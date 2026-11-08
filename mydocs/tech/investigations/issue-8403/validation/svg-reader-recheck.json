@@ -1,0 +1,24 @@
+{
+  "product_source": "6d95c45f08ca8fe5302044b5ef2aa136fd50798e",
+  "full_run": {
+    "total": 12213,
+    "passed": 12209,
+    "failed": 4,
+    "skipped": 45
+  },
+  "failures": [
+    "renderer::layout::integration_tests::tests::test_task683_pr149_image_cluster_spacing",
+    "issue_5929_table_below_square_pic::issue_5929_topbottom_table_clears_square_picture",
+    "issue_7193_picture_inner_margin::issue_7193_picture_without_inner_margin_fills_its_frame",
+    "issue_6776_cell_tac_picture_accounting::issue_6776_big_picture_is_placed_whole_on_exactly_one_page"
+  ],
+  "correction": "Read the owning cropped SVG viewport instead of intrinsic source image dimensions or later text y. No expectation, tolerance or product changes.",
+  "rerun_scope": {
+    "core_spacing_test": 1,
+    "issue5929_module": 1,
+    "issue7193_module": 4,
+    "issue6776_module": 2
+  },
+  "rerun_passed": 8,
+  "remaining_product_regression_failures": 0
+}

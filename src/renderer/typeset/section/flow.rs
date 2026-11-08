@@ -1,15 +1,13 @@
 //! 구역 문단 처리의 place_paragraph_flow 단계. 조건·예약·발행 순서를 유지한다.
 use crate::renderer::typeset::{
-    hwpunit_to_px, is_synthetic_line_seg,
-    native_hwp5_circled_rowbreak_table_heading_requires_fresh_page,
-    native_hwp5_first_footnote_overlap_break_line, notes,
+    hwpunit_to_px, is_synthetic_line_seg, native_hwp5_first_footnote_overlap_break_line, notes,
     original_hwpx_tac_filled_page_keeps_short_trail, synth_square_wrap_rects, ComposedParagraph,
     Control, Issue2424TypesetProfile, MeasuredTable, PageDef, PageItem, Paragraph,
     ResolvedStyleSet, TypesetEngine, TypesetState,
 };
 impl TypesetEngine {
     #[allow(clippy::too_many_arguments)]
-    pub(super) fn place_paragraph_flow(
+    pub(super) fn place_paragraph_flow_with_storage<S: crate::storage::Storage>(
         &self,
         st: &mut TypesetState,
         para_idx: usize,
@@ -22,7 +20,8 @@ impl TypesetEngine {
         has_table: bool,
         issue2424_ts_enabled: bool,
         issue2424_prof: &mut Issue2424TypesetProfile,
-    ) -> Option<notes::footnotes::boundary::NativeHwp5FootnoteBreak> {
+        storage: &S,
+    ) -> Result<Option<notes::footnotes::boundary::NativeHwp5FootnoteBreak>, S::Error> {
         let issue2424_branch_started = issue2424_ts_enabled.then(std::time::Instant::now);
         let mut native_hwp5_footnote_break = None;
         if !has_table {
@@ -85,10 +84,13 @@ impl TypesetEngine {
                             }
                             let left_gap = ox0 - cax;
                             let right_gap = cax + caw - ox1;
+                            // 사각형은 원본의 좌우 바깥 여백까지 이미 포함한다.
+                            // 별도 고정 간격을 얹으면 원점과 가용 폭이 함께
+                            // 달라져 같은 배제 경계를 측정·paint에서 잃는다.
                             if right_gap >= left_gap {
-                                cs_px = cs_px.max(ox1 - cax + 3.8);
+                                cs_px = cs_px.max(ox1 - cax);
                             } else {
-                                right_cut = right_cut.min(left_gap - 3.8);
+                                right_cut = right_cut.min(left_gap);
                             }
                         }
                         let sw_px = (right_cut - cs_px).max(0.0);
@@ -119,14 +121,38 @@ impl TypesetEngine {
             }
             // [#6175] devel 의 known-square-band 인자를 그대로 전달한다 —
             // 위에서 좁힌 col_w(합성 어울림 감폭)와 함께 쓴다.
-            let formatted = self.format_paragraph_with_known_square_band(
+            self.format_next_stored_vpos.set(
+                paragraphs
+                    .get(para_idx + 1)
+                    .and_then(|next| next.line_segs.first())
+                    .filter(|line| !is_synthetic_line_seg(line))
+                    .map(|line| line.vertical_pos),
+            );
+            let formatted = self.format_paragraph_with_known_square_band_with_storage(
                 para,
                 composed.get(para_idx),
                 styles,
                 Some(col_w),
                 st.wrap_around_derived_band
                     || st.current_column_wrap_anchors.contains_key(&para_idx),
+                storage,
             );
+            self.format_next_stored_vpos.set(None);
+            let mut formatted = formatted?;
+            // HWP5 컨테이너는 파서의 raw 출처 봉인으로 편집 여부를 확인할 수 있다.
+            // HWPX/원본 HWP3는 같은 출처 봉인이 없으므로 이 저장 증언 경로에 넣지 않는다.
+            // 편집 중 복제한 줄을 정상 저장 원점으로 믿지 않고 기존 소유자에 남긴다.
+            if let Some(plan) = (st.profile.hwp5_container() && !st.profile.session_edited())
+                .then(|| paragraphs.get(para_idx + 1))
+                .flatten()
+                .and_then(|next| {
+                    crate::renderer::inline_flow::plan_stored_empty_square_host(
+                        para, next, styles, self.dpi,
+                    )
+                })
+            {
+                formatted.use_square_host_plan(plan, self.dpi);
+            }
             // 줄 단위 어울림 배제: 문단 시작은 개체 위이지만 뒷줄이 개체 사각형과
             // 교차하는 형상(출석부) — 문단 전체 감폭 대신 교차 y 밴드를 anchor 에
             // 실어 layout 이 교차하는 줄만 감폭한다.
@@ -154,7 +180,7 @@ impl TypesetEngine {
                         if right_gap < left_gap {
                             continue; // 우측 개체 형상은 미지원(현행 유지)
                         }
-                        let cs_px = ox1 - cax + 3.8;
+                        let cs_px = ox1 - cax;
                         let sw_px = caw - cs_px;
                         if sw_px < caw * 0.25 {
                             continue;
@@ -176,19 +202,57 @@ impl TypesetEngine {
             native_hwp5_footnote_break =
                 native_hwp5_first_footnote_overlap_break_line(&st, para, &formatted, self.dpi);
             let is_last_in_section = para_idx + 1 == paragraphs.len();
-            if native_hwp5_circled_rowbreak_table_heading_requires_fresh_page(
-                &st, para, &formatted, paragraphs, para_idx, self.dpi,
-            ) {
-                st.advance_column_or_new_page();
-            }
             // [Task #1027 Stage D] fit 직전 vpos 스냅으로 누적 drift 제거 (렌더러 정합).
-            self.vpos_snap_current_height(
+            self.vpos_snap_current_height_with_storage(
                 st,
                 para_idx,
                 paragraphs,
+                composed,
                 styles,
                 formatted.spacing_before,
-            );
+                storage,
+            )?;
+            // 단 첫 줄이 완전한 자리차지 상자 뒤에 저장됐으면, 상자와 줄의
+            // 닫힌 경계가 쪽 축 0을 인증한다. 그 줄의 양수 vpos를 쪽 원점으로
+            // 빼면 뒤 본문이 올라가고 문단 내부의 다음 쪽 reset도 사라진다.
+            let opening_float_line = (st.col_count == 1
+                && st.current_items.is_empty()
+                && !st.profile.session_edited()
+                && (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout()))
+            .then(|| {
+                let body = &st.layout.body_area;
+                let paper = crate::renderer::page_layout::LayoutRect {
+                    x: 0.0,
+                    y: 0.0,
+                    width: st.layout.page_width,
+                    height: st.layout.page_height,
+                };
+                let frame = crate::renderer::float_placement::ObjectPlacementFrame {
+                    container: body,
+                    column: body,
+                    body,
+                    paper: &paper,
+                    paragraph_y: body.y,
+                    alignment: crate::model::style::Alignment::Left,
+                    dpi: self.dpi,
+                };
+                frame.stored_topbottom_host_line_origin(para)
+            })
+            .flatten()
+            .filter(|origin| {
+                *origin >= formatted.spacing_before
+                    && *origin + formatted.total_height - formatted.spacing_before
+                        <= st.available_height()
+            });
+            let opening_page = (st.pages.len(), st.current_column);
+            if let Some(origin) = opening_float_line {
+                st.align_flow_to(origin - formatted.spacing_before);
+                st.record_vpos_page_origin(Some(0));
+                st.record_vpos_lazy_origin(None);
+                st.record_vpos_column_anchor(0.0);
+                st.record_stored_column_origin(Some((0, 0.0)));
+                st.record_vpos_origin_provenance(true);
+            }
             if let Some(crate::model::control::Control::Table(prev_table)) =
                 st.current_items.last().and_then(|item| match item {
                     PageItem::Table {
@@ -222,11 +286,18 @@ impl TypesetEngine {
                     formatted.height_for_fit.max(formatted.total_height),
                     next_h.unwrap_or(0.0),
                 ) {
-                    st.advance_column_or_new_page();
+                    st.advance_column_or_new_page_with_storage(storage)?;
                 }
             }
-            if !self.typeset_inline_flow(st, para_idx, para, styles, measured_tables) {
-                self.typeset_paragraph(
+            if !self.typeset_inline_flow_with_storage(
+                st,
+                para_idx,
+                para,
+                styles,
+                measured_tables,
+                storage,
+            )? {
+                self.typeset_paragraph_with_storage(
                     st,
                     para_idx,
                     para,
@@ -234,7 +305,37 @@ impl TypesetEngine {
                     paragraphs,
                     styles,
                     is_last_in_section,
-                );
+                    storage,
+                )?;
+            }
+            if let Some(origin) = opening_float_line.filter(|_| {
+                opening_page == (st.pages.len(), st.current_column)
+                    && matches!(st.current_items.first(), Some(PageItem::FullParagraph { para_index })
+                        if *para_index == para_idx)
+            }) {
+                // 실제 fit이 수용한 같은 원점·끝을 paint에도 전달한다.
+                st.record_paragraph_origin_with_storage(crate::renderer::pagination::ParagraphOrigin {
+                    paragraph_index: para_idx,
+                    spacing_before: formatted.spacing_before,
+                    source_vpos_base: 0,
+                    flow_start: origin - formatted.spacing_before,
+                    flow_end: st.current_height,
+                }, storage)?;
+            }
+            if let Some(mut plan) = formatted
+                .square_host_plan
+                .clone()
+                .filter(|plan| plan.stored_empty_host)
+            {
+                // fit 후 실제 같은 단에 수용한 전체 줄 결과만 게시한다.
+                // 이월·숨김·분할 경로를 소유했다고 추정하지 않는다.
+                if !st.hidden_empty_paras.contains(&para_idx) && st.current_items.iter().any(|item| {
+                    matches!(item, PageItem::FullParagraph { para_index } if *para_index == para_idx)
+                }) {
+                    let origin = st.current_height - (plan.end - plan.start);
+                    plan.relative_to(0.0, -origin);
+                    st.record_square_host_flow(para_idx, plan);
+                }
             }
             // HWPX가 수식 인라인 개체를 포함한 문단의 line_seg 높이를 실제
             // 조판보다 작게 저장하는 경우, 다음 문단의 양수 VPOS가 같은 물리
@@ -300,8 +401,59 @@ impl TypesetEngine {
                 }
             }
         } else {
+            // 쪽 첫 저장 줄이 제목 표(쪽·종이 기준 어울림 표) 바깥 아래에서 시작한 쪽은, 한/글처럼
+            // 그 줄부터 저장 위치에 둔다. 쪽 원점은 0 이다. 제목 표 host 가 쪽을 열었든, 앞의
+            // 빈 문단 뒤에 오든 같다. 흐름은 host 를 배치한 뒤 그 저장 줄 아래끝으로 맞춘다.
+            // 미리 내리면 쪽을 거의 채운 어울림 표가 내려간 흐름 아래에서 자리를 못 찾아 쪼개진다.
+            let page_opener = st
+                .current_items
+                .first()
+                .and_then(crate::renderer::typeset::page_item_para_index)
+                .unwrap_or(para_idx);
+            let title_page = st.col_count == 1
+                && (st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
+                && crate::renderer::layout::stored_page_square_preserves_source_origin(
+                    paragraphs,
+                    page_opener,
+                    &st.layout,
+                    self.dpi,
+                );
+            let title_page_start = title_page && st.current_items.is_empty();
+            if title_page_start {
+                st.record_vpos_column_anchor(st.current_height);
+                st.record_vpos_page_origin(Some(0));
+                st.record_vpos_lazy_origin(None);
+                st.record_vpos_origin_provenance(true);
+                // 원점만 바로잡는다. 이 쪽의 저장 사다리는 지금까지처럼 앞 간격 회수나
+                // 뒤로 스냅하는 근거로 쓰지 않는다(그리는 쪽의 순차 흐름과 같게).
+                st.record_vpos_ladder_validity(true);
+            }
+            // 절대 위치 표의 앵커 줄 뒤 TAC도 일반 글줄과 같은 저장 원점을
+            // 소비한다. 앵커가 옆 차선에 남으면 그 줄의 끝과 표 아래의 다음
+            // 저장 줄 사이에 빈 밴드가 있다. 이 간격을 paint에서 따로 더하지
+            // 않고 공통 HeightCursor를 통해 fit와 실제 배치에 함께 전달한다.
+            if title_page
+                && !title_page_start
+                && para.controls.iter().any(|control| {
+                    matches!(control, Control::Table(table) if table.common.treat_as_char)
+                })
+                && !para.controls.iter().any(|control| {
+                    matches!(control, Control::Table(table)
+                        if !table.common.treat_as_char
+                            && matches!(table.common.vert_rel_to,
+                                crate::model::shape::VertRelTo::Page | crate::model::shape::VertRelTo::Paper))
+                })
+            {
+                let spacing_before = styles
+                    .para_styles
+                    .get(para.para_shape_id as usize)
+                    .map_or(0.0, |style| style.spacing_before);
+                self.vpos_snap_current_height_with_storage(
+                    st, para_idx, paragraphs, composed, styles, spacing_before, storage,
+                )?;
+            }
             // 표 문단: Phase 2에서 전환 예정. 현재는 기존 방식 호환용 stub.
-            self.typeset_table_paragraph(
+            self.typeset_table_paragraph_with_storage(
                 st,
                 para_idx,
                 para,
@@ -312,7 +464,33 @@ impl TypesetEngine {
                 page_def,
                 paragraphs,
                 composed,
-            );
+                storage,
+            )?;
+            // 그 쪽 제목 표 host 의 저장 줄(제목 표 앵커만 든 줄 포함)도 흐름을 차지한다. 그리는
+            // 쪽은 이 줄을 그린 뒤 다음 문단을 잇는다.
+            if title_page
+                && st.current_items.iter().any(|item| {
+                    matches!(item, PageItem::Table { para_index, control_index }
+                        if *para_index == para_idx
+                            && matches!(para.controls.get(*control_index),
+                                Some(Control::Table(table))
+                                    if !table.common.treat_as_char
+                                        && matches!(table.common.text_wrap, crate::model::shape::TextWrap::Square)
+                                        && matches!(table.common.vert_rel_to,
+                                            crate::model::shape::VertRelTo::Page | crate::model::shape::VertRelTo::Paper)))
+                })
+            {
+                if let Some(last) = para.line_segs.last() {
+                    let bottom = last
+                        .vertical_pos
+                        .saturating_add(last.line_height)
+                        .saturating_add(last.line_spacing);
+                    let host_bottom = st.vpos_col_anchor + hwpunit_to_px(bottom, self.dpi);
+                    if host_bottom > st.current_height {
+                        st.align_flow_to(host_bottom);
+                    }
+                }
+            }
         }
         Issue2424TypesetProfile::add(
             if has_table {
@@ -323,6 +501,6 @@ impl TypesetEngine {
             issue2424_branch_started,
         );
 
-        native_hwp5_footnote_break
+        Ok(native_hwp5_footnote_break)
     }
 }

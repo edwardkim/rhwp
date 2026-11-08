@@ -1,0 +1,935 @@
+{
+  "verified_at": "2026-10-13T00:58:34.300923+09:00",
+  "base": "bfa28a77a2714482f647ee6a7b9aa7f7876d8404",
+  "code_candidate": "d6d8f5bc2031a175c350e9be5daffe0525c05e4a",
+  "source_identity": {
+    "current_source_head": "d6d8f5bc2031a175c350e9be5daffe0525c05e4a",
+    "runner_initial_head": "9c9877705f8cb91770a45f85c36e5f4c7da567a0",
+    "intervening_change": "renderer contract test reflects six excluded exam samples; Rust/build input unchanged",
+    "rust_changed_since_start": [],
+    "wasm_sha256": {
+      "pkg/rhwp_bg.wasm": "64161016b28c98da7e8ce77e5ef70e17424028e016c9b02b0c05bc034b965f26",
+      "rhwp-studio/public/rhwp_bg.wasm": "64161016b28c98da7e8ce77e5ef70e17424028e016c9b02b0c05bc034b965f26"
+    }
+  },
+  "validation_pipeline": {
+    "head": "9c9877705f8cb91770a45f85c36e5f4c7da567a0",
+    "checks": [
+      {
+        "name": "manifest-prepare",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "duration_seconds": 0.709176778793335
+      },
+      {
+        "name": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "duration_seconds": 7.233508110046387
+      },
+      {
+        "name": "unit-tiers",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "bfa28a77a2714482f647ee6a7b9aa7f7876d8404"
+        ],
+        "exit_code": 0,
+        "duration_seconds": 15.112166166305542
+      },
+      {
+        "name": "cli-focused",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "cli_exit_codes",
+          "--",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review"
+        ],
+        "exit_code": 0,
+        "duration_seconds": 123.0290539264679
+      },
+      {
+        "name": "cli-catalog-focused",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "cli_catalog_contract",
+          "--",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review"
+        ],
+        "exit_code": 0,
+        "duration_seconds": 8.167572021484375
+      },
+      {
+        "name": "native-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "duration_seconds": 3.828122138977051
+      },
+      {
+        "name": "wasm-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "duration_seconds": 0.22841477394104004
+      },
+      {
+        "name": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review"
+        ],
+        "exit_code": 0,
+        "duration_seconds": 9.002627849578857
+      },
+      {
+        "name": "workspace-all-targets-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "duration_seconds": 36.03045701980591
+      },
+      {
+        "name": "manifest-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "bfa28a77a2714482f647ee6a7b9aa7f7876d8404"
+        ],
+        "exit_code": 0,
+        "duration_seconds": 0.5984811782836914
+      },
+      {
+        "name": "fresh-wasm",
+        "command": [
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--out-dir",
+          "pkg",
+          "--no-opt"
+        ],
+        "exit_code": 0,
+        "duration_seconds": 2.06673002243042
+      },
+      {
+        "name": "full-nextest",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--tests",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "duration_seconds": 761.1738460063934
+      },
+      {
+        "name": "native-skia-lib",
+        "command": [
+          "cargo",
+          "test",
+          "--locked",
+          "--profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--features",
+          "native-skia",
+          "--lib",
+          "--",
+          "--test-threads",
+          "8"
+        ],
+        "exit_code": 0,
+        "duration_seconds": 160.9645619392395
+      },
+      {
+        "name": "native-skia-png",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "issue_2225_missing_picture_placeholder",
+          "--",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--features",
+          "native-skia"
+        ],
+        "exit_code": 0,
+        "duration_seconds": 149.70074105262756
+      },
+      {
+        "name": "native-skia-pdf",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "render_p37_direct_pdf_export",
+          "--",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--features",
+          "native-skia"
+        ],
+        "exit_code": 0,
+        "duration_seconds": 8.645594835281372
+      }
+    ]
+  },
+  "nextest_summary": "Summary [ 443.078s] 10217 tests run: 10217 passed (8 slow), 45 skipped",
+  "native_skia_summaries": {
+    "native-skia-lib": [
+      "test result: ok. 3864 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 30.48s",
+      "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+    ],
+    "native-skia-png": [
+      "Summary [   1.082s] 2 tests run: 2 passed, 235 skipped"
+    ],
+    "native-skia-pdf": [
+      "Summary [   0.824s] 4 tests run: 4 passed, 209 skipped"
+    ]
+  },
+  "frontend": [
+    {
+      "name": "studio-build",
+      "command": [
+        "npm",
+        "--prefix",
+        "rhwp-studio",
+        "run",
+        "build"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 7.0083911418914795
+    },
+    {
+      "name": "chrome-build",
+      "command": [
+        "npm",
+        "--prefix",
+        "rhwp-chrome",
+        "run",
+        "build"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 2.7941811084747314
+    },
+    {
+      "name": "firefox-build",
+      "command": [
+        "npm",
+        "--prefix",
+        "rhwp-firefox",
+        "run",
+        "build"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 2.878141164779663
+    },
+    {
+      "name": "extension-dist-contracts",
+      "command": [
+        "node",
+        "--test",
+        "scripts/frontend-extension-dist.test.mjs"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.3090329170227051
+    },
+    {
+      "name": "studio-browser-embed",
+      "command": [
+        "node",
+        "e2e/run-with-vite.mjs",
+        "--",
+        "node",
+        "e2e/embed-transport.test.mjs",
+        "--mode=headless"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 9.560184001922607
+    },
+    {
+      "name": "studio-render-diff",
+      "command": [
+        "node",
+        "e2e/run-render-diff.mjs"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 14.021889925003052
+    },
+    {
+      "name": "chrome-extension-smoke",
+      "command": [
+        "node",
+        "e2e/extension-smoke.test.mjs"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 2.548585891723633
+    }
+  ],
+  "studio_unit": {
+    "pass": 1834,
+    "fail": 0,
+    "skip": 2
+  },
+  "transfer": {
+    "source_head": "afbca2a1c42e9ff6c994ffa945d2a86f19eb05c0",
+    "source_branch": "fix/7445-completed-20261009",
+    "target_branch": "review/dependabot-20261012",
+    "base": "bfa28a77a2714482f647ee6a7b9aa7f7876d8404",
+    "docs_paths": [
+      "AGENTS.md",
+      "CLAUDE.md",
+      "CONTRIBUTING.md",
+      ".github/pull_request_template.md",
+      "mydocs/manual/pr_review/collaborator_external_pr.md",
+      "mydocs/manual/pr_review/collaborator_self_merge.md",
+      "mydocs/manual/pr_review/local_validation.md",
+      "mydocs/manual/pr_review/visual_fixture_evidence.md",
+      "mydocs/manual/verification/object_visual_regression.md",
+      "mydocs/manual/verification/visual_sweep_guide.md",
+      "mydocs/manual/verification/visual_verification_governance.md",
+      "scripts/visual_sweep.py",
+      "scripts/tests/test_visual_sweep.py"
+    ],
+    "gym_original_commit": "c0bbd2da688a114f571a8bec066d8405867aa0e1",
+    "gym_paths": [
+      "gym/README.md",
+      "gym/core/input_selection.py",
+      "gym/packs/casual-rides/README.md",
+      "gym/packs/casual-rides/reference/CR16.json",
+      "gym/packs/casual-rides/reference/CR17.json",
+      "gym/packs/casual-rides/reference/CR18.json",
+      "gym/packs/casual-rides/reference/CR40.json",
+      "gym/packs/casual-rides/tasks/CR16.json",
+      "gym/packs/casual-rides/tasks/CR17.json",
+      "gym/packs/casual-rides/tasks/CR18.json",
+      "gym/packs/casual-rides/tasks/CR40.json",
+      "gym/packs/core-cli/README.md",
+      "gym/packs/core-cli/reference/T20.json",
+      "gym/packs/core-cli/reference/T54.json",
+      "gym/packs/core-cli/tasks/T20.json",
+      "gym/packs/core-cli/tasks/T54.json",
+      "gym/packs/corpus-diagnostics/README.md",
+      "gym/packs/corpus-diagnostics/reference/CD17.json",
+      "gym/packs/corpus-diagnostics/reference/CD18.json",
+      "gym/packs/corpus-diagnostics/reference/CD21.json",
+      "gym/packs/corpus-diagnostics/reference/CD22.json",
+      "gym/packs/corpus-diagnostics/reference/CD25.json",
+      "gym/packs/corpus-diagnostics/reference/CD26.json",
+      "gym/packs/corpus-diagnostics/reference/CD27.json",
+      "gym/packs/corpus-diagnostics/reference/CD28.json",
+      "gym/packs/corpus-diagnostics/reference/CD29.json",
+      "gym/packs/corpus-diagnostics/reference/CD30.json",
+      "gym/packs/corpus-diagnostics/reference/CD33.json",
+      "gym/packs/corpus-diagnostics/reference/CD41.json",
+      "gym/packs/corpus-diagnostics/reference/CD44.json",
+      "gym/packs/corpus-diagnostics/reference/CD45.json",
+      "gym/packs/corpus-diagnostics/reference/CD46.json",
+      "gym/packs/corpus-diagnostics/tasks/CD17.json",
+      "gym/packs/corpus-diagnostics/tasks/CD18.json",
+      "gym/packs/corpus-diagnostics/tasks/CD21.json",
+      "gym/packs/corpus-diagnostics/tasks/CD22.json",
+      "gym/packs/corpus-diagnostics/tasks/CD25.json",
+      "gym/packs/corpus-diagnostics/tasks/CD26.json",
+      "gym/packs/corpus-diagnostics/tasks/CD27.json",
+      "gym/packs/corpus-diagnostics/tasks/CD28.json",
+      "gym/packs/corpus-diagnostics/tasks/CD29.json",
+      "gym/packs/corpus-diagnostics/tasks/CD30.json",
+      "gym/packs/corpus-diagnostics/tasks/CD33.json",
+      "gym/packs/corpus-diagnostics/tasks/CD41.json",
+      "gym/packs/corpus-diagnostics/tasks/CD44.json",
+      "gym/packs/corpus-diagnostics/tasks/CD45.json",
+      "gym/packs/corpus-diagnostics/tasks/CD46.json",
+      "gym/packs/extraction/README.md",
+      "gym/packs/extraction/reference/EX04.json",
+      "gym/packs/extraction/reference/EX08.json",
+      "gym/packs/extraction/reference/EX09.json",
+      "gym/packs/extraction/reference/EX10.json",
+      "gym/packs/extraction/reference/EX11.json",
+      "gym/packs/extraction/reference/EX12.json",
+      "gym/packs/extraction/reference/EX13.json",
+      "gym/packs/extraction/reference/EX14.json",
+      "gym/packs/extraction/reference/EX25.json",
+      "gym/packs/extraction/reference/EX26.json",
+      "gym/packs/extraction/reference/EX27.json",
+      "gym/packs/extraction/reference/EX28.json",
+      "gym/packs/extraction/tasks/EX04.json",
+      "gym/packs/extraction/tasks/EX08.json",
+      "gym/packs/extraction/tasks/EX09.json",
+      "gym/packs/extraction/tasks/EX10.json",
+      "gym/packs/extraction/tasks/EX11.json",
+      "gym/packs/extraction/tasks/EX12.json",
+      "gym/packs/extraction/tasks/EX13.json",
+      "gym/packs/extraction/tasks/EX14.json",
+      "gym/packs/extraction/tasks/EX25.json",
+      "gym/packs/extraction/tasks/EX26.json",
+      "gym/packs/extraction/tasks/EX27.json",
+      "gym/packs/extraction/tasks/EX28.json",
+      "gym/packs/layout-rendering/README.md",
+      "gym/packs/layout-rendering/reference/LR11.json",
+      "gym/packs/layout-rendering/reference/LR12.json",
+      "gym/packs/layout-rendering/reference/LR13.json",
+      "gym/packs/layout-rendering/reference/LR16.json",
+      "gym/packs/layout-rendering/reference/LR19.json",
+      "gym/packs/layout-rendering/reference/LR23.json",
+      "gym/packs/layout-rendering/reference/LR24.json",
+      "gym/packs/layout-rendering/reference/LR31.json",
+      "gym/packs/layout-rendering/reference/LR34.json",
+      "gym/packs/layout-rendering/reference/LR39.json",
+      "gym/packs/layout-rendering/reference/LR40.json",
+      "gym/packs/layout-rendering/reference/LR42.json",
+      "gym/packs/layout-rendering/reference/LR46.json",
+      "gym/packs/layout-rendering/tasks/LR11.json",
+      "gym/packs/layout-rendering/tasks/LR12.json",
+      "gym/packs/layout-rendering/tasks/LR13.json",
+      "gym/packs/layout-rendering/tasks/LR16.json",
+      "gym/packs/layout-rendering/tasks/LR19.json",
+      "gym/packs/layout-rendering/tasks/LR23.json",
+      "gym/packs/layout-rendering/tasks/LR24.json",
+      "gym/packs/layout-rendering/tasks/LR31.json",
+      "gym/packs/layout-rendering/tasks/LR34.json",
+      "gym/packs/layout-rendering/tasks/LR39.json",
+      "gym/packs/layout-rendering/tasks/LR40.json",
+      "gym/packs/layout-rendering/tasks/LR42.json",
+      "gym/packs/layout-rendering/tasks/LR46.json",
+      "gym/packs/objects-media/README.md",
+      "gym/packs/objects-media/reference/OM25.json",
+      "gym/packs/objects-media/reference/OM29.json",
+      "gym/packs/objects-media/reference/OM38.json",
+      "gym/packs/objects-media/reference/OM39.json",
+      "gym/packs/objects-media/tasks/OM25.json",
+      "gym/packs/objects-media/tasks/OM29.json",
+      "gym/packs/objects-media/tasks/OM38.json",
+      "gym/packs/objects-media/tasks/OM39.json",
+      "gym/packs/oracle-probe/README.md",
+      "gym/packs/oracle-probe/reference/OP35.json",
+      "gym/packs/oracle-probe/reference/OP36.json",
+      "gym/packs/oracle-probe/tasks/OP35.json",
+      "gym/packs/oracle-probe/tasks/OP36.json",
+      "gym/packs/render-tree/README.md",
+      "gym/packs/render-tree/reference/RT04.json",
+      "gym/packs/render-tree/reference/RT23.json",
+      "gym/packs/render-tree/reference/RT24.json",
+      "gym/packs/render-tree/reference/RT25.json",
+      "gym/packs/render-tree/reference/RT26.json",
+      "gym/packs/render-tree/reference/RT27.json",
+      "gym/packs/render-tree/reference/RT28.json",
+      "gym/packs/render-tree/reference/RT29.json",
+      "gym/packs/render-tree/reference/RT32.json",
+      "gym/packs/render-tree/reference/RT38.json",
+      "gym/packs/render-tree/reference/RT39.json",
+      "gym/packs/render-tree/tasks/RT04.json",
+      "gym/packs/render-tree/tasks/RT23.json",
+      "gym/packs/render-tree/tasks/RT24.json",
+      "gym/packs/render-tree/tasks/RT25.json",
+      "gym/packs/render-tree/tasks/RT26.json",
+      "gym/packs/render-tree/tasks/RT27.json",
+      "gym/packs/render-tree/tasks/RT28.json",
+      "gym/packs/render-tree/tasks/RT29.json",
+      "gym/packs/render-tree/tasks/RT32.json",
+      "gym/packs/render-tree/tasks/RT38.json",
+      "gym/packs/render-tree/tasks/RT39.json",
+      "gym/packs/security/README.md",
+      "gym/packs/security/reference/SE23.json",
+      "gym/packs/security/reference/SE34.json",
+      "gym/packs/security/reference/SE55.json",
+      "gym/packs/security/reference/SE68.json",
+      "gym/packs/security/tasks/SE23.json",
+      "gym/packs/security/tasks/SE34.json",
+      "gym/packs/security/tasks/SE55.json",
+      "gym/packs/security/tasks/SE68.json",
+      "gym/packs/serialization/README.md",
+      "gym/packs/serialization/reference/SR10.json",
+      "gym/packs/serialization/reference/SR14.json",
+      "gym/packs/serialization/reference/SR18.json",
+      "gym/packs/serialization/reference/SR28.json",
+      "gym/packs/serialization/reference/SR29.json",
+      "gym/packs/serialization/reference/SR30.json",
+      "gym/packs/serialization/reference/SR31.json",
+      "gym/packs/serialization/reference/SR33.json",
+      "gym/packs/serialization/reference/SR34.json",
+      "gym/packs/serialization/reference/SR38.json",
+      "gym/packs/serialization/reference/SR46.json",
+      "gym/packs/serialization/reference/SR54.json",
+      "gym/packs/serialization/tasks/SR10.json",
+      "gym/packs/serialization/tasks/SR14.json",
+      "gym/packs/serialization/tasks/SR18.json",
+      "gym/packs/serialization/tasks/SR28.json",
+      "gym/packs/serialization/tasks/SR29.json",
+      "gym/packs/serialization/tasks/SR30.json",
+      "gym/packs/serialization/tasks/SR31.json",
+      "gym/packs/serialization/tasks/SR33.json",
+      "gym/packs/serialization/tasks/SR34.json",
+      "gym/packs/serialization/tasks/SR38.json",
+      "gym/packs/serialization/tasks/SR46.json",
+      "gym/packs/serialization/tasks/SR54.json",
+      "gym/packs/text-editing/README.md",
+      "gym/packs/text-editing/reference/TE29.json",
+      "gym/packs/text-editing/reference/TE36.json",
+      "gym/packs/text-editing/reference/TE37.json",
+      "gym/packs/text-editing/reference/TE38.json",
+      "gym/packs/text-editing/reference/TE39.json",
+      "gym/packs/text-editing/reference/TE76.json",
+      "gym/packs/text-editing/reference/TE82.json",
+      "gym/packs/text-editing/tasks/TE29.json",
+      "gym/packs/text-editing/tasks/TE36.json",
+      "gym/packs/text-editing/tasks/TE37.json",
+      "gym/packs/text-editing/tasks/TE38.json",
+      "gym/packs/text-editing/tasks/TE39.json",
+      "gym/packs/text-editing/tasks/TE76.json",
+      "gym/packs/text-editing/tasks/TE82.json",
+      "gym/tools/fuzz_corpus.py",
+      "gym/tools/robustness.py",
+      "mydocs/pr/assets/issue7445/completed-20261009/gym-exam-removal/validation.json",
+      "mydocs/working/task_m100_7445_stage425_gym_exam_removal.md",
+      "scripts/tests/test_gym_authority_ledger.py",
+      "scripts/tests/test_gym_core_casual_packs.py",
+      "scripts/tests/test_gym_extraction_pack.py",
+      "scripts/tests/test_gym_fuzz_corpus.py",
+      "scripts/tests/test_gym_om_lr_cd_packs.py",
+      "scripts/tests/test_gym_packs.py",
+      "scripts/tests/test_gym_robustness.py",
+      "scripts/tests/test_gym_security_pack.py",
+      "scripts/tests/test_gym_serialization_pack.py",
+      "scripts/tests/test_gym_studio_rendertree_packs.py",
+      "scripts/tests/test_gym_text_editing_pack.py"
+    ],
+    "untouched_later_gym_moves": [
+      "CR29",
+      "CR30",
+      "CD42",
+      "RT14",
+      "SE79",
+      "SE80",
+      "TE33"
+    ],
+    "original_fixtures_preserved": true,
+    "gym_portability_paths": [
+      "scripts/tests/test_gym_score_runner.py"
+    ],
+    "rust_studio_exam_paths": [
+      "rhwp-studio/e2e/MANIFEST.md",
+      "rhwp-studio/e2e/grid-mode-click-coord.test.mjs",
+      "rhwp-studio/e2e/hml-equation-embed.test.mjs",
+      "rhwp-studio/e2e/issue-595.test.mjs",
+      "scripts/font_rule_ledger.mjs",
+      "scripts/gen_pua_oldhangul_rs.py",
+      "scripts/renderer_baseline_manifest.json",
+      "scripts/svg_regression_diff.sh",
+      "src/serializer/cfb_writer/tests.rs",
+      "src/wasm_api/tests.rs",
+      "tests/cases/body_overflow_baseline.rs",
+      "tests/cases/issue_3500_char_shapes_roundtrip.rs",
+      "tests/cases/issue_4161_ratio_default_contract.rs",
+      "tests/cases/off_canvas_baseline.rs",
+      "tests/cases/oracle_page_count_baseline.rs",
+      "tests/cases/text_overlap_baseline.rs",
+      "tests/convert_verify_corpus_ratchet.rs",
+      "tests/envelope_integrity_contract.rs",
+      "tests/hwp5_roundtrip_baseline.rs",
+      "tests/hwpx_roundtrip_baseline.rs",
+      "tests/ir_field_sweep_baseline.rs",
+      "tests/issue_1402_enum_token_whitelist.rs",
+      "tests/issue_4141_hwp3_relative_size_contract.rs",
+      "tests/issue_4155_hwp3_char_shade_contract.rs",
+      "tests/overflow_cell_baseline.rs",
+      "tests/security_corpus_regression.rs",
+      "tests/support/exam_fixtures.rs",
+      "tests/visual_roundtrip_baseline.rs",
+      "tests/cases/issue_4961_font_decision_trace.rs",
+      "tests/cases/issue_4962_font_metric_coverage.rs",
+      "mydocs/tech/investigations/issue-4961/font_decision_trace_e2e.json",
+      "mydocs/tech/investigations/issue-4962/font_metric_coverage_public_fixtures.json",
+      "scripts/tests/font_decision_trace_e2e.test.mjs"
+    ],
+    "source_cleanup_head": "28be39176bac63abff0dd5017ab18e3ca64fab82",
+    "target_transfer_head": "9c9877705f8cb91770a45f85c36e5f4c7da567a0",
+    "production_and_documents_preserved": true,
+    "source_clean": true
+  },
+  "gym": {
+    "run": 3170,
+    "fail": 0,
+    "skip": 1
+  },
+  "visual_sweep_unit": {
+    "pass": 83
+  },
+  "font_decision_trace": {
+    "pass": 2
+  },
+  "renderer_contract": {
+    "exit_code": 0,
+    "excluded_exam_samples": 6,
+    "remaining_samples": 116,
+    "representative_samples": 23
+  },
+  "ci_policy": {
+    "pass": 89,
+    "fail": 0
+  },
+  "workflow_contracts": {
+    "pass": 186
+  },
+  "codeql_group_contracts": {
+    "pass": 22
+  },
+  "agent_codex_contracts": {
+    "pass": 14
+  },
+  "actionlint": {
+    "exit_code": 0,
+    "shellcheck": "explicitly disabled"
+  },
+  "additional_font_ledger_audit": {
+    "run": 18,
+    "pass": 17,
+    "fail": 1,
+    "base_problem": {
+      "base": "bfa28a77a2714482f647ee6a7b9aa7f7876d8404",
+      "error_count": 3014,
+      "errors_are_missing_references": true,
+      "paths": [
+        {
+          "path": "mydocs/plans/task_m100_4939.md",
+          "exists_at_base": false
+        },
+        {
+          "path": "mydocs/report/font_metrics_fallback_causal_lineage_20260816.md",
+          "exists_at_base": false
+        }
+      ],
+      "code_candidates_test_changed": "",
+      "baseline_issue": true
+    }
+  },
+  "production_render_scope": {
+    "inspected": [
+      "src/renderer/layout",
+      "src/renderer/skia",
+      "src/paint",
+      "src/document_core/queries/rendering.rs",
+      "rhwp-studio/src",
+      "rhwp-chrome/src",
+      "rhwp-firefox/src"
+    ],
+    "changed": [],
+    "zip_resource_lookup": "Unicode/CP437 file lookup, byte budgets and content verified; no layout change claimed"
+  },
+  "gpu": "native Rust GPU retired; PR7844 superseded; Vello0.11 runtime not adopted",
+  "browser_limit": "Actual Chrome; Firefox build/dist only; Firefox/Edge runtime untested",
+  "canvas_comparison": {
+    "KTX.hwp": {
+      "page": 1,
+      "diff_pixels": 209,
+      "pixels": 891662
+    },
+    "biz_plan.hwp": {
+      "page": 1,
+      "diff_pixels": 0
+    },
+    "tac-case-001.hwp": {
+      "page": 1,
+      "diff_pixels": 0
+    },
+    "is_hancom_pdf_comparison": false
+  },
+  "source_prs": [
+    {
+      "number": 7841,
+      "source": "047e507b130121672dd73c82b7d22d99a0e7c008",
+      "applied": "4784dda6f9c1a80688be9a911510d3c9907e5d0a"
+    },
+    {
+      "number": 7842,
+      "source": "1dbc261c80a705ec8ecd5ba852d4ff8191b4966a",
+      "applied": "edf029c0fccb026bbef5467862d11d3a35f4b98b"
+    },
+    {
+      "number": 7843,
+      "source": "464424fdfc7584574a411943a76da0fd2807ad12",
+      "applied": "ab83e6904df551eb4c55200b138bf8a69fba4b64"
+    },
+    {
+      "number": 7844,
+      "source": "7d2114c1179fd90141938cb67f84884c25e423b9",
+      "applied": "4b1c1667b8d66c39975b0100f561acf647e1a04d"
+    },
+    {
+      "number": 7845,
+      "source": "56ce6d73bc49624eecc250473da8146e046365a6",
+      "applied": "68c1cb351b2e3ab73f6a66f6fcede1b3ebf14e6d"
+    },
+    {
+      "number": 7846,
+      "source": "1fdb145906cf7f603d34263f341f3c0a7e0211f6",
+      "applied": "25c026891a37411a829c2cd1f396402777172ca7"
+    },
+    {
+      "number": 7847,
+      "source": "d5bc5801fa17c02e916a00d6a2f74104726ca456",
+      "applied": "b40ed3cf8f0e684027584f3dc0e8e9d6d7a55306"
+    },
+    {
+      "number": 7848,
+      "source": "8415f8b42b6eca5a7804c3dbd37f76024aac46e9",
+      "applied": "babb45bf9898dd04f8ef7c9c891f96ef80b43d3a"
+    },
+    {
+      "number": 7849,
+      "source": "dc347f543c5958f89271524223204fcdc564f355",
+      "applied": "b53a19513a86189385a318b65bfc0ea50df4a6e3"
+    },
+    {
+      "number": 7850,
+      "source": "f9c45efb78038c35fbd5dfb5e6819f42e1c4d3bf",
+      "applied": "7669d38ded10dc51646f27c0f2bd2ca64d085bfe"
+    },
+    {
+      "number": 7851,
+      "source": "44b008d70c5e9d0ee7e3fbc9b58190944385fa3e",
+      "applied": "3c267ff1f47937d8bfa76b85bcdbd75cc9172ed1"
+    },
+    {
+      "number": 7852,
+      "source": "350251d4d23d6ef71683f85da337d1523342e6b9",
+      "applied": "93d9c366de90f2d36d5165881152fc9bfcb1764c"
+    },
+    {
+      "number": 7853,
+      "source": "99f8ad57fa7777e49f701732d409180d0bd26ef4",
+      "applied": "c16674223cfe40470253bb501fed06497a475bfe"
+    },
+    {
+      "number": 7854,
+      "source": "00bdf9fc060337ddefd1b7c52ff14e4a37d9f3cb",
+      "applied": "b85667483d9d5932364903559594d5b3c227c886"
+    }
+  ],
+  "live_source_heads": {
+    "at": "2026-10-13T00:38:11.648345+09:00",
+    "pulls": [
+      {
+        "number": 7841,
+        "head": "047e507b130121672dd73c82b7d22d99a0e7c008",
+        "state": "open",
+        "base": "bfa28a77a2714482f647ee6a7b9aa7f7876d8404",
+        "changed_from_applied": false
+      },
+      {
+        "number": 7842,
+        "head": "1dbc261c80a705ec8ecd5ba852d4ff8191b4966a",
+        "state": "open",
+        "base": "bfa28a77a2714482f647ee6a7b9aa7f7876d8404",
+        "changed_from_applied": false
+      },
+      {
+        "number": 7843,
+        "head": "464424fdfc7584574a411943a76da0fd2807ad12",
+        "state": "open",
+        "base": "bfa28a77a2714482f647ee6a7b9aa7f7876d8404",
+        "changed_from_applied": false
+      },
+      {
+        "number": 7844,
+        "head": "7d2114c1179fd90141938cb67f84884c25e423b9",
+        "state": "open",
+        "base": "bfa28a77a2714482f647ee6a7b9aa7f7876d8404",
+        "changed_from_applied": false
+      },
+      {
+        "number": 7845,
+        "head": "56ce6d73bc49624eecc250473da8146e046365a6",
+        "state": "open",
+        "base": "bfa28a77a2714482f647ee6a7b9aa7f7876d8404",
+        "changed_from_applied": false
+      },
+      {
+        "number": 7846,
+        "head": "1fdb145906cf7f603d34263f341f3c0a7e0211f6",
+        "state": "open",
+        "base": "bfa28a77a2714482f647ee6a7b9aa7f7876d8404",
+        "changed_from_applied": false
+      },
+      {
+        "number": 7847,
+        "head": "d5bc5801fa17c02e916a00d6a2f74104726ca456",
+        "state": "open",
+        "base": "bfa28a77a2714482f647ee6a7b9aa7f7876d8404",
+        "changed_from_applied": false
+      },
+      {
+        "number": 7848,
+        "head": "8415f8b42b6eca5a7804c3dbd37f76024aac46e9",
+        "state": "open",
+        "base": "bfa28a77a2714482f647ee6a7b9aa7f7876d8404",
+        "changed_from_applied": false
+      },
+      {
+        "number": 7849,
+        "head": "dc347f543c5958f89271524223204fcdc564f355",
+        "state": "open",
+        "base": "bfa28a77a2714482f647ee6a7b9aa7f7876d8404",
+        "changed_from_applied": false
+      },
+      {
+        "number": 7850,
+        "head": "f9c45efb78038c35fbd5dfb5e6819f42e1c4d3bf",
+        "state": "open",
+        "base": "bfa28a77a2714482f647ee6a7b9aa7f7876d8404",
+        "changed_from_applied": false
+      },
+      {
+        "number": 7851,
+        "head": "44b008d70c5e9d0ee7e3fbc9b58190944385fa3e",
+        "state": "open",
+        "base": "bfa28a77a2714482f647ee6a7b9aa7f7876d8404",
+        "changed_from_applied": false
+      },
+      {
+        "number": 7852,
+        "head": "350251d4d23d6ef71683f85da337d1523342e6b9",
+        "state": "open",
+        "base": "bfa28a77a2714482f647ee6a7b9aa7f7876d8404",
+        "changed_from_applied": false
+      },
+      {
+        "number": 7853,
+        "head": "99f8ad57fa7777e49f701732d409180d0bd26ef4",
+        "state": "open",
+        "base": "bfa28a77a2714482f647ee6a7b9aa7f7876d8404",
+        "changed_from_applied": false
+      },
+      {
+        "number": 7854,
+        "head": "00bdf9fc060337ddefd1b7c52ff14e4a37d9f3cb",
+        "state": "open",
+        "base": "bfa28a77a2714482f647ee6a7b9aa7f7876d8404",
+        "changed_from_applied": false
+      }
+    ]
+  },
+  "source_branch_dependency": {
+    "source_head": "28be39176bac63abff0dd5017ab18e3ca64fab82",
+    "clean": true,
+    "original_renderer_samples_pdf_preserved": true,
+    "integration_first": true,
+    "future_merge_conflicts": [
+      "mydocs/tech/investigations/issue-4961/font_decision_trace_e2e.json",
+      "scripts/tests/font_decision_trace_e2e.test.mjs",
+      "tests/cases/issue_4961_font_decision_trace.rs",
+      "tests/overflow_cell_baseline.rs",
+      "tools/object_visual_regression.py"
+    ],
+    "source_branch_regression_after_cleanup": "not run; must synchronize after this integration and validate separately"
+  },
+  "github_ci": "pending PR creation; original PR greens not reuse evidence",
+  "generated_suites_committed": false,
+  "logs": "/Users/tsjang/rhwp/output/pr-review/dependabot-20261012/final-transferred",
+  "prior_failed_verification": {
+    "nextest": "10218 run, 10217 pass, 1 CLI catalog failure; fixed and rerun",
+    "renderer_contract": "retired exam counts not reflected; fixed and rerun",
+    "direct_pdf": "previous invocation found no tests due stale generated suite; freshly prepared suite rerun"
+  },
+  "log_sha256": {
+    "manifest-prepare.log": "55c939a4e4527a1a4c51046f0b376683e00366ae57c51e714c49857027a7f549",
+    "full-nextest.log": "cab33a5abce99553eeb5df2953b946ebb0f15cc7065ae3b4b098503476540327",
+    "fresh-wasm.log": "3f4b2ba55d427b211c2465a2fbfb72f4344665fb876862ef2ef9fb8581c2fef6",
+    "studio-unit.log": "dc8cb389995fd72229518061806434fa274822d0bffb6b3e63676b636cb0c51f",
+    "renderer-contract-corrected.log": "8d6e0a29a60a8581c46d17e71a03f73782563c7a9191b6bf26516db1f83cd812",
+    "ci-policy.log": "46c9f1dba2f2331a2831be9f066262825109a323373112b6d59ad5aa56dc5424",
+    "native-clippy.log": "5591573db9035ad7d02b507da9c1cd82e9eb4f82e9295acb52800c16f32d7698",
+    "studio-build.log": "535bd44140a11506d65b6f9d7fd3e9bab50795daacfe2f31882c147495db04e0",
+    "cli-catalog-focused.log": "ba65bd55ecab4bcd2623441bccd9f7f1d07d05b7d71a612b48c5d27086fa08cf",
+    "firefox-build.log": "26b45043532e1e6cf325898cee3640d32684897897a7291e0480e05f8362c143",
+    "chrome-build.log": "78100aeb90c5c8996626e9387505b226387816b1a8c3d58569d0dc367a2aab87",
+    "unit-tiers.log": "0d45552c6afb0896bbd32357459d647da2ce3d27492d564da5d23a91c6de596c",
+    "font-ledger.log": "19ae292fb6f2625e9a1db3be07c318742a36d91a1944f59b6bcd6a839ca84a6c",
+    "fmt-check.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "chrome-extension-smoke.log": "125e7ec6496ef43d33ddf3bbad4c805fd637c03318504ceab481a431c347cfa5",
+    "extension-dist-contracts.log": "23f152e35feda7e7a7b4f7e029427f982473444974ab063cbb73a283028854ae",
+    "workspace-all-targets-clippy.log": "189264ede017d464c30fcc51f4484e3e3ecf024973e2578bfeb0b92e2982a553",
+    "native-skia-pdf.log": "3120889d5b9f0bd1791ab8f67e84d09ed37d37644422184502524583ae1a4322",
+    "workspace-build.log": "33dbfb289f13ba7e8bdcbc003175a85b89a2ebea989a500d4e2eab2160f93b03",
+    "native-skia-lib.log": "3a83141aebe4ec89c8abd760ea9ffafecffb777cff6f8cff94b416fc809abe9c",
+    "studio-browser-embed.log": "5e42e0066d86fec68decd136fd4a3489d8cac3bb2aa36ff87aa7c80674907551",
+    "manifest-check.log": "a353f5919a6956952ff85f74cdd08d1ba6c2c75a33b9aa301e0b21c4d7141d7b",
+    "studio-render-diff.log": "0e91605c04d8862d1379797bc22f67bdf7bc4691ddea800c9eeae2e7b0ebaa35",
+    "renderer-contract.log": "80e5985771aa988a372ed2f75128a91f13a28b6a2c7b961cb37ff8909eeabb5e",
+    "cli-focused.log": "774368ba36e41229adae11de693fb5070aba73d43323ef2508ffbe186c9816e7",
+    "native-skia-png.log": "7dae823bbb3a80bdf5c5d9d394863a75cf7fa5d04a43cc03d0c483ba469c4dd7",
+    "wasm-clippy.log": "fecede7c2157efe2f16c8c8b9dce94b0fb4dd384dca8207046c8bf7636eb0ffe"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "native": {
+    "changedRGB": [],
+    "lowerThanAcceptedByPointOne": []
+  },
+  "wasm": {
+    "changedRGB": [],
+    "lowerThanAcceptedByPointOne": []
+  }
+}

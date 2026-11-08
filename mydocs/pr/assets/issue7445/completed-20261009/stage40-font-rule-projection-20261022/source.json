@@ -1,0 +1,11 @@
+{
+  "parentHead": "7df8352e8535954903c2793445f04d91e2bd8ef9",
+  "files": {
+    "tests/cases/issue_4966_font_rule_projection.rs": "148ec8cacabb693627768fa85c3031b01a96768fd29fa4657cf638da49da8a4d"
+  },
+  "cases": [
+    "issue_4966_font_rule_projection",
+    "issue_7445_document_substitute_lookup",
+    "issue_7445_installed_style_program"
+  ]
+}

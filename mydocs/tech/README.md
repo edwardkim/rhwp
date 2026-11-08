@@ -17,17 +17,21 @@ last_verified: 2026-09-03
 | 주제 | 권위 또는 우선 진입점 | 관련 상세 문서 |
 | --- | --- | --- |
 | HWP 5.0 구현 차이 | [HWP 5.0 스펙 문서 정오표](hwp_spec_errata.md) | [한글 문서 파일 형식 5.0 개정 1.3](한글문서파일형식_5.0_revision1.3.md), [HWP 제어 데이터](hwp_ctrl_data.md) |
+| HWP 차트 파일 구조 | [한글 문서 파일 형식 차트 개정 1.2](한글문서파일형식_차트_revision1.2.md) | 한컴 공식 PDF 전체 변환본: 객체·상수 표와 구조 그림 |
+| HWP 수식 파일 구조 | [한글 문서 파일 형식 수식 개정 1.3](한글문서파일형식_수식_revision1.3.md) | 한컴 공식 PDF 전체 변환본: 명령어·기호·예제 및 원본 수식 이미지 |
 | HWP↔OWPML(HWPX) 정합 관찰(공개용) | [HWP/OWPML 정합 관찰 노트](owpml_conformance_observations.md) | [HWP 5.0 스펙 문서 정오표](hwp_spec_errata.md), [한컴 공식 OWPML 모델 참조 가이드](hwpx_hancom_reference.md) |
 | 포맷 파서와 공통 IR 책임 경계 | [포맷 파서와 공통 Document IR 경계](parser_architecture.md) | [HWP/HWPX IR 차이](hwp_hwpx_ir_differences.md) |
 | IR 저장·직렬화와 무효화 계약 | [HWP 저장 기술 가이드](hwp_save_guide.md) | [직렬화 passthrough·무효화 계약](serialization_passthrough_contract.md) |
 | HWPX와 HWP IR 차이 | [HWP/HWPX IR 차이](hwp_hwpx_ir_differences.md) | [HWPX 한컴 참조](hwpx_hancom_reference.md), [HWPX DVC 참조](hwpx_dvc_reference.md), [로컬 OWPML XML 스키마](../manual/owpml_schema_reference.md) |
 | Document IR와 LineSeg 계약 | [Document IR LineSeg 표준](document_ir_lineseg_standard.md) | [Issue #310 LineSeg vpos 조사](investigations/issue-310/README.md), [HWPX LineSeg 검증](hwpx_lineseg_validation.md) |
 | 렌더링 엔진 | [렌더링 엔진 설계](rendering_engine_design.md) | [Text IR v2 계약](text-ir-v2.md), [CanvasKit parity 계획](canvaskit-parity-implementation.md), [M07-pack fallback matrix](canvaskit-m07-pack-fallback-matrix.md), [Issue #516 다층 렌더링 후보 조사](investigations/issue-516/README.md), [Issue #124 캔버스·폰트 측정 조사](investigations/issue-124/README.md) |
+| 텍스트 레이아웃 API의 모델·표시 분리 | [텍스트 레이아웃 표시 계약](text_layout_display_contract.md) | `getPageTextLayout` / native JSON의 오프셋·표시 경계 (#7909) |
 | 출력 백엔드 공통 계약 | [RenderBackend 계약](render_backend.md) | [어댑터 작성 가이드](../manual/render_backend_adapter_guide.md), [계약 카탈로그](../manual/render_backend_contract_catalog.md), [픽스처 목록](render_backend_fixture_catalog.md) |
 | 수식 명령 디스패치 | [수식 모듈 매뉴얼](../manual/equation_module.md) | 분류 정본 [`src/renderer/equation/dispatch.rs`](../../src/renderer/equation/dispatch.rs), [Issue #139 수식 지원 조사](investigations/issue-139/README.md) |
 | 표 레이아웃 | [표 레이아웃 규칙](table_layout_rules.md) | [HWP 표 렌더링](hwp_table_rendering.md), [Issue #101 부분 표 흐름 조사](investigations/issue-101/README.md) |
 | 레이아웃 이상탐지(overflow/overlap/empty_page) | [레이아웃 이상탐지 — 세 번째 층](layout_anomaly_detection.md) | CLI `layout-anomaly`, `render_geom_diff`(변위 비교)와의 관계 |
-| 폰트 대체와 충실도 | [폰트 fallback 전략](font_fallback_strategy.md) | [Issue #124 캔버스·폰트 측정 조사](investigations/issue-124/README.md), [Issue #2125 font ownership 조사](investigations/issue-2125/README.md) |
+| 폰트 대체와 충실도 | [폰트 fallback 전략](font_fallback_strategy.md) | [문서별 사용자 글꼴 선택](document_font_preferences.md), [Issue #124 캔버스·폰트 측정 조사](investigations/issue-124/README.md), [Issue #2125 font ownership 조사](investigations/issue-2125/README.md) |
+| Studio 명령 오류·복구 | [Studio 명령 오류 계약 v1](studio_command_error_contract.md) | #8104, 호스트 capability·문서 세션·rollback 검증·오류 전달 |
 | 편집 undo/redo | [편집 action undo/redo 아키텍처](edit_action_undo_redo_architecture.md) | 이슈별 실동작 조사 문서 |
 | 기술 채택·비채택 | [ThorVG 결정 기록](thorvg_decision.md) | [Issue #112-115 ThorVG PoC 조사](investigations/issue-112/README.md) |
 | 초소형 모델용 매크로 도구 축 | [초소형 모델용 매크로 도구 축 설계 결정](tiny_model_macro_tools.md) | 계약 테스트 `tests/digest_macro_contract.rs`, CLI 명령은 [CLI 명령 레퍼런스](../manual/cli_commands.md) 재확인 |

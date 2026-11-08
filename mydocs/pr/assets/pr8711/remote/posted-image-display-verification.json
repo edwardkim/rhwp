@@ -1,0 +1,149 @@
+[
+  {
+    "url": "https://github.com/edwardkim/rhwp/pull/8711#pullrequestreview-5809579616",
+    "sha": "cbe5a6f4dfbc2775913af10ee42098137b27e088",
+    "status": 200,
+    "anchor": "pullrequestreview-5809579616",
+    "container": "pullrequestreview-5809579616",
+    "images": [
+      {
+        "src": "https://raw.githubusercontent.com/edwardkim/rhwp/cbe5a6f4dfbc2775913af10ee42098137b27e088/mydocs/pr/assets/pr8711/figures/candidate-native-saved-review.png",
+        "complete": true,
+        "width": 2416,
+        "height": 1209,
+        "renderedWidth": 381.984375,
+        "renderedHeight": 191.15625,
+        "display": "inline",
+        "visibility": "visible"
+      },
+      {
+        "src": "https://raw.githubusercontent.com/edwardkim/rhwp/cbe5a6f4dfbc2775913af10ee42098137b27e088/mydocs/pr/assets/pr8711/figures/candidate-native-saved-overlay.png",
+        "complete": true,
+        "width": 794,
+        "height": 1209,
+        "renderedWidth": 381.984375,
+        "renderedHeight": 581.65625,
+        "display": "inline",
+        "visibility": "visible"
+      },
+      {
+        "src": "https://raw.githubusercontent.com/edwardkim/rhwp/cbe5a6f4dfbc2775913af10ee42098137b27e088/mydocs/pr/assets/pr8711/figures/candidate-wasm-saved-review.png",
+        "complete": true,
+        "width": 2416,
+        "height": 1209,
+        "renderedWidth": 381.984375,
+        "renderedHeight": 191.15625,
+        "display": "inline",
+        "visibility": "visible"
+      },
+      {
+        "src": "https://raw.githubusercontent.com/edwardkim/rhwp/cbe5a6f4dfbc2775913af10ee42098137b27e088/mydocs/pr/assets/pr8711/figures/candidate-wasm-saved-overlay.png",
+        "complete": true,
+        "width": 794,
+        "height": 1209,
+        "renderedWidth": 381.984375,
+        "renderedHeight": 581.65625,
+        "display": "inline",
+        "visibility": "visible"
+      }
+    ]
+  },
+  {
+    "url": "https://github.com/edwardkim/rhwp/pull/8226#issuecomment-6701260386",
+    "sha": "e724c6caff896a9478dc537cab4e99a57cf879cf",
+    "status": 200,
+    "anchor": "issuecomment-6701260386",
+    "container": "issuecomment-6701260386",
+    "images": [
+      {
+        "src": "https://raw.githubusercontent.com/edwardkim/rhwp/e724c6caff896a9478dc537cab4e99a57cf879cf/mydocs/pr/assets/pr8711/figures/candidate-native-saved-review.png",
+        "complete": true,
+        "width": 2416,
+        "height": 1209,
+        "renderedWidth": 381.984375,
+        "renderedHeight": 191.15625,
+        "display": "inline",
+        "visibility": "visible"
+      },
+      {
+        "src": "https://raw.githubusercontent.com/edwardkim/rhwp/e724c6caff896a9478dc537cab4e99a57cf879cf/mydocs/pr/assets/pr8711/figures/candidate-native-saved-overlay.png",
+        "complete": true,
+        "width": 794,
+        "height": 1209,
+        "renderedWidth": 381.984375,
+        "renderedHeight": 581.65625,
+        "display": "inline",
+        "visibility": "visible"
+      },
+      {
+        "src": "https://raw.githubusercontent.com/edwardkim/rhwp/e724c6caff896a9478dc537cab4e99a57cf879cf/mydocs/pr/assets/pr8711/figures/candidate-wasm-saved-review.png",
+        "complete": true,
+        "width": 2416,
+        "height": 1209,
+        "renderedWidth": 381.984375,
+        "renderedHeight": 191.15625,
+        "display": "inline",
+        "visibility": "visible"
+      },
+      {
+        "src": "https://raw.githubusercontent.com/edwardkim/rhwp/e724c6caff896a9478dc537cab4e99a57cf879cf/mydocs/pr/assets/pr8711/figures/candidate-wasm-saved-overlay.png",
+        "complete": true,
+        "width": 794,
+        "height": 1209,
+        "renderedWidth": 381.984375,
+        "renderedHeight": 581.65625,
+        "display": "inline",
+        "visibility": "visible"
+      }
+    ]
+  },
+  {
+    "url": "https://github.com/edwardkim/rhwp/pull/8711#issuecomment-6701260763",
+    "sha": "e724c6caff896a9478dc537cab4e99a57cf879cf",
+    "status": 200,
+    "anchor": "issuecomment-6701260763",
+    "container": "issuecomment-6701260763",
+    "images": [
+      {
+        "src": "https://raw.githubusercontent.com/edwardkim/rhwp/e724c6caff896a9478dc537cab4e99a57cf879cf/mydocs/pr/assets/pr8711/figures/candidate-native-saved-review.png",
+        "complete": true,
+        "width": 2416,
+        "height": 1209,
+        "renderedWidth": 381.984375,
+        "renderedHeight": 191.15625,
+        "display": "inline",
+        "visibility": "visible"
+      },
+      {
+        "src": "https://raw.githubusercontent.com/edwardkim/rhwp/e724c6caff896a9478dc537cab4e99a57cf879cf/mydocs/pr/assets/pr8711/figures/candidate-native-saved-overlay.png",
+        "complete": true,
+        "width": 794,
+        "height": 1209,
+        "renderedWidth": 381.984375,
+        "renderedHeight": 581.65625,
+        "display": "inline",
+        "visibility": "visible"
+      },
+      {
+        "src": "https://raw.githubusercontent.com/edwardkim/rhwp/e724c6caff896a9478dc537cab4e99a57cf879cf/mydocs/pr/assets/pr8711/figures/candidate-wasm-saved-review.png",
+        "complete": true,
+        "width": 2416,
+        "height": 1209,
+        "renderedWidth": 381.984375,
+        "renderedHeight": 191.15625,
+        "display": "inline",
+        "visibility": "visible"
+      },
+      {
+        "src": "https://raw.githubusercontent.com/edwardkim/rhwp/e724c6caff896a9478dc537cab4e99a57cf879cf/mydocs/pr/assets/pr8711/figures/candidate-wasm-saved-overlay.png",
+        "complete": true,
+        "width": 794,
+        "height": 1209,
+        "renderedWidth": 381.984375,
+        "renderedHeight": 581.65625,
+        "display": "inline",
+        "visibility": "visible"
+      }
+    ]
+  }
+]

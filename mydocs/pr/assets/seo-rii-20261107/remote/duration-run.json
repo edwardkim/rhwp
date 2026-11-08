@@ -1,0 +1,60 @@
+{
+  "conclusion": "success",
+  "jobs": [
+    {
+      "completedAt": "2026-11-07T09:29:31Z",
+      "conclusion": "success",
+      "databaseId": 128365396038,
+      "name": "Refresh nextest target duration data",
+      "startedAt": "2026-11-07T09:26:31Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Collect verified PR duration measurements",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Prepare duration policy data",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Publish duration policy with guarded Git Data API",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "number": 10,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 11,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42359744228/job/128365396038"
+    }
+  ],
+  "status": "completed",
+  "url": "https://github.com/edwardkim/rhwp/actions/runs/42359744228"
+}

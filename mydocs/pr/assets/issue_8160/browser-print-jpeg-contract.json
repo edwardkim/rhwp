@@ -1,0 +1,75 @@
+{
+  "issue": 8160,
+  "status": "wasm_patch_linted_fresh_standard_package_pending",
+  "contract": "Prepared Print JPEG bytes carry the existing typed transfer marker. The browser codec restores the same RGB as Native Skia/libjpeg, then both use the existing shared PrintRasterFrame resampler. Original image nodes, crop and placement stay unchanged. Ordinary unmarked inputs keep their existing decoder.",
+  "browser": "Chrome/155.0.8059.84",
+  "pixel_proofs": [
+    {
+      "payload": "resolved-20-4.jpg",
+      "size": [
+        859,
+        542
+      ],
+      "rgb_mismatches": 0,
+      "maximum_error": [
+        0,
+        0,
+        0
+      ],
+      "payload_sha256": "3cdb4361e91479e46ec9952193cd1a6785cb0bb7d824ebc0c238c2c1d8a2348a",
+      "browser_png_sha256": "03c4dd04a2547e9190a570cf8de11de0e7aae629a9edd3cfd88b9e567eb3409f"
+    },
+    {
+      "payload": "resolved-1-2.jpg",
+      "size": [
+        586,
+        141
+      ],
+      "rgb_mismatches": 0,
+      "maximum_error": [
+        0,
+        0,
+        0
+      ],
+      "payload_sha256": "2d2db783f251f83e857e7a559b048c38a13a9edf5d1a048804ec9e917586846c",
+      "browser_png_sha256": "92a39dc0057b2355fcd7622748833d9e4fa9cc9c066d5c33ad6a0643494dba03"
+    },
+    {
+      "payload": "resolved-39-6.jpg",
+      "size": [
+        556,
+        1055
+      ],
+      "rgb_mismatches": 0,
+      "maximum_error": [
+        0,
+        0,
+        0
+      ],
+      "payload_sha256": "d4882e46722181201869c9cb15187ddc1bed50b97cae30c247f58a8fd8a98162",
+      "browser_png_sha256": "93e451f0732f3a41e9aad6bb164f3d232a4335debeb8f1cdb4bfc32bfd104da4"
+    },
+    {
+      "payload": "resolved-1-1.jpg",
+      "size": [
+        133,
+        40
+      ],
+      "rgb_mismatches": 0,
+      "maximum_error": [
+        0,
+        0,
+        0
+      ],
+      "payload_sha256": "4327f504ca2c096b52fe1885d4d64ec50677ba04d3910b56723b88cb422ff594",
+      "browser_png_sha256": "35a7c54fe2f9d25c086fcfd36af0770e3c75707e88beb9a7d560baa82714cab4"
+    }
+  ],
+  "asynchronous_loading": "Existing HTML image cache and prefetch own loading; pending typed JPEG None is not cached as a permanent failure. Both full and cropped drawing consume the shared decoded cache. Header/decode bounds and natural dimensions are verified.",
+  "source_of_test_bytes": "Source-generated rhwp Print payloads; no PDF pixels feed production.",
+  "wasm_lib_clippy": {
+    "exit_code": 0,
+    "seconds": 109
+  },
+  "registered_regressions": false
+}

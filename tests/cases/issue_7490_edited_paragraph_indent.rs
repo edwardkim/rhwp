@@ -146,18 +146,43 @@ fn editing_keeps_hancom_record_of_unindented_line() {
 
 #[test]
 fn applying_indent_to_hancom_paragraph_draws_it() {
-    // #6190 표본의 `학 력 사 항`(indent 0, 가운데 정렬, bit 20 꺼짐)에 새로 들여쓰기를 준다.
     const HEADING: usize = 1;
     let mut doc = open("samples/issue6190/center_align_first_line_indent.hwp");
     let before = line_starts(&doc, HEADING);
+    let original_heading = doc.document().sections[0].paragraphs[HEADING].text.clone();
 
-    doc.apply_para_format_native(0, HEADING, r#"{"indent":20445}"#)
+    // #7816의 짝수 포인트 단위 입력. 20444와 예전20445는 같은 편집이 아니다.
+    // 이 정확한 입력의 독립 Hancom2020 Print는 제목 전체를 한 줄에 그린다.
+    doc.apply_para_format_native(0, HEADING, r#"{"indent":20444}"#)
         .expect("apply indent");
     let after = line_starts(&doc, HEADING);
+    assert_eq!(after.len(), 1, "동일20444 편집 Print의 단일 글줄 소속");
     assert!(
-        after.len() == 1 && after[0] > before[0],
-        "새로 준 들여쓰기는 그려진다 — \
-         적용 전 {before:?}, 적용 후 {after:?}"
+        after[0] > before[0],
+        "새 들여쓰기를 실제 glyph 원점에 적용한다"
+    );
+    let tree = doc.build_page_render_tree(0).expect("편집한 실제 쪽");
+    let body = body_node(&tree.root);
+    let mut runs = Vec::new();
+    collect_host_text(&tree.root, HEADING, &mut runs);
+    assert_eq!(runs.len(), 1, "원본 제목을 한 번만 그린다");
+    let title = &runs[0];
+    assert_eq!(rendered_text(title).trim(), original_heading.trim());
+    assert!(
+        title.bbox.x >= body.bbox.x
+            && title.bbox.x + title.bbox.width <= body.bbox.x + body.bbox.width,
+        "유효한 들여쓰기의 제목 전체는 본문 안에 놓인다"
+    );
+    assert_eq!(doc.page_count(), 1, "독립 Print의 한 쪽과 내용 보존");
+    // 전1쪽 Native98.74535/WASM98.77329·확대 판독 후 독립 glyph 원점을 보호한다.
+    // Evidence: regression-policy-20261015/issue7490-fit-prefix.
+    assert!((title.bbox.x - 413.53588).abs() <= 2.0, "독립 Print 제목 x");
+    let RenderNodeType::TextRun(run) = &title.node_type else {
+        panic!("title run")
+    };
+    assert!(
+        (title.bbox.y + run.baseline - 167.8166).abs() <= 2.0,
+        "독립 Print 제목 baseline"
     );
 }
 
@@ -305,6 +330,13 @@ fn edited_tac_table_that_fits_stays_on_the_text_line() {
         panic!("table");
     };
     let count = usize::from(table.col_count);
+    let original_text: String = table
+        .cells
+        .iter()
+        .flat_map(|cell| &cell.paragraphs)
+        .flat_map(|para| para.text.chars())
+        .filter(|ch| !ch.is_whitespace())
+        .collect();
     doc.set_table_column_widths_native(0, 7, 0, vec![12000 / count as u32; count])
         .expect("resize through API");
     doc.insert_text_native(0, 7, 0, "가")
@@ -324,11 +356,45 @@ fn edited_tac_table_that_fits_stays_on_the_text_line() {
         prefix.bbox,
         table.bbox
     );
+    let body = rhwp::model::page::PageAreas::from_page_def(
+        &doc.document().sections[0].section_def.page_def,
+    )
+    .body_area;
+    let scale = 96.0 / 7200.0;
     assert!(
-        table.bbox.x > 98.3 && table.bbox.x + table.bbox.width < 699.2,
-        "same-line table is after its prefix and inside body: {:?}",
+        table.bbox.x >= f64::from(body.left) * scale
+            && table.bbox.x + table.bbox.width <= f64::from(body.right) * scale,
+        "same-line table stays within its source page body: {:?}",
         table.bbox
     );
+    assert_eq!(rendered_text(prefix), "가");
+    assert_eq!(
+        rendered_text(table)
+            .chars()
+            .filter(|ch| !ch.is_whitespace())
+            .collect::<String>(),
+        original_text,
+        "resize preserves every cell paragraph in source order exactly once"
+    );
+    assert_eq!(
+        doc.page_count(),
+        1,
+        "original and same-edit independent Print page count"
+    );
+    // Same edit, independent Hancom2020 Print cell clips (pt→96DPI CSSpx).
+    // p1 Native98.74064/WASM98.76872; this is the only page exercising resize.
+    // Evidence: regression-policy-20261015/issue7490-fit-prefix.
+    for (field, actual, expected) in [
+        ("x", table.bbox.x, 326.064),
+        ("y", table.bbox.y, 630.3506666666666),
+        ("width", table.bbox.width, 159.91466666666662),
+        ("height", table.bbox.height, 132.17466666666678),
+    ] {
+        assert!(
+            (actual - expected).abs() <= 2.0,
+            "same-line merged table {field}: actual={actual}, independent Print={expected}"
+        );
+    }
 }
 
 /// The edited HWP must carry the same default column and paper geometry as IR.
@@ -557,113 +623,6 @@ fn punctuation_before_tac_remains_visible_in_its_prefix_row() {
     assert_tac_prefix_row(".\n");
 }
 
-#[test]
-fn default_column_rebuild_preserves_content_and_object_geometry() {
-    // The complete IR sweep identified these no-column body sections. A
-    // default single-column record may change control-stream offsets, but
-    // cannot change paragraph content, paper geometry or painted text and object boxes.
-    let samples = [
-        "samples/issue5701/1530000-200800002_slice_p139_tac_reset_tail.hwp",
-        "samples/issue5715/float_chart_ghost_ladder_gap.hwp",
-        "samples/issue5802/hf_cross_section_inherit.hwp",
-        "samples/issue5833/cell_multi_para_float_pics.hwp",
-        "samples/issue5871/ws_host_float_double_charge.hwp",
-        "samples/issue6133/156483831_poster_title_above_offset_float.hwp",
-        "samples/issue6135/156544683_title_row_underfit.hwp",
-        "samples/issue6184/156489124_tail_line_before_deferred_table.hwp",
-        "samples/issue6190/center_align_first_line_indent.hwp",
-        "samples/issue6196/cell_char_spacing_fit.hwp",
-        "samples/issue6204/square_picture_band_host.hwp",
-    ];
-    fn painted_boxes(node: &RenderNode, out: &mut Vec<(f64, f64, f64, f64)>) {
-        if matches!(
-            node.node_type,
-            RenderNodeType::Table(_)
-                | RenderNodeType::TextRun(_)
-                | RenderNodeType::Image(_)
-                | RenderNodeType::Line(_)
-                | RenderNodeType::Rectangle(_)
-                | RenderNodeType::Ellipse(_)
-                | RenderNodeType::Path(_)
-                | RenderNodeType::Group(_)
-                | RenderNodeType::TextBox
-                | RenderNodeType::Equation(_)
-                | RenderNodeType::FormObject(_)
-                | RenderNodeType::Placeholder(_)
-                | RenderNodeType::RawSvg(_)
-        ) {
-            out.push((node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height));
-        }
-        for child in &node.children {
-            painted_boxes(child, out);
-        }
-    }
-    for input in samples {
-        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(input);
-        let bytes = std::fs::read(path).expect("source");
-        let source = rhwp::parser::parse_document(&bytes).expect("source IR");
-        let mut rebuilt = source.clone();
-        rebuilt.doc_info.raw_stream_dirty = true;
-        for section in &mut rebuilt.sections {
-            section.raw_stream = None;
-        }
-        let saved = rhwp::serializer::serialize_document(&rebuilt).expect("rebuilt save");
-        let reopened = rhwp::parser::parse_document(&saved).expect("rebuilt IR");
-        assert_eq!(source.sections.len(), reopened.sections.len(), "{input}");
-        for (before, after) in source.sections.iter().zip(&reopened.sections) {
-            assert_eq!(
-                format!("{:?}", before.section_def.page_def),
-                format!("{:?}", after.section_def.page_def),
-                "{input}: paper"
-            );
-            assert_eq!(
-                before.paragraphs.len(),
-                after.paragraphs.len(),
-                "{input}: paragraphs"
-            );
-            for (before, after) in before.paragraphs.iter().zip(&after.paragraphs) {
-                assert_eq!(before.text, after.text, "{input}: content");
-                assert_eq!(
-                    before.para_shape_id, after.para_shape_id,
-                    "{input}: paragraph style"
-                );
-            }
-        }
-        let before = HwpDocument::from_bytes(&bytes).expect("source layout");
-        let after = HwpDocument::from_bytes(&saved).expect("saved layout");
-        assert_eq!(before.page_count(), after.page_count(), "{input}: pages");
-        for page in 0..before.page_count() {
-            let mut old_boxes = Vec::new();
-            let mut new_boxes = Vec::new();
-            painted_boxes(
-                &before
-                    .build_page_render_tree(page)
-                    .expect("source tree")
-                    .root,
-                &mut old_boxes,
-            );
-            painted_boxes(
-                &after.build_page_render_tree(page).expect("saved tree").root,
-                &mut new_boxes,
-            );
-            assert_eq!(
-                old_boxes.len(),
-                new_boxes.len(),
-                "{input} page {page}: painted node ownership"
-            );
-            for (a, b) in old_boxes.iter().zip(&new_boxes) {
-                assert!(
-                    same_position(a.0, b.0)
-                        && same_position(a.1, b.1)
-                        && same_position(a.2, b.2)
-                        && same_position(a.3, b.3),
-                    "{input} page {page}: object geometry {a:?} -> {b:?}"
-                );
-            }
-        }
-    }
-}
-
 fn starts_in_area(doc: &HwpDocument, area: &str) -> Vec<f64> {
     fn visit(node: &RenderNode, area: &str, inside: bool, out: &mut Vec<f64>) {
         let inside = inside
@@ -748,6 +707,9 @@ fn footnote_format_command_places_first_and_following_lines() {
         .expect("footnote control");
     doc.insert_text_in_footnote_native(0, 0, control, 0, 2, TEXT)
         .expect("footnote text");
+    // 새 각주는 '각주' 스타일의 문단 모양(내어쓰기)을 받는다. 기준 줄은 들여쓰기 0에서 잰다.
+    doc.apply_para_format_in_footnote_native(0, 0, control, 0, r#"{"indent":0}"#)
+        .expect("flat footnote");
     let flat = starts_in_area(&doc, "footnote");
     for indent in [3000, -3000] {
         doc.apply_para_format_in_footnote_native(

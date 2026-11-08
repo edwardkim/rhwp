@@ -1,0 +1,19 @@
+{
+  "source_sha": "0c3148ab54b3a4ca1bdc969e4d9283265625feec",
+  "command": [
+    "/home/tsjang/rhwp/target/pr-review/debug/font-metric-gen",
+    "--plan",
+    "/home/tsjang/rhwp-8160-validation/mydocs/tech/investigations/issue-4964/font_metric_generator_canary_plan.json",
+    "--generated-output",
+    "/home/tsjang/rhwp-8160-validation/src/renderer/font_metrics_generated.rs",
+    "--metadata-output",
+    "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate34/worktree-canonical-should-not-write.json"
+  ],
+  "cwd": "/home/tsjang/rhwp-8160-validation",
+  "exit_code": 1,
+  "stderr": "\uc624\ub958: canonical generated DB \ucd9c\ub825\uc5d0\ub294 595-entry historical-generated-0-594 plan\uc774 \ud544\uc694\n",
+  "before_sha256": "b093ca08bd7200bed211569df90e1e964ce090a2a9522bc29e1bbb3fa9d5c3cb",
+  "after_sha256": "b093ca08bd7200bed211569df90e1e964ce090a2a9522bc29e1bbb3fa9d5c3cb",
+  "metadata_created": false,
+  "status": "passed"
+}

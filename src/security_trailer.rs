@@ -184,7 +184,7 @@ pub fn seal(host_hwp3: &[u8], secret: &[u8], password: &[u8]) -> Result<Vec<u8>,
     let ct_len = (secret.len() + TAG_LEN) as u32;
     let header = build_header(FLAG_REDACTED, &salt, &nonce, ct_len);
 
-    let cipher_key = Key::try_from(key.as_ref()).expect("파생 키는 항상 32바이트");
+    let cipher_key = Key::try_from(&key[..]).expect("파생 키는 항상 32바이트");
     let cipher = XChaCha20Poly1305::new(&cipher_key);
     let nonce = XNonce::from(nonce);
     let ciphertext = cipher
@@ -284,7 +284,7 @@ pub fn open(bytes: &[u8], password: &[u8]) -> Opened {
             }
         }
     };
-    let cipher_key = Key::try_from(key.as_ref()).expect("파생 키는 항상 32바이트");
+    let cipher_key = Key::try_from(&key[..]).expect("파생 키는 항상 32바이트");
     let cipher = XChaCha20Poly1305::new(&cipher_key);
     let nonce = XNonce::from(nonce);
     match cipher.decrypt(
@@ -431,7 +431,7 @@ pub fn seal_to_pubkey(
     // AEAD 키 = 32바이트 공유비밀을 그대로 사용(ML-KEM SS 는 균일 난수). Zeroizing 로 소거 보장.
     let mut key = Zeroizing::new([0u8; 32]);
     key.copy_from_slice(shared.as_slice());
-    let cipher_key = Key::try_from(key.as_ref()).expect("ML-KEM 공유비밀은 항상 32바이트");
+    let cipher_key = Key::try_from(&key[..]).expect("ML-KEM 공유비밀은 항상 32바이트");
     let cipher = XChaCha20Poly1305::new(&cipher_key);
     let nonce = XNonce::from(nonce);
     let ciphertext = cipher
@@ -572,7 +572,7 @@ pub fn open_with_privkey(bytes: &[u8], secret_key: &[u8]) -> Opened {
     let shared = dk.decapsulate(&ct_kem);
     let mut key = Zeroizing::new([0u8; 32]);
     key.copy_from_slice(shared.as_slice());
-    let cipher_key = Key::try_from(key.as_ref()).expect("ML-KEM 공유비밀은 항상 32바이트");
+    let cipher_key = Key::try_from(&key[..]).expect("ML-KEM 공유비밀은 항상 32바이트");
     let cipher = XChaCha20Poly1305::new(&cipher_key);
     let nonce = XNonce::from(nonce);
     match cipher.decrypt(

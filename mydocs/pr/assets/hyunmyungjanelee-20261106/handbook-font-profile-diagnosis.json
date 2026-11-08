@@ -1,0 +1,34 @@
+{
+  "first_attempt": {
+    "explicit_font_path": "/home/edward/mygithub/ttfs",
+    "status": "completed failed; not a pass",
+    "baseline_comparison_pages": [
+      9,
+      27,
+      277
+    ],
+    "same_profile_base_candidate_pngs": "byte identical on all three diagnosed pages"
+  },
+  "expanded_local_profile": {
+    "status": "not the canonical reference profile",
+    "pages": [
+      9,
+      27,
+      277
+    ],
+    "raw": [
+      96.58,
+      93.14,
+      90.9
+    ]
+  },
+  "canonical_recovery": {
+    "reference": "mydocs/pr/assets/semanticist21-20261105/handbook-font-profile-correction.json",
+    "command": "visual_sweep.py --handbook-gate; no explicit --font-path and unset RHWP_FONT_PATH",
+    "status": "passed",
+    "baseline_changed": false,
+    "pages": 383,
+    "minimum_raw": 99.96465,
+    "regressions": 0
+  }
+}

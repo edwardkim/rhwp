@@ -1,20 +1,37 @@
 //! 상태의 불변 관측면. 쓰기 권한은 state 소유자에 한정한다.
 use crate::renderer::typeset::{
     ColumnType, DeferredSquarePictureControl, DeferredTableControl, EndnoteParaSource, EndnoteRef,
-    PageContent, PageItem, PageLayoutInfo, Paragraph, VisibleFloatExclusion,
+    FootnoteRef, PageContent, PageItem, PageLayoutInfo, Paragraph, VisibleFloatExclusion,
 };
+/// 후속 원본 줄로 확인하기 전의 실제 문단 소비. 단 밖으로 공개하지 않는다.
+pub(super) struct PendingParagraphOrigin {
+    pub(super) paragraph_index: usize,
+    pub(super) spacing_before: f64,
+    pub(super) flow_start: f64,
+    pub(super) flow_end: f64,
+}
 pub(in crate::renderer::typeset) struct StateView {
+    pub(in crate::renderer::typeset) deferred_table_successor_start: Option<usize>,
+    pub(super) pending_table_terminal_gap: Option<DeferredTableTerminalGap>,
     /// 완성된 페이지 목록
     pub(in crate::renderer::typeset) pages: Vec<PageContent>,
     /// 현재 단에 쌓이는 항목
     pub(in crate::renderer::typeset) current_items: Vec<PageItem>,
-    /// 수용한 일반 전체/분할 본문의 (문단, 끝 줄)별 단 상대 점유 하단.
-    pub(in crate::renderer::typeset) paragraph_fragment_content_bottoms:
-        std::collections::HashMap<(usize, usize), f64>,
+    /// 이전 본문 밖의 저장 글줄을 이어받으며 이미 연 쪽 경계의 (문단, 시작 컷).
+    pub(in crate::renderer::typeset) stored_paragraph_boundary_carry: Option<(usize, usize)>,
+    /// 수용한 본문 조각의 (문단, 끝 줄)별 점유 하단·흐름 끝·검증된 저장 축.
+    pub(in crate::renderer::typeset) paragraph_fragment_content_bottoms: std::collections::HashMap<
+        (usize, usize),
+        super::paragraph_fragment::ParagraphFragmentBounds,
+    >,
+    /// 축소된 본문 프레임에서 실제 빈 줄을 이어받은 저장 쪽 경계.
+    pub(in crate::renderer::typeset) saved_empty_run: Option<super::empty_run::SavedEmptyRun>,
     /// 현재 단에서 소비된 높이 (px)
     pub(in crate::renderer::typeset) current_height: f64,
     /// 현재 단 시작 시점의 논리 높이 (px)
     pub(in crate::renderer::typeset) current_start_height: f64,
+    /// 첫 물리 쪽의 모든 단이 공유하는 인증된 저장 시작 밴드.
+    pub(in crate::renderer::typeset) stored_initial_column_band: f64,
     /// 현재 단에 미주 흐름 항목이 포함되어 있는지 여부
     pub(in crate::renderer::typeset) current_endnote_flow: bool,
     /// [#5886] 현재 단에 문단-사이 compact 되감김을 넣었으면, 이후 문단도
@@ -69,6 +86,18 @@ pub(in crate::renderer::typeset) struct StateView {
     /// 옮겨 밴드 바닥을 확장할 때만 사용한다.
     pub(in crate::renderer::typeset) square_band_top: Option<f64>,
     pub(in crate::renderer::typeset) current_footnote_height: f64,
+    pub(in crate::renderer::typeset) footnote_placement: crate::model::footnote::FootnotePlacement,
+    pub(in crate::renderer::typeset) footnote_frames:
+        Vec<crate::renderer::footnote_frames::Reservation>,
+    /// 저장 각주 reset 뒤 조각과 그 뒤 번호는 다음 물리 쪽을 소유한다.
+    /// 현재 본문을 먼저 이월하지 않고 실제 쪽 전환 때 같은 순서로 예약한다.
+    pub(in crate::renderer::typeset) deferred_body_footnotes: Vec<(FootnoteRef, f64)>,
+    /// 지금 배치 중인 문단의 본문 각주와 그 참조가 든 줄. 분할 판정이 앞 줄의
+    /// 각주 높이를 뒤 줄보다 먼저 예약하고, 조각 확정 때 그 쪽에 등록한다.
+    pub(in crate::renderer::typeset) own_line_notes: Vec<crate::renderer::typeset::OwnLineNote>,
+    /// 분할 조각 확정 때 이미 등록한 (문단, 컨트롤) 각주. 컨트롤 순회는 건너뛴다.
+    pub(in crate::renderer::typeset) line_registered_notes:
+        std::collections::HashSet<(usize, usize)>,
     /// 현재 큐 예약은 실제 배치와 같은 본문 하단 앵커를 사용한다.
     pub(in crate::renderer::typeset) current_footnote_body_bottom_reserved: bool,
     /// 현재 쪽은 그림 표시가 있는 앞쪽에서 이월된 HWPX 각주 본문을 소유한다.
@@ -102,11 +131,6 @@ pub(in crate::renderer::typeset) struct StateView {
     pub(in crate::renderer::typeset) footnote_separator_overhead: f64,
     /// 각주 사이 간격
     pub(in crate::renderer::typeset) footnote_between_notes_margin: f64,
-    /// 각주 안전 여백
-    pub(in crate::renderer::typeset) footnote_safety_margin: f64,
-    /// [#2559] 현재 구역에 꼬리말 정의가 없는가. 빈 꼬리말 밴드는 각주가 먼저
-    /// 사용하므로, 이 경우에만 각주 높이의 일부를 본문 가용 높이에서 회수한다.
-    pub(in crate::renderer::typeset) section_has_no_footer: bool,
     /// 존(zone) y 오프셋 (다단 나누기 시 누적)
     pub(in crate::renderer::typeset) current_zone_y_offset: f64,
     /// 현재 존의 레이아웃 오버라이드
@@ -118,31 +142,73 @@ pub(in crate::renderer::typeset) struct StateView {
     pub(in crate::renderer::typeset) pending_body_wide_top_reserve: f64,
     /// visible text host 의 양수 offset 자리차지 표가 후속 문단을 밀어내는 구간.
     pub(in crate::renderer::typeset) visible_float_exclusions: Vec<VisibleFloatExclusion>,
+    /// [#7696] 현재 단에 방출된 쪽·종이 기준 자리차지 그림·도형의 세로 밴드(단 상대).
+    /// 문단 시작 판정만 이 밴드를 읽는다 — 표·빈 float·쪽 점유 계상은 그대로 둔다.
+    pub(in crate::renderer::typeset) page_anchored_bands: Vec<VisibleFloatExclusion>,
+    /// [#7696] 쪽·종이 기준 밴드가 밀어 확정한 문단 시작(단 상대 px). 배치가 같은 값을 쓴다.
+    pub(in crate::renderer::typeset) page_band_flow_starts: std::collections::HashMap<usize, f64>,
     /// 현재 쪽에 실제 배치된 그림의 점유 영역(용지 좌표). 다음 단에도 간섭할 수 있다.
     pub(in crate::renderer::typeset) side_wrap_exclusions:
         std::collections::BTreeMap<(usize, usize), crate::renderer::layout_frame::FrameExclusion>,
+    /// [#8282] 저장 줄 없는 host 의 배제 영역. 한/글이 그 개체 둘레로 뒤 문단을 조판한 적이
+    /// 없으므로 뒤 문단의 저장 줄은 이 개체를 증언하지 않는다.
+    pub(in crate::renderer::typeset) unwitnessed_side_wraps:
+        std::collections::BTreeSet<(usize, usize)>,
     pub(in crate::renderer::typeset) inline_placements: std::collections::HashMap<
         (usize, usize),
         crate::renderer::float_placement::InlineBoxPlacement,
     >,
     pub(in crate::renderer::typeset) inline_flow_plans:
         std::collections::HashMap<usize, crate::renderer::inline_flow::InlineFlowPlan>,
+    /// 재조판 문단의 확정 간격/원점을 현재 단과 함께 전달한다.
+    pub(in crate::renderer::typeset) computed_paragraphs:
+        std::collections::HashMap<usize, crate::renderer::composer::ComposedParagraph>,
+    pub(in crate::renderer::typeset) paragraph_origins:
+        std::collections::HashMap<usize, crate::renderer::pagination::ParagraphOrigin>,
+    pub(super) pending_paragraph_origins: Vec<PendingParagraphOrigin>,
+    pub(in crate::renderer::typeset) host_compositions: std::collections::HashMap<
+        usize,
+        std::sync::Arc<crate::renderer::composer::ComposedParagraph>,
+    >,
+    pub(in crate::renderer::typeset) stored_paragraph_flow_ends:
+        std::collections::HashMap<usize, f64>,
+    /// 쪽 상단의 첫 문단이 이미 예약한 저장 앞 간격.
+    pub(in crate::renderer::typeset) stored_column_top_spacings:
+        std::collections::HashMap<usize, crate::renderer::float_placement::StoredColumnTopSpacing>,
     pub(in crate::renderer::typeset) paragraph_float_placements: std::collections::HashMap<
         (usize, usize),
         crate::renderer::float_placement::ParagraphFloatPlacement,
     >,
+    /// [#7330] 현재 단에서 확정한 자리차지 표가 민 host 첫 글줄의 남은 앞 간격.
+    pub(in crate::renderer::typeset) float_pushed_line_spacings:
+        std::collections::HashMap<usize, crate::renderer::float_placement::FloatPushedFirstLine>,
     /// 단 상대 TAC 물리 하단. 저장 host 높이와 별개로 다음 어울림 후보 줄을 제한한다.
     pub(in crate::renderer::typeset) inline_box_flow_bottom: f64,
     /// 같은 문단의 선행 RowBreak 표가 continuation 을 만들 때 후행 co-anchored 표를
     /// 후속 섹션 블록 뒤로 잠시 미루기 위한 큐.
     pub(in crate::renderer::typeset) deferred_table_controls: Vec<DeferredTableControl>,
+    /// 같은 호스트의 부동 개체만 다음 단으로 이월하고 현재 단 본문은 계속 채운다.
+    pub(in crate::renderer::typeset) deferred_column_shapes: Vec<(
+        usize,
+        usize,
+        crate::renderer::typeset::controls::shape_flow::TableHostShapeFlow,
+    )>,
     /// native HWP5 page-tail Square 그림을 다음 physical page의 시작에 넣는 큐.
     /// 단일 컬럼·caption 보유 picture 형상으로 한정한다.
     pub(in crate::renderer::typeset) deferred_next_page_square_pictures:
         Vec<DeferredSquarePictureControl>,
+    /// 이어지는 쪽에서 저장 reset 으로 끝낸 문단 조각 (문단, 시작 줄). 그 조각 안 표시의
+    /// 본문 각주는 조각 경계 판정이 이미 계상했으므로 표시가 놓인 쪽에 둔다.
+    pub(in crate::renderer::typeset) stored_reset_note_fragments: Vec<(usize, usize)>,
     /// 현재 호스트를 남기고 다음 쪽의 저장 상단 프레임만 이월한다.
     pub(in crate::renderer::typeset) deferred_next_page_stored_frames:
         Vec<crate::renderer::typeset::DeferredStoredFrameControl>,
+    /// 본문은 현재 단에 남고 개체 상자만 바로 다음 단으로 넘어간다.
+    pub(in crate::renderer::typeset) deferred_next_column_stored_frames:
+        Vec<crate::renderer::typeset::DeferredStoredFrameControl>,
+    /// Source paragraph -> first physical page after its deferred object.
+    pub(in crate::renderer::typeset) deferred_source_frame_body_pages:
+        std::collections::HashMap<usize, usize>,
     /// 저장 그림 상단 예약은 흐름에 반영하고 그림 항목은 단 확정 시 앞에 붙인다.
     pub(in crate::renderer::typeset) page_start_stored_frames:
         Vec<crate::renderer::typeset::DeferredStoredFrameControl>,
@@ -180,10 +246,6 @@ pub(in crate::renderer::typeset) struct StateView {
     /// [Task #359] 다음 pi 가 vpos-reset 가드를 발동할 예정 → 현재 pi 의 fit 안전마진 비활성화.
     /// 단독 항목 페이지 발생 차단용.
     pub(in crate::renderer::typeset) skip_safety_margin_once: bool,
-    /// [Task #1725] tail-before-vpos-reset 문단 1회 각주 안전마진(40px) 비활성화.
-    /// 각주 있는 페이지에서 한글 LINESEG 는 tail 문단을 본문에 배치(각주는 아래)하는데,
-    /// rhwp 각주 예약(+40px 버퍼)이 tail 을 수 px 초과로 밀어 near-empty 페이지 over-pagination.
-    pub(in crate::renderer::typeset) skip_footnote_margin_once: bool,
     /// 다음 저장 vpos-reset 직전 tail의 실제 저장 line bounds. 현재 flow와 저장 bottom의
     /// 차이만 다음 문단의 fit allowance로 쓴다.
     pub(in crate::renderer::typeset) tail_saved_bounds_once: Option<(f64, f64)>,
@@ -206,6 +268,8 @@ pub(in crate::renderer::typeset) struct StateView {
     pub(in crate::renderer::typeset) hide_empty_line: bool,
     /// [Task #362] 현재 페이지에서 감춘 빈 줄 수 (페이지마다 reset, 최대 2).
     pub(in crate::renderer::typeset) hidden_empty_lines: u32,
+    /// 숨긴 첫 줄로 달라진 물리 쪽 경계가 저장 경계와 다시 맞을 때까지 유지한다.
+    pub(in crate::renderer::typeset) hidden_line_reflow_active: bool,
     /// [Task #362] 감춘 빈 줄이 적용된 페이지 인덱스 (페이지 변경 감지용).
     pub(in crate::renderer::typeset) hidden_empty_page_idx: usize,
     /// [Task #362] hide_empty_line 으로 감춘 paragraph 인덱스 (PaginationResult 에 포함).
@@ -217,7 +281,15 @@ pub(in crate::renderer::typeset) struct StateView {
     /// [Task #836] 미주 목록 (섹션별 수집, 문서 끝에 렌더).
     pub(in crate::renderer::typeset) endnotes: Vec<EndnoteRef>,
     pub(in crate::renderer::typeset) endnote_paragraphs: Vec<Paragraph>,
+    /// 실제 줄 높이·간격을 다시 계산한 미주 문단의 목록 내 인덱스와
+    /// 같은 전진 안에서 끝줄 내용 높이가 이미 소비한 후행 간격(HU).
+    /// 이 문단의 저장 단 컷은 이전 세로 배치의 캐시이므로 실제 fit을 우선한다.
+    pub(in crate::renderer::typeset) reissued_endnote_rows: std::collections::HashMap<usize, i32>,
     pub(in crate::renderer::typeset) endnote_para_sources: Vec<EndnoteParaSource>,
+    /// 현재 구역의 본문 다음에 등록되는 가상 미주 문단 범위의 시작.
+    pub(in crate::renderer::typeset) endnote_para_base: Option<usize>,
+    pub(in crate::renderer::typeset) endnote_measured_tables:
+        Vec<crate::renderer::height_measurer::MeasuredTable>,
     /// [Task #1246] 현재 섹션 미주의 between-notes 마진(HU, 0=미적용). HeightCursor 가 미주 사이
     /// min-gap 보정에 사용. 모든 경계에서 동일한 섹션 설정값이므로 스칼라로 보관.
     pub(in crate::renderer::typeset) endnote_between_notes_hu: i32,
@@ -275,18 +347,20 @@ pub(in crate::renderer::typeset) struct StateView {
     ///
     /// overlay 표는 흐름 소비가 0 이라 앵커 쪽에서 다음 쪽 항목을 바로 push 할 수 없다
     /// (다음 쪽은 이후 문단이 흐름을 넘길 때 비로소 생긴다). 그래서 앵커 쪽에서
-    /// "몇 번째 행부터 잘렸는지"만 적어 두고, 단/쪽이 열릴 때 그 시작에 방출한다.
-    /// `(para_index, control_index, start_row, reserve_px)`.
+    /// 행과 셀 유닛의 내용 컷·잔여 점유를 적어 두고, 단/쪽이 열릴 때 방출한다.
+    /// 앵커 컷과 같은 소유 유닛을 `OverlayContinuation`으로 보존한다.
     ///
     /// [#5792] `reserve_px` 는 잔여 행이 새 쪽 흐름에서 예약해야 할 높이다 — 뒤따르는
     /// 흐름이 그 자리를 스스로 만드는 형상(#4514 필러 문단)에서는 0 이다.
-    pub(in crate::renderer::typeset) pending_overlay_continuations: Vec<(usize, usize, usize, f64)>,
+    pub(in crate::renderer::typeset) pending_overlay_continuations:
+        Vec<crate::renderer::pagination::OverlayContinuation>,
     /// [#4568] 현재 단에 이어 그릴 overlay 잔여 행 목록. `flush_column` 에서
     /// `ColumnContent::overlay_continuations` 로 옮긴다.
     pub(in crate::renderer::typeset) current_column_overlay_continuations:
         Vec<crate::renderer::pagination::OverlayContinuation>,
-    /// [#4568] 현재 단의 overlay 표 앵커 컷 — `(para, ctrl, end_row)`.
-    pub(in crate::renderer::typeset) current_column_overlay_cuts: Vec<(usize, usize, usize)>,
+    /// [#4568] 현재 단의 overlay 표 앵커 컷 — `(para, ctrl, cut)`.
+    pub(in crate::renderer::typeset) current_column_overlay_cuts:
+        Vec<(usize, usize, crate::renderer::pagination::OverlayCut)>,
     /// [Task #362] 현재 단에서 표 옆에 배치되는 wrap-around paragraphs.
     /// flush_column 에서 ColumnContent 로 전달.
     pub(in crate::renderer::typeset) current_column_wrap_around_paras:
@@ -305,10 +379,14 @@ pub(in crate::renderer::typeset) struct StateView {
     /// (이전 zone 디자인 spacing /2) + (새 zone 디자인 spacing /2) 를 zone_y_offset 에
     /// 더한다. 다단(2+) ColumnDef 의 `간격`은 가로 간격이므로 0 으로 둔다.
     pub(in crate::renderer::typeset) current_zone_design_spacing_px: f64,
+    pub(in crate::renderer::typeset) current_zone_plain_text: bool,
     /// [Task #1027 Stage D] 컬럼 단위 vpos 스냅 상태 (렌더러 build_single_column 정합).
     /// current_height 상대공간(col_area_y=0)에서 HeightCursor 를 구동한다.
     pub(in crate::renderer::typeset) vpos_page_base: Option<i32>,
     pub(in crate::renderer::typeset) vpos_lazy_base: Option<i32>,
+    /// 단 첫 수용 항목의 저장 축. 활성 page/lazy 기준이 소거돼도 paint와 같은
+    /// 새 축 판정에 사용하며, HeightCursor가 종료한 결과도 그대로 보존한다.
+    pub(in crate::renderer::typeset) vpos_stored_column_origin: Option<(i32, f64)>,
     /// [#2243] page_base 가 **저장**(비합성) lineseg 에서 왔는지. 저장-앵커 사다리는
     /// 저장 lineseg 없는 문단(생성기 누락 — 한글 fresh 재계산으로 성장 가능)을
     /// 만나면 연속성이 깨지므로 dirty 판단에 쓴다.
@@ -321,6 +399,8 @@ pub(in crate::renderer::typeset) struct StateView {
     /// 저장 vpos 스냅(VPOS_CORR)을 마친 문단 시작 커서 `(문단, y)`.
     /// 측정 누적의 sb·trailing_ls drift 가 걷힌 실제 앞 커서다.
     pub(in crate::renderer::typeset) vpos_snapped_flow_start: Option<(usize, f64)>,
+    /// 공통 vpos 질의가 현재 문단에서 거절한 저장 원점 `(문단, source HU)`.
+    pub(in crate::renderer::typeset) rejected_stored_forward_origin: Option<(usize, i32)>,
     pub(in crate::renderer::typeset) vpos_prev_layout_para: Option<usize>,
     pub(in crate::renderer::typeset) vpos_prev_partial_table: bool,
     /// 컬럼 시작 시점의 current_height (page_path anchor — 렌더러 col_anchor_y 대응).
@@ -330,4 +410,12 @@ pub(in crate::renderer::typeset) struct StateView {
     /// [#6753] 직전 문단이 `#2279 ①` 트림으로 흐름에서 뺀 `spacing_before`(px).
     /// lazy 기준 역산이 그 트림분을 기준점에 싣지 않도록 `HeightCursor` 로 넘긴다.
     pub(in crate::renderer::typeset) vpos_prev_trimmed_sb_px: f64,
+}
+
+pub(super) struct DeferredTableTerminalGap {
+    pub(super) para_index: usize,
+    pub(super) control_index: usize,
+    pub(super) flow_end: f64,
+    pub(super) page_index: usize,
+    pub(super) column_index: u16,
 }

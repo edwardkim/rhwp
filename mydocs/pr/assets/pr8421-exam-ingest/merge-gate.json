@@ -1,0 +1,14 @@
+{
+  "head": "fe915543091ea964e5c691b391e890cd028e5a91",
+  "base": "0b697f90c3637558196b9e3b81c4eb59049432af",
+  "merge_tree": "b0293e561f681f124511c6e6693c85fe7c219f97",
+  "check_counts": {
+    "success": 33,
+    "skipped": 6
+  },
+  "policy_run": 41435296198,
+  "policy_url": "https://github.com/edwardkim/rhwp/actions/runs/41435296198",
+  "review_url": "https://github.com/edwardkim/rhwp/pull/8421#pullrequestreview-5735721570",
+  "review_id": 5735721570,
+  "review_state": "APPROVED"
+}

@@ -20,73 +20,10 @@
 //! 규약을 한쪽으로 통일하고, 다시 갈라지지 않도록 고정한다.
 #![cfg(not(target_arch = "wasm32"))]
 
-/// 종결자를 세지 않던 HWP 3.0 문서.
-const HWP3_SAMPLE: &str = "samples/SO-SUEOP.hwp";
-
-fn sample_path(rel: &str) -> std::path::PathBuf {
-    std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(rel)
-}
-
-fn load(path: &std::path::Path) -> rhwp::model::document::Document {
-    let data = std::fs::read(path).expect("파일 읽기");
-    rhwp::parser::parse_document(&data).expect("파싱")
-}
-
-/// 문단이 실제로 차지하는 UTF-16 코드 유닛 수 (종결자 제외).
-/// 탭은 본문에서 한 글자로 보이지만 HWP5 스트림에서는 **8 코드 유닛**을 차지한다
-/// (0x0009 + 확장 7). 1로 세면 탭이 든 문단마다 판정이 어긋난다.
-fn body_code_units(para: &rhwp::model::paragraph::Paragraph) -> u32 {
-    let text: u32 = para
-        .text
-        .chars()
-        .map(|c| {
-            if c == '\t' {
-                8
-            } else {
-                c.encode_utf16(&mut [0; 2]).len() as u32
-            }
-        })
-        .sum();
-    // [#4680] 제목 차례 표시는 글자 축을 안 쓰지만 저장본에서 8 코드유닛을 차지한다
-    // (탭과 같은 인라인 컨트롤 규칙 — 위 분기가 이미 탭을 8 로 센다).
-    text + 8 * para.title_marks.len() as u32
-}
-
-/// HWP3 파싱이 문단 종결자를 세는지 — 규약 준수.
-#[test]
-fn hwp3_char_count_includes_the_paragraph_terminator() {
-    let doc = load(&sample_path(HWP3_SAMPLE));
-    let mut checked = 0usize;
-    let mut violations = Vec::new();
-    for section in &doc.sections {
-        for (pi, para) in section.paragraphs.iter().enumerate() {
-            // 컨트롤이 섞인 문단은 코드 유닛 계산이 복잡해 순수 텍스트 문단만 본다.
-            if !para.controls.is_empty() || para.text.is_empty() {
-                continue;
-            }
-            checked += 1;
-            let expected = body_code_units(para) + 1;
-            if para.char_count != expected {
-                if violations.len() < 3 {
-                    violations.push(format!(
-                        "문단 {pi}: char_count={} 기대={expected} text={:?}",
-                        para.char_count,
-                        para.text.chars().take(20).collect::<String>()
-                    ));
-                }
-            }
-        }
-    }
-    assert!(
-        checked > 100,
-        "검사한 문단이 너무 적다({checked}건) — 표본이 바뀌었는지 확인하라"
-    );
-    assert!(
-        violations.is_empty(),
-        "HWP3 문단이 종결자를 세지 않는다:\n  {}",
-        violations.join("\n  ")
-    );
-}
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/deferred_exam_scope.rs"
+));
 
 /// 규약이 코드에 명시돼 있고, 종결자를 빠뜨린 대입이 다시 들어오지 않는다.
 ///
@@ -102,6 +39,9 @@ fn no_assignment_drops_the_terminator() {
         };
         for entry in entries.flatten() {
             let path = entry.path();
+            if is_deferred_exam_document(path.to_string_lossy().as_ref()) {
+                continue;
+            }
             if path.is_dir() {
                 stack.push(path);
                 continue;

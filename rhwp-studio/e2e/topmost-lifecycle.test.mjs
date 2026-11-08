@@ -16,6 +16,7 @@ async function selectTopmostAndOperate(page, op) {
   return page.evaluate((operation) => {
     const wasm = window.__wasm;
     const ih = window.__inputHandler;
+    if (!ih.isActive()) return { error: '편집기가 활성화되기 전에 개체 연산을 시작함' };
     const overlaps = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 
     let target = null;
@@ -76,7 +77,12 @@ async function runScenario(page, op, label) {
     `${label} 최상단 선택이 글상자 아님: hit=${r.hitType}, sel=${r.selType}`);
   assert(r.selCi === r.shapeRef.ci, `${label} 선택 ref 가 글상자 ci 와 불일치: ${r.selCi} vs ${r.shapeRef.ci}`);
 
-  await page.evaluate(() => new Promise((res) => setTimeout(res, 600))); // 재렌더 대기
+  await page.waitForFunction(({ p, beforeShapes }) => {
+    const ih = window.__inputHandler;
+    const controls = window.__wasm.getPageControlLayout(p).controls || [];
+    return !ih.isInPictureObjectSelection()
+      && controls.filter(control => control.type === 'shape').length === beforeShapes - 1;
+  }, { timeout: 10000 }, { p: r.p, beforeShapes: r.beforeShapes });
   const after = await countTypes(page, r.p);
   console.log(`${label} 후 카운트:`, JSON.stringify(after), `(이전 shapes=${r.beforeShapes}, images=${r.beforeImages})`);
 
@@ -85,9 +91,26 @@ async function runScenario(page, op, label) {
     `${label}: 글상자가 1개 줄지 않음: ${r.beforeShapes} → ${after.shapes}`);
   assert(after.images === r.beforeImages,
     `${label}: 이미지가 영향받음(엉뚱한 개체 처리): ${r.beforeImages} → ${after.images}`);
+  if (op === 'cut') {
+    const { copiedHtml, token } = await page.evaluate(async () => {
+      const items = await navigator.clipboard.read();
+      const item = items.find(value => value.types.includes('text/html'));
+      return {
+        copiedHtml: item ? await (await item.getType('text/html')).text() : '',
+        token: window.__inputHandler.rhwpClipboardToken,
+      };
+    });
+    assert(token && copiedHtml.includes(`<!--rhwp-studio-clipboard:${token}-->`),
+      '이번 오려두기의 HTML 클립보드 기록 완료');
+  }
 }
 
-runTest('겹침 최상단 선택 → 삭제/오려두기 lifecycle (#1280 v2)', async ({ page }) => {
+runTest('겹침 최상단 선택 → 삭제/오려두기 lifecycle (#1280 v2)', async ({ browser, page }) => {
+  // 임시 headless 프로필만 허용하며, 연결한 사용자 브라우저의 권한은 바꾸지 않는다.
+  if (!browser._isRemote) {
+    await browser.defaultBrowserContext().overridePermissions(new URL(page.url()).origin,
+      ['clipboard-read', 'clipboard-write', 'clipboard-sanitized-write']);
+  }
   await runScenario(page, 'delete', '삭제');
   await runScenario(page, 'cut', '오려두기');
   console.log('✅ #1280 v2: 겹침 최상단(글상자) 선택 → 삭제/오려두기가 글상자만 처리(이미지 잔존) 통과');

@@ -1,0 +1,915 @@
+{
+  "base": "d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867",
+  "parentHead": "f1f52d57bdf5cb42b4cea2a2515a9985e2dc67b7",
+  "sourceFiles": {
+    "rhwp-studio/src/view/canvas-view.ts": "6f4bf9c2c67783b9358e3e936c9fdbba94c29d40d7c92e15c417e31c044fde1c",
+    "rhwp-studio/src/view/page-renderer.ts": "0d65c4c17336d031f060d0096f2fe9358c1bcff7208d62847c8e2a3e82a7bb22",
+    "rhwp-studio/tests/canvas-view-surface-cache.test.ts": "06f94f2bddba34a0561fffd0e75c66bb13c0466a6b1e4fcc1f96174f5272c72c"
+  },
+  "rustSourceChanged": false,
+  "sourceProducer": {
+    "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/vector-print-compositor-observer-repair/producer.json",
+    "sha256": "cc86dc28828dcba76630c6a38603f981814c3ab0d306ddc87ea13b374c2674b5"
+  },
+  "fullPrAcceptance": false,
+  "scope": "기존 50조건 중 Studio 소비 경계 검증. 전체 50조건의 전후 비교는 별도로 진행한다.",
+  "checks": [
+    {
+      "consumerResults": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/vector-print-compositor-observer-repair/actual/browser-results.json",
+      "sha256": "6de9fe22c90c6948e83220c3701c51b9b838543e9419195398584e3d0da1c4ce",
+      "count": 31,
+      "freshSamples": null,
+      "reused": []
+    },
+    {
+      "consumerResults": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/vector-print-compositor-observer-repair/merged-zoom/browser-results.json",
+      "sha256": "3f674b721c70bc55c0d461c8bf2e8ff33d5ead2064d1649d0b9c188b0748d4aa",
+      "count": 4,
+      "freshSamples": [
+        "roadmap-p153"
+      ],
+      "reused": [
+        {
+          "sample": "sample16-original-p033",
+          "sourceResults": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/vector-print-compositor-complete/zoom-dpr-restore/browser-results.json",
+          "sourceResultsSha256": "447108d9ef15c1d23eb88c2ee1c61b3fd63cf9e4f8df422a4f42b12b6634c68a",
+          "sourceProducer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/vector-print-compositor-complete/producer.json",
+          "sourceProducerSha256": "7b40a63884ec510aa135747d0e9097ec84987c4005b544b4ca7944039a4bdf91"
+        },
+        {
+          "sample": "low-slack-p001",
+          "sourceResults": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/vector-print-compositor-complete/zoom-dpr-restore/browser-results.json",
+          "sourceResultsSha256": "447108d9ef15c1d23eb88c2ee1c61b3fd63cf9e4f8df422a4f42b12b6634c68a",
+          "sourceProducer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/vector-print-compositor-complete/producer.json",
+          "sourceProducerSha256": "7b40a63884ec510aa135747d0e9097ec84987c4005b544b4ca7944039a4bdf91"
+        },
+        {
+          "sample": "missing-lineseg1-p001",
+          "sourceResults": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/vector-print-compositor-complete/zoom-dpr-restore/browser-results.json",
+          "sourceResultsSha256": "447108d9ef15c1d23eb88c2ee1c61b3fd63cf9e4f8df422a4f42b12b6634c68a",
+          "sourceProducer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/vector-print-compositor-complete/producer.json",
+          "sourceProducerSha256": "7b40a63884ec510aa135747d0e9097ec84987c4005b544b4ca7944039a4bdf91"
+        }
+      ]
+    }
+  ],
+  "comparisons": {
+    "zoom-independent-review": {
+      "count": 20,
+      "minimumRaw": 90.00026,
+      "below90": 0,
+      "sourceResults": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/vector-print-compositor-observer-repair/zoom-independent-review/results.json",
+      "sourceResultsSha256": "826d10beb197a92377dfde1e9074955a1b6b6e0d226b29314732081bf9e9db99",
+      "canvasAuditUnchanged": true,
+      "tsvSha256": "d9ceae6a11e011d43a75be96bc10dcf88bb5dcfcee79b8e7ff971302386a9951"
+    },
+    "independent-print-review": {
+      "count": 31,
+      "minimumRaw": 93.15185,
+      "below90": 0,
+      "sourceResults": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/vector-print-compositor-observer-repair/independent-print-review/results.json",
+      "sourceResultsSha256": "a442252779af3ed2c3925f863c2700d4ecc10209c75c049e21c0a496e14fc6a9",
+      "canvasAuditUnchanged": true,
+      "tsvSha256": "fc074b9b105b4b2871cb3f7a0d98cf6f8c618cf61deaa502733b39371ccb0984"
+    }
+  },
+  "representatives": [
+    {
+      "file": "missing-lineseg-zoom-before-policy-review.png",
+      "sha256": "190267f5b4083b7128fbf18dc2975abadd7eeacc8c88543519a9427dad8dc813",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/vector-filter-before-after-policy-native-strip/comparison/before-policy/zoomed/review/review_001.png",
+      "directInspection": "표·본문·별표의 내용 소속과 쪽 위치 보존. 내부 가로 괘선과 글자의 미세 래스터 차이가 남음."
+    },
+    {
+      "file": "missing-lineseg-zoom-before-policy-overlay.png",
+      "sha256": "162cf04b72247fb8527e06bf5452aafd1bc753c099c7dcb1d4273e9e78b50c3e",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/vector-filter-before-after-policy-native-strip/comparison/before-policy/zoomed/overlay/overlay_001.png",
+      "directInspection": "표·본문·별표의 내용 소속과 쪽 위치 보존. 내부 가로 괘선과 글자의 미세 래스터 차이가 남음."
+    },
+    {
+      "file": "missing-lineseg-zoom-current-policy-review.png",
+      "sha256": "91b6a3e01d93bbcf0fc99af7694e8c45c73d8265bb3a2334db514ea74c9439e8",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/vector-filter-before-after-policy-native-strip/comparison/current-policy/zoomed/review/review_001.png",
+      "directInspection": "표·본문·별표의 내용 소속과 쪽 위치 보존. 내부 가로 괘선과 글자의 미세 래스터 차이가 남음."
+    },
+    {
+      "file": "missing-lineseg-zoom-current-policy-overlay.png",
+      "sha256": "bb3871abdcaa492db9a9c1cba90d5a070c7d4122dabdd00bb32001a74f834b8e",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/vector-filter-before-after-policy-native-strip/comparison/current-policy/zoomed/overlay/overlay_001.png",
+      "directInspection": "표·본문·별표의 내용 소속과 쪽 위치 보존. 내부 가로 괘선과 글자의 미세 래스터 차이가 남음."
+    },
+    {
+      "file": "sample11-p050-print-review.png",
+      "sha256": "c618b05bcaba5870a108150f3893d78a5d2ba69475596d1fbbd354909c76b8e0",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/vector-print-compositor-observer-repair/independent-print-review/sample11-original-p050/canvas2d/review/review_050.png",
+      "raw": 93.15185,
+      "directInspection": "독립 PDF와 배치·문단·그림 소속 보존 확인. 색상과 가는 획의 미세 차이는 남음."
+    },
+    {
+      "file": "sample11-p050-print-overlay.png",
+      "sha256": "56d86e465bab8b7300db75461d4ac374e53e9806aa3a80e0904ff3c3611540fa",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/vector-print-compositor-observer-repair/independent-print-review/sample11-original-p050/canvas2d/overlay/overlay_050.png",
+      "raw": 93.15185,
+      "directInspection": "독립 PDF와 배치·문단·그림 소속 보존 확인. 색상과 가는 획의 미세 차이는 남음."
+    },
+    {
+      "file": "roadmap-p153-dpr15-review.png",
+      "sha256": "665ba985d2e99017f543cd6d450be7bd844bd5488f8d58af801af4fedd605501",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/vector-print-compositor-observer-repair/zoom-independent-review/roadmap-p153/fractional-dpr/review/review_153.png",
+      "raw": 96.1015,
+      "directInspection": "독립 PDF와 배치·문단·그림 소속 보존 확인. 색상과 가는 획의 미세 차이는 남음."
+    },
+    {
+      "file": "roadmap-p153-dpr15-overlay.png",
+      "sha256": "3bb9de6cfff4b6b1c0e35e302b464ad446536eb7b8e5dff9da47dc996e307ecc",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/vector-print-compositor-observer-repair/zoom-independent-review/roadmap-p153/fractional-dpr/overlay/overlay_153.png",
+      "raw": 96.1015,
+      "directInspection": "독립 PDF와 배치·문단·그림 소속 보존 확인. 색상과 가는 획의 미세 차이는 남음."
+    }
+  ],
+  "consumers": [
+    {
+      "sample": "pii66-declared-p042",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "sample16-hwpx-p045",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "biotoxin205-p044",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "asset60-p013",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "rowbreak18-p013",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "worklife6-p006",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "biotoxin205-p143",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "worklife6-p004",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "worklife6-p005",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "court2-p001",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "pii66-default-p050",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "giant4138-original-p080",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "hwp3-original-p003",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "superscript3-p001",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "sample11-original-p002",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "sample11-original-p050",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "sample11-original-p100",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "sample16-original-p006",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "sample16-original-p033",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "rowbreak18-p007",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "roadmap-p153",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "treatise-p005",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "task1725-p029",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "task1725-p030",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "task1725-p201",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "low-slack-p001",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "low-slack-p001",
+      "requestedBackend": "canvaskit-compat",
+      "effectiveBackend": "canvaskit",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "low-slack-p001",
+      "requestedBackend": "canvaskit-default",
+      "effectiveBackend": "canvaskit",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "missing-lineseg1-p001",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "missing-lineseg1-p001",
+      "requestedBackend": "canvaskit-compat",
+      "effectiveBackend": "canvaskit",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "missing-lineseg1-p001",
+      "requestedBackend": "canvaskit-default",
+      "effectiveBackend": "canvaskit",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "sample16-original-p033",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "low-slack-p001",
+      "requestedBackend": "canvaskit-compat",
+      "effectiveBackend": "canvaskit",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "missing-lineseg1-p001",
+      "requestedBackend": "canvaskit-default",
+      "effectiveBackend": "canvaskit",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    },
+    {
+      "sample": "roadmap-p153",
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "responses": [
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp.js",
+          "servedSha256": "181b94621c03dbdbf28a3c9627d333bbcb3ffcf86034f0c2348d4f823c737848",
+          "frozenSha256": "aea5f6639676442e0628b640b75d0f70eb300481421112d23b661a082f695a68",
+          "matchesFrozenBuild": true,
+          "method": "vite-inline-source-map-exact-asset-url-rewrite"
+        },
+        {
+          "pathname": "/@fs/Users/tsjang/rhwp-7445-completed-20261009/pkg/rhwp_bg.wasm",
+          "servedSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "frozenSha256": "d098ee45e5b23c6373f9a957fc059cf46afd329de5cabd9db07c728586971024",
+          "matchesFrozenBuild": true,
+          "method": "raw-byte-identity"
+        }
+      ]
+    }
+  ],
+  "controlledPolicyComparison": {
+    "rows": [
+      {
+        "role": "before-policy",
+        "raw": 86.78369,
+        "comparisonKind": "Exact prior product method executed on identical completed canvases; not a full baseline app build; CSS changes only, canvas bytes are audited",
+        "policyAuditSha256": "ffcb24cb0720d25c93631fc2620ca6aee98394f93d63a0cf3aaafdabd2107056"
+      },
+      {
+        "role": "current-policy",
+        "raw": 90.00026,
+        "comparisonKind": "Exact prior product method executed on identical completed canvases; not a full baseline app build; CSS changes only, canvas bytes are audited",
+        "policyAuditSha256": "ffcb24cb0720d25c93631fc2620ca6aee98394f93d63a0cf3aaafdabd2107056"
+      }
+    ],
+    "scope": "동일한 완성 canvas에 Git 부모의 실제 메서드와 현재 메서드를 적용한 합성 정책 대조. 전체 base 앱 빌드 결과가 아님.",
+    "sourceResultsSha256": "d461290a6dd3194c8b796426b27fb8f3763e701085bcadde39f430360006a536",
+    "policyProvenanceSha256": "7c016ed65d173b44b314aa9e68fa7d36caf23839c00480c625e85b10fbdf8ccb"
+  },
+  "unitAndBuild": {
+    "sourceProducerSha256": "7b40a63884ec510aa135747d0e9097ec84987c4005b544b4ca7944039a4bdf91",
+    "typescriptExit": 0,
+    "studioTotal": 2411,
+    "studioPass": 2409,
+    "studioFail": 0,
+    "studioSkip": 2,
+    "productionBuildExit": 0,
+    "metadataBeforeFail": 1,
+    "metadataAfterPass": 71,
+    "logsRoot": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/vector-print-compositor-complete"
+  },
+  "rustChecks": {
+    "producerCore": "f1f52d57bdf5cb42b4cea2a2515a9985e2dc67b7",
+    "gates": 18,
+    "fullNextestPass": 11752,
+    "fullNextestFail": 0,
+    "fullNextestSkip": 45,
+    "resultsSha256": "556ba15c96b6109cd5e64d5f93f905f4fef6461544e38d574f8caa7ef672e81c",
+    "resultsPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/final-scope50-rust-gates/results.json",
+    "allExitZero": true
+  }
+}

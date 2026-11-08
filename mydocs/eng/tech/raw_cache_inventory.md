@@ -79,8 +79,8 @@ rhwp 재생성본으로 바뀐다.
 | 필드 | 위치 | 담는 것 | 축 | 복원 장치 |
 |---|---|---|---|---|
 | `raw_data` | `bin_data.rs:32` | 원본 레코드 바이트 (라운드트립 보존용) | 편집이 씀 | 없음 |
-| `raw_ctrl_data` | `control.rs:160` | 라운드트립용 원본 ctrl_data | 편집이 씀 | `raw_ctrl_seal`(control.rs:164) — #4495 |
-| `raw_ctrl_seal` | `control.rs:164` | `raw_ctrl_data` 무결성 봉인 | —(장치) | 없음 |
+| `raw_ctrl_data` | `control/equation.rs:45` | 수식 CTRL_HEADER의 원본 ctrl_data | 편집이 씀 | `raw_ctrl_seal`(control/equation.rs:49) — #4495 |
+| `raw_ctrl_seal` | `control/equation.rs:49` | 수식 `raw_ctrl_data`의 common 속성 무결성 봉인 | —(장치) | 없음 |
 | `raw_type` | `control.rs:852` | HWPX `fieldBegin type` 원문 — IR 이 모르는 종류일 때만 | 순수 passthrough | 없음 |
 | `raw_parameters_xml` | `control.rs:880` | HWPX `hp:parameters` 원문 verbatim | 순수 passthrough | 없음 |
 | `raw_data` | `document.rs:144` | 원본 FileHeader 256바이트 (직렬화 시 원본 복원용) | 편집이 씀 | 없음 |

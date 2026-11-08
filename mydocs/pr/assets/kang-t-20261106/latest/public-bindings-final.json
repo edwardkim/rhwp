@@ -1,0 +1,29 @@
+{
+  "source": "63236b9cc5fcbbbbe6fbce5691e81aaf6e406c1e",
+  "files": [
+    {
+      "name": "rhwp.js",
+      "pkg_sha256": "0099b8a6e00f750e1dbddb3a89bf42874f24effcf8bf4dc5eb328d69e691606b",
+      "public_sha256": "0099b8a6e00f750e1dbddb3a89bf42874f24effcf8bf4dc5eb328d69e691606b",
+      "same": true
+    },
+    {
+      "name": "rhwp_bg.wasm",
+      "pkg_sha256": "46ef070e9e5b656598a42bdfe9e8ddcb81955cbff77623ccaf572238ec9f160e",
+      "public_sha256": "46ef070e9e5b656598a42bdfe9e8ddcb81955cbff77623ccaf572238ec9f160e",
+      "same": true
+    },
+    {
+      "name": "rhwp.d.ts",
+      "pkg_sha256": "316f00766c6544dda79b1eaf6fad8926972d08978f621848ae7111b69ea0201c",
+      "public_sha256": "316f00766c6544dda79b1eaf6fad8926972d08978f621848ae7111b69ea0201c",
+      "same": true
+    },
+    {
+      "name": "rhwp_bg.wasm.d.ts",
+      "pkg_sha256": "1ef9796bb7089d2e78eab939e3f5d6e09148376902cb61eb8952fa224cbf406d",
+      "public_sha256": "1ef9796bb7089d2e78eab939e3f5d6e09148376902cb61eb8952fa224cbf406d",
+      "same": true
+    }
+  ]
+}

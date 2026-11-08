@@ -265,12 +265,12 @@ class ExtractionPackTests(unittest.TestCase):
     """extraction pack — 읽기 추출. 새 pack·T07 복제 없음."""
 
     PACK = PACKS / "extraction"
-    EXPECTED = [f"EX{i:02d}" for i in range(1, 29)]
+    EXPECTED = [f"EX{i:02d}" for i in range(1, 29) if i not in {4, 8, 9, 10, 11, 12, 13, 14, 25, 26, 27, 28}]
 
     def _tasks(self):
         return [read_json(p) for p in sorted((self.PACK / "tasks").glob("EX*.json"))]
 
-    def test_task_ids_are_ex01_to_ex28(self):
+    def test_active_extraction_task_ids_are_complete(self):
         ids = [t["id"] for t in self._tasks()]
         self.assertEqual(ids, self.EXPECTED)
 
@@ -318,14 +318,9 @@ class ExtractionPackTests(unittest.TestCase):
         for flag in ("date", "amount", "number", "all"):
             self.assertTrue(kinds.get(flag), f"--kind {flag} 과제가 없다")
 
-    def test_export_text_page_and_length_contracts(self):
+    def test_remaining_export_text_page_contracts(self):
         page_tasks = [t for t in self._tasks() if t["checks"][0]["path"] == "pageCount"]
-        len_tasks = [t for t in self._tasks() if t["checks"][0]["op"] == "len_answer_eq"]
-        self.assertGreaterEqual(len(page_tasks), 3)
-        self.assertGreaterEqual(len(len_tasks), 2)
-        p0 = next(t for t in self._tasks() if t["id"] == "EX04")
-        self.assertIn("-p", p0["checks"][0]["cmd"])
-        self.assertIn("0", p0["checks"][0]["cmd"])
+        self.assertEqual({task["id"] for task in page_tasks}, {"EX02", "EX22"})
 
     def test_chart_samples_are_not_all_the_same(self):
         charts = [

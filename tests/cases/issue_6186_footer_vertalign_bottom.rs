@@ -47,7 +47,6 @@ fn issue_6186_footer_bottom_alignment_matches_hancom() {
 
 /// 저장 왕복에서도 세로 정렬이 보존되어야 한다 — 직렬화기가 `vertAlign` 을 늘
 /// `"TOP"` 으로 굳혀 저장하면 재렌더가 밴드 맨 위로 돌아간다(visual roundtrip
-/// baseline 이 exam_social·k-water-rfp 에서 25~32px 변위로 잡아냈다).
 #[test]
 fn issue_6186_footer_vertalign_survives_hwpx_roundtrip() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);

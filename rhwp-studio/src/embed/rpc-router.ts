@@ -23,12 +23,16 @@ import type {
   RenderBackendRequest,
 } from '../view/render-backend.ts';
 
+/** `getPageSvg` 의 선택 인자 `profile` 허용값 — `LayerRenderProfile` 과 같다. */
+const SVG_PAGE_PROFILES: readonly LayerRenderProfile[] = ['fastPreview', 'screen', 'print', 'highQuality'];
+
 export interface EmbedNotifySavedResult {
   ok: true;
   wasDirty: boolean;
 }
 
 export interface EmbedRpcHandlers {
+  getCommandErrorState?(): Promise<unknown>;
   ready(): Promise<boolean>;
   loadFile(
     data: Uint8Array,
@@ -39,7 +43,8 @@ export interface EmbedRpcHandlers {
   pageCount(): Promise<number>;
   getRendererDiagnostics(page: number): Promise<EmbedRendererDiagnosticsV1>;
   getFontDecisionTrace(page: number, maxCharacters: number): Promise<EmbedFontDecisionTraceV1>;
-  getPageSvg(page: number): Promise<string>;
+  /** `profile` 생략 시 기존과 같은 화면 렌더(`renderPageSvg`). `'print'` 는 편집 화면 전용 요소(빈 누름틀 안내문 등)를 뺀다. */
+  getPageSvg(page: number, profile?: LayerRenderProfile): Promise<string>;
   exportHwp(): Promise<Uint8Array>;
   exportHwpx(): Promise<Uint8Array>;
   exportHml(): Promise<Uint8Array>;
@@ -130,6 +135,9 @@ export async function routeEmbedRequest(
         params.skipUnsavedGuard === true,
         params.suppressDialogs === true,
       );
+    case 'getCommandErrorState':
+      if (!handlers.getCommandErrorState) throw new Error('command-error-v1 is unavailable');
+      return handlers.getCommandErrorState();
     case 'pageCount': return handlers.pageCount();
     case 'getRendererDiagnostics': {
       const page = params.page ?? 0;
@@ -157,9 +165,16 @@ export async function routeEmbedRequest(
       }
       return handlers.getFontDecisionTrace(page as number, maxCharacters as number);
     }
-    case 'getPageSvg': return handlers.getPageSvg(
-      typeof params.page === 'number' ? params.page : 0,
-    );
+    case 'getPageSvg': {
+      const profile = params.profile;
+      if (profile !== undefined && !SVG_PAGE_PROFILES.includes(profile as LayerRenderProfile)) {
+        throw new Error(`profile must be one of ${SVG_PAGE_PROFILES.join(', ')}`);
+      }
+      return handlers.getPageSvg(
+        typeof params.page === 'number' ? params.page : 0,
+        profile as LayerRenderProfile | undefined,
+      );
+    }
     case 'exportHwp': return handlers.exportHwp();
     case 'exportHwpx': return handlers.exportHwpx();
     case 'exportHml': return handlers.exportHml();

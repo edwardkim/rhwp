@@ -1,0 +1,118 @@
+[
+  {
+    "role": "base",
+    "key": "bottom15",
+    "binarySha256": "39beec91d5bdfcc3a356071f3c497efdf8bd3f4cf402df6fa72de7c47a211913",
+    "pages": 3,
+    "counts": {
+      "rhwp": 3,
+      "pdf": 3
+    },
+    "minimum": "50.30717",
+    "minimumPage": "3",
+    "below90": [
+      "3"
+    ],
+    "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/ordinary-row-native-v7b/base/bottom15/silhouette.tsv"
+  },
+  {
+    "role": "base",
+    "key": "footer15",
+    "binarySha256": "39beec91d5bdfcc3a356071f3c497efdf8bd3f4cf402df6fa72de7c47a211913",
+    "pages": 3,
+    "counts": {
+      "rhwp": 3,
+      "pdf": 3
+    },
+    "minimum": "50.30717",
+    "minimumPage": "3",
+    "below90": [
+      "3"
+    ],
+    "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/ordinary-row-native-v7b/base/footer15/silhouette.tsv"
+  },
+  {
+    "role": "base",
+    "key": "original-hwp",
+    "binarySha256": "39beec91d5bdfcc3a356071f3c497efdf8bd3f4cf402df6fa72de7c47a211913",
+    "pages": 3,
+    "counts": {
+      "rhwp": 3,
+      "pdf": 3
+    },
+    "minimum": "98.05950",
+    "minimumPage": "1",
+    "below90": [],
+    "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/ordinary-row-native-v7b/base/original-hwp/silhouette.tsv"
+  },
+  {
+    "role": "base",
+    "key": "original-hwpx",
+    "binarySha256": "39beec91d5bdfcc3a356071f3c497efdf8bd3f4cf402df6fa72de7c47a211913",
+    "pages": 3,
+    "counts": {
+      "rhwp": 3,
+      "pdf": 3
+    },
+    "minimum": "98.04591",
+    "minimumPage": "1",
+    "below90": [],
+    "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/ordinary-row-native-v7b/base/original-hwpx/silhouette.tsv"
+  },
+  {
+    "role": "candidate",
+    "key": "bottom15",
+    "binarySha256": "bace0b3cfe2300004ae74113c18c2877c82ebf1eda4de969f1543055f7db5c21",
+    "pages": 3,
+    "counts": {
+      "rhwp": 3,
+      "pdf": 3
+    },
+    "minimum": "98.05890",
+    "minimumPage": "1",
+    "below90": [],
+    "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/ordinary-row-native-v7b/candidate/bottom15/silhouette.tsv"
+  },
+  {
+    "role": "candidate",
+    "key": "footer15",
+    "binarySha256": "bace0b3cfe2300004ae74113c18c2877c82ebf1eda4de969f1543055f7db5c21",
+    "pages": 3,
+    "counts": {
+      "rhwp": 3,
+      "pdf": 3
+    },
+    "minimum": "98.05890",
+    "minimumPage": "1",
+    "below90": [],
+    "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/ordinary-row-native-v7b/candidate/footer15/silhouette.tsv"
+  },
+  {
+    "role": "candidate",
+    "key": "original-hwp",
+    "binarySha256": "bace0b3cfe2300004ae74113c18c2877c82ebf1eda4de969f1543055f7db5c21",
+    "pages": 3,
+    "counts": {
+      "rhwp": 3,
+      "pdf": 3
+    },
+    "minimum": "98.05890",
+    "minimumPage": "1",
+    "below90": [],
+    "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/ordinary-row-native-v7b/candidate/original-hwp/silhouette.tsv"
+  },
+  {
+    "role": "candidate",
+    "key": "original-hwpx",
+    "binarySha256": "bace0b3cfe2300004ae74113c18c2877c82ebf1eda4de969f1543055f7db5c21",
+    "pages": 3,
+    "counts": {
+      "rhwp": 3,
+      "pdf": 3
+    },
+    "minimum": "98.04532",
+    "minimumPage": "1",
+    "below90": [],
+    "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/ordinary-row-native-v7b/candidate/original-hwpx/silhouette.tsv"
+  }
+]

@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-29",
+  "input": "samples/HWP5-nopassword-123456.hwpx",
+  "pdf": "pdf/HWP5-nopassword-123456-hwpx-2024.pdf",
+  "page": 18,
+  "dpi": 96,
+  "metric": "반경 2px raw 실루엣",
+  "results": {
+    "native": {
+      "old_pdf_raster_raw": 99.95316,
+      "new_pdf_raster_raw": 99.9086,
+      "render_png_before_and_after_sha256": "05da21277db0e361b0b1d48c90cbe2f84f7d4c1401bb3a069d8fd379a2ec1a59",
+      "old_pdf_raster_sha256": "10ac205a47deb17f9cd582324470b60337a8e3d0c2ffa398174c682c3278f2f7",
+      "new_pdf_raster_sha256": "7aed8d2992ea17cb041827633a982c065399da1f298ff999cf266e732e404f69"
+    },
+    "wasm": {
+      "old_pdf_raster_raw": 99.94989,
+      "new_pdf_raster_raw": 99.9049,
+      "render_png_before_and_after_sha256": "7956aead842253ebcdb86d07f68f6abbb6c6898b7ff2016bab0d5d8ffc179269",
+      "old_pdf_raster_sha256": "10ac205a47deb17f9cd582324470b60337a8e3d0c2ffa398174c682c3278f2f7",
+      "new_pdf_raster_sha256": "7aed8d2992ea17cb041827633a982c065399da1f298ff999cf266e732e404f69"
+    }
+  },
+  "input_sha256": "20ed90f48c6501cad99f6aa1f82d81d2a2132eb04f2d1d32805ac251749e4d0e",
+  "pdf_sha256": "b20bd5c0b3716818113cc6bc2a18ba768325b338a3a16840e3680e124cfea01d"
+}

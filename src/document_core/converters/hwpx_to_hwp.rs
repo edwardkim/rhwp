@@ -21,7 +21,8 @@ use std::collections::BTreeSet;
 use crate::model::bin_data::{BinDataStatus, BinDataType};
 use crate::model::control::Control;
 use crate::model::document::{
-    Document, HwpVersion, Section, SectionDef, HWP3_ORIGIN_STREAM_PATH, HWPX_ORIGIN_STREAM_PATH,
+    Document, HwpVersion, Section, SectionDef, HWP3_ORIGIN_STREAM_PATH,
+    HWP5_ORIGIN_HWPX_MARKER_PATH, HWPX_ORIGIN_STREAM_PATH,
 };
 use crate::model::image::Picture;
 use crate::model::paragraph::Paragraph;
@@ -30,7 +31,7 @@ use crate::model::style::{BorderFill, BorderLineType, Fill, FillType};
 use crate::model::table::{Cell, Table, TablePageBreak};
 use crate::parser::FileFormat;
 
-use super::common_obj_attr_writer::serialize_common_obj_attr;
+use super::common_obj_attr_writer::try_serialize_common_obj_attr;
 use super::hwpx_master_page_slots::materialize_hwp5_master_page_slots;
 // [#4400] bit packing 은 serializer 소유 — document_core::converters 는 더 이상 이 로직을
 // 직접 갖지 않는다.
@@ -86,8 +87,10 @@ pub struct AdapterReport {
     pub text_box_para_header_tail_materialized: u32,
     /// HWPX 출처 일반 paragraph PARA_HEADER tail materialize 횟수
     pub para_header_tail_materialized: u32,
-    /// [#4677] 캡션 달린 묶음 개체의 번호 범주 비트(bit28→bit29) 보정 횟수
+    /// [#4677] 캡션 달린 묶음 개체의 캡션 비트(bit29) 보정 횟수
     pub captioned_group_numbering_bit_materialized: u32,
+    /// [#8339] 개체 공통 attr bit 28 을 한컴 HWPX→HWP 저장 규칙으로 정한 개체 수
+    pub object_attr_bit28_materialized: u32,
     /// HWPX 수식(Equation) CTRL_HEADER attr 중 한컴 저장 관례 비트 보강 횟수 (Task #1061)
     pub equation_ctrl_header_attr_materialized: u32,
     /// HWPX 수식(Equation) EQEDIT 의 font_name/version_info 정답지 정합 정정 횟수 (Task #1061 Stage 2)
@@ -203,37 +206,54 @@ impl AdapterReport {
 /// 보존된다 (정수 필드 라운드트립).
 pub fn convert_hwpx_to_hwp_ir(doc: &mut Document) -> AdapterReport {
     let master_page_apply_slots_materialized = materialize_hwp5_master_page_slots(doc);
-    let mut report = convert_to_hwp_ir(doc, true);
+    let mut report = match convert_to_hwp_ir(doc, true, &crate::storage::Unbounded) {
+        Ok(report) => report,
+        Err(never) => match never {},
+    };
     report.master_page_apply_slots_materialized = master_page_apply_slots_materialized;
     report
 }
 
-/// HWPX/HWP3 출처 IR 을 HWP 직렬화기가 기대하는 형태로 정규화한다.
+/// HWPX/HWP3/PDF 출처 IR 을 HWP 직렬화기가 기대하는 형태로 정규화한다.
 ///
 /// 한컴 HWP5 스트림은 출처와 관계없이 구역당 `PAGE_BORDER_FILL` 레코드 세 개를
 /// 요구한다. HWPX 원본의 단일 BOTH XML 구조 보존은 이 변환을 생략하는 대신,
 /// `DocumentCore` HWP export 경계에서 저장 뒤 PBF overlay를 되돌려 보장한다.
-fn convert_to_hwp_ir(doc: &mut Document, source_is_hwpx: bool) -> AdapterReport {
+fn convert_to_hwp_ir<S: crate::storage::Storage>(
+    doc: &mut Document,
+    source_is_hwpx: bool,
+    storage: &S,
+) -> Result<AdapterReport, S::Error> {
     let mut report = AdapterReport::new();
 
     normalize_file_header_for_hwp(doc, &mut report);
-    normalize_page_border_fills_for_hwp(doc);
+    normalize_page_border_fills_for_hwp(doc, storage)?;
     // [#4099] 도형을 건드리는 첫 패스여야 한다 — 뒤 패스가 바깥 차트 OleShape 에 가한
     // 변경은 fold 로 통째로 버려지고, BinData 순서 materialize 는 fold 가 올려놓은
     // 진짜 `bin_data_id` 를 봐야 remap 이 맞는다.
     fold_hwpx_chart_ole_for_hwp(doc, &mut report);
-    normalize_picture_geometry_for_hwp(doc, source_is_hwpx);
+    normalize_picture_geometry_for_hwp(doc, source_is_hwpx, storage)?;
     normalize_doc_properties_for_hwp(doc, &mut report);
-    materialize_hwp5_bin_data_order(doc, &mut report);
+    materialize_hwp5_bin_data_order(doc, &mut report, storage)?;
     normalize_bin_data_for_hwp(doc, &mut report);
+    // [#8339] 표 어댑터가 CTRL_HEADER 를 `raw_ctrl_data` 로 굳히기 전에 정해야 한다.
+    // 차트 fold 뒤라 HWP 로 나갈 OLE 개체가 이미 제자리에 있다.
+    if source_is_hwpx {
+        materialize_object_attr_bit28(doc, &mut report);
+    }
 
     // Stage 4: SectionDef 컨트롤 삽입 (HWPX 파서가 만들지 않으므로 직렬화기가 PAGE_DEF 출력 못 함)
     // [#5249] secd tail 길이는 저장될 FileHeader 버전이 정한다. 위
     // `normalize_file_header_for_hwp` 가 버전을 확정한 뒤이므로 여기서 읽어 내린다.
     let file_version = doc.header.version.clone();
     for (section_idx, section) in doc.sections.iter_mut().enumerate() {
-        adapt_section_def(&mut section.section_def, &file_version, &mut report);
-        insert_section_def_control(section, &mut report);
+        adapt_section_def(
+            &mut section.section_def,
+            &file_version,
+            &mut report,
+            storage,
+        )?;
+        insert_section_def_control(section, &mut report, storage)?;
         materialize_following_section_break_type(section_idx, section, &mut report);
 
         // HWPX -> HWP 어댑터가 SectionDef, 바탕쪽, 문단 제어를 물질화했으므로
@@ -242,16 +262,16 @@ fn convert_to_hwp_ir(doc: &mut Document, source_is_hwpx: bool) -> AdapterReport 
         section.raw_stream = None;
     }
 
-    normalize_paragraph_char_border_fills(doc, &mut report);
+    normalize_paragraph_char_border_fills(doc, &mut report, storage)?;
 
     // Stage 2/3: 표 ctrl_data + 셀 list_attr (raw_ctrl_data 합성)
     for section in &mut doc.sections {
         for para in &mut section.paragraphs {
-            adapt_paragraph(para, &mut report);
+            adapt_paragraph(para, &mut report, storage)?;
         }
     }
 
-    report
+    Ok(report)
 }
 
 /// HWPX 파서가 `Chart/chartN.xml` 파트에 붙이는 확장자 표식
@@ -432,12 +452,15 @@ fn fold_hwpx_chart_ole_for_hwp(doc: &mut Document, report: &mut AdapterReport) {
         }
         match ole.chart_switch_fallback.take() {
             Some(fallback) => {
+                // 편집한 차트의 인라인 속성은 저장용 대체 OLE에도 유지한다.
+                let treat_as_char = ole.common.treat_as_char;
                 // [#4319] 파서가 `<hp:chart>` 와 `<hp:default><hp:ole>` 양쪽의
                 // `<hp:caption>` 을 읽는다. 실물은 두 브랜치가 같은 캡션을 중복
                 // 기록하지만, chart 쪽에만 있는 경우 fallback 채택으로 조용히
                 // 사라지지 않게 이월한다.
                 let chart_caption = ole.caption.take();
                 *ole = *fallback;
+                ole.common.treat_as_char = treat_as_char;
                 if ole.caption.is_none() {
                     ole.caption = chart_caption;
                 }
@@ -543,7 +566,11 @@ fn normalize_bin_data_for_hwp(doc: &mut Document, report: &mut AdapterReport) {
 /// 순서로 적히는 경우가 있다. HWP5의 `bin_data_id`는 `BIN_DATA` 레코드 순번을 가리키므로,
 /// 한컴 정답지처럼 본문 컨트롤에서 먼저 등장하는 그림/OLE를 앞에 두고 DocInfo 전용 배경
 /// 이미지는 뒤로 보내야 한다. 이때 모든 참조 ID와 `BinDataContent.id`도 함께 remap한다.
-fn materialize_hwp5_bin_data_order(doc: &mut Document, report: &mut AdapterReport) {
+fn materialize_hwp5_bin_data_order<S: crate::storage::Storage>(
+    doc: &mut Document,
+    report: &mut AdapterReport,
+    storage: &S,
+) -> Result<(), S::Error> {
     let bin_count = doc.doc_info.bin_data_list.len();
     if bin_count <= 1
         || !doc
@@ -552,47 +579,53 @@ fn materialize_hwp5_bin_data_order(doc: &mut Document, report: &mut AdapterRepor
             .iter()
             .any(|bd| bd.data_type == BinDataType::Storage)
     {
-        return;
+        return Ok(());
     }
 
-    let mut order = Vec::with_capacity(bin_count);
+    let mut order = storage.vec(bin_count)?;
     let mut seen = BTreeSet::new();
 
     for section in &doc.sections {
-        collect_bin_order_from_paragraphs(&section.paragraphs, bin_count, &mut order, &mut seen);
+        collect_bin_order_from_paragraphs(
+            &section.paragraphs,
+            bin_count,
+            &mut order,
+            &mut seen,
+            storage,
+        )?;
         for master_page in &section.section_def.master_pages {
             collect_bin_order_from_paragraphs(
                 &master_page.paragraphs,
                 bin_count,
                 &mut order,
                 &mut seen,
-            );
+                storage,
+            )?;
         }
     }
 
-    collect_bin_order_from_doc_info(doc, bin_count, &mut order, &mut seen);
+    collect_bin_order_from_doc_info(doc, bin_count, &mut order, &mut seen, storage)?;
 
     for id in 1..=bin_count as u16 {
-        push_bin_order(id, bin_count, &mut order, &mut seen);
+        push_bin_order(id, bin_count, &mut order, &mut seen, storage)?;
     }
 
-    let identity: Vec<u16> = (1..=bin_count as u16).collect();
-    if order == identity {
-        return;
+    if order.iter().copied().eq(1..=bin_count as u16) {
+        return Ok(());
     }
 
-    let mut remap = vec![0u16; bin_count + 1];
+    let mut remap = zeroed(storage, bin_count + 1)?;
     for (new_idx, old_id) in order.iter().enumerate() {
         remap[*old_id as usize] = (new_idx + 1) as u16;
     }
 
-    let old_bin_data = doc.doc_info.bin_data_list.clone();
-    let mut new_bin_data = Vec::with_capacity(old_bin_data.len());
+    let old_bin_data = &doc.doc_info.bin_data_list;
+    let mut new_bin_data = storage.vec(old_bin_data.len())?;
     for old_id in &order {
         let Some(old) = old_bin_data.get((*old_id as usize).saturating_sub(1)) else {
             continue;
         };
-        let mut bin_data = old.clone();
+        let mut bin_data = storage.clone_record(old)?;
         bin_data.storage_id = remap[*old_id as usize];
         new_bin_data.push(bin_data);
     }
@@ -600,18 +633,27 @@ fn materialize_hwp5_bin_data_order(doc: &mut Document, report: &mut AdapterRepor
         doc.doc_info.bin_data_list = new_bin_data;
     }
 
-    let old_content = doc.bin_data_content.clone();
-    let mut new_content = Vec::with_capacity(old_content.len());
+    let content_count = doc.bin_data_content.len();
+    let mut old_content = storage.vec(content_count)?;
+    old_content.extend(
+        std::mem::take(&mut doc.bin_data_content)
+            .into_iter()
+            .map(Some),
+    );
+    let mut new_content = storage.vec(content_count)?;
     for old_id in &order {
-        if let Some(content) = old_content.iter().find(|content| content.id == *old_id) {
-            let mut content = content.clone();
+        if let Some(slot) = old_content
+            .iter_mut()
+            .find(|slot| slot.as_ref().is_some_and(|content| content.id == *old_id))
+        {
+            let mut content = slot.take().expect("matched content");
             content.id = remap[*old_id as usize];
-            new_content.push(content);
+            storage.push(&mut new_content, content)?;
         }
     }
-    for content in old_content {
+    for content in old_content.into_iter().flatten() {
         if content.id == 0 || content.id as usize > bin_count {
-            new_content.push(content);
+            storage.push(&mut new_content, content)?;
         }
     }
     doc.bin_data_content = new_content;
@@ -619,103 +661,163 @@ fn materialize_hwp5_bin_data_order(doc: &mut Document, report: &mut AdapterRepor
     remap_bin_refs_in_doc(doc, &remap);
     doc.doc_info.raw_stream_dirty = true;
     report.bin_data_order_materialized += 1;
+
+    Ok(())
 }
 
-fn push_bin_order(id: u16, bin_count: usize, order: &mut Vec<u16>, seen: &mut BTreeSet<u16>) {
-    if id == 0 || id as usize > bin_count || !seen.insert(id) {
-        return;
+fn push_bin_order<S: crate::storage::Storage>(
+    id: u16,
+    bin_count: usize,
+    order: &mut Vec<u16>,
+    seen: &mut BTreeSet<u16>,
+    storage: &S,
+) -> Result<(), S::Error> {
+    if id == 0 || id as usize > bin_count || seen.contains(&id) {
+        return Ok(());
     }
-    order.push(id);
+    storage.tree_entry::<u16, ()>()?;
+    seen.insert(id);
+    storage.push(order, id)?;
+
+    Ok(())
 }
 
-fn collect_bin_order_from_doc_info(
+fn collect_bin_order_from_doc_info<S: crate::storage::Storage>(
     doc: &Document,
     bin_count: usize,
     order: &mut Vec<u16>,
     seen: &mut BTreeSet<u16>,
-) {
+    storage: &S,
+) -> Result<(), S::Error> {
     for border_fill in &doc.doc_info.border_fills {
         if let Some(image) = &border_fill.fill.image {
-            push_bin_order(image.bin_data_id, bin_count, order, seen);
+            push_bin_order(image.bin_data_id, bin_count, order, seen, storage)?;
         }
     }
+
+    Ok(())
 }
 
-fn collect_bin_order_from_paragraphs(
+fn collect_bin_order_from_paragraphs<S: crate::storage::Storage>(
     paragraphs: &[Paragraph],
     bin_count: usize,
     order: &mut Vec<u16>,
     seen: &mut BTreeSet<u16>,
-) {
+    storage: &S,
+) -> Result<(), S::Error> {
     for para in paragraphs {
         for ctrl in &para.controls {
-            collect_bin_order_from_control(ctrl, bin_count, order, seen);
+            collect_bin_order_from_control(ctrl, bin_count, order, seen, storage)?;
         }
     }
+
+    Ok(())
 }
 
-fn collect_bin_order_from_control(
+fn collect_bin_order_from_control<S: crate::storage::Storage>(
     ctrl: &Control,
     bin_count: usize,
     order: &mut Vec<u16>,
     seen: &mut BTreeSet<u16>,
-) {
+    storage: &S,
+) -> Result<(), S::Error> {
     match ctrl {
         Control::Picture(pic) => {
-            push_bin_order(pic.image_attr.bin_data_id, bin_count, order, seen);
+            push_bin_order(pic.image_attr.bin_data_id, bin_count, order, seen, storage)?;
             // [#2736] 그림 캡션 문단도 순회한다. 표 캡션(아래 arm)·도형 캡션
             // (collect_bin_order_from_shape)은 이미 방문하는데 그림 캡션만 빠져 있어,
             // 같은 캡션 컨테이너인데 소유 개체 종류에 따라 순회 여부가 갈렸다.
             if let Some(caption) = &pic.caption {
-                collect_bin_order_from_paragraphs(&caption.paragraphs, bin_count, order, seen);
+                collect_bin_order_from_paragraphs(
+                    &caption.paragraphs,
+                    bin_count,
+                    order,
+                    seen,
+                    storage,
+                )?;
             }
         }
-        Control::Shape(shape) => collect_bin_order_from_shape(shape, bin_count, order, seen),
+        Control::Shape(shape) => {
+            collect_bin_order_from_shape(shape, bin_count, order, seen, storage)?
+        }
         Control::Table(table) => {
             for cell in &table.cells {
-                collect_bin_order_from_paragraphs(&cell.paragraphs, bin_count, order, seen);
+                collect_bin_order_from_paragraphs(
+                    &cell.paragraphs,
+                    bin_count,
+                    order,
+                    seen,
+                    storage,
+                )?;
             }
             if let Some(caption) = &table.caption {
-                collect_bin_order_from_paragraphs(&caption.paragraphs, bin_count, order, seen);
+                collect_bin_order_from_paragraphs(
+                    &caption.paragraphs,
+                    bin_count,
+                    order,
+                    seen,
+                    storage,
+                )?;
             }
         }
         Control::Header(header) => {
-            collect_bin_order_from_paragraphs(&header.paragraphs, bin_count, order, seen);
+            collect_bin_order_from_paragraphs(&header.paragraphs, bin_count, order, seen, storage)?;
         }
         Control::Footer(footer) => {
-            collect_bin_order_from_paragraphs(&footer.paragraphs, bin_count, order, seen);
+            collect_bin_order_from_paragraphs(&footer.paragraphs, bin_count, order, seen, storage)?;
         }
         Control::Footnote(footnote) => {
-            collect_bin_order_from_paragraphs(&footnote.paragraphs, bin_count, order, seen);
+            collect_bin_order_from_paragraphs(
+                &footnote.paragraphs,
+                bin_count,
+                order,
+                seen,
+                storage,
+            )?;
         }
         Control::Endnote(endnote) => {
-            collect_bin_order_from_paragraphs(&endnote.paragraphs, bin_count, order, seen);
+            collect_bin_order_from_paragraphs(
+                &endnote.paragraphs,
+                bin_count,
+                order,
+                seen,
+                storage,
+            )?;
         }
         Control::HiddenComment(comment) => {
-            collect_bin_order_from_paragraphs(&comment.paragraphs, bin_count, order, seen);
+            collect_bin_order_from_paragraphs(
+                &comment.paragraphs,
+                bin_count,
+                order,
+                seen,
+                storage,
+            )?;
         }
         _ => {}
     }
+
+    Ok(())
 }
 
-fn collect_bin_order_from_shape(
+fn collect_bin_order_from_shape<S: crate::storage::Storage>(
     shape: &ShapeObject,
     bin_count: usize,
     order: &mut Vec<u16>,
     seen: &mut BTreeSet<u16>,
-) {
+    storage: &S,
+) -> Result<(), S::Error> {
     match shape {
         ShapeObject::Picture(pic) => {
-            push_bin_order(pic.image_attr.bin_data_id, bin_count, order, seen);
+            push_bin_order(pic.image_attr.bin_data_id, bin_count, order, seen, storage)?;
         }
         ShapeObject::Ole(ole) => {
             if let Ok(id) = u16::try_from(ole.bin_data_id) {
-                push_bin_order(id, bin_count, order, seen);
+                push_bin_order(id, bin_count, order, seen, storage)?;
             }
         }
         ShapeObject::Group(group) => {
             for child in &group.children {
-                collect_bin_order_from_shape(child, bin_count, order, seen);
+                collect_bin_order_from_shape(child, bin_count, order, seen, storage)?;
             }
         }
         _ => {}
@@ -723,15 +825,29 @@ fn collect_bin_order_from_shape(
 
     if let Some(drawing) = shape.drawing() {
         if let Some(image) = &drawing.fill.image {
-            push_bin_order(image.bin_data_id, bin_count, order, seen);
+            push_bin_order(image.bin_data_id, bin_count, order, seen, storage)?;
         }
         if let Some(text_box) = &drawing.text_box {
-            collect_bin_order_from_paragraphs(&text_box.paragraphs, bin_count, order, seen);
+            collect_bin_order_from_paragraphs(
+                &text_box.paragraphs,
+                bin_count,
+                order,
+                seen,
+                storage,
+            )?;
         }
         if let Some(caption) = &drawing.caption {
-            collect_bin_order_from_paragraphs(&caption.paragraphs, bin_count, order, seen);
+            collect_bin_order_from_paragraphs(
+                &caption.paragraphs,
+                bin_count,
+                order,
+                seen,
+                storage,
+            )?;
         }
     }
+
+    Ok(())
 }
 
 fn remap_bin_refs_in_doc(doc: &mut Document, remap: &[u16]) {
@@ -877,19 +993,25 @@ fn shape_attr_mut(
 /// 크기는 `SHAPE_COMPONENT` 가 이미 갖고 있다(현재 폭/높이). 그것으로 사각형을
 /// 만들고, 자르기는 원본 크기 기준 전체 영역으로 둔다. 이미 채워진 그림은
 /// 건드리지 않으므로 HWPX·HWP5 경로는 무영향이다.
-fn normalize_picture_geometry_for_hwp(doc: &mut Document, source_is_hwpx: bool) {
-    fn fill(pic: &mut crate::model::image::Picture, source_is_hwpx: bool) {
+fn normalize_picture_geometry_for_hwp<S: crate::storage::Storage>(
+    doc: &mut Document,
+    source_is_hwpx: bool,
+    storage: &S,
+) -> Result<(), S::Error> {
+    fn fill<S: crate::storage::Storage>(
+        pic: &mut crate::model::image::Picture,
+        source_is_hwpx: bool,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         // HWPX `hp:imgDim`은 논리 원본 이미지 크기이며 IR에 그대로 보존한다. 다만
         // 한컴 2020의 HWPX -> HWP 저장본은 SC_PICTURE extra(18 byte) 속의 별도
         // original-width/height 칸을 0으로 쓴다. 이 칸에 imgDim을 복사하면 묶음
         // 그림을 인쇄할 때 한컴이 크기를 다시 해석해 표지가 크게 어긋난다.
         if source_is_hwpx && pic.raw_picture_extra.is_empty() {
-            // HWPX hc:img는 bright, contrast 순서지만 한컴 2020이 HWP5
-            // SC_PICTURE에 저장하는 두 i8 칸은 반대 순서다. HWP5 serializer는
-            // 모델 순서대로 기록하므로 이 경계에서만 바꾼다. raw extra를 함께
-            // 채워 두므로 adapter 재호출 시 다시 교환되지 않는다.
-            std::mem::swap(&mut pic.image_attr.brightness, &mut pic.image_attr.contrast);
-            pic.raw_picture_extra.reserve_exact(18);
+            // 밝기·명암은 의미 IR 그대로 유지한다. HWP5의 명암→밝기 바이트
+            // 순서는 serialize_picture_data가 결정한다. 이 경계에서도 교환하면
+            // HWPX→HWP 저장 시 두 값을 다시 뒤집게 된다(#7751).
+            storage.reserve(&mut pic.raw_picture_extra, 18)?;
             pic.raw_picture_extra.push(pic.border_opacity);
             pic.raw_picture_extra
                 .extend_from_slice(&pic.instance_id.to_le_bytes());
@@ -908,7 +1030,7 @@ fn normalize_picture_geometry_for_hwp(doc: &mut Document, source_is_hwpx: bool) 
             pic.shape_attr.local_file_version = 1;
         }
         if pic.border_x.iter().any(|&v| v != 0) || pic.border_y.iter().any(|&v| v != 0) {
-            return;
+            return Ok(());
         }
         let w = if pic.shape_attr.current_width > 0 {
             pic.shape_attr.current_width as i32
@@ -921,7 +1043,7 @@ fn normalize_picture_geometry_for_hwp(doc: &mut Document, source_is_hwpx: bool) 
             pic.common.height as i32
         };
         if w <= 0 || h <= 0 {
-            return;
+            return Ok(());
         }
         // `border_x`/`border_y` 는 이름과 달리 **디스크의 8개 스칼라를 앞뒤로 나눈
         // 것**이다. 실제 저장 순서는 (x,y) 쌍 4개다 — HWPX 파서가 같은 규약을
@@ -943,38 +1065,61 @@ fn normalize_picture_geometry_for_hwp(doc: &mut Document, source_is_hwpx: bool) 
             pic.crop.right = ow;
             pic.crop.bottom = oh;
         }
+
+        Ok(())
     }
     // HWP3 파서는 아래 컨테이너에 실제로 문단을 만든다: 표 셀/캡션, 그림·그리기
     // 개체 캡션, 글상자, 숨은설명, 머리말·꼬리말·각주·미주, 바탕쪽. 어느 하나라도
     // 빠뜨리면 그 안의 그림 또는 도형만 HWP5 계약(geometry/local-file-version)을
     // 잃고, 한컴은 문서 전체를 거부할 수 있다. 각 변환 단계가 독자 walker를 조금씩
     // 달리 두지 않도록 여기서는 모든 paragraph container를 하나의 재귀로 방문한다.
-    fn walk_paragraphs(paragraphs: &mut [Paragraph], source_is_hwpx: bool) {
+    fn walk_paragraphs<S: crate::storage::Storage>(
+        paragraphs: &mut [Paragraph],
+        source_is_hwpx: bool,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         for para in paragraphs {
-            walk_controls(&mut para.controls, source_is_hwpx);
+            walk_controls(&mut para.controls, source_is_hwpx, storage)?;
         }
+
+        Ok(())
     }
 
-    fn walk_caption(caption: &mut crate::model::shape::Caption, source_is_hwpx: bool) {
-        walk_paragraphs(&mut caption.paragraphs, source_is_hwpx);
+    fn walk_caption<S: crate::storage::Storage>(
+        caption: &mut crate::model::shape::Caption,
+        source_is_hwpx: bool,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        walk_paragraphs(&mut caption.paragraphs, source_is_hwpx, storage)?;
+
+        Ok(())
     }
 
-    fn walk_master_pages(
+    fn walk_master_pages<S: crate::storage::Storage>(
         master_pages: &mut [crate::model::header_footer::MasterPage],
         source_is_hwpx: bool,
-    ) {
+        storage: &S,
+    ) -> Result<(), S::Error> {
         for master_page in master_pages {
-            walk_paragraphs(&mut master_page.paragraphs, source_is_hwpx);
+            walk_paragraphs(&mut master_page.paragraphs, source_is_hwpx, storage)?;
         }
+
+        Ok(())
     }
 
-    fn walk_drawing(drawing: &mut crate::model::shape::DrawingObjAttr, source_is_hwpx: bool) {
+    fn walk_drawing<S: crate::storage::Storage>(
+        drawing: &mut crate::model::shape::DrawingObjAttr,
+        source_is_hwpx: bool,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         if let Some(text_box) = &mut drawing.text_box {
-            walk_paragraphs(&mut text_box.paragraphs, source_is_hwpx);
+            walk_paragraphs(&mut text_box.paragraphs, source_is_hwpx, storage)?;
         }
         if let Some(caption) = &mut drawing.caption {
-            walk_caption(caption, source_is_hwpx);
+            walk_caption(caption, source_is_hwpx, storage)?;
         }
+
+        Ok(())
     }
 
     // [#4367] HWP3 수식의 EQEDIT 계약 — 한컴 저장본 대조(sample16 정답지):
@@ -982,19 +1127,28 @@ fn normalize_picture_geometry_for_hwp(doc: &mut Document, source_is_hwpx: bool) 
     // (한컴 67). HWP3 파서의 baseline 원시값(465)은 그 축이 아니어서 범위 밖이고,
     // font_size=0 인 수식 개체를 한글 2022 가 만나면 크래시한다(문단 이등분 COM
     // 실측 — 크기 채움 후에도 크래시 잔존, EQEDIT 바이트 대조로 확정).
-    fn normalize_equation_for_hwp(eq: &mut crate::model::control::Equation) {
+    fn normalize_equation_for_hwp<S: crate::storage::Storage>(
+        eq: &mut crate::model::control::Equation,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         if eq.font_size == 0 {
             eq.font_size = 1200;
         }
         if eq.font_name.is_empty() {
-            eq.font_name = "HYhwpEQ".to_string();
+            eq.font_name = storage.string("HYhwpEQ")?;
         }
         if !(0..=100).contains(&eq.baseline) {
             eq.baseline = 65;
         }
+
+        Ok(())
     }
 
-    fn walk_shape(shape: &mut ShapeObject, source_is_hwpx: bool) {
+    fn walk_shape<S: crate::storage::Storage>(
+        shape: &mut ShapeObject,
+        source_is_hwpx: bool,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         // local file version 은 그림뿐 아니라 **모든 개체 요소**가 1 이어야 한다.
         // 한컴 저장본은 예외 없이 1 이고, HWP3 변환본은 도형(`$con`/`$rec` 등)만
         // 0 으로 남아 문서 전체가 거부됐다(그림만 고쳤을 때 20건 중 2건 잔존).
@@ -1006,9 +1160,9 @@ fn normalize_picture_geometry_for_hwp(doc: &mut Document, source_is_hwpx: bool) 
 
         match shape {
             ShapeObject::Picture(pic) => {
-                fill(pic, source_is_hwpx);
+                fill(pic, source_is_hwpx, storage)?;
                 if let Some(caption) = &mut pic.caption {
-                    walk_caption(caption, source_is_hwpx);
+                    walk_caption(caption, source_is_hwpx, storage)?;
                 }
             }
             // [#4367] 사각형 도형의 꼭짓점 4점 — 그림(#3676 계약 ②)과 같은 축이다.
@@ -1018,7 +1172,7 @@ fn normalize_picture_geometry_for_hwp(doc: &mut Document, source_is_hwpx: bool) 
             // COM 실측 — N=5 열림/N=6 거부, 발동체는 사각형 글상자). 이미 채워진
             // 도형(HWP5/HWPX 경로)은 건드리지 않는다.
             ShapeObject::Rectangle(rect) => {
-                walk_drawing(&mut rect.drawing, source_is_hwpx);
+                walk_drawing(&mut rect.drawing, source_is_hwpx, storage)?;
                 let zeroed =
                     rect.x_coords.iter().all(|&v| v == 0) && rect.y_coords.iter().all(|&v| v == 0);
                 if zeroed {
@@ -1074,32 +1228,32 @@ fn normalize_picture_geometry_for_hwp(doc: &mut Document, source_is_hwpx: bool) 
             }
             ShapeObject::Group(group) => {
                 for child in &mut group.children {
-                    walk_shape(child, source_is_hwpx);
+                    walk_shape(child, source_is_hwpx, storage)?;
                 }
                 if let Some(caption) = &mut group.caption {
-                    walk_caption(caption, source_is_hwpx);
+                    walk_caption(caption, source_is_hwpx, storage)?;
                 }
             }
             // Chart/OLE은 DrawingObjAttr의 caption과 별개로 HWP3 parser가 채우는
             // own caption을 가진다. 특히 HWP3 OLE fixup은 picture caption을
             // `ole.caption`으로 옮긴다. 둘 다 누락하면 0 geometry picture가 남는다.
             ShapeObject::Chart(chart) => {
-                walk_drawing(&mut chart.drawing, source_is_hwpx);
+                walk_drawing(&mut chart.drawing, source_is_hwpx, storage)?;
                 if let Some(caption) = &mut chart.caption {
-                    walk_caption(caption, source_is_hwpx);
+                    walk_caption(caption, source_is_hwpx, storage)?;
                 }
             }
             ShapeObject::Ole(ole) => {
-                walk_drawing(&mut ole.drawing, source_is_hwpx);
+                walk_drawing(&mut ole.drawing, source_is_hwpx, storage)?;
                 if let Some(caption) = &mut ole.caption {
-                    walk_caption(caption, source_is_hwpx);
+                    walk_caption(caption, source_is_hwpx, storage)?;
                 }
             }
             _ => {
                 // Line/Rectangle/Ellipse/Arc/Polygon/Curve의 text box와 caption은
                 // 모두 동일한 paragraph container이므로 같은 walker로 재귀한다.
                 if let Some(drawing) = shape.drawing_mut() {
-                    walk_drawing(drawing, source_is_hwpx);
+                    walk_drawing(drawing, source_is_hwpx, storage)?;
                     // [#4680] 위 사각형 arm 과 같은 storage flip 계약을 선·다각형·
                     // 타원·호·곡선에도 적용한다. 종전에는 사각형만 세워서 나머지
                     // 도형이 0 으로 나갔고, 한컴은 그런 도형이 든 문서를 열지 못했다.
@@ -1123,56 +1277,74 @@ fn normalize_picture_geometry_for_hwp(doc: &mut Document, source_is_hwpx: bool) 
                 }
             }
         }
+
+        Ok(())
     }
 
-    fn walk_controls(controls: &mut [Control], source_is_hwpx: bool) {
+    fn walk_controls<S: crate::storage::Storage>(
+        controls: &mut [Control],
+        source_is_hwpx: bool,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         for control in controls {
             match control {
                 Control::Picture(pic) => {
-                    fill(pic, source_is_hwpx);
+                    fill(pic, source_is_hwpx, storage)?;
                     if let Some(caption) = &mut pic.caption {
-                        walk_caption(caption, source_is_hwpx);
+                        walk_caption(caption, source_is_hwpx, storage)?;
                     }
                 }
-                Control::Shape(shape) => walk_shape(shape, source_is_hwpx),
+                Control::Shape(shape) => walk_shape(shape, source_is_hwpx, storage)?,
                 // [#4367] 수식 EQEDIT 계약 정규화 — 위 normalize_equation_for_hwp 참조.
-                Control::Equation(eq) => normalize_equation_for_hwp(eq),
+                Control::Equation(eq) => normalize_equation_for_hwp(eq, storage)?,
                 Control::Table(table) => {
                     for cell in &mut table.cells {
-                        walk_paragraphs(&mut cell.paragraphs, source_is_hwpx);
+                        walk_paragraphs(&mut cell.paragraphs, source_is_hwpx, storage)?;
                     }
                     if let Some(caption) = &mut table.caption {
-                        walk_caption(caption, source_is_hwpx);
+                        walk_caption(caption, source_is_hwpx, storage)?;
                     }
                 }
-                Control::Header(header) => walk_paragraphs(&mut header.paragraphs, source_is_hwpx),
-                Control::Footer(footer) => walk_paragraphs(&mut footer.paragraphs, source_is_hwpx),
+                Control::Header(header) => {
+                    walk_paragraphs(&mut header.paragraphs, source_is_hwpx, storage)?
+                }
+                Control::Footer(footer) => {
+                    walk_paragraphs(&mut footer.paragraphs, source_is_hwpx, storage)?
+                }
                 Control::Footnote(footnote) => {
-                    walk_paragraphs(&mut footnote.paragraphs, source_is_hwpx)
+                    walk_paragraphs(&mut footnote.paragraphs, source_is_hwpx, storage)?
                 }
                 Control::Endnote(endnote) => {
-                    walk_paragraphs(&mut endnote.paragraphs, source_is_hwpx)
+                    walk_paragraphs(&mut endnote.paragraphs, source_is_hwpx, storage)?
                 }
                 Control::HiddenComment(comment) => {
-                    walk_paragraphs(&mut comment.paragraphs, source_is_hwpx)
+                    walk_paragraphs(&mut comment.paragraphs, source_is_hwpx, storage)?
                 }
                 // HWPX memo field와 HWP3의 SectionDef control도 문단을 품을 수 있다.
                 // 본문 SectionDef와는 별개 IR 인스턴스이므로 여기서도 안전하게 덮는다.
                 Control::Field(field) => {
-                    walk_paragraphs(&mut field.memo_paragraphs, source_is_hwpx)
+                    walk_paragraphs(&mut field.memo_paragraphs, source_is_hwpx, storage)?
                 }
                 Control::SectionDef(section_def) => {
-                    walk_master_pages(&mut section_def.master_pages, source_is_hwpx)
+                    walk_master_pages(&mut section_def.master_pages, source_is_hwpx, storage)?
                 }
                 _ => {}
             }
         }
+
+        Ok(())
     }
 
     for section in doc.sections.iter_mut() {
-        walk_paragraphs(&mut section.paragraphs, source_is_hwpx);
-        walk_master_pages(&mut section.section_def.master_pages, source_is_hwpx);
+        walk_paragraphs(&mut section.paragraphs, source_is_hwpx, storage)?;
+        walk_master_pages(
+            &mut section.section_def.master_pages,
+            source_is_hwpx,
+            storage,
+        )?;
     }
+
+    Ok(())
 }
 
 /// [#3676] HWP 저장 구역마다 `HWPTAG_PAGE_BORDER_FILL` 을 **3개** 채운다
@@ -1187,14 +1359,25 @@ fn normalize_picture_geometry_for_hwp(doc: &mut Document, source_is_hwpx: bool) 
 /// 플래그가 아니라 **개수 자체가 규격**이므로 첫 레코드를 복제해 채운다.
 /// HWPX 는 실제 문서에서 BOTH 하나만 갖는 것이 보통이지만, HWP 출력에도 같은 세 record가
 /// 필요하다. HWPX live IR 원형은 호출 경계에서 해당 overlay를 복원한다.
-fn normalize_page_border_fills_for_hwp(doc: &mut Document) {
-    fn pad(sd: &mut crate::model::document::SectionDef) {
+fn normalize_page_border_fills_for_hwp<S: crate::storage::Storage>(
+    doc: &mut Document,
+    storage: &S,
+) -> Result<(), S::Error> {
+    fn pad<S: crate::storage::Storage>(
+        sd: &mut crate::model::document::SectionDef,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         while sd.extra_page_border_fills.len() < 2 {
-            sd.extra_page_border_fills.push(sd.page_border_fill.clone());
+            storage.push(
+                &mut sd.extra_page_border_fills,
+                storage.clone_record(&sd.page_border_fill)?,
+            )?;
         }
+
+        Ok(())
     }
     for section in doc.sections.iter_mut() {
-        pad(&mut section.section_def);
+        pad(&mut section.section_def, storage)?;
         // [#5142] HWPX 는 한 section 파일에 secPr 를 여러 개 둘 수 있고 이는 문단
         // 중간의 SectionDef 컨트롤로 파싱된다. HWP5 저장 시 이 경계마다 별도
         // Section 스트림으로 갈라지므로(#5142 serializer 분할), 그 컨트롤의 PBF 도
@@ -1202,11 +1385,13 @@ fn normalize_page_border_fills_for_hwp(doc: &mut Document) {
         for para in section.paragraphs.iter_mut() {
             for ctrl in para.controls.iter_mut() {
                 if let Control::SectionDef(sd) = ctrl {
-                    pad(sd);
+                    pad(sd, storage)?;
                 }
             }
         }
     }
+
+    Ok(())
 }
 
 fn normalize_file_header_for_hwp(doc: &mut Document, report: &mut AdapterReport) {
@@ -1303,9 +1488,13 @@ fn normalize_doc_properties_for_hwp(doc: &mut Document, report: &mut AdapterRepo
 ///
 /// 한컴은 `<secd>` CTRL_HEADER 와 PAGE_DEF 를 정상 인식. HWP 출처에서는 이미 컨트롤이
 /// 있으므로 idempotent 가드에 막혀 변경 없음.
-fn insert_section_def_control(section: &mut Section, report: &mut AdapterReport) {
+fn insert_section_def_control<S: crate::storage::Storage>(
+    section: &mut Section,
+    report: &mut AdapterReport,
+    storage: &S,
+) -> Result<(), S::Error> {
     if section.paragraphs.is_empty() {
-        return;
+        return Ok(());
     }
     let first_para = &mut section.paragraphs[0];
     if let Some(Control::SectionDef(section_def)) = first_para
@@ -1313,20 +1502,18 @@ fn insert_section_def_control(section: &mut Section, report: &mut AdapterReport)
         .iter_mut()
         .find(|c| matches!(c, Control::SectionDef(_)))
     {
-        **section_def = section.section_def.clone();
-        return;
+        **section_def = storage.clone_section_def(&section.section_def)?;
+        return Ok(());
     }
-    first_para.controls.insert(
+    storage.bytes(std::mem::size_of::<SectionDef>())?;
+    first_para.insert_leading_definition(
         0,
-        Control::SectionDef(Box::new(section.section_def.clone())),
-    );
-    let leading_defs = first_para
-        .controls
-        .iter()
-        .take_while(|control| matches!(control, Control::SectionDef(_) | Control::ColumnDef(_)))
-        .count();
-    first_para.reserve_leading_extended_control_slots(leading_defs);
+        Control::SectionDef(Box::new(storage.clone_section_def(&section.section_def)?)),
+        storage,
+    )?;
     report.section_def_controls_inserted += 1;
+
+    Ok(())
 }
 
 fn materialize_following_section_break_type(
@@ -1358,13 +1545,17 @@ fn materialize_following_section_break_type(
     report.following_section_break_type_materialized += 1;
 }
 
-fn normalize_paragraph_char_border_fills(doc: &mut Document, report: &mut AdapterReport) {
-    let para_char_refs = collect_paragraph_char_border_fill_refs(doc);
+fn normalize_paragraph_char_border_fills<S: crate::storage::Storage>(
+    doc: &mut Document,
+    report: &mut AdapterReport,
+    storage: &S,
+) -> Result<(), S::Error> {
+    let para_char_refs = collect_paragraph_char_border_fill_refs(doc, storage)?;
     if para_char_refs.is_empty() {
-        return;
+        return Ok(());
     }
 
-    let object_refs = collect_object_border_fill_refs(doc);
+    let object_refs = collect_object_border_fill_refs(doc, storage)?;
     for id in para_char_refs {
         if id == 0 || object_refs.contains(&id) {
             continue;
@@ -1388,57 +1579,72 @@ fn normalize_paragraph_char_border_fills(doc: &mut Document, report: &mut Adapte
             report.border_fills_no_fill_normalized += 1;
         }
     }
+
+    Ok(())
 }
 
-fn collect_paragraph_char_border_fill_refs(doc: &Document) -> std::collections::HashSet<u16> {
+fn collect_paragraph_char_border_fill_refs<S: crate::storage::Storage>(
+    doc: &Document,
+    storage: &S,
+) -> Result<std::collections::HashSet<u16>, S::Error> {
     let mut refs = std::collections::HashSet::new();
     for para_shape in &doc.doc_info.para_shapes {
         if para_shape.border_fill_id > 0 {
-            refs.insert(para_shape.border_fill_id);
+            insert_ref(&mut refs, para_shape.border_fill_id, storage)?;
         }
     }
     for char_shape in &doc.doc_info.char_shapes {
         if char_shape.border_fill_id > 0 {
-            refs.insert(char_shape.border_fill_id);
+            insert_ref(&mut refs, char_shape.border_fill_id, storage)?;
         }
     }
-    refs
+    Ok(refs)
 }
 
-fn collect_object_border_fill_refs(doc: &Document) -> std::collections::HashSet<u16> {
+fn collect_object_border_fill_refs<S: crate::storage::Storage>(
+    doc: &Document,
+    storage: &S,
+) -> Result<std::collections::HashSet<u16>, S::Error> {
     let mut refs = std::collections::HashSet::new();
     for section in &doc.sections {
         if section.section_def.page_border_fill.border_fill_id > 0 {
-            refs.insert(section.section_def.page_border_fill.border_fill_id);
+            insert_ref(
+                &mut refs,
+                section.section_def.page_border_fill.border_fill_id,
+                storage,
+            )?;
         }
         for page_border_fill in &section.section_def.extra_page_border_fills {
             if page_border_fill.border_fill_id > 0 {
-                refs.insert(page_border_fill.border_fill_id);
+                insert_ref(&mut refs, page_border_fill.border_fill_id, storage)?;
             }
         }
         for para in &section.paragraphs {
-            collect_object_border_fill_refs_from_paragraph(para, &mut refs);
+            collect_object_border_fill_refs_from_paragraph(para, &mut refs, storage)?;
         }
         // 바탕쪽(master page) 문단 안 개체 참조도 수집한다. bin 워크
         // (materialize_hwp5_bin_data_order, remap_bin_refs_in_doc)와 adapt 워크가
         // 이미 바탕쪽을 순회하는데 이 collect 워크만 빠져 있었다.
         for master_page in &section.section_def.master_pages {
             for para in &master_page.paragraphs {
-                collect_object_border_fill_refs_from_paragraph(para, &mut refs);
+                collect_object_border_fill_refs_from_paragraph(para, &mut refs, storage)?;
             }
         }
     }
-    refs
+    Ok(refs)
 }
 
-fn collect_object_border_fill_refs_from_paragraph(
+fn collect_object_border_fill_refs_from_paragraph<S: crate::storage::Storage>(
     para: &Paragraph,
     refs: &mut std::collections::HashSet<u16>,
-) {
+    storage: &S,
+) -> Result<(), S::Error> {
     for ctrl in &para.controls {
         match ctrl {
-            Control::Table(table) => collect_table_border_fill_refs(table, refs),
-            Control::Shape(shape) => collect_object_border_fill_refs_from_shape(shape, refs),
+            Control::Table(table) => collect_table_border_fill_refs(table, refs, storage)?,
+            Control::Shape(shape) => {
+                collect_object_border_fill_refs_from_shape(shape, refs, storage)?
+            }
             // [#2736] 그림 캡션 문단 안 개체 참조도 수집한다. `Control::Picture` arm 자체가
             // 없어 표 캡션(collect_table_border_fill_refs)·도형 캡션
             // (collect_object_border_fill_refs_from_shape)과 달리 그림 캡션만 빠져 있었고,
@@ -1447,7 +1653,7 @@ fn collect_object_border_fill_refs_from_paragraph(
             Control::Picture(pic) => {
                 if let Some(caption) = &pic.caption {
                     for p in &caption.paragraphs {
-                        collect_object_border_fill_refs_from_paragraph(p, refs);
+                        collect_object_border_fill_refs_from_paragraph(p, refs, storage)?;
                     }
                 }
             }
@@ -1457,84 +1663,95 @@ fn collect_object_border_fill_refs_from_paragraph(
             // 정규화되어 컨테이너 안 개체의 채우기가 유실된다(#2467 adapt 워크와 동형).
             Control::Footnote(footnote) => {
                 for p in &footnote.paragraphs {
-                    collect_object_border_fill_refs_from_paragraph(p, refs);
+                    collect_object_border_fill_refs_from_paragraph(p, refs, storage)?;
                 }
             }
             Control::Endnote(endnote) => {
                 for p in &endnote.paragraphs {
-                    collect_object_border_fill_refs_from_paragraph(p, refs);
+                    collect_object_border_fill_refs_from_paragraph(p, refs, storage)?;
                 }
             }
             Control::HiddenComment(comment) => {
                 for p in &comment.paragraphs {
-                    collect_object_border_fill_refs_from_paragraph(p, refs);
+                    collect_object_border_fill_refs_from_paragraph(p, refs, storage)?;
                 }
             }
             // 머리말/꼬리말 문단 안 개체도 다른 워크(bin order/remap, adapt)와 동일하게 순회.
             Control::Header(header) => {
                 for p in &header.paragraphs {
-                    collect_object_border_fill_refs_from_paragraph(p, refs);
+                    collect_object_border_fill_refs_from_paragraph(p, refs, storage)?;
                 }
             }
             Control::Footer(footer) => {
                 for p in &footer.paragraphs {
-                    collect_object_border_fill_refs_from_paragraph(p, refs);
+                    collect_object_border_fill_refs_from_paragraph(p, refs, storage)?;
                 }
             }
             _ => {}
         }
     }
+
+    Ok(())
 }
 
-fn collect_object_border_fill_refs_from_shape(
+fn collect_object_border_fill_refs_from_shape<S: crate::storage::Storage>(
     shape: &ShapeObject,
     refs: &mut std::collections::HashSet<u16>,
-) {
+    storage: &S,
+) -> Result<(), S::Error> {
     if let Some(drawing) = shape.drawing() {
         if let Some(text_box) = &drawing.text_box {
             for para in &text_box.paragraphs {
-                collect_object_border_fill_refs_from_paragraph(para, refs);
+                collect_object_border_fill_refs_from_paragraph(para, refs, storage)?;
             }
         }
         // 도형 캡션 문단 안 개체 참조도 수집(bin order/remap 워크와 동형).
         // #2483 은 표 캡션을 다뤘고, 이 도형 drawing.caption 은 별개 경로다.
         if let Some(caption) = &drawing.caption {
             for para in &caption.paragraphs {
-                collect_object_border_fill_refs_from_paragraph(para, refs);
+                collect_object_border_fill_refs_from_paragraph(para, refs, storage)?;
             }
         }
     }
 
     if let ShapeObject::Group(group) = shape {
         for child in &group.children {
-            collect_object_border_fill_refs_from_shape(child, refs);
+            collect_object_border_fill_refs_from_shape(child, refs, storage)?;
         }
     }
+
+    Ok(())
 }
 
-fn collect_table_border_fill_refs(table: &Table, refs: &mut std::collections::HashSet<u16>) {
+fn collect_table_border_fill_refs<S: crate::storage::Storage>(
+    table: &Table,
+    refs: &mut std::collections::HashSet<u16>,
+    storage: &S,
+) -> Result<(), S::Error> {
     if table.border_fill_id > 0 {
-        refs.insert(table.border_fill_id);
+        insert_ref(refs, table.border_fill_id, storage)?;
     }
     for zone in &table.zones {
         if zone.border_fill_id > 0 {
-            refs.insert(zone.border_fill_id);
+            insert_ref(refs, zone.border_fill_id, storage)?;
         }
     }
     for cell in &table.cells {
         if cell.border_fill_id > 0 {
-            refs.insert(cell.border_fill_id);
+            insert_ref(refs, cell.border_fill_id, storage)?;
         }
         for para in &cell.paragraphs {
-            collect_object_border_fill_refs_from_paragraph(para, refs);
+            collect_object_border_fill_refs_from_paragraph(para, refs, storage)?;
         }
     }
     // 표 캡션 문단 안의 개체 참조도 수집(#2467 과 동일 근거).
     if let Some(caption) = &table.caption {
         for para in &caption.paragraphs {
-            collect_object_border_fill_refs_from_paragraph(para, refs);
+            collect_object_border_fill_refs_from_paragraph(para, refs, storage)?;
         }
     }
+
+    Ok(())
 }
 
 fn is_transparent_paragraph_no_fill_candidate(border_fill: &BorderFill) -> bool {
@@ -1564,22 +1781,31 @@ enum ParagraphContext {
     MasterPage,
 }
 
-fn adapt_paragraph(para: &mut Paragraph, report: &mut AdapterReport) {
-    adapt_paragraph_with_context(para, report, ParagraphContext::Body);
+fn adapt_paragraph<S: crate::storage::Storage>(
+    para: &mut Paragraph,
+    report: &mut AdapterReport,
+    storage: &S,
+) -> Result<(), S::Error> {
+    adapt_paragraph_with_context(para, report, ParagraphContext::Body, storage)?;
+
+    Ok(())
 }
 
-fn adapt_paragraph_with_context(
+fn adapt_paragraph_with_context<S: crate::storage::Storage>(
     para: &mut Paragraph,
     report: &mut AdapterReport,
     context: ParagraphContext,
-) {
+    storage: &S,
+) -> Result<(), S::Error> {
     materialize_master_page_autonum_placeholder(para, report, context);
-    materialize_autonum_fwspace_range_tag(para, report);
+    materialize_autonum_fwspace_range_tag(para, report, storage)?;
     materialize_autonum_fwspace_char_shape_offsets(para, report);
     materialize_fixed_width_space_control(para, report, context);
-    materialize_para_header_tail(para, report);
+    materialize_para_header_tail(para, report, storage)?;
 
     if para.ctrl_data_records.len() < para.controls.len() {
+        let missing = para.controls.len() - para.ctrl_data_records.len();
+        storage.reserve(&mut para.ctrl_data_records, missing)?;
         para.ctrl_data_records
             .resize_with(para.controls.len(), || None);
     }
@@ -1589,21 +1815,23 @@ fn adapt_paragraph_with_context(
     for (idx, ctrl) in controls.iter_mut().enumerate() {
         match ctrl {
             Control::Table(table) => {
-                adapt_table_with_context(table, report, context);
-                adapt_table_layout_ctrl_data(table, &mut ctrl_data_records[idx], report);
+                adapt_table_with_context(table, report, context, storage)?;
+                adapt_table_layout_ctrl_data(table, &mut ctrl_data_records[idx], report, storage)?;
             }
             Control::Header(header) => adapt_paragraphs_with_context(
                 &mut header.paragraphs,
                 report,
                 ParagraphContext::HeaderFooter,
-            ),
+                storage,
+            )?,
             Control::Footer(footer) => adapt_paragraphs_with_context(
                 &mut footer.paragraphs,
                 report,
                 ParagraphContext::HeaderFooter,
-            ),
+                storage,
+            )?,
             Control::Picture(pic) => {
-                adapt_picture_href_ctrl_data(pic, &mut ctrl_data_records[idx], report);
+                adapt_picture_href_ctrl_data(pic, &mut ctrl_data_records[idx], report, storage)?;
                 // [#2736] 그림 캡션 문단도 보강한다. 표 캡션은 adapt_table_with_context 가
                 // 이미 보강하고, bin order/remap·border_fill 수집 워크는 캡션을 순회하는데
                 // adapt 워크만 그림 캡션을 건너뛰었다. 실측(samples/hwpx/aift.hwpx): 본문
@@ -1611,31 +1839,42 @@ fn adapt_paragraph_with_context(
                 // 미방문 시 캡션 안 그림 href·표 raw_ctrl_data·수식 보정이 물질화되지 않고
                 // 문단 header tail 도 10바이트로 남아 PARA_HEADER 가 22/24 로 섞인다.
                 if let Some(caption) = &mut pic.caption {
-                    adapt_paragraphs_with_context(&mut caption.paragraphs, report, context);
+                    adapt_paragraphs_with_context(
+                        &mut caption.paragraphs,
+                        report,
+                        context,
+                        storage,
+                    )?;
                 }
                 materialize_picture_caption_common_attr(pic, report);
             }
-            Control::Shape(shape) => adapt_shape_with_context(shape, report, context),
+            Control::Shape(shape) => adapt_shape_with_context(shape, report, context, storage)?,
             Control::Equation(eq) => adapt_equation(eq, report),
             // 각주/미주/숨은설명 문단도 body 문단과 동일하게 보강해야 한다.
             // bin 참조 수집·리맵 워크(collect_bin_order/remap_bin_refs)는 이미 이들을
             // 재귀하므로 adapt 워크만 빠져 있으면, 이 안의 그림 href·표 ctrl_data 등이
             // 물질화되지 않고 HWPX→HWP 변환 시 유실된다.
             Control::Footnote(footnote) => {
-                adapt_paragraphs_with_context(&mut footnote.paragraphs, report, context)
+                adapt_paragraphs_with_context(&mut footnote.paragraphs, report, context, storage)?
             }
             Control::Endnote(endnote) => {
-                adapt_paragraphs_with_context(&mut endnote.paragraphs, report, context)
+                adapt_paragraphs_with_context(&mut endnote.paragraphs, report, context, storage)?
             }
             Control::HiddenComment(comment) => {
-                adapt_paragraphs_with_context(&mut comment.paragraphs, report, context)
+                adapt_paragraphs_with_context(&mut comment.paragraphs, report, context, storage)?
             }
             _ => {}
         }
     }
+
+    Ok(())
 }
 
-fn materialize_autonum_fwspace_range_tag(para: &mut Paragraph, report: &mut AdapterReport) {
+fn materialize_autonum_fwspace_range_tag<S: crate::storage::Storage>(
+    para: &mut Paragraph,
+    report: &mut AdapterReport,
+    storage: &S,
+) -> Result<(), S::Error> {
     const HWP5_AUTONUM_FWSPACE_TRAILING_TAG: u32 = 0x0100_0023;
 
     if para
@@ -1643,7 +1882,7 @@ fn materialize_autonum_fwspace_range_tag(para: &mut Paragraph, report: &mut Adap
         .iter()
         .any(|tag| tag.tag == HWP5_AUTONUM_FWSPACE_TRAILING_TAG)
     {
-        return;
+        return Ok(());
     }
 
     if !para
@@ -1651,28 +1890,28 @@ fn materialize_autonum_fwspace_range_tag(para: &mut Paragraph, report: &mut Adap
         .iter()
         .any(|ctrl| matches!(ctrl, Control::AutoNumber(_)))
     {
-        return;
+        return Ok(());
     }
 
     let mut chars = para.text.chars();
     if chars.next() != Some(' ') || chars.next() != Some('\u{2007}') {
-        return;
+        return Ok(());
     }
 
     if para.text.chars().count() <= 2 || para.char_offsets.len() != para.text.chars().count() {
-        return;
+        return Ok(());
     }
 
     let Some(last_char) = para.text.chars().last() else {
-        return;
+        return Ok(());
     };
     let Some(&start) = para.char_offsets.last() else {
-        return;
+        return Ok(());
     };
 
     let end = start + last_char.len_utf16() as u32;
     if end <= start {
-        return;
+        return Ok(());
     }
 
     // Hancom's HWPX->HWP save materializes an otherwise implicit range tag on
@@ -1682,12 +1921,15 @@ fn materialize_autonum_fwspace_range_tag(para: &mut Paragraph, report: &mut Adap
     // Without this tag the file is structurally readable by rhwp, but Hancom
     // reports corruption around the first AutoNumber/PageHide boundary in
     // exam_social.hwpx.
+    storage.reserve(&mut para.range_tags, 1)?;
     para.range_tags.push(crate::model::paragraph::RangeTag {
         start,
         end,
         tag: HWP5_AUTONUM_FWSPACE_TRAILING_TAG,
     });
     report.autonum_fwspace_range_tag_materialized += 1;
+
+    Ok(())
 }
 
 fn materialize_autonum_fwspace_char_shape_offsets(
@@ -1727,18 +1969,27 @@ fn materialize_autonum_fwspace_char_shape_offsets(
     report.autonum_fwspace_char_shape_offsets_materialized += 1;
 }
 
-fn adapt_paragraphs(paragraphs: &mut [Paragraph], report: &mut AdapterReport) {
-    adapt_paragraphs_with_context(paragraphs, report, ParagraphContext::Body);
+fn adapt_paragraphs<S: crate::storage::Storage>(
+    paragraphs: &mut [Paragraph],
+    report: &mut AdapterReport,
+    storage: &S,
+) -> Result<(), S::Error> {
+    adapt_paragraphs_with_context(paragraphs, report, ParagraphContext::Body, storage)?;
+
+    Ok(())
 }
 
-fn adapt_paragraphs_with_context(
+fn adapt_paragraphs_with_context<S: crate::storage::Storage>(
     paragraphs: &mut [Paragraph],
     report: &mut AdapterReport,
     context: ParagraphContext,
-) {
+    storage: &S,
+) -> Result<(), S::Error> {
     for para in paragraphs {
-        adapt_paragraph_with_context(para, report, context);
+        adapt_paragraph_with_context(para, report, context, storage)?;
     }
+
+    Ok(())
 }
 
 fn materialize_fixed_width_space_control(
@@ -1764,12 +2015,10 @@ fn materialize_fixed_width_space_control(
     report.header_footer_fwspace_control_materialized += 1;
 }
 
-/// [#4677] 캡션 달린 묶음 개체(`<hp:container>`)의 번호 범주 비트를 한컴 값으로 맞춘다.
+/// [#4677] 캡션 달린 묶음 개체(`<hp:container>`)에 한컴 캡션 비트(bit 29)를 세운다.
 ///
-/// 파서는 `numberingType="PICTURE"` 개체에 attr **bit 28** 을 세운다
-/// (`parser/hwpx/section.rs` — 한컴 2020 저장본 근거). 그런데 한글 2022 는 **캡션이 달린
-/// 묶음**을 저장할 때 같은 자리에 **bit 29** 를 쓴다. 오라클 실측(12.0.0.535, 같은 문서를
-/// 한글로 열어 다시 저장):
+/// 한글 2022 는 **캡션이 달린 묶음**을 저장할 때 **bit 29** 를 쓴다. 오라클 실측(12.0.0.535,
+/// 같은 문서를 한글로 열어 다시 저장):
 ///
 /// | 개체 | 한컴 attr | rhwp attr |
 /// |---|---|---|
@@ -1779,32 +2028,167 @@ fn materialize_fixed_width_space_control(
 /// 이 한 비트가 어긋나면 한글은 문서를 열되 **본문을 통째로 버린다**(0자·1쪽). 캡션을 빼거나
 /// 묶음을 빼면 정상 개방되는 것으로 트리거를 확정했고, 비트만 바꿔 다시 측정해 회복을 확인했다
 /// (00900·00911·01134·02315 네 문서가 글자수·쪽수까지 원본과 일치).
+///
+/// 표에서 bit 28 은 꺼져 있었지만 캡션 없는 그림(`0x040A2310`)도 같았다 — bit 28 은 번호
+/// 범주가 아니라 [`materialize_object_attr_bit28`] 의 문서 규칙이 정하므로 여기서는 건드리지
+/// 않는다. 한글 2024 의 HWPX→HWP 저장도 캡션 달린 묶음에 bit 28 과 29 를 함께 쓴다(#8339).
 fn materialize_captioned_group_numbering_bit(
     common: &mut crate::model::shape::CommonObjAttr,
     report: &mut AdapterReport,
 ) {
-    const PICTURE_NUMBERING_BIT: u32 = 1 << 28;
     const CAPTIONED_GROUP_NUMBERING_BIT: u32 = 1 << 29;
 
     if common.attr & CAPTIONED_GROUP_NUMBERING_BIT != 0 {
         return;
     }
 
-    common.attr &= !PICTURE_NUMBERING_BIT;
     common.attr |= CAPTIONED_GROUP_NUMBERING_BIT;
-    common.hwp5_gen_shape_attr_bit28 = false;
     report.captioned_group_numbering_bit_materialized += 1;
 }
 
-fn materialize_para_header_tail(para: &mut Paragraph, report: &mut AdapterReport) {
+/// [#8339] HWPX 출처 개체의 공통 attr **bit 28** 을 한컴 HWPX→HWP 저장 규칙으로 정한다.
+///
+/// bit 28 은 번호 범주가 아니다. 범주는 bit 26-27 의 2비트다(#8294). HWPX 에는 이 비트에
+/// 대응하는 속성이 없고, 한글이 개체를 새로 만들 때 문서 설정과 개체 위치로 정해 찍는다.
+/// 한글 2024(13.0.0.564) COM 으로 한컴 HWPX 를 HWP 로 저장해 확인했다.
+///
+/// - `<hh:trackchageConfig flags>` 에 **0x08** 이 있으면 모든 개체(표·그림·도형·차트·OLE·
+///   수식)에 bit 28 을 켠다 — 한컴 HWPX 176문서 중 flags=56 인 174문서와 요소가 없는(56)
+///   1문서의 개체 26,644개 전부. exam_social·eq-002 의 flags 만 바꾼 변형도 8·24·40·56 은
+///   전부 켜지고, 0·1·2·4·16·32·48·64 는 아래 위치 규칙만 남는다.
+/// - flags 에 0x08 이 없어도 **바탕쪽·머리말·꼬리말** 안의 개체(그 안의 표 셀 포함)는 켠다.
+///   본문·각주·미주의 개체는 끈다(3-09월_교육_통합_2023 의 flags=0 변형: 머리말 표·도형은
+///   켜지고, 각주·미주의 수식 1,119개·도형 20개와 본문 개체는 꺼진다).
+///
+/// 종전 파서는 `numberingType="PICTURE"` 개체에만 켰다. 한글 저장본의 같은 HWPX 요소가
+/// bit 28 0 과 1 로 갈리는 이유(쌍 문서는 다른 버전이 만든 HWP)를 번호 범주로 오인한
+/// 것이다. 묶음 자식·글상자 안 개체도 위치 규칙을 따르도록 같은 문맥으로 내려간다.
+fn materialize_object_attr_bit28(doc: &mut Document, report: &mut AdapterReport) {
+    const TRACK_CHANGE_STAMPS_OBJECTS: u32 = 0x08;
+
+    fn stamp(
+        common: &mut crate::model::shape::CommonObjAttr,
+        on: bool,
+        report: &mut AdapterReport,
+    ) {
+        const BIT28: u32 = 1 << 28;
+        // 묶은 `attr` 도 같이 맞춘다 — 뒤의 표 CTRL_HEADER 재구성이 차이를 변환으로 센다.
+        common.attr = if on {
+            common.attr | BIT28
+        } else {
+            common.attr & !BIT28
+        };
+        if common.hwp5_gen_shape_attr_bit28 != on {
+            common.hwp5_gen_shape_attr_bit28 = on;
+            report.object_attr_bit28_materialized += 1;
+        }
+    }
+
+    fn walk_paragraphs(
+        paragraphs: &mut [Paragraph],
+        all: bool,
+        page_frame: bool,
+        report: &mut AdapterReport,
+    ) {
+        for para in paragraphs {
+            for ctrl in &mut para.controls {
+                walk_control(ctrl, all, page_frame, report);
+            }
+        }
+    }
+
+    fn walk_shape(
+        shape: &mut ShapeObject,
+        all: bool,
+        page_frame: bool,
+        report: &mut AdapterReport,
+    ) {
+        stamp(shape.common_mut(), all || page_frame, report);
+        if let Some(drawing) = shape.drawing_mut() {
+            if let Some(text_box) = &mut drawing.text_box {
+                walk_paragraphs(&mut text_box.paragraphs, all, page_frame, report);
+            }
+            if let Some(caption) = &mut drawing.caption {
+                walk_paragraphs(&mut caption.paragraphs, all, page_frame, report);
+            }
+        }
+        match shape {
+            ShapeObject::Group(group) => {
+                if let Some(caption) = &mut group.caption {
+                    walk_paragraphs(&mut caption.paragraphs, all, page_frame, report);
+                }
+                for child in &mut group.children {
+                    walk_shape(child, all, page_frame, report);
+                }
+            }
+            ShapeObject::Picture(pic) => {
+                if let Some(caption) = &mut pic.caption {
+                    walk_paragraphs(&mut caption.paragraphs, all, page_frame, report);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    fn walk_control(ctrl: &mut Control, all: bool, page_frame: bool, report: &mut AdapterReport) {
+        let on = all || page_frame;
+        match ctrl {
+            Control::Table(table) => {
+                stamp(&mut table.common, on, report);
+                for cell in &mut table.cells {
+                    walk_paragraphs(&mut cell.paragraphs, all, page_frame, report);
+                }
+                if let Some(caption) = &mut table.caption {
+                    walk_paragraphs(&mut caption.paragraphs, all, page_frame, report);
+                }
+            }
+            Control::Picture(pic) => {
+                stamp(&mut pic.common, on, report);
+                if let Some(caption) = &mut pic.caption {
+                    walk_paragraphs(&mut caption.paragraphs, all, page_frame, report);
+                }
+            }
+            Control::Shape(shape) => walk_shape(shape, all, page_frame, report),
+            Control::Equation(eq) => stamp(&mut eq.common, on, report),
+            Control::Header(header) => walk_paragraphs(&mut header.paragraphs, all, true, report),
+            Control::Footer(footer) => walk_paragraphs(&mut footer.paragraphs, all, true, report),
+            Control::Footnote(note) => {
+                walk_paragraphs(&mut note.paragraphs, all, page_frame, report)
+            }
+            Control::Endnote(note) => {
+                walk_paragraphs(&mut note.paragraphs, all, page_frame, report)
+            }
+            Control::HiddenComment(comment) => {
+                walk_paragraphs(&mut comment.paragraphs, all, page_frame, report)
+            }
+            _ => {}
+        }
+    }
+
+    let all = doc.doc_info.track_change_flags() & TRACK_CHANGE_STAMPS_OBJECTS != 0;
+    for section in &mut doc.sections {
+        for master_page in &mut section.section_def.master_pages {
+            walk_paragraphs(&mut master_page.paragraphs, all, true, report);
+        }
+        walk_paragraphs(&mut section.paragraphs, all, false, report);
+    }
+}
+
+fn materialize_para_header_tail<S: crate::storage::Storage>(
+    para: &mut Paragraph,
+    report: &mut AdapterReport,
+    storage: &S,
+) -> Result<(), S::Error> {
     if para.raw_header_extra.len() >= 12 {
-        return;
+        return Ok(());
     }
 
     if para.raw_header_extra.len() >= 10 {
+        let additional = 12 - para.raw_header_extra.len();
+        storage.reserve(&mut para.raw_header_extra, additional)?;
         para.raw_header_extra.resize(12, 0);
     } else {
-        let mut extra = vec![0; 12];
+        let mut extra = zeroed(storage, 12)?;
         let char_shape_count = para.char_shapes.len().max(1).min(u16::MAX as usize) as u16;
         let range_tag_count = para.range_tags.len().min(u16::MAX as usize) as u16;
         let line_seg_count = para.line_segs.len().min(u16::MAX as usize) as u16;
@@ -1817,25 +2201,31 @@ fn materialize_para_header_tail(para: &mut Paragraph, report: &mut AdapterReport
     }
 
     report.para_header_tail_materialized += 1;
+
+    Ok(())
 }
 
-fn adapt_section_def(
+fn adapt_section_def<S: crate::storage::Storage>(
     section_def: &mut SectionDef,
     file_version: &HwpVersion,
     report: &mut AdapterReport,
-) {
+    storage: &S,
+) -> Result<(), S::Error> {
     materialize_section_def_hide_empty_line_flag(section_def, report);
     materialize_single_master_page_flags(section_def, report);
     materialize_multi_master_page_flags(section_def, report);
-    materialize_section_def_ctrl_tail(section_def, file_version, report);
+    materialize_section_def_ctrl_tail(section_def, file_version, report, storage)?;
 
     for master_page in &mut section_def.master_pages {
         adapt_paragraphs_with_context(
             &mut master_page.paragraphs,
             report,
             ParagraphContext::MasterPage,
-        );
+            storage,
+        )?;
     }
+
+    Ok(())
 }
 
 fn materialize_section_def_hide_empty_line_flag(
@@ -1982,16 +2372,17 @@ fn section_def_ctrl_tail_len(version: &HwpVersion) -> usize {
 /// **버전은 47을 약속하고 내용은 38을 내보내는** 불일치가 됐다.
 ///
 /// HWP5 원본에서 파싱한 `raw_ctrl_extra` 는 손대지 않는다 — 라운드트립 계약이 먼저다.
-fn materialize_section_def_ctrl_tail(
+fn materialize_section_def_ctrl_tail<S: crate::storage::Storage>(
     section_def: &mut SectionDef,
     file_version: &HwpVersion,
     report: &mut AdapterReport,
-) {
+    storage: &S,
+) -> Result<(), S::Error> {
     if !section_def.raw_ctrl_extra.is_empty() {
-        return;
+        return Ok(());
     }
 
-    let mut extra = vec![0; section_def_ctrl_tail_len(file_version)];
+    let mut extra = zeroed(storage, section_def_ctrl_tail_len(file_version))?;
     // 확장 영역 offset 0 의 u16 마커. 코퍼스 47 byte 325구역 중 비영은 14건뿐이고
     // 바탕쪽 수의 함수가 아니다(바탕쪽 1인데 1·4, 바탕쪽 2인데 0 이 공존). 결정 요인이
     // 미확정이므로 종전 정답지(exam_kor 계열)에서 유도된 이 규칙을 **넓히지도 좁히지도
@@ -2004,6 +2395,8 @@ fn materialize_section_def_ctrl_tail(
         section_def.raw_ctrl_extra = extra;
         report.section_def_master_page_tail_materialized += 1;
     }
+
+    Ok(())
 }
 
 /// [Task #1061] HWPX 수식 control 의 한컴 호환 contract 정정.
@@ -2013,15 +2406,14 @@ fn materialize_section_def_ctrl_tail(
 /// - HWPX 의 `font` 속성을 HWP5 EQEDIT 의 font_name 자리에 매핑한 결과 정답지와 자리값 swap
 ///   → Stage 2 에서 parser 직접 정정 (정답지: version_info="Equation Version 60", font_name="")
 ///
-/// 본 함수는 Stage 1 의 attr 재구성 (enum 필드 → bit 합성 + bit 27 보강) + raw_ctrl_data clear
+/// 본 함수는 Stage 1 의 attr 재구성 (enum 필드 → bit 합성) + raw_ctrl_data clear
 /// (직렬화기가 common 으로 재합성).
 fn adapt_equation(eq: &mut crate::model::control::Equation, report: &mut AdapterReport) {
-    const HWPX_EQUATION_NUMBERING_BIT: u32 = 0x0800_0000;
-
     let before = eq.common.attr;
-    // HWPX 출처는 attr=0 으로 IR 생성 → pack_common_attr_bits 로 enum 필드들에서 재합성 후
-    // bit 27 보강. 표 어댑터 (materialize_table_ctrl_header_attr) 와 동일 패턴.
-    eq.common.attr = pack_common_attr_bits(&eq.common) | HWPX_EQUATION_NUMBERING_BIT;
+    // HWPX 출처는 attr=0 으로 IR 생성 → pack_common_attr_bits 로 enum 필드들에서 재합성한다.
+    // [#8335] 위 bit 27 은 수식 번호 범주(11)의 윗 비트다 — packer 가 numberingType 에서
+    // 만든다. 종전 무조건 OR 은 `NONE` 수식을 표 범주(10)로 저장했다.
+    eq.common.attr = pack_common_attr_bits(&eq.common);
 
     // raw_ctrl_data 가 보존되어 있으면 직렬화기가 raw 우선 사용 → attr 갱신 무효화.
     // clear 하여 직렬화기가 common 으로 재합성하도록 함.
@@ -2033,15 +2425,22 @@ fn adapt_equation(eq: &mut crate::model::control::Equation, report: &mut Adapter
     }
 }
 
-fn adapt_shape(shape: &mut ShapeObject, report: &mut AdapterReport) {
-    adapt_shape_with_context(shape, report, ParagraphContext::Body);
+fn adapt_shape<S: crate::storage::Storage>(
+    shape: &mut ShapeObject,
+    report: &mut AdapterReport,
+    storage: &S,
+) -> Result<(), S::Error> {
+    adapt_shape_with_context(shape, report, ParagraphContext::Body, storage)?;
+
+    Ok(())
 }
 
-fn adapt_shape_with_context(
+fn adapt_shape_with_context<S: crate::storage::Storage>(
     shape: &mut ShapeObject,
     report: &mut AdapterReport,
     context: ParagraphContext,
-) {
+    storage: &S,
+) -> Result<(), S::Error> {
     if context == ParagraphContext::MasterPage {
         if let ShapeObject::Line(line) = shape {
             materialize_master_page_line_rendering_size_ratio(line, report);
@@ -2050,8 +2449,8 @@ fn adapt_shape_with_context(
 
     if let Some(drawing) = shape.drawing_mut() {
         if let Some(text_box) = &mut drawing.text_box {
-            materialize_text_box_hwp5_envelope(text_box, report);
-            adapt_paragraphs_with_context(&mut text_box.paragraphs, report, context);
+            materialize_text_box_hwp5_envelope(text_box, report, storage)?;
+            adapt_paragraphs_with_context(&mut text_box.paragraphs, report, context, storage)?;
         }
         // [#2736] 도형 캡션 문단도 보강한다. `DrawingObjAttr` 를 공유하는 사각형·타원·선·호·
         // 다각형·곡선·글상자·묶음·차트·OLE 이 한 번에 덮인다. 형제 워크
@@ -2059,7 +2458,7 @@ fn adapt_shape_with_context(
         // collect_object_border_fill_refs_from_shape)는 셋 다 이미 drawing.caption 을
         // 순회하는데 adapt 워크만 빠져 있었다.
         if let Some(caption) = &mut drawing.caption {
-            adapt_paragraphs_with_context(&mut caption.paragraphs, report, context);
+            adapt_paragraphs_with_context(&mut caption.paragraphs, report, context, storage)?;
         }
     }
 
@@ -2073,20 +2472,22 @@ fn adapt_shape_with_context(
     match shape {
         ShapeObject::Group(group) => {
             if let Some(caption) = &mut group.caption {
-                adapt_paragraphs_with_context(&mut caption.paragraphs, report, context);
+                adapt_paragraphs_with_context(&mut caption.paragraphs, report, context, storage)?;
                 materialize_captioned_group_numbering_bit(&mut group.common, report);
             }
             for child in &mut group.children {
-                adapt_shape_with_context(child, report, context);
+                adapt_shape_with_context(child, report, context, storage)?;
             }
         }
         ShapeObject::Picture(pic) => {
             if let Some(caption) = &mut pic.caption {
-                adapt_paragraphs_with_context(&mut caption.paragraphs, report, context);
+                adapt_paragraphs_with_context(&mut caption.paragraphs, report, context, storage)?;
             }
         }
         _ => {}
     }
+
+    Ok(())
 }
 
 fn materialize_master_page_line_rendering_size_ratio(
@@ -2161,13 +2562,17 @@ fn write_raw_rendering_f64(raw: &mut [u8], offset: usize, value: f64) -> bool {
     true
 }
 
-fn materialize_text_box_hwp5_envelope(text_box: &mut TextBox, report: &mut AdapterReport) {
+fn materialize_text_box_hwp5_envelope<S: crate::storage::Storage>(
+    text_box: &mut TextBox,
+    report: &mut AdapterReport,
+    storage: &S,
+) -> Result<(), S::Error> {
     if !is_draw_text_hwp5_envelope_candidate(text_box) {
-        return;
+        return Ok(());
     }
 
     if text_box.raw_list_header_extra.is_empty() {
-        text_box.raw_list_header_extra = vec![0; 13];
+        text_box.raw_list_header_extra = zeroed(storage, 13)?;
         report.text_box_list_header_tail_materialized += 1;
     }
 
@@ -2176,7 +2581,7 @@ fn materialize_text_box_hwp5_envelope(text_box: &mut TextBox, report: &mut Adapt
             continue;
         }
 
-        let mut extra = vec![0; 12];
+        let mut extra = zeroed(storage, 12)?;
         let char_shape_count = para.char_shapes.len().max(1).min(u16::MAX as usize) as u16;
         let range_tag_count = para.range_tags.len().min(u16::MAX as usize) as u16;
         let line_seg_count = para.line_segs.len().min(u16::MAX as usize) as u16;
@@ -2189,6 +2594,8 @@ fn materialize_text_box_hwp5_envelope(text_box: &mut TextBox, report: &mut Adapt
         para.raw_header_extra = extra;
         report.text_box_para_header_tail_materialized += 1;
     }
+
+    Ok(())
 }
 
 fn is_draw_text_hwp5_envelope_candidate(text_box: &TextBox) -> bool {
@@ -2199,65 +2606,48 @@ fn is_draw_text_hwp5_envelope_candidate(text_box: &TextBox) -> bool {
     })
 }
 
-fn adapt_picture_href_ctrl_data(
+fn adapt_picture_href_ctrl_data<S: crate::storage::Storage>(
     pic: &Picture,
     ctrl_data_slot: &mut Option<Vec<u8>>,
     report: &mut AdapterReport,
-) {
+    storage: &S,
+) -> Result<(), S::Error> {
     let Some(href) = pic.href.as_deref().filter(|value| !value.is_empty()) else {
-        return;
+        return Ok(());
     };
 
-    let ctrl_data = build_picture_href_ctrl_data(href);
+    let ctrl_data = build_picture_href_ctrl_data(href, storage)?;
     if ctrl_data_slot.as_deref() == Some(ctrl_data.as_slice()) {
-        return;
+        return Ok(());
     }
 
     *ctrl_data_slot = Some(ctrl_data);
     report.picture_href_ctrl_data_materialized += 1;
+
+    Ok(())
 }
 
-fn build_picture_href_ctrl_data(href: &str) -> Vec<u8> {
-    let hwp_href = normalize_picture_href_for_hwp_ctrl_data(href);
-    let utf16: Vec<u16> = hwp_href.encode_utf16().collect();
-
-    let mut data = Vec::with_capacity(22 + utf16.len() * 2);
-    data.extend_from_slice(&0x021b_u16.to_le_bytes());
-    data.extend_from_slice(&1_u16.to_le_bytes());
-    data.extend_from_slice(&0_u16.to_le_bytes());
-    data.extend_from_slice(&0x026f_u16.to_le_bytes());
-    data.extend_from_slice(&0x8000_u16.to_le_bytes());
-    data.extend_from_slice(&0x026f_u16.to_le_bytes());
-    data.extend_from_slice(&1_u16.to_le_bytes());
-    data.extend_from_slice(&0_u16.to_le_bytes());
-    data.extend_from_slice(&0x0265_u16.to_le_bytes());
-    data.extend_from_slice(&0x0001_u16.to_le_bytes());
-    data.extend_from_slice(&(utf16.len().min(u16::MAX as usize) as u16).to_le_bytes());
-    for ch in utf16.into_iter().take(u16::MAX as usize) {
-        data.extend_from_slice(&ch.to_le_bytes());
-    }
-    data
+fn build_picture_href_ctrl_data<S: crate::storage::Storage>(
+    href: &str,
+    storage: &S,
+) -> Result<Vec<u8>, S::Error> {
+    storage.binary(&AdapterPayload::Href(href))
 }
 
-fn normalize_picture_href_for_hwp_ctrl_data(href: &str) -> String {
-    if href.contains("\\://") {
-        href.to_string()
-    } else {
-        href.replace("://", "\\://")
-    }
-}
-
-fn adapt_table_layout_ctrl_data(
+fn adapt_table_layout_ctrl_data<S: crate::storage::Storage>(
     table: &Table,
     ctrl_data_slot: &mut Option<Vec<u8>>,
     report: &mut AdapterReport,
-) {
+    storage: &S,
+) -> Result<(), S::Error> {
     if ctrl_data_slot.is_some() || !table_requires_layout_ctrl_data(table) {
-        return;
+        return Ok(());
     }
 
-    *ctrl_data_slot = Some(build_table_layout_ctrl_data());
+    *ctrl_data_slot = Some(build_table_layout_ctrl_data(storage)?);
     report.table_layout_ctrl_data_materialized += 1;
+
+    Ok(())
 }
 
 fn table_requires_layout_ctrl_data(table: &Table) -> bool {
@@ -2286,43 +2676,36 @@ const TABLE_LAYOUT_CTRL_DATA_I4_ITEMS: [(u16, u32); 11] = [
     (0x400a, 84188),
 ];
 
-fn build_table_layout_ctrl_data() -> Vec<u8> {
-    // HWPX→HWP adapter가 특정 3x2 선택지 표 뒤에 materialize하는 104바이트 raw 계약.
-    // serializer는 이 payload를 해석하거나 재번호화하지 않고 ctrl_data_records에서 복사한다.
-    let mut data = Vec::with_capacity(104);
-    data.extend_from_slice(&0x021b_u16.to_le_bytes());
-    data.extend_from_slice(&1_u16.to_le_bytes());
-    data.extend_from_slice(&0_u16.to_le_bytes());
-    data.extend_from_slice(&0x0242_u16.to_le_bytes());
-    data.extend_from_slice(&0x8000_u16.to_le_bytes());
-    data.extend_from_slice(&0x0242_u16.to_le_bytes());
-    data.extend_from_slice(&(TABLE_LAYOUT_CTRL_DATA_I4_ITEMS.len() as u16).to_le_bytes());
-    data.extend_from_slice(&0_u16.to_le_bytes());
-    for &(item_id, value) in &TABLE_LAYOUT_CTRL_DATA_I4_ITEMS {
-        data.extend_from_slice(&item_id.to_le_bytes());
-        data.extend_from_slice(&0x0004_u16.to_le_bytes());
-        data.extend_from_slice(&value.to_le_bytes());
-    }
-    data
+fn build_table_layout_ctrl_data<S: crate::storage::Storage>(
+    storage: &S,
+) -> Result<Vec<u8>, S::Error> {
+    storage.binary(&AdapterPayload::TableLayout)
 }
 
-fn adapt_table(table: &mut Table, report: &mut AdapterReport) {
-    adapt_table_with_context(table, report, ParagraphContext::Body);
+fn adapt_table<S: crate::storage::Storage>(
+    table: &mut Table,
+    report: &mut AdapterReport,
+    storage: &S,
+) -> Result<(), S::Error> {
+    adapt_table_with_context(table, report, ParagraphContext::Body, storage)?;
+
+    Ok(())
 }
 
-fn adapt_table_with_context(
+fn adapt_table_with_context<S: crate::storage::Storage>(
     table: &mut Table,
     report: &mut AdapterReport,
     context: ParagraphContext,
-) {
+    storage: &S,
+) -> Result<(), S::Error> {
     // 1. raw_ctrl_data 합성 (HWPX 출처는 비어있음)
     if table.raw_ctrl_data.is_empty() {
         materialize_table_outer_margin(table, report);
         materialize_table_record_attr(table, report);
-        materialize_table_record_row_sizes(table, report);
+        materialize_table_record_row_sizes(table, report, storage)?;
         materialize_table_ctrl_header_attr(table, report);
 
-        table.raw_ctrl_data = serialize_common_obj_attr(&table.common);
+        table.raw_ctrl_data = try_serialize_common_obj_attr(&table.common, storage)?;
         report.tables_ctrl_data_synthesized += 1;
 
         if table.raw_ctrl_data.len() >= common_obj_offsets::FLAGS.end {
@@ -2341,20 +2724,26 @@ fn adapt_table_with_context(
     // 셀별 보강 + 내부 문단 재귀 (중첩 표 대응)
     for cell in &mut table.cells {
         adapt_cell_list_attr(cell, report);
-        materialize_cell_list_header_contract(cell, report);
+        materialize_cell_list_header_contract(cell, report, storage)?;
         for cpara in &mut cell.paragraphs {
-            adapt_paragraph_with_context(cpara, report, context);
+            adapt_paragraph_with_context(cpara, report, context, storage)?;
         }
     }
 
     // 표 캡션 문단도 보강한다(#2443 에서 캡션이 bin 리맵 대상임이 확인됨).
     // 누락 시 캡션 안의 그림 href·중첩 표 ctrl_data 등이 물질화되지 않는다.
     if let Some(caption) = &mut table.caption {
-        adapt_paragraphs_with_context(&mut caption.paragraphs, report, context);
+        adapt_paragraphs_with_context(&mut caption.paragraphs, report, context, storage)?;
     }
+
+    Ok(())
 }
 
-fn materialize_cell_list_header_contract(cell: &mut Cell, report: &mut AdapterReport) {
+fn materialize_cell_list_header_contract<S: crate::storage::Storage>(
+    cell: &mut Cell,
+    report: &mut AdapterReport,
+    storage: &S,
+) -> Result<(), S::Error> {
     let before_width_ref = cell.list_header_width_ref;
     let before_extra_len = cell.raw_list_extra.len();
 
@@ -2370,7 +2759,7 @@ fn materialize_cell_list_header_contract(cell: &mut Cell, report: &mut AdapterRe
     }
 
     if cell.raw_list_extra.is_empty() {
-        let mut extra = vec![0u8; 13];
+        let mut extra = zeroed(storage, 13)?;
         extra[0..4].copy_from_slice(&cell.width.to_le_bytes());
         cell.raw_list_extra = extra;
     }
@@ -2380,6 +2769,8 @@ fn materialize_cell_list_header_contract(cell: &mut Cell, report: &mut AdapterRe
     {
         report.cells_list_header_contract_materialized += 1;
     }
+
+    Ok(())
 }
 
 fn materialize_table_outer_margin(table: &mut Table, report: &mut AdapterReport) {
@@ -2426,8 +2817,12 @@ fn materialize_table_record_attr(table: &mut Table, report: &mut AdapterReport) 
     }
 }
 
-fn materialize_table_record_row_sizes(table: &mut Table, report: &mut AdapterReport) {
-    let mut row_sizes = vec![0i16; table.row_count as usize];
+fn materialize_table_record_row_sizes<S: crate::storage::Storage>(
+    table: &mut Table,
+    report: &mut AdapterReport,
+    storage: &S,
+) -> Result<(), S::Error> {
+    let mut row_sizes: Vec<i16> = zeroed(storage, table.row_count as usize)?;
     for cell in &table.cells {
         let row = cell.row as usize;
         if row < row_sizes.len() {
@@ -2436,17 +2831,18 @@ fn materialize_table_record_row_sizes(table: &mut Table, report: &mut AdapterRep
     }
 
     if row_sizes.is_empty() || row_sizes.iter().all(|&count| count == 0) {
-        return;
+        return Ok(());
     }
 
     if table.row_sizes != row_sizes {
         table.row_sizes = row_sizes;
         report.table_record_row_sizes_materialized += 1;
     }
+
+    Ok(())
 }
 
 fn materialize_table_ctrl_header_attr(table: &mut Table, report: &mut AdapterReport) {
-    const HWPX_TABLE_NUMBERING_BIT: u32 = 0x0800_0000;
     const HWP5_TABLE_CAPTION_COMMON_ATTR_BIT: u32 = 0x2000_0000;
 
     let before = table.common.attr;
@@ -2456,14 +2852,10 @@ fn materialize_table_ctrl_header_attr(table: &mut Table, report: &mut AdapterRep
     // 2022 도 같은 변환에서 `0` 을 그대로 둔다 — HWPX 를 열어 HWP 로 저장한 실측에서
     // 13문서 표 84개 전부 보존, 정규화 0건(`tools/hangul_flowwithtext_oracle.py`).
     // #2697 의 표 번호 비트 무조건 OR 과 같은 계열이다.
+    // [#2697·#8335] 번호 범주 bit 26-27 은 `pack_common_attr_bits` 가 numberingType 에서
+    // 만든다. 종전엔 TABLE 일 때만 bit 27 을 따로 세워 `PICTURE` 표가 범주 없음(0)으로
+    // 저장됐다 — 그 표의 그림 캡션이 모두 1 이 됐다(policy_progress 그림 2~16).
     let mut attr = pack_common_attr_bits(&table.common);
-    // [#2697] 파서(materialize_hwpx_table_attrs)와 동일 게이트: "표 번호" 비트는
-    // numberingType 이 실제로 TABLE 일 때만 세운다. 종전 무조건 OR 은 numberingType=
-    // "PICTURE"/"NONE" 표를 HWP5 저장 시 표 번호 범주로 되돌려, 파서가 #2697 에서
-    // 제거한 IR 모순(numbering_type=Picture ↔ attr=TABLE)을 변환 계층이 재도입했다.
-    if table.common.numbering_type == crate::model::shape::ObjectNumberingType::Table {
-        attr |= HWPX_TABLE_NUMBERING_BIT;
-    }
     if table.caption.is_some() {
         attr |= HWP5_TABLE_CAPTION_COMMON_ATTR_BIT;
     }
@@ -2523,6 +2915,30 @@ fn adapt_cell_list_attr(cell: &mut Cell, report: &mut AdapterReport) {
 ///
 /// 호출자: `DocumentCore::export_hwp_with_adapter()` (Stage 5 에서 추가).
 pub fn convert_if_hwpx_source(doc: &mut Document, source_format: FileFormat) -> AdapterReport {
+    match try_convert_if_hwpx_source(doc, source_format, &crate::storage::Unbounded) {
+        Ok(report) => report,
+        Err(never) => match never {},
+    }
+}
+pub(crate) fn try_convert_if_hwpx_source<S: crate::storage::Storage>(
+    doc: &mut Document,
+    source_format: FileFormat,
+    storage: &S,
+) -> Result<AdapterReport, S::Error> {
+    // PDF lowering creates semantic IR, not an existing HWP5 stream. Materialize
+    // its wire-only fields on the export snapshot just as for other non-HWP
+    // inputs. Use the 5.1 record schema supported by the writer; a scaffold's
+    // default 0.0.0.0 header is not an HWP file version. Do not add HWPX/HWP3
+    // origin markers or apply the HWPX-only picture tone/extra-data conversion.
+    if matches!(source_format, FileFormat::Pdf) {
+        doc.header.version = HwpVersion {
+            major: 5,
+            minor: 1,
+            build: 0,
+            revision: 0,
+        };
+        return convert_to_hwp_ir(doc, false, storage);
+    }
     // [#5933] HWPML(HML) 출처는 HWPX 전용 보정을 타면 안 되지만, **HWP5 스트림 계약**인
     // 구역당 `HWPTAG_PAGE_BORDER_FILL` 3개(#3676)는 출처와 무관하게 지켜야 한다.
     //
@@ -2543,11 +2959,11 @@ pub fn convert_if_hwpx_source(doc: &mut Document, source_format: FileFormat) -> 
     //
     // 저장 시점 보정이라 IR 과 HWPX 산출(단일 BOTH)은 그대로 둔다 — HWPX 출처와 같은 계약.
     if matches!(source_format, FileFormat::Hml) {
-        normalize_page_border_fills_for_hwp(doc);
-        return AdapterReport::new().no_op("Hml: page_border_fill 3개만 보정");
+        normalize_page_border_fills_for_hwp(doc, storage)?;
+        return Ok(AdapterReport::new().no_op(storage.string("Hml: page_border_fill 3개만 보정")?));
     }
     if !matches!(source_format, FileFormat::Hwpx | FileFormat::Hwp3) {
-        return AdapterReport::new().no_op("source_format != Hwpx/Hwp3");
+        return Ok(AdapterReport::new().no_op(storage.string("source_format != Hwpx/Hwp3")?));
     }
     // [Issue #1770] HWPX 출처만 마커 부여 (HWP3 은 자체 variant 시멘틱 유지).
     // idempotent — 이미 있으면 추가하지 않는다.
@@ -2556,14 +2972,31 @@ pub fn convert_if_hwpx_source(doc: &mut Document, source_format: FileFormat) -> 
     } else {
         0
     };
+    // [#8302] rhwp 가 HWP5 에서 만든 HWPX(`rhwp-hwp5-origin`)는 HWPX 계보가 아니다.
+    // 그 IR 은 HWP5-origin 호환 계약으로 조판되므로, HWP 로 되돌릴 때 HWPX 계보 마커를
+    // 붙이면 재파싱이 `hwpx_stored_layout` 으로 갈라져 원본 HWP 와 쪽수가 달라진다
+    // (2912735: 원본·한컴 2쪽 → 왕복 1쪽). 마커 없이 원래의 native HWP5 계보로 둔다.
+    let hwp5_origin_hwpx = doc.hwpx_aux_entry(HWP5_ORIGIN_HWPX_MARKER_PATH).is_some();
     if matches!(source_format, FileFormat::Hwpx)
+        && !hwp5_origin_hwpx
         && !doc
             .extra_streams
             .iter()
             .any(|(p, _)| p == HWPX_ORIGIN_STREAM_PATH)
     {
-        doc.extra_streams
-            .push((HWPX_ORIGIN_STREAM_PATH.to_string(), b"1".to_vec()));
+        // [#8310] 한컴 HWPX(rhwp 출처 표식 없음)는 원본 저장 줄 계약을 지닌 변환본으로
+        // 표시한다. rhwp HWP3 출처 HWPX 는 HWP3 native 규칙으로 열리므로 종전 값을 둔다.
+        let marker: &[u8] = if doc
+            .hwpx_aux_entry(crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH)
+            .is_some()
+        {
+            b"1"
+        } else {
+            crate::model::document::HWPX_ORIGIN_SOURCE_LINES
+        };
+        let path = storage.string(HWPX_ORIGIN_STREAM_PATH)?;
+        let data = storage.copy_slice(marker)?;
+        storage.push(&mut doc.extra_streams, (path, data))?;
     }
     // [#3707] HWP3 출처 마커 — 재파싱이 쪽나눔 허용치를 되돌릴 수 있게 한다.
     // HWP3 파서가 세우는 `pagination_bottom_tolerance`(1600 HU)는 렌더러 내부 값이라
@@ -2574,17 +3007,115 @@ pub fn convert_if_hwpx_source(doc: &mut Document, source_format: FileFormat) -> 
             .iter()
             .any(|(p, _)| p == HWP3_ORIGIN_STREAM_PATH)
     {
-        doc.extra_streams
-            .push((HWP3_ORIGIN_STREAM_PATH.to_string(), b"1".to_vec()));
+        let path = storage.string(HWP3_ORIGIN_STREAM_PATH)?;
+        let data = storage.copy_slice(b"1")?;
+        storage.push(&mut doc.extra_streams, (path, data))?;
     }
     // [#4367] HWP3 개체 마커 축 재작성 — convert_to_hwp_ir(secd 삽입 등 다른
     // 좌표 보정)보다 먼저, HWP3 출처에만 적용한다. HWPX 의 U+FFFC(#4778 계약)는
     // 별개 시멘틱이므로 건드리지 않는다.
-    let mut report = convert_to_hwp_ir(doc, matches!(source_format, FileFormat::Hwpx));
+    let mut report = convert_to_hwp_ir(doc, matches!(source_format, FileFormat::Hwpx), storage)?;
     report.master_page_apply_slots_materialized = master_page_apply_slots_materialized;
-    report
+    Ok(report)
 }
 
+fn zeroed<S: crate::storage::Storage, T: Copy + Default>(
+    storage: &S,
+    count: usize,
+) -> Result<Vec<T>, S::Error> {
+    let mut values = storage.vec(count)?;
+    values.resize(count, T::default());
+    Ok(values)
+}
+fn insert_ref<S: crate::storage::Storage>(
+    refs: &mut std::collections::HashSet<u16>,
+    id: u16,
+    storage: &S,
+) -> Result<(), S::Error> {
+    if !refs.contains(&id) {
+        storage.reserve_set(refs, 1)?;
+        refs.insert(id);
+    }
+    Ok(())
+}
+enum AdapterPayload<'a> {
+    Href(&'a str),
+    TableLayout,
+}
+impl crate::serializer::byte_writer::BinaryProducer for AdapterPayload<'_> {
+    fn write<W: std::io::Write>(
+        &self,
+        w: &mut crate::serializer::byte_writer::ByteWriter<W>,
+    ) -> std::io::Result<()> {
+        match self {
+            Self::Href(href) => {
+                let escape = !href.contains("\\://");
+                let chars = href.split("://").enumerate().flat_map(|(index, part)| {
+                    let prefix = if index == 0 {
+                        ""
+                    } else if escape {
+                        "\\://"
+                    } else {
+                        "://"
+                    };
+                    prefix.chars().chain(part.chars())
+                });
+                let count = chars
+                    .clone()
+                    .map(char::len_utf16)
+                    .take(u16::MAX as usize)
+                    .sum::<usize>()
+                    .min(u16::MAX as usize);
+                for value in [
+                    0x021b,
+                    1,
+                    0,
+                    0x026f,
+                    0x8000,
+                    0x026f,
+                    1,
+                    0,
+                    0x0265,
+                    1,
+                    count as u16,
+                ] {
+                    w.write_u16(value)?;
+                }
+                let mut written = 0;
+                'chars: for ch in chars {
+                    let mut units = [0; 2];
+                    for unit in ch.encode_utf16(&mut units) {
+                        if written == count {
+                            break 'chars;
+                        }
+                        w.write_u16(*unit)?;
+                        written += 1;
+                    }
+                }
+            }
+            Self::TableLayout => {
+                for value in [
+                    0x021b,
+                    1,
+                    0,
+                    0x0242,
+                    0x8000,
+                    0x0242,
+                    TABLE_LAYOUT_CTRL_DATA_I4_ITEMS.len() as u16,
+                    0,
+                ] {
+                    w.write_u16(value)?;
+                }
+                for &(id, value) in &TABLE_LAYOUT_CTRL_DATA_I4_ITEMS {
+                    w.write_u16(id)?;
+                    w.write_u16(4)?;
+                    w.write_u32(value)?;
+                }
+            }
+        }
+        Ok(())
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -2649,7 +3180,7 @@ mod tests {
         };
 
         let mut report = AdapterReport::default();
-        insert_section_def_control(&mut section, &mut report);
+        insert_section_def_control(&mut section, &mut report, &crate::storage::Unbounded).unwrap();
 
         assert_eq!(report.section_def_controls_inserted, 1);
         // secd + cold = 확장 제어문자 2개 × 8 코드유닛만큼 앞자리가 비어야 한다.
@@ -2694,7 +3225,7 @@ mod tests {
         };
 
         let mut report = AdapterReport::default();
-        insert_section_def_control(&mut section, &mut report);
+        insert_section_def_control(&mut section, &mut report, &crate::storage::Unbounded).unwrap();
 
         assert_eq!(
             section.paragraphs[0].char_offsets,
@@ -2981,7 +3512,7 @@ mod tests {
             paragraphs: vec![para],
             ..Default::default()
         });
-        let refs = collect_object_border_fill_refs(&doc);
+        let refs = collect_object_border_fill_refs(&doc, &crate::storage::Unbounded).unwrap();
         assert!(refs.contains(&7), "각주 안 표의 border_fill 이 수집돼야 함");
 
         // 표 캡션 문단 안 표의 border_fill 도 수집돼야 한다.
@@ -3003,7 +3534,7 @@ mod tests {
             paragraphs: vec![tpara],
             ..Default::default()
         });
-        let refs2 = collect_object_border_fill_refs(&doc2);
+        let refs2 = collect_object_border_fill_refs(&doc2, &crate::storage::Unbounded).unwrap();
         assert!(
             refs2.contains(&9),
             "표 캡션 안 표의 border_fill 이 수집돼야 함"
@@ -3035,7 +3566,9 @@ mod tests {
             ..Default::default()
         });
         assert!(
-            collect_object_border_fill_refs(&doc).contains(&11),
+            collect_object_border_fill_refs(&doc, &crate::storage::Unbounded)
+                .unwrap()
+                .contains(&11),
             "머리말 안 표의 border_fill 이 수집돼야 함"
         );
 
@@ -3047,7 +3580,9 @@ mod tests {
         let mut doc2 = Document::default();
         doc2.sections.push(sec);
         assert!(
-            collect_object_border_fill_refs(&doc2).contains(&13),
+            collect_object_border_fill_refs(&doc2, &crate::storage::Unbounded)
+                .unwrap()
+                .contains(&13),
             "바탕쪽 안 표의 border_fill 이 수집돼야 함"
         );
 
@@ -3066,7 +3601,9 @@ mod tests {
             ..Default::default()
         });
         assert!(
-            collect_object_border_fill_refs(&doc3).contains(&15),
+            collect_object_border_fill_refs(&doc3, &crate::storage::Unbounded)
+                .unwrap()
+                .contains(&15),
             "도형 캡션 안 표의 border_fill 이 수집돼야 함"
         );
     }
@@ -3143,7 +3680,7 @@ mod tests {
         };
 
         let mut report = AdapterReport::new();
-        adapt_table(&mut table, &mut report);
+        adapt_table(&mut table, &mut report, &crate::storage::Unbounded).unwrap();
 
         assert_eq!(table.raw_table_record_attr, 0x0400_000e);
         assert_eq!(table.row_sizes, vec![3]);
@@ -3202,7 +3739,7 @@ mod tests {
         };
 
         let mut report = AdapterReport::new();
-        adapt_table(&mut table, &mut report);
+        adapt_table(&mut table, &mut report, &crate::storage::Unbounded).unwrap();
 
         assert_eq!(table.raw_table_record_attr & 0x03, 0x01);
         assert_eq!(table.raw_table_record_attr & 0x04, 0x04);
@@ -3267,7 +3804,7 @@ mod tests {
         };
 
         let mut report = AdapterReport::new();
-        adapt_table(&mut table, &mut report);
+        adapt_table(&mut table, &mut report, &crate::storage::Unbounded).unwrap();
 
         assert_eq!(
             u32::from_le_bytes(
@@ -3301,12 +3838,12 @@ mod tests {
         table.common.numbering_type = ObjectNumberingType::Picture;
 
         let mut report = AdapterReport::new();
-        adapt_table(&mut table, &mut report);
+        adapt_table(&mut table, &mut report, &crate::storage::Unbounded).unwrap();
 
         assert_eq!(
-            table.common.attr & 0x0800_0000,
-            0,
-            "PICTURE 번호 표에 TABLE 번호 비트가 서면 IR 모순: {:#010x}",
+            table.common.attr & ObjectNumberingType::HWP5_ATTR_MASK,
+            ObjectNumberingType::Picture.hwp5_attr_bits(),
+            "[#8335] PICTURE 번호 표는 그림 범주(01)로 저장: {:#010x}",
             table.common.attr
         );
         let flags = u32::from_le_bytes(
@@ -3339,7 +3876,7 @@ mod tests {
         // Table::default() 의 common.numbering_type 은 None.
 
         let mut report = AdapterReport::new();
-        adapt_table(&mut table, &mut report);
+        adapt_table(&mut table, &mut report, &crate::storage::Unbounded).unwrap();
 
         assert_eq!(
             table.common.attr & 0x0800_0000,
@@ -3369,7 +3906,7 @@ mod tests {
         table.common.numbering_type = ObjectNumberingType::Table;
 
         let mut report = AdapterReport::new();
-        adapt_table(&mut table, &mut report);
+        adapt_table(&mut table, &mut report, &crate::storage::Unbounded).unwrap();
 
         assert_eq!(
             table.common.attr & 0x0800_0000,
@@ -3391,7 +3928,8 @@ mod tests {
         };
         let mut report = AdapterReport::new();
 
-        materialize_cell_list_header_contract(&mut cell, &mut report);
+        materialize_cell_list_header_contract(&mut cell, &mut report, &crate::storage::Unbounded)
+            .unwrap();
 
         assert_eq!(cell.list_header_width_ref & 0x0001, 0x0001);
         assert_eq!(cell.raw_list_extra.len(), 13);
@@ -3402,7 +3940,8 @@ mod tests {
         assert!(cell.raw_list_extra[4..].iter().all(|&byte| byte == 0));
         assert_eq!(report.cells_list_header_contract_materialized, 1);
 
-        materialize_cell_list_header_contract(&mut cell, &mut report);
+        materialize_cell_list_header_contract(&mut cell, &mut report, &crate::storage::Unbounded)
+            .unwrap();
         assert_eq!(report.cells_list_header_contract_materialized, 1);
     }
 
@@ -3416,7 +3955,8 @@ mod tests {
         };
         let mut report = AdapterReport::new();
 
-        materialize_cell_list_header_contract(&mut cell, &mut report);
+        materialize_cell_list_header_contract(&mut cell, &mut report, &crate::storage::Unbounded)
+            .unwrap();
 
         assert_eq!(cell.list_header_width_ref & 0x0001, 0);
         assert_eq!(cell.raw_list_extra.len(), 13);
@@ -3562,10 +4102,9 @@ mod tests {
                 _ => None,
             })
             .expect("묶음 개체가 남아 있어야 한다");
-        assert_eq!(
-            group.common.attr & (1 << 28),
-            0,
-            "PICTURE 번호 비트(bit28)는 지운다"
+        assert!(
+            group.common.hwp5_gen_shape_attr_bit28,
+            "[#8339] bit28 은 문서 규칙을 따른다 — 변경 추적 레코드가 없으면 한컴 기본 56(0x08 포함)"
         );
         assert_ne!(
             group.common.attr & (1 << 29),
@@ -3583,7 +4122,9 @@ mod tests {
 
     #[test]
     fn picture_href_ctrl_data_matches_hancom_parameter_set_shape() {
-        let data = build_picture_href_ctrl_data("http://www.korea.kr;1;0;0;");
+        let data =
+            build_picture_href_ctrl_data("http://www.korea.kr;1;0;0;", &crate::storage::Unbounded)
+                .unwrap();
         assert_eq!(data.len(), 76);
         assert_eq!(&data[0..2], &0x021b_u16.to_le_bytes());
         assert_eq!(&data[2..4], &1_u16.to_le_bytes());
@@ -3614,13 +4155,13 @@ mod tests {
         para.controls.push(Control::Picture(Box::new(pic)));
 
         let mut report = AdapterReport::new();
-        adapt_paragraph(&mut para, &mut report);
+        adapt_paragraph(&mut para, &mut report, &crate::storage::Unbounded).unwrap();
         assert_eq!(report.picture_href_ctrl_data_materialized, 1);
         assert_eq!(para.ctrl_data_records.len(), 1);
         assert_eq!(para.ctrl_data_records[0].as_ref().unwrap().len(), 76);
 
         let mut second = AdapterReport::new();
-        adapt_paragraph(&mut para, &mut second);
+        adapt_paragraph(&mut para, &mut second, &crate::storage::Unbounded).unwrap();
         assert_eq!(second.picture_href_ctrl_data_materialized, 0);
     }
 
@@ -3642,7 +4183,7 @@ mod tests {
         para.controls.push(Control::Footnote(Box::new(footnote)));
 
         let mut report = AdapterReport::new();
-        adapt_paragraph(&mut para, &mut report);
+        adapt_paragraph(&mut para, &mut report, &crate::storage::Unbounded).unwrap();
         assert_eq!(report.picture_href_ctrl_data_materialized, 1);
         let Control::Footnote(fnote) = &para.controls[0] else {
             panic!("expected footnote control");
@@ -3670,7 +4211,7 @@ mod tests {
         })));
 
         let mut treport = AdapterReport::new();
-        adapt_paragraph(&mut tpara, &mut treport);
+        adapt_paragraph(&mut tpara, &mut treport, &crate::storage::Unbounded).unwrap();
         assert_eq!(treport.picture_href_ctrl_data_materialized, 1);
         let Control::Table(tbl) = &tpara.controls[0] else {
             panic!("expected table control");
@@ -3714,7 +4255,7 @@ mod tests {
         })));
 
         let mut preport = AdapterReport::new();
-        adapt_paragraph(&mut ppara, &mut preport);
+        adapt_paragraph(&mut ppara, &mut preport, &crate::storage::Unbounded).unwrap();
         assert_eq!(
             preport.picture_href_ctrl_data_materialized, 1,
             "그림 캡션 문단 안 그림의 href 가 물질화돼야 함(캡션 문단 미방문)"
@@ -3740,7 +4281,7 @@ mod tests {
             .push(Control::Shape(Box::new(ShapeObject::Rectangle(rect))));
 
         let mut sreport = AdapterReport::new();
-        adapt_paragraph(&mut spara, &mut sreport);
+        adapt_paragraph(&mut spara, &mut sreport, &crate::storage::Unbounded).unwrap();
         assert_eq!(
             sreport.picture_href_ctrl_data_materialized, 1,
             "도형 캡션 문단 안 그림의 href 가 물질화돼야 함(캡션 문단 미방문)"
@@ -3825,7 +4366,9 @@ mod tests {
         });
 
         assert!(
-            collect_object_border_fill_refs(&doc).contains(&17),
+            collect_object_border_fill_refs(&doc, &crate::storage::Unbounded)
+                .unwrap()
+                .contains(&17),
             "그림 캡션 안 표의 border_fill 이 수집돼야 함"
         );
     }
@@ -3897,7 +4440,7 @@ mod tests {
         })));
 
         let mut report = AdapterReport::new();
-        adapt_paragraph(&mut para, &mut report);
+        adapt_paragraph(&mut para, &mut report, &crate::storage::Unbounded).unwrap();
 
         assert_eq!(report.table_layout_ctrl_data_materialized, 1);
         assert_eq!(para.ctrl_data_records.len(), 1);
@@ -3909,7 +4452,7 @@ mod tests {
         assert_eq!(&data[12..14], &11_u16.to_le_bytes());
 
         let mut second = AdapterReport::new();
-        adapt_paragraph(&mut para, &mut second);
+        adapt_paragraph(&mut para, &mut second, &crate::storage::Unbounded).unwrap();
         assert_eq!(second.table_layout_ctrl_data_materialized, 0);
     }
 
@@ -3932,7 +4475,7 @@ mod tests {
             ]
         );
 
-        let payload = build_table_layout_ctrl_data();
+        let payload = build_table_layout_ctrl_data(&crate::storage::Unbounded).unwrap();
         assert_eq!(payload.len(), 104);
         for (index, &(item_id, value)) in TABLE_LAYOUT_CTRL_DATA_I4_ITEMS.iter().enumerate() {
             let offset = 16 + index * 8;
@@ -3981,7 +4524,7 @@ mod tests {
         })));
 
         let mut report = AdapterReport::new();
-        adapt_paragraph(&mut paragraph, &mut report);
+        adapt_paragraph(&mut paragraph, &mut report, &crate::storage::Unbounded).unwrap();
 
         assert_eq!(report.table_layout_ctrl_data_materialized, 1);
         assert!(paragraph.ctrl_data_records[0].is_none());
@@ -3992,7 +4535,11 @@ mod tests {
         assert_eq!(nested_owner.ctrl_data_records.len(), 1);
         assert_eq!(
             nested_owner.ctrl_data_records[0].as_deref(),
-            Some(build_table_layout_ctrl_data().as_slice())
+            Some(
+                build_table_layout_ctrl_data(&crate::storage::Unbounded)
+                    .unwrap()
+                    .as_slice()
+            )
         );
     }
 
@@ -4008,7 +4555,7 @@ mod tests {
         })));
 
         let mut report = AdapterReport::new();
-        adapt_paragraph(&mut para, &mut report);
+        adapt_paragraph(&mut para, &mut report, &crate::storage::Unbounded).unwrap();
 
         assert_eq!(report.table_layout_ctrl_data_materialized, 0);
         assert!(para.ctrl_data_records[0].is_none());
@@ -4023,13 +4570,25 @@ mod tests {
         };
 
         let mut report = AdapterReport::new();
-        adapt_section_def(&mut section_def, &hwp_version(5, 1, 0, 0), &mut report);
+        adapt_section_def(
+            &mut section_def,
+            &hwp_version(5, 1, 0, 0),
+            &mut report,
+            &crate::storage::Unbounded,
+        )
+        .unwrap();
 
         assert_eq!(section_def.flags, 0x2000_0000);
         assert_eq!(report.section_def_single_master_page_flags_materialized, 1);
 
         let mut second = AdapterReport::new();
-        adapt_section_def(&mut section_def, &hwp_version(5, 1, 0, 0), &mut second);
+        adapt_section_def(
+            &mut section_def,
+            &hwp_version(5, 1, 0, 0),
+            &mut second,
+            &crate::storage::Unbounded,
+        )
+        .unwrap();
         assert_eq!(second.section_def_single_master_page_flags_materialized, 0);
     }
 
@@ -4045,7 +4604,13 @@ mod tests {
         };
 
         let mut report = AdapterReport::new();
-        adapt_section_def(&mut section_def, &hwp_version(5, 1, 0, 0), &mut report);
+        adapt_section_def(
+            &mut section_def,
+            &hwp_version(5, 1, 0, 0),
+            &mut report,
+            &crate::storage::Unbounded,
+        )
+        .unwrap();
 
         assert_eq!(section_def.flags & 0xe000_0000, 0x8000_0000);
         assert_eq!(report.section_def_single_master_page_flags_materialized, 1);
@@ -4060,13 +4625,25 @@ mod tests {
         };
 
         let mut report = AdapterReport::new();
-        adapt_section_def(&mut section_def, &hwp_version(5, 1, 0, 0), &mut report);
+        adapt_section_def(
+            &mut section_def,
+            &hwp_version(5, 1, 0, 0),
+            &mut report,
+            &crate::storage::Unbounded,
+        )
+        .unwrap();
 
         assert_eq!(section_def.flags, 0xC000_0000);
         assert_eq!(report.section_def_multi_master_page_flags_materialized, 1);
 
         let mut second = AdapterReport::new();
-        adapt_section_def(&mut section_def, &hwp_version(5, 1, 0, 0), &mut second);
+        adapt_section_def(
+            &mut section_def,
+            &hwp_version(5, 1, 0, 0),
+            &mut second,
+            &crate::storage::Unbounded,
+        )
+        .unwrap();
         assert_eq!(second.section_def_multi_master_page_flags_materialized, 0);
     }
 
@@ -4079,7 +4656,13 @@ mod tests {
         };
 
         let mut report = AdapterReport::new();
-        adapt_section_def(&mut section_def, &hwp_version(5, 1, 0, 0), &mut report);
+        adapt_section_def(
+            &mut section_def,
+            &hwp_version(5, 1, 0, 0),
+            &mut report,
+            &crate::storage::Unbounded,
+        )
+        .unwrap();
 
         assert_eq!(section_def.flags & 0xe000_0000, 0xc000_0000);
         assert_eq!(report.section_def_multi_master_page_flags_materialized, 1);
@@ -4132,7 +4715,13 @@ mod tests {
         // ① HWPX 출처의 실제 저장 버전(파서가 5.1.0.0 을 적는다) + 바탕쪽 없음.
         let mut modern = SectionDef::default();
         let mut report = AdapterReport::new();
-        materialize_section_def_ctrl_tail(&mut modern, &hwp_version(5, 1, 0, 0), &mut report);
+        materialize_section_def_ctrl_tail(
+            &mut modern,
+            &hwp_version(5, 1, 0, 0),
+            &mut report,
+            &crate::storage::Unbounded,
+        )
+        .unwrap();
         assert_eq!(
             modern.raw_ctrl_extra.len(),
             19,
@@ -4144,12 +4733,24 @@ mod tests {
         // ② 경계 자신과 그 바로 아래.
         let mut boundary = SectionDef::default();
         let mut report = AdapterReport::new();
-        materialize_section_def_ctrl_tail(&mut boundary, &hwp_version(5, 0, 4, 0), &mut report);
+        materialize_section_def_ctrl_tail(
+            &mut boundary,
+            &hwp_version(5, 0, 4, 0),
+            &mut report,
+            &crate::storage::Unbounded,
+        )
+        .unwrap();
         assert_eq!(boundary.raw_ctrl_extra.len(), 19);
 
         let mut legacy = SectionDef::default();
         let mut report = AdapterReport::new();
-        materialize_section_def_ctrl_tail(&mut legacy, &hwp_version(5, 0, 3, 0), &mut report);
+        materialize_section_def_ctrl_tail(
+            &mut legacy,
+            &hwp_version(5, 0, 3, 0),
+            &mut report,
+            &crate::storage::Unbounded,
+        )
+        .unwrap();
         assert_eq!(
             legacy.raw_ctrl_extra.len(),
             10,
@@ -4162,7 +4763,13 @@ mod tests {
             ..Default::default()
         };
         let mut report = AdapterReport::new();
-        materialize_section_def_ctrl_tail(&mut triple, &hwp_version(5, 1, 0, 0), &mut report);
+        materialize_section_def_ctrl_tail(
+            &mut triple,
+            &hwp_version(5, 1, 0, 0),
+            &mut report,
+            &crate::storage::Unbounded,
+        )
+        .unwrap();
         assert_eq!(triple.raw_ctrl_extra.len(), 19);
         assert_eq!(&triple.raw_ctrl_extra[0..4], &[0, 0, 1, 0]);
 
@@ -4176,7 +4783,9 @@ mod tests {
             &mut legacy_triple,
             &hwp_version(5, 0, 3, 0),
             &mut report,
-        );
+            &crate::storage::Unbounded,
+        )
+        .unwrap();
         assert_eq!(legacy_triple.raw_ctrl_extra.len(), 10);
         assert_eq!(&legacy_triple.raw_ctrl_extra[2..4], &[0, 0]);
 
@@ -4188,7 +4797,13 @@ mod tests {
             ..Default::default()
         };
         let mut report = AdapterReport::new();
-        materialize_section_def_ctrl_tail(&mut parsed, &hwp_version(5, 1, 0, 0), &mut report);
+        materialize_section_def_ctrl_tail(
+            &mut parsed,
+            &hwp_version(5, 1, 0, 0),
+            &mut report,
+            &crate::storage::Unbounded,
+        )
+        .unwrap();
         assert_eq!(parsed.raw_ctrl_extra, original);
         assert_eq!(report.section_def_master_page_tail_materialized, 0);
     }
@@ -4228,7 +4843,7 @@ mod tests {
         })));
 
         let mut report = AdapterReport::new();
-        adapt_paragraph(&mut para, &mut report);
+        adapt_paragraph(&mut para, &mut report, &crate::storage::Unbounded).unwrap();
 
         for control in &para.controls {
             let nested = match control {
@@ -4276,7 +4891,7 @@ mod tests {
         });
 
         let mut report = AdapterReport::new();
-        adapt_shape(&mut shape, &mut report);
+        adapt_shape(&mut shape, &mut report, &crate::storage::Unbounded).unwrap();
         assert_eq!(report.picture_href_ctrl_data_materialized, 1);
 
         let ShapeObject::Rectangle(rect) = shape else {
@@ -4590,7 +5205,7 @@ mod tests {
         };
 
         let mut report = AdapterReport::new();
-        adapt_paragraph(&mut para, &mut report);
+        adapt_paragraph(&mut para, &mut report, &crate::storage::Unbounded).unwrap();
 
         assert_eq!(report.autonum_fwspace_range_tag_materialized, 1);
         assert_eq!(para.range_tags.len(), 1);
@@ -4599,7 +5214,7 @@ mod tests {
         assert_eq!(para.range_tags[0].tag, 0x0100_0023);
 
         let mut second_report = AdapterReport::new();
-        adapt_paragraph(&mut para, &mut second_report);
+        adapt_paragraph(&mut para, &mut second_report, &crate::storage::Unbounded).unwrap();
         assert_eq!(second_report.autonum_fwspace_range_tag_materialized, 0);
         assert_eq!(para.range_tags.len(), 1);
     }
@@ -4619,7 +5234,9 @@ mod tests {
             &mut header_para,
             &mut report,
             ParagraphContext::HeaderFooter,
-        );
+            &crate::storage::Unbounded,
+        )
+        .unwrap();
 
         assert_eq!(report.header_footer_fwspace_control_materialized, 0);
         assert_eq!(header_para.control_mask & HWP5_FIXED_WIDTH_SPACE_MASK, 0);
@@ -4631,7 +5248,13 @@ mod tests {
             ..Default::default()
         };
         let mut body_report = AdapterReport::new();
-        adapt_paragraph_with_context(&mut body_para, &mut body_report, ParagraphContext::Body);
+        adapt_paragraph_with_context(
+            &mut body_para,
+            &mut body_report,
+            ParagraphContext::Body,
+            &crate::storage::Unbounded,
+        )
+        .unwrap();
 
         assert_eq!(body_report.header_footer_fwspace_control_materialized, 1);
         assert_ne!(body_para.control_mask & HWP5_FIXED_WIDTH_SPACE_MASK, 0);
@@ -4647,7 +5270,9 @@ mod tests {
             &mut master_para,
             &mut master_report,
             ParagraphContext::MasterPage,
-        );
+            &crate::storage::Unbounded,
+        )
+        .unwrap();
 
         assert_eq!(master_report.header_footer_fwspace_control_materialized, 0);
         assert_eq!(master_para.control_mask & HWP5_FIXED_WIDTH_SPACE_MASK, 0);
@@ -4669,7 +5294,9 @@ mod tests {
             &mut master_page_para,
             &mut report,
             ParagraphContext::MasterPage,
-        );
+            &crate::storage::Unbounded,
+        )
+        .unwrap();
 
         assert_eq!(report.master_page_autonum_placeholder_removed, 1);
         assert!(master_page_para.text.is_empty());
@@ -4685,7 +5312,13 @@ mod tests {
             ..Default::default()
         };
         let mut body_report = AdapterReport::new();
-        adapt_paragraph_with_context(&mut body_para, &mut body_report, ParagraphContext::Body);
+        adapt_paragraph_with_context(
+            &mut body_para,
+            &mut body_report,
+            ParagraphContext::Body,
+            &crate::storage::Unbounded,
+        )
+        .unwrap();
 
         assert_eq!(body_report.master_page_autonum_placeholder_removed, 0);
         assert_eq!(body_para.text, " ");
@@ -4733,7 +5366,13 @@ mod tests {
         });
         let mut report = AdapterReport::new();
 
-        adapt_shape_with_context(&mut shape, &mut report, ParagraphContext::MasterPage);
+        adapt_shape_with_context(
+            &mut shape,
+            &mut report,
+            ParagraphContext::MasterPage,
+            &crate::storage::Unbounded,
+        )
+        .unwrap();
 
         let line = match shape {
             ShapeObject::Line(line) => line,
@@ -4776,7 +5415,7 @@ mod tests {
         };
 
         let mut report = AdapterReport::new();
-        adapt_paragraph(&mut para, &mut report);
+        adapt_paragraph(&mut para, &mut report, &crate::storage::Unbounded).unwrap();
 
         assert_eq!(report.autonum_fwspace_char_shape_offsets_materialized, 1);
         assert_eq!(para.char_shapes[0].start_pos, 0);
@@ -4784,7 +5423,7 @@ mod tests {
         assert_eq!(para.char_shapes[2].start_pos, 16);
 
         let mut second_report = AdapterReport::new();
-        adapt_paragraph(&mut para, &mut second_report);
+        adapt_paragraph(&mut para, &mut second_report, &crate::storage::Unbounded).unwrap();
         assert_eq!(
             second_report.autonum_fwspace_char_shape_offsets_materialized,
             0
@@ -4846,7 +5485,7 @@ mod tests {
         para.controls.push(Control::Picture(Box::new(pic)));
 
         let mut report = AdapterReport::new();
-        adapt_paragraph(&mut para, &mut report);
+        adapt_paragraph(&mut para, &mut report, &crate::storage::Unbounded).unwrap();
 
         let Control::Picture(pic) = &para.controls[0] else {
             panic!("Picture control expected");
@@ -4859,7 +5498,7 @@ mod tests {
 
         // 멱등: 다시 적용해도 카운트가 늘지 않아야 함.
         let mut second = AdapterReport::new();
-        adapt_paragraph(&mut para, &mut second);
+        adapt_paragraph(&mut para, &mut second, &crate::storage::Unbounded).unwrap();
         assert_eq!(second.picture_caption_common_attr_materialized, 0);
     }
 
@@ -4877,7 +5516,7 @@ mod tests {
         para.controls.push(Control::Picture(Box::new(pic)));
 
         let mut report = AdapterReport::new();
-        adapt_paragraph(&mut para, &mut report);
+        adapt_paragraph(&mut para, &mut report, &crate::storage::Unbounded).unwrap();
 
         let Control::Picture(pic) = &para.controls[0] else {
             panic!("Picture control expected");
@@ -4981,7 +5620,8 @@ mod tests {
 
         let mut order = Vec::new();
         let mut seen = BTreeSet::new();
-        collect_bin_order_from_control(&ctrl, 2, &mut order, &mut seen);
+        collect_bin_order_from_control(&ctrl, 2, &mut order, &mut seen, &crate::storage::Unbounded)
+            .unwrap();
 
         assert_eq!(
             order,

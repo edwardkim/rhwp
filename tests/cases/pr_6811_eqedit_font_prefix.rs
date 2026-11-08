@@ -1,3 +1,7 @@
+//! 관계형·고정형: 검사 대상 — 수식 글꼴 접두어의 붙여 쓴 표현과 LaTeX 변환.
+//! 주석 갱신: 2026-11-01T06:04:10+09:00; 직전 파일 커밋: 2026-09-09T19:45:12+09:00 (`7be27c47cb7ffe4d52bdb0e4900fa8f2a963077f`).
+//! 입력·기준: 파일 내 EqEdit 문자열 표본과 변환 계약.
+//! API·데이터 계약을 검사하며 화면 시각 일치율은 측정하지 않는다.
 use rhwp::doclang::eqedit::{convert, convert_with_degraded};
 
 fn check(script: &str, expected: &str) {

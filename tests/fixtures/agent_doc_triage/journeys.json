@@ -31,7 +31,7 @@
         "export-structure"
       ],
       "stop": "S05",
-      "sample": "samples/hwp3-sample16.hwp"
+      "sample": "samples/hwp3-sample.hwp"
     },
     {
       "id": "J04",
@@ -117,7 +117,7 @@
         "digest --sections"
       ],
       "stop": "S06",
-      "sample": "samples/hwp3-sample16.hwp"
+      "sample": "samples/hwp3-sample.hwp"
     },
     {
       "id": "J12",
@@ -137,7 +137,7 @@
         "info"
       ],
       "stop": "S02",
-      "sample": "samples/hwp3-sample16-hwp5-2024-password-123456.hwp"
+      "sample": "samples/HWP5-password-123456.hwpx"
     },
     {
       "id": "J14",

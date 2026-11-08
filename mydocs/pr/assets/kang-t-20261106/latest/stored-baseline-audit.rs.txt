@@ -1,0 +1,9 @@
+use rhwp::{DocumentCore,model::{control::Control,paragraph::Paragraph,document::Document}};
+fn walk(paras:&[Paragraph],d:&Document,out:&mut [[usize;2];4]) {
+ for p in paras {
+  let a=((d.doc_info.para_shapes[p.para_shape_id as usize].attr1>>20)&3)as usize;
+  for s in &p.line_segs {out[a][0]+=1; let ok=match a {1=>s.baseline_distance==0,2=>s.baseline_distance==s.text_height/2,3=>s.baseline_distance==s.text_height,_=>false};if ok{out[a][1]+=1;}}
+  for c in &p.controls {if let Control::Table(t)=c {for cell in &t.cells {walk(&cell.paragraphs,d,out);}}}
+ }
+}
+fn main(){for path in std::env::args().skip(1){let core=DocumentCore::from_bytes(&std::fs::read(&path).unwrap()).unwrap();let d=core.document();let mut out=[[0;2];4];for s in &d.sections{walk(&s.paragraphs,d,&mut out);}println!("{}\t{:?}",path,out);}}

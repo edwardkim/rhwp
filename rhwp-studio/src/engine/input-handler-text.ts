@@ -1,6 +1,7 @@
 /** input-handler text methods — extracted from InputHandler class */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { normalizeTextNewlines } from '../core/text-newlines';
 import {
   InsertTextCommand,
   DeleteTextCommand,
@@ -25,13 +26,7 @@ import type { TextMutationEffects } from './command';
 import type { DocumentPosition } from '@/core/types';
 import { showConfirm } from '@/ui/confirm-dialog';
 import { tryConfirmDeleteHyperlink } from './input-handler-hyperlink-delete';
-import {
-  detectPlatformKind,
-  getNavigationAction,
-  shouldSuppressUnmappedNavigation,
-  type NavigationAction,
-  type NavigationKeyInput,
-} from './navigation-keymap';
+import type { NavigationKeyInput } from './navigation-keymap';
 
 /**
  * [#2548] WASM 삭제/조회 count 는 Rust `Paragraph::delete_text_at` 의 char(Unicode
@@ -143,101 +138,28 @@ function tryConfirmRemoveClickHereAtBoundary(
   }
 }
 
-/** IME 조합 종료 후 대기 중인 탐색 키를 처리한다 */
-function executeNavigationAction(this: any, action: NavigationAction, shiftKey: boolean): void {
-  if (shiftKey) this.cursor.setAnchor();
-  else this.cursor.clearSelection();
-
-  switch (action) {
-    case 'wordBackward':
-      this.cursor.moveToWordBoundary(-1);
-      break;
-    case 'wordForward':
-      this.cursor.moveToWordBoundary(1);
-      break;
-    case 'lineStart':
-      this.cursor.moveToLineStart();
-      this.markCurrentFieldStartOutside?.();
-      break;
-    case 'lineEnd':
-      this.cursor.moveToLineEnd();
-      this.markCurrentFieldEndOutside?.();
-      break;
-    case 'paragraphBackward':
-      this.cursor.moveToParagraphBoundary(-1);
-      break;
-    case 'paragraphForward':
-      this.cursor.moveToParagraphBoundary(1);
-      break;
+/** IME 조합 종료 후에도 현재 편집 모드의 키보드 처리 경로를 사용한다. */
+function processPendingNav(this: any, nav: NavigationKeyInput): boolean {
+  const key = nav.code || nav.key || '';
+  // 조합 확정 Enter는 줄바꿈을 추가하지 않는다. 일반 keydown을 재생하지 않으므로
+  // 이 경로에서 pagination barrier를 수행한다. 다른 탐색 키의 barrier는 onKeyDown이 맡는다.
+  if (key === 'Enter') {
+    this.flushDeferredPaginationIfNeeded('before-navigation', false);
+    return true;
   }
 
-  this.updateCaret();
-  if (shiftKey) this.updateSelection();
-}
-
-function processPendingNav(this: any, nav: NavigationKeyInput): void {
-  this.flushDeferredPaginationIfNeeded('before-navigation', false);
-  const { code, shiftKey } = nav;
-  const platform = detectPlatformKind();
-  const action = getNavigationAction(nav, platform);
-  if (action) {
-    executeNavigationAction.call(this, action, shiftKey);
-    return;
-  }
-  if (shouldSuppressUnmappedNavigation(nav, platform)) return;
-
-  // 방향키 처리
-  if (code === 'ArrowLeft' || code === 'ArrowRight' ||
-      code === 'ArrowUp' || code === 'ArrowDown') {
-    const vertical = this.cursor.isInVerticalCell?.() ?? false;
-    if (shiftKey) {
-      this.cursor.setAnchor();
-    } else {
-      this.cursor.clearSelection();
-    }
-    let moveH: number | null = null;
-    let moveV: number | null = null;
-    if (code === 'ArrowLeft') {
-      if (vertical) moveV = -1; else moveH = -1;
-    } else if (code === 'ArrowRight') {
-      if (vertical) moveV = 1; else moveH = 1;
-    } else if (code === 'ArrowUp') {
-      if (vertical) moveH = -1; else moveV = -1;
-    } else {
-      if (vertical) moveH = 1; else moveV = 1;
-    }
-    if (!shiftKey && moveH === 1 && this.tryEnterExitedFieldStart?.()) {
-      this.updateCaret();
-      return;
-    }
-    if (!shiftKey && moveH === -1 && this.tryEnterExitedFieldEnd?.()) {
-      this.updateCaret();
-      return;
-    }
-    if (!shiftKey && moveH === -1 && this.tryExitCurrentFieldStart?.()) {
-      this.updateCaret();
-      return;
-    }
-    if (!shiftKey && moveH === 1 && this.tryExitCurrentFieldEnd?.()) {
-      this.updateCaret();
-      return;
-    }
-    if (moveH !== null) this.cursor.moveHorizontal(moveH);
-    if (moveV !== null) this.cursor.moveVertical(moveV);
-    this.updateCaret();
-  } else if (code === 'Home') {
-    if (shiftKey) this.cursor.setAnchor(); else this.cursor.clearSelection();
-    this.cursor.moveToLineStart();
-    this.markCurrentFieldStartOutside?.();
-    this.updateCaret();
-  } else if (code === 'End') {
-    if (shiftKey) this.cursor.setAnchor(); else this.cursor.clearSelection();
-    this.cursor.moveToLineEnd();
-    this.markCurrentFieldEndOutside?.();
-    this.updateCaret();
-  } else if (code === 'Enter') {
-    // Enter는 조합 확정만으로 충분 (줄바꿈은 별도 처리 불필요)
-  }
+  // IME의 key='Process'와 조합 플래그를 넘기면 다시 보류된다. 물리 키와 수정자만
+  // 재생해 머리말/꼬리말·각주·셀의 커서 소유자, 선택과 화면 이동을 일반 입력과 공유한다.
+  let handled = false;
+  this.onKeyDown({
+    ...nav,
+    key,
+    code: key,
+    isComposing: false,
+    keyCode: 0,
+    preventDefault() { handled = true; },
+  } as KeyboardEvent);
+  return handled;
 }
 
 function tryDeleteBodyFootnoteAtCursor(
@@ -446,6 +368,7 @@ function clearCellBlockLetterImeFollowup(this: any): void {
   this.isComposing = false;
   this.compositionAnchor = null;
   this.compositionLength = 0;
+  this.compositionBodyLogical = false;
   this._lastCompositionText = '';
   this._lastComposedText = '';
   this.caret.hideComposition();
@@ -453,6 +376,7 @@ function clearCellBlockLetterImeFollowup(this: any): void {
 }
 
 export function onCompositionStart(this: any): void {
+  this.compositionBodyLogical = false;
   if (this._cellBlockLetterImeGuard?.consume('compositionstart')) {
     clearCellBlockLetterImeFollowup.call(this);
     return;
@@ -495,6 +419,13 @@ export function onCompositionStart(this: any): void {
   }
 
   this.isComposing = true;
+  this.compositionBodyLogical = !this.cursor.isInHeaderFooter()
+    && !this.cursor.isInFootnote()
+    && basePos.parentParaIndex === undefined
+    && !basePos.isTextBox
+    && basePos.charOffset > this.wasm.getParagraphLength(basePos.sectionIndex, basePos.paragraphIndex)
+    && basePos.charOffset >= this.wasm.getLogicalLength(basePos.sectionIndex, basePos.paragraphIndex);
+  if (this.compositionBodyLogical) this._lastCompositionText = '';
   if (this.cursor.isInHeaderFooter()) {
     // 머리말/꼬리말 모드에서는 hfCharOffset을 anchor의 charOffset으로 사용
     this.compositionAnchor = basePos;
@@ -515,6 +446,7 @@ export function onCompositionEnd(this: any): void {
 
   const anchor = this.compositionAnchor;
   const finalLength = this.compositionLength;
+  const bodyLogical = this.compositionBodyLogical;
   const headerFooterSelectionComposition = this.headerFooterSelectionComposition === true;
   const covered: string = this._compositionCovered || '';
   const fragmentId: number | null = this._compositionFragment;
@@ -524,6 +456,7 @@ export function onCompositionEnd(this: any): void {
   this.isComposing = false;
   this.compositionAnchor = null;
   this.compositionLength = 0;
+  this.compositionBodyLogical = false;
   this.textarea.value = '';
   this.caret.hideComposition();
   this.updateCaret();
@@ -531,7 +464,7 @@ export function onCompositionEnd(this: any): void {
 
   // [#7489] 조합이 글자 없이 끝나면(취소) 덮었던 글자를 범위·글자 모양까지 되살린다.
   // 기록할 편집은 없다.
-  if (anchor && finalLength === 0 && covered) {
+  if (anchor && finalLength === 0 && (covered || (bodyLogical && fragmentId !== null))) {
     if (fragmentId !== null) {
       // 되돌리기(handleUndo)와 같은 순서로 지연 조판을 먼저 끝내고 문단을 되돌린다.
       this.flushDeferredPaginationIfNeeded('before-undo', false);
@@ -576,18 +509,26 @@ export function onCompositionEnd(this: any): void {
         this.executeOperation({ kind: 'record', command: new InsertTextInFootnoteCommand(target, this.cursor.fnInnerParaIdx, anchor.charOffset, composed) });
       }
     } else {
-      const insertedText = this.getTextAt(anchor, finalLength);
-      if (insertedText) {
+      const textAnchor = bodyLogical ? {
+        ...anchor,
+        charOffset: this.wasm.logicalToTextOffset(anchor.sectionIndex, anchor.paragraphIndex, anchor.charOffset),
+      } : anchor;
+      const insertedText = this.getTextAt(textAnchor, finalLength);
+      const recorded = insertedText && (!bodyLogical
+        || (insertedText === this._lastCompositionText && charCount(insertedText) === finalLength));
+      if (recorded) {
         // execute() 없이 히스토리에만 기록 (텍스트는 이미 문서에 있음). 덮어쓴 글자와 덮기 전
         // 문단 조각도 함께 기록해 한 번의 되돌리기로 되살린다.
         this.executeOperation({
           kind: 'record',
           command: new InsertTextCommand(
-            anchor, insertedText, undefined, undefined, covered, fragmentId === null ? [] : [fragmentId],
+            anchor, insertedText, undefined, bodyLogical ? this.getPendingCharShape?.() : undefined,
+            covered, fragmentId === null ? [] : [fragmentId], bodyLogical,
           ),
         });
-      } else if (fragmentId !== null) {
-        this.wasm.discardDeleteFragment(fragmentId);
+      } else {
+        if (bodyLogical) this._lastComposedText = '';
+        if (fragmentId !== null) this.wasm.discardDeleteFragment(fragmentId);
       }
     }
   }
@@ -599,7 +540,12 @@ export function onCompositionEnd(this: any): void {
   if (this._pendingNavAfterIME) {
     const nav = this._pendingNavAfterIME;
     this._pendingNavAfterIME = null;
-    processPendingNav.call(this, nav);
+    if (processPendingNav.call(this, nav)) {
+      this._imeNavigationGuard?.markReplayed();
+    } else {
+      // 재생이 소비하지 않은 키(HF/FN Tab 등)는 native keydown의 기본 동작을 허용한다.
+      this._imeNavigationGuard?.reset();
+    }
   }
 }
 
@@ -626,7 +572,7 @@ export function onInput(this: any, e?: InputEvent): void {
     return;
   }
 
-  const text = this.textarea.value;
+  const text = normalizeTextNewlines(this.textarea.value);
   // const inputType = e?.inputType ?? 'unknown';
   // const inputData = e?.data ?? '';
   // const isComp = e?.isComposing ?? false;
@@ -662,6 +608,14 @@ export function onInput(this: any, e?: InputEvent): void {
     try {
       this.replaceTextAtRaw(anchor, this.compositionLength, text);
     } catch (err) {
+      if (this.compositionBodyLogical) {
+        // 이 경로는 조각을 복구했으므로 같은 앵커에서 다음 조합 갱신을 받는다.
+        console.warn('[InputHandler] 개체 뒤 조합 갱신 실패 — 이전 입력 유지:', err);
+        this.textarea.value = this._lastCompositionText || '';
+        this.prepareTextMutationBeforeCursor(IMMEDIATE_TEXT_MUTATION_EFFECTS);
+        this.afterEdit();
+        return;
+      }
       // wasm 의 deferred replace 범위 가드가 거부하면(외부 변이로 앵커·길이가 낡은
       // 경합) 여기서 던진 채 두면 onInput 전체가 죽어 조합 추적이 낡은 값으로
       // wedge 된다. 조합을 현재 캐럿에 재정박하고 이번 조합 텍스트를 새로 삽입해
@@ -814,7 +768,7 @@ export function onInput(this: any, e?: InputEvent): void {
       this.wasm.insertTextInHeaderFooter(target.sectionIdx, isHeader, target.applyTo, paraIdx, charOffset, text);
       // [Task #2337] 히스토리 기록 → 본문 스냅샷 undo 가 이 편집을 무언 파괴하지 않게 한다.
       this.executeOperation({ kind: 'record', command: new InsertTextInHeaderFooterCommand(target, paraIdx, charOffset, text) });
-      this.cursor.setHfCursorPosition(paraIdx, charOffset + text.length);
+      this.cursor.setHfCursorPosition(paraIdx, charOffset + charCount(text));
       this.afterEdit();
     } catch (err) {
       console.error('[HF-input] insertTextInHeaderFooter 실패:', err);
@@ -833,11 +787,17 @@ export function onInput(this: any, e?: InputEvent): void {
       const charOffset = this.cursor.fnCharOffset;
       this.wasm.insertTextInFootnote(target.sectionIdx, target.paraIdx, target.controlIdx, innerParaIdx, charOffset, text);
       this.executeOperation({ kind: 'record', command: new InsertTextInFootnoteCommand(target, innerParaIdx, charOffset, text) });
-      this.cursor.setFnCursorPosition(innerParaIdx, charOffset + text.length);
+      this.cursor.setFnCursorPosition(innerParaIdx, charOffset + charCount(text));
       this.afterEdit();
     } catch (err) {
       console.error('[FN-input] insertTextInFootnote 실패:', err);
     }
+    return;
+  }
+
+  // 누름틀 정규화는 선택을 해제할 수 있으므로 지원 범위를 먼저 검사한다.
+  if (this.cursor.hasSelection() && !this.canDeleteSelectionInFormMode?.()) {
+    this.textarea.value = '';
     return;
   }
 
@@ -847,10 +807,6 @@ export function onInput(this: any, e?: InputEvent): void {
   // 선택 영역은 삽입 모드와 똑같이 입력으로 바뀌고, 뒤 글자를 더 덮어쓰지 않는다.
   const hadSelection = this.cursor.hasSelection();
   if (hadSelection) {
-    if (!this.canDeleteSelectionInFormMode?.()) {
-      this.textarea.value = '';
-      return;
-    }
     this.deleteSelection();
     insertPos = this.prepareClickHereInputPosition?.() ?? this.cursor.getPosition();
     refreshClickHereGuide = this.isClickHereGuidePosition?.(insertPos) === true;
@@ -898,9 +854,45 @@ export function replaceTextAtRaw(
   deleteCount: number,
   text: string,
 ): TextMutationEffects {
-  if (!this.canInsertTextInFormMode?.(pos)) return NO_TEXT_MUTATION_EFFECTS;
-  if (deleteCount > 0 && !this.canDeleteTextInFormMode?.(pos, deleteCount)) {
+  if (!this.canInsertTextInFormMode?.(pos)) {
+    if (this.isComposing && this.compositionBodyLogical) throw new Error('이 위치에는 조합을 넣지 못합니다');
     return NO_TEXT_MUTATION_EFFECTS;
+  }
+  if (deleteCount > 0 && !this.canDeleteTextInFormMode?.(pos, deleteCount)) {
+    if (this.isComposing && this.compositionBodyLogical) throw new Error('이 위치의 조합을 바꾸지 못합니다');
+    return NO_TEXT_MUTATION_EFFECTS;
+  }
+  if (this.isComposing && this.compositionBodyLogical) {
+    const scalar = this.wasm.logicalToTextOffset(pos.sectionIndex, pos.paragraphIndex, pos.charOffset);
+    const textPos = { ...pos, charOffset: scalar };
+    if (!Number.isInteger(pos.charOffset) || pos.charOffset < 0
+      || pos.charOffset > this.wasm.getLogicalLength(pos.sectionIndex, pos.paragraphIndex)
+      || !Number.isInteger(deleteCount) || deleteCount < 0
+      || scalar + deleteCount > this.wasm.getParagraphLength(pos.sectionIndex, pos.paragraphIndex)) {
+      throw new Error('조합 범위가 바뀌었습니다');
+    }
+    if (deleteCount > 0 && !this.canDeleteTextInFormMode?.(textPos, deleteCount)) {
+      throw new Error('이 위치의 조합을 바꾸지 못합니다');
+    }
+    // 한 오프셋을 받는 local replace는 개체 뒤 삽입과 텍스트 삭제를 함께 표현하지 못한다.
+    const fragment = captureTextFragment(this.wasm, pos);
+    if (fragment === null) throw new Error('이 위치에서는 조합을 바꾸지 못했습니다');
+    try {
+      this.wasm.runInBatch(() => {
+        if (deleteCount > 0) this.wasm.deleteText(pos.sectionIndex, pos.paragraphIndex, scalar, deleteCount);
+        if (text) this.wasm.insertTextLogical(pos.sectionIndex, pos.paragraphIndex, pos.charOffset, text);
+      });
+      // 예약 서식이 빈 run까지 바꾸므로 첫 원문 조각을 Undo·취소에 넘긴다.
+      if (this._compositionFragment === null && this.getPendingCharShape?.()) {
+        this._compositionFragment = fragment;
+      }
+    } catch (error) {
+      this.wasm.restoreDeleteFragment(fragment);
+      throw error;
+    } finally {
+      if (this._compositionFragment !== fragment) this.wasm.discardDeleteFragment(fragment);
+    }
+    return IMMEDIATE_TEXT_MUTATION_EFFECTS;
   }
   if (!this.cursor.isInHeaderFooter() && !this.cursor.isInFootnote()) {
     return replaceTextWithMutationEffects(this.wasm, pos, deleteCount, text);

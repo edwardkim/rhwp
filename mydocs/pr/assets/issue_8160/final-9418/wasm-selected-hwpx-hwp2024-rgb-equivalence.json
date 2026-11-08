@@ -1,0 +1,172 @@
+[
+  {
+    "page": 1,
+    "rhwp_png": {
+      "rgb_identical": true,
+      "images": {
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwpx/sample16-hwpx/rhwp_png/rhwp_001.png": "4669579a6b8cc8eeb1916148828eb5168afbb0c6d9335b1dd2b018fd6e608e6c",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwp2024/sample16-hwp2024/rhwp_png/rhwp_001.png": "4669579a6b8cc8eeb1916148828eb5168afbb0c6d9335b1dd2b018fd6e608e6c"
+      }
+    },
+    "pdf_png": {
+      "rgb_identical": true,
+      "images": {
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwpx/sample16-hwpx/pdf_png/pdf-001.png": "87e198e2769a8b49aff5bcae43a6fd77b549c241c394c6ad2c498ee0b2730246",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwp2024/sample16-hwp2024/pdf_png/pdf-001.png": "87e198e2769a8b49aff5bcae43a6fd77b549c241c394c6ad2c498ee0b2730246"
+      }
+    }
+  },
+  {
+    "page": 2,
+    "rhwp_png": {
+      "rgb_identical": true,
+      "images": {
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwpx/sample16-hwpx/rhwp_png/rhwp_002.png": "14d840afa830e19fe7690c9a41ab65557e091e85dd5eb45ded26f430c6e0bb50",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwp2024/sample16-hwp2024/rhwp_png/rhwp_002.png": "14d840afa830e19fe7690c9a41ab65557e091e85dd5eb45ded26f430c6e0bb50"
+      }
+    },
+    "pdf_png": {
+      "rgb_identical": true,
+      "images": {
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwpx/sample16-hwpx/pdf_png/pdf-002.png": "0cedabc86d3293a3a85bf302264cee7c9f89ca04a7efab03f8cdf8c68a0b9b6c",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwp2024/sample16-hwp2024/pdf_png/pdf-002.png": "0cedabc86d3293a3a85bf302264cee7c9f89ca04a7efab03f8cdf8c68a0b9b6c"
+      }
+    }
+  },
+  {
+    "page": 3,
+    "rhwp_png": {
+      "rgb_identical": true,
+      "images": {
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwpx/sample16-hwpx/rhwp_png/rhwp_003.png": "90854d1de232533eebcf924b36699151f9936a3acb79af12d2d456e3ab109225",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwp2024/sample16-hwp2024/rhwp_png/rhwp_003.png": "90854d1de232533eebcf924b36699151f9936a3acb79af12d2d456e3ab109225"
+      }
+    },
+    "pdf_png": {
+      "rgb_identical": true,
+      "images": {
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwpx/sample16-hwpx/pdf_png/pdf-003.png": "2fa720609058eaf704fd0c14872bed90dca629479b897138e64d967881942574",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwp2024/sample16-hwp2024/pdf_png/pdf-003.png": "2fa720609058eaf704fd0c14872bed90dca629479b897138e64d967881942574"
+      }
+    }
+  },
+  {
+    "page": 5,
+    "rhwp_png": {
+      "rgb_identical": true,
+      "images": {
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwpx/sample16-hwpx/rhwp_png/rhwp_005.png": "88651329388e78321bb4b42dad9837ea11a400841c4cd881edd28a79c9d0387b",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwp2024/sample16-hwp2024/rhwp_png/rhwp_005.png": "88651329388e78321bb4b42dad9837ea11a400841c4cd881edd28a79c9d0387b"
+      }
+    },
+    "pdf_png": {
+      "rgb_identical": true,
+      "images": {
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwpx/sample16-hwpx/pdf_png/pdf-005.png": "4bf3c3178099bb3915ba9280a0485c0e6ef6ce4ad9d111f8f10db643006f9e6c",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwp2024/sample16-hwp2024/pdf_png/pdf-005.png": "4bf3c3178099bb3915ba9280a0485c0e6ef6ce4ad9d111f8f10db643006f9e6c"
+      }
+    }
+  },
+  {
+    "page": 6,
+    "rhwp_png": {
+      "rgb_identical": true,
+      "images": {
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwpx/sample16-hwpx/rhwp_png/rhwp_006.png": "5fa02ae8dc512a72b90df4fb6dd816be55d78990a1c6721b8c2c984ed9bd2705",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwp2024/sample16-hwp2024/rhwp_png/rhwp_006.png": "5fa02ae8dc512a72b90df4fb6dd816be55d78990a1c6721b8c2c984ed9bd2705"
+      }
+    },
+    "pdf_png": {
+      "rgb_identical": true,
+      "images": {
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwpx/sample16-hwpx/pdf_png/pdf-006.png": "6a8a543a6db72ffb0256269221ae95d3b11942b9a03f14bfa10a9269b7547efa",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwp2024/sample16-hwp2024/pdf_png/pdf-006.png": "6a8a543a6db72ffb0256269221ae95d3b11942b9a03f14bfa10a9269b7547efa"
+      }
+    }
+  },
+  {
+    "page": 18,
+    "rhwp_png": {
+      "rgb_identical": true,
+      "images": {
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwpx/sample16-hwpx/rhwp_png/rhwp_018.png": "f96ff8982bf1483ea257d639f72afa5a9bebb69014188f365a55bc6777c471ab",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwp2024/sample16-hwp2024/rhwp_png/rhwp_018.png": "f96ff8982bf1483ea257d639f72afa5a9bebb69014188f365a55bc6777c471ab"
+      }
+    },
+    "pdf_png": {
+      "rgb_identical": true,
+      "images": {
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwpx/sample16-hwpx/pdf_png/pdf-018.png": "5b8ce921a87a1578cbe60753532668dbd052c584ba29d1176dd5e381dce0a3b3",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwp2024/sample16-hwp2024/pdf_png/pdf-018.png": "5b8ce921a87a1578cbe60753532668dbd052c584ba29d1176dd5e381dce0a3b3"
+      }
+    }
+  },
+  {
+    "page": 35,
+    "rhwp_png": {
+      "rgb_identical": true,
+      "images": {
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwpx/sample16-hwpx/rhwp_png/rhwp_035.png": "01f67d603c683da9707dc6d17a85809990f00b8cb36340416368aeeeb99a8a59",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwp2024/sample16-hwp2024/rhwp_png/rhwp_035.png": "01f67d603c683da9707dc6d17a85809990f00b8cb36340416368aeeeb99a8a59"
+      }
+    },
+    "pdf_png": {
+      "rgb_identical": true,
+      "images": {
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwpx/sample16-hwpx/pdf_png/pdf-035.png": "5dc7cdae3998b5b72e0d280420f64bb8090a92b0827d85f6a87cddb4d434716c",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwp2024/sample16-hwp2024/pdf_png/pdf-035.png": "5dc7cdae3998b5b72e0d280420f64bb8090a92b0827d85f6a87cddb4d434716c"
+      }
+    }
+  },
+  {
+    "page": 38,
+    "rhwp_png": {
+      "rgb_identical": true,
+      "images": {
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwpx/sample16-hwpx/rhwp_png/rhwp_038.png": "9cc709210594fdd5010b3b261aefe3138477aa18ac380002631b390b9f8d46c5",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwp2024/sample16-hwp2024/rhwp_png/rhwp_038.png": "9cc709210594fdd5010b3b261aefe3138477aa18ac380002631b390b9f8d46c5"
+      }
+    },
+    "pdf_png": {
+      "rgb_identical": true,
+      "images": {
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwpx/sample16-hwpx/pdf_png/pdf-038.png": "d9a50883db015aa2c6ed010ac25bf9162a7f310d47b5f78c14cf0a5f6ab6ecf1",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwp2024/sample16-hwp2024/pdf_png/pdf-038.png": "d9a50883db015aa2c6ed010ac25bf9162a7f310d47b5f78c14cf0a5f6ab6ecf1"
+      }
+    }
+  },
+  {
+    "page": 41,
+    "rhwp_png": {
+      "rgb_identical": false,
+      "images": {
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwpx/sample16-hwpx/rhwp_png/rhwp_041.png": "d1f29dee633ee46c117854aa27389f1054d47d13919e0d345f02f1b150e33f6a",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwp2024/sample16-hwp2024/rhwp_png/rhwp_041.png": "dbdb672eb2fff9d97118125d702c8579a3a2b7d50f2a921835b68493fc5c931e"
+      }
+    },
+    "pdf_png": {
+      "rgb_identical": true,
+      "images": {
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwpx/sample16-hwpx/pdf_png/pdf-041.png": "3d4fcd291d1ef840db51265bf6b186de538bd741742076cd15acbb3c29896c05",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwp2024/sample16-hwp2024/pdf_png/pdf-041.png": "3d4fcd291d1ef840db51265bf6b186de538bd741742076cd15acbb3c29896c05"
+      }
+    }
+  },
+  {
+    "page": 58,
+    "rhwp_png": {
+      "rgb_identical": true,
+      "images": {
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwpx/sample16-hwpx/rhwp_png/rhwp_058.png": "dc1de1a9ee70a07f56f178b21cf5d41bedd6041c280f188c1807a0f99391e5f4",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwp2024/sample16-hwp2024/rhwp_png/rhwp_058.png": "dc1de1a9ee70a07f56f178b21cf5d41bedd6041c280f188c1807a0f99391e5f4"
+      }
+    },
+    "pdf_png": {
+      "rgb_identical": true,
+      "images": {
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwpx/sample16-hwpx/pdf_png/pdf-058.png": "7a3a92e48ed152ff1f1946bf3d011b28c8ff9545ac30d9f795a945192cf62ec7",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/original-font-final-full-wasm-hwp2024/sample16-hwp2024/pdf_png/pdf-058.png": "7a3a92e48ed152ff1f1946bf3d011b28c8ff9545ac30d9f795a945192cf62ec7"
+      }
+    }
+  }
+]

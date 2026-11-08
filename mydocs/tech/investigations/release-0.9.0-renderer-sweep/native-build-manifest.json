@@ -1,0 +1,8 @@
+{
+  "sourceSha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+  "path": "output/release-v0.9.0-execution/promotion/clip-review/rhwp-native",
+  "sha256": "03e1b4b280fdf7ece140350177a4da064f06c7015247470e09c8c592ad640b7f",
+  "bytes": 88156288,
+  "feature": "native-skia",
+  "profile": "release-test"
+}

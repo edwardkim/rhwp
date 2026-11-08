@@ -1,0 +1,20 @@
+RHWP LMM Variable Outline 파생 글꼴 manifest
+
+원본: Latin Modern Math 1.959
+원본 파일: LatinModernMath-Regular.woff2
+원본 SHA-256: 1177d9025d1e797c54b3c7676976365abd90f903423091de7f0f4e7a4b372162
+Copyright 2012--2014 B. Jackowski, P. Strzelczyk, P. Pianowski.
+라이선스: 동봉 LatinModernMath-GUST-FONT-LICENSE.txt의 GUST Font License
+
+파생 파일: LatinModernMath-VariableOutline-subset.otf
+파생 SHA-256: c3b70b3a6ad5d7b03fb9c86067b6fc212b3a084870a9acff13238190137bf260
+family/full name: RHWP LMM Variable Outline
+PostScript name: RHWP-LMM-VariableOutline
+
+변경: 정체 A~Z/a~z와 이탤릭 a~z의 Unicode 윤곽만 fontTools subset으로
+보존하고 힌트와 MATH/GSUB/GPOS 테이블을 제외했다. family/full/PostScript
+이름과 CFF 이름을 변경했으며 원본 저작권·라이선스 name 정보와 timestamp를
+보존했다. 한컴 대문자는 공개 정체 윤곽에 독립 Print 기울임을 적용한다.
+굵은 변수도 같은 공개 일반 윤곽에 확인한 전진·획·장평을 소비한다.
+사용자 설치 글꼴의 바이트·윤곽은 포함하지 않으며 공개 원본과 파생 파일
+모두 위 GUST 라이선스 조건을 유지한다.

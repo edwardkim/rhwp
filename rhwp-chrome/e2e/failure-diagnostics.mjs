@@ -51,6 +51,7 @@ export async function saveFailureDiagnostics(browser, name, diagnostic) {
   const targets = browser?.targets() || [];
   const summary = {
     ...diagnostic,
+    runId: process.env.RHWP_EXTENSION_E2E_RUN_ID,
     openExtensionUrls: targets.filter(target => target.url().startsWith('chrome-extension://')).map(target => target.url()),
     workers: targets.filter(target => target.type() === 'service_worker').map(target => target.url()),
   };

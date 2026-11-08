@@ -1,0 +1,284 @@
+{
+  "fonts": [
+    {
+      "fontFile": "malgunbd.ttf",
+      "sha256": "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082",
+      "weightClass": 700,
+      "names": [
+        [
+          1,
+          "Malgun Gothic"
+        ],
+        [
+          1,
+          "맑은 고딕"
+        ],
+        [
+          2,
+          "Bold"
+        ],
+        [
+          4,
+          "Malgun Gothic Bold"
+        ],
+        [
+          4,
+          "맑은 고딕 Bold"
+        ],
+        [
+          6,
+          "MalgunGothicBold"
+        ]
+      ]
+    },
+    {
+      "fontFile": "arialbd.ttf",
+      "sha256": "e8f4e3baf6cc35fed6fcce3a540e8b39e8f6cda1d22a28f2ec8f526fef7a43f5",
+      "weightClass": 700,
+      "names": [
+        [
+          1,
+          "Arial"
+        ],
+        [
+          2,
+          "Bold"
+        ],
+        [
+          2,
+          "Fet"
+        ],
+        [
+          2,
+          "Fett"
+        ],
+        [
+          2,
+          "Félkövér"
+        ],
+        [
+          2,
+          "Gras"
+        ],
+        [
+          2,
+          "Grassetto"
+        ],
+        [
+          2,
+          "Halvfet"
+        ],
+        [
+          2,
+          "Kalın"
+        ],
+        [
+          2,
+          "Krepko"
+        ],
+        [
+          2,
+          "Lihavoitu"
+        ],
+        [
+          2,
+          "Lodia"
+        ],
+        [
+          2,
+          "Negreta"
+        ],
+        [
+          2,
+          "Negrita"
+        ],
+        [
+          2,
+          "Negrito"
+        ],
+        [
+          2,
+          "Pogrubiony"
+        ],
+        [
+          2,
+          "Tučné"
+        ],
+        [
+          2,
+          "Vet"
+        ],
+        [
+          2,
+          "fed"
+        ],
+        [
+          2,
+          "tučné"
+        ],
+        [
+          2,
+          "đậm"
+        ],
+        [
+          2,
+          "Έντονα"
+        ],
+        [
+          2,
+          "Полужирный"
+        ],
+        [
+          4,
+          "Arial Bold"
+        ],
+        [
+          4,
+          "Arial Fet"
+        ],
+        [
+          4,
+          "Arial Fett"
+        ],
+        [
+          4,
+          "Arial Félkövér"
+        ],
+        [
+          4,
+          "Arial Gras"
+        ],
+        [
+          4,
+          "Arial Grassetto"
+        ],
+        [
+          4,
+          "Arial Halvfet"
+        ],
+        [
+          4,
+          "Arial Kalın"
+        ],
+        [
+          4,
+          "Arial Krepko"
+        ],
+        [
+          4,
+          "Arial Lihavoitu"
+        ],
+        [
+          4,
+          "Arial Lodia"
+        ],
+        [
+          4,
+          "Arial Negreta"
+        ],
+        [
+          4,
+          "Arial Negrita"
+        ],
+        [
+          4,
+          "Arial Negrito"
+        ],
+        [
+          4,
+          "Arial Pogrubiony"
+        ],
+        [
+          4,
+          "Arial Tučné"
+        ],
+        [
+          4,
+          "Arial Vet"
+        ],
+        [
+          4,
+          "Arial fed"
+        ],
+        [
+          4,
+          "Arial tučné"
+        ],
+        [
+          4,
+          "Arial đậm"
+        ],
+        [
+          4,
+          "Arial Έντονα"
+        ],
+        [
+          4,
+          "Arial Полужирный"
+        ],
+        [
+          6,
+          "Arial-BoldMT"
+        ]
+      ]
+    },
+    {
+      "fontFile": "wingding.ttf",
+      "sha256": "9bcd6064e3b52fa30a347edd6e82506e2ec8b1602930b423c629a82c10468a5b",
+      "weightClass": 400,
+      "names": [
+        [
+          1,
+          "Wingdings"
+        ],
+        [
+          2,
+          "Navadno"
+        ],
+        [
+          2,
+          "Normaali"
+        ],
+        [
+          2,
+          "Normal"
+        ],
+        [
+          2,
+          "Normale"
+        ],
+        [
+          2,
+          "Normálne"
+        ],
+        [
+          2,
+          "Regular"
+        ],
+        [
+          2,
+          "Standaard"
+        ],
+        [
+          2,
+          "Standard"
+        ],
+        [
+          2,
+          "normal"
+        ],
+        [
+          4,
+          "Wingdings"
+        ],
+        [
+          6,
+          "Wingdings-Regular"
+        ]
+      ]
+    }
+  ],
+  "scope": "Font name metadata only; no proprietary font bytes. PDF descriptors independently retain weight 700 for both bold faces. Style-specific targets retain Bold rather than collapsing to Regular.",
+  "input": "pdf/issue7966/exceeds-32.pdf",
+  "inputSha256": "cd8465adc8c96e7dd6dc2412b0d198ea0d54ae019824cad63443bc31139ea3d4"
+}

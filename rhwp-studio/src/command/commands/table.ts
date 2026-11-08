@@ -19,6 +19,9 @@ import {
   type TableInsertRowColumnMode,
 } from '@/ui/table-row-column-dialog';
 import { t } from '../../i18n/index.ts';
+import { clampedCellAfterDelete } from '@/engine/table-cell-clamp';
+import type { WasmBridge } from '@/core/wasm-bridge';
+import type { CellPathEntry, DocumentPosition } from '@/core/types';
 const inTable = (ctx: EditorContext) => ctx.inTable;
 const inTableOrCellSelection = (ctx: EditorContext) => ctx.inTable || ctx.inCellSelectionMode;
 const hasMultiCellSelection = (ctx: EditorContext) => ctx.hasMultiCellSelection;
@@ -259,35 +262,6 @@ function applyTableInsertRowColumn(
   restoreEditorFocus(ih);
 }
 
-/**
- * 줄/칸 지우기 후 커서 셀 보정 (#1483).
- *
- * 삭제로 셀 수가 줄면 기존 cellIndex가 새 표 범위를 벗어나 updateRect가 "셀 인덱스 초과"로
- * 실패한다. 삭제 후 표 크기(rowCount/colCount) 내로 (row,col)을 clamp하고, 해당 위치의
- * cellIndex를 getTableCellBboxes로 역조회한다 (병합 셀은 rowSpan/colSpan 범위로 매칭).
- * 표가 소멸(rowCount/colCount<=0)하면 null을 반환한다.
- */
-function clampedCellAfterDelete(
-  wasm: CommandServices['wasm'],
-  sec: number,
-  parentPara: number,
-  controlIdx: number,
-  origRow: number,
-  origCol: number,
-  rowCount: number,
-  colCount: number,
-): { cellIndex: number; cellParaIndex: number } | null {
-  if (rowCount <= 0 || colCount <= 0) return null;
-  const row = Math.min(origRow, rowCount - 1);
-  const col = Math.min(origCol, colCount - 1);
-  const bboxes = wasm.getTableCellBboxes(sec, parentPara, controlIdx);
-  const hit = bboxes.find(
-    (b) =>
-      row >= b.row && row < b.row + b.rowSpan &&
-      col >= b.col && col < b.col + b.colSpan,
-  );
-  return { cellIndex: hit ? hit.cellIdx : 0, cellParaIndex: 0 };
-}
 
 function applyTableDeleteRowColumn(
   services: CommandServices,
@@ -308,6 +282,7 @@ function applyTableDeleteRowColumn(
       const corrected = clampedCellAfterDelete(
         wasm, pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!,
         cellInfo.row, cellInfo.col, res.rowCount, res.colCount,
+        pos.cellPath,
       );
       if (!corrected) {
         // 표 소멸 → 표 밖 본문 위치로 폴백.
@@ -319,16 +294,53 @@ function applyTableDeleteRowColumn(
   restoreEditorFocus(ih);
 }
 
+/**
+ * [#8262] 캐럿이 있는 칸 안에 표를 만들고, 캐럿을 안쪽 표 첫 칸에 둔다.
+ * 깊이 1 칸은 `cellPath` 가 없을 수 있어 평면 필드로 경로를 만든다.
+ */
+function createTableInCell(
+  wasm: WasmBridge,
+  pos: DocumentPosition,
+  rows: number,
+  cols: number,
+  options?: TableCreateOptions,
+): DocumentPosition {
+  const cellPath: CellPathEntry[] = pos.cellPath?.length
+    ? pos.cellPath
+    : [{ controlIndex: pos.controlIndex!, cellIndex: pos.cellIndex!, cellParaIndex: pos.cellParaIndex! }];
+  const result = wasm.createTableInCellByPath(pos.sectionIndex, pos.parentParaIndex!, cellPath, pos.charOffset, {
+    rowCount: rows,
+    colCount: cols,
+    ...(options?.colWidths ? { colWidths: options.colWidths } : {}),
+    ...(options?.rowHeights ? { rowHeights: options.rowHeights } : {}),
+  });
+  if (!result.ok) return pos;
+  const [outer] = result.cellPath;
+  return {
+    sectionIndex: pos.sectionIndex,
+    paragraphIndex: pos.paragraphIndex,
+    charOffset: 0,
+    parentParaIndex: pos.parentParaIndex,
+    controlIndex: outer.controlIndex,
+    cellIndex: outer.cellIndex,
+    cellParaIndex: outer.cellParaIndex,
+    cellPath: result.cellPath,
+  };
+}
+
 export const tableCommands: CommandDef[] = [
   { id: 'table:create', label: t('command.table.create.label'), icon: 'icon-table',
     opensDialog: true,
-    canExecute: (ctx) => ctx.hasDocument && !ctx.inTable,
+    // [#8262] 표 칸 안에서도 만든다(깊이 무관). 글상자 안은 아직 받지 않는다.
+    canExecute: (ctx) => ctx.hasDocument,
     execute(services, params) {
       const ih = services.getInputHandler();
       if (!ih) return;
       const pos = ih.getCursorPosition();
-      if (pos.parentParaIndex !== undefined) return;
+      if (pos.isTextBox) return;
+      const inCell = pos.parentParaIndex !== undefined;
       const dialog = new TableCreateDialog();
+      dialog.inlineOnly = inCell;
       dialog.onApply = (rows, cols, options?: TableCreateOptions) => {
         const ih2 = services.getInputHandler();
         if (!ih2) return;
@@ -336,6 +348,7 @@ export const tableCommands: CommandDef[] = [
           kind: 'snapshot',
           operationType: 'createTable',
           operation: (wasm) => {
+            if (inCell) return createTableInCell(wasm, pos, rows, cols, options);
             const result = options
               ? wasm.createTableEx({
                   sectionIdx: pos.sectionIndex,
@@ -355,6 +368,7 @@ export const tableCommands: CommandDef[] = [
                 controlIndex: result.controlIdx,
                 cellIndex: 0,
                 cellParaIndex: 0,
+                cellPath: [{ controlIndex: result.controlIdx, cellIndex: 0, cellParaIndex: 0 }],
               };
             }
             return pos;

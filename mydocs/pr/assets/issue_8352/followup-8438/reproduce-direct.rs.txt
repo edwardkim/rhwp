@@ -1,0 +1,9 @@
+use rhwp::{DocumentCore, parser::pdf::{PdfImportLayout, PdfImportOptions}};
+fn main() {
+    let source = std::fs::read("samples/21_언어_기출_편집가능본-2010.pdf").unwrap();
+    let options = PdfImportOptions { layout: PdfImportLayout::Editable, ..Default::default() };
+    let mut doc = DocumentCore::from_pdf_bytes(&source, &options).unwrap();
+    doc.insert_text_native(0, 59, 0, "IR: ").unwrap();
+    let bytes = doc.export_hwp_native().unwrap();
+    std::fs::write("output/pr-review/planet6897-ordered-20261031/followup-8357-direct.hwp", bytes).unwrap();
+}

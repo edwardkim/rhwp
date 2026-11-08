@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-28",
+  "scope": "요청된 변경 테스트의 정상 실행; 전체 회귀 재실행 없음",
+  "results": [
+    {
+      "log": "output/pr-review/planet6897-20261026/rebase-8328/fixed-coordinates-targeted-nextest-retry.log",
+      "sha256": "c4234df3e99c9940bbdc3125a44edf0a08b8120512e18e4af12dbf81d2040a36",
+      "summary": "Summary [   5.758s] 25 tests run: 25 passed, 1873 skipped"
+    },
+    {
+      "log": "output/pr-review/planet6897-20261026/rebase-8328/issue8168-fixed-coordinates.log",
+      "sha256": "47ad0242a77360d8e408939c36ed18b9b249f56660b1ae772eecdef149c14d8f",
+      "summary": "Summary [   0.034s] 2 tests run: 2 passed, 274 skipped"
+    }
+  ]
+}

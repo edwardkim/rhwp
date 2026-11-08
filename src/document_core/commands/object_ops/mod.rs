@@ -8,8 +8,11 @@ mod chart;
 mod common;
 mod connector;
 mod equation;
+/// 각주 모양 탭의 조회·적용과 각주 번호 맞추기.
+mod footnote_shape;
 mod note;
 mod picture;
+mod picture_inline_migration;
 mod shape;
 mod table;
 mod table_creation;

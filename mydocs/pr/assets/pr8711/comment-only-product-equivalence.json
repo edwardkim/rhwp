@@ -1,0 +1,7 @@
+{
+  "producer_source": "a657ac0936e324f9648ab628862062b5b9fddbd8",
+  "test_provenance_commit": "4e5a8d1565543daa999c776668d491fcc0beade5",
+  "product_source_changes": [],
+  "maintainer_delta": "Only module doc comments in tests/cases/leading_definition_slots.rs; no assertion, expectation, fixture or product source change.",
+  "local_validation": "New head Rust gates required; previous green Full CI is not counted as the final gate after this correction."
+}

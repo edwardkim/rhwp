@@ -47,6 +47,7 @@
   ],
   "widthSources": {
     "measuredOverlay": [
+      "measuredOriginalGlyph",
       "kopubTable",
       "metricHalfwidthPunctuationOverlay",
       "metricNarrowPunctuationOverlay",
@@ -54,7 +55,9 @@
     ],
     "metricHit": [
       "embeddedMetric",
-      "metricHalfSpace"
+      "metricHalfSpace",
+      "canonicalHangulMetric",
+      "declaredGlyphFallbackMetric"
     ],
     "heuristicFallback": [
       "heuristicFullwidth",

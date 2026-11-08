@@ -1,0 +1,43 @@
+{
+  "summary": "Compared npm-lock snapshots: 0 added, 0 removed, 1 changed.",
+  "beforeFormat": "npm-lock",
+  "afterFormat": "npm-lock",
+  "comparisonNote": "parse warnings: \"@anthropic-ai/sdk\" is listed as a direct dependency but has no resolved entry in the lockfile (likely an optional/platform-specific package that wasn't installed); \"@noble/hashes\" is listed as a direct dependency but has no resolved entry in the lockfile (likely an optional/platform-specific package that wasn't installed); \"canvaskit-wasm\" is listed as a direct dependency but has no resolved entry in the lockfile (likely an optional/platform-specific package that wasn't installed); \"pixelmatch\" is listed as a direct dependency but has no resolved entry in the lockfile (likely an optional/platform-specific package that wasn't installed); \"pngjs\" is listed as a direct dependency but has no resolved entry in the lockfile (likely an optional/platform-specific package that wasn't installed); and 17 more",
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "name": "@types/chrome",
+      "actualName": null,
+      "npmscanUrl": "https://npmscan.com/package/%40types%2Fchrome",
+      "beforeVersion": "0.3.6",
+      "afterVersion": "0.3.7",
+      "coexistingVersions": null,
+      "changeType": "upgrade",
+      "hasInstallScript": false,
+      "installScriptIntroduced": false,
+      "installScriptKeys": null,
+      "installScriptKeysIntroduced": null,
+      "sourceIntegrityChanged": false,
+      "identityMismatch": false,
+      "tarballName": null,
+      "tarballVersion": null,
+      "resolvedUrl": "https://registry.npmjs.org/@types/chrome/-/chrome-0.3.7.tgz",
+      "integrity": "sha512-jWZgbHqWbTL1a5+PoyN0OJutNyejWgyZ5MdcvKo6iJE1TNRtXR3FxsC4WzNl52yZWPidfWC8NV/VUNZf+OFKcA==",
+      "isVulnerable": false,
+      "highestSeverity": null,
+      "vulnerabilities": [],
+      "vulnerabilityDelta": "still-clean",
+      "resolutionNote": null
+    }
+  ],
+  "totalAdded": 0,
+  "totalRemoved": 0,
+  "totalChanged": 1,
+  "flaggedCount": 0,
+  "truncated": false,
+  "truncationNote": null,
+  "enrichmentNote": null,
+  "projectLifecycleChanges": null,
+  "overridesChanges": null
+}

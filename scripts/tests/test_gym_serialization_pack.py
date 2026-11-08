@@ -23,7 +23,7 @@ README = PACK / "README.md"
 WORKING = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_serialization_pack.md"
 EXCEPTIONS = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_serialization_exceptions.md"
 
-EXPECTED_IDS = [f"SR{i:02d}" for i in range(1, 57)]
+EXPECTED_IDS = [f"SR{i:02d}" for i in range(1, 57) if i not in {10, 14, 18, 28, 29, 30, 31, 33, 34, 38, 46, 54}]
 
 NEW_REQUIRES = {
     "convert",
@@ -54,13 +54,9 @@ LIVE_ANSWER_PATHS = {
 }
 
 CONVERT_FAMILY = {"SR09", "SR13", "SR17", "SR21", "SR25", "SR26", "SR27", "SR56"}
-EXTRACT_FAMILY = {"SR10", "SR14", "SR18", "SR22", "SR28", "SR29", "SR30", "SR31", "SR54"}
-PDF_FAMILY = {
-    "SR11", "SR15", "SR19", "SR23", "SR32", "SR33", "SR34", "SR35", "SR49", "SR50",
-}
-IR_FAMILY = {
-    "SR01", "SR06", "SR12", "SR16", "SR20", "SR24", "SR36", "SR37", "SR38", "SR39", "SR53",
-}
+EXTRACT_FAMILY = {'SR22'}
+PDF_FAMILY = {'SR11', 'SR15', 'SR19', 'SR23', 'SR32', 'SR35', 'SR49', 'SR50'}
+IR_FAMILY = {'SR01', 'SR06', 'SR12', 'SR16', 'SR20', 'SR24', 'SR36', 'SR37', 'SR39', 'SR53'}
 HWPX_FAMILY = {"SR01", "SR06", "SR40", "SR41", "SR42", "SR51"}
 DOCLANG_FAMILY = {"SR03", "SR43", "SR44", "SR45", "SR52"}
 

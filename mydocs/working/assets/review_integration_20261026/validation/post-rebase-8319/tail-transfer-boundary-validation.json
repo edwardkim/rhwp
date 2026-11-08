@@ -1,0 +1,35 @@
+{
+  "head_before_uncommitted_fix": "983942b04a09d9237a04667779c2bff741ea80a3",
+  "binary": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/candidate-default-tail-transfer",
+  "binary_sha256": "f20f34b155658b8899b64a8ab12e76d5fb23094bccfe654ba901d0982640e36e",
+  "source_file_sha256": {
+    "src/renderer/layout/table_layout.rs": "299402b245a00dc68a840e0259677cf59fc21eb33d45de8911622718ec1ecc6a",
+    "src/renderer/layout/table_layout/row_physical_band.rs": "68e48bb1abe913948c2071b5ec153fec7553426d09821d4876dd9058228df4fc"
+  },
+  "build_exit": 0,
+  "build_log": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/candidate-tail-transfer-build.log",
+  "test_source": "tests/cases/source_frame_control_ownership.rs",
+  "test_source_sha256": "440548a03a3f9dff0eb3f2851643c461394617576037d3d26fbdb434fcf35d60",
+  "test_binary": "/home/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_004-e5410ec404781dbb",
+  "test_binary_sha256": "17683c463a6bfab29b13ed910881f261e25ae3fa7d6111c229782fcf7a804d9f",
+  "test_scope": "Previously compiled unchanged assertions; CARGO_BIN_EXE_rhwp selects the freshly built CLI for all rendered geometry. This is a focused CLI proof, not full Rust validation.",
+  "before": {
+    "binary": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/candidate-default-before-layout-fix",
+    "binary_sha256": "410c5e82771dc61530fb4b8881952d7512c88a4503e4bba4fd8862ced0fd24b7",
+    "pages": 19,
+    "target_test_exit": 101,
+    "log": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/whole-tac-before-direct.log",
+    "log_sha256": "a2e99219f7ef8159c8239332aa49a1d8a09f78171a8f61d9ecd13add80fb9689"
+  },
+  "after": {
+    "pages": 17,
+    "tests": 7,
+    "passed": 7,
+    "exit": 0,
+    "log": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/source-frame-tail-transfer-direct.log",
+    "log_sha256": "e76cfd257254dc26b9329c1a12c3717cca4829195de4dbc319f3b2dc5fe363bd"
+  },
+  "new_base_physical_refit_preserved": true,
+  "expectations_changed": false,
+  "native_wasm_visual_preservation_complete": false
+}

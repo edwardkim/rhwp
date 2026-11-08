@@ -1,0 +1,15 @@
+[RustTestSuite] issue_2225_missing_picture_placeholder -> regression_suite_020::issue_2225_missing_picture_placeholder
+[RustTestSuite] cargo nextest run --locked --test regression_suite_020 -E test(/(^|::)issue_2225_missing_picture_placeholder::/) --cargo-profile release-test --target-dir /home/edward/mygithub/rhwp/target/pr-review --features native-skia
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped
+   Compiling rhwp v0.9.0 (/home/edward/mygithub/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 4m 04s
+────────────
+ Nextest run ID 7a3b3b43-17fe-458b-945e-8706d3d30daa with nextest profile: default
+    Starting 2 tests across 1 binary (289 tests skipped)
+        PASS [   0.029s] (1/2) rhwp::regression_suite_020 issue_2225_missing_picture_placeholder::issue_2225_missing_picture_placeholder_split
+        PASS [   0.132s] (2/2) rhwp::regression_suite_020 issue_2225_missing_picture_placeholder::issue_2225_export_png_defaults_to_screen_skia_profile
+────────────
+     Summary [   0.133s] 2 tests run: 2 passed, 289 skipped
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+info: update nextest with cargo nextest self update, or bypass check with --override-version-check

@@ -1,0 +1,26 @@
+[
+  {
+    "path": "samples/issue7524/textbox_tac_picture_rows.hwp",
+    "bytes": 10752,
+    "sha256": "ffc0a66e92b10ec2ea10167bca2a2721c68a4207aed4acf5b381ab5e7ca18d36",
+    "included_in_candidate": true
+  },
+  {
+    "path": "pdf/issue7524/textbox_tac_picture_rows-webhwp-print.pdf",
+    "bytes": 61696,
+    "sha256": "212f1c608c99a1a427aa5302046d8479afb0a16fecc19c2fcf62afb7212653a5",
+    "included_in_candidate": true
+  },
+  {
+    "path": "samples/issue8122/textbox_valign_no_lineseg.hwp",
+    "bytes": 9728,
+    "sha256": "de374075cfc2c1ef945d3795bba194b90dc42d759caf8b478c603d4777cfb8ff",
+    "included_in_candidate": true
+  },
+  {
+    "path": "pdf/issue8122/textbox_valign_no_lineseg-webhwp-print.pdf",
+    "bytes": 47497,
+    "sha256": "0cfca5740c6fc9aaadf9db814e6e0503850d1f56013eb4bdda895bbc80dd0023",
+    "included_in_candidate": true
+  }
+]

@@ -1,0 +1,208 @@
+{
+  "purpose": "Independent diagnostic margin-edit contract, not fidelity claim for a newly generated fixture. Existing source model is edited in the regression; temporary HWPX inputs are not test fixtures.",
+  "recipe": {
+    "source": "samples/issue6032/2912695_civil_petition_form.hwp",
+    "export_command": "candidate-final-rhwp export-hwpx <source> civil-source.hwpx",
+    "transform": "Contents/section0.xml top-level paragraph3, first table id=2092824694, outMargin.top141->0; other entry payloads and XML bytes unchanged",
+    "unmodified_hwpx_sha256": "434e0f8ab27cd08916fa6a1859adf8dee02c1158b6ff75c014335bf162266f58",
+    "margin0_hwpx_sha256": "599b2129ba4a158938ed9d9af607fc3da59318239ffba5e45476fc391892af48",
+    "purpose": "Independent Hancom comparison of edited margin behavior; diagnostic generated inputs, not new regression fixtures."
+  },
+  "original_saved_product": "unknown",
+  "original_saved_version": "6.7.5.954",
+  "engine_selection": "Explicit Hancom2020 for the paired diagnostic, not an inferred product label for the unknown original.",
+  "actual_prints": [
+    {
+      "job_id": "7b00ad86-9ffb-4303-ae04-746f50d2fc98",
+      "generated_input_sha256": "434e0f8ab27cd08916fa6a1859adf8dee02c1158b6ff75c014335bf162266f58",
+      "print_result": {
+        "job_id": "7b00ad86-9ffb-4303-ae04-746f50d2fc98",
+        "status": "success",
+        "engine": "2020",
+        "engine_profile": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "input_format": "hwpx",
+        "format": "pdf",
+        "bytes": 47955,
+        "pdf_page_count": 2,
+        "logical_page_count": null,
+        "elapsed_ms": 12071,
+        "worker_elapsed_ms": 11111,
+        "worker_bits": 32,
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "input_preprocess": "none",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdf": "pdf/review-integration-20261026/civil-source-2020.pdf",
+      "pdf_sha256": "d6ffbf6032e86fc81ba3472b1434d503c6ac59018e63ef41ec8cea0f9599c8f2",
+      "bytes": 47955
+    },
+    {
+      "job_id": "fedd0e84-2cd9-4863-91b7-16c6c77d2454",
+      "generated_input_sha256": "599b2129ba4a158938ed9d9af607fc3da59318239ffba5e45476fc391892af48",
+      "print_result": {
+        "job_id": "fedd0e84-2cd9-4863-91b7-16c6c77d2454",
+        "status": "success",
+        "engine": "2020",
+        "engine_profile": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "input_format": "hwpx",
+        "format": "pdf",
+        "bytes": 47964,
+        "pdf_page_count": 2,
+        "logical_page_count": null,
+        "elapsed_ms": 11650,
+        "worker_elapsed_ms": 10886,
+        "worker_bits": 32,
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "input_preprocess": "none",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdf": "pdf/review-integration-20261026/civil-margin0-2020.pdf",
+      "pdf_sha256": "33c054dfc92c9bb8c18b8b5c7fdff690e81240f22ee75af1bdec85ed8708fbf9",
+      "bytes": 47964
+    }
+  ],
+  "path_bounds": [
+    {
+      "pdf": "output/pr-review/planet6897-20261026/margin-edit/civil-margin0-2020.pdf",
+      "pages": 2,
+      "wide_lower_path_bounds_css_px": [
+        [
+          94.3493,
+          872.9653,
+          576.6494,
+          2.8773
+        ],
+        [
+          94.3493,
+          872.9653,
+          576.6494,
+          2.8773
+        ],
+        [
+          95.788,
+          885.5907,
+          572.6533,
+          0.96
+        ],
+        [
+          95.788,
+          963.9053,
+          572.6533,
+          0.96
+        ],
+        [
+          95.788,
+          963.9053,
+          572.6533,
+          0.96
+        ],
+        [
+          95.788,
+          885.5907,
+          572.6533,
+          0.96
+        ]
+      ]
+    },
+    {
+      "pdf": "output/pr-review/planet6897-20261026/margin-edit/civil-source-2020.pdf",
+      "pages": 2,
+      "wide_lower_path_bounds_css_px": [
+        [
+          94.3493,
+          874.7227,
+          576.6494,
+          2.8773
+        ],
+        [
+          94.3493,
+          874.7227,
+          576.6494,
+          2.8773
+        ],
+        [
+          95.788,
+          887.508,
+          572.6533,
+          0.96
+        ],
+        [
+          95.788,
+          965.8227,
+          572.6533,
+          0.96
+        ],
+        [
+          95.788,
+          965.8227,
+          572.6533,
+          0.96
+        ],
+        [
+          95.788,
+          887.508,
+          572.6533,
+          0.96
+        ]
+      ]
+    }
+  ],
+  "independent_source_margin_hu": 141,
+  "source_margin_css_px": 1.88,
+  "observed_second_table_shift_css_px": -1.9173000000000684,
+  "old_expected_shift_css_px": 0,
+  "correction": "Keep edit countercase; second table follows the margin delta once. Preserve tolerance; do not relax oracle counts or source geometry.",
+  "original_input_sha256": "1c6569dc69b1fe99de058de2760249d322b393b7eb6b4f2a2fe60f2489c25e04",
+  "original_input_matches_committed_blob": true,
+  "visual_prerequisite": {
+    "production_source": "3ae26ef0a1a20a8810813a085179220f56d2561a",
+    "native_pages": 2,
+    "native_raw_min": "100.00000",
+    "wasm_pages": 2,
+    "wasm_raw_min": "100.00000",
+    "initial_wasm_attempt": "Browser launch timeout, no engine output; not counted as pass.",
+    "successful_wasm_retry": "civil-form-current-wasm-retry.log"
+  },
+  "latest_visual_prerequisite": {
+    "production_head": "56a638b9960e8bad9c3f73185a17665d7f7c94b1",
+    "native_all_pages": 2,
+    "native_min_raw": "100.00000",
+    "fresh_wasm_all_pages": 2,
+    "fresh_wasm_min_raw": "100.00000",
+    "wasm_mode": "release no-opt diagnostic; final optimized all-document validation pending",
+    "evidence": "v12-diagnostic-wasm-review.json"
+  },
+  "corrected_existing_contract": {
+    "file": "tests/cases/issue_4068_column_top_table_outer_margin.rs",
+    "function": "issue_4068_column_top_margin_edit_advances_the_following_table_once",
+    "retained_tolerance_px": 0.3,
+    "expected_second_table_delta": "minus original outer_margin_top",
+    "result": "Native focused all3 pass; source original-frame and following-table non-overlap checks retained."
+  }
+}

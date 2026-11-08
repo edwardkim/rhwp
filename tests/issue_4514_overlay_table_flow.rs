@@ -67,7 +67,8 @@ fn issue_4514_overlay_tables_do_not_overlap() {
     assert_eq!(total, 46, "총 페이지 수가 예기치 않게 변했다");
 
     let mut requirement_table_pages: Vec<u32> = Vec::new();
-    let mut ecr004_spans: Vec<(u32, f64)> = Vec::new();
+    let mut ecr004_pages: Vec<u32> = Vec::new();
+    let mut ecr004_neighbors: Vec<(u32, Vec<i64>, Vec<i64>)> = Vec::new();
     for page in 0..total {
         let tree = core
             .build_page_render_tree(page)
@@ -106,26 +107,29 @@ fn issue_4514_overlay_tables_do_not_overlap() {
                 requirement_table_pages.push(page);
             }
         }
-        ecr004_spans.extend(
-            spans
-                .iter()
-                .filter(|(pi, _, _)| *pi == 139)
-                .map(|(_, y, _)| (page, *y)),
-        );
+        for (index, (pi, _, _)) in spans.iter().enumerate() {
+            if *pi == 139 {
+                ecr004_pages.push(page);
+                ecr004_neighbors.push((
+                    page,
+                    spans[..index].iter().map(|(owner, _, _)| *owner).collect(),
+                    spans[index + 1..]
+                        .iter()
+                        .map(|(owner, _, _)| *owner)
+                        .collect(),
+                ));
+            }
+        }
     }
 
-    // 한컴 구조: ECR-001~005 가 연속 3쪽 (N: 001+002시작 / N+1: 002계속+003+004시작 /
-    // N+2: 004계속+005). 수정 전에는 2쪽으로 압축되며 8쪽에 4개가 겹쳐 있었다.
+    // #7808: 고정 base도 미달이었던 원본의 "ECR-001~005는 3쪽" 핀은
+    // 독립 Print와 불일치한다. Print 11쪽에도 ECR-005 뒷 본문이 이어지므로
+    // 이전 PASS는 이어받기 누락을 허용했다. 이 잘못된 쪽수 핀만 이관하고
+    // 전쪽 무겹침·연속 소속·ECR-004 앞뒤 소유의 정확한 기존 관계는 유지한다.
     requirement_table_pages.sort_unstable();
-    assert_eq!(
-        requirement_table_pages.len(),
-        3,
-        "ECR-001~005 구간은 한컴처럼 3쪽이어야 한다 (실제: {:?})",
-        requirement_table_pages
-    );
     assert!(
         requirement_table_pages.windows(2).all(|w| w[1] == w[0] + 1),
-        "ECR 구간 3쪽은 연속이어야 한다 (실제: {:?})",
+        "ECR 구간의 모든 조각은 연속된 쪽에 속해야 한다 (실제: {:?})",
         requirement_table_pages
     );
 
@@ -133,20 +137,28 @@ fn issue_4514_overlay_tables_do_not_overlap() {
     // 반드시 이어 그려져야 한다. 표가 3쪽 구간에 존재한다는 판정만으로는 앵커 쪽의
     // 컷만 남기고 continuation을 잃는 회귀를 잡지 못한다.
     assert_eq!(
-        ecr004_spans.len(),
+        ecr004_pages.len(),
         2,
         "ECR-004는 앵커와 다음 쪽 연속 조각으로 정확히 두 번 보여야 한다: {:?}",
-        ecr004_spans
+        ecr004_pages
     );
     assert_eq!(
-        ecr004_spans[1].0,
-        ecr004_spans[0].0 + 1,
+        ecr004_pages[1],
+        ecr004_pages[0] + 1,
         "ECR-004 연속 조각은 바로 다음 쪽에 있어야 한다: {:?}",
-        ecr004_spans
+        ecr004_pages
+    );
+    // 독립 한컴 출력의 소유 순서: 앞 조각은 ECR-003 뒤에 있고, 다음 쪽의
+    // 첫 표는 ECR-004의 이어받기이며 ECR-005보다 앞에 있다. 700/100px 같은
+    // 화면 영역으로 하단·상단을 고정하지 않는다. 전쪽 무겹침 검사는 위에서 유지한다.
+    assert!(
+        ecr004_neighbors[0].1.contains(&119),
+        "ECR-004 앞 조각은 같은 쪽의 ECR-003 뒤에 있어야 한다: {:?}",
+        ecr004_neighbors
     );
     assert!(
-        ecr004_spans[0].1 > 700.0 && ecr004_spans[1].1 < 100.0,
-        "ECR-004는 앞 쪽 하단에서 다음 쪽 상단으로 이어져야 한다: {:?}",
-        ecr004_spans
+        ecr004_neighbors[1].1.is_empty() && ecr004_neighbors[1].2.contains(&158),
+        "ECR-004 이어받기는 다음 쪽의 첫 표이며 ECR-005보다 앞에 있어야 한다: {:?}",
+        ecr004_neighbors
     );
 }

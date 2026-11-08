@@ -5,8 +5,8 @@ use std::path::Path;
 use std::process::{Command, Output};
 
 fn bin() -> String {
-    std::env::var("CARGO_BIN_EXE_rhwp-q-text-file")
-        .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp-q-text-file").to_string())
+    std::env::var("CARGO_BIN_EXE_rhwp-q")
+        .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp-q").to_string())
 }
 
 fn sample() -> String {
@@ -18,6 +18,7 @@ fn sample() -> String {
 
 fn run(args: &[&str]) -> Output {
     Command::new(bin())
+        .arg("text-file")
         .args(args)
         .output()
         .expect("rhwp-q-text-file 실행 실패")

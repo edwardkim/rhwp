@@ -1,0 +1,94 @@
+{
+  "date": "2026-10-28",
+  "input": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+  "pdf": "pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+  "pages": [
+    33,
+    43,
+    47
+  ],
+  "metric": "96dpi, PDFium, 반경 2px raw 실루엣",
+  "wasm_sha256": "7b9684d74a850c6925ec981a2cf005d86e50fe166b21bf71669ce2fdfc9ebbb4",
+  "results": {
+    "native_current_pdf": {
+      "tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-spec-claims/native-current_pdf.tsv",
+      "sha256": "3a702eb109a47c8f08a4faabe1bf4cd8699c9fff79eccbced559990b9826545d",
+      "values": {
+        "33": 100.0,
+        "43": 100.0,
+        "47": 99.98
+      }
+    },
+    "native_prior_pdf": {
+      "tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-spec-claims/native-prior_pdf.tsv",
+      "sha256": "dae98bef1dc50ed034dcfa79fe08e4adcebef0f1193e43875bdc944f59cb987f",
+      "values": {
+        "33": 100.0,
+        "43": 100.0,
+        "47": 100.0
+      }
+    },
+    "native_page_hashes": [
+      {
+        "page": 33,
+        "render_sha256": "ccd8b97612c155c7928ae407f929c64157a9db99c81886d9dde9651943700c5b",
+        "prior_pdf_png_sha256": "a37995f735a254805499277b8be3945e64e975cac4180f58b8c5a91d174aca36",
+        "current_pdf_png_sha256": "91993bdb9174a5828b3f537c14488344ee6535c9e6df5320cc312b6a601d9e05"
+      },
+      {
+        "page": 43,
+        "render_sha256": "7f86f0303980575e83522e024f4d03102d46e211cf40d583e95a646a909c8312",
+        "prior_pdf_png_sha256": "87148794b34d77643d4145f3cf970a66612b4963898d33f71cc471ad995772f8",
+        "current_pdf_png_sha256": "fea0961a15e9ac90bae36cf56bcfac23dfc6a5cea35fe23439ade9db6bd009de"
+      },
+      {
+        "page": 47,
+        "render_sha256": "bebc4aaedf2075fa255cab03bff888378ee100c7784f2c8953da57b55f72c233",
+        "prior_pdf_png_sha256": "37ae91dec5d41345513bfc354b0fdc1ecb8754949cdd738f5e57f830e4738e6e",
+        "current_pdf_png_sha256": "ae49c714e945deacc78f1c01c74d50946271ffa4302ad7939e54437892781833"
+      }
+    ],
+    "wasm_current_pdf": {
+      "tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-spec-claims/wasm-current_pdf.tsv",
+      "sha256": "3a702eb109a47c8f08a4faabe1bf4cd8699c9fff79eccbced559990b9826545d",
+      "values": {
+        "33": 100.0,
+        "43": 100.0,
+        "47": 99.98
+      }
+    },
+    "wasm_prior_pdf": {
+      "tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-spec-claims/wasm-prior_pdf.tsv",
+      "sha256": "dae98bef1dc50ed034dcfa79fe08e4adcebef0f1193e43875bdc944f59cb987f",
+      "values": {
+        "33": 100.0,
+        "43": 100.0,
+        "47": 100.0
+      }
+    },
+    "wasm_page_hashes": [
+      {
+        "page": 33,
+        "render_sha256": "6e1d8a3b8bf1e57a73ef783ba69be2e908c4559c26bc1a159a7ce877e96bfc34",
+        "prior_pdf_png_sha256": "a37995f735a254805499277b8be3945e64e975cac4180f58b8c5a91d174aca36",
+        "current_pdf_png_sha256": "91993bdb9174a5828b3f537c14488344ee6535c9e6df5320cc312b6a601d9e05"
+      },
+      {
+        "page": 43,
+        "render_sha256": "47578593dd47c50656028bbafcb9ea133b2a7c8493691691d32907c7936b90c5",
+        "prior_pdf_png_sha256": "87148794b34d77643d4145f3cf970a66612b4963898d33f71cc471ad995772f8",
+        "current_pdf_png_sha256": "fea0961a15e9ac90bae36cf56bcfac23dfc6a5cea35fe23439ade9db6bd009de"
+      },
+      {
+        "page": 47,
+        "render_sha256": "a77d6cc91137a469faeca4d989dbfbed7ab6d659cd06108b1ee34d33c6664b36",
+        "prior_pdf_png_sha256": "37ae91dec5d41345513bfc354b0fdc1ecb8754949cdd738f5e57f830e4738e6e",
+        "current_pdf_png_sha256": "ae49c714e945deacc78f1c01c74d50946271ffa4302ad7939e54437892781833"
+      }
+    ]
+  },
+  "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+  "pdf_sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+  "prior_pdf_raster_policy": "pdfium_smooth_rgb_v1",
+  "current_pdf_raster_policy": "pdfium_smooth_rgb_exact_dpi_v2"
+}

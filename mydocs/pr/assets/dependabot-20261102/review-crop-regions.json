@@ -1,0 +1,31 @@
+{
+  "dpi": 96,
+  "zoom": 2,
+  "boxes": {
+    "saved_bottom": [
+      105,
+      150,
+      380,
+      340
+    ],
+    "wrapping_A": [
+      105,
+      150,
+      415,
+      325
+    ],
+    "legacy_textbox": [
+      78,
+      100,
+      705,
+      430
+    ],
+    "wmf_fixed_face": [
+      55,
+      65,
+      395,
+      440
+    ]
+  },
+  "purpose": "Review-only crop coordinates; no regression assertion or fixture expectation added."
+}

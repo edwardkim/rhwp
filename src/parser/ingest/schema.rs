@@ -118,6 +118,8 @@ fn default_auto_number() -> bool {
 #[derive(Debug, Clone, Serialize)]
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum StemBlock {
+    /// One paragraph with ordered text and inline image runs.
+    Paragraph { runs: Vec<InlineRun> },
     /// 텍스트 단락.
     Text { text: String },
     /// 이미지 참조 (자르기/배치는 media 항목에서 결정).
@@ -140,6 +142,50 @@ pub enum StemBlock {
     },
 }
 
+/// A text/image run in a single paragraph. Each image occupies one logical slot.
+#[derive(Debug, Clone, Serialize)]
+#[serde(tag = "type", rename_all = "lowercase")]
+pub enum InlineRun {
+    Text {
+        text: String,
+    },
+    Image {
+        #[serde(rename = "ref")]
+        ref_: String,
+    },
+}
+
+impl<'de> Deserialize<'de> for InlineRun {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::Error;
+        let raw = RawStemBlock::deserialize(deserializer)?;
+        if raw.placement.is_some()
+            || raw.title.is_some()
+            || raw.blocks.is_some()
+            || raw.runs.is_some()
+        {
+            return Err(D::Error::custom(
+                "inline run에는 type과 text 또는 ref만 허용됩니다",
+            ));
+        }
+        match raw.block_type.as_str() {
+            "text" if raw.ref_.is_none() => Ok(Self::Text {
+                text: raw
+                    .text
+                    .ok_or_else(|| D::Error::custom("text run에 text가 필요합니다"))?,
+            }),
+            "image" if raw.text.is_none() => Ok(Self::Image {
+                ref_: raw
+                    .ref_
+                    .ok_or_else(|| D::Error::custom("image run에 ref가 필요합니다"))?,
+            }),
+            _ => Err(D::Error::custom(
+                "inline run은 text 또는 image이며 다른 필드는 허용되지 않습니다",
+            )),
+        }
+    }
+}
+
 /// [#3358] StemBlock 전 변형의 필드 합집합 — 미지 필드 거부와 type 별 검증의 중간층.
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -156,6 +202,8 @@ struct RawStemBlock {
     title: Option<String>,
     #[serde(default)]
     blocks: Option<Vec<StemBlock>>,
+    #[serde(default)]
+    runs: Option<Vec<InlineRun>>,
 }
 
 impl<'de> Deserialize<'de> for StemBlock {
@@ -175,7 +223,25 @@ impl<'de> Deserialize<'de> for StemBlock {
                     Ok(())
                 }
             };
+        if raw.block_type != "paragraph" && raw.runs.is_some() {
+            return Err(D::Error::custom("runs는 paragraph 블록 전용입니다"));
+        }
         match raw.block_type.as_str() {
+            "paragraph" => {
+                if raw.text.is_some()
+                    || raw.ref_.is_some()
+                    || raw.placement.is_some()
+                    || raw.title.is_some()
+                    || raw.blocks.is_some()
+                {
+                    return Err(D::Error::custom("paragraph에는 type과 runs만 허용됩니다"));
+                }
+                Ok(StemBlock::Paragraph {
+                    runs: raw
+                        .runs
+                        .ok_or_else(|| D::Error::custom("paragraph 블록에 runs가 필요합니다"))?,
+                })
+            }
             "text" => {
                 forbid(
                     raw.ref_.is_some(),
@@ -258,7 +324,7 @@ impl<'de> Deserialize<'de> for StemBlock {
                 })
             }
             other => Err(D::Error::custom(format!(
-                "알 수 없는 블록 type '{other}' (지원: text|image|boxed)"
+                "알 수 없는 블록 type '{other}' (지원: text|image|boxed|paragraph)"
             ))),
         }
     }

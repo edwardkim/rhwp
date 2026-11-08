@@ -2,7 +2,7 @@
 
 const fs = require('node:fs');
 
-const POLICY_VERSION = '6';
+const POLICY_VERSION = '8';
 const POLICY_CONTEXT = 'CI Impact Policy';
 const WORKFLOW_ORDER = ['CI', 'CodeQL', 'Render Diff'];
 const WORKFLOW_PATHS = {
@@ -14,7 +14,7 @@ const WRITER_PERMISSIONS = new Set(['admin', 'maintain', 'write']);
 const FRONTEND_MODES = new Set(['none', 'unit', 'package']);
 const BOOLEAN_VALUES = new Set(['true', 'false']);
 const CLASSIFICATION_STATUSES = new Set(['classified', 'full']);
-const CODEQL_LANGUAGE_ORDER = ['javascript-typescript', 'python', 'rust'];
+const CODEQL_LANGUAGE_ORDER = ['javascript-typescript', 'python', 'rust', 'actions'];
 
 const CI_PUSH_PATHS_IGNORE = []; // CI push is release-tag-only; no branch push checks.
 
@@ -23,7 +23,19 @@ const CI_PULL_REQUEST_PATHS_IGNORE = [
   'assets/edge/**',
   'assets/logo/**',
   'assets/screenshots/**',
-  '*.md',
+  'CHANGELOG.md',
+  'CHANGELOG_EN.md',
+  'CONTRIBUTING.md',
+  'CONVENTIONS.md',
+  'GEMINI.md',
+  'QWEN.md',
+  'README.md',
+  'README_EN.md',
+  'ROADMAP.md',
+  'SECURITY.md',
+  'THIRD_PARTY.md',
+  'THIRD_PARTY_LICENSES.md',
+  'replit.md',
   'LICENSE',
   '.github/ISSUE_TEMPLATE/**',
   '.github/FUNDING.yml',
@@ -38,7 +50,19 @@ const CODEQL_PUSH_PATHS_IGNORE = []; // CodeQL has no push trigger.
 
 const CODEQL_PULL_REQUEST_PATHS_IGNORE = [
   'assets/**',
-  '*.md',
+  'CHANGELOG.md',
+  'CHANGELOG_EN.md',
+  'CONTRIBUTING.md',
+  'CONVENTIONS.md',
+  'GEMINI.md',
+  'QWEN.md',
+  'README.md',
+  'README_EN.md',
+  'ROADMAP.md',
+  'SECURITY.md',
+  'THIRD_PARTY.md',
+  'THIRD_PARTY_LICENSES.md',
+  'replit.md',
   'LICENSE',
   '.github/ISSUE_TEMPLATE/**',
   '.github/FUNDING.yml',
@@ -66,6 +90,8 @@ const DEPLOY_PAGES_PUSH_PATHS_IGNORE = [
 ];
 
 const RENDER_DIFF_PULL_REQUEST_PATHS = [
+  'AGENTS.md',
+  'CLAUDE.md',
   'Cargo.toml',
   'Cargo.lock',
   'src/paint/**',
@@ -79,6 +105,8 @@ const RENDER_DIFF_PULL_REQUEST_PATHS = [
   'assets/fonts/**',
   'ttfs/**',
   'scripts/renderer_baseline.py',
+  'scripts/measure_render_diff_wasm.py',
+  'scripts/wasm-pack-locked.sh',
   'scripts/renderer_baseline_manifest.json',
   'scripts/ci-impact-classifier.cjs',
   'scripts/generate_font_glyph_payload_fixture.py',
@@ -105,10 +133,12 @@ const CI_RUST_JOBS = [
   'build-test-archive-b',
   'build-test-archive-c',
   'build-test-archive-d',
+  'build-test-archive-e',
   'test-archive-a-shard-1',
   'test-archive-b-shard-1',
   'test-archive-c-shard-1',
   'test-archive-d-shard-1',
+  'test-archive-e-shard-1',
 ];
 // Reusable workflow calls have two observed REST job names: a skipped call keeps only
 // its caller job id, while an executed call is reported as "caller / called job name".
@@ -131,6 +161,10 @@ const CI_JOB_ALIASES = {
     'build-test-archive-d',
     'build-test-archive-d / Build test archive (d)',
   ],
+  'build-test-archive-e': [
+    'build-test-archive-e',
+    'build-test-archive-e / Build test archive (e)',
+  ],
   'test-archive-a-shard-1': [
     'test-archive-a-shard-1',
     'test-archive-a-shard-1 / Default-feature tests (Archive A)',
@@ -147,6 +181,10 @@ const CI_JOB_ALIASES = {
     'test-archive-d-shard-1',
     'test-archive-d-shard-1 / Default-feature tests (Archive D)',
   ],
+  'test-archive-e-shard-1': [
+    'test-archive-e-shard-1',
+    'test-archive-e-shard-1 / Default-feature tests (Archive E)',
+  ],
 };
 const CI_NATIVE_JOB = 'Native Skia tests';
 const CI_FRONTEND_JOBS = ['Frontend unit gates', 'Frontend package gates'];
@@ -158,11 +196,13 @@ const CI_AUDITED_JOB_IDS = {
   'build-test-archive-b': 'build-test-archive-b',
   'build-test-archive-c': 'build-test-archive-c',
   'build-test-archive-d': 'build-test-archive-d',
+  'build-test-archive-e': 'build-test-archive-e',
   'resolve-nextest-duration-policy': 'resolve-nextest-duration-policy',
   'test-archive-a-shard-1': 'test-archive-a-shard-1',
   'test-archive-b-shard-1': 'test-archive-b-shard-1',
   'test-archive-c-shard-1': 'test-archive-c-shard-1',
   'test-archive-d-shard-1': 'test-archive-d-shard-1',
+  'test-archive-e-shard-1': 'test-archive-e-shard-1',
   lint: 'Lint (fmt, clippy, WASM check)',
   'native-skia-tests': CI_NATIVE_JOB,
   'frontend-unit-gates': CI_FRONTEND_JOBS[0],
@@ -173,6 +213,7 @@ const CODEQL_JOBS = {
   'javascript-typescript': 'Analyze (javascript-typescript)',
   python: 'Analyze (python)',
   rust: 'Analyze (rust)',
+  actions: 'Analyze (actions)',
 };
 
 function fullClassification(reason) {
@@ -291,6 +332,10 @@ function isReviewReferencePath(filename) {
 
 function isAllowedReviewFile(file) {
   const normalized = normalizeFile(file);
+  if (normalized.filename === 'AGENTS.md' || normalized.filename === 'CLAUDE.md') {
+    return !normalized.previous_filename
+      && (normalized.status === 'added' || normalized.status === 'modified');
+  }
   if (
     normalized.filename.startsWith('mydocs/')
     && !RENDER_CONTRACT_DOC_PATHS.has(normalized.filename)
@@ -426,6 +471,8 @@ function workflowRunMatchesPull(run, identity) {
   // GitHub can return an empty pull_requests array for fork runs. In that case the
   // repository + branch + exact SHA guards in selectLatestWorkflowRun remain the
   // authority. When association data exists, reject runs from another PR/base.
+  // 연결 PR의 head.sha는 이후 push에 맞춰 갱신된다. 실행 SHA는 아래 호출자의
+  // run.head_sha 검사로 확인하며 가변 PR 메타데이터와 중복 대조하지 않는다.
   if (pulls.length === 0) return true;
   return pulls.some((pull) => (
     Number(pull?.number || 0) === Number(identity.pullNumber || 0)
@@ -435,7 +482,6 @@ function workflowRunMatchesPull(run, identity) {
       || String(pull?.base?.sha || '') === String(identity.baseSha || '')
     )
     && String(pull?.head?.ref || '') === String(identity.headBranch || '')
-    && String(pull?.head?.sha || '') === String(identity.headSha || '')
   ));
 }
 
@@ -473,6 +519,7 @@ function encodeCodeqlLanguages(value) {
     'javascript-typescript': 'js',
     python: 'py',
     rust: 'rs',
+    actions: 'ac',
   })[language] || 'all').join(',');
 }
 
@@ -527,7 +574,7 @@ function parseStatusDescription(description) {
   if (!FRONTEND_MODES.has(fields.get('fe'))) throw new Error('invalid frontend axis');
   if (!new Set(['0', '1']).has(fields.get('render'))) throw new Error('invalid render axis');
   if (!new Set(['0', '1']).has(fields.get('skia'))) throw new Error('invalid skia axis');
-  if (!/^(none|all|(?:js|py|rs)(?:,(?:js|py|rs))*)$/.test(fields.get('ql'))) {
+  if (!/^(none|all|(?:js|py|rs|ac)(?:,(?:js|py|rs|ac))*)$/.test(fields.get('ql'))) {
     throw new Error('invalid CodeQL axis');
   }
   const languages = fields.get('ql').split(',');

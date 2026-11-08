@@ -1,0 +1,2360 @@
+{
+  "status": "pass",
+  "note": "90 미만 예외 쪽은 표시하며 통과로 주장하지 않음",
+  "base_commit": "db5cd5bcc60a69e42f419f18a7f57a33b6fb7fdc",
+  "candidate_source": "81f2428cf8",
+  "backend": "native",
+  "base_wasm_sha256": null,
+  "candidate_wasm_sha256": null,
+  "base_native_helper_sha256": "5a8c2ef8a95330e685ab61073cdf149d256f253310fd946005ff63010fe84f2e",
+  "candidate_native_helper_sha256": "2a4915dfda39a74efbc903297d51e85a3d71634127ec01c47f65124624beedb0",
+  "cases": 55,
+  "pages": 329,
+  "drops_ge_0_1pp": [],
+  "below90": [
+    [
+      "claim-8045",
+      1,
+      71.03857,
+      true
+    ],
+    [
+      "claim-8049",
+      10,
+      86.7529,
+      true
+    ],
+    [
+      "claim-8049",
+      82,
+      26.99553,
+      true
+    ],
+    [
+      "claim-8056",
+      11,
+      68.87152,
+      true
+    ],
+    [
+      "claim-8062",
+      30,
+      86.93039,
+      true
+    ],
+    [
+      "claim-8062",
+      31,
+      78.34114,
+      true
+    ]
+  ],
+  "errors": [],
+  "cases_data": [
+    {
+      "key": "claim-8014",
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/2026년+7월+인구동향.hwp",
+      "input_sha256": "6f87a7a4de1e89bab89be40cec8523d106300a259ee953481d3d288f91fd99ad",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/2026년+7월+인구동향-2020.pdf",
+      "pdf_sha256": "85fe0b2ba7792dcc23b6b3f671ffa59bf0a54cf2cf786b86180da3b21082d3e5",
+      "compat": "2022",
+      "base_tsv_sha256": "a21d5106ef1c8ff4ddfcefabec915ad63b426e8682843e3e80752a435fb166a3",
+      "candidate_tsv_sha256": "a21d5106ef1c8ff4ddfcefabec915ad63b426e8682843e3e80752a435fb166a3",
+      "pages": [
+        {
+          "page": 1,
+          "base": 99.9565,
+          "candidate": 99.9565
+        },
+        {
+          "page": 2,
+          "base": 99.20067,
+          "candidate": 99.20067
+        },
+        {
+          "page": 3,
+          "base": 98.6903,
+          "candidate": 98.6903
+        },
+        {
+          "page": 4,
+          "base": 99.70066,
+          "candidate": 99.70066
+        },
+        {
+          "page": 5,
+          "base": 99.73183,
+          "candidate": 99.73183
+        },
+        {
+          "page": 6,
+          "base": 99.87661,
+          "candidate": 99.87661
+        },
+        {
+          "page": 7,
+          "base": 99.51773,
+          "candidate": 99.51773
+        },
+        {
+          "page": 8,
+          "base": 99.82884,
+          "candidate": 99.82884
+        },
+        {
+          "page": 9,
+          "base": 99.89508,
+          "candidate": 99.89508
+        },
+        {
+          "page": 10,
+          "base": 99.8581,
+          "candidate": 99.8581
+        },
+        {
+          "page": 11,
+          "base": 97.61882,
+          "candidate": 97.61882
+        },
+        {
+          "page": 12,
+          "base": 98.75195,
+          "candidate": 98.75195
+        },
+        {
+          "page": 13,
+          "base": 99.95242,
+          "candidate": 99.95242
+        },
+        {
+          "page": 14,
+          "base": 99.9655,
+          "candidate": 99.9655
+        },
+        {
+          "page": 15,
+          "base": 99.9671,
+          "candidate": 99.9671
+        },
+        {
+          "page": 16,
+          "base": 99.9698,
+          "candidate": 99.9698
+        },
+        {
+          "page": 17,
+          "base": 99.96786,
+          "candidate": 99.96786
+        },
+        {
+          "page": 18,
+          "base": 99.97117,
+          "candidate": 99.97117
+        },
+        {
+          "page": 19,
+          "base": 99.97052,
+          "candidate": 99.97052
+        },
+        {
+          "page": 20,
+          "base": 99.91431,
+          "candidate": 99.91431
+        },
+        {
+          "page": 21,
+          "base": 99.95776,
+          "candidate": 99.95776
+        },
+        {
+          "page": 22,
+          "base": 99.9344,
+          "candidate": 99.9344
+        },
+        {
+          "page": 23,
+          "base": 99.94767,
+          "candidate": 99.94767
+        },
+        {
+          "page": 24,
+          "base": 99.9444,
+          "candidate": 99.9444
+        },
+        {
+          "page": 25,
+          "base": 99.93,
+          "candidate": 99.93
+        },
+        {
+          "page": 26,
+          "base": 99.95008,
+          "candidate": 99.95008
+        },
+        {
+          "page": 27,
+          "base": 99.98451,
+          "candidate": 99.98451
+        },
+        {
+          "page": 28,
+          "base": 99.98617,
+          "candidate": 99.98617
+        },
+        {
+          "page": 29,
+          "base": 99.98552,
+          "candidate": 99.98552
+        },
+        {
+          "page": 30,
+          "base": 99.98868,
+          "candidate": 99.98868
+        },
+        {
+          "page": 31,
+          "base": 99.98844,
+          "candidate": 99.98844
+        },
+        {
+          "page": 32,
+          "base": 99.90873,
+          "candidate": 99.90873
+        },
+        {
+          "page": 33,
+          "base": 99.97086,
+          "candidate": 99.97086
+        },
+        {
+          "page": 34,
+          "base": 99.97306,
+          "candidate": 99.97306
+        },
+        {
+          "page": 35,
+          "base": 99.9716,
+          "candidate": 99.9716
+        },
+        {
+          "page": 36,
+          "base": 99.97441,
+          "candidate": 99.97441
+        },
+        {
+          "page": 37,
+          "base": 99.97388,
+          "candidate": 99.97388
+        },
+        {
+          "page": 38,
+          "base": 99.98292,
+          "candidate": 99.98292
+        },
+        {
+          "page": 39,
+          "base": 99.98143,
+          "candidate": 99.98143
+        },
+        {
+          "page": 40,
+          "base": 99.9829,
+          "candidate": 99.9829
+        },
+        {
+          "page": 41,
+          "base": 99.98244,
+          "candidate": 99.98244
+        }
+      ]
+    },
+    {
+      "key": "claim-8027",
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8027-official.hwpx",
+      "input_sha256": "e75eb152f9d2059c76c83c631acb64883d413da6d491371a667a5c3740ac6499",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8027-official-2020.pdf",
+      "pdf_sha256": "e2827da24d2230fc0d0129ab761bc2e4875ba16330c216ff5ecde1ff9386b346",
+      "compat": "2022",
+      "base_tsv_sha256": "19a170c09be04606c1d25038d7d31f8ac0f9e09bb7e2d23209c8222e7b99cf71",
+      "candidate_tsv_sha256": "19a170c09be04606c1d25038d7d31f8ac0f9e09bb7e2d23209c8222e7b99cf71",
+      "pages": [
+        {
+          "page": 1,
+          "base": 93.68328,
+          "candidate": 93.68328
+        },
+        {
+          "page": 2,
+          "base": 99.63752,
+          "candidate": 99.63752
+        },
+        {
+          "page": 3,
+          "base": 96.38065,
+          "candidate": 96.38065
+        },
+        {
+          "page": 4,
+          "base": 99.48492,
+          "candidate": 99.48492
+        },
+        {
+          "page": 5,
+          "base": 99.98161,
+          "candidate": 99.98161
+        },
+        {
+          "page": 6,
+          "base": 98.63386,
+          "candidate": 98.63386
+        }
+      ]
+    },
+    {
+      "key": "claim-8030",
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8030-new-official.hwp",
+      "input_sha256": "8acbe67ba95fd53432b80cbdbc82e9cb118534775ada58b832437eae2b4ea99c",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8030-new-official-2020.pdf",
+      "pdf_sha256": "b57c3f31d21624a72b7cb9e9182b1d6b6c4d91c70b52069483781af2d1358a2f",
+      "compat": "2022",
+      "base_tsv_sha256": "76dac3942340f2c09b43dd87aeccb4d905eb6dc8966db066990cc17a11df0405",
+      "candidate_tsv_sha256": "76dac3942340f2c09b43dd87aeccb4d905eb6dc8966db066990cc17a11df0405",
+      "pages": [
+        {
+          "page": 1,
+          "base": 98.54612,
+          "candidate": 98.54612
+        },
+        {
+          "page": 2,
+          "base": 98.63856,
+          "candidate": 98.63856
+        },
+        {
+          "page": 3,
+          "base": 98.78137,
+          "candidate": 98.78137
+        },
+        {
+          "page": 4,
+          "base": 98.74798,
+          "candidate": 98.74798
+        },
+        {
+          "page": 5,
+          "base": 98.7231,
+          "candidate": 98.7231
+        },
+        {
+          "page": 6,
+          "base": 98.89748,
+          "candidate": 98.89748
+        },
+        {
+          "page": 7,
+          "base": 97.5714,
+          "candidate": 97.5714
+        }
+      ]
+    },
+    {
+      "key": "claim-8031",
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8031-official.hwp",
+      "input_sha256": "f66e6c1d782d35489adb8a610ea88d4a336a014306d811c0521ddb509c757413",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8031-official-2020.pdf",
+      "pdf_sha256": "1bfbe9a38f71f379499fddaad247ba47c0c837188bf7757d6c4125e48dff693e",
+      "compat": "2022",
+      "base_tsv_sha256": "8c715fc46f53de955753ce08283def91862279a4a4aa9d02e83a95bd195df26b",
+      "candidate_tsv_sha256": "8c715fc46f53de955753ce08283def91862279a4a4aa9d02e83a95bd195df26b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 99.98151,
+          "candidate": 99.98151
+        },
+        {
+          "page": 2,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "claim-8036",
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8036-seoul-official.hwpx",
+      "input_sha256": "d4bfa888c37087e8632eaf2705a53c7c8d96423ea4a9aa7cd232b172963c3d6f",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8036-seoul-official-2020.pdf",
+      "pdf_sha256": "c75706f95b270d4a1d7b946277b682596024f28995c99ac3fbd4aeb6abd3bd7b",
+      "compat": "2022",
+      "base_tsv_sha256": "8ad615380cc08fa45060fa2d0739e4d30612f8ef970e045fbdfaed7bdef22dcc",
+      "candidate_tsv_sha256": "8ad615380cc08fa45060fa2d0739e4d30612f8ef970e045fbdfaed7bdef22dcc",
+      "pages": [
+        {
+          "page": 1,
+          "base": 95.97864,
+          "candidate": 95.97864
+        },
+        {
+          "page": 2,
+          "base": 99.95597,
+          "candidate": 99.95597
+        },
+        {
+          "page": 3,
+          "base": 97.41064,
+          "candidate": 97.41064
+        },
+        {
+          "page": 4,
+          "base": 99.81041,
+          "candidate": 99.81041
+        },
+        {
+          "page": 5,
+          "base": 99.93596,
+          "candidate": 99.93596
+        },
+        {
+          "page": 6,
+          "base": 99.85879,
+          "candidate": 99.85879
+        },
+        {
+          "page": 7,
+          "base": 99.83343,
+          "candidate": 99.83343
+        },
+        {
+          "page": 8,
+          "base": 99.74225,
+          "candidate": 99.74225
+        },
+        {
+          "page": 9,
+          "base": 99.68508,
+          "candidate": 99.68508
+        },
+        {
+          "page": 10,
+          "base": 98.42359,
+          "candidate": 98.42359
+        },
+        {
+          "page": 11,
+          "base": 99.99015,
+          "candidate": 99.99015
+        },
+        {
+          "page": 12,
+          "base": 98.07866,
+          "candidate": 98.07866
+        },
+        {
+          "page": 13,
+          "base": 99.19631,
+          "candidate": 99.19631
+        }
+      ]
+    },
+    {
+      "key": "claim-8039",
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8039-official.hwpx",
+      "input_sha256": "abecaf23efa76ae77ef30979b20bad54470518adb6a2dd73f93ec4066ac16848",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8039-official-2020.pdf",
+      "pdf_sha256": "b0cf082bfdb19e1672e55b85cdc5707a785b4b84ded5de79d52e78e98fbe18d3",
+      "compat": "2022",
+      "base_tsv_sha256": "bb87ad317d6459f2d75e6a28aed441ee45d747c6f7edb50263d67634dfc09475",
+      "candidate_tsv_sha256": "bb87ad317d6459f2d75e6a28aed441ee45d747c6f7edb50263d67634dfc09475",
+      "pages": [
+        {
+          "page": 1,
+          "base": 93.57902,
+          "candidate": 93.57902
+        },
+        {
+          "page": 2,
+          "base": 99.45131,
+          "candidate": 99.45131
+        },
+        {
+          "page": 3,
+          "base": 99.14411,
+          "candidate": 99.14411
+        },
+        {
+          "page": 4,
+          "base": 98.61568,
+          "candidate": 98.61568
+        },
+        {
+          "page": 5,
+          "base": 97.46147,
+          "candidate": 97.46147
+        },
+        {
+          "page": 6,
+          "base": 99.76983,
+          "candidate": 99.76983
+        },
+        {
+          "page": 7,
+          "base": 98.27551,
+          "candidate": 98.27551
+        },
+        {
+          "page": 8,
+          "base": 97.86504,
+          "candidate": 97.86504
+        },
+        {
+          "page": 9,
+          "base": 99.08258,
+          "candidate": 99.08258
+        },
+        {
+          "page": 10,
+          "base": 97.92796,
+          "candidate": 97.92796
+        },
+        {
+          "page": 11,
+          "base": 99.38034,
+          "candidate": 99.38034
+        },
+        {
+          "page": 12,
+          "base": 99.98329,
+          "candidate": 99.98329
+        },
+        {
+          "page": 13,
+          "base": 98.34239,
+          "candidate": 98.34239
+        },
+        {
+          "page": 14,
+          "base": 97.65984,
+          "candidate": 97.65984
+        },
+        {
+          "page": 15,
+          "base": 97.80032,
+          "candidate": 97.80032
+        },
+        {
+          "page": 16,
+          "base": 98.57854,
+          "candidate": 98.57854
+        },
+        {
+          "page": 17,
+          "base": 98.79591,
+          "candidate": 98.79591
+        },
+        {
+          "page": 18,
+          "base": 98.13687,
+          "candidate": 98.13687
+        },
+        {
+          "page": 19,
+          "base": 99.36623,
+          "candidate": 99.36623
+        },
+        {
+          "page": 20,
+          "base": 98.13946,
+          "candidate": 98.13946
+        },
+        {
+          "page": 21,
+          "base": 99.68719,
+          "candidate": 99.68719
+        },
+        {
+          "page": 22,
+          "base": 99.61079,
+          "candidate": 99.61079
+        }
+      ]
+    },
+    {
+      "key": "claim-8045",
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8045-mofa.hwp",
+      "input_sha256": "4bf58b220d6a70e7efbc9ad5bf7d501e2f1291430a1fff9b9bb3afc9f25fba6c",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8045-mofa-2020.pdf",
+      "pdf_sha256": "6cac0eb2d182787be811ef0f6bd5d1dac56df9c4836c3995b0daaf7f0eeecde2",
+      "compat": "2022",
+      "base_tsv_sha256": "955f091c3c837c4fcf381b78a07aa91c589a4b37c5fff3250a49ab43b211e9db",
+      "candidate_tsv_sha256": "955f091c3c837c4fcf381b78a07aa91c589a4b37c5fff3250a49ab43b211e9db",
+      "pages": [
+        {
+          "page": 1,
+          "base": 71.03857,
+          "candidate": 71.03857
+        },
+        {
+          "page": 2,
+          "base": 99.99866,
+          "candidate": 99.99866
+        }
+      ]
+    },
+    {
+      "key": "claim-8049",
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8049-official.hwp",
+      "input_sha256": "29018def6969c60e6b0fb5c7cca06c8fd12a3b1239543c8f3eb1d1d03bc4294e",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8049-official-2020.pdf",
+      "pdf_sha256": "ddc7df829907d31b0befffc663ca0879efacaa0ceae34f92502fe0e99a9a9859",
+      "compat": "2022",
+      "base_tsv_sha256": "73ef2b504066ad19bdc3b7c7d5d03f9123445a3a2622b57767d791b9acbf6330",
+      "candidate_tsv_sha256": "73ef2b504066ad19bdc3b7c7d5d03f9123445a3a2622b57767d791b9acbf6330",
+      "pages": [
+        {
+          "page": 1,
+          "base": 99.72982,
+          "candidate": 99.72982
+        },
+        {
+          "page": 2,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 3,
+          "base": 95.10468,
+          "candidate": 95.10468
+        },
+        {
+          "page": 4,
+          "base": 99.66401,
+          "candidate": 99.66401
+        },
+        {
+          "page": 5,
+          "base": 99.84058,
+          "candidate": 99.84058
+        },
+        {
+          "page": 6,
+          "base": 99.85265,
+          "candidate": 99.85265
+        },
+        {
+          "page": 7,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 8,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 9,
+          "base": 99.24037,
+          "candidate": 99.24037
+        },
+        {
+          "page": 10,
+          "base": 86.7529,
+          "candidate": 86.7529
+        },
+        {
+          "page": 11,
+          "base": 98.34516,
+          "candidate": 98.34516
+        },
+        {
+          "page": 12,
+          "base": 99.98513,
+          "candidate": 99.98513
+        },
+        {
+          "page": 13,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 14,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 15,
+          "base": 98.80777,
+          "candidate": 98.80777
+        },
+        {
+          "page": 16,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 17,
+          "base": 99.99778,
+          "candidate": 99.99778
+        },
+        {
+          "page": 18,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 19,
+          "base": 99.99358,
+          "candidate": 99.99358
+        },
+        {
+          "page": 20,
+          "base": 99.99896,
+          "candidate": 99.99896
+        },
+        {
+          "page": 21,
+          "base": 99.98266,
+          "candidate": 99.98266
+        },
+        {
+          "page": 22,
+          "base": 99.9885,
+          "candidate": 99.9885
+        },
+        {
+          "page": 23,
+          "base": 99.98056,
+          "candidate": 99.98056
+        },
+        {
+          "page": 24,
+          "base": 98.16608,
+          "candidate": 98.16608
+        },
+        {
+          "page": 25,
+          "base": 99.95304,
+          "candidate": 99.95304
+        },
+        {
+          "page": 26,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 27,
+          "base": 99.99696,
+          "candidate": 99.99696
+        },
+        {
+          "page": 28,
+          "base": 99.9969,
+          "candidate": 99.9969
+        },
+        {
+          "page": 29,
+          "base": 98.96511,
+          "candidate": 98.96511
+        },
+        {
+          "page": 30,
+          "base": 99.95553,
+          "candidate": 99.95553
+        },
+        {
+          "page": 31,
+          "base": 99.99863,
+          "candidate": 99.99863
+        },
+        {
+          "page": 32,
+          "base": 99.99587,
+          "candidate": 99.99587
+        },
+        {
+          "page": 33,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 34,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 35,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 36,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 37,
+          "base": 99.62051,
+          "candidate": 99.62051
+        },
+        {
+          "page": 38,
+          "base": 99.99936,
+          "candidate": 99.99936
+        },
+        {
+          "page": 39,
+          "base": 95.2701,
+          "candidate": 95.2701
+        },
+        {
+          "page": 40,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 41,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 42,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 43,
+          "base": 99.99449,
+          "candidate": 99.99449
+        },
+        {
+          "page": 44,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 45,
+          "base": 95.70369,
+          "candidate": 95.70369
+        },
+        {
+          "page": 46,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 47,
+          "base": 99.94523,
+          "candidate": 99.94523
+        },
+        {
+          "page": 48,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 49,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 50,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 51,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 52,
+          "base": 96.2953,
+          "candidate": 96.2953
+        },
+        {
+          "page": 53,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 54,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 55,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 56,
+          "base": 99.98672,
+          "candidate": 99.98672
+        },
+        {
+          "page": 57,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 58,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 59,
+          "base": 96.42303,
+          "candidate": 96.42303
+        },
+        {
+          "page": 60,
+          "base": 99.99565,
+          "candidate": 99.99565
+        },
+        {
+          "page": 61,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 62,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 63,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 64,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 65,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 66,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 67,
+          "base": 95.99868,
+          "candidate": 95.99868
+        },
+        {
+          "page": 68,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 69,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 70,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 71,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 72,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 73,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 74,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 75,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 76,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 77,
+          "base": 96.16489,
+          "candidate": 96.16489
+        },
+        {
+          "page": 78,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 79,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 80,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 81,
+          "base": 96.23667,
+          "candidate": 96.23667
+        },
+        {
+          "page": 82,
+          "base": 26.99553,
+          "candidate": 26.99553
+        }
+      ]
+    },
+    {
+      "key": "claim-8050",
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8050-law-current.hwp",
+      "input_sha256": "6371d1fcf8f9574430c0df8e6141cd9d7e6b2c11aa10bc3afeeb8e5cdf07cf04",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8050-law-current-2020.pdf",
+      "pdf_sha256": "7bcbc54f4240b8e5104c8b930b8618cb7fa968b9f158a9b09b961d4924fd8d2c",
+      "compat": "2022",
+      "base_tsv_sha256": "9d023e282458ee0dc778ed8e488b10bce5d7b1b2be53571e83d15ad3b1f17b19",
+      "candidate_tsv_sha256": "9d023e282458ee0dc778ed8e488b10bce5d7b1b2be53571e83d15ad3b1f17b19",
+      "pages": [
+        {
+          "page": 1,
+          "base": 99.93959,
+          "candidate": 99.93959
+        },
+        {
+          "page": 2,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "claim-8051",
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8051-official.hwpx",
+      "input_sha256": "690e1cad747b643c331f563780271f1323690aded489f205a5a1eefb037b5b1e",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8051-official-2024.pdf",
+      "pdf_sha256": "ca0c2d437564ed39779e3c8b739b7176e2dd0d753893c32db48f7e6ac1d579da",
+      "compat": "2024",
+      "base_tsv_sha256": "fe7ecf42c8bd487c4357e68de0af884f8f5c367e30f0c6b82b75576765c849f1",
+      "candidate_tsv_sha256": "fe7ecf42c8bd487c4357e68de0af884f8f5c367e30f0c6b82b75576765c849f1",
+      "pages": [
+        {
+          "page": 1,
+          "base": 99.99887,
+          "candidate": 99.99887
+        },
+        {
+          "page": 2,
+          "base": 99.99278,
+          "candidate": 99.99278
+        },
+        {
+          "page": 3,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 4,
+          "base": 99.99472,
+          "candidate": 99.99472
+        },
+        {
+          "page": 5,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 6,
+          "base": 99.99966,
+          "candidate": 99.99966
+        },
+        {
+          "page": 7,
+          "base": 99.98049,
+          "candidate": 99.98049
+        },
+        {
+          "page": 8,
+          "base": 99.97441,
+          "candidate": 99.97441
+        },
+        {
+          "page": 9,
+          "base": 99.99285,
+          "candidate": 99.99285
+        }
+      ]
+    },
+    {
+      "key": "claim-8053",
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8053-official.hwpx",
+      "input_sha256": "e720b3b38eb46286c34a1ba6a002c2448c264ec1d13f8e9e3d5279c57f68bfa6",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8053-official-2020.pdf",
+      "pdf_sha256": "a19baf71541f3e2b19ef3e2cab09fad2f10e150f514e31c4300dd1186548629b",
+      "compat": "2022",
+      "base_tsv_sha256": "11194165ff548e7f9db199369b298f78ab5cb997a14bdf7ae80e8b53a841baf1",
+      "candidate_tsv_sha256": "11194165ff548e7f9db199369b298f78ab5cb997a14bdf7ae80e8b53a841baf1",
+      "pages": [
+        {
+          "page": 1,
+          "base": 99.76936,
+          "candidate": 99.76936
+        },
+        {
+          "page": 2,
+          "base": 99.8225,
+          "candidate": 99.8225
+        },
+        {
+          "page": 3,
+          "base": 98.91448,
+          "candidate": 98.91448
+        },
+        {
+          "page": 4,
+          "base": 99.84512,
+          "candidate": 99.84512
+        },
+        {
+          "page": 5,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "claim-8055",
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8055-official.hwpx",
+      "input_sha256": "adb76fe70975d3f8dae20120d1ea27434f24aa69ebd7e04427b80e547bb78828",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8055-official-2020.pdf",
+      "pdf_sha256": "1bf8b519e921c4e8cb27e5c2dac609ea4e7435b4f925b3ae688ee351057a91ea",
+      "compat": "2022",
+      "base_tsv_sha256": "d9f6515323f64139383b4d26a50c026d658246abc27001977fd7ca934c06ea48",
+      "candidate_tsv_sha256": "d9f6515323f64139383b4d26a50c026d658246abc27001977fd7ca934c06ea48",
+      "pages": [
+        {
+          "page": 1,
+          "base": 99.99761,
+          "candidate": 99.99761
+        },
+        {
+          "page": 2,
+          "base": 99.98741,
+          "candidate": 99.98741
+        }
+      ]
+    },
+    {
+      "key": "claim-8056",
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8056-official.hwp",
+      "input_sha256": "56b7a19affa96a586c1db2502f3a8f4d597cbafaf1250b7d4214417b94c31905",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8056-official-2024.pdf",
+      "pdf_sha256": "9767f31c631cfe09b4f102acf6ce5dda4e488079bf6fd2b994e357936c98c4eb",
+      "compat": "2024",
+      "base_tsv_sha256": "e52b11928abbfa50f57b35fa3f44e231cdcce92e460846f29cd462a461d1b728",
+      "candidate_tsv_sha256": "e52b11928abbfa50f57b35fa3f44e231cdcce92e460846f29cd462a461d1b728",
+      "pages": [
+        {
+          "page": 1,
+          "base": 99.75299,
+          "candidate": 99.75299
+        },
+        {
+          "page": 2,
+          "base": 98.23581,
+          "candidate": 98.23581
+        },
+        {
+          "page": 3,
+          "base": 96.31767,
+          "candidate": 96.31767
+        },
+        {
+          "page": 4,
+          "base": 97.2507,
+          "candidate": 97.2507
+        },
+        {
+          "page": 5,
+          "base": 99.48072,
+          "candidate": 99.48072
+        },
+        {
+          "page": 6,
+          "base": 99.91074,
+          "candidate": 99.91074
+        },
+        {
+          "page": 7,
+          "base": 99.15478,
+          "candidate": 99.15478
+        },
+        {
+          "page": 8,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 9,
+          "base": 99.85159,
+          "candidate": 99.85159
+        },
+        {
+          "page": 10,
+          "base": 99.80828,
+          "candidate": 99.80828
+        },
+        {
+          "page": 11,
+          "base": 68.87152,
+          "candidate": 68.87152
+        },
+        {
+          "page": 12,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "claim-8057",
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8057-official.hwpx",
+      "input_sha256": "7180ce00f71bb9fc4285d045b6a0fd8bfbdd1c60642176c95a0496c19463ff6e",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8057-official-2020.pdf",
+      "pdf_sha256": "ebdcb04f80fd12d8d577e131d0730153fe246c2efd60611648ecc1853286a5df",
+      "compat": "2022",
+      "base_tsv_sha256": "bbf4e6f8adaddbe2fe0acf56c86f653a973d908122720496cb7d0e2383510531",
+      "candidate_tsv_sha256": "bbf4e6f8adaddbe2fe0acf56c86f653a973d908122720496cb7d0e2383510531",
+      "pages": [
+        {
+          "page": 1,
+          "base": 99.87929,
+          "candidate": 99.87929
+        },
+        {
+          "page": 2,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 3,
+          "base": 98.69643,
+          "candidate": 98.69643
+        },
+        {
+          "page": 4,
+          "base": 96.17278,
+          "candidate": 96.17278
+        },
+        {
+          "page": 5,
+          "base": 99.23949,
+          "candidate": 99.23949
+        },
+        {
+          "page": 6,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 7,
+          "base": 95.46028,
+          "candidate": 95.46028
+        },
+        {
+          "page": 8,
+          "base": 97.88225,
+          "candidate": 97.88225
+        },
+        {
+          "page": 9,
+          "base": 99.21109,
+          "candidate": 99.21109
+        },
+        {
+          "page": 10,
+          "base": 99.62872,
+          "candidate": 99.62872
+        },
+        {
+          "page": 11,
+          "base": 99.62652,
+          "candidate": 99.62652
+        },
+        {
+          "page": 12,
+          "base": 99.50391,
+          "candidate": 99.50391
+        },
+        {
+          "page": 13,
+          "base": 99.51356,
+          "candidate": 99.51356
+        },
+        {
+          "page": 14,
+          "base": 99.33121,
+          "candidate": 99.33121
+        },
+        {
+          "page": 15,
+          "base": 99.16179,
+          "candidate": 99.16179
+        },
+        {
+          "page": 16,
+          "base": 99.47305,
+          "candidate": 99.47305
+        },
+        {
+          "page": 17,
+          "base": 98.88067,
+          "candidate": 98.88067
+        },
+        {
+          "page": 18,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 19,
+          "base": 96.20253,
+          "candidate": 96.20253
+        },
+        {
+          "page": 20,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 21,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 22,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 23,
+          "base": 99.14621,
+          "candidate": 99.14621
+        },
+        {
+          "page": 24,
+          "base": 99.43584,
+          "candidate": 99.43584
+        },
+        {
+          "page": 25,
+          "base": 98.82239,
+          "candidate": 98.82239
+        },
+        {
+          "page": 26,
+          "base": 99.05276,
+          "candidate": 99.05276
+        },
+        {
+          "page": 27,
+          "base": 99.40377,
+          "candidate": 99.40377
+        },
+        {
+          "page": 28,
+          "base": 99.9962,
+          "candidate": 99.9962
+        },
+        {
+          "page": 29,
+          "base": 99.99915,
+          "candidate": 99.99915
+        },
+        {
+          "page": 30,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 31,
+          "base": 99.99336,
+          "candidate": 99.99336
+        },
+        {
+          "page": 32,
+          "base": 99.91377,
+          "candidate": 99.91377
+        },
+        {
+          "page": 33,
+          "base": 99.59054,
+          "candidate": 99.59054
+        },
+        {
+          "page": 34,
+          "base": 98.1943,
+          "candidate": 98.1943
+        },
+        {
+          "page": 35,
+          "base": 99.02834,
+          "candidate": 99.02834
+        },
+        {
+          "page": 36,
+          "base": 99.56882,
+          "candidate": 99.56882
+        },
+        {
+          "page": 37,
+          "base": 99.76149,
+          "candidate": 99.76149
+        }
+      ]
+    },
+    {
+      "key": "claim-8062",
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/ssec2609.hwpx",
+      "input_sha256": "28f84a2dd9ea81f87f892b8a61e4f72d54bb9fa128dee354bdd223b735c911ec",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/ssec2609-2020.pdf",
+      "pdf_sha256": "7a064de57333d66e4ae90f7063c1687d096117a4112f3e91f5af902ededf9493",
+      "compat": "2022",
+      "base_tsv_sha256": "24d3ee5e5119d833dd17300b5e9816c7ddd133a1931c11e71e0f44a548fefc65",
+      "candidate_tsv_sha256": "24d3ee5e5119d833dd17300b5e9816c7ddd133a1931c11e71e0f44a548fefc65",
+      "pages": [
+        {
+          "page": 1,
+          "base": 99.96258,
+          "candidate": 99.96258
+        },
+        {
+          "page": 2,
+          "base": 98.64439,
+          "candidate": 98.64439
+        },
+        {
+          "page": 3,
+          "base": 98.28098,
+          "candidate": 98.28098
+        },
+        {
+          "page": 4,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 5,
+          "base": 99.99681,
+          "candidate": 99.99681
+        },
+        {
+          "page": 6,
+          "base": 98.89435,
+          "candidate": 98.89435
+        },
+        {
+          "page": 7,
+          "base": 98.59505,
+          "candidate": 98.59505
+        },
+        {
+          "page": 8,
+          "base": 99.88379,
+          "candidate": 99.88379
+        },
+        {
+          "page": 9,
+          "base": 99.84346,
+          "candidate": 99.84346
+        },
+        {
+          "page": 10,
+          "base": 99.7058,
+          "candidate": 99.7058
+        },
+        {
+          "page": 11,
+          "base": 99.6784,
+          "candidate": 99.6784
+        },
+        {
+          "page": 12,
+          "base": 99.48646,
+          "candidate": 99.48646
+        },
+        {
+          "page": 13,
+          "base": 98.98962,
+          "candidate": 98.98962
+        },
+        {
+          "page": 14,
+          "base": 99.18625,
+          "candidate": 99.18625
+        },
+        {
+          "page": 15,
+          "base": 99.05431,
+          "candidate": 99.05431
+        },
+        {
+          "page": 16,
+          "base": 99.49877,
+          "candidate": 99.49877
+        },
+        {
+          "page": 17,
+          "base": 99.39088,
+          "candidate": 99.39088
+        },
+        {
+          "page": 18,
+          "base": 98.95229,
+          "candidate": 98.95229
+        },
+        {
+          "page": 19,
+          "base": 99.23126,
+          "candidate": 99.23126
+        },
+        {
+          "page": 20,
+          "base": 99.16446,
+          "candidate": 99.16446
+        },
+        {
+          "page": 21,
+          "base": 99.28633,
+          "candidate": 99.28633
+        },
+        {
+          "page": 22,
+          "base": 99.32141,
+          "candidate": 99.32141
+        },
+        {
+          "page": 23,
+          "base": 98.63273,
+          "candidate": 98.63273
+        },
+        {
+          "page": 24,
+          "base": 98.2224,
+          "candidate": 98.2224
+        },
+        {
+          "page": 25,
+          "base": 99.82529,
+          "candidate": 99.82529
+        },
+        {
+          "page": 26,
+          "base": 99.68534,
+          "candidate": 99.68534
+        },
+        {
+          "page": 27,
+          "base": 98.18733,
+          "candidate": 98.18733
+        },
+        {
+          "page": 28,
+          "base": 99.18001,
+          "candidate": 99.18001
+        },
+        {
+          "page": 29,
+          "base": 99.45961,
+          "candidate": 99.45961
+        },
+        {
+          "page": 30,
+          "base": 86.93039,
+          "candidate": 86.93039
+        },
+        {
+          "page": 31,
+          "base": 78.34114,
+          "candidate": 78.34114
+        },
+        {
+          "page": 32,
+          "base": 98.73612,
+          "candidate": 98.73612
+        },
+        {
+          "page": 33,
+          "base": 98.65939,
+          "candidate": 98.65939
+        },
+        {
+          "page": 34,
+          "base": 98.60777,
+          "candidate": 98.60777
+        },
+        {
+          "page": 35,
+          "base": 99.33303,
+          "candidate": 99.33303
+        }
+      ]
+    },
+    {
+      "key": "claim-8065",
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8065-law-current.hwp",
+      "input_sha256": "1cbb4f77a3b190a9057081293f4a030055530369c986012327ac49511e82009f",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8065-law-current-2020.pdf",
+      "pdf_sha256": "4c1921a5b44e59cb2bdc52c2be13c068600a1ff95233af1522834536f2625d86",
+      "compat": "2022",
+      "base_tsv_sha256": "0b6ce72a67cff90ab8dcc09f5c1b6a79eeeef6f72cd8cdf0b3ce9450d5cb74c3",
+      "candidate_tsv_sha256": "0b6ce72a67cff90ab8dcc09f5c1b6a79eeeef6f72cd8cdf0b3ce9450d5cb74c3",
+      "pages": [
+        {
+          "page": 1,
+          "base": 99.31007,
+          "candidate": 99.31007
+        },
+        {
+          "page": 2,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 3,
+          "base": 99.98231,
+          "candidate": 99.98231
+        },
+        {
+          "page": 4,
+          "base": 99.23913,
+          "candidate": 99.23913
+        },
+        {
+          "page": 5,
+          "base": 99.99763,
+          "candidate": 99.99763
+        },
+        {
+          "page": 6,
+          "base": 98.96631,
+          "candidate": 98.96631
+        }
+      ]
+    },
+    {
+      "key": "control-7559",
+      "input": "mydocs/pr/assets/computed_empty_host_line_20261020/public_api_originals/inputs/offset-hwpx.hwpx",
+      "input_sha256": "cf0903bc87b790495100f96e8a787f0ba00ce67cb72406c89d2be6a9533821ee",
+      "pdf": "pdf/pr7559_review/offset-hwpx-2020.pdf",
+      "pdf_sha256": "02179a917b9e5a917daa3d644b243be21050ee0688a11310fd722336d1bd0708",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-7572",
+      "input": "mydocs/pr/assets/s21_20261027/inputs/178.hwpx",
+      "input_sha256": "9ba1c6e882408656bccb85688b8ba4588626a91e61b068b106c8cf5fcf06ac23",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/178-2020.pdf",
+      "pdf_sha256": "1bf0df15cbdacdc8246f3087cd0a74584951ee786c02fd11949fda9c67849ecd",
+      "compat": "2022",
+      "base_tsv_sha256": "9e83e432d3f2300ef54a44fa7d98ebd345b4830e43bb1ebefd13e639b05b27a9",
+      "candidate_tsv_sha256": "9e83e432d3f2300ef54a44fa7d98ebd345b4830e43bb1ebefd13e639b05b27a9",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 3,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-7573",
+      "input": "mydocs/pr/assets/s21_20261027/inputs/181.hwpx",
+      "input_sha256": "84283f46ef725b412d9bd70509db541f6f2d6f54417870a82fb47ebda72e9a48",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/181-2020.pdf",
+      "pdf_sha256": "0dc723d7498e4651c12cfda73dfb6bea0c67717d6e1fa47f65f69a5bb359d9ca",
+      "compat": "2022",
+      "base_tsv_sha256": "e3fd94d0af45f614598b15e7d4677bac47ea9de4822c95e0474b78d171fc43d4",
+      "candidate_tsv_sha256": "e3fd94d0af45f614598b15e7d4677bac47ea9de4822c95e0474b78d171fc43d4",
+      "pages": [
+        {
+          "page": 1,
+          "base": 99.57627,
+          "candidate": 99.57627
+        }
+      ]
+    },
+    {
+      "key": "control-7588",
+      "input": "mydocs/pr/assets/semanticist21_group_geometry_20261021/inputs/hwpx/pr7588-pr8042-ungroup-30.hwpx",
+      "input_sha256": "cd2c7fd270f1020bc960b5dce629251012b286e5912c8bbacf5908aa20cdd3ad",
+      "pdf": "mydocs/pr/assets/semanticist21_group_geometry_20261021/pdf/hwpx/pr7588-pr8042-ungroup-30-2020.pdf",
+      "pdf_sha256": "5e3e31a234ce26f4a6e8517c5142c00f66e93576853ec66da80d4dc8e1295b71",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-7589",
+      "input": "mydocs/pr/assets/pr_7589_form_multiline/pr7589-multiline-true.hwpx",
+      "input_sha256": "8b3d341410df07fc32f0909b5b84f274ec48e61bb70bf1bcc6050c2e62599457",
+      "pdf": "mydocs/pr/assets/pr_7589_form_multiline/pr7589-multiline-true-2020.pdf",
+      "pdf_sha256": "21482ec033b610614f675e32bb983cb3d75f9acbbf7ca7bbe00702f61f8f7868",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-7662",
+      "input": "mydocs/pr/assets/s21_20261027/inputs/188.hwpx",
+      "input_sha256": "d454147e39fb3fcb6070f3b21edece5dbba1bee10dc063422043cb6b8aa7033e",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/188-2020.pdf",
+      "pdf_sha256": "2f79486fefcbd252a897b2d29619b8b7f2d4f6716a81e7030466db0ca3eafd7d",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-7694",
+      "input": "tests/fixtures/inline-control-move/chart-after.hwp",
+      "input_sha256": "8ff56111b683005b7d4cd34990e7214debc7785d9bef6bc76a2772d036ace617",
+      "pdf": "pdf/semanticist21_source_contracts_20261026/pr7694-updated-198-chart-after-2020.pdf",
+      "pdf_sha256": "2f93373067c868addc624878b01c99f25fd13235de2924976fa17b5a44a90d57",
+      "compat": "2022",
+      "base_tsv_sha256": "0d2c389c71478f43143cb7d8b6ba2a72316694ddb7d8cbf93c38e61ba113a3a8",
+      "candidate_tsv_sha256": "0d2c389c71478f43143cb7d8b6ba2a72316694ddb7d8cbf93c38e61ba113a3a8",
+      "pages": [
+        {
+          "page": 1,
+          "base": 99.71479,
+          "candidate": 99.71479
+        }
+      ]
+    },
+    {
+      "key": "control-7819",
+      "input": "tests/fixtures/char_overlap_caret_axis/nonbmp-endnote-true.hwp",
+      "input_sha256": "a7aafc8b6e37141e10b34077ce592410f7115c67186ab72db828509aebb16e87",
+      "pdf": "pdf/issue7819_char_overlap_caret_axis/nonbmp-endnote-true-hwp-2020.pdf",
+      "pdf_sha256": "0d72792090d0aa869fa11ff8ca3712b2532c0c12073e302790ec5fe68c170bdb",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-7833",
+      "input": "tests/fixtures/hwpx_cell_frame_print/pr7833-flat-false-tables-false-cut.hwpx",
+      "input_sha256": "61aeefefc423eb88c4e21d36018a9b5d0bb67ff3902766049d990691609ed897",
+      "pdf": "pdf/semanticist21-20261019/generated-hwpx/pr7833-flat-false-tables-false-cut/pr7833-flat-false-tables-false-cut-2020.pdf",
+      "pdf_sha256": "57cbd0f72b13b8a0e8049c465c3230c7c7643adda0e005deb2275450ad0c4190",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-7904",
+      "input": "mydocs/pr/assets/s21_20261027/inputs/211.hwpx",
+      "input_sha256": "4fd67cd597ea33cc7ae916bb9448c84416c1225300a28f984095f93a105bcc6d",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/211-2020.pdf",
+      "pdf_sha256": "89ce80e0bfff5b6befcc0603cb3c55e48888fd3433fe0c007fbe937ce6b6a5b5",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-8014",
+      "input": "mydocs/pr/assets/s21_20261027/inputs/195.hwpx",
+      "input_sha256": "56fb2054fa2a57d09a4e024edc5bd29f6f67a47424e2b19096a18bbb986d4684",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/195-2020.pdf",
+      "pdf_sha256": "081082724f2e50034da71cfb3a91c291820d00641eb5bc2fd3348e9c4791c5c7",
+      "compat": "2022",
+      "base_tsv_sha256": "094d30eee84dde4dcc92d55aa656a8615cdfbec723fe6720212821115e1f46fc",
+      "candidate_tsv_sha256": "094d30eee84dde4dcc92d55aa656a8615cdfbec723fe6720212821115e1f46fc",
+      "pages": [
+        {
+          "page": 1,
+          "base": 99.98384,
+          "candidate": 99.98384
+        },
+        {
+          "page": 2,
+          "base": 99.98236,
+          "candidate": 99.98236
+        }
+      ]
+    },
+    {
+      "key": "control-8031",
+      "input": "tests/fixtures/pr8031_page_number_cell/pr8031-api-defined-page-number-cell.hwpx",
+      "input_sha256": "7e331d2c5a828bf4f915491ee8db3cd0a9eb253d7cc6caad80acebc37044e8b8",
+      "pdf": "pdf/semanticist21-20261019/pr8031-api-defined-page-number-cell-2020.pdf",
+      "pdf_sha256": "feb6345ec85aa9166fb3d7a6ce5a2359879cdff66f009c293fd237559986f1a9",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-8032",
+      "input": "tests/fixtures/pr8032_print_alpha/wide.hwpx",
+      "input_sha256": "9ef1b0180eab92c311901a5be26936ac737df165c6a0cdf9b8a743553519b07d",
+      "pdf": "pdf/semanticist21-20261019/pr8032-print-alpha-wide-2020.pdf",
+      "pdf_sha256": "ca30c1fce58e933f0a20c7b842f1cd1c306d071f2f64b1fef110449532d5187d",
+      "compat": "2022",
+      "base_tsv_sha256": "6dd99082b21662a8c193585e08b26b57f532359c53a9348091bd8e5e96c5b5f9",
+      "candidate_tsv_sha256": "6dd99082b21662a8c193585e08b26b57f532359c53a9348091bd8e5e96c5b5f9",
+      "pages": [
+        {
+          "page": 1,
+          "base": 98.78322,
+          "candidate": 98.78322
+        }
+      ]
+    },
+    {
+      "key": "control-8035",
+      "input": "mydocs/pr/assets/s21_20261027/inputs/212.hwpx",
+      "input_sha256": "d8c5ad8e8f31461d2b74b63bac9dc1a6e60541f02ec58a1048a9b079028f52c9",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/212-2020.pdf",
+      "pdf_sha256": "c310ea3c5ec9d880e6997282712e15f990bc07e6055ddf4b2e3d3b3bd4472508",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-8036",
+      "input": "tests/fixtures/pr8036_stored_tall_line/continuing.hwpx",
+      "input_sha256": "21bb9f714b5e3ce646142cd4d8a34cd2c50600a89d6b741f75a2f7dbdbb4df0f",
+      "pdf": "pdf/pr8036_stored_tall_line/continuing-2020.pdf",
+      "pdf_sha256": "8ae130f8e28669e5036359e2c2a95d2c992f78947feaf1e9ab2f2811e39b478d",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-8037",
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/inputs/pr8037-body-picture-on-host.hwpx",
+      "input_sha256": "b45e8e507712da9a975445ad0055bd7eef45b30deab607f9e23f8bc1effc28b4",
+      "pdf": "pdf/pr8319_evidence_alignment_20261027/pr8037-body-picture-on-host-2020.pdf",
+      "pdf_sha256": "f48eb5b9db28cb727cea14f63cb9a0da64eed6ce9e9eee1e854c10e354282d27",
+      "compat": "2022",
+      "base_tsv_sha256": "e2db9645cdd2f415762a72570f8b224c810c728d51965f6edfaeb35bd1cde9c7",
+      "candidate_tsv_sha256": "e2db9645cdd2f415762a72570f8b224c810c728d51965f6edfaeb35bd1cde9c7",
+      "pages": [
+        {
+          "page": 1,
+          "base": 96.19075,
+          "candidate": 96.19075
+        }
+      ]
+    },
+    {
+      "key": "control-8038",
+      "input": "mydocs/pr/assets/raised_dot_clip_20261025/raised-dot.hwpx",
+      "input_sha256": "c65131da3881475c93af521dcdcde9b2b4e8cd981500fcaa98ab9b447dc4e1b7",
+      "pdf": "pdf/raised-dot-clip/raised-dot-2020.pdf",
+      "pdf_sha256": "cfd1ebaa3ccad355448049468a6bd13ba60c0428f020cca129e80d40f6d7a90d",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-8039",
+      "input": "tests/fixtures/hwpx_cell_frame_print/pr8039-control-tail-true.hwpx",
+      "input_sha256": "22391a6e27cde14e353279be278eb184e4cc2df5a9a3306c3d5a0cd41b671ea2",
+      "pdf": "pdf/semanticist21-20261019/generated-hwpx/pr8039-control-tail-true/pr8039-control-tail-true-2020.pdf",
+      "pdf_sha256": "0a1dd0de95c683deabf54499477415fd4ebe9926889748a6154812da07c9375f",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-8041",
+      "input": "mydocs/pr/assets/semanticist21_group_geometry_20261021/inputs/hwpx/pr8041-case-3-base-0-after.hwpx",
+      "input_sha256": "d6eaa0ed71943ecf8559dc764b74e75487c81fc05c63c44b04c6fd6ea1040432",
+      "pdf": "mydocs/pr/assets/semanticist21_group_geometry_20261021/pdf/hwpx/pr8041-case-3-base-0-after-2020.pdf",
+      "pdf_sha256": "ede3f7bf8973520b6332b0f9bb8e4a4d688de1628d39c5768a731a4539f40b74",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-8042",
+      "input": "mydocs/pr/assets/active_field_group_owner_20261021/inputs/ungroup-after.hwp",
+      "input_sha256": "977a99bd44e5d85d7ce25f90a533e80dc4e19f34409e548722d0fc12776b82a3",
+      "pdf": "mydocs/pr/assets/active_field_group_owner_20261021/pdf/ungroup-after-hwp-2020.pdf",
+      "pdf_sha256": "2611ce87c13d808b2eee30fed01d480b0d354f3d7b9dcad60190d6cd6e9cc1bc",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-8043",
+      "input": "mydocs/pr/assets/s21_20261027/inputs/197.hwpx",
+      "input_sha256": "8cac55deaa8102e4afcb66535679f5ae852028cc13d939758194c9480249e507",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/197-2020.pdf",
+      "pdf_sha256": "25a5c691a535a18ee06edc17eae6c292c3a83ec973b605ee55399819ec46a76e",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-8045",
+      "input": "tests/fixtures/pr8045_square_wrap/square-hancom2020.hwpx",
+      "input_sha256": "a85aa1a67089027180c9772d8285b5d39d2eb345a4cf706ab2bd380616f5c361",
+      "pdf": "pdf/pr8045_review/square-hancom2020-2020.pdf",
+      "pdf_sha256": "3a429a93a009f44c275cc0394caef62296e706fc6e224b2a63ce2333fd1e3843",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-8049",
+      "input": "mydocs/pr/assets/caption_autonumber_projection_20261021/inputs/ta-pic-caption-tight.hwpx",
+      "input_sha256": "32cdf807f2a9ceae26671a07ab88ea69bcbc5e2082a6aabe75ae265b2e5b8c4f",
+      "pdf": "mydocs/pr/assets/caption_autonumber_projection_20261021/pdf/ta-pic-caption-tight-2020.pdf",
+      "pdf_sha256": "0800c0ffc142e50abb76b4db6f69a8201c0849813c924e928b10893a4947f9d8",
+      "compat": "2022",
+      "base_tsv_sha256": "ab6a5aa82e5fe1c2ec986eb3084e7e6ecc600bc548f5e353acdb1b404da51450",
+      "candidate_tsv_sha256": "ab6a5aa82e5fe1c2ec986eb3084e7e6ecc600bc548f5e353acdb1b404da51450",
+      "pages": [
+        {
+          "page": 1,
+          "base": 99.98107,
+          "candidate": 99.98107
+        }
+      ]
+    },
+    {
+      "key": "control-8050",
+      "input": "mydocs/pr/assets/s21_20261027/inputs/198.hwpx",
+      "input_sha256": "ffada9bc581584a267a49baee246008e1cd12345e0396b910c14d4f9fca6e5f9",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/198-2020.pdf",
+      "pdf_sha256": "7309f5416cf835fbb24835a3cd6e4eb99747d679c9532aaed589d74ec1d19d1d",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-8051",
+      "input": "mydocs/pr/assets/s21_20261027/inputs/199.hwpx",
+      "input_sha256": "6659ed9830af931405704b5dd23bcb3da05b11ca76be4f7b9ba599b5300865ac",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/199-2020.pdf",
+      "pdf_sha256": "37cdbbd886447e06d992d7a8a9f7aea29a47e1782fc919050194cd719978caea",
+      "compat": "2022",
+      "base_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "candidate_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-8052",
+      "input": "mydocs/pr/assets/s21_20261027/inputs/200.hwpx",
+      "input_sha256": "6050a3e9573c4bfca97e3554d6cae92a17b6979cd660341c0b400fb7a2c01c92",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/200-2020.pdf",
+      "pdf_sha256": "2144d8c6cb8f0bd9a8b7edd6288ced43e0819d2e26f048280da10b1e959befbf",
+      "compat": "2022",
+      "base_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "candidate_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-8053",
+      "input": "mydocs/pr/assets/s21_20261027/inputs/202.hwpx",
+      "input_sha256": "2034955066e5b31cb78d0112753277c8d612eb914de3e60ce4ae09b9fb7676a3",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/202-2020.pdf",
+      "pdf_sha256": "76cc2289033f2c6238c7b22f7276193e09655dbe73c155363d8e63d5f4830f6d",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-8054",
+      "input": "mydocs/pr/assets/s21_20261027/inputs/203.hwpx",
+      "input_sha256": "778ca806c3b2aed367dfd283dccb85ec51229b08a7b6ef2602ae804ac2ccc25f",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/203-2020.pdf",
+      "pdf_sha256": "9c364c74306723adf27bffdc7d90da7f6fa9167e5c507e083b91c1c194859738",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-8055",
+      "input": "mydocs/pr/assets/float_fragment_frames_20261020/inputs/hwp/public-rowbreak-normalized-2020.hwp",
+      "input_sha256": "5c6e9dcc37c42de5f2d4c9972eb339e476672ac60da02135e7ec2e483d5ed34d",
+      "pdf": "mydocs/pr/assets/float_fragment_frames_20261020/pdf/hwp/public-rowbreak-normalized-2020-2020.pdf",
+      "pdf_sha256": "93cc27c42b7db35f13e8925c651c883e90b390e68bbf068ad4865e2437bec22f",
+      "compat": "2022",
+      "base_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "candidate_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-8056",
+      "input": "mydocs/pr/assets/s21_20261027/inputs/205.hwpx",
+      "input_sha256": "58b6739b969d07cb0f486566c0667fcf81fe33d327989fd714ff847f64f2e63c",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/205-2020.pdf",
+      "pdf_sha256": "ca9e361b88f476ec94a348de0016ae0ccb0a8bc18e61c92520fa7ab18a43524f",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-8057",
+      "input": "mydocs/pr/assets/verified_point_suppliers_20261025/inputs/gulim.hwpx",
+      "input_sha256": "446a7d75666788b9dde8586716a592b507ad1c689dd50709890771d84735e3e8",
+      "pdf": "pdf/verified-point-suppliers/gulim-2020.pdf",
+      "pdf_sha256": "31d9188b0212d222d7eb46e391febaaf0bc591516fa8939a12c2720f7c1fdcc5",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-8061",
+      "input": "tests/fixtures/pr8061_cell_picture_layer/picture-z2.hwpx",
+      "input_sha256": "759bf88c72ac5d1b2ff221756abbad2bbaac7776af752350f003bd4db9e83998",
+      "pdf": "pdf/pr8061_review/picture-z2-2020.pdf",
+      "pdf_sha256": "fc519b025cd35fb85e2be7e6505b74a0e0a4b0328f7bb3b1c18bb109dcf308a9",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-8062",
+      "input": "mydocs/pr/assets/s21_20261027/inputs/206.hwpx",
+      "input_sha256": "af558f112f87e6e62e8bb9ef764c8f34502fd13643b99e7a8dbf6199761b964b",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/206-2020.pdf",
+      "pdf_sha256": "5b0bb6548804a340ad13d809bf057b4d644cb59b6020db1510003edeb04154b0",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-8065",
+      "input": "mydocs/pr/assets/s21_20261027/inputs/207.hwpx",
+      "input_sha256": "698ca8c3b6cb6c9696a11b30af703fa1e079f184a03d61f73b18ed5e3512af91",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/207-2020.pdf",
+      "pdf_sha256": "7c1d945fe8282e1ea0575b08450de97521be6f332ea9b8293bbb7763c0427ab2",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-8066",
+      "input": "mydocs/pr/assets/s21_20261027/inputs/208.hwpx",
+      "input_sha256": "e672f8042449111ebcff0bd74336b382356c77680a9e4fe0549cf65dd33a2f83",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/208-2020.pdf",
+      "pdf_sha256": "99bf4e5d23a240fa7541fe6313e773f61928602623c89aaa03e59049955823bc",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-8090",
+      "input": "mydocs/pr/assets/s21_20261027/inputs/209.hwpx",
+      "input_sha256": "b7e549f3aa68ec0a338fe15f287db03cf683f2444fb765e422e0b159538e63c1",
+      "pdf": "mydocs/pr/assets/s21_20261027/inputs/209-2020.pdf",
+      "pdf_sha256": "6cda0e705d476cd00a99cad338df523018bf3160dd2774cc34a026e686a52109",
+      "compat": "2022",
+      "base_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "candidate_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        },
+        {
+          "page": 2,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-8093",
+      "input": "tests/fixtures/pr8093_form_caret/form-slot.hwp",
+      "input_sha256": "1c7e40474066cfc7c4892ab8d3b2e6ae7dde7055335ae2330c772e1cdc159b6c",
+      "pdf": "pdf/pr8093_review/form-slot-hwp-2020.pdf",
+      "pdf_sha256": "fd36f88c6e8766ee36bf6dbfd36dea9defe33e6efa11aea18c0c53caa3f87817",
+      "compat": "2022",
+      "base_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "candidate_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "pages": [
+        {
+          "page": 1,
+          "base": 100.0,
+          "candidate": 100.0
+        }
+      ]
+    },
+    {
+      "key": "control-8094",
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/inputs/pr8094-caption-number-sudal.hwpx",
+      "input_sha256": "dab243d31a31079621231c4f625ea6d9eb99119f3e050aaf7c3411f9e29b5189",
+      "pdf": "pdf/pr8319_evidence_alignment_20261027/pr8094-caption-number-sudal-2020.pdf",
+      "pdf_sha256": "acf82f44ad2c2e53f4ba6c068ace272038a4f23fa9f5f006ceecd76e155a7a6c",
+      "compat": "2022",
+      "base_tsv_sha256": "d59735166d409db427795f9a27629e8ed244cda2c06f96f7a6286b4d6202f550",
+      "candidate_tsv_sha256": "d59735166d409db427795f9a27629e8ed244cda2c06f96f7a6286b4d6202f550",
+      "pages": [
+        {
+          "page": 1,
+          "base": 98.11257,
+          "candidate": 98.11257
+        }
+      ]
+    },
+    {
+      "key": "control-8096",
+      "input": "tests/fixtures/pr8096_form_defaults/form-only-defaults-hwpx.hwpx",
+      "input_sha256": "2d49344b76f515dc3d325ce6eca9fb75cdc384743aa13e38966ae675eab515f4",
+      "pdf": "pdf/semanticist21_source_contracts_20261026/form-only-defaults-hwpx-2020.pdf",
+      "pdf_sha256": "9a240e7026b5b7e5a3d30fca93746e017555f1679d790b092009d935cc6979b1",
+      "compat": "2022",
+      "base_tsv_sha256": "3c4e081b1bfd38369d51d9ec95176751949ed9a977e422e1f6fb97f0caa1b8fd",
+      "candidate_tsv_sha256": "3c4e081b1bfd38369d51d9ec95176751949ed9a977e422e1f6fb97f0caa1b8fd",
+      "pages": [
+        {
+          "page": 1,
+          "base": 99.99194,
+          "candidate": 99.99194
+        }
+      ]
+    }
+  ]
+}

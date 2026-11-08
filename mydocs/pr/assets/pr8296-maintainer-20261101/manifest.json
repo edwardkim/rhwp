@@ -1,0 +1,209 @@
+{
+  "reviewedHead": "f3e2128edca7b188080b2a94f25e0988e26c9699",
+  "latestDevel": "20c9678b01c5a564bb510c9fccd652cceafcd212",
+  "measuredBase": "da39c536613a4bd543dc72b63a556183efc0383f",
+  "reuse": "Retained earlier base/head visual runs, independently inspected here. Current devel whole-page TSVs not newly rendered. No final no-regression approval claimed.",
+  "currentBrowser": "Fresh browser run against exact head TS and matching optimized WASM; actual Canvas.drawText inner glyph IDs captured without replacing renderer logic. Controlled font-coverage case uses original produced textRun with a missing-Hangul body face and prepared public Batang.",
+  "scores": [
+    {
+      "stage": "base",
+      "backend": "native",
+      "document": "seal-form",
+      "page": 1,
+      "raw": 99.91
+    },
+    {
+      "stage": "base",
+      "backend": "native",
+      "document": "seal-form",
+      "page": 2,
+      "raw": 100.0
+    },
+    {
+      "stage": "base",
+      "backend": "native",
+      "document": "bokhak",
+      "page": 1,
+      "raw": 97.21
+    },
+    {
+      "stage": "base",
+      "backend": "native",
+      "document": "issue4680",
+      "page": 1,
+      "raw": 98.91
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "document": "seal-form",
+      "page": 1,
+      "raw": 99.89
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "document": "seal-form",
+      "page": 2,
+      "raw": 100.0
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "document": "bokhak",
+      "page": 1,
+      "raw": 97.12
+    },
+    {
+      "stage": "base",
+      "backend": "wasm",
+      "document": "issue4680",
+      "page": 1,
+      "raw": 98.88
+    },
+    {
+      "stage": "head",
+      "backend": "native",
+      "document": "seal-form",
+      "page": 1,
+      "raw": 99.94
+    },
+    {
+      "stage": "head",
+      "backend": "native",
+      "document": "seal-form",
+      "page": 2,
+      "raw": 100.0
+    },
+    {
+      "stage": "head",
+      "backend": "native",
+      "document": "bokhak",
+      "page": 1,
+      "raw": 97.23
+    },
+    {
+      "stage": "head",
+      "backend": "native",
+      "document": "issue4680",
+      "page": 1,
+      "raw": 99.12
+    },
+    {
+      "stage": "head",
+      "backend": "wasm",
+      "document": "seal-form",
+      "page": 1,
+      "raw": 99.91
+    },
+    {
+      "stage": "head",
+      "backend": "wasm",
+      "document": "seal-form",
+      "page": 2,
+      "raw": 100.0
+    },
+    {
+      "stage": "head",
+      "backend": "wasm",
+      "document": "bokhak",
+      "page": 1,
+      "raw": 97.13
+    },
+    {
+      "stage": "head",
+      "backend": "wasm",
+      "document": "issue4680",
+      "page": 1,
+      "raw": 99.1
+    }
+  ],
+  "inputs": [
+    {
+      "key": "seal-form",
+      "sourceCommit": "f3e2128edca7b188080b2a94f25e0988e26c9699",
+      "paths": [
+        {
+          "canonical": "samples/issue8201/seal-delegation-form.hwp",
+          "baselineCopy": "/home/edward/mygithub/rhwp-worktrees/pr-8296-seal-pua/output/pr-review/8296/inputs/samples/issue8201/seal-delegation-form.hwp",
+          "bytes": 19456,
+          "sha256": "6fac28bd4e08219e909a538c297cbd193af10961c6b851337c893365717ac695",
+          "commitBytesIdentical": true
+        },
+        {
+          "canonical": "samples/issue8201/seal-delegation-form-2020.pdf",
+          "baselineCopy": "/home/edward/mygithub/rhwp-worktrees/pr-8296-seal-pua/output/pr-review/8296/inputs/samples/issue8201/seal-delegation-form-2020.pdf",
+          "bytes": 72007,
+          "sha256": "43ed1a9c58c0b221c391703fb2f76f658f520e75d64e7b213b3c9b2fa477a5a8",
+          "commitBytesIdentical": true
+        }
+      ]
+    },
+    {
+      "key": "bokhak",
+      "sourceCommit": "f3e2128edca7b188080b2a94f25e0988e26c9699",
+      "paths": [
+        {
+          "canonical": "samples/복학원서.hwp",
+          "baselineCopy": "/home/edward/mygithub/rhwp-worktrees/pr-8296-seal-pua/output/pr-review/8296/inputs/samples/복학원서.hwp",
+          "bytes": 114688,
+          "sha256": "da81b4010331bcac290f900c7cf224c97ee8355399614725ce46c197ff1a22a4",
+          "commitBytesIdentical": true
+        },
+        {
+          "canonical": "pdf/복학원서-2022.pdf",
+          "baselineCopy": "/home/edward/mygithub/rhwp-worktrees/pr-8296-seal-pua/output/pr-review/8296/inputs/pdf/복학원서-2022.pdf",
+          "bytes": 123705,
+          "sha256": "72b7edc292212a8a0c04a6a4c7500d380bc3d74759d568f9c8d6f0d60631996a",
+          "commitBytesIdentical": true
+        }
+      ]
+    },
+    {
+      "key": "issue4680",
+      "sourceCommit": "f3e2128edca7b188080b2a94f25e0988e26c9699",
+      "paths": [
+        {
+          "canonical": "samples/issue4680/20117321_gijang_handover_bond_ledger_form.hwp",
+          "baselineCopy": "/home/edward/mygithub/rhwp-worktrees/pr-8296-seal-pua/output/pr-review/8296/inputs/samples/issue4680/20117321_gijang_handover_bond_ledger_form.hwp",
+          "bytes": 20486,
+          "sha256": "20698f60a2beca4bcf0d3abe275c090ff46392f916747ed262b5e76f6a5fe2f1",
+          "commitBytesIdentical": true
+        },
+        {
+          "canonical": "pdf/issue4680/20117321_gijang_handover_bond_ledger_form-2020.pdf",
+          "baselineCopy": "/home/edward/mygithub/rhwp-worktrees/pr-8296-seal-pua/output/pr-review/8296/inputs/pdf/issue4680/20117321_gijang_handover_bond_ledger_form-2020.pdf",
+          "bytes": 50572,
+          "sha256": "2d7698cfbdea7770b3ffe1e9fdd2d1488f6943453582da2f96125d600acfd63d",
+          "commitBytesIdentical": true
+        }
+      ]
+    }
+  ],
+  "focusedTest": {
+    "result": "28 PASS / 0 FAIL / 1710 nonselected skipped",
+    "source": "f3e2128edca7b188080b2a94f25e0988e26c9699",
+    "nativeSkia": true,
+    "environment": "bwrap minimal-font; personal/system/Windows font paths hidden; bundled open fonts retained",
+    "logSha256": "0163843590e50921bb7b1e92b197786056a8dec19939dc7373e8e533753cc613",
+    "cases": [
+      "8201",
+      "5800",
+      "6127",
+      "937",
+      "948",
+      "2020",
+      "3216",
+      "8225"
+    ]
+  },
+  "artifacts": {
+    "rhwp.js": "261594f3843adba12acf73383b474665ee58ebbe7d84b7c6374d85ef2cc24c25",
+    "rhwp_bg.wasm": "3659b8e32f10e89179b9d0c8984291de17198b460caa0f4006503cae0a445068"
+  },
+  "latestDevelWasmReuse": {
+    "buildSource": "f17ca45e14a016e747f2a3aa399bbc50bb805df9",
+    "reason": "20c9678b01 differs in lowering.rs source cfg(test) removal only; non-test production content identical. See #8420 manifest."
+  },
+  "canvasKitRendererSha256": "e0fc252dbd227b353f62c22da0e4d504a1ad91b8dbe818752371e37c49bcdb68"
+}

@@ -23,7 +23,7 @@ const defaults = {
     'mydocs/tech/investigations/issue-4968/kerning_q2_hancom_adjudication.json',
   ),
   native: path.join(repoRoot, 'target/release/rhwp'),
-  qkit: path.join(repoRoot, 'target/release/rhwp-q-kit'),
+  qkit: path.join(repoRoot, 'target/pr-review/release/rhwp-q'),
   pkg: path.join(repoRoot, 'pkg'),
   output: path.join(repoRoot, 'mydocs/tech/investigations/issue-4968/kerning_q2_fixture_baseline.json'),
 };
@@ -198,7 +198,7 @@ export async function generateBaseline(options) {
 
   const env = scrubRhwpEnv();
   const nativeEnvelope = JSON.parse(run(options.qkit, [
-    'layer-tree', options.fixture, '--page', '0', '--json',
+    'kit', 'layer-tree', options.fixture, '--page', '0', '--json',
   ], { env }));
   const nativeTree = nativeEnvelope.tree;
   const wasmJs = path.join(options.pkg, 'rhwp.js');

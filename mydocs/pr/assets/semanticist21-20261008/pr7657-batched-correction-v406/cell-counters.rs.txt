@@ -1,0 +1,51 @@
+use rhwp::model::control::Control;
+use rhwp::wasm_api::HwpDocument;
+use std::path::Path;
+
+fn blank() -> HwpDocument {
+    let mut doc = HwpDocument::create_empty();
+    doc.create_blank_document().unwrap();
+    doc.insert_text(0, 0, 0, "머리").unwrap();
+    doc.split_paragraph(0, 0, 2, None).unwrap();
+    doc.create_table(0, 1, 0, 1, 1).unwrap();
+    doc
+}
+fn shape(doc: &HwpDocument) -> u16 {
+    let Control::Table(table) = &doc.document().sections[0].paragraphs[1].controls[0] else { panic!() };
+    table.cells[0].paragraphs[0].para_shape_id
+}
+fn toc(doc: &HwpDocument) -> u32 {
+    doc.document().doc_info.styles.iter().position(|style| style.local_name == "차례 제목").unwrap() as u32
+}
+fn save(doc: &HwpDocument, out: &Path, name: &str) {
+    std::fs::write(out.join(format!("{name}.hwpx")), doc.export_hwpx().unwrap()).unwrap();
+}
+fn main() {
+    let out = std::env::args().nth(1).unwrap();
+    let out = Path::new(&out);std::fs::create_dir_all(out).unwrap();
+    save(&blank(), out, "counter-01-unchanged-empty");
+    let mut doc=blank();doc.insert_text_in_cell(0,1,0,0,0,0,"셀 본문").unwrap();
+    doc.apply_cell_style(0,1,0,0,0,toc(&doc)).unwrap();
+    save(&doc,out,"counter-02-visible-style");
+    let mut doc=blank();doc.insert_text_in_cell(0,1,0,0,0,0,"앞뒤").unwrap();
+    doc.split_paragraph_in_cell(0,1,0,0,0,1,None).unwrap();
+    doc.apply_cell_style(0,1,0,0,0,toc(&doc)).unwrap();
+    save(&doc,out,"counter-03-first-of-two");
+    let mut doc=blank();doc.insert_text_in_cell(0,1,0,0,0,0,"앞뒤").unwrap();
+    doc.split_paragraph_in_cell(0,1,0,0,0,1,None).unwrap();
+    doc.apply_cell_style(0,1,0,0,1,toc(&doc)).unwrap();
+    save(&doc,out,"counter-04-second-of-two");
+    let mut doc=blank();doc.apply_para_format_in_cell(0,1,0,0,0,r#"{"spacingBefore":1200}"#).unwrap();
+    doc.apply_cell_style(0,1,0,0,0,toc(&doc)).unwrap();
+    save(&doc,out,"counter-05-direct-format-preserved");
+    let mut doc=blank();let old=shape(&doc);
+    doc.apply_cell_style(0,1,0,0,0,toc(&doc)).unwrap();
+    doc.set_cell_para_shape_id(0,1,0,0,0,old).unwrap();
+    save(&doc,out,"counter-06-restored-para-shape");
+    let mut doc=blank();let style=toc(&doc);
+    doc.apply_cell_style(0,1,0,0,0,style).unwrap();
+    doc.apply_cell_style(0,1,0,0,0,style).unwrap();
+    save(&doc,out,"counter-07-idempotent-style");
+    let mut doc=blank();doc.apply_para_format_in_cell(0,1,0,0,0,r#"{"spacingBefore":2400}"#).unwrap();
+    save(&doc,out,"counter-08-first-para-spacing");
+}

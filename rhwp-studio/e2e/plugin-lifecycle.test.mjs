@@ -36,7 +36,8 @@ runTest('플러그인 호스트', async ({ page }) => {
     return { denied, ok, list: p.list(), ping: p.invoke('dev-probe', 'ping', []) };
   });
   assert(load.denied === 'PLUGIN_NOT_ALLOWED', `TC1: allowlist 밖 거절 (${load.denied})`);
-  assert(load.list.length === 1 && load.list[0].id === 'dev-probe', 'TC1: 로드 목록에 반영');
+  // 내장 플러그인(ai-assistant)이 함께 올라와 있을 수 있으므로 개수가 아니라 존재로 본다.
+  assert(load.list.some(p => p.id === 'dev-probe'), 'TC1: 로드 목록에 반영');
   assert(load.ping === 'pong', 'TC1: 표면 호출 동작');
   assert(load.ok.methods.includes('appendRuns'), 'TC1: 표면 메서드 노출');
 
@@ -75,17 +76,22 @@ runTest('플러그인 호스트', async ({ page }) => {
     `TC3: undo 1회로 배치 전체 복원 ("${textAfterUndo}" === "${textBefore}")`);
 
   // ── TC4: 중첩 트랜잭션 거절 ────────────────────────────
-  const nested = await page.evaluate(() => {
+  const nested = await page.evaluate(async () => {
     try { window.rhwpStudio.plugins.invoke('dev-probe', 'nestedTransaction', []); return null; }
-    catch (e) { return e.code; }
+    catch (e) {
+      return { name: e.name, cause: e.cause?.code, report: await e.report };
+    }
   });
-  assert(nested === 'NESTED_TX', `TC4: 중첩 트랜잭션 거절 (${nested})`);
+  assert(nested?.name === 'StudioCommandError' && nested.cause === 'NESTED_TX',
+    `TC4: 명령 경계가 중첩 트랜잭션 거절 원인을 보존 (${JSON.stringify(nested)})`);
+  assert(nested?.report?.recovery === 'succeeded' && nested.report.checks.ready,
+    'TC4: 중첩 트랜잭션 거절의 복구 완료 뒤 후속 명령 실행');
 
   // ── TC5: 본문이 던지면 롤백 ────────────────────────────
   const beforeThrow = await paraText(page);
-  const threw = await page.evaluate(() => {
+  const threw = await page.evaluate(async () => {
     try { window.rhwpStudio.plugins.invoke('dev-probe', 'throwingTransaction', ['롤백대상']); return null; }
-    catch (e) { return e.message; }
+    catch (e) { await e.report; return e.message; }
   });
   await page.evaluate(() => new Promise(r => setTimeout(r, 300)));
   const afterThrow = await paraText(page);
@@ -114,7 +120,7 @@ runTest('플러그인 호스트', async ({ page }) => {
   assert(disposed.registered && disposed.inMenu, 'TC6: 플러그인이 커맨드·메뉴를 심음');
   assert(!disposed.stillRegistered, 'TC6: unload 후 커맨드 회수');
   assert(!disposed.stillInMenu, 'TC6: unload 후 메뉴 항목 회수');
-  assert(disposed.list.length === 0, 'TC6: 로드 목록 비워짐');
+  assert(!disposed.list.some(p => p.id === 'dev-probe'), 'TC6: 로드 목록에서 빠짐');
 
   // ── TC7: unload 후 호출은 거절, studio 는 살아 있다 ────
   const afterUnload = await page.evaluate(() => {

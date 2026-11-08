@@ -1,0 +1,137 @@
+[
+  {
+    "input": "samples/hwp3-table-cell-order.hwp",
+    "input_sha256": "d9e30ed3a46e20b358c89eb1b26e14cf031f78e5192cea61752fed77f8dd939d",
+    "external_flags": 1,
+    "job_id": "d55ad44a-07fa-47e8-bacf-f3f0919c4700",
+    "target": "pdf",
+    "engine": "2020",
+    "output": "pdf/issue7642-hwp3-realign-controls-20261012/hwp3-table-cell-order-hancom-2020.pdf",
+    "output_sha256": "eb56a4e7a7638e777919bec8082d187ef98a3b48c6e1fc7d06d258454a4cd2aa",
+    "output_bytes": 57118,
+    "metadata": {
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+      "input_format": "hwp",
+      "format": "pdf",
+      "bytes": 57118,
+      "input_preprocess": "none",
+      "pdf_page_count": 1
+    },
+    "pages": 1
+  },
+  {
+    "input": "samples/hwp3-table-cell-order.hwp",
+    "input_sha256": "d9e30ed3a46e20b358c89eb1b26e14cf031f78e5192cea61752fed77f8dd939d",
+    "external_flags": 1,
+    "job_id": "ef4d0c89-c631-4b0d-b1c6-49e5284752b2",
+    "target": "hwpx",
+    "engine": "2020",
+    "output": "pdf/issue7642-hwp3-realign-controls-20261012/hwp3-table-cell-order-hancom-2020.hwpx",
+    "output_sha256": "99a54d4fb31b1fee7e2bf9e1594896efc51eee58b51f92ff7c2fa3997b081c82",
+    "output_bytes": 31003,
+    "metadata": {
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": null,
+      "pdf_output_mode": "",
+      "input_format": "hwp",
+      "format": "hwpx",
+      "bytes": 31003,
+      "input_preprocess": "none",
+      "pdf_page_count": null
+    }
+  },
+  {
+    "input": "samples/issue1892_hwp3_tab_roundtrip.hwp",
+    "input_sha256": "7c7457de8fb74f23d2305bb4870e412138494fb0aef1af2258af181ac5aec8c0",
+    "external_flags": 1,
+    "job_id": "8f8e9876-16bb-4def-96c7-0929e03b2e2f",
+    "target": "pdf",
+    "engine": "2020",
+    "output": "pdf/issue7642-hwp3-realign-controls-20261012/issue1892_hwp3_tab_roundtrip-hancom-2020.pdf",
+    "output_sha256": "1e7c42d93ea9f2e878ace63d044d20c1667198f860c9f53dd5986efc1519d934",
+    "output_bytes": 54576,
+    "metadata": {
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+      "input_format": "hwp",
+      "format": "pdf",
+      "bytes": 54576,
+      "input_preprocess": "none",
+      "pdf_page_count": 1
+    },
+    "pages": 1
+  },
+  {
+    "input": "samples/issue1892_hwp3_tab_roundtrip.hwp",
+    "input_sha256": "7c7457de8fb74f23d2305bb4870e412138494fb0aef1af2258af181ac5aec8c0",
+    "external_flags": 1,
+    "job_id": "6d9d40af-649a-47a0-80fc-ec8b5ccff868",
+    "target": "hwpx",
+    "engine": "2020",
+    "output": "pdf/issue7642-hwp3-realign-controls-20261012/issue1892_hwp3_tab_roundtrip-hancom-2020.hwpx",
+    "output_sha256": "b917dc983655f167410651d1afcd2a57da82e6adb11dbde1faebc81c2fb6051e",
+    "output_bytes": 19332,
+    "metadata": {
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": null,
+      "pdf_output_mode": "",
+      "input_format": "hwp",
+      "format": "hwpx",
+      "bytes": 19332,
+      "input_preprocess": "none",
+      "pdf_page_count": null
+    }
+  },
+  {
+    "input": "samples/hwp3-table-grid-gap.hwp",
+    "input_sha256": "3313829fceedf03883a4590757f58a459b8d9425cad0d64a88ff14b8f91fb49a",
+    "external_flags": 4,
+    "job_id": "7e19a762-6020-4e23-8bfd-ebacec2cd2f0",
+    "target": "pdf",
+    "engine": "2020",
+    "output": "pdf/issue7642-hwp3-realign-controls-20261012/hwp3-table-grid-gap-hancom-2020.pdf",
+    "output_sha256": "7a237226382ec2c24898e3cf01e3834e88bce2a0d95998de3f7c0728391f8e77",
+    "output_bytes": 83538,
+    "metadata": {
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+      "input_format": "hwp",
+      "format": "pdf",
+      "bytes": 83538,
+      "input_preprocess": "none",
+      "pdf_page_count": 3
+    },
+    "pages": 3
+  },
+  {
+    "input": "samples/hwp3-table-grid-gap.hwp",
+    "input_sha256": "3313829fceedf03883a4590757f58a459b8d9425cad0d64a88ff14b8f91fb49a",
+    "external_flags": 4,
+    "job_id": "60d7118a-c34e-49b2-a0ab-0a7cf468ec9a",
+    "target": "hwpx",
+    "engine": "2020",
+    "output": "pdf/issue7642-hwp3-realign-controls-20261012/hwp3-table-grid-gap-hancom-2020.hwpx",
+    "output_sha256": "677fe5af6762de197223c47756e727832de1daa541020e79e25c4edc57da19b8",
+    "output_bytes": 47487,
+    "metadata": {
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": null,
+      "pdf_output_mode": "",
+      "input_format": "hwp",
+      "format": "hwpx",
+      "bytes": 47487,
+      "input_preprocess": "none",
+      "pdf_page_count": null
+    }
+  }
+]

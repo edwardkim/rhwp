@@ -1,0 +1,70 @@
+{
+  "source_sha": "5df67d3299befb467a49dc4eaafd12d6e1877e2d",
+  "backend": "native-skia",
+  "status": "read selected comparisons and enlarged details",
+  "selected_pages": [
+    1,
+    2,
+    3,
+    5,
+    6,
+    18,
+    35,
+    38,
+    41,
+    58
+  ],
+  "directly_viewed": {
+    "hwpx": [
+      1,
+      2,
+      3,
+      5,
+      6,
+      18,
+      35,
+      38,
+      41,
+      58
+    ],
+    "hwp2024": [
+      6,
+      41
+    ],
+    "hwp2022": [
+      1,
+      2,
+      3,
+      5,
+      6,
+      18,
+      35,
+      38,
+      41,
+      58
+    ]
+  },
+  "equivalent_actual_pixel_pairs": "native-selected-hwpx-hwp2024-rgb-equivalence.json",
+  "hwp2024_other_pages": "actual source and reference RGB identical to directly viewed HWPX pairs; page41 separately viewed",
+  "details": "native-detail-crops.json",
+  "observations": [
+    "BCP source and independent Print both two lines; final 립 remains in same paragraph",
+    "fraction numerator denominator rules and brackets have same content/order/placement",
+    "toc bracket bottom and cover logo bounds preserved",
+    "WMF images and downstream body remain on intended pages",
+    "table bottom, following text, footer and annex list preserved"
+  ],
+  "metric_scope": "raw threshold232 symmetric2px silhouette; does not claim exact color or RGB equality with Print",
+  "additionally_viewed_hwp2022_pages": [
+    63,
+    64
+  ],
+  "overlays_directly_viewed": [
+    "hwp2024/overlay_006.png",
+    "hwp2022/overlay_003.png"
+  ],
+  "incoming_original_boundaries_directly_viewed": [
+    "original-sample16 p40",
+    "original-sample11-user-print p1"
+  ]
+}

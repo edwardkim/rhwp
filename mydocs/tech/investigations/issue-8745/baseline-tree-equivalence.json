@@ -1,0 +1,12 @@
+{
+  "analyzed_commit": "8e8a09daf88cc6cd91d683c409757c08ddbc1fde",
+  "base_commit": "e4ffabea38062e716f6c333cc950fa31b42b4dd7",
+  "root_differences": [
+    {
+      "path": "mydocs",
+      "analyzed": "62763a1d0130cba5e810462133a61cceab25b869",
+      "base": "1696b3533069e4c82d60ab6e4fbe3e5329ca0bed"
+    }
+  ],
+  "equal_root_entries": 78
+}

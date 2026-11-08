@@ -1,0 +1,32 @@
+{
+  "dpi": 96,
+  "method": "PyMuPDF shape drawing bounds in points × 96/72",
+  "cases": [
+    {
+      "input": "samples/issue8167/tac_rectangle_inline.hwpx",
+      "input_sha256": "fdd1cb7dcef5d077c4f19f749822bf3a76734105ef0a1443bdff75f038596abd",
+      "pdf": "pdf/issue8167/tac_rectangle_inline-2020.pdf",
+      "pdf_sha256": "2fc3532f64ccc0d7a8df032db06ef8b8dff652ed1644cb9bfb2ea50f4eaf20b2",
+      "page": 1,
+      "shape_stroke_rect_px": [
+        132.89,
+        132.02,
+        359.81,
+        207.77
+      ]
+    },
+    {
+      "input": "samples/issue8167/tac_textbox_inline.hwpx",
+      "input_sha256": "300db4c44b4b622a682bfb0744bba910d5620b29f089a51caf159ee40a3c544b",
+      "pdf": "pdf/issue8167/tac_textbox_inline-2020.pdf",
+      "pdf_sha256": "337ce08be0780c8b807d41b2640579519732e3a8d9478b0bbc98a706f0f3ac07",
+      "page": 1,
+      "shape_stroke_rect_px": [
+        136.57,
+        135.85,
+        363.64,
+        211.61
+      ]
+    }
+  ]
+}

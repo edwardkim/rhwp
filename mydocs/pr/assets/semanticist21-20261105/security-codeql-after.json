@@ -1,0 +1,127 @@
+{
+  "head": "da0074f41ee01d7fa79e6bd4ffd5cadf7c69665d",
+  "analysis": {
+    "ref": "refs/pull/8609/merge",
+    "commit_sha": "04a4c1f0e222628eb2eab748a8d1d82ed8a55704",
+    "analysis_key": ".github/workflows/codeql.yml:analyze",
+    "environment": "{\"language\":\"rust\"}",
+    "category": ".github/workflows/codeql.yml:analyze/language:rust",
+    "error": "",
+    "created_at": "2026-11-05T00:11:17Z",
+    "results_count": 122,
+    "rules_count": 23,
+    "id": 2099534274,
+    "url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/analyses/2099534274",
+    "sarif_id": "6b380a56-d8ad-11f1-8ac4-c29a5ad8a9f9",
+    "tool": {
+      "name": "CodeQL",
+      "guid": null,
+      "version": "2.27.4"
+    },
+    "deletable": true,
+    "warning": ""
+  },
+  "tested_merge_parents": [
+    "e96b500e3ea259c821f05440f0388355916a9e9b",
+    "da0074f41ee01d7fa79e6bd4ffd5cadf7c69665d"
+  ],
+  "sarif_sha256": "2794cb888b59e093030caba7026f264e8ed96e199a8f279ea0943b340568fcd2",
+  "sarif_results_before": 126,
+  "sarif_results_after": 122,
+  "open_ids_before": [
+    462,
+    466,
+    470,
+    472,
+    474,
+    475,
+    476,
+    478,
+    481,
+    482,
+    483,
+    484
+  ],
+  "open_ids_after": [
+    462,
+    466,
+    470,
+    472,
+    474,
+    475,
+    476,
+    478,
+    483,
+    484
+  ],
+  "fixed_instances": [
+    {
+      "number": 481,
+      "instance": {
+        "ref": "refs/pull/8609/merge",
+        "analysis_key": ".github/workflows/codeql.yml:analyze",
+        "environment": "{\"language\":\"rust\"}",
+        "category": ".github/workflows/codeql.yml:analyze/language:rust",
+        "state": "fixed",
+        "commit_sha": "323280a80c16bb1eb5bc14d5eabbef0e61a72abc",
+        "message": {
+          "text": "This operation writes ...::from_bytes_with_password(...) to a log file."
+        },
+        "location": {
+          "path": "src/renderer/height_measurer.rs",
+          "start_line": 4654,
+          "end_line": 4665,
+          "start_column": 29,
+          "end_column": 42
+        },
+        "classifications": []
+      },
+      "instance_commit_sha_is_last_seen": true,
+      "current_ref_analysis_id": 2099534274,
+      "current_tested_merge": "04a4c1f0e222628eb2eab748a8d1d82ed8a55704"
+    },
+    {
+      "number": 482,
+      "instance": {
+        "ref": "refs/pull/8609/merge",
+        "analysis_key": ".github/workflows/codeql.yml:analyze",
+        "environment": "{\"language\":\"rust\"}",
+        "category": ".github/workflows/codeql.yml:analyze/language:rust",
+        "state": "fixed",
+        "commit_sha": "323280a80c16bb1eb5bc14d5eabbef0e61a72abc",
+        "message": {
+          "text": "This operation writes ...::from_bytes_with_password(...) to a log file."
+        },
+        "location": {
+          "path": "src/renderer/height_measurer.rs",
+          "start_line": 4925,
+          "end_line": 4951,
+          "start_column": 37,
+          "end_column": 56
+        },
+        "classifications": []
+      },
+      "instance_commit_sha_is_last_seen": true,
+      "current_ref_analysis_id": 2099534274,
+      "current_tested_merge": "04a4c1f0e222628eb2eab748a8d1d82ed8a55704"
+    }
+  ],
+  "independent_ghas_checks": [
+    {
+      "id": 126950478026,
+      "name": "CodeQL",
+      "head_sha": "da0074f41ee01d7fa79e6bd4ffd5cadf7c69665d",
+      "conclusion": "success",
+      "status": "completed",
+      "html_url": "https://github.com/edwardkim/rhwp/runs/126950478026",
+      "output": {
+        "title": "No new alerts in code changed by this pull request",
+        "summary": "[View all branch alerts](/edwardkim/rhwp/security/code-scanning?query=pr%3A8609+tool%3ACodeQL+is%3Aopen).",
+        "text": null,
+        "annotations_count": 0,
+        "annotations_url": "https://api.github.com/repos/edwardkim/rhwp/check-runs/126950478026/annotations"
+      }
+    }
+  ],
+  "alert_classification_or_security_settings_changed": false
+}

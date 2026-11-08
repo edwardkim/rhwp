@@ -155,24 +155,30 @@ fn spec_revision13_p015_table73_split_and_p016_keeps_para84() {
 
     assert_eq!(src.page_count(), rt.page_count(), "round-trip page count");
 
-    let (src15_kind, src15_para) = first_item(&src, 14);
-    let (rt15_kind, rt15_para) = first_item(&rt, 14);
-    assert_eq!(src15_kind, "partialTable");
-    assert_eq!(src15_para, 73);
+    // 표 73 이어받기 조각으로 열리는 쪽 다음 쪽은 문단 84 PartialParagraph 로 열린다.
+    // 절대 쪽 번호는 고정하지 않는다 — 이 문서는 정본 대비 쪽수가 다르고(#5585), #7696 이
+    // 구역 3 의 빈 쪽(정본 9쪽)을 되살린 뒤 이 두 쪽은 정본과 같은 16·17쪽이다
+    // (정본 PDF 16쪽 = 표 73 이어받기, 17쪽 첫머리 = 문단 84 둘째 줄. 표 73 을 자르는
+    // 행은 정본과 아직 다르다 — 이 검사의 범위 밖).
+    let table73_page = (0..src.page_count())
+        .find(|&page| first_item(&src, page) == ("partialTable".to_string(), 73))
+        .expect("#5128: 표 73 이어받기 조각으로 열리는 쪽이 있어야 한다");
     assert_eq!(
-        (rt15_kind.as_str(), rt15_para),
-        (src15_kind.as_str(), src15_para),
-        "#5128: p015 첫 항목(표 73 분할)이 왕복에서 달라졌다"
+        first_item(&rt, table73_page),
+        first_item(&src, table73_page),
+        "#5128: 표 73 분할로 열리는 쪽의 첫 항목이 왕복에서 달라졌다"
     );
 
-    let (src16_kind, src16_para) = first_item(&src, 15);
-    let (rt16_kind, rt16_para) = first_item(&rt, 15);
-    assert_eq!(src16_kind, "partialParagraph");
-    assert_eq!(src16_para, 84);
+    let (src_next_kind, src_next_para) = first_item(&src, table73_page + 1);
     assert_eq!(
-        (rt16_kind.as_str(), rt16_para),
-        (src16_kind.as_str(), src16_para),
-        "#5128: p016 은 문단 84 PartialParagraph 로 열려야 한다"
+        (src_next_kind.as_str(), src_next_para),
+        ("partialParagraph", 84),
+        "#5128: 표 73 분할 다음 쪽은 문단 84 PartialParagraph 로 열려야 한다"
+    );
+    assert_eq!(
+        first_item(&rt, table73_page + 1),
+        (src_next_kind, src_next_para),
+        "#5128: 표 73 분할 다음 쪽 첫 항목이 왕복에서 달라졌다"
     );
 
     // Page count alone cannot detect shifted cuts or lost/replayed units.

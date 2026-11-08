@@ -80,7 +80,7 @@ fn ctrl_id_to_field_type(ctrl_id: u32) -> FieldType {
 /// - 일반 컨트롤: CTRL_HEADER = [ctrl_id(4)] + [ctrl_data]
 /// - 필드 컨트롤: CTRL_HEADER = [ctrl_id(4)] + [속성(4)] + [기타속성(1)] + [command_len(2)] + [command] + [id(4)]
 fn parse_field_control(ctrl_id: u32, ctrl_data: &[u8]) -> Control {
-    let field_type = ctrl_id_to_field_type(ctrl_id);
+    let mut field_type = ctrl_id_to_field_type(ctrl_id);
 
     // ctrl_data: 속성(4) + 기타속성(1) + command_len(2) + command(가변) + id(4)
     if ctrl_data.len() < 7 {
@@ -113,11 +113,25 @@ fn parse_field_control(ctrl_id: u32, ctrl_data: &[u8]) -> Control {
         0
     };
 
-    let memo_index = if reader.remaining() >= 4 {
+    let mut memo_index = if reader.remaining() >= 4 {
         reader.read_u32().unwrap_or(0)
     } else {
         0
     };
+    // Hancom writes a memo's control id as `%unk` and only the command says
+    // MEMO. The real number may live in the command when the trailing slot is 0.
+    if command.starts_with("MEMO/") {
+        if field_type == FieldType::Unknown {
+            field_type = FieldType::Memo;
+        }
+        if memo_index == 0 {
+            memo_index = command
+                .split('/')
+                .nth(2)
+                .and_then(|token| token.parse().ok())
+                .unwrap_or(0);
+        }
+    }
 
     Control::Field(Field {
         field_type,
@@ -409,7 +423,10 @@ fn parse_cell(records: &[Record]) -> Cell {
 /// 셀의 raw_list_extra에서 필드 이름을 추출한다.
 /// 구조: raw_list_extra[15..17] = name_len (u16 LE), [17..17+name_len*2] = UTF-16LE 문자열
 /// (직렬화 대칭: serializer::control::build_cell_list_extra — #1808)
-pub(crate) fn parse_cell_field_name(extra: &[u8]) -> Option<String> {
+/// Borrow the existing validated UTF-16 field-name surface without owned scratch.
+pub(crate) fn cell_field_name_units(
+    extra: &[u8],
+) -> Option<impl Iterator<Item = u16> + Clone + '_> {
     if extra.len() < 18 {
         return None;
     }
@@ -417,11 +434,16 @@ pub(crate) fn parse_cell_field_name(extra: &[u8]) -> Option<String> {
     if name_len == 0 || extra.len() < 17 + name_len * 2 {
         return None;
     }
-    let wchars: Vec<u16> = extra[17..17 + name_len * 2]
-        .chunks_exact(2)
-        .map(|c| u16::from_le_bytes([c[0], c[1]]))
+    Some(
+        extra[17..17 + name_len * 2]
+            .chunks_exact(2)
+            .map(|bytes| u16::from_le_bytes([bytes[0], bytes[1]])),
+    )
+}
+pub(crate) fn parse_cell_field_name(extra: &[u8]) -> Option<String> {
+    let name: String = char::decode_utf16(cell_field_name_units(extra)?)
+        .map(|scalar| scalar.unwrap_or(char::REPLACEMENT_CHARACTER))
         .collect();
-    let name = String::from_utf16_lossy(&wchars);
     if name.is_empty() {
         None
     } else {
@@ -793,6 +815,7 @@ fn parse_ruby(ctrl_data: &[u8]) -> Control {
 
 fn parse_char_overlap(ctrl_data: &[u8]) -> Control {
     let mut co = CharOverlap::default();
+    co.hwp_wire_chars = true;
     if ctrl_data.len() < 2 {
         return Control::CharOverlap(co);
     }
@@ -977,6 +1000,7 @@ fn parse_equation_control(ctrl_data: &[u8], child_records: &[Record]) -> Control
         }
     }
 
+    equation.retain_legacy_source_frame();
     Control::Equation(Box::new(equation))
 }
 

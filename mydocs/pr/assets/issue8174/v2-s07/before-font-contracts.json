@@ -1,0 +1,26 @@
+[
+  {
+    "name": "memo_entries_hits_and_sticky_failure_share_the_request",
+    "passed": false
+  },
+  {
+    "name": "memo_hit_copy_has_an_exact_decoded_boundary",
+    "passed": false
+  },
+  {
+    "name": "memo_cmap_range_owned_value_is_charged_before_the_cache_copy",
+    "passed": false
+  },
+  {
+    "name": "negative_memo_entries_are_bounded_too",
+    "passed": false
+  },
+  {
+    "name": "tounicode_normalization_preserves_fullwidth_and_memo_copies",
+    "passed": false
+  },
+  {
+    "name": "embedded_post_names_are_reserved_before_once_lock_expansion",
+    "passed": false
+  }
+]

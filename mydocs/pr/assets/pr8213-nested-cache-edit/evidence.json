@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-28",
+  "fixture": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "edit": "nested_table_height_cache_contract.rs: first_nested_cell, insert at offset 0 \"중첩 표 높이 캐시 검사 문장입니다. \" repeated 40 times; export_hwp_native and reopen",
+  "edit_hwp_sha256": "26158e2c25e7413720f625c1f781715a8dfcb16131dbb391ae32009e61f8d2fe",
+  "pdf": "pdf/pr8213-nested-cache-edited-2020.pdf",
+  "pdf_sha256": "af9176a7913675338210535e3219ccb81ee09d0a8d3ca685a3d1b088b9262e80",
+  "pdf_engine": "Hancom 2020 MCP PrintToPDFEx method 0",
+  "job_id": "776c5114-41f9-478f-8555-520817b341e9",
+  "pages": 18,
+  "method": "96 dpi PDFium vs native-skia / fresh WASM canvas, raw silhouette radius 2px",
+  "native_binary_sha256": "2a4915dfda39a74efbc903297d51e85a3d71634127ec01c47f65124624beedb0",
+  "wasm_sha256": "05bab1b50e9a17b380582e562e992c7189fc3d2e9c85a01187ef069c24ff56e7",
+  "results": {
+    "native": {
+      "minimum_percent": 26.59257,
+      "minimum_page": 3,
+      "under_98_pages": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        14,
+        17,
+        18
+      ],
+      "tsv": "mydocs/pr/assets/pr8213-nested-cache-edit/native.tsv"
+    },
+    "wasm": {
+      "minimum_percent": 26.64294,
+      "minimum_page": 3,
+      "under_98_pages": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        18
+      ],
+      "tsv": "mydocs/pr/assets/pr8213-nested-cache-edit/wasm.tsv"
+    }
+  },
+  "limitation": "편집 후 직렬화해 다시 연 입력의 측정이다. 메모리에서 편집한 SVG cache equality 자체의 측정이라고 주장하지 않는다. 원 PR 관련 검사의 증거이며 98% 미만 페이지에 고정 좌표를 부여하지 않는다."
+}

@@ -1,0 +1,50 @@
+{
+  "source_sha": "45684640be5eddcf5972b063260250345b34d928",
+  "source_dir": "/home/edward/mygithub/rhwp",
+  "source_digest": "8eba7011d353a1f062a26c925be98220d16e41201d9da19ee3091d46ee654332",
+  "mode": "wasm",
+  "profile": "release",
+  "command": [
+    "scripts/wasm-pack-locked.sh",
+    "--target",
+    "web",
+    "--out-dir",
+    "pkg"
+  ],
+  "started": "2026-11-06T12:45:50.467102+00:00",
+  "success": true,
+  "status": "passed",
+  "exit_code": 0,
+  "finished": "2026-11-06T12:58:13.738538+00:00",
+  "artifacts": {
+    "rhwp.js": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/base-producer/pkg/rhwp.js",
+      "bytes": 559617,
+      "sha256": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138",
+      "public_sha256": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138"
+    },
+    "rhwp_bg.wasm": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/base-producer/pkg/rhwp_bg.wasm",
+      "bytes": 28309027,
+      "sha256": "2b8259b27596cf4c38d63404a61106c8ae1f9886e9a29c66adf283a689c7bf7b",
+      "public_sha256": "2b8259b27596cf4c38d63404a61106c8ae1f9886e9a29c66adf283a689c7bf7b"
+    },
+    "rhwp.d.ts": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/base-producer/pkg/rhwp.d.ts",
+      "bytes": 224571,
+      "sha256": "09c34203f1cfdb1b7cdca1dc14c31033da9cde3dbade3383ec41a8a5c0364c9e",
+      "public_sha256": "3b13b78ffee6847681d4d9a8ba4acd5359d9c22dbec1eafdcb4c8541f2a5340c"
+    },
+    "rhwp_bg.wasm.d.ts": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/base-producer/pkg/rhwp_bg.wasm.d.ts",
+      "bytes": 78001,
+      "sha256": "ccd7c7e5d5411b02e190750a8d6c819a7632659d1643fd19be2c4d32d38cd873",
+      "public_sha256": "fb02e9d0706c033df6dbce1699d2ae065f9f50bbeff128d966be3ebef9a294c5"
+    },
+    "package.json": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/base-producer/pkg/package.json",
+      "bytes": 429,
+      "sha256": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19"
+    }
+  }
+}

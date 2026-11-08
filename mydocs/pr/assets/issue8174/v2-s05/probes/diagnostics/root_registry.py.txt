@@ -1,0 +1,37 @@
+"""Final README-only root revision; preserve immutable downloaded child archives."""
+import json,time,shutil,http.server,threading,hashlib,subprocess,tarfile
+from pathlib import Path
+import registry_verify as registry
+B=registry.BASE;R=registry.ROOT
+if __name__=='__main__':
+ while not (B/'cli-install.command.json').exists():time.sleep(1)
+ assert json.loads((B/'cli-install.command.json').read_text())['exit_code']==0
+ subprocess.run(['python3',str(R/'scripts/crates_io_source_preflight.py'),'--output-dir',str(B/'final-source-preflight')],cwd=R,check=True,stdout=(B/'final-source-preflight.log').open('w'))
+ cfg=['--config','source.crates-io.replace-with="rhwp-validation"','--config','source.rhwp-validation.registry="sparse+http://127.0.0.1:48174/index/"']
+ registry.record('final-package-rhwp',['cargo',*cfg,'package','--package','rhwp','--no-verify','--registry','crates-io'])
+ archive=B/'crates-final/rhwp-0.8.7.crate';archive.parent.mkdir(exist_ok=True);shutil.copyfile(registry.TARGET/'package/rhwp-0.8.7.crate',archive)
+ row,normalized,members=registry.index_row(archive)
+ for dep in row['deps']:dep['registry']='https://github.com/rust-lang/crates.io-index'
+ server=http.server.ThreadingHTTPServer(('127.0.0.1',48175),registry.Handler)
+ registry.ORIGIN='http://127.0.0.1:48175';registry.ROWS['rhwp']=row;registry.FILES['rhwp','0.8.7']=archive
+ # Compare every source file of all 14 archives with the final Git source, allowing Cargo-generated files only.
+ pre=json.loads((B/'final-source-preflight/source-preflight.json').read_text());rows=[]
+ old={r['name']:r for r in json.loads((B/'packages.json').read_text())['packages']}
+ for name in pre['dependency_order']:
+  path=archive if name=='rhwp' else B/'crates'/f'{name}-{old[name]["version"]}.crate'
+  ledger={r['package_path']:r for r in json.loads((B/'final-source-preflight'/(name+'.files.json')).read_text())}
+  with tarfile.open(path,'r:gz') as tar:
+   actual={m.name.split('/',1)[1]:m for m in tar.getmembers() if m.isfile()};generated={'Cargo.lock','Cargo.toml','Cargo.toml.orig','.cargo_vcs_info.json'}
+   assert set(actual)<=set(ledger)|generated and set(ledger)<=set(actual),name
+   for relative,member in actual.items():
+    if relative in generated:continue
+    assert hashlib.sha256(tar.extractfile(member).read()).hexdigest()==ledger[relative]['sha256'],(name,relative)
+   assert hashlib.sha256(tar.extractfile(actual['Cargo.toml.orig']).read()).hexdigest()==ledger['Cargo.toml']['sha256']
+   vcs=json.loads(tar.extractfile(actual['.cargo_vcs_info.json']).read());assert not vcs['git'].get('dirty',False)
+  rows.append({'name':name,'archive':str(path.relative_to(B)),'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'bytes':path.stat().st_size,'files':len(actual),'archive_source_sha':vcs['git']['sha1'],'source_bytes_match_final_git':True,'publish_guard':normalized['package'].get('publish') if name=='rhwp' else old[name]['publish_guard']})
+ (B/'final-packages.json').write_text(json.dumps({'source_sha':pre['source_sha'],'packages':rows,'cargo_normalized':True,'cargo_verified':False,'publish_ready':False,'real_crates_io_verified':False},indent=2)+'\n')
+ threading.Thread(target=server.serve_forever,daemon=True).start();(B/'final-root-registry-ready').write_text('http://127.0.0.1:48175/index/\n');print('FINAL ROOT REGISTRY READY',flush=True)
+ try:
+  while not (B/'stop-final-root-registry').exists():time.sleep(1)
+ finally:
+  (B/'final-root-http-requests.json').write_text(json.dumps(registry.REQUESTS,indent=2)+'\n');server.shutdown()

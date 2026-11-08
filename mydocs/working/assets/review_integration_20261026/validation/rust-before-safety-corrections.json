@@ -1,0 +1,148 @@
+{
+  "head": "f34157026afad07c423e58a9b3018b9c46593325",
+  "base": "0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c",
+  "started_at": "2026-10-26T21:06:25.483434+00:00",
+  "target": "/home/tsjang/rhwp/target/pr-review",
+  "build_jobs": 4,
+  "steps": [
+    {
+      "name": "final-fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 47.91222020192072,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/final-fmt-check.log"
+    },
+    {
+      "name": "final-clippy-host",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 1.2660244739381596,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/final-clippy-host.log"
+    },
+    {
+      "name": "final-clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 146.80479840596672,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/final-clippy-wasm.log"
+    },
+    {
+      "name": "final-workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review"
+      ],
+      "exit": 0,
+      "seconds": 192.91985949396621,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/final-workspace-build.log"
+    },
+    {
+      "name": "final-clippy-workspace",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 219.04907886800356,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/final-clippy-workspace.log"
+    },
+    {
+      "name": "final-suite-policy",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c"
+      ],
+      "exit": 0,
+      "seconds": 3.3368445279775187,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/final-suite-policy.log"
+    },
+    {
+      "name": "final-unit-tier-policy",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c"
+      ],
+      "exit": 0,
+      "seconds": 39.92438497301191,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/final-unit-tier-policy.log"
+    },
+    {
+      "name": "final-nextest-all",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--tests",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "exit": 100,
+      "seconds": 4107.247965661925,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/final-nextest-all.log"
+    }
+  ],
+  "status": "failed",
+  "active_step": "final-nextest-all",
+  "operator_interruption": {
+    "reason": "Correct the7 confirmed assertion failures in a new source candidate, then rerun mandatory validation. Not an interruption due to output silence.",
+    "completed_passes": 8854,
+    "assertion_failures": 7,
+    "interrupted_tests": 3,
+    "unrun_runnable_tests": 2757,
+    "preexisting_skipped_tests": 45,
+    "full_validation_complete": false
+  }
+}

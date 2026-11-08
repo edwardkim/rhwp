@@ -1,0 +1,10 @@
+{
+  "scope": "upstream/devel...HEAD changed nondeleted file names and font-extension entries in changed HWPX/ZIP/EPUB; does not inspect PDF embedded fonts or other archive formats",
+  "direct_font_files": [],
+  "archives_inspected": 14,
+  "archives_with_font_entries": [],
+  "date": "2026-10-29",
+  "base": "db5cd5bcc60a69e42f419f18a7f57a33b6fb7fdc",
+  "head": "fea14f965b4c9f1c2b4a050f080edde27eeceecb",
+  "policy": "새로 설치한 글꼴은 내부 검증용으로만 사용하며 글꼴 파일을 배포하지 않는다."
+}

@@ -1,0 +1,43 @@
+{
+  "checked_at": "2026-10-27T06:15:03.688907+00:00",
+  "historically_validated_source": "3ae26ef0a1a20a8810813a085179220f56d2561a",
+  "current_head": "de9602f1b3db4df2c0fd953f33b5af1e3f9a6466",
+  "compared_paths": [
+    "rhwp-studio/src",
+    "rhwp-studio/e2e",
+    "rhwp-studio/package.json",
+    "rhwp-studio/package-lock.json",
+    "scripts",
+    ".github"
+  ],
+  "changed_paths": [
+    ".github/workflows/ci.yml",
+    "rhwp-studio/e2e/MANIFEST.md"
+  ],
+  "byte_identical": false,
+  "actual_fresh_wasm_ui_separately_executed": true,
+  "earlier_differences_already_validated_in_v14": {
+    "prior_completed_head": "1cd656fdf9a09e88cd1ee9eb92f4c43358ea2559",
+    "compared_paths": [
+      "rhwp-studio/src",
+      "rhwp-studio/e2e",
+      "rhwp-studio/package.json",
+      "rhwp-studio/package-lock.json",
+      "scripts",
+      ".github"
+    ],
+    "changed_paths": [],
+    "byte_identical": true,
+    "reason": "Brotli CI dependency and E2E manifest corrections were already included in completed v14 final workflow/E2E checks; no new post-rebase changes."
+  },
+  "frontend_implementation_only": {
+    "compared_paths": [
+      "rhwp-studio/src",
+      "rhwp-studio/e2e",
+      "rhwp-studio/package.json",
+      "rhwp-studio/package-lock.json"
+    ],
+    "changed_executable_paths": [],
+    "manifest_only_difference": "rhwp-studio/e2e/MANIFEST.md"
+  }
+}

@@ -74,7 +74,7 @@ fn classify_navigable(ctrl: &Control) -> Option<bool> {
             // TextBox 없거나 비어있는 TAC 도형만 표처럼 1칸 건너뛰기
             s.common().treat_as_char.then_some(false)
         }
-        Control::Table(_) | Control::Picture(_) | Control::Equation(_)
+        Control::Table(_) | Control::Picture(_) | Control::Equation(_) | Control::Form(_)
             if is_treat_as_char_object_control(ctrl) =>
         {
             Some(false)
@@ -203,7 +203,7 @@ fn resolve_paragraphs<'a>(
         let ctrl = para.controls.get(entry.ctrl_idx)?;
         if entry.is_textbox {
             if let Control::Shape(s) = ctrl {
-                let tb = get_textbox_from_shape(s.as_ref())?;
+                let tb = super::super::helpers::get_textbox_at(s.as_ref(), entry.cell_idx)?;
 
                 // 마지막 컨텍스트 entry가 빈 글상자이면 오버플로우 타겟인지 확인
                 if depth == context.len() - 1 && tb.paragraphs.iter().all(|p| p.text.is_empty()) {
@@ -345,7 +345,9 @@ impl DocumentCore {
                 if let Some(ctrl) = para.controls.get(entry.ctrl_idx) {
                     if entry.is_textbox {
                         if let Control::Shape(s) = ctrl {
-                            if let Some(tb) = get_textbox_from_shape(s.as_ref()) {
+                            if let Some(tb) =
+                                super::super::helpers::get_textbox_at(s.as_ref(), entry.cell_idx)
+                            {
                                 paragraphs = &tb.paragraphs;
                             }
                         }

@@ -1,0 +1,11 @@
+{
+  "runtime_source": "0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0",
+  "native_sha256": "dd902cab6625af2e95da9b5e63337989c2e5bd3299912c8b2f8aa9e464e9f494",
+  "optimized": true,
+  "files": {
+    "rhwp.js": "d5a84985620c90581d6078773cb46445a3237075a3b216a04130fe7e7e18c25b",
+    "rhwp_bg.wasm": "4ac5f4022146819136965192e81491ca86f42c6360e2f3d8b35c1c70f0699e70",
+    "rhwp.d.ts": "8980cdae730e732bcb374a48ffb48d36d09b043c4c0da38a0677abcebdd35f99",
+    "rhwp_bg.wasm.d.ts": "d7b8efbb4e34d9f1cf645033e75c332938e94683d58c12e0fdfbf82555bf4c19"
+  }
+}

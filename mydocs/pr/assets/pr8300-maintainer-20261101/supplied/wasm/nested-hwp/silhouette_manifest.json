@@ -1,0 +1,615 @@
+{
+  "key": "nested-hwp",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1
+  ],
+  "completed_pages": [
+    1
+  ],
+  "missing_pages": [],
+  "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8300/candidate-wasm/nested-hwp/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8300/candidate-wasm/nested-hwp/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "8ba40f42e3b06c848709ea0b74f4a061b53edc6604f02e77bc8861bf40f08ad3",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8300/candidate-wasm/nested-hwp/pdf_png/pdf-001.png",
+      "pdf_sha256": "d9b8fbc9e9676b2b9dcc41419e6b431f08b582f06c821c53c2eedfe41d81aaae"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 6332,
+      "tolerant_content_match_percent": 100.0
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "mydocs/pr/assets/issue_8262/input/rhwp-nested.hwp",
+      "sha256": "2058ea89e29b6ee12053be5890ec553adf5629bc8a937bca407b51229585b829"
+    },
+    "pdf": {
+      "path": "mydocs/pr/assets/issue_8262/input/rhwp-nested.pdf",
+      "sha256": "c4f090a237aa73beb64945ffd9fcde92f252060564cca27d2d0be3d0e08c9db2"
+    },
+    "git_head": "24484260bb7e374176147fd136ae9848d0f49a6c",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "547ddd0c1553b0066b1b870dd1fd2fabc523f8c91fba2b0ebe6f1776634dedb8"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/edward/mygithub/rhwp/output/pr-review/pr8300/bin/candidate-rhwp",
+      "path": "output/pr-review/pr8300/bin/candidate-rhwp",
+      "sha256": "02dae1270b97632988febdfd23dd7e16032f6ac6799788f1e1dd4d9080851c37"
+    },
+    "raster_backend": "wasm-canvas2d",
+    "png_exporter_sha256": "257a0134180b34363814058348646346cf83313b97cf42424c014dc864722a5f",
+    "layout_generation": "2022",
+    "wasm": {
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp/pkg/rhwp.js",
+          "sha256": "013afb1fd2b8f3b696ec918c30671b7160924f9ec358ad611799ccbd4b74eff8"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "sha256": "8545edf30ed554a6bd0a964ac4f55774ae2fcdd548654ffb1bf2b3503fa5782b"
+        }
+      ],
+      "exporter_sha256": "2ca97153abef50b59d1d1ac5d1d60407696feca6bc23f9fa4ad8b733f58fe44e",
+      "font_registration_sha256": "4f13b6007cecdc50d806a01d4959676ef1cdbffef9a016037b0609ea71eb71d5",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "system_fontconfig",
+      "files": [
+        {
+          "path": "/home/edward/vsworks/myproject/Noto_Sans_KR/NotoSansKR-VariableFont_wght.ttf",
+          "sha256": "7cd81998a15203d3b457d31345590181e8933ca3de20361722d996491b132b83"
+        },
+        {
+          "path": "/home/edward/vsworks/myproject/Noto_Sans_KR/static/NotoSansKR-Black.ttf",
+          "sha256": "d92fe452a7c1adf1e476b8a82ec72f7f6b5641303f384c4f1f59c34a8cd052c2"
+        },
+        {
+          "path": "/home/edward/vsworks/myproject/Noto_Sans_KR/static/NotoSansKR-Bold.ttf",
+          "sha256": "d95f5963608631e4af863f472f594cb00151370583edc174c2a78a71301cb863"
+        },
+        {
+          "path": "/home/edward/vsworks/myproject/Noto_Sans_KR/static/NotoSansKR-ExtraBold.ttf",
+          "sha256": "e4c858e7064b4f6b40043358935068bb086219d881fc1080592cd2c24f12fd5b"
+        },
+        {
+          "path": "/home/edward/vsworks/myproject/Noto_Sans_KR/static/NotoSansKR-ExtraLight.ttf",
+          "sha256": "333109be9f01634838b25dd6d926182da76585ee1900428cff19e2f3b4bb910e"
+        },
+        {
+          "path": "/home/edward/vsworks/myproject/Noto_Sans_KR/static/NotoSansKR-Light.ttf",
+          "sha256": "e30e815ee5664b977296ea1ead3d26d5c35c54c694b375950c6974c593563194"
+        },
+        {
+          "path": "/home/edward/vsworks/myproject/Noto_Sans_KR/static/NotoSansKR-Medium.ttf",
+          "sha256": "765182d8744fdea52496959aef74fd786dda0b79dfe0e4acc9f7731967867397"
+        },
+        {
+          "path": "/home/edward/vsworks/myproject/Noto_Sans_KR/static/NotoSansKR-Regular.ttf",
+          "sha256": "d120ae7d44307155ab593bbbe63e0bb7f5766e00492015e5d69f220092589156"
+        },
+        {
+          "path": "/home/edward/vsworks/myproject/Noto_Sans_KR/static/NotoSansKR-SemiBold.ttf",
+          "sha256": "bb455ffd06710cd8cfeda3705095390c1a7efc1747e044f12f259b6afe8f0e85"
+        },
+        {
+          "path": "/home/edward/vsworks/myproject/Noto_Sans_KR/static/NotoSansKR-Thin.ttf",
+          "sha256": "e63727eb8ca0c45435f00f57f14eaefd326df179b2c2616518cbbfd2ecba171d"
+        },
+        {
+          "path": "/home/edward/vsworks/myproject/Noto_Serif_KR/NotoSerifKR-VariableFont_wght.ttf",
+          "sha256": "ad964df5f03b757746aeb34c93ba26c2353939e8dc024216d425d5c7b9f21ae1"
+        },
+        {
+          "path": "/home/edward/vsworks/myproject/Noto_Serif_KR/static/NotoSerifKR-Black.ttf",
+          "sha256": "10df941c9e340f798821fe5c0d02eebf2ba558b9760edcc885b5b36bbc7d9860"
+        },
+        {
+          "path": "/home/edward/vsworks/myproject/Noto_Serif_KR/static/NotoSerifKR-Bold.ttf",
+          "sha256": "df809f42883c47180dbcd592432c83b3f3abbb67b801dc6e7f9b18bb72efb512"
+        },
+        {
+          "path": "/home/edward/vsworks/myproject/Noto_Serif_KR/static/NotoSerifKR-ExtraBold.ttf",
+          "sha256": "6f97996ae771efea34d16a63e19bf93750e6ef85d92753d2673af3578c0f290f"
+        },
+        {
+          "path": "/home/edward/vsworks/myproject/Noto_Serif_KR/static/NotoSerifKR-ExtraLight.ttf",
+          "sha256": "80b6af3ff623423898ca8a1efa5ffb64546578b310afd2debe719ade033b8111"
+        },
+        {
+          "path": "/home/edward/vsworks/myproject/Noto_Serif_KR/static/NotoSerifKR-Light.ttf",
+          "sha256": "c0fd5cfbb8e2654e70f8c2d0ee279aa307e4218f57bcf28af8954980ec112d62"
+        },
+        {
+          "path": "/home/edward/vsworks/myproject/Noto_Serif_KR/static/NotoSerifKR-Medium.ttf",
+          "sha256": "7ee1428ee40edc4c950057b09d42c17f97e0262598376082a7cd2723ea4f39c0"
+        },
+        {
+          "path": "/home/edward/vsworks/myproject/Noto_Serif_KR/static/NotoSerifKR-Regular.ttf",
+          "sha256": "78e2a43d067065fa0934765ddf27b7c051a6a43a8407c1dbf6774d3e71b489f4"
+        },
+        {
+          "path": "/home/edward/vsworks/myproject/Noto_Serif_KR/static/NotoSerifKR-SemiBold.ttf",
+          "sha256": "f485f30688dca5b523bbd8b95090c308e02efd424fdfbcfa169c96212c4f68b6"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/C059-BdIta.otf",
+          "sha256": "60d0ab6a22e4018b1232806d98f4015e04f9a0a569db7a169c40d55e2a9f6252"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/C059-Bold.otf",
+          "sha256": "75dea10068264324522e7b96612083582eee0158eb728fa9c219279890f33e26"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/C059-Italic.otf",
+          "sha256": "77852deabd3a84f7d0213932239de522410309374c2255ccbd510f01dc7c6e80"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/C059-Roman.otf",
+          "sha256": "e00cc7b88f0cf25ae43f0e48de39d0043fe042b55719a3ac32669ab3369542ec"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/D050000L.otf",
+          "sha256": "a7bd946b69ae526328f26b5339fb31057dd40950d7b60598f36b2bd06542f105"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/NimbusMonoPS-Bold.otf",
+          "sha256": "f036d05d2168c7f71cb11d31e81d11133f3d09711e24ebde19d08a24842384d5"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/NimbusMonoPS-BoldItalic.otf",
+          "sha256": "a67ed9e364c933c79fc3ce88e17a0265334697c184b065407e754d43cbbf6d0a"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/NimbusMonoPS-Italic.otf",
+          "sha256": "7f1f85498027e07befadd3c7592518909b9e8c7f96ee5615e0b21be0c399c4b4"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/NimbusMonoPS-Regular.otf",
+          "sha256": "4f225ca8e13acb16f733ce741693105e527d5f7a5443901b9ecc190fca4e149b"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/NimbusRoman-Bold.otf",
+          "sha256": "e0ad81923bc6d85d5426f796217c87963ca1ae3c65e22c87a25b6c6353de299e"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/NimbusRoman-BoldItalic.otf",
+          "sha256": "c84bcb17ab4ee54f16dadad6a3b0b2df37a24f9fc812897c4a59eeca785a5dec"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/NimbusRoman-Italic.otf",
+          "sha256": "b7c424e6cb79baddfcdcd9a9d87f9fc4fdd06f0e5160066e2b2e47bcd647c7b9"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/NimbusRoman-Regular.otf",
+          "sha256": "fd41669443616a7ae890c42e53a58f47fa24a940fd1e367acaff665cf5b6e9d8"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/NimbusSans-Bold.otf",
+          "sha256": "7f33328e6b4d4cd21b45fa625791928c9407dc702db6780e56b09ca9a3ecaa67"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/NimbusSans-BoldItalic.otf",
+          "sha256": "3f47fb34fcb7de09f8cbc9f305191340ddebf7a068419f4bb5f49287dea59b87"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/NimbusSans-Italic.otf",
+          "sha256": "7b0bef5686aa58c0fd0f0d01beeae56664208490e30ca6a25431281c9a0c6402"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/NimbusSans-Regular.otf",
+          "sha256": "7c25be4d78155523080ab85b10277150657ff7dabbcad7037bdd536c9b6d0d08"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/NimbusSansNarrow-Bold.otf",
+          "sha256": "6d7cec07f5a9035e208532dab35a51312aef4a7f26eb524dd614c9fcd97c3264"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/NimbusSansNarrow-BoldOblique.otf",
+          "sha256": "3cefbe4a602a08a0400798fc4aba2d48f7b7e05fa6ed54c2009d68adc6eccef9"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/NimbusSansNarrow-Oblique.otf",
+          "sha256": "6fd8dd67ab951f36f66563ef8443bafdf10836e73ebe856f85f4a9c282293585"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/NimbusSansNarrow-Regular.otf",
+          "sha256": "0111cf7c05377c4f1685d37bfa8b3edd2033278122f69e0a9803a8514e352b99"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/P052-Bold.otf",
+          "sha256": "ba6503baaf0f9e4e40a69cc4c0e57049fbde313fe183aba8fe823208337a94af"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/P052-BoldItalic.otf",
+          "sha256": "63e15828175e55559ae09c9bdcd09fc0354537657d43109edb6e2a5509f8299f"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/P052-Italic.otf",
+          "sha256": "1feac6055211cf5c6c812c026e398195070f174064cc4d390f0db01647443b0e"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/P052-Roman.otf",
+          "sha256": "f054a7389d8d0e9f4c5f7b4c21feb7e2b14bec8004a1e92778a78d149524eea9"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/StandardSymbolsPS.otf",
+          "sha256": "df570efda2df425dbfc004e4e5f77c55ca1b47f8ff28ad60dfad0fccf422b0bd"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/URWBookman-Demi.otf",
+          "sha256": "ab8b2fe57cbea9783c6179188dc013c76cfc5717c22cf59bbf3016ef2d7d93ee"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/URWBookman-DemiItalic.otf",
+          "sha256": "4d9dbaae8178ffa2f5d557245d09dc968eeac9eed7e453cc2db4cc6a9aacb44d"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/URWBookman-Light.otf",
+          "sha256": "7b1bc8e6a16cef53785ce03d4848f8971f3ba38cd9e266e4786a50e08bd9235b"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/URWBookman-LightItalic.otf",
+          "sha256": "ed722e6c2996b08e8516d27a7c017972cfabf5d1736b496b6526da78fd17691a"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/URWGothic-Book.otf",
+          "sha256": "04318316cee29950805110c9c8949eea189ef5575132881f4d4d7e03e5299903"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/URWGothic-BookOblique.otf",
+          "sha256": "ec4e947734950fd344918e560bc8ad0c5d8b17d0ab4853988824f13b9f77e53f"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/URWGothic-Demi.otf",
+          "sha256": "5b009410cf5231dcb1e45b155c1afedcfc63d82042fd8c414d0dd7705c9fbbae"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/URWGothic-DemiOblique.otf",
+          "sha256": "d57abaa6d40718cfbf735ad50080d0b095e7194e451992e02786a7c0113db35c"
+        },
+        {
+          "path": "/usr/share/fonts/opentype/urw-base35/Z003-MediumItalic.otf",
+          "sha256": "a04947e59fc9339ea3c4b34c31fd46764f22af7512afc2c074ce190e79ed7a09"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/dejavu/DejaVuMathTeXGyre.ttf",
+          "sha256": "75a6cb527b0175f9d13af29c33a6915ae38645016c6fe9881653155cd1f62485"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+          "sha256": "5c1247acef7f2b8522a31742c76d6adcb5569bacc0be7ceaa4dc39dd252ce895"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/dejavu/DejaVuSans-BoldOblique.ttf",
+          "sha256": "58d78a24ddff9ab30427550d68f0b9b7dd28d6690f9f4b3e4ebac7105252e9b2"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/dejavu/DejaVuSans-ExtraLight.ttf",
+          "sha256": "fab10cd1c5680872c4d8db8059af93e3ff2b5e2ebc6120574d3c0d414334e979"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf",
+          "sha256": "2d7b524ce7d51db78591b4e19c8185b89f3af0aa6534c5e524cf0c6f4ea673de"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+          "sha256": "ae7b7855e115a5966d8b1b3f80f254ccc117ec86f9965e202ee2940453837280"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed-Bold.ttf",
+          "sha256": "8d9984f4eaae48bb3677966491b55538738283c1de177d60df1681a1b7844ffc"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed-BoldOblique.ttf",
+          "sha256": "817ffe1976a879cad74e0299fc76c66884f5247c6c50a77dd71fffe4fa009712"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed-Oblique.ttf",
+          "sha256": "e31968dabb045c534579e667b181f1fa965ab3a59b8278f09bbe88e5895fd08b"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed.ttf",
+          "sha256": "8b4d7f13947aa922594024f078cc9e89e8aa1ae6172150cbfe83f234be4f8985"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf",
+          "sha256": "3a3c502eeff669a231549e80df9f7c49de109bafe303170409e905d0b31a38fe"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-BoldOblique.ttf",
+          "sha256": "a5251173370e30760e6919711dcd33e149d216ca4814eb74332bda03fcc7e834"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Oblique.ttf",
+          "sha256": "3d7955616e69721f7edb8e1b7a580f8fbd7d737111c6b54266ddc1d9ef13202f"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
+          "sha256": "c805f9436dbc268644c1d9584f01a601a653e028e08fd74b9b949f6cf8304d88"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf",
+          "sha256": "847b33e13925f19ff87e4d934d6b3cf7cac35ce16424f6f670e40c2f377cf2df"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/dejavu/DejaVuSerif-BoldItalic.ttf",
+          "sha256": "e4662d0bcf9039a5d1fb7b52f964aebdde4563be9e5a8521299936f4818c0ab2"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Italic.ttf",
+          "sha256": "1d7476da447f9455a47c41adfd6ac2b1fc1b65e660f3ea4bf36128506c7e094c"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
+          "sha256": "8f2c103bfa3fd5de71f1b92b18f21906b5a26871fb7e19a9a4c9af539c3cc7ab"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/dejavu/DejaVuSerifCondensed-Bold.ttf",
+          "sha256": "3a48e198db686dcea39b3116c582b66427c2bc41c44409f19e5af7e0da446190"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/dejavu/DejaVuSerifCondensed-BoldItalic.ttf",
+          "sha256": "14f03c4313f276e7e5604413c18e87c7ce76e578b1baff8112523802378ef156"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/dejavu/DejaVuSerifCondensed-Italic.ttf",
+          "sha256": "d938442b1c5ca73fef154c73bee02a8cd276a1a98dad837c038947d84eb31d99"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/dejavu/DejaVuSerifCondensed.ttf",
+          "sha256": "1eae1e560d251f6bd759c70dcc2285e1a34e1951b2427feeab56a0d2e3b136ad"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf",
+          "sha256": "acb6440a713d880a13a21b468ba7cd43f5a2b2934972e51be791c880730777b8"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf",
+          "sha256": "9b872773134e2e4d8c0b17021266786576db06c843ede0d0b523b214a450756c"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/nanum/NanumBarunGothicBold.ttf",
+          "sha256": "39bba4cd9bd2986143825c8654abbb62443914ab33b346c0c929a916f5d98bf2"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+          "sha256": "48a28e97b34fc8e5b157657633670cd1b7de126cfc414da65ce9c3d5bc8be733"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf",
+          "sha256": "454eb3f503f377782a99eb84fc4bb7dde22a0f075d41b47427737f2985053bc9"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/nanum/NanumGothicCoding.ttf",
+          "sha256": "787effd7efed2abca88ade231faa8191f4e9fcf85b1805a13ee1dc3724b72089"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/nanum/NanumGothicCodingBold.ttf",
+          "sha256": "77a6de97c176b76ef9a683b565a1e6f4ce40b499c72a2972c4b5bdf7c6b8e7a0"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/nanum/NanumMyeongjo.ttf",
+          "sha256": "a21faae83d2d16d11c639f04f25fbe410eda905969ad75eff50d63ca31569f25"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/nanum/NanumMyeongjoBold.ttf",
+          "sha256": "cb47c5d029dd5ee5b8f6fe142c468d670edbe4e9caaad33b91e6ac399e99194a"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/nanum/NanumSquareB.ttf",
+          "sha256": "f737d58294faec9c632189af3a2a3e48e49c03c0256de09db61e879e2857bfbf"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/nanum/NanumSquareR.ttf",
+          "sha256": "5a51deae5237435d9a0bc0cc6cc30619a914b29801f895698cfdacadcad06e94"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/nanum/NanumSquareRoundB.ttf",
+          "sha256": "61fd37816a1ee1a9336876742392d80bdafd340e5124a088aeda20446e2e15de"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/nanum/NanumSquareRoundR.ttf",
+          "sha256": "52862fdf05b55ba886ca21998222d9598ef84c975e68046b9a8d8f1af09228a0"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/noto/NotoMono-Regular.ttf",
+          "sha256": "41fd7ccc82375e2a1e47f0cc2c941c14d7c99ba2f57cf69c9f738d07fb257686"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/noto/NotoSansMono-Bold.ttf",
+          "sha256": "b22563d5f03b345a62115e78d8789c9ed99c2cfa8059fad6e7a5c4ced288e21e"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/noto/NotoSansMono-Regular.ttf",
+          "sha256": "6b692c4b6d15ccf59f1c1fe8d11cb8a92f51960f3e9f1f523781755a3af7e29f"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/roboto/unhinted/RobotoCondensed-Bold.ttf",
+          "sha256": "7f109b2b6d72e7563522d3c3d2c6c8b79ec5a711bfdf483b93e345eab5b5ef94"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/roboto/unhinted/RobotoCondensed-BoldItalic.ttf",
+          "sha256": "6dcbc5c98d5d61038a7cb5f4e7d53d628ec4e29dd4a37239018d8c377ed1daa3"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/roboto/unhinted/RobotoCondensed-Italic.ttf",
+          "sha256": "718ec69846837362c43937caf7fe1a72a5392ee60454ee54981050ee389ed43b"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/roboto/unhinted/RobotoCondensed-Light.ttf",
+          "sha256": "54ac590712c9e832c0980b9c647520c93052d24f2d610b6bafde3a08ed93ace6"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/roboto/unhinted/RobotoCondensed-LightItalic.ttf",
+          "sha256": "dcb71d1f714be7850c359334ecfa0d3342809b9418e10adaa80987d6ed15144c"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/roboto/unhinted/RobotoCondensed-Medium.ttf",
+          "sha256": "660d652c17a99d0b4a3f9b7072701bfb4421bb0bce29b2baf096a193d5564bde"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/roboto/unhinted/RobotoCondensed-MediumItalic.ttf",
+          "sha256": "a000e42780bb486ecb7bc842ee699257d7399997886f9b7d7884d39106ccfd6f"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/roboto/unhinted/RobotoCondensed-Regular.ttf",
+          "sha256": "936069d5e46da383bff37b629a73e0bfb8b8ac7bc54cfb927fb700f6a890e9aa"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Black.ttf",
+          "sha256": "bbd81322180b38dee7c61668970af6159f7fd180eac6bf615f3d1e06f878d3f0"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-BlackItalic.ttf",
+          "sha256": "923a413d6185c47543a9d6eaf517c6fb168bc745f90157d3d6092dfde3eef338"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Bold.ttf",
+          "sha256": "36f3709dea3e3ce3c6aedc058079e55980825f898f1e901d091c73c40de8bab1"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-BoldItalic.ttf",
+          "sha256": "63d368b094a9bde61447b410b4261b30569eef1bf2094a52de9828121ba7baf7"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Italic.ttf",
+          "sha256": "5cd9337020d0b1593bae42dcca5cfc0fb86f5806ef469d66d09eae1e56ce346b"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Light.ttf",
+          "sha256": "e5c6b2b3cad15fd7dd820970eb859635d75bb2155b1a70f78a0668f8ba6d6eef"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-LightItalic.ttf",
+          "sha256": "a9d2a1c8bbd8b4fea43d2d4027e8d71c39d821831cff4cde97a8e0a723e310bf"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Medium.ttf",
+          "sha256": "7984aafeaf437899ce89b251d2875fc5048cb7d290152eac070239cca7ff726c"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-MediumItalic.ttf",
+          "sha256": "48eefc3c8e548f21df2e9b18e06e40834a203e2ff09deed0a09a2c83536c0582"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Regular.ttf",
+          "sha256": "797e35f7f5d6020a5c6ea13b42ecd668bcfb3bbc4baa0e74773527e5b6cb3174"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-Thin.ttf",
+          "sha256": "52cab88c2fe93c21152b483763745976861be2e3cc093554155f8a3b24de5b97"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/roboto/unhinted/RobotoTTF/Roboto-ThinItalic.ttf",
+          "sha256": "07af4624ab4233724dce0cc0a8e96e59114f754d8fdea94755fcc867445de6ac"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/ubuntu/Ubuntu-Italic[wdth,wght].ttf",
+          "sha256": "f5689f6ae7f16f7ede2012702abd605ac1afa03c950713523b9953d600937975"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/ubuntu/UbuntuMono-Italic[wght].ttf",
+          "sha256": "4148a3a8e6a702da461992047bcc07179f1eed12a3020384be754d015240678a"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/ubuntu/UbuntuMono[wght].ttf",
+          "sha256": "fbf1e748836994f730e602f7dcf2525564d6d78aa336080cbb73af909d0e08ee"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/ubuntu/UbuntuSans-Italic[wdth,wght].ttf",
+          "sha256": "603f7a4b837143b742a8df3ad3ad80164a50e4529f02e3f6aa533b78e209d3df"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/ubuntu/UbuntuSansMono-Italic[wght].ttf",
+          "sha256": "55c3678f40cafe4ac39f0071151626693ea7fa70f421408015cc5fcd858afd71"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/ubuntu/UbuntuSansMono[wght].ttf",
+          "sha256": "507870a3fe5737eb5b02f366587d30607c02a5ad45d8fe94b3ee20a80ccad32a"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/ubuntu/UbuntuSans[wdth,wght].ttf",
+          "sha256": "37e90bba45a2a1172d9f6078e45daebaa1b4e537943205cc1309f142a254fe40"
+        },
+        {
+          "path": "/usr/share/fonts/truetype/ubuntu/Ubuntu[wdth,wght].ttf",
+          "sha256": "28c4c189a44803b1986fd16074187034dc6d94ad35f5e87de13dd0e786b70b73"
+        }
+      ]
+    }
+  },
+  "exported_svg_pages": 0,
+  "exported_png_source_pages": 1,
+  "exported_render_tree_pages": 1,
+  "exported_pdf_pages": 1
+}

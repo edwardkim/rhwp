@@ -1,0 +1,94 @@
+{
+  "issue": 8160,
+  "status": "native_190_of_192_raw100_not_complete",
+  "contract": "Adjacent full-source SRCPAINT/SRCAND pairs with the same destination and no intervening raw WMF record are represented as RGBA only if every RGB channel is constant or identity for every possible destination. Ordinary source white is not transparent. Source WMF bytes, crop, image bounds and ownership remain unchanged.",
+  "limits": {
+    "pending_pixels": 16777216,
+    "partial_source_rectangles": "not_combined",
+    "different_destination_or_intervening_record": "not_combined",
+    "non_binary_alpha_or_per_channel_mixed_identity": "not_combined"
+  },
+  "algebra": {
+    "source_gray_pairs": 131072,
+    "destinations_per_pair": 256,
+    "checked_results": 33554432,
+    "alpha_representable_pairs": 13124,
+    "result": "pass",
+    "probe_sha256": "65a313ccd4b66343207cba069e400121de38825253ee4fdb9e549b963ef9a093"
+  },
+  "independent_input_sha256": "14315791a1d81b0706a835bf52017cdd9ce4ecca6d0e4baf2cafad5c250956e8",
+  "independent_cases": 36,
+  "crosses": [
+    "OR_AND / AND_OR / ordinary white SRCCOPY",
+    "stretch modes 1 / 3 / 4",
+    "normal / horizontal mirror",
+    "two nonwhite backgrounds"
+  ],
+  "independent_results": {
+    "native": "all36 source algebra cases pass in compat2022 and compat2024",
+    "hancom_2024": "all36 match source transparency and color ownership",
+    "hancom_2020": "OR_AND and SRCCOPY match, 12 reverse AND_OR cases output opaque white/black; recorded engine discrepancy, not claimed equivalent"
+  },
+  "independent_pdfs": [
+    {
+      "engine": 2020,
+      "sha256": "1b8ee8c664e807f288a62fd402b80b7ac1daeb6f8b96e8aafa42f17e10bf84c1"
+    },
+    {
+      "engine": 2024,
+      "sha256": "1db8090530751c18dc74ef31ef55958138e78c6def23994f7490b2c224b20fe9"
+    }
+  ],
+  "original_source_pairs": {
+    "image3": 6,
+    "image5": 2,
+    "noncanonical_pixels": 0
+  },
+  "native_producer": {
+    "head": "e098aa34389b56f02ffc4645c850c12be552c300",
+    "patch_sha256": "3d3bdb2d985549cfc60a00b5a8c9cf8b9954c7117b534fc128f34e4e9fb624a6",
+    "artifacts": [
+      {
+        "file": "output/pr-review/issue8160-20261022/candidate29/native/rhwp",
+        "sha256": "5b0d3e7c054eae6b83eb53c79794207ef178788e88676476ea523122f2a249a9"
+      },
+      {
+        "file": "output/pr-review/issue8160-20261022/candidate29/native/librhwp.rlib",
+        "sha256": "663a817dc9710d887ee4cd9e29e3dd3c55018cb2f89e17d741ca5d9f2c730193"
+      }
+    ]
+  },
+  "native_original_results": {
+    "hwpx": {
+      "pages": 64,
+      "raw100": 64,
+      "remaining": []
+    },
+    "hwp2024": {
+      "pages": 64,
+      "raw100": 64,
+      "remaining": []
+    },
+    "hwp2022": {
+      "pages": 64,
+      "raw100": 62,
+      "remaining": [
+        {
+          "page": "18",
+          "tolerant_content_match_percent": "99.99929",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.99929",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "35",
+          "tolerant_content_match_percent": "99.98954",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.98954",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ]
+    }
+  },
+  "fresh_optimized_wasm": "pending_current_source"
+}

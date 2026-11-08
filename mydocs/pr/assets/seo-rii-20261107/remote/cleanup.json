@@ -1,0 +1,69 @@
+{
+  "started_at": "2026-11-07T09:35:39.622261+00:00",
+  "merge": "f5f0fbee95b5fb0e32e99f8f639d228ae55389dd",
+  "head": "0d2548fd88ea76b10e53eec841376b4bcbecbc4a",
+  "active_use": [],
+  "windows_active_use": [],
+  "sizes_before_bytes": {
+    "/home/edward/mygithub/rhwp/output": 10845712384,
+    "/home/edward/mygithub/rhwp/target/pr-review/debug": 20674777088,
+    "/home/edward/mygithub/rhwp-worktrees/review-integration-536-seo-rii-native-hosts": 9992691712,
+    "/mnt/c/Users/edward/AppData/Local/Temp/rhwp-pr-review-seo-rii-20261107": 752312320
+  },
+  "free_before": 170645397504,
+  "windows_free_before": 173249470464,
+  "actions": [
+    {
+      "remote_branch_deleted": "review/integration-536-seo-rii-native-hosts"
+    },
+    {
+      "worktree_removed": "/home/edward/mygithub/rhwp-worktrees/review-integration-536-seo-rii-native-hosts",
+      "exists": false
+    },
+    {
+      "local_branch_deleted": "review/integration-536-seo-rii-native-hosts",
+      "owned_fetch_refs_deleted": 29
+    },
+    {
+      "docker_image_removed": "rhwp-review-seo-rii-20261107-wasm:local"
+    },
+    {
+      "windows_tools_removed": "/mnt/c/Users/edward/AppData/Local/Temp/rhwp-pr-review-seo-rii-20261107",
+      "exists": false
+    },
+    {
+      "shared_review_debug_removed": "/home/edward/mygithub/rhwp/target/pr-review/debug",
+      "exists": false
+    },
+    {
+      "root_output_removed": "/home/edward/mygithub/rhwp/output",
+      "exists": false
+    }
+  ],
+  "preserved": [
+    "root pkg JS/WASM",
+    "root Studio node_modules and Vite PID99334",
+    "foreign pr-8296-seal-pua worktree",
+    "Draft #8738",
+    "contributor fork branches",
+    "release/release-test/wasm32 profiles",
+    "global installed tools and parent Docker image"
+  ],
+  "root_live_wasm_before": "46ef070e9e5b656598a42bdfe9e8ddcb81955cbff77623ccaf572238ec9f160e",
+  "completed_at": "2026-11-07T09:36:10.329317+00:00",
+  "complete": true,
+  "free_after": 212169666560,
+  "windows_free_after": 174014742528,
+  "remaining_worktrees": "worktree /home/edward/mygithub/rhwp\nHEAD 4ba7aba38973bc0b45b2a4e9875a05029004a677\nbranch refs/heads/devel\n\nworktree /home/edward/mygithub/rhwp-worktrees/pr-8296-seal-pua\nHEAD f3e2128edca7b188080b2a94f25e0988e26c9699\nbranch refs/heads/review/pr-8296-seal-pua",
+  "remaining_review_profiles": [
+    "doc",
+    "package",
+    "release",
+    "release-test",
+    "tmp",
+    "wasm32-unknown-unknown",
+    "x86_64-pc-windows-msvc",
+    "x86_64-unknown-linux-gnu"
+  ],
+  "root_live_wasm_after": "46ef070e9e5b656598a42bdfe9e8ddcb81955cbff77623ccaf572238ec9f160e"
+}

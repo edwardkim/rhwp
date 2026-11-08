@@ -8,7 +8,10 @@ import test, { after, before } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-const BINARY = path.join(ROOT, 'target', 'debug', 'font-metric-gen');
+const TARGET = process.env.CARGO_TARGET_DIR
+  ? path.resolve(ROOT, process.env.CARGO_TARGET_DIR)
+  : path.join(ROOT, 'target');
+const BINARY = path.join(TARGET, 'debug', 'font-metric-gen');
 const PLAN = path.join(
   ROOT,
   'mydocs',
@@ -43,7 +46,7 @@ function runGenerator(arguments_, expectedStatus = 0, cwd = ROOT) {
 before(() => {
   const build = spawnSync(
     'cargo',
-    ['build', '--locked', '--bin', 'font-metric-gen'],
+    ['build', '--locked', '--features', 'dev-tools', '--bin', 'font-metric-gen'],
     {
       cwd: ROOT,
       encoding: 'utf8',
@@ -99,7 +102,11 @@ test('tracked public canary emits deterministic generated data and provenance me
 
   const metadata = JSON.parse(fs.readFileSync(firstMetadata, 'utf8'));
   assert.equal(metadata.generatorContract, 'generated-data-and-provenance-only-v1');
-  assert.equal(metadata.generatorVersion, '0.8.4');
+  const packageSection = fs.readFileSync(path.join(ROOT, 'Cargo.toml'), 'utf8')
+    .split(/^\[/m).find((section) => section.startsWith('package]'));
+  const packageVersion = packageSection?.match(/^version\s*=\s*"([^"]+)"/m)?.[1];
+  assert.ok(packageVersion, 'Cargo.toml must declare the product version');
+  assert.equal(metadata.generatorVersion, packageVersion);
   assert.match(metadata.generatorSourceSha256, /^[0-9a-f]{64}$/);
   assert.equal(metadata.targetRegion, 'canary');
   assert.equal(metadata.expectedEntryCount, 2);

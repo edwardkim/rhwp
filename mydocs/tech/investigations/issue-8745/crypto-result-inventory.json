@@ -1,0 +1,182 @@
+[
+  {
+    "alert": 27,
+    "rule": "rust/hard-coded-cryptographic-value",
+    "path": "src/parser/mod.rs",
+    "line": 3578,
+    "function": "test_password_encrypted_hwp_full_stream_roundtrip",
+    "category": "test-fixture-or-public-vector",
+    "source_blob": "7b6b1bb4a1698b41f41b80352667a66a7621f336",
+    "disposition": "preserve existing alert classification; no remote mutation"
+  },
+  {
+    "alert": 173,
+    "rule": "rust/hard-coded-cryptographic-value",
+    "path": "crates/rhwp-password-crypto/src/lib.rs",
+    "line": 1054,
+    "function": "hwp5_stream_roundtrip_preserves_partial_block",
+    "category": "test-fixture-or-public-vector",
+    "source_blob": "24dd9212c2069d7781fc26dda1803ab1e5df5607",
+    "disposition": "preserve existing alert classification; no remote mutation"
+  },
+  {
+    "alert": 174,
+    "rule": "rust/hard-coded-cryptographic-value",
+    "path": "crates/rhwp-password-crypto/src/lib.rs",
+    "line": 1056,
+    "function": "hwp5_stream_roundtrip_preserves_partial_block",
+    "category": "test-fixture-or-public-vector",
+    "source_blob": "24dd9212c2069d7781fc26dda1803ab1e5df5607",
+    "disposition": "preserve existing alert classification; no remote mutation"
+  },
+  {
+    "alert": 175,
+    "rule": "rust/hard-coded-cryptographic-value",
+    "path": "crates/rhwp-password-crypto/src/lib.rs",
+    "line": 1064,
+    "function": "hwp5_decrypt_matches_external_vector",
+    "category": "test-fixture-or-public-vector",
+    "source_blob": "24dd9212c2069d7781fc26dda1803ab1e5df5607",
+    "disposition": "preserve existing alert classification; no remote mutation"
+  },
+  {
+    "alert": 124,
+    "rule": "rust/hard-coded-cryptographic-value",
+    "path": "src/parser/crypto.rs",
+    "line": 293,
+    "function": "password_limit_rejects_expanded_stream",
+    "category": "test-fixture-or-public-vector",
+    "source_blob": "b977d2143b08c5bce66026c1ac5d7de4528fa86a",
+    "disposition": "preserve existing alert classification; no remote mutation"
+  },
+  {
+    "alert": 125,
+    "rule": "rust/hard-coded-cryptographic-value",
+    "path": "src/parser/crypto.rs",
+    "line": 295,
+    "function": "password_limit_rejects_expanded_stream",
+    "category": "test-fixture-or-public-vector",
+    "source_blob": "b977d2143b08c5bce66026c1ac5d7de4528fa86a",
+    "disposition": "preserve existing alert classification; no remote mutation"
+  },
+  {
+    "alert": 151,
+    "rule": "rust/hard-coded-cryptographic-value",
+    "path": "src/parser/mod.rs",
+    "line": 3338,
+    "function": "hwp5_open_decompression_encrypted_doc_info_uses_e2e_limit",
+    "category": "test-fixture-or-public-vector",
+    "source_blob": "7b6b1bb4a1698b41f41b80352667a66a7621f336",
+    "disposition": "preserve existing alert classification; no remote mutation"
+  },
+  {
+    "alert": 37,
+    "rule": "rust/hard-coded-cryptographic-value",
+    "path": "src/parser/mod.rs",
+    "line": 3499,
+    "function": "test_encrypted_flag_routes_password_paths",
+    "category": "test-fixture-or-public-vector",
+    "source_blob": "7b6b1bb4a1698b41f41b80352667a66a7621f336",
+    "disposition": "preserve existing alert classification; no remote mutation"
+  },
+  {
+    "alert": 38,
+    "rule": "rust/hard-coded-cryptographic-value",
+    "path": "src/parser/mod.rs",
+    "line": 3512,
+    "function": "test_encrypted_document_rejects_unsupported_encrypt_version",
+    "category": "test-fixture-or-public-vector",
+    "source_blob": "7b6b1bb4a1698b41f41b80352667a66a7621f336",
+    "disposition": "preserve existing alert classification; no remote mutation"
+  },
+  {
+    "alert": 39,
+    "rule": "rust/hard-coded-cryptographic-value",
+    "path": "src/parser/mod.rs",
+    "line": 3521,
+    "function": "test_encrypted_stream_limited_decode_enforces_decompression_bound",
+    "category": "test-fixture-or-public-vector",
+    "source_blob": "7b6b1bb4a1698b41f41b80352667a66a7621f336",
+    "disposition": "preserve existing alert classification; no remote mutation"
+  },
+  {
+    "alert": 40,
+    "rule": "rust/hard-coded-cryptographic-value",
+    "path": "src/parser/mod.rs",
+    "line": 3538,
+    "function": "test_password_encrypted_uncompressed_hwp_detects_wrong_password",
+    "category": "test-fixture-or-public-vector",
+    "source_blob": "7b6b1bb4a1698b41f41b80352667a66a7621f336",
+    "disposition": "preserve existing alert classification; no remote mutation"
+  },
+  {
+    "alert": 41,
+    "rule": "rust/hard-coded-cryptographic-value",
+    "path": "src/parser/mod.rs",
+    "line": 3563,
+    "function": "test_password_encrypted_uncompressed_hwp_detects_wrong_password",
+    "category": "test-fixture-or-public-vector",
+    "source_blob": "7b6b1bb4a1698b41f41b80352667a66a7621f336",
+    "disposition": "preserve existing alert classification; no remote mutation"
+  },
+  {
+    "alert": 42,
+    "rule": "rust/hard-coded-cryptographic-value",
+    "path": "src/parser/mod.rs",
+    "line": 3642,
+    "function": "test_password_encrypted_hwp_full_stream_roundtrip",
+    "category": "test-fixture-or-public-vector",
+    "source_blob": "7b6b1bb4a1698b41f41b80352667a66a7621f336",
+    "disposition": "preserve existing alert classification; no remote mutation"
+  },
+  {
+    "alert": 176,
+    "rule": "rust/hard-coded-cryptographic-value",
+    "path": "crates/rhwp-password-crypto/src/lib.rs",
+    "line": 133,
+    "function": "derive_hwp5_key",
+    "category": "digest-output-array-fully-overwritten",
+    "source_blob": "24dd9212c2069d7781fc26dda1803ab1e5df5607",
+    "disposition": "preserve existing alert classification; no remote mutation"
+  },
+  {
+    "alert": 177,
+    "rule": "rust/hard-coded-cryptographic-value",
+    "path": "crates/rhwp-password-crypto/src/lib.rs",
+    "line": 273,
+    "function": "derive_hwp3_legacy_des_key",
+    "category": "legacy-key-bit-assembly",
+    "source_blob": "24dd9212c2069d7781fc26dda1803ab1e5df5607",
+    "disposition": "preserve existing alert classification; no remote mutation"
+  },
+  {
+    "alert": 136,
+    "rule": "rust/hard-coded-cryptographic-value",
+    "path": "src/parser/crypto.rs",
+    "line": 267,
+    "function": "distribute_aes_matches_nist_vector",
+    "category": "test-fixture-or-public-vector",
+    "source_blob": "b977d2143b08c5bce66026c1ac5d7de4528fa86a",
+    "disposition": "preserve existing alert classification; no remote mutation"
+  },
+  {
+    "alert": 205,
+    "rule": "rust/weak-sensitive-data-hashing",
+    "path": "crates/rhwp-password-crypto/src/lib.rs",
+    "line": 572,
+    "function": "derive_hwpx_key",
+    "category": "hwpx-format-required-sha256-prehash-then-pbkdf2",
+    "source_blob": "24dd9212c2069d7781fc26dda1803ab1e5df5607",
+    "disposition": "preserve existing alert classification; no remote mutation"
+  },
+  {
+    "alert": 178,
+    "rule": "rust/weak-cryptographic-algorithm",
+    "path": "crates/rhwp-password-crypto/src/lib.rs",
+    "line": 283,
+    "function": "hwp3_des_ecb",
+    "category": "hwp3-format-required-des",
+    "source_blob": "24dd9212c2069d7781fc26dda1803ab1e5df5607",
+    "disposition": "preserve existing alert classification; no remote mutation"
+  }
+]

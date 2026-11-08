@@ -59,6 +59,20 @@ export class TableCreateDialog {
   onApply: ((rows: number, cols: number, options?: TableCreateOptions) => void) | null = null;
 
   /**
+   * [#8262] 칸 안에서 만들 때 — 칸 안 표는 글자처럼 취급만 만들 수 있으므로 상세 대화의
+   * 「글자처럼 취급」을 켠 채 잠근다.
+   */
+  inlineOnly = false;
+
+  /** 칸 안이면 「글자처럼 취급」을 켠 채 잠근다(본문 기본값 해제는 그대로). */
+  private applyInlineOnly(treatChk: HTMLInputElement): void {
+    if (!this.inlineOnly) return;
+    treatChk.checked = true;
+    treatChk.disabled = true;
+    treatChk.title = i18nText('dialog.tableCreate.treatInCell.title');
+  }
+
+  /**
    * 그리드 피커를 표시한다.
    * @param anchor 앵커 요소 — 있으면 아래에 위치, 없으면 화면 중앙
    */
@@ -350,6 +364,7 @@ export class TableCreateDialog {
     treatChk.type = 'checkbox';
     treatChk.id = 'tc-treat-as-char';
     treatChk.checked = false;
+    this.applyInlineOnly(treatChk);
     const treatLbl = document.createElement('label');
     treatLbl.htmlFor = 'tc-treat-as-char';
     treatLbl.textContent = i18nText('dialog.tableCreate.treatLbl.text');

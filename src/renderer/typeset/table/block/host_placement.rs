@@ -4,13 +4,13 @@ use crate::renderer::{
     typeset::{hwpunit_to_px, TypesetState},
 };
 
-pub(super) struct HostPlacementConstraint<'a> {
-    pub(super) table: &'a crate::model::table::Table,
-    pub(super) has_preceding_coanchored_float: bool,
-    pub(super) dpi: f64,
+pub(in crate::renderer::typeset) struct HostPlacementConstraint<'a> {
+    pub(in crate::renderer::typeset) table: &'a crate::model::table::Table,
+    pub(in crate::renderer::typeset) has_preceding_coanchored_float: bool,
+    pub(in crate::renderer::typeset) dpi: f64,
 }
 impl HostPlacementConstraint<'_> {
-    pub(super) fn constrain(
+    pub(in crate::renderer::typeset) fn constrain(
         &self,
         mut placement: ParagraphFloatPlacement,
         st: &TypesetState,
@@ -28,6 +28,15 @@ impl HostPlacementConstraint<'_> {
             let shift = (st.current_height + outer_top - placement.table_top).max(0.0);
             placement.table_top += shift;
             placement.occupied_bottom += shift;
+        }
+        // 흐름이 소유한 같은 앵커의 표 상자는 현재 커서에서 배치한다.
+        // 본문 배제 띠는 글줄의 수용 조건이며 앞 문단의 떠 있는 표와
+        // 이 흐름 표의 물리 충돌을 입증하지 않는다.
+        if matches!(
+            placement.flow,
+            crate::renderer::float_placement::ParagraphFloatFlow::CoanchoredTable
+        ) {
+            return placement;
         }
         placement.clear_occupied_bands(
             st.visible_float_exclusions

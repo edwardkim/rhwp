@@ -8,9 +8,11 @@ rhwp capabilities --search)을 벗어나지 않는지, gym 과 새 CLI 와
 
 from __future__ import annotations
 
+import ast
 import json
 import unittest
 from pathlib import Path
+from unittest.mock import Mock
 
 REPO = Path(__file__).resolve().parents[2]
 SKILL = REPO / ".claude" / "skills" / "rhwp-codex"
@@ -90,6 +92,23 @@ class AgentCodexSkillTests(unittest.TestCase):
 
     def test_regen_exit_3_is_data(self):
         self.assertEqual(self.regen["staleExit"], 3)
+        # 요약 index를 인자 구문으로 잘못 싣지 않고 명령별 도움말을 소비한다.
+        function = next(node for node in ast.parse(read(GEN)).body
+                        if isinstance(node, ast.FunctionDef) and node.name == "help_lines")
+        for detailed, expected in [
+            ("  rhwp export-svg [옵션]\n  export-svg <파일.hwp> [옵션]", "export-svg <파일.hwp> [옵션]"),
+            ("  rhwp export-svg [옵션]", "export-svg [옵션]"),
+        ]:
+            runner = Mock(return_value=(0, detailed))
+            namespace = {
+                "capabilities": Mock(return_value={"commands": [{"name": "export-svg"}]}),
+                "FAMILIES": [], "run_bin": runner,
+            }
+            exec(compile(ast.Module(body=[function], type_ignores=[]), str(GEN), "exec"), namespace)
+            lines = namespace["help_lines"]()
+            usage = next(line.strip() for line in lines if line.strip().startswith("export-svg "))
+            self.assertEqual(usage, expected)
+            runner.assert_called_once_with(["export-svg", "--help"])
         self.assertTrue(self.regen["staleIsData"])
         self.assertIn("--check", self.skill)
         text = read(GEN)

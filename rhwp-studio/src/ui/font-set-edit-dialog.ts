@@ -1,3 +1,4 @@
+import { compareFontNames } from '../core/font-name-order.ts';
 /**
  * 대표 글꼴 추가/편집 대화상자
  *
@@ -15,7 +16,7 @@ function getWebFonts(): string[] {
   const unique = new Set<string>();
   for (const name of REGISTERED_FONTS) unique.add(name);
   ['serif', 'sans-serif', 'monospace'].forEach(f => unique.add(f));
-  return Array.from(unique).sort((a, b) => a.localeCompare(b, 'ko'));
+  return Array.from(unique).sort(compareFontNames);
 }
 
 export class FontSetEditDialog extends ModalDialog {
@@ -34,7 +35,7 @@ export class FontSetEditDialog extends ModalDialog {
     const body = document.createElement('div');
     body.className = 'fse-body';
     const webFonts = getWebFonts();
-    const localFonts = getLocalFonts();
+    const localFonts = getLocalFonts().sort(compareFontNames);
     const langKeys: (keyof Omit<FontSet, 'name'>)[] = [
       'korean', 'english', 'chinese', 'japanese', 'other', 'symbol', 'user',
     ];

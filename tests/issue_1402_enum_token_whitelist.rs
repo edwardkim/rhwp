@@ -11,6 +11,17 @@
 //! 화이트리스트 갱신: 새 열거 속성/토큰을 방출하게 되면, 한컴 실물 또는 owpml
 //! 스펙으로 확인 후 아래 WHITELIST 에 추가한다 (추정 금지 — 실물·스펙 교차).
 
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/deferred_exam_scope.rs"
+));
+mod exam_fixtures {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/support/exam_fixtures.rs"
+    ));
+}
+
 use std::collections::HashMap;
 
 use rhwp::parser::hwpx::parse_hwpx;
@@ -77,8 +88,8 @@ fn whitelist() -> HashMap<&'static str, Vec<&'static str>> {
     m.insert("gutterType", vec!["LEFT_ONLY", "LEFT_RIGHT", "TOP_BOTTOM"]);
     // 캡션 side (#1387)
     m.insert("side", vec!["LEFT", "RIGHT", "TOP", "BOTTOM"]);
-    // circleType: SHAPE_REVERSAL_TIRANGLE 은 한컴 owpml 오타 철자 추정 — 파서·
-    // serializer 동일 철자라 roundtrip 정합. owpml 권위 자료 미접근으로 현행 유지.
+    // circleType: SHAPE_REVERSAL_TIRANGLE 은 한컴 owpml 철자 그대로다. 한컴 12.30 저장본의
+    // 14개 모양 이름과 같다.
     m.insert(
         "circleType",
         vec![
@@ -89,6 +100,13 @@ fn whitelist() -> HashMap<&'static str, Vec<&'static str>> {
             "SHAPE_REVERSAL_RECTANGLE",
             "SHAPE_TRIANGLE",
             "SHAPE_REVERSAL_TIRANGLE",
+            "SHAPE_LIGHT",
+            "SHAPE_RHOMBUS",
+            "SHAPE_REVERSAL_RHOMBUS",
+            "SHAPE_ROUNDED_RECTANGLE",
+            "SHAPE_EMPTY_CIRCULATE_TRIANGLE",
+            "SHAPE_THIN_CIRCULATE_TRIANGLE",
+            "SHAPE_THICK_CIRCULATE_TRIANGLE",
         ],
     );
     m.insert("composeType", vec!["OVERLAP", "SPREAD"]);
@@ -126,7 +144,7 @@ fn all_section_xml(doc: &rhwp::model::document::Document) -> String {
     let mut xml = String::new();
     for i in 0..zip.len() {
         let mut f = zip.by_index(i).unwrap();
-        let name = f.name().to_string();
+        let name = f.name().expect("ZIP 엔트리 이름").to_string();
         if name.contains("Contents/") && name.ends_with(".xml") {
             use std::io::Read;
             let mut s = String::new();
@@ -144,6 +162,11 @@ fn serializer_enum_tokens_within_whitelist() {
 
     for entry in std::fs::read_dir("samples/hwpx").expect("samples") {
         let path = entry.unwrap().path();
+        if is_deferred_exam_document(path.to_string_lossy().as_ref())
+            || exam_fixtures::is_deferred_fixture(&path)
+        {
+            continue;
+        }
         if path.extension().map(|e| e == "hwpx").unwrap_or(false) {
             let Ok(bytes) = std::fs::read(&path) else {
                 continue;
@@ -184,6 +207,11 @@ fn numtype_figure_regression_guard() {
     // #1387 회귀 봉인 — 어떤 샘플도 serialize 후 numType="FIGURE" 를 방출하면 안 된다.
     for entry in std::fs::read_dir("samples/hwpx").expect("samples") {
         let path = entry.unwrap().path();
+        if is_deferred_exam_document(path.to_string_lossy().as_ref())
+            || exam_fixtures::is_deferred_fixture(&path)
+        {
+            continue;
+        }
         if path.extension().map(|e| e == "hwpx").unwrap_or(false) {
             let Ok(bytes) = std::fs::read(&path) else {
                 continue;
@@ -198,7 +226,9 @@ fn numtype_figure_regression_guard() {
             if let Ok(mut zip) = zip::ZipArchive::new(reader) {
                 for i in 0..zip.len() {
                     let mut f = zip.by_index(i).unwrap();
-                    if f.name().contains("Contents/") && f.name().ends_with(".xml") {
+                    if f.name().expect("ZIP 엔트리 이름").contains("Contents/")
+                        && f.name().expect("ZIP 엔트리 이름").ends_with(".xml")
+                    {
                         use std::io::Read;
                         let mut s = String::new();
                         f.read_to_string(&mut s).ok();

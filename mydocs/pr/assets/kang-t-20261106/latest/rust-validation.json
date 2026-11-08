@@ -1,0 +1,243 @@
+[
+  {
+    "index": 0,
+    "name": "fmt",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "source_sha": "63236b9cc5fcbbbbe6fbce5691e81aaf6e406c1e",
+    "started": "2026-11-06T15:19:17.495674+00:00",
+    "state": "passed",
+    "exit_code": 0,
+    "finished": "2026-11-06T15:19:44.486688+00:00"
+  },
+  {
+    "index": 1,
+    "name": "focused",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--test-threads",
+      "4",
+      "--no-fail-fast",
+      "--test",
+      "regression_suite_007",
+      "--test",
+      "regression_suite_008",
+      "--test",
+      "regression_suite_009",
+      "--test",
+      "regression_suite_013",
+      "--test",
+      "regression_suite_014",
+      "--test",
+      "regression_suite_021",
+      "--test",
+      "regression_suite_023",
+      "-E",
+      "test(/(issue_8687_declared_font_fallback_names|issue_8555_vertical_alignment_baseline|issue_8556_insert_picture_in_cell|issue_8557_relocate_floating_picture|issue_8576_cell_square_no_overlap_stack|issue_6892_cell_float_host_para_anchor|issue_6494_cell_float_stays_in_its_cell|issue_5818_cell_square_logo_text_wrap|issue_8174_public_storage_boundaries)::/)"
+    ],
+    "source_sha": "63236b9cc5fcbbbbe6fbce5691e81aaf6e406c1e",
+    "started": "2026-11-06T15:19:44.486960+00:00",
+    "state": "passed",
+    "exit_code": 0,
+    "finished": "2026-11-06T15:27:36.087424+00:00"
+  },
+  {
+    "index": 2,
+    "name": "native-lib",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia",
+      "--lib",
+      "--",
+      "--test-threads=4"
+    ],
+    "source_sha": "63236b9cc5fcbbbbe6fbce5691e81aaf6e406c1e",
+    "started": "2026-11-06T15:27:36.087807+00:00",
+    "state": "passed",
+    "exit_code": 0,
+    "finished": "2026-11-06T15:33:53.677173+00:00"
+  },
+  {
+    "index": 3,
+    "name": "native-placeholder",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_2225_missing_picture_placeholder",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia"
+    ],
+    "source_sha": "63236b9cc5fcbbbbe6fbce5691e81aaf6e406c1e",
+    "started": "2026-11-06T15:33:53.677600+00:00",
+    "state": "passed",
+    "exit_code": 0,
+    "finished": "2026-11-06T15:34:11.575991+00:00"
+  },
+  {
+    "index": 4,
+    "name": "native-direct-pdf",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "render_p37_direct_pdf_export",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia"
+    ],
+    "source_sha": "63236b9cc5fcbbbbe6fbce5691e81aaf6e406c1e",
+    "started": "2026-11-06T15:34:11.576313+00:00",
+    "state": "passed",
+    "exit_code": 0,
+    "finished": "2026-11-06T15:34:12.948092+00:00"
+  },
+  {
+    "index": 5,
+    "name": "full-nextest",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--tests",
+      "--test-threads",
+      "4",
+      "--no-fail-fast"
+    ],
+    "source_sha": "63236b9cc5fcbbbbe6fbce5691e81aaf6e406c1e",
+    "started": "2026-11-06T15:34:12.948351+00:00",
+    "state": "passed",
+    "exit_code": 0,
+    "finished": "2026-11-06T16:05:44.188492+00:00"
+  },
+  {
+    "index": 6,
+    "name": "clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "source_sha": "63236b9cc5fcbbbbe6fbce5691e81aaf6e406c1e",
+    "started": "2026-11-06T16:05:44.190129+00:00",
+    "state": "passed",
+    "exit_code": 0,
+    "finished": "2026-11-06T16:06:32.597193+00:00"
+  },
+  {
+    "index": 7,
+    "name": "clippy-wasm",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "rhwp",
+      "--lib",
+      "--target",
+      "wasm32-unknown-unknown",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "source_sha": "63236b9cc5fcbbbbe6fbce5691e81aaf6e406c1e",
+    "started": "2026-11-06T16:06:32.597487+00:00",
+    "state": "passed",
+    "exit_code": 0,
+    "finished": "2026-11-06T16:07:18.102008+00:00"
+  },
+  {
+    "index": 8,
+    "name": "workspace-build",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--workspace",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review"
+    ],
+    "source_sha": "63236b9cc5fcbbbbe6fbce5691e81aaf6e406c1e",
+    "started": "2026-11-06T16:07:18.102358+00:00",
+    "state": "passed",
+    "exit_code": 0,
+    "finished": "2026-11-06T16:08:02.346713+00:00"
+  },
+  {
+    "index": 9,
+    "name": "workspace-clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "source_sha": "63236b9cc5fcbbbbe6fbce5691e81aaf6e406c1e",
+    "started": "2026-11-06T16:08:02.347486+00:00",
+    "state": "passed",
+    "exit_code": 0,
+    "finished": "2026-11-06T16:09:19.295149+00:00"
+  },
+  {
+    "index": 10,
+    "name": "suite-check",
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--check",
+      "--base-ref",
+      "a7feb849e11642b1438b7e9ee460ff4c8a7c946e"
+    ],
+    "source_sha": "63236b9cc5fcbbbbe6fbce5691e81aaf6e406c1e",
+    "started": "2026-11-06T16:09:19.295762+00:00",
+    "state": "passed",
+    "exit_code": 0,
+    "finished": "2026-11-06T16:09:20.188566+00:00"
+  }
+]

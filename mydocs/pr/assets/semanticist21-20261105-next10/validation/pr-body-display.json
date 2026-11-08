@@ -1,0 +1,70 @@
+{
+  "url": "https://github.com/edwardkim/rhwp/pull/8640",
+  "head": "4cf202d2aba44b0cfdd33465b03e37d1826a3fdc",
+  "images": [
+    {
+      "alt": "borders p1 Native·fresh WASM·독립 Print 비교",
+      "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4cf202d2aba44b0cfdd33465b03e37d1826a3fdc/mydocs/pr/assets/semanticist21-20261105-next10/images/post8622/borders-review.png",
+      "complete": true,
+      "naturalWidth": 615,
+      "naturalHeight": 3436
+    },
+    {
+      "alt": "outline p1 Native·fresh WASM·독립 Print 비교",
+      "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4cf202d2aba44b0cfdd33465b03e37d1826a3fdc/mydocs/pr/assets/semanticist21-20261105-next10/images/post8622/outline-review.png",
+      "complete": true,
+      "naturalWidth": 615,
+      "naturalHeight": 2336
+    },
+    {
+      "alt": "equal-height-edited-hwpx p2 Native·fresh WASM·독립 Print 비교",
+      "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4cf202d2aba44b0cfdd33465b03e37d1826a3fdc/mydocs/pr/assets/semanticist21-20261105-next10/images/post8622/equal-height-edited-review.png",
+      "complete": true,
+      "naturalWidth": 670,
+      "naturalHeight": 2156
+    },
+    {
+      "alt": "footnote-shape p2 Native·fresh WASM·독립 Print 비교",
+      "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4cf202d2aba44b0cfdd33465b03e37d1826a3fdc/mydocs/pr/assets/semanticist21-20261105-next10/images/post8622/footnote-review.png",
+      "complete": true,
+      "naturalWidth": 1815,
+      "naturalHeight": 1476
+    },
+    {
+      "alt": "endnote-restart5 p1 Native·fresh WASM·독립 Print 비교",
+      "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4cf202d2aba44b0cfdd33465b03e37d1826a3fdc/mydocs/pr/assets/semanticist21-20261105-next10/images/post8622/master-review.png",
+      "complete": true,
+      "naturalWidth": 1420,
+      "naturalHeight": 2336
+    },
+    {
+      "alt": "table-formula-recalculated-hwpx p1 Native·fresh WASM·독립 Print 비교",
+      "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4cf202d2aba44b0cfdd33465b03e37d1826a3fdc/mydocs/pr/assets/semanticist21-20261105-next10/images/post8622/formula-review.png",
+      "complete": true,
+      "naturalWidth": 690,
+      "naturalHeight": 1876
+    },
+    {
+      "alt": "outline-id2-hwpx p1 Native·fresh WASM·독립 Print 비교",
+      "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4cf202d2aba44b0cfdd33465b03e37d1826a3fdc/mydocs/pr/assets/semanticist21-20261105-next10/images/post8622/outline-id-review.png",
+      "complete": true,
+      "naturalWidth": 1125,
+      "naturalHeight": 1776
+    },
+    {
+      "alt": "paragraph-head-edited-hwpx p1 Native·fresh WASM·독립 Print 비교",
+      "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4cf202d2aba44b0cfdd33465b03e37d1826a3fdc/mydocs/pr/assets/semanticist21-20261105-next10/images/post8622/paragraph-head-review.png",
+      "complete": true,
+      "naturalWidth": 660,
+      "naturalHeight": 2196
+    },
+    {
+      "alt": "drop-cap p1 Native·fresh WASM·독립 Print 비교",
+      "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4cf202d2aba44b0cfdd33465b03e37d1826a3fdc/mydocs/pr/assets/semanticist21-20261105-next10/images/post8622/drop-cap-review.png",
+      "complete": true,
+      "naturalWidth": 620,
+      "naturalHeight": 2216
+    }
+  ],
+  "pass": true
+}

@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-28",
+  "input": "samples/hwpx/exam_kor.hwpx",
+  "input_sha256": "c71a8991d63d084c18db1c90d2e32865b2af69cae5762b20cb554ee53a539b7c",
+  "last_saved_with": {
+    "product": "hancom-office-2020",
+    "version": "11.0.0.8969"
+  },
+  "pdf": "pdf/hwpx/exam_kor-hwpx-2020.pdf",
+  "prior_pdf_sha256": "0579ec8882595cf3213b26bb734fc912f7fce103c63e8ee0f425329e50db80ed",
+  "pdf_sha256": "86cb58a24a75c460e95e34e90e825721bf868f6dca979fc17aa4f2f2f3171902",
+  "bytes": 4566492,
+  "pages": 20,
+  "page_size": "841 x 1190 pt (A3)",
+  "job_id": "dc6c68b8-8265-4c27-8bef-b20d9e19f7e8",
+  "engine": "2020",
+  "hancom_version": "11.0.0.9136",
+  "backend": "hwp-managed-direct-dll-host",
+  "pdf_print_method": 0,
+  "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+  "font_scope": {
+    "mode": "session0",
+    "status": "verified",
+    "profile_source": "protected_config",
+    "session_id": 0,
+    "mapped_font_count": 2,
+    "registered_font_count": 2,
+    "failed_font_count": 0,
+    "parent_visibility": "verified",
+    "child_visibility": "verified"
+  },
+  "note": "원본 용지 설정으로 새 MCP Print PDF를 산출해 종전 A4 PDF를 교체했다."
+}

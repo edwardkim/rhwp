@@ -1,0 +1,858 @@
+{
+  "date": "2026-10-29",
+  "input": "samples/hwp3-sample16-hwp5-2010.hwp",
+  "input_sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45",
+  "old_pdf": "pdf/hwp3-sample16-hwp5-2010-hwp-2024.pdf",
+  "old_pdf_sha256": "ba4b10dee6e35e9c5ee71dd8c8004528ad3dd72b47ef5dd0cd859e0431aae381",
+  "new_pdf": "pdf/hwp3-sample16-hwp5-2010-issue7723-mcp-2024.pdf",
+  "new_pdf_sha256": "4b03e8f1325654b423f4e2975890309c44b70cf3a1b1083879097aff2ad09c6a",
+  "section": 0,
+  "top_level_paragraph": 446,
+  "raw_record_tags": [
+    {
+      "tag": 66,
+      "level": 0,
+      "bytes": 24
+    },
+    {
+      "tag": 67,
+      "level": 1,
+      "bytes": 396
+    },
+    {
+      "tag": 68,
+      "level": 1,
+      "bytes": 32
+    }
+  ],
+  "raw_line_segment_records": 0,
+  "char_shape_ids": [
+    19,
+    54,
+    55
+  ],
+  "fonts_per_shape": {
+    "korean": "휴먼명조",
+    "latin": "HCI Poppy",
+    "hanja_japanese_other_symbol": "한양신명조",
+    "user": "명조"
+  },
+  "old_and_new_pdf_page": 22,
+  "second_line_end": {
+    "old_pdf": "응용프",
+    "new_pdf": "응용프로",
+    "rhwp_default": "응용프",
+    "rhwp_poppy_to_gulim_metrics_trial": "응용프로"
+  },
+  "first_line_next_start": {
+    "old_pdf": "스위치",
+    "new_pdf": "스위치",
+    "rhwp_default": "스위치",
+    "rhwp_poppy_to_gulim_metrics_trial": "위치"
+  },
+  "pdf_resources": {
+    "old_latin_text_resource": "T3, Type3, object 31",
+    "new_latin_text_resource": "F1, Type0, object 12",
+    "identification": "PDF 22쪽 같은 Active-Active 실행 위치의 텍스트 연산과 글꼴 자원 확인"
+  },
+  "new_font12_comparison": "추출 글꼴과 Gulim을 비교한 기존 진단에서 87개 코드 중 윤곽 76개 일치, 11개 차이",
+  "raw_metric_page22": {
+    "default": 98.298,
+    "poppy_to_gulim_metrics_trial": 94.5712,
+    "poppy_to_gulim_paint_trial": 98.33248
+  },
+  "qualification": "줄 나눔과 글꼴 프로그램 차이를 확인했지만 치환의 전체 규칙이나 100% 해결을 입증하지 않는다. 글꼴 매핑 실험은 다른 쪽에 하락이 있어 적용하지 않았다.",
+  "tools": [
+    "CFB DocInfo 및 Section0 레코드 직접 읽기",
+    "pdftotext -bbox-layout",
+    "pypdf ContentStream",
+    "기존 렌더 트리와 실험 TSV"
+  ],
+  "poppy_gulim_no_human_truetype_trial": {
+    "date": "2026-10-29",
+    "scope": "HCI Poppy를 Gulim으로 대체하고 trueTypeFaces에 휴먼명조를 지정하지 않는 임시 입력",
+    "pages": {
+      "1": 97.9567,
+      "4": 96.27799,
+      "22": 93.17762,
+      "38": 95.46827
+    },
+    "paragraph_446_first_line_next_start": "위치",
+    "interpretation": "새 PDF와 다른 줄 나눔이 유지되고 선택 쪽의 일치율이 하락해 채택하지 않았다."
+  },
+  "poppy_gulim_replacement_without_ttf_certification_trial": {
+    "date": "2026-10-29",
+    "scope": "HCI Poppy→Gulim 대체, Gulim TrueType 인증 없이 휴먼명조만 인증",
+    "pages": {
+      "1": 99.2802,
+      "4": 99.39002,
+      "22": 98.28053,
+      "38": 99.25589
+    },
+    "interpretation": "선택 쪽 모두 100%가 아니며 4쪽과 22쪽이 기존보다 낮아 채택하지 않았다."
+  },
+  "selected_latin_advances": {
+    "purpose": "22쪽 해당 영문 문자열의 한컴 새 PDF font 12, 사용자 Gulim, 사용자 HCI Poppy 전진폭 비교",
+    "pdf_font_program_sha256": "42ec3998ef39aa7dbd2d78a6a558c8859a5df76ec902bd2db8b7300d8931e73e",
+    "gulim_program_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+    "poppy_program_sha256": "ad78b2ee6458dcbef0b373b1ca7b3ddfb6ddd1610eda331ebd88d486e0556341",
+    "values": [
+      {
+        "character": " ",
+        "pdf_gulim_poppy_em": [
+          0.333008,
+          0.333008,
+          0.25
+        ]
+      },
+      {
+        "character": "-",
+        "pdf_gulim_poppy_em": [
+          0.625,
+          0.625,
+          0.332
+        ]
+      },
+      {
+        "character": "A",
+        "pdf_gulim_poppy_em": [
+          0.645508,
+          0.645508,
+          0.777
+        ]
+      },
+      {
+        "character": "I",
+        "pdf_gulim_poppy_em": [
+          0.269531,
+          0.269531,
+          0.335
+        ]
+      },
+      {
+        "character": "N",
+        "pdf_gulim_poppy_em": [
+          0.699219,
+          0.699219,
+          0.83
+        ]
+      },
+      {
+        "character": "U",
+        "pdf_gulim_poppy_em": [
+          0.710938,
+          0.710938,
+          0.777
+        ]
+      },
+      {
+        "character": "W",
+        "pdf_gulim_poppy_em": [
+          0.894531,
+          0.894531,
+          0.998
+        ]
+      },
+      {
+        "character": "X",
+        "pdf_gulim_poppy_em": [
+          0.625,
+          0.625,
+          0.667
+        ]
+      },
+      {
+        "character": "c",
+        "pdf_gulim_poppy_em": [
+          0.572266,
+          0.572266,
+          0.443
+        ]
+      },
+      {
+        "character": "d",
+        "pdf_gulim_poppy_em": [
+          0.605469,
+          0.605469,
+          0.609
+        ]
+      },
+      {
+        "character": "e",
+        "pdf_gulim_poppy_em": [
+          0.567383,
+          0.567383,
+          0.478
+        ]
+      },
+      {
+        "character": "i",
+        "pdf_gulim_poppy_em": [
+          0.241211,
+          0.241211,
+          0.291
+        ]
+      },
+      {
+        "character": "n",
+        "pdf_gulim_poppy_em": [
+          0.580078,
+          0.580078,
+          0.582
+        ]
+      },
+      {
+        "character": "o",
+        "pdf_gulim_poppy_em": [
+          0.605469,
+          0.605469,
+          0.546
+        ]
+      },
+      {
+        "character": "s",
+        "pdf_gulim_poppy_em": [
+          0.525391,
+          0.525391,
+          0.423
+        ]
+      },
+      {
+        "character": "t",
+        "pdf_gulim_poppy_em": [
+          0.313477,
+          0.313477,
+          0.324
+        ]
+      },
+      {
+        "character": "v",
+        "pdf_gulim_poppy_em": [
+          0.5,
+          0.5,
+          0.564
+        ]
+      },
+      {
+        "character": "w",
+        "pdf_gulim_poppy_em": [
+          0.75,
+          0.75,
+          0.832
+        ]
+      }
+    ],
+    "scope": "선택 18글자의 전진폭 비교이며 해당 글꼴의 모든 윤곽이나 줄 구성 동등성을 뜻하지 않는다."
+  },
+  "raw_para_text_control_characters": [
+    {
+      "offset_utf16": 196,
+      "value": "0x000D",
+      "meaning": "문단 끝"
+    }
+  ],
+  "raw_before_problem_word": "구성을 뒤 공백 3개 다음에 스위치가 이어짐; 중간 강제 줄바꿈 없음",
+  "hancom_2024_resave_probe": {
+    "date": "2026-10-29",
+    "job_id": "f2112ff1-0d56-4125-88d8-24c8da2a26da",
+    "result_sha256": "8961c8677e859e0d8dbc716056c4c650d321114293cfa8a06c097679dbb99221",
+    "result_bytes": 3048960,
+    "engine": "2024",
+    "source_paragraph": 446,
+    "source_line_segment_records": 0,
+    "resaved_paragraph": 446,
+    "resaved_line_segment_records": 0,
+    "scope": "한컴 2024 HWP 재저장본을 원시 레코드로 확인했다. 저장된 줄이 없어 인쇄 시 조판 줄 구성을 이 자료만으로 추출할 수 없다. 임시 저장본은 근거 파일로 커밋하지 않는다."
+  },
+  "hancom_2024_hwpx_probe": {
+    "date": "2026-10-29",
+    "job_id": "88f636fa-adcf-4d05-ad6f-df5bc9b52046",
+    "result_sha256": "c9a2a833ed060d926d1a52baf48a7a93d30a03fc05e7e8a55caa1fb6d67ccd0d",
+    "result_bytes": 3067100,
+    "section": "Contents/section0.xml",
+    "paragraph_global_index_including_nested": 700,
+    "text_characters": 196,
+    "line_segments": 0,
+    "scope": "한컴 HWPX 변환본도 해당 문단에 lineseg가 없어 인쇄 쪽의 줄 배치를 직접 복원할 수 없다. 임시 변환본은 커밋하지 않는다."
+  },
+  "pdf_positioned_latin_advances": {
+    "target": "22쪽 문단 446의 Active-Active 13글자",
+    "source_spacing_percent": -20,
+    "method": "새 PDF F1 글리프 hmtx에서 TJ 조정값을 뺀 전진폭과 HCI Poppy 원본 hmtx의 80%를 비교",
+    "values": [
+      {
+        "character": "A",
+        "pdf_effective_em": 0.620908,
+        "poppy_80pct_em": 0.6216,
+        "difference_em": -0.000692
+      },
+      {
+        "character": "c",
+        "pdf_effective_em": 0.352166,
+        "poppy_80pct_em": 0.3544,
+        "difference_em": -0.002234
+      },
+      {
+        "character": "t",
+        "pdf_effective_em": 0.268977,
+        "poppy_80pct_em": 0.2592,
+        "difference_em": 0.009777
+      },
+      {
+        "character": "i",
+        "pdf_effective_em": 0.231711,
+        "poppy_80pct_em": 0.2328,
+        "difference_em": -0.001089
+      },
+      {
+        "character": "v",
+        "pdf_effective_em": 0.4537,
+        "poppy_80pct_em": 0.4512,
+        "difference_em": 0.0025
+      },
+      {
+        "character": "e",
+        "pdf_effective_em": 0.379983,
+        "poppy_80pct_em": 0.3824,
+        "difference_em": -0.002417
+      },
+      {
+        "character": "-",
+        "pdf_effective_em": 0.2685,
+        "poppy_80pct_em": 0.2656,
+        "difference_em": 0.0029
+      },
+      {
+        "character": "A",
+        "pdf_effective_em": 0.620908,
+        "poppy_80pct_em": 0.6216,
+        "difference_em": -0.000692
+      },
+      {
+        "character": "c",
+        "pdf_effective_em": 0.361366,
+        "poppy_80pct_em": 0.3544,
+        "difference_em": 0.006966
+      },
+      {
+        "character": "t",
+        "pdf_effective_em": 0.259777,
+        "poppy_80pct_em": 0.2592,
+        "difference_em": 0.000577
+      },
+      {
+        "character": "i",
+        "pdf_effective_em": 0.231711,
+        "poppy_80pct_em": 0.2328,
+        "difference_em": -0.001089
+      },
+      {
+        "character": "v",
+        "pdf_effective_em": 0.4537,
+        "poppy_80pct_em": 0.4512,
+        "difference_em": 0.0025
+      },
+      {
+        "character": "e",
+        "pdf_effective_em": 0.389283,
+        "poppy_80pct_em": 0.3824,
+        "difference_em": 0.006883
+      }
+    ],
+    "max_abs_difference_em": 0.009777,
+    "qualification": "한 실행에서 PDF는 굴림 프로그램 글리프를 사용하면서 원래 Poppy 폭에 가까운 전진을 사용한다. 공백·다른 줄·다른 문서 전체에 같은 규칙이 적용된다는 증거는 아니다."
+  },
+  "source_font_flags": {
+    "korean_face_attribute": "0x62",
+    "latin_face_attribute": "0x62",
+    "latin_face_alt_type_low_bits": 2,
+    "source_shape_55_attribute": "0x00000000",
+    "source_shape_55_use_font_space": false,
+    "scope": "원본 DocInfo FACE_NAME 및 CHAR_SHAPE 바이트에서 읽음. 글꼴의 실제 설치 여부를 뜻하지 않는다."
+  },
+  "use_font_space_control": {
+    "date": "2026-10-29",
+    "description": "한컴 변환 HWPX 대조본과 charPr 55의 useFontSpace만 0→1로 바꾼 임시 HWPX를 한컴 2024 Print 0으로 각각 출력",
+    "original_hwpx_sha256": "c9a2a833ed060d926d1a52baf48a7a93d30a03fc05e7e8a55caa1fb6d67ccd0d",
+    "modified_hwpx_sha256": "e53d3ec474e57cdb246e7e753028d55a800fc0e1b72375a6c0ec1a63824c8b07",
+    "changed_zip_entries": [
+      "Contents/header.xml"
+    ],
+    "page": 22,
+    "cases": {
+      "converted": {
+        "job_id": "3b5c6294-5957-4a98-873d-aabef05f815d",
+        "pdf_sha256": "a3aaf7497baefe2dc10983f72042fe2ffd03c5f69ec8a712f3011374bd8abca9",
+        "pdf_pages": 64,
+        "print_method": 0,
+        "first_line_end": "구성을",
+        "second_line_start": "스위치",
+        "second_line_end": "응용프로"
+      },
+      "space55": {
+        "job_id": "38204b47-3202-4b55-b3f4-ca4e10678e1b",
+        "pdf_sha256": "0d416f2cf58d6b47e0e76aecc77e6d458520be76762a568aa9823f66594e8a4d",
+        "pdf_pages": 64,
+        "print_method": 0,
+        "first_line_end": "스위",
+        "second_line_start": "치",
+        "second_line_end": "응용프로그램의"
+      }
+    },
+    "conclusion": "공백 설정을 1로 바꾸면 첫 줄에 스위가 넘어가 원래 새 MCP PDF와 달라진다. 원본 설정은 0이므로 설정을 켜서 맞추는 방법은 채택하지 않는다. 이 비교는 HWPX 실험이며 원본 HWP의 다른 차이 전체를 설명하지 않는다."
+  },
+  "converted_hwpx_rhwp_comparison": {
+    "date": "2026-10-29",
+    "input_sha256": "c9a2a833ed060d926d1a52baf48a7a93d30a03fc05e7e8a55caa1fb6d67ccd0d",
+    "input_job_id": "88f636fa-adcf-4d05-ad6f-df5bc9b52046",
+    "pdf_sha256": "a3aaf7497baefe2dc10983f72042fe2ffd03c5f69ec8a712f3011374bd8abca9",
+    "print_job_id": "3b5c6294-5957-4a98-873d-aabef05f815d",
+    "page": 22,
+    "pdf_pages": 64,
+    "metric": "96dpi PDFium, 반경 2px raw",
+    "results": {
+      "base": {
+        "raw_percent": 98.26045,
+        "render_png_sha256": "c14a62f45d16c4d0dc839bd23d5640a878d99c408b2ebb3b007e0712a5a42a99",
+        "pdf_png_sha256": "b1a584df43e256835e5aeb03877741d22d73886f4ab3484fbf8336e39d879f7e",
+        "active_x_px": 236.8
+      },
+      "poppy-paint": {
+        "raw_percent": 94.44641,
+        "render_png_sha256": "7ad3a671b5d7aab386cbaee6775e36f2190396f4f0c38ce0ad11f2de38895e03",
+        "pdf_png_sha256": "b1a584df43e256835e5aeb03877741d22d73886f4ab3484fbf8336e39d879f7e",
+        "active_x_px": 221.8
+      }
+    },
+    "qualification": "변환된 HWPX에서도 미달이 재현됐다. 변환본 HCI Poppy의 글꼴 종류는 TTF이고 원본 HWP의 종류는 HFT이므로 두 환경 설정의 내부 처리까지 동일하다고 보지 않는다. 임시 입력·PDF는 커밋하지 않는다."
+  },
+  "page22_unmatched_pixel_bands": {
+    "date": "2026-10-29",
+    "native_png_sha256": "86e56961a02737a7d59da7ede4749975cf36e1f6388b9805bb004ebdc7719ce9",
+    "pdf_png_sha256": "a18a8ac8d54ce09dd5913616165a62e0e4668e39f19459ec6b3beac904a4ccf5",
+    "method": "RGB 최소 채널 232 미만을 내용으로 판정하고 반경 2px 안에 짝이 없는 화소의 합을 40px 높이 띠로 집계",
+    "total_unmatched": 2061,
+    "content_union": 121093,
+    "bands": [
+      {
+        "y_start": 80,
+        "y_end_exclusive": 120,
+        "pixels": 4
+      },
+      {
+        "y_start": 360,
+        "y_end_exclusive": 400,
+        "pixels": 16
+      },
+      {
+        "y_start": 560,
+        "y_end_exclusive": 600,
+        "pixels": 6
+      },
+      {
+        "y_start": 600,
+        "y_end_exclusive": 640,
+        "pixels": 1
+      },
+      {
+        "y_start": 680,
+        "y_end_exclusive": 720,
+        "pixels": 252
+      },
+      {
+        "y_start": 720,
+        "y_end_exclusive": 760,
+        "pixels": 1167
+      },
+      {
+        "y_start": 760,
+        "y_end_exclusive": 800,
+        "pixels": 561
+      },
+      {
+        "y_start": 800,
+        "y_end_exclusive": 840,
+        "pixels": 27
+      },
+      {
+        "y_start": 840,
+        "y_end_exclusive": 880,
+        "pixels": 24
+      },
+      {
+        "y_start": 920,
+        "y_end_exclusive": 960,
+        "pixels": 3
+      }
+    ],
+    "dominant_680_to_800_pixels": 1980,
+    "dominant_percentage_of_unmatched": 96.07,
+    "qualification": "문단 446이 있는 세 띠의 합이며 같은 띠의 모든 화소가 그 문단에 속한다는 뜻은 아니다."
+  },
+  "pdf_embedded_font_controlled_trial": {
+    "date": "2026-10-29",
+    "source": "새 MCP PDF 22쪽 F1 글꼴 자원 12번의 임베디드 TrueType 윤곽과 ToUnicode/CID 매핑으로 임시 글꼴 생성",
+    "source_font_sha256": "42ec3998ef39aa7dbd2d78a6a558c8859a5df76ec902bd2db8b7300d8931e73e",
+    "temporary_reconstructed_font_sha256": "b72a7b2ca2bdc93e88c01288a74b515938a1cbb7296b34917d2acbb98062b201",
+    "mapped_unicode_count": 111,
+    "font_path_policy": "임시 진단에만 공급; 폰트나 스크립트를 저장소·회귀테스트에 넣지 않음",
+    "common_settings": "같은 입력·PDF·현재 Native 바이너리·글꼴 공급 디렉터리·원본 폭 보존 true·96dpi, HCI Poppy 표시 치환만 다름",
+    "reference_raster_identical_per_page": true,
+    "selection_observation": "실험 SVG의 HCI Poppy 표시 face는 임시 글꼴 이름으로 지정됨. 이 선언만으로 Native 백엔드가 모든 글리프에 그 프로그램을 실제 선택했다고 보증하지 않는다.",
+    "pages": [
+      {
+        "page": 1,
+        "control_raw": 99.17741,
+        "trial_raw": 99.17741,
+        "change_pp": 0.0,
+        "common_pdf_raster_sha256": "86908c655e179d707d60eac4b67e66e15b2a3fabcaf5ec9153b95fb477dfb98b"
+      },
+      {
+        "page": 4,
+        "control_raw": 99.39012,
+        "trial_raw": 99.4445,
+        "change_pp": 0.05438,
+        "common_pdf_raster_sha256": "233b1cc2439e272bbd99c632af3e2f2c48650ac55310dd9c665400afb01f19d2"
+      },
+      {
+        "page": 22,
+        "control_raw": 98.24609,
+        "trial_raw": 98.28007,
+        "change_pp": 0.03398,
+        "common_pdf_raster_sha256": "b1a584df43e256835e5aeb03877741d22d73886f4ab3484fbf8336e39d879f7e"
+      },
+      {
+        "page": 38,
+        "control_raw": 99.24463,
+        "trial_raw": 99.29983,
+        "change_pp": 0.0552,
+        "common_pdf_raster_sha256": "264421c6701c63294b9194a5944e12375ca0d3518f9a9de837b7624ca96617b1"
+      }
+    ],
+    "run_manifest_sha256": {
+      "matched-control": "e8038f30839788a90fd9a76bae801b054ad0d37a59a7ef92cd52824661fd8b00",
+      "trial": "60a94acfec70887b47fe5d5ae946fc01ace1d4b1490c996f5c5a80fcb0f544e8"
+    },
+    "interpretation": "표시 치환은 22쪽 약 0.034%p 개선하지만 네 쪽 모두 100% 미달. 쪽 전체·WASM 및 다른 입력은 검증하지 않았으므로 적용하지 않았다. 대조군·실험군의 수치는 이전 원본 폭 보존 설정이 달랐던 결과와 혼합하지 않는다."
+  },
+  "second_line_word_origins": {
+    "date": "2026-10-29",
+    "scope": "22쪽 문단 446의 둘째 줄에서 중복 단어는 첫 등장",
+    "method": "동일 두 PDF의 pdftotext -bbox xMin을 96/72로 환산; 현재 Native SVG 텍스트 개별 문자 x 사용",
+    "settings": "원본 폭 보존 true, 임시 PDF 글꼴 치환 없이 엄격 글꼴 공급",
+    "positions": [
+      {
+        "word": "스위치",
+        "old_pdf_x_px": 136.64,
+        "new_pdf_x_px": 136.64,
+        "rhwp_control_x_px": 136.69
+      },
+      {
+        "word": "기반의",
+        "old_pdf_x_px": 186.72,
+        "new_pdf_x_px": 185.12,
+        "rhwp_control_x_px": 186.76
+      },
+      {
+        "word": "Active-Active",
+        "old_pdf_x_px": 236.8,
+        "new_pdf_x_px": 233.76,
+        "rhwp_control_x_px": 236.83
+      },
+      {
+        "word": "부하분산",
+        "old_pdf_x_px": 329.6,
+        "new_pdf_x_px": 325.12,
+        "rhwp_control_x_px": 329.67
+      }
+    ],
+    "interpretation": "첫 단어 시작은 거의 같고 뒤 단어의 원점이 새 PDF에서 점차 왼쪽이다. 기존 PDF와 rhwp는 더 넓은 간격으로 글줄이 끝나지만 새 PDF는 한 글자를 더 배치한다. 양쪽 맞춤 후 결과이므로 이 수치만으로 줄 나눔 이전의 자연 공백폭이나 유일한 원인을 확정하지 않는다.",
+    "current_svg_sha256": "7133640412b1b12bfd6832aed523744d0ef9e1175720c9105ff6a382ceb82c52"
+  },
+  "last_saved_product_check": {
+    "file_name": "samples/hwp3-sample16-hwp5-2010.hwp",
+    "metadata": {
+      "confidence": "metadata",
+      "product": "hancom-office-2024",
+      "version": "13.0.0.3457"
+    },
+    "document_version": "5.1.1.0",
+    "source_page_count": 64,
+    "reason": "파일 이름과 달리 마지막 저장 제품 메타데이터는 한컴 2024이므로 MCP 사용 지침의 2024 엔진을 사용한다. 제품 메타데이터와 문서의 최초 생성 버전은 별개다.",
+    "command": "rhwp info samples/hwp3-sample16-hwp5-2010.hwp --json",
+    "raw_info_sha256": "a4b095dadb1354c65b53759d3216af45913674b6db4ae21c7f8ededf7886f8e0",
+    "guide": "mydocs/manual/mcp_hwp2024Convert_usage.md"
+  },
+  "physical_fit_trace": {
+    "date": "2026-10-29",
+    "method": "현재 HEAD의 별도 worktree에서 문단 446의 실제 물리 구간 fit 판정값만 출력하고 기존 줄 나눔 동작은 변경하지 않았다.",
+    "page": 22,
+    "line_start_index": 53,
+    "candidate_character": "로",
+    "candidate_start_index": 107,
+    "current_width_hwp": 42728,
+    "candidate_advance_hwp": 1040,
+    "candidate_fit_width_after_letter_spacing_hwp": 1300,
+    "effective_width_hwp": 44024,
+    "candidate_excess_hwp": 4,
+    "pair_adjustment_hwp": 0,
+    "space_savings_hwp": 0,
+    "candidate_accepted": false,
+    "interpretation": "줄 끝 자간을 제외한 판정폭 44028이 물리 구간 너비 44024보다 4 HWPUNIT 커서 거절된다. 새로운 PDF에서 해당 글자를 포함하지만 이 한 사례만으로 물리 구간의 일반 허용값을 변경할 근거는 되지 않는다. 기존 PDF는 같은 글자 이전에서 줄이 끝난다.",
+    "diagnostic_source": "src/renderer/composer/line_breaking.rs",
+    "control_settings": "print, compat 2024, 원본 폭 보존 글꼴 환경, 기존 엄격 글꼴 공급"
+  },
+  "original_pr_8188_comparison": {
+    "date": "2026-10-29",
+    "original_pr": "https://github.com/edwardkim/rhwp/pull/8188",
+    "source_commit": "17225375ff975ca45704ab4eb1803f3f9ba15ea9",
+    "original_evidence": "mydocs/working/task_m100_8160_stage2.md",
+    "original_solution": "저장 줄이 없는 HWPX 22쪽 문단 446에서 글자 끝 자간 fit 판정과 HCI Poppy 원본 512 em 폭을 공통 조판에 반영했다. 한컴 독립 표본의 관측을 사용했다.",
+    "metric_file": "src/renderer/font_metric_hci_poppy.rs",
+    "metric_file_sha256_at_source_and_current": "9308e62b1b6e9657144b6ce62e77522dfba5c6f19b1b861b11875cb66c77fa1e",
+    "metric_file_unchanged_since_pr_merge": true,
+    "original_pr_hwpx_pdf": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+    "original_pr_hwpx_pdf_sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+    "original_hwpx_pdf_page22_second_line_ends": "응용프",
+    "issue7723_new_pdf_page22_second_line_ends": "응용프로",
+    "qualification": "#8188은 세 저장본 각각의 새 MCP 기준을 검증했으며 #7723 2010 이름 별칭은 별도의 원본이다. 서로 다른 PDF 출력은 각각 비교하며, 이 근거만으로 새 출력의 글꼴 대체 원인이나 새 기준 100%를 확정하지 않는다."
+  },
+  "physical_four_hwpunit_tolerance_trial": {
+    "date": "2026-10-29",
+    "backend": "Native Skia",
+    "pages": [
+      1,
+      4,
+      22,
+      38
+    ],
+    "dpi": 96,
+    "method": "visual_sweep.py silhouette-only, 동일 rhwp 실행 파일·원래 글꼴 환경·입력과 비교별 동일 PDF 래스터. 실험군만 임시 환경 변수로 물리 구간 판정에 4 HWPUNIT을 허용했다.",
+    "font_environment": "#8188 동등 검증에 사용한 strict8188-diagnostic-font-env-2024.json과 같은 217개 원본 글꼴 프로그램. 글꼴과 임시 진단 코드는 커밋하지 않는다.",
+    "old_pdf_sha256": "ba4b10dee6e35e9c5ee71dd8c8004528ad3dd72b47ef5dd0cd859e0431aae381",
+    "new_pdf_sha256": "4b03e8f1325654b423f4e2975890309c44b70cf3a1b1083879097aff2ad09c6a",
+    "same_pdf_raster_between_control_and_trial": true,
+    "same_render_raster_between_pdf_targets": true,
+    "runs": {
+      "control-new": {
+        "metrics": {
+          "1": 99.2802,
+          "4": 99.33339,
+          "22": 98.24607,
+          "38": 99.21033
+        },
+        "rasters": {
+          "1": {
+            "rhwp": "b2ec2c1f9fd090534904f72e5949c5e250da1c727a1feb1fb268b1bb19435144",
+            "pdf": "86908c655e179d707d60eac4b67e66e15b2a3fabcaf5ec9153b95fb477dfb98b"
+          },
+          "4": {
+            "rhwp": "e586ae5d492367b1eff5617c4562a4172e23a87c5417af3f19979833945b63bb",
+            "pdf": "233b1cc2439e272bbd99c632af3e2f2c48650ac55310dd9c665400afb01f19d2"
+          },
+          "22": {
+            "rhwp": "86e56961a02737a7d59da7ede4749975cf36e1f6388b9805bb004ebdc7719ce9",
+            "pdf": "b1a584df43e256835e5aeb03877741d22d73886f4ab3484fbf8336e39d879f7e"
+          },
+          "38": {
+            "rhwp": "af0c80c5b8ac6cf42ce7b7a931b208839d972435b448017e030aa0e9432e475a",
+            "pdf": "264421c6701c63294b9194a5944e12375ca0d3518f9a9de837b7624ca96617b1"
+          }
+        },
+        "manifest_sha256": "fe005b00eb4267b9228635118dba0e97af0d8b275a3c0107a2d584f86b39d67a"
+      },
+      "trial-new": {
+        "metrics": {
+          "1": 99.2802,
+          "4": 99.33339,
+          "22": 99.90314,
+          "38": 99.21033
+        },
+        "rasters": {
+          "1": {
+            "rhwp": "b2ec2c1f9fd090534904f72e5949c5e250da1c727a1feb1fb268b1bb19435144",
+            "pdf": "86908c655e179d707d60eac4b67e66e15b2a3fabcaf5ec9153b95fb477dfb98b"
+          },
+          "4": {
+            "rhwp": "e586ae5d492367b1eff5617c4562a4172e23a87c5417af3f19979833945b63bb",
+            "pdf": "233b1cc2439e272bbd99c632af3e2f2c48650ac55310dd9c665400afb01f19d2"
+          },
+          "22": {
+            "rhwp": "1776c811072bf7c95b3f5e9dda17d212ac1b8237a09973927c699c30f0541848",
+            "pdf": "b1a584df43e256835e5aeb03877741d22d73886f4ab3484fbf8336e39d879f7e"
+          },
+          "38": {
+            "rhwp": "af0c80c5b8ac6cf42ce7b7a931b208839d972435b448017e030aa0e9432e475a",
+            "pdf": "264421c6701c63294b9194a5944e12375ca0d3518f9a9de837b7624ca96617b1"
+          }
+        },
+        "manifest_sha256": "71c2f7692d326a5621a5fc2168c6223e6d5e5af04350ba3954caa8db8a771073"
+      },
+      "control-old": {
+        "metrics": {
+          "1": 99.9826,
+          "4": 100.0,
+          "22": 100.0,
+          "38": 100.0
+        },
+        "rasters": {
+          "1": {
+            "rhwp": "b2ec2c1f9fd090534904f72e5949c5e250da1c727a1feb1fb268b1bb19435144",
+            "pdf": "95a3f45819abbc33b4ca64d400c96f685a754dd34fcb583ca0afc25d78dcb50e"
+          },
+          "4": {
+            "rhwp": "e586ae5d492367b1eff5617c4562a4172e23a87c5417af3f19979833945b63bb",
+            "pdf": "f26ba83f7d950d6c5211aa9d06293e96a7332a6576301ff783d0b7f0949fe68e"
+          },
+          "22": {
+            "rhwp": "86e56961a02737a7d59da7ede4749975cf36e1f6388b9805bb004ebdc7719ce9",
+            "pdf": "fe8655b1fb132e460e3554efeae7fcd7674816b2f6739c58c6d180363512c53f"
+          },
+          "38": {
+            "rhwp": "af0c80c5b8ac6cf42ce7b7a931b208839d972435b448017e030aa0e9432e475a",
+            "pdf": "9a53285dc7918fda9e979cdc5ff7c935b6fceb6463e47a2ab008cec84663e898"
+          }
+        },
+        "manifest_sha256": "496f5b32d7fc9a3d4bf214e14186c6324dec8091ded76d1ed30460c8be6e22b8"
+      },
+      "trial-old": {
+        "metrics": {
+          "1": 99.9826,
+          "4": 100.0,
+          "22": 98.26082,
+          "38": 100.0
+        },
+        "rasters": {
+          "1": {
+            "rhwp": "b2ec2c1f9fd090534904f72e5949c5e250da1c727a1feb1fb268b1bb19435144",
+            "pdf": "95a3f45819abbc33b4ca64d400c96f685a754dd34fcb583ca0afc25d78dcb50e"
+          },
+          "4": {
+            "rhwp": "e586ae5d492367b1eff5617c4562a4172e23a87c5417af3f19979833945b63bb",
+            "pdf": "f26ba83f7d950d6c5211aa9d06293e96a7332a6576301ff783d0b7f0949fe68e"
+          },
+          "22": {
+            "rhwp": "1776c811072bf7c95b3f5e9dda17d212ac1b8237a09973927c699c30f0541848",
+            "pdf": "fe8655b1fb132e460e3554efeae7fcd7674816b2f6739c58c6d180363512c53f"
+          },
+          "38": {
+            "rhwp": "af0c80c5b8ac6cf42ce7b7a931b208839d972435b448017e030aa0e9432e475a",
+            "pdf": "9a53285dc7918fda9e979cdc5ff7c935b6fceb6463e47a2ab008cec84663e898"
+          }
+        },
+        "manifest_sha256": "c56e71b074bc306deb47a672266a86288cbcc74ff3809144338bc4f1dc4457e9"
+      }
+    },
+    "interpretation": "22쪽 새 기준은 98.24607%에서 99.90314%로 개선하지만 기존 기준은 100%에서 98.26082%로 1.73918%p 하락하고 새 기준도 100%에 미달한다. 기존 #8188 보존 요구와 충돌하므로 이 허용값은 채택하지 않는다. 현재 래스터 정책의 기존 PDF 1쪽은 99.98260%이며 과거 정책의 100%와 구분한다."
+  },
+  "hancom2024_host_poppy_check": {
+    "date": "2026-10-29",
+    "host_alias": "win10-hwp-convert-2024",
+    "service_observation": "HwpConvert2024Mcp 서비스 Running",
+    "file": "C:\\Program Files (x86)\\Hnc\\Office 2024\\HOffice130\\Shared\\Fonts\\HMEPO.HFT",
+    "sha256": "222fceeeffb111c095a760ee178e7c7aebf8d334cf91706658bccb4e2b1d01d4",
+    "comparison_evidence": "mydocs/pr/assets/issue_8160/poppy-original-widths.json",
+    "method": "SSH 읽기 전용 Get-ChildItem, Get-FileHash와 Get-Service. 파일을 복사하거나 서버 설정을 변경하지 않았다.",
+    "interpretation": "서비스 데이터에서 해당 job 식별자가 확인되고 설치본은 원 PR에 기록한 HCI Poppy 원본과 일치한다. 다만 파일 존재와 job 기록만으로 해당 worker가 그 글꼴을 실제 선택했는지 증명하지 않는다.",
+    "job_id_search": "서비스 데이터 디렉터리의 로그·JSON·텍스트 파일에서 #7723 MCP job 식별자가 포함된 파일 1개를 찾았다. 내용은 출력하지 않았다."
+  },
+  "original_8188_hwpx_current_mcp_page22_probe": {
+    "date": "2026-10-29",
+    "input": "samples/hwp3-sample16-hwp5.hwpx",
+    "input_sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+    "original_reference_pdf": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+    "original_reference_pdf_sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+    "new_mcp_job_id": "a10e3d2b-2eee-49c0-9ed1-4c4670099526",
+    "new_pdf_sha256": "6074fa7b73146c8ae3f544283630e73823485330174c39285aa8b74357f03c56",
+    "new_pdf_bytes": 2183488,
+    "engine": "2024",
+    "hancom_version": "13.0.0.3901",
+    "print_mode": "frame_print_to_pdf_ex_one_up",
+    "total_pages": 64,
+    "examined_pages": [
+      22
+    ],
+    "rasterizer": "visual_sweep_pdf.py, pdfium_smooth_rgb_exact_dpi_v2, 96dpi",
+    "original_hwpx_page22_png_sha256": "fe8655b1fb132e460e3554efeae7fcd7674816b2f6739c58c6d180363512c53f",
+    "same_as_issue7723_old_page22": true,
+    "new_hwpx_page22_png_sha256": "b1a584df43e256835e5aeb03877741d22d73886f4ab3484fbf8336e39d879f7e",
+    "same_as_issue7723_new_page22": true,
+    "original_line_end": "응용프",
+    "new_line_end": "응용프로",
+    "new_page_fonts": "CID TrueType resources 12,30,57; old PDF includes Type3 resources",
+    "interpretation": "같은 원 PR HWPX를 같은 한컴 버전과 Print 방식으로 현재 MCP에서 재출력해도 22쪽의 줄 구성과 글꼴 자원이 이전 원 PR PDF와 다르다. 새 HWPX PDF 22쪽 래스터는 새 HWP #7723 PDF와 일치하고 기존 두 PDF의 22쪽 래스터도 서로 일치한다. 문서 형식만의 차이는 아니다. 이 관측은 서버 출력 상태가 바뀐 구체적 원인을 입증하지 않는다. 전쪽 비교는 수행하지 않았다. 새 PDF는 임시 진단 산출물이다."
+  },
+  "mcp_font_scope_semantics": {
+    "date": "2026-10-29",
+    "host": "win10-hwp-convert-2024",
+    "worker_source": "C:\\ProgramData\\HwpConvert2024\\service\\app\\tools\\hwp-direct-host\\HwpDirectHostWorker.cs",
+    "worker_source_sha256": "ae6381676e64b8feae103729f45788677cfbc4e45e20ade128887328f473a2a4",
+    "method": "서비스 호스트의 worker 소스를 읽기 전용으로 확인했다. 인증 설정과 토큰 값은 읽어 기록하지 않았다.",
+    "registration": "session 0에서 private font map의 대상 글꼴을 AddFontResourceEx로 등록한다.",
+    "visibility": "InspectFontVisibility는 GDI EnumFontFamiliesEx로 한컴바탕과 한컴돋움 두 계열을 확인하고, 별도 자식 프로세스도 동일한 표시 여부를 확인한다.",
+    "conclusion": "font_scope verified는 한컴바탕·한컴돋움의 해당 가시성 검증을 의미하며 문서별 HCI Poppy HFT의 실제 선택이나 포함을 증명하지 않는다. 현재 Poppy 출력이 대체된 직접 원인을 확정하지 않는다."
+  },
+  "mcp_worker_history_comparison": {
+    "date": "2026-10-29",
+    "host": "win10-hwp-convert-2024",
+    "prior_snapshot": "rollback-observer-handoff-20261027-233322-6bad159c",
+    "prior_worker_sha256": "4f7c751d113a2a89ce75a3e6dce6931d88689bb4614b4027ffe9d0b4f3499c25",
+    "current_worker_sha256": "ae6381676e64b8feae103729f45788677cfbc4e45e20ade128887328f473a2a4",
+    "prior_runner_sha256": "b2c22c761d7f07542a894c5657586d189c8776eddaa4255e1031a2a2d14dadda",
+    "current_runner_sha256": "6e711630e37ad7d0252462f61dc0a759796dc0dd790ced5d844ec740402f4090",
+    "method": "현재 서비스와 2026-10-27 배포 전 롤백 보존본의 worker 및 runner 소스를 읽기 전용으로 가져와 diff했다. 서버 설정·실행 파일은 바꾸지 않았다.",
+    "observed_changes": "worker 변경은 열기/인쇄 대화상자 감시 분리와 문서 열기 종료 인계 대기, runner 변경은 감시 프로세스 종료·인계 마커와 인쇄 감시다. 비교한 두 소스 diff에 글꼴 선택 로직의 직접 변경은 없다.",
+    "qualification": "이 보존본이 #8188 job에서 실제 실행된 정확한 바이너리라는 사실은 확인하지 못했다. 감시 순서가 HFT 로딩에 영향을 주는지도 실험하지 않았으므로 출력 변화의 원인으로 단정하지 않는다."
+  },
+  "mcp_runtime_files_time_check": {
+    "date": "2026-10-29",
+    "host": "win10-hwp-convert-2024",
+    "service_account": "LocalSystem",
+    "scope": "한컴 2024 설치 Bin의 Hwp 및 글꼴 관련 파일과 Shared/Fonts의 HFT 파일 메타데이터, 2024 런타임 프로필의 private font map 메타데이터",
+    "observed_hwp_and_font_bin_latest_write": "2026-07-14 15:46:02",
+    "observed_hft_latest_write": "2023-11-06 10:16:50",
+    "runtime_font_map_sha256": "4daee6e7be713d3c6051335d82bfc8f71da28829c27480684758eb2dae7b6bed",
+    "runtime_font_map_modified": "2026-09-04 20:29:53",
+    "current_worker_exe_sha256": "8b8ac0ebf6deb5b18c1496b4c6d5211165215e973de741fd2c6cb6ea25cfefa5",
+    "rollback_worker_exe_sha256": "092d9fef8a2db57de2c3c44883b01be0daff1a14a3498586fcde21e05478972b",
+    "qualification": "파일 변경 시간과 현재 해시는 과거 시점에 같은 파일이었음을 증명하지 않는다. 이전 원 PR job의 서버 상태 파일은 남아 있지 않았고 두 worker 실행 비교도 하지 않았다. worker 교체나 서버 설정 변경 없이 확인했다."
+  },
+  "hancom_alternate_host_file_comparison": {
+    "date": "2026-10-29",
+    "hosts": [
+      "win10-ted",
+      "win10-hwp-convert-2024"
+    ],
+    "method": "SSH 읽기 전용 Get-FileHash로 양쪽 한컴 2024 설치본 및 각 작업 프로필의 PrivateFont130.dat를 비교했다.",
+    "matching_sha256": {
+      "Hwp.exe": "4b3f84c2beb6004827b09e227c6ebe7da23edab1ec4690cee4a58ce5ec3ff168",
+      "HncFontLib.dll": "56744a20eb2bbb55f0db111b0355623dc9841fbd0b4189ccfdafeefe149036d7",
+      "HncHftExtp.dll": "3296dc9581f736603b7e1b4648c1a816e4979c722f02b0d619a8a9a091202e42",
+      "HMEPO.HFT": "222fceeeffb111c095a760ee178e7c7aebf8d334cf91706658bccb4e2b1d01d4",
+      "UnlicenseFontList.ini": "a0406dd79c6d7a135df49594d6314180ad72a11921677a691bf29dee6bf46c84",
+      "PrivateFont130.dat": "4daee6e7be713d3c6051335d82bfc8f71da28829c27480684758eb2dae7b6bed"
+    },
+    "limitations": [
+      "현재 두 호스트의 선택된 파일이 동일하다는 확인이며 원 PR 당시의 호스트 상태를 증명하지 않는다.",
+      "실제 인쇄 시 폰트 선택과 두 호스트의 전체 실행 환경 일치를 증명하지 않는다.",
+      "서버나 호스트의 파일과 설정은 변경하지 않았다."
+    ]
+  },
+  "alternate_mcp_service_preflight": {
+    "date": "2026-10-29",
+    "host": "win10-ted",
+    "service": "HwpConvert2024Mcp",
+    "service_status": "Running",
+    "service_account": "LocalSystem",
+    "runner_source_sha256": "b2c22c761d7f07542a894c5657586d189c8776eddaa4255e1031a2a2d14dadda",
+    "worker_source_sha256": "2f6a1213b4fe3937ecc10aac6bc21954a577801aca93c43cc421f794128aa467",
+    "worker_binary_sha256": "7a61f1d4891028673f760bc37f387cc67719edc00598e4c2d7f2e0e95c52bdf7",
+    "worker_modified": "2026-10-20 01:18:37",
+    "primary_host": "win10-hwp-convert-2024",
+    "primary_runner_source_sha256": "6e711630e37ad7d0252462f61dc0a759796dc0dd790ced5d844ec740402f4090",
+    "primary_worker_sha256": "8b8ac0ebf6deb5b18c1496b4c6d5211165215e973de741fd2c6cb6ea25cfefa5",
+    "client_files": "두 호스트의 기존 클라이언트 설정이 같은 MCP 주소를 가리키는 것만 확인했다. 인증 값과 주소는 기록하지 않았다.",
+    "interpretation": "이전 시점 서비스가 별도 호스트에 있으나 기존 클라이언트 설정으로 그 서비스를 직접 쓰는지는 확인되지 않았다. 별도 주소를 사용한 변환 실험은 실행하지 않았고 대상 서버나 설정을 수정하지 않았다.",
+    "source_diff": "2026-10-27 직전 보존본과 비교한 결과 두 소스의 차이는 대화상자 관찰의 표시·소유자·단계 검증이며 글꼴 선택 코드 직접 차이는 없다. 정확한 당시 실행 바이너리라는 근거는 없다."
+  }
+}

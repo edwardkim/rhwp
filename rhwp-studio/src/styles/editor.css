@@ -8,11 +8,18 @@
   /* minmax(0, 1fr): 1fr(=minmax(auto,1fr))은 콘텐츠 기반 최소 크기가 한 방향
      래칫으로 작동해 창을 넓혔다 줄이면 트랙이 줄지 않는다(#1191). 최소를 0으로
      고정해 창 축소 시에도 트랙이 정상 축소되어 가운데 정렬이 유지된다. */
-  grid-template-columns: 20px minmax(0, 1fr);
+  /* 셋째 열은 오른쪽 패널(#side-panel-host) 자리다. 패널이 숨으면 auto 열은 0 이 된다. */
+  grid-template-columns: 20px minmax(0, 1fr) auto;
   grid-template-rows: 20px minmax(0, 1fr);
   flex: 1;
   overflow: hidden;
 }
+
+/* 열이 셋이 되면 자동 배치가 눈금자를 밀어내므로 네 칸을 명시한다. */
+#ruler-corner { grid-column: 1; grid-row: 1; }
+#h-ruler { grid-column: 2; grid-row: 1; }
+#v-ruler { grid-column: 1; grid-row: 2; }
+#scroll-container { grid-column: 2; grid-row: 2; }
 
 /* 눈금자 교차 코너 (좌상단) */
 #ruler-corner {

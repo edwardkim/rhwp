@@ -94,13 +94,11 @@
     "T09-J01",
     "T09-J02",
     "T09-J03",
-    "T09-J04",
     "T09-B01",
     "T09-B02",
     "T09-B03",
     "T09-B04",
     "T09-B05",
-    "T09-B06",
     "T09-B07",
     "T09-B08",
     "T10-J01",
@@ -112,7 +110,7 @@
     "T10-B03",
     "T10-B04"
   ],
-  "count": 109,
+  "count": 107,
   "excerptedFromCanonical": true,
   "fabricatedLive": false
 }

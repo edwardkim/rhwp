@@ -1,0 +1,96 @@
+{
+  "files": [
+    {
+      "file": "native-crop-silhouette.tsv",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/head/native/crop/silhouette.tsv",
+      "sha256": "2eb339aa1ace71d6f47500df3df716e5e942e2a665f65b2f75ff5baadbea1859"
+    },
+    {
+      "file": "native-crop-review.png",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/head/native/crop/review/review_001.png",
+      "sha256": "10ee5b72614887b6cb0815dca18b871656b44e776362c9c296a6706f1835e967"
+    },
+    {
+      "file": "native-crop-overlay.png",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/head/native/crop/overlay/overlay_001.png",
+      "sha256": "7abfb414730525d6fb447ae62894cf44ffd5fdb9c2d4b771de5b959c71cd8bc6"
+    },
+    {
+      "file": "native-reserved-silhouette.tsv",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/head/native/reserved/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "file": "native-reserved-review.png",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/head/native/reserved/review/review_001.png",
+      "sha256": "c2428caaeda2bb515780b91795a94c86598c7deb9fae183365a8204eb6aa47f3"
+    },
+    {
+      "file": "native-reserved-overlay.png",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/head/native/reserved/overlay/overlay_001.png",
+      "sha256": "5bfec5dfb30fc6e76399269f2e7cfef13e13436db0ef005991d683f3435090b7"
+    },
+    {
+      "file": "native-indexed-silhouette.tsv",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/head/native/indexed/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "file": "native-indexed-review.png",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/head/native/indexed/review/review_001.png",
+      "sha256": "c7a6459a78b6ff035421332e9bc68dda4cba0eca276f20274262d1118f9558a2"
+    },
+    {
+      "file": "native-indexed-overlay.png",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/head/native/indexed/overlay/overlay_001.png",
+      "sha256": "f348cfde62337d45dc343e7edb3c3a28b4399df89be5bc90da581b6b1eb1bd20"
+    },
+    {
+      "file": "wasm-crop-silhouette.tsv",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/head/wasm/crop/silhouette.tsv",
+      "sha256": "8814c50e8d49ff282e073254e407327665d39818c019fb02fb97fbd7c1bbed39"
+    },
+    {
+      "file": "wasm-crop-review.png",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/head/wasm/crop/review/review_001.png",
+      "sha256": "69e4717ee124c9bf4d681f4b98ddba3c661dfeb13e8dc01e8e6978a6ead7f0ac"
+    },
+    {
+      "file": "wasm-crop-overlay.png",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/head/wasm/crop/overlay/overlay_001.png",
+      "sha256": "dcecc58a6563fb914eb889465a4a2ec3d84574802f63887e7b83fba98f5b7b66"
+    },
+    {
+      "file": "wasm-reserved-silhouette.tsv",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/head/wasm/reserved/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "file": "wasm-reserved-review.png",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/head/wasm/reserved/review/review_001.png",
+      "sha256": "73e3353247335bb1ef47e152023340377ebc8fa8172e09fab9e92d9ecbf396f5"
+    },
+    {
+      "file": "wasm-reserved-overlay.png",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/head/wasm/reserved/overlay/overlay_001.png",
+      "sha256": "31821e3ba7e3d125e3e1df640ecd27ebdd28bc21f4ed7ddc8cc45e763feb5f72"
+    },
+    {
+      "file": "wasm-indexed-silhouette.tsv",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/head/wasm/indexed/silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "file": "wasm-indexed-review.png",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/head/wasm/indexed/review/review_001.png",
+      "sha256": "4a2cb8943ad844afee1da92fa017c860d92f5833b85fb04b9c13bf5d843d29dc"
+    },
+    {
+      "file": "wasm-indexed-overlay.png",
+      "source": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/head/wasm/indexed/overlay/overlay_001.png",
+      "sha256": "f073d5f5a0fe26053e76945a58b5633921d59c9c896401e9bd1b2a7f6fe3e3d6"
+    }
+  ],
+  "directInspection": "Native/fresh WASM의 review와 overlay에서 모든 팔레트 그림·예약색 patch·crop 경계를 확인했다. crop의 작은 경계 차이는 그대로 기록했다.",
+  "fullPrAcceptance": false
+}

@@ -1,0 +1,106 @@
+[
+  {
+    "pr": 8515,
+    "source_head": "1e16858afba62b58866aa2f7dfca925b9cd720a5",
+    "source_path": "samples/issue8513/textbox_floating_table_offset.hwpx",
+    "sha256": "fb714bedfc3adaf2a36106d21f956aadf9538dcfcd9478a2c488a97cb013b0a6",
+    "bytes": 7939,
+    "lastSavedWith": {
+      "confidence": "metadata",
+      "product": "hancom-office-2020",
+      "version": "11.0.0.3524"
+    },
+    "fonts": [
+      "함초롬돋움",
+      "함초롬바탕"
+    ],
+    "base_pages": 1
+  },
+  {
+    "pr": 8599,
+    "source_head": "0f2dd6b7fe901344538c1d21473ee67cb0672a37",
+    "source_path": "samples/issue8579/partial_table_control_only_para.hwp",
+    "sha256": "1d11a900d41c073dfd0432e37ae73dc0d24ead99f028c475be8c5e275550bff9",
+    "bytes": 15360,
+    "lastSavedWith": {
+      "confidence": "metadata",
+      "product": "hancom-office-2010",
+      "version": "8.0.0.466"
+    },
+    "fonts": [
+      "HCR Dotum",
+      "함초롬바탕"
+    ],
+    "base_pages": 2
+  },
+  {
+    "pr": 8608,
+    "source_head": "5554b6f93c5d105b305d30802ed5bd2436b83b21",
+    "source_path": "samples/issue8584/short_row_grid_r21.hwpx",
+    "sha256": "4e4108d50e0da44245b79b17458be7ecdb7d6a39ea2a44c7e0813c292885221f",
+    "bytes": 11564,
+    "lastSavedWith": {
+      "confidence": "metadata",
+      "product": "hancom-office-2024",
+      "version": "13.0.0.3622"
+    },
+    "fonts": [
+      "HCR Dotum",
+      "함초롬바탕"
+    ],
+    "base_pages": 1
+  },
+  {
+    "pr": 8608,
+    "source_head": "5554b6f93c5d105b305d30802ed5bd2436b83b21",
+    "source_path": "samples/issue8584/short_row_grid_r4.hwpx",
+    "sha256": "21ea9a9277b95ae606847b835c8c7233144dad443744b11bbc57323bb69d3981",
+    "bytes": 10619,
+    "lastSavedWith": {
+      "confidence": "metadata",
+      "product": "hancom-office-2024",
+      "version": "13.0.0.3622"
+    },
+    "fonts": [
+      "HCR Dotum",
+      "함초롬바탕"
+    ],
+    "base_pages": 1
+  },
+  {
+    "pr": 8631,
+    "source_head": "b76d7b9312815d6099b97e63923b0a2585fe03cd",
+    "source_path": "samples/issue8594/bindata_link_shift.hwp",
+    "sha256": "04f067517a604e75fd3a6b75130226af4fd7c65a27dab5859bdba87cb50856ff",
+    "bytes": 343552,
+    "lastSavedWith": {
+      "confidence": "metadata",
+      "product": "hancom-office-2020",
+      "version": "11.0.0.9083"
+    },
+    "fonts": [
+      "KoPub돋움체 Light",
+      "함초롬돋움",
+      "함초롬바탕"
+    ],
+    "base_pages": 1
+  },
+  {
+    "pr": 8656,
+    "source_head": "e635037bb95740382c0ac25c93ba103512c0c90b",
+    "source_path": "samples/issue8593/picture_soft_edge.hwp",
+    "sha256": "fb71457b094a0b534fe8ea2092ecc3a642bc1e5ea0ffe99c2915e426b6c629f4",
+    "bytes": 343552,
+    "lastSavedWith": {
+      "confidence": "metadata",
+      "product": "hancom-office-2020",
+      "version": "11.0.0.9083"
+    },
+    "fonts": [
+      "KoPub돋움체 Light",
+      "함초롬돋움",
+      "함초롬바탕"
+    ],
+    "base_pages": 1
+  }
+]

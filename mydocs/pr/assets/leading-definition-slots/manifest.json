@@ -1,0 +1,260 @@
+{
+  "code_commit": "d2a7376aa00c6b4cc2fb1a7ad84240094879d8b8",
+  "base_commit": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "fixture": "Generated minimal report with a header, implicit column definition, and a table between two text spans; no private document content.",
+  "reference_pdf": {
+    "path": "pdf/leading-definition-slots/report-implicit-column-hancom-print.pdf",
+    "producer": "Mac Hancom HWP 12.30.0, independent Print PDF of the input, 1 page",
+    "input_sha256": "28768b01550ba2596c5e2bd182454a39a6700c8789fbe95e198d83c3898c4a40"
+  },
+  "environment": {
+    "os": "Linux x86_64",
+    "rust": "1.93.1",
+    "profile": "print",
+    "compat": 2022,
+    "dpi": 96,
+    "silhouette_tolerance_px": 2,
+    "raw_gate": 90,
+    "max_regression_pp": 0.1,
+    "font": {
+      "name": "HANBatang.ttf",
+      "bytes": 28413328,
+      "sha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+      "included": false
+    }
+  },
+  "producers": {
+    "base": {
+      "native-rhwp": "44d0fc6a600753a3528f40ae528987f16d15b5bd83ca07f5b00a2ce1a84b979e",
+      "pkg/rhwp.js": "f90e8e9655657ea0f23b467ccb89b37b6af24f8f1b387dab9055dae747aea5b9",
+      "pkg/rhwp_bg.wasm": "95c1ea2dc80a4f3d0f4db28a7994b8ed180ba4dc2cfbdca91be02e6bf20676c7"
+    },
+    "candidate": {
+      "native-rhwp": "ff1d7a180c1a80e773c94e2ec199a80a52c72bac99dd0f4d7f77dbcc4ac681fb",
+      "pkg/rhwp.js": "f90e8e9655657ea0f23b467ccb89b37b6af24f8f1b387dab9055dae747aea5b9",
+      "pkg/rhwp_bg.wasm": "da5f84253202ca36a54b7ea474d619c9a0d7d13226b44d40b88faeae8f50bf1d"
+    }
+  },
+  "source_files": {
+    "src/model/paragraph.rs": "7100869a991d476b31e0ca296149420b5f31265390e8bc1f7c257d10632c7901",
+    "src/serializer/body_text.rs": "389cc912e8c4981ce0a362be7a68c25cb31bcaf1e58b273f85dcbda1d0d6714d",
+    "src/document_core/converters/hwpx_to_hwp.rs": "f3cc2df9d9daf3c6449de66e2e1f602e6081afd12c579ba6f13df0db21f51df5",
+    "tests/cases/leading_definition_slots.rs": "3d98576ed778e6a2e9591f0486fd579f6c51d4c56bcee1028cf43056f7cd75d2"
+  },
+  "validation": {
+    "default_nextest": {
+      "job": "7656fab6-abf7-470a-92bf-37b4795c378b",
+      "passed": 11571,
+      "skipped": 45,
+      "failed": 0,
+      "seconds": 733.188,
+      "raw_log_sha256": "f369569f6f7efdd357398b7d28471835dfee3e198f4c3fc57e4d265a699dea4c"
+    },
+    "native": {
+      "job": "a608d701-8784-4016-a17c-3544c4943bd8",
+      "clippy": true,
+      "lib_passed": 4041,
+      "lib_ignored": 12,
+      "leading_definition_slots": {
+        "passed": 3,
+        "filtered": 253
+      },
+      "issue2225": {
+        "passed": 2,
+        "filtered": 270
+      },
+      "p37_pdf": {
+        "passed": 14,
+        "filtered": 266
+      },
+      "scope": "Completed test stages from original Hub stdout. Overall job failed during browser/output collection; not an overall success.",
+      "raw_log_sha256": "ad854a0ec247384c01ccc03ccdf7726fead7034762c948cc858e5fbe18db07c4"
+    },
+    "docs": {
+      "passed": 8,
+      "ignored": 3
+    },
+    "visual": {
+      "job": "a1d3ca4c-7249-40b9-af95-0ee539205971",
+      "state": "succeeded",
+      "downloaded_files_verified": 222,
+      "rows": 8,
+      "candidate_raw_gate_pass": true,
+      "regression_rows": 0,
+      "base_saved_failures_preserved": true,
+      "raw_log_sha256": "532b99c6b4982551d7b6a21e87338d56a0301c57e73afcec9dbee71206474cf5"
+    }
+  },
+  "manual_review": {
+    "scope": "One-page input and saved HWP; Native and WASM review/overlay. Table remains between the prefix and suffix; text and table boundaries retained. Raw100 is a 2px silhouette result, not pixel identity.",
+    "hancom": "Opened candidate native-saved.hwp in Mac Hancom: 1 page, prefix/table/suffix preserved; closed without saving. Native and WASM saved HWP bytes identical.",
+    "candidate_saved_sha256": "567964173536addd7ffdf3014e9f247387b8381c3217802383a4a33ebff6025d"
+  },
+  "limits": [
+    "No claim of every document or HWP3 oracle corpus coverage.",
+    "No app engine pin or release; candidate is not merged upstream.",
+    "Private font programs, executable binaries and WASM packages are excluded."
+  ],
+  "payloads": [
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/input/report-implicit-column.hwpx",
+      "bytes": 7969,
+      "sha256": "28768b01550ba2596c5e2bd182454a39a6700c8789fbe95e198d83c3898c4a40"
+    },
+    {
+      "path": "pdf/leading-definition-slots/report-implicit-column-hancom-print.pdf",
+      "bytes": 13991,
+      "sha256": "8e7af1fcc369dbc45405bd0073850d085122a9d3f9f637678f119b324831d0d7"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/visual-rows.json",
+      "bytes": 3120,
+      "sha256": "b5ebaaf236c3d082f9919ce33d7fb1e46a8feae96e66c347755a2c1777068a82"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/full-regression.json",
+      "bytes": 756,
+      "sha256": "04bc377718526911432af7cbea7e949f64b4943bcf3741ac4ce065b18f4fbdb0"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/base/export-proof.json",
+      "bytes": 425,
+      "sha256": "51d574776ecf511ebe2de8d64e3f79493017718a4a9e3c3cee003202293b6698"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/base/saved.hwp",
+      "bytes": 7168,
+      "sha256": "b11600e8601d73770d6824663ee70429d87cb447afd3f9baf4d53194afe9fc22"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/base/native/input/silhouette.tsv",
+      "bytes": 138,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/base/native/input/run_manifest.json",
+      "bytes": 2808,
+      "sha256": "6112899e9cb970bb1f0fb34fcbe0980ae16b416bfa46ea5a79927d41fdddeb9f"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/base/native/saved/silhouette.tsv",
+      "bytes": 136,
+      "sha256": "163c8715e21ad1c691322e3274ef2d09b981fae43b0cd9f14a78acdc6c1a6c4d"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/base/native/saved/run_manifest.json",
+      "bytes": 2799,
+      "sha256": "828ded5d4c6259408714170c5687b7bcb506ffdcab59cd58d41bb0660f584cf1"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/base/native/saved-review.png",
+      "bytes": 61884,
+      "sha256": "5fa323cd523ec4f3ed7c8fa5f4deabb7efd6f40a53c11d4e80c9069f9da379c5"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/base/native/saved-overlay.png",
+      "bytes": 35632,
+      "sha256": "aed4eb483122c26847579e4916ebabdfa1d220e3a87d8aa195c52cb53ddf14dc"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/base/wasm/input/silhouette.tsv",
+      "bytes": 138,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/base/wasm/input/run_manifest.json",
+      "bytes": 3657,
+      "sha256": "58421ef73aab436eca64746cffacd0fe1ac346701bb9659ba299d4ca89534bdd"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/base/wasm/saved/silhouette.tsv",
+      "bytes": 136,
+      "sha256": "35f494341fdbb20b65d8199e87d914d21ab83669f711c1e8e41002b9214b0cd6"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/base/wasm/saved/run_manifest.json",
+      "bytes": 3646,
+      "sha256": "eacaf980d6c4215189096686f88e114c7c5b96048f16b613c29a3092660f449b"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/base/wasm/saved-review.png",
+      "bytes": 63304,
+      "sha256": "e0d87852ac6ab10a168255a84cfc882552ef44dd9428c1a6273cb8fbb768b450"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/base/wasm/saved-overlay.png",
+      "bytes": 37086,
+      "sha256": "17ffda34c14adab59d1093f34d3a1dbf9a91f5927d2db344aa6443b80c87d6ae"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/candidate/export-proof.json",
+      "bytes": 428,
+      "sha256": "8fde809b93186824db5e60541b3d04215557cf2087c14926de852ce010befe7a"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/candidate/saved.hwp",
+      "bytes": 7168,
+      "sha256": "567964173536addd7ffdf3014e9f247387b8381c3217802383a4a33ebff6025d"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/candidate/native/input/silhouette.tsv",
+      "bytes": 138,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/candidate/native/input/run_manifest.json",
+      "bytes": 2818,
+      "sha256": "df461defad3a850ec1f8fd98ed8a0dc4133e84b8b5ca0154e5e533a8d17b11aa"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/candidate/native/saved/silhouette.tsv",
+      "bytes": 138,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/candidate/native/saved/run_manifest.json",
+      "bytes": 2814,
+      "sha256": "413efb272be51b574a928ac9701432d6dd6c7851af5e5e3e6dae11d84b66763c"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/candidate/native/saved-review.png",
+      "bytes": 60930,
+      "sha256": "f4796c7fc62f7b599278d8ddd84a7b79b6523a586636355e3f3c4b40c356b769"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/candidate/native/saved-overlay.png",
+      "bytes": 34721,
+      "sha256": "64ff06550d57df91ec99c198e7e6a40960fa658043210ca34ae0b6030ea6add7"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/candidate/wasm/input/silhouette.tsv",
+      "bytes": 138,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/candidate/wasm/input/run_manifest.json",
+      "bytes": 3677,
+      "sha256": "ee439caa5ff1c1ba2c30e905291a3bccb5f5e3a912a2a3fc8c01471591be05e6"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/candidate/wasm/saved/silhouette.tsv",
+      "bytes": 138,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/candidate/wasm/saved/run_manifest.json",
+      "bytes": 3671,
+      "sha256": "75a1ab2cc901725bda9ff5367403ee446dd8e26e326a611ab85f1ac3e465b53c"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/candidate/wasm/saved-review.png",
+      "bytes": 63113,
+      "sha256": "a809bdba79c273490aa91090278b724ff25d3b333b5bcba847bad593e46ad233"
+    },
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/candidate/wasm/saved-overlay.png",
+      "bytes": 37133,
+      "sha256": "33c30c7b521ad4f24539b10d91fa0d997569e40aaf0ba8a16495cb66725e4d65"
+    }
+  ]
+}

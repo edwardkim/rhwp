@@ -1,0 +1,30 @@
+[
+  {
+    "input": "samples/issue6172/2599643_port_call_form.hwp",
+    "input_sha256": "94b705e86e3894c14d38ffa8469e662426e2ddc3b86aa2013f99a4999afd2f1e",
+    "pdf": "pdf/issue7642-failed-inputs-followup-20261011/2599643_port_call_form-2020.pdf",
+    "pdf_sha256": "3e23db3c4d9da6a5163a16b59ab7e803b5e15e1ff1a24993cd167a1f28dc5b1a",
+    "pages": 1,
+    "job_id": "3b619400-ca88-4d7f-9ef9-afb1add3778e",
+    "print": {
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    }
+  },
+  {
+    "input": "samples/issue5699/20099369_yeongwol_forms.hwp",
+    "input_sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+    "pdf": "pdf/issue7642-failed-inputs-followup-20261011/20099369_yeongwol_forms-2020.pdf",
+    "pdf_sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+    "pages": 4,
+    "job_id": "96e81b5a-c911-448f-aab4-8f7deb383ebc",
+    "print": {
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    }
+  }
+]

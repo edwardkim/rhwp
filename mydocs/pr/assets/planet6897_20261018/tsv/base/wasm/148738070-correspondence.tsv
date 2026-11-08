@@ -1,0 +1,10 @@
+page	rhwp_present	pdf_present	correspondence_status	silhouette_raw_match_percent
+1	1	1	same_number_raster_comparison	88.14623
+2	1	1	same_number_raster_comparison	81.11269
+3	1	1	same_number_raster_comparison	75.97021
+4	1	1	same_number_raster_comparison	51.13841
+5	1	1	same_number_raster_comparison	14.48102
+6	1	1	same_number_raster_comparison	2.38254
+7	1	1	same_number_raster_comparison	27.74552
+8	1	0	missing_pdf_page	
+9	1	0	missing_pdf_page	

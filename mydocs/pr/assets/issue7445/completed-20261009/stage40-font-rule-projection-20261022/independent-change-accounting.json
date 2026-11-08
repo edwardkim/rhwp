@@ -1,0 +1,164 @@
+{
+  "sealedV1": 830,
+  "recordedActiveDelta": 15,
+  "expectedActive": 845,
+  "sealedNameProjection": 171,
+  "recordedNameDelta": 7,
+  "expectedNameProjection": 178,
+  "changes": [
+    {
+      "file": "assets/font-rules/changes/issue-7023-batangche-serif-supply.json",
+      "sha256": "3056d9ec90a57a7d27926586fd2ec6bb92fc0303c233cf341eec6d71349a80ac",
+      "activeDelta": 0,
+      "projection": "canvas2d-webfont",
+      "operations": 1
+    },
+    {
+      "file": "assets/font-rules/changes/issue-6936-new-gulim-face-identity.json",
+      "sha256": "3004278552553a190890b32da12006e83a51786028840309011b0d3c66f327d0",
+      "activeDelta": 0,
+      "projection": "rust-layout-name",
+      "operations": 1
+    },
+    {
+      "file": "assets/font-rules/changes/issue-4969-oldhangul-license-webfont.json",
+      "sha256": "212b6169582fb2b18fc875b6f9b0094e24b1aa5d68dc57ef256c125110e6a0e2",
+      "activeDelta": 0,
+      "projection": "canvas2d-webfont",
+      "operations": 1
+    },
+    {
+      "file": "assets/font-rules/changes/issue-4969-oldhangul-license-canvaskit.json",
+      "sha256": "2bc3932d2ee31d52f53282972d3a3ad081b215c1c1c9bbfa4d0067cddddb3faf",
+      "activeDelta": 0,
+      "projection": "canvaskit-sfnt",
+      "operations": 1
+    },
+    {
+      "file": "assets/font-rules/changes/issue-7196-ygodic230-metric-name.json",
+      "sha256": "32ba0e30b0bbb23fa29f46d56ac2dc6ffd80bfb16315090be1886df0b74cccf9",
+      "activeDelta": 1,
+      "projection": "rust-layout-metric",
+      "operations": 1
+    },
+    {
+      "file": "assets/font-rules/changes/issue-5884-noto-symbols2-webfont.json",
+      "sha256": "269c36ec10b2eae9af54e6630931875a5bfb9627be9881285eeb48d216dd82f4",
+      "activeDelta": 1,
+      "projection": "canvas2d-webfont",
+      "operations": 1
+    },
+    {
+      "file": "assets/font-rules/changes/issue-5884-noto-symbols2-canvaskit.json",
+      "sha256": "0513fa026fc89793049314e945c94aff589961bfc9c6e8b7e996fcc58bda4be9",
+      "activeDelta": 1,
+      "projection": "canvaskit-sfnt",
+      "operations": 1
+    },
+    {
+      "file": "assets/font-rules/changes/issue-7958-h2hdrm-postscript-identity.json",
+      "sha256": "d04a756721112256a849a0fbee447d615921cbc8ac926e4ee99c1bb08da49d26",
+      "activeDelta": 2,
+      "projection": "rust-layout-name",
+      "operations": 2
+    },
+    {
+      "file": "assets/font-rules/changes/issue-7959-malgun-postscript-identity.json",
+      "sha256": "9af4b0a40b0109ff7193bcd69205ed95b1e6474498b7fc5948aa44bb1d022849",
+      "activeDelta": 1,
+      "projection": "rust-layout-name",
+      "operations": 1
+    },
+    {
+      "file": "assets/font-rules/changes/issue-7966-postscript-layout-name.json",
+      "sha256": "63aaae1650a7df78feb9d16e20c679cc24499559c98ed92012430ff8c0daebba",
+      "activeDelta": 3,
+      "projection": "rust-layout-name",
+      "operations": 3
+    },
+    {
+      "file": "assets/font-rules/changes/issue-7966-postscript-layout-metric.json",
+      "sha256": "11fae7cb24b36e78ae21025701378a9eb8b81f93cc0c3603a76e9bd05a56a7b1",
+      "activeDelta": 2,
+      "projection": "rust-layout-metric",
+      "operations": 2
+    },
+    {
+      "file": "assets/font-rules/changes/issue-7445-public-batang-metric-name.json",
+      "sha256": "0381893ad6f1771e3e889916a4a2e38006e7762ae0893ca67ff1b8d1545c95de",
+      "activeDelta": 1,
+      "projection": "rust-layout-metric",
+      "operations": 1
+    },
+    {
+      "file": "assets/font-rules/changes/issue-7445-public-batang-webfont-supply.json",
+      "sha256": "66614284a8def9bffcbdab99449cd2b95671282899b5afb508c9f790ac43abb9",
+      "activeDelta": 1,
+      "projection": "canvas2d-webfont",
+      "operations": 1
+    },
+    {
+      "file": "assets/font-rules/changes/issue-7445-public-batang-canvaskit-supply.json",
+      "sha256": "38b56482df8a3a8774e9babbf332b1825a560f7d898c6e7eb9d755927e8a0eac",
+      "activeDelta": 1,
+      "projection": "canvaskit-sfnt",
+      "operations": 1
+    },
+    {
+      "file": "assets/font-rules/changes/issue-7445-missing-title-public-fallback.json",
+      "sha256": "1a2bd7909e9bcb3b9433a21b6a9ec8ead1499f0c4a3f288fb30936a2473d361f",
+      "activeDelta": 1,
+      "projection": "rust-layout-name",
+      "operations": 1
+    }
+  ],
+  "observedActive": 846,
+  "unrecorded": [
+    {
+      "conditions": {
+        "altType": "1",
+        "availability": "nonembedded-ttf-document-substitute",
+        "languageSlot": "all"
+      },
+      "decisionPlane": "layout-name",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-7445.document-substitute-lookup"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-7445.document-substitute-lookup",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 178,
+      "projections": [
+        {
+          "id": "rust-layout-name",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "style-fallback",
+      "ruleId": "rule.rust-style-resolution.8f1a484b6e8dff748728",
+      "selectionTupleSha256": "94ad1b492b12f71df012d3caf935ed692a288c9883e31c721c4724966d2d9adf",
+      "sourceBoundaryId": "rust-style-resolution.document-substitute",
+      "sourceFace": "HCR Batang",
+      "status": "active",
+      "supply": null,
+      "targetFaceOrPolicy": "Haansoft Batang"
+    }
+  ],
+  "missing": [],
+  "resolution": {
+    "originalCommit": "87e94094cb7eb61578a61920c7c51aa70d36fa39",
+    "omittedTestChangeSet": "assets/font-rules/changes/issue-7445-document-substitute-lookup.json",
+    "recordedDelta": 1,
+    "expectedActiveAfterIncludingRecordedChange": 846,
+    "expectedLayoutNameAfterIncludingRecordedChange": 179,
+    "unrecordedMeans": "이전 Rust 검사 목록 기준의 누락이며 실제 change set은 원 커밋에 존재한다."
+  }
+}

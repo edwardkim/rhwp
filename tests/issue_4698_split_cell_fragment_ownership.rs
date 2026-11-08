@@ -1,118 +1,154 @@
-//! Issue #4698: 쪽 경계에 걸친 병합(rowspan) 셀의 문단이 조각별로 나뉘어 소유되는지 회귀 가드.
-//!
-//! 재현 문서 (tracked 공개 샘플): `samples/kps-ai.hwp` (HWP5).
-//! 한컴 정답지: `pdf/kps-ai-2022.pdf` — `- 62 -` 쪽 하단 라벨은 "3. 민간 / 소프트웨어" 까지,
-//! 이어지는 `- 63 -` 쪽 상단이 "시장침해 / 가능성" 을 받는다.
-//! (0-based 페이지 인덱스로는 각각 64, 65)
-//!
-//! 결함 본질: 셀[39](r=18, rs=6)은 기하만 두 조각으로 나뉘고 **내용은 나뉘지 않았다**.
-//! 앞 조각이 문단 5 개 전부를 받아 조각 하단(1033.8px)을 넘긴 줄이 Cell clip 으로 사라지고,
-//! 뒤 조각은 [#1073] "라벨은 앞 쪽에 이미 렌더됨" 가정으로 통째 공란화되어 `시장침해` 4 자가
-//! 어느 쪽에도 남지 않았다.
-//! 정정: 저장 `LINE_SEG.vpos` 재시작(= 한컴 자신의 조각 경계)대로 문단을 조각에 배분한다.
-//!
-//! SVG 는 글리프마다 `<text>` 를 방출하므로 문자열 검색만으로는 같은 쪽의 다른 셀("민간
-//! 소프트웨어 시장 침해 가능성 없음")과 구분되지 않는다. 그래서 좌표로 판정한다 — 이 라벨
-//! 열은 x < 175px 이고, 조각 경계는 앞 쪽 셀 하단 1033.8px / 뒤 쪽 셀 상단 134.2px 이다.
+//! 독립 Print65/66쪽의 병합 라벨은 원본 셀과 같은 내용 컷을 이어받는다.
+//! 고정 SVG 좌표 대신 바깥 표 → 소유 셀 → 안쪽 표 → 병합 셀의 경로를 따른다.
+//! v448 Native/fresh 전77쪽 최저90.85010%, 누락·미달0, 전쪽 RGBA 동일.
 
-use std::fs;
+use rhwp::document_core::DocumentCore;
+use rhwp::model::{control::Control, paragraph::Paragraph, table::Cell};
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use std::path::Path;
 
-/// 라벨 열 우측 경계(px) — 이 안쪽 글리프만 병합 라벨 셀 소속이다.
-const LABEL_COLUMN_RIGHT: f64 = 175.0;
-/// 앞 조각 라벨 셀 하단(px).
-const FIRST_FRAGMENT_CELL_BOTTOM: f64 = 1033.8;
-/// 뒤 조각 라벨 셀 상단 + 한 줄 여유(px).
-const CONTINUATION_LABEL_TOP_BAND: f64 = 200.0;
-const FIRST_FRAGMENT_PAGE: u32 = 64;
-const CONTINUATION_FRAGMENT_PAGE: u32 = 65;
-
-fn load_doc(rel: &str) -> rhwp::wasm_api::HwpDocument {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(rel);
-    let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {}", rel, e));
-    rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse")
+fn compact(text: &str) -> String {
+    text.chars().filter(|ch| !ch.is_whitespace()).collect()
 }
 
-/// `<text ... translate(x,y) ...>내용</text>` 을 (x, y, 내용) 으로 훑는다.
-fn glyphs(svg: &str) -> Vec<(f64, f64, String)> {
-    let mut out = Vec::new();
-    let mut rest = svg;
-    while let Some(open) = rest.find("<text") {
-        let Some(gt) = rest[open..].find('>') else {
-            break;
-        };
-        let tag = &rest[open..open + gt];
-        let after = &rest[open + gt + 1..];
-        let Some(close) = after.find("</text>") else {
-            break;
-        };
-        let text = after[..close].to_string();
-        rest = &after[close + "</text>".len()..];
-        let Some(tr) = tag.find("translate(") else {
-            continue;
-        };
-        let inner = &tag[tr + "translate(".len()..];
-        let Some(end) = inner.find(')') else { continue };
-        let mut parts = inner[..end].split(',');
-        let (Some(x), Some(y)) = (parts.next(), parts.next()) else {
-            continue;
-        };
-        if let (Ok(x), Ok(y)) = (x.trim().parse::<f64>(), y.trim().parse::<f64>()) {
-            out.push((x, y, text));
+#[derive(Clone, Copy)]
+struct Owner {
+    pi: usize,
+    ci: usize,
+    row: u16,
+    col: u16,
+}
+
+fn source(paragraphs: &[Paragraph]) -> Option<(Vec<Owner>, &Cell)> {
+    for (pi, paragraph) in paragraphs.iter().enumerate() {
+        for (ci, control) in paragraph.controls.iter().enumerate() {
+            let Control::Table(table) = control else {
+                continue;
+            };
+            for cell in &table.cells {
+                let owner = Owner {
+                    pi,
+                    ci,
+                    row: cell.row,
+                    col: cell.col,
+                };
+                let text: String = cell.paragraphs.iter().map(|p| compact(&p.text)).collect();
+                if text == "3.민간소프트웨어시장침해가능성" {
+                    return Some((vec![owner], cell));
+                }
+                if let Some((mut path, label)) = source(&cell.paragraphs) {
+                    path.insert(0, owner);
+                    return Some((path, label));
+                }
+            }
         }
     }
-    out
+    None
 }
 
-/// 라벨 열(x < 175) 안에서 주어진 y 구간에 있는 글자들.
-fn label_column_chars(svg: &str, y_min: f64, y_max: f64) -> String {
-    glyphs(svg)
+fn walk<'a>(node: &'a RenderNode, nodes: &mut Vec<&'a RenderNode>) {
+    nodes.push(node);
+    for child in &node.children {
+        walk(child, nodes);
+    }
+}
+
+fn owned_cell<'a>(root: &'a RenderNode, path: &[Owner]) -> &'a RenderNode {
+    let mut scope = root;
+    for owner in path {
+        let mut nodes = Vec::new();
+        walk(scope, &mut nodes);
+        let table = nodes
+            .into_iter()
+            .find(|n| {
+                matches!(&n.node_type,
+            RenderNodeType::Table(t) if t.para_index == Some(owner.pi)
+                && t.control_index == Some(owner.ci))
+            })
+            .expect("원본 경로의 표 조각");
+        scope = table
+            .children
+            .iter()
+            .find(|n| {
+                matches!(&n.node_type,
+            RenderNodeType::TableCell(c) if c.row == owner.row && c.col == owner.col)
+            })
+            .expect("원본 경로의 소유 셀");
+    }
+    scope
+}
+
+fn text_inside(cell: &RenderNode) -> String {
+    let mut nodes = Vec::new();
+    walk(cell, &mut nodes);
+    nodes
         .into_iter()
-        .filter(|(x, y, _)| *x < LABEL_COLUMN_RIGHT && *y >= y_min && *y <= y_max)
-        .map(|(_, _, t)| t)
-        .collect::<String>()
-        .chars()
-        .filter(|c| !c.is_whitespace())
+        .filter_map(|node| {
+            let RenderNodeType::TextRun(run) = &node.node_type else {
+                return None;
+            };
+            if !run.text.trim().is_empty() {
+                assert!(
+                    node.bbox.y >= cell.bbox.y - 1e-8
+                        && node.bbox.y + node.bbox.height <= cell.bbox.y + cell.bbox.height + 1e-8,
+                    "글줄은 자신의 병합 셀 조각 안에 표시되어야 한다"
+                );
+            }
+            Some(compact(&run.text))
+        })
         .collect()
 }
 
-/// 앞 조각은 자기 몫(`3. 민간 / 소프트웨어`)만 받고, 셀 하단을 넘겨 그리지 않는다.
-#[test]
-fn first_fragment_keeps_only_its_own_paragraphs() {
-    let doc = load_doc("samples/kps-ai.hwp");
-    let svg = doc
-        .render_page_svg_native(FIRST_FRAGMENT_PAGE)
-        .expect("render first fragment page");
-
-    let own = label_column_chars(&svg, 900.0, FIRST_FRAGMENT_CELL_BOTTOM);
-    assert!(
-        own.contains("민간") && own.contains("소프트웨어"),
-        "앞 조각(page {FIRST_FRAGMENT_PAGE}) 라벨 셀에 `3. 민간 / 소프트웨어` 누락 — 조각 배분 회귀 (실측: {own:?})"
+fn check_fragments() -> (String, String) {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/kps-ai.hwp");
+    let core = DocumentCore::from_bytes(&std::fs::read(path).unwrap()).unwrap();
+    let (owners, original) = source(&core.document().sections[0].paragraphs).unwrap();
+    let reset = original
+        .paragraphs
+        .windows(2)
+        .position(|pair| {
+            pair[0]
+                .line_segs
+                .last()
+                .zip(pair[1].line_segs.first())
+                .is_some_and(|(before, after)| after.vertical_pos < before.vertical_pos)
+        })
+        .expect("독립 Print와 대응하는 원본 문단의 저장 줄 재시작")
+        + 1;
+    let expected_first: String = original.paragraphs[..reset]
+        .iter()
+        .map(|p| compact(&p.text))
+        .collect();
+    let expected_next: String = original.paragraphs[reset..]
+        .iter()
+        .map(|p| compact(&p.text))
+        .collect();
+    assert_eq!(expected_first, "3.민간소프트웨어");
+    assert_eq!(expected_next, "시장침해가능성");
+    let first = core.build_page_render_tree(64).unwrap();
+    let next = core.build_page_render_tree(65).unwrap();
+    let first_text = text_inside(owned_cell(&first.root, &owners));
+    let next_text = text_inside(owned_cell(&next.root, &owners));
+    assert_eq!(
+        first_text.clone() + &next_text,
+        original
+            .paragraphs
+            .iter()
+            .map(|p| compact(&p.text))
+            .collect::<String>(),
+        "병합 라벨의 순서·누락·중복을 함께 검사한다"
     );
-
-    let overflow = label_column_chars(&svg, FIRST_FRAGMENT_CELL_BOTTOM, f64::MAX);
-    assert!(
-        overflow.is_empty(),
-        "앞 조각(page {FIRST_FRAGMENT_PAGE})이 다음 쪽 소유 문단을 셀 하단 아래로 흘려보냈다 (실측: {overflow:?})"
-    );
+    (first_text, next_text)
 }
 
-/// 뒤 조각은 공란이 아니라 `시장침해 / 가능성` 을 상단에서 받는다.
+#[test]
+fn first_fragment_does_not_spill_continuation_paragraphs() {
+    let (first, _) = check_fragments();
+    assert_eq!(first, "3.민간소프트웨어");
+}
+
 #[test]
 fn continuation_fragment_receives_the_remaining_paragraphs() {
-    let doc = load_doc("samples/kps-ai.hwp");
-    let svg = doc
-        .render_page_svg_native(CONTINUATION_FRAGMENT_PAGE)
-        .expect("render continuation fragment page");
-
-    let top = label_column_chars(&svg, 0.0, CONTINUATION_LABEL_TOP_BAND);
-    assert!(
-        top.contains("시장침해"),
-        "연속(page {CONTINUATION_FRAGMENT_PAGE}) 라벨 셀 상단이 `시장침해` 를 받지 못했다 — \
-         병합 라벨 공란화(#1073) 회귀로 4 자가 어느 쪽에도 남지 않는다 (실측: {top:?})"
-    );
-    assert!(
-        top.contains("가능성"),
-        "연속(page {CONTINUATION_FRAGMENT_PAGE}) 라벨 셀 상단에 `가능성` 누락 (실측: {top:?})"
-    );
+    let (_, next) = check_fragments();
+    assert_eq!(next, "시장침해가능성");
 }

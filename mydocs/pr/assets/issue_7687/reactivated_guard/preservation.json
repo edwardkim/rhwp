@@ -1,0 +1,38 @@
+{
+  "status": "exact_reactivated_guard_archived_and_removed_healthy_synthetic_guard_retained",
+  "classification": "new rendering guard reactivated an already deferred original; refuse unqualified new guard rather than lowering its assertions",
+  "user_scope_instruction": "이미 이관한 것은 제외",
+  "source_pr": 8005,
+  "applied_commit": "fe46e0698603ea22d2fcbed3e801921091cd7e86",
+  "fixed_base": "2e3b4f880bd11d35398e6ea0100846611f13a72d",
+  "test_present_on_fixed_base": false,
+  "existing_issue": 7687,
+  "original_source": "tests/cases/issue_7687_empty_host_multi_float_gap.rs",
+  "source_blob": "51f03fb7336f58762925361384abeadb266b5362",
+  "source_sha256": "86c029d77872bcb111379f5c482816111b2fe3eeea0561a48cc269f6e23beed7",
+  "archive": "mydocs/pr/assets/issue_7687/reactivated_guard/issue_7687_empty_host_multi_float_gap.rs.txt",
+  "archive_sha256": "86c029d77872bcb111379f5c482816111b2fe3eeea0561a48cc269f6e23beed7",
+  "input": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+  "previously_archived_input": "mydocs/pr/assets/issue7445/한글문서파일형식_5.0_revision1.3.hwp",
+  "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+  "independent_pdf": "pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+  "pdf_sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+  "prior_preservation_ledger": "mydocs/pr/assets/issue7445/format_spec13_test_removal_validation.json",
+  "new_source_pr_admitted_raw_native": 81.2,
+  "new_source_pr_admitted_raw_wasm": 81.8,
+  "base_page_count": 72,
+  "current_page_count": 74,
+  "pdf_page_count": 71,
+  "whole_base_sweep": "aborted before TSV due page count mismatch; no invented raw minimum",
+  "remove_only": [
+    "hwpspec_empty_host_lines_fill_gap_and_title_clears_second_table"
+  ],
+  "retain": [
+    "synthetic_empty_host_cases_follow_hancom_gap_rule",
+    "all helpers shared by the synthetic cases",
+    "unrelated parser/IR/source marker/serializer tests",
+    "shared original and independent PDF"
+  ],
+  "restore_when": "same original matches independent PDF page count and all-page Native/fresh WASM raw minimum90 plus direct inspection; select by content ownership and add qualified key page guards",
+  "active_removal_parent": "e271ec080e4ac21f70b64e59768a546ddbca895c"
+}

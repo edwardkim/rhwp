@@ -26,6 +26,7 @@ impl TypesetEngine {
         endnote_shape: Option<&FootnoteShape>,
         endnote_flow_profile: Option<EndnoteFlowProfile>,
         compact_endnote_separator_profile: bool,
+        separator_origin: Option<f64>,
         emitted_endnote_count: usize,
         last_render_endnote_para_local_idx: Option<usize>,
         cleared_single_line_internal_rewind_split: bool,
@@ -42,11 +43,40 @@ impl TypesetEngine {
             mut emitted_endnote_separator,
             mut current_endnote_had_inline_object_vpos_overestimate,
         } = carry;
+        let mut reserved_tail_spacing_px = 0.0;
+        if emitted_endnote_count > 0
+            && endnote_shape.is_some_and(|shape| endnote_between_notes_margin(shape) == 0)
+        {
+            if let Some(index) = last_render_endnote_para_local_idx {
+                let reclaimed =
+                    st.reclaim_endnote_tail_spacing(index, paragraphs.len() + index, self.dpi);
+                // 다음 미주의 저장 좌표 기준과 현재 단의 예약 공간은 같은 회수량을 쓴다.
+                // 앞 문단의 내용 끝과 내부 줄 원점은 이동하지 않는다.
+                vpos_offset = vpos_offset.saturating_sub(reclaimed);
+                prev_en_bottom_vpos = prev_en_bottom_vpos.map(|v| v.saturating_sub(reclaimed));
+            }
+        }
         if !emitted_endnote_separator {
             if let (Some(shape), Some(profile)) = (endnote_shape, endnote_flow_profile) {
                 let sep_height = profile.separator_height_px(self.dpi);
-                if sep_height > 0.0 {
+                // 새 쪽 첫 미주는 본문과 나눌 경계가 없다. 같은 쪽 본문 뒤에만
+                // 구분선과 위/아래 여백을 예약한다. 높이가 0이어도 선은 표시한다.
+                if !st.current_items.is_empty() {
+                    if sep_height == 0.0 {
+                        let trailing =
+                            crate::renderer::note_separator::completed_body_tail_spacing_hu(
+                                &st.current_items,
+                                paragraphs,
+                            );
+                        st.reclaim_flow_by(hwpunit_to_px(trailing, self.dpi));
+                        vpos_offset = vpos_offset.saturating_sub(trailing);
+                        prev_en_bottom_vpos =
+                            prev_en_bottom_vpos.map(|v| v.saturating_sub(trailing));
+                        prev_en_content_bottom_vpos =
+                            prev_en_content_bottom_vpos.map(|v| v.saturating_sub(trailing));
+                    }
                     st.append_item(PageItem::EndnoteSeparator {
+                        flow_origin: separator_origin,
                         separator_length: shape.separator_length,
                         margin_above: shape.separator_above_margin_hu(),
                         margin_below: endnote_separator_below_margin(shape),
@@ -54,13 +84,13 @@ impl TypesetEngine {
                         line_width: shape.separator_line_width,
                         color: shape.separator_color,
                     });
-                    st.mark_endnote_flow();
                     if !profile.compact_separator_below {
                         st.advance_flow_by(sep_height);
                         st.record_column_flow_origin(st.current_height);
                     }
                 }
             }
+            st.mark_endnote_flow();
             emitted_endnote_separator = true;
         }
         let rewind_group_advance_threshold = if st.current_column + 1 < st.col_count {
@@ -254,6 +284,9 @@ impl TypesetEngine {
             && !zero_between_question_group_title_tail
             && !visible_large_between_question_group_title_tail
             && st.current_height > st.available_height() * rewind_group_advance_threshold
+            // 앞 미주의 좌표 되감기로 다음 미주 전체의 분할 금지를 추정하지 않는다.
+            // 분할 가능한 내용은 아래의 문단별 fit이 남은 단 공간을 소비한다.
+            && self.endnote_is_indivisible(en_ctrl, styles, st)
         {
             let group_first = en_ctrl
                 .paragraphs
@@ -464,14 +497,6 @@ impl TypesetEngine {
                             && continued_endnote_tail_before_new_note
                             && st.current_height > st.available_height() * 0.70
                             && st.current_height < st.available_height() * 0.75;
-                        let skip_default_mid_column_between_notes_trailing = endnote_flow_profile
-                            .map(EndnoteFlowProfile::visible_nonzero_default_between_notes)
-                            .unwrap_or(false)
-                            && boundary_prev_endnote_had_vpos_rewind
-                            && continued_endnote_tail_before_new_note
-                            && st.current_column + 1 >= st.col_count
-                            && st.current_height > st.available_height() * 0.25
-                            && st.current_height < st.available_height() * 0.50;
                         let skip_absorbed_render_between_notes_trailing = {
                             let absorbed_visible_profile = endnote_flow_profile
                                 .map(|profile| {
@@ -480,8 +505,6 @@ impl TypesetEngine {
                                 .unwrap_or(false);
                             let absorbed_tail_continues_at_column_top =
                                 st.current_height < st.available_height() * 0.25;
-                            let absorbed_tail_near_column_bottom =
-                                st.current_height > st.available_height() * 0.65;
                             let absorbed_short_tac_tail = st
                                 .endnote_paragraphs
                                 .get(prev_local_idx)
@@ -506,14 +529,11 @@ impl TypesetEngine {
                                 && boundary_prev_endnote_had_vpos_rewind
                                 && continued_endnote_tail_before_new_note
                                 && (absorbed_tail_continues_at_column_top
-                                    || (st.current_column + 1 >= st.col_count
-                                        && absorbed_tail_near_column_bottom)
                                     || (absorbed_short_tac_tail
                                         && st.current_height > st.available_height() * 0.80))
                         };
                         let skip_render_between_notes_trailing =
                             skip_default_render_between_notes_trailing
-                                || skip_default_mid_column_between_notes_trailing
                                 || skip_absorbed_render_between_notes_trailing;
                         if st
                             .endnote_paragraphs
@@ -531,9 +551,11 @@ impl TypesetEngine {
                                     } else {
                                         between_notes
                                     };
-                                st.apply_endnote_render_tail_spacing(
+                                reserved_tail_spacing_px = st.apply_endnote_tail_spacing(
                                     prev_local_idx,
+                                    paragraphs.len() + prev_local_idx,
                                     render_between_notes,
+                                    self.dpi,
                                 );
                             }
                         }
@@ -543,6 +565,7 @@ impl TypesetEngine {
         }
         (
             EndnoteEmitVars {
+                reserved_tail_spacing_px,
                 boundary_prev_endnote_had_vpos_rewind,
                 endnote_has_vpos_rewind,
                 continued_endnote_tail_before_new_note,
@@ -561,5 +584,43 @@ impl TypesetEngine {
                 current_endnote_had_inline_object_vpos_overestimate,
             },
         )
+    }
+
+    /// 다음 미주 전체가 명시적 문단 연결과 줄 묶음으로 분할 불가인지 확인한다.
+    /// 저장 좌표의 되감기나 다음 미주의 크기는 묶음 속성을 대신하지 않는다.
+    fn endnote_is_indivisible(
+        &self,
+        endnote: &crate::model::footnote::Endnote,
+        styles: &ResolvedStyleSet,
+        st: &TypesetState,
+    ) -> bool {
+        if endnote.paragraphs.is_empty() {
+            return false;
+        }
+        let column_width = st
+            .layout
+            .column_areas
+            .get(st.current_column as usize)
+            .map(|area| area.width)
+            .unwrap_or(st.layout.body_area.width);
+        endnote.paragraphs.iter().enumerate().all(|(index, para)| {
+            let Some(style) = styles.para_styles.get(para.para_shape_id as usize) else {
+                return false;
+            };
+            if para.column_type != crate::model::paragraph::ColumnBreakType::None
+                || style.page_break_before
+                || (index + 1 < endnote.paragraphs.len() && !style.keep_with_next)
+            {
+                return false;
+            }
+            if style.keep_lines {
+                return true;
+            }
+            let composed = crate::renderer::composer::compose_paragraph_in_context(para, styles);
+            self.format_endnote_paragraph(para, Some(&composed), styles, Some(column_width))
+                .line_heights
+                .len()
+                == 1
+        })
     }
 }

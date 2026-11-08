@@ -1,0 +1,112 @@
+{
+  "status": "diagnostic_only_unresolved",
+  "metric": "silhouette_raw_match_percent; threshold 232, radius 2px",
+  "note": "이전 검증에서 보존한 실제 이미지의 기준 PDF 비교를 재계산한다. 과거 환경 차이를 규명하거나 나머지 쪽의 과거 이미지를 대신하지 않는다.",
+  "cases": [
+    {
+      "key": "rebase8116-cell_nested_table_rows",
+      "page": 1,
+      "historical_png": "mydocs/working/assets/review_integration_20261026/validation/representative/wasm/rebase8116-cell_nested_table_rows-p001.png",
+      "historical_png_sha256": "f0d052a9098d75afe6cc4307b35c7e4d65d47bce5e295b23c02694cd3c74ff38",
+      "old_wasm_current_environment_png_sha256": "ae5c14786ea8933cd01f7d7b210b731c06bedd2d34828688b88d94e00b2af324",
+      "candidate_png_sha256": "8765f248cc190e91e5031139e70e3909502d124fafc01cc50f58c5b554f82e9b",
+      "reference_pdf_png_sha256": "241cc97ba73a733de63bb9a08dd54ea8dd4efe80d792a7ef50c16d37ab81ed75",
+      "historical_vs_pdf": 98.57262,
+      "old_wasm_current_environment_vs_pdf": 98.35047,
+      "candidate_vs_pdf": 98.35045,
+      "historical_vs_old_current_environment": 100.0,
+      "historical_vs_candidate": 100.0,
+      "historical_vs_old_raw_by_radius": {
+        "0": 98.12089,
+        "1": 100.0,
+        "2": 100.0
+      },
+      "global_shift_diagnostic": {
+        "search_x_px": [
+          -3,
+          3
+        ],
+        "search_y_px": [
+          -3,
+          3
+        ],
+        "best_shift_xy": [
+          0,
+          0
+        ],
+        "best_binary_disagreement_pixels": 3563,
+        "note": "원본 이미지의 잉크가 모서리 근처에 없음을 확인한 뒤 offset wrap을 사용한 진단이다."
+      }
+    },
+    {
+      "key": "endnotes-september",
+      "page": 20,
+      "historical_png": "mydocs/working/assets/review_integration_20261026/validation/representative/wasm/endnotes-september-p020.png",
+      "historical_png_sha256": "4dc385cd6aaeeb8f652ec32bd67d941885faeed47ae489e5ab36c7d1b789be58",
+      "old_wasm_current_environment_png_sha256": "7035a9f2090ac09c5047df8be2e6d1ed041ffb86a955e331fa182c873034d093",
+      "candidate_png_sha256": "21af915422da57cbb70203a3f9aa6869aa4e1feadbb736d4a1ea49ccf5dfd480",
+      "reference_pdf_png_sha256": "ed886665fe306a5cdd7cbb81804660e96c4e15235b2b470f7ca5c38144f82ff0",
+      "historical_vs_pdf": 96.35945,
+      "old_wasm_current_environment_vs_pdf": 95.30078,
+      "candidate_vs_pdf": 95.32108,
+      "historical_vs_old_current_environment": 100.0,
+      "historical_vs_candidate": 100.0,
+      "historical_vs_old_raw_by_radius": {
+        "0": 73.80862,
+        "1": 98.92553,
+        "2": 100.0
+      },
+      "global_shift_diagnostic": {
+        "search_x_px": [
+          -3,
+          3
+        ],
+        "search_y_px": [
+          -3,
+          3
+        ],
+        "best_shift_xy": [
+          0,
+          0
+        ],
+        "best_binary_disagreement_pixels": 15235,
+        "note": "원본 이미지의 잉크가 모서리 근처에 없음을 확인한 뒤 offset wrap을 사용한 진단이다."
+      }
+    },
+    {
+      "key": "endnotes-november",
+      "page": 21,
+      "historical_png": "mydocs/working/assets/review_integration_20261026/validation/representative/wasm/endnotes-november-p021.png",
+      "historical_png_sha256": "f823079e73be794eb5d9aba13c7695fa1bf3df4f6ccaf39b6f48a888aa4c5cbf",
+      "old_wasm_current_environment_png_sha256": "0b723ec50b4c5ef86f5e7d85d5de8ad7ae135f7ebf622e6172784f9dd93c2e35",
+      "candidate_png_sha256": "ac71341ab053fff94916a9e679d4d89b976d0e340b644e4e49e88346b574decc",
+      "reference_pdf_png_sha256": "84b7606787231ae6b530193c6fe81fbce82e34e20cffa924fcd4139ec0b25a97",
+      "historical_vs_pdf": 91.32974,
+      "old_wasm_current_environment_vs_pdf": 90.84543,
+      "candidate_vs_pdf": 90.84255,
+      "historical_vs_old_current_environment": 99.91143,
+      "historical_vs_candidate": 99.91146,
+      "historical_vs_old_raw_by_radius": {
+        "0": 82.55992,
+        "1": 99.0244,
+        "2": 99.91143
+      },
+      "global_shift_diagnostic": {
+        "search_x_px": [
+          -3,
+          3
+        ],
+        "search_y_px": [
+          -3,
+          3
+        ],
+        "best_shift_xy": [
+          0,
+          0
+        ],
+        "best_binary_disagreement_pixels": 12996,
+        "note": "원본 이미지의 잉크가 모서리 근처에 없음을 확인한 뒤 offset wrap을 사용한 진단이다."
+      }
+    }
+  ]
+}

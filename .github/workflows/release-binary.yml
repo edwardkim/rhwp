@@ -27,7 +27,8 @@ jobs:
       matrix:
         include:
           - target: x86_64-unknown-linux-gnu
-            runner: ubuntu-latest
+            # Keep the GNU binary compatible with Ubuntu 24.04 (glibc 2.39).
+            runner: ubuntu-24.04
             archive: tar.gz
             archive_suffix: linux-x86_64
             binary_name: rhwp
@@ -89,8 +90,21 @@ jobs:
           restore-keys: |
             ${{ matrix.target }}-${{ matrix.runner }}-cargo-
 
+      - name: Install native Skia dependencies (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo env DEBIAN_FRONTEND=noninteractive apt-get \
+            -o Acquire::Retries=3 -o Acquire::http::Timeout=30 \
+            -o Acquire::https::Timeout=30 -o DPkg::Lock::Timeout=60 update
+          sudo env DEBIAN_FRONTEND=noninteractive apt-get \
+            -o Acquire::Retries=3 -o Acquire::http::Timeout=30 \
+            -o Acquire::https::Timeout=30 -o DPkg::Lock::Timeout=60 \
+            install -y --no-install-recommends \
+            fonts-dejavu-core libfontconfig1-dev libfreetype6-dev
+
       - name: Build release binary
-        run: cargo build --release --bin rhwp --target ${{ matrix.target }}
+        run: cargo build --locked --release --bin rhwp --features native-skia --target ${{ matrix.target }}
 
       - name: Verify binary (Linux/macOS)
         if: matrix.archive == 'tar.gz'
@@ -103,6 +117,14 @@ jobs:
         run: |
           target/${{ matrix.target }}/release/${{ matrix.binary_name }} --version
 
+      - name: Install Python for release verification
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+
+      - name: Prepare third-party notices
+        run: python scripts/prepare_release_notices.py dist/rhwp/notices
+
       - name: Package archive (Linux/macOS)
         if: matrix.archive == 'tar.gz'
         shell: bash
@@ -113,6 +135,7 @@ jobs:
           cp LICENSE dist/rhwp/
           cp README.md dist/rhwp/
           cp README_EN.md dist/rhwp/
+          cp packaging/PDF_QUICKSTART.md packaging/PDF_QUICKSTART_EN.md dist/rhwp/
           cd dist && tar -czf "../${ARCHIVE_NAME}" rhwp/
           cd ..
           ls -la "${ARCHIVE_NAME}"
@@ -128,9 +151,19 @@ jobs:
           Copy-Item LICENSE dist/rhwp/
           Copy-Item README.md dist/rhwp/
           Copy-Item README_EN.md dist/rhwp/
+          Copy-Item packaging/PDF_QUICKSTART.md, packaging/PDF_QUICKSTART_EN.md dist/rhwp/
           Compress-Archive -Path dist/rhwp -DestinationPath $archiveName -Force
           Get-ChildItem $archiveName
           "ARCHIVE_NAME=$archiveName" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      # Verify the packaged binary on every platform, including the Intel binary
+      # on macOS ARM. --version alone cannot detect a missing optional backend.
+      - name: Verify packaged PNG export
+        shell: bash
+        run: |
+          python scripts/verify_release_binary.py \
+            --archive "${ARCHIVE_NAME}" \
+            --sample samples/issue2527_empty_linesegs.hwpx
 
       - name: Upload artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -155,7 +188,7 @@ jobs:
           echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
 
       - name: Download all artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           path: dist/
           merge-multiple: true

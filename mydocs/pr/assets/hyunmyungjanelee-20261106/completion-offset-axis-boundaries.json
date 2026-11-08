@@ -1,0 +1,24 @@
+[
+  {
+    "axis": "vertical",
+    "input_sha256": "93d7902b3718013d300deaba51183756c8fc4e77cd5956c624518518233a719e",
+    "table": {
+      "x": 498.9,
+      "y": 28633255.1,
+      "w": 151.2,
+      "h": 75.6
+    },
+    "result": "signed offset and positive margin remain positive"
+  },
+  {
+    "axis": "both",
+    "input_sha256": "1e9966975b11bf37674d13b30f9e5164da04f451d07df42ab44336f0425ab6dc",
+    "table": {
+      "x": 28633236.2,
+      "y": 28633255.1,
+      "w": 151.2,
+      "h": 75.6
+    },
+    "result": "signed offset and positive margin remain positive"
+  }
+]

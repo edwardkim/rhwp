@@ -1,0 +1,20 @@
+from pathlib import Path
+import subprocess,json,hashlib
+R=Path.cwd();O=R/'output/pr-review/issue8174/v2-s05-20261025';D=O/'negatives';D.mkdir(exist_ok=True)
+subprocess.run(['qpdf','--encrypt','registry-test','registry-owner','256','--',str(R/'pdf/issue8174/features/icc-rgb.pdf'),str(D/'encrypted.pdf')],check=True)
+objects=[b'<< /Type /Catalog /Pages 2 0 R >>',b'<< /Type /Pages /Count 1 /Kids [3 0 R] >>',b'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 100 100] /Resources << /XObject << /Im1 5 0 R >> >> /Contents 4 0 R >>']
+content=b'q 40 0 0 20 10 10 cm /Im1 Do Q';objects+=[f'<< /Length {len(content)} >>\nstream\n'.encode()+content+b'\nendstream',b'<< /Type /XObject /Subtype /Image /Width 4 /Height 2 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /UnknownDecode /Length 24 >>\nstream\n'+bytes([255,0,0])*8+b'\nendstream']
+output=b'%PDF-1.4\n';offset=[]
+for i,obj in enumerate(objects):offset.append(len(output));output+=f'{i+1} 0 obj\n'.encode()+obj+b'\nendobj\n'
+xref=len(output);output+=f'xref\n0 {len(objects)+1}\n0000000000 65535 f \n'.encode()+b''.join(f'{p:010} 00000 n \n'.encode() for p in offset)+f'trailer\n<< /Size {len(objects)+1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n'.encode();(D/'unsupported-filter.pdf').write_bytes(output);(D/'irrecoverable.pdf').write_bytes(b'%PDF-1.4\ninvalid')
+rows=[{'name':n,'input':str(D/(n+'.pdf'))} for n in ['encrypted','unsupported-filter','irrecoverable']]+[{'name':n,'input':str(R/'pdf/issue8183'/(n+'.pdf'))} for n in ['corrupt-JBIG2Decode','corrupt-JPXDecode']]
+for row in rows:row['sha256']=hashlib.sha256(Path(row['input']).read_bytes()).hexdigest()
+(O/'negative-fixtures.json').write_text(json.dumps(rows,indent=2)+'\n');checked=[]
+for row in rows:
+ target=D/(row['name']+'.hwpx');target.write_bytes(b'KEEP OUTPUT')
+ result=subprocess.run([str(O/'candidate-native/rhwp'),'import-pdf',row['input'],str(target),'--json'],capture_output=True,timeout=30)
+ assert result.returncode==1 and not result.stdout and target.read_bytes()==b'KEEP OUTPUT',(row['name'],result.returncode,result.stderr)
+ if row['name']=='encrypted':assert b'PDF_ENCRYPTION_UNSUPPORTED' in result.stderr,result.stderr
+ good=D/(row['name']+'-followup.hwpx');healthy=subprocess.run([str(O/'candidate-native/rhwp'),'import-pdf',str(R/'pdf/issue8174/features/icc-rgb.pdf'),str(good),'--json'],capture_output=True,timeout=30);assert healthy.returncode==0 and json.loads(healthy.stdout)['pageCount']==1
+ checked.append({**row,'exit':result.returncode,'error':result.stderr.decode(),'existing_output_preserved':True,'healthy_followup_passed':True})
+(O/'negative-cli-results.json').write_text(json.dumps(checked,indent=2)+'\n');print('NEGATIVE CLI PASS',len(checked),flush=True)

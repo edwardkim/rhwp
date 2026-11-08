@@ -1,0 +1,115 @@
+{
+  "input": "samples/issue5874/italic-repro.hwpx",
+  "input_sha256": "cc03b646e5ba294575d8d254de00368b7a085bb51f1abbbdedcd3b2608f81dc5",
+  "pdf": "pdf/issue5874/italic-repro-hancom2020-print.pdf",
+  "pdf_sha256": "4a02cd3410ab1824c2d556ad4b050468d458a345af2b5e8f196c2399ce9a4e8f",
+  "print_receipt": "output/pr-review/semanticist21-20261019/mcp-italic-preservation-232/writer-original-engine2020-complete.json",
+  "print_contract": {
+    "engine": "2020",
+    "build": "11.0.0.9136",
+    "method": 0,
+    "preprocess": "none",
+    "pages": 1
+  },
+  "independent_matrix": "1 0 .333 -1 tx ty Tm",
+  "scope": "Existing #5874 coefficient contract; not a new page coordinate pin or full integration approval",
+  "qualification": [
+    {
+      "backend": "native",
+      "pages": 1,
+      "silhouette_raw_match_percent": "100.00000",
+      "tsv": "mydocs/pr/assets/issue5874_synthetic_italic_20261025/native/silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "png": {
+        "review": {
+          "path": "mydocs/pr/assets/issue5874_synthetic_italic_20261025/native/review.png",
+          "sha256": "c743c52c7a4b0185cb200f90fd1883f1bb06d658b44d073f58f6fe3e8ee19884"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issue5874_synthetic_italic_20261025/native/overlay.png",
+          "sha256": "0ec68e5c6a6d0d1a0007695a3ed74670e41259d3831d0715aff66c54f4b176da"
+        }
+      },
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "native-candidate-writer-original-engine2020",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/italic-preservation-inputs-232/writer-original-engine2020.hwpx",
+        "/home/tsjang/rhwp/pdf/semanticist21-20261019/italic-preservation-232/writer-original-engine2020/writer-original-engine2020-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-208",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3281/native-candidate-writer-original-engine2020",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "producer_receipt": "output/pr-review/semanticist21-20261019/rebase-native208-build-3244-result.json",
+      "producer_source": "5ae234786dbcd15e98a6cf35dd0c187af483efc7",
+      "direct_read": "본문・기울임 위치 및 guide/overlay 판독; 작은 글자의 raster 농도 차이는 raw100과 별도로 남음"
+    },
+    {
+      "backend": "wasm",
+      "pages": 1,
+      "silhouette_raw_match_percent": "100.00000",
+      "tsv": "mydocs/pr/assets/issue5874_synthetic_italic_20261025/wasm/silhouette.tsv",
+      "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "png": {
+        "review": {
+          "path": "mydocs/pr/assets/issue5874_synthetic_italic_20261025/wasm/review.png",
+          "sha256": "3c082ae1a1a2b1f323db75bfc147cad142ef0f8fc4e65e077fe0b83acb4c1a18"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issue5874_synthetic_italic_20261025/wasm/overlay.png",
+          "sha256": "33d55d68c1e0ee36c207b33f7752d214a4e862c6c22d88e7ed6605d693cf3942"
+        }
+      },
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "wasm-candidate-writer-original-engine2020",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/italic-preservation-inputs-232/writer-original-engine2020.hwpx",
+        "/home/tsjang/rhwp/pdf/semanticist21-20261019/italic-preservation-232/writer-original-engine2020/writer-original-engine2020-2020.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-208",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/failed-input-comparison-3281/wasm-candidate-writer-original-engine2020",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-055",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "producer_receipt": "output/pr-review/semanticist21-20261019/rebase-candidate-wasm055-build-3251-result.json",
+      "producer_source": "04d8c792ee2352ef4f102ce31f056a735e74609d",
+      "direct_read": "본문・기울임 위치 및 guide/overlay 판독; 작은 글자의 raster 농도 차이는 raw100과 별도로 남음"
+    }
+  ],
+  "test_receipt": "output/pr-review/semanticist21-20261019/rebase-focused-contracts-3282-result.json"
+}

@@ -7,6 +7,12 @@ use crate::paint::{
 use crate::renderer::render_tree::{BoundingBox, TextRunNode};
 use std::collections::HashSet;
 
+pub use crate::paint::shaped_measurement::{
+    JustificationMode, LineBreakChangeRisk, LineBreakContextValue, LineBreakShadowReport,
+    ShapedMeasurementLineReport, ShapedMeasurementPageSummary, ShapedMeasurementParagraphSummary,
+    ShapedMeasurementRunReport, TabStopSummary, TableCellConstraintSummary,
+};
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FontRequest {
     pub family: String,
@@ -63,7 +69,8 @@ impl FontResolver for NoopFontResolver {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub enum GlyphRunQuality {
     Exact,
     PositionAdjusted,
@@ -98,6 +105,11 @@ pub struct TextShapeDiagnostic {
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct TextShapeReport {
     pub diagnostics: Vec<TextShapeDiagnostic>,
+    pub shaped_measurements: Vec<ShapedMeasurementRunReport>,
+    pub shaped_measurement_lines: Vec<ShapedMeasurementLineReport>,
+    pub line_break_shadows: Vec<LineBreakShadowReport>,
+    pub shaped_measurement_paragraphs: Vec<ShapedMeasurementParagraphSummary>,
+    pub shaped_measurement_pages: Vec<ShapedMeasurementPageSummary>,
 }
 
 impl TextShapeReport {
@@ -142,7 +154,9 @@ impl<'a> TextShapeLowerer<'a> {
                     self.collect_node(child, report);
                 }
             }
-            LayerNodeKind::ClipRect { child, .. } => self.collect_node(child, report),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                self.collect_node(child, report)
+            }
             LayerNodeKind::Leaf { ops } => {
                 for op in ops {
                     if let PaintOp::TextRun { run, .. } = op {
@@ -165,7 +179,7 @@ impl<'a> TextShapeLowerer<'a> {
                     self.lower_node(child, report, next_text_source_id);
                 }
             }
-            LayerNodeKind::ClipRect { child, .. } => {
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
                 self.lower_node(child, report, next_text_source_id);
             }
             LayerNodeKind::Leaf { ops } => {
@@ -180,7 +194,10 @@ impl<'a> TextShapeLowerer<'a> {
                     .collect::<HashSet<_>>();
                 let mut lowered = Vec::with_capacity(ops.len());
                 for op in ops.drain(..) {
-                    if let PaintOp::TextRun { bbox, run, source } = op {
+                    if let PaintOp::TextRun {
+                        bbox, run, source, ..
+                    } = op
+                    {
                         let source = source.unwrap_or_else(|| {
                             crate::paint::TextSourceSpan::for_text_run(*next_text_source_id, &run)
                         });
@@ -190,21 +207,28 @@ impl<'a> TextShapeLowerer<'a> {
                         let equivalence_group = format!("text-{text_source_id}");
                         if existing_glyph_groups.contains(&equivalence_group) {
                             lowered.push(PaintOp::TextRun {
+                                paint_transform: None,
                                 bbox,
                                 run,
                                 source: Some(source),
                             });
                             continue;
                         }
-                        let (diagnostic, glyph_run) = self.lower_text_run(bbox, &run, &source);
+                        let (diagnostic, measurement, glyph_run) =
+                            self.lower_text_run(bbox, &run, &source);
                         report.diagnostics.push(diagnostic);
+                        if let Some(measurement) = measurement {
+                            report.shaped_measurements.push(measurement);
+                        }
                         lowered.push(PaintOp::TextRun {
+                            paint_transform: None,
                             bbox,
                             run,
                             source: Some(source),
                         });
                         if let Some(glyph_run) = glyph_run {
                             lowered.push(PaintOp::GlyphRun {
+                                paint_transform: None,
                                 bbox,
                                 run: Box::new(glyph_run),
                             });
@@ -227,7 +251,11 @@ impl<'a> TextShapeLowerer<'a> {
         bbox: BoundingBox,
         run: &TextRunNode,
         source: &crate::paint::TextSourceSpan,
-    ) -> (TextShapeDiagnostic, Option<LayerGlyphRunPaint>) {
+    ) -> (
+        TextShapeDiagnostic,
+        Option<ShapedMeasurementRunReport>,
+        Option<LayerGlyphRunPaint>,
+    ) {
         self.evaluate_text_run(Some(bbox), run, Some(source))
     }
 
@@ -236,7 +264,11 @@ impl<'a> TextShapeLowerer<'a> {
         bbox: Option<BoundingBox>,
         run: &TextRunNode,
         source: Option<&crate::paint::TextSourceSpan>,
-    ) -> (TextShapeDiagnostic, Option<LayerGlyphRunPaint>) {
+    ) -> (
+        TextShapeDiagnostic,
+        Option<ShapedMeasurementRunReport>,
+        Option<LayerGlyphRunPaint>,
+    ) {
         let text_source_id = source.map_or(0, |source| source.id.0);
         if run.char_overlap.is_some() || run.text.is_empty() {
             return (
@@ -249,6 +281,7 @@ impl<'a> TextShapeLowerer<'a> {
                     strict_visual_eligible: false,
                     reason: Some("notShapingCandidate".to_string()),
                 },
+                None,
                 None,
             );
         }
@@ -279,6 +312,7 @@ impl<'a> TextShapeLowerer<'a> {
         };
 
         let mut public_glyph_run = None;
+        let mut measurement_report = None;
         let mut public_glyph_run_emitted = false;
         let mut strict_visual_eligible = false;
         let paint_style = PaintTextStyle::from(&run.style);
@@ -290,6 +324,10 @@ impl<'a> TextShapeLowerer<'a> {
         ) {
             if let Some(bbox) = bbox {
                 if let Some(shaped) = self.resolver.shape_glyph_run(&request, run, &resolved) {
+                    // Observe the existing shape result exactly once. Do not add
+                    // shaping calls to diagnostics-only traversal or use these
+                    // measurements to choose layout or replay eligibility.
+                    measurement_report = Some(shaped_measurement_report(run, source, &shaped));
                     if !paint_style.is_fill_only_glyph_replay() {
                         reason = Some("unsupportedGlyphRunPaintEffect".to_string());
                     } else if glyph_run_is_exportable(&shaped) {
@@ -342,8 +380,67 @@ impl<'a> TextShapeLowerer<'a> {
                 strict_visual_eligible,
                 reason,
             },
+            measurement_report,
             public_glyph_run,
         )
+    }
+}
+
+fn shaped_measurement_report(
+    run: &TextRunNode,
+    source: Option<&crate::paint::TextSourceSpan>,
+    shaped: &ResolvedGlyphRun,
+) -> ShapedMeasurementRunReport {
+    let positions = run.replay_positions_for(&run.text);
+    let legacy_width_px = positions
+        .first()
+        .zip(positions.last())
+        .map(|(first, last)| (last - first).abs())
+        .unwrap_or(0.0);
+    // This is the committed skia horizontal advance-span observation. It does
+    // not claim a vertical-metric comparison or independently measured ink.
+    let start = shaped
+        .positions
+        .iter()
+        .map(|point| point.x)
+        .fold(f64::INFINITY, f64::min);
+    let end = shaped
+        .positions
+        .iter()
+        .enumerate()
+        .map(|(index, point)| {
+            point.x
+                + shaped
+                    .advances
+                    .as_ref()
+                    .and_then(|advances| advances.get(index))
+                    .map_or(0.0, |advance| advance.dx)
+        })
+        .fold(f64::NEG_INFINITY, f64::max);
+    let shaped_width_px = if start.is_finite() && end.is_finite() {
+        (end - start).abs()
+    } else {
+        0.0
+    };
+    let delta_px = shaped_width_px - legacy_width_px;
+    ShapedMeasurementRunReport {
+        document_id: None,
+        sample_id: None,
+        page_index: None,
+        text_op_id: None,
+        source: source.cloned(),
+        legacy_width_px,
+        shaped_width_px,
+        delta_px,
+        delta_ratio: if legacy_width_px.abs() > f64::EPSILON {
+            delta_px / legacy_width_px
+        } else {
+            0.0
+        },
+        cluster_mismatch_count: shaped.diagnostics.cluster_mismatch_count,
+        fallback_font_difference: shaped.diagnostics.used_fallback_font_count > 0,
+        vertical_metric_difference: false,
+        shaping_quality: Some(glyph_quality_from_variant(shaped.diagnostics.quality)),
     }
 }
 

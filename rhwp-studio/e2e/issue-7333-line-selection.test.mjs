@@ -1,4 +1,6 @@
 /**
+ * 관계형: 실제 선 선택·이동·Undo의 주소와 표시 경계 복원을 검사한다. 절대 px 기대값은 고정하지 않는다.
+ * 주석 갱신: 2026-11-05 18:52 KST. 원본 8쪽 Native/fresh WASM 99.99704%/99.99112%(96dpi·compat2022).
  * #7333 8쪽의 넓은 도형 위에 그린 화살표를 실제 마우스로 선택한다.
  *
  * 단순 bbox hit-test는 화살표를 감싼 도형을 먼저 고를 수 있다. 이 검증은 실클릭 뒤
@@ -87,6 +89,7 @@ runTest('#7333 8쪽 화살표 실클릭 객체 선택', async ({ page }) => {
     const pageLeft = input.virtualScroll.getPageLeftResolved(bbox.pageIndex, content.clientWidth);
     return {
       ref,
+      bbox,
       before: { horzOffset: props.horzOffset, vertOffset: props.vertOffset },
       x: rect.left + pageLeft + ((bbox.x1 + bbox.x2) / 2) * zoom,
       y: rect.top + input.virtualScroll.getPageOffset(bbox.pageIndex) + ((bbox.y1 + bbox.y2) / 2) * zoom,
@@ -103,6 +106,8 @@ runTest('#7333 8쪽 화살표 실클릭 객체 선택', async ({ page }) => {
     return { horzOffset: props.horzOffset, vertOffset: props.vertOffset };
   }, moveState.ref);
   assert.notDeepEqual(afterMove, moveState.before, '실제 드래그가 화살표 위치를 바꾼다');
+  assert.notDeepEqual(await page.evaluate(ref => window.__inputHandler.findPictureBbox(ref), moveState.ref),
+    moveState.bbox, '저장 offset뿐 아니라 실제 선의 표시 경계도 이동한다');
 
   await page.keyboard.down('Control');
   await page.keyboard.press('z');
@@ -114,6 +119,8 @@ runTest('#7333 8쪽 화살표 실클릭 객체 선택', async ({ page }) => {
     return { horzOffset: props.horzOffset, vertOffset: props.vertOffset };
   }, moveState.ref);
   assert.deepEqual(afterUndo, moveState.before, '실제 Ctrl+Z가 화살표 위치를 원래대로 되돌린다');
+  assert.deepEqual(await page.evaluate(ref => window.__inputHandler.findPictureBbox(ref), moveState.ref),
+    moveState.bbox, 'Ctrl+Z는 실제 선의 표시 경계도 복원한다');
 
   await page.mouse.click(clickPoint.x, clickPoint.y);
   await page.mouse.move(moveState.x, moveState.y);
@@ -136,4 +143,6 @@ runTest('#7333 8쪽 화살표 실클릭 객체 선택', async ({ page }) => {
     return { horzOffset: props.horzOffset, vertOffset: props.vertOffset };
   }, moveState.ref);
   assert.deepEqual(afterMetaUndo, moveState.before, '실제 Command+Z도 화살표 위치를 원래대로 되돌린다');
+  assert.deepEqual(await page.evaluate(ref => window.__inputHandler.findPictureBbox(ref), moveState.ref),
+    moveState.bbox, 'Command+Z는 실제 선의 표시 경계도 복원한다');
 });

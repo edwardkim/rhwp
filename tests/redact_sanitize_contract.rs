@@ -609,35 +609,6 @@ fn keep_preview_retains_the_thumbnail() {
     );
 }
 
-/// 산출물은 입력 형식을 보존한다 (HWPX 입력 → HWPX 산출).
-#[test]
-fn sanitize_preserves_the_input_format() {
-    let src = repo("samples/3-09월_교육_통합_2022.hwpx");
-    if !src.exists() {
-        eprintln!("HWPX 샘플 없음 — 건너뜀");
-        return;
-    }
-    let out_path = scratch("san_fmt.hwpx");
-    let _ = std::fs::remove_file(&out_path);
-    let args = [
-        "edit",
-        "sanitize",
-        src.to_str().unwrap(),
-        "-o",
-        out_path.to_str().unwrap(),
-        "--json",
-    ];
-    let out = run(&args);
-    assert_eq!(out.status.code(), Some(0), "{}", describe(&args, &out));
-    let v = json_of(&args, &out);
-    assert_eq!(v["outputFormat"], "hwpx", "{v}");
-    assert_eq!(
-        document_text(&out_path),
-        document_text(&src),
-        "HWPX sanitize 가 본문을 바꿨습니다"
-    );
-}
-
 /// 없는 파일·알 수 없는 옵션은 stdout 을 오염시키지 않는다 (계약 봉투 규약).
 ///
 /// 봉투 계약의 소비자는 `stdout` 을 통째로 `JSON.parse` 한다 — 실패 경로가 한 글자라도

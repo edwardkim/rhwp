@@ -1,0 +1,1889 @@
+{
+  "status": "finished_with_below90",
+  "date": "2026-10-28",
+  "producer_source": "81f2428cf8",
+  "visual_sweep_source": "ubuntu-ted3 2d44695b14576d8c9204e6d9d8317649d8828a48",
+  "visual_sweep_sha256": "9be99fdf45ac7f755aa15fd3d3e7787132453acaaa221f01635b87aca6de1102",
+  "pdf_raster_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+  "metric": "precise silhouette_manifest.json raw scores; TSV displays only two decimals",
+  "cases": [
+    {
+      "key": "exam-hwp",
+      "input": "samples/exam_kor.hwp",
+      "input_sha256": "0315576fb25dd29ad3b6b188ee2539d0e8d31c15b74847be801c2186a97aac69",
+      "pdf": "pdf/exam_kor-hwp-2020.pdf",
+      "pdf_sha256": "d67a5a0c759dcc8609226f89ef96de5339e3b41c43c2655be3824dcde1732f22",
+      "compat": "2022",
+      "pages": 20,
+      "native_min": 96.7414,
+      "wasm_min": 96.66238,
+      "native_exit": 0,
+      "wasm_exit": 0,
+      "native_manifest_sha256": "70a6ba0f43b6d34698085feedf638b200984f770fed1c8170244a528a785d1a7",
+      "wasm_manifest_sha256": "1b4c7408ae9ffec4f79f748249556d964b229422cdfd76cdbe54895fdf2de884",
+      "page_metrics": [
+        {
+          "page": 1,
+          "native_raw": 99.69502,
+          "wasm_raw": 99.7044
+        },
+        {
+          "page": 2,
+          "native_raw": 99.9121,
+          "wasm_raw": 99.89572
+        },
+        {
+          "page": 3,
+          "native_raw": 99.91984,
+          "wasm_raw": 99.92849
+        },
+        {
+          "page": 4,
+          "native_raw": 99.93501,
+          "wasm_raw": 99.9288
+        },
+        {
+          "page": 5,
+          "native_raw": 99.77678,
+          "wasm_raw": 99.77521
+        },
+        {
+          "page": 6,
+          "native_raw": 99.9173,
+          "wasm_raw": 99.90884
+        },
+        {
+          "page": 7,
+          "native_raw": 99.92233,
+          "wasm_raw": 99.92041
+        },
+        {
+          "page": 8,
+          "native_raw": 98.17161,
+          "wasm_raw": 98.12405
+        },
+        {
+          "page": 9,
+          "native_raw": 99.36687,
+          "wasm_raw": 99.38428
+        },
+        {
+          "page": 10,
+          "native_raw": 99.59485,
+          "wasm_raw": 99.57233
+        },
+        {
+          "page": 11,
+          "native_raw": 99.63983,
+          "wasm_raw": 99.71218
+        },
+        {
+          "page": 12,
+          "native_raw": 99.91652,
+          "wasm_raw": 99.92155
+        },
+        {
+          "page": 13,
+          "native_raw": 99.46245,
+          "wasm_raw": 99.49421
+        },
+        {
+          "page": 14,
+          "native_raw": 99.80586,
+          "wasm_raw": 99.78063
+        },
+        {
+          "page": 15,
+          "native_raw": 99.82703,
+          "wasm_raw": 99.8346
+        },
+        {
+          "page": 16,
+          "native_raw": 99.83531,
+          "wasm_raw": 99.8512
+        },
+        {
+          "page": 17,
+          "native_raw": 96.7414,
+          "wasm_raw": 96.66238
+        },
+        {
+          "page": 18,
+          "native_raw": 99.29699,
+          "wasm_raw": 99.36392
+        },
+        {
+          "page": 19,
+          "native_raw": 99.64363,
+          "wasm_raw": 99.66589
+        },
+        {
+          "page": 20,
+          "native_raw": 99.83793,
+          "wasm_raw": 99.86733
+        }
+      ]
+    },
+    {
+      "key": "exam-hwpx",
+      "input": "samples/hwpx/exam_kor.hwpx",
+      "input_sha256": "c71a8991d63d084c18db1c90d2e32865b2af69cae5762b20cb554ee53a539b7c",
+      "pdf": "pdf/hwpx/exam_kor-hwpx-2020.pdf",
+      "pdf_sha256": "86cb58a24a75c460e95e34e90e825721bf868f6dca979fc17aa4f2f2f3171902",
+      "compat": "2022",
+      "pages": 20,
+      "native_min": 96.65339,
+      "wasm_min": 96.56449,
+      "native_exit": 0,
+      "wasm_exit": 0,
+      "native_manifest_sha256": "8cbe5c01646c4afc9bcd40edea825758611b8280a6a62d44a22e9a62e6aa74bb",
+      "wasm_manifest_sha256": "30ed67cfe797c45917ff6fdd3d3541817ef2f27e751739db93fc457eb5f5c603",
+      "page_metrics": [
+        {
+          "page": 1,
+          "native_raw": 99.69179,
+          "wasm_raw": 99.70186
+        },
+        {
+          "page": 2,
+          "native_raw": 99.90667,
+          "wasm_raw": 99.88922
+        },
+        {
+          "page": 3,
+          "native_raw": 99.91995,
+          "wasm_raw": 99.92769
+        },
+        {
+          "page": 4,
+          "native_raw": 99.93519,
+          "wasm_raw": 99.92895
+        },
+        {
+          "page": 5,
+          "native_raw": 99.75956,
+          "wasm_raw": 99.75472
+        },
+        {
+          "page": 6,
+          "native_raw": 99.88914,
+          "wasm_raw": 99.88071
+        },
+        {
+          "page": 7,
+          "native_raw": 99.9247,
+          "wasm_raw": 99.92085
+        },
+        {
+          "page": 8,
+          "native_raw": 98.16299,
+          "wasm_raw": 98.11282
+        },
+        {
+          "page": 9,
+          "native_raw": 99.37,
+          "wasm_raw": 99.39141
+        },
+        {
+          "page": 10,
+          "native_raw": 99.58403,
+          "wasm_raw": 99.55557
+        },
+        {
+          "page": 11,
+          "native_raw": 99.64367,
+          "wasm_raw": 99.71272
+        },
+        {
+          "page": 12,
+          "native_raw": 99.91706,
+          "wasm_raw": 99.91915
+        },
+        {
+          "page": 13,
+          "native_raw": 99.46407,
+          "wasm_raw": 99.4937
+        },
+        {
+          "page": 14,
+          "native_raw": 99.79257,
+          "wasm_raw": 99.76554
+        },
+        {
+          "page": 15,
+          "native_raw": 99.78282,
+          "wasm_raw": 99.78803
+        },
+        {
+          "page": 16,
+          "native_raw": 99.83345,
+          "wasm_raw": 99.84802
+        },
+        {
+          "page": 17,
+          "native_raw": 96.65339,
+          "wasm_raw": 96.56449
+        },
+        {
+          "page": 18,
+          "native_raw": 99.26581,
+          "wasm_raw": 99.3341
+        },
+        {
+          "page": 19,
+          "native_raw": 99.59741,
+          "wasm_raw": 99.61503
+        },
+        {
+          "page": 20,
+          "native_raw": 99.83637,
+          "wasm_raw": 99.86497
+        }
+      ]
+    },
+    {
+      "key": "examlang",
+      "input": "samples/21_언어_기출_편집가능본.hwp",
+      "input_sha256": "905454045ca2e236839a7cab59750678116d08af3db31dbf846819af355b8d15",
+      "pdf": "pdf/21_언어_기출_편집가능본-hwp-2020.pdf",
+      "pdf_sha256": "9691fc2a6d443e0fc2eba1b744b908ce7393b07a06b7b977112f5b0ef72a57a4",
+      "compat": "2022",
+      "pages": 15,
+      "native_min": 95.1991,
+      "wasm_min": 95.16548,
+      "native_exit": 0,
+      "wasm_exit": 0,
+      "native_manifest_sha256": "dbe0e426e27fa3d614f7919e64e1251943a4b012018f239b908ec4d172481d3b",
+      "wasm_manifest_sha256": "65b135f5842c9b50ee849e7f5a24556d62d036981369b4ce68892b61f71d2b6d",
+      "page_metrics": [
+        {
+          "page": 1,
+          "native_raw": 97.26052,
+          "wasm_raw": 97.3124
+        },
+        {
+          "page": 2,
+          "native_raw": 99.84022,
+          "wasm_raw": 99.82294
+        },
+        {
+          "page": 3,
+          "native_raw": 99.85903,
+          "wasm_raw": 99.89129
+        },
+        {
+          "page": 4,
+          "native_raw": 99.98709,
+          "wasm_raw": 99.96692
+        },
+        {
+          "page": 5,
+          "native_raw": 99.76147,
+          "wasm_raw": 99.74917
+        },
+        {
+          "page": 6,
+          "native_raw": 99.97425,
+          "wasm_raw": 99.98037
+        },
+        {
+          "page": 7,
+          "native_raw": 99.80112,
+          "wasm_raw": 99.786
+        },
+        {
+          "page": 8,
+          "native_raw": 97.84078,
+          "wasm_raw": 97.71749
+        },
+        {
+          "page": 9,
+          "native_raw": 98.5715,
+          "wasm_raw": 98.63475
+        },
+        {
+          "page": 10,
+          "native_raw": 99.87782,
+          "wasm_raw": 99.82165
+        },
+        {
+          "page": 11,
+          "native_raw": 99.72022,
+          "wasm_raw": 99.73403
+        },
+        {
+          "page": 12,
+          "native_raw": 95.1991,
+          "wasm_raw": 95.16548
+        },
+        {
+          "page": 13,
+          "native_raw": 99.71887,
+          "wasm_raw": 99.74084
+        },
+        {
+          "page": 14,
+          "native_raw": 99.8507,
+          "wasm_raw": 99.80565
+        },
+        {
+          "page": 15,
+          "native_raw": 96.14612,
+          "wasm_raw": 96.21307
+        }
+      ]
+    },
+    {
+      "key": "liver",
+      "input": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+      "input_sha256": "50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113",
+      "pdf": "pdf/pr3740/hwp/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-2020.pdf",
+      "pdf_sha256": "7879ffee6313575132187c44c0090cd2e62c32c12c29b7eabd989181acf27b3a",
+      "compat": "2022",
+      "pages": 215,
+      "native_min": 59.29844,
+      "wasm_min": 58.93395,
+      "native_exit": 1,
+      "wasm_exit": 1,
+      "native_manifest_sha256": "81fa6208353798433182fa0b22093d4a103b4be4ab24fb68378900f61081fe6c",
+      "wasm_manifest_sha256": "1d3e615e512b5fb13b4a898ec69c26951cb1569e25d97ff0fe0113045a8f5db8",
+      "page_metrics": [
+        {
+          "page": 1,
+          "native_raw": 88.76076,
+          "wasm_raw": 88.56311
+        },
+        {
+          "page": 2,
+          "native_raw": 94.16571,
+          "wasm_raw": 94.13126
+        },
+        {
+          "page": 3,
+          "native_raw": 98.79111,
+          "wasm_raw": 98.73563
+        },
+        {
+          "page": 4,
+          "native_raw": 98.30558,
+          "wasm_raw": 98.49474
+        },
+        {
+          "page": 5,
+          "native_raw": 95.02224,
+          "wasm_raw": 94.85771
+        },
+        {
+          "page": 6,
+          "native_raw": 91.02018,
+          "wasm_raw": 90.93601
+        },
+        {
+          "page": 7,
+          "native_raw": 87.65921,
+          "wasm_raw": 87.50475
+        },
+        {
+          "page": 8,
+          "native_raw": 89.83701,
+          "wasm_raw": 89.62469
+        },
+        {
+          "page": 9,
+          "native_raw": 97.28779,
+          "wasm_raw": 97.36772
+        },
+        {
+          "page": 10,
+          "native_raw": 98.64361,
+          "wasm_raw": 98.67983
+        },
+        {
+          "page": 11,
+          "native_raw": 98.07569,
+          "wasm_raw": 98.16773
+        },
+        {
+          "page": 12,
+          "native_raw": 80.36511,
+          "wasm_raw": 80.62109
+        },
+        {
+          "page": 13,
+          "native_raw": 59.29844,
+          "wasm_raw": 58.93395
+        },
+        {
+          "page": 14,
+          "native_raw": 95.90168,
+          "wasm_raw": 96.00379
+        },
+        {
+          "page": 15,
+          "native_raw": 94.05526,
+          "wasm_raw": 94.05483
+        },
+        {
+          "page": 16,
+          "native_raw": 97.5649,
+          "wasm_raw": 97.52274
+        },
+        {
+          "page": 17,
+          "native_raw": 98.3682,
+          "wasm_raw": 98.34387
+        },
+        {
+          "page": 18,
+          "native_raw": 99.75718,
+          "wasm_raw": 99.77022
+        },
+        {
+          "page": 19,
+          "native_raw": 98.19236,
+          "wasm_raw": 98.47793
+        },
+        {
+          "page": 20,
+          "native_raw": 96.26836,
+          "wasm_raw": 96.27006
+        },
+        {
+          "page": 21,
+          "native_raw": 98.30257,
+          "wasm_raw": 98.488
+        },
+        {
+          "page": 22,
+          "native_raw": 96.80326,
+          "wasm_raw": 96.78162
+        },
+        {
+          "page": 23,
+          "native_raw": 97.99088,
+          "wasm_raw": 97.86419
+        },
+        {
+          "page": 24,
+          "native_raw": 96.57615,
+          "wasm_raw": 96.62165
+        },
+        {
+          "page": 25,
+          "native_raw": 99.11198,
+          "wasm_raw": 99.19345
+        },
+        {
+          "page": 26,
+          "native_raw": 98.94024,
+          "wasm_raw": 99.00166
+        },
+        {
+          "page": 27,
+          "native_raw": 97.66273,
+          "wasm_raw": 97.74715
+        },
+        {
+          "page": 28,
+          "native_raw": 97.61782,
+          "wasm_raw": 97.59231
+        },
+        {
+          "page": 29,
+          "native_raw": 98.08976,
+          "wasm_raw": 98.07282
+        },
+        {
+          "page": 30,
+          "native_raw": 98.38988,
+          "wasm_raw": 98.08415
+        },
+        {
+          "page": 31,
+          "native_raw": 97.52717,
+          "wasm_raw": 97.56885
+        },
+        {
+          "page": 32,
+          "native_raw": 96.67553,
+          "wasm_raw": 96.65534
+        },
+        {
+          "page": 33,
+          "native_raw": 97.84723,
+          "wasm_raw": 97.97834
+        },
+        {
+          "page": 34,
+          "native_raw": 97.75386,
+          "wasm_raw": 97.87309
+        },
+        {
+          "page": 35,
+          "native_raw": 98.43079,
+          "wasm_raw": 98.49743
+        },
+        {
+          "page": 36,
+          "native_raw": 98.2753,
+          "wasm_raw": 98.56398
+        },
+        {
+          "page": 37,
+          "native_raw": 98.33609,
+          "wasm_raw": 98.57295
+        },
+        {
+          "page": 38,
+          "native_raw": 98.70287,
+          "wasm_raw": 98.77172
+        },
+        {
+          "page": 39,
+          "native_raw": 98.22663,
+          "wasm_raw": 98.31179
+        },
+        {
+          "page": 40,
+          "native_raw": 94.16266,
+          "wasm_raw": 94.22653
+        },
+        {
+          "page": 41,
+          "native_raw": 96.83923,
+          "wasm_raw": 97.00349
+        },
+        {
+          "page": 42,
+          "native_raw": 99.09413,
+          "wasm_raw": 99.1513
+        },
+        {
+          "page": 43,
+          "native_raw": 96.59763,
+          "wasm_raw": 96.70134
+        },
+        {
+          "page": 44,
+          "native_raw": 97.78883,
+          "wasm_raw": 97.88179
+        },
+        {
+          "page": 45,
+          "native_raw": 96.32182,
+          "wasm_raw": 96.36664
+        },
+        {
+          "page": 46,
+          "native_raw": 98.21113,
+          "wasm_raw": 98.26866
+        },
+        {
+          "page": 47,
+          "native_raw": 98.87822,
+          "wasm_raw": 98.91129
+        },
+        {
+          "page": 48,
+          "native_raw": 96.33731,
+          "wasm_raw": 96.50572
+        },
+        {
+          "page": 49,
+          "native_raw": 94.97464,
+          "wasm_raw": 95.10434
+        },
+        {
+          "page": 50,
+          "native_raw": 95.46395,
+          "wasm_raw": 95.61245
+        },
+        {
+          "page": 51,
+          "native_raw": 97.55772,
+          "wasm_raw": 97.49157
+        },
+        {
+          "page": 52,
+          "native_raw": 96.79437,
+          "wasm_raw": 96.85476
+        },
+        {
+          "page": 53,
+          "native_raw": 97.3541,
+          "wasm_raw": 97.39004
+        },
+        {
+          "page": 54,
+          "native_raw": 96.16206,
+          "wasm_raw": 96.21753
+        },
+        {
+          "page": 55,
+          "native_raw": 94.39984,
+          "wasm_raw": 94.45077
+        },
+        {
+          "page": 56,
+          "native_raw": 95.84378,
+          "wasm_raw": 95.84234
+        },
+        {
+          "page": 57,
+          "native_raw": 95.05018,
+          "wasm_raw": 95.07452
+        },
+        {
+          "page": 58,
+          "native_raw": 94.57972,
+          "wasm_raw": 94.55973
+        },
+        {
+          "page": 59,
+          "native_raw": 93.38854,
+          "wasm_raw": 93.60857
+        },
+        {
+          "page": 60,
+          "native_raw": 95.80953,
+          "wasm_raw": 95.79123
+        },
+        {
+          "page": 61,
+          "native_raw": 96.02256,
+          "wasm_raw": 96.03912
+        },
+        {
+          "page": 62,
+          "native_raw": 95.87066,
+          "wasm_raw": 95.97656
+        },
+        {
+          "page": 63,
+          "native_raw": 96.46057,
+          "wasm_raw": 96.45447
+        },
+        {
+          "page": 64,
+          "native_raw": 95.87819,
+          "wasm_raw": 95.94487
+        },
+        {
+          "page": 65,
+          "native_raw": 95.69549,
+          "wasm_raw": 95.738
+        },
+        {
+          "page": 66,
+          "native_raw": 96.05049,
+          "wasm_raw": 96.11956
+        },
+        {
+          "page": 67,
+          "native_raw": 93.47568,
+          "wasm_raw": 93.50918
+        },
+        {
+          "page": 68,
+          "native_raw": 92.99151,
+          "wasm_raw": 93.08396
+        },
+        {
+          "page": 69,
+          "native_raw": 95.23152,
+          "wasm_raw": 95.17767
+        },
+        {
+          "page": 70,
+          "native_raw": 93.15898,
+          "wasm_raw": 93.10424
+        },
+        {
+          "page": 71,
+          "native_raw": 92.91047,
+          "wasm_raw": 92.8703
+        },
+        {
+          "page": 72,
+          "native_raw": 99.74181,
+          "wasm_raw": 99.75316
+        },
+        {
+          "page": 73,
+          "native_raw": 94.07672,
+          "wasm_raw": 94.23917
+        },
+        {
+          "page": 74,
+          "native_raw": 94.23034,
+          "wasm_raw": 94.374
+        },
+        {
+          "page": 75,
+          "native_raw": 96.54384,
+          "wasm_raw": 96.64764
+        },
+        {
+          "page": 76,
+          "native_raw": 95.32637,
+          "wasm_raw": 95.33141
+        },
+        {
+          "page": 77,
+          "native_raw": 96.26688,
+          "wasm_raw": 96.69377
+        },
+        {
+          "page": 78,
+          "native_raw": 97.59525,
+          "wasm_raw": 97.63125
+        },
+        {
+          "page": 79,
+          "native_raw": 96.18112,
+          "wasm_raw": 95.83
+        },
+        {
+          "page": 80,
+          "native_raw": 96.20466,
+          "wasm_raw": 96.38596
+        },
+        {
+          "page": 81,
+          "native_raw": 95.37872,
+          "wasm_raw": 95.46483
+        },
+        {
+          "page": 82,
+          "native_raw": 96.29056,
+          "wasm_raw": 96.33586
+        },
+        {
+          "page": 83,
+          "native_raw": 95.689,
+          "wasm_raw": 95.7725
+        },
+        {
+          "page": 84,
+          "native_raw": 95.02493,
+          "wasm_raw": 95.08464
+        },
+        {
+          "page": 85,
+          "native_raw": 93.04827,
+          "wasm_raw": 93.11152
+        },
+        {
+          "page": 86,
+          "native_raw": 93.48479,
+          "wasm_raw": 93.52216
+        },
+        {
+          "page": 87,
+          "native_raw": 95.92643,
+          "wasm_raw": 95.99503
+        },
+        {
+          "page": 88,
+          "native_raw": 88.83099,
+          "wasm_raw": 88.77482
+        },
+        {
+          "page": 89,
+          "native_raw": 95.54467,
+          "wasm_raw": 95.51207
+        },
+        {
+          "page": 90,
+          "native_raw": 96.58065,
+          "wasm_raw": 96.69763
+        },
+        {
+          "page": 91,
+          "native_raw": 95.77263,
+          "wasm_raw": 95.80381
+        },
+        {
+          "page": 92,
+          "native_raw": 95.22765,
+          "wasm_raw": 95.40773
+        },
+        {
+          "page": 93,
+          "native_raw": 95.14549,
+          "wasm_raw": 95.28058
+        },
+        {
+          "page": 94,
+          "native_raw": 97.02467,
+          "wasm_raw": 96.99588
+        },
+        {
+          "page": 95,
+          "native_raw": 95.50834,
+          "wasm_raw": 95.5556
+        },
+        {
+          "page": 96,
+          "native_raw": 95.3211,
+          "wasm_raw": 95.5032
+        },
+        {
+          "page": 97,
+          "native_raw": 95.64371,
+          "wasm_raw": 95.66462
+        },
+        {
+          "page": 98,
+          "native_raw": 95.88901,
+          "wasm_raw": 95.91434
+        },
+        {
+          "page": 99,
+          "native_raw": 94.9427,
+          "wasm_raw": 95.01816
+        },
+        {
+          "page": 100,
+          "native_raw": 96.91056,
+          "wasm_raw": 97.00518
+        },
+        {
+          "page": 101,
+          "native_raw": 98.13623,
+          "wasm_raw": 98.13507
+        },
+        {
+          "page": 102,
+          "native_raw": 96.12465,
+          "wasm_raw": 96.17356
+        },
+        {
+          "page": 103,
+          "native_raw": 93.83529,
+          "wasm_raw": 93.82874
+        },
+        {
+          "page": 104,
+          "native_raw": 91.01589,
+          "wasm_raw": 91.09144
+        },
+        {
+          "page": 105,
+          "native_raw": 92.75751,
+          "wasm_raw": 92.94781
+        },
+        {
+          "page": 106,
+          "native_raw": 95.01149,
+          "wasm_raw": 95.21564
+        },
+        {
+          "page": 107,
+          "native_raw": 96.46122,
+          "wasm_raw": 96.66065
+        },
+        {
+          "page": 108,
+          "native_raw": 97.55879,
+          "wasm_raw": 97.52257
+        },
+        {
+          "page": 109,
+          "native_raw": 91.87009,
+          "wasm_raw": 91.85867
+        },
+        {
+          "page": 110,
+          "native_raw": 94.28004,
+          "wasm_raw": 94.24135
+        },
+        {
+          "page": 111,
+          "native_raw": 95.535,
+          "wasm_raw": 95.55355
+        },
+        {
+          "page": 112,
+          "native_raw": 98.80692,
+          "wasm_raw": 98.75049
+        },
+        {
+          "page": 113,
+          "native_raw": 99.67811,
+          "wasm_raw": 99.66652
+        },
+        {
+          "page": 114,
+          "native_raw": 93.04091,
+          "wasm_raw": 93.11891
+        },
+        {
+          "page": 115,
+          "native_raw": 96.1324,
+          "wasm_raw": 96.20483
+        },
+        {
+          "page": 116,
+          "native_raw": 93.09288,
+          "wasm_raw": 93.2843
+        },
+        {
+          "page": 117,
+          "native_raw": 96.30443,
+          "wasm_raw": 96.56164
+        },
+        {
+          "page": 118,
+          "native_raw": 98.6462,
+          "wasm_raw": 98.6786
+        },
+        {
+          "page": 119,
+          "native_raw": 95.96455,
+          "wasm_raw": 96.04762
+        },
+        {
+          "page": 120,
+          "native_raw": 93.63401,
+          "wasm_raw": 93.83026
+        },
+        {
+          "page": 121,
+          "native_raw": 97.58563,
+          "wasm_raw": 97.65392
+        },
+        {
+          "page": 122,
+          "native_raw": 95.53767,
+          "wasm_raw": 95.64667
+        },
+        {
+          "page": 123,
+          "native_raw": 97.3791,
+          "wasm_raw": 97.35763
+        },
+        {
+          "page": 124,
+          "native_raw": 97.19961,
+          "wasm_raw": 97.25338
+        },
+        {
+          "page": 125,
+          "native_raw": 97.03848,
+          "wasm_raw": 97.01638
+        },
+        {
+          "page": 126,
+          "native_raw": 96.68999,
+          "wasm_raw": 96.59572
+        },
+        {
+          "page": 127,
+          "native_raw": 94.47993,
+          "wasm_raw": 94.51053
+        },
+        {
+          "page": 128,
+          "native_raw": 97.41687,
+          "wasm_raw": 97.4763
+        },
+        {
+          "page": 129,
+          "native_raw": 98.59146,
+          "wasm_raw": 98.57999
+        },
+        {
+          "page": 130,
+          "native_raw": 98.60074,
+          "wasm_raw": 98.63583
+        },
+        {
+          "page": 131,
+          "native_raw": 96.77794,
+          "wasm_raw": 96.94352
+        },
+        {
+          "page": 132,
+          "native_raw": 97.43197,
+          "wasm_raw": 97.40207
+        },
+        {
+          "page": 133,
+          "native_raw": 97.05455,
+          "wasm_raw": 97.21605
+        },
+        {
+          "page": 134,
+          "native_raw": 97.8671,
+          "wasm_raw": 97.93777
+        },
+        {
+          "page": 135,
+          "native_raw": 96.91297,
+          "wasm_raw": 96.99742
+        },
+        {
+          "page": 136,
+          "native_raw": 96.71919,
+          "wasm_raw": 96.70379
+        },
+        {
+          "page": 137,
+          "native_raw": 95.56557,
+          "wasm_raw": 95.62031
+        },
+        {
+          "page": 138,
+          "native_raw": 94.43778,
+          "wasm_raw": 94.64381
+        },
+        {
+          "page": 139,
+          "native_raw": 98.37291,
+          "wasm_raw": 98.58888
+        },
+        {
+          "page": 140,
+          "native_raw": 98.82342,
+          "wasm_raw": 98.83172
+        },
+        {
+          "page": 141,
+          "native_raw": 95.82507,
+          "wasm_raw": 95.88346
+        },
+        {
+          "page": 142,
+          "native_raw": 92.93018,
+          "wasm_raw": 92.99999
+        },
+        {
+          "page": 143,
+          "native_raw": 96.6809,
+          "wasm_raw": 96.67509
+        },
+        {
+          "page": 144,
+          "native_raw": 96.68666,
+          "wasm_raw": 96.7113
+        },
+        {
+          "page": 145,
+          "native_raw": 97.08404,
+          "wasm_raw": 97.22899
+        },
+        {
+          "page": 146,
+          "native_raw": 92.97478,
+          "wasm_raw": 93.08688
+        },
+        {
+          "page": 147,
+          "native_raw": 92.70773,
+          "wasm_raw": 92.69457
+        },
+        {
+          "page": 148,
+          "native_raw": 95.60017,
+          "wasm_raw": 95.7184
+        },
+        {
+          "page": 149,
+          "native_raw": 95.80909,
+          "wasm_raw": 95.88712
+        },
+        {
+          "page": 150,
+          "native_raw": 96.33023,
+          "wasm_raw": 96.48048
+        },
+        {
+          "page": 151,
+          "native_raw": 96.92371,
+          "wasm_raw": 96.89188
+        },
+        {
+          "page": 152,
+          "native_raw": 95.57662,
+          "wasm_raw": 95.55602
+        },
+        {
+          "page": 153,
+          "native_raw": 96.64258,
+          "wasm_raw": 96.77862
+        },
+        {
+          "page": 154,
+          "native_raw": 93.52079,
+          "wasm_raw": 93.61068
+        },
+        {
+          "page": 155,
+          "native_raw": 95.69282,
+          "wasm_raw": 95.90193
+        },
+        {
+          "page": 156,
+          "native_raw": 97.88833,
+          "wasm_raw": 97.89326
+        },
+        {
+          "page": 157,
+          "native_raw": 84.46512,
+          "wasm_raw": 85.22522
+        },
+        {
+          "page": 158,
+          "native_raw": 76.18606,
+          "wasm_raw": 77.65065
+        },
+        {
+          "page": 159,
+          "native_raw": 95.76274,
+          "wasm_raw": 95.78237
+        },
+        {
+          "page": 160,
+          "native_raw": 72.77094,
+          "wasm_raw": 75.92045
+        },
+        {
+          "page": 161,
+          "native_raw": 98.2689,
+          "wasm_raw": 98.25361
+        },
+        {
+          "page": 162,
+          "native_raw": 98.16655,
+          "wasm_raw": 98.1889
+        },
+        {
+          "page": 163,
+          "native_raw": 97.08901,
+          "wasm_raw": 97.11231
+        },
+        {
+          "page": 164,
+          "native_raw": 95.06436,
+          "wasm_raw": 94.98739
+        },
+        {
+          "page": 165,
+          "native_raw": 95.58402,
+          "wasm_raw": 95.64691
+        },
+        {
+          "page": 166,
+          "native_raw": 95.77991,
+          "wasm_raw": 95.77827
+        },
+        {
+          "page": 167,
+          "native_raw": 83.03246,
+          "wasm_raw": 83.67068
+        },
+        {
+          "page": 168,
+          "native_raw": 84.0186,
+          "wasm_raw": 85.00299
+        },
+        {
+          "page": 169,
+          "native_raw": 99.3646,
+          "wasm_raw": 99.35362
+        },
+        {
+          "page": 170,
+          "native_raw": 95.48908,
+          "wasm_raw": 95.65547
+        },
+        {
+          "page": 171,
+          "native_raw": 88.78423,
+          "wasm_raw": 88.50485
+        },
+        {
+          "page": 172,
+          "native_raw": 89.22918,
+          "wasm_raw": 89.49326
+        },
+        {
+          "page": 173,
+          "native_raw": 88.56737,
+          "wasm_raw": 88.9466
+        },
+        {
+          "page": 174,
+          "native_raw": 96.85548,
+          "wasm_raw": 96.94345
+        },
+        {
+          "page": 175,
+          "native_raw": 77.83788,
+          "wasm_raw": 77.59498
+        },
+        {
+          "page": 176,
+          "native_raw": 95.91465,
+          "wasm_raw": 96.00292
+        },
+        {
+          "page": 177,
+          "native_raw": 96.17157,
+          "wasm_raw": 96.2053
+        },
+        {
+          "page": 178,
+          "native_raw": 98.00476,
+          "wasm_raw": 98.07619
+        },
+        {
+          "page": 179,
+          "native_raw": 97.53214,
+          "wasm_raw": 97.59851
+        },
+        {
+          "page": 180,
+          "native_raw": 97.8694,
+          "wasm_raw": 97.87436
+        },
+        {
+          "page": 181,
+          "native_raw": 95.52394,
+          "wasm_raw": 95.67356
+        },
+        {
+          "page": 182,
+          "native_raw": 98.26578,
+          "wasm_raw": 98.29206
+        },
+        {
+          "page": 183,
+          "native_raw": 98.10974,
+          "wasm_raw": 98.21345
+        },
+        {
+          "page": 184,
+          "native_raw": 94.75851,
+          "wasm_raw": 94.91416
+        },
+        {
+          "page": 185,
+          "native_raw": 95.64596,
+          "wasm_raw": 95.50219
+        },
+        {
+          "page": 186,
+          "native_raw": 98.63693,
+          "wasm_raw": 98.75512
+        },
+        {
+          "page": 187,
+          "native_raw": 96.15943,
+          "wasm_raw": 96.28918
+        },
+        {
+          "page": 188,
+          "native_raw": 95.08313,
+          "wasm_raw": 95.16077
+        },
+        {
+          "page": 189,
+          "native_raw": 92.56335,
+          "wasm_raw": 92.78085
+        },
+        {
+          "page": 190,
+          "native_raw": 95.0015,
+          "wasm_raw": 94.82407
+        },
+        {
+          "page": 191,
+          "native_raw": 92.33804,
+          "wasm_raw": 92.31432
+        },
+        {
+          "page": 192,
+          "native_raw": 90.90058,
+          "wasm_raw": 90.99287
+        },
+        {
+          "page": 193,
+          "native_raw": 90.48732,
+          "wasm_raw": 90.44991
+        },
+        {
+          "page": 194,
+          "native_raw": 91.80459,
+          "wasm_raw": 91.80394
+        },
+        {
+          "page": 195,
+          "native_raw": 91.83571,
+          "wasm_raw": 91.93046
+        },
+        {
+          "page": 196,
+          "native_raw": 87.71821,
+          "wasm_raw": 87.67374
+        },
+        {
+          "page": 197,
+          "native_raw": 88.40288,
+          "wasm_raw": 88.54132
+        },
+        {
+          "page": 198,
+          "native_raw": 95.1588,
+          "wasm_raw": 95.12681
+        },
+        {
+          "page": 199,
+          "native_raw": 93.93626,
+          "wasm_raw": 93.9508
+        },
+        {
+          "page": 200,
+          "native_raw": 92.66414,
+          "wasm_raw": 92.6584
+        },
+        {
+          "page": 201,
+          "native_raw": 92.69556,
+          "wasm_raw": 92.62965
+        },
+        {
+          "page": 202,
+          "native_raw": 89.64108,
+          "wasm_raw": 89.85066
+        },
+        {
+          "page": 203,
+          "native_raw": 95.68664,
+          "wasm_raw": 95.8044
+        },
+        {
+          "page": 204,
+          "native_raw": 96.47376,
+          "wasm_raw": 96.47846
+        },
+        {
+          "page": 205,
+          "native_raw": 95.99374,
+          "wasm_raw": 96.02968
+        },
+        {
+          "page": 206,
+          "native_raw": 96.02322,
+          "wasm_raw": 96.01723
+        },
+        {
+          "page": 207,
+          "native_raw": 91.30896,
+          "wasm_raw": 91.3194
+        },
+        {
+          "page": 208,
+          "native_raw": 84.45558,
+          "wasm_raw": 84.9757
+        },
+        {
+          "page": 209,
+          "native_raw": 94.39402,
+          "wasm_raw": 94.43839
+        },
+        {
+          "page": 210,
+          "native_raw": 92.8374,
+          "wasm_raw": 92.63681
+        },
+        {
+          "page": 211,
+          "native_raw": 95.11131,
+          "wasm_raw": 95.0863
+        },
+        {
+          "page": 212,
+          "native_raw": 94.27115,
+          "wasm_raw": 94.50034
+        },
+        {
+          "page": 213,
+          "native_raw": 90.34126,
+          "wasm_raw": 90.59163
+        },
+        {
+          "page": 214,
+          "native_raw": 88.74552,
+          "wasm_raw": 89.16687
+        },
+        {
+          "page": 215,
+          "native_raw": 95.80396,
+          "wasm_raw": 95.81977
+        }
+      ]
+    },
+    {
+      "key": "outline",
+      "input": "samples/task3307/issue3307_outline_number.hwpx",
+      "input_sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+      "pdf": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "pdf_sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+      "compat": "2022",
+      "pages": 9,
+      "native_min": 97.30996,
+      "wasm_min": 97.15648,
+      "native_exit": 0,
+      "wasm_exit": 0,
+      "native_manifest_sha256": "75d9d5774a85cefcafe3faaddf2eba0af70d619b2c9a893bb623ba055b35f3b7",
+      "wasm_manifest_sha256": "362a5eb7f62130f7107ae0ee9b21a6c39a6b959e1faf9fcb095f9cfc420a25a8",
+      "page_metrics": [
+        {
+          "page": 1,
+          "native_raw": 100.0,
+          "wasm_raw": 100.0
+        },
+        {
+          "page": 2,
+          "native_raw": 97.30996,
+          "wasm_raw": 97.15648
+        },
+        {
+          "page": 3,
+          "native_raw": 100.0,
+          "wasm_raw": 100.0
+        },
+        {
+          "page": 4,
+          "native_raw": 100.0,
+          "wasm_raw": 100.0
+        },
+        {
+          "page": 5,
+          "native_raw": 100.0,
+          "wasm_raw": 100.0
+        },
+        {
+          "page": 6,
+          "native_raw": 100.0,
+          "wasm_raw": 100.0
+        },
+        {
+          "page": 7,
+          "native_raw": 97.88785,
+          "wasm_raw": 97.81921
+        },
+        {
+          "page": 8,
+          "native_raw": 99.9828,
+          "wasm_raw": 99.96373
+        },
+        {
+          "page": 9,
+          "native_raw": 100.0,
+          "wasm_raw": 100.0
+        }
+      ]
+    },
+    {
+      "key": "row-hwp",
+      "input": "samples/rowbreak-problem-pages.hwp",
+      "input_sha256": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed",
+      "pdf": "pdf/rowbreak-problem-pages-hwp-2024.pdf",
+      "pdf_sha256": "2c49bda9cc21dc8b93b554d2607da241dd7e894657eb308ed823e7d44654e85c",
+      "compat": "2024",
+      "pages": 18,
+      "native_min": 97.86923,
+      "wasm_min": 97.91713,
+      "native_exit": 0,
+      "wasm_exit": 0,
+      "native_manifest_sha256": "6d3137c44bb780b7ada0d46b5c2f1ee2acbaf9355d2e2b88c5df44b6c3b0c5a1",
+      "wasm_manifest_sha256": "224c381ae267123cc3b2f5ea9dc22eaa1373ab675514302a7e7ebaa66fc265f3",
+      "page_metrics": [
+        {
+          "page": 1,
+          "native_raw": 99.9208,
+          "wasm_raw": 99.92124
+        },
+        {
+          "page": 2,
+          "native_raw": 99.69004,
+          "wasm_raw": 99.69217
+        },
+        {
+          "page": 3,
+          "native_raw": 99.99844,
+          "wasm_raw": 99.98183
+        },
+        {
+          "page": 4,
+          "native_raw": 99.99502,
+          "wasm_raw": 99.99356
+        },
+        {
+          "page": 5,
+          "native_raw": 99.99712,
+          "wasm_raw": 99.9971
+        },
+        {
+          "page": 6,
+          "native_raw": 100.0,
+          "wasm_raw": 99.99615
+        },
+        {
+          "page": 7,
+          "native_raw": 99.74778,
+          "wasm_raw": 99.72694
+        },
+        {
+          "page": 8,
+          "native_raw": 98.50271,
+          "wasm_raw": 98.51133
+        },
+        {
+          "page": 9,
+          "native_raw": 99.93608,
+          "wasm_raw": 99.94385
+        },
+        {
+          "page": 10,
+          "native_raw": 100.0,
+          "wasm_raw": 100.0
+        },
+        {
+          "page": 11,
+          "native_raw": 97.86923,
+          "wasm_raw": 97.91713
+        },
+        {
+          "page": 12,
+          "native_raw": 98.01683,
+          "wasm_raw": 98.03172
+        },
+        {
+          "page": 13,
+          "native_raw": 98.84461,
+          "wasm_raw": 98.83836
+        },
+        {
+          "page": 14,
+          "native_raw": 98.89226,
+          "wasm_raw": 98.90645
+        },
+        {
+          "page": 15,
+          "native_raw": 99.99848,
+          "wasm_raw": 99.99924
+        },
+        {
+          "page": 16,
+          "native_raw": 98.52036,
+          "wasm_raw": 98.4814
+        },
+        {
+          "page": 17,
+          "native_raw": 99.04847,
+          "wasm_raw": 99.04962
+        },
+        {
+          "page": 18,
+          "native_raw": 100.0,
+          "wasm_raw": 100.0
+        }
+      ]
+    },
+    {
+      "key": "row-hwpx",
+      "input": "samples/rowbreak-problem-pages.hwpx",
+      "input_sha256": "4ccc321e7eb146f28b768654502a128ba1ae408238fd1ed37d51e963732eb5b0",
+      "pdf": "pdf/rowbreak-problem-pages-hwpx-2020.pdf",
+      "pdf_sha256": "e3dc7bb21707f92e42e83808023bf155f62475fc4eb0e0498709d03986c5afe5",
+      "compat": "2022",
+      "pages": 18,
+      "native_min": 94.05007,
+      "wasm_min": 93.97178,
+      "native_exit": 0,
+      "wasm_exit": 0,
+      "native_manifest_sha256": "934778f76a5bbf2db2050a0b19fc8d5d0f82d93ca60e69c2a412377c5f449737",
+      "wasm_manifest_sha256": "cb7a57ce238b2803cfeccb2254f6f5356530ce9e6b7f9753c545a0d572611bd4",
+      "page_metrics": [
+        {
+          "page": 1,
+          "native_raw": 99.78911,
+          "wasm_raw": 99.78944
+        },
+        {
+          "page": 2,
+          "native_raw": 99.54784,
+          "wasm_raw": 99.54876
+        },
+        {
+          "page": 3,
+          "native_raw": 99.99845,
+          "wasm_raw": 99.97889
+        },
+        {
+          "page": 4,
+          "native_raw": 99.99646,
+          "wasm_raw": 99.99644
+        },
+        {
+          "page": 5,
+          "native_raw": 94.05007,
+          "wasm_raw": 93.97178
+        },
+        {
+          "page": 6,
+          "native_raw": 100.0,
+          "wasm_raw": 99.99625
+        },
+        {
+          "page": 7,
+          "native_raw": 99.8103,
+          "wasm_raw": 99.78178
+        },
+        {
+          "page": 8,
+          "native_raw": 98.53646,
+          "wasm_raw": 98.57156
+        },
+        {
+          "page": 9,
+          "native_raw": 99.93631,
+          "wasm_raw": 99.94002
+        },
+        {
+          "page": 10,
+          "native_raw": 99.98646,
+          "wasm_raw": 99.9824
+        },
+        {
+          "page": 11,
+          "native_raw": 95.74925,
+          "wasm_raw": 95.75079
+        },
+        {
+          "page": 12,
+          "native_raw": 97.68091,
+          "wasm_raw": 97.64847
+        },
+        {
+          "page": 13,
+          "native_raw": 98.81057,
+          "wasm_raw": 98.79067
+        },
+        {
+          "page": 14,
+          "native_raw": 99.88224,
+          "wasm_raw": 99.89651
+        },
+        {
+          "page": 15,
+          "native_raw": 99.99848,
+          "wasm_raw": 99.99924
+        },
+        {
+          "page": 16,
+          "native_raw": 98.52036,
+          "wasm_raw": 98.4814
+        },
+        {
+          "page": 17,
+          "native_raw": 99.04937,
+          "wasm_raw": 99.05052
+        },
+        {
+          "page": 18,
+          "native_raw": 100.0,
+          "wasm_raw": 100.0
+        }
+      ]
+    },
+    {
+      "key": "sample2",
+      "input": "samples/hwpx_sample2.hwp",
+      "input_sha256": "ca66d521d070ac8442e09fd3f283e17611eb9efb45eb4bf6c3a8f65e604f6b5f",
+      "pdf": "pdf/hwpx_sample2-2020.pdf",
+      "pdf_sha256": "3d792e4116183a9cbf9f31b6abe561d040565f2e16af30ab57eb449732f99c78",
+      "compat": "2022",
+      "pages": 29,
+      "native_min": 96.12298,
+      "wasm_min": 95.97915,
+      "native_exit": 0,
+      "wasm_exit": 0,
+      "native_manifest_sha256": "d51c6a5a53fa3a116441b79076c52649abfa28fe5e0cf9f7c85a8127e5cb7208",
+      "wasm_manifest_sha256": "bd35a4b3e6676290e98b4b29a5ced7f35698cf3dc62b2ac54ff1cde754d8780b",
+      "page_metrics": [
+        {
+          "page": 1,
+          "native_raw": 96.21876,
+          "wasm_raw": 96.30033
+        },
+        {
+          "page": 2,
+          "native_raw": 99.39923,
+          "wasm_raw": 99.42955
+        },
+        {
+          "page": 3,
+          "native_raw": 98.90725,
+          "wasm_raw": 98.94675
+        },
+        {
+          "page": 4,
+          "native_raw": 99.96855,
+          "wasm_raw": 99.99325
+        },
+        {
+          "page": 5,
+          "native_raw": 99.74563,
+          "wasm_raw": 99.7936
+        },
+        {
+          "page": 6,
+          "native_raw": 99.52591,
+          "wasm_raw": 99.74092
+        },
+        {
+          "page": 7,
+          "native_raw": 99.95557,
+          "wasm_raw": 100.0
+        },
+        {
+          "page": 8,
+          "native_raw": 96.12298,
+          "wasm_raw": 95.97915
+        },
+        {
+          "page": 9,
+          "native_raw": 99.17065,
+          "wasm_raw": 99.19796
+        },
+        {
+          "page": 10,
+          "native_raw": 99.9859,
+          "wasm_raw": 99.99655
+        },
+        {
+          "page": 11,
+          "native_raw": 98.94923,
+          "wasm_raw": 98.93787
+        },
+        {
+          "page": 12,
+          "native_raw": 99.75551,
+          "wasm_raw": 99.74036
+        },
+        {
+          "page": 13,
+          "native_raw": 99.20585,
+          "wasm_raw": 99.23664
+        },
+        {
+          "page": 14,
+          "native_raw": 97.48489,
+          "wasm_raw": 97.73002
+        },
+        {
+          "page": 15,
+          "native_raw": 99.84799,
+          "wasm_raw": 99.90596
+        },
+        {
+          "page": 16,
+          "native_raw": 99.54946,
+          "wasm_raw": 99.582
+        },
+        {
+          "page": 17,
+          "native_raw": 99.84881,
+          "wasm_raw": 99.86373
+        },
+        {
+          "page": 18,
+          "native_raw": 99.25534,
+          "wasm_raw": 99.30031
+        },
+        {
+          "page": 19,
+          "native_raw": 99.91241,
+          "wasm_raw": 99.94545
+        },
+        {
+          "page": 20,
+          "native_raw": 99.74263,
+          "wasm_raw": 99.87618
+        },
+        {
+          "page": 21,
+          "native_raw": 99.72064,
+          "wasm_raw": 99.83946
+        },
+        {
+          "page": 22,
+          "native_raw": 99.19327,
+          "wasm_raw": 99.22991
+        },
+        {
+          "page": 23,
+          "native_raw": 99.974,
+          "wasm_raw": 100.0
+        },
+        {
+          "page": 24,
+          "native_raw": 99.94963,
+          "wasm_raw": 99.99815
+        },
+        {
+          "page": 25,
+          "native_raw": 99.90521,
+          "wasm_raw": 100.0
+        },
+        {
+          "page": 26,
+          "native_raw": 99.95156,
+          "wasm_raw": 100.0
+        },
+        {
+          "page": 27,
+          "native_raw": 98.50447,
+          "wasm_raw": 98.68191
+        },
+        {
+          "page": 28,
+          "native_raw": 99.9709,
+          "wasm_raw": 99.98637
+        },
+        {
+          "page": 29,
+          "native_raw": 99.96556,
+          "wasm_raw": 99.98341
+        }
+      ]
+    },
+    {
+      "key": "toggle",
+      "input": "samples/pic-in-table-with-toggle.hwp",
+      "input_sha256": "e69b29f30d683d206f100fc36f6cc69a284dbf62aa18e05896684b6c585e2df1",
+      "pdf": "pdf/pic-in-table-with-toggle-2020.pdf",
+      "pdf_sha256": "ee92c9183ad5afa9f16fe92d3a2a9f1c420493310d19245e29e5196d295f8c1b",
+      "compat": "2022",
+      "pages": 1,
+      "native_min": 100.0,
+      "wasm_min": 100.0,
+      "native_exit": 0,
+      "wasm_exit": 0,
+      "native_manifest_sha256": "830da2ebcc9bf68c9e0f5f112f5c40bb0e047e66c9f4e46cf2f23eb7d1dfe8e6",
+      "wasm_manifest_sha256": "6ccd2127a235377a48ea8800c4dd2a389dd5961f98881ec821b0324b2de2723d",
+      "page_metrics": [
+        {
+          "page": 1,
+          "native_raw": 100.0,
+          "wasm_raw": 100.0
+        }
+      ]
+    }
+  ]
+}

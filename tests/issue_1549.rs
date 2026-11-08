@@ -1,6 +1,8 @@
-//! Issue #1549: visible host 문단(텍스트=섹션 제목)에 양수 offset co-anchored
-//! TopAndBottom float 표가 여러 개 있을 때, host 제목이 표 *아래*로 밀려 렌더되던
-//! 회귀를 막는다. 한컴은 제목을 문단 앵커(표 위)에 두고 양수 offset 표를 그 아래에 둔다.
+//! Issue #1549: 공동 앵커 표·제목·후속 본문의 실제 순서를 보존한다.
+//! 원 이슈의 실문서 설명을 합성 입력의 정답으로 대신하지 않는다. 정확히 같은
+//! HWPX의 한컴 2020 Print는 2쪽이며 세 표 아래에 제목, 그 아래에 본문을 둔다.
+//! 전쪽 Native/fresh WASM 최저 97.31566/97.44110%와 직접 판독 근거:
+//! `mydocs/pr/assets/issue_1549/stored_title_contract/`.
 //!
 //! fixture: samples/issue1549_multipositive_float_tables.hwpx
 //!   = issue1510 구조에서 float 표 offset 을 모두 작은 양수로 narrow
@@ -67,43 +69,129 @@ fn find_title_bbox(root: &RenderNode, needle: &str) -> Option<(f64, f64)> {
 }
 
 #[test]
-fn issue_1549_multi_positive_float_host_title_renders_above_tables() {
+fn issue_1549_saved_coanchored_tables_precede_their_host_title_and_body() {
     let doc = load_doc(HWPX_SAMPLE);
+    assert_eq!(doc.page_count(), 2, "정확한 원본의 독립 Print 전체 쪽수");
     let tree = doc
         .build_page_render_tree(0)
         .expect("build_page_render_tree(0)");
 
     let (title_top, title_bottom) =
         find_title_bbox(&tree.root, TITLE_NEEDLE).expect("host title text bbox");
-    let table_tops: Vec<f64> = TARGET_TABLES
+    let tables: Vec<(f64, f64)> = TARGET_TABLES
         .iter()
-        .map(|&ci| {
-            find_table_bbox(&tree.root, ci)
-                .unwrap_or_else(|| panic!("table ci={ci} bbox"))
-                .0
-        })
+        .map(|&ci| find_table_bbox(&tree.root, ci).unwrap_or_else(|| panic!("table ci={ci} bbox")))
         .collect();
-    let first_table_top = table_tops.iter().cloned().fold(f64::INFINITY, f64::min);
+    for adjacent in tables.windows(2) {
+        assert!(
+            adjacent[0].1 <= adjacent[1].0 + 0.5,
+            "원본 A·B·C 표의 순서·비겹침"
+        );
+    }
+    let last_table_bottom = tables.last().expect("원본 세 표").1;
+    assert!(
+        title_top + 0.5 >= last_table_bottom,
+        "독립 Print의 제목은 마지막 표 아래: 표 하단 {last_table_bottom}, 제목 {title_top}"
+    );
+    let (body_top, _) = find_title_bbox(&tree.root, "filler paragraph 01").expect("첫 후속 본문");
+    assert!(body_top + 0.5 >= title_bottom, "후속 본문은 제목 아래");
 
-    assert!(
-        title_top < first_table_top + 0.5,
-        "host title must render at the paragraph anchor, above its co-anchored \
-         positive-offset float tables (Hancom places the title above the tables): \
-         title_top={title_top:.1}, table_tops={table_tops:?}",
-    );
-    // 한컴은 제목을 자기 줄에 두고 표를 그 줄 *아래*에 둔다. 표가 제목 줄을 침범하면
-    // 안 된다(작은 양수 offset 에서 제목·표가 같은 y 로 밀려 겹치던 회귀 가드).
-    assert!(
-        first_table_top + 0.5 >= title_bottom,
-        "co-anchored float table must clear the host title line, not overlap it: \
-         title=({title_top:.1}..{title_bottom:.1}), first_table_top={first_table_top:.1}",
-    );
+    fn text(node: &RenderNode) -> String {
+        let mut out = match &node.node_type {
+            RenderNodeType::TextRun(run) => run.display_or_text().to_owned(),
+            _ => String::new(),
+        };
+        for child in &node.children {
+            out.push_str(&text(child));
+        }
+        out
+    }
+    let content = text(&tree.root);
+    for label in [
+        "A11",
+        "A12",
+        "A21",
+        "A22",
+        "B11",
+        "B12",
+        "B21",
+        "B22",
+        "C11",
+        TITLE_NEEDLE,
+    ] {
+        assert_eq!(
+            content.matches(label).count(),
+            1,
+            "1쪽 내용 단일 소유: {label}"
+        );
+    }
+    let mut previous = 0;
+    for number in 1..=30 {
+        let label = format!("filler paragraph {number:02}");
+        assert_eq!(
+            content.matches(&label).count(),
+            1,
+            "후속 본문 누락·중복: {label}"
+        );
+        let index = content.find(&label).unwrap();
+        assert!(index >= previous, "후속 문단 원문 순서: {label}");
+        previous = index + label.len();
+    }
+    let last = doc
+        .build_page_render_tree(1)
+        .expect("독립 Print의 마지막 쪽");
+    let tail = text(&last.root);
+    assert_eq!(content.matches("filler paragraph").count(), 30);
+    assert_eq!(tail.matches("filler paragraph").count(), 2);
+    for number in 1..=32 {
+        let label = format!("filler paragraph {number:02}");
+        let (owner, other) = if number <= 30 {
+            (&content, &tail)
+        } else {
+            (&tail, &content)
+        };
+        assert_eq!(
+            owner.matches(&label).count(),
+            1,
+            "독립 Print의 쪽 소속: {label}"
+        );
+        assert!(!other.contains(&label), "쪽 경계를 넘은 중복: {label}");
+    }
+    assert!(tail.find("filler paragraph 31") < tail.find("filler paragraph 32"));
+
+    // 같은 종료 동작의 완료 2쪽은 양쪽 raw 100%다. PDF 글자 원점·기준선을
+    // 72pt→96dpi로 환산하며, 98% 미만인 1쪽에는 절대 좌표를 추가하지 않는다.
+    fn check_tail_baseline(node: &RenderNode, found: &mut usize) {
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            let expected = match run.display_or_text() {
+                "filler paragraph 31" => Some((31, 143.523_153)),
+                "filler paragraph 32" => Some((32, 164.779_917)),
+                _ => None,
+            };
+            if let Some((paragraph, baseline)) = expected {
+                assert_eq!(run.para_index, Some(paragraph), "원본 문단 소유");
+                assert!(
+                    (node.bbox.x - 113.378_550).abs() <= 2.0,
+                    "독립 Print 글자 원점"
+                );
+                assert!(
+                    (node.bbox.y + run.baseline - baseline).abs() <= 2.0,
+                    "독립 Print 기준선"
+                );
+                *found += 1;
+            }
+        }
+        for child in &node.children {
+            check_tail_baseline(child, found);
+        }
+    }
+    let mut found = 0;
+    check_tail_baseline(&last.root, &mut found);
+    assert_eq!(found, 2, "마지막 두 문단의 줄이 한 번씩 있어야 한다");
 }
 
-/// 제목을 앵커로 되돌리면(위 테스트), 옛 버그가 우연히 제공하던 flow advance 가
-/// 사라져 뒤따르는 *빈-host(text 없는)* para float 표가 선행 float 점유밴드 위로
-/// 올라와 겹칠 수 있다(작업일지류 실문서 회귀). 빈-host float 도 선행 exclusion
-/// 밴드 아래로 클램프되는지 가드한다.
+/// 별도 빈 host의 후행 표는 선행 float 점유 영역과 겹치지 않는다.
+/// 위 합성 입력의 제목 순서 교정을 이 독립적인 표 간 관계에 확대 적용하지 않는다.
 ///
 /// fixture: 문단0 = visible host 제목 + 양수 offset float 표 A,
 ///          문단1 = 빈 host(text 0) + 양수 offset float 표 C (A 밴드와 겹치는 자연위치).

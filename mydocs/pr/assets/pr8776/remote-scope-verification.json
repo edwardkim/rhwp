@@ -1,0 +1,28 @@
+{
+  "pr": 8776,
+  "head": "c09e8c9f5e0389776f1fc29c6fe9ca75779a6d56",
+  "body_sha256": "eef44a6ab9e2aa009aac4fa3b699da325bef47c964c3388b4e5336637b239922",
+  "body_verified": true,
+  "file_count": 18,
+  "files": [
+    ".github/workflows/full-renderer-sweep.yml",
+    ".github/workflows/release-binary.yml",
+    "mydocs/manual/publish_guide.md",
+    "mydocs/tech/canvaskit-parity-implementation.md",
+    "mydocs/tech/investigations/release-0.9.0-ci-runtime/browser-capture-matrix.tsv",
+    "mydocs/tech/investigations/release-0.9.0-ci-runtime/ci-classification.json",
+    "mydocs/tech/investigations/release-0.9.0-ci-runtime/cli-reuse-proof.json",
+    "mydocs/tech/investigations/release-0.9.0-ci-runtime/native-output-comparison.tsv",
+    "mydocs/tech/investigations/release-0.9.0-ci-runtime/runtime-validation.json",
+    "mydocs/tech/investigations/release-0.9.0-ci-runtime/workflow-semantic-diff.json",
+    "mydocs/working/release_0_9_0_ci_runtime_corrections.md",
+    "rhwp-studio/e2e/renderer-baseline-contract.mjs",
+    "rhwp-studio/e2e/renderer-baseline-native-diff.mjs",
+    "rhwp-studio/e2e/renderer-baseline.mjs",
+    "rhwp-studio/e2e/renderer-contract.test.mjs",
+    "scripts/renderer_baseline.py",
+    "scripts/tests/test_canvaskit_parity_batches.py",
+    "scripts/tests/test_release_channel_policy_workflow.py"
+  ],
+  "no_product_source_change": true
+}

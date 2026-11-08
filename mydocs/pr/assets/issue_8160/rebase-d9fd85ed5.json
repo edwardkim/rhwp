@@ -1,0 +1,123 @@
+{
+  "branch": "task/8160-sample16-raw100",
+  "base_sha": "d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867",
+  "before_head": "67c27cb3b97404d421c8b7431257104b11b4f4dd",
+  "after_head": "2cd7f5dde2ebbd2e6dd1cc7d9dc28663bf0cded5",
+  "before_tree": "b08f7a24e4db6ab5da77738d5ba8450f8a7e7543",
+  "after_tree": "b08f7a24e4db6ab5da77738d5ba8450f8a7e7543",
+  "whole_tree_identical": true,
+  "backup_branch": "task/8160-sample16-before-rebase",
+  "worktree_clean": true,
+  "conflicts": [
+    "Cargo workspace exclude: preserve JPEG encoder and SVG fork",
+    "stage4 working record: preserve all prior records"
+  ],
+  "commits": [
+    {
+      "old_sha": "7d45c82200a96276ebfd55446451eca6e0fc3f3c",
+      "new_sha": "fa509c04291dffd72344927368b222d2744a9c90",
+      "subject": "문서: #8160 새 Print 기준과 Native 전쪽 진단 고정"
+    },
+    {
+      "old_sha": "a4aeedbc42e21d705b8a89c84d4fbb29259ad727",
+      "new_sha": "b12ddcdb537f306cce33d404ed4c772a3e074c16",
+      "subject": "문서: Native 진단 TSV 줄바꿈과 빈 좌표 표기 정리"
+    },
+    {
+      "old_sha": "a6973140966804a5cedb77e29194455416989396",
+      "new_sha": "f1b1cd9b6abd642bd52269573fc4df70b847e13c",
+      "subject": "문서: #8160 fresh WASM 전쪽 기준 측정 기록"
+    },
+    {
+      "old_sha": "fe59486c04e040e2b487e5d511d0ea3d48860cab",
+      "new_sha": "7265ab38b5cca2ceec774ff7ae1886cac86175e8",
+      "subject": "수정: HCI Poppy 굵은 기호의 원본 전진폭 선택"
+    },
+    {
+      "old_sha": "328ac4d4420f47969f7fff12586072f33baf4982",
+      "new_sha": "fbf97c8d38cc4a33c8f4b5b3c170e109fec8aef6",
+      "subject": "수정: #8160 탭·표 전진과 원본 기호 배치의 공통 소비 정리"
+    },
+    {
+      "old_sha": "f0f434b8f5f31386fa4f2c2ff881d0f150ceac45",
+      "new_sha": "43ee2d7de5feac178ce4801b2f4a2944c3d3a9c0",
+      "subject": "fix: 원본 BCP 문단의 두 줄을 숨기는 예외 제거"
+    },
+    {
+      "old_sha": "e098aa34389b56f02ffc4645c850c12be552c300",
+      "new_sha": "c797b083e4b50db6e3f4abd2240f277c0462f383",
+      "subject": "수정: 원본 글꼴 배치와 Print 그림의 공통 전달 복원"
+    },
+    {
+      "old_sha": "409184576ba5d7576b80b6f84c2adbfa986c6e9d",
+      "new_sha": "343302c4340eecdb4b20b5508119f84c565f0d1b",
+      "subject": "수정: WMF 연속 OR·AND 마스크의 투명 영역 보존"
+    },
+    {
+      "old_sha": "395f1c24840894979a3697fbe29459b52d5253f0",
+      "new_sha": "4779dcaba205b61b34820724bafdf5bb4ca2566b",
+      "subject": "수정: 공급된 HFT 윤곽의 잉크 폭을 Canvas에서도 보존"
+    },
+    {
+      "old_sha": "f3408d9cc16a8fac9092946f52d898250b7a3f16",
+      "new_sha": "e730b81e35e2462b42b819e38cbd36514f79e0ea",
+      "subject": "수정: 인쇄 JPEG의 브라우저 복원을 공통 프레임에 연결"
+    },
+    {
+      "old_sha": "213f797d8e0acf73d0d0b40452f56a92956c7bc6",
+      "new_sha": "19c45ea7acdddfe47256d62792a99347ff837089",
+      "subject": "기능: WMF 장치 재생에 원본 창과 글꼴 계약 전달"
+    },
+    {
+      "old_sha": "44d984ddf3cfba98780871add2ca7280dbc7a077",
+      "new_sha": "c1e971ba13ed9e56ea19cab8b433e9f940937a95",
+      "subject": "수정: 명시적인 글자 폭 맞춤만 공통 paint에서 소비"
+    },
+    {
+      "old_sha": "803046519d82d20c71d85937b96a8eefabb200d0",
+      "new_sha": "de045f00067c205cbe775673d234076d3f5533a3",
+      "subject": "기능: WMF 공통 인쇄 재생기를 세 출력 경로에 연결"
+    },
+    {
+      "old_sha": "d0647274d4f05b0b50a53f0323988ba6e1a6947f",
+      "new_sha": "9ed150978d0ac7629395c5a98b69b940fe714ed1",
+      "subject": "문서: sample16 Native 전쪽 192쪽 raw 100% 검증 기록"
+    },
+    {
+      "old_sha": "5b2f92f0a3a8929ad629406259d8a47df7b3a917",
+      "new_sha": "b7f1c34fc7ebba446f82940f49e187c2b4038f01",
+      "subject": "수정: CanvasKit WMF 자원 준비와 재생의 판별을 공유"
+    },
+    {
+      "old_sha": "d311cb14bef7c08ad2bf1af90ac183ba1a3e0112",
+      "new_sha": "2fb7557199885a6bf981ba2ff76e311b27e1f66d",
+      "subject": "검증: sample16 Native와 표준 WASM 전 384쪽 raw 100% 확정"
+    },
+    {
+      "old_sha": "46c4d6b0f5a3ac985d55e21c7abbdf21155ce06e",
+      "new_sha": "a2c4d2b20e2bfec2171f21d021366ad323e1fd01",
+      "subject": "검사: BCP 원본 두 줄과 후속 문단 소유로 기대값 정정"
+    },
+    {
+      "old_sha": "da0a43cb520d9f0f061dba30f28d922ee7b5f9e1",
+      "new_sha": "f4ce4a86b7eed162ce2373937dc699fb16929c23",
+      "subject": "검사: sample16 전 192쪽 계약과 384개 실제 출력 회귀 통합"
+    },
+    {
+      "old_sha": "9a1cf5e99ac61f591a36d328ef7054afc1ccd55e",
+      "new_sha": "9f90c051b5ef9ad4927d68e0f16ff84e9c05735f",
+      "subject": "증적: 독립 인쇄 계약의 원본과 새 MCP PDF 보존"
+    },
+    {
+      "old_sha": "37fbde9cfd537488d397ec15472ca6124b3edf66",
+      "new_sha": "bdbb8f23200bbe93d2f020a0cb2395c09458b79e",
+      "subject": "검사: 명시 폭 맞춤과 일반 글자 폭 보존의 기대값 통합"
+    },
+    {
+      "old_sha": "67c27cb3b97404d421c8b7431257104b11b4f4dd",
+      "new_sha": "2cd7f5dde2ebbd2e6dd1cc7d9dc28663bf0cded5",
+      "subject": "수정: 인쇄 JPEG fork를 최신 패키징 후보와 고지에 연결"
+    }
+  ],
+  "remote_push_and_pr": "require explicit approval"
+}

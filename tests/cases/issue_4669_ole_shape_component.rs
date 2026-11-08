@@ -28,7 +28,10 @@ fn repo_path(rel: &str) -> PathBuf {
 
 fn section_xml_of(bytes: &[u8]) -> String {
     let mut zip = zip::ZipArchive::new(std::io::Cursor::new(bytes)).expect("ZIP 열기");
-    let names: Vec<String> = zip.file_names().map(str::to_string).collect();
+    let names: Vec<String> = zip
+        .file_names()
+        .map(|name| name.expect("ZIP 엔트리 이름").into_owned())
+        .collect();
     let mut xml = String::new();
     for name in names {
         if name.starts_with("Contents/section") && name.ends_with(".xml") {
@@ -98,7 +101,10 @@ fn pack_section_into_hansel(fixture_section: &str) -> Vec<u8> {
         zip::write::SimpleFileOptions::default().compression_method(zip::CompressionMethod::Stored);
     let deflated = zip::write::SimpleFileOptions::default()
         .compression_method(zip::CompressionMethod::Deflated);
-    let names: Vec<String> = src.file_names().map(str::to_string).collect();
+    let names: Vec<String> = src
+        .file_names()
+        .map(|name| name.expect("ZIP 엔트리 이름").into_owned())
+        .collect();
     for name in names {
         let mut data = Vec::new();
         src.by_name(&name)

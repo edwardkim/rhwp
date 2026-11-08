@@ -1,0 +1,85 @@
+{
+  "purpose": "수식 및 HFT 메트릭 진단 입력과 독립 한컴 저장·Print 출력 보존",
+  "files": [
+    {
+      "path": "pdf/issue7642-hft-char-style-diagnostic/char-style-ascii-2020.hwp",
+      "bytes": 18432,
+      "sha256": "2f3220f8ff655eb571fb98ad7dfd051df5f09b9cc770d52fd09c226150d9e028"
+    },
+    {
+      "path": "pdf/issue7642-hft-char-style-diagnostic/char-style-ascii-2020.pdf",
+      "bytes": 67287,
+      "sha256": "f3099f4576782f5b822f65fe08fbd8851a8b30868202b304462d9ccf4fce9fb6"
+    },
+    {
+      "path": "pdf/issue7642-hft-char-style-diagnostic/char-style-hwp-v3-2020.hwp",
+      "bytes": 51200,
+      "sha256": "1d6426f0ce96b8fc1c61ab9a7ff954760900ab2b5e31280ff457083bfd423ced"
+    },
+    {
+      "path": "pdf/issue7642-hft-char-style-diagnostic/char-style-hwp-v3-2020.pdf",
+      "bytes": 30294,
+      "sha256": "6e5441602e78494eb377e7d0b9d0e206ab82ff79ee7c749d9519a27e2df388a2"
+    },
+    {
+      "path": "pdf/issue7642-negation-contract/negation-contract-2024-v2.hwp",
+      "bytes": 23552,
+      "sha256": "8f924122b8e991cf81355f1c92b92cd25bcaa68451f8abfb0c5072fb520f1a8e"
+    },
+    {
+      "path": "pdf/issue7642-negation-contract/negation-contract-2024-v2.pdf",
+      "bytes": 14352,
+      "sha256": "c4cac9c964e615a5c3281918356bba47df52b5c4bfdb8a4fb86ade1e0b26a790"
+    },
+    {
+      "path": "pdf/issue7642-negation-contract/negation-contract-2024.hwp",
+      "bytes": 26624,
+      "sha256": "c3adb0640944e04454bb55ba45f75230e62823726de3bd9c5c80eac800a6c0f5"
+    },
+    {
+      "path": "pdf/issue7642-negation-contract/negation-contract-2024.pdf",
+      "bytes": 15338,
+      "sha256": "33fb5d603e57847827792d3a0142a6adce1b00772876a83cf438a6dda21d5c6c"
+    },
+    {
+      "path": "pdf/issue7642-negation-contract/negation-contract-input-v2.hwpx",
+      "bytes": 11307,
+      "sha256": "adc7243c5882af1e34471312507269ec69953f9c9b31a473ed9be951470baf72"
+    },
+    {
+      "path": "pdf/issue7642-negation-contract/negation-contract-input.hwpx",
+      "bytes": 11411,
+      "sha256": "6022cb8fec5ab9d62d749b8d2c51c9dc96819af4cb41bf50ac090a0d5a13c201"
+    },
+    {
+      "path": "pdf/issue7642-not-glyph-frame/not-glyph-frame-2024.hwp",
+      "bytes": 18944,
+      "sha256": "96fe1fad7296f5e199b974ddc8f5ee8db409bfa108d5c2a52a713900fdd4eb84"
+    },
+    {
+      "path": "pdf/issue7642-not-glyph-frame/not-glyph-frame-2024.pdf",
+      "bytes": 13548,
+      "sha256": "1f3df53f0992c8e060d968cbf44892e60b52fe9e8c8126308688cb305edbfef5"
+    },
+    {
+      "path": "pdf/issue7642-not-glyph-frame/not-glyph-frame-input.hwpx",
+      "bytes": 11354,
+      "sha256": "a9ebf700c904f3358a4721e604accc7b8bf48f28d3fe4e8f33b7f73a026bb760"
+    },
+    {
+      "path": "pdf/issue7642-not-operand-diagnostic/not-operand-2024.hwp",
+      "bytes": 20480,
+      "sha256": "aaf89fe933ea4d667734ed10251266381c2466a90a406d7e2f194876746638f4"
+    },
+    {
+      "path": "pdf/issue7642-not-operand-diagnostic/not-operand-2024.pdf",
+      "bytes": 17330,
+      "sha256": "2a29f62bf20b129a98176bafa3db1a41e86fffd3a04aa4cca534070ce5c734eb"
+    },
+    {
+      "path": "pdf/issue7642-not-operand-diagnostic/not-operand-input.hwpx",
+      "bytes": 11399,
+      "sha256": "0e00f9a287a0383c6e75e64956223a4b557fad954b8da8c55dd7829870e065fa"
+    }
+  ]
+}

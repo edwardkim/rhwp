@@ -31,17 +31,32 @@ impl<'a> SelectedBlockCut<'a> {
         }
     }
 
-    pub(in crate::renderer::typeset) fn end_row(&self, block: &RowBlockCandidate) -> usize {
+    pub(in crate::renderer::typeset) fn end_row(
+        &self,
+        rows: &RowBlockQuery<'_>,
+        block: &RowBlockCandidate,
+        start: &[usize],
+    ) -> usize {
         let Self {
             cut_res,
             cut_offsets,
             use_offsets,
         } = *self;
         let RowBlockCandidate { b_start, b_end, .. } = *block;
+        if use_offsets && start.is_empty() {
+            if let Some(end) = rows.layout_engine.row_block_cut_complete_prefix_end(
+                rows.table,
+                (b_start, b_end),
+                &cut_res.end_cut,
+                rows.styles,
+            ) {
+                return end;
+            }
+        }
         if use_offsets {
             let mut render_end = b_start + 1;
             for (idx, row_top) in cut_offsets.iter().enumerate() {
-                if *row_top < cut_res.consumed_height - 0.1 {
+                if *row_top < cut_res.occupied_height() - 0.1 {
                     render_end = b_start + idx + 1;
                 }
             }
@@ -49,6 +64,47 @@ impl<'a> SelectedBlockCut<'a> {
         } else {
             b_end
         }
+    }
+
+    /// A complete stored row boundary owns its natural physical box even when
+    /// the ink-only cut is below the partial-text orphan minimum. Produce the
+    /// occupied prefix and last row together for reservation and paint.
+    pub(in crate::renderer::typeset) fn complete_row_boundary_frame(
+        &self,
+        rows: &RowBlockQuery<'_>,
+        block: &RowBlockCandidate,
+        start: &[usize],
+        budget: f64,
+    ) -> Option<(f64, f64)> {
+        let end_row = self.end_row(rows, block, start);
+        if !self.use_offsets
+            || !start.is_empty()
+            || self.cut_res.hit_hard_break
+            || !rows.layout_engine.row_block_cut_is_complete_row_boundary(
+                rows.table,
+                (block.b_start, block.b_end),
+                end_row,
+                &self.cut_res.end_cut,
+                rows.styles,
+            )
+        {
+            return None;
+        }
+        // 완전 행도 같은 컷의 병합 소유자가 요구한 물리 높이를 보존한다.
+        // 원본 행 prefix의 끝과 예약 높이를 함께 전달해 paint가 뒤의
+        // 미소비 행에 빈 띠를 배분하지 않게 한다.
+        let height = rows
+            .fragment_height(block, end_row, start, &self.cut_res.end_cut)
+            .max(self.cut_res.occupied_height());
+        let before_last = rows.fragment_height(block, end_row - 1, start, &self.cut_res.end_cut)
+            + if end_row > block.b_start + 1 {
+                rows.cs
+            } else {
+                0.0
+            };
+        let last = height - before_last;
+        (height.is_finite() && height > 0.0 && height <= budget && last > 0.0)
+            .then_some((height, last))
     }
 
     /// 내용이 완전 행에서 닫힐 때만 남은 쪽 밴드를 마지막 행의 물리 높이로 쓴다.
@@ -113,6 +169,25 @@ impl<'a> SelectedBlockCut<'a> {
             }
         }
         let physical = rows.fragment_height(block, end_row, start, &self.cut_res.end_cut);
+        let next_visible =
+            rows.layout_engine
+                .row_complete_cut_content_height(rows.table, end_row, rows.styles);
+        let next_declared = rows
+            .table
+            .cells
+            .iter()
+            .filter(|cell| {
+                cell.row as usize == end_row && cell.row_span == 1 && cell.height <= i32::MAX as u32
+            })
+            .map(|cell| crate::renderer::hwpunit_to_px(cell.height as i32, dpi))
+            .fold(0.0, f64::max);
+        // 남은 한 행의 내용과 원본 최소 상자를 먼저 보존한다. 쪽에 남은 방을
+        // 전부 요구하면, 앞 조각에 실제로 배정할 수 있는 빈 띠까지 기각하게 된다.
+        // 이미 수용한 완전 행의 물리 높이를 줄이는 용도로는 이 잔고를 쓰지 않는다.
+        let source_prefix = source_height - next_declared.max(next_visible);
+        if source_prefix >= physical {
+            boundary_budget = boundary_budget.min(source_prefix);
+        }
         let before_last = rows.fragment_height(block, end_row - 1, start, &self.cut_res.end_cut)
             + if end_row > block.b_start + 1 {
                 rows.cs
@@ -126,15 +201,48 @@ impl<'a> SelectedBlockCut<'a> {
             rows.styles,
         );
         let next_height = source_height - boundary_budget;
-        let next_visible =
-            rows.layout_engine
-                .row_complete_cut_content_height(rows.table, end_row, rows.styles);
         ((physical - boundary_budget).abs() > 0.5
             && visible <= band
             && band > 0.0
             && next_height >= next_visible
             && next_height <= fresh_budget)
             .then_some(band)
+    }
+
+    /// 저장 그림 칸이 이어지며 형제 행의 물리 공간을 보존하는 컷의 예약 높이.
+    pub(in crate::renderer::typeset) fn stored_picture_frame_height(
+        &self,
+        rows: &RowBlockQuery<'_>,
+        block: &RowBlockCandidate,
+        start: &[usize],
+        end_row: usize,
+    ) -> Option<f64> {
+        if !self.use_offsets {
+            return None;
+        }
+        let partial_picture = rows
+            .layout_engine
+            .row_block_cut_has_partial_stored_pictures(
+                rows.table,
+                (block.b_start, block.b_end),
+                start,
+                &self.cut_res.end_cut,
+                rows.styles,
+            );
+        let owns_physical_row = (block.b_start..end_row).any(|row| {
+            rows.layout_engine.row_block_cut_uses_measured_height(
+                rows.table,
+                (block.b_start, block.b_end),
+                row,
+                start,
+                &self.cut_res.end_cut,
+                rows.styles,
+            )
+        });
+        (partial_picture && owns_physical_row).then(|| {
+            rows.fragment_height(block, end_row, start, &self.cut_res.end_cut)
+                .max(self.cut_res.consumed_height)
+        })
     }
 
     /// 부모가 끝 컷을 기록한 뒤 원래 시점에 호출한다. 측정을 select 시점으로 앞당기지 않는다.
@@ -145,6 +253,11 @@ impl<'a> SelectedBlockCut<'a> {
         blk_start_cut: &[usize],
         end_row: usize,
     ) -> f64 {
+        // 수용한 같은 컷의 그림 내용과 완전 형제 행의 물리 공간을 함께 예약한다.
+        if let Some(height) = self.stored_picture_frame_height(rows, block, blk_start_cut, end_row)
+        {
+            return height;
+        }
         let Self {
             cut_res,
             use_offsets,
@@ -159,7 +272,9 @@ impl<'a> SelectedBlockCut<'a> {
         let RowBlockCandidate { b_start, b_end, .. } = *block;
         if use_offsets {
             // [#2287] 오프셋(밴드) 컷의 페이지 소비 권위는 컷 워크의
-            // consumed_height(예산 내 가시 밴드)다. per-row 합산
+            // physical_height다. 부분 컷 최소 높이는 consumed_height로
+            // 별도 판정하며, per-row 합산은 여기서 대체하지 않는다.
+            // per-row 합산
             // (block_fragment_height)은 rowspan 걸침 셀의 유닛을 행
             // 단위로 배분하지 못해 양방향으로 발산한다:
             // - 연속분(start_cut)에서 row_span==1 필터로 **0 평가**
@@ -168,14 +283,8 @@ impl<'a> SelectedBlockCut<'a> {
             //   과대** (교육부 47×9 r2..4: frag 2354.6 vs 컷 450.7 —
             //   p25 가 2396px 로 만재되어 p26 sliver + p30 tail
             //   overflow, PR #2290 P1 리뷰).
-            // frag_total 은 렌더 조각 표시용 참고값으로만 두고, 소비는
-            // 컷 워크와 발산할 때 consumed_height 로 정정한다.
-            let frag_total = rows.fragment_height(block, end_row, blk_start_cut, &cut_res.end_cut);
-            if (frag_total - cut_res.consumed_height).abs() <= 0.5 {
-                frag_total
-            } else {
-                cut_res.consumed_height
-            }
+            // 같은 컷의 유닛별 물리 상자를 그대로 예약한다.
+            cut_res.occupied_height()
         } else {
             let content_height = layout_engine.row_block_content_height(
                 table,

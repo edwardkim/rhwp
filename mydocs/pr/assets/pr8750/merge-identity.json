@@ -1,0 +1,13 @@
+{
+  "observed_at": "2026-11-08T00:02:06.482589+09:00",
+  "head": "a373208ba5538646cee0027b101393f6bd845f3f",
+  "base": "1e16a19aede5ccb2657d35974940eb596286cdf1",
+  "github_merge_sha": "7fda4c8e8fb03eb47e3713695592006a113a1dc5",
+  "github_tree": "7ccb386565a67458e7a2af394e26feda9377c3d3",
+  "local_merge_tree": "7ccb386565a67458e7a2af394e26feda9377c3d3",
+  "matches": true,
+  "parents": [
+    "1e16a19aede5ccb2657d35974940eb596286cdf1",
+    "a373208ba5538646cee0027b101393f6bd845f3f"
+  ]
+}

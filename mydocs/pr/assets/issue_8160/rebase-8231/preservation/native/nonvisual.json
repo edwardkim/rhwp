@@ -1,0 +1,328 @@
+{
+  "studio_source_contracts": {
+    "passed": true,
+    "runs": [
+      {
+        "role": "base",
+        "sha": "238de6de41a208648f4ade6b494fe433a81c1fce",
+        "command": [
+          "node",
+          "--test",
+          "tests/chrome-mode.test.ts",
+          "tests/dialog-policy-ledger.test.ts",
+          "tests/document-initialization-order.test.ts",
+          "tests/ruler-document-load-refresh.test.ts",
+          "tests/zoom-fit-mode-persistence.test.ts",
+          "tests/style-undo-routing.test.ts",
+          "tests/review-runtime-contracts.test.ts",
+          "tests/subsecond-runtime.test.ts",
+          "tests/canvaskit-sfnt-face.test.ts",
+          "tests/ai-agent-loop.test.ts",
+          "tests/ai-chat-command-recovery.test.ts",
+          "tests/ai-claude-errors.test.ts",
+          "tests/ai-claude-request.test.ts",
+          "tests/ai-command-tools.test.ts",
+          "tests/ai-key-store.test.ts",
+          "tests/ai-message-render.test.ts",
+          "tests/ai-read-tools.test.ts",
+          "tests/ai-settings.test.ts",
+          "tests/ai-untrusted.test.ts",
+          "tests/ai-write-tools.test.ts",
+          "tests/side-panel-host.test.ts",
+          "tests/plugin-side-panel.test.ts"
+        ],
+        "exit_code": 0,
+        "seconds": 8.061,
+        "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/rebase8231/paired-source-ui-base.log",
+        "tests_passed": 203,
+        "tests_failed": 0
+      },
+      {
+        "role": "head",
+        "sha": "f017a4df419a8125e0bc5ef314255857f008db6c",
+        "command": [
+          "node",
+          "--test",
+          "tests/chrome-mode.test.ts",
+          "tests/dialog-policy-ledger.test.ts",
+          "tests/document-initialization-order.test.ts",
+          "tests/ruler-document-load-refresh.test.ts",
+          "tests/zoom-fit-mode-persistence.test.ts",
+          "tests/style-undo-routing.test.ts",
+          "tests/review-runtime-contracts.test.ts",
+          "tests/subsecond-runtime.test.ts",
+          "tests/canvaskit-sfnt-face.test.ts",
+          "tests/ai-agent-loop.test.ts",
+          "tests/ai-chat-command-recovery.test.ts",
+          "tests/ai-claude-errors.test.ts",
+          "tests/ai-claude-request.test.ts",
+          "tests/ai-command-tools.test.ts",
+          "tests/ai-key-store.test.ts",
+          "tests/ai-message-render.test.ts",
+          "tests/ai-read-tools.test.ts",
+          "tests/ai-settings.test.ts",
+          "tests/ai-untrusted.test.ts",
+          "tests/ai-write-tools.test.ts",
+          "tests/side-panel-host.test.ts",
+          "tests/plugin-side-panel.test.ts"
+        ],
+        "exit_code": 0,
+        "seconds": 7.646,
+        "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/rebase8231/paired-source-ui-head.log",
+        "tests_passed": 203,
+        "tests_failed": 0
+      }
+    ]
+  },
+  "textbox_public_api": {
+    "passed": true,
+    "scope": "Existing #8172 public API creation/attachment/removal and HWP save/reopen tests linked against independently frozen base/head Native libraries",
+    "runs": [
+      {
+        "role": "base",
+        "library_sha256": "17f5ef733bb03d2b9ea4646f8daf777c8476f3d62dd419ac29881015dc58671b",
+        "source_sha256": "6d57430156cdcb3173eb51b7d2cac1534c556fb0bc41c553f5abca4d30526e48",
+        "command": [
+          "rustc",
+          "--edition=2021",
+          "--test",
+          "--crate-name",
+          "issue_8172_textbox_preservation",
+          "/home/tsjang/rhwp/tests/cases/issue_8172_textbox_shape_storage_bit.rs",
+          "-o",
+          "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/rebase8231/textbox-contract-base",
+          "-L",
+          "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+          "--extern",
+          "rhwp=/home/tsjang/rhwp/output/pr-review/issue8160-20261022/rebase8231/base/native/librhwp.rlib",
+          "-L",
+          "/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-d3bbd036d45b3a6c/out/skia",
+          "-L",
+          "native=/home/tsjang/rhwp/target/pr-review/release-test/build/blake3-7496182056f3c99a/out",
+          "-L",
+          "native=/usr/lib/x86_64-linux-gnu"
+        ],
+        "exit_code": 0,
+        "seconds": 9.408534699934535,
+        "tests_passed": 3,
+        "source_sha": "238de6de41a208648f4ade6b494fe433a81c1fce"
+      },
+      {
+        "role": "head",
+        "library_sha256": "8eb4b6f448ae53b912c74d4c6f9a3a504d5cd059bf83fa7b054f1bfc335ce3a6",
+        "source_sha256": "6d57430156cdcb3173eb51b7d2cac1534c556fb0bc41c553f5abca4d30526e48",
+        "command": [
+          "rustc",
+          "--edition=2021",
+          "--test",
+          "--crate-name",
+          "issue_8172_textbox_preservation",
+          "/home/tsjang/rhwp/tests/cases/issue_8172_textbox_shape_storage_bit.rs",
+          "-o",
+          "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/rebase8231/textbox-contract-head",
+          "-L",
+          "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+          "--extern",
+          "rhwp=/home/tsjang/rhwp/output/pr-review/issue8160-20261022/rebase8231/fix1/native/librhwp.rlib",
+          "-L",
+          "/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-d3bbd036d45b3a6c/out/skia",
+          "-L",
+          "native=/home/tsjang/rhwp/target/pr-review/release-test/build/blake3-7496182056f3c99a/out",
+          "-L",
+          "native=/usr/lib/x86_64-linux-gnu"
+        ],
+        "exit_code": 0,
+        "seconds": 3.887159385951236,
+        "tests_passed": 3,
+        "source_sha": "e01e7540fd4c8a67ce5d1d1e5802170973acb998"
+      }
+    ]
+  },
+  "windows_checkout_bytes": {
+    "passed": true,
+    "scope": "Local Git checkout with Windows autocrlf/symlinks settings; not Windows runtime execution",
+    "base_sha": "238de6de41a208648f4ade6b494fe433a81c1fce",
+    "head_sha": "f017a4df419a8125e0bc5ef314255857f008db6c",
+    "command_options": [
+      "core.autocrlf=true",
+      "core.symlinks=false"
+    ],
+    "rows": [
+      {
+        "role": "head",
+        "path": "Cargo.lock",
+        "bytes": 91035,
+        "sha256": "f5d41abc5851958f9185b16c5be6b95969ab8eee89c21f030522cffc4ee61a6c",
+        "exact_index_bytes": true
+      },
+      {
+        "role": "head",
+        "path": "rhwp-studio/src/ui/chrome-mode.ts",
+        "bytes": 4109,
+        "sha256": "4211ac990569c6bd461077b5ac0f75e831603bdea05a9a309cf364c4c8d52ec3",
+        "exact_index_bytes": true
+      },
+      {
+        "role": "head",
+        "path": "rhwp-studio/src/core/subsecond-runtime.ts",
+        "bytes": 24991,
+        "sha256": "083a09923f22d5c8979871245fa0adf893b3b8b5c69c3ebdc944076a4b950247",
+        "exact_index_bytes": true
+      },
+      {
+        "role": "head",
+        "path": "rhwp-studio/tests/canvaskit-sfnt-face.test.ts",
+        "bytes": 10361,
+        "sha256": "9ef35962f981d924fff6abc65f9dff12c5fa10a562a199d6dee9f5ef22506445",
+        "exact_index_bytes": true
+      },
+      {
+        "role": "head",
+        "path": "src/document_core/mod.rs",
+        "bytes": 29668,
+        "sha256": "b37e967a26cfb88106d77316930c9b11aadc0a20e1ab309054f27368cd56523f",
+        "exact_index_bytes": true
+      },
+      {
+        "role": "head",
+        "path": "rhwp-studio/public/fonts",
+        "bytes": 18,
+        "sha256": "ea2a279925c20d67f65e6b9667f030737bd29302decd08656fcd93729d0abce8",
+        "exact_index_bytes": true
+      },
+      {
+        "role": "head",
+        "path": "assets/fonts/D2Coding-Regular.woff2",
+        "bytes": 1485480,
+        "sha256": "4d3fa8ed66fedcb1787f200bd75637b816b09057fc06da0aa783e3b305a726d8",
+        "exact_index_bytes": true
+      },
+      {
+        "role": "head",
+        "path": "pdf/issue7966/affine-clip-controls.pdf",
+        "bytes": 1676,
+        "sha256": "a395c7899600b097d6cf28a7e352e0f3c16416108b54b2b5cdf95b577fb5c7b6",
+        "exact_index_bytes": true
+      },
+      {
+        "role": "head",
+        "path": "pdf/issue7966/close-stroke-controls.pdf",
+        "bytes": 1335,
+        "sha256": "02d0b20cf1a46305df97fbcc9ad1fa4ae383233e068f005ff2b82384b3bcf390",
+        "exact_index_bytes": true
+      },
+      {
+        "role": "head",
+        "path": "pdf/issue7966/exceeds-32.pdf",
+        "bytes": 1460215,
+        "sha256": "cd8465adc8c96e7dd6dc2412b0d198ea0d54ae019824cad63443bc31139ea3d4",
+        "exact_index_bytes": true
+      },
+      {
+        "role": "head",
+        "path": "pdf/issue7966/image-placement-controls.pdf",
+        "bytes": 7365,
+        "sha256": "05b94e819617287c141b321d3c6c4dc1467fdad69a27d17a429b34b6febe7c02",
+        "exact_index_bytes": true
+      },
+      {
+        "role": "head",
+        "path": "pdf/issue7966/text-paint-order-controls.pdf",
+        "bytes": 1945,
+        "sha256": "c6226b37743ab8482c928229a4320743a32a4aff8e3e5658f90beed09df8e922",
+        "exact_index_bytes": true
+      },
+      {
+        "role": "base",
+        "path": "Cargo.lock",
+        "bytes": 91035,
+        "sha256": "9de45bade3712d379d62418e201d6e24c08a6ca61ab4b930a3d9d5a0bf275155",
+        "exact_index_bytes": true
+      },
+      {
+        "role": "base",
+        "path": "rhwp-studio/src/ui/chrome-mode.ts",
+        "bytes": 4109,
+        "sha256": "4211ac990569c6bd461077b5ac0f75e831603bdea05a9a309cf364c4c8d52ec3",
+        "exact_index_bytes": true
+      },
+      {
+        "role": "base",
+        "path": "rhwp-studio/src/core/subsecond-runtime.ts",
+        "bytes": 24991,
+        "sha256": "083a09923f22d5c8979871245fa0adf893b3b8b5c69c3ebdc944076a4b950247",
+        "exact_index_bytes": true
+      },
+      {
+        "role": "base",
+        "path": "rhwp-studio/tests/canvaskit-sfnt-face.test.ts",
+        "bytes": 10361,
+        "sha256": "9ef35962f981d924fff6abc65f9dff12c5fa10a562a199d6dee9f5ef22506445",
+        "exact_index_bytes": true
+      },
+      {
+        "role": "base",
+        "path": "src/document_core/mod.rs",
+        "bytes": 29668,
+        "sha256": "b37e967a26cfb88106d77316930c9b11aadc0a20e1ab309054f27368cd56523f",
+        "exact_index_bytes": true
+      },
+      {
+        "role": "base",
+        "path": "rhwp-studio/public/fonts",
+        "bytes": 18,
+        "sha256": "ea2a279925c20d67f65e6b9667f030737bd29302decd08656fcd93729d0abce8",
+        "exact_index_bytes": true
+      },
+      {
+        "role": "base",
+        "path": "assets/fonts/D2Coding-Regular.woff2",
+        "bytes": 1485480,
+        "sha256": "4d3fa8ed66fedcb1787f200bd75637b816b09057fc06da0aa783e3b305a726d8",
+        "exact_index_bytes": true
+      },
+      {
+        "role": "base",
+        "path": "pdf/issue7966/affine-clip-controls.pdf",
+        "bytes": 1676,
+        "sha256": "a395c7899600b097d6cf28a7e352e0f3c16416108b54b2b5cdf95b577fb5c7b6",
+        "exact_index_bytes": true
+      },
+      {
+        "role": "base",
+        "path": "pdf/issue7966/close-stroke-controls.pdf",
+        "bytes": 1335,
+        "sha256": "02d0b20cf1a46305df97fbcc9ad1fa4ae383233e068f005ff2b82384b3bcf390",
+        "exact_index_bytes": true
+      },
+      {
+        "role": "base",
+        "path": "pdf/issue7966/exceeds-32.pdf",
+        "bytes": 1460215,
+        "sha256": "cd8465adc8c96e7dd6dc2412b0d198ea0d54ae019824cad63443bc31139ea3d4",
+        "exact_index_bytes": true
+      },
+      {
+        "role": "base",
+        "path": "pdf/issue7966/image-placement-controls.pdf",
+        "bytes": 7365,
+        "sha256": "05b94e819617287c141b321d3c6c4dc1467fdad69a27d17a429b34b6febe7c02",
+        "exact_index_bytes": true
+      },
+      {
+        "role": "base",
+        "path": "pdf/issue7966/text-paint-order-controls.pdf",
+        "bytes": 1945,
+        "sha256": "c6226b37743ab8482c928229a4320743a32a4aff8e3e5658f90beed09df8e922",
+        "exact_index_bytes": true
+      }
+    ]
+  },
+  "rust_focused": {
+    "passed": true,
+    "selected": 136,
+    "passed_count": 136,
+    "source_sha": "5d8188deafde17924b77365668f942cde99925d7",
+    "scope": "85 issue8160 default tests and 51 incoming preservation tests; not full nextest"
+  }
+}

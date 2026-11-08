@@ -30,7 +30,10 @@ fn chart_samples(dir: &Path, out: &mut Vec<PathBuf>) {
 /// ZIP 바이트에서 (엔트리 이름 → 바이트) 전체 맵을 수집한다.
 fn zip_entries(zip_bytes: &[u8]) -> Vec<(String, Vec<u8>)> {
     let mut zip = zip::ZipArchive::new(std::io::Cursor::new(zip_bytes)).expect("ZIP 열기");
-    let names: Vec<String> = zip.file_names().map(str::to_string).collect();
+    let names: Vec<String> = zip
+        .file_names()
+        .map(|name| name.expect("ZIP 엔트리 이름").into_owned())
+        .collect();
     let mut entries = Vec::new();
     for name in names {
         let mut bytes = Vec::new();
@@ -245,7 +248,9 @@ fn issue_3546_chart_part_is_password_protected() {
         DocumentCore::from_bytes(&encrypted).is_err(),
         "{label}: 비밀번호 없이 암호 HWPX를 열면 안 된다"
     );
-    let decrypted = DocumentCore::from_bytes_with_password(&encrypted, &password)
+    let mut decrypted = DocumentCore::new_empty();
+    decrypted
+        .load_bytes(&encrypted, Some(&password))
         .unwrap_or_else(|e| panic!("decrypt {label}: {e:?}"));
     let restored = decrypted
         .export_hwpx_native()

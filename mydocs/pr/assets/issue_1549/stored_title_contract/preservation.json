@@ -1,0 +1,93 @@
+{
+  "reason": "independent Print of the exact synthetic original places the host title after all three tables; old blanket title-first premise was incorrect",
+  "original_code": [
+    {
+      "source": "tests/issue_1549.rs",
+      "archive": "mydocs/pr/assets/issue_1549/stored_title_contract/issue_1549.rs.txt",
+      "sha256": "75942c85b3e5e67c8de41a50bc1a31c14e5d0316f67facba0670d66eacbe158c"
+    },
+    {
+      "source": "tests/cases/issue_6929_float_table_para_offset.rs",
+      "archive": "mydocs/pr/assets/issue_1549/stored_title_contract/issue_6929_float_table_para_offset.rs.txt",
+      "sha256": "153d444d98cbe86f3990da0d6c228435a3ea81b0650bcaf489201f316335707e"
+    }
+  ],
+  "input": "samples/issue1549_multipositive_float_tables.hwpx",
+  "input_sha256": "f60b90c9242d37b0ede10294dbc976c68790daa87684fdab7684107b2cd0380f",
+  "pdf": "pdf/issue1549/issue1549_multipositive_float_tables-2020.pdf",
+  "pdf_sha256": "0d4d150aa28bda3a5e7db4cbaf865883cec6cae40fbf69432d04bf8dfb2d75b7",
+  "pages": 2,
+  "engine": "2020",
+  "hancom_version": "11.0.0.9136",
+  "pdf_print_method": 0,
+  "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+  "job_id": "a7838939-0658-4214-abe7-2b21d1488a0e",
+  "native_source": "928ba88d0",
+  "wasm_source": "cffebd41bad6b71bb0239bcdde629bc5a7eea4e3",
+  "reuse_proof": "928ba88d0 changes only empty-float prepare after para_has_visible_text returns None. Both full Native page PNGs are byte-identical to cffebd41b. Fresh WASM final integration validation remains required.",
+  "min_raw_native": 97.31566,
+  "min_raw_wasm": 97.4411,
+  "coordinate_pin_added": true,
+  "scope": "correct only two existing assertions using this original; preserve all other issue1549 and issue6929 cases",
+  "selected_coordinate_page": 2,
+  "selected_page_native_raw": 100,
+  "selected_page_wasm_raw": 100,
+  "dpi": 96,
+  "independent_pdf_coordinates": {
+    "x": 113.37855,
+    "baselines": [
+      143.523153,
+      164.779917
+    ]
+  },
+  "page2_source_correspondence": {
+    "page1_filler_range": [
+      1,
+      30
+    ],
+    "page2_filler_range": [
+      31,
+      32
+    ]
+  },
+  "tail_review_sources": [
+    {
+      "label": "Hancom Print",
+      "source": "output/pr-review/planet6897-20261018/final-four-new-failures-20261021/issue1549-native-whole/multi/pdf_png/pdf-002.png",
+      "sha256": "c2af7f9ffd961fa33a7c1c33c689e8c637a85526986af15c8b0a89bc4c5d9013"
+    },
+    {
+      "label": "Native",
+      "source": "output/pr-review/planet6897-20261018/stored-empty-lane-anchor-priority-20261021/issue1549-native-whole/multi/rhwp_png/rhwp_002.png",
+      "sha256": "accb0e616546ef8bd2815c4abcb0fedf4ffbe4a4764d14bbdfb66d9ff0534d0d"
+    },
+    {
+      "label": "fresh WASM",
+      "source": "output/pr-review/planet6897-20261018/final-four-new-failures-20261021/issue1549-wasm-whole/multi/rhwp_png/rhwp_002.png",
+      "sha256": "588f6cbc5c53885465e449f0b98ffa3de55c77f53d0088cd4fe9f7286074e26b"
+    }
+  ],
+  "tail_review_crop_96dpi": [
+    100,
+    115,
+    275,
+    185
+  ],
+  "current_test_result": "Native candidate18 cases:16 passed; remaining two unrelated issue6111 source-anchor assertions fail",
+  "remaining_policy_whole_page_count": 216,
+  "corrected_guard_before": {
+    "base_sha": "2e3b4f880bd11d35398e6ea0100846611f13a72d",
+    "compile_exit_code": 0,
+    "test_exit_code": 101,
+    "independent_print_pages": 2,
+    "observed_pages": 1
+  },
+  "corrected_guard_after": {
+    "native_producer_source": "928ba88d0",
+    "issue1549": "PASS",
+    "issue6929": "PASS",
+    "focused_passed": 16,
+    "focused_failed": 2,
+    "remaining_failure_scope": "issue6111"
+  }
+}

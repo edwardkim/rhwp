@@ -1,0 +1,14 @@
+{
+  "pdf": "samples/21_언어_기출_편집가능본-2010.pdf",
+  "pdf_sha256": "609d56421009ccab5a50cb2a8f4e78af4d0961de2e7ae85d811905e8434ac251",
+  "page": 7,
+  "text": "결국르포르는권력이제어할수있는틀을넘어쟁의가발생",
+  "dpi": 96,
+  "pdf_text_bbox_px": [
+    603.98,
+    388.54,
+    992.9,
+    403.25
+  ],
+  "method": "PyMuPDF line bbox in PDF points multiplied by 96/72"
+}

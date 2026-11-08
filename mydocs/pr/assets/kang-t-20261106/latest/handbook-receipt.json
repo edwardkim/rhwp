@@ -1,0 +1,21 @@
+{
+  "source": "63236b9cc5fcbbbbe6fbce5691e81aaf6e406c1e",
+  "profile_sha256": "c785858219d00e4269d88a0ea0a6d22d2bcdef02e132896cdb17ce0d26150103",
+  "state": "passed",
+  "started": "2026-11-06T15:33:32.840189+00:00",
+  "command": [
+    "python3",
+    "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/run-minfont-visual.py",
+    "/home/edward/mygithub/rhwp/venv/bin/python",
+    "scripts/visual_sweep.py",
+    "--handbook-gate",
+    "--out",
+    "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/candidate-latest-handbook-ready-env",
+    "--rhwp-bin",
+    "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/candidate-producer/rhwp",
+    "--page-workers",
+    "4"
+  ],
+  "exit_code": 0,
+  "finished": "2026-11-06T15:40:43.990029+00:00"
+}

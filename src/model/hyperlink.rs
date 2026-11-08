@@ -45,7 +45,114 @@ pub fn web_command(uri: &str) -> Result<String, HwpError> {
         command.push(c);
     }
     command.push_str(";1;0;0;");
+    checked_length(command)
+}
+
+/// 문서 내부 책갈피 링크의 한컴 Command(`?<이름>;0;0;0;`)를 만든다.
+/// 한컴 실측(HWP `hwpctl_Action_Table__v1.1.hwp`, HWPX `TargetType=BOOKMARK`)처럼 `\ : ;`만 escape한다.
+pub fn bookmark_command(name: &str) -> Result<String, HwpError> {
+    if name.trim().is_empty() || name.chars().any(char::is_control) {
+        return Err(HwpError::InvalidField(
+            "책갈피 이름이 비어 있거나 제어 문자를 포함합니다".into(),
+        ));
+    }
+    let mut command = String::with_capacity(name.len() + 8);
+    command.push('?');
+    for c in name.chars() {
+        if matches!(c, '\\' | ':' | ';') {
+            command.push('\\');
+        }
+        command.push(c);
+    }
+    command.push_str(";0;0;0;");
+    checked_length(command)
+}
+
+/// Command가 문서 내부 책갈피 링크이면 책갈피 이름을 돌려준다.
+pub fn command_bookmark(command: &str) -> Option<String> {
+    command_uri(command)
+        .strip_prefix('?')
+        .filter(|name| !name.is_empty())
+        .map(str::to_string)
+}
+
+fn checked_length(command: String) -> Result<String, HwpError> {
     // HWP5 CTRL_HEADER의 command 길이는 u16 UTF-16 code unit 수다.
+    if command.encode_utf16().count() > u16::MAX as usize {
+        return Err(HwpError::InvalidField(
+            "하이퍼링크 주소가 너무 깁니다".into(),
+        ));
+    }
+    Ok(command)
+}
+
+/// Destination semantics shared by editing, output and host click routing.
+/// Classification never opens a file, network connection or application.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum LinkDestinationKind {
+    Web,
+    Mail,
+    DocumentAnchor,
+    RelativeFile,
+    LocalFile,
+    RegisteredApplication,
+}
+
+pub fn classify_destination(uri: &str) -> Option<LinkDestinationKind> {
+    use LinkDestinationKind::*;
+    if uri.is_empty() || uri.trim() != uri || uri.chars().any(char::is_control) {
+        return None;
+    }
+    if let Some(anchor) = uri.strip_prefix('#') {
+        return (!anchor.is_empty()).then_some(DocumentAnchor);
+    }
+    if uri.starts_with('/')
+        || uri.starts_with("\\\\")
+        || (uri.as_bytes().get(1) == Some(&b':')
+            && uri.as_bytes().first().is_some_and(u8::is_ascii_alphabetic)
+            && uri
+                .as_bytes()
+                .get(2)
+                .is_some_and(|b| matches!(b, b'/' | b'\\')))
+    {
+        return Some(LocalFile);
+    }
+    if let Some((scheme, rest)) = uri.split_once(':') {
+        if rest.is_empty()
+            || !scheme
+                .as_bytes()
+                .first()
+                .is_some_and(u8::is_ascii_alphabetic)
+            || !scheme
+                .bytes()
+                .all(|b| b.is_ascii_alphanumeric() || b"+-.".contains(&b))
+        {
+            return None;
+        }
+        return match scheme.to_ascii_lowercase().as_str() {
+            "http" | "https" => web_command(uri).ok().map(|_| Web),
+            "mailto" => (!rest.trim().is_empty()).then_some(Mail),
+            "file" => Some(LocalFile),
+            "javascript" | "vbscript" | "data" => None,
+            _ => Some(RegisteredApplication),
+        };
+    }
+    Some(RelativeFile)
+}
+
+/// Preserve the selected destination verbatim through HWP/HWPX command escaping.
+pub fn destination_command(uri: &str) -> Result<String, HwpError> {
+    classify_destination(uri)
+        .ok_or_else(|| HwpError::InvalidField("유효한 링크 목적지가 필요합니다".into()))?;
+    let mut command = String::with_capacity(uri.len() + 16);
+    for c in uri.chars() {
+        if matches!(c, '\\' | ':' | ';' | '#') {
+            command.push('\\');
+        }
+        command.push(c);
+    }
+    command.push_str(";1;0;0;");
     if command.encode_utf16().count() > u16::MAX as usize {
         return Err(HwpError::InvalidField(
             "하이퍼링크 주소가 너무 깁니다".into(),

@@ -43,11 +43,32 @@ fn issue_6128_following_paragraph_clears_the_wrapped_line() {
     );
 }
 
-/// `needle` 을 포함한 첫 텍스트 줄의 (위끝, 아래끝).
+/// `needle` 을 포함한 첫 텍스트 줄의 (위끝, 아래끝). 한 줄은 언어 슬롯마다 run 이
+/// 갈리므로(`·` 는 영문 슬롯 — #7702) 줄의 run 을 이어 찾는다.
 fn line_bounds(node: &RenderNode, needle: &str) -> Option<(f64, f64)> {
-    if let RenderNodeType::TextRun(run) = &node.node_type {
-        if run.text.contains(needle) {
-            return Some((node.bbox.y, node.bbox.y + node.bbox.height));
+    if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+        let runs: Vec<&RenderNode> = node
+            .children
+            .iter()
+            .filter(|child| matches!(child.node_type, RenderNodeType::TextRun(_)))
+            .collect();
+        let text: String = runs
+            .iter()
+            .filter_map(|child| match &child.node_type {
+                RenderNodeType::TextRun(run) => Some(run.text.as_str()),
+                _ => None,
+            })
+            .collect();
+        if text.contains(needle) {
+            let top = runs
+                .iter()
+                .map(|run| run.bbox.y)
+                .fold(f64::INFINITY, f64::min);
+            let bottom = runs
+                .iter()
+                .map(|run| run.bbox.y + run.bbox.height)
+                .fold(f64::NEG_INFINITY, f64::max);
+            return Some((top, bottom));
         }
     }
     node.children

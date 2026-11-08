@@ -1,0 +1,8 @@
+{
+  "actual_final_native_decoded_bytes": 3071858,
+  "fixed_input_cap": 3065060,
+  "actual_final_focused_tests": "5 passed, 0 failed",
+  "previous_negative_control": "grid-budget-negative-control.json",
+  "historical_negative_source_base": "170b886f167b705b6e630c5b34bb638d92fae0a9",
+  "note": "현재 양성 검사는 최신 base에서 재실행했다. 이전 음성 대조를 현재 base에서 재실행했다고 기록하지 않는다."
+}

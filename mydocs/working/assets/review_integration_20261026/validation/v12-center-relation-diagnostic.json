@@ -1,0 +1,20 @@
+{
+  "source_frame_height_hu": 64119,
+  "source_cell_padding_hu": 850,
+  "results": [
+    {
+      "phase": "before",
+      "top_gap": -0.02000000000000135,
+      "bottom_gap": 8.733333333333462,
+      "gap_difference": 8.753333333333464,
+      "relation_pass": false
+    },
+    {
+      "phase": "after",
+      "top_gap": 4.28000000000001,
+      "bottom_gap": 4.433333333333508,
+      "gap_difference": 0.15333333333349763,
+      "relation_pass": true
+    }
+  ]
+}

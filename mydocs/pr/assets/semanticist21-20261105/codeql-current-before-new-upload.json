@@ -1,0 +1,837 @@
+{
+  "analyses": [
+    {
+      "ref": "refs/pull/8609/merge",
+      "commit_sha": "04a4c1f0e222628eb2eab748a8d1d82ed8a55704",
+      "analysis_key": ".github/workflows/codeql.yml:analyze",
+      "environment": "{\"language\":\"actions\"}",
+      "category": ".github/workflows/codeql.yml:analyze/language:actions",
+      "error": "",
+      "created_at": "2026-11-05T00:01:09Z",
+      "results_count": 0,
+      "rules_count": 17,
+      "id": 2099481684,
+      "url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/analyses/2099481684",
+      "sarif_id": "00f7d712-d8ac-11f1-9304-ad241357f0d2",
+      "tool": {
+        "name": "CodeQL",
+        "guid": null,
+        "version": "2.27.4"
+      },
+      "deletable": true,
+      "warning": ""
+    },
+    {
+      "ref": "refs/pull/8609/merge",
+      "commit_sha": "04a4c1f0e222628eb2eab748a8d1d82ed8a55704",
+      "analysis_key": ".github/workflows/codeql.yml:analyze",
+      "environment": "{\"language\":\"python\"}",
+      "category": ".github/workflows/codeql.yml:analyze/language:python",
+      "error": "",
+      "created_at": "2026-11-04T23:58:27Z",
+      "results_count": 3,
+      "rules_count": 43,
+      "id": 2099468916,
+      "url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/analyses/2099468916",
+      "sarif_id": "a0127038-d8ab-11f1-9108-6db23db7d65d",
+      "tool": {
+        "name": "CodeQL",
+        "guid": null,
+        "version": "2.27.3"
+      },
+      "deletable": true,
+      "warning": ""
+    },
+    {
+      "ref": "refs/pull/8609/merge",
+      "commit_sha": "04a4c1f0e222628eb2eab748a8d1d82ed8a55704",
+      "analysis_key": ".github/workflows/codeql.yml:analyze",
+      "environment": "{\"language\":\"javascript-typescript\"}",
+      "category": ".github/workflows/codeql.yml:analyze/language:javascript-typescript",
+      "error": "",
+      "created_at": "2026-11-04T23:58:03Z",
+      "results_count": 7,
+      "rules_count": 87,
+      "id": 2099467053,
+      "url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/analyses/2099467053",
+      "sarif_id": "91501d8e-d8ab-11f1-881b-5615e0ddff57",
+      "tool": {
+        "name": "CodeQL",
+        "guid": null,
+        "version": "2.27.2"
+      },
+      "deletable": true,
+      "warning": ""
+    },
+    {
+      "ref": "refs/pull/8609/merge",
+      "commit_sha": "323280a80c16bb1eb5bc14d5eabbef0e61a72abc",
+      "analysis_key": ".github/workflows/codeql.yml:analyze",
+      "environment": "{\"language\":\"rust\"}",
+      "category": ".github/workflows/codeql.yml:analyze/language:rust",
+      "error": "",
+      "created_at": "2026-11-04T22:48:14Z",
+      "results_count": 126,
+      "rules_count": 23,
+      "id": 2099065996,
+      "url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/analyses/2099065996",
+      "sarif_id": "d0f9d164-d8a1-11f1-988d-61f0ad4216e6",
+      "tool": {
+        "name": "CodeQL",
+        "guid": null,
+        "version": "2.27.4"
+      },
+      "deletable": true,
+      "warning": ""
+    },
+    {
+      "ref": "refs/pull/8609/merge",
+      "commit_sha": "323280a80c16bb1eb5bc14d5eabbef0e61a72abc",
+      "analysis_key": ".github/workflows/codeql.yml:analyze",
+      "environment": "{\"language\":\"python\"}",
+      "category": ".github/workflows/codeql.yml:analyze/language:python",
+      "error": "",
+      "created_at": "2026-11-04T22:34:08Z",
+      "results_count": 3,
+      "rules_count": 43,
+      "id": 2098977752,
+      "url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/analyses/2098977752",
+      "sarif_id": "d8cef2d6-d89f-11f1-9ae5-163dd5533ec3",
+      "tool": {
+        "name": "CodeQL",
+        "guid": null,
+        "version": "2.27.3"
+      },
+      "deletable": false,
+      "warning": ""
+    },
+    {
+      "ref": "refs/pull/8609/merge",
+      "commit_sha": "323280a80c16bb1eb5bc14d5eabbef0e61a72abc",
+      "analysis_key": ".github/workflows/codeql.yml:analyze",
+      "environment": "{\"language\":\"javascript-typescript\"}",
+      "category": ".github/workflows/codeql.yml:analyze/language:javascript-typescript",
+      "error": "",
+      "created_at": "2026-11-04T22:34:05Z",
+      "results_count": 7,
+      "rules_count": 87,
+      "id": 2098977448,
+      "url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/analyses/2098977448",
+      "sarif_id": "d78b1760-d89f-11f1-9326-5a1b8985b470",
+      "tool": {
+        "name": "CodeQL",
+        "guid": null,
+        "version": "2.27.2"
+      },
+      "deletable": false,
+      "warning": ""
+    },
+    {
+      "ref": "refs/pull/8609/merge",
+      "commit_sha": "323280a80c16bb1eb5bc14d5eabbef0e61a72abc",
+      "analysis_key": ".github/workflows/codeql.yml:analyze",
+      "environment": "{\"language\":\"actions\"}",
+      "category": ".github/workflows/codeql.yml:analyze/language:actions",
+      "error": "",
+      "created_at": "2026-11-04T22:31:33Z",
+      "results_count": 0,
+      "rules_count": 17,
+      "id": 2098959996,
+      "url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/analyses/2098959996",
+      "sarif_id": "7c810550-d89f-11f1-82f8-596b1b0f07c6",
+      "tool": {
+        "name": "CodeQL",
+        "guid": null,
+        "version": "2.27.4"
+      },
+      "deletable": false,
+      "warning": ""
+    }
+  ],
+  "open_alerts": [
+    {
+      "number": 484,
+      "created_at": "2026-10-31T11:15:27Z",
+      "updated_at": "2026-11-04T22:48:14Z",
+      "url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/alerts/484",
+      "html_url": "https://github.com/edwardkim/rhwp/security/code-scanning/484",
+      "state": "open",
+      "fixed_at": null,
+      "dismissed_by": null,
+      "dismissed_at": null,
+      "dismissed_reason": null,
+      "dismissed_comment": null,
+      "rule": {
+        "id": "rust/cleartext-logging",
+        "severity": "warning",
+        "description": "Cleartext logging of sensitive information",
+        "name": "rust/cleartext-logging",
+        "tags": [
+          "external/cwe/cwe-312",
+          "external/cwe/cwe-359",
+          "external/cwe/cwe-532",
+          "security"
+        ],
+        "full_description": "Logging sensitive information in plaintext can expose it to an attacker.",
+        "help": "# Cleartext logging of sensitive information\nSensitive user data and system information that is logged could be exposed to an attacker when it is displayed. Also, external processes often store the standard output and standard error streams of an application, which will include logged sensitive information.\n\n\n## Recommendation\nDo not log sensitive data. If it is necessary to log sensitive data, encrypt it before logging.\n\n\n## Example\nThe following example code logs user credentials (in this case, their password) in plaintext:\n\n\n```rust\nlet password = \"P@ssw0rd\";\ninfo!(\"User password changed to {password}\");\n\n```\nInstead, you should encrypt the credentials, or better still, omit them entirely:\n\n\n```rust\nlet password = \"P@ssw0rd\";\ninfo!(\"User password changed\");\n\n```\n\n## References\n* M. Dowd, J. McDonald and J. Schuhm, *The Art of Software Security Assessment*, 1st Edition, Chapter 2 - 'Common Vulnerabilities of Encryption', p. 43. Addison Wesley, 2006.\n* M. Howard and D. LeBlanc, *Writing Secure Code*, 2nd Edition, Chapter 9 - 'Protecting Secret Data', p. 299. Microsoft, 2002.\n* OWASP: [Logging Cheat Sheet - Data to exclude](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html#data-to-exclude).\n* Common Weakness Enumeration: [CWE-312](https://cwe.mitre.org/data/definitions/312.html).\n* Common Weakness Enumeration: [CWE-359](https://cwe.mitre.org/data/definitions/359.html).\n* Common Weakness Enumeration: [CWE-532](https://cwe.mitre.org/data/definitions/532.html).\n",
+        "security_severity_level": "high"
+      },
+      "tool": {
+        "name": "CodeQL",
+        "guid": null,
+        "version": "2.27.4"
+      },
+      "most_recent_instance": {
+        "ref": "refs/pull/8609/merge",
+        "analysis_key": ".github/workflows/codeql.yml:analyze",
+        "environment": "{\"language\":\"rust\"}",
+        "category": ".github/workflows/codeql.yml:analyze/language:rust",
+        "state": "open",
+        "commit_sha": "323280a80c16bb1eb5bc14d5eabbef0e61a72abc",
+        "message": {
+          "text": "This operation writes ...::from_bytes_with_password(...) to a log file."
+        },
+        "location": {
+          "path": "src/renderer/layout/table_layout/unit_diagnostics.rs",
+          "start_line": 103,
+          "end_line": 104,
+          "start_column": 13,
+          "end_column": 44
+        },
+        "classifications": []
+      },
+      "instances_url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/alerts/484/instances",
+      "dismissal_approved_by": null,
+      "assignees": [],
+      "linked_pull_requests": [],
+      "linked_issues": []
+    },
+    {
+      "number": 483,
+      "created_at": "2026-10-31T11:15:27Z",
+      "updated_at": "2026-11-04T22:48:14Z",
+      "url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/alerts/483",
+      "html_url": "https://github.com/edwardkim/rhwp/security/code-scanning/483",
+      "state": "open",
+      "fixed_at": null,
+      "dismissed_by": null,
+      "dismissed_at": null,
+      "dismissed_reason": null,
+      "dismissed_comment": null,
+      "rule": {
+        "id": "rust/cleartext-logging",
+        "severity": "warning",
+        "description": "Cleartext logging of sensitive information",
+        "name": "rust/cleartext-logging",
+        "tags": [
+          "external/cwe/cwe-312",
+          "external/cwe/cwe-359",
+          "external/cwe/cwe-532",
+          "security"
+        ],
+        "full_description": "Logging sensitive information in plaintext can expose it to an attacker.",
+        "help": "# Cleartext logging of sensitive information\nSensitive user data and system information that is logged could be exposed to an attacker when it is displayed. Also, external processes often store the standard output and standard error streams of an application, which will include logged sensitive information.\n\n\n## Recommendation\nDo not log sensitive data. If it is necessary to log sensitive data, encrypt it before logging.\n\n\n## Example\nThe following example code logs user credentials (in this case, their password) in plaintext:\n\n\n```rust\nlet password = \"P@ssw0rd\";\ninfo!(\"User password changed to {password}\");\n\n```\nInstead, you should encrypt the credentials, or better still, omit them entirely:\n\n\n```rust\nlet password = \"P@ssw0rd\";\ninfo!(\"User password changed\");\n\n```\n\n## References\n* M. Dowd, J. McDonald and J. Schuhm, *The Art of Software Security Assessment*, 1st Edition, Chapter 2 - 'Common Vulnerabilities of Encryption', p. 43. Addison Wesley, 2006.\n* M. Howard and D. LeBlanc, *Writing Secure Code*, 2nd Edition, Chapter 9 - 'Protecting Secret Data', p. 299. Microsoft, 2002.\n* OWASP: [Logging Cheat Sheet - Data to exclude](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html#data-to-exclude).\n* Common Weakness Enumeration: [CWE-312](https://cwe.mitre.org/data/definitions/312.html).\n* Common Weakness Enumeration: [CWE-359](https://cwe.mitre.org/data/definitions/359.html).\n* Common Weakness Enumeration: [CWE-532](https://cwe.mitre.org/data/definitions/532.html).\n",
+        "security_severity_level": "high"
+      },
+      "tool": {
+        "name": "CodeQL",
+        "guid": null,
+        "version": "2.27.4"
+      },
+      "most_recent_instance": {
+        "ref": "refs/pull/8609/merge",
+        "analysis_key": ".github/workflows/codeql.yml:analyze",
+        "environment": "{\"language\":\"rust\"}",
+        "category": ".github/workflows/codeql.yml:analyze/language:rust",
+        "state": "open",
+        "commit_sha": "323280a80c16bb1eb5bc14d5eabbef0e61a72abc",
+        "message": {
+          "text": "This operation writes ...::from_bytes_with_password(...) to a log file."
+        },
+        "location": {
+          "path": "src/renderer/layout/table_layout/capacity_tolerance.rs",
+          "start_line": 37,
+          "end_line": 48,
+          "start_column": 17,
+          "end_column": 27
+        },
+        "classifications": []
+      },
+      "instances_url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/alerts/483/instances",
+      "dismissal_approved_by": null,
+      "assignees": [],
+      "linked_pull_requests": [],
+      "linked_issues": []
+    },
+    {
+      "number": 482,
+      "created_at": "2026-10-31T11:15:27Z",
+      "updated_at": "2026-11-04T22:48:14Z",
+      "url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/alerts/482",
+      "html_url": "https://github.com/edwardkim/rhwp/security/code-scanning/482",
+      "state": "open",
+      "fixed_at": null,
+      "dismissed_by": null,
+      "dismissed_at": null,
+      "dismissed_reason": null,
+      "dismissed_comment": null,
+      "rule": {
+        "id": "rust/cleartext-logging",
+        "severity": "warning",
+        "description": "Cleartext logging of sensitive information",
+        "name": "rust/cleartext-logging",
+        "tags": [
+          "external/cwe/cwe-312",
+          "external/cwe/cwe-359",
+          "external/cwe/cwe-532",
+          "security"
+        ],
+        "full_description": "Logging sensitive information in plaintext can expose it to an attacker.",
+        "help": "# Cleartext logging of sensitive information\nSensitive user data and system information that is logged could be exposed to an attacker when it is displayed. Also, external processes often store the standard output and standard error streams of an application, which will include logged sensitive information.\n\n\n## Recommendation\nDo not log sensitive data. If it is necessary to log sensitive data, encrypt it before logging.\n\n\n## Example\nThe following example code logs user credentials (in this case, their password) in plaintext:\n\n\n```rust\nlet password = \"P@ssw0rd\";\ninfo!(\"User password changed to {password}\");\n\n```\nInstead, you should encrypt the credentials, or better still, omit them entirely:\n\n\n```rust\nlet password = \"P@ssw0rd\";\ninfo!(\"User password changed\");\n\n```\n\n## References\n* M. Dowd, J. McDonald and J. Schuhm, *The Art of Software Security Assessment*, 1st Edition, Chapter 2 - 'Common Vulnerabilities of Encryption', p. 43. Addison Wesley, 2006.\n* M. Howard and D. LeBlanc, *Writing Secure Code*, 2nd Edition, Chapter 9 - 'Protecting Secret Data', p. 299. Microsoft, 2002.\n* OWASP: [Logging Cheat Sheet - Data to exclude](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html#data-to-exclude).\n* Common Weakness Enumeration: [CWE-312](https://cwe.mitre.org/data/definitions/312.html).\n* Common Weakness Enumeration: [CWE-359](https://cwe.mitre.org/data/definitions/359.html).\n* Common Weakness Enumeration: [CWE-532](https://cwe.mitre.org/data/definitions/532.html).\n",
+        "security_severity_level": "high"
+      },
+      "tool": {
+        "name": "CodeQL",
+        "guid": null,
+        "version": "2.27.4"
+      },
+      "most_recent_instance": {
+        "ref": "refs/pull/8609/merge",
+        "analysis_key": ".github/workflows/codeql.yml:analyze",
+        "environment": "{\"language\":\"rust\"}",
+        "category": ".github/workflows/codeql.yml:analyze/language:rust",
+        "state": "open",
+        "commit_sha": "323280a80c16bb1eb5bc14d5eabbef0e61a72abc",
+        "message": {
+          "text": "This operation writes ...::from_bytes_with_password(...) to a log file."
+        },
+        "location": {
+          "path": "src/renderer/height_measurer.rs",
+          "start_line": 4925,
+          "end_line": 4951,
+          "start_column": 37,
+          "end_column": 56
+        },
+        "classifications": []
+      },
+      "instances_url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/alerts/482/instances",
+      "dismissal_approved_by": null,
+      "assignees": [],
+      "linked_pull_requests": [],
+      "linked_issues": []
+    },
+    {
+      "number": 481,
+      "created_at": "2026-10-31T11:15:27Z",
+      "updated_at": "2026-11-04T22:48:14Z",
+      "url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/alerts/481",
+      "html_url": "https://github.com/edwardkim/rhwp/security/code-scanning/481",
+      "state": "open",
+      "fixed_at": null,
+      "dismissed_by": null,
+      "dismissed_at": null,
+      "dismissed_reason": null,
+      "dismissed_comment": null,
+      "rule": {
+        "id": "rust/cleartext-logging",
+        "severity": "warning",
+        "description": "Cleartext logging of sensitive information",
+        "name": "rust/cleartext-logging",
+        "tags": [
+          "external/cwe/cwe-312",
+          "external/cwe/cwe-359",
+          "external/cwe/cwe-532",
+          "security"
+        ],
+        "full_description": "Logging sensitive information in plaintext can expose it to an attacker.",
+        "help": "# Cleartext logging of sensitive information\nSensitive user data and system information that is logged could be exposed to an attacker when it is displayed. Also, external processes often store the standard output and standard error streams of an application, which will include logged sensitive information.\n\n\n## Recommendation\nDo not log sensitive data. If it is necessary to log sensitive data, encrypt it before logging.\n\n\n## Example\nThe following example code logs user credentials (in this case, their password) in plaintext:\n\n\n```rust\nlet password = \"P@ssw0rd\";\ninfo!(\"User password changed to {password}\");\n\n```\nInstead, you should encrypt the credentials, or better still, omit them entirely:\n\n\n```rust\nlet password = \"P@ssw0rd\";\ninfo!(\"User password changed\");\n\n```\n\n## References\n* M. Dowd, J. McDonald and J. Schuhm, *The Art of Software Security Assessment*, 1st Edition, Chapter 2 - 'Common Vulnerabilities of Encryption', p. 43. Addison Wesley, 2006.\n* M. Howard and D. LeBlanc, *Writing Secure Code*, 2nd Edition, Chapter 9 - 'Protecting Secret Data', p. 299. Microsoft, 2002.\n* OWASP: [Logging Cheat Sheet - Data to exclude](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html#data-to-exclude).\n* Common Weakness Enumeration: [CWE-312](https://cwe.mitre.org/data/definitions/312.html).\n* Common Weakness Enumeration: [CWE-359](https://cwe.mitre.org/data/definitions/359.html).\n* Common Weakness Enumeration: [CWE-532](https://cwe.mitre.org/data/definitions/532.html).\n",
+        "security_severity_level": "high"
+      },
+      "tool": {
+        "name": "CodeQL",
+        "guid": null,
+        "version": "2.27.4"
+      },
+      "most_recent_instance": {
+        "ref": "refs/pull/8609/merge",
+        "analysis_key": ".github/workflows/codeql.yml:analyze",
+        "environment": "{\"language\":\"rust\"}",
+        "category": ".github/workflows/codeql.yml:analyze/language:rust",
+        "state": "open",
+        "commit_sha": "323280a80c16bb1eb5bc14d5eabbef0e61a72abc",
+        "message": {
+          "text": "This operation writes ...::from_bytes_with_password(...) to a log file."
+        },
+        "location": {
+          "path": "src/renderer/height_measurer.rs",
+          "start_line": 4654,
+          "end_line": 4665,
+          "start_column": 29,
+          "end_column": 42
+        },
+        "classifications": []
+      },
+      "instances_url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/alerts/481/instances",
+      "dismissal_approved_by": null,
+      "assignees": [],
+      "linked_pull_requests": [],
+      "linked_issues": []
+    },
+    {
+      "number": 478,
+      "created_at": "2026-10-31T11:15:27Z",
+      "updated_at": "2026-11-04T22:48:14Z",
+      "url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/alerts/478",
+      "html_url": "https://github.com/edwardkim/rhwp/security/code-scanning/478",
+      "state": "open",
+      "fixed_at": null,
+      "dismissed_by": null,
+      "dismissed_at": null,
+      "dismissed_reason": null,
+      "dismissed_comment": null,
+      "rule": {
+        "id": "rust/cleartext-logging",
+        "severity": "warning",
+        "description": "Cleartext logging of sensitive information",
+        "name": "rust/cleartext-logging",
+        "tags": [
+          "external/cwe/cwe-312",
+          "external/cwe/cwe-359",
+          "external/cwe/cwe-532",
+          "security"
+        ],
+        "full_description": "Logging sensitive information in plaintext can expose it to an attacker.",
+        "help": "# Cleartext logging of sensitive information\nSensitive user data and system information that is logged could be exposed to an attacker when it is displayed. Also, external processes often store the standard output and standard error streams of an application, which will include logged sensitive information.\n\n\n## Recommendation\nDo not log sensitive data. If it is necessary to log sensitive data, encrypt it before logging.\n\n\n## Example\nThe following example code logs user credentials (in this case, their password) in plaintext:\n\n\n```rust\nlet password = \"P@ssw0rd\";\ninfo!(\"User password changed to {password}\");\n\n```\nInstead, you should encrypt the credentials, or better still, omit them entirely:\n\n\n```rust\nlet password = \"P@ssw0rd\";\ninfo!(\"User password changed\");\n\n```\n\n## References\n* M. Dowd, J. McDonald and J. Schuhm, *The Art of Software Security Assessment*, 1st Edition, Chapter 2 - 'Common Vulnerabilities of Encryption', p. 43. Addison Wesley, 2006.\n* M. Howard and D. LeBlanc, *Writing Secure Code*, 2nd Edition, Chapter 9 - 'Protecting Secret Data', p. 299. Microsoft, 2002.\n* OWASP: [Logging Cheat Sheet - Data to exclude](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html#data-to-exclude).\n* Common Weakness Enumeration: [CWE-312](https://cwe.mitre.org/data/definitions/312.html).\n* Common Weakness Enumeration: [CWE-359](https://cwe.mitre.org/data/definitions/359.html).\n* Common Weakness Enumeration: [CWE-532](https://cwe.mitre.org/data/definitions/532.html).\n",
+        "security_severity_level": "high"
+      },
+      "tool": {
+        "name": "CodeQL",
+        "guid": null,
+        "version": "2.27.4"
+      },
+      "most_recent_instance": {
+        "ref": "refs/pull/8609/merge",
+        "analysis_key": ".github/workflows/codeql.yml:analyze",
+        "environment": "{\"language\":\"rust\"}",
+        "category": ".github/workflows/codeql.yml:analyze/language:rust",
+        "state": "open",
+        "commit_sha": "323280a80c16bb1eb5bc14d5eabbef0e61a72abc",
+        "message": {
+          "text": "This operation writes ...::from_bytes_with_password(...) to a log file."
+        },
+        "location": {
+          "path": "src/renderer/typeset/table/scan/runner.rs",
+          "start_line": 120,
+          "end_line": 121,
+          "start_column": 33,
+          "end_column": 49
+        },
+        "classifications": []
+      },
+      "instances_url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/alerts/478/instances",
+      "dismissal_approved_by": null,
+      "assignees": [],
+      "linked_pull_requests": [],
+      "linked_issues": []
+    },
+    {
+      "number": 476,
+      "created_at": "2026-10-31T11:15:27Z",
+      "updated_at": "2026-11-04T22:48:14Z",
+      "url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/alerts/476",
+      "html_url": "https://github.com/edwardkim/rhwp/security/code-scanning/476",
+      "state": "open",
+      "fixed_at": null,
+      "dismissed_by": null,
+      "dismissed_at": null,
+      "dismissed_reason": null,
+      "dismissed_comment": null,
+      "rule": {
+        "id": "rust/cleartext-logging",
+        "severity": "warning",
+        "description": "Cleartext logging of sensitive information",
+        "name": "rust/cleartext-logging",
+        "tags": [
+          "external/cwe/cwe-312",
+          "external/cwe/cwe-359",
+          "external/cwe/cwe-532",
+          "security"
+        ],
+        "full_description": "Logging sensitive information in plaintext can expose it to an attacker.",
+        "help": "# Cleartext logging of sensitive information\nSensitive user data and system information that is logged could be exposed to an attacker when it is displayed. Also, external processes often store the standard output and standard error streams of an application, which will include logged sensitive information.\n\n\n## Recommendation\nDo not log sensitive data. If it is necessary to log sensitive data, encrypt it before logging.\n\n\n## Example\nThe following example code logs user credentials (in this case, their password) in plaintext:\n\n\n```rust\nlet password = \"P@ssw0rd\";\ninfo!(\"User password changed to {password}\");\n\n```\nInstead, you should encrypt the credentials, or better still, omit them entirely:\n\n\n```rust\nlet password = \"P@ssw0rd\";\ninfo!(\"User password changed\");\n\n```\n\n## References\n* M. Dowd, J. McDonald and J. Schuhm, *The Art of Software Security Assessment*, 1st Edition, Chapter 2 - 'Common Vulnerabilities of Encryption', p. 43. Addison Wesley, 2006.\n* M. Howard and D. LeBlanc, *Writing Secure Code*, 2nd Edition, Chapter 9 - 'Protecting Secret Data', p. 299. Microsoft, 2002.\n* OWASP: [Logging Cheat Sheet - Data to exclude](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html#data-to-exclude).\n* Common Weakness Enumeration: [CWE-312](https://cwe.mitre.org/data/definitions/312.html).\n* Common Weakness Enumeration: [CWE-359](https://cwe.mitre.org/data/definitions/359.html).\n* Common Weakness Enumeration: [CWE-532](https://cwe.mitre.org/data/definitions/532.html).\n",
+        "security_severity_level": "high"
+      },
+      "tool": {
+        "name": "CodeQL",
+        "guid": null,
+        "version": "2.27.4"
+      },
+      "most_recent_instance": {
+        "ref": "refs/pull/8609/merge",
+        "analysis_key": ".github/workflows/codeql.yml:analyze",
+        "environment": "{\"language\":\"rust\"}",
+        "category": ".github/workflows/codeql.yml:analyze/language:rust",
+        "state": "open",
+        "commit_sha": "323280a80c16bb1eb5bc14d5eabbef0e61a72abc",
+        "message": {
+          "text": "This operation writes ...::from_bytes_with_password(...) to a log file."
+        },
+        "location": {
+          "path": "src/renderer/typeset/table/continuation/fragment/scan.rs",
+          "start_line": 161,
+          "end_line": 161,
+          "start_column": 31,
+          "end_column": 142
+        },
+        "classifications": []
+      },
+      "instances_url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/alerts/476/instances",
+      "dismissal_approved_by": null,
+      "assignees": [],
+      "linked_pull_requests": [],
+      "linked_issues": []
+    },
+    {
+      "number": 475,
+      "created_at": "2026-10-31T11:15:27Z",
+      "updated_at": "2026-11-04T22:48:14Z",
+      "url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/alerts/475",
+      "html_url": "https://github.com/edwardkim/rhwp/security/code-scanning/475",
+      "state": "open",
+      "fixed_at": null,
+      "dismissed_by": null,
+      "dismissed_at": null,
+      "dismissed_reason": null,
+      "dismissed_comment": null,
+      "rule": {
+        "id": "rust/cleartext-logging",
+        "severity": "warning",
+        "description": "Cleartext logging of sensitive information",
+        "name": "rust/cleartext-logging",
+        "tags": [
+          "external/cwe/cwe-312",
+          "external/cwe/cwe-359",
+          "external/cwe/cwe-532",
+          "security"
+        ],
+        "full_description": "Logging sensitive information in plaintext can expose it to an attacker.",
+        "help": "# Cleartext logging of sensitive information\nSensitive user data and system information that is logged could be exposed to an attacker when it is displayed. Also, external processes often store the standard output and standard error streams of an application, which will include logged sensitive information.\n\n\n## Recommendation\nDo not log sensitive data. If it is necessary to log sensitive data, encrypt it before logging.\n\n\n## Example\nThe following example code logs user credentials (in this case, their password) in plaintext:\n\n\n```rust\nlet password = \"P@ssw0rd\";\ninfo!(\"User password changed to {password}\");\n\n```\nInstead, you should encrypt the credentials, or better still, omit them entirely:\n\n\n```rust\nlet password = \"P@ssw0rd\";\ninfo!(\"User password changed\");\n\n```\n\n## References\n* M. Dowd, J. McDonald and J. Schuhm, *The Art of Software Security Assessment*, 1st Edition, Chapter 2 - 'Common Vulnerabilities of Encryption', p. 43. Addison Wesley, 2006.\n* M. Howard and D. LeBlanc, *Writing Secure Code*, 2nd Edition, Chapter 9 - 'Protecting Secret Data', p. 299. Microsoft, 2002.\n* OWASP: [Logging Cheat Sheet - Data to exclude](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html#data-to-exclude).\n* Common Weakness Enumeration: [CWE-312](https://cwe.mitre.org/data/definitions/312.html).\n* Common Weakness Enumeration: [CWE-359](https://cwe.mitre.org/data/definitions/359.html).\n* Common Weakness Enumeration: [CWE-532](https://cwe.mitre.org/data/definitions/532.html).\n",
+        "security_severity_level": "high"
+      },
+      "tool": {
+        "name": "CodeQL",
+        "guid": null,
+        "version": "2.27.4"
+      },
+      "most_recent_instance": {
+        "ref": "refs/pull/8609/merge",
+        "analysis_key": ".github/workflows/codeql.yml:analyze",
+        "environment": "{\"language\":\"rust\"}",
+        "category": ".github/workflows/codeql.yml:analyze/language:rust",
+        "state": "open",
+        "commit_sha": "323280a80c16bb1eb5bc14d5eabbef0e61a72abc",
+        "message": {
+          "text": "This operation writes ...::from_bytes_with_password(...) to a log file."
+        },
+        "location": {
+          "path": "src/renderer/typeset/table/continuation/fragment/budget.rs",
+          "start_line": 1953,
+          "end_line": 1958,
+          "start_column": 17,
+          "end_column": 69
+        },
+        "classifications": []
+      },
+      "instances_url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/alerts/475/instances",
+      "dismissal_approved_by": null,
+      "assignees": [],
+      "linked_pull_requests": [],
+      "linked_issues": []
+    },
+    {
+      "number": 474,
+      "created_at": "2026-10-31T11:15:27Z",
+      "updated_at": "2026-11-04T22:48:14Z",
+      "url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/alerts/474",
+      "html_url": "https://github.com/edwardkim/rhwp/security/code-scanning/474",
+      "state": "open",
+      "fixed_at": null,
+      "dismissed_by": null,
+      "dismissed_at": null,
+      "dismissed_reason": null,
+      "dismissed_comment": null,
+      "rule": {
+        "id": "rust/cleartext-logging",
+        "severity": "warning",
+        "description": "Cleartext logging of sensitive information",
+        "name": "rust/cleartext-logging",
+        "tags": [
+          "external/cwe/cwe-312",
+          "external/cwe/cwe-359",
+          "external/cwe/cwe-532",
+          "security"
+        ],
+        "full_description": "Logging sensitive information in plaintext can expose it to an attacker.",
+        "help": "# Cleartext logging of sensitive information\nSensitive user data and system information that is logged could be exposed to an attacker when it is displayed. Also, external processes often store the standard output and standard error streams of an application, which will include logged sensitive information.\n\n\n## Recommendation\nDo not log sensitive data. If it is necessary to log sensitive data, encrypt it before logging.\n\n\n## Example\nThe following example code logs user credentials (in this case, their password) in plaintext:\n\n\n```rust\nlet password = \"P@ssw0rd\";\ninfo!(\"User password changed to {password}\");\n\n```\nInstead, you should encrypt the credentials, or better still, omit them entirely:\n\n\n```rust\nlet password = \"P@ssw0rd\";\ninfo!(\"User password changed\");\n\n```\n\n## References\n* M. Dowd, J. McDonald and J. Schuhm, *The Art of Software Security Assessment*, 1st Edition, Chapter 2 - 'Common Vulnerabilities of Encryption', p. 43. Addison Wesley, 2006.\n* M. Howard and D. LeBlanc, *Writing Secure Code*, 2nd Edition, Chapter 9 - 'Protecting Secret Data', p. 299. Microsoft, 2002.\n* OWASP: [Logging Cheat Sheet - Data to exclude](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html#data-to-exclude).\n* Common Weakness Enumeration: [CWE-312](https://cwe.mitre.org/data/definitions/312.html).\n* Common Weakness Enumeration: [CWE-359](https://cwe.mitre.org/data/definitions/359.html).\n* Common Weakness Enumeration: [CWE-532](https://cwe.mitre.org/data/definitions/532.html).\n",
+        "security_severity_level": "high"
+      },
+      "tool": {
+        "name": "CodeQL",
+        "guid": null,
+        "version": "2.27.4"
+      },
+      "most_recent_instance": {
+        "ref": "refs/pull/8609/merge",
+        "analysis_key": ".github/workflows/codeql.yml:analyze",
+        "environment": "{\"language\":\"rust\"}",
+        "category": ".github/workflows/codeql.yml:analyze/language:rust",
+        "state": "open",
+        "commit_sha": "323280a80c16bb1eb5bc14d5eabbef0e61a72abc",
+        "message": {
+          "text": "This operation writes ...::from_bytes_with_password(...) to a log file."
+        },
+        "location": {
+          "path": "src/renderer/typeset/table/continuation/fragment/budget.rs",
+          "start_line": 1917,
+          "end_line": 1919,
+          "start_column": 21,
+          "end_column": 51
+        },
+        "classifications": []
+      },
+      "instances_url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/alerts/474/instances",
+      "dismissal_approved_by": null,
+      "assignees": [],
+      "linked_pull_requests": [],
+      "linked_issues": []
+    },
+    {
+      "number": 472,
+      "created_at": "2026-10-31T11:15:27Z",
+      "updated_at": "2026-11-04T22:48:14Z",
+      "url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/alerts/472",
+      "html_url": "https://github.com/edwardkim/rhwp/security/code-scanning/472",
+      "state": "open",
+      "fixed_at": null,
+      "dismissed_by": null,
+      "dismissed_at": null,
+      "dismissed_reason": null,
+      "dismissed_comment": null,
+      "rule": {
+        "id": "rust/cleartext-logging",
+        "severity": "warning",
+        "description": "Cleartext logging of sensitive information",
+        "name": "rust/cleartext-logging",
+        "tags": [
+          "external/cwe/cwe-312",
+          "external/cwe/cwe-359",
+          "external/cwe/cwe-532",
+          "security"
+        ],
+        "full_description": "Logging sensitive information in plaintext can expose it to an attacker.",
+        "help": "# Cleartext logging of sensitive information\nSensitive user data and system information that is logged could be exposed to an attacker when it is displayed. Also, external processes often store the standard output and standard error streams of an application, which will include logged sensitive information.\n\n\n## Recommendation\nDo not log sensitive data. If it is necessary to log sensitive data, encrypt it before logging.\n\n\n## Example\nThe following example code logs user credentials (in this case, their password) in plaintext:\n\n\n```rust\nlet password = \"P@ssw0rd\";\ninfo!(\"User password changed to {password}\");\n\n```\nInstead, you should encrypt the credentials, or better still, omit them entirely:\n\n\n```rust\nlet password = \"P@ssw0rd\";\ninfo!(\"User password changed\");\n\n```\n\n## References\n* M. Dowd, J. McDonald and J. Schuhm, *The Art of Software Security Assessment*, 1st Edition, Chapter 2 - 'Common Vulnerabilities of Encryption', p. 43. Addison Wesley, 2006.\n* M. Howard and D. LeBlanc, *Writing Secure Code*, 2nd Edition, Chapter 9 - 'Protecting Secret Data', p. 299. Microsoft, 2002.\n* OWASP: [Logging Cheat Sheet - Data to exclude](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html#data-to-exclude).\n* Common Weakness Enumeration: [CWE-312](https://cwe.mitre.org/data/definitions/312.html).\n* Common Weakness Enumeration: [CWE-359](https://cwe.mitre.org/data/definitions/359.html).\n* Common Weakness Enumeration: [CWE-532](https://cwe.mitre.org/data/definitions/532.html).\n",
+        "security_severity_level": "high"
+      },
+      "tool": {
+        "name": "CodeQL",
+        "guid": null,
+        "version": "2.27.4"
+      },
+      "most_recent_instance": {
+        "ref": "refs/pull/8609/merge",
+        "analysis_key": ".github/workflows/codeql.yml:analyze",
+        "environment": "{\"language\":\"rust\"}",
+        "category": ".github/workflows/codeql.yml:analyze/language:rust",
+        "state": "open",
+        "commit_sha": "323280a80c16bb1eb5bc14d5eabbef0e61a72abc",
+        "message": {
+          "text": "This operation writes ...::from_bytes_with_password(...) to a log file."
+        },
+        "location": {
+          "path": "src/renderer/typeset/table/continuation/fragment/budget.rs",
+          "start_line": 1247,
+          "end_line": 1249,
+          "start_column": 29,
+          "end_column": 61
+        },
+        "classifications": []
+      },
+      "instances_url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/alerts/472/instances",
+      "dismissal_approved_by": null,
+      "assignees": [],
+      "linked_pull_requests": [],
+      "linked_issues": []
+    },
+    {
+      "number": 470,
+      "created_at": "2026-10-31T11:15:27Z",
+      "updated_at": "2026-11-04T22:48:14Z",
+      "url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/alerts/470",
+      "html_url": "https://github.com/edwardkim/rhwp/security/code-scanning/470",
+      "state": "open",
+      "fixed_at": null,
+      "dismissed_by": null,
+      "dismissed_at": null,
+      "dismissed_reason": null,
+      "dismissed_comment": null,
+      "rule": {
+        "id": "rust/cleartext-logging",
+        "severity": "warning",
+        "description": "Cleartext logging of sensitive information",
+        "name": "rust/cleartext-logging",
+        "tags": [
+          "external/cwe/cwe-312",
+          "external/cwe/cwe-359",
+          "external/cwe/cwe-532",
+          "security"
+        ],
+        "full_description": "Logging sensitive information in plaintext can expose it to an attacker.",
+        "help": "# Cleartext logging of sensitive information\nSensitive user data and system information that is logged could be exposed to an attacker when it is displayed. Also, external processes often store the standard output and standard error streams of an application, which will include logged sensitive information.\n\n\n## Recommendation\nDo not log sensitive data. If it is necessary to log sensitive data, encrypt it before logging.\n\n\n## Example\nThe following example code logs user credentials (in this case, their password) in plaintext:\n\n\n```rust\nlet password = \"P@ssw0rd\";\ninfo!(\"User password changed to {password}\");\n\n```\nInstead, you should encrypt the credentials, or better still, omit them entirely:\n\n\n```rust\nlet password = \"P@ssw0rd\";\ninfo!(\"User password changed\");\n\n```\n\n## References\n* M. Dowd, J. McDonald and J. Schuhm, *The Art of Software Security Assessment*, 1st Edition, Chapter 2 - 'Common Vulnerabilities of Encryption', p. 43. Addison Wesley, 2006.\n* M. Howard and D. LeBlanc, *Writing Secure Code*, 2nd Edition, Chapter 9 - 'Protecting Secret Data', p. 299. Microsoft, 2002.\n* OWASP: [Logging Cheat Sheet - Data to exclude](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html#data-to-exclude).\n* Common Weakness Enumeration: [CWE-312](https://cwe.mitre.org/data/definitions/312.html).\n* Common Weakness Enumeration: [CWE-359](https://cwe.mitre.org/data/definitions/359.html).\n* Common Weakness Enumeration: [CWE-532](https://cwe.mitre.org/data/definitions/532.html).\n",
+        "security_severity_level": "high"
+      },
+      "tool": {
+        "name": "CodeQL",
+        "guid": null,
+        "version": "2.27.4"
+      },
+      "most_recent_instance": {
+        "ref": "refs/pull/8609/merge",
+        "analysis_key": ".github/workflows/codeql.yml:analyze",
+        "environment": "{\"language\":\"rust\"}",
+        "category": ".github/workflows/codeql.yml:analyze/language:rust",
+        "state": "open",
+        "commit_sha": "323280a80c16bb1eb5bc14d5eabbef0e61a72abc",
+        "message": {
+          "text": "This operation writes ...::from_bytes_with_password(...) to a log file."
+        },
+        "location": {
+          "path": "src/renderer/typeset/table/continuation/fragment/coanchored_origin.rs",
+          "start_line": 231,
+          "end_line": 232,
+          "start_column": 17,
+          "end_column": 100
+        },
+        "classifications": []
+      },
+      "instances_url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/alerts/470/instances",
+      "dismissal_approved_by": null,
+      "assignees": [],
+      "linked_pull_requests": [],
+      "linked_issues": []
+    },
+    {
+      "number": 466,
+      "created_at": "2026-10-31T11:15:27Z",
+      "updated_at": "2026-11-04T22:48:14Z",
+      "url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/alerts/466",
+      "html_url": "https://github.com/edwardkim/rhwp/security/code-scanning/466",
+      "state": "open",
+      "fixed_at": null,
+      "dismissed_by": null,
+      "dismissed_at": null,
+      "dismissed_reason": null,
+      "dismissed_comment": null,
+      "rule": {
+        "id": "rust/cleartext-logging",
+        "severity": "warning",
+        "description": "Cleartext logging of sensitive information",
+        "name": "rust/cleartext-logging",
+        "tags": [
+          "external/cwe/cwe-312",
+          "external/cwe/cwe-359",
+          "external/cwe/cwe-532",
+          "security"
+        ],
+        "full_description": "Logging sensitive information in plaintext can expose it to an attacker.",
+        "help": "# Cleartext logging of sensitive information\nSensitive user data and system information that is logged could be exposed to an attacker when it is displayed. Also, external processes often store the standard output and standard error streams of an application, which will include logged sensitive information.\n\n\n## Recommendation\nDo not log sensitive data. If it is necessary to log sensitive data, encrypt it before logging.\n\n\n## Example\nThe following example code logs user credentials (in this case, their password) in plaintext:\n\n\n```rust\nlet password = \"P@ssw0rd\";\ninfo!(\"User password changed to {password}\");\n\n```\nInstead, you should encrypt the credentials, or better still, omit them entirely:\n\n\n```rust\nlet password = \"P@ssw0rd\";\ninfo!(\"User password changed\");\n\n```\n\n## References\n* M. Dowd, J. McDonald and J. Schuhm, *The Art of Software Security Assessment*, 1st Edition, Chapter 2 - 'Common Vulnerabilities of Encryption', p. 43. Addison Wesley, 2006.\n* M. Howard and D. LeBlanc, *Writing Secure Code*, 2nd Edition, Chapter 9 - 'Protecting Secret Data', p. 299. Microsoft, 2002.\n* OWASP: [Logging Cheat Sheet - Data to exclude](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html#data-to-exclude).\n* Common Weakness Enumeration: [CWE-312](https://cwe.mitre.org/data/definitions/312.html).\n* Common Weakness Enumeration: [CWE-359](https://cwe.mitre.org/data/definitions/359.html).\n* Common Weakness Enumeration: [CWE-532](https://cwe.mitre.org/data/definitions/532.html).\n",
+        "security_severity_level": "high"
+      },
+      "tool": {
+        "name": "CodeQL",
+        "guid": null,
+        "version": "2.27.4"
+      },
+      "most_recent_instance": {
+        "ref": "refs/pull/8609/merge",
+        "analysis_key": ".github/workflows/codeql.yml:analyze",
+        "environment": "{\"language\":\"rust\"}",
+        "category": ".github/workflows/codeql.yml:analyze/language:rust",
+        "state": "open",
+        "commit_sha": "323280a80c16bb1eb5bc14d5eabbef0e61a72abc",
+        "message": {
+          "text": "This operation writes ...::from_bytes_with_password(...) to a log file."
+        },
+        "location": {
+          "path": "src/renderer/typeset/section.rs",
+          "start_line": 250,
+          "end_line": 257,
+          "start_column": 33,
+          "end_column": 55
+        },
+        "classifications": []
+      },
+      "instances_url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/alerts/466/instances",
+      "dismissal_approved_by": null,
+      "assignees": [],
+      "linked_pull_requests": [],
+      "linked_issues": []
+    },
+    {
+      "number": 462,
+      "created_at": "2026-10-31T11:15:27Z",
+      "updated_at": "2026-11-04T22:48:14Z",
+      "url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/alerts/462",
+      "html_url": "https://github.com/edwardkim/rhwp/security/code-scanning/462",
+      "state": "open",
+      "fixed_at": null,
+      "dismissed_by": null,
+      "dismissed_at": null,
+      "dismissed_reason": null,
+      "dismissed_comment": null,
+      "rule": {
+        "id": "rust/cleartext-logging",
+        "severity": "warning",
+        "description": "Cleartext logging of sensitive information",
+        "name": "rust/cleartext-logging",
+        "tags": [
+          "external/cwe/cwe-312",
+          "external/cwe/cwe-359",
+          "external/cwe/cwe-532",
+          "security"
+        ],
+        "full_description": "Logging sensitive information in plaintext can expose it to an attacker.",
+        "help": "# Cleartext logging of sensitive information\nSensitive user data and system information that is logged could be exposed to an attacker when it is displayed. Also, external processes often store the standard output and standard error streams of an application, which will include logged sensitive information.\n\n\n## Recommendation\nDo not log sensitive data. If it is necessary to log sensitive data, encrypt it before logging.\n\n\n## Example\nThe following example code logs user credentials (in this case, their password) in plaintext:\n\n\n```rust\nlet password = \"P@ssw0rd\";\ninfo!(\"User password changed to {password}\");\n\n```\nInstead, you should encrypt the credentials, or better still, omit them entirely:\n\n\n```rust\nlet password = \"P@ssw0rd\";\ninfo!(\"User password changed\");\n\n```\n\n## References\n* M. Dowd, J. McDonald and J. Schuhm, *The Art of Software Security Assessment*, 1st Edition, Chapter 2 - 'Common Vulnerabilities of Encryption', p. 43. Addison Wesley, 2006.\n* M. Howard and D. LeBlanc, *Writing Secure Code*, 2nd Edition, Chapter 9 - 'Protecting Secret Data', p. 299. Microsoft, 2002.\n* OWASP: [Logging Cheat Sheet - Data to exclude](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html#data-to-exclude).\n* Common Weakness Enumeration: [CWE-312](https://cwe.mitre.org/data/definitions/312.html).\n* Common Weakness Enumeration: [CWE-359](https://cwe.mitre.org/data/definitions/359.html).\n* Common Weakness Enumeration: [CWE-532](https://cwe.mitre.org/data/definitions/532.html).\n",
+        "security_severity_level": "high"
+      },
+      "tool": {
+        "name": "CodeQL",
+        "guid": null,
+        "version": "2.27.4"
+      },
+      "most_recent_instance": {
+        "ref": "refs/pull/8609/merge",
+        "analysis_key": ".github/workflows/codeql.yml:analyze",
+        "environment": "{\"language\":\"rust\"}",
+        "category": ".github/workflows/codeql.yml:analyze/language:rust",
+        "state": "open",
+        "commit_sha": "323280a80c16bb1eb5bc14d5eabbef0e61a72abc",
+        "message": {
+          "text": "This operation writes ...::from_bytes_with_password(...) to a log file."
+        },
+        "location": {
+          "path": "src/renderer/typeset/controls.rs",
+          "start_line": 411,
+          "end_line": 422,
+          "start_column": 21,
+          "end_column": 41
+        },
+        "classifications": []
+      },
+      "instances_url": "https://api.github.com/repos/edwardkim/rhwp/code-scanning/alerts/462/instances",
+      "dismissal_approved_by": null,
+      "assignees": [],
+      "linked_pull_requests": [],
+      "linked_issues": []
+    }
+  ]
+}

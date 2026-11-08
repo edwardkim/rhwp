@@ -33,7 +33,7 @@ fn broken_ole_hwpx_bytes() -> Vec<u8> {
         let mut writer = zip::ZipWriter::new(&mut out);
         for i in 0..archive.len() {
             let mut entry = archive.by_index(i).expect("zip entry");
-            let name = entry.name().to_string();
+            let name = entry.name().expect("ZIP 엔트리 이름").to_string();
             let mut data = Vec::new();
             entry.read_to_end(&mut data).expect("read zip entry");
             if name == BROKEN_OLE_ENTRY {

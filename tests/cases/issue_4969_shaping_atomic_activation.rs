@@ -1,4 +1,8 @@
-//! Issue #4969 W10-Q2-D4-B: the first product lane activates atomically.
+//! 관계형·고정형: 합성 입력의 글리프 소유·원자적 게시와 직렬화 크기 계약.
+//! 주석 갱신: 2026-10-30T15:27:48+09:00; 직전 파일 커밋: 2026-10-30T14:21:47+09:00 (d5fc184645).
+//! 빈 문서와 저장소 글꼴을 이용한 합성 계약 검사로, 실제 문서의 시각 출력 검사가 아니므로
+//! 독립 PDF 대비 Native·fresh WASM raw 측정은 해당하지 않는다.
+//! 근거: mydocs/working/archives/task_m100_4969_w10_q4_d3_b.md.
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
@@ -20,8 +24,7 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen_test::wasm_bindgen_test;
 
-const SOURCE_HAN: &[u8] =
-    include_bytes!("../../ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf");
+const SOURCE_HAN: &[u8] = include_bytes!("../../ttfs/opensource/RHWPOldHangul-Regular.otf");
 const HAPPINESS: &[u8] =
     include_bytes!("../../ttfs/redistributable/happiness-sans/HappinessSansVF.ttf");
 const NOTO: &[u8] = include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");
@@ -114,7 +117,9 @@ fn collect_text_ops<'a>(node: &'a LayerNode, ops: &mut Vec<&'a PaintOp>) {
                 collect_text_ops(child, ops);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => collect_text_ops(child, ops),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            collect_text_ops(child, ops)
+        }
         LayerNodeKind::Leaf { ops: leaf_ops } => ops.extend(leaf_ops.iter().filter(|op| {
             matches!(
                 op,
@@ -203,7 +208,7 @@ fn mutate_bounded_vertical_glyph_runs(
                 mutate_bounded_vertical_glyph_runs(child, mutate);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => {
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
             mutate_bounded_vertical_glyph_runs(child, mutate);
         }
         LayerNodeKind::Leaf { ops } => {
@@ -379,7 +384,9 @@ fn find_layer_source_node(node: &LayerNode, source_node_id: u32) -> Option<&Laye
         LayerNodeKind::Group { children, .. } => children
             .iter()
             .find_map(|child| find_layer_source_node(child, source_node_id)),
-        LayerNodeKind::ClipRect { child, .. } => find_layer_source_node(child, source_node_id),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            find_layer_source_node(child, source_node_id)
+        }
         LayerNodeKind::Leaf { .. } => None,
     }
 }
@@ -597,7 +604,9 @@ fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf(
             assert_eq!(vertical_reports.len(), 2, "{backend:?}");
             if matches!(
                 backend,
-                VariantSelectionBackend::CanvasKit | VariantSelectionBackend::CanvasKitBrowser
+                VariantSelectionBackend::CanvasKit
+                    | VariantSelectionBackend::CanvasKitBrowser
+                    | VariantSelectionBackend::NativeSkia
             ) {
                 assert!(vertical_reports.iter().all(|report| {
                     report.selected_variant_id.as_deref() == Some("verticalGlyphRun")
@@ -610,6 +619,46 @@ fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf(
                         && report.fallback_required
                 }));
             }
+        }
+
+        #[cfg(feature = "native-skia")]
+        {
+            use rhwp::renderer::layer_renderer::RasterRenderOptions;
+            use rhwp::renderer::skia::{native_skia_glyph_run_replay_proof, SkiaLayerRenderer};
+            for op in &ops {
+                if let PaintOp::GlyphRun { run, .. } = op {
+                    let proof = native_skia_glyph_run_replay_proof(run, &layer_tree.resources);
+                    assert!(
+                        proof.typeface_constructible,
+                        "published vertical run: {proof:?}"
+                    );
+                }
+            }
+            let renderer = SkiaLayerRenderer::new();
+            let first = renderer
+                .render_raster_with_options(&layer_tree, RasterRenderOptions::default())
+                .expect("Native exact vertical replay");
+            let second = renderer
+                .render_raster_with_options(&layer_tree, RasterRenderOptions::default())
+                .expect("Native exact vertical replay with prepared glyph cache");
+            for output in [&first, &second] {
+                let selected = output
+                    .diagnostics
+                    .variant_selections
+                    .iter()
+                    .filter(|report| {
+                        matches!(report.equivalence_group.as_str(), "text-0" | "text-1")
+                    })
+                    .collect::<Vec<_>>();
+                assert_eq!(selected.len(), 2);
+                assert!(selected
+                    .iter()
+                    .all(|report| report.selected_variant_id.as_deref()
+                        == Some("verticalGlyphRun")
+                        && !report.fallback_required));
+                assert!(output.diagnostics.native_glyph_rejections.is_empty());
+            }
+            assert_eq!(first.bytes, second.bytes);
         }
 
         let browser_plan = analyze_canvaskit_replay_plan(&layer_tree, CanvasKitReplayMode::Default);
@@ -726,6 +775,8 @@ fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf(
     let rejected_json = rejected_layer.to_json();
     let accepted: serde_json::Value =
         serde_json::from_str(&accepted_json).expect("parse accepted layer JSON");
+    let rejected: serde_json::Value =
+        serde_json::from_str(&rejected_json).expect("parse rejected layer JSON");
     assert_eq!(accepted["textSources"].as_array().map(Vec::len), Some(2));
     assert_eq!(
         accepted["fontResources"]["blobs"].as_array().map(Vec::len),
@@ -769,9 +820,144 @@ fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf(
         .map(|(_, bytes)| bytes.len())
         .sum::<usize>();
     assert_eq!(font_payload_bytes, 2_519_996);
-    assert_eq!(accepted_json.len(), 3_375_713);
-    assert_eq!(rejected_json.len(), 9_161);
-    assert_eq!(accepted_json.len() - rejected_json.len(), 3_366_552);
+    // P45/P46/P47과 편집 가능한 글자 클리핑은 게시가 거부된 경우를 포함해
+    // 모든 출력의 루트 knownFeatures에 기능을 추가한다. 이 값은 출력기의 지원을
+    // 나타내며 이 입력의 글리프나 자원이 아니다. JSON 문자열과 구분자 크기만
+    // 정확히 제외해 기존 페이로드·구조 크기 검증값을 유지한다.
+    const ADDED_CAPABILITIES: [&str; 6] = [
+        "text.glyphOutline.colorLayers.colrV1.sourceOver",
+        "text.glyphOutline.colorLayers.colrV1.clip",
+        "text.glyphOutline.svgGlyph.fontEmBox",
+        "paint.pageBackground.imageEffects",
+        "layer.visualBounds",
+        "paint.textClipPath",
+    ];
+    let capability_wire_bytes = ADDED_CAPABILITIES
+        .iter()
+        .map(|feature| {
+            serde_json::to_string(feature)
+                .expect("JSON capability string")
+                .len()
+                + 1
+        })
+        .sum::<usize>();
+    let publication_json_bytes = |json: &str, value: &serde_json::Value| {
+        // 인쇄 세대 정책은 글리프 게시와 무관한 루트 메타데이터다. 값과
+        // 직렬화 형식을 확인한 뒤 기존 게시 크기 영수증에서만 제외한다.
+        let raster_policy_bytes = ["rasterTextGeometry", "rasterClipCoverage"]
+            .iter()
+            .map(|key| {
+                let policy = value[*key].as_bool().expect("래스터 정책은 불리언");
+                let field = format!(",\"{key}\":{policy}");
+                assert_eq!(json.matches(&field).count(), 1, "래스터 정책은 한 번 기록");
+                field.len()
+            })
+            .sum::<usize>();
+        let known = value["knownFeatures"]
+            .as_array()
+            .expect("known capabilities");
+        assert!(known.len() > ADDED_CAPABILITIES.len());
+        for feature in ADDED_CAPABILITIES {
+            assert_eq!(
+                known
+                    .iter()
+                    .filter(|entry| entry.as_str() == Some(feature))
+                    .count(),
+                1,
+                "added capability must occur exactly once: {feature}"
+            );
+        }
+        let used = value["usedFeatures"].as_array().expect("used capabilities");
+        assert_eq!(
+            used.iter()
+                .filter(|entry| entry.as_str() == Some("layer.visualBounds"))
+                .count(),
+            1,
+            "P47 visual bounds are declared exactly once as used"
+        );
+        let visual_feature_bytes = serde_json::to_string("layer.visualBounds")
+            .expect("JSON visual bounds capability")
+            .len()
+            + 1;
+
+        // P47은 기존 논리 상자와 별도로 기록 영역을 출력한다.
+        // 이 검사는 필드 형태와 정식 직렬화 크기를 확인하며 새 좌표 기준을
+        // 만들거나 시각 영역 좌표 검사를 대신하지 않는다.
+        // 임의의 메타데이터가 아니라 실제 레이어 노드만 순회한다.
+        let mut nodes = vec![&value["root"]];
+        let mut visual_count = 0;
+        let mut empty_group_count = 0;
+        let mut visual_wire_bytes = 0;
+        while let Some(node) = nodes.pop() {
+            if let Some(visual) = node.get("visualBounds") {
+                let object = visual.as_object().expect("visual bounds object");
+                assert_eq!(object.len(), 4, "only x/y/width/height belong to the bbox");
+                let [x, y, width, height] = ["x", "y", "width", "height"].map(|key| {
+                    let scalar = visual[key].as_f64().expect("numeric visual bound");
+                    assert!(scalar.is_finite(), "finite visual bound {key}");
+                    scalar
+                });
+                assert!(
+                    width > 0.0 && height > 0.0,
+                    "only nonempty visual extents are exported"
+                );
+                assert!((x + width).is_finite() && (y + height).is_finite());
+                let field = format!(
+                    ",\"visualBounds\":{{\"x\":{x:.3},\"y\":{y:.3},\"width\":{width:.3},\"height\":{height:.3}}}"
+                );
+                assert!(
+                    json.contains(&field),
+                    "visual bounds use canonical three-decimal encoding"
+                );
+                visual_wire_bytes += field.len();
+                visual_count += 1;
+            } else {
+                assert_eq!(
+                    node["kind"], "group",
+                    "only empty fixture groups lack visible ink"
+                );
+                assert!(node["children"]
+                    .as_array()
+                    .expect("empty group children")
+                    .is_empty());
+                empty_group_count += 1;
+            }
+            match node["kind"].as_str().expect("layer node kind") {
+                "group" => nodes.extend(node["children"].as_array().expect("group children")),
+                "clipRect" => nodes.push(node.get("child").expect("clip child")),
+                "leaf" => {
+                    assert!(node["ops"].is_array(), "leaf operations");
+                }
+                kind => panic!("unexpected fixture layer kind: {kind}"),
+            }
+        }
+        assert_eq!(
+            visual_count, 11,
+            "each nonempty fixture layer has one visual box"
+        );
+        assert_eq!(empty_group_count, 2);
+        assert_eq!(
+            json.matches("\"visualBounds\":").count(),
+            visual_count,
+            "no visual metadata outside the accounted layer nodes"
+        );
+        json.len()
+            .checked_sub(
+                capability_wire_bytes
+                    + visual_feature_bytes
+                    + visual_wire_bytes
+                    + raster_policy_bytes,
+            )
+            .expect("capability wire overhead")
+    };
+    let accepted_publication_bytes = publication_json_bytes(&accepted_json, &accepted);
+    let rejected_publication_bytes = publication_json_bytes(&rejected_json, &rejected);
+    assert_eq!(accepted_publication_bytes, 3_375_713);
+    assert_eq!(rejected_publication_bytes, 9_161);
+    assert_eq!(
+        accepted_publication_bytes - rejected_publication_bytes,
+        3_366_552
+    );
     println!(
         "{}",
         serde_json::json!({
@@ -791,7 +977,7 @@ fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf(
 
 #[test]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
-fn issue_4969_q2_d4_b_one_line_run_publishes_one_common_alternative() {
+fn issue_4969_common_alternative_preserves_declared_size_and_shared_page_geometry() {
     let core = core_with_surface(TEXT, Alignment::Left, 0, false);
     let layer_tree = core
         .build_page_layer_tree(0)
@@ -808,7 +994,7 @@ fn issue_4969_q2_d4_b_one_line_run_publishes_one_common_alternative() {
     let glyph_runs = ops
         .iter()
         .filter_map(|op| match op {
-            PaintOp::GlyphRun { bbox, run }
+            PaintOp::GlyphRun { bbox, run, .. }
                 if run.diagnostics.reason.as_deref()
                     == Some("q2CommonShapingCondensedDrawProjectionV1") =>
             {
@@ -843,7 +1029,16 @@ fn issue_4969_q2_d4_b_one_line_run_publishes_one_common_alternative() {
     assert_eq!(text_bbox.width, glyph_bbox.width);
     assert_eq!(text_bbox.height, glyph_bbox.height);
     assert!((text_bbox.width - page_advance).abs() <= 1.0e-9);
-    assert!(glyph_run.paint_style.font_size < text_run.style.font_size);
+    // 장평은 가로축만 소유한다. 실제 원본 글자모양의 기준 크기는 세로로 보존한다.
+    let source_para = &core.document().sections[0].paragraphs[0];
+    let source_shape =
+        &core.document().doc_info.char_shapes[source_para.char_shapes[0].char_shape_id as usize];
+    let source_font_size = rhwp::renderer::hwpunit_to_px(source_shape.base_size as i32, 96.0);
+    let source_ratio = f64::from(source_shape.ratios[0]) / 100.0;
+    assert_eq!(glyph_run.paint_style.font_size, source_font_size);
+    assert_eq!(text_run.style.font_size, source_font_size);
+    assert_eq!(glyph_run.placement.run_to_page.a, source_ratio);
+    assert_eq!(glyph_run.placement.run_to_page.d, 1.0);
     assert_eq!(glyph_run.paint_style.ratio, 1.0);
     assert!(glyph_run.diagnostics.strict_visual_eligible);
     assert_eq!(layer_tree.text_sources.entries.len(), 1);
@@ -930,7 +1125,7 @@ fn issue_4969_q2_d5_n1_no_lineseg_publishes_one_atomic_common_alternative() {
     let glyph_runs = ops
         .iter()
         .filter_map(|op| match op {
-            PaintOp::GlyphRun { bbox, run }
+            PaintOp::GlyphRun { bbox, run, .. }
                 if run.diagnostics.reason.as_deref()
                     == Some("q2CommonShapingCondensedDrawProjectionV1") =>
             {

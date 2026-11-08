@@ -1,0 +1,41 @@
+{
+  "source_commit": "e1fea22a8e2401d4bdee33bc961520b2c1f08c2e",
+  "replaced_incorrect_tests": [
+    {
+      "old_source": "src/renderer/layout/tests.rs",
+      "source_commit": "e1fea22a8e2401d4bdee33bc961520b2c1f08c2e",
+      "old_function": "header_paper_relative_shape_uses_page_origin",
+      "old_source_sha256": "a5441e7bff6489b852f30b916f03a1fc1872c904629507b744d0b8a2f791cf51",
+      "archive": "mydocs/pr/assets/issue7642-relational-regressions/header_paper_relative_shape_uses_page_origin.rs.txt",
+      "archive_sha256": "afec19572fe746d8882c5a9f32fe5a1296739aa40eccf76b9b344047b9150d55",
+      "new_source": "tests/cases/issue_7642_header_shape_ownership_relations.rs",
+      "independent_proof": "table-text Native/fresh WASM99.98998%; header official HWP/Print Native/fresh WASM100%; whole1page, direct review",
+      "archive_newline_policy": "원문 함수·속성은 보존하며 함수 뒤의 분리용 빈 줄만 제외한다."
+    },
+    {
+      "old_source": "tests/svg_snapshot.rs",
+      "source_commit": "e1fea22a8e2401d4bdee33bc961520b2c1f08c2e",
+      "old_function": "table_text_page_0",
+      "old_source_sha256": "d17d0a372ecd6bbcdb676410ad363ab0c9cf22b3039b77fd97e99ae61dd478c9",
+      "archive": "mydocs/pr/assets/issue7642-relational-regressions/table_text_page_0.rs.txt",
+      "archive_sha256": "51716298b7e99e8c5ae805bdac36436883e677d15eacaca7ec1ff751c988fd7c",
+      "new_source": "tests/cases/issue_7642_table_text_ownership_relations.rs",
+      "independent_proof": "table-text Native/fresh WASM99.98998%; header official HWP/Print Native/fresh WASM100%; whole1page, direct review",
+      "archive_newline_policy": "원문 함수·속성은 보존하며 함수 뒤의 분리용 빈 줄만 제외한다."
+    }
+  ],
+  "removed_transferred_alias_rows": [
+    {
+      "source": "tests/fixtures/text_overlap_baseline.tsv",
+      "row": "issue6697/80550-agricultural-machinery-act-amendment.hwpx\t14",
+      "issue": 7749,
+      "reason": "이관된 동일 바이트 원본의 별칭. 다른 축은 보존."
+    },
+    {
+      "source": "tests/fixtures/off_canvas_baseline.tsv",
+      "row": "issue6697/80550-agricultural-machinery-act-amendment.hwpx\t7",
+      "issue": 7749,
+      "reason": "이관된 동일 바이트 원본의 별칭. 다른 축은 보존."
+    }
+  ]
+}

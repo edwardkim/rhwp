@@ -1,0 +1,71 @@
+[
+  {
+    "case": "verified_print_bitmap_visible_palette",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "verified_print_bitmap_visible_palette",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--features",
+      "native-skia",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "exitCode": 0,
+    "seconds": 31.98742795799626,
+    "summary": [
+      "     Summary [   0.296s] 2 tests run: 2 passed, 257 skipped"
+    ]
+  },
+  {
+    "case": "verified_hancom2024_reserved_palette",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "verified_hancom2024_reserved_palette",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--features",
+      "native-skia",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "exitCode": 0,
+    "seconds": 43.13462395800161,
+    "summary": [
+      "     Summary [   0.179s] 2 tests run: 2 passed, 273 skipped"
+    ]
+  },
+  {
+    "case": "issue_2293_chart_png_text",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_2293_chart_png_text",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--features",
+      "native-skia",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "exitCode": 0,
+    "seconds": 31.47406520898221,
+    "summary": [
+      "     Summary [   2.535s] 2 tests run: 2 passed, 262 skipped"
+    ]
+  }
+]

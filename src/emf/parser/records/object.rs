@@ -1,7 +1,7 @@
 //! 객체 레코드 — 펜/브러시/폰트 생성·선택·삭제.
 
 use crate::emf::parser::{
-    objects::{LogBrush, LogFontW, LogPen},
+    objects::{LogBrush, LogFontW, LogPen, PenWidthKind},
     Cursor,
 };
 use crate::emf::Error;
@@ -38,6 +38,11 @@ pub fn parse_ext_create_pen(c: &mut Cursor<'_>) -> Result<(u32, LogPen), Error> 
         LogPen {
             style,
             width,
+            width_kind: if style & 0x0001_0000 != 0 {
+                PenWidthKind::Logical
+            } else {
+                PenWidthKind::DevicePixel
+            },
             _reserved: 0,
             color,
         },

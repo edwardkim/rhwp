@@ -1,0 +1,36 @@
+{
+  "status": "partial_candidate_superseded",
+  "description": "사양 HWP 24쪽 개선. 20쪽은 첫 표만 바로잡아 두 번째 표와 제목이 어긋나 보정안을 교체했다. HWPML 23쪽은 미해결이다.",
+  "native_skia_binary_sha256": "aea33b510a4f8e88a7e7ee3f745795c8cdf06f570703ab6696c00de17abc117b",
+  "hwp5_spec_pages": {
+    "20": {
+      "pre_rebase": 99.9956,
+      "before": 78.31096,
+      "partial": 84.20746
+    },
+    "21": {
+      "pre_rebase": 99.58762,
+      "before": 99.11991,
+      "partial": 99.11991
+    },
+    "24": {
+      "pre_rebase": 99.75514,
+      "before": 76.71379,
+      "partial": 99.99751
+    }
+  },
+  "focused_spec_tests": {
+    "total": 9,
+    "pass": 8,
+    "fail": 1,
+    "failure": "hwpspec_second_coanchored_table_keeps_print_origin",
+    "log": "output/pr-review/planet6897-20261026/rebase-8319/issue8149-after-prepare.log"
+  },
+  "existing_focused_tests": {
+    "total": 24,
+    "pass": 24,
+    "log": "output/pr-review/planet6897-20261026/rebase-8319/number-and-frame-focused.log"
+  },
+  "tsv_sha256": "c066d6cd9e03d555b5e5fd6597f31f8be700250788c3fbb72e6a851654c5f5c0",
+  "visual_log": "output/pr-review/planet6897-20261026/rebase-8319/hwp5-spec-partial-fix-skia.log"
+}

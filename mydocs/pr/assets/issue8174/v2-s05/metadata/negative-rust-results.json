@@ -1,0 +1,27 @@
+[
+  {
+    "code": "PDF_ENCRYPTION_UNSUPPORTED",
+    "healthyFollowup": true,
+    "name": "encrypted"
+  },
+  {
+    "code": "PDF_PARSE_FAILED",
+    "healthyFollowup": true,
+    "name": "unsupported-filter"
+  },
+  {
+    "code": "PDF_PARSE_FAILED",
+    "healthyFollowup": true,
+    "name": "irrecoverable"
+  },
+  {
+    "code": "PDF_PARSE_FAILED",
+    "healthyFollowup": true,
+    "name": "corrupt-JBIG2Decode"
+  },
+  {
+    "code": "PDF_PARSE_FAILED",
+    "healthyFollowup": true,
+    "name": "corrupt-JPXDecode"
+  }
+]

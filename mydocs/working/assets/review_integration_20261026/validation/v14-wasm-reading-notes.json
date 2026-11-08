@@ -1,0 +1,53 @@
+{
+  "production_source": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+  "records": [
+    {
+      "key": "newsletter-chinese",
+      "page": 1,
+      "backend": "fresh optimized WASM",
+      "actual_png_sha256": "2c042a9ce450bd5b0ad6b140f10570854123a7ca74013da06a6e2f89acb88ce7",
+      "comparison": "mydocs/working/assets/review_integration_20261026/validation/images/stage-v14/newsletter-chinese-p001-wasm-compare.png",
+      "observation": "가로 조각의 동일 물리 글줄 정렬과 표·본문 간격이 유지된다. 글꼴 굵기 차이는 픽셀 완전 일치로 보고하지 않는다."
+    },
+    {
+      "key": "newsletter-chinese",
+      "page": 2,
+      "backend": "fresh optimized WASM",
+      "actual_png_sha256": "aba63dcba11d82431c0986c0a88741e2940a7f815c30ed282e8148d1857b087e",
+      "comparison": "mydocs/working/assets/review_integration_20261026/validation/images/stage-v14/newsletter-chinese-p002-wasm-compare.png",
+      "observation": "둘째 쪽의 그림 4개와 설명 표·안내 상자·바닥글 소유가 유지된다. 글꼴·미세 글줄 높이 외양 차이를 해결 주장에 포함하지 않는다."
+    },
+    {
+      "key": "onsemiro-hwp",
+      "page": 42,
+      "backend": "fresh optimized WASM",
+      "actual_png_sha256": "8d1307f53fb9966bf8ce8697275829e63e599e08b73367eab488216d09f8971a",
+      "comparison": "mydocs/working/assets/review_integration_20261026/validation/images/stage-v14/onsemiro-hwp-p042-wasm-compare.png",
+      "observation": "저장 프레임의 본문·중략·B 문단·후속 대화·바닥글이 원본 42쪽에 보존된다. 글꼴 굵기와 B 표식 외양 차이는 남아 있다."
+    },
+    {
+      "key": "fiscal-anchor",
+      "page": 1,
+      "backend": "fresh optimized WASM",
+      "actual_png_sha256": "69a21e9c41f8a343438976087229910ff2b6a816e1a6fdd4658083ba62801296",
+      "comparison": "mydocs/working/assets/review_integration_20261026/validation/images/stage-v14/fiscal-anchor-p001-wasm-compare.png",
+      "observation": "첫 쪽의 표제·본문·연락처 표·하단 그림과 바닥글이 독립 Print와 같은 쪽에 보존된다. 글꼴 굵기 차이는 해결로 주장하지 않는다."
+    },
+    {
+      "key": "fiscal-anchor",
+      "page": 2,
+      "backend": "fresh optimized WASM",
+      "actual_png_sha256": "64513a98c44f32f96546ed8e91f6d97fc66a7bf9adf8d7af8e1b0626c57c799e",
+      "comparison": "mydocs/working/assets/review_integration_20261026/validation/images/stage-v14/fiscal-anchor-p002-wasm-compare.png",
+      "observation": "첫째·둘째 재정 표와 각주·바닥글의 순서와 영역이 보존된다."
+    },
+    {
+      "key": "fiscal-anchor",
+      "page": 3,
+      "backend": "fresh optimized WASM",
+      "actual_png_sha256": "8179ba4ebf57c87f95d4faba126a3ff60eafa8f99d0529a77a25918476752d7c",
+      "comparison": "mydocs/working/assets/review_integration_20261026/validation/images/stage-v14/fiscal-anchor-p003-wasm-compare.png",
+      "observation": "재정수지·중앙정부 채무 표·후속 발행 본문과 각주가 같은 셋째 쪽에 보존된다."
+    }
+  ]
+}

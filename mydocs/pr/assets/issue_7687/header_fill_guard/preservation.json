@@ -1,0 +1,28 @@
+{
+  "source_commit": "c96354d4e67fd88c0eadd9eecb5aebbe043d7373",
+  "introducing_integration_commit": "d09373c39a158b6fbd56c6e000122bf4e50cd150",
+  "source_commit_original": "a9672907e47edc8fafe191711aa4251e66aefe0b",
+  "source_pr": 8010,
+  "source_blob": "c1d3ad1f6e75f74a4ded8e20b16d4ed6e17e9db1",
+  "original_path": "tests/cases/issue_8008_header_footer_paragraph_fill.rs",
+  "preserved_path": "mydocs/pr/assets/issue_7687/header_fill_guard/issue_8008_header_footer_paragraph_fill.rs.txt",
+  "source_sha256": "baf871093b06eed32544a071065872df5d8c4e75c48e2b3f16a815cf8559ccba",
+  "removed_functions": [
+    "header_paragraph_fill_is_painted_behind_the_header_text",
+    "header_fill_color_reaches_the_svg"
+  ],
+  "retained_functions": [],
+  "input": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+  "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+  "independent_pdf": "pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+  "pdf_sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+  "pdf_pages": 71,
+  "existing_issue": 7687,
+  "measured_base_sha": "80968497c2c178eeecb3b2e1d04d086ad27a0dc7",
+  "measured_candidate_sha": "ca26039dad8dcb07b182dd60136ae4a2aa533bd0",
+  "classification": "New guard reactivation for an already deferred original; full original-output qualification remains incomplete. No production implementation or input/PDF is removed.",
+  "base_pages": 72,
+  "candidate_pages": 74,
+  "page_count_receipt": "post8120-hwpspec-pagecount-recheck-20261021.json",
+  "implementation_status": "Header fill is already present in upstream; guard qualification is distinct from correctness of the fill implementation."
+}

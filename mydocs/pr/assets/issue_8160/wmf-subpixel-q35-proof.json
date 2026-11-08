@@ -1,0 +1,25 @@
+{
+  "source_bitmap": "wmf-bitmap37",
+  "source_size": [
+    84,
+    64
+  ],
+  "display_width_floor_96": 0,
+  "pdf_page": 18,
+  "matches": [
+    {
+      "xref": 324,
+      "format": "jpeg",
+      "pixels_equal_q35": true
+    }
+  ],
+  "source_file": "samples/hwp3-sample16-hwp5-2022.hwp",
+  "input_sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+  "reference_pdf": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+  "pdf_sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+  "raw_cfb_stream": "BinData/BIN0003.WMF",
+  "raw_cfb_deflate_wmf_sha256": "1927d7c64d345e4467f5936b3e9a28cfe1b395bf5a2301f5fef6fb1ff829cb5d",
+  "raw_cfb_equals_hwpx_wmf": true,
+  "source_png_sha256": "88829865ba84439c2fc76207d5593b4166e07c9c59f35baf85ba0b36da1c2f61",
+  "q35_decoded_rgb_sha256": "2dd94263aab3037eb7a168c50c6250cf9b967ebfaf32cd3948b02cb04dafd83f"
+}

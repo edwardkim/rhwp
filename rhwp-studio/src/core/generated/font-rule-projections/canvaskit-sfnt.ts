@@ -25,10 +25,10 @@ export type GeneratedFontRuleProjection = Readonly<{
 export const FONT_RULE_CANVASKIT_SFNT_META = Object.freeze({
   "schemaVersion": "1.0",
   "sourceCommit": "a1f9872e28aea6755b656161ed1802f73308da58",
-  "inputSha256": "a94b64311540ff736c7eb89a70dc3ce38742fdd671ec3c73a4ee05b1302be034",
+  "inputSha256": "f33a6ca90d8a01631cacaf4608e17986defafc11223f0d42e6421ac7bb22c27e",
   "projectionId": "canvaskit-sfnt",
-  "projectionSha256": "d9019fc756d4fd9334252704309bb2020c251d6a7d04dc0f5a6b2efb0f017668",
-  "ruleCount": 158
+  "projectionSha256": "4fafd58b3790c95660cf4100816854aa19d6260d9c35eb8d7a9c583290d9a15e",
+  "ruleCount": 164
 });
 
 export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjection[] = Object.freeze([
@@ -2824,12 +2824,12 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
     }
   },
   {
-    "ruleId": "rule.studio-supply.9226454d982d47a1557d.canvaskit",
+    "ruleId": "rule.issue-8533.rokg-canvaskit-rokg",
     "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
-    "sourceFace": "Government_16040911",
-    "targetFaceOrPolicy": "unavailable: no CanvasKit SFNT source for CDN_GOVERNMENT_SYMBOL_REGULAR",
+    "sourceFace": "ROKG",
+    "targetFaceOrPolicy": "unavailable: no offline CanvasKit SFNT source for ROKG",
     "conditions": {
       "profile": "canvaskit-sfnt"
     },
@@ -2839,22 +2839,24 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
     "supply": {
       "capabilityAgreement": false,
       "declaredCapability": "unavailable",
-      "fontFamily": "Government_16040911",
+      "fontFamily": "ROKG",
       "kind": "canvaskit-plan",
       "offline": {
         "sources": [],
         "unavailableFonts": [
-          "Government_16040911"
+          "ROKG"
         ]
       },
       "online": {
         "sources": [
           {
             "aliases": [
-              "정부상징 부처명_16040911",
-              "Government_16040911"
+              "ROKG",
+              "ROKG R",
+              "ROKGR",
+              "대한민국정부상징체 R"
             ],
-            "url": "https://cdn.jsdelivr.net/gh/jangster77/korea-government-symbol-font@v1.0.0/fonts/Government_16040911.ttf"
+            "url": "https://cdn.jsdelivr.net/gh/Alex4386/gov-symbol@eee1e7d37a5ff02ab8bf6c6eb77272d71f1829a2/src/assets/fonts/ROKG_R.woff"
           }
         ],
         "unavailableFonts": []
@@ -2863,12 +2865,12 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
     }
   },
   {
-    "ruleId": "rule.studio-supply.521afff37dd1f6357469.canvaskit",
+    "ruleId": "rule.issue-8533.rokg-canvaskit-rokg-r",
     "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
-    "sourceFace": "정부상징 부처명_16040911",
-    "targetFaceOrPolicy": "unavailable: no CanvasKit SFNT source for CDN_GOVERNMENT_SYMBOL_REGULAR",
+    "sourceFace": "ROKG R",
+    "targetFaceOrPolicy": "unavailable: no offline CanvasKit SFNT source for ROKG",
     "conditions": {
       "profile": "canvaskit-sfnt"
     },
@@ -2878,22 +2880,24 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
     "supply": {
       "capabilityAgreement": false,
       "declaredCapability": "unavailable",
-      "fontFamily": "정부상징 부처명_16040911",
+      "fontFamily": "ROKG R",
       "kind": "canvaskit-plan",
       "offline": {
         "sources": [],
         "unavailableFonts": [
-          "정부상징 부처명_16040911"
+          "ROKG R"
         ]
       },
       "online": {
         "sources": [
           {
             "aliases": [
-              "정부상징 부처명_16040911",
-              "Government_16040911"
+              "ROKG",
+              "ROKG R",
+              "ROKGR",
+              "대한민국정부상징체 R"
             ],
-            "url": "https://cdn.jsdelivr.net/gh/jangster77/korea-government-symbol-font@v1.0.0/fonts/Government_16040911.ttf"
+            "url": "https://cdn.jsdelivr.net/gh/Alex4386/gov-symbol@eee1e7d37a5ff02ab8bf6c6eb77272d71f1829a2/src/assets/fonts/ROKG_R.woff"
           }
         ],
         "unavailableFonts": []
@@ -6504,12 +6508,12 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
     }
   },
   {
-    "ruleId": "rule.studio-supply.0aab2d58429b52047acb.canvaskit",
+    "ruleId": "rule.issue-4969.oldhangul-license-canvaskit",
     "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
-    "sourceFace": "Source Han Serif K Old Hangul",
-    "targetFaceOrPolicy": "unavailable: no CanvasKit SFNT source for 'fonts/SourceHanSerifK-OldHangul-subset.woff2'",
+    "sourceFace": "RHWP Old Hangul",
+    "targetFaceOrPolicy": "unavailable: no CanvasKit SFNT source for 'fonts/RHWPOldHangul-Regular.woff2'",
     "conditions": {
       "profile": "canvaskit-sfnt"
     },
@@ -6519,15 +6523,15 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
     "supply": {
       "capabilityAgreement": false,
       "declaredCapability": "unavailable",
-      "fontFamily": "Source Han Serif K Old Hangul",
+      "fontFamily": "RHWP Old Hangul",
       "kind": "canvaskit-plan",
       "offline": {
         "sources": [
           {
             "aliases": [
-              "Source Han Serif K Old Hangul"
+              "RHWP Old Hangul"
             ],
-            "url": "fonts/SourceHanSerifK-OldHangul-subset.woff2"
+            "url": "fonts/RHWPOldHangul-Regular.woff2"
           }
         ],
         "unavailableFonts": []
@@ -6536,9 +6540,9 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
         "sources": [
           {
             "aliases": [
-              "Source Han Serif K Old Hangul"
+              "RHWP Old Hangul"
             ],
-            "url": "fonts/SourceHanSerifK-OldHangul-subset.woff2"
+            "url": "fonts/RHWPOldHangul-Regular.woff2"
           }
         ],
         "unavailableFonts": []
@@ -6620,5 +6624,253 @@ export const FONT_RULE_CANVASKIT_SFNT_RULES: readonly GeneratedFontRuleProjectio
     "mode": "direct",
     "metricEntryIds": [],
     "supply": null
+  },
+  {
+    "ruleId": "rule.issue-5884.noto-symbols2.canvaskit",
+    "sourceBoundaryId": "studio-supply.font-list",
+    "relationType": "supply-source",
+    "decisionPlane": "supply",
+    "sourceFace": "Noto Sans Symbols2",
+    "targetFaceOrPolicy": "sfnt: fonts/NotoSansSymbols2-Regular.ttf",
+    "conditions": {
+      "profile": "canvaskit-sfnt"
+    },
+    "order": null,
+    "mode": "direct",
+    "metricEntryIds": [],
+    "supply": {
+      "capabilityAgreement": true,
+      "declaredCapability": "sfnt-source",
+      "fontFamily": "Noto Sans Symbols2",
+      "kind": "canvaskit-plan",
+      "offline": {
+        "sources": [
+          {
+            "aliases": [
+              "Noto Sans Symbols2"
+            ],
+            "url": "fonts/NotoSansSymbols2-Regular.ttf"
+          }
+        ],
+        "unavailableFonts": []
+      },
+      "online": {
+        "sources": [
+          {
+            "aliases": [
+              "Noto Sans Symbols2"
+            ],
+            "url": "fonts/NotoSansSymbols2-Regular.ttf"
+          }
+        ],
+        "unavailableFonts": []
+      },
+      "runtimePlanStatus": "planned"
+    }
+  },
+  {
+    "ruleId": "rule.issue-7445.public-batang-canvaskit-supply",
+    "sourceBoundaryId": "studio-supply.font-list",
+    "relationType": "supply-source",
+    "decisionPlane": "supply",
+    "sourceFace": "RHWP Public Batang",
+    "targetFaceOrPolicy": "unavailable: no CanvasKit SFNT source for 'fonts/RHWPPublicBatang-Regular.woff2'",
+    "conditions": {
+      "profile": "canvaskit-sfnt"
+    },
+    "order": null,
+    "mode": "direct",
+    "metricEntryIds": [],
+    "supply": {
+      "capabilityAgreement": false,
+      "declaredCapability": "unavailable",
+      "fontFamily": "RHWP Public Batang",
+      "kind": "canvaskit-plan",
+      "offline": {
+        "sources": [
+          {
+            "aliases": [
+              "RHWP Public Batang"
+            ],
+            "url": "fonts/RHWPPublicBatang-Regular.woff2"
+          }
+        ],
+        "unavailableFonts": []
+      },
+      "online": {
+        "sources": [
+          {
+            "aliases": [
+              "RHWP Public Batang"
+            ],
+            "url": "fonts/RHWPPublicBatang-Regular.woff2"
+          }
+        ],
+        "unavailableFonts": []
+      },
+      "runtimePlanStatus": "planned"
+    }
+  },
+  {
+    "ruleId": "rule.issue-8533.rokg-canvaskit-rokgr",
+    "sourceBoundaryId": "studio-supply.font-list",
+    "relationType": "supply-source",
+    "decisionPlane": "supply",
+    "sourceFace": "ROKGR",
+    "targetFaceOrPolicy": "unavailable: no offline CanvasKit SFNT source for ROKG",
+    "conditions": {
+      "profile": "canvaskit-sfnt"
+    },
+    "order": null,
+    "mode": "direct",
+    "metricEntryIds": [],
+    "supply": {
+      "capabilityAgreement": false,
+      "declaredCapability": "unavailable",
+      "fontFamily": "ROKGR",
+      "kind": "canvaskit-plan",
+      "offline": {
+        "sources": [],
+        "unavailableFonts": [
+          "ROKGR"
+        ]
+      },
+      "online": {
+        "sources": [
+          {
+            "aliases": [
+              "ROKG",
+              "ROKG R",
+              "ROKGR",
+              "대한민국정부상징체 R"
+            ],
+            "url": "https://cdn.jsdelivr.net/gh/Alex4386/gov-symbol@eee1e7d37a5ff02ab8bf6c6eb77272d71f1829a2/src/assets/fonts/ROKG_R.woff"
+          }
+        ],
+        "unavailableFonts": []
+      },
+      "runtimePlanStatus": "planned"
+    }
+  },
+  {
+    "ruleId": "rule.issue-8533.rokg-canvaskit-korean-name",
+    "sourceBoundaryId": "studio-supply.font-list",
+    "relationType": "supply-source",
+    "decisionPlane": "supply",
+    "sourceFace": "대한민국정부상징체 R",
+    "targetFaceOrPolicy": "unavailable: no offline CanvasKit SFNT source for ROKG",
+    "conditions": {
+      "profile": "canvaskit-sfnt"
+    },
+    "order": null,
+    "mode": "direct",
+    "metricEntryIds": [],
+    "supply": {
+      "capabilityAgreement": false,
+      "declaredCapability": "unavailable",
+      "fontFamily": "대한민국정부상징체 R",
+      "kind": "canvaskit-plan",
+      "offline": {
+        "sources": [],
+        "unavailableFonts": [
+          "대한민국정부상징체 R"
+        ]
+      },
+      "online": {
+        "sources": [
+          {
+            "aliases": [
+              "ROKG",
+              "ROKG R",
+              "ROKGR",
+              "대한민국정부상징체 R"
+            ],
+            "url": "https://cdn.jsdelivr.net/gh/Alex4386/gov-symbol@eee1e7d37a5ff02ab8bf6c6eb77272d71f1829a2/src/assets/fonts/ROKG_R.woff"
+          }
+        ],
+        "unavailableFonts": []
+      },
+      "runtimePlanStatus": "planned"
+    }
+  },
+  {
+    "ruleId": "rule.issue-1994.hankyoreh-canvaskit-0",
+    "sourceBoundaryId": "studio-supply.font-list",
+    "relationType": "supply-source",
+    "decisionPlane": "supply",
+    "sourceFace": "한겨레결체",
+    "targetFaceOrPolicy": "unavailable: no offline CanvasKit SFNT source for 한겨레결체",
+    "conditions": {
+      "profile": "canvaskit-sfnt"
+    },
+    "order": null,
+    "mode": "direct",
+    "metricEntryIds": [],
+    "supply": {
+      "capabilityAgreement": false,
+      "declaredCapability": "unavailable",
+      "fontFamily": "한겨레결체",
+      "kind": "canvaskit-plan",
+      "offline": {
+        "sources": [],
+        "unavailableFonts": [
+          "한겨레결체"
+        ]
+      },
+      "online": {
+        "sources": [
+          {
+            "aliases": [
+              "한겨레결체",
+              "Hankc",
+              "TSThgrgl"
+            ],
+            "url": "https://cdn.jsdelivr.net/npm/@noonnu/hankc@0.1.0/fonts/hankc-400.woff"
+          }
+        ],
+        "unavailableFonts": []
+      },
+      "runtimePlanStatus": "planned"
+    }
+  },
+  {
+    "ruleId": "rule.issue-1994.hankyoreh-canvaskit-1",
+    "sourceBoundaryId": "studio-supply.font-list",
+    "relationType": "supply-source",
+    "decisionPlane": "supply",
+    "sourceFace": "Hankc",
+    "targetFaceOrPolicy": "unavailable: no offline CanvasKit SFNT source for Hankc",
+    "conditions": {
+      "profile": "canvaskit-sfnt"
+    },
+    "order": null,
+    "mode": "direct",
+    "metricEntryIds": [],
+    "supply": {
+      "capabilityAgreement": false,
+      "declaredCapability": "unavailable",
+      "fontFamily": "Hankc",
+      "kind": "canvaskit-plan",
+      "offline": {
+        "sources": [],
+        "unavailableFonts": [
+          "Hankc"
+        ]
+      },
+      "online": {
+        "sources": [
+          {
+            "aliases": [
+              "한겨레결체",
+              "Hankc",
+              "TSThgrgl"
+            ],
+            "url": "https://cdn.jsdelivr.net/npm/@noonnu/hankc@0.1.0/fonts/hankc-400.woff"
+          }
+        ],
+        "unavailableFonts": []
+      },
+      "runtimePlanStatus": "planned"
+    }
   }
 ]);

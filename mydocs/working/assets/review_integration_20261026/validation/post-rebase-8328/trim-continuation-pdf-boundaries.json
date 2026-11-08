@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-28",
+  "method": "PDF vector table horizontal boundary y in points * 96/72; direct side-by-side inspection",
+  "tolerance_px": 2,
+  "cases": [
+    {
+      "input": "samples/issue1937/trim_n0_F02.hwpx",
+      "pdf": "pdf/issue1937/trim_n0_F02-2020.pdf",
+      "pdf_sha256": "a71267faa225feb77c287174c80dd7696e9908359d36c64bf4fe22c29567281d",
+      "page": 2,
+      "top_96dpi_px": 94.3,
+      "bottom_96dpi_px": 334.03
+    },
+    {
+      "input": "samples/issue1937/trim_n0_h6630_F02.hwpx",
+      "pdf": "pdf/issue1937/trim_n0_h6630_F02-2020.pdf",
+      "pdf_sha256": "712cfce8782c75b36877fa6f002cca6e4ac1ffbdfeb03ea0fb49e3a2d2e1f59b",
+      "page": 2,
+      "top_96dpi_px": 94.3,
+      "bottom_96dpi_px": 447.51
+    },
+    {
+      "input": "samples/issue1937/trim_n0_h6660_F02.hwpx",
+      "pdf": "pdf/issue1937/trim_n0_h6660_F02-2020.pdf",
+      "pdf_sha256": "5bc9182c1014f2c581d5f8fd9a54e9892e6a1107d2ecf7248e741c890c7bdbd6",
+      "page": 2,
+      "top_96dpi_px": 94.3,
+      "bottom_96dpi_px": 468.93
+    },
+    {
+      "input": "samples/issue1937/trim_n0_l1_big_h6500_F01.hwpx",
+      "pdf": "pdf/issue1937/trim_n0_l1_big_h6500_F01-2020.pdf",
+      "pdf_sha256": "64cc48388543e1457c083e4a548804f2d9a09c4c0d04617b89a01c98f26b90f9",
+      "page": 2,
+      "top_96dpi_px": 94.3,
+      "bottom_96dpi_px": 460.3
+    },
+    {
+      "input": "samples/issue1937/trim_n1_F01.hwpx",
+      "pdf": "pdf/issue1937/trim_n1_F01-2020.pdf",
+      "pdf_sha256": "ea8e29b1962aea890cae27ad03115449efd133edab54c73e21257cce0f8dd2b1",
+      "page": 2,
+      "top_96dpi_px": 94.3,
+      "bottom_96dpi_px": 356.73
+    },
+    {
+      "input": "samples/issue1937/trim_n1_F04.hwpx",
+      "pdf": "pdf/issue1937/trim_n1_F04-2020.pdf",
+      "pdf_sha256": "1a6bf60a6d6628d466db701017c5ab6a82003fa656f396cfcdd76be2f9093014",
+      "page": 2,
+      "top_96dpi_px": 94.3,
+      "bottom_96dpi_px": 413.95
+    }
+  ],
+  "visual_inspection": {
+    "path": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/trim-continuation-print-crops.png",
+    "sha256": "00fae5b0a02e0bda226bff9250e5f2cf4e708f66d6217edd3549c6cf32daef4a"
+  }
+}

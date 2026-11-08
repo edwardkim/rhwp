@@ -1,0 +1,85 @@
+{
+  "source": "samples/basic/KTX-003.hwp",
+  "sourceSha256": "619bc919de3f2b8113fb9af0fcc808c754dc601ed9e66e49226280fd3d1ae032",
+  "pdf": "pdf/basic/KTX-003-hwp-2020.pdf",
+  "pdfSha256": "a0798bc093be8521908d9d0e5f2bf557013370f12de455fb9886d4f4d6419787",
+  "page": 1,
+  "layoutDpi": 96,
+  "method": "Independent PDF colored vector rectangles with text/owner cross-check; points multiplied by 4/3, not measured from candidate output",
+  "cells": [
+    {
+      "section": 0,
+      "paragraph": 30,
+      "control": 0,
+      "row": 1,
+      "col": 0,
+      "pdfRectPoints": [
+        398.0849914550781,
+        75.91900634765625,
+        436.0830078125,
+        88.75201416015625
+      ],
+      "expectedCss": [
+        530.7799886067709,
+        101.225341796875,
+        50.66402180989576,
+        17.11067708333333
+      ],
+      "pixelTolerance": 1.0,
+      "sourceText": "서울"
+    },
+    {
+      "section": 0,
+      "paragraph": 32,
+      "control": 0,
+      "row": 2,
+      "col": 1,
+      "pdfRectPoints": [
+        415.7049865722656,
+        239.27099609375,
+        440.3979797363281,
+        249.34600830078125
+      ],
+      "expectedCss": [
+        554.2733154296875,
+        319.0279947916667,
+        32.92399088541663,
+        13.433349609375
+      ],
+      "pixelTolerance": 1.0,
+      "sourceText": "용산"
+    },
+    {
+      "section": 0,
+      "paragraph": 33,
+      "control": 0,
+      "row": 2,
+      "col": 1,
+      "pdfRectPoints": [
+        432.96600341796875,
+        428.04998779296875,
+        480.79400634765625,
+        440.76300048828125
+      ],
+      "expectedCss": [
+        577.2880045572916,
+        570.7333170572916,
+        63.77067057291674,
+        16.95068359375
+      ],
+      "pixelTolerance": 1.0,
+      "sourceText": "서울"
+    }
+  ],
+  "eligibleAfterBothBackends98AndReview": true,
+  "accepted": true,
+  "qualification": {
+    "nativeRaw": "99.36494",
+    "wasmRaw": "99.38975",
+    "pageCountNative": 1,
+    "pageCountWasm": 1,
+    "pageCountPdf": 1,
+    "independentReviewAndOverlayRead": true,
+    "sourceProducerSha256": "192198302815b32c9699bae4b8a59c09055e1e14461579b092736183add54f82"
+  }
+}

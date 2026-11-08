@@ -1,7 +1,7 @@
 # 예제 02_png_single_page — PNG 한 장 패스스루
 
 이 워크스루는 gym 과제가 아니다. 기존 helper 와 `rhwp build-from-ingest` 만 쓴다.
-교차: `T02`. 동작: Read + crop.
+교차: `T02`. 동작: Read + crop. 이미지 입력은 경로·실제 치수·한도를 검증하고 산출 Picture/BinData와 실제 표시를 확인한다.
 
 ## 입력
 
@@ -32,4 +32,4 @@ rhwp dump "$OUT" > "$TMP/dump.txt"
 
 ## 한계
 
-Picture #182, 수식 이미지, 표 Picture. 새 CLI / exam_paper 수정 없음.
+build-from-ingest는 로컬 PNG/JPEG/GIF/BMP/TIFF를 Picture/BinData로 삽입한다. 이미지 오류는 INGEST_IMAGE_*로 진단하며 placeholder로 대체하지 않는다. 파일·자원·텍스트 보존과 실제 표시를 확인한다. 수식과 표 이미지는 편집 가능한 수식·표 구조가 아니다.

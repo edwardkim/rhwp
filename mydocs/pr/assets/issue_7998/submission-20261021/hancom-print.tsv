@@ -1,0 +1,3 @@
+input_format	job_id	engine	hancom_version	input_preprocess	pdf_print_method	pdf_output_mode	pages
+hwpx	6f50305d-58c4-4fc1-96a9-69202e457639	2024	13.0.0.3901	none	0	frame_print_to_pdf_ex_one_up	162
+hwp	f2305064-d171-46aa-b2ed-7691dc18d116	2024	13.0.0.3901	none	0	frame_print_to_pdf_ex_one_up	162

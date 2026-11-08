@@ -1,0 +1,38 @@
+[
+  {
+    "page": 1,
+    "base": "98.66658",
+    "before": "98.62957",
+    "candidate": "98.62957",
+    "deltaVsBasePp": "-0.03701",
+    "deltaVsBeforePp": "0.00000",
+    "dropAtLeastPointOneVsBase": false
+  },
+  {
+    "page": 2,
+    "base": "97.39951",
+    "before": "98.45087",
+    "candidate": "98.65793",
+    "deltaVsBasePp": "1.25842",
+    "deltaVsBeforePp": "0.20706",
+    "dropAtLeastPointOneVsBase": false
+  },
+  {
+    "page": 3,
+    "base": "95.06565",
+    "before": "96.94163",
+    "candidate": "97.81025",
+    "deltaVsBasePp": "2.74460",
+    "deltaVsBeforePp": "0.86862",
+    "dropAtLeastPointOneVsBase": false
+  },
+  {
+    "page": 4,
+    "base": "93.18598",
+    "before": "95.90341",
+    "candidate": "96.14438",
+    "deltaVsBasePp": "2.95840",
+    "deltaVsBeforePp": "0.24097",
+    "dropAtLeastPointOneVsBase": false
+  }
+]

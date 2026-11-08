@@ -11,8 +11,6 @@
 | `missing` | `samples/없는파일.hwp` | 레시피 9 가 일부러 섞은 없는 파일. 실패 봉투 원형. |
 | `form01` | `samples/form-01.hwp` | 메일머지 서식 최소 표본. |
 | `table001` | `samples/table-001.hwp` | batch_axes_contract 표 병합 표본. |
-| `handbook` | `samples/2025 행정업무운영 편람(최종).hwpx` | 레시피 9 convert 실측. 387쪽 / 428ms / 9_083_392 bytes. |
-| `handbookHwp` | `samples/2025 행정업무운영 편람(최종).hwp` | extract-data 계약 오라클과 같은 편람 HWP5. |
 
 없는 파일 `samples/없는파일.hwp` 는 저장소에 없다. 실패 봉투를 내기 위해
 목록에만 넣는다.
@@ -31,3 +29,5 @@
 - `rhwp capabilities` 의 batch 항목
 - 픽스처: `fixtures/` · 이 장: `30_corpus.md`
 - 이슈 #5311. gym 아님. 새 CLI 아님.
+
+편람 HWP/HWPX는 사용자 요청으로 활성 회귀 fixture와 생성기에서 제외했다.

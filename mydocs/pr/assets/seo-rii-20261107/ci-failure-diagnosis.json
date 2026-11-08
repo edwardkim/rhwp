@@ -1,0 +1,44 @@
+[
+  {
+    "pr": 8666,
+    "kind": "native",
+    "job": 127698051925,
+    "annotations": [
+      "The job has exceeded the maximum execution time of 30m0s",
+      "The operation was canceled."
+    ],
+    "error_lines": [
+      "2026-11-06T04:15:37.7134246Z ##[error]The operation was canceled."
+    ],
+    "log_sha256": "cc3c2193959a9229c149fd9eec96af8bee0ddc91e75440f7c52d3f86913b021e",
+    "classification": "runner job maximum time exceeded; no compiler/test failure observed in complete logs"
+  },
+  {
+    "pr": 8671,
+    "kind": "lint",
+    "job": 127824285757,
+    "annotations": [
+      "The job has exceeded the maximum execution time of 45m0s",
+      "The operation was canceled."
+    ],
+    "error_lines": [
+      "2026-11-06T10:42:22.2782578Z ##[error]The operation was canceled."
+    ],
+    "log_sha256": "9a3a7d16688a8bfffd4c648473e50822617a85efaced97a28699e6d6e75499b7",
+    "classification": "runner job maximum time exceeded; no compiler/test failure observed in complete logs"
+  },
+  {
+    "pr": 8671,
+    "kind": "native",
+    "job": 127824285617,
+    "annotations": [
+      "The job has exceeded the maximum execution time of 30m0s",
+      "The operation was canceled."
+    ],
+    "error_lines": [
+      "2026-11-06T10:23:20.9909135Z ##[error]The operation was canceled."
+    ],
+    "log_sha256": "11ba4c1ec81e79f75b2a6cf78a53f6ac90718fed1ba3a852bc7932c1d727e38b",
+    "classification": "runner job maximum time exceeded; no compiler/test failure observed in complete logs"
+  }
+]

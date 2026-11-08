@@ -1,3 +1,7 @@
+//! 관계형: 문서 제목 추출과 정보 출력의 API 계약.
+//! 주석 갱신: 2026-10-30T10:05:44+09:00; 직전 파일 커밋: 2026-10-30T02:17:47+09:00 (55d447871d).
+//! 근거: mydocs/manual/cli_commands.md의 info·batch info 출력 계약.
+//! 추출 텍스트와 info 출력의 관계 검사이며 페이지별 raw 시각 측정은 대상이 아니다.
 //! [#3407] `info --json`·`batch info` 봉투의 `title` 필드 계약 테스트.
 //!
 //! 계약: `title` 은 렌더된 페이지 텍스트(`export-text --json` 과 같은 원천)의
@@ -13,8 +17,6 @@ use std::process::{Command, Output, Stdio};
 
 /// 표지 첫 줄이 문서 제목인 표본 (제목 있는 경우).
 const SAMPLE_COVER_TITLE: &str = "samples/2022년 국립국어원 업무계획.hwp";
-/// 표지(0~1쪽)가 이미지라 렌더 텍스트가 비는 표본 — 다음 쪽 fallback 검증.
-const SAMPLE_IMAGE_COVER: &str = "samples/2025 행정업무운영 편람(최종).hwp";
 /// 앞쪽 페이지에 의미 줄이 전혀 없는 표본 — null fallback 검증.
 const SAMPLE_NO_TEXT: &str = "samples/253E164F57A1BC6934-empty.hwp";
 /// 단건/배치·export-text 동형 검증용 소형 표본.
@@ -122,7 +124,7 @@ fn first_meaningful_line_via_export_text(rel: &str) -> Option<String> {
     None
 }
 
-// ── info --json title ──────────────────────────────────────────────────────
+// ── info --json 제목 ──────────────────────────────────────────────────────
 
 #[test]
 fn info_json_title_is_cover_first_meaningful_line() {
@@ -138,16 +140,6 @@ fn info_json_title_is_cover_first_meaningful_line() {
     assert!(v["pageCount"].as_u64().unwrap() >= 1, "{v}");
     assert!(v["paraCount"].as_u64().unwrap() >= 1, "{v}");
     assert!(v["fonts"].is_array(), "{v}");
-}
-
-#[test]
-fn info_json_title_falls_back_past_image_cover() {
-    // 표지 0~1쪽이 이미지(렌더 텍스트 "")인 문서 — 이슈 #3407 3안의 fallback.
-    let v = info_json(SAMPLE_IMAGE_COVER);
-    assert_eq!(
-        v["title"], "행정업무운영 편람",
-        "표지가 비면 다음 쪽 첫 의미 줄로 내려가야 합니다: {v}"
-    );
 }
 
 #[test]
@@ -174,7 +166,7 @@ fn info_json_title_matches_export_text_first_line() {
     }
 }
 
-// ── batch info --json title ────────────────────────────────────────────────
+// ── batch info --json 제목 ────────────────────────────────────────────────
 
 #[test]
 fn batch_info_records_carry_title() {

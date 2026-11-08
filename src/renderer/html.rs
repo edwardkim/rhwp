@@ -133,11 +133,7 @@ impl HtmlRenderer {
                     run.validated_layout_positions_for(run.display_or_text()),
                 );
                 if self.show_paragraph_marks || self.show_control_codes {
-                    let font_size = if run.style.font_size > 0.0 {
-                        run.style.font_size
-                    } else {
-                        12.0
-                    };
+                    let font_size = run.style.effective_font_size();
                     // 공백·탭 기호
                     if !run.text.is_empty() {
                         let char_positions = run.replay_positions_for(&run.text);
@@ -287,13 +283,9 @@ impl Renderer for HtmlRenderer {
     ) {
         // [Task #509] 한컴은 폰트 지정과 상관없이 PUA 를 자체 처리. 지정 폰트에 글리프
         // 부재 시 한컴 내부 매핑이 발행. rhwp 도 동일 동작 모방 (PR #251 정합).
-        let text = &crate::renderer::composer::expand_pua_render_text(text);
+        let text = &crate::renderer::composer::expand_pua_render_text_in_style(text, style);
 
-        let font_size = if style.font_size > 0.0 {
-            style.font_size
-        } else {
-            12.0
-        };
+        let font_size = style.effective_font_size();
         let color = color_to_css(style.color);
         let font_family = if style.font_family.is_empty() {
             "sans-serif".to_string()
@@ -365,6 +357,26 @@ impl Renderer for HtmlRenderer {
                 color
             ));
         }
+        if let Some(p) = style.text_paint {
+            let rgba = |color: u32, alpha: u8| {
+                format!(
+                    "rgba({},{},{},{})",
+                    color & 255,
+                    (color >> 8) & 255,
+                    (color >> 16) & 255,
+                    f64::from(alpha) / 255.0
+                )
+            };
+            css.push_str(&format!(
+                "-webkit-text-stroke:{}px {};-webkit-text-fill-color:{};paint-order:fill stroke;",
+                if p.width == 0.0 { 1.0 } else { p.width },
+                rgba(p.paint.stroke_color, p.paint.stroke_alpha),
+                rgba(
+                    style.color,
+                    if p.paint.fill { p.paint.fill_alpha } else { 0 }
+                )
+            ));
+        }
         // 양각
         if style.emboss {
             css.push_str("text-shadow:-1px -1px 0 #999,1px 1px 0 #fff;");
@@ -382,8 +394,8 @@ impl Renderer for HtmlRenderer {
             ));
         }
 
-        let ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
-        if (ratio - 1.0).abs() > 0.01 {
+        let (_, ratio) = style.ratio_draw_params(1.0);
+        if style.has_horizontal_ratio() {
             css.push_str(&format!(
                 "transform:scaleX({:.4});transform-origin:left;",
                 ratio

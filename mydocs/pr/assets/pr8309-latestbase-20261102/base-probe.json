@@ -1,0 +1,62 @@
+{
+  "base": "0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0",
+  "wasmSha256": "4ac5f4022146819136965192e81491ca86f42c6360e2f3d8b35c1c70f0699e70",
+  "rows": [
+    {
+      "case": "new",
+      "format": "hwp",
+      "before": "Top",
+      "after": "Center",
+      "preserved": false
+    },
+    {
+      "case": "new",
+      "format": "hwpx",
+      "before": "Top",
+      "after": "Top",
+      "preserved": true
+    },
+    {
+      "case": "Center",
+      "format": "hwp",
+      "before": "Center",
+      "after": "Center",
+      "preserved": true
+    },
+    {
+      "case": "Center",
+      "format": "hwpx",
+      "before": "Center",
+      "after": "Center",
+      "preserved": true
+    },
+    {
+      "case": "Bottom",
+      "format": "hwp",
+      "before": "Bottom",
+      "after": "Center",
+      "preserved": false
+    },
+    {
+      "case": "Bottom",
+      "format": "hwpx",
+      "before": "Bottom",
+      "after": "Bottom",
+      "preserved": true
+    },
+    {
+      "case": "Top",
+      "format": "hwp",
+      "before": "Top",
+      "after": "Center",
+      "preserved": false
+    },
+    {
+      "case": "Top",
+      "format": "hwpx",
+      "before": "Top",
+      "after": "Top",
+      "preserved": true
+    }
+  ]
+}

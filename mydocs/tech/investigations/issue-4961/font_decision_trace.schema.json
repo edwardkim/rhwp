@@ -301,7 +301,7 @@
         "candidateId": { "type": "string", "pattern": "^candidate\\.[0-9a-f]{20}$" },
         "ruleId": {
           "oneOf": [
-            { "type": "string", "pattern": "^rule\\.[a-z0-9-]+\\.[0-9a-f]{20}$" },
+            { "type": "string", "pattern": "^rule\\.[a-z0-9]+(?:[._:-][a-z0-9]+)*$" },
             { "type": "null" }
           ]
         },

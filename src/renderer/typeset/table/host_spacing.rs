@@ -5,7 +5,7 @@ use crate::model::{paragraph::Paragraph, provenance::LayoutCompatibilityProfile,
 use crate::renderer::composer::ComposedParagraph;
 use crate::renderer::float_placement::{
     is_para_topbottom_float, native_empty_host_rowbreak_line_advance_hu, signed_hwpunit,
-    stored_empty_anchor_band_host_line_advance_hu,
+    square_float_outer_margin_top_hu, stored_empty_anchor_band_host_line_advance_hu,
 };
 use crate::renderer::hwpunit_to_px;
 use crate::renderer::style_resolver::ResolvedStyleSet;
@@ -88,11 +88,13 @@ pub(super) fn resolve(
             .filter(|control| matches!(control, crate::model::control::Control::Table(_)))
             .count()
             == 1;
+    let empty_square_outer_top = square_float_outer_margin_top_hu(table)
+        .filter(|_| !crate::renderer::typeset::para_has_visible_text(para));
     let outer_top =
         if is_tac || is_para_topbottom_float(&table.common) || absolute_table_with_post_text {
             hwpunit_to_px(table.outer_margin_top as i32, dpi)
         } else {
-            0.0
+            empty_square_outer_top.map_or(0.0, |margin| hwpunit_to_px(margin, dpi))
         };
     // [Task #1841] visible-host 자리차지(TopAndBottom) 표는 outer_margin_bottom 을
     // 후속 재개 간격에 포함한다 (layout 재개 y 가산과 대칭 — 렌더/pagination 정합).
@@ -197,28 +199,28 @@ pub(super) fn resolve(
             // Preserve the stack rule for edited/reflowed or synthetic input.
             let source_frame_reset = profile().hwp5_stored_pagination_layout()
                 && !profile().session_edited()
-                && matches!(
-                    table.page_break,
-                    crate::model::table::TablePageBreak::RowBreak
-                )
-                && !para.stored_text_partition_is_dirty()
-                && !para.cell_format_vpos_dirty
-                && !p.stored_text_partition_is_dirty()
-                && !p.cell_format_vpos_dirty
-                && para.line_segs.len() == 1
-                && p.line_segs.len() == 1
-                && [&para.line_segs[0], &p.line_segs[0]].iter().all(|line| {
-                    line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                        && line.vertical_pos >= 0
-                        && line.line_height > 0
-                })
-                && p.line_segs[0].vertical_pos < para.line_segs[0].vertical_pos;
+                && crate::renderer::stored_float_anchor::stored_anchor_successor_rewinds(para, p);
             is_table_anchor && !source_frame_reset
         })
         .unwrap_or(false);
     let suppress_empty_anchor_spacing = is_topbottom_empty_anchor && !next_is_empty_table_anchor;
 
-    let host_line_spacing = if suppress_empty_anchor_spacing || absolute_table_with_post_text {
+    // 같은 빈 호스트의 흐름 표는 각 개체의 바깥 여백을 소유하지만,
+    // 호스트 줄간격은 마지막 흐름 표 뒤에서 한 번만 소비한다.
+    let has_following_host_float = is_empty_host_float
+        && para.controls.iter().skip(ctrl_idx + 1).any(|control| {
+            matches!(control, crate::model::control::Control::Table(following)
+                if is_para_topbottom_float(&following.common))
+        });
+    let reflow_host_tail = crate::renderer::reflow_float_host_line::trailing_advance(
+        para, table, composed, styles, dpi,
+    );
+    let host_line_spacing = if let Some(advance) = reflow_host_tail {
+        advance
+    } else if suppress_empty_anchor_spacing
+        || absolute_table_with_post_text
+        || has_following_host_float
+    {
         0.0
     } else if !is_tac && !is_single_cell_placeholder {
         para.line_segs
@@ -267,15 +269,29 @@ pub(super) fn resolve(
         .map(|line_advance| hwpunit_to_px(line_advance, dpi))
         .unwrap_or(0.0)
     };
-    let after = sa
-        + outer_bottom
-        + host_line_spacing
-        + positive_empty_host_rowbreak_tail
-        + stored_empty_anchor_host_line_tail;
+    // 저장 사다리가 전체 호스트 줄 진행을 증명하면 표 스택의 기존 줄간격을
+    // 그 진행량으로 대체한다. 줄간격은 LH+LS 안에 이미 포함되어 있다.
+    let host_line_tail = if stored_empty_anchor_host_line_tail > 0.0 {
+        stored_empty_anchor_host_line_tail
+    } else {
+        host_line_spacing
+    };
+    let after = sa + outer_bottom + host_line_tail + positive_empty_host_rowbreak_tail;
     let host_spacing = HostSpacing {
         before,
+        // 위 세 갈래 모두 단 상단에서는 바깥 위 여백만 남는다.
+        column_top_before: outer_top,
         after,
+        host_line_spacing,
+        // 저장 원점이 없는 개체는 뒤 저장 줄로 종료 여백을 복원할 수 없다.
+        // 전체 표와 같은 바깥여백을 마지막 조각 뒤 흐름에 한 번 전달한다.
+        // 호스트 줄간격은 첫 조각의 계약이므로 여기서 반복하지 않는다.
         spacing_after_only: sa,
+        terminal_outer_bottom_flow: if is_para_topbottom_float(&table.common) && !is_tac {
+            outer_bottom
+        } else {
+            0.0
+        },
         after_for_fit: after - outer_bottom_flow_only,
     };
 

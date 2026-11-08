@@ -1,0 +1,89 @@
+{
+  "reportVersion": 1,
+  "sourceSha256": "fabdb4c1b313eed53cf752dd583b91ae022dd0dab3cce5e966ea8c6d15d23609",
+  "sourceStatus": "fail",
+  "status": "incomplete",
+  "sourceSchemaVersion": 1,
+  "evidenceVersion": 1,
+  "runId": "b51dfe3c-599c-4c3b-aa88-d6e4aaff3143",
+  "candidate": {
+    "sha256": "8ccccb9e9ee3a802f6436b7fe0615bc1af93ada2d0039c38c58f2d0ffe600295",
+    "version": "0.8.7",
+    "manifestVersion": 3,
+    "unchanged": true,
+    "buildSha": "미관측 (검사 도구 SHA와 별개)"
+  },
+  "tool": {
+    "sha": "e32f63d2aac839190d2b8085f0ec5346fa4e0479",
+    "dirty": false
+  },
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "linux",
+    "arch": "x64",
+    "puppeteer": "25.14.0",
+    "chrome": "155.0.8059.79"
+  },
+  "startedAt": "2026-10-24T03:31:33.684Z",
+  "finishedAt": "2026-10-24T03:31:34.607Z",
+  "results": [
+    {
+      "name": "extension-smoke",
+      "status": "fail",
+      "evidence": [
+        {
+          "id": "evidence-1",
+          "kind": "log",
+          "sha256": "874baaedfe8a5bf6accddfc67e994bcdb859f1314d66327a3a2076bf9a42423b",
+          "status": "verified"
+        },
+        {
+          "id": "evidence-2",
+          "kind": "json",
+          "sha256": "e75615fc5478bbc6022cf77ed58e8e985e7cdaae1ada77fed273f09132db1e09",
+          "status": "verified",
+          "stage": "launch"
+        }
+      ],
+      "exitCode": 1,
+      "timedOut": false
+    },
+    {
+      "name": "download-interceptor",
+      "status": "not-run",
+      "evidence": [],
+      "exitCode": null,
+      "timedOut": null
+    },
+    {
+      "name": "extension-lifecycle",
+      "status": "not-run",
+      "evidence": [],
+      "exitCode": null,
+      "timedOut": null
+    }
+  ],
+  "issues": [
+    "failure-png-missing"
+  ],
+  "limitations": [
+    "Unpacked Chrome for Testing only",
+    "스토어 설치·업데이트, Edge/Firefox 미검증",
+    "실제 사용자 환경·문서 표시·인쇄 품질 미검증",
+    "자동 검사 결과는 배포 승인이 아님",
+    "Chrome 버전은 실행기의 설치 대상 기록이며 브라우저 실행을 증명하지 않음"
+  ],
+  "manualReview": {
+    "status": "입력된 수동 검토 기록 (자동 검증 아님)",
+    "reviewMode": "delegated",
+    "checkedAt": "2026-10-24T03:40:22.789Z",
+    "readability": "pass",
+    "sharingExclusions": "pass"
+  },
+  "excluded": [
+    "후보·브라우저 절대 경로",
+    "다운로드 식별자·URL",
+    "원본 로그·진단 JSON·PNG·자유 텍스트",
+    "사용자 프로필·원문 문서(수집하지 않음)"
+  ]
+}

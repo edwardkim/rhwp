@@ -47,7 +47,7 @@ fn is_whole_flow_table(table: &crate::model::table::Table) -> bool {
     is_para_topbottom_float(&table.common)
         && table.common.flow_with_text
         && !table.common.allow_overlap
-        && table.page_break == crate::model::table::TablePageBreak::None
+        && table.layout_page_break() == crate::model::table::TablePageBreak::None
         && table.common.vert_align == crate::model::shape::VertAlign::Top
         && table.caption.is_none()
         && table.common.height > 0
@@ -70,6 +70,58 @@ pub(in crate::renderer::typeset) struct ControlPlacementOrder {
     pub last_placed_table: Option<usize>,
 }
 
+/// 공백과 표의 원시 슬롯이 문단을 빠짐없이 소유할 때만 저장 줄 순서를 쓴다.
+pub(in crate::renderer::typeset) fn complete_whitespace_table_stream(para: &Paragraph) -> bool {
+    match complete_whitespace_table_stream_with_storage(para, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+fn complete_whitespace_table_stream_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    storage: &S,
+) -> Result<bool, S::Error> {
+    if para.text.is_empty()
+        || !para.text.chars().all(char::is_whitespace)
+        || para.text.chars().count() != para.char_offsets.len()
+        || !para
+            .controls
+            .iter()
+            .all(|control| matches!(control, Control::Table(_)))
+        || !para.title_marks.is_empty()
+        || !para.field_ranges.is_empty()
+        || !para.orphan_field_ends.is_empty()
+    {
+        return Ok(false);
+    }
+    let slots = para.control_utf16_positions_with_storage(storage)?;
+    if slots.len() != para.controls.len() {
+        return Ok(false);
+    }
+    let mut ranges = storage.vec(para.char_offsets.len().saturating_add(slots.len()))?;
+    for (start, ch) in para.char_offsets.iter().copied().zip(para.text.chars()) {
+        let Some(end) = start.checked_add(Paragraph::char_stream_len(ch)) else {
+            return Ok(false);
+        };
+        storage.push(&mut ranges, (start, end))?;
+    }
+    for start in slots {
+        let Some(end) = start.checked_add(crate::model::control::CTRL_CHAR_CODE_UNITS) else {
+            return Ok(false);
+        };
+        storage.push(&mut ranges, (start, end))?;
+    }
+    storage.stable_sort_by(&mut ranges, |a, b| a.0.cmp(&b.0))?;
+    Ok(ranges
+        .into_iter()
+        .try_fold(0, |end, (start, next)| {
+            (start == end && next > start).then_some(next)
+        })
+        .and_then(|end| end.checked_add(1))
+        == Some(para.char_count))
+}
+
 /// 세로 오프셋 키가 꺼져도 기존 TAC/비-TAC 보조 키는 유지한다.
 /// 같은 키의 선언 순서는 sort_by_key의 안정 정렬로 보존한다.
 pub(in crate::renderer::typeset) fn for_paragraph(
@@ -78,6 +130,19 @@ pub(in crate::renderer::typeset) fn for_paragraph(
     flow: TacFlowQuery<'_>,
     column_height: f64,
 ) -> ControlPlacementOrder {
+    match for_paragraph_with_storage(para, fmt, flow, column_height, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(in crate::renderer::typeset) fn for_paragraph_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    fmt: &FormattedParagraph,
+    flow: TacFlowQuery<'_>,
+    column_height: f64,
+    storage: &S,
+) -> Result<ControlPlacementOrder, S::Error> {
     // 각 컨트롤에 대해 format → fits → place/split
     // [참고2 순서 역전 fix] 빈 host 문단의 para-relative float 표(비-TAC,
     // wrap=위아래, vert=문단)는 흐름과 무관하게 vertical_offset 위치에 배치되는
@@ -177,7 +242,7 @@ pub(in crate::renderer::typeset) fn for_paragraph(
                 if is_para_topbottom_float(&table.common)
                     && table.common.flow_with_text
                     && !table.common.allow_overlap
-                    && table.page_break == crate::model::table::TablePageBreak::None
+                    && table.layout_page_break() == crate::model::table::TablePageBreak::None
                     && table.common.height > 0
                     && table.common.height < 0x8000_0000
                     && crate::renderer::hwpunit_to_px(
@@ -210,30 +275,46 @@ pub(in crate::renderer::typeset) fn for_paragraph(
             _ => 1,
         }
     };
-    let mut ctrl_order: Vec<usize> = (0..para.controls.len()).collect();
+    let mut ctrl_order: Vec<usize> = storage.collect(0..para.controls.len())?;
     // 원본 빈 carrier의 서로 다른 저장 줄은 같은 앵커가 아니다. TAC 보조 키가
     // 앞 줄의 표를 뒤 줄 float 뒤로 보내지 않도록 paint와 같은 줄 소속을 먼저 쓴다.
     // 같은 줄 안의 기존 정렬과 편집·합성 줄의 기존 경로는 유지한다.
-    let stored_control_lines = (!flow.session_edited()
-        && !para.stored_text_partition_dirty
-        && para.empty_control_stream_position(0).is_some()
-        && para.line_segs.iter().all(|seg| {
-            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-        }))
-    .then(|| {
-        ctrl_order
+    let stored_control_lines = if !para.stored_text_partition_dirty
+        && ((!flow.session_edited() && para.empty_control_stream_position(0).is_some())
+            || (!has_negative_para_float
+                && !para.cell_format_vpos_dirty
+                && fmt.computed_host_lines.is_none()
+                && !para.line_segs.is_empty()
+                && complete_whitespace_table_stream_with_storage(para, storage)?))
+        && para
+            .line_segs
             .iter()
-            .map(|&ci| crate::renderer::layout::control_line_seg_index(para, ci))
-            .collect::<Option<Vec<_>>>()
-    })
-    .flatten();
-    ctrl_order.sort_by_key(|&i| {
-        (
-            stored_control_lines.as_ref().map_or(0, |lines| lines[i]),
-            float_table_voffset(&para.controls[i]),
-            table_flow_tiebreak(&para.controls[i]),
-        )
-    });
+            .all(|seg| seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+    {
+        let mut lines = storage.vec(ctrl_order.len())?;
+        let mut complete = true;
+        for &ci in &ctrl_order {
+            if let Some(line) = crate::renderer::layout::control_line_seg_index(para, ci) {
+                storage.push(&mut lines, line)?;
+            } else {
+                complete = false;
+                break;
+            }
+        }
+        complete.then_some(lines)
+    } else {
+        None
+    };
+    storage.stable_sort_by(&mut ctrl_order, |&a, &b| {
+        let key = |i: usize| {
+            (
+                stored_control_lines.as_ref().map_or(0, |lines| lines[i]),
+                float_table_voffset(&para.controls[i]),
+                table_flow_tiebreak(&para.controls[i]),
+            )
+        };
+        key(a).cmp(&key(b))
+    })?;
     // 공동 앵커의 첫 오프셋 상자에 들어가지 않는 개체는 뒤의 첫 수용 가능한
     // 형제에게 그 자리를 넘긴다. 이후 형제는 이미 소비한 앵커를 공유하므로
     // 높이 정렬을 반복하지 않는다. 앞쪽 끝에서 소진된 오프셋에는 적용하지 않는다.
@@ -245,7 +326,7 @@ pub(in crate::renderer::typeset) fn for_paragraph(
             else {
                 continue;
             };
-            if !opened_lines.insert(line) {
+            if !storage.insert_set(&mut opened_lines, line)? {
                 continue;
             }
             let Control::Table(first) = &para.controls[ci] else {
@@ -253,7 +334,7 @@ pub(in crate::renderer::typeset) fn for_paragraph(
             };
             if crate::renderer::float_placement::para_offset_consumed_by_page_break(
                 para,
-                &first.common,
+                first,
                 column_height,
                 flow.dpi(),
             ) || whole_flow_offset_frame(first, flow.dpi()) <= column_height
@@ -283,9 +364,9 @@ pub(in crate::renderer::typeset) fn for_paragraph(
         .rev()
         .find(|&i| matches!(para.controls[i], Control::Table(_)));
 
-    ControlPlacementOrder {
+    Ok(ControlPlacementOrder {
         ctrl_order,
         first_placed_table,
         last_placed_table,
-    }
+    })
 }

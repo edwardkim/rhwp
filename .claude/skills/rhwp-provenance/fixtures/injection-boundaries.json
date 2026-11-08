@@ -53,7 +53,7 @@
       "required": ["B1", "B2", "B3"]
     },
     "서식-메타": {
-      "commands": ["fields", "form-value", "explain", "bookmarks", "info"],
+      "commands": ["fields", "form-value", "explain", "bookmarks", "info", "export-svg", "export-pdf", "export-png"],
       "required": ["B1", "B2", "B3", "B4"]
     },
     "보안-발췌": {
@@ -72,8 +72,6 @@
       "commands": [
         "capabilities",
         "export-provenance-map",
-        "export-svg",
-        "export-pdf",
         "export-markdown",
         "convert",
         "replay"

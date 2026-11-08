@@ -67,6 +67,38 @@ new image, font, bitmap glyph, SVG glyph, or PDF/vector resources become
 replay-critical, they should move through that resource table instead of
 through backend-local browser objects.
 
+## P47 native source port (2026-10-14)
+
+The native port adds renderer-local bounded picture, prepared-glyph and decoded
+image caches; profile-controlled replay; direct gradient/hatch fills and parallel
+strokes; source-pixel image effects; multi-face font catalogs; complex shaping;
+wavy decorations; explicit vertical placement; and per-render raster diagnostics.
+The body/equation font chain keeps the current per-family custom → system →
+bundled order, CJK equation coverage, and shared measurement/draw text runs.
+Shared arrow geometry and image content-inset/crop placement remain authoritative.
+The existing Sixel `RasterPixels` RGBA8888-premultiplied API stays unchanged.
+
+`PaintBounds` separates logical geometry from derived visual recording bounds.
+Schema minor 25 exports optional layer `visualBounds`; clips retain producer
+geometry and glyph placement is not translated twice. This source depends on
+P45's SVG `font_em_box` and shaped-measurement report types. The baseline runner
+accepts `charOverlaps` and `tabLeaders` only from actual replay diagnostics supplied
+by P46, including restored cached pictures.
+
+This is a source preparation status, not a parity or visual-verification result.
+Current-head Cargo/Clippy, native raster comparisons and fresh WASM comparisons
+have not run because the shared host lacks build space. Before publishing or
+merging, run the required Rust gates and compare every affected page against an
+independent Hancom Print PDF using both Native and fresh WASM; every page must
+meet the repository's 90% gate, followed by focused visual review.
+
+Historical P47 synthetic rendering cases and six corpus rows remain deferred
+candidates. Existing sample files alone do not satisfy that gate; the `hwpspec`
+and `aift` visual failures moved by #7445 must be re-evaluated on this head before
+restoring their corpus rows. The existing single-color gradient fallback test
+may need a reviewed expectation update for direct gradients; its proposed pixel
+changes are also deferred until independent visual evidence is available.
+
 ## Guardrails
 
 - CanvasKit source must not import `canvas2d-layer-renderer` or depend on
@@ -457,6 +489,17 @@ feature inventory beside page-scoped CanvasKit runtime diagnostics. Missing or
 invalid direct-only plans, incomplete renders, render errors, and unexpected
 runtime operations fail the baseline contract. Known direct-replay gaps remain
 visible as report inventory instead of being reclassified as successful output.
+
+For samples outside the strict readiness corpus, an actual missing-font preparation
+failure may be classified as a separate Canvas2D fallback check. The harness requires
+a matching resource-preparation selection reason, no initialization error, and an
+independent complete font plan confirming every unavailable family. It compares the
+same document, page, profile and actual backend with explicit Canvas2D at exact pixel
+identity and requires non-empty ink. These captures are excluded from CanvasKit replay,
+parity and performance success counts; `fontFallbackGate` records their result separately.
+Unknown fallback, unrelated errors and any fallback in a readiness sample remain failures.
+Diagnostic LayerTree/replay-plan queries use a synchronous portable-metrics transaction
+that restores the active Canvas2D metrics, including when the diagnostic call throws.
 
 The cross-backend corpus also renders the manifest's exact page index into a
 dedicated intrinsic-scale capture surface. This keeps nonzero-page diagnostics,

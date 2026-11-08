@@ -39,14 +39,19 @@ pub(in crate::renderer::typeset) fn classify_prefix(
     }
 }
 
+pub(in crate::renderer::typeset) struct WrapTailMetrics {
+    pub advance: f64,
+    pub content_height: f64,
+}
+
 impl WrapPrefix {
     /// 포맷 이후 기존 안정 형상 조건을 만족할 때만 꼬리의 전진량을 계산한다.
-    pub(in crate::renderer::typeset) fn suffix_height(
+    pub(in crate::renderer::typeset) fn suffix_metrics(
         &self,
         para: &Paragraph,
         formatted: &FormattedParagraph,
         is_empty_para: bool,
-    ) -> Option<f64> {
+    ) -> Option<WrapTailMetrics> {
         let wrap_prefix_len = self.len;
         let suffix_is_full_width = self.suffix_is_full_width;
         let can_split_prefix = !is_empty_para
@@ -55,10 +60,16 @@ impl WrapPrefix {
             && suffix_is_full_width
             && formatted.line_count() == para.line_segs.len();
         if can_split_prefix {
-            let suffix_height = formatted
-                .line_advances_sum(wrap_prefix_len..formatted.line_count())
-                + formatted.spacing_after;
-            return Some(suffix_height);
+            let mut advance = 0.0_f64;
+            let mut content_height = 0.0_f64;
+            for line in wrap_prefix_len..formatted.line_count() {
+                content_height = content_height.max(advance + formatted.line_heights[line]);
+                advance += formatted.line_advance(line);
+            }
+            return Some(WrapTailMetrics {
+                advance: advance + formatted.spacing_after,
+                content_height,
+            });
         }
         None
     }

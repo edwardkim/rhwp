@@ -1,0 +1,9 @@
+{
+  "browser": "Windows Chrome155 CDP19222",
+  "ownership": "only test-created incognito contexts/tabs",
+  "primary_hwp_and_pdf": "existing committed independent Hancom input/PDF inventory",
+  "synthetic_drag_hwp": "diagnostic generated inputs from public source with scripts; not new layout golden fixtures",
+  "position_contract": "body drop follows pointer grab; cell drop keeps selected cell identity and actual drawn containment after text flow re-layout",
+  "observed_wasm_sha256": "46ef070e9e5b656598a42bdfe9e8ddcb81955cbff77623ccaf572238ec9f160e",
+  "scripts": "verbatim executed local scripts; replace workspace paths when replaying; default arguments only, no FORCE_START diagnostic override"
+}

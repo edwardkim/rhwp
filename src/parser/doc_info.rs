@@ -16,7 +16,7 @@ use crate::model::document::{DocInfo, DocProperties, RawRecord};
 use crate::model::style::{
     Alignment, BorderFill, BorderLine, BorderLineType, Bullet, CenterLine, CharShape, DiagonalLine,
     Fill, FillType, Font, GradientFill, ImageFill, ImageFillMode, LineSpacingType, Numbering,
-    NumberingHead, ParaShape, SolidFill, Style, TabDef, TabItem, UnderlineType,
+    NumberingHead, ParaShape, SolidFill, Style, TabDef, TabItem, UnderlineType, NUMBERING_LEVELS,
 };
 
 /// DocInfo 파싱 에러
@@ -294,12 +294,22 @@ pub(crate) fn parse_face_name(data: &[u8]) -> Result<Font, DocInfoError> {
         .read_hwp_string()
         .map_err(|e| DocInfoError::IoError(e.to_string()))?;
 
-    let alt_name = if attr & 0x80 != 0 {
-        let _alt_type = r.read_u8().unwrap_or(0);
-        r.read_hwp_string().ok()
+    let subst_font = if attr & 0x80 != 0 {
+        let font_type = r.read_u8().unwrap_or(0);
+        r.read_hwp_string()
+            .ok()
+            .map(|face| crate::model::style::SubstFont {
+                face,
+                font_type,
+                ..Default::default()
+            })
     } else {
         None
     };
+    // HWP table 19's alternative face has its own type byte. Normalize it at
+    // this producer so layout, paint and HWPX save consume the same fallback.
+    // Keep the existing alt_name API; HWP3 uses that field for source identity.
+    let alt_name = subst_font.as_ref().map(|font| font.face.clone());
 
     let type_info = if attr & 0x40 != 0 {
         let mut bytes = [0u8; 10];
@@ -333,8 +343,8 @@ pub(crate) fn parse_face_name(data: &[u8]) -> Result<Font, DocInfoError> {
         alt_name,
         type_info,
         default_name,
-        // HWP5 FACE_NAME 에는 HWPX substFont 개념이 없다.
-        subst_font: None,
+        subst_font,
+        native_program: None,
     })
 }
 
@@ -540,6 +550,37 @@ fn is_real_strike_shape_id(shape: u8) -> bool {
     shape <= 12
 }
 
+/// [#8423] 파일 버전 5.0.2.4의 글자 모양 취소선 비트 값 1은 취소선이 아니다.
+///
+/// 같은 70바이트 레코드·같은 `attr`(bit 18-20 = 1, bit 26-29 = 0)를 한/글 2020
+/// (11.0.0.9136)이 HWPX로 변환한 결과가 파일 버전에 따라 갈린다.
+/// - 5.0.2.4(7.5.12.629·631 저장) 2건: `strikeout shape="NONE"`. 30396 권고문의 독립
+///   Print에도 표 숫자 위 선이 없다.
+/// - 5.0.2.2(7.0.1.215)·5.0.2.5(7.5.12.674·754) 3건, 5.1.1.0(2024) 1건: `shape="SOLID"`,
+///   5.0.2.5 문서의 Print에는 실제 취소선이 있다.
+///
+/// 확인한 5.0.2.4 경계만 해제하고 원본 `attr`·`raw_data`는 보존한다. 다른 버전과
+/// 2 이상의 비트 값은 근거가 없어 기존 판정을 유지한다.
+pub(crate) fn apply_v5024_strike_bits(
+    char_shapes: &mut [CharShape],
+    version: &crate::parser::header::HwpVersion,
+) {
+    let hangul_2007_5024 = (
+        version.major,
+        version.minor,
+        version.build,
+        version.revision,
+    ) == (5, 0, 2, 4);
+    if !hangul_2007_5024 {
+        return;
+    }
+    for cs in char_shapes {
+        if (cs.attr >> 18) & 0x07 == 1 {
+            cs.strikethrough = false;
+        }
+    }
+}
+
 fn parse_char_shape(data: &[u8]) -> Result<CharShape, DocInfoError> {
     let mut r = ByteReader::new(data);
 
@@ -637,6 +678,7 @@ fn parse_char_shape(data: &[u8]) -> Result<CharShape, DocInfoError> {
     let use_font_space = (attr & (1 << 25)) != 0;
 
     Ok(CharShape {
+        text_paint: None,
         raw_data: None,
         font_ids,
         ratios,
@@ -773,6 +815,16 @@ fn parse_para_shape(data: &[u8]) -> Result<ParaShape, DocInfoError> {
     } else {
         0
     };
+    // [#8352] 한/글은 «최소» 줄간격을 5.0.2.5 필드(attr3 종류 3 + `line_spacing_v2`)에만 두고
+    // 구 필드에는 비율 100 을 자리표시로 남긴다. 다른 종류는 두 필드가 같다.
+    let (line_spacing_type, line_spacing) = if attr3 & 0x1f == 3 {
+        (
+            LineSpacingType::Minimum,
+            i32::try_from(line_spacing_v2).unwrap_or(i32::MAX),
+        )
+    } else {
+        (line_spacing_type, line_spacing)
+    };
 
     // [#2734] 말미 4바이트(payload offset 54~57) = 개요 수준(0~9 = 1수준~10수준).
     // attr1 bit25~27 은 3비트라 한컴이 6 에서 포화시키므로 8~10수준은 이 필드에만 남는다.
@@ -828,38 +880,11 @@ fn parse_para_shape(data: &[u8]) -> Result<ParaShape, DocInfoError> {
 fn parse_numbering(data: &[u8]) -> Result<Numbering, DocInfoError> {
     let mut r = ByteReader::new(data);
     let mut numbering = Numbering::default();
+    numbering.level_start_numbers = [1; NUMBERING_LEVELS];
 
     // 수준별(1~7) 문단 머리 정보 + 번호 형식 문자열
     for level in 0..7 {
-        // 문단 머리 정보 (표 41: 12바이트)
-        let attr = r.read_u32().unwrap_or(0);
-        let width_adjust = r.read_i16().unwrap_or(0);
-        let text_distance = r.read_i16().unwrap_or(0);
-        let char_shape_id = r.read_u32().unwrap_or(0);
-
-        let number_format = ((attr >> 5) & 0x0F) as u8;
-        numbering.heads[level] = NumberingHead {
-            attr,
-            width_adjust,
-            text_distance,
-            char_shape_id,
-            number_format,
-        };
-
-        // 번호 형식 문자열 (가변 길이)
-        let format_len = r.read_u16().unwrap_or(0) as usize;
-        if format_len > 0 {
-            let mut format_str = String::new();
-            for _ in 0..format_len {
-                let ch = r.read_u16().unwrap_or(0);
-                if ch > 0 {
-                    if let Some(c) = char::from_u32(ch as u32) {
-                        format_str.push(c);
-                    }
-                }
-            }
-            numbering.level_formats[level] = format_str;
-        }
+        read_numbering_level(&mut r, &mut numbering, level);
     }
 
     // 시작 번호
@@ -870,7 +895,51 @@ fn parse_numbering(data: &[u8]) -> Result<Numbering, DocInfoError> {
         numbering.level_start_numbers[level] = r.read_u32().unwrap_or(1);
     }
 
+    // 한/글 5.1 이상은 8~10수준을 같은 꼴(머리 정보·형식 문자열 3회, 시작 번호 3회)로 덧붙인다.
+    // 없는 레코드(5.0.x)의 8~10수준은 형식 없는 빈 수준이다.
+    if !r.is_empty() {
+        for level in 7..NUMBERING_LEVELS {
+            read_numbering_level(&mut r, &mut numbering, level);
+        }
+        for level in 7..NUMBERING_LEVELS {
+            numbering.level_start_numbers[level] = r.read_u32().unwrap_or(1);
+        }
+    }
+
     Ok(numbering)
+}
+
+/// 번호 정의 한 수준의 문단 머리 정보(표 41: 12바이트)와 번호 형식 문자열.
+fn read_numbering_level(r: &mut ByteReader, numbering: &mut Numbering, level: usize) {
+    let attr = r.read_u32().unwrap_or(0);
+    let width_adjust = r.read_i16().unwrap_or(0);
+    let text_distance = r.read_i16().unwrap_or(0);
+    let char_shape_id = r.read_u32().unwrap_or(0);
+
+    // 1~10수준 모두 번호 형식의 다섯 비트(甲 = 16 포함)를 보존한다.
+    let number_format = ((attr >> 5) & 0x1F) as u8;
+    numbering.heads[level] = NumberingHead {
+        attr,
+        width_adjust,
+        text_distance,
+        char_shape_id,
+        number_format,
+    };
+
+    // 번호 형식 문자열 (가변 길이)
+    let format_len = r.read_u16().unwrap_or(0) as usize;
+    if format_len > 0 {
+        let mut format_str = String::new();
+        for _ in 0..format_len {
+            let ch = r.read_u16().unwrap_or(0);
+            if ch > 0 {
+                if let Some(c) = char::from_u32(ch as u32) {
+                    format_str.push(c);
+                }
+            }
+        }
+        numbering.level_formats[level] = format_str;
+    }
 }
 
 /// HWPTAG_BULLET 파싱 (표 44: 글머리표)
@@ -908,6 +977,7 @@ fn parse_bullet(data: &[u8]) -> Result<Bullet, DocInfoError> {
         char_shape_id,
         bullet_char,
         image_bullet,
+        hwpx_image_without_ref: false,
         image_data,
         check_bullet_char,
         raw_para_head: None,

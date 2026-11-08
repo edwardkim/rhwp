@@ -1,0 +1,34 @@
+[
+  {
+    "name": "base",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp"
+    ],
+    "exit": 0,
+    "seconds": 333.1234269142151
+  },
+  {
+    "name": "candidate",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp"
+    ],
+    "exit": 0,
+    "seconds": 271.69651436805725
+  }
+]

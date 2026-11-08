@@ -1,0 +1,74 @@
+[
+  {
+    "key": "body-list-typed",
+    "reference": "pdf/issue8109/print/body-list-typed-hwp-2020.pdf",
+    "metadata": {
+      "Creator": "Hwp 2020 0.0.0.0",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "CreationDate": "Wed Oct 21 16:45:14 2026 KST",
+      "Pages": "1",
+      "Page size": "399 x 260 pts",
+      "PDF version": "1.4"
+    }
+  },
+  {
+    "key": "helvetica-styles",
+    "reference": "pdf/issue8109/print/control-styles-hwp-2020.pdf",
+    "metadata": {
+      "Creator": "Hwp 2020 0.0.0.0",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "CreationDate": "Wed Oct 21 16:45:46 2026 KST",
+      "Pages": "1",
+      "Page size": "300 x 240 pts",
+      "PDF version": "1.4"
+    }
+  },
+  {
+    "key": "pic-crop-01",
+    "reference": "pdf/pic-crop-01-2022.pdf",
+    "metadata": {
+      "Creator": "Hwp 2022 12.0.0.4426",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "CreationDate": "Thu May  7 17:33:02 2026 KST",
+      "Pages": "1",
+      "Page size": "595 x 841 pts (A4)",
+      "PDF version": "1.6"
+    }
+  },
+  {
+    "key": "shape-group-02",
+    "reference": "pdf/shape-group-02-hwp-2020.pdf",
+    "metadata": {
+      "Creator": "Hwp 2022 0.0.0.0",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "CreationDate": "Sun Aug 30 17:51:35 2026 KST",
+      "Pages": "1",
+      "Page size": "595 x 841 pts (A4)",
+      "PDF version": "1.6"
+    }
+  },
+  {
+    "key": "re-03-latin",
+    "reference": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+    "metadata": {
+      "Creator": "Hwp 2022 0.0.0.0",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "CreationDate": "Sun Aug 30 17:41:49 2026 KST",
+      "Pages": "1",
+      "Page size": "595 x 841 pts (A4)",
+      "PDF version": "1.6"
+    }
+  },
+  {
+    "key": "handbook-hwp",
+    "reference": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+    "metadata": {
+      "Creator": "Hancom PDF 1.3.0.550",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "CreationDate": "Fri Oct  2 23:13:24 2026 KST",
+      "Pages": "383",
+      "Page size": "555 x 754 pts",
+      "PDF version": "1.6"
+    }
+  }
+]

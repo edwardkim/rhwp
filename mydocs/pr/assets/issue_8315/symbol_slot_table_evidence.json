@@ -1,0 +1,93 @@
+[
+ {
+  "font_path": "batang.ttc",
+  "face_index": 2,
+  "font_sha256": "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8",
+  "families": [
+   "Gungsuh",
+   "궁서"
+  ],
+  "em": 1024,
+  "metric_name": "Gungsuh",
+  "metric_em": 1024,
+  "present_count": 280
+ },
+ {
+  "font_path": "batang.ttc",
+  "face_index": 0,
+  "font_sha256": "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8",
+  "families": [
+   "Batang",
+   "바탕"
+  ],
+  "em": 1024,
+  "metric_name": "Batang",
+  "metric_em": 1024,
+  "present_count": 280
+ },
+ {
+  "font_path": "gulim.ttc",
+  "face_index": 2,
+  "font_sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12",
+  "families": [
+   "Dotum",
+   "돋움"
+  ],
+  "em": 1024,
+  "metric_name": "Dotum",
+  "metric_em": 1024,
+  "present_count": 280
+ },
+ {
+  "font_path": "gulim.ttc",
+  "face_index": 0,
+  "font_sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12",
+  "families": [
+   "Gulim",
+   "굴림"
+  ],
+  "em": 1024,
+  "metric_name": "Gulim",
+  "metric_em": 1024,
+  "present_count": 280
+ },
+ {
+  "font_path": "gulim.ttc",
+  "face_index": 1,
+  "font_sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12",
+  "families": [
+   "GulimChe",
+   "굴림체"
+  ],
+  "em": 1024,
+  "metric_name": "GulimChe",
+  "metric_em": 1024,
+  "present_count": 280
+ },
+ {
+  "font_path": "malgun.ttf",
+  "face_index": 0,
+  "font_sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+  "families": [
+   "Malgun Gothic",
+   "맑은 고딕"
+  ],
+  "em": 2048,
+  "metric_name": "Malgun Gothic",
+  "metric_em": 2048,
+  "present_count": 277
+ },
+ {
+  "font_path": "HANBatang.ttf",
+  "face_index": 0,
+  "font_sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+  "families": [
+   "HCR Batang",
+   "함초롬바탕"
+  ],
+  "em": 1000,
+  "metric_name": "HCR Batang",
+  "metric_em": 1000,
+  "present_count": 305
+ }
+]

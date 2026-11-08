@@ -1,0 +1,190 @@
+{
+  "sample16-hwpx": {
+    "pages": 64,
+    "min": 98.27803,
+    "raw100_pages": [
+      41,
+      56,
+      58,
+      63,
+      64
+    ],
+    "changes": [
+      {
+        "page": 2,
+        "base": 98.24658,
+        "head": 99.77878
+      },
+      {
+        "page": 7,
+        "base": 99.79016,
+        "head": 99.95105
+      },
+      {
+        "page": 18,
+        "base": 96.24353,
+        "head": 99.08287
+      },
+      {
+        "page": 28,
+        "base": 99.96921,
+        "head": 99.98983
+      },
+      {
+        "page": 29,
+        "base": 99.95733,
+        "head": 99.99552
+      },
+      {
+        "page": 33,
+        "base": 99.99382,
+        "head": 99.99928
+      },
+      {
+        "page": 34,
+        "base": 99.95576,
+        "head": 99.99313
+      },
+      {
+        "page": 38,
+        "base": 97.85044,
+        "head": 99.99869
+      },
+      {
+        "page": 41,
+        "base": 97.73925,
+        "head": 100.0
+      },
+      {
+        "page": 42,
+        "base": 99.62891,
+        "head": 99.99792
+      }
+    ]
+  },
+  "sample16-hwp2024": {
+    "pages": 64,
+    "min": 98.36526,
+    "raw100_pages": [
+      41,
+      56,
+      58,
+      63,
+      64
+    ],
+    "changes": [
+      {
+        "page": 2,
+        "base": 98.24658,
+        "head": 99.77878
+      },
+      {
+        "page": 7,
+        "base": 99.79016,
+        "head": 99.95105
+      },
+      {
+        "page": 28,
+        "base": 99.96921,
+        "head": 99.98983
+      },
+      {
+        "page": 29,
+        "base": 99.95733,
+        "head": 99.99552
+      },
+      {
+        "page": 33,
+        "base": 99.99382,
+        "head": 99.99928
+      },
+      {
+        "page": 34,
+        "base": 99.95576,
+        "head": 99.99313
+      },
+      {
+        "page": 38,
+        "base": 97.85044,
+        "head": 99.99869
+      },
+      {
+        "page": 41,
+        "base": 97.73521,
+        "head": 100.0
+      },
+      {
+        "page": 42,
+        "base": 99.62891,
+        "head": 99.99792
+      }
+    ]
+  },
+  "sample16-hwp2022": {
+    "pages": 64,
+    "min": 95.03337,
+    "raw100_pages": [],
+    "changes": [
+      {
+        "page": 2,
+        "base": 97.22208,
+        "head": 98.61692
+      },
+      {
+        "page": 28,
+        "base": 99.08873,
+        "head": 99.18163
+      },
+      {
+        "page": 29,
+        "base": 99.01504,
+        "head": 99.16899
+      },
+      {
+        "page": 31,
+        "base": 99.12473,
+        "head": 99.17038
+      },
+      {
+        "page": 33,
+        "base": 99.32713,
+        "head": 99.23252
+      },
+      {
+        "page": 34,
+        "base": 98.84121,
+        "head": 98.95586
+      },
+      {
+        "page": 38,
+        "base": 97.20022,
+        "head": 99.3357
+      }
+    ]
+  },
+  "producer": {
+    "base_source": "605ccfd92f2f12f18e14182548d729f9929fda00",
+    "committed_production_head": "fe59486c04e040e2b487e5d511d0ea3d48860cab",
+    "build_exit_code": 0,
+    "patch_sha256": "83f0caedcc5482f25c921a6ae1094ed73270f4d0665ec12491c508bc09dd6805",
+    "new_sources": [
+      {
+        "path": "src/renderer/layout/leader_tab.rs",
+        "sha256": "57b1b831389d911cea72a7586fc01ace0fff57e6968c9517cc3c1b8dd61826c2"
+      }
+    ],
+    "artifacts": [
+      {
+        "file": "output/pr-review/issue8160-20261022/candidate5/native/rhwp",
+        "sha256": "0184cae93ba8f46a38c77ead4f3af6df65859e85be40a8d9e3db3b51177b9c22"
+      },
+      {
+        "file": "output/pr-review/issue8160-20261022/candidate5/native/librhwp.rlib",
+        "sha256": "e2daa404b1ed30602a2f3f957b78dacd5cf15d045251427d1ae0b8f51e520503"
+      }
+    ],
+    "rlib_source": "target/pr-review/release-test/deps/librhwp.rlib",
+    "correction": "Root release-test/librhwp.rlib was a stale 2026-10-10 alias; diagnostic rlib replaced with the actual deps library linked by the 2026-10-23 candidate5 binary. CLI and sweep are unchanged."
+  },
+  "baseline_font_environment": "Existing portable font supply; independent original HFT font supply is a separate diagnostic, not mixed into these results."
+}

@@ -1,0 +1,600 @@
+{
+  "rows": [
+    {
+      "index": 1,
+      "repeat": 1,
+      "profile": "dev",
+      "ref": "codex/measure-7473-dev-1",
+      "run_id": 36436604581,
+      "head_sha": "ddf5ce2d2c13d4c87aa4a3b165d39b7506d3a25f",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/36436604581",
+      "status": "completed",
+      "conclusion": "success",
+      "job_url": "https://github.com/edwardkim/rhwp/actions/runs/36436604581/job/108976114154",
+      "job_seconds": 498.0,
+      "step_wasm_seconds": 122.0,
+      "step_native_seconds": 122.0,
+      "step_visual_seconds": 58.0,
+      "step_readiness_seconds": 84.0,
+      "build": {
+        "source_sha": "ddf5ce2d2c13d4c87aa4a3b165d39b7506d3a25f",
+        "source_dirty": false,
+        "profile": "dev",
+        "command": [
+          "sh",
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--dev"
+        ],
+        "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+        "wasm_pack": "wasm-pack 0.15.0",
+        "cargo_cache_hit": "false",
+        "cargo_cache_matched_key": "",
+        "cargo_lock_sha256": "965e127faa8826819f413cc8e35b3d6433dda2a0c5bd662c9052d1d70e111fda",
+        "cargo_target_dir": "target",
+        "cargo_build_jobs": "default",
+        "timing_method": "log receipt boundaries; includes setup/finalization, not isolated process timings",
+        "success": true,
+        "wall_seconds": 111.551,
+        "returncode": 0,
+        "events_seconds": {
+          "cargo_start": 2.835854308000023,
+          "bindgen_start": 102.44894839000003,
+          "package_done": 111.529792028
+        },
+        "phase_seconds_approx": {
+          "preparation": 2.836,
+          "cargo": 99.613,
+          "bindgen_setup_and_run": 9.081,
+          "wasm_opt_and_finalize": null,
+          "after_package": 0.021
+        },
+        "tool_commands": {
+          "wasm-bindgen": [
+            "/home/runner/.cache/.wasm-pack/wasm-bindgen-834c8396d913406b/wasm-bindgen",
+            "/home/runner/work/rhwp/rhwp/target/wasm32-unknown-unknown/debug/rhwp.wasm",
+            "--out-dir",
+            "/home/runner/work/rhwp/rhwp/pkg",
+            "--typescript",
+            "--target",
+            "web",
+            "--debug"
+          ]
+        },
+        "tools": {
+          "wasm-bindgen": {
+            "version": "wasm-bindgen 0.2.127",
+            "sha256": "f36dbe1938e78a79ce34d0ab3700907555161e293954f6f35bf6785a2f0cf916"
+          }
+        },
+        "artifacts": {
+          "rhwp.js": {
+            "sha256": "8f01a5bcc227a41d72b4aca57792445e9f413c4400154b74bdf8992f35301df3",
+            "bytes": 558609
+          },
+          "rhwp_bg.wasm": {
+            "sha256": "3923eeaa5319bf9662915d1d616e9e89c2a156b6c56994dbe5c844d52e4810fb",
+            "bytes": 41227131
+          }
+        }
+      }
+    },
+    {
+      "index": 2,
+      "repeat": 1,
+      "profile": "release",
+      "ref": "codex/measure-7473-release-1",
+      "run_id": 36436608897,
+      "head_sha": "ddf5ce2d2c13d4c87aa4a3b165d39b7506d3a25f",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/36436608897",
+      "status": "completed",
+      "conclusion": "success",
+      "job_url": "https://github.com/edwardkim/rhwp/actions/runs/36436608897/job/108976158258",
+      "job_seconds": 788.0,
+      "step_wasm_seconds": 443.0,
+      "step_native_seconds": 124.0,
+      "step_visual_seconds": 43.0,
+      "step_readiness_seconds": 72.0,
+      "build": {
+        "source_sha": "ddf5ce2d2c13d4c87aa4a3b165d39b7506d3a25f",
+        "source_dirty": false,
+        "profile": "release",
+        "command": [
+          "sh",
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--release"
+        ],
+        "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+        "wasm_pack": "wasm-pack 0.15.0",
+        "cargo_cache_hit": "false",
+        "cargo_cache_matched_key": "",
+        "cargo_lock_sha256": "965e127faa8826819f413cc8e35b3d6433dda2a0c5bd662c9052d1d70e111fda",
+        "cargo_target_dir": "target",
+        "cargo_build_jobs": "default",
+        "timing_method": "log receipt boundaries; includes setup/finalization, not isolated process timings",
+        "success": true,
+        "wall_seconds": 431.927,
+        "returncode": 0,
+        "events_seconds": {
+          "cargo_start": 3.102734985999973,
+          "bindgen_start": 306.280514005,
+          "opt_start": 311.026809213,
+          "package_done": 431.913420953
+        },
+        "phase_seconds_approx": {
+          "preparation": 3.103,
+          "cargo": 303.178,
+          "bindgen_setup_and_run": 4.746,
+          "wasm_opt_and_finalize": 120.887,
+          "after_package": 0.014
+        },
+        "tool_commands": {
+          "wasm-bindgen": [
+            "/home/runner/.cache/.wasm-pack/wasm-bindgen-834c8396d913406b/wasm-bindgen",
+            "/home/runner/work/rhwp/rhwp/target/wasm32-unknown-unknown/release/rhwp.wasm",
+            "--out-dir",
+            "/home/runner/work/rhwp/rhwp/pkg",
+            "--typescript",
+            "--target",
+            "web"
+          ],
+          "wasm-opt": [
+            "/home/runner/.cache/.wasm-pack/wasm-opt-1ceaaea8b7b5f7e0/bin/wasm-opt",
+            "/home/runner/work/rhwp/rhwp/pkg/rhwp_bg.wasm",
+            "-o",
+            "/home/runner/work/rhwp/rhwp/pkg/rhwp_bg.wasm-opt.wasm",
+            "-O"
+          ]
+        },
+        "tools": {
+          "wasm-bindgen": {
+            "version": "wasm-bindgen 0.2.127",
+            "sha256": "f36dbe1938e78a79ce34d0ab3700907555161e293954f6f35bf6785a2f0cf916"
+          },
+          "wasm-opt": {
+            "version": "wasm-opt version 117 (version_117)",
+            "sha256": "621b5a984f16d0323ea7aa8b389ac9ccda0950ddee5de0e99292970129f571ed"
+          }
+        },
+        "artifacts": {
+          "rhwp.js": {
+            "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+            "bytes": 453222
+          },
+          "rhwp_bg.wasm": {
+            "sha256": "d4f9a862800dad6ac2eb56b6d452a45c385a941bbcc84a0a9e78a273bd4be095",
+            "bytes": 11341620
+          }
+        }
+      }
+    },
+    {
+      "index": 3,
+      "repeat": 2,
+      "profile": "dev",
+      "ref": "codex/measure-7473-dev-2",
+      "run_id": 36436613036,
+      "head_sha": "ddf5ce2d2c13d4c87aa4a3b165d39b7506d3a25f",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/36436613036",
+      "status": "completed",
+      "conclusion": "success",
+      "job_url": "https://github.com/edwardkim/rhwp/actions/runs/36436613036/job/108976187638",
+      "job_seconds": 525.0,
+      "step_wasm_seconds": 127.0,
+      "step_native_seconds": 125.0,
+      "step_visual_seconds": 58.0,
+      "step_readiness_seconds": 84.0,
+      "build": {
+        "source_sha": "ddf5ce2d2c13d4c87aa4a3b165d39b7506d3a25f",
+        "source_dirty": false,
+        "profile": "dev",
+        "command": [
+          "sh",
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--dev"
+        ],
+        "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+        "wasm_pack": "wasm-pack 0.15.0",
+        "cargo_cache_hit": "false",
+        "cargo_cache_matched_key": "",
+        "cargo_lock_sha256": "965e127faa8826819f413cc8e35b3d6433dda2a0c5bd662c9052d1d70e111fda",
+        "cargo_target_dir": "target",
+        "cargo_build_jobs": "default",
+        "timing_method": "log receipt boundaries; includes setup/finalization, not isolated process timings",
+        "success": true,
+        "wall_seconds": 116.61,
+        "returncode": 0,
+        "events_seconds": {
+          "cargo_start": 2.422580093999983,
+          "bindgen_start": 106.90068510699999,
+          "package_done": 116.586563042
+        },
+        "phase_seconds_approx": {
+          "preparation": 2.423,
+          "cargo": 104.478,
+          "bindgen_setup_and_run": 9.686,
+          "wasm_opt_and_finalize": null,
+          "after_package": 0.023
+        },
+        "tool_commands": {
+          "wasm-bindgen": [
+            "/home/runner/.cache/.wasm-pack/wasm-bindgen-834c8396d913406b/wasm-bindgen",
+            "/home/runner/work/rhwp/rhwp/target/wasm32-unknown-unknown/debug/rhwp.wasm",
+            "--out-dir",
+            "/home/runner/work/rhwp/rhwp/pkg",
+            "--typescript",
+            "--target",
+            "web",
+            "--debug"
+          ]
+        },
+        "tools": {
+          "wasm-bindgen": {
+            "version": "wasm-bindgen 0.2.127",
+            "sha256": "f36dbe1938e78a79ce34d0ab3700907555161e293954f6f35bf6785a2f0cf916"
+          }
+        },
+        "artifacts": {
+          "rhwp.js": {
+            "sha256": "8f01a5bcc227a41d72b4aca57792445e9f413c4400154b74bdf8992f35301df3",
+            "bytes": 558609
+          },
+          "rhwp_bg.wasm": {
+            "sha256": "3923eeaa5319bf9662915d1d616e9e89c2a156b6c56994dbe5c844d52e4810fb",
+            "bytes": 41227131
+          }
+        }
+      }
+    },
+    {
+      "index": 4,
+      "repeat": 2,
+      "profile": "release",
+      "ref": "codex/measure-7473-release-2",
+      "run_id": 36436617318,
+      "head_sha": "ddf5ce2d2c13d4c87aa4a3b165d39b7506d3a25f",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/36436617318",
+      "status": "completed",
+      "conclusion": "success",
+      "job_url": "https://github.com/edwardkim/rhwp/actions/runs/36436617318/job/108976190130",
+      "job_seconds": 760.0,
+      "step_wasm_seconds": 421.0,
+      "step_native_seconds": 119.0,
+      "step_visual_seconds": 43.0,
+      "step_readiness_seconds": 72.0,
+      "build": {
+        "source_sha": "ddf5ce2d2c13d4c87aa4a3b165d39b7506d3a25f",
+        "source_dirty": false,
+        "profile": "release",
+        "command": [
+          "sh",
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--release"
+        ],
+        "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+        "wasm_pack": "wasm-pack 0.15.0",
+        "cargo_cache_hit": "false",
+        "cargo_cache_matched_key": "",
+        "cargo_lock_sha256": "965e127faa8826819f413cc8e35b3d6433dda2a0c5bd662c9052d1d70e111fda",
+        "cargo_target_dir": "target",
+        "cargo_build_jobs": "default",
+        "timing_method": "log receipt boundaries; includes setup/finalization, not isolated process timings",
+        "success": true,
+        "wall_seconds": 410.215,
+        "returncode": 0,
+        "events_seconds": {
+          "cargo_start": 2.303902817000008,
+          "bindgen_start": 287.387832388,
+          "opt_start": 292.058786302,
+          "package_done": 410.202734706
+        },
+        "phase_seconds_approx": {
+          "preparation": 2.304,
+          "cargo": 285.084,
+          "bindgen_setup_and_run": 4.671,
+          "wasm_opt_and_finalize": 118.144,
+          "after_package": 0.012
+        },
+        "tool_commands": {
+          "wasm-bindgen": [
+            "/home/runner/.cache/.wasm-pack/wasm-bindgen-834c8396d913406b/wasm-bindgen",
+            "/home/runner/work/rhwp/rhwp/target/wasm32-unknown-unknown/release/rhwp.wasm",
+            "--out-dir",
+            "/home/runner/work/rhwp/rhwp/pkg",
+            "--typescript",
+            "--target",
+            "web"
+          ],
+          "wasm-opt": [
+            "/home/runner/.cache/.wasm-pack/wasm-opt-1ceaaea8b7b5f7e0/bin/wasm-opt",
+            "/home/runner/work/rhwp/rhwp/pkg/rhwp_bg.wasm",
+            "-o",
+            "/home/runner/work/rhwp/rhwp/pkg/rhwp_bg.wasm-opt.wasm",
+            "-O"
+          ]
+        },
+        "tools": {
+          "wasm-bindgen": {
+            "version": "wasm-bindgen 0.2.127",
+            "sha256": "f36dbe1938e78a79ce34d0ab3700907555161e293954f6f35bf6785a2f0cf916"
+          },
+          "wasm-opt": {
+            "version": "wasm-opt version 117 (version_117)",
+            "sha256": "621b5a984f16d0323ea7aa8b389ac9ccda0950ddee5de0e99292970129f571ed"
+          }
+        },
+        "artifacts": {
+          "rhwp.js": {
+            "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+            "bytes": 453222
+          },
+          "rhwp_bg.wasm": {
+            "sha256": "d4f9a862800dad6ac2eb56b6d452a45c385a941bbcc84a0a9e78a273bd4be095",
+            "bytes": 11341620
+          }
+        }
+      }
+    },
+    {
+      "index": 5,
+      "repeat": 3,
+      "profile": "dev",
+      "ref": "codex/measure-7473-dev-3",
+      "run_id": 36436621337,
+      "head_sha": "ddf5ce2d2c13d4c87aa4a3b165d39b7506d3a25f",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/36436621337",
+      "status": "completed",
+      "conclusion": "success",
+      "job_url": "https://github.com/edwardkim/rhwp/actions/runs/36436621337/job/108976198072",
+      "job_seconds": 500.0,
+      "step_wasm_seconds": 114.0,
+      "step_native_seconds": 117.0,
+      "step_visual_seconds": 58.0,
+      "step_readiness_seconds": 85.0,
+      "build": {
+        "source_sha": "ddf5ce2d2c13d4c87aa4a3b165d39b7506d3a25f",
+        "source_dirty": false,
+        "profile": "dev",
+        "command": [
+          "sh",
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--dev"
+        ],
+        "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+        "wasm_pack": "wasm-pack 0.15.0",
+        "cargo_cache_hit": "false",
+        "cargo_cache_matched_key": "",
+        "cargo_lock_sha256": "965e127faa8826819f413cc8e35b3d6433dda2a0c5bd662c9052d1d70e111fda",
+        "cargo_target_dir": "target",
+        "cargo_build_jobs": "default",
+        "timing_method": "log receipt boundaries; includes setup/finalization, not isolated process timings",
+        "success": true,
+        "wall_seconds": 104.252,
+        "returncode": 0,
+        "events_seconds": {
+          "cargo_start": 2.1847180719999812,
+          "bindgen_start": 95.64776583099999,
+          "package_done": 104.23083450599998
+        },
+        "phase_seconds_approx": {
+          "preparation": 2.185,
+          "cargo": 93.463,
+          "bindgen_setup_and_run": 8.583,
+          "wasm_opt_and_finalize": null,
+          "after_package": 0.021
+        },
+        "tool_commands": {
+          "wasm-bindgen": [
+            "/home/runner/.cache/.wasm-pack/wasm-bindgen-834c8396d913406b/wasm-bindgen",
+            "/home/runner/work/rhwp/rhwp/target/wasm32-unknown-unknown/debug/rhwp.wasm",
+            "--out-dir",
+            "/home/runner/work/rhwp/rhwp/pkg",
+            "--typescript",
+            "--target",
+            "web",
+            "--debug"
+          ]
+        },
+        "tools": {
+          "wasm-bindgen": {
+            "version": "wasm-bindgen 0.2.127",
+            "sha256": "f36dbe1938e78a79ce34d0ab3700907555161e293954f6f35bf6785a2f0cf916"
+          }
+        },
+        "artifacts": {
+          "rhwp.js": {
+            "sha256": "8f01a5bcc227a41d72b4aca57792445e9f413c4400154b74bdf8992f35301df3",
+            "bytes": 558609
+          },
+          "rhwp_bg.wasm": {
+            "sha256": "3923eeaa5319bf9662915d1d616e9e89c2a156b6c56994dbe5c844d52e4810fb",
+            "bytes": 41227131
+          }
+        }
+      }
+    },
+    {
+      "index": 6,
+      "repeat": 3,
+      "profile": "release",
+      "ref": "codex/measure-7473-release-3",
+      "run_id": 36436626093,
+      "head_sha": "ddf5ce2d2c13d4c87aa4a3b165d39b7506d3a25f",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/36436626093",
+      "status": "completed",
+      "conclusion": "success",
+      "job_url": "https://github.com/edwardkim/rhwp/actions/runs/36436626093/job/108976558861",
+      "job_seconds": 677.0,
+      "step_wasm_seconds": 369.0,
+      "step_native_seconds": 100.0,
+      "step_visual_seconds": 37.0,
+      "step_readiness_seconds": 65.0,
+      "build": {
+        "source_sha": "ddf5ce2d2c13d4c87aa4a3b165d39b7506d3a25f",
+        "source_dirty": false,
+        "profile": "release",
+        "command": [
+          "sh",
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--release"
+        ],
+        "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+        "wasm_pack": "wasm-pack 0.15.0",
+        "cargo_cache_hit": "false",
+        "cargo_cache_matched_key": "",
+        "cargo_lock_sha256": "965e127faa8826819f413cc8e35b3d6433dda2a0c5bd662c9052d1d70e111fda",
+        "cargo_target_dir": "target",
+        "cargo_build_jobs": "default",
+        "timing_method": "log receipt boundaries; includes setup/finalization, not isolated process timings",
+        "success": true,
+        "wall_seconds": 361.015,
+        "returncode": 0,
+        "events_seconds": {
+          "cargo_start": 2.176015551000006,
+          "bindgen_start": 238.792348052,
+          "opt_start": 242.874426274,
+          "package_done": 361.00308454900005
+        },
+        "phase_seconds_approx": {
+          "preparation": 2.176,
+          "cargo": 236.616,
+          "bindgen_setup_and_run": 4.082,
+          "wasm_opt_and_finalize": 118.129,
+          "after_package": 0.012
+        },
+        "tool_commands": {
+          "wasm-bindgen": [
+            "/home/runner/.cache/.wasm-pack/wasm-bindgen-834c8396d913406b/wasm-bindgen",
+            "/home/runner/work/rhwp/rhwp/target/wasm32-unknown-unknown/release/rhwp.wasm",
+            "--out-dir",
+            "/home/runner/work/rhwp/rhwp/pkg",
+            "--typescript",
+            "--target",
+            "web"
+          ],
+          "wasm-opt": [
+            "/home/runner/.cache/.wasm-pack/wasm-opt-1ceaaea8b7b5f7e0/bin/wasm-opt",
+            "/home/runner/work/rhwp/rhwp/pkg/rhwp_bg.wasm",
+            "-o",
+            "/home/runner/work/rhwp/rhwp/pkg/rhwp_bg.wasm-opt.wasm",
+            "-O"
+          ]
+        },
+        "tools": {
+          "wasm-bindgen": {
+            "version": "wasm-bindgen 0.2.127",
+            "sha256": "f36dbe1938e78a79ce34d0ab3700907555161e293954f6f35bf6785a2f0cf916"
+          },
+          "wasm-opt": {
+            "version": "wasm-opt version 117 (version_117)",
+            "sha256": "621b5a984f16d0323ea7aa8b389ac9ccda0950ddee5de0e99292970129f571ed"
+          }
+        },
+        "artifacts": {
+          "rhwp.js": {
+            "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+            "bytes": 453222
+          },
+          "rhwp_bg.wasm": {
+            "sha256": "d4f9a862800dad6ac2eb56b6d452a45c385a941bbcc84a0a9e78a273bd4be095",
+            "bytes": 11341620
+          }
+        }
+      }
+    }
+  ],
+  "summary": {
+    "dev": {
+      "n": 3,
+      "job_seconds": {
+        "min": 498.0,
+        "median": 500.0,
+        "max": 525.0
+      },
+      "step_wasm_seconds": {
+        "min": 114.0,
+        "median": 122.0,
+        "max": 127.0
+      },
+      "step_native_seconds": {
+        "min": 117.0,
+        "median": 122.0,
+        "max": 125.0
+      },
+      "step_visual_seconds": {
+        "min": 58.0,
+        "median": 58.0,
+        "max": 58.0
+      },
+      "step_readiness_seconds": {
+        "min": 84.0,
+        "median": 84.0,
+        "max": 85.0
+      },
+      "cargo": {
+        "min": 93.463,
+        "median": 99.613,
+        "max": 104.478
+      },
+      "bindgen_setup_and_run": {
+        "min": 8.583,
+        "median": 9.081,
+        "max": 9.686
+      }
+    },
+    "release": {
+      "n": 3,
+      "job_seconds": {
+        "min": 677.0,
+        "median": 760.0,
+        "max": 788.0
+      },
+      "step_wasm_seconds": {
+        "min": 369.0,
+        "median": 421.0,
+        "max": 443.0
+      },
+      "step_native_seconds": {
+        "min": 100.0,
+        "median": 119.0,
+        "max": 124.0
+      },
+      "step_visual_seconds": {
+        "min": 37.0,
+        "median": 43.0,
+        "max": 43.0
+      },
+      "step_readiness_seconds": {
+        "min": 65.0,
+        "median": 72.0,
+        "max": 72.0
+      },
+      "cargo": {
+        "min": 236.616,
+        "median": 285.084,
+        "max": 303.178
+      },
+      "bindgen_setup_and_run": {
+        "min": 4.082,
+        "median": 4.671,
+        "max": 4.746
+      },
+      "wasm_opt_and_finalize": {
+        "min": 118.129,
+        "median": 118.144,
+        "max": 120.887
+      }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-28",
+  "source": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8049-official.hwp",
+  "source_sha256": "29018def6969c60e6b0fb5c7cca06c8fd12a3b1239543c8f3eb1d1d03bc4294e",
+  "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8049-official-2020.pdf",
+  "pdf_sha256": "ddc7df829907d31b0befffc663ca0879efacaa0ceae34f92502fe0e99a9a9859",
+  "page_82_wasm_raw": 26.80545,
+  "pdf_observation": "82쪽 첫 본문에 부록 2 제목, 그 아래 비교표",
+  "candidate_observation": "제목이 81쪽 표 뒤에 배치돼 각주 시작 부분과 충돌, 82쪽에는 제목이 없고 비교표가 위로 당겨짐",
+  "source_evidence": {
+    "section": 0,
+    "title_paragraph": 1023,
+    "title_text": "부록 2. 기존계획 대비 비교표",
+    "title_saved_vpos_hu": 0,
+    "title_line_height_hu": 1700,
+    "spacing_after_hu": 3000,
+    "page_break_before": false,
+    "keep_with_next": false,
+    "next_paragraph": 1024,
+    "next_saved_vpos_hu": 4220,
+    "next_table_height_hu": 62018,
+    "previous_paragraph": 1022,
+    "previous_saved_vpos_hu": 4820,
+    "previous_table_height_hu": 36917
+  },
+  "interpretation": "제목의 저장 vpos 0이 이전 표 뒤에서 새 쪽의 단서일 수 있으나 단일 사례만으로 일반 조건이나 원인을 확정하지 않는다. 코드 변경과 회귀 검사는 아직 없다."
+}

@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-29",
+  "scope": "AGENTS.md·CLAUDE.md의 문서 전용 경로와 관련 CI 분류·신뢰된 검토 연결 로컬 검사",
+  "runs": [
+    {
+      "command": "node --test scripts/tests/ci-impact-classifier.test.cjs",
+      "passed": 45,
+      "exit_code": 0,
+      "log_sha256": "eaa0807fd9d10e7909d67e13d9516b9a9681457d4207b4bf1e185c4d3f6cba61"
+    },
+    {
+      "command": "python3 -m unittest scripts.tests.test_review_only_fast_pass_workflows",
+      "passed": 25,
+      "exit_code": 0,
+      "log_sha256": "09fafed9b179cbcdc8ccbb0454b251c9fea481209abcd07ab30ad63901c2c08e"
+    },
+    {
+      "command": "node --test scripts/tests/verify-trusted-postmerge-review-bridge.test.mjs",
+      "passed": 83,
+      "exit_code": 0,
+      "log_sha256": "919180f2bf6007e5aee2b3fce0b6271ca94657de44ec4399fc6ce5cb8a474ccc"
+    }
+  ],
+  "limitations": "로컬 스크립트 검사이며 원격 CI 실행 완료나 이번 통합 브랜치가 문서 전용이라는 뜻은 아니다."
+}

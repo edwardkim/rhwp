@@ -1,0 +1,465 @@
+{
+  "functional_head": "4e5a8d1565543daa999c776668d491fcc0beade5",
+  "metadata_head": "929f0f5ca537fe83b9947131d79b05e3f108c512",
+  "full_nextest": {
+    "passed": 12782,
+    "failed": 0,
+    "ignored": 45,
+    "runtime_seconds": 962.009
+  },
+  "native_official": {
+    "lib_passed": 4040,
+    "lib_ignored": 12,
+    "placeholder_passed": 2,
+    "direct_pdf_passed": 22,
+    "total_passed": 4064
+  },
+  "initial_focused_passed": 76,
+  "final_focused_passed": 4,
+  "initial_commands": [
+    {
+      "name": "focused",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8711/run-minfont.py",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--lib",
+        "--test",
+        "regression_suite_009",
+        "--test",
+        "regression_suite_012",
+        "--test",
+        "regression_suite_013",
+        "--test",
+        "regression_suite_019",
+        "-E",
+        "test(leading_definition_slots::) | test(issue_8555_vertical_alignment_baseline::) | test(issue_8556_insert_picture_in_cell::) | test(issue_8557_relocate_floating_picture::) | test(model::paragraph::tests::)",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ],
+      "source_sha": "4e5a8d1565543daa999c776668d491fcc0beade5",
+      "started": "2026-11-07T00:56:39.981485+00:00",
+      "status": "passed",
+      "returncode": 0,
+      "finished": "2026-11-07T01:07:54.460672+00:00"
+    },
+    {
+      "name": "format",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8711/run-minfont.py",
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "source_sha": "4e5a8d1565543daa999c776668d491fcc0beade5",
+      "started": "2026-11-07T01:07:54.463562+00:00",
+      "status": "passed",
+      "returncode": 0,
+      "finished": "2026-11-07T01:08:19.508493+00:00"
+    },
+    {
+      "name": "native-clippy",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8711/run-minfont.py",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "source_sha": "4e5a8d1565543daa999c776668d491fcc0beade5",
+      "started": "2026-11-07T01:08:19.511197+00:00",
+      "status": "passed",
+      "returncode": 0,
+      "finished": "2026-11-07T01:10:38.375256+00:00"
+    },
+    {
+      "name": "wasm-clippy",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8711/run-minfont.py",
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "source_sha": "4e5a8d1565543daa999c776668d491fcc0beade5",
+      "started": "2026-11-07T01:10:38.378103+00:00",
+      "status": "passed",
+      "returncode": 0,
+      "finished": "2026-11-07T01:12:41.356835+00:00"
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8711/run-minfont.py",
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review"
+      ],
+      "source_sha": "4e5a8d1565543daa999c776668d491fcc0beade5",
+      "started": "2026-11-07T01:12:41.359584+00:00",
+      "status": "passed",
+      "returncode": 0,
+      "finished": "2026-11-07T01:15:57.414797+00:00"
+    },
+    {
+      "name": "workspace-clippy",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8711/run-minfont.py",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "source_sha": "4e5a8d1565543daa999c776668d491fcc0beade5",
+      "started": "2026-11-07T01:15:57.420597+00:00",
+      "status": "passed",
+      "returncode": 0,
+      "finished": "2026-11-07T01:18:39.340562+00:00"
+    },
+    {
+      "name": "suite-policy",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8711/run-minfont.py",
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "13775409e57a9550cfb31866d40bdf319ab54bac"
+      ],
+      "source_sha": "4e5a8d1565543daa999c776668d491fcc0beade5",
+      "started": "2026-11-07T01:18:39.343622+00:00",
+      "status": "passed",
+      "returncode": 0,
+      "finished": "2026-11-07T01:18:40.202469+00:00"
+    },
+    {
+      "name": "unit-tier-policy",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8711/run-minfont.py",
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "13775409e57a9550cfb31866d40bdf319ab54bac"
+      ],
+      "source_sha": "4e5a8d1565543daa999c776668d491fcc0beade5",
+      "started": "2026-11-07T01:18:40.205231+00:00",
+      "status": "passed",
+      "returncode": 0,
+      "finished": "2026-11-07T01:18:51.206370+00:00"
+    },
+    {
+      "name": "full-nextest",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8711/run-minfont.py",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--tests",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ],
+      "source_sha": "4e5a8d1565543daa999c776668d491fcc0beade5",
+      "started": "2026-11-07T01:18:51.209060+00:00",
+      "status": "passed",
+      "returncode": 0,
+      "finished": "2026-11-07T01:49:02.831441+00:00"
+    },
+    {
+      "name": "native-lib",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8711/run-minfont.py",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "4"
+      ],
+      "source_sha": "4e5a8d1565543daa999c776668d491fcc0beade5",
+      "started": "2026-11-07T01:49:02.836369+00:00",
+      "status": "passed",
+      "returncode": 0,
+      "finished": "2026-11-07T01:49:27.984239+00:00"
+    },
+    {
+      "name": "native-placeholder",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8711/run-minfont.py",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "source_sha": "4e5a8d1565543daa999c776668d491fcc0beade5",
+      "started": "2026-11-07T01:49:27.986950+00:00",
+      "status": "passed",
+      "returncode": 0,
+      "finished": "2026-11-07T01:55:04.790660+00:00"
+    },
+    {
+      "name": "native-direct-pdf",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8711/run-minfont.py",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "source_sha": "4e5a8d1565543daa999c776668d491fcc0beade5",
+      "started": "2026-11-07T01:55:04.796958+00:00",
+      "status": "passed",
+      "returncode": 0,
+      "finished": "2026-11-07T01:55:22.273131+00:00"
+    }
+  ],
+  "final_metadata_commands": [
+    {
+      "name": "prepare",
+      "source_sha": "929f0f5ca537fe83b9947131d79b05e3f108c512",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8711/run-minfont.py",
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "started": "2026-11-07T01:55:28.709344+00:00",
+      "status": "passed",
+      "returncode": 0,
+      "finished": "2026-11-07T01:55:30.189348+00:00"
+    },
+    {
+      "name": "format",
+      "source_sha": "929f0f5ca537fe83b9947131d79b05e3f108c512",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8711/run-minfont.py",
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "started": "2026-11-07T01:55:30.189697+00:00",
+      "status": "passed",
+      "returncode": 0,
+      "finished": "2026-11-07T01:55:55.308951+00:00"
+    },
+    {
+      "name": "native-clippy",
+      "source_sha": "929f0f5ca537fe83b9947131d79b05e3f108c512",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8711/run-minfont.py",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started": "2026-11-07T01:55:55.309282+00:00",
+      "status": "passed",
+      "returncode": 0,
+      "finished": "2026-11-07T01:55:55.836563+00:00"
+    },
+    {
+      "name": "wasm-clippy",
+      "source_sha": "929f0f5ca537fe83b9947131d79b05e3f108c512",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8711/run-minfont.py",
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started": "2026-11-07T01:55:55.836914+00:00",
+      "status": "passed",
+      "returncode": 0,
+      "finished": "2026-11-07T01:55:56.330201+00:00"
+    },
+    {
+      "name": "workspace-build",
+      "source_sha": "929f0f5ca537fe83b9947131d79b05e3f108c512",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8711/run-minfont.py",
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review"
+      ],
+      "started": "2026-11-07T01:55:56.330734+00:00",
+      "status": "passed",
+      "returncode": 0,
+      "finished": "2026-11-07T01:55:56.834274+00:00"
+    },
+    {
+      "name": "workspace-clippy",
+      "source_sha": "929f0f5ca537fe83b9947131d79b05e3f108c512",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8711/run-minfont.py",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started": "2026-11-07T01:55:56.834709+00:00",
+      "status": "passed",
+      "returncode": 0,
+      "finished": "2026-11-07T01:56:13.785675+00:00"
+    },
+    {
+      "name": "suite-policy",
+      "source_sha": "929f0f5ca537fe83b9947131d79b05e3f108c512",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8711/run-minfont.py",
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "13775409e57a9550cfb31866d40bdf319ab54bac"
+      ],
+      "started": "2026-11-07T01:56:13.786110+00:00",
+      "status": "passed",
+      "returncode": 0,
+      "finished": "2026-11-07T01:56:14.630976+00:00"
+    },
+    {
+      "name": "unit-tier-policy",
+      "source_sha": "929f0f5ca537fe83b9947131d79b05e3f108c512",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8711/run-minfont.py",
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "13775409e57a9550cfb31866d40bdf319ab54bac"
+      ],
+      "started": "2026-11-07T01:56:14.631427+00:00",
+      "status": "passed",
+      "returncode": 0,
+      "finished": "2026-11-07T01:56:25.220498+00:00"
+    },
+    {
+      "name": "focused",
+      "source_sha": "929f0f5ca537fe83b9947131d79b05e3f108c512",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8711/run-minfont.py",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "leading_definition_slots",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ],
+      "started": "2026-11-07T01:56:25.220879+00:00",
+      "status": "passed",
+      "returncode": 0,
+      "finished": "2026-11-07T01:56:43.038825+00:00"
+    }
+  ],
+  "note": "Full nextest/Native runs are the functional_head results. The final head changes only module doc comments; normalized test body and product source equality are recorded separately. New-head lint and affected focused tests were rerun."
+}

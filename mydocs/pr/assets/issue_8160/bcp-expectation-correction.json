@@ -1,0 +1,21 @@
+{
+  "source_sha": "803046519d82d20c71d85937b96a8eefabb200d0",
+  "gate": "candidate33-all-backends.json",
+  "source_contract": "bcp-source-rows-contract.json",
+  "execution": "Linux rustc --edition=2021 --test, CARGO_MANIFEST_DIR=/home/tsjang/rhwp, frozen Native rlib",
+  "before": {
+    "source_ref": "d311cb14b",
+    "case": "issue_7642_sample16_2022_paragraph_relations",
+    "exit_code": 101,
+    "passed": 1,
+    "failed": 1,
+    "reason": "BCP actual two rows, old expectation one row"
+  },
+  "after": {
+    "exit_code": 0,
+    "passed": 2,
+    "failed": 0,
+    "seconds": 2.59
+  },
+  "formal_nextest": "pending"
+}

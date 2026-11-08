@@ -1,0 +1,5 @@
+key	input	reference	inputSha256	referenceSha256	pages
+body-list-typed	tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp	pdf/issue8109/print/body-list-typed-hwp-2020.pdf	ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687	d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3	1
+helvetica-styles	tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp	pdf/issue8109/print/control-styles-hwp-2020.pdf	2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da	fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba	1
+pic-crop-01	samples/pic-crop-01.hwp	pdf/pic-crop-01-2022.pdf	3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c	4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3	1
+shape-group-02	samples/shape-group-02.hwp	pdf/shape-group-02-hwp-2020.pdf	12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f	ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7	1

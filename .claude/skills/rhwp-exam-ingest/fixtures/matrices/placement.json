@@ -48,7 +48,7 @@
         "text+image"
       ],
       "common": false,
-      "limit": "Picture inline #182"
+      "limit": "문장 중간은 paragraph.runs의 text/image 순서로 지정"
     }
   ]
 }

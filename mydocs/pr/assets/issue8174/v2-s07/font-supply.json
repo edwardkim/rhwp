@@ -1,0 +1,24 @@
+{
+  "source": "/usr/share/fonts/opentype/urw-base35/NimbusRoman-Regular.otf",
+  "sourceSha256": "fd41669443616a7ae890c42e53a58f47fa24a940fd1e367acaff665cf5b6e9d8",
+  "alias": "output/pr-review/issue8174/v2-s07-20261025/font-alias/NimbusRoman-pdf-name.otf",
+  "aliasSha256": "2c237ddd819ae3ff4eb0184f119f2e761c7c0da9227600c01e4e5c1c95e4c33b",
+  "requestedPdfName": "Nimbus Roman Regular",
+  "reason": "PyMuPDF exposes the full face name; the installed font catalog only registers Nimbus Roman and NimbusRoman-Regular. Supply the same glyph program under the actual requested name instead of accepting a fallback.",
+  "onlyChangedTables": [
+    "name",
+    "head.checkSumAdjustment"
+  ],
+  "unchangedGlyphAndMetricTables": {
+    "hhea": "c1d8b9bbc9f8072a6b44ca2023bd48146a0107eaac37bd16d6701866ae14a8ec",
+    "maxp": "14d1fad8f1ae71adaba8d803c2e5e9f227c26efc553ee867bf28eb5b516ca240",
+    "OS/2": "bbe07b5a5c3445c9da364957ba33ced9750c2d61ba3d1f328be5ba8d607232df",
+    "cmap": "ca168a07bc84ce3182c2a6bf07729d324cae895e3f2b6005e5791454203ff10e",
+    "post": "2a2402556dbd0fecc6afd6688143a39e67686cbfce763e0829419fd39e231146",
+    "CFF ": "4ceab89db224e517d11ee1a020222ed1be60a1a1c7699db281b2b7804c9b2767",
+    "GPOS": "3818ae5683aac4f388b3da3a20c5b5185267762382d8cb374dddb23a48d870a6",
+    "GSUB": "534cfd752c5550edd8d178c931bc0013df2ea0b379b12876fa84bcd2c15d8354",
+    "PCLT": "d21825c84450109df49bc064ee24cbebc3cdd7fe1f9a1916f124c7c20074fd6e",
+    "hmtx": "03f7e93c56462768f7d2d55f9fc5e3c1bc9c6762bfdfc1f8563ac5622e29c489"
+  }
+}

@@ -25,10 +25,10 @@ export type GeneratedFontRuleProjection = Readonly<{
 export const FONT_RULE_CANVAS2D_WEBFONT_META = Object.freeze({
   "schemaVersion": "1.0",
   "sourceCommit": "a1f9872e28aea6755b656161ed1802f73308da58",
-  "inputSha256": "6148c568b05fea9ec317759bfc7a19762f93eded557c5b5af01efbb7057ed266",
+  "inputSha256": "59bb65f77dc9a5de57db115c05ac56c7902af0be516a14839455e10e9ee33c6c",
   "projectionId": "canvas2d-webfont",
-  "projectionSha256": "b6ff0ce6d73634bc75b15d2ed20f70465d7a32f9c525b8030b365d7a7f464245",
-  "ruleCount": 153
+  "projectionSha256": "3a4759c7b701be8ee9552cf89ab7660abd6812df8990445a4548aa60bc87ad1c",
+  "ruleCount": 159
 });
 
 export const FONT_RULE_CANVAS2D_WEBFONT_RULES: readonly GeneratedFontRuleProjection[] = Object.freeze([
@@ -1353,46 +1353,46 @@ export const FONT_RULE_CANVAS2D_WEBFONT_RULES: readonly GeneratedFontRuleProject
     }
   },
   {
-    "ruleId": "rule.studio-supply.9226454d982d47a1557d.canvas2d",
+    "ruleId": "rule.issue-8533.rokg-webfont-rokg",
     "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
-    "sourceFace": "Government_16040911",
-    "targetFaceOrPolicy": "CDN_GOVERNMENT_SYMBOL_REGULAR",
+    "sourceFace": "ROKG",
+    "targetFaceOrPolicy": "CDN_ROKG_R",
     "conditions": {
-      "profile": "canvas2d-css-truetype"
+      "profile": "canvas2d-css-woff2"
     },
     "order": null,
     "mode": "direct",
     "metricEntryIds": [],
     "supply": {
       "external": true,
-      "fontFamily": "Government_16040911",
-      "format": "truetype",
+      "fontFamily": "ROKG",
+      "format": "woff2",
       "kind": "canvas2d-webfont",
-      "sourceUrl": "https://cdn.jsdelivr.net/gh/jangster77/korea-government-symbol-font@v1.0.0/fonts/Government_16040911.ttf",
+      "sourceUrl": "https://cdn.jsdelivr.net/gh/Alex4386/gov-symbol@eee1e7d37a5ff02ab8bf6c6eb77272d71f1829a2/src/assets/fonts/ROKG_R.woff2",
       "unicodeRange": null
     }
   },
   {
-    "ruleId": "rule.studio-supply.521afff37dd1f6357469.canvas2d",
+    "ruleId": "rule.issue-8533.rokg-webfont-rokg-r",
     "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
-    "sourceFace": "정부상징 부처명_16040911",
-    "targetFaceOrPolicy": "CDN_GOVERNMENT_SYMBOL_REGULAR",
+    "sourceFace": "ROKG R",
+    "targetFaceOrPolicy": "CDN_ROKG_R",
     "conditions": {
-      "profile": "canvas2d-css-truetype"
+      "profile": "canvas2d-css-woff2"
     },
     "order": null,
     "mode": "direct",
     "metricEntryIds": [],
     "supply": {
       "external": true,
-      "fontFamily": "정부상징 부처명_16040911",
-      "format": "truetype",
+      "fontFamily": "ROKG R",
+      "format": "woff2",
       "kind": "canvas2d-webfont",
-      "sourceUrl": "https://cdn.jsdelivr.net/gh/jangster77/korea-government-symbol-font@v1.0.0/fonts/Government_16040911.ttf",
+      "sourceUrl": "https://cdn.jsdelivr.net/gh/Alex4386/gov-symbol@eee1e7d37a5ff02ab8bf6c6eb77272d71f1829a2/src/assets/fonts/ROKG_R.woff2",
       "unicodeRange": null
     }
   },
@@ -3377,12 +3377,12 @@ export const FONT_RULE_CANVAS2D_WEBFONT_RULES: readonly GeneratedFontRuleProject
     }
   },
   {
-    "ruleId": "rule.studio-supply.0aab2d58429b52047acb.canvas2d",
+    "ruleId": "rule.issue-4969.oldhangul-license-webfont",
     "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
-    "sourceFace": "Source Han Serif K Old Hangul",
-    "targetFaceOrPolicy": "'fonts/SourceHanSerifK-OldHangul-subset.woff2'",
+    "sourceFace": "RHWP Old Hangul",
+    "targetFaceOrPolicy": "'fonts/RHWPOldHangul-Regular.woff2'",
     "conditions": {
       "profile": "canvas2d-css-unknown"
     },
@@ -3391,11 +3391,143 @@ export const FONT_RULE_CANVAS2D_WEBFONT_RULES: readonly GeneratedFontRuleProject
     "metricEntryIds": [],
     "supply": {
       "external": false,
-      "fontFamily": "Source Han Serif K Old Hangul",
+      "fontFamily": "RHWP Old Hangul",
       "format": "woff2",
       "kind": "canvas2d-webfont",
-      "sourceUrl": "fonts/SourceHanSerifK-OldHangul-subset.woff2",
+      "sourceUrl": "fonts/RHWPOldHangul-Regular.woff2",
       "unicodeRange": "U+1100-11FF, U+A960-A97F, U+D7B0-D7FF"
+    }
+  },
+  {
+    "ruleId": "rule.issue-5884.noto-symbols2.webfont",
+    "sourceBoundaryId": "studio-supply.font-list",
+    "relationType": "supply-source",
+    "decisionPlane": "supply",
+    "sourceFace": "Noto Sans Symbols2",
+    "targetFaceOrPolicy": "'fonts/NotoSansSymbols2-Regular.ttf'",
+    "conditions": {
+      "profile": "canvas2d-css-unknown"
+    },
+    "order": null,
+    "mode": "direct",
+    "metricEntryIds": [],
+    "supply": {
+      "external": false,
+      "fontFamily": "Noto Sans Symbols2",
+      "format": "truetype",
+      "kind": "canvas2d-webfont",
+      "sourceUrl": "fonts/NotoSansSymbols2-Regular.ttf",
+      "unicodeRange": null
+    }
+  },
+  {
+    "ruleId": "rule.issue-7445.public-batang-webfont-supply",
+    "sourceBoundaryId": "studio-supply.font-list",
+    "relationType": "supply-source",
+    "decisionPlane": "supply",
+    "sourceFace": "RHWP Public Batang",
+    "targetFaceOrPolicy": "'fonts/RHWPPublicBatang-Regular.woff2'",
+    "conditions": {
+      "profile": "canvas2d-css-unknown"
+    },
+    "order": null,
+    "mode": "direct",
+    "metricEntryIds": [],
+    "supply": {
+      "external": false,
+      "fontFamily": "RHWP Public Batang",
+      "format": "woff2",
+      "kind": "canvas2d-webfont",
+      "sourceUrl": "fonts/RHWPPublicBatang-Regular.woff2",
+      "unicodeRange": null
+    }
+  },
+  {
+    "ruleId": "rule.issue-8533.rokg-webfont-rokgr",
+    "sourceBoundaryId": "studio-supply.font-list",
+    "relationType": "supply-source",
+    "decisionPlane": "supply",
+    "sourceFace": "ROKGR",
+    "targetFaceOrPolicy": "CDN_ROKG_R",
+    "conditions": {
+      "profile": "canvas2d-css-woff2"
+    },
+    "order": null,
+    "mode": "direct",
+    "metricEntryIds": [],
+    "supply": {
+      "external": true,
+      "fontFamily": "ROKGR",
+      "format": "woff2",
+      "kind": "canvas2d-webfont",
+      "sourceUrl": "https://cdn.jsdelivr.net/gh/Alex4386/gov-symbol@eee1e7d37a5ff02ab8bf6c6eb77272d71f1829a2/src/assets/fonts/ROKG_R.woff2",
+      "unicodeRange": null
+    }
+  },
+  {
+    "ruleId": "rule.issue-8533.rokg-webfont-korean-name",
+    "sourceBoundaryId": "studio-supply.font-list",
+    "relationType": "supply-source",
+    "decisionPlane": "supply",
+    "sourceFace": "대한민국정부상징체 R",
+    "targetFaceOrPolicy": "CDN_ROKG_R",
+    "conditions": {
+      "profile": "canvas2d-css-woff2"
+    },
+    "order": null,
+    "mode": "direct",
+    "metricEntryIds": [],
+    "supply": {
+      "external": true,
+      "fontFamily": "대한민국정부상징체 R",
+      "format": "woff2",
+      "kind": "canvas2d-webfont",
+      "sourceUrl": "https://cdn.jsdelivr.net/gh/Alex4386/gov-symbol@eee1e7d37a5ff02ab8bf6c6eb77272d71f1829a2/src/assets/fonts/ROKG_R.woff2",
+      "unicodeRange": null
+    }
+  },
+  {
+    "ruleId": "rule.issue-1994.hankyoreh-webfont-0",
+    "sourceBoundaryId": "studio-supply.font-list",
+    "relationType": "supply-source",
+    "decisionPlane": "supply",
+    "sourceFace": "한겨레결체",
+    "targetFaceOrPolicy": "CDN_HANKC_400",
+    "conditions": {
+      "profile": "canvas2d-css-woff2"
+    },
+    "order": null,
+    "mode": "direct",
+    "metricEntryIds": [],
+    "supply": {
+      "external": true,
+      "fontFamily": "한겨레결체",
+      "format": "woff2",
+      "kind": "canvas2d-webfont",
+      "sourceUrl": "https://cdn.jsdelivr.net/npm/@noonnu/hankc@0.1.0/fonts/hankc-400.woff2",
+      "unicodeRange": null
+    }
+  },
+  {
+    "ruleId": "rule.issue-1994.hankyoreh-webfont-1",
+    "sourceBoundaryId": "studio-supply.font-list",
+    "relationType": "supply-source",
+    "decisionPlane": "supply",
+    "sourceFace": "Hankc",
+    "targetFaceOrPolicy": "CDN_HANKC_400",
+    "conditions": {
+      "profile": "canvas2d-css-woff2"
+    },
+    "order": null,
+    "mode": "direct",
+    "metricEntryIds": [],
+    "supply": {
+      "external": true,
+      "fontFamily": "Hankc",
+      "format": "woff2",
+      "kind": "canvas2d-webfont",
+      "sourceUrl": "https://cdn.jsdelivr.net/npm/@noonnu/hankc@0.1.0/fonts/hankc-400.woff2",
+      "unicodeRange": null
     }
   }
 ]);

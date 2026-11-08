@@ -1,0 +1,982 @@
+[
+  {
+    "key": "a4",
+    "input": "tests/fixtures/issue4138/original-print-paper/a4.hwp",
+    "input_sha256": "7fb09ffa65e2329f3415806ea6291a31e8a0fa006670431593e9b0728250a963",
+    "pdf": "pdf/issue4138/original-print-paper-a4-2024.pdf",
+    "pdf_sha256": "f142ef2c2210310cf0bd2ee272d92057e681e05768f3e37a13ee668425f9c21b",
+    "page_count": 1,
+    "origin": "Independent Hancom 2024 Save from zero width/height/baseline, then Print; no candidate PDF",
+    "save_job": "d25dc1b6-6256-4bf1-a7f5-2a455f061947",
+    "print_job": "03d7a0f2-81ee-43b5-8ce1-6a16495e019f",
+    "cases": [
+      {
+        "para_index": 0,
+        "script": "P",
+        "base_unit": 900,
+        "glyphs": [
+          {
+            "character": "P",
+            "point_origin": [
+              87.55255126953125,
+              107.64236450195312
+            ],
+            "point_font_size": 8.992650032043457,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 1,
+        "script": "P",
+        "base_unit": 1000,
+        "glyphs": [
+          {
+            "character": "P",
+            "point_origin": [
+              87.79241943359375,
+              125.9823226928711
+            ],
+            "point_font_size": 9.951866149902344,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 2,
+        "script": "P",
+        "base_unit": 1200,
+        "glyphs": [
+          {
+            "character": "P",
+            "point_origin": [
+              88.27215576171875,
+              146.9593963623047
+            ],
+            "point_font_size": 11.99020004272461,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 3,
+        "script": "P",
+        "base_unit": 1800,
+        "glyphs": [
+          {
+            "character": "P",
+            "point_origin": [
+              89.71138000488281,
+              175.7279510498047
+            ],
+            "point_font_size": 17.985300064086914,
+            "page": 1
+          }
+        ]
+      }
+    ],
+    "print_producer": {
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "backend": "hwp-managed-direct-dll-host",
+      "pdf_page_count": 1,
+      "pdf_print_method": 0,
+      "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+      "input_preprocess": "scripts_disabled"
+    }
+  },
+  {
+    "key": "a5",
+    "input": "tests/fixtures/issue4138/original-print-paper/a5.hwp",
+    "input_sha256": "81cf96a37795d59c6a409d288ca1a03e93631daea4466c7a2af3beb314d0595d",
+    "pdf": "pdf/issue4138/original-print-paper-a5-2024.pdf",
+    "pdf_sha256": "1f16d031667292eb02c25194c76a2e603069540e6095f80f52f001cac60f00e1",
+    "page_count": 1,
+    "origin": "Independent Hancom 2024 Save from zero width/height/baseline, then Print; no candidate PDF",
+    "save_job": "179c850a-dcd5-410f-aa63-5664e961654b",
+    "print_job": "208f8fc4-37e3-4105-bbea-2747fb70cb58",
+    "cases": [
+      {
+        "para_index": 0,
+        "script": "P",
+        "base_unit": 900,
+        "glyphs": [
+          {
+            "character": "P",
+            "point_origin": [
+              87.4912338256836,
+              107.70162963867188
+            ],
+            "point_font_size": 8.991973876953125,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 1,
+        "script": "P",
+        "base_unit": 1000,
+        "glyphs": [
+          {
+            "character": "P",
+            "point_origin": [
+              87.7309341430664,
+              126.05168151855469
+            ],
+            "point_font_size": 9.951118469238281,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 2,
+        "script": "P",
+        "base_unit": 1200,
+        "glyphs": [
+          {
+            "character": "P",
+            "point_origin": [
+              88.21033477783203,
+              147.04031372070312
+            ],
+            "point_font_size": 11.989298820495605,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 3,
+        "script": "P",
+        "base_unit": 1800,
+        "glyphs": [
+          {
+            "character": "P",
+            "point_origin": [
+              89.64855194091797,
+              175.82470703125
+            ],
+            "point_font_size": 17.98394775390625,
+            "page": 1
+          }
+        ]
+      }
+    ],
+    "print_producer": {
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "backend": "hwp-managed-direct-dll-host",
+      "pdf_page_count": 1,
+      "pdf_print_method": 0,
+      "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+      "input_preprocess": "scripts_disabled"
+    }
+  },
+  {
+    "key": "linear-mixed",
+    "input": "tests/fixtures/issue4138/original-print-paper/linear-mixed.hwp",
+    "input_sha256": "6c352b786006a592e9ad805cd996a0c466420ca52bbd5c30202f5f9cb541d2ff",
+    "pdf": "pdf/issue4138/original-print-paper-linear-mixed-2024.pdf",
+    "pdf_sha256": "fd66d1e4c2972a74b0d95cd05060990a62ca57ab0f506b223c6b3e5ecfd55457",
+    "page_count": 1,
+    "origin": "Independent Hancom 2024 Save from zero width/height/baseline, then Print; no candidate PDF",
+    "save_job": "bf5cb1b0-4369-493a-abae-4721ce2e0121",
+    "print_job": "66828f45-81e5-4359-854b-02ef0d61e01e",
+    "cases": [
+      {
+        "para_index": 0,
+        "script": "P",
+        "base_unit": 600,
+        "glyphs": [
+          {
+            "character": "P",
+            "point_origin": [
+              87.07280731201172,
+              107.28275299072266
+            ],
+            "point_font_size": 5.995100021362305,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 1,
+        "script": "A",
+        "base_unit": 600,
+        "glyphs": [
+          {
+            "character": "A",
+            "point_origin": [
+              86.95287322998047,
+              123.22533416748047
+            ],
+            "point_font_size": 5.995100021362305,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 2,
+        "script": "Qg",
+        "base_unit": 600,
+        "glyphs": [
+          {
+            "character": "Q",
+            "point_origin": [
+              86.95287322998047,
+              139.28778076171875
+            ],
+            "point_font_size": 5.995100021362305,
+            "page": 1
+          },
+          {
+            "character": "g",
+            "point_origin": [
+              91.75027465820312,
+              139.28778076171875
+            ],
+            "point_font_size": 5.995100021362305,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 3,
+        "script": "460",
+        "base_unit": 600,
+        "glyphs": [
+          {
+            "character": "4",
+            "point_origin": [
+              86.95287322998047,
+              155.23036193847656
+            ],
+            "point_font_size": 5.995100021362305,
+            "page": 1
+          },
+          {
+            "character": "6",
+            "point_origin": [
+              89.95124816894531,
+              155.23036193847656
+            ],
+            "point_font_size": 5.995100021362305,
+            "page": 1
+          },
+          {
+            "character": "0",
+            "point_origin": [
+              92.94962310791016,
+              155.23036193847656
+            ],
+            "point_font_size": 5.995100021362305,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 4,
+        "script": "A=B",
+        "base_unit": 600,
+        "glyphs": [
+          {
+            "character": "A",
+            "point_origin": [
+              86.95287322998047,
+              171.1729278564453
+            ],
+            "point_font_size": 5.995100021362305,
+            "page": 1
+          },
+          {
+            "character": "=",
+            "point_origin": [
+              92.94962310791016,
+              171.1729278564453
+            ],
+            "point_font_size": 5.995100021362305,
+            "page": 1
+          },
+          {
+            "character": "B",
+            "point_origin": [
+              100.02578735351562,
+              171.1729278564453
+            ],
+            "point_font_size": 5.995100021362305,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 5,
+        "script": "A+B",
+        "base_unit": 600,
+        "glyphs": [
+          {
+            "character": "A",
+            "point_origin": [
+              86.95287322998047,
+              187.23538208007812
+            ],
+            "point_font_size": 5.995100021362305,
+            "page": 1
+          },
+          {
+            "character": "+",
+            "point_origin": [
+              92.8296890258789,
+              187.23538208007812
+            ],
+            "point_font_size": 5.995100021362305,
+            "page": 1
+          },
+          {
+            "character": "B",
+            "point_origin": [
+              99.42611694335938,
+              187.23538208007812
+            ],
+            "point_font_size": 5.995100021362305,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 6,
+        "script": "{A}",
+        "base_unit": 600,
+        "glyphs": [
+          {
+            "character": "A",
+            "point_origin": [
+              88.27215576171875,
+              203.17796325683594
+            ],
+            "point_font_size": 5.995100021362305,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 7,
+        "script": "P",
+        "base_unit": 900,
+        "glyphs": [
+          {
+            "character": "P",
+            "point_origin": [
+              87.55255126953125,
+              219.60000610351562
+            ],
+            "point_font_size": 8.992650032043457,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 8,
+        "script": "A",
+        "base_unit": 900,
+        "glyphs": [
+          {
+            "character": "A",
+            "point_origin": [
+              87.6724853515625,
+              236.86114501953125
+            ],
+            "point_font_size": 8.992650032043457,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 9,
+        "script": "Qg",
+        "base_unit": 900,
+        "glyphs": [
+          {
+            "character": "Q",
+            "point_origin": [
+              87.6724853515625,
+              254.12228393554688
+            ],
+            "point_font_size": 8.992650032043457,
+            "page": 1
+          },
+          {
+            "character": "g",
+            "point_origin": [
+              94.50878143310547,
+              254.12228393554688
+            ],
+            "point_font_size": 8.992650032043457,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 10,
+        "script": "460",
+        "base_unit": 900,
+        "glyphs": [
+          {
+            "character": "4",
+            "point_origin": [
+              87.55255126953125,
+              271.3834228515625
+            ],
+            "point_font_size": 8.992650032043457,
+            "page": 1
+          },
+          {
+            "character": "6",
+            "point_origin": [
+              92.11007690429688,
+              271.3834228515625
+            ],
+            "point_font_size": 8.992650032043457,
+            "page": 1
+          },
+          {
+            "character": "0",
+            "point_origin": [
+              96.54767608642578,
+              271.3834228515625
+            ],
+            "point_font_size": 8.992650032043457,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 11,
+        "script": "A=B",
+        "base_unit": 900,
+        "glyphs": [
+          {
+            "character": "A",
+            "point_origin": [
+              87.6724853515625,
+              288.6445617675781
+            ],
+            "point_font_size": 8.992650032043457,
+            "page": 1
+          },
+          {
+            "character": "=",
+            "point_origin": [
+              96.90747833251953,
+              288.6445617675781
+            ],
+            "point_font_size": 8.992650032043457,
+            "page": 1
+          },
+          {
+            "character": "B",
+            "point_origin": [
+              107.58169555664062,
+              288.6445617675781
+            ],
+            "point_font_size": 8.992650032043457,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 12,
+        "script": "A+B",
+        "base_unit": 900,
+        "glyphs": [
+          {
+            "character": "A",
+            "point_origin": [
+              87.6724853515625,
+              305.90570068359375
+            ],
+            "point_font_size": 8.992650032043457,
+            "page": 1
+          },
+          {
+            "character": "+",
+            "point_origin": [
+              96.66761016845703,
+              305.90570068359375
+            ],
+            "point_font_size": 8.992650032043457,
+            "page": 1
+          },
+          {
+            "character": "B",
+            "point_origin": [
+              106.74214935302734,
+              305.90570068359375
+            ],
+            "point_font_size": 8.992650032043457,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 13,
+        "script": "{A}",
+        "base_unit": 900,
+        "glyphs": [
+          {
+            "character": "A",
+            "point_origin": [
+              89.71138000488281,
+              323.1668395996094
+            ],
+            "point_font_size": 8.992650032043457,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 14,
+        "script": "P",
+        "base_unit": 1200,
+        "glyphs": [
+          {
+            "character": "P",
+            "point_origin": [
+              88.27215576171875,
+              343.1849365234375
+            ],
+            "point_font_size": 11.99020004272461,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 15,
+        "script": "A",
+        "base_unit": 1200,
+        "glyphs": [
+          {
+            "character": "A",
+            "point_origin": [
+              88.27215576171875,
+              366.1997985839844
+            ],
+            "point_font_size": 11.99020004272461,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 16,
+        "script": "Qg",
+        "base_unit": 1200,
+        "glyphs": [
+          {
+            "character": "Q",
+            "point_origin": [
+              88.27215576171875,
+              389.21466064453125
+            ],
+            "point_font_size": 11.99020004272461,
+            "page": 1
+          },
+          {
+            "character": "g",
+            "point_origin": [
+              97.26728057861328,
+              389.21466064453125
+            ],
+            "point_font_size": 11.99020004272461,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 17,
+        "script": "460",
+        "base_unit": 1200,
+        "glyphs": [
+          {
+            "character": "4",
+            "point_origin": [
+              88.27215576171875,
+              412.2294921875
+            ],
+            "point_font_size": 11.99020004272461,
+            "page": 1
+          },
+          {
+            "character": "6",
+            "point_origin": [
+              94.26890563964844,
+              412.2294921875
+            ],
+            "point_font_size": 11.99020004272461,
+            "page": 1
+          },
+          {
+            "character": "0",
+            "point_origin": [
+              100.26565551757812,
+              412.2294921875
+            ],
+            "point_font_size": 11.99020004272461,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 18,
+        "script": "A=B",
+        "base_unit": 1200,
+        "glyphs": [
+          {
+            "character": "A",
+            "point_origin": [
+              88.27215576171875,
+              435.2443542480469
+            ],
+            "point_font_size": 11.99020004272461,
+            "page": 1
+          },
+          {
+            "character": "=",
+            "point_origin": [
+              100.50553131103516,
+              435.2443542480469
+            ],
+            "point_font_size": 11.99020004272461,
+            "page": 1
+          },
+          {
+            "character": "B",
+            "point_origin": [
+              114.4179916381836,
+              435.2443542480469
+            ],
+            "point_font_size": 11.99020004272461,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 19,
+        "script": "A+B",
+        "base_unit": 1200,
+        "glyphs": [
+          {
+            "character": "A",
+            "point_origin": [
+              88.27215576171875,
+              458.2591857910156
+            ],
+            "point_font_size": 11.99020004272461,
+            "page": 1
+          },
+          {
+            "character": "+",
+            "point_origin": [
+              100.14572143554688,
+              458.2591857910156
+            ],
+            "point_font_size": 11.99020004272461,
+            "page": 1
+          },
+          {
+            "character": "B",
+            "point_origin": [
+              113.45851135253906,
+              458.2591857910156
+            ],
+            "point_font_size": 11.99020004272461,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 20,
+        "script": "{A}",
+        "base_unit": 1200,
+        "glyphs": [
+          {
+            "character": "A",
+            "point_origin": [
+              90.91072845458984,
+              481.2740478515625
+            ],
+            "point_font_size": 11.99020004272461,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 21,
+        "script": "P",
+        "base_unit": 1800,
+        "glyphs": [
+          {
+            "character": "P",
+            "point_origin": [
+              89.71138000488281,
+              510.0426025390625
+            ],
+            "point_font_size": 17.985300064086914,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 22,
+        "script": "A",
+        "base_unit": 1800,
+        "glyphs": [
+          {
+            "character": "A",
+            "point_origin": [
+              89.59144592285156,
+              544.5648803710938
+            ],
+            "point_font_size": 17.985300064086914,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 23,
+        "script": "Qg",
+        "base_unit": 1800,
+        "glyphs": [
+          {
+            "character": "Q",
+            "point_origin": [
+              89.59144592285156,
+              579.087158203125
+            ],
+            "point_font_size": 17.985300064086914,
+            "page": 1
+          },
+          {
+            "character": "g",
+            "point_origin": [
+              103.38397216796875,
+              579.087158203125
+            ],
+            "point_font_size": 17.985300064086914,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 24,
+        "script": "460",
+        "base_unit": 1800,
+        "glyphs": [
+          {
+            "character": "4",
+            "point_origin": [
+              89.59144592285156,
+              613.6094360351562
+            ],
+            "point_font_size": 17.985300064086914,
+            "page": 1
+          },
+          {
+            "character": "6",
+            "point_origin": [
+              98.5865707397461,
+              613.6094360351562
+            ],
+            "point_font_size": 17.985300064086914,
+            "page": 1
+          },
+          {
+            "character": "0",
+            "point_origin": [
+              107.58169555664062,
+              613.6094360351562
+            ],
+            "point_font_size": 17.985300064086914,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 25,
+        "script": "A=B",
+        "base_unit": 1800,
+        "glyphs": [
+          {
+            "character": "A",
+            "point_origin": [
+              89.59144592285156,
+              648.1317138671875
+            ],
+            "point_font_size": 17.985300064086914,
+            "page": 1
+          },
+          {
+            "character": "=",
+            "point_origin": [
+              107.82156372070312,
+              648.1317138671875
+            ],
+            "point_font_size": 17.985300064086914,
+            "page": 1
+          },
+          {
+            "character": "B",
+            "point_origin": [
+              128.81019592285156,
+              648.1317138671875
+            ],
+            "point_font_size": 17.985300064086914,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 26,
+        "script": "A+B",
+        "base_unit": 1800,
+        "glyphs": [
+          {
+            "character": "A",
+            "point_origin": [
+              89.59144592285156,
+              682.6539916992188
+            ],
+            "point_font_size": 17.985300064086914,
+            "page": 1
+          },
+          {
+            "character": "+",
+            "point_origin": [
+              107.34182739257812,
+              682.6539916992188
+            ],
+            "point_font_size": 17.985300064086914,
+            "page": 1
+          },
+          {
+            "character": "B",
+            "point_origin": [
+              127.25102996826172,
+              682.6539916992188
+            ],
+            "point_font_size": 17.985300064086914,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 27,
+        "script": "{A}",
+        "base_unit": 1800,
+        "glyphs": [
+          {
+            "character": "A",
+            "point_origin": [
+              93.54930114746094,
+              717.1762084960938
+            ],
+            "point_font_size": 17.985300064086914,
+            "page": 1
+          }
+        ]
+      }
+    ],
+    "print_producer": {
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "backend": "hwp-managed-direct-dll-host",
+      "pdf_page_count": 1,
+      "pdf_print_method": 0,
+      "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+      "input_preprocess": "scripts_disabled"
+    }
+  },
+  {
+    "key": "after-fill",
+    "input": "tests/fixtures/issue4138/original-print-paper/after-fill.hwp",
+    "input_sha256": "d8d06270fb51511202c50748ce218537b25cc2105a37b762c3c075511235e44e",
+    "pdf": "pdf/issue4138/original-print-paper-after-fill-2024.pdf",
+    "pdf_sha256": "cfa612f160be70bbfcaf4c6d9ac5d2f5330fc84a4caee5e2140b34a0e1e97460",
+    "page_count": 1,
+    "origin": "Independent Hancom 2024 Save/Print: text shade fill before original equations; PDF CTM rounds to .120",
+    "cases": [
+      {
+        "para_index": 0,
+        "script": "P",
+        "base_unit": 900,
+        "glyphs": [
+          {
+            "character": "P",
+            "point_origin": [
+              90.83999633789062,
+              107.75999450683594
+            ],
+            "point_font_size": 9.0,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 1,
+        "script": "P",
+        "base_unit": 1000,
+        "glyphs": [
+          {
+            "character": "P",
+            "point_origin": [
+              87.83999633789062,
+              126.1199951171875
+            ],
+            "point_font_size": 9.960000038146973,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 2,
+        "script": "P",
+        "base_unit": 1200,
+        "glyphs": [
+          {
+            "character": "P",
+            "point_origin": [
+              88.31999969482422,
+              147.1199951171875
+            ],
+            "point_font_size": 12.0,
+            "page": 1
+          }
+        ]
+      },
+      {
+        "para_index": 3,
+        "script": "P",
+        "base_unit": 1800,
+        "glyphs": [
+          {
+            "character": "P",
+            "point_origin": [
+              89.75999450683594,
+              175.9199981689453
+            ],
+            "point_font_size": 18.0,
+            "page": 1
+          }
+        ]
+      }
+    ],
+    "save_job": "2049039c-0f6e-45fb-9a9e-d87418babe99",
+    "print_job": "b8b81faf-7335-434c-9ab0-0d490eac18c3",
+    "print_producer": {
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "backend": "hwp-managed-direct-dll-host",
+      "pdf_page_count": 1,
+      "pdf_print_method": 0,
+      "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+      "input_preprocess": "scripts_disabled"
+    }
+  }
+]

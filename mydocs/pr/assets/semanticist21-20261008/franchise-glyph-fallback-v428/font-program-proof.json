@@ -1,0 +1,62 @@
+{
+  "scope": "원본 glyph coverage와 직접 hmtx; private font bytes는 포함하지 않음",
+  "programs": [
+    {
+      "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+      "em": 512,
+      "corners": [
+        {
+          "unicode": "0x231c",
+          "glyph": null,
+          "advance": null
+        },
+        {
+          "unicode": "0x231d",
+          "glyph": null,
+          "advance": null
+        },
+        {
+          "unicode": "0x231e",
+          "glyph": null,
+          "advance": null
+        },
+        {
+          "unicode": "0x231f",
+          "glyph": null,
+          "advance": null
+        }
+      ],
+      "installed_file": "HMKMM.TTF"
+    },
+    {
+      "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+      "em": 1024,
+      "corners": [
+        {
+          "unicode": "0x231c",
+          "glyph": "uni231C",
+          "advance": 1024
+        },
+        {
+          "unicode": "0x231d",
+          "glyph": "uni231D",
+          "advance": 1024
+        },
+        {
+          "unicode": "0x231e",
+          "glyph": "uni231E",
+          "advance": 1024
+        },
+        {
+          "unicode": "0x231f",
+          "glyph": "uni231F",
+          "advance": 1024
+        }
+      ],
+      "installed_file": "HBATANG.TTF"
+    }
+  ],
+  "existing_verified_table": "src/renderer/font_metrics_technical_symbols.rs",
+  "independent_pdf": "pdf/pr_6088_6144/hancom2020/pr_6088_6144_issue5966_franchise_review_report_1130000-202100008_franchise_review_report-2020.pdf",
+  "current_p19_before": 86.41272
+}

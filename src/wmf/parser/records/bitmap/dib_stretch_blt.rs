@@ -179,7 +179,9 @@ impl META_DIBSTRETCHBLT {
         let record = if bitmap_specified {
             let (target, c) = crate::wmf::parser::DeviceIndependentBitmap::parse_with_color_usage(
                 buf,
-                crate::wmf::parser::ColorUsage::DIB_PAL_INDICES,
+                // 이 레코드의 packed DIB에는 헤더 뒤 RGB 색상표가 있다.
+                // PAL_INDICES로 읽으면 표를 픽셀로 소비해 사진의 행·열이 밀린다.
+                crate::wmf::parser::ColorUsage::DIB_RGB_COLORS,
             )?;
             record_size.consume(c);
 

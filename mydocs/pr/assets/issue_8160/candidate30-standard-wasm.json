@@ -1,0 +1,96 @@
+{
+  "source_sha": "f3408d9cc16a8fac9092946f52d898250b7a3f16",
+  "build_mode": {
+    "profile": "release",
+    "build_mode": "standard",
+    "cdylib_only": "0",
+    "crate_types": "rlib+cdylib",
+    "lto_policy": "manifest",
+    "cache_variant": "release-rlib-cdylib-lto-manifest"
+  },
+  "artifacts": {
+    "rhwp.js": {
+      "sha256": "80d707fc5d1fecdecbfca1359268d4b9043c0eafa05a2be1b2f2393dd8db701d",
+      "bytes": 483471
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "a2a1abfc1bc43ed7c0fa818907a4de8e582f4dec796ad72da2093640df29d0e6",
+      "bytes": 21918007
+    }
+  },
+  "metric": {
+    "threshold": 232,
+    "symmetric_radius_pixels": 2,
+    "white_pad": true,
+    "raw_integer_pixel_counts": true
+  },
+  "summary": {
+    "hwpx": {
+      "pages": 64,
+      "raw100": 64,
+      "remaining": []
+    },
+    "hwp2024": {
+      "pages": 64,
+      "raw100": 64,
+      "remaining": []
+    },
+    "hwp2022": {
+      "pages": 64,
+      "raw100": 61,
+      "remaining": [
+        {
+          "document": "hwp2022",
+          "page": 18,
+          "candidate_png_sha256": "dce0b6a7c0d8091e3af181453f1500dcea5b218c9692db40bb6b0fca8791f844",
+          "reference_png_sha256": "74046eaea5927ec001c33332a8a53a5bd954fa196edffe2c1a4ca2f947f98b98",
+          "candidate_unmatched": 15,
+          "reference_unmatched": 6,
+          "raw100": false
+        },
+        {
+          "document": "hwp2022",
+          "page": 35,
+          "candidate_png_sha256": "ed185a8ca96ce0836b07acbf3841c7a2b79eab429b8c4c71f67725899af41824",
+          "reference_png_sha256": "67f5245366e853fb1187d939dc84035434c5f8d63ce0ae36fed8a22469131763",
+          "candidate_unmatched": 0,
+          "reference_unmatched": 67,
+          "raw100": false
+        },
+        {
+          "document": "hwp2022",
+          "page": 38,
+          "candidate_png_sha256": "af2ec3f16500c9fc7abe8d9d7a116c93601c92e34145c623c5c8f4a2fa952b21",
+          "reference_png_sha256": "5b518684bb5d2e146ad906fde08b035ba57f948257be3d453d4ffd96790ac5f0",
+          "candidate_unmatched": 4,
+          "reference_unmatched": 5,
+          "raw100": false
+        }
+      ]
+    }
+  },
+  "build_seconds": 1811.784,
+  "receipts": {
+    "hwpx": {
+      "exit_code": 0,
+      "seconds": 106.28,
+      "input_sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+      "pdf_sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee"
+    },
+    "hwp2024": {
+      "exit_code": 0,
+      "seconds": 95.81,
+      "input_sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+      "pdf_sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b"
+    },
+    "hwp2022": {
+      "exit_code": 0,
+      "seconds": 66.61,
+      "input_sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+      "pdf_sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33"
+    }
+  },
+  "page_count": 192,
+  "raw100": 189,
+  "full_receipt_path": "output/pr-review/issue8160-20261022/candidate30/wasm-standard-source-ink-jpeg-full-exact-summary.json"
+}

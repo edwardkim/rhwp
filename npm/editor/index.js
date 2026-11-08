@@ -16,6 +16,7 @@ import {
   validateBodyParagraphTarget,
   validateDocumentState,
   validateDocumentChangedEvent,
+  validateFieldChangedEvent,
   validateFocusTargetResult,
   validateRevertTextCommand,
   validateSelectionContext,
@@ -100,6 +101,8 @@ export class RhwpEditor {
     this._transport = transport;
     this._documentChangedListeners = new Set();
     this._offDocumentChanged = null;
+    this._fieldChangedListeners = new Set();
+    this._offFieldChanged = null;
     this._lastDocumentEpoch = null;
     this._lastDocumentChangeSeq = null;
   }
@@ -169,10 +172,12 @@ export class RhwpEditor {
   /**
    * 특정 페이지를 SVG 문자열로 렌더링합니다.
    * @param page - 0부터 시작하는 페이지 번호
+   * @param options - `{ profile }` 생략 시 화면 렌더. `'print'` 는 인쇄용(빈 누름틀 안내문 등 편집 화면 전용 요소 제외)
    * @returns SVG 문자열
    */
-  async getPageSvg(page = 0) {
-    return this._request('getPageSvg', { page });
+  async getPageSvg(page = 0, options = {}) {
+    if (options.profile === undefined) return this._request('getPageSvg', { page });
+    return this._request('getPageSvg', { page, profile: options.profile });
   }
 
   /**
@@ -353,6 +358,36 @@ export class RhwpEditor {
     };
   }
 
+  /**
+   * 캐럿이 누름틀에 들어가거나 다른 누름틀로 옮기거나 나올 때 이벤트를 받습니다.
+   * 같은 누름틀 안에서 움직이는 동안은 다시 오지 않습니다.
+   */
+  onFieldChanged(listener) {
+    assertCapability(this._transport, 'field-focus-events-v1');
+    if (typeof listener !== 'function') throw new TypeError('listener must be a function');
+    this._fieldChangedListeners.add(listener);
+    if (!this._offFieldChanged) {
+      this._offFieldChanged = this._transport.on('fieldChanged', (payload) => {
+        let event;
+        try {
+          event = validateFieldChangedEvent(payload);
+        } catch {
+          return;
+        }
+        for (const subscriber of this._fieldChangedListeners) {
+          try { subscriber(event); } catch { /* 한 listener가 다른 listener를 막지 않는다. */ }
+        }
+      });
+    }
+    return () => {
+      this._fieldChangedListeners.delete(listener);
+      if (this._fieldChangedListeners.size === 0) {
+        this._offFieldChanged?.();
+        this._offFieldChanged = null;
+      }
+    };
+  }
+
   _isFreshDocumentEvent(epoch, changeSeq) {
     if (this._lastDocumentEpoch === null) return true;
     if (epoch !== this._lastDocumentEpoch) return epoch > this._lastDocumentEpoch;
@@ -442,6 +477,12 @@ export class RhwpEditor {
         this._request('plugin.invoke', { id: 'hwpctrl', method: 'exportBytes', args: [format] }),
       undo: () => this._request('plugin.invoke', { id: 'hwpctrl', method: 'undo', args: [] }),
       redo: () => this._request('plugin.invoke', { id: 'hwpctrl', method: 'redo', args: [] }),
+      /**
+       * HwpCtrl 커서를 사용자 캐럿 자리로 옮깁니다. HwpCtrl 은 자체 커서를 가지므로, 사용자가
+       * 화면에서 고른 자리에 `CreateField` 등을 쓰려면 먼저 부릅니다. 옮길 수 없으면 `null`.
+       */
+      syncCursorFromCaret: () =>
+        this._request('plugin.invoke', { id: 'hwpctrl', method: 'syncCursorFromCaret', args: [] }),
     };
   }
 
@@ -463,6 +504,9 @@ export class RhwpEditor {
     this._offDocumentChanged?.();
     this._offDocumentChanged = null;
     this._documentChangedListeners.clear();
+    this._offFieldChanged?.();
+    this._offFieldChanged = null;
+    this._fieldChangedListeners.clear();
     this._transport.destroy();
     this._iframe.remove();
   }

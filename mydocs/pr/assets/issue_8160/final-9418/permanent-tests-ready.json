@@ -1,0 +1,11 @@
+{
+  "test_head_sha": "ef69d163e05062f9c281968a0f9e0884a616aec3",
+  "actual_render_producer": "5df67d3299befb467a49dc4eaafd12d6e1877e2d",
+  "all384_actual_zero": true,
+  "original16_11_native_wasm_full_minimum_at_least90": true,
+  "original_border_restored": true,
+  "permanent_browser_before_fail_after9pass": true,
+  "render_and_ui_source_blobs_identical": true,
+  "prior_test_head_sha": "72c144f49c2531ee49fe9fd1b3b626052a7ee8e7",
+  "existing_hwp3_equation_svg_selection_corrected": true
+}

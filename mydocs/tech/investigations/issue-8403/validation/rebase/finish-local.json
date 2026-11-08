@@ -1,0 +1,146 @@
+[
+  {
+    "name": "test-helper-native",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia",
+      "--lib",
+      "test_task683_pr149_image_cluster_spacing"
+    ],
+    "exit": 0,
+    "seconds": 443.13
+  },
+  {
+    "name": "security-cli",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp"
+    ],
+    "exit": 0,
+    "seconds": 371.6
+  },
+  {
+    "name": "security-fixtures",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia",
+      "--test",
+      "regression_suite_013",
+      "--test",
+      "regression_suite_018",
+      "-E",
+      "test(/security_corpus_regression::/) | test(/injection_scan_contract::/)"
+    ],
+    "exit": 0,
+    "seconds": 326.67
+  },
+  {
+    "name": "new-sample-ratchets",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--test",
+      "regression_suite_003",
+      "--test",
+      "overflow_cell_baseline",
+      "--test",
+      "regression_suite_019",
+      "--test",
+      "regression_suite_011",
+      "--test",
+      "regression_suite_007",
+      "--test",
+      "regression_suite_005",
+      "--test-threads",
+      "14",
+      "--no-fail-fast",
+      "-E",
+      "test(/ir_field_sweep_does_not_regress|overflow_cell_lines_do_not_grow|off_canvas_does_not_grow|text_overlaps_do_not_grow|body_overflow_does_not_grow|oracle_page_count/)"
+    ],
+    "exit": 0,
+    "seconds": 126.39
+  },
+  {
+    "name": "test-helper-clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 64.98
+  },
+  {
+    "name": "final-fmt",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 22.42
+  },
+  {
+    "name": "final-unit-tier",
+    "command": [
+      "node",
+      "scripts/rust-unit-test-tiers.mjs",
+      "--check",
+      "--base-ref",
+      "99a176b7cb"
+    ],
+    "exit": 0,
+    "seconds": 9.97
+  },
+  {
+    "name": "final-manifest",
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--check",
+      "--base-ref",
+      "99a176b7cb"
+    ],
+    "exit": 0,
+    "seconds": 0.73
+  }
+]

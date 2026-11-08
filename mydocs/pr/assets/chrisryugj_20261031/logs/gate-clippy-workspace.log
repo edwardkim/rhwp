@@ -1,0 +1,102 @@
+   Compiling serde_core v1.0.229
+   Compiling serde_json v1.0.154
+   Compiling syn v3.0.3
+    Checking bitflags v2.13.1
+   Compiling num-traits v0.2.19
+   Compiling getrandom v0.4.3
+    Checking anstream v1.0.0
+    Checking png v0.18.1
+    Checking env_logger v0.11.11
+    Checking chacha20 v0.10.2
+    Checking uuid v1.28.0
+    Checking pdf-writer v0.12.1
+    Checking cfb v0.15.0
+    Checking moxcms v0.8.1
+    Checking module-lattice v0.2.3
+    Checking chrono v0.4.45
+    Checking ml-kem v0.3.3
+    Checking ml-dsa v0.1.1
+    Checking chacha20poly1305 v0.11.0
+    Checking rhwp-password-crypto v0.1.0 (/home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261031/candidate-source/crates/rhwp-password-crypto)
+   Compiling rustix v1.1.4
+    Checking futures-core v0.3.34
+    Checking pin-project-lite v0.2.17
+    Checking futures-task v0.3.34
+    Checking slab v0.4.12
+    Checking linux-raw-sys v0.12.1
+    Checking futures-util v0.3.34
+    Checking rhwp-contracts v0.1.0 (/home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261031/candidate-source/crates/rhwp-contracts)
+    Checking fastrand v2.5.0
+    Checking wait-timeout v0.2.1
+    Checking bit-vec v0.10.1
+    Checking quick-error v1.2.3
+    Checking rand v0.10.3
+   Compiling wasm-bindgen-test-macro v0.3.77
+    Checking bit-set v0.11.1
+   Compiling synstructure v0.14.0
+    Checking rand_xorshift v0.5.0
+    Checking cast v0.3.0
+    Checking unarray v0.1.4
+    Checking nu-ansi-term v0.50.3
+    Checking oorandom v11.1.5
+    Checking wasm-bindgen-test-shared v0.2.127
+    Checking clap_lex v1.1.0
+    Checking strsim v0.11.1
+    Checking same-file v1.0.6
+    Checking anyhow v1.0.104
+    Checking js-sys v0.3.104
+    Checking clap_builder v4.6.7
+    Checking tempfile v3.27.0
+    Checking walkdir v2.5.0
+    Checking which v8.0.6
+   Compiling rhwp-subsecond v0.0.0 (/home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261031/candidate-source/tools/rhwp-subsecond)
+    Checking rusty-fork v0.3.1
+    Checking proptest v1.12.0
+    Checking rhwp-ooxml-chart v0.1.0 (/home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261031/candidate-source/crates/rhwp-ooxml-chart)
+   Compiling serde_derive v1.0.229
+   Compiling bytemuck_derive v1.12.0
+   Compiling zerofrom-derive v0.1.8
+    Checking bytemuck v1.25.2
+   Compiling yoke-derive v0.8.4
+    Checking font-types v0.11.3
+    Checking read-fonts v0.39.2
+    Checking zerofrom v0.1.8
+    Checking rustybuzz v0.20.1
+    Checking tiny-skia-path v0.11.4
+    Checking font-types v0.12.7
+    Checking yoke v0.8.3
+   Compiling thiserror-impl v2.0.20
+    Checking read-fonts v0.46.0
+    Checking serde v1.0.229
+    Checking tiny-skia-path v0.12.0
+    Checking rgb v0.8.53
+    Checking quick-xml v0.41.0
+    Checking usvg v0.45.1
+    Checking thiserror v2.0.20
+    Checking tiny-skia v0.11.4
+    Checking image v0.25.10
+    Checking office_oxide v0.1.9
+    Checking tiny-skia v0.12.0
+    Checking resvg v0.45.1
+    Checking usvg v0.47.0
+    Checking wasm-bindgen-futures v0.4.77
+   Compiling async-trait v0.1.92
+    Checking write-fonts v0.48.1
+    Checking skrifa v0.42.1
+    Checking resvg v0.47.0
+   Compiling clap_derive v4.6.7
+    Checking wasm-bindgen-test v0.3.77
+    Checking llm-verifier-verdict-protocol v0.1.0 (/home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261031/candidate-source/tools/llm_verifier/verdict_protocol)
+    Checking llm-verifier-claim-bind v0.1.0 (/home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261031/candidate-source/tools/llm_verifier/claim_bind)
+    Checking llm-verifier-criteria-decomp v0.1.0 (/home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261031/candidate-source/tools/llm_verifier/criteria_decomp)
+    Checking clap v4.6.7
+    Checking batch-convert v0.1.0 (/home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261031/candidate-source/tools/batch-convert)
+    Checking subsetter v0.2.6
+    Checking rhwp-pdf-import-backend v0.3.78-rhwp.1 (/home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261031/candidate-source/vendor/rhwp-pdf-import-backend)
+    Checking rhwp-svg2pdf v0.13.0-rhwp.1 (/home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261031/candidate-source/vendor/svg2pdf)
+    Checking write-fonts v0.55.0
+    Checking skrifa v0.49.0
+    Checking skera v0.9.0
+    Checking rhwp v0.9.0 (/home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261031/candidate-source)
+    Checking rhwp-native-ffi v0.1.0 (/home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261031/candidate-source/bindings/Native)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 15s

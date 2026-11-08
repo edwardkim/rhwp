@@ -1,0 +1,15 @@
+{
+  "source_commit": "1c885d3110b768799eb9463c61a2be7a1f862755",
+  "command": "CARGO_TARGET_DIR=target/pr-review CARGO_BUILD_JOBS=4 scripts/wasm-pack-locked.sh --target web --out-dir pkg",
+  "result": "exit 0; optimized; WebAssembly.compile passed",
+  "build_log_sha256": "437e60027424ce2c32e4aa12953c5dd8700b6b45eaf0a7e71484036e039bee54",
+  "files": {
+    "rhwp.js": "a48acb46a157950724859baea436fda8d5d3b7c9a0fd10665455c952bf4c2434",
+    "rhwp_bg.wasm": "7f99d8e4c5b21c6fbd765c7fc098baa19b1feef5c1958eaa9ceeeb5e9e9afd09"
+  },
+  "studio_public_sha256": {
+    "rhwp.js": "a48acb46a157950724859baea436fda8d5d3b7c9a0fd10665455c952bf4c2434",
+    "rhwp_bg.wasm": "7f99d8e4c5b21c6fbd765c7fc098baa19b1feef5c1958eaa9ceeeb5e9e9afd09"
+  },
+  "visual_status": "in progress; rerun for later production source changes"
+}

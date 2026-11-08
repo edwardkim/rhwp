@@ -1,0 +1,102 @@
+{
+  "input_sha256": "1927d7c64d345e4467f5936b3e9a28cfe1b395bf5a2301f5fef6fb1ff829cb5d",
+  "candidate_svg_sha256": "3f537270695d7c4736a393843e410da93f4f45005b3acf7c7683f82543c7453d",
+  "method": "Independent raw WMF records + CP949 byte grouping vs emitted SVG absolute origins; unit scale verified for this source",
+  "checked_records": 554,
+  "failures": [],
+  "examples": [
+    {
+      "id": "elem28",
+      "text": "주전산센타",
+      "raw_bytes": "c1d6c0fcbbeabcbec5b8",
+      "dx": [
+        117,
+        0,
+        117,
+        0,
+        117,
+        0,
+        116,
+        0,
+        117,
+        0
+      ],
+      "svg_x": [
+        174.0,
+        291.0,
+        408.0,
+        525.0,
+        641.0
+      ],
+      "expected_relative_x": [
+        0,
+        117,
+        234,
+        351,
+        467
+      ]
+    },
+    {
+      "id": "elem33",
+      "text": "주전산센타",
+      "raw_bytes": "c1d6c0fcbbeabcbec5b8",
+      "dx": [
+        117,
+        0,
+        117,
+        0,
+        117,
+        0,
+        116,
+        0,
+        117,
+        0
+      ],
+      "svg_x": [
+        170.0,
+        287.0,
+        404.0,
+        521.0,
+        637.0
+      ],
+      "expected_relative_x": [
+        0,
+        117,
+        234,
+        351,
+        467
+      ]
+    },
+    {
+      "id": "elem43",
+      "text": "목표시스템",
+      "raw_bytes": "b8f1c7a5bdc3bdbac5db",
+      "dx": [
+        117,
+        0,
+        117,
+        0,
+        116,
+        0,
+        117,
+        0,
+        117,
+        0
+      ],
+      "svg_x": [
+        815.0,
+        932.0,
+        1049.0,
+        1165.0,
+        1282.0
+      ],
+      "expected_relative_x": [
+        0,
+        117,
+        234,
+        350,
+        467
+      ]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "date_kst": "2026-11-07",
+  "approval": "새 head CI 성공·self-review 후 머지와 후속 처리까지 승인",
+  "scope": [
+    "existing upstream branch fast-forward push",
+    "PR body evidence supplement",
+    "exact-head CI and self-review",
+    "merge #8711 preserving source commits",
+    "#8226 supersede comment and close",
+    "thanks comment",
+    "mydocs-only operating record devel push",
+    "devel synchronization",
+    "final cleanup"
+  ],
+  "ci_manual_reruns": 0,
+  "workflow_cancellations": 0,
+  "security_metadata_mutations": 0
+}

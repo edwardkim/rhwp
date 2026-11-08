@@ -1,0 +1,224 @@
+{
+ "native/d1342": {
+  "pr_review_gate": {
+   "status": "passed",
+   "metric": "silhouette_raw_match_percent",
+   "minimum_silhouette_raw_match_percent": 90.0,
+   "below_threshold_pages": [],
+   "unavailable_metric_pages": [],
+   "font_mismatch_evidence": null,
+   "document_page_counts": {
+    "rhwp": 415,
+    "pdf": 415
+   },
+   "page_count_mismatch": false
+  },
+  "pages": {
+   "93": 95.72611
+  }
+ },
+ "native/d1613": {
+  "pr_review_gate": {
+   "status": "passed",
+   "metric": "silhouette_raw_match_percent",
+   "minimum_silhouette_raw_match_percent": 90.0,
+   "below_threshold_pages": [],
+   "unavailable_metric_pages": [],
+   "font_mismatch_evidence": null,
+   "document_page_counts": {
+    "rhwp": 204,
+    "pdf": 204
+   },
+   "page_count_mismatch": false
+  },
+  "pages": {
+   "165": 99.17778,
+   "173": 99.22206,
+   "190": 99.47445
+  }
+ },
+ "native/d5941": {
+  "pr_review_gate": {
+   "status": "passed",
+   "metric": "silhouette_raw_match_percent",
+   "minimum_silhouette_raw_match_percent": 90.0,
+   "below_threshold_pages": [],
+   "unavailable_metric_pages": [],
+   "font_mismatch_evidence": null,
+   "document_page_counts": {
+    "rhwp": 205,
+    "pdf": 205
+   },
+   "page_count_mismatch": false
+  },
+  "pages": {
+   "11": 100.0
+  }
+ },
+ "native/k1130": {
+  "pr_review_gate": {
+   "status": "passed",
+   "metric": "silhouette_raw_match_percent",
+   "minimum_silhouette_raw_match_percent": 90.0,
+   "below_threshold_pages": [],
+   "unavailable_metric_pages": [],
+   "font_mismatch_evidence": null,
+   "document_page_counts": {
+    "rhwp": 142,
+    "pdf": 142
+   },
+   "page_count_mismatch": false
+  },
+  "pages": {
+   "51": 99.08894
+  }
+ },
+ "native/k86712": {
+  "pr_review_gate": {
+   "status": "passed",
+   "metric": "silhouette_raw_match_percent",
+   "minimum_silhouette_raw_match_percent": 90.0,
+   "below_threshold_pages": [],
+   "unavailable_metric_pages": [],
+   "font_mismatch_evidence": null,
+   "document_page_counts": {
+    "rhwp": 64,
+    "pdf": 64
+   },
+   "page_count_mismatch": false
+  },
+  "pages": {
+   "21": 99.89587,
+   "34": 99.97381
+  }
+ },
+ "native/t1749x": {
+  "pr_review_gate": {
+   "status": "passed",
+   "metric": "silhouette_raw_match_percent",
+   "minimum_silhouette_raw_match_percent": 90.0,
+   "below_threshold_pages": [],
+   "unavailable_metric_pages": [],
+   "font_mismatch_evidence": null,
+   "document_page_counts": {
+    "rhwp": 5,
+    "pdf": 5
+   },
+   "page_count_mismatch": false
+  },
+  "pages": {
+   "5": 99.99832
+  }
+ },
+ "wasm/d1342": {
+  "pr_review_gate": {
+   "status": "passed",
+   "metric": "silhouette_raw_match_percent",
+   "minimum_silhouette_raw_match_percent": 90.0,
+   "below_threshold_pages": [],
+   "unavailable_metric_pages": [],
+   "font_mismatch_evidence": null,
+   "document_page_counts": {
+    "rhwp": 415,
+    "pdf": 415
+   },
+   "page_count_mismatch": false
+  },
+  "pages": {
+   "93": 95.76124
+  }
+ },
+ "wasm/d1613": {
+  "pr_review_gate": {
+   "status": "passed",
+   "metric": "silhouette_raw_match_percent",
+   "minimum_silhouette_raw_match_percent": 90.0,
+   "below_threshold_pages": [],
+   "unavailable_metric_pages": [],
+   "font_mismatch_evidence": null,
+   "document_page_counts": {
+    "rhwp": 204,
+    "pdf": 204
+   },
+   "page_count_mismatch": false
+  },
+  "pages": {
+   "165": 99.21357,
+   "173": 99.26826,
+   "190": 99.47705
+  }
+ },
+ "wasm/d5941": {
+  "pr_review_gate": {
+   "status": "passed",
+   "metric": "silhouette_raw_match_percent",
+   "minimum_silhouette_raw_match_percent": 90.0,
+   "below_threshold_pages": [],
+   "unavailable_metric_pages": [],
+   "font_mismatch_evidence": null,
+   "document_page_counts": {
+    "rhwp": 205,
+    "pdf": 205
+   },
+   "page_count_mismatch": false
+  },
+  "pages": {
+   "11": 100.0
+  }
+ },
+ "wasm/k1130": {
+  "pr_review_gate": {
+   "status": "passed",
+   "metric": "silhouette_raw_match_percent",
+   "minimum_silhouette_raw_match_percent": 90.0,
+   "below_threshold_pages": [],
+   "unavailable_metric_pages": [],
+   "font_mismatch_evidence": null,
+   "document_page_counts": {
+    "rhwp": 142,
+    "pdf": 142
+   },
+   "page_count_mismatch": false
+  },
+  "pages": {
+   "51": 99.30151
+  }
+ },
+ "wasm/k86712": {
+  "pr_review_gate": {
+   "status": "passed",
+   "metric": "silhouette_raw_match_percent",
+   "minimum_silhouette_raw_match_percent": 90.0,
+   "below_threshold_pages": [],
+   "unavailable_metric_pages": [],
+   "font_mismatch_evidence": null,
+   "document_page_counts": {
+    "rhwp": 64,
+    "pdf": 64
+   },
+   "page_count_mismatch": false
+  },
+  "pages": {
+   "21": 99.95485,
+   "34": 99.91211
+  }
+ },
+ "wasm/t1749x": {
+  "pr_review_gate": {
+   "status": "passed",
+   "metric": "silhouette_raw_match_percent",
+   "minimum_silhouette_raw_match_percent": 90.0,
+   "below_threshold_pages": [],
+   "unavailable_metric_pages": [],
+   "font_mismatch_evidence": null,
+   "document_page_counts": {
+    "rhwp": 5,
+    "pdf": 5
+   },
+   "page_count_mismatch": false
+  },
+  "pages": {
+   "5": 99.96788
+  }
+ }
+}

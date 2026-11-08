@@ -1,0 +1,36 @@
+{
+  "sample": "samples/2025 행정업무운영 편람(최종).hwpx",
+  "sample_sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+  "pdf": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+  "pdf_sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+  "dpi": 96,
+  "compat2024": true,
+  "page_count": 383,
+  "image_count": 4,
+  "frame_image_index": 2,
+  "visual_qualification": {
+    "source_head": "15a99891c8",
+    "page": 140,
+    "native_raw_percent": 100.0,
+    "fresh_wasm_raw_percent": 99.98238,
+    "metric": "silhouette_raw_match_percent"
+  },
+  "oracle_producer": "기존 canonical PDFium 96 DPI PNG의 영역을 무보간 절단; 원 PDF와 페이지 PNG는 변경하지 않음",
+  "page_png_sha256": "a34d52427ec670fbdfb4adadbea89092877c493937b222510b74480bc9bd5c1c",
+  "browser_raster_regions": [
+    {
+      "id": "handbook-login-jpeg-print-frame",
+      "page": 140,
+      "box": [
+        166,
+        320,
+        592,
+        625
+      ],
+      "threshold": 232,
+      "symmetric_radius_pixels": 2,
+      "oracle": "tests/fixtures/issue8533/handbook-p140-print-frame.png",
+      "oracle_sha256": "82307f9bc3d34efe8f36737b3b386f72828c8c36398b7f93b5b4bbf3d35ddf83"
+    }
+  ]
+}

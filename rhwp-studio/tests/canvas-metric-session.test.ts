@@ -63,12 +63,19 @@ test('CanvasKit selection restores portable mode without requesting Canvas metri
   assert.deepEqual(f.events, ['select:false']);
 });
 
-test('measurement failure is diagnostic and cannot retain active stale positions', async () => {
+test('measurement failure is diagnostic and cannot retain active stale positions', async (t) => {
+  // 의도한 측정 실패의 경고를 검증하되 전체 검사 로그에 실제 장애처럼 출력하지 않는다.
+  const warning = t.mock.method(console, 'warn', () => {});
   const f = fixture(); f.doc.selectCanvasMetrics(true);
   assert.equal(await f.session.prepare(f.doc, f.generation, 'canvas2d', () => true,
     async () => {}, () => null), true);
   assert.equal(f.doc.canvasMetricsActive(), false);
   assert.match(f.session.lastError!, /unavailable/);
+  assert.equal(warning.mock.callCount(), 1);
+  const [label, error] = warning.mock.calls[0].arguments;
+  assert.equal(label, '[Canvas metrics] portable fallback:');
+  assert.ok(error instanceof Error);
+  assert.equal(error.message, 'Canvas2D measurement context unavailable');
 });
 
 test('portable transaction restores Canvas on success and on exception; nested export is safe', () => {

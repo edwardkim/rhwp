@@ -11,6 +11,7 @@
 // 관련 이슈:
 // - #198: Chrome 마지막 저장 위치 보존 + DEXT5 블랙리스트 + MIME 힌트
 // - #207: 동일 판정 로직을 Firefox 측에도 적용
+// - #7664: 로컬 file:// HWP 는 저장 위치 대화상자로 filename 이 비어도 URL 경로로 판정
 
 /** filename 또는 URL 에서 .hwp/.hwpx/.hml 확장자를 감지 (쿼리 문자열 허용). */
 export const HWP_EXTENSION_RE = /\.(hwp|hwpx|hml)(\?|$)/i;
@@ -45,6 +46,43 @@ export const NON_REFETCHABLE_PATTERNS = [
 ];
 
 /**
+ * 로컬 file:// URL의 경로가 .hwp/.hwpx/.hml 인지 판별한다 (#7664).
+ *
+ * file:// URL은 디스크에 있는 실제 파일 자체이므로 redirect나 첨부 파일명으로 바뀌지 않는다.
+ * 쿼리·fragment는 경로가 아니므로 pathname만 본다.
+ *
+ * @param {string} url
+ * @returns {boolean}
+ */
+export function isLocalHwpFileUrl(url) {
+  if (typeof url !== 'string' || !url.startsWith('file:')) return false;
+  try {
+    return HWP_EXTENSION_RE.test(new URL(url).pathname);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * 로컬 file:// HWP URL의 표시용 파일명 (#7664).
+ *
+ * 저장 위치 확인 대화상자가 떠 있는 동안은 `DownloadItem.filename`이 비어 있으므로
+ * URL 경로의 마지막 요소를 쓴다. URL 경로의 퍼센트 인코딩은 전송 표현이므로 디코딩한다.
+ *
+ * @param {string} url
+ * @returns {string}
+ */
+export function localHwpFileUrlFilename(url) {
+  if (!isLocalHwpFileUrl(url)) return '';
+  const leaf = new URL(url).pathname.split('/').pop() || '';
+  try {
+    return decodeURIComponent(leaf);
+  } catch {
+    return leaf;
+  }
+}
+
+/**
  * 다운로드 항목의 HWP 자동 열기 여부를 근거 우선순위와 이벤트 단계로 판별한다.
  *
  * filename / url / finalUrl / mime / referrer의 충돌을 명시적으로 해소한다.
@@ -76,6 +114,13 @@ export function classifyDownload(item, { metadataFinalized = false } = {}) {
   const mime = (item.mime || '').trim().toLowerCase();
   if (NON_HWP_MIME_PREFIXES.some(prefix => mime.startsWith(prefix))) {
     return { action: 'ignore', reason: 'non-hwp-mime' };
+  }
+
+  // #7664: Chrome "다운로드 전 저장 위치 확인" 대화상자가 떠 있는 동안 filename은 비어 있고,
+  // 대화상자를 취소하면 interrupted로 끝나 재판정 기회가 없다. 로컬 파일의 URL 경로는
+  // 확정 근거이므로 filename 확정을 기다리지 않는다. 위의 재요청 불가·비-HWP 우선순위는 유지한다.
+  if (isLocalHwpFileUrl(url)) {
+    return { action: 'intercept', reason: 'local-hwp-file-url' };
   }
 
   const finalUrl = item.finalUrl || '';

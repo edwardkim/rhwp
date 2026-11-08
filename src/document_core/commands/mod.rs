@@ -1,24 +1,40 @@
 // [#6840] 발췌 산출물에서 참조 없는 BinData 를 버린다 — 쪽을 잘라도 파일이 줄지 않던 문제.
 pub(crate) mod bin_data_prune;
+mod border_paint_bands;
+pub(crate) mod border_paint_edit;
+mod border_paint_structure;
+// 한/글 글머리표·그림 글머리표 사용자 정의 모양.
+mod bullet_create;
 mod clipboard;
 mod clone_identity;
+// 덧말·글자 겹침 넣기와 고치기.
+mod compose_controls;
+pub use compose_controls::ComposeHost;
 // [#5769] 삭제의 참 역연산 — 조각 저장소. DeleteFragment 타입이 DocumentCore
 // 필드로 쓰이므로 pub(crate).
 pub(crate) mod delete_fragment;
 mod document;
+pub(crate) use document::HwpExportSnapshot;
+mod source_line_ladder;
 // [jb] 외부 문서(다른 서식표)를 커서에 끼워 넣기 — 한글 클립보드 문서모델 붙여넣기용
+mod cell_format_origin;
 mod footnote_ops;
 mod foreign_paste;
 mod formatting;
 mod formatting_runs;
 mod header_footer_ops;
 mod html_import;
+mod numbering_char_shape;
 mod object_ops;
 pub(crate) mod paragraph_block;
+mod paragraph_format_path;
 pub use object_ops::{TableColumnWidths, TableCreationOptions};
 pub(crate) mod picture_transform_journal;
 // [#3565] 대형 문서 결함을 이분법으로 좁히기 위한 쪽 범위 추출.
 pub mod page_extract;
+mod table_formula;
+// 구역 나누기·합치기 — 한/글 [쪽-구역 나누기]와 구역 경계 지우기.
+mod section_ops;
 mod table_ops;
 mod text_editing;
 // [#5769] Stage 4 — 구역 raw 저널. SectionRawCapture 타입이 DocumentCore 필드로

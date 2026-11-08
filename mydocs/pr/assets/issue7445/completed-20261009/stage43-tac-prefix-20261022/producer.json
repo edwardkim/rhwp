@@ -1,0 +1,98 @@
+{
+  "source": {
+    "parentHead": "9440feae26c7420213502f9482e04f0a6eb6c641",
+    "files": {
+      "src/renderer/typeset/controls/stored_tac/owned_row.rs": "99687998cb88d2e2ab79162d1f4120845d8e5c326db116aa2f0429ca14188364"
+    },
+    "patchSha256": "32231185317a9905e074cab846ea165d084df29c528c555ae3d6dbbe69a36b0f",
+    "cases": [
+      "issue_7490_edited_paragraph_indent",
+      "issue_1470_authored_caption_numbering",
+      "issue_7998_tac_prefix_numbering",
+      "issue_7679_tac_table_after_host_line",
+      "issue_7330_float_sibling_tac_single_paint"
+    ]
+  },
+  "artifacts": {
+    "rhwp-native": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/repair-focused-v9/rhwp-native",
+      "sha256": "ae2a5095e29f84c2eb22cbd95786e4c37425bf8d7160b5b699b6ca7d401c3eb2"
+    },
+    "librhwp.rlib": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/repair-focused-v9/librhwp.rlib",
+      "sha256": "db0443bbcb177fdb4b50b5b28a07ff7a85d64f581b62e5e585e0570563a54e9e"
+    }
+  },
+  "sdkSourceSha256": "75363d632c23cbbf3dc58970e7db3d81de8fa85899ab65552615e212c987923e",
+  "sdkBinarySha256": "a6e2b42d7dc4460fecc4f2d8743984612986d632a43e8a656e57b3df77a39315",
+  "nativeFocus": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--features",
+      "native-skia",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "--test",
+      "regression_suite_003",
+      "--test",
+      "regression_suite_007",
+      "--test",
+      "regression_suite_012",
+      "--test",
+      "regression_suite_017",
+      "--test",
+      "regression_suite_028",
+      "-E",
+      "test(/(^|::)issue_7490_edited_paragraph_indent::/) or test(/(^|::)issue_1470_authored_caption_numbering::/) or test(/(^|::)issue_7998_tac_prefix_numbering::/) or test(/(^|::)issue_7679_tac_table_after_host_line::/) or test(/(^|::)issue_7330_float_sibling_tac_single_paint::/)"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 162.8001582622528,
+    "source": {
+      "parentHead": "9440feae26c7420213502f9482e04f0a6eb6c641",
+      "files": {
+        "src/renderer/typeset/controls/stored_tac/owned_row.rs": "99687998cb88d2e2ab79162d1f4120845d8e5c326db116aa2f0429ca14188364"
+      },
+      "patchSha256": "32231185317a9905e074cab846ea165d084df29c528c555ae3d6dbbe69a36b0f",
+      "cases": [
+        "issue_7490_edited_paragraph_indent",
+        "issue_1470_authored_caption_numbering",
+        "issue_7998_tac_prefix_numbering",
+        "issue_7679_tac_table_after_host_line",
+        "issue_7330_float_sibling_tac_single_paint"
+      ]
+    },
+    "logSha256": "7d7b39cbdd61eefc5ad8d6c40c1bee62d1d664e9e2c2ada62fb51b4f317568fc"
+  },
+  "fontLedger": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/candidate-source.json",
+  "pdfRasterizer": {
+    "program": "pypdfium2",
+    "backend": "pdfium",
+    "policy": "pdfium_smooth_rgb_v1",
+    "antialias": {
+      "text": true,
+      "image": true,
+      "path": true
+    },
+    "script_sha256": "eda5cb9561ea417f55efdf2a36510a5db2563d4382adf2b5ef564389f6736faf",
+    "available": true,
+    "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+    "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+    "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+    "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+    "version": "152.0.7947.0",
+    "wrapper_version": "5.12.1",
+    "version_exit_code": 0
+  },
+  "visualToolSha256": "69d9d56394b26fcb7a64b41588a378da745475b3297bae89fd6b4d16903cede4",
+  "dpi": 96,
+  "radiusPx": 2,
+  "scope": "Three exact serialized input/independent Hancom2020 Print pairs; same editor live state and reopened state; Native-only, not final PR acceptance."
+}

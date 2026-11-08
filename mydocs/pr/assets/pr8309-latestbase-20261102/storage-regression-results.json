@@ -1,0 +1,17 @@
+{
+  "before_runtime": "0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0",
+  "after_runtime": "c4686b913cb13ed7a161f941b8e6eadb2be37171",
+  "assertions_unchanged": true,
+  "before_failures": [
+    "new_textbox_is_top_aligned_in_hwp_and_hwpx",
+    "hwp_keeps_other_list_attr_bits",
+    "tb_vertical_align_change_reaches_hwp"
+  ],
+  "after_passes": [
+    "hwp_keeps_other_list_attr_bits",
+    "new_textbox_is_top_aligned_in_hwp_and_hwpx",
+    "tb_vertical_align_change_reaches_hwp"
+  ],
+  "before_summary": "test result: FAILED. 0 passed; 3 failed; 0 ignored; 0 measured; 268 filtered out; finished in 0.01s",
+  "after_summary": "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 268 filtered out; finished in 0.01s"
+}

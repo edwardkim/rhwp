@@ -1,0 +1,639 @@
+[
+  {
+    "label": "manifest-prepare",
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--prepare"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:05:03.160863+00:00",
+    "ended": "2026-11-04T23:05:04.560080+00:00",
+    "exit": 0,
+    "log_sha256": "66354f9d6d57adac106dfa4901e6ddfe674aa7ab14bc081a84c77ebf8dd2cf05",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "fmt",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:05:04.560847+00:00",
+    "ended": "2026-11-04T23:05:28.778545+00:00",
+    "exit": 0,
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "clippy-workspace",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:05:28.778874+00:00",
+    "ended": "2026-11-04T23:06:37.106453+00:00",
+    "exit": 0,
+    "log_sha256": "34167b9fce2463ea4f58c50bf486a323e63f626fdb681049750bcd38d38ac3c2",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "clippy-wasm",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "rhwp",
+      "--lib",
+      "--target",
+      "wasm32-unknown-unknown",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:06:37.108166+00:00",
+    "ended": "2026-11-04T23:07:23.068099+00:00",
+    "exit": 0,
+    "log_sha256": "2fdf9eda48c7fc97d19bb2f5448c19f3bad182c70f3fb2418ea93914043d1a70",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "workspace-build",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--workspace"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:07:23.068481+00:00",
+    "ended": "2026-11-04T23:08:18.787325+00:00",
+    "exit": 0,
+    "log_sha256": "a291bd80a74a08d509414854b83825eac5f5b34f41563220311b37075d7faf94",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "manifest-check",
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--check",
+      "--base-ref",
+      "e96b500e3ea259c821f05440f0388355916a9e9b"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:08:18.788133+00:00",
+    "ended": "2026-11-04T23:08:19.797533+00:00",
+    "exit": 0,
+    "log_sha256": "53afe23e10b5dd10812686d0a7729379088ea74149e1db26810af8474edd357c",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "unit-tiers",
+    "command": [
+      "node",
+      "scripts/rust-unit-test-tiers.mjs",
+      "--check",
+      "--base-ref",
+      "e96b500e3ea259c821f05440f0388355916a9e9b"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:08:19.797892+00:00",
+    "ended": "2026-11-04T23:08:30.350033+00:00",
+    "exit": 0,
+    "log_sha256": "2c6dbaab2093a94c2fa3ec11190f384180b922a10025e3466a44f53c6611685c",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "full-nextest",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--tests",
+      "--test-threads",
+      "6",
+      "--no-fail-fast"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:08:30.350511+00:00",
+    "ended": "2026-11-04T23:30:51.346892+00:00",
+    "exit": 0,
+    "log_sha256": "d4aebbe047982648708ab4f3177d3d34b92f5ed9622d56c157f7dc35b7ee30dd",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "native-ci-00",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "skia",
+      "--lib",
+      "--verbose"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:30:51.351647+00:00",
+    "ended": "2026-11-04T23:35:53.503565+00:00",
+    "exit": 0,
+    "log_sha256": "4fc0b87501154b2a6f00793c24507f98282e28e151254c6b5a7678d30de54efe",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "native-ci-01",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "cli_exit_codes_native",
+      "--",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--verbose"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:35:53.505267+00:00",
+    "ended": "2026-11-04T23:40:21.926686+00:00",
+    "exit": 0,
+    "log_sha256": "1097bc0fc1ab495e38d796fe6ebfb9738daed1bfa5074ba18d09d90a7a3e446f",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "native-ci-02",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "issue_1144_native",
+      "--",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--verbose"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:40:21.931632+00:00",
+    "ended": "2026-11-04T23:40:24.301464+00:00",
+    "exit": 0,
+    "log_sha256": "573e2f4f0e16efd4a28cde9ad481ad24c70c066d818b51508fe8fe9b78089d40",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "native-ci-03",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "issue_2225_missing_picture_placeholder",
+      "--",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--verbose"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:40:24.301917+00:00",
+    "ended": "2026-11-04T23:40:37.533249+00:00",
+    "exit": 0,
+    "log_sha256": "993fe38a3efe0304ec73eb6f463471b38ae3e9fb9058b4aa1bf13d154f1f0305",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "native-ci-04",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "render_p37_direct_pdf_export",
+      "--",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--verbose"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:40:37.533728+00:00",
+    "ended": "2026-11-04T23:40:53.943269+00:00",
+    "exit": 0,
+    "log_sha256": "3668b61a0cb43b97df8a6043d17e4bb7f6354648082e814152631ef5650fcd34",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "native-ci-05",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "issue_7950_pdf_paint",
+      "--",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--verbose"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:40:53.956000+00:00",
+    "ended": "2026-11-04T23:41:08.558911+00:00",
+    "exit": 0,
+    "log_sha256": "744c9c85a88e150922c33ce6aa0947dd175873a53368b5fef07cbed04313f808",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "native-ci-06",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "issue_2083_hide_fill_page_background",
+      "--",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--verbose"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:41:08.559390+00:00",
+    "ended": "2026-11-04T23:41:18.675230+00:00",
+    "exit": 0,
+    "log_sha256": "12d029551208823f487ba84b7002cfb8cf6b351c7e8d09b037e2dea11bd2e9fd",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "native-ci-07",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "issue_2292_chart_png_clip",
+      "--",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--verbose"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:41:18.675717+00:00",
+    "ended": "2026-11-04T23:41:31.578323+00:00",
+    "exit": 0,
+    "log_sha256": "f6ad0ecdd29784f30dc86c7c1e9b48d6b0e06be3b3c232a8fd2f01fabcca0873",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "native-ci-08",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "issue_2293_chart_png_text",
+      "--",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--verbose"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:41:31.578824+00:00",
+    "ended": "2026-11-04T23:41:45.823160+00:00",
+    "exit": 0,
+    "log_sha256": "eec9b9a8e1585e8dfa5c0c6f7110143b6312e1cf63cab6d82e2e5e4c78cb7a39",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "native-ci-09",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "issue_7820_sixel_contract",
+      "--",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--verbose"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:41:45.823677+00:00",
+    "ended": "2026-11-04T23:41:59.173257+00:00",
+    "exit": 0,
+    "log_sha256": "15e5cefc9f66d97edccfb42f559ab812957067a6a115c25e2b7e72e694cbb5cc",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "native-ci-10",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "issue_8150_kitty_contract",
+      "--",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--verbose"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:41:59.173743+00:00",
+    "ended": "2026-11-04T23:42:12.482963+00:00",
+    "exit": 0,
+    "log_sha256": "ee1b1608f6c644b43ea78fa53b1526affa87e4907a703ed93e329bf7208e1864",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "native-ci-11",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "issue_4961_font_decision_trace",
+      "--",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--verbose"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:42:12.483484+00:00",
+    "ended": "2026-11-04T23:42:27.522991+00:00",
+    "exit": 0,
+    "log_sha256": "e39d76e51775025c1264428be1126cb74e2d5f99d34693b295f697e5100674bb",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "native-ci-12",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "issue_7902_original_frame_and_content",
+      "--",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--verbose"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:42:27.523503+00:00",
+    "ended": "2026-11-04T23:42:49.933670+00:00",
+    "exit": 0,
+    "log_sha256": "a4a0da1b67470e5d6fbd00223da8ca5f132b7e3f15e05aa6fb23f41e4319e9d3",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "native-ci-13",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "issue_8160_hwp2022_paragraph_relations",
+      "--",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--verbose"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:42:49.934208+00:00",
+    "ended": "2026-11-04T23:43:04.859639+00:00",
+    "exit": 0,
+    "log_sha256": "62627ffe7b211194adb56d6b7841334a12fb45d823c3d0252e6636f76d03d102",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "native-ci-14",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "native_fractional_glyph_origin",
+      "--",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--verbose"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:43:04.860169+00:00",
+    "ended": "2026-11-04T23:43:16.290548+00:00",
+    "exit": 0,
+    "log_sha256": "2dd6e269ac805548a87404ace2390abc9015ab17ff3c28c96dec25adfa385afe",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "native-ci-15",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "skia_native_glyph_replay",
+      "--",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--verbose"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:43:16.291107+00:00",
+    "ended": "2026-11-04T23:43:29.040799+00:00",
+    "exit": 0,
+    "log_sha256": "571f71188947fbb68fbbcb864d29ca867bc3e9e26585c7d8659fda307eac8580",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "native-ci-16",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "issue_8153_opaque_mixed_axis_image_sampling",
+      "--",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--verbose"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:43:29.041313+00:00",
+    "ended": "2026-11-04T23:43:47.654725+00:00",
+    "exit": 0,
+    "log_sha256": "3d23692e4222676ce5c5499b71c806eab713c93ecc3ed89b409c2fa5cb1f697e",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "native-ci-17",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "issue_8153_print_glyph_geometry",
+      "--",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--verbose"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:43:47.655328+00:00",
+    "ended": "2026-11-04T23:43:59.800923+00:00",
+    "exit": 0,
+    "log_sha256": "d938a438889fa33bfcdfe0582ec3f4b02143579271be63b633868159e99104be",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "native-ci-18",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "issue_8153_symbol_fallback",
+      "--",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--verbose"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:43:59.801491+00:00",
+    "ended": "2026-11-04T23:44:13.949817+00:00",
+    "exit": 0,
+    "log_sha256": "93b92891b662ac76d232f440a7e3493d171dbd7fa5ac7f612f8d364a15c33f36",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "native-ci-19",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "issue_536_native_region_cache",
+      "--",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--verbose"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:44:13.950372+00:00",
+    "ended": "2026-11-04T23:44:14.906572+00:00",
+    "exit": 0,
+    "log_sha256": "68374170fc955582a20844a9698c8c1d7c1a9661e7552294286703a9e7347e45",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "native-ci-20",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "skia_region_plan",
+      "--",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--verbose"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:44:14.907117+00:00",
+    "ended": "2026-11-04T23:44:29.617184+00:00",
+    "exit": 0,
+    "log_sha256": "e8bedea88ed5900285d1b34a55c0a26e60a313ce172bbe3ac1fa02d712c475d9",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "native-ci-21",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "skia_host_surface",
+      "--",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--verbose"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:44:29.617764+00:00",
+    "ended": "2026-11-04T23:44:30.331674+00:00",
+    "exit": 0,
+    "log_sha256": "948754b14fa65851d60b3292601a92bd605365bb434e9447630ac23845674a2e",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "native-lib-all",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--lib"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:44:30.332295+00:00",
+    "ended": "2026-11-04T23:44:55.085622+00:00",
+    "exit": 0,
+    "log_sha256": "5803bbff04da36043b475062c7e19c9eb251cdb8baaffd175850247647491bf1",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "label": "doc-tests",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--doc"
+    ],
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "started": "2026-11-04T23:44:55.090361+00:00",
+    "ended": "2026-11-04T23:48:50.222593+00:00",
+    "exit": 0,
+    "log_sha256": "0c69a64370c716158bfafc2bf0f053aa5fd82e6e9268db2137dacb557265ef92",
+    "font_environment": "minimal-font-prefix.json"
+  }
+]

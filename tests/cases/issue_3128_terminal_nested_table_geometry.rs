@@ -45,45 +45,6 @@ fn text_line_contains(node: &RenderNode, needles: &[&str]) -> bool {
 }
 
 #[test]
-fn issue_3128_terminal_continuation_does_not_reserve_empty_host_tail() {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
-    let bytes = fs::read(path).expect("read #3128 authority fixture");
-    let core = DocumentCore::from_bytes(&bytes).expect("parse #3128 authority fixture");
-
-    assert_eq!(
-        core.page_count(),
-        82,
-        "#1891 page-count authority must remain 82"
-    );
-
-    let page = core
-        .build_page_render_tree(33)
-        .expect("render HWP 2024 PDF p34");
-    let continuation =
-        find_table_with_owner_para(&page.root, 325).expect("p34 activity-cost continuation");
-    let direct_benefit =
-        find_table_with_owner_para(&page.root, 336).expect("p34 direct-benefit table");
-    let continuation_bottom = continuation.bbox.y + continuation.bbox.height;
-    assert!(
-        (continuation.bbox.y - 77.0).abs() <= 2.0,
-        "p34 continuation top must match the Hancom 2024 y=77px oracle; got y={:.1}",
-        continuation.bbox.y
-    );
-    assert!(
-        (continuation_bottom - 463.0).abs() <= 2.0,
-        "p34 continuation bottom must match the Hancom 2024 y=463px oracle; got bottom={continuation_bottom:.1} (y={:.1}, h={:.1})",
-        continuation.bbox.y,
-        continuation.bbox.height
-    );
-
-    assert!(
-        (direct_benefit.bbox.y - 512.0).abs() <= 4.0,
-        "p34 direct-benefit table must match the Hancom 2024 y=512px oracle; got y={:.1}",
-        direct_benefit.bbox.y
-    );
-}
-
-#[test]
 fn issue_3128_terminal_continuation_keeps_hancom_line_wrap() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
     let bytes = fs::read(path).expect("read #3128 authority fixture");

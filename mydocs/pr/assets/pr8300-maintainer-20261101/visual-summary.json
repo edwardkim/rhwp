@@ -1,0 +1,128 @@
+[
+  {
+    "group": "created",
+    "key": "nested-empty-hwp",
+    "backend": "native",
+    "pageCount": 1,
+    "minimumRaw": 100.0,
+    "measurementTime": "2026-11-01T07:57:24.357821+00:00",
+    "tsv": "mydocs/pr/assets/pr8300-maintainer-20261101/created/native/nested-empty-hwp/silhouette.tsv"
+  },
+  {
+    "group": "created",
+    "key": "nested-empty-hwp",
+    "backend": "wasm",
+    "pageCount": 1,
+    "minimumRaw": 100.0,
+    "measurementTime": "2026-11-01T08:01:18.854696+00:00",
+    "tsv": "mydocs/pr/assets/pr8300-maintainer-20261101/created/wasm/nested-empty-hwp/silhouette.tsv"
+  },
+  {
+    "group": "created",
+    "key": "nested-empty-hwpx",
+    "backend": "native",
+    "pageCount": 1,
+    "minimumRaw": 100.0,
+    "measurementTime": "2026-11-01T07:57:25.641774+00:00",
+    "tsv": "mydocs/pr/assets/pr8300-maintainer-20261101/created/native/nested-empty-hwpx/silhouette.tsv"
+  },
+  {
+    "group": "created",
+    "key": "nested-empty-hwpx",
+    "backend": "wasm",
+    "pageCount": 1,
+    "minimumRaw": 100.0,
+    "measurementTime": "2026-11-01T08:01:22.126178+00:00",
+    "tsv": "mydocs/pr/assets/pr8300-maintainer-20261101/created/wasm/nested-empty-hwpx/silhouette.tsv"
+  },
+  {
+    "group": "created",
+    "key": "nested-mid-hwp",
+    "backend": "native",
+    "pageCount": 1,
+    "minimumRaw": 100.0,
+    "measurementTime": "2026-11-01T07:57:26.993737+00:00",
+    "tsv": "mydocs/pr/assets/pr8300-maintainer-20261101/created/native/nested-mid-hwp/silhouette.tsv"
+  },
+  {
+    "group": "created",
+    "key": "nested-mid-hwp",
+    "backend": "wasm",
+    "pageCount": 1,
+    "minimumRaw": 100.0,
+    "measurementTime": "2026-11-01T08:01:29.879280+00:00",
+    "tsv": "mydocs/pr/assets/pr8300-maintainer-20261101/created/wasm/nested-mid-hwp/silhouette.tsv"
+  },
+  {
+    "group": "created",
+    "key": "nested-mid-hwpx",
+    "backend": "native",
+    "pageCount": 1,
+    "minimumRaw": 100.0,
+    "measurementTime": "2026-11-01T07:57:28.321714+00:00",
+    "tsv": "mydocs/pr/assets/pr8300-maintainer-20261101/created/native/nested-mid-hwpx/silhouette.tsv"
+  },
+  {
+    "group": "created",
+    "key": "nested-mid-hwpx",
+    "backend": "wasm",
+    "pageCount": 1,
+    "minimumRaw": 100.0,
+    "measurementTime": "2026-11-01T08:01:39.021819+00:00",
+    "tsv": "mydocs/pr/assets/pr8300-maintainer-20261101/created/wasm/nested-mid-hwpx/silhouette.tsv"
+  },
+  {
+    "group": "supplied",
+    "key": "nested-hwp",
+    "backend": "native",
+    "pageCount": 1,
+    "minimumRaw": 100.0,
+    "measurementTime": "2026-11-01T07:57:29.617859+00:00",
+    "tsv": "mydocs/pr/assets/pr8300-maintainer-20261101/supplied/native/nested-hwp/silhouette.tsv"
+  },
+  {
+    "group": "supplied",
+    "key": "nested-hwp",
+    "backend": "wasm",
+    "pageCount": 1,
+    "minimumRaw": 100.0,
+    "measurementTime": "2026-11-01T08:01:43.779452+00:00",
+    "tsv": "mydocs/pr/assets/pr8300-maintainer-20261101/supplied/wasm/nested-hwp/silhouette.tsv"
+  },
+  {
+    "group": "supplied",
+    "key": "nested-hwpx",
+    "backend": "native",
+    "pageCount": 1,
+    "minimumRaw": 100.0,
+    "measurementTime": "2026-11-01T07:57:30.830286+00:00",
+    "tsv": "mydocs/pr/assets/pr8300-maintainer-20261101/supplied/native/nested-hwpx/silhouette.tsv"
+  },
+  {
+    "group": "supplied",
+    "key": "nested-hwpx",
+    "backend": "wasm",
+    "pageCount": 1,
+    "minimumRaw": 100.0,
+    "measurementTime": "2026-11-01T08:01:48.307550+00:00",
+    "tsv": "mydocs/pr/assets/pr8300-maintainer-20261101/supplied/wasm/nested-hwpx/silhouette.tsv"
+  },
+  {
+    "group": "supplied",
+    "key": "nested-mid",
+    "backend": "native",
+    "pageCount": 1,
+    "minimumRaw": 100.0,
+    "measurementTime": "2026-11-01T07:57:32.054723+00:00",
+    "tsv": "mydocs/pr/assets/pr8300-maintainer-20261101/supplied/native/nested-mid/silhouette.tsv"
+  },
+  {
+    "group": "supplied",
+    "key": "nested-mid",
+    "backend": "wasm",
+    "pageCount": 1,
+    "minimumRaw": 100.0,
+    "measurementTime": "2026-11-01T08:01:57.985105+00:00",
+    "tsv": "mydocs/pr/assets/pr8300-maintainer-20261101/supplied/wasm/nested-mid/silhouette.tsv"
+  }
+]

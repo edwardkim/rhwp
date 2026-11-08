@@ -1438,7 +1438,7 @@ class RegistryAndArgumentsTests(unittest.TestCase):
     def test_recognized_reference_patterns_use_pdf_directory_and_version_suffix(
         self,
     ) -> None:
-        for key in ("plan", "manual", "korexam", "math", "eng"):
+        for key in ("plan", "manual"):
             with self.subTest(key=key):
                 fixture = FIDELITY.REG[key]
                 self.assertTrue(fixture.reference_pattern.startswith("pdf/"))

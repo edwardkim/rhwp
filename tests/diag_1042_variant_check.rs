@@ -1,11 +1,6 @@
 #[test]
 fn check_variant_flags() {
-    let files = [
-        "samples/k-water-rfp.hwp",
-        "samples/k-water-rfp-2024.hwp",
-        "samples/hwp3-sample16-hwp5-2022.hwp",
-        "samples/hwp3-sample16-hwp5.hwp",
-    ];
+    let files = ["samples/k-water-rfp.hwp", "samples/k-water-rfp-2024.hwp"];
     for f in files.iter() {
         let bytes = std::fs::read(f).expect("read");
         let doc = rhwp::parser::parse_hwp(&bytes).expect("parse");

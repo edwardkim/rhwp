@@ -1,0 +1,19 @@
+{
+  "base-bottom15-native.tsv": "194fd7d86bc9d84fd4de9225767564958de760a4bcd5489f1eb03f10d7360b06",
+  "base-candidate-comparison.json": "f915dd834e9c6e537fd2b8b7d84dbcde4179c9e0a76e34cbfadbe4c599888251",
+  "base-footer15-native.tsv": "194fd7d86bc9d84fd4de9225767564958de760a4bcd5489f1eb03f10d7360b06",
+  "base-original-hwp-native.tsv": "c98e547785e2fed3b8d1d68e38b498ed8834f56b12a940a4f06aa382781024d2",
+  "base-original-hwpx-native.tsv": "fac7fae4ebac45a712901a184af3f5208c99ac5b5c0981000f5ca7067e33d4c8",
+  "bottom15-native-p002-overlay.png": "7f6a016be04c77e7da75ac7ac446429579b1d092ae16aaab70bb529fd5099c06",
+  "bottom15-native-p002-review.png": "544ba2f97fa8e77393b39b475eadb61646ddd5c6e5def1bf6e951c48adc432be",
+  "bottom15-native-p003-overlay.png": "f1b4a03b9fe835a7027d55df83a05775fde672e3965d7fee386a6f75a8721c6e",
+  "bottom15-native-p003-review.png": "70a558b21f67e0e2b33ea9fe19032159af52be3c099d3975e8f622bae3707d78",
+  "candidate-bottom15-native.tsv": "4f611bd448bdf6848f0890e89376ec08812dcf452ab2c5cfd5d5b456867c7676",
+  "candidate-footer15-native.tsv": "4f611bd448bdf6848f0890e89376ec08812dcf452ab2c5cfd5d5b456867c7676",
+  "candidate-original-hwp-native.tsv": "92f9abe9a3a2211f5edbbf7a1f06a8e5f88698acdedcc78d2431df7f1e6b4527",
+  "candidate-original-hwpx-native.tsv": "9828c841af1e71a789e5ea0242280db5dd9a35f737bfbcd2f5b0a34a31e9dd41",
+  "cause.json": "b5909bd12ba3dca16abdbafee5e401afd140212223740d9a22c8a583b8d81aaa",
+  "native-tests-result.json": "5722a21ac2fb3b8d12400642e10012feec02802d0665758bd0c8cc0d6b7e1da8",
+  "native-whole-results.json": "112bcb1d2e6987960c73ab23897056e2534fa83f60193d42a02da195713cb815",
+  "producer.json": "a0b1931938f25ec5285641862a0d0a6f02c38f0a5712fb06912e2d81cd436a30"
+}

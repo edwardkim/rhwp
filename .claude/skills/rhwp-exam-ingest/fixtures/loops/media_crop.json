@@ -5,7 +5,7 @@
     "vision-bbox",
     "crop --dry-run",
     "crop",
-    "build --media-dir"
+    "build --media-dir → Picture/BinData·실제 표시 확인"
   ],
   "stopOn": [
     "CROP_BBOX_NOT_UINT",

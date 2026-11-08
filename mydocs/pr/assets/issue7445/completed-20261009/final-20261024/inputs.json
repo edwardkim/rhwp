@@ -1,0 +1,802 @@
+[
+  {
+    "case": "sample16-2022",
+    "role": "source",
+    "path": "samples/hwp3-sample16-hwp5-2022.hwp",
+    "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+    "sizeBytes": 3048448,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "sample16-2022",
+    "role": "pdf",
+    "path": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+    "sha256": "6737b57af568a591eb073eeb27054e10aaf7587cbdfd6f18a06d1033b4025a19",
+    "sizeBytes": 1856498,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "pii66-declared",
+    "role": "source",
+    "path": "samples/task2097/75544_pii_bunseok.hwpx",
+    "sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+    "sizeBytes": 162611,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "pii66-declared",
+    "role": "pdf",
+    "path": "pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf",
+    "sha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770",
+    "sizeBytes": 777176,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "sample16-hwpx",
+    "role": "source",
+    "path": "samples/hwp3-sample16-hwp5.hwpx",
+    "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+    "sizeBytes": 3061900,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "sample16-hwpx",
+    "role": "pdf",
+    "path": "pdf/hwp3-sample16-hwp5-lossless-2024.pdf",
+    "sha256": "9d0a504f5344f39b770d84eba613567feb7910eded9fbb125ad4e7b0bab6b589",
+    "sizeBytes": 2465097,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "worklife6",
+    "role": "source",
+    "path": "samples/issue6145/worklife_balance_index_156607916.hwpx",
+    "sha256": "7778e5373baf7371a7c643cf4cca73defb065a92ecc941a3e55fff34fcdd2d17",
+    "sizeBytes": 278388,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "worklife6",
+    "role": "pdf",
+    "path": "pdf/planet-review-20260917/worklife_balance_index_156607916-2020.pdf",
+    "sha256": "0cc7229c1d8da5ef425ef76f3ba143db17171a71449bc4e341579a18a07a47ec",
+    "sizeBytes": 374776,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "asset60",
+    "role": "source",
+    "path": "samples/issue6031/3249937_asset_management_rules.hwpx",
+    "sha256": "97b5d6c571a6b7626321c6a53d797e3511978447497bb73309bd23eaa8e7ea77",
+    "sizeBytes": 423622,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "asset60",
+    "role": "pdf",
+    "path": "pdf/3249937_asset_management_rules-2020.pdf",
+    "sha256": "99099b0eb4b829b87e3b55e37a2db9f5aae51008ac7b8b93283db6900b02aecb",
+    "sizeBytes": 715365,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "rowbreak18",
+    "role": "source",
+    "path": "samples/rowbreak-problem-pages.hwp",
+    "sha256": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed",
+    "sizeBytes": 553984,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "rowbreak18",
+    "role": "pdf",
+    "path": "pdf/rowbreak-problem-pages-hwp-2024.pdf",
+    "sha256": "2c49bda9cc21dc8b93b554d2607da241dd7e894657eb308ed823e7d44654e85c",
+    "sizeBytes": 1056768,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "biotoxin205",
+    "role": "source",
+    "path": "samples/issue5941/1480000-201900698-native-neartop-reset.hwp",
+    "sha256": "18765ac22270a2cb4ece6a1e6539c2dea6ca6ccde2573b42fb9acce7c34fa83a",
+    "sizeBytes": 61810688,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "biotoxin205",
+    "role": "pdf",
+    "path": "pdf/issue5941-1480000-201900698-2020.pdf",
+    "sha256": "fe01f1ddffc3153d015adab93178f0fa8a5e9624763ff529362d4410d50955dc",
+    "sizeBytes": 8209545,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "regulatory17",
+    "role": "source",
+    "path": "samples/issue7445/80250_regulatory_analysis.hwp",
+    "sha256": "e68d903c20e89ed1325b3a5633c3c0606d21b042345b76a1785cad1e1eca8589",
+    "sizeBytes": 58368,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "regulatory17",
+    "role": "pdf",
+    "path": "pdf/80250_regulatory_analysis-hwp-2024.pdf",
+    "sha256": "65bbfb5a1ae7c4a71774cda4c91156990edd8a41177b6509109ee08ec286f286",
+    "sizeBytes": 316988,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "ktx003",
+    "role": "source",
+    "path": "samples/basic/KTX-003.hwp",
+    "sha256": "619bc919de3f2b8113fb9af0fcc808c754dc601ed9e66e49226280fd3d1ae032",
+    "sizeBytes": 66048,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "ktx003",
+    "role": "pdf",
+    "path": "pdf/basic/KTX-003-hwp-2020.pdf",
+    "sha256": "a0798bc093be8521908d9d0e5f2bf557013370f12de455fb9886d4f4d6419787",
+    "sizeBytes": 719180,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "low-slack6535",
+    "role": "source",
+    "path": "samples/issue6535/36339092_low_slack_absorb_block.hwpx",
+    "sha256": "28f17fae566427400084a30985a62e731c1907c42b25d52eaa000bb61a83e0ad",
+    "sizeBytes": 45872,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "low-slack6535",
+    "role": "pdf",
+    "path": "pdf/36339092_low_slack_absorb_block-2020.pdf",
+    "sha256": "0772e32e1a98a22042a2c25755ab493fe2b79d5096a1ce9ad5d5b3a400d6f809",
+    "sizeBytes": 38403,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "press12",
+    "role": "source",
+    "path": "samples/issue3637/press_release_split_cell_nested_table.hwpx",
+    "sha256": "e2cb077d51293ae081a83e49c3bf2bca701087fddb4068d29295607b326be410",
+    "sizeBytes": 433664,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "press12",
+    "role": "pdf",
+    "path": "pdf/issue3637/press_release_split_cell_nested_table-hwpx-2020.pdf",
+    "sha256": "731ff37070a7a5fedbd239920323244aecd10d8913a1a49351956263e45bc2cc",
+    "sizeBytes": 908484,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "project2097-declared",
+    "role": "source",
+    "path": "samples/task2097/1741000_project_application.hwp",
+    "sha256": "f645ec5d34f897f4078a57b15e5e6e408bbf751e653b187ab28a7549cea29096",
+    "sizeBytes": 65536,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "project2097-declared",
+    "role": "pdf",
+    "path": "pdf/task2097/1741000_project_application-2020.pdf",
+    "sha256": "3ef880378d5ec7bfb7bbedadab3dc9a855a2838348a383f767021cb43f7e3f89",
+    "sizeBytes": 156787,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "issue265",
+    "role": "source",
+    "path": "samples/issue_265.hwp",
+    "sha256": "645525c8cd5ec11b1742ba7cfc759f68622861916233b5e982385cdb12f0ced2",
+    "sizeBytes": 88880,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "issue265",
+    "role": "pdf",
+    "path": "pdf/issue_265-hwp-2020.pdf",
+    "sha256": "c8e4218c7b80f1fb4f7877f5613eb6fd82fa1ca2b1ca3cde6266b81586357302",
+    "sizeBytes": 437907,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "hwp3-alias",
+    "role": "source",
+    "path": "samples/hwp3-sample.hwp",
+    "sha256": "645525c8cd5ec11b1742ba7cfc759f68622861916233b5e982385cdb12f0ced2",
+    "sizeBytes": 88880,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "hwp3-alias",
+    "role": "pdf",
+    "path": "pdf/issue_265-hwp-2020.pdf",
+    "sha256": "c8e4218c7b80f1fb4f7877f5613eb6fd82fa1ca2b1ca3cde6266b81586357302",
+    "sizeBytes": 437907,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "converted16",
+    "role": "source",
+    "path": "samples/hwp3-sample-hwp5.hwp",
+    "sha256": "dc2edf4737c110ab16a6c6543bceed9f5648d634a40e180ce3fc2725ec0f21d8",
+    "sizeBytes": 111616,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "converted16",
+    "role": "pdf",
+    "path": "pdf/hwp3-sample-hwp5-hwp-2020.pdf",
+    "sha256": "fec78b1b1e8491b735247ff33ad38d3db69ff4cf1f55a6e22d4e81a289597f0b",
+    "sizeBytes": 442875,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "tac3",
+    "role": "source",
+    "path": "samples/issue6448/tac_cell_leftover_fits.hwpx",
+    "sha256": "429594ece605450efad3ca82c06d086169897f199be01d69d97ad116d1121fb2",
+    "sizeBytes": 4259,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "tac3",
+    "role": "pdf",
+    "path": "pdf/tac_cell_leftover_fits-2020.pdf",
+    "sha256": "09f0373671ac8dd4dab35ea6dde2190c71b6fb2d0e25e0dc26235a4122df96e6",
+    "sizeBytes": 11113,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "civil2",
+    "role": "source",
+    "path": "samples/issue6032/2912695_civil_petition_form.hwp",
+    "sha256": "1c6569dc69b1fe99de058de2760249d322b393b7eb6b4f2a2fe60f2489c25e04",
+    "sizeBytes": 14848,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "civil2",
+    "role": "pdf",
+    "path": "pdf/2912695_civil_petition_form-2020.pdf",
+    "sha256": "2e85455f13d0e911b495a7a152f1c799ffb2fc37dd2051312cafa4359c810f89",
+    "sizeBytes": 47955,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "ole-hwp",
+    "role": "source",
+    "path": "samples/한셀OLE.hwp",
+    "sha256": "fdc595a2f5f99f97653b91e57b4c74090391495ce5f84ef2e60308ea4b8e9da3",
+    "sizeBytes": 18944,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "ole-hwp",
+    "role": "pdf",
+    "path": "pdf/한셀OLE-hwp-2020.pdf",
+    "sha256": "9017f5a77f0942b61f71a1e806118b326191a3a0990189d88b08a8f83e863efc",
+    "sizeBytes": 6177,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "ole-hwpx",
+    "role": "source",
+    "path": "samples/한셀OLE.hwpx",
+    "sha256": "e9d1b0b79021f47743f56e1e162c0226fbc4e83865d4443cb9e0ce8af3e4cc8a",
+    "sizeBytes": 19024,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "ole-hwpx",
+    "role": "pdf",
+    "path": "pdf/한셀OLE-hwpx-2024.pdf",
+    "sha256": "62f31c99574b526c0c32b6c8a0600eee3d33966f92ad4cd800dd6d3cfbc27260",
+    "sizeBytes": 6179,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "rnote-cp01",
+    "role": "source",
+    "path": "samples/rnote/labnote-001-cp-01.hwp",
+    "sha256": "83f3f604192cca91bf15475f0e1de98219b6e65edd3229260fb8e83ebb0bbe79",
+    "sizeBytes": 21504,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "rnote-cp01",
+    "role": "pdf",
+    "path": "pdf/rnote/labnote-001-cp-01-hwp-2020.pdf",
+    "sha256": "d8a975d2d71c6345574391d54d2ed16590d6ba2480ae4f0be5e510c60d93bc2f",
+    "sizeBytes": 20077,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "rnote-cp02",
+    "role": "source",
+    "path": "samples/rnote/labnote-001-cp-02.hwp",
+    "sha256": "e2f939584a357f1776fa57a1bc16e696094b236154a419ac687fee70655c8e2d",
+    "sizeBytes": 20480,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "rnote-cp02",
+    "role": "pdf",
+    "path": "pdf/rnote/labnote-001-cp-02-hwp-2020.pdf",
+    "sha256": "e837e7098edc55d2e482b61696a1fddc58f45ad89d68976ac2366ab57bd3b09f",
+    "sizeBytes": 21993,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "table32",
+    "role": "source",
+    "path": "tests/fixtures/issue7486_table_enter/table_enter_32.hwpx",
+    "sha256": "79d6412a6744ec332978f77d3c09fd3859075dabde7c3613ea04a435beeec517",
+    "sizeBytes": 8366,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "table32",
+    "role": "pdf",
+    "path": "pdf/issue7486_table_enter_32-2020.pdf",
+    "sha256": "3b08c1988ef0ef0ad9485181171ddbacb335dc08e23eb33828012400142e26d8",
+    "sizeBytes": 6294,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "table33",
+    "role": "source",
+    "path": "tests/fixtures/issue7486_table_enter/table_enter_33.hwpx",
+    "sha256": "d49761580c9acce5338d17277395791ae63ce8a8d5546ff1a4efe3a77dceba45",
+    "sizeBytes": 8375,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "table33",
+    "role": "pdf",
+    "path": "pdf/issue7486_table_enter_33-2020.pdf",
+    "sha256": "909928debd7823ebd7713db0a96b59ba8559326b83d7844af6b77f754c50fff3",
+    "sizeBytes": 6721,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "table40",
+    "role": "source",
+    "path": "tests/fixtures/issue7486_table_enter/table_enter_40.hwpx",
+    "sha256": "9d60a17e20ba6f8cbc28508fde139454fca8cff9856a3fc6d1d4eef9acb9609a",
+    "sizeBytes": 8433,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "table40",
+    "role": "pdf",
+    "path": "pdf/issue7486_table_enter_40-2020.pdf",
+    "sha256": "562bd355ac70352dddbb889550d2960b03bbf052302dca0e3529d718e7a95a71",
+    "sizeBytes": 6721,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "table30",
+    "role": "source",
+    "path": "tests/fixtures/issue7486_table_enter/table30_spacing300_enter9.hwpx",
+    "sha256": "79c350473cd54de687d66b0e53357b57b889f0ed368d57a49ceafad18e848c4c",
+    "sizeBytes": 8788,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "table30",
+    "role": "pdf",
+    "path": "pdf/issue7486_table30_spacing300_enter9-2020.pdf",
+    "sha256": "fe360e6095b4ccd7a1f0b98ba4af22583b7d4f0c2cf63eb995d841fe6a7e665d",
+    "sizeBytes": 7397,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "ole-enter-hwp",
+    "role": "source",
+    "path": "mydocs/pr/assets/issue7445/completed-20261009/ole-enter-hwp.hwp",
+    "sha256": "75f3dd5c4ef95e5d29c2ec254e1deba2a0b1279ecbf3e87c86a2968fc9daeff2",
+    "sizeBytes": 17920,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "ole-enter-hwp",
+    "role": "pdf",
+    "path": "pdf/issue2069/ole-enter-hwp-2020.pdf",
+    "sha256": "f08d96aaafcb1c5213394063f8ca238123100812284d2dc6379429d3c2fc1009",
+    "sizeBytes": 6865,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "ole-enter-hwpx",
+    "role": "source",
+    "path": "mydocs/pr/assets/issue7445/completed-20261009/ole-enter-hwpx.hwpx",
+    "sha256": "00234f9ecf0dace140026f7afbbd94ede0cd0ceba4526c7df1acd677e5bce54e",
+    "sizeBytes": 13525,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "ole-enter-hwpx",
+    "role": "pdf",
+    "path": "pdf/issue2069/ole-enter-hwpx-2024.pdf",
+    "sha256": "b2622289b71002056a41f87be8bc341ee33725f7458d1b9529fafb3c28944d5c",
+    "sizeBytes": 6172,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "roadmap302",
+    "role": "source",
+    "path": "samples/issue5941/1490000-201600081_roadmap_research.hwp",
+    "sha256": "a06f46ec3f175c7cfa84eb3178b8b3fbdf78e94f71b31d7d87f3417a2617dae9",
+    "sizeBytes": 3923456,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "roadmap302",
+    "role": "pdf",
+    "path": "pdf/issue7382-regression-review/1490000-201600081_roadmap_research-2020.pdf",
+    "sha256": "133f79cad7b756ebef777d253befb14f9407faaf7fe04eeea66036f3e049bbe7",
+    "sizeBytes": 4342169,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "disaster",
+    "role": "source",
+    "path": "samples/task2097/21298295_byeolpyo5_disaster.hwp",
+    "sha256": "0cbaa29cf07948e8c9baf161fd8df4d766758a210fa64b2128fc038a57a6a435",
+    "sizeBytes": 90624,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "disaster",
+    "role": "pdf",
+    "path": "pdf/task2097/21298295_byeolpyo5_disaster-hwp-2020.pdf",
+    "sha256": "379736f7f167ade6b0fa6a9db8a43d3a7265808d483870c6a948e15c045d5ced",
+    "sizeBytes": 113772,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "empty-cell",
+    "role": "source",
+    "path": "samples/hwp3-empty-cell.hwp",
+    "sha256": "4190c30466215e575c2a45404f6f9c22fff0eb8136e2027000eb2c861f271508",
+    "sizeBytes": 6277,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "empty-cell",
+    "role": "pdf",
+    "path": "pdf/hwp3-empty-cell-2020.pdf",
+    "sha256": "12471a98c183506be2fad619b48a8c5e0110320e9f1a75bd000395d9a90669f6",
+    "sizeBytes": 100795,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "land-table",
+    "role": "source",
+    "path": "samples/issue6803/1376496-neighborhood-facility-land-table.hwp",
+    "sha256": "2482b695bc92c0cafe661af63c54acea834b6927bf9c666bdf47299910e3801d",
+    "sizeBytes": 32768,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "land-table",
+    "role": "pdf",
+    "path": "pdf/1376496-neighborhood-facility-land-table-2020.pdf",
+    "sha256": "ef7ac0c12d37f8b96f1af5e2d67e812151d9b9862c4f42824fee8bc04a5dda12",
+    "sizeBytes": 153835,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "ledger",
+    "role": "source",
+    "path": "samples/issue4680/20117321_gijang_handover_bond_ledger_form.hwp",
+    "sha256": "20698f60a2beca4bcf0d3abe275c090ff46392f916747ed262b5e76f6a5fe2f1",
+    "sizeBytes": 20486,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "ledger",
+    "role": "pdf",
+    "path": "pdf/issue4680/20117321_gijang_handover_bond_ledger_form-2020.pdf",
+    "sha256": "2d7698cfbdea7770b3ffe1e9fdd2d1488f6943453582da2f96125d600acfd63d",
+    "sizeBytes": 50572,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "lighting",
+    "role": "source",
+    "path": "samples/issue6860/3067979-road-lighting-photometric-hancom2020.hwpx",
+    "sha256": "028c3d318e121120ed4b8a71ba11bbb343d724da3563d4133bd354ca4fb61b2a",
+    "sizeBytes": 57893,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "lighting",
+    "role": "pdf",
+    "path": "pdf/3067979-road-lighting-photometric-hancom2020.pdf",
+    "sha256": "d2ef6b035034036f769a94a550efbfaf6a542d14846e16ad88ad3b53c1e59182",
+    "sizeBytes": 88013,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "none-image-fill",
+    "role": "source",
+    "path": "samples/issue7235/156086935_none_image_fill.hwp",
+    "sha256": "b12aa445776bef38a003e8679865a9a0ed2f729ecef18099625c976efe64d6ae",
+    "sizeBytes": 258048,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "none-image-fill",
+    "role": "pdf",
+    "path": "pdf/issue7235/156086935_none_image_fill-2020.pdf",
+    "sha256": "20f1f898bb5e25b63ea25cb48350964f7ac36a4273d770dd927cc54a54987b9d",
+    "sizeBytes": 392975,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "yeongwol4",
+    "role": "source",
+    "path": "samples/issue5699/20099369_yeongwol_forms.hwp",
+    "sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+    "sizeBytes": 20800,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "yeongwol4",
+    "role": "pdf",
+    "path": "pdf/20099369_yeongwol_forms-2020.pdf",
+    "sha256": "01682a87a130c0f1d713afa74c4c54b74ef2c0200395b5184d4c31a9f635335b",
+    "sizeBytes": 91696,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "court2",
+    "role": "source",
+    "path": "samples/issue6034/2912735_court_report_form.hwp",
+    "sha256": "9e68695b504656383f7686b75b3e92d28056201ad967570c28144e4bfce880ac",
+    "sizeBytes": 11776,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "court2",
+    "role": "pdf",
+    "path": "pdf/2912735_court_report_form-2020.pdf",
+    "sha256": "039f83dda89a7ac1fe3a162b39fdee0afbc43f4cc98af0c48a1223eed38d27a8",
+    "sizeBytes": 38167,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "superscript3",
+    "role": "source",
+    "path": "samples/issue5756/156732409_superscript_advance.hwp",
+    "sha256": "f354fdc246a0b334c34af1bd1916185a23eb7cc729c74e57407a7ea35f65b422",
+    "sizeBytes": 140288,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "superscript3",
+    "role": "pdf",
+    "path": "pdf/156732409_superscript_advance-2020.pdf",
+    "sha256": "de981116f2f6b526322e239024d4f9fec28cd889f08cffea0c4545effe883b7a",
+    "sizeBytes": 207567,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "field-marker1",
+    "role": "source",
+    "path": "samples/issue7344/36494836_field_marker_tac_lines.hwpx",
+    "sha256": "4103c9e87b43bd783043c9d757d83179363e9ca5e50cc6c50bcea7220ac86358",
+    "sizeBytes": 14338,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "field-marker1",
+    "role": "pdf",
+    "path": "pdf/issue7344/36494836-2020.pdf",
+    "sha256": "485e04ee4d309235cdbb0bcb345432c879391d850e1b4831a3d22136a2dbabde",
+    "sizeBytes": 36394,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "broken-ladder1",
+    "role": "source",
+    "path": "samples/issue7344/36312980_broken_cell_ladder_center.hwpx",
+    "sha256": "57e3acec05d3c856e931b5c4146fae6ecd3f96c6356fc7d6d99c501a83a34e21",
+    "sizeBytes": 14132,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "broken-ladder1",
+    "role": "pdf",
+    "path": "pdf/issue7344/36312980-2020.pdf",
+    "sha256": "ef35e530d654dcbfc9c4f008e89b2280d7a297b0e7bbcb2f39efef344ea4532b",
+    "sizeBytes": 38491,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "missing-lineseg1",
+    "role": "source",
+    "path": "samples/issue7344/36455985_no_lineseg_cell_spacing_before.hwpx",
+    "sha256": "9518b5ee4ca2c625b9b6ac8504def1915472bd7be60023eec9b79a4f38f045a2",
+    "sizeBytes": 14728,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "missing-lineseg1",
+    "role": "pdf",
+    "path": "pdf/issue7344/36455985-2020.pdf",
+    "sha256": "6b6dc687b810ab6a1f6def894334fcf9e2bde1084d1a7ad6bf38b1416fc2b8a7",
+    "sizeBytes": 38803,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "quote1",
+    "role": "source",
+    "path": "samples/issue7235/156467175_press_release_header_logo_p1.hwp",
+    "sha256": "559b2760ccb678ae22484bc7de8bc61347fff17d3b980d9bec3f2ecec8e07d57",
+    "sizeBytes": 232960,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "quote1",
+    "role": "pdf",
+    "path": "pdf/issue7235/156467175_press_release_header_logo_p1-2020.pdf",
+    "sha256": "1e791edc71173ec436fbdca3480705a97beade1f496318212440955077763cc2",
+    "sizeBytes": 124290,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "giant4138-original",
+    "role": "source",
+    "path": "samples/issue1949_giant_cell_nested_tables_perf.hwp",
+    "sha256": "ef10261cd29325116028e4f4f3e6be1a72c675eb771bddfd8484e7fe5aa94b4e",
+    "sizeBytes": 303616,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "giant4138-original",
+    "role": "pdf",
+    "path": "pdf/issue1949_giant_cell_nested_tables_perf-hwp-2024.pdf",
+    "sha256": "9fb08dea604813eed90a0449f29682d400be54dacd413352cc4f680f37cd4a44",
+    "sizeBytes": 985365,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "giant4138-tab-period",
+    "role": "source",
+    "path": "tests/fixtures/issue4138/tab-period-split.hwp",
+    "sha256": "d9bc6b13d54f5179c2cf57e6a2310a28efce4f8f6d6e74137a5828c9878a24b6",
+    "sizeBytes": 254464,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "giant4138-tab-period",
+    "role": "pdf",
+    "path": "pdf/issue4138-tab-period-split-20261015-2024.pdf",
+    "sha256": "687f1404e56a764258c93fb0e59d9fb1dd870b506d36451fbfa833fd207f8294",
+    "sizeBytes": 1020436,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "giant4138-current-ascii",
+    "role": "source",
+    "path": "mydocs/pr/assets/issue7445/completed-20261009/regression-policy-20261015/issue4138-current-production/saved-split-1x2.hwp",
+    "sha256": "4a96f1fc838eb7239d8c85b7698b9e04f83fc6b2f271c948ccae038a1c6c89b9",
+    "sizeBytes": 254464,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "giant4138-current-ascii",
+    "role": "pdf",
+    "path": "pdf/issue4138-ascii-split-20261016-2024.pdf",
+    "sha256": "5a82290de1571c692c7246fe6b57ae136602ae52c2068f2568fffc6c91bfd571",
+    "sizeBytes": 1020485,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "pii66-default",
+    "role": "source",
+    "path": "samples/task2097/75544_pii_bunseok.hwpx",
+    "sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+    "sizeBytes": 162611,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "pii66-default",
+    "role": "pdf",
+    "path": "pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf",
+    "sha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770",
+    "sizeBytes": 777176,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "giant4138-hwpx115",
+    "role": "source",
+    "path": "samples/issue1949_giant_cell_nested_tables_perf.hwpx",
+    "sha256": "fc6e5f156de470dfbb14aab392389491720ee7fb1bf6f03fe9a018e93b420c65",
+    "sizeBytes": 266523,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "giant4138-hwpx115",
+    "role": "pdf",
+    "path": "pdf/issue1949_giant_cell_nested_tables_perf-hwpx-2020.pdf",
+    "sha256": "ba065afdd3ace7fd6b87fe82848e6cae3d01915a1606e4d8a70e4c2153d57d73",
+    "sizeBytes": 985368,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "original-sample16",
+    "role": "source",
+    "path": "samples/hwp3-sample16.hwp",
+    "sha256": "559fd94860cf836d5800436d56055c23a73e59eedef3da273a5ba365e6ed9e16",
+    "sizeBytes": 2949937,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "original-sample16",
+    "role": "pdf",
+    "path": "pdf/hwp3-sample16-current-print-20261017-2020.pdf",
+    "sha256": "8f0bfd27ae567481e244f39de6f7b596b3afa8b227dce895d4ebf9cebc416bd0",
+    "sizeBytes": 2150230,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "original-sample11-user-print",
+    "role": "source",
+    "path": "samples/hwp3-sample11.hwp",
+    "sha256": "51b743b2823a2df9b6fac243f56aebecedbbd02e2a8baad58ffc2e5a4e695f20",
+    "sizeBytes": 391507,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "original-sample11-user-print",
+    "role": "pdf",
+    "path": "pdf/hwp3-sample11-ui-print-2020.pdf",
+    "sha256": "d787942b264a6593a0a5aafc50f44ecc85e7fca70b2617c2ec87c0e7315f7fda",
+    "sizeBytes": 28266804,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "new-upstream-field01",
+    "role": "source",
+    "path": "samples/field-01.hwp",
+    "sha256": "518cb939079e6e0640a5f813597f744e2528a17ca52ee418929f1c8f4b5380c0",
+    "sizeBytes": 514560,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "new-upstream-field01",
+    "role": "pdf",
+    "path": "pdf/field-01-hwp-2020.pdf",
+    "sha256": "ec488080ac777c355444bf98e0d0fb34ef02600870313bcaa212aff4500d8d0b",
+    "sizeBytes": 129044,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "receipt7017",
+    "role": "source",
+    "path": "samples/issue7017/2528375-science-invention-contest-receipt.hwp",
+    "sha256": "20f18916495e7fb815928ec73fd73a193b76a9ce6b575cefe0dd0515804d1da7",
+    "sizeBytes": 14336,
+    "committedAndExecutedBytesMatch": true
+  },
+  {
+    "case": "receipt7017",
+    "role": "pdf",
+    "path": "pdf/2528375-science-invention-contest-receipt-2020.pdf",
+    "sha256": "ee0f1312284ce04c683b69cbdfd70157760ff42ea57a2a864a1d3aaf93ff8e3b",
+    "sizeBytes": 60153,
+    "committedAndExecutedBytesMatch": true
+  }
+]

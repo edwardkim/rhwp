@@ -1,0 +1,30 @@
+{
+  "recorded_at": "2026-10-27T09:27:02.484989+00:00",
+  "validated_code_head": "2e902abacf328bccdd7780606666ac3b1c5c1ce9",
+  "base": "faa885e8b54ffc7cdf4196cd43a3103f362499a2",
+  "all18_rust_gates_passed": true,
+  "current_backend_cases": 67,
+  "current_page_comparisons_per_backend": 956,
+  "any_page_score_drop": 0,
+  "prior_output_byte_identical_pages_per_backend": 941,
+  "source_review_impl_pairs": 20,
+  "tracked_source_and_pdf_paths": 125,
+  "derived_import_outputs_not_fixtures": 12,
+  "local_markdown_links": 770,
+  "original_source_heads_unchanged": 20,
+  "original_reviewer_assignments_preserved": 20,
+  "original_unresolved_threads": 0,
+  "own_existing_pr_preflight": {
+    "number": 8319,
+    "head_branch": "review/semanticist21-20261019",
+    "status_at_read": "CI in progress;no failure observed",
+    "mutated": false,
+    "recheck_before_approved_pr_creation": true
+  },
+  "user_approval_gate": {
+    "latest_instruction": "pr 은 승인 받고 진행",
+    "remote_push_performed": false,
+    "pull_request_created": false,
+    "next_action": "Commit final local evidence, prepare concrete PR description, clean temporary output and idle debug, then request user approval."
+  }
+}

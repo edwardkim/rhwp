@@ -1,7 +1,8 @@
 import { execFileSync } from "node:child_process";
 
 const LIMIT = 8 * 1024 * 1024;
-const LABELS = ["b", "c", "d"];
+const LABELS = ["b", "c", "d", "e"];
+const HISTORICAL_LABELS = ["b", "c", "d"];
 const ID = /^[1-9][0-9]*$/;
 const SHA = /^[0-9a-f]{40}$/;
 // JUnit preserves Rust Unicode identifiers. Keep this a data-only identifier
@@ -25,7 +26,7 @@ export function selectDurationArtifacts(artifacts, run, pr, repositoryId) {
   const prefix = `nextest-target-durations-${run.id}-attempt-${run.run_attempt}`;
   const useNew = artifacts.some((artifact) => artifact?.name?.startsWith(`${prefix}-`));
   const legacy = !useNew && pr.head?.repo?.id === repositoryId && run.run_attempt === 1;
-  if (!useNew && !legacy) fail("attempt-bound B/C/D artifacts unavailable");
+  if (!useNew && !legacy) fail("attempt-bound B/C/D/E artifacts unavailable");
   const selected = LABELS.map((label) => {
     const name = `${legacy ? `nextest-target-durations-${run.id}` : prefix}-${label}`;
     const matches = artifacts.filter((artifact) => artifact?.name === name);
@@ -43,7 +44,7 @@ export function selectDurationArtifacts(artifacts, run, pr, repositoryId) {
     }
     return { label, artifact, legacy };
   });
-  if (new Set(selected.map(({ artifact }) => artifact.id)).size !== 3) fail("duplicate artifact IDs");
+  if (new Set(selected.map(({ artifact }) => artifact.id)).size !== LABELS.length) fail("duplicate artifact IDs");
   return selected;
 }
 
@@ -83,21 +84,22 @@ with zipfile.ZipFile(io.BytesIO(sys.stdin.buffer.read(limit+1))) as archive:
   }).toString("utf8"));
 }
 
-export function validateDurationReports(reports, { run, pr, repositoryId, testedMergeSha, legacy = false, measurementAttempts = null }) {
-  if (!Array.isArray(reports) || reports.length !== 3 || !SHA.test(testedMergeSha || "")
+export function validateDurationReports(reports, { run, pr, repositoryId, testedMergeSha, legacy = false, measurementAttempts = null, archiveLabels = LABELS }) {
+  if (![LABELS.join(","), HISTORICAL_LABELS.join(",")].includes(archiveLabels.join(","))) fail("invalid archive layout");
+  if (!Array.isArray(reports) || reports.length !== archiveLabels.length || !SHA.test(testedMergeSha || "")
     || !SHA.test(run?.head_sha || "") || !ID.test(String(run?.id || ""))
     || !Number.isSafeInteger(pr?.number) || pr.number <= 0
     || !Number.isSafeInteger(run.run_attempt) || run.run_attempt <= 0
     || (legacy && (pr.head?.repo?.id !== repositoryId || run.run_attempt !== 1))) fail("invalid report context");
   if (measurementAttempts !== null && (legacy || !record(measurementAttempts)
-    || Object.keys(measurementAttempts).sort().join(",") !== "b,c,d"
-    || LABELS.some(label => !Number.isSafeInteger(measurementAttempts[label])
+    || Object.keys(measurementAttempts).sort().join(",") !== archiveLabels.join(",")
+    || archiveLabels.some(label => !Number.isSafeInteger(measurementAttempts[label])
       || measurementAttempts[label] < 1 || measurementAttempts[label] > run.run_attempt))) fail("invalid measurement attempt map");
   const labels = new Set();
   const keys = { targets: new Set(), cases: new Set(), test_cases: new Set() };
   const schemas = new Set();
   const output = reports.map((report) => {
-    if (!record(report) || !LABELS.includes(report.archive_label) || labels.has(report.archive_label)
+    if (!record(report) || !archiveLabels.includes(report.archive_label) || labels.has(report.archive_label)
       || ![1, 2].includes(report.schema_version) || (!legacy && report.schema_version !== 2)) fail("invalid report schema or label");
     labels.add(report.archive_label);
     schemas.add(report.schema_version);
@@ -140,6 +142,6 @@ export function validateDurationReports(reports, { run, pr, repositoryId, tested
     }
     return normalized;
   });
-  if (labels.size !== 3 || schemas.size !== 1) fail("incomplete or mixed B/C/D schemas");
+  if (labels.size !== archiveLabels.length || schemas.size !== 1) fail("incomplete or mixed B/C/D/E schemas");
   return output.sort((a, b) => a.archive_label.localeCompare(b.archive_label));
 }

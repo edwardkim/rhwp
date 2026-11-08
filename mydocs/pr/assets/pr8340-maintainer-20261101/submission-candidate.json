@@ -1,0 +1,29 @@
+{
+  "source_head": "806e151776e6fae7a482bccad1aa4af8fa8dda23",
+  "base": "1a7ae8f5bd17ebc22b281fd1915973e18e4e641f",
+  "candidate_before_final_metadata": "aafd76f23bfd84c25760f2ebe35aa80ceaf9f565",
+  "declaration_commit": "3fa96a6e8da8558d8a7a9cdaa32adaf4644e202d",
+  "source_only_commits": 2,
+  "latest_devel_history_pushed_to_fork": false,
+  "clean_merge_tree": "f88dafad20cae433f5de8b3bad40ac5846b255de",
+  "compared_tested_integration_candidate": "836ca241a32908d57889997f110455d2f7751e6d",
+  "different_files": [
+    "rhwp-studio/public/rhwp.d.ts",
+    "rhwp-studio/public/rhwp_bg.wasm.d.ts"
+  ],
+  "all_runtime_source_and_test_blobs_identical": true,
+  "signatures": [
+    {
+      "path": "rhwp-studio/public/rhwp.d.ts",
+      "semantic_declarations_match_fresh_pkg": true,
+      "difference": "Generated export ordering only",
+      "merged_sha256": "b93fa8a8a0ecc2159b9135c15b333e52a78c1a5b79a52138ee1065a07e478059"
+    },
+    {
+      "path": "rhwp-studio/public/rhwp_bg.wasm.d.ts",
+      "semantic_declarations_match_fresh_pkg": true,
+      "difference": "Generated export ordering only",
+      "merged_sha256": "5adcbf0ea47fa68468ae7123400b833b3ad59b4bee0abdfcb87a1c4c032ba76d"
+    }
+  ]
+}

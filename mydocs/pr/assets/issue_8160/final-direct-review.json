@@ -1,0 +1,59 @@
+{
+  "source_sha": "0c3148ab54b3a4ca1bdc969e4d9283265625feec",
+  "reviewed_at": "2026-10-24T00:30:06.025649+00:00",
+  "directly_viewed": [
+    {
+      "path": "output/pr-review/issue8160-20261022/candidate34/final-review/triplet-hwp2022-p003.png",
+      "sha256": "12d82af220031726a39a63c245b4309b51a76b05af3bec7dbf8c4b7c4b8f01ae"
+    },
+    {
+      "path": "output/pr-review/issue8160-20261022/candidate34/final-review/triplet-hwp2022-p035.png",
+      "sha256": "38de61ca7265dbe56df2a19eadac88ac518debb5453fc9556bcde7ed7cb59bf8"
+    },
+    {
+      "path": "output/pr-review/issue8160-20261022/candidate34/final-review/triplet-hwp2022-p038.png",
+      "sha256": "0d6732dcba57e82fc798a65f00da5a52734fa924b7bb7e43fc54f56e4b47605e"
+    },
+    {
+      "path": "output/pr-review/issue8160-20261022/candidate34/final-review/triplet-hwp2024-p003.png",
+      "sha256": "92d193ca244ea569a17d328847a22c87d09783e1d40badca373da2d5d921e707"
+    },
+    {
+      "path": "output/pr-review/issue8160-20261022/candidate34/final-review/triplet-hwp2024-p006.png",
+      "sha256": "e4397b120c113e5daf885ba5142d0f46dbf66d2202facce108a7e1628df3ab09"
+    },
+    {
+      "path": "output/pr-review/issue8160-20261022/candidate34/final-review/triplet-hwpx-p018.png",
+      "sha256": "00ec3f332fff7a336e2c46c984ab4c144204fdfb3f788f4f24c31f30dc2e4c26"
+    },
+    {
+      "path": "output/pr-review/issue8160-20261022/candidate34/final-review/triplet-hwpx-p058.png",
+      "sha256": "cbccb3a0623c6556469848e778b1c494525357c8f3499486c6641ad754afc415"
+    },
+    {
+      "path": "output/pr-review/issue8160-20261022/candidate34/browser-review/canvaskit-2022-p018.png",
+      "sha256": "3c7488b87ef4a7722182303d8f84356cbc0f9b9406dfeb69cb1cc85593c6aac2"
+    },
+    {
+      "path": "output/pr-review/issue8160-20261022/candidate34/browser-review/canvaskit-2022-p035.png",
+      "sha256": "6b31048743a1d94e8c968c8958c40931bf3ab563e9385949cade3c4a6e0dc94a"
+    }
+  ],
+  "scope": [
+    "2022 p3 BCP: both original rows and successor preserved",
+    "2024 p3 original font forms and body spacing",
+    "2024 p6 complete evaluation table and both price equations",
+    "HWPX p18 WMF, adjacent title tables and following text",
+    "2022 p35 complete WMF labels, red marks and connections",
+    "2022 p38 full table and footer -36-",
+    "HWPX p58 complete form grid",
+    "CanvasKit software p18 and p35 image regions"
+  ],
+  "observed_limits": [
+    "Native/WASM table rules and underlines have lighter raster coverage than the reference on some pages",
+    "Hatch/antialiasing texture varies; raw100 means the fixed threshold232 and symmetric2px content silhouette contract",
+    "No missing content, wrong original line ownership, or new layout overlap observed in the viewed regions"
+  ],
+  "overlay_page_indices_corrected": true,
+  "status": "completed"
+}

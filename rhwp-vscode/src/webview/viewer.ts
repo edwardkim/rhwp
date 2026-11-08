@@ -98,10 +98,12 @@ const vscodeBundledFontFiles = new Set([
   "Pretendard-Regular.woff2",
   "Pretendard-Bold.woff2",
   "D2Coding-Regular.woff2",
+  "NotoSansMath-Regular.woff2",
   "NanumGothic-Regular.woff2",
   "NanumMyeongjo-Regular.woff2",
   "GowunBatang-Regular.woff2",
   "GowunDodum-Regular.woff2",
+  "RHWPPublicBatang-Regular.woff2",
 ]);
 const canvasKitFontPlan = (requiredFontFamilies: readonly string[]) => resolveCanvasKitFontPlan(
   requiredFontFamilies,
@@ -123,6 +125,9 @@ const rendererSession = new RendererSession(
       surface,
       {
         ...(canvasKitDefaultFontUri ? { defaultFontUrl: canvasKitDefaultFontUri } : {}),
+        ...(canvasKitFontsBaseUri ? {
+          mathFallbackFontUrl: `${canvasKitFontsBaseUri}/NotoSansMath-Regular.woff2`,
+        } : {}),
         requirePreparedFontFamilies: true,
       },
     );

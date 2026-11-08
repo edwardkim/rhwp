@@ -1,0 +1,34 @@
+{
+  "sourceRequest": "하이텔울릉도제목체",
+  "selectionCondition": "Only when original/installed aliases and document-declared substitute programs are absent, and RHWP Public Batang is actually supplied; explicit caller/embedded selections preserved.",
+  "source": "samples/hwp3-sample11.hwp",
+  "sourceSha256": "51b743b2823a2df9b6fac243f56aebecedbbd02e2a8baad58ffc2e5a4e695f20",
+  "independentReference": "pdf/hwp3-sample11-ui-print-2020.pdf",
+  "independentReferenceSha256": "d787942b264a6593a0a5aafc50f44ecc85e7fca70b2617c2ec87c0e7315f7fda",
+  "publicProgram": "assets/font-rules/evidence/issue-7445-public-batang-webfont.json",
+  "candidateMeasurements": [
+    {
+      "family": "Batang",
+      "referenceCoverage": 31,
+      "meanOutlineIoU": 0.7798255134019757,
+      "meanAdvanceErrorEm": 0.018239667338709676,
+      "distance": 0.17913036091626017
+    },
+    {
+      "family": "Baekmuk Batang",
+      "referenceCoverage": 31,
+      "meanOutlineIoU": 0.3467913926477719,
+      "meanAdvanceErrorEm": 0.022775957661290324,
+      "distance": 0.49738156892142915
+    },
+    {
+      "family": "Hahmlet",
+      "referenceCoverage": 31,
+      "meanOutlineIoU": 0.3331742657176305,
+      "meanAdvanceErrorEm": 0.08164138104838707,
+      "distance": 0.5276475769214546
+    }
+  ],
+  "scope": "Independent Print fallback outlines for31observed characters, not the unavailable original HiTEL font program. Best among measured candidates; not a claim that original HY Ulleungdo design equals Batang. No local proprietary font bytes redistributed.",
+  "hostContract": "Browser presence-only local names may block public fallback but never assert program identity/TrueType/cmap. WOFF2 load/flavor/hash and Native SFNT identity prove actual fallback supply separately."
+}

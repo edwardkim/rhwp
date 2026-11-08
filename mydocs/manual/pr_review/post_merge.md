@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-09-13
+last_verified: 2026-11-04
 ---
 
 # Merge 후속 처리
@@ -22,7 +22,8 @@ last_verified: 2026-09-13
 4. 최종 devel을 upstream/devel로 fast-forward한다.
 5. 관련 issue close 상태를 확인하고 필요한 issue comment를 게시한다.
 6. 원 PR 또는 supersede PR에 review 결과 comment를 게시한다.
-7. local·remote branch, worktree, 검토 전용 target을 정리하고 잔여 여부를 검증한다.
+7. local·remote branch, worktree, 검토 전용 target을 정리하고, 아래 7.7에 따라 저장소 루트의
+   `output/` 디렉터리 전체를 제거한 뒤 잔여 여부를 검증한다.
 
 시각 asset URL을 comment에 쓰면 asset이 devel에 실제 존재한 뒤에만 게시한다. 이미 완료된 원 PR의 기록만
 담는 별도 fast-pass PR은 5–6과 오늘할일 갱신을 반복하지 않고, devel sync와 cleanup만 수행한다.
@@ -54,6 +55,30 @@ golden/baseline을 maintainer 운영 기록으로 직접 push하지 않고 전�
 
 direct 반영은 source, test, workflow, golden/baseline, 기존 sample 수정, 신규 LFS 자료를 포함할 수 없다.
 그 범위를 넘으면 후속 PR로 전환한다.
+
+### 7.1.1 CI 변경 PR은 옵션 2로 후속 기록
+
+**옵션 2는 원 코드 PR을 검증·병합한 뒤 review·오늘할일·후속 증적을 별도 기록 PR로 반영하는 경로다.**
+원 PR의 전체 diff에 `.github/workflows/**`(예: `ci.yml`), `.github/actions/**`, CI 실행·재사용 판정
+정책 또는 검사기의 변경이 포함되면 처음부터 이 경로를 적용한다. 이 경우 문서-only trailing commit도
+전체 CI를 다시 실행할 수 있으므로, 원 PR에 후속 기록을 push해 재사용 가능 여부를 시험하지 않는다.
+
+1. 원 PR의 최신 code head에서 필요한 Full CI·required check와 실제 검토를 완료한다. 원 PR 본문의
+   검증·시각 증적과 merge 승인 조건은 유지하며, 옵션 2로 실패·미검증을 우회하지 않는다.
+2. 승인된 원 PR을 해당 head로 merge하고 merge SHA를 확인한다. 후속 기록만을 위해 원 PR의 CI
+   설정을 다시 수정하거나 검증을 재실행하지 않는다.
+3. 최신 `upstream/devel` 위 별도 branch에서 원 PR의 review·오늘할일·후속 증적만 반영한다.
+   원 코드·test·workflow 변경을 다시 포함하지 않는다. 원 PR 번호, 검증한 code SHA·CI 결과와
+   확정된 merge SHA를 기록한다.
+4. 기존 원격 승인 조건에 따라 후속 기록 PR을 생성한다. [PR 전체 review-only 경로](review_only_fast_pass.md#b-pr-전체가-review-only)의
+   실제 preflight·required check와 mergeability를 확인한 뒤 승인된 절차로 병합한다. 문서-only라는
+   이유로 fast-pass나 CI 성공을 미리 단정하지 않는다.
+5. 이 절의 나머지 devel 동기화·issue/comment·정리를 완료한다. 이미 끝난 원 PR의 원격 조치를
+   후속 기록 PR에서 중복 실행하지 않는다.
+
+trusted controller의 재사용 기능이 있더라도 위 조건의 후속 기록은 옵션 2로 처리한다. 그 기능의
+활성화를 기다리거나 full 재실행을 피하려고 CI 정책을 바꾸는 것으로 대신하지 않는다. PR에 CI를
+설명하는 문서만 바뀌고 실행 정의·판정 정책은 바뀌지 않았다면 이 조건에 해당하지 않는다.
 
 ## 7.6 review 문서 archive 이동
 
@@ -177,6 +202,11 @@ close 체크리스트: ① sub-issue close ② 가드 테스트 PR merge ③ 판
 direct link로 남기고, merge commit에 포함된 실제 asset을 보이게 포함한다. raw URL은 이미지 표시용 증적이며,
 문서 비교 방법의 정본은 Visual Sweep 가이드다.
 
+첫 comment부터 해당 원 PR이 주장한 각 문서·페이지와 일치하는 review·overlay를 넣는다. 원 PR
+본문·첨부와 이미지의 입력·페이지·출력 경로를 대조하고, 다른 PR의 대표 이미지로 대체하지 않는다.
+게시 전에 merge SHA로 고정한 raw 응답의 이미지 형식·해시를 원본과 비교하고, 게시 후 API 본문과
+화면 표시를 확인한다. 대응 증적이 준비되지 않았으면 먼저 보완하고 comment는 보류한다.
+
 게시 전에 해당 개별 review 문서의 `Merge 후 contributor PR comment 계획`을 읽고, 실제 merge SHA, devel에
 존재하는 asset, 확인한 페이지·후보 수·수치·사람의 결론이 계획과 일치하는지 대조한다. 계획이 없거나 불완전하면
 임시 output이나 기억에 의존해 comment를 작성하지 않는다. review 기록을 먼저 보완하고, 필요한 asset을 devel에
@@ -210,17 +240,47 @@ heavy worker skip, final aggregate, issue 상태를 PR comment에 남긴다. 반
 성공 merge뿐 아니라 reject/close, supersede, review 중단, 후속 기록 fast-pass 완료도 최종 종료 gate다.
 정리 또는 유지 사유를 확인하기 전에는 후속 처리 완료라고 보고하지 않는다.
 
-PR이 merge되고 필수 후속 처리가 끝나면, 해당 검토가 만든
-`output/pr-review/<review-id>/`의 로그와 임시 산출물을 정리한다. 먼저 이 경로를 사용하는 실행이 없는지,
-필요한 결과 요약·영구 증적이 검토 문서와 추적 asset에 남았는지 확인한다. 정확히 해당 review가 소유한
-경로만 제거하며 다른 검토의 `output`과 공유 산출물은 보존한다. merge 전 보류 중인 검토의 로그는 유지한다.
+검토와 필수 후속 처리가 끝나면 **저장소 루트의 `output/` 디렉터리 전체를 통째로 제거한다.**
+`output/pr-review/<review-id>/` 또는 `output/pr-review/`만 지우는 것으로 끝내지 않는다.
+이전에 완료·종료한 다른 검토의 로그·중간 출력·중복 산출물과 `output/`의 다른 하위 디렉터리도
+포함한다. 검토별 하위 경로는 실행 결과의 저장·귀속 단위이며 정리 범위를 제한하지 않는다.
+
+`output/`은 임시 작업공간이다. **검토와 필수 후속 처리가 끝나면 별도 정리 지시나 재승인 없이
+`output/` 전체를 자동 삭제한다. 삭제 전에 임시 내용을 다른 디렉터리에 복사·압축·이관하지 않는다.**
+“보존하지 말고 제거”라는 추가 지시를 기다리거나 보존 여부를 다시 묻지 않는다.
+필요한 정식 검증 증거는 작업 중 정식 경로와 검토 문서에 반영한다. 이미 정식 경로에 있는
+원본·기준 자료·커밋된 증거는 output 삭제 범위에 포함하지 않는다. 명시적인 보존 지시 또는
+실제로 진행 중인 다른 작업의 사용이 확인된 경우만 예외로 기록하며, 사용 종료 후 정리를 완료한다.
+
+**유휴 셸이 `output/`이나 `target/pr-review/debug`를 현재 작업 디렉터리(cwd)로 가리키는
+것만으로 삭제를 보류하지 않는다.**
+실행 중인 빌드·테스트·변환 작업, 자식 프로세스와 실제 파일 접근을 확인해 사용 여부를 판정한다.
+파일 작업 없이 대기 중인 셸의 cwd 참조만 있으면 셸을 강제 종료하거나 명령을 주입하지 않고
+삭제를 진행한다. 실제로 진행 중인 다른 작업이 파일을 사용하거나 새로 생성하는 경우에는
+구체적인 프로세스·경로·사용 근거를 기록하고 충돌을 조율한다.
+
+1. `output/` 전체의 용량·용도·소유 작업과 관련 이슈·PR의 상태를 확인한다. 실행 중인 프로세스의
+   경로·열린 파일 참조도 확인하며, 진행 중인 다른 작업의 자료를 임의로 이동·삭제하지 않는다.
+2. 원본 HWP/HWPX·독립 Print PDF·글꼴·후속 재현 자료와 최종 TSV·대표 review/overlay PNG,
+   입력/기준 SHA·렌더 명령 중 정식 보존이 필요한 자료의 반영 여부를 확인한다. 누락된 필수 자료만
+   작업의 자료 반영 단계에서 보완하고 해시·접근 가능 여부·검토 문서의 참조를 확인한다.
+   종료 정리 단계에서는 임시 로그·중간 출력·중복 산출물의 보존용 복사·압축·이관을 만들지 않는다.
+3. 필요한 증거 보존과 모든 사용 종료를 확인한 뒤 **정확한 저장소 루트의 `output/` 경로를 지정해
+   디렉터리 자체를 재귀 삭제한다.** 하위 산출물 일부만 지우거나 압축본을 그 안에 남기는 것으로
+   대체하지 않는다. `output/` 밖의 원본·PDF·글꼴·사용자 자료는 보존한다.
+   `target/pr-review/debug`의 종료 후 정리는 아래 7.7.1을 따른다.
+4. 다른 작업이 사용 중이거나 소유·필요 여부가 불명확해 전체 삭제를 완료할 수 없으면 해당 경로와
+   사유를 기록하고 **output 정리는 미완료**로 보고한다. 전체를 점검했다는 이유만으로 완료 처리하지 않는다.
+5. 삭제 경로·삭제 전후 용량과 여유 공간·완료 여부를 `output/` 밖의 정리 로그에 남기고
+   그 로그 위치를 사용자에게 보여준다. 로그에는 삭제 대상 파일 내용을 복사하지 않는다.
+   마지막에는 `output/` 디렉터리 자체가 존재하지 않는지 확인한 뒤에만 정리 완료로 보고한다.
 
 이번 PR 또는 검토만을 위해 만든 별도 local worktree는 merge와 필수 후속 처리가 끝난 뒤 **제거가 기본**이다.
 여기에는 commit·push를 만들지 않고 PR diff 열람, CI 로그 조사, 재현, 검증, cherry-pick 누적 또는 merge
 simulation만 수행한 local 검토 worktree도 포함한다. 다음 작업의 편의를 위한 보존은 유지 사유가 아니다. 제거
 전에는 clean 상태와 사용자·다른 도구의 소유 여부를 확인하며, 활성 작업 또는 작업지시자의 명시 보존 지시 때문에
-제거하지 못하면 정확한 경로와 사유를 최종 상태에 기록한다. 기본 작업공간, 공유 `target/pr-review`, 사용자·다른
-도구가 만든 worktree는 이 규칙의 삭제 대상이 아니다.
+제거하지 못하면 정확한 경로와 사유를 최종 상태에 기록한다. 기본 작업공간, 사용자·다른 도구가 만든
+worktree는 이 규칙의 삭제 대상이 아니다. 공유 target의 정리 범위는 아래 7.7.1을 따른다.
 
 대상 worktree는 자기 자신을 제거할 수 없으므로, 정리 명령은 반드시 보존할 기본 작업공간 또는 다른 clean
 worktree에서 실행한다. merge가 성공한 것만 확인하고 대상 worktree에 그대로 남아 "후속 처리 완료"로
@@ -292,17 +352,31 @@ contributor fork의 head는 위 `upstream` 조회 대상이 아니다. PR metada
 
 ### 7.7.1 검토 전용 target
 
-PR review Cargo 검증의 고정 경로 `target/pr-review`는 branch·worktree 정리 뒤에도 보존한다. 이 경로는
-다음 review의 일반 컴파일 산출물을 재사용하는 shared review cache이며, 빌드 뒤 이동하면 통합 테스트에
-박힌 절대 실행 경로가 깨질 수 있다. shared target/debug, target/release, target/release-test,
-target/wasm32-unknown-unknown와 사용자·다른 도구 산출물도 삭제 대상으로 가정하지 않는다.
+PR review Cargo 검증은 macOS·Linux·Windows 모두 각 host의 기본 rhwp 작업공간 아래 `target/pr-review`
+한 곳을 절대 경로로 공유한다. 검증 중에는 이 경로를 이동하거나 초기화하지 않는다. 빌드 뒤
+이동하면 통합 테스트에 박힌 절대 실행 경로가 깨질 수 있다.
+
+**검증과 필수 후속 처리가 끝나면 기본 작업공간의 `target/pr-review/debug` 디렉터리 전체를
+정리한다.** Ubuntu 기본 경로는 `/home/tsjang/rhwp/target/pr-review/debug`이며 worktree 안의
+동명 경로로 바꿔 잡지 않는다. 다음 조건을 모두 확인한 뒤 추가 승인 질문 없이 삭제한다.
+
+1. 공유 target을 사용하는 Cargo·rustc·wasm-pack·wasm-opt와 해당 debug 실행 파일·통합 테스트가
+   모두 종료됐고, 확인된 다른 실행·예약 작업도 그 경로를 사용하지 않는다.
+2. 필요한 검증 결과는 이미 정식 경로에 반영했다. 종료된 debug 빌드 산출물은 별도 백업·압축하지 않는다.
+3. 정확한 `target/pr-review/debug`만 재귀 삭제하고 디렉터리 부재·확보 공간을 정리 로그에 기록한다.
+   사용 중이라면 프로세스·경로를 기록하고 종료 후 이 단계를 완료한다.
+
+공유 target의 루트와 `release`, `release-test`, `wasm32-unknown-unknown` 등 다른 profile은
+재사용한다. 저장소의 별도 `target/debug`와 `target/release` 등도 이 debug 정리 범위에 포함하지 않는다.
 
 ~~~bash
 find target -mindepth 1 -maxdepth 1 -type d -exec du -sh {} \;
-pgrep -alf '(^|/)(cargo|rustc|wasm-pack)( |$)' || true
+pgrep -alf '(^|/)(cargo|rustc|wasm-pack|wasm-opt)( |$)' || true
 ~~~
 
-실행 중인 Cargo/Rust가 있으면 해당 target을 유지한다. `target/pr-review`는 정리하지 않고, 종료된 과거
-`target/review-*`처럼 고정 cache와 구별되는 exact legacy review directory만 소유·미사용을 확인한 뒤
-제거하거나 복구 가능한 환경에서는 휴지통으로 이동한다. 이후 남은 target 하위 경로와 보존한
-`target/pr-review`를 최종 상태에 기록한다.
+실행 중인 Cargo/Rust나 debug 실행 파일이 있으면 정리를 보류하고 사용 종료 후 위 debug 정리를
+완료한다. 종료된 과거 `target/review-*` 같은 별도 legacy review directory도 소유·미사용을 확인한
+뒤 정리할 수 있다. 최종 상태에는 debug 삭제 여부, 남은 target profile과 유지 사유를 구분해 기록한다.
+
+이 legacy 정리는 새 PR별 target을 만들라는 지시가 아니다. `target/<issue>`, `target/pr-<번호>`,
+`target/pr-review/<issue>`나 worktree별 target을 새로 만들고 merge 뒤 지우는 방식은 사용하지 않는다.

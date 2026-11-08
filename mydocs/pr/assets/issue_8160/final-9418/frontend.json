@@ -1,0 +1,115 @@
+{
+  "source_sha": "5df67d3299befb467a49dc4eaafd12d6e1877e2d",
+  "render_artifact_producer": "5df67d3299befb467a49dc4eaafd12d6e1877e2d",
+  "status": "passed",
+  "steps": [
+    {
+      "name": "studio-tsc",
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "cwd": "/home/tsjang/rhwp-8160-wasm-candidate6/rhwp-studio",
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/frontend-studio-tsc.log",
+      "exit_code": 0,
+      "seconds": 2.959
+    },
+    {
+      "name": "studio-tests",
+      "command": [
+        "npm",
+        "--prefix",
+        "rhwp-studio",
+        "test"
+      ],
+      "cwd": "/home/tsjang/rhwp-8160-wasm-candidate6",
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/frontend-studio-tests.log",
+      "exit_code": 0,
+      "seconds": 38.469
+    },
+    {
+      "name": "wasm-bindings-embed",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "scripts/frontend-wasm-bindings.test.mjs",
+        "scripts/frontend-editor-embed.test.mjs"
+      ],
+      "cwd": "/home/tsjang/rhwp-8160-wasm-candidate6",
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/frontend-wasm-bindings-embed.log",
+      "exit_code": 0,
+      "seconds": 0.54
+    },
+    {
+      "name": "font-trace",
+      "command": [
+        "node",
+        "--test",
+        "scripts/tests/font_decision_trace_contract.test.mjs",
+        "scripts/tests/font_decision_trace_e2e.test.mjs"
+      ],
+      "cwd": "/home/tsjang/rhwp-8160-wasm-candidate6",
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/frontend-font-trace.log",
+      "exit_code": 0,
+      "seconds": 18.491
+    },
+    {
+      "name": "vscode-compile",
+      "command": [
+        "npm",
+        "--prefix",
+        "rhwp-vscode",
+        "run",
+        "compile"
+      ],
+      "cwd": "/home/tsjang/rhwp-8160-wasm-candidate6",
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/frontend-vscode-compile.log",
+      "exit_code": 0,
+      "seconds": 30.628
+    },
+    {
+      "name": "vscode-outline",
+      "command": [
+        "node",
+        "--test",
+        "scripts/frontend-vscode-outline.test.mjs"
+      ],
+      "cwd": "/home/tsjang/rhwp-8160-wasm-candidate6",
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/frontend-vscode-outline.log",
+      "exit_code": 0,
+      "seconds": 0.254
+    },
+    {
+      "name": "studio-build",
+      "command": [
+        "npm",
+        "--prefix",
+        "rhwp-studio",
+        "run",
+        "build"
+      ],
+      "cwd": "/home/tsjang/rhwp-8160-wasm-candidate6",
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/frontend-studio-build.log",
+      "exit_code": 0,
+      "seconds": 14.336
+    },
+    {
+      "name": "incoming8195-command-error-browser",
+      "command": [
+        "node",
+        "e2e/command-error-contract.test.mjs",
+        "--mode=headless"
+      ],
+      "cwd": "/home/tsjang/rhwp-8160-wasm-candidate6/rhwp-studio",
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/logs/frontend-incoming8195-command-error-browser.log",
+      "exit_code": 0,
+      "seconds": 21.146
+    }
+  ],
+  "actual_package": {
+    "rhwp.js": "eb7d0eef282086b1369e71989543400fb159ba93a50dbaca056dd6d8a9f1a062",
+    "rhwp_bg.wasm": "c6a073a989a47d58198d1c85aadc39060744f7973d36ff5aa8cb59b24c00a7cd"
+  }
+}

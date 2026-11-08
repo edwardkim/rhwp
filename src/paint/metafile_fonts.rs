@@ -1,0 +1,424 @@
+//! 메타파일 paint가 실제 공급된 SFNT와 font 세대를 공유한다. 문서 측정 slot과 분리한다.
+
+use std::collections::{BTreeMap, HashMap, HashSet};
+use std::sync::{Arc, Mutex};
+
+use resvg::usvg::fontdb::{Database, Family, Source, Style, Weight, ID};
+use serde::{Deserialize, Serialize};
+
+use super::metafile_surface::SurfaceCache;
+
+const MAX_FONT_BYTES: usize = 32 * 1024 * 1024;
+const MAX_TOTAL_BYTES: usize = 64 * 1024 * 1024;
+const MAX_ALIASES: usize = 256;
+
+#[derive(Clone, Default)]
+pub(crate) struct MetafileFonts {
+    database: Option<Arc<Database>>,
+    sources: HashMap<[u8; 32], Arc<Vec<u8>>>,
+    aliases: HashMap<(String, u16, u8), ([u8; 32], u32, ID)>,
+    pub(super) fingerprint: [u8; 32],
+    pub(super) surfaces: Arc<Mutex<SurfaceCache>>,
+    requests: Arc<Mutex<Option<(u32, String)>>>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub(crate) struct FontRequest {
+    pub families: Vec<String>,
+    pub weight: u16,
+    pub italic: bool,
+    pub text: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct PageFontRequests {
+    metafile: Vec<FontRequest>,
+    text_effects: Vec<FontRequest>,
+}
+
+/// 현재 인쇄 트리가 실제로 소비하는 그림·문자 효과의 글꼴만 요청한다.
+/// 다른 쪽의 원본 BinData·글자 모양은 이 쪽의 paint 자원 예산을 소비하지 않는다.
+pub(crate) fn page_requests(
+    root: &crate::renderer::render_tree::RenderNode,
+    hangul2024: bool,
+) -> Result<PageFontRequests, &'static str> {
+    use crate::renderer::render_tree::RenderNodeType;
+    let mut metafile = Vec::new();
+    let mut effects = BTreeMap::<(Vec<String>, u16, bool), std::collections::BTreeSet<char>>::new();
+    let mut pending = vec![root];
+    let mut work = 1_000_000usize;
+    while let Some(node) = pending.pop() {
+        work = work
+            .checked_sub(1)
+            .ok_or("페이지 글꼴 요청의 순회 한도를 초과했습니다")?;
+        if !node.visible || node.editor_only {
+            continue;
+        }
+        match &node.node_type {
+            RenderNodeType::Image(image) => {
+                if let Some(data) = image.data.as_deref().filter(|data| {
+                    crate::renderer::image_resolver::detect_image_mime_type(data) == "image/x-wmf"
+                }) {
+                    if let Some(items) = crate::renderer::svg::convert_wmf_to_svg(data)
+                        .and_then(|svg| requests(&svg))
+                    {
+                        metafile.extend(items);
+                    }
+                }
+            }
+            RenderNodeType::RawSvg(svg) => {
+                if let Some(items) = requests(svg.svg.as_bytes()) {
+                    metafile.extend(items);
+                }
+            }
+            RenderNodeType::TextRun(run) if hangul2024 => {
+                let shadow = run.style.shadow_type == 2 && !run.is_vertical;
+                let leader = super::dot_leader::needs_font_program(node);
+                if shadow || leader {
+                    let families =
+                        crate::renderer::internal_font_family_members(&run.style.font_family)
+                            .into_iter()
+                            .map(str::to_owned)
+                            .collect::<Vec<_>>();
+                    let weight = match run.style.css_font_weight() {
+                        Some("bold") => 700,
+                        Some(value) => value.parse().unwrap_or(400),
+                        None => 400,
+                    };
+                    let chars = effects
+                        .entry((families, weight, run.style.italic))
+                        .or_default();
+                    if shadow {
+                        chars.extend(run.display_or_text().chars().filter(|c| !c.is_control()));
+                    }
+                    if leader {
+                        chars.insert('·');
+                    }
+                    if chars.len() > super::MAX_PORTABLE_GLYPHS_PER_RUN {
+                        return Err("페이지 텍스트 효과의 글리프 요청 한도를 초과했습니다");
+                    }
+                }
+            }
+            _ => (),
+        }
+        pending.extend(node.children.iter().rev());
+    }
+    let text_effects = effects
+        .into_iter()
+        .filter(|((names, _, _), chars)| !names.is_empty() && !chars.is_empty())
+        .map(|((families, weight, italic), chars)| FontRequest {
+            families,
+            weight,
+            italic,
+            text: chars.into_iter().collect(),
+        })
+        .collect();
+    Ok(PageFontRequests {
+        metafile,
+        text_effects,
+    })
+}
+
+pub(super) fn family(name: &str) -> Family<'_> {
+    match name {
+        "serif" => Family::Serif,
+        "sans-serif" => Family::SansSerif,
+        "monospace" => Family::Monospace,
+        "cursive" => Family::Cursive,
+        "fantasy" => Family::Fantasy,
+        _ => Family::Name(name),
+    }
+}
+
+pub(crate) fn requests(svg: &[u8]) -> Option<Vec<FontRequest>> {
+    let xml = roxmltree::Document::parse(std::str::from_utf8(svg).ok()?).ok()?;
+    let mut groups = BTreeMap::<(Vec<String>, u16, bool), HashSet<char>>::new();
+    for node in xml.descendants().filter(|n| n.has_tag_name("text")) {
+        let names =
+            svgtypes::parse_font_families(node.attribute("font-family").unwrap_or("sans-serif"))
+                .ok()?
+                .into_iter()
+                .map(|name| match name {
+                    svgtypes::FontFamily::Named(value) => value,
+                    other => other.to_string(),
+                })
+                .collect::<Vec<_>>();
+        let weight = match node.attribute("font-weight").unwrap_or("400") {
+            "bold" => 700,
+            value => value.parse().ok()?,
+        };
+        let italic = matches!(node.attribute("font-style"), Some("italic" | "oblique"));
+        let chars = groups.entry((names, weight, italic)).or_default();
+        for text in node
+            .descendants()
+            .filter_map(|n| n.is_text().then(|| n.text()).flatten())
+        {
+            // XML 공백은 SVG에서 공백 문자로 처리될 수 있다. 공백만 있는
+            // 장식 텍스트도 실제 공급 글꼴의 cmap을 확인하도록 보존한다.
+            chars.extend(text.chars().filter_map(|c| match c {
+                '\t' | '\n' | '\r' => Some(' '),
+                c if !c.is_control() => Some(c),
+                _ => None,
+            }));
+        }
+    }
+    Some(
+        groups
+            .into_iter()
+            .filter(|(_, chars)| !chars.is_empty())
+            .map(|((families, weight, italic), chars)| {
+                let mut chars = chars.into_iter().collect::<Vec<_>>();
+                chars.sort_unstable();
+                FontRequest {
+                    families,
+                    weight,
+                    italic,
+                    text: chars.into_iter().collect(),
+                }
+            })
+            .collect(),
+    )
+}
+
+fn configure_generics(database: &mut Database) {
+    let first = |names: &[&str]| {
+        names.iter().find_map(|name| {
+            database
+                .faces()
+                .any(|f| f.families.iter().any(|(family, _)| family == name))
+                .then_some((*name).to_owned())
+        })
+    };
+    let sans = first(&[
+        "Noto Sans CJK KR",
+        "Noto Sans KR",
+        "HCR Dotum",
+        "Malgun Gothic",
+        "DejaVu Sans",
+    ]);
+    let serif = first(&[
+        "Noto Serif CJK KR",
+        "Noto Serif KR",
+        "HCR Batang",
+        "DejaVu Serif",
+    ]);
+    let mono = first(&["GulimChe", "D2Coding", "DejaVu Sans Mono"]);
+    if let Some(name) = sans {
+        database.set_sans_serif_family(name);
+    }
+    if let Some(name) = serif {
+        database.set_serif_family(name);
+    }
+    if let Some(name) = mono {
+        database.set_monospace_family(name);
+    }
+}
+
+fn default_database() -> Arc<Database> {
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        use std::sync::OnceLock;
+        static DATABASE: OnceLock<Arc<Database>> = OnceLock::new();
+        DATABASE
+            .get_or_init(|| {
+                let mut database = Database::new();
+                database.load_system_fonts();
+                crate::renderer::font_paths::load_into_fontdb(&mut database, &[]);
+                configure_generics(&mut database);
+                Arc::new(database)
+            })
+            .clone()
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        Arc::new(Database::new())
+    }
+}
+
+impl MetafileFonts {
+    /// 세션에 명시적으로 공급한 프로그램만 새 텍스트 효과의 근거로 쓴다.
+    pub(super) fn is_supplied_face(&self, id: ID) -> bool {
+        self.aliases
+            .values()
+            .any(|(_, _, supplied)| *supplied == id)
+    }
+
+    /// 텍스트 효과는 같은 family/style 해소와 명시 공급 프로그램만 소비한다.
+    pub(super) fn supplied_faces_for_style(&self, style: &crate::renderer::TextStyle) -> Vec<ID> {
+        let database = self.database();
+        let weight = match style.css_font_weight() {
+            Some("bold") => 700,
+            Some(value) => value.parse().unwrap_or(400),
+            None => 400,
+        };
+        crate::renderer::internal_font_family_members(&style.font_family)
+            .into_iter()
+            .filter_map(|name| {
+                database.query(&resvg::usvg::fontdb::Query {
+                    families: &[Family::Name(name)],
+                    weight: Weight(weight),
+                    style: if style.italic {
+                        Style::Italic
+                    } else {
+                        Style::Normal
+                    },
+                    ..Default::default()
+                })
+            })
+            .filter(|id| self.is_supplied_face(*id))
+            .collect()
+    }
+
+    pub(crate) fn cached_requests(&self, epoch: u32) -> Option<String> {
+        self.requests
+            .lock()
+            .ok()?
+            .as_ref()
+            .filter(|(value, _)| *value == epoch)
+            .map(|(_, json)| json.clone())
+    }
+
+    pub(crate) fn cache_requests(&self, epoch: u32, json: &str) {
+        if let Ok(mut cache) = self.requests.lock() {
+            *cache = Some((epoch, json.to_owned()));
+        }
+    }
+
+    pub(super) fn database(&self) -> Arc<Database> {
+        self.database.clone().unwrap_or_else(default_database)
+    }
+
+    pub(crate) fn register(
+        &mut self,
+        name: &str,
+        bytes: &[u8],
+        face_index: u32,
+    ) -> Result<bool, &'static str> {
+        let name = name.trim();
+        if name.is_empty() || name.len() > 1024 || name.chars().any(char::is_control) {
+            return Err("메타파일 글꼴 family가 유효하지 않습니다");
+        }
+        if bytes.len() > MAX_FONT_BYTES {
+            return Err("메타파일 글꼴의 바이트 상한을 초과했습니다");
+        }
+        let parsed = ttf_parser::Face::parse(bytes, face_index)
+            .map_err(|_| "메타파일 글꼴 face를 읽을 수 없습니다")?;
+        let key = (
+            name.to_lowercase(),
+            parsed.weight().to_number(),
+            if parsed.is_italic() {
+                1
+            } else if parsed.is_oblique() {
+                2
+            } else {
+                0
+            },
+        );
+        let digest = *blake3::hash(bytes).as_bytes();
+        if self
+            .aliases
+            .get(&key)
+            .is_some_and(|(hash, index, _)| *hash == digest && *index == face_index)
+        {
+            return Ok(false);
+        }
+        if self.aliases.len() >= MAX_ALIASES && !self.aliases.contains_key(&key) {
+            return Err("메타파일 글꼴 alias 상한을 초과했습니다");
+        }
+        let source = if let Some(data) = self.sources.get(&digest) {
+            data.clone()
+        } else {
+            let used: usize = self.sources.values().map(|v| v.len()).sum();
+            if used.saturating_add(bytes.len()) > MAX_TOTAL_BYTES {
+                return Err("메타파일 글꼴의 총 바이트 상한을 초과했습니다");
+            }
+            Arc::new(bytes.to_vec())
+        };
+        let mut temporary = Database::new();
+        temporary.load_font_source(Source::Binary(source.clone()));
+        let mut face = temporary
+            .faces()
+            .find(|f| f.index == face_index)
+            .cloned()
+            .ok_or("메타파일 글꼴의 명명 face를 읽을 수 없습니다")?;
+        // 이 등록은 family 하나에 대한 명시 binding이다. 원본의 다른 alias를
+        // 함께 노출하면 후속 alias 등록이 앞서 등록한 다른 binding까지 지울 수 있다.
+        // 원래 family 이름과 프로그램 자체는 공급된 SFNT 바이트에 보존된다.
+        let language = face
+            .families
+            .first()
+            .ok_or("메타파일 글꼴의 family가 없습니다")?
+            .1;
+        face.families = vec![(name.to_owned(), language)];
+        let db = self.database.get_or_insert_with(default_database);
+        let db = Arc::make_mut(db);
+        // 명시적으로 공급한 실제 face가 같은 family/style의 오래된 프로그램을 대체한다.
+        let old = db
+            .faces()
+            .filter(|old| {
+                old.weight == face.weight
+                    && old.style == face.style
+                    && old
+                        .families
+                        .iter()
+                        .any(|(family, _)| family.eq_ignore_ascii_case(name))
+            })
+            .map(|f| f.id)
+            .collect::<Vec<_>>();
+        for id in old {
+            db.remove_face(id);
+        }
+        let id = db.push_face_info(face);
+        configure_generics(db);
+        self.sources.insert(digest, source);
+        self.aliases.insert(key, (digest, face_index, id));
+        let mut hash = blake3::Hasher::new();
+        hash.update(&self.fingerprint);
+        hash.update(name.as_bytes());
+        hash.update(&digest);
+        hash.update(&face_index.to_le_bytes());
+        self.fingerprint = *hash.finalize().as_bytes();
+        Ok(true)
+    }
+
+    /// 없는 글자를 투명한 출력으로 확정하기 전에 실제 선택 후보의 cmap을 대조한다.
+    pub(super) fn coverage_fingerprint(&self, requests: &[FontRequest]) -> Option<[u8; 32]> {
+        let database = self.database();
+        let mut sources = blake3::Hasher::new();
+        for request in requests {
+            let mut missing = request.text.chars().collect::<HashSet<_>>();
+            for name in &request.families {
+                let families = [family(name)];
+                let Some(id) = database.query(&resvg::usvg::fontdb::Query {
+                    families: &families,
+                    weight: Weight(request.weight),
+                    style: if request.italic {
+                        Style::Italic
+                    } else {
+                        Style::Normal
+                    },
+                    ..Default::default()
+                }) else {
+                    continue;
+                };
+                database.with_face_data(id, |data, index| {
+                    if let Ok(face) = ttf_parser::Face::parse(data, index) {
+                        // 시스템 파일도 실제 사용한 bytes로 식별한다. 같은 경로의
+                        // 프로그램 교체가 이전 surface의 재사용으로 이어지면 안 된다.
+                        sources.update(blake3::hash(data).as_bytes());
+                        sources.update(&index.to_le_bytes());
+                        missing.retain(|ch| !face.glyph_index(*ch).is_some_and(|g| g.0 != 0));
+                    }
+                });
+                if missing.is_empty() {
+                    break;
+                }
+            }
+            if !missing.is_empty() {
+                return None;
+            }
+        }
+        Some(*sources.finalize().as_bytes())
+    }
+}

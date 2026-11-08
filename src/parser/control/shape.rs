@@ -189,6 +189,9 @@ pub(crate) fn parse_gso_control(ctrl_data: &[u8], child_records: &[Record]) -> C
             text_box.margin_right = lr.read_i16().unwrap_or(0);
             text_box.margin_top = lr.read_i16().unwrap_or(0);
             text_box.margin_bottom = lr.read_i16().unwrap_or(0);
+            // The HWP LIST_HEADER physically stores all four margins. Zero is
+            // explicit too; dropping its presence changes HWPX text layout.
+            text_box.text_margin_explicit = lh_data.len() >= 16;
             text_box.max_width = lr.read_u32().unwrap_or(0);
             // 나머지 바이트 보존 (라운드트립용)
             if lr.remaining() > 0 {
@@ -353,21 +356,19 @@ pub(crate) fn parse_common_obj_attr(ctrl_data: &[u8]) -> CommonObjAttr {
     // 안 잠긴 표보다 정확히 `2^30` 만큼 크다(같은 문서 안 표 열둘로 대조). 여태 HWPX 경로에서만
     // 읽고 HWP5 는 늘 `false` 여서, 잠긴 개체가 저장·변환에서 풀려 나갔다.
     common.locked = attr & (1 << 30) != 0;
-    common.hwp5_gen_shape_attr_bit26 = attr & (1 << 26) != 0;
     common.hwp5_gen_shape_attr_bit28 = attr & (1 << 28) != 0;
     // [#5864] 개체 번호 범주(캡션 번호·상호참조 계열) — attr bits 26-28 의 3비트
     // 열거다. 07276 실측: 표 155/155(0=NONE 23·2=TABLE 126·1=PICTURE 6), 수식
     // 8/8(=3), gso 분포도 한글 2024 SaveAs HWPX 의 numberingType 과 정합
     // (PICTURE 28·TABLE 1 정확 일치). 종전엔 안 읽어 h2x 산출이 전량 NONE 이
     // 됐고, 한글이 상호참조 순번을 전부 1 로 재계산했다(07276 상호참조 153중
-    // 101 오염). bit26/28 개별 보존 플래그(hwp5_gen_shape_attr_bit26/28)는
-    // attr verbatim 왕복용으로 그대로 둔다.
-    common.numbering_type = match (attr >> 26) & 0x7 {
-        1 => crate::model::shape::ObjectNumberingType::Picture,
-        2 => crate::model::shape::ObjectNumberingType::Table,
-        3 => crate::model::shape::ObjectNumberingType::Equation,
-        _ => crate::model::shape::ObjectNumberingType::None,
-    };
+    // 101 오염).
+    // [#8294] 범주는 bit 26-27 의 2비트다. bit 28 은 범주와 별개로 켜진다 — 한글 2024
+    // `NumberingType` 은 원본 6·5·7 을 표·그림·수식(2·1·3)으로, 4 를 없음(0)으로 읽는다
+    // (한글문서파일형식 표 166 · exam_math_no 수식·그림·표 전수). 3비트로 읽으면 표 1437·
+    // 그림 435·수식 375(samples)가 범주를 잃어 캡션 번호가 모두 1이 된다.
+    // [#8335] bit 26 은 이 범주의 아래 비트다 — 저장기도 범주에서 다시 만든다.
+    common.numbering_type = crate::model::shape::ObjectNumberingType::from_hwp5_attr(attr);
     common.vert_rel_to = match (attr >> 3) & 0x03 {
         1 => VertRelTo::Page,
         2 => VertRelTo::Para,
@@ -729,6 +730,11 @@ fn parse_container_children(child_records: &[Record], depth: u32) -> Vec<ShapeOb
             text_box: None,
             caption: None,
         };
+        // [#8225] 자식 SHAPE_COMPONENT 바로 아래의 CTRL_DATA (개체 설명 등). 저장 때 같은 자리에 되쓴다
+        child_drawing.shape_attr.ctrl_data = child_slice[1..]
+            .iter()
+            .find(|r| r.level == child_slice[0].level + 1 && r.tag_id == tags::HWPTAG_CTRL_DATA)
+            .map(|r| r.data.clone());
         // tb_attr: SHAPE_COMPONENT 인라인 텍스트 속성 (미구현, 항상 None)
         let tb_attr: Option<(i16, i16, i16, i16, u32, u32)> = None;
 
@@ -793,6 +799,7 @@ fn parse_container_children(child_records: &[Record], depth: u32) -> Vec<ShapeOb
                     text_box.margin_right = lr.read_i16().unwrap_or(0);
                     text_box.margin_top = lr.read_i16().unwrap_or(0);
                     text_box.margin_bottom = lr.read_i16().unwrap_or(0);
+                    text_box.text_margin_explicit = lh_data.len() >= 16;
                     text_box.max_width = lr.read_u32().unwrap_or(0);
                     if lr.remaining() > 0 {
                         text_box.raw_list_header_extra =
@@ -942,9 +949,10 @@ fn parse_picture(common: CommonObjAttr, shape_attr: ShapeComponentAttr, data: &[
         bottom: r.read_i16().unwrap_or(0),
     };
 
-    // 이미지 속성
-    pic.image_attr.brightness = r.read_i8().unwrap_or(0);
+    // HWP5 실저장 순서는 명암→밝기다. 의미 IR/HWPX는 밝기→명암으로 읽는다.
+    // 한컴2024의 편람 그림354 HWP→HWPX는 bright=8, contrast=0이다(#7751).
     pic.image_attr.contrast = r.read_i8().unwrap_or(0);
+    pic.image_attr.brightness = r.read_i8().unwrap_or(0);
     let effect = r.read_u8().unwrap_or(0);
     pic.image_attr.effect = match effect {
         1 => ImageEffect::GrayScale,
@@ -968,21 +976,26 @@ fn parse_picture(common: CommonObjAttr, shape_attr: ShapeComponentAttr, data: &[
                 pic.raw_picture_extra[4],
             ]);
         }
-        if pic.raw_picture_extra.len() >= 18 {
-            if let Some(&alpha) = pic.raw_picture_extra.last() {
-                pic.image_attr.transparency =
-                    crate::model::image::alpha_byte_to_transparency_percent(alpha);
-            }
+        // 꼬리 중간의 그림 효과 정보 뒤에 원본 크기와 투명도가 온다.
+        let layout = crate::model::image::picture_extra_layout(&pic.raw_picture_extra);
+        if let Some(&alpha) = layout
+            .alpha_offset
+            .and_then(|i| pic.raw_picture_extra.get(i))
+        {
+            pic.image_attr.transparency =
+                crate::model::image::alpha_byte_to_transparency_percent(alpha);
         }
-        // [#1929] extra 꼬리의 원본 이미지 크기(offset 9..17: w4+h4)를 img_dim 으로
+        // [#1929] extra 꼬리의 원본 이미지 크기(w4+h4)를 img_dim 으로
         // 적재 — HWPX `hp:imgDim` 대응 필드. 종전에는 HWP5 파스가 이를 읽지 않아
         // HWPX→HWP5 왕복에서 imgDim 이 (0,0) 으로 소실됐다 (직렬화기 non-raw
         // 경로가 기록해도 재파스가 버림).
-        if pic.raw_picture_extra.len() >= 17 {
-            let e = &pic.raw_picture_extra;
+        if let Some(e) = layout
+            .dim_offset
+            .and_then(|i| pic.raw_picture_extra.get(i..i + 8))
+        {
             pic.img_dim = (
-                u32::from_le_bytes([e[9], e[10], e[11], e[12]]),
-                u32::from_le_bytes([e[13], e[14], e[15], e[16]]),
+                u32::from_le_bytes([e[0], e[1], e[2], e[3]]),
+                u32::from_le_bytes([e[4], e[5], e[6], e[7]]),
             );
         }
     }

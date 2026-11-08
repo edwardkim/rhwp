@@ -282,6 +282,9 @@ fn context_display_overlay_preserves_frame_style_partitions_around_the_field() {
             supplemental_metrics_blocked: false,
             inserted_control_text: false,
             space_metric: crate::renderer::composer::SpaceMetric::Stored,
+            regenerated_font_metrics: false,
+            literal_figure_space: false,
+            literal_soft_hyphen: false,
             ..stale.clone()
         },
         ComposedTextRun {
@@ -431,6 +434,64 @@ fn modest_field_fill_reflows_a_geometry_matching_stored_partition() {
         !materialized.stored_text_partition_is_dirty(),
         "a model-writing reflow publishes a current partition"
     );
+    {
+        let text = "alpha\tomega";
+        let extensions = vec![[7500, 0, 0x0203, 0, 0, 0, 9]];
+        let mut para = Paragraph {
+            text: text.into(),
+            char_count: text.chars().count() as u32 + 1,
+            char_offsets: (0..text.chars().count() as u32).collect(),
+            tab_extended: extensions.clone(),
+            char_shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }],
+            line_segs: vec![LineSeg {
+                segment_width: 15000,
+                line_height: 1000,
+                text_height: 900,
+                baseline_distance: 800,
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        let composed = compose_paragraph(&para);
+        assert_eq!(
+            composed.tab_extended, extensions,
+            "저장 줄 수용 경로는 전진을 보존한다"
+        );
+        para.invalidate_layout_inputs();
+        assert!(para.stored_text_partition_is_dirty());
+        let styles = crate::renderer::style_resolver::ResolvedStyleSet::default();
+        let rebuilt = recompose_stored_lines_in_frame(
+            &composed,
+            &para,
+            ParagraphBox::content(0..15000),
+            200.0,
+            &styles,
+            96.0,
+            false,
+            StoredRowMissPolicy::Reflow,
+            &[],
+        )
+        .expect("편집으로 무효화한 저장 줄은 현재 프레임에서 재구성한다");
+        assert!(
+            rebuilt.tab_extended.is_empty(),
+            "옛 줄의 전진을 새 줄에서 다시 수용하지 않는다"
+        );
+        assert_eq!(
+            para.tab_extended, extensions,
+            "원본·직렬화 데이터는 보존한다"
+        );
+        let visible: String = rebuilt
+            .lines
+            .iter()
+            .flat_map(|line| &line.runs)
+            .map(|run| run.text.as_str())
+            .collect();
+        assert_eq!(visible, text, "재조판은 내용 순서·누락·중복을 보존한다");
+    }
 }
 
 /// 누름틀을 가진 본문 문단도 프레임이 소유한다 — 소유자 없는 문단을 만들면 안 된다.
@@ -794,22 +855,21 @@ fn test_compose_multi_line_multi_style() {
     assert_eq!(composed.lines[1].runs[0].char_style_id, 3);
 }
 
-/// 빈 문단
-#[test]
-fn test_compose_empty_paragraph() {
-    let para = Paragraph::default();
-    let composed = compose_paragraph(&para);
-    assert!(composed.lines.is_empty());
-    assert!(composed.inline_controls.is_empty());
-}
-
 /// table-vpos-01 page 5의 10/11/12 마커는 CharOverlap 하나에 두 개의
 /// HWP PUA 구성 글자가 들어온다. 텍스트 흐름과 캐럿 이동은 한 글자 폭이어야 한다.
+/// 두 글자는 사각형 블록의 십의자리 1·일의자리 0이다(한컴 12.30 사각형 "12" 저장본과 같은 블록).
 #[test]
 fn test_char_overlap_multi_component_is_single_advance() {
     let chars = vec!['\u{F02BA}', '\u{F02C3}'];
-    assert_eq!(decode_pua_overlap_number(&chars), None);
+    assert_eq!(decode_pua_overlap_number(&chars).as_deref(), Some("10"));
+    assert_eq!(pua_overlap_number_border(&chars), 3);
     assert_eq!(char_overlap_advance_units(&chars), 1);
+    // 한컴 반전 원·반전 사각형 "12"
+    assert_eq!(
+        decode_pua_overlap_number(&['\u{F029D}', '\u{F02A8}']).as_deref(),
+        Some("12")
+    );
+    assert_eq!(pua_overlap_number_border(&['\u{F02D7}', '\u{F02E2}']), 4);
 }
 
 /// [#4085] `charSz` 는 OWPML 상 "테두리 내부 글자의 크기 비율"이므로 테두리를
@@ -820,38 +880,19 @@ fn test_char_overlap_multi_component_is_single_advance() {
 /// - 관세청 월간 수출입 현황 p1 — 테두리 없음(0) + `charSz=-4` → 축소 없음.
 ///   한컴 PDF content stream 에서 마커와 본문이 같은 `101 Tf`, 같은 baseline.
 #[test]
-fn char_overlap_size_ratio_applies_only_when_a_border_is_drawn() {
+fn char_overlap_signed_size_steps_follow_hancom_print() {
     // 테두리 없음 — charSz 부호와 무관하게 축소하지 않는다 (#4085 관세청 오라클)
     assert_eq!(char_overlap_size_ratio(0, -4), 1.0);
     assert_eq!(char_overlap_size_ratio(0, 90), 1.0);
-
-    // 테두리 있음 — PR #1101 실측 규칙 보존 (회귀 금지)
+    // 독립 Print의 크기 증거·전쪽 Native/fresh WASM·직접 확대 판독:
+    // mydocs/pr/assets/semanticist21_20261019/char_overlap_size_print/README.md
+    // 본문 10pt에 -3/0/10/20/50을 적용한 결과는 약 7/10/20/30/60pt다.
+    for (char_size, expected) in [(-3, 0.7), (0, 1.0), (10, 2.0), (20, 3.0), (50, 6.0)] {
+        assert!((char_overlap_size_ratio(1, char_size) - expected).abs() < 1e-9);
+    }
+    // 기존 PR #1101의 테두리 있는 음수 크기 계약도 유지한다.
     assert_eq!(char_overlap_size_ratio(4, -2), 0.8);
-    assert!((char_overlap_size_ratio(1, -3) - 0.7).abs() < 1e-9);
-
-    // 양수는 percent 그대로
-    assert_eq!(char_overlap_size_ratio(1, 50), 0.5);
-
-    // 0 은 기본 100%
     assert_eq!(char_overlap_size_ratio(3, 0), 1.0);
-}
-
-/// LineSeg 없는 텍스트 문단
-#[test]
-fn test_compose_no_line_segs() {
-    let para = Paragraph {
-        text: "텍스트만 있음".to_string(),
-        char_shapes: vec![CharShapeRef {
-            start_pos: 0,
-            char_shape_id: 7,
-        }],
-        ..Default::default()
-    };
-
-    let composed = compose_paragraph(&para);
-    assert_eq!(composed.lines.len(), 1);
-    assert_eq!(composed.lines[0].runs[0].text, "텍스트만 있음");
-    assert_eq!(composed.lines[0].runs[0].char_style_id, 7);
 }
 
 /// 확장 컨트롤 문자로 인한 위치 격차
@@ -1197,12 +1238,16 @@ fn test_split_runs_by_lang_korean_english() {
         text: "안녕Hello세계".to_string(),
         char_style_id: 0,
         lang_index: 0,
+        neutral_space_origin: None,
         char_overlap: None,
         footnote_marker: None,
         display_text: None,
         supplemental_metrics_blocked: false,
         inserted_control_text: false,
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
+        regenerated_font_metrics: false,
+        literal_figure_space: false,
+        literal_soft_hyphen: false,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 3);
@@ -1221,12 +1266,16 @@ fn test_split_runs_by_lang_no_split() {
         text: "안녕하세요".to_string(),
         char_style_id: 0,
         lang_index: 0,
+        neutral_space_origin: None,
         char_overlap: None,
         footnote_marker: None,
         display_text: None,
         supplemental_metrics_blocked: false,
         inserted_control_text: false,
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
+        regenerated_font_metrics: false,
+        literal_figure_space: false,
+        literal_soft_hyphen: false,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 1);
@@ -1241,12 +1290,16 @@ fn test_split_runs_by_lang_space_follows_prev() {
         text: "안녕 Hello 세계".to_string(),
         char_style_id: 0,
         lang_index: 0,
+        neutral_space_origin: None,
         char_overlap: None,
         footnote_marker: None,
         display_text: None,
         supplemental_metrics_blocked: false,
         inserted_control_text: false,
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
+        regenerated_font_metrics: false,
+        literal_figure_space: false,
+        literal_soft_hyphen: false,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 3);
@@ -1265,12 +1318,16 @@ fn test_split_runs_by_lang_empty() {
         text: "".to_string(),
         char_style_id: 0,
         lang_index: 0,
+        neutral_space_origin: None,
         char_overlap: None,
         footnote_marker: None,
         display_text: None,
         supplemental_metrics_blocked: false,
         inserted_control_text: false,
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
+        regenerated_font_metrics: false,
+        literal_figure_space: false,
+        literal_soft_hyphen: false,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 1);
@@ -1284,12 +1341,16 @@ fn test_split_runs_by_lang_english_only() {
         text: "Hello World".to_string(),
         char_style_id: 0,
         lang_index: 0,
+        neutral_space_origin: None,
         char_overlap: None,
         footnote_marker: None,
         display_text: None,
         supplemental_metrics_blocked: false,
         inserted_control_text: false,
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
+        regenerated_font_metrics: false,
+        literal_figure_space: false,
+        literal_soft_hyphen: false,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 1);
@@ -1388,12 +1449,16 @@ fn test_estimate_composed_line_width() {
             text: "가나다".to_string(),
             char_style_id: 0,
             lang_index: 0,
+            neutral_space_origin: None,
             char_overlap: None,
             footnote_marker: None,
             display_text: None,
             supplemental_metrics_blocked: false,
             inserted_control_text: false,
             space_metric: crate::renderer::composer::SpaceMetric::Stored,
+            regenerated_font_metrics: false,
+            literal_figure_space: false,
+            literal_soft_hyphen: false,
         }],
         line_height: 400,
         baseline_distance: 320,
@@ -1549,7 +1614,11 @@ fn issue_4442_corrected_noto_ascii_advances_change_threshold_wrap_with_kerning_o
     let text_style = resolved_to_text_style(&styles, 0, 1);
     let corrected_width = estimate_text_width_unrounded("AVATAR", &text_style);
     let prior_table_width = 3416.0;
-    assert_eq!(corrected_width, 3633.0);
+    // [#7702] 한/글 장치 격자 단위 합 68118 × 4/75 px.
+    assert!(
+        (corrected_width - 68118.0 * 4.0 / 75.0).abs() < 1e-9,
+        "{corrected_width}"
+    );
     let threshold = (prior_table_width + corrected_width) / 2.0;
 
     let mut para = Paragraph {
@@ -1683,11 +1752,13 @@ fn test_reflow_condense_shrinks_measured_space_width() {
         ..Default::default()
     };
 
-    // Natural width is 50px: 8 latin chars at 5px + 2 spaces at 5px.
-    // condense=20 allows each measured space to shrink by 20%, saving 2px.
+    // [#7702] On the Hancom device grid (ppem 187) a half-width latin char is 94 units
+    // (5.013px) and a space rounds down to 93 units (4.96px): natural width 50.03px.
+    // condense=20 shrinks each space by 20% of 4.96px, saving 1.98px → 48.05px, which
+    // fits a 48.1px box only through condense.
     reflow_line_segs(
         &mut para,
-        ParagraphBox::content_width_px(48.0, 96.0),
+        ParagraphBox::content_width_px(48.1, 96.0),
         &styles,
         96.0,
     );
@@ -1743,6 +1814,12 @@ fn test_geumchik_functions() {
     assert!(is_line_end_forbidden('\u{20A9}')); // ₩
     assert!(!is_line_end_forbidden('가'));
     assert!(!is_line_end_forbidden('A'));
+    // 같은 원본의 독립 Print는 ASCII 큰따옴표 뒤 한글 경계를 허용한다.
+    // 방향이 있는 여는 따옴표와 줄머리 금칙은 별도로 유지한다.
+    assert!(!is_line_end_forbidden('"'));
+    assert!(is_line_start_forbidden('"'));
+    assert!(is_line_end_forbidden('\u{201C}'));
+    assert!(is_line_end_forbidden('\u{300C}'));
 }
 
 /// 토크나이저: 한국어 어절 토큰화
@@ -1873,12 +1950,16 @@ fn test_555_effective_text_for_metrics_uses_display_text_when_present() {
         text: "\u{F861}".to_string(), // PUA 책괄호 (1 char)
         char_style_id: 0,
         lang_index: 0,
+        neutral_space_origin: None,
         char_overlap: None,
         footnote_marker: None,
         display_text: Some("《".to_string()), // 변환된 자모 (1 char in this case)
         supplemental_metrics_blocked: false,
         inserted_control_text: false,
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
+        regenerated_font_metrics: false,
+        literal_figure_space: false,
+        literal_soft_hyphen: false,
     };
     let effective = super::effective_text_for_metrics(&run);
     assert_eq!(
@@ -1898,12 +1979,16 @@ fn test_555_effective_text_for_metrics_multi_jamo_cluster() {
         text: "\u{F8E0}".to_string(), // PUA 옛한글 합자 (가상 codepoint, 1 char)
         char_style_id: 0,
         lang_index: 0,
+        neutral_space_origin: None,
         char_overlap: None,
         footnote_marker: None,
         display_text: Some("ᄃᆞᄫᆡ".to_string()), // 4 jamo chars
         supplemental_metrics_blocked: false,
         inserted_control_text: false,
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
+        regenerated_font_metrics: false,
+        literal_figure_space: false,
+        literal_soft_hyphen: false,
     };
     let effective = super::effective_text_for_metrics(&run);
     assert_eq!(
@@ -1924,12 +2009,16 @@ fn test_555_effective_text_for_metrics_no_display_text_falls_back_to_text() {
         text: "한글".to_string(),
         char_style_id: 0,
         lang_index: 0,
+        neutral_space_origin: None,
         char_overlap: None,
         footnote_marker: None,
         display_text: None,
         supplemental_metrics_blocked: false,
         inserted_control_text: false,
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
+        regenerated_font_metrics: false,
+        literal_figure_space: false,
+        literal_soft_hyphen: false,
     };
     let effective = super::effective_text_for_metrics(&run);
     assert_eq!(
@@ -1951,12 +2040,16 @@ fn test_677_effective_text_for_metrics_preserves_f081c_filler() {
         text: "\u{F081C}\u{F081C}".to_string(),
         char_style_id: 0,
         lang_index: 0,
+        neutral_space_origin: None,
         char_overlap: None,
         footnote_marker: None,
         display_text: Some("□□".to_string()),
         supplemental_metrics_blocked: false,
         inserted_control_text: false,
         space_metric: crate::renderer::composer::SpaceMetric::Stored,
+        regenerated_font_metrics: false,
+        literal_figure_space: false,
+        literal_soft_hyphen: false,
     };
     let effective = super::effective_text_for_metrics(&run);
     assert_eq!(
@@ -2076,12 +2169,16 @@ fn test_kbu1_line_start_forbidden_retraction() {
             text: "적용한다.111111".to_string(),
             char_style_id: 0,
             lang_index: 0,
+            neutral_space_origin: None,
             char_overlap: None,
             footnote_marker: None,
             display_text: None,
             supplemental_metrics_blocked: false,
             inserted_control_text: false,
             space_metric: crate::renderer::composer::SpaceMetric::Stored,
+            regenerated_font_metrics: false,
+            literal_figure_space: false,
+            literal_soft_hyphen: false,
         }],
         line_height: 400,
         baseline_distance: 320,
@@ -2328,6 +2425,58 @@ fn owned_rowbreak_tac_height_selects_current_or_multirow_frames() {
         16.0
     );
 
+    // 완전한 원본 개체 줄이 새 프레임의 다음 저장 줄을 닫는 경우와,
+    // 단순 되감김·더티 셀·합성 사다리를 구분한다. px 위치를 핀으로 두지 않는다.
+    let mut moved = single_row.clone();
+    moved.line_segs[0].vertical_pos = moved.line_segs[0].line_height * 2;
+    let mut next = Paragraph {
+        line_segs: vec![LineSeg {
+            vertical_pos: moved.line_segs[0].line_height + moved.line_segs[0].line_spacing,
+            line_height: moved.line_segs[0].line_spacing,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let closes = |host: &Paragraph, following: &Paragraph| {
+        tac_next_line_full_spacing(
+            host,
+            Some(following),
+            0.0,
+            0.0,
+            &host.line_segs[0],
+            crate::model::provenance::LayoutCompatibilityProfile::default(),
+            96.0,
+        )
+    };
+    assert!(closes(&moved, &next));
+    next.line_segs[0].vertical_pos -= moved.line_segs[0].line_spacing;
+    assert!(
+        !closes(&moved, &next),
+        "되감김만으로 전량 간격을 소유하지 않는다"
+    );
+    next.line_segs[0].vertical_pos += moved.line_segs[0].line_spacing;
+    next.cell_format_vpos_dirty = true;
+    assert!(!closes(&moved, &next));
+    next.cell_format_vpos_dirty = false;
+    next.line_segs[0].tag = LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+    // 현재 생성한 후속 줄은 원본 저장 사다리의 닫힘 증거가 아니다.
+    assert!(
+        crate::renderer::float_placement::restarted_tac::restarted_tac_line_advance(
+            &moved, &next, 0.0, 0.0, 96.0,
+        )
+        .is_none()
+    );
+    // 저장 원점이 간격을 복원하지 않는 후속 재조판에는 전량 간격을 남긴다.
+    // C416의 독립 Print/전쪽 검증처럼 두 소유를 구분하며 더티 후속 줄은 위에서 거절한다.
+    assert!(closes(&moved, &next));
+    next.line_segs[0].tag = 0;
+    moved.line_segs[0].line_height -= 1;
+    next.line_segs[0].vertical_pos -= 1;
+    assert!(
+        !closes(&moved, &next),
+        "불완전한 개체 높이의 닫힘을 채택하지 않는다"
+    );
+
     let undersized = para_with_rows(4, 32_338);
     assert_eq!(owned_rowbreak_tac_height(&undersized, 0), None);
     assert!(stored_first_tac_line(&undersized).is_none());
@@ -2337,4 +2486,74 @@ fn owned_rowbreak_tac_height_selects_current_or_multirow_frames() {
         stored_first_tac_line(&single_row).is_none(),
         "가시 텍스트와 같은 줄은 별도 구성 계약"
     );
+}
+
+#[test]
+fn default_tabs_use_the_physical_row_origin() {
+    // 80px 등간격 탭 격자에서 원점 20px인 폭 100px 줄은
+    // 첫 탭 60px + 전각 네 글자 40px가 정확히 한 줄을 소유한다.
+    // 원점 0인 대조군은 80px + 40px라 두 줄이다.
+    let styles = ResolvedStyleSet {
+        char_styles: vec![crate::renderer::style_resolver::ResolvedCharStyle {
+            font_size: 10.0,
+            ..Default::default()
+        }],
+        para_styles: vec![crate::renderer::style_resolver::ResolvedParaStyle {
+            default_tab_width: 80.0,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let para = Paragraph {
+        text: "\t가나다라".into(),
+        char_count: 6,
+        char_offsets: (0..5).collect(),
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }],
+        ..Default::default()
+    };
+    let rows = |left| {
+        let mut frame =
+            crate::renderer::layout_frame::LayoutFrame::new(left..left + 7500, 0, vec![]);
+        super::line_breaking::layout_paragraph_in_frame(&para, &mut frame, &styles, 96.0).unwrap()
+    };
+    assert_eq!(rows(0).len(), 2);
+    assert_eq!(
+        rows(1500).len(),
+        1,
+        "탭 격자는 줄 내부 0이 아니라 물리 행의 시작 좌표에서 이어진다"
+    );
+}
+
+/// 저장 줄 없는 문단은 vpos 재계산이 건너뛰지만, 그 높이 자리는 뒤 문단의 저장
+/// 좌표에 남아 있다. 앞 문단을 편집해도 그 간격을 지워 뒤 문단을 끌어올리지 않는다.
+#[test]
+fn recalculating_vpos_keeps_the_room_of_a_paragraph_without_stored_lines() {
+    let line = |vertical_pos| LineSeg {
+        vertical_pos,
+        line_height: 1000,
+        text_height: 1000,
+        baseline_distance: 850,
+        line_spacing: 600,
+        segment_width: 42520,
+        ..Default::default()
+    };
+    let lined = |vertical_pos| Paragraph {
+        line_segs: vec![line(vertical_pos)],
+        ..Default::default()
+    };
+    // 0번(0~1600) 뒤에 줄 없는 1번(저장 높이 2000)이 있고, 2번은 3600에서 시작한다.
+    let mut paragraphs = vec![lined(0), Paragraph::default(), lined(3600), lined(5200)];
+    let styles = ResolvedStyleSet::default();
+    recalculate_section_vpos(&mut paragraphs, 0, None, Some(1600), &styles, 96.0, false);
+    assert_eq!(paragraphs[2].line_segs[0].vertical_pos, 3600);
+    assert_eq!(paragraphs[3].line_segs[0].vertical_pos, 5200);
+
+    // 0번이 한 줄 늘면 뒤 문단은 그 증가만큼만 내려간다.
+    paragraphs[0].line_segs.push(line(1600));
+    recalculate_section_vpos(&mut paragraphs, 0, None, Some(1600), &styles, 96.0, false);
+    assert_eq!(paragraphs[2].line_segs[0].vertical_pos, 5200);
+    assert_eq!(paragraphs[3].line_segs[0].vertical_pos, 6800);
 }

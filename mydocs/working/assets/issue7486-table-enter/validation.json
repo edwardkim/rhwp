@@ -1,0 +1,997 @@
+{
+  "schemaVersion": 1,
+  "baseSha": "e1ecaa248ecf7f667d8fccab4d9938e70a253392",
+  "productionSourceSha": "97772d5d40787e77c3238debc2b2576b11713476",
+  "inputGeneration": "fresh WASM createBlankDocument -> applyParaFormat -> createTable -> repeated body splitParagraph -> exportHwpx; no hand-written XML or LineSeg edits",
+  "hancom": {
+    "engine": "2020",
+    "profile": "HOffice120 compatibility",
+    "jobs": [
+      "1afc9f80-2630-4d82-8946-e54a503a4fd0",
+      "cb5653b0-9944-4e01-9620-cebca812af4d",
+      "f37fe063-ba16-4306-9b83-9d101aeda1aa",
+      "069ab28a-934d-4163-bba1-a38e303b924c"
+    ],
+    "pdfPageCounts": {
+      "table_enter_32": 1,
+      "table_enter_33": 2,
+      "table_enter_40": 2,
+      "table30_spacing300_enter9": 2
+    }
+  },
+  "build": {
+    "wasmMode": "release --no-opt, host fallback; Docker daemon unavailable",
+    "command": "CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg --no-opt",
+    "jsSha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+    "wasmSha256": "bf181de82cf87a7f7e8cd49833021169594f6e76995dbe03266322d165821dee",
+    "rootPublicHashesMatched": true,
+    "nativeProfile": "release-test"
+  },
+  "sweep": {
+    "dpi": 96,
+    "comparisonProfile": "print",
+    "scope": "all 7 pages from all 4 inputs, both backends",
+    "checks": [
+      {
+        "backend": "native",
+        "inputKey": "table32",
+        "pages": [
+          1
+        ],
+        "minimumTolerantContentMatchPercent": 100.0,
+        "below90Pages": []
+      },
+      {
+        "backend": "native",
+        "inputKey": "table33",
+        "pages": [
+          1,
+          2
+        ],
+        "minimumTolerantContentMatchPercent": 100.0,
+        "below90Pages": []
+      },
+      {
+        "backend": "native",
+        "inputKey": "table40",
+        "pages": [
+          1,
+          2
+        ],
+        "minimumTolerantContentMatchPercent": 100.0,
+        "below90Pages": []
+      },
+      {
+        "backend": "native",
+        "inputKey": "table30",
+        "pages": [
+          1,
+          2
+        ],
+        "minimumTolerantContentMatchPercent": 100.0,
+        "below90Pages": []
+      },
+      {
+        "backend": "wasm",
+        "inputKey": "table32",
+        "pages": [
+          1
+        ],
+        "minimumTolerantContentMatchPercent": 100.0,
+        "below90Pages": []
+      },
+      {
+        "backend": "wasm",
+        "inputKey": "table33",
+        "pages": [
+          1,
+          2
+        ],
+        "minimumTolerantContentMatchPercent": 100.0,
+        "below90Pages": []
+      },
+      {
+        "backend": "wasm",
+        "inputKey": "table40",
+        "pages": [
+          1,
+          2
+        ],
+        "minimumTolerantContentMatchPercent": 100.0,
+        "below90Pages": []
+      },
+      {
+        "backend": "wasm",
+        "inputKey": "table30",
+        "pages": [
+          1,
+          2
+        ],
+        "minimumTolerantContentMatchPercent": 100.0,
+        "below90Pages": []
+      }
+    ],
+    "directReview": "table outlines, row/column boundaries and positions agree; rhwp lines are lighter than PDF; page2 is empty in both; silhouettes alone do not certify border color",
+    "rules": "90% minimum fulfilled before adding new regression tests; no font exception, area masking or changed tolerance"
+  },
+  "runtimeDiagnostics": {
+    "apiCases": 12,
+    "entersPerCase": 60,
+    "missingOwners": 0,
+    "browserAssertions": 56,
+    "browserCases": "table10 160% Enter33 and table30 300% Enter9, zoom100/66, Enter/Undo/Redo",
+    "externalExistingPageCountControls": 8,
+    "existingPageCountChanges": 0,
+    "sourceSha": "97772d5d40787e77c3238debc2b2576b11713476",
+    "apiLogSha256": "b2132bd6874fa5c2b3ece86f73cd9fcc2657eb997b542ef5a48ce94275b061f6"
+  },
+  "files": {
+    "mydocs/working/assets/issue7486-table-enter/after-table10-zoom100.png": {
+      "bytes": 53606,
+      "sha256": "14fd7c571d2953de6593296c809b3b1d4bc794cee21f3869bd63358faa97310f"
+    },
+    "mydocs/working/assets/issue7486-table-enter/after-table10-zoom66.png": {
+      "bytes": 57026,
+      "sha256": "843526a409d78086e472ae0145b225d32346c3a95e8063dacd79be6ea9dadfcf"
+    },
+    "mydocs/working/assets/issue7486-table-enter/after-table30-zoom100.png": {
+      "bytes": 54220,
+      "sha256": "961b8ddb57a0167c457a98d67b5b1fd94d600d06ac3a9284a7d62a7f518ab1c9"
+    },
+    "mydocs/working/assets/issue7486-table-enter/after-table30-zoom66.png": {
+      "bytes": 58751,
+      "sha256": "dc37f5b50a22c2dbb982bb68a4264d2b0d560ae45758ffd4f21cbc2354d3f017"
+    },
+    "mydocs/working/assets/issue7486-table-enter/native_table30_overlay_001.png": {
+      "bytes": 21214,
+      "sha256": "81c80560a77fe9575ac707c0481b15e90c2f4dc621107abcb240c0720e74333e"
+    },
+    "mydocs/working/assets/issue7486-table-enter/native_table30_review_001.png": {
+      "bytes": 31583,
+      "sha256": "c07f242d37debb3190f528bf7f0ac23649c9c906642b1aca93eb8dc6e4ef0fc0"
+    },
+    "mydocs/working/assets/issue7486-table-enter/native_table30_silhouette.tsv": {
+      "bytes": 164,
+      "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c"
+    },
+    "mydocs/working/assets/issue7486-table-enter/native_table32_silhouette.tsv": {
+      "bytes": 138,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    "mydocs/working/assets/issue7486-table-enter/native_table33_overlay_001.png": {
+      "bytes": 19668,
+      "sha256": "4006bbcccf176be71a53ac50126fa8940ff8ab8977748649dc8f120d5466166c"
+    },
+    "mydocs/working/assets/issue7486-table-enter/native_table33_review_001.png": {
+      "bytes": 27859,
+      "sha256": "ba69f937e9c29c906f38e68af557b04eaf0e6bdbf4da13745d51ced4a2ec3404"
+    },
+    "mydocs/working/assets/issue7486-table-enter/native_table33_silhouette.tsv": {
+      "bytes": 164,
+      "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c"
+    },
+    "mydocs/working/assets/issue7486-table-enter/native_table40_silhouette.tsv": {
+      "bytes": 164,
+      "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c"
+    },
+    "pdf/issue7486_table30_spacing300_enter9-2020.pdf": {
+      "bytes": 7397,
+      "sha256": "fe360e6095b4ccd7a1f0b98ba4af22583b7d4f0c2cf63eb995d841fe6a7e665d"
+    },
+    "tests/fixtures/issue7486_table_enter/table30_spacing300_enter9.hwpx": {
+      "bytes": 8788,
+      "sha256": "79c350473cd54de687d66b0e53357b57b889f0ed368d57a49ceafad18e848c4c"
+    },
+    "pdf/issue7486_table_enter_32-2020.pdf": {
+      "bytes": 6294,
+      "sha256": "3b08c1988ef0ef0ad9485181171ddbacb335dc08e23eb33828012400142e26d8"
+    },
+    "tests/fixtures/issue7486_table_enter/table_enter_32.hwpx": {
+      "bytes": 8366,
+      "sha256": "79d6412a6744ec332978f77d3c09fd3859075dabde7c3613ea04a435beeec517"
+    },
+    "pdf/issue7486_table_enter_33-2020.pdf": {
+      "bytes": 6721,
+      "sha256": "909928debd7823ebd7713db0a96b59ba8559326b83d7844af6b77f754c50fff3"
+    },
+    "tests/fixtures/issue7486_table_enter/table_enter_33.hwpx": {
+      "bytes": 8375,
+      "sha256": "d49761580c9acce5338d17277395791ae63ce8a8d5546ff1a4efe3a77dceba45"
+    },
+    "pdf/issue7486_table_enter_40-2020.pdf": {
+      "bytes": 6721,
+      "sha256": "562bd355ac70352dddbb889550d2960b03bbf052302dca0e3529d718e7a95a71"
+    },
+    "tests/fixtures/issue7486_table_enter/table_enter_40.hwpx": {
+      "bytes": 8433,
+      "sha256": "9d60a17e20ba6f8cbc28508fde139454fca8cff9856a3fc6d1d4eef9acb9609a"
+    },
+    "mydocs/working/assets/issue7486-table-enter/wasm_table30_overlay_001.png": {
+      "bytes": 22845,
+      "sha256": "cc2d88c58c027bb58ac70e01d8285b197d4d39769c40b470d2d258f8a4b0bc00"
+    },
+    "mydocs/working/assets/issue7486-table-enter/wasm_table30_review_001.png": {
+      "bytes": 33286,
+      "sha256": "3b923be6beb60091d67bb43735a15eb4adce8b2ffd5ae6758c4ea64b96f8fa2f"
+    },
+    "mydocs/working/assets/issue7486-table-enter/wasm_table30_silhouette.tsv": {
+      "bytes": 164,
+      "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c"
+    },
+    "mydocs/working/assets/issue7486-table-enter/wasm_table32_silhouette.tsv": {
+      "bytes": 138,
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    "mydocs/working/assets/issue7486-table-enter/wasm_table33_overlay_001.png": {
+      "bytes": 21298,
+      "sha256": "f252782b7c4d9a038f380093791d244d1c795ac673688083377a468ea17e6678"
+    },
+    "mydocs/working/assets/issue7486-table-enter/wasm_table33_review_001.png": {
+      "bytes": 29523,
+      "sha256": "b70ea7b574138e1a719d7b84bfcf6997e922159a468474dd8498bbb8a9bdcefd"
+    },
+    "mydocs/working/assets/issue7486-table-enter/wasm_table33_silhouette.tsv": {
+      "bytes": 164,
+      "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c"
+    },
+    "mydocs/working/assets/issue7486-table-enter/wasm_table40_silhouette.tsv": {
+      "bytes": 164,
+      "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c"
+    }
+  },
+  "focusedRegression": {
+    "baseSha": "e1ecaa248ecf7f667d8fccab4d9938e70a253392",
+    "verifiedTestCommit": "97e65c23d156452f3fc220c641dabb3e619be0cd",
+    "before": {
+      "passed": 4,
+      "failed": 2,
+      "errors": [
+        "paragraph34 has no page",
+        "paragraph10 has no page"
+      ]
+    },
+    "after": {
+      "passed": 6,
+      "failed": 0
+    },
+    "scope": "same final test source, create/split/save/reopen/order/table ownership; fixed-base suite policy and fmt check passed",
+    "logs": {
+      "before-new-focused-final.log": "6106d25d6910d2ebe0bd241652681cdd7a371ca67bb09226d21af5105613657f",
+      "after-new-focused.log": "b12fd1f09418967e0bf59b83baa7b9c0a6e1d4abaed30e58c9cef5c9725da7bb",
+      "fmt-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "suite-policy-final.log": "482abb86feb5bd7175179e9009b9fb2f1a73d94079a3722566e07aed4cc16b4a"
+    }
+  },
+  "inputPaths": {
+    "table30_spacing300_enter9-2020.pdf": "pdf/issue7486_table30_spacing300_enter9-2020.pdf",
+    "table30_spacing300_enter9.hwpx": "tests/fixtures/issue7486_table_enter/table30_spacing300_enter9.hwpx",
+    "table_enter_32-2020.pdf": "pdf/issue7486_table_enter_32-2020.pdf",
+    "table_enter_32.hwpx": "tests/fixtures/issue7486_table_enter/table_enter_32.hwpx",
+    "table_enter_33-2020.pdf": "pdf/issue7486_table_enter_33-2020.pdf",
+    "table_enter_33.hwpx": "tests/fixtures/issue7486_table_enter/table_enter_33.hwpx",
+    "table_enter_40-2020.pdf": "pdf/issue7486_table_enter_40-2020.pdf",
+    "table_enter_40.hwpx": "tests/fixtures/issue7486_table_enter/table_enter_40.hwpx"
+  },
+  "inputCommitNote": "Moved byte-identical generated HWPX to tests/fixtures/issue7486_table_enter and independent Hancom Print PDF to pdf/issue7486_*.pdf before PR; no XML or PDF contents modified.",
+  "historicalPreRegressionEvidence": {
+    "productionSourceSha": "75b433ccbe58ccf297a4f0ddbc6db83a1b850910",
+    "build": {
+      "wasmMode": "dev",
+      "command": "CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg --dev",
+      "jsSha256": "8f01a5bcc227a41d72b4aca57792445e9f413c4400154b74bdf8992f35301df3",
+      "wasmSha256": "0bf1590a758a3e0bb2faa80e3036c59568e675f7dd2ce073dc0a57b380a907f1",
+      "rootPublicHashesMatched": true,
+      "nativeProfile": "release-test"
+    },
+    "sweep": {
+      "dpi": 96,
+      "comparisonProfile": "print",
+      "scope": "all 7 pages from all 4 inputs, both backends",
+      "checks": [
+        {
+          "backend": "native",
+          "inputKey": "table32",
+          "pages": [
+            1
+          ],
+          "minimumTolerantContentMatchPercent": 100.0,
+          "below90Pages": []
+        },
+        {
+          "backend": "native",
+          "inputKey": "table33",
+          "pages": [
+            1,
+            2
+          ],
+          "minimumTolerantContentMatchPercent": 100.0,
+          "below90Pages": []
+        },
+        {
+          "backend": "native",
+          "inputKey": "table40",
+          "pages": [
+            1,
+            2
+          ],
+          "minimumTolerantContentMatchPercent": 100.0,
+          "below90Pages": []
+        },
+        {
+          "backend": "native",
+          "inputKey": "table30",
+          "pages": [
+            1,
+            2
+          ],
+          "minimumTolerantContentMatchPercent": 100.0,
+          "below90Pages": []
+        },
+        {
+          "backend": "wasm",
+          "inputKey": "table32",
+          "pages": [
+            1
+          ],
+          "minimumTolerantContentMatchPercent": 100.0,
+          "below90Pages": []
+        },
+        {
+          "backend": "wasm",
+          "inputKey": "table33",
+          "pages": [
+            1,
+            2
+          ],
+          "minimumTolerantContentMatchPercent": 100.0,
+          "below90Pages": []
+        },
+        {
+          "backend": "wasm",
+          "inputKey": "table40",
+          "pages": [
+            1,
+            2
+          ],
+          "minimumTolerantContentMatchPercent": 100.0,
+          "below90Pages": []
+        },
+        {
+          "backend": "wasm",
+          "inputKey": "table30",
+          "pages": [
+            1,
+            2
+          ],
+          "minimumTolerantContentMatchPercent": 100.0,
+          "below90Pages": []
+        }
+      ],
+      "directReview": "table outlines, row/column boundaries and positions agree; rhwp lines are lighter than PDF; page2 is empty in both; silhouettes alone do not certify border color",
+      "rules": "90% minimum fulfilled before adding new regression tests; no font exception, area masking or changed tolerance"
+    },
+    "runtimeDiagnostics": {
+      "apiCases": 12,
+      "entersPerCase": 60,
+      "missingOwners": 0,
+      "browserAssertions": 56,
+      "browserCases": "table10 160% Enter33 and table30 300% Enter9, zoom100/66, Enter/Undo/Redo",
+      "externalExistingPageCountControls": 8,
+      "existingPageCountChanges": 0
+    }
+  },
+  "submissionSweepProvenance": [
+    {
+      "hwp": {
+        "path": "tests/fixtures/issue7486_table_enter/table_enter_32.hwpx",
+        "sha256": "79d6412a6744ec332978f77d3c09fd3859075dabde7c3613ea04a435beeec517"
+      },
+      "pdf": {
+        "path": "pdf/issue7486_table_enter_32-2020.pdf",
+        "sha256": "3b08c1988ef0ef0ad9485181171ddbacb335dc08e23eb33828012400142e26d8"
+      },
+      "git_head": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+      },
+      "svg_rasterizer": "webfont",
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "target/pr-review/release-test/rhwp",
+        "path": "target/pr-review/release-test/rhwp",
+        "sha256": "c5ce34fe46859968352af0f05ae4e7d06c624c454b6b775deed408aa219a49db"
+      },
+      "font_supply": {
+        "mode": "local",
+        "source": "none",
+        "files": []
+      }
+    },
+    {
+      "hwp": {
+        "path": "tests/fixtures/issue7486_table_enter/table_enter_33.hwpx",
+        "sha256": "d49761580c9acce5338d17277395791ae63ce8a8d5546ff1a4efe3a77dceba45"
+      },
+      "pdf": {
+        "path": "pdf/issue7486_table_enter_33-2020.pdf",
+        "sha256": "909928debd7823ebd7713db0a96b59ba8559326b83d7844af6b77f754c50fff3"
+      },
+      "git_head": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+      },
+      "svg_rasterizer": "webfont",
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "target/pr-review/release-test/rhwp",
+        "path": "target/pr-review/release-test/rhwp",
+        "sha256": "c5ce34fe46859968352af0f05ae4e7d06c624c454b6b775deed408aa219a49db"
+      },
+      "font_supply": {
+        "mode": "local",
+        "source": "none",
+        "files": []
+      }
+    },
+    {
+      "hwp": {
+        "path": "tests/fixtures/issue7486_table_enter/table_enter_40.hwpx",
+        "sha256": "9d60a17e20ba6f8cbc28508fde139454fca8cff9856a3fc6d1d4eef9acb9609a"
+      },
+      "pdf": {
+        "path": "pdf/issue7486_table_enter_40-2020.pdf",
+        "sha256": "562bd355ac70352dddbb889550d2960b03bbf052302dca0e3529d718e7a95a71"
+      },
+      "git_head": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+      },
+      "svg_rasterizer": "webfont",
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "target/pr-review/release-test/rhwp",
+        "path": "target/pr-review/release-test/rhwp",
+        "sha256": "c5ce34fe46859968352af0f05ae4e7d06c624c454b6b775deed408aa219a49db"
+      },
+      "font_supply": {
+        "mode": "local",
+        "source": "none",
+        "files": []
+      }
+    },
+    {
+      "hwp": {
+        "path": "tests/fixtures/issue7486_table_enter/table30_spacing300_enter9.hwpx",
+        "sha256": "79c350473cd54de687d66b0e53357b57b889f0ed368d57a49ceafad18e848c4c"
+      },
+      "pdf": {
+        "path": "pdf/issue7486_table30_spacing300_enter9-2020.pdf",
+        "sha256": "fe360e6095b4ccd7a1f0b98ba4af22583b7d4f0c2cf63eb995d841fe6a7e665d"
+      },
+      "git_head": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+      },
+      "svg_rasterizer": "webfont",
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "target/pr-review/release-test/rhwp",
+        "path": "target/pr-review/release-test/rhwp",
+        "sha256": "c5ce34fe46859968352af0f05ae4e7d06c624c454b6b775deed408aa219a49db"
+      },
+      "font_supply": {
+        "mode": "local",
+        "source": "none",
+        "files": []
+      }
+    },
+    {
+      "hwp": {
+        "path": "tests/fixtures/issue7486_table_enter/table_enter_32.hwpx",
+        "sha256": "79d6412a6744ec332978f77d3c09fd3859075dabde7c3613ea04a435beeec517"
+      },
+      "pdf": {
+        "path": "pdf/issue7486_table_enter_32-2020.pdf",
+        "sha256": "3b08c1988ef0ef0ad9485181171ddbacb335dc08e23eb33828012400142e26d8"
+      },
+      "git_head": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+      },
+      "svg_rasterizer": "webfont",
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "target/pr-review/release-test/rhwp",
+        "path": "target/pr-review/release-test/rhwp",
+        "sha256": "c5ce34fe46859968352af0f05ae4e7d06c624c454b6b775deed408aa219a49db"
+      },
+      "wasm": {
+        "files": [
+          {
+            "path": "/Users/melee/Documents/projects/forks/rhwp/pkg/rhwp.js",
+            "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+          },
+          {
+            "path": "/Users/melee/Documents/projects/forks/rhwp/pkg/rhwp_bg.wasm",
+            "sha256": "bf181de82cf87a7f7e8cd49833021169594f6e76995dbe03266322d165821dee"
+          }
+        ],
+        "exporter_sha256": "aaf27aabe09958270a5a8d8b19593a386dd821bb9cbc1e219a9c726c623fea6f",
+        "comparison_profile": "print",
+        "font_policy": "same-input native --font-style; font-face CSS only",
+        "render_tree": "WASM getPageRenderTree"
+      },
+      "font_supply": {
+        "mode": "local",
+        "source": "none",
+        "files": []
+      }
+    },
+    {
+      "hwp": {
+        "path": "tests/fixtures/issue7486_table_enter/table_enter_33.hwpx",
+        "sha256": "d49761580c9acce5338d17277395791ae63ce8a8d5546ff1a4efe3a77dceba45"
+      },
+      "pdf": {
+        "path": "pdf/issue7486_table_enter_33-2020.pdf",
+        "sha256": "909928debd7823ebd7713db0a96b59ba8559326b83d7844af6b77f754c50fff3"
+      },
+      "git_head": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+      },
+      "svg_rasterizer": "webfont",
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "target/pr-review/release-test/rhwp",
+        "path": "target/pr-review/release-test/rhwp",
+        "sha256": "c5ce34fe46859968352af0f05ae4e7d06c624c454b6b775deed408aa219a49db"
+      },
+      "wasm": {
+        "files": [
+          {
+            "path": "/Users/melee/Documents/projects/forks/rhwp/pkg/rhwp.js",
+            "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+          },
+          {
+            "path": "/Users/melee/Documents/projects/forks/rhwp/pkg/rhwp_bg.wasm",
+            "sha256": "bf181de82cf87a7f7e8cd49833021169594f6e76995dbe03266322d165821dee"
+          }
+        ],
+        "exporter_sha256": "aaf27aabe09958270a5a8d8b19593a386dd821bb9cbc1e219a9c726c623fea6f",
+        "comparison_profile": "print",
+        "font_policy": "same-input native --font-style; font-face CSS only",
+        "render_tree": "WASM getPageRenderTree"
+      },
+      "font_supply": {
+        "mode": "local",
+        "source": "none",
+        "files": []
+      }
+    },
+    {
+      "hwp": {
+        "path": "tests/fixtures/issue7486_table_enter/table_enter_40.hwpx",
+        "sha256": "9d60a17e20ba6f8cbc28508fde139454fca8cff9856a3fc6d1d4eef9acb9609a"
+      },
+      "pdf": {
+        "path": "pdf/issue7486_table_enter_40-2020.pdf",
+        "sha256": "562bd355ac70352dddbb889550d2960b03bbf052302dca0e3529d718e7a95a71"
+      },
+      "git_head": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+      },
+      "svg_rasterizer": "webfont",
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "target/pr-review/release-test/rhwp",
+        "path": "target/pr-review/release-test/rhwp",
+        "sha256": "c5ce34fe46859968352af0f05ae4e7d06c624c454b6b775deed408aa219a49db"
+      },
+      "wasm": {
+        "files": [
+          {
+            "path": "/Users/melee/Documents/projects/forks/rhwp/pkg/rhwp.js",
+            "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+          },
+          {
+            "path": "/Users/melee/Documents/projects/forks/rhwp/pkg/rhwp_bg.wasm",
+            "sha256": "bf181de82cf87a7f7e8cd49833021169594f6e76995dbe03266322d165821dee"
+          }
+        ],
+        "exporter_sha256": "aaf27aabe09958270a5a8d8b19593a386dd821bb9cbc1e219a9c726c623fea6f",
+        "comparison_profile": "print",
+        "font_policy": "same-input native --font-style; font-face CSS only",
+        "render_tree": "WASM getPageRenderTree"
+      },
+      "font_supply": {
+        "mode": "local",
+        "source": "none",
+        "files": []
+      }
+    },
+    {
+      "hwp": {
+        "path": "tests/fixtures/issue7486_table_enter/table30_spacing300_enter9.hwpx",
+        "sha256": "79c350473cd54de687d66b0e53357b57b889f0ed368d57a49ceafad18e848c4c"
+      },
+      "pdf": {
+        "path": "pdf/issue7486_table30_spacing300_enter9-2020.pdf",
+        "sha256": "fe360e6095b4ccd7a1f0b98ba4af22583b7d4f0c2cf63eb995d841fe6a7e665d"
+      },
+      "git_head": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+      },
+      "svg_rasterizer": "webfont",
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "target/pr-review/release-test/rhwp",
+        "path": "target/pr-review/release-test/rhwp",
+        "sha256": "c5ce34fe46859968352af0f05ae4e7d06c624c454b6b775deed408aa219a49db"
+      },
+      "wasm": {
+        "files": [
+          {
+            "path": "/Users/melee/Documents/projects/forks/rhwp/pkg/rhwp.js",
+            "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+          },
+          {
+            "path": "/Users/melee/Documents/projects/forks/rhwp/pkg/rhwp_bg.wasm",
+            "sha256": "bf181de82cf87a7f7e8cd49833021169594f6e76995dbe03266322d165821dee"
+          }
+        ],
+        "exporter_sha256": "aaf27aabe09958270a5a8d8b19593a386dd821bb9cbc1e219a9c726c623fea6f",
+        "comparison_profile": "print",
+        "font_policy": "same-input native --font-style; font-face CSS only",
+        "render_tree": "WASM getPageRenderTree"
+      },
+      "font_supply": {
+        "mode": "local",
+        "source": "none",
+        "files": []
+      }
+    }
+  ],
+  "initialFullRegression": {
+    "candidate": "a2960d63a041bcff93da25ab33ce2bbd52bad41d",
+    "passed": 10244,
+    "failed": 4,
+    "skipped": 50,
+    "cause": "stored single terminal empty paragraph after a completed PartialTable allocated an extra page",
+    "fix": "absorb valid closing guide before fit failure while retaining its paragraph owner; preserve Enter lines; no baseline changes"
+  },
+  "guideBoundaryControls": [
+    {
+      "key": "eogu",
+      "input": "samples/task2097/18095317_eogu_geumji.hwp",
+      "pageCount": 21,
+      "expected": 21
+    },
+    {
+      "key": "curriculum",
+      "input": "samples/task2287/1342000_edu_curriculum_map.hwp",
+      "pageCount": 413,
+      "expected": 413
+    },
+    {
+      "key": "table33",
+      "input": "tests/fixtures/issue7486_table_enter/table_enter_33.hwpx",
+      "pageCount": 2,
+      "expected": 2
+    },
+    {
+      "key": "table30",
+      "input": "tests/fixtures/issue7486_table_enter/table30_spacing300_enter9.hwpx",
+      "pageCount": 2,
+      "expected": 2
+    }
+  ],
+  "submissionReviewGates": [
+    {
+      "backend": "native",
+      "input": "table33",
+      "status": "passed",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    {
+      "backend": "native",
+      "input": "table30",
+      "status": "passed",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    {
+      "backend": "wasm",
+      "input": "table33",
+      "status": "passed",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    {
+      "backend": "wasm",
+      "input": "table30",
+      "status": "passed",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    }
+  ],
+  "intermediateFullRegression": {
+    "sourceSha": "94491536a599f6e2e246895a4dbc0de02cf72325",
+    "passed": 10247,
+    "failed": 1,
+    "skipped": 50,
+    "cause": "closing guide retained its page but layout used overflowing table flow end; offCanvas eogu1->2",
+    "fix": "share valid stored line origin and preserved flow end via InlineFlowPlan; no clamp or hiding"
+  },
+  "committedInputAudit": [
+    {
+      "path": "pdf/issue7486_table30_spacing300_enter9-2020.pdf",
+      "commit": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sha256": "fe360e6095b4ccd7a1f0b98ba4af22583b7d4f0c2cf63eb995d841fe6a7e665d",
+      "lfs": false
+    },
+    {
+      "path": "pdf/issue7486_table_enter_32-2020.pdf",
+      "commit": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sha256": "3b08c1988ef0ef0ad9485181171ddbacb335dc08e23eb33828012400142e26d8",
+      "lfs": false
+    },
+    {
+      "path": "pdf/issue7486_table_enter_33-2020.pdf",
+      "commit": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sha256": "909928debd7823ebd7713db0a96b59ba8559326b83d7844af6b77f754c50fff3",
+      "lfs": false
+    },
+    {
+      "path": "pdf/issue7486_table_enter_40-2020.pdf",
+      "commit": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sha256": "562bd355ac70352dddbb889550d2960b03bbf052302dca0e3529d718e7a95a71",
+      "lfs": false
+    },
+    {
+      "path": "samples/issue3637/press_release_split_cell_nested_table.hwpx",
+      "commit": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sha256": "e2cb077d51293ae081a83e49c3bf2bca701087fddb4068d29295607b326be410",
+      "lfs": false
+    },
+    {
+      "path": "samples/issue3637/press_release_topbottom_float.hwpx",
+      "commit": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sha256": "6fa11e6a8d3be9289d23a1f861e9833e5b2473b63d0f4b5bf6092feb164aac21",
+      "lfs": false
+    },
+    {
+      "path": "samples/issue3637/regulatory_impact_nested_table_escape.hwpx",
+      "commit": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sha256": "e7b147f7cea66c97bed79085a3d89c2656037e0f711232f659ed3c7344984f62",
+      "lfs": false
+    },
+    {
+      "path": "samples/k-water-rfp.hwp",
+      "commit": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sha256": "1b4d1169c8e622b7365e9029ced513b13206f5939cf12024438c38d30253c2b4",
+      "lfs": false
+    },
+    {
+      "path": "samples/kps-ai.hwp",
+      "commit": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sha256": "9b0fceb3d96956f27c893e15a72a1ad94f7ee005bd581381a1aadfcb1f57a7b9",
+      "lfs": false
+    },
+    {
+      "path": "samples/p122.hwp",
+      "commit": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sha256": "b4d66baa093d564ac728c84d591b3ea7d6bc4cfef160bde81ee13afc6d927e82",
+      "lfs": false
+    },
+    {
+      "path": "samples/task2097/18095317_eogu_geumji.hwp",
+      "commit": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sha256": "956ad319f493aa8edfd26bb318c97b82a187a5860fc6ce3c19e55a4ae8429ed9",
+      "lfs": false
+    },
+    {
+      "path": "samples/task2287/1342000_edu_curriculum_map.hwp",
+      "commit": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sha256": "623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e",
+      "lfs": false
+    },
+    {
+      "path": "samples/통합재정통계(2010.11월).hwp",
+      "commit": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sha256": "d785f1ba522bd5350871c558f681153f7d6c1b9fa3423e6b178bd3f16af7bee1",
+      "lfs": false
+    },
+    {
+      "path": "samples/통합재정통계(2011.10월).hwp",
+      "commit": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sha256": "18b094a33b8f1d4a00eb51bda774d2c5747f3db76d400862801f051cbbf1a02f",
+      "lfs": false
+    },
+    {
+      "path": "tests/fixtures/issue7486_table_enter/table30_spacing300_enter9.hwpx",
+      "commit": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sha256": "79c350473cd54de687d66b0e53357b57b889f0ed368d57a49ceafad18e848c4c",
+      "lfs": false
+    },
+    {
+      "path": "tests/fixtures/issue7486_table_enter/table_enter_32.hwpx",
+      "commit": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sha256": "79d6412a6744ec332978f77d3c09fd3859075dabde7c3613ea04a435beeec517",
+      "lfs": false
+    },
+    {
+      "path": "tests/fixtures/issue7486_table_enter/table_enter_33.hwpx",
+      "commit": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sha256": "d49761580c9acce5338d17277395791ae63ce8a8d5546ff1a4efe3a77dceba45",
+      "lfs": false
+    },
+    {
+      "path": "tests/fixtures/issue7486_table_enter/table_enter_40.hwpx",
+      "commit": "97772d5d40787e77c3238debc2b2576b11713476",
+      "sha256": "9d60a17e20ba6f8cbc28508fde139454fca8cff9856a3fc6d1d4eef9acb9609a",
+      "lfs": false
+    }
+  ],
+  "guidePlacementDiagnostic": {
+    "sourceSha": "97772d5d40787e77c3238debc2b2576b11713476",
+    "eoguTerminalGuideTextLine": {
+      "pageIndex": 20,
+      "paragraph": 1,
+      "x": 68.0,
+      "y": 519.6,
+      "width": 657.7,
+      "height": 13.3
+    },
+    "basis": "body y75.5867 + stored vpos33298 HU ->443.9733px; shared plan, no clamp",
+    "pageCount": 21,
+    "offCanvas": 1,
+    "remaining": "pre-existing final table off-canvas, no new guide overflow"
+  },
+  "submissionVerification": {
+    "sourceSha": "97772d5d40787e77c3238debc2b2576b11713476",
+    "baseSha": "e1ecaa248ecf7f667d8fccab4d9938e70a253392",
+    "stages": [
+      {
+        "stage": "prepare",
+        "status": "passed",
+        "logSha256": "a757ed0ccb4391b5889edc66e65089c1394eb173468af0f83e1a7911eda58bcd",
+        "completedAtUtc": "2026-10-02T17:43:44Z"
+      },
+      {
+        "stage": "fmt",
+        "status": "passed",
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "completedAtUtc": "2026-10-02T17:43:50Z"
+      },
+      {
+        "stage": "small-boundaries",
+        "status": "passed",
+        "logSha256": "efd45ab40d7f9be07c77dc372fdc90e5d78fdea57d50662361ae214a3b7c974a",
+        "completedAtUtc": "2026-10-02T17:47:30Z"
+      },
+      {
+        "stage": "native-build",
+        "status": "passed",
+        "logSha256": "749c8f9e2708d3ce4c9e15e372a5533e6c0ed55fa1b320137a9b53b452c24738",
+        "completedAtUtc": "2026-10-02T17:48:41Z"
+      },
+      {
+        "stage": "wasm-build",
+        "status": "passed",
+        "logSha256": "b0dda0ed2f390cca53bea1e60ec3d4c9599627dd94f25c8188f27dad5258ccc3",
+        "completedAtUtc": "2026-10-02T17:51:14Z"
+      },
+      {
+        "stage": "clippy-native",
+        "status": "passed",
+        "logSha256": "ecb515796fdf46fdb91b981a1a049ed8653a3cc244456445c1bc5858a94e8ba7",
+        "completedAtUtc": "2026-10-02T17:51:30Z"
+      },
+      {
+        "stage": "clippy-wasm",
+        "status": "passed",
+        "logSha256": "1265782cbb9e8cb2bf24603f799e68444c6f352e6f1030d4afefe63e44bebc9a",
+        "completedAtUtc": "2026-10-02T17:51:44Z"
+      },
+      {
+        "stage": "build-workspace",
+        "status": "passed",
+        "logSha256": "91a7c574e6e58de876627de0f51c2031d94ef17cde73a6b85be0bc9a2963ac6b",
+        "completedAtUtc": "2026-10-02T17:52:03Z"
+      },
+      {
+        "stage": "clippy-workspace",
+        "status": "passed",
+        "logSha256": "aeb21c79ba5e6f5389006c478f94eff9ddc519e0d91d21b78401adc21cc3f7a7",
+        "completedAtUtc": "2026-10-02T17:52:24Z"
+      },
+      {
+        "stage": "suite-policy",
+        "status": "passed",
+        "logSha256": "482abb86feb5bd7175179e9009b9fb2f1a73d94079a3722566e07aed4cc16b4a",
+        "completedAtUtc": "2026-10-02T17:52:25Z"
+      },
+      {
+        "stage": "manifest-contract",
+        "status": "passed",
+        "logSha256": "a89e8330eaa630837cc0400f4fb1e94ba1262df0199229659680983ad974eda7",
+        "completedAtUtc": "2026-10-02T17:52:28Z"
+      },
+      {
+        "stage": "focused",
+        "status": "passed",
+        "logSha256": "392f712dbc1bee0e89b78844c6429f6b00a80a0bc3e22631ebefa7c587520270",
+        "completedAtUtc": "2026-10-02T17:55:41Z"
+      },
+      {
+        "stage": "nextest",
+        "status": "passed",
+        "logSha256": "efed306f06db0f596c532cd851337fd6248e2a3aa4a2444e802d1df98fbe1ea8",
+        "completedAtUtc": "2026-10-02T17:59:53Z"
+      },
+      {
+        "stage": "skia-lib",
+        "status": "passed",
+        "logSha256": "b5902ad83dd561f3e8707702c782cf500f12e07fd8a096fbea38b57d25f3c743",
+        "completedAtUtc": "2026-10-02T18:01:59Z"
+      },
+      {
+        "stage": "skia-picture",
+        "status": "passed",
+        "logSha256": "6ceeb555ed2b1d370dd632b4e8abd5c085a44bfc8ad4fcecc5584198b378a981",
+        "completedAtUtc": "2026-10-02T18:03:10Z"
+      },
+      {
+        "stage": "skia-pdf",
+        "status": "passed",
+        "logSha256": "061a5dc3d627cca5cea619cc203df66e31439e9330e4c4d57582fb17b999f723",
+        "completedAtUtc": "2026-10-02T18:03:16Z"
+      }
+    ],
+    "summaries": {
+      "small-boundaries": [
+        "Summary [  10.540s] 21 tests run: 21 passed, 10277 skipped"
+      ],
+      "focused": [
+        "Summary [  10.999s] 20 tests run: 20 passed, 10278 skipped"
+      ],
+      "nextest": [
+        "Summary [ 249.784s] 10248 tests run: 10248 passed (6 slow), 50 skipped"
+      ],
+      "skia-lib": [
+        "test result: ok. 3927 passed; 0 failed; 13 ignored; 0 measured; 0 filtered out; finished in 44.50s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ],
+      "skia-picture": [
+        "Summary [   1.186s] 2 tests run: 2 passed, 224 skipped"
+      ],
+      "skia-pdf": [
+        "Summary [   0.956s] 4 tests run: 4 passed, 219 skipped"
+      ],
+      "manifest-contract": []
+    },
+    "actualServedWasmSha256": "bf181de82cf87a7f7e8cd49833021169594f6e76995dbe03266322d165821dee"
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "reused_existing_completed_executions": true,
+  "frontend_source_continuity": "Studio source is byte-identical to the completed unit run; all nonRust executable, CI and E2E inputs are byte-identical to the completed v14 final head. Actual current optimized WASM browser runs are separately recorded.",
+  "runs": [
+    {
+      "temporary_log_basename": "ai-provider-focused.log",
+      "log_sha256": "9ff587e8911c02d8993e0a77ad78cffc409e21ca96cc33f714671fae1e17a124",
+      "log_bytes": 2458,
+      "observed_summary": [
+        "\u2139 tests 22",
+        "\u2139 pass 22",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ],
+      "completed_exit": 0,
+      "empty_stdout_when_passed": false
+    },
+    {
+      "temporary_log_basename": "studio-unit-after-canvaskit.log",
+      "log_sha256": "f5526ff6463df416d6b83638911addc3cf2dcf4904f7a2022a50317bcc16b1a6",
+      "log_bytes": 255877,
+      "observed_summary": [
+        "\u2139 tests 2609",
+        "\u2139 pass 2607",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 2",
+        "\u2139 todo 0"
+      ],
+      "completed_exit": 0,
+      "empty_stdout_when_passed": false
+    },
+    {
+      "temporary_log_basename": "visual-sweep-contracts.log",
+      "log_sha256": "329cee4537aef6174a0ab9f13d688b5b50c3aa871081aa2b210bf2929ffa5933",
+      "log_bytes": 1815,
+      "observed_summary": [
+        "Ran 192 tests in 100.697s",
+        "OK"
+      ],
+      "completed_exit": 0,
+      "empty_stdout_when_passed": false
+    },
+    {
+      "temporary_log_basename": "final-workflow-contracts.log",
+      "log_sha256": "d14115311b21692a0c1f7361e7d9a501f56a4905a34b981c6f7c6de58d8b8606",
+      "log_bytes": 297,
+      "observed_summary": [
+        "Ran 196 tests in 22.563s",
+        "OK"
+      ],
+      "completed_exit": 0,
+      "empty_stdout_when_passed": false
+    },
+    {
+      "temporary_log_basename": "canvaskit-tsc.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_bytes": 0,
+      "observed_summary": [],
+      "completed_exit": 0,
+      "empty_stdout_when_passed": true
+    },
+    {
+      "temporary_log_basename": "final-e2e-manifest-after.log",
+      "log_sha256": "12e744bb3b2ba0dbfc26e9f69c86c0f387edd85754a927831f803d60a6c88b9a",
+      "log_bytes": 79,
+      "observed_summary": [
+        "e2e \ud30c\uc77c(tracked): 172\uac1c / MANIFEST \ud589: 172\uac1c",
+        "e2e manifest: \uc774\uc0c1 \uc5c6\uc74c"
+      ],
+      "completed_exit": 0,
+      "empty_stdout_when_passed": false
+    },
+    {
+      "temporary_log_basename": "woff-ci-actionlint.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_bytes": 0,
+      "observed_summary": [],
+      "completed_exit": 0,
+      "empty_stdout_when_passed": true
+    },
+    {
+      "temporary_log_basename": "woff-sfnt-after.log",
+      "log_sha256": "d1ccd71a570aee5544426246f3869a0c1a9d467aa2b887789ae1053eff37619b",
+      "log_bytes": 139,
+      "observed_summary": [
+        "Ran 29 tests in 0.361s",
+        "OK"
+      ],
+      "completed_exit": 0,
+      "empty_stdout_when_passed": false,
+      "reuse_note": "Previously completed font-container contract execution;not rerun after rebase. Relevant scripts and font inputs are unchanged, as recorded by source continuity."
+    }
+  ],
+  "post_rebase_executable_source_continuity": "post-rebase-8116/non-rust-source-continuity.json"
+}

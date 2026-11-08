@@ -1,0 +1,109 @@
+{
+  "changeSetId": "issue-7966.postscript-layout-name",
+  "decisionPlane": "layout-name",
+  "evidenceRecords": [
+    {
+      "evidenceId": "evidence.issue-7966.postscript-styles",
+      "kind": "public-fixture",
+      "licenseOrProvenance": "Installed SFNT family/full/PostScript names and OS/2 weight. Metadata only, no font bytes. PDF FontDescriptor weight 700 is independently retained. Full face targets keep Bold; neither bold identity aliases to a regular name.",
+      "parentEvidenceIds": [],
+      "sha256": "0d348703c2d9d027af77c42fda6293f61f63aef8af6205e6b595bc39cd1fd337",
+      "source": "assets/font-rules/evidence/issue-7966-postscript-styles.json"
+    }
+  ],
+  "expectedDelta": {
+    "activeRuleDelta": 3,
+    "projectionId": "rust-layout-name",
+    "unchangedProjectionIds": [
+      "rust-layout-metric",
+      "canvas2d-paint",
+      "canvas2d-webfont",
+      "canvaskit-sfnt"
+    ]
+  },
+  "issue": 7966,
+  "kind": "font-rule-change-set",
+  "operations": [
+    {
+      "operationId": "operation.issue-7966.layout-name-0",
+      "rule": {
+        "conditions": {
+          "languageSlot": "all"
+        },
+        "decisionPlane": "layout-name",
+        "evidenceIds": [
+          "evidence.issue-7966.postscript-styles"
+        ],
+        "metricEntryIds": [],
+        "order": null,
+        "projection": {
+          "id": "rust-layout-name",
+          "mode": "direct"
+        },
+        "projectionSequence": 174,
+        "relationType": "style-fallback",
+        "ruleId": "rule.rust-style-resolution.d145573b4a0a8f0207a1",
+        "sourceBoundaryId": "rust-style-resolution.ttf",
+        "sourceFace": "MalgunGothicBold",
+        "supply": null,
+        "targetFaceOrPolicy": "Malgun Gothic Bold"
+      },
+      "type": "add-rule"
+    },
+    {
+      "operationId": "operation.issue-7966.layout-name-1",
+      "rule": {
+        "conditions": {
+          "languageSlot": "all"
+        },
+        "decisionPlane": "layout-name",
+        "evidenceIds": [
+          "evidence.issue-7966.postscript-styles"
+        ],
+        "metricEntryIds": [],
+        "order": null,
+        "projection": {
+          "id": "rust-layout-name",
+          "mode": "direct"
+        },
+        "projectionSequence": 175,
+        "relationType": "style-fallback",
+        "ruleId": "rule.rust-style-resolution.b1f7fd94d0b7349f050c",
+        "sourceBoundaryId": "rust-style-resolution.ttf",
+        "sourceFace": "Arial-BoldMT",
+        "supply": null,
+        "targetFaceOrPolicy": "Arial Bold"
+      },
+      "type": "add-rule"
+    },
+    {
+      "operationId": "operation.issue-7966.layout-name-2",
+      "rule": {
+        "conditions": {
+          "languageSlot": "all"
+        },
+        "decisionPlane": "layout-name",
+        "evidenceIds": [
+          "evidence.issue-7966.postscript-styles"
+        ],
+        "metricEntryIds": [],
+        "order": null,
+        "projection": {
+          "id": "rust-layout-name",
+          "mode": "direct"
+        },
+        "projectionSequence": 176,
+        "relationType": "style-fallback",
+        "ruleId": "rule.rust-style-resolution.95cdb8836bbe2ab25687",
+        "sourceBoundaryId": "rust-style-resolution.ttf",
+        "sourceFace": "Wingdings-Regular",
+        "supply": null,
+        "targetFaceOrPolicy": "Wingdings"
+      },
+      "type": "add-rule"
+    }
+  ],
+  "parentRegistrySha256": "b6e1f5845284cbfd9925c00b3bada4c21d264dc45dd41314b5bb661d419597f7",
+  "schemaVersion": "2.0",
+  "sequence": 10
+}

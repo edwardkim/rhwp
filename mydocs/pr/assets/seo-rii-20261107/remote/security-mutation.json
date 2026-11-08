@@ -1,0 +1,46 @@
+{
+  "approved_at_record": "2026-11-07T09:24:33.593167+00:00",
+  "user_answer": "세 경고 분류·필요 시 Rust 1회 재실행 승인 (권장)",
+  "alerts": [
+    478,
+    483,
+    484
+  ],
+  "reason": "false positive",
+  "conditional_rerun": {
+    "job": 128346915552,
+    "head": "0d2548fd88ea76b10e53eec841376b4bcbecbc4a",
+    "maximum": 1,
+    "only_if_check_not_automatically_updated": true
+  },
+  "results": [
+    {
+      "number": 478,
+      "state": "dismissed",
+      "dismissed_reason": "false positive",
+      "dismissed_at": "2026-11-07T09:24:50Z",
+      "dismissed_by": "edwardkim",
+      "url": "https://github.com/edwardkim/rhwp/security/code-scanning/478"
+    },
+    {
+      "number": 483,
+      "state": "dismissed",
+      "dismissed_reason": "false positive",
+      "dismissed_at": "2026-11-07T09:24:51Z",
+      "dismissed_by": "edwardkim",
+      "url": "https://github.com/edwardkim/rhwp/security/code-scanning/483"
+    },
+    {
+      "number": 484,
+      "state": "dismissed",
+      "dismissed_reason": "false positive",
+      "dismissed_at": "2026-11-07T09:24:52Z",
+      "dismissed_by": "edwardkim",
+      "url": "https://github.com/edwardkim/rhwp/security/code-scanning/484"
+    }
+  ],
+  "initial_request_error": "422: dismissal comment exceeded 280 characters; no mutation. Retried with shorter same-scope evidence.",
+  "check_refreshed_automatically": true,
+  "rerun_performed": false,
+  "codeql_check_conclusion": "success"
+}

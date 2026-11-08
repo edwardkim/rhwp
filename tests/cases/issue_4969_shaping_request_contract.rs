@@ -34,8 +34,7 @@ use std::sync::Arc;
 use wasm_bindgen_test::wasm_bindgen_test;
 
 const NOTO: &[u8] = include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");
-const SOURCE_HAN: &[u8] =
-    include_bytes!("../../ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf");
+const SOURCE_HAN: &[u8] = include_bytes!("../../ttfs/opensource/RHWPOldHangul-Regular.otf");
 const HAPPINESS: &[u8] =
     include_bytes!("../../ttfs/redistributable/happiness-sans/HappinessSansVF.ttf");
 
@@ -581,7 +580,9 @@ fn issue_4969_q4_a_exact_vertical_metrics_and_origins_are_deterministic() {
             .as_ref()
             .expect("Source Han vertical identity")
             .settings_sha256,
-        "e41dd5fc7b332e7367802c508cc7b07cb193bd92903731b3fe4637071ac3de6f"
+        // RHWP Old Hangul 재명명은 name/CFF 메타데이터와 원본 바이트 식별자를 바꾼다.
+        // 위 glyph ID·advance·offset 기대값은 유지한다.
+        "03fb00135725a74da6d939f59080129069046576874d86cccd36538eb8985b0a"
     );
 }
 
@@ -806,7 +807,7 @@ fn issue_4969_terminal_attempt_owns_applied_output_without_text_trace() {
     assert!(attempt.trace.settings_sha256.is_some());
     assert_eq!(
         attempt.trace.font_source_sha256.as_deref(),
-        Some("2f86ef9a52acb6d1dad9d915843239123b635d97edd88fd0573a88ffcb4e16f1")
+        Some("0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4")
     );
     let applied = attempt.applied.as_ref().expect("applied payload");
     assert_eq!(applied.glyphs.len(), attempt.trace.glyph_count);
@@ -1142,7 +1143,7 @@ fn issue_4969_q4_c_old_hangul_geometry_has_one_owner_and_exact_origins() {
     assert_eq!(transaction.trace().attempt_id, 4969);
     assert_eq!(
         transaction.trace().font_source_sha256.as_deref(),
-        Some("2f86ef9a52acb6d1dad9d915843239123b635d97edd88fd0573a88ffcb4e16f1")
+        Some("0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4")
     );
     assert!(std::sync::Arc::ptr_eq(
         transaction.line_geometry(),

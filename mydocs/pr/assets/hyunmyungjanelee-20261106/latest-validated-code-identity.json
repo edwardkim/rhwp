@@ -1,0 +1,18 @@
+{
+  "validated_product_src_tree": "c1ea19fbc94dd6aac77d4368755b6da5a9544e42",
+  "current_head": "ec814abd46434dc613a568ee43547b3ce5b8b992",
+  "builds": {
+    "native": {
+      "head": "99a1085a9cfb63aafdfcf7274740694d52bdeed9",
+      "src_tree": "c1ea19fbc94dd6aac77d4368755b6da5a9544e42",
+      "sha256": "39f077d1d982873fff20428274e67652e0990cf8ad2d7855164776b34241a6ee"
+    },
+    "wasm": {
+      "head": "ec814abd46434dc613a568ee43547b3ce5b8b992",
+      "src_tree": "c1ea19fbc94dd6aac77d4368755b6da5a9544e42",
+      "sha256": "251c54c1194265e74e7a76863c5645da74330e12044b7f877e9c2fe14405a98f"
+    }
+  },
+  "base": "5716a226b562b7300193dd0b573ded9cd71ac890",
+  "timestamp": "2026-11-06T04:48:06.102552+00:00"
+}

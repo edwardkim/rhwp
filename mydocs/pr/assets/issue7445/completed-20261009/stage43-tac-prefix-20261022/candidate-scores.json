@@ -1,0 +1,86 @@
+[
+  {
+    "condition": "spaces-live",
+    "pages": 1,
+    "bbox": [
+      {
+        "x": 98.3,
+        "y": 658.7,
+        "w": 597.1,
+        "h": 59.5
+      }
+    ],
+    "raw": 97.37766,
+    "inputMatchesPrintedBytes": true
+  },
+  {
+    "condition": "spaces-reopened",
+    "pages": 1,
+    "bbox": [
+      {
+        "x": 98.3,
+        "y": 658.7,
+        "w": 597.1,
+        "h": 59.5
+      }
+    ],
+    "raw": 99.68821,
+    "inputMatchesPrintedBytes": true
+  },
+  {
+    "condition": "break-live",
+    "pages": 1,
+    "bbox": [
+      {
+        "x": 98.3,
+        "y": 658.7,
+        "w": 597.1,
+        "h": 59.5
+      }
+    ],
+    "raw": 97.37766,
+    "inputMatchesPrintedBytes": true
+  },
+  {
+    "condition": "break-reopened",
+    "pages": 1,
+    "bbox": [
+      {
+        "x": 98.3,
+        "y": 658.7,
+        "w": 597.1,
+        "h": 59.5
+      }
+    ],
+    "raw": 99.68821,
+    "inputMatchesPrintedBytes": true
+  },
+  {
+    "condition": "dot-break-live",
+    "pages": 1,
+    "bbox": [
+      {
+        "x": 98.3,
+        "y": 658.7,
+        "w": 597.1,
+        "h": 59.5
+      }
+    ],
+    "raw": 97.37861,
+    "inputMatchesPrintedBytes": true
+  },
+  {
+    "condition": "dot-break-reopened",
+    "pages": 1,
+    "bbox": [
+      {
+        "x": 98.3,
+        "y": 658.7,
+        "w": 597.1,
+        "h": 59.5
+      }
+    ],
+    "raw": 99.68834,
+    "inputMatchesPrintedBytes": true
+  }
+]

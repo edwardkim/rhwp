@@ -1,0 +1,28 @@
+{
+  "pr": 8541,
+  "sourceSha": "ec814abd46434dc613a568ee43547b3ce5b8b992",
+  "wasmSha256": "251c54c1194265e74e7a76863c5645da74330e12044b7f877e9c2fe14405a98f",
+  "runtime": "지정한 제품 SHA의 실제 WASM 공개 API",
+  "observations": {
+    "split": {
+      "ok": true,
+      "section": 1,
+      "para": 0,
+      "charOffset": 0
+    },
+    "split_hwp": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-8659-api/pr8541/split.hwp",
+    "split_hwpx": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-8659-api/pr8541/split.hwpx",
+    "merge": {
+      "ok": true,
+      "section": 0,
+      "para": 1
+    },
+    "mergedParagraphs": [
+      "앞",
+      "뒤"
+    ],
+    "merged_hwp": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-8659-api/pr8541/merged.hwp",
+    "merged_hwpx": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-8659-api/pr8541/merged.hwpx"
+  },
+  "status": "passed"
+}

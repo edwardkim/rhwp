@@ -1,0 +1,95 @@
+{
+  "updated_at": "2026-11-07T16:41:01+09:00",
+  "validated_test_source": "263b1e753c006d1631d25794588b6638fa1172ae",
+  "scope": "leading module documentation only; all Rust items, test functions, assertion values, fixtures and product source unchanged",
+  "items": [
+    {
+      "path": "tests/cases/issue_536_native_gl.rs",
+      "prior_file_commit": "0e289ce4743d097d1a6fb345fdb5ce4659f1535a",
+      "prior_file_commit_time": "2026-11-07T04:42:42+09:00",
+      "body_before_sha256": "baa2de66db0872a717b518385315b899c367a6164920a41f877effac2f638d3f",
+      "body_after_sha256": "baa2de66db0872a717b518385315b899c367a6164920a41f877effac2f638d3f",
+      "non_header_body_unchanged": true
+    },
+    {
+      "path": "tests/cases/issue_536_native_gl_recovery.rs",
+      "prior_file_commit": "1d5cc242bad823fe68890aaa2dce9415a07d9687",
+      "prior_file_commit_time": "2026-11-07T06:28:43+09:00",
+      "body_before_sha256": "de018b1e5029fdf66fbd93204c696b3a628affc390665ff69d2aa4b1adb5172c",
+      "body_after_sha256": "de018b1e5029fdf66fbd93204c696b3a628affc390665ff69d2aa4b1adb5172c",
+      "non_header_body_unchanged": true
+    },
+    {
+      "path": "tests/cases/issue_536_native_gpu_tiles.rs",
+      "prior_file_commit": "2c732a24a4d0d1974e2d48a759b323d2772b8d9b",
+      "prior_file_commit_time": "2026-11-07T06:01:20+09:00",
+      "body_before_sha256": "62b538dd73f85222e7c2bdf44e2c1fc2f1e6b79437f97a18789f9eba80c1d37b",
+      "body_after_sha256": "62b538dd73f85222e7c2bdf44e2c1fc2f1e6b79437f97a18789f9eba80c1d37b",
+      "non_header_body_unchanged": true
+    },
+    {
+      "path": "tests/cases/issue_536_native_ime_edit.rs",
+      "prior_file_commit": "0f629e936bd6d3f96a05c36a1fe18c9dcac663dc",
+      "prior_file_commit_time": "2026-11-07T07:41:53+09:00",
+      "body_before_sha256": "9d19d336b59be12663cac0a44e409f9532017c1edc45b2fb3e993e40a623919c",
+      "body_after_sha256": "9d19d336b59be12663cac0a44e409f9532017c1edc45b2fb3e993e40a623919c",
+      "non_header_body_unchanged": true
+    },
+    {
+      "path": "tests/cases/issue_536_native_presentation.rs",
+      "prior_file_commit": "1d5cc242bad823fe68890aaa2dce9415a07d9687",
+      "prior_file_commit_time": "2026-11-07T06:28:43+09:00",
+      "body_before_sha256": "1e33ff6608cd253893382b9583e093d628454a00b9a38e7f150f8acd44d54f56",
+      "body_after_sha256": "1e33ff6608cd253893382b9583e093d628454a00b9a38e7f150f8acd44d54f56",
+      "non_header_body_unchanged": true
+    },
+    {
+      "path": "tests/cases/issue_536_native_recovery_open.rs",
+      "prior_file_commit": "21fac65baabdb550e597e96ea676d913de054304",
+      "prior_file_commit_time": "2026-11-07T07:40:46+09:00",
+      "body_before_sha256": "680f31923d8471e37f8943faeb405f1167148ccb0e07111a72eaad3b42d8370e",
+      "body_after_sha256": "680f31923d8471e37f8943faeb405f1167148ccb0e07111a72eaad3b42d8370e",
+      "non_header_body_unchanged": true
+    },
+    {
+      "path": "tests/cases/issue_536_native_render_snapshot.rs",
+      "prior_file_commit": "bde016c5af9579883707717a3831801dfd92fdb9",
+      "prior_file_commit_time": "2026-11-07T03:08:35+09:00",
+      "body_before_sha256": "126f020fd6448c5b02e9bb5e27071247954b472980a9a5f9392d94e1b6da68bd",
+      "body_after_sha256": "126f020fd6448c5b02e9bb5e27071247954b472980a9a5f9392d94e1b6da68bd",
+      "non_header_body_unchanged": true
+    },
+    {
+      "path": "tests/cases/issue_536_shared_layer_tree.rs",
+      "prior_file_commit": "ca1f63c157401fbc8a95f53a4c2582bf2c1e87a6",
+      "prior_file_commit_time": "2026-11-06T12:43:16+09:00",
+      "body_before_sha256": "2019116bf9648c003e938089bdff3da7fbe3c6e54c6fdcce39b74d77d449a110",
+      "body_after_sha256": "2019116bf9648c003e938089bdff3da7fbe3c6e54c6fdcce39b74d77d449a110",
+      "non_header_body_unchanged": true
+    },
+    {
+      "path": "tests/cases/issue_536_native_runtime.rs",
+      "prior_file_commit": "8a679ed90b1f73aeac67ef384513e44a04b9ef0a",
+      "prior_file_commit_time": "2026-11-06T12:49:38+09:00",
+      "body_before_sha256": "d8bbb2b674d87650b0508847059ba32b6ba5825c651a6fd3401d6172920b0d6d",
+      "body_after_sha256": "d8bbb2b674d87650b0508847059ba32b6ba5825c651a6fd3401d6172920b0d6d",
+      "non_header_body_unchanged": true
+    },
+    {
+      "path": "tests/cases/skia_native_glyph_replay.rs",
+      "prior_file_commit": "a0b8824f5fb54b33af6ecc694e7c962f8d4f182a",
+      "prior_file_commit_time": "2026-11-06T18:08:11+09:00",
+      "body_before_sha256": "206f9c343ad1e01855a1296858c7cb4e27893044af6384e935fb4d4c17af7d0c",
+      "body_after_sha256": "206f9c343ad1e01855a1296858c7cb4e27893044af6384e935fb4d4c17af7d0c",
+      "non_header_body_unchanged": true
+    },
+    {
+      "path": "tests/cases/skia_host_surface.rs",
+      "prior_file_commit": "101899925c90cd050d66659e65440d5acb1e995f",
+      "prior_file_commit_time": "2026-11-07T05:31:30+09:00",
+      "body_before_sha256": "7175ccb2c36e0aa1da683ab60a942a4208780ac18f0d41b8c181133c960cdc78",
+      "body_after_sha256": "7175ccb2c36e0aa1da683ab60a942a4208780ac18f0d41b8c181133c960cdc78",
+      "non_header_body_unchanged": true
+    }
+  ]
+}

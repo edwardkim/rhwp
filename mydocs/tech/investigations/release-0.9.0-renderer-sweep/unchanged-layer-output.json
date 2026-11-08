@@ -1,0 +1,30 @@
+[
+  {
+    "before": "before-canvas/BlogForm_BookReview.hwp-6bfb8992-p01-layer.png",
+    "after": "after-canvas/BlogForm_BookReview.hwp-6bfb8992-p01-layer.png",
+    "identical": true,
+    "beforeSha256": "9f30e70e15df6893bd5f1aaa778df6aa6e7c589d7be6c4adbdbafdcd2268c3fc",
+    "afterSha256": "9f30e70e15df6893bd5f1aaa778df6aa6e7c589d7be6c4adbdbafdcd2268c3fc"
+  },
+  {
+    "before": "base-wasm/blogform/rhwp_png/rhwp_001.png",
+    "after": "final-wasm/blogform/rhwp_png/rhwp_001.png",
+    "identical": true,
+    "beforeSha256": "915e5c3d05c900c4a62ee084a33ad8f5b5abb8eebe7b59627d0c6060add5459f",
+    "afterSha256": "915e5c3d05c900c4a62ee084a33ad8f5b5abb8eebe7b59627d0c6060add5459f"
+  },
+  {
+    "before": "base-native-png-screen/BlogForm_BookReview.png",
+    "after": "final-native-png-screen/BlogForm_BookReview.png",
+    "identical": true,
+    "beforeSha256": "585c8ca1a0ec6763d743a40df01be512d56be60742f8fca3b76c5818344319d7",
+    "afterSha256": "585c8ca1a0ec6763d743a40df01be512d56be60742f8fca3b76c5818344319d7"
+  },
+  {
+    "before": "base-native-png-print/BlogForm_BookReview.png",
+    "after": "final-native-png-print/BlogForm_BookReview.png",
+    "identical": true,
+    "beforeSha256": "421a671ed82b74dcc22101791f7f548d235fd708896b15c4e5623569891cd51c",
+    "afterSha256": "421a671ed82b74dcc22101791f7f548d235fd708896b15c4e5623569891cd51c"
+  }
+]

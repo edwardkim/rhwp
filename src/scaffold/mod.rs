@@ -6,7 +6,7 @@
 //! 않는다(`src/provenance.rs` 의 `scaffold` 항목 참조).
 //!
 //! 지원 요소는 **왕복 검증으로 통과한 것만** 노출한다 — 문서 제목, 개요 수준 제목(1~7),
-//! 본문 문단(한글 포함), 단순 표(행×열 텍스트 셀). 각 요소는 `serialize_hwpx` 로 쓴 뒤
+//! 개요 번호 모양, 본문 문단(한글 포함), 단순 표(행×열 텍스트 셀). 각 요소는 `serialize_hwpx` 로 쓴 뒤
 //! `parse_hwpx` 로 되읽어 내용이 그대로 복원됨을 이 모듈의 테스트가 증명한다.
 
 pub mod builder;
@@ -14,7 +14,8 @@ pub mod schema;
 
 pub use builder::build_scaffold;
 pub use schema::{
-    Block, CellAlign, CellAlignSpec, PageSize, ScaffoldSpec, SCAFFOLD_SCHEMA_VERSION,
+    Block, CellAlign, CellAlignSpec, OutlineLevel, OutlineNumFormat, PageSize, ScaffoldSpec,
+    OUTLINE_DEFAULTS, SCAFFOLD_SCHEMA_VERSION,
 };
 
 use crate::error::HwpError;
@@ -25,6 +26,7 @@ pub fn parse_scaffold_bytes(bytes: &[u8]) -> Result<ScaffoldSpec, HwpError> {
         .map_err(|e| HwpError::InvalidFile(format!("scaffold JSON 파싱 실패: {e}")))?;
     validate_version(&spec)?;
     validate_blocks(&spec)?;
+    validate_outline_numbering(&spec)?;
     Ok(spec)
 }
 
@@ -34,6 +36,7 @@ pub fn parse_scaffold_str(s: &str) -> Result<ScaffoldSpec, HwpError> {
         .map_err(|e| HwpError::InvalidFile(format!("scaffold JSON 파싱 실패: {e}")))?;
     validate_version(&spec)?;
     validate_blocks(&spec)?;
+    validate_outline_numbering(&spec)?;
     Ok(spec)
 }
 
@@ -43,6 +46,54 @@ fn validate_version(spec: &ScaffoldSpec) -> Result<(), HwpError> {
             "지원하지 않는 scaffold 스키마 버전 '{}' (지원: \"{}\")",
             spec.version, SCAFFOLD_SCHEMA_VERSION
         )));
+    }
+    Ok(())
+}
+
+/// 개요 번호 형식 문자열의 최대 길이(글자). 한/글 문단 번호 대화상자가 받는 길이 안쪽이다.
+const OUTLINE_TEXT_MAX_CHARS: usize = 32;
+
+/// `outline_numbering` 은 1~7개이고, 각 `text` 는 비어 있지 않으며 `^` 뒤에는 자기 수준
+/// 이하의 숫자(`^1`~`^L`)만 온다. 잘못 쓰면 한/글이 번호를 그리지 못하거나 엉뚱한 수준을
+/// 세므로 즉시 거부한다.
+fn validate_outline_numbering(spec: &ScaffoldSpec) -> Result<(), HwpError> {
+    let Some(levels) = &spec.outline_numbering else {
+        return Ok(());
+    };
+    if levels.is_empty() || levels.len() > 7 {
+        return Err(HwpError::InvalidFile(format!(
+            "outline_numbering 은 수준 1 부터 1~7개여야 합니다 (받은 개수 {})",
+            levels.len()
+        )));
+    }
+    for (i, lv) in levels.iter().enumerate() {
+        let level = i + 1;
+        let where_ = format!("outline_numbering[{i}] (수준 {level})");
+        if lv.text.trim().is_empty() {
+            return Err(HwpError::InvalidFile(format!(
+                "{where_}: text 가 비었습니다 (예: \"^{level}.\")"
+            )));
+        }
+        if lv.text.chars().count() > OUTLINE_TEXT_MAX_CHARS {
+            return Err(HwpError::InvalidFile(format!(
+                "{where_}: text 는 {OUTLINE_TEXT_MAX_CHARS}자 이하여야 합니다"
+            )));
+        }
+        let mut chars = lv.text.chars();
+        while let Some(c) = chars.next() {
+            if c != '^' {
+                continue;
+            }
+            match chars.next().and_then(|d| d.to_digit(10)) {
+                Some(d) if (1..=level as u32).contains(&d) => {}
+                _ => {
+                    return Err(HwpError::InvalidFile(format!(
+                        "{where_}: '^' 뒤에는 1~{level} 의 수준 번호가 와야 합니다 ({:?})",
+                        lv.text
+                    )))
+                }
+            }
+        }
     }
     Ok(())
 }

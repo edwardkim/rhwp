@@ -1,0 +1,38 @@
+{
+  "reason": "Cargo final Native CLI has a different binary fingerprint; product source unchanged since 054ef1cd2d",
+  "cli_sha256": "83153458267dd9d078988ccc2761a8741edca366e297ae3f8fe82741afc25376",
+  "full_sweep_cli_sha256": "90cfc746f2082b303e29684992d3ca72d2bf5d018e62f86a450ca98fd41bb808",
+  "checks": [
+    {
+      "document": "kps-ai",
+      "page": 53,
+      "png_sha256": "96a27cd9adeb80d1ba64106556c442d2dec19e11e72d71df4be7d86518daa0bf",
+      "byte_identical_to_full_sweep": true
+    },
+    {
+      "document": "kps-ai",
+      "page": 65,
+      "png_sha256": "233a9327d80df19a767f0b28c0e9173daa736f09bd336f8c93ca115992e9d4da",
+      "byte_identical_to_full_sweep": true
+    },
+    {
+      "document": "kps-ai",
+      "page": 66,
+      "png_sha256": "8269772cf0bc85ef7926abbcc18f4a2fc808e9b319e204787da30c34ba23d6c3",
+      "byte_identical_to_full_sweep": true
+    },
+    {
+      "document": "midrange-three-columns-hwpx",
+      "page": 1,
+      "png_sha256": "62c6a0169dfc2dd63d033aa92c9036ce1165f497e34ea3feaaa5aeaef05d74b7",
+      "byte_identical_to_full_sweep": true
+    },
+    {
+      "document": "midrange-three-columns-hwpx",
+      "page": 2,
+      "png_sha256": "f467d920e26d63aaf171560672ae6611d60b108c0911fdf0b2cb49260465446b",
+      "byte_identical_to_full_sweep": true
+    }
+  ],
+  "status": "PASS"
+}

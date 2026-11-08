@@ -1,0 +1,57 @@
+{
+  "date": "2026-10-29",
+  "source_pr": 8227,
+  "source_image_commit": "a34d1fb70dcdc2e1f692efaa63bfd2d77ee0e74c",
+  "source_pdf": "samples/21_언어_기출_편집가능본-2020.pdf",
+  "source_pdf_sha256": "a1a8b0ffd6ae9b23627f7b1bf58bbdfdc0714a369713cc057aa836c75b143f1e",
+  "pdf_blob_matches_contributor": true,
+  "mode": "editable",
+  "source_claim": "2020 PDF 1쪽 첫 줄 들여쓰기 overlay, 3쪽 이어지는 문단 머리 review",
+  "source_images": {
+    "native_review_p003": {
+      "path": "mydocs/pr/assets/issue_8220_editable/png/2020_native_review_p003.png",
+      "sha256": "558a053f1b8b5a34129ec9e8bef6c91f04d60e2a821cb02bf96d837d32b663d0",
+      "git_blob": "e417d7bcc1d0687ffcfe40775104828379796adf"
+    },
+    "native_overlay_p001": {
+      "path": "mydocs/pr/assets/issue_8220_editable/png/2020_native_overlay_p001.png",
+      "sha256": "d69b7a91eca111ab894f0f84f92c82b18442d7e7fd2608ec9ba3616e6113313e",
+      "git_blob": "ab0387540fd88430fb8aa53f03d466b31add3336"
+    },
+    "wasm_review_p003": {
+      "path": "mydocs/pr/assets/issue_8220_editable/png/2020_wasm_review_p003.png",
+      "sha256": "6bcd6c03a9a784fc7b7d99a67f26edf1357e9679a9488b0a3cc28761c6aa2d40",
+      "git_blob": "0be15a1a029fec634a008d9d04162bee7efb826c"
+    },
+    "wasm_overlay_p001": {
+      "path": "mydocs/pr/assets/issue_8220_editable/png/2020_wasm_overlay_p001.png",
+      "sha256": "a4f4baec9f2a0e4bc6ed1b83b0356fd57c7ac69222e4ca0f6e49e029e954ef1c",
+      "git_blob": "62a3d1b07ffe15cffe856df4a55c2420401185ce"
+    }
+  },
+  "integration_candidate_20261027": {
+    "native": {
+      "tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/pdf-2020-editable.tsv",
+      "tsv_sha256": "4c00c1ab492b2837ce7ea6d31d1b2dc6e3e63805570bfdff1b139525e173bbe5",
+      "pages": {
+        "1": 99.6991,
+        "3": 99.44626
+      },
+      "minimum": 99.13134
+    },
+    "wasm": {
+      "tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/pdf-2020-editable.tsv",
+      "tsv_sha256": "c8f55ea5ff315e8a0d1abc2e94dfc08a18abad40dabc32d1c836eab927b79e34",
+      "pages": {
+        "1": 98.7279,
+        "3": 98.88209
+      },
+      "minimum": 98.69133
+    }
+  },
+  "limitations": [
+    "원 PR의 이미지와 2026-10-27 통합 후보 TSV는 별도의 실행이다.",
+    "후속 체리픽 이후 새 측정이나 편집 후 저장·재열기 출력으로 대체하지 않는다.",
+    "이미지 연결과 해당 쪽별 수치 기록이며 원 PR 전체 주장 검증을 대신하지 않는다."
+  ]
+}

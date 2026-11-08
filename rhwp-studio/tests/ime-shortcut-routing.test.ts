@@ -7,7 +7,7 @@ const source = readFileSync(
   'utf8',
 );
 
-test('IME 조합 분기는 매칭된 Ctrl 단축키를 조기 반환 전에 dispatch한다', () => {
+test('IME 조합 분기는 Ctrl+E 내용 지우기를 구분하고 나머지 단축키를 dispatch한다', () => {
   const imeStart = source.indexOf('if (e.isComposing || e.keyCode === 229) {');
   const imeEnd = source.indexOf('// [#4031]', imeStart);
   assert.ok(imeStart >= 0 && imeEnd > imeStart, 'IME 조합 분기 경계를 찾지 못했다');
@@ -15,6 +15,6 @@ test('IME 조합 분기는 매칭된 Ctrl 단축키를 조기 반환 전에 disp
   const imeBranch = source.slice(imeStart, imeEnd);
   assert.match(
     imeBranch,
-    /if \(\(e\.ctrlKey \|\| e\.metaKey\) && this\.dispatcher\) \{\s*const cmdId = matchShortcut\(e, defaultShortcuts\);\s*if \(cmdId\) \{\s*e\.preventDefault\(\);\s*this\.dispatcher\.dispatch\(cmdId\);\s*return;/,
+    /if \(\(e\.ctrlKey \|\| e\.metaKey\) && this\.dispatcher\) \{\s*const cmdId = matchShortcut\(e, defaultShortcuts\);\s*if \(cmdId\) \{\s*e\.preventDefault\(\);\s*if \(cmdId === 'edit:delete' && this\.cursor\.isInCellSelectionMode\(\) && e\.ctrlKey && !e\.metaKey\) \{[\s\S]*?this\.clearSelectedCellBlock\(\);[\s\S]*?return;\s*\}\s*this\.dispatcher\.dispatch\(cmdId\);\s*return;/,
   );
 });

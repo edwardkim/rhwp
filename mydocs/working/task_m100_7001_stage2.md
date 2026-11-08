@@ -133,7 +133,7 @@ DocFacts를 각각 만든 후 같은 `build_menu`를 호출한다.
 ## 5. search — 주소와 검색 범위가 달라 독립 보존 우선
 
 근거: [main](../../src/cli/queries/search.rs), [agent](../../src/bin/rhwp-agent/searchcmd.rs),
-[q-kit](../../src/bin/rhwp-q-kit/search_all.rs),
+[q-kit](https://github.com/edwardkim/rhwp/blob/313bd4273dc0cc36a3f3f9b01425797636601b61/src/bin/rhwp-q-kit/search_all.rs),
 [grep 코어](../../src/document_core/queries/grep.rs),
 [검색 API](../../src/document_core/queries/search_query.rs).
 
@@ -159,14 +159,14 @@ main의 `search_json_value`는 main.rs에 남아 있고 batch/MCP도 관련 계�
 
 ## 6. q-more/q-pack — 봉투는 복제, volume-probe는 서로 다른 계산
 
-[more envelope](../../src/bin/rhwp-q-more/envelope.rs)와
-[pack envelope](../../src/bin/rhwp-q-pack/envelope.rs)는 도구명 치환 후 **파일 전체가 동일**하다.
+[more envelope](https://github.com/edwardkim/rhwp/blob/313bd4273dc0cc36a3f3f9b01425797636601b61/src/bin/rhwp-q-more/envelope.rs)와
+[pack envelope](https://github.com/edwardkim/rhwp/blob/313bd4273dc0cc36a3f3f9b01425797636601b61/src/bin/rhwp-q-pack/envelope.rs)는 도구명 치환 후 **파일 전체가 동일**하다.
 JSON 생성, stdout 오류 처리, 파일 로더, 1파일 파서, slot 파서가 공통화 후보다.
 현재 helper의 stdout/직렬화 실패는 exit 1을 반환한다. agent helper는 stdout 실패 시
 process::exit(1)를 호출하므로 세 봉투를 한꺼번에 동일 함수로 바꾸는 범위까지 확정하지 않는다.
 
-[more probe](../../src/bin/rhwp-q-more/probe.rs)와
-[pack probe](../../src/bin/rhwp-q-pack/probe.rs)의 현재 차이:
+[more probe](https://github.com/edwardkim/rhwp/blob/313bd4273dc0cc36a3f3f9b01425797636601b61/src/bin/rhwp-q-more/probe.rs)와
+[pack probe](https://github.com/edwardkim/rhwp/blob/313bd4273dc0cc36a3f3f9b01425797636601b61/src/bin/rhwp-q-pack/probe.rs)의 현재 차이:
 
 | 계산 | more | pack |
 | --- | --- | --- |

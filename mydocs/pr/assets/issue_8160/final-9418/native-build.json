@@ -1,0 +1,25 @@
+{
+  "source_sha": "5df67d3299befb467a49dc4eaafd12d6e1877e2d",
+  "source_dirty": false,
+  "command": [
+    "cargo",
+    "build",
+    "--locked",
+    "--profile",
+    "release-test",
+    "--features",
+    "native-skia",
+    "--bin",
+    "rhwp",
+    "--target-dir",
+    "/home/tsjang/rhwp/target/pr-review",
+    "--message-format=json-render-diagnostics"
+  ],
+  "exit_code": 0,
+  "seconds": 518.634,
+  "linked_rlib": "/home/tsjang/rhwp/target/pr-review/release-test/deps/librhwp.rlib",
+  "artifacts": {
+    "rhwp": "534ea8ec8c1d25002716b1d19d6893ae81b0ddb0ae88bf00e531dab1c81890d3",
+    "librhwp.rlib": "c6a123801d64c7cbb3743e607344be9ac432aaa63ba7fc3b2f32329287722060"
+  }
+}

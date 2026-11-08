@@ -1,0 +1,81 @@
+{
+  "candidate_runtime": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+  "contributions": [
+    {
+      "pr": 8326,
+      "original_head": "32c2a1e9febb303ac0662021279cf9171b346cb8",
+      "merge_commit": "9e31490ff41661d75bd5384785b69240c575ed75",
+      "merge_subject": "fix(hwpx): #8326의 header 그림 참조와 최신 글머리표 계약 통합",
+      "original_head_is_ancestor": true
+    },
+    {
+      "pr": 8331,
+      "original_head": "5b36dbd078acd5add18592511682ce268dd66e82",
+      "merge_commit": "4d31bcbdca72972b0a39cf14cc2f7ce716000f31",
+      "merge_subject": "merge: semanticist21 PR #8331 원 기여 보존",
+      "original_head_is_ancestor": true
+    },
+    {
+      "pr": 8332,
+      "original_head": "c773e5060c0f186b4bf8281133004f5afe120fa4",
+      "merge_commit": "96c2b2eb89b399146f09bdd834b4fd0b8423248a",
+      "merge_subject": "merge: semanticist21 PR #8332 원 기여 보존",
+      "original_head_is_ancestor": true
+    },
+    {
+      "pr": 8347,
+      "original_head": "19aed211d178996cf83aae89388ed91d6ec93bcf",
+      "merge_commit": "e5a585d5d6282da3b6d8dbe0b1f6ba348c14b993",
+      "merge_subject": "merge: semanticist21 PR #8347 원 기여 보존",
+      "original_head_is_ancestor": true
+    },
+    {
+      "pr": 8349,
+      "original_head": "ffc0550e8b9c6db8627f9a82cc7f0f3ff39a5415",
+      "merge_commit": "6ce743395e4f0866b51db85cd5ae9777a096f51f",
+      "merge_subject": "merge: semanticist21 PR #8349 원 기여 보존",
+      "original_head_is_ancestor": true
+    },
+    {
+      "pr": 8358,
+      "original_head": "9a709cdcd31300731cefbdbec4a978557f871183",
+      "merge_commit": "eb7866f32ea95623e76b2dcdccd0155e3fc3385f",
+      "merge_subject": "merge: semanticist21 PR #8358 원 기여 보존",
+      "original_head_is_ancestor": true
+    },
+    {
+      "pr": 8359,
+      "original_head": "2587dd58dac9a8bf312d7cd2f59b37e803d1a387",
+      "merge_commit": "f6ea22f3d4c91b81802aab07829c90a57c678d7c",
+      "merge_subject": "fix(layout): #8359 기본 탭 간격과 최신 스타일 해소 계약 통합",
+      "original_head_is_ancestor": true
+    },
+    {
+      "pr": 8363,
+      "original_head": "9d6e420da55d4b9d9684c0e9c8f61cdf84ff29ff",
+      "merge_commit": "643b8c85f16f1a5f39f29fca8116e70c5cb10ae1",
+      "merge_subject": "merge: semanticist21 PR #8363 원 기여 보존",
+      "original_head_is_ancestor": true
+    },
+    {
+      "pr": 8366,
+      "original_head": "5993e4d32e08cce8785e79364dd6ac66eab80dfb",
+      "merge_commit": "6448653c5b9bd2bc05e51ea79f93136c833d4619",
+      "merge_subject": "merge: semanticist21 PR #8366 원 기여 보존",
+      "original_head_is_ancestor": true
+    },
+    {
+      "pr": 8367,
+      "original_head": "0f73bc67fcffb6126c745d86685df893ffb5267b",
+      "merge_commit": "01a68502db719313c8d095b3f34617fce3d20411",
+      "merge_subject": "merge: semanticist21 PR #8367 원 기여 보존",
+      "original_head_is_ancestor": true
+    }
+  ],
+  "maintainer_corrections": [
+    "1bc22c9165",
+    "fd220910ef",
+    "5c540c6c3e",
+    "2f44d7d0ab"
+  ]
+}

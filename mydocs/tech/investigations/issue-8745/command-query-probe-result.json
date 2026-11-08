@@ -1,0 +1,106 @@
+{
+  "codeql": {
+    "name": "CodeQL",
+    "organization": "GitHub",
+    "semanticVersion": "2.27.4",
+    "notifications": [
+      {
+        "id": "cli/file-coverage-baseline",
+        "name": "cli/file-coverage-baseline",
+        "shortDescription": {
+          "text": "File coverage baseline telemetry"
+        },
+        "fullDescription": {
+          "text": "File coverage baseline telemetry"
+        },
+        "defaultConfiguration": {
+          "enabled": true
+        }
+      },
+      {
+        "id": "cli/platform",
+        "name": "cli/platform",
+        "shortDescription": {
+          "text": "Platform"
+        },
+        "fullDescription": {
+          "text": "Platform"
+        },
+        "defaultConfiguration": {
+          "enabled": true
+        }
+      },
+      {
+        "id": "cli/build-mode",
+        "name": "cli/build-mode",
+        "shortDescription": {
+          "text": "Database build mode"
+        },
+        "fullDescription": {
+          "text": "Database build mode"
+        },
+        "defaultConfiguration": {
+          "enabled": true
+        }
+      },
+      {
+        "id": "rust/extractor/telemetry",
+        "name": "rust/extractor/telemetry",
+        "shortDescription": {
+          "text": "telemetry"
+        },
+        "fullDescription": {
+          "text": "telemetry"
+        },
+        "defaultConfiguration": {
+          "enabled": true
+        }
+      }
+    ],
+    "rules": [
+      {
+        "id": "rust/cleartext-logging",
+        "name": "rust/cleartext-logging",
+        "shortDescription": {
+          "text": "Cleartext logging of sensitive information"
+        },
+        "fullDescription": {
+          "text": "Logging sensitive information in plaintext can expose it to an attacker."
+        },
+        "defaultConfiguration": {
+          "enabled": true,
+          "level": "warning"
+        },
+        "properties": {
+          "tags": [
+            "security",
+            "external/cwe/cwe-312",
+            "external/cwe/cwe-359",
+            "external/cwe/cwe-532"
+          ],
+          "description": "Logging sensitive information in plaintext can\n              expose it to an attacker.",
+          "id": "rust/cleartext-logging",
+          "kind": "path-problem",
+          "name": "Cleartext logging of sensitive information",
+          "precision": "high",
+          "problem.severity": "warning",
+          "security-severity": "7.5"
+        }
+      }
+    ]
+  },
+  "source_sha256": "ee6ecf1d2231a52c826613a282646529ab558ff40c158bbbaa05ec5fa98a6e0e",
+  "results": [
+    {
+      "rule": "rust/cleartext-logging",
+      "line": 20,
+      "message": "This operation writes [...::from_bytes_with_password(...)](1) to a log file."
+    },
+    {
+      "rule": "rust/cleartext-logging",
+      "line": 29,
+      "message": "This operation writes [password](1) to a log file."
+    }
+  ],
+  "note": "Isolated structural experiment. Does not prove the product fix or compatibility. Original return produces an alert; command/query path has no alert; raw password logging is still detected."
+}

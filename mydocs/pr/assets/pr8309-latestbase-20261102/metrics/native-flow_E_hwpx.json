@@ -1,0 +1,61 @@
+{
+  "summary": {
+    "compared_pages": 1,
+    "average_silhouette_raw_match_percent": 100.0,
+    "worst_silhouette_raw_match_percent": 100.0,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 99.89516,
+    "worst_pixel_match_percent": 99.89516,
+    "average_ink_match_percent": 89.20356,
+    "worst_ink_match_percent": 89.20356,
+    "average_visual_accuracy_proxy_percent": 89.20356,
+    "worst_visual_accuracy_proxy_percent": 89.20356,
+    "average_tolerant_content_match_percent": 100.0,
+    "worst_tolerant_content_match_percent": 100.0,
+    "worst_pages": [
+      1
+    ]
+  },
+  "pages": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8309-latest/candidate-native-flow-review/flow_E_hwpx/rhwp_png/rhwp_001.png",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8309-latest/candidate-native-flow-review/flow_E_hwpx/pdf_png/pdf-001.png",
+      "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8309-latest/candidate-native-flow-review/flow_E_hwpx/overlay/overlay_001.png",
+      "width": 794,
+      "height": 1122,
+      "pixel_diff_threshold": 32,
+      "overlay_color_legend": {
+        "rhwp_only": "blue",
+        "pdf_only": "red",
+        "both_different": "orange",
+        "matching": "gray"
+      },
+      "total_pixels": 890868,
+      "diff_pixels": 934,
+      "diff_ratio": 0.00104842,
+      "pixel_match_percent": 99.89516,
+      "ink_union_pixels": 8651,
+      "ink_diff_pixels": 934,
+      "ink_diff_ratio": 0.1079644,
+      "ink_match_percent": 89.20356,
+      "visual_accuracy_proxy_percent": 89.20356,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 8651,
+      "tolerant_content_match_percent": 100.0,
+      "mean_abs_channel_delta": 0.119,
+      "max_channel_delta": 135,
+      "diff_bbox": [
+        114,
+        133,
+        710,
+        212
+      ]
+    }
+  ]
+}

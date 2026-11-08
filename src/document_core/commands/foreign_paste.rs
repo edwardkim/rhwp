@@ -112,6 +112,9 @@ impl crate::document_core::DocumentCore {
         for para in &mut foreign_paras {
             strip_section_scoped_controls(para);
         }
+        // 외부/HTML 붙여넣기는 메모 본문을 싣지 않는다. 앵커만 남기면 본문 없는
+        // 메모 필드가 되므로 필드를 떼고 글자만 남긴다.
+        crate::document_core::queries::memo_query::drop_memo_fields(&mut foreign_paras);
 
         let imported_bin = pool.imported();
         pool.restore(&mut self.document);
@@ -168,7 +171,7 @@ impl crate::document_core::DocumentCore {
             let new_chars = text.chars().count();
 
             self.document.sections[section_idx].paragraphs[para_idx]
-                .insert_text_at(char_offset, &text);
+                .insert_text_from_paragraph(char_offset, &foreign_paras[0]);
             self.apply_clipboard_char_shapes(
                 section_idx,
                 para_idx,
@@ -918,6 +921,7 @@ fn drop_leading_control_slots(para: &mut Paragraph, max_slots: usize) {
     }
 
     let shift = (slots as u32) * 8;
+    para.delete_nb_space_origin_range(0, slots);
     para.text = chars[slots..].iter().collect();
     para.char_offsets = para.char_offsets[slots..]
         .iter()

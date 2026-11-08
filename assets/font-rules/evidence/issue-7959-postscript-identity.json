@@ -1,0 +1,67 @@
+{
+  "fonts": [
+    {
+      "fontFile": "malgun.ttf",
+      "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+      "weightClass": 400,
+      "names": [
+        [
+          1,
+          "Malgun Gothic"
+        ],
+        [
+          1,
+          "맑은 고딕"
+        ],
+        [
+          2,
+          "Regular"
+        ],
+        [
+          4,
+          "Malgun Gothic"
+        ],
+        [
+          4,
+          "맑은 고딕"
+        ],
+        [
+          6,
+          "MalgunGothic"
+        ]
+      ]
+    },
+    {
+      "fontFile": "malgunbd.ttf",
+      "sha256": "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082",
+      "weightClass": 700,
+      "names": [
+        [
+          1,
+          "Malgun Gothic"
+        ],
+        [
+          1,
+          "맑은 고딕"
+        ],
+        [
+          2,
+          "Bold"
+        ],
+        [
+          4,
+          "Malgun Gothic Bold"
+        ],
+        [
+          4,
+          "맑은 고딕 Bold"
+        ],
+        [
+          6,
+          "MalgunGothicBold"
+        ]
+      ]
+    }
+  ],
+  "scope": "Locally installed name-table identity metadata only. No font bytes distributed. Import retains separately extracted bold/italic style."
+}

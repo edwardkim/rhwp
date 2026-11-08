@@ -1,0 +1,414 @@
+//! 셀의 단 설정 메타데이터와 실제 줄·개체 점유를 구분한다.
+
+use crate::model::paragraph::Paragraph;
+
+impl super::LayoutEngine {
+    /// 내용이 끝난 종료 병합 칸의 미소비 최소 공간만 보존한다.
+    /// 남은 글줄은 기존 유닛 원장과 이어받기 요구가 소유한다. 저장 줄 칸도 같다 —
+    /// 한/글 2020 1342000 61·62쪽 첫 빈 띠(51.6·84.1px)는 일반 행 꼬리가 아니라 그 행에서
+    /// 끝나는 병합 칸(행 8–17 등)의 남은 선언이다. 저장 줄 칸은 끝 행 내용이 이 조각에서
+    /// 끝난(`complete_end_row`) 경우만 본다 — 블록 컷의 부분 행(1341000 29쪽)은 저장 프레임이 소유한다.
+    pub(crate) fn ending_span_minimum_remainder(
+        &self,
+        table: &crate::model::table::Table,
+        end_row: usize,
+        accepted: &[crate::renderer::pagination::StraddleCellCarry],
+        complete_end_row: bool,
+        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    ) -> Option<f64> {
+        table
+            .cells
+            .iter()
+            .enumerate()
+            .filter(|(_, cell)| {
+                cell.row_span > 1
+                    && usize::from(cell.row) + usize::from(cell.row_span) == end_row
+                    && (complete_end_row || self.cell_uses_plain_reflow_units(cell, table))
+            })
+            .filter_map(|(index, cell)| {
+                let owner = accepted.iter().find(|owner| owner.cell_index == index)?;
+                let physical = owner.accepted_physical_height?;
+                let units = self.cell_units(cell, table, styles);
+                let end = owner.fragment_cut?.1.min(units.len());
+                if end != units.len() {
+                    return None;
+                }
+                let minimum = if cell.height < 0x8000_0000 {
+                    super::hwpunit_to_px(cell.height as i32, self.dpi)
+                } else {
+                    0.0
+                };
+                let remaining = minimum - physical;
+                // 종료 병합 칸도 자기 내용이 모두 끝난 작은 빈 꼬리는 흡수한다.
+                // 일반 칸에서 흡수한 공간을 이 원장에서 다시 만들지 않는다.
+                if complete_row_blank_tail_is_absorbed(remaining, self.dpi) {
+                    return None;
+                }
+                (remaining > 0.5).then_some(remaining)
+            })
+            .reduce(f64::max)
+    }
+
+    /// 내용이 끝난 뒤 한 줄도 되지 않는 최소 공간만 남으면 빈 조각을 만들지 않는다.
+    /// 줄이 남은 컷에는 적용하지 않으며, 큰 빈 최소는 기존 물리 원장으로 이어진다.
+    pub(crate) fn row_blank_tail_is_line_sliver(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        tail: f64,
+        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    ) -> bool {
+        let line = self
+            .indexed_row_cut_cell_order(table, row)
+            .into_iter()
+            .filter_map(|index| {
+                let cell = &table.cells[index];
+                let stored = self.stored_plain_text_cell_frame(table, cell);
+                if !stored && !self.cell_uses_plain_reflow_units(cell, table) {
+                    return None;
+                }
+                let units = self.cell_units(cell, table, styles);
+                let last = units.last()?;
+                // 마지막 잉크 상자에서는 다음 줄 간격을 이미 접었을 수 있다.
+                // 완료 뒤의 한 줄 경계는 유효한 원본 슬롯을 소비하며,
+                // 새로 조판한 줄에는 그 줄 생산자가 준 현재 높이를 쓴다.
+                let source_slot = (stored && !last.reflowed_line_slot)
+                    .then(|| {
+                        let paragraph = cell.paragraphs.get(last.para_idx)?;
+                        let line = paragraph.line_segs.get(last.vis_end.checked_sub(1)?)?;
+                        line.line_height.checked_add(line.line_spacing)
+                    })
+                    .flatten()
+                    .map_or(0.0, |height| super::hwpunit_to_px(height, self.dpi));
+                Some(last.height.max(source_slot))
+            })
+            .fold(0.0, f64::max);
+        blank_tail_is_line_sliver(tail, line, self.dpi)
+    }
+
+    /// 내용이 끝난 행의 빈 꼬리가 쪽 경계에서 흡수되는가. 저장 줄 행도 같은 상한을 쓴다.
+    pub(crate) fn complete_row_blank_tail_is_absorbed(&self, tail: f64) -> bool {
+        complete_row_blank_tail_is_absorbed(tail, self.dpi)
+    }
+
+    /// 셀 단위로 나누는 표의 쪽 끝 행을 이 쪽에 둘 수 있는가 — 선언 높이가 아니라 행 내용
+    /// (글줄과 칸 안 여백)이 남은 공간보다 **작아야** 한다. 비교는 HU 격자에서 한다.
+    ///
+    /// 한/글 2020 Print 합성(`samples/issue8464/gen_row_content_fit.py`, 12pt 한 줄 행,
+    /// 내용 1200 + 칸 여백 141×2 = 1482HU): 남은 공간이 내용보다 2·4·6·8·12HU 크면 행을
+    /// 이 쪽에 두고, 같거나(0HU) 작으면 다음 쪽으로 넘긴다. 10pt(1282HU)도 같은 경계다.
+    /// 선언 높이·줄간격·저장 줄 유무(한/글이 HWP 로 다시 저장한 입력)와 무관했다.
+    pub(crate) fn row_content_fits_page_rest(&self, content: f64, rest: f64) -> bool {
+        crate::renderer::px_to_hwpunit(content, self.dpi)
+            < crate::renderer::px_to_hwpunit(rest, self.dpi)
+    }
+
+    /// 현재 행을 넘어 계속되는 병합 칸의 독립적인 빈 최소 공간.
+    /// 글줄이 재조판된다는 사실만으로 쪽 끝의 빈 띠를 소유하지 않는다.
+    pub(crate) fn row_has_continuing_reflow_minimum(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    ) -> bool {
+        table.cells.iter().any(|cell| {
+            if usize::from(cell.row) > row
+                || usize::from(cell.row) + usize::from(cell.row_span) <= row + 1
+                || cell.height >= 0x8000_0000
+                || !self.cell_uses_plain_reflow_units(cell, table)
+            {
+                return false;
+            }
+            let end = self.cell_units(cell, table, styles).len();
+            super::hwpunit_to_px(cell.height as i32, self.dpi)
+                > self.cell_cut_visible_height(cell, table, styles, 0, end) + 0.5
+        })
+    }
+
+    /// 확정된 일반 셀 구간은 선언과 내용 요구를 함께 푼다.
+    /// 재조판 요구가 선언을 넘으면 미지 행의 옛 배분도 같은 제약으로 다시 푼다.
+    /// 저장 프레임의 요구는 기존 순서대로 마지막 걸침 행에서 계속 보존한다.
+    /// 다만 저장 칸의 선언이 내용보다 작아 선언만으로는 행이 정해지지 않으면,
+    /// 내용 요구로 모든 행이 정해질 때에 한해 그 해를 쓴다.
+    pub(crate) fn resolve_span_content_requirements(
+        table: &crate::model::table::Table,
+        requirements: &[(usize, f64)],
+        initial_rows: &[f64],
+        content_floors: &[f64],
+        declared_shrink_hu: &[u32],
+        dpi: f64,
+        render_normalization: &crate::renderer::render_normalization::RenderNormalizationOverlay,
+    ) -> Option<Vec<f64>> {
+        let is_plain_reflow = |cell: &crate::model::table::Cell| {
+            // 이웃 셀의 줄 구성이 바뀌어도 이 셀의 저장 선언 제약은 유지한다.
+            // 컷 유닛과 같은 출처로 실제 재조판 셀의 내용 요구만 먼저 배분한다.
+            cell.text_direction == 0
+                && Self::cell_has_plain_reflow_paragraphs(
+                    cell,
+                    render_normalization.cell_text_partition_reflowed(table, cell),
+                )
+        };
+        let is_horizontal = |cell: &crate::model::table::Cell| cell.text_direction == 0;
+        let overflows = |is_target: &dyn Fn(&crate::model::table::Cell) -> bool| {
+            requirements.iter().any(|&(index, height)| {
+                let cell = &table.cells[index];
+                cell.height < 0x8000_0000
+                    && is_target(cell)
+                    && height > super::hwpunit_to_px(cell.height as i32, dpi)
+            })
+        };
+        let plain_overflow = overflows(&is_plain_reflow);
+        if !plain_overflow && !overflows(&is_horizontal) {
+            return None;
+        }
+        // 행 높이가 이미 정해진 일반 셀 구간에서 작은 병합 셀의 내용이 커지면,
+        // 큰 병합 선언의 잔여도 그 성장분을 소비해야 한다. 선언을 먼저 풀고 끝 행에
+        // 배정한 잔여를 남겨 둔 채 자식 내용만 늘리면 같은 높이를 두 번 더한다.
+        // 미지 행·세로쓰기·독립 저장 reset·개체가 있는 구간의 기존 계약은 유지한다.
+        let mut ranges: Vec<(usize, usize)> = table
+            .cells
+            .iter()
+            .filter_map(|cell| {
+                let row = usize::from(cell.row);
+                let span = usize::from(cell.row_span);
+                (span > 1 && row + span <= initial_rows.len()).then_some((row, row + span))
+            })
+            .collect();
+        ranges.sort_unstable();
+        let mut components: Vec<(usize, usize)> = Vec::new();
+        for (start, end) in ranges {
+            if let Some(last) = components.last_mut().filter(|last| start < last.1) {
+                last.1 = last.1.max(end);
+            } else {
+                components.push((start, end));
+            }
+        }
+        let mut closed_plain_rows = vec![false; initial_rows.len()];
+        for (start, end) in components {
+            if initial_rows[start..end].iter().any(|&height| height <= 0.0) {
+                continue;
+            }
+            let closed = table
+                .cells
+                .iter()
+                .filter(|cell| {
+                    usize::from(cell.row) < end
+                        && usize::from(cell.row) + usize::from(cell.row_span) > start
+                })
+                .all(|cell| {
+                    if cell.text_direction != 0
+                        || cell.height >= 0x8000_0000
+                        || render_normalization.cell_frame_reflowed(table, cell)
+                        || cell.paragraphs.iter().any(|paragraph| {
+                            paragraph.controls.iter().any(|control| {
+                                !crate::renderer::cell_control_is_text_metadata(control)
+                            })
+                        })
+                    {
+                        return false;
+                    }
+                    let mut previous = None;
+                    cell.paragraphs
+                        .iter()
+                        .flat_map(|paragraph| &paragraph.line_segs)
+                        .all(|segment| {
+                            let follows =
+                                previous.is_none_or(|position| segment.vertical_pos >= position);
+                            previous = Some(segment.vertical_pos);
+                            follows
+                        })
+                });
+            if closed {
+                closed_plain_rows[start..end].fill(true);
+            }
+        }
+        let is_closed_plain = |cell: &crate::model::table::Cell| {
+            let row = usize::from(cell.row);
+            let span = usize::from(cell.row_span);
+            closed_plain_rows
+                .get(row..row + span)
+                .is_some_and(|rows| !rows.is_empty() && rows.iter().all(|&closed| closed))
+        };
+        let closed_overflow = overflows(&is_closed_plain);
+        let mut required = vec![0.0f64; table.cells.len()];
+        for &(index, height) in requirements {
+            required[index] = height;
+        }
+        let span_constraints = |uses_content: &dyn Fn(&crate::model::table::Cell) -> bool| {
+            let mut constraints: Vec<(usize, usize, f64)> = Vec::new();
+            for (index, cell) in table.cells.iter().enumerate() {
+                let row = usize::from(cell.row);
+                let span = usize::from(cell.row_span);
+                if span <= 1 || row + span > initial_rows.len() || cell.height >= 0x8000_0000 {
+                    continue;
+                }
+                let declared = super::hwpunit_to_px(cell.height as i32, dpi);
+                let total = if uses_content(cell) {
+                    declared.max(required[index])
+                } else {
+                    declared
+                } - super::hwpunit_to_px(1, dpi)
+                    * table.inner_cell_spacing_hu(span) as f64;
+                if let Some(prior) = constraints
+                    .iter_mut()
+                    .find(|value| value.0 == row && value.1 == span)
+                {
+                    prior.2 = prior.2.max(total);
+                } else {
+                    constraints.push((row, span, total));
+                }
+            }
+            constraints.sort_by_key(|&(_, span, _)| span);
+            constraints
+        };
+        let mut heights = initial_rows.to_vec();
+        if plain_overflow || closed_overflow {
+            crate::renderer::height_measurer::solve_rowspan_row_heights(
+                &span_constraints(&|cell| is_plain_reflow(cell) || is_closed_plain(cell)),
+                &mut heights,
+            );
+        } else {
+            // 엇갈린 병합 칸 사슬에서 선언(예: 282HU)이 이미 정한 앞 행보다 작으면
+            // 그 제약은 아무 행도 정하지 못하고, 남은 행은 고르게 나뉜다. 한/글은 칸의
+            // 내용 높이로 사슬을 이어 푼다. 선언만으로 풀리는 표는 종전 결과를 유지한다.
+            let mut declared_rows = initial_rows.to_vec();
+            if crate::renderer::height_measurer::solve_rowspan_row_heights(
+                &span_constraints(&|_| false),
+                &mut declared_rows,
+            ) || !crate::renderer::height_measurer::solve_rowspan_row_heights(
+                &span_constraints(&is_horizontal),
+                &mut heights,
+            ) {
+                return None;
+            }
+        }
+        for (row, &shrink) in declared_shrink_hu.iter().enumerate().take(heights.len()) {
+            if shrink != 0 {
+                heights[row] = (heights[row] - super::hwpunit_to_px(shrink as i32, dpi))
+                    .max(content_floors[row]);
+            }
+        }
+        for &(index, required) in requirements {
+            let cell = &table.cells[index];
+            let row = usize::from(cell.row);
+            let span = usize::from(cell.row_span);
+            let combined = heights[row..row + span].iter().sum::<f64>()
+                + super::hwpunit_to_px(1, dpi) * table.inner_cell_spacing_hu(span) as f64;
+            if required > combined {
+                heights[row + span - 1] += required - combined;
+            }
+        }
+        Some(heights)
+    }
+
+    /// 저장 프레임을 높이 컷으로 다시 해석하지 않는 일반 재조판 출처.
+    pub(crate) fn cell_has_plain_reflow_paragraphs(
+        cell: &crate::model::table::Cell,
+        table_reflowed: bool,
+    ) -> bool {
+        cell.paragraphs.iter().all(|paragraph| {
+            paragraph_has_plain_flow(paragraph)
+                && (table_reflowed || crate::renderer::para_has_no_stored_line_segs(paragraph))
+        })
+    }
+
+    pub(crate) fn cell_uses_plain_reflow_units(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+    ) -> bool {
+        Self::cell_has_plain_reflow_paragraphs(
+            cell,
+            self.render_normalization
+                .borrow()
+                .cell_frame_reflowed(table, cell),
+        )
+    }
+
+    /// 일반 칸이 없는 행의 종료 병합 칸이 실제 수용 공간에서 모두 끝났는지 확인한다.
+    /// 계속되는 다른 병합 칸의 높이와 내용 커서는 별도 원장에 남긴다.
+    pub(crate) fn row_band_completes_ending_reflow_spans(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        accepted: &[crate::renderer::pagination::StraddleCellCarry],
+        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    ) -> bool {
+        if table.layout_page_break() != crate::model::table::TablePageBreak::RowBreak
+            || !self.indexed_row_cut_cell_order(table, row).is_empty()
+        {
+            return false;
+        }
+        let mut has_ending_owner = false;
+        for (index, cell) in table.cells.iter().enumerate().filter(|(_, cell)| {
+            cell.row_span > 1 && usize::from(cell.row) + usize::from(cell.row_span) == row + 1
+        }) {
+            has_ending_owner = true;
+            if !self.cell_uses_plain_reflow_units(cell, table) {
+                return false;
+            }
+            let Some(carry) = accepted.iter().find(|carry| carry.cell_index == index) else {
+                return false;
+            };
+            let units = self.cell_units(cell, table, styles);
+            if !carry
+                .fragment_cut
+                .is_some_and(|(_, end)| end == units.len())
+            {
+                return false;
+            }
+            let Some(physical) = carry.accepted_physical_height else {
+                return false;
+            };
+            // 끝 행 소속만으로 미소비 줄이 모두 들어갔다고 추정하지 않는다.
+            let content = self.cell_cut_visible_height(cell, table, styles, 0, units.len());
+            let roundoff = f64::EPSILON * content.abs().max(physical.abs()).max(1.0) * 8.0;
+            if content > physical + roundoff {
+                return false;
+            }
+        }
+        has_ending_owner
+    }
+}
+
+impl super::CellUnit {
+    /// 빈 간격 유닛을 제외하고 실제 가시 줄 범위의 존재만 공유한다.
+    pub(in crate::renderer::layout) fn has_visible_line(&self) -> bool {
+        !self.empty_spacer && self.vis_start < self.vis_end
+    }
+}
+
+/// 내용이 모두 끝난 행에서 그린 뒤 남은 빈 꼬리를 쪽 경계에서 흡수하는 상한(HU).
+///
+/// 한/글 2024 합성 사다리(#8105 `probes/make_declared_row_band.py`): 남은 선언이 1275HU(17.0px)
+/// 이면 흡수하고 1290HU(17.2px) 이면 다음 쪽 첫머리 빈 띠로 넘긴다. 시험 행 칸 여백 283·500,
+/// 표 기본 칸 여백 141·400, 칸 글자 10·16pt, 병합 칸·저장 줄 유무와 무관했다 — 칸의 줄 높이가
+/// 기준이 아니다. 한/글 2020 #7642 stage3197 의 13.33px 흡수 · 21.33px 이월과도 맞는다.
+/// 1282HU 는 기본 10pt 줄(1000)과 기본 칸 위아래 여백(141×2)의 합이다.
+const COMPLETE_ROW_BLANK_TAIL_ABSORB_HU: i32 = 1282;
+
+fn complete_row_blank_tail_is_absorbed(tail: f64, dpi: f64) -> bool {
+    tail <= super::hwpunit_to_px(COMPLETE_ROW_BLANK_TAIL_ABSORB_HU, dpi)
+}
+
+/// 흡수 대상은 내용 유닛을 가진 소유 칸의 꼬리다.
+fn blank_tail_is_line_sliver(tail: f64, line: f64, dpi: f64) -> bool {
+    line > 0.0 && complete_row_blank_tail_is_absorbed(tail, dpi)
+}
+
+/// 한 단 설정은 이미 선택한 셀 프레임을 바꾸거나 내용 상자를 추가하지 않는다.
+/// 각주·미주도 같다 — 칸 안에는 줄 속 번호 글자만 남고 본문은 쪽의 주석 영역이 소유한다.
+/// 한/글 2020 Print(`samples/issue1937/gen_cell_notes_multipage.py` LINES=7, 각주가 행 첫
+/// 문단에 있는 행)는 그 행을 쪽 끝에서 자를 때도 각주 없는 행처럼 마지막 줄의 뒤 줄간격을
+/// 빼고 줄을 하나 더 받는다(2쪽 R12 다섯 줄).
+/// 다단 설정이나 독립 개체의 흐름 계약까지 이 판정으로 확대하지 않는다.
+pub(super) fn paragraph_has_plain_flow(paragraph: &Paragraph) -> bool {
+    paragraph.controls.iter().all(|control| {
+        crate::renderer::cell_control_is_text_metadata(control)
+            || matches!(
+                control,
+                crate::model::control::Control::Footnote(_)
+                    | crate::model::control::Control::Endnote(_)
+            )
+    })
+}

@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-28",
+  "command": "cargo nextest run --cargo-profile release-test --target-dir target/pr-review --test regression_suite_013 -E 'test(issue_8220_pdf_editable_layout::)' --no-fail-fast",
+  "passed": 4,
+  "failed": 0,
+  "skipped": 288,
+  "nextest_run_id": "ae24b411-26ab-4cd9-aa87-86173166b7a8",
+  "log_sha256": "9b92ac8cd413a9732e6410fb2c9631c02eb733173b7db4dd4f099e44dfbc9c22",
+  "source": "tests/cases/issue_8220_pdf_editable_layout.rs",
+  "source_sha256": "8da285abe778a8456ef8191dd8319e3af69897b1d089ae54cca956b82fcd9971",
+  "coordinate_evidence": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pdf2010-exam-p7-coordinates.json"
+}

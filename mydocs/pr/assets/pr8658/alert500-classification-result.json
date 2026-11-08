@@ -1,0 +1,63 @@
+{
+  "approval": "explicit user approval for #500 false positive and at most one conditional same-head CodeQL Rust rerun",
+  "observed_at": "2026-11-06T11:40:04.787478+00:00",
+  "head": "d440ddc370026ba89ac79a6f6bc2385b24195973",
+  "before": {
+    "500": {
+      "global": null,
+      "instance": "open",
+      "ref": "refs/pull/8694/merge",
+      "dismissed_reason": null
+    },
+    "478": {
+      "global": null,
+      "instance": "open",
+      "ref": "refs/pull/8694/merge",
+      "dismissed_reason": null
+    },
+    "483": {
+      "global": null,
+      "instance": "open",
+      "ref": "refs/pull/8694/merge",
+      "dismissed_reason": null
+    },
+    "484": {
+      "global": null,
+      "instance": "open",
+      "ref": "refs/pull/8694/merge",
+      "dismissed_reason": null
+    }
+  },
+  "after": {
+    "500": {
+      "global": "dismissed",
+      "instance": "dismissed",
+      "ref": "refs/pull/8694/merge",
+      "dismissed_reason": "false positive"
+    },
+    "478": {
+      "global": null,
+      "instance": "open",
+      "ref": "refs/pull/8694/merge",
+      "dismissed_reason": null
+    },
+    "483": {
+      "global": null,
+      "instance": "open",
+      "ref": "refs/pull/8694/merge",
+      "dismissed_reason": null
+    },
+    "484": {
+      "global": null,
+      "instance": "open",
+      "ref": "refs/pull/8694/merge",
+      "dismissed_reason": null
+    }
+  },
+  "alert": 500,
+  "dismissed_reason": "false positive",
+  "dismissed_by": "edwardkim",
+  "dismissed_at": "2026-11-06T11:40:01Z",
+  "workflow_rerun_used": false,
+  "other_alerts_unchanged": true
+}

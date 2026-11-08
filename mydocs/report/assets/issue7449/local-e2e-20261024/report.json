@@ -1,0 +1,94 @@
+{
+  "reportVersion": 1,
+  "sourceSha256": "ce04aa534e95c6de3dc4ac06274171ac1468f1b2c3a70e366d015ff78af97f23",
+  "sourceStatus": "pass",
+  "status": "pass",
+  "sourceSchemaVersion": 1,
+  "evidenceVersion": 1,
+  "runId": "8f9b83c5-2747-4576-8229-ca242b295d7c",
+  "candidate": {
+    "sha256": "eaa4e7d9d364fd6877eb0c840eeb551137876c86002520d5efb9b0ad2ac6af45",
+    "version": "0.8.7",
+    "manifestVersion": 3,
+    "unchanged": true,
+    "buildSha": "미관측 (검사 도구 SHA와 별개)"
+  },
+  "tool": {
+    "sha": "955fa1125fce67b9a5ad8db09ed8780a9eb1caab",
+    "dirty": false
+  },
+  "environment": {
+    "node": "v24.15.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "puppeteer": "25.14.0",
+    "chrome": "155.0.8059.79"
+  },
+  "startedAt": "2026-10-24T04:30:59.680Z",
+  "finishedAt": "2026-10-24T04:31:51.512Z",
+  "results": [
+    {
+      "name": "extension-smoke",
+      "status": "pass",
+      "evidence": [
+        {
+          "id": "evidence-1",
+          "kind": "log",
+          "sha256": "d3d8925c0c9922d7f8f94f8398d822989c9afd6100f6b25afb922d4361b67c40",
+          "status": "verified"
+        }
+      ],
+      "exitCode": 0,
+      "timedOut": false
+    },
+    {
+      "name": "download-interceptor",
+      "status": "pass",
+      "evidence": [
+        {
+          "id": "evidence-2",
+          "kind": "log",
+          "sha256": "f86e09fcc2a755fc83d491250c3b2cadb8f3674ad0258bfff010f4c8692faf25",
+          "status": "verified"
+        }
+      ],
+      "exitCode": 0,
+      "timedOut": false
+    },
+    {
+      "name": "extension-lifecycle",
+      "status": "pass",
+      "evidence": [
+        {
+          "id": "evidence-3",
+          "kind": "log",
+          "sha256": "1491f026b562bf72a6ea49aa8df785b4489c1552ab38029fe720170b8f7cc57e",
+          "status": "verified"
+        }
+      ],
+      "exitCode": 0,
+      "timedOut": false
+    }
+  ],
+  "issues": [],
+  "limitations": [
+    "Unpacked Chrome for Testing only",
+    "스토어 설치·업데이트, Edge/Firefox 미검증",
+    "실제 사용자 환경·문서 표시·인쇄 품질 미검증",
+    "자동 검사 결과는 배포 승인이 아님",
+    "Chrome 버전은 실행기의 설치 대상 기록이며 브라우저 실행을 증명하지 않음"
+  ],
+  "manualReview": {
+    "status": "입력된 수동 검토 기록 (자동 검증 아님)",
+    "reviewMode": "delegated",
+    "checkedAt": "2026-10-24T04:33:09.838Z",
+    "readability": "pass",
+    "sharingExclusions": "pass"
+  },
+  "excluded": [
+    "후보·브라우저 절대 경로",
+    "다운로드 식별자·URL",
+    "원본 로그·진단 JSON·PNG·자유 텍스트",
+    "사용자 프로필·원문 문서(수집하지 않음)"
+  ]
+}

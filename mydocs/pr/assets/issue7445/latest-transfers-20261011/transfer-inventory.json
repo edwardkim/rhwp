@@ -1,0 +1,264 @@
+{
+  "source_commit": "cc5a14d592c1470a2adfc3ae08341bcfc010bd62",
+  "issues_checked": [
+    7803,
+    7804,
+    7806,
+    7807,
+    7808,
+    7809,
+    7821,
+    7822,
+    7823,
+    7830,
+    7831
+  ],
+  "files": [
+    {
+      "path": "tests/cases/issue_5584_single_unit_sliver_fragment.rs",
+      "archive": "mydocs/pr/assets/issue7445/latest-transfers-20261011/tests/cases/issue_5584_single_unit_sliver_fragment.rs.txt",
+      "sha256": "af1ca90842a72893b3e7eaf48a5c63060119db3a471182eb7555066cc58166a1",
+      "removed": [
+        {
+          "name": "issue_5584_no_single_unit_sliver_fragment",
+          "issue": 7822
+        }
+      ],
+      "active_file_kept_as_pointer": true,
+      "preserved_test_functions": []
+    },
+    {
+      "path": "tests/cases/issue_5807_coanchored_float_tac_order.rs",
+      "archive": "mydocs/pr/assets/issue7445/latest-transfers-20261011/tests/cases/issue_5807_coanchored_float_tac_order.rs.txt",
+      "sha256": "b5eadeb95b0f154e4e03b35c4e42672afec7307478a3265eb9cb49b78aca7673",
+      "removed": [
+        {
+          "name": "issue_5807_float_table_precedes_coanchored_tac_table",
+          "issue": 7821
+        }
+      ],
+      "active_file_kept_as_pointer": true,
+      "preserved_test_functions": []
+    },
+    {
+      "path": "tests/cases/issue_6025_cell_fragment_budget_pin.rs",
+      "archive": "mydocs/pr/assets/issue7445/latest-transfers-20261011/tests/cases/issue_6025_cell_fragment_budget_pin.rs.txt",
+      "sha256": "01a0deb5cc28a7b0c10ea278dc2a70896d72d74eea49fc7d164982f8761fe41b",
+      "removed": [
+        {
+          "name": "issue_6025_la_line_stays_on_first_page",
+          "issue": 7822
+        }
+      ],
+      "active_file_kept_as_pointer": true,
+      "preserved_test_functions": []
+    },
+    {
+      "path": "tests/cases/issue_6790_source_frame_tail_extension_must_fit.rs",
+      "archive": "mydocs/pr/assets/issue7445/latest-transfers-20261011/tests/cases/issue_6790_source_frame_tail_extension_must_fit.rs.txt",
+      "sha256": "b0ea2bf9aeb118489490378da4bbc3ab85732ef2dc10c1c67c4ba7cf47d719ff",
+      "removed": [
+        {
+          "name": "a_source_frame_that_fits_still_extends",
+          "issue": 7822
+        }
+      ],
+      "preserved_test_functions": [
+        "first_fragment_stays_inside_the_body",
+        "row_break_table_splits_into_three_pages",
+        "the_square_wrap_bound_document_is_unaffected"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_6923_wrapper_fragment_page_frame.rs",
+      "archive": "mydocs/pr/assets/issue7445/latest-transfers-20261011/tests/cases/issue_6923_wrapper_fragment_page_frame.rs.txt",
+      "sha256": "f0951c3d61177e4c416467a4016848d4f4069fa5e093e96386b2fb09ab3daaed",
+      "removed": [
+        {
+          "name": "extending_the_box_does_not_move_the_top_anchored_content",
+          "issue": 7823
+        },
+        {
+          "name": "wrapper_fragment_box_reaches_the_page_frame",
+          "issue": 7823
+        }
+      ],
+      "active_file_kept_as_pointer": true,
+      "preserved_test_functions": []
+    },
+    {
+      "path": "tests/cases/issue_6923_wrapper_table_stored_page_frame.rs",
+      "archive": "mydocs/pr/assets/issue7445/latest-transfers-20261011/tests/cases/issue_6923_wrapper_table_stored_page_frame.rs.txt",
+      "sha256": "a477f09d6b810a69d79d7b037f0102705b407e7372cfce15bcda8e11b3cc967a",
+      "removed": [
+        {
+          "name": "continuation_heading_boxes_follow_the_pdf_stored_frame",
+          "issue": 7823
+        },
+        {
+          "name": "continuation_tables_follow_their_owner_line_horizontal_origin",
+          "issue": 7823
+        },
+        {
+          "name": "no_off_canvas_in_the_document",
+          "issue": 7823
+        },
+        {
+          "name": "page1_nested_table_sits_on_its_stored_ladder_position",
+          "issue": 7823
+        },
+        {
+          "name": "page1_wrapper_frame_contains_its_own_last_line",
+          "issue": 7823
+        },
+        {
+          "name": "page4_content_stays_inside_the_body",
+          "issue": 7823
+        },
+        {
+          "name": "page4_has_no_text_overlap",
+          "issue": 7823
+        },
+        {
+          "name": "page5_keeps_the_empty_leading_source_slot",
+          "issue": 7823
+        },
+        {
+          "name": "page5_starts_at_the_stored_page_frame",
+          "issue": 7823
+        },
+        {
+          "name": "page_count_matches_the_hancom_oracle",
+          "issue": 7823
+        }
+      ],
+      "active_file_kept_as_pointer": true,
+      "preserved_test_functions": []
+    },
+    {
+      "path": "tests/cases/issue_6950_paragraph_end_topbottom_anchor.rs",
+      "archive": "mydocs/pr/assets/issue7445/latest-transfers-20261011/tests/cases/issue_6950_paragraph_end_topbottom_anchor.rs.txt",
+      "sha256": "c49fa0908e396c97505115c1990f9ede5d756d6cfd85ce1a1b4315c23741c0ec",
+      "removed": [
+        {
+          "name": "first_fragment_real_fixture_matches_paragraph_offset_without_extra_margins",
+          "issue": 7822
+        }
+      ],
+      "preserved_test_functions": [
+        "a_control_after_a_hard_break_is_not_a_width_wrapped_text_tail",
+        "anchor_origin_translation_is_applied_once",
+        "centered_wrapper_preserves_its_cell_frame_and_nested_table_origin",
+        "computed_anchor_uses_scalar_positions_and_not_stored_geometry",
+        "computed_frame_placement_reaches_paint_and_following_flow",
+        "computed_host_rejects_invalid_rows_and_other_wrap_owners",
+        "first_fragment_uses_paragraph_reference_not_text_or_outer_box",
+        "floating_band_consumes_flow_only_when_the_tail_line_has_insufficient_space",
+        "object_only_paragraph_preserves_outer_frames_and_finishes_once",
+        "occupied_bands_move_the_box_not_the_anchor_and_are_order_independent",
+        "page_last_line_consumes_the_resolved_source_frame",
+        "paragraph_completion_uses_occupied_end_once_in_either_emission_order",
+        "paragraph_start_controls_are_not_reclassified_as_text_tail_anchors",
+        "paragraph_text_table_and_following_text_do_not_overlap",
+        "preceding_tables_and_page_count_are_preserved",
+        "reflowed_host_does_not_use_stale_stored_line_coordinates",
+        "shorter_body_does_not_hide_table_overflow_by_moving_it_over_host_text",
+        "split_and_deferred_computed_tables_preserve_host_and_paint_inside_frame",
+        "split_computed_host_publishes_fragment_local_placements",
+        "stored_band_origin_requires_measured_successor_agreement_and_valid_source",
+        "stored_tail_table_paints_border_and_cell_content_from_the_same_origin",
+        "tail_table_closes_its_paragraph_before_successor_line_advance",
+        "top_caption_is_inside_the_reserved_box_before_the_table_body",
+        "typeset_publishes_a_computed_placement_for_the_current_frame",
+        "unproven_source_coordinates_do_not_supply_a_stored_plan",
+        "wrap_semantics_are_not_reclassified_as_topbottom",
+        "wrapper_alignment_variants_consume_the_cell_space_once"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_7063_midpage_fragment_box_and_align.rs",
+      "archive": "mydocs/pr/assets/issue7445/latest-transfers-20261011/tests/cases/issue_7063_midpage_fragment_box_and_align.rs.txt",
+      "sha256": "006e36d480e5835b3bc0666c261d7399751169dbd8507a156c26553fe0503d87",
+      "removed": [
+        {
+          "name": "issue_7063_midpage_fragment_box_does_not_pull_next_page_rows",
+          "issue": 7830
+        }
+      ],
+      "preserved_test_functions": [
+        "issue_7063_midpage_fragment_box_reaches_the_page_and_centers_its_slice"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_7095_page_spanning_fragment_box.rs",
+      "archive": "mydocs/pr/assets/issue7445/latest-transfers-20261011/tests/cases/issue_7095_page_spanning_fragment_box.rs.txt",
+      "sha256": "594623f688bfc30f6aa4ad9b7ee22eb36d892e92bf74d5e73169db37983da16c",
+      "removed": [],
+      "cases_removed": [
+        {
+          "issue": 7831,
+          "scope": "끝 조각 검사 중 가정폭력 분기. 정상 7062 분기는 보존"
+        }
+      ],
+      "preserved_test_functions": [
+        "fragment_budget_preserves_units_with_visible_and_empty_hosts",
+        "issue_7095_first_fragment_starting_at_page_top_is_pinned_too",
+        "issue_7095_fragment_box_opens_the_table_outer_top_margin",
+        "issue_7095_last_fragment_and_downstream_contracts_hold",
+        "issue_7095_pinned_fragment_centres_its_own_content_in_the_box",
+        "issue_7095_stale_cell_height_keeps_content_fitted_box_top_anchored",
+        "issue_7095_terminal_fragment_box_takes_the_stored_cell_height_remainder",
+        "issue_7095_terminal_fragment_does_not_push_the_next_paragraph_past_its_stored_top",
+        "projected_picture_fragment_does_not_claim_a_stored_page_frame",
+        "stored_midpage_cut_keeps_its_last_source_unit"
+      ]
+    },
+    {
+      "path": "tests/issue_1692.rs",
+      "archive": "mydocs/pr/assets/issue7445/latest-transfers-20261011/tests/issue_1692.rs.txt",
+      "sha256": "96d66bdd6262b8714c8eb383ff2c39920fb813356df940b924390efd3e03466d",
+      "removed": [],
+      "assertions_removed": [
+        {
+          "issue": 7807,
+          "scope": "HWP3/HWPX y 1px 일치 assertion 및 후속 질문의 절대 PDF y assertion"
+        }
+      ],
+      "preserved_test_functions": [
+        "issue_1692_so_sueop_answer_endnote_pages_match_pdf_ranges",
+        "issue_1692_so_sueop_header_footer_page5_matches_reference_contract",
+        "issue_1692_so_sueop_hwp3_endnote_internal_vpos_zero_is_normalized",
+        "issue_1692_so_sueop_hwp3_endnotes_follow_hwpx_numbering_and_width",
+        "issue_1692_so_sueop_hwp3_line_box_reflects_para_margins",
+        "issue_1692_so_sueop_hwp3_page1_school_label_matches_hwpx_y",
+        "issue_1692_so_sueop_hwp3_page22_relationship_box_uses_table_flow",
+        "issue_1692_so_sueop_hwp3_preserves_blue_text_color_like_hwpx_reference",
+        "issue_1692_so_sueop_hwp3_title_renders_from_embedded_ole",
+        "issue_1692_so_sueop_hwpx_endnote_internal_vpos_zero_is_normalized",
+        "issue_1692_so_sueop_hwpx_title_ole_renders_from_embedded_preview"
+      ]
+    },
+    {
+      "path": "tests/issue_2430_cell_rewrap_threshold.rs",
+      "archive": "mydocs/pr/assets/issue7445/latest-transfers-20261011/tests/issue_2430_cell_rewrap_threshold.rs.txt",
+      "sha256": "606aae884115a363a82be2b29ff5ae80b61cff4059b55946e7d313f0f8155a05",
+      "removed": [
+        {
+          "name": "issue_2430_cell_rewrap_threshold_no_oversplit",
+          "issue": 7831
+        }
+      ],
+      "preserved_test_functions": [
+        "issue_2430_page16_keeps_leading_blank_paragraph_in_cell"
+      ]
+    }
+  ],
+  "baseline_rows_removed": [
+    {
+      "file": "tests/fixtures/oracle_page_count_baseline.tsv",
+      "line": "samples/issue5807/coanchored_float_tac_order.hwp\t3\t3",
+      "issue": 7821
+    }
+  ],
+  "removed_test_count": 19
+}

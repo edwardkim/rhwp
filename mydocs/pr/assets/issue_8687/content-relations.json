@@ -1,0 +1,473 @@
+{
+  "sourceSha": "e4aefbcce7bf3db783ec39f3223e79b53082fbc1",
+  "records": [
+    {
+      "engine": "native",
+      "input": "used",
+      "page": 1,
+      "textRuns": [
+        {
+          "text": "HEADER C",
+          "owners": [
+            "Page",
+            "Header",
+            "Table",
+            "Cell",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 0
+        },
+        {
+          "text": "Body line one of probe U.",
+          "owners": [
+            "Page",
+            "Body",
+            "Column",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 0
+        },
+        {
+          "text": "Body line two.",
+          "owners": [
+            "Page",
+            "Body",
+            "Column",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 1
+        },
+        {
+          "text": "Body line three.",
+          "owners": [
+            "Page",
+            "Body",
+            "Column",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 2
+        },
+        {
+          "text": "FOOTER C",
+          "owners": [
+            "Page",
+            "Footer",
+            "Table",
+            "Cell",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 0
+        },
+        {
+          "text": "BOX",
+          "owners": [
+            "Page",
+            "Footer",
+            "Rect",
+            "TextBox",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 0
+        }
+      ],
+      "eachExpectedContentExactlyOnce": true,
+      "bodyOrderPreserved": true
+    },
+    {
+      "engine": "native",
+      "input": "repro",
+      "page": 1,
+      "textRuns": [
+        {
+          "text": "HEADER C",
+          "owners": [
+            "Page",
+            "Header",
+            "Table",
+            "Cell",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 0
+        },
+        {
+          "text": "Body line one of probe U.",
+          "owners": [
+            "Page",
+            "Body",
+            "Column",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 0
+        },
+        {
+          "text": "Body line two.",
+          "owners": [
+            "Page",
+            "Body",
+            "Column",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 1
+        },
+        {
+          "text": "Body line three.",
+          "owners": [
+            "Page",
+            "Body",
+            "Column",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 2
+        },
+        {
+          "text": "FOOTER C",
+          "owners": [
+            "Page",
+            "Footer",
+            "Table",
+            "Cell",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 0
+        },
+        {
+          "text": "BOX",
+          "owners": [
+            "Page",
+            "Footer",
+            "Rect",
+            "TextBox",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 0
+        }
+      ],
+      "eachExpectedContentExactlyOnce": true,
+      "bodyOrderPreserved": true
+    },
+    {
+      "engine": "native",
+      "input": "control",
+      "page": 1,
+      "textRuns": [
+        {
+          "text": "HEADER C",
+          "owners": [
+            "Page",
+            "Header",
+            "Table",
+            "Cell",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 0
+        },
+        {
+          "text": "Body line one of probe U.",
+          "owners": [
+            "Page",
+            "Body",
+            "Column",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 0
+        },
+        {
+          "text": "Body line two.",
+          "owners": [
+            "Page",
+            "Body",
+            "Column",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 1
+        },
+        {
+          "text": "Body line three.",
+          "owners": [
+            "Page",
+            "Body",
+            "Column",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 2
+        },
+        {
+          "text": "FOOTER C",
+          "owners": [
+            "Page",
+            "Footer",
+            "Table",
+            "Cell",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 0
+        },
+        {
+          "text": "BOX",
+          "owners": [
+            "Page",
+            "Footer",
+            "Rect",
+            "TextBox",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 0
+        }
+      ],
+      "eachExpectedContentExactlyOnce": true,
+      "bodyOrderPreserved": true
+    },
+    {
+      "engine": "wasm",
+      "input": "used",
+      "page": 1,
+      "textRuns": [
+        {
+          "text": "HEADER C",
+          "owners": [
+            "Page",
+            "Header",
+            "Table",
+            "Cell",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 0
+        },
+        {
+          "text": "Body line one of probe U.",
+          "owners": [
+            "Page",
+            "Body",
+            "Column",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 0
+        },
+        {
+          "text": "Body line two.",
+          "owners": [
+            "Page",
+            "Body",
+            "Column",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 1
+        },
+        {
+          "text": "Body line three.",
+          "owners": [
+            "Page",
+            "Body",
+            "Column",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 2
+        },
+        {
+          "text": "FOOTER C",
+          "owners": [
+            "Page",
+            "Footer",
+            "Table",
+            "Cell",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 0
+        },
+        {
+          "text": "BOX",
+          "owners": [
+            "Page",
+            "Footer",
+            "Rect",
+            "TextBox",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 0
+        }
+      ],
+      "eachExpectedContentExactlyOnce": true,
+      "bodyOrderPreserved": true
+    },
+    {
+      "engine": "wasm",
+      "input": "repro",
+      "page": 1,
+      "textRuns": [
+        {
+          "text": "HEADER C",
+          "owners": [
+            "Page",
+            "Header",
+            "Table",
+            "Cell",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 0
+        },
+        {
+          "text": "Body line one of probe U.",
+          "owners": [
+            "Page",
+            "Body",
+            "Column",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 0
+        },
+        {
+          "text": "Body line two.",
+          "owners": [
+            "Page",
+            "Body",
+            "Column",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 1
+        },
+        {
+          "text": "Body line three.",
+          "owners": [
+            "Page",
+            "Body",
+            "Column",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 2
+        },
+        {
+          "text": "FOOTER C",
+          "owners": [
+            "Page",
+            "Footer",
+            "Table",
+            "Cell",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 0
+        },
+        {
+          "text": "BOX",
+          "owners": [
+            "Page",
+            "Footer",
+            "Rect",
+            "TextBox",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 0
+        }
+      ],
+      "eachExpectedContentExactlyOnce": true,
+      "bodyOrderPreserved": true
+    },
+    {
+      "engine": "wasm",
+      "input": "control",
+      "page": 1,
+      "textRuns": [
+        {
+          "text": "HEADER C",
+          "owners": [
+            "Page",
+            "Header",
+            "Table",
+            "Cell",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 0
+        },
+        {
+          "text": "Body line one of probe U.",
+          "owners": [
+            "Page",
+            "Body",
+            "Column",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 0
+        },
+        {
+          "text": "Body line two.",
+          "owners": [
+            "Page",
+            "Body",
+            "Column",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 1
+        },
+        {
+          "text": "Body line three.",
+          "owners": [
+            "Page",
+            "Body",
+            "Column",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 2
+        },
+        {
+          "text": "FOOTER C",
+          "owners": [
+            "Page",
+            "Footer",
+            "Table",
+            "Cell",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 0
+        },
+        {
+          "text": "BOX",
+          "owners": [
+            "Page",
+            "Footer",
+            "Rect",
+            "TextBox",
+            "TextLine",
+            "TextRun"
+          ],
+          "pi": 0
+        }
+      ],
+      "eachExpectedContentExactlyOnce": true,
+      "bodyOrderPreserved": true
+    }
+  ]
+}

@@ -10,7 +10,13 @@ const CAPABILITIES = [
   'document-agent-command-v1',
   'target-navigation-v1',
   'document-change-events-v1',
+  'field-focus-events-v1',
 ];
+/** 이벤트마다 협상돼야 하는 capability. 목록에 없는 이벤트는 버린다. */
+const EVENT_CAPABILITIES = {
+  documentChanged: 'document-change-events-v1',
+  fieldChanged: 'field-focus-events-v1',
+};
 const LONG_RUNNING_METHODS = new Set([
   'loadFile', 'getFontDecisionTrace', 'exportHwp', 'exportHwpVerify', 'exportHwpx', 'exportHml',
 ]);
@@ -183,10 +189,11 @@ export class EditorTransport {
       const expectedKeys = ['event', 'payload', 'sessionId', 'type', 'version'];
       if (message.version !== PROTOCOL_VERSION
           || message.sessionId !== this._sessionId
-          || !this._peerCapabilities.has('document-change-events-v1')
           || keys.length !== expectedKeys.length
           || keys.some((key, index) => key !== expectedKeys[index])
-          || typeof message.event !== 'string') return;
+          || typeof message.event !== 'string'
+          || !Object.prototype.hasOwnProperty.call(EVENT_CAPABILITIES, message.event)
+          || !this._peerCapabilities.has(EVENT_CAPABILITIES[message.event])) return;
       for (const listener of this._listeners.get(message.event) || []) {
         try { listener(message.payload); } catch { /* 한 listener가 다른 listener를 막지 않는다. */ }
       }

@@ -1,0 +1,215 @@
+{
+  "contract": "paint text sequence by page and available owner fields; whitespace excluded; image-internal text not covered",
+  "cases": [
+    {
+      "case": "field-reset",
+      "base_owner_count": 24,
+      "head_owner_count": 24,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "field-plain",
+      "base_owner_count": 24,
+      "head_owner_count": 24,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "symbol-slot-2020",
+      "base_owner_count": 4,
+      "head_owner_count": 4,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "symbol-slot-2024",
+      "base_owner_count": 4,
+      "head_owner_count": 4,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "titled-host",
+      "base_owner_count": 50,
+      "head_owner_count": 50,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "saved-host",
+      "base_owner_count": 50,
+      "head_owner_count": 50,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "omitted-after",
+      "base_owner_count": 61,
+      "head_owner_count": 61,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "hwp5-control",
+      "base_owner_count": 433,
+      "head_owner_count": 433,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "onsaemiro-control",
+      "base_owner_count": 655,
+      "head_owner_count": 655,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "offset-min",
+      "base_owner_count": 68,
+      "head_owner_count": 68,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "rowspan-header",
+      "base_owner_count": 185,
+      "head_owner_count": 185,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "tac-successor",
+      "base_owner_count": 111,
+      "head_owner_count": 111,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "policy1790387-actual",
+      "base_owner_count": 2246,
+      "head_owner_count": 2246,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "briefing1487",
+      "base_owner_count": 281,
+      "head_owner_count": 281,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "franchise",
+      "base_owner_count": 1560,
+      "head_owner_count": 1560,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "regulatory86712",
+      "base_owner_count": 1458,
+      "head_owner_count": 1458,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "cbta1613",
+      "base_owner_count": 5478,
+      "head_owner_count": 5478,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "task1749x",
+      "base_owner_count": 92,
+      "head_owner_count": 92,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "task1749h",
+      "base_owner_count": 92,
+      "head_owner_count": 92,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "near-top-reset",
+      "base_owner_count": 10051,
+      "head_owner_count": 10051,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "curriculum-control",
+      "base_owner_count": 27511,
+      "head_owner_count": 27511,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "math1342000-actual",
+      "base_owner_count": 3030,
+      "head_owner_count": 3030,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "roadmap-control",
+      "base_owner_count": 8980,
+      "head_owner_count": 8980,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "onsaemiro-converted-control",
+      "base_owner_count": 655,
+      "head_owner_count": 655,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "source8152-d2176",
+      "base_owner_count": 354,
+      "head_owner_count": 354,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "source8152-d17253",
+      "base_owner_count": 172,
+      "head_owner_count": 172,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "source8152-d80168",
+      "base_owner_count": 2997,
+      "head_owner_count": 2997,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "source8152-d1853",
+      "base_owner_count": 761,
+      "head_owner_count": 761,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "source8152-d1880",
+      "base_owner_count": 339,
+      "head_owner_count": 339,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "source8152-d5169",
+      "base_owner_count": 161,
+      "head_owner_count": 161,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "source8152-hfine",
+      "base_owner_count": 42,
+      "head_owner_count": 42,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "source8152-ha10m",
+      "base_owner_count": 94,
+      "head_owner_count": 94,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "source8152-dband",
+      "base_owner_count": 282,
+      "head_owner_count": 282,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "source8152-hs2",
+      "base_owner_count": 1258,
+      "head_owner_count": 1258,
+      "owner_sequences_equal": true
+    },
+    {
+      "case": "source8152-d80168x",
+      "base_owner_count": 2995,
+      "head_owner_count": 2995,
+      "owner_sequences_equal": true
+    }
+  ]
+}

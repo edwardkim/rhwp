@@ -1,0 +1,56 @@
+{
+  "backend": "Vulkan",
+  "borrowedGpuSurface": true,
+  "checks": [
+    "known interior colors",
+    "host state restoration",
+    "invalid arguments preserve pixels"
+  ],
+  "device": "llvmpipe (LLVM 20.1.2, 256 bits)",
+  "deviceApiVersion": 4211006,
+  "deviceId": 0,
+  "deviceInitializationMicros": 225217,
+  "driverVersion": 104865800,
+  "hardwareAccelerationVerified": false,
+  "measurements": {
+    "hostTransfers": {
+      "readbackBytes": 24576,
+      "readbackCount": 2,
+      "scope": "explicit verification read_pixels calls only"
+    },
+    "skiaResourceCache": {
+      "limitBytes": 268435456,
+      "resourceBytes": 88064,
+      "resourceCount": 5,
+      "scope": "Skia cache accounting, not total VRAM or process memory"
+    },
+    "surface": {
+      "alpha": "premultiplied",
+      "height": 48,
+      "origin": "topLeft",
+      "pixelFormat": "rgba8888",
+      "rowBytes": 256,
+      "width": 64
+    },
+    "timingsMicros": {
+      "clock": "host monotonic wall time, not GPU timestamps",
+      "contextInitialization": 1099,
+      "flushSubmitAndWait": 64983,
+      "invalidArgumentRejection": 9,
+      "preservationFlushSubmitAndWait": 95,
+      "preservationReadback": 93,
+      "replayRecording": 293,
+      "surfaceAllocation": 65,
+      "verificationReadback": 147,
+      "verificationTotal": 70394
+    }
+  },
+  "presentationVerified": false,
+  "readback": "verification host only",
+  "sampleFrames": 1,
+  "scale": 1.25,
+  "schemaVersion": 1,
+  "softwareDevice": true,
+  "status": "passed",
+  "vendorId": 65541
+}

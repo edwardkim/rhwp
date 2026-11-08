@@ -1,0 +1,305 @@
+{
+  "recorded": "2026-11-07T21:42:18.291393+09:00",
+  "execution_history": [
+    {
+      "check": "full-regressions",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/codeql-password-investigation/minimal-font/run.sh",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--tests",
+        "--test-threads",
+        "6",
+        "--no-fail-fast"
+      ],
+      "start": "2026-11-07T20:06:49.000002+09:00",
+      "exit_code": 0,
+      "end": "2026-11-07T20:53:54.845559+09:00"
+    },
+    {
+      "check": "native-lib",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/codeql-password-investigation/minimal-font/run.sh",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "4"
+      ],
+      "start": "2026-11-07T20:53:54.907744+09:00",
+      "interrupted_by": "host reboot before 2026-11-07T21:00+09:00"
+    },
+    {
+      "check": "native-lib",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/codeql-password-investigation/minimal-font/run.sh",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "4"
+      ],
+      "start": "2026-11-07T21:08:46.063755+09:00",
+      "exit_code": 0,
+      "end": "2026-11-07T21:17:59.856481+09:00"
+    },
+    {
+      "check": "native-placeholder",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/codeql-password-investigation/minimal-font/run.sh",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "start": "2026-11-07T21:17:59.856873+09:00",
+      "exit_code": 1,
+      "end": "2026-11-07T21:17:59.867373+09:00"
+    },
+    {
+      "check": "native-placeholder",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/codeql-password-investigation/minimal-font/run.sh",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "start": "2026-11-07T21:18:37.959922+09:00",
+      "exit_code": 4,
+      "end": "2026-11-07T21:27:46.478190+09:00"
+    },
+    {
+      "check": "native-placeholder",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/codeql-password-investigation/minimal-font/run.sh",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "start": "2026-11-07T21:28:55.527435+09:00",
+      "exit_code": 0,
+      "end": "2026-11-07T21:29:16.134624+09:00"
+    },
+    {
+      "check": "native-pdf",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/codeql-password-investigation/minimal-font/run.sh",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "start": "2026-11-07T21:29:16.135007+09:00",
+      "exit_code": 0,
+      "end": "2026-11-07T21:29:35.327020+09:00"
+    },
+    {
+      "check": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "start": "2026-11-07T21:29:35.327426+09:00",
+      "exit_code": 0,
+      "end": "2026-11-07T21:30:03.387456+09:00"
+    },
+    {
+      "check": "clippy-root",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "start": "2026-11-07T21:30:03.387825+09:00",
+      "exit_code": 0,
+      "end": "2026-11-07T21:32:40.587826+09:00"
+    },
+    {
+      "check": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "start": "2026-11-07T21:32:40.588209+09:00",
+      "exit_code": 0,
+      "end": "2026-11-07T21:34:55.284178+09:00"
+    },
+    {
+      "check": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review"
+      ],
+      "start": "2026-11-07T21:34:55.284637+09:00",
+      "exit_code": 0,
+      "end": "2026-11-07T21:38:43.781571+09:00"
+    },
+    {
+      "check": "clippy-workspace",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "start": "2026-11-07T21:38:43.782000+09:00",
+      "exit_code": 0,
+      "end": "2026-11-07T21:41:47.844248+09:00"
+    },
+    {
+      "check": "suite-manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "e4ffabea38062e716f6c333cc950fa31b42b4dd7"
+      ],
+      "start": "2026-11-07T21:41:47.847521+09:00",
+      "exit_code": 0,
+      "end": "2026-11-07T21:41:48.713351+09:00"
+    }
+  ],
+  "latest_all_success": true,
+  "logs": {
+    "full-regressions": {
+      "sha256": "30aec50c89760b3acdbc813878452d06e3d47a08972714bde0c0596cb44f189f",
+      "bytes": 1778598
+    },
+    "native-lib": {
+      "sha256": "f92f52d248276494acf6688ee400a8c5c4baf610114cd277ffb94db9db672020",
+      "bytes": 344424
+    },
+    "native-placeholder": {
+      "sha256": "2de7a20a1a76a47e2da173c4521ab32590f4dfe11c0edd13738bf1057cc321d8",
+      "bytes": 1474
+    },
+    "native-pdf": {
+      "sha256": "d595500ae79f73b05fe962001d0928a61fd18459a653accb82847bb887073dc1",
+      "bytes": 7657
+    },
+    "fmt": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "clippy-root": {
+      "sha256": "26c96013144b7a75f1a6a02f0471d1caf5edb79b96bfbd49e330fbebed9b1b24",
+      "bytes": 9683
+    },
+    "clippy-wasm": {
+      "sha256": "e5cd32a3bf97c3c540c7a5b22f75d6509ff87187d938c88cbb1f1d6404cdb1f6",
+      "bytes": 3561
+    },
+    "workspace-build": {
+      "sha256": "d9a47340f56b0f5a5fc16fe4b91ca6952765179b6f8069a0495d18ff4fcf8abd",
+      "bytes": 10066
+    },
+    "clippy-workspace": {
+      "sha256": "0a7fba4fec3e808dbd8ecbe63067a260b3aa77afae851457378d2df037dd260d",
+      "bytes": 3956
+    },
+    "suite-manifest": {
+      "sha256": "55932348418c26c2b50b6b7ee4a4073d845a082c02e17db2e6e47e0c03ab18d3",
+      "bytes": 179
+    }
+  },
+  "counts": {
+    "full_regressions": 12831,
+    "full_existing_skipped": 45,
+    "native_units": 4040,
+    "native_placeholder": 2,
+    "native_direct_pdf": 35,
+    "native_total": 4077,
+    "focused": 11
+  },
+  "source_sha256": {
+    "src/cli/commands/conversion.rs": "fd7ae12d8ce29143eb8b76eb69d385028337f0dbff7c0d96b3fb7dd0fd310867",
+    "src/cli/document_io.rs": "588e6a0a9a3a6ce6719a82201367edb56d553564f4896615d52d3c3a67f4d2eb",
+    "src/document_core/commands/document.rs": "65ab39be17bbbfc0f98829dbf56a8dc30d5b31a59cfb47ab92185a374d61b752",
+    "src/mcp_serve.rs": "2d62d3d328b941444688ba8284736f1bc458eb510bbd8c49e5770f3991f8781c",
+    "src/native_host/mod.rs": "7b2384855b65aed110c603da7e077444498eb23a2f8418cd1209e9ae2fbcd13e",
+    "src/service/open.rs": "4bdfdaa7c3a56facb7c28040ef448a1cb442b595e5edbbe343965f2aae61d776",
+    "src/wasm_api.rs": "28e8d218eec6e1d56835846f00756baa4aa24557ec3f6a6083e6027ef80ace5d",
+    "tests/common/passthrough_exemptions.rs": "e713c7d1fbfcdc9dd40f3c69ca4feacfd4fbca802881650e220530ecb08cdd16",
+    "tests/cases/issue_8745_password_boundary.rs": "e025fb158c0d794cd99c3c0544ff95b6c7925cef99a744db6e79f97ee350517d"
+  },
+  "font_scope": "five repository open fonts; private/system fonts hidden",
+  "node_harness_fix": "readonly bind of Node executable; regenerated suites with identical 2112 source paths"
+}

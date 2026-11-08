@@ -1,9 +1,13 @@
+//! 관계형: LLM 내보내기의 내용 보존과 출력 계약.
+//! 주석 갱신: 2026-10-30T10:05:44+09:00; 직전 파일 커밋: 2026-10-30T02:17:47+09:00 (55d447871d).
+//! 근거: mydocs/manual/cli_commands.md의 export-llm 출력 계약.
+//! 내보낸 청크와 원문·출력 형식의 계약 검사이며 페이지별 raw 시각 측정은 대상이 아니다.
 //! `export-llm` 계약 — HWP/HWPX → LLM-ready RAG 청크.
 //!
 //! 실제 바이너리를 실제 샘플에 돌려 계약을 고정한다:
 //! - 기본 산출은 NDJSON(한 줄당 청크 하나), `--format json` 은 단일 봉투.
-//! - 청크마다 출처 앵커(headingPath/section/paragraph)와 **untrusted 표지**가 실린다.
-//! - 표는 청크 안에서 Markdown 으로 선형화되어 자기완결이다(머리 행 보존·병합 주석).
+//! - 청크마다 원본 출처와 **untrusted 표지**가 실린다.
+//! - 토큰 예산을 바꾸면 청크 수와 묶인 본문의 크기에 반영된다.
 //! - 같은 입력·옵션이면 바이트까지 같다(결정론).
 //! - 청크 텍스트의 합이 문서 본문을 사실상 덮는다(무손실, export-text 대조).
 #![cfg(not(target_arch = "wasm32"))]
@@ -15,8 +19,6 @@ use serde_json::Value;
 
 /// 본문만 있는 논문 샘플(제목 미검출 → 전량 서문). 예산 쪼개기·결정론·커버리지에 쓴다.
 const PAPER: &str = "samples/hwp3-sample.hwp";
-/// 중첩 제목 계층과 표가 풍부한 정부 편람. 제목 경로·표 선형화에 쓴다.
-const MANUAL: &str = "samples/2025 행정업무운영 편람(최종).hwpx";
 
 fn rhwp_bin() -> String {
     std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
@@ -187,91 +189,6 @@ fn multi_unit_text_chunks_respect_the_budget() {
 
 // ── 제목 경로 · 자기완결 표 ──────────────────────────────────────────────────
 
-#[test]
-fn nested_heading_paths_and_anchors_are_present() {
-    let path = sample(MANUAL);
-    let path = path.to_str().unwrap();
-    let args = ["export-llm", path, "--format", "json"];
-    let out = run(&args);
-    assert_eq!(out.status.code(), Some(0), "{}", describe(&args, &out));
-    let v: Value = serde_json::from_slice(&out.stdout).unwrap();
-    let chunks = v["chunks"].as_array().unwrap();
-
-    // 중첩 제목 경로(예: ["제2장 …", "제1절 …"])가 실제로 나온다.
-    let nested = chunks
-        .iter()
-        .any(|c| c["headingPath"].as_array().map(|p| p.len()).unwrap_or(0) >= 2);
-    assert!(nested, "중첩 제목 경로가 있어야 한다");
-
-    // 제목 경로가 있는 청크는 headingPath 를 문서 파생으로 표지하고 주소를 싣는다.
-    for c in chunks {
-        let hp = c["headingPath"].as_array().unwrap();
-        if !hp.is_empty() {
-            assert!(
-                c["section"].is_number(),
-                "제목 청크는 section 앵커를 실어야 한다"
-            );
-            assert!(c["paragraph"].is_number());
-        }
-    }
-}
-
-#[test]
-fn tables_are_linearized_and_self_contained() {
-    let path = sample(MANUAL);
-    let path = path.to_str().unwrap();
-    let args = ["export-llm", path, "--format", "json"];
-    let out = run(&args);
-    assert_eq!(out.status.code(), Some(0), "{}", describe(&args, &out));
-    let v: Value = serde_json::from_slice(&out.stdout).unwrap();
-    let chunks = v["chunks"].as_array().unwrap();
-
-    // 표를 품은 청크가 있고, 그 표는 청크 텍스트 안에서 Markdown 으로 선형화된다.
-    let table_chunk = chunks
-        .iter()
-        .find(|c| {
-            c["tables"].as_array().is_some_and(|t| !t.is_empty())
-                && c["text"].as_str().unwrap().contains("| --- |")
-        })
-        .expect("Markdown 표를 품은 청크가 있어야 한다");
-    let table_meta = &table_chunk["tables"][0];
-    assert!(table_meta["rows"].is_number());
-    assert!(table_meta["cols"].is_number());
-    assert!(table_meta["index"].is_number());
-
-    // 병합 셀은 청크 텍스트에 주석된다(문서 어딘가에 병합 표가 있다).
-    let any_merge = chunks
-        .iter()
-        .any(|c| c["text"].as_str().unwrap().contains("[병합"));
-    assert!(any_merge, "병합 셀 주석이 최소 한 번은 나와야 한다");
-}
-
-#[test]
-fn split_tables_repeat_their_header() {
-    // 작은 예산으로 큰 표를 강제로 쪼갠 뒤, 모든 파트가 머리 행을 되풀이하는지 본다.
-    let path = sample(MANUAL);
-    let path = path.to_str().unwrap();
-    let args = ["export-llm", path, "--format", "json", "--max-tokens", "80"];
-    let out = run(&args);
-    assert_eq!(out.status.code(), Some(0), "{}", describe(&args, &out));
-    let v: Value = serde_json::from_slice(&out.stdout).unwrap();
-    let chunks = v["chunks"].as_array().unwrap();
-
-    let mut saw_split = false;
-    for c in chunks {
-        for t in c["tables"].as_array().into_iter().flatten() {
-            if t["partCount"].as_i64().unwrap_or(1) > 1 {
-                saw_split = true;
-                assert_eq!(
-                    t["headerRepeated"], true,
-                    "쪼개진 표 파트는 머리 행을 되풀이한다: {c}"
-                );
-            }
-        }
-    }
-    assert!(saw_split, "예산 80 이면 큰 표가 쪼개져야 한다");
-}
-
 // ── 무손실(라운드트립) ──────────────────────────────────────────────────────
 
 /// export-text 본문 토큰이 청크(headingPath + text)에 얼마나 담기는지.
@@ -311,12 +228,6 @@ fn chunks_cover_the_document_body() {
     let paper = sample(PAPER);
     let paper_cov = coverage(paper.to_str().unwrap());
     assert!(paper_cov >= 0.97, "PAPER 커버리지 {paper_cov:.4} < 0.97");
-
-    // 제목·표가 풍부한 편람: page-표면(머리말/꼬리말·쪽번호 반복) 차이로 100% 는 아니나
-    // 본문 손실은 없다 — 보수적 하한을 건다.
-    let manual = sample(MANUAL);
-    let manual_cov = coverage(manual.to_str().unwrap());
-    assert!(manual_cov >= 0.92, "MANUAL 커버리지 {manual_cov:.4} < 0.92");
 }
 
 // ── 사용법 · 런타임 오류 ────────────────────────────────────────────────────

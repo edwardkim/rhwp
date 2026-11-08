@@ -1,0 +1,26 @@
+[
+  {
+    "key": "hole",
+    "source": "pdf/issue7998/text-clips/evenodd-hole.pdf",
+    "sourceSha256": "0428db32b9a64ed7f4224fff1d2303d9908222441535482d8d849729b939a423",
+    "sourceOperation": "retain first text-show prefix including original active clipping, font and metrics; close active q scopes",
+    "bytes": 17297,
+    "sha256": "8237dce7fe5d462a53b6bb8a5d327c73610d96cc9f15ea9f972a00b8c7d6e1a5"
+  },
+  {
+    "key": "curve",
+    "source": "pdf/issue7998/text-clips/curve-clip.pdf",
+    "sourceSha256": "ac44e71ebb3cf603086500df2a62febfee4e3543b436eeb5142556b559d9888c",
+    "sourceOperation": "retain first text-show prefix including original active clipping, font and metrics; close active q scopes",
+    "bytes": 17307,
+    "sha256": "6b5aca87bf9c2b57ad2ffc920a99f4712f9422d9d182e1fc6322364db6222d5a"
+  },
+  {
+    "key": "parent",
+    "source": "pdf/issue7998/text-clips/parent-intersection.pdf",
+    "sourceSha256": "8abc32a4efc8b121fd6df026c1e21c28d3c1caf90c015537c069e15b5451a262",
+    "sourceOperation": "retain first text-show prefix including original active clipping, font and metrics; close active q scopes",
+    "bytes": 17306,
+    "sha256": "1109569e91ebe73fa70bcf09ff59f10e6f757c06102a370159eefa17d47da847"
+  }
+]

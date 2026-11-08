@@ -77,6 +77,7 @@ pub(crate) fn build_sir_with_document(
         FileFormat::Hwp | FileFormat::Hwpx => {}
         FileFormat::Hwp3 => return Err(ConvertError::UnsupportedFormat("HWP 3.x")),
         FileFormat::Hml => return Err(ConvertError::UnsupportedFormat("HWPML (HML)")),
+        FileFormat::Pdf => return Err(ConvertError::UnsupportedFormat("PDF")),
         FileFormat::DrmProtected => {
             return Err(ConvertError::UnsupportedFormat("DRM-protected document"))
         }

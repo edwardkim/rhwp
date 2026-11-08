@@ -1,0 +1,91 @@
+{
+  "date": "2026-10-29",
+  "scope": "독립 합성 Poppy HFT 문서의 typeInfo 속성 대조. #7723 입력이나 기준 PDF는 바꾸지 않는다.",
+  "source_template": "poppy-complete-alphabet-symbols-typeinfo.hwpx",
+  "shared_body_section_sha256": "62fd5f3b542541c8b3236674fbbc89b82298b9419cd31016e85e3de179eda16b",
+  "different_zip_members": [
+    "Contents/header.xml"
+  ],
+  "change": "14개 HCI Poppy 글꼴 항목의 typeInfo에서 가족 분류와 수치 속성만 고딕·비영값에서 명조·0으로 바꿨다. 한 속성의 단독 효과는 분리하지 않았다.",
+  "conversion": "기존 HWP 2024 MCP start/status/download, 13.0.0.3901, Print 0",
+  "outputs": {
+    "baseline": {
+      "input_sha256": "e465eb826d20eb3c1f45d5c46f262670650bd82e14f1f5fc85cb5675e267fcbc",
+      "mcp_job_id": "b523a7bd-05f8-4fab-8285-fcd33e211501",
+      "engine": "2024",
+      "pdf_sha256": "a24814a63502871be3654fcd6999aeec48afc1fdbff4dc043ab2610dc0cb7657",
+      "pages": 5,
+      "page1_T1_subtype": "/Type3",
+      "page1_T1_widths_first_12": [
+        1000.0,
+        1000.0,
+        1000.0,
+        1000.0,
+        1000.0,
+        1000.0,
+        1000.0,
+        1000.0,
+        1000.0,
+        1000.0,
+        1000.0,
+        1000.0
+      ]
+    },
+    "zero": {
+      "input_sha256": "3c684146cb7937b00c316460289e2f5a671ded60aed2a29d1ee280fa72030163",
+      "mcp_job_id": "0608ee5e-8062-4b18-bc3e-6c832bff3d9c",
+      "engine": "2024",
+      "pdf_sha256": "5b4ddc6a21a8367be87d9355edbac036821abda6cc52c6c01d81a1932255c627",
+      "pages": 4,
+      "page1_T1_subtype": "/Type3",
+      "page1_T1_widths_first_12": [
+        747.0,
+        747.0,
+        747.0,
+        747.0,
+        747.0,
+        747.0,
+        747.0,
+        747.0,
+        747.0,
+        747.0,
+        747.0,
+        747.0
+      ]
+    }
+  },
+  "type3_t1_common_charproc_names": 91,
+  "type3_t1_identical_charproc_streams": 0,
+  "interpretation": "두 입력 모두 Type3 자원을 생성했고 첫 글꼴 자원의 폭·같은 이름의 글리프 스트림과 전체 쪽수가 달랐다. 현재 MCP에서 HFT가 전부 미지원이라고 단정할 수 없고 typeInfo를 바꾸면 글꼴 출력이 바뀔 수 있다. HWPX 원본의 22쪽과 글꼴 대체 원인이 이것 하나 때문이라는 증거는 아니다.",
+  "limitations": [
+    "합성 입력의 본문 및 다른 글꼴 슬롯 구성은 #7723 원본과 다르다.",
+    "familyType 및 여러 속성을 함께 바꿨고 어떤 값이 결과를 일으켰는지 분리하지 않았다.",
+    "Type3 자원만으로 정확한 글꼴 이름을 증명하지 않는다.",
+    "입력과 출력 PDF는 임시 진단 산출물이며 제품 입력·기준 PDF·회귀 검사에 적용하지 않았다."
+  ],
+  "original_hwpx_metadata_mutation_probe": {
+    "date": "2026-10-29",
+    "original_input": "samples/hwp3-sample16-hwp5.hwpx",
+    "original_sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+    "temporary_input_sha256": "30374a2a728432f2034d733747aa25f449dc9c96586346f3375982481a6175ea",
+    "modified_entries": 7,
+    "modified_members": [
+      "Contents/header.xml"
+    ],
+    "body_section_sha256": "6f73e382bbe81300abd9ca469ccf51fb7418e7cb3f4e740407a23d0cd9fc8189",
+    "change": "HCI Poppy 및 한양신명조 7개 font 항목의 typeInfo만 명조·0에서 고딕·비영 수치로 바꿨다. 입력 변형은 MCP 폰트 선택 진단 전용이다.",
+    "mcp_job_id": "aeb08f55-bdbe-4426-b0c1-3df638a944fa",
+    "engine": "2024",
+    "temporary_pdf_sha256": "806f1f88a331d11d24473cb83f61de037e9b786f249f55322fc4b5144801395b",
+    "pdf_pages": 64,
+    "checked_page": 22,
+    "modified_and_original_current_pdf_raster_sha256": "b1a584df43e256835e5aeb03877741d22d73886f4ab3484fbf8336e39d879f7e",
+    "text_line_end": "응용프로",
+    "result": "현재 MCP 출력의 22쪽 PNG가 변형 전 입력의 현재 MCP 출력과 완전히 같다. 이 7개 속성을 이 값으로 바꾸는 것만으로는 문제 쪽의 폰트 자원·줄 구성이 바뀌지 않는다.",
+    "limitations": [
+      "원본 문서를 바꾸지 않았다. 수정본 PDF를 정답으로 사용하지 않는다.",
+      "22쪽만 확인했고 다른 쪽이나 다른 속성 조합의 결과는 주장하지 않는다.",
+      "서버 출력 변화의 원인을 확정하지 않는다."
+    ]
+  }
+}

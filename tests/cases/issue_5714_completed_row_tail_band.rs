@@ -53,33 +53,69 @@ fn max_text_line_bottom(node: &RenderNode) -> f64 {
         .fold(own, f64::max)
 }
 
-/// [#2097→#5714] 1741000 p2 의 기하 핀 — 쪽수(2)만으로는 "앞 조각의 유령 tail
-/// 밴드가 p2 첫 행을 압축"하는 우연 정답과 "말미 행 압축 수용"의 진짜 정답을
-/// 못 가른다. 한글 2024 PDF 실측: p2 첫 행(국민 의견수렴)은 전체 높이
-/// 56.4px(42.2pt), 말미 행(연구결과 활용방안)은 하단에서 압축(선언 80.3 →
-/// 밴드 ~70pt급). 둘 다 핀한다.
+/// 정본 1쪽의 검토 결과와 2쪽의 첫/마지막 행 소유를 보존한다.
+/// 실제 전쪽 Native/fresh 수용은 보정215의 참조 폰트 환경과 PDF로 확인했다.
+/// 관측 px 높이 대신 완전한 라벨·본문의 셀 내부 포함과 앞뒤 행 순서를 검사한다.
 #[test]
 fn issue_5714_task2097_p2_top_row_full_height_bottom_row_squeezed() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("samples/task2097/1741000_project_application.hwp");
-    let bytes = fs::read(&path).expect("read task2097 fixture");
-    let core = DocumentCore::from_bytes(&bytes).expect("parse task2097 fixture");
-    assert_eq!(core.page_count(), 2, "한글 2024 COM 재실측 쪽수");
+    let bytes = fs::read(&path).expect("사업신청서 원본 읽기");
+    let mut core = DocumentCore::from_bytes(&bytes).expect("사업신청서 원본 파싱");
+    let environment = rhwp::renderer::font_environment::FontEnvironment::from_json(include_str!(
+        "../../mydocs/pr/assets/issue7445/resolution-20261005/project2097-reference-font-environment.json"
+    ))
+    .expect("독립 PDF의 참조 폰트 환경");
+    core.set_font_environment(Some(environment))
+        .expect("측정과 paint에 같은 참조 환경 적용");
+    assert_eq!(core.page_count(), 2, "정본 전체 쪽수와 마지막 행 소유");
 
-    let p2 = core.build_page_render_tree(1).expect("render p2");
+    let p1 = core.build_page_render_tree(0).expect("첫 쪽 배치");
+    let p2 = core.build_page_render_tree(1).expect("둘째 쪽 배치");
+    let first_text = all_text(&p1.root);
+    let second_text = all_text(&p2.root);
+    assert!(first_text.contains("중복검토 방법") && first_text.contains("유사ㆍ중복 여부"));
+    assert!(!first_text.contains("국민 의견"));
+    assert!(!second_text.contains("중복검토 방법"));
+
     let top =
-        find_cell_containing(&p2.root, "국민 의견").expect("p2 must start at 국민 의견수렴 row");
-    assert!(
-        (52.0..=60.0).contains(&top.bbox.height),
-        "p2 첫 행은 전체 높이(한글 56.3px)여야 한다 — h={:.1} (유령 tail 밴드 압축이면 ~10px)",
-        top.bbox.height,
-    );
-    let bottom = find_cell_containing(&p2.root, "활용방안").expect("p2 must end at 활용방안 row");
-    assert!(
-        bottom.bbox.height < 80.0,
-        "p2 말미 행은 압축 수용(선언 80.3 미만 밴드)이어야 한다 — h={:.1}",
-        bottom.bbox.height,
-    );
+        find_cell_containing(&p2.root, "국민 의견").expect("둘째 쪽 첫 행의 국민 의견수렴 라벨");
+    let middle =
+        find_cell_containing(&p2.root, "연구내용").expect("같은 쪽 중간 행의 연구내용 라벨");
+    let bottom =
+        find_cell_containing(&p2.root, "활용방안").expect("같은 쪽 마지막 행의 활용방안 라벨");
+    let epsilon = (top.bbox.width + middle.bbox.height + bottom.bbox.height) * f64::EPSILON * 128.0;
+    assert!(top.bbox.y + top.bbox.height <= middle.bbox.y + epsilon);
+    assert!(middle.bbox.y + middle.bbox.height <= bottom.bbox.y + epsilon);
+
+    fn collect_lines<'a>(node: &'a RenderNode, lines: &mut Vec<&'a RenderNode>) {
+        if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+            lines.push(node);
+        }
+        for child in &node.children {
+            collect_lines(child, lines);
+        }
+    }
+    for (cell, labels) in [
+        (top, ["국민 의견", "수렴 여부"]),
+        (bottom, ["연구결과", "활용방안"]),
+    ] {
+        let mut lines = Vec::new();
+        collect_lines(cell, &mut lines);
+        assert_eq!(lines.len(), labels.len(), "라벨 글줄 누락·중복 금지");
+        for (line, label) in lines.into_iter().zip(labels) {
+            assert!(all_text(line).contains(label), "원본 라벨 순서: {label}");
+            assert!(line.bbox.y + epsilon >= cell.bbox.y);
+            assert!(line.bbox.y + line.bbox.height <= cell.bbox.y + cell.bbox.height + epsilon);
+        }
+    }
+    let use_plan =
+        find_cell_containing(&p2.root, "現 일원화 모델").expect("둘째 쪽의 첫 활용방안 문단");
+    let use_text = all_text(use_plan);
+    let first = use_text.find("일원화 모델").expect("첫 활용방안");
+    let last = use_text.find("중장기 발전방안").expect("마지막 활용방안");
+    assert!(first < last, "마지막 두 문단의 원본 순서");
+    assert!(max_text_line_bottom(use_plan) <= use_plan.bbox.y + use_plan.bbox.height + epsilon);
 }
 
 #[test]

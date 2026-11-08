@@ -1,0 +1,49 @@
+{
+  "source_before": "924ad79d37b44bf320a363fa08a6d4ccd6f430d3",
+  "input": "samples/issue8060/71352_lpg_regulatory_impact.hwp",
+  "input_sha256": "4e9b240082ba91b99669325292cae2b62e88765854d1e7bbbc6d44146dc14d55",
+  "pdf": "pdf/issue8060/71352_lpg_regulatory_impact-2024.pdf",
+  "pdf_sha256": "c2e1b4beea546d02436e85f9b491ab64093c6327bf6ef227f02f4f075608f501",
+  "existing_issue": 8060,
+  "previous_user_approved_whole_visual_transfer": "65ef09ad8d67e94babd9ce619465ee2c98e81369",
+  "scope": "only exact corpus body reference; shared original/PDF/normal 2 boundary tests and other axes retained",
+  "source_archive": [
+    {
+      "source_path": "tests/cases/body_overflow_baseline.rs",
+      "source_blob": "a175e2c9c0d1287914bfcd31d28c1019d9f5786f",
+      "archive_path": "mydocs/pr/assets/issue_8060/corpus_body_reference/body_overflow_baseline.rs.txt",
+      "bytes": 17770,
+      "sha256": "bea3119084ddc24a4c6c66ca871d3c9003d7129cd2046f2f0fc6d29f1c129bd5"
+    },
+    {
+      "source_path": "tests/support/deferred_visual_regression_scope.rs",
+      "source_blob": "fdc446852477c9f0127664807db5a819c3aabf6c",
+      "archive_path": "mydocs/pr/assets/issue_8060/corpus_body_reference/deferred_visual_regression_scope.rs.txt",
+      "bytes": 919,
+      "sha256": "78d13236ad9f8b7588d71599237cfcd1f3528b13be4507378ef0f66b41dcfb3c"
+    },
+    {
+      "source_path": "tests/fixtures/deferred_visual_regression_inputs.tsv",
+      "source_blob": "54bc723d6f2daa65be930aa733e5462bfed7ae91",
+      "archive_path": "mydocs/pr/assets/issue_8060/corpus_body_reference/deferred_visual_regression_inputs.tsv.txt",
+      "bytes": 1274,
+      "sha256": "3f29b15860621dbf19efdaf15b73c11c1c9b862de2ae110d73cc9f99cfa46126"
+    }
+  ],
+  "status": "local_reference_removed_and_verified",
+  "verification": {
+    "archive_only_manifest_check": "pass",
+    "after_manifest_check": "pass; 1646 sources / 7140 static test attrs / 48 integration targets unchanged",
+    "removed_function_count": 0,
+    "removed_body_input_count": 1,
+    "collection_probe_before": "intended FAIL (input incorrectly present)",
+    "collection_probe_after": "PASS (exact body input absent)",
+    "retained_normal_boundary_tests": "2 passed / 0 failed",
+    "other_rendering_axes": "off_canvas/text_overlap unchanged",
+    "remote_issue_followup": "existing issue8060 confirmed open with original PR8059 comments; exact p11 observation to link after PR evidence publication"
+  },
+  "upstream_base_input_registered": false,
+  "upstream_base_dedicated_test_registered": false,
+  "input_import_commit": "576a86a138a05a215c020352e0c2a7072e4e051f",
+  "classification": "already transferred incoming input remained in automatic body corpus; not a dedicated regression registered in fixed upstream base"
+}

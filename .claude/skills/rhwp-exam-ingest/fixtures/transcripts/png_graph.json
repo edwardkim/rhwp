@@ -14,7 +14,7 @@
     },
     {
       "cmd": "rhwp build-from-ingest ingest.json --media-dir $MEDIA -o out.hwpx",
-      "expect": "exit 0"
+      "expect": "Picture/BinData·이미지 배치와 텍스트 보존 확인"
     }
   ],
   "limit": "L-picture"

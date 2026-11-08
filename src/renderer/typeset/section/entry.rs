@@ -2,8 +2,8 @@
 use crate::renderer::typeset::{
     column_def_design_spacing_px, columndef_separator_between_floating_overlays,
     empty_table_carrier_column_break_before_page_table,
-    hwp5_origin_redundant_pagehide_break_marker, native_hwp5_figure_table_overlay_guide_empty,
-    para_has_visible_text, para_is_columndef_only_separator, para_is_non_tac_overlay_table_anchor,
+    native_hwp5_figure_table_overlay_guide_empty, para_has_visible_text,
+    para_is_columndef_only_separator, para_is_non_tac_overlay_table_anchor,
     para_is_post_paper_page_square_table_scaffold, para_is_pre_paper_page_square_table_scaffold,
     ColumnBreakType, ColumnDef, ColumnType, Control, PageDef, PageItem, PageLayoutInfo, Paragraph,
     ResolvedStyleSet, TypesetEngine, TypesetState,
@@ -12,6 +12,7 @@ pub(super) struct ParagraphBoundary<'a> {
     pub para_style: Option<&'a crate::renderer::style_resolver::ResolvedParaStyle>,
     pub para_style_break: bool,
     pub force_page_break: bool,
+    pub reconsider_synthetic_break: bool,
     pub overlay_columndef_separator_break: bool,
 }
 impl TypesetEngine {
@@ -31,16 +32,57 @@ impl TypesetEngine {
         force_break_before: &std::collections::HashSet<usize>,
         has_table: bool,
     ) -> Option<ParagraphBoundary<'a>> {
+        match self.prepare_paragraph_boundary_with_storage(
+            st,
+            para_idx,
+            para,
+            paragraphs,
+            styles,
+            page_def,
+            column_def,
+            profile,
+            variant_prev_para_idx,
+            body_height_hu_for_variant,
+            force_break_before,
+            has_table,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(super) fn prepare_paragraph_boundary_with_storage<'a, S: crate::storage::Storage>(
+        &self,
+        st: &mut TypesetState,
+        para_idx: usize,
+        para: &Paragraph,
+        paragraphs: &[Paragraph],
+        styles: &'a ResolvedStyleSet,
+        page_def: &PageDef,
+        column_def: &ColumnDef,
+        profile: crate::model::provenance::LayoutCompatibilityProfile,
+        variant_prev_para_idx: Option<usize>,
+        body_height_hu_for_variant: i32,
+        force_break_before: &std::collections::HashSet<usize>,
+        has_table: bool,
+        storage: &S,
+    ) -> Result<Option<ParagraphBoundary<'a>>, S::Error> {
         // [Task #702] 새 ColumnDef 검출. shortcut.hwp p2/p3 파일/미리보기/편집 등은
         // [쪽나누기]+단정의:1단 (header) → [단나누기]+단정의:2단 (content) 패턴 사용.
         // [다단나누기] 외에도 Page/Column break 의 ColumnDef 차이도 zone 재정의 신호로 인식.
-        let new_col_def_opt: Option<ColumnDef> = para.controls.iter().find_map(|c| {
-            if let Control::ColumnDef(cd) = c {
-                Some(cd.clone())
-            } else {
-                None
-            }
-        });
+        let new_col_def_opt: Option<ColumnDef> = para
+            .controls
+            .iter()
+            .find_map(|c| {
+                if let Control::ColumnDef(cd) = c {
+                    Some(cd)
+                } else {
+                    None
+                }
+            })
+            .map(|cd| storage.clone_record(cd))
+            .transpose()?;
         let has_diff_col_def = new_col_def_opt
             .as_ref()
             .map(|cd| {
@@ -49,21 +91,22 @@ impl TypesetEngine {
             })
             .unwrap_or(false);
 
-        let is_terminal_empty_column_break = para_idx + 1 == paragraphs.len()
+        let is_terminal_empty_para = para_idx + 1 == paragraphs.len()
             && st.col_count == 1
-            && para.column_type == ColumnBreakType::Column
             && !has_diff_col_def
             && para.controls.is_empty()
             && para
                 .text
-                .replace(|c: char| c.is_control(), "")
-                .trim()
-                .is_empty();
-        if is_terminal_empty_column_break {
+                .chars()
+                .filter(|c| !c.is_control())
+                .all(char::is_whitespace);
+        if is_terminal_empty_para && para.column_type == ColumnBreakType::Column {
             // 1단 구역 끝의 빈 단나누기 문단은 다음 단/밴드가 없으므로
             // 별도 빈 페이지를 만들지 않는다.
-            return None;
+            return Ok(None);
         }
+        // 명시적 쪽 나누기는 빈 마지막 문단도 다음 쪽으로 보낸다.
+        // 앞 쪽의 남은 공간만으로 생략하면 실제 한컴 Print의 빈 끝 쪽이 유실된다.
 
         let is_overlay_guide_empty_para = st.col_count > 1
             && para.column_type == ColumnBreakType::None
@@ -82,10 +125,18 @@ impl TypesetEngine {
                 })
                 .and_then(|idx| paragraphs.get(idx))
                 .is_some_and(para_is_non_tac_overlay_table_anchor);
-        if is_overlay_guide_empty_para {
+        let original_overlay_guide_owns_flow = (profile.hwp5_stored_pagination_layout()
+            || profile.hwpx_stored_layout())
+            && !profile.session_edited()
+            && !self.uniform_filler_ladder.get()
+            && !st.vpos_ladder_dirty
+            && crate::renderer::float_placement::stored_overlay_guide_owns_flow(
+                paragraphs, para_idx,
+            );
+        if is_overlay_guide_empty_para && !original_overlay_guide_owns_flow {
             // 글앞/글뒤 표 뒤의 빈 guide 줄은 떠 있는 개체의 위치 보조값이며,
             // 다단 flow 높이를 소비하지 않는다.
-            return None;
+            return Ok(None);
         }
 
         let closed_frame_guide = (para.text.is_empty()
@@ -130,11 +181,14 @@ impl TypesetEngine {
         if closed_frame_guide {
             // 표 배치가 이 정확한 원본 프레임을 이미 수용했다.
             // 안내 줄을 두 번 소비하지 않고 문단 출처를 보존한다.
-            st.hide_empty_paragraph(para_idx);
-            st.append_item(PageItem::FullParagraph {
-                para_index: para_idx,
-            });
-            return None;
+            st.hide_empty_paragraph_with_storage(para_idx, storage)?;
+            st.append_item_with_storage(
+                PageItem::FullParagraph {
+                    para_index: para_idx,
+                },
+                storage,
+            )?;
+            return Ok(None);
         }
 
         let is_native_hwp5_figure_table_overlay_guide_empty = profile
@@ -145,16 +199,19 @@ impl TypesetEngine {
             // 표 paint span 내부의 빈 HWP line은 다시 높이를 소비하면 안 되지만,
             // PI↔page 진단에서 문단 자체는 계속 추적 가능해야 하므로 0-height item으로
             // 남긴다.
-            st.hide_empty_paragraph(para_idx);
-            st.append_item(PageItem::FullParagraph {
-                para_index: para_idx,
-            });
-            return None;
+            st.hide_empty_paragraph_with_storage(para_idx, storage)?;
+            st.append_item_with_storage(
+                PageItem::FullParagraph {
+                    para_index: para_idx,
+                },
+                storage,
+            )?;
+            return Ok(None);
         }
 
         // 다단 나누기
         if para.column_type == ColumnBreakType::MultiColumn {
-            self.process_multicolumn_break(st, para_idx, paragraphs, page_def);
+            self.process_multicolumn_break(st, para_idx, paragraphs, page_def, styles);
         }
 
         // 단 나누기
@@ -180,14 +237,16 @@ impl TypesetEngine {
             && (crate::renderer::layout::para_is_floating_overlay_anchor(para)
                 || empty_columndef_only_break
                 || overlay_columndef_separator_break
-                || (profile.hwpx_stored_layout()
+                // 같은 저장 구조를 원본 HWP5 도 갖는다 — 한/글은 형식으로 쪽 구성을 가르지
+                // 않는다(편람 hwp·hwpx 정본 모두 구역 12 pi=17 단나누기에 빈 쪽이 없다).
+                || ((profile.hwpx_stored_layout() || profile.hwp5_stored_pagination_layout())
                     && empty_table_carrier_column_break_before_page_table(
                         para_idx, para, paragraphs,
                     )));
         if para.column_type == ColumnBreakType::Column && !suppress_floating_anchor_column_break {
             if has_diff_col_def {
                 // [Task #702] 단나누기 + 새 ColumnDef = zone 재정의 (MultiColumn 등가 처리)
-                self.process_multicolumn_break(st, para_idx, paragraphs, page_def);
+                self.process_multicolumn_break(st, para_idx, paragraphs, page_def, styles);
             } else if !st.current_items.is_empty() {
                 // [Task #846] 마지막 단에서 명시적 단나누기 → 새 페이지가 아니라 같은
                 // col_count 로 같은 페이지에 새 단-밴드를 시작 (들어갈 공간이 있으면). ≈ #768.
@@ -201,14 +260,31 @@ impl TypesetEngine {
                 {
                     self.start_new_column_band(st, para_idx, paragraphs);
                 } else {
-                    st.advance_column_or_new_page();
+                    st.advance_column_or_new_page_with_storage(storage)?;
                 }
             }
         }
 
         // 쪽 나누기
-        let force_page_break = para.column_type == ColumnBreakType::Page
-            || para.column_type == ColumnBreakType::Section;
+        let reconsider_synthetic_break = st.col_count == 1
+            && crate::renderer::pagination::reconsider_synthetic_text_page_break(
+                para,
+                &st.current_items,
+                &st.hidden_empty_paras,
+                st.hide_empty_line,
+                st.hidden_line_reflow_active,
+                st.available_height() - st.current_height,
+                self.dpi,
+            );
+        if matches!(
+            para.column_type,
+            ColumnBreakType::Page | ColumnBreakType::Section
+        ) {
+            st.set_hidden_line_reflow_active(reconsider_synthetic_break);
+        }
+        let force_page_break = (para.column_type == ColumnBreakType::Page
+            || para.column_type == ColumnBreakType::Section)
+            && !reconsider_synthetic_break;
         let para_style = styles.para_styles.get(para.para_shape_id as usize);
         let para_style_break = para_style.map(|s| s.page_break_before).unwrap_or(false);
 
@@ -219,7 +295,9 @@ impl TypesetEngine {
         // sample16-2022 pi=87 (빈 문단, text_len=0) skip ✓
         // sample16-2022 pi=118 (content, sb=284) skip ✓
         // sample16-2022 pi=316 (content, sb=0) skip ✓
-        let variant_vpos_reset_break = profile.hwp3_layout()
+        let variant_vpos_reset_break = !reconsider_synthetic_break
+            && profile.hwp3_layout()
+            && !st.stored_paragraph_boundary_already_open(paragraphs, para_idx)
             && self.judge_hwp3_variant_vpos_reset_break(
                 para,
                 paragraphs,
@@ -245,35 +323,34 @@ impl TypesetEngine {
         if (force_page_break || para_style_break || variant_vpos_reset_break)
             && !st.current_items.is_empty()
         {
-            st.force_new_page();
-            // [Task #702] 쪽나누기 + 새 ColumnDef = 새 페이지에서 col 정의 적용
-            if has_diff_col_def {
-                if let Some(cd) = &new_col_def_opt {
-                    st.enter_column_definition(cd.column_count.max(1));
-                    let new_layout = PageLayoutInfo::from_page_def(page_def, cd, self.dpi);
-                    st.install_zone_layout(new_layout, cd.column_type);
-                    // [Task #853] 새 페이지 첫 zone: 디자인 spacing /2 (위쪽 절반)만 추가.
-                    // (이전 zone 은 이전 페이지에 있었으므로 아래쪽 절반은 더하지 않음.)
-                    let new_ds = column_def_design_spacing_px(cd, self.dpi);
-                    st.advance_zone_origin(new_ds / 2.0);
-                    st.initialize_zone_spacing(new_ds);
-                }
+            st.force_new_page_with_storage(storage)?;
+            // [#8471] 앞 문단의 넘긴 표가 이 쪽을 차지했으면 쪽 나누기는 그다음 쪽에서 시작한다.
+            if (force_page_break || para_style_break)
+                && st.page_start_owns_deferred_table_before(para_idx)
+            {
+                st.force_new_page_with_storage(storage)?;
             }
-        }
-
-        // HWP5-origin 문서는 section PageHide를 연 빈 marker와, 같은 쪽 장식 host의
-        // Page break를 함께 기록할 수 있다. marker의 break는 적용하되 marker
-        // 자체를 배치하지 않아 host가 그 새 쪽을 바로 소유하도록 한다.
-        if (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
-            && hwp5_origin_redundant_pagehide_break_marker(
-                para_idx,
-                para,
-                paragraphs,
-                profile.hwpx_stored_layout(),
-            )
-        {
-            st.hide_empty_paragraph(para_idx);
-            return None;
+            // [Task #702] 쪽나누기 + 새 ColumnDef = 새 페이지에서 col 정의 적용.
+            // 단 수·종류가 같아도 단 너비·방향·구분선이 바뀐 정의는 새 쪽부터 그 배치를 쓴다.
+            let new_page_columns = new_col_def_opt.as_ref().and_then(|cd| {
+                let layout = PageLayoutInfo::from_page_def_for_page(
+                    page_def,
+                    cd,
+                    self.dpi,
+                    st.pages.len() as u32,
+                );
+                (has_diff_col_def || !same_zone_columns(&layout, &st.layout))
+                    .then_some((cd, layout))
+            });
+            if let Some((cd, new_layout)) = new_page_columns {
+                st.enter_column_definition(cd.column_count.max(1));
+                st.install_page_start_layout(new_layout, cd.column_type);
+                // [Task #853] 새 페이지 첫 zone: 디자인 spacing /2 (위쪽 절반)만 추가.
+                // (이전 zone 은 이전 페이지에 있었으므로 아래쪽 절반은 더하지 않음.)
+                let new_ds = column_def_design_spacing_px(cd, self.dpi);
+                st.advance_zone_origin(new_ds / 2.0);
+                st.initialize_zone_spacing(new_ds, false);
+            }
         }
 
         // [Task #1046] 사후 reflow 이월: layout 에서 본문 하단 overflow 로 판정된 항목은
@@ -281,7 +358,7 @@ impl TypesetEngine {
         // para_idx 가 현재 페이지에 이미 항목이 있으면 새 페이지를 강제 (force_page_break 등가).
         // 빈 셋(reflow hint 없음)이면 무동작 → 기존 출력 불변.
         if force_break_before.contains(&para_idx) && !st.current_items.is_empty() {
-            st.force_new_page();
+            st.force_new_page_with_storage(storage)?;
         }
 
         if para_is_pre_paper_page_square_table_scaffold(para_idx, paragraphs)
@@ -290,15 +367,34 @@ impl TypesetEngine {
             // [#2019 v3] Paper/Page 기준 Square 표를 둘러싼 빈 스캐폴드 문단.
             // 쪽나누기/ColumnDef 효과는 위에서 적용하되, PDF 기준으로는 별도 빈 줄을
             // 렌더하거나 본문 흐름 높이를 소비하지 않는다.
-            st.hide_empty_paragraph(para_idx);
-            return None;
+            st.hide_empty_paragraph_with_storage(para_idx, storage)?;
+            return Ok(None);
         }
 
-        Some(ParagraphBoundary {
+        Ok(Some(ParagraphBoundary {
             para_style,
             para_style_break,
             force_page_break,
+            reconsider_synthetic_break,
             overlay_columndef_separator_break,
-        })
+        }))
     }
+}
+
+/// 두 단 배치가 같은 단 영역·방향·구분선을 쓰는지. 맞쪽 방향이 쪽마다 뒤집는 단 순서는 보지 않는다.
+fn same_zone_columns(a: &PageLayoutInfo, b: &PageLayoutInfo) -> bool {
+    let spans = |layout: &PageLayoutInfo| {
+        let mut spans: Vec<(f64, f64)> = layout
+            .column_areas
+            .iter()
+            .map(|area| (area.x, area.width))
+            .collect();
+        spans.sort_by(|p, q| p.0.total_cmp(&q.0));
+        spans
+    };
+    spans(a) == spans(b)
+        && (a.column_areas.len() < 2
+            || (a.column_direction == b.column_direction
+                && (a.separator_type, a.separator_width, a.separator_color)
+                    == (b.separator_type, b.separator_width, b.separator_color)))
 }

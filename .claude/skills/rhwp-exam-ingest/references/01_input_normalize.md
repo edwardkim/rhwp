@@ -24,7 +24,9 @@ $MEDIA_DIR/
   img/q4_table.png
 ```
 
-`build-from-ingest --media-dir "$MEDIA_DIR"` 가 `media[].id` 를 이 루트에서 찾는다.
+위 구조는 crop 자료와 ingest 참조를 정리하기 위한 규칙이다.
+`build-from-ingest --media-dir "$MEDIA_DIR"`는 상대 이미지 파일을 검증해 삽입한다.
+생략하면 JSON 디렉터리를 사용한다. INGEST_IMAGE_* 오류는 F18에서 진단한다.
 
 ## 형식별 정규화
 

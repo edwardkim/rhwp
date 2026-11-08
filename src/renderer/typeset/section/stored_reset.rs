@@ -22,6 +22,41 @@ impl TypesetEngine {
         measured_tables: &[MeasuredTable],
         boundary: &super::entry::ParagraphBoundary<'_>,
     ) {
+        match self.apply_stored_paragraph_boundary_with_storage(
+            st,
+            para_idx,
+            para,
+            paragraphs,
+            styles,
+            has_table,
+            hwp3_origin_page_tolerance,
+            profile,
+            body_height_hu_for_variant,
+            measured_tables,
+            boundary,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(super) fn apply_stored_paragraph_boundary_with_storage<S: crate::storage::Storage>(
+        &self,
+        st: &mut TypesetState,
+        para_idx: usize,
+        para: &Paragraph,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+        has_table: bool,
+        hwp3_origin_page_tolerance: bool,
+        profile: crate::model::provenance::LayoutCompatibilityProfile,
+        body_height_hu_for_variant: i32,
+        measured_tables: &[MeasuredTable],
+        boundary: &super::entry::ParagraphBoundary<'_>,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        let reset_consumed_by_empty_prefix = st.consume_saved_empty_run_reset(para_idx, paragraphs);
         let para_style = boundary.para_style;
         let overlay_columndef_separator_break = boundary.overlay_columndef_separator_break;
         // Task #321: 문단간 vpos-reset 기반 강제 분할
@@ -33,7 +68,7 @@ impl TypesetEngine {
         // HWP5 변환본 case 에서 paragraph 442/443 wrap_around 매칭 후 후속 paragraph
         // (예: 599) vpos=0 시점에도 wrap_around active 유지되어 페이지 분할 위반 →
         // vpos-reset trigger 시 wrap_around 강제 종료 + advance_column_or_new_page.
-        if para_idx > 0 && !st.current_items.is_empty() {
+        let _: () = if para_idx > 0 && !st.current_items.is_empty() {
             let prev_para = &paragraphs[para_idx - 1];
             // 재조판 줄의 vpos는 문단 내부 좌표다. 문단 사이의 쪽/단 경계는
             // 양쪽이 실제 저장 줄일 때만 같은 쪽 좌표계의 되감김으로 읽는다.
@@ -42,12 +77,52 @@ impl TypesetEngine {
                 .first()
                 .filter(|s| !is_synthetic_line_seg(s))
                 .map(|s| s.vertical_pos);
+            // 누락 줄을 재구성한 본문 뒤에도 다음 원본 프레임은 남아 있다.
+            // 자기 문단 위 간격에서 재시작하는 미편집 저장 본문을 연결한다.
+            // 합성 줄 자체의 vpos를 쪽 경계 신호로 읽지는 않는다.
+            let reconstructed_source_vpos = curr_first_vpos.and_then(|cv| {
+                let spacing_before = para_style
+                    .map(|style| (style.spacing_before * 7200.0 / self.dpi).round() as i32)?;
+                if profile.session_edited()
+                    || st.col_count != 1
+                    || !(profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+                    || para.stored_text_partition_is_dirty()
+                    || para.cell_format_vpos_dirty
+                    || !para.controls.is_empty()
+                    || !para_has_visible_text(para)
+                    || para.column_type != ColumnBreakType::None
+                    || cv <= 0
+                    || spacing_before <= 0
+                    || (i64::from(cv) - i64::from(spacing_before)).abs() > 1
+                    || para.line_segs.iter().any(|line| {
+                        is_synthetic_line_seg(line) || line.line_height <= 0
+                    })
+                {
+                    return None;
+                }
+                crate::renderer::typeset::paragraph::stored_lines::stored_vpos_before_reconstructed_text(
+                    &st.current_items, paragraphs, para_idx,
+                ).filter(|pv| cv < *pv)
+            });
             let prev_last_vpos = prev_para
                 .line_segs
                 .last()
                 .filter(|s| !is_synthetic_line_seg(s))
-                .map(|s| s.vertical_pos);
+                .map(|s| s.vertical_pos)
+                .or(reconstructed_source_vpos);
             if let (Some(cv), Some(pv)) = (curr_first_vpos, prev_last_vpos) {
+                // 저장 쪽 경계는 그 쪽의 줄 구성에 의존한다. 현재 쪽에서
+                // 재조판 뒤 빈 저장 줄의 연속성만으로 옛 경계를 복구하지 않는다.
+                // 실제 흐름 끝이 저장 끝과 일치하는 경계는 공통 판정에서 보존한다.
+                // 명시적 쪽/단 나눔은 entry 단계에서 처리한다.
+                let stored_boundary_invalidated_by_reflow =
+                    reconstructed_source_vpos.is_none()
+                    && crate::renderer::typeset::paragraph::stored_lines::stored_page_boundary_invalidated_by_reflow(
+                        profile, st.col_count, &st.current_items, paragraphs,
+                        para_idx, st.current_height, self.dpi,
+                    ) || crate::renderer::typeset::paragraph::stored_lines::stored_frame_prefix_consumed_before_page(
+                        st, paragraphs, para_idx, styles,
+                    );
                 // 현재 문단의 vpos가 직전 문단의 마지막 vpos보다 작은 경우 — 컬럼/페이지 reset 시그널.
                 // - 단일 단: cv == 0 만 인정 (Task #321 보수적 기준 유지).
                 //   단일 단에서 cv != 0 의 cv < pv 는 partial-table split 의 LAYOUT 잔재로
@@ -105,23 +180,41 @@ impl TypesetEngine {
                 // 그려지고 이어지는 본문은 다음 쪽으로 넘어간다.
                 let native_inline_shape_reset = !hwp3_origin_page_tolerance
                     && profile.hwp5_stored_pagination_layout()
+                    && !profile.session_edited()
                     && shape_only_para
                     && para.controls.len() == 1
                     && matches!(&para.controls[0], Control::Shape(shape) if shape.common().treat_as_char)
-                    && para.line_segs.len() == 1
                     && cv > 0
-                    && cv <= 2500
-                    && prev_vpos_end > 60_000
-                    && paragraphs.get(para_idx + 1).is_some_and(|next| {
-                        next.line_segs
-                            .first()
-                            .filter(|seg| !is_synthetic_line_seg(seg))
-                            .is_some_and(|seg| {
-                                seg.vertical_pos > cv && seg.vertical_pos < prev_vpos_end / 2
-                            })
-                    })
+                    && cv == para_sb_hu_for_reset
+                    && stored_inline_shape_restarts_column(
+                        prev_para,
+                        para,
+                        paragraphs.get(para_idx + 1),
+                        crate::renderer::px_to_hwpunit(st.layout.body_area.height, self.dpi),
+                    )
                     && !para_is_page_bottom_fixed_table_anchor(para)
                     && !para_hosts_page_anchored_block(para);
+                // 글자 없는 표 host 문단(글자처럼 취급하지 않는 문단 기준 자리차지 표만)도
+                // 새 쪽 첫 줄의 저장 vpos 를 문단 위 간격으로 적는다. 표 자체는 host 줄 뒤에
+                // 놓이므로 host 줄의 원점이 곧 표가 놓인 쪽이다 — 앞 쪽 하단에서 되감긴
+                // 이 원점은 쪽 경계다(#1086 의 표 host 는 HWP3 원점 허용 경로).
+                let near_top_table_host = has_table_control
+                    && !para_has_visible_text(para)
+                    && !profile.session_edited()
+                    && para.controls.iter().all(|control| match control {
+                        Control::Table(table) => {
+                            !table.common.treat_as_char
+                                && matches!(
+                                    table.common.text_wrap,
+                                    crate::model::shape::TextWrap::TopAndBottom
+                                )
+                                && matches!(
+                                    table.common.vert_rel_to,
+                                    crate::model::shape::VertRelTo::Para
+                                )
+                        }
+                        _ => false,
+                    });
                 // [#1921 d=-1] 네이티브 HWP5/HWPX 의 비영 near-top reset:
                 // 한글은 새 쪽 첫 줄의 stored vpos 를 0 이 아니라 해당 문단의
                 // spacing_before 로 기록하기도 한다 (조문별/규제영향분석서 클래스,
@@ -140,8 +233,8 @@ impl TypesetEngine {
                         && para_sb_hu_for_reset > 0
                         && (cv - para_sb_hu_for_reset).abs() <= 150
                         && !shape_only_para
-                        && !has_table_control
-                        && para_has_visible_text(para)
+                        && ((!has_table_control && para_has_visible_text(para))
+                            || near_top_table_host)
                         && prev_vpos_end > 60_000
                         // [#5941 축 B] `#5921` 의 완화("이번 쪽 잔여에 들어가면 저장
                         // near-top 리셋을 버린다")를 **네이티브 HWP5 저장 조판 프로파일의
@@ -167,6 +260,12 @@ impl TypesetEngine {
                                 st.current_height,
                                 st.available_height(),
                             ))
+                            // 실제 흐름이 저장 끝까지 왔다면 HWPX도 같은 쪽
+                            // 경계를 소비한다. 잔여 fit만으로 이를 덮지 않는다.
+                            || (!profile.session_edited()
+                                && crate::renderer::typeset::stored_rewind_boundary_matches_current_flow(
+                                    paragraphs, para_idx, &st.current_items, st.current_height, self.dpi,
+                                ))
                             || native_near_top_reset_exceeds_remaining(
                                 para,
                                 para_sb_hu_for_reset,
@@ -209,6 +308,73 @@ impl TypesetEngine {
                     && st.wrap_around_cs < 0
                     && !para_is_page_bottom_fixed_table_anchor(para)
                     && stored_vpos_top_collision(prev_para, para);
+                // 좌표 축을 닫은 완전한 TAC 표도 원본 쪽 경계는 보존한다.
+                // 부분 이어받기는 이 단에 원본 전체 줄을 소비한 증거가 아니다.
+                let inline_frame_page_restart = st.col_count == 1
+                    && !profile.session_edited()
+                    && (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+                    && matches!(st.current_items.last(), Some(crate::renderer::typeset::PageItem::Table {
+                        para_index, control_index: 0,
+                    }) if *para_index == para_idx - 1)
+                    && crate::renderer::stored_page_origin::stored_inline_frame_restarts_page(
+                        prev_para,
+                        para,
+                        paragraphs.get(para_idx + 1),
+                        styles,
+                        self.dpi,
+                    );
+                let source_margin_restart = st.col_count == 1
+                    && !profile.session_edited()
+                    && (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+                    && st.vpos_page_base.is_some_and(|origin| {
+                        crate::renderer::float_placement::stored_margin_page_restart(
+                            prev_para,
+                            para,
+                            paragraphs.get(para_idx + 1),
+                            styles,
+                            origin,
+                            st.current_height - st.vpos_col_anchor,
+                            self.dpi,
+                        )
+                    });
+                // 이미 검증한 그림 행이 재시작 원점을 소유한다. 앞 본문이 실제
+                // 저장 끝까지 도달했을 때만 그 행과 본문을 같은 새 쪽에 발행한다.
+                let stored_picture_group_reset = st.col_count == 1
+                    && !profile.session_edited()
+                    && (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+                    && cv > 0
+                    && cv < pv
+                    && !para.stored_text_partition_is_dirty()
+                    && !prev_para.stored_text_partition_is_dirty()
+                    && para.controls.is_empty()
+                    && st.has_pending_picture_group_reset(hwpunit_to_px(cv, self.dpi), self.dpi)
+                    && prev_para.line_segs.last().is_some_and(|line| {
+                        let end = i64::from(line.vertical_pos)
+                            + i64::from(line.line_height)
+                            + i64::from(line.line_spacing)
+                            - i64::from(st.vpos_page_base.unwrap_or(0));
+                        (end as f64 * self.dpi / 7200.0 - st.current_height).abs()
+                            <= self.dpi / 7200.0
+                    });
+                let coanchored_host_reset = st.col_count == 1
+                    && !profile.session_edited()
+                    && profile.hwp5_stored_pagination_layout()
+                    && crate::renderer::float_placement::stored_empty_host_frame::coanchored_host_restarts_page(
+                        prev_para,
+                        para,
+                        crate::renderer::px_to_hwpunit(st.layout.body_area.height, self.dpi),
+                    );
+                // 직전 저장 리셋 뒤의 사다리가 그 구간 내용의 높이를 담지 못했으면 그 끝의
+                // vpos 0 은 이 쪽 기하의 쪽 경계가 아니다(한/글은 다시 흘린다). 증거는 두
+                // 가지다: 저장 줄 없는 보이는 문단에 자리를 남기지 않은 사다리, 저장 줄을
+                // 대신해 다시 만든 줄 때문에 본문 아래에서 시작하게 된 보이는 글줄.
+                let stored_ladder_misses_content = st.col_count == 1
+                    && cv == 0
+                    && stored_segment_ladder_misses_content(
+                        paragraphs,
+                        para_idx,
+                        crate::renderer::px_to_hwpunit(st.layout.body_area.height, self.dpi),
+                    );
                 let trigger = if st.col_count > 1 {
                     if is_distribute {
                         cv < prev_vpos_end && prev_vpos_end > 0
@@ -216,17 +382,32 @@ impl TypesetEngine {
                         cv < pv && pv > 5000
                     }
                 } else {
+                    // 큰 개체 줄의 끝만으로 다음 vpos=0을 새 쪽으로 추정하지 않는다.
+                    // 뒤 글줄이 현재 쪽에 들어가는 정상 인쇄도 있으므로, 저장 줄의
+                    // 시작 위치가 충분히 진행한 기존 되감김 조건을 유지한다.
                     (cv == 0
                             && pv > 5000
+                            && !stored_ladder_misses_content
                             && !hwp3_content_vpos_zero_reset
                             && !para_is_page_bottom_fixed_table_anchor(para)
                             // [#6535 잔여] 쪽-앵커 블록의 vpos=0 은 절대배치 산물이지
                             // 쪽 리셋 신호가 아니다.
                             && !para_hosts_page_anchored_block(para))
                         || near_page_top_reset
-                        || native_near_top_reset
+                        // The accepted column origin can survive a broken
+                        // source ladder. Its dirty/provenance flag controls
+                        // backward snapping, not ownership of a carried frame.
+                        || (native_near_top_reset
+                            && !st
+                                .vpos_page_base
+                                .is_some_and(|origin| cv < origin))
                         || native_inline_shape_reset
                         || stored_top_collision_reset
+                        || source_margin_restart
+                        || inline_frame_page_restart
+                        || stored_picture_group_reset
+                        || coanchored_host_reset
+                        || reconstructed_source_vpos.is_some()
                 };
                 // [#2279 OMIT-fit] spacing-누락 문서군에서 fresh 재계산이 직전
                 // 쪽에서 밀어낸 빈 문단만 담긴 쪽에는 저장 리셋 경계를 적용하지
@@ -318,7 +499,14 @@ impl TypesetEngine {
                             None => false,
                         }
                     };
+                // Plain-text near-top source resets were evaluated against the
+                // accepted stored origin above. Explicit zero/shape/column
+                // boundaries retain their separate ownership contracts.
                 let trigger = trigger
+                    && !boundary.reconsider_synthetic_break
+                    && !reset_consumed_by_empty_prefix
+                    && !st.stored_paragraph_boundary_already_open(paragraphs, para_idx)
+                    && !stored_boundary_invalidated_by_reflow
                     && !omit_pushed_empty_page
                     && !hangul2024_refit
                     && !overlay_columndef_separator_break
@@ -349,11 +537,98 @@ impl TypesetEngine {
                             // 한글은 밴드를 떠나는 쪽의 흐름 말미에 남기고 본문 아래
                             // 여백으로 흘린다.
                             st.spill_page_tail_floats(para_idx, para);
-                            st.advance_column_or_new_page();
+                            st.advance_column_or_new_page_with_storage(storage)?;
                         }
                     }
                 }
             }
+        };
+        Ok(())
+    }
+}
+
+/// 인라인 도형은 자기 저장 줄 상자를 소유한다. 이전 쪽의 남은 물리 높이에
+/// 그 상자가 들어가지 않고 뒤 줄이 새 축에서 이어질 때 저장 재시작을 보존한다.
+fn stored_inline_shape_restarts_column(
+    previous: &Paragraph,
+    current: &Paragraph,
+    next: Option<&Paragraph>,
+    body_height_hu: i32,
+) -> bool {
+    let Some(next) = next else {
+        return false;
+    };
+    let (Some(last), [line], Some(after)) = (
+        previous.line_segs.last(),
+        current.line_segs.as_slice(),
+        next.line_segs.first(),
+    ) else {
+        return false;
+    };
+    if [previous, current, next]
+        .iter()
+        .any(|para| para.stored_text_partition_is_dirty() || para.cell_format_vpos_dirty)
+        || [last, line, after]
+            .iter()
+            .any(|seg| is_synthetic_line_seg(seg) || seg.line_height <= 0 || seg.line_spacing < 0)
+        || body_height_hu <= 0
+    {
+        return false;
+    }
+    let previous_end =
+        i64::from(last.vertical_pos) + i64::from(last.line_height) + i64::from(last.line_spacing);
+    let current_end =
+        i64::from(line.vertical_pos) + i64::from(line.line_height) + i64::from(line.line_spacing);
+    line.vertical_pos < last.vertical_pos
+        && i64::from(after.vertical_pos) >= current_end
+        && i64::from(after.vertical_pos) < previous_end
+        && previous_end + i64::from(line.line_height) + i64::from(line.line_spacing)
+            > i64::from(body_height_hu)
+}
+
+/// `para_idx` 앞의 같은 저장 쪽 구간(직전 vpos 되감김 뒤)의 사다리가 내용의 높이를
+/// 담지 못했는지 본다.
+///
+/// - 저장 줄이 없는 보이는 문단이 있는데, 그 앞뒤 저장 줄 사이에 자리가 남지 않았다
+///   (사다리가 그 문단의 높이를 세지 않았다). 자리를 남긴 사다리는 그 문단을 이미 센
+///   한/글 저장본이다.
+/// - 구간에 다시 만든 줄(구현 속성 표지, 저장 줄을 대신해 재조판한 줄)이 있고, 그 결과
+///   보이는 글줄이 본문 높이(`body_hu`) 바깥에서 시작한다. 저장 줄만으로 이어진 사다리가
+///   쪽을 넘어 누적되는 것(HWP3 변환본 등)은 한/글도 그 vpos 0 을 쪽 경계로 쓴다.
+fn stored_segment_ladder_misses_content(
+    paragraphs: &[Paragraph],
+    para_idx: usize,
+    body_hu: i32,
+) -> bool {
+    // 저장 줄 없는 보이는 문단 묶음 바로 뒤에 오는 줄의 vpos.
+    let mut later_vpos: Option<i32> = None;
+    let mut unstored_visible_before_later = false;
+    let mut rebuilt_line = false;
+    let mut text_line_below_body = false;
+    for para in paragraphs[..para_idx].iter().rev() {
+        if para.line_segs.is_empty() {
+            unstored_visible_before_later |= para_has_visible_text(para);
+            continue;
+        }
+        let visible = para_has_visible_text(para);
+        for line in para.line_segs.iter().rev() {
+            if let Some(later) = later_vpos {
+                if line.vertical_pos > later {
+                    return rebuilt_line && text_line_below_body;
+                }
+                let advance_end = line
+                    .vertical_pos
+                    .saturating_add(line.line_height)
+                    .saturating_add(line.line_spacing);
+                if unstored_visible_before_later && later <= advance_end {
+                    return true;
+                }
+            }
+            unstored_visible_before_later = false;
+            rebuilt_line |= is_synthetic_line_seg(line);
+            text_line_below_body |= visible && line.vertical_pos > body_hu;
+            later_vpos = Some(line.vertical_pos);
         }
     }
+    rebuilt_line && text_line_below_body
 }

@@ -296,7 +296,9 @@ function sweep() {
   const exe = path.join(REPO_ROOT, 'target', 'release', 'rhwp');
   if (!existsSync(exe)) throw new Error(`릴리스 바이너리가 없다: ${exe}`);
   const samples = path.join(REPO_ROOT, 'samples');
+  const deferred = new Set(readFileSync(path.join(REPO_ROOT, 'tests/fixtures/deferred_document_regressions.txt'), 'utf8').trim().split(/\r?\n/u));
   const files = readdirSync(samples)
+    .filter((file) => !deferred.has(file))
     .filter((f) => f.endsWith('.hwp') || f.endsWith('.hwpx'))
     .sort()
     .map((f) => path.join(samples, f));

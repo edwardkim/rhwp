@@ -1,0 +1,26 @@
+[
+  {
+    "pr": 8286,
+    "source": "bf5bfb34a3b54b91e8c320d622320fe3962a67ff",
+    "integration": "bf4b9e776615d992300ae13b6e87f7c86512aae1",
+    "author": "author semanticist <semanticist0@gmail.com> 1793018327 +0900",
+    "coAuthors": [],
+    "authorAndTrailersPreserved": true
+  },
+  {
+    "pr": 8226,
+    "source": "d2a7376aa00c6b4cc2fb1a7ad84240094879d8b8",
+    "integration": "80de584391e70c3fe04255abd1c087a221640582",
+    "author": "author semanticist <semanticist0@gmail.com> 1792915167 +0900",
+    "coAuthors": [],
+    "authorAndTrailersPreserved": true
+  },
+  {
+    "pr": 8226,
+    "source": "b97b418a90d833af4ffbf2949f0e517ec15c61e0",
+    "integration": "28ac0dd0e99f7e4abd7580f8db2ec8b22e33efa2",
+    "author": "author semanticist <semanticist0@gmail.com> 1792925008 +0900",
+    "coAuthors": [],
+    "authorAndTrailersPreserved": true
+  }
+]

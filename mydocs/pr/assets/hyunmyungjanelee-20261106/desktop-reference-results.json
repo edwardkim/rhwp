@@ -1,0 +1,77 @@
+[
+  {
+    "job_id": "5f5724ab-142d-409a-a4c1-b8cadc90639a",
+    "status": "succeeded",
+    "engine": "2020",
+    "input": "samples/issue8513/textbox_floating_table_offset.hwpx",
+    "input_sha256": "fb714bedfc3adaf2a36106d21f956aadf9538dcfcd9478a2c488a97cb013b0a6",
+    "result": {
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "bytes": 10600,
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    },
+    "pdf_sha256": "92157894ff185371aad34d06b48f279a0eeee8d4ec903aa80941294dbbe9c923"
+  },
+  {
+    "job_id": "0d39111f-5775-4a72-926d-55cb813b1175",
+    "status": "succeeded",
+    "engine": "2020",
+    "input": "samples/issue8579/partial_table_control_only_para.hwp",
+    "input_sha256": "1d11a900d41c073dfd0432e37ae73dc0d24ead99f028c475be8c5e275550bff9",
+    "result": {
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "bytes": 37890,
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    },
+    "pdf_sha256": "3fe4a9c5496864ffafc76d97ae1f99027b8c8d91275090d082c79447996866ab"
+  },
+  {
+    "job_id": "902ed6d7-0374-4e5f-8c79-f9db57b2aa4e",
+    "status": "succeeded",
+    "engine": "2024",
+    "input": "samples/issue8584/short_row_grid_r21.hwpx",
+    "input_sha256": "4e4108d50e0da44245b79b17458be7ecdb7d6a39ea2a44c7e0813c292885221f",
+    "result": {
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "bytes": 16472,
+      "pdf_print_method": 0,
+      "pdf_output_mode": "frame_print_to_pdf_ex_one_up"
+    },
+    "pdf_sha256": "3278cc0724d15dea4053be64bd58235cb833b4034eb1efd60cc5c8bafbaebb04"
+  },
+  {
+    "job_id": "264a5f35-f70e-41bd-a3b0-3a3401ddebae",
+    "status": "succeeded",
+    "engine": "2024",
+    "input": "samples/issue8584/short_row_grid_r4.hwpx",
+    "input_sha256": "21ea9a9277b95ae606847b835c8c7233144dad443744b11bbc57323bb69d3981",
+    "result": {
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "bytes": 14700,
+      "pdf_print_method": 0,
+      "pdf_output_mode": "frame_print_to_pdf_ex_one_up"
+    },
+    "pdf_sha256": "7c6d186aa60cac58bd34aa22dff15a0e9cf18b69634bf8b7738d66537fc9a142"
+  },
+  {
+    "job_id": "3547811a-3eca-45b1-891c-d53d036f72f1",
+    "status": "succeeded",
+    "engine": "2020",
+    "input": "samples/issue8594/bindata_link_shift.hwp",
+    "input_sha256": "04f067517a604e75fd3a6b75130226af4fd7c65a27dab5859bdba87cb50856ff",
+    "result": {
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "bytes": 222545,
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    },
+    "pdf_sha256": "663ab919c9440b6397d16931cf69b29c32c34e740aebd932634886e440a23ca3"
+  }
+]

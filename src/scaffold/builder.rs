@@ -16,7 +16,9 @@ use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
 use crate::model::shape::{common_obj_offsets, CommonObjAttr};
 use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
 use crate::model::Padding;
-use crate::scaffold::schema::{Block, CellAlignSpec, PageSize, ScaffoldSpec};
+use crate::scaffold::schema::{
+    Block, CellAlignSpec, OutlineLevel, PageSize, ScaffoldSpec, OUTLINE_DEFAULTS,
+};
 
 // 글자 모양 ID (doc_info.char_shapes 인덱스).
 const CS_NORMAL: u32 = 0;
@@ -33,6 +35,13 @@ const PS_HEADING_BASE: u16 = 2;
 const BF_NONE: u16 = 1; // border_fills[0] — 무테두리 (글자/문단 참조)
 const BF_SOLID: u16 = 2; // border_fills[1] — 실선 (표/셀 참조)
 
+/// 개요 번호 문단 머리 속성(표 41): 왼쪽 정렬, 번호 너비를 실제 문자열 너비에 따름(bit 2),
+/// 자동 내어쓰기(bit 3), 본문과의 거리는 글자 크기 비율(bit 4 = 0). 한/글 새 문서의
+/// 개요 번호 `paraHead`(align=LEFT useInstWidth=1 autoIndent=1 textOffsetType=PERCENT)와 같다.
+const OUTLINE_HEAD_ATTR: u32 = (1 << 2) | (1 << 3);
+/// 본문과의 거리 50%(글자 크기 비율) — 한/글 새 문서 개요 번호 기본값.
+const OUTLINE_TEXT_OFFSET: i16 = 50;
+
 /// [`ScaffoldSpec`] → [`Document`] IR 변환.
 pub fn build_scaffold(spec: &ScaffoldSpec) -> Document {
     let mut doc = Document::default();
@@ -45,6 +54,12 @@ pub fn build_scaffold(spec: &ScaffoldSpec) -> Document {
     section.section_def.page_border_fill.spacing_right = 1417;
     section.section_def.page_border_fill.spacing_top = 1417;
     section.section_def.page_border_fill.spacing_bottom = 1417;
+    if let Some(levels) = &spec.outline_numbering {
+        // 번호 정의 하나를 만들고 구역 개요 번호가 그것(1-based id 1)을 가리킨다.
+        // 개요 문단 모양은 numbering_id 0 그대로 — 조판·직렬화가 구역 개요 번호로 해석한다.
+        doc.doc_info.numberings = vec![outline_numbering(levels)];
+        section.section_def.outline_numbering_id = 1;
+    }
     doc.sections.push(section);
 
     let content_width = content_width_of(&doc.sections[0].section_def.page_def);
@@ -217,6 +232,34 @@ fn init_doc_info(doc: &mut Document, font_name: &str) {
     }];
 }
 
+/// `outline_numbering` → 문단 번호 정의. 지정하지 않은 수준은 [`OUTLINE_DEFAULTS`].
+fn outline_numbering(levels: &[OutlineLevel]) -> crate::model::style::Numbering {
+    use crate::model::style::{Numbering, NumberingHead};
+    let mut n = Numbering {
+        start_number: 1,
+        level_start_numbers: [1; crate::model::style::NUMBERING_LEVELS],
+        ..Default::default()
+    };
+    for (i, (default_text, default_format)) in OUTLINE_DEFAULTS.iter().enumerate() {
+        let (text, format) = match levels.get(i) {
+            Some(lv) => (lv.text.as_str(), lv.num_format),
+            None => (*default_text, *default_format),
+        };
+        let code = format.code();
+        n.level_formats[i] = text.to_string();
+        n.heads[i] = NumberingHead {
+            // 번호 형식 코드는 속성 bit 5~9에도 둔다(HWPX 파서와 같은 표현).
+            attr: OUTLINE_HEAD_ATTR | (u32::from(code) << 5),
+            width_adjust: 0,
+            text_distance: OUTLINE_TEXT_OFFSET,
+            // 글자 모양 참조 없음 — 번호는 문단의 글자 모양을 따른다.
+            char_shape_id: u32::MAX,
+            number_format: code,
+        };
+    }
+    n
+}
+
 fn page_def_from_spec(page_size: PageSize) -> PageDef {
     let mut page_def = PageDef::a4_default();
     if (page_size.width_mm - 210.0).abs() > f32::EPSILON
@@ -250,6 +293,19 @@ fn utf16_offsets(text: &str) -> (Vec<u32>, u32) {
     (offsets, acc)
 }
 
+/// [#8424] scaffold 가 만드는 글 문단의 저장 줄 정보(LineSeg).
+///
+/// scaffold 는 글꼴 측정·줄 나눔을 하지 않으므로 실제 줄 구성을 알 수 없다. 종전처럼
+/// 1줄짜리 LineSeg(높이 1000, 폭 50000 또는 셀 폭)를 꾸며 넣으면, 저장 줄을 신뢰하는
+/// 소비자(rhwp 셀 배치)는 긴 셀 텍스트를 한 줄로 잘라 그린다. 한컴은 저장 줄과 무관하게
+/// 다시 조판한다(linesegarray 유무와 관계없이 한컴 2024 Print 출력이 픽셀 단위로 동일 —
+/// #8424 실측).
+///
+/// 그래서 저장 줄을 비워 "아직 조판하지 않은 문단"으로 둔다. HWPX 직렬화는 이때
+/// `<hp:linesegarray>` 를 쓰지 않고, rhwp 는 HWPX 로드 시 빈 줄 정보를 재조판 대상으로
+/// 본다(`DocumentCore::needs_line_seg_reflow`, #1380).
+const UNCOMPOSED_LINE_SEGS: Vec<LineSeg> = Vec::new();
+
 /// 평문 텍스트 문단을 만든다(제목/제목/본문 공용).
 fn make_text_para(text: &str, para_shape_id: u16, char_shape_id: u32) -> Paragraph {
     let (char_offsets, utf16_len) = utf16_offsets(text);
@@ -261,16 +317,8 @@ fn make_text_para(text: &str, para_shape_id: u16, char_shape_id: u32) -> Paragra
             start_pos: 0,
             char_shape_id,
         }],
-        line_segs: vec![LineSeg {
-            text_start: 0,
-            line_height: 1000,
-            text_height: 1000,
-            baseline_distance: 850,
-            line_spacing: 600,
-            segment_width: 50000,
-            tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-            ..Default::default()
-        }],
+        // [#8424] 저장 줄 정보를 만들지 않는다 — `UNCOMPOSED_LINE_SEGS` 참고.
+        line_segs: UNCOMPOSED_LINE_SEGS,
         para_shape_id,
         style_id: 0,
         has_para_text: true,
@@ -279,13 +327,12 @@ fn make_text_para(text: &str, para_shape_id: u16, char_shape_id: u32) -> Paragra
 }
 
 /// 셀 내부 문단을 만든다. `create_table_native` 의 셀 문단 보정과 정합
-/// (char_count_msb=true, raw_header_extra 10바이트, seg_width=셀폭-좌우패딩).
-fn make_cell_para(text: &str, col_width: u32, para_shape_id: u16) -> Paragraph {
+/// (char_count_msb=true, raw_header_extra 10바이트). 저장 줄 정보는 만들지 않는다(#8424).
+fn make_cell_para(text: &str, para_shape_id: u16) -> Paragraph {
     let (char_offsets, utf16_len) = utf16_offsets(text);
-    let seg_w = (col_width as i32) - 141 - 141; // 셀 폭 - 좌우 패딩
+    // n_char_shapes=1, n_line_segs=0(저장 줄 정보 없음 — #8424, `UNCOMPOSED_LINE_SEGS`)
     let mut raw_header_extra = vec![0u8; 10];
-    raw_header_extra[0..2].copy_from_slice(&1u16.to_le_bytes()); // n_char_shapes=1
-    raw_header_extra[4..6].copy_from_slice(&1u16.to_le_bytes()); // n_line_segs=1
+    raw_header_extra[0..2].copy_from_slice(&1u16.to_le_bytes());
     Paragraph {
         text: text.to_string(),
         char_count: utf16_len + 1,
@@ -295,16 +342,9 @@ fn make_cell_para(text: &str, col_width: u32, para_shape_id: u16) -> Paragraph {
             start_pos: 0,
             char_shape_id: CS_NORMAL,
         }],
-        line_segs: vec![LineSeg {
-            text_start: 0,
-            line_height: 1000,
-            text_height: 1000,
-            baseline_distance: 850,
-            line_spacing: 600,
-            segment_width: seg_w,
-            tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-            ..Default::default()
-        }],
+        // [#8424] 셀 폭과 글자 폭으로 줄을 나눈 결과를 여기서 알 수 없다. 1줄로 꾸며 쓰면
+        // 저장 줄을 신뢰하는 소비자는 긴 셀 텍스트를 한 줄로 잘라 그린다.
+        line_segs: UNCOMPOSED_LINE_SEGS,
         para_shape_id,
         style_id: 0,
         has_para_text: !text.is_empty(),
@@ -362,7 +402,7 @@ fn build_table_paragraph(
                 .get(c as usize)
                 .copied()
                 .unwrap_or(PS_NORMAL);
-            cell.paragraphs = vec![make_cell_para(text, col_width, para_shape_id)];
+            cell.paragraphs = vec![make_cell_para(text, para_shape_id)];
             cell.raw_list_extra = Vec::new();
             cells.push(cell);
         }
@@ -371,7 +411,10 @@ fn build_table_paragraph(
     let row_sizes: Vec<i16> = (0..row_count_u16).map(|_| col_count_u16 as i16).collect();
 
     // raw_ctrl_data: CommonObjAttr 바이너리 (파서 호환, 38바이트).
-    let flags: u32 = (2 << 3) | (3 << 8) | (4 << 15) | (2 << 18) | (1 << 21);
+    // bit 13: 세로 기준이 문단일 때 개체를 본문 영역 안으로 제한(HWPX `flowWithText="1"`).
+    // 한글 새 표의 기본값이며 `table.attr`(0x082A_2210)에도 켜져 있다. 빠지면 한글이 쪽 끝 표를
+    // 나누지 않고 각주 영역 위에 겹쳐 그린다.
+    let flags: u32 = (2 << 3) | (3 << 8) | (1 << 13) | (4 << 15) | (2 << 18) | (1 << 21);
     let outer_margin: i16 = 283; // ~1mm
     let mut raw_ctrl_data = vec![0u8; 38];
     raw_ctrl_data[common_obj_offsets::FLAGS].copy_from_slice(&flags.to_le_bytes());
@@ -413,6 +456,7 @@ fn build_table_paragraph(
             horz_rel_to: crate::model::shape::HorzRelTo::Para,
             vert_align: crate::model::shape::VertAlign::Top,
             horz_align: crate::model::shape::HorzAlign::Left,
+            flow_with_text: true,
             width: total_width,
             height: total_height,
             instance_id,
@@ -426,6 +470,7 @@ fn build_table_paragraph(
         raw_ctrl_seal: None,
         raw_table_record_attr: 0x0000_0006, // bits 0-1 = 2(나눔, 행 단위 = HWPX CELL), bit2 = repeat_header
         raw_table_record_extra: Vec::new(),
+        layout_page_break_cache: Default::default(),
     };
     table.rebuild_grid();
 

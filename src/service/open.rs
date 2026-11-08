@@ -152,14 +152,12 @@ impl DocumentService {
         if !is_openable(format) {
             return Err(ServiceError::UnsupportedFormat { detected: format });
         }
-        // 3) 비밀번호 유무 분기 — 세 표면이 각자 쓰던 그 분기, 여기 한 번만.
-        let loaded = match opts.password.as_deref() {
-            Some(password) => DocumentCore::from_bytes_with_password(bytes, password.as_bytes()),
-            None => DocumentCore::from_bytes(bytes),
-        };
+        // 인증 command의 성공 뒤에만 완성된 문서를 공개한다. 암호를 소비하는
+        // 호출의 반환값에 문서나 진단 metadata를 함께 싣지 않는다.
+        let mut core = DocumentCore::new_empty();
+        let loaded = core.load_bytes(bytes, opts.password.as_deref().map(str::as_bytes));
         // 4) 실패에 이름을 붙인다.
-        let core = loaded
-            .map_err(|error| ServiceError::from_open_failure(&error, opts.password.is_some()))?;
+        loaded.map_err(|error| ServiceError::from_open_failure(&error, opts.password.is_some()))?;
         Ok(OpenedDocument {
             core,
             format,
@@ -175,17 +173,27 @@ impl DocumentService {
 /// 비밀번호는 **인자로 전달한다**. 현행 CLI 처럼 전역(`thread_local`)에 숨기면
 /// 호출 지점만 봐서는 어떤 인증이 적용되는지 알 수 없고, `batch` 처럼 워커
 /// 스레드로 갈라지는 경로에서 조용히 사라진다.
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Clone, Default, PartialEq, Eq)]
 pub struct OpenOptions {
     /// 암호 문서 비밀번호. `None` 이면 평문 경로로 연다.
     ///
-    /// 값은 [`OpenedDocument`] 에 보존되지 않는다 — 열기가 끝나면 잊는다.
+    /// 서비스 metadata에는 보존하지 않는다. HWP5 파서는 이미지 지연 복호화를
+    /// 위해 문서 내부 resolver에 암호를 보관할 수 있다. Debug 출력에는 포함하지 않는다.
     pub password: Option<String>,
     /// 이 호출에만 적용할 크기 상한. `None` 이면 서비스 기본값을 쓴다.
     ///
     /// 무제한으로 열려면 서비스 쪽을 [`DocumentService::with_max_bytes`]`(None)`
     /// 으로 만든다 — 호출 단위 `None` 은 "지정 안 함"이지 "무제한"이 아니다.
     pub max_bytes: Option<usize>,
+}
+
+impl std::fmt::Debug for OpenOptions {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("OpenOptions")
+            .field("password", &self.password.as_ref().map(|_| "[redacted]"))
+            .field("max_bytes", &self.max_bytes)
+            .finish()
+    }
 }
 
 impl OpenOptions {
@@ -297,8 +305,8 @@ impl OpenedDocument {
     /// 중복"이 정보이기 때문이다.
     pub fn info(&self) -> DocumentInfo {
         let document = self.document();
-        let version = if self.format == FileFormat::Hml {
-            // HML 에는 HWP 바이너리 버전이 없다. 0.0.0.0 을 지어내지 않는다.
+        let version = if matches!(self.format, FileFormat::Hml | FileFormat::Pdf) {
+            // HML/PDF에는 HWP 바이너리 버전이 없다. 0.0.0.0 을 지어내지 않는다.
             None
         } else {
             Some(format!(
@@ -386,6 +394,7 @@ pub fn format_token(format: FileFormat) -> &'static str {
         FileFormat::Hwpx => "hwpx",
         FileFormat::Hwp3 => "hwp3",
         FileFormat::Hml => "hml",
+        FileFormat::Pdf => "pdf",
         FileFormat::DrmProtected => "drm-protected",
         FileFormat::Empty => "empty",
         FileFormat::Unknown => "unknown",
@@ -398,8 +407,9 @@ pub fn format_token(format: FileFormat) -> &'static str {
 /// 결국 거절하지만, 거절의 **이름**이 형식 판정에서 나와야 소비자가 "지원하지
 /// 않는 형식"과 "손상된 문서"를 가를 수 있다.
 fn is_openable(format: FileFormat) -> bool {
-    matches!(
-        format,
-        FileFormat::Hwp | FileFormat::Hwpx | FileFormat::Hwp3 | FileFormat::Hml
-    )
+    (format == FileFormat::Pdf && cfg!(feature = "pdf-import"))
+        || matches!(
+            format,
+            FileFormat::Hwp | FileFormat::Hwpx | FileFormat::Hwp3 | FileFormat::Hml
+        )
 }

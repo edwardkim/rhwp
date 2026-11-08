@@ -1,7 +1,8 @@
 //! #3604 보호 문서 MCP 계약.
 //!
-//! 실제 HWP5/HWP3/HWPX fixture로 세션 암호 입력과 무상태 자식 stdin 전달을
-//! 검증한다. 암호 값이 도구 응답에 에코되지 않는지도 함께 고정한다.
+//! 공용 HWP3/HWPX fixture로 세션 암호 입력과 무상태 자식 stdin 전달을
+//! 검증한다. sample16 HWP5는 issue_8160_mcp_password에서 같은 경계를 보호한다.
+//! 암호 값이 도구 응답에 에코되지 않는지도 함께 고정한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::io::{BufRead, BufReader, Write};
@@ -11,14 +12,15 @@ use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};
 const PASSWORD: &str = "123456";
 const WRONG_PASSWORD: &str = "mcp-password-must-not-echo";
 const FIXTURES: &[(&str, Option<u64>)] = &[
-    (
-        "samples/hwp3-sample16-hwp5-2024-password-123456.hwp",
-        Some(64),
-    ),
     ("samples/HWP3-password-123456.hwp", Some(24)),
     // 이 HWPX의 쪽수 고정만 #7445에서 독립 시각 기준으로 재검토한다.
     ("samples/HWP5-password-123456.hwpx", None),
 ];
+
+// nextest archive의 런타임 실행 경로 재매핑을 우선한다(#3289).
+fn rhwp_bin() -> String {
+    std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
+}
 
 fn fixture_path(relative: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(relative)
@@ -33,7 +35,7 @@ struct Server {
 
 impl Server {
     fn started() -> Self {
-        let mut child = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+        let mut child = Command::new(rhwp_bin())
             .arg("mcp-serve")
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
@@ -212,12 +214,13 @@ fn protected_documents_open_in_a_password_session_without_echoing_password() {
 
 #[test]
 fn stateless_document_tool_uses_password_stdin_without_cli_argument_echo() {
-    let fixture = fixture_path(FIXTURES[0].0);
+    let (fixture_name, expected_pages) = FIXTURES[0];
+    let fixture = fixture_path(fixture_name);
     if !fixture.exists() {
         eprintln!("fixture 없음 — 건너뜀: {}", fixture.display());
         return;
     }
-    let capabilities = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    let capabilities = Command::new(rhwp_bin())
         .args(["capabilities", "--mcp"])
         .output()
         .expect("capabilities 실행 실패");
@@ -258,7 +261,11 @@ fn stateless_document_tool_uses_password_stdin_without_cli_argument_echo() {
         "hwp_info",
         serde_json::json!({"path": path, "password": PASSWORD}),
     );
-    assert_eq!(info["pageCount"].as_u64(), Some(64), "{info}");
+    assert_eq!(
+        info["pageCount"].as_u64(),
+        expected_pages,
+        "{fixture_name}: {info}"
+    );
 
     let wrong = server.tool_response(
         "hwp_info",

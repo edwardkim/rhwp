@@ -1,0 +1,89 @@
+{
+  "status": "diagnostic_only",
+  "prior_source": "3a2a081a418a38a2fb696136835d0f721b216972",
+  "base": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+  "js_sha256": "c1c8d1820cc4375ab668427fa0a42c87d71c3d0d83955f4d300880559023ddc6",
+  "rebuilt_wasm_sha256": "aeae0942721fcc322dcadcb6468293e38a7460a0879314308a719b2763e9ef71",
+  "historical_wasm_sha256": "c5b25dd8b22efce0d4ecb08291069e3ec625345c40957cbe457cc431f69737d8",
+  "font_condition": "51 ordered historical font SHA and prior fontconfig selection",
+  "old_exporter_sha256": "b723139a685d823e485054fab5341257eabc4e3a42768c94baa0a1918c35f7c2",
+  "old_exporter_check": {
+    "input": "endnotes-september",
+    "page": 20,
+    "raw": 95.30078,
+    "note": "same as the current exporter; historical raw 96.35945 remains unexplained"
+  },
+  "rows": [
+    {
+      "input": "endnotes-september",
+      "page": 20,
+      "historical": 96.35945,
+      "pre_source_current_environment": 95.30078,
+      "base_current_environment": 95.32108,
+      "base_minus_pre_pp": 0.0203
+    },
+    {
+      "input": "endnotes-november",
+      "page": 21,
+      "historical": 91.32974,
+      "pre_source_current_environment": 90.84543,
+      "base_current_environment": 90.84255,
+      "base_minus_pre_pp": -0.00288
+    },
+    {
+      "input": "newsletter-korean",
+      "page": 1,
+      "historical": 98.00674,
+      "pre_source_current_environment": 97.55441,
+      "base_current_environment": 97.55086,
+      "base_minus_pre_pp": -0.00355
+    },
+    {
+      "input": "onsemiro-hwp",
+      "page": 19,
+      "historical": 97.7889,
+      "pre_source_current_environment": 97.67924,
+      "base_current_environment": 97.67924,
+      "base_minus_pre_pp": 0.0
+    },
+    {
+      "input": "onsemiro-hwp",
+      "page": 26,
+      "historical": 94.25851,
+      "pre_source_current_environment": 93.85686,
+      "base_current_environment": 93.94558,
+      "base_minus_pre_pp": 0.08872
+    },
+    {
+      "input": "onsemiro-hwp",
+      "page": 33,
+      "historical": 97.81353,
+      "pre_source_current_environment": 97.70492,
+      "base_current_environment": 97.70492,
+      "base_minus_pre_pp": 0.0
+    },
+    {
+      "input": "onsemiro-hwp",
+      "page": 38,
+      "historical": 93.89759,
+      "pre_source_current_environment": 93.74377,
+      "base_current_environment": 93.7303,
+      "base_minus_pre_pp": -0.01347
+    },
+    {
+      "input": "rebase8116-cell_nested_table_rows",
+      "page": 1,
+      "historical": 98.57262,
+      "pre_source_current_environment": 98.35047,
+      "base_current_environment": 98.35045,
+      "base_minus_pre_pp": -2e-05
+    }
+  ],
+  "note": "same-environment comparison of representative pages; historical wasm bytes differ, not proof of historic environment identity",
+  "logs": [
+    "output/pr-review/planet6897-20261026/rebase-8319/pre-rebase-wasm-build.log",
+    "output/pr-review/planet6897-20261026/rebase-8319/wasm-declines-pre-rebase-diagnostic.log",
+    "output/pr-review/planet6897-20261026/rebase-8319/wasm-declines-base-diagnostic.log",
+    "output/pr-review/planet6897-20261026/rebase-8319/pre-rebase-old-exporter.log"
+  ]
+}

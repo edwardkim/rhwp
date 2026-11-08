@@ -57,11 +57,20 @@ jobs:
           sparse-checkout: |
             src
             crates
+            vendor
+            assets
+            data
             tests
             samples
             tools
             bindings
             scripts
+            saved/blank2010.hwp
+            mydocs/manual/agent_knowledge_map.md
+            mydocs/manual/agent_troubleshooting_guide.md
+            mydocs/manual/recipes
+            mydocs/manual/gym_optional_tool.md
+            mydocs/tech/agent_roadmap/atlas_r1_r200.md
 
       - name: Gate on runner + samples
         id: gate
@@ -127,7 +136,7 @@ jobs:
 
       - name: Rust build cache
         if: ${{ steps.gate.outputs.should_run == 'true' }}
-        uses: Swatinem/rust-cache@f0d9c3887740aee45f6153b24b3a6b815192ec16 # v2.9.1
+        uses: Swatinem/rust-cache@c8037a86dde8214a8310e9f54a8fc61ab362aa31 # v2.9.3 이후 workspace root key 보정
         with:
           shared-key: layout-anomaly-advisory
           save-if: ${{ github.ref == 'refs/heads/devel' && github.event_name == 'schedule' }}
@@ -137,7 +146,7 @@ jobs:
         if: ${{ steps.gate.outputs.should_run == 'true' }}
         continue-on-error: true
         shell: bash
-        run: cargo build --release --bin rhwp
+        run: cargo build --locked --release --bin rhwp
 
       - name: Build-failed note
         if: ${{ steps.gate.outputs.should_run == 'true' && steps.build.outcome != 'success' }}
@@ -183,6 +192,26 @@ jobs:
         if: ${{ always() && hashFiles('layout-anomaly-advisory/summary.md') != '' }}
         shell: bash
         run: cat layout-anomaly-advisory/summary.md >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Record actual scan completion
+        if: ${{ always() }}
+        env:
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          SCAN_EXIT: ${{ steps.scan.outputs.scan_exit }}
+        run: |
+          python3 scripts/layout_advisory_verdict.py \
+            --report layout-anomaly-advisory/report.json \
+            --output layout-anomaly-advisory/verdict.json \
+            --build-outcome "$BUILD_OUTCOME" --scan-exit "$SCAN_EXIT"
+
+      - name: Upload execution verdict
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: layout-anomaly-advisory-verdict
+          path: layout-anomaly-advisory/verdict.json
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Upload advisory artifacts
         if: ${{ always() }}

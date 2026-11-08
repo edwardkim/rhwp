@@ -1,0 +1,318 @@
+[
+  {
+    "name": "jpx-alpha",
+    "prints": [
+      {
+        "kind": "hwpx-print",
+        "pdf_sha256": "65b637d2800ec7592dbaadc980a1a5d70af8848ec160453960ec722c010a2fe2",
+        "images": [
+          {
+            "xref": 11,
+            "mask_xref": 0,
+            "dictionary": {
+              "Width": [
+                "int",
+                "4"
+              ],
+              "Height": [
+                "int",
+                "2"
+              ],
+              "BitsPerComponent": [
+                "int",
+                "1"
+              ],
+              "Mask": [
+                "null",
+                "null"
+              ],
+              "SMask": [
+                "null",
+                "null"
+              ]
+            },
+            "raw_sha256": "697e4d3ada1391630ef2bc671497f14138f3971c42f949272bad078973b19ac2"
+          },
+          {
+            "xref": 12,
+            "mask_xref": 11,
+            "dictionary": {
+              "Width": [
+                "int",
+                "4"
+              ],
+              "Height": [
+                "int",
+                "2"
+              ],
+              "BitsPerComponent": [
+                "int",
+                "8"
+              ],
+              "Mask": [
+                "xref",
+                "11 0 R"
+              ],
+              "SMask": [
+                "null",
+                "null"
+              ]
+            },
+            "raw_sha256": "4ddc7ad9dd633eba7d399b214b1246036b49b122749a233d2473b56b5422a5cd",
+            "mask_dictionary": {
+              "Width": [
+                "int",
+                "4"
+              ],
+              "Height": [
+                "int",
+                "2"
+              ],
+              "BitsPerComponent": [
+                "int",
+                "1"
+              ]
+            },
+            "mask_hex": "c0e0"
+          }
+        ],
+        "page_pixmap_sha256": "c349f827804cc503ea47fd7dce9ed8b0a7dba8b14b8a1db4a7be787c542a2623"
+      },
+      {
+        "kind": "hancom-hwp-print",
+        "pdf_sha256": "0afd2c4e7a5ebd17537b86d3c3089bbab800ce9620c4e137a70923748465ab21",
+        "images": [
+          {
+            "xref": 11,
+            "mask_xref": 0,
+            "dictionary": {
+              "Width": [
+                "int",
+                "4"
+              ],
+              "Height": [
+                "int",
+                "2"
+              ],
+              "BitsPerComponent": [
+                "int",
+                "1"
+              ],
+              "Mask": [
+                "null",
+                "null"
+              ],
+              "SMask": [
+                "null",
+                "null"
+              ]
+            },
+            "raw_sha256": "697e4d3ada1391630ef2bc671497f14138f3971c42f949272bad078973b19ac2"
+          },
+          {
+            "xref": 12,
+            "mask_xref": 11,
+            "dictionary": {
+              "Width": [
+                "int",
+                "4"
+              ],
+              "Height": [
+                "int",
+                "2"
+              ],
+              "BitsPerComponent": [
+                "int",
+                "8"
+              ],
+              "Mask": [
+                "xref",
+                "11 0 R"
+              ],
+              "SMask": [
+                "null",
+                "null"
+              ]
+            },
+            "raw_sha256": "4ddc7ad9dd633eba7d399b214b1246036b49b122749a233d2473b56b5422a5cd",
+            "mask_dictionary": {
+              "Width": [
+                "int",
+                "4"
+              ],
+              "Height": [
+                "int",
+                "2"
+              ],
+              "BitsPerComponent": [
+                "int",
+                "1"
+              ]
+            },
+            "mask_hex": "c0e0"
+          }
+        ],
+        "page_pixmap_sha256": "c349f827804cc503ea47fd7dce9ed8b0a7dba8b14b8a1db4a7be787c542a2623"
+      }
+    ],
+    "same_printed_pixels": true
+  },
+  {
+    "name": "jpx-premult",
+    "prints": [
+      {
+        "kind": "hwpx-print",
+        "pdf_sha256": "fd0e676fbd0b32cb8bdc4eaed5f7e00f80c8cb1e95d531776a876f71c28a0825",
+        "images": [
+          {
+            "xref": 11,
+            "mask_xref": 0,
+            "dictionary": {
+              "Width": [
+                "int",
+                "4"
+              ],
+              "Height": [
+                "int",
+                "2"
+              ],
+              "BitsPerComponent": [
+                "int",
+                "1"
+              ],
+              "Mask": [
+                "null",
+                "null"
+              ],
+              "SMask": [
+                "null",
+                "null"
+              ]
+            },
+            "raw_sha256": "9e1162334348838c9273520fc204a3fc7be856e6bb6933468f9bdfd2292e52fb"
+          },
+          {
+            "xref": 12,
+            "mask_xref": 11,
+            "dictionary": {
+              "Width": [
+                "int",
+                "4"
+              ],
+              "Height": [
+                "int",
+                "2"
+              ],
+              "BitsPerComponent": [
+                "int",
+                "8"
+              ],
+              "Mask": [
+                "xref",
+                "11 0 R"
+              ],
+              "SMask": [
+                "null",
+                "null"
+              ]
+            },
+            "raw_sha256": "a0375bfe9bab7ec2166819aad2a8d9e7dc30b068b769fc27a99c8703be7c4fa8",
+            "mask_dictionary": {
+              "Width": [
+                "int",
+                "4"
+              ],
+              "Height": [
+                "int",
+                "2"
+              ],
+              "BitsPerComponent": [
+                "int",
+                "1"
+              ]
+            },
+            "mask_hex": "50d0"
+          }
+        ],
+        "page_pixmap_sha256": "d6224360c5afda1e207c6c8bb6b58f597b3b7c6f82521a4e0771ebf9e5ef2d7a"
+      },
+      {
+        "kind": "hancom-hwp-print",
+        "pdf_sha256": "feda6d8c6db8a496ff0ca7b7bb07636f4b5feb03bbd6ce46b454ec67c3e4366d",
+        "images": [
+          {
+            "xref": 11,
+            "mask_xref": 0,
+            "dictionary": {
+              "Width": [
+                "int",
+                "4"
+              ],
+              "Height": [
+                "int",
+                "2"
+              ],
+              "BitsPerComponent": [
+                "int",
+                "1"
+              ],
+              "Mask": [
+                "null",
+                "null"
+              ],
+              "SMask": [
+                "null",
+                "null"
+              ]
+            },
+            "raw_sha256": "9e1162334348838c9273520fc204a3fc7be856e6bb6933468f9bdfd2292e52fb"
+          },
+          {
+            "xref": 12,
+            "mask_xref": 11,
+            "dictionary": {
+              "Width": [
+                "int",
+                "4"
+              ],
+              "Height": [
+                "int",
+                "2"
+              ],
+              "BitsPerComponent": [
+                "int",
+                "8"
+              ],
+              "Mask": [
+                "xref",
+                "11 0 R"
+              ],
+              "SMask": [
+                "null",
+                "null"
+              ]
+            },
+            "raw_sha256": "a0375bfe9bab7ec2166819aad2a8d9e7dc30b068b769fc27a99c8703be7c4fa8",
+            "mask_dictionary": {
+              "Width": [
+                "int",
+                "4"
+              ],
+              "Height": [
+                "int",
+                "2"
+              ],
+              "BitsPerComponent": [
+                "int",
+                "1"
+              ]
+            },
+            "mask_hex": "50d0"
+          }
+        ],
+        "page_pixmap_sha256": "d6224360c5afda1e207c6c8bb6b58f597b3b7c6f82521a4e0771ebf9e5ef2d7a"
+      }
+    ],
+    "same_printed_pixels": true
+  }
+]

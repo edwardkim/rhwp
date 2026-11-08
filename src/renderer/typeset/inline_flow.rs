@@ -19,35 +19,61 @@ impl TypesetEngine {
         styles: &ResolvedStyleSet,
         tables: &[MeasuredTable],
     ) -> bool {
+        match self.typeset_inline_flow_with_storage(
+            st,
+            para_index,
+            para,
+            styles,
+            tables,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(super) fn typeset_inline_flow_with_storage<S: crate::storage::Storage>(
+        &self,
+        st: &mut TypesetState,
+        para_index: usize,
+        para: &Paragraph,
+        styles: &ResolvedStyleSet,
+        tables: &[MeasuredTable],
+        storage: &S,
+    ) -> Result<bool, S::Error> {
         let column = st.inline_flow_column();
-        let table_text_rows = inline_flow::supports_table_text_rows(para);
+        let table_text_rows = inline_flow::supports_table_text_rows_with_storage(para, storage)?;
+        let picture_rows = inline_flow::supports_picture_rows(para);
+        // [#8282] 저장 줄이 있는 본문은 증언 없는 어울림 개체가 있을 때만 후보다.
+        let reflow_stored_text =
+            !st.unwitnessed_side_wraps.is_empty() && inline_flow::supports_stored_plain_text(para);
         if !inline_flow::supports(para, super::super::px_to_hwpunit(column.width, self.dpi))
             && !inline_flow::supports_plain_text(para)
+            && !inline_flow::supports_square_float_host(para)
+            && !reflow_stored_text
         {
-            return false;
+            return Ok(false);
         }
         if !table_text_rows
+            && !picture_rows
             && st.side_wrap_exclusions.is_empty()
-            && !para.controls.iter().any(|c| {
-                matches!(c, Control::Picture(p) if !p.common.treat_as_char
-                && p.common.text_wrap == crate::model::shape::TextWrap::Square)
-            })
+            && !para
+                .controls
+                .iter()
+                .any(crate::renderer::composer::control_is_square_float_object)
         {
             // 어울림 입력이 없는 기존 inline 문단에서는 토큰/plan도 만들지 않는다.
-            return false;
+            return Ok(false);
         }
         let build = |st: &TypesetState, start: f64, preceding: bool| {
-            plan::build_plan(
-                st.inline_flow_input(start, preceding),
-                para,
-                para_index,
-                styles,
-                tables,
-                self.dpi,
+            let mut input = st.inline_flow_input(start, preceding);
+            input.reflow_stored_text = reflow_stored_text;
+            plan::build_plan_with_storage(
+                input, para, para_index, styles, tables, self.dpi, storage,
             )
         };
-        let Some(mut plan) = build(st, st.current_height, true) else {
-            return false;
+        let Some(mut plan) = build(st, st.current_height, true)? else {
+            return Ok(false);
         };
         // An unchanged plain row can continue a shared cursor, but an old
         // exclusion alone does not transfer ownership from a legacy paragraph.
@@ -58,30 +84,62 @@ impl TypesetEngine {
             .last()
             .and_then(|item| st.inline_flow_plans.get(&item.para_index()))
             .is_some_and(|previous| (previous.end - st.current_height).abs() < 0.01);
-        if !table_text_rows && !plan.carved && (plan.text_rows.is_none() || !follows_shared_rows) {
-            return false;
+        if !table_text_rows
+            && !picture_rows
+            && !plan.carved
+            && (plan.text_rows.is_none() || !follows_shared_rows)
+        {
+            return Ok(false);
         }
-        if plan.end > st.available_height() + 0.01 {
+        if reflow_stored_text
+            && !plan.carved_by_any(
+                st.unwitnessed_side_wraps
+                    .iter()
+                    .filter_map(|key| st.side_wrap_exclusions.get(key)),
+                column.y,
+                self.dpi,
+            )
+        {
+            // 저장 줄은 증언된 개체에 대해서는 정본이다. 증언 없는 개체와 겹칠 때만 대체한다.
+            return Ok(false);
+        }
+        // 마지막 줄 뒤 간격은 다음 흐름의 전진량이다. 표 경로와 같은
+        // 실제 행·개체 하단으로 수용하고, 확정 뒤에는 end 전체를 전진한다.
+        if plan.occupied_end() > st.available_height() + 0.01 {
+            // 현재 단에 앞 행이 실제로 들어가면 문단 전체를 다음 단으로 옮기지
+            // 않는다. 아직 inline plan의 부분 행 소유자가 없으므로, 제외 영역과
+            // 부동 도형에 의존하지 않는 경우 기존 문단 분할 소유자에게 맡긴다.
+            // 그 소유자는 측정한 줄 범위를 paint에도 전달한다.
+            if picture_rows
+                && !plan.carved
+                && plan.floating_shapes.is_empty()
+                && plan.rows.len() > 1
+                && plan.rows[0].y + plan.rows[0].height <= st.available_height()
+            {
+                return Ok(false);
+            }
             // 새 단 후보가 실제로 수용 가능할 때만 상태를 전진한다.
             // 한 단보다 큰 혼합 문단의 fragment owner는 아직 기존 경로에 있다.
-            let Some(candidate) = build(st, 0.0, false) else {
-                return false;
+            let Some(candidate) = build(st, 0.0, false)? else {
+                return Ok(false);
             };
-            if candidate.end > st.base_available_height() + 0.01 || st.current_items.is_empty() {
-                return false;
+            if candidate.occupied_end() > st.base_available_height() + 0.01
+                || st.current_items.is_empty()
+            {
+                return Ok(false);
             }
-            st.advance_column_or_new_page();
-            let Some(candidate) = build(st, st.current_height, true) else {
-                return false;
+            st.advance_column_or_new_page_with_storage(storage)?;
+            let Some(candidate) = build(st, st.current_height, true)? else {
+                return Ok(false);
             };
-            if candidate.end > st.available_height() + 0.01 {
+            if candidate.occupied_end() > st.available_height() + 0.01 {
                 // 실제 다음 단의 폭/각주 예산이 예비 후보와 다르면 기존 분할기로 넘긴다.
                 // 수용 불가능한 plan을 확정 metadata로 게시하지 않는다.
-                return false;
+                return Ok(false);
             }
             plan = candidate;
         }
-        st.commit_inline_flow(para_index, plan);
-        true
+        st.commit_inline_flow_with_storage(para_index, plan, storage)?;
+        Ok(true)
     }
 }

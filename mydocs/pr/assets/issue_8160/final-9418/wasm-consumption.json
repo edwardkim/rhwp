@@ -1,0 +1,27 @@
+{
+  "source_sha": "5df67d3299befb467a49dc4eaafd12d6e1877e2d",
+  "records": [
+    {
+      "source_sha": "5df67d3299befb467a49dc4eaafd12d6e1877e2d",
+      "profile": "release",
+      "expected_sha256": "c6a073a989a47d58198d1c85aadc39060744f7973d36ff5aa8cb59b24c00a7cd",
+      "page": "http://127.0.0.1:7801/",
+      "capture_method": "actual-initialization-response-at-loadingFinished",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7801/@fs/home/tsjang/rhwp-8160-wasm-candidate29/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "bytes": 22520674,
+          "sha256": "c6a073a989a47d58198d1c85aadc39060744f7973d36ff5aa8cb59b24c00a7cd"
+        },
+        {
+          "url": "http://127.0.0.1:7801/@fs/home/tsjang/rhwp-8160-wasm-candidate29/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "bytes": 22520674,
+          "sha256": "c6a073a989a47d58198d1c85aadc39060744f7973d36ff5aa8cb59b24c00a7cd"
+        }
+      ]
+    }
+  ]
+}

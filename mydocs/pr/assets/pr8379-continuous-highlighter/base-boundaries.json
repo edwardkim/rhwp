@@ -1,0 +1,40 @@
+{
+  "rows": [
+    {
+      "case": "F5-cell-block-palette",
+      "before": {
+        "mode": false,
+        "active": false,
+        "textSelection": false,
+        "cellBlock": {
+          "sec": 0,
+          "ppi": 0,
+          "ci": 2,
+          "cellIndices": [
+            0
+          ]
+        },
+        "undo": 2
+      },
+      "after": {
+        "mode": false,
+        "active": false,
+        "textSelection": false,
+        "cellBlock": {
+          "sec": 0,
+          "ppi": 0,
+          "ci": 2,
+          "cellIndices": [
+            0
+          ]
+        },
+        "undo": 3
+      },
+      "beforeShade": "#ffffff",
+      "afterShade": "#00ff00",
+      "expected": "Selected cell text receives green immediately; continuous mode stays off.",
+      "pass": true
+    }
+  ],
+  "pageErrors": []
+}

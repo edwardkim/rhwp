@@ -691,18 +691,86 @@
       ]
     },
     "export-svg": {
-      "untrusted": [],
-      "origins": {},
-      "note": "매니페스트는 산출 경로·바이트·쪽수뿐이다. 문서 텍스트는 SVG 파일 안에 있고 봉투에는 없다.",
-      "category": "엔진-전용",
-      "forbiddenSlots": []
+      "untrusted": [
+        "nativeFontSupply",
+        "fontEnvironment"
+      ],
+      "origins": {
+        "nativeFontSupply": "native_webfonts::prepare — DocInfo 글꼴명·명시 대체 이름을 담는 공급 보고와 문서별 글꼴 매핑",
+        "fontEnvironment": "apply_font_environment — DocInfo 글꼴명·명시 대체 이름에서 구성한 substitutions·selectedPrograms 등의 글꼴 환경"
+      },
+      "note": "산출 경로·바이트·쪽수는 엔진 값이고 본문은 SVG 파일에 있다. 선택적으로 실리는 글꼴 공급 보고·환경에는 문서가 정한 이름이 포함된다.",
+      "category": "서식-메타",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_argument_path",
+        "tool_name",
+        "shell_command",
+        "url_or_request_body",
+        "run_plan",
+        "privilege_decision",
+        "log_or_issue",
+        "log_title",
+        "output_filename",
+        "multimodal_instruction",
+        "next_query"
+      ]
+    },
+    "export-png": {
+      "untrusted": [
+        "nativeFontSupply",
+        "fontEnvironment",
+        "observedFontFallbacks",
+        "declaredFontEnvironment"
+      ],
+      "origins": {
+        "nativeFontSupply": "native_webfonts::prepare — DocInfo 글꼴명·명시 대체 이름을 담는 공급 보고와 문서별 글꼴 매핑",
+        "fontEnvironment": "apply_font_environment — DocInfo 글꼴명·명시 대체 이름에서 구성한 substitutions·selectedPrograms 등의 글꼴 환경",
+        "observedFontFallbacks": "observed_font_fallbacks — 실제 공급에서 관측한 문서의 원래 글꼴명과 대체 이름",
+        "declaredFontEnvironment": "core.font_environment — 대체 관측에 함께 실리는 선언 환경과 문서 글꼴 매핑"
+      },
+      "note": "본문은 PNG와 별도 render tree 파일에 있다. 글꼴 공급 보고·환경의 이름과 실제 대체 관측은 문서 파생이며 metadata-only 응답에도 실제 포함될 때 표지한다.",
+      "category": "서식-메타",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_argument_path",
+        "tool_name",
+        "shell_command",
+        "url_or_request_body",
+        "run_plan",
+        "privilege_decision",
+        "log_or_issue",
+        "log_title",
+        "output_filename",
+        "multimodal_instruction",
+        "next_query"
+      ]
     },
     "export-pdf": {
-      "untrusted": [],
-      "origins": {},
-      "note": "매니페스트는 backend·경로·바이트·쪽수뿐이다.",
-      "category": "엔진-전용",
-      "forbiddenSlots": []
+      "untrusted": [
+        "nativeFontSupply",
+        "fontEnvironment"
+      ],
+      "origins": {
+        "nativeFontSupply": "native_webfonts::prepare — DocInfo 글꼴명·명시 대체 이름을 담는 공급 보고와 문서별 글꼴 매핑",
+        "fontEnvironment": "apply_font_environment — DocInfo 글꼴명·명시 대체 이름에서 구성한 substitutions·selectedPrograms 등의 글꼴 환경"
+      },
+      "note": "backend·경로·바이트·쪽수는 엔진 값이다. 선택적인 글꼴 공급 보고의 글꼴명·대체 이름은 문서가 정한 문자열이다.",
+      "category": "서식-메타",
+      "forbiddenSlots": [
+        "system_prompt",
+        "tool_argument_path",
+        "tool_name",
+        "shell_command",
+        "url_or_request_body",
+        "run_plan",
+        "privilege_decision",
+        "log_or_issue",
+        "log_title",
+        "output_filename",
+        "multimodal_instruction",
+        "next_query"
+      ]
     },
     "export-markdown": {
       "untrusted": [],
@@ -808,6 +876,22 @@
       "note": "문서를 열지 않는다 — run 계획서 문법의 자기서술(JSON Schema)이다.",
       "category": "엔진-전용",
       "forbiddenSlots": []
+    },
+    "import-pdf": {
+      "note": "본문은 저장 파일에 있다. 진단의 원본 좌표는 문서 파생 값이며, 경고·문단 정책은 엔진 상수다.",
+      "origins": {
+        "diagnostics.pages": "PDF MediaBox와 추출 span의 원본 좌표·쪽 대응"
+      },
+      "untrusted": [
+        "diagnostics.pages"
+      ],
+      "category": "특수-표면",
+      "forbiddenSlots": [
+        "system_prompt",
+        "output_filename",
+        "log_title",
+        "tool_argument_path"
+      ]
     }
   }
 }

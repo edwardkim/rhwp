@@ -1,0 +1,3 @@
+# 정본 TSV의 CRLF와 SHA-256을 Windows에서도 변환 없이 보존한다.
+# 줄 끝 CR만 인정하며 일반적인 후행 공백 검사는 유지한다.
+*.tsv -text whitespace=cr-at-eol

@@ -1,0 +1,65 @@
+{
+  "rows": [
+    {
+      "operation": "original",
+      "pages": 1,
+      "base_native": "98.05964",
+      "candidate_native": "98.05964",
+      "drop_native": "0.00000",
+      "base_wasm": "97.90605",
+      "candidate_wasm": "97.90605",
+      "drop_wasm": "0.00000"
+    },
+    {
+      "operation": "insert",
+      "pages": 1,
+      "base_native": "98.04957",
+      "candidate_native": "98.04957",
+      "drop_native": "0.00000",
+      "base_wasm": "97.89441",
+      "candidate_wasm": "97.89441",
+      "drop_wasm": "0.00000",
+      "base_live_canvas": "97.32876",
+      "candidate_live_canvas": "97.89491"
+    },
+    {
+      "operation": "delete",
+      "pages": 1,
+      "base_native": "98.0465",
+      "candidate_native": "98.0465",
+      "drop_native": "0.0000",
+      "base_wasm": "97.89252",
+      "candidate_wasm": "97.89252",
+      "drop_wasm": "0.00000",
+      "base_live_canvas": "97.89252",
+      "candidate_live_canvas": "97.89252"
+    },
+    {
+      "operation": "split",
+      "pages": 1,
+      "base_native": "98.09736",
+      "candidate_native": "98.09736",
+      "drop_native": "0.00000",
+      "base_wasm": "98.00278",
+      "candidate_wasm": "98.00278",
+      "drop_wasm": "0.00000",
+      "base_live_canvas": "98.00278",
+      "candidate_live_canvas": "98.00278"
+    },
+    {
+      "operation": "split-merge",
+      "pages": 1,
+      "base_native": "98.05964",
+      "candidate_native": "98.05964",
+      "drop_native": "0.00000",
+      "base_wasm": "97.90605",
+      "candidate_wasm": "97.90605",
+      "drop_wasm": "0.00000",
+      "base_live_canvas": "97.90605",
+      "candidate_live_canvas": "97.90605"
+    }
+  ],
+  "aboveTwoPointDrop": [],
+  "allPageCountsAgree": true,
+  "allPagesAtLeast90": true
+}

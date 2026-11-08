@@ -49,6 +49,29 @@
   flex-wrap: wrap;
 }
 
+.local-font-list-search { box-sizing: border-box; width: 100%; text-align: left; }
+.local-font-list-scroll { max-height: 55vh; overflow: auto; }
+.local-font-list-table {
+  width: 100%;
+  min-width: 640px;
+  table-layout: fixed;
+  border-collapse: collapse;
+  text-align: left;
+}
+.local-font-list-table th:nth-child(1) { width: 21%; }
+.local-font-list-table th:nth-child(2) { width: 46%; }
+.local-font-list-table th:nth-child(3) { width: 11%; }
+.local-font-list-table th:nth-child(4) { width: 22%; }
+.local-font-list-table th, .local-font-list-table td {
+  box-sizing: border-box;
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+.local-font-list-table th { position: sticky; top: 0; background: var(--color-surface); }
+
 .opt-local-status {
   font-size: var(--font-size-base);
   color: var(--color-text-muted);

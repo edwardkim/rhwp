@@ -1,0 +1,48 @@
+{
+  "state": "complete",
+  "pid": 212626,
+  "started_at": 1791914392.8273456,
+  "jobs": {
+    "sample16-main": {
+      "job_id": "2c87563f-9785-47a9-9c72-6fbd3de0ce56",
+      "state": "succeeded",
+      "input_path": "/home/tsjang/rhwp/samples/hwp3-sample16-hwp5.hwp",
+      "input_sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45",
+      "output_path": "/home/tsjang/rhwp/pdf/issue7642-sample16-legacy-print-recheck/hwp3-sample16-hwp5-2020.pdf",
+      "sha256": "11ad7429bf30c28baf7a594ff2a65bbd5e3e54668c37f3e61d8aca5105497405",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+      "pages": null,
+      "last_saved_with": {
+        "confidence": "metadata",
+        "product": "hancom-office-2024",
+        "version": "13.0.0.3457"
+      },
+      "page_count": 64,
+      "purpose": "이전 default 2022 호환 검사의 2020 출력 진단; 2024 저장본의 공식 2024 기준을 대체하지 않음"
+    },
+    "sample16-2022": {
+      "job_id": "140068d8-c342-40b0-b3c4-7dfdf2706c39",
+      "state": "succeeded",
+      "input_path": "/home/tsjang/rhwp/samples/hwp3-sample16-hwp5-2022.hwp",
+      "input_sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+      "output_path": "/home/tsjang/rhwp/pdf/issue7642-sample16-legacy-print-recheck/hwp3-sample16-hwp5-2022-2020.pdf",
+      "sha256": "cf332d3372d9b5423b5941356b7685afc5c23865f8d8f4c1eb9131c4eca71bae",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+      "pages": null,
+      "last_saved_with": {
+        "confidence": "metadata",
+        "product": "hancom-office-2022",
+        "version": "12.0.0.535"
+      },
+      "page_count": 64,
+      "purpose": "2022 저장본에 대응하는 2020 Print 기준"
+    }
+  },
+  "elapsed_seconds": 110.62866592407227
+}

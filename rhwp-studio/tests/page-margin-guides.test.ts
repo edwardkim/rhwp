@@ -194,3 +194,30 @@ test('PageRenderer forwards the focused patch to the margin-guide clip', async (
     await vite.close();
   }
 });
+
+
+for (const profile of ['screen', 'print'] as const) test(`focused ${profile} replay keeps content and profile-owned guides`, async () => {
+  const vite = await createServer({ root: fileURLToPath(new URL('..', import.meta.url)),
+    appType: 'custom', logLevel: 'silent', server: { middlewareMode: true } });
+  try {
+    const { PageRenderer } = await vite.ssrLoadModule('/src/view/page-renderer.ts');
+    const { canvas, calls } = recordingCanvas();
+    const renderedProfiles: string[] = [];
+    const wasm = {
+      getPageInfo: () => pageInfo,
+      getPageOverlayImages: () => JSON.stringify({ hasBehind: false, hasFront: false,
+        imageCount: 0, rawSvgCount: 0, flowImageCount: 0, flowRawSvgCount: 0,
+        behind: [], front: [] }),
+      renderPagePatchToCanvasFiltered(...args: unknown[]) { renderedProfiles.push(String(args.at(-1))); },
+    };
+    const renderer = new PageRenderer(wasm, 'canvas2d', profile);
+    const result = renderer.renderPage(0, canvas, 2, 1, 1, { reason: 'text-edit',
+      allowStaticOverlayReuse: true,
+      focusedPagePatch: { pageIndex: 0, x: 80, y: 120, width: 240, height: 32 },
+    });
+    assert.equal(result.needsTextEditStaticLayerVerification, false);
+    assert.deepEqual(renderedProfiles, [profile], 'Print도 문서 paint를 실제 실행해야 한다');
+    assert.equal(calls.filter(call => call.name === 'stroke').length, profile === 'screen' ? 1 : 0,
+      '편집용 여백 표시는 화면에만 그리며 인쇄 내용에 합성하지 않는다');
+  } finally { await vite.close(); }
+});

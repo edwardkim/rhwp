@@ -51,7 +51,9 @@ last_verified: 2026-08-22
 7. `heuristic`
 
 cluster continuation, inline object placeholder, HWP PUA filler, figure space와 tab advance는 font metric
-coverage 대상이 아니므로 `not-applicable`로 분리한다. 새 `widthSource`나 모순된
+coverage 대상이 아니므로 `not-applicable`로 분리한다. `measuredOriginalGlyph`는 원본 글꼴의 부분 실측 advance를 소비한 `hit`이며
+`measured-overlay`에 포함합니다. 정적 전체 metric entry나 대체 글꼴로 오인하지 않습니다.
+이는 진단 분류이며 원본 글꼴 선택·폭 계산·paint를 바꾸지 않습니다. 새 `widthSource`나 모순된
 `characterMatch`·`metricEntry` 조합은 임의 분류하지 않고 실패한다.
 
 ## 분모

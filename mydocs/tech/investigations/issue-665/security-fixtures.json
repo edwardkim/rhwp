@@ -1,0 +1,511 @@
+{
+  "documents": 24,
+  "detector_runs": 72,
+  "input_scope": "tests/fixtures/issue665 (separate from samples-only regression)",
+  "results": [
+    {
+      "input": "tests/fixtures/issue665/generated/above.hwpx",
+      "sha256": "9e6d2e66c380f9c22259a67c1c28743e5ced9887f988352c82603f8e70a92516",
+      "detector": "hidden-text",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/above.hwpx",
+      "sha256": "9e6d2e66c380f9c22259a67c1c28743e5ced9887f988352c82603f8e70a92516",
+      "detector": "injection",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/above.hwpx",
+      "sha256": "9e6d2e66c380f9c22259a67c1c28743e5ced9887f988352c82603f8e70a92516",
+      "detector": "unicode",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/below.hwpx",
+      "sha256": "8ce905a532198ee59893b952f1360e13a173e4267777a1d32a87a25d62c0c589",
+      "detector": "hidden-text",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/below.hwpx",
+      "sha256": "8ce905a532198ee59893b952f1360e13a173e4267777a1d32a87a25d62c0c589",
+      "detector": "injection",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/below.hwpx",
+      "sha256": "8ce905a532198ee59893b952f1360e13a173e4267777a1d32a87a25d62c0c589",
+      "detector": "unicode",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/between.hwpx",
+      "sha256": "d8abaf2fddbd0e3105c6ed87dc8e2b94a17603fae51ba039c998d16301d2aaeb",
+      "detector": "hidden-text",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/between.hwpx",
+      "sha256": "d8abaf2fddbd0e3105c6ed87dc8e2b94a17603fae51ba039c998d16301d2aaeb",
+      "detector": "injection",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/between.hwpx",
+      "sha256": "d8abaf2fddbd0e3105c6ed87dc8e2b94a17603fae51ba039c998d16301d2aaeb",
+      "detector": "unicode",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/format-bmp.hwpx",
+      "sha256": "b9ee9649b2935618451abbda1b19306eb81ea7b7b74a1899f5efe4567a69d500",
+      "detector": "hidden-text",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/format-bmp.hwpx",
+      "sha256": "b9ee9649b2935618451abbda1b19306eb81ea7b7b74a1899f5efe4567a69d500",
+      "detector": "injection",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/format-bmp.hwpx",
+      "sha256": "b9ee9649b2935618451abbda1b19306eb81ea7b7b74a1899f5efe4567a69d500",
+      "detector": "unicode",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/format-gif.hwpx",
+      "sha256": "04e7b11fd2f561c0463faba63f7d9d8aa2d82877aebe627ae2497104e0e06f30",
+      "detector": "hidden-text",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/format-gif.hwpx",
+      "sha256": "04e7b11fd2f561c0463faba63f7d9d8aa2d82877aebe627ae2497104e0e06f30",
+      "detector": "injection",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/format-gif.hwpx",
+      "sha256": "04e7b11fd2f561c0463faba63f7d9d8aa2d82877aebe627ae2497104e0e06f30",
+      "detector": "unicode",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/format-jpg.hwpx",
+      "sha256": "a7e7d6c838f3b14ac8bf164acf64faed6c57b95652fdfc1cb2c1159f2aae0e48",
+      "detector": "hidden-text",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/format-jpg.hwpx",
+      "sha256": "a7e7d6c838f3b14ac8bf164acf64faed6c57b95652fdfc1cb2c1159f2aae0e48",
+      "detector": "injection",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/format-jpg.hwpx",
+      "sha256": "a7e7d6c838f3b14ac8bf164acf64faed6c57b95652fdfc1cb2c1159f2aae0e48",
+      "detector": "unicode",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/format-tif.hwpx",
+      "sha256": "44167cf9475dd7869196daee175c29e7127c766d68e53c2ef4bacb98e2234db5",
+      "detector": "hidden-text",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/format-tif.hwpx",
+      "sha256": "44167cf9475dd7869196daee175c29e7127c766d68e53c2ef4bacb98e2234db5",
+      "detector": "injection",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/format-tif.hwpx",
+      "sha256": "44167cf9475dd7869196daee175c29e7127c766d68e53c2ef4bacb98e2234db5",
+      "detector": "unicode",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/inline.hwpx",
+      "sha256": "115a33c6aff2a6231b27124f076fef1f38766f5f12a91450bdf4049c07593f19",
+      "detector": "hidden-text",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/inline.hwpx",
+      "sha256": "115a33c6aff2a6231b27124f076fef1f38766f5f12a91450bdf4049c07593f19",
+      "detector": "injection",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/inline.hwpx",
+      "sha256": "115a33c6aff2a6231b27124f076fef1f38766f5f12a91450bdf4049c07593f19",
+      "detector": "unicode",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/mixed.hwpx",
+      "sha256": "c30e5fa62e60c0cb879a33b7a416e7b33c0c39e57948e77c14ebd5712291c870",
+      "detector": "hidden-text",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/mixed.hwpx",
+      "sha256": "c30e5fa62e60c0cb879a33b7a416e7b33c0c39e57948e77c14ebd5712291c870",
+      "detector": "injection",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/mixed.hwpx",
+      "sha256": "c30e5fa62e60c0cb879a33b7a416e7b33c0c39e57948e77c14ebd5712291c870",
+      "detector": "unicode",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/runs-roundtrip.hwp",
+      "sha256": "7ce5bd6c46df17194e6d9249a3cf21ee0b67398eaa21f75176233288738c2c45",
+      "detector": "hidden-text",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/runs-roundtrip.hwp",
+      "sha256": "7ce5bd6c46df17194e6d9249a3cf21ee0b67398eaa21f75176233288738c2c45",
+      "detector": "injection",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/runs-roundtrip.hwp",
+      "sha256": "7ce5bd6c46df17194e6d9249a3cf21ee0b67398eaa21f75176233288738c2c45",
+      "detector": "unicode",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/runs-roundtrip.hwpx",
+      "sha256": "8f473e623d01a881578474d5db893d3b7b4365816afb562d887053bb2f83af3e",
+      "detector": "hidden-text",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/runs-roundtrip.hwpx",
+      "sha256": "8f473e623d01a881578474d5db893d3b7b4365816afb562d887053bb2f83af3e",
+      "detector": "injection",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/runs-roundtrip.hwpx",
+      "sha256": "8f473e623d01a881578474d5db893d3b7b4365816afb562d887053bb2f83af3e",
+      "detector": "unicode",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/runs.hwpx",
+      "sha256": "43d3a78e0d9853350bb886d292de0b3fbf20fc9426a699c3c8ee10625083cd9a",
+      "detector": "hidden-text",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/runs.hwpx",
+      "sha256": "43d3a78e0d9853350bb886d292de0b3fbf20fc9426a699c3c8ee10625083cd9a",
+      "detector": "injection",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/runs.hwpx",
+      "sha256": "43d3a78e0d9853350bb886d292de0b3fbf20fc9426a699c3c8ee10625083cd9a",
+      "detector": "unicode",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/shared-boxed.hwpx",
+      "sha256": "01e6f22c9543213e400e4db454f9c6a145a28748b983d02e2ffea6203e7717c4",
+      "detector": "hidden-text",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/shared-boxed.hwpx",
+      "sha256": "01e6f22c9543213e400e4db454f9c6a145a28748b983d02e2ffea6203e7717c4",
+      "detector": "injection",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/generated/shared-boxed.hwpx",
+      "sha256": "01e6f22c9543213e400e4db454f9c6a145a28748b983d02e2ffea6203e7717c4",
+      "detector": "unicode",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/above-reference.hwpx",
+      "sha256": "c25c1bd7b1b63da09f2508d734ed36e545e15ba8f9808b182dd8c0f900c7ec5b",
+      "detector": "hidden-text",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/above-reference.hwpx",
+      "sha256": "c25c1bd7b1b63da09f2508d734ed36e545e15ba8f9808b182dd8c0f900c7ec5b",
+      "detector": "injection",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/above-reference.hwpx",
+      "sha256": "c25c1bd7b1b63da09f2508d734ed36e545e15ba8f9808b182dd8c0f900c7ec5b",
+      "detector": "unicode",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/below-reference.hwpx",
+      "sha256": "3e02a345f51064378a09258b7c801b8b1e480cf34f997b8dce31ba07807f902b",
+      "detector": "hidden-text",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/below-reference.hwpx",
+      "sha256": "3e02a345f51064378a09258b7c801b8b1e480cf34f997b8dce31ba07807f902b",
+      "detector": "injection",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/below-reference.hwpx",
+      "sha256": "3e02a345f51064378a09258b7c801b8b1e480cf34f997b8dce31ba07807f902b",
+      "detector": "unicode",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/between-reference.hwpx",
+      "sha256": "8bb46c608103eae874098b59b163275f852a32cb19a84a3caf04e0bdc70427c1",
+      "detector": "hidden-text",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/between-reference.hwpx",
+      "sha256": "8bb46c608103eae874098b59b163275f852a32cb19a84a3caf04e0bdc70427c1",
+      "detector": "injection",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/between-reference.hwpx",
+      "sha256": "8bb46c608103eae874098b59b163275f852a32cb19a84a3caf04e0bdc70427c1",
+      "detector": "unicode",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/format-bmp-reference.hwpx",
+      "sha256": "2cb578edaca119168d86e7aec7a8a5273307a91552c06b010281d7456f2b18fd",
+      "detector": "hidden-text",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/format-bmp-reference.hwpx",
+      "sha256": "2cb578edaca119168d86e7aec7a8a5273307a91552c06b010281d7456f2b18fd",
+      "detector": "injection",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/format-bmp-reference.hwpx",
+      "sha256": "2cb578edaca119168d86e7aec7a8a5273307a91552c06b010281d7456f2b18fd",
+      "detector": "unicode",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/format-gif-reference.hwpx",
+      "sha256": "d737496fbb64fae50c4bb325da605d7254d6ed7f7d54449c2e0badd298d5c470",
+      "detector": "hidden-text",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/format-gif-reference.hwpx",
+      "sha256": "d737496fbb64fae50c4bb325da605d7254d6ed7f7d54449c2e0badd298d5c470",
+      "detector": "injection",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/format-gif-reference.hwpx",
+      "sha256": "d737496fbb64fae50c4bb325da605d7254d6ed7f7d54449c2e0badd298d5c470",
+      "detector": "unicode",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/format-jpg-reference.hwpx",
+      "sha256": "1dfd24321925ab742a19633ff6c80789dec3e4c2d39bcfad900115e06a644564",
+      "detector": "hidden-text",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/format-jpg-reference.hwpx",
+      "sha256": "1dfd24321925ab742a19633ff6c80789dec3e4c2d39bcfad900115e06a644564",
+      "detector": "injection",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/format-jpg-reference.hwpx",
+      "sha256": "1dfd24321925ab742a19633ff6c80789dec3e4c2d39bcfad900115e06a644564",
+      "detector": "unicode",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/format-tif-reference.hwpx",
+      "sha256": "0d3994c9bdc784b60c847f5bc81e183f8b7bb7767bf240cc3f5dcf3759309202",
+      "detector": "hidden-text",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/format-tif-reference.hwpx",
+      "sha256": "0d3994c9bdc784b60c847f5bc81e183f8b7bb7767bf240cc3f5dcf3759309202",
+      "detector": "injection",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/format-tif-reference.hwpx",
+      "sha256": "0d3994c9bdc784b60c847f5bc81e183f8b7bb7767bf240cc3f5dcf3759309202",
+      "detector": "unicode",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/inline-reference.hwpx",
+      "sha256": "33fef5dd1c17ac002252e057b9dc8ff5285943930075a721d1777a0b8ad5b608",
+      "detector": "hidden-text",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/inline-reference.hwpx",
+      "sha256": "33fef5dd1c17ac002252e057b9dc8ff5285943930075a721d1777a0b8ad5b608",
+      "detector": "injection",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/inline-reference.hwpx",
+      "sha256": "33fef5dd1c17ac002252e057b9dc8ff5285943930075a721d1777a0b8ad5b608",
+      "detector": "unicode",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/mixed-reference.hwpx",
+      "sha256": "88df51fefe3f3c34ad43989f1fdae5720efeca20654eb2a7cdd0171f3bf62ba7",
+      "detector": "hidden-text",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/mixed-reference.hwpx",
+      "sha256": "88df51fefe3f3c34ad43989f1fdae5720efeca20654eb2a7cdd0171f3bf62ba7",
+      "detector": "injection",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/mixed-reference.hwpx",
+      "sha256": "88df51fefe3f3c34ad43989f1fdae5720efeca20654eb2a7cdd0171f3bf62ba7",
+      "detector": "unicode",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/runs-reference.hwpx",
+      "sha256": "b7d6603908a49183904dfa3257beb5e13867e713d021ab87483a5ab1a3b2c0c0",
+      "detector": "hidden-text",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/runs-reference.hwpx",
+      "sha256": "b7d6603908a49183904dfa3257beb5e13867e713d021ab87483a5ab1a3b2c0c0",
+      "detector": "injection",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/runs-reference.hwpx",
+      "sha256": "b7d6603908a49183904dfa3257beb5e13867e713d021ab87483a5ab1a3b2c0c0",
+      "detector": "unicode",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/shared-boxed-reference.hwpx",
+      "sha256": "a19e8c79ab2956f8c1b290ab9d64450a9d4481829c82cbe1f1da71bb148b113c",
+      "detector": "hidden-text",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/shared-boxed-reference.hwpx",
+      "sha256": "a19e8c79ab2956f8c1b290ab9d64450a9d4481829c82cbe1f1da71bb148b113c",
+      "detector": "injection",
+      "exit": 0,
+      "clean": true
+    },
+    {
+      "input": "tests/fixtures/issue665/references/shared-boxed-reference.hwpx",
+      "sha256": "a19e8c79ab2956f8c1b290ab9d64450a9d4481829c82cbe1f1da71bb148b113c",
+      "detector": "unicode",
+      "exit": 0,
+      "clean": true
+    }
+  ]
+}

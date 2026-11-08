@@ -1,0 +1,105 @@
+{
+  "current_code_head": "9e5e419196355c51dc5ddc5f4308bb13a235f290",
+  "base": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+  "rebase_completed": true,
+  "native_clippy_passed": true,
+  "current_full_regression_complete": false,
+  "current_visual_validation_complete": false,
+  "pr_ready": false,
+  "remote_push_performed": false,
+  "pull_request_created": false,
+  "checks": [
+    {
+      "name": "suite-prepare",
+      "exit_code": 0,
+      "log_sha256": "67078ba89f7dea3bfa61099459e9bb706acd452e8ba92f505a771ad55d56344a",
+      "temporary_log_path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/suite-prepare.log",
+      "summary": [
+        "[RustTestSuite] 새 test source 없음",
+        "[RustTestSuite] 생성: 28 harnesses, 20 exceptions",
+        "[RustTestSuite] 확인 완료: 1857 sources / 7955 static test attrs / 28 suites + 20 exceptions = 48/48 integration targets / nextest 최소 6288 cases / weight 1653301..1657657"
+      ]
+    },
+    {
+      "name": "fmt-check",
+      "exit_code": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "temporary_log_path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/fmt-check.log",
+      "summary": []
+    },
+    {
+      "name": "fmt-after-api-fix",
+      "exit_code": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "temporary_log_path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/fmt-after-api-fix.log",
+      "summary": []
+    },
+    {
+      "name": "suite-policy",
+      "exit_code": 0,
+      "log_sha256": "f6443e2bab0cc20b5e9bb148d46e56f089a2c234ae6a9e0a00f70602a9c25aaa",
+      "temporary_log_path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/suite-policy.log",
+      "summary": [
+        "[RustTestSuite] 확인 완료: 1857 sources / 7955 static test attrs / 28 suites + 20 exceptions = 48/48 integration targets / nextest 최소 6288 cases / weight 1653301..1657657"
+      ]
+    },
+    {
+      "name": "unit-policy",
+      "exit_code": 0,
+      "log_sha256": "2c6dbaab2093a94c2fa3ec11190f384180b922a10025e3466a44f53c6611685c",
+      "temporary_log_path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/unit-policy.log",
+      "summary": [
+        "[RustUnitTier] 확인 완료: 4099 tests / 296 modules / ready 0 / support 85 / white-box 4010 / cfg support items 28"
+      ]
+    },
+    {
+      "name": "clippy-host",
+      "exit_code": 101,
+      "log_sha256": "1bff8817243e6aced65a8088c658d7a26e72b414c44222911a09f09ba5e710df",
+      "temporary_log_path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/clippy-host.log",
+      "summary": [
+        "Some errors have detailed explanations: E0004, E0061, E0308, E0499, E0502.",
+        "For more information about an error, try `rustc --explain E0004`.",
+        "error: could not compile `rhwp` (lib) due to 6 previous errors"
+      ]
+    },
+    {
+      "name": "clippy-host-after-api-fix",
+      "exit_code": 101,
+      "log_sha256": "609f422ead79acb86c5cc0045e5b3eaaabad54b6082dbd641710ee1aa747592c",
+      "temporary_log_path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/clippy-host-after-api-fix.log",
+      "summary": [
+        "Some errors have detailed explanations: E0499, E0502.",
+        "For more information about an error, try `rustc --explain E0499`.",
+        "error: could not compile `rhwp` (lib) due to 2 previous errors"
+      ]
+    },
+    {
+      "name": "clippy-host-after-borrow-fix",
+      "exit_code": 0,
+      "log_sha256": "270820e2573c5de9d59eab605e1bded5805b00a61f78325a679a651bcbc616b2",
+      "temporary_log_path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/clippy-host-after-borrow-fix.log",
+      "summary": [
+        "    Checking rhwp v0.8.7 (/home/tsjang/rhwp)",
+        "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3m 07s"
+      ]
+    },
+    {
+      "name": "markdown-links-focused",
+      "exit_code": 0,
+      "log_sha256": "738fe3fb7a9a216b734bfb2361775f8eeae265400f5aba6f126a9cf5a1e118ad",
+      "temporary_log_path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/markdown-links-focused.log",
+      "summary": [
+        "{\"files\": 3, \"broken_links\": []}"
+      ]
+    },
+    {
+      "name": "rustfmt-final-changed-source",
+      "exit_code": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "temporary_log_path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/rustfmt-final-changed-source.log",
+      "summary": []
+    }
+  ],
+  "broad_markdown_scan_stopped": "The CLI scanned unrelated tracked binary files even without redirect checks; only its same link validation function was applied to the three changed documents."
+}

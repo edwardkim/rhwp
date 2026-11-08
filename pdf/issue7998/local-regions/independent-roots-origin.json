@@ -1,0 +1,267 @@
+{
+  "sourceGeometrySha256": "d4c1fe7a8a3c025b2be3648ba6e2ad1123eff3dde008983edadcef7e8f7b6656",
+  "sourcePage": 5,
+  "procedure": "remove all original text shows, image/Form draws, annotations and metadata; add separately constructed ASCII C/L cell labels; no original text or images redistributed",
+  "expectedLabels": [
+    {
+      "label": "C11111",
+      "row": 0,
+      "column": 0,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "C11112",
+      "row": 0,
+      "column": 1,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "C11121",
+      "row": 0,
+      "column": 2,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "C11211",
+      "row": 1,
+      "column": 0,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "C11212",
+      "row": 1,
+      "column": 1,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "C11221",
+      "row": 1,
+      "column": 2,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "C12111",
+      "row": 2,
+      "column": 0,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "C12112",
+      "row": 2,
+      "column": 1,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "C12121",
+      "row": 2,
+      "column": 2,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "C12211",
+      "row": 3,
+      "column": 0,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "C12212",
+      "row": 3,
+      "column": 1,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "C12221",
+      "row": 3,
+      "column": 2,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "C21111",
+      "row": 4,
+      "column": 0,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "C21112",
+      "row": 4,
+      "column": 1,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "C21121",
+      "row": 4,
+      "column": 2,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "C21211",
+      "row": 5,
+      "column": 0,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "C21212",
+      "row": 5,
+      "column": 1,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "C21221",
+      "row": 5,
+      "column": 2,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "L11111",
+      "row": 0,
+      "column": 0,
+      "rows": 2,
+      "columns": 1
+    },
+    {
+      "label": "L11112",
+      "row": 0,
+      "column": 1,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "L11121",
+      "row": 0,
+      "column": 2,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "L11122",
+      "row": 0,
+      "column": 3,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "L11212",
+      "row": 1,
+      "column": 1,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "L11221",
+      "row": 1,
+      "column": 2,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "L11222",
+      "row": 1,
+      "column": 3,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "L12111",
+      "row": 2,
+      "column": 0,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "L12112",
+      "row": 2,
+      "column": 1,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "L12121",
+      "row": 2,
+      "column": 2,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "L12122",
+      "row": 2,
+      "column": 3,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "L12211",
+      "row": 3,
+      "column": 0,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "L12212",
+      "row": 3,
+      "column": 1,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "L12221",
+      "row": 3,
+      "column": 2,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "L12222",
+      "row": 3,
+      "column": 3,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "L21111",
+      "row": 4,
+      "column": 0,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "L21112",
+      "row": 4,
+      "column": 1,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "L21121",
+      "row": 4,
+      "column": 2,
+      "rows": 1,
+      "columns": 1
+    },
+    {
+      "label": "L21122",
+      "row": 4,
+      "column": 3,
+      "rows": 1,
+      "columns": 1
+    }
+  ],
+  "inputSha256": "998c2e20d074eca08f0596200bcdde70b28d42871a07e90eaaedd3d7fce0a1d2"
+}

@@ -1,0 +1,248 @@
+{
+  "code_sha": "1ae9b510a5af0164de45191670e5e895e97270b3",
+  "base_sha": "5e2b9bfbf08573a31fa1e11a2445ff63fc0755c0",
+  "opt_in_head": "3bfe08e24a55f16f7408405ead9550ffab925dad",
+  "runs": {
+    "ci": 39380204001,
+    "codeql": 39380203913,
+    "render_diff": 39380203897,
+    "pages_verify_only": 39380248603,
+    "packages_verify_only": 39380255159
+  },
+  "builds": [
+    {
+      "source_sha": "9c14f1b3cdeab25244e6111aeab996227e4c3371",
+      "wall_seconds": 689.626,
+      "phase_seconds_approx": {
+        "preparation": 2.01,
+        "cargo": 499.291,
+        "bindgen_setup_and_run": 5.971,
+        "wasm_opt_and_finalize": 182.333,
+        "after_package": 0.02
+      },
+      "cargo_cache_hit": "false",
+      "runner": {
+        "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+        "logical_cpus": 4,
+        "image": "ubuntu24",
+        "image_version": "20261018.339.1",
+        "cpu_model": "AMD EPYC 9V74 80-Core Processor"
+      },
+      "build_configuration": {
+        "profile": "release",
+        "build_mode": "standard",
+        "cdylib_only": "0",
+        "crate_types": "rlib+cdylib",
+        "lto_policy": "manifest",
+        "cache_variant": "release-rlib-cdylib-lto-manifest"
+      },
+      "artifacts": {
+        "rhwp.js": {
+          "sha256": "915ddc5aa7998937f009c76b71e53236a2536b2c30de1a37b9603b95e0b3ff15",
+          "bytes": 479094
+        },
+        "rhwp_bg.wasm": {
+          "sha256": "a7462849b7e0db027b59b81b791d13c45f1fc7669d0aed45caa1a20ca15b8508",
+          "bytes": 19281907
+        }
+      },
+      "lane": "render",
+      "consumption_matches": 18
+    },
+    {
+      "source_sha": "1ae9b510a5af0164de45191670e5e895e97270b3",
+      "wall_seconds": 778.382,
+      "phase_seconds_approx": {
+        "preparation": 1.949,
+        "cargo": 546.473,
+        "bindgen_setup_and_run": 6.546,
+        "wasm_opt_and_finalize": 223.4,
+        "after_package": 0.013
+      },
+      "cargo_cache_hit": "unknown",
+      "runner": {
+        "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+        "logical_cpus": 4,
+        "image": "ubuntu24",
+        "image_version": "20261012.334.1",
+        "cpu_model": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz"
+      },
+      "build_configuration": {
+        "profile": "release",
+        "build_mode": "standard",
+        "cdylib_only": "0",
+        "crate_types": "rlib+cdylib",
+        "lto_policy": "manifest",
+        "cache_variant": "release-rlib-cdylib-lto-manifest"
+      },
+      "artifacts": {
+        "rhwp.js": {
+          "sha256": "915ddc5aa7998937f009c76b71e53236a2536b2c30de1a37b9603b95e0b3ff15",
+          "bytes": 479094
+        },
+        "rhwp_bg.wasm": {
+          "sha256": "a7462849b7e0db027b59b81b791d13c45f1fc7669d0aed45caa1a20ca15b8508",
+          "bytes": 19281907
+        }
+      },
+      "lane": "pages",
+      "consumption_matches": 2
+    },
+    {
+      "source_sha": "1ae9b510a5af0164de45191670e5e895e97270b3",
+      "wall_seconds": 743.018,
+      "phase_seconds_approx": {
+        "preparation": 2.812,
+        "cargo": 547.394,
+        "bindgen_setup_and_run": 6.474,
+        "wasm_opt_and_finalize": 186.321,
+        "after_package": 0.017
+      },
+      "cargo_cache_hit": "unknown",
+      "runner": {
+        "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+        "logical_cpus": 4,
+        "image": "ubuntu24",
+        "image_version": "20261012.334.1",
+        "cpu_model": "AMD EPYC 7763 64-Core Processor"
+      },
+      "build_configuration": {
+        "profile": "release",
+        "build_mode": "standard",
+        "cdylib_only": "0",
+        "crate_types": "rlib+cdylib",
+        "lto_policy": "manifest",
+        "cache_variant": "release-rlib-cdylib-lto-manifest"
+      },
+      "artifacts": {
+        "rhwp.js": {
+          "sha256": "915ddc5aa7998937f009c76b71e53236a2536b2c30de1a37b9603b95e0b3ff15",
+          "bytes": 479094
+        },
+        "rhwp_bg.wasm": {
+          "sha256": "a7462849b7e0db027b59b81b791d13c45f1fc7669d0aed45caa1a20ca15b8508",
+          "bytes": 19281907
+        }
+      },
+      "lane": "packages",
+      "consumption_matches": 2
+    }
+  ],
+  "publish_verdict": {
+    "accepted": true,
+    "channels": {
+      "npm-core": {
+        "inputState": "",
+        "jobResult": "skipped",
+        "state": "verify-only"
+      },
+      "npm-editor": {
+        "inputState": "",
+        "jobResult": "skipped",
+        "state": "verify-only"
+      },
+      "open-vsx": {
+        "inputState": "",
+        "jobResult": "skipped",
+        "state": "verify-only"
+      },
+      "vscode-marketplace": {
+        "inputState": "",
+        "jobResult": "skipped",
+        "state": "verify-only"
+      }
+    },
+    "errors": [],
+    "extensionsRequested": true,
+    "gates": {
+      "build-vsix": "success",
+      "build-wasm": "success",
+      "validate-release-source": "success"
+    },
+    "githubSha": "1ae9b510a5af0164de45191670e5e895e97270b3",
+    "mode": "verify",
+    "refName": "codex/render-diff-release-7473",
+    "schemaVersion": 1,
+    "verdict": "completed"
+  },
+  "final_vsix_bytes": {
+    "rhwp.js": {
+      "sha256": "915ddc5aa7998937f009c76b71e53236a2536b2c30de1a37b9603b95e0b3ff15",
+      "bytes": 479094
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "a7462849b7e0db027b59b81b791d13c45f1fc7669d0aed45caa1a20ca15b8508",
+      "bytes": 19281907
+    }
+  },
+  "fixture_identity": [
+    {
+      "path": "samples/basic/KTX.hwp",
+      "sha256": "6c1a027d67b33c03f469b56548b4c7d6bca36b1c1190c7cc5eac88e35c403cf1",
+      "matches_code_commit": true
+    },
+    {
+      "path": "samples/biz_plan.hwp",
+      "sha256": "8b786d6824622afae2220b203beeef6e5592157e1896fea055ebc602817113c1",
+      "matches_code_commit": true
+    },
+    {
+      "path": "samples/hwp_table_test.hwp",
+      "sha256": "dc3e57d7577447ae4b47f59bdb0f499a5ac29066b62af8a650bcdd8d70eee32a",
+      "matches_code_commit": true
+    },
+    {
+      "path": "samples/kps-ai.hwp",
+      "sha256": "9b0fceb3d96956f27c893e15a72a1ad94f7ee005bd581381a1aadfcb1f57a7b9",
+      "matches_code_commit": true
+    },
+    {
+      "path": "samples/lseg-01-basic.hwp",
+      "sha256": "86e607233a2218928fabe5969155116a46d4ab4400db1402fe45b0082149496c",
+      "matches_code_commit": true
+    },
+    {
+      "path": "samples/lseg-05-tab.hwp",
+      "sha256": "0066108df04204324c0802414087563e7673e30f3d142dd014af14e318153d2c",
+      "matches_code_commit": true
+    },
+    {
+      "path": "samples/pic-crop-01.hwp",
+      "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+      "matches_code_commit": true
+    },
+    {
+      "path": "samples/pua-test.hwp",
+      "sha256": "592e00e3e8bc72afef829fd71a13cbc340bff3770425b9d1ee025afc1e1649fa",
+      "matches_code_commit": true
+    },
+    {
+      "path": "samples/re-font-batang-hancom.hwp",
+      "sha256": "99ec0cd2f55ba45493b97c550333db6d0275831ae6150a041bdbe5e2bd174049",
+      "matches_code_commit": true
+    },
+    {
+      "path": "samples/render-p35-font-native-bitmap.hwpx",
+      "sha256": "1c902d41d47e532f42d2b24a44058efd370ee6496927c32e76e955029a0b9eec",
+      "matches_code_commit": true
+    },
+    {
+      "path": "samples/table-004.hwp",
+      "sha256": "451ab7c40d47c4200e98b57b7cb3806e64968c32fa9441fc171e7babf64be915",
+      "matches_code_commit": true
+    },
+    {
+      "path": "samples/tac-case-001.hwp",
+      "sha256": "c003385b7b3495dd93a2688ea74b8a07848543a6c0128cb693635d8ba6fe43da",
+      "matches_code_commit": true
+    }
+  ],
+  "artifact_digests": {
+    "12245459572": "1fd6fb815f7fcf5df33fc2ccf8996d1e2f4373adeb0f2cc85485ae0dc7859cef",
+    "12245519339": "e7eb59358d620062acc2b1de4ad0b5ce490c3732657a847f9dbcba2d763369ef",
+    "12246030939": "91e20aefb553a90b1e9ad0876d0ad4894f1d2afbe8effea9ee2b487928e8349a",
+    "12245796636": "dbb46a0c6510b6c6dfdfd03188d4ddbf2da054c6e43175e7c17a801494aaa5c6",
+    "12246091636": "0fc381f3c4baa3bea0834edc8bd8af909cdd9a751638b48f837421f5b34a2465",
+    "12246515524": "cdb259cdc28a7b7db021dc972f15db83562a4775678cde560d854ad24d19bc20"
+  }
+}

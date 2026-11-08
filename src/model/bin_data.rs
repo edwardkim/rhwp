@@ -105,6 +105,13 @@ pub struct BinDataContent {
 pub trait BinDataResolver:
     std::fmt::Debug + Send + Sync + std::panic::RefUnwindSafe + std::panic::UnwindSafe
 {
+    /// Allocation-free upper bound for one bounded materialization. Implementers
+    /// returning Some must enforce it in `resolve_limited`; opaque resolvers may
+    /// retain None and let the host reserve the full requested limit first.
+    fn stable_size_bound(&self, _key: &str) -> Option<usize> {
+        None
+    }
+
     /// `key` 가 가리키는 BinData 의 바이트를 압축 해제하여 반환한다.
     ///
     /// 원본이 손상되었거나 엔트리가 없으면 빈 벡터를 반환한다
@@ -151,6 +158,21 @@ pub trait BinDataResolver:
     fn resolve_raw(&self, _key: &str) -> Option<StoredBinData> {
         None
     }
+
+    /// 원본 ZIP 엔트리가 deflate 로 저장돼 있으면 그 압축 바이트와 CRC-32·비압축 크기를
+    /// 반환한다 (압축 해제 없음). HWPX 저장이 바뀌지 않은 엔트리를 다시 압축하지 않고
+    /// 옮길 때 쓴다. ZIP 컨테이너가 아니거나 deflate 가 아니면 `None` 이다 (기본값).
+    fn resolve_deflated_zip_entry(&self, _key: &str) -> Option<DeflatedZipEntry> {
+        None
+    }
+}
+
+/// 원본 ZIP 의 deflate 엔트리 — 압축 바이트와 그 해제 내용의 CRC-32·크기.
+#[derive(Debug, Clone)]
+pub struct DeflatedZipEntry {
+    pub crc32: u32,
+    pub uncompressed_size: u64,
+    pub compressed_bytes: Vec<u8>,
 }
 
 /// 세션 중 추가된 바이트를 기존 공개 enum 모양을 바꾸지 않고 공유한다.
@@ -171,6 +193,10 @@ impl std::fmt::Debug for InMemorySharedBinDataResolver {
 }
 
 impl BinDataResolver for InMemorySharedBinDataResolver {
+    fn stable_size_bound(&self, _key: &str) -> Option<usize> {
+        Some(self.bytes.len())
+    }
+
     fn resolve(&self, _key: &str) -> Vec<u8> {
         self.bytes.to_vec()
     }
@@ -285,6 +311,15 @@ impl BinDataBytes {
         }
     }
 
+    /// 원본 ZIP 의 deflate 엔트리를 그대로 얻는다 (압축 해제 없음). `Loaded` 와 ZIP 이 아닌
+    /// 컨테이너는 `None` 이다.
+    pub fn load_deflated_zip_entry(&self) -> Option<DeflatedZipEntry> {
+        match self {
+            BinDataBytes::Loaded(_) => None,
+            BinDataBytes::Lazy { resolver, key } => resolver.resolve_deflated_zip_entry(key),
+        }
+    }
+
     /// 바이트 길이. `Lazy` 인 경우 압축 해제가 발생하므로 렌더 경로의
     /// 반복 호출은 피하고 `load()` 결과를 재사용한다.
     pub fn len(&self) -> usize {
@@ -318,6 +353,75 @@ impl From<Vec<u8>> for BinDataBytes {
     fn from(v: Vec<u8>) -> Self {
         BinDataBytes::Loaded(v)
     }
+}
+
+/// HWP5 연결(Link) 레코드 자리를 지키는 빈 항목.
+///
+/// 그림의 `bin_data_id` 는 BIN_DATA 레코드 순번이고 `content_index` 는 그 순번을
+/// 배열 위치로 쓴다. 연결 레코드는 저장 스트림이 없어 건너뛰면 뒤 항목이 한 칸씩
+/// 앞당겨져 뒤 그림이 다른 그림을 가리킨다. 저장 id 0 은 BIN0000 스트림이 될 수
+/// 없는 값이라 실제 항목과 겹치지 않는다.
+pub(crate) fn hwp5_link_slot() -> BinDataContent {
+    BinDataContent {
+        id: 0,
+        data: BinDataBytes::Loaded(Vec::new()),
+        extension: String::new(),
+    }
+}
+
+/// `record`(같은 위치의 BIN_DATA 레코드) 자리를 지키는 `hwp5_link_slot` 인가.
+///
+/// HWP5 연결 레코드는 저장 id 가 없어 0 이다(HWP3·HWPX 연결 레코드는 0 이 아니다).
+/// 외부 그림이 채워져 id 가 바뀐 항목은 해당하지 않는다.
+pub(crate) fn is_hwp5_link_slot(content: &BinDataContent, record: Option<&BinData>) -> bool {
+    content.id == 0
+        && content.extension.is_empty()
+        && matches!(&content.data, BinDataBytes::Loaded(v) if v.is_empty())
+        && record.is_some_and(|bd| bd.data_type == BinDataType::Link && bd.storage_id == 0)
+}
+
+/// Resolve the document-record index first, with sparse storage IDs only as a fallback.
+/// Rendering and editable paint provenance must refer to the same actual bytes.
+pub(crate) fn content_index(contents: &[BinDataContent], id: u16) -> Option<usize> {
+    let index = usize::from(id.checked_sub(1)?);
+    if index < contents.len() {
+        Some(index)
+    } else {
+        contents.iter().position(|c| c.id == id)
+    }
+}
+
+/// Register embedded bytes using the shared content-position/storage-id contract.
+/// Callers that accept external batches must validate counts before registration.
+pub(crate) fn register_embedded_bin_data(
+    document: &mut super::document::Document,
+    image_data: impl Into<std::sync::Arc<[u8]>>,
+    extension: &str,
+) -> u16 {
+    let position_id = document.bin_data_content.len() as u16 + 1;
+    let storage_id = document.next_bin_data_storage_id();
+    document.bin_data_content.push(BinDataContent {
+        id: storage_id,
+        data: BinDataBytes::from_shared(image_data),
+        extension: extension.to_string(),
+    });
+    // attr: bits 0-3=1(Embedding), bits 4-5=0(Default), bits 8-9=1(Success)
+    let bin_attr: u16 = 0x0101;
+    document.doc_info.bin_data_list.push(BinData {
+        raw_data: None,
+        attr: bin_attr,
+        data_type: BinDataType::Embedding,
+        compression: BinDataCompression::Default,
+        status: BinDataStatus::Success,
+        abs_path: None,
+        rel_path: None,
+        storage_id,
+        extension: Some(extension.to_string()),
+    });
+    document.doc_info.raw_stream = None; // DocInfo 재직렬화
+                                         // [#3315] 여기서 bin_data_epoch 를 올리지 않는다 — 새 id 를 덧붙일 뿐 기존
+                                         // id→바이트는 그대로다. 올리면 무관한 그림의 소비자 캐시까지 함께 버려진다.
+    position_id
 }
 
 #[cfg(test)]

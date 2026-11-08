@@ -1,0 +1,9 @@
+{
+  "compiled_base_head": "401d9070b6bf3cca3803c3c87ac88a0ad4a07a6b",
+  "tracked_patch_sha256": "9d9bd64de24952a3cd46b1fb2c47d2a54f2e1c5d891d238cecf1c0b55a468abb",
+  "binary_sha256": "d457b503ed7f2f1b1bd4f67c245c620d7eb0f91ebd85196fe5451b7084bfbffe",
+  "binary": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/candidate-v12-visual-row-rhwp",
+  "scope": "Native v12 horizontal-fragment alignment correction; original 49 whole-document comparisons.",
+  "reconciled_production_head": "56a638b9960e8bad9c3f73185a17665d7f7c94b1",
+  "production_tree_matches_compiled_base_plus_patch": true
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "verdict": "completed",
+  "promotionEligible": true,
+  "gateReason": "ok",
+  "buildOutcome": "success",
+  "compareOutcome": "success",
+  "compareExit": "0",
+  "packOutcome": "success",
+  "summary": {
+    "pairs": 859,
+    "match": 857,
+    "mismatch": 0,
+    "error": 2,
+    "unpaired": 372
+  }
+}

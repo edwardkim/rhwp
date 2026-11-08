@@ -1,0 +1,573 @@
+{
+  "at": "2026-11-07T08:00:25.436236+00:00",
+  "sha": "0d2548fd88ea76b10e53eec841376b4bcbecbc4a",
+  "items": [
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/input/report-implicit-column.hwpx",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/leading-definition-slots/input/report-implicit-column.hwpx",
+      "http": 200,
+      "mime": "application/octet-stream",
+      "bytes": 7969,
+      "sha256": "28768b01550ba2596c5e2bd182454a39a6700c8789fbe95e198d83c3898c4a40",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/README.md",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/README.md",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 4446,
+      "sha256": "b0646a2338f9523c36a3c807eaa3d561aa8f1fb9ef9bde651f903b9d9d45fa33",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/build-provenance.json",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/build-provenance.json",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 9047,
+      "sha256": "266c056a0acdf93065d74dad5a64878c50f3652fc71e8c475d2df5299ebcf230",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/direct-pdf/direct-pdf-p001-overlay.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/direct-pdf/direct-pdf-p001-overlay.png",
+      "http": 200,
+      "mime": "image/png",
+      "bytes": 33240,
+      "sha256": "1caa1bc3e0a809ab70a174047a46245ef65da0efeabb20cc98bd4b6b735f7e5f",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/direct-pdf/direct-pdf-p001-review.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/direct-pdf/direct-pdf-p001-review.png",
+      "http": 200,
+      "mime": "image/png",
+      "bytes": 66958,
+      "sha256": "cf8ec3579816acdde8454969bfa0abcd41026aaf5406bd128f9e13ea26fc47c2",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/font-supply-provenance.json",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/font-supply-provenance.json",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 3439,
+      "sha256": "b364da2a7eecaaf412548554d529e431e6aa16c4628c85b66cecaf2c0dbd4412",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/local-gates.json",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/local-gates.json",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 11677,
+      "sha256": "fe88f1cb06d1782766af7c6f7895158bddf9b568324eeff0251ebb9f37b2dbc7",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/platform-execution/handbook-native-final-correction.json",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/platform-execution/handbook-native-final-correction.json",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 548,
+      "sha256": "0e2ed362627ddbe339a7bdfd5316f67133714105035e056223d48cc609b05474",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/test-header-metadata-receipt.json",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/test-header-metadata-receipt.json",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 5053,
+      "sha256": "adb9b31e1ef61d01c09c451566b8c9756a7f87e842140744c04a630a4362ecdf",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/validation-scope.md",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/validation-scope.md",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 7515,
+      "sha256": "6523399943068aa84488e5c21637b9d1bc6226f234d57b0d44640f55ebd1b221",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/base-candidate-comparison.json",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/base-candidate-comparison.json",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 3590,
+      "sha256": "7c881bff7a765cabc6d6e153e768811b5a7a55078debabd822158cd680ee2432",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/eq-01-native-p001-overlay.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/eq-01-native-p001-overlay.png",
+      "http": 200,
+      "mime": "image/png",
+      "bytes": 132019,
+      "sha256": "2ce70d97e438cfa33c92e1bbab3f986ee43346212e16facee8b01087c7a63aa9",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/eq-01-native-p001-review.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/eq-01-native-p001-review.png",
+      "http": 200,
+      "mime": "image/png",
+      "bytes": 382897,
+      "sha256": "127304e1bc06d2f62909073b8cf67b2224143b09e46d5f867d1f62b6c7a3e80a",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/eq-01-native.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/eq-01-native.tsv",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 130,
+      "sha256": "1912733cbb187da1d3fb9c1c1ab865c74b70e1b21c83c67bc4892f777d7b9067",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/eq-01-wasm-p001-overlay.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/eq-01-wasm-p001-overlay.png",
+      "http": 200,
+      "mime": "image/png",
+      "bytes": 130430,
+      "sha256": "fcc643c9010694cb81204c06eab1fb6b301bae864e7ff9010f27e3ad58c8f291",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/eq-01-wasm-p001-review.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/eq-01-wasm-p001-review.png",
+      "http": 200,
+      "mime": "image/png",
+      "bytes": 361925,
+      "sha256": "a2d6fccb44f4e2a9dfd3266750f8a664dc84e0f9bf4c47e2bea678675d5bc075",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/eq-01-wasm.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/eq-01-wasm.tsv",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 130,
+      "sha256": "362f07fd9b7c5e750d75d823e3c7b14ee9424cce902272c0bd28de5084993e46",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/issue8337-full-fonts-native-p001-overlay.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/issue8337-full-fonts-native-p001-overlay.png",
+      "http": 200,
+      "mime": "image/png",
+      "bytes": 57987,
+      "sha256": "9feb469b2a6f9c24dbc6b57dcf08d127058111217f99ca7f6f4ac516b7d8f554",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/issue8337-full-fonts-native-p001-review.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/issue8337-full-fonts-native-p001-review.png",
+      "http": 200,
+      "mime": "image/png",
+      "bytes": 125722,
+      "sha256": "e80028f48563f2c64b2fe1c85185a09684edc3bc19c137c6c7246c12ab1c255a",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/issue8337-full-fonts-native.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/issue8337-full-fonts-native.tsv",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 130,
+      "sha256": "c4a77f98c5a7a9cef4ff9095b18e1eafea07688132d92679e874a6a42a878ef8",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/issue8337-full-fonts-wasm-p001-overlay.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/issue8337-full-fonts-wasm-p001-overlay.png",
+      "http": 200,
+      "mime": "image/png",
+      "bytes": 56551,
+      "sha256": "f5471f4f95e1128c83a05165f16ef6952a54958a1fcc5ace383a9becd3f3c4fe",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/issue8337-full-fonts-wasm-p001-review.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/issue8337-full-fonts-wasm-p001-review.png",
+      "http": 200,
+      "mime": "image/png",
+      "bytes": 121614,
+      "sha256": "1b3e3aa741638e02afb22534f7471f4ec724cf664f2d6466ef384651d7601a32",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/issue8337-full-fonts-wasm.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/issue8337-full-fonts-wasm.tsv",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 130,
+      "sha256": "00dad0c8347552c2301ec8f95c8ebd75e83437cc0218d2cffeadc4afcc3a42a3",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/leading-definition-native.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/leading-definition-native.tsv",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 132,
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/leading-definition-wasm.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/leading-definition-wasm.tsv",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 132,
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-native-p001-overlay.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-native-p001-overlay.png",
+      "http": 200,
+      "mime": "image/png",
+      "bytes": 65943,
+      "sha256": "b0d4c12ee52b4b017b5339cf76736367542c6a93d9134071c03e633e15dce6b2",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-native-p001-review.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-native-p001-review.png",
+      "http": 200,
+      "mime": "image/png",
+      "bytes": 204034,
+      "sha256": "06531183b1c8667376876f8f1357431373f17cefc89e804bd4f5d93e2a22744d",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-native.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-native.tsv",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 132,
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-wasm-p001-overlay.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-wasm-p001-overlay.png",
+      "http": 200,
+      "mime": "image/png",
+      "bytes": 67032,
+      "sha256": "5165fd38f13290a56cd407c7eeceebe22e9c0d774598595fd0eba26cddf961d2",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-wasm-p001-review.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-wasm-p001-review.png",
+      "http": 200,
+      "mime": "image/png",
+      "bytes": 205240,
+      "sha256": "8f7b4f041f57bdc8a9f5f6d130e9bd7bdd7dd17373c6c21b4d336f9bd977a938",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-wasm.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-wasm.tsv",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 130,
+      "sha256": "7678d6f2f5d362601ec7573b64be6cc0077e70485b9fbdd18272914d4058f420",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/radial-native-p001-overlay.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/radial-native-p001-overlay.png",
+      "http": 200,
+      "mime": "image/png",
+      "bytes": 30717,
+      "sha256": "140ec46a0d7a73fa9cc8d3ea89bfaa23a4a5bfbbc527e0e15639e3e40d4e3114",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/radial-native-p001-review.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/radial-native-p001-review.png",
+      "http": 200,
+      "mime": "image/png",
+      "bytes": 63467,
+      "sha256": "7f50da9d9cb9fab8109fe465dcdaa75faa1650267ce038cfdd6b4172ccfdce6e",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/radial-native.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/radial-native.tsv",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 232,
+      "sha256": "cdcf3e026b8de27abee1649a14fc0767bd3b6d02806046e34dcc9164c24df91f",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/radial-wasm-p001-overlay.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/radial-wasm-p001-overlay.png",
+      "http": 200,
+      "mime": "image/png",
+      "bytes": 30754,
+      "sha256": "601803d889861489aee2bf851a0b7a36bba588436f78cc50a21620eae02aadbd",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/radial-wasm-p001-review.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/radial-wasm-p001-review.png",
+      "http": 200,
+      "mime": "image/png",
+      "bytes": 63193,
+      "sha256": "5030bb8b6b940e96a84c5969ba1ff18eb17fbd7b3ace160a2cdf8c010a7d4561",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/radial-wasm.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/radial-wasm.tsv",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 232,
+      "sha256": "cdcf3e026b8de27abee1649a14fc0767bd3b6d02806046e34dcc9164c24df91f",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/recent-8555-native.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/recent-8555-native.tsv",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 184,
+      "sha256": "d47424b75ab727cf35e700598718a0010fb8f131d5a8e2871bb2d178dc60d9a3",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/recent-8555-wasm.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/recent-8555-wasm.tsv",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 184,
+      "sha256": "536ac9aa0c410fc46f981449f5e8494449b0b1df594ec2e4a23279771c8acd5c",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/recent-8556-native.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/recent-8556-native.tsv",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 204,
+      "sha256": "15d8f06a41c34633a90cb84e2581747b488f760f9957c12b33c291b67baf0736",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/recent-8556-wasm.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/recent-8556-wasm.tsv",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 204,
+      "sha256": "92b670e1f725bd3951b9938ed057552a9b0c7917319e00938754dc0e16faaddb",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/recent-8557-native.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/recent-8557-native.tsv",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 184,
+      "sha256": "92cf02301eb2a9e438971994cc709ac98c154320234a2327abe4115fd0a3b3c8",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/recent-8557-wasm.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/recent-8557-wasm.tsv",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 184,
+      "sha256": "adf9ea0ff925000aed704fee58f64261944518517c67df4773fb9262a878e6b9",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/representative-review-metrics.json",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/representative-review-metrics.json",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 51897,
+      "sha256": "1eaf65ac5c1291cda3e314ee9b7de475cfb846ac8856cd1503fec4eb8c0ec4b6",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/shape-group-native.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/shape-group-native.tsv",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 132,
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "equal_to_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/shape-group-wasm.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/mydocs/pr/assets/seo-rii-20261107/visual/shape-group-wasm.tsv",
+      "http": 200,
+      "mime": "text/plain; charset=utf-8",
+      "bytes": 132,
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "equal_to_commit": true
+    },
+    {
+      "path": "pdf/eq-01-hwp-2020.pdf",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/pdf/eq-01-hwp-2020.pdf",
+      "http": 200,
+      "mime": "application/octet-stream",
+      "bytes": 40437,
+      "sha256": "ee030acffaa0e06194a1409d507b05b12c4a9f8760eeaf9771efbe9c0235296b",
+      "equal_to_commit": true
+    },
+    {
+      "path": "pdf/issue7593/repro-equation-issue7593-hwpx-2020.pdf",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/pdf/issue7593/repro-equation-issue7593-hwpx-2020.pdf",
+      "http": 200,
+      "mime": "application/octet-stream",
+      "bytes": 42595,
+      "sha256": "206b9fc127a8f40e63fc49ba86ebd455f7d4e651e1f32dbf68d3915052d9f8db",
+      "equal_to_commit": true
+    },
+    {
+      "path": "pdf/issue8555/21868765_cell_text_edit-hwp-mac-12.30.pdf",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/pdf/issue8555/21868765_cell_text_edit-hwp-mac-12.30.pdf",
+      "http": 200,
+      "mime": "application/octet-stream",
+      "bytes": 593720,
+      "sha256": "aa6a2bf0fb12525a5108fab7a812e7ba81f8b879e9a50651b5128dc36f722c93",
+      "equal_to_commit": true
+    },
+    {
+      "path": "pdf/issue8556/21868765_cell_picture_insert-hwp-mac-12.30.pdf",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/pdf/issue8556/21868765_cell_picture_insert-hwp-mac-12.30.pdf",
+      "http": 200,
+      "mime": "application/octet-stream",
+      "bytes": 628655,
+      "sha256": "bf19f16e555477bdbe63862bb196a0ad35e65942b77a3d11d41e65a1e3b1a57a",
+      "equal_to_commit": true
+    },
+    {
+      "path": "pdf/issue8557/21868765_relocated_picture-hwp-mac-12.30.pdf",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/pdf/issue8557/21868765_relocated_picture-hwp-mac-12.30.pdf",
+      "http": 200,
+      "mime": "application/octet-stream",
+      "bytes": 622845,
+      "sha256": "568d2037f8b132c25b70c4a26b3bca0f13168b92d755ad1a13891ddc2e929107",
+      "equal_to_commit": true
+    },
+    {
+      "path": "pdf/leading-definition-slots/report-implicit-column-hancom-print.pdf",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/pdf/leading-definition-slots/report-implicit-column-hancom-print.pdf",
+      "http": 200,
+      "mime": "application/octet-stream",
+      "bytes": 13991,
+      "sha256": "8e7af1fcc369dbc45405bd0073850d085122a9d3f9f637678f119b324831d0d7",
+      "equal_to_commit": true
+    },
+    {
+      "path": "pdf/pic-crop-01-2022.pdf",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/pdf/pic-crop-01-2022.pdf",
+      "http": 200,
+      "mime": "application/octet-stream",
+      "bytes": 19211,
+      "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+      "equal_to_commit": true
+    },
+    {
+      "path": "pdf/shape-group-02-hwp-2020.pdf",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/pdf/shape-group-02-hwp-2020.pdf",
+      "http": 200,
+      "mime": "application/octet-stream",
+      "bytes": 89651,
+      "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+      "equal_to_commit": true
+    },
+    {
+      "path": "samples/eq-01.hwp",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/samples/eq-01.hwp",
+      "http": 200,
+      "mime": "application/octet-stream",
+      "bytes": 16384,
+      "sha256": "d4b5e4730da12395c953d16c026c979adfdf3235eee4be605cef0ab758a7e5ec",
+      "equal_to_commit": true
+    },
+    {
+      "path": "samples/issue7593/repro-equation-issue7593.hwpx",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/samples/issue7593/repro-equation-issue7593.hwpx",
+      "http": 200,
+      "mime": "application/octet-stream",
+      "bytes": 14835,
+      "sha256": "88a3683c34e92f8887e54b9b379f8c399a8ec844e46e127793c6486cba8d31ec",
+      "equal_to_commit": true
+    },
+    {
+      "path": "samples/issue8555/21868765_cell_text_edit.hwp",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/samples/issue8555/21868765_cell_text_edit.hwp",
+      "http": 200,
+      "mime": "application/octet-stream",
+      "bytes": 57344,
+      "sha256": "bbf1f72951b6ff5de258f806c5d2569214538b76a867ecebce10f9da8718ff9e",
+      "equal_to_commit": true
+    },
+    {
+      "path": "samples/issue8556/21868765_cell_picture_insert.hwp",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/samples/issue8556/21868765_cell_picture_insert.hwp",
+      "http": 200,
+      "mime": "application/octet-stream",
+      "bytes": 83456,
+      "sha256": "507362e6c73d6db4db73fe4b42ae8110c945747ec4b7564e9b83044cb9ceb074",
+      "equal_to_commit": true
+    },
+    {
+      "path": "samples/issue8557/21868765_relocated_picture.hwp",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/samples/issue8557/21868765_relocated_picture.hwp",
+      "http": 200,
+      "mime": "application/octet-stream",
+      "bytes": 83456,
+      "sha256": "0d7cfc1df9f86da46cb12ebe5aa1eb0fbd9e660d4302f7a6facee8296ee09001",
+      "equal_to_commit": true
+    },
+    {
+      "path": "samples/pic-crop-01.hwp",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/samples/pic-crop-01.hwp",
+      "http": 200,
+      "mime": "application/octet-stream",
+      "bytes": 131072,
+      "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+      "equal_to_commit": true
+    },
+    {
+      "path": "samples/shape-group-02.hwp",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/samples/shape-group-02.hwp",
+      "http": 200,
+      "mime": "application/octet-stream",
+      "bytes": 16384,
+      "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+      "equal_to_commit": true
+    },
+    {
+      "path": "tests/fixtures/gradient/radial-corner-print-contract-2020.pdf",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/tests/fixtures/gradient/radial-corner-print-contract-2020.pdf",
+      "http": 200,
+      "mime": "application/octet-stream",
+      "bytes": 35457,
+      "sha256": "1f0a7707198e81b8bd9a93efe9e5e6a35fe3ffd9e0131ebb4851c71e9ec2d1a8",
+      "equal_to_commit": true
+    },
+    {
+      "path": "tests/fixtures/gradient/radial-corner-print-contract.hwpx",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/0d2548fd88ea76b10e53eec841376b4bcbecbc4a/tests/fixtures/gradient/radial-corner-print-contract.hwpx",
+      "http": 200,
+      "mime": "application/octet-stream",
+      "bytes": 8749,
+      "sha256": "01884d8ea148e21fdb68194dd23c353c635903e4fc19d8b242e1efbe1d0aaf0d",
+      "equal_to_commit": true
+    }
+  ]
+}

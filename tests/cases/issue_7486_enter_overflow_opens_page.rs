@@ -101,3 +101,82 @@ fn repeated_enter_preserves_line_boxes_across_spacing_and_pages() {
         }
     }
 }
+
+// 실제 편집 API가 만든 동일 형상의 원문·독립 한컴 2020 PDF:
+// mydocs/working/assets/issue7486-table-enter/validation.json.
+// 정식 회귀 추가 전에 Native/fresh WASM 전체 7쪽의 최저 실루엣 100%와
+// 표 외곽·빈 2쪽을 직접 확인했다. 기대 owner는 독립 PDF의 쪽수와
+// 순차 본문 흐름 계약에서 정하며 절대 화면 좌표를 고정하지 않는다.
+fn assert_table_enter_boundary(rows: u16, spacing: u32, boundary: usize) {
+    let mut doc = HwpDocument::create_empty();
+    doc.create_blank_document_native().unwrap();
+    doc.apply_para_format_native(
+        0,
+        0,
+        &format!(r#"{{"lineSpacing":{spacing},"lineSpacingType":"Percent"}}"#),
+    )
+    .unwrap();
+    doc.create_table_native(0, 0, 0, rows, 2).unwrap();
+
+    // 표 삽입은 뒤 본문 문단1을 생성한다. 셀 내부 Enter와 구분한다.
+    assert_eq!(doc.get_paragraph_count_native(0).unwrap(), 2);
+    for para in 1..=boundary {
+        doc.split_paragraph_native(0, para, 0, None).unwrap();
+        let rect: serde_json::Value = serde_json::from_str(
+            &doc.get_cursor_rect_native(0, para + 1, 0)
+                .expect("새 빈 줄도 페이지를 소유해야 한다"),
+        )
+        .unwrap();
+        assert_eq!(
+            doc.page_count(),
+            if para < boundary { 1 } else { 2 },
+            "rows={rows}, spacing={spacing}, Enter={para}"
+        );
+        assert_eq!(
+            rect["pageIndex"].as_u64(),
+            Some(u64::from(para == boundary)),
+            "rows={rows}, spacing={spacing}, Enter={para}"
+        );
+    }
+
+    let bytes = doc.export_hwpx_native().unwrap();
+    let reopened = HwpDocument::from_bytes(&bytes).unwrap();
+    assert_eq!(reopened.page_count(), 2, "저장·재열기에서도 빈 2쪽 보존");
+    assert_eq!(
+        reopened.get_paragraph_count_native(0).unwrap(),
+        boundary + 2
+    );
+    let mut previous_page = 0;
+    for para in 0..boundary + 2 {
+        let rect: serde_json::Value =
+            serde_json::from_str(&reopened.get_cursor_rect_native(0, para, 0).unwrap()).unwrap();
+        let page = rect["pageIndex"].as_u64().unwrap();
+        assert!(page >= previous_page && page < 2, "본문 순서·소속 보존");
+        previous_page = page;
+    }
+    assert_eq!(previous_page, 1, "마지막 문단은 독립 PDF와 같은 2쪽");
+    fn table_count(node: &rhwp::renderer::render_tree::RenderNode) -> usize {
+        usize::from(matches!(
+            node.node_type,
+            rhwp::renderer::render_tree::RenderNodeType::Table(_)
+        )) + node.children.iter().map(table_count).sum::<usize>()
+    }
+    let first = reopened.build_page_render_tree(0).unwrap();
+    let second = reopened.build_page_render_tree(1).unwrap();
+    assert_eq!(
+        table_count(&first.root),
+        1,
+        "원래 표의 첫 쪽 소속·단일 표시"
+    );
+    assert_eq!(table_count(&second.root), 0, "다음 빈 쪽에 표 중복 없음");
+}
+
+#[test]
+fn table_followed_by_enter_keeps_finalized_blank_page() {
+    assert_table_enter_boundary(10, 160, 33);
+}
+
+#[test]
+fn table_followed_by_enter_after_spacing_drift_keeps_line_owner() {
+    assert_table_enter_boundary(30, 300, 9);
+}

@@ -124,13 +124,13 @@ impl SourceTailQuery<'_> {
         None
     }
 
-    /// 보정이 반영된 후보를 받는다. avail_for_rows를 잔여 예산으로 재해석하지 않는다.
+    /// 이미 수용한 행·행 간격·안 여백을 제외한 현재 행의 내용 예산을 소비한다.
     pub(in crate::renderer::typeset) fn extension_fit(
         &self,
         res: &RowCutResult,
         source_tail_cut: &RowCutResult,
         mid_frame_only: bool,
-        avail_for_rows: f64,
+        content_budget: f64,
     ) -> SourceTailFit {
         let Self { row, .. } = *self;
         let RowScanQuery { rows, r, .. } = *row;
@@ -212,7 +212,29 @@ impl SourceTailQuery<'_> {
         // `#5057` 두 시험은 이 `source_frame_tail` 갈래를 실제로 실행하지
         // 않는다(PR #6792 검토 실측). 우회 없이 #3930·#3931·#5057·#5584·
         // #5801·#6025·#6549·#6790 선택 시험 19/19 가 통과한다.
-        let source_tail_owns_this_page = source_tail_cut.consumed_height <= avail_for_rows + 0.5;
+        // Ordinary cuts account for the physical reserve of mixed nested
+        // content. The extended cut must reserve that same content before
+        // claiming this row's remaining band; the fragment's total band also
+        // includes preceding rows and cannot be spent again here.
+        let reserve = layout_engine.row_cut_mixed_nested_reserve(
+            table,
+            r,
+            self.row_start_cut,
+            &source_tail_cut.end_cut,
+            styles,
+        );
+        let source_tail_owns_this_page =
+            source_tail_cut.consumed_height + reserve <= content_budget + 0.5;
+        if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+            eprintln!(
+                "DIAG_SCAN TAIL_SPACE r={} height={:.3} reserve={:.3} content_budget={:.3} owns={}",
+                r,
+                source_tail_cut.consumed_height,
+                reserve,
+                content_budget,
+                source_tail_owns_this_page
+            );
+        }
 
         SourceTailFit {
             extension,

@@ -24,6 +24,18 @@ pub const HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS: &[u8] = b"2:paragraph-utf16";
 /// 없으면 render-diff 왕복이 프로파일 차이만큼 갈라진다(hwp3-sample p7 14.9px).
 pub const HWP3_ORIGIN_HWPX_MARKER_PATH: &str = "META-INF/rhwp-hwp3-origin";
 
+/// [#8303] HWP3 원본에서 만든 HWPX 가 `textpos` 를 문단 UTF-16 축으로 싣는다는 생산자 표지.
+///
+/// 값은 [`HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS`] 와 같다. 한컴 2020·2024 가 같은 HWP3 을 HWPX 로
+/// 저장할 때 구역·단 정의 자리를 센 축으로 쓰고(`hwp3-table-caption` 문단 0 줄 1:
+/// `textpos=62`), 그 자리를 뺀 값(46)은 한컴이 표를 한 줄 아래에 인쇄한다. HWP3 원본의
+/// 마커 값(`hwp3_page_ownership`)과 분리해 두어, 표지가 없는 이전 산출물은 종전 축으로 읽는다.
+pub const HWP3_ORIGIN_HWPX_PARAGRAPH_AXIS_PATH: &str = "META-INF/rhwp-hwp3-paragraph-axis";
+
+/// 원본 HWP3의 외부 생성·재정렬 요청을 저장 왕복에서 보존한다.
+pub const HWP3_EXTERNAL_REALIGN_STREAM_PATH: &str = "/RhwpHwp3ExternalRealign";
+pub const HWP3_EXTERNAL_REALIGN_HWPX_PATH: &str = "META-INF/rhwp-hwp3-external-realign";
+
 /// [Issue #1770] HWPX-origin 마커 스트림 경로.
 ///
 /// rhwp 의 HWPX→HWP 변환은 LINE_SEG 를 verbatim 직렬화하므로 산출 HWP5 의 IR 은
@@ -33,6 +45,14 @@ pub const HWP3_ORIGIN_HWPX_MARKER_PATH: &str = "META-INF/rhwp-hwp3-origin";
 /// 한컴은 미지의 루트 스트림을 무시하고(열림 계약 게이트로 검증), 한컴에서 재저장하면
 /// 마커가 사라지며 그 문서는 진짜 native HWP5 가 되므로 시멘틱이 자기일관적이다.
 pub const HWPX_ORIGIN_STREAM_PATH: &str = "/RhwpHwpxOrigin";
+
+/// [#8310] `/RhwpHwpxOrigin` 값 — 원본 HWPX 의 저장 줄 계약을 지닌 변환본.
+///
+/// 한컴 HWPX(rhwp 출처 표식 없음)에서 만든 HWP 는 본문 저장 줄을 원본 HWPX 와 같게 쓴다 —
+/// 원본 좌표 스냅샷(#5847)과 "저장 줄 없음". 다시 열 때 HWPX 와 같은 XML import 규칙으로
+/// 줄을 재구성해야 같은 조판 입력이 된다. 종전 값 `1` 은 이 계약 없이 쓴 변환본이므로
+/// 값으로 구분해 종전 파일의 읽기 규칙을 바꾸지 않는다.
+pub const HWPX_ORIGIN_SOURCE_LINES: &[u8] = b"2";
 
 /// [#3707] HWP3 출처 마커. `RhwpHwpxOrigin` 과 같은 방식이다.
 ///
@@ -252,6 +272,29 @@ pub struct DocInfo {
     pub raw_provenance: Option<crate::model::raw_provenance::DocInfoSeal>,
 }
 
+impl DocInfo {
+    /// 문서의 변경 추적 설정(`<hh:trackchageConfig flags>` · HWP5 `HWPTAG_TRACKCHANGE` 첫 `u32`).
+    ///
+    /// 이 값은 이름과 달리 **조판에 영향을 준다** — 한글이 `flags="0"` 문서를 열면 같은
+    /// 내용이 한 쪽 더 늘어난다(00295 실측: 원본 1쪽, rhwp 저장본 2쪽, 이 값만 56 으로
+    /// 바꾸면 다시 1쪽). HWP5 는 `HWPTAG_TRACKCHANGE` 레코드 첫 `u32` 에 싣는다(파서가
+    /// 모델링하지 않아 `extra_records` 에 원시 보존된다). 레코드가 없으면 56 — 한컴
+    /// 실측이다: 코퍼스 6,473 문서 중 4,588 이 레코드를 갖고 그중 4,555 가 56 이며,
+    /// 레코드가 **없는** 문서(00000·00001)를 한글로 저장해도 `flags="56"` 이 나온다.
+    /// 4바이트가 안 되는 손상 레코드도 기본값으로 떨어진다.
+    pub fn track_change_flags(&self) -> u32 {
+        self.extra_records
+            .iter()
+            .find(|r| r.tag_id == crate::parser::tags::HWPTAG_TRACKCHANGE)
+            .and_then(|r| r.data.get(..4))
+            .map(|b| u32::from_le_bytes([b[0], b[1], b[2], b[3]]))
+            .unwrap_or(TRACK_CHANGE_FLAGS_DEFAULT)
+    }
+}
+
+/// 한컴이 `HWPTAG_TRACKCHANGE` 없는 문서에 쓰는 변경 추적 설정값 (실측).
+pub const TRACK_CHANGE_FLAGS_DEFAULT: u32 = 56;
+
 /// HWP5 `HWPTAG_DOC_DATA` 안에서 인쇄 방식을 담는 키.
 ///
 /// 레코드는 `(u32 key, u32 value)` 의 평평한 목록이고 **키 순서가 문서마다 다르다** —
@@ -281,6 +324,8 @@ pub struct Section {
     pub section_def: SectionDef,
     /// 문단 리스트
     pub paragraphs: Vec<Paragraph>,
+    /// 본문 문단 뒤에 저장된 바탕쪽·메모 목록. 본문 raw_stream과 수명을 분리한다.
+    pub trailing_lists: Option<crate::model::section_tail::SectionTail>,
     /// 원본 BodyText 레코드 스트림 바이트 (직렬화 시 원본 복원용)
     /// 편집 시 None으로 초기화하여 재직렬화 유도
     pub raw_stream: Option<Vec<u8>>,
@@ -361,7 +406,61 @@ pub struct SectionDef {
     pub master_pages: Vec<MasterPage>,
 }
 
+impl SectionDef {
+    /// 원고지 정서법 (HWP5 flags bit 22, HWPX `<hp:grid wonggojiFormat>`).
+    pub const WONGOJI_FORMAT: u32 = 1 << 22;
+
+    pub fn wonggoji_format(&self) -> bool {
+        self.flags & Self::WONGOJI_FORMAT != 0
+    }
+
+    pub fn set_wonggoji_format(&mut self, on: bool) {
+        if on {
+            self.flags |= Self::WONGOJI_FORMAT;
+        } else {
+            self.flags &= !Self::WONGOJI_FORMAT;
+        }
+    }
+
+    /// 원고지 칸 격자. 줄·글자 격자가 모두 있고 원고지 정서법이 켜진 구역만 칸에 맞춰 짠다.
+    pub fn cell_grid(&self) -> Option<crate::model::paragraph::CellGrid> {
+        (self.wonggoji_format() && self.line_grid > 0 && self.char_grid > 0).then(|| {
+            crate::model::paragraph::CellGrid {
+                line: i32::from(self.line_grid),
+                cell: i32::from(self.char_grid),
+            }
+        })
+    }
+}
+
 impl Document {
+    /// HWPX 인쇄 설정의 편집 용지 표시 값. 미기재와 미지원 값은 구분한다.
+    pub(crate) fn hwpx_print_crop_mark(settings: &[u8]) -> Option<bool> {
+        let xml = std::str::from_utf8(settings).ok()?;
+        let start = xml.find(r#"name="PrintCropMark""#)?;
+        let value_start = start + xml[start..].find('>')? + 1;
+        let value_end = value_start + xml[value_start..].find('<')?;
+        match xml[value_start..value_end].trim() {
+            "0" => Some(false),
+            "1" => Some(true),
+            _ => None,
+        }
+    }
+
+    /// 한컴 Print의 편집 용지 표시. 미기재와 지원하지 않는 값은 출력하지 않는다.
+    pub(crate) fn print_crop_marks(&self) -> bool {
+        if let Some(settings) = self.hwpx_aux_entry("settings.xml") {
+            return Self::hwpx_print_crop_mark(settings).unwrap_or(false);
+        }
+        self.doc_info.extra_records.iter().any(|record| {
+            record.tag_id == 27
+                && record.data.chunks_exact(8).any(|pair| {
+                    u32::from_le_bytes(pair[..4].try_into().unwrap()) == 0x0006_401a
+                        && u32::from_le_bytes(pair[4..].try_into().unwrap()) == 1
+                })
+        })
+    }
+
     /// HWPX 원본 보조 엔트리를 경로로 조회한다.
     ///
     /// 직렬화기가 하드코딩 상수 대신 원본 바이트를 출력할지 결정할 때 사용한다.
@@ -373,16 +472,28 @@ impl Document {
             .map(|(_, d)| d.as_slice())
     }
 
+    /// [#8310] 이 HWP 가 원본 HWPX 의 저장 줄 계약(원본 좌표·저장 줄 없음)을 지니는가.
+    ///
+    /// `/RhwpHwpxOrigin` 의 값이 [`HWPX_ORIGIN_SOURCE_LINES`] 일 때만 참이다. 종전 값(`1`)의
+    /// 변환본과 rhwp HWP3 출처 HWPX 에서 만든 HWP 는 종전처럼 HWP 규칙으로 줄을 읽는다.
+    pub fn hwpx_origin_keeps_source_lines(&self) -> bool {
+        self.extra_streams.iter().any(|(path, value)| {
+            path == HWPX_ORIGIN_STREAM_PATH && value == HWPX_ORIGIN_SOURCE_LINES
+        })
+    }
+
     /// [#2403 Stage 1] 레이아웃 호환 정책 질의 표면.
     ///
-    /// 기존 분기의 1:1 파생 — `hwp3_layout` = `is_hwp3_variant`,
+    /// 계보와 실제 저장 포맷을 구분한다. HWP5의 문단 단위·저장 줄은 HWP5 계약을
+    /// 사용하고 `hwp3_lineage`만으로 HWP3 좌표 보정을 켜지 않는다.
     /// `hwpx_stored_layout` = (HWPX 컨테이너 && rhwp HWP5→HWPX 산출물 마커
     /// 없음) || rhwp HWPX→HWP 변환본. HWP5→HWPX 마커는 세션 중 부착될 수
     /// 있어 저장 값이 아닌 현재 문서 상태에서 파생한다. `native_hwp5_layout`은
-    /// 변환 계보가 없는 원본 HWP5 컨테이너에만 true다. HWP5-origin HWPX는
+    /// rhwp HWPX 변환 마커가 없는 실제 HWP5 컨테이너에 true다. HWP5-origin HWPX는
     /// `hwp5_stored_pagination_layout`으로 별도 호환 계약을 적용한다.
     pub fn layout_profile(&self) -> crate::model::provenance::LayoutCompatibilityProfile {
         use crate::model::provenance::SourceFormat;
+        let hwp5_container = self.provenance.format == SourceFormat::Hwp5;
         let hwp5_origin_hwpx = self.hwpx_aux_entry(HWP5_ORIGIN_HWPX_MARKER_PATH).is_some();
         // 원본 HWP3→HWPX 는 hwp3-origin 마커만 있다. lineage 만으로 hwp3_layout
         // 을 켜면 HWP3→HWP5 변환본 전용 계약(spacing_before *2 등)이 직파싱
@@ -393,8 +504,13 @@ impl Document {
         let native_hwp3_hwpx = self.provenance.format == SourceFormat::Hwpx
             && self.hwpx_aux_entry(HWP3_ORIGIN_HWPX_MARKER_PATH).is_some()
             && !hwp5_origin_hwpx;
+        // HWP5-origin HWPX는 같은 HWP5 문단 단위를 보존한다. 컨테이너 변경만으로
+        // HWP3 전용 본문 높이·저장 줄·문단 간격 분기를 다시 켜지 않는다.
         crate::model::provenance::LayoutCompatibilityProfile::new(
-            self.provenance.hwp3_lineage && !native_hwp3_hwpx,
+            self.provenance.hwp3_lineage
+                && !native_hwp3_hwpx
+                && !hwp5_container
+                && !hwp5_origin_hwpx,
             self.provenance.format == SourceFormat::Hwp3 || native_hwp3_hwpx,
             (self.provenance.format == SourceFormat::Hwpx
                 && !hwp5_origin_hwpx
@@ -402,13 +518,19 @@ impl Document {
                 || self.provenance.hwpx_lineage,
             self.provenance.format == SourceFormat::Hwpx && !native_hwp3_hwpx,
             hwp5_origin_hwpx,
-            self.provenance.format == SourceFormat::Hwp5
-                && !self.provenance.hwp3_lineage
-                && !self.provenance.hwpx_lineage,
+            hwp5_container && !self.provenance.hwpx_lineage,
+        )
+        .with_hwp5_container(hwp5_container)
+        .with_hwp3_external_realign(
+            self.extra_streams
+                .iter()
+                .any(|(path, value)| path == HWP3_EXTERNAL_REALIGN_STREAM_PATH && value == b"1")
+                || self.hwpx_aux_entry(HWP3_EXTERNAL_REALIGN_HWPX_PATH) == Some(b"1"),
         )
         .with_hwp3_password_layout(
             self.provenance.format == SourceFormat::Hwp3 && self.header.encrypted,
         )
+        .with_stored_rows_before_hancom_2020(self.provenance.stored_rows_before_hancom_2020)
         // native HWP5 는 로드 시 raw_stream 을 보유한 섹션을 raw_provenance 로
         // 봉인한다(파서 seal_body_raw_provenance). 편집 명령은 raw_stream 만
         // None 으로 지우고 봉인은 남기므로, "봉인은 있는데 raw_stream 이 사라짐"

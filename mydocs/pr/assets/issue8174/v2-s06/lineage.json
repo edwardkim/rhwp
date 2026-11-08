@@ -1,0 +1,16 @@
+{
+  "issue": "https://github.com/edwardkim/rhwp/issues/7911",
+  "original_pr": "https://github.com/edwardkim/rhwp/pull/7913",
+  "integrated_commit": "4662c069e557e928ed7968d061121fde90b1f027",
+  "original_review": "mydocs/pr/archives/pr_7913_review.md",
+  "original_implementation_evidence": "mydocs/working/task_m100_7911_stage2.md#322-폰트-전역-캐시-격리와-truetype-cmap-예약-경계-2026-10-16",
+  "followups": [
+    "515bd72dcd",
+    "80968497c2",
+    "e7a0dec55c6c6c6365e4ff50babe7583e1cf1c70",
+    "f9d12b3a17",
+    "ec06a6d83f"
+  ],
+  "current_observation_source": "695cea7b973fc54fc5ffc7f6d414f7ecf403b882",
+  "scope": "Original issue/body/all comments, original PR/body/comments/reviews, integration and later source history compared. Previously fixed bounded object copies/global font-cache isolation/TrueType map sharing retained."
+}

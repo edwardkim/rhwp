@@ -185,5 +185,45 @@ fn squeeze_cell_line_width_tracks_the_stored_inner_width() {
             (cell_width - line_width - 2.0 * DECLARED_INNER_MARGIN_PX).abs() <= 0.7,
             "`{needle}` 칸은 좌우 원문 여백을 유지해야 한다"
         );
+        // 전6쪽 양쪽90% 이상, 이 중요한6쪽은 Native99.94512/WASM99.94559%.
+        // 높은1쪽은 이 마지막 열의 SQUEEZE를 검증하지 않으므로 대신 고르지 않는다.
+        // 독립 Print cell clip의 pt→96DPI CSSpx. 기존 안 여백·원문 폭 관계도 유지한다.
+        // Evidence: regression-policy-20261015/worklife-squeeze.
+        let (top, bottom, expected_text) = if row == 20 {
+            (
+                244.652,
+                197.064,
+                "일･생활균형조례제정,근로자(시민)및기업지원명시만점(1점)",
+            )
+        } else {
+            (197.064, 163.861, "담당조직형태만점(1점)+관련조직5개")
+        };
+        let painted_text: String = cell["children"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .flat_map(|line| line["children"].as_array().into_iter().flatten())
+            .filter_map(|run| run["text"].as_str())
+            .collect();
+        assert_eq!(
+            painted_text
+                .chars()
+                .filter(|c| !c.is_whitespace())
+                .collect::<String>(),
+            expected_text,
+            "해당 원문 셀의 순서·누락·중복 보존"
+        );
+        for (axis, expected) in [
+            ("x", 438.004 * 4.0 / 3.0),
+            ("y", (841.0 - top) * 4.0 / 3.0),
+            ("w", (536.951 - 438.004) * 4.0 / 3.0),
+            ("h", (top - bottom) * 4.0 / 3.0),
+        ] {
+            let actual = cell["bbox"][axis].as_f64().expect("소유 셀 상자");
+            assert!(
+                (actual - expected).abs() <= 2.0,
+                "독립 Print의 마지막 열 셀 {axis}: 실제={actual}, 기준={expected}"
+            );
+        }
     }
 }

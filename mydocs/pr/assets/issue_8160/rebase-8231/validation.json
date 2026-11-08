@@ -1,0 +1,439 @@
+{
+  "passed": true,
+  "scope": "Local mandatory gates only; remote candidate CI, PR update and merge are not completed",
+  "base_sha": "238de6de41a208648f4ade6b494fe433a81c1fce",
+  "validated_test_source": "949195dba653cdef8d8fa1506131f5db2f669e78",
+  "render_producer": "e01e7540fd4c8a67ce5d1d1e5802170973acb998",
+  "recorded_head": "11aff27a29a3018c65aa02396661758d8febf778",
+  "runtime_identical": true,
+  "trailing_paths": [
+    "mydocs/pr/assets/issue_8160/rebase-8231/README.md",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/README.md",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/canvaskit/ck-source-diagram-full-print.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/canvaskit/ck-source-diagram-full.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/canvaskit/ck-source-figure-edge-print.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/canvaskit/ck-source-figure-edge.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/canvaskit/ck-source-figure-full-print.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/canvaskit/ck-source-figure-full.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/canvaskit/ck-source-figure-text-print.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/canvaskit/ck-source-figure-text.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/canvaskit/p018-provenance.json",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/canvaskit/p035-provenance.json",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/renderers.json",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/studio-base.json",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/studio-head.json",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/target-inspection.json",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/target-review/bcp-two-lines-focus.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/target-review/equation-lines-focus.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/target-review/hwp2022-p003.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/target-review/hwp2022-p018.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/target-review/hwp2022-p035.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/target-review/hwp2022-p038.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/target-review/hwp2024-p003.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/target-review/hwp2024-p006.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/target-review/hwpx-p018.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/target-review/hwpx-p058.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/consumer/wmf-before-after.json",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/README.md",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base-build.json",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/briefing1487.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/cbta1613.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/curriculum-control.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/field-plain.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/field-reset.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/franchise.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/hwp5-control.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/math1342000-actual.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/near-top-reset.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/offset-min.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/omitted-after.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/onsaemiro-control.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/onsaemiro-converted-control.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/policy1790387-actual.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/regulatory86712.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/roadmap-control.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/rowspan-header.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/saved-host.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/source8152-d17253.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/source8152-d1853.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/source8152-d1880.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/source8152-d2176.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/source8152-d5169.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/source8152-d80168.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/source8152-d80168x.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/source8152-dband.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/source8152-ha10m.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/source8152-hfine.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/source8152-hs2.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/symbol-slot-2020.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/symbol-slot-2024.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/tac-successor.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/task1749h.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/task1749x.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/base/titled-host.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head-build.json",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/briefing1487.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/cbta1613.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/curriculum-control.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/field-plain.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/field-reset.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/franchise.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/hwp5-control.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/math1342000-actual.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/near-top-reset.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/offset-min.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/omitted-after.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/onsaemiro-control.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/onsaemiro-converted-control.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/policy1790387-actual.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/regulatory86712.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/roadmap-control.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/rowspan-header.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/saved-host.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/source8152-d17253.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/source8152-d1853.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/source8152-d1880.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/source8152-d2176.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/source8152-d5169.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/source8152-d80168.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/source8152-d80168x.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/source8152-dband.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/source8152-ha10m.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/source8152-hfine.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/source8152-hs2.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/symbol-slot-2020.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/symbol-slot-2024.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/tac-successor.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/task1749h.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/task1749x.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/head/titled-host.tsv",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/images/cbta1613-p048-full.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/images/curriculum-control-p048-full.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/images/curriculum-control-p087-full.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/images/curriculum-control-p178-full.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/images/offset-min-p001-full.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/images/omitted-after-p002-full.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/images/onsaemiro-control-p036-full.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/images/onsaemiro-converted-control-p046-focus.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/images/policy1790387-actual-p006-full.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/images/regulatory86712-p027-full.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/images/rowspan-header-p002-full.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/images/rowspan-header-p003-full.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/images/saved-host-p001-full.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/images/saved-host-p004-full.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/images/symbol-slot-2020-p001-full.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/images/symbol-slot-2024-p001-full.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/images/titled-host-p001-full.png",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/inspection.json",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/paint-owners.json",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/paired-pages.json",
+    "mydocs/pr/assets/issue_8160/rebase-8231/preservation/wasm/proof.json",
+    "mydocs/working/task_m100_8160_stage10.md"
+  ],
+  "rust_phases": [
+    {
+      "name": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 7.771985091036186,
+      "log_sha256": "40c2f703659a57575b4401dfd6623f994d603a46c8371df8b94523b8e0722072"
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 78.1136344820261,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 10.015873890020885,
+      "log_sha256": "43f3e2478c47cfeb01c84ad1ee3194c635d7909d7148129dabee25a2a09a834a"
+    },
+    {
+      "name": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 3.8152045200113207,
+      "log_sha256": "b672eb925c2fe4d830889eb0c451c87983dcae285e43aaf4b230a62c3c4620b7"
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 3.2575333979912102,
+      "log_sha256": "a52787ab42561629ef803a736767cb6c32c68488cc00694fb04e55ce85b38c24"
+    },
+    {
+      "name": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 39.96319370996207,
+      "log_sha256": "bfa4b3f820f2f66755617e77ed2844278d9165e44a05259cb041435f47863c0d"
+    },
+    {
+      "name": "suite-policy",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "238de6de41a208648f4ade6b494fe433a81c1fce"
+      ],
+      "exit_code": 0,
+      "seconds": 3.1809622400905937,
+      "log_sha256": "f4d291ad22a61ad9f6d8c99bd30a725548db834030134325cdce6530a3af8291"
+    },
+    {
+      "name": "unit-policy",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "238de6de41a208648f4ade6b494fe433a81c1fce"
+      ],
+      "exit_code": 0,
+      "seconds": 34.32787914504297,
+      "log_sha256": "d8ea078dd615474da03f5bd8e22900752ea88c198fc4f7afd3bc1f60be4290bc"
+    },
+    {
+      "name": "full-nextest",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--tests",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 7948.773103572079,
+      "log_sha256": "5579fdba25d1fb8b5df798f66e51e3f6bd1c02c093483603aa071f8b2062ea1f"
+    },
+    {
+      "name": "skia-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 228.30932324402966,
+      "log_sha256": "c1fe8102207590086f2e23c956fc0428df87cf2887f8b1e39df8eb0da44833f9"
+    },
+    {
+      "name": "skia-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib"
+      ],
+      "exit_code": 0,
+      "seconds": 608.5082596299471,
+      "log_sha256": "7d5665f5bd4f080759141b186a0bad17af1c6e41c8d1be7519b06017a8448027"
+    },
+    {
+      "name": "skia-placeholder",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit_code": 0,
+      "seconds": 420.35534773301333,
+      "log_sha256": "07e6c6cefc5b62686e0650e88a63ec31020f72c24215057facdebbbf1bc17920"
+    },
+    {
+      "name": "skia-direct-pdf",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit_code": 0,
+      "seconds": 25.493626795941964,
+      "log_sha256": "875f255588993ac93462072444a872529612c057e3060c74d8a3d49bcc52ff80"
+    },
+    {
+      "name": "skia-issue8160",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8160_hwp2022_paragraph_relations",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit_code": 0,
+      "seconds": 57.32648466003593,
+      "log_sha256": "27a352e1b8aa9d3544c6a507e67d31d2574cf2c29fe935fad66b42b1a0add325"
+    }
+  ],
+  "full_nextest": {
+    "run": 11573,
+    "passed": 11573,
+    "skipped": 45,
+    "issue8160_default_passed": 86
+  },
+  "native_skia_libraries": {
+    "passed": 4040,
+    "failed": 0,
+    "ignored": 12,
+    "targets": 4
+  },
+  "native_skia_focused": [
+    {
+      "phase": "skia-placeholder",
+      "run": 2,
+      "passed": 2
+    },
+    {
+      "phase": "skia-direct-pdf",
+      "run": 14,
+      "passed": 14
+    },
+    {
+      "phase": "skia-issue8160",
+      "run": 3,
+      "passed": 3
+    }
+  ],
+  "target_raw100": {
+    "files": 3,
+    "pages_each": 64,
+    "backends": [
+      "native",
+      "fresh optimized wasm"
+    ],
+    "pages_checked": 384,
+    "raw100": 384,
+    "integer_unmatched_both_directions": 0,
+    "proof": "raw100-proof.json",
+    "proof_sha256": "88728eca8a986d083a013f59af8e1242d768f9b27a626680923416647870f7df"
+  },
+  "preservation": [
+    {
+      "backend": "native",
+      "conditions": 35,
+      "pages": 2041,
+      "minimum": 91.66238,
+      "maximum_decline_pp": 0.08523,
+      "drops_at_least_0_1pp": 0,
+      "below90": 0
+    },
+    {
+      "backend": "wasm",
+      "conditions": 35,
+      "pages": 2041,
+      "minimum": 91.70207,
+      "maximum_decline_pp": 0.09506,
+      "drops_at_least_0_1pp": 0,
+      "below90": 0
+    }
+  ],
+  "other_local_checks": {
+    "node_registration_and_locking_passed": 25,
+    "visual_sweep_python_passed": 191,
+    "studio_unit_passed": 2572,
+    "studio_unit_skipped": 2,
+    "studio_typecheck_passed": true
+  },
+  "consumer_proof": "consumer/README.md",
+  "excluded": [
+    "2025 행정업무운영 편람(최종).hwp",
+    "2025 행정업무운영 편람(최종).hwpx",
+    "specification errata edits"
+  ]
+}

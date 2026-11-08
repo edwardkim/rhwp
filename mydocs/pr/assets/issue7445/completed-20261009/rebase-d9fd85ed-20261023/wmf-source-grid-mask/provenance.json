@@ -1,0 +1,130 @@
+{
+  "parentHead": "3dada4386c000fbec6510aca204f660a1ae19ff8",
+  "base": "d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867",
+  "source": {
+    "parentHead": "3dada4386c000fbec6510aca204f660a1ae19ff8",
+    "base": "d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867",
+    "productionDiffSha256": "a7b05083dfcf907da9dcbb89d8128fa878392838dbe215f181c3b20253f436a3",
+    "sourceFiles": {
+      "src/paint/metafile_surface.rs": "7b87a2d2ca815205989abf9da355b3a67200bd4d1ae89d6a3a9a9b14a3b50c86",
+      "src/paint/metafile_masks.rs": "4e66a8a239f6afa7d026eeffaa672e17d15ef726647040aecaccf12e78818e11"
+    },
+    "sourceState": "Uncommitted shared bitmap-mask grid correction; no document selector or threshold change",
+    "remoteReference": {
+      "host": "ubuntu-ted2",
+      "sourceHead": "0c3148ab54b3a4ca1bdc969e4d9283265625feec",
+      "sourcePath": "src/paint/metafile_print/masks.rs",
+      "sha256": "4e66a8a239f6afa7d026eeffaa672e17d15ef726647040aecaccf12e78818e11",
+      "remoteReadOnly": true,
+      "applied": false
+    },
+    "fullPrAcceptance": false
+  },
+  "native": {
+    "binarySha256": "cd551d86ca214a73ddf27fbfbb3970e56ef130438d5112c71a1c3571161cfcc2",
+    "sourceProducerSha256": "17d0d2aec3d0190c5e40b68925330f3fd6569ceaef2db7ef63dbe6d60d6d5282"
+  },
+  "wasm": {
+    "files": {
+      "rhwp.js": "56b2836e71bbbde64097476cb009303b8eeff61777c480cae82a238cf4d47af3",
+      "rhwp_bg.wasm": "d8ec24b44df148ad4ccc1d3c6a779756b1b373df1feb2738ab515ce039a39a05"
+    },
+    "rootAndStudioPublicMatch": true,
+    "method": "Mac locked wrapper --target web --out-dir pkg --no-opt; local substitute, not Docker optimized",
+    "sourceProducerSha256": "17d0d2aec3d0190c5e40b68925330f3fd6569ceaef2db7ef63dbe6d60d6d5282"
+  },
+  "artifacts": [
+    {
+      "file": "sample16-hwpx-native-silhouette.tsv",
+      "sha256": "f2193bd16cf1bfe465d9db77366ab2aa7f776e357b40c78a25be18617cd81355",
+      "producer": "Stage86 Native/fresh WASM full affected cohort",
+      "case": "sample16-hwpx",
+      "backend": "native",
+      "pages": 64
+    },
+    {
+      "file": "biotoxin205-native-silhouette.tsv",
+      "sha256": "6cdbb1d6e933608d3a45e788d6add659b450d721ed0884d849ddf12ca5b97828",
+      "producer": "Stage86 Native/fresh WASM full affected cohort",
+      "case": "biotoxin205",
+      "backend": "native",
+      "pages": 205
+    },
+    {
+      "file": "press12-native-silhouette.tsv",
+      "sha256": "635a8cfbccc43e141cd200e0dd91a7c24f839185276e80774477ba13047fdf08",
+      "producer": "Stage86 Native/fresh WASM full affected cohort",
+      "case": "press12",
+      "backend": "native",
+      "pages": 12
+    },
+    {
+      "file": "sample16-hwpx-wasm-silhouette.tsv",
+      "sha256": "aabd42101c05785973ef982c5e8f64dc2efbba62b5b6ca0fe81aeaeef3f77b8f",
+      "producer": "Stage86 Native/fresh WASM full affected cohort",
+      "case": "sample16-hwpx",
+      "backend": "wasm",
+      "pages": 64
+    },
+    {
+      "file": "biotoxin205-wasm-silhouette.tsv",
+      "sha256": "ec6580946f1bec055c9f943400112b8d42a8841f559cc58f645ca027cd229024",
+      "producer": "Stage86 Native/fresh WASM full affected cohort",
+      "case": "biotoxin205",
+      "backend": "wasm",
+      "pages": 205
+    },
+    {
+      "file": "press12-wasm-silhouette.tsv",
+      "sha256": "febad181d5ecb81c571f57bd457334900c9ba5d8e2d71a7f2de59e6992ecf525",
+      "producer": "Stage86 Native/fresh WASM full affected cohort",
+      "case": "press12",
+      "backend": "wasm",
+      "pages": 12
+    },
+    {
+      "file": "native-p018-review.png",
+      "sha256": "473da4033f5019eeb5dbec55c1e885eb38a87aad6e73e4f5b7aaa821144ac0cd",
+      "producer": "Stage86 fresh focus capture, not reused old head"
+    },
+    {
+      "file": "native-p018-overlay.png",
+      "sha256": "4dfb060d858526dd9bf87f047f7417ced3fedb15d39dbe913560ec54feaa614a",
+      "producer": "Stage86 fresh focus capture, not reused old head"
+    },
+    {
+      "file": "native-p035-review.png",
+      "sha256": "20c239e3f143a28ac98ac85f3aa0947c3aca7d557d5f9bfdcdb641b3931360a8",
+      "producer": "Stage86 fresh focus capture, not reused old head"
+    },
+    {
+      "file": "native-p035-overlay.png",
+      "sha256": "2285f8679165b1be41469a88a2357a3cf39c21ad89ce54afb625709f410f9aaf",
+      "producer": "Stage86 fresh focus capture, not reused old head"
+    },
+    {
+      "file": "wasm-p018-review.png",
+      "sha256": "91201821f13a734a356ff935e7e7acb97f3e6564e419906d2535cb652e1fc5c1",
+      "producer": "Stage86 fresh focus capture, not reused old head"
+    },
+    {
+      "file": "wasm-p018-overlay.png",
+      "sha256": "d5e9e1fdae0074e0a86ff6ea97804a558cc5fdfabf7af7f0c6976106bceeb84d",
+      "producer": "Stage86 fresh focus capture, not reused old head"
+    },
+    {
+      "file": "wasm-p035-review.png",
+      "sha256": "298ebcc1508542d8e61ba9e0ec737395e9474c91817db4606b2b50e8c6bbc6d6",
+      "producer": "Stage86 fresh focus capture, not reused old head"
+    },
+    {
+      "file": "wasm-p035-overlay.png",
+      "sha256": "386ed6206423e0ee6686d410c27d92300eaaabaaae17560fc1c04ae28679bb79",
+      "producer": "Stage86 fresh focus capture, not reused old head"
+    }
+  ],
+  "fullPrAcceptance": false,
+  "sourceProducerOriginalSha256": "17d0d2aec3d0190c5e40b68925330f3fd6569ceaef2db7ef63dbe6d60d6d5282",
+  "remoteReferenceApplied": true,
+  "sourceProducerSnapshot": "Prepared before application; original metadata retained byte-for-byte. Source file hashes match validated frozen builds."
+}

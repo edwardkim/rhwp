@@ -1,0 +1,119 @@
+{
+  "date": "2026-10-29",
+  "scope": "sample4 1쪽만 확인; 36쪽 전체를 새 글꼴로 다시 측정한 결과가 아니다",
+  "input": "samples/hwp3-sample4.hwp",
+  "input_sha256": "f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4",
+  "pdf": "pdf/hwp3-sample4-2020.pdf",
+  "pdf_sha256": "61d63da58638b4a28900a15694779b35766f4ff5b3e0ed41d959a97f2599bb60",
+  "dpi": 96,
+  "comparison_profile": "print",
+  "compat": "2022",
+  "new_font": {
+    "family": "중간공한 / Konghan Normal",
+    "sha256": "adb0346c72368434530c38348d9dcf05a989d755f9a1e698463724f0ee34dbf9",
+    "availability": "사용자 설치 글꼴; 저장소에 글꼴 바이트를 포함하지 않음"
+  },
+  "previous_evidence": "mydocs/pr/assets/issue8219/sample4/evidence.json",
+  "previous_evidence_sha256": "4479087e90e11b572157de38925960eccdd37cdf079acefcd0c663ebc9bd68a3",
+  "results": {
+    "native": {
+      "page": 1,
+      "previous_raw_percent": 64.32418,
+      "after_raw_percent": 66.60007,
+      "new_minus_old_pp": 2.27589,
+      "previous_and_current_pdf_raster_sha256": "3111babab0e7ff8a36e4eb694b30f9a37a5cd9c3a0d68a5010d6e14a8877a2f7",
+      "before_after_code_png_sha256": "bc3588cb99a88cff28e324fa7b8b26219d8c7fb930159ab82cdb3fe4e15a4ad3",
+      "before_after_code_png_identical": true,
+      "visual_sweep_exit_code": 1,
+      "exit_reason": "1쪽 90% 미만",
+      "new_run_manifest_sha256": "891a0821847b7f14ab163a008e2c93e5c4d98d72f3e99748e33a6646286f18de",
+      "previous_code_new_font_manifest_sha256": "aeb32ceafebe8113a9e821e59172ab4706349816cd7d1f8c896ba539a53ce4e1"
+    },
+    "wasm": {
+      "page": 1,
+      "previous_raw_percent": 64.81033,
+      "after_raw_percent": 66.44902,
+      "new_minus_old_pp": 1.63869,
+      "previous_and_current_pdf_raster_sha256": "3111babab0e7ff8a36e4eb694b30f9a37a5cd9c3a0d68a5010d6e14a8877a2f7",
+      "before_after_code_png_sha256": "183e5b70a62cf53e36ffce29ee5949cb5cf263f7657c3cdd55f15359b59f6619",
+      "before_after_code_png_identical": true,
+      "visual_sweep_exit_code": 1,
+      "exit_reason": "1쪽 90% 미만",
+      "new_run_manifest_sha256": "0c3947a4210040a2a5d52a4678a9d8a69b03ed69f2a47a663b38f2e74c1a9897",
+      "previous_code_new_font_manifest_sha256": "64a1c19a77f88df0ebd9d597725277e2637c62e020d21729bce37ca3c9ac17ab",
+      "font_loaded_sha256": "adb0346c72368434530c38348d9dcf05a989d755f9a1e698463724f0ee34dbf9"
+    }
+  },
+  "qualification": "두 글꼴 환경에서 같은 PDF 래스터를 사용했다. 보정 전후 바이너리끼리는 새 환경에서 PNG가 같았다. 이전 환경과 글꼴 공급 조건이 다르므로 차이의 유일한 원인을 단정하지 않는다. WASM 새 실행에는 해당 글꼴 경로를 명시했다. 1쪽은 양쪽 모두 90% 미만이며 사용자 결정에 따라 별도 보정하지 않는다.",
+  "spacing_diagnostic": {
+    "scope": "1쪽 제목 문단의 서로 연속된 한글 9쌍",
+    "source_parser_style": {
+      "bold": true,
+      "spacing_percent": 0,
+      "ratio_percent": 100,
+      "size_points": 20
+    },
+    "pdf_font_size_points": 20.02363,
+    "font_units_per_em": 1000,
+    "pdf_origin_units": "pymupdf PDF 좌표; 원점을 글자 크기로 나눔",
+    "values": [
+      {
+        "characters": "리눅",
+        "pdf_advance_em": 0.80862,
+        "font_advance_em": 0.759,
+        "difference_em": 0.04962
+      },
+      {
+        "characters": "눅스",
+        "pdf_advance_em": 0.65288,
+        "font_advance_em": 0.6,
+        "difference_em": 0.05288
+      },
+      {
+        "characters": "어셈",
+        "pdf_advance_em": 0.84453,
+        "font_advance_em": 0.798,
+        "difference_em": 0.04653
+      },
+      {
+        "characters": "셈블",
+        "pdf_advance_em": 0.97037,
+        "font_advance_em": 0.92,
+        "difference_em": 0.05037
+      },
+      {
+        "characters": "블리",
+        "pdf_advance_em": 0.64688,
+        "font_advance_em": 0.598,
+        "difference_em": 0.04888
+      },
+      {
+        "characters": "프로",
+        "pdf_advance_em": 0.64688,
+        "font_advance_em": 0.598,
+        "difference_em": 0.04888
+      },
+      {
+        "characters": "로그",
+        "pdf_advance_em": 0.64688,
+        "font_advance_em": 0.593,
+        "difference_em": 0.05388
+      },
+      {
+        "characters": "그래",
+        "pdf_advance_em": 0.60497,
+        "font_advance_em": 0.556,
+        "difference_em": 0.04897
+      },
+      {
+        "characters": "래밍",
+        "pdf_advance_em": 0.95236,
+        "font_advance_em": 0.903,
+        "difference_em": 0.04936
+      }
+    ],
+    "pdf_text_ink_bbox_width_px": 266.35,
+    "rhwp_text_run_layout_bbox_width_px": 346.7,
+    "interpretation": "PDF의 연속 한글 원점 간격은 공급 글꼴별 자연 전진폭보다 대략 0.05em 크다. 한글 구간의 PDF 글자 bounding box와 rhwp 레이아웃 run box는 서로 다른 경계 종류이므로 수치 차이는 진단용이다. 글꼴 윤곽 일치 및 차이의 유일한 원인을 확정하지 않는다."
+  }
+}

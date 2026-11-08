@@ -92,10 +92,18 @@ pub(in crate::renderer::typeset) fn place(
     let is_first_placed = first_placed_table == Some(ctrl_idx);
     let is_last_placed = last_placed_table == Some(ctrl_idx);
     if engine.is_effective_tac_table(para, table, fmt) {
-        if !engine.render_normalization.table_text_reflowed(table) {
+        if !engine.render_normalization.table_text_reflowed(table)
+            && !engine
+                .render_normalization
+                .inline_host_frame_expanded(table)
+        {
             if let Some(placement) = super::stored_tac::prepare_coanchored_first_line(
                 ctrl_idx,
                 para,
+                next_para,
+                next_para
+                    .and_then(|next| styles.para_styles.get(next.para_shape_id as usize))
+                    .map_or(0.0, |style| style.spacing_before),
                 fmt,
                 ft.effective_height,
                 st.stored_tac_page(paragraphs_all),
@@ -118,9 +126,14 @@ pub(in crate::renderer::typeset) fn place(
             is_first_placed,
             is_last_placed,
             styles,
+            composed,
+            next_para,
             preceding_stored_vpos(paragraphs_all, para_idx),
         );
-    } else if engine.try_typeset_empty_para_float_table(
+    } else if !crate::renderer::float_placement::is_textless_coanchored_float_host(para)
+        // [#7687] 양수 오프셋 표를 품은 글자 없는 다중 자리차지 host 는 lane 적층이 아니라
+        // 글 있는 host 와 같은 공동 앵커 경로(`place_table_with_text`)로 간다.
+        && engine.try_typeset_empty_para_float_table(
         st,
         para_idx,
         ctrl_idx,
@@ -128,10 +141,14 @@ pub(in crate::renderer::typeset) fn place(
         table,
         &ft,
         composed,
+        para_idx
+            .checked_sub(1)
+            .and_then(|index| paragraphs_all.get(index)),
         next_para,
         styles,
         para_start_height,
         para_float_lanes,
+        paragraphs_all,
     ) {
         // Empty host para-float table placed by horizontal lane reservation.
     } else {

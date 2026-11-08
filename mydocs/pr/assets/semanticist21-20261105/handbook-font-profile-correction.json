@@ -1,0 +1,27 @@
+{
+  "source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+  "first_attempt": {
+    "profile": "visual-fonts-final (10 programs for other case references)",
+    "status": "completed failed",
+    "result": "reference fallback changed; same profile on base also differs",
+    "process_killed": false
+  },
+  "diagnostic": {
+    "reference_p27_pdf_fonts": [
+      "KoPubDotumBold",
+      "KoPubDotumMedium"
+    ],
+    "base_with_other_case_profile_raw": 94.91,
+    "candidate_with_reference_profile_raw": 100.0
+  },
+  "acceptance": {
+    "profile": "canonical handbook pinned KoPub/HCR (no explicit --font-path)",
+    "status": "passed",
+    "pages": 383,
+    "minimum": 99.96,
+    "exact100_pages": 370,
+    "tsv": "handbook-final-native.tsv",
+    "gate": "handbook-final-gate.json",
+    "baseline_changed": false
+  }
+}

@@ -87,7 +87,9 @@ class HwpPasswordDialog extends ModalDialog {
         }
       };
       document.addEventListener('keydown', this.inputEnterHandler, true);
-      requestAnimationFrame(() => this.input.focus());
+      requestAnimationFrame(() => {
+        if (this.isTopmostDialog() && !this.dialog.querySelector('input:focus, textarea:focus')) this.input.focus();
+      });
     });
   }
 }
@@ -198,7 +200,9 @@ class HwpSavePasswordDialog extends ModalDialog {
         }
       };
       document.addEventListener('keydown', this.inputEnterHandler, true);
-      requestAnimationFrame(() => this.passwordInput.focus());
+      requestAnimationFrame(() => {
+        if (this.isTopmostDialog() && !this.dialog.querySelector('input:focus, textarea:focus')) this.passwordInput.focus();
+      });
     });
   }
 }

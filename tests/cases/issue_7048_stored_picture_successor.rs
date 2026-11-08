@@ -44,8 +44,24 @@ fn check_sample(path: &str) {
         let RenderNodeType::TextRun(run) = &target.node_type else {
             unreachable!()
         };
+        let body = tree
+            .root
+            .children
+            .iter()
+            .find(|node| matches!(node.node_type, RenderNodeType::Body { .. }))
+            .expect("본문 영역");
+        let expected_baseline = |para: usize, legacy: f64| {
+            if path == FULL {
+                // 독립 Print16쪽과 원본 저장 LineSeg가 같은 줄 원점을 소유한다.
+                // 절대 페이지 위치 대신 본문 원점에 대한 원본 메트릭을 검사한다.
+                let line = &core.document().sections[0].paragraphs[para].line_segs[0];
+                body.bbox.y + f64::from(line.vertical_pos + line.baseline_distance) * 96.0 / 7200.0
+            } else {
+                legacy
+            }
+        };
         assert!(
-            (target.bbox.y + run.baseline - 1020.32).abs() < 1.0,
+            (target.bbox.y + run.baseline - expected_baseline(150, 1020.32)).abs() < 1.0,
             "Hancom PDF baseline: {:?}, baseline {}",
             target.bbox,
             run.baseline
@@ -55,7 +71,8 @@ fn check_sample(path: &str) {
         let RenderNodeType::TextRun(run) = &preceding.node_type else {
             unreachable!()
         };
-        assert!((preceding.bbox.y + run.baseline - 974.72).abs() < 1.0);
+        assert!((preceding.bbox.y + run.baseline - expected_baseline(149, 974.72)).abs() < 1.0);
+        assert!(preceding.bbox.y + preceding.bbox.height <= target.bbox.y);
     }
     assert!(found, "content-matched PDF page must exist");
 }
@@ -172,6 +189,26 @@ fn issue_7048_table_first_fragment_keeps_the_footer_clear() {
                         .max()
                         .unwrap();
                     assert_eq!(last_row, 21, "Hancom PDF 57 ends before 품목별 특성 row");
+                    if path == FULL {
+                        let body = tree
+                            .root
+                            .children
+                            .iter()
+                            .find(|node| matches!(node.node_type, RenderNodeType::Body { .. }))
+                            .expect("본문 영역");
+                        let footer = tree
+                            .root
+                            .children
+                            .iter()
+                            .find(|node| matches!(node.node_type, RenderNodeType::Footer))
+                            .expect("꼬리말 영역");
+                        let bottom = table.bbox.y + table.bbox.height;
+                        assert!(table.bbox.y >= body.bbox.y - 0.5);
+                        assert!(bottom <= body.bbox.y + body.bbox.height + 0.5);
+                        assert!(bottom <= footer.bbox.y + 0.5, "표가 꼬리말을 침범함");
+                    }
+                    // 원본57쪽은 양쪽98% 이상인 완료 페이지이므로 독립
+                    // Print의 기존1px 하단 검사도 관계 검사와 함께 유지한다.
                     assert!(
                         (table.bbox.y + table.bbox.height - 1006.6).abs() < 1.0,
                         "Hancom first fragment bottom: {:?}",

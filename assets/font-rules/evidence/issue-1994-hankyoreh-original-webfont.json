@@ -1,0 +1,23 @@
+{
+  "audit": {
+    "cmapCharacters": 12443,
+    "horizontalAdvanceDifferences": 0,
+    "missingCharacters": 0,
+    "outlineDifferences": 0,
+    "sourceGlyphs": 13010,
+    "unitsPerEm": 1000,
+    "woff2Glyphs": 13010,
+    "woffGlyphs": 13010
+  },
+  "family": "한겨레결체",
+  "officialArchive": "https://img.hani.co.kr/section-image/allim/hankc.zip",
+  "officialNotice": "https://notice.hani.co.kr/customer_view.html?bid=notification&no=56&page=1",
+  "officialTtfSha256": "86ef0563e50f815e9a6f0a409efbe580f6af06dc0b5de320e6d53755b7863bc1",
+  "postScriptName": "TSThgrgl",
+  "scope": "사용자가 지정한 고정 버전 CDN. 공식 원본의 전체 cmap 문자별 윤곽·전진폭과 일치하며 대체 글꼴 규칙이 아니다. 글꼴 바이너리와 로컬 경로는 저장소에 포함하지 않는다.",
+  "sha256Woff": "792ccf7d42ef50839bd9674c344f322afa9fe8fc04f57316b3c4e46c5b854357",
+  "sha256Woff2": "985c795cc1e342c3091e6d217fd6f71155471f8a191fdce52180289662cf9db1",
+  "sourceCss": "https://cdn.jsdelivr.net/npm/@noonnu/hankc@0.1.0/index.min.css",
+  "sourceWoff": "https://cdn.jsdelivr.net/npm/@noonnu/hankc@0.1.0/fonts/hankc-400.woff",
+  "sourceWoff2": "https://cdn.jsdelivr.net/npm/@noonnu/hankc@0.1.0/fonts/hankc-400.woff2"
+}

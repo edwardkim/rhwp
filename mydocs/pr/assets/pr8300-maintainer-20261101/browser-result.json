@@ -1,0 +1,479 @@
+{
+  "scope": "Actual Studio automation command router, real picker/detail DOM clicks, history Undo/Redo, new nested depth, WASM rejection and actual saved HWP/HWPX. This is an execution probe; visual comparison is measured separately.",
+  "results": [
+    {
+      "case": "body-dialog-default",
+      "checked": false,
+      "disabled": false,
+      "title": ""
+    },
+    {
+      "case": "depth-two-and-repeated-history",
+      "deep": {
+        "position": {
+          "sectionIndex": 0,
+          "paragraphIndex": 0,
+          "charOffset": 0,
+          "parentParaIndex": 0,
+          "controlIndex": 2,
+          "cellIndex": 4,
+          "cellParaIndex": 0,
+          "cellPath": [
+            {
+              "controlIndex": 2,
+              "cellIndex": 4,
+              "cellParaIndex": 0
+            },
+            {
+              "controlIndex": 0,
+              "cellIndex": 0,
+              "cellParaIndex": 0
+            },
+            {
+              "controlIndex": 0,
+              "cellIndex": 0,
+              "cellParaIndex": 0
+            }
+          ]
+        },
+        "inner": {
+          "rowCount": 2,
+          "colCount": 2,
+          "cellCount": 4
+        },
+        "info": {
+          "version": "5.1.0.1",
+          "sectionCount": 1,
+          "pageCount": 1,
+          "encrypted": false,
+          "hwp3Variant": false,
+          "fallbackFont": "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+          "fontsUsed": [
+            "함초롬돋움",
+            "함초롬바탕"
+          ],
+          "fontSubstitutions": []
+        },
+        "undoDepth": 2,
+        "canUndo": true
+      }
+    },
+    {
+      "case": "nested-hwp",
+      "dialog": {
+        "checked": true,
+        "disabled": true,
+        "title": "표 칸 안에 만드는 표는 글자처럼 취급만 지원합니다"
+      },
+      "before": {
+        "position": {
+          "sectionIndex": 0,
+          "paragraphIndex": 0,
+          "charOffset": 0,
+          "parentParaIndex": 0,
+          "controlIndex": 2,
+          "cellIndex": 4,
+          "cellParaIndex": 0,
+          "cellPath": [
+            {
+              "controlIndex": 2,
+              "cellIndex": 4,
+              "cellParaIndex": 0
+            }
+          ]
+        },
+        "inner": null,
+        "info": {
+          "version": "5.1.0.1",
+          "sectionCount": 1,
+          "pageCount": 1,
+          "encrypted": false,
+          "hwp3Variant": false,
+          "fallbackFont": "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+          "fontsUsed": [
+            "함초롬돋움",
+            "함초롬바탕"
+          ],
+          "fontSubstitutions": []
+        },
+        "undoDepth": 0,
+        "canUndo": false
+      },
+      "after": {
+        "position": {
+          "sectionIndex": 0,
+          "paragraphIndex": 0,
+          "charOffset": 0,
+          "parentParaIndex": 0,
+          "controlIndex": 2,
+          "cellIndex": 4,
+          "cellParaIndex": 0,
+          "cellPath": [
+            {
+              "controlIndex": 2,
+              "cellIndex": 4,
+              "cellParaIndex": 0
+            },
+            {
+              "controlIndex": 0,
+              "cellIndex": 0,
+              "cellParaIndex": 0
+            }
+          ]
+        },
+        "inner": {
+          "rowCount": 2,
+          "colCount": 2,
+          "cellCount": 4
+        },
+        "info": {
+          "version": "5.1.0.1",
+          "sectionCount": 1,
+          "pageCount": 1,
+          "encrypted": false,
+          "hwp3Variant": false,
+          "fallbackFont": "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+          "fontsUsed": [
+            "함초롬돋움",
+            "함초롬바탕"
+          ],
+          "fontSubstitutions": []
+        },
+        "undoDepth": 1,
+        "canUndo": true
+      },
+      "outer": {
+        "rowCount": 3,
+        "colCount": 3,
+        "cellCount": 9
+      },
+      "undo": {
+        "position": {
+          "sectionIndex": 0,
+          "paragraphIndex": 0,
+          "charOffset": 0,
+          "parentParaIndex": 0,
+          "controlIndex": 2,
+          "cellIndex": 4,
+          "cellParaIndex": 0,
+          "cellPath": [
+            {
+              "controlIndex": 2,
+              "cellIndex": 4,
+              "cellParaIndex": 0
+            }
+          ]
+        },
+        "inner": null,
+        "info": {
+          "version": "5.1.0.1",
+          "sectionCount": 1,
+          "pageCount": 1,
+          "encrypted": false,
+          "hwp3Variant": false,
+          "fallbackFont": "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+          "fontsUsed": [
+            "함초롬돋움",
+            "함초롬바탕"
+          ],
+          "fontSubstitutions": []
+        },
+        "undoDepth": 0,
+        "canUndo": false
+      },
+      "redo": {
+        "position": {
+          "sectionIndex": 0,
+          "paragraphIndex": 0,
+          "charOffset": 0,
+          "parentParaIndex": 0,
+          "controlIndex": 2,
+          "cellIndex": 4,
+          "cellParaIndex": 0,
+          "cellPath": [
+            {
+              "controlIndex": 2,
+              "cellIndex": 4,
+              "cellParaIndex": 0
+            },
+            {
+              "controlIndex": 0,
+              "cellIndex": 0,
+              "cellParaIndex": 0
+            }
+          ]
+        },
+        "inner": {
+          "rowCount": 2,
+          "colCount": 2,
+          "cellCount": 4
+        },
+        "info": {
+          "version": "5.1.0.1",
+          "sectionCount": 1,
+          "pageCount": 1,
+          "encrypted": false,
+          "hwp3Variant": false,
+          "fallbackFont": "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+          "fontsUsed": [
+            "함초롬돋움",
+            "함초롬바탕"
+          ],
+          "fontSubstitutions": []
+        },
+        "undoDepth": 1,
+        "canUndo": true
+      },
+      "invalid": {
+        "error": "칸 안 표는 글자처럼 취급만 지원한다 (treatAsChar:false 는 받지 않는다)",
+        "unchanged": true
+      },
+      "saved": {
+        "key": "nested-hwp",
+        "hwp": {
+          "bytes": 13312,
+          "sha256": "99cd39742fe9d1c5cceab59f60c77e84ad4c72a3205bf19ce0fd76722367dc0e"
+        },
+        "hwpx": {
+          "bytes": 8050,
+          "sha256": "d61f1d19d3623acf0ff5b65c6dae622ecbfec27f13e281771804ad87edec8d8e"
+        }
+      },
+      "typed": {
+        "position": {
+          "sectionIndex": 0,
+          "paragraphIndex": 0,
+          "charOffset": 2,
+          "parentParaIndex": 0,
+          "controlIndex": 2,
+          "cellIndex": 4,
+          "cellParaIndex": 0,
+          "cellPath": [
+            {
+              "controlIndex": 2,
+              "cellIndex": 4,
+              "cellParaIndex": 0
+            },
+            {
+              "controlIndex": 0,
+              "cellIndex": 0,
+              "cellParaIndex": 0
+            },
+            {
+              "controlIndex": 0,
+              "cellIndex": 0,
+              "cellParaIndex": 0
+            }
+          ]
+        },
+        "text": "중첩"
+      }
+    },
+    {
+      "case": "nested-mid",
+      "dialog": {
+        "checked": true,
+        "disabled": true,
+        "title": "표 칸 안에 만드는 표는 글자처럼 취급만 지원합니다"
+      },
+      "before": {
+        "position": {
+          "sectionIndex": 0,
+          "paragraphIndex": 0,
+          "charOffset": 2,
+          "parentParaIndex": 0,
+          "controlIndex": 2,
+          "cellIndex": 0,
+          "cellParaIndex": 0,
+          "cellPath": [
+            {
+              "controlIndex": 2,
+              "cellIndex": 0,
+              "cellParaIndex": 0
+            }
+          ]
+        },
+        "inner": null,
+        "info": {
+          "version": "5.1.0.1",
+          "sectionCount": 1,
+          "pageCount": 1,
+          "encrypted": false,
+          "hwp3Variant": false,
+          "fallbackFont": "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+          "fontsUsed": [
+            "함초롬돋움",
+            "함초롬바탕"
+          ],
+          "fontSubstitutions": []
+        },
+        "undoDepth": 0,
+        "canUndo": false
+      },
+      "after": {
+        "position": {
+          "sectionIndex": 0,
+          "paragraphIndex": 0,
+          "charOffset": 0,
+          "parentParaIndex": 0,
+          "controlIndex": 2,
+          "cellIndex": 0,
+          "cellParaIndex": 1,
+          "cellPath": [
+            {
+              "controlIndex": 2,
+              "cellIndex": 0,
+              "cellParaIndex": 1
+            },
+            {
+              "controlIndex": 0,
+              "cellIndex": 0,
+              "cellParaIndex": 0
+            }
+          ]
+        },
+        "inner": {
+          "rowCount": 2,
+          "colCount": 2,
+          "cellCount": 4
+        },
+        "info": {
+          "version": "5.1.0.1",
+          "sectionCount": 1,
+          "pageCount": 1,
+          "encrypted": false,
+          "hwp3Variant": false,
+          "fallbackFont": "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+          "fontsUsed": [
+            "함초롬돋움",
+            "함초롬바탕"
+          ],
+          "fontSubstitutions": []
+        },
+        "undoDepth": 1,
+        "canUndo": true
+      },
+      "outer": {
+        "rowCount": 2,
+        "colCount": 2,
+        "cellCount": 4
+      },
+      "undo": {
+        "position": {
+          "sectionIndex": 0,
+          "paragraphIndex": 0,
+          "charOffset": 2,
+          "parentParaIndex": 0,
+          "controlIndex": 2,
+          "cellIndex": 0,
+          "cellParaIndex": 0,
+          "cellPath": [
+            {
+              "controlIndex": 2,
+              "cellIndex": 0,
+              "cellParaIndex": 0
+            }
+          ]
+        },
+        "inner": null,
+        "info": {
+          "version": "5.1.0.1",
+          "sectionCount": 1,
+          "pageCount": 1,
+          "encrypted": false,
+          "hwp3Variant": false,
+          "fallbackFont": "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+          "fontsUsed": [
+            "함초롬돋움",
+            "함초롬바탕"
+          ],
+          "fontSubstitutions": []
+        },
+        "undoDepth": 0,
+        "canUndo": false
+      },
+      "redo": {
+        "position": {
+          "sectionIndex": 0,
+          "paragraphIndex": 0,
+          "charOffset": 0,
+          "parentParaIndex": 0,
+          "controlIndex": 2,
+          "cellIndex": 0,
+          "cellParaIndex": 1,
+          "cellPath": [
+            {
+              "controlIndex": 2,
+              "cellIndex": 0,
+              "cellParaIndex": 1
+            },
+            {
+              "controlIndex": 0,
+              "cellIndex": 0,
+              "cellParaIndex": 0
+            }
+          ]
+        },
+        "inner": {
+          "rowCount": 2,
+          "colCount": 2,
+          "cellCount": 4
+        },
+        "info": {
+          "version": "5.1.0.1",
+          "sectionCount": 1,
+          "pageCount": 1,
+          "encrypted": false,
+          "hwp3Variant": false,
+          "fallbackFont": "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+          "fontsUsed": [
+            "함초롬돋움",
+            "함초롬바탕"
+          ],
+          "fontSubstitutions": []
+        },
+        "undoDepth": 1,
+        "canUndo": true
+      },
+      "invalid": {
+        "error": "칸 안 표는 글자처럼 취급만 지원한다 (treatAsChar:false 는 받지 않는다)",
+        "unchanged": true
+      },
+      "saved": {
+        "key": "nested-mid",
+        "hwp": {
+          "bytes": 13312,
+          "sha256": "61bba390bc543053415106b48f759cd6db79940e66315dbf1854ac48d2c86efa"
+        },
+        "hwpx": {
+          "bytes": 7998,
+          "sha256": "09d0ef1126a287a4ff3a85b6b938a330a87bffdd86bce7e7b3e62f8bc1980704"
+        }
+      },
+      "typed": {
+        "position": {
+          "sectionIndex": 0,
+          "paragraphIndex": 0,
+          "charOffset": 2,
+          "parentParaIndex": 0,
+          "controlIndex": 2,
+          "cellIndex": 0,
+          "cellParaIndex": 1,
+          "cellPath": [
+            {
+              "controlIndex": 2,
+              "cellIndex": 0,
+              "cellParaIndex": 1
+            },
+            {
+              "controlIndex": 0,
+              "cellIndex": 0,
+              "cellParaIndex": 0
+            }
+          ]
+        },
+        "text": "중첩"
+      }
+    }
+  ]
+}

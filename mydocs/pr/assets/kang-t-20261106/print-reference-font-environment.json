@@ -1,0 +1,92 @@
+{
+  "documentGlyphFallbacks": [
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 12,
+      "languageSlot": 0,
+      "source": "함초롬바탕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 13,
+      "languageSlot": 0,
+      "source": "나눔바른고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 12,
+      "languageSlot": 1,
+      "source": "함초롬바탕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 13,
+      "languageSlot": 1,
+      "source": "나눔바른고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 10,
+      "languageSlot": 2,
+      "source": "함초롬바탕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 9,
+      "languageSlot": 3,
+      "source": "함초롬바탕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 5,
+      "languageSlot": 4,
+      "source": "함초롬바탕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 4,
+      "languageSlot": 6,
+      "source": "함초롬바탕"
+    }
+  ],
+  "documentSubstitutions": [],
+  "id": "kang-t-hancom-print-hcr-batang",
+  "preserveSourceMetrics": true,
+  "substitutions": {
+    "#중명조": "HCRBatang",
+    "#태고딕": "HCRBatang",
+    "HY신명조": "HCRBatang",
+    "굴림": "HCRBatang",
+    "돋움": "HCRBatang",
+    "맑은 고딕": "HCRBatang",
+    "명조": "HCRBatang",
+    "바탕": "HCRBatang",
+    "신명 세명조": "HCRBatang",
+    "신명 신명조": "HCRBatang",
+    "신명 신신명조": "HCRBatang",
+    "신명 중고딕": "HCRBatang",
+    "신명 중명조": "HCRBatang",
+    "신명 태고딕": "HCRBatang",
+    "신명 태그래픽": "HCRBatang",
+    "한양신명조": "HCRBatang",
+    "한양중고딕": "HCRBatang",
+    "한컴바탕": "HCRBatang",
+    "함초롬바탕": "HCRBatang"
+  }
+}

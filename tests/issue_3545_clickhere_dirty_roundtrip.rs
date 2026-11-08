@@ -49,7 +49,7 @@ fn with_dirty_flag(bytes: &[u8]) -> Vec<u8> {
     let mut out = zip::ZipWriter::new(std::io::Cursor::new(Vec::new()));
     for i in 0..src.len() {
         let mut entry = src.by_index(i).expect("zip 엔트리");
-        let name = entry.name().to_string();
+        let name = entry.name().expect("ZIP 엔트리 이름").to_string();
         if name == "Contents/section0.xml" {
             let mut xml = String::new();
             entry.read_to_string(&mut xml).expect("section XML");
@@ -71,7 +71,10 @@ fn with_dirty_flag(bytes: &[u8]) -> Vec<u8> {
 /// 저장본의 본문 section XML 을 연결해 돌려준다.
 fn section_xml(hwpx: &[u8]) -> String {
     let mut zip = zip::ZipArchive::new(std::io::Cursor::new(hwpx.to_vec())).expect("저장본 ZIP");
-    let names: Vec<String> = zip.file_names().map(str::to_string).collect();
+    let names: Vec<String> = zip
+        .file_names()
+        .map(|name| name.expect("ZIP 엔트리 이름").into_owned())
+        .collect();
     let mut xml = String::new();
     for name in names {
         if name.starts_with("Contents/section") && name.ends_with(".xml") {

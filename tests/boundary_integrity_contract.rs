@@ -134,7 +134,7 @@ fn hwpx_patched(src_hwp: &Path, dst: &Path, entry: &str, from: &str, to: &str) -
     let mut replaced = 0usize;
     for i in 0..zin.len() {
         let mut e = zin.by_index(i).expect("zip 항목");
-        let name = e.name().to_string();
+        let name = e.name().expect("ZIP 엔트리 이름").to_string();
         let mut buf = Vec::new();
         std::io::copy(&mut e, &mut buf).expect("항목 읽기");
         if name == entry {

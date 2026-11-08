@@ -1,0 +1,6 @@
+{
+  "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+  "priorEvidence": "output/pr-review/issue8174/v2-s04-20261025-before-distribution-correction",
+  "priorNextest": "11799 passed,4 failed,45 skipped",
+  "reason": "Valid encrypted distribution script envelope was incorrectly treated as raw deflate; old source results are not final gates"
+}

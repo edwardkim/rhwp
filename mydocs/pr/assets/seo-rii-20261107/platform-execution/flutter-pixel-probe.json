@@ -1,0 +1,21 @@
+{
+  "source_head": "e976fd9393",
+  "status": "passed",
+  "command": [
+    "python3",
+    "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont-gui.py",
+    "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/flutter-controller-runner/build/linux/x64/debug/bundle/rhwp_review_probe"
+  ],
+  "input": "tests/fixtures/pr8061_cell_picture_layer/bordered-page-picture.hwpx",
+  "probe_changes": "read-only diagnostic: public picture fixture, CPU region output and first GPU publication held for compositor capture; original edit/invalidation probe passed separately",
+  "probe_sha256": "a486b8ce8a88b5d9cddda9390144f2977d21b757f24fdce0238ff2225bcc1be8",
+  "started_at": "2026-11-07T03:52:36.581147+00:00",
+  "capture": {
+    "window": "0x600003",
+    "returncode": 0,
+    "stderr": "",
+    "path": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/flutter-pixels/flutter-window.png"
+  },
+  "returncode": 0,
+  "finished_at": "2026-11-07T03:52:47.748806+00:00"
+}

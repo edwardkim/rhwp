@@ -14,8 +14,13 @@ fn assert_close(actual: &Value, expected: f64, label: &str) {
     let actual = actual
         .as_f64()
         .unwrap_or_else(|| panic!("{label}: 값 없음"));
+    // 두 API는 0.1px 단위 JSON을 반환한다. 원점과 charX를 따로 반올림한
+    // 합을 이진 실수로 빼면 정확한 한 단위 차이도 0.10000000000002가 된다.
+    // 기존 0.1px 허용 범위를 같은 십진 격자에서 비교한다.
+    let actual_tenths = (actual * 10.0).round() as i64;
+    let expected_tenths = (expected * 10.0).round() as i64;
     assert!(
-        (actual - expected).abs() <= 0.1,
+        actual.is_finite() && (actual_tenths - expected_tenths).abs() <= 1,
         "{label}: {actual:.1}, 기대 {expected:.1}"
     );
 }

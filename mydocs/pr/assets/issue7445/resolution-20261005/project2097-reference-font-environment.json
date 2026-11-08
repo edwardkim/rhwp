@@ -1,0 +1,11 @@
+{
+  "id": "hwp2018-pdf-batang-legacy-latin",
+  "substitutions": {
+    "HCI Poppy": "Batang",
+    "한양신명조": "Batang"
+  },
+  "trueTypeFaces": [
+    "Batang",
+    "휴먼명조"
+  ]
+}

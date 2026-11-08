@@ -1,0 +1,70 @@
+{
+  "changeSetId": "issue-4969.oldhangul-license-webfont",
+  "decisionPlane": "supply",
+  "evidenceRecords": [
+    {
+      "evidenceId": "evidence.issue-4969.oldhangul-redistribution-name",
+      "kind": "public-source",
+      "licenseOrProvenance": "Adobe Source Han Serif K OFL 1.1 수정본. Reserved Font Name을 수정본 이름으로 사용하지 않도록 RHWP Old Hangul로 재명명. 원본 저작권과 OFL, 2215개 glyph charstring 및 메트릭·cmap·GSUB·GPOS 보존. scripts/rename-old-hangul-font.py로 재생성한다.",
+      "parentEvidenceIds": [],
+      "sha256": "1a45a61e9a320c1bc62ca1401f7b23ceffffe8133dc2a9650ad4e12524f8dcab",
+      "source": "assets/fonts/RHWPOldHangul-Regular.woff2"
+    }
+  ],
+  "expectedDelta": {
+    "activeRuleDelta": 0,
+    "projectionId": "canvas2d-webfont",
+    "unchangedProjectionIds": [
+      "rust-layout-name",
+      "rust-layout-metric",
+      "canvas2d-paint",
+      "canvaskit-sfnt"
+    ]
+  },
+  "issue": 4969,
+  "kind": "font-rule-change-set",
+  "operations": [
+    {
+      "evidenceIds": [
+        "evidence.issue-4969.oldhangul-redistribution-name"
+      ],
+      "expectedSelectionTupleSha256": "aeab4bb705e97d654bee51adc7c84cce6c6d056b145c173061ca113cec5548e2",
+      "operationId": "operation.issue-4969.oldhangul-license-webfont",
+      "replacementRule": {
+        "conditions": {
+          "profile": "canvas2d-css-unknown"
+        },
+        "decisionPlane": "supply",
+        "evidenceIds": [
+          "evidence.issue-4969.oldhangul-redistribution-name"
+        ],
+        "metricEntryIds": [],
+        "order": null,
+        "projection": {
+          "id": "canvas2d-webfont",
+          "mode": "direct"
+        },
+        "projectionSequence": 152,
+        "relationType": "supply-source",
+        "ruleId": "rule.issue-4969.oldhangul-license-webfont",
+        "sourceBoundaryId": "studio-supply.font-list",
+        "sourceFace": "RHWP Old Hangul",
+        "supply": {
+          "external": false,
+          "fontFamily": "RHWP Old Hangul",
+          "format": "woff2",
+          "kind": "canvas2d-webfont",
+          "sourceUrl": "fonts/RHWPOldHangul-Regular.woff2",
+          "unicodeRange": "U+1100-11FF, U+A960-A97F, U+D7B0-D7FF"
+        },
+        "targetFaceOrPolicy": "'fonts/RHWPOldHangul-Regular.woff2'"
+      },
+      "retiredRuleId": "rule.studio-supply.0aab2d58429b52047acb.canvas2d",
+      "retirementReason": "수정본을 RHWP 고유 이름으로 공급하고 원본 Source Reserved Font Name을 primary font name에서 제거한다.",
+      "type": "retire-and-replace"
+    }
+  ],
+  "parentRegistrySha256": "01c5894418589e1d943322c9baec3bddb450e96fd6435f476b393f471d3789b4",
+  "schemaVersion": "2.0",
+  "sequence": 6
+}

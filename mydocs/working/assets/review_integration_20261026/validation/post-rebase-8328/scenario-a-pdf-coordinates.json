@@ -1,0 +1,19 @@
+{
+  "source": "samples/tac-verify/scenario-a-after.hwp",
+  "source_sha256": "a6d0adcd7ff92e2679a123eda7484c408a005e046839067626dec08bcd551eba",
+  "independent_pdf": "pdf/issue8168/scenario-a-after-2024.pdf",
+  "pdf_sha256": "49faa5bf34bc4e32024c1c31e81687fc9c32eec55db34742cb6cbdbc89fad8d9",
+  "page": 1,
+  "dpi": 96,
+  "method": "PyMuPDF PDF drawing and image bounds scaled from points by 96/72",
+  "table_horizontal_y_px": [
+    136.01,
+    302.39
+  ],
+  "image_rect_px": [
+    113.38,
+    306.23,
+    193.02,
+    377.19
+  ]
+}

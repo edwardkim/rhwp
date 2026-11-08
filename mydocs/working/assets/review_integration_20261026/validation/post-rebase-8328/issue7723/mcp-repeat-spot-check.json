@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-28",
+  "purpose": "동일 2024 MCP 출력 두 번의 선택 쪽을 같은 PDFium 방식으로 비교",
+  "input": "samples/hwp3-sample16-hwp5-2010.hwp",
+  "input_sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45",
+  "first_pdf": "pdf/hwp3-sample16-hwp5-2010-issue7723-mcp-2024.pdf",
+  "first_pdf_sha256": "4b03e8f1325654b423f4e2975890309c44b70cf3a1b1083879097aff2ad09c6a",
+  "repeat_pdf_sha256": "26b123a6ca76dc12fc274acd938914253b19d2ab96f4b02d308d3f2fe52bef9f",
+  "repeat_job_id": "e16cedd9-53f8-479d-8d41-bcb3c039edd8",
+  "engine": "2024",
+  "hancom_version": "13.0.0.3901",
+  "print_method": 0,
+  "output_mode": "frame_print_to_pdf_ex_one_up",
+  "pdf_page_count": 64,
+  "rasterizer": "현재 visual_sweep_pdf.py, PDFium 96dpi",
+  "pages": [
+    {
+      "page": 1,
+      "first_png_sha256": "86908c655e179d707d60eac4b67e66e15b2a3fabcaf5ec9153b95fb477dfb98b",
+      "repeat_png_sha256": "86908c655e179d707d60eac4b67e66e15b2a3fabcaf5ec9153b95fb477dfb98b",
+      "identical": true
+    },
+    {
+      "page": 4,
+      "first_png_sha256": "233b1cc2439e272bbd99c632af3e2f2c48650ac55310dd9c665400afb01f19d2",
+      "repeat_png_sha256": "233b1cc2439e272bbd99c632af3e2f2c48650ac55310dd9c665400afb01f19d2",
+      "identical": true
+    },
+    {
+      "page": 22,
+      "first_png_sha256": "b1a584df43e256835e5aeb03877741d22d73886f4ab3484fbf8336e39d879f7e",
+      "repeat_png_sha256": "b1a584df43e256835e5aeb03877741d22d73886f4ab3484fbf8336e39d879f7e",
+      "identical": true
+    },
+    {
+      "page": 38,
+      "first_png_sha256": "264421c6701c63294b9194a5944e12375ca0d3518f9a9de837b7624ca96617b1",
+      "repeat_png_sha256": "264421c6701c63294b9194a5944e12375ca0d3518f9a9de837b7624ca96617b1",
+      "identical": true
+    }
+  ],
+  "scope": "선택 4쪽만 비교했으며 전체 쪽 동일성 또는 rhwp 100%를 뜻하지 않는다."
+}

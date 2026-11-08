@@ -191,7 +191,9 @@ fn actual_hwp3_password_fixture_requires_the_password_and_preserves_structure() 
         "HWP3 머리말 PUA: {hwp3_header_text:?}"
     );
 
-    let hwp_document = HwpDocument::from_bytes_with_password(&bytes, FIXTURE_PASSWORD)
+    let mut hwp_document = HwpDocument::from(rhwp::DocumentCore::new_empty());
+    hwp_document
+        .load_bytes(&bytes, Some(FIXTURE_PASSWORD))
         .expect("공개 HwpDocument API도 fixture를 열어야 함");
     assert_eq!(hwp_document.page_count(), 24);
 
@@ -286,14 +288,17 @@ fn actual_hwp3_password_fixture_preserves_p3_inline_object_vertical_contract() {
 
     // HWP5 변환본과 한컴 PDF의 3쪽 저장 흐름 계약. 제목 양옆의 작은 사각형은
     // 일반 제목 텍스트와 한 줄을 공유하므로 160% 줄간격을 유지하고, inline 표는
-    // 표 자체 높이 + 2mm 고정 후행간격만 차지한다. 첫 표의 spacing_before=568 HU는
-    // 선행 제목의 spacing_after로 이미 반영되어 이중 적용하면 안 된다.
+    // 표 자체 높이 + 2mm 고정 후행간격만 차지한다.
+    // [#8304] 줄 위치는 같은 문서를 한컴 2024 가 HWP5 로 저장한
+    // `samples/HWP5-nopassword-123456.hwp` 의 저장값이다. 첫 표 문단의 첫 줄은 선행
+    // 문단의 뒤 간격(568)과 표 문단의 앞 간격(568)을 모두 누적한다(2984+1600+568+568).
+    // 종전 기대값(5152 …)은 표 앞 간격을 생략한 값으로, 3쪽 표 뒤 내용을 9px 올렸다.
     let expected = [
         (23, 0, 1_600, 960),
-        (25, 5_152, 12_920, 600),
-        (27, 21_972, 1_600, 960),
-        (30, 29_292, 17_188, 600),
-        (31, 47_648, 1_000, 600),
+        (25, 5_720, 12_920, 600),
+        (27, 22_540, 1_600, 960),
+        (30, 29_860, 17_188, 600),
+        (31, 48_216, 1_000, 600),
     ];
 
     for (paragraph_index, vertical_pos, line_height, line_spacing) in expected {
@@ -340,8 +345,8 @@ fn actual_hwp3_password_fixture_preserves_toc_inline_shape_vertical_contract() {
                     .text
                     .chars()
                     .all(|ch| ch.is_ascii_digit() || ch.is_whitespace() || ch == '\u{FFFC}'),
-            "차례 항목 {paragraph_index}의 본문은 marker·공백·쪽 번호여야 함: {:?}",
-            paragraph.text
+            // #8745: 조건은 유지하고 실패 진단의 복호화 본문 출력만 제거한다.
+            "차례 항목 {paragraph_index}의 본문은 marker·공백·쪽 번호여야 함"
         );
         assert!(matches!(
             paragraph.controls.as_slice(),
@@ -472,16 +477,60 @@ fn actual_hwp3_password_fixture_keeps_icon_outline_at_column_origin_without_fill
 
 #[test]
 fn actual_hwp3_password_fixture_keeps_regular_page_background_opaque() {
-    let document = HwpDocument::from_bytes_with_password(&fixture_bytes(), FIXTURE_PASSWORD)
+    use base64::Engine as _;
+
+    let source = parse_document_with_password(&fixture_bytes(), FIXTURE_PASSWORD)
+        .expect("원본 쪽 배경 속성과 payload");
+    let border_id = source.sections[0]
+        .section_def
+        .page_border_fill
+        .border_fill_id;
+    let fill = source.doc_info.border_fills[(border_id - 1) as usize]
+        .fill
+        .image
+        .as_ref()
+        .expect("원본 쪽 배경");
+    assert_eq!((fill.brightness, fill.contrast), (-15, 50));
+    let original = image::load_from_memory(
+        &source.bin_data_content[(fill.bin_data_id - 1) as usize]
+            .data
+            .load(),
+    )
+    .expect("원본 배경 BMP")
+    .to_rgba8();
+    let mut document = HwpDocument::from(rhwp::DocumentCore::new_empty());
+    document
+        .load_bytes(&fixture_bytes(), Some(FIXTURE_PASSWORD))
         .expect("실제 HWP3 fixture를 열어야 함");
     let svg = document
         .render_page_svg(0)
         .expect("첫 쪽 SVG를 렌더해야 함");
 
-    assert!(
-        svg.contains("rhwp-img-bc-b50c-15"),
-        "배경의 HWP 밝기 50·대비 -15 색조는 유지해야 함"
-    );
+    // 효과가 이미 픽셀에 들어간 PNG를 보호한다. 이전 SVG filter ID의 존재는
+    // 실제 불투명도·색조의 증거가 아니며 중복 효과 적용을 요구해서도 안 된다.
+    let backgrounds: Vec<_> = svg
+        .split("data:image/png;base64,")
+        .skip(1)
+        .filter_map(|tail| {
+            let encoded = tail.split('"').next()?;
+            let bytes = base64::engine::general_purpose::STANDARD
+                .decode(encoded)
+                .ok()?;
+            let png = image::load_from_memory(&bytes).ok()?.to_rgba8();
+            (png.dimensions() == original.dimensions()).then_some(png)
+        })
+        .collect();
+    assert_eq!(backgrounds.len(), 1, "원본 크기의 쪽 배경 하나를 보존한다");
+    let background = &backgrounds[0];
+    assert!(background.pixels().all(|pixel| pixel[3] == 255));
+    assert!(background
+        .pixels()
+        .zip(original.pixels())
+        .all(|(after, before)| (0..3).all(|channel| after[channel] >= before[channel])));
+    assert!(background
+        .pixels()
+        .zip(original.pixels())
+        .any(|(after, before)| after.0[..3] != before.0[..3]));
     assert!(
         !svg.contains("<g opacity=\"0.17\">"),
         "일반 쪽 배경의 밝기·대비를 legacy watermark opacity로 처리하면 안 됨"
@@ -508,7 +557,9 @@ fn actual_hwp3_password_fixture_normalizes_hanging_indent_first_line_margin() {
 
 #[test]
 fn actual_hwp3_password_fixture_keeps_hyperlink_internal_vpos_reset_on_next_page() {
-    let document = HwpDocument::from_bytes_with_password(&fixture_bytes(), FIXTURE_PASSWORD)
+    let mut document = HwpDocument::from(rhwp::DocumentCore::new_empty());
+    document
+        .load_bytes(&fixture_bytes(), Some(FIXTURE_PASSWORD))
         .expect("실제 HWP3 fixture를 열어야 함");
 
     // 문단 258은 hyperlink marker 하나를 포함하지만, 저장 LINE_SEG는 두 번째 줄을

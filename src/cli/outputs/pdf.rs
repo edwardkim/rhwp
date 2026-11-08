@@ -345,7 +345,7 @@ pub(crate) fn export_pdf(args: &[String]) -> i32 {
             output_file,
             target_page,
             pdf_backend,
-            pdf_options,
+            mut pdf_options,
             // PDF raster feature 빌드가 아래에서 font_paths 를 대입한다 — 기본
             // 빌드에서만 미사용 mut 로 보이는 자리다 (CI Canvas visual diff 잡 기준).
             mut direct_pdf_options,
@@ -369,10 +369,17 @@ pub(crate) fn export_pdf(args: &[String]) -> i32 {
             Ok(d) => d,
             Err(e) => return e.report(),
         };
-        if let Err(e) = doc.set_font_environment(font_environment) {
-            eprintln!("오류: 폰트 환경 적용 실패: {e}");
-            return EXIT_RUNTIME;
-        }
+        let font_supply = match super::apply_font_environment(
+            &mut doc,
+            font_environment,
+            &mut pdf_options.font_paths,
+        ) {
+            Ok(supply) => supply,
+            Err(e) => {
+                eprintln!("오류: 폰트 환경 적용 실패: {e}");
+                return EXIT_RUNTIME;
+            }
+        };
 
         // [#3302] 외부 연결 그림 같은 디렉터리 자동 적재 — export-svg/export-png 와 동일 규칙.
         if allows_implicit_sibling_resources(rhwp::parser::detect_format(&data)) {
@@ -476,6 +483,8 @@ pub(crate) fn export_pdf(args: &[String]) -> i32 {
                         "bytes": pdf_bytes.len(),
                         "pageCount": page_count,
                         "renderedCount": pages.len(),
+                        "nativeFontSupply": font_supply.report,
+                        "fontEnvironment": doc.font_environment(),
                     }),
                     "export-pdf",
                 )

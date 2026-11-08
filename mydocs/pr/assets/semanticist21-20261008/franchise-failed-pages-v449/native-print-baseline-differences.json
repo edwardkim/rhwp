@@ -1,0 +1,1452 @@
+[
+  {
+    "page": 55,
+    "matched_lines": 34,
+    "lines": [
+      {
+        "text": "2021.6.22. 의결 ",
+        "native": {
+          "y": 325.75333,
+          "x": 130.26,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 328.48000081380206,
+        "baseline_delta": -2.726670813802059,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "제2021-171호",
+        "native": {
+          "y": 349.22,
+          "x": 136.93333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 352.0,
+        "baseline_delta": -2.7799999999999727,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "가) 거래상 지위 성립 여부",
+        "native": {
+          "y": 189.35333,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 193.44000244140625,
+        "baseline_delta": -4.08667244140625,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "다음과 같은 점을 고려할 때, 피심인은 가맹점사업자에 대하여 ",
+        "native": {
+          "y": 220.82,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 224.79998779296875,
+        "baseline_delta": -3.979987792968757,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "거래상 지위가 있는 것으로 판단된다.",
+        "native": {
+          "y": 244.28667,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 248.31998697916666,
+        "baseline_delta": -4.0333169791666705,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "첫째, 피심인의 가맹점사업자는 피심인의 영업표지 등을 사용",
+        "native": {
+          "y": 275.75333,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 279.83998616536456,
+        "baseline_delta": -4.086656165364559,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "하는 대가로 일정 금액의 가맹금을 피심인에게 지급하고 피심",
+        "native": {
+          "y": 299.22,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 303.1999918619792,
+        "baseline_delta": -3.9799918619791583,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "인으로부터 상호, 상표, 포장, 디자인뿐만 아니라 상품의 생산",
+        "native": {
+          "y": 322.68667,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 326.71999104817706,
+        "baseline_delta": -4.033321048177072,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "에 대한 노하우 등 영업행위 일체에 대하여 지원을 받고 있는 ",
+        "native": {
+          "y": 346.15333,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 350.239990234375,
+        "baseline_delta": -4.086660234375017,
+        "print_fonts": [
+          "HCRBatang",
+          "HCRBatang-Bold"
+        ]
+      },
+      {
+        "text": "등 피심인에게 전적으로 의존하는 거래관계에 있다.",
+        "native": {
+          "y": 369.62,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 373.5999755859375,
+        "baseline_delta": -3.9799755859374955,
+        "print_fonts": [
+          "HCRBatang",
+          "HCRBatang-Bold"
+        ]
+      },
+      {
+        "text": "둘째, 가맹점사업자가 피심인의 가맹사업에 참여하기 위해서는 ",
+        "native": {
+          "y": 401.08667,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 405.1199951171875,
+        "baseline_delta": -4.0333251171874736,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "피심인이 제시하는 조건과 기준 등에 따라 점포 및 내부 시설",
+        "native": {
+          "y": 424.55333,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 428.6399739583333,
+        "baseline_delta": -4.086643958333298,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "장비 등을 준비하여야 하고, 이와 관련하여 상당한 비용의 투",
+        "native": {
+          "y": 448.02,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 452.0,
+        "baseline_delta": -3.980000000000018,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "자(개점료, 인테리어 비용, 주방집기 비용)가 이루어져야 하는",
+        "native": {
+          "y": 471.48667,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 475.5199788411458,
+        "baseline_delta": -4.033308841145811,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "바, 가맹점사업자들이 피심인과 거래 단절이 되는 경우에는 가",
+        "native": {
+          "y": 494.95333,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 499.0399983723958,
+        "baseline_delta": -4.08666837239582,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "맹점사업자는 투자비용의 회수가 곤란할 뿐만 아니라 대체거래",
+        "native": {
+          "y": 518.42,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 522.3999837239584,
+        "baseline_delta": -3.979983723958412,
+        "print_fonts": [
+          "HCRBatang",
+          "HCRBatang-Bold"
+        ]
+      },
+      {
+        "text": "선 확보가 용이하지 아니하여 상당한 경제적 손실을 입게 되기 ",
+        "native": {
+          "y": 541.88667,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 545.9200032552084,
+        "baseline_delta": -4.03333325520839,
+        "print_fonts": [
+          "HCRBatang",
+          "HCRBatang-Bold"
+        ]
+      },
+      {
+        "text": "때문에 가맹점사업자는 피심인의 요구에 응할 수밖에 없다.",
+        "native": {
+          "y": 565.35333,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 569.4399820963541,
+        "baseline_delta": -4.086652096354101,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "2000.12.23. 의결 ",
+        "native": {
+          "y": 712.03333,
+          "x": 126.22666666666666,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 714.719970703125,
+        "baseline_delta": -2.686640703125022,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "제2000-180호",
+        "native": {
+          "y": 735.5,
+          "x": 136.93333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 738.239990234375,
+        "baseline_delta": -2.739990234375,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "가. 피심인의 우월적 지위 성립 여부",
+        "native": {
+          "y": 599.1,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 603.1999918619791,
+        "baseline_delta": -4.099991861979106,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "이 사건에서 가맹사업자인 피심인은 다음과 같은 점에서 가맹",
+        "native": {
+          "y": 630.56667,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 634.5599772135416,
+        "baseline_delta": -3.993307213541584,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "점에 대하여 거래상 지위가 우월함이 인정된다.",
+        "native": {
+          "y": 654.03333,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 658.0799967447916,
+        "baseline_delta": -4.046666744791651,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "첫째, 가맹점은 피심인의 영업표지 등을 사용한 대가로 일정액",
+        "native": {
+          "y": 685.5,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 689.6000162760416,
+        "baseline_delta": -4.100016276041629,
+        "print_fonts": [
+          "HCRBatang",
+          "HCRBatang-Bold"
+        ]
+      },
+      {
+        "text": "의 금액(가맹비 : 5백만원, 계약이행보증금 : 2백만원)을 피심",
+        "native": {
+          "y": 708.96667,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 712.9599609375,
+        "baseline_delta": -3.993290937499978,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "인에게 지급하고 피심인으로부터 상호, 상표, 포장, 디자인뿐만 ",
+        "native": {
+          "y": 732.43333,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 736.47998046875,
+        "baseline_delta": -4.046650468750045,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "아니라 제품의 생산에 대한 노하우 등 영업행위 일체에 대하여 ",
+        "native": {
+          "y": 755.9,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 760.0,
+        "baseline_delta": -4.100000000000023,
+        "print_fonts": [
+          "HCRBatang",
+          "HCRBatang-Bold"
+        ]
+      },
+      {
+        "text": "지원을 받고 있는 등 가맹점은 피심인에게 의존하는 거래관계",
+        "native": {
+          "y": 779.36667,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 783.3599446614584,
+        "baseline_delta": -3.993274661458372,
+        "print_fonts": [
+          "HCRBatang",
+          "HCRBatang-Bold"
+        ]
+      },
+      {
+        "text": "둘째, 가맹점은 피심인의 가맹사업에 참여하기 위해서 피심인",
+        "native": {
+          "y": 834.3,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 838.3999837239584,
+        "baseline_delta": -4.099983723958417,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "이 제시하는 조건과 기준에 따라 점포 및 내부시설장비 등을 ",
+        "native": {
+          "y": 857.76667,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 861.760009765625,
+        "baseline_delta": -3.9933397656250236,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "준비해야 하고 또 상당액의 투자가 선행되어야 하는 바, 만약 ",
+        "native": {
+          "y": 881.23333,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 885.2799479166666,
+        "baseline_delta": -4.046617916666605,
+        "print_fonts": [
+          "HCRBatang",
+          "HCRBatang-Bold"
+        ]
+      },
+      {
+        "text": "피심인이 가맹계약을 해지하는 경우 가맹점은 투자비용을 회수",
+        "native": {
+          "y": 904.7,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 908.7999674479166,
+        "baseline_delta": -4.099967447916583,
+        "print_fonts": [
+          "HCRBatang",
+          "HCRBatang-Bold"
+        ]
+      },
+      {
+        "text": "할 수 있는 다른 방법이 없어 가맹점은 상당한 경제적 손실이 ",
+        "native": {
+          "y": 928.16667,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 932.1599934895834,
+        "baseline_delta": -3.9933234895834175,
+        "print_fonts": [
+          "HCRBatang",
+          "HCRBatang-Bold"
+        ]
+      },
+      {
+        "text": "입게 되므로 가맹사업자의 요구에 응할 수밖에 없는 사정에 있",
+        "native": {
+          "y": 951.63333,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 955.6800130208334,
+        "baseline_delta": -4.04668302083337,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      }
+    ]
+  },
+  {
+    "page": 57,
+    "matched_lines": 30,
+    "lines": [
+      {
+        "text": "    · 이상의 공정거래위원회 심결례에서 보는 바와 같이, 가맹사업 역시 ",
+        "native": {
+          "y": 840.16,
+          "x": 146.9314,
+          "fonts": [
+            "",
+            "HumanMyeongJo"
+          ]
+        },
+        "print_baseline": 840.1599934895834,
+        "baseline_delta": 6.5104165969387395e-06,
+        "print_fonts": [
+          "ÈÞ¸Õ¸íÁ¶"
+        ]
+      },
+      {
+        "text": "거래당사자로서 가맹본부와 가맹점사업자 간의 종속성 내지 의존성의 ",
+        "native": {
+          "y": 873.46667,
+          "x": 171.77333333333334,
+          "fonts": [
+            "HumanMyeongJo"
+          ]
+        },
+        "print_baseline": 873.6000162760416,
+        "baseline_delta": -0.13334627604160687,
+        "print_fonts": [
+          "ÈÞ¸Õ¸íÁ¶"
+        ]
+      },
+      {
+        "text": "정도가 상당한 계속적 거래관계를 전제하고 있음. 다만 다른 거래",
+        "native": {
+          "y": 906.77333,
+          "x": 171.77333333333334,
+          "fonts": [
+            "HumanMyeongJo"
+          ]
+        },
+        "print_baseline": 906.8799641927084,
+        "baseline_delta": -0.10663419270838403,
+        "print_fonts": [
+          "ÈÞ¸Õ¸íÁ¶"
+        ]
+      },
+      {
+        "text": "유형에서 통상적으로 고려되는 ‘사업자의 업무상 지휘감독권’의 ",
+        "native": {
+          "y": 940.08,
+          "x": 171.77333333333334,
+          "fonts": [
+            "HumanMyeongJo"
+          ]
+        },
+        "print_baseline": 940.1599934895834,
+        "baseline_delta": -0.0799934895833303,
+        "print_fonts": [
+          "ÈÞ¸Õ¸íÁ¶"
+        ]
+      },
+      {
+        "text": "자로서 소비자선호도가 매우 높은 편이므로 가맹점사업자로서",
+        "native": {
+          "y": 157.13333,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 157.1199951171875,
+        "baseline_delta": 0.013334882812500837,
+        "print_fonts": [
+          "HCRBatang",
+          "HCRBatang-Bold"
+        ]
+      },
+      {
+        "text": "는 피심인과의 지속적인 거래관계를 유지하고자 하며 이로서 ",
+        "native": {
+          "y": 180.6,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 180.6399943033854,
+        "baseline_delta": -0.03999430338541288,
+        "print_fonts": [
+          "HCRBatang",
+          "HCRBatang-Bold"
+        ]
+      },
+      {
+        "text": "가맹본부는 가맹점사업자에 대한 거래상 우월한 지위를 가진다",
+        "native": {
+          "y": 204.06667,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 204.15999348958334,
+        "baseline_delta": -0.09332348958335501,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "2012.11.27. 의결 ",
+        "native": {
+          "y": 465.16667,
+          "x": 126.22666666666666,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 467.8400065104167,
+        "baseline_delta": -2.673336510416675,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "제2012-262호",
+        "native": {
+          "y": 488.63333,
+          "x": 136.93333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 491.3599853515625,
+        "baseline_delta": -2.726655351562499,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "가맹사업법위반행위에 ",
+        "native": {
+          "y": 569.7,
+          "x": 124.45713333333333,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 572.47998046875,
+        "baseline_delta": -2.7799804687499545,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "가) 거래상지위 성립 여부",
+        "native": {
+          "y": 258.36667,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 262.40000406901044,
+        "baseline_delta": -4.0333340690104365,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "피심인은 다음과 같은 점을 고려할 때 가맹점사업자에 대하여 ",
+        "native": {
+          "y": 289.83333,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 293.9200032552083,
+        "baseline_delta": -4.086673255208325,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "거래상지위가 있는 것으로 판단된다.",
+        "native": {
+          "y": 313.3,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 317.44000244140625,
+        "baseline_delta": -4.140002441406239,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "첫째, 가맹사업의 특성 상 가맹점사업자들은 가맹사업에 대한 ",
+        "native": {
+          "y": 344.76667,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 348.8000081380208,
+        "baseline_delta": -4.033338138020838,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "기술, 경험 및 자금 면에서 절대적인 약점을 사업적 능력에서 ",
+        "native": {
+          "y": 368.23333,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 372.3199869791667,
+        "baseline_delta": -4.086656979166662,
+        "print_fonts": [
+          "HCRBatang",
+          "HCRBatang-Bold"
+        ]
+      },
+      {
+        "text": "현격하게 우위에 있는 가맹본부의 전적인 지원에 의해 보완받",
+        "native": {
+          "y": 391.7,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 395.8400065104167,
+        "baseline_delta": -4.140006510416697,
+        "print_fonts": [
+          "HCRBatang",
+          "HCRBatang-Bold"
+        ]
+      },
+      {
+        "text": "는 위치에 있고, 가맹계약에 따라 가맹본부와 지속적인 거래관",
+        "native": {
+          "y": 415.16667,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 419.1999918619792,
+        "baseline_delta": -4.033321861979175,
+        "print_fonts": [
+          "HCRBatang",
+          "HCRBatang-Bold"
+        ]
+      },
+      {
+        "text": "계를 유지하면서 가맹본부가 요구하는 조건과 기준에 따라 점",
+        "native": {
+          "y": 438.63333,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 442.719970703125,
+        "baseline_delta": -4.086640703124999,
+        "print_fonts": [
+          "HCRBatang",
+          "HCRBatang-Bold"
+        ]
+      },
+      {
+        "text": "포 및 내부시설을 준비하여야 하며, 원치 않는 시기에 계약이 ",
+        "native": {
+          "y": 462.1,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 466.239990234375,
+        "baseline_delta": -4.139990234374977,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "해지될 경우 위와 같은 시설투자비용을 충분히 회수하기 어려",
+        "native": {
+          "y": 485.56667,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 489.5999755859375,
+        "baseline_delta": -4.033305585937512,
+        "print_fonts": [
+          "HCRBatang",
+          "HCRBatang-Bold"
+        ]
+      },
+      {
+        "text": "워져 경제적 손실을 입는 점에서 통상 가맹본부의 거래상지위",
+        "native": {
+          "y": 509.03333,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 513.1199951171875,
+        "baseline_delta": -4.086665117187522,
+        "print_fonts": [
+          "HCRBatang",
+          "HCRBatang-Bold"
+        ]
+      },
+      {
+        "text": "둘째, 피심인은 국내 자동차 제조시장에서 시장지배적사업자이",
+        "native": {
+          "y": 563.96667,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 568.0,
+        "baseline_delta": -4.033329999999978,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "고, 자동차정비가맹 시장에서 1위 사업자의 위치에 있으므로 ",
+        "native": {
+          "y": 587.43333,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 591.5199788411459,
+        "baseline_delta": -4.086648841145916,
+        "print_fonts": [
+          "HCRBatang",
+          "HCRBatang-Bold"
+        ]
+      },
+      {
+        "text": "소비자신뢰도 및 선호도가 매우 높은 편이며, 이러한 피심인과 ",
+        "native": {
+          "y": 610.9,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 615.0399983723959,
+        "baseline_delta": -4.139998372395894,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "가맹계약을 체결하게 되는 경우, 피심인의 보증수리 업무를 위",
+        "native": {
+          "y": 634.36667,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 638.3999837239584,
+        "baseline_delta": -4.033313723958372,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "탁받게 되어 안정적인 수익을 기대할 수 있게 될 뿐만 아니라 ",
+        "native": {
+          "y": 657.83333,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 661.9200032552084,
+        "baseline_delta": -4.086673255208325,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "자동차정비업의 특성 상 보증수리 고객이 일반수리 등에 대한 ",
+        "native": {
+          "y": 681.3,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 685.4400227864584,
+        "baseline_delta": -4.140022786458417,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "고객으로 유인될 가능성이 높은 점 등을 고려할 때, 가맹점사",
+        "native": {
+          "y": 704.76667,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 708.7999674479166,
+        "baseline_delta": -4.033297447916652,
+        "print_fonts": [
+          "HCRBatang",
+          "HCRBatang-Bold"
+        ]
+      },
+      {
+        "text": "업자로서는 피심인과의 지속적인 거래관계를 유지하고자 하며 ",
+        "native": {
+          "y": 728.23333,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 732.3199869791666,
+        "baseline_delta": -4.086656979166605,
+        "print_fonts": [
+          "HCRBatang",
+          "HCRBatang-Bold"
+        ]
+      },
+      {
+        "text": "이로서 가맹본부는 가맹점사업자에 대한 거래상 우월한 지위를 ",
+        "native": {
+          "y": 751.7,
+          "x": 256.49333333333334,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 755.8400065104166,
+        "baseline_delta": -4.140006510416583,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      }
+    ]
+  },
+  {
+    "page": 79,
+    "matched_lines": 30,
+    "lines": [
+      {
+        "text": "경우 거래상대방이 무조건 책임을 지도록 한다는 조건을 설정하",
+        "native": {
+          "y": 150.38667,
+          "x": 239.45333333333338,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 150.39999389648438,
+        "baseline_delta": -0.013323896484365605,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "(마) 계약서에 규정되어 있는 수수료율, 지급대가 수준 등을 일방적으로 ",
+        "native": {
+          "y": 205.32,
+          "x": 208.53333333333336,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 205.44000244140625,
+        "baseline_delta": -0.12000244140625682,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "거래상대방에게 불리하게 변경하는 행위",
+        "native": {
+          "y": 228.78667,
+          "x": 236.88000000000002,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 228.79998779296875,
+        "baseline_delta": -0.013317792968763342,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "(바) 계약기간 중에 자기의 점포 장기임차인에게 광고선전비의 부과기",
+        "native": {
+          "y": 260.25333,
+          "x": 208.53333333333336,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 260.3199869791667,
+        "baseline_delta": -0.06665697916668023,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "준을 일방적으로 상향조정한 행위",
+        "native": {
+          "y": 283.72,
+          "x": 239.45333333333338,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 283.83998616536456,
+        "baseline_delta": -0.1199861653645371,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "(가) 합리적 이유없이 대리점의 거래처 또는 판매내역 등을 조사하거나 ",
+        "native": {
+          "y": 302.14667,
+          "x": 208.53333333333336,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 306.239990234375,
+        "baseline_delta": -4.093320234375028,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "제품광고시 자기와 사전합의하도록 요구하는 행위",
+        "native": {
+          "y": 325.61333,
+          "x": 237.36,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 329.59999593098956,
+        "baseline_delta": -3.9866659309895454,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "(나) 금융기관이 채권회수에 아무런 곤란이 없음에도 불구하고 자금을 ",
+        "native": {
+          "y": 357.08,
+          "x": 208.53333333333336,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 361.1199951171875,
+        "baseline_delta": -4.039995117187516,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "대출해준 회사의 임원선임 및 기타 경영활동에 대하여 간섭하거나 ",
+        "native": {
+          "y": 380.54667,
+          "x": 238.28000000000003,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 384.6399739583333,
+        "baseline_delta": -4.093303958333308,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "특정 임원의 선임이나 해임을 대출조건으로 요구하는 행위",
+        "native": {
+          "y": 404.01333,
+          "x": 238.28000000000003,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 408.0,
+        "baseline_delta": -3.9866700000000037,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "(다) 상가를 임대하거나 대리점계약을 체결하면서 당초 계약내용과 달리 ",
+        "native": {
+          "y": 435.48,
+          "x": 208.53333333333336,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 439.5199788411458,
+        "baseline_delta": -4.039978841145796,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "취급품목이나 가격, 요금 등에 관하여 지도를 하거나 자신의 허가나 ",
+        "native": {
+          "y": 458.94667,
+          "x": 238.28000000000003,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 463.0399983723958,
+        "baseline_delta": -4.093328372395831,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "승인을 받도록 하는 행위",
+        "native": {
+          "y": 482.41333,
+          "x": 238.28000000000003,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 486.3999837239583,
+        "baseline_delta": -3.986653723958341,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "(라) 합리적 이유없이 대리점 또는 협력업체의 업무용 차량 증가를 요",
+        "native": {
+          "y": 513.88,
+          "x": 208.53333333333336,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 517.9200032552084,
+        "baseline_delta": -4.040003255208376,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "(가) 자기가 공급하는 상품을 판매하는 사업자 및 대리점에 대하여 판",
+        "native": {
+          "y": 559.77333,
+          "x": 208.53333333333336,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 563.8400065104166,
+        "baseline_delta": -4.066676510416642,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "매목표를 설정하고 미달성시 공급을 중단하는 등의 제재를 가하",
+        "native": {
+          "y": 583.24,
+          "x": 237.36,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 587.3599853515625,
+        "baseline_delta": -4.119985351562491,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "(나) 자기가 공급하는 용역을 제공하는 사업자 및 대리점에 대하여 회",
+        "native": {
+          "y": 638.17333,
+          "x": 208.53333333333336,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 642.239990234375,
+        "baseline_delta": -4.0666602343750355,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "원이나 가입자의 수를 할당하고 이를 달성하지 못할 경우 대리점",
+        "native": {
+          "y": 661.64,
+          "x": 237.36,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 665.7599690755209,
+        "baseline_delta": -4.119969075520885,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "계약의 해지나 수수료지급의 중단 등의 제재를 가하는 행위",
+        "native": {
+          "y": 685.10667,
+          "x": 237.36,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 689.1199544270834,
+        "baseline_delta": -4.013284427083363,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "(다) 대리점이 판매목표량을 달성하지 못하였을 경우 반품조건부 거래",
+        "native": {
+          "y": 716.57333,
+          "x": 208.53333333333336,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 720.6399739583334,
+        "baseline_delta": -4.066643958333316,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "임에도 불구하고 반품하지 못하게 하고 대리점이 제품을 인수한 ",
+        "native": {
+          "y": 740.04,
+          "x": 237.60000000000002,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 744.1599934895834,
+        "baseline_delta": -4.119993489583408,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "것으로 회계처리하여 추후 대금지급 시 공제하는 행위",
+        "native": {
+          "y": 763.50667,
+          "x": 237.60000000000002,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 767.52001953125,
+        "baseline_delta": -4.0133495312500145,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "(라) 대리점이 판매목표량을 달성하지 못하였을 경우 본사에서 대리점",
+        "native": {
+          "y": 794.97333,
+          "x": 208.53333333333336,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 799.0399576822916,
+        "baseline_delta": -4.066627682291596,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "을 대신하여 강제로 미판매 물량을 덤핑 판매한 후 발생손실을 ",
+        "native": {
+          "y": 818.44,
+          "x": 238.28000000000003,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 822.5599772135416,
+        "baseline_delta": -4.119977213541574,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "대리점의 부담으로 하는 행위",
+        "native": {
+          "y": 841.90667,
+          "x": 238.28000000000003,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 845.9200032552084,
+        "baseline_delta": -4.0133332552084084,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "(마) 거래상대방과 상품 또는 용역의 거래단가를 사전에 약정하지 않은 ",
+        "native": {
+          "y": 873.37333,
+          "x": 208.53333333333336,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 877.43994140625,
+        "baseline_delta": -4.06661140624999,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "상태에서, 거래상대방의 판매량이 목표에 미달되는 경우에는 목표를 ",
+        "native": {
+          "y": 896.84,
+          "x": 237.36,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 900.9599609375,
+        "baseline_delta": -4.119960937499968,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "달성하는 경우에 비해 낮은 단가를 적용함으로써 불이익을 주는 ",
+        "native": {
+          "y": 920.30667,
+          "x": 237.36,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 924.3199869791666,
+        "baseline_delta": -4.013316979166575,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "(가) 설계용역비를 늦게 지급하고 이에 대한 지연이자를 장기간 지급",
+        "native": {
+          "y": 970.2,
+          "x": 208.53333333333336,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 973.43994140625,
+        "baseline_delta": -3.2399414062499545,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      },
+      {
+        "text": "하지 않아 거래상대방이 사실상 수령을 포기한 경우",
+        "native": {
+          "y": 993.66667,
+          "x": 237.36,
+          "fonts": [
+            "HCR Batang"
+          ]
+        },
+        "print_baseline": 996.7999674479166,
+        "baseline_delta": -3.133297447916675,
+        "print_fonts": [
+          "HCRBatang"
+        ]
+      }
+    ]
+  }
+]

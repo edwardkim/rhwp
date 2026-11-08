@@ -89,6 +89,17 @@ fn capabilities_def() -> Value {
             "tool": prim("string", "도구 이름. 항상 \"rhwp\"."),
             "version": prim("string", "rhwp 버전 — `rhwp --version` 과 같은 원천"),
             "formats": r("Formats"),
+            "pdfImportSupport": object(
+                json!({
+                    "enabled": prim("boolean", "이 산출물의 pdf-import feature 선택."),
+                    "jbig2": prim("boolean", "pdf-jbig2 feature 선택."),
+                    "jpeg2000": prim("boolean", "실제 JPEG 2000 decoder 포함."),
+                    "icc": prim("boolean", "실제 ICC 색 변환 CMM 포함."),
+                    "boundedXrefRecovery": prim("boolean", "요청 예산을 소비하는 xref 복구 포함."),
+                }),
+                &["enabled", "jbig2", "jpeg2000", "icc", "boundedXrefRecovery"],
+                "빌드 시점의 PDF 지원. 모든 입력의 지원이나 안전성 보장은 아니다.",
+            ),
             "exitCodes": r("ExitCodes"),
             "jsonContract": r("JsonContract"),
             "batch": r("BatchContract"),
@@ -263,6 +274,10 @@ fn command_def() -> Value {
                 prim("string", "봉투 최상위 필드 이름"),
                 "`--json` 봉투가 싣는 필드 목록. 코드 생성기의 반환 타입 원천이다.",
             ),
+            "resourceProfiles": array_of(
+                prim("string", "지원하는 자원 프로필 이름"),
+                "자원 프로필을 선택할 수 있는 명령에만 나타난다. 세부 한도는 해당 명령의 자원 정책을 따른다.",
+            ),
             // [#3884 G4] 하위 명령 자기서술 — 부모 명령(edit·inspect)에만 붙는다.
             "subcommands": array_of(
                 object(
@@ -372,6 +387,8 @@ fn mcp_tool_def() -> Value {
                 "이 도구가 돌려주는 JSON 봉투의 최상위 필드 목록.",
             ),
             "annotations": r("McpToolAnnotations"),
+            "requiresFeature": prim("string", "이 도구가 요구하는 빌드 feature. 게이트된 도구에만 붙는다."),
+            "available": prim("boolean", "현재 바이너리에서 실제로 쓸 수 있는가. 게이트된 도구에만 붙는다."),
         }),
         &["name", "description", "inputSchema", "cli"],
         "MCP 도구 하나의 정의. 호스트가 tools/list 에 그대로 등록할 수 있는 모양이다.",

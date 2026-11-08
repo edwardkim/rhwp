@@ -1,0 +1,82 @@
+{
+  "changeSetId": "issue-4969.oldhangul-license-canvaskit",
+  "decisionPlane": "supply",
+  "evidenceRecords": [],
+  "expectedDelta": {
+    "activeRuleDelta": 0,
+    "projectionId": "canvaskit-sfnt",
+    "unchangedProjectionIds": [
+      "rust-layout-name",
+      "rust-layout-metric",
+      "canvas2d-paint",
+      "canvas2d-webfont"
+    ]
+  },
+  "issue": 4969,
+  "kind": "font-rule-change-set",
+  "operations": [
+    {
+      "evidenceIds": [
+        "evidence.issue-4969.oldhangul-redistribution-name"
+      ],
+      "expectedSelectionTupleSha256": "41d172a0612eb72b5e4c535b18147c4a506856b9bfd76f3022ff886c35e0222e",
+      "operationId": "operation.issue-4969.oldhangul-license-canvaskit",
+      "replacementRule": {
+        "conditions": {
+          "profile": "canvaskit-sfnt"
+        },
+        "decisionPlane": "supply",
+        "evidenceIds": [
+          "evidence.issue-4969.oldhangul-redistribution-name"
+        ],
+        "metricEntryIds": [],
+        "order": null,
+        "projection": {
+          "id": "canvaskit-sfnt",
+          "mode": "direct"
+        },
+        "projectionSequence": 152,
+        "relationType": "supply-source",
+        "ruleId": "rule.issue-4969.oldhangul-license-canvaskit",
+        "sourceBoundaryId": "studio-supply.font-list",
+        "sourceFace": "RHWP Old Hangul",
+        "supply": {
+          "capabilityAgreement": false,
+          "declaredCapability": "unavailable",
+          "fontFamily": "RHWP Old Hangul",
+          "kind": "canvaskit-plan",
+          "offline": {
+            "sources": [
+              {
+                "aliases": [
+                  "RHWP Old Hangul"
+                ],
+                "url": "fonts/RHWPOldHangul-Regular.woff2"
+              }
+            ],
+            "unavailableFonts": []
+          },
+          "online": {
+            "sources": [
+              {
+                "aliases": [
+                  "RHWP Old Hangul"
+                ],
+                "url": "fonts/RHWPOldHangul-Regular.woff2"
+              }
+            ],
+            "unavailableFonts": []
+          },
+          "runtimePlanStatus": "planned"
+        },
+        "targetFaceOrPolicy": "unavailable: no CanvasKit SFNT source for 'fonts/RHWPOldHangul-Regular.woff2'"
+      },
+      "retiredRuleId": "rule.studio-supply.0aab2d58429b52047acb.canvaskit",
+      "retirementReason": "수정본을 RHWP 고유 이름으로 공급하고 원본 Source Reserved Font Name을 primary font name에서 제거한다.",
+      "type": "retire-and-replace"
+    }
+  ],
+  "parentRegistrySha256": "76caceddd9b2121a02b9de709a976b6e5308d0e4902811028f63a279a2d574e7",
+  "schemaVersion": "2.0",
+  "sequence": 7
+}

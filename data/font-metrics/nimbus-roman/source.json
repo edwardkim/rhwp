@@ -1,0 +1,95 @@
+{
+  "generator": "scripts/extract_nimbus_roman_metrics.py",
+  "source": "https://github.com/ArtifexSoftware/urw-base35-fonts",
+  "fontBytesOrOutlinesIncluded": false,
+  "programs": [
+    {
+      "file": "NimbusRoman-Regular.otf",
+      "sha256": "fd41669443616a7ae890c42e53a58f47fa24a940fd1e367acaff665cf5b6e9d8",
+      "family": "Nimbus Roman",
+      "subfamily": "Regular",
+      "postscript": "NimbusRoman-Regular",
+      "aliases": [
+        "Nimbus Roman",
+        "Nimbus Roman Regular",
+        "NimbusRoman-Regular"
+      ],
+      "bold": false,
+      "italic": false,
+      "em": 1000,
+      "glyphs": 854,
+      "sourceTables": [
+        "name",
+        "head",
+        "cmap",
+        "hmtx"
+      ]
+    },
+    {
+      "file": "NimbusRoman-Bold.otf",
+      "sha256": "e0ad81923bc6d85d5426f796217c87963ca1ae3c65e22c87a25b6c6353de299e",
+      "family": "Nimbus Roman",
+      "subfamily": "Bold",
+      "postscript": "NimbusRoman-Bold",
+      "aliases": [
+        "Nimbus Roman",
+        "Nimbus Roman Bold",
+        "NimbusRoman-Bold"
+      ],
+      "bold": true,
+      "italic": false,
+      "em": 1000,
+      "glyphs": 854,
+      "sourceTables": [
+        "name",
+        "head",
+        "cmap",
+        "hmtx"
+      ]
+    },
+    {
+      "file": "NimbusRoman-Italic.otf",
+      "sha256": "b7c424e6cb79baddfcdcd9a9d87f9fc4fdd06f0e5160066e2b2e47bcd647c7b9",
+      "family": "Nimbus Roman",
+      "subfamily": "Italic",
+      "postscript": "NimbusRoman-Italic",
+      "aliases": [
+        "Nimbus Roman",
+        "Nimbus Roman Italic",
+        "NimbusRoman-Italic"
+      ],
+      "bold": false,
+      "italic": true,
+      "em": 1000,
+      "glyphs": 854,
+      "sourceTables": [
+        "name",
+        "head",
+        "cmap",
+        "hmtx"
+      ]
+    },
+    {
+      "file": "NimbusRoman-BoldItalic.otf",
+      "sha256": "c84bcb17ab4ee54f16dadad6a3b0b2df37a24f9fc812897c4a59eeca785a5dec",
+      "family": "Nimbus Roman",
+      "subfamily": "Bold Italic",
+      "postscript": "NimbusRoman-BoldItalic",
+      "aliases": [
+        "Nimbus Roman",
+        "Nimbus Roman Bold Italic",
+        "NimbusRoman-BoldItalic"
+      ],
+      "bold": true,
+      "italic": true,
+      "em": 1000,
+      "glyphs": 854,
+      "sourceTables": [
+        "name",
+        "head",
+        "cmap",
+        "hmtx"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "pageCount": 1,
+  "all_pages_exported": true,
+  "rasterBackend": "native-skia",
+  "comparisonProfile": "print",
+  "layoutGeneration": "2022",
+  "pages": [
+    {
+      "bytes": 128521,
+      "page": 0,
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261031/candidate-native-sweep/tab-split-merge/rhwp_png/rhwp_001.png",
+      "renderTreePath": "/home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261031/candidate-native-sweep/tab-split-merge/render_tree/render_tree_001.json"
+    }
+  ]
+}

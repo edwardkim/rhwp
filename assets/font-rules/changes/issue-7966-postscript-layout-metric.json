@@ -1,0 +1,78 @@
+{
+  "changeSetId": "issue-7966.postscript-layout-metric",
+  "decisionPlane": "layout-metric",
+  "evidenceRecords": [],
+  "expectedDelta": {
+    "activeRuleDelta": 2,
+    "projectionId": "rust-layout-metric",
+    "unchangedProjectionIds": [
+      "rust-layout-name",
+      "canvas2d-paint",
+      "canvas2d-webfont",
+      "canvaskit-sfnt"
+    ]
+  },
+  "issue": 7966,
+  "kind": "font-rule-change-set",
+  "operations": [
+    {
+      "operationId": "operation.issue-7966.layout-metric-0",
+      "rule": {
+        "conditions": {},
+        "decisionPlane": "layout-metric",
+        "evidenceIds": [
+          "evidence.issue-7966.postscript-styles"
+        ],
+        "metricEntryIds": [
+          "font-metric.cb5db76c0649913e4438",
+          "font-metric.1beeab194e16e4a6107d"
+        ],
+        "order": null,
+        "projection": {
+          "id": "rust-layout-metric",
+          "mode": "direct"
+        },
+        "projectionSequence": 68,
+        "relationType": "metric-surrogate",
+        "ruleId": "rule.rust-metric.97a520bd286dc482c765",
+        "sourceBoundaryId": "rust-metric.metric-alias",
+        "sourceFace": "Malgun Gothic Bold",
+        "supply": null,
+        "targetFaceOrPolicy": "Malgun Gothic"
+      },
+      "type": "add-rule"
+    },
+    {
+      "operationId": "operation.issue-7966.layout-metric-1",
+      "rule": {
+        "conditions": {},
+        "decisionPlane": "layout-metric",
+        "evidenceIds": [
+          "evidence.issue-7966.postscript-styles"
+        ],
+        "metricEntryIds": [
+          "font-metric.b5fafcd791a4af142ef1",
+          "font-metric.6edd92d6f8127459749a",
+          "font-metric.a94242c0b0f23c0e97fd",
+          "font-metric.a04310c5f53100889fc3"
+        ],
+        "order": null,
+        "projection": {
+          "id": "rust-layout-metric",
+          "mode": "direct"
+        },
+        "projectionSequence": 69,
+        "relationType": "metric-surrogate",
+        "ruleId": "rule.rust-metric.d3b78b2bdea7d0531b5f",
+        "sourceBoundaryId": "rust-metric.metric-alias",
+        "sourceFace": "Arial Bold",
+        "supply": null,
+        "targetFaceOrPolicy": "Arial"
+      },
+      "type": "add-rule"
+    }
+  ],
+  "parentRegistrySha256": "e8a68bfda63f41030fdf65afb0e5e72d85a5eeedb1023f3136d74ae86489ae62",
+  "schemaVersion": "2.0",
+  "sequence": 11
+}

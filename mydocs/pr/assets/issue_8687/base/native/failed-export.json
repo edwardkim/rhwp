@@ -1,0 +1,19 @@
+{
+  "sourceSha": "08963f6825956984d38b0d9392f44777db7107ab",
+  "binarySha256": "6ae877ba5c123cc285bd9bc12fdd3eee85ca2adfbf99466e33af13bdd40991f4",
+  "input": "pdf/issue8687/font_list_name_fallback.hwpx",
+  "inputSha256": "b84f9c8815b9093135a1e3e630dd8b55aac62916275edac0dc0e8fc61520120e",
+  "command": [
+    "rhwp",
+    "export-png",
+    "pdf/issue8687/font_list_name_fallback.hwpx",
+    "--profile",
+    "screen",
+    "--scale",
+    "1.5",
+    "--json"
+  ],
+  "exitCode": 1,
+  "producedPngs": 0,
+  "error": "실제 PUA 글꼴 공급 실패: 렌더링 오류: font environment requires a valid id, single-face substitutions, and bounded distinct glyph fallback faces"
+}

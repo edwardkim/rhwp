@@ -1,0 +1,41 @@
+{
+  "reviewed_utc": "2026-11-06T05:10:43.555230+00:00",
+  "pr": 8683,
+  "head": "71052fccc6fc5090fa94ca9dd013be0ff5984ff7",
+  "base": "5716a226b562b7300193dd0b573ded9cd71ac890",
+  "product_src_tree": "c1ea19fbc94dd6aac77d4368755b6da5a9544e42",
+  "code_review": "completed",
+  "blocking_findings": [],
+  "approved_existing_difference": {
+    "pr": 8599,
+    "issue_to_keep_open": 8579,
+    "new_regression_exception": false
+  },
+  "reviewed_contracts": [
+    "실제 문단 원점과 인라인 위치 공유·떠 있는 paint/흐름 분리",
+    "signed offset+margin의 정확한 부호·범위 보존",
+    "격자 계산의 Storage 예산·실패 전파와 정상 경계 유지",
+    "Link 레코드 순번과 실제 BinData 파일 쓰기의 분리",
+    "soft-edge 21/22바이트 꼬리의 원본 크기·alpha와 기존 꼬리 보존"
+  ],
+  "local_validation": {
+    "focused": 27,
+    "regression": 12752,
+    "native": 4064,
+    "security_source": "동일 8개 입력을 명시한 전체 실행의 6개 실제 PASS",
+    "original_visual_pages": 7,
+    "extended_visual_pages": 12,
+    "inherited_visual_pages": 55,
+    "handbook_pages": 383
+  },
+  "input_commit_check": "56 original/reference files match Git blobs",
+  "font_program_redistribution": false,
+  "original_heads_preserved": 5,
+  "after_validated_candidate": "승인 기록 mydocs 9개만 변경. 제품·검사·fixture·workflow 추가 변경 없음.",
+  "github_ci": "all_success",
+  "merge_verdict": "accept_with_approved_existing_difference_only",
+  "security_bot_review": "security-bot-review.json",
+  "policy_audit_run": 42169452466,
+  "github_archive_passed": 12558,
+  "github_archive_existing_skipped": 45
+}

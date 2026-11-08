@@ -8,12 +8,6 @@
   ],
   "entries": [
     {
-      "doc": "samples/hwp3-sample16.hwp",
-      "route": "hwpx",
-      "issue": 3518,
-      "reason": "HWPX 내보내기 전후 쪽수 불일치 (64→65) — M05-2"
-    },
-    {
       "doc": "samples/synam-001.hwp",
       "route": "hwpx",
       "issue": 3521,

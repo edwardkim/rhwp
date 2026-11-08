@@ -1,0 +1,73 @@
+{
+  "production_source_sha": "605ccfd92f2f12f18e14182548d729f9929fda00",
+  "measurements": [
+    {
+      "key": "sample16-hwp2022",
+      "pages": 64,
+      "raw_minimum": 95.03337,
+      "raw_100_pages": [],
+      "under_90_pages": [],
+      "tsv": "mydocs/pr/assets/issue_8160/tsv/base/native/sample16-hwp2022.tsv",
+      "manifest": "output/pr-review/issue8160-20261022/base/native-scores/sample16-hwp2022/sample16-hwp2022/silhouette_manifest.json",
+      "page_counts": {
+        "rhwp": 64,
+        "pdf": 64
+      }
+    },
+    {
+      "key": "sample16-hwp2024",
+      "pages": 64,
+      "raw_minimum": 97.73521,
+      "raw_100_pages": [
+        56,
+        58,
+        63,
+        64
+      ],
+      "under_90_pages": [],
+      "tsv": "mydocs/pr/assets/issue_8160/tsv/base/native/sample16-hwp2024.tsv",
+      "manifest": "output/pr-review/issue8160-20261022/base/native-scores/sample16-hwp2024/sample16-hwp2024/silhouette_manifest.json",
+      "page_counts": {
+        "rhwp": 64,
+        "pdf": 64
+      }
+    },
+    {
+      "key": "sample16-hwpx",
+      "pages": 64,
+      "raw_minimum": 96.24353,
+      "raw_100_pages": [
+        56,
+        58,
+        63,
+        64
+      ],
+      "under_90_pages": [],
+      "tsv": "mydocs/pr/assets/issue_8160/tsv/base/native/sample16-hwpx.tsv",
+      "manifest": "output/pr-review/issue8160-20261022/base/native-scores/sample16-hwpx/sample16-hwpx/silhouette_manifest.json",
+      "page_counts": {
+        "rhwp": 64,
+        "pdf": 64
+      }
+    }
+  ],
+  "native_producer": {
+    "source_sha": "605ccfd92f2f12f18e14182548d729f9929fda00",
+    "source_files": 2747,
+    "source_fingerprint_sha256": "a28c53ac28e6a0e7b73f4f38f3531a7a9964598793e8066be5cae9d2a393dc1c",
+    "native_build_command": "CARGO_BUILD_JOBS=14 cargo build --locked --profile release-test --features native-skia --bin rhwp --target-dir target/pr-review",
+    "native_build_exit_code": 0,
+    "native_artifacts": [
+      {
+        "file": "output/pr-review/issue8160-20261022/base/native/rhwp",
+        "sha256": "de6723319a105a43a54ed7d8505d1c7e6a634103f18f5562d0feabf9072b62fb",
+        "bytes": 70124512
+      },
+      {
+        "file": "output/pr-review/issue8160-20261022/base/native/librhwp.rlib",
+        "sha256": "32081d44bab1784e1da8b5ed4ccecf5c55c0a6af105e65b12b0d23e9f10cab26",
+        "bytes": 120124444
+      }
+    ]
+  }
+}

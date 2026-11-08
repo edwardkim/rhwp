@@ -1,0 +1,121 @@
+{
+  "pdfEmbeddedFamily": "HCRBatang",
+  "wasmRasterBackend": "wasm-canvas2d",
+  "browser": "Chrome/155.0.8059.79",
+  "wasmFonts": {
+    "requested": [
+      "noto serif kr"
+    ],
+    "loaded": [
+      {
+        "family": "Noto Serif KR",
+        "registeredFamily": "Noto Serif KR",
+        "sourceSha256": "ad964df5f03b757746aeb34c93ba26c2353939e8dc024216d425d5c7b9f21ae1",
+        "sha256": "ad964df5f03b757746aeb34c93ba26c2353939e8dc024216d425d5c7b9f21ae1",
+        "textProgramSha256": "ad964df5f03b757746aeb34c93ba26c2353939e8dc024216d425d5c7b9f21ae1",
+        "faceIndex": 0,
+        "weight": 200,
+        "style": "normal",
+        "repairs": [],
+        "sourceKind": "external"
+      },
+      {
+        "family": "Noto Serif KR",
+        "registeredFamily": "Noto Serif KR",
+        "sourceSha256": "10df941c9e340f798821fe5c0d02eebf2ba558b9760edcc885b5b36bbc7d9860",
+        "sha256": "10df941c9e340f798821fe5c0d02eebf2ba558b9760edcc885b5b36bbc7d9860",
+        "textProgramSha256": "10df941c9e340f798821fe5c0d02eebf2ba558b9760edcc885b5b36bbc7d9860",
+        "faceIndex": 0,
+        "weight": 900,
+        "style": "normal",
+        "repairs": [],
+        "sourceKind": "external"
+      },
+      {
+        "family": "Noto Serif KR",
+        "registeredFamily": "Noto Serif KR",
+        "sourceSha256": "df809f42883c47180dbcd592432c83b3f3abbb67b801dc6e7f9b18bb72efb512",
+        "sha256": "df809f42883c47180dbcd592432c83b3f3abbb67b801dc6e7f9b18bb72efb512",
+        "textProgramSha256": "df809f42883c47180dbcd592432c83b3f3abbb67b801dc6e7f9b18bb72efb512",
+        "faceIndex": 0,
+        "weight": 700,
+        "style": "normal",
+        "repairs": [],
+        "sourceKind": "external"
+      },
+      {
+        "family": "Noto Serif KR",
+        "registeredFamily": "Noto Serif KR",
+        "sourceSha256": "6f97996ae771efea34d16a63e19bf93750e6ef85d92753d2673af3578c0f290f",
+        "sha256": "6f97996ae771efea34d16a63e19bf93750e6ef85d92753d2673af3578c0f290f",
+        "textProgramSha256": "6f97996ae771efea34d16a63e19bf93750e6ef85d92753d2673af3578c0f290f",
+        "faceIndex": 0,
+        "weight": 800,
+        "style": "normal",
+        "repairs": [],
+        "sourceKind": "external"
+      },
+      {
+        "family": "Noto Serif KR",
+        "registeredFamily": "Noto Serif KR",
+        "sourceSha256": "80b6af3ff623423898ca8a1efa5ffb64546578b310afd2debe719ade033b8111",
+        "sha256": "80b6af3ff623423898ca8a1efa5ffb64546578b310afd2debe719ade033b8111",
+        "textProgramSha256": "80b6af3ff623423898ca8a1efa5ffb64546578b310afd2debe719ade033b8111",
+        "faceIndex": 0,
+        "weight": 250,
+        "style": "normal",
+        "repairs": [],
+        "sourceKind": "external"
+      },
+      {
+        "family": "Noto Serif KR",
+        "registeredFamily": "Noto Serif KR",
+        "sourceSha256": "c0fd5cfbb8e2654e70f8c2d0ee279aa307e4218f57bcf28af8954980ec112d62",
+        "sha256": "c0fd5cfbb8e2654e70f8c2d0ee279aa307e4218f57bcf28af8954980ec112d62",
+        "textProgramSha256": "c0fd5cfbb8e2654e70f8c2d0ee279aa307e4218f57bcf28af8954980ec112d62",
+        "faceIndex": 0,
+        "weight": 300,
+        "style": "normal",
+        "repairs": [],
+        "sourceKind": "external"
+      },
+      {
+        "family": "Noto Serif KR",
+        "registeredFamily": "Noto Serif KR",
+        "sourceSha256": "7ee1428ee40edc4c950057b09d42c17f97e0262598376082a7cd2723ea4f39c0",
+        "sha256": "7ee1428ee40edc4c950057b09d42c17f97e0262598376082a7cd2723ea4f39c0",
+        "textProgramSha256": "7ee1428ee40edc4c950057b09d42c17f97e0262598376082a7cd2723ea4f39c0",
+        "faceIndex": 0,
+        "weight": 500,
+        "style": "normal",
+        "repairs": [],
+        "sourceKind": "external"
+      },
+      {
+        "family": "Noto Serif KR",
+        "registeredFamily": "Noto Serif KR",
+        "sourceSha256": "78e2a43d067065fa0934765ddf27b7c051a6a43a8407c1dbf6774d3e71b489f4",
+        "sha256": "78e2a43d067065fa0934765ddf27b7c051a6a43a8407c1dbf6774d3e71b489f4",
+        "textProgramSha256": "78e2a43d067065fa0934765ddf27b7c051a6a43a8407c1dbf6774d3e71b489f4",
+        "faceIndex": 0,
+        "weight": 400,
+        "style": "normal",
+        "repairs": [],
+        "sourceKind": "external"
+      },
+      {
+        "family": "Noto Serif KR",
+        "registeredFamily": "Noto Serif KR",
+        "sourceSha256": "f485f30688dca5b523bbd8b95090c308e02efd424fdfbcfa169c96212c4f68b6",
+        "sha256": "f485f30688dca5b523bbd8b95090c308e02efd424fdfbcfa169c96212c4f68b6",
+        "textProgramSha256": "f485f30688dca5b523bbd8b95090c308e02efd424fdfbcfa169c96212c4f68b6",
+        "faceIndex": 0,
+        "weight": 600,
+        "style": "normal",
+        "repairs": [],
+        "sourceKind": "external"
+      }
+    ]
+  },
+  "note": "Font programs are not committed. Visual measurement uses the observed Canvas2D fallback, not a claim of identical Hancom font programs."
+}

@@ -1,0 +1,104 @@
+[
+  {
+    "role": "base",
+    "key": "rowbreak-hwp",
+    "binarySha256": "39beec91d5bdfcc3a356071f3c497efdf8bd3f4cf402df6fa72de7c47a211913",
+    "pages": 18,
+    "counts": {
+      "rhwp": 18,
+      "pdf": 18
+    },
+    "minimum": "87.46657",
+    "minimumPage": "16",
+    "below90": [
+      "7",
+      "16"
+    ],
+    "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/mixed-opening-native-v10c/base/rowbreak-hwp/silhouette.tsv"
+  },
+  {
+    "role": "base",
+    "key": "rowbreak-hwpx",
+    "binarySha256": "39beec91d5bdfcc3a356071f3c497efdf8bd3f4cf402df6fa72de7c47a211913",
+    "pages": 18,
+    "counts": {
+      "rhwp": 18,
+      "pdf": 18
+    },
+    "minimum": "88.81098",
+    "minimumPage": "7",
+    "below90": [
+      "7"
+    ],
+    "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/mixed-opening-native-v10c/base/rowbreak-hwpx/silhouette.tsv"
+  },
+  {
+    "role": "before",
+    "key": "rowbreak-hwp",
+    "binarySha256": "ae2a5095e29f84c2eb22cbd95786e4c37425bf8d7160b5b699b6ca7d401c3eb2",
+    "pages": 18,
+    "counts": {
+      "rhwp": 18,
+      "pdf": 18
+    },
+    "minimum": "62.37510",
+    "minimumPage": "12",
+    "below90": [
+      "11",
+      "12"
+    ],
+    "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/mixed-opening-native-v10c/before/rowbreak-hwp/silhouette.tsv"
+  },
+  {
+    "role": "before",
+    "key": "rowbreak-hwpx",
+    "binarySha256": "ae2a5095e29f84c2eb22cbd95786e4c37425bf8d7160b5b699b6ca7d401c3eb2",
+    "pages": 18,
+    "counts": {
+      "rhwp": 18,
+      "pdf": 18
+    },
+    "minimum": "36.58076",
+    "minimumPage": "12",
+    "below90": [
+      "7",
+      "11",
+      "12"
+    ],
+    "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/mixed-opening-native-v10c/before/rowbreak-hwpx/silhouette.tsv"
+  },
+  {
+    "role": "candidate",
+    "key": "rowbreak-hwp",
+    "binarySha256": "66213e861c4e669607c9f11f972b1d9ab1b5b0e28fe8226d8517e56428fb7a96",
+    "pages": 18,
+    "counts": {
+      "rhwp": 18,
+      "pdf": 18
+    },
+    "minimum": "62.37510",
+    "minimumPage": "12",
+    "below90": [
+      "11",
+      "12"
+    ],
+    "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/mixed-opening-native-v10c/candidate/rowbreak-hwp/silhouette.tsv"
+  },
+  {
+    "role": "candidate",
+    "key": "rowbreak-hwpx",
+    "binarySha256": "66213e861c4e669607c9f11f972b1d9ab1b5b0e28fe8226d8517e56428fb7a96",
+    "pages": 18,
+    "counts": {
+      "rhwp": 18,
+      "pdf": 18
+    },
+    "minimum": "36.58076",
+    "minimumPage": "12",
+    "below90": [
+      "11",
+      "12"
+    ],
+    "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/mixed-opening-native-v10c/candidate/rowbreak-hwpx/silhouette.tsv"
+  }
+]

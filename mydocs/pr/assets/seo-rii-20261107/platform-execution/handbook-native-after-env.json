@@ -1,0 +1,21 @@
+{
+  "source_head": "c2648ffdfe",
+  "status": "passed",
+  "started_at": "2026-11-07T04:14:56.915129+00:00",
+  "command": [
+    "python3",
+    "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont-python.py",
+    "/home/edward/mygithub/rhwp/venv/bin/python",
+    "scripts/visual_sweep.py",
+    "--silhouette-only",
+    "--handbook-gate",
+    "--rhwp-bin",
+    "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/candidate-native/rhwp",
+    "--page-workers",
+    "2",
+    "--out",
+    "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/handbook-native-after-env"
+  ],
+  "returncode": 0,
+  "finished_at": "2026-11-07T04:22:04.616689+00:00"
+}

@@ -96,16 +96,6 @@ SAMPLES = {
         "note": "playbook 예시 2 고난도 수식.",
         "groundTruth": "한컴 출력 PDF",
     },
-    "leet": {
-        "path": "samples/21_언어_기출_편집가능본.hwp",
-        "pages": 15,
-        "sha256": "905454045ca2e236839a7cab59750678116d08af3db31dbf846819af355b8d15",
-        "note": "playbook 예시 6. A3 법학적성시험 언어이해.",
-        "groundTruth": "pdf/21_언어_기출_편집가능본-2022.pdf",
-        "referenceSha256": "f2d858d7974393661d91a658e6b384b951114ef52783379f426a963effd97b72",
-        "creator": "Hwp 2022 12.0.0.4426",
-        "producer": "Hancom PDF 1.3.0.550",
-    },
     "gianmun": {
         "path": "(외부) 행정 업무 편람 별지 제1호 일반기안문",
         "pages": None,
@@ -1076,18 +1066,6 @@ def traces() -> list[dict]:
             "stop": "F04",
             "filed": False,
             "note": "한계를 기록. 한컴 충실도 이슈 금지.",
-        },
-        {
-            "id": "T05",
-            "journey": "J06",
-            "title": "언어이해 8쪽 provenance 기록 후 대조",
-            "commands": [
-                "기록: Creator Hwp 2022 12.0.0.4426 Producer Hancom PDF 1.3.0.550",
-                "venv/bin/python tools/fidelity_compare/fidelity_compare.py 7 7 --source samples/21_언어_기출_편집가능본.hwp --reference-pdf pdf/21_언어_기출_편집가능본-2022.pdf --out-dir /tmp/rhwp-fidelity-leet-p8",
-            ],
-            "stop": "F03",
-            "filed": False,
-            "note": "페이지 0 기준이므로 8쪽은 -p 7.",
         },
     ]
     extras = []

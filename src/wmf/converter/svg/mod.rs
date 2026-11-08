@@ -1,13 +1,18 @@
+mod clipping;
 mod device_context;
 mod node;
+mod saved_device_context;
+mod source_contract;
+mod source_rop_pair;
 mod ternary_raster_operator;
+mod text_advances;
 mod util;
 
 use crate::wmf::{
     converter::{
         svg::{
             device_context::DeviceContext,
-            node::{Data, Node},
+            node::{share_repeated_bitmaps, Data, Node},
             ternary_raster_operator::{BrushOnlyRopSequence, TernaryRasterOperator},
             util::{as_point_string, url_string, Fill, Stroke},
         },
@@ -19,19 +24,29 @@ use crate::wmf::{
 
 #[derive(Default)]
 pub struct SVGPlayer {
-    context_stack: Vec<DeviceContext>,
+    context_stack: Vec<saved_device_context::SavedDeviceContext>,
     context_current: DeviceContext,
     definitions: Vec<Node>,
     /// [#6469] 브러시 전용 ROP 근사의 짧은 PATINVERT → DPA → PATINVERT 상태.
     brush_only_rop_sequence: BrushOnlyRopSequence,
+    source_rop_pair: Option<source_rop_pair::PendingSourcePair>,
     elements: Vec<Node>,
     object_selected: SelectedGraphicsObject,
     current_clip_id: Option<String>,
+    clip_bounds: BTreeMap<String, clipping::DeviceClipBounds>,
+    source_contract: Option<source_contract::SourceContract>,
 }
 
 impl SVGPlayer {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// 원본 창·LOGFONT·그리기 순서를 공통 출력 장치가 소비할 때만 보존한다.
+    /// 기본 SVG의 모양과 속성에는 추가 메타데이터를 방출하지 않는다.
+    pub fn with_source_contract(mut self) -> Self {
+        self.source_contract = Some(Default::default());
+        self
     }
 
     #[inline]
@@ -41,6 +56,9 @@ impl SVGPlayer {
 
     #[inline]
     fn push_element(&mut self, record_number: usize, mut element: Node) {
+        if let Some(contract) = &mut self.source_contract {
+            element = contract.element(element, &self.context_current, &self.object_selected.font);
+        }
         if record_number > 0 {
             element = element.set("id", format!("elem{record_number}"));
         }
@@ -73,6 +91,8 @@ impl crate::wmf::converter::Player for SVGPlayer {
             definitions,
             brush_only_rop_sequence,
             elements,
+            clip_bounds,
+            source_contract,
             ..
         } = self;
 
@@ -96,12 +116,15 @@ impl crate::wmf::converter::Player for SVGPlayer {
         let mut vb_right = vb_x.saturating_add(vb_w_i32);
         let mut vb_bottom = vb_y.saturating_add(vb_h_i32);
         for elem in elements.iter() {
-            if let Some(mx) = element_max_x(elem) {
+            // 출력에 적용한 같은 물리 클립만 표시 외곽에도 반영한다.
+            // 큰 원본 비트맵의 잘린 부분으로 viewBox를 늘리면 남은 그림까지 축소된다.
+            let (max_x, max_y) = clipping::visible_element_maxima(elem, &clip_bounds);
+            if let Some(mx) = max_x {
                 if mx > vb_right {
                     vb_right = mx;
                 }
             }
-            if let Some(my) = element_max_y(elem) {
+            if let Some(my) = max_y {
                 if my > vb_bottom {
                     vb_bottom = my;
                 }
@@ -114,7 +137,18 @@ impl crate::wmf::converter::Player for SVGPlayer {
 
         let mut document = Node::new("svg")
             .set("xmlns", "http://www.w3.org/2000/svg")
+            // 논리 크기를 내재 크기로 보존하여 브라우저의 300×150 기본값을 피한다.
+            .set("width", vb_w_i32)
+            .set("height", vb_h_i32)
             .set("viewBox", format!("{vb_x} {vb_y} {vb_w_i32} {vb_h_i32}"));
+
+        if let Some(contract) = source_contract {
+            document = contract.document(document, &context_current);
+        }
+
+        // 외곽 계산은 원래 image 좌표를 소비한 뒤 끝낸다. 반복 비트맵의
+        // 바이트만 공유하고 실제 요소의 순서·좌표·클립은 그대로 유지한다.
+        let (definitions, elements) = share_repeated_bitmaps(definitions, elements);
 
         if !definitions.is_empty() {
             let mut defs = Node::new("defs");
@@ -306,6 +340,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
         let operator = match record {
             META_DIBSTRETCHBLT::WithBitmap {
                 raster_operation,
+                src_height,
+                src_width,
+                y_src,
+                x_src,
                 dest_height,
                 dest_width,
                 y_dest,
@@ -318,12 +356,47 @@ impl crate::wmf::converter::Player for SVGPlayer {
                         .blit_dest_rect(x_dest, y_dest, dest_width, dest_height);
                 let mut operator = TernaryRasterOperator::new(raster_operation, rect);
 
+                if matches!(
+                    raster_operation,
+                    TernaryRasterOperation::SRCPAINT | TernaryRasterOperation::SRCAND
+                ) {
+                    let bitmap = crate::wmf::converter::Bitmap::from((*target).clone());
+                    let composed = source_rop_pair::PendingSourcePair::observe(
+                        &mut self.source_rop_pair,
+                        source_rop_pair::SourceBlit {
+                            record: record_number,
+                            element: self.elements.len(),
+                            operation: raster_operation,
+                            destination: rect,
+                            source: [x_src, y_src, src_width, src_height],
+                            bitmap: &bitmap,
+                        },
+                    );
+                    if let Some(composed) = composed {
+                        if let Some(previous) = self.elements.get_mut(composed.previous_element) {
+                            use base64::{engine::general_purpose::STANDARD, Engine};
+                            *previous = Node::new("g");
+                            let uri =
+                                format!("data:image/png;base64,{}", STANDARD.encode(composed.png));
+                            self.push_element(
+                                record_number,
+                                TernaryRasterOperator::image_node(rect, uri),
+                            );
+                            return Ok(self);
+                        }
+                    }
+                } else {
+                    self.source_rop_pair = None;
+                }
+
                 if raster_operation.use_selected_brush() {
                     operator = operator.brush(self.selected_brush().clone());
                 }
 
                 if raster_operation.use_source() {
-                    operator = operator.source_bitmap(*target);
+                    operator = operator
+                        .source_bitmap(*target)
+                        .source_rectangle(x_src, y_src, src_width, src_height);
                 }
 
                 operator
@@ -475,6 +548,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
     ) -> Result<Self, PlayError> {
         let META_STRETCHDIB {
             raster_operation,
+            src_height,
+            src_width,
+            y_src,
+            x_src,
             dest_height,
             dest_width,
             y_dst,
@@ -493,7 +570,20 @@ impl crate::wmf::converter::Player for SVGPlayer {
         }
 
         if raster_operation.use_source() {
-            operator = operator.source_bitmap(dib);
+            // StretchDIBits의 원점은 상향식 DIB에서는 왼쪽 아래, 하향식에서는 왼쪽 위다.
+            // 디코딩한 이미지는 왼쪽 위가 원점이므로 원래 행 방향을 함께 전달한다.
+            let bottom_up = match &dib.dib_header_info {
+                crate::wmf::parser::BitmapInfoHeader::Core(_) => true,
+                crate::wmf::parser::BitmapInfoHeader::Info(header) => header.height > 0,
+                crate::wmf::parser::BitmapInfoHeader::V4(header) => header.height > 0,
+                crate::wmf::parser::BitmapInfoHeader::V5(header) => header.height > 0,
+            };
+            operator = operator
+                .source_bitmap(dib)
+                .source_rectangle(x_src, y_src, src_width, src_height);
+            if bottom_up {
+                operator = operator.bottom_up_source();
+            }
         }
 
         let Some(elem) = operator
@@ -790,6 +880,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 .map_err(|err| PlayError::InvalidRecord {
                     cause: err.to_string(),
                 })?;
+        let explicit = text_advances::explicit_advances(&record, font.charset, &text_content);
         let point = {
             let point = PointS {
                 x: if self.context_current.text_align_update_cp {
@@ -919,7 +1010,28 @@ impl crate::wmf::converter::Player for SVGPlayer {
             )
             .set("fill", self.context_current.text_color_as_css_color());
 
-        if record.dx.len() <= 1 {
+        if let Some(advances) = &explicit {
+            // Dx는 font의 자연 폭에 더할 여백이 아니라 원점 사이의 논리 전진이다.
+            // DBCS 바이트 셀을 연결한 결과를 전체 문자열의 정렬 기준에서 소비한다.
+            let alignment = match self.context_current.text_align_horizontal {
+                TextAlignmentMode::TA_CENTER => f64::from(advances.total) / 2.0,
+                TextAlignmentMode::TA_RIGHT => f64::from(advances.total),
+                _ => 0.0,
+            };
+            let window = &self.context_current.window;
+            let reference = if self.context_current.text_align_update_cp {
+                f64::from(point.x)
+            } else {
+                f64::from(window.to_device(f32::from(record.x), 0.0).0)
+            };
+            let zero = window.to_device(0.0, 0.0).0;
+            text = text.set("text-anchor", "start");
+            for (content, advance) in &advances.cells {
+                let logical = (f64::from(*advance) - alignment) as f32;
+                let x = reference + f64::from(window.to_device(logical, 0.0).0 - zero);
+                text = text.add(Node::new("tspan").set("x", x).add(Node::new_text(content)));
+            }
+        } else if record.dx.len() <= 1 {
             text = text.add(Node::new_text(&text_content));
         } else {
             // https://cgit.freedesktop.org/libreoffice/core/tree/emfio/source/reader/wmfreader.cxx?id=c0b14ab9aa4d713a6b718ef07b9e0379b88e97d3#n693
@@ -955,10 +1067,23 @@ impl crate::wmf::converter::Player for SVGPlayer {
         }
 
         if self.context_current.text_align_update_cp {
-            let dx = (font.height.saturating_abs() / 2)
-                .saturating_mul(i16::try_from(text_content.width()).unwrap_or(0));
+            let dx = explicit.as_ref().map_or_else(
+                || {
+                    f64::from(
+                        (font.height.saturating_abs() / 2)
+                            .saturating_mul(i16::try_from(text_content.width()).unwrap_or(0)),
+                    )
+                },
+                |advances| {
+                    let window = &self.context_current.window;
+                    f64::from(
+                        window.to_device(advances.total as f32, 0.0).0
+                            - window.to_device(0.0, 0.0).0,
+                    )
+                },
+            );
             let point = PointS {
-                x: point.x.saturating_add(dx),
+                x: (f64::from(point.x) + dx) as i16,
                 y: point.y,
             };
             self.context_current = self.context_current.drawing_position(point);
@@ -1730,20 +1855,16 @@ impl crate::wmf::converter::Player for SVGPlayer {
             .object_table
             .get(record.region as usize);
 
-        if let GraphicsObject::Region(region) = object {
-            let rect = &region.bounding_rectangle;
-            let id = format!("clip{record_number}");
-            let mut clip = Node::new("clipPath").set("id", &id);
-            let rect_node = Node::new("rect")
-                .set("x", rect.left)
-                .set("y", rect.top)
-                .set("width", rect.right - rect.left)
-                .set("height", rect.bottom - rect.top);
-            clip = clip.add(rect_node);
-            self.definitions.push(clip);
-            self.current_clip_id = Some(id);
+        let rectangle = match object {
+            GraphicsObject::Region(region) => Some(region.bounding_rectangle.clone()),
+            _ => None,
+        };
+        if let Some(rectangle) = rectangle {
+            self.context_current.clipping_region = Some(rectangle.clone());
+            self.install_device_clip(record_number, &rectangle, false);
         } else {
             self.current_clip_id = None;
+            self.context_current.clipping_region = None;
         }
 
         Ok(self)
@@ -1859,12 +1980,14 @@ impl crate::wmf::converter::Player for SVGPlayer {
             ..
         } = record;
 
-        self.context_current = self.context_current.clipping_region(Rect {
+        let rectangle = Rect {
             left,
             top,
             right,
             bottom,
-        });
+        };
+        self.context_current = self.context_current.clipping_region(rectangle.clone());
+        self.install_device_clip(record_number, &rectangle, true);
 
         Ok(self)
     }
@@ -1967,17 +2090,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
         record_number: usize,
         record: META_RESTOREDC,
     ) -> Result<Self, PlayError> {
-        let context = if record.n_saved_dc < 0 {
-            self.context_current.clone().into()
-        } else if (record.n_saved_dc as usize) < self.context_stack.len() {
-            self.context_stack.remove(record.n_saved_dc as usize).into()
-        } else {
-            None
-        };
-
-        if let Some(ctx) = context {
-            self.context_current = ctx;
-        }
+        self.restore_playback_context(record.n_saved_dc);
 
         Ok(self)
     }
@@ -1992,7 +2105,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
         record_number: usize,
         record: META_SAVEDC,
     ) -> Result<Self, PlayError> {
-        self.context_stack.push(self.context_current.clone());
+        self.save_playback_context();
 
         Ok(self)
     }

@@ -1,0 +1,147 @@
+{
+  "base": "96ccd557592a711f215e7ad28822f4c7a3f00c15",
+  "productSource": "c3f5cbd6d7beecdaa231cd3a40080f2e7f3c8c1e",
+  "testHeaderCommit": "f3a57f2e6b",
+  "gates": [
+    {
+      "name": "fmt-final",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "started": "2026-10-30T23:46:19.966917+09:00",
+      "exit": 0,
+      "finished": "2026-10-30T23:46:43.634409+09:00"
+    },
+    {
+      "name": "suite-manifest",
+      "exit": 0,
+      "correction": "Regenerated harnesses after source-header metrics changed; generated files excluded from staging.",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "96ccd557592a711f215e7ad28822f4c7a3f00c15"
+      ]
+    },
+    {
+      "name": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started": "2026-10-30T23:47:13.496824+09:00",
+      "exit": 0,
+      "finished": "2026-10-30T23:49:27.888761+09:00"
+    },
+    {
+      "name": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started": "2026-10-30T23:49:27.888977+09:00",
+      "exit": 0,
+      "finished": "2026-10-30T23:50:33.684875+09:00"
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ],
+      "started": "2026-10-30T23:50:33.685066+09:00",
+      "exit": 0,
+      "finished": "2026-10-30T23:53:16.787387+09:00"
+    },
+    {
+      "name": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started": "2026-10-30T23:53:16.787614+09:00",
+      "exit": 0,
+      "finished": "2026-10-30T23:55:31.562827+09:00"
+    },
+    {
+      "name": "skia-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--all-targets",
+        "--features",
+        "native-skia",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started": "2026-10-30T23:55:31.563357+09:00",
+      "exit": 0,
+      "finished": "2026-10-30T23:57:45.645830+09:00"
+    },
+    {
+      "name": "full-nextest",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "started": "2026-10-30T23:57:45.646044+09:00",
+      "exit": 0,
+      "finished": "2026-10-31T00:17:18.056376+09:00",
+      "summary": "12198 passed; 45 skipped; 1 slow; 517.660 seconds test execution"
+    }
+  ],
+  "nativeFocused": {
+    "issue_536_native_region_cache": 21,
+    "skia_region_plan": 10,
+    "skia_host_surface": 9,
+    "issue_536_native_viewport": 8,
+    "issue_536_native_session": 3,
+    "render_p37_direct_pdf_export": 22,
+    "issue_536_direct_pdf_linear_gradient": 8
+  },
+  "nativeLib": {
+    "passed": 4040,
+    "ignored": 12
+  },
+  "nativePlaceholder": 2,
+  "ciNodeContracts": 95,
+  "ciPythonContracts": 95,
+  "ciActionlint": "PASS; shellcheck/pyflakes integrations disabled; Python and shell checks run separately",
+  "featureOffSession": "3 PASS inside full-nextest"
+}

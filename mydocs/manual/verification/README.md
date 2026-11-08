@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/verification/README.md
-last_verified: 2026-07-30
+last_verified: 2026-10-09
 ---
 
 # 시각 검증 문서 지도
@@ -15,6 +15,7 @@ last_verified: 2026-07-30
 | --- | --- | --- |
 | 독립 정답지 기준 실제 사용자 출력 결함의 발굴·원인 판정 | [버그 헌팅 playbook](../bug_hunting_playbook.md) | [시각 검증 거버넌스](visual_verification_governance.md)의 라우팅 표와 이 디렉터리의 도구 |
 | 시각 검증 적용 판단과 증적 규약 | [시각 검증 거버넌스](visual_verification_governance.md) | [PR review 시각·fixture 증적](../pr_review/visual_fixture_evidence.md) |
+| 공통 조판/paint 결과의 Canvas·SVG·Native PNG 소비 검증 | [출력 백엔드 소비 경로 검증](renderer_backend_verification.md) | [폰트 사고 대응](../font_incident_response.md), [RenderBackend 계약](../../tech/render_backend.md) |
 | PDF/SVG overlay·drift 후보 탐색 | [PDF/SVG visual sweep 가이드](visual_sweep_guide.md) | [SVG 회귀 diff](svg_regression_diff.md) |
 | 그림 mime 발산(디코드 불가 방출) 전수 검출 | [이미지 발산 스윕](image_divergence_sweep.md) | [시각 검증 거버넌스](visual_verification_governance.md) |
 | 표·그림 geometry 무회귀 | [개체 시각 회귀 하니스](object_visual_regression.md) | [페이지·PI 매칭 오라클](verify_pi_page_vs_hangul.md) |

@@ -1,0 +1,169 @@
+{
+  "date": "2026-10-28",
+  "head_at_audit": "b7d8eef3d5dac85cf744d757f52f84039d9691c7",
+  "scope": "20개 원 PR 검토·구현 문서의 파일 상대 링크 존재 여부; 웹 주소와 문서 내 앵커 및 내용 적합성은 검사 범위 밖",
+  "documents": [
+    {
+      "path": "mydocs/pr/archives/pr_8115_review.md",
+      "relative_links": 46
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8115_review_impl.md",
+      "relative_links": 2
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8128_review.md",
+      "relative_links": 32
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8128_review_impl.md",
+      "relative_links": 3
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8133_review.md",
+      "relative_links": 35
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8133_review_impl.md",
+      "relative_links": 3
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8142_review.md",
+      "relative_links": 28
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8142_review_impl.md",
+      "relative_links": 2
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8184_review.md",
+      "relative_links": 42
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8184_review_impl.md",
+      "relative_links": 4
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8202_review.md",
+      "relative_links": 41
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8202_review_impl.md",
+      "relative_links": 3
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8205_review.md",
+      "relative_links": 33
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8205_review_impl.md",
+      "relative_links": 3
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8206_review.md",
+      "relative_links": 69
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8206_review_impl.md",
+      "relative_links": 2
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8209_review.md",
+      "relative_links": 28
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8209_review_impl.md",
+      "relative_links": 2
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8210_review.md",
+      "relative_links": 28
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8210_review_impl.md",
+      "relative_links": 3
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8213_review.md",
+      "relative_links": 38
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8213_review_impl.md",
+      "relative_links": 3
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8215_review.md",
+      "relative_links": 12
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8215_review_impl.md",
+      "relative_links": 2
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8217_review.md",
+      "relative_links": 18
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8217_review_impl.md",
+      "relative_links": 2
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8219_review.md",
+      "relative_links": 12
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8219_review_impl.md",
+      "relative_links": 2
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8221_review.md",
+      "relative_links": 33
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8221_review_impl.md",
+      "relative_links": 2
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8227_review.md",
+      "relative_links": 42
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8227_review_impl.md",
+      "relative_links": 2
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8229_review.md",
+      "relative_links": 40
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8229_review_impl.md",
+      "relative_links": 2
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8237_review.md",
+      "relative_links": 39
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8237_review_impl.md",
+      "relative_links": 2
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8265_review.md",
+      "relative_links": 23
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8265_review_impl.md",
+      "relative_links": 2
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8283_review.md",
+      "relative_links": 72
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8283_review_impl.md",
+      "relative_links": 3
+    }
+  ],
+  "checked_links": 760,
+  "missing": []
+}

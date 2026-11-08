@@ -30,6 +30,31 @@ pub(super) fn discard_terminal_blank_only_page(
     let Some(last_page) = pages.last() else {
         return;
     };
+    // #3637의 저장 표 꼬리 호환 처리는 표 바로 뒤의 종료 문단에만 적용한다.
+    // 일반 본문 줄을 거친 반복 Enter의 새 쪽은 그 표의 꼬리가 아니다.
+    let Some(PageItem::PartialTable {
+        para_index: table_para,
+        ..
+    }) = pages
+        .get(pages.len() - 2)
+        .and_then(|page| page.column_contents.last())
+        .and_then(|column| column.items.last())
+    else {
+        return;
+    };
+    let mut tail_items = last_page
+        .column_contents
+        .iter()
+        .flat_map(|column| &column.items);
+    let Some(PageItem::FullParagraph {
+        para_index: tail_para,
+    }) = tail_items.next()
+    else {
+        return;
+    };
+    if tail_items.next().is_some() || table_para.checked_add(1) != Some(*tail_para) {
+        return;
+    }
     let mut has_item = false;
     let blank_only = last_page.column_contents.iter().all(|column| {
         if !column.wrap_around_paras.is_empty() {
@@ -45,9 +70,8 @@ pub(super) fn discard_terminal_blank_only_page(
             };
             let no_visible_text = para
                 .text
-                .replace(|ch: char| ch.is_control(), "")
-                .trim()
-                .is_empty();
+                .chars()
+                .all(|ch| ch.is_control() || ch.is_whitespace());
             let opened_by_stored_vpos_reset = *para_index > 0
                 && paragraphs
                     .get(*para_index - 1)
@@ -78,16 +102,36 @@ pub(in crate::renderer::typeset) fn finalize_pages(
     page_number_pos: &Option<crate::model::control::PageNumberPos>,
     paragraphs: &[Paragraph],
 ) {
+    match finalize_pages_with_storage(
+        pages,
+        hf_entries,
+        page_number_pos,
+        paragraphs,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(()) => (),
+        Err(never) => match never {},
+    }
+}
+pub(in crate::renderer::typeset) fn finalize_pages_with_storage<S: crate::storage::Storage>(
+    pages: &mut [PageContent],
+    hf_entries: &[(usize, HeaderFooterRef, bool, HeaderFooterApply)],
+    page_number_pos: &Option<crate::model::control::PageNumberPos>,
+    paragraphs: &[Paragraph],
+    storage: &S,
+) -> Result<(), S::Error> {
     // 쪽번호: PageNumberAssigner 가 NewNumber 1회 적용 + 단조 증가를 보장 (Issue #353)
     // 머리말/꼬리말 선택은 engine.rs 와 같은 규칙을 쓴다 — 종류별로 누적하고 쪽 홀짝에
     // 더 구체적인 것을 고른다. 한 변수에 덮어쓰면 등장 순서가 구체성을 이긴다 (#3234).
     let mut active_hf = crate::renderer::pagination::ActiveHeaderFooter::default();
-    let events = crate::renderer::page_number::PageControlEvents::collect(pages, paragraphs);
+    let events = crate::renderer::page_number::PageControlEvents::collect_with_storage(
+        pages, paragraphs, storage,
+    )?;
     let mut assigner =
         crate::renderer::page_number::PageNumberAssigner::new_for_pages(&events.new_numbers, 1);
 
     for (i, page) in pages.iter_mut().enumerate() {
-        let page_num = assigner.assign(page);
+        let page_num = assigner.assign_with_storage(page, storage)?;
 
         // 이 페이지에 속하는 머리말/꼬리말 갱신
         let page_last_para = page
@@ -105,21 +149,27 @@ pub(in crate::renderer::typeset) fn finalize_pages(
             .max();
 
         if let Some(last_pi) = page_last_para {
-            active_hf.accumulate(hf_entries, last_pi);
+            active_hf.accumulate_with_storage(hf_entries, last_pi, storage)?;
         }
 
         page.page_number = page_num;
         page.page_number_restarted = assigner.last_restarted();
-        let (current_header, current_footer) = active_hf.active(page_num);
+        let (current_header, current_footer) = active_hf.active_with_storage(page_num, storage)?;
         page.active_header = current_header;
         page.active_footer = current_footer;
-        if !assigner.should_hide_page_number() {
-            page.page_number_pos = page_number_pos.clone();
+        if !events.positions.is_empty() {
+            page.page_number_pos = events
+                .active_position(i)
+                .map(|value| crate::storage::try_clone(value, storage))
+                .transpose()?;
+        } else if !assigner.should_hide_page_number() {
+            page.page_number_pos = crate::storage::try_clone(page_number_pos, storage)?;
         }
 
         // 한 컨트롤의 감추기는 소스 위치가 매핑된 한 쪽에만 적용한다.
-        if let Some((_, hide)) = events.hides.iter().find(|(target, _)| *target == i) {
-            page.page_hide = Some(hide.clone());
+        if let Some((_, hide)) = events.hides.iter().rev().find(|(target, _)| *target == i) {
+            page.page_hide = Some(crate::storage::try_clone(hide, storage)?);
         }
     }
+    Ok(())
 }

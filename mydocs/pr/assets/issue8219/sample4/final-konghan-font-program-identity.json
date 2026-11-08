@@ -1,0 +1,788 @@
+{
+  "date": "2026-10-29",
+  "scope": "sample4 한컴 2020 PDF 1쪽 /T1 Type3 자원에 수록된 108개 글자",
+  "input": "samples/hwp3-sample4.hwp",
+  "input_sha256": "f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4",
+  "pdf": "pdf/hwp3-sample4-2020.pdf",
+  "pdf_sha256": "61d63da58638b4a28900a15694779b35766f4ff5b3e0ed41d959a97f2599bb60",
+  "font_family": "중간공한 / Konghan Normal",
+  "font_sha256": "adb0346c72368434530c38348d9dcf05a989d755f9a1e698463724f0ee34dbf9",
+  "pdf_font": "/T1",
+  "pdf_font_matrix": [
+    0.001,
+    0,
+    0,
+    0.001,
+    0,
+    0
+  ],
+  "font_units_per_em": 1000,
+  "glyph_count": 108,
+  "equal_advance_count": 108,
+  "equal_outline_count": 108,
+  "pdf_paint": {
+    "operator": "B",
+    "stroke_width_units": 20,
+    "count": 108
+  },
+  "comparison": "ToUnicode와 /Encoding으로 108개 문자를 대응하고, PDF Type3 CharProc의 이동·직선·3차 곡선·닫기 경로를 OTF glyph RecordingPen과 같은 em 좌표에서 대조했다. 같은 방향의 연속 직선에서 사이 점만 제거해 경로 기하를 정규화했다. PDF /Widths와 OTF hmtx도 em 단위로 대조했다.",
+  "limitations": "PDF에 이 글꼴 자원으로 포함된 108개 글자에 한정한 결과다. 나머지 글자, 배치·합성 굵기·힌팅·실제 페이지 전체의 픽셀 일치는 검증하지 않았다. 굵은 제목에 한컴은 경로를 채우고 20/1000em 선폭으로 그린다.",
+  "glyphs": [
+    {
+      "pdf_code": 0,
+      "unicode": "U+0043",
+      "glyph": "uni0043",
+      "advance_em": 0.657,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 1,
+      "unicode": "U+002D",
+      "glyph": "uni002D",
+      "advance_em": 0.585,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 2,
+      "unicode": "U+0036",
+      "glyph": "uni0036",
+      "advance_em": 0.448,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 3,
+      "unicode": "U+0020",
+      "glyph": "uni0020",
+      "advance_em": 0.36,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 4,
+      "unicode": "U+B9AC",
+      "glyph": "uniB9AC",
+      "advance_em": 0.759,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 5,
+      "unicode": "U+B205",
+      "glyph": "uniB205",
+      "advance_em": 0.6,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 6,
+      "unicode": "U+C2A4",
+      "glyph": "uniC2A4",
+      "advance_em": 0.586,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 7,
+      "unicode": "U+C5B4",
+      "glyph": "uniC5B4",
+      "advance_em": 0.798,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 8,
+      "unicode": "U+C148",
+      "glyph": "uniC148",
+      "advance_em": 0.92,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 9,
+      "unicode": "U+BE14",
+      "glyph": "uniBE14",
+      "advance_em": 0.598,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 10,
+      "unicode": "U+D504",
+      "glyph": "uniD504",
+      "advance_em": 0.598,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 11,
+      "unicode": "U+B85C",
+      "glyph": "uniB85C",
+      "advance_em": 0.593,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 12,
+      "unicode": "U+ADF8",
+      "glyph": "uniADF8",
+      "advance_em": 0.556,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 13,
+      "unicode": "U+B798",
+      "glyph": "uniB798",
+      "advance_em": 0.903,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 14,
+      "unicode": "U+BC0D",
+      "glyph": "uniBC0D",
+      "advance_em": 0.764,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 15,
+      "unicode": "U+C815",
+      "glyph": "uniC815",
+      "advance_em": 0.79,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 16,
+      "unicode": "U+BCD1",
+      "glyph": "uniBCD1",
+      "advance_em": 0.806,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 17,
+      "unicode": "U+C218",
+      "glyph": "uniC218",
+      "advance_em": 0.586,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 18,
+      "unicode": "U+0062",
+      "glyph": "uni0062",
+      "advance_em": 0.485,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 19,
+      "unicode": "U+0073",
+      "glyph": "uni0073",
+      "advance_em": 0.294,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 20,
+      "unicode": "U+006A",
+      "glyph": "uni006A",
+      "advance_em": 0.16,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 21,
+      "unicode": "U+0075",
+      "glyph": "uni0075",
+      "advance_em": 0.385,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 22,
+      "unicode": "U+006E",
+      "glyph": "uni006E",
+      "advance_em": 0.405,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 23,
+      "unicode": "U+0067",
+      "glyph": "uni0067",
+      "advance_em": 0.482,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 24,
+      "unicode": "U+0040",
+      "glyph": "uni0040",
+      "advance_em": 0.8,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 25,
+      "unicode": "U+0061",
+      "glyph": "uni0061",
+      "advance_em": 0.474,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 26,
+      "unicode": "U+006D",
+      "glyph": "uni006D",
+      "advance_em": 0.579,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 27,
+      "unicode": "U+002E",
+      "glyph": "uni002E",
+      "advance_em": 0.242,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 28,
+      "unicode": "U+0063",
+      "glyph": "uni0063",
+      "advance_em": 0.411,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 29,
+      "unicode": "U+006F",
+      "glyph": "uni006F",
+      "advance_em": 0.459,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 30,
+      "unicode": "U+0031",
+      "glyph": "uni0031",
+      "advance_em": 0.296,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 31,
+      "unicode": "U+C758",
+      "glyph": "uniC758",
+      "advance_em": 0.757,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 32,
+      "unicode": "U+AE30",
+      "glyph": "uniAE30",
+      "advance_em": 0.722,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 33,
+      "unicode": "U+CD08",
+      "glyph": "uniCD08",
+      "advance_em": 0.586,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 34,
+      "unicode": "U+C5D0",
+      "glyph": "uniC5D0",
+      "advance_em": 0.928,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 35,
+      "unicode": "U+B300",
+      "glyph": "uniB300",
+      "advance_em": 0.908,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 36,
+      "unicode": "U+D558",
+      "glyph": "uniD558",
+      "advance_em": 0.775,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 37,
+      "unicode": "U+C5EC",
+      "glyph": "uniC5EC",
+      "advance_em": 0.802,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 38,
+      "unicode": "U+0032",
+      "glyph": "uni0032",
+      "advance_em": 0.426,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 39,
+      "unicode": "U+0047",
+      "glyph": "uni0047",
+      "advance_em": 0.758,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 40,
+      "unicode": "U+0041",
+      "glyph": "uni0041",
+      "advance_em": 0.593,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 41,
+      "unicode": "U+0053",
+      "glyph": "uni0053",
+      "advance_em": 0.457,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 42,
+      "unicode": "U+CF54",
+      "glyph": "uniCF54",
+      "advance_em": 0.556,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 43,
+      "unicode": "U+B529",
+      "glyph": "uniB529",
+      "advance_em": 0.764,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 44,
+      "unicode": "U+D0C0",
+      "glyph": "uniD0C0",
+      "advance_em": 0.783,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 45,
+      "unicode": "U+C77C",
+      "glyph": "uniC77C",
+      "advance_em": 0.76,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 46,
+      "unicode": "U+0033",
+      "glyph": "uni0033",
+      "advance_em": 0.451,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 47,
+      "unicode": "U+AC04",
+      "glyph": "uniAC04",
+      "advance_em": 0.741,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 48,
+      "unicode": "U+B2E8",
+      "glyph": "uniB2E8",
+      "advance_em": 0.783,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 49,
+      "unicode": "U+D55C",
+      "glyph": "uniD55C",
+      "advance_em": 0.775,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 50,
+      "unicode": "U+C0AC",
+      "glyph": "uniC0AC",
+      "advance_em": 0.771,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 51,
+      "unicode": "U+C6A9",
+      "glyph": "uniC6A9",
+      "advance_em": 0.594,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 52,
+      "unicode": "U+BC95",
+      "glyph": "uniBC95",
+      "advance_em": 0.802,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 53,
+      "unicode": "U+0034",
+      "glyph": "uni0034",
+      "advance_em": 0.446,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 54,
+      "unicode": "U+003A",
+      "glyph": "uni003A",
+      "advance_em": 0.698,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 55,
+      "unicode": "U+0068",
+      "glyph": "uni0068",
+      "advance_em": 0.416,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 56,
+      "unicode": "U+0065",
+      "glyph": "uni0065",
+      "advance_em": 0.453,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 57,
+      "unicode": "U+006C",
+      "glyph": "uni006C",
+      "advance_em": 0.158,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 58,
+      "unicode": "U+0077",
+      "glyph": "uni0077",
+      "advance_em": 0.688,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 59,
+      "unicode": "U+B9CC",
+      "glyph": "uniB9CC",
+      "advance_em": 0.783,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 60,
+      "unicode": "U+B4E4",
+      "glyph": "uniB4E4",
+      "advance_em": 0.598,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 61,
+      "unicode": "U+0035",
+      "glyph": "uni0035",
+      "advance_em": 0.467,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 62,
+      "unicode": "U+C778",
+      "glyph": "uniC778",
+      "advance_em": 0.76,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 63,
+      "unicode": "U+B77C",
+      "glyph": "uniB77C",
+      "advance_em": 0.778,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 64,
+      "unicode": "U+B370",
+      "glyph": "uniB370",
+      "advance_em": 0.932,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 65,
+      "unicode": "U+C774",
+      "glyph": "uniC774",
+      "advance_em": 0.76,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 66,
+      "unicode": "U+D130",
+      "glyph": "uniD130",
+      "advance_em": 0.802,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 67,
+      "unicode": "U+C5F0",
+      "glyph": "uniC5F0",
+      "advance_em": 0.802,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 68,
+      "unicode": "U+C0B0",
+      "glyph": "uniC0B0",
+      "advance_em": 0.771,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 69,
+      "unicode": "U+C608",
+      "glyph": "uniC608",
+      "advance_em": 0.928,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 70,
+      "unicode": "U+C81C",
+      "glyph": "uniC81C",
+      "advance_em": 0.92,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 71,
+      "unicode": "U+CEF4",
+      "glyph": "uniCEF4",
+      "advance_em": 0.76,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 72,
+      "unicode": "U+D4E8",
+      "glyph": "uniD4E8",
+      "advance_em": 0.598,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 73,
+      "unicode": "U+C11C",
+      "glyph": "uniC11C",
+      "advance_em": 0.79,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 74,
+      "unicode": "U+C22B",
+      "glyph": "uniC22B",
+      "advance_em": 0.586,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 75,
+      "unicode": "U+C790",
+      "glyph": "uniC790",
+      "advance_em": 0.771,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 76,
+      "unicode": "U+0050",
+      "glyph": "uni0050",
+      "advance_em": 0.41,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 77,
+      "unicode": "U+0055",
+      "glyph": "uni0055",
+      "advance_em": 0.477,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 78,
+      "unicode": "U+AD6C",
+      "glyph": "uniAD6C",
+      "advance_em": 0.556,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 79,
+      "unicode": "U+C870",
+      "glyph": "uniC870",
+      "advance_em": 0.586,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 80,
+      "unicode": "U+CE59",
+      "glyph": "uniCE59",
+      "advance_em": 0.752,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 81,
+      "unicode": "U+B7A8",
+      "glyph": "uniB7A8",
+      "advance_em": 0.903,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 82,
+      "unicode": "U+D30C",
+      "glyph": "uniD30C",
+      "advance_em": 0.783,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 83,
+      "unicode": "U+C740",
+      "glyph": "uniC740",
+      "advance_em": 0.594,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 84,
+      "unicode": "U+B2E4",
+      "glyph": "uniB2E4",
+      "advance_em": 0.783,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 85,
+      "unicode": "U+C74C",
+      "glyph": "uniC74C",
+      "advance_em": 0.594,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 86,
+      "unicode": "U+ACFC",
+      "glyph": "uniACFC",
+      "advance_em": 0.741,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 87,
+      "unicode": "U+AC19",
+      "glyph": "uniAC19",
+      "advance_em": 0.741,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 88,
+      "unicode": "U+C2E4",
+      "glyph": "uniC2E4",
+      "advance_em": 0.752,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 89,
+      "unicode": "U+D589",
+      "glyph": "uniD589",
+      "advance_em": 0.9,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 90,
+      "unicode": "U+004C",
+      "glyph": "uni004C",
+      "advance_em": 0.33,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 91,
+      "unicode": "U+0044",
+      "glyph": "uni0044",
+      "advance_em": 0.603,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 92,
+      "unicode": "U+B97C",
+      "glyph": "uniB97C",
+      "advance_em": 0.593,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 93,
+      "unicode": "U+B4E0",
+      "glyph": "uniB4E0",
+      "advance_em": 0.598,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 94,
+      "unicode": "U+C2DC",
+      "glyph": "uniC2DC",
+      "advance_em": 0.752,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 95,
+      "unicode": "U+C838",
+      "glyph": "uniC838",
+      "advance_em": 0.794,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 96,
+      "unicode": "U+C640",
+      "glyph": "uniC640",
+      "advance_em": 0.779,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 97,
+      "unicode": "U+B9C8",
+      "glyph": "uniB9C8",
+      "advance_em": 0.783,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 98,
+      "unicode": "U+D06C",
+      "glyph": "uniD06C",
+      "advance_em": 0.556,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 99,
+      "unicode": "U+BE0C",
+      "glyph": "uniBE0C",
+      "advance_em": 0.598,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 100,
+      "unicode": "U+B8E8",
+      "glyph": "uniB8E8",
+      "advance_em": 0.593,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 101,
+      "unicode": "U+D2F4",
+      "glyph": "uniD2F4",
+      "advance_em": 0.764,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 102,
+      "unicode": "U+004F",
+      "glyph": "uni004F",
+      "advance_em": 0.783,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 103,
+      "unicode": "U+BD80",
+      "glyph": "uniBD80",
+      "advance_em": 0.598,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 104,
+      "unicode": "U+D2B8",
+      "glyph": "uniD2B8",
+      "advance_em": 0.598,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 105,
+      "unicode": "U+B4DC",
+      "glyph": "uniB4DC",
+      "advance_em": 0.598,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 106,
+      "unicode": "U+004E",
+      "glyph": "uni004E",
+      "advance_em": 0.641,
+      "outline_same_after_collinear_normalization": true
+    },
+    {
+      "pdf_code": 107,
+      "unicode": "U+004D",
+      "glyph": "uni004D",
+      "advance_em": 0.88,
+      "outline_same_after_collinear_normalization": true
+    }
+  ]
+}

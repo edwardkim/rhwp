@@ -49,7 +49,7 @@ export class HyperlinkDialog extends ModalDialog {
     webTab.type = 'button';
     webTab.id = 'hyperlink-web-tab';
     webTab.className = 'dialog-tab active';
-    webTab.textContent = t('dialog.hyperlink.webTab.text');
+    webTab.textContent = '연결 대상';
     webTab.setAttribute('role', 'tab');
     webTab.setAttribute('aria-selected', 'true');
     webTab.setAttribute('aria-controls', 'hyperlink-web-panel');
@@ -62,14 +62,14 @@ export class HyperlinkDialog extends ModalDialog {
     panel.setAttribute('aria-labelledby', webTab.id);
     const webLabel = document.createElement('label');
     webLabel.htmlFor = 'hyperlink-uri';
-    webLabel.textContent = t('dialog.hyperlink.webLabel.text');
+    webLabel.textContent = '웹·메일·책갈피·파일·앱 주소';
     panel.append(webLabel);
     this.uriInput = document.createElement('input');
     this.uriInput.className = 'dialog-input';
     this.uriInput.id = 'hyperlink-uri';
-    this.uriInput.type = 'url';
+    this.uriInput.type = 'text';
     this.uriInput.setAttribute('aria-label', t('dialog.hyperlink.createBody.label.x36747b'));
-    this.uriInput.placeholder = 'https://example.com';
+    this.uriInput.placeholder = 'https://example.com / mailto:... / #책갈피 / 파일 경로';
     this.uriInput.value = this.initial.uri;
     const addressRow = document.createElement('div');
     addressRow.className = 'dialog-row dialog-hyperlink-address';

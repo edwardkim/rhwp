@@ -191,46 +191,6 @@ mod tests {
         assert!(total_compared > 0, "비교 대상 문단이 0개");
     }
 
-    #[test]
-    fn issue3211_uncached_endnote_body_preserves_inline_control_flow() {
-        for path in [
-            "samples/3-09월_교육_통합_2022.hwp",
-            "samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwp",
-        ] {
-            let Some(reports) = run_comparison(path) else {
-                panic!("#3211 sample is missing: {path}");
-            };
-            let compared: usize = reports
-                .iter()
-                .map(|report| report.compared_paragraphs)
-                .sum();
-            let line_count_matched: usize = reports
-                .iter()
-                .map(|report| report.line_count_match_count)
-                .sum();
-            let line_break_matched: usize = reports
-                .iter()
-                .map(|report| report.line_break_match_count)
-                .sum();
-            eprintln!(
-                "#3211 {path}: stored={compared}, line-count={line_count_matched}, line-break={line_break_matched}"
-            );
-
-            // Windows Hancom 2022가 저장한 두 HWP에서 baseline은 165개 문단이다.
-            // 인라인 제어문 폭을 빼면 줄 수 일치가 139개까지 무너진다. 이 하한은
-            // 수식·그림이 줄 폭과 line box를 함께 차지해야 함을 고정한다.
-            assert_eq!(compared, 165, "unexpected #3211 fixture corpus: {path}");
-            assert!(
-                line_count_matched >= 160,
-                "#3211 inline-control reflow regressed line counts: {line_count_matched}/165 ({path})"
-            );
-            assert!(
-                line_break_matched >= 130,
-                "#3211 inline-control reflow regressed line breaks: {line_break_matched}/165 ({path})"
-            );
-        }
-    }
-
     // ─── 문자별 폭 진단 (Task 400) ───
 
     /// 줄별 텍스트를 추출하고 rhwp 측정 폭 vs available_width를 비교

@@ -5,7 +5,7 @@
 
 use super::composer::{
     char_overlap_display_text, char_overlap_size_ratio, decode_pua_overlap_number,
-    expand_pua_render_text, CharOverlapInfo,
+    expand_pua_render_text_in_style, pua_overlap_number_border, CharOverlapInfo,
 };
 pub(crate) use super::image_resolver::{
     bmp_bytes_to_png_bytes, detect_image_mime_type, pcx_bytes_to_png_bytes,
@@ -20,10 +20,18 @@ use super::render_tree::{
     REAL_PICTURE_WATERMARK_FILL_OPACITY, REAL_PICTURE_WATERMARK_PAGE_OPACITY,
 };
 use super::{
-    boxed_pua_char_overlap_semantics, clamp_tab_leader_end_x, GradientFillInfo, LineStyle,
-    PathCommand, PatternFillInfo, Renderer, ShapeStyle, StrokeDash, TextStyle,
+    boxed_pua_char_overlap_semantics, clamp_tab_leader_end_x, faux_bold_stroke_width,
+    GradientFillInfo, LineStyle, PathCommand, PatternFillInfo, Renderer, ShapeStyle, StrokeDash,
+    TextStyle,
 };
 use crate::paint::{PaintOp, TextDecorationKind};
+use std::fmt::Write as _;
+
+mod char_overlap;
+#[cfg(not(target_arch = "wasm32"))]
+mod italic_fonts;
+mod pua_glyph;
+mod stroke_pattern;
 
 /// Hanyang-PUA 옛한글 코드포인트를 KS X 1026-1:2007 자모 시퀀스로 확장.
 /// PUA 가 없으면 원본 문자열 그대로 반환 (allocation 없음).
@@ -44,6 +52,22 @@ fn expand_pua_old_hangul(text: &str) -> String {
 use super::layout::{is_halfwidth_cjk_quote, split_into_clusters};
 use crate::model::style::{ImageFillMode, UnderlineType};
 use base64::Engine;
+
+#[cfg(not(target_arch = "wasm32"))]
+mod fallback_fonts;
+#[cfg(not(target_arch = "wasm32"))]
+mod font_file_lookup;
+#[cfg(not(target_arch = "wasm32"))]
+mod system_fonts;
+#[cfg(not(target_arch = "wasm32"))]
+mod webfont_subset;
+#[cfg(all(test, not(target_arch = "wasm32")))]
+use font_file_lookup::FontFileName;
+#[cfg(not(target_arch = "wasm32"))]
+use font_file_lookup::{
+    find_font_file, find_font_file_for_chars, plan_svg_font_file_lookup,
+    plan_svg_font_file_lookup_with_fallback, FontFileLookupPlan,
+};
 
 const TEXT_MARK_CLIP_RIGHT_PAD: f64 = 48.0;
 
@@ -71,7 +95,7 @@ pub enum FontEmbedMode {
 /// SVG 렌더러
 pub struct SvgRenderer {
     /// SVG 출력 버퍼
-    output: String,
+    output: super::svg_buffer::SvgBuffer,
     /// 그라데이션 정의 버퍼 (<defs> 내부)
     defs: Vec<String>,
     /// 그라데이션 ID 카운터
@@ -123,6 +147,9 @@ pub struct SvgRenderer {
     pub font_embed_mode: FontEmbedMode,
     /// 추가 폰트 탐색 경로
     pub font_paths: Vec<std::path::PathBuf>,
+    pub(crate) source_font_coverage: super::pua_glyph::FontCoverage,
+    #[cfg(not(target_arch = "wasm32"))]
+    source_font_coverage_requests: std::collections::HashSet<(String, bool, bool)>,
     /// 사용된 폰트별 codepoint 수집 (font_family → codepoints)
     font_codepoints: std::collections::HashMap<String, std::collections::HashSet<char>>,
     /// 실제 Bold face가 필요한 폰트 family.
@@ -131,6 +158,7 @@ pub struct SvgRenderer {
     /// 일반 face 하나만 `@font-face`로 임베드하면 브라우저가 synthetic bold를
     /// 적용해 획 두께와 글리프 폭이 기준 PDF와 달라진다.
     font_bold_families: std::collections::HashSet<String>,
+    font_italic_styles: std::collections::HashSet<(String, bool)>,
     /// [#4709] 배치에 쓴 내장 메트릭 face를 출력에 주석으로 남길지 (옵트인).
     ///
     /// 켜면 각 `<text>`에 `data-metric-font`, 루트 `<svg>`에 페이지에서 쓰인
@@ -218,7 +246,7 @@ pub(super) struct LayerDebugOverlayProjection {
 impl SvgRenderer {
     pub fn new() -> Self {
         Self {
-            output: String::new(),
+            output: Default::default(),
             defs: Vec::new(),
             gradient_counter: 0,
             clip_counter: 0,
@@ -239,8 +267,12 @@ impl SvgRenderer {
             defs_ids: std::collections::HashSet::new(),
             font_embed_mode: FontEmbedMode::None,
             font_paths: Vec::new(),
+            source_font_coverage: Default::default(),
+            #[cfg(not(target_arch = "wasm32"))]
+            source_font_coverage_requests: Default::default(),
             font_codepoints: std::collections::HashMap::new(),
             font_bold_families: std::collections::HashSet::new(),
+            font_italic_styles: std::collections::HashSet::new(),
             annotate_metric_font: false,
             metric_faces: std::collections::BTreeSet::new(),
             soft_wrap_decoration_trim: None,
@@ -254,6 +286,28 @@ impl SvgRenderer {
     /// 생성된 SVG 문자열 반환
     pub fn output(&self) -> &str {
         &self.output
+    }
+
+    pub(crate) fn bound_output(
+        &mut self,
+        maximum: usize,
+        reservation: std::sync::Arc<dyn crate::storage::Reservation>,
+    ) {
+        self.output.bounded(maximum, reservation);
+    }
+
+    pub(crate) fn check_output(&self) -> Result<(), crate::error::HwpError> {
+        self.output.check()
+    }
+
+    pub(crate) fn insert_output_style(&mut self, style: &str) {
+        if let Some(position) = self.output.find('>') {
+            self.output.insert_str(position + 1, style);
+        }
+    }
+
+    pub(crate) fn take_checked_output(&mut self) -> Result<String, crate::error::HwpError> {
+        std::mem::take(&mut self.output).finish()
     }
 
     /// 수집된 폰트별 사용 글자 목록 반환
@@ -278,6 +332,17 @@ impl SvgRenderer {
         self.begin_page(width, height);
     }
 
+    /// 공통 그룹의 좌표계만 직렬화한다. 자식의 논리 bbox는 다시 배치하지 않는다.
+    pub(super) fn begin_layer_transform(&mut self, [a, b, c, d, e, f]: [f64; 6]) {
+        self.output.push_str(&format!(
+            "<g transform=\"matrix({a} {b} {c} {d} {e} {f})\">\n"
+        ));
+    }
+
+    pub(super) fn end_layer_transform(&mut self) {
+        self.output.push_str("</g>\n");
+    }
+
     /// Closes the SVG document consumed by direct `PageLayerTree` replay.
     pub(super) fn end_layer_page(&mut self) {
         self.end_page();
@@ -289,6 +354,26 @@ impl SvgRenderer {
     /// primitive writer. They never carry children, visibility, profile, clipping, or stacking;
     /// those decisions remain owned by `PageLayerTree` and `SvgLayerRenderer`.
     pub(super) fn render_layer_paint_op(
+        &mut self,
+        op: &PaintOp,
+        source_node_id: Option<u32>,
+    ) -> SvgPaintDisposition {
+        if !op.glyph_paint_transform_is_valid() {
+            return SvgPaintDisposition::UnsupportedTextVariant;
+        }
+        if let Some(t) = op.glyph_paint_transform() {
+            self.output.push_str(&format!(
+                "<g transform=\"matrix({} {} {} {} {} {})\">",
+                t.a, t.b, t.c, t.d, t.e, t.f
+            ));
+            let disposition = self.render_layer_paint_op_untransformed(op, source_node_id);
+            self.output.push_str("</g>");
+            return disposition;
+        }
+        self.render_layer_paint_op_untransformed(op, source_node_id)
+    }
+
+    fn render_layer_paint_op_untransformed(
         &mut self,
         op: &PaintOp,
         source_node_id: Option<u32>,
@@ -383,6 +468,7 @@ impl SvgRenderer {
                 trim_trailing_spaces,
                 ..
             } => {
+                let (bbox, run) = op.decoration_replay().expect("decoration replay");
                 let rotation = run.rotation;
                 let mut decoration = run.as_ref().clone();
                 decoration.rotation = 0.0;
@@ -404,12 +490,12 @@ impl SvgRenderer {
                 };
                 let previous_forced_trim = self.forced_decoration_trim;
                 self.forced_decoration_trim = Some(*trim_trailing_spaces);
-                self.with_layer_text_rotation(rotation, *bbox, |renderer| {
+                self.with_layer_text_rotation(rotation, bbox, |renderer| {
                     renderer.with_suppressed_text_glyphs(|renderer| {
                         renderer.render_layer_payload_node(
                             node_id,
                             RenderNodeType::TextRun(decoration),
-                            *bbox,
+                            bbox,
                             false,
                         );
                     });
@@ -545,6 +631,39 @@ impl SvgRenderer {
             .push_str(&format!("<g clip-path=\"url(#{})\">", id));
     }
 
+    pub(super) fn begin_layer_path_clip(
+        &mut self,
+        paths: &[crate::model::text_clip::TextClipPath],
+        id: &str,
+    ) {
+        use crate::model::text_clip::ClipCommand;
+        for (index, path) in paths.iter().enumerate() {
+            let mut d = String::new();
+            for c in &path.commands {
+                use std::fmt::Write;
+                match *c {
+                    ClipCommand::Move(x, y) => {
+                        let _ = write!(d, "M{x} {y} ");
+                    }
+                    ClipCommand::Line(x, y) => {
+                        let _ = write!(d, "L{x} {y} ");
+                    }
+                    ClipCommand::Cubic(a, b, c, d1, e, f) => {
+                        let _ = write!(d, "C{a} {b} {c} {d1} {e} {f} ");
+                    }
+                    ClipCommand::Close => d.push_str("Z "),
+                }
+            }
+            let rule = if path.even_odd { "evenodd" } else { "nonzero" };
+            let name = format!("{id}-{index}");
+            self.defs.push(format!(
+                "<clipPath id=\"{name}\"><path d=\"{d}\" clip-rule=\"{rule}\"/></clipPath>"
+            ));
+            self.output
+                .push_str(&format!("<g clip-path=\"url(#{name})\">"));
+        }
+    }
+
     pub(super) fn end_layer_clip(&mut self) {
         self.output.push_str("</g>\n");
     }
@@ -643,6 +762,17 @@ impl SvgRenderer {
 
     /// 개별 노드를 SVG로 렌더링
     fn render_node(&mut self, node: &RenderNode) {
+        if let Some(paths) = &node.paint_clip {
+            let mut source = node.clone();
+            source.paint_clip = None;
+            self.begin_layer_path_clip(paths, &format!("source-text-{}", node.id));
+            self.render_node(&source);
+            for _ in paths {
+                self.end_layer_clip();
+            }
+            return;
+        }
+
         if !node.visible {
             return;
         }
@@ -688,22 +818,31 @@ impl SvgRenderer {
                     // SVG 본문에서 `font-weight="bold"`를 내보내는 것과 같은
                     // 조건을 쓴다. CharShape.bold 외에 family 이름에 명시된 Bold
                     // face도 실제 Bold outline을 선택해야 synthetic bold가 되지 않는다.
-                    if run.style.is_visually_bold() {
-                        self.font_bold_families
-                            .insert(run.style.font_family.clone());
-                    }
-                    let codepoints = self
-                        .font_codepoints
-                        .entry(run.style.font_family.clone())
-                        .or_default();
-                    // 그려지는 글자로 모은다 — 필드는 표시값이 나간다 (Task #3216).
-                    for ch in run.display_or_text().chars() {
-                        if !ch.is_control() {
-                            codepoints.insert(ch);
+                    // 체인 전체를 한 face 이름으로 임베딩하면 CSS가 실제 선택하는
+                    // 각 face에는 공급되지 않는다. 측정과 같은 선언 순서의 face를 모은다.
+                    for family in run
+                        .style
+                        .font_family
+                        .split(',')
+                        .map(str::trim)
+                        .filter(|s| !s.is_empty())
+                    {
+                        if run.style.is_visually_bold() {
+                            self.font_bold_families.insert(family.to_string());
+                        }
+                        let codepoints =
+                            self.font_codepoints.entry(family.to_string()).or_default();
+                        // 그려지는 글자로 모은다 — 필드는 표시값이 나간다 (Task #3216).
+                        for ch in run.display_or_text().chars() {
+                            if !ch.is_control() {
+                                codepoints.insert(ch);
+                            }
                         }
                     }
                 }
-                if let Some(ref overlap) = run.char_overlap {
+                if self.render_composed_overlap(node, run) {
+                    // 원문 겹침의 모든 글자는 위 공통 결과로 출력했다.
+                } else if let Some(ref overlap) = run.char_overlap {
                     // 글자겹침(CharOverlap) 렌더링: 각 문자에 테두리 도형 + 텍스트
                     self.draw_char_overlap(
                         &run.text,
@@ -719,11 +858,7 @@ impl SvgRenderer {
                     let cx = node.bbox.x + node.bbox.width / 2.0;
                     let cy = node.bbox.y + node.bbox.height / 2.0;
                     let color = color_to_svg(run.style.color);
-                    let font_size = if run.style.font_size > 0.0 {
-                        run.style.font_size
-                    } else {
-                        12.0
-                    };
+                    let font_size = run.style.effective_font_size();
                     let font_family = if run.style.font_family.is_empty() {
                         "sans-serif".to_string()
                     } else {
@@ -744,7 +879,10 @@ impl SvgRenderer {
                         attrs.push_str(" font-weight=\"500\"");
                     }
                     if run.style.italic {
-                        attrs.push_str(" font-style=\"italic\"");
+                        attrs.push_str(&format!(
+                            " font-style=\"{}\"",
+                            super::text_italic::CSS_STYLE
+                        ));
                     }
                     for c in run.display_or_text().chars() {
                         if c == ' ' {
@@ -772,7 +910,7 @@ impl SvgRenderer {
                     // 어긋나면 run 경계마다 실틈이 남는다.
                     self.active_decoration_width = Some(node.bbox.width);
                     self.draw_text_positioned(
-                        run.display_or_text(),
+                        run.metric_or_display_text(),
                         node.bbox.x,
                         node.bbox.y + run.baseline,
                         &run.style,
@@ -787,21 +925,28 @@ impl SvgRenderer {
                         run.field_marker,
                         crate::renderer::render_tree::FieldMarkerType::None
                     );
-                    let font_size = if run.style.font_size > 0.0 {
-                        run.style.font_size
-                    } else {
-                        12.0
-                    };
+                    let font_size = run.style.effective_font_size();
                     // 공백·탭 기호: 각 문자 위치에 오버레이
                     if !run.text.is_empty() && !is_marker {
                         let char_positions = run.replay_positions_for(&run.text);
+                        let visual = super::text_direction::VisualTextPositions::for_style(
+                            &run.text,
+                            &char_positions,
+                            &run.style,
+                        );
+                        let origin = |i: usize| {
+                            visual
+                                .as_ref()
+                                .and_then(|p| p.span_origin(i, i + 1))
+                                .unwrap_or(char_positions[i])
+                        };
                         let mark_font_size = font_size * 0.5;
                         for (i, c) in run.text.chars().enumerate() {
                             if c == ' ' {
-                                let cx = node.bbox.x + char_positions[i];
+                                let cx = node.bbox.x + origin(i);
                                 // ∨ 기호를 공백 영역 중앙 하단에 배치
                                 let next_x = if i + 1 < char_positions.len() {
-                                    node.bbox.x + char_positions[i + 1]
+                                    cx + char_positions[i + 1] - char_positions[i]
                                 } else {
                                     node.bbox.x + node.bbox.width
                                 };
@@ -811,7 +956,7 @@ impl SvgRenderer {
                                     mid_x, node.bbox.y + run.baseline, mark_font_size,
                                 ));
                             } else if c == '\t' {
-                                let cx = node.bbox.x + char_positions[i];
+                                let cx = node.bbox.x + origin(i);
                                 self.output.push_str(&format!(
                                     "<text x=\"{}\" y=\"{}\" font-size=\"{}\" fill=\"#0066FF\">\u{2192}</text>\n",
                                     cx, node.bbox.y + run.baseline, mark_font_size,
@@ -842,14 +987,15 @@ impl SvgRenderer {
                 }
             }
             RenderNodeType::FootnoteMarker(marker) => {
-                let sup_size = (marker.base_font_size * 0.55).max(7.0);
+                let sup_size =
+                    super::render_tree::FootnoteMarkerNode::font_size(marker.base_font_size);
                 let color = color_to_svg(marker.color);
                 let font_family = if marker.font_family.is_empty() {
                     "sans-serif"
                 } else {
                     &marker.font_family
                 };
-                let y = node.bbox.y + node.bbox.height * 0.4;
+                let y = node.bbox.y + marker.baseline;
                 self.output.push_str(&format!(
                     "<text x=\"{}\" y=\"{}\" font-family=\"{}\" font-size=\"{}\" fill=\"{}\">{}</text>\n",
                     node.bbox.x, y, escape_xml(font_family), sup_size, color, escape_xml(&marker.text),
@@ -857,6 +1003,9 @@ impl SvgRenderer {
             }
             RenderNodeType::Rectangle(rect) => {
                 self.open_shape_transform(&rect.transform, &node.bbox);
+                if rect.round_stroke_join {
+                    self.output.push_str("<g stroke-linejoin=\"round\">");
+                }
                 self.draw_rect_with_gradient(
                     node.bbox.x,
                     node.bbox.y,
@@ -866,10 +1015,15 @@ impl SvgRenderer {
                     &rect.style,
                     rect.gradient.as_deref(),
                 );
+                if rect.round_stroke_join {
+                    self.output.push_str("</g>");
+                }
             }
             RenderNodeType::Line(line) => {
                 self.open_shape_transform(&line.transform, &node.bbox);
-                self.draw_line(line.x1, line.y1, line.x2, line.y2, &line.style);
+                for stroke in line.paint_strokes() {
+                    self.draw_line(stroke.x1, stroke.y1, stroke.x2, stroke.y2, &stroke.style);
+                }
             }
             RenderNodeType::Ellipse(ellipse) => {
                 self.open_shape_transform(&ellipse.transform, &node.bbox);
@@ -887,9 +1041,17 @@ impl SvgRenderer {
             RenderNodeType::Image(img) => {
                 // [shot 05] 회전 90/270° 시 bbox extent swap — 이중회전 방지.
                 // [#7193] 그림은 틀(node.bbox)에서 안쪽 여백을 뺀 자리에 그린다.
-                let eff_bbox = img
-                    .transform
-                    .effective_image_bbox(&img.paint_bbox(&node.bbox));
+                let eff_bbox = img.transformed_paint_bbox(&node.bbox);
+                if let Some(points) = img.source_clip_path(&node.bbox) {
+                    let points = points
+                        .iter()
+                        .map(|p| format!("{},{}", p[0], p[1]))
+                        .collect::<Vec<_>>()
+                        .join(" ");
+                    self.output.push_str(&format!(
+                        "<defs><clipPath id=\"img-source-{}\"><polygon points=\"{}\"/></clipPath></defs><g clip-path=\"url(#img-source-{})\">\n",
+                        node.id,points,node.id));
+                }
                 self.open_shape_transform(&img.transform, &eff_bbox);
                 self.render_image_node(img, &eff_bbox);
             }
@@ -900,24 +1062,18 @@ impl SvgRenderer {
             }
             RenderNodeType::Equation(eq) => {
                 // 수식 SVG 조각을 bbox 위치에 배치
-                // HWP 저장 영역(bbox)과 레이아웃 산출 크기(layout_box)가 다를 수 있으므로
-                // bbox 너비에 맞춰 스케일링한다. 일반 높이는 줄 여백을 포함하므로
-                // 유지하고, 기본 글자보다 낮은 압축 프레임만 공통 세로 비율을 쓴다.
-                let scale_x = if eq.layout_box.width > 0.0 && node.bbox.width > 0.0 {
-                    node.bbox.width / eq.layout_box.width
-                } else {
-                    1.0
-                };
+                // 저장 프레임은 흐름 예약 영역이고 글자 장평이 아니다. BaseUnit으로
+                // 만든 공통 글자·장식 폭을 유지하며 압축 프레임의 세로 비율만 적용한다.
                 let scale_y = super::equation::stored_vertical_scale(
                     node.bbox.height,
                     eq.layout_box.height,
                     eq.font_size,
                 );
-                let needs_scale = (scale_x - 1.0).abs() > 0.01 || (scale_y - 1.0).abs() > 0.01;
+                let needs_scale = (scale_y - 1.0).abs() > 0.01;
                 if needs_scale {
                     self.output.push_str(&format!(
-                        "<g transform=\"translate({},{}) scale({:.4},{:.4})\">\n",
-                        node.bbox.x, node.bbox.y, scale_x, scale_y,
+                        "<g transform=\"translate({},{}) scale(1,{:.4})\">\n",
+                        node.bbox.x, node.bbox.y, scale_y,
                     ));
                 } else {
                     self.output.push_str(&format!(
@@ -933,11 +1089,25 @@ impl SvgRenderer {
                     for segment in eq.svg_content.split("</text>") {
                         if let Some(start) = segment.rfind('>') {
                             let text = &segment[start + 1..];
-                            let family = if super::equation::text_has_cjk(text) {
-                                "Haansoft Batang"
-                            } else {
-                                "Latin Modern Math"
-                            };
+                            let header = &segment[..start];
+                            // 표시 조각이 선언한 실제 face를 공급한다. 구형 원본
+                            // glyph를 영문이라는 이유로 다른 수학 face로 추정하지 않는다.
+                            let family = header
+                                .rsplit("<text")
+                                .next()
+                                .and_then(|attrs| {
+                                    super::svg_fragment::find_svg_attr_value(attrs, "font-family")
+                                })
+                                .and_then(|families| families.split(',').next())
+                                .map(|face| face.trim().trim_matches(['\'', '"']))
+                                .filter(|face| !face.is_empty())
+                                .unwrap_or_else(|| {
+                                    if super::equation::text_has_cjk(text) {
+                                        "Haansoft Batang"
+                                    } else {
+                                        "Latin Modern Math"
+                                    }
+                                });
                             self.font_codepoints
                                 .entry(family.to_string())
                                 .or_default()
@@ -950,6 +1120,17 @@ impl SvgRenderer {
                 self.render_form_object(form, &node.bbox);
             }
             RenderNodeType::RawSvg(r) => {
+                if self.font_embed_mode != FontEmbedMode::None {
+                    for usage in super::svg_fragment::svg_text_font_usage(&r.svg) {
+                        if usage.bold {
+                            self.font_bold_families.insert(usage.family.clone());
+                        }
+                        self.font_codepoints
+                            .entry(usage.family)
+                            .or_default()
+                            .extend(usage.text.chars().filter(|ch| !ch.is_control()));
+                    }
+                }
                 // Task #195 단계 8: OOXML 차트 SVG 조각 그대로 삽입
                 self.output.push_str(&r.svg);
             }
@@ -1200,7 +1381,12 @@ impl SvgRenderer {
         // 동일 의미. 같은 plane 내부는 안정 정렬로 기존 트리 순서를 보존한다.
         // (PNG=native Skia / 웹캔버스=CanvasKit 는 PaintOp replay plane 으로 이미
         //  정정됨 — PR #1163 / #1017. 본 변경은 SVG 경로 정합.)
-        if Self::children_need_plane_reorder(node) {
+        if matches!(node.node_type, RenderNodeType::Column(_)) {
+            // 본문은 LayerBuilder와 같은 흐름/앵커 순서를 소비한다.
+            for child in crate::renderer::paint_order::children(node) {
+                self.render_node(child);
+            }
+        } else if Self::children_need_plane_reorder(node) {
             let mut ordered: Vec<&RenderNode> = node.children.iter().collect();
             ordered.sort_by_key(|c| Self::node_z_sort_key(c));
             for child in ordered {
@@ -1230,6 +1416,9 @@ impl SvgRenderer {
 
         // 도형 변환 그룹 종료
         self.close_shape_transform(&node.node_type);
+        if matches!(&node.node_type, RenderNodeType::Image(image) if image.source_rect.is_some()) {
+            self.output.push_str("</g>\n");
+        }
 
         // 조판부호 개체 마커 (붉은색 대괄호) — 조판부호 ON일 때만
         if self.show_control_codes {
@@ -1279,7 +1468,6 @@ impl SvgRenderer {
         // 한컴 정답지 시각 표준: 도형이 자체 좌표계 기준으로 먼저 회전 후 flip 적용.
         // SVG 에서 동일 결과 = "translate(flip) scale(-1,1) rotate(-θ)"
         // (flip 와 함께 회전 시 각도 부호 반전 필요).
-        let flip_negate_rotation = transform.horz_flip ^ transform.vert_flip;
         if transform.horz_flip {
             parts.push(format!("translate({},0) scale(-1,1)", cx * 2.0));
         }
@@ -1287,11 +1475,7 @@ impl SvgRenderer {
             parts.push(format!("translate(0,{}) scale(1,-1)", cy * 2.0));
         }
         if transform.rotation != 0.0 {
-            let effective_rotation = if flip_negate_rotation {
-                -transform.rotation
-            } else {
-                transform.rotation
-            };
+            let effective_rotation = transform.reflected_rotation();
             parts.push(format!("rotate({},{},{})", effective_rotation, cx, cy));
         }
         self.output
@@ -1322,20 +1506,58 @@ impl SvgRenderer {
         self.gradient_counter += 1;
         let id = format!("grad{}", self.gradient_counter);
 
-        let stops = Self::build_gradient_stops(grad);
+        let (colors, positions) =
+            super::linear_gradient_color_stops(grad, bbox.0, bbox.1, bbox.2, bbox.3);
+        let stops = Self::build_gradient_stops(&GradientFillInfo {
+            colors,
+            positions,
+            ..grad.clone()
+        });
 
         let def = match grad.gradient_type {
+            4 if bbox.2 > 0.0 && bbox.3 > 0.0 => {
+                let (bx, by, bw, bh) = bbox;
+                let (cx, cy, radius, cos, sin) =
+                    super::square_gradient_geometry(grad, bx, by, bw, bh);
+                let point = |u: f64, v: f64| {
+                    (
+                        cx + radius * (u * cos - v * sin),
+                        cy + radius * (u * sin + v * cos),
+                    )
+                };
+                let corners = [(1.0, -1.0), (1.0, 1.0), (-1.0, 1.0), (-1.0, -1.0)];
+                let normals = [(1.0, 0.0), (0.0, 1.0), (-1.0, 0.0), (0.0, -1.0)];
+                let outside = color_to_svg(*grad.colors.last().unwrap_or(&0));
+                let mut pattern = format!("<pattern id=\"{id}\" patternUnits=\"userSpaceOnUse\" x=\"{bx}\" y=\"{by}\" width=\"{bw}\" height=\"{bh}\" viewBox=\"{bx} {by} {bw} {bh}\"><rect x=\"{bx}\" y=\"{by}\" width=\"{bw}\" height=\"{bh}\" fill=\"{outside}\"/>\n");
+                // max(|회전 x|, |회전 y|)는 네 삼각형 안에서 각각 선형이다.
+                // 각 면의 중심→변 색상 축을 공통 물리 좌표에서 만든다.
+                for index in 0..4 {
+                    let (ex, ey) = point(normals[index].0, normals[index].1);
+                    let (ax, ay) = point(corners[index].0, corners[index].1);
+                    let (bx, by) = point(corners[(index + 1) % 4].0, corners[(index + 1) % 4].1);
+                    pattern.push_str(&format!("<linearGradient id=\"{id}s{index}\" gradientUnits=\"userSpaceOnUse\" x1=\"{cx}\" y1=\"{cy}\" x2=\"{ex}\" y2=\"{ey}\">{stops}</linearGradient><path d=\"M{cx} {cy}L{ax} {ay}L{bx} {by}Z\" fill=\"url(#{id}s{index})\"/>\n"));
+                }
+                pattern.push_str("</pattern>\n");
+                pattern
+            }
             2 => {
                 // 원형 (Radial)
-                let cx = grad.center_x as f64;
-                let cy = grad.center_y as f64;
-                format!(
-                    "<radialGradient id=\"{}\" cx=\"{}%\" cy=\"{}%\" r=\"50%\" fx=\"{}%\" fy=\"{}%\">\n{}</radialGradient>\n",
-                    id, cx, cy, cx, cy, stops,
-                )
+                if let Some((cx, cy, radius)) =
+                    super::gradient_geometry::radial_circle(bbox, grad.center_x, grad.center_y)
+                {
+                    format!(
+                        "<radialGradient id=\"{}\" gradientUnits=\"userSpaceOnUse\" cx=\"{}\" cy=\"{}\" r=\"{}\" fx=\"{}\" fy=\"{}\">\n{}</radialGradient>\n",
+                        id, cx, cy, radius, cx, cy, stops,
+                    )
+                } else {
+                    format!(
+                        "<radialGradient id=\"{}\" cx=\"{}%\" cy=\"{}%\" r=\"50%\" fx=\"{}%\" fy=\"{}%\">\n{}</radialGradient>\n",
+                        id, grad.center_x, grad.center_y, grad.center_x, grad.center_y, stops,
+                    )
+                }
             }
             _ => {
-                // 선형 (Linear) — gradient_type 1(줄무늬), 3(원뿔), 4(사각) 모두 선형으로 근사
+                // 선형 (Linear) — 원뿔과 치수를 알 수 없는 채우기는 기존 선형 근사.
                 //
                 // [#6845] 축은 **사용자 좌표계**로 낸다. `objectBoundingBox` 백분율은
                 // 상자의 가로·세로를 각각 0~1 로 정규화하므로 가로세로비가 1 이 아니면
@@ -1343,7 +1565,8 @@ impl SvgRenderer {
                 // 한/글 −0.365 인데 rhwp 는 +3.72 였다.
                 let (bx, by, bw, bh) = bbox;
                 if bw > 0.0 && bh > 0.0 {
-                    let (x1, y1, x2, y2) = super::linear_gradient_axis(grad.angle, bx, by, bw, bh);
+                    let (x1, y1, x2, y2) =
+                        super::linear_gradient_axis_for_fill(grad, bx, by, bw, bh);
                     format!(
                         "<linearGradient id=\"{}\" gradientUnits=\"userSpaceOnUse\" x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\">\n{}</linearGradient>\n",
                         id, x1, y1, x2, y2, stops,
@@ -1369,37 +1592,24 @@ impl SvgRenderer {
         let id = format!("pat{}", self.clip_counter);
         let bg = color_to_svg(info.background_color);
         let fg = color_to_svg(info.pattern_color);
-        let sz = 6; // 패턴 타일 크기 (px)
-
-        // HWP 패턴 종류 (0-based, 표 31 참조): 0=가로줄, 1=세로줄, 2=역대각선, 3=대각선, 4=십자, 5=격자
+        let sz = info.tile_size;
+        let stroke = sz / 8.0;
+        // 독립 Print의 1~6 hatch: 쪽 원점에 고정한 8-dot/100dpi 무늬.
+        let horizontal = format!("<path d=\"M0 0H{sz}M0 {sz}H{sz}\"/>");
+        let vertical = format!("<path d=\"M0 0V{sz}M{sz} 0V{sz}\"/>");
+        let slash = format!("<path d=\"M{sz} 0L0 {sz}\"/>");
+        let backslash = format!("<path d=\"M0 0L{sz} {sz}\"/>");
         let lines = match info.pattern_type {
-            0 => // 가로줄 (- - - -)
-                format!("<rect width=\"{sz}\" height=\"{sz}\" fill=\"{bg}\"/>\
-                         <line x1=\"0\" y1=\"3\" x2=\"{sz}\" y2=\"3\" stroke=\"{fg}\" stroke-width=\"1\"/>"),
-            1 => // 세로줄 (|||||)
-                format!("<rect width=\"{sz}\" height=\"{sz}\" fill=\"{bg}\"/>\
-                         <line x1=\"3\" y1=\"0\" x2=\"3\" y2=\"{sz}\" stroke=\"{fg}\" stroke-width=\"1\"/>"),
-            2 => // 대각선 (/////)
-                format!("<rect width=\"{sz}\" height=\"{sz}\" fill=\"{bg}\"/>\
-                         <line x1=\"{sz}\" y1=\"0\" x2=\"0\" y2=\"{sz}\" stroke=\"{fg}\" stroke-width=\"1\"/>"),
-            3 => // 역대각선 (\\\\\)
-                format!("<rect width=\"{sz}\" height=\"{sz}\" fill=\"{bg}\"/>\
-                         <line x1=\"0\" y1=\"0\" x2=\"{sz}\" y2=\"{sz}\" stroke=\"{fg}\" stroke-width=\"1\"/>"),
-            4 => // 십자 (+++++)
-                format!("<rect width=\"{sz}\" height=\"{sz}\" fill=\"{bg}\"/>\
-                         <line x1=\"3\" y1=\"0\" x2=\"3\" y2=\"{sz}\" stroke=\"{fg}\" stroke-width=\"1\"/>\
-                         <line x1=\"0\" y1=\"3\" x2=\"{sz}\" y2=\"3\" stroke=\"{fg}\" stroke-width=\"1\"/>"),
-            5 => // 격자 (xxxxx)
-                format!("<rect width=\"{sz}\" height=\"{sz}\" fill=\"{bg}\"/>\
-                         <line x1=\"0\" y1=\"0\" x2=\"{sz}\" y2=\"{sz}\" stroke=\"{fg}\" stroke-width=\"1\"/>\
-                         <line x1=\"{sz}\" y1=\"0\" x2=\"0\" y2=\"{sz}\" stroke=\"{fg}\" stroke-width=\"1\"/>"),
-            _ => // 알 수 없는 패턴: 단색
-                format!("<rect width=\"{sz}\" height=\"{sz}\" fill=\"{bg}\"/>"),
+            1 => horizontal,
+            2 => vertical,
+            3 => slash,
+            4 => backslash,
+            5 => format!("{horizontal}{vertical}"),
+            6 => format!("{slash}{backslash}"),
+            _ => String::new(),
         };
-
         let def = format!(
-            "<pattern id=\"{}\" patternUnits=\"userSpaceOnUse\" width=\"{}\" height=\"{}\">{}</pattern>\n",
-            id, sz, sz, lines
+            "<pattern id=\"{id}\" patternUnits=\"userSpaceOnUse\" width=\"{sz}\" height=\"{sz}\"><rect width=\"{sz}\" height=\"{sz}\" fill=\"{bg}\"/><g fill=\"none\" stroke=\"{fg}\" stroke-width=\"{stroke}\">{lines}</g></pattern>\n"
         );
         self.defs.push(def);
         id
@@ -1427,189 +1637,42 @@ impl SvgRenderer {
 
     /// 화살표 마커 SVG 정의 생성 (중복 시 기존 ID 반환)
     ///
-    /// HWP 화살표 크기(0-8): {작은,중간,큰} × {작은,중간,큰} (너비 × 길이)
-    /// 선 두께와 길이를 고려하여 마커 크기 결정
+    /// A marker replays the common arrow outline at the original endpoint.
     fn ensure_arrow_marker(
         &mut self,
         color: &str,
         stroke_width: f64,
-        line_len: f64,
+        _line_len: f64,
         arrow: &super::ArrowStyle,
         arrow_size: u8,
         is_start: bool,
     ) -> String {
-        let type_name = match arrow {
-            super::ArrowStyle::Arrow => "arrow",
-            super::ArrowStyle::ConcaveArrow => "concave",
-            super::ArrowStyle::OpenDiamond => "odiamond",
-            super::ArrowStyle::OpenCircle => "ocircle",
-            super::ArrowStyle::OpenSquare => "osquare",
-            super::ArrowStyle::Diamond => "diamond",
-            super::ArrowStyle::Circle => "circle",
-            super::ArrowStyle::Square => "square",
-            super::ArrowStyle::None => "none",
-        };
         let dir = if is_start { "s" } else { "e" };
-        let color_id = color.replace('#', "");
-        let id = format!("mk-{}-{}-{}-{}", type_name, dir, color_id, arrow_size);
-
+        let id = format!(
+            "mk-{:?}-{}-{}-{}-{:x}",
+            arrow,
+            dir,
+            color.replace('#', ""),
+            arrow_size,
+            stroke_width.to_bits()
+        );
         if !self.defs_ids.insert(id.clone()) {
             return id;
         }
-
-        // HWP 화살표 크기 → 너비/길이 배율
-        // arrow_size: 0=작은-작은, 1=작은-중간, 2=작은-큰,
-        //             3=중간-작은, 4=중간-중간, 5=중간-큰,
-        //             6=큰-작은, 7=큰-중간, 8=큰-큰
-        let width_level = arrow_size / 3; // 0=작은, 1=중간, 2=큰
-        let length_level = arrow_size % 3; // 0=작은, 1=중간, 2=큰
-
-        // 너비 배율 (선 두께 대비 화살표 높이)
-        let width_mult = match width_level {
-            0 => 1.5, // 작은: 선 두께의 1.5배
-            1 => 2.5, // 중간: 선 두께의 2.5배
-            _ => 3.5, // 큰: 선 두께의 3.5배
-        };
-        // 길이 배율 (화살표 높이 대비 길이)
-        let length_mult = match length_level {
-            0 => 1.0, // 작은
-            1 => 1.5, // 중간
-            _ => 2.0, // 큰
-        };
-
-        let arrow_h = (stroke_width * width_mult).max(3.0);
-        let arrow_w = (arrow_h * length_mult).min(line_len * 0.3); // 선 길이의 30% 이하
-        let half_h = arrow_h / 2.0;
-
-        let def = match arrow {
-            super::ArrowStyle::Arrow => {
-                // 선이 화살표 길이만큼 줄어드므로 refX는 화살표 밑변(base) 위치
-                // start: refX=arrow_w (밑변이 줄어든 시작점에 정렬, 팁은 원래 시작점 방향)
-                // end:   refX=0 (밑변이 줄어든 끝점에 정렬, 팁은 원래 끝점 방향)
-                if is_start {
-                    format!(
-                        "<marker id=\"{}\" viewBox=\"0 0 {} {}\" refX=\"{}\" refY=\"{}\" markerWidth=\"{}\" markerHeight=\"{}\" orient=\"auto\" markerUnits=\"userSpaceOnUse\">\
-                        <path d=\"M {} 0 L 0 {} L {} {}\" fill=\"{}\" stroke=\"none\"/></marker>\n",
-                        id, arrow_w, arrow_h, arrow_w, half_h, arrow_w, arrow_h,
-                        arrow_w, half_h, arrow_w, arrow_h, color,
-                    )
-                } else {
-                    format!(
-                        "<marker id=\"{}\" viewBox=\"0 0 {} {}\" refX=\"0\" refY=\"{}\" markerWidth=\"{}\" markerHeight=\"{}\" orient=\"auto\" markerUnits=\"userSpaceOnUse\">\
-                        <path d=\"M 0 0 L {} {} L 0 {}\" fill=\"{}\" stroke=\"none\"/></marker>\n",
-                        id, arrow_w, arrow_h, half_h, arrow_w, arrow_h,
-                        arrow_w, half_h, arrow_h, color,
-                    )
-                }
-            }
-            super::ArrowStyle::ConcaveArrow => {
-                let concave = arrow_w * 0.3;
-                if is_start {
-                    format!(
-                        "<marker id=\"{}\" viewBox=\"0 0 {} {}\" refX=\"{}\" refY=\"{}\" markerWidth=\"{}\" markerHeight=\"{}\" orient=\"auto\" markerUnits=\"userSpaceOnUse\">\
-                        <path d=\"M {} 0 L 0 {} L {} {} L {} {} Z\" fill=\"{}\" stroke=\"none\"/></marker>\n",
-                        id, arrow_w, arrow_h, arrow_w, half_h, arrow_w, arrow_h,
-                        arrow_w, half_h, arrow_w, arrow_h, concave, half_h, color,
-                    )
-                } else {
-                    format!(
-                        "<marker id=\"{}\" viewBox=\"0 0 {} {}\" refX=\"0\" refY=\"{}\" markerWidth=\"{}\" markerHeight=\"{}\" orient=\"auto\" markerUnits=\"userSpaceOnUse\">\
-                        <path d=\"M 0 0 L {} {} L 0 {} L {} {} Z\" fill=\"{}\" stroke=\"none\"/></marker>\n",
-                        id, arrow_w, arrow_h, half_h, arrow_w, arrow_h,
-                        arrow_w, half_h, arrow_h, arrow_w - concave, half_h, color,
-                    )
-                }
-            }
-            super::ArrowStyle::OpenDiamond => {
-                let half_w = arrow_w / 2.0;
-                let sw = (stroke_width * 0.3).max(0.5);
-                let ref_x = if is_start { arrow_w } else { 0.0 };
-                format!(
-                    "<marker id=\"{}\" viewBox=\"0 0 {} {}\" refX=\"{}\" refY=\"{}\" markerWidth=\"{}\" markerHeight=\"{}\" orient=\"auto\" markerUnits=\"userSpaceOnUse\">\
-                    <path d=\"M {} 0 L {} {} L {} {} L 0 {} Z\" fill=\"white\" stroke=\"{}\" stroke-width=\"{}\"/></marker>\n",
-                    id, arrow_w, arrow_h, ref_x, half_h, arrow_w, arrow_h,
-                    half_w, arrow_w, half_h, half_w, arrow_h, half_h, color, sw,
-                )
-            }
-            super::ArrowStyle::OpenCircle => {
-                let half_w = arrow_w / 2.0;
-                let rx = half_w * 0.8;
-                let ry = half_h * 0.8;
-                let sw = (stroke_width * 0.3).max(0.5);
-                let ref_x = if is_start { arrow_w } else { 0.0 };
-                format!(
-                    "<marker id=\"{}\" viewBox=\"0 0 {} {}\" refX=\"{}\" refY=\"{}\" markerWidth=\"{}\" markerHeight=\"{}\" orient=\"auto\" markerUnits=\"userSpaceOnUse\">\
-                    <ellipse cx=\"{}\" cy=\"{}\" rx=\"{}\" ry=\"{}\" fill=\"white\" stroke=\"{}\" stroke-width=\"{}\"/></marker>\n",
-                    id, arrow_w, arrow_h, ref_x, half_h, arrow_w, arrow_h,
-                    half_w, half_h, rx, ry, color, sw,
-                )
-            }
-            super::ArrowStyle::OpenSquare => {
-                let sw = (stroke_width * 0.3).max(0.5);
-                let ref_x = if is_start { arrow_w } else { 0.0 };
-                format!(
-                    "<marker id=\"{}\" viewBox=\"0 0 {} {}\" refX=\"{}\" refY=\"{}\" markerWidth=\"{}\" markerHeight=\"{}\" orient=\"auto\" markerUnits=\"userSpaceOnUse\">\
-                    <rect x=\"0\" y=\"0\" width=\"{}\" height=\"{}\" fill=\"white\" stroke=\"{}\" stroke-width=\"{}\"/></marker>\n",
-                    id, arrow_w, arrow_h, ref_x, half_h, arrow_w, arrow_h,
-                    arrow_w, arrow_h, color, sw,
-                )
-            }
-            super::ArrowStyle::Diamond => {
-                let half_w = arrow_w / 2.0;
-                let ref_x = if is_start { arrow_w } else { 0.0 };
-                format!(
-                    "<marker id=\"{}\" viewBox=\"0 0 {} {}\" refX=\"{}\" refY=\"{}\" markerWidth=\"{}\" markerHeight=\"{}\" orient=\"auto\" markerUnits=\"userSpaceOnUse\">\
-                    <path d=\"M {} 0 L {} {} L {} {} L 0 {} Z\" fill=\"{}\" stroke=\"none\"/></marker>\n",
-                    id, arrow_w, arrow_h, ref_x, half_h, arrow_w, arrow_h,
-                    half_w, arrow_w, half_h, half_w, arrow_h, half_h, color,
-                )
-            }
-            super::ArrowStyle::Circle => {
-                let half_w = arrow_w / 2.0;
-                let rx = half_w * 0.8;
-                let ry = half_h * 0.8;
-                let ref_x = if is_start { arrow_w } else { 0.0 };
-                format!(
-                    "<marker id=\"{}\" viewBox=\"0 0 {} {}\" refX=\"{}\" refY=\"{}\" markerWidth=\"{}\" markerHeight=\"{}\" orient=\"auto\" markerUnits=\"userSpaceOnUse\">\
-                    <ellipse cx=\"{}\" cy=\"{}\" rx=\"{}\" ry=\"{}\" fill=\"{}\" stroke=\"none\"/></marker>\n",
-                    id, arrow_w, arrow_h, ref_x, half_h, arrow_w, arrow_h,
-                    half_w, half_h, rx, ry, color,
-                )
-            }
-            super::ArrowStyle::Square => {
-                let ref_x = if is_start { arrow_w } else { 0.0 };
-                format!(
-                    "<marker id=\"{}\" viewBox=\"0 0 {} {}\" refX=\"{}\" refY=\"{}\" markerWidth=\"{}\" markerHeight=\"{}\" orient=\"auto\" markerUnits=\"userSpaceOnUse\">\
-                    <rect x=\"0\" y=\"0\" width=\"{}\" height=\"{}\" fill=\"{}\" stroke=\"none\"/></marker>\n",
-                    id, arrow_w, arrow_h, ref_x, half_h, arrow_w, arrow_h,
-                    arrow_w, arrow_h, color,
-                )
-            }
-            super::ArrowStyle::None => return id,
-        };
-
-        self.defs.push(def);
+        if let Some(head) = super::arrow::head(*arrow, stroke_width, arrow_size) {
+            let (length, height) = super::arrow::dimensions(stroke_width, arrow_size);
+            let direction = if is_start { -1.0 } else { 1.0 };
+            let commands = head.at(0.0, 0.0, direction, 0.0);
+            let d = svg_path_data(&commands);
+            let left = if is_start { 0.0 } else { -length };
+            let fill = if head.filled { color } else { "white" };
+            let outline = if head.filled { "none" } else { color };
+            let outline_width = (stroke_width * 0.3).max(0.5);
+            self.defs.push(format!(
+                "<marker id=\"{id}\" viewBox=\"{left} {} {length} {height}\" refX=\"0\" refY=\"0\" markerWidth=\"{length}\" markerHeight=\"{height}\" orient=\"auto\" markerUnits=\"userSpaceOnUse\" overflow=\"visible\"><path d=\"{}\" fill=\"{fill}\" stroke=\"{outline}\" stroke-width=\"{outline_width}\"/></marker>\n",
+                -height / 2.0, d.trim()));
+        }
         id
-    }
-
-    /// 화살표 크기(arrow_w, arrow_h) 계산
-    /// ensure_arrow_marker와 동일한 로직으로 화살표 길이를 반환
-    fn calc_arrow_dims(stroke_width: f64, line_len: f64, arrow_size: u8) -> (f64, f64) {
-        let width_level = arrow_size / 3;
-        let length_level = arrow_size % 3;
-        let width_mult = match width_level {
-            0 => 1.5,
-            1 => 2.5,
-            _ => 3.5,
-        };
-        let length_mult = match length_level {
-            0 => 1.0,
-            1 => 1.5,
-            _ => 2.0,
-        };
-        let arrow_h = (stroke_width * width_mult).max(3.0);
-        let arrow_w = (arrow_h * length_mult).min(line_len * 0.3);
-        (arrow_w, arrow_h)
     }
 
     /// 그라데이션 색상 stop 목록 생성
@@ -1663,13 +1726,7 @@ impl SvgRenderer {
                 color_to_svg(stroke),
                 style.stroke_width
             ));
-            match style.stroke_dash {
-                StrokeDash::Dash => attrs.push_str(" stroke-dasharray=\"6 3\""),
-                StrokeDash::Dot => attrs.push_str(" stroke-dasharray=\"2 2\""),
-                StrokeDash::DashDot => attrs.push_str(" stroke-dasharray=\"6 3 2 3\""),
-                StrokeDash::DashDotDot => attrs.push_str(" stroke-dasharray=\"6 3 2 3 2 3\""),
-                _ => {}
-            }
+            stroke_pattern::append_attrs(&mut attrs, style.stroke_dash, style.stroke_width);
         }
 
         if style.opacity < 1.0 {
@@ -1719,29 +1776,7 @@ impl SvgRenderer {
         style: &ShapeStyle,
         gradient: Option<&GradientFillInfo>,
     ) {
-        let mut d = String::new();
-        for cmd in commands {
-            match cmd {
-                PathCommand::MoveTo(x, y) => d.push_str(&format!("M{} {} ", x, y)),
-                PathCommand::LineTo(x, y) => d.push_str(&format!("L{} {} ", x, y)),
-                PathCommand::CurveTo(x1, y1, x2, y2, x, y) => {
-                    d.push_str(&format!("C{} {} {} {} {} {} ", x1, y1, x2, y2, x, y))
-                }
-                PathCommand::ArcTo(rx, ry, x_rot, large_arc, sweep, x, y) => {
-                    d.push_str(&format!(
-                        "A{} {} {} {} {} {} {} ",
-                        rx,
-                        ry,
-                        x_rot,
-                        if *large_arc { 1 } else { 0 },
-                        if *sweep { 1 } else { 0 },
-                        x,
-                        y
-                    ));
-                }
-                PathCommand::ClosePath => d.push_str("Z "),
-            }
-        }
+        let d = svg_path_data(commands);
 
         let mut attrs = format!("d=\"{}\"", d.trim());
 
@@ -1753,13 +1788,7 @@ impl SvgRenderer {
                 color_to_svg(stroke),
                 style.stroke_width
             ));
-            match style.stroke_dash {
-                StrokeDash::Dash => attrs.push_str(" stroke-dasharray=\"6 3\""),
-                StrokeDash::Dot => attrs.push_str(" stroke-dasharray=\"2 2\""),
-                StrokeDash::DashDot => attrs.push_str(" stroke-dasharray=\"6 3 2 3\""),
-                StrokeDash::DashDotDot => attrs.push_str(" stroke-dasharray=\"6 3 2 3 2 3\""),
-                _ => {}
-            }
+            stroke_pattern::append_attrs(&mut attrs, style.stroke_dash, style.stroke_width);
         }
 
         self.output.push_str(&format!("<path {}/>\n", attrs));
@@ -1885,10 +1914,28 @@ impl SvgRenderer {
             } else {
                 (std::borrow::Cow::Borrowed(&img.data[..]), detected_mime)
             };
-        let base64_data = base64::engine::general_purpose::STANDARD.encode(&*render_bytes);
+        let (brightness, contrast) = img.display_brightness_contrast();
+        let adjusted = (!preserve_color_watermark)
+            .then(|| {
+                crate::renderer::image_resolver::adjusted_picture_bytes(
+                    &render_bytes,
+                    img.effect,
+                    brightness,
+                    contrast,
+                )
+            })
+            .flatten();
+        let adjustments_baked = adjusted.is_some();
+        let render_bytes = adjusted.as_deref().unwrap_or(&render_bytes);
+        let render_mime = if adjustments_baked {
+            "image/png"
+        } else {
+            render_mime
+        };
+        let base64_data = base64::engine::general_purpose::STANDARD.encode(render_bytes);
         let data_uri = format!("data:{};base64,{}", render_mime, base64_data);
 
-        let effect_filter_id = if preserve_color_watermark {
+        let effect_filter_id = if preserve_color_watermark || adjustments_baked {
             None
         } else {
             self.ensure_image_effect_filter(img.effect)
@@ -1897,7 +1944,7 @@ impl SvgRenderer {
             self.output
                 .push_str(&format!("<g filter=\"url(#{})\">\n", fid));
         }
-        let bc_filter_id = if preserve_color_watermark {
+        let bc_filter_id = if preserve_color_watermark || adjustments_baked {
             None
         } else {
             let (brightness, contrast) = img.display_brightness_contrast();
@@ -2022,6 +2069,40 @@ impl SvgRenderer {
     }
 
     fn render_image_node(&mut self, img: &ImageNode, bbox: &super::render_tree::BoundingBox) {
+        if let Some(path) = super::pdf_stroke::project(img, *bbox) {
+            self.draw_path_with_gradient(&path.commands, &path.style, None);
+            return;
+        }
+        let interpolation = img.data.as_deref().and_then(|data| {
+            let (width, height) = super::image_resolver::png_sampling::dimensions(data)?;
+            let source = img.crop.map_or((width, height), |crop| {
+                let (_, _, w, h) =
+                    compute_image_crop_src(crop, img.original_size_hu, width, height);
+                (w, h)
+            });
+            let frame = img.transformed_paint_bbox(bbox);
+            // SVG's intrinsic page uses the renderer's 96-DPI coordinate system.
+            super::image_resolver::png_sampling::magnification(
+                super::image_resolver::png_sampling::interpolation(data),
+                source,
+                (frame.width, frame.height),
+            )
+        });
+        if let Some(interpolate) = interpolation {
+            let rendering = if interpolate { "auto" } else { "pixelated" };
+            let _ = write!(self.output, "<g style=\"image-rendering:{rendering}\">");
+        }
+        self.render_image_node_with_sampling(img, bbox);
+        if interpolation.is_some() {
+            self.output.push_str("</g>");
+        }
+    }
+
+    fn render_image_node_with_sampling(
+        &mut self,
+        img: &ImageNode,
+        bbox: &super::render_tree::BoundingBox,
+    ) {
         // 저장 자르기 선택이 비었으면 프레임만 점유하며 원본을 그리지 않는다.
         if img.crop.is_some_and(|(l, t, r, b)| r <= l || b <= t) {
             return;
@@ -2055,7 +2136,7 @@ impl SvgRenderer {
         // 더 투명하게 합성되는 샘플이 있어 opacity만 별도 프로파일을 사용한다.
         let preserve_color_watermark = img.is_real_picture_watermark_tone_preset();
         // [Issue #1156] 워터마크 판정 = 밝기·대비가 둘 다 0 이 아님 (effect 무관).
-        let is_watermark_image = img.is_watermark();
+        let is_watermark_image = crate::renderer::image_resolver::is_watermark_image(img);
         let mime_type = detect_image_mime_type(data);
 
         // WMF → SVG 변환 (브라우저는 WMF를 렌더링할 수 없으므로 SVG로 변환)
@@ -2115,8 +2196,25 @@ impl SvgRenderer {
                 (std::borrow::Cow::Borrowed(data), mime_type, false)
             };
 
-        // 그림 효과(그레이스케일/흑백) → SVG 필터 래핑
-        let effect_filter_id = if baked_watermark || preserve_color_watermark {
+        let adjusted = (!(baked_watermark || preserve_color_watermark))
+            .then(|| {
+                crate::renderer::image_resolver::adjusted_picture_bytes(
+                    &render_data,
+                    img.effect,
+                    img.brightness,
+                    img.contrast,
+                )
+            })
+            .flatten();
+        let adjustments_baked = adjusted.is_some();
+        let render_data = adjusted.map_or(render_data, std::borrow::Cow::Owned);
+        let render_mime = if adjustments_baked {
+            "image/png"
+        } else {
+            render_mime
+        };
+        // 일반 raster 색조는 공통 helper가 확정한 픽셀을 사용한다.
+        let effect_filter_id = if baked_watermark || preserve_color_watermark || adjustments_baked {
             None
         } else {
             self.ensure_image_effect_filter(img.effect)
@@ -2135,7 +2233,7 @@ impl SvgRenderer {
         // 비-zero) 는 저장값을 그대로 brightness/contrast 필터로 적용한다. JPEG 워터마크는
         // #976의 baked PNG 선보정이 성공하면 런타임 필터를 생략하고, RealPic 색상
         // 워터마크는 #975의 baked PNG 톤 보정으로 처리한다.
-        let bc_filter_id = if baked_watermark || preserve_color_watermark {
+        let bc_filter_id = if baked_watermark || preserve_color_watermark || adjustments_baked {
             None
         } else {
             self.ensure_brightness_contrast_filter(img.brightness, img.contrast)
@@ -2162,6 +2260,18 @@ impl SvgRenderer {
         let data_uri = format!("data:{};base64,{}", render_mime, base64_data);
 
         let fill_mode = img.fill_mode.unwrap_or(ImageFillMode::FitToSize);
+        let image_size = parse_image_dimensions(&render_data)
+            .map(|(w, h)| (f64::from(w), f64::from(h)))
+            .or_else(|| {
+                (render_mime == "image/svg+xml")
+                    .then(|| super::metafile_geometry::svg_viewport(&render_data))
+                    .flatten()
+            });
+        let crop_reference = if mime_type == "image/x-wmf" {
+            super::metafile_geometry::wmf_crop_reference(img.original_size_hu)
+        } else {
+            img.original_size_hu
+        };
 
         match fill_mode {
             // [#7235] 채우기 유형 15(NONE): 한컴은 원래 픽셀 크기로 두지 않고 종횡비를
@@ -2169,12 +2279,8 @@ impl SvgRenderer {
             ImageFillMode::Zoom | ImageFillMode::None => {
                 // contain 비율은 최종적으로 보이는 crop 영역으로 계산한다.
                 // 맞춘 viewport 자체를 clip하여 잘려 나간 픽셀이 letterbox에 새지 않는다.
-                if let (Some(crop), Some((iw, ih))) =
-                    (img.crop, parse_image_dimensions(&render_data))
-                {
-                    let (iw, ih) = (iw as f64, ih as f64);
-                    let (sx, sy, sw, sh) =
-                        compute_image_crop_src(crop, img.original_size_hu, iw, ih);
+                if let (Some(crop), Some((iw, ih))) = (img.crop, image_size) {
+                    let (sx, sy, sw, sh) = compute_image_crop_src(crop, crop_reference, iw, ih);
                     let scale = (bbox.width / sw).min(bbox.height / sh);
                     let (w, h) = (sw * scale, sh * scale);
                     self.output.push_str(&format!(
@@ -2192,20 +2298,12 @@ impl SvgRenderer {
             ImageFillMode::FitToSize | ImageFillMode::Total => {
                 // 그림 자르기: crop이 있으면 원본 이미지의 일부만 표시
                 if let Some((cl, ct, cr, cb)) = img.crop {
-                    if let Some((img_w, img_h)) = parse_image_dimensions(&render_data) {
-                        let img_w = img_w as f64;
-                        let img_h = img_h as f64;
-                        let (src_x, src_y, src_w, src_h) = compute_image_crop_src(
-                            (cl, ct, cr, cb),
-                            img.original_size_hu,
-                            img_w,
-                            img_h,
-                        );
+                    if let Some((img_w, img_h)) = image_size {
+                        let (src_x, src_y, src_w, src_h) =
+                            compute_image_crop_src((cl, ct, cr, cb), crop_reference, img_w, img_h);
                         // 전체 이미지 대비 잘림이 있는지 확인
-                        let is_cropped = src_x > 0.5
-                            || src_y > 0.5
-                            || (src_w - img_w).abs() > 1.0
-                            || (src_h - img_h).abs() > 1.0;
+                        let is_cropped =
+                            !image_source_is_full((src_x, src_y, src_w, src_h), img_w, img_h);
                         if is_cropped {
                             // SVG: 중첩 svg + viewBox로 crop 영역만 표시
                             self.output.push_str(&format!(
@@ -2526,11 +2624,10 @@ impl SvgRenderer {
         bbox_w: f64,
         bbox_h: f64,
     ) {
-        let font_size = if style.font_size > 0.0 {
-            style.font_size
-        } else {
-            12.0
-        };
+        if overlap.empty_ink {
+            return;
+        }
+        let font_size = style.effective_font_size();
         let chars: Vec<char> = text.chars().collect();
         if chars.is_empty() {
             return;
@@ -2538,9 +2635,13 @@ impl SvgRenderer {
 
         // PUA 다자리 숫자 디코딩 시도
         if let Some(number_str) = decode_pua_overlap_number(&chars) {
+            let mut overlap = overlap.clone();
+            if overlap.border_type == 0 {
+                overlap.border_type = pua_overlap_number_border(&chars);
+            }
             self.draw_char_overlap_combined(
                 style,
-                overlap,
+                &overlap,
                 &number_str,
                 bbox_x,
                 bbox_y,
@@ -2595,7 +2696,10 @@ impl SvgRenderer {
             font_attrs.push_str(" font-weight=\"500\"");
         }
         if style.italic {
-            font_attrs.push_str(" font-style=\"italic\"");
+            font_attrs.push_str(&format!(
+                " font-style=\"{}\"",
+                super::text_italic::CSS_STYLE
+            ));
         }
 
         if chars.len() > 1 {
@@ -2676,11 +2780,7 @@ impl SvgRenderer {
         bbox_w: f64,
         bbox_h: f64,
     ) {
-        let font_size = if style.font_size > 0.0 {
-            style.font_size
-        } else {
-            12.0
-        };
+        let font_size = style.effective_font_size();
         let box_size = font_size;
 
         // border_type=0이고 PUA 숫자이면 원형으로 자동 렌더링
@@ -2723,7 +2823,10 @@ impl SvgRenderer {
             font_attrs.push_str(" font-weight=\"500\"");
         }
         if style.italic {
-            font_attrs.push_str(" font-style=\"italic\"");
+            font_attrs.push_str(&format!(
+                " font-style=\"{}\"",
+                super::text_italic::CSS_STYLE
+            ));
         }
 
         let cx = bbox_x + box_size / 2.0;
@@ -2756,9 +2859,41 @@ impl SvgRenderer {
         ));
     }
 
-    /// 선 모양(shape)에 따라 SVG line/group을 출력한다.
-    /// shape: 0=실선, 1=긴점선, 2=점선, 3=일점쇄선, 4=이점쇄선, 5=긴파선,
-    ///        6=원형점, 7=이중선, 8=가는+굵은, 9=굵은+가는, 10=삼중선
+    /// 줄 기준으로 해소한 위 밑줄을 그린다.
+    fn draw_top_underline(
+        &mut self,
+        x1: f64,
+        baseline: f64,
+        x2: f64,
+        color: &str,
+        geometry: &super::text_decoration::TopUnderlineGeometry,
+        phase_delta: f64,
+    ) {
+        if x2 <= x1 {
+            return;
+        }
+        for stroke in &geometry.strokes {
+            let dash = stroke
+                .dash
+                .iter()
+                .map(f64::to_string)
+                .collect::<Vec<_>>()
+                .join(" ");
+            let y = baseline + stroke.offset;
+            self.output.push_str(&format!(
+                "<line x1=\"{x1}\" y1=\"{y}\" x2=\"{x2}\" y2=\"{y}\" stroke=\"{color}\" stroke-width=\"{}\" stroke-dasharray=\"{dash}\" stroke-dashoffset=\"{}\"/>\n",
+                stroke.width, geometry.phase + phase_delta,
+            ));
+        }
+        if let Some(dot) = &geometry.dots {
+            let y = baseline + dot.offset;
+            self.output.push_str(&format!(
+                "<line x1=\"{x1}\" y1=\"{y}\" x2=\"{x2}\" y2=\"{y}\" stroke=\"{color}\" stroke-width=\"{}\" stroke-linecap=\"round\" stroke-dasharray=\"0 {}\" stroke-dashoffset=\"{}\"/>\n",
+                dot.radius * 2.0, dot.step, geometry.phase + phase_delta,
+            ));
+        }
+    }
+
     fn draw_line_shape(&mut self, x1: f64, y1: f64, x2: f64, y2: f64, color: &str, shape: u8) {
         match shape {
             7 => {
@@ -2876,6 +3011,9 @@ impl SvgRenderer {
     fn render_form_object(&mut self, form: &FormObjectNode, bbox: &BoundingBox) {
         use super::form_appearance::{form_drawing, FormPrimitive};
         let drawing = form_drawing(form, *bbox);
+        // 컨트롤은 자기 영역 밖을 그리지 않는다. 폭보다 긴 캡션은 영역 경계에서 잘린다.
+        let clip_id = format!("form-clip-{}", self.next_clip_id());
+        self.begin_layer_clip(*bbox, &clip_id);
         for primitive in drawing.primitives {
             match primitive {
                 FormPrimitive::Rect { bbox: b, color } => self.output.push_str(&format!(
@@ -2900,9 +3038,11 @@ impl SvgRenderer {
             self.output.push_str(&format!(
                 "<text x=\"{:.3}\" y=\"{:.3}\" font-size=\"{:.3}\" fill=\"{}\" font-family=\"{}\" font-weight=\"{}\" font-style=\"{}\">{}</text>\n",
                 label.x, label.baseline, label.font_size, escape_xml(&label.color),
-                escape_xml(&label.font_family), if label.bold { "bold" } else { "normal" },
-                if label.italic { "italic" } else { "normal" }, escape_xml(&label.text)));
+                escape_xml(&super::render_font_family_chain_for_weight(&label.font_family, label.bold)),
+                if label.bold { "bold" } else { "normal" },
+                if label.italic { super::text_italic::CSS_STYLE } else { "normal" }, escape_xml(&label.text)));
         }
+        self.end_layer_clip();
     }
 
     fn place_debug_label(
@@ -3116,16 +3256,56 @@ impl SvgRenderer {
 
         self.output.push_str("</g>\n");
     }
-    /// [#6127] 한컴 사각 안 숫자(U+F02B1~F02C4) 벡터 합성 — web_canvas
-    /// `draw_boxed_pua_number` 와 같은 기하(상자 0.72em, 숫자 0.5em, 중앙 정렬).
-    fn draw_boxed_pua_number(
+    /// [#6127] 한컴 합성 PUA 기호 벡터 합성 — web_canvas `draw_enclosed_pua` 와 같은
+    /// 동봉 em 기하. 메트릭이 없는 다자리 네모 숫자는 상자 0.72em, 숫자 0.5em 폴백이다.
+    fn draw_enclosed_pua(
         &mut self,
-        number: u32,
+        glyph: super::EnclosedPua,
         x: f64,
         baseline_y: f64,
         style: &TextStyle,
         font_size: f64,
     ) {
+        let inner_text = glyph.inner_text();
+        if let Some(g) = super::enclosed_pua_geometry::geometry(glyph, font_size) {
+            let faces = super::enclosed_pua_geometry::inner_faces(glyph);
+            for face in &faces {
+                self.font_codepoints
+                    .entry((*face).to_string())
+                    .or_default()
+                    .extend(inner_text.chars());
+            }
+            let family = format!(
+                "{},{}",
+                faces
+                    .iter()
+                    .map(|face| format!("'{face}'"))
+                    .collect::<Vec<_>>()
+                    .join(","),
+                super::render_font_family_chain_for_weight(
+                    &style.font_family,
+                    style.is_visually_bold()
+                )
+            );
+            let color = color_to_svg(style.color);
+            match g.frame_shape {
+                super::enclosed_pua_geometry::FrameShape::Rect => self.output.push_str(&format!(
+                    "<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{}\"/>\n",
+                    x + g.frame_x, baseline_y + g.frame_y, g.frame_width, g.frame_height,
+                    color, g.stroke_width)),
+                super::enclosed_pua_geometry::FrameShape::Ellipse => self.output.push_str(&format!(
+                    "<ellipse cx=\"{}\" cy=\"{}\" rx=\"{}\" ry=\"{}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{}\"/>\n",
+                    x + g.frame_x + g.frame_width / 2.0,
+                    baseline_y + g.frame_y + g.frame_height / 2.0,
+                    g.frame_width / 2.0, g.frame_height / 2.0, color, g.stroke_width)),
+            }
+            self.output.push_str(&format!(
+                "<text transform=\"matrix({} 0 0 {} {} {})\" x=\"0\" y=\"0\" font-family=\"{}\" font-size=\"{}\" fill=\"{}\">{}</text>\n",
+                g.inner_scale_x, g.inner_scale_y, x + g.inner_x,
+                baseline_y + g.inner_y, escape_xml(&family), font_size, color,
+                escape_xml(&inner_text)));
+            return;
+        }
         let box_size = (font_size * 0.72).max(1.0);
         let box_y = baseline_y - font_size * 0.76;
         let color = color_to_svg(style.color);
@@ -3151,54 +3331,30 @@ impl SvgRenderer {
             escape_xml(&font_family),
             number_font_size,
             color,
-            number,
+            inner_text,
         ));
     }
 
-    /// 연결선은 `PathNode`로 보존되므로, 일반 `LineNode`와 같은 marker를 별도
-    /// 투명 기준선에 붙인다. SVG marker는 기준선 stroke와 독립적으로 정의된 색을
-    /// 사용한다. 따라서 경로 본문을 두 번 칠하지 않고도 시작/끝 모양을 유지한다.
+    /// Connectors replay the shared endpoint-tangent outlines over their shaft.
     fn draw_path_arrow_markers(&mut self, path: &PathNode) {
-        let (Some(style), Some((x1, y1, x2, y2))) = (&path.line_style, path.connector_endpoints)
-        else {
+        let Some(style) = &path.line_style else {
             return;
         };
-        if style.start_arrow == super::ArrowStyle::None
-            && style.end_arrow == super::ArrowStyle::None
-        {
-            return;
-        }
-        let color = color_to_svg(style.color);
-        let line_len = ((x2 - x1).powi(2) + (y2 - y1).powi(2)).sqrt();
-        if line_len <= f64::EPSILON {
-            return;
-        }
-        let mut markers = String::new();
-        if style.start_arrow != super::ArrowStyle::None {
-            let marker_id = self.ensure_arrow_marker(
-                &color,
-                style.width.max(0.5),
-                line_len,
-                &style.start_arrow,
-                style.start_arrow_size,
-                true,
+        self.draw_arrow_heads(&super::arrow::connector_heads(path), style);
+    }
+
+    fn draw_arrow_heads(&mut self, heads: &[super::arrow::ArrowHead], style: &LineStyle) {
+        for head in heads {
+            self.draw_path(
+                &head.commands,
+                &ShapeStyle {
+                    fill_color: Some(if head.filled { style.color } else { 0xFFFFFF }),
+                    stroke_color: if head.filled { None } else { Some(style.color) },
+                    stroke_width: (style.width * 0.3).max(0.5),
+                    ..Default::default()
+                },
             );
-            markers.push_str(&format!(" marker-start=\"url(#{marker_id})\""));
         }
-        if style.end_arrow != super::ArrowStyle::None {
-            let marker_id = self.ensure_arrow_marker(
-                &color,
-                style.width.max(0.5),
-                line_len,
-                &style.end_arrow,
-                style.end_arrow_size,
-                false,
-            );
-            markers.push_str(&format!(" marker-end=\"url(#{marker_id})\""));
-        }
-        self.output.push_str(&format!(
-            "<line x1=\"{x1}\" y1=\"{y1}\" x2=\"{x2}\" y2=\"{y2}\" stroke=\"none\" fill=\"none\"{markers}/>\n"
-        ));
     }
 }
 
@@ -3274,24 +3430,34 @@ impl Renderer for SvgRenderer {
         // 보이지 않게 처리. HWP/HWPX 의 inline 도형/표/그림 등 treat_as_char 컨트롤이
         // paragraph text 자체에 U+FFFC 로 표현됨 — 도형 path 는 별도 emit 되므로 본
         // placeholder character 는 시각적으로 invisible 해야 한다. 한컴 정답지 정합.
-        let text: String = text.chars().filter(|&c| c != '\u{FFFC}').collect();
+        let metric_source: String = text.chars().filter(|&c| c != '\u{FFFC}').collect();
+        let text = metric_source.as_str();
         if text.is_empty() {
             return;
         }
         // [Task #509] 한컴은 폰트 지정과 상관없이 PUA 를 자체 처리. 지정 폰트에 글리프
         // 부재 시 한컴 내부 매핑이 발행. rhwp 도 동일 동작 모방 — 일반 텍스트도 PUA
         // 변환 적용 (PR #251 정합). 매핑 표는 한컴 PDF 정답지 기준.
-        let text = &expand_pua_render_text(&text);
+        let text = &expand_pua_render_text_in_style(&text, style);
         // [Task #528] Hanyang-PUA 옛한글 → KS X 1026-1:2007 자모 시퀀스.
         // 한/글 2010 이전 옛한글 PUA 인코딩을 표준 자모로 변환 (KTUG 매핑).
         let text = &expand_pua_old_hangul(text);
+        if self.font_embed_mode != FontEmbedMode::None && style.italic {
+            for family in style
+                .font_family
+                .split(',')
+                .map(str::trim)
+                .filter(|s| !s.is_empty())
+            {
+                self.font_italic_styles
+                    .insert((family.to_owned(), style.is_visually_bold()));
+            }
+        }
+        self.prepare_pua_glyphs(text, style);
+        let source_coverage = self.source_font_coverage.clone();
 
         let color = color_to_svg(style.color);
-        let base_font_size = if style.font_size > 0.0 {
-            style.font_size
-        } else {
-            12.0
-        };
+        let base_font_size = style.effective_font_size();
         // 위첨자/아래첨자는 레이아웃 advance 는 원래 run 기준으로 유지하고,
         // 실제 SVG glyph 크기와 baseline 만 Canvas/HTML 출력과 동일하게 조정한다.
         let (font_size, y) = style.script_draw_metrics(base_font_size, y);
@@ -3307,17 +3473,30 @@ impl Renderer for SvgRenderer {
             // [#3772] bold 는 ExtraLight 를 빼서 PDF 굵기를 지킨다.
             super::render_font_family_chain_for_weight(&style.font_family, style.is_visually_bold())
         };
-        let old_hangul_font_family = format!("'Source Han Serif K Old Hangul',{}", font_family);
+        let old_hangul_font_family = format!("'RHWP Old Hangul',{}", font_family);
 
-        // [#5821] 압축 장평은 세로도 √r — SSOT 는 condensed_ratio_draw_params.
-        let (font_size, ratio) =
-            crate::renderer::condensed_ratio_draw_params(font_size, style.ratio);
-        let has_ratio = (ratio - 1.0).abs() > 0.01;
+        // HFT와 TrueType의 장평 변환을 같은 스타일 계약에서 소비한다.
+        let (font_size, ratio) = style.ratio_draw_params(font_size);
+        let has_ratio = style.has_horizontal_ratio();
 
         // 공통 스타일 속성 구성 (fill 제외 — 그림자/원본에서 각각 설정)
         // [#7151] 합성 볼드는 굵기를 획으로 명시한다 — 색이 fill 과 같아야 하므로
         // 속성 자체는 fill 을 아는 `attrs_for_cluster` 에서 붙인다.
-        let faux_bold_stroke = faux_bold_stroke_width(style, font_size);
+        // 외곽선 글자는 채우지 않고 윤곽만 긋는다. 합성 볼드 획과 겹치지 않게 그 획은 끈다.
+        let outline_attrs = style.text_paint.is_none().then(|| super::stroke_pattern::char_outline_stroke(style.outline_type)).flatten().map(
+            |(width, intervals)| {
+                let mut attrs = format!(
+                    " stroke=\"{color}\" stroke-width=\"{width:.2}\" stroke-linecap=\"round\" stroke-linejoin=\"round\""
+                );
+                if !intervals.is_empty() {
+                    let pattern: Vec<String> = intervals.iter().map(|v| format!("{v:.2}")).collect();
+                    attrs.push_str(&format!(" stroke-dasharray=\"{}\"", pattern.join(" ")));
+                }
+                attrs
+            },
+        );
+        let faux_bold_stroke =
+            faux_bold_stroke_width(style, font_size).filter(|_| outline_attrs.is_none());
         let mut base_attrs = format!("font-size=\"{}\"", font_size);
         if faux_bold_stroke.is_none() {
             if style.is_visually_bold() {
@@ -3327,7 +3506,10 @@ impl Renderer for SvgRenderer {
             }
         }
         if style.italic {
-            base_attrs.push_str(" font-style=\"italic\"");
+            base_attrs.push_str(&format!(
+                " font-style=\"{}\"",
+                super::text_italic::CSS_STYLE
+            ));
         }
         // [#4709] 옵트인: 이 run 의 배치 폭을 계산한 내장 메트릭 face 주석.
         // 임베드 호스트가 함초롬 등 미설치 폰트의 자간 불일치를 보정할 근거.
@@ -3341,24 +3523,85 @@ impl Renderer for SvgRenderer {
                 self.metric_faces.insert(face);
             }
         }
+        let italic_face = |cluster_str: &str| {
+            if !style.italic {
+                return None;
+            }
+            let glyph = pua_glyph::display(&source_coverage, cluster_str, style);
+            if source_coverage
+                .glyph(&style.font_family, cluster_str)
+                .is_none()
+                && super::contains_old_hangul_jamo(&glyph)
+            {
+                return None;
+            }
+            source_coverage
+                .text_faces
+                .select(&font_family, &glyph, style.is_visually_bold(), true)
+        };
         let attrs_for_cluster = |cluster_str: &str, fill: &str| {
-            let cluster_font_family = if super::contains_old_hangul_jamo(cluster_str) {
+            let glyph = pua_glyph::display(&source_coverage, cluster_str, style);
+            let measured_family =
+                super::measured_glyph_supplier::family(style, cluster_str).map(|family| {
+                    super::render_font_family_chain_for_weight(family, style.is_visually_bold())
+                });
+            let cluster_font_family = if source_coverage
+                .glyph(&style.font_family, cluster_str)
+                .is_none()
+                && super::contains_old_hangul_jamo(&glyph)
+            {
                 &old_hangul_font_family
             } else {
-                &font_family
+                measured_family.as_ref().unwrap_or(&font_family)
             };
+            let face = italic_face(cluster_str);
+            let selected_family = face.as_ref().map(|face| format!("'{}'", face.family));
+            let attrs = face.as_ref().map_or_else(
+                || base_attrs.clone(),
+                |face| {
+                    base_attrs.replace(
+                        super::text_italic::CSS_STYLE,
+                        if face.slanted { "italic" } else { "normal" },
+                    )
+                },
+            );
             format!(
                 "font-family=\"{}\" {} fill=\"{}\"{}",
-                escape_xml(cluster_font_family),
-                base_attrs,
-                fill,
-                faux_bold_stroke.map_or_else(String::new, |w| faux_bold_stroke_attr(w, fill)),
+                escape_xml(selected_family.as_deref().unwrap_or(cluster_font_family)),
+                attrs,
+                if style.text_paint.is_some_and(|p| !p.paint.fill) { "none" } else { fill },
+                style.text_paint.map_or_else(
+                    || faux_bold_stroke.map_or_else(String::new, |w| faux_bold_stroke_attr(w, fill)),
+                    |p| format!(" stroke=\"{}\" stroke-width=\"{}\" stroke-linejoin=\"{}\" stroke-miterlimit=\"{}\" fill-opacity=\"{}\" stroke-opacity=\"{}\" paint-order=\"fill stroke\"{}",
+                        color_to_svg(p.paint.stroke_color), if p.width == 0.0 { 1.0 } else { p.width },
+                        match p.paint.line_join { 1 => "round", 2 => "bevel", _ => "miter" },
+                        f64::from(p.paint.miter_limit_milli) / 1000.0,
+                        f64::from(p.paint.fill_alpha) / 255.0, f64::from(p.paint.stroke_alpha) / 255.0,
+                        if p.width == 0.0 { " vector-effect=\"non-scaling-stroke\"" } else { "" })),
             )
         };
 
         // 클러스터 단위 렌더링: 옛한글 자모 조합 시퀀스를 하나의 <text>로 묶음
-        let char_positions = super::replay_positions_or_compute(text, style, layout_positions);
-        let clusters = split_into_clusters(text);
+        let metric_text = super::composer::display_projection_metric_text(
+            &metric_source,
+            text,
+            style.literal_soft_hyphen,
+        );
+        let char_positions =
+            super::replay_positions_or_compute(metric_text, style, layout_positions);
+        let visual_positions =
+            super::text_direction::VisualTextPositions::for_style(text, &char_positions, style);
+        let cluster_x = |index: usize, cluster: &str| {
+            visual_positions
+                .as_ref()
+                .and_then(|p| p.span_origin(index, index + cluster.chars().count()))
+                .unwrap_or(char_positions[index])
+        };
+        let clusters = if visual_positions.is_some() {
+            super::contextual_text::coalesce(split_into_clusters(text))
+        } else {
+            split_into_clusters(text)
+        };
 
         // 형광펜 배경 (CharShape.shade_color 기반 — web_canvas.rs와 동일 로직)
         if !self.suppress_text_glyphs
@@ -3366,11 +3609,15 @@ impl Renderer for SvgRenderer {
         {
             let text_width = *char_positions.last().unwrap_or(&0.0);
             if text_width > 0.0 {
-                self.output.push_str(&format!(
-                    "<rect x=\"{:.4}\" y=\"{:.4}\" width=\"{:.4}\" height=\"{:.4}\" fill=\"{}\"/>\n",
-                    x, y - font_size, text_width, font_size * 1.2,
-                    color_to_svg(style.shade_color),
-                ));
+                let spans = visual_positions
+                    .as_ref()
+                    .map(|p| p.segments(text.chars().count()))
+                    .unwrap_or_else(|| vec![(0.0, text_width)]);
+                for (left, right) in spans {
+                    self.output.push_str(&format!(
+                        "<rect x=\"{:.4}\" y=\"{:.4}\" width=\"{:.4}\" height=\"{:.4}\" fill=\"{}\"/>\n",
+                        x + left, y - font_size, right-left, font_size*1.2, color_to_svg(style.shade_color)));
+                }
             }
         }
 
@@ -3397,10 +3644,10 @@ impl Renderer for SvgRenderer {
             |char_idx: usize, cluster_str: &str| advance_in(&char_positions, char_idx, cluster_str);
         // 글리프 폭(`textLength`)은 커닝 전 advance에 맞춘다. 자리와 `·` 중앙은 char_positions를 따른다.
         let fit_positions =
-            super::glyph_fit_positions(text, style, layout_positions, &char_positions);
+            super::glyph_fit_positions(metric_text, style, layout_positions, &char_positions);
         let glyph_advance =
             |char_idx: usize, cluster_str: &str| advance_in(&fit_positions, char_idx, cluster_str);
-        let is_middle_dot = |cluster_str: &str| cluster_str == "\u{00B7}";
+        let is_middle_dot = super::render_tree::is_vector_middle_dot;
         let dot_radius = font_size * super::render_tree::MIDDLE_DOT_RADIUS_EM;
         let dot_cy_offset = -font_size * super::render_tree::MIDDLE_DOT_CY_OFFSET_EM;
 
@@ -3411,52 +3658,76 @@ impl Renderer for SvgRenderer {
         // 그림자 렌더링 (원본 아래에 오프셋된 그림자색 텍스트)
         if !self.suppress_text_glyphs && style.shadow_type > 0 {
             let shadow_color = color_to_svg(style.shadow_color);
-            let dx = style.shadow_offset_x;
-            let dy = style.shadow_offset_y;
-            for (char_idx, cluster_str) in clusters.iter() {
-                // 공백의 저장 전진폭·장식은 유지하되 글꼴의 잘못된 NBSP 윤곽선은 그리지 않는다.
-                if cluster_str.chars().all(char::is_whitespace) {
-                    continue;
-                }
-                if is_middle_dot(cluster_str) {
-                    let adv = cluster_advance(*char_idx, cluster_str);
-                    let cx = x + char_positions[*char_idx] + adv / 2.0 + dx;
-                    let cy = y + dot_cy_offset + dy;
-                    self.output.push_str(&format!(
-                        "<circle cx=\"{:.4}\" cy=\"{:.4}\" r=\"{:.4}\" fill=\"{}\"/>\n",
-                        cx, cy, dot_radius, shadow_color,
-                    ));
-                    continue;
-                }
-                let char_x = x + char_positions[*char_idx] + dx;
-                let char_y = y + dy;
-                let length_attrs = svg_cluster_text_length_attrs(
-                    cluster_str,
-                    glyph_advance(*char_idx, cluster_str),
-                    style,
-                    script_advance_scale,
-                    ratio,
-                );
-                let shadow_attrs = attrs_for_cluster(cluster_str, &shadow_color);
-                if has_ratio {
-                    self.output.push_str(&format!(
-                        "<text transform=\"translate({},{}) scale({:.4},1)\" {}{}>{}</text>\n",
-                        char_x,
-                        char_y,
+            for [dx, dy] in crate::paint::text_shadow::offsets(style) {
+                for (char_idx, cluster_str) in clusters.iter() {
+                    let painted = visual_positions
+                        .as_ref()
+                        .map(|p| p.mirrored(cluster_str, *char_idx))
+                        .unwrap_or(std::borrow::Cow::Borrowed(cluster_str.as_str()));
+                    let cluster_str = painted.as_ref();
+                    // 공백의 저장 전진폭·장식은 유지하되 글꼴의 잘못된 NBSP 윤곽선은 그리지 않는다.
+                    if super::text_glyph_visibility::is_nonprinting_cluster(cluster_str) {
+                        continue;
+                    }
+                    if cluster_str == "․" {
+                        if let Some(ink) =
+                            super::render_tree::fullwidth_onepoint_ink(style, font_size)
+                        {
+                            self.output.push_str(&format!(
+                            "<ellipse cx=\"{:.4}\" cy=\"{:.4}\" rx=\"{:.4}\" ry=\"{:.4}\" fill=\"{}\"/>\n",
+                            x + char_positions[*char_idx] + ink.center_x + dx,
+                            y - ink.above_baseline + dy, ink.radius_x, ink.radius_y, shadow_color));
+                            continue;
+                        }
+                    }
+                    if is_middle_dot(cluster_str) {
+                        let adv = cluster_advance(*char_idx, cluster_str);
+                        let cx = x + cluster_x(*char_idx, cluster_str) + adv / 2.0 + dx;
+                        let cy = y + dot_cy_offset + dy;
+                        self.output.push_str(&format!(
+                            "<circle cx=\"{:.4}\" cy=\"{:.4}\" r=\"{:.4}\" fill=\"{}\"/>\n",
+                            cx, cy, dot_radius, shadow_color,
+                        ));
+                        continue;
+                    }
+                    let char_x = x + cluster_x(*char_idx, cluster_str) + dx;
+                    let char_y = y + dy;
+                    let length_attrs = svg_cluster_text_length_attrs(
+                        cluster_str,
+                        glyph_advance(*char_idx, cluster_str),
+                        style,
+                        script_advance_scale,
                         ratio,
-                        shadow_attrs,
-                        length_attrs,
-                        escape_xml(cluster_str),
-                    ));
-                } else {
-                    self.output.push_str(&format!(
-                        "<text x=\"{}\" y=\"{}\" {}{}>{}</text>\n",
-                        char_x,
-                        char_y,
-                        shadow_attrs,
-                        length_attrs,
-                        escape_xml(cluster_str),
-                    ));
+                    );
+                    let shadow_attrs = attrs_for_cluster(cluster_str, &shadow_color);
+                    let skew = italic_face(cluster_str)
+                        .filter(|face| !face.slanted)
+                        .map_or(0.0, |_| super::text_italic::SKEW_X);
+                    if has_ratio || skew != 0.0 {
+                        let transform = if skew == 0.0 {
+                            format!("scale({ratio:.4},1)")
+                        } else {
+                            format!("matrix({ratio:.4} 0 {} 1 0 0)", ratio * skew)
+                        };
+                        self.output.push_str(&format!(
+                            "<text transform=\"translate({},{}) {}\" {}{}>{}</text>\n",
+                            char_x,
+                            char_y,
+                            transform,
+                            shadow_attrs,
+                            length_attrs,
+                            escape_xml(&pua_glyph::display(&source_coverage, cluster_str, style)),
+                        ));
+                    } else {
+                        self.output.push_str(&format!(
+                            "<text x=\"{}\" y=\"{}\" {}{}>{}</text>\n",
+                            char_x,
+                            char_y,
+                            shadow_attrs,
+                            length_attrs,
+                            escape_xml(&pua_glyph::display(&source_coverage, cluster_str, style)),
+                        ));
+                    }
                 }
             }
         }
@@ -3465,8 +3736,13 @@ impl Renderer for SvgRenderer {
         // positioning calculation below without repainting their TextRun mirror.
         if !self.suppress_text_glyphs {
             for (char_idx, cluster_str) in clusters.iter() {
+                let painted = visual_positions
+                    .as_ref()
+                    .map(|p| p.mirrored(cluster_str, *char_idx))
+                    .unwrap_or(std::borrow::Cow::Borrowed(cluster_str.as_str()));
+                let cluster_str = painted.as_ref();
                 // 공백의 저장 전진폭·장식은 유지하되 글꼴의 잘못된 NBSP 윤곽선은 그리지 않는다.
-                if cluster_str.chars().all(char::is_whitespace) {
+                if super::text_glyph_visibility::is_nonprinting_cluster(cluster_str) {
                     continue;
                 }
                 if cluster_str == "-" {
@@ -3479,7 +3755,7 @@ impl Renderer for SvgRenderer {
                             font_size,
                         )
                     {
-                        let char_x = x + char_positions[*char_idx];
+                        let char_x = x + cluster_x(*char_idx, cluster_str);
                         self.output.push_str(&format!(
                             "<line x1=\"{:.4}\" y1=\"{:.4}\" x2=\"{:.4}\" y2=\"{:.4}\" stroke=\"{}\" stroke-width=\"{:.4}\"/>\n",
                             char_x + start,
@@ -3497,37 +3773,47 @@ impl Renderer for SvgRenderer {
                         continue;
                     }
                 }
-                // [#6127] 한컴 사각 안 숫자(U+F02B1~F02C4) 평문 폴백 — web_canvas
-                // (`draw_boxed_pua_number`)와 동일한 bounded vector 합성. raw PUA 를
+                // [#6127] 한컴 합성 PUA 기호(사각 안 숫자 등) 평문 폴백 — web_canvas
+                // (`draw_enclosed_pua`)와 동일한 bounded vector 합성. raw PUA 를
                 // 흘리면 함초롬 확장 글꼴이 없는 소비자(브라우저·PyMuPDF)에서 빈칸이
                 // 된다(2599643 "②⓪⓪" 소실). CharOverlap 경로의 #4158 합성과 같은
                 // 의미이고, 백엔드 간 패리티를 맞춘다.
                 if cluster_str.chars().count() == 1 {
-                    if let Some(number) =
-                        cluster_str.chars().next().and_then(super::boxed_pua_number)
-                    {
-                        let char_x = x + char_positions[*char_idx];
-                        self.draw_boxed_pua_number(number, char_x, y, style, font_size);
+                    if let Some(glyph) = cluster_str.chars().next().and_then(super::enclosed_pua) {
+                        let char_x = x + cluster_x(*char_idx, cluster_str);
+                        self.draw_enclosed_pua(glyph, char_x, y, style, font_size);
                         continue;
                     }
                 }
                 if let Some((cx, cy, rx, ry)) =
                     super::legacy_hft_bullet_geometry(cluster_str, style)
                 {
-                    let char_x = x + char_positions[*char_idx];
+                    let char_x = x + cluster_x(*char_idx, cluster_str);
                     self.output.push_str(&format!(
                         "<ellipse cx=\"{:.4}\" cy=\"{:.4}\" rx=\"{:.4}\" ry=\"{:.4}\" fill=\"{}\"/>\n",
                         char_x + cx, y + cy, rx, ry, color,
                     ));
                     self.output.push_str(&format!(
-                        "<text x=\"{:.4}\" y=\"{:.4}\" fill-opacity=\"0\">∙</text>\n",
+                        "<text x=\"{:.4}\" y=\"{:.4}\" fill-opacity=\"0\">{cluster_str}</text>\n",
                         char_x, y,
                     ));
                     continue;
                 }
+                if cluster_str == "․" {
+                    if let Some(ink) = super::render_tree::fullwidth_onepoint_ink(style, font_size)
+                    {
+                        let origin = x + char_positions[*char_idx];
+                        self.output.push_str(&format!(
+                            "<ellipse cx=\"{:.4}\" cy=\"{:.4}\" rx=\"{:.4}\" ry=\"{:.4}\" fill=\"{}\"/>\n",
+                            origin + ink.center_x, y - ink.above_baseline, ink.radius_x, ink.radius_y, color));
+                        // 원문 문자·오프셋과 검색 가능성을 보존한다.
+                        self.output.push_str(&format!("<text x=\"{origin:.4}\" y=\"{y:.4}\" font-size=\"{font_size}\" fill-opacity=\"0\">․</text>\n"));
+                        continue;
+                    }
+                }
                 if is_middle_dot(cluster_str) {
                     let adv = cluster_advance(*char_idx, cluster_str);
-                    let cx = x + char_positions[*char_idx] + adv / 2.0;
+                    let cx = x + cluster_x(*char_idx, cluster_str) + adv / 2.0;
                     let cy = y + dot_cy_offset;
                     self.output.push_str(&format!(
                         "<circle cx=\"{:.4}\" cy=\"{:.4}\" r=\"{:.4}\" fill=\"{}\"/>\n",
@@ -3541,7 +3827,7 @@ impl Renderer for SvgRenderer {
                     self.output.push_str(&format!(
                         "<text x=\"{:.4}\" y=\"{:.4}\" font-size=\"{}\" fill=\"{}\" \
                          fill-opacity=\"0\"{}>{}</text>\n",
-                        x + char_positions[*char_idx],
+                        x + cluster_x(*char_idx, cluster_str),
                         y,
                         font_size,
                         color,
@@ -3556,7 +3842,7 @@ impl Renderer for SvgRenderer {
                     ));
                     continue;
                 }
-                let char_x = x + char_positions[*char_idx];
+                let char_x = x + cluster_x(*char_idx, cluster_str);
                 let length_attrs = svg_cluster_text_length_attrs(
                     cluster_str,
                     glyph_advance(*char_idx, cluster_str),
@@ -3564,17 +3850,28 @@ impl Renderer for SvgRenderer {
                     script_advance_scale,
                     ratio,
                 );
-                let common_attrs = attrs_for_cluster(cluster_str, &color);
-
-                if has_ratio {
+                let common_attrs = match &outline_attrs {
+                    Some(stroke) => attrs_for_cluster(cluster_str, "none") + stroke,
+                    None => attrs_for_cluster(cluster_str, &color),
+                };
+                let glyph_text = pua_glyph::display(&source_coverage, cluster_str, style);
+                let skew = italic_face(cluster_str)
+                    .filter(|face| !face.slanted)
+                    .map_or(0.0, |_| super::text_italic::SKEW_X);
+                if has_ratio || skew != 0.0 {
+                    let transform = if skew == 0.0 {
+                        format!("scale({ratio:.4},1)")
+                    } else {
+                        format!("matrix({ratio:.4} 0 {} 1 0 0)", ratio * skew)
+                    };
                     self.output.push_str(&format!(
-                        "<text transform=\"translate({},{}) scale({:.4},1)\" {}{}>{}</text>\n",
+                        "<text transform=\"translate({},{}) {}\" {}{}>{}</text>\n",
                         char_x,
                         y,
-                        ratio,
+                        transform,
                         common_attrs,
                         length_attrs,
-                        escape_xml(cluster_str),
+                        escape_xml(&glyph_text),
                     ));
                 } else {
                     self.output.push_str(&format!(
@@ -3583,7 +3880,7 @@ impl Renderer for SvgRenderer {
                         y,
                         common_attrs,
                         length_attrs,
-                        escape_xml(cluster_str),
+                        escape_xml(&glyph_text),
                     ));
                 }
             }
@@ -3615,23 +3912,35 @@ impl Renderer for SvgRenderer {
                 }
             }
         };
-        if !matches!(style.underline, UnderlineType::None) {
-            let text_width = decoration_width;
-            // 밑줄 색은 CHAR_SHAPE 의 **고정 위치 필수 필드**다(doc_info.rs 의
-            // text_color 바로 뒤). COLORREF 0 은 "미지정"이 아니라 **검정**이므로
-            // sentinel 로 쓸 수 없다 — 종전 `!= 0` 검사는 문서가 명시한 검정 밑줄을
-            // 글자색으로 바꿔 그렸다(hwpx_sample2 12쪽: 정답지 검정 25개 vs
-            // rhwp 글자색 #082108 24개). 저장값을 그대로 쓴다.
-            let ul_color = color_to_svg(style.underline_color);
-            let multi = if matches!(style.underline, UnderlineType::Top) {
-                None
-            } else {
-                crate::renderer::text_decoration::underline_multi_lines(style.underline_shape)
-            };
-            if let Some(lines) = multi {
-                for (dy_em, width_em) in lines {
-                    let ly = y + font_size * dy_em;
-                    self.output.push_str(&format!(
+        let decoration_end = text.chars().count()
+            - self
+                .active_decoration_trim
+                .min(text.chars().rev().take_while(|ch| *ch == ' ').count());
+        let segments = visual_positions
+            .as_ref()
+            .map(|p| p.segments(decoration_end))
+            .unwrap_or_else(|| vec![(0.0, decoration_width)]);
+        for (left, right) in segments {
+            let x = x + left;
+            let decoration_width = right - left;
+            if !matches!(style.underline, UnderlineType::None) {
+                let text_width = decoration_width;
+                // 밑줄 색은 CHAR_SHAPE 의 **고정 위치 필수 필드**다(doc_info.rs 의
+                // text_color 바로 뒤). COLORREF 0 은 "미지정"이 아니라 **검정**이므로
+                // sentinel 로 쓸 수 없다 — 종전 `!= 0` 검사는 문서가 명시한 검정 밑줄을
+                // 글자색으로 바꿔 그렸다(hwpx_sample2 12쪽: 정답지 검정 25개 vs
+                // rhwp 글자색 #082108 24개). 저장값을 그대로 쓴다.
+                let ul_color = color_to_svg(style.underline_color);
+                let top = crate::renderer::text_decoration::underline_geometry(style, font_size);
+                let multi =
+                    crate::renderer::text_decoration::underline_multi_lines(style.underline_shape)
+                        .filter(|_| style.underline != UnderlineType::Top);
+                if let Some(top) = top {
+                    self.draw_top_underline(x, y, x + text_width, &ul_color, &top, left);
+                } else if let Some(lines) = multi {
+                    for (dy_em, width_em) in lines {
+                        let ly = y + font_size * dy_em;
+                        self.output.push_str(&format!(
                         "<line x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"{}\" stroke-width=\"{:.2}\"/>\n",
                         x,
                         ly,
@@ -3640,63 +3949,64 @@ impl Renderer for SvgRenderer {
                         ul_color,
                         (font_size * width_em).max(0.3),
                     ));
+                    }
+                } else {
+                    let ul_y = match style.underline {
+                        UnderlineType::Top => y - font_size + 1.0,
+                        _ => {
+                            y + font_size
+                                * crate::renderer::text_decoration::UNDERLINE_BASELINE_RATIO
+                        }
+                    };
+                    self.draw_line_shape(
+                        x,
+                        ul_y,
+                        x + text_width,
+                        ul_y,
+                        &ul_color,
+                        style.underline_shape,
+                    );
                 }
-            } else {
-                let ul_y = match style.underline {
-                    UnderlineType::Top => y - font_size + 1.0,
-                    _ => y + font_size * crate::renderer::text_decoration::UNDERLINE_BASELINE_RATIO,
+            }
+
+            // 취소선 처리
+            if style.strikethrough {
+                let text_width = decoration_width;
+                let strike_y = y - font_size * 0.3;
+                let st_color = if style.strike_color != 0 {
+                    color_to_svg(style.strike_color)
+                } else {
+                    color.to_string()
                 };
                 self.draw_line_shape(
                     x,
-                    ul_y,
+                    strike_y,
                     x + text_width,
-                    ul_y,
-                    &ul_color,
-                    style.underline_shape,
+                    strike_y,
+                    &st_color,
+                    style.strike_shape,
                 );
             }
         }
-
-        // 취소선 처리
-        if style.strikethrough {
-            let text_width = decoration_width;
-            let strike_y = y - font_size * 0.3;
-            let st_color = if style.strike_color != 0 {
-                color_to_svg(style.strike_color)
-            } else {
-                color.to_string()
-            };
-            self.draw_line_shape(
-                x,
-                strike_y,
-                x + text_width,
-                strike_y,
-                &st_color,
-                style.strike_shape,
-            );
-        }
-
-        // 강조점 처리
-        if style.emphasis_dot > 0 {
-            let dot_char = match style.emphasis_dot {
-                1 => "●",
-                2 => "○",
-                3 => "ˇ",
-                4 => "˜",
-                5 => "･",
-                6 => "˸",
-                _ => "",
-            };
-            if !dot_char.is_empty() {
-                let dot_size = font_size * 0.3;
-                let dot_y = y - font_size * 1.05;
-                for &cx in &char_positions[..char_positions.len().saturating_sub(1)] {
-                    let dot_x = x + cx + (font_size * style.ratio * 0.5);
-                    self.output.push_str(&format!(
-                        "<text x=\"{}\" y=\"{}\" font-size=\"{}\" text-anchor=\"middle\" fill=\"{}\">{}</text>\n",
-                        dot_x, dot_y, dot_size, color, dot_char,
-                    ));
+        if let Some(geometry) = super::emphasis::geometry(text, &char_positions, style, font_size) {
+            if self.font_embed_mode != FontEmbedMode::None {
+                self.font_codepoints
+                    .entry(geometry.font_family.to_owned())
+                    .or_default()
+                    .extend(geometry.browser_text.chars());
+                if geometry.bold {
+                    self.font_bold_families
+                        .insert(geometry.font_family.to_owned());
                 }
+            }
+            for position in &geometry.positions {
+                self.output.push_str(&format!(
+                    "<text transform=\"translate({} {}) matrix({} 0 {} 1 0 0)\" x=\"{}\" y=\"0\" font-family=\"{}\" font-size=\"{}\" font-weight=\"{}\" font-style=\"normal\" fill=\"{}\" text-anchor=\"{}\" xml:space=\"preserve\">{}</text>\n",
+                    x + position, y + geometry.baseline_offset, geometry.ratio,
+                    geometry.skew_x * geometry.ratio, geometry.browser_offset,
+                    geometry.font_family, geometry.font_size, if geometry.bold { "bold" } else { "normal" },
+                    color, if geometry.browser_align_end { "end" } else { "start" }, geometry.browser_text,
+                ));
             }
         }
 
@@ -3728,6 +4038,20 @@ impl Renderer for SvgRenderer {
                     ));
                 }
                 3 => {
+                    if let Some(dots) =
+                        super::tab_leader::dot_geometry(font_size, leader.start_x, leader_end_x)
+                    {
+                        for center in dots.centers {
+                            self.output.push_str(&format!(
+                                "<circle cx=\"{:.6}\" cy=\"{:.6}\" r=\"{:.6}\" fill=\"{}\"/>\n",
+                                x + center,
+                                ly,
+                                dots.radius,
+                                color,
+                            ));
+                        }
+                        continue;
+                    }
                     // 점선 ··· — round cap 으로 원형 점 표현 (한컴 동등).
                     // 두께·간격은 폰트 크기를 따른다 — 고정값은 목차 점선을 가는
                     // 실선으로 보이게 했다(#5698 계열, 상수 근거는 render_tree).
@@ -3760,9 +4084,10 @@ impl Renderer for SvgRenderer {
                 }
                 7 => {
                     // 원형점선 ●●●
+                    let (w, dash, gap) = super::render_tree::tab_circle_leader_stroke();
                     self.output.push_str(&format!(
-                        "<line x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"{}\" stroke-width=\"0.7\" stroke-dasharray=\"0.1 2.5\" stroke-linecap=\"round\"/>\n",
-                        lx1, ly, lx2, ly, color,
+                        "<line x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"{}\" stroke-width=\"{:.3}\" stroke-dasharray=\"{:.3} {:.3}\" stroke-linecap=\"round\"/>\n",
+                        lx1, ly, lx2, ly, color, w, dash, gap,
                     ));
                 }
                 8 => {
@@ -3837,6 +4162,7 @@ impl Renderer for SvgRenderer {
             | super::LineRenderType::ThickThinDouble
             | super::LineRenderType::ThinThickThinTriple => {
                 self.draw_multi_line(x1, y1, x2, y2, width, &color, &style.line_type);
+                self.draw_arrow_heads(&super::arrow::line_heads((x1, y1, x2, y2), style), style);
                 return;
             }
             _ => {}
@@ -3846,21 +4172,16 @@ impl Renderer for SvgRenderer {
         let dy = y2 - y1;
         let line_len = (dx * dx + dy * dy).sqrt();
 
-        // 화살표 머리 크기만큼 선 끝점 조정
-        // 선이 화살표 머리 안으로 침범하지 않도록 줄임
-        let mut lx1 = x1;
-        let mut ly1 = y1;
-        let mut lx2 = x2;
-        let mut ly2 = y2;
+        // Keep original endpoints, including when the head is longer than the shaft.
+        let lx1 = x1;
+        let ly1 = y1;
+        let lx2 = x2;
+        let ly2 = y2;
         let mut marker_start_attr = String::new();
         let mut marker_end_attr = String::new();
 
         if line_len > 0.0 {
-            let ux = dx / line_len; // 단위 벡터
-            let uy = dy / line_len;
-
             if style.start_arrow != super::ArrowStyle::None {
-                let (arrow_w, _) = Self::calc_arrow_dims(width, line_len, style.start_arrow_size);
                 let marker_id = self.ensure_arrow_marker(
                     &color,
                     width,
@@ -3870,12 +4191,8 @@ impl Renderer for SvgRenderer {
                     true,
                 );
                 marker_start_attr = format!(" marker-start=\"url(#{})\"", marker_id);
-                // 시작점을 화살표 길이만큼 전진
-                lx1 += ux * arrow_w;
-                ly1 += uy * arrow_w;
             }
             if style.end_arrow != super::ArrowStyle::None {
-                let (arrow_w, _) = Self::calc_arrow_dims(width, line_len, style.end_arrow_size);
                 let marker_id = self.ensure_arrow_marker(
                     &color,
                     width,
@@ -3885,9 +4202,6 @@ impl Renderer for SvgRenderer {
                     false,
                 );
                 marker_end_attr = format!(" marker-end=\"url(#{})\"", marker_id);
-                // 끝점을 화살표 길이만큼 후퇴
-                lx2 -= ux * arrow_w;
-                ly2 -= uy * arrow_w;
             }
         }
 
@@ -3895,12 +4209,17 @@ impl Renderer for SvgRenderer {
             "x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"{}\" stroke-width=\"{}\"",
             lx1, ly1, lx2, ly2, color, width,
         );
-        match style.dash {
-            super::StrokeDash::Dash => attrs.push_str(" stroke-dasharray=\"6 3\""),
-            super::StrokeDash::Dot => attrs.push_str(" stroke-dasharray=\"2 2\""),
-            super::StrokeDash::DashDot => attrs.push_str(" stroke-dasharray=\"6 3 2 3\""),
-            super::StrokeDash::DashDotDot => attrs.push_str(" stroke-dasharray=\"6 3 2 3 2 3\""),
-            _ => {} // Solid
+        if let Some(intervals) = &style.dash_pattern {
+            attrs.push_str(&format!(
+                " stroke-dasharray=\"{}\"",
+                intervals
+                    .iter()
+                    .map(|v| v.to_string())
+                    .collect::<Vec<_>>()
+                    .join(" ")
+            ));
+        } else {
+            stroke_pattern::append_attrs(&mut attrs, style.dash, width);
         }
         attrs.push_str(&marker_start_attr);
         attrs.push_str(&marker_end_attr);
@@ -3994,32 +4313,6 @@ fn path_bbox(commands: &[PathCommand]) -> (f64, f64, f64, f64) {
     }
 }
 
-/// COLORREF (BGR) → SVG 색상 문자열 변환
-/// 합성 볼드 획 굵기(px) — 실제 Bold 메트릭이 없는 face 의 볼드 요청에만.
-///
-/// 한/글 2022 는 Bold face 가 없는 face 의 볼드를 PDF `2 Tr`(fill+stroke)로
-/// 내보내고 선 굵기를 **글꼴·크기 불문 `0.02 em`** 으로 준다. 표본
-/// `pdf/issue2470/36382471_masked-2022.pdf` 1쪽의 `Tr 2` run 은 전부
-/// `w / Tf` 가 0.0200 이다 — 굴림체 `1.66/83`, HY헤드라인M `3.50/175`,
-/// HY견명조 `4.34/217`. `font-weight="bold"` 만 넘기면 굵히는 양이 받는 쪽
-/// 몫이라 Chromium 은 이보다 굵게 만든다(#7151).
-///
-/// 메트릭 DB 에 Bold 항목이 있는 face 는 배치 advance 도 Bold 메트릭으로
-/// 잡았으므로 종전대로 그 face 를 요청한다. DB 에 없는 face 는 어느 쪽인지
-/// 알 근거가 없어 건드리지 않는다.
-fn faux_bold_stroke_width(style: &TextStyle, font_size: f64) -> Option<f64> {
-    /// 한/글 2022 PDF 실측 — `w / Tf`.
-    const HANCOM_FAUX_BOLD_STROKE_EM: f64 = 0.02;
-
-    if !style.bold {
-        return None;
-    }
-    let primary = super::style_resolver::primary_font_name(&style.font_family);
-    super::font_metrics_data::find_metric(primary, true, style.italic)?
-        .bold_fallback
-        .then_some(font_size * HANCOM_FAUX_BOLD_STROKE_EM)
-}
-
 /// `fill` 과 같은 색으로 합성 볼드 획을 준다 — PDF `2 Tr` 과 같은 채움 후 획.
 fn faux_bold_stroke_attr(width: f64, fill: &str) -> String {
     format!(" stroke=\"{}\" stroke-width=\"{:.3}\"", fill, width)
@@ -4039,9 +4332,13 @@ fn svg_text_length_attrs(
     fit_narrow_hangul: bool,
 ) -> String {
     if !fit_narrow_hangul
-        && !cluster_str
-            .chars()
-            .any(|ch| ch.is_ascii_alphanumeric() || is_halfwidth_cjk_quote(ch))
+        && !cluster_str.chars().any(|ch| {
+            ch.is_ascii_alphanumeric()
+                    || is_halfwidth_cjk_quote(ch)
+                    // PUA 책괄호의 반각 원본 전진과 리터럴 전각 흰 겹낫표는
+                    // 같은 표시 Unicode라도 각자의 측정 결과에 맞춰 그린다.
+                    || matches!(ch, '\u{300E}' | '\u{300F}')
+        })
     {
         return String::new();
     }
@@ -4136,7 +4433,23 @@ pub(crate) fn convert_wmf_to_svg(data: &[u8]) -> Option<Vec<u8>> {
     use crate::wmf::converter::{SVGPlayer, WMFConverter};
     let player = SVGPlayer::new();
     let converter = WMFConverter::new(data, player);
-    converter.run().ok()
+    let fallback = converter.run().ok()?;
+    // 표준 WMFC만 복원한다. 알 수 없는 escape나 불완전한 EMF+를 부분 표시하지 않는다.
+    if let Some(emf) = crate::parser::ole_container::emf_from_wmf_comment_chunks(data) {
+        if let Some(viewport) = super::metafile_geometry::svg_viewport(&fallback) {
+            if let Some(svg) = crate::emf::emfplus::convert_supported(&emf, viewport) {
+                return Some(svg);
+            }
+        }
+    }
+    Some(fallback)
+}
+
+/// A source-pixel difference is real content, even when it is only one pixel.
+/// In a two-pixel pattern tile it can select half the image. Compare the source
+/// window itself; display scale and pixel rounding do not erase that selection.
+pub(crate) fn image_source_is_full(source: (f64, f64, f64, f64), width: f64, height: f64) -> bool {
+    source == (0.0, 0.0, width, height)
 }
 
 /// 이미지 데이터에서 픽셀 크기(width, height)를 파싱한다.
@@ -4144,8 +4457,8 @@ pub(crate) fn convert_wmf_to_svg(data: &[u8]) -> Option<Vec<u8>> {
 /// source rect (x, y, w, h) 를 계산한다.
 ///
 /// `crop_reference_size`(`imgDim`)가 있으면 문서가 보존한 전체 좌표 범위를
-/// 디코딩 이미지 크기에 대응시킨다. 없으면 crop `right`/`bottom` 이 전체 좌표
-/// 범위를 가리킨다고 보고 디코딩 크기에 대응시킨다(적응 폴백) — imgDim 을
+/// 디코딩 이미지 크기에 대응시킨다. 없으면 zero-origin 끝점의 후보를
+/// 같은 등방 단위로 환산한다(적응 폴백) — imgDim 을
 /// 보존하지 않는 구형 HWP5 의 비-96dpi 스캔 그림은 crop 단위가 75 HU/px 가
 /// 아니어서, 고정 75 룰은 src 를 과소 계산해 그림을 확대·절단한다(#3239).
 /// 둘 다 쓸 수 없을 때만 [Task #477] 표준 75 HU/px 를 쓴다.
@@ -4157,35 +4470,47 @@ pub(crate) fn compute_image_crop_src(
     img_h_px: f64,
 ) -> (f64, f64, f64, f64) {
     let (cl, ct, cr, cb) = crop_hu;
+    // 원본 좌표가 전체 영역과 같다면 실수 환산 오차로 잘림으로 판정하지 않는다.
+    // 실제 가장자리 자르기는 원본 단위에서 구별해 그대로 환산한다.
+    if let Some((width, height)) = crop_reference_size {
+        if width > 0
+            && height > 0
+            && img_w_px.is_finite()
+            && img_w_px > 0.0
+            && img_h_px.is_finite()
+            && img_h_px > 0.0
+            && cl == 0
+            && ct == 0
+            && i64::from(cr) == i64::from(width)
+            && i64::from(cb) == i64::from(height)
+        {
+            return (0.0, 0.0, img_w_px, img_h_px);
+        }
+    }
     const HU_PER_PX: f64 = 75.0;
     let (scale_x, scale_y) = crop_reference_size
         .filter(|(w, h)| *w > 0 && *h > 0 && img_w_px > 0.0 && img_h_px > 0.0)
         .map(|(w, h)| (w as f64 / img_w_px, h as f64 / img_h_px))
         .filter(|(sx, sy)| sx.is_finite() && sy.is_finite() && *sx > 0.0 && *sy > 0.0)
         .or_else(|| {
-            // [#7015] 적응 폴백은 `right`/`bottom` 이 **전체 좌표 범위**라는 가정 위에
-            // 선다. 그 가정은 그 축을 자르지 않았을 때만 성립하므로, 축마다 따로 본다 —
-            // `left > 0` 이면 x 축, `top > 0` 이면 y 축의 `right`/`bottom` 은 자르기
-            // 경계이지 전체 범위가 아니다.
-            //
-            // 30442 권익위 권고문 3쪽 실측: crop `(0, 20745, 88560, 45453)`, 디코딩
-            // 1181×945. x 축은 `88560 / 1181 = 75.0` 으로 표준과 정확히 일치하는데
-            // (= 전체 범위), y 축을 같은 식으로 보면 `45453 / 945 = 48.1` 이라 배율이
-            // 36% 작아진다. 그 결과 자르기 창이 `y 431.3..945.0` 으로 아래로 밀려
-            // 로고(잉크 `y 324..562`)의 위쪽 107행이 잘리고 아래 383행은 흰 여백만
-            // 들어왔다 — "로고가 절반만 보인다".
-            //
-            // 한 축만 전체 범위가 확인되면 그 배율을 두 축에 쓴다(HWP5 crop 좌표는
-            // 등방이다). 둘 다 확인되지 않으면 아래 표준 75 HU/px 로 떨어진다.
-            // `#3239` 의 200dpi 스캔 픽스처는 `left = top = 0` 이라 종전과 같이
-            // 두 축 모두 적응 배율을 쓴다.
+            // A zero start does not establish that the opposite edge is the full
+            // image extent: right/bottom-only cropping also starts at zero.
+            // Without an explicit reference, HWPUNIT coordinates must retain one
+            // isotropic scale. Use the smallest common scale which fits the
+            // available zero-origin extents in the decoded image. Independent
+            // axis scales would expand a shortened edge back to the full image.
+            // Nonzero starts do not provide a full-extent candidate (#7015).
+            // If neither axis provides one, retain the standard 75 HU/px fallback.
             let axis_scale = |crop_start: i32, crop_end: i32, img_px: f64| {
                 (crop_start == 0 && crop_end > 0 && img_px > 0.0)
                     .then(|| crop_end as f64 / img_px)
                     .filter(|scale| scale.is_finite() && *scale > 0.0)
             };
             match (axis_scale(cl, cr, img_w_px), axis_scale(ct, cb, img_h_px)) {
-                (Some(sx), Some(sy)) => Some((sx, sy)),
+                (Some(sx), Some(sy)) => {
+                    let scale = sx.max(sy);
+                    Some((scale, scale))
+                }
                 (Some(scale), None) | (None, Some(scale)) => Some((scale, scale)),
                 (None, None) => None,
             }
@@ -4198,7 +4523,7 @@ pub(crate) fn compute_image_crop_src(
     (src_x, src_y, src_w, src_h)
 }
 
-fn parse_image_dimensions(data: &[u8]) -> Option<(u32, u32)> {
+pub(crate) fn parse_image_dimensions(data: &[u8]) -> Option<(u32, u32)> {
     if data.len() < 24 {
         return None;
     }
@@ -4252,17 +4577,19 @@ fn parse_image_dimensions(data: &[u8]) -> Option<(u32, u32)> {
         return Some((w, h.unsigned_abs()));
     }
 
-    None
+    super::svg_fragment::svg_intrinsic_pixel_dimensions(data)
 }
 
 /// 폰트명 → local() 별칭 매핑 (한글명 + 영문명)
 fn font_local_aliases(font_family: &str) -> Vec<&'static str> {
     match font_family {
+        // 설치 파일의 한글 family와 영문 이름은 같은 나눔고딕 프로그램이다.
+        "나눔고딕" | "NanumGothic" => vec!["나눔고딕", "NanumGothic"],
         "함초롬바탕" => vec!["함초롬바탕", "HCR Batang"],
         "함초롬돋움" => vec!["함초롬돋움", "HCR Dotum"],
         "함초롱바탕" => vec!["함초롱바탕", "HCR Batang"],
         "함초롱돋움" => vec!["함초롱돋움", "HCR Dotum"],
-        "한컴바탕" => vec!["한컴바탕", "함초롬바탕", "HCR Batang"],
+        "한컴바탕" => vec!["한컴바탕", "Haansoft Batang"],
         "한컴돋움" => vec!["Haansoft Dotum", "한컴돋움", "함초롬돋움", "HCR Dotum"],
         // 설치본의 한글 family와 영문 full name을 함께 연결한다.
         "한컴 고딕" | "Hancom Gothic" => {
@@ -4274,21 +4601,21 @@ fn font_local_aliases(font_family: &str) -> Vec<&'static str> {
         "맑은 고딕" => vec!["맑은 고딕", "Malgun Gothic"],
         "바탕" => vec!["바탕", "Batang"],
         "돋움" => vec!["돋움", "Dotum"],
+        "돋움체" | "DotumChe" => vec!["돋움체", "DotumChe"],
         "굴림" => vec!["굴림", "Gulim"],
         "굴림체" => vec!["굴림체", "GulimChe"],
         "바탕체" => vec!["바탕체", "BatangChe"],
         "궁서" => vec!["궁서", "Gungsuh"],
         "궁서체" => vec!["궁서체", "GungsuhChe"],
-        // 한컴 2020 PDF 출력은 legacy `한양중고딕`을 HCR Dotum으로 대체한다.
-        // HWPX의 원 face를 먼저 local()로 찾으면 host에 따라 HYGothic 또는 Noto
-        // 로 달라져 기준 PDF와 획·폭이 크게 어긋난다. 한컴 대체 face를 먼저 고정한
-        // 뒤에 원 family/full name을 보조 후보로 남긴다.
+        // 원본 한양중고딕의 outline 프로그램을 먼저 공급한다. 한컴 버전만으로
+        // HCR 대체를 가정하면 HFT 선언과 Type3 출력의 획·폭을 바꾸게 된다.
+        // 명시 대체는 FontEnvironment가 결정하며 HCR은 원 face 부재 시 폴백이다.
         "한양중고딕" => vec![
-            "HCR Dotum",
-            "함초롬돋움",
             "한양중고딕",
             "HY중고딕",
             "HYGothic-Medium",
+            "HCR Dotum",
+            "함초롬돋움",
         ],
         "HY중고딕" => vec!["HY중고딕", "HYGothic-Medium"],
         // HMKMM.TTF 같은 legacy 휴먼명조 배포본은 EBDT bitmap strike를 포함하며,
@@ -4343,7 +4670,9 @@ fn font_local_aliases(font_family: &str) -> Vec<&'static str> {
 /// 한컴 2020 PDF가 쓴 full name을 명시해 synthetic bold를 피한다.
 fn font_local_bold_aliases(font_family: &str) -> Vec<&'static str> {
     match font_family {
-        "함초롬바탕" | "함초롱바탕" | "한컴바탕" | "휴먼명조" => {
+        "나눔고딕" | "NanumGothic" => vec!["NanumGothicBold", "나눔고딕 Bold"],
+        "한컴바탕" | "Haansoft Batang" => vec!["Haansoft Batang Bold"],
+        "함초롬바탕" | "함초롱바탕" | "휴먼명조" => {
             vec!["HCR Batang Bold", "함초롬바탕 Bold"]
         }
         "함초롬돋움" | "함초롱돋움" | "한컴돋움" | "한양중고딕" | "HY중고딕" =>
@@ -4359,6 +4688,61 @@ fn font_local_bold_aliases(font_family: &str) -> Vec<&'static str> {
 /// 폰트명 → 알려진 파일명 매핑 (HWP/한컴/MS 폰트)
 fn known_font_filenames(font_name: &str) -> Vec<&'static str> {
     match font_name {
+        // 기존 KoPub의 name table에 있는 한글/영문 face와 실제 배포
+        // 파일명을 연결한다. KoPub World는 별도 family이므로 포함하지 않는다.
+        "KoPub돋움체"
+        | "KoPubDotum"
+        | "KoPub Dotum"
+        | "KoPub돋움체 Light"
+        | "KoPubDotum Light"
+        | "KoPub Dotum Light"
+        | "KoPubDotumLight" => vec![
+            "KoPub Dotum Light.ttf",
+            "KoPubDotum-Light.ttf",
+            "KoPubDotumLight.ttf",
+        ],
+        "KoPub돋움체 Medium" | "KoPubDotum Medium" | "KoPub Dotum Medium" | "KoPubDotumMedium" =>
+        {
+            vec![
+                "KoPub Dotum Medium.ttf",
+                "KoPubDotum-Medium.ttf",
+                "KoPubDotumMedium.ttf",
+            ]
+        }
+        "KoPub돋움체 Bold" | "KoPubDotum Bold" | "KoPub Dotum Bold" | "KoPubDotumBold" => {
+            vec![
+                "KoPub Dotum Bold.ttf",
+                "KoPubDotum-Bold.ttf",
+                "KoPubDotumBold.ttf",
+            ]
+        }
+        "KoPub바탕체"
+        | "KoPubBatang"
+        | "KoPub Batang"
+        | "KoPub바탕체 Light"
+        | "KoPubBatang Light"
+        | "KoPub Batang Light"
+        | "KoPubBatangLight" => vec![
+            "KoPub Batang Light.ttf",
+            "KoPubBatang-Light.ttf",
+            "KoPubBatangLight.ttf",
+        ],
+        "KoPub바탕체 Medium"
+        | "KoPubBatang Medium"
+        | "KoPub Batang Medium"
+        | "KoPubBatangMedium" => vec![
+            "KoPub Batang Medium.ttf",
+            "KoPubBatang-Medium.ttf",
+            "KoPubBatangMedium.ttf",
+        ],
+        "KoPub바탕체 Bold" | "KoPubBatang Bold" | "KoPub Batang Bold" | "KoPubBatangBold" => {
+            vec![
+                "KoPub Batang Bold.ttf",
+                "KoPubBatang-Bold.ttf",
+                "KoPubBatangBold.ttf",
+            ]
+        }
+        "나눔고딕" | "NanumGothic" => vec!["NanumGothic.ttf"],
         // 실제 설치 face가 있어도 파일명 누락으로 Noto를 원 family에 내장하지 않는다.
         "한컴 고딕" | "Hancom Gothic" => vec!["Hancom Gothic Regular.ttf"],
         // 한컴 PDF의 함초롬바탕은 HCR Batang이다. HBATANG.TTF는 다른
@@ -4372,7 +4756,7 @@ fn known_font_filenames(font_name: &str) -> Vec<&'static str> {
         "HCR Dotum" => vec!["HANDotum.ttf", "hamchod-r.ttf"],
         "Haansoft Batang" => vec!["HBATANG.TTF"],
         "Haansoft Dotum" => vec!["HDOTUM.TTF"],
-        "한컴바탕" => vec!["hamchob-r.ttf", "HBATANG.TTF"],
+        "한컴바탕" => vec!["HBATANG.TTF"],
         "함초롬돋움" | "함초롱돋움" | "한컴돋움" => {
             vec!["hamchod-r.ttf", "HDOTUM.TTF"]
         }
@@ -4382,10 +4766,8 @@ fn known_font_filenames(font_name: &str) -> Vec<&'static str> {
         // 연결한다. 실제 face를 공급해도 영문 파일명 때문에 대체 글꼴을 고르면 안 된다.
         "한컴 윤고딕 230" | "Haan YGodic 230" => vec!["HANYGO230.ttf"],
         "한컴 윤고딕 240" | "Haan YGodic 240" => vec!["HANYGO240.ttf"],
-        // 한컴 2020 PDF는 legacy 한양중고딕을 HCR Dotum으로 출력한다. portable
-        // SVG의 full embed도 같은 대체 face를 넣어야 local() 미설치/Snap sandbox
-        // 환경에서 기준 PDF와 다른 HYGothic·Noto 폭으로 재조판하지 않는다.
-        "한양중고딕" => vec!["HANDotum.ttf", "HDOTUM.TTF", "H2GTRM.TTF"],
+        // local()와 Full embed는 같은 원본 프로그램 우선순위를 사용한다.
+        "한양중고딕" => vec!["H2GTRM.TTF", "HANDotum.ttf", "HDOTUM.TTF"],
         // [#6171] 한컴 Windows 설치본의 실제 파일명은 형제 항목(H2GTRM/H2MJSM)과 같은
         // `H2*` 계열이다 — Windows 글꼴 레지스트리 실측:
         //   HY견고딕 → H2GTRE.TTF(family `HYGothic-Extra`)
@@ -4400,14 +4782,24 @@ fn known_font_filenames(font_name: &str) -> Vec<&'static str> {
         "HY신명조" | "한양신명조" => {
             vec!["H2MJSM.TTF", "HYSNMJ.TTF", "hamchob-r.ttf"]
         }
+        "HyhwpEQ" | "HYhwpEQ" => vec!["HYHWPEQ.TTF", "hyhwpeq.ttf"],
         "Latin Modern Math" => vec![
             "latinmodern-math.otf",
             "LatinModernMath-Regular.otf",
             "lmmath-regular.otf",
         ],
+        // Windows의 실제 파일명으로 영문 face를 찾아 Full 출력에 공급한다.
+        "Palatino Linotype" => vec!["pala.ttf"],
         "맑은 고딕" | "Malgun Gothic" => vec!["malgun.ttf", "MalgunGothic.ttf"],
         "바탕" | "Batang" => vec!["batang.ttc", "BATANG.TTC", "hamchob-r.ttf"],
-        "돋움" | "Dotum" => vec!["dotum.ttc", "DOTUM.TTC", "hamchod-r.ttf"],
+        "돋움" | "Dotum" => vec![
+            "dotum.ttc",
+            "DOTUM.TTC",
+            "gulim.ttc",
+            "GULIM.TTC",
+            "hamchod-r.ttf",
+        ],
+        "돋움체" | "DotumChe" => vec!["gulim.ttc", "GULIM.TTC", "dotum.ttc", "DOTUM.TTC"],
         "굴림" | "Gulim" => vec!["gulim.ttc", "GULIM.TTC", "hamchod-r.ttf"],
         "궁서" | "Gungsuh" => vec!["gungsuh.ttc", "GUNGSUH.TTC", "hamchob-r.ttf"],
         "굴림체" | "GulimChe" => vec!["gulim.ttc", "hamchod-r.ttf"],
@@ -4417,6 +4809,9 @@ fn known_font_filenames(font_name: &str) -> Vec<&'static str> {
         "휴먼명조" | "HumanMyeongJo" => {
             vec!["HMKMM.TTF", "HANBatang.ttf", "HBATANG.TTF", "hamchob-r.ttf"]
         }
+        // 휴먼고딕도 원본 윤곽선을 공급한다. EBDT 혼합 파일은 공통 임베드
+        // 정규화가 비트맵 strike만 제외하므로 local 대체 글꼴로 바꿀 필요가 없다.
+        "휴먼고딕" | "HumanGothic" => vec!["HMKMG.TTF"],
         "새바탕" | "새돋움" | "새굴림" | "새궁서" => {
             vec!["hamchob-r.ttf", "hamchod-r.ttf"]
         }
@@ -4431,14 +4826,39 @@ fn known_font_filenames(font_name: &str) -> Vec<&'static str> {
 /// 별도 선언해야 글리프 폭과 획 두께가 유지된다.
 fn known_bold_font_filenames(font_name: &str) -> Vec<&'static str> {
     match font_name {
+        "KoPub돋움체"
+        | "KoPubDotum"
+        | "KoPub Dotum"
+        | "KoPub돋움체 Bold"
+        | "KoPubDotum Bold"
+        | "KoPub Dotum Bold"
+        | "KoPubDotumBold" => vec![
+            "KoPub Dotum Bold.ttf",
+            "KoPubDotum-Bold.ttf",
+            "KoPubDotumBold.ttf",
+        ],
+        "KoPub바탕체"
+        | "KoPubBatang"
+        | "KoPub Batang"
+        | "KoPub바탕체 Bold"
+        | "KoPubBatang Bold"
+        | "KoPub Batang Bold"
+        | "KoPubBatangBold" => vec![
+            "KoPub Batang Bold.ttf",
+            "KoPubBatang-Bold.ttf",
+            "KoPubBatangBold.ttf",
+        ],
+        "나눔고딕" | "NanumGothic" => vec!["NanumGothicBold.ttf"],
         "한컴 고딕" | "Hancom Gothic" => vec!["Hancom Gothic Bold.ttf"],
-        "함초롬바탕" | "함초롱바탕" | "한컴바탕" | "휴먼명조" => {
+        "한컴바탕" | "Haansoft Batang" => vec!["HBATANGB.TTF"],
+        "함초롬바탕" | "함초롱바탕" | "휴먼명조" => {
             vec!["HANBatangB.ttf", "HBATANGB.TTF"]
         }
         "함초롬돋움" | "함초롱돋움" | "한컴돋움" | "한양중고딕" | "HY중고딕" =>
         {
             vec!["HANDotumB.ttf", "HDOTUMB.TTF", "H2GTRB.TTF"]
         }
+        "Palatino Linotype" => vec!["palab.ttf"],
         "맑은 고딕" | "Malgun Gothic" => vec!["malgunbd.ttf", "MalgunGothicBold.ttf"],
         _ => vec![],
     }
@@ -4455,9 +4875,8 @@ fn known_bold_font_filenames(font_name: &str) -> Vec<&'static str> {
 /// serif(바탕/명조/궁서)·라틴 폰트에는 적용하지 않는다(시각 정합과 무관). 실제 저작권
 /// 폰트가 탐색 경로에 있으면 그쪽이 우선한다(대체는 탐색 경로 말단의 `ttfs/opensource/`).
 ///
-/// 주의: 현 임베딩 subsetter(typst, PDF용)는 cmap 을 제거하므로 @font-face 임베딩은
-/// 브라우저 `<text>` 매핑에 무효. 본 대체의 실효 경로는 **폴백 체인 + fontconfig/웹폰트로
-/// 설치된 ExtraLight** 이다(Task #1224 보고서 참조).
+/// SVG 부분집합은 Unicode cmap과 웹 조판 정보를 보존한다. 설치된 원 프로그램과
+/// 최후 후보의 선택 순서는 부분집합 생성 여부와 별개다.
 #[cfg(not(target_arch = "wasm32"))]
 fn korean_gothic_substitute(font_name: &str) -> Option<&'static str> {
     let lower = font_name.to_ascii_lowercase();
@@ -4472,121 +4891,6 @@ fn korean_gothic_substitute(font_name: &str) -> Option<&'static str> {
     } else {
         None
     }
-}
-
-/// 파일시스템 탐색에 넘기는 하나의 폰트 파일명.
-///
-/// 문서 메타데이터에서 유래한 후보는 SVG 폰트 해석 단계에서만
-/// 이 형식으로 바뀐다. 파일시스템 루프는 이 타입의 후보만
-/// 설정된 검색 루트에 결합한다.
-#[cfg(not(target_arch = "wasm32"))]
-#[derive(Clone, Debug)]
-struct FontFileName(String);
-
-#[cfg(not(target_arch = "wasm32"))]
-impl FontFileName {
-    fn from_document_candidate(candidate: String) -> Option<Self> {
-        use std::path::Component;
-
-        if candidate.contains(['/', '\\', '\0']) {
-            return None;
-        }
-        let mut components = std::path::Path::new(&candidate).components();
-        (matches!(components.next(), Some(Component::Normal(_))) && components.next().is_none())
-            .then_some(Self(candidate))
-    }
-
-    fn as_path(&self) -> &std::path::Path {
-        std::path::Path::new(&self.0)
-    }
-}
-
-/// SVG 폰트 해석이 선택한 파일명과 탐색 루트.
-#[cfg(not(target_arch = "wasm32"))]
-struct FontFileLookupPlan {
-    candidates: Vec<FontFileName>,
-    search_dirs: Vec<std::path::PathBuf>,
-}
-
-/// 문서 폰트명을 SVG 폰트 해석용 파일 후보로 계획한다.
-///
-/// 별칭·대체 폰트·후보 우선순위는 렌더러 정책이므로 여기서
-/// 선택한다. 이후의 파일시스템 조회는 타입으로 검증된 후보를 읽는 기계적 단계다.
-#[cfg(not(target_arch = "wasm32"))]
-fn plan_svg_font_file_lookup(
-    font_name: &str,
-    extra_paths: &[std::path::PathBuf],
-    bold: bool,
-) -> FontFileLookupPlan {
-    let candidates = {
-        // 폰트명 → 파일명 후보 생성
-        let known_files = if bold {
-            known_bold_font_filenames(font_name)
-        } else {
-            known_font_filenames(font_name)
-        };
-        let mut files: Vec<String> = known_files.iter().map(|s| s.to_string()).collect();
-        let aliases = if bold {
-            font_local_bold_aliases(font_name)
-        } else {
-            font_local_aliases(font_name)
-        };
-        let mut names = vec![font_name.to_string()];
-        for a in &aliases {
-            names.push(a.to_string());
-        }
-        for name in &names {
-            let clean = name.replace(' ', "");
-            files.push(format!("{}.ttf", name));
-            files.push(format!("{}.otf", name));
-            files.push(format!("{}.ttc", name));
-            files.push(format!("{}.TTF", name));
-            if clean != *name {
-                files.push(format!("{}.ttf", clean));
-                files.push(format!("{}.otf", clean));
-                files.push(format!("{}.ttc", clean));
-            }
-        }
-        // Task #1224: 고딕 계열은 오픈소스 대체(Noto Sans KR ExtraLight)를 최후 후보로 추가.
-        // 실제 저작권 폰트가 앞선 탐색 경로에 있으면 그쪽이 우선하므로, 대체는
-        // 탐색 경로 말단(ttfs/opensource)에서만 매칭된다.
-        if !bold {
-            if let Some(sub) = korean_gothic_substitute(font_name) {
-                files.push(sub.to_string());
-            }
-        }
-        files
-            .into_iter()
-            .filter_map(FontFileName::from_document_candidate)
-            .collect()
-    };
-
-    // [#2864] 탐색 경로(우선순위 순)는 renderer::font_paths 가 단일 정의한다.
-    // 호출자 지정 → RHWP_FONT_PATH → OS 시스템 경로 → ttfs/opensource(최후 폴백).
-    // 종전의 ttfs/hwp·ttfs/windows(로컬 전용)와 /mnt/c/Windows/Fonts(WSL2 전용)는
-    // 제거했다. Task #1224 의 고딕 대체(Noto Sans KR ExtraLight)는 최후 탐색인
-    // ttfs/opensource 에서 그대로 매칭된다.
-    FontFileLookupPlan {
-        candidates,
-        search_dirs: crate::renderer::font_paths::search_dirs(extra_paths),
-    }
-}
-
-/// 계획된 폰트 파일을 설정된 루트에서 읽는다.
-#[cfg(not(target_arch = "wasm32"))]
-fn find_font_file(plan: &FontFileLookupPlan) -> Option<std::path::PathBuf> {
-    for dir in &plan.search_dirs {
-        if !dir.exists() {
-            continue;
-        }
-        for candidate in &plan.candidates {
-            let path = dir.join(candidate.as_path());
-            if path.exists() {
-                return Some(path);
-            }
-        }
-    }
-    None
 }
 
 /// 형식4 cmap의 마지막 비문자 U+FFFF가 잘못된 글리프 번호를 가리키면
@@ -4657,11 +4961,82 @@ fn svg_outline_font_data<'a>(
     data: &'a [u8],
     chars: &std::collections::HashSet<char>,
 ) -> std::borrow::Cow<'a, [u8]> {
+    svg_outline_font_face_data(data, chars, 0, false)
+}
+
+/// collection의 이름·스타일이 일치하는 face를 휴대 가능한 독립 sfnt로 공급한다.
+/// 찾지 못한 이름을 첫 face에 연결하지 않으며, 일반 파일의 대체 정책은 보존한다.
+#[cfg(not(target_arch = "wasm32"))]
+fn svg_selected_font_data<'a>(
+    data: &'a [u8],
+    font_name: &str,
+    chars: &std::collections::HashSet<char>,
+) -> Option<std::borrow::Cow<'a, [u8]>> {
+    if data.get(..4) != Some(b"ttcf") {
+        return Some(svg_outline_font_data(data, chars));
+    }
+    let count = ttf_parser::fonts_in_collection(data)?;
+    if count > 256 {
+        return None;
+    }
+    let aliases = font_local_aliases(font_name);
+    for requested in std::iter::once(font_name).chain(aliases.iter().copied()) {
+        for index in 0..count {
+            let Ok(face) = ttf_parser::Face::parse(data, index) else {
+                continue;
+            };
+            if face.is_bold() || face.is_italic() {
+                continue;
+            }
+            let matches = face.names().into_iter().any(|name| {
+                matches!(name.name_id, 1 | 4 | 6 | 16)
+                    && name
+                        .to_string()
+                        .or_else(|| std::str::from_utf8(name.name).ok().map(str::to_owned))
+                        .is_some_and(|name| name.eq_ignore_ascii_case(requested))
+            });
+            if matches {
+                let selected = svg_outline_font_face_data(data, chars, index, true);
+                // 독립 sfnt를 만들지 못한 collection은 local()로 남긴다.
+                return matches!(selected, std::borrow::Cow::Owned(_)).then_some(selected);
+            }
+        }
+    }
+    None
+}
+
+fn svg_outline_font_face_data<'a>(
+    data: &'a [u8],
+    chars: &std::collections::HashSet<char>,
+    face_index: u32,
+    extract_collection: bool,
+) -> std::borrow::Cow<'a, [u8]> {
+    if let Some(program) =
+        crate::renderer::text_font_presentation::ordinary_text_font_program(data, face_index)
+    {
+        return std::borrow::Cow::Owned(
+            svg_outline_font_face_data_impl(&program, chars, 0, false).into_owned(),
+        );
+    }
+    svg_outline_font_face_data_impl(data, chars, face_index, extract_collection)
+}
+
+fn svg_outline_font_face_data_impl<'a>(
+    data: &'a [u8],
+    chars: &std::collections::HashSet<char>,
+    face_index: u32,
+    extract_collection: bool,
+) -> std::borrow::Cow<'a, [u8]> {
     let original = || std::borrow::Cow::Borrowed(data);
-    // 기존 임베드의 기본 face(0)를 유지한다. collection의 다른 face는
-    // 선택하지 않으며, 이 face의 테이블 오프셋은 collection 전체 기준이다.
+    // collection 테이블 오프셋은 파일 전체 기준이며, 선택 face 헤더만 다르다.
     let sfnt_offset = if data.get(..4) == Some(b"ttcf") {
-        let Some(offset) = data.get(12..16) else {
+        let Some(position) = (face_index as usize)
+            .checked_mul(4)
+            .and_then(|v| v.checked_add(12))
+        else {
+            return original();
+        };
+        let Some(offset) = data.get(position..position + 4) else {
             return original();
         };
         u32::from_be_bytes(offset.try_into().unwrap()) as usize
@@ -4677,7 +5052,7 @@ fn svg_outline_font_data<'a>(
     if !matches!(header.get(..4), Some(b"\0\x01\0\0" | b"true")) {
         return original();
     }
-    let Ok(face) = ttf_parser::Face::parse(data, 0) else {
+    let Ok(face) = ttf_parser::Face::parse(data, face_index) else {
         return original();
     };
     let mut outline_count = 0;
@@ -4722,7 +5097,7 @@ fn svg_outline_font_data<'a>(
         repaired_cmap |= matches!(bytes, std::borrow::Cow::Owned(_));
         tables.push((&record[..4], bytes));
     }
-    if (!has_bitmap && !repaired_cmap)
+    if (!has_bitmap && !repaired_cmap && !extract_collection)
         || !tables
             .iter()
             .any(|(tag, bytes)| *tag == b"head" && bytes.len() >= 12)
@@ -4867,9 +5242,8 @@ fn append_local_bold_font_face_css(css: &mut String, font_name: &str) {
 
 /// 실제 Bold face를 data-URI로 추가한다.
 ///
-/// 서브셋 경로도 Bold는 전체 파일을 사용한다. 현재 subsetter 산출물은 browser
-/// `<text>`에서 필요한 cmap를 보존하지 않는 경우가 있어, real Bold 대신
-/// synthetic bold로 되돌아가는 것보다 원본 face를 보존하는 편이 정확하다.
+/// Bold는 기존의 실제 전체 프로그램 공급을 유지한다. Regular의 부분집합 결과로
+/// Bold 프로그램을 대신하거나 브라우저의 synthetic bold를 강제하지 않는다.
 #[cfg(not(target_arch = "wasm32"))]
 fn append_embedded_bold_font_face_css(
     css: &mut String,
@@ -4903,18 +5277,49 @@ pub fn generate_embedded_font_style(
     embedded_fonts: &std::collections::HashMap<String, Vec<u8>>,
 ) -> String {
     let mut css = String::new();
-    let mut font_names = renderer.font_codepoints().keys().collect::<Vec<_>>();
-    font_names.sort_unstable();
-    for font_name in font_names {
-        if let Some(line) = embedded_font_face_css(
-            font_name,
-            embedded_fonts,
-            &renderer.font_codepoints()[font_name],
-        ) {
+    for (font_name, request) in font_style_requests(renderer) {
+        if let Some(line) = embedded_font_face_css(&font_name, embedded_fonts, &request.chars) {
             css.push_str(&line);
         }
     }
     css
+}
+
+/// CSS 체인의 선언 face를 개별 리소스로 수집한다. 체인 전체를 한 개의
+/// @font-face 이름으로 만들거나 generic 사본이 선언 대체를 가리게 하지 않는다.
+struct FontStyleRequest {
+    chars: std::collections::HashSet<char>,
+    #[cfg(not(target_arch = "wasm32"))]
+    bold: bool,
+    #[cfg(not(target_arch = "wasm32"))]
+    allow_generic_substitute: bool,
+}
+
+fn font_style_requests(
+    renderer: &SvgRenderer,
+) -> std::collections::BTreeMap<String, FontStyleRequest> {
+    let mut requests = std::collections::BTreeMap::<String, FontStyleRequest>::new();
+    for (chain, chars) in renderer.font_codepoints() {
+        let members = super::internal_font_family_members(chain);
+        for face in &members {
+            let request = requests
+                .entry((*face).to_string())
+                .or_insert_with(|| FontStyleRequest {
+                    chars: std::collections::HashSet::new(),
+                    #[cfg(not(target_arch = "wasm32"))]
+                    bold: false,
+                    #[cfg(not(target_arch = "wasm32"))]
+                    allow_generic_substitute: true,
+                });
+            request.chars.extend(chars.iter().copied());
+            #[cfg(not(target_arch = "wasm32"))]
+            {
+                request.bold |= renderer.font_bold_families().contains(chain);
+                request.allow_generic_substitute &= members.len() == 1;
+            }
+        }
+    }
+    requests
 }
 
 /// SvgRenderer의 수집된 폰트 정보를 기반으로 @font-face CSS를 생성한다.
@@ -4927,7 +5332,7 @@ pub fn generate_font_style(
     font_paths: &[std::path::PathBuf],
     embedded_fonts: &std::collections::HashMap<String, Vec<u8>>,
 ) -> String {
-    let codepoints = renderer.font_codepoints();
+    let codepoints = font_style_requests(renderer);
     if codepoints.is_empty() {
         return String::new();
     }
@@ -4939,11 +5344,9 @@ pub fn generate_font_style(
     match renderer.font_embed_mode {
         FontEmbedMode::Style => {
             for &font_name in &font_names {
-                if let Some(line) = embedded_font_face_css(
-                    font_name,
-                    embedded_fonts,
-                    &renderer.font_codepoints()[font_name],
-                ) {
+                if let Some(line) =
+                    embedded_font_face_css(font_name, embedded_fonts, &codepoints[font_name].chars)
+                {
                     css.push_str(&line);
                     continue;
                 }
@@ -4962,34 +5365,54 @@ pub fn generate_font_style(
                     escape_css_font_name(font_name),
                     src,
                 ));
-                if renderer.font_bold_families().contains(font_name) {
+                if codepoints[font_name].bold {
                     append_local_bold_font_face_css(&mut css, font_name);
                 }
             }
         }
         FontEmbedMode::Subset => {
             for &font_name in &font_names {
-                let chars = &codepoints[font_name];
-                if let Some(line) = embedded_font_face_css(
-                    font_name,
-                    embedded_fonts,
-                    &renderer.font_codepoints()[font_name],
-                ) {
+                let chars = &codepoints[font_name].chars;
+                if let Some(line) =
+                    embedded_font_face_css(font_name, embedded_fonts, &codepoints[font_name].chars)
+                {
                     css.push_str(&line);
                     continue;
                 }
-                let regular_lookup = plan_svg_font_file_lookup(font_name, font_paths, false);
-                if let Some(font_path) = find_font_file(&regular_lookup) {
+                let regular_lookup = plan_svg_font_file_lookup_with_fallback(
+                    font_name,
+                    font_paths,
+                    false,
+                    codepoints[font_name].allow_generic_substitute,
+                );
+                if let Some(font_path) =
+                    find_font_file_for_chars(&regular_lookup, &codepoints[font_name].chars)
+                {
                     if let Ok(font_data) = std::fs::read(&font_path) {
-                        let outline_data = svg_outline_font_data(&font_data, chars);
-                        if matches!(outline_data, std::borrow::Cow::Owned(_)) {
-                            let b64 =
-                                base64::engine::general_purpose::STANDARD.encode(&outline_data);
+                        if let Some(font_data) =
+                            svg_selected_font_data(&font_data, font_name, chars)
+                        {
+                            let (data, subset) = match webfont_subset::subset(&font_data, chars) {
+                                Ok(data) => (std::borrow::Cow::Owned(data), true),
+                                Err(error) => {
+                                    eprintln!(
+                                        "  [font-embed] {} 부분집합 미지원: {} → 전체 face 공급",
+                                        font_name, error
+                                    );
+                                    (font_data, false)
+                                }
+                            };
+                            let (mime, format) = if subset || data.starts_with(b"OTTO") {
+                                ("font/opentype", "opentype")
+                            } else {
+                                ("font/ttf", "truetype")
+                            };
+                            let b64 = base64::engine::general_purpose::STANDARD.encode(&data);
                             css.push_str(&format!(
-                                "@font-face {{ font-family: \"{}\"; src: url(\"data:font/ttf;base64,{}\") format(\"truetype\"); }}\n",
-                                escape_css_font_name(font_name), b64,
+                                "@font-face {{ font-family: \"{}\"; src: url(\"data:{};base64,{}\") format(\"{}\"); }}\n",
+                                escape_css_font_name(font_name), mime, b64, format,
                             ));
-                            if renderer.font_bold_families().contains(font_name) {
+                            if codepoints[font_name].bold {
                                 let bold_lookup =
                                     plan_svg_font_file_lookup(font_name, font_paths, true);
                                 append_embedded_bold_font_face_css(
@@ -4999,53 +5422,6 @@ pub fn generate_font_style(
                                 );
                             }
                             continue;
-                        }
-                        // codepoint → glyph ID 변환 (ttf-parser cmap 사용)
-                        let glyphs = ttf_parser::Face::parse(&font_data, 0)
-                            .map(|face| {
-                                chars
-                                    .iter()
-                                    .filter_map(|character| face.glyph_index(*character))
-                                    .map(|glyph| glyph.0)
-                                    .collect::<Vec<_>>()
-                            })
-                            .unwrap_or_default();
-                        // HashSet character order is intentionally irrelevant: stable glyph IDs
-                        // make subset bytes and the embedded base64 deterministic.
-                        let remapper = subsetter::GlyphRemapper::new_from_glyphs_sorted(&glyphs);
-                        // 서브셋 추출
-                        match subsetter::subset(&font_data, 0, &remapper) {
-                            Ok(subset_data) => {
-                                let b64 =
-                                    base64::engine::general_purpose::STANDARD.encode(&subset_data);
-                                css.push_str(&format!(
-                                    "@font-face {{ font-family: \"{}\"; src: url(\"data:font/opentype;base64,{}\") format(\"opentype\"); }}\n",
-                                    escape_css_font_name(font_name), b64,
-                                ));
-                                if renderer.font_bold_families().contains(font_name) {
-                                    let bold_lookup =
-                                        plan_svg_font_file_lookup(font_name, font_paths, true);
-                                    append_embedded_bold_font_face_css(
-                                        &mut css,
-                                        font_name,
-                                        &bold_lookup,
-                                    );
-                                }
-                                eprintln!(
-                                    "  [font-embed] {} → 서브셋 {:.1}KB ({}글자, 원본 {:.1}KB)",
-                                    font_name,
-                                    subset_data.len() as f64 / 1024.0,
-                                    chars.len(),
-                                    font_data.len() as f64 / 1024.0
-                                );
-                                continue;
-                            }
-                            Err(e) => {
-                                eprintln!(
-                                    "  [font-embed] {} 서브셋 실패: {} → local() 폴백",
-                                    font_name, e
-                                );
-                            }
                         }
                     }
                 }
@@ -5065,41 +5441,55 @@ pub fn generate_font_style(
                     escape_css_font_name(font_name),
                     src,
                 ));
-                if renderer.font_bold_families().contains(font_name) {
+                if codepoints[font_name].bold {
                     append_local_bold_font_face_css(&mut css, font_name);
                 }
             }
         }
         FontEmbedMode::Full => {
             for &font_name in &font_names {
-                if let Some(line) = embedded_font_face_css(
-                    font_name,
-                    embedded_fonts,
-                    &renderer.font_codepoints()[font_name],
-                ) {
+                if let Some(line) =
+                    embedded_font_face_css(font_name, embedded_fonts, &codepoints[font_name].chars)
+                {
                     css.push_str(&line);
                     continue;
                 }
-                let regular_lookup = plan_svg_font_file_lookup(font_name, font_paths, false);
-                if let Some(font_path) = find_font_file(&regular_lookup) {
+                let regular_lookup = plan_svg_font_file_lookup_with_fallback(
+                    font_name,
+                    font_paths,
+                    false,
+                    codepoints[font_name].allow_generic_substitute,
+                );
+                if let Some(font_path) =
+                    find_font_file_for_chars(&regular_lookup, &codepoints[font_name].chars)
+                {
                     if let Ok(font_data) = std::fs::read(&font_path) {
-                        let font_data = svg_outline_font_data(&font_data, &codepoints[font_name]);
-                        let b64 = base64::engine::general_purpose::STANDARD.encode(&font_data);
-                        css.push_str(&format!(
+                        if let Some(font_data) = svg_selected_font_data(
+                            &font_data,
+                            font_name,
+                            &codepoints[font_name].chars,
+                        ) {
+                            let b64 = base64::engine::general_purpose::STANDARD.encode(&font_data);
+                            css.push_str(&format!(
                             "@font-face {{ font-family: \"{}\"; src: url(\"data:font/opentype;base64,{}\") format(\"opentype\"); }}\n",
                             escape_css_font_name(font_name), b64,
                         ));
-                        if renderer.font_bold_families().contains(font_name) {
-                            let bold_lookup =
-                                plan_svg_font_file_lookup(font_name, font_paths, true);
-                            append_embedded_bold_font_face_css(&mut css, font_name, &bold_lookup);
+                            if codepoints[font_name].bold {
+                                let bold_lookup =
+                                    plan_svg_font_file_lookup(font_name, font_paths, true);
+                                append_embedded_bold_font_face_css(
+                                    &mut css,
+                                    font_name,
+                                    &bold_lookup,
+                                );
+                            }
+                            eprintln!(
+                                "  [font-embed] {} → 전체 {:.1}KB",
+                                font_name,
+                                font_data.len() as f64 / 1024.0
+                            );
+                            continue;
                         }
-                        eprintln!(
-                            "  [font-embed] {} → 전체 {:.1}KB",
-                            font_name,
-                            font_data.len() as f64 / 1024.0
-                        );
-                        continue;
                     }
                 }
                 // 폰트 파일 없음 → local() 폴백
@@ -5118,7 +5508,7 @@ pub fn generate_font_style(
                     escape_css_font_name(font_name),
                     src,
                 ));
-                if renderer.font_bold_families().contains(font_name) {
+                if codepoints[font_name].bold {
                     append_local_bold_font_face_css(&mut css, font_name);
                 }
             }
@@ -5126,8 +5516,37 @@ pub fn generate_font_style(
         FontEmbedMode::None => {}
     }
 
+    fallback_fonts::append_missing_serif_font_css(&mut css, renderer, font_paths, embedded_fonts);
+    italic_fonts::append_font_css(&mut css, renderer, font_paths);
     css
 }
 
 #[cfg(test)]
 mod tests;
+
+fn svg_path_data(commands: &[PathCommand]) -> String {
+    let mut d = String::new();
+    for cmd in commands {
+        match cmd {
+            PathCommand::MoveTo(x, y) => d.push_str(&format!("M{} {} ", x, y)),
+            PathCommand::LineTo(x, y) => d.push_str(&format!("L{} {} ", x, y)),
+            PathCommand::CurveTo(x1, y1, x2, y2, x, y) => {
+                d.push_str(&format!("C{} {} {} {} {} {} ", x1, y1, x2, y2, x, y))
+            }
+            PathCommand::ArcTo(rx, ry, x_rot, large_arc, sweep, x, y) => {
+                d.push_str(&format!(
+                    "A{} {} {} {} {} {} {} ",
+                    rx,
+                    ry,
+                    x_rot,
+                    if *large_arc { 1 } else { 0 },
+                    if *sweep { 1 } else { 0 },
+                    x,
+                    y
+                ));
+            }
+            PathCommand::ClosePath => d.push_str("Z "),
+        }
+    }
+    d
+}

@@ -1,0 +1,34 @@
+{
+  "date": "2026-10-28",
+  "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8036-seoul-official.hwpx",
+  "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8036-seoul-official-2020.pdf",
+  "pdf_sha256": "c75706f95b270d4a1d7b946277b682596024f28995c99ac3fbd4aeb6abd3bd7b",
+  "method": "horizontal PDF stroke y in points * 96/72; direct side-by-side inspection",
+  "boundaries": [
+    {
+      "page": 11,
+      "x0_pt": 55.16999816894531,
+      "x1_pt": 539.8300170898438,
+      "y_pt": 765.9619750976562,
+      "y_96dpi_px": 1021.2826334635416
+    },
+    {
+      "page": 12,
+      "x0_pt": 53.37099838256836,
+      "x1_pt": 100.14600372314453,
+      "y_pt": 152.9530029296875,
+      "y_96dpi_px": 203.93733723958334
+    },
+    {
+      "page": 12,
+      "x0_pt": 53.37099838256836,
+      "x1_pt": 100.14600372314453,
+      "y_pt": 183.39898681640625,
+      "y_96dpi_px": 244.531982421875
+    }
+  ],
+  "visual_inspection": {
+    "path": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8036-print-crops.png",
+    "sha256": "3477b816c368a41ff0d0ad8fbd617c923441b100927fafe061e3ec4629bd33d4"
+  }
+}

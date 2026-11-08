@@ -8,6 +8,62 @@ use std::sync::OnceLock;
 
 use crate::renderer::font_rule_layout_metric_projection::find_font_rule_layout_metric;
 
+#[path = "font_metrics_vertical.rs"]
+mod vertical;
+pub(crate) use vertical::win_descent_em;
+
+#[path = "font_metric_han_santteut.rs"]
+mod han_santteut;
+
+#[path = "font_metric_legacy_hft.rs"]
+mod legacy_hft;
+
+#[path = "font_metric_hci_poppy.rs"]
+mod hci_poppy;
+
+#[path = "font_metric_hci_tulip.rs"]
+mod hci_tulip;
+
+#[path = "font_metric_math_alphabet.rs"]
+mod math_alphabet;
+
+#[path = "font_metric_math_symbols.rs"]
+mod math_symbols;
+
+#[path = "font_metric_cjk_punctuation.rs"]
+mod cjk_punctuation;
+#[path = "font_metric_supplementary_pictographs.rs"]
+mod supplementary_pictographs;
+
+#[path = "font_metric_contextual_scripts.rs"]
+mod contextual_scripts;
+#[path = "font_metric_math_symbol_blocks.rs"]
+mod math_symbol_blocks;
+
+#[path = "font_metric_hangul_jamo.rs"]
+mod hangul_jamo;
+
+pub(crate) fn uses_hangul_jamo_overlay(metric: &FontMetric, character: char) -> bool {
+    hangul_jamo::width(metric, character).is_some()
+}
+#[path = "font_metric_symbol_slot_chars.rs"]
+mod symbol_slot_chars;
+
+#[path = "font_metric_nimbus_roman.rs"]
+mod nimbus_roman;
+
+pub(crate) use legacy_hft::{
+    is_metric_face as is_legacy_hft_metric_face, metric_face_name as legacy_hft_metric_face,
+};
+
+/// 독립 Print와 원본 HFT에서 확인한 전진 표인지 구분한다.
+/// 표시용 글꼴 프로그램의 hmtx는 이 표의 원본 정밀도를 대신하지 않는다.
+pub(crate) fn is_verified_original_hft_advance(metric: &FontMetric) -> bool {
+    hci_poppy::METRICS
+        .iter()
+        .any(|source| std::ptr::eq(source, metric))
+}
+
 #[derive(Debug)]
 pub struct HangulMetric {
     pub cho_groups: u8,
@@ -29,6 +85,19 @@ pub struct FontMetric {
     pub hangul: Option<&'static HangulMetric>,
 }
 
+/// Source SFNT hhea descent for the Windows Korean UI families. Like the
+/// generated advance tables this is program metadata, independent of an
+/// installed rendering substitute. Gulim.ttc faces 0..=3 have upem=1024 and
+/// descender=-145; provenance is recorded with the TAC baseline qualification.
+/// Other programs retain the caller's existing compatibility fallback.
+pub(crate) fn source_descent_em(name: &str, bold: bool, italic: bool) -> Option<f64> {
+    let metric = find_metric(name, bold, italic)?.metric;
+    match metric.name {
+        "Gulim" | "GulimChe" | "Dotum" | "DotumChe" => Some(145.0 / 1024.0),
+        _ => None,
+    }
+}
+
 #[derive(Debug)]
 pub struct LatinRange {
     pub start: u32,
@@ -39,6 +108,9 @@ pub struct LatinRange {
 impl FontMetric {
     pub fn get_width(&self, ch: char) -> Option<u16> {
         let code = ch as u32;
+        if let Some(width) = hangul_jamo::width(self, ch) {
+            return Some(width);
+        }
         // 한글 음절 (U+AC00~U+D7A3)
         if code >= 0xAC00 && code <= 0xD7A3 {
             if let Some(h) = self.hangul {
@@ -62,9 +134,106 @@ impl FontMetric {
             let Some(&w) = range.widths.get(idx) else {
                 continue;
             };
-            return if w > 0 { Some(w) } else { None };
+            return if w > 0 {
+                Some(w)
+            } else {
+                supplementary_pictographs::width(self, ch)
+                    .or_else(|| contextual_scripts::width(self, ch))
+            };
         }
-        None
+        // 기존 범위는 그대로 우선하며, 확인된 프로그램의 누락 구간만 보충한다.
+        verified_technical_symbol_width(self, ch)
+            .or_else(|| math_symbols::width(self, ch))
+            .or_else(|| math_alphabet::width(self, ch))
+            .or_else(|| math_symbol_blocks::width(self, ch))
+            .or_else(|| supplementary_pictographs::width(self, ch))
+            .or_else(|| contextual_scripts::width(self, ch))
+            .or_else(|| symbol_slot_chars::width(self, ch))
+    }
+}
+
+include!("font_metrics_technical_symbols.rs");
+
+/// 실제 프로그램에서 확인한 cmap. DB의 미수집 범위를 glyph 결측으로 취급하지 않는다.
+pub(crate) fn verified_metric_has_glyph(metric: &FontMetric, ch: char) -> Option<bool> {
+    if nimbus_roman_metric_source(metric).is_some() {
+        // These ranges cover the actual program's complete Unicode cmap.
+        return Some(metric.get_width(ch).is_some());
+    }
+    verified_program_has_glyph(metric, ch)
+        .or_else(|| math_symbols::has_glyph(metric, ch))
+        .or_else(|| math_alphabet::entry(metric, ch).map(|(present, _)| present))
+        .or_else(|| cjk_punctuation::primary_has_glyph(metric.name, metric.bold, metric.italic, ch))
+        .or_else(|| math_symbol_blocks::entry(metric, ch).map(|(present, _)| present))
+        .or_else(|| supplementary_pictographs::entry(metric, ch).map(|(present, _)| present))
+        .or_else(|| contextual_scripts::entry(metric, ch).map(|(present, _)| present))
+        .or_else(|| symbol_slot_chars::entry(metric, ch).map(|(present, _)| present))
+}
+
+/// DB 항목이 없어도 확인한 원 face의 cmap은 독립적으로 조회한다.
+pub(crate) fn verified_named_program_has_glyph(
+    family: &str,
+    bold: bool,
+    italic: bool,
+    ch: char,
+) -> Option<bool> {
+    math_alphabet::primary_has_glyph(family, bold, italic, ch)
+        .or_else(|| cjk_punctuation::primary_has_glyph(family, bold, italic, ch))
+        .or_else(|| supplementary_pictographs::primary_has_glyph(family, bold, italic, ch))
+        .or_else(|| contextual_scripts::primary_has_glyph(family, bold, italic, ch))
+}
+
+/// 확인한 원 프로그램의 결측 글리프 공급 체인. 기본 face의 폭 계약은 바꾸지 않는다.
+pub(crate) fn verified_program_glyph_fallback_families(face: &str) -> &'static [&'static str] {
+    // HMKMM.TTF의 cmap에는 U+2024가 없고 HBATANG.TTF에는 있다.
+    // 독립 개인정보 Print의 같은 제목도 휴먼명조 사이에서 이 기호만
+    // Haansoft Batang으로 출력한다. 이름 별칭은 기존 메트릭 선택기가 해소한다.
+    match find_metric(face, false, false).map(|found| found.metric.name) {
+        Some("HumanMyeongJo" | "DotumChe" | "HYSinMyeongJo-Medium" | "HYHeadLine-Medium") => {
+            &["Haansoft Batang"]
+        }
+        // Gulim U+2024의 측정도 아래 verified_missing_glyph_supplier가
+        // HDOTUM에 맡긴다. 같은 공급자를 실제 paint 후보에도 전달한다.
+        Some("Gulim") => &["Haansoft Dotum"],
+        _ => &[],
+    }
+}
+
+/// 원 프로그램의 결측과 독립 Print의 공급 face를 함께 확인한 기호만 해소한다.
+/// 폭 표의 누락만으로 공급자를 추측하지 않으며, HFT 호환 폭과의 경계는 호출자가 지킨다.
+pub(crate) fn verified_missing_glyph_supplier(
+    metric: &FontMetric,
+    ch: char,
+) -> Option<&'static str> {
+    match (metric.name, metric.em_size, metric.bold, metric.italic, ch) {
+        // arial.ttf b2374214…abfd의 cmap에는 두 점이 없다. 명시적 Arial
+        // 대조군의 독립 한컴2020 Print는 두 문자 모두 HBATANG으로 출력한다.
+        // Arial의 다른 문자나 다른 weight/style의 공급자는 변경하지 않는다.
+        ("Arial", 2048, false, false, '\u{2024}' | '\u{2027}') => Some("Haansoft Batang"),
+        // gulim.TTC의 DotumChe cmap에는 U+2024가 없다(SHA ed750275…776c).
+        // 근린생활시설 표의 독립 Print는 HBATANG의 0.173em 글리프로 출력하며,
+        // HBATANG.TTF의 hmtx 178/1024도 같은 자연 전진을 확인한다.
+        ("DotumChe", 1024, false, false, '\u{2024}') => Some("Haansoft Batang"),
+        // 같은 gulim.TTC의 GulimChe도 이 글리프가 없다. 위임전결규정의
+        // 독립2020 Print44·86쪽은 HBATANG178/1024em과 같은 윤곽으로 공급한다.
+        // 폭 표에 없는 문자를 고정폭1em으로 추정하지 않는다. 다른 기호는 유지한다.
+        ("GulimChe", 1024, false, false, '\u{2024}') => Some("Haansoft Batang"),
+        // [#8419] batang.ttc(SHA 51d9a8d4…c9d8)의 Batang cmap에도 U+2024가 없다.
+        // 10645 운영지침의 독립 한컴2022 Print는 바탕 사이의 `․`만 Haansoft Batang
+        // CID 글꼴로 출력한다. U+2027과 다른 weight/style은 확인하지 않아 바꾸지 않는다.
+        ("Batang", 1024, false, false, '\u{2024}') => Some("Haansoft Batang"),
+        // 법원 서식 Print의 Haansoft Dotum CID 3과 HDOTUM hmtx의 대응.
+        ("Gulim", 1024, false, false, '\u{2024}' | '\u{2027}') => Some("Haansoft Dotum"),
+        // 기호 슬롯을 HY신명조 TTF로 지정한 독립2020 Print의 두 점은
+        // HBATANG이다. HFT 한양신명조의 전진은 해당 overlay가 보존한다.
+        ("HYSinMyeongJo-Medium", 1024, false, false, '\u{2024}' | '\u{2027}') => {
+            Some("Haansoft Batang")
+        }
+        // H2HDRM의 확인된 U+2024 결측과 독립 한컴2020 Print의 실제 공급자다.
+        // 음영/양각의 세 replay 모두 HBATANG을 사용하며 자연 전진은 기존
+        // 공급 프로그램의 hmtx를 소비한다. 다른 문자·weight는 추정하지 않는다.
+        ("HYHeadLine-Medium", 1024, false, false, '\u{2024}') => Some("Haansoft Batang"),
+        _ => None,
     }
 }
 
@@ -123,6 +292,16 @@ fn resolve_projected_metric_alias(name: &str) -> (&str, Option<&'static str>) {
         // YNCH05.TTF의 숫자 1은 530/1000em이며 한컴 PDF도 이 폭을 쓴다.
         None if name == "양재난초체M" => ("Yj NANCHO Medium", None),
         None => (name, None),
+    }
+}
+
+/// PostScript 이름의 굵기 접미사(`-Regular`/`-Medium`/`-Bold`)를 떼어 family 와 Bold 여부를 돌려준다.
+fn strip_postscript_weight_suffix(name: &str) -> Option<(&str, bool)> {
+    let (family, weight) = name.rsplit_once('-')?;
+    match weight {
+        "Regular" | "Medium" => Some((family, false)),
+        "Bold" => Some((family, true)),
+        _ => None,
     }
 }
 
@@ -217,13 +396,67 @@ pub fn find_metric(name: &str, bold: bool, italic: bool) -> Option<MetricMatch> 
     })
 }
 
+/// 이름 하나의 별칭·색인 해석. `bold`/`italic` 과 무관하다.
+#[derive(Clone, Copy)]
+struct MetricNameResolution {
+    /// 별칭이 요청 이름과 다르면 그 정적 이름.
+    alias: Option<&'static str>,
+    alias_rule_id: Option<&'static str>,
+    slots: Option<&'static [MetricSelection; 4]>,
+}
+
+/// 글자마다 불리므로 최근 이름 몇 개의 해석을 보관한다. 결과는 이름만으로 정해진다.
+fn resolve_metric_name(name: &str) -> MetricNameResolution {
+    const RECENT: usize = 8;
+    thread_local! {
+        static RECENT_NAMES: std::cell::RefCell<Vec<(Box<str>, MetricNameResolution)>> =
+            const { std::cell::RefCell::new(Vec::new()) };
+    }
+    RECENT_NAMES.with(|recent| {
+        let mut recent = recent.borrow_mut();
+        if let Some((_, resolution)) = recent.iter().find(|(cached, _)| **cached == *name) {
+            return *resolution;
+        }
+        let (alias_resolved_name, alias_rule_id) = resolve_projected_metric_alias(name);
+        let resolution = MetricNameResolution {
+            alias: static_metric_alias(name),
+            alias_rule_id,
+            slots: metric_index().get(alias_resolved_name),
+        };
+        if recent.len() >= RECENT {
+            recent.remove(0);
+        }
+        recent.push((name.into(), resolution));
+        resolution
+    })
+}
+
+/// `resolve_projected_metric_alias` 가 요청 이름 대신 돌려주는 정적 별칭.
+fn static_metric_alias(name: &str) -> Option<&'static str> {
+    match find_font_rule_layout_metric(name) {
+        Some(rule) => Some(rule.target_face_or_policy),
+        None if name == "양재난초체M" => Some("Yj NANCHO Medium"),
+        None => None,
+    }
+}
+
 pub(crate) fn find_metric_decision<'a>(
     name: &'a str,
     bold: bool,
     italic: bool,
 ) -> Option<MetricLookupDecision<'a>> {
-    let (alias_resolved_name, alias_rule_id) = resolve_projected_metric_alias(name);
-    let slots = metric_index().get(alias_resolved_name)?;
+    let mut resolution = resolve_metric_name(name);
+    let mut lookup_name = name;
+    let mut bold = bold;
+    if resolution.slots.is_none() {
+        let (family, suffix_bold) = strip_postscript_weight_suffix(name)?;
+        lookup_name = family;
+        resolution = resolve_metric_name(family);
+        bold |= suffix_bold;
+    }
+    let alias_resolved_name = resolution.alias.unwrap_or(lookup_name);
+    let alias_rule_id = resolution.alias_rule_id;
+    let slots = resolution.slots?;
     let selected = slots[metric_slot_index(bold, italic)];
     Some(MetricLookupDecision {
         requested_name: name,
@@ -234,6 +467,71 @@ pub(crate) fn find_metric_decision<'a>(
         match_kind: selected.match_kind,
         entry_index: selected.entry_index,
     })
+}
+
+/// [#8079] 굵은 글자의 **조판 전진폭**을 줄 같은 family 의 보통(Regular) 표.
+///
+/// 한/글은 별도 Bold 면이 있는 TrueType 의 굵은 글자를 Bold 면으로 그리지만, 글자 원점은
+/// 보통 면의 전진폭으로 잡는다. 한컴 PDF 는 임베드 Bold `/W` 를 그대로 둔 채 TJ 조정으로
+/// 다음 글자를 당긴다 — 맑은 고딕 Bold 숫자 `/W` 579/1000 뒤 `29.000` = 보통 1128/2048(0.55em).
+/// `pdf/` 한컴 정본 205개 전수(TJ 안 글자의 `/W − 조정`)에서 굵은 맑은 고딕은 보통 폭 쪽이
+/// 26,893자, Bold 폭 쪽이 357자다. Arial Bold·Times New Roman Bold 도 Bold 폭 쪽은 0자다.
+///
+/// 같은 이름·같은 기울임의 보통 항목이 **정확히** 있을 때만 돌려준다. em 이 다르면 같은
+/// 격자로 비교할 근거가 없어 None. 글리프 선택·결측 판정은 이 표가 아니라 Bold 항목이 맡는다.
+pub(crate) fn regular_advance_metric(bold_metric: &FontMetric) -> Option<&'static FontMetric> {
+    if !bold_metric.bold {
+        return None;
+    }
+    let slots = metric_index().get(bold_metric.name)?;
+    let regular = slots[metric_slot_index(false, bold_metric.italic)];
+    (regular.match_kind == MetricMatchKind::Exact
+        && !regular.metric.bold
+        && regular.metric.italic == bold_metric.italic
+        && regular.metric.em_size == bold_metric.em_size)
+        .then_some(regular.metric)
+}
+
+/// 원본 프로그램에서 확인한 문자 폭은 표시 대체 글꼴의 완전한 표보다 우선한다.
+/// 부분 표의 미측정 문자·확인하지 않은 정체는 기존 색인 선택을 그대로 쓴다.
+pub(crate) fn find_metric_decision_for_character<'a>(
+    name: &'a str,
+    bold: bool,
+    italic: bool,
+    character: char,
+) -> Option<MetricLookupDecision<'a>> {
+    let mut decision = find_metric_decision(name, bold, italic)?;
+    if character.is_whitespace() {
+        return Some(decision);
+    }
+    let Some((source_slot, source)) = hci_poppy::METRICS.iter().enumerate().find(|(_, source)| {
+        decision.alias_resolved_name == source.name
+            && bold == source.bold
+            && italic == source.italic
+            && source.get_width(character).is_some()
+    }) else {
+        return Some(decision);
+    };
+    static SOURCE_INDICES: OnceLock<Vec<Option<usize>>> = OnceLock::new();
+    let indices = SOURCE_INDICES.get_or_init(|| {
+        hci_poppy::METRICS
+            .iter()
+            .map(|source| {
+                FONT_METRICS
+                    .iter()
+                    .position(|entry| std::ptr::eq(entry, source))
+            })
+            .collect()
+    });
+    if let Some(index) = indices[source_slot] {
+        // 각 표가 가진 em을 함께 선택한다. em=1000의 폭을 em=2048 표에
+        // 정수 반올림해 섞지 않으며 가운뎃점 등 기존 독립 측정도 보존한다.
+        decision.metric = source;
+        decision.entry_index = index;
+        decision.match_kind = MetricMatchKind::Exact;
+        decision.bold_fallback = false;
+    }
+    Some(decision)
 }
 
 /// [#4709] 이 스타일의 글자폭 배치에 실제로 쓰인 내장 메트릭 face 이름.
@@ -249,11 +547,17 @@ pub fn layout_metric_face_name(font_family: &str, bold: bool, italic: bool) -> O
         .trim()
         .trim_matches('\'');
     // KoPub 은 kopub_char_width 전용 표가 find_metric 보다 앞선다 — face 자체가 정체.
-    let lower = primary.to_lowercase();
+    // `measure_char_width_embedded` 의 `KoPubFamily::from_primary` 와 같은 이름 판정
+    // (`KoPubWorld` 개정판도 구분하며 각 face의 전진폭은 해당 측정 표가 결정한다).
+    let lower = primary.to_lowercase().replace(' ', "");
     if primary.contains("KoPub돋움체")
-        || lower.contains("kopub dotum")
+        || primary.contains("KoPubWorld돋움체")
+        || lower.contains("kopubdotum")
+        || lower.contains("kopubworlddotum")
         || primary.contains("KoPub바탕체")
-        || lower.contains("kopub batang")
+        || primary.contains("KoPubWorld바탕체")
+        || lower.contains("kopubbatang")
+        || lower.contains("kopubworldbatang")
     {
         return Some(primary.to_string());
     }
@@ -296,10 +600,50 @@ fn legacy_find_metric(name: &str, bold: bool, italic: bool) -> Option<MetricMatc
 
 include!("font_metrics_generated.rs");
 include!("font_metrics_overlays.rs");
+include!("font_metrics_core14.rs");
 
-/// 기존 600-entry 물리 순서를 노출하는 논리 view.
+/// Published AFMs are independent of the historical 600-entry evidence ledger.
+pub(crate) fn core14_metric_source(metric: &FontMetric) -> Option<(&'static str, &'static str)> {
+    if !CORE14_FONT_METRICS
+        .iter()
+        .any(|entry| std::ptr::eq(entry, metric))
+    {
+        return None;
+    }
+    Some(match (metric.bold, metric.italic) {
+        (false, false) => (
+            "data/font-metrics/adobe-core14/Helvetica.afm",
+            "CORE14_0_RANGES",
+        ),
+        (true, false) => (
+            "data/font-metrics/adobe-core14/Helvetica-Bold.afm",
+            "CORE14_1_RANGES",
+        ),
+        (false, true) => (
+            "data/font-metrics/adobe-core14/Helvetica-Oblique.afm",
+            "CORE14_2_RANGES",
+        ),
+        (true, true) => (
+            "data/font-metrics/adobe-core14/Helvetica-BoldOblique.afm",
+            "CORE14_3_RANGES",
+        ),
+    })
+}
+
+/// Actual SFNT table measurements, separate from the historical rule ledger.
+pub(crate) fn nimbus_roman_metric_source(metric: &FontMetric) -> Option<&'static str> {
+    if !metric.name.starts_with("Nimbus") {
+        return None;
+    }
+    nimbus_roman::METRICS
+        .iter()
+        .any(|entry| std::ptr::eq(entry, metric))
+        .then_some("data/font-metrics/nimbus-roman/source.json")
+}
+
+/// 기존 600-entry 물리 순서를 보존하고 독립 AFM 메트릭을 뒤에 연결한다.
 ///
-/// generated 595개 뒤에 measured overlay 5개를 연결하며 정렬·dedupe하지 않는다.
+/// generated 595개와 measured overlay 5개를 정렬·dedupe하지 않는다.
 struct FontMetrics;
 
 static FONT_METRICS: FontMetrics = FontMetrics;
@@ -309,6 +653,12 @@ impl FontMetrics {
         GENERATED_FONT_METRICS
             .iter()
             .chain(MEASURED_FONT_METRIC_OVERLAYS.iter())
+            .chain(CORE14_FONT_METRICS.iter())
+            .chain(han_santteut::METRICS.iter())
+            .chain(legacy_hft::METRICS.iter())
+            .chain(hci_poppy::METRICS.iter())
+            .chain(hci_tulip::METRICS.iter())
+            .chain(nimbus_roman::METRICS.iter())
     }
 }
 

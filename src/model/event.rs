@@ -6,6 +6,11 @@
 /// 문서 변경 이벤트
 #[derive(Debug, Clone)]
 pub enum DocumentEvent {
+    /// 개체 슬롯을 옮긴 뒤 새 소유 주소를 알린다.
+    InlineControlMoved {
+        source: crate::document_core::inline_control::InlineControlAddress,
+        destination: crate::document_core::inline_control::InlineControlAddress,
+    },
     /// Atomic fixed-form fill; paragraph indices are section-local owning roots.
     TemplateFilled {
         section: usize,
@@ -180,6 +185,7 @@ impl DocumentEvent {
     /// 이벤트를 JSON 객체 문자열로 직렬화한다.
     pub fn to_json(&self) -> String {
         match self {
+            DocumentEvent::InlineControlMoved { source, destination } => serde_json::json!({"type": "InlineControlMoved", "source": source, "destination": destination}).to_string(),
             DocumentEvent::HyperlinkChanged {
                 section,
                 para,

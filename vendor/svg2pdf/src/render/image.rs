@@ -55,16 +55,13 @@ pub fn render(
         ImageKind::SVG(tree) => create_svg_image(tree, chunk, ctx, rc)?,
     };
 
-    let view_box = view_box.unwrap_or(
-        Rect::from_xywh(0.0, 0.0, image_size.width(), image_size.height()).unwrap(),
-    );
+    let view_box = view_box
+        .unwrap_or(Rect::from_xywh(0.0, 0.0, image_size.width(), image_size.height()).unwrap());
 
     content.save_state_checked()?;
 
     // Account for the x/y of the viewbox.
-    content.transform(
-        Transform::from_translate(view_box.x(), view_box.y()).to_pdf_transform(),
-    );
+    content.transform(Transform::from_translate(view_box.x(), view_box.y()).to_pdf_transform());
 
     // Scale the image from 1x1 to the actual dimensions.
     content.transform(
@@ -117,7 +114,12 @@ fn create_transparent_image(
             let image = image.to_rgba16();
 
             if image.pixels().any(|&Rgba([.., a])| a != u16::MAX) {
-                Some(image.pixels().flat_map(|&Rgba([.., a])| a.to_be_bytes()).collect())
+                Some(
+                    image
+                        .pixels()
+                        .flat_map(|&Rgba([.., a])| a.to_be_bytes())
+                        .collect(),
+                )
             } else {
                 None
             }
@@ -136,8 +138,7 @@ fn create_transparent_image(
 
     let compression_level = CompressionLevel::DefaultLevel as u8;
     let compressed_image = compress_to_vec_zlib(&encoded_image, compression_level);
-    let compressed_mask =
-        encoded_mask.map(|m| compress_to_vec_zlib(&m, compression_level));
+    let compressed_mask = encoded_mask.map(|m| compress_to_vec_zlib(&m, compression_level));
 
     create_raster_image(
         chunk,
@@ -172,8 +173,7 @@ fn create_raster_image(
     });
 
     let image_size =
-        Size::from_wh(dynamic_image.width() as f32, dynamic_image.height() as f32)
-            .unwrap();
+        Size::from_wh(dynamic_image.width() as f32, dynamic_image.height() as f32).unwrap();
     let image_ref = ctx.alloc_ref();
     let image_name = rc.add_x_object(image_ref);
 

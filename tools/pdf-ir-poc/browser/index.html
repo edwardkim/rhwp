@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>PDF IR POC Evidence</title>
+<style>body { margin:0; background:#ddd; } canvas { display:block; background:white; }</style>
+<canvas id="page"></canvas>
+<script type="module">
+  const worker = new Worker("./worker.js", { type: "module" });
+  let nextId = 0;
+  const pending = new Map();
+  let fatal = null;
+  window.pocReady = false;
+  worker.onmessage = ({ data }) => {
+    if (data.kind === "ready") { window.pocReady = true; return; }
+    if (data.kind === "fatal") { failWorker(data.error); return; }
+    const request = pending.get(data.id);
+    if (!request) return;
+    pending.delete(data.id);
+    clearTimeout(request.timer);
+    if (data.error) request.reject(new Error(data.error));
+    else request.resolve(data);
+  };
+  function failWorker(message) {
+    fatal = String(message);
+    window.workerFatal = fatal;
+    for (const request of pending.values()) { clearTimeout(request.timer); request.reject(new Error(fatal)); }
+    pending.clear();
+  }
+  worker.onerror = (error) => failWorker(error.message);
+  window.compileBuffer = (bytes, paintedRules=false,tables=false) => new Promise((resolve, reject) => {
+    if (fatal) { reject(new Error(fatal)); return; }
+    const id = ++nextId;
+    const timer = setTimeout(()=>{ pending.delete(id); reject(new Error("POC worker response timed out")); },15000);
+    pending.set(id, { resolve, reject, timer });
+    worker.postMessage({ id, bytes, paintedRules,tables }, [bytes]);
+  });
+  window.runPdf = async (name, paintedRules=false,tables=false) => {
+    const response = await fetch(`/pdf/${name}.pdf`);
+    const result = await window.compileBuffer(await response.arrayBuffer(),paintedRules,tables);
+    const xml = new DOMParser().parseFromString(result.svg, "image/svg+xml");
+    const dimensions = xml.documentElement.getAttribute("viewBox").split(/\s+/).map(Number);
+    const canvas = document.getElementById("page");
+    canvas.width = Math.ceil(dimensions[2]);
+    canvas.height = Math.ceil(dimensions[3]);
+    const image = new Image();
+    const url = URL.createObjectURL(new Blob([result.svg], { type:"image/svg+xml" }));
+    try {
+      image.src = url;
+      await image.decode();
+      const ctx = canvas.getContext("2d", { willReadFrequently:true });
+      ctx.fillStyle = "white";
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.drawImage(image,0,0,canvas.width,canvas.height);
+      const pixels = ctx.getImageData(0,0,canvas.width,canvas.height).data;
+      let inkPixels = 0;
+      for (let i=0; i<pixels.length; i+=4) if (pixels[i]<230 || pixels[i+1]<230 || pixels[i+2]<230) inkPixels++;
+      return {
+        report: result.report, svg: result.svg, hwpx: Array.from(result.hwpx),
+        pageCount: result.pageCount, elapsedMs: result.elapsedMs,
+        svgText: xml.documentElement.textContent, images: xml.querySelectorAll("image").length,
+        inkPixels, canvasSize:[canvas.width,canvas.height]
+      };
+    } finally { URL.revokeObjectURL(url); }
+  };
+</script>
+</html>

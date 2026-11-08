@@ -1,0 +1,60 @@
+{
+  "base": "c88657d9c30b57d8481de40f74fd76fd3e2a0af7",
+  "original_head": "a9836a959015e9f4709d1b659994b7316f812289",
+  "compatibility_merge": "dda384eadc4148ff4c939efdf1a184aacd0e59fa",
+  "runtime_source": "01e9f4ff012acceaa477c7f4f0a085b86747ef42",
+  "runtime_changes": [
+    "src/document_core/commands/object_ops/shape.rs",
+    "src/serializer/control.rs"
+  ],
+  "native": {
+    "source": "01e9f4ff012acceaa477c7f4f0a085b86747ef42",
+    "native_sha256": "606e9e7f6a7106649ccae474365abec6afb98b79a7314951643a0e461b922f7f",
+    "focused": "PASS",
+    "font_programs": 5
+  },
+  "wasm": {
+    "source": "01e9f4ff012acceaa477c7f4f0a085b86747ef42",
+    "optimized": true,
+    "files": {
+      "rhwp.js": "e686b20d70bfc9e51f9ebf7efb3d0c84ca7308d19db747b6ce6a2328af35b07a",
+      "rhwp_bg.wasm": "bff12af51b68ac60b07ec91b47bc7787352c69a839ff9587363b0cb834ebf6f8",
+      "rhwp.d.ts": "93e5476f76ac72f116eb636456c6131a07297b4779b764a71c39183bd6352d0e",
+      "rhwp_bg.wasm.d.ts": "8108c6673fb8b4889f2738005c8dfcf757ac4e89b5ec946f9dd6c8b56467d1f9"
+    }
+  },
+  "environment": {
+    "os": "Linux x86_64 (WSL2)",
+    "rust": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+    "node": "v24.15.0",
+    "chrome": "155.0.8059.79",
+    "wasm_pack": "0.15.0",
+    "wasm_opt": "117",
+    "dpi": 96,
+    "profile": "print",
+    "modern_compat": "2024",
+    "legacy_compat": "2022"
+  },
+  "fidelity_fonts": [
+    {
+      "family": "함초롬바탕 / HCRBatang",
+      "version": "1.980 Build 20140819",
+      "sha256": "d85550717552101699122adc5b948e8129881f39ffcf802cafe62aac3b1ced40",
+      "source": "https://raw.githubusercontent.com/dsolver-el/hwpx-template-engine/d3018c859da225ea8b0f71408ce30ac48de862f6/src/main/resources/fonts/hcr/HANBatang.ttf"
+    },
+    {
+      "path": "/home/edward/mygithub/ttfs/hwp/HBATANG.TTF",
+      "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+    },
+    {
+      "path": "/home/edward/mygithub/ttfs/windows/gulim.ttc",
+      "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+    }
+  ],
+  "font_programs_committed": false,
+  "recorded_at": "2026-11-02T00:15:45.036917+00:00",
+  "visual_tools_source": "c88657d9c30b57d8481de40f74fd76fd3e2a0af7",
+  "nextest_version": "cargo-nextest 0.9.137 (75ddba7e9 2026-05-26)\nrelease: 0.9.137\ncommit-hash: 75ddba7e911b44c5c0700dac0415d824403de9bd\ncommit-date: 2026-05-26\nhost: x86_64-unknown-linux-gnu",
+  "test_file_sha256": "10968fd6e8a46ac7a4a8bc505ba9549f196361b71672f3a47b6ef8315e91e774",
+  "test_assertions_unchanged": true
+}

@@ -1,0 +1,783 @@
+{
+  "issue": 7998,
+  "stage": 27,
+  "date": "2026-10-19",
+  "base": "d69233b17c730f2f4d64a0ec8d6a3b6e21309625",
+  "productSourceSha256": {
+    "src/document_core/commands/border_paint_structure.rs": "9440459fa777459a4043b14e0cfeb5d47d3129c47aca9317475e4eb724ae77e0",
+    "src/document_core/commands/table_ops.rs": "76f6a6c1f7b479bde0dfb87a60916e5fe637bf38b5e4a0f2945a7ef7fd7bdf64",
+    "src/model/mod.rs": "a6cb4f321bfe81284af6b304240176a9a3191b1b642deee93ee50018bc75381c",
+    "src/parser/hwpx/mod.rs": "a6c2b27b10a726f6b388e3bdcde6e49f2978e249b3953c0469a9a6e2cfc9817b",
+    "src/serializer/hwpx/context.rs": "b7c39ffe7b51efee3912d2305ebb37e3fe20084b3c306d11ffc69675ea9a9238",
+    "src/serializer/hwpx/mod.rs": "0b0a3d3da3adc1bac45d989cd138735ef6686722c82628d685d9287ddfdb5b58",
+    "src/serializer/hwpx/table.rs": "cbaf9fb418875659d2ef9191b4862ec2bee010badbc29526cc1d3c34204b2e8c",
+    "src/model/table_row_grid.rs": "81055c3ed2db49a171ba49b50b7a4b05252c6f742d7ba03f22af69e6b7d487b9"
+  },
+  "nativeSha256": "61cc3cd5a8acc2d9856266ff7297c4b375139b3551888017187cd9dedda2d8da",
+  "freshDockerWasm": {
+    "rhwp.js": {
+      "bytes": 476454,
+      "sha256": "5671802fbb89ed060c3bab7a6f458a78833a7e5ca3e7df8e1699d45098cddeb6"
+    },
+    "rhwp_bg.wasm": {
+      "bytes": 19691452,
+      "sha256": "73bc7e504539bea447489808782cffaf97aeb48e0a4f693656e2c0f41e38b0db"
+    }
+  },
+  "generatedInputs": [
+    {
+      "input": "edited/colspan-into.hwp",
+      "bytes": 4096,
+      "sha256": "37382d3a4a912e73a4cb9f9dcd869f55eda1a6f75752fb3430bec12a17eacddf",
+      "reproducedSha256": "37382d3a4a912e73a4cb9f9dcd869f55eda1a6f75752fb3430bec12a17eacddf",
+      "identical": true
+    },
+    {
+      "input": "edited/colspan-into.hwpx",
+      "bytes": 7091,
+      "sha256": "013ce91bfca513a73fac26ca30ebc9076e3558c64f8db2bb2416657d55500563",
+      "reproducedSha256": "013ce91bfca513a73fac26ca30ebc9076e3558c64f8db2bb2416657d55500563",
+      "identical": true
+    },
+    {
+      "input": "edited/colspan-merge.hwp",
+      "bytes": 4096,
+      "sha256": "3c44686ae456110440d9514ba66eeb1a6a77c986b436e371e39d41f31af795dc",
+      "reproducedSha256": "3c44686ae456110440d9514ba66eeb1a6a77c986b436e371e39d41f31af795dc",
+      "identical": true
+    },
+    {
+      "input": "edited/colspan-merge.hwpx",
+      "bytes": 7047,
+      "sha256": "0c30be462342f2e9a3ae5a6097f86dad2f4b1d2990ff75a03171eb085f0001e1",
+      "reproducedSha256": "0c30be462342f2e9a3ae5a6097f86dad2f4b1d2990ff75a03171eb085f0001e1",
+      "identical": true
+    },
+    {
+      "input": "edited/colspan-split.hwp",
+      "bytes": 4096,
+      "sha256": "37382d3a4a912e73a4cb9f9dcd869f55eda1a6f75752fb3430bec12a17eacddf",
+      "reproducedSha256": "37382d3a4a912e73a4cb9f9dcd869f55eda1a6f75752fb3430bec12a17eacddf",
+      "identical": true
+    },
+    {
+      "input": "edited/colspan-split.hwpx",
+      "bytes": 7091,
+      "sha256": "013ce91bfca513a73fac26ca30ebc9076e3558c64f8db2bb2416657d55500563",
+      "reproducedSha256": "013ce91bfca513a73fac26ca30ebc9076e3558c64f8db2bb2416657d55500563",
+      "identical": true
+    },
+    {
+      "input": "edited/rowspan-merge-from-hwp.hwpx",
+      "bytes": 7775,
+      "sha256": "bc8200848c81fcb0ccca833512f7444d9f122aa7ad4b1cb8e601eadab526ff7d",
+      "reproducedSha256": "bc8200848c81fcb0ccca833512f7444d9f122aa7ad4b1cb8e601eadab526ff7d",
+      "identical": true
+    },
+    {
+      "input": "edited/rowspan-merge-row.hwp",
+      "bytes": 4096,
+      "sha256": "91a280681f200738c8d704feba83082a1efebf106d40b98d1e7245ae38163594",
+      "reproducedSha256": "91a280681f200738c8d704feba83082a1efebf106d40b98d1e7245ae38163594",
+      "identical": true
+    },
+    {
+      "input": "edited/rowspan-merge-row.hwpx",
+      "bytes": 7667,
+      "sha256": "4c723d5d78a3acd876a9f20e2386683a36e6c1a79c4f9002e45422b07720a0c9",
+      "reproducedSha256": "4c723d5d78a3acd876a9f20e2386683a36e6c1a79c4f9002e45422b07720a0c9",
+      "identical": true
+    },
+    {
+      "input": "edited/rowspan-merge-standard.hwpx",
+      "bytes": 7329,
+      "sha256": "023d8e3025e746c62658701bc8e4ae7f1fc56c544784efc73d61683786cfc3c3",
+      "reproducedSha256": "023d8e3025e746c62658701bc8e4ae7f1fc56c544784efc73d61683786cfc3c3",
+      "identical": true
+    },
+    {
+      "input": "edited/rowspan-merge.hwp",
+      "bytes": 4096,
+      "sha256": "b0cfebfc574843495137bc1ff4ccb450547c4563df308ceedcdd9a93309300e8",
+      "reproducedSha256": "b0cfebfc574843495137bc1ff4ccb450547c4563df308ceedcdd9a93309300e8",
+      "identical": true
+    },
+    {
+      "input": "edited/rowspan-merge.hwpx",
+      "bytes": 7608,
+      "sha256": "d8f293b6d3e40ac5976c5daafa9886b2f576d363ccf3e8618bf56ed401f7b8a5",
+      "reproducedSha256": "d8f293b6d3e40ac5976c5daafa9886b2f576d363ccf3e8618bf56ed401f7b8a5",
+      "identical": true
+    },
+    {
+      "input": "edited/rowspan-range.hwp",
+      "bytes": 4096,
+      "sha256": "a9cccbb568a8da2483e321fe5aaca8a374ffa828860d1c554545633d6f799392",
+      "reproducedSha256": "a9cccbb568a8da2483e321fe5aaca8a374ffa828860d1c554545633d6f799392",
+      "identical": true
+    },
+    {
+      "input": "edited/rowspan-range.hwpx",
+      "bytes": 7400,
+      "sha256": "a50805a4d6a7ee0265eeadd433393f489ba068a1154cd33e7192d36e008c6d45",
+      "reproducedSha256": "a50805a4d6a7ee0265eeadd433393f489ba068a1154cd33e7192d36e008c6d45",
+      "identical": true
+    },
+    {
+      "input": "edited/rowspan-split.hwp",
+      "bytes": 4096,
+      "sha256": "6a36dd4ac427ec78f238fda0180c0a30eeabce93fea2ffd14297d104b9a0ca40",
+      "reproducedSha256": "6a36dd4ac427ec78f238fda0180c0a30eeabce93fea2ffd14297d104b9a0ca40",
+      "identical": true
+    },
+    {
+      "input": "edited/rowspan-split.hwpx",
+      "bytes": 7365,
+      "sha256": "ab9bee22a05f06bac55c141632644971c013a447451c1421c00e97a861f279e1",
+      "reproducedSha256": "ab9bee22a05f06bac55c141632644971c013a447451c1421c00e97a861f279e1",
+      "identical": true
+    },
+    {
+      "input": "preserved/hidden-separate.hwp",
+      "bytes": 5632,
+      "sha256": "bc3e53b7da889c2a689e5b150bbf3722c6754cc3a96f7462a6a2e755fe98ed8b",
+      "reproducedSha256": "bc3e53b7da889c2a689e5b150bbf3722c6754cc3a96f7462a6a2e755fe98ed8b",
+      "identical": true
+    },
+    {
+      "input": "preserved/hidden-separate.hwpx",
+      "bytes": 9050,
+      "sha256": "2641c8b12ce5bb33bfb60c9eebe555c54b5f56539dc305219815323136b331df",
+      "reproducedSha256": "2641c8b12ce5bb33bfb60c9eebe555c54b5f56539dc305219815323136b331df",
+      "identical": true
+    },
+    {
+      "input": "preserved/retained.hwp",
+      "bytes": 11264,
+      "sha256": "aa77cd8163fbaa609a6d931436ca6fd298ed28c0bd30dae04eaed8483f318738",
+      "reproducedSha256": "aa77cd8163fbaa609a6d931436ca6fd298ed28c0bd30dae04eaed8483f318738",
+      "identical": true
+    },
+    {
+      "input": "preserved/retained.hwpx",
+      "bytes": 13716,
+      "sha256": "12c114215ccd61319474aec9b02dc23d89a1f4a0df018bb1ee83356de5179677",
+      "reproducedSha256": "12c114215ccd61319474aec9b02dc23d89a1f4a0df018bb1ee83356de5179677",
+      "identical": true
+    }
+  ],
+  "independentPrints": [
+    {
+      "pdf": "pdf/issue7998/cell-regions/topology/print/colspan-into-hwp-2020.pdf",
+      "bytes": 18175,
+      "sha256": "6c0988baf6b2a2501434b2431dda96385f9516efc960074d5d7aa656cf290374",
+      "pageCount": 1,
+      "pdfInfo": [
+        "Creator:         Hwp 2020 0.0.0.0",
+        "Page size:       399 x 360 pts"
+      ],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/colspan-into.hwp",
+      "printedInputSha256": "37382d3a4a912e73a4cb9f9dcd869f55eda1a6f75752fb3430bec12a17eacddf",
+      "source": "automated Hancom Print",
+      "engine": "2020",
+      "hancomVersion": "11.0.0.9136",
+      "printMethod": 0,
+      "outputMode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "pdf": "pdf/issue7998/cell-regions/topology/print/colspan-into-hwpx-2020.pdf",
+      "bytes": 18175,
+      "sha256": "76b34764a7ea5909ef485c9240e4536c81052bdeea7ffd1fae0ed0e930315b3a",
+      "pageCount": 1,
+      "pdfInfo": [
+        "Creator:         Hwp 2020 0.0.0.0",
+        "Page size:       399 x 360 pts"
+      ],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/colspan-into.hwpx",
+      "printedInputSha256": "013ce91bfca513a73fac26ca30ebc9076e3558c64f8db2bb2416657d55500563",
+      "source": "automated Hancom Print",
+      "engine": "2020",
+      "hancomVersion": "11.0.0.9136",
+      "printMethod": 0,
+      "outputMode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "pdf": "pdf/issue7998/cell-regions/topology/print/colspan-merge-hwpx-2020.pdf",
+      "bytes": 18126,
+      "sha256": "91884529f1a16bc9bcbbe3e67c43be90a864722d7acbf421cb004964e4e4e578",
+      "pageCount": 1,
+      "pdfInfo": [
+        "Creator:         Hwp 2020 0.0.0.0",
+        "Page size:       399 x 360 pts"
+      ],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/colspan-merge.hwpx",
+      "printedInputSha256": "0c30be462342f2e9a3ae5a6097f86dad2f4b1d2990ff75a03171eb085f0001e1",
+      "source": "automated Hancom Print",
+      "engine": "2020",
+      "hancomVersion": "11.0.0.9136",
+      "printMethod": 0,
+      "outputMode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "pdf": "pdf/issue7998/cell-regions/topology/print/colspan-split-hwp-2020.pdf",
+      "bytes": 18175,
+      "sha256": "d84f377abce33475d58714e5af48499f4a2511f85c6562fab6a3ca0451a11128",
+      "pageCount": 1,
+      "pdfInfo": [
+        "Creator:         Hwp 2020 0.0.0.0",
+        "Page size:       399 x 360 pts"
+      ],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/colspan-split.hwp",
+      "printedInputSha256": "37382d3a4a912e73a4cb9f9dcd869f55eda1a6f75752fb3430bec12a17eacddf",
+      "source": "automated Hancom Print",
+      "engine": "2020",
+      "hancomVersion": "11.0.0.9136",
+      "printMethod": 0,
+      "outputMode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "pdf": "pdf/issue7998/cell-regions/topology/print/colspan-split-hwpx-2020.pdf",
+      "bytes": 18175,
+      "sha256": "9b43207e50d1f5547140902a17c6e362f2709eac170fdfb02208753e67d73a2c",
+      "pageCount": 1,
+      "pdfInfo": [
+        "Creator:         Hwp 2020 0.0.0.0",
+        "Page size:       399 x 360 pts"
+      ],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/colspan-split.hwpx",
+      "printedInputSha256": "013ce91bfca513a73fac26ca30ebc9076e3558c64f8db2bb2416657d55500563",
+      "source": "automated Hancom Print",
+      "engine": "2020",
+      "hancomVersion": "11.0.0.9136",
+      "printMethod": 0,
+      "outputMode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "pdf": "pdf/issue7998/cell-regions/topology/print/rowspan-merge-from-hwp-hwpx-2020.pdf",
+      "bytes": 18150,
+      "sha256": "cf0c7ade22fd15d928476901b35485b86fce6721458613ca8e09f547132b4cd4",
+      "pageCount": 1,
+      "pdfInfo": [
+        "Creator:         Hwp 2020 0.0.0.0",
+        "Page size:       399 x 360 pts"
+      ],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/rowspan-merge-from-hwp.hwpx",
+      "printedInputSha256": "bc8200848c81fcb0ccca833512f7444d9f122aa7ad4b1cb8e601eadab526ff7d",
+      "source": "automated Hancom Print",
+      "engine": "2020",
+      "hancomVersion": "11.0.0.9136",
+      "printMethod": 0,
+      "outputMode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "pdf": "pdf/issue7998/cell-regions/topology/print/rowspan-merge-row-hwp-2020.pdf",
+      "bytes": 18193,
+      "sha256": "67e513cd24edcadcd9d8e165b5af127c2d5a71a2f6922db0350ec6693a4c81d5",
+      "pageCount": 1,
+      "pdfInfo": [
+        "Creator:         Hwp 2020 0.0.0.0",
+        "Page size:       399 x 360 pts"
+      ],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/rowspan-merge-row.hwp",
+      "printedInputSha256": "91a280681f200738c8d704feba83082a1efebf106d40b98d1e7245ae38163594",
+      "source": "automated Hancom Print",
+      "engine": "2020",
+      "hancomVersion": "11.0.0.9136",
+      "printMethod": 0,
+      "outputMode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "pdf": "pdf/issue7998/cell-regions/topology/print/rowspan-merge-row-hwpx-2020.pdf",
+      "bytes": 18193,
+      "sha256": "0f2e3847665a05eef1b1d90dd69a71ed82fe4a5c85cce8cacb79a09415cb05f6",
+      "pageCount": 1,
+      "pdfInfo": [
+        "Creator:         Hwp 2020 0.0.0.0",
+        "Page size:       399 x 360 pts"
+      ],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/rowspan-merge-row.hwpx",
+      "printedInputSha256": "4c723d5d78a3acd876a9f20e2386683a36e6c1a79c4f9002e45422b07720a0c9",
+      "source": "automated Hancom Print",
+      "engine": "2020",
+      "hancomVersion": "11.0.0.9136",
+      "printMethod": 0,
+      "outputMode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "pdf": "pdf/issue7998/cell-regions/topology/print/rowspan-merge-hwpx-2020.pdf",
+      "bytes": 18150,
+      "sha256": "b2d01f643c5e741ba99635e15e016d657f027d23bd61f27e078297ed5be5b449",
+      "pageCount": 1,
+      "pdfInfo": [
+        "Creator:         Hwp 2020 0.0.0.0",
+        "Page size:       399 x 360 pts"
+      ],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/rowspan-merge.hwpx",
+      "printedInputSha256": "d8f293b6d3e40ac5976c5daafa9886b2f576d363ccf3e8618bf56ed401f7b8a5",
+      "source": "automated Hancom Print",
+      "engine": "2020",
+      "hancomVersion": "11.0.0.9136",
+      "printMethod": 0,
+      "outputMode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "pdf": "pdf/issue7998/cell-regions/topology/print/rowspan-merge-hwp-manual-2020.pdf",
+      "bytes": 18171,
+      "sha256": "fda1222bf1adc9a9743b0e8c866ca4b82435562e65ad3e5d017eedfd2f903336",
+      "pageCount": 1,
+      "pdfInfo": [
+        "Creator:         Hwp 2020 11.0.0.9166",
+        "Page size:       595 x 841 pts (A4)"
+      ],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/rowspan-merge.hwp",
+      "printedInputSha256": "b0cfebfc574843495137bc1ff4ccb450547c4563df308ceedcdd9a93309300e8",
+      "source": "maintainer manual Hancom Print",
+      "hancomVersion": "11.0.0.9166",
+      "sourceConfirmation": "maintainer explicitly identified HWP as the printed format",
+      "acceptedException": "2026-10-19: use normal manual PDF; additional MCP table-height difference is deferred",
+      "paperCaveat": "Manual A4; content keeps the same physical origin/scale as the 399 x 360 pt document; no post hoc registration or scaling"
+    },
+    {
+      "pdf": "pdf/issue7998/cell-regions/topology/print/rowspan-range-hwpx-2020.pdf",
+      "bytes": 18213,
+      "sha256": "d5ceb0543ff03c3f18732c23dcd992604dfcedc875043722fb842d1bad7ec617",
+      "pageCount": 1,
+      "pdfInfo": [
+        "Creator:         Hwp 2020 0.0.0.0",
+        "Page size:       399 x 360 pts"
+      ],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/rowspan-range.hwpx",
+      "printedInputSha256": "a50805a4d6a7ee0265eeadd433393f489ba068a1154cd33e7192d36e008c6d45",
+      "source": "automated Hancom Print",
+      "engine": "2020",
+      "hancomVersion": "11.0.0.9136",
+      "printMethod": 0,
+      "outputMode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "pdf": "pdf/issue7998/cell-regions/topology/print/rowspan-split-hwpx-2020.pdf",
+      "bytes": 18183,
+      "sha256": "8700dd3022dbe215eb704863fbe32c7b2129b7aeb55b3fb0a8d9b9120ef4c9bd",
+      "pageCount": 1,
+      "pdfInfo": [
+        "Creator:         Hwp 2020 0.0.0.0",
+        "Page size:       399 x 360 pts"
+      ],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/rowspan-split.hwpx",
+      "printedInputSha256": "ab9bee22a05f06bac55c141632644971c013a447451c1421c00e97a861f279e1",
+      "source": "automated Hancom Print",
+      "engine": "2020",
+      "hancomVersion": "11.0.0.9136",
+      "printMethod": 0,
+      "outputMode": "hancom2020_pdf_driver_one_up"
+    }
+  ],
+  "validation": [
+    {
+      "key": "source-retained",
+      "input": "pdf/issue7998/retained-border-structure/retained-pen.pdf",
+      "inputSha256": "f41939dc7ba7b197fbf7bbc76611bf47ffb098738d19a163fef92d15edcf547f",
+      "pdf": "pdf/issue7998/retained-border-structure/retained-pen.pdf",
+      "referenceSha256": "f41939dc7ba7b197fbf7bbc76611bf47ffb098738d19a163fef92d15edcf547f",
+      "nativeRawPercent": 99.97868,
+      "freshWasmRawPercent": 99.9784,
+      "documentPageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "missingPages": [],
+      "printedInput": null,
+      "referenceRole": "exact-input Print or original PDF"
+    },
+    {
+      "key": "preserved-retained-hwp",
+      "input": "pdf/issue7998/cell-regions/topology/preserved/retained.hwp",
+      "inputSha256": "aa77cd8163fbaa609a6d931436ca6fd298ed28c0bd30dae04eaed8483f318738",
+      "pdf": "pdf/issue7998/retained-border-structure/retained-pen.pdf",
+      "referenceSha256": "f41939dc7ba7b197fbf7bbc76611bf47ffb098738d19a163fef92d15edcf547f",
+      "nativeRawPercent": 99.97868,
+      "freshWasmRawPercent": 99.9784,
+      "documentPageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "missingPages": [],
+      "printedInput": null,
+      "referenceRole": "exact-input Print or original PDF"
+    },
+    {
+      "key": "preserved-retained-hwpx",
+      "input": "pdf/issue7998/cell-regions/topology/preserved/retained.hwpx",
+      "inputSha256": "12c114215ccd61319474aec9b02dc23d89a1f4a0df018bb1ee83356de5179677",
+      "pdf": "pdf/issue7998/retained-border-structure/retained-pen.pdf",
+      "referenceSha256": "f41939dc7ba7b197fbf7bbc76611bf47ffb098738d19a163fef92d15edcf547f",
+      "nativeRawPercent": 99.97868,
+      "freshWasmRawPercent": 99.9784,
+      "documentPageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "missingPages": [],
+      "printedInput": null,
+      "referenceRole": "exact-input Print or original PDF"
+    },
+    {
+      "key": "source-hidden-separate",
+      "input": "pdf/issue7998/cell-regions/hidden-separate.pdf",
+      "inputSha256": "38110b3e53010b36a1b31f223454aa5dfeb3e6349807c2c8b68e6721cd4e358e",
+      "pdf": "pdf/issue7998/cell-regions/hidden-separate.pdf",
+      "referenceSha256": "38110b3e53010b36a1b31f223454aa5dfeb3e6349807c2c8b68e6721cd4e358e",
+      "nativeRawPercent": 100.0,
+      "freshWasmRawPercent": 100.0,
+      "documentPageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "missingPages": [],
+      "printedInput": null,
+      "referenceRole": "exact-input Print or original PDF"
+    },
+    {
+      "key": "preserved-hidden-separate-hwp",
+      "input": "pdf/issue7998/cell-regions/topology/preserved/hidden-separate.hwp",
+      "inputSha256": "bc3e53b7da889c2a689e5b150bbf3722c6754cc3a96f7462a6a2e755fe98ed8b",
+      "pdf": "pdf/issue7998/cell-regions/hidden-separate.pdf",
+      "referenceSha256": "38110b3e53010b36a1b31f223454aa5dfeb3e6349807c2c8b68e6721cd4e358e",
+      "nativeRawPercent": 100.0,
+      "freshWasmRawPercent": 100.0,
+      "documentPageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "missingPages": [],
+      "printedInput": null,
+      "referenceRole": "exact-input Print or original PDF"
+    },
+    {
+      "key": "preserved-hidden-separate-hwpx",
+      "input": "pdf/issue7998/cell-regions/topology/preserved/hidden-separate.hwpx",
+      "inputSha256": "2641c8b12ce5bb33bfb60c9eebe555c54b5f56539dc305219815323136b331df",
+      "pdf": "pdf/issue7998/cell-regions/hidden-separate.pdf",
+      "referenceSha256": "38110b3e53010b36a1b31f223454aa5dfeb3e6349807c2c8b68e6721cd4e358e",
+      "nativeRawPercent": 100.0,
+      "freshWasmRawPercent": 100.0,
+      "documentPageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "missingPages": [],
+      "printedInput": null,
+      "referenceRole": "exact-input Print or original PDF"
+    },
+    {
+      "key": "source-colspan",
+      "input": "pdf/issue7998/cell-regions/colspan.pdf",
+      "inputSha256": "9d300df62e8ea1ccf9b3e7e4def4f21bd23e442e0e80e698a3db72e3990ed01c",
+      "pdf": "pdf/issue7998/cell-regions/colspan.pdf",
+      "referenceSha256": "9d300df62e8ea1ccf9b3e7e4def4f21bd23e442e0e80e698a3db72e3990ed01c",
+      "nativeRawPercent": 100.0,
+      "freshWasmRawPercent": 100.0,
+      "documentPageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "missingPages": [],
+      "printedInput": null,
+      "referenceRole": "exact-input Print or original PDF"
+    },
+    {
+      "key": "source-rowspan",
+      "input": "pdf/issue7998/cell-regions/rowspan.pdf",
+      "inputSha256": "ee2cbcf5ce04b57e4c82d0e8e0acee4bd31ddaf57048a8bed0421dd4cf3a006b",
+      "pdf": "pdf/issue7998/cell-regions/rowspan.pdf",
+      "referenceSha256": "ee2cbcf5ce04b57e4c82d0e8e0acee4bd31ddaf57048a8bed0421dd4cf3a006b",
+      "nativeRawPercent": 100.0,
+      "freshWasmRawPercent": 100.0,
+      "documentPageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "missingPages": [],
+      "printedInput": null,
+      "referenceRole": "exact-input Print or original PDF"
+    },
+    {
+      "key": "colspan-into-hwp",
+      "input": "pdf/issue7998/cell-regions/topology/edited/colspan-into.hwp",
+      "inputSha256": "37382d3a4a912e73a4cb9f9dcd869f55eda1a6f75752fb3430bec12a17eacddf",
+      "pdf": "pdf/issue7998/cell-regions/topology/print/colspan-into-hwp-2020.pdf",
+      "referenceSha256": "6c0988baf6b2a2501434b2431dda96385f9516efc960074d5d7aa656cf290374",
+      "nativeRawPercent": 99.9396,
+      "freshWasmRawPercent": 99.90274,
+      "documentPageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "missingPages": [],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/colspan-into.hwp",
+      "referenceRole": "exact-input Print or original PDF"
+    },
+    {
+      "key": "colspan-into-hwpx",
+      "input": "pdf/issue7998/cell-regions/topology/edited/colspan-into.hwpx",
+      "inputSha256": "013ce91bfca513a73fac26ca30ebc9076e3558c64f8db2bb2416657d55500563",
+      "pdf": "pdf/issue7998/cell-regions/topology/print/colspan-into-hwpx-2020.pdf",
+      "referenceSha256": "76b34764a7ea5909ef485c9240e4536c81052bdeea7ffd1fae0ed0e930315b3a",
+      "nativeRawPercent": 99.9396,
+      "freshWasmRawPercent": 99.90274,
+      "documentPageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "missingPages": [],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/colspan-into.hwpx",
+      "referenceRole": "exact-input Print or original PDF"
+    },
+    {
+      "key": "colspan-merge-hwp",
+      "input": "pdf/issue7998/cell-regions/topology/edited/colspan-merge.hwp",
+      "inputSha256": "3c44686ae456110440d9514ba66eeb1a6a77c986b436e371e39d41f31af795dc",
+      "pdf": "pdf/issue7998/cell-regions/topology/print/colspan-merge-hwpx-2020.pdf",
+      "referenceSha256": "91884529f1a16bc9bcbbe3e67c43be90a864722d7acbf421cb004964e4e4e578",
+      "nativeRawPercent": 100.0,
+      "freshWasmRawPercent": 100.0,
+      "documentPageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "missingPages": [],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/colspan-merge.hwpx",
+      "referenceRole": "same-edit shared reference; not a separate format Print"
+    },
+    {
+      "key": "colspan-merge-hwpx",
+      "input": "pdf/issue7998/cell-regions/topology/edited/colspan-merge.hwpx",
+      "inputSha256": "0c30be462342f2e9a3ae5a6097f86dad2f4b1d2990ff75a03171eb085f0001e1",
+      "pdf": "pdf/issue7998/cell-regions/topology/print/colspan-merge-hwpx-2020.pdf",
+      "referenceSha256": "91884529f1a16bc9bcbbe3e67c43be90a864722d7acbf421cb004964e4e4e578",
+      "nativeRawPercent": 100.0,
+      "freshWasmRawPercent": 100.0,
+      "documentPageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "missingPages": [],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/colspan-merge.hwpx",
+      "referenceRole": "exact-input Print or original PDF"
+    },
+    {
+      "key": "colspan-split-hwp",
+      "input": "pdf/issue7998/cell-regions/topology/edited/colspan-split.hwp",
+      "inputSha256": "37382d3a4a912e73a4cb9f9dcd869f55eda1a6f75752fb3430bec12a17eacddf",
+      "pdf": "pdf/issue7998/cell-regions/topology/print/colspan-split-hwp-2020.pdf",
+      "referenceSha256": "d84f377abce33475d58714e5af48499f4a2511f85c6562fab6a3ca0451a11128",
+      "nativeRawPercent": 99.9396,
+      "freshWasmRawPercent": 99.90274,
+      "documentPageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "missingPages": [],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/colspan-split.hwp",
+      "referenceRole": "exact-input Print or original PDF"
+    },
+    {
+      "key": "colspan-split-hwpx",
+      "input": "pdf/issue7998/cell-regions/topology/edited/colspan-split.hwpx",
+      "inputSha256": "013ce91bfca513a73fac26ca30ebc9076e3558c64f8db2bb2416657d55500563",
+      "pdf": "pdf/issue7998/cell-regions/topology/print/colspan-split-hwpx-2020.pdf",
+      "referenceSha256": "9b43207e50d1f5547140902a17c6e362f2709eac170fdfb02208753e67d73a2c",
+      "nativeRawPercent": 99.9396,
+      "freshWasmRawPercent": 99.90274,
+      "documentPageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "missingPages": [],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/colspan-split.hwpx",
+      "referenceRole": "exact-input Print or original PDF"
+    },
+    {
+      "key": "rowspan-merge-from-hwp-hwpx",
+      "input": "pdf/issue7998/cell-regions/topology/edited/rowspan-merge-from-hwp.hwpx",
+      "inputSha256": "bc8200848c81fcb0ccca833512f7444d9f122aa7ad4b1cb8e601eadab526ff7d",
+      "pdf": "pdf/issue7998/cell-regions/topology/print/rowspan-merge-from-hwp-hwpx-2020.pdf",
+      "referenceSha256": "cf0c7ade22fd15d928476901b35485b86fce6721458613ca8e09f547132b4cd4",
+      "nativeRawPercent": 99.94756,
+      "freshWasmRawPercent": 98.29446,
+      "documentPageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "missingPages": [],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/rowspan-merge-from-hwp.hwpx",
+      "referenceRole": "exact-input Print or original PDF"
+    },
+    {
+      "key": "rowspan-merge-row-hwp",
+      "input": "pdf/issue7998/cell-regions/topology/edited/rowspan-merge-row.hwp",
+      "inputSha256": "91a280681f200738c8d704feba83082a1efebf106d40b98d1e7245ae38163594",
+      "pdf": "pdf/issue7998/cell-regions/topology/print/rowspan-merge-row-hwp-2020.pdf",
+      "referenceSha256": "67e513cd24edcadcd9d8e165b5af127c2d5a71a2f6922db0350ec6693a4c81d5",
+      "nativeRawPercent": 99.95448,
+      "freshWasmRawPercent": 98.51106,
+      "documentPageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "missingPages": [],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/rowspan-merge-row.hwp",
+      "referenceRole": "exact-input Print or original PDF"
+    },
+    {
+      "key": "rowspan-merge-row-hwpx",
+      "input": "pdf/issue7998/cell-regions/topology/edited/rowspan-merge-row.hwpx",
+      "inputSha256": "4c723d5d78a3acd876a9f20e2386683a36e6c1a79c4f9002e45422b07720a0c9",
+      "pdf": "pdf/issue7998/cell-regions/topology/print/rowspan-merge-row-hwpx-2020.pdf",
+      "referenceSha256": "0f2e3847665a05eef1b1d90dd69a71ed82fe4a5c85cce8cacb79a09415cb05f6",
+      "nativeRawPercent": 99.95448,
+      "freshWasmRawPercent": 98.51106,
+      "documentPageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "missingPages": [],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/rowspan-merge-row.hwpx",
+      "referenceRole": "exact-input Print or original PDF"
+    },
+    {
+      "key": "rowspan-merge-standard-hwpx",
+      "input": "pdf/issue7998/cell-regions/topology/edited/rowspan-merge-standard.hwpx",
+      "inputSha256": "023d8e3025e746c62658701bc8e4ae7f1fc56c544784efc73d61683786cfc3c3",
+      "pdf": "pdf/issue7998/cell-regions/topology/print/rowspan-merge-hwpx-2020.pdf",
+      "referenceSha256": "b2d01f643c5e741ba99635e15e016d657f027d23bd61f27e078297ed5be5b449",
+      "nativeRawPercent": 99.94756,
+      "freshWasmRawPercent": 98.29446,
+      "documentPageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "missingPages": [],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/rowspan-merge.hwpx",
+      "referenceRole": "same-edit shared reference; not a separate format Print"
+    },
+    {
+      "key": "rowspan-merge-hwp",
+      "input": "pdf/issue7998/cell-regions/topology/edited/rowspan-merge.hwp",
+      "inputSha256": "b0cfebfc574843495137bc1ff4ccb450547c4563df308ceedcdd9a93309300e8",
+      "pdf": "pdf/issue7998/cell-regions/topology/print/rowspan-merge-hwp-manual-2020.pdf",
+      "referenceSha256": "fda1222bf1adc9a9743b0e8c866ca4b82435562e65ad3e5d017eedfd2f903336",
+      "nativeRawPercent": 99.94763,
+      "freshWasmRawPercent": 98.27024,
+      "documentPageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "missingPages": [],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/rowspan-merge.hwp",
+      "referenceRole": "exact-input Print or original PDF"
+    },
+    {
+      "key": "rowspan-merge-hwpx",
+      "input": "pdf/issue7998/cell-regions/topology/edited/rowspan-merge.hwpx",
+      "inputSha256": "d8f293b6d3e40ac5976c5daafa9886b2f576d363ccf3e8618bf56ed401f7b8a5",
+      "pdf": "pdf/issue7998/cell-regions/topology/print/rowspan-merge-hwpx-2020.pdf",
+      "referenceSha256": "b2d01f643c5e741ba99635e15e016d657f027d23bd61f27e078297ed5be5b449",
+      "nativeRawPercent": 99.94756,
+      "freshWasmRawPercent": 98.29446,
+      "documentPageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "missingPages": [],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/rowspan-merge.hwpx",
+      "referenceRole": "exact-input Print or original PDF"
+    },
+    {
+      "key": "rowspan-range-hwp",
+      "input": "pdf/issue7998/cell-regions/topology/edited/rowspan-range.hwp",
+      "inputSha256": "a9cccbb568a8da2483e321fe5aaca8a374ffa828860d1c554545633d6f799392",
+      "pdf": "pdf/issue7998/cell-regions/topology/print/rowspan-range-hwpx-2020.pdf",
+      "referenceSha256": "d5ceb0543ff03c3f18732c23dcd992604dfcedc875043722fb842d1bad7ec617",
+      "nativeRawPercent": 99.95394,
+      "freshWasmRawPercent": 98.49391,
+      "documentPageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "missingPages": [],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/rowspan-range.hwpx",
+      "referenceRole": "same-edit shared reference; not a separate format Print"
+    },
+    {
+      "key": "rowspan-range-hwpx",
+      "input": "pdf/issue7998/cell-regions/topology/edited/rowspan-range.hwpx",
+      "inputSha256": "a50805a4d6a7ee0265eeadd433393f489ba068a1154cd33e7192d36e008c6d45",
+      "pdf": "pdf/issue7998/cell-regions/topology/print/rowspan-range-hwpx-2020.pdf",
+      "referenceSha256": "d5ceb0543ff03c3f18732c23dcd992604dfcedc875043722fb842d1bad7ec617",
+      "nativeRawPercent": 99.95394,
+      "freshWasmRawPercent": 98.49391,
+      "documentPageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "missingPages": [],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/rowspan-range.hwpx",
+      "referenceRole": "exact-input Print or original PDF"
+    },
+    {
+      "key": "rowspan-split-hwp",
+      "input": "pdf/issue7998/cell-regions/topology/edited/rowspan-split.hwp",
+      "inputSha256": "6a36dd4ac427ec78f238fda0180c0a30eeabce93fea2ffd14297d104b9a0ca40",
+      "pdf": "pdf/issue7998/cell-regions/topology/print/rowspan-split-hwpx-2020.pdf",
+      "referenceSha256": "8700dd3022dbe215eb704863fbe32c7b2129b7aeb55b3fb0a8d9b9120ef4c9bd",
+      "nativeRawPercent": 99.93299,
+      "freshWasmRawPercent": 98.62659,
+      "documentPageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "missingPages": [],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/rowspan-split.hwpx",
+      "referenceRole": "same-edit shared reference; not a separate format Print"
+    },
+    {
+      "key": "rowspan-split-hwpx",
+      "input": "pdf/issue7998/cell-regions/topology/edited/rowspan-split.hwpx",
+      "inputSha256": "ab9bee22a05f06bac55c141632644971c013a447451c1421c00e97a861f279e1",
+      "pdf": "pdf/issue7998/cell-regions/topology/print/rowspan-split-hwpx-2020.pdf",
+      "referenceSha256": "8700dd3022dbe215eb704863fbe32c7b2129b7aeb55b3fb0a8d9b9120ef4c9bd",
+      "nativeRawPercent": 99.93299,
+      "freshWasmRawPercent": 98.62659,
+      "documentPageCounts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "missingPages": [],
+      "printedInput": "pdf/issue7998/cell-regions/topology/edited/rowspan-split.hwpx",
+      "referenceRole": "exact-input Print or original PDF"
+    }
+  ],
+  "directReview": {
+    "maintainer": "visual and editing structure passed",
+    "date": "2026-10-19",
+    "referenceRefresh": "Only three references replaced; frozen product PNGs reused, same physical geometry read again"
+  },
+  "additionalCompatibilityFinding": {
+    "input": "pdf/issue7998/cell-regions/topology/edited/rowspan-merge.hwp",
+    "inputSha256": "b0cfebfc574843495137bc1ff4ccb450547c4563df308ceedcdd9a93309300e8",
+    "pdf": "pdf/issue7998/cell-regions/topology/compatibility/rowspan-merge-hwp-2020.pdf",
+    "pdfSha256": "b4b631462feb05aa942ada990d48c58a11f7acbffd7417171c7b3ff20b9c20fc",
+    "hancomVersion": "11.0.0.9136",
+    "printMethod": 0,
+    "outputMode": "hancom2020_pdf_driver_one_up",
+    "observedNativeRawPercent": 56.38381,
+    "finding": "MCP Print extends table below page; maintainer manual Print has normal table height",
+    "status": "cause unconfirmed; maintainer explicitly deferred, use normal manual Print as reference"
+  },
+  "limits": [
+    "Retained source-paint merge/split remains unsupported and is rejected before mutation",
+    "Native Hancom may discard the private latent-grid entry",
+    "R1 generalization, R2 and P5 remain open; parser_allocation_bounds_proven=false"
+  ]
+}

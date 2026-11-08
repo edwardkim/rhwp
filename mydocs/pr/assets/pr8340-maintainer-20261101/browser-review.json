@@ -1,0 +1,968 @@
+{
+  "servedWasmHash": "19e4729f73daa5a183d37b29eb09500cdd217c112383f0d643b786fce59bb3c1",
+  "records": [
+    {
+      "key": "nested-same-line",
+      "before": {
+        "pageCount": 1,
+        "depth": 2,
+        "actualDepth": 2,
+        "props": {
+          "alignment": "justify",
+          "lineSpacing": 160,
+          "lineSpacingType": "Percent",
+          "marginLeft": 0,
+          "marginRight": 0,
+          "indent": -13.3,
+          "spacingBefore": 0,
+          "spacingAfter": 0,
+          "paraShapeId": 0,
+          "headType": "None",
+          "paraLevel": 0,
+          "numberingId": 0,
+          "widowOrphan": false,
+          "keepWithNext": false,
+          "keepLines": false,
+          "pageBreakBefore": false,
+          "fontLineHeight": false,
+          "singleLine": false,
+          "autoSpaceKrEn": false,
+          "autoSpaceKrNum": false,
+          "verticalAlign": 0,
+          "englishBreakUnit": 0,
+          "koreanBreakUnit": 0,
+          "tabAutoLeft": false,
+          "tabAutoRight": false,
+          "tabStops": [],
+          "defaultTabSpacing": 8000,
+          "borderFillId": 2,
+          "borderLeft": {
+            "type": 0,
+            "width": 0,
+            "color": "#000000"
+          },
+          "borderRight": {
+            "type": 0,
+            "width": 0,
+            "color": "#000000"
+          },
+          "borderTop": {
+            "type": 0,
+            "width": 0,
+            "color": "#000000"
+          },
+          "borderBottom": {
+            "type": 0,
+            "width": 0,
+            "color": "#000000"
+          },
+          "fillType": "none",
+          "fillColor": "#ffffff",
+          "patternColor": "#000000",
+          "patternType": 0,
+          "borderSpacing": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "borderConnect": false,
+          "borderIgnoreMargin": false
+        },
+        "targets": 1,
+        "otherProps": {
+          "alignment": "justify",
+          "lineSpacing": 160,
+          "lineSpacingType": "Percent",
+          "marginLeft": 0,
+          "marginRight": 0,
+          "indent": -13.3,
+          "spacingBefore": 0,
+          "spacingAfter": 0,
+          "paraShapeId": 0,
+          "headType": "None",
+          "paraLevel": 0,
+          "numberingId": 0,
+          "widowOrphan": false,
+          "keepWithNext": false,
+          "keepLines": false,
+          "pageBreakBefore": false,
+          "fontLineHeight": false,
+          "singleLine": false,
+          "autoSpaceKrEn": false,
+          "autoSpaceKrNum": false,
+          "verticalAlign": 0,
+          "englishBreakUnit": 0,
+          "koreanBreakUnit": 0,
+          "tabAutoLeft": false,
+          "tabAutoRight": false,
+          "tabStops": [],
+          "defaultTabSpacing": 8000,
+          "borderFillId": 2,
+          "borderLeft": {
+            "type": 0,
+            "width": 0,
+            "color": "#000000"
+          },
+          "borderRight": {
+            "type": 0,
+            "width": 0,
+            "color": "#000000"
+          },
+          "borderTop": {
+            "type": 0,
+            "width": 0,
+            "color": "#000000"
+          },
+          "borderBottom": {
+            "type": 0,
+            "width": 0,
+            "color": "#000000"
+          },
+          "fillType": "none",
+          "fillColor": "#ffffff",
+          "patternColor": "#000000",
+          "patternType": 0,
+          "borderSpacing": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "borderConnect": false,
+          "borderIgnoreMargin": false
+        }
+      },
+      "center": {
+        "alignment": "center",
+        "lineSpacing": 160,
+        "lineSpacingType": "Percent",
+        "marginLeft": 0,
+        "marginRight": 0,
+        "indent": -13.3,
+        "spacingBefore": 0,
+        "spacingAfter": 0,
+        "paraShapeId": 20,
+        "headType": "None",
+        "paraLevel": 0,
+        "numberingId": 0,
+        "widowOrphan": false,
+        "keepWithNext": false,
+        "keepLines": false,
+        "pageBreakBefore": false,
+        "fontLineHeight": false,
+        "singleLine": false,
+        "autoSpaceKrEn": false,
+        "autoSpaceKrNum": false,
+        "verticalAlign": 0,
+        "englishBreakUnit": 0,
+        "koreanBreakUnit": 0,
+        "tabAutoLeft": false,
+        "tabAutoRight": false,
+        "tabStops": [],
+        "defaultTabSpacing": 8000,
+        "borderFillId": 2,
+        "borderLeft": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderRight": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderTop": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderBottom": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "fillType": "none",
+        "fillColor": "#ffffff",
+        "patternColor": "#000000",
+        "patternType": 0,
+        "borderSpacing": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "borderConnect": false,
+        "borderIgnoreMargin": false
+      },
+      "undone": {
+        "alignment": "justify",
+        "lineSpacing": 160,
+        "lineSpacingType": "Percent",
+        "marginLeft": 0,
+        "marginRight": 0,
+        "indent": -13.3,
+        "spacingBefore": 0,
+        "spacingAfter": 0,
+        "paraShapeId": 0,
+        "headType": "None",
+        "paraLevel": 0,
+        "numberingId": 0,
+        "widowOrphan": false,
+        "keepWithNext": false,
+        "keepLines": false,
+        "pageBreakBefore": false,
+        "fontLineHeight": false,
+        "singleLine": false,
+        "autoSpaceKrEn": false,
+        "autoSpaceKrNum": false,
+        "verticalAlign": 0,
+        "englishBreakUnit": 0,
+        "koreanBreakUnit": 0,
+        "tabAutoLeft": false,
+        "tabAutoRight": false,
+        "tabStops": [],
+        "defaultTabSpacing": 8000,
+        "borderFillId": 2,
+        "borderLeft": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderRight": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderTop": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderBottom": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "fillType": "none",
+        "fillColor": "#ffffff",
+        "patternColor": "#000000",
+        "patternType": 0,
+        "borderSpacing": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "borderConnect": false,
+        "borderIgnoreMargin": false
+      },
+      "redone": {
+        "alignment": "center",
+        "lineSpacing": 160,
+        "lineSpacingType": "Percent",
+        "marginLeft": 0,
+        "marginRight": 0,
+        "indent": -13.3,
+        "spacingBefore": 0,
+        "spacingAfter": 0,
+        "paraShapeId": 20,
+        "headType": "None",
+        "paraLevel": 0,
+        "numberingId": 0,
+        "widowOrphan": false,
+        "keepWithNext": false,
+        "keepLines": false,
+        "pageBreakBefore": false,
+        "fontLineHeight": false,
+        "singleLine": false,
+        "autoSpaceKrEn": false,
+        "autoSpaceKrNum": false,
+        "verticalAlign": 0,
+        "englishBreakUnit": 0,
+        "koreanBreakUnit": 0,
+        "tabAutoLeft": false,
+        "tabAutoRight": false,
+        "tabStops": [],
+        "defaultTabSpacing": 8000,
+        "borderFillId": 2,
+        "borderLeft": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderRight": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderTop": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderBottom": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "fillType": "none",
+        "fillColor": "#ffffff",
+        "patternColor": "#000000",
+        "patternType": 0,
+        "borderSpacing": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "borderConnect": false,
+        "borderIgnoreMargin": false
+      },
+      "block": {
+        "enabled": true,
+        "targets": 2,
+        "paths": [
+          {
+            "sec": 0,
+            "parentPara": 4,
+            "path": [
+              {
+                "controlIndex": 0,
+                "cellIndex": 1,
+                "cellParaIndex": 0
+              },
+              {
+                "controlIndex": 0,
+                "cellIndex": 0,
+                "cellParaIndex": 0
+              }
+            ]
+          },
+          {
+            "sec": 0,
+            "parentPara": 4,
+            "path": [
+              {
+                "controlIndex": 0,
+                "cellIndex": 1,
+                "cellParaIndex": 0
+              },
+              {
+                "controlIndex": 0,
+                "cellIndex": 1,
+                "cellParaIndex": 0
+              }
+            ]
+          }
+        ]
+      },
+      "right": {
+        "alignment": "right",
+        "lineSpacing": 160,
+        "lineSpacingType": "Percent",
+        "marginLeft": 0,
+        "marginRight": 0,
+        "indent": -13.3,
+        "spacingBefore": 0,
+        "spacingAfter": 0,
+        "paraShapeId": 21,
+        "headType": "None",
+        "paraLevel": 0,
+        "numberingId": 0,
+        "widowOrphan": false,
+        "keepWithNext": false,
+        "keepLines": false,
+        "pageBreakBefore": false,
+        "fontLineHeight": false,
+        "singleLine": false,
+        "autoSpaceKrEn": false,
+        "autoSpaceKrNum": false,
+        "verticalAlign": 0,
+        "englishBreakUnit": 0,
+        "koreanBreakUnit": 0,
+        "tabAutoLeft": false,
+        "tabAutoRight": false,
+        "tabStops": [],
+        "defaultTabSpacing": 8000,
+        "borderFillId": 2,
+        "borderLeft": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderRight": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderTop": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderBottom": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "fillType": "none",
+        "fillColor": "#ffffff",
+        "patternColor": "#000000",
+        "patternType": 0,
+        "borderSpacing": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "borderConnect": false,
+        "borderIgnoreMargin": false
+      },
+      "otherAfter": {
+        "alignment": "justify",
+        "lineSpacing": 160,
+        "lineSpacingType": "Percent",
+        "marginLeft": 0,
+        "marginRight": 0,
+        "indent": -13.3,
+        "spacingBefore": 0,
+        "spacingAfter": 0,
+        "paraShapeId": 0,
+        "headType": "None",
+        "paraLevel": 0,
+        "numberingId": 0,
+        "widowOrphan": false,
+        "keepWithNext": false,
+        "keepLines": false,
+        "pageBreakBefore": false,
+        "fontLineHeight": false,
+        "singleLine": false,
+        "autoSpaceKrEn": false,
+        "autoSpaceKrNum": false,
+        "verticalAlign": 0,
+        "englishBreakUnit": 0,
+        "koreanBreakUnit": 0,
+        "tabAutoLeft": false,
+        "tabAutoRight": false,
+        "tabStops": [],
+        "defaultTabSpacing": 8000,
+        "borderFillId": 2,
+        "borderLeft": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderRight": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderTop": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderBottom": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "fillType": "none",
+        "fillColor": "#ffffff",
+        "patternColor": "#000000",
+        "patternType": 0,
+        "borderSpacing": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "borderConnect": false,
+        "borderIgnoreMargin": false
+      }
+    },
+    {
+      "key": "nested-width-wrap",
+      "before": {
+        "pageCount": 1,
+        "depth": 2,
+        "actualDepth": 2,
+        "props": {
+          "alignment": "justify",
+          "lineSpacing": 160,
+          "lineSpacingType": "Percent",
+          "marginLeft": 0,
+          "marginRight": 0,
+          "indent": -13.3,
+          "spacingBefore": 0,
+          "spacingAfter": 0,
+          "paraShapeId": 0,
+          "headType": "None",
+          "paraLevel": 0,
+          "numberingId": 0,
+          "widowOrphan": false,
+          "keepWithNext": false,
+          "keepLines": false,
+          "pageBreakBefore": false,
+          "fontLineHeight": false,
+          "singleLine": false,
+          "autoSpaceKrEn": false,
+          "autoSpaceKrNum": false,
+          "verticalAlign": 0,
+          "englishBreakUnit": 0,
+          "koreanBreakUnit": 0,
+          "tabAutoLeft": false,
+          "tabAutoRight": false,
+          "tabStops": [],
+          "defaultTabSpacing": 8000,
+          "borderFillId": 2,
+          "borderLeft": {
+            "type": 0,
+            "width": 0,
+            "color": "#000000"
+          },
+          "borderRight": {
+            "type": 0,
+            "width": 0,
+            "color": "#000000"
+          },
+          "borderTop": {
+            "type": 0,
+            "width": 0,
+            "color": "#000000"
+          },
+          "borderBottom": {
+            "type": 0,
+            "width": 0,
+            "color": "#000000"
+          },
+          "fillType": "none",
+          "fillColor": "#ffffff",
+          "patternColor": "#000000",
+          "patternType": 0,
+          "borderSpacing": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "borderConnect": false,
+          "borderIgnoreMargin": false
+        },
+        "targets": 1,
+        "otherProps": {
+          "alignment": "justify",
+          "lineSpacing": 160,
+          "lineSpacingType": "Percent",
+          "marginLeft": 0,
+          "marginRight": 0,
+          "indent": -13.3,
+          "spacingBefore": 0,
+          "spacingAfter": 0,
+          "paraShapeId": 0,
+          "headType": "None",
+          "paraLevel": 0,
+          "numberingId": 0,
+          "widowOrphan": false,
+          "keepWithNext": false,
+          "keepLines": false,
+          "pageBreakBefore": false,
+          "fontLineHeight": false,
+          "singleLine": false,
+          "autoSpaceKrEn": false,
+          "autoSpaceKrNum": false,
+          "verticalAlign": 0,
+          "englishBreakUnit": 0,
+          "koreanBreakUnit": 0,
+          "tabAutoLeft": false,
+          "tabAutoRight": false,
+          "tabStops": [],
+          "defaultTabSpacing": 8000,
+          "borderFillId": 2,
+          "borderLeft": {
+            "type": 0,
+            "width": 0,
+            "color": "#000000"
+          },
+          "borderRight": {
+            "type": 0,
+            "width": 0,
+            "color": "#000000"
+          },
+          "borderTop": {
+            "type": 0,
+            "width": 0,
+            "color": "#000000"
+          },
+          "borderBottom": {
+            "type": 0,
+            "width": 0,
+            "color": "#000000"
+          },
+          "fillType": "none",
+          "fillColor": "#ffffff",
+          "patternColor": "#000000",
+          "patternType": 0,
+          "borderSpacing": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "borderConnect": false,
+          "borderIgnoreMargin": false
+        }
+      },
+      "center": {
+        "alignment": "center",
+        "lineSpacing": 160,
+        "lineSpacingType": "Percent",
+        "marginLeft": 0,
+        "marginRight": 0,
+        "indent": -13.3,
+        "spacingBefore": 0,
+        "spacingAfter": 0,
+        "paraShapeId": 20,
+        "headType": "None",
+        "paraLevel": 0,
+        "numberingId": 0,
+        "widowOrphan": false,
+        "keepWithNext": false,
+        "keepLines": false,
+        "pageBreakBefore": false,
+        "fontLineHeight": false,
+        "singleLine": false,
+        "autoSpaceKrEn": false,
+        "autoSpaceKrNum": false,
+        "verticalAlign": 0,
+        "englishBreakUnit": 0,
+        "koreanBreakUnit": 0,
+        "tabAutoLeft": false,
+        "tabAutoRight": false,
+        "tabStops": [],
+        "defaultTabSpacing": 8000,
+        "borderFillId": 2,
+        "borderLeft": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderRight": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderTop": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderBottom": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "fillType": "none",
+        "fillColor": "#ffffff",
+        "patternColor": "#000000",
+        "patternType": 0,
+        "borderSpacing": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "borderConnect": false,
+        "borderIgnoreMargin": false
+      },
+      "undone": {
+        "alignment": "justify",
+        "lineSpacing": 160,
+        "lineSpacingType": "Percent",
+        "marginLeft": 0,
+        "marginRight": 0,
+        "indent": -13.3,
+        "spacingBefore": 0,
+        "spacingAfter": 0,
+        "paraShapeId": 0,
+        "headType": "None",
+        "paraLevel": 0,
+        "numberingId": 0,
+        "widowOrphan": false,
+        "keepWithNext": false,
+        "keepLines": false,
+        "pageBreakBefore": false,
+        "fontLineHeight": false,
+        "singleLine": false,
+        "autoSpaceKrEn": false,
+        "autoSpaceKrNum": false,
+        "verticalAlign": 0,
+        "englishBreakUnit": 0,
+        "koreanBreakUnit": 0,
+        "tabAutoLeft": false,
+        "tabAutoRight": false,
+        "tabStops": [],
+        "defaultTabSpacing": 8000,
+        "borderFillId": 2,
+        "borderLeft": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderRight": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderTop": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderBottom": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "fillType": "none",
+        "fillColor": "#ffffff",
+        "patternColor": "#000000",
+        "patternType": 0,
+        "borderSpacing": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "borderConnect": false,
+        "borderIgnoreMargin": false
+      },
+      "redone": {
+        "alignment": "center",
+        "lineSpacing": 160,
+        "lineSpacingType": "Percent",
+        "marginLeft": 0,
+        "marginRight": 0,
+        "indent": -13.3,
+        "spacingBefore": 0,
+        "spacingAfter": 0,
+        "paraShapeId": 20,
+        "headType": "None",
+        "paraLevel": 0,
+        "numberingId": 0,
+        "widowOrphan": false,
+        "keepWithNext": false,
+        "keepLines": false,
+        "pageBreakBefore": false,
+        "fontLineHeight": false,
+        "singleLine": false,
+        "autoSpaceKrEn": false,
+        "autoSpaceKrNum": false,
+        "verticalAlign": 0,
+        "englishBreakUnit": 0,
+        "koreanBreakUnit": 0,
+        "tabAutoLeft": false,
+        "tabAutoRight": false,
+        "tabStops": [],
+        "defaultTabSpacing": 8000,
+        "borderFillId": 2,
+        "borderLeft": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderRight": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderTop": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderBottom": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "fillType": "none",
+        "fillColor": "#ffffff",
+        "patternColor": "#000000",
+        "patternType": 0,
+        "borderSpacing": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "borderConnect": false,
+        "borderIgnoreMargin": false
+      },
+      "block": {
+        "enabled": true,
+        "targets": 2,
+        "paths": [
+          {
+            "sec": 0,
+            "parentPara": 4,
+            "path": [
+              {
+                "controlIndex": 0,
+                "cellIndex": 1,
+                "cellParaIndex": 0
+              },
+              {
+                "controlIndex": 0,
+                "cellIndex": 0,
+                "cellParaIndex": 0
+              }
+            ]
+          },
+          {
+            "sec": 0,
+            "parentPara": 4,
+            "path": [
+              {
+                "controlIndex": 0,
+                "cellIndex": 1,
+                "cellParaIndex": 0
+              },
+              {
+                "controlIndex": 0,
+                "cellIndex": 1,
+                "cellParaIndex": 0
+              }
+            ]
+          }
+        ]
+      },
+      "right": {
+        "alignment": "right",
+        "lineSpacing": 160,
+        "lineSpacingType": "Percent",
+        "marginLeft": 0,
+        "marginRight": 0,
+        "indent": -13.3,
+        "spacingBefore": 0,
+        "spacingAfter": 0,
+        "paraShapeId": 21,
+        "headType": "None",
+        "paraLevel": 0,
+        "numberingId": 0,
+        "widowOrphan": false,
+        "keepWithNext": false,
+        "keepLines": false,
+        "pageBreakBefore": false,
+        "fontLineHeight": false,
+        "singleLine": false,
+        "autoSpaceKrEn": false,
+        "autoSpaceKrNum": false,
+        "verticalAlign": 0,
+        "englishBreakUnit": 0,
+        "koreanBreakUnit": 0,
+        "tabAutoLeft": false,
+        "tabAutoRight": false,
+        "tabStops": [],
+        "defaultTabSpacing": 8000,
+        "borderFillId": 2,
+        "borderLeft": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderRight": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderTop": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderBottom": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "fillType": "none",
+        "fillColor": "#ffffff",
+        "patternColor": "#000000",
+        "patternType": 0,
+        "borderSpacing": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "borderConnect": false,
+        "borderIgnoreMargin": false
+      },
+      "otherAfter": {
+        "alignment": "justify",
+        "lineSpacing": 160,
+        "lineSpacingType": "Percent",
+        "marginLeft": 0,
+        "marginRight": 0,
+        "indent": -13.3,
+        "spacingBefore": 0,
+        "spacingAfter": 0,
+        "paraShapeId": 0,
+        "headType": "None",
+        "paraLevel": 0,
+        "numberingId": 0,
+        "widowOrphan": false,
+        "keepWithNext": false,
+        "keepLines": false,
+        "pageBreakBefore": false,
+        "fontLineHeight": false,
+        "singleLine": false,
+        "autoSpaceKrEn": false,
+        "autoSpaceKrNum": false,
+        "verticalAlign": 0,
+        "englishBreakUnit": 0,
+        "koreanBreakUnit": 0,
+        "tabAutoLeft": false,
+        "tabAutoRight": false,
+        "tabStops": [],
+        "defaultTabSpacing": 8000,
+        "borderFillId": 2,
+        "borderLeft": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderRight": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderTop": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "borderBottom": {
+          "type": 0,
+          "width": 0,
+          "color": "#000000"
+        },
+        "fillType": "none",
+        "fillColor": "#ffffff",
+        "patternColor": "#000000",
+        "patternType": 0,
+        "borderSpacing": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "borderConnect": false,
+        "borderIgnoreMargin": false
+      }
+    }
+  ],
+  "errors": []
+}

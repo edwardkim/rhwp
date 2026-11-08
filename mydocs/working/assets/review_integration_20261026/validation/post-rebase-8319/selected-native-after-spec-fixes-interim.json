@@ -1,0 +1,82 @@
+{
+  "status": "interim_failed",
+  "source_commit": "d9914becd",
+  "note": "동일한 이전 시스템 글꼴 조건의 선택 쪽 확인. 전체 검증 및 sample16 최종 재검증 전. issue2007 3쪽은 하락 기준 미달.",
+  "native_binary_sha256": "d4fc9e824e1de50c52ec11a92fad54a424f1910bfa13d69b54e8843219798dcc",
+  "rows": [
+    {
+      "input": "hwp5-spec-official",
+      "page": 20,
+      "pre_rebase": 99.9956,
+      "candidate": 99.9956,
+      "decline_pp": 0.0,
+      "passes_decline_gate": true,
+      "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/hwp5-spec-official.tsv",
+      "baseline_sha256": "77a039ba7939efdd192cd635aaa758207395603c4bea041ded5c8e9484ae0da0",
+      "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8319/final-hwp5-spec-native-interim.tsv",
+      "candidate_sha256": "67644d9338d589f34acdd553425ebc8fb94c91e22d5d1cb3e77d30990f6f6889"
+    },
+    {
+      "input": "hwp5-spec-official",
+      "page": 21,
+      "pre_rebase": 99.58762,
+      "candidate": 99.59026,
+      "decline_pp": -0.00264,
+      "passes_decline_gate": true,
+      "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/hwp5-spec-official.tsv",
+      "baseline_sha256": "77a039ba7939efdd192cd635aaa758207395603c4bea041ded5c8e9484ae0da0",
+      "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8319/final-hwp5-spec-native-interim.tsv",
+      "candidate_sha256": "67644d9338d589f34acdd553425ebc8fb94c91e22d5d1cb3e77d30990f6f6889"
+    },
+    {
+      "input": "hwp5-spec-official",
+      "page": 24,
+      "pre_rebase": 99.75514,
+      "candidate": 99.99751,
+      "decline_pp": -0.24237,
+      "passes_decline_gate": true,
+      "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/hwp5-spec-official.tsv",
+      "baseline_sha256": "77a039ba7939efdd192cd635aaa758207395603c4bea041ded5c8e9484ae0da0",
+      "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8319/final-hwp5-spec-native-interim.tsv",
+      "candidate_sha256": "67644d9338d589f34acdd553425ebc8fb94c91e22d5d1cb3e77d30990f6f6889"
+    },
+    {
+      "input": "hwpml-spec-2020",
+      "page": 23,
+      "pre_rebase": 99.99389,
+      "candidate": 99.99389,
+      "decline_pp": 0.0,
+      "passes_decline_gate": true,
+      "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/hwpml-spec-2020.tsv",
+      "baseline_sha256": "bf9b820a779f355f2c966fb911b8bf906d3acb6ba2d8a880852a1fbe8a274a38",
+      "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8319/final-hwpml-spec-native-interim.tsv",
+      "candidate_sha256": "1bd71dfceab7f61d329b03858355b0a2a7c2248a1e736dfd829e7bf54f5960b1"
+    },
+    {
+      "input": "hwpml-spec-2020",
+      "page": 24,
+      "pre_rebase": 99.88729,
+      "candidate": 99.88864,
+      "decline_pp": -0.00135,
+      "passes_decline_gate": true,
+      "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/hwpml-spec-2020.tsv",
+      "baseline_sha256": "bf9b820a779f355f2c966fb911b8bf906d3acb6ba2d8a880852a1fbe8a274a38",
+      "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8319/final-hwpml-spec-native-interim.tsv",
+      "candidate_sha256": "1bd71dfceab7f61d329b03858355b0a2a7c2248a1e736dfd829e7bf54f5960b1"
+    },
+    {
+      "input": "nested-height-cache",
+      "page": 3,
+      "pre_rebase": 99.79139,
+      "candidate": 99.40903,
+      "decline_pp": 0.38236,
+      "passes_decline_gate": false,
+      "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/nested-height-cache.tsv",
+      "baseline_sha256": "af48c16fe41eb6361e2fbee4f812aa50c184df3f6b57639f9c248094b10b60b7",
+      "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8319/final-issue2007-native-interim.tsv",
+      "candidate_sha256": "2d60f6233f0166f1873b1ff15f3ca38e04d452964be78e708fc390cff98552d2"
+    }
+  ],
+  "producer_status": "invalid_stale_chart_dependency",
+  "invalidation_note": "Native 실행 파일의 이전 worktree 차트 의존성 확인. 이 쪽별 측정도 현재 소스의 최종 증거로 쓰지 않는다."
+}

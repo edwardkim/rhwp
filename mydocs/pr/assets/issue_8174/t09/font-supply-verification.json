@@ -1,0 +1,20 @@
+{
+  "mathPrograms": [
+    {
+      "program": "HYHWPEQ.TTF",
+      "bytes": 155612,
+      "sha256": "a3a3cd992a89ac38e7707b58143ebdb1da9511d3c462f019cda7f92c30467807",
+      "byteIdenticalToInstalledOriginal": true,
+      "glyphOrMetricTransformation": false
+    },
+    {
+      "program": "HancomEQN.ttf",
+      "bytes": 244816,
+      "sha256": "c249c422e4acbafe2757c0f4a5d714414f84305c728776d889224f6116186e35",
+      "byteIdenticalToInstalledOriginal": true,
+      "glyphOrMetricTransformation": false
+    }
+  ],
+  "combinedMathBytes": 400428,
+  "originalProgramsPublished": false
+}

@@ -1,0 +1,66 @@
+{
+  "source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+  "official_commands": 3,
+  "passed": 4064,
+  "lib_passed": 4040,
+  "missing_picture_passed": 2,
+  "direct_pdf_passed": 22,
+  "existing_lib_ignored": 12,
+  "focused_filter_excluded": [
+    301,
+    262
+  ],
+  "results": [
+    {
+      "index": 1,
+      "libtest_results": [
+        [
+          "3858",
+          "0",
+          "12"
+        ],
+        [
+          "15",
+          "0",
+          "0"
+        ],
+        [
+          "165",
+          "0",
+          "0"
+        ],
+        [
+          "2",
+          "0",
+          "0"
+        ]
+      ],
+      "nextest_summaries": [],
+      "raw_log_sha256": "5300a69b15d9eda1eb2cd673577169a7dd5161452afc788c331e398be50752ca"
+    },
+    {
+      "index": 2,
+      "libtest_results": [],
+      "nextest_summaries": [
+        [
+          "0.170",
+          "2",
+          "2"
+        ]
+      ],
+      "raw_log_sha256": "664d3b4c27f6210718d7998b92c84d8029a1a3dcdc24d7a73b597077580def2e"
+    },
+    {
+      "index": 3,
+      "libtest_results": [],
+      "nextest_summaries": [
+        [
+          "0.304",
+          "22",
+          "22"
+        ]
+      ],
+      "raw_log_sha256": "42ee09c35b7128909f2796bcb48bc5465e4add24a95150202031a4a8586811d8"
+    }
+  ]
+}

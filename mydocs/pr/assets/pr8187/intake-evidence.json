@@ -1,0 +1,707 @@
+{
+  "recorded_at": "2026-11-03T09:01:08.692779+09:00",
+  "pr": 8187,
+  "url": "https://github.com/edwardkim/rhwp/pull/8187",
+  "reviewer": "edwardkim",
+  "base_route": "maintainer_general",
+  "modifiers": [
+    "intake_and_review",
+    "local_validation",
+    "visual_fixture_evidence",
+    "rework_and_exceptions",
+    "post_merge"
+  ],
+  "local_review_branch": "review/pr-8187-logical-editing",
+  "simulation": {
+    "base": "4e2cc6bb36576b95d58d4c76cd833281ea652554",
+    "head": "32df7b71a6e731f767e4945e3e1d79ca0cac3e58",
+    "merge_base": "60972534680a0c5e51e54ec189b92e252e81a867",
+    "simulation_exit": 1,
+    "conflicts": [
+      "CONFLICT (content): Merge conflict in src/document_core/commands/clipboard.rs",
+      "CONFLICT (content): Merge conflict in src/document_core/commands/text_editing.rs",
+      "CONFLICT (content): Merge conflict in src/paint/builder.rs",
+      "CONFLICT (content): Merge conflict in src/renderer/composer/composition.inc.rs",
+      "CONFLICT (content): Merge conflict in src/renderer/layout/paragraph_layout.rs",
+      "CONFLICT (content): Merge conflict in src/renderer/layout/table_partial.rs",
+      "CONFLICT (content): Merge conflict in src/renderer/skia/text_shaping.rs",
+      "CONFLICT (content): Merge conflict in src/renderer/typeset/paragraph.rs",
+      "CONFLICT (content): Merge conflict in src/renderer/typeset/paragraph/split_entry.rs",
+      "CONFLICT (content): Merge conflict in src/serializer/hwpx/section.rs",
+      "CONFLICT (content): Merge conflict in tests/common/passthrough_exemptions.rs"
+    ],
+    "changed_files": 128,
+    "additions": 5650,
+    "deletions": 235,
+    "code_paths": [
+      "src/diagnostics/layout_anomaly.rs",
+      "src/document_core/commands/clipboard.rs",
+      "src/document_core/commands/formatting.rs",
+      "src/document_core/commands/html_import.rs",
+      "src/document_core/commands/text_editing.rs",
+      "src/document_core/helpers.rs",
+      "src/document_core/native_interaction.rs",
+      "src/model/control.rs",
+      "src/model/paragraph.rs",
+      "src/paint/builder.rs",
+      "src/paint/json.rs",
+      "src/renderer/canvas.rs",
+      "src/renderer/composer/composition.inc.rs",
+      "src/renderer/composer/inline_picture_metrics.rs",
+      "src/renderer/layout.rs",
+      "src/renderer/layout/paragraph_layout.rs",
+      "src/renderer/layout/picture_footnote.rs",
+      "src/renderer/layout/table_cell_content.rs",
+      "src/renderer/layout/table_layout.rs",
+      "src/renderer/layout/table_layout/wrapper_cell_viewport.rs",
+      "src/renderer/layout/table_partial.rs",
+      "src/renderer/layout/tests.rs",
+      "src/renderer/mod.rs",
+      "src/renderer/note_marker.rs",
+      "src/renderer/render_tree.rs",
+      "src/renderer/skia/text_replay.rs",
+      "src/renderer/skia/text_shaping.rs",
+      "src/renderer/typeset/notes/endnotes/content.rs",
+      "src/renderer/typeset/paragraph.rs",
+      "src/renderer/typeset/paragraph/split_entry.rs",
+      "src/renderer/typeset/section.rs",
+      "src/renderer/typeset/section/columns.rs",
+      "src/renderer/typeset/section/entry.rs",
+      "src/renderer/typeset/state.rs",
+      "src/renderer/typeset/state/commands.rs",
+      "src/renderer/typeset/state/data.rs",
+      "src/renderer/typeset/state/transition.rs",
+      "src/renderer/typeset/table/continuation/job.rs",
+      "src/serializer/body_text.rs",
+      "src/serializer/column_sizes.rs",
+      "src/serializer/hwpx/section.rs",
+      "src/serializer/mod.rs",
+      "src/wasm_api.rs",
+      "tests/cases/layout_anomaly_m02f_fatten.rs",
+      "tests/cases/layout_anomaly_off_canvas_contract.rs",
+      "tests/cases/layout_anomaly_text_overlap_contract.rs",
+      "tests/cases/logical_body_boundary_delete.rs",
+      "tests/cases/model_paragraph_fragment_range.rs",
+      "tests/cases/reflow_body_paragraph_range.rs",
+      "tests/cases/styled_text_clipboard_field_affinity.rs",
+      "tests/cases/styled_text_html_field_affinity.rs",
+      "tests/common/passthrough_exemptions.rs"
+    ]
+  },
+  "original_head_ci": {
+    "conclusion": "success",
+    "headSha": "32df7b71a6e731f767e4945e3e1d79ca0cac3e58",
+    "status": "completed",
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/40092729836"
+  },
+  "related_issue": {
+    "number": 7444,
+    "state": "OPEN",
+    "previous_pr": 7509,
+    "previous_merge": "fc36d71452a1aedae5f1f2b05737efe60a00f37f",
+    "scope": "logical deletion and styled text paste supplement an already merged partial fix; Studio UI integration remains separate"
+  },
+  "contributor_evidence": {
+    "files_verified": 75,
+    "files": [
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/base/native/continued-one-to-three-columns-hwpx/silhouette.tsv",
+        "sha256": "431dada854acc14fc986ab22b93273a618d95d1346d89ecf9569172a5254f9cd",
+        "bytes": 186
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/base/native/giant4138-original-hwp/silhouette.tsv",
+        "sha256": "241c36c80c78145c78c751e1922169f4b2cb0ae457c389e5675a47fd3f6e84a0",
+        "bytes": 218
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/base/native/giant4138-tab-period-hwp/silhouette.tsv",
+        "sha256": "63d0040e6668bb7f951eae6f90c362295afb6a0ce984bc3bb89c124611eb9404",
+        "bytes": 218
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/base/native/kps-ai/overlay_066.png",
+        "sha256": "50ddb3a5632df2be3a42d23255e77762608206354cead735ce1a0a2f1691ca18",
+        "bytes": 97047
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/base/native/kps-ai/review_066.png",
+        "sha256": "8412f869922ee88d552924333517f79b8a020cb17b0dea376c6c1ccdbcc96bd9",
+        "bytes": 261819
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/base/native/kps-ai/silhouette.tsv",
+        "sha256": "84e717361189ca6ba0b675791d9ea212beaf4972c30fcbe0dbaaf40339a4087a",
+        "bytes": 2090
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/base/native/midrange-three-columns-hwpx/silhouette.tsv",
+        "sha256": "3e70fb84244c1956eb0661ba5e5a8e2aaa33192547ce7c06e1996f60bb542678",
+        "bytes": 160
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/base/native/paragraph-after-1800-hwpx/silhouette.tsv",
+        "sha256": "3e70fb84244c1956eb0661ba5e5a8e2aaa33192547ce7c06e1996f60bb542678",
+        "bytes": 160
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/base/native/paragraph-after-5000-hwpx/silhouette.tsv",
+        "sha256": "3e70fb84244c1956eb0661ba5e5a8e2aaa33192547ce7c06e1996f60bb542678",
+        "bytes": 160
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/base/native/rowbreak18-hwp/silhouette.tsv",
+        "sha256": "35547c250566a492765fa83ddfb2352c7448ce6c069096dc30274a6217594da2",
+        "bytes": 558
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/base/native/shortcut-hwp/silhouette.tsv",
+        "sha256": "cef933c710aff28e777bbdbe24710c93249baf1eb0ea55b2ddb6f9c2a15f39b3",
+        "bytes": 280
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/base/native/zone-preserve-paragraph-after-hwpx/silhouette.tsv",
+        "sha256": "3e70fb84244c1956eb0661ba5e5a8e2aaa33192547ce7c06e1996f60bb542678",
+        "bytes": 160
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/base/wasm/continued-one-to-three-columns-hwpx/silhouette.tsv",
+        "sha256": "dfcb64e57a4d911c893f9fcbb2709749a478f6fa987475fda7380b7c7e68f237",
+        "bytes": 186
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/base/wasm/giant4138-original-hwp/silhouette.tsv",
+        "sha256": "95f9e72e2ac33c572bb7605dcec244f75cc991ed46326ec04fb7df9b800f3618",
+        "bytes": 218
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/base/wasm/giant4138-tab-period-hwp/silhouette.tsv",
+        "sha256": "8dc7d0024d43d06d5ef484c5e269ab6db7970306380eaba27b137df28a5b868d",
+        "bytes": 218
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/base/wasm/kps-ai/overlay_066.png",
+        "sha256": "ecc4aa3695608263a80a87cfb43cb6fb58b1a26fc77735e53b34b4f4df6bec3a",
+        "bytes": 96008
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/base/wasm/kps-ai/review_066.png",
+        "sha256": "775f8b83480de31984850cbc1cad1cf8e73d8169c690c827ad17e8774ac42f31",
+        "bytes": 265638
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/base/wasm/kps-ai/silhouette.tsv",
+        "sha256": "3498bd21f55179e39364173dae2e76454e4233233964fe5f84767f4f6a8b394c",
+        "bytes": 2089
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/base/wasm/midrange-three-columns-hwpx/silhouette.tsv",
+        "sha256": "cf2859724c325f0917dde5e3d5c9037d651d67363526c8406013e58d1d1b4886",
+        "bytes": 160
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/base/wasm/paragraph-after-1800-hwpx/silhouette.tsv",
+        "sha256": "cf2859724c325f0917dde5e3d5c9037d651d67363526c8406013e58d1d1b4886",
+        "bytes": 160
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/base/wasm/paragraph-after-5000-hwpx/silhouette.tsv",
+        "sha256": "cf2859724c325f0917dde5e3d5c9037d651d67363526c8406013e58d1d1b4886",
+        "bytes": 160
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/base/wasm/rowbreak18-hwp/silhouette.tsv",
+        "sha256": "f09322a56b4f3b549ff093352194ef971ccf7ac13a700fee1bf6698388018594",
+        "bytes": 560
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/base/wasm/shortcut-hwp/silhouette.tsv",
+        "sha256": "1394fa6dd2504ae673b78a73ed93077e138fead89f196ff3e0211d6688ffd824",
+        "bytes": 280
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/base/wasm/zone-preserve-paragraph-after-hwpx/silhouette.tsv",
+        "sha256": "cf2859724c325f0917dde5e3d5c9037d651d67363526c8406013e58d1d1b4886",
+        "bytes": 160
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/inputs/continued-one-to-three-columns.hwpx",
+        "sha256": "192bf8ca81299dd6cf1600b38f5c2a8960cb0ae049d60094e90fe9632bacec61",
+        "bytes": 8543
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/inputs/continued-one-to-three-columns.hwpx.hancom.pdf",
+        "sha256": "37aeffeebc1bb88967eceb0d32f3a164a93bfb2990f3433a2ce56a6669c3d2cd",
+        "bytes": 15968
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/inputs/kps-ai.hwp.hancom.pdf",
+        "sha256": "6d95c2f18c275f77f5294bacec5ec15ead1b7dbbfe4a39d1df586bcaf54a4824",
+        "bytes": 2030250
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/inputs/midrange-three-columns.hwpx",
+        "sha256": "52390726444671ba7155c1167ad8fcb4ad0737ee8745407a0eab31e923da9c93",
+        "bytes": 8143
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/inputs/midrange-three-columns.hwpx.hancom.pdf",
+        "sha256": "972a2c39d0c40a9440541efdc0c998e688a009bf8f5e4522cbf0481076a9ecfc",
+        "bytes": 13958
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/inputs/paragraph-after-1800.hwpx",
+        "sha256": "4fe5ac0671e48fba011e612273889643e695054126541bafbda21baa40dc7143",
+        "bytes": 8112
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/inputs/paragraph-after-1800.hwpx.hancom.pdf",
+        "sha256": "5bae4d031b26c0b4ae0e4bd9d3cb1eeb109ab54e77309cb7f189467e91b950c9",
+        "bytes": 13958
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/inputs/paragraph-after-5000.hwpx",
+        "sha256": "c8c5c1b2ee30faccd795d1d45ab35e354fd851eaf687aebd7f9cd7c1d389cc5a",
+        "bytes": 8112
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/inputs/paragraph-after-5000.hwpx.hancom.pdf",
+        "sha256": "299c3b1ff7eb619ed722b778f0df33ab6ccd7068817e194d8b9866646af64f61",
+        "bytes": 13958
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/inputs/zone-preserve-paragraph-after.hwpx",
+        "sha256": "f6b1517cc2f897d8059c2f2208a4517d36f8c568bac57a6703dacb7d7b0ea304",
+        "bytes": 8109
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/inputs/zone-preserve-paragraph-after.hwpx.hancom.pdf",
+        "sha256": "c3aa3e889f4fc45e0d413e88b4bf3605d82a18c0299422d5a89f0f8d5814b37b",
+        "bytes": 13958
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/native/continued-one-to-three-columns-hwpx/overlay_002.png",
+        "sha256": "402d850d2b721ebe1fd5438a3cc94fd5e5b71a9367948ad395880e796792b639",
+        "bytes": 118739
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/native/continued-one-to-three-columns-hwpx/review_002.png",
+        "sha256": "4897a8259865a9fb19b001303026b487db5726f9e4437d4e092f94916b75e42b",
+        "bytes": 322196
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/native/continued-one-to-three-columns-hwpx/silhouette.tsv",
+        "sha256": "9e83e432d3f2300ef54a44fa7d98ebd345b4830e43bb1ebefd13e639b05b27a9",
+        "bytes": 190
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/native/giant4138-original-hwp/silhouette.tsv",
+        "sha256": "241c36c80c78145c78c751e1922169f4b2cb0ae457c389e5675a47fd3f6e84a0",
+        "bytes": 218
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/native/giant4138-tab-period-hwp/silhouette.tsv",
+        "sha256": "63d0040e6668bb7f951eae6f90c362295afb6a0ce984bc3bb89c124611eb9404",
+        "bytes": 218
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/native/kps-ai/overlay_066.png",
+        "sha256": "50ddb3a5632df2be3a42d23255e77762608206354cead735ce1a0a2f1691ca18",
+        "bytes": 97047
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/native/kps-ai/review_066.png",
+        "sha256": "8412f869922ee88d552924333517f79b8a020cb17b0dea376c6c1ccdbcc96bd9",
+        "bytes": 261819
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/native/kps-ai/silhouette.tsv",
+        "sha256": "ceeca8fe3a3fd2577ae1f8bd13dbbcdc36b0d818ae5e214ca84b6ad7be4fc1c8",
+        "bytes": 2090
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/native/midrange-three-columns-hwpx/silhouette.tsv",
+        "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+        "bytes": 164
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/native/paragraph-after-1800-hwpx/silhouette.tsv",
+        "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+        "bytes": 164
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/native/paragraph-after-5000-hwpx/overlay_002.png",
+        "sha256": "6f404d272738ebee98303a7c1f6767424c022f34b8bed4a97f8ae1340aa2c043",
+        "bytes": 108209
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/native/paragraph-after-5000-hwpx/review_002.png",
+        "sha256": "17f70281e6316bcdec38c27886341047179f6da1f83584d8de67bb10b7fa81c0",
+        "bytes": 289574
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/native/paragraph-after-5000-hwpx/silhouette.tsv",
+        "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+        "bytes": 164
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/native/rowbreak18-hwp/silhouette.tsv",
+        "sha256": "35547c250566a492765fa83ddfb2352c7448ce6c069096dc30274a6217594da2",
+        "bytes": 558
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/native/shortcut-hwp/overlay_003.png",
+        "sha256": "46f05d49247f894e596484a8353acf90a76b7d4fbb2203c839f1c08d611b6209",
+        "bytes": 113701
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/native/shortcut-hwp/review_003.png",
+        "sha256": "a9c15e3d1edebd77b2447bb769c1f6b33f328aa67d5ce9d4ec69e5adff494fb5",
+        "bytes": 308547
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/native/shortcut-hwp/silhouette.tsv",
+        "sha256": "cef933c710aff28e777bbdbe24710c93249baf1eb0ea55b2ddb6f9c2a15f39b3",
+        "bytes": 280
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/native/zone-preserve-paragraph-after-hwpx/overlay_001.png",
+        "sha256": "fd8cc75e983b13fd8a4fdbe5e0d7dc6cad84ca680aff699c7f24c982a7b7f2d0",
+        "bytes": 116720
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/native/zone-preserve-paragraph-after-hwpx/review_001.png",
+        "sha256": "006bc1ffe8dae340c003475e1965e063ec0b8104548898abe8da5931792a7e4b",
+        "bytes": 314705
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/native/zone-preserve-paragraph-after-hwpx/silhouette.tsv",
+        "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+        "bytes": 164
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/wasm/continued-one-to-three-columns-hwpx/overlay_002.png",
+        "sha256": "0c440f55a15290bc108e44bc536c75a4d60fc0e754b82642881bb445c7aba670",
+        "bytes": 125598
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/wasm/continued-one-to-three-columns-hwpx/review_002.png",
+        "sha256": "1a5574f1c221daae158090354798185776c10293657ee38961adfc3364d88630",
+        "bytes": 334088
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/wasm/continued-one-to-three-columns-hwpx/silhouette.tsv",
+        "sha256": "9e83e432d3f2300ef54a44fa7d98ebd345b4830e43bb1ebefd13e639b05b27a9",
+        "bytes": 190
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/wasm/giant4138-original-hwp/silhouette.tsv",
+        "sha256": "95f9e72e2ac33c572bb7605dcec244f75cc991ed46326ec04fb7df9b800f3618",
+        "bytes": 218
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/wasm/giant4138-tab-period-hwp/silhouette.tsv",
+        "sha256": "8dc7d0024d43d06d5ef484c5e269ab6db7970306380eaba27b137df28a5b868d",
+        "bytes": 218
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/wasm/kps-ai/overlay_066.png",
+        "sha256": "ecc4aa3695608263a80a87cfb43cb6fb58b1a26fc77735e53b34b4f4df6bec3a",
+        "bytes": 96008
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/wasm/kps-ai/review_066.png",
+        "sha256": "775f8b83480de31984850cbc1cad1cf8e73d8169c690c827ad17e8774ac42f31",
+        "bytes": 265638
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/wasm/kps-ai/silhouette.tsv",
+        "sha256": "3498bd21f55179e39364173dae2e76454e4233233964fe5f84767f4f6a8b394c",
+        "bytes": 2089
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/wasm/midrange-three-columns-hwpx/silhouette.tsv",
+        "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+        "bytes": 164
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/wasm/paragraph-after-1800-hwpx/silhouette.tsv",
+        "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+        "bytes": 164
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/wasm/paragraph-after-5000-hwpx/overlay_002.png",
+        "sha256": "d2febd13a108ece9347f7539552aa4b95bc442b292881f5008f0f29cea2e1d6e",
+        "bytes": 114506
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/wasm/paragraph-after-5000-hwpx/review_002.png",
+        "sha256": "1ffe6152674df1078e542121029104e030b95b115982a9d246b609e8d4a57fea",
+        "bytes": 300046
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/wasm/paragraph-after-5000-hwpx/silhouette.tsv",
+        "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+        "bytes": 164
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/wasm/rowbreak18-hwp/silhouette.tsv",
+        "sha256": "f09322a56b4f3b549ff093352194ef971ccf7ac13a700fee1bf6698388018594",
+        "bytes": 560
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/wasm/shortcut-hwp/overlay_003.png",
+        "sha256": "7dd210370b8361d0e8717ee40cd85455647d6a1bfceeb0ef6f676a60ae94f731",
+        "bytes": 118166
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/wasm/shortcut-hwp/review_003.png",
+        "sha256": "1b1dd7dca20ebff45b536286cce117ea01cfa71dfe01fa66ab38550a1b1f26cb",
+        "bytes": 329772
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/wasm/shortcut-hwp/silhouette.tsv",
+        "sha256": "1394fa6dd2504ae673b78a73ed93077e138fead89f196ff3e0211d6688ffd824",
+        "bytes": 280
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/wasm/zone-preserve-paragraph-after-hwpx/overlay_001.png",
+        "sha256": "f1ac1fb8de6c78a5dd81c554d9017cf2528d68e1ee22bc238bbb088aee49b132",
+        "bytes": 123640
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/wasm/zone-preserve-paragraph-after-hwpx/review_001.png",
+        "sha256": "b0dbb12dfc4e95d39e8aefcf56c344de377e48cf0da9ac38331b93b889842563",
+        "bytes": 326919
+      },
+      {
+        "path": "mydocs/pr/assets/platy-native-editing/wasm/zone-preserve-paragraph-after-hwpx/silhouette.tsv",
+        "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+        "bytes": 164
+      }
+    ],
+    "kps_tsv": [
+      {
+        "stage": "base",
+        "backend": "native",
+        "rows": 77,
+        "minimum": 89.27622,
+        "below_90": [
+          66
+        ]
+      },
+      {
+        "stage": "base",
+        "backend": "wasm",
+        "rows": 77,
+        "minimum": 88.90567,
+        "below_90": [
+          66
+        ]
+      },
+      {
+        "stage": "candidate",
+        "backend": "native",
+        "rows": 77,
+        "minimum": 89.27622,
+        "below_90": [
+          66
+        ]
+      },
+      {
+        "stage": "candidate",
+        "backend": "wasm",
+        "rows": 77,
+        "minimum": 88.90567,
+        "below_90": [
+          66
+        ]
+      }
+    ],
+    "scope": {
+      "documents": 10,
+      "selected_pages_per_backend": 121,
+      "rendered_outputs": 484,
+      "backends": [
+        "native-skia",
+        "wasm-canvas2d"
+      ],
+      "compatibility": {
+        "existing_seven_documents": 2022,
+        "rowbreak_and_giant": 2024
+      },
+      "dpi": 96,
+      "silhouette_tolerance_px": 2,
+      "comparison_rows": 242,
+      "raw_regressions_at_least_0_1_pp": 0,
+      "first_five_documents": {
+        "pages": 11,
+        "minimum_raw_percent": 100
+      },
+      "shortcut": {
+        "pages": 7,
+        "native_minimum_raw": 96.80573,
+        "wasm_minimum_raw": 96.85011
+      },
+      "kps": {
+        "pages": 77,
+        "native_minimum_raw": 89.27622,
+        "wasm_minimum_raw": 88.90567,
+        "below_90_pages_native": [
+          66
+        ],
+        "below_90_pages_wasm": [
+          66
+        ],
+        "same_font_supply_as_base": true,
+        "remaining_geometry": "공식 base와 후보의 66쪽 점수는 동일하며, 실제 위 테두리 누락과 내부 행·하단선 배치 차이가 남아 있습니다."
+      },
+      "rowbreak": {
+        "pages": 18,
+        "compatibility": 2024
+      },
+      "giant": {
+        "original_pages": 115,
+        "split_pages": 197,
+        "selected_original": [
+          1,
+          10,
+          31,
+          115
+        ],
+        "selected_split": [
+          1,
+          10,
+          31,
+          197
+        ],
+        "scope": "대표 쪽만 비교했으며 312쪽 전수 시각 검증을 뜻하지 않습니다."
+      },
+      "raw_90_gate_pass": false,
+      "manual_visual_review": "대표 쪽 직접 검수이며 전쪽 수동 검수를 주장하지 않습니다."
+    },
+    "font_programs_included": false
+  },
+  "current_devel_diagnostic": {
+    "scope": "Native page 66 only; not an all-pages or fresh WASM gate",
+    "source": "4e2cc6bb36576b95d58d4c76cd833281ea652554",
+    "binary_build_source": "d78048a6f0e5f71aa3bdb7d32e703bd5971e3019",
+    "binary_sha256": "6d2cf962975ff04f6e965e8596e579ea99f1a47d201c9c6132d89fa4237d0d24",
+    "product_source_diff_from_binary_build": [],
+    "input_path": "rhwp-studio/public/samples/kps-ai.hwp",
+    "input_sha256": "9b0fceb3d96956f27c893e15a72a1ad94f7ee005bd581381a1aadfcb1f57a7b9",
+    "reference_path_in_pr": "mydocs/pr/assets/platy-native-editing/inputs/kps-ai.hwp.hancom.pdf",
+    "reference_commit": "32df7b71a6e731f767e4945e3e1d79ca0cac3e58",
+    "reference_sha256": "6d95c2f18c275f77f5294bacec5ec15ead1b7dbbfe4a39d1df586bcaf54a4824",
+    "dpi": 96,
+    "compat": 2022,
+    "profile": "print",
+    "font_paths": [
+      "/home/edward/mygithub/ttfs/hwp",
+      "/home/edward/mygithub/ttfs/windows",
+      "/mnt/c/Windows/Fonts"
+    ],
+    "same_font_supply_as_contributor": false,
+    "font_environment_note": "Full locally supplied fonts instead of contributor-specific subsets; the scores must not be used as a controlled before/after improvement. No font programs are committed.",
+    "page_counts": {
+      "rhwp": 77,
+      "pdf": 77
+    },
+    "metric": {
+      "page": 66,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8187/current-devel-native/kps-ai-current/rhwp_png/rhwp_066.png",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8187/current-devel-native/kps-ai-current/pdf_png/pdf-066.png",
+      "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8187/current-devel-native/kps-ai-current/overlay/overlay_066.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "overlay_color_legend": {
+        "rhwp_only": "blue",
+        "pdf_only": "red",
+        "both_different": "orange",
+        "matching": "gray"
+      },
+      "total_pixels": 891662,
+      "diff_pixels": 51275,
+      "diff_ratio": 0.05750497,
+      "pixel_match_percent": 94.2495,
+      "ink_union_pixels": 131251,
+      "ink_diff_pixels": 51275,
+      "ink_diff_ratio": 0.39066369,
+      "ink_match_percent": 60.93363,
+      "visual_accuracy_proxy_percent": 60.93363,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 89.98789,
+      "silhouette_raw_unmatched_pixels": 13141,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 131251,
+      "tolerant_content_match_percent": 89.98789,
+      "mean_abs_channel_delta": 7.099,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        60,
+        131,
+        694,
+        1082
+      ]
+    },
+    "gate": {
+      "status": "re_review_required",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [
+        {
+          "page": 66,
+          "silhouette_raw_match_percent": 89.98789
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 77,
+        "pdf": 77
+      },
+      "page_count_mismatch": false
+    },
+    "manual_review": "Top edge over the continuing left cell remains absent; row boundaries, date and signature are vertically displaced. Native page 66 remains below 90. No claim about the current WASM output or whole-document minimum.",
+    "generated_assets": [
+      {
+        "path": "mydocs/pr/assets/pr8187/current-devel-kps-p066-native.png",
+        "bytes": 84964,
+        "sha256": "c382d8fafa920f52027c70e05ce34d32d6e1e21cfccb5e4a760774c2a9564ebd"
+      },
+      {
+        "path": "mydocs/pr/assets/pr8187/current-devel-kps-p066-overlay.png",
+        "bytes": 92391,
+        "sha256": "bd6f421bd7f4d7094dbe81ea452448f4ca93712099197380c59e1c070e89a5c6"
+      },
+      {
+        "path": "mydocs/pr/assets/pr8187/current-devel-kps-p066-review.png",
+        "bytes": 254209,
+        "sha256": "b23db2ca783c8bf28743d3473df62feb7d7544fd645197710ceb3586bf1d9f07"
+      },
+      {
+        "path": "mydocs/pr/assets/pr8187/reference-kps-p066.png",
+        "bytes": 89189,
+        "sha256": "a53fd19910e94a028ebcf71de7c429da15af398a11aa68ec0da854a0b4356fca"
+      }
+    ],
+    "sweep_script_sha256": "0caed0f2a6dbd9652215605d50730dddd48c9c9eb35892dbac3fc11ed4e6e17a"
+  },
+  "not_executed": [
+    "Conflict resolution",
+    "Integrated candidate build/tests",
+    "Current devel all-pages Native/fresh WASM",
+    "Integrated candidate all-pages Native/fresh WASM"
+  ],
+  "remote_actions": {
+    "reviewer_requested_and_verified": true,
+    "comment": false,
+    "push": false,
+    "approve_review": false,
+    "merge": false
+  },
+  "next_gate": "Maintainer decision on conflict resolution under local_validation.md section 4.2"
+}

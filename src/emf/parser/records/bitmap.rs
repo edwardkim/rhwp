@@ -37,6 +37,41 @@ pub struct StretchDIBits {
     pub bits: Vec<u8>,
 }
 
+/// EMR_CREATEDIBPATTERNBRUSHPT의 장치 비트맵 브러시 원본.
+#[derive(Debug, Clone)]
+pub struct DibPatternBrush {
+    pub usage: u32,
+    pub bmi: Vec<u8>,
+    pub bits: Vec<u8>,
+}
+
+/// 레코드 자체 기준 offset은 다른 DIB 레코드와 같은 방식으로 검증한다.
+pub fn parse_pattern_brush(payload: &[u8]) -> Result<(u32, DibPatternBrush), Error> {
+    if payload.len() < 24 {
+        return Err(Error::UnexpectedEof { at: 0, need: 24 });
+    }
+    let handle = read_u32(&payload[..4]);
+    let usage = read_u32(&payload[4..8]);
+    let bmi = slice_at(
+        payload,
+        read_u32(&payload[8..12]) as usize,
+        read_u32(&payload[12..16]) as usize,
+    )?;
+    let bits = slice_at(
+        payload,
+        read_u32(&payload[16..20]) as usize,
+        read_u32(&payload[20..24]) as usize,
+    )?;
+    Ok((
+        handle,
+        DibPatternBrush {
+            usage,
+            bmi: bmi.to_vec(),
+            bits: bits.to_vec(),
+        },
+    ))
+}
+
 const HEADER_BYTES: usize = 8;
 const FIXED: usize = 72;
 
@@ -82,13 +117,17 @@ fn slice_at(payload: &[u8], record_off: usize, len: usize) -> Result<&[u8], Erro
             at: 0,
             need: HEADER_BYTES,
         })?;
-    if start + len > payload.len() {
+    let end = start.checked_add(len).ok_or(Error::UnexpectedEof {
+        at: start,
+        need: len,
+    })?;
+    if end > payload.len() {
         return Err(Error::UnexpectedEof {
             at: start,
             need: len,
         });
     }
-    Ok(&payload[start..start + len])
+    Ok(&payload[start..end])
 }
 
 fn read_u32(b: &[u8]) -> u32 {

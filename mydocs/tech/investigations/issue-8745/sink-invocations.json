@@ -1,0 +1,1286 @@
+[
+  {
+    "alert": 325,
+    "path": "src/renderer/composer.rs",
+    "region": {
+      "endColumn": 48,
+      "endLine": 341,
+      "startColumn": 1,
+      "startLine": 341
+    },
+    "source_sha256": "039e9db4ac675fce56e077d223875f60b127b5f996c3181f5b418564487804dd",
+    "invocation": "include!(\"composer/stored_cell_reflow.inc.rs\");"
+  },
+  {
+    "alert": 190,
+    "path": "src/cli/commands/conversion.rs",
+    "region": {
+      "endColumn": 43,
+      "endLine": 527,
+      "startColumn": 25,
+      "startLine": 525
+    },
+    "source_sha256": "91357fc7f77a339a7bee93fadc0abc370ab2adf22352183700c39743b633b5f1",
+    "invocation": "                        \"저장 완료: {} ({}KB)\",\n                        output_path.display(),\n                        bytes.len() / 1024"
+  },
+  {
+    "alert": 400,
+    "path": "src/renderer/composer/stored_marker_frames.rs",
+    "region": {
+      "endColumn": 34,
+      "endLine": 73,
+      "startColumn": 17,
+      "startLine": 69
+    },
+    "source_sha256": "693cde4573c2bfd80216ce86c07a2d6b96b56cba3a86fdbe8f228e8197240dd4",
+    "invocation": "                \"MARKER_FRAMES style={} source_rows={} projected_rows={} last_frame_start={}\",\n                para.para_shape_id,\n                para.line_segs.len(),\n                rows.len(),\n                last_frame_start,"
+  },
+  {
+    "alert": 402,
+    "path": "src/renderer/height_cursor.rs",
+    "region": {
+      "endColumn": 101,
+      "endLine": 1480,
+      "startColumn": 25,
+      "startLine": 1479
+    },
+    "source_sha256": "e9ebf7b601f0f55ed91483ffa74e23afbce08978913e9517242a4f6f59c4f207",
+    "invocation": "                        \"VPOS_CORR_SKIP: pi={} prev_pi={} y_in={:.2} prev_vpos_end={} lazy_base_corrected={} lazy_base={}\",\n                        item_para, prev_pi, y_offset, prev_vpos_end, lazy_base_corrected, lazy_base,"
+  },
+  {
+    "alert": 403,
+    "path": "src/renderer/height_cursor.rs",
+    "region": {
+      "endColumn": 188,
+      "endLine": 2717,
+      "startColumn": 17,
+      "startLine": 2707
+    },
+    "source_sha256": "e9ebf7b601f0f55ed91483ffa74e23afbce08978913e9517242a4f6f59c4f207",
+    "invocation": "                \"VPOS_CORR: path={} pi={} prev_pi={} prev_vpos={} prev_lh={} prev_ls={} vpos_end={} base={} col_y={:.17} y_in={:.17} end_y={:.17} result={:.17} stale_forward={} large_gap_body_stale={} current_title={} title_bottom={} page_tail={} single_tail={} zero_gap_title={} compact_new_note={} compact_stale_note_gap={} compact_tac_pic_gap={} compact_bottom_rewind={} compact_deep_backtrack={} compact_safe_backtrack={} applied={}\",\n                path, item_para, prev_pi, seg.vertical_pos, seg.line_height, seg.line_spacing,\n                vpos_end, base, self.col_area_y, y_offset, end_y, result, stale_forward,\n                compact_endnote_large_gap_body_stale_forward, current_is_endnote_title, compact_endnote_title_bottom_backtrack,\n                compact_endnote_page_tail_backtrack,\n                compact_endnote_single_line_tail_backtrack,\n                compact_endnote_zero_gap_title_forward,\n                compact_endnote_new_note_jump, compact_endnote_stale_note_gap,\n                compact_endnote_tac_picture_gap, compact_endnote_bottom_rewind,\n                compact_endnote_deep_backtrack, compact_endnote_safe_vpos_backtrack,\n                (applied || compact_endnote_deep_backtrack || compact_endnote_safe_vpos_backtrack) && !stale_forward && !compact_endnote_new_note_jump && !compact_endnote_tac_picture_gap,"
+  },
+  {
+    "alert": 404,
+    "path": "src/renderer/height_cursor.rs",
+    "region": {
+      "endColumn": 58,
+      "endLine": 2807,
+      "startColumn": 21,
+      "startLine": 2806
+    },
+    "source_sha256": "e9ebf7b601f0f55ed91483ffa74e23afbce08978913e9517242a4f6f59c4f207",
+    "invocation": "                    \"VPOS_SYNTH_FWD_SKIP: pi={} prev_pi={} y_in={:.2} result={:.2}\",\n                    item_para, prev_pi, y_offset, result,"
+  },
+  {
+    "alert": 499,
+    "path": "src/renderer/height_measurer.rs",
+    "region": {
+      "endColumn": 75,
+      "endLine": 5624,
+      "startColumn": 25,
+      "startLine": 5623
+    },
+    "source_sha256": "cb9231111c59b07bc6152ca9af2b5b2858f5876b4b7d8fefc7c622fd4dda8c98",
+    "invocation": "                        \"DIAG5757 fire rows={row_count} common={common_h:.1} declared={declared_rows_sum:.1} raw={raw_table_height:.1} wrap={:?} pb={:?}\",\n                        table.common.text_wrap, table.layout_page_break(),"
+  },
+  {
+    "alert": 410,
+    "path": "src/renderer/layout/paragraph_layout.rs",
+    "region": {
+      "endColumn": 70,
+      "endLine": 6470,
+      "startColumn": 25,
+      "startLine": 6463
+    },
+    "source_sha256": "e28dac498b532f354bc81c0753105b524e22517b14d4f1de3b2e51a8560301f2",
+    "invocation": "                        \"DIAG_PITCH li={} raw_lh={:.2} raw_ls={:.2} max_fs={:.2} -> lh={:.2} ls={:.2} stored_ls_cnt={}\",\n                        line_idx,\n                        raw_lh,\n                        hwpunit_to_px(comp_line.line_spacing, self.dpi),\n                        max_fs,\n                        line_height,\n                        line_spacing_px,\n                        para.map(|p| p.line_segs.len()).unwrap_or(0),"
+  },
+  {
+    "alert": 231,
+    "path": "src/renderer/layout/paragraph_layout.rs",
+    "region": {
+      "endColumn": 41,
+      "endLine": 7027,
+      "startColumn": 25,
+      "startLine": 7020
+    },
+    "source_sha256": "e28dac498b532f354bc81c0753105b524e22517b14d4f1de3b2e51a8560301f2",
+    "invocation": "                        \"LAYOUT_OVERFLOW_CELL: section={} pi={} line={} y={:.1} \\\n                         page_bottom={:.1} overflow={:.1}px\",\n                        section_index,\n                        para_index,\n                        line_idx,\n                        text_y,\n                        page_h,\n                        text_y - page_h,"
+  },
+  {
+    "alert": 232,
+    "path": "src/renderer/layout/paragraph_layout.rs",
+    "region": {
+      "endColumn": 45,
+      "endLine": 8531,
+      "startColumn": 21,
+      "startLine": 8518
+    },
+    "source_sha256": "e28dac498b532f354bc81c0753105b524e22517b14d4f1de3b2e51a8560301f2",
+    "invocation": "                    \"  TAC_ADV pi={} line_idx={} y={:.1} raw_lh={:.1} lh={:.1} ls={:.1} label_extra={:.1} whitespace={} cur_pic={:?} prev_pic={:?} skip_wrap={} skip_pic={} skip={}\",\n                    para_index,\n                    line_idx,\n                    y,\n                    raw_lh,\n                    line_height,\n                    line_spacing_px,\n                    tac_picture_label_extra,\n                    runs_all_whitespace,\n                    current_line_reserved_tac_picture_height,\n                    prev_line_reserved_tac_picture_height,\n                    skip_advance_empty_wrap,\n                    skip_advance_empty_tac_picture,\n                    skip_advance_empty_line,"
+  },
+  {
+    "alert": 483,
+    "path": "src/renderer/layout/table_layout/capacity_tolerance.rs",
+    "region": {
+      "endColumn": 27,
+      "endLine": 48,
+      "startColumn": 17,
+      "startLine": 37
+    },
+    "source_sha256": "06a2d06698a8c844b9f733e56c4ff9e46bc23aad780f02b40f04177cd63fb9f7",
+    "invocation": "                \"DIAG_REFLOW_CAPACITY row={} col={} para={} no_ls={} controls={:?} nested={:?} mixed={} topbottom={} next={:.12} available={:.12} tolerance={:.12}\",\n                cell.row,\n                cell.col,\n                unit.para_idx,\n                paragraph.is_some_and(crate::renderer::para_has_no_stored_line_segs),\n                paragraph.map(|para| para.controls.len()),\n                unit.nested_row,\n                unit.mixed_nested_fragment,\n                unit.top_and_bottom_flow,\n                next_height,\n                available,\n                tolerance,"
+  },
+  {
+    "alert": 412,
+    "path": "src/renderer/layout/table_layout/row_physical_band.rs",
+    "region": {
+      "endColumn": 33,
+      "endLine": 537,
+      "startColumn": 21,
+      "startLine": 536
+    },
+    "source_sha256": "68e48bb1abe913948c2071b5ec153fec7553426d09821d4876dd9058228df4fc",
+    "invocation": "                    \"DIAG_SCAN PHYSICAL_REFIT r={row} start={start_cut:?} end={:?} physical={physical_budget:.3} budget={budget:.3} required={required:.3} owners={owners:?}\",\n                    cut.end_cut,"
+  },
+  {
+    "alert": 497,
+    "path": "src/renderer/layout/table_layout/stored_intra_paragraph_frame.rs",
+    "region": {
+      "endColumn": 70,
+      "endLine": 139,
+      "startColumn": 17,
+      "startLine": 130
+    },
+    "source_sha256": "9c745f2935feeec09879567a279656c288c457b029d6877c213ca98cf6cf8548",
+    "invocation": "                \"DIAG_SCAN STORED_CELL_FRAME table={:p} row={} span={} origin={:.6} current={:.6} end={:.6} cached={}\",\n                table,\n                row,\n                cell.row_span,\n                origin,\n                current,\n                end,\n                self.stored_frame_row_plans\n                    .borrow()\n                    .contains_key(&(table as *const Table as usize)),"
+  },
+  {
+    "alert": 413,
+    "path": "src/renderer/layout/table_layout/stored_ordinary_row_frame.rs",
+    "region": {
+      "endColumn": 191,
+      "endLine": 489,
+      "startColumn": 21,
+      "startLine": 489
+    },
+    "source_sha256": "212d67e43808a8c6833b8d0871c8426d001c02af7d7e0c29f1e06dc6dc395564",
+    "invocation": "                    \"DIAG_ROW_TAIL stored row={row} declared={declared:.6} content={content:.6} frame={height:.6} accepted={accepted:.6} carried={carried:?} minimum={minimum:.6} cut={cut:?}\""
+  },
+  {
+    "alert": 414,
+    "path": "src/renderer/layout/table_layout/unit_diagnostics.rs",
+    "region": {
+      "endColumn": 16,
+      "endLine": 40,
+      "startColumn": 13,
+      "startLine": 29
+    },
+    "source_sha256": "117053368af6101d84f31c4e95b4f0fb2c2057469b2c4e4d91728bb420a7efd7",
+    "invocation": "            \"DIAG_CELL_UNIT row={} col={} span={} index={} height={:.6} following={:.6} reflowed_slot={} para={} lines={}..{} hard_break={} stored_frame_break={} page_frame_reset={} source={:?} nested_row={:?} nested_cut={:?}\",\n            cell.row, cell.col, cell.row_span, index, unit.height,\n            unit.following_line_advance, unit.reflowed_line_slot, unit.para_idx,\n            unit.vis_start, unit.vis_end, unit.hard_break_before,\n            unit.stored_frame_break_before, unit.page_frame_reset_before,\n            seg.map(|seg| (seg.vertical_pos, seg.line_height, seg.line_spacing)),\n            unit.nested_row,\n            unit.nested_table_fragment.as_ref().map(|cut| (\n                &cut.start_cut,\n                &cut.end_cut,\n                cut.terminal,\n            )),"
+  },
+  {
+    "alert": 484,
+    "path": "src/renderer/layout/table_layout/unit_diagnostics.rs",
+    "region": {
+      "endColumn": 44,
+      "endLine": 104,
+      "startColumn": 13,
+      "startLine": 103
+    },
+    "source_sha256": "117053368af6101d84f31c4e95b4f0fb2c2057469b2c4e4d91728bb420a7efd7",
+    "invocation": "            \"DIAG_SPAN_REMAINDER row={} col={} cursor={} accepted={accepted:?} required={required:.6} estimated_prefix={estimated_prefix:.6} actual_prefix={actual_prefix:.6} band={band:.6} remaining={remaining:.6}\",\n            cell.row, cell.col, cursor_row,"
+  },
+  {
+    "alert": 417,
+    "path": "src/renderer/layout/table_layout/unit_diagnostics.rs",
+    "region": {
+      "endColumn": 74,
+      "endLine": 119,
+      "startColumn": 13,
+      "startLine": 118
+    },
+    "source_sha256": "117053368af6101d84f31c4e95b4f0fb2c2057469b2c4e4d91728bb420a7efd7",
+    "invocation": "            \"DIAG_CONTINUATION_DEMAND row={} col={} content={:.6} physical={:.6} prefix={:?} through={:?} snapshot={snapshot}\",\n            cell.row, cell.col, heights.0, heights.1, ledger.0, ledger.1,"
+  },
+  {
+    "alert": 418,
+    "path": "src/renderer/layout/table_layout/unit_diagnostics.rs",
+    "region": {
+      "endColumn": 56,
+      "endLine": 136,
+      "startColumn": 13,
+      "startLine": 134
+    },
+    "source_sha256": "117053368af6101d84f31c4e95b4f0fb2c2057469b2c4e4d91728bb420a7efd7",
+    "invocation": "            \"DIAG_CELL_ALIGN row={} col={} cut={cut:?} align={align:?} cell_y={:.6} text_y={:.6} cell_h={:.6} pad={:.6} content={:.6} centered={:.6} owners={owners:?}\",\n            cell.row, cell.col, position.0, position.1,\n            heights.0, heights.1, heights.2, heights.3,"
+  },
+  {
+    "alert": 419,
+    "path": "src/renderer/layout/table_layout/unit_diagnostics.rs",
+    "region": {
+      "endColumn": 67,
+      "endLine": 154,
+      "startColumn": 13,
+      "startLine": 153
+    },
+    "source_sha256": "117053368af6101d84f31c4e95b4f0fb2c2057469b2c4e4d91728bb420a7efd7",
+    "invocation": "            \"DIAG_CELL_SPAN row={} col={} rows={}..{} prior={:.6} height={:.6} units={}..{}\",\n            cell.row, cell.col, start, end, prior, height, su, eu,"
+  },
+  {
+    "alert": 420,
+    "path": "src/renderer/layout/table_partial.rs",
+    "region": {
+      "endColumn": 54,
+      "endLine": 3127,
+      "startColumn": 25,
+      "startLine": 3114
+    },
+    "source_sha256": "2031b4f537bf6fb2a17db449a997f8311134c6bd08dd5b443f56731149f2314e",
+    "invocation": "                        \"DIAG_CELLPARA pi={} cell=({},{}) cp={} lines={}..{} cut={:?} nested={:?} mixed={} nonline={} para_y={:.1} cell_bot={:.1} owned_before={:?}\",\n                        para_index,\n                        cell.row,\n                        cell.col,\n                        cp_idx,\n                        start_line,\n                        end_line,\n                        cut_units,\n                        nested_cut_rows,\n                        mixed_nested_split.is_some(),\n                        visible_non_inline_controls,\n                        para_y,\n                        cell_content_bottom(cell_y, cell_h, pad_bottom),\n                        stored_linear_spacing_before,"
+  },
+  {
+    "alert": 234,
+    "path": "src/renderer/layout/table_layout.rs",
+    "region": {
+      "endColumn": 42,
+      "endLine": 4214,
+      "startColumn": 17,
+      "startLine": 4200
+    },
+    "source_sha256": "648cffc6f319ae4eeadb2a2d8608e287d656946e98c7d8bbe4af8ba21200c0c6",
+    "invocation": "                \"[DIAG_TAC layout_table] tac={} depth={} mt={} meta={:?} rows={} y_start={:.1} decl_common_h={:.1} row_heights={:?} decl_cell_h={:?}\",\n                table.common.treat_as_char,\n                depth,\n                measured_table.is_some(),\n                table_meta,\n                row_count,\n                y_start,\n                hwpunit_to_px(table.common.height as i32, self.dpi),\n                row_heights\n                    .iter()\n                    .map(|h| (h * 10.0).round() / 10.0)\n                    .collect::<Vec<_>>(),\n                decl.iter()\n                    .map(|h| (h * 10.0).round() / 10.0)\n                    .collect::<Vec<_>>(),"
+  },
+  {
+    "alert": 421,
+    "path": "src/renderer/layout/table_layout.rs",
+    "region": {
+      "endColumn": 74,
+      "endLine": 4266,
+      "startColumn": 17,
+      "startLine": 4254
+    },
+    "source_sha256": "648cffc6f319ae4eeadb2a2d8608e287d656946e98c7d8bbe4af8ba21200c0c6",
+    "invocation": "                \"[DIAG_TAC viewport] depth={} meta={:?} col_area=({:.1},{:.1},{:.1},{:.1}) y_start={:.1} row_y_end={:.1} explicit_split={:?} inferred={:?}\",\n                depth,\n                table_meta,\n                col_area.x,\n                col_area.y,\n                col_area.width,\n                col_area.height,\n                y_start,\n                row_y.last().copied().unwrap_or(0.0),\n                nested_split.map(|s| (s.start_row, s.end_row, s.visible_height)),\n                inferred_viewport_split\n                    .as_ref()\n                    .map(|s| (s.start_row, s.end_row, s.visible_height)),"
+  },
+  {
+    "alert": 422,
+    "path": "src/renderer/layout/table_partial.rs",
+    "region": {
+      "endColumn": 623,
+      "endLine": 5362,
+      "startColumn": 51,
+      "startLine": 5362
+    },
+    "source_sha256": "2031b4f537bf6fb2a17db449a997f8311134c6bd08dd5b443f56731149f2314e",
+    "invocation": "                                        eprintln!(\"DIAG_SCAN INLINE_SLOT parent_pi={} cp={cp_idx} ctrl={ctrl_idx} tac={} table_only={table_host_line_only_fragment} empty_runs={all_runs_empty} alignment={para_alignment:?} recursive={} line={} line_widths={tac_line_widths:?} prepared_x={empty_tac_x:.3} area_x={:.3} area_w={:.3} nested_w={nested_w:.3} painted={:?}\", cell_context.parent_para_index, nested_table.common.treat_as_char, split_info.as_ref().is_some_and(|split| split.recursive_cut.is_some()), empty_tac_current_line, ctrl_area.x, ctrl_area.width, cell_node.children.get(first_new_child).map(|child| child.bbox));"
+  },
+  {
+    "alert": 424,
+    "path": "src/renderer/layout/table_layout.rs",
+    "region": {
+      "endColumn": 68,
+      "endLine": 5960,
+      "startColumn": 25,
+      "startLine": 5958
+    },
+    "source_sha256": "648cffc6f319ae4eeadb2a2d8608e287d656946e98c7d8bbe4af8ba21200c0c6",
+    "invocation": "                        \"DIAG_SPANH layout id={} r={r} c={} span={span} declared={:.6} lines={line_based:.6} objects={object_based:.6} required={required_height:.6} combined={combined:.6}\",\n                        table.common.instance_id, cell.col,\n                        hwpunit_to_px(cell.height as i32, self.dpi)"
+  },
+  {
+    "alert": 423,
+    "path": "src/renderer/layout/table_partial.rs",
+    "region": {
+      "endColumn": 146,
+      "endLine": 5638,
+      "startColumn": 35,
+      "startLine": 5638
+    },
+    "source_sha256": "2031b4f537bf6fb2a17db449a997f8311134c6bd08dd5b443f56731149f2314e",
+    "invocation": "                        eprintln!(\"DIAG_STORED_NESTED_HOST_FLOW cp={cp_idx} entry={stored_host_flow_entry:.6} height={height:.6} end={para_y:.6}\");"
+  },
+  {
+    "alert": 425,
+    "path": "src/renderer/layout/table_partial.rs",
+    "region": {
+      "endColumn": 113,
+      "endLine": 6846,
+      "startColumn": 29,
+      "startLine": 6846
+    },
+    "source_sha256": "2031b4f537bf6fb2a17db449a997f8311134c6bd08dd5b443f56731149f2314e",
+    "invocation": "                            \"D6981R r={r} start_row={start_row} end_row={end_row} need={need:.1} have={have:.1}\""
+  },
+  {
+    "alert": 235,
+    "path": "src/renderer/layout/table_layout.rs",
+    "region": {
+      "endColumn": 50,
+      "endLine": 7276,
+      "startColumn": 33,
+      "startLine": 7275
+    },
+    "source_sha256": "648cffc6f319ae4eeadb2a2d8608e287d656946e98c7d8bbe4af8ba21200c0c6",
+    "invocation": "                                \"DBG5699_J3 bodybottom-clamp release: clamped={clamped:.1} < y_start={y_start:.1}, keep pushed={:.1}\",\n                                pushed.max(min_y)"
+  },
+  {
+    "alert": 428,
+    "path": "src/renderer/layout/table_layout.rs",
+    "region": {
+      "endColumn": 67,
+      "endLine": 7621,
+      "startColumn": 21,
+      "startLine": 7620
+    },
+    "source_sha256": "648cffc6f319ae4eeadb2a2d8608e287d656946e98c7d8bbe4af8ba21200c0c6",
+    "invocation": "                    \"DIAG5601B cp={cp_idx} use={use_saved_cell_para_vpos} anchor={has_stored_para_anchor} restart={local_vpos_restart_seen} para_y_in={para_y:.1} first_vpos={:?}\",\n                    para.line_segs.first().map(|s| s.vertical_pos)"
+  },
+  {
+    "alert": 426,
+    "path": "src/renderer/layout/table_partial.rs",
+    "region": {
+      "endColumn": 407,
+      "endLine": 7138,
+      "startColumn": 23,
+      "startLine": 7138
+    },
+    "source_sha256": "2031b4f537bf6fb2a17db449a997f8311134c6bd08dd5b443f56731149f2314e",
+    "invocation": "            eprintln!(\"NESTED_FRAME rows={} cols={} range={:?} start={:?} end={:?} block={} start_block={} measured={} resolved={:?} actual={:?} start_override={:?} end_override={:?}\", table.row_count, table.col_count, start_row..end_row, start_cut, end_cut, is_block_split, start_cut_is_block, measured_table.is_some(), resolved_row_heights, row_heights, start_row_height_override, end_row_height_override);"
+  },
+  {
+    "alert": 427,
+    "path": "src/renderer/layout/table_partial.rs",
+    "region": {
+      "endColumn": 80,
+      "endLine": 7735,
+      "startColumn": 25,
+      "startLine": 7734
+    },
+    "source_sha256": "2031b4f537bf6fb2a17db449a997f8311134c6bd08dd5b443f56731149f2314e",
+    "invocation": "                        \"DIAG_FOLD pi={} rows={}..{} trail={:.2} slack={:.2} fold={:.2}\",\n                        para_index, start_row, end_row, trail, fold_slack, fold"
+  },
+  {
+    "alert": 429,
+    "path": "src/renderer/layout/table_partial.rs",
+    "region": {
+      "endColumn": 31,
+      "endLine": 8334,
+      "startColumn": 17,
+      "startLine": 8322
+    },
+    "source_sha256": "2031b4f537bf6fb2a17db449a997f8311134c6bd08dd5b443f56731149f2314e",
+    "invocation": "                \"DIAG_FRAG pi={} ci={} rows={}..{} cont={} blk={} start_cut={:?} end_cut={:?} y_start={:.1} tbl_h={:.1} logical_delta={:.1} cap={:.1}\",\n                para_index,\n                control_index,\n                start_row,\n                end_row,\n                is_continuation,\n                is_block_split,\n                start_cut,\n                end_cut,\n                y_start,\n                partial_table_height,\n                stored_reset_logical_height_delta,\n                caption_total,"
+  },
+  {
+    "alert": 500,
+    "path": "src/renderer/layout/table_layout.rs",
+    "region": {
+      "endColumn": 97,
+      "endLine": 8942,
+      "startColumn": 37,
+      "startLine": 8942
+    },
+    "source_sha256": "648cffc6f319ae4eeadb2a2d8608e287d656946e98c7d8bbe4af8ba21200c0c6",
+    "invocation": "                                    \"[6313B] pic_y={pic_y:.1} pic_h={pic_h:.1} pic_x={pic_x:.1}\""
+  },
+  {
+    "alert": 431,
+    "path": "src/renderer/layout/table_layout.rs",
+    "region": {
+      "endColumn": 187,
+      "endLine": 8412,
+      "startColumn": 41,
+      "startLine": 8412
+    },
+    "source_sha256": "648cffc6f319ae4eeadb2a2d8608e287d656946e98c7d8bbe4af8ba21200c0c6",
+    "invocation": "                                        \"[6313] tac_img_y={tac_img_y:.1} pybc={para_y_before_compose:.1} target_line={target_line} cur={current_tac_line} pic_h={pic_h:.1} segs={segs:?}\","
+  },
+  {
+    "alert": 432,
+    "path": "src/renderer/layout/table_layout.rs",
+    "region": {
+      "endColumn": 79,
+      "endLine": 12452,
+      "startColumn": 21,
+      "startLine": 12450
+    },
+    "source_sha256": "648cffc6f319ae4eeadb2a2d8608e287d656946e98c7d8bbe4af8ba21200c0c6",
+    "invocation": "                    \"DIAG_SCAN NESTED_SOURCE_FRAME start={start_cut:?} end={end_cut:?} height={height:.3} margins={:.3}/{:.3}\",\n                    hwpunit_to_px(table.outer_margin_top as i32, self.dpi),\n                    hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi),"
+  },
+  {
+    "alert": 485,
+    "path": "src/renderer/layout/table_layout.rs",
+    "region": {
+      "endColumn": 37,
+      "endLine": 12753,
+      "startColumn": 25,
+      "startLine": 12746
+    },
+    "source_sha256": "648cffc6f319ae4eeadb2a2d8608e287d656946e98c7d8bbe4af8ba21200c0c6",
+    "invocation": "                        \"DIAG_MIXFRAG_PROFILE paras={} units={} resets={} authoritative={} nested_ctrls={} table_h={:.1} body_h={:.1}\",\n                        cell.paragraphs.len(),\n                        units.len(),\n                        stored_page_frame_boundaries,\n                        has_authoritative_frame_boundary,\n                        nested_controls,\n                        nested_table_height,\n                        page_height,"
+  },
+  {
+    "alert": 486,
+    "path": "src/renderer/layout/table_layout.rs",
+    "region": {
+      "endColumn": 37,
+      "endLine": 13204,
+      "startColumn": 25,
+      "startLine": 13200
+    },
+    "source_sha256": "648cffc6f319ae4eeadb2a2d8608e287d656946e98c7d8bbe4af8ba21200c0c6",
+    "invocation": "                        \"DIAG_MIXFRAG cell paras={} units={} total={:.1} inner_w={:.2}\",\n                        cell.paragraphs.len(),\n                        cell_units.len(),\n                        total,\n                        inner_width,"
+  },
+  {
+    "alert": 435,
+    "path": "src/renderer/layout/table_layout.rs",
+    "region": {
+      "endColumn": 75,
+      "endLine": 13897,
+      "startColumn": 27,
+      "startLine": 13894
+    },
+    "source_sha256": "648cffc6f319ae4eeadb2a2d8608e287d656946e98c7d8bbe4af8ba21200c0c6",
+    "invocation": "                eprintln!(\"DIAG_CELL_UNIT id={} r={} c={} u={} p={} lines={}..{} h={:.6} empty={} hard={} frame={}\",\n                    table.common.instance_id, cell.row, cell.col, i, unit.para_idx,\n                    unit.vis_start, unit.vis_end, unit.height, unit.empty_spacer,\n                    unit.hard_break_before, unit.stored_frame_break_before);"
+  },
+  {
+    "alert": 436,
+    "path": "src/renderer/layout/table_layout.rs",
+    "region": {
+      "endColumn": 35,
+      "endLine": 14510,
+      "startColumn": 17,
+      "startLine": 14495
+    },
+    "source_sha256": "648cffc6f319ae4eeadb2a2d8608e287d656946e98c7d8bbe4af8ba21200c0c6",
+    "invocation": "                \"DIAG_SHORT_CHILD eligible={} native={} parent=(rows={},h={:.1},wrap={:?},vert={:?},break={:?}) cell=(row={},span={},paras={}) child=(cols={},tac={},cells={},paras={},flow={:.1})\",\n                eligible,\n                self.profile.get().hwp5_stored_pagination_layout(),\n                table.row_count,\n                parent_declared_height,\n                table.common.text_wrap,\n                table.common.vert_rel_to,\n                table.layout_page_break(),\n                cell.row,\n                cell.row_span,\n                cell.paragraphs.len(),\n                child.col_count,\n                child.common.treat_as_char,\n                child.cells.len(),\n                child.cells.first().map(|c| c.paragraphs.len()).unwrap_or(0),\n                child_flow_height,"
+  },
+  {
+    "alert": 433,
+    "path": "src/renderer/layout.rs",
+    "region": {
+      "endColumn": 38,
+      "endLine": 3982,
+      "startColumn": 1,
+      "startLine": 3982
+    },
+    "source_sha256": "a148353470d5f8f7edcaff905dd9aa8ad81a127176a2565b2d2c35034dd20e2e",
+    "invocation": "include!(\"layout/shape_item.inc.rs\");"
+  },
+  {
+    "alert": 437,
+    "path": "src/renderer/layout.rs",
+    "region": {
+      "endColumn": 90,
+      "endLine": 9047,
+      "startColumn": 25,
+      "startLine": 9046
+    },
+    "source_sha256": "a148353470d5f8f7edcaff905dd9aa8ad81a127176a2565b2d2c35034dd20e2e",
+    "invocation": "                        \"DBG5699 pi={} y_before={:.1} y_now={:.1} floor={:.1}\",\n                        item_para, y_before_vpos_adjust, y_offset, hcursor.min_flow_floor"
+  },
+  {
+    "alert": 438,
+    "path": "src/renderer/layout.rs",
+    "region": {
+      "endColumn": 55,
+      "endLine": 10441,
+      "startColumn": 33,
+      "startLine": 10438
+    },
+    "source_sha256": "a148353470d5f8f7edcaff905dd9aa8ad81a127176a2565b2d2c35034dd20e2e",
+    "invocation": "                                \"VPOS_RESTART pi={item_para} source={} origin={:.3} base={:?}\",\n                                first.vertical_pos,\n                                y_offset + spacing_before,\n                                hcursor.vpos_lazy_base"
+  },
+  {
+    "alert": 439,
+    "path": "src/renderer/layout.rs",
+    "region": {
+      "endColumn": 45,
+      "endLine": 10460,
+      "startColumn": 21,
+      "startLine": 10450
+    },
+    "source_sha256": "a148353470d5f8f7edcaff905dd9aa8ad81a127176a2565b2d2c35034dd20e2e",
+    "invocation": "                    \"FLOW_ORIGIN sec={} pi={} before={} start={} end={:?} plans={:?}\",\n                    page_content.section_index,\n                    item_para,\n                    y_before_vpos_adjust,\n                    y_offset,\n                    col_content.stored_paragraph_flow_ends.get(&item_para),\n                    col_content\n                        .paragraph_float_placements\n                        .iter()\n                        .filter(|((owner, _), _)| *owner == item_para)\n                        .collect::<Vec<_>>()"
+  },
+  {
+    "alert": 440,
+    "path": "src/renderer/layout.rs",
+    "region": {
+      "endColumn": 29,
+      "endLine": 10552,
+      "startColumn": 21,
+      "startLine": 10547
+    },
+    "source_sha256": "a148353470d5f8f7edcaff905dd9aa8ad81a127176a2565b2d2c35034dd20e2e",
+    "invocation": "                    \"TAC_CURSOR  {} y_in={:.1} y_out={:.1} dy={:.1} was_tac={}\",\n                    _item_desc,\n                    _y_in,\n                    new_y,\n                    new_y - _y_in,\n                    was_tac,"
+  },
+  {
+    "alert": 441,
+    "path": "src/renderer/layout.rs",
+    "region": {
+      "endColumn": 37,
+      "endLine": 10562,
+      "startColumn": 21,
+      "startLine": 10557
+    },
+    "source_sha256": "a148353470d5f8f7edcaff905dd9aa8ad81a127176a2565b2d2c35034dd20e2e",
+    "invocation": "                    \"EN_RENDER pi={} y_in_rel={:.1} y_out_rel={:.1} dy={:.1} col_h={:.1}\",\n                    item_para,\n                    _y_in - col_area.y,\n                    new_y - col_area.y,\n                    new_y - _y_in,\n                    col_area.height,"
+  },
+  {
+    "alert": 442,
+    "path": "src/renderer/layout.rs",
+    "region": {
+      "endColumn": 72,
+      "endLine": 10600,
+      "startColumn": 33,
+      "startLine": 10599
+    },
+    "source_sha256": "a148353470d5f8f7edcaff905dd9aa8ad81a127176a2565b2d2c35034dd20e2e",
+    "invocation": "                                \"DBG5699_H2 pi={} ci={} rewind {:.1}→{:.1} 금지\",\n                                para_index, control_index, _y_in, new_y"
+  },
+  {
+    "alert": 443,
+    "path": "src/renderer/layout.rs",
+    "region": {
+      "endColumn": 88,
+      "endLine": 10846,
+      "startColumn": 21,
+      "startLine": 10845
+    },
+    "source_sha256": "a148353470d5f8f7edcaff905dd9aa8ad81a127176a2565b2d2c35034dd20e2e",
+    "invocation": "                    \"FLOW_END sec={} pi={} from={} to={}\",\n                    page_content.section_index, item_para, item_start_y_for_band, new_y"
+  },
+  {
+    "alert": 444,
+    "path": "src/renderer/layout.rs",
+    "region": {
+      "endColumn": 32,
+      "endLine": 11151,
+      "startColumn": 21,
+      "startLine": 11145
+    },
+    "source_sha256": "a148353470d5f8f7edcaff905dd9aa8ad81a127176a2565b2d2c35034dd20e2e",
+    "invocation": "                    \"LAYOUT_Y: page={} sec={} ord={} pi={} y_after={:.1} (body_top={:.1})\",\n                    page_content.page_index,\n                    page_content.section_index,\n                    item_ordinal,\n                    item_para,\n                    y_offset,\n                    col_area.y,"
+  },
+  {
+    "alert": 487,
+    "path": "src/renderer/layout.rs",
+    "region": {
+      "endColumn": 33,
+      "endLine": 13321,
+      "startColumn": 25,
+      "startLine": 13308
+    },
+    "source_sha256": "a148353470d5f8f7edcaff905dd9aa8ad81a127176a2565b2d2c35034dd20e2e",
+    "invocation": "                        \"DIAG_TACX pi={} ci={} align={:?} base_x={:.2} aligned_x={:.2} tblw={:.2} om_l={} om_r={} col_x={:.2} col_w={:.2} eff_ml={:.2} mr={:.2} leading={:.2}\",\n                        para_index,\n                        control_index,\n                        alignment,\n                        base_x,\n                        aligned_x,\n                        hwpunit_to_px(t.common.width as i32, self.dpi),\n                        t.outer_margin_left,\n                        t.outer_margin_right,\n                        col_area.x,\n                        col_area.width,\n                        effective_margin,\n                        margin_right,\n                        leading,"
+  },
+  {
+    "alert": 488,
+    "path": "src/renderer/layout/table_layout.rs",
+    "region": {
+      "endColumn": 22,
+      "endLine": 24958,
+      "startColumn": 21,
+      "startLine": 24950
+    },
+    "source_sha256": "648cffc6f319ae4eeadb2a2d8608e287d656946e98c7d8bbe4af8ba21200c0c6",
+    "invocation": "                    \"DIAG_BLKH cell[{}] r={} c={} units={} su={} eu={} content={:.1} h={:.1}\",\n                    i,\n                    cell.row,\n                    cell.col,\n                    units.len(),\n                    su,\n                    eu,\n                    content,\n                    h"
+  },
+  {
+    "alert": 445,
+    "path": "src/renderer/layout.rs",
+    "region": {
+      "endColumn": 54,
+      "endLine": 14436,
+      "startColumn": 21,
+      "startLine": 14431
+    },
+    "source_sha256": "a148353470d5f8f7edcaff905dd9aa8ad81a127176a2565b2d2c35034dd20e2e",
+    "invocation": "                    \"WHOLE_TABLE_Y: pi={} sec={} tac={} table_y_start={:.1} table_y_end={:.1} table_h={:.1} para_y={:.1} table_y_before={:.1}\",\n                    para_index, page_content.section_index, is_tac,\n                    if let Some((_, iy)) = inline_pos { iy } else { table_y_before },\n                    table_y_end,\n                    table_y_end - (if let Some((_, iy)) = inline_pos { iy } else { table_y_before }),\n                    para_y_for_table, table_y_before,"
+  },
+  {
+    "alert": 449,
+    "path": "src/renderer/layout.rs",
+    "region": {
+      "endColumn": 53,
+      "endLine": 14910,
+      "startColumn": 17,
+      "startLine": 14907
+    },
+    "source_sha256": "a148353470d5f8f7edcaff905dd9aa8ad81a127176a2565b2d2c35034dd20e2e",
+    "invocation": "                \"DIAG5701_TBL_EXIT pi={} y_out={:.1} content_bottom={:.1}\",\n                para_index,\n                y_offset,\n                self.last_item_content_bottom.get(),"
+  },
+  {
+    "alert": 451,
+    "path": "src/renderer/layout.rs",
+    "region": {
+      "endColumn": 78,
+      "endLine": 15322,
+      "startColumn": 41,
+      "startLine": 15321
+    },
+    "source_sha256": "a148353470d5f8f7edcaff905dd9aa8ad81a127176a2565b2d2c35034dd20e2e",
+    "invocation": "                                        \"DIAG_PAINT_SB pi={} sb={:.1} y={:.1}\",\n                                        para_index, spacing_before, y_offset,"
+  },
+  {
+    "alert": 452,
+    "path": "src/renderer/layout/table_layout.rs",
+    "region": {
+      "endColumn": 113,
+      "endLine": 27495,
+      "startColumn": 29,
+      "startLine": 27495
+    },
+    "source_sha256": "648cffc6f319ae4eeadb2a2d8608e287d656946e98c7d8bbe4af8ba21200c0c6",
+    "invocation": "                            \"D6981R r={r} start_row={start_row} end_row={end_row} need={need:.1} have={have:.1}\""
+  },
+  {
+    "alert": 326,
+    "path": "src/renderer/typeset/controls/empty_float.rs",
+    "region": {
+      "endColumn": 33,
+      "endLine": 185,
+      "startColumn": 13,
+      "startLine": 184
+    },
+    "source_sha256": "e6dea5df187d3daab0a9e803fdbec31d3e7059b9c5a1aa2d3423887343db187e",
+    "invocation": "            \"DIAG_FLOAT_FRAME pi={para_idx} ci={ctrl_idx} origin={para_start_height} height={} reflowed={table_reflowed} closed={closed_source_placement:?}\",\n            ft.effective_height,"
+  },
+  {
+    "alert": 327,
+    "path": "src/renderer/typeset/controls/empty_float.rs",
+    "region": {
+      "endColumn": 59,
+      "endLine": 514,
+      "startColumn": 13,
+      "startLine": 513
+    },
+    "source_sha256": "e6dea5df187d3daab0a9e803fdbec31d3e7059b9c5a1aa2d3423887343db187e",
+    "invocation": "            \"DIAG_FLOAT_LANE pi={para_idx} ci={ctrl_idx} raw={raw_top} lane={lane_top} closed={closed_control_frame:?} before={} after={} reserved={reserved_height}\",\n            ft.host_spacing.before, ft.host_spacing.after,"
+  },
+  {
+    "alert": 328,
+    "path": "src/renderer/typeset/controls/stored_tac.rs",
+    "region": {
+      "endColumn": 55,
+      "endLine": 941,
+      "startColumn": 25,
+      "startLine": 938
+    },
+    "source_sha256": "419f8328748fa7336be47da717fdc458c9e9f5e8856627244f0472fd2ff5889e",
+    "invocation": "                        \"DIAG_STORED_TAC pi={para_idx} current={} saved={} same_frame={same_frame} inherited={inherited_origin:?} previous={:?} page_base={:?} lazy_base={:?} anchor={} text_frame={:?}\",\n                        page.current_height, saved_origin, page.previous_content_bottom,\n                        page.vpos_page_base, page.vpos_lazy_base, page.vpos_col_anchor,\n                        page.stored_text_column_frame,"
+  },
+  {
+    "alert": 329,
+    "path": "src/renderer/typeset/controls/stored_tac.rs",
+    "region": {
+      "endColumn": 79,
+      "endLine": 997,
+      "startColumn": 33,
+      "startLine": 995
+    },
+    "source_sha256": "419f8328748fa7336be47da717fdc458c9e9f5e8856627244f0472fd2ff5889e",
+    "invocation": "                                \"DIAG_STORED_TAC_FIT pi={para_idx} control={} measured={} physical={} declared={} caption={} residual={}\",\n                                line.control, m.total_height, physical_height,\n                                table.common.height, caption_extent, residual,"
+  },
+  {
+    "alert": 330,
+    "path": "src/renderer/typeset/controls.rs",
+    "region": {
+      "endColumn": 35,
+      "endLine": 204,
+      "startColumn": 17,
+      "startLine": 198
+    },
+    "source_sha256": "23859dab38005be6ad8a8c4f41590783b6f0b8b55b87e0965f211ac6b20e9026",
+    "invocation": "                \"OVERLAY_CONT: pi={} ci={} start_row={} remaining={:.1} reserve={:.1} room={:.1}\",\n                para_idx,\n                ctrl_idx,\n                continuation.first_unfit,\n                continuation.remaining_px,\n                continuation.reserve_px,\n                continuation.room,"
+  },
+  {
+    "alert": 462,
+    "path": "src/renderer/typeset/controls.rs",
+    "region": {
+      "endColumn": 41,
+      "endLine": 422,
+      "startColumn": 21,
+      "startLine": 411
+    },
+    "source_sha256": "23859dab38005be6ad8a8c4f41590783b6f0b8b55b87e0965f211ac6b20e9026",
+    "invocation": "                    \"DIAG_TACSIB pi={} ci={} line_idx={} add={:.1} first_seg={:.1}\",\n                    para_idx,\n                    ci,\n                    prior_tac_count,\n                    lh + ls_extra,\n                    para.line_segs\n                        .first()\n                        .map(|s0| hwpunit_to_px(\n                            s0.line_height.saturating_add(s0.line_spacing),\n                            dpi\n                        ))\n                        .unwrap_or(0.0),"
+  },
+  {
+    "alert": 331,
+    "path": "src/renderer/typeset/controls.rs",
+    "region": {
+      "endColumn": 38,
+      "endLine": 437,
+      "startColumn": 21,
+      "startLine": 431
+    },
+    "source_sha256": "23859dab38005be6ad8a8c4f41590783b6f0b8b55b87e0965f211ac6b20e9026",
+    "invocation": "                    \"DIAG_LADSP pi={} OMIT step={:.1} cap={:.1} fmt_total={:.1} sb={:.1} sa={:.1}\",\n                    para_idx,\n                    stored_step_px.unwrap_or(0.0),\n                    cap,\n                    fmt.total_height,\n                    fmt.spacing_before,\n                    fmt.spacing_after"
+  },
+  {
+    "alert": 334,
+    "path": "src/renderer/typeset/notes/endnotes/emit.rs",
+    "region": {
+      "endColumn": 56,
+      "endLine": 156,
+      "startColumn": 25,
+      "startLine": 151
+    },
+    "source_sha256": "063406754608c2bec987ff68e274152033a850625770d40b7a1495b476bce30f",
+    "invocation": "                        \"EN_ACC pi={} path={} ch_before={:.1} adv={:.1} ch_after={:.1}\",\n                        en_para_idx,\n                        if tac_stack_ssot { \"TACstack\" } else { \"add\" },\n                        st.current_height,\n                        en_advance,\n                        st.current_height + en_advance,"
+  },
+  {
+    "alert": 332,
+    "path": "src/renderer/typeset/controls.rs",
+    "region": {
+      "endColumn": 69,
+      "endLine": 474,
+      "startColumn": 13,
+      "startLine": 466
+    },
+    "source_sha256": "23859dab38005be6ad8a8c4f41590783b6f0b8b55b87e0965f211ac6b20e9026",
+    "invocation": "            \"DIAG_TACCAP pi={} tac_seg_total={:.1} cap={:.1} fmt_total={:.1} sb={:.1} cur_h={:.1} snapped_base={:.1} clamp={}\",\n            para_idx,\n            tac_seg_total,\n            cap,\n            fmt.total_height,\n            fmt.spacing_before,\n            st.tac_height_page().current_height,\n            snapped_base,\n            st.tac_height_page().current_height - snapped_base > cap"
+  },
+  {
+    "alert": 335,
+    "path": "src/renderer/typeset/notes/endnotes/emit.rs",
+    "region": {
+      "endColumn": 27,
+      "endLine": 140,
+      "startColumn": 25,
+      "startLine": 130
+    },
+    "source_sha256": "063406754608c2bec987ff68e274152033a850625770d40b7a1495b476bce30f",
+    "invocation": "                        \"EN_ACC pi={} path={} ch_before={:.1} rewind_start={:.1} adv={:.1} ch_after={:.1}\",\n                        en_para_idx,\n                        if consume_rewind_picture_height { \"TACbottom\" } else { \"TACmax\" },\n                        st.current_height,\n                        rewind_start,\n                        en_advance,\n                        if consume_rewind_picture_height {\n                            st.current_height + en_advance\n                        } else {\n                            st.current_height.max(rewind_end)\n                        },"
+  },
+  {
+    "alert": 336,
+    "path": "src/renderer/typeset/notes/endnotes/emit.rs",
+    "region": {
+      "endColumn": 72,
+      "endLine": 174,
+      "startColumn": 29,
+      "startLine": 173
+    },
+    "source_sha256": "063406754608c2bec987ff68e274152033a850625770d40b7a1495b476bce30f",
+    "invocation": "                            \"EN_ACC pi={} path=A2sim {:.1} -> {:.1}\",\n                            en_para_idx, st.current_height, sim_bottom,"
+  },
+  {
+    "alert": 337,
+    "path": "src/renderer/typeset/notes/endnotes/flow_table.rs",
+    "region": {
+      "endColumn": 43,
+      "endLine": 127,
+      "startColumn": 21,
+      "startLine": 125
+    },
+    "source_sha256": "0873a4fa4db816478e0cf624b4543b0132b75342cb2e690207ac6b7e47583158",
+    "invocation": "                    \"EN_FLOW_TABLE pi={para_index} ci={control_index} origin={origin:.3} rows={:?} available={:.3}\",\n                    formatted_table.row_heights,\n                    st.available_height(),"
+  },
+  {
+    "alert": 339,
+    "path": "src/renderer/typeset/notes/endnotes/metrics.rs",
+    "region": {
+      "endColumn": 33,
+      "endLine": 183,
+      "startColumn": 29,
+      "startLine": 176
+    },
+    "source_sha256": "c57e571ec48a5db0e3654e5922730036c61e396657a196638edc4e06024fa3c7",
+    "invocation": "                            \"EN_SSOT pi={} rewind={} acc_legacy={:.1} acc={:.1} line_adv_sum={:.1} fit={:.1} h4f={:.1}\",\n                            en_para_idx,\n                            internal_vpos_rewind,\n                            tot,\n                            tot,\n                            line_advances_sum,\n                            h4f,\n                            h4f,"
+  },
+  {
+    "alert": 338,
+    "path": "src/renderer/typeset/notes/endnotes/measure.rs",
+    "region": {
+      "endColumn": 35,
+      "endLine": 20,
+      "startColumn": 1,
+      "startLine": 20
+    },
+    "source_sha256": "6f9adc3c17beccf99b09841eb9a5403e09d5629c1db357e814de087b11beb5c6",
+    "invocation": "include!(\"stored_ink_fit.inc.rs\");"
+  },
+  {
+    "alert": 340,
+    "path": "src/renderer/typeset/notes/endnotes/paragraph/initial_fit.rs",
+    "region": {
+      "endColumn": 35,
+      "endLine": 130,
+      "startColumn": 17,
+      "startLine": 123
+    },
+    "source_sha256": "0fd86bebb59aa0491cb67d2ed8578c0a2580e7ad4434627bb35ce249d1246098",
+    "invocation": "                \"DIAG_ENCOL pi={} avail={:.1} cur_h={:.1} remain={:.1} col_w={:.1} fit={:.1} adv={:.1}\",\n                en_para_idx,\n                available,\n                st.current_height,\n                remaining_height,\n                en_col_w,\n                en_fit,\n                total_advance_fit,"
+  },
+  {
+    "alert": 341,
+    "path": "src/renderer/typeset/notes/endnotes/measure.rs",
+    "region": {
+      "endColumn": 33,
+      "endLine": 429,
+      "startColumn": 21,
+      "startLine": 425
+    },
+    "source_sha256": "6f9adc3c17beccf99b09841eb9a5403e09d5629c1db357e814de087b11beb5c6",
+    "invocation": "                    \"EN_COLSIM start_h={:.1} avail={:.1} items={} bottom={:.1}\",\n                    st.current_start_height,\n                    available,\n                    local_indices.len(),\n                    flow_bottom,"
+  },
+  {
+    "alert": 342,
+    "path": "src/renderer/typeset/notes/endnotes/measure.rs",
+    "region": {
+      "endColumn": 54,
+      "endLine": 591,
+      "startColumn": 25,
+      "startLine": 586
+    },
+    "source_sha256": "6f9adc3c17beccf99b09841eb9a5403e09d5629c1db357e814de087b11beb5c6",
+    "invocation": "                        \"EN_MEASURE pi={} y_top={:.1} heuristic={:.1} measured={:.1} diff={:.1}\",\n                        pi,\n                        y,\n                        heuristic_advance,\n                        measured,\n                        measured - heuristic_advance,"
+  },
+  {
+    "alert": 344,
+    "path": "src/renderer/typeset/notes/endnotes/paragraph/reflow_fit.rs",
+    "region": {
+      "endColumn": 124,
+      "endLine": 465,
+      "startColumn": 27,
+      "startLine": 465
+    },
+    "source_sha256": "0f78758b15c06a64327e926a13e3fa097d731add4c97453c831f49dbbff363f4",
+    "invocation": "                eprintln!(\"EN_PREFIX_OCCUPIED pi={para_index} end={end_line} bottom={occupied:.3} available={available:.3}\");"
+  },
+  {
+    "alert": 345,
+    "path": "src/renderer/typeset/notes/endnotes/paragraph/reflow_fit.rs",
+    "region": {
+      "endColumn": 42,
+      "endLine": 653,
+      "startColumn": 17,
+      "startLine": 651
+    },
+    "source_sha256": "0f78758b15c06a64327e926a13e3fa097d731add4c97453c831f49dbbff363f4",
+    "invocation": "                \"EN_HEAD_FIT pi={para_index} flow={:.3} occupied={occupied:.3} origin={origin:.3} head_height={:.3} gap={gap:.3} available={available:.3} overflows={natural_overflows} can_stay={can_stay}\",\n                previous.flow_bottom,\n                formatted.height_for_fit,"
+  },
+  {
+    "alert": 347,
+    "path": "src/renderer/typeset/notes/footnotes/boundary.rs",
+    "region": {
+      "endColumn": 50,
+      "endLine": 645,
+      "startColumn": 21,
+      "startLine": 644
+    },
+    "source_sha256": "a90b1bdbb18c28e7c66e9d0a30b01bc1b93a9c744a55694e9b166edfe21de493",
+    "invocation": "                    \"DIAG_FN_RESET_OVERLAP line={next_idx} prev_bottom={flow_prev_bottom:.1} next_bottom={flow_next_bottom:.1} top={footnote_top:.1} anchored_top={anchored_footnote_top:.1} existing={actual_footnote_height:.1} current_notes={}\",\n                    projected_current_notes.len()"
+  },
+  {
+    "alert": 463,
+    "path": "src/renderer/typeset/paragraph.rs",
+    "region": {
+      "endColumn": 34,
+      "endLine": 698,
+      "startColumn": 13,
+      "startLine": 684
+    },
+    "source_sha256": "27fa7961af950e55b9c1f1b256c7a171de06a71299b4475f2b489d26d13b17c4",
+    "invocation": "            \"DIAG_ADV pi={} adv={:.1} total={:.1} h4f={:.1} sb={:.1} sa={:.1} cur={:.1} columns={} page_base={:?} lazy_base={:?} dirty={} trim_before={} stored_successor={:?} stored_guide={:?}\",\n            para_idx,\n            advance,\n            fmt.total_height,\n            fmt.height_for_fit,\n            fmt.spacing_before,\n            fmt.spacing_after,\n            st.current_height,\n            st.col_count,\n            st.vpos_page_base,\n            st.vpos_lazy_base,\n            st.vpos_ladder_dirty,\n            trim_spacing_before_for_flow,\n            stored_successor_flow,\n            stored_guide_advance,"
+  },
+  {
+    "alert": 466,
+    "path": "src/renderer/typeset/section.rs",
+    "region": {
+      "endColumn": 55,
+      "endLine": 239,
+      "startColumn": 33,
+      "startLine": 232
+    },
+    "source_sha256": "e0ba493e872d064b6771ee87d814da03f671b9d0864d6ea658f8072aee2525a9",
+    "invocation": "                                \"[VPOS_OVF] pi={} own={} ({:.1}px) next={} avail={:.1} cur_h={:.1} items={}\",\n                                para_idx,\n                                own,\n                                own_px,\n                                next,\n                                body_bottom,\n                                st.current_height,\n                                st.current_items.len()"
+  },
+  {
+    "alert": 353,
+    "path": "src/renderer/typeset/state/notes.rs",
+    "region": {
+      "endColumn": 52,
+      "endLine": 65,
+      "startColumn": 17,
+      "startLine": 60
+    },
+    "source_sha256": "c00d54527106c0e763895b9fecb5838ce82f0e83024fd53d6766cdc8b8770678",
+    "invocation": "                \"DIAG_FN add h={:.1} cur_total={:.1} page={} cur_h={:.1} first={}\",\n                height,\n                self.data.current_footnote_height,\n                self.data.pages.len() + 1,\n                self.data.current_height,\n                self.data.is_first_footnote_on_page"
+  },
+  {
+    "alert": 467,
+    "path": "src/renderer/typeset/table/block/entry.rs",
+    "region": {
+      "endColumn": 71,
+      "endLine": 421,
+      "startColumn": 17,
+      "startLine": 416
+    },
+    "source_sha256": "a7d9d27f90195279ecd5ee28d7eb41834dc90a2db1f53461fd345996caf4e39f",
+    "invocation": "                \"TABLE_DRIFT: pi={} sec={} eff_h={:.1} host_sp={:.1} table_total={:.1} mt_sum={:.1} mt_rows={} cs={:.1} cur_h={:.1} tac={} rows={} avail={:.1} base={:.1} fn={:.1} zone={:.1} declared={:.1} pb={:?} mt_row_heights={:?}\",\n                para_idx, st.section_index, ft.effective_height, host_spacing_total, table_total,\n                mt_sum, mt_rows, mt_cs, st.current_height, table.common.treat_as_char, table.row_count,\n                available, st.base_available_height(), total_footnote, st.current_zone_y_offset,\n                declared_object_total, table.layout_page_break(),\n                mt.map(|m| m.row_heights.clone()).unwrap_or_default(),"
+  },
+  {
+    "alert": 468,
+    "path": "src/renderer/typeset/table/block/entry.rs",
+    "region": {
+      "endColumn": 56,
+      "endLine": 754,
+      "startColumn": 25,
+      "startLine": 738
+    },
+    "source_sha256": "a7d9d27f90195279ecd5ee28d7eb41834dc90a2db1f53461fd345996caf4e39f",
+    "invocation": "                        \"DIAG_SCAN FOOTER pi={} anchor_vpos={} cur_h={:.2} target_y={:.2} sync_h={:.2} \\\n                         block_h={:.2} v_off={:.2} avail={:.2} avail_after={:.2} slack_code={:.2} margin={:.1} underrun={:.2} base={:?} lazy={:?} compacted={:.2}\",\n                        para_idx,\n                        anchor_vpos,\n                        st.current_height,\n                        target_y,\n                        sync_h,\n                        block_height,\n                        v_off,\n                        available,\n                        avail_after,\n                        avail_after - sync_h,\n                        uncertain_anchor_margin,\n                        st.flow_underrun,\n                        st.vpos_page_base,\n                        st.vpos_lazy_base,\n                        st.vpos_compacted_stored_delta,"
+  },
+  {
+    "alert": 469,
+    "path": "src/renderer/typeset/table/block/entry.rs",
+    "region": {
+      "endColumn": 84,
+      "endLine": 1370,
+      "startColumn": 21,
+      "startLine": 1350
+    },
+    "source_sha256": "a7d9d27f90195279ecd5ee28d7eb41834dc90a2db1f53461fd345996caf4e39f",
+    "invocation": "                    \"DIAG_SCAN DECL_DEFER? pi={} cur_h={:.1} declared={:.1} avail={:.1} host_h={:.1} host_before={:.1} v_off={:.1} outer_top={:.1} saved={:?} bottom_fits={} splits_here={} near_anchor_fragment={} internal_reset={} next_rewind={} internal_reset_resync={} multirow_internal_reset_resync={} own_fn_fragment={}\",\n                    para_idx,\n                    st.current_height,\n                    declared_total,\n                    available,\n                    fmt.total_height,\n                    ft.host_spacing.before,\n                    hwpunit_to_px(\n                        signed_hwpunit(table.common.vertical_offset).max(0),\n                        self.dpi,\n                    ),\n                    hwpunit_to_px(table.outer_margin_top as i32, self.dpi),\n                    saved_span,\n                    saved_object_bottom_fits_current,\n                    saved_anchor_splits_here,\n                    native_hwp5_near_anchor_rowbreak_needs_fragment_scan,\n                    has_internal_saved_vpos_reset,\n                    next_rewinds_after_table,\n                    native_hwp5_internal_reset_rewind_needs_anchor_resync,\n                    native_hwp5_multirow_internal_reset_needs_anchor_resync,\n                    native_hwp5_own_footnote_fragment_can_start_before_reservation,"
+  },
+  {
+    "alert": 470,
+    "path": "src/renderer/typeset/table/continuation/fragment/coanchored_origin.rs",
+    "region": {
+      "endColumn": 100,
+      "endLine": 232,
+      "startColumn": 17,
+      "startLine": 231
+    },
+    "source_sha256": "5282414e0d6b5e673ee36af59353c60750f519e46a5350ab746a20b1818ea9c2",
+    "invocation": "                \"COANCHORED_FIRST_FRAME: pi={} ci={} anchor={:.3} flow={:.3} top={:.3}\",\n                input.source.para_index, input.source.control_index, anchor, st.current_height, top"
+  },
+  {
+    "alert": 498,
+    "path": "src/renderer/typeset/table/continuation/fragment/emit.rs",
+    "region": {
+      "endColumn": 73,
+      "endLine": 84,
+      "startColumn": 21,
+      "startLine": 75
+    },
+    "source_sha256": "335f543b4453a4c3e861a4f98f70ad9fdf0f80fc9242224eeffdd9f9228ed93d",
+    "invocation": "                    \"DIAG_SCAN FRAGMENT_FRAME stage={} pi={} rows={}..{} continuation={} height={:.6} last={:?} cut_prefix={:.6} measured_prefix={:.6}\",\n                    stage,\n                    para_idx,\n                    cursor_row,\n                    end,\n                    is_continuation,\n                    height,\n                    last,\n                    cut_row_h.iter().take(prefix_end).sum::<f64>(),\n                    mt.row_heights.iter().take(prefix_end).sum::<f64>(),"
+  },
+  {
+    "alert": 472,
+    "path": "src/renderer/typeset/table/continuation/fragment/budget.rs",
+    "region": {
+      "endColumn": 61,
+      "endLine": 1249,
+      "startColumn": 29,
+      "startLine": 1247
+    },
+    "source_sha256": "7a7f59cd18fc67aa682b428e402676ae72f9041abcc26b0915de02cd57764d50",
+    "invocation": "                            \"TABLE_STORED_FIRST_FRAME: pi={} source_anchor={:.8} flow_host={:.8} placement={:?} frame={:.8} fits={}\",\n                            para_idx, anchor_px, flow_host_start, fragment_placement,\n                            frame_height, placed_frame_fits,"
+  },
+  {
+    "alert": 354,
+    "path": "src/renderer/typeset/table/continuation/fragment/physical_rows.rs",
+    "region": {
+      "endColumn": 64,
+      "endLine": 287,
+      "startColumn": 25,
+      "startLine": 284
+    },
+    "source_sha256": "9ef0395c8ba60414c772d4f33ea83980ad83cdfa66046602667fbf5adc1b2d8c",
+    "invocation": "                        \"DIAG_SPAN_BAND_OWNER sec={} pi={} row={} first={} end={} declared={:.6} prefix={:.6} current={:.6} row_floor={:.6} after={:.6} slack={:.6}\",\n                        st.section_index, source.para_index, row, first, end,\n                        hwpunit_to_px(cell.height as i32, self.dpi), prefix,\n                        current, owned_row_floor, after, slack,"
+  },
+  {
+    "alert": 355,
+    "path": "src/renderer/typeset/table/continuation/fragment/physical_rows.rs",
+    "region": {
+      "endColumn": 51,
+      "endLine": 299,
+      "startColumn": 17,
+      "startLine": 297
+    },
+    "source_sha256": "9ef0395c8ba60414c772d4f33ea83980ad83cdfa66046602667fbf5adc1b2d8c",
+    "invocation": "                \"DIAG_SPAN_BAND_RESULT sec={} pi={} row={} current={:.6} remaining={:.6} whole={:.6} row_slack={:.6} span_slack={:.6} available={:.6}\",\n                st.section_index, source.para_index, row, current, remaining,\n                whole_row, row_slack, slack, band,"
+  },
+  {
+    "alert": 474,
+    "path": "src/renderer/typeset/table/continuation/fragment/budget.rs",
+    "region": {
+      "endColumn": 51,
+      "endLine": 1919,
+      "startColumn": 21,
+      "startLine": 1917
+    },
+    "source_sha256": "7a7f59cd18fc67aa682b428e402676ae72f9041abcc26b0915de02cd57764d50",
+    "invocation": "                    \"DIAG_SCAN ROW_PHYSICAL_FRAME pi={para_idx} continuation={is_continuation} body={:.6} available={:.6} column={:.6} frame={frame_boundary:.6} bottom={bottom:.6} accepted={accepted_frame_bottom:?} top={top:.6} header={header_overhead:.6} caption={caption_extra:.6} spacing={}\",\n                    st.layout.body_area.height, st.available_height(), st.inline_flow_column().height,\n                    table.outer_cell_spacing_hu(),"
+  },
+  {
+    "alert": 475,
+    "path": "src/renderer/typeset/table/continuation/fragment/budget.rs",
+    "region": {
+      "endColumn": 69,
+      "endLine": 1958,
+      "startColumn": 17,
+      "startLine": 1953
+    },
+    "source_sha256": "7a7f59cd18fc67aa682b428e402676ae72f9041abcc26b0915de02cd57764d50",
+    "invocation": "                \"TABLE_SPLIT_AVAIL: pi={} sec={} cursor_row={} cont={} cur_h={:.1} table_avail={:.1} caption={:.1} host_before={:.1} vert_off={:.1} outer_bottom={:.1} page_avail={:.1} header_oh={:.1} avail_for_rows={:.1} source_frame={:?} source_end={:?} allowance={:.1} start_cut={:?}\",\n                para_idx, st.section_index, cursor_row, is_continuation, st.current_height,\n                table_available, caption_extra, host_before_overhead, vert_offset_overhead,\n                fragment_outer_bottom_overhead, page_avail, header_overhead, avail_for_rows,\n                saved_first_fragment_source_frame, source_first_fragment_row_end,\n                source_first_fragment_overflow_allowance, start_cut,"
+  },
+  {
+    "alert": 476,
+    "path": "src/renderer/typeset/table/continuation/fragment/scan.rs",
+    "region": {
+      "endColumn": 142,
+      "endLine": 160,
+      "startColumn": 31,
+      "startLine": 160
+    },
+    "source_sha256": "9a6afc201f9c54d9fa05ed22d291718d5b135b865af0ba203a84f78b5813605e",
+    "invocation": "                    eprintln!(\"DIAG_SCAN SOURCE_FIRST_ROW_FRAME pi={para_idx} cut={cut:?} opening={opening:.3} available={avail_for_rows:.3}\");"
+  },
+  {
+    "alert": 356,
+    "path": "src/renderer/typeset/table/continuation/fragment/physical_rows.rs",
+    "region": {
+      "endColumn": 92,
+      "endLine": 677,
+      "startColumn": 35,
+      "startLine": 676
+    },
+    "source_sha256": "9ef0395c8ba60414c772d4f33ea83980ad83cdfa66046602667fbf5adc1b2d8c",
+    "invocation": "                        eprintln!(\"TABLE_CLOSED_PARTIAL_ROW: pi={} row={} before={:.6} current={:.6} total={:.6}\",\n                            input.source.para_index, row, before, current, before + current);"
+  },
+  {
+    "alert": 357,
+    "path": "src/renderer/typeset/table/continuation/fragment/physical_rows.rs",
+    "region": {
+      "endColumn": 90,
+      "endLine": 715,
+      "startColumn": 35,
+      "startLine": 714
+    },
+    "source_sha256": "9ef0395c8ba60414c772d4f33ea83980ad83cdfa66046602667fbf5adc1b2d8c",
+    "invocation": "                        eprintln!(\"TABLE_PENDING_ROW: pi={} row={} before={:.6} current={:.6} total={:.6}\",\n                            input.source.para_index, row, before, height, before + height);"
+  },
+  {
+    "alert": 358,
+    "path": "src/renderer/typeset/table/continuation/fragment/stored_block_frames.rs",
+    "region": {
+      "endColumn": 70,
+      "endLine": 98,
+      "startColumn": 17,
+      "startLine": 97
+    },
+    "source_sha256": "a57df44fb437b4aa7afde21f476ccf4f9140424d7ae3d70a955e536ce0eff0da",
+    "invocation": "                \"TABLE_ACCEPTED_BLOCK_PAGE: pi={} rows={}..{} physical={:.6} content={:.6}\",\n                input.source.para_index, first, end, height, occupied"
+  },
+  {
+    "alert": 359,
+    "path": "src/renderer/typeset/table/continuation/fragment/scan.rs",
+    "region": {
+      "endColumn": 72,
+      "endLine": 371,
+      "startColumn": 35,
+      "startLine": 369
+    },
+    "source_sha256": "9a6afc201f9c54d9fa05ed22d291718d5b135b865af0ba203a84f78b5813605e",
+    "invocation": "                        eprintln!(\"SOURCE_BODY_FRAME: pi={} end_row={} end_cut={:?} frame_h={:.3} last_h={:.3}\",\n                            para_idx, scan.end_row, scan.split_end_cut, scan.consumed,\n                            scan.end_row_height_override.unwrap_or(0.0));"
+  },
+  {
+    "alert": 360,
+    "path": "src/renderer/typeset/table/continuation/fragment/scan.rs",
+    "region": {
+      "endColumn": 78,
+      "endLine": 487,
+      "startColumn": 17,
+      "startLine": 485
+    },
+    "source_sha256": "9a6afc201f9c54d9fa05ed22d291718d5b135b865af0ba203a84f78b5813605e",
+    "invocation": "                \"DIAG_SPLITSCAN pi={} sec={} cursor={} end_row={} consumed={:.1} avail={:.1} hdr={:.1} rows={} intra={} cont={}\",\n                para_idx, st.section_index, cursor_row, end_row, consumed, avail_for_rows,\n                header_overhead, row_count, can_intra_split, is_continuation,"
+  },
+  {
+    "alert": 361,
+    "path": "src/renderer/typeset/table/continuation/fragment/scan.rs",
+    "region": {
+      "endColumn": 83,
+      "endLine": 540,
+      "startColumn": 29,
+      "startLine": 539
+    },
+    "source_sha256": "9a6afc201f9c54d9fa05ed22d291718d5b135b865af0ba203a84f78b5813605e",
+    "invocation": "                            \"DIAG_SCAN FN_REFIT pi={} consumed {:.1} -> {:.1} reserved={:.1}\",\n                            para_idx, consumed, refit.consumed, table_fn_reserved,"
+  },
+  {
+    "alert": 362,
+    "path": "src/renderer/typeset/table/continuation/fragment/stored_frame_budget.rs",
+    "region": {
+      "endColumn": 66,
+      "endLine": 145,
+      "startColumn": 17,
+      "startLine": 144
+    },
+    "source_sha256": "efa530c3c5fa2253f5f57d7155e03175152b0e14b9870565c1b187b102e0f8b9",
+    "invocation": "                \"DIAG_SCAN BODY_CLOSING_FRAME rows={}..{} accepted_start={:?} frame={height:.6} prefix={before:.6} last={last:.6} selected={selected:.6}\",\n                first, scan.end_row, scan.accepted_start_row_box,"
+  },
+  {
+    "alert": 363,
+    "path": "src/renderer/typeset/table/continuation/fragment/emit.rs",
+    "region": {
+      "endColumn": 99,
+      "endLine": 1663,
+      "startColumn": 29,
+      "startLine": 1662
+    },
+    "source_sha256": "335f543b4453a4c3e861a4f98f70ad9fdf0f80fc9242224eeffdd9f9228ed93d",
+    "invocation": "                            \"DIAG_SPAN_END_BAND row={} content={:.6} physical_before={:.6} band={:.6} physical_after={:.6} fragment_after={:.6}\",\n                            last_row, split_end_limit, last_height, band, row_box, partial_height,"
+  },
+  {
+    "alert": 364,
+    "path": "src/renderer/typeset/table/continuation/fragment/emit.rs",
+    "region": {
+      "endColumn": 57,
+      "endLine": 2543,
+      "startColumn": 21,
+      "startLine": 2541
+    },
+    "source_sha256": "335f543b4453a4c3e861a4f98f70ad9fdf0f80fc9242224eeffdd9f9228ed93d",
+    "invocation": "                    \"DIAG_5714 FRAG pi={} cursor_row={} end_row={} limit={:.1} full={:.1} tail={:.1} split_end_limit={:.1} continues={}\",\n                    para_idx, cursor_row, end_row, limit, full, tail,\n                    split_end_limit, tail_band_continues"
+  },
+  {
+    "alert": 365,
+    "path": "src/renderer/typeset/table/continuation/fragment/emit.rs",
+    "region": {
+      "endColumn": 190,
+      "endLine": 2292,
+      "startColumn": 25,
+      "startLine": 2292
+    },
+    "source_sha256": "335f543b4453a4c3e861a4f98f70ad9fdf0f80fc9242224eeffdd9f9228ed93d",
+    "invocation": "                        \"DIAG_ROW_TAIL reflow pi={para_idx} row={row} complete={complete_physical_end_cut} full={full:.6} used={used:.6} tail={tail:.6} carried={carried:?} cut={next_cut:?}\""
+  },
+  {
+    "alert": 478,
+    "path": "src/renderer/typeset/table/scan/runner.rs",
+    "region": {
+      "endColumn": 49,
+      "endLine": 121,
+      "startColumn": 33,
+      "startLine": 120
+    },
+    "source_sha256": "caab95876d21db5c430d01293a20f3a1e407db77c369eca43da7a655e791f2be",
+    "invocation": "                                \"DIAG_SCAN SOURCE_SPAN_DEFER r={r} minimum={minimum:.3} avail={:.3}\",\n                                v.avail_for_rows"
+  },
+  {
+    "alert": 368,
+    "path": "src/renderer/typeset/table/scan/runner.rs",
+    "region": {
+      "endColumn": 84,
+      "endLine": 225,
+      "startColumn": 29,
+      "startLine": 222
+    },
+    "source_sha256": "caab95876d21db5c430d01293a20f3a1e407db77c369eca43da7a655e791f2be",
+    "invocation": "                            \"DIAG_SCAN SOURCE_SPAN_FRAME rows={}..{} physical={physical:.3} minimum={minimum:.3} last={:.3}\",\n                            v.cursor_row,\n                            progress.scan.end_row,\n                            progress.scan.end_row_height_override.unwrap_or(height)"
+  },
+  {
+    "alert": 371,
+    "path": "src/renderer/typeset/table/scan/runner/row_step.rs",
+    "region": {
+      "endColumn": 34,
+      "endLine": 324,
+      "startColumn": 33,
+      "startLine": 320
+    },
+    "source_sha256": "c138790651b59d69b31a8b1373845ada4d49d9de0b8b4f97081e3ed7a3cec346",
+    "invocation": "                                \"DIAG_SCAN RSPAN_CLOSE r={} box={:.2} visible={:.2} declared={:.1}\",\n                                r - 1,\n                                closing_box,\n                                visible_height,\n                                h"
+  },
+  {
+    "alert": 383,
+    "path": "src/renderer/typeset.rs",
+    "region": {
+      "endColumn": 48,
+      "endLine": 4435,
+      "startColumn": 25,
+      "startLine": 4433
+    },
+    "source_sha256": "97118fb1214b51982b01679a32b50ab6cb09939e8f3711ddbcf80587aa2660d1",
+    "invocation": "                        \"DIAG_COMPAT24 pi={para_idx} ci={ctrl_idx} carried_reclaim={charged:.1} \\\n                         total_reclaimed={:.1}\",\n                        st.hangul2024_reclaimed"
+  },
+  {
+    "alert": 384,
+    "path": "src/renderer/typeset.rs",
+    "region": {
+      "endColumn": 58,
+      "endLine": 4585,
+      "startColumn": 21,
+      "startLine": 4578
+    },
+    "source_sha256": "97118fb1214b51982b01679a32b50ab6cb09939e8f3711ddbcf80587aa2660d1",
+    "invocation": "                    \"DBG5699_TS pi={} ci={} th_charge={:.1} decl={:.1} meas={:.1} gap={:?} unowned_hwpx={}\",\n                    para_idx,\n                    ctrl_idx,\n                    table_height,\n                    hwpunit_to_px(table.common.height as i32, self.dpi),\n                    ft.total_height,\n                    anchor_gap_px,\n                    hwpx_rowbreak_tac_missing_owned_line,"
+  },
+  {
+    "alert": 385,
+    "path": "src/renderer/typeset.rs",
+    "region": {
+      "endColumn": 82,
+      "endLine": 5730,
+      "startColumn": 21,
+      "startLine": 5725
+    },
+    "source_sha256": "97118fb1214b51982b01679a32b50ab6cb09939e8f3711ddbcf80587aa2660d1",
+    "invocation": "                    \"DIAG_HOSTBOX pi={} add={:.1} host_sb={:.1} host_sa={:.1} stored_gap_hu={}\",\n                    para_idx,\n                    host_spacing_px,\n                    fmt.spacing_before,\n                    fmt.spacing_after,\n                    para.line_segs.first().map(|s| s.line_spacing).unwrap_or(-1),"
+  },
+  {
+    "alert": 386,
+    "path": "src/renderer/typeset.rs",
+    "region": {
+      "endColumn": 70,
+      "endLine": 5854,
+      "startColumn": 17,
+      "startLine": 5838
+    },
+    "source_sha256": "97118fb1214b51982b01679a32b50ab6cb09939e8f3711ddbcf80587aa2660d1",
+    "invocation": "                \"DIAG_TAC pi={} tac={} pre_h={:.1} table_total={:.1} fmt_total={:.1} fmt_fit={:.1} stored_ls={} cur_h_after={:.1} page={} computed_end={:?} line_heights={:?} line_spacings={:?} stored_row={:?} spacing_before={} spacing_after={} reflowed={}\",\n                para_idx,\n                table.common.treat_as_char,\n                pre_height,\n                table_total_height,\n                fmt.total_height,\n                fmt.height_for_fit,\n                !para.line_segs.is_empty(),\n                st.current_height,\n                st.pages.len(),\n                computed_table_row_end,\n                fmt.line_heights,\n                fmt.line_spacings,\n                stored_single_row_source,\n                fmt.spacing_before,\n                fmt.spacing_after,\n                self.render_normalization.table_text_reflowed(table),"
+  },
+  {
+    "alert": 387,
+    "path": "src/renderer/typeset.rs",
+    "region": {
+      "endColumn": 65,
+      "endLine": 6385,
+      "startColumn": 17,
+      "startLine": 6375
+    },
+    "source_sha256": "97118fb1214b51982b01679a32b50ab6cb09939e8f3711ddbcf80587aa2660d1",
+    "invocation": "                \"DIAG_TAC_END pi={} cur_h={:.1} trailing_fired={} has_post_text={} delta={:.1} accepted_origin={:?} page_base={:?} lazy_base={:?} row_advance={} inline={:?}\",\n                para_idx,\n                st.current_height,\n                restore_terminal_tac_spacing,\n                has_post_text,\n                fmt.total_height - fmt.height_for_fit,\n                accepted_single_row_origin,\n                st.vpos_page_base,\n                st.vpos_lazy_base,\n                fmt.line_advance(0),\n                st.inline_placements.get(&(para_idx, ctrl_idx)),"
+  },
+  {
+    "alert": 399,
+    "path": "src/document_core/queries/rendering.rs",
+    "region": {
+      "endColumn": 63,
+      "endLine": 5958,
+      "startColumn": 33,
+      "startLine": 5955
+    },
+    "source_sha256": "8b9a9d0c60c7a87c1b4fb0a0a3d5610677cbb641d4f1cba67954e756e5274336",
+    "invocation": "                                \"CONVERGENCE: sec{} page {} 수렴 확인 ({}페이지 재사용 가능)\",\n                                idx,\n                                converge_page + 1,\n                                old_page_count - converge_page"
+  },
+  {
+    "alert": 221,
+    "path": "src/document_core/queries/rendering.rs",
+    "region": {
+      "endColumn": 46,
+      "endLine": 6296,
+      "startColumn": 17,
+      "startLine": 6284
+    },
+    "source_sha256": "8b9a9d0c60c7a87c1b4fb0a0a3d5610677cbb641d4f1cba67954e756e5274336",
+    "invocation": "                \"RHWP_2424_PAGINATION_PROFILE mode={mode} sections={} dirty_sections={} pages={} total_ms={:.3} invalidate_ms={:.3} normalize_ms={:.3} setup_ms={:.3} measure_ms={:.3} typeset_ms={:.3} postprocess_ms={:.3} cleanup_ms={:.3} other_ms={:.3}\",\n                self.document.sections.len(),\n                issue2424_dirty_sections,\n                page_count,\n                total.as_secs_f64() * 1000.0,\n                issue2424_invalidate_elapsed.as_secs_f64() * 1000.0,\n                issue2424_normalize_elapsed.as_secs_f64() * 1000.0,\n                issue2424_setup_elapsed.as_secs_f64() * 1000.0,\n                issue2424_measure_elapsed.as_secs_f64() * 1000.0,\n                issue2424_typeset_elapsed.as_secs_f64() * 1000.0,\n                issue2424_postprocess_elapsed.as_secs_f64() * 1000.0,\n                issue2424_cleanup_elapsed.as_secs_f64() * 1000.0,\n                other.as_secs_f64() * 1000.0,"
+  }
+]

@@ -1,6 +1,6 @@
 //! [#5511 Stage 1~2] 최상위 dispatch와 자기서술·모듈 소유권의 characterization 계약.
 //!
-//! handler 이동 전에 실제 `main()` 102개 arm과 catalog를 양방향으로 대조한다.
+//! 실제 `main()` 최상위 arm과 catalog를 양방향으로 대조한다.
 //! help·capabilities·MCP의 현재 결과도 같은 catalog와 비교하되, 이 단계에서는
 //! 기존 출력 생성기를 바꾸지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
@@ -107,7 +107,18 @@ fn catalog_is_unique_and_matches_all_top_level_dispatch_arms() {
     let dispatch = dispatch_names();
     let dispatch_set: BTreeSet<&str> = dispatch.iter().copied().collect();
 
-    assert_eq!(commands().len(), 102, "characterization 기준선");
+    // 명령 수는 공개 기능의 추가·폐기로 달라진다. 선언과 실제 dispatch의 대응을 검사한다.
+    assert!(!catalog_names.is_empty(), "catalog가 비어서는 안 된다");
+    for retired in ["export-png-gpu", "gpu-info"] {
+        assert!(
+            !catalog_names.contains(retired),
+            "폐기 명령이 catalog에 남음: {retired}"
+        );
+        assert!(
+            !dispatch_set.contains(retired),
+            "폐기 명령이 dispatch에 남음: {retired}"
+        );
+    }
     assert_eq!(catalog_names.len(), commands().len(), "catalog 이름 중복");
     assert_eq!(dispatch.len(), dispatch_set.len(), "dispatch arm 이름 중복");
     assert_eq!(dispatch_set, catalog_names, "dispatch↔catalog drift");

@@ -1,0 +1,18 @@
+{
+  "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+  "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+  "cargo": "cargo 1.93.1 (083ac5135 2025-12-15)",
+  "node": "v24.15.0",
+  "nextest": "cargo-nextest 0.9.137 (75ddba7e9 2026-05-26)\nrelease: 0.9.137\ncommit-hash: 75ddba7e911b44c5c0700dac0415d824403de9bd\ncommit-date: 2026-05-26\nhost: x86_64-unknown-linux-gnu",
+  "logical_cpus": 16,
+  "shared_target": "/home/edward/mygithub/rhwp/target/pr-review",
+  "corrected_full_test_threads": 6,
+  "native_lib_rust_test_threads": 4,
+  "cargo_build_jobs": 6,
+  "font_isolation": "minimal-font-prefix.json",
+  "browser": {
+    "executable": "/home/edward/.cache/puppeteer/chrome/linux-155.0.8059.79/chrome-linux64/chrome",
+    "version": "Google Chrome for Testing 155.0.8059.79"
+  },
+  "private_validation_fonts_committed": false
+}

@@ -42,21 +42,7 @@ fn text_line_bbox_containing(root: &RenderNode, needle: &str) -> Option<Bounding
         .find_map(|child| text_line_bbox_containing(child, needle))
 }
 
-#[test]
-fn issue_2430_cell_rewrap_threshold_no_oversplit() {
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("samples/task2430/1382000_domestic_violence_survey.hwp");
-    let bytes = std::fs::read(&path).expect("read fixture");
-    let core = DocumentCore::from_bytes(&bytes).expect("parse");
-    let pages = core.page_count();
-    // 한글 정답 39쪽. 셀 재래핑 임계가 ×1.05 로 되돌아가면 40쪽(+1) 과다분할한다.
-    // #4069 저장 프레임 전파가 p14 셀의 무시되는 빈 Enter를 경계로 오인하면
-    // 반대로 38쪽(-1)으로 줄어드는 것도 이 계약이 함께 검출한다.
-    assert_eq!(
-        pages, 39,
-        "1382000은 한글 기준 39쪽이어야 함 (40쪽=재래핑, 38쪽=빈 Enter 프레임 오인). #2430 #4069"
-    );
-}
+// 전쪽 39쪽 계약은 #7831로 이관했다. 아래16쪽 정상 계약은 유지한다.
 
 #[test]
 fn issue_2430_page16_keeps_leading_blank_paragraph_in_cell() {

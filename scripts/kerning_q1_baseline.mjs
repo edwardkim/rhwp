@@ -13,7 +13,7 @@ const defaults = {
   fixture: path.join(repoRoot, 'mydocs/tech/investigations/issue-4963/fixtures/oracle_typesetting_fixture.hwpx'),
   manifest: path.join(repoRoot, 'mydocs/tech/investigations/issue-4963/fixtures/oracle_typesetting_fixture.manifest.json'),
   native: path.join(repoRoot, 'target/release/rhwp'),
-  qkit: path.join(repoRoot, 'target/release/rhwp-q-kit'),
+  qkit: path.join(repoRoot, 'target/pr-review/release/rhwp-q'),
   pkg: path.join(repoRoot, 'pkg'),
   output: path.join(repoRoot, 'mydocs/tech/investigations/issue-4968/kerning_q1_baseline.json'),
 };
@@ -148,7 +148,7 @@ export async function generateBaseline(options) {
 
   const env = scrubRhwpEnv();
   const nativeEnvelopeBytes = run(options.qkit, [
-    'layer-tree', options.fixture, '--page', '0', '--json',
+    'kit', 'layer-tree', options.fixture, '--page', '0', '--json',
   ], { env });
   const nativeEnvelope = JSON.parse(nativeEnvelopeBytes);
   const nativeTree = nativeEnvelope.tree;

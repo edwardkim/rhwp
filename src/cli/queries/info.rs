@@ -16,6 +16,7 @@ use crate::{info_json_value, load_document, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
 struct InfoArgs<'a> {
     file_path: &'a str,
     json_mode: bool,
+    font_plan: bool,
 }
 
 pub(crate) fn run(args: &[String]) -> i32 {
@@ -41,6 +42,10 @@ pub(crate) fn run(args: &[String]) -> i32 {
         Err(error) => return error.report(),
     };
 
+    if options.font_plan {
+        println!("{}", doc.get_document_font_selection_plan());
+        return EXIT_OK;
+    }
     if options.json_mode {
         let info = info_json_value(options.file_path, file_size, detected_format, &doc);
         println!("{info}");
@@ -53,10 +58,12 @@ pub(crate) fn run(args: &[String]) -> i32 {
 
 fn parse_args(args: &[String]) -> Result<InfoArgs<'_>, i32> {
     let mut json_mode = false;
+    let mut font_plan = false;
     let mut file_path: Option<&str> = None;
     for arg in args {
         match arg.as_str() {
             "--json" => json_mode = true,
+            "--font-plan" => font_plan = true,
             other if other.starts_with('-') => {
                 eprintln!("알 수 없는 옵션: {other}");
                 return Err(EXIT_USAGE);
@@ -76,6 +83,7 @@ fn parse_args(args: &[String]) -> Result<InfoArgs<'_>, i32> {
     Ok(InfoArgs {
         file_path,
         json_mode,
+        font_plan,
     })
 }
 
@@ -137,7 +145,10 @@ fn print_file_header(
 ) {
     println!("파일: {}", file_path);
     println!("크기: {} bytes", file_size);
-    if detected_format != FileFormat::Hml {
+    if detected_format == FileFormat::Pdf {
+        println!("format: PDF");
+    }
+    if !matches!(detected_format, FileFormat::Hml | FileFormat::Pdf) {
         println!(
             "버전: {}.{}.{}.{}",
             document.header.version.major,

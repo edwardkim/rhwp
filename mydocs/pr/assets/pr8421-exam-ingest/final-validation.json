@@ -1,0 +1,12 @@
+{
+  "base": "0b697f90c3637558196b9e3b81c4eb59049432af",
+  "original_head": "d8c2fc3e1a04a006e971219dd3fb0b175ee96987",
+  "focused_tests": 48,
+  "changed_markdown_links_checked": 36,
+  "json_files": 76,
+  "generated_files_compared": 103,
+  "generator_non_string_ast_identical": true,
+  "yaml_and_router_description_equal": true,
+  "unmodified_sample_external_image_reference": "fixtures/md/sample_exam.md -> figures/pm10.png (original fixture external input; not added by PR)",
+  "final_self_review_addendum": "Input normalization, decision tree, boxed schema/support distinction, pitfalls and I025 aligned; same 48 tests passed"
+}

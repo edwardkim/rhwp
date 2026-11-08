@@ -9,7 +9,11 @@
 가져오고 rhwp 출처 표식(META-INF/rhwp-hwp5-origin)은 넣지 않는다. 생성물에는 linesegarray 가 없다.
 저장 LineSeg 가 있는 입력은 이 생성물을 한/글(hwp2024Convert MCP engine 2020)로 HWPX 저장한 것이다.
 
-사용: python3 samples/page_anchored_square/make_page_anchored_square.py <출력.hwpx>  (저장소 루트에서)
+사용: python3 samples/page_anchored_square/make_page_anchored_square.py <출력.hwpx> [변형]  (저장소 루트에서)
+변형(#7548 3단계 반례, 생략하면 기본 형상과 바이트 동일):
+  allow_overlap   표 allowOverlap="1" — 개체끼리 겹침 허용이 글 배제를 바꾸는지
+  top_and_bottom  표 textWrap="TOP_AND_BOTTOM" — 자리차지는 어울림과 다른 경로
+  narrow          표 폭 = 본문 폭의 절반, horzAlign=LEFT — 옆 공간이 있으면 띠와 겹치는 줄만 오른쪽 차선으로
 """
 import re
 import sys
@@ -17,6 +21,10 @@ import zipfile
 
 src = zipfile.ZipFile('samples/issue2527_empty_linesegs.hwpx')
 out = sys.argv[1]
+variant = sys.argv[2] if len(sys.argv) > 2 else ''
+assert variant in ('', 'allow_overlap', 'top_and_bottom', 'narrow'), variant
+WRAP = 'TOP_AND_BOTTOM' if variant == 'top_and_bottom' else 'SQUARE'
+OVERLAP = '1' if variant == 'allow_overlap' else '0'
 hdr = src.read('Contents/header.xml').decode('utf8')
 sec = src.read('Contents/section0.xml').decode('utf8')
 head = sec[:sec.find('<hp:bookmark')]  # 첫 문단의 secPr·colPr 까지
@@ -45,16 +53,20 @@ def cell(c, r, w, text):
 def table(tid, rows):
     out_l = out_r = 140
     total = BODY_W - out_l - out_r
+    if variant == 'narrow':
+        total = BODY_W // 2 - out_l - out_r
     w = total // 4
     width = w * 4
     trs = ''.join('<hp:tr>' + ''.join(cell(c, r, w, rows[r][c]) for c in range(4)) + '</hp:tr>'
                   for r in range(len(rows)))
-    return (f'<hp:tbl id="{tid}" zOrder="{tid}" numberingType="TABLE" textWrap="SQUARE" textFlow="BOTH_SIDES" '
+    return (f'<hp:tbl id="{tid}" zOrder="{tid}" numberingType="TABLE" textWrap="{WRAP}" textFlow="BOTH_SIDES" '
             f'lock="0" dropcapstyle="None" pageBreak="CELL" repeatHeader="0" rowCnt="{len(rows)}" colCnt="4" '
             f'cellSpacing="0" borderFillIDRef="2" noAdjust="0">'
             f'<hp:sz width="{width}" widthRelTo="ABSOLUTE" height="{2000 * len(rows)}" heightRelTo="ABSOLUTE" protect="0"/>'
-            '<hp:pos treatAsChar="0" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" '
-            'vertRelTo="PAGE" horzRelTo="PAGE" vertAlign="TOP" horzAlign="CENTER" vertOffset="13000" horzOffset="0"/>'
+            '<hp:pos treatAsChar="0" affectLSpacing="0" flowWithText="1" '
+            f'allowOverlap="{OVERLAP}" holdAnchorAndSO="0" '
+            'vertRelTo="PAGE" horzRelTo="PAGE" vertAlign="TOP" '
+            f'horzAlign="{"LEFT" if variant == "narrow" else "CENTER"}" vertOffset="13000" horzOffset="0"/>'
             f'<hp:outMargin left="{out_l}" right="{out_r}" top="140" bottom="852"/>'
             '<hp:inMargin left="510" right="510" top="141" bottom="141"/>'
             + trs + '</hp:tbl>')

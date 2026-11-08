@@ -1,3 +1,4 @@
+import { StudioCommandError } from '../core/command-error.ts';
 import {
   EMBED_PROTOCOL_VERSION,
   EMBED_CAPABILITIES,
@@ -15,8 +16,14 @@ interface EmbedRuntimeOptions {
   hostWindow: Window;
   parentWindow: Window;
   handlers: EmbedRpcHandlers;
+  subscribeCommandError?: (listener: (payload: unknown) => void) => () => void;
   subscribeDocumentChanged?: (listener: (payload: unknown) => void) => () => void;
+  /** 누름틀 진입·이탈. 클라이언트가 `field-focus-events-v1` 을 협상했을 때만 구독한다. */
+  subscribeFieldChanged?: (listener: (payload: unknown) => void) => () => void;
 }
+
+type EventSubscriptions = Partial<Record<'documentChanged' | 'fieldChanged' | 'commandError',
+  (listener: (payload: unknown) => void) => () => void>>;
 
 function errorText(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -46,7 +53,7 @@ function bindPort(
   sessionId: string,
   clientCapabilities: readonly string[],
   handlers: EmbedRpcHandlers,
-  subscribeDocumentChanged?: (listener: (payload: unknown) => void) => () => void,
+  subscriptions: EventSubscriptions,
 ): () => void {
   port.onmessage = async ({ data }) => {
     if (!isRequestAttempt(data, sessionId)) return;
@@ -67,6 +74,7 @@ function bindPort(
       return;
     }
     const requiredCapability = {
+      getCommandErrorState: 'command-error-v1',
       getDocumentState: 'document-state-v1',
       getSelectionContext: 'selection-context-v1',
       applyTextCommand: 'document-agent-command-v1',
@@ -85,8 +93,11 @@ function bindPort(
       response.result = await routeEmbedRequest(data.method, data.params, handlers);
     } catch (error) {
       const documentAgentError = isDocumentAgentError(error) ? error : null;
+      const commandError = error instanceof StudioCommandError && clientCapabilities.includes('command-error-v1')
+        ? await error.report : undefined;
       response.error = {
-        code: documentAgentError?.code ?? 'RPC_ERROR',
+        ...(commandError ? { commandError } : {}),
+        code: commandError?.code ?? documentAgentError?.code ?? 'RPC_ERROR',
         message: errorText(error),
         ...(typeof documentAgentError?.recovered === 'boolean'
           ? { recovered: documentAgentError.recovered }
@@ -100,15 +111,17 @@ function bindPort(
     type: 'rhwp-connected', version: EMBED_PROTOCOL_VERSION, sessionId,
     capabilities: EMBED_CAPABILITIES,
   });
-  return subscribeDocumentChanged?.((payload) => {
-    port.postMessage({
-      type: 'rhwp-event',
-      version: EMBED_PROTOCOL_VERSION,
-      sessionId,
-      event: 'documentChanged',
-      payload,
-    });
-  }) ?? (() => {});
+  const offs = (Object.keys(subscriptions) as Array<keyof EventSubscriptions>).map((event) =>
+    subscriptions[event]!((payload) => {
+      port.postMessage({
+        type: 'rhwp-event',
+        version: EMBED_PROTOCOL_VERSION,
+        sessionId,
+        event,
+        payload,
+      });
+    }));
+  return () => { for (const off of offs) off(); };
 }
 
 function rejectConnect(port: MessagePort, attempt: { version: number; sessionId: string }): void {
@@ -159,7 +172,7 @@ export function installEmbedRuntime(options: EmbedRuntimeOptions): () => void {
     origin: string;
     sessionId: string;
     port: MessagePort;
-    offDocumentChanged: () => void;
+    offEvents: () => void;
   } | null = null;
   const onMessage = (event: MessageEvent) => {
     const transferredPorts = Array.from(event.ports);
@@ -192,16 +205,25 @@ export function installEmbedRuntime(options: EmbedRuntimeOptions): () => void {
         return;
       }
       ports.add(port);
-      const offDocumentChanged = bindPort(
+      const capabilities = event.data.capabilities;
+      const subscriptions: EventSubscriptions = {};
+      if (capabilities.includes('command-error-v1') && options.subscribeCommandError) {
+        subscriptions.commandError = options.subscribeCommandError;
+      }
+      if (capabilities.includes('document-change-events-v1') && options.subscribeDocumentChanged) {
+        subscriptions.documentChanged = options.subscribeDocumentChanged;
+      }
+      if (capabilities.includes('field-focus-events-v1') && options.subscribeFieldChanged) {
+        subscriptions.fieldChanged = options.subscribeFieldChanged;
+      }
+      const offEvents = bindPort(
         port,
         event.data.sessionId,
-        event.data.capabilities,
+        capabilities,
         options.handlers,
-        event.data.capabilities.includes('document-change-events-v1')
-          ? options.subscribeDocumentChanged
-          : undefined,
+        subscriptions,
       );
-      binding = { origin: event.origin, sessionId: event.data.sessionId, port, offDocumentChanged };
+      binding = { origin: event.origin, sessionId: event.data.sessionId, port, offEvents };
       return;
     }
     if (binding) return;
@@ -210,7 +232,7 @@ export function installEmbedRuntime(options: EmbedRuntimeOptions): () => void {
   options.hostWindow.addEventListener('message', onMessage);
   return () => {
     options.hostWindow.removeEventListener('message', onMessage);
-    binding?.offDocumentChanged();
+    binding?.offEvents();
     for (const port of ports) releasePort(port);
     ports.clear();
     binding = null;

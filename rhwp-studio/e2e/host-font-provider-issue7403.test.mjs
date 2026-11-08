@@ -495,7 +495,35 @@ runTest(`Issue #7403 ${backend}: host font identity, replacement and document pr
   assert.equal(replacedRace.count, 1);
   console.log('Document lifecycle contracts:', JSON.stringify({ historyResult, switched, replacedRace }));
 
-  await page.evaluate(async () => { await window.rhwpStudio.fonts.setProvider(null); });
-  await page.waitForFunction(() => window.__hostFontDiagnostics()?.localTypefaceCount === 0);
+  await page.evaluate(async () => {
+    window.__host7403.detach = {
+      renderer: window.__canvasView.pageRenderer.canvaskitRenderer,
+      bytes: window.__wasm.exportHwp(),
+    };
+    await window.rhwpStudio.fonts.setProvider(null);
+  });
+  if (backend === 'canvaskit') {
+    // #7688 requires a prepared face. Removing the only Next Host source must
+    // release it and diagnose the existing Canvas2D fallback, not keep a stale
+    // CanvasKit face just to expose a zero-valued current-renderer counter.
+    await page.waitForFunction(() => window.__renderBackend === 'canvas2d'
+      && window.__host7403.detach.renderer.diagnostics().localTypefaceCount === 0);
+    const session = await page.evaluate(() => window.__canvasView.getRendererSessionDiagnostics());
+    assert.equal(session.fallbackReason, 'canvaskitResourcePreparationFailed');
+    assert.match(session.selectionError, /Next Host/);
+  } else {
+    await page.waitForFunction(() => window.__hostFontDiagnostics()?.localTypefaceCount === 0);
+  }
+  const detached = await page.evaluate(() => {
+    const before = window.__host7403.detach.bytes, after = window.__wasm.exportHwp();
+    return { state: window.rhwpStudio.fonts.getState(),
+      bytesUnchanged: before.length === after.length && before.every((value, i) => value === after[i]),
+      pages: window.__wasm.pageCount };
+  });
+  assert.equal(detached.state.active, false);
+  assert.equal(detached.state.count, 0);
+  assert.equal(detached.bytesUnchanged, true);
+  assert.equal(detached.pages, 1);
+  console.log('Provider detach contracts:', JSON.stringify(detached));
   console.log(JSON.stringify({ result, preserved: { ...preserved, roundtrips: preserved.roundtrips.map(item => ({ name: item.name, fonts: item.fonts, bold: item.properties.bold })) } }, null, 2));
 }, { skipLoadApp: true });

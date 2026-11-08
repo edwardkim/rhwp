@@ -1,0 +1,88 @@
+{
+  "status": "diagnostic_only_unresolved",
+  "note": "리베이스 후 최종 후보가 아닌 선행 보정 WASM에서 글꼴 공급을 달리한 선택 쪽 진단이다. 과거 수치의 전체 재현이나 최종 통과 근거가 아니다.",
+  "wasm_sha256": "dc7dd9a1a9a725a486064356ad583032d02394ad75cb64de8f1809ccfe87248b",
+  "fontconfig_sha256": "28440f36b4d03be667315cec2dc781a27987c175c1d9e014326f3a3764a4545d",
+  "pages": [
+    {
+      "key": "rebase8116-cell_nested_table_rows",
+      "page": 1,
+      "historical_percent": 98.57262,
+      "hcr_explicit_percent": 98.57264,
+      "hcr_original_percent": 98.35045,
+      "historical_tsv_sha256": "f72eb34829d09fdffd3e910f84590866735c5281bd66698f3656c2616bab5379",
+      "hcr_explicit_tsv_sha256": "bfe92e0a9bb7fcdca4fbb4dd247ab5747632df1277211370d22a64c2f61e5258",
+      "hcr_original_tsv_sha256": "58eb34393240f718c65dca5331b8223bc30d0a137a678c0210c86724cd3a5b58"
+    },
+    {
+      "key": "onsemiro-hwp",
+      "page": 19,
+      "historical_percent": 97.7889,
+      "hcr_explicit_percent": 97.67924,
+      "hcr_original_percent": 97.67924,
+      "historical_tsv_sha256": "c4c450f1d1c5df453ad1fd1ec6897268c832a84d4685fca98bc1b7a56cbaf7bb",
+      "hcr_explicit_tsv_sha256": "9d37745c7ce6e5af3d836caf24e8f03e906b3f806e952a6f97df5e564d523be9",
+      "hcr_original_tsv_sha256": "9d37745c7ce6e5af3d836caf24e8f03e906b3f806e952a6f97df5e564d523be9"
+    },
+    {
+      "key": "onsemiro-hwp",
+      "page": 26,
+      "historical_percent": 94.25851,
+      "hcr_explicit_percent": 93.94558,
+      "hcr_original_percent": 93.94558,
+      "historical_tsv_sha256": "c4c450f1d1c5df453ad1fd1ec6897268c832a84d4685fca98bc1b7a56cbaf7bb",
+      "hcr_explicit_tsv_sha256": "9d37745c7ce6e5af3d836caf24e8f03e906b3f806e952a6f97df5e564d523be9",
+      "hcr_original_tsv_sha256": "9d37745c7ce6e5af3d836caf24e8f03e906b3f806e952a6f97df5e564d523be9"
+    },
+    {
+      "key": "onsemiro-hwp",
+      "page": 33,
+      "historical_percent": 97.81353,
+      "hcr_explicit_percent": 97.70492,
+      "hcr_original_percent": 97.70492,
+      "historical_tsv_sha256": "c4c450f1d1c5df453ad1fd1ec6897268c832a84d4685fca98bc1b7a56cbaf7bb",
+      "hcr_explicit_tsv_sha256": "9d37745c7ce6e5af3d836caf24e8f03e906b3f806e952a6f97df5e564d523be9",
+      "hcr_original_tsv_sha256": "9d37745c7ce6e5af3d836caf24e8f03e906b3f806e952a6f97df5e564d523be9"
+    },
+    {
+      "key": "onsemiro-hwp",
+      "page": 38,
+      "historical_percent": 93.89759,
+      "hcr_explicit_percent": 93.7303,
+      "hcr_original_percent": 93.7303,
+      "historical_tsv_sha256": "c4c450f1d1c5df453ad1fd1ec6897268c832a84d4685fca98bc1b7a56cbaf7bb",
+      "hcr_explicit_tsv_sha256": "9d37745c7ce6e5af3d836caf24e8f03e906b3f806e952a6f97df5e564d523be9",
+      "hcr_original_tsv_sha256": "9d37745c7ce6e5af3d836caf24e8f03e906b3f806e952a6f97df5e564d523be9"
+    },
+    {
+      "key": "newsletter-korean",
+      "page": 1,
+      "historical_percent": 98.00674,
+      "hcr_explicit_percent": 97.55086,
+      "hcr_original_percent": 97.55086,
+      "historical_tsv_sha256": "c8eaac97e19aab727f9048f5b7203a1008a7b899231aa0cb172e69a43a1b1b43",
+      "hcr_explicit_tsv_sha256": "ff7527736a21b6f84360f68bde7cda63e7f7d92ba21ae6a15f1534446c9be8b9",
+      "hcr_original_tsv_sha256": "ff7527736a21b6f84360f68bde7cda63e7f7d92ba21ae6a15f1534446c9be8b9"
+    },
+    {
+      "key": "endnotes-november",
+      "page": 21,
+      "historical_percent": 91.32974,
+      "hcr_explicit_percent": 90.84255,
+      "hcr_original_percent": 90.84255,
+      "historical_tsv_sha256": "25e63f7a5565d510c8ebe5306caac196efff3730e9dd7c85755a99723504b728",
+      "hcr_explicit_tsv_sha256": "d8084a78c87eb7bf3ef2182bbdf2dd0d3df428517536297deec59612e4f6d63e",
+      "hcr_original_tsv_sha256": "d8084a78c87eb7bf3ef2182bbdf2dd0d3df428517536297deec59612e4f6d63e"
+    },
+    {
+      "key": "endnotes-september",
+      "page": 20,
+      "historical_percent": 96.35945,
+      "hcr_explicit_percent": 95.32108,
+      "hcr_original_percent": 95.32108,
+      "historical_tsv_sha256": "e473e15f2b465cc75f2dc94c86dbf441d4daf5aed6d31e92e920b7406cd6eed7",
+      "hcr_explicit_tsv_sha256": "7b05eeb41480e22023754cd368d3a105eabea946be0fd897b10b341c649f7073",
+      "hcr_original_tsv_sha256": "7b05eeb41480e22023754cd368d3a105eabea946be0fd897b10b341c649f7073"
+    }
+  ]
+}

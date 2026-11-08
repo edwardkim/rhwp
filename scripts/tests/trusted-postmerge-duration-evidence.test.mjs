@@ -13,11 +13,11 @@ for (const options of [{ fork: true }, { fork: false }, { fork: false, legacy: t
   test(`duration provenance 정상 발행·소비: ${JSON.stringify(options)}`, () => {
     const f = durationFixture(options);
     const selected = selectDurationArtifacts(f.artifacts, f.run, f.pr, f.repositoryId);
-    assert.equal(selected.length, 3);
+    assert.equal(selected.length, 4);
     assert.ok(selected.every(s => s.legacy === Boolean(options.legacy)));
     const reports = selected.map(s => decodeDurationArtifact(reportZip(f.reports.find(r => r.archive_label === s.label)), s.label));
     const normalized = validateDurationReports(reports, f.context);
-    assert.deepEqual(normalized.map(r => r.archive_label), ["b", "c", "d"]);
+    assert.deepEqual(normalized.map(r => r.archive_label), ["b", "c", "d", "e"]);
     assert.ok(normalized.every(r => r.run_id === "123" && r.sha === f.context.testedMergeSha));
   });
 }
@@ -28,6 +28,7 @@ test("#6901 한글 Rust 이름은 JUnit부터 ZIP 소비와 policy 갱신까지 
     "issue_676_t재정통계_2010_11_single_page",
     "정산_방어_계약",
     "감사_보고_기계_대사_계약",
+    "추가_분산_계약",
   ];
   f.reports.forEach((report, index) => {
     const label = report.archive_label;
@@ -168,7 +169,7 @@ test("ZIP 암호화 flag, 크기 제한, 큰 압축 해제 결과를 거부한�
 const workflow = readFileSync(new URL("../../.github/workflows/trusted-postmerge-ci-reuse.yml", import.meta.url), "utf8");
 const finalize = workflow.split("- name: Finalize reuse after validated evidence publication")[1]
   .split("run: |\n")[1].split("\n").map(line => line.replace(/^ {10}/, "")).join("\n");
-for (const failed of [null, "B", "C", "D"]) {
+for (const failed of [null, "B", "C", "D", "E"]) {
   test(`정규화 artifact 발행 ${failed || "모두 성공"} 최종 reuse 계약`, t => {
     const directory = mkdtempSync(path.join(tmpdir(), "duration-finalize-"));
     t.after(() => rmSync(directory, { recursive: true, force: true }));
@@ -176,7 +177,8 @@ for (const failed of [null, "B", "C", "D"]) {
     execFileSync("bash", ["-e", "-c", finalize], { env: { ...process.env, GITHUB_OUTPUT: output,
       REUSE: "true", REASON: "verified", SOURCE_RUN_ID: "123", REFRESH: "true",
       PUBLISH_B: failed === "B" ? "failure" : "success", PUBLISH_C: failed === "C" ? "skipped" : "success",
-      PUBLISH_D: failed === "D" ? "cancelled" : "success" } });
+      PUBLISH_D: failed === "D" ? "cancelled" : "success",
+      PUBLISH_E: failed === "E" ? "failure" : "success" } });
     const result = Object.fromEntries(readFileSync(output, "utf8").trim().split("\n").map(line => line.split("=")));
     assert.equal(result.reuse, failed ? "false" : "true");
     assert.equal(result.refresh_duration_data, failed ? "false" : "true");

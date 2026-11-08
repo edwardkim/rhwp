@@ -1,0 +1,323 @@
+[
+  {
+    "number": 8337,
+    "id": 6705090949,
+    "url": "https://github.com/edwardkim/rhwp/issues/8337#issuecomment-6705090949",
+    "body": "[통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)의 [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd)으로 이 원 사례의 수식 글꼴 부재 문제를 해결했습니다.\n\n기존 기여의 문자별 대체 경로를 보존하면서, 원 수식 글꼴의 사설 표시 코드를 의미 문자로 복원하도록 메인테이너 보정을 추가했습니다. 실제 공개 입력 `samples/issue7593/repro-equation-issue7593.hwpx`에서 AB·CD·4·3이 표시되며 원래 위치·기준선·기울임을 유지합니다.\n\n- 같은 본문 글꼴·원 수식 face 부재 조건의 Native 전 1쪽: 최신 devel raw 93.84% → 보정 99.63%. 문자 복원을 직접 판독했습니다.\n- 원 수식 face를 공급하면 보정 전후 Native PNG가 같습니다. fresh WASM 정상 공급 대조도 전 1쪽 raw 99.48%로 확인했습니다. WASM 공급 대조를 Native 글꼴 부재 조건의 검증으로 혼용하지 않습니다.\n- 실제 producer의 새 숫자 회귀는 보정 전 실패·보정 후 통과했습니다. 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건과 [동일 head CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884)를 확인했습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8671_review.md) · [문서 비교 방법](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment).\n\n| 실제 원 사례 p1 | review | overlay |\n| --- | --- | --- |\n| Native 원 수식 face 부재 | ![Native p1 review](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/issue8337/missing-face-candidate-review.png) | ![Native p1 overlay](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/issue8337/missing-face-candidate-overlay.png) |\n| fresh WASM 원 face 공급 | ![WASM p1 review](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/visual/issue8337-full-fonts-wasm-p001-review.png) | ![WASM p1 overlay](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/visual/issue8337-full-fonts-wasm-p001-overlay.png) |\n\n자동 일치율은 내용 픽셀·실루엣의 보조 수치이며 사람의 판단 정확도가 아닙니다. 이 이슈의 공개 원 사례는 완료로 닫으며, [#536](https://github.com/edwardkim/rhwp/issues/536)·[#8701](https://github.com/edwardkim/rhwp/issues/8701)의 전체 로드맵은 OPEN을 유지합니다.\n\n상태 확인: devel 반영과 상태 확인 뒤 승인된 범위로 완료 close했습니다.\n",
+    "created_at": "2026-11-07T09:31:52Z",
+    "api_verified": true,
+    "kind": "issue",
+    "auto_closed_before_followup": false
+  },
+  {
+    "number": 8666,
+    "id": 6705091371,
+    "url": "https://github.com/edwardkim/rhwp/pull/8666#issuecomment-6705091371",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `67d46ba6b5a1`는 통합 merge commit의 조상으로 확인했습니다.\n\nTile wire·raster cache/quota는 실제 session·worker ABI와 cache 계약으로 확인했습니다. 페이지·exact scale·LRU와 uncached 동등성 검사를 유지하며, 설치 글꼴에 의존하던 새 cache 검사에는 공개 fixture 프로그램을 명시했습니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8666_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n",
+    "created_at": "2026-11-07T09:31:54Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8667,
+    "id": 6705091846,
+    "url": "https://github.com/edwardkim/rhwp/pull/8667#issuecomment-6705091846",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `ca1f63c15740`는 통합 merge commit의 조상으로 확인했습니다.\n\n불변 Arc layer tree의 공유·원 session 수명 종료 이후 소비를 집중 계약과 snapshot 경로에서 확인했습니다. 일반 문서 Native/WASM 각 24쪽의 base/후보 PNG 48쌍은 모두 같습니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8667_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n",
+    "created_at": "2026-11-07T09:31:57Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8668,
+    "id": 6705092355,
+    "url": "https://github.com/edwardkim/rhwp/pull/8668#issuecomment-6705092355",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `8a679ed90b1f`는 통합 merge commit의 조상으로 확인했습니다.\n\nenclosing RGBA viewport의 실제 바이트 예약·실패 후 credit 복구를 worker quota 계약과 실제 Native worker ABI에서 확인했습니다. 프로세스 전체 메모리 상한으로 확대 해석하지 않습니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8668_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n",
+    "created_at": "2026-11-07T09:31:59Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8669,
+    "id": 6705092824,
+    "url": "https://github.com/edwardkim/rhwp/pull/8669#issuecomment-6705092824",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `fd2df4070400`는 통합 merge commit의 조상으로 확인했습니다.\n\n새 요청·취소·close의 tile 경계 취소와 부분 frame 폐기를 Native 계약에서 대조했습니다. stale source/device/view 세대를 새 frame으로 표시하지 않는 실제 presentation 검증도 연결했습니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8669_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n",
+    "created_at": "2026-11-07T09:32:02Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8670,
+    "id": 6705093261,
+    "url": "https://github.com/edwardkim/rhwp/pull/8670#issuecomment-6705093261",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `5847f6f25627`는 통합 merge commit의 조상으로 확인했습니다.\n\nglyph 준비의 typed 실패·cache 보존과 잘못된 source/face/placement의 fallback을 집중 검사 범위에 포함했습니다. 실제 숫자 의미 오류는 진단 성공으로 면제하지 않고 [#8671](https://github.com/edwardkim/rhwp/pull/8671)에서 별도 보정했습니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8670_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n",
+    "created_at": "2026-11-07T09:32:04Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8671,
+    "id": 6705093711,
+    "url": "https://github.com/edwardkim/rhwp/pull/8671#issuecomment-6705093711",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `a4e839d1c504`는 통합 merge commit의 조상으로 확인했습니다.\n\n실제 공개 [#8337](https://github.com/edwardkim/rhwp/issues/8337) 입력의 사설 숫자 코드 4·3을 의미 문자로 복원했습니다. Native face 부재 대조·원 face 공급 전후 동일 PNG·fresh WASM 전쪽과 독립 Print 확대 판독을 완료했습니다. 기존 5개 검사는 보정 전에도 통과했지만 신규 실제 producer 검사는 missing-ink에서 실패했고, 복구한 보정 코드에서는 해당 검사를 포함한 집중 회귀 194건이 통과했습니다. 최신 devel의 같은 글꼴 부재 조건은 AB·CD·4·3 누락/raw 93.84%였고 최종 보정은 복원/raw 99.63%입니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8671_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n\n원 사설 코드를 일반 글꼴의 다른 문자로 그리는 문제를 메인테이너가 보정했습니다. 실제 원 사례 p1의 Native 원 수식 글꼴 부재 조건은 raw 93.84%→99.63%이며 AB·CD·4·3 복원을 직접 확인했습니다. 원 글꼴 공급 시 기존 PNG와 같고, 새 실제 producer 회귀는 보정 전 실패·보정 후 통과했습니다. 아래 WASM은 원 글꼴을 공급한 정상 대조로, Native 부재 조건과 구분합니다.\n\n[문서 비교 방법](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 따랐습니다. 자동 일치율은 내용 픽셀·실루엣의 보조 수치이며 사람의 판단 정확도가 아닙니다.\n\n| 대상 | review | overlay |\n| --- | --- | --- |\n| Native p1 원 수식 face 부재 | ![Native p1 원 수식 face 부재 review](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/issue8337/missing-face-candidate-review.png) | ![Native p1 원 수식 face 부재 overlay](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/issue8337/missing-face-candidate-overlay.png) |\n| fresh WASM p1 원 face 공급 | ![fresh WASM p1 원 face 공급 review](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/visual/issue8337-full-fonts-wasm-p001-review.png) | ![fresh WASM p1 원 face 공급 overlay](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/visual/issue8337-full-fonts-wasm-p001-overlay.png) |\n",
+    "created_at": "2026-11-07T09:32:07Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": [
+      "issue8337/missing-face-candidate-review.png",
+      "issue8337/missing-face-candidate-overlay.png",
+      "visual/issue8337-full-fonts-wasm-p001-review.png",
+      "visual/issue8337-full-fonts-wasm-p001-overlay.png"
+    ]
+  },
+  {
+    "number": 8672,
+    "id": 6705094234,
+    "url": "https://github.com/edwardkim/rhwp/pull/8672#issuecomment-6705094234",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `2fb8d6f0a70a`는 통합 merge commit의 조상으로 확인했습니다.\n\n정적 Direct PDF preflight의 page/node/op 위치와 bounded reason 계약을 집중 검사·공개 Rust API 범위로 대조했습니다. 동적 실행·전체 문서 편집 가능성의 보장으로 확대하지 않습니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8672_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n",
+    "created_at": "2026-11-07T09:32:10Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8673,
+    "id": 6705094647,
+    "url": "https://github.com/edwardkim/rhwp/pull/8673#issuecomment-6705094647",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `47bdb1caee3f`는 통합 merge commit의 조상으로 확인했습니다.\n\n실제 Direct PDF의 원형 대조군 6쪽을 내보내 PDFium으로 raster했습니다. 모두 raw 100%이며 중심·반경·색 변화·표식을 직접 확인했습니다. base는 non-linear gradient 거부였고 후보 PDF에는 radial shading 6개·image XObject 0개가 있습니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8673_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n\n원형 그라데이션 fixture의 실제 Direct PDF 전 6쪽 raw는 100%입니다. Vector shading 6개·image XObject 0개, 중심·반경·색 변화·표식을 확인했습니다. Native PNG와 별개인 실제 PDF를 PDFium으로 래스터화해 비교했습니다. 아래는 직접 판독한 p1·p3·p6입니다.\n\n[문서 비교 방법](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 따랐습니다. 자동 일치율은 내용 픽셀·실루엣의 보조 수치이며 사람의 판단 정확도가 아닙니다.\n\n| 대상 | review | overlay |\n| --- | --- | --- |\n| Direct PDF p1 | ![Direct PDF p1 review](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/direct-pdf/direct-pdf-p001-review.png) | ![Direct PDF p1 overlay](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/direct-pdf/direct-pdf-p001-overlay.png) |\n| Direct PDF p3 | ![Direct PDF p3 review](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/direct-pdf/direct-pdf-p003-review.png) | ![Direct PDF p3 overlay](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/direct-pdf/direct-pdf-p003-overlay.png) |\n| Direct PDF p6 | ![Direct PDF p6 review](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/direct-pdf/direct-pdf-p006-review.png) | ![Direct PDF p6 overlay](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/direct-pdf/direct-pdf-p006-overlay.png) |\n",
+    "created_at": "2026-11-07T09:32:13Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": [
+      "direct-pdf/direct-pdf-p001-review.png",
+      "direct-pdf/direct-pdf-p001-overlay.png",
+      "direct-pdf/direct-pdf-p003-review.png",
+      "direct-pdf/direct-pdf-p003-overlay.png",
+      "direct-pdf/direct-pdf-p006-review.png",
+      "direct-pdf/direct-pdf-p006-overlay.png"
+    ]
+  },
+  {
+    "number": 8674,
+    "id": 6705095074,
+    "url": "https://github.com/edwardkim/rhwp/pull/8674#issuecomment-6705095074",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `0d70e975806e`는 통합 merge commit의 조상으로 확인했습니다.\n\n증명 가능한 shape만 clip 밖에서 건너뛰는 culling 반례·정상 대조를 집중 검사 범위에 포함했습니다. 실제 도형·그라데이션·그림의 Native/WASM 전쪽 출력도 base와 같습니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8674_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n\n도형 그룹·그림 잘림 대조군 p1의 Native/fresh WASM 출력은 같은 devel PNG와 바이트 단위로 같았습니다. picture-crop의 독립 Print 대비 기존 가는 테두리 차이는 메인테이너가 이번 변경과 무관한 기존 차이에 한정해 수용했습니다. 새 회귀의 면제는 아닙니다.\n\n[문서 비교 방법](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 따랐습니다. 자동 일치율은 내용 픽셀·실루엣의 보조 수치이며 사람의 판단 정확도가 아닙니다.\n\n| 대상 | review | overlay |\n| --- | --- | --- |\n| shape-group p1 native | ![shape-group p1 native review](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/visual/shape-group-native-p001-review.png) | ![shape-group p1 native overlay](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/visual/shape-group-native-p001-overlay.png) |\n| shape-group p1 wasm | ![shape-group p1 wasm review](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/visual/shape-group-wasm-p001-review.png) | ![shape-group p1 wasm overlay](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/visual/shape-group-wasm-p001-overlay.png) |\n| picture-crop p1 native | ![picture-crop p1 native review](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-native-p001-review.png) | ![picture-crop p1 native overlay](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-native-p001-overlay.png) |\n| picture-crop p1 wasm | ![picture-crop p1 wasm review](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-wasm-p001-review.png) | ![picture-crop p1 wasm overlay](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-wasm-p001-overlay.png) |\n",
+    "created_at": "2026-11-07T09:32:15Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": [
+      "visual/shape-group-native-p001-review.png",
+      "visual/shape-group-native-p001-overlay.png",
+      "visual/shape-group-wasm-p001-review.png",
+      "visual/shape-group-wasm-p001-overlay.png",
+      "visual/picture-crop-native-p001-review.png",
+      "visual/picture-crop-native-p001-overlay.png",
+      "visual/picture-crop-wasm-p001-review.png",
+      "visual/picture-crop-wasm-p001-overlay.png"
+    ]
+  },
+  {
+    "number": 8675,
+    "id": 6705095489,
+    "url": "https://github.com/edwardkim/rhwp/pull/8675#issuecomment-6705095489",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `a0b8824f5fb5`는 통합 merge commit의 조상으로 확인했습니다.\n\n기존 HWP5 bounded producer→one-glyph/cluster→Native upright 소비 계약과 cache 이후 다중 scalar 거부를 집중 범위에 포함했습니다. 이는 명시한 exact portable subset의 API 계약이며 HWPX·mixed·sideways·일반 bidi의 지원 완료 주장이 아닙니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8675_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n",
+    "created_at": "2026-11-07T09:32:18Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8702,
+    "id": 6705095900,
+    "url": "https://github.com/edwardkim/rhwp/pull/8702#issuecomment-6705095900",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `c22449e8b592`는 통합 merge commit의 조상으로 확인했습니다.\n\n실제 Native·Qt 참조 host의 문서 교체·수정 상태·늦은 응답·종료 수명 검증을 확인했습니다. document/revision 세대와 worker의 기존 FIFO 계약을 유지합니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8702_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n",
+    "created_at": "2026-11-07T09:32:20Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8703,
+    "id": 6705096314,
+    "url": "https://github.com/edwardkim/rhwp/pull/8703#issuecomment-6705096314",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `03a235362d2c`는 통합 merge commit의 조상으로 확인했습니다.\n\n실제 worker 저장의 prepare→게시→ack·원본 외부 변경 충돌·loss report 승인 경계를 확인했습니다. 복구 파일을 원본 저장 완료로 취급하지 않습니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8703_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n",
+    "created_at": "2026-11-07T09:32:23Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8704,
+    "id": 6705096712,
+    "url": "https://github.com/edwardkim/rhwp/pull/8704#issuecomment-6705096712",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `7dadd5afd6c8`는 통합 merge commit의 조상으로 확인했습니다.\n\nQt 참조 viewport와 고정 tile 재사용·scale/page key·bounded cache를 실제 GL/CPU host와 계약 검사에서 구분해 확인했습니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8704_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n",
+    "created_at": "2026-11-07T09:32:26Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8705,
+    "id": 6705097158,
+    "url": "https://github.com/edwardkim/rhwp/pull/8705#issuecomment-6705097158",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `fc27113c3e95`는 통합 merge commit의 조상으로 확인했습니다.\n\n독립 headless Vulkan manifest를 공용 target에서 실제 compile/run·fmt·Clippy했습니다. Skia 0.156.0의 borrowed GPU surface, known interior colors·host state 복원·invalid argument의 pixel 보존을 통과했습니다. 실제 장치는 llvmpipe LLVM 20.1.2이고 verification readback은 2회입니다. hardwareAccelerationVerified와 presentationVerified는 false이며 이 한계를 유지합니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8705_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n",
+    "created_at": "2026-11-07T09:32:28Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8706,
+    "id": 6705097562,
+    "url": "https://github.com/edwardkim/rhwp/pull/8706#issuecomment-6705097562",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `16a15d2aa19b`는 통합 merge commit의 조상으로 확인했습니다.\n\n불변 snapshot의 layer/resources/font 입력 소유와 원 문서 session 종료·편집 이후 별도 renderer 소비를 실제 ABI·snapshot 계약에서 확인했습니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8706_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n",
+    "created_at": "2026-11-07T09:32:31Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8707,
+    "id": 6705097955,
+    "url": "https://github.com/edwardkim/rhwp/pull/8707#issuecomment-6705097955",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `48382f79cdf2`는 통합 merge commit의 조상으로 확인했습니다.\n\npresentation lease·CPU frame·snapshot의 cross-thread 소유와 stale 거부·quota 반환을 실제 Native ABI·owner dispatcher 검증에 포함했습니다. GPU consumer 완료 계약은 별도로 구분합니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8707_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n",
+    "created_at": "2026-11-07T09:32:33Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8712,
+    "id": 6705098327,
+    "url": "https://github.com/edwardkim/rhwp/pull/8712#issuecomment-6705098327",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `101899925c90`는 통합 merge commit의 조상으로 확인했습니다.\n\n호스트 소유 current GL context/FBO에 대한 실제 Native replay와 GL 상태 복원을 확인했습니다. Linux 실행은 llvmpipe 소프트웨어 GL이며 물리 GPU 성능 입증이 아닙니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8712_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n",
+    "created_at": "2026-11-07T09:32:36Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8713,
+    "id": 6705098719,
+    "url": "https://github.com/edwardkim/rhwp/pull/8713#issuecomment-6705098719",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `f4ded9d0d358`는 통합 merge commit의 조상으로 확인했습니다.\n\n실제 Qt GPU viewport에서 frame 9회·snapshot export 5회·제품 전체 frame readback 0을 확인했습니다. 폐기·재생성 경계와 current context 수명을 함께 대조했습니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8713_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n",
+    "created_at": "2026-11-07T09:32:38Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8714,
+    "id": 6705099103,
+    "url": "https://github.com/edwardkim/rhwp/pull/8714#issuecomment-6705099103",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `91cb75e870e7`는 통합 merge commit의 조상으로 확인했습니다.\n\nGPU tile/resource pin·eviction·합산 예산과 정상 복구를 실제 tile/cache 계약에서 확인했습니다. 통계의 Skia 자원 바이트를 전체 VRAM으로 표시하지 않습니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8714_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n",
+    "created_at": "2026-11-07T09:32:41Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8716,
+    "id": 6705099474,
+    "url": "https://github.com/edwardkim/rhwp/pull/8716#issuecomment-6705099474",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `18149728631d`는 통합 merge commit의 조상으로 확인했습니다.\n\nGL context 세대 복구·반복 폐기/재생성과 같은 stamp의 CPU 품질 frame을 실제 host에서 확인했습니다. 검증용 readback과 제품 경로의 readback을 분리했습니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8716_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n",
+    "created_at": "2026-11-07T09:32:43Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8718,
+    "id": 6705099882,
+    "url": "https://github.com/edwardkim/rhwp/pull/8718#issuecomment-6705099882",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `8b69fde69046`는 통합 merge commit의 조상으로 확인했습니다.\n\nQt shortcut·IME·선택을 기존 Native FIFO에 연결한 경로와 owner 수명 검증을 확인했습니다. source/revision 불일치 응답이 새 문서를 변경하지 않는 경계를 유지합니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8718_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n",
+    "created_at": "2026-11-07T09:32:46Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8720,
+    "id": 6705100245,
+    "url": "https://github.com/edwardkim/rhwp/pull/8720#issuecomment-6705100245",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `21fac65baabd`는 통합 merge commit의 조상으로 확인했습니다.\n\nworker 소유 자동 저장·복구 파일의 다시 열기·미저장 상태를 실제 ABI·참조 host 범위에서 확인했습니다. 원본 저장과 복구 상태를 합치지 않습니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8720_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n",
+    "created_at": "2026-11-07T09:32:48Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8721,
+    "id": 6705100617,
+    "url": "https://github.com/edwardkim/rhwp/pull/8721#issuecomment-6705100617",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `4ac991f97bce`는 통합 merge commit의 조상으로 확인했습니다.\n\nbounded semantics·선택/geometry·닫힌 widget·수명 불일치와 조회 한도를 실제 Native·Qt 접근성 검증 범위에 포함했습니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8721_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n",
+    "created_at": "2026-11-07T09:32:51Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8722,
+    "id": 6705101046,
+    "url": "https://github.com/edwardkim/rhwp/pull/8722#issuecomment-6705101046",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `6098e175eb8f`는 통합 merge commit의 조상으로 확인했습니다.\n\n공식 Flutter SDK의 analyze·70개 test와 실제 Native IME 두 경로, Linux controller/view의 두 revision·close 후 자원 반환을 확인했습니다. pub get의 자동 analysis_options migration도 분리 기록했습니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8722_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n",
+    "created_at": "2026-11-07T09:32:54Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8723,
+    "id": 6705101435,
+    "url": "https://github.com/edwardkim/rhwp/pull/8723#issuecomment-6705101435",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `0f629e936bd6`는 통합 merge commit의 조상으로 확인했습니다.\n\nnon-BMP UTF-16·stale context·원자적 rollback·Undo·presentation 무효화를 실제 Linux·Windows Native ABI와 Flutter Native IME 검증에 포함했습니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8723_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n",
+    "created_at": "2026-11-07T09:32:56Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8724,
+    "id": 6705101820,
+    "url": "https://github.com/edwardkim/rhwp/pull/8724#issuecomment-6705101820",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `9d8b56ecef4d`는 통합 merge commit의 조상으로 확인했습니다.\n\n공식 Linux Flutter SDK plugin compile/link와 GL/GLES 상태 복원, 실제 texture/controller capture를 확인했습니다. CPU와 같은 내용 bbox·2px 밖 잉크 차이 0이며 가장자리 AA 차이는 남습니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8724_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n",
+    "created_at": "2026-11-07T09:32:59Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8726,
+    "id": 6705102247,
+    "url": "https://github.com/edwardkim/rhwp/pull/8726#issuecomment-6705102247",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `d9570e04cc5e`는 통합 merge commit의 조상으로 확인했습니다.\n\n작업지시자가 default-disabled Metal 실험 기반으로 한정해 예외 수용했습니다. Apple SDK·실물 Metal·지속 표시 검증은 완료 주장이 아니며 기존 immutable/quarantine 예산과 차단을 보존합니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8726_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n\nMetal은 메인테이너 결정에 따라 기본 비활성 실험 기반으로만 수용했습니다. macOS·Apple SDK compile/link와 실제 Metal 실행은 미검증이며 지원 완료나 연속 표시가 검증된 것으로 안내하지 않습니다.\n",
+    "created_at": "2026-11-07T09:33:01Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8727,
+    "id": 6705102615,
+    "url": "https://github.com/edwardkim/rhwp/pull/8727#issuecomment-6705102615",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `ac393935254c`는 통합 merge commit의 조상으로 확인했습니다.\n\n실제 Windows SDK의 protected registrar 접근·변수 가림 compile 실패를 보정했습니다. 새 제품 코드의 MSVC/Native D3D compile/link, 실제 Windows ABI 4종과 하드웨어 D3D12 색상·알파·stale 거부 2종이 통과했습니다. 최종 Flutter D3D11 consumer sampling·지속 표시 qualification은 bounded foundation 완료와 구분합니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8727_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n\n실제 Windows SDK의 protected registrar 접근과 변수 가림을 메인테이너가 보정했습니다. 최종 MSVC DLL의 ABI 4종·D3D12 하드웨어 2종은 통과했습니다. 최종 Flutter D3D11 consumer sampling·지속 표시는 별도의 남은 검증이며 기존 bounded immutable/quarantine 계약을 유지합니다.\n",
+    "created_at": "2026-11-07T09:33:04Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  },
+  {
+    "number": 8728,
+    "id": 6705102973,
+    "url": "https://github.com/edwardkim/rhwp/pull/8728#issuecomment-6705102973",
+    "body": "기여해 주셔서 감사합니다. 원 기여 commit을 보존해 [통합 PR #8739](https://github.com/edwardkim/rhwp/pull/8739)로 머지했습니다. 원 head `629f204f82e9`는 통합 merge commit의 조상으로 확인했습니다.\n\n실제 Flutter controller/view에서 두 revision·동기 무효화·opaque cover·capture 소유·close 후 raster/lease/source 반환을 확인했습니다. 별도의 실제 그림 texture capture를 Native CPU 결과와 대조했습니다.\n\n- 검증 head: `0d2548fd88ea76b10e53eec841376b4bcbecbc4a`, [merge commit](https://github.com/edwardkim/rhwp/commit/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd).\n- 통합 head의 [GitHub CI](https://github.com/edwardkim/rhwp/actions/runs/42353615884), CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사를 확인했습니다. 이전 원 head CI의 시간 초과와 새 통합 CI를 구분했습니다.\n- 로컬 최소 글꼴 전체 회귀 12,825건·Native 공식 4,077건·Studio 2,745건이 통과했습니다. Native 집중 194건은 전체와 중복되는 범위여서 합산하지 않았습니다.\n- [개별 검토 기록](https://github.com/edwardkim/rhwp/blob/2ca988bab230007c941f3caae57e773cb0cc81d1/mydocs/pr/archives/pr_8728_review.md) · [플랫폼별 실제 검증·제한](https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/validation-scope.md).\n\n[Native 로드맵 #536](https://github.com/edwardkim/rhwp/issues/536)과 [호스트 로드맵 #8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지합니다. 원 fork branch도 보존했습니다.\n",
+    "created_at": "2026-11-07T09:33:06Z",
+    "api_verified": true,
+    "kind": "pull",
+    "image_paths": []
+  }
+]

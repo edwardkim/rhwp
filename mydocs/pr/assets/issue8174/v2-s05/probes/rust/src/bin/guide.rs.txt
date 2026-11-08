@@ -1,0 +1,40 @@
+use rhwp::{parse_document, serializer::serialize_hwpx_with_report};
+
+fn read_and_save(bytes: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    let document = parse_document(bytes)?;
+    for section in &document.sections {
+        for paragraph in &section.paragraphs {
+            println!("{}", paragraph.text);
+        }
+    }
+    let saved = serialize_hwpx_with_report(&document)?;
+    // 보고 대상 손실이 있으면 호스트가 저장 수용 여부를 결정합니다.
+    if !saved.content_loss().is_empty() {
+        eprintln!("{}", saved.content_loss().to_json());
+    }
+    Ok(saved.into_bytes())
+}
+
+use rhwp::service::{DocumentService, OpenOptions};
+
+fn edit(bytes: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    let opened = DocumentService::new()
+        .with_title_scan(false)
+        .open_bytes(bytes, &OpenOptions::new())?;
+    let mut core = opened.into_core();
+    core.insert_text_native(0, 0, 0, "추가 문구 ")?;
+    Ok(rhwp::serializer::serialize_hwpx(core.document())?)
+}
+
+use rhwp::{DocumentCore, parser::pdf::{PdfImportOptions, PdfImportPolicy, PdfImportProfile}};
+
+fn import_pdf(bytes: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    let policy = PdfImportPolicy::for_profile(PdfImportProfile::Constrained)
+        .with_limits_json(r#"{"maxSelectedPages":16}"#)?;
+    let core = DocumentCore::from_pdf_bytes_with_policy(
+        bytes, &PdfImportOptions::default(), policy,
+    )?;
+    Ok(rhwp::serializer::serialize_hwpx(core.document())?)
+}
+
+fn main()->Result<(),Box<dyn std::error::Error>> {let b=std::fs::read(std::env::args().nth(1).unwrap())?;read_and_save(&b)?;edit(&b)?;let p=std::fs::read(std::env::args().nth(2).unwrap())?;import_pdf(&p)?;println!("GUIDE PASS");Ok(())}

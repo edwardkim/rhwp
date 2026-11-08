@@ -1,0 +1,10 @@
+{
+  "committed_source_head": "3ae26ef0a1a20a8810813a085179220f56d2561a",
+  "compiled_base_head": "a2129e3f7d7d1d3f9cdbfd2cdcd0e6f34c034470",
+  "compiled_patch_sha256": "fab1a4009595f2b267358c686e9c08dfa6da6862b0ade7f0fe9248c1b3279012",
+  "committed_production_delta_matches_compiled_patch": true,
+  "binary": "output/pr-review/planet6897-20261026/candidate-final-rhwp",
+  "binary_sha256": "336c7467562b53cf6968fdb211da1b311767569e08a763119404e7974488f543",
+  "producer_receipt": "output/pr-review/planet6897-20261026/legacy-v9-producer.json",
+  "scope": "src, crates, Cargo.toml, Cargo.lock, build.rs; later commits only record validated source/validation helper/progress"
+}

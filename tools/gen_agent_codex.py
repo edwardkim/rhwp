@@ -112,6 +112,9 @@ LIVE = {
 
 # 계약만 장에 붙는 사유 — 없는 명령은 공통 사유를 쓴다.
 CONTRACT_ONLY_REASON = {
+    "export-kitty": "그래픽 APC 스트림이므로 JSON 표본으로 싣지 않는다. Native 빌드·로컬/SSH 실행·글자 누락 시 `--font-path` 지정과 저장 파일 재생성은 [Kitty 출력 가이드](../export_kitty_command.md)를 따른다.",
+    "export-sixel": "그래픽 DCS 스트림이므로 JSON 표본으로 싣지 않는다. 로컬/SSH 실행·글자 누락 시 `--font-path` 지정과 저장 파일 재생성은 [Sixel 출력 가이드](../export_sixel_command.md)를 따른다.",
+    "import-pdf": "pdf-import feature 활성 빌드에서 PDF를 HWPX/HWP로 가져온다. 기본 빌드는 PDF_IMPORT_DISABLED로 거부한다. 활성 경로 검증은 tests/cases/issue_7911_pdf_cli.rs와 scripts/tests/pdf-import-wasm.test.mjs 참조.",
     "batch": "NDJSON 스트림(stdin 목록) 명령 — 단일 봉투 표본 형식과 달라 계약만 싣는다. 실행 규약은 rhwp-bulk-pipeline 스킬 참조.",
     "mcp-serve": "상주 서버 — 표본 실행이 세션을 남긴다. 통합 규약은 rhwp-mcp-session 스킬과 mcp_integration_guide 참조.",
     "keygen": "비밀키 파일을 만드는 명령 — 표본이라도 키 재료를 저장소 문서에 싣지 않는다.",
@@ -143,8 +146,7 @@ FAMILIES = [
     ("30_편집과_계획", "편집·계획 — 원본 무훼손 변경",
      ["edit", "edit replace-text", "edit set-cell", "edit fill-fields", "edit apply-endnote-shape", "edit set-chart-data", "edit insert-number", "edit insert-image", "edit redact", "edit sanitize", "run"]),
     ("40_변환과_렌더", "변환·렌더 — 형식을 넘나든다",
-     ["convert", "export-hwpx", "export-hml", "export-markdown", "export-doclang", "export-pdf", "export-svg", "thumbnail", "render-diff", "build-from-ingest", "scaffold", "split-document",
-      "export-png-gpu", "gpu-info"]),
+     ["convert", "import-pdf", "export-hwpx", "export-hml", "export-markdown", "export-doclang", "export-pdf", "export-svg", "export-kitty", "export-sixel", "thumbnail", "render-diff", "build-from-ingest", "scaffold", "split-document"]),
     ("50_검증_사다리", "검증 사다리 — 판정은 데이터다",
      ["verify", "ir-diff", "replay", "audit", "lineage", "hwpx-roundtrip",
       "layout-anomaly",
@@ -241,8 +243,23 @@ def provenance_map():
 
 
 def help_lines():
-    _, out = run_bin(["--help"])
-    return out.splitlines()
+    # 루트 --help는 이름·요약 index다. 사용법은 명령별 상세 도움말에서 읽는다.
+    commands = {command["name"] for command in capabilities()["commands"]}
+    names = commands | {
+        name for _, _, members in FAMILIES for name in members
+        if name.split()[0] in commands
+    }
+    lines = []
+    for name in sorted(names):
+        code, out = run_bin(name.split() + ["--help"])
+        if code != 0:
+            continue
+        detailed = out.splitlines()
+        lines.extend(detailed)
+        # 보조 설명의 상세 구문을 우선하고, 없으면 정본 rhwp 사용법을 쓴다.
+        lines.extend(line.strip()[5:] for line in detailed
+                     if line.strip().startswith("rhwp " + name + " "))
+    return lines
 
 
 def command_chapter(cmd, prov, help_map):

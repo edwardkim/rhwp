@@ -1,0 +1,77 @@
+{
+  "base_commit": "a7feb849e11642b1438b7e9ee460ff4c8a7c946e",
+  "product_commit": "24bb81d0320a8d666b76abda9ad2e991040f124a",
+  "source_pr": 8226,
+  "native_binary_sha256": "0a016772b94352d59581781254d08732526966b06e3d53130ee1739ad50d6ecc",
+  "wasm_sha256": "62fd93a578534a35861cd1decd2137819b05ddba4aa2d712a62d0f647b9a6ff6",
+  "input": "mydocs/pr/assets/leading-definition-slots/input/report-implicit-column.hwpx",
+  "input_sha256": "28768b01550ba2596c5e2bd182454a39a6700c8789fbe95e198d83c3898c4a40",
+  "pdf": "pdf/leading-definition-slots/report-implicit-column-hancom-print.pdf",
+  "pdf_sha256": "8e7af1fcc369dbc45405bd0073850d085122a9d3f9f637678f119b324831d0d7",
+  "output_hwp_sha256": "729ed729fec4da78c376bcfb5b18eaf12497554b5daabb846ad57e2b35f1bbf2",
+  "profile": "print",
+  "compat": 2022,
+  "dpi": 96,
+  "pages": 1,
+  "direct_wasm_save": {
+    "bytes": {
+      "file": "direct.hwp",
+      "bytes": 6656,
+      "sha256": "729ed729fec4da78c376bcfb5b18eaf12497554b5daabb846ad57e2b35f1bbf2"
+    },
+    "reportBytes": {
+      "file": "reported.hwp",
+      "bytes": 6656,
+      "sha256": "729ed729fec4da78c376bcfb5b18eaf12497554b5daabb846ad57e2b35f1bbf2"
+    },
+    "contentLoss": "{\"schemaVersion\":1,\"outputFormat\":\"hwp\",\"count\":0,\"losses\":[]}",
+    "afterFontPreparationBytes": {
+      "file": "font-prepared.hwp",
+      "bytes": 6656,
+      "sha256": "729ed729fec4da78c376bcfb5b18eaf12497554b5daabb846ad57e2b35f1bbf2"
+    }
+  },
+  "visual": "repro-visual.tsv",
+  "status": "local_required_gates_passed_remote_ci_pending",
+  "linux_handbook": "handbook-linux.json",
+  "test_commit": "effcb0d60241d41601fa3cc471c6e46050a60676",
+  "local_validation": "local-validation.json",
+  "base_wasm_sha256": "941af4e51b82959bd4330943a306a45c568b8664d739e7133012b2c4b66ddaf3",
+  "base_output_hwp_sha256": "cb1fec65bf3e7621870c54c60700d0b89050430969f4562b296bb77ca8b8a386",
+  "base_direct_wasm_save": {
+    "bytes": {
+      "file": "direct.hwp",
+      "bytes": 6656,
+      "sha256": "cb1fec65bf3e7621870c54c60700d0b89050430969f4562b296bb77ca8b8a386"
+    },
+    "reportBytes": {
+      "file": "reported.hwp",
+      "bytes": 6656,
+      "sha256": "cb1fec65bf3e7621870c54c60700d0b89050430969f4562b296bb77ca8b8a386"
+    },
+    "contentLoss": "{\"schemaVersion\":1,\"outputFormat\":\"hwp\",\"count\":0,\"losses\":[]}",
+    "afterFontPreparationBytes": {
+      "file": "font-prepared.hwp",
+      "bytes": 6656,
+      "sha256": "cb1fec65bf3e7621870c54c60700d0b89050430969f4562b296bb77ca8b8a386"
+    }
+  },
+  "asset_sha256": {
+    "base-provenance.json": "5aa7dc3bde9fac834b1c1ce80fc121f10e792fb5cdabc48cd2d1d0b320376c45",
+    "base-wasm-saved-review.png": "014158486efa8190c0a3183352cf3b0c615f54edf3d8d2e6afae57c297c8bc0f",
+    "handbook-base-candidate.json": "e3faeefe75625ed46780d967c6bb30cb4f6604089aad7296f733874ef72bf00f",
+    "handbook-base-candidate.tsv": "6ebebc4b339afebdc12d467c3e55deead4d686811d9c50a1294baec15c5aca26",
+    "handbook-linux.json": "8b650a4ded26856338efe0a13e9b0ebde19f74d3aa0a14217b89693a1053975f",
+    "handbook-linux.tsv": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+    "local-validation.json": "8b184c5fc8e609b15c85ec8ed6add71a04fb261dec09bffe7346504d906c190d",
+    "native-saved-overlay.png": "1bd4c19f265370cd91fabd97d8c005edea1ceca43b3cc956a276069800f5338d",
+    "native-saved-review.png": "01791825a91cffe5960d876ffae6afd913ac47efcb4c1b53481caf4f0646cf08",
+    "repro-metrics.json": "a9655b3d8e5840571829cdf40b7ded934ce822cf2678917e58f20786aef4345a",
+    "repro-provenance.json": "2c1cf8aa5a7b4656d1115c5aaabbadca32479caae6fbd152e794eab03e085378",
+    "repro-visual.tsv": "63d251a3e963f6d81295883a6afa9327a7a78a8e093f7064ff0f9661ec9be7e9",
+    "saved-content-zoom.png": "b5e6e68463fa013cdbf80a6ece2ef94fa87d34c3fd113095a1a8edb1d5223dcc",
+    "svg-saved-review.png": "ecb9dd3ac8064f6049d367b5e06df3b198becc317284061d0b5cc2d28f5fdce8",
+    "wasm-saved-overlay.png": "d375e45633353d2a7413316f5b31e67d1a466f0e5f3b833647f1b5cd62c894db",
+    "wasm-saved-review.png": "6ba2bb7164f864c58e4bcac7f5ec36fecec4b3093d8af33b5c6af3799012a07c"
+  }
+}

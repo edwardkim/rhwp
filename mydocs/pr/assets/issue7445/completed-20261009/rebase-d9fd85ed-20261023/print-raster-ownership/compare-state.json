@@ -1,0 +1,40 @@
+{
+  "complete": true,
+  "steps": [
+    {
+      "name": "independent-print-review",
+      "exitCode": 0,
+      "state": {
+        "complete": true,
+        "comparisons": 31,
+        "below90": [],
+        "newDropsAtLeast2Pp": [],
+        "directInspectionPending": true,
+        "fullPrAcceptance": false
+      }
+    },
+    {
+      "name": "zoom-independent-review",
+      "exitCode": 0,
+      "state": {
+        "complete": true,
+        "comparisons": 20,
+        "below90": [
+          {
+            "sample": "missing-lineseg1-p001",
+            "step": {
+              "name": "zoomed",
+              "zoom": 1.25,
+              "dpr": 1.5
+            },
+            "raw": 86.78369
+          }
+        ],
+        "directInspectionPending": true,
+        "fullPrAcceptance": false
+      }
+    }
+  ],
+  "directInspectionPending": true,
+  "fullPrAcceptance": false
+}

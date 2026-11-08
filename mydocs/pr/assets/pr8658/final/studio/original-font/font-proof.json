@@ -1,0 +1,21 @@
+{
+  "requested": [
+    "함초롬바탕",
+    "함초롬바탕",
+    "함초롬바탕",
+    "함초롬바탕",
+    "함초롬바탕",
+    "함초롬바탕",
+    "함초롬바탕"
+  ],
+  "sourceSha": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85",
+  "keys": [
+    "{\"handle\":{\"faceIndex\":0,\"fontBytes\":26583332,\"fontSourceSha256\":\"ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85\"},\"ok\":true,\"registry\":{\"generation\":1,\"slotCount\":1,\"sourceCount\":1,\"totalSourceBytes\":26583332},\"slot\":{\"charShapeId\":0,\"languageIndex\":0},\"status\":\"registered\"}",
+    "{\"handle\":{\"faceIndex\":0,\"fontBytes\":26583332,\"fontSourceSha256\":\"ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85\"},\"ok\":true,\"registry\":{\"generation\":2,\"slotCount\":2,\"sourceCount\":1,\"totalSourceBytes\":26583332},\"slot\":{\"charShapeId\":0,\"languageIndex\":1},\"status\":\"registered\"}",
+    "{\"handle\":{\"faceIndex\":0,\"fontBytes\":26583332,\"fontSourceSha256\":\"ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85\"},\"ok\":true,\"registry\":{\"generation\":3,\"slotCount\":3,\"sourceCount\":1,\"totalSourceBytes\":26583332},\"slot\":{\"charShapeId\":0,\"languageIndex\":2},\"status\":\"registered\"}",
+    "{\"handle\":{\"faceIndex\":0,\"fontBytes\":26583332,\"fontSourceSha256\":\"ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85\"},\"ok\":true,\"registry\":{\"generation\":4,\"slotCount\":4,\"sourceCount\":1,\"totalSourceBytes\":26583332},\"slot\":{\"charShapeId\":0,\"languageIndex\":3},\"status\":\"registered\"}",
+    "{\"handle\":{\"faceIndex\":0,\"fontBytes\":26583332,\"fontSourceSha256\":\"ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85\"},\"ok\":true,\"registry\":{\"generation\":5,\"slotCount\":5,\"sourceCount\":1,\"totalSourceBytes\":26583332},\"slot\":{\"charShapeId\":0,\"languageIndex\":4},\"status\":\"registered\"}",
+    "{\"handle\":{\"faceIndex\":0,\"fontBytes\":26583332,\"fontSourceSha256\":\"ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85\"},\"ok\":true,\"registry\":{\"generation\":6,\"slotCount\":6,\"sourceCount\":1,\"totalSourceBytes\":26583332},\"slot\":{\"charShapeId\":0,\"languageIndex\":5},\"status\":\"registered\"}",
+    "{\"handle\":{\"faceIndex\":0,\"fontBytes\":26583332,\"fontSourceSha256\":\"ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85\"},\"ok\":true,\"registry\":{\"generation\":7,\"slotCount\":7,\"sourceCount\":1,\"totalSourceBytes\":26583332},\"slot\":{\"charShapeId\":0,\"languageIndex\":6},\"status\":\"registered\"}"
+  ]
+}

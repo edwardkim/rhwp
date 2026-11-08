@@ -2,6 +2,8 @@
 //! 실제 Player 로직(레코드 순회 → SVG 출력)은 단계 12~13에서 구현한다.
 
 pub mod device_context;
+mod device_stroke;
+mod pattern_brush;
 pub mod player;
 pub mod svg;
 

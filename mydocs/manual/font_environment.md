@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/cli_commands.md
-last_verified: 2026-10-01
+last_verified: 2026-11-06
 ---
 
 # 명시적 조판 폰트 환경
@@ -13,23 +13,23 @@ last_verified: 2026-10-01
 
 ```json
 {
-  "id": "hancom-kopub-unavailable",
+  "id": "explicit-substitution",
   "substitutions": {
-    "KoPub돋움체 Light": "함초롬바탕",
-    "KoPub돋움체 Medium": "함초롬바탕",
-    "KoPub돋움체 Bold": "함초롬바탕"
+    "원본글꼴": "대체글꼴"
   }
 }
 ```
 
-위 예시는 #6389의 KoPub돋움체→바탕 환경 선언이다. 전체 시스템의 폰트 미설치를 자동 재현하는
-프로필이 아니며, 실제 기준 PDF와 대상 글꼴을 확인한 뒤 매핑을 선택한다. 테스트용 설정은
-[`kopub-unavailable.json`](../../tests/fixtures/issue_6389/kopub-unavailable.json)에 있다.
+위 예시는 명시적 글꼴 대체 선언의 형식이다. 실제 원본 face와 설치된 대체 face를 확인해
+이름을 지정하고, 설정 파일은 Git에서 제외된 `output/` 아래에 만든다. 시스템 글꼴 부재의
+자동 재현이나 PDF 일치 인증으로 사용하지 않는다. KoPub 미설치 전용 회귀·프로필은 제거했으며,
+정상 KoPub 환경의 검증은 해당 글꼴과 독립 Print를 공급해 수행한다.
 
 ## CLI와 Visual Sweep
 
 ```bash
 rhwp export-svg input.hwp --font-environment environment.json -o output/svg --font-style
+rhwp export-png input.hwp --font-environment environment.json -o output/png --profile print
 rhwp export-render-tree input.hwp --font-environment environment.json -o output/tree
 rhwp export-pdf input.hwp --font-environment environment.json -o output/result.pdf
 
@@ -44,8 +44,10 @@ Visual Sweep은 Native와 `--wasm-pkg` 양쪽에 동일한 환경을 적용하�
 내용으로 확인한다. #6389 편람의 KoPub PDF p68과 no-ttf PDF p69는 같은 내용이므로 단순히 같은
 페이지 번호끼리 비교해서는 안 된다.
 
-옵션을 생략하면 종전 동작과 출력 계약을 유지한다. SVG JSON manifest에는 설정한
-`fontEnvironment`가 추가된다. CLI 지원 명령은 위 세 가지이며 다른 명령의 전역 옵션은 아니다.
+명시적 환경을 생략한 Native 출력은 내장·설치된 글꼴을 먼저 확인하고, 없는 글꼴을 등록된
+공개 웹폰트로 보완한다. 일반 대체는 원본 프로그램 공급과 구분하며 미지원·공급 실패도 보고한다.
+명시적 환경을 지정하면 그 선택을 따른다. 출력 JSON의 `fontEnvironment`에는 실제 적용한
+환경이 기록된다. 명령별 지원은 [CLI 명령 참조](cli_commands.md)를 확인한다.
 
 ## Rust와 WASM
 
@@ -63,6 +65,13 @@ document.setFontEnvironment(undefined); // 기본 조판 복원
 
 - 매핑 key는 문서의 정확한 font face 이름, value는 최종 단일 face 이름이다. 재귀 치환하지 않는다.
 - 환경 ID/이름의 빈 문자열, 앞뒤 공백, 제어 문자, CSS family chain 등을 거부한다.
+- 문서의 원본 대체를 자동 관측할 때도 같은 단일 face 이름 규칙을 적용한다.
+  `산돌고딕 L\,한컴돋움` 같은 목록 표기의 원본 이름이나 부적합한 대체 이름은
+  관측 요청에서 제외하고 다른 정상 요청은 계속 처리한다. 원본 글꼴 이름을 분해하거나
+  바꾸지 않으며, 호출자가 명시한 환경의 검증 규칙은 유지한다.
+- 미해소된 원본 TTF 이름에 쉼표가 있고 같은 레코드에 유효한 비내장 단일 TTF 대체가
+  선언돼 있으면, 그 대체를 측정과 paint의 공통 첫 face로 사용한다. 원본 이름 일부를
+  내부 체인의 별도 후보로 해석하지 않는다. 정상 단일 face와 내장 프로그램의 우선순위는 보존한다.
 - 내장 폰트는 미설치로 처리하지 않고 기존 이름을 유지한다. 매핑하지 않은 폰트도 기존 규칙을 따른다.
 - 환경을 바꾸면 스타일·문단 구성·측정·페이지 캐시를 재구성한다. 이전 Canvas 측정 세션은 폐기된다.
 - 같은 환경의 반복 적용은 no-op이다. 편집 batch 중 변경은 거부한다.
@@ -73,13 +82,32 @@ document.setFontEnvironment(undefined); // 기본 조판 복원
 이 설정은 빠진 글꼴 파일을 제공하지 않는다. 출력 backend가 목표 폰트를 사용할 수 있어야 하며,
 최종 시각 판정은 [Visual Sweep](verification/visual_sweep_guide.md)의 직접 비교 절차를 따른다.
 
+## 표시용 치환과 실제 프로그램 선택의 출처
+
+`preserveSourceMetrics: true`인 표시용 대체는 원본의 언어별 폭 표·공백·인쇄 프레임을 보존한다.
+공급한 웹폰트의 family 이름만으로 원본 메트릭까지 바꾸지 않는다. 반면 실제 공급자가 원본 또는
+문서의 대체 글꼴을 조회해 선택한 HFT 프로그램은 그 프로그램의 문장부호 계약을 유지한다.
+예를 들어 문서의 `명조` 조회가 프로그램 내부 family `Myeongjo`로 해소돼도 이름의 차이만으로
+일반 표시 치환으로 취급하지 않는다.
+
+공통 프로그램 선택 생산자는 `selectedPrograms`에 원본 이름별 `query`, `family`, `programId`,
+`trueType`, `openTypeCff`를 기록한다. 언어·font ID마다 선택이 다른 `documentSubstitutions`에도
+조회 이름 `query`를 보존한다. 측정 소비자는 조회 이름이 해당 슬롯의 원본·문서 지정 후보에 속하고
+선택 대상도 그대로인 경우에만 이 출처를 사용한다. 일반 웹폰트 치환으로 선택을 덮어쓸 때는
+해당 원본의 이전 프로그램 출처를 제거한다.
+
+이 정보는 실제 프로그램 공급 snapshot에서 생성하며, 설치·선택을 추정해 수동으로 채우지 않는다.
+프로그램 ID와 선언만으로 글리프 공급이나 PDF 일치를 인증하지 않으며 실제 바이트·cmap·backend
+소비와 독립 출력 대조는 별도로 확인한다.
+
 ## 같은 이름의 TrueType·HFT 프로그램 구분
 
 독립 PDF와 실제 글꼴 파일이 TrueType 프로그램을 사용하는 것으로 확인되었을 때만
 `trueTypeFaces`에 **최종 face 이름**을 지정한다. 생략하면 기존 HFT 호환 폭을 유지한다.
 원본의 TTF 선언·파일 확장자·저장 제품 버전만으로 값을 채우지 않는다. 현재 별도 폭이 검증된
-휴먼명조의 가운뎃점은 HMKMM.TTF와 독립 PDF에서 확인한512/512 전진폭을 사용한다.
-따옴표는 TrueType 파일의 글리프 폭과 한컴 문단의 반각 전진이 다를 수 있어 기존 규칙을 유지한다.
+휴먼명조의 가운뎃점과 이중 따옴표 `“”`는 HMKMM.TTF의 실제 hmtx 전진폭을 사용한다.
+독립 PDF의 동일 outline과 다음 글자 원점이 전각 전진을 확인한 범위다. 단일 따옴표와
+다른 face는 별도 근거 없이 이 계약으로 바꾸지 않는다.
 
 ```json
 {
@@ -95,3 +123,40 @@ document.setFontEnvironment(undefined); // 기본 조판 복원
 임베드 검사·Native/fresh WASM PNG를 확인한다. EBDT/EBLC 제거는 임베드 사본에만 적용한다.
 프로필이나 메트릭 지원 자체는 글꼴 설치·출력 일치 인증이 아니며, HFT 기준 PDF에는 적용하지 않는다.
 검증 기록에는 JSON과 글꼴 SHA-256, PDF의 실제 글꼴 형식, 임베드 결과를 남긴다.
+
+## 결측 글리프의 명시적 폴백
+
+원 face는 그대로 쓰되 일부 글자만 다른 프로그램에서 그려야 하면 `glyphFallbacks`로
+공급을 확인한 face 순서를 선언한다. 키는 치환 후의 최종 face 이름이다. 일반 OS 폴백보다
+먼저 조회하고, 원본의 `substFont`는 그 뒤에 보존한다. 기본값은 비어 있으며 자동으로 설치
+글꼴을 찾아 채우지 않는다.
+
+```json
+{
+  "id": "verified-primary-and-glyph-provider",
+  "substitutions": {},
+  "trueTypeFaces": ["휴먼명조"],
+  "glyphFallbacks": {"휴먼명조": ["Haansoft Batang"]}
+}
+```
+
+위 예시는 두 프로그램의 실제 공급과 문자 지원을 확인한 세션에만 적용한다. 메트릭 결측과
+실제 glyph 결측을 구분한다. 기본 TrueType 프로그램의 검증한 cmap이 glyph 부재를 입증하고,
+다음 선언 프로그램의 cmap과 전진폭도 확인된 범위에서만 다음 메트릭을 찾는다. 현재 검증한
+기술 기호 구간은 regular 휴먼명조·한컴바탕 프로그램이다. 수집하지 않은 구간이나 다른
+weight의 지원 여부는 추정하지 않고 기존 backend 보충 측정으로 남긴다. primary hit·공백·
+문서의 HFT 폭 규칙은 유지하며, 뒤 face에 앞 face의 HFT 속성을 복제하지 않는다.
+SVG는 체인 구성 face를 각각 임베드하고 Canvas와 Native Skia도 같은 선언 순서를 사용한다.
+미지의 OS 선택을 메트릭 DB의 이름만으로 추정하지 않는다. DB에 없는 글자의 기존 보충 측정
+계약도 유지한다.
+
+확인한 SFNT의 `unitsPerEm`과 historical DB의 `em_size`가 다를 수 있다. 추출 시 실제 DB face와
+em을 확인하고 `scripts/extract_verified_symbol_metrics.py --metric-em`으로 DB 단위를 지정한다.
+원 프로그램의 폭과 em을 증거로 보존하고, 메트릭 소비에는 같은 비율로 환산한 폭을 쓴다.
+cmap의 글자 유무는 단위 변환과 독립이다. 이름이나 숫자가 같다는 이유만으로 프로그램의
+동일성을 주장하지 않으며, 실제 파일 해시·독립 Print의 glyph·backend 선택을 함께 확인한다.
+
+최대256개 key, key마다1~16개의 단일 face 이름을 허용한다. 빈 목록·중복·자기 참조·CSS 삽입
+문자열은 거절한다. 이 설정만으로 설치·선택·PDF 일치를 입증할 수 없다. 실제 출력 프로그램,
+glyph cmap/전진폭, 공급 파일의 SHA-256과 backend 선택을 확인하고 동일 설정의
+Native/fresh WASM 전체 페이지와 확대 판독으로 검증한다. 설정은 원본 문서에 저장하지 않는다.

@@ -1,0 +1,38 @@
+[
+  {
+    "path": "samples/issue8403/patterns.hwp",
+    "bytes": 46592,
+    "sha256": "cf127c285976a11cc018dfea0ba55ab5a599b88b68d4903d03e66a581129abbe",
+    "sourcePdf": "pdf/issue8403/image-patterns.pdf"
+  },
+  {
+    "path": "samples/issue8403/patterns.hwpx",
+    "bytes": 51039,
+    "sha256": "9f6dab1c7c79f3175b2a90eee32598feb3e2b086ecd8beda507b9ff496154c2f",
+    "sourcePdf": "pdf/issue8403/image-patterns.pdf"
+  },
+  {
+    "path": "samples/issue8403/stroke.hwp",
+    "bytes": 10240,
+    "sha256": "1059be20e316c7b7342269cf4cd49637df1c313b0c505bab980758a9d6ead429",
+    "sourcePdf": "pdf/issue8403/text-stroke.pdf"
+  },
+  {
+    "path": "samples/issue8403/stroke.hwpx",
+    "bytes": 19852,
+    "sha256": "67314dbd4a6d0a74b9c0d8a08c83d9e3024e28e55e9c6a6565c038fa8a93bcc5",
+    "sourcePdf": "pdf/issue8403/text-stroke.pdf"
+  },
+  {
+    "path": "samples/issue8403/stroke-edited.hwp",
+    "bytes": 10240,
+    "sha256": "203dc4c6fcfa93b14674348aab72e1996f7476200b89b7a0354250c296aca502",
+    "sourcePdf": "pdf/issue8403/text-stroke-edited.pdf"
+  },
+  {
+    "path": "samples/issue8403/stroke-edited.hwpx",
+    "bytes": 19855,
+    "sha256": "1dfd4a8cf5a3168df287698e7901557744bf15d5da8c79b8752063736d8fac1f",
+    "sourcePdf": "pdf/issue8403/text-stroke-edited.pdf"
+  }
+]

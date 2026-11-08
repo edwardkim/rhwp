@@ -88,7 +88,8 @@ export class AutomationHost implements StudioAutomation {
     params?: Record<string, unknown>,
     options: { allowDialog?: boolean } = {},
   ): CommandResult {
-    if (!options.allowDialog && this.options.registry.get(id)?.opensDialog) {
+    const def = this.options.registry.get(id);
+    if (!options.allowDialog && def?.opensDialog && !def.runsWithoutDialog?.(params)) {
       return {
         ok: false,
         reason: 'needs-dialog',

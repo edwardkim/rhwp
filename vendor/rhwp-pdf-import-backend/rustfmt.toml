@@ -1,0 +1,36 @@
+# Rustfmt configuration for pdf_oxide
+# See https://rust-lang.github.io/rustfmt/ for all options
+# Note: Using only stable-compatible options for CI compatibility (stable Rust)
+
+# Edition
+edition = "2021"
+
+# Line width
+max_width = 100
+
+# Indentation
+tab_spaces = 4
+hard_tabs = false
+
+# Imports
+reorder_imports = true
+reorder_modules = true
+
+# Formatting
+force_explicit_abi = true
+match_block_trailing_comma = true
+
+# Function calls
+fn_call_width = 80
+fn_params_layout = "Tall"
+
+# Whitespace
+use_small_heuristics = "Default"
+
+# Newlines
+newline_style = "Unix"
+use_field_init_shorthand = true
+use_try_shorthand = true
+
+# Chains
+chain_width = 60

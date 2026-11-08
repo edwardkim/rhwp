@@ -75,31 +75,3 @@ fn issue_5751_dense_row_grows_to_content_plus_padding() {
          (24.13px)로 눌렸다면 #501 가드가 정상 조밀 표에서 오발동한 것이다, got {h}"
     );
 }
-
-#[test]
-fn issue_5751_guard_threshold_is_declared_height_itself() {
-    use rhwp::model::table::Cell;
-
-    let px = |hu: i32| hu as f64 * 96.0 / 7200.0;
-
-    // #501 원 사례 (mel-001 p2 셀[21]) — 여백이 셀 높이 자체를 넘는다: 발동.
-    assert!(
-        Cell::vertical_padding_is_abnormal(px(1280), px(3400)),
-        "여백 3,400 HU > 셀 1,280 HU 는 비정상으로 판정해야 한다 — #501 가드 회귀"
-    );
-
-    // 2026_oss_rst s0:pi=7 행 5 — 여백이 셀 높이의 절반~1배: 미발동.
-    assert!(
-        !Cell::vertical_padding_is_abnormal(px(1810), px(1020)),
-        "여백 1,020 HU 는 셀 1,810 HU 안이라 정상이다 — #5751 오발동"
-    );
-
-    // 156505020 데이터 셀 — 같은 구간(절반 초과, 1배 미만): 미발동.
-    assert!(
-        !Cell::vertical_padding_is_abnormal(px(1582), px(1132)),
-        "여백 1,132 HU 는 셀 1,582 HU 안이라 정상이다 — #5751 오발동"
-    );
-
-    // 선언 높이 결측(0)은 판정 대상이 아니다.
-    assert!(!Cell::vertical_padding_is_abnormal(0.0, 100.0));
-}

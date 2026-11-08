@@ -1,4 +1,9 @@
-import type { PageInfo } from '../core/types';
+import type { LayerRenderProfile, PageInfo } from '../core/types';
+
+/** 편집 안내선은 문서의 인쇄 내용에 포함하지 않는다. */
+export function shouldDrawPageMarginGuides(profile: LayerRenderProfile = 'screen'): boolean {
+  return profile === 'screen';
+}
 
 export interface PageSpaceRect {
   x: number;

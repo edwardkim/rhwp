@@ -1,10 +1,8 @@
 //! 미주 내부 문단 흐름 조정. 준비·조회·상태 반영의 기존 순서를 보존한다.
 
 use crate::renderer::typeset::{
-    hwpunit_to_px, line_has_visible_text, line_is_equation_tac_text_run_only,
-    para_has_non_tac_picture_or_shape, para_has_treat_as_char_picture_or_shape, ComposedParagraph,
-    Control, EndnoteRef, FormattedParagraph, MeasuredTable, Paragraph, ResolvedStyleSet,
-    TypesetEngine, TypesetState, ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX,
+    hwpunit_to_px, Control, EndnoteRef, FormattedParagraph, MeasuredTable, Paragraph,
+    ResolvedStyleSet, TypesetEngine, TypesetState, ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX,
 };
 
 /// 호출 시점의 관측값. 페이지 상태를 변경할 수 없는 Query 입력이다.
@@ -18,8 +16,8 @@ pub(super) struct RewindTailInput<'a> {
     pub(super) ep_idx: usize,
     pub(super) en_para: &'a Paragraph,
     pub(super) fmt: &'a FormattedParagraph,
-    pub(super) composed: &'a ComposedParagraph,
     pub(super) endnote_start: i32,
+    pub(super) compact_no_separator_spacing: bool,
     pub(super) prev_en_bottom_vpos: Option<i32>,
     pub(super) emitted_endnote_count: usize,
     pub(super) en_para_idx: usize,
@@ -50,12 +48,10 @@ pub(super) struct RewindTailInput<'a> {
 pub(super) struct RewindTailResult {
     pub(super) new_endnote_stale_forward_vpos: bool,
     pub(super) large_between_tail_render_overflows: bool,
-    pub(super) large_between_tail_before_rewind_picture: bool,
+    pub(super) kept_successor_overflows: bool,
     pub(super) no_separator_tail_table_starts_next_column: bool,
-    pub(super) no_separator_last_column_tail_before_rewind_starts_next_page: bool,
     pub(super) no_separator_tail_after_picture_starts_next_page: bool,
     pub(super) later_endnote_vpos_rewinds_after_current: bool,
-    pub(super) large_between_equation_tail_starts_next_column: bool,
     pub(super) large_between_title_tail_render_overflows: bool,
     pub(super) large_between_question_title_render_y: Option<f64>,
     pub(super) large_between_question_title_head_inside_frame: bool,
@@ -78,8 +74,8 @@ impl TypesetEngine {
             ep_idx,
             en_para,
             fmt,
-            composed,
             endnote_start,
+            compact_no_separator_spacing,
             prev_en_bottom_vpos,
             emitted_endnote_count,
             en_para_idx,
@@ -133,23 +129,19 @@ impl TypesetEngine {
             large_separator_block,
             visible_compact_sequential_tail_fits_current_column,
         );
-        let large_between_tail_before_rewind_picture = self
-            .judge_large_between_tail_before_rewind_picture(
-                &fmt,
-                st,
-                en_para,
-                en_ctrl,
-                this_first_offset,
-                endnote_start,
-                available,
-                ep_idx,
-                default_between_notes_gap,
-                compact_endnote_separator_profile,
-                has_visible_endnote_separator,
-                local_vpos_rewind,
-                internal_vpos_rewind,
-                large_separator_block,
-            );
+        let kept_successor_overflows = self.reflowed_endnote_kept_successor_overflows(
+            st,
+            paragraphs,
+            styles,
+            en_para,
+            en_para_idx,
+            available,
+            en_col_w,
+            measured_tables,
+            &en_ctrl.paragraphs[ep_idx + 1..],
+            endnote_start,
+            compact_no_separator_spacing,
+        );
         let table_only_endnote_para_before_rewind = en_para.text.is_empty()
             && en_para
                 .controls
@@ -173,21 +165,6 @@ impl TypesetEngine {
                 local_vpos_rewind,
                 this_first_offset,
             );
-        let no_separator_last_column_tail_before_rewind_starts_next_page = self
-            .judge_no_separator_last_column_tail_before_rewind_starts_next_page(
-                &fmt,
-                st,
-                en_para,
-                en_ctrl,
-                this_first_offset,
-                endnote_start,
-                available,
-                ep_idx,
-                has_visible_endnote_separator,
-                local_vpos_rewind,
-                internal_vpos_rewind,
-                large_separator_block,
-            );
         let no_separator_tail_after_picture_starts_next_page = self
             .judge_no_separator_tail_after_picture_starts_next_page(
                 st,
@@ -210,56 +187,6 @@ impl TypesetEngine {
                     .unwrap_or(false)
             })
         });
-        let large_between_small_equation_tail_bleeds_previous_column = !default_between_notes_gap
-            && compact_endnote_separator_profile
-            && has_visible_endnote_separator
-            && ep_idx == 1
-            && en_ctrl.paragraphs.len().saturating_sub(ep_idx) >= 5
-            && st.col_count > 1
-            && st.current_column + 1 < st.col_count
-            && st.current_height > available * 0.90
-            && !st.current_items.is_empty()
-            && !local_vpos_rewind
-            && !internal_vpos_rewind
-            && later_endnote_vpos_rewinds_after_current
-            && fmt.line_heights.len() == 1
-            && fmt.line_advance(0) <= 36.0
-            && st.current_height + fmt.line_advance(0)
-                <= available + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX + 80.0
-            && line_is_equation_tac_text_run_only(en_para, &composed, 0)
-            && en_ctrl.paragraphs.get(ep_idx + 1).is_some_and(|next_para| {
-                let next_comp =
-                    crate::renderer::composer::compose_paragraph_in_context(next_para, styles);
-                let next_fmt = self.format_endnote_paragraph(
-                    next_para,
-                    Some(&next_comp),
-                    &styles,
-                    Some(en_col_w),
-                );
-                next_fmt.line_heights.len() == 1
-                    && next_fmt.line_advance(0) <= 24.0
-                    && line_has_visible_text(&next_comp, 0)
-                    && !para_has_treat_as_char_picture_or_shape(next_para)
-                    && !para_has_non_tac_picture_or_shape(next_para)
-            });
-        let large_between_equation_tail_starts_next_column = self
-            .judge_large_between_equation_tail_starts_next_column(
-                st,
-                &fmt,
-                en_para,
-                en_ctrl,
-                styles,
-                &composed,
-                available,
-                compact_endnote_separator_profile,
-                default_between_notes_gap,
-                en_col_w,
-                ep_idx,
-                has_visible_endnote_separator,
-                internal_vpos_rewind,
-                large_between_small_equation_tail_bleeds_previous_column,
-                local_vpos_rewind,
-            );
         let large_between_title_tail_render_overflows = if !default_between_notes_gap
             && ep_idx == 0
             && st.current_column + 1 >= st.col_count
@@ -405,12 +332,10 @@ impl TypesetEngine {
         RewindTailResult {
             new_endnote_stale_forward_vpos,
             large_between_tail_render_overflows,
-            large_between_tail_before_rewind_picture,
+            kept_successor_overflows,
             no_separator_tail_table_starts_next_column,
-            no_separator_last_column_tail_before_rewind_starts_next_page,
             no_separator_tail_after_picture_starts_next_page,
             later_endnote_vpos_rewinds_after_current,
-            large_between_equation_tail_starts_next_column,
             large_between_title_tail_render_overflows,
             large_between_question_title_render_y,
             large_between_question_title_head_inside_frame,

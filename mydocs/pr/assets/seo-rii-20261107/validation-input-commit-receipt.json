@@ -1,0 +1,113 @@
+{
+  "source": "263b1e753c006d1631d25794588b6638fa1172ae",
+  "items": [
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/input/report-implicit-column.hwpx",
+      "git_blob": "1c9e3f7edf95c999bcefd58866e504c33fede392",
+      "sha256": "28768b01550ba2596c5e2bd182454a39a6700c8789fbe95e198d83c3898c4a40",
+      "equal_to_test_source": true
+    },
+    {
+      "path": "pdf/eq-01-hwp-2020.pdf",
+      "git_blob": "cddbd2750fded8d7697e84a2ab1160a44a7060be",
+      "sha256": "ee030acffaa0e06194a1409d507b05b12c4a9f8760eeaf9771efbe9c0235296b",
+      "equal_to_test_source": true
+    },
+    {
+      "path": "pdf/issue7593/repro-equation-issue7593-hwpx-2020.pdf",
+      "git_blob": "086d5548169995774491ea351390a89985f2d2c8",
+      "sha256": "206b9fc127a8f40e63fc49ba86ebd455f7d4e651e1f32dbf68d3915052d9f8db",
+      "equal_to_test_source": true
+    },
+    {
+      "path": "pdf/issue8555/21868765_cell_text_edit-hwp-mac-12.30.pdf",
+      "git_blob": "0bef2b9810f017a36c35cc7271380a296b50fcdc",
+      "sha256": "aa6a2bf0fb12525a5108fab7a812e7ba81f8b879e9a50651b5128dc36f722c93",
+      "equal_to_test_source": true
+    },
+    {
+      "path": "pdf/issue8556/21868765_cell_picture_insert-hwp-mac-12.30.pdf",
+      "git_blob": "f33691a9e3fb1699d69c5c82790da5019a031c5b",
+      "sha256": "bf19f16e555477bdbe63862bb196a0ad35e65942b77a3d11d41e65a1e3b1a57a",
+      "equal_to_test_source": true
+    },
+    {
+      "path": "pdf/issue8557/21868765_relocated_picture-hwp-mac-12.30.pdf",
+      "git_blob": "be5a472fa909b9f51e38319d63368823c4234c28",
+      "sha256": "568d2037f8b132c25b70c4a26b3bca0f13168b92d755ad1a13891ddc2e929107",
+      "equal_to_test_source": true
+    },
+    {
+      "path": "pdf/leading-definition-slots/report-implicit-column-hancom-print.pdf",
+      "git_blob": "cfc021da583fab860f8b76fcd0a34f3b0f15c8e9",
+      "sha256": "8e7af1fcc369dbc45405bd0073850d085122a9d3f9f637678f119b324831d0d7",
+      "equal_to_test_source": true
+    },
+    {
+      "path": "pdf/pic-crop-01-2022.pdf",
+      "git_blob": "171d9dfe4e3511ec9ed8c8078e47cfa5ac2ac7e2",
+      "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+      "equal_to_test_source": true
+    },
+    {
+      "path": "pdf/shape-group-02-hwp-2020.pdf",
+      "git_blob": "58e8dc8d8a4c11df34acee1058470239c4aea1e3",
+      "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+      "equal_to_test_source": true
+    },
+    {
+      "path": "samples/eq-01.hwp",
+      "git_blob": "879b7b68e08f93f204c57e20480263cc75520bdc",
+      "sha256": "d4b5e4730da12395c953d16c026c979adfdf3235eee4be605cef0ab758a7e5ec",
+      "equal_to_test_source": true
+    },
+    {
+      "path": "samples/issue7593/repro-equation-issue7593.hwpx",
+      "git_blob": "d0c323cd037a593f88292feb28651c0f50eaa78b",
+      "sha256": "88a3683c34e92f8887e54b9b379f8c399a8ec844e46e127793c6486cba8d31ec",
+      "equal_to_test_source": true
+    },
+    {
+      "path": "samples/issue8555/21868765_cell_text_edit.hwp",
+      "git_blob": "7f6e4eba45461895a83fddd6bf7ea2e73a0a948d",
+      "sha256": "bbf1f72951b6ff5de258f806c5d2569214538b76a867ecebce10f9da8718ff9e",
+      "equal_to_test_source": true
+    },
+    {
+      "path": "samples/issue8556/21868765_cell_picture_insert.hwp",
+      "git_blob": "94daa6908c7e47a105cd9e18b7e6019f2b08dfcd",
+      "sha256": "507362e6c73d6db4db73fe4b42ae8110c945747ec4b7564e9b83044cb9ceb074",
+      "equal_to_test_source": true
+    },
+    {
+      "path": "samples/issue8557/21868765_relocated_picture.hwp",
+      "git_blob": "572e0c4bd19311060172e4d65605a31f6f5dd538",
+      "sha256": "0d7cfc1df9f86da46cb12ebe5aa1eb0fbd9e660d4302f7a6facee8296ee09001",
+      "equal_to_test_source": true
+    },
+    {
+      "path": "samples/pic-crop-01.hwp",
+      "git_blob": "2ae41567f46adfdecebab27b327500f76b74c4e1",
+      "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+      "equal_to_test_source": true
+    },
+    {
+      "path": "samples/shape-group-02.hwp",
+      "git_blob": "ceb34fdaad8f81674881bfeae7a1089e68aab262",
+      "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+      "equal_to_test_source": true
+    },
+    {
+      "path": "tests/fixtures/gradient/radial-corner-print-contract-2020.pdf",
+      "git_blob": "a17c8b0f3a9714ef3c5859b52f7b900c7a143bd4",
+      "sha256": "1f0a7707198e81b8bd9a93efe9e5e6a35fe3ffd9e0131ebb4851c71e9ec2d1a8",
+      "equal_to_test_source": true
+    },
+    {
+      "path": "tests/fixtures/gradient/radial-corner-print-contract.hwpx",
+      "git_blob": "cc2d6e80d5b95a9441b16fb988d3a2ca2ed9cede",
+      "sha256": "01884d8ea148e21fdb68194dd23c353c635903e4fc19d8b242e1efbe1d0aaf0d",
+      "equal_to_test_source": true
+    }
+  ]
+}

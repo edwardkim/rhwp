@@ -1,0 +1,118 @@
+{
+  "base": {
+    "moduleInitMedianMs": 107.0,
+    "memoryBytesMax": 9371648,
+    "jpeg-import": {
+      "firstMedianMs": 213.35000002384186,
+      "warmMedianMs": 33.0
+    },
+    "table-open": {
+      "firstMedianMs": 82.44999998807907,
+      "warmMedianMs": 14.200000047683716
+    }
+  },
+  "candidate": {
+    "moduleInitMedianMs": 109.34999996423721,
+    "memoryBytesMax": 9437184,
+    "jpeg-import": {
+      "firstMedianMs": 217.4000000357628,
+      "warmMedianMs": 32.60000002384186
+    },
+    "table-open": {
+      "firstMedianMs": 82.84999996423721,
+      "warmMedianMs": 14.0
+    }
+  },
+  "handoff": {
+    "direct": {
+      "firstMedianMs": 145.0,
+      "subsequentMedianMs": 37.199999928474426,
+      "sampleCount": 24
+    },
+    "worker": {
+      "firstMedianMs": 195.4000000357628,
+      "subsequentMedianMs": 152.5999999642372,
+      "sampleCount": 24,
+      "workerAndSerializeMedianMs": 152.49999994039536,
+      "reopenMedianMs": 7.049999952316284,
+      "editableBytesMax": 110281
+    }
+  },
+  "crypto": {
+    "createKdfMedianMs": 235.44999998807907,
+    "65536": {
+      "encryptMedianMs": 0.10000002384185791,
+      "unlockIncludingKdfMedianMs": 236.1500000357628,
+      "ciphertextBytes": 65552
+    },
+    "1048576": {
+      "encryptMedianMs": 2.0,
+      "unlockIncludingKdfMedianMs": 239.05000001192093,
+      "ciphertextBytes": 1048592
+    }
+  },
+  "svg": [
+    {
+      "name": "gradient",
+      "firstMs": 31.600000023841858,
+      "warmMedianMs": 3.0,
+      "imageCacheEntries": 1,
+      "imageCachePixels": 900
+    },
+    {
+      "name": "clip-opacity",
+      "firstMs": 5.400000095367432,
+      "warmMedianMs": 1.8000000715255737,
+      "imageCacheEntries": 1,
+      "imageCachePixels": 900
+    },
+    {
+      "name": "internal-use",
+      "firstMs": 3.100000023841858,
+      "warmMedianMs": 1.7000000476837158,
+      "imageCacheEntries": 1,
+      "imageCachePixels": 900
+    },
+    {
+      "name": "restricted-script",
+      "firstMs": 3.100000023841858,
+      "warmMedianMs": 1.75,
+      "imageCacheEntries": 1,
+      "imageCachePixels": 900
+    },
+    {
+      "name": "embedded-png",
+      "firstMs": 11.300000071525574,
+      "warmMedianMs": 1.75,
+      "imageCacheEntries": 1,
+      "imageCachePixels": 900
+    },
+    {
+      "name": "embedded-jpeg",
+      "firstMs": 7.199999928474426,
+      "warmMedianMs": 1.850000023841858,
+      "imageCacheEntries": 1,
+      "imageCachePixels": 900
+    },
+    {
+      "name": "foreground",
+      "firstMs": 2.5,
+      "warmMedianMs": 1.600000023841858,
+      "imageCacheEntries": 1,
+      "imageCachePixels": 900
+    }
+  ],
+  "environment": {
+    "platform": "linux",
+    "release": "6.6.114.1-microsoft-standard-WSL2",
+    "cpu": "Intel(R) Core(TM) i9-9900KF CPU @ 3.60GHz",
+    "logicalCPUs": 16,
+    "node": "v24.15.0",
+    "browser": "HeadlessChrome/155.0.8059.79",
+    "method": "4 fresh tabs/package, alternate S03/S04 order, 12 iterations/input; same producer direct/Worker uses 4 tabs x 6 rounds with alternate order; crypto 4 rounds x 10 encryptions/size; exclude upload/UI waits/render; memory is WASM linear high-water, not RSS; OS/JIT/cache not globally cold",
+    "sizes": {
+      "baseWasmBytes": 23340325,
+      "candidateWasmBytes": 23453911
+    }
+  }
+}

@@ -10,8 +10,9 @@
  *   3. 최종 fallback → generic serif/sans-serif
  */
 
-import { getDetectedOSFonts, REGISTERED_FONTS } from './font-loader.ts';
-import { resolveLocalFont } from './local-fonts.ts';
+import { getDetectedOSFonts, hasLoadedLocalFontFamily, REGISTERED_FONTS } from './font-loader.ts';
+import { getLocalFontState, resolveLocalFont } from './local-fonts.ts';
+import { TEXT_SYMBOL_FONT_FAMILIES } from './text-symbol-font.ts';
 
 import {
   FONT_RULE_DISPLAY_CHAIN_POLICY_IDS,
@@ -97,6 +98,11 @@ export function setDocumentFontSubstitutions(
     next.set(key, families);
   }
   documentFontSubstitutions = next;
+}
+
+/** 엔진이 준 언어별 체인과 대조할 선언 대체 후보를 반환한다. */
+export function documentSubstituteFamilies(fontName: string): readonly string[] {
+  return documentFontSubstitutions.get(normalizedFamilyKey(fontName)) ?? [];
 }
 
 function confirmedFontName(
@@ -191,6 +197,10 @@ function installedFaceName(
 ): string | null {
   if (!fontName) return null;
   if (confirmedLocalFonts === undefined) {
+    // 같은 family의 한글·영문 프로그램은 단일 OS face로 확정할 수 없다.
+    // 이미 로드한 실제 프로그램의 CSS family까지 모호한 이름으로 버리면
+    // 원본 OTF를 공급하고도 호환 대체(예: 옥수수 → 돋움)로 그리게 된다.
+    if (hasLoadedLocalFontFamily(fontName)) return fontName;
     const record = resolveLocalFont(fontName);
     if (record) return localRecordCssFamily(fontName, record);
   } else {
@@ -200,6 +210,10 @@ function installedFaceName(
     // 이전 문서의 전역 감지 결과를 다시 사용하면 설치되지 않은 face가 선택될 수 있다.
     return null;
   }
+  // A width-only presence probe can also see the platform's LastResort font.
+  // With an authorized catalog available, an unmatched name is unverified;
+  // do not promote that probe to the selected original program.
+  if (!getLocalFontState().stored || getLocalFontState().source === 'local-font-access') return null;
   return detectedOSFontIndex().get(normalizedFamilyKey(fontName)) ?? null;
 }
 
@@ -293,7 +307,26 @@ function pushUniqueFontFamily(families: string[], fontName: string): void {
   families.push(name);
 }
 
-function systemFallbackFamilies(fontName: string): string[] {
+/** 기존 요청·별칭의 순서는 보존하고, 빠진 후보를 다음 공통 후보 앞에 넣는다.
+ * generic 뒤에 누락 후보를 붙이면 브라우저가 그 후보에 도달하지 못할 수 있다.
+ */
+export function completeFontFamilyList(incoming: readonly string[], fallback: readonly string[]): string[] {
+  const families: string[] = [];
+  for (const name of incoming) pushUniqueFontFamily(families, name);
+  const key = (name: string) => name.toLocaleLowerCase('en-US');
+  for (let index = 0; index < fallback.length; index++) {
+    const name = fallback[index].trim();
+    if (!name || families.some(existing => key(existing) === key(name))) continue;
+    const following = fallback.slice(index + 1).find(candidate =>
+      families.some(existing => key(existing) === key(candidate)));
+    const position = following === undefined ? families.length
+      : families.findIndex(existing => key(existing) === key(following));
+    families.splice(position, 0, name);
+  }
+  return families;
+}
+
+function bodyFallbackFamilies(fontName: string): string[] {
   if (GENERIC_FONTS.has(fontName)) return [fontName];
   // KoPub바탕체는 이름에 "바탕체"가 있지만 Windows BatangChe와 달리 비례폭 출판 명조다.
   if (/KoPub\s*바탕(?:체)?|KoPub\s*Batang/i.test(fontName)) {
@@ -309,6 +342,29 @@ function systemFallbackFamilies(fontName: string): string[] {
   }
   // Sans-serif (기본)
   return ['Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Pretendard', 'sans-serif'];
+}
+
+function systemFallbackFamilies(fontName: string): string[] {
+  const body = bodyFallbackFamilies(fontName);
+  if (GENERIC_FONTS.has(fontName)) return body;
+  // 본문 후보 뒤에 공개 문자 기호를 먼저 두어 누락 글자가 컬러 이모지로 바뀌지 않게 한다.
+  // 명시적으로 요청한 이모지 face는 호출자가 앞에 보존한다.
+  const families: string[] = [];
+  for (const name of [...body.slice(0, -1), ...TEXT_SYMBOL_FONT_FAMILIES, 'Segoe UI Emoji', 'Noto Emoji', 'Noto Color Emoji', body.at(-1)!]) {
+    pushUniqueFontFamily(families, name);
+  }
+  return families;
+}
+
+/** 원래 선언은 유지하고, 빠진 글리프를 공급할 일반 텍스트 후보를 같은 순서로 준비·소비한다. */
+export function ordinaryTextFontFamilies(family: string): string[] {
+  const declared = parseCssFontFamilyList(family);
+  if (!declared.length) return [];
+  const families: string[] = [];
+  for (const candidate of [...declared, ...systemFallbackFamilies(declared[0])]) {
+    pushUniqueFontFamily(families, candidate);
+  }
+  return families;
 }
 
 /**
@@ -438,13 +494,15 @@ export function fontFamilyCandidatesForDisplayWithRules(
   const localRecord = options.confirmedLocalFonts === undefined
     ? resolveLocalFont(fontName)
     : null;
+  const installedOriginal = installedFaceName(fontName, options.confirmedLocalFonts);
   const originalAllowed =
     options.includeUnconfirmedOriginal === true ||
     REGISTERED_FONTS.has(fontName) ||
-    confirmedLocalFontSet.has(fontName.toLocaleLowerCase('en-US'));
+    confirmedLocalFontSet.has(fontName.toLocaleLowerCase('en-US')) ||
+    installedOriginal !== null;
 
   if (!localRecord) {
-    const substitute = installedFaceName(fontName, options.confirmedLocalFonts) === null
+    const substitute = installedOriginal === null
       ? installedSubstituteFace(fontName, altType, langId, options.confirmedLocalFonts)
       : null;
     if (substitute) {
@@ -458,7 +516,9 @@ export function fontFamilyCandidatesForDisplayWithRules(
     pushUniqueFontFamily(families, localRecordCssFamily(fontName, localRecord));
     ruleIds.push(FONT_RULE_DISPLAY_CHAIN_POLICY_IDS['style-fallback']);
   } else if (originalAllowed) {
-    pushUniqueFontFamily(families, fontName);
+    // A loaded local program is already the selected face. Do not drop it
+    // merely because it is absent from the bundled web-font catalog.
+    pushUniqueFontFamily(families, installedOriginal ?? fontName);
     ruleIds.push(FONT_RULE_DISPLAY_CHAIN_POLICY_IDS['style-fallback']);
   }
 

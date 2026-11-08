@@ -1,0 +1,114 @@
+{
+  "runtime_commit": "8dc75860cec88ddf7c3f8aeee230b2ca7e2e5537",
+  "dpi": 96,
+  "compat": "2024",
+  "profile": "Print",
+  "native_sha256": "e333c70587ecf48e24632de8e6f3b843f33eb328051580442af4f46214743ca4",
+  "wasm_artifacts": {
+    "rhwp.js": "75cae6af5d48aa54e2d182681313dc85d824c60ebbea973ab4eb9285807c967d",
+    "rhwp_bg.wasm": "0995e84e0f2adf6411a517e7f10998a3cbc0929d067d757d8e8ee136637cf4fc"
+  },
+  "scope": "existing original383page regression registration reference; no handbook renderer implementation change; not final whole PR/new-base gate",
+  "backends": {
+    "native": {
+      "pages": 383,
+      "minimum_raw": 95.28875,
+      "page94_raw": "99.08163",
+      "page242_raw": "99.55922",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "group-registered-native-224",
+        "/home/tsjang/rhwp/samples/2025 행정업무운영 편람(최종).hwp",
+        "/home/tsjang/rhwp/pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-224",
+        "--compat",
+        "2024",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "2",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/group-registered-reference-3621/group-registered-native-224",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "tsv/native.tsv",
+      "tsv_sha256": "c9e705184fc96af264f31e59998b00ae743df7e7113650487963e2b1ed3bdfec",
+      "pngs": {
+        "png/native/overlay_094.png": "3d2118db8a68598eed6953d417afcfc4c79a037b3d1ea54361c92092479082fa",
+        "png/native/review_094.png": "d0e3cec9419c452431a2e0d7ec11223171dd732dbac02dbbebac896b69b0b1ce"
+      }
+    },
+    "wasm": {
+      "pages": 383,
+      "minimum_raw": 95.96573,
+      "page94_raw": "99.08481",
+      "page242_raw": "99.56120",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--file-target",
+        "group-registered-wasm-224",
+        "/home/tsjang/rhwp/samples/2025 행정업무운영 편람(최종).hwp",
+        "/home/tsjang/rhwp/pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-224",
+        "--compat",
+        "2024",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "2",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/group-registered-reference-3621/group-registered-wasm-224",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-063",
+        "--font-path",
+        "/usr/share/fonts",
+        "--font-path",
+        "/usr/local/share/fonts",
+        "--font-path",
+        "/home/tsjang/.local/share/fonts",
+        "--font-path",
+        "/home/tsjang/rhwp/assets/fonts"
+      ],
+      "tsv": "tsv/wasm.tsv",
+      "tsv_sha256": "a4232b68861ba26ea8edd1d8a00751f2fe787f113f9e7b8a9905c612c3ef6002",
+      "pngs": {
+        "png/wasm/overlay_094.png": "a44b26bfdfdc8e33525fd61307c1ca3f5a4d60d6bf31a564ba346b5df64d7b00",
+        "png/wasm/review_094.png": "35f64f825e9b97dcc888bee0db554c09950b80c8c1d0eeaa7c5e8c36579fbb0c"
+      }
+    }
+  },
+  "formal_regression": {
+    "source_hashes": {
+      "tests/cases/group_picture_outline_frames.rs": "584a4edc4457d8b3f4fe442d985791dff4d9fabf24038921e466cf70ab16f959"
+    },
+    "summary": {
+      "total": 2,
+      "executed": 2,
+      "pass": 2,
+      "fail": 0,
+      "ignored": 0
+    },
+    "focused_clippy_exit_code": 0,
+    "independent_coordinates": "../independent_coordinates.json",
+    "unchanged_tolerance_css_px": 2,
+    "corrected_relation": "for these source default thin solid borders, stroke ink bounds coincide with image frame; bbox denotes centered stroke path; owners/stacking preserved"
+  },
+  "input": "samples/2025 행정업무운영 편람(최종).hwp",
+  "input_sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+  "pdf": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+  "pdf_sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593"
+}

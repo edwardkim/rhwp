@@ -26,117 +26,136 @@
 //! 5쪽 아래 두 그림 상단 560.03pt · 574.05pt.
 #![cfg(not(target_arch = "wasm32"))]
 
-use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::path::Path;
 
-fn rhwp_bin() -> String {
-    std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+use rhwp::DocumentCore;
+
+fn core() -> DocumentCore {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/issue6313/microbe_bank_cell_picture.hwpx");
+    DocumentCore::from_bytes(&std::fs::read(path).expect("정식 미생물 원본")).expect("문서 로드")
 }
 
-fn sample() -> String {
-    Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("samples/issue6313/microbe_bank_cell_picture.hwpx")
-        .to_string_lossy()
-        .into_owned()
-}
-
-fn temp_dir() -> PathBuf {
-    let dir = std::env::temp_dir().join(format!(
-        "rhwp-6313-{}-{}",
-        std::process::id(),
-        std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_nanos()
-    ));
-    std::fs::create_dir_all(&dir).unwrap();
-    dir
-}
-
-/// 5쪽 render tree JSON.
-fn page5_render_tree() -> String {
-    let dir = temp_dir();
-    let out = Command::new(rhwp_bin())
-        .args([
-            "export-render-tree",
-            &sample(),
-            "-p",
-            "4",
-            "-o",
-            &dir.to_string_lossy(),
-        ])
-        .output()
-        .unwrap();
-    assert_eq!(out.status.code(), Some(0), "{out:?}");
-    let path = std::fs::read_dir(&dir)
-        .unwrap()
-        .filter_map(|e| e.ok())
-        .map(|e| e.path())
-        .find(|p| p.extension().is_some_and(|x| x == "json"))
-        .expect("render tree JSON 이 없다");
-    std::fs::read_to_string(path).unwrap()
-}
-
-/// `"Image"` 노드의 (y, y+h) 목록.
-fn image_extents(json: &str) -> Vec<(f64, f64)> {
-    let mut out = Vec::new();
-    let mut rest = json;
-    while let Some(at) = rest.find("\"Image\"") {
-        let tail = &rest[at..];
-        let Some(bbox_at) = tail.find("\"bbox\"") else {
-            break;
-        };
-        let seg = &tail[bbox_at..(bbox_at + 200).min(tail.len())];
-        let num = |key: &str| -> Option<f64> {
-            seg.split(&format!("\"{key}\""))
-                .nth(1)
-                .and_then(|r| r.trim_start().strip_prefix(':'))
-                .and_then(|r| {
-                    r.trim_start()
-                        .split(|c: char| !c.is_ascii_digit() && c != '.' && c != '-')
-                        .find(|s| !s.is_empty())
-                        .and_then(|s| s.parse::<f64>().ok())
-                })
-        };
-        if let (Some(y), Some(h)) = (num("y"), num("h")) {
-            out.push((y, y + h));
-        }
-        rest = &tail[bbox_at + 6..];
+fn cell_images<'a>(
+    node: &'a RenderNode,
+    owner: Option<&'a RenderNode>,
+    images: &mut Vec<(&'a RenderNode, &'a RenderNode)>,
+) {
+    let owner = if matches!(node.node_type, RenderNodeType::TableCell(_)) {
+        Some(node)
+    } else {
+        owner
+    };
+    if matches!(node.node_type, RenderNodeType::Image(_)) {
+        images.push((node, owner.expect("셀 그림의 실제 소유 칸")));
     }
-    out
+    for child in &node.children {
+        cell_images(child, owner, images);
+    }
+}
+
+fn inside(inner: &RenderNode, outer: &RenderNode) -> bool {
+    // 좌표 변환의 부동소수점 반올림만 허용한다. 과거 픽셀 위치를 고정하지 않는다.
+    let epsilon = outer.bbox.height.max(outer.bbox.width).max(1.0) * 1e-9;
+    inner.bbox.x >= outer.bbox.x - epsilon
+        && inner.bbox.y >= outer.bbox.y - epsilon
+        && inner.bbox.x + inner.bbox.width <= outer.bbox.x + outer.bbox.width + epsilon
+        && inner.bbox.y + inner.bbox.height <= outer.bbox.y + outer.bbox.height + epsilon
+}
+
+fn find<'a>(
+    node: &'a RenderNode,
+    predicate: &impl Fn(&RenderNode) -> bool,
+) -> Option<&'a RenderNode> {
+    if predicate(node) {
+        return Some(node);
+    }
+    node.children
+        .iter()
+        .find_map(|child| find(child, predicate))
+}
+
+fn text(node: &RenderNode) -> String {
+    let own = match &node.node_type {
+        RenderNodeType::TextRun(run) => run.text.clone(),
+        _ => String::new(),
+    };
+    own + &node.children.iter().map(text).collect::<String>()
 }
 
 #[test]
 fn cell_pictures_stay_inside_the_page() {
-    let json = page5_render_tree();
-    let images = image_extents(&json);
-    assert!(images.len() >= 4, "5쪽 그림 4개를 기대했다: {images:?}");
-
-    // A4 세로 = 1122.5px. 종전에는 아래 두 그림이 1146.6·1198.3 으로 용지 밖이었다.
-    for (top, bottom) in &images {
+    let core = core();
+    // 독립 Print PDF는 5쪽이며 마지막 쪽의 검색 예시 그림 네 개를 보존한다.
+    // 전쪽 Native/fresh WASM 최저 93.89126%를 확인한 뒤 기존 검사를 교정했다.
+    assert_eq!(core.page_count(), 5, "독립 Print의 전쪽 소속 보존");
+    let page = core.build_page_render_tree(4).expect("검색 방법 마지막 쪽");
+    assert!(text(&page.root).contains("특허미생물 검색 방법"));
+    let mut images = Vec::new();
+    cell_images(&page.root, None, &mut images);
+    assert_eq!(images.len(), 4, "Print의 검색 예시 네 그림을 보존");
+    for (image, _) in images {
         assert!(
-            *bottom <= 1122.5,
-            "그림이 용지 아래로 나갔다: {top:.1}..{bottom:.1}"
+            inside(image, &page.root),
+            "그림이 자기 페이지를 벗어났다: {:?}",
+            image.bbox
         );
     }
 }
 
 #[test]
 fn lower_cell_pictures_match_the_hangul_oracle() {
-    let json = page5_render_tree();
-    let mut tops: Vec<f64> = image_extents(&json).into_iter().map(|(t, _)| t).collect();
-    tops.sort_by(|a, b| a.partial_cmp(b).unwrap());
-    assert!(tops.len() >= 4, "그림 4개를 기대했다: {tops:?}");
+    let core = core();
+    let page = core.build_page_render_tree(4).expect("검색 예시 마지막 쪽");
+    let mut images = Vec::new();
+    cell_images(&page.root, None, &mut images);
+    // PDF에서 그림은 각 검색 단계 칸 안에 있다. 자기 높이를 다시 더하던
+    // 결함은 아래 그림을 칸 밖으로 밀어낸다. 746.7/765.4px 핀을 대신한다.
+    let mut lower_columns = Vec::new();
+    for (image, owner) in images {
+        assert!(
+            inside(image, owner),
+            "그림 {:?}이 소유 칸 {:?} 밖이다",
+            image.bbox,
+            owner.bbox
+        );
+        if let RenderNodeType::TableCell(cell) = &owner.node_type {
+            if cell.row == 2 {
+                lower_columns.push(cell.col);
+            }
+        }
+    }
+    lower_columns.sort_unstable();
+    assert_eq!(lower_columns, [0, 1], "아래 두 검색 단계 그림의 칸 소속");
 
-    // 한글 2022: 560.03pt = 746.7px, 574.05pt = 765.4px.
-    // 종전: 973.0px·952.9px (각각 +169.7pt·+140.6pt 이탈).
-    let (third, fourth) = (tops[2], tops[3]);
+    // 같은 원본의 Print 3쪽은 수탁 표 → 분양 현황 제목 → 분양 표 순서다.
+    // 앞 표 뒤 공백 줄의 높이를 버리면 뒤 표가 자기 제목을 덮었다.
+    let page = core
+        .build_page_render_tree(2)
+        .expect("기탁 및 분양 현황 쪽");
+    let table = |para| {
+        find(&page.root, &|node| {
+        matches!(&node.node_type, RenderNodeType::Table(data) if data.para_index == Some(para))
+    }).expect("현황 표의 본문 소유")
+    };
+    let preceding = table(40);
+    let following = table(41);
+    let title = find(&page.root, &|node| {
+        matches!(&node.node_type, RenderNodeType::TextLine(line) if line.para_index == Some(41))
+            && text(node).contains("분양 현황")
+    })
+    .expect("분양 현황 제목");
     assert!(
-        (third - 746.7).abs() <= 8.0,
-        "아래 왼쪽 그림이 한글(746.7px)에서 벗어났다: {third:.1}"
+        preceding.bbox.y + preceding.bbox.height <= title.bbox.y,
+        "앞 표와 분양 현황 제목의 순서"
     );
     assert!(
-        (fourth - 765.4).abs() <= 8.0,
-        "아래 오른쪽 그림이 한글(765.4px)에서 벗어났다: {fourth:.1}"
+        title.bbox.y + title.bbox.height <= following.bbox.y,
+        "분양 표가 자기 제목을 덮으면 안 된다"
+    );
+    assert!(
+        text(following).contains("970"),
+        "분양 표의 마지막 합계 내용을 보존"
     );
 }

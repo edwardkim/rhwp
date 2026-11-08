@@ -1,0 +1,149 @@
+{
+  "merge": "f5f0fbee95b5fb0e32e99f8f639d228ae55389dd",
+  "images": [
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/direct-pdf/direct-pdf-p001-overlay.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/direct-pdf/direct-pdf-p001-overlay.png",
+      "mime": "image/png",
+      "bytes": 33240,
+      "sha256": "1caa1bc3e0a809ab70a174047a46245ef65da0efeabb20cc98bd4b6b735f7e5f",
+      "matches_merge_blob": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/direct-pdf/direct-pdf-p001-review.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/direct-pdf/direct-pdf-p001-review.png",
+      "mime": "image/png",
+      "bytes": 66958,
+      "sha256": "cf8ec3579816acdde8454969bfa0abcd41026aaf5406bd128f9e13ea26fc47c2",
+      "matches_merge_blob": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/direct-pdf/direct-pdf-p003-overlay.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/direct-pdf/direct-pdf-p003-overlay.png",
+      "mime": "image/png",
+      "bytes": 32496,
+      "sha256": "637f23cc3f0878246925e4e733925220a3a37f3a756be1be5e6dcf168f27a92a",
+      "matches_merge_blob": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/direct-pdf/direct-pdf-p003-review.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/direct-pdf/direct-pdf-p003-review.png",
+      "mime": "image/png",
+      "bytes": 64598,
+      "sha256": "65197ef052cf31266158c84178fc55f4c521ff272e7f2e67871e9edcd37f8726",
+      "matches_merge_blob": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/direct-pdf/direct-pdf-p006-overlay.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/direct-pdf/direct-pdf-p006-overlay.png",
+      "mime": "image/png",
+      "bytes": 31158,
+      "sha256": "29f19aed0460dbe6b0190f49c469270c33aa93e577441996eb9a69d4b7fdf055",
+      "matches_merge_blob": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/direct-pdf/direct-pdf-p006-review.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/direct-pdf/direct-pdf-p006-review.png",
+      "mime": "image/png",
+      "bytes": 58707,
+      "sha256": "67d526e6ddf8fef5de79a4114efc29078e4f4a7270acc02a7020923b00ffeae3",
+      "matches_merge_blob": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/issue8337/missing-face-candidate-overlay.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/issue8337/missing-face-candidate-overlay.png",
+      "mime": "image/png",
+      "bytes": 59675,
+      "sha256": "f19778afbf30a63f2db3d191d8a9c1b8df7e5de67b316604941ec5ccfb7937ae",
+      "matches_merge_blob": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/issue8337/missing-face-candidate-review.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/issue8337/missing-face-candidate-review.png",
+      "mime": "image/png",
+      "bytes": 127010,
+      "sha256": "9087bbbdf80efb17883b842020024b57168cf0db69b91f2b0ac059a66f9e0475",
+      "matches_merge_blob": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/issue8337-full-fonts-wasm-p001-overlay.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/visual/issue8337-full-fonts-wasm-p001-overlay.png",
+      "mime": "image/png",
+      "bytes": 56551,
+      "sha256": "f5471f4f95e1128c83a05165f16ef6952a54958a1fcc5ace383a9becd3f3c4fe",
+      "matches_merge_blob": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/issue8337-full-fonts-wasm-p001-review.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/visual/issue8337-full-fonts-wasm-p001-review.png",
+      "mime": "image/png",
+      "bytes": 121614,
+      "sha256": "1b3e3aa741638e02afb22534f7471f4ec724cf664f2d6466ef384651d7601a32",
+      "matches_merge_blob": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-native-p001-overlay.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-native-p001-overlay.png",
+      "mime": "image/png",
+      "bytes": 65943,
+      "sha256": "b0d4c12ee52b4b017b5339cf76736367542c6a93d9134071c03e633e15dce6b2",
+      "matches_merge_blob": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-native-p001-review.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-native-p001-review.png",
+      "mime": "image/png",
+      "bytes": 204034,
+      "sha256": "06531183b1c8667376876f8f1357431373f17cefc89e804bd4f5d93e2a22744d",
+      "matches_merge_blob": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-wasm-p001-overlay.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-wasm-p001-overlay.png",
+      "mime": "image/png",
+      "bytes": 67032,
+      "sha256": "5165fd38f13290a56cd407c7eeceebe22e9c0d774598595fd0eba26cddf961d2",
+      "matches_merge_blob": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-wasm-p001-review.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/visual/picture-crop-wasm-p001-review.png",
+      "mime": "image/png",
+      "bytes": 205240,
+      "sha256": "8f7b4f041f57bdc8a9f5f6d130e9bd7bdd7dd17373c6c21b4d336f9bd977a938",
+      "matches_merge_blob": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/shape-group-native-p001-overlay.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/visual/shape-group-native-p001-overlay.png",
+      "mime": "image/png",
+      "bytes": 46530,
+      "sha256": "90118cff0cf3a750274a971bc5098553a23d492603cc46ff7b9ebcdf4eb810ee",
+      "matches_merge_blob": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/shape-group-native-p001-review.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/visual/shape-group-native-p001-review.png",
+      "mime": "image/png",
+      "bytes": 109980,
+      "sha256": "ac390b60a51588522c1a7e692f2cd61e973fefde47055370d6111141e83f3938",
+      "matches_merge_blob": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/shape-group-wasm-p001-overlay.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/visual/shape-group-wasm-p001-overlay.png",
+      "mime": "image/png",
+      "bytes": 46677,
+      "sha256": "360cd8fedf27476f09449e86f33aa0bddab4a6df31bf7dd0766448d8884932b9",
+      "matches_merge_blob": true
+    },
+    {
+      "path": "mydocs/pr/assets/seo-rii-20261107/visual/shape-group-wasm-p001-review.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/f5f0fbee95b5fb0e32e99f8f639d228ae55389dd/mydocs/pr/assets/seo-rii-20261107/visual/shape-group-wasm-p001-review.png",
+      "mime": "image/png",
+      "bytes": 109924,
+      "sha256": "2e4d6104fb6a82a8ae3d06c4f2a28ff75f82fe1d389097044649456f9d56be53",
+      "matches_merge_blob": true
+    }
+  ]
+}

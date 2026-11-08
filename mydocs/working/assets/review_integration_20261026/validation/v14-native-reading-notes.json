@@ -1,0 +1,38 @@
+[
+  {
+    "key": "hairline-sungeo",
+    "page": 34,
+    "source": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+    "raw": "99.97530",
+    "compare": "mydocs/working/assets/review_integration_20261026/validation/images/stage-v14/hairline-sungeo-p034-native-compare.png",
+    "directly_viewed_current": true,
+    "observation": "Four dotted frame sides, title and following body line are retained. Existing marker shape and text-weight differences remain; full pixel equality is not claimed.",
+    "current_png_byte_identical_to_prior_formal_image": true,
+    "new_regression_claimed": false,
+    "residual_fixed_claimed": false
+  },
+  {
+    "key": "hwpml-spec-2020",
+    "page": 23,
+    "source": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+    "raw": "99.99389",
+    "compare": "mydocs/working/assets/review_integration_20261026/validation/images/stage-v14/hwpml-spec-2020-p023-native-compare.png",
+    "directly_viewed_current": true,
+    "observation": "Diagram/table geometry, connectors and captions are retained. Existing hatch-direction and text-weight differences remain and are outside the frame-placement correction.",
+    "current_png_byte_identical_to_prior_formal_image": true,
+    "new_regression_claimed": false,
+    "residual_fixed_claimed": false
+  },
+  {
+    "key": "hwpml-spec-2020",
+    "page": 54,
+    "source": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+    "raw": "99.99765",
+    "compare": "mydocs/working/assets/review_integration_20261026/validation/images/stage-v14/hwpml-spec-2020-p054-native-compare.png",
+    "directly_viewed_current": true,
+    "observation": "Table/caption/body order and frames are retained. Existing small callout-icon appearance and text-weight differences remain.",
+    "current_png_byte_identical_to_prior_formal_image": true,
+    "new_regression_claimed": false,
+    "residual_fixed_claimed": false
+  }
+]

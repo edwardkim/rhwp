@@ -1,0 +1,62 @@
+[
+  {
+    "job_id": 127728960703,
+    "name": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+    "conclusion": "success",
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/42166096972/job/127728960703",
+    "summaries": [
+      "2026-11-06T05:25:26.0833858Z ##[end-action id=__taiki-e_install-action.__run;outcome=success;conclusion=success;duration_ms=383]",
+      "2026-11-06T05:26:19.1081717Z \u001b[32;1m     Summary\u001b[0m [  46.756s] \u001b[1m3801\u001b[0m tests run: \u001b[1m3801\u001b[0m \u001b[32;1mpassed\u001b[0m, \u001b[1m12\u001b[0m \u001b[33;1mskipped\u001b[0m"
+    ]
+  },
+  {
+    "job_id": 127730057035,
+    "name": "test-archive-e-shard-1 / Default-feature tests (Archive E)",
+    "conclusion": "success",
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/42166096972/job/127730057035",
+    "summaries": [
+      "2026-11-06T05:28:37.8101423Z ##[end-action id=__taiki-e_install-action.__run;outcome=success;conclusion=success;duration_ms=504]",
+      "2026-11-06T05:33:23.9576685Z \u001b[32;1m     Summary\u001b[0m [ 275.203s] \u001b[1m2308\u001b[0m tests run: \u001b[1m2308\u001b[0m \u001b[32;1mpassed\u001b[0m, \u001b[1m9\u001b[0m \u001b[33;1mskipped\u001b[0m"
+    ]
+  },
+  {
+    "job_id": 127730221146,
+    "name": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+    "conclusion": "success",
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/42166096972/job/127730221146",
+    "summaries": [
+      "2026-11-06T05:29:11.3983007Z ##[end-action id=__taiki-e_install-action.__run;outcome=success;conclusion=success;duration_ms=486]",
+      "2026-11-06T05:34:35.0995506Z \u001b[32;1m     Summary\u001b[0m [ 310.614s] \u001b[1m1835\u001b[0m tests run: \u001b[1m1835\u001b[0m \u001b[32;1mpassed\u001b[0m, \u001b[1m15\u001b[0m \u001b[33;1mskipped\u001b[0m"
+    ]
+  },
+  {
+    "job_id": 127730273122,
+    "name": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+    "conclusion": "success",
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/42166096972/job/127730273122",
+    "summaries": [
+      "2026-11-06T05:29:18.0359436Z ##[end-action id=__taiki-e_install-action.__run;outcome=success;conclusion=success;duration_ms=368]",
+      "2026-11-06T05:32:07.5150684Z \u001b[32;1m        PASS\u001b[0m [   0.202s] (1453/2596) \u001b[35;1mrhwp::regression_suite_022\u001b[0m \u001b[36mcli_json_contract\u001b[0m\u001b[36m::\u001b[0m\u001b[34;1mbatch_export_text_json_all_success\u001b[0m",
+      "2026-11-06T05:34:40.6405997Z \u001b[32;1m     Summary\u001b[0m [ 313.919s] \u001b[1m2596\u001b[0m tests run: \u001b[1m2596\u001b[0m \u001b[32;1mpassed\u001b[0m, \u001b[1m6\u001b[0m \u001b[33;1mskipped\u001b[0m"
+    ]
+  },
+  {
+    "job_id": 127731075320,
+    "name": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+    "conclusion": "success",
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/42166096972/job/127731075320",
+    "summaries": [
+      "2026-11-06T05:32:40.3981575Z ##[end-action id=__taiki-e_install-action.__run;outcome=success;conclusion=success;duration_ms=580]",
+      "2026-11-06T05:35:56.5819228Z \u001b[32;1m        PASS\u001b[0m [   0.009s] (1686/2018) \u001b[35;1mrhwp::regression_suite_021\u001b[0m \u001b[36mverified_stored_tall_line_print_flow\u001b[0m\u001b[36m::\u001b[0m\u001b[34;1mprinted_tall_line_continuation_preserves_table_and_successor_on_one_page\u001b[0m",
+      "2026-11-06T05:35:56.5942271Z \u001b[32;1m        PASS\u001b[0m [   0.010s] (1687/2018) \u001b[35;1mrhwp::regression_suite_021\u001b[0m \u001b[36mverified_stored_tall_line_print_flow\u001b[0m\u001b[36m::\u001b[0m\u001b[34;1mprinted_tall_line_rewind_preserves_table_and_successor_on_one_page\u001b[0m",
+      "2026-11-06T05:36:28.7000757Z \u001b[32;1m     Summary\u001b[0m [ 216.572s] \u001b[1m2018\u001b[0m tests run: \u001b[1m2018\u001b[0m \u001b[32;1mpassed\u001b[0m (\u001b[1m1\u001b[0m \u001b[33;1mslow\u001b[0m), \u001b[1m3\u001b[0m \u001b[33;1mskipped\u001b[0m"
+    ]
+  },
+  {
+    "job_id": 127733506795,
+    "name": "Build & Test",
+    "conclusion": "success",
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/42166096972/job/127733506795",
+    "summaries": []
+  }
+]

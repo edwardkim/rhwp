@@ -1,47 +1,51 @@
 //! 문단 fit 예산에 필요한 읽기 전용 계산. 페이지 상태나 1회성 flag를 소비하지 않는다.
 
 use super::super::{
-    saved_bounds_overlap_current_flow, section_has_zero_high_attr_rowbreak_table,
-    BODY_BOTTOM_SEAT_PX, SAVED_FRAME_FLOW_DRIFT_TOLERANCE_PX,
+    saved_bounds_overlap_current_flow, BODY_BOTTOM_SEAT_PX, SAVED_FRAME_FLOW_DRIFT_TOLERANCE_PX,
 };
 use super::metrics::FormattedParagraph;
 use crate::model::paragraph::Paragraph;
 
-pub(in crate::renderer::typeset) fn layout_drift_safety_px(paragraphs: &[Paragraph]) -> f64 {
-    // Task #332 Stage 4a: layout drift 안전 마진.
-    // typeset 의 fit 추정과 layout 의 실측 진행은 폰트 메트릭/표 측정 다중성 등으로
-    // 미세하게 어긋날 수 있다 (~수 px). 마진을 빼서 보수적으로 fit 을 판정해
-    // layout 시점의 LAYOUT_OVERFLOW (clamp pile 트리거) 를 사전 차단한다.
-    // [Task #359] 다음 pi 가 vpos-reset 가드 발동 예정 시 안전마진 1회 비활성화
-    // (단독 항목 페이지 차단).
-    // [Task #361] 직전 항목이 PartialTable 인 경우 안전마진 비활성화.
-    // PartialTable 의 cur_h 는 row 단위로 정확히 누적되므로 안전마진이 과함.
-    // (k-water-rfp p15 case: PartialTable 직후 작은 텍스트 (16px) 가 잔여 5.3px 부족으로
-    // fit 실패하여 다음 페이지로 밀리는 회귀.)
-    // [Task #643] VPOS_CORR 백워드 허용 (8px) 으로 layout drift 누적이 해소됨.
-    const DEFAULT_LAYOUT_DRIFT_SAFETY_PX: f64 = 4.0;
-    const ROWBREAK_LAYOUT_DRIFT_SAFETY_PX: f64 = 0.0;
-    if section_has_zero_high_attr_rowbreak_table(paragraphs) {
-        ROWBREAK_LAYOUT_DRIFT_SAFETY_PX
+pub(in crate::renderer::typeset) fn layout_drift_safety_px(_paragraphs: &[Paragraph]) -> f64 {
+    // Fit uses the accepted line/object footprint. An unrelated margin cannot
+    // reject content which fits inside the physical column; any discrepancy
+    // with paint must be corrected in the shared footprint or origin instead.
+    0.0
+}
+
+/// [#7824] 이 문단의 fit 에 쓸 drift 안전마진.
+///
+/// 저장 줄 없이 rhwp 가 로드 때 합성한 줄(`TAG_IMPLEMENTATION_PROPERTY`)만 가진 문단은
+/// 마진 없이 진짜 본문 하한으로 잰다. 그런 문단의 쪽 맞춤은 이미 위 간격까지 담은 계산
+/// 높이(`height_for_fit`)로 하므로, 마진은 한/글이 넣는 쪽 마지막 줄만 밀어낸다 —
+/// hwp3-sample16-hwp5 21쪽 끝 한 줄 글머리(바닥 967.8px / 본문 971.3px)와 22쪽 끝
+/// 다섯 줄 문단의 마지막 줄(968.4px)을 한/글은 그 쪽에 두는데 4px 마진 예산
+/// 967.3px 에 걸려 다음 쪽으로 넘어갔다. 한/글 저장 줄이 있는 문단은 종전대로다.
+pub(in crate::renderer::typeset) fn paragraph_layout_drift_safety_px(
+    paragraphs: &[Paragraph],
+    para: &Paragraph,
+) -> f64 {
+    let synthesized_lines_only = !para.line_segs.is_empty()
+        && para.line_segs.iter().all(|seg| {
+            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        });
+    if synthesized_lines_only {
+        0.0
     } else {
-        DEFAULT_LAYOUT_DRIFT_SAFETY_PX
+        layout_drift_safety_px(paragraphs)
     }
 }
 
-pub(in crate::renderer::typeset) fn exclusion_probe_height(
-    fmt: &FormattedParagraph,
-    hwpx_stored_layout: bool,
-) -> f64 {
-    if hwpx_stored_layout {
-        // 배제 영역은 첫 글줄의 실제 높이로 짚는다. 뒤 줄간격은 다음 흐름이
-        // 소비할 공간이며, 표 위에 들어가는 잉크를 표 아래로 밀 근거가 아니다.
-        fmt.line_heights
-            .first()
-            .copied()
-            .unwrap_or(fmt.height_for_fit)
-    } else {
-        0.0
-    }
+pub(in crate::renderer::typeset) fn exclusion_probe_height(fmt: &FormattedParagraph) -> f64 {
+    // 배제 영역은 첫 글줄의 실제 높이로 짚는다. 뒤 줄간격은 다음 흐름이
+    // 소비할 공간이며, 표 위에 들어가는 잉크를 표 아래로 밀 근거가 아니다.
+    // [#7687] 프로파일과 무관하다 — 한/글은 HWP5 저장본(hwpspec pi=132)과 저장 줄 없는
+    // HWPX(합성 H4) 모두 줄 상자가 띠에 걸리면 띠 아래로 보낸다. 배치의 `item_probe_height`
+    // (Task #1794 로 HWP5 까지 적용)와 같은 축이다.
+    fmt.line_heights
+        .first()
+        .copied()
+        .unwrap_or(fmt.height_for_fit)
 }
 
 /// 저장 tail의 하단이 본문 안에 있다는 source 증거가 있을 때, 현재 조판 흐름이 그

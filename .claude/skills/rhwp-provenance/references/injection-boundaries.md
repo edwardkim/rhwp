@@ -3,8 +3,8 @@
 이 장은 문서 파생 값이 에이전트 권한으로 **넘어가지 못하게** 막는 경계다.
 표지와 격벽은 완화다. 경계는 모델이 배신해도 남는다.
 
-권위: [`mydocs/tech/agent_security/consumer_guide.md`](../../../mydocs/tech/agent_security/consumer_guide.md)
-§3.5, [`indirect_prompt_injection.md`](../../../mydocs/tech/agent_security/indirect_prompt_injection.md).
+권위: [`mydocs/tech/agent_security/consumer_guide.md`](../../../../mydocs/tech/agent_security/consumer_guide.md)
+§3.5, [`indirect_prompt_injection.md`](../../../../mydocs/tech/agent_security/indirect_prompt_injection.md).
 기계 교차표: [../fixtures/injection-boundaries.json](../fixtures/injection-boundaries.json).
 
 관련: [forbidden-prompt-slots.md](forbidden-prompt-slots.md),

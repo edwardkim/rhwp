@@ -1,0 +1,74 @@
+{
+  "head": "faa885e8b54ffc7cdf4196cd43a3103f362499a2",
+  "started_at": "2026-10-27T05:12:40.733651+00:00",
+  "steps": [
+    {
+      "name": "v15-base-native-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review"
+      ],
+      "exit": 0,
+      "seconds": 691.8461583310273,
+      "temporary_log_sha256": "f1dc563d05c8eff19a230dd7a4f17e0dc837b303299a32a0635a37f0617a370b",
+      "observed_summary": [
+        "    Finished `release-test` profile [optimized] target(s) in 11m 31s"
+      ]
+    },
+    {
+      "name": "v15-base-wasm-build",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg"
+      ],
+      "exit": 0,
+      "seconds": 2068.610997511889,
+      "temporary_log_sha256": "845667b8da7eea460c6b0ac986749503eef1f236f3d6db556bd38f6b3f77ed4a",
+      "observed_summary": [
+        "    Finished `release` profile [optimized] target(s) in 10m 00s",
+        "[INFO]: \u2728   Done in 34m 23s"
+      ]
+    },
+    {
+      "name": "v15-base-wasm-module-check",
+      "command": [
+        "node",
+        "-e",
+        "WebAssembly.compile(require('fs').readFileSync(process.argv[1])).then(()=>console.log('WebAssembly.compile PASS')).catch(e=>{console.error(e);process.exit(1)})",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/base-v15-optimized-wasm/rhwp_bg.wasm"
+      ],
+      "exit": 0,
+      "seconds": 0.3127935380907729,
+      "temporary_log_sha256": "cb1916841b95afd1c165c91ac1d507ed8e6b17bc1b40c6d01832b6e76b73e666",
+      "observed_summary": [
+        "WebAssembly.compile PASS"
+      ]
+    }
+  ],
+  "native_binary": {
+    "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/base-v15-rhwp",
+    "sha256": "aa3ae3bffab7672eaef8d54df3b0f85cbf26b6009075b6f90912475a40f72888"
+  },
+  "wasm_package": {
+    "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/base-v15-optimized-wasm",
+    "wasm_sha256": "2b73483f2e91d812ca9d2ee0da389738f7c5dc612ff543a8dd9c63a30a67a32f",
+    "js_sha256": "c1c8d1820cc4375ab668427fa0a42c87d71c3d0d83955f4d300880559023ddc6"
+  },
+  "completed_at": "2026-10-27T05:58:44.511811+00:00",
+  "source_paths": 1822,
+  "source_snapshot_sha256": "f09bbb40b5b729393272b2c8a79ad95e0b492542cad5e04a3ebdb56941f5b510",
+  "source_snapshot_match_to_git_commit": true,
+  "working_directory": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/base-8116"
+}

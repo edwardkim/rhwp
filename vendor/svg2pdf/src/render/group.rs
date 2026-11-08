@@ -7,9 +7,7 @@ use usvg::{Opacity, Transform};
 use super::filter;
 use super::{clip_path, mask, Render};
 use crate::util::context::Context;
-use crate::util::helper::{
-    BlendModeExt, ContentExt, GroupExt, NameExt, RectExt, TransformExt,
-};
+use crate::util::helper::{BlendModeExt, ContentExt, GroupExt, NameExt, RectExt, TransformExt};
 use crate::util::resources::ResourceContainer;
 use crate::Result;
 
@@ -30,9 +28,7 @@ pub fn render(
 
     #[cfg(not(feature = "filters"))]
     if !group.filters().is_empty() {
-        log::warn!(
-            "Failed convert filter because the filters feature was disabled. Skipping."
-        )
+        log::warn!("Failed convert filter because the filters feature was disabled. Skipping.")
     }
 
     let initial_opacity = initial_opacity.unwrap_or(Opacity::ONE);
@@ -56,7 +52,11 @@ pub fn render(
             content.transform(group.transform().to_pdf_transform());
             mask::render(group, mask, chunk, content, ctx, rc)?;
             content.transform(
-                group.transform().invert().ok_or(UnknownError)?.to_pdf_transform(),
+                group
+                    .transform()
+                    .invert()
+                    .ok_or(UnknownError)?
+                    .to_pdf_transform(),
             );
         }
 
@@ -93,7 +93,14 @@ fn create_x_object(
 
     let mut content = Content::new();
 
-    create_to_stream(group, chunk, &mut content, ctx, accumulated_transform, &mut rc)?;
+    create_to_stream(
+        group,
+        chunk,
+        &mut content,
+        ctx,
+        accumulated_transform,
+        &mut rc,
+    )?;
 
     let content_stream = ctx.finish_content(content);
 

@@ -1,0 +1,9 @@
+{
+  "head": "e58024b15e11438a0e1162a25d836d3c3c4ff7a9",
+  "files": {
+    "rhwp_bg.wasm.d.ts": "d7b8efbb4e34d9f1cf645033e75c332938e94683d58c12e0fdfbf82555bf4c19",
+    "rhwp.js": "d5a84985620c90581d6078773cb46445a3237075a3b216a04130fe7e7e18c25b",
+    "rhwp_bg.wasm": "0b916be3db137fdce3071d9069dd9669157c4e7ea86bedb78657625728916fbd",
+    "rhwp.d.ts": "8980cdae730e732bcb374a48ffb48d36d09b043c4c0da38a0677abcebdd35f99"
+  }
+}

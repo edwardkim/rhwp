@@ -1,0 +1,34 @@
+{
+  "crate": "jpeg-decoder",
+  "version": "0.3.2",
+  "package_checksum": "00810f1d8b74be64b13dbf3db89ac67740615d6c891f0e7b6179326533011a07",
+  "vcs": {
+    "git": {
+      "sha1": "eb2d7c0f6a2d0298aba7a7f8b9ca1440353e8f8c"
+    },
+    "path_in_vcs": ""
+  },
+  "files": {
+    "LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+    "Cargo.toml.orig": "3f39615f2fefddd9fe83ee227e36f27e8fdb83c4a393820cacd09e10a191c36a",
+    "README.md": "cb72ab0179d2c2578d2840bc2bdf96935833178d34466fb5c1982f9f6be9547f",
+    "LICENSE-MIT": "22b83fb92a50418c7df9564b9c179fa2a0e74f293bc58b72dd7e218fc0902143",
+    "src/marker.rs": "e68c3ffc47bfb16b2f08ed169abde7d95369e1a887ba3a6edd3d453ba0e1e2af",
+    "src/error.rs": "7c0deaa7c58b4f1c00a42616ce0b8b37c1040ac85fcdade36ca20aa0c2435a61",
+    "src/huffman.rs": "80df6386478375e99614c4639af004aede2927763645b0a49df6b6d083eef5f0",
+    "src/parser.rs": "22beb0cbfb24f9246452441abfa45d908ae099ef39c8728d17579160e2892e1e",
+    "src/lib.rs": "f8fc7484fa5e66728f248377eef89477b16ae0891850bdb8640a15566ca82cf1",
+    "src/idct.rs": "255d74922aedcb287f368b74d1ee3e2bb5d64d959100269eab0224234c94d94f",
+    "src/upsampler.rs": "234e6f479cd90166b1db19884ef9ec21c50bf7c838c2bd646e6ee563eafd3f0f",
+    "src/decoder.rs": "07680c94bf754329c00a3ca9f1c3a38c964296cd528ff8954597365e02a864da",
+    "src/worker/mod.rs": "98275ba202d4acd3f5c9568f404c9fd1412668240490e0d2f70e9654f7753b44",
+    "src/worker/rayon.rs": "7ae36b76d8de63c009f3990e085c46691438a081aeb564fe277cfec68e5bbfe1",
+    "src/worker/immediate.rs": "7677d198b0eab4cda943a0f60f21f42f9c7c9163dcfe32a77fa50d0b47e90be0",
+    "src/worker/multithreaded.rs": "6d5bb0d3ed09bf179bee4a0b3c625d497b3b35535545cf780b2497d333c8fdd9",
+    "src/arch/mod.rs": "d7484cefbc186c887e926fa5ea2950c412f95326152e6bc7a19484d3eb3e63b9",
+    "src/arch/neon.rs": "9ee5fbebb8621b69e2031162a61269cd0784883fbe574974250ac2a23b66dd74",
+    "src/arch/wasm.rs": "c3aea9d15b722fa2a57ae9c3b09bf5b3bd4b86d48efa6440e00a9f8688190489",
+    "src/arch/ssse3.rs": "c470868f692ecad6428c5dc113c6fa3261cd3c23ce5158c5a8c7174e12298c65",
+    "src/decoder/lossless.rs": "e1249764347a2b1fc3de955e3e822c7dddd29418e3049990fe036259d10df488"
+  }
+}

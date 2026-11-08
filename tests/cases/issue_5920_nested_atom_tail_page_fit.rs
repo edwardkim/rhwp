@@ -3,7 +3,7 @@
 //!
 //! `press_release_split_cell_nested_table` 은 본문 전체가 3행 1열 `RowBreak` 표의
 //! 한 셀 안에 들어 있고, 8쪽의 두 상자는 그 셀 안의 중첩 표(문단당 1개 atom)다.
-//! 한글 2020 정본(`pdf/issue3637/press_release_split_cell_nested_table-2020.pdf`)
+//! 한글 2020 정본(`pdf/issue3637/press_release_split_cell_nested_table-hwpx-2020.pdf`)
 //! 8쪽은 `< 은행의 위탁보증 포트폴리오 구성(가상사례) >` 상자와 그 아래
 //! `☞ 그동안 지속적인 노력에도 …` 결론 상자를 **함께** 담는다
 //! (결론 상자 테두리 512.0~778.0pt, 본문 하단 785.2pt — 7.2pt 여유).
@@ -12,7 +12,7 @@
 //! 예산에 넣어 `avail 997.827px` 를 **0.467px** 넘겼고, 상자를 9쪽으로 밀어
 //! 8쪽 아래 절반이 통째로 비었다.
 //!
-//! 이 문서의 총 쪽수(13)는 9쪽의 별개 결함(본문이 정본보다 세 줄 높게 쌓인다)
+//! 이 문서의 과거 총 쪽수(13)는 9쪽의 별개 결함(본문이 정본보다 세 줄 높게 쌓인다)
 //! 때문에 그대로다 — 총 쪽수는 `tests/fixtures/render_page_samples.tsv` 가 고정한다.
 //! 여기서는 8쪽 정합만 고정한다.
 
@@ -125,10 +125,134 @@ fn issue_7206_page4_fragment_does_not_exceed_the_body() {
     );
     let over = table_bottom - bottom;
     assert!(
-        over <= 0.5,
+        table_bottom <= bottom,
         "#7206: 이어받은 조각 상자가 본문을 넘었다 — 물리 {}쪽 표 하단 {table_bottom:.2}px, \
          본문 하단 {bottom:.2}px, 초과 {over:.2}px. 조각은 본문보다 클 수 없다 \
          (수정 전 1053.90 vs 1046.90 = +7.00, 수정 후 1039.00).",
         PAGE + 1
     );
+}
+
+/// 앞 조각의 그림은 마지막 조각의 셀 안 여백을 소유하지 않는다.
+/// 전12쪽 Native/fresh WASM 및 독립 Print를 대조한 증적은 Stage88 보고서에 둔다.
+/// 12쪽의 마지막 본문·빈 종료 행·빈 후속 문단·안내 표를 함께 검사한다.
+#[test]
+fn continued_picture_row_keeps_its_own_padding_and_following_footer() {
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    use sha2::{Digest, Sha256};
+
+    fn collect<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+        out.push(node);
+        for child in &node.children {
+            collect(child, out);
+        }
+    }
+    fn text(node: &RenderNode) -> String {
+        let mut nodes = Vec::new();
+        collect(node, &mut nodes);
+        nodes
+            .iter()
+            .filter_map(|node| match &node.node_type {
+                RenderNodeType::TextRun(run) => Some(run.display_or_text()),
+                _ => None,
+            })
+            .collect::<String>()
+    }
+    let bytes = fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).unwrap();
+    let hash: String = Sha256::digest(&bytes)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect();
+    assert_eq!(
+        hash, "e2cb077d51293ae081a83e49c3bf2bca701087fddb4068d29295607b326be410",
+        "독립 Print와 같은 원본"
+    );
+    let mut doc = DocumentCore::from_bytes(&bytes).unwrap();
+    doc.set_hangul2024_compat(false);
+    assert_eq!(doc.page_count(), 12, "본문과 마지막 안내 표의 쪽 소속 보존");
+    let page = doc.build_page_render_tree(11).unwrap();
+    let mut nodes = Vec::new();
+    collect(&page.root, &mut nodes);
+    let table = |paragraph| {
+        let found: Vec<_> = nodes.iter().copied().filter(|node| matches!(&node.node_type,
+            RenderNodeType::Table(t) if t.para_index == Some(paragraph) && t.control_index == Some(0) && t.cell_context.is_none())).collect();
+        assert_eq!(found.len(), 1, "최외곽 표의 단일 소유: {paragraph}");
+        found[0]
+    };
+    let outer = table(5);
+    let cells: Vec<_> = outer
+        .children
+        .iter()
+        .filter(|node| {
+            matches!(&node.node_type,
+        RenderNodeType::TableCell(cell) if cell.row == 1 && cell.col == 0)
+        })
+        .collect();
+    assert_eq!(cells.len(), 1, "이어받은 본문 셀은 하나다");
+    let cell = cells[0];
+    let mut content = Vec::new();
+    collect(cell, &mut content);
+    let tail: Vec<_> = content
+        .iter()
+        .copied()
+        .filter(|node| {
+            matches!(&node.node_type, RenderNodeType::TextLine(_)) && text(node).contains("별첨")
+        })
+        .collect();
+    assert_eq!(tail.len(), 1, "마지막 본문 줄의 누락·중복 방지");
+    let source = doc.document();
+    let rhwp::model::control::Control::Table(source_table) =
+        &source.sections[0].paragraphs[5].controls[0]
+    else {
+        panic!("원본 표")
+    };
+    let source_cell = source_table
+        .cells
+        .iter()
+        .find(|cell| cell.row == 1 && cell.col == 0)
+        .unwrap();
+    let bottom_padding = source_cell.padding.bottom as f64 / 75.0;
+    assert!(
+        tail[0].bbox.y + tail[0].bbox.height + bottom_padding
+            <= cell.bbox.y + cell.bbox.height + 0.05,
+        "마지막 줄과 원본 안 여백이 실제 조각 셀에 포함되어야 한다"
+    );
+    let footer = table(7);
+    assert!(
+        outer.bbox.y + outer.bbox.height <= footer.bbox.y,
+        "종료 행·후속 문단 뒤에 안내 표가 놓인다"
+    );
+    assert!(
+        text(footer).contains("www.fsc.go.kr"),
+        "안내 표의 내용 소유"
+    );
+    assert_eq!(nodes.iter().filter(|node| matches!(&node.node_type, RenderNodeType::TextRun(run) if run.para_index == Some(6))).count(), 1, "보이는 글자가 없는 후속 문단도 보존한다");
+
+    // PDF SHA 731ff37070a7a5fedbd239920323244aecd10d8913a1a49351956263e45bc2cc.
+    // 독립 12쪽의 이중 괘선 중심(pt×4/3), 96DPI CSS 좌표·허용 오차 ±2px.
+    // Table bbox만 보지 않고 실제 paint에 전달하는 네 가로선을 대조한다.
+    let mut paints = Vec::new();
+    collect(footer, &mut paints);
+    let mut centers: Vec<_> = paints
+        .iter()
+        .filter(|node| {
+            matches!(&node.node_type, RenderNodeType::Line(_))
+                && node.bbox.width > 600.0
+                && node.bbox.height < 1.0
+        })
+        .map(|node| node.bbox.y + node.bbox.height / 2.0)
+        .collect();
+    centers.sort_by(f64::total_cmp);
+    assert_eq!(centers.len(), 4, "안내 표의 위·아래 이중 가로선");
+    for (actual, expected) in centers.into_iter().zip([
+        917.5559895833334,
+        918.99462890625,
+        993.7932942708334,
+        995.2306315104166,
+    ]) {
+        assert!(
+            (actual - expected).abs() <= 2.0,
+            "독립 Print의 안내 표 괘선: {actual} vs {expected}"
+        );
+    }
 }

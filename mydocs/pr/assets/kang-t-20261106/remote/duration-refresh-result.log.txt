@@ -1,0 +1,18 @@
+2026-11-07T00:07:34.3635536Z Complete job name: Refresh nextest target duration data
+const { collectPostmergeDurations } = await import(pathToFileURL(path.join(
+  process.env.GITHUB_WORKSPACE, 'scripts/collect-postmerge-duration-data.mjs',
+const result = await collectPostmergeDurations({
+  github, ...context.repo, mergeSha: context.sha, outputDir: process.env.DURATION_DIR,
+await core.summary.addHeading('PR duration metadata refresh')
+2026-11-07T00:10:21.4475511Z   DURATION_DIR: /home/runner/work/_temp/postmerge-duration-data
+2026-11-07T00:10:25.8335380Z   measurement="${DURATION_DIR}/duration-${label}/target-durations-${label}.json"
+2026-11-07T00:10:25.8336695Z node scripts/refresh-nextest-target-duration-policy.mjs \
+2026-11-07T00:10:25.8337079Z   --policy tests/suites/nextest-target-duration-policy.json \
+2026-11-07T00:10:25.8432937Z   DURATION_DIR: /home/runner/work/_temp/postmerge-duration-data
+2026-11-07T00:10:25.8433334Z   OUTPUT_POLICY: /home/runner/work/_temp/nextest-target-duration-policy.json
+2026-11-07T00:10:29.0218514Z [NextestTargetDuration] refreshed_targets=46
+const { publishNextestDurationData } = await import(pathToFileURL(path.join(
+  process.env.GITHUB_WORKSPACE, 'scripts/publish-nextest-duration-data.mjs',
+const result = await publishNextestDurationData({
+  content: fs.readFileSync(path.join(process.env.RUNNER_TEMP, 'nextest-target-duration-policy.json'), 'utf8'),
+await core.summary.addHeading('Duration metadata publication')

@@ -9,6 +9,7 @@ pub mod state;
 pub mod text;
 
 use super::objects::{Header, LogBrush, LogFontW, LogPen, PointL, RectL, SizeL, XForm};
+pub use bitmap::DibPatternBrush;
 pub use bitmap::StretchDIBits;
 pub use text::ExtTextOut;
 
@@ -27,6 +28,10 @@ pub enum Record {
     CreateBrushIndirect {
         handle: u32,
         brush: LogBrush,
+    },
+    CreateDibPatternBrush {
+        handle: u32,
+        brush: DibPatternBrush,
     },
     ExtCreateFontIndirectW {
         handle: u32,
@@ -59,6 +64,8 @@ pub enum Record {
 
     // 상태 — 색상/모드 (단계 11)
     SetBkMode(u32),
+    SetPolyFillMode(u32),
+    SetBrushOrgEx(PointL),
     SetTextAlign(u32),
     SetTextColor(u32),
     SetBkColor(u32),
@@ -95,6 +102,10 @@ pub enum Record {
     Polygon16 {
         bounds: RectL,
         points: Vec<(i16, i16)>,
+    },
+    PolyPolygon16 {
+        bounds: RectL,
+        polygons: Vec<Vec<(i16, i16)>>,
     },
     PolyBezier16 {
         bounds: RectL,

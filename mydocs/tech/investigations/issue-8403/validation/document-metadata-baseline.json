@@ -1,0 +1,48 @@
+{
+  "base": "3c01421e89a562de4ba8b021a4cdf943af60b58d",
+  "current_errors": 16,
+  "existing_errors": 16,
+  "new_errors": 0,
+  "records": [
+    {
+      "path": "mydocs/tech/benchmark_vs_alternatives.md",
+      "same_as_base": true,
+      "missing_fields": [
+        "kind",
+        "status",
+        "canonical",
+        "last_verified"
+      ]
+    },
+    {
+      "path": "mydocs/tech/investigations/issue-4964/README.md",
+      "same_as_base": true,
+      "missing_fields": [
+        "kind",
+        "status",
+        "canonical",
+        "last_verified"
+      ]
+    },
+    {
+      "path": "mydocs/tech/investigations/issue-5511/README.md",
+      "same_as_base": true,
+      "missing_fields": [
+        "kind",
+        "status",
+        "canonical",
+        "last_verified"
+      ]
+    },
+    {
+      "path": "mydocs/tech/investigations/issue-5511/task_m100_5511_cli_surface_inventory.md",
+      "same_as_base": true,
+      "missing_fields": [
+        "kind",
+        "status",
+        "canonical",
+        "last_verified"
+      ]
+    }
+  ]
+}

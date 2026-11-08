@@ -1,8 +1,10 @@
 //! 텍스트 삽입/삭제/문단 분리·병합/범위 삭제/문단 쿼리 관련 native 메서드
 
-use super::super::helpers::get_textbox_from_shape;
-use super::super::queries::field_query::rebuild_char_offsets;
+use super::super::helpers::{
+    get_textbox_from_shape, logical_paragraph_length, logical_to_text_offset,
+};
 use super::super::queries::rendering::FocusedPageTreePatch;
+use super::clipboard::text_to_split_logical_offset;
 use super::formatting::restore_para_meta;
 use crate::document_core::{
     ActiveFieldInfo, DeferredPaginationDescriptor, DeferredPaginationTargetStatus, DocumentCore,
@@ -12,19 +14,258 @@ use crate::model::control::{Control, FieldType};
 use crate::model::document::Document;
 use crate::model::event::DocumentEvent;
 use crate::model::page::ColumnDef;
-use crate::model::paragraph::{LineSeg, ParaMeta, Paragraph};
+use crate::model::paragraph::{normalize_text_newlines, LineSeg, ParaMeta, Paragraph};
 use crate::model::shape::{ShapeObject, TextWrap, VertRelTo};
 use crate::model::style::Alignment;
 use crate::renderer::composer::{
-    compose_paragraph, layout_picture_band, reflow_line_segs, ParagraphBox,
+    compose_paragraph, control_owns_body_band, layout_picture_band, reflow_line_segs, ParagraphBox,
 };
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::pagination::PageItem;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 
+mod stored_vertical_frame;
+use stored_vertical_frame::StoredVerticalFrame;
+
+/// 복사와 같은 경계로 지울 개체를 먼저 검증하여 실패 시 원문을 지킨다.
+fn boundary_controls_to_delete(
+    para: &Paragraph,
+    start: (usize, bool),
+    end: (usize, bool),
+) -> Result<Vec<usize>, HwpError> {
+    let positions = para.control_text_positions();
+    let selected: Vec<usize> = para
+        .controls
+        .iter()
+        .enumerate()
+        .filter_map(|(index, control)| {
+            let at = positions.get(index).copied()?;
+            (Paragraph::is_split_movable_control(control)
+                && (at > start.0 || (at == start.0 && !start.1))
+                && (at < end.0 || (at == end.0 && end.1)))
+                .then_some(index)
+        })
+        .collect();
+    if !selected.is_empty()
+        && (!para.field_ranges.is_empty()
+            || !para.orphan_field_ends.is_empty()
+            || para
+                .controls
+                .iter()
+                .any(|control| matches!(control, Control::Field(_)))
+            || selected.iter().any(|&index| {
+                !matches!(
+                    para.controls[index],
+                    Control::Table(_)
+                        | Control::Picture(_)
+                        | Control::Shape(_)
+                        | Control::Equation(_)
+                        | Control::Footnote(_)
+                        | Control::Endnote(_)
+                        | Control::Form(_)
+                ) || para.controls.iter().enumerate().any(|(other, control)| {
+                    other != index
+                        && Paragraph::is_split_movable_control(control)
+                        && positions.get(other) == positions.get(index)
+                })
+            }))
+    {
+        return Err(HwpError::RenderError(
+            "필드나 같은 자리의 여러 개체를 포함한 경계 삭제는 아직 지원하지 않습니다".into(),
+        ));
+    }
+    Ok(selected)
+}
+
 pub(crate) type CellReflowMetrics = (i32, i16, i16);
 
-fn cell_vpos_resets(previous: &Paragraph, current: &Paragraph) -> bool {
+fn validate_form_boundary_metadata(
+    paragraph: &Paragraph,
+    from: usize,
+    to: usize,
+) -> Result<(), HwpError> {
+    if paragraph.range_tags.is_empty() && paragraph.markpen_marks.is_empty() {
+        return Ok(());
+    }
+    let mut prefix = paragraph.clone();
+    let suffix = prefix.split_at(to);
+    let selected = prefix.split_at(from);
+    let fragments = [&prefix, &selected, &suffix];
+    // 기존 분할기가 경계에 걸친 범위 표지를 버리므로 원문 변경 전에 막는다.
+    if fragments.iter().map(|p| p.range_tags.len()).sum::<usize>() != paragraph.range_tags.len()
+        || fragments
+            .iter()
+            .map(|p| p.effective_markpen_range_tags().len())
+            .sum::<usize>()
+            != paragraph.effective_markpen_range_tags().len()
+    {
+        return Err(HwpError::RenderError(
+            "양식 선택 경계에 걸친 범위 태그나 형광펜은 아직 지원하지 않습니다".into(),
+        ));
+    }
+    Ok(())
+}
+
+/// 복사와 같은 글자 경계에 든 표·그림만 지울 수 있는지 변경 전에 확인한다.
+fn cell_boundary_has_objects(
+    paragraph: &Paragraph,
+    start: usize,
+    end: usize,
+) -> Result<bool, HwpError> {
+    let positions = paragraph.control_text_positions();
+    let end_after = end >= paragraph.text.chars().count();
+    let selected: Vec<usize> = paragraph
+        .controls
+        .iter()
+        .enumerate()
+        .filter_map(|(ci, control)| {
+            let at = positions.get(ci).copied()?;
+            (!matches!(
+                control,
+                Control::SectionDef(_) | Control::ColumnDef(_) | Control::Field(_)
+            ) && at >= start
+                && (at < end || (at == end && end_after)))
+                .then_some(ci)
+        })
+        .collect();
+    let has_objects = selected.iter().any(|&ci| {
+        matches!(
+            paragraph.controls[ci],
+            Control::Table(_) | Control::Picture(_)
+        )
+    });
+    if !has_objects {
+        return Ok(false);
+    }
+    if !paragraph.range_tags.is_empty() || !paragraph.markpen_marks.is_empty() {
+        return Err(HwpError::RenderError(
+            "범위 태그나 형광펜이 있는 문단의 경계 개체 삭제는 아직 지원하지 않습니다".into(),
+        ));
+    }
+    if !paragraph.field_ranges.is_empty()
+        || !paragraph.orphan_field_ends.is_empty()
+        || paragraph
+            .controls
+            .iter()
+            .any(|c| matches!(c, Control::Field(_)))
+        || selected.iter().any(|&ci| {
+            !matches!(
+                paragraph.controls[ci],
+                Control::Table(_) | Control::Picture(_)
+            ) || paragraph
+                .controls
+                .iter()
+                .enumerate()
+                .any(|(other, control)| {
+                    other != ci
+                        && Paragraph::is_split_movable_control(control)
+                        && positions.get(other) == positions.get(ci)
+                })
+        })
+    {
+        return Err(HwpError::RenderError(
+            "필드나 같은 자리의 여러 개체를 포함한 셀 경계 삭제는 아직 지원하지 않습니다".into(),
+        ));
+    }
+    Ok(true)
+}
+
+fn delete_paragraph_boundary(
+    paragraph: &mut Paragraph,
+    start: usize,
+    end: usize,
+    has_objects: bool,
+) {
+    let text_len = paragraph.text.chars().count();
+    let end = end.min(text_len);
+    if start > end {
+        return;
+    }
+    if has_objects {
+        let end_after = end == text_len;
+        let positions = paragraph.control_text_positions();
+        // 복사와 같은 반개방 글자 범위를 쓴다. 문단 끝 경계는 후행 개체까지 포함한다.
+        // 슬롯 제거를 공통 모델 연산에 맡겨 글자 모양과 필드의 컨트롤 번호도 함께 옮긴다.
+        for control in (0..paragraph.controls.len()).rev() {
+            let at = positions[control];
+            if matches!(
+                paragraph.controls[control],
+                Control::Table(_) | Control::Picture(_)
+            ) && at >= start
+                && (at < end || (at == end && end_after))
+            {
+                paragraph.remove_control(control);
+            }
+        }
+    }
+    crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+        paragraph,
+        start,
+        end - start,
+    );
+}
+
+/// flat·중첩 경로 모두 같은 문단 범위를 검증한 뒤 적용한다.
+fn delete_cell_range(
+    paragraphs: &mut Vec<Paragraph>,
+    start_para: usize,
+    start_offset: usize,
+    end_para: usize,
+    end_offset: usize,
+) -> Result<bool, HwpError> {
+    if start_para > end_para || (start_para == end_para && start_offset > end_offset) {
+        return Err(HwpError::RenderError(
+            "시작 위치가 끝 위치보다 뒤에 있습니다".into(),
+        ));
+    }
+    let first = paragraphs
+        .get(start_para)
+        .ok_or_else(|| HwpError::RenderError("시작 셀 문단 범위 초과".into()))?;
+    let last = paragraphs
+        .get(end_para)
+        .ok_or_else(|| HwpError::RenderError("끝 셀 문단 범위 초과".into()))?;
+    let first_len = first.text.chars().count();
+    if start_offset > first_len || end_offset > last.text.chars().count() {
+        return Err(HwpError::RenderError("셀 글자 위치 범위 초과".into()));
+    }
+    if start_para == end_para && start_offset == end_offset {
+        return Ok(false);
+    }
+    let first_end = if start_para == end_para {
+        end_offset
+    } else {
+        first_len
+    };
+    let first_objects = cell_boundary_has_objects(first, start_offset, first_end)?;
+    let last_objects = if start_para == end_para {
+        false
+    } else {
+        cell_boundary_has_objects(last, 0, end_offset)?
+    };
+    // 끝 경계까지 검증을 마친 뒤에만 원문을 바꿔 실패 시 부분 삭제를 막는다.
+    if start_para == end_para {
+        delete_paragraph_boundary(
+            &mut paragraphs[start_para],
+            start_offset,
+            end_offset,
+            first_objects,
+        );
+    } else {
+        delete_paragraph_boundary(&mut paragraphs[end_para], 0, end_offset, last_objects);
+        paragraphs.drain(start_para + 1..end_para);
+        delete_paragraph_boundary(
+            &mut paragraphs[start_para],
+            start_offset,
+            first_end,
+            first_objects,
+        );
+        let next = paragraphs.remove(start_para + 1);
+        paragraphs[start_para].merge_from(&next);
+    }
+    Ok(true)
+}
+
+pub(super) fn cell_vpos_resets(previous: &Paragraph, current: &Paragraph) -> bool {
     if let Some(reset) = current.cell_vpos_reset {
         return reset;
     }
@@ -37,7 +278,7 @@ fn cell_vpos_resets(previous: &Paragraph, current: &Paragraph) -> bool {
     }
 }
 
-fn recalculate_cell_paragraph_vpos(
+pub(super) fn recalculate_cell_paragraph_vpos(
     paragraphs: &mut [Paragraph],
     start_para: usize,
     ignore_reset_at: Option<usize>,
@@ -80,6 +321,24 @@ fn recalculate_cell_paragraph_vpos(
     );
 }
 
+/// Shared line/object flow end used when publishing a cell vpos ladder.
+fn cell_paragraph_flow_end(para: &Paragraph, dpi: f64) -> Option<i32> {
+    let first = para.line_segs.first()?;
+    let last = para.line_segs.last()?;
+    let line_end = last
+        .vertical_pos
+        .saturating_add(last.line_height)
+        .saturating_add(last.line_spacing);
+    let picture_end = crate::renderer::float_placement::reflow_picture_host_advance(para, dpi)
+        .map(|advance| {
+            first
+                .vertical_pos
+                .saturating_add(crate::renderer::px_to_hwpunit(advance, dpi))
+        })
+        .unwrap_or(line_end);
+    Some(line_end.max(picture_end))
+}
+
 /// [#4138] `[start_para, stop_para)` 구간의 셀 문단 vpos 사다리를 문단 간격·줄간격
 /// 계산으로 재배치한다. `recalculate_cell_paragraph_vpos` 의 적용 루프를 분리한 것으로,
 /// 호출자가 정지 지점(stop_para)을 결정한다 — 텍스트 편집 경로는 RowBreak 조각 경계를
@@ -118,15 +377,8 @@ fn apply_cell_vpos_ladder(
 
     let mut next_vpos = if start_para > 0 {
         let previous = &paragraphs[start_para - 1];
-        previous
-            .line_segs
-            .last()
-            .map(|seg| {
-                seg.vertical_pos
-                    + seg.line_height
-                    + seg.line_spacing
-                    + boundary_gaps[start_para - 1]
-            })
+        cell_paragraph_flow_end(previous, dpi)
+            .map(|end| end.saturating_add(boundary_gaps[start_para - 1]))
             .unwrap_or(0)
     } else {
         paragraphs[0]
@@ -143,8 +395,8 @@ fn apply_cell_vpos_ladder(
             for seg in &mut para.line_segs {
                 seg.vertical_pos += delta;
             }
-            if let Some(last) = para.line_segs.last() {
-                next_vpos = last.vertical_pos + last.line_height + last.line_spacing;
+            if let Some(end) = cell_paragraph_flow_end(para, dpi) {
+                next_vpos = end;
             }
         }
         if let Some(gap) = boundary_gaps.get(para_idx) {
@@ -561,9 +813,10 @@ impl DocumentCore {
     ) -> Option<(usize, std::ops::Range<usize>, f64, (f64, f64))> {
         let section = self.document.sections.get(section_idx)?;
         let host_index = (0..=para_idx).rev().find(|&index| {
-            section.paragraphs[index].controls.iter().any(|control| {
-                matches!(control, Control::Picture(picture) if !picture.common.treat_as_char)
-            })
+            section.paragraphs[index]
+                .controls
+                .iter()
+                .any(control_owns_body_band)
         })?;
         let column_def = Self::find_column_def_for_paragraph(&section.paragraphs, host_index);
         let layout =
@@ -782,7 +1035,7 @@ impl DocumentCore {
             .iter_mut()
             .zip(new_band.line_segs.into_iter().zip(new_band.space_metrics))
         {
-            paragraph.replace_line_segs_with_space_metrics(line_segs, space_metrics);
+            paragraph.publish_float_band_rows(line_segs, space_metrics);
         }
 
         // When an edited paragraph clears the exclusion earlier than before,
@@ -886,80 +1139,69 @@ fn body_paragraph_flow_signature(paragraph: &Paragraph) -> (usize, Option<i64>) 
 }
 
 #[derive(Clone, Copy)]
-struct FieldEndInsertion {
-    control_idx: usize,
-    start_char_idx: usize,
-    end_char_idx: usize,
-}
-
-#[derive(Clone, Copy)]
-struct FieldStartInsertion {
-    control_idx: usize,
-    start_char_idx: usize,
-    end_char_idx: usize,
-}
-
-#[derive(Clone, Copy)]
 struct SquareOleWrapChainForEnter {
     bottom_vpos: i32,
     column_start: i32,
     segment_width: i32,
 }
 
-fn active_field_matches(
+/// 이 문단(셀이면 그 경로)에서 입력을 받는 누름틀의 컨트롤 번호.
+fn active_field_control(
     active_field: Option<&ActiveFieldInfo>,
     section_idx: usize,
     para_idx: usize,
     cell_path: Option<&[(usize, usize, usize)]>,
-    control_idx: usize,
-) -> bool {
-    active_field.is_some_and(|af| {
-        af.section_idx == section_idx
-            && af.para_idx == para_idx
-            && af.control_idx == control_idx
-            && match (&af.cell_path, cell_path) {
-                (None, None) => true,
-                (Some(a), Some(b)) => a.as_slice() == b,
-                _ => false,
-            }
-    })
+) -> Option<usize> {
+    active_field
+        .filter(|af| {
+            af.section_idx == section_idx
+                && af.para_idx == para_idx
+                && match (&af.cell_path, cell_path) {
+                    (None, None) => true,
+                    (Some(a), Some(b)) => a.as_slice() == b,
+                    _ => false,
+                }
+        })
+        .map(|af| af.control_idx)
 }
 
-fn inactive_field_end_insertions(
-    para: &Paragraph,
-    active_field: Option<&ActiveFieldInfo>,
-    section_idx: usize,
-    para_idx: usize,
-    cell_path: Option<&[(usize, usize, usize)]>,
+/// 글자를 지우고 넣는다. 누름틀 문단은 누름틀 경계와 다른 컨트롤의 원시 슬롯을 지킨다.
+/// `after_inline_control` 이면 `char_offset` 자리 개체 뒤에 넣는다 (#7444).
+/// 실제로 지운 글자 수를 돌려준다.
+fn replace_paragraph_text(
+    para: &mut Paragraph,
     char_offset: usize,
-) -> Vec<FieldEndInsertion> {
-    para.field_ranges
-        .iter()
-        .filter_map(|fr| {
-            match para.controls.get(fr.control_idx) {
-                Some(Control::Field(field)) if field.field_type == FieldType::ClickHere => {}
-                _ => return None,
-            }
-            // 빈 누름틀은 active 상태가 아직 반영되기 전 첫 입력도 값으로 받아야 한다.
-            if fr.start_char_idx == fr.end_char_idx || fr.end_char_idx != char_offset {
-                return None;
-            }
-            if active_field_matches(
-                active_field,
-                section_idx,
-                para_idx,
-                cell_path,
-                fr.control_idx,
-            ) {
-                return None;
-            }
-            Some(FieldEndInsertion {
-                control_idx: fr.control_idx,
-                start_char_idx: fr.start_char_idx,
-                end_char_idx: fr.end_char_idx,
-            })
-        })
-        .collect()
+    delete_count: usize,
+    text: &str,
+    active: Option<usize>,
+    after_inline_control: bool,
+) -> usize {
+    if !text.is_empty() && has_clickhere_field_range(para) {
+        return para.replace_text_keeping_slots(
+            char_offset,
+            delete_count,
+            text,
+            active,
+            after_inline_control,
+        );
+    }
+    let replaced_memos = para.memos_within(char_offset, char_offset + delete_count);
+    let deleted = if delete_count > 0 {
+        if text.is_empty() {
+            crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+                para,
+                char_offset,
+                delete_count,
+            )
+        } else {
+            para.delete_text_at(char_offset, delete_count)
+        }
+    } else {
+        0
+    };
+    let inserted_at = para.insert_text_at_caret(char_offset, text, after_inline_control);
+    para.regrow_replaced_memos(&replaced_memos, inserted_at, text.chars().count());
+    deleted
 }
 
 fn para_has_visible_text_for_enter(para: &Paragraph) -> bool {
@@ -1111,88 +1353,38 @@ fn empty_paragraph_after_square_wrap_anchor(anchor: &Paragraph) -> Paragraph {
     para
 }
 
-fn inactive_field_start_insertions(
-    para: &Paragraph,
-    active_field: Option<&ActiveFieldInfo>,
-    section_idx: usize,
-    para_idx: usize,
-    cell_path: Option<&[(usize, usize, usize)]>,
-    char_offset: usize,
-) -> Vec<FieldStartInsertion> {
-    para.field_ranges
-        .iter()
-        .filter_map(|fr| {
-            match para.controls.get(fr.control_idx) {
-                Some(Control::Field(field)) if field.field_type == FieldType::ClickHere => {}
-                _ => return None,
-            }
-            // 빈 누름틀은 시작/끝 경계가 없고 첫 입력이 필드 값이어야 한다.
-            if fr.start_char_idx == fr.end_char_idx || fr.start_char_idx != char_offset {
-                return None;
-            }
-            if active_field_matches(
-                active_field,
-                section_idx,
-                para_idx,
-                cell_path,
-                fr.control_idx,
-            ) {
-                return None;
-            }
-            Some(FieldStartInsertion {
-                control_idx: fr.control_idx,
-                start_char_idx: fr.start_char_idx,
-                end_char_idx: fr.end_char_idx,
-            })
-        })
-        .collect()
-}
-
-fn keep_inactive_field_end_outside(
-    para: &mut Paragraph,
-    insertions: &[FieldEndInsertion],
-    inserted_len: usize,
-) {
-    if inserted_len == 0 || insertions.is_empty() {
-        return;
-    }
-    for target in insertions {
-        if let Some(fr) = para.field_ranges.iter_mut().find(|fr| {
-            fr.control_idx == target.control_idx
-                && fr.start_char_idx == target.start_char_idx
-                && fr.end_char_idx == target.end_char_idx + inserted_len
-        }) {
-            fr.end_char_idx = target.end_char_idx;
-        }
-    }
-}
-
-fn keep_inactive_field_start_outside(
-    para: &mut Paragraph,
-    insertions: &[FieldStartInsertion],
-    inserted_len: usize,
-) {
-    if inserted_len == 0 || insertions.is_empty() {
-        return;
-    }
-    for target in insertions {
-        if let Some(fr) = para.field_ranges.iter_mut().find(|fr| {
-            fr.control_idx == target.control_idx
-                && fr.start_char_idx == target.start_char_idx
-                && fr.end_char_idx == target.end_char_idx + inserted_len
-        }) {
-            fr.start_char_idx = target.start_char_idx + inserted_len;
-        }
-    }
-}
-
+/// 경계에 친 글자를 필드 밖에 두어야 하는 필드(누름틀·계산식)가 있는 문단인가.
+/// 한/글 12.30은 계산식 결과 3 뒤에 친 9를 필드 밖에 두어, 다시 계산하면 129가 되었다.
 fn has_clickhere_field_range(para: &Paragraph) -> bool {
     para.field_ranges.iter().any(|fr| {
         matches!(
             para.controls.get(fr.control_idx),
-            Some(Control::Field(field)) if field.field_type == FieldType::ClickHere
+            Some(Control::Field(field))
+                if matches!(field.field_type, FieldType::ClickHere | FieldType::Formula)
         )
     })
+}
+
+/// 서식 글도 일반 입력과 같은 활성 누름틀·개체 앞뒤 소속으로 넣는다.
+pub(super) fn insert_body_text_with_field_affinity(
+    para: &mut Paragraph,
+    active_field: Option<&ActiveFieldInfo>,
+    section_idx: usize,
+    para_idx: usize,
+    char_offset: usize,
+    after_inline_control: bool,
+    source: &Paragraph,
+) {
+    let active = active_field_control(active_field, section_idx, para_idx, None);
+    replace_paragraph_text(
+        para,
+        char_offset,
+        0,
+        &source.text,
+        active,
+        after_inline_control,
+    );
+    para.inherit_inserted_text_controls(source, char_offset);
 }
 
 impl DocumentCore {
@@ -1243,39 +1435,15 @@ impl DocumentCore {
         );
         self.document.sections[section_idx].raw_stream = None;
 
-        let deleted_count = if delete_count > 0 {
-            self.document.sections[section_idx].paragraphs[para_idx]
-                .delete_text_at(char_offset, delete_count)
-        } else {
-            0
-        };
-
-        if new_chars_count > 0 {
-            let active_field = self.active_field.clone();
-            let outside_insertions = inactive_field_end_insertions(
-                &self.document.sections[section_idx].paragraphs[para_idx],
-                active_field.as_ref(),
-                section_idx,
-                para_idx,
-                None,
-                char_offset,
-            );
-            let before_insertions = inactive_field_start_insertions(
-                &self.document.sections[section_idx].paragraphs[para_idx],
-                active_field.as_ref(),
-                section_idx,
-                para_idx,
-                None,
-                char_offset,
-            );
-            let para = &mut self.document.sections[section_idx].paragraphs[para_idx];
-            para.insert_text_at(char_offset, text);
-            keep_inactive_field_start_outside(para, &before_insertions, new_chars_count);
-            keep_inactive_field_end_outside(para, &outside_insertions, new_chars_count);
-            if has_clickhere_field_range(para) {
-                rebuild_char_offsets(para);
-            }
-        }
+        let active = active_field_control(self.active_field.as_ref(), section_idx, para_idx, None);
+        let deleted_count = replace_paragraph_text(
+            &mut self.document.sections[section_idx].paragraphs[para_idx],
+            char_offset,
+            delete_count,
+            text,
+            active,
+            false,
+        );
 
         self.reflow_paragraph(section_idx, para_idx);
         let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
@@ -1293,8 +1461,17 @@ impl DocumentCore {
         let flow_after = body_paragraph_flow_signature(
             &self.document.sections[section_idx].paragraphs[para_idx],
         );
-        let flow_changed = flow_before != flow_after;
-        if flow_changed {
+        // 원고지 구역의 칸 배치는 렌더 정규화본에만 있어, 쪽 나눔을 미루면 칸 없이 그린다.
+        // 원고지 문서는 작아 입력마다 다시 나눈다.
+        let cell_grid_section = self.document.sections[section_idx]
+            .section_def
+            .cell_grid()
+            .is_some();
+        let flow_changed = flow_before != flow_after || cell_grid_section;
+        if self.batch_mode {
+            // 문단의 새 줄 구성은 위에서 갱신했다. 쪽 소속 확정은 endBatch가 소유한다.
+            self.mark_section_dirty(section_idx);
+        } else if flow_changed {
             self.paginate();
             for _ in 0..2 {
                 let new_col = self
@@ -1362,7 +1539,9 @@ impl DocumentCore {
 
         Ok(super::super::helpers::json_ok_with(&format!(
             "\"charOffset\":{},\"documentPaginationPending\":{},\"flowChanged\":{}",
-            new_offset, !flow_changed, flow_changed
+            new_offset,
+            self.batch_mode || !flow_changed,
+            flow_changed
         )))
     }
 
@@ -1387,11 +1566,20 @@ impl DocumentCore {
     /// [#4180] 문서 캐럿 메타데이터 스탬핑의 유일한 쓰기 지점 — doc_properties
     /// (재직렬화 경로)와 raw_stream(passthrough 경로) 양쪽에 반영한다.
     pub(crate) fn stamp_caret(&mut self, sec: u32, para: u32, caret_utf16: u32) {
-        self.document.doc_properties.caret_list_id = sec;
-        self.document.doc_properties.caret_para_id = para;
-        self.document.doc_properties.caret_char_pos = caret_utf16;
+        Self::stamp_document_caret(&mut self.document, sec, para, caret_utf16);
+    }
+
+    fn stamp_document_caret(
+        document: &mut crate::model::document::Document,
+        sec: u32,
+        para: u32,
+        caret_utf16: u32,
+    ) {
+        document.doc_properties.caret_list_id = sec;
+        document.doc_properties.caret_para_id = para;
+        document.doc_properties.caret_char_pos = caret_utf16;
         // DocInfo raw_stream 내 캐럿 위치만 surgical update (전체 재직렬화 방지)
-        if let Some(ref mut raw) = self.document.doc_info.raw_stream {
+        if let Some(ref mut raw) = document.doc_info.raw_stream {
             let _ = crate::serializer::doc_info::surgical_update_caret(raw, sec, para, caret_utf16);
         }
     }
@@ -1407,8 +1595,18 @@ impl DocumentCore {
         para_idx: usize,
         char_idx: usize,
     ) {
-        let Some(para) = self
-            .document
+        Self::set_document_caret_position(&mut self.document, section_idx, para_idx, char_idx);
+    }
+
+    /// Use the same scalar-to-UTF16/raw DocInfo contract on an export snapshot.
+    /// The caller validates its address; legacy out-of-range behavior is retained.
+    pub(crate) fn set_document_caret_position(
+        document: &mut crate::model::document::Document,
+        section_idx: usize,
+        para_idx: usize,
+        char_idx: usize,
+    ) {
+        let Some(para) = document
             .sections
             .get(section_idx)
             .and_then(|s| s.paragraphs.get(para_idx))
@@ -1416,7 +1614,7 @@ impl DocumentCore {
             return;
         };
         let caret_utf16 = Self::caret_utf16_at(para, char_idx);
-        self.stamp_caret(section_idx as u32, para_idx as u32, caret_utf16);
+        Self::stamp_document_caret(document, section_idx as u32, para_idx as u32, caret_utf16);
     }
 
     pub fn insert_text_native(
@@ -1439,6 +1637,8 @@ impl DocumentCore {
         after_inline_control: bool,
         text: &str,
     ) -> Result<String, HwpError> {
+        let normalized = normalize_text_newlines(text);
+        let text = normalized.as_ref();
         // 인덱스 범위 검증
         if section_idx >= self.document.sections.len() {
             return Err(HwpError::RenderError(format!(
@@ -1458,30 +1658,9 @@ impl DocumentCore {
 
         // 텍스트 삽입
         let new_chars_count = text.chars().count();
-        let active_field = self.active_field.clone();
-        let outside_insertions = inactive_field_end_insertions(
-            &self.document.sections[section_idx].paragraphs[para_idx],
-            active_field.as_ref(),
-            section_idx,
-            para_idx,
-            None,
-            char_offset,
-        );
-        let before_insertions = inactive_field_start_insertions(
-            &self.document.sections[section_idx].paragraphs[para_idx],
-            active_field.as_ref(),
-            section_idx,
-            para_idx,
-            None,
-            char_offset,
-        );
+        let active = active_field_control(self.active_field.as_ref(), section_idx, para_idx, None);
         let apply_insert = |para: &mut Paragraph| {
-            para.insert_text_at_caret(char_offset, text, after_inline_control);
-            keep_inactive_field_start_outside(para, &before_insertions, new_chars_count);
-            keep_inactive_field_end_outside(para, &outside_insertions, new_chars_count);
-            if has_clickhere_field_range(para) {
-                rebuild_char_offsets(para);
-            }
+            replace_paragraph_text(para, char_offset, 0, text, active, after_inline_control);
         };
         let picture_band_applied =
             self.apply_body_edit_through_picture_band(section_idx, para_idx, &apply_insert)?;
@@ -1589,6 +1768,30 @@ impl DocumentCore {
         char_offset: usize,
         count: usize,
     ) -> Result<String, HwpError> {
+        self.delete_text_native_impl(section_idx, para_idx, char_offset, count, false)
+    }
+
+    /// Delete text for a replacement whose new text is not empty. A memo whose
+    /// whole anchor is replaced keeps its field; a following insert expands the
+    /// range over the replacement.
+    pub(crate) fn delete_text_native_preserving_memos(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+        count: usize,
+    ) -> Result<String, HwpError> {
+        self.delete_text_native_impl(section_idx, para_idx, char_offset, count, true)
+    }
+
+    fn delete_text_native_impl(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+        count: usize,
+        preserve_memos: bool,
+    ) -> Result<String, HwpError> {
         // 인덱스 범위 검증
         if section_idx >= self.document.sections.len() {
             return Err(HwpError::RenderError(format!(
@@ -1608,15 +1811,119 @@ impl DocumentCore {
 
         // 텍스트 삭제
         let apply_delete = |para: &mut Paragraph| {
-            para.delete_text_at(char_offset, count);
+            if preserve_memos {
+                para.delete_text_at(char_offset, count);
+            } else {
+                crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+                    para,
+                    char_offset,
+                    count,
+                );
+            }
         };
+        self.apply_body_text_edit(section_idx, para_idx, char_offset, &apply_delete)?;
+
+        self.event_log.push(DocumentEvent::TextDeleted {
+            section: section_idx,
+            para: para_idx,
+            offset: char_offset,
+            count,
+        });
+        Ok(super::super::helpers::json_ok_with(&format!(
+            "\"charOffset\":{}",
+            char_offset
+        )))
+    }
+
+    /// [#7866] 본문 문단의 글자 `char_offset..+length` 를 `text` 로 한 단계에 바꾼다.
+    /// 새 글자는 지운 글자의 글자 모양을 자리대로 잇는다
+    /// ([`Paragraph::replace_text_inheriting_char_shapes`]). 지우기·넣기와 같은 재조판 꼬리를
+    /// 한 번만 거치므로 넣은 글자가 앞 글자의 모양으로 조판됐다가 다시 바뀌는 일이 없다.
+    pub fn replace_text_inheriting_char_shapes_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+        length: usize,
+        text: &str,
+    ) -> Result<String, HwpError> {
+        let normalized = normalize_text_newlines(text);
+        let text = normalized.as_ref();
+        self.validate_body_paragraph_index(section_idx, para_idx)?;
+        // An empty replacement is a deletion: a memo whose whole anchor text
+        // went away must go with it.
+        if text.is_empty() {
+            return self.delete_text_native_impl(section_idx, para_idx, char_offset, length, false);
+        }
+        let new_chars_count = text.chars().count();
+        let apply_replace = |para: &mut Paragraph| {
+            para.replace_text_inheriting_char_shapes(char_offset, length, text);
+        };
+        self.apply_body_text_edit(
+            section_idx,
+            para_idx,
+            char_offset + new_chars_count,
+            &apply_replace,
+        )?;
+
+        self.event_log.push(DocumentEvent::TextDeleted {
+            section: section_idx,
+            para: para_idx,
+            offset: char_offset,
+            count: length,
+        });
+        self.event_log.push(DocumentEvent::TextInserted {
+            section: section_idx,
+            para: para_idx,
+            offset: char_offset,
+            len: new_chars_count,
+        });
+        Ok(super::super::helpers::json_ok_with(&format!(
+            "\"charOffset\":{}",
+            char_offset + new_chars_count
+        )))
+    }
+
+    fn validate_body_paragraph_index(
+        &self,
+        section_idx: usize,
+        para_idx: usize,
+    ) -> Result<(), HwpError> {
+        if section_idx >= self.document.sections.len() {
+            return Err(HwpError::RenderError(format!(
+                "구역 인덱스 {} 범위 초과 (총 {}개)",
+                section_idx,
+                self.document.sections.len()
+            )));
+        }
+        let section = &self.document.sections[section_idx];
+        if para_idx >= section.paragraphs.len() {
+            return Err(HwpError::RenderError(format!(
+                "문단 인덱스 {} 범위 초과 (총 {}개)",
+                para_idx,
+                section.paragraphs.len()
+            )));
+        }
+        Ok(())
+    }
+
+    /// 본문 문단 글자 편집의 공통 꼬리. 그림 밴드를 거치는 편집이 아니면 raw 스트림을
+    /// 무효화하고 문단에 `apply` 를 적용한 뒤 재조판 → vpos 재계산 → 재구성 → 재페이지네이션을
+    /// 다단 재배치가 수렴할 때까지(최대 3회) 반복한다. 끝으로 `caret_char_offset` 에 캐럿을 둔다.
+    fn apply_body_text_edit(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        caret_char_offset: usize,
+        apply: &dyn Fn(&mut Paragraph),
+    ) -> Result<(), HwpError> {
         let picture_band_applied =
-            self.apply_body_edit_through_picture_band(section_idx, para_idx, &apply_delete)?;
+            self.apply_body_edit_through_picture_band(section_idx, para_idx, apply)?;
 
         if !picture_band_applied {
             // 편집 시 raw 스트림 무효화 (재직렬화 유도)
             self.document.sections[section_idx].raw_stream = None;
-            apply_delete(&mut self.document.sections[section_idx].paragraphs[para_idx]);
+            apply(&mut self.document.sections[section_idx].paragraphs[para_idx]);
 
             // line_segs 재계산 (리플로우) → 재구성 → 재페이지네이션
             // 다단 수렴 루프 (최대 3회)
@@ -1676,8 +1983,8 @@ impl DocumentCore {
 
         // 캐럿 위치 갱신 (DocProperties)
         let para = &self.document.sections[section_idx].paragraphs[para_idx];
-        let caret_utf16_pos = if char_offset < para.char_offsets.len() {
-            para.char_offsets[char_offset]
+        let caret_utf16_pos = if caret_char_offset < para.char_offsets.len() {
+            para.char_offsets[caret_char_offset]
         } else if !para.char_offsets.is_empty() {
             let last = para.char_offsets.len() - 1;
             let last_char = para.text.chars().nth(last);
@@ -1689,17 +1996,7 @@ impl DocumentCore {
             (para.controls.len() as u32) * 8
         };
         self.stamp_caret(section_idx as u32, para_idx as u32, caret_utf16_pos);
-
-        self.event_log.push(DocumentEvent::TextDeleted {
-            section: section_idx,
-            para: para_idx,
-            offset: char_offset,
-            count,
-        });
-        Ok(super::super::helpers::json_ok_with(&format!(
-            "\"charOffset\":{}",
-            char_offset
-        )))
+        Ok(())
     }
 
     /// 지정된 문단의 line_segs를 컬럼 너비 기반으로 재계산한다.
@@ -1727,12 +2024,44 @@ impl DocumentCore {
         let para_style = self.styles.para_styles.get(para.para_shape_id as usize);
         // 본문: 열 상자를 그대로 넘긴다. 이 자리가 대화형 편집의 관문이고,
         // 종전에 두 끝점을 버려 `column_start=0` 을 발행했던 지점이다.
+        let column_width = col_area.width;
         reflow_line_segs(
             &mut self.document.sections[section_idx].paragraphs[para_idx],
-            ParagraphBox::body_for_style(col_area.width, para_style, self.dpi),
+            ParagraphBox::body_for_style(column_width, para_style, self.dpi),
             &self.styles,
             self.dpi,
         );
+        // 원고지 구역: 칸 수로 줄을 다시 나누고, 문단 세로 위치를 셈하는 줄 간격을 격자에 맞춘다.
+        let document = &mut self.document;
+        crate::renderer::cell_grid::fit_body_paragraph(
+            &mut document.sections[section_idx],
+            &document.doc_info.para_shapes,
+            para_idx,
+            column_width,
+            &self.styles,
+            self.dpi,
+        );
+    }
+
+    /// 본문 문단을 다시 짠 서식 편집 뒤에 원고지 구역이면 칸 수로 다시 나눈다.
+    pub(crate) fn fit_cell_grid(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    ) {
+        let column_width = self.body_wrap_width(section_idx);
+        let document = &mut self.document;
+        if let Some(section) = document.sections.get_mut(section_idx) {
+            crate::renderer::cell_grid::fit_body_paragraph(
+                section,
+                &document.doc_info.para_shapes,
+                para_idx,
+                column_width,
+                styles,
+                self.dpi,
+            );
+        }
     }
 
     /// 표 셀 내부 문단에 텍스트 삽입 (네이티브)
@@ -1851,6 +2180,36 @@ impl DocumentCore {
         text: &str,
         paginate_immediately: bool,
     ) -> Result<String, HwpError> {
+        self.replace_text_in_cell_field_impl(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            char_offset,
+            delete_count,
+            text,
+            paginate_immediately,
+            None,
+        )
+    }
+
+    /// 셀 글 교체. `field_control`을 주면 넣는 글을 그 필드가 품는다(계산식 결과).
+    pub(crate) fn replace_text_in_cell_field_impl(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+        char_offset: usize,
+        delete_count: usize,
+        text: &str,
+        paginate_immediately: bool,
+        field_control: Option<usize>,
+    ) -> Result<String, HwpError> {
+        let normalized = normalize_text_newlines(text);
+        let text = normalized.as_ref();
         let new_chars_count = text.chars().count();
         let focused_target_is_table_cell = !paginate_immediately
             && is_focused_table_cell_target(
@@ -1880,8 +2239,13 @@ impl DocumentCore {
         };
 
         // 셀 문단 접근 검증 및 텍스트 교체
-        let active_field = self.active_field.clone();
         let cell_path = [(control_idx, cell_idx, cell_para_idx)];
+        let active = active_field_control(
+            self.active_field.as_ref(),
+            section_idx,
+            parent_para_idx,
+            Some(&cell_path),
+        );
         let cell_para = self.get_cell_paragraph_mut(
             section_idx,
             parent_para_idx,
@@ -1890,6 +2254,9 @@ impl DocumentCore {
             cell_para_idx,
         )?;
         let old_text_len = cell_para.text.chars().count();
+        let source_text_before =
+            crate::model::raw_provenance::bytes_digest(cell_para.text.as_bytes());
+        let stored_frame_before = StoredVerticalFrame::capture(cell_para);
         let flow_advance_before = relative_paragraph_flow_advance(cell_para);
         let local_contribution_before =
             crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
@@ -1897,35 +2264,18 @@ impl DocumentCore {
             );
         let units_fp_before =
             crate::renderer::layout::LayoutEngine::cell_paragraph_units_fingerprint(cell_para);
-        let deleted_count = if delete_count > 0 {
-            cell_para.delete_text_at(char_offset, delete_count)
-        } else {
-            0
-        };
-        let outside_insertions = inactive_field_end_insertions(
-            cell_para,
-            active_field.as_ref(),
-            section_idx,
-            parent_para_idx,
-            Some(&cell_path),
-            char_offset,
-        );
-        let before_insertions = inactive_field_start_insertions(
-            cell_para,
-            active_field.as_ref(),
-            section_idx,
-            parent_para_idx,
-            Some(&cell_path),
-            char_offset,
-        );
-        if new_chars_count > 0 {
-            cell_para.insert_text_at(char_offset, text);
-            keep_inactive_field_start_outside(cell_para, &before_insertions, new_chars_count);
-            keep_inactive_field_end_outside(cell_para, &outside_insertions, new_chars_count);
-            if has_clickhere_field_range(cell_para) {
-                rebuild_char_offsets(cell_para);
+        let deleted_count = match field_control {
+            Some(control) => cell_para.replace_text_keeping_slots(
+                char_offset,
+                delete_count,
+                text,
+                Some(control),
+                false,
+            ),
+            None => {
+                replace_paragraph_text(cell_para, char_offset, delete_count, text, active, false)
             }
-        }
+        };
         debug_assert_eq!(deleted_count, delete_count);
 
         // 부모 컨트롤 dirty 마킹 (표 또는 글상자)
@@ -1948,16 +2298,12 @@ impl DocumentCore {
             cell_para_idx,
             None,
         );
-        if matches!(
-            self.document.sections[section_idx].paragraphs[parent_para_idx]
-                .controls
-                .get(control_idx),
-            Some(Control::Table(_))
-        ) {
-            self.mark_table_text_reflowed_after_edit(section_idx, parent_para_idx, control_idx)?;
-        }
-
-        let (flow_advance_after, local_contribution_after) = {
+        let (
+            flow_advance_after,
+            local_contribution_after,
+            stored_frame_unchanged,
+            source_text_after,
+        ) = {
             let cell_para_after = self
                 .get_cell_paragraph_ref(
                     section_idx,
@@ -1974,21 +2320,49 @@ impl DocumentCore {
                 crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
                     cell_para_after,
                 ),
+                stored_frame_before
+                    .as_ref()
+                    .is_some_and(|before| before.matches(cell_para_after)),
+                crate::model::raw_provenance::bytes_digest(cell_para_after.text.as_bytes()),
             )
         };
-        let units_fp_unchanged = self
-            .get_cell_paragraph_ref(
+        // 실제 줄 프레임이 같으면 표 전체의 저장 사다리를 무효화하지 않는다.
+        // 이전 편집의 표식은 구역 전체의 로드 상태 복원 근거가 있을 때만 해제한다.
+        if !stored_frame_unchanged
+            && matches!(
+                self.document.sections[section_idx].paragraphs[parent_para_idx]
+                    .controls
+                    .get(control_idx),
+                Some(Control::Table(_))
+            )
+        {
+            self.mark_table_text_reflowed_after_cell_edit(
                 section_idx,
                 parent_para_idx,
                 control_idx,
-                cell_idx,
-                cell_para_idx,
-            )
-            .is_some_and(|p| {
-                crate::renderer::layout::LayoutEngine::cell_paragraph_units_fingerprint(p)
-                    == units_fp_before
-            });
-        let cell_flow_changed = flow_advance_before != flow_advance_after;
+            )?;
+        }
+        let loaded_frame_restored = self.restore_loaded_frames_after_cell_text_edit(
+            section_idx,
+            old_text_len,
+            old_text_len - deleted_count + new_chars_count,
+            source_text_before,
+            source_text_after,
+        );
+        let units_fp_unchanged = !loaded_frame_restored
+            && self
+                .get_cell_paragraph_ref(
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    cell_para_idx,
+                )
+                .is_some_and(|p| {
+                    crate::renderer::layout::LayoutEngine::cell_paragraph_units_fingerprint(p)
+                        == units_fp_before
+                });
+        let cell_flow_changed = loaded_frame_restored || flow_advance_before != flow_advance_after;
         let new_offset = char_offset + new_chars_count;
         let focused_after = if focused_target_is_table_cell {
             self.get_cell_paragraph_ref(
@@ -2081,16 +2455,20 @@ impl DocumentCore {
             });
         }
         // raw 스트림 무효화, 재페이지네이션 (셀 편집 → composed 불변, section dirty만 설정)
-        self.document.sections[section_idx].raw_stream = None;
+        let source_cache_restored =
+            self.finish_loaded_source_cache_after_cell_edit(section_idx, loaded_frame_restored);
         if has_compat_projection {
             self.invalidate_render_normalization_section(section_idx);
         }
-        if has_compat_projection && !paginate_immediately {
+        if (has_compat_projection || loaded_frame_restored || source_cache_restored)
+            && !paginate_immediately
+        {
             self.compute_render_normalized();
         }
         self.mark_section_pagination_dirty(section_idx);
         let new_text_len = old_text_len - deleted_count + new_chars_count;
         let focused_page_tree_patched = if !paginate_immediately
+            && !source_cache_restored
             && !cell_flow_changed
             && !had_pending_flow_change
             && focused_delta_x.is_some()
@@ -2251,6 +2629,9 @@ impl DocumentCore {
             cell_para_idx,
         )?;
         let old_text_len = cell_para.text.chars().count();
+        let source_text_before =
+            crate::model::raw_provenance::bytes_digest(cell_para.text.as_bytes());
+        let stored_frame_before = StoredVerticalFrame::capture(cell_para);
         let flow_advance_before = relative_paragraph_flow_advance(cell_para);
         let local_contribution_before =
             crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
@@ -2258,7 +2639,11 @@ impl DocumentCore {
             );
         let units_fp_before =
             crate::renderer::layout::LayoutEngine::cell_paragraph_units_fingerprint(cell_para);
-        let deleted_count = cell_para.delete_text_at(char_offset, count);
+        let deleted_count = crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+            cell_para,
+            char_offset,
+            count,
+        );
 
         // 부모 컨트롤 dirty 마킹 (표 또는 글상자)
         self.mark_cell_control_dirty(section_idx, parent_para_idx, control_idx);
@@ -2282,16 +2667,12 @@ impl DocumentCore {
             cell_para_idx,
             None,
         );
-        if matches!(
-            self.document.sections[section_idx].paragraphs[parent_para_idx]
-                .controls
-                .get(control_idx),
-            Some(Control::Table(_))
-        ) {
-            self.mark_table_text_reflowed_after_edit(section_idx, parent_para_idx, control_idx)?;
-        }
-
-        let (flow_advance_after, local_contribution_after) = {
+        let (
+            flow_advance_after,
+            local_contribution_after,
+            stored_frame_unchanged,
+            source_text_after,
+        ) = {
             let cell_para_after = self
                 .get_cell_paragraph_ref(
                     section_idx,
@@ -2308,21 +2689,49 @@ impl DocumentCore {
                 crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
                     cell_para_after,
                 ),
+                stored_frame_before
+                    .as_ref()
+                    .is_some_and(|before| before.matches(cell_para_after)),
+                crate::model::raw_provenance::bytes_digest(cell_para_after.text.as_bytes()),
             )
         };
-        let units_fp_unchanged = self
-            .get_cell_paragraph_ref(
+        // 실제 줄 프레임이 같으면 표 전체의 저장 사다리를 무효화하지 않는다.
+        // 이전 편집이 이미 기록한 재조판 표식은 그대로 유지한다.
+        if !stored_frame_unchanged
+            && matches!(
+                self.document.sections[section_idx].paragraphs[parent_para_idx]
+                    .controls
+                    .get(control_idx),
+                Some(Control::Table(_))
+            )
+        {
+            self.mark_table_text_reflowed_after_cell_edit(
                 section_idx,
                 parent_para_idx,
                 control_idx,
-                cell_idx,
-                cell_para_idx,
-            )
-            .is_some_and(|p| {
-                crate::renderer::layout::LayoutEngine::cell_paragraph_units_fingerprint(p)
-                    == units_fp_before
-            });
-        let cell_flow_changed = flow_advance_before != flow_advance_after;
+            )?;
+        }
+        let loaded_frame_restored = self.restore_loaded_frames_after_cell_text_edit(
+            section_idx,
+            old_text_len,
+            old_text_len.saturating_sub(deleted_count),
+            source_text_before,
+            source_text_after,
+        );
+        let units_fp_unchanged = !loaded_frame_restored
+            && self
+                .get_cell_paragraph_ref(
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    cell_para_idx,
+                )
+                .is_some_and(|p| {
+                    crate::renderer::layout::LayoutEngine::cell_paragraph_units_fingerprint(p)
+                        == units_fp_before
+                });
+        let cell_flow_changed = loaded_frame_restored || flow_advance_before != flow_advance_after;
         let focused_after = if focused_target_is_table_cell {
             self.get_cell_paragraph_ref(
                 section_idx,
@@ -2358,12 +2767,11 @@ impl DocumentCore {
             }
         }
 
-        let refresh_compat_projection = !paginate_immediately
-            && self
-                .render_normalization
-                .sections
-                .get(section_idx)
-                .is_some_and(|section| section.is_some());
+        let has_compat_projection = self
+            .render_normalization
+            .sections
+            .get(section_idx)
+            .is_some_and(|section| section.is_some());
         self.mark_render_normalization_path_dirty(
             section_idx,
             parent_para_idx,
@@ -2412,14 +2820,23 @@ impl DocumentCore {
         }
 
         // raw 스트림 무효화, 재페이지네이션 (셀 편집 → composed 불변)
-        self.document.sections[section_idx].raw_stream = None;
-        if refresh_compat_projection {
+        let source_cache_restored =
+            self.finish_loaded_source_cache_after_cell_edit(section_idx, loaded_frame_restored);
+        // Immediate edits need the same revision bump as deferred edits and
+        // insertion. Otherwise pagination can reuse a projection that still
+        // paints text which has already been deleted from the editable IR.
+        if has_compat_projection {
             self.invalidate_render_normalization_section(section_idx);
+        }
+        if (has_compat_projection || loaded_frame_restored || source_cache_restored)
+            && !paginate_immediately
+        {
             self.compute_render_normalized();
         }
         self.mark_section_pagination_dirty(section_idx);
         let new_text_len = old_text_len.saturating_sub(deleted_count);
         let focused_page_tree_patched = if !paginate_immediately
+            && !source_cache_restored
             && !cell_flow_changed
             && !had_pending_flow_change
             && focused_delta_x.is_some()
@@ -2547,18 +2964,13 @@ impl DocumentCore {
                 Ok(&mut cell.paragraphs[cell_para_idx])
             }
             Control::Shape(shape) => {
-                if cell_idx != 0 {
-                    return Err(HwpError::RenderError(format!(
-                        "글상자 셀 인덱스는 0이어야 합니다 (요청: {})",
-                        cell_idx
-                    )));
-                }
-                let tb =
-                    super::super::helpers::get_textbox_from_shape_mut(shape).ok_or_else(|| {
+                let tb = super::super::helpers::get_textbox_at_mut(shape, cell_idx).ok_or_else(
+                    || {
                         HwpError::RenderError(
                             "지정된 Shape 컨트롤에 텍스트 박스가 없습니다".to_string(),
                         )
-                    })?;
+                    },
+                )?;
                 if cell_para_idx >= tb.paragraphs.len() {
                     return Err(HwpError::RenderError(format!(
                         "글상자 문단 인덱스 {} 범위 초과 (총 {}개)",
@@ -2830,9 +3242,10 @@ impl DocumentCore {
             }
         };
         let para_style = styles.para_styles.get(para_shape_id as usize);
-        let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-        let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-        let final_width = (available_width - margin_left - margin_right).max(0.0);
+        // Keep the style-derived origin as well as the width. The render frame
+        // already consumes this box; passing only its width here published
+        // column_start=0 after an edit despite a nonzero paragraph margin.
+        let paragraph_box = ParagraphBox::content_for_style(available_width, para_style, self.dpi);
 
         // 가변 참조로 리플로우 실행
         match self.document.sections[section_idx].paragraphs[parent_para_idx]
@@ -2869,7 +3282,7 @@ impl DocumentCore {
                         let preserved_prefix =
                             crate::renderer::composer::reflow_line_segs_after_cell_text_edit(
                                 cell_para,
-                                ParagraphBox::content_width_px(final_width, self.dpi),
+                                paragraph_box.clone(),
                                 &styles,
                                 self.dpi,
                                 edit_char_offset,
@@ -2904,7 +3317,7 @@ impl DocumentCore {
                             if let Some(mut candidate) = hwpx_full_reflow_candidate.take() {
                                 reflow_line_segs(
                                     &mut candidate,
-                                    ParagraphBox::content_width_px(final_width, self.dpi),
+                                    paragraph_box.clone(),
                                     &styles,
                                     self.dpi,
                                 );
@@ -2919,42 +3332,27 @@ impl DocumentCore {
                         if split_stale_cell_reflow {
                             crate::renderer::composer::reflow_line_segs_after_cell_split(
                                 cell_para,
-                                ParagraphBox::content_width_px(final_width, self.dpi),
+                                paragraph_box.clone(),
                                 &styles,
                                 self.dpi,
                             );
                         } else {
-                            reflow_line_segs(
-                                cell_para,
-                                ParagraphBox::content_width_px(final_width, self.dpi),
-                                &styles,
-                                self.dpi,
-                            );
+                            reflow_line_segs(cell_para, paragraph_box.clone(), &styles, self.dpi);
                         }
                     }
                 }
             }
             Some(Control::Shape(shape)) => {
-                if let Some(tb) = super::super::helpers::get_textbox_from_shape_mut(shape) {
+                if let Some(tb) = super::super::helpers::get_textbox_at_mut(shape, cell_idx) {
                     if let Some(cell_para) = tb.paragraphs.get_mut(cell_para_idx) {
-                        reflow_line_segs(
-                            cell_para,
-                            ParagraphBox::content_width_px(final_width, self.dpi),
-                            &styles,
-                            self.dpi,
-                        );
+                        reflow_line_segs(cell_para, paragraph_box.clone(), &styles, self.dpi);
                     }
                 }
             }
             Some(Control::Picture(pic)) => {
                 if let Some(ref mut cap) = pic.caption {
                     if let Some(cell_para) = cap.paragraphs.get_mut(cell_para_idx) {
-                        reflow_line_segs(
-                            cell_para,
-                            ParagraphBox::content_width_px(final_width, self.dpi),
-                            &styles,
-                            self.dpi,
-                        );
+                        reflow_line_segs(cell_para, paragraph_box.clone(), &styles, self.dpi);
                     }
                 }
             }
@@ -2994,7 +3392,8 @@ impl DocumentCore {
                 &mut cell.paragraphs
             }
             Control::Shape(shape) => {
-                let Some(textbox) = super::super::helpers::get_textbox_from_shape_mut(shape) else {
+                let Some(textbox) = super::super::helpers::get_textbox_at_mut(shape, cell_idx)
+                else {
                     return;
                 };
                 &mut textbox.paragraphs
@@ -3130,7 +3529,10 @@ impl DocumentCore {
             .collect()
     }
 
-    fn cell_metrics_for_control(control: &Control, cell_idx: usize) -> Option<CellReflowMetrics> {
+    pub(crate) fn cell_metrics_for_control(
+        control: &Control,
+        cell_idx: usize,
+    ) -> Option<CellReflowMetrics> {
         match control {
             Control::Table(table) => {
                 if cell_idx == 65534 {
@@ -3151,9 +3553,18 @@ impl DocumentCore {
                 }
             }
             Control::Shape(shape) => {
-                let tb = super::super::helpers::get_textbox_from_shape(shape)?;
-                let common = shape.common();
-                Some((common.width as i32, tb.margin_left, tb.margin_right))
+                let tb = super::super::helpers::get_textbox_at(shape, cell_idx)?;
+                let owner = shape.textbox_shape_at(cell_idx)?;
+                // 묶음 자식은 독립 개체 common.sz가 없으며 orgSz와 합성 변환이 물리 프레임을 정한다.
+                // layout_group_child와 같은 원본 폭을 쓰고, 바깥 Group의 폭으로 재래핑하지 않는다.
+                let width = if matches!(shape.as_ref(), crate::model::shape::ShapeObject::Group(_))
+                {
+                    let attr = owner.shape_attr();
+                    (attr.original_width as f64 * attr.render_sx.abs()) as i32
+                } else {
+                    owner.common().width as i32
+                };
+                Some((width, tb.margin_left, tb.margin_right))
             }
             Control::Picture(pic) => Some((pic.common.width as i32, 0, 0)),
             _ => None,
@@ -3163,7 +3574,7 @@ impl DocumentCore {
     /// [#2755] path 의 CellPathEntry 사슬을 따라 **최내곽** 셀의 폭·좌우 패딩(HWPUNIT)을
     /// 해석한다. 마지막 엔트리를 제외한 각 엔트리에서 다음 중첩 컨트롤을 담은 컨테이너
     /// 문단(`cell_para_idx`)으로 하강한다 — `get_cell_paragraphs_mut_by_path` 의 불변 짝이다.
-    fn resolve_innermost_cell_metrics(
+    pub(crate) fn resolve_innermost_cell_metrics(
         &self,
         section_idx: usize,
         parent_para_idx: usize,
@@ -3178,14 +3589,30 @@ impl DocumentCore {
         for (i, &(ctrl_idx, cell_idx, cell_para_idx)) in path.iter().enumerate() {
             let control = para.controls.get(ctrl_idx)?;
             if i + 1 == path.len() {
+                if matches!(control, Control::Header(_) | Control::Footer(_)) {
+                    // 머리말·꼬리말 영역 폭 = 쪽 글 영역 폭(`reflow_hf_paragraph`와 같다).
+                    let page_def = &self
+                        .document
+                        .sections
+                        .get(section_idx)?
+                        .section_def
+                        .page_def;
+                    let width = page_def.width as i32
+                        - page_def.margin_left as i32
+                        - page_def.margin_right as i32;
+                    return (cell_idx == 0).then_some((width, 0, 0));
+                }
                 return Self::cell_metrics_for_control(control, cell_idx);
             }
             para = match control {
                 Control::Table(t) => t.cells.get(cell_idx)?.paragraphs.get(cell_para_idx)?,
-                Control::Shape(s) => super::super::helpers::get_textbox_from_shape(s)?
+                Control::Shape(s) => super::super::helpers::get_textbox_at(s, cell_idx)?
                     .paragraphs
                     .get(cell_para_idx)?,
                 Control::Picture(p) => p.caption.as_ref()?.paragraphs.get(cell_para_idx)?,
+                Control::Header(_) | Control::Footer(_) if cell_idx == 0 => {
+                    control.header_footer_paragraphs()?.get(cell_para_idx)?
+                }
                 _ => return None,
             };
         }
@@ -3218,6 +3645,15 @@ impl DocumentCore {
         let pad_right_px = hwpunit_to_px(pad_right as i32, dpi);
         let available_width = (cell_width_px - pad_left_px - pad_right_px).max(0.0);
 
+        // 머리말·꼬리말 문단은 그 편집 경로(`reflow_hf_paragraph`)와 같은 상자로 다시 짠다.
+        let header_footer = path.len() == 1
+            && self
+                .document
+                .sections
+                .get(section_idx)
+                .and_then(|section| section.paragraphs.get(parent_para_idx))
+                .and_then(|para| para.controls.get(path[0].0))
+                .is_some_and(|control| control.header_footer_paragraphs().is_some());
         let Ok(paras) = self.get_cell_paragraphs_mut_by_path(section_idx, parent_para_idx, path)
         else {
             return;
@@ -3226,16 +3662,14 @@ impl DocumentCore {
             return;
         };
         let para_style = styles.para_styles.get(cell_para.para_shape_id as usize);
-        let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-        let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-        let final_width = (available_width - margin_left - margin_right).max(0.0);
+        let paragraph_box = if header_footer {
+            let margins = para_style.map_or(0.0, |s| s.margin_left + s.margin_right);
+            ParagraphBox::content_width_px((available_width - margins).max(0.0), dpi)
+        } else {
+            ParagraphBox::content_for_style(available_width, para_style, dpi)
+        };
         // 셀 내용 상자 — 열이 없으므로 미스냅.
-        reflow_line_segs(
-            cell_para,
-            ParagraphBox::content_width_px(final_width, dpi),
-            &styles,
-            dpi,
-        );
+        reflow_line_segs(cell_para, paragraph_box, &styles, dpi);
     }
 
     /// [#2755] path 기반 셀 문단 vpos 재계산 (깊이 ≥ 2 중첩 표 지원).
@@ -3278,6 +3712,163 @@ impl DocumentCore {
         end_offset: usize,
         cell_ctx: Option<(usize, usize, usize)>,
     ) -> Result<String, HwpError> {
+        self.delete_range_internal(
+            section_idx,
+            start_para,
+            start_offset,
+            end_para,
+            end_offset,
+            cell_ctx,
+            None,
+            None,
+        )
+    }
+
+    /// 본문 선택을 복사와 같은 캐럿 축으로 지운다. 셀의 경계 개체는 이 API의 범위 밖이다.
+    pub fn delete_range_logical_native(
+        &mut self,
+        section_idx: usize,
+        start_para: usize,
+        start_logical: usize,
+        end_para: usize,
+        end_logical: usize,
+    ) -> Result<String, HwpError> {
+        if start_para > end_para || (start_para == end_para && start_logical > end_logical) {
+            return Err(HwpError::RenderError(
+                "시작 위치가 끝 위치보다 뒤에 있음".into(),
+            ));
+        }
+        let para = |index| {
+            self.document
+                .sections
+                .get(section_idx)
+                .and_then(|section| section.paragraphs.get(index))
+        };
+        for (index, logical) in [(start_para, start_logical), (end_para, end_logical)] {
+            let p = para(index)
+                .ok_or_else(|| HwpError::RenderError("지울 본문 위치를 확인해 주세요".into()))?;
+            if logical > logical_paragraph_length(p) {
+                return Err(HwpError::RenderError(
+                    "지울 캐럿 위치를 확인해 주세요".into(),
+                ));
+            }
+            // 문단 끝의 빈 선택을 개체 뒤 경계로 승격하면 떠 있는 개체가 지워진다.
+            if start_para == end_para && start_logical == end_logical {
+                return Ok(super::super::helpers::json_ok_with(&format!(
+                    "\"paraIdx\":{},\"charOffset\":{}",
+                    start_para, start_logical
+                )));
+            }
+            if super::clipboard::has_only_inline_forms(p) {
+                continue;
+            }
+            {
+                let positions = p.control_text_positions();
+                if logical < logical_paragraph_length(p)
+                    && p.controls.iter().enumerate().any(|(ci, control)| {
+                        Paragraph::is_split_movable_control(control)
+                            && logical > text_to_split_logical_offset(p, positions[ci], false)
+                            && logical < text_to_split_logical_offset(p, positions[ci], true)
+                            && p.controls.iter().enumerate().any(|(other, control)| {
+                                other != ci
+                                    && Paragraph::is_split_movable_control(control)
+                                    && positions[other] == positions[ci]
+                            })
+                    })
+                {
+                    return Err(HwpError::RenderError(
+                        "같은 자리의 여러 개체 사이 경계는 아직 지원하지 않습니다".into(),
+                    ));
+                }
+            }
+        }
+        let start = para(start_para).map_or((start_logical, false), |p| {
+            logical_to_text_offset(p, start_logical)
+        });
+        let mut end = para(end_para).map_or((end_logical, false), |p| {
+            logical_to_text_offset(p, end_logical)
+        });
+        end.1 |= para(end_para).is_some_and(|p| end_logical >= logical_paragraph_length(p));
+        self.delete_range_internal(
+            section_idx,
+            start_para,
+            start.0,
+            end_para,
+            end.0,
+            None,
+            Some((start.1, end.1)),
+            Some((start_logical, end_logical)),
+        )?;
+        Ok(super::super::helpers::json_ok_with(&format!(
+            "\"paraIdx\":{},\"charOffset\":{}",
+            start_para, start_logical
+        )))
+    }
+
+    fn delete_body_paragraph_range(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        start: (usize, bool),
+        end: (usize, bool),
+        selected: &[usize],
+        logical_boundaries: bool,
+        form_logical_range: Option<(usize, usize)>,
+    ) -> Result<(), HwpError> {
+        if let Some((from, to)) = form_logical_range {
+            let paragraph = &mut self.document.sections[section_idx].paragraphs[para_idx];
+            let suffix = paragraph.split_at(to);
+            paragraph.split_at(from);
+            paragraph.merge_from(&suffix);
+            return Ok(());
+        }
+        if !logical_boundaries {
+            delete_paragraph_boundary(
+                &mut self.document.sections[section_idx].paragraphs[para_idx],
+                start.0,
+                end.0,
+                true,
+            );
+            return Ok(());
+        }
+        if selected.is_empty() {
+            crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+                &mut self.document.sections[section_idx].paragraphs[para_idx],
+                start.0,
+                end.0.saturating_sub(start.0),
+            );
+            return Ok(());
+        }
+        let reflowed = self.text_reflowed_table_control_indices_at(section_idx, para_idx);
+        self.forget_text_reflowed_tables_in_paragraph_at(section_idx, para_idx);
+        let para = &mut self.document.sections[section_idx].paragraphs[para_idx];
+        let from = text_to_split_logical_offset(para, start.0, start.1);
+        let to = text_to_split_logical_offset(para, end.0, end.1);
+        // 문단 끝의 떠 있는 개체는 캐럿 칸이 없으므로 뒤 조각으로 남기지 않는다.
+        let suffix = (!(end.1 && end.0 >= para.text.chars().count())).then(|| para.split_at(to));
+        let _ = para.split_at(from);
+        if let Some(suffix) = suffix {
+            para.merge_from(&suffix);
+        }
+        let kept: Vec<usize> = reflowed
+            .into_iter()
+            .filter(|index| !selected.contains(index))
+            .map(|index| index - selected.iter().filter(|&&removed| removed < index).count())
+            .collect();
+        self.inherit_text_reflowed_table_controls(section_idx, para_idx, 0, &kept)
+    }
+
+    fn delete_range_internal(
+        &mut self,
+        section_idx: usize,
+        start_para: usize,
+        start_offset: usize,
+        end_para: usize,
+        end_offset: usize,
+        cell_ctx: Option<(usize, usize, usize)>,
+        boundaries: Option<(bool, bool)>,
+        form_logical_offsets: Option<(usize, usize)>,
+    ) -> Result<String, HwpError> {
         // 인덱스/범위 검증 — section_idx 범위, start/end para 범위, 뒤집힌 오프셋(start > end)
         if section_idx >= self.document.sections.len() {
             return Err(HwpError::RenderError(format!(
@@ -3308,53 +3899,102 @@ impl DocumentCore {
             }
         }
 
-        // Section raw 스트림 무효화 (재직렬화 유도)
-        self.document.sections[section_idx].raw_stream = None;
-        // DocInfo raw_stream은 유지 (전체 재직렬화 시 FIX-4 문제 발생)
+        let (start_after, end_after) = boundaries.unwrap_or((false, false));
+        let mut first_controls = Vec::new();
+        let mut last_controls = Vec::new();
+        let mut first_form_range = None;
+        let mut last_form_range = None;
+        if cell_ctx.is_none() {
+            if let Some((from, to)) = form_logical_offsets {
+                let paragraphs = &self.document.sections[section_idx].paragraphs;
+                if super::clipboard::has_only_inline_forms(&paragraphs[start_para]) {
+                    let end = if start_para == end_para {
+                        to
+                    } else {
+                        logical_paragraph_length(&paragraphs[start_para])
+                    };
+                    validate_form_boundary_metadata(&paragraphs[start_para], from, end)?;
+                    first_form_range = Some((from, end));
+                }
+                if start_para != end_para
+                    && super::clipboard::has_only_inline_forms(&paragraphs[end_para])
+                {
+                    validate_form_boundary_metadata(&paragraphs[end_para], 0, to)?;
+                    last_form_range = Some((0, to));
+                }
+            }
+        }
+
+        // 글자 축 API도 지원하지 않는 필드·개체 경계를 바꾸기 전에 거절한다.
+        if boundaries.is_none() && cell_ctx.is_none() {
+            let paragraphs = &self.document.sections[section_idx].paragraphs;
+            let first_end = if start_para == end_para {
+                (
+                    end_offset,
+                    end_offset >= paragraphs[end_para].text.chars().count(),
+                )
+            } else {
+                (paragraphs[start_para].text.chars().count(), true)
+            };
+            boundary_controls_to_delete(&paragraphs[start_para], (start_offset, false), first_end)?;
+            if start_para != end_para {
+                boundary_controls_to_delete(
+                    &paragraphs[end_para],
+                    (0, false),
+                    (
+                        end_offset,
+                        end_offset >= paragraphs[end_para].text.chars().count(),
+                    ),
+                )?;
+            }
+        }
+        if boundaries.is_some() && cell_ctx.is_none() {
+            let paragraphs = &self.document.sections[section_idx].paragraphs;
+            let first_end = if start_para == end_para {
+                (end_offset, end_after)
+            } else {
+                (paragraphs[start_para].text.chars().count(), true)
+            };
+            if first_form_range.is_none() {
+                first_controls = boundary_controls_to_delete(
+                    &paragraphs[start_para],
+                    (start_offset, start_after),
+                    first_end,
+                )?;
+            }
+            if start_para != end_para && last_form_range.is_none() {
+                last_controls = boundary_controls_to_delete(
+                    &paragraphs[end_para],
+                    (0, false),
+                    (end_offset, end_after),
+                )?;
+            }
+        }
 
         if let Some((ppi, ci, cei)) = cell_ctx {
-            // ─── 셀 내 deleteRange ───
-            if start_para == end_para {
-                // 같은 문단 내 삭제
-                let count = end_offset - start_offset;
-                if count > 0 {
-                    let cell_para =
-                        self.get_cell_paragraph_mut(section_idx, ppi, ci, cei, start_para)?;
-                    cell_para.delete_text_at(start_offset, count);
-                    self.reflow_cell_paragraph(section_idx, ppi, ci, cei, start_para);
+            let changed = if cei == 65534 && start_para == end_para {
+                // 기존 flat API의 표 캡션 문단 주소도 그대로 받는다.
+                let paragraph =
+                    self.get_cell_paragraph_mut(section_idx, ppi, ci, cei, start_para)?;
+                let mut paragraphs = vec![paragraph.clone()];
+                let changed = delete_cell_range(&mut paragraphs, 0, start_offset, 0, end_offset)?;
+                if changed {
+                    *paragraph = paragraphs.remove(0);
                 }
+                changed
             } else {
-                // 다중 문단 셀 내 삭제
-                // 1) 마지막 문단 앞부분 삭제
-                if end_offset > 0 {
-                    let cell_para =
-                        self.get_cell_paragraph_mut(section_idx, ppi, ci, cei, end_para)?;
-                    cell_para.delete_text_at(0, end_offset);
-                }
-                // 2) 중간 문단 역순 제거 — 셀 내 문단은 cell.paragraphs에서 직접 제거
-                for mid_para in (start_para + 1..end_para).rev() {
-                    let cell = self.get_cell_mut(section_idx, ppi, ci, cei)?;
-                    if mid_para < cell.paragraphs.len() {
-                        cell.paragraphs.remove(mid_para);
-                    }
-                }
-                // 3) 첫 문단 뒷부분 삭제
-                {
-                    let cell_para =
-                        self.get_cell_paragraph_mut(section_idx, ppi, ci, cei, start_para)?;
-                    let para_len = cell_para.text.chars().count();
-                    if start_offset < para_len {
-                        cell_para.delete_text_at(start_offset, para_len - start_offset);
-                    }
-                }
-                // 4) 첫-마지막 문단 병합 (마지막 문단이 이제 start_para+1에 위치)
-                let cell = self.get_cell_mut(section_idx, ppi, ci, cei)?;
-                if start_para + 1 < cell.paragraphs.len() {
-                    let next_para = cell.paragraphs.remove(start_para + 1);
-                    cell.paragraphs[start_para].merge_from(&next_para);
-                }
-                self.reflow_cell_paragraph(section_idx, ppi, ci, cei, start_para);
+                let paragraphs =
+                    self.get_cell_paragraphs_mut_by_path(section_idx, ppi, &[(ci, cei, 0)])?;
+                delete_cell_range(paragraphs, start_para, start_offset, end_para, end_offset)?
+            };
+            if !changed {
+                return Ok(super::super::helpers::json_ok_with(&format!(
+                    "\"paraIdx\":{},\"charOffset\":{}",
+                    start_para, start_offset
+                )));
             }
+            self.document.sections[section_idx].raw_stream = None;
+            self.reflow_cell_paragraph(section_idx, ppi, ci, cei, start_para);
 
             // 부모 컨트롤 dirty 마킹 + 재페이지네이션
             self.mark_cell_control_dirty(section_idx, ppi, ci);
@@ -3371,13 +4011,25 @@ impl DocumentCore {
                 start_para, start_offset
             )))
         } else {
+            // 셀 경로 검증 실패는 원시 저장 스트림에도 영향을 주지 않는다.
+            self.document.sections[section_idx].raw_stream = None;
             // ─── 본문 deleteRange ───
             if start_para == end_para {
                 // 같은 문단 내 삭제
                 let count = end_offset - start_offset;
-                if count > 0 {
-                    self.document.sections[section_idx].paragraphs[start_para]
-                        .delete_text_at(start_offset, count);
+                if count > 0
+                    || !first_controls.is_empty()
+                    || first_form_range.is_some_and(|(from, to)| from < to)
+                {
+                    self.delete_body_paragraph_range(
+                        section_idx,
+                        start_para,
+                        (start_offset, start_after),
+                        (end_offset, end_after),
+                        &first_controls,
+                        boundaries.is_some(),
+                        first_form_range,
+                    )?;
                     // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
                     let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
                         &self.document.sections[section_idx].paragraphs[start_para],
@@ -3398,10 +4050,15 @@ impl DocumentCore {
                 self.recompose_paragraph(section_idx, start_para);
             } else {
                 // 1) 마지막 문단 앞부분 삭제
-                if end_offset > 0 {
-                    self.document.sections[section_idx].paragraphs[end_para]
-                        .delete_text_at(0, end_offset);
-                }
+                self.delete_body_paragraph_range(
+                    section_idx,
+                    end_para,
+                    (0, false),
+                    (end_offset, end_after),
+                    &last_controls,
+                    boundaries.is_some(),
+                    last_form_range,
+                )?;
                 // 2) 중간 문단 역순 제거 (composed도 동기)
                 for mid_para in (start_para + 1..end_para).rev() {
                     self.forget_text_reflowed_tables_in_paragraph_at(section_idx, mid_para);
@@ -3416,10 +4073,15 @@ impl DocumentCore {
                         .text
                         .chars()
                         .count();
-                    if start_offset < para_len {
-                        self.document.sections[section_idx].paragraphs[start_para]
-                            .delete_text_at(start_offset, para_len - start_offset);
-                    }
+                    self.delete_body_paragraph_range(
+                        section_idx,
+                        start_para,
+                        (start_offset, start_after),
+                        (para_len, true),
+                        &first_controls,
+                        boundaries.is_some(),
+                        first_form_range,
+                    )?;
                 }
                 // 4) 첫-마지막 문단 병합 (마지막 문단이 이제 start_para+1에 위치)
                 if start_para + 1 < self.document.sections[section_idx].paragraphs.len() {
@@ -3532,12 +4194,9 @@ impl DocumentCore {
                 }
                 table.cells.get(cell_idx)?.paragraphs.get(cell_para_idx)
             }
-            Control::Shape(shape) => {
-                if cell_idx != 0 {
-                    return None;
-                }
-                get_textbox_from_shape(shape)?.paragraphs.get(cell_para_idx)
-            }
+            Control::Shape(shape) => super::super::helpers::get_textbox_at(shape, cell_idx)?
+                .paragraphs
+                .get(cell_para_idx),
             Control::Picture(pic) => pic.caption.as_ref()?.paragraphs.get(cell_para_idx),
             _ => None,
         }
@@ -3736,14 +4395,6 @@ impl DocumentCore {
         self.document.sections[section_idx]
             .paragraphs
             .insert(new_para_idx, new_para);
-        for i in para_idx..=new_para_idx {
-            if !self.document.sections[section_idx].paragraphs[i]
-                .field_ranges
-                .is_empty()
-            {
-                rebuild_char_offsets(&mut self.document.sections[section_idx].paragraphs[i]);
-            }
-        }
 
         // 양쪽 문단 리플로우 → vpos 재계산 → 재구성 → 재페이지네이션 + 다단 수렴 루프
         let old_col1 = self
@@ -3846,14 +4497,6 @@ impl DocumentCore {
         self.document.sections[section_idx]
             .paragraphs
             .insert(new_para_idx, new_para);
-        for i in para_idx..=new_para_idx {
-            if !self.document.sections[section_idx].paragraphs[i]
-                .field_ranges
-                .is_empty()
-            {
-                rebuild_char_offsets(&mut self.document.sections[section_idx].paragraphs[i]);
-            }
-        }
 
         // 새 문단에 쪽 나누기 설정
         self.document.sections[section_idx].paragraphs[new_para_idx].column_type =
@@ -4586,7 +5229,7 @@ impl DocumentCore {
                 }
             }
             Some(Control::Shape(shape)) => {
-                if let Some(tb) = super::super::helpers::get_textbox_from_shape_mut(shape) {
+                if let Some(tb) = super::super::helpers::get_textbox_at_mut(shape, cell_idx) {
                     tb.paragraphs.insert(new_cell_para_idx, new_para);
                 }
             }
@@ -4717,7 +5360,7 @@ impl DocumentCore {
                 }
             }
             Some(Control::Shape(shape)) => {
-                if let Some(tb) = super::super::helpers::get_textbox_from_shape_mut(shape) {
+                if let Some(tb) = super::super::helpers::get_textbox_at_mut(shape, cell_idx) {
                     let removed = tb.paragraphs.remove(cell_para_idx);
                     removed_meta = removed.capture_meta();
                     merge_point = tb.paragraphs[prev_idx].merge_from(&removed);
@@ -5280,7 +5923,7 @@ impl DocumentCore {
                 Ok(cell.paragraphs.len())
             }
             Some(Control::Shape(shape)) => {
-                let text_box = get_textbox_from_shape(shape)
+                let text_box = super::super::helpers::get_textbox_at(shape, cell_idx)
                     .ok_or_else(|| HwpError::RenderError("도형에 글상자가 없습니다".to_string()))?;
                 Ok(text_box.paragraphs.len())
             }
@@ -5727,13 +6370,7 @@ impl DocumentCore {
                     &mut cell.paragraphs
                 }
                 Some(Control::Shape(shape)) => {
-                    if cell_idx != 0 {
-                        return Err(HwpError::RenderError(format!(
-                            "경로[{}]: 글상자의 cell_index는 0이어야 합니다 ({})",
-                            i, cell_idx
-                        )));
-                    }
-                    let text_box = super::super::helpers::get_textbox_from_shape_mut(shape)
+                    let text_box = super::super::helpers::get_textbox_at_mut(shape, cell_idx)
                         .ok_or_else(|| {
                             HwpError::RenderError(format!(
                                 "경로[{}]: controls[{}]가 텍스트 글상자가 아닙니다",
@@ -5756,6 +6393,16 @@ impl DocumentCore {
                         ))
                     })?;
                     &mut caption.paragraphs
+                }
+                Some(ctrl @ (Control::Header(_) | Control::Footer(_))) => {
+                    if cell_idx != 0 {
+                        return Err(HwpError::RenderError(format!(
+                            "경로[{}]: 머리말·꼬리말의 cell_index는 0이어야 합니다 ({})",
+                            i, cell_idx
+                        )));
+                    }
+                    ctrl.header_footer_paragraphs_mut()
+                        .expect("머리말·꼬리말 컨트롤")
                 }
                 _ => {
                     return Err(HwpError::RenderError(format!(
@@ -5809,6 +6456,8 @@ impl DocumentCore {
         char_offset: usize,
         text: &str,
     ) -> Result<String, HwpError> {
+        let normalized = normalize_text_newlines(text);
+        let text = normalized.as_ref();
         // 깊이 1 표는 일반 셀 삽입 경로가 셀 폭 리플로우와 vpos 재계산을 이미 담당한다.
         // IME가 cellPath를 항상 전달하더라도 같은 편집 계약을 사용해야 한다.
         if path.len() == 1 {
@@ -5825,30 +6474,14 @@ impl DocumentCore {
         }
 
         let new_chars_count = text.chars().count();
-        let active_field = self.active_field.clone();
+        let active = active_field_control(
+            self.active_field.as_ref(),
+            section_idx,
+            parent_para_idx,
+            Some(path),
+        );
         let cell_para = self.get_cell_paragraph_mut_by_path(section_idx, parent_para_idx, path)?;
-        let outside_insertions = inactive_field_end_insertions(
-            cell_para,
-            active_field.as_ref(),
-            section_idx,
-            parent_para_idx,
-            Some(path),
-            char_offset,
-        );
-        let before_insertions = inactive_field_start_insertions(
-            cell_para,
-            active_field.as_ref(),
-            section_idx,
-            parent_para_idx,
-            Some(path),
-            char_offset,
-        );
-        cell_para.insert_text_at(char_offset, text);
-        keep_inactive_field_start_outside(cell_para, &before_insertions, new_chars_count);
-        keep_inactive_field_end_outside(cell_para, &outside_insertions, new_chars_count);
-        if has_clickhere_field_range(cell_para) {
-            rebuild_char_offsets(cell_para);
-        }
+        replace_paragraph_text(cell_para, char_offset, 0, text, active, false);
 
         let inner_cell_para_idx = path.last().map(|entry| entry.2).unwrap_or(0);
         self.reflow_cell_paragraph_by_path(section_idx, parent_para_idx, path, inner_cell_para_idx);
@@ -5908,7 +6541,11 @@ impl DocumentCore {
         }
 
         let cell_para = self.get_cell_paragraph_mut_by_path(section_idx, parent_para_idx, path)?;
-        cell_para.delete_text_at(char_offset, count);
+        crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
+            cell_para,
+            char_offset,
+            count,
+        );
 
         // [#2755] 깊이 ≥ 2 중첩 셀도 flat `delete_text_in_cell_native` 처럼 최내곽 셀 폭으로
         // 재래핑하고 vpos 를 재계산한다(깊이 1 은 위 위임 가드가 flat 경로로 처리).
@@ -5956,41 +6593,13 @@ impl DocumentCore {
         end_para: usize,
         end_offset: usize,
     ) -> Result<String, HwpError> {
-        {
-            let paras = self.get_cell_paragraphs_mut_by_path(section_idx, parent_para_idx, path)?;
-            if start_para == end_para {
-                let count = end_offset.saturating_sub(start_offset);
-                if count > 0 {
-                    if let Some(p) = paras.get_mut(start_para) {
-                        p.delete_text_at(start_offset, count);
-                    }
-                }
-            } else {
-                // 1) 마지막 문단 앞부분 삭제
-                if end_offset > 0 {
-                    if let Some(p) = paras.get_mut(end_para) {
-                        p.delete_text_at(0, end_offset);
-                    }
-                }
-                // 2) 중간 문단 역순 제거
-                for mid in (start_para + 1..end_para).rev() {
-                    if mid < paras.len() {
-                        paras.remove(mid);
-                    }
-                }
-                // 3) 첫 문단 뒷부분 삭제
-                if let Some(p) = paras.get_mut(start_para) {
-                    let para_len = p.text.chars().count();
-                    if start_offset < para_len {
-                        p.delete_text_at(start_offset, para_len - start_offset);
-                    }
-                }
-                // 4) 첫-마지막 문단 병합 (마지막이 이제 start_para+1)
-                if start_para + 1 < paras.len() {
-                    let next = paras.remove(start_para + 1);
-                    paras[start_para].merge_from(&next);
-                }
-            }
+        let paragraphs =
+            self.get_cell_paragraphs_mut_by_path(section_idx, parent_para_idx, path)?;
+        if !delete_cell_range(paragraphs, start_para, start_offset, end_para, end_offset)? {
+            return Ok(super::super::helpers::json_ok_with(&format!(
+                "\"paraIdx\":{},\"charOffset\":{}",
+                start_para, start_offset
+            )));
         }
 
         // [#2755] flat `delete_range_native` 셀 분기와 동일하게 병합 생존 문단(start_para)을
@@ -6053,6 +6662,18 @@ impl DocumentCore {
         for (i, &(ctrl_idx, cell_idx, _cpi)) in path.iter().enumerate() {
             let table = match para.controls.get_mut(ctrl_idx) {
                 Some(Control::Table(t)) => t.as_mut(),
+                // 머리말·꼬리말 뿌리: 그 문단에 든 표로 내려간다(머리말 문단 자체는 머리말 API가 맡는다).
+                Some(ctrl @ (Control::Header(_) | Control::Footer(_)))
+                    if i == 0 && cell_idx == 0 && path.len() > 1 =>
+                {
+                    para = ctrl
+                        .header_footer_paragraphs_mut()
+                        .and_then(|paragraphs| paragraphs.get_mut(_cpi))
+                        .ok_or_else(|| {
+                            HwpError::RenderError("머리말·꼬리말 문단 범위 초과".to_string())
+                        })?;
+                    continue;
+                }
                 _ => return Err(HwpError::RenderError("경로: 표가 아닙니다".to_string())),
             };
             let cell = table
@@ -6158,6 +6779,18 @@ impl DocumentCore {
         for (i, &(ctrl_idx, cell_idx, _cpi)) in path.iter().enumerate() {
             let table = match para.controls.get_mut(ctrl_idx) {
                 Some(Control::Table(t)) => t.as_mut(),
+                // 머리말·꼬리말 뿌리: 그 문단에 든 표로 내려간다(머리말 문단 자체는 머리말 API가 맡는다).
+                Some(ctrl @ (Control::Header(_) | Control::Footer(_)))
+                    if i == 0 && cell_idx == 0 && path.len() > 1 =>
+                {
+                    para = ctrl
+                        .header_footer_paragraphs_mut()
+                        .and_then(|paragraphs| paragraphs.get_mut(_cpi))
+                        .ok_or_else(|| {
+                            HwpError::RenderError("머리말·꼬리말 문단 범위 초과".to_string())
+                        })?;
+                    continue;
+                }
                 _ => return Err(HwpError::RenderError("경로: 표가 아닙니다".to_string())),
             };
             let cell = table
@@ -7811,294 +8444,6 @@ mod tests {
     }
 
     #[test]
-    fn picture_frame_body_edit_publishes_complete_band_before_recompose() {
-        use crate::model::control::Control;
-        use crate::model::page::ColumnDef;
-        use crate::renderer::page_layout::PageLayoutInfo;
-
-        const HOST: usize = 325;
-        const INTERIOR: usize = 326;
-        const DOWNSTREAM: usize = 332;
-        const DPI: f64 = 96.0;
-
-        let bytes = std::fs::read(
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("samples/3-09월_교육_통합_2022.hwp"),
-        )
-        .expect("p325 corpus fixture");
-        let mut core = DocumentCore::from_bytes(&bytes).expect("parse p325 corpus fixture");
-
-        let styles = core.styles.clone();
-        let page_def = core.document.sections[0].section_def.page_def.clone();
-        let para_column_map = core.para_column_map.clone();
-        let hwp3_layout = core.document.layout_profile().hwp3_layout();
-        let original_paragraphs = core.document.sections[0].paragraphs.clone();
-        let column_def = original_paragraphs[..=HOST]
-            .iter()
-            .flat_map(|paragraph| &paragraph.controls)
-            .filter_map(|control| match control {
-                Control::ColumnDef(column) => Some(column.clone()),
-                _ => None,
-            })
-            .next_back()
-            .unwrap_or_else(ColumnDef::default);
-        let page_layout = PageLayoutInfo::from_page_def(&page_def, &column_def, DPI);
-        let host_column_index = para_column_map
-            .first()
-            .and_then(|columns| columns.get(HOST))
-            .copied()
-            .unwrap_or(0) as usize;
-        let column_width_px = page_layout
-            .column_areas
-            .get(host_column_index)
-            .or_else(|| page_layout.column_areas.first())
-            .unwrap_or(&page_layout.body_area)
-            .width;
-        let initial_band = crate::renderer::composer::layout_picture_band(
-            &original_paragraphs,
-            HOST,
-            column_width_px,
-            &styles,
-            DPI,
-            (0.0, 0.0),
-        )
-        .expect("p325 Picture frame");
-        assert_eq!(initial_band.paragraph_range, HOST..DOWNSTREAM);
-        assert!(initial_band.paragraph_range.contains(&INTERIOR));
-
-        let geometry = |paragraphs: &[Paragraph]| {
-            paragraphs
-                .iter()
-                .map(|paragraph| {
-                    paragraph
-                        .line_segs
-                        .iter()
-                        .map(|line| {
-                            (
-                                line.text_start,
-                                line.vertical_pos,
-                                line.line_height,
-                                line.text_height,
-                                line.baseline_distance,
-                                line.line_spacing,
-                                line.column_start,
-                                line.segment_width,
-                                line.tag,
-                            )
-                        })
-                        .collect::<Vec<_>>()
-                })
-                .collect::<Vec<_>>()
-        };
-        let reflow_released_body_paragraph = |paragraphs: &mut [Paragraph], para_idx: usize| {
-            let column_def = DocumentCore::find_column_def_for_paragraph(paragraphs, para_idx);
-            let layout = PageLayoutInfo::from_page_def(&page_def, &column_def, DPI);
-            let column_index = para_column_map
-                .first()
-                .and_then(|columns| columns.get(para_idx))
-                .copied()
-                .unwrap_or(0) as usize;
-            let column_area = layout
-                .column_areas
-                .get(column_index)
-                .or_else(|| layout.column_areas.first())
-                .unwrap_or(&layout.body_area);
-            let paragraph = &mut paragraphs[para_idx];
-            let para_style = styles.para_styles.get(paragraph.para_shape_id as usize);
-            let margin_left = para_style.map(|style| style.margin_left).unwrap_or(0.0);
-            let margin_right = para_style.map(|style| style.margin_right).unwrap_or(0.0);
-            reflow_line_segs(
-                paragraph,
-                ParagraphBox::body_for_style(column_area.width, para_style, DPI),
-                &styles,
-                DPI,
-            );
-        };
-
-        let insertion = "가".repeat(4);
-        let original_text = original_paragraphs[INTERIOR].text.clone();
-        let mut expected_after_insert = original_paragraphs.clone();
-        expected_after_insert[INTERIOR].insert_text_at(0, &insertion);
-        let inserted_band = crate::renderer::composer::layout_picture_band(
-            &expected_after_insert,
-            HOST,
-            column_width_px,
-            &styles,
-            DPI,
-            (0.0, 0.0),
-        )
-        .expect("edited p325 Picture frame");
-        let inserted_range = inserted_band.paragraph_range.clone();
-        assert_eq!(inserted_range, HOST..331);
-        assert_eq!(
-            inserted_band.line_segs[INTERIOR - HOST].len(),
-            2,
-            "the interior insertion must add one physical row"
-        );
-        for (paragraph, line_segs) in expected_after_insert[inserted_range.clone()]
-            .iter_mut()
-            .zip(inserted_band.line_segs)
-        {
-            paragraph.replace_line_segs(line_segs);
-        }
-        for released_para_idx in inserted_range.end..initial_band.paragraph_range.end {
-            reflow_released_body_paragraph(&mut expected_after_insert, released_para_idx);
-        }
-        crate::renderer::composer::recalculate_section_vpos(
-            &mut expected_after_insert,
-            HOST,
-            Some(HOST..initial_band.paragraph_range.end.max(inserted_range.end)),
-            crate::renderer::composer::paragraph_flow_end(&original_paragraphs[HOST]),
-            &styles,
-            DPI,
-            hwp3_layout,
-        );
-
-        core.insert_text_native(0, INTERIOR, 0, &insertion)
-            .expect("Picture-owned paragraph insert succeeds");
-        assert_eq!(
-            core.document.sections[0].paragraphs[INTERIOR].text,
-            format!("{}{}", insertion, original_text),
-        );
-        assert!(
-            core.document.sections[0].raw_stream.is_none(),
-            "the successful transaction invalidates the source section together with its LineSegs"
-        );
-        assert_eq!(
-            geometry(&core.document.sections[0].paragraphs[HOST..=DOWNSTREAM]),
-            geometry(&expected_after_insert[HOST..=DOWNSTREAM]),
-            "the complete fresh band, released p331, and downstream p332 boundary must publish together"
-        );
-        assert_eq!(
-            core.document.sections[0].paragraphs[DOWNSTREAM].line_segs[0].segment_width,
-            original_paragraphs[DOWNSTREAM].line_segs[0].segment_width,
-            "p332 remains a full-width downstream paragraph while its vertical position is recomposed"
-        );
-
-        let before_delete = core.document.sections[0].paragraphs.clone();
-        let before_delete_band = crate::renderer::composer::layout_picture_band(
-            &before_delete,
-            HOST,
-            column_width_px,
-            &styles,
-            DPI,
-            (0.0, 0.0),
-        )
-        .expect("inserted Picture frame before delete");
-        assert_eq!(before_delete_band.paragraph_range, HOST..331);
-        let mut expected_after_delete = before_delete.clone();
-        expected_after_delete[INTERIOR].delete_text_at(0, insertion.chars().count());
-        let deleted_band = crate::renderer::composer::layout_picture_band(
-            &expected_after_delete,
-            HOST,
-            column_width_px,
-            &styles,
-            DPI,
-            (0.0, 0.0),
-        )
-        .expect("restored p325 Picture frame");
-        let deleted_range = deleted_band.paragraph_range.clone();
-        assert_eq!(deleted_range, HOST..DOWNSTREAM);
-        for (paragraph, line_segs) in expected_after_delete[deleted_range.clone()]
-            .iter_mut()
-            .zip(deleted_band.line_segs)
-        {
-            paragraph.replace_line_segs(line_segs);
-        }
-        for released_para_idx in deleted_range.end..before_delete_band.paragraph_range.end {
-            reflow_released_body_paragraph(&mut expected_after_delete, released_para_idx);
-        }
-        crate::renderer::composer::recalculate_section_vpos(
-            &mut expected_after_delete,
-            HOST,
-            Some(
-                HOST..before_delete_band
-                    .paragraph_range
-                    .end
-                    .max(deleted_range.end),
-            ),
-            crate::renderer::composer::paragraph_flow_end(&before_delete[HOST]),
-            &styles,
-            DPI,
-            hwp3_layout,
-        );
-
-        core.delete_text_native(0, INTERIOR, 0, insertion.chars().count())
-            .expect("Picture-owned paragraph delete succeeds");
-        assert_eq!(
-            core.document.sections[0].paragraphs[INTERIOR].text, original_text,
-            "delete restores the edited paragraph text"
-        );
-        assert_eq!(
-            geometry(&core.document.sections[0].paragraphs[HOST..=DOWNSTREAM]),
-            geometry(&expected_after_delete[HOST..=DOWNSTREAM]),
-            "delete must also republish the fresh complete band and p332 boundary"
-        );
-    }
-
-    #[test]
-    fn picture_frame_transaction_rejects_shadow_failure_without_publication() {
-        const HOST: usize = 325;
-        const INTERIOR: usize = 326;
-        const DOWNSTREAM: usize = 332;
-
-        let bytes = std::fs::read(
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("samples/3-09월_교육_통합_2022.hwp"),
-        )
-        .expect("p325 corpus fixture");
-        let mut core = DocumentCore::from_bytes(&bytes).expect("parse p325 corpus fixture");
-        let before_paragraphs = core.document.sections[0].paragraphs.clone();
-        let before_raw_stream = core.document.sections[0].raw_stream.clone();
-        let geometry = |paragraphs: &[Paragraph]| {
-            paragraphs
-                .iter()
-                .map(|paragraph| {
-                    paragraph
-                        .line_segs
-                        .iter()
-                        .map(|line| {
-                            (
-                                line.text_start,
-                                line.vertical_pos,
-                                line.line_height,
-                                line.text_height,
-                                line.baseline_distance,
-                                line.line_spacing,
-                                line.column_start,
-                                line.segment_width,
-                                line.tag,
-                            )
-                        })
-                        .collect::<Vec<_>>()
-                })
-                .collect::<Vec<_>>()
-        };
-
-        let result = core.apply_body_edit_through_picture_band(0, INTERIOR, |paragraph| {
-            paragraph.column_type = ColumnBreakType::Column;
-        });
-
-        assert!(
-            result.is_err(),
-            "the staged layout must reject a column break"
-        );
-        assert_eq!(
-            core.document.sections[0].paragraphs[INTERIOR].text, before_paragraphs[INTERIOR].text,
-            "a rejected shadow edit must not publish source text"
-        );
-        assert_eq!(
-            geometry(&core.document.sections[0].paragraphs[HOST..=DOWNSTREAM]),
-            geometry(&before_paragraphs[HOST..=DOWNSTREAM]),
-            "a rejected shadow edit must not publish partial LineSeg geometry"
-        );
-        assert_eq!(
-            core.document.sections[0].raw_stream, before_raw_stream,
-            "a rejected shadow edit must not invalidate source serialization state"
-        );
-    }
-
-    #[test]
     fn picture_frame_column_convergence_accepts_stable_and_rejects_exhaustion() {
         const HOST: usize = 325;
 
@@ -8131,321 +8476,6 @@ mod tests {
                     if message == "그림 배치 영역(325..)의 단 배치가 수렴하지 않습니다"
             ),
             "an exhausted alternating column sequence must be rejected before commit"
-        );
-    }
-
-    #[test]
-    fn picture_frame_reprojects_after_host_moves_to_unequal_column() {
-        use crate::model::control::Control;
-
-        const HOST: usize = 325;
-        const INTERIOR: usize = 326;
-        const DPI: f64 = 96.0;
-
-        let bytes = std::fs::read(
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("samples/3-09월_교육_통합_2022.hwp"),
-        )
-        .expect("p325 corpus fixture");
-
-        let mut core = DocumentCore::from_bytes(&bytes).expect("parse p325 corpus fixture");
-        let column = core.document.sections[0].paragraphs[0]
-            .controls
-            .iter_mut()
-            .find_map(|control| match control {
-                Control::ColumnDef(column) => Some(column),
-                _ => None,
-            })
-            .expect("p0 column definition");
-        column.same_width = false;
-        column.proportional_widths = true;
-        column.widths = vec![10_000, 22_000];
-        column.gaps = vec![500];
-        core.document.sections[0].section_def.page_def.height = 12_000;
-        core.recompose_section(0);
-        core.paginate();
-
-        let before_col = core.para_column_map[0][HOST];
-        let (_, _, before_width_hwp, _) = core
-            .picture_band_owning_body_paragraph(0, HOST)
-            .expect("initial Picture band");
-        assert_eq!(
-            before_col, 0,
-            "fixture starts the host in the narrow column"
-        );
-
-        core.insert_text_native(0, HOST, 0, &"가".repeat(32))
-            .expect("host insert succeeds");
-
-        let after_col = core.para_column_map[0][HOST];
-        let (_, fresh_range, after_width_hwp, _) = core
-            .picture_band_owning_body_paragraph(0, HOST)
-            .expect("Picture band after pagination");
-        assert_eq!(after_col, 1, "the expanded host moves to the wide column");
-        assert_ne!(
-            before_width_hwp, after_width_hwp,
-            "the two physical columns must have different available widths"
-        );
-
-        let fresh_band = crate::renderer::composer::layout_picture_band(
-            &core.document.sections[0].paragraphs,
-            HOST,
-            after_width_hwp,
-            &core.styles,
-            DPI,
-            (0.0, 0.0),
-        )
-        .expect("fresh band at the post-pagination column width");
-        assert_eq!(fresh_band.paragraph_range, fresh_range);
-        let horizontal_projection = |line: &LineSeg| {
-            (
-                line.text_start,
-                line.line_height,
-                line.text_height,
-                line.baseline_distance,
-                line.line_spacing,
-                line.column_start,
-                line.segment_width,
-                line.tag,
-            )
-        };
-        for (paragraph, fresh_lines) in core.document.sections[0].paragraphs[fresh_range.clone()]
-            .iter()
-            .zip(fresh_band.line_segs)
-        {
-            assert_eq!(
-                paragraph
-                    .line_segs
-                    .iter()
-                    .map(horizontal_projection)
-                    .collect::<Vec<_>>(),
-                fresh_lines
-                    .iter()
-                    .map(horizontal_projection)
-                    .collect::<Vec<_>>(),
-                "every current band member must match the post-pagination column projection"
-            );
-        }
-    }
-
-    #[test]
-    fn picture_frame_batch_edit_reprojects_before_final_pagination() {
-        use crate::model::control::Control;
-
-        const HOST: usize = 325;
-        const DPI: f64 = 96.0;
-
-        let bytes = std::fs::read(
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("samples/3-09월_교육_통합_2022.hwp"),
-        )
-        .expect("p325 corpus fixture");
-
-        let mut core = DocumentCore::from_bytes(&bytes).expect("parse p325 corpus fixture");
-        let column = core.document.sections[0].paragraphs[0]
-            .controls
-            .iter_mut()
-            .find_map(|control| match control {
-                Control::ColumnDef(column) => Some(column),
-                _ => None,
-            })
-            .expect("p0 column definition");
-        column.same_width = false;
-        column.proportional_widths = true;
-        column.widths = vec![10_000, 22_000];
-        column.gaps = vec![500];
-        core.document.sections[0].section_def.page_def.height = 12_000;
-        core.recompose_section(0);
-        core.paginate();
-
-        let before_col = core.para_column_map[0][HOST];
-        let (_, _, before_width_hwp, _) = core
-            .picture_band_owning_body_paragraph(0, HOST)
-            .expect("initial Picture band");
-        assert_eq!(before_col, 0, "fixture starts in the narrow column");
-
-        core.begin_batch_native().expect("begin batch");
-        core.insert_text_native(0, HOST, 0, &"가".repeat(32))
-            .expect("host insert succeeds during batch");
-        let after_edit_col = core.para_column_map[0][HOST];
-        core.end_batch_native().expect("end batch");
-
-        let after_flush_col = core.para_column_map[0][HOST];
-        let (_, fresh_range, after_width_hwp, _) = core
-            .picture_band_owning_body_paragraph(0, HOST)
-            .expect("Picture band after final pagination");
-        assert_eq!(
-            after_edit_col, before_col,
-            "batch mode keeps the live column map deferred"
-        );
-        assert_eq!(
-            after_flush_col, 1,
-            "the expanded host moves to the wide column when the batch flushes"
-        );
-        assert_ne!(before_width_hwp, after_width_hwp);
-
-        let fresh_band = crate::renderer::composer::layout_picture_band(
-            &core.document.sections[0].paragraphs,
-            HOST,
-            after_width_hwp,
-            &core.styles,
-            DPI,
-            (0.0, 0.0),
-        )
-        .expect("fresh band at the post-batch column width");
-        assert_eq!(fresh_band.paragraph_range, fresh_range);
-        let horizontal_projection = |line: &LineSeg| {
-            (
-                line.text_start,
-                line.line_height,
-                line.text_height,
-                line.baseline_distance,
-                line.line_spacing,
-                line.column_start,
-                line.segment_width,
-                line.tag,
-            )
-        };
-        let actual_projection = core.document.sections[0].paragraphs[fresh_range.clone()]
-            .iter()
-            .map(|paragraph| {
-                paragraph
-                    .line_segs
-                    .iter()
-                    .map(horizontal_projection)
-                    .collect::<Vec<_>>()
-            })
-            .collect::<Vec<_>>();
-        let fresh_projection = fresh_band
-            .line_segs
-            .iter()
-            .map(|line_segs| {
-                line_segs
-                    .iter()
-                    .map(horizontal_projection)
-                    .collect::<Vec<_>>()
-            })
-            .collect::<Vec<_>>();
-
-        assert_eq!(
-            actual_projection, fresh_projection,
-            "the deferred batch flush must already receive the destination-width Picture band"
-        );
-    }
-
-    #[test]
-    fn picture_frame_failed_narrow_column_convergence_publishes_nothing() {
-        use crate::model::control::Control;
-
-        const HOST: usize = 325;
-        const DOWNSTREAM: usize = 332;
-        let bytes = std::fs::read(
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("samples/3-09월_교육_통합_2022.hwp"),
-        )
-        .expect("p325 corpus fixture");
-
-        let mut core = DocumentCore::from_bytes(&bytes).expect("parse p325 corpus fixture");
-        let host_style_id = core.document.sections[0].paragraphs[HOST].para_shape_id;
-        core.styles.para_styles[host_style_id as usize].margin_left =
-            crate::renderer::hwpunit_to_px(20_000, core.dpi);
-        let column = core.document.sections[0].paragraphs[0]
-            .controls
-            .iter_mut()
-            .find_map(|control| match control {
-                Control::ColumnDef(column) => Some(column),
-                _ => None,
-            })
-            .expect("p0 column definition");
-        column.same_width = false;
-        column.proportional_widths = true;
-        column.widths = vec![22_000, 10_000];
-        column.gaps = vec![500];
-        core.document.sections[0].section_def.page_def.height = 12_000;
-        core.recompose_section(0);
-        core.paginate();
-
-        let before_col = core.para_column_map[0][HOST];
-        let (_, before_range, before_width_px, _) = core
-            .picture_band_owning_body_paragraph(0, HOST)
-            .expect("supported Picture band in the wide source column");
-        assert_eq!(before_col, 0, "fixture starts in the wide column");
-        assert_eq!(before_range, HOST..326);
-        // Same pin, same quantity — the tuple carries px now, so convert at
-        // the assertion rather than restating the number in another unit.
-        assert_eq!(
-            crate::renderer::px_to_hwpunit(before_width_px, core.dpi),
-            36_842
-        );
-
-        let geometry = |paragraphs: &[Paragraph]| {
-            paragraphs
-                .iter()
-                .map(|paragraph| {
-                    paragraph
-                        .line_segs
-                        .iter()
-                        .map(|line| {
-                            (
-                                line.text_start,
-                                line.vertical_pos,
-                                line.line_height,
-                                line.text_height,
-                                line.baseline_distance,
-                                line.line_spacing,
-                                line.column_start,
-                                line.segment_width,
-                                line.tag,
-                            )
-                        })
-                        .collect::<Vec<_>>()
-                })
-                .collect::<Vec<_>>()
-        };
-        let before_text = core.document.sections[0].paragraphs[HOST].text.clone();
-        let before_geometry = geometry(&core.document.sections[0].paragraphs[HOST..=DOWNSTREAM]);
-        let before_raw_stream = core.document.sections[0].raw_stream.clone();
-        let before_columns = core.para_column_map.clone();
-        let before_event_count = core.event_log.len();
-
-        let result = core.insert_text_native(0, HOST, 0, &"가".repeat(32));
-        let after_col = core.para_column_map[0][HOST];
-        let text_changed = core.document.sections[0].paragraphs[HOST].text != before_text;
-        let raw_changed = core.document.sections[0].raw_stream != before_raw_stream;
-        let event_count = core.event_log.len();
-
-        assert!(
-            matches!(
-                result,
-                Err(HwpError::RenderError(ref message))
-                    if message == "그림 배치 영역(325..)을 새 단 너비로 다시 배치할 수 없습니다"
-            ),
-            "the narrow destination column must reject its re-projection"
-        );
-        assert_eq!(
-            after_col, before_col,
-            "a rejected convergence must not publish its destination column"
-        );
-        assert!(
-            !text_changed,
-            "a rejected convergence must not publish text"
-        );
-        assert!(
-            !raw_changed,
-            "a rejected convergence must not invalidate raw data"
-        );
-        assert_eq!(
-            geometry(&core.document.sections[0].paragraphs[HOST..=DOWNSTREAM]),
-            before_geometry,
-            "a rejected convergence must not publish partial LineSeg geometry"
-        );
-        assert_eq!(
-            core.para_column_map, before_columns,
-            "a rejected convergence must not publish pagination state"
-        );
-        assert_eq!(
-            event_count, before_event_count,
-            "a rejected convergence must not publish an edit event"
         );
     }
 }

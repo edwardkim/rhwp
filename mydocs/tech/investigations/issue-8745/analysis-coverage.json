@@ -1,0 +1,14 @@
+{
+  "baseline_warnings": 831,
+  "candidate_warnings": 831,
+  "same_warning_multiset": true,
+  "baseline_only": {},
+  "candidate_only": {},
+  "baseline_success_files": 1604,
+  "candidate_success_files": 1604,
+  "baseline_error_files": 181,
+  "candidate_error_files": 181,
+  "local_baseline_logging": 107,
+  "candidate_pr_logging": 0,
+  "baseline_rule_file_line_matches_github": true
+}

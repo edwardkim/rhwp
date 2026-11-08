@@ -1,0 +1,521 @@
+{
+  "parent_head": "037cd8a9a1956711601c87196952e4596779e617",
+  "policy_base": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "before_product_head": "b0c5f9b4c898f706c99e2aa67398b0e5bfaaa545",
+  "candidate_producer": {
+    "parent_head": "037cd8a9a1956711601c87196952e4596779e617",
+    "files": {
+      "src/renderer/layout/table_layout.rs": {
+        "before_sha256": "df380ee2793ff08a47f80f6cce5dffa9db9762bbde14ea5afc98c605de5c1657",
+        "candidate_sha256": "69f3cb0c1e2348307a030484c6ccb13a59e452c38f70c33340710e26e41301df"
+      },
+      "src/renderer/layout/table_layout/row_physical_band.rs": {
+        "before_sha256": "fec3554012c6fed75da477b6508e3f2973c1cb34bd3a0ab301c07f7a03c2fa7f",
+        "candidate_sha256": "912e505b1887a80380390f837137870fc76180dd3d236420a5ce7a0bcd708eff"
+      },
+      "src/renderer/layout/table_layout/row_block_cut.rs": {
+        "before_sha256": "2f97b87578b3bd8e2961107e9e95173f201cb106aaddcdfb517590310de2d691",
+        "candidate_sha256": "cbf1da58d2c73690534d00342f10c29d96f630f29faaa4dffab304fd6a6332b6"
+      }
+    },
+    "status": "native_built_needs_visual_check",
+    "scope": "독립 최소 안의 마지막 원본 슬롯을 Capacity에만 예약한다. Occupied·CellUnit 소유·paint 원점은 유지한다. 두 기존 Capacity 소비자가 같은 질의를 쓴다.",
+    "native_binary": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/closing-slot-capacity-only/rhwp-native",
+    "native_sha256": "9d7aaf5bd827c3a4a477eeee9c2b6bd2be343b9e718c1e1d2add60a2c877c909",
+    "native_build_exit_code": 0,
+    "wasm_files": {
+      "pkg/rhwp.js": "f90e8e9655657ea0f23b467ccb89b37b6af24f8f1b387dab9055dae747aea5b9",
+      "pkg/rhwp_bg.wasm": "b60b3794bb64c81fd5e88eef15e877d906fa8b36f13fcfa001e095b0f0e26016",
+      "rhwp-studio/public/rhwp.js": "f90e8e9655657ea0f23b467ccb89b37b6af24f8f1b387dab9055dae747aea5b9",
+      "rhwp-studio/public/rhwp_bg.wasm": "b60b3794bb64c81fd5e88eef15e877d906fa8b36f13fcfa001e095b0f0e26016"
+    },
+    "wasm_mode": "Mac locked wrapper --target web --out-dir pkg --no-opt 로컬 대체 빌드. Docker 최적화 통과 아님.",
+    "wasm_build_exit_code": 0
+  },
+  "format_only_source_proof": {
+    "file": "src/renderer/layout/table_layout/row_block_cut.rs",
+    "producer_source_sha256": "cbf1da58d2c73690534d00342f10c29d96f630f29faaa4dffab304fd6a6332b6",
+    "formatted_source_sha256": "6cea7bf7fe291932f137f93433efe4643c8293ae1358f8401ee539ba631ccddb",
+    "same_rustfmt_output": true,
+    "canonical_format_sha256": "6cea7bf7fe291932f137f93433efe4643c8293ae1358f8401ee539ba631ccddb",
+    "normalization": "rustfmt stdout의 알려진 정확한 파일명 헤더만 제거하고 전체 소스 바이트 비교",
+    "all_other_product_sources_byte_identical": true,
+    "note": "실제 캡처 producer는 포맷 전 해시로 유지. 제품의 유일한 차이는 동일 rustfmt 출력인 인자 목록 줄바꿈이며 정식 Cargo focused는 포맷 후 파일을 다시 빌드."
+  },
+  "input": "samples/issue1880_takeplace_host_before.hwpx",
+  "input_sha256": "9807766f5b4b2ad352362b5384f3bc0611a89cfdb1b65bd3d6682d7d571dca2c",
+  "pdf": "pdf/issue1880/issue1880_takeplace_host_before-2024.pdf",
+  "pdf_sha256": "662735e5f28fd423ffd158335cea1abfee1ed92b19c125efbea20c46dceca446",
+  "condition": "96DPI / Print / compat2024 / canonical visual_sweep.py / 2px / 90% / 같은 문서별 글꼴",
+  "runs": [
+    {
+      "mode": "base",
+      "backend": "native",
+      "pages": 10,
+      "min_raw": "47.12761",
+      "below90": [
+        10
+      ],
+      "p9_raw": "98.54126",
+      "p10_raw": "47.12761"
+    },
+    {
+      "mode": "before",
+      "backend": "native",
+      "pages": 10,
+      "min_raw": "47.12761",
+      "below90": [
+        10
+      ],
+      "p9_raw": "98.54126",
+      "p10_raw": "47.12761"
+    },
+    {
+      "mode": "after",
+      "backend": "native",
+      "pages": 10,
+      "min_raw": "98.39726",
+      "below90": [],
+      "p9_raw": "100.00000",
+      "p10_raw": "100.00000"
+    },
+    {
+      "mode": "base",
+      "backend": "wasm",
+      "pages": 10,
+      "min_raw": "47.11770",
+      "below90": [
+        10
+      ],
+      "p9_raw": "98.54175",
+      "p10_raw": "47.11770"
+    },
+    {
+      "mode": "before",
+      "backend": "wasm",
+      "pages": 10,
+      "min_raw": "47.11770",
+      "below90": [
+        10
+      ],
+      "p9_raw": "98.54175",
+      "p10_raw": "47.11770"
+    },
+    {
+      "mode": "after",
+      "backend": "wasm",
+      "pages": 10,
+      "min_raw": "98.39669",
+      "below90": [],
+      "p9_raw": "100.00000",
+      "p10_raw": "100.00000"
+    }
+  ],
+  "regression_proof": {
+    "test_source": "tests/cases/issue_8105_complete_cell_closing_slot.rs",
+    "test_source_sha256": "0334980dbca72659780708b0e2a0b692dc756ec5bcec824e2161ddcb42001f1a",
+    "test_binary_sha256": "76c4d063b5b240356c0eb74bfb02a4221df2988880ab6587edb9e7341bb59a0c",
+    "method": "동일한 실제 Rust 테스트 실행 파일에서 기존 CLI 환경 경로 override 관례로 frozen 수정 전/잘못된 paint 반례/수정 후 Native를 실행. 테스트가 호출한 CLI의 SHA를 별도 고정. 같은 테스트의 원본 파서는 변경 없음. Cargo nextest의 정식 manifest 연결은 별도 확인 필요.",
+    "records": [
+      {
+        "stage": "before",
+        "cli": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/head/rhwp-native",
+        "cli_sha256": "638770d1d271d606276a57021e7a9672324783dbd677a758efd659c4cff7c2a8",
+        "exit_code": 101,
+        "passed": 0,
+        "failed": 2,
+        "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/closing-slot-capacity-only/regression-before.log"
+      },
+      {
+        "stage": "wrong-paint-counterexample",
+        "cli": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/closing-source-slot-candidate/rhwp-native",
+        "cli_sha256": "cb9164e08608e695f279959beb5643ea23cb3ca77ae9fe36439c4a49b5f9f28a",
+        "exit_code": 101,
+        "passed": 1,
+        "failed": 1,
+        "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/closing-slot-capacity-only/regression-wrong-paint-counterexample.log"
+      },
+      {
+        "stage": "after",
+        "cli": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/closing-slot-capacity-only/rhwp-native",
+        "cli_sha256": "9d7aaf5bd827c3a4a477eeee9c2b6bd2be343b9e718c1e1d2add60a2c877c909",
+        "exit_code": 0,
+        "passed": 2,
+        "failed": 0,
+        "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/closing-slot-capacity-only/regression-after.log"
+      }
+    ]
+  },
+  "native_content_ownership": {
+    "producer": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/closing-slot-capacity-only/source-identity.json",
+    "before_producer": "b0c5f9b4c898f706c99e2aa67398b0e5bfaaa545",
+    "native_comparisons": [
+      {
+        "case": "d1880",
+        "base_tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/visual/head/native/source8152-d1880/silhouette.tsv",
+        "candidate_tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/closing-slot-capacity-only/visual/source8152-d1880/silhouette.tsv",
+        "rows": [
+          {
+            "page": 1,
+            "before": "100.00000",
+            "after": "100.00000",
+            "delta_pp": "0.00000"
+          },
+          {
+            "page": 2,
+            "before": "100.00000",
+            "after": "100.00000",
+            "delta_pp": "0.00000"
+          },
+          {
+            "page": 3,
+            "before": "99.99509",
+            "after": "99.99509",
+            "delta_pp": "0.00000"
+          },
+          {
+            "page": 4,
+            "before": "100.00000",
+            "after": "100.00000",
+            "delta_pp": "0.00000"
+          },
+          {
+            "page": 5,
+            "before": "100.00000",
+            "after": "100.00000",
+            "delta_pp": "0.00000"
+          },
+          {
+            "page": 6,
+            "before": "98.39726",
+            "after": "98.39726",
+            "delta_pp": "0.00000"
+          },
+          {
+            "page": 7,
+            "before": "100.00000",
+            "after": "100.00000",
+            "delta_pp": "0.00000"
+          },
+          {
+            "page": 8,
+            "before": "100.00000",
+            "after": "100.00000",
+            "delta_pp": "0.00000"
+          },
+          {
+            "page": 9,
+            "before": "98.54126",
+            "after": "100.00000",
+            "delta_pp": "1.45874"
+          },
+          {
+            "page": 10,
+            "before": "47.12761",
+            "after": "100.00000",
+            "delta_pp": "52.87239"
+          }
+        ],
+        "declines_ge_0p1": []
+      },
+      {
+        "case": "policy76-78",
+        "base_tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/closing-flow-capacity-candidate/control-before/policy-hwp-p77/silhouette.tsv",
+        "candidate_tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/closing-slot-capacity-only/control-after/policy-hwp-p77/silhouette.tsv",
+        "rows": [
+          {
+            "page": 76,
+            "before": "95.50745",
+            "after": "95.50745",
+            "delta_pp": "0.00000"
+          },
+          {
+            "page": 77,
+            "before": "96.95278",
+            "after": "96.95278",
+            "delta_pp": "0.00000"
+          },
+          {
+            "page": 78,
+            "before": "97.75030",
+            "after": "97.75030",
+            "delta_pp": "0.00000"
+          }
+        ],
+        "declines_ge_0p1": []
+      },
+      {
+        "case": "cbta187-190",
+        "base_tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/visual/head/native/cbta1613/silhouette.tsv",
+        "candidate_tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/closing-slot-capacity-only/control-cbta/cbta1613/silhouette.tsv",
+        "rows": [
+          {
+            "page": 187,
+            "before": "99.14048",
+            "after": "99.14048",
+            "delta_pp": "0.00000"
+          },
+          {
+            "page": 188,
+            "before": "99.26343",
+            "after": "99.26343",
+            "delta_pp": "0.00000"
+          },
+          {
+            "page": 189,
+            "before": "99.13818",
+            "after": "99.13818",
+            "delta_pp": "0.00000"
+          },
+          {
+            "page": 190,
+            "before": "99.47042",
+            "after": "99.47042",
+            "delta_pp": "0.00000"
+          }
+        ],
+        "declines_ge_0p1": []
+      }
+    ],
+    "all_body_character_and_source_owner_order_equal_excluding_repeated_header": true,
+    "body_characters_excluding_repeated_header": 13544,
+    "repeated_header_characters_equal": true,
+    "header_characters": 57,
+    "header_scope": "원본 pi9 표의 header=1인 첫 행은 반복 머리글. 반복된 문자도 별도로 같은지 확인했다.",
+    "direct_read_native_p10": "독립 Print와 첫 이어받기 줄·품질문서 관리 행의 시작·다음 행과 닫는 테두리 정합. 글리프의 미세한 색상 가장자리 차이는 남음.",
+    "new_tests": "추가 전 fresh WASM 전10쪽 검증 대기. 기존 검사 제거·완화 없음.",
+    "same_native_png_bytes_pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "changed_native_png_bytes_pages": [
+      9,
+      10
+    ],
+    "directly_read_native_pages": [
+      9,
+      10
+    ]
+  },
+  "files": {
+    "tsv/base-native.tsv": {
+      "sha256": "e2b3aa1a3c0bf7cf22451b9fc157273205b9648c9ced505f67991055a9f5ebc7",
+      "bytes": 365,
+      "producer_source_path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/visual/base/native/source8152-d1880/silhouette.tsv"
+    },
+    "tsv/before-native.tsv": {
+      "sha256": "e2b3aa1a3c0bf7cf22451b9fc157273205b9648c9ced505f67991055a9f5ebc7",
+      "bytes": 365,
+      "producer_source_path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/visual/head/native/source8152-d1880/silhouette.tsv"
+    },
+    "tsv/after-native.tsv": {
+      "sha256": "1a723a3f13e8cd14e2a3f51bcdcba145821201238db52e5b3c2e8f0af8622814",
+      "bytes": 369,
+      "producer_source_path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/closing-slot-capacity-only/visual/source8152-d1880/silhouette.tsv"
+    },
+    "before-native-p010-review.png": {
+      "sha256": "c22bbd2770020f6df72f258cfdba1d17691c0ef70203830bdbd7edae42613884",
+      "bytes": 207734,
+      "producer_source_path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/review-png/native/source8152-d1880/review/review_010.png"
+    },
+    "before-native-p010-overlay.png": {
+      "sha256": "981d8fa8daf02b3ecdfc8105f4eb88e794f1f642b6c90e2ec0dddc718a1a6620",
+      "bytes": 79238,
+      "producer_source_path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/review-png/native/source8152-d1880/overlay/overlay_010.png"
+    },
+    "after-native-p009-review.png": {
+      "sha256": "14e43092ee8c2d18eecd6ae216056d9912b9ddc088b16e6f0804087d12d9130c",
+      "bytes": 803100,
+      "producer_source_path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/closing-slot-capacity-only/review-png/review/review_009.png"
+    },
+    "after-native-p009-overlay.png": {
+      "sha256": "f7bd37f4edcf0c8c2a0e7367cb52e479fcf867a1c47b6e16ba041bdd18e2908d",
+      "bytes": 259535,
+      "producer_source_path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/closing-slot-capacity-only/review-png/overlay/overlay_009.png"
+    },
+    "after-native-p010-review.png": {
+      "sha256": "81e8b6df2869f376e250bc89ce6b5b9db41d28e27dcedbe7a570d3a0b0dc40fc",
+      "bytes": 212639,
+      "producer_source_path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/closing-slot-capacity-only/review-png/review/review_010.png"
+    },
+    "after-native-p010-overlay.png": {
+      "sha256": "637ceebbd24fab64a4479b7302fce5770ffe370d7d3750145fb1fe2cae5cf9d0",
+      "bytes": 82372,
+      "producer_source_path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/closing-slot-capacity-only/review-png/overlay/overlay_010.png"
+    },
+    "tsv/base-wasm.tsv": {
+      "sha256": "69008f5aa3f93b5841d6a3eab9d0be62f95d8ecab14353b6ea69470320a6d202",
+      "bytes": 365,
+      "producer_source_path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/visual/base/wasm/source8152-d1880/silhouette.tsv"
+    },
+    "tsv/before-wasm.tsv": {
+      "sha256": "69008f5aa3f93b5841d6a3eab9d0be62f95d8ecab14353b6ea69470320a6d202",
+      "bytes": 365,
+      "producer_source_path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/visual/head/wasm/source8152-d1880/silhouette.tsv"
+    },
+    "tsv/after-wasm.tsv": {
+      "sha256": "58db4cd3ea4932936213594953d97eb8d5d7a07222bb6a24ed1e897d22424638",
+      "bytes": 369,
+      "producer_source_path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/closing-slot-capacity-only/visual-wasm/source8152-d1880/silhouette.tsv"
+    },
+    "before-wasm-p010-review.png": {
+      "sha256": "3b49faa942d69aac1a19a0de25cc73549249cd4f9b6fe2bdd74785adca177b79",
+      "bytes": 207705,
+      "producer_source_path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/review-png/wasm/source8152-d1880/review/review_010.png"
+    },
+    "before-wasm-p010-overlay.png": {
+      "sha256": "4f0463c4634f8f8f682e3b668d76d920476a91e9eed72645f9f8ae3940eb385d",
+      "bytes": 79061,
+      "producer_source_path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/review-png/wasm/source8152-d1880/overlay/overlay_010.png"
+    },
+    "after-wasm-p009-review.png": {
+      "sha256": "357cb60d151aa33a0fab2aee301e6b8e16ed45c9261230791178fdd3001322fd",
+      "bytes": 803306,
+      "producer_source_path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/closing-slot-capacity-only/review-png-wasm/review/review_009.png"
+    },
+    "after-wasm-p009-overlay.png": {
+      "sha256": "7ac281fdc7a898dae13e6a66d1e17db68fd6a1dc0e697961af85e43f9f99f0cd",
+      "bytes": 259696,
+      "producer_source_path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/closing-slot-capacity-only/review-png-wasm/overlay/overlay_009.png"
+    },
+    "after-wasm-p010-review.png": {
+      "sha256": "f76b9263730713dff041664345b2a8cf61a68e44f672bb55f97b6a5d6cdb08f6",
+      "bytes": 212689,
+      "producer_source_path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/closing-slot-capacity-only/review-png-wasm/review/review_010.png"
+    },
+    "after-wasm-p010-overlay.png": {
+      "sha256": "33e0528765baf04de953042c92f89cb9405ced4e36bc0e0f88807655d9dd605d",
+      "bytes": 82193,
+      "producer_source_path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/closing-slot-capacity-only/review-png-wasm/overlay/overlay_010.png"
+    }
+  },
+  "scope": "이 입력의 전10쪽·새2검사의 전후 증거. 통합 전체 36조건/새전체회귀/Studio 실제 소비/최신 CI 완료 주장이 아님.",
+  "font_programs": {
+    "provenance_sha256": "139aeeecaee9bc1813bf504ba67312d62fe1ea2fd805dd6c2d062a1be09f5152",
+    "files": [
+      {
+        "sha256": "febb15c4b79dffd48f7424d656fa8456586575216f007a40d962801d0a5280fd",
+        "sourceSha256": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5",
+        "families": [
+          "HYGothic-Medium",
+          "HY중고딕"
+        ],
+        "weight": 400,
+        "style": "normal",
+        "bytes": 3274536
+      },
+      {
+        "sha256": "9d56ac6f59a57794a1f2c03c09846a301b239ae1fe402a12bb0c32971c41774a",
+        "sourceSha256": "49dd1ef0caa6989a7dd95b484fdd052cbc846f6514c0c08421ed03a6cb1669cc",
+        "families": [
+          "HYSinMyeongJo-Medium",
+          "HY신명조"
+        ],
+        "weight": 400,
+        "style": "normal",
+        "bytes": 5403260
+      },
+      {
+        "sha256": "acd4b604c9561bd88f9c6d160e640f42bce668abd106a39c2ed74478a15869bd",
+        "sourceSha256": "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002",
+        "families": [
+          "HYMyeongJo-Extra",
+          "HY견명조"
+        ],
+        "weight": 400,
+        "style": "normal",
+        "bytes": 6360560
+      }
+    ],
+    "binary_fonts_committed": false
+  },
+  "cargo_focused": {
+    "exit_code": 0,
+    "passed": 2,
+    "skipped_unselected": 261,
+    "source_files": {
+      "src/renderer/layout/table_layout.rs": "69f3cb0c1e2348307a030484c6ccb13a59e452c38f70c33340710e26e41301df",
+      "src/renderer/layout/table_layout/row_physical_band.rs": "912e505b1887a80380390f837137870fc76180dd3d236420a5ce7a0bcd708eff",
+      "src/renderer/layout/table_layout/row_block_cut.rs": "6cea7bf7fe291932f137f93433efe4643c8293ae1358f8401ee539ba631ccddb",
+      "tests/cases/issue_8105_complete_cell_closing_slot.rs": "0334980dbca72659780708b0e2a0b692dc756ec5bcec824e2161ddcb42001f1a"
+    },
+    "log_sha256": "c3f5e201b12c5c17f7fa7b861aa92f4adbca579dfd032ee86cfaba005718c944",
+    "manifest_check_exit_code": 0,
+    "markdown_link_check_exit_code": 0
+  },
+  "retained_regression_packet": {
+    "modules": 9,
+    "passed": 16,
+    "failed": 0,
+    "cases": [
+      {
+        "case": "issue_8105_closing_fragment_trailing_empty_line",
+        "exit_code": 0,
+        "passed": 1,
+        "failed": 0
+      },
+      {
+        "case": "issue_8105_declared_overflow_row_content_fits",
+        "exit_code": 0,
+        "passed": 1,
+        "failed": 0
+      },
+      {
+        "case": "issue_8105_declared_row_blank_tail",
+        "exit_code": 0,
+        "passed": 3,
+        "failed": 0
+      },
+      {
+        "case": "issue_8105_first_fragment_outer_top",
+        "exit_code": 0,
+        "passed": 1,
+        "failed": 0
+      },
+      {
+        "case": "issue_8105_footnote_area_closing_line",
+        "exit_code": 0,
+        "passed": 1,
+        "failed": 0
+      },
+      {
+        "case": "issue_8105_fragment_outer_top_and_restart_trim",
+        "exit_code": 0,
+        "passed": 3,
+        "failed": 0
+      },
+      {
+        "case": "issue_8105_numbered_stored_word_tail",
+        "exit_code": 0,
+        "passed": 3,
+        "failed": 0
+      },
+      {
+        "case": "issue_8105_split_row_declared_cells",
+        "exit_code": 0,
+        "passed": 2,
+        "failed": 0
+      },
+      {
+        "case": "issue_8105_split_row_first_fragment_closing_line",
+        "exit_code": 0,
+        "passed": 1,
+        "failed": 0
+      }
+    ]
+  },
+  "direct_read_native_pages": [
+    9,
+    10
+  ],
+  "direct_read_wasm_pages": [
+    9,
+    10
+  ]
+}

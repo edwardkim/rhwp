@@ -1,0 +1,363 @@
+{
+  "source": {
+    "parentHead": "01910e50f80bc5af3829047a01f46974c6209aaf",
+    "base": "d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867",
+    "productionDiffSha256": "d3be566527f34f5ef68f213f2edf5bf131791ac2e86947faf52b267489675752",
+    "sourceFiles": {
+      "src/renderer/typeset/paragraph/metrics.rs": "0fc360d8c5730d6763ff11b5010ea9d3dae6645576570a3a1a385729ec5ea99d",
+      "src/renderer/typeset/controls/stored_tac.rs": "e7bc2a81abdee4524a56bfa00c7b07e691150ea18549d050492dc9772efd2841"
+    },
+    "sourceState": "Uncommitted common flow and independently certified zero-column origin correction; active nonzero axes remain rejected",
+    "fullPrAcceptance": false
+  },
+  "native": {
+    "binarySha256": "2f8f952b7fbe326320ead4877b8221b2245fbb71b36b109017ecfb3887aabf51",
+    "sourceProducerSha256": "192198302815b32c9699bae4b8a59c09055e1e14461579b092736183add54f82"
+  },
+  "wasm": {
+    "files": {
+      "rhwp.js": "56b2836e71bbbde64097476cb009303b8eeff61777c480cae82a238cf4d47af3",
+      "rhwp_bg.wasm": "77f44c82074e830a900ba0847f18def0dafee18bda1002d9eeceb3dc0089fcdc"
+    },
+    "rootAndStudioPublicMatch": true,
+    "method": "Mac locked wrapper --target web --out-dir pkg --no-opt; local substitute, not Docker optimized",
+    "sourceProducerSha256": "192198302815b32c9699bae4b8a59c09055e1e14461579b092736183add54f82"
+  },
+  "builds": [
+    {
+      "step": "native-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--jobs",
+        "8"
+      ],
+      "exitCode": 0,
+      "seconds": 120.37740898132324
+    },
+    {
+      "step": "fresh-wasm",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exitCode": 0,
+      "seconds": 205.3559148311615
+    }
+  ],
+  "before": {
+    "renderedRole": "before-common-flow-correction",
+    "renderedProductionHead": "01910e50f80bc5af3829047a01f46974c6209aaf",
+    "frozenArtifactSource": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage86-mask-grid-preparation",
+    "frozenNative": {
+      "binarySha256": "cd551d86ca214a73ddf27fbfbb3970e56ef130438d5112c71a1c3571161cfcc2",
+      "sourceProducerSha256": "17d0d2aec3d0190c5e40b68925330f3fd6569ceaef2db7ef63dbe6d60d6d5282"
+    },
+    "frozenWasm": {
+      "files": {
+        "rhwp.js": "56b2836e71bbbde64097476cb009303b8eeff61777c480cae82a238cf4d47af3",
+        "rhwp_bg.wasm": "d8ec24b44df148ad4ccc1d3c6a779756b1b373df1feb2738ab515ce039a39a05"
+      },
+      "rootAndStudioPublicMatch": true,
+      "method": "Mac locked wrapper --target web --out-dir pkg --no-opt; local substitute, not Docker optimized",
+      "sourceProducerSha256": "17d0d2aec3d0190c5e40b68925330f3fd6569ceaef2db7ef63dbe6d60d6d5282"
+    },
+    "originalProductionDiffMatchesCommit": true,
+    "currentSourceGuardOnly": "Current dirty after candidate is monitored solely to prevent drift; frozen before artifacts remain the rendered producer",
+    "fullPrAcceptance": false
+  },
+  "regression": {
+    "steps": [
+      {
+        "role": "before",
+        "exitCode": 100,
+        "seconds": 119.92149710655212,
+        "sourceHashes": {
+          "src/renderer/typeset/paragraph/metrics.rs": "ded0fb6640991e6f1562500bfe057a5d3caf5e6a012156336111288abceef646",
+          "src/renderer/typeset/controls/stored_tac.rs": "9ee39bbc02bdad2a7dbea93d983afa36a8ae91f6abf1365aa292da8a55ca83b9"
+        }
+      },
+      {
+        "role": "after",
+        "exitCode": 0,
+        "seconds": 127.68014907836914,
+        "sourceHashes": {
+          "src/renderer/typeset/paragraph/metrics.rs": "0fc360d8c5730d6763ff11b5010ea9d3dae6645576570a3a1a385729ec5ea99d",
+          "src/renderer/typeset/controls/stored_tac.rs": "e7bc2a81abdee4524a56bfa00c7b07e691150ea18549d050492dc9772efd2841"
+        }
+      }
+    ],
+    "testSourceSha256": "27cd6248e4f7f13ec1b584a2e08d4e99cf1a33fa9c7b28fe5ec2c6a60a1f90ea",
+    "sourceRestored": true,
+    "expectationsUnchanged": true,
+    "beforeRuntimeFailure": true,
+    "afterRuntimePass": true
+  },
+  "artifacts": [
+    {
+      "file": "before-native-ktx003.tsv",
+      "sha256": "d2577e63f55e8c421878eef31276fc4fa3d1837116293744b02ace54d93970e7",
+      "role": "before",
+      "backend": "native",
+      "case": "ktx003",
+      "pages": [
+        {
+          "page": 1,
+          "raw": "81.34542"
+        }
+      ]
+    },
+    {
+      "file": "before-wasm-ktx003.tsv",
+      "sha256": "07fa4ceaf78a5f0d4a4b4d0ca85ab6c8c8ad18f2a0030ee42b54f708fe56d2ba",
+      "role": "before",
+      "backend": "wasm",
+      "case": "ktx003",
+      "pages": [
+        {
+          "page": 1,
+          "raw": "81.37405"
+        }
+      ]
+    },
+    {
+      "file": "before-native-ktx-p001-review.png",
+      "sha256": "473fe06e87563a319f876607c83add799d0c8e3dd45161e4c82bb425570a6a34",
+      "role": "before",
+      "backend": "native",
+      "case": "ktx003",
+      "page": 1
+    },
+    {
+      "file": "before-native-ktx-p001-overlay.png",
+      "sha256": "2553710b8aeffa79e23f85b2fda88b12fa4dd8e2966b6a145f793720ab877774",
+      "role": "before",
+      "backend": "native",
+      "case": "ktx003",
+      "page": 1
+    },
+    {
+      "file": "before-wasm-ktx-p001-review.png",
+      "sha256": "43c10fc6bc50ef1237a603f3f0c100c622c1370b5105f5b5c514055e7a706223",
+      "role": "before",
+      "backend": "wasm",
+      "case": "ktx003",
+      "page": 1
+    },
+    {
+      "file": "before-wasm-ktx-p001-overlay.png",
+      "sha256": "592f18d3356e2833935436c0a55e518218f1403e45bba6d34758722789b86ce5",
+      "role": "before",
+      "backend": "wasm",
+      "case": "ktx003",
+      "page": 1
+    },
+    {
+      "file": "after-native-ktx003.tsv",
+      "sha256": "c048e8751248af75d1e4b7e38a1dbae56d5dc7a7e4d3ca0275bb6c15b49d18e1",
+      "role": "after",
+      "backend": "native",
+      "case": "ktx003",
+      "pages": [
+        {
+          "page": 1,
+          "raw": "99.36494"
+        }
+      ]
+    },
+    {
+      "file": "after-native-low-slack6535.tsv",
+      "sha256": "c695e53ec9ac7f79dd928c699d70782ae3fe14f9a71966d32c528cf38f73af4a",
+      "role": "after",
+      "backend": "native",
+      "case": "low-slack6535",
+      "pages": [
+        {
+          "page": 1,
+          "raw": "99.99852"
+        }
+      ]
+    },
+    {
+      "file": "after-native-missing-lineseg1.tsv",
+      "sha256": "4f8c8c80b4e18d34292841274662d94f68ec2146ceceefa14e8f4d5715e9afdd",
+      "role": "after",
+      "backend": "native",
+      "case": "missing-lineseg1",
+      "pages": [
+        {
+          "page": 1,
+          "raw": "98.02990"
+        }
+      ]
+    },
+    {
+      "file": "after-native-original-sample11-user-print.tsv",
+      "sha256": "bb11202f879c5b30fe077eaaecc54d0fac8e2c73e91e22f36e810e0878cf4e7d",
+      "role": "after",
+      "backend": "native",
+      "case": "original-sample11-user-print",
+      "pages": [
+        {
+          "page": 2,
+          "raw": "99.83678"
+        },
+        {
+          "page": 50,
+          "raw": "93.13188"
+        }
+      ]
+    },
+    {
+      "file": "after-native-sample16-hwpx.tsv",
+      "sha256": "ccb9c86dec24e615a64a476d9fb01b53ad4fb694709c96afcc4af2a063de1c38",
+      "role": "after",
+      "backend": "native",
+      "case": "sample16-hwpx",
+      "pages": [
+        {
+          "page": 18,
+          "raw": "96.75084"
+        },
+        {
+          "page": 35,
+          "raw": "98.91162"
+        }
+      ]
+    },
+    {
+      "file": "after-wasm-ktx003.tsv",
+      "sha256": "1a03196c04a41d2d1bfd1b1140f40be92af65378d9ca275fe41e808f812e4d04",
+      "role": "after",
+      "backend": "wasm",
+      "case": "ktx003",
+      "pages": [
+        {
+          "page": 1,
+          "raw": "99.38975"
+        }
+      ]
+    },
+    {
+      "file": "after-wasm-low-slack6535.tsv",
+      "sha256": "5d4dd369a7994ef2752a30f0fb5551976a6aebc89be0847b46f4c88745aa37c1",
+      "role": "after",
+      "backend": "wasm",
+      "case": "low-slack6535",
+      "pages": [
+        {
+          "page": 1,
+          "raw": "99.99851"
+        }
+      ]
+    },
+    {
+      "file": "after-wasm-missing-lineseg1.tsv",
+      "sha256": "a6764df49f043a046f0ed32dc668f53edf69341823273f99005133d15823dc1a",
+      "role": "after",
+      "backend": "wasm",
+      "case": "missing-lineseg1",
+      "pages": [
+        {
+          "page": 1,
+          "raw": "98.02479"
+        }
+      ]
+    },
+    {
+      "file": "after-wasm-original-sample11-user-print.tsv",
+      "sha256": "501104230a245f7df9b7150b20173e2df38e1db6020ce2315349ef305bab953f",
+      "role": "after",
+      "backend": "wasm",
+      "case": "original-sample11-user-print",
+      "pages": [
+        {
+          "page": 2,
+          "raw": "99.83678"
+        },
+        {
+          "page": 50,
+          "raw": "93.13713"
+        }
+      ]
+    },
+    {
+      "file": "after-wasm-sample16-hwpx.tsv",
+      "sha256": "1fbaefdf714b6a302ccaa58d645f20d21316371f4ad8fc9f7b638194e191e8e2",
+      "role": "after",
+      "backend": "wasm",
+      "case": "sample16-hwpx",
+      "pages": [
+        {
+          "page": 18,
+          "raw": "96.75000"
+        },
+        {
+          "page": 35,
+          "raw": "98.91082"
+        }
+      ]
+    },
+    {
+      "file": "after-native-ktx-p001-review.png",
+      "sha256": "03ff190736228ffc75902a2de91dedfe69bd5dd24afd3f892b7d13606f95a7ff",
+      "role": "after",
+      "backend": "native",
+      "case": "ktx003",
+      "page": 1
+    },
+    {
+      "file": "after-native-ktx-p001-overlay.png",
+      "sha256": "c3a63d3232e955ca31ebfa42fceaefd19ef13fb00b76413d510b1ebcf64d2a1a",
+      "role": "after",
+      "backend": "native",
+      "case": "ktx003",
+      "page": 1
+    },
+    {
+      "file": "after-wasm-ktx-p001-review.png",
+      "sha256": "0aec291f28997b788d7811a9703d341d9c240b1b43d11ecdef5cee4bdd24df53",
+      "role": "after",
+      "backend": "wasm",
+      "case": "ktx003",
+      "page": 1
+    },
+    {
+      "file": "after-wasm-ktx-p001-overlay.png",
+      "sha256": "a83a75d688c8556c0cfd811ba21c0b9c9cb8b685500178dd7ea303c433444897",
+      "role": "after",
+      "backend": "wasm",
+      "case": "ktx003",
+      "page": 1
+    }
+  ],
+  "fullPrAcceptance": false,
+  "full50FreshValidationComplete": false,
+  "scopeGates": [
+    {
+      "gate": "fmt",
+      "exitCode": 0
+    },
+    {
+      "gate": "manifest",
+      "exitCode": 0
+    },
+    {
+      "gate": "diff",
+      "exitCode": 0
+    }
+  ]
+}

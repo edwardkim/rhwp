@@ -1,0 +1,62 @@
+from pathlib import Path
+import argparse, datetime, hashlib, json, os, shutil, subprocess
+
+p = argparse.ArgumentParser()
+p.add_argument('--source', type=Path, required=True)
+p.add_argument('--label', required=True)
+p.add_argument('--mode', choices=['native', 'wasm'], required=True)
+p.add_argument('--diagnostic', action='store_true')
+p.add_argument('--reuse-compiled', action='store_true')
+a = p.parse_args()
+root = Path('/home/edward/mygithub/rhwp')
+target = root / 'target/pr-review'
+out = root / 'output/pr-review/kang-t-20261106' / f'{a.label}-producer'
+out.mkdir(exist_ok=True)
+proof_path = out / f'{a.mode}-build.json'
+tracked = subprocess.check_output(['git', 'ls-files', 'src', 'crates', 'vendor', 'Cargo.toml', 'Cargo.lock', 'build.rs'], cwd=a.source, text=True).splitlines()
+digest = hashlib.sha256()
+for rel in tracked:
+    f = a.source / rel
+    if f.is_file():
+        digest.update(rel.encode() + b'\0' + f.read_bytes() + b'\0')
+env = os.environ.copy()
+env.update(CARGO_BUILD_JOBS='4', CARGO_TARGET_DIR=str(target))
+if a.mode == 'native':
+    command = ['cargo', 'build', '--locked', '--profile', 'release-test', '--features', 'native-skia', '--lib', '--bin', 'rhwp', '--message-format=json', '--target-dir', str(target)]
+else:
+    env['CARGO_PROFILE_RELEASE_CODEGEN_UNITS'] = '16'
+    command = ['scripts/wasm-pack-locked.sh', '--target', 'web', '--out-dir', 'pkg']
+    if a.diagnostic:
+        command.append('--no-opt')
+proof = dict(source_sha=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=a.source, text=True).strip(), source_dir=str(a.source), source_digest=digest.hexdigest(), mode=a.mode, profile='release-test' if a.mode == 'native' else 'release', command=command, started=datetime.datetime.now(datetime.timezone.utc).isoformat(), success=False, status='running')
+proof['environment'] = {key: env.get(key) for key in ['CARGO_BUILD_JOBS', 'CARGO_TARGET_DIR', 'CARGO_PROFILE_RELEASE_CODEGEN_UNITS', 'BINARYEN_CORES', 'RUSTFLAGS']}
+proof_path.write_text(json.dumps(proof, indent=2) + '\n')
+proof['optimized'] = a.mode == 'native' or not a.diagnostic
+# Do not reuse another worktree's package artifact solely because its mtime is newer.
+if not a.reuse_compiled:
+    os.utime(a.source / 'src/lib.rs', None)
+else:
+    previous = json.loads((out / 'native-build.json').read_text())
+    assert a.mode == 'wasm' and previous['success'] and previous['source_digest'] == digest.hexdigest()
+    assert not subprocess.check_output(['git', 'diff', '--name-only', '--', 'src', 'crates', 'vendor', 'Cargo.toml', 'Cargo.lock', 'build.rs'], cwd=a.source, text=True).strip()
+    proof['reuse_compiled_source_digest'] = previous['source_digest']
+with (out / f'{a.mode}-build-messages.jsonl').open('w') as stdout, (out / f'{a.mode}-build.log').open('w') as stderr:
+    result = subprocess.run(command, cwd=a.source, env=env, stdout=stdout, stderr=stderr)
+proof.update(exit_code=result.returncode, finished=datetime.datetime.now(datetime.timezone.utc).isoformat(), success=result.returncode == 0, status='passed' if result.returncode == 0 else 'failed')
+if result.returncode == 0:
+    proof['artifacts'] = {}
+    files = ['rhwp', 'librhwp.rlib'] if a.mode == 'native' else ['rhwp.js', 'rhwp_bg.wasm', 'rhwp.d.ts', 'rhwp_bg.wasm.d.ts', 'package.json']
+    source_dir = target / 'release-test' if a.mode == 'native' else a.source / 'pkg'
+    frozen = out if a.mode == 'native' else out / 'pkg'
+    frozen.mkdir(exist_ok=True)
+    for name in files:
+        dst = frozen / name
+        shutil.copy2(source_dir / name, dst)
+        proof['artifacts'][name] = dict(path=str(dst), bytes=dst.stat().st_size, sha256=hashlib.sha256(dst.read_bytes()).hexdigest())
+        if a.mode == 'wasm' and name != 'package.json':
+            public = a.source / 'rhwp-studio/public' / name
+            if public.exists():
+                proof['artifacts'][name]['public_sha256'] = hashlib.sha256(public.read_bytes()).hexdigest()
+proof_path.write_text(json.dumps(proof, indent=2) + '\n')
+print(json.dumps(proof, indent=2), flush=True)
+raise SystemExit(result.returncode)

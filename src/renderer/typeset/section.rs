@@ -19,7 +19,7 @@ mod stored_reset;
 mod tail;
 mod vpos;
 impl TypesetEngine {
-    pub(in crate::renderer::typeset) fn run_section(
+    pub(in crate::renderer::typeset) fn run_section_with_storage<S: crate::storage::Storage>(
         &self,
         paragraphs: &[Paragraph],
         composed: &[ComposedParagraph],
@@ -36,7 +36,8 @@ impl TypesetEngine {
         endnote_shape: Option<&FootnoteShape>,
         force_break_before: &std::collections::HashSet<usize>,
         endnote_deferral: EndnoteDeferral<'_>,
-    ) -> PaginationResult {
+        storage: &S,
+    ) -> Result<PaginationResult, S::Error> {
         // [#2424 프로파일] paginate_pass 와 같은 env var 로 하위 단계 게이트.
         #[cfg(not(target_arch = "wasm32"))]
         let issue2424_ts_enabled =
@@ -46,7 +47,8 @@ impl TypesetEngine {
         let issue2424_ts_started = issue2424_ts_enabled.then(std::time::Instant::now);
         let mut issue2424_prof = Issue2424TypesetProfile::default();
 
-        let layout = PageLayoutInfo::from_page_def(page_def, column_def, self.dpi);
+        let layout =
+            PageLayoutInfo::from_page_def_with_storage(page_def, column_def, self.dpi, storage)?;
         // [#2403] 소스분기 프로파일 — 엔진(Cell)과 state 에 한 번에 배선.
         self.profile.set(profile);
         // [#5854] 통짜 합성 LINE_SEG 사다리 판정 — 구역당 한 번.
@@ -56,14 +58,15 @@ impl TypesetEngine {
             ));
         // [#6175] 용지/쪽 기준 어울림 개체의 폭과 세로 band - 구역당 한 번.
         *self.float_carve_evidence.borrow_mut() =
-            crate::renderer::float_placement::paper_or_page_float_carve_evidence(paragraphs);
+            crate::renderer::float_placement::paper_or_page_float_carve_evidence_with_storage(
+                paragraphs, storage,
+            )?;
         let col_count = column_def.column_count.max(1);
         let default_footnote_shape = FootnoteShape::default();
         let footnote_shape = footnote_shape.unwrap_or(&default_footnote_shape);
         let footnote_separator_overhead = footnote_separator_overhead_px(footnote_shape, self.dpi);
         let footnote_between_notes_margin =
             footnote_between_notes_margin_px(footnote_shape, self.dpi);
-        let footnote_safety_margin = hwpunit_to_px(3000, self.dpi);
         // [Task #1007] variant cross-paragraph vpos reset THRESHOLD 계산용 body height (HU)
         let body_height_hu_for_variant: i32 = if profile.hwp3_layout() {
             page_def.height.saturating_sub(
@@ -85,9 +88,9 @@ impl TypesetEngine {
             section_index,
             footnote_separator_overhead,
             footnote_between_notes_margin,
-            footnote_safety_margin,
             column_def.column_type,
         );
+        st.configure_footnote_placement(footnote_shape.placement);
         st.initialize_source(
             hide_empty_line,
             profile,
@@ -96,6 +99,15 @@ impl TypesetEngine {
                 .any(|p| p.line_segs.iter().any(|ls| !is_synthetic_line_seg(ls))),
             skip_spacing_before_prededuct,
         );
+        if let Some(band) = crate::renderer::stored_page_origin::initial_column_band::resolve(
+            paragraphs,
+            styles,
+            profile,
+            usize::from(col_count),
+            self.dpi,
+        ) {
+            st.initialize_stored_column_band(band);
+        }
         // [#2279 OMIT-eager] 기계생성 압축 ladder 문서군 사전 판별 — lazy 판별
         // (#2383, 빈 host 표 성장 시점)보다 앞서 페이지말 fit 규칙에 적용되도록
         // 구역 시작 시점에 확정한다. lazy 경로는 사전 스캔 미검출 형상의
@@ -122,28 +134,15 @@ impl TypesetEngine {
                 st.mark_stored_spacing_omitted();
             }
         }
-        st.initialize_zone_spacing(column_def_design_spacing_px(column_def, self.dpi));
+        st.initialize_zone_spacing(column_def_design_spacing_px(column_def, self.dpi), false);
 
         // 머리말/꼬리말/쪽 번호/새 번호/감추기 컨트롤 수집
         let (hf_entries, page_number_pos) =
-            Self::collect_header_footer_controls(paragraphs, section_index);
-        // [#2559] 조건부(Even/Odd)까지 포함해 어떤 꼬리말이라도 정의돼 있으면
-        // 밴드가 점유될 수 있다. 완전히 비어 있는 구역에서만 각주 회수를 허용한다.
-        st.record_footer_presence(!hf_entries.iter().any(|(_, _, is_header, _)| !is_header));
-        // [#2668 진단] 밴드 회수 판정 관측 — 동작 불변.
-        // "꼬리말 위치 쪽 번호(PageNumberPos)가 밴드를 점유하므로 회수 대상에서 빼야 한다"는
-        // 판별자 가설을 이 출력으로 반증했다(회귀군·개선군 양쪽에 고루 존재).
-        // 경위와 실측은 mydocs/report/task_2668_footnote_band_measurement.md 참조.
-        if std::env::var("RHWP_DIAG_FBAND").is_ok() {
-            eprintln!(
-                "DIAG_FBAND sec={} footer_ctrl={} pnum_pos={:?} reclaim={}",
+            crate::renderer::pagination::collect_header_footer_controls_with_storage(
+                paragraphs,
                 section_index,
-                hf_entries.iter().any(|(_, _, is_header, _)| !is_header),
-                page_number_pos.as_ref().map(|p| p.position),
-                st.section_has_no_footer
-            );
-        }
-
+                storage,
+            )?;
         // 가시 콘텐츠(텍스트 또는 컨트롤 보유)를 가진 마지막 문단 인덱스. 이 뒤의 빈 문단들은
         // 문서 말미의 trailing 빈 문단이라, co-anchored 자리차지 표가 페이지를 채운 경우에 한해
         // 현재 page 잔여를 초과하면 새 page 를 만들지 않고 흡수한다(아래 trailing-empty 가드).
@@ -164,6 +163,8 @@ impl TypesetEngine {
             if st.prefilled_paras.contains(&para_idx) {
                 continue;
             }
+            st.apply_deferred_source_frame_body_page_with_storage(para_idx, storage)?;
+            st.consume_pending_table_terminal_gap(para_idx, paragraphs, styles, self.dpi);
             // 후속 본문이 사이에 없는 새 표 문단은 이전 묶음의 일부가 아니다.
             // 이전 문단의 후행 표를 먼저 완료한다. 새 문단의 명시적 쪽/단 나눔과
             // 저장 vpos를 적용하기 전이어야 이전 표가 새 문단 뒤로 밀리지 않는다.
@@ -238,7 +239,7 @@ impl TypesetEngine {
                                 st.current_items.len()
                             );
                         }
-                        st.advance_column_or_new_page();
+                        st.advance_column_or_new_page_with_storage(storage)?;
                     }
                 }
             }
@@ -276,7 +277,7 @@ impl TypesetEngine {
                 eprintln!("DIAG_ROUTE pi={} has_table={}", para_idx, has_table);
             }
 
-            let Some(boundary) = self.prepare_paragraph_boundary(
+            let Some(boundary) = self.prepare_paragraph_boundary_with_storage(
                 &mut st,
                 para_idx,
                 para,
@@ -289,11 +290,13 @@ impl TypesetEngine {
                 body_height_hu_for_variant,
                 force_break_before,
                 has_table,
-            ) else {
+                storage,
+            )?
+            else {
                 continue;
             };
 
-            self.apply_stored_paragraph_boundary(
+            self.apply_stored_paragraph_boundary_with_storage(
                 &mut st,
                 para_idx,
                 para,
@@ -305,9 +308,10 @@ impl TypesetEngine {
                 body_height_hu_for_variant,
                 measured_tables,
                 &boundary,
-            );
+                storage,
+            )?;
 
-            if self.absorb_section_tail(
+            if self.absorb_section_tail_with_storage(
                 &mut st,
                 para_idx,
                 para,
@@ -317,7 +321,11 @@ impl TypesetEngine {
                 last_content_para_idx,
                 boundary.para_style_break,
                 boundary.force_page_break,
-            ) {
+                storage,
+            )? {
+                // 빈 줄의 높이를 흡수해도 다음 문단의 저장 리셋은 이 원본 줄을
+                // 기준으로 판정해야 한다. 표시 여부와 저장 경계의 소유는 다르다.
+                variant_prev_para_idx = Some(para_idx);
                 continue;
             }
 
@@ -341,12 +349,14 @@ impl TypesetEngine {
                 continue;
             }
 
-            st.ensure_page();
+            st.ensure_page_with_storage(storage)?;
 
-            self.keep_heading_with_following_block(&mut st, para_idx, para, paragraphs);
+            self.keep_heading_with_following_block_with_storage(
+                &mut st, para_idx, para, paragraphs, storage,
+            )?;
 
             let picture_host_origin = (st.pages.len(), st.current_column, st.current_height);
-            let native_hwp5_footnote_break = self.place_paragraph_flow(
+            let native_hwp5_footnote_break = self.place_paragraph_flow_with_storage(
                 &mut st,
                 para_idx,
                 para,
@@ -358,7 +368,8 @@ impl TypesetEngine {
                 has_table,
                 issue2424_ts_enabled,
                 &mut issue2424_prof,
-            );
+                storage,
+            )?;
 
             self.finish_paragraph_anchor_state(
                 &mut st,
@@ -374,7 +385,7 @@ impl TypesetEngine {
                 &mut issue2424_prof,
             );
 
-            self.place_paragraph_controls(
+            self.place_paragraph_controls_with_storage(
                 &mut st,
                 para_idx,
                 para,
@@ -384,7 +395,8 @@ impl TypesetEngine {
                 has_table,
                 picture_host_origin,
                 native_hwp5_footnote_break,
-            );
+                storage,
+            )?;
 
             // [Task #1007] variant vpos reset 감지용 prev_para_idx 갱신
             variant_prev_para_idx = Some(para_idx);
@@ -396,9 +408,12 @@ impl TypesetEngine {
         let issue2424_inloop_flush = issue2424_prof.deferred_flush.0;
 
         // source tail에 뒤따르는 본문이 없어 자연 page break가 일어나지 않은 경우에도,
-        // deferred Square picture는 현재 쪽 FootnoteArea에 겹치지 않고 독립한 다음 physical
-        // page를 가져야 한다. 일반 흐름을 되감지 않고 picture PageItem만 drain한다.
-        if !st.deferred_next_page_square_pictures.is_empty() {
+        // 지연 그림과 확정 개체 프레임은 독립한 다음 physical page를 가져야 한다.
+        // 일반 흐름을 되감지 않고 다음 쪽 소유가 확정된 항목을 모두 배출한다.
+        if !st.deferred_next_page_square_pictures.is_empty()
+            || !st.deferred_next_page_stored_frames.is_empty()
+            || st.has_deferred_body_footnotes()
+        {
             st.force_new_page();
         }
 
@@ -433,10 +448,17 @@ impl TypesetEngine {
             &mut issue2424_prof.deferred_flush,
             issue2424_final_flush_started,
         );
-        if !st.current_items.is_empty() {
-            st.flush_column_always();
+        st.finish_next_column_stored_frames_with_storage(storage)?;
+        st.finish_deferred_column_shapes_with_storage(storage)?;
+        if st.has_column_content() {
+            st.flush_column_always_with_storage(storage)?;
         }
-        st.ensure_page();
+        // 마지막 본문 뒤의 저장 각주 suffix도 버리지 않는다. 실제 다음 쪽을
+        // 열면 전환 command가 큐를 인출하고 기존 각주 lane에 높이를 예약한다.
+        if st.has_deferred_body_footnotes() {
+            st.push_new_page_with_storage(storage)?;
+        }
+        st.ensure_page_with_storage(storage)?;
 
         // [#1955] 글뒤로 표 후행 빈 문단 보류 흡수 부착 — 페이지 확정 후
         // anchor 표의 첫 fragment 가 있는 단에 소급 기록 (한글: 글뒤로 표는
@@ -452,7 +474,7 @@ impl TypesetEngine {
         st.discard_terminal_blank_only_page(paragraphs);
 
         // 페이지 번호 + 머리말/꼬리말 할당
-        st.finalize_pages(&hf_entries, &page_number_pos, paragraphs);
+        st.finalize_pages_with_storage(&hf_entries, &page_number_pos, paragraphs, storage)?;
 
         if let Some(started) = issue2424_ts_started {
             let total = started.elapsed();
@@ -492,6 +514,6 @@ impl TypesetEngine {
             );
         }
 
-        st.into_result()
+        Ok(st.into_result())
     }
 }

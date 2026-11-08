@@ -1,0 +1,6 @@
+{
+  "exit": 101,
+  "cause": "Build started before the new detached worktree checkout finished;src/lib.rs was not present yet.",
+  "classification": "verification setup error;not a product regression",
+  "corrective_action": "Waited for successful checkout and queued a new complete-source build after candidate Cargo ends."
+}

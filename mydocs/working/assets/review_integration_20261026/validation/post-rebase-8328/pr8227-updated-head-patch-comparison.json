@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-28",
+  "original_head": "a34d1fb70dcdc2e1f692efaa63bfd2d77ee0e74c",
+  "latest_head": "fe855d85935c47b3ff5fd1b93839e5926f468828",
+  "scope": "원 PR 커밋 내용의 동일성; 통합 후보 코드 변경·원 head CI 통과 또는 시각 전체 페이지 결과를 독립 증명하지 않는다",
+  "commits": [
+    {
+      "cherry_pick_original": "b8a0e876d5fad426108ea7173f9c6ab8d7f47e17",
+      "latest_remote_commit": "9d5c213be15bf4847bd2f4e6029fedaf49f294aa",
+      "stable_patch_id": "ad11cd6480820e8e2887c5d63f0592b15cfb23af"
+    },
+    {
+      "cherry_pick_original": "2b3982b028b5b80398d6d0b75bf96716762995a3",
+      "latest_remote_commit": "511b27b08417b06c40fccb089384882b61b2214a",
+      "stable_patch_id": "634a11339053fdff6258aa7fb475b410b171900b"
+    },
+    {
+      "cherry_pick_original": "1a69db15352e171d2a16b4195d78cc445af2e9e6",
+      "latest_remote_commit": "3e230b6d724d2712a7f0f3694a5117340f4ccc26",
+      "stable_patch_id": "54cf721f8b0289465607450f25a85d2c6c0855ec"
+    },
+    {
+      "cherry_pick_original": "462c3dd380da3e3f617c39082f341efcb8fc6afe",
+      "latest_remote_commit": "123677a5cdd3f7a3665d681b01623bc9de448461",
+      "stable_patch_id": "c5b5274cc8d5879fa30795ce85d9e6a74f6460ed"
+    },
+    {
+      "cherry_pick_original": "a19b8bc9359d8b80d86c7b497d9d1e7f40c72774",
+      "latest_remote_commit": "d015b208d32fc8b0a5fa970f85a9afb6516943e1",
+      "stable_patch_id": "e3bd3166373b4192929675a3b81e7d53823966de"
+    },
+    {
+      "cherry_pick_original": "6d1ad105f8b56d4639855200e1b6ccf9b7ddc618",
+      "latest_remote_commit": "28db98d0f5dd5e1e230c77c19822cdd746ff3fed",
+      "stable_patch_id": "bda29e242dfe9d9eeb18e9dcd009eecb16040448"
+    },
+    {
+      "cherry_pick_original": "a34d1fb70dcdc2e1f692efaa63bfd2d77ee0e74c",
+      "latest_remote_commit": "fe855d85935c47b3ff5fd1b93839e5926f468828",
+      "stable_patch_id": "8e86bf42847ef5b1850ba50761de8446270fb1f1"
+    }
+  ]
+}

@@ -22,7 +22,7 @@ export const MUTATING_METHODS: readonly string[] = [
   // 쪽/구역/다단
   'setPageDef', 'setPageMargin', 'setSectionDef', 'setSectionDefAll', 'setPageBorderFill', 'setColumnDef',
   // 본문 텍스트/문단
-  'insertText', 'replaceBodyTextLocal', 'deleteText', 'deleteRange', 'splitParagraph', 'mergeParagraph',
+  'insertText', 'insertTextLogical', 'replaceBodyTextLocal', 'deleteText', 'deleteRange', 'splitParagraph', 'mergeParagraph',
   'insertPageBreak', 'insertColumnBreak', 'insertNewNumber', 'setNumberingRestart',
   // 셀 텍스트/문단
   'insertTextInCell', 'insertTextInCellDeferredPagination', 'deleteTextInCell',
@@ -31,7 +31,7 @@ export const MUTATING_METHODS: readonly string[] = [
   'splitParagraphInCell', 'mergeParagraphInCell', 'splitParagraphInCellByPath',
   'mergeParagraphInCellByPath',
   // 표 구조/속성
-  'createTable', 'createTableEx', 'deleteTableControl', 'insertTableRow', 'splitTable', 'mergeTableWithNext',
+  'createTable', 'createTableEx', 'createTableInCellByPath', 'deleteTableControl', 'insertTableRow', 'splitTable', 'mergeTableWithNext',
   'insertTableColumn', 'deleteTableRow', 'deleteTableColumn', 'mergeTableCells',
   'splitTableCell', 'splitTableCellInto', 'splitTableCellsInRange', 'resizeTableCells',
   'resizeTableCellsByPath', // [#7189] 중첩 표 셀 크기 조절 — 평면 resizeTableCells 의 경로 변형
@@ -40,9 +40,11 @@ export const MUTATING_METHODS: readonly string[] = [
   'pasteTableCellsTransposed', 'transposeTableCellsInPlace', 'pasteTableCellsTransposedAsTable',
   'evaluateTableFormula',
   // 그림/도형/수식 개체
-  'insertPicture', 'assignPictureImage', 'setPictureProperties',
+  'insertPicture', 'insertPictureInCell', 'relocateFloatingPicture',
+  'assignPictureImage', 'setPictureProperties',
   'setHeaderFooterPictureProperties', 'setCellPicturePropertiesByPath',
   'setCellShapePropertiesByPath', 'deletePictureControl', 'deleteCellPictureControlByPath',
+  'deleteCellShapeControlByPath',
   'createShapeControl', 'setShapeProperties', 'deleteShapeControl', 'changeShapeZOrder',
   'applyShapeZOrderPairs', // [#5769 후속] z 절대 대입 — SetZOrderCommand 의 undo/redo 경로
   'groupShapes', 'ungroupShape', 'moveLineEndpoint', 'updateConnectorsInSection',
@@ -61,6 +63,7 @@ export const MUTATING_METHODS: readonly string[] = [
   'setCharShapeIdInCell', 'setCharShapeIdInCellByPath',
   'setCharShapeRuns', 'setCharShapeRunsInCellByPath',
   'applyParaFormat', 'setParaShapeId', 'applyParaFormatInCell', 'setCellParaShapeId',
+  'applyParaFormatInCellByPath', 'setCellParaShapeIdByPath',
   // 스타일/번호 정의 (DocInfo 변이 포함)
   'updateStyle', 'updateStyleShapes', 'createStyle', 'deleteStyle', 'applyStyle',
   'applyCellStyle', 'createNumbering', 'ensureDefaultNumbering', 'ensureDefaultBullet',
@@ -73,7 +76,7 @@ export const MUTATING_METHODS: readonly string[] = [
   // 필드/양식/찾아바꾸기/책갈피
   'insertHyperlink', 'updateHyperlink', 'replaceHyperlinkText', 'removeHyperlink',
   'setFieldValue', 'setFieldValueByName', 'removeFieldAt', 'insertClickHereField',
-  'updateClickHereProps', 'setFormValue', 'setFormValueInCell',
+  'updateClickHereProps', 'setFormValue', 'setFormValueInCell', 'applyFormActionUpdates',
   'replaceText', 'replaceOne', 'replaceAll',
   'addBookmark', 'deleteBookmark', 'renameBookmark',
   // lineseg 재계산 (#177 — 저장 lineseg 를 실제로 변경)
@@ -89,6 +92,7 @@ export const EXCLUDED_NON_DOCUMENT: readonly string[] = [
   'clearLayerResourceCache', // 렌더 캐시
   'setShowParagraphMarks', 'setShowControlCodes', 'setShowTransparentBorders', // 표시 토글
   'setClipEnabled', // 렌더 클립 옵션
+  'setFontEnvironment', // 문서 IR·저장 줄·편집 히스토리를 바꾸지 않는 렌더 글꼴 환경
   'setActiveField', 'clearActiveField', // 편집 세션 상태 (직렬화 비대상)
   'moveVertical', 'moveVerticalByPath', // 캐럿 세로 탐색 (조회)
   'ensureParagraphStableIds', // 런타임 추적 id 부여
@@ -102,6 +106,7 @@ export const EXCLUDED_NON_DOCUMENT: readonly string[] = [
   // restoreSectionRaw 는 passthrough 를 되살리지만 SetSectionPropsCommand.undo 단일
   // 경로로 고정돼 있어(restoreDeleteFragment 와 같은 취급) 제외한다. 히스토리 밖 직접 호출 금지.
   'captureSectionRaw', 'restoreSectionRaw', 'discardSectionRaw',
+  'discardBorderPaintUndo', // journal lifetime only; no document mutation
   // [#7002] 스냅샷 API — 위 두 저널의 선례이면서 정작 분류가 빠져 있었다
   // (이 파일의 restoreDeleteFragment 주석이 SnapshotCommand.undo 의 restoreSnapshot 을
   // 근거로 인용한다). save·discard 는 저장소 적재·해제라 IR 비변경이고,

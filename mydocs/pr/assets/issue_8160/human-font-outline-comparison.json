@@ -1,0 +1,376 @@
+{
+  "source_font": "/usr/local/share/fonts/hancom-office-2020/Hwp/HMKMM.TTF",
+  "source_font_sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+  "pdf_font_xref": 34,
+  "pdf_subset_sha256": "bc369c55fee24922b41d866682830fb1b3cd600b2675f6f7f577fec9588074d1",
+  "source_upm": 512,
+  "pdf_upm": 512,
+  "glyphs_compared": 91,
+  "equal": 91,
+  "checks": [
+    {
+      "character": "별",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "첨",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "자",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "료",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "목",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "차",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "기",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "술",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "제",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "안",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "서",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "세",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "부",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "평",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "가",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "준",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "항",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "및",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "배",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "점",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "표",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "공",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "통",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "시",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "전",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "조",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "건",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "의",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "효",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "력",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "작",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "성",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "양",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "식",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "응",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "모",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "신",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "청",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "사",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "재",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "무",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "구",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "용",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "도",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "유",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "업",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "수",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "행",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "실",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "적",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "증",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "명",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "원",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "해",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "복",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "센",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "터",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "비",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "스",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "내",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "역",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "직",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "체",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "계",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "투",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "입",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "인",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "현",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "황",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "프",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "로",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "젝",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "트",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "일",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "정",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "획",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "장",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "지",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "보",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "요",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "율",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "금",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "액",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "호",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "찰",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "참",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "동",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "급",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "협",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "합",
+      "equal_normalized_outline": true
+    },
+    {
+      "character": "각",
+      "equal_normalized_outline": true
+    }
+  ]
+}

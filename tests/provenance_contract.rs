@@ -1,3 +1,8 @@
+//! 관계형(보안 출처): 실제 문서 값과 도구의 정적 경로 메타데이터를 구분한다.
+//! 주석 갱신: 2026-11-04T21:47:31+09:00; 직전 파일 변경: 2026-11-04T21:22:50+09:00
+//! (`990bb2fccf49803c0d6b3fdeb0225069133d7170`). 실제 문서의 래스터 배치를 검사하지
+//! 않으므로 raw·DPI는 비해당이다. 원본 응답의 출처 계약과 실제 CLI를 검사한다.
+//! 근거: mydocs/working/task_m100_planet6897_native_output_provenance.md.
 //! [#3787 S1] 봉투 출처 표지 드리프트 가드.
 //!
 //! 계약: 모든 `--json` 봉투는 `untrustedContent`(bool)와 `untrustedFields`(경로 배열)를
@@ -310,17 +315,33 @@ fn is_caller_echo(path: &str) -> bool {
 
 /// 봉투를 훑어 **문서 문자열이 실제로 나타난** 경로들을 모은다.
 /// 경로 표기는 지도와 같다: `.` 은 객체 하위, `[]` 는 배열 전개.
-fn scan(v: &Value, path: &str, or: &DocOracle, out: &mut BTreeSet<String>) {
+fn scan(v: &Value, path: &str, or: &DocOracle, recipe: &Recipe, out: &mut BTreeSet<String>) {
+    // 최상위 표지의 정적 경로 이름은 도구가 생성한 메타데이터다. 그 이름이
+    // 문서 토큰과 우연히 같아도 문서 값의 유출로 세지 않는다. 정확히 선언된
+    // 경로만 허용하므로 위조 표지와 중첩된 문서 필드는 계속 아래에서 검사한다.
+    if path == "untrustedFields"
+        && v.as_array().is_some_and(|values| {
+            rhwp::provenance::entry(recipe.command).is_some_and(|entry| {
+                values.iter().all(|value| {
+                    value
+                        .as_str()
+                        .is_some_and(|path| entry.untrusted.iter().any(|field| field.path == path))
+                })
+            })
+        })
+    {
+        return;
+    }
     match v {
         Value::String(s) => {
-            if !is_caller_echo(path) && or.hits(s) {
+            if !is_caller_echo(path) && or.hits(s) && !is_recipe_path_echo(recipe, path, s) {
                 out.insert(path.to_string());
             }
         }
         Value::Array(a) => {
             let p = format!("{path}[]");
             for e in a {
-                scan(e, &p, or, out);
+                scan(e, &p, or, recipe, out);
             }
         }
         Value::Object(o) => {
@@ -330,11 +351,57 @@ fn scan(v: &Value, path: &str, or: &DocOracle, out: &mut BTreeSet<String>) {
                 } else {
                     format!("{path}.{k}")
                 };
-                scan(val, &p, or, out);
+                scan(val, &p, or, recipe, out);
             }
         }
         _ => {}
     }
+}
+
+#[test]
+fn static_path_metadata_does_not_hide_document_values_or_forged_paths() {
+    let oracle = DocOracle {
+        tokens: vec!["nativeFontSupply".into()],
+        exact: BTreeSet::new(),
+    };
+    let recipe = Recipe {
+        command: "export-svg",
+        doc: None,
+        args: Vec::new(),
+        stdin: None,
+        exit: 0,
+        ndjson: false,
+    };
+    let mut envelope = rhwp::provenance::marked(
+        serde_json::json!({"nativeFontSupply": {"unavailable": ["nativeFontSupply-document-font"]}}),
+        recipe.command,
+    );
+    assert!(envelope["untrustedFields"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|value| value.as_str().is_some_and(|path| oracle.hits(path))));
+    let mut found = BTreeSet::new();
+    scan(&envelope, "", &oracle, &recipe, &mut found);
+    assert_eq!(
+        found,
+        BTreeSet::from(["nativeFontSupply.unavailable[]".into()])
+    );
+
+    envelope["untrustedFields"] = serde_json::json!(["nativeFontSupply-document-font"]);
+    envelope["fontEnvironment"] =
+        serde_json::json!({"untrustedFields": ["nativeFontSupply-document-font"]});
+    let mut found = BTreeSet::new();
+    scan(&envelope, "", &oracle, &recipe, &mut found);
+    assert!(found.contains("nativeFontSupply.unavailable[]"));
+    assert!(
+        found.contains("untrustedFields[]"),
+        "위조한 경로는 제외하지 않는다"
+    );
+    assert!(
+        found.contains("fontEnvironment.untrustedFields[]"),
+        "중첩된 문서 값은 검사한다"
+    );
 }
 
 // ── 호출 레시피 ────────────────────────────────────────────────────────────
@@ -350,6 +417,24 @@ struct Recipe {
     exit: i32,
     /// stdout 이 NDJSON(줄당 봉투 하나)인가.
     ndjson: bool,
+}
+
+fn is_recipe_path_echo(recipe: &Recipe, path: &str, value: &str) -> bool {
+    if recipe.args.first().map(String::as_str) != Some(recipe.command) {
+        return false;
+    }
+    // shortcut: 현재 레시피의 옵션 앞 입력만 다룬다. 옵션 뒤 입력 레시피가 생기면 원본 입력을 명시한다.
+    let mut inputs = recipe
+        .args
+        .iter()
+        .skip(1)
+        .take_while(|arg| !arg.starts_with('-'));
+    match (recipe.command, path) {
+        ("render-diff", "sourceA") => inputs.next().is_some_and(|input| input == value),
+        ("render-diff", "sourceB") => inputs.nth(1).is_some_and(|input| input == value),
+        ("scan", "roots[]") => inputs.any(|input| input == value),
+        _ => false,
+    }
 }
 
 /// 레시피를 만들 수 없어 스윕에서 빼는 명령과 **그 사유**.
@@ -1619,6 +1704,23 @@ fn recipes() -> Vec<Recipe> {
             exit: 0,
             ndjson: false,
         },
+        #[cfg(feature = "native-skia")]
+        Recipe {
+            command: "export-png",
+            doc: Some(main.clone()),
+            args: vec![
+                s("export-png"),
+                p(&main),
+                s("-o"),
+                out("png"),
+                s("-p"),
+                s("0"),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
         Recipe {
             command: "export-pdf",
             doc: Some(main.clone()),
@@ -1655,6 +1757,23 @@ fn recipes() -> Vec<Recipe> {
             command: "export-hwpx",
             doc: Some(main.clone()),
             args: vec![s("export-hwpx"), p(&main), out("out.hwpx"), s("--json")],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        #[cfg(feature = "pdf-import")]
+        Recipe {
+            command: "import-pdf",
+            // PDF 좌표 진단의 표지는 전용 CLI 계약에서도 검사한다.
+            doc: None,
+            args: vec![
+                s("import-pdf"),
+                p(&sample("pdf/issue5875/nested_table_text_caption-2020.pdf")),
+                out("pdf-import.hwpx"),
+                s("--source-pages"),
+                s("0"),
+                s("--json"),
+            ],
             stdin: None,
             exit: 0,
             ndjson: false,
@@ -1955,8 +2074,28 @@ fn every_text_bearing_command_declares_untrusted_fields() {
     // 조용히 빠져나가면 그 다음 검사는 아무 의미가 없다.
     let sweep = sweep();
     let covered: BTreeSet<&str> = sweep.recipes.iter().map(|r| r.command).collect();
+    // 선언의 출처 지도는 위 검사에서 feature 비가용 명령까지 확인한다.
+    // 실제 호출은 이 바이너리가 명시적으로 사용 가능하다고 밝힌 명령만 수행한다.
+    // 비가용 PNG를 문서 입력이 없는 명령으로 면제하지 않으며 Native Skia에서는
+    // 위 PNG 레시피와 cli_exit_codes_native가 실제 산출 봉투를 확인한다.
+    let unavailable: BTreeSet<&str> = cap["commands"]
+        .as_array()
+        .expect("commands")
+        .iter()
+        .filter(|command| command["json"] == true && command["available"] == false)
+        .map(|command| {
+            assert!(
+                command["requiresFeature"]
+                    .as_str()
+                    .is_some_and(|feature| !feature.is_empty()),
+                "비가용 JSON 명령에는 빌드 feature 근거가 있어야 한다: {command}"
+            );
+            command["name"].as_str().expect("command name")
+        })
+        .collect();
     let uncovered: Vec<String> = json_commands(&cap)
         .into_iter()
+        .filter(|name| !unavailable.contains(name.as_str()))
         .filter(|n| !covered.contains(n.as_str()))
         .filter(|n| !SWEEP_EXEMPT.iter().any(|(c, _)| c == n))
         .collect();
@@ -2002,7 +2141,7 @@ fn every_text_bearing_command_declares_untrusted_fields() {
                 ));
             }
             let mut found = BTreeSet::new();
-            scan(env, "", or, &mut found);
+            scan(env, "", or, r, &mut found);
             if found.is_empty() {
                 continue;
             }
@@ -2633,4 +2772,154 @@ fn every_json_command_declares_nonempty_record_fields() {
         problems.len(),
         problems.join("\n"),
     );
+}
+
+#[test]
+fn recipe_path_echo_only_excludes_exact_root_input_arguments() {
+    let oracle = DocOracle {
+        tokens: vec!["address".into()],
+        exact: BTreeSet::new(),
+    };
+    let a = "/tmp/address-a.hwp";
+    let b = "/tmp/address-b.hwpx";
+    let recipe = |command, args: &[&str]| Recipe {
+        command,
+        doc: None,
+        args: args.iter().map(|arg| (*arg).to_string()).collect(),
+        stdin: None,
+        exit: 0,
+        ndjson: false,
+    };
+    let render = recipe("render-diff", &["render-diff", a, b, "--json"]);
+    let scan_recipe = recipe("scan", &["scan", a, b, "--probe", "--json"]);
+    let other = recipe("info", &["info", a, b, "--json"]);
+    let mismatched = recipe("render-diff", &["info", a, b, "--json"]);
+    let render_option = recipe("render-diff", &["render-diff", a, "-o", b, "--json"]);
+    let scan_option = recipe("scan", &["scan", a, "--limit", "address", "--json"]);
+    let render_after_option = recipe("render-diff", &["render-diff", "--json", a, b]);
+    let scan_after_option = recipe("scan", &["scan", "--json", a, b]);
+    let expected = |paths: &[&str]| {
+        paths
+            .iter()
+            .map(|path| (*path).to_string())
+            .collect::<BTreeSet<String>>()
+    };
+    let mut cases = vec![
+        (
+            "render-diff 입력 반향과 본문을 구별",
+            &render,
+            serde_json::json!({
+                "sourceA": a, "sourceB": b, "roots": [a], "body": "address body",
+                "nested": {"sourceA": a, "sourceB": b, "roots": [a]},
+                "files": [{"probe": {"error": a}}], "fields": [{"name": a}]
+            }),
+            expected(&[
+                "roots[]",
+                "body",
+                "nested.sourceA",
+                "nested.sourceB",
+                "nested.roots[]",
+                "files[].probe.error",
+                "fields[].name",
+            ]),
+        ),
+        (
+            "scan 입력 반향과 문서 필드를 구별",
+            &scan_recipe,
+            serde_json::json!({
+                "roots": [a, b], "sourceA": a, "sourceB": b,
+                "nested": {"sourceA": a, "roots": [a]},
+                "files": [{"probe": {"error": a}}], "fields": [{"name": a}]
+            }),
+            expected(&[
+                "sourceA",
+                "sourceB",
+                "nested.sourceA",
+                "nested.roots[]",
+                "files[].probe.error",
+                "fields[].name",
+            ]),
+        ),
+        (
+            "다른 명령의 같은 경로는 탐지",
+            &other,
+            serde_json::json!({"sourceA": a, "sourceB": b, "roots": [a]}),
+            expected(&["sourceA", "sourceB", "roots[]"]),
+        ),
+        (
+            "레시피와 실제 명령이 다르면 탐지",
+            &mismatched,
+            serde_json::json!({"sourceA": a, "sourceB": b}),
+            expected(&["sourceA", "sourceB"]),
+        ),
+        (
+            "두 입력의 역할을 바꾸면 탐지",
+            &render,
+            serde_json::json!({"sourceA": b, "sourceB": a}),
+            expected(&["sourceA", "sourceB"]),
+        ),
+        (
+            "출력 옵션값은 두 번째 입력이 아니다",
+            &render_option,
+            serde_json::json!({"sourceA": a, "sourceB": b}),
+            expected(&["sourceB"]),
+        ),
+        (
+            "문서 낱말과 같은 옵션값도 탐지",
+            &scan_option,
+            serde_json::json!({"roots": [a, "address"]}),
+            expected(&["roots[]"]),
+        ),
+        (
+            "옵션 뒤 render-diff 입력은 보수적으로 탐지",
+            &render_after_option,
+            serde_json::json!({"sourceA": a, "sourceB": b}),
+            expected(&["sourceA", "sourceB"]),
+        ),
+        (
+            "옵션 뒤 scan 입력은 보수적으로 탐지",
+            &scan_after_option,
+            serde_json::json!({"roots": [a, b]}),
+            expected(&["roots[]"]),
+        ),
+        (
+            "배열 형태가 다르면 정확한 root 경로가 아니다",
+            &render,
+            serde_json::json!({"sourceA": [a], "sourceB": [b]}),
+            expected(&["sourceA[]", "sourceB[]"]),
+        ),
+        (
+            "배열이 아닌 roots는 정확한 root 경로가 아니다",
+            &scan_recipe,
+            serde_json::json!({"roots": a}),
+            expected(&["roots"]),
+        ),
+    ];
+    for value in [
+        "/tmp/address-other.hwp",
+        "/tmp/address",
+        "/tmp/address-a.hwp address",
+    ] {
+        cases.push((
+            "다른 전체값이나 부분 경로는 탐지",
+            &render,
+            serde_json::json!({"sourceA": value, "sourceB": value}),
+            expected(&["sourceA", "sourceB"]),
+        ));
+        cases.push((
+            "scan도 다른 전체값이나 부분 경로는 탐지",
+            &scan_recipe,
+            serde_json::json!({"roots": [value]}),
+            expected(&["roots[]"]),
+        ));
+    }
+    let mut failures = Vec::new();
+    for (label, recipe, envelope, expected) in cases {
+        let mut found = BTreeSet::new();
+        scan(&envelope, "", &oracle, recipe, &mut found);
+        if found != expected {
+            failures.push(format!("{label}: expected={expected:?}, actual={found:?}"));
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
 }

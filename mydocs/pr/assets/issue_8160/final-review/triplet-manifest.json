@@ -1,0 +1,135 @@
+[
+  {
+    "source_sha": "0c3148ab54b3a4ca1bdc969e4d9283265625feec",
+    "document": "hwpx",
+    "page": 18,
+    "crop": [
+      80,
+      300,
+      735,
+      850
+    ],
+    "image": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate34/final-review/triplet-hwpx-p018.png",
+    "sha256": "00ec3f332fff7a336e2c46c984ab4c144204fdfb3f788f4f24c31f30dc2e4c26",
+    "input_sha256": [
+      "5b8ce921a87a1578cbe60753532668dbd052c584ba29d1176dd5e381dce0a3b3",
+      "4f152fc855886fa954f8dba7204893aacfbceccd3a53778728619896f44b8027",
+      "573daf45c55e25b5b2ce71b8fb5ec7db746dc38b7e27c29a659cf19a1a9b9c3e"
+    ],
+    "public_image": "triplet-hwpx-p018.png"
+  },
+  {
+    "source_sha": "0c3148ab54b3a4ca1bdc969e4d9283265625feec",
+    "document": "hwpx",
+    "page": 58,
+    "crop": [
+      75,
+      70,
+      740,
+      1020
+    ],
+    "image": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate34/final-review/triplet-hwpx-p058.png",
+    "sha256": "cbccb3a0623c6556469848e778b1c494525357c8f3499486c6641ad754afc415",
+    "input_sha256": [
+      "7a3a92e48ed152ff1f1946bf3d011b28c8ff9545ac30d9f795a945192cf62ec7",
+      "023b34034fb4cfd57fa9abbcc842faec8126d2da3147705c18e767817934ce4a",
+      "f839106a5fb6c32ad4b8426d9c029dcdcc01b757fa12b0c8ab4e7fd30b6d83c6"
+    ],
+    "public_image": "triplet-hwpx-p058.png"
+  },
+  {
+    "source_sha": "0c3148ab54b3a4ca1bdc969e4d9283265625feec",
+    "document": "hwp2024",
+    "page": 3,
+    "crop": [
+      65,
+      65,
+      745,
+      1020
+    ],
+    "image": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate34/final-review/triplet-hwp2024-p003.png",
+    "sha256": "92d193ca244ea569a17d328847a22c87d09783e1d40badca373da2d5d921e707",
+    "input_sha256": [
+      "2fa720609058eaf704fd0c14872bed90dca629479b897138e64d967881942574",
+      "32132adb42a88b641d238ac528f73762be0e06f5d11364a9992f4ec7438834af",
+      "3c90e261900f1e1069b95c2d76f090092a0240d3cbb69fe28b6c8034c6e0ffd5"
+    ],
+    "public_image": "triplet-hwp2024-p003.png"
+  },
+  {
+    "source_sha": "0c3148ab54b3a4ca1bdc969e4d9283265625feec",
+    "document": "hwp2024",
+    "page": 6,
+    "crop": [
+      75,
+      755,
+      740,
+      1010
+    ],
+    "image": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate34/final-review/triplet-hwp2024-p006.png",
+    "sha256": "e4397b120c113e5daf885ba5142d0f46dbf66d2202facce108a7e1628df3ab09",
+    "input_sha256": [
+      "6a8a543a6db72ffb0256269221ae95d3b11942b9a03f14bfa10a9269b7547efa",
+      "5b81ae992e5793b127cebc4009646db21c59efd0b0854513c56b5fa4ca98bd0f",
+      "605a78ac25d02aa43ccfd9ed26cb218e1f45646da413a7a3fb8e1a1c303d5da3"
+    ],
+    "public_image": "triplet-hwp2024-p006.png"
+  },
+  {
+    "source_sha": "0c3148ab54b3a4ca1bdc969e4d9283265625feec",
+    "document": "hwp2022",
+    "page": 3,
+    "crop": [
+      80,
+      825,
+      735,
+      1010
+    ],
+    "image": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate34/final-review/triplet-hwp2022-p003.png",
+    "sha256": "12d82af220031726a39a63c245b4309b51a76b05af3bec7dbf8c4b7c4b8f01ae",
+    "input_sha256": [
+      "1970d271f9fe8803cccb79d562790f9de5eaf0dc241a8fcfbf8964365dd54cfc",
+      "13c21015411dd26ab84ea247d80248c08050c314a4c398be4a77b73cc3b4ecae",
+      "09189aded9d2d514636dbd5c5888e91f66a7ee2d2552e04a64f272670f75c7ba"
+    ],
+    "public_image": "triplet-hwp2022-p003.png"
+  },
+  {
+    "source_sha": "0c3148ab54b3a4ca1bdc969e4d9283265625feec",
+    "document": "hwp2022",
+    "page": 35,
+    "crop": [
+      80,
+      495,
+      735,
+      1020
+    ],
+    "image": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate34/final-review/triplet-hwp2022-p035.png",
+    "sha256": "38de61ca7265dbe56df2a19eadac88ac518debb5453fc9556bcde7ed7cb59bf8",
+    "input_sha256": [
+      "67f5245366e853fb1187d939dc84035434c5f8d63ce0ae36fed8a22469131763",
+      "b590ebfc82f5466f7e631de6e28cc9c9ac6e3f51cc80b199151d6df9a48efbae",
+      "e9eaecb3e03b70b19e10e4f9abac69724074f6fc3cd4e30bb2a1e423e83de767"
+    ],
+    "public_image": "triplet-hwp2022-p035.png"
+  },
+  {
+    "source_sha": "0c3148ab54b3a4ca1bdc969e4d9283265625feec",
+    "document": "hwp2022",
+    "page": 38,
+    "crop": [
+      70,
+      70,
+      740,
+      1030
+    ],
+    "image": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate34/final-review/triplet-hwp2022-p038.png",
+    "sha256": "0d6732dcba57e82fc798a65f00da5a52734fa924b7bb7e43fc54f56e4b47605e",
+    "input_sha256": [
+      "5b518684bb5d2e146ad906fde08b035ba57f948257be3d453d4ffd96790ac5f0",
+      "dfb8e71988be43b4040dcfdc1b528e0d661f8ad61a303193f97a39fedd643dc0",
+      "b8e95eb81c4c03b9adb78f109c59fe256f00c44f6a22b183af6b13a9f4d24479"
+    ],
+    "public_image": "triplet-hwp2022-p038.png"
+  }
+]

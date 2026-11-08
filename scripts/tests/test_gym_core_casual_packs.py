@@ -137,12 +137,12 @@ class ManifestTests(unittest.TestCase):
 
 
 class InventoryTests(unittest.TestCase):
-    def test_core_ids_are_contiguous_and_paired(self):
+    def test_core_active_ids_are_complete_and_paired(self):
         paths = core_task_paths()
         nums = [t_num(p) for p in paths]
         self.assertEqual(nums[0], 1)
-        self.assertGreaterEqual(nums[-1], MIN_CORE)
-        self.assertEqual(nums, list(range(1, nums[-1] + 1)))
+        self.assertGreaterEqual(nums[-1], max(n for n in range(1, MIN_CORE + 1) if n not in {20, 54}))
+        self.assertEqual(nums, [n for n in range(1, MIN_CORE + 1) if n not in {20, 54}])
         missing = [p.stem for p in paths if not (CORE / "reference" / p.name).is_file()]
         self.assertEqual(missing, [])
         for path in paths:
@@ -152,12 +152,12 @@ class InventoryTests(unittest.TestCase):
             self.assertEqual(ref["id"], path.stem)
             self.assertTrue(ref.get("steps"), path.stem)
 
-    def test_casual_ids_are_contiguous_and_paired(self):
+    def test_casual_active_ids_are_complete_and_paired(self):
         paths = cr_task_paths()
         nums = [cr_num(p) for p in paths]
         self.assertEqual(nums[0], 1)
         self.assertGreaterEqual(nums[-1], MIN_CR)
-        self.assertEqual(nums, list(range(1, nums[-1] + 1)))
+        self.assertEqual(nums, [n for n in range(1, MIN_CR + 1) if n not in {16, 17, 18, 40}])
         missing = [p.stem for p in paths if not (CASUAL / "reference" / p.name).is_file()]
         self.assertEqual(missing, [])
         for path in paths:

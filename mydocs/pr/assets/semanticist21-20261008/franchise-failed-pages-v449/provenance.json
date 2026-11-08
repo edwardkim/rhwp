@@ -1,0 +1,64 @@
+{
+  "rust_code_sha": "7749d712ca338d1883cc092d8020133b312082f4",
+  "review_head": "a42ab362f1b01b4e086124278c857cbb79b0852c",
+  "base_sha": "552f5228d2dbfd6046c838f14241704f1bcb8a05",
+  "input": "samples/issue5966/1130000-202100008_franchise_review_report.hwp",
+  "pdf": "pdf/pr_6088_6144/hancom2020/pr_6088_6144_issue5966_franchise_review_report_1130000-202100008_franchise_review_report-2020.pdf",
+  "native_result": {
+    "key": "franchise",
+    "exit": 1,
+    "seconds": 6038.238781246007,
+    "code_sha": "7749d712ca338d1883cc092d8020133b312082f4",
+    "source_guard_unchanged": true,
+    "metrics": [
+      {
+        "tsv": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261008/final-code-validation-v449/franchise-native/franchise5966/silhouette.tsv",
+        "pages": 142,
+        "minimum": [
+          55,
+          84.64501
+        ],
+        "below90": [
+          55,
+          57,
+          79
+        ]
+      }
+    ]
+  },
+  "assets": [
+    {
+      "path": "mydocs/pr/assets/semanticist21-20261008/franchise-failed-pages-v449/native-p055-review.png",
+      "producer": "output/pr-review/semanticist21-20261008/final-code-validation-v449/franchise-native/franchise5966/review/review_055.png",
+      "sha256": "472d4c41e21ac843dd57915486099cc6d42f1295e5402d0fa4a2ad80481d6c1d"
+    },
+    {
+      "path": "mydocs/pr/assets/semanticist21-20261008/franchise-failed-pages-v449/native-p055-overlay.png",
+      "producer": "output/pr-review/semanticist21-20261008/final-code-validation-v449/franchise-native/franchise5966/overlay/overlay_055.png",
+      "sha256": "04e1b502a65bbc5c3cb320c3fa7b5e416bda368890bdc7a4b80ef2b6622d0ac2"
+    },
+    {
+      "path": "mydocs/pr/assets/semanticist21-20261008/franchise-failed-pages-v449/native-p057-review.png",
+      "producer": "output/pr-review/semanticist21-20261008/final-code-validation-v449/franchise-native/franchise5966/review/review_057.png",
+      "sha256": "88a09ca4e728eef9695fe258aad8d578a88c206e02ee7d2bbd45efdda4b30e4d"
+    },
+    {
+      "path": "mydocs/pr/assets/semanticist21-20261008/franchise-failed-pages-v449/native-p057-overlay.png",
+      "producer": "output/pr-review/semanticist21-20261008/final-code-validation-v449/franchise-native/franchise5966/overlay/overlay_057.png",
+      "sha256": "fe450da81a2fb015fd70d377186ac6ed21cd47e0cb10cfc2fc22a3aa80540638"
+    },
+    {
+      "path": "mydocs/pr/assets/semanticist21-20261008/franchise-failed-pages-v449/native-p079-review.png",
+      "producer": "output/pr-review/semanticist21-20261008/final-code-validation-v449/franchise-native/franchise5966/review/review_079.png",
+      "sha256": "de0cb618e0ae46dfaffd6827ea98944f537cbeaf16b82ede1191492402aca164"
+    },
+    {
+      "path": "mydocs/pr/assets/semanticist21-20261008/franchise-failed-pages-v449/native-p079-overlay.png",
+      "producer": "output/pr-review/semanticist21-20261008/final-code-validation-v449/franchise-native/franchise5966/overlay/overlay_079.png",
+      "sha256": "6baf5a37d2de780b7f4a0a8ca6c1815bcd735fd863ed0954145ffc89c7601450"
+    }
+  ],
+  "fresh": "not executed for Franchise: Native below90, correction required",
+  "input_sha256": "a1b8299b2554a83873b780474defb02efa949b43c86c63bcc164967f96091e55",
+  "pdf_sha256": "4cf22800e29baddb9b84023462c75252efd4efb04d22e9e64a8e3d9313076009"
+}

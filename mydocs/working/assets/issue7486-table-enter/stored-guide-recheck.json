@@ -1,0 +1,640 @@
+{
+  "schemaVersion": 1,
+  "status": "merge_hold",
+  "reason": "stored-guide input visual gate failed; no font exception or tolerance change",
+  "baseSha": "e1ecaa248ecf7f667d8fccab4d9938e70a253392",
+  "reviewedRemoteHeadSha": "3edcbdbe172767d135ce420e459a41fc9b44f12e",
+  "runWorkingHeadSha": "0e1dd5d4a32adf29f608dc2705994d6b6759109f",
+  "productionSourceSha": "97772d5d40787e77c3238debc2b2576b11713476",
+  "freshWasm": {
+    "command": "CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg --no-opt",
+    "limitation": "host release --no-opt fallback; standard Docker build not claimed",
+    "sha256": "bf181de82cf87a7f7e8cd49833021169594f6e76995dbe03266322d165821dee",
+    "publicHashMatched": true
+  },
+  "hancomEogu": {
+    "jobId": "6023e41e-d10c-4ef4-b6ef-49c08d8a100b",
+    "userExplicitTransferApproval": true,
+    "result": {
+      "job_id": "6023e41e-d10c-4ef4-b6ef-49c08d8a100b",
+      "status": "success",
+      "engine": "2020",
+      "engine_profile": "2020",
+      "hancom_version": "11.0.0.9136",
+      "backend": "hwp-managed-direct-dll-host",
+      "input_format": "hwp",
+      "format": "pdf",
+      "bytes": 609842,
+      "pdf_page_count": 21,
+      "logical_page_count": null,
+      "elapsed_ms": 25698,
+      "worker_elapsed_ms": 23061,
+      "worker_bits": 32,
+      "font_scope": {
+        "mode": "session0",
+        "status": "verified",
+        "profile_source": "protected_config",
+        "session_id": 0,
+        "mapped_font_count": 2,
+        "registered_font_count": 2,
+        "failed_font_count": 0,
+        "parent_visibility": "verified",
+        "child_visibility": "verified"
+      },
+      "input_preprocess": "none",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    },
+    "pdfMetadata": {
+      "creator": "Hwp 2020 0.0.0.0",
+      "producer": "Hancom PDF 1.3.0.550",
+      "pdfVersion": "1.4",
+      "pages": 21,
+      "oneUp": true
+    }
+  },
+  "inputs": [
+    {
+      "path": "samples/task2097/18095317_eogu_geumji.hwp",
+      "sha256": "956ad319f493aa8edfd26bb318c97b82a187a5860fc6ce3c19e55a4ae8429ed9",
+      "sha1": "fa040fe042852eff7a6f9e1bb1faa08db0bbee77"
+    },
+    {
+      "path": "pdf/18095317_eogu_geumji-2020.pdf",
+      "sha256": "98a9378f5b3440cc8c56c03dd483e2af95a194b9340ebc916c08474ceea65eab",
+      "sha1": "f252dac638198a9b2f3e48f823be9316a0c966f6",
+      "pdfInfo": "Author:          SYSTEM\nCreator:         Hwp 2020 0.0.0.0\nProducer:        Hancom PDF 1.3.0.550\nCreationDate:    Sat Oct  3 04:10:46 2026 KST\nModDate:         Sat Oct  3 04:10:46 2026 KST\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           21\nEncrypted:       no\nPage size:       595 x 841 pts (A4)\nPage rot:        0\nFile size:       609842 bytes\nOptimized:       no\nPDF version:     1.4\n"
+    },
+    {
+      "path": "samples/task2287/1342000_edu_curriculum_map.hwp",
+      "sha256": "623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e",
+      "sha1": "68f4633515c376aab2602b7e0994acf763c72a41"
+    },
+    {
+      "path": "pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf",
+      "sha256": "bc16ee92640644307fd1ce92ab8ffe663088210caa7740bef620daaa0187e197",
+      "sha1": "2ca172fe69d53c4ffc911edbacf4e02e4fe093f5",
+      "pdfInfo": "Author:          법제처 국가법령정보센터\nCreator:         Hwp 2022 0.0.0.0\nProducer:        Hancom PDF 1.3.0.550\nCreationDate:    Sun Aug 30 18:04:38 2026 KST\nModDate:         Sun Aug 30 18:04:38 2026 KST\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           415\nEncrypted:       no\nPage size:       595 x 841 pts (A4)\nPage rot:        0\nFile size:       2611647 bytes\nOptimized:       no\nPDF version:     1.6\n"
+    }
+  ],
+  "reviewRuns": [
+    {
+      "input": "eogu",
+      "backend": "native",
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 20,
+            "tolerant_content_match_percent": 18.38669
+          },
+          {
+            "page": 21,
+            "tolerant_content_match_percent": 19.9277
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "provenance": {
+        "hwp": {
+          "path": "samples/task2097/18095317_eogu_geumji.hwp",
+          "sha256": "956ad319f493aa8edfd26bb318c97b82a187a5860fc6ce3c19e55a4ae8429ed9"
+        },
+        "pdf": {
+          "path": "pdf/18095317_eogu_geumji-2020.pdf",
+          "sha256": "98a9378f5b3440cc8c56c03dd483e2af95a194b9340ebc916c08474ceea65eab"
+        },
+        "git_head": "0e1dd5d4a32adf29f608dc2705994d6b6759109f",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+        },
+        "svg_rasterizer": "webfont",
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "target/pr-review/release-test/rhwp",
+          "path": "target/pr-review/release-test/rhwp",
+          "sha256": "78142f3c5f01b762415514a79eb05beab8ef45752c568368828106f94efdbbdd"
+        },
+        "font_supply": {
+          "mode": "local",
+          "source": "none",
+          "files": []
+        }
+      }
+    },
+    {
+      "input": "eogu",
+      "backend": "wasm",
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 20,
+            "tolerant_content_match_percent": 18.38669
+          },
+          {
+            "page": 21,
+            "tolerant_content_match_percent": 19.9277
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "provenance": {
+        "hwp": {
+          "path": "samples/task2097/18095317_eogu_geumji.hwp",
+          "sha256": "956ad319f493aa8edfd26bb318c97b82a187a5860fc6ce3c19e55a4ae8429ed9"
+        },
+        "pdf": {
+          "path": "pdf/18095317_eogu_geumji-2020.pdf",
+          "sha256": "98a9378f5b3440cc8c56c03dd483e2af95a194b9340ebc916c08474ceea65eab"
+        },
+        "git_head": "0e1dd5d4a32adf29f608dc2705994d6b6759109f",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+        },
+        "svg_rasterizer": "webfont",
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "target/pr-review/release-test/rhwp",
+          "path": "target/pr-review/release-test/rhwp",
+          "sha256": "78142f3c5f01b762415514a79eb05beab8ef45752c568368828106f94efdbbdd"
+        },
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/melee/Documents/projects/forks/rhwp/pkg/rhwp.js",
+              "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+            },
+            {
+              "path": "/Users/melee/Documents/projects/forks/rhwp/pkg/rhwp_bg.wasm",
+              "sha256": "bf181de82cf87a7f7e8cd49833021169594f6e76995dbe03266322d165821dee"
+            }
+          ],
+          "exporter_sha256": "aaf27aabe09958270a5a8d8b19593a386dd821bb9cbc1e219a9c726c623fea6f",
+          "comparison_profile": "print",
+          "font_policy": "same-input native --font-style; font-face CSS only",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "local",
+          "source": "none",
+          "files": []
+        }
+      }
+    },
+    {
+      "input": "eogu",
+      "backend": "base",
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 20,
+            "tolerant_content_match_percent": 18.38669
+          },
+          {
+            "page": 21,
+            "tolerant_content_match_percent": 19.9277
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "provenance": {
+        "hwp": {
+          "path": "samples/task2097/18095317_eogu_geumji.hwp",
+          "sha256": "956ad319f493aa8edfd26bb318c97b82a187a5860fc6ce3c19e55a4ae8429ed9"
+        },
+        "pdf": {
+          "path": "pdf/18095317_eogu_geumji-2020.pdf",
+          "sha256": "98a9378f5b3440cc8c56c03dd483e2af95a194b9340ebc916c08474ceea65eab"
+        },
+        "git_head": "0e1dd5d4a32adf29f608dc2705994d6b6759109f",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+        },
+        "svg_rasterizer": "webfont",
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "output/pr-review/issue7486-table-fix-20261003/rhwp-before",
+          "path": "output/pr-review/issue7486-table-fix-20261003/rhwp-before",
+          "sha256": "788b7522d1c036823b59f0ee16218b8f8df56481d2cb117dcea3c1f3806a531c"
+        },
+        "font_supply": {
+          "mode": "local",
+          "source": "none",
+          "files": []
+        }
+      }
+    },
+    {
+      "input": "curriculum",
+      "backend": "native",
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 171,
+            "tolerant_content_match_percent": 66.33053
+          },
+          {
+            "page": 172,
+            "tolerant_content_match_percent": 24.00083
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "provenance": {
+        "hwp": {
+          "path": "samples/task2287/1342000_edu_curriculum_map.hwp",
+          "sha256": "623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e"
+        },
+        "pdf": {
+          "path": "pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf",
+          "sha256": "bc16ee92640644307fd1ce92ab8ffe663088210caa7740bef620daaa0187e197"
+        },
+        "git_head": "0e1dd5d4a32adf29f608dc2705994d6b6759109f",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+        },
+        "svg_rasterizer": "webfont",
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "target/pr-review/release-test/rhwp",
+          "path": "target/pr-review/release-test/rhwp",
+          "sha256": "78142f3c5f01b762415514a79eb05beab8ef45752c568368828106f94efdbbdd"
+        },
+        "font_supply": {
+          "mode": "local",
+          "source": "none",
+          "files": []
+        }
+      }
+    },
+    {
+      "input": "curriculum",
+      "backend": "wasm",
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 171,
+            "tolerant_content_match_percent": 66.33053
+          },
+          {
+            "page": 172,
+            "tolerant_content_match_percent": 24.00083
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "provenance": {
+        "hwp": {
+          "path": "samples/task2287/1342000_edu_curriculum_map.hwp",
+          "sha256": "623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e"
+        },
+        "pdf": {
+          "path": "pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf",
+          "sha256": "bc16ee92640644307fd1ce92ab8ffe663088210caa7740bef620daaa0187e197"
+        },
+        "git_head": "0e1dd5d4a32adf29f608dc2705994d6b6759109f",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+        },
+        "svg_rasterizer": "webfont",
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "target/pr-review/release-test/rhwp",
+          "path": "target/pr-review/release-test/rhwp",
+          "sha256": "78142f3c5f01b762415514a79eb05beab8ef45752c568368828106f94efdbbdd"
+        },
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/melee/Documents/projects/forks/rhwp/pkg/rhwp.js",
+              "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+            },
+            {
+              "path": "/Users/melee/Documents/projects/forks/rhwp/pkg/rhwp_bg.wasm",
+              "sha256": "bf181de82cf87a7f7e8cd49833021169594f6e76995dbe03266322d165821dee"
+            }
+          ],
+          "exporter_sha256": "aaf27aabe09958270a5a8d8b19593a386dd821bb9cbc1e219a9c726c623fea6f",
+          "comparison_profile": "print",
+          "font_policy": "same-input native --font-style; font-face CSS only",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "local",
+          "source": "none",
+          "files": []
+        }
+      }
+    },
+    {
+      "input": "curriculum",
+      "backend": "base",
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 171,
+            "tolerant_content_match_percent": 66.32949
+          },
+          {
+            "page": 172,
+            "tolerant_content_match_percent": 24.00083
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "provenance": {
+        "hwp": {
+          "path": "samples/task2287/1342000_edu_curriculum_map.hwp",
+          "sha256": "623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e"
+        },
+        "pdf": {
+          "path": "pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf",
+          "sha256": "bc16ee92640644307fd1ce92ab8ffe663088210caa7740bef620daaa0187e197"
+        },
+        "git_head": "0e1dd5d4a32adf29f608dc2705994d6b6759109f",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+        },
+        "svg_rasterizer": "webfont",
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "output/pr-review/issue7486-table-fix-20261003/rhwp-before",
+          "path": "output/pr-review/issue7486-table-fix-20261003/rhwp-before",
+          "sha256": "788b7522d1c036823b59f0ee16218b8f8df56481d2cb117dcea3c1f3806a531c"
+        },
+        "font_supply": {
+          "mode": "local",
+          "source": "none",
+          "files": []
+        }
+      }
+    }
+  ],
+  "fullScope": {
+    "native": {
+      "eogu": {
+        "nativeOrWasmPageCount": 21,
+        "pdfPageCount": 21,
+        "comparedPages": 21,
+        "minimumTolerantContentMatchPercent": 14.72666,
+        "below90Pages": [
+          2,
+          3,
+          4,
+          7,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21
+        ],
+        "tsv": "mydocs/working/assets/issue7486-table-enter/blocked_native_eogu_silhouette.tsv",
+        "tsvSha256": "f6562586c897462cb43c4c9cb25acacf0dc3383d8cec891cbf65b16857c54885"
+      },
+      "curriculum": {
+        "nativeOrWasmPageCount": 413,
+        "pdfPageCount": 415,
+        "fullTsvStatus": "failed_before_scoring_due_to_page_count_mismatch",
+        "allPageSilhouetteMinimum": null,
+        "note": "Do not count two selected-page review rasters as full-document verification."
+      }
+    },
+    "wasm": {
+      "eogu": {
+        "nativeOrWasmPageCount": 21,
+        "pdfPageCount": 21,
+        "comparedPages": 21,
+        "minimumTolerantContentMatchPercent": 14.72666,
+        "below90Pages": [
+          2,
+          3,
+          4,
+          7,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21
+        ],
+        "tsv": "mydocs/working/assets/issue7486-table-enter/blocked_wasm_eogu_silhouette.tsv",
+        "tsvSha256": "f6562586c897462cb43c4c9cb25acacf0dc3383d8cec891cbf65b16857c54885"
+      },
+      "curriculum": {
+        "nativeOrWasmPageCount": 413,
+        "pdfPageCount": 415,
+        "fullTsvStatus": "failed_before_scoring_due_to_page_count_mismatch",
+        "allPageSilhouetteMinimum": null,
+        "note": "Do not count two selected-page review rasters as full-document verification."
+      }
+    }
+  },
+  "beforeAfter": [
+    {
+      "input": "eogu",
+      "page": 20,
+      "beforeSha256": "2e0c3d978af1ec69c33819f48a22267bc49c67f1fa846dd5443746167eaedd22",
+      "afterSha256": "2e0c3d978af1ec69c33819f48a22267bc49c67f1fa846dd5443746167eaedd22",
+      "samePngBytes": true
+    },
+    {
+      "input": "eogu",
+      "page": 21,
+      "beforeSha256": "961f534c515f2a4377f4eedc9cda241a4aaacda33712cc852a61006bf61066c0",
+      "afterSha256": "961f534c515f2a4377f4eedc9cda241a4aaacda33712cc852a61006bf61066c0",
+      "samePngBytes": true
+    },
+    {
+      "input": "curriculum",
+      "page": 171,
+      "beforeSha256": "66276f988368b7c5cb3451a46359ce1156337993a76c3b8cd12e0aba7b270363",
+      "afterSha256": "aa57adf666fe7f0a09f179789a5d3a0e762550d1b579d11d5cbbd38be2b13ab6",
+      "samePngBytes": false
+    },
+    {
+      "input": "curriculum",
+      "page": 172,
+      "beforeSha256": "1a4b9d098b688576ad01b659b9fd3071cbcc615f32e737ad378657cc88177703",
+      "afterSha256": "1a4b9d098b688576ad01b659b9fd3071cbcc615f32e737ad378657cc88177703",
+      "samePngBytes": true
+    }
+  ],
+  "assets": [
+    {
+      "path": "mydocs/working/assets/issue7486-table-enter/blocked_native_eogu_review_021.png",
+      "sha256": "dcd476fef4f5d9d23b58641584587968a0ab98bf64f6996da7cb9305be3726f1"
+    },
+    {
+      "path": "mydocs/working/assets/issue7486-table-enter/blocked_native_eogu_overlay_021.png",
+      "sha256": "63dd21c81526c28532a7a2f7244b4e68fd8be2d81e9ccfd50c69cdf720ee5e21"
+    },
+    {
+      "path": "mydocs/working/assets/issue7486-table-enter/blocked_wasm_eogu_review_021.png",
+      "sha256": "9c5afe037e268a19cff718633fa157e6231066a739fe7d25d06aa1e9658e5218"
+    },
+    {
+      "path": "mydocs/working/assets/issue7486-table-enter/blocked_wasm_eogu_overlay_021.png",
+      "sha256": "e867f88f0996a60792362e85a3d9ba0c6915f0b8832222193e2ae684bb080901"
+    },
+    {
+      "path": "mydocs/working/assets/issue7486-table-enter/blocked_native_curriculum_review_171.png",
+      "sha256": "0aa9e248161fa5ab048bc822d853191e9421c773b321a5bbb8d8bcc278657f2e"
+    },
+    {
+      "path": "mydocs/working/assets/issue7486-table-enter/blocked_native_curriculum_overlay_171.png",
+      "sha256": "dffc8b9a81695e4113484538b53ebdccd7c4ac77c6c36c5334f8a4b49d764021"
+    },
+    {
+      "path": "mydocs/working/assets/issue7486-table-enter/blocked_wasm_curriculum_review_171.png",
+      "sha256": "6393b0502b39d5b4a92e21985aa62e04f8cdbe4cb5f8ffb61588c34f1101e6cf"
+    },
+    {
+      "path": "mydocs/working/assets/issue7486-table-enter/blocked_wasm_curriculum_overlay_171.png",
+      "sha256": "faf9fe0b76f6c5060e93fda6536abbebc2af131ce79a9800b7bc35f3ea299e2e"
+    }
+  ],
+  "existingDefectTracking": {
+    "eogu": "https://github.com/edwardkim/rhwp/issues/7207",
+    "curriculum": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5874264216"
+  },
+  "beforeBinarySourceSha": "e1ecaa248ecf7f667d8fccab4d9938e70a253392",
+  "beforeBinaryProvenanceNote": "Before runs used the base-built rhwp-before binary; run_manifest git_head records the working checkout, not that binary source.",
+  "commands": [
+    {
+      "command": "venv/bin/python scripts/visual_sweep.py --hwp samples/task2097/18095317_eogu_geumji.hwp --pdf pdf/18095317_eogu_geumji-2020.pdf --key eogu-guide --rhwp-bin target/pr-review/release-test/rhwp --pages 20,21 --dpi 96 --out output/pr-review/issue7486-table-fix-20261003/correction-native-review",
+      "result": "re_review_required",
+      "logSha256": "0366725809ad951f47ce12bd19d5fbac5f1ce81b6afe8b908505dd6309533816",
+      "logTail": [
+        "Raster PNG pages: rhwp=2, pdf=2",
+        "summary: /Users/melee/Documents/projects/forks/rhwp/output/pr-review/issue7486-table-fix-20261003/correction-native-review/summary.json",
+        "PR 검토 보류: 2px 이웃 관용 내용 실루엣 일치율이 90% 미만입니다. 메인터너 보정 후 새 review PNG로 재검토하세요: eogu-guide (p20=18.38669%, p21=19.9277%)"
+      ]
+    },
+    {
+      "command": "venv/bin/python scripts/visual_sweep.py --hwp samples/task2097/18095317_eogu_geumji.hwp --pdf pdf/18095317_eogu_geumji-2020.pdf --key eogu-guide --rhwp-bin target/pr-review/release-test/rhwp --silhouette-only --dpi 96 --out output/pr-review/issue7486-table-fix-20261003/correction-native-scores",
+      "result": "below_threshold",
+      "logSha256": "896d4a11e3741730060adc661c6ea2bee648777517955f72511511383b574027",
+      "logTail": [
+        "실루엣 보조값 21쪽: /Users/melee/Documents/projects/forks/rhwp/output/pr-review/issue7486-table-fix-20261003/correction-native-scores/eogu-guide/silhouette.tsv",
+        "summary: /Users/melee/Documents/projects/forks/rhwp/output/pr-review/issue7486-table-fix-20261003/correction-native-scores/summary.json",
+        "PR 검토 보류: 2px 이웃 관용 내용 실루엣 일치율이 90% 미만입니다. 메인터너 보정 후 새 review PNG로 재검토하세요: eogu-guide (p2=49.1284%, p3=50.49426%, p4=51.49974%, p7=75.79486%, p10=20.38984%, p11=40.66092%, p12=48.87478%, p13=43.91493%, p14=40.93894%, p15=39.3537%, p16=71.07471%, p17=34.10092%, p18=20.59107%, p19=14.72666%, p20=18.38669%, p21=19.9277%)"
+      ]
+    },
+    {
+      "command": "venv/bin/python scripts/visual_sweep.py --hwp samples/task2287/1342000_edu_curriculum_map.hwp --pdf pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf --key curriculum-guide --rhwp-bin target/pr-review/release-test/rhwp --pages 171,172 --dpi 96 --out output/pr-review/issue7486-table-fix-20261003/correction-native-review",
+      "result": "re_review_required",
+      "logSha256": "5b8e039fa2a577afdc1251c1cac3d7bd6dc2fd3640f86c67879d52961b12f77e",
+      "logTail": [
+        "Raster PNG pages: rhwp=2, pdf=2",
+        "summary: /Users/melee/Documents/projects/forks/rhwp/output/pr-review/issue7486-table-fix-20261003/correction-native-review/summary.json",
+        "PR 검토 보류: 2px 이웃 관용 내용 실루엣 일치율이 90% 미만입니다. 메인터너 보정 후 새 review PNG로 재검토하세요: curriculum-guide (p171=66.33053%, p172=24.00083%)"
+      ]
+    },
+    {
+      "command": "venv/bin/python scripts/visual_sweep.py --hwp samples/task2287/1342000_edu_curriculum_map.hwp --pdf pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf --key curriculum-guide --rhwp-bin target/pr-review/release-test/rhwp --silhouette-only --dpi 96 --out output/pr-review/issue7486-table-fix-20261003/correction-native-scores",
+      "result": "page_count_mismatch",
+      "logSha256": "28509dcaa0206f20e4a4f0ebf824755602ed3b2e68029957144c8596d7649522",
+      "logTail": [
+        "SVG export pages: 413",
+        "+ pdftoppm -r 96 -png /Users/melee/Documents/projects/forks/rhwp/pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf /Users/melee/Documents/projects/forks/rhwp/output/pr-review/issue7486-table-fix-20261003/correction-native-scores/curriculum-guide/pdf_png/pdf",
+        "SVG, render tree, PDF raster의 선택 페이지 수가 일치하지 않습니다: svg=413, tree=413, pdf=415"
+      ]
+    },
+    {
+      "command": "venv/bin/python scripts/visual_sweep.py --hwp samples/task2097/18095317_eogu_geumji.hwp --pdf pdf/18095317_eogu_geumji-2020.pdf --key eogu-guide --rhwp-bin target/pr-review/release-test/rhwp --wasm-pkg pkg --pages 20,21 --dpi 96 --out output/pr-review/issue7486-table-fix-20261003/correction-wasm-review",
+      "result": "re_review_required",
+      "logSha256": "b4174eb04f005a3f8b851f98518e0e9c9dd9cde9d3f94041fb8d46344e3d92a0",
+      "logTail": [
+        "Raster PNG pages: rhwp=2, pdf=2",
+        "summary: /Users/melee/Documents/projects/forks/rhwp/output/pr-review/issue7486-table-fix-20261003/correction-wasm-review/summary.json",
+        "PR 검토 보류: 2px 이웃 관용 내용 실루엣 일치율이 90% 미만입니다. 메인터너 보정 후 새 review PNG로 재검토하세요: eogu-guide (p20=18.38669%, p21=19.9277%)"
+      ]
+    },
+    {
+      "command": "venv/bin/python scripts/visual_sweep.py --hwp samples/task2097/18095317_eogu_geumji.hwp --pdf pdf/18095317_eogu_geumji-2020.pdf --key eogu-guide --rhwp-bin target/pr-review/release-test/rhwp --wasm-pkg pkg --silhouette-only --dpi 96 --out output/pr-review/issue7486-table-fix-20261003/correction-wasm-scores",
+      "result": "below_threshold",
+      "logSha256": "2615072da75c14eb7ddcf4ff83ac438cff33a4a17fbcb03fd93050e907817f4d",
+      "logTail": [
+        "실루엣 보조값 21쪽: /Users/melee/Documents/projects/forks/rhwp/output/pr-review/issue7486-table-fix-20261003/correction-wasm-scores/eogu-guide/silhouette.tsv",
+        "summary: /Users/melee/Documents/projects/forks/rhwp/output/pr-review/issue7486-table-fix-20261003/correction-wasm-scores/summary.json",
+        "PR 검토 보류: 2px 이웃 관용 내용 실루엣 일치율이 90% 미만입니다. 메인터너 보정 후 새 review PNG로 재검토하세요: eogu-guide (p2=49.1284%, p3=50.49426%, p4=51.49974%, p7=75.79486%, p10=20.38984%, p11=40.66092%, p12=48.87478%, p13=43.91493%, p14=40.93894%, p15=39.3537%, p16=71.07471%, p17=34.10092%, p18=20.59107%, p19=14.72666%, p20=18.38669%, p21=19.9277%)"
+      ]
+    },
+    {
+      "command": "venv/bin/python scripts/visual_sweep.py --hwp samples/task2287/1342000_edu_curriculum_map.hwp --pdf pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf --key curriculum-guide --rhwp-bin target/pr-review/release-test/rhwp --wasm-pkg pkg --pages 171,172 --dpi 96 --out output/pr-review/issue7486-table-fix-20261003/correction-wasm-review",
+      "result": "re_review_required",
+      "logSha256": "f37e24ab138dcf00cb28ff00138a2d237edcf8d7080d0047d2e590678eb57b50",
+      "logTail": [
+        "Raster PNG pages: rhwp=2, pdf=2",
+        "summary: /Users/melee/Documents/projects/forks/rhwp/output/pr-review/issue7486-table-fix-20261003/correction-wasm-review/summary.json",
+        "PR 검토 보류: 2px 이웃 관용 내용 실루엣 일치율이 90% 미만입니다. 메인터너 보정 후 새 review PNG로 재검토하세요: curriculum-guide (p171=66.33053%, p172=24.00083%)"
+      ]
+    },
+    {
+      "command": "venv/bin/python scripts/visual_sweep.py --hwp samples/task2287/1342000_edu_curriculum_map.hwp --pdf pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf --key curriculum-guide --rhwp-bin target/pr-review/release-test/rhwp --wasm-pkg pkg --silhouette-only --dpi 96 --out output/pr-review/issue7486-table-fix-20261003/correction-wasm-scores",
+      "result": "page_count_mismatch",
+      "logSha256": "45bf5a5def5af02ea0e69d1e9661e5ccdde45f197e7a19d43963f94edf6b2809",
+      "logTail": [
+        "SVG export pages: 413",
+        "+ pdftoppm -r 96 -png /Users/melee/Documents/projects/forks/rhwp/pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf /Users/melee/Documents/projects/forks/rhwp/output/pr-review/issue7486-table-fix-20261003/correction-wasm-scores/curriculum-guide/pdf_png/pdf",
+        "SVG, render tree, PDF raster의 선택 페이지 수가 일치하지 않습니다: svg=413, tree=413, pdf=415"
+      ]
+    },
+    {
+      "command": "venv/bin/python scripts/visual_sweep.py --hwp samples/task2097/18095317_eogu_geumji.hwp --pdf pdf/18095317_eogu_geumji-2020.pdf --key eogu-before --rhwp-bin output/pr-review/issue7486-table-fix-20261003/rhwp-before --pages 20,21 --dpi 96 --out output/pr-review/issue7486-table-fix-20261003/correction-base-review",
+      "result": "re_review_required",
+      "logSha256": "092acac1db5fdaf393617e7fa17cb39c2ec58cdbbbfbc9d5696b4bd4d4a95100",
+      "logTail": [
+        "Raster PNG pages: rhwp=2, pdf=2",
+        "summary: /Users/melee/Documents/projects/forks/rhwp/output/pr-review/issue7486-table-fix-20261003/correction-base-review/summary.json",
+        "PR 검토 보류: 2px 이웃 관용 내용 실루엣 일치율이 90% 미만입니다. 메인터너 보정 후 새 review PNG로 재검토하세요: eogu-before (p20=18.38669%, p21=19.9277%)"
+      ]
+    },
+    {
+      "command": "venv/bin/python scripts/visual_sweep.py --hwp samples/task2287/1342000_edu_curriculum_map.hwp --pdf pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf --key curriculum-before --rhwp-bin output/pr-review/issue7486-table-fix-20261003/rhwp-before --pages 171,172 --dpi 96 --out output/pr-review/issue7486-table-fix-20261003/correction-base-review",
+      "result": "re_review_required",
+      "logSha256": "dd159bd287f9029c6879fe16308bc7a14183faa6f84866226442e2654f9ae239",
+      "logTail": [
+        "Raster PNG pages: rhwp=2, pdf=2",
+        "summary: /Users/melee/Documents/projects/forks/rhwp/output/pr-review/issue7486-table-fix-20261003/correction-base-review/summary.json",
+        "PR 검토 보류: 2px 이웃 관용 내용 실루엣 일치율이 90% 미만입니다. 메인터너 보정 후 새 review PNG로 재검토하세요: curriculum-before (p171=66.32949%, p172=24.00083%)"
+      ]
+    }
+  ]
+}

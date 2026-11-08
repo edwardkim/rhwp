@@ -1,0 +1,142 @@
+{
+  "source": {
+    "parentHead": "37c7979fa77344b00ecaf64b757966203ebc1317",
+    "files": {
+      "src/renderer/layout/table_layout/stored_ordinary_row_frame.rs": "19966c0bee60f702f744ae3d006b504f5df440f935844a8de9807921db4d7df0"
+    },
+    "patchSha256": "48f6b5c643d8d2f9edb21bf7ebe80cb326f7b4cda2beac95757b2acde9886831",
+    "cases": [
+      "issue_1133_partial_row_frame",
+      "issue_8105_declared_row_blank_tail",
+      "issue_8101_no_adjust_fragment_bottom",
+      "rowbreak_carried_row_band",
+      "issue_8105_fragment_outer_top_and_restart_trim",
+      "first_frame_remainder_capped_by_row_box",
+      "issue_8060_joint_stored_row_restart",
+      "stored_zero_origin_later_page_row_fits"
+    ]
+  },
+  "focusResult": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--features",
+      "native-skia",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "--test",
+      "regression_suite_008",
+      "--test",
+      "regression_suite_012",
+      "--test",
+      "regression_suite_018",
+      "--test",
+      "regression_suite_019",
+      "--test",
+      "regression_suite_022",
+      "--test",
+      "regression_suite_025",
+      "--test",
+      "regression_suite_026",
+      "-E",
+      "test(/(^|::)issue_1133_partial_row_frame::/) or test(/(^|::)issue_8105_declared_row_blank_tail::/) or test(/(^|::)issue_8101_no_adjust_fragment_bottom::/) or test(/(^|::)rowbreak_carried_row_band::/) or test(/(^|::)issue_8105_fragment_outer_top_and_restart_trim::/) or test(/(^|::)first_frame_remainder_capped_by_row_box::/) or test(/(^|::)issue_8060_joint_stored_row_restart::/) or test(/(^|::)stored_zero_origin_later_page_row_fits::/)"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 169.8876211643219,
+    "source": {
+      "parentHead": "37c7979fa77344b00ecaf64b757966203ebc1317",
+      "files": {
+        "src/renderer/layout/table_layout/stored_ordinary_row_frame.rs": "19966c0bee60f702f744ae3d006b504f5df440f935844a8de9807921db4d7df0"
+      },
+      "patchSha256": "48f6b5c643d8d2f9edb21bf7ebe80cb326f7b4cda2beac95757b2acde9886831",
+      "cases": [
+        "issue_1133_partial_row_frame",
+        "issue_8105_declared_row_blank_tail",
+        "issue_8101_no_adjust_fragment_bottom",
+        "rowbreak_carried_row_band",
+        "issue_8105_fragment_outer_top_and_restart_trim",
+        "first_frame_remainder_capped_by_row_box",
+        "issue_8060_joint_stored_row_restart",
+        "stored_zero_origin_later_page_row_fits"
+      ]
+    },
+    "logSha256": "055212f801dc1d1210a293fecea96f9b9d7e23978c2a62db251467d6b18e0d4e"
+  },
+  "artifacts": {
+    "rhwp-native": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/repair-focused-v7/rhwp-native",
+      "sha256": "bace0b3cfe2300004ae74113c18c2877c82ebf1eda4de969f1543055f7db5c21"
+    },
+    "librhwp.rlib": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/repair-focused-v7/librhwp.rlib",
+      "sha256": "0a81f457def28b440fa6f9e09cf9b07e6f53e1938e586e4a29f98494876b6aae"
+    }
+  },
+  "fontLedger": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/candidate-source.json",
+  "visualToolSha256": "69d9d56394b26fcb7a64b41588a378da745475b3297bae89fd6b4d16903cede4",
+  "pdfRasterizer": {
+    "program": "pypdfium2",
+    "backend": "pdfium",
+    "policy": "pdfium_smooth_rgb_v1",
+    "antialias": {
+      "text": true,
+      "image": true,
+      "path": true
+    },
+    "script_sha256": "eda5cb9561ea417f55efdf2a36510a5db2563d4382adf2b5ef564389f6736faf",
+    "available": true,
+    "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+    "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+    "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+    "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+    "version": "152.0.7947.0",
+    "wrapper_version": "5.12.1",
+    "version_exit_code": 0
+  },
+  "dpi": 96,
+  "tolerancePx": 2,
+  "minimumRaw": 90,
+  "captureWorkers": 8,
+  "fullPrAcceptance": false,
+  "cases": [
+    {
+      "key": "bottom15",
+      "input": "/Users/tsjang/rhwp-7445-completed-20261009/samples/issue1133/page-number-bottom15.hwpx",
+      "inputSha256": "daf33c69e328f9e6b4ac2442868192da559e3cc9fa2afb01d0385e995b3f0226",
+      "pdf": "/Users/tsjang/rhwp-7445-completed-20261009/pdf/issue1133/page-number-bottom15-2020.pdf",
+      "pdfSha256": "a51fc9de4e6214a38610e9bbd0544787752426810c59d5e309261fc483f6ba10",
+      "compat": "2022"
+    },
+    {
+      "key": "footer15",
+      "input": "/Users/tsjang/rhwp-7445-completed-20261009/samples/issue1133/page-number-footer15.hwpx",
+      "inputSha256": "0c935c4dc35145ecb4a225fc39aefe8d2107d9ff6f23a7c525cffc8292b1bee5",
+      "pdf": "/Users/tsjang/rhwp-7445-completed-20261009/pdf/issue1133/page-number-footer15-2020.pdf",
+      "pdfSha256": "a1f7e04876bd9e77f2e8b5371a8f6d02d8448411b267b4a7563869aaf52fcf1b",
+      "compat": "2022"
+    },
+    {
+      "key": "original-hwp",
+      "input": "/Users/tsjang/rhwp-7445-completed-20261009/samples/issue_1133.hwp",
+      "inputSha256": "ea03105fa7fa22398f3e370d222f37213e986ecca4b9b97d2847f1bbfe998d3b",
+      "pdf": "/Users/tsjang/rhwp-7445-completed-20261009/pdf/issue7382-regression-review/issue_1133-2020.pdf",
+      "pdfSha256": "46ca5b1abc40d9479e9eea7994b951ebb82d177ebc448cd09688170effd850ae",
+      "compat": "2022"
+    },
+    {
+      "key": "original-hwpx",
+      "input": "/Users/tsjang/rhwp-7445-completed-20261009/samples/hwpx/issue_1133.hwpx",
+      "inputSha256": "2cf479d94a70d2a834ae7bc1f5ec5fa3d7ff895792cded48d0bf92ca19341bee",
+      "pdf": "/Users/tsjang/rhwp-7445-completed-20261009/pdf/hwpx/issue_1133.pdf",
+      "pdfSha256": "ca066fdc5cda9fd8c47c9a29ba9a546e70c6acdaa96df4d6c66e0b8e02cdbc45",
+      "compat": "2022"
+    }
+  ]
+}

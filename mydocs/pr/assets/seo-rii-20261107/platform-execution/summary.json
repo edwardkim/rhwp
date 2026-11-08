@@ -1,0 +1,60 @@
+{
+  "recorded_at": "2026-11-07T04:30:58.224500+00:00",
+  "native_platform_source": "c2648ffdfe",
+  "native_handbook": {
+    "pages": 383,
+    "minimum": 99.96,
+    "regressions": 0,
+    "status": "passed"
+  },
+  "windows": {
+    "sdk_plugin_compile_link": "passed after maintainer correction",
+    "native_d3d_compile_link": "passed",
+    "actual_abi_contracts": [
+      "session",
+      "worker",
+      "presentation",
+      "atomic IME"
+    ],
+    "actual_hardware_d3d": {
+      "softwareAdapter": false,
+      "opaque_and_premultiplied_alpha": "passed",
+      "source_stale_rejection": "passed; target pixels preserved",
+      "verification_readbacks": 1,
+      "production_whole_frame_readbacks": 0
+    },
+    "limits": [
+      "Windows Flutter final D3D11 consumer sampling and sustained presentation are not qualified",
+      "No consumer GPU retirement contract; bounded immutable/quarantine policy retained"
+    ]
+  },
+  "linux": {
+    "flutter_tests": 70,
+    "flutter_actual_controller_view": "passed including two revisions, synchronous invalidation, opaque cover and zero resources after close",
+    "actual_texture_cpu_pixel_comparison": "passed geometry/channel control; edge AA differences retained",
+    "physical_gpu_qualified": false
+  },
+  "macos": "explicit experimental-foundation-only exception; Apple SDK/Metal hardware remain unverified",
+  "pr8671": "semantic correction and real producer negative/positive, Native absent/provided controls, fresh WASM full-page visual and all mandatory local gates passed",
+  "common_full_checks": "all17 final serial gates passed at263b; full12825, focused194, Native official4077, Studio2745",
+  "final_native_correction": {
+    "source": "cda7c8cb33bb7ded970d033ed1543aabb49c63a2",
+    "handbook_pages": 383,
+    "handbook_minimum": 99.96,
+    "handbook_regressions": 0,
+    "native_wasm_baseline_pairs": 48,
+    "png_byte_identical_pairs": 48,
+    "direct_pdf_radial_pages": 6,
+    "direct_pdf_radial_minimum": 100.0
+  },
+  "vulkan": {
+    "source": "263b1e753c006d1631d25794588b6638fa1172ae",
+    "compile_run_fmt_clippy": "passed",
+    "device": "llvmpipe LLVM20.1.2",
+    "softwareDevice": true,
+    "hardwareAccelerationVerified": false,
+    "presentationVerified": false,
+    "verificationReadbacks": 2,
+    "reference": "vulkan-final-response.json"
+  }
+}

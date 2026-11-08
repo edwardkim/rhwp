@@ -647,6 +647,7 @@ pub(crate) fn capabilities_value() -> serde_json::Value {
         "schemaVersion": crate::ENVELOPE_SCHEMA_VERSION,
         "tool": "rhwp",
         "version": rhwp::version(),
+        "pdfImportSupport": rhwp::pdf_support::pdf_import_support(),
         // [#4329 R67×R83] 전 버전 축(봉투·IR·capabilities·plan + crate semver)의
         // 단일 출처 자기서술 — 외부 소비자가 이 한 번의 호출로 상류 버전을 기계
         // 대조한다(#4327 U2). 값의 원천은 rhwp::schema_registry 이고, 여기와
@@ -655,7 +656,7 @@ pub(crate) fn capabilities_value() -> serde_json::Value {
         // hwp5 는 convert·extract-pages·edit -o *.hwp 가 실제로 내는 산출 형식이다
         // (봉투의 format/outputFormat 이 "hwp5"). 쓰기 목록에서 빠져 있어 매니페스트만
         // 읽은 에이전트가 "HWP5 로는 못 쓴다"고 오판했다.
-        "formats": { "read": ["hwp5", "hwpx", "hwp3", "hml"], "write": ["hwp5", "hwpx", "hml", "pdf", "svg", "png", "txt", "md", "doclang"] },
+        "formats": { "read": if cfg!(feature = "pdf-import") { vec!["hwp5", "hwpx", "hwp3", "hml", "pdf"] } else { vec!["hwp5", "hwpx", "hwp3", "hml"] }, "write": ["hwp5", "hwpx", "hml", "pdf", "svg", "png", "txt", "md", "doclang"] },
         "exitCodes": {
             "0": "성공",
             "1": "런타임 실패 (읽기·파싱·렌더·쓰기)",

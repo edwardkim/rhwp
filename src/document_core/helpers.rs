@@ -65,6 +65,7 @@ pub(crate) fn logical_to_text_offset(para: &Paragraph, logical_offset: usize) ->
             if logical_idx == logical_offset {
                 return (text_idx, true);
             }
+            continue;
         }
         // 텍스트 문자
         if text_idx < text_len {
@@ -108,11 +109,6 @@ pub(crate) fn logical_paragraph_length(para: &Paragraph) -> usize {
         .iter()
         .filter(|ctrl| is_logical_inline_control(ctrl))
         .count();
-    let char_overlap_count = para
-        .controls
-        .iter()
-        .filter(|ctrl| matches!(ctrl, Control::CharOverlap(_)))
-        .count();
     let logical_positions = find_logical_control_positions(para);
     let max_inline_end = para
         .controls
@@ -124,7 +120,7 @@ pub(crate) fn logical_paragraph_length(para: &Paragraph) -> usize {
         .map(|pos| pos + 1)
         .unwrap_or(0);
 
-    (text_len + inline_count + char_overlap_count).max(max_inline_end + char_overlap_count)
+    (text_len + inline_count).max(max_inline_end)
 }
 
 /// 반환: positions[i] = para.controls[i]가 삽입되어야 할 텍스트 문자 인덱스
@@ -162,7 +158,26 @@ pub(crate) fn get_textbox_from_shape(
     drawing.text_box.as_ref()
 }
 
-/// ShapeObject에서 TextBox 가변 참조를 추출하는 헬퍼
+/// 셀 편집 주소로 지정한 글상자를 찾는다. 묶음도 원본 자식 순서의 글상자 번호로 구분한다.
+pub(crate) fn get_textbox_at(
+    shape: &crate::model::shape::ShapeObject,
+    index: usize,
+) -> Option<&crate::model::shape::TextBox> {
+    shape.textbox_shape_at(index)?.drawing()?.text_box.as_ref()
+}
+
+pub(crate) fn get_textbox_at_mut(
+    shape: &mut crate::model::shape::ShapeObject,
+    index: usize,
+) -> Option<&mut crate::model::shape::TextBox> {
+    shape
+        .textbox_shape_at_mut(index)?
+        .drawing_mut()?
+        .text_box
+        .as_mut()
+}
+
+/// 독립 ShapeObject의 TextBox 가변 참조를 추출한다.
 pub(crate) fn get_textbox_from_shape_mut(
     shape: &mut crate::model::shape::ShapeObject,
 ) -> Option<&mut crate::model::shape::TextBox> {
@@ -427,8 +442,79 @@ pub(crate) fn parse_char_shape_mods(json: &str) -> crate::model::style::CharShap
     mods
 }
 
+/// JSON 의 문자열 밖 공백(스페이스·탭·줄바꿈)을 걷어낸다 (#8439).
+///
+/// 아래 `json_*` helper 들은 `"키":값` 꼴의 고정 문자열을 찾는다. `{"alignment": "center"}` 처럼
+/// 콜론 뒤에 공백이 있는 표준 JSON(Python `json.dumps`·`jq` 기본 출력)은 그대로면 키를 찾지
+/// 못해 조용히 무시된다. 각 helper 입구에서 이 함수를 거쳐 공백 유무와 관계없이 같은 결과를
+/// 내게 한다. 문자열 안의 공백과 이스케이프는 보존하고, 걷어낼 공백이 없으면 복사하지 않는다.
+pub(crate) fn compact_json(json: &str) -> std::borrow::Cow<'_, str> {
+    let mut in_string = false;
+    let mut escaped = false;
+    let needs = json.chars().any(|c| {
+        if in_string {
+            if escaped {
+                escaped = false;
+            } else if c == '\\' {
+                escaped = true;
+            } else if c == '"' {
+                in_string = false;
+            }
+            false
+        } else if c == '"' {
+            in_string = true;
+            false
+        } else {
+            c.is_ascii_whitespace()
+        }
+    });
+    if !needs {
+        return std::borrow::Cow::Borrowed(json);
+    }
+    let mut out = String::with_capacity(json.len());
+    let (mut in_string, mut escaped) = (false, false);
+    for c in json.chars() {
+        if in_string {
+            out.push(c);
+            if escaped {
+                escaped = false;
+            } else if c == '\\' {
+                escaped = true;
+            } else if c == '"' {
+                in_string = false;
+            }
+        } else if c == '"' {
+            in_string = true;
+            out.push(c);
+        } else if !c.is_ascii_whitespace() {
+            out.push(c);
+        }
+    }
+    std::borrow::Cow::Owned(out)
+}
+
+/// 문단 서식 JSON 이 바꿀 속성을 하나라도 담는지 (#8439).
+///
+/// `apply_para_format*_native` 가 읽는 키 — 문단 모양(`parse_para_shape_mods`), 탭, 테두리/배경,
+/// `borderSpacing` — 중 하나도 읽히지 않으면 적용해도 아무것도 바뀌지 않는다.
+pub(crate) fn para_format_props_have_effect(json: &str) -> bool {
+    parse_para_shape_mods(json) != crate::model::style::ParaShapeMods::default()
+        || json_has_tab_keys(json)
+        || json_has_border_keys(json)
+        || parse_json_i16_array(json, "borderSpacing", 4).is_some()
+}
+
+/// 글자 서식 JSON 이 바꿀 속성을 하나라도 담는지 (#8439). `apply_char_format*_native` 가 읽는
+/// 키는 글자 모양(`parse_char_shape_mods`)과 테두리/배경이다.
+pub(crate) fn char_format_props_have_effect(json: &str) -> bool {
+    parse_char_shape_mods(json) != crate::model::style::CharShapeMods::default()
+        || json_has_border_keys(json)
+}
+
 /// JSON에서 [v0,v1,...,v6] 형태의 u8 배열 파싱 (7 요소)
 pub(crate) fn json_u8_array(json: &str, key: &str) -> Option<[u8; 7]> {
+    let compacted = compact_json(json);
+    let json: &str = &compacted;
     let pattern = format!("\"{}\":[", key);
     let pos = json.find(&pattern)?;
     let rest = &json[pos + pattern.len()..];
@@ -448,6 +534,8 @@ pub(crate) fn json_u8_array(json: &str, key: &str) -> Option<[u8; 7]> {
 
 /// JSON에서 [v0,v1,...,v6] 형태의 i8 배열 파싱 (7 요소)
 pub(crate) fn json_i8_array(json: &str, key: &str) -> Option<[i8; 7]> {
+    let compacted = compact_json(json);
+    let json: &str = &compacted;
     let pattern = format!("\"{}\":[", key);
     let pos = json.find(&pattern)?;
     let rest = &json[pos + pattern.len()..];
@@ -467,6 +555,8 @@ pub(crate) fn json_i8_array(json: &str, key: &str) -> Option<[i8; 7]> {
 
 /// JSON에서 [v0,v1,...,v6] 형태의 u16 배열 파싱 (7 요소)
 pub(crate) fn json_u16_array(json: &str, key: &str) -> Option<[u16; 7]> {
+    let compacted = compact_json(json);
+    let json: &str = &compacted;
     let pattern = format!("\"{}\":[", key);
     let pos = json.find(&pattern)?;
     let rest = &json[pos + pattern.len()..];
@@ -495,6 +585,8 @@ pub(crate) fn json_has_border_keys(json: &str) -> bool {
 
 /// JSON에서 중첩 오브젝트를 문자열로 추출한다. (예: "borderLeft":{"type":1,"width":0,"color":"#000"})
 pub(crate) fn json_object(json: &str, key: &str) -> Option<String> {
+    let compacted = compact_json(json);
+    let json: &str = &compacted;
     let pattern = format!("\"{}\":{{", key);
     let pos = json.find(&pattern)?;
     let rest = &json[pos + pattern.len() - 1..]; // '{' 포함
@@ -655,6 +747,8 @@ pub(crate) fn build_tab_def_from_json(
 
 /// JSON "tabStops":[...] 배열에서 Vec<TabItem>을 파싱한다.
 pub(crate) fn parse_tab_stops_json(json: &str) -> Option<Vec<crate::model::style::TabItem>> {
+    let compacted = compact_json(json);
+    let json: &str = &compacted;
     use crate::model::style::TabItem;
     let key = "\"tabStops\":[";
     let start = json.find(key)?;
@@ -690,6 +784,8 @@ pub(crate) fn parse_tab_stops_json(json: &str) -> Option<Vec<crate::model::style
 
 /// JSON 배열에서 i16 값들을 파싱한다 (예: "borderSpacing":[0,0,0,0])
 pub(crate) fn parse_json_i16_array(json: &str, key: &str, count: usize) -> Option<Vec<i16>> {
+    let compacted = compact_json(json);
+    let json: &str = &compacted;
     let pattern = format!("\"{}\":[", key);
     let start = json.find(&pattern)?;
     let rest = &json[start + pattern.len()..];
@@ -708,6 +804,8 @@ pub(crate) fn parse_json_i16_array(json: &str, key: &str, count: usize) -> Optio
 
 /// 간단한 JSON boolean 파싱
 pub(crate) fn json_bool(json: &str, key: &str) -> Option<bool> {
+    let compacted = compact_json(json);
+    let json: &str = &compacted;
     let pattern = format!("\"{}\":", key);
     let pos = json.find(&pattern)?;
     let rest = &json[pos + pattern.len()..];
@@ -723,6 +821,8 @@ pub(crate) fn json_bool(json: &str, key: &str) -> Option<bool> {
 
 /// 간단한 JSON i32 파싱
 pub(crate) fn json_i32(json: &str, key: &str) -> Option<i32> {
+    let compacted = compact_json(json);
+    let json: &str = &compacted;
     let pattern = format!("\"{}\":", key);
     let pos = json.find(&pattern)?;
     let rest = &json[pos + pattern.len()..];
@@ -740,6 +840,8 @@ pub(crate) fn json_u16(json: &str, key: &str) -> Option<u16> {
 
 /// 간단한 JSON 문자열 파싱 (이스케이프 시퀀스 디코딩 지원)
 pub(crate) fn json_str(json: &str, key: &str) -> Option<String> {
+    let compacted = compact_json(json);
+    let json: &str = &compacted;
     let pattern = format!("\"{}\":\"", key);
     let pos = json.find(&pattern)?;
     let rest = &json[pos + pattern.len()..];
@@ -787,6 +889,8 @@ pub(crate) fn json_color(json: &str, key: &str) -> Option<u32> {
 
 /// 간단한 JSON u32 파싱
 pub(crate) fn json_u32(json: &str, key: &str) -> Option<u32> {
+    let compacted = compact_json(json);
+    let json: &str = &compacted;
     let pattern = format!("\"{}\":", key);
     let pos = json.find(&pattern)?;
     let rest = &json[pos + pattern.len()..];
@@ -809,6 +913,8 @@ pub(crate) fn json_i16(json: &str, key: &str) -> Option<i16> {
 
 /// 간단한 JSON f64 파싱
 pub(crate) fn json_f64(json: &str, key: &str) -> Option<f64> {
+    let compacted = compact_json(json);
+    let json: &str = &compacted;
     let pattern = format!("\"{}\":", key);
     let pos = json.find(&pattern)?;
     let rest = &json[pos + pattern.len()..];
@@ -822,6 +928,8 @@ pub(crate) fn json_f64(json: &str, key: &str) -> Option<f64> {
 
 /// JSON 필수 필드 usize 파싱 (없으면 에러)
 pub(crate) fn json_usize(json: &str, key: &str) -> Result<usize, HwpError> {
+    let compacted = compact_json(json);
+    let json: &str = &compacted;
     let pattern = format!("\"{}\":", key);
     let pos = json
         .find(&pattern)
@@ -949,6 +1057,9 @@ pub(crate) fn color_ref_to_css(color: crate::model::ColorRef) -> String {
 /// HWPX `faceColor="none"` 은 파서가 이미 `FillType::None` 으로 읽지만(#1172), HWP 는
 /// 단색 레코드로 남는다. `color_ref_to_css` 가 상위 바이트를 버리므로 이 판정이 없으면
 /// '색 없음'이 흰색 단색으로 보인다.
+///
+/// 그러데이션·그림은 개체 속성 조회와 같은 `gradient`·`image` 로 알린다. `none` 으로 알리면
+/// 읽은 속성을 그대로 다시 쓰는 호출이 채우기를 지운다(`create_border_fill_from_json`).
 pub(crate) fn fill_json_values(
     fill: &crate::model::style::Fill,
 ) -> (&'static str, String, String, i32) {
@@ -964,6 +1075,8 @@ pub(crate) fn fill_json_values(
                 s.pattern_type,
             )
         }
+        (FillType::Gradient, _) => ("gradient", "#ffffff".to_string(), "#000000".to_string(), 0),
+        (FillType::Image, _) => ("image", "#ffffff".to_string(), "#000000".to_string(), 0),
         _ => ("none", "#ffffff".to_string(), "#000000".to_string(), 0),
     }
 }
@@ -1579,15 +1692,9 @@ pub(crate) fn border_fills_equal(
             return false;
         }
     }
-    // fill 비교 (fill_type + solid color)
-    if a.fill.fill_type != b.fill.fill_type {
-        return false;
-    }
-    match (&a.fill.solid, &b.fill.solid) {
-        (Some(sa), Some(sb)) => sa.background_color == sb.background_color,
-        (None, None) => true,
-        _ => false,
-    }
+    // 채우기는 면 색뿐 아니라 무늬 종류·무늬 색, 그러데이션, 그림, 투명도까지 모두 같아야 한다.
+    // 면 색만 비교하면 무늬만 바꾼 정의가 옛 정의로 재사용되어 칸 배경 무늬가 바뀌지 않는다.
+    a.fill == b.fill
 }
 
 #[cfg(test)]

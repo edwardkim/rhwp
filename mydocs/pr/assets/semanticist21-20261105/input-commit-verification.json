@@ -1,0 +1,469 @@
+{
+  "source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+  "inputs": [
+    {
+      "path": "tests/fixtures/rowspan_staggered_heights/equal-height-partial-block.hwp",
+      "bytes": 151552,
+      "sha256": "a0b4e465ba880cd0be611f84a3db69fa38b64b31cfc9a807f9a2fc86a998228d",
+      "commit_blob": "9d04b02b574b664a375b62e11e06ede5385e547d",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/rowspan_staggered_heights/equal-height-partial-block-hancom-mac-12.30.pdf",
+      "bytes": 156321,
+      "sha256": "a4c213bb53b86411340b432e8d347c5a6386807ceb606f001c043288bb115755",
+      "commit_blob": "b7d49d38630c5f17ed2d609206722b36671d9254",
+      "exact_committed_input": true
+    },
+    {
+      "path": "tests/fixtures/section_start_page_number/start-number-10.hwp",
+      "bytes": 13824,
+      "sha256": "905fc3d65af8c4a8fbb7b3fbb4262ce9384adfd7ac94da6a56f77c4abd1a61cc",
+      "commit_blob": "b7e01f9f6c62b7808ef06f2240c486931961dd32",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/section_start_page_number/start-number-10-hancom-mac-12.30.pdf",
+      "bytes": 23566,
+      "sha256": "e56546018aa8ce374b378641ea90393734244c0c48f25c73baaaa7d7a868edbc",
+      "commit_blob": "0d1001cc61318a37aff3b6a5f759f0a99c34cca3",
+      "exact_committed_input": true
+    },
+    {
+      "path": "tests/fixtures/section_default_tab_spacing/tab-spacing-16000.hwp",
+      "bytes": 13312,
+      "sha256": "d93a381f2b55796700a569f4e344742ee57e573a0daa431252e7c89473a8d2c4",
+      "commit_blob": "ca1bb409e84058b84f26212ee217841c00254db0",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/section_default_tab_spacing/tab-spacing-16000-hancom-mac-12.30.pdf",
+      "bytes": 14303,
+      "sha256": "f9ff800e595fafbed408b6c79c2291ad61b67de8a5f599bb7f9e6c3fc7fa1236",
+      "commit_blob": "74b79962b797f9ffe856dcfdb94696d8586fe78f",
+      "exact_committed_input": true
+    },
+    {
+      "path": "tests/fixtures/cell_diagonal_shapes/diagonal-shape-codes.hwp",
+      "bytes": 13824,
+      "sha256": "cbe355d679ca96ee7d68306393fdce54342a73e3b75707a827c5dcab78be813e",
+      "commit_blob": "b3db384c650650c7266c28f19dba276aa9d042d7",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/cell_diagonal_shapes/diagonal-shape-codes-hancom-mac-12.30.pdf",
+      "bytes": 16114,
+      "sha256": "a51db66c28e12a97f71de2f17dbc7e7acaed894ac1b25bb8743272cfb9185a98",
+      "commit_blob": "573e96850199e3d2fa62d295f779b844a2a4c377",
+      "exact_committed_input": true
+    },
+    {
+      "path": "tests/fixtures/border_line_types/borders.hwp",
+      "bytes": 15872,
+      "sha256": "49566c073210994953b02a0d1e178636ba038c3e7e432f436266f9762407052f",
+      "commit_blob": "505e270589e2c7d1172b57fa406443685957b359",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/border_line_types/borders-hancom-mac-12.30.pdf",
+      "bytes": 44777,
+      "sha256": "110ef964ad956d961093dadbf725d93c62492ac1feee78f24daae5fb407a02bf",
+      "commit_blob": "157aed3a1494fdf7374b7a3f30a59c4de380b970",
+      "exact_committed_input": true
+    },
+    {
+      "path": "tests/fixtures/header_footer_numbering/header-numbering.hwp",
+      "bytes": 13312,
+      "sha256": "88f02207f746bf1888d965afd32ca1123e04e3d6e12becb877bbf50e1a79816b",
+      "commit_blob": "8b30d78f2630b1714b23189306799dcba4e1f7c9",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/header_footer_numbering/header-numbering-hancom-mac-12.30.pdf",
+      "bytes": 14963,
+      "sha256": "2a6af0c084cc364cbd8ad87217a8079acef3c96b9c73eb9fe624a112991127b9",
+      "commit_blob": "3aab806b647ef7303c36b92de2db9e0c3459cc4b",
+      "exact_committed_input": true
+    },
+    {
+      "path": "mydocs/pr/assets/raised-decoration-hancom/body-emphasis-36pt.hwp",
+      "bytes": 12800,
+      "sha256": "a386956956b17c7b288ae2f637450fd7ffec248cb4f5960c20717fa8e76eeb85",
+      "commit_blob": "55fba86b1401c754442f0076f3be9261169eb6e2",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/raised-decoration-hancom/body-emphasis-36pt-hancom-print.pdf",
+      "bytes": 10019,
+      "sha256": "01dd10caa0d00464799e0643f5bcbc76c5b609eec22e533d72e7b189616b3ea0",
+      "commit_blob": "854a538df71b6a46cff8611283728d209a8e637a",
+      "exact_committed_input": true
+    },
+    {
+      "path": "mydocs/pr/assets/raised-decoration-hancom/body-top-36pt.hwp",
+      "bytes": 12800,
+      "sha256": "2964eacbf6143a7ef9767225f9b334e7d8372786d598f9b9de77c7c84cc5b248",
+      "commit_blob": "29ca18d13f953fbab817ce3877090f877ae2aa3a",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/raised-decoration-hancom/body-top-36pt-hancom-print.pdf",
+      "bytes": 9985,
+      "sha256": "418f121161d31be875783fd62795f291e5add074ec9ce5d88ff3cf6e274785ec",
+      "commit_blob": "6891b6c5215b339bd5dce21d03f364ffff5f5db1",
+      "exact_committed_input": true
+    },
+    {
+      "path": "mydocs/pr/assets/raised-decoration-hancom/cell-top-10-36pt.hwp",
+      "bytes": 13312,
+      "sha256": "c5e77e2d42a30b5b06c5d351f9be051d4f24624d8af174d7e780bb156431448e",
+      "commit_blob": "b40754a2e153eb259549e4dd201123916f690692",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/raised-decoration-hancom/cell-top-10-36pt-hancom-print.pdf",
+      "bytes": 9985,
+      "sha256": "9c6292c9db84a3d26e65a8bdb1de357dfb65ba193d5b61add9e082e1422a7a9b",
+      "commit_blob": "15f503c1e7e12755f064a2e3e8af65b62266abd2",
+      "exact_committed_input": true
+    },
+    {
+      "path": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-1.hwp",
+      "bytes": 13312,
+      "sha256": "99685bf70ae34c540cc2c225d3b0086f34754143bcaf0edf8b98e9f43eeb5378",
+      "commit_blob": "7eb2eb80404c19d3df9a905a0c41b9593bcb15c1",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/raised-decoration-hancom/emphasis-probe-1-hancom-print.pdf",
+      "bytes": 22132,
+      "sha256": "4b93ceb6e431f7da5d9c268ab2ae718bf3cfe95cdc0e3aed55c42bf45d90981f",
+      "commit_blob": "3f6cde1dcd85968d407e2b5ba91fd1abea4efd76",
+      "exact_committed_input": true
+    },
+    {
+      "path": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-2.hwp",
+      "bytes": 13312,
+      "sha256": "725958e63073d9faf3d3c60d72eced19d489e869007a4a18e982e249ed2383dc",
+      "commit_blob": "b0223e2905c0436756777d7dd419f8edf54af275",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/raised-decoration-hancom/emphasis-probe-2-hancom-print.pdf",
+      "bytes": 22166,
+      "sha256": "891ac87e371ec84b8808a15c6e5e12a1e454c3882081c4926229972e75654f1e",
+      "commit_blob": "7c1a3b9cd21c06a1f717c3f6e26a562842963a75",
+      "exact_committed_input": true
+    },
+    {
+      "path": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-3.hwp",
+      "bytes": 13312,
+      "sha256": "682ac2c7e45c45c608b392f9956835098537b5fbb3e19a5a5fafe2edfa757690",
+      "commit_blob": "15625ac6ed4542cfabb6f9a02af1304740292000",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/raised-decoration-hancom/emphasis-probe-3-hancom-print.pdf",
+      "bytes": 22146,
+      "sha256": "394a638937221705249edd457855007d81508419dd48939b2e187ed60feff8a1",
+      "commit_blob": "263a88673b2f5c25933a322fc815e4e936fe47c8",
+      "exact_committed_input": true
+    },
+    {
+      "path": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-4.hwp",
+      "bytes": 13312,
+      "sha256": "00e8a986d8c2a3349c629343a47fa81d5b869ac019b71cd9cb81d8e74ea0aa6d",
+      "commit_blob": "4eb3d9dad37c6763b02a06fe4cb6d27572b261fd",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/raised-decoration-hancom/emphasis-probe-4-hancom-print.pdf",
+      "bytes": 22189,
+      "sha256": "9bee2226c21834489066662f8070436723afe1276d133b7d8d9c5dc30838408d",
+      "commit_blob": "271af81a01b19a7a0b5319414b70e437bb6edc64",
+      "exact_committed_input": true
+    },
+    {
+      "path": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-5.hwp",
+      "bytes": 13312,
+      "sha256": "43329ca0ab4ea7e09fbbaa43805a130f07958c802dd399b53d78bcf09a4ae1c1",
+      "commit_blob": "2e8b2c3ac23161f888d41c89f4102980b3a078a2",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/raised-decoration-hancom/emphasis-probe-5-hancom-print.pdf",
+      "bytes": 22138,
+      "sha256": "f03f1e88763792b1073535b5abcdfc773079daefb4a79824281891f8af882b0a",
+      "commit_blob": "efdf5c270385cb2c1f76d07ad7faf1795983c9d6",
+      "exact_committed_input": true
+    },
+    {
+      "path": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-6.hwp",
+      "bytes": 13312,
+      "sha256": "de70385adaac4ec5aefe3eed25dd9f6fc914be799844698748cd79914c4d6be4",
+      "commit_blob": "0cde06d7b00efd775fb99469361264a709f7f786",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/raised-decoration-hancom/emphasis-probe-6-hancom-print.pdf",
+      "bytes": 22165,
+      "sha256": "a9377ed2cfdfa0901ef3b18054fd3662fb9d8d59e17940a3790f06163b1ad159",
+      "commit_blob": "2342d1f70e9585321f2ef767e2c301e341fcb634",
+      "exact_committed_input": true
+    },
+    {
+      "path": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-0.hwp",
+      "bytes": 13312,
+      "sha256": "63b12b22e5057f636d86440de2f11d3476ae7c2ef1de0ec58a8bd796152ca7a5",
+      "commit_blob": "bf923038c31f155116b45efe5bf609310f072527",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/raised-decoration-hancom/top-probe-shape-0-hancom-print.pdf",
+      "bytes": 11010,
+      "sha256": "d069300bbf7da2899e63023bae5354abc94b6edefb1be92c34ae74d18c2b0a94",
+      "commit_blob": "6846443c9443319acfbbc8aa348cf78883c57c23",
+      "exact_committed_input": true
+    },
+    {
+      "path": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-1.hwp",
+      "bytes": 13312,
+      "sha256": "b55cec7fb6974a2ee2592baf681e8be6b33ff6162809d373a3e3fde0934eb5c3",
+      "commit_blob": "1ad9da0d4dbbb6006736b5c704b4a6e80be1f2a1",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/raised-decoration-hancom/top-probe-shape-1-hancom-print.pdf",
+      "bytes": 12346,
+      "sha256": "18f80bad905b6108c09916ed6ca197e5370d751c09a464cd6c3bad1c64822b30",
+      "commit_blob": "87e41f1b170f63d06cd04718a35917a86551cac4",
+      "exact_committed_input": true
+    },
+    {
+      "path": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-10.hwp",
+      "bytes": 13312,
+      "sha256": "7de89153c2a9dc90acf8eae2767f0cd9fde6445fef63c42a655efb764a88d06c",
+      "commit_blob": "5920e9d949e1bd90f5d04faf81249e9badcafb39",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/raised-decoration-hancom/top-probe-shape-10-hancom-print.pdf",
+      "bytes": 11390,
+      "sha256": "4652346c5db07fab1564a90138ae69b03c3e12af0c3153d2f4054ec9ebadfa85",
+      "commit_blob": "fae3297d9e62fdaa970377fd432da9ab6babb4dc",
+      "exact_committed_input": true
+    },
+    {
+      "path": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-2.hwp",
+      "bytes": 13312,
+      "sha256": "b9c4583a8325367624d8ebd8818dc2ad9efc6d278feee5e35fc751ad94021223",
+      "commit_blob": "b8dac6939f7f9272262bc881cfce3dc0241ecb42",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/raised-decoration-hancom/top-probe-shape-2-hancom-print.pdf",
+      "bytes": 15047,
+      "sha256": "0742ea0f7e9164f0b59e02648de8855db048214f629d1303eda0d989f4407e5d",
+      "commit_blob": "3b2102ab2c0786d7fd5b7f67e373e91be822234a",
+      "exact_committed_input": true
+    },
+    {
+      "path": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-3.hwp",
+      "bytes": 13312,
+      "sha256": "966c229e3a1e0686bff63bcf5f6699450f168eba0229c98802235bf93371b5d5",
+      "commit_blob": "d8ea6a6350fb570efd0e24b80f95f1d9a41f4165",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/raised-decoration-hancom/top-probe-shape-3-hancom-print.pdf",
+      "bytes": 12305,
+      "sha256": "829148d46d65fa7cf524034b87781ccfef61a5950a8bada859c749ab71544951",
+      "commit_blob": "f4658116074dc430313698107d831de9dadc915b",
+      "exact_committed_input": true
+    },
+    {
+      "path": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-4.hwp",
+      "bytes": 13312,
+      "sha256": "d29b4ef3d8f5210258e20a45639115bd7d82c66bc45a13e1189010bfb654d7ef",
+      "commit_blob": "6248c13954379b24dcb3e021368f6d64f9e5fca6",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/raised-decoration-hancom/top-probe-shape-4-hancom-print.pdf",
+      "bytes": 12520,
+      "sha256": "1fac76ad1f2dcd2076882850c77006eff15a12fa907e4259e10c4ed19611bb41",
+      "commit_blob": "0865713285a8ccc462bebae7d272873d5a5dcecf",
+      "exact_committed_input": true
+    },
+    {
+      "path": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-5.hwp",
+      "bytes": 13312,
+      "sha256": "deade69da52406b917d05a766744df63c49dcd187e783963d64afbfdc926325e",
+      "commit_blob": "e83e2380c9357e28641644537cad4e9d257fe2ae",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/raised-decoration-hancom/top-probe-shape-5-hancom-print.pdf",
+      "bytes": 11877,
+      "sha256": "f9a1d4e0f2071730269f1f9360ee31d5c13b3d79591761b398581a7c5029da25",
+      "commit_blob": "1b9400adff53a756bbf1c9d99183f097bb1facad",
+      "exact_committed_input": true
+    },
+    {
+      "path": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-6.hwp",
+      "bytes": 13312,
+      "sha256": "647f25a29d8650a939dbd78534c393570cef915ab3df219311f82c5b6f00750c",
+      "commit_blob": "ede7b75b7ade67ae41fc75731618fdeb66be83c1",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/raised-decoration-hancom/top-probe-shape-6-hancom-print.pdf",
+      "bytes": 32045,
+      "sha256": "6da0f1e55cb39cf7c334adba69b43e67dc9d8f6167c10b56f5d7b4788718a460",
+      "commit_blob": "5c0e3980b39ba44ee49629fcba4ae961eedcd71f",
+      "exact_committed_input": true
+    },
+    {
+      "path": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-7.hwp",
+      "bytes": 13312,
+      "sha256": "95dadeb501d80d158d4514c6990a9d17a25b5841e328cb42ba022f735883e27b",
+      "commit_blob": "d1497b6318b9bd8378a91eaba03d72b69b92f9b4",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/raised-decoration-hancom/top-probe-shape-7-hancom-print.pdf",
+      "bytes": 11183,
+      "sha256": "97a966259c1da9034c4967aae9e0abe79339b76034a96570c67c2440c1122a0e",
+      "commit_blob": "ad274f14eb584b0cb082a2e23764208db56be21b",
+      "exact_committed_input": true
+    },
+    {
+      "path": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-8.hwp",
+      "bytes": 13312,
+      "sha256": "1dfcb9ca9d581800a1618b2a389321151a1aa96cc0ea46fe24358c96b5fbd544",
+      "commit_blob": "c933a514f210bacc0eb7d0cb423f103604b6933f",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/raised-decoration-hancom/top-probe-shape-8-hancom-print.pdf",
+      "bytes": 11216,
+      "sha256": "095dc7fea0d5ab769d37d8c9d6fb528299cbecfeac7127f710479fbb5a69f2bc",
+      "commit_blob": "7fd9a1646dea9bf680631b24bfbdd02a070203af",
+      "exact_committed_input": true
+    },
+    {
+      "path": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-9.hwp",
+      "bytes": 13312,
+      "sha256": "12dbe1066237eec3b9cf33d539c0ed7bf70729602196509b5730f904005c6051",
+      "commit_blob": "55dafce5ace4e66d92bf41eedced67e31a4344e3",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/raised-decoration-hancom/top-probe-shape-9-hancom-print.pdf",
+      "bytes": 11221,
+      "sha256": "80096764f575e3e2292cee06c7c3595be72a00d08cffd47843569ef3367d6c22",
+      "commit_blob": "710f8ded587c38ce423c735439b9fd930d37a4f7",
+      "exact_committed_input": true
+    },
+    {
+      "path": "samples/issue6929/148776468_search_ad_terms_press_release.hwp",
+      "bytes": 495616,
+      "sha256": "a05d313f34852e07305d8bf16223303d9cc00c3d9bdc0b5258f96dfcb347a43d",
+      "commit_blob": "c96f102fe7553b21dc880a77511c6378c9206a41",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/issue6929/148776468_search_ad_terms_press_release-hwp-2020.pdf",
+      "bytes": 510756,
+      "sha256": "61c28f0265bde456dea299a6793e00cd731fabe78cb1e258bb9ca5397d233495",
+      "commit_blob": "4ebafc0237b9586eae541e55264767d06fd66614",
+      "exact_committed_input": true
+    },
+    {
+      "path": "samples/basic/NewYear_s_Day.hwp",
+      "bytes": 95232,
+      "sha256": "1be2736df6b21687f5c1627bac307cc689171928f6ceb0a235af0bc727eb6372",
+      "commit_blob": "bef16f2f254d1ec008593ed527bb6eace22da526",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/basic/NewYear_s_Day-hwp-2020.pdf",
+      "bytes": 167690,
+      "sha256": "44b4e5f7517c86034b800ed307fcbf09dcf7242d342fd5e14ddfca9d22537ec0",
+      "commit_blob": "d8fa1ecb413f158050af74df0079dfe353702c5d",
+      "exact_committed_input": true
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/156492236-regulatory-sandbox-full.hwpx",
+      "bytes": 23230621,
+      "sha256": "af198ad2dff0c1ad0458d7147ca8fcf42b45b0d2e5ceb2e10353debc8250a5b9",
+      "commit_blob": "ee7d4088f9e8bdb45334bcd5445cbf95c32f6fa0",
+      "exact_committed_input": true
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8236/regulatory_sandbox/reference-full-2020.pdf",
+      "bytes": 926826,
+      "sha256": "54139a4760f911f57861f33920f5755e07eee85c1cf2cfedfd6c272e25a5c3e9",
+      "commit_blob": "bf92d7d87c9db1c634fc71d63f2c334eabc9d6e1",
+      "exact_committed_input": true
+    },
+    {
+      "path": "samples/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.hwpx",
+      "bytes": 4776579,
+      "sha256": "1253106b8b01ee8f305598047a4c0e62bd6f60e042bebe477cf99c43fe6f0b94",
+      "commit_blob": "c7a570431c3ce5f6d66436abf9c748f0e00eb01e",
+      "exact_committed_input": true
+    },
+    {
+      "path": "pdf/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2-hwpx-2024.pdf",
+      "bytes": 1463084,
+      "sha256": "676ff523287067a69c860341d6528a2ab4e4b36953cc83f87be55ac90f79c20d",
+      "commit_blob": "60badc3a79f10b7d835f2f0c64e97d243ddee7f5",
+      "exact_committed_input": true
+    },
+    {
+      "path": "mydocs/pr/assets/semanticist21-20261105/roundtrip/base-header-image-refs.hwpx",
+      "bytes": 398505,
+      "sha256": "5e1dcc865f147e7fe60b74bcbddbe48b5fc1055d8c371c2c2305823a6374d48a",
+      "commit_blob": "da52fef8ce8bbe4430a3d5907da7700d156b952a",
+      "exact_committed_input": true,
+      "font_program_entries": []
+    },
+    {
+      "path": "mydocs/pr/assets/semanticist21-20261105/roundtrip/base-image-bullet-newyear.hwpx",
+      "bytes": 35501,
+      "sha256": "8e13dc6fdd47d018add40ac8dd0ad70bdbe68bf13a2fb5b3fe3498b347a26475",
+      "commit_blob": "11ca36242236203f24c23cf7f0861795a85a2dbb",
+      "exact_committed_input": true,
+      "font_program_entries": []
+    },
+    {
+      "path": "mydocs/pr/assets/semanticist21-20261105/roundtrip/candidate-header-image-refs.hwpx",
+      "bytes": 398505,
+      "sha256": "5e1dcc865f147e7fe60b74bcbddbe48b5fc1055d8c371c2c2305823a6374d48a",
+      "commit_blob": "da52fef8ce8bbe4430a3d5907da7700d156b952a",
+      "exact_committed_input": true,
+      "font_program_entries": []
+    },
+    {
+      "path": "mydocs/pr/assets/semanticist21-20261105/roundtrip/candidate-image-bullet-newyear.hwpx",
+      "bytes": 35501,
+      "sha256": "8e13dc6fdd47d018add40ac8dd0ad70bdbe68bf13a2fb5b3fe3498b347a26475",
+      "commit_blob": "11ca36242236203f24c23cf7f0861795a85a2dbb",
+      "exact_committed_input": true,
+      "font_program_entries": []
+    },
+    {
+      "path": "mydocs/pr/assets/semanticist21-20261105/roundtrip/section-tabs-two-sections.hwpx",
+      "bytes": 8871,
+      "sha256": "8212c848e98c05ea2c797f83048f9c97960f87d1143ded10c849d6bb77d1be75",
+      "commit_blob": "6600cb385e4f54a292ca029b88f0ae70e5b830eb",
+      "exact_committed_input": true,
+      "font_program_entries": []
+    }
+  ],
+  "count": 65,
+  "all_exact": true,
+  "pdfs_under_50MiB": true,
+  "generated_hwpx_have_no_fonts": true
+}

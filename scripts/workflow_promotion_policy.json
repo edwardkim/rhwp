@@ -27,7 +27,8 @@
         "CodeQL preflight",
         "Analyze (javascript-typescript)",
         "Analyze (python)",
-        "Analyze (rust)"
+        "Analyze (rust)",
+        "Analyze (actions)"
       ],
       "requiredSkippedJobs": [],
       "requiredArtifacts": [],
@@ -168,7 +169,8 @@
         "build-test-archive-a / Build test archive (a)",
         "build-test-archive-b / Build test archive (b)",
         "build-test-archive-c / Build test archive (c)",
-        "build-test-archive-d / Build test archive (d)"
+        "build-test-archive-d / Build test archive (d)",
+        "build-test-archive-e / Build test archive (e)"
       ]
     },
     ".github/workflows/run-nextest-archives.yml": {
@@ -192,7 +194,8 @@
         "test-archive-a-shard-1 / Default-feature tests (Archive A)",
         "test-archive-b-shard-1 / Default-feature tests (Archive B)",
         "test-archive-c-shard-1 / Default-feature tests (Archive C)",
-        "test-archive-d-shard-1 / Default-feature tests (Archive D)"
+        "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+        "test-archive-e-shard-1 / Default-feature tests (Archive E)"
       ]
     },
     ".github/workflows/issue-form-labels.yml": {
@@ -277,6 +280,179 @@
         "Build & Test",
         "release-operations-contracts / Release operations contracts"
       ]
+    },
+    ".github/workflows/native-host-package.yml": {
+      "executionMode": "direct",
+      "sensitiveSurfaces": [
+        "matrix",
+        "artifact"
+      ],
+      "requiredJobs": [
+        "CI preflight",
+        "Build & Test",
+        "native-host-package / Package linux-x86_64",
+        "native-host-package / Package macos-aarch64",
+        "native-host-package / Package windows-x86_64"
+      ],
+      "requiredSkippedJobs": [],
+      "requiredArtifacts": [
+        "rhwp-native-host-linux-x86_64",
+        "rhwp-native-host-macos-aarch64",
+        "rhwp-native-host-windows-x86_64"
+      ],
+      "allowedEvents": [
+        "workflow_dispatch"
+      ],
+      "allowedActors": [
+        "edwardkim"
+      ],
+      "evidencePath": ".github/workflows/ci.yml"
+    },
+    ".github/actions/verify-release-wasm/action.yml": {
+      "executionMode": "verify-only",
+      "sensitiveSurfaces": [
+        "permissions",
+        "secrets",
+        "artifact",
+        "deployment"
+      ],
+      "requiredJobs": [
+        "Validate release source",
+        "Build WASM",
+        "Build VSIX once",
+        "Publish channel aggregate"
+      ],
+      "requiredSkippedJobs": [
+        "Publish @rhwp/core",
+        "Publish @rhwp/editor",
+        "Publish VS Code Marketplace extension",
+        "Publish Open VSX extension"
+      ],
+      "requiredArtifacts": [
+        "wasm-pkg",
+        "vscode-vsix",
+        "release-publish-evidence",
+        "release-wasm-validation"
+      ],
+      "requiredVerdictArtifact": {
+        "name": "release-publish-evidence",
+        "requiredPath": "release-publish-evidence.json",
+        "acceptedVerdicts": [
+          "completed"
+        ]
+      },
+      "allowedEvents": [
+        "workflow_dispatch"
+      ],
+      "allowedActors": [
+        "edwardkim"
+      ],
+      "evidencePath": ".github/workflows/npm-publish.yml"
+    },
+    ".github/workflows/ci-impact-policy.yml": {
+      "requiredSkippedJobs": [],
+      "requiredArtifacts": [],
+      "allowedEvents": [
+        "workflow_dispatch"
+      ],
+      "allowedActors": [
+        "edwardkim"
+      ],
+      "executionMode": "contracts-only",
+      "evidencePath": ".github/workflows/ci.yml",
+      "sensitiveSurfaces": [
+        "permissions",
+        "artifact"
+      ],
+      "requiredJobs": [
+        "CI preflight",
+        "Build & Test",
+        "release-operations-contracts / Release operations contracts"
+      ]
+    },
+    ".github/workflows/full-renderer-sweep.yml": {
+      "executionMode": "direct",
+      "sensitiveSurfaces": [
+        "cache",
+        "artifact"
+      ],
+      "requiredJobs": [
+        "Full Renderer Sweep"
+      ],
+      "requiredSkippedJobs": [],
+      "requiredArtifacts": [
+        "full-renderer-sweep-artifacts"
+      ],
+      "allowedEvents": [
+        "workflow_dispatch"
+      ],
+      "allowedActors": [
+        "edwardkim"
+      ]
+    },
+    ".github/workflows/fuzz-smoke.yml": {
+      "executionMode": "direct",
+      "sensitiveSurfaces": [
+        "cache",
+        "artifact",
+        "matrix"
+      ],
+      "requiredJobs": [
+        "fuzz parse_hwp",
+        "fuzz parse_hwp3",
+        "fuzz parse_hwpx",
+        "fuzz parse_hml",
+        "fuzz parse_wmf",
+        "fuzz parse_ooxml_chart"
+      ],
+      "requiredSkippedJobs": [],
+      "requiredArtifacts": [],
+      "allowedEvents": [
+        "workflow_dispatch"
+      ],
+      "allowedActors": [
+        "edwardkim"
+      ]
+    },
+    ".github/workflows/skill-router-gate.yml": {
+      "executionMode": "direct",
+      "sensitiveSurfaces": [],
+      "requiredJobs": [
+        "Skill router gate"
+      ],
+      "requiredSkippedJobs": [],
+      "requiredArtifacts": [],
+      "allowedEvents": [
+        "workflow_dispatch"
+      ],
+      "allowedActors": [
+        "edwardkim"
+      ]
+    },
+    ".github/workflows/layout-anomaly-advisory.yml": {
+      "executionMode": "direct",
+      "sensitiveSurfaces": [
+        "cache",
+        "artifact"
+      ],
+      "requiredJobs": [
+        "layout-anomaly-advisory"
+      ],
+      "requiredSkippedJobs": [],
+      "requiredArtifacts": [],
+      "allowedEvents": [
+        "workflow_dispatch"
+      ],
+      "allowedActors": [
+        "edwardkim"
+      ],
+      "requiredVerdictArtifact": {
+        "name": "layout-anomaly-advisory-verdict",
+        "requiredPath": "verdict.json",
+        "acceptedVerdicts": [
+          "completed"
+        ]
+      }
     }
   }
 }

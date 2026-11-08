@@ -1,0 +1,93 @@
+[
+  {
+    "case": "gradient",
+    "nativeWasmMaximumChannelDifference": 0,
+    "maximumReferenceChannelDifference": 1,
+    "nativeInkBounds": [
+      10,
+      10,
+      40,
+      40
+    ],
+    "maximumWhiteCompositeReferenceChannelDifference": 1,
+    "maximumReferenceAlphaDifference": 0
+  },
+  {
+    "case": "clip-opacity",
+    "nativeWasmMaximumChannelDifference": 0,
+    "maximumReferenceChannelDifference": 255,
+    "nativeInkBounds": [
+      11,
+      11,
+      39,
+      39
+    ],
+    "maximumWhiteCompositeReferenceChannelDifference": 28,
+    "maximumReferenceAlphaDifference": 28
+  },
+  {
+    "case": "internal-use",
+    "nativeWasmMaximumChannelDifference": 0,
+    "maximumReferenceChannelDifference": 0,
+    "nativeInkBounds": [
+      10,
+      10,
+      40,
+      40
+    ],
+    "maximumWhiteCompositeReferenceChannelDifference": 0,
+    "maximumReferenceAlphaDifference": 0
+  },
+  {
+    "case": "restricted-script",
+    "nativeWasmMaximumChannelDifference": 0,
+    "maximumReferenceChannelDifference": 0,
+    "nativeInkBounds": [
+      10,
+      10,
+      40,
+      40
+    ],
+    "maximumWhiteCompositeReferenceChannelDifference": 0,
+    "maximumReferenceAlphaDifference": 0
+  },
+  {
+    "case": "embedded-png",
+    "nativeWasmMaximumChannelDifference": 0,
+    "maximumReferenceChannelDifference": 0,
+    "nativeInkBounds": [
+      10,
+      10,
+      40,
+      40
+    ],
+    "maximumWhiteCompositeReferenceChannelDifference": 0,
+    "maximumReferenceAlphaDifference": 0
+  },
+  {
+    "case": "embedded-jpeg",
+    "nativeWasmMaximumChannelDifference": 0,
+    "maximumReferenceChannelDifference": 0,
+    "nativeInkBounds": [
+      10,
+      10,
+      40,
+      40
+    ],
+    "maximumWhiteCompositeReferenceChannelDifference": 0,
+    "maximumReferenceAlphaDifference": 0
+  },
+  {
+    "case": "foreground",
+    "nativeWasmMaximumChannelDifference": 0,
+    "maximumReferenceChannelDifference": 0,
+    "nativeInkBounds": [
+      10,
+      10,
+      40,
+      40
+    ],
+    "maximumWhiteCompositeReferenceChannelDifference": 0,
+    "maximumReferenceAlphaDifference": 0
+  }
+]

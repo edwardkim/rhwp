@@ -1,0 +1,134 @@
+[
+  {
+    "case": "crop",
+    "role": "base",
+    "backend": "native",
+    "counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "raw": "99.98227",
+    "directory": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/base/native/crop"
+  },
+  {
+    "case": "crop",
+    "role": "head",
+    "backend": "native",
+    "counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "raw": "99.97923",
+    "directory": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/head/native/crop"
+  },
+  {
+    "case": "crop",
+    "role": "base",
+    "backend": "wasm",
+    "counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "raw": "99.98255",
+    "directory": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/base/wasm/crop"
+  },
+  {
+    "case": "crop",
+    "role": "head",
+    "backend": "wasm",
+    "counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "raw": "99.97922",
+    "directory": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/head/wasm/crop"
+  },
+  {
+    "case": "reserved",
+    "role": "base",
+    "backend": "native",
+    "counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "raw": "99.75947",
+    "directory": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/base/native/reserved"
+  },
+  {
+    "case": "reserved",
+    "role": "head",
+    "backend": "native",
+    "counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "raw": "100.00000",
+    "directory": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/head/native/reserved"
+  },
+  {
+    "case": "reserved",
+    "role": "base",
+    "backend": "wasm",
+    "counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "raw": "99.75938",
+    "directory": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/base/wasm/reserved"
+  },
+  {
+    "case": "reserved",
+    "role": "head",
+    "backend": "wasm",
+    "counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "raw": "100.00000",
+    "directory": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/head/wasm/reserved"
+  },
+  {
+    "case": "indexed",
+    "role": "base",
+    "backend": "native",
+    "counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "raw": "99.74919",
+    "directory": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/base/native/indexed"
+  },
+  {
+    "case": "indexed",
+    "role": "head",
+    "backend": "native",
+    "counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "raw": "100.00000",
+    "directory": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/head/native/indexed"
+  },
+  {
+    "case": "indexed",
+    "role": "base",
+    "backend": "wasm",
+    "counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "raw": "99.74906",
+    "directory": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/base/wasm/indexed"
+  },
+  {
+    "case": "indexed",
+    "role": "head",
+    "backend": "wasm",
+    "counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "raw": "100.00000",
+    "directory": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/bitmap-regression-qualification/head/wasm/indexed"
+  }
+]

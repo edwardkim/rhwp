@@ -1,3 +1,7 @@
+//! 관계형·고정형: 검사 대상 — 암호 저장·복호화와 원본 대비 재열기.
+//! 주석 갱신: 2026-11-01T05:59:30+09:00; 직전 파일 커밋: 2026-08-01T15:42:15+09:00 (`9dd0965dc037987cbac32af8dbd33b60f7e1b6eb`).
+//! 입력·기준: `samples/143E433F503322BD33.hwp`와 HWP5 암호 저장 API.
+//! 모델·API·직렬화 계약을 검사하며 화면 시각 일치율은 측정하지 않는다.
 use rhwp::parser::{self, cfb_reader, header, ParseError};
 use rhwp::serializer::serialize_hwp_with_password;
 

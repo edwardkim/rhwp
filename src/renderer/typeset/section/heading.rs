@@ -1,5 +1,29 @@
 //! 구역 문단 처리의 keep_heading_with_following_block 단계. 조건·예약·발행 순서를 유지한다.
 use crate::renderer::typeset::{PageItem, Paragraph, TypesetEngine, TypesetState};
+
+/// 저장 쪽 경계의 증거는 재조판 누적 좌표와 섞지 않는다.
+/// 줄 수·내용·셀 배치가 바뀐 원본 스냅샷은 현재 줄의 위치 증거가 아니다.
+fn stored_row_position(paragraph: &Paragraph, row: usize) -> Option<i32> {
+    if paragraph.stored_text_partition_is_dirty()
+        || paragraph.cell_format_vpos_dirty
+        // 현재 줄 구성의 공백/개체 원장은 파생 기하의 출처다. 유효한 새 줄도
+        // 원본이 기록한 쪽 경계의 독립 증거로 다시 해석하지 않는다.
+        || !paragraph.layout_space_metrics.is_empty()
+        || paragraph.layout_object_projection
+        || paragraph
+            .line_segs
+            .iter()
+            .any(super::super::is_synthetic_line_seg)
+    {
+        return None;
+    }
+    let line = paragraph.line_segs.get(row)?;
+    match &paragraph.source_line_seg_vertical_pos {
+        Some(source) if source.len() == paragraph.line_segs.len() => source.get(row).copied(),
+        Some(_) => None,
+        None => Some(line.vertical_pos),
+    }
+}
 impl TypesetEngine {
     #[allow(clippy::too_many_arguments)]
     pub(super) fn keep_heading_with_following_block(
@@ -9,6 +33,26 @@ impl TypesetEngine {
         para: &Paragraph,
         paragraphs: &[Paragraph],
     ) {
+        match self.keep_heading_with_following_block_with_storage(
+            st,
+            para_idx,
+            para,
+            paragraphs,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(super) fn keep_heading_with_following_block_with_storage<S: crate::storage::Storage>(
+        &self,
+        st: &mut TypesetState,
+        para_idx: usize,
+        para: &Paragraph,
+        paragraphs: &[Paragraph],
+        storage: &S,
+    ) -> Result<(), S::Error> {
         // [Task #404] heading-orphan 패턴 보정 (vpos 기반).
         // 현재 paragraph 가 누적 height 로는 fit 하지만 HWP vpos 기준 페이지 한계를
         // 넘고, 다음 substantial block(Table/Shape/큰 paragraph)이 잔여 영역에 들어
@@ -26,37 +70,30 @@ impl TypesetEngine {
         // Stage 1 진단 로그 분석으로 false positive 41건 → 1건(pi=83)으로 축소.
         // page_top_vpos 는 current_items 의 첫 item para_index 를 통해 즉시 계산
         // (TypesetState 필드 추적은 typeset_paragraph 내부 페이지 flush 와 동기 안 됨).
-        if !st.current_items.is_empty() && st.wrap_around_cs < 0 && st.col_count == 1 {
+        let _: () = if !st.current_items.is_empty() && st.wrap_around_cs < 0 && st.col_count == 1 {
             let page_first_para_idx = st.current_items.iter().find_map(|item| match item {
                 PageItem::FullParagraph { para_index } => Some(*para_index),
                 PageItem::PartialParagraph { para_index, .. } => Some(*para_index),
                 PageItem::Table { para_index, .. } => Some(*para_index),
+                // 이어지는 표 조각의 host vpos 는 앞 쪽의 좌표다 — 이 쪽 원점이 아니다.
+                PageItem::PartialTable {
+                    is_continuation: true,
+                    ..
+                } => None,
                 PageItem::PartialTable { para_index, .. } => Some(*para_index),
                 PageItem::Shape { para_index, .. } => Some(*para_index),
                 PageItem::EndnoteSeparator { .. } => None,
             });
             let page_top_vpos_opt = page_first_para_idx
                 .and_then(|pi| paragraphs.get(pi))
-                .and_then(|p| p.line_segs.first())
-                .filter(|seg| !super::super::is_synthetic_line_seg(seg))
-                .map(|s| s.vertical_pos);
-            if let (Some(first_seg), Some(page_top_vpos)) = (
-                para.line_segs
-                    .first()
-                    .filter(|seg| !super::super::is_synthetic_line_seg(seg)),
-                page_top_vpos_opt,
-            ) {
-                // 재조판이 생성한 누적 좌표는 저장된 쪽의 소유 근거가 아니다.
-                // 앞 쪽에서 일부 줄을 이미 소비한 문단의 첫 좌표로 쪽 원점을
-                // 추측하면, 실제로 들어가는 목록 항목까지 다음 쪽으로 밀린다.
-                // 혼합 사다리도 전체 경계의 저장 근거가 없으면 흐름 fit에 맡긴다.
-                if para
-                    .line_segs
-                    .iter()
-                    .any(super::super::is_synthetic_line_seg)
-                {
-                    return;
-                }
+                .and_then(|paragraph| stored_row_position(paragraph, 0));
+            if let Some(page_top_vpos) = page_top_vpos_opt {
+                let Some(last_index) = para.line_segs.len().checked_sub(1) else {
+                    return Ok(());
+                };
+                let Some(last_vpos) = stored_row_position(para, last_index) else {
+                    return Ok(());
+                };
                 let body_h_hu =
                     crate::renderer::px_to_hwpunit(st.layout.body_area.height, self.dpi);
                 let para_h_px: f64 = para
@@ -69,18 +106,13 @@ impl TypesetEngine {
                         )
                     })
                     .sum();
-                let para_h_hu = crate::renderer::px_to_hwpunit(para_h_px, self.dpi);
                 // [Task #643] vpos_end 는 마지막 줄의 bottom (vpos + lh) 기준.
                 // para_h_px 누적은 트레일링 line_spacing 까지 포함하여 ~10-12 HU 과대.
                 // HWP 가 페이지 끝에서 트레일링 ls 를 고려하지 않고 lh 만 fit 검사하는
                 // 시멘틱 정합 (pi=39 page 3 fits 케이스).
                 // 손상 입력의 거대한 vpos/height 로 i32 덧셈이 오버플로(패닉)하지
                 // 않도록 saturating — 정상값에선 동일, 손상값은 i32::MAX 로 포화.
-                let vpos_end = para
-                    .line_segs
-                    .last()
-                    .map(|s| s.vertical_pos.saturating_add(s.line_height))
-                    .unwrap_or(first_seg.vertical_pos.saturating_add(para_h_hu));
+                let vpos_end = last_vpos.saturating_add(para.line_segs[last_index].line_height);
                 let page_bottom_vpos = page_top_vpos.saturating_add(body_h_hu);
 
                 let avail = st.available_height();
@@ -105,9 +137,10 @@ impl TypesetEngine {
                 let next_doesnt_fit = st.current_height + para_h_px + next_h_px > avail;
 
                 if current_fits && vpos_overflow && next_substantial && next_doesnt_fit {
-                    st.advance_column_or_new_page();
+                    st.advance_column_or_new_page_with_storage(storage)?;
                 }
             }
-        }
+        };
+        Ok(())
     }
 }

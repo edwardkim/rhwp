@@ -59,12 +59,21 @@ fn page_number_uses_the_document_page_number_style() {
         "쪽번호의 영문 글꼴은 원본 스타일에서 가져와야 한다: source={source_font}, actual={}",
         number.style.font_family
     );
-    // 한컴 2020/2024 PDF 양쪽에서 5쪽의 glyph 은 y=1052..1061px 이다.
-    // 현재 글꼴의 렌더 잉크는 TextRun bbox 상단보다 약 3px 아래에 시작한다.
+    let reference = doc.build_page_render_tree(1).expect("2쪽 render tree");
+    fn number_baseline(node: &RenderNode) -> Option<f64> {
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            if run.para_index.is_none() && run.text.contains('2') {
+                return Some(node.bbox.y + run.baseline);
+            }
+        }
+        node.children.iter().find_map(number_baseline)
+    }
+    // 독립 한컴 Print의 2·5쪽 번호는 같은 기준선이다. 잉크와 bbox의
+    // 우연한 차이 대신 같은 스타일·꼬리말의 최종 기준선 관계를 보호한다.
+    let reference_baseline = number_baseline(&reference.root).expect("2쪽 자동 쪽번호");
     assert!(
-        (1048.0..=1049.5).contains(&number_node.bbox.y),
-        "5쪽 쪽번호 세로 기준이 한컴 PDF 보다 높다: {:.1}px",
-        number_node.bbox.y,
+        (number_node.bbox.y + number.baseline - reference_baseline).abs() <= 0.15,
+        "같은 스타일의 2·5쪽 자동 번호 기준선이 다르다"
     );
 }
 

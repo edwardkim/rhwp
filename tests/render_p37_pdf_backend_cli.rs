@@ -1,3 +1,7 @@
+//! 관계형·고정형: 검사 대상 — 기본·명시 SVG 백엔드의 PDF 바이트 비교와 기능 미지원 오류.
+//! 주석 갱신: 2026-11-01T06:05:18+09:00; 직전 파일 커밋: 2026-07-25T14:17:29+09:00 (`4db23dec226241539c2d98002b662f1fb60f03bf`).
+//! 입력·기준: `samples/re-03-latin-only-hancom.hwp`와 `export-pdf` CLI.
+//! 출력 API 계약을 검사하며 화면 시각 일치율은 측정하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::{Path, PathBuf};

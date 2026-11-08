@@ -1,0 +1,657 @@
+{
+  "productionHead": "1f54c3df17747b71c8be9b47b3198add4fa4fd3b",
+  "pages": [
+    {
+      "case": "roadmap302",
+      "backend": "native",
+      "page": 295,
+      "hashes": {
+        "actual": "e4cbce31cd118e5e98a41aa1c6186fa770aad84ba1d627c6d0dc3939767fa196",
+        "reference": "194e39c16e5f01cacdefa1e43feda3892761576553adc414f5cc5db04882752e"
+      },
+      "sourceProducerSha256": "5425c68f70b278d83704d176f1af2121dcef4b6200c93987fec820eab4a4b0b4",
+      "raw": 98.96693,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "마지막 상자 내용·기준선·이어받기와 다음 쪽 경계 보존. 얇은 선 및 글리프 가장자리 차이는 잔여.",
+      "review": "review/native/roadmap302-p295-review.png",
+      "reviewSha256": "e3a46f817dd1a89bc27967027972896c8b71d8eccf744f290be8b2e6aef9160b",
+      "overlay": "review/native/roadmap302-p295-overlay.png",
+      "overlaySha256": "469179e98aec45b7b904a4809517607956cc116a4889661d376843b77e2fe061"
+    },
+    {
+      "case": "roadmap302",
+      "backend": "wasm",
+      "page": 295,
+      "hashes": {
+        "actual": "8cd9e4ac53748af02caa71500eb61f3b3571743158152e2ffefb0b5da33b1656",
+        "reference": "194e39c16e5f01cacdefa1e43feda3892761576553adc414f5cc5db04882752e"
+      },
+      "sourceProducerSha256": "49c77a28a7335db2e0acec633a5876fb4c68f394db09078dd6359a9777375a6a",
+      "raw": 98.966,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "마지막 상자 내용·기준선·이어받기와 다음 쪽 경계 보존. 얇은 선 및 글리프 가장자리 차이는 잔여.",
+      "review": "review/wasm/roadmap302-p295-review.png",
+      "reviewSha256": "9e5a86af583ac0a513164b9d8db09bbb65eb54d4ab40857e9ce574efbb21d5ac",
+      "overlay": "review/wasm/roadmap302-p295-overlay.png",
+      "overlaySha256": "b05e14a02a8e711fb9e2cd8d9b01c8eb2832f76c303ed430dc567053af608f1d"
+    },
+    {
+      "case": "original-sample11-user-print",
+      "backend": "native",
+      "page": 2,
+      "hashes": {
+        "actual": "6acd1be81efc89a17759965adbb5b8bacc950045b088d86e1aba182c930c04c2",
+        "reference": "997a9cd0f1bb5f8dbcbfef19fb3d5012faa4b073cc98b7bb4eacc9d60108291e"
+      },
+      "sourceProducerSha256": "b733af3307e593177c45fc63df94193a429a2091ad021e29e627836119d9d8dc",
+      "raw": 99.83678,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "목차 5.2 들여쓰기·탭, 상하 괘선·쪽 번호·그림 및 연결 소속 보존. p50 회색/갈색 면은 사용자 UI Print에도 존재하는 인쇄 차이이며 편집기 화면과 구분. 미세 획·위상 잔여를 일치로 주장하지 않음.",
+      "review": "review/native/original-sample11-user-print-p002-review.png",
+      "reviewSha256": "e2eccd0c7ed1c2050bca3e927db59b9c4e63c2ad17abd28e79cf158816d753c0",
+      "overlay": "review/native/original-sample11-user-print-p002-overlay.png",
+      "overlaySha256": "a6f493b334f5945886a7ac6076816d92dbe221a48b522b665dfd53db7cc20124"
+    },
+    {
+      "case": "original-sample11-user-print",
+      "backend": "native",
+      "page": 50,
+      "hashes": {
+        "actual": "16561c883b451b9d4069f699d5cf48c2d78a39d9394efa5e17df4ac7f894362b",
+        "reference": "b03f7e551965d3d64d7d11e729bfde11e7372878a6687664b08f3f7b93f5b7c5"
+      },
+      "sourceProducerSha256": "b733af3307e593177c45fc63df94193a429a2091ad021e29e627836119d9d8dc",
+      "raw": 93.13188,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "목차 5.2 들여쓰기·탭, 상하 괘선·쪽 번호·그림 및 연결 소속 보존. p50 회색/갈색 면은 사용자 UI Print에도 존재하는 인쇄 차이이며 편집기 화면과 구분. 미세 획·위상 잔여를 일치로 주장하지 않음.",
+      "review": "review/native/original-sample11-user-print-p050-review.png",
+      "reviewSha256": "62751817329d421fe9db180818ff1a56e8c2e879fc6411ddb68c398ff342010a",
+      "overlay": "review/native/original-sample11-user-print-p050-overlay.png",
+      "overlaySha256": "6d3c89997e281d962f0475800ae38518fc49facd09dba7f30bd09109dc83bf84"
+    },
+    {
+      "case": "original-sample11-user-print",
+      "backend": "wasm",
+      "page": 2,
+      "hashes": {
+        "actual": "d0c967cda07a7db65083abaa5cad172d7129447be88b1de8b9053cf276e6ff05",
+        "reference": "997a9cd0f1bb5f8dbcbfef19fb3d5012faa4b073cc98b7bb4eacc9d60108291e"
+      },
+      "sourceProducerSha256": "4f614c23d5f249fe5ac2ee60e2d98b35aac6b8672a47e3ba153c14ab1e584e59",
+      "raw": 99.83678,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "목차 5.2 들여쓰기·탭, 상하 괘선·쪽 번호·그림 및 연결 소속 보존. p50 회색/갈색 면은 사용자 UI Print에도 존재하는 인쇄 차이이며 편집기 화면과 구분. 미세 획·위상 잔여를 일치로 주장하지 않음.",
+      "review": "review/wasm/original-sample11-user-print-p002-review.png",
+      "reviewSha256": "19568eb3a026370169ac3dc9c3f6b3e8f9e21a1938ceb97121fb3b3f0c5031ff",
+      "overlay": "review/wasm/original-sample11-user-print-p002-overlay.png",
+      "overlaySha256": "cbf7972d21c9ba18c4d69e62661271f93c70bc744ab527509ea36e2c7952e5a9"
+    },
+    {
+      "case": "original-sample11-user-print",
+      "backend": "wasm",
+      "page": 50,
+      "hashes": {
+        "actual": "bd8148e6c31bed1fda48c31d24c21dcc53ad8f663d098d7f8ea583a0aa3dac0a",
+        "reference": "b03f7e551965d3d64d7d11e729bfde11e7372878a6687664b08f3f7b93f5b7c5"
+      },
+      "sourceProducerSha256": "4f614c23d5f249fe5ac2ee60e2d98b35aac6b8672a47e3ba153c14ab1e584e59",
+      "raw": 93.13713,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "목차 5.2 들여쓰기·탭, 상하 괘선·쪽 번호·그림 및 연결 소속 보존. p50 회색/갈색 면은 사용자 UI Print에도 존재하는 인쇄 차이이며 편집기 화면과 구분. 미세 획·위상 잔여를 일치로 주장하지 않음.",
+      "review": "review/wasm/original-sample11-user-print-p050-review.png",
+      "reviewSha256": "109362a172c222728e1adba39fe24f19d0bed8c168910c8ecf2482a38f102343",
+      "overlay": "review/wasm/original-sample11-user-print-p050-overlay.png",
+      "overlaySha256": "a352790d51aa2de8775f542ff511725ce196ea15924f44d1527526e2e5e624fd"
+    },
+    {
+      "case": "original-sample16",
+      "backend": "native",
+      "page": 6,
+      "hashes": {
+        "actual": "f7873caab458f7f5638b62fa1821f03c294b317b9b8d3931c04d1a25fc01f14a",
+        "reference": "00781331f564b8d639e01aa2ede7ad91f4c9f2becfbaa41acbf72608bc0f7c4f"
+      },
+      "sourceProducerSha256": "1341936461aabf6e95ab29420b0f2ce4aa0f32ba2b93d26bbe3cd5685e320468",
+      "raw": 99.94633,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "p6 수식·분수·동그라미 및 표, p33 SAN/복구 표 순서, p62 조문·동그라미·들여쓰기 보존. 괄호·원 외곽선·안티앨리어싱 미세 차이 잔여.",
+      "review": "review/native/original-sample16-p006-review.png",
+      "reviewSha256": "cc2b14343fd2a6c8a8e0e1cfd2b4a722ca57255ff00ce6ed2131ed6592945048",
+      "overlay": "review/native/original-sample16-p006-overlay.png",
+      "overlaySha256": "2392eff4bbb435cf70793f8131e542fb5fb2dde47de347d17801673eabf07c80"
+    },
+    {
+      "case": "original-sample16",
+      "backend": "native",
+      "page": 33,
+      "hashes": {
+        "actual": "04c952247590d76bf80de7a38c70cbb1effe7f565b841f37e2c39d129c76c021",
+        "reference": "7f7e35a635183ba25564c6f035abb14bf8d5923258b78c41303d9ce6ba54b51a"
+      },
+      "sourceProducerSha256": "1341936461aabf6e95ab29420b0f2ce4aa0f32ba2b93d26bbe3cd5685e320468",
+      "raw": 99.9972,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "p6 수식·분수·동그라미 및 표, p33 SAN/복구 표 순서, p62 조문·동그라미·들여쓰기 보존. 괄호·원 외곽선·안티앨리어싱 미세 차이 잔여.",
+      "review": "review/native/original-sample16-p033-review.png",
+      "reviewSha256": "d1788f805e0ff197de70d290e095e3712ff94ae0dbcb8aa48663bd000edd5b86",
+      "overlay": "review/native/original-sample16-p033-overlay.png",
+      "overlaySha256": "b908dfb4dbf53554edbee9f2e5c0af967e6c4f552be9acf6a68f20426d81ba6d"
+    },
+    {
+      "case": "original-sample16",
+      "backend": "native",
+      "page": 62,
+      "hashes": {
+        "actual": "96a075d894d370b7df2bd3d940b03e07b46e98ae06483839476d94b6ea16e2a6",
+        "reference": "142f1856a5541a517e10cdf9c21e39bb793509a768d8e8d712bb6239d5470771"
+      },
+      "sourceProducerSha256": "1341936461aabf6e95ab29420b0f2ce4aa0f32ba2b93d26bbe3cd5685e320468",
+      "raw": 99.97792,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "p6 수식·분수·동그라미 및 표, p33 SAN/복구 표 순서, p62 조문·동그라미·들여쓰기 보존. 괄호·원 외곽선·안티앨리어싱 미세 차이 잔여.",
+      "review": "review/native/original-sample16-p062-review.png",
+      "reviewSha256": "97d0aac22824f2ea4f75e8e4d8175b5a15249b4d9ebd91e74fcf9ceb81f96b92",
+      "overlay": "review/native/original-sample16-p062-overlay.png",
+      "overlaySha256": "d33d7eb7e54d1db7897b138bf94cb8f6491df7be453698cb6747d95b12870e4c"
+    },
+    {
+      "case": "original-sample16",
+      "backend": "wasm",
+      "page": 6,
+      "hashes": {
+        "actual": "1fd62720ed660e1251eaa7fa66a8a0dd7b3492b22019ff9c38b6b4842d33d35f",
+        "reference": "00781331f564b8d639e01aa2ede7ad91f4c9f2becfbaa41acbf72608bc0f7c4f"
+      },
+      "sourceProducerSha256": "eb0a50f59613410621d4d61da14057088ee977e6d4278d769598c18047724b56",
+      "raw": 99.9498,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "p6 수식·분수·동그라미 및 표, p33 SAN/복구 표 순서, p62 조문·동그라미·들여쓰기 보존. 괄호·원 외곽선·안티앨리어싱 미세 차이 잔여.",
+      "review": "review/wasm/original-sample16-p006-review.png",
+      "reviewSha256": "4e7e43e5bafba058f3108bdce3ea9dee29f629f5b6ab5533a762c2ae2208b99b",
+      "overlay": "review/wasm/original-sample16-p006-overlay.png",
+      "overlaySha256": "6a452cad5548fd9ab150ad5893fdae79494b0c71a7c128ebd45979f0fae00f73"
+    },
+    {
+      "case": "original-sample16",
+      "backend": "wasm",
+      "page": 33,
+      "hashes": {
+        "actual": "dbd499effb66e547c680c8a800debe42d47fbfbbe0f9afd857cadab58b1bc4da",
+        "reference": "7f7e35a635183ba25564c6f035abb14bf8d5923258b78c41303d9ce6ba54b51a"
+      },
+      "sourceProducerSha256": "eb0a50f59613410621d4d61da14057088ee977e6d4278d769598c18047724b56",
+      "raw": 99.9972,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "p6 수식·분수·동그라미 및 표, p33 SAN/복구 표 순서, p62 조문·동그라미·들여쓰기 보존. 괄호·원 외곽선·안티앨리어싱 미세 차이 잔여.",
+      "review": "review/wasm/original-sample16-p033-review.png",
+      "reviewSha256": "9998600b7a641c7ad2411184e487a63e90ab7ed432ac50d71cb3859c2b6c9317",
+      "overlay": "review/wasm/original-sample16-p033-overlay.png",
+      "overlaySha256": "9e0c52f181bba0a449dc1f2b31a68ffd13266bbf414fdc71ee0328fc2b7b366e"
+    },
+    {
+      "case": "original-sample16",
+      "backend": "wasm",
+      "page": 62,
+      "hashes": {
+        "actual": "35ab5e2e7149e56909e8969daf48d41487a879742c0c4d2afa5e95f022a7a6a7",
+        "reference": "142f1856a5541a517e10cdf9c21e39bb793509a768d8e8d712bb6239d5470771"
+      },
+      "sourceProducerSha256": "eb0a50f59613410621d4d61da14057088ee977e6d4278d769598c18047724b56",
+      "raw": 99.97789,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "p6 수식·분수·동그라미 및 표, p33 SAN/복구 표 순서, p62 조문·동그라미·들여쓰기 보존. 괄호·원 외곽선·안티앨리어싱 미세 차이 잔여.",
+      "review": "review/wasm/original-sample16-p062-review.png",
+      "reviewSha256": "61692058b551ce07ffaf4efc336ae09288f81d00be18e020cca2e2144ef51751",
+      "overlay": "review/wasm/original-sample16-p062-overlay.png",
+      "overlaySha256": "b415c69dfdefc4dca6e8c01c674a3008b8190daced80f1a1170ecd30e0b5cdcd"
+    },
+    {
+      "case": "giant4138-original",
+      "backend": "native",
+      "page": 31,
+      "hashes": {
+        "actual": "e41fb91decb3a3984ccec2bec32cbec705310a2ec438a5be24eba44458e75fba",
+        "reference": "a69bd56752da6a6796e159ad40a6f46dea5a6d770371fbb35de15bb088ef3ad6"
+      },
+      "sourceProducerSha256": "4a040ed0351864244bd858dcbc5b26198a372453548738c7e121dcdf1e50b4b4",
+      "raw": 100.0,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "원본 p31의 5.2.6~5.3.3 내용·순서·줄 끝 보존. 편집 분할본 p31의 판독과 별개.",
+      "review": "review/native/giant4138-original-p031-review.png",
+      "reviewSha256": "b3dfe63a707f96c2954b8f5a45752d7950e68e370d16d4913972aec96c1a5a29",
+      "overlay": "review/native/giant4138-original-p031-overlay.png",
+      "overlaySha256": "e383f17fc42b7ba46dea3c540d21da5be10dba7b9e4f9213e783a8139d2768d5"
+    },
+    {
+      "case": "giant4138-original",
+      "backend": "wasm",
+      "page": 31,
+      "hashes": {
+        "actual": "b45450ac8bd26d592cee51eb1e320613f683c86f5baceb22f77faf1dd3054b7e",
+        "reference": "a69bd56752da6a6796e159ad40a6f46dea5a6d770371fbb35de15bb088ef3ad6"
+      },
+      "sourceProducerSha256": "54ed35ef06e0eb272d492c3f49a52c76cbc5ddae330a7ef5e0ea3e983b1f5ff0",
+      "raw": 100.0,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "원본 p31의 5.2.6~5.3.3 내용·순서·줄 끝 보존. 편집 분할본 p31의 판독과 별개.",
+      "review": "review/wasm/giant4138-original-p031-review.png",
+      "reviewSha256": "280b57f5d252c295cc0223d2fe3676dd98a49fb3175a01c45caab6980e5a31ac",
+      "overlay": "review/wasm/giant4138-original-p031-overlay.png",
+      "overlaySha256": "56a694d525e153e0e307f8b41bace7a896b9b5ef7c7c202a9ab4283af059463d"
+    },
+    {
+      "case": "pii66-declared",
+      "backend": "native",
+      "page": 66,
+      "hashes": {
+        "actual": "8124977f6d1233dd350d8599cb41e86accb1eee06f9ffb3b1bed64e2dacac060",
+        "reference": "6c42491e133791934aa70495c392d5281537eb864351eae2635e3ce18bef0062"
+      },
+      "sourceProducerSha256": "757777117e0bb51932dd102d791ec137f22dcede1e93a7b9b3852ce9a25bce71",
+      "raw": 100.0,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "마지막 표 조각의 텍스트 셀·빈 peer·쪽 번호 보존. 이 판독은 CanvasKit 지원 통과 증거가 아님.",
+      "review": "review/native/pii66-declared-p066-review.png",
+      "reviewSha256": "105321338648aa6a4a28ffbee00a23ce312c87b03bfa236d2400f366e85213a7",
+      "overlay": "review/native/pii66-declared-p066-overlay.png",
+      "overlaySha256": "4b9ed5178de364083b266ff30460c0b6ef28676441ef6a6a1821fc1465bb9a6b"
+    },
+    {
+      "case": "pii66-declared",
+      "backend": "wasm",
+      "page": 66,
+      "hashes": {
+        "actual": "0355e483352b4ec0ff462c54ab88a1bc737591dc7df7568ef30a69c8c00534b1",
+        "reference": "6c42491e133791934aa70495c392d5281537eb864351eae2635e3ce18bef0062"
+      },
+      "sourceProducerSha256": "13eb1d7f70d3b57115ca08e7e32cbf1db22ba3acaded6da31f150077215852b8",
+      "raw": 100.0,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "마지막 표 조각의 텍스트 셀·빈 peer·쪽 번호 보존. 이 판독은 CanvasKit 지원 통과 증거가 아님.",
+      "review": "review/wasm/pii66-declared-p066-review.png",
+      "reviewSha256": "e5dc9e5fddf4defbf05550b4faa635c8a2715f66c7bcdd73b489a3d184a27aab",
+      "overlay": "review/wasm/pii66-declared-p066-overlay.png",
+      "overlaySha256": "a9976c79292a39036f8a74de1c118a178f8810df6627252788fc65e0be12eb22"
+    },
+    {
+      "case": "biotoxin205",
+      "backend": "native",
+      "page": 11,
+      "hashes": {
+        "actual": "27784a320e2218659a3787220e31b66dc17cb5454e4052f661ebce4264338446",
+        "reference": "6508d05fb8f4dbdcfd15f2c94a3d7248a2b65ef1d4002f94bd130474975545ec"
+      },
+      "sourceProducerSha256": "181b15d97286337b0a8165c4ec84ab55aa9fe1fe2c9268891c60c3826873c390",
+      "raw": 100.0,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "p11 표제·각 행 학명/국명/비고의 소속과 순서, p80 막대 그래프·캡션·본문 첫 줄과 Ca2+ 위첨자 및 문단 끝·쪽 번호 보존. 글리프 획 및 표 선 굵기의 RGB 차이는 잔여.",
+      "review": "review/native/biotoxin205-p011-review.png",
+      "reviewSha256": "a4581ac9948f3f763ca9fc75e7f97049d4537e7e6f3566252fb704e5f3de0963",
+      "overlay": "review/native/biotoxin205-p011-overlay.png",
+      "overlaySha256": "c6db771849f6692838d7cbc79111505b54d9c0e610e39b857058a1667562487b"
+    },
+    {
+      "case": "biotoxin205",
+      "backend": "native",
+      "page": 80,
+      "hashes": {
+        "actual": "22c9b4032b9b9c9ec6a0e851f89657edc26784d6cb1d07cc9337362ec7954228",
+        "reference": "d362feb61fd0597f2861920af82a9ad8c6e77128fddea6bb488dd7894ac253e2"
+      },
+      "sourceProducerSha256": "181b15d97286337b0a8165c4ec84ab55aa9fe1fe2c9268891c60c3826873c390",
+      "raw": 99.99241,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "p11 표제·각 행 학명/국명/비고의 소속과 순서, p80 막대 그래프·캡션·본문 첫 줄과 Ca2+ 위첨자 및 문단 끝·쪽 번호 보존. 글리프 획 및 표 선 굵기의 RGB 차이는 잔여.",
+      "review": "review/native/biotoxin205-p080-review.png",
+      "reviewSha256": "6ef8ef0477755f75a81d11eb529f6acc2a2cf7cb50cdfd38640ef51736bf98e9",
+      "overlay": "review/native/biotoxin205-p080-overlay.png",
+      "overlaySha256": "eaa4f7aaac959d41e00cd683983f7ceee7269399a8d1749436cc4b14a5d64a8d"
+    },
+    {
+      "case": "biotoxin205",
+      "backend": "wasm",
+      "page": 11,
+      "hashes": {
+        "actual": "6e112fce0827f9cc662cabc996e07a8bcd762c47698b25136f7d3dd69b493811",
+        "reference": "6508d05fb8f4dbdcfd15f2c94a3d7248a2b65ef1d4002f94bd130474975545ec"
+      },
+      "sourceProducerSha256": "0f905c51148876f914731cb135e7a879cc14a84e9e7d462cc12c4b6a30fd5035",
+      "raw": 100.0,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "p11 표제·각 행 학명/국명/비고의 소속과 순서, p80 막대 그래프·캡션·본문 첫 줄과 Ca2+ 위첨자 및 문단 끝·쪽 번호 보존. 글리프 획 및 표 선 굵기의 RGB 차이는 잔여.",
+      "review": "review/wasm/biotoxin205-p011-review.png",
+      "reviewSha256": "4eb25f60e4474b7841514e38fc908c8cfab28bd6138f56561f98ca0bb631b4ae",
+      "overlay": "review/wasm/biotoxin205-p011-overlay.png",
+      "overlaySha256": "f60de97879964278e34f44be6e8fab15b10c63ff695837a865fc83b2739f5d7c"
+    },
+    {
+      "case": "biotoxin205",
+      "backend": "wasm",
+      "page": 80,
+      "hashes": {
+        "actual": "7d6106f9887fd0242a89f41940dc2c90886256f3ede6fdf6fb6db76c637bbb2b",
+        "reference": "d362feb61fd0597f2861920af82a9ad8c6e77128fddea6bb488dd7894ac253e2"
+      },
+      "sourceProducerSha256": "0f905c51148876f914731cb135e7a879cc14a84e9e7d462cc12c4b6a30fd5035",
+      "raw": 99.9924,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "p11 표제·각 행 학명/국명/비고의 소속과 순서, p80 막대 그래프·캡션·본문 첫 줄과 Ca2+ 위첨자 및 문단 끝·쪽 번호 보존. 글리프 획 및 표 선 굵기의 RGB 차이는 잔여.",
+      "review": "review/wasm/biotoxin205-p080-review.png",
+      "reviewSha256": "c05468d912a77831d0495ea818523a266cc530b37b2e784f19b905c3cee0f5e4",
+      "overlay": "review/wasm/biotoxin205-p080-overlay.png",
+      "overlaySha256": "3b7c32b3cd6c9a3d994509c3b3968f261bc3a68f9a457b80919a622e1e011115"
+    },
+    {
+      "case": "giant4138-tab-period",
+      "backend": "native",
+      "page": 1,
+      "hashes": {
+        "actual": "28d6f6edba5c699800de841d1522f46d33a5ca10ed71a452ca23b8bf49803a50",
+        "reference": "0a7c2eb16dd3b3703a2020ea70d84ca9a1a52801e4a4a55432a823a7e79f6f48"
+      },
+      "sourceProducerSha256": "c9eaa56f3136021adeb4461bf4282740ff096b0f86bafcd0e2727104af9efdb4",
+      "raw": 99.9975,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "첫 쪽 제목과1.1.1~1.1.3 줄 소속·첫/마지막 줄 경계가 독립 Print와 대응한다.",
+      "review": "review/native/giant4138-tab-period-p001-review.png",
+      "reviewSha256": "13eb4236c14cbbfbe8f503933e39571a09451181a56167bd751d419014434416",
+      "overlay": "review/native/giant4138-tab-period-p001-overlay.png",
+      "overlaySha256": "e9fac4abe53c62ae06ed11c34914fb24d15187f6089e4c3dae6696a3857b895b"
+    },
+    {
+      "case": "giant4138-tab-period",
+      "backend": "native",
+      "page": 10,
+      "hashes": {
+        "actual": "0dafa12951427ce7ef17d78c0003cf11da22242214f13e54f12571858c3cafe5",
+        "reference": "a58f5902d59a0d62ec495e276818588b487e9b5d1ed789d06548289392bed02d"
+      },
+      "sourceProducerSha256": "c9eaa56f3136021adeb4461bf4282740ff096b0f86bafcd0e2727104af9efdb4",
+      "raw": 99.79617,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "이어받은 수식과2.3.2.3~2.3.2.6 문단·아래첨자/지수·줄 끝의 소속이 Print와 대응한다. 루트·획·글리프 AA 미세 차이는 잔여이며 RGB 동일이라고 주장하지 않는다.",
+      "review": "review/native/giant4138-tab-period-p010-review.png",
+      "reviewSha256": "057a6280aac2c319eb7e27ab57fbfb7cb981a6012d42d8fb36820337a6a473fd",
+      "overlay": "review/native/giant4138-tab-period-p010-overlay.png",
+      "overlaySha256": "f3090752e8d0e1877551c008dca20e2f14df00d2e8c5256e9ac98f9a1487f59f"
+    },
+    {
+      "case": "giant4138-tab-period",
+      "backend": "native",
+      "page": 31,
+      "hashes": {
+        "actual": "b5803cd2f38b93eafbaef4ca4f4bf1d4cb71cbb4f4d77085b1b5f128a4147981",
+        "reference": "ffa81837744d3fe41198721f2efa193490c93aef1b9d7eb75582c9946df50d24"
+      },
+      "sourceProducerSha256": "c9eaa56f3136021adeb4461bf4282740ff096b0f86bafcd0e2727104af9efdb4",
+      "raw": 100.0,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "상단 이어받기부터4.2.1.10/4.2.2.1/4.2.2.2의 순서·줄 끝과 쪽 끝 경계 보존.",
+      "review": "review/native/giant4138-tab-period-p031-review.png",
+      "reviewSha256": "f3d5f0cb913351e264895a06b402781058366e82afacba0780a7e3d1fa8b43c4",
+      "overlay": "review/native/giant4138-tab-period-p031-overlay.png",
+      "overlaySha256": "c02cf1d00b690c84231341b2d385a903fb6baf713e8ac2bbce57416180a601fc"
+    },
+    {
+      "case": "giant4138-tab-period",
+      "backend": "native",
+      "page": 197,
+      "hashes": {
+        "actual": "13b99609c7e097967a6401c11d10a9f42fdab7f88d1a594cbc3902b0f5938e9f",
+        "reference": "ba9d8fc8813e5fc1e906ea9177bfb38c2bd5ae951bf57d40475a85fad6dc122c"
+      },
+      "sourceProducerSha256": "c9eaa56f3136021adeb4461bf4282740ff096b0f86bafcd0e2727104af9efdb4",
+      "raw": 100.0,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "마지막 문단의 시작/끝과6개 줄을 보존하며 중복·잘림·불필요한 추가 쪽을 관찰하지 않았다.",
+      "review": "review/native/giant4138-tab-period-p197-review.png",
+      "reviewSha256": "28ee64d9b608a7b9a9ecef1cdb55f01d4fa226efccff2fe17a1918c845721dd1",
+      "overlay": "review/native/giant4138-tab-period-p197-overlay.png",
+      "overlaySha256": "7079c77d2b36eade76069a52695483c504000b7e39d57b62e064d3a247bb25e2"
+    },
+    {
+      "case": "giant4138-tab-period",
+      "backend": "wasm",
+      "page": 1,
+      "hashes": {
+        "actual": "eca7715f4b4bf0bd0ed0a5ae61ede20458b7cdb1803de669fd5fe7268b18a22b",
+        "reference": "0a7c2eb16dd3b3703a2020ea70d84ca9a1a52801e4a4a55432a823a7e79f6f48"
+      },
+      "sourceProducerSha256": "74730032f5d37d7b36fc94c1c9bf60ddbd919357f0abd66004bfb2ea7038a04f",
+      "raw": 99.9975,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "첫 쪽 제목과1.1.1~1.1.3 줄 소속·첫/마지막 줄 경계가 독립 Print와 대응한다.",
+      "review": "review/wasm/giant4138-tab-period-p001-review.png",
+      "reviewSha256": "a50e928c572fd266c01e46fb5795aa4f81ed0afd436bcbd3e9d1bcbb7fbc0ff6",
+      "overlay": "review/wasm/giant4138-tab-period-p001-overlay.png",
+      "overlaySha256": "801f360ccaee16b6fd5773c6e69049f160467ae1342e94dae8fdbea9586bab8c"
+    },
+    {
+      "case": "giant4138-tab-period",
+      "backend": "wasm",
+      "page": 10,
+      "hashes": {
+        "actual": "bee3f70243950aefb4e1ac9ae8c173fda3e2131c5c5f2551238096d3e32766f2",
+        "reference": "a58f5902d59a0d62ec495e276818588b487e9b5d1ed789d06548289392bed02d"
+      },
+      "sourceProducerSha256": "74730032f5d37d7b36fc94c1c9bf60ddbd919357f0abd66004bfb2ea7038a04f",
+      "raw": 99.7962,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "이어받은 수식과2.3.2.3~2.3.2.6 문단·아래첨자/지수·줄 끝의 소속이 Print와 대응한다. 루트·획·글리프 AA 미세 차이는 잔여이며 RGB 동일이라고 주장하지 않는다.",
+      "review": "review/wasm/giant4138-tab-period-p010-review.png",
+      "reviewSha256": "43af1d44277b1b4f9a4db6913d29ffcf8892da95b5c9d7b765ab12391d65c8de",
+      "overlay": "review/wasm/giant4138-tab-period-p010-overlay.png",
+      "overlaySha256": "e0c519c5cac28e05297d53ea3548e3786cfb1ec82ae5cb133ddfc6d251677785"
+    },
+    {
+      "case": "giant4138-tab-period",
+      "backend": "wasm",
+      "page": 31,
+      "hashes": {
+        "actual": "137bcf885ed11e9e92b92cfee7655c23734ba827bb68540b3c1bfd3931822063",
+        "reference": "ffa81837744d3fe41198721f2efa193490c93aef1b9d7eb75582c9946df50d24"
+      },
+      "sourceProducerSha256": "74730032f5d37d7b36fc94c1c9bf60ddbd919357f0abd66004bfb2ea7038a04f",
+      "raw": 100.0,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "상단 이어받기부터4.2.1.10/4.2.2.1/4.2.2.2의 순서·줄 끝과 쪽 끝 경계 보존.",
+      "review": "review/wasm/giant4138-tab-period-p031-review.png",
+      "reviewSha256": "5cd84f1ad34cc125dddab07ae0233d1754ff328e78062d96ad0f0755328dfb91",
+      "overlay": "review/wasm/giant4138-tab-period-p031-overlay.png",
+      "overlaySha256": "74fbe6226bf9439ea1a6c84f75d27db29b52f3c476ed0c15c67111ca1a80806f"
+    },
+    {
+      "case": "giant4138-tab-period",
+      "backend": "wasm",
+      "page": 197,
+      "hashes": {
+        "actual": "47859ffebd029fdd4ee58e3cfe95b8e6cb89ec6d4c4211a2eea2641d5cd4592e",
+        "reference": "ba9d8fc8813e5fc1e906ea9177bfb38c2bd5ae951bf57d40475a85fad6dc122c"
+      },
+      "sourceProducerSha256": "74730032f5d37d7b36fc94c1c9bf60ddbd919357f0abd66004bfb2ea7038a04f",
+      "raw": 100.0,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "마지막 문단의 시작/끝과6개 줄을 보존하며 중복·잘림·불필요한 추가 쪽을 관찰하지 않았다.",
+      "review": "review/wasm/giant4138-tab-period-p197-review.png",
+      "reviewSha256": "8634aff2a6685aafaf75122573b6b99e0963becbe5196eb3e0115d438c5cd161",
+      "overlay": "review/wasm/giant4138-tab-period-p197-overlay.png",
+      "overlaySha256": "c083282d07ea3e56559df54af3eb062f0fe06c61c9c487899eba60ab9fab64b3"
+    },
+    {
+      "case": "giant4138-current-ascii",
+      "backend": "native",
+      "page": 1,
+      "hashes": {
+        "actual": "28d6f6edba5c699800de841d1522f46d33a5ca10ed71a452ca23b8bf49803a50",
+        "reference": "0a7c2eb16dd3b3703a2020ea70d84ca9a1a52801e4a4a55432a823a7e79f6f48"
+      },
+      "sourceProducerSha256": "d2df2cff415771b8cd4afcc94f9a45a6087c67fd81fbe53e47393fed6a674c01",
+      "raw": 99.9975,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "첫 쪽 제목과1.1.1~1.1.3 줄 소속·첫/마지막 줄 경계가 독립 Print와 대응한다.",
+      "review": "review/native/giant4138-current-ascii-p001-review.png",
+      "reviewSha256": "362acaed52353507b8a7a04f7104e907f1b71037a7c3ac3d890734cc0c69e60a",
+      "overlay": "review/native/giant4138-current-ascii-p001-overlay.png",
+      "overlaySha256": "3d6162b5f5d9adfea1a47c3042eedf4c03c7ec47a8749256b2920d1799c0173f"
+    },
+    {
+      "case": "giant4138-current-ascii",
+      "backend": "native",
+      "page": 10,
+      "hashes": {
+        "actual": "0dafa12951427ce7ef17d78c0003cf11da22242214f13e54f12571858c3cafe5",
+        "reference": "a58f5902d59a0d62ec495e276818588b487e9b5d1ed789d06548289392bed02d"
+      },
+      "sourceProducerSha256": "d2df2cff415771b8cd4afcc94f9a45a6087c67fd81fbe53e47393fed6a674c01",
+      "raw": 99.79617,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "이어받은 수식과2.3.2.3~2.3.2.6 문단·아래첨자/지수·줄 끝의 소속이 Print와 대응한다. 루트·획·글리프 AA 미세 차이는 잔여이며 RGB 동일이라고 주장하지 않는다.",
+      "review": "review/native/giant4138-current-ascii-p010-review.png",
+      "reviewSha256": "572eb2643b115a537551d4c9a150b59475c2f17c0aecddbde291d730bf058ed5",
+      "overlay": "review/native/giant4138-current-ascii-p010-overlay.png",
+      "overlaySha256": "4fd9433b964573efeda82db3e52d8c2a2488edbb180ad12186863d83514a12a4"
+    },
+    {
+      "case": "giant4138-current-ascii",
+      "backend": "native",
+      "page": 31,
+      "hashes": {
+        "actual": "b5803cd2f38b93eafbaef4ca4f4bf1d4cb71cbb4f4d77085b1b5f128a4147981",
+        "reference": "ffa81837744d3fe41198721f2efa193490c93aef1b9d7eb75582c9946df50d24"
+      },
+      "sourceProducerSha256": "d2df2cff415771b8cd4afcc94f9a45a6087c67fd81fbe53e47393fed6a674c01",
+      "raw": 100.0,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "상단 이어받기부터4.2.1.10/4.2.2.1/4.2.2.2의 순서·줄 끝과 쪽 끝 경계 보존.",
+      "review": "review/native/giant4138-current-ascii-p031-review.png",
+      "reviewSha256": "1a35498cccc8ee951f6125ca274a0b5a70d3b9a092f44fe59b3a736cd16b9610",
+      "overlay": "review/native/giant4138-current-ascii-p031-overlay.png",
+      "overlaySha256": "3f2a7fb128b6cb9e0ee1ee93414530fd78ba56839e283808d8e9849162b701ec"
+    },
+    {
+      "case": "giant4138-current-ascii",
+      "backend": "native",
+      "page": 197,
+      "hashes": {
+        "actual": "13b99609c7e097967a6401c11d10a9f42fdab7f88d1a594cbc3902b0f5938e9f",
+        "reference": "ba9d8fc8813e5fc1e906ea9177bfb38c2bd5ae951bf57d40475a85fad6dc122c"
+      },
+      "sourceProducerSha256": "d2df2cff415771b8cd4afcc94f9a45a6087c67fd81fbe53e47393fed6a674c01",
+      "raw": 100.0,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "마지막 문단의 시작/끝과6개 줄을 보존하며 중복·잘림·불필요한 추가 쪽을 관찰하지 않았다.",
+      "review": "review/native/giant4138-current-ascii-p197-review.png",
+      "reviewSha256": "a2c6393371ec114a6d6a3f3e4c631d7bc800eea69f383695436c3d0301b083e0",
+      "overlay": "review/native/giant4138-current-ascii-p197-overlay.png",
+      "overlaySha256": "70dd9e86e6d794e0e5fc83da4ae2170f64d0eb7ba6d6ff817f053313ebe8cfcb"
+    },
+    {
+      "case": "giant4138-current-ascii",
+      "backend": "wasm",
+      "page": 1,
+      "hashes": {
+        "actual": "eca7715f4b4bf0bd0ed0a5ae61ede20458b7cdb1803de669fd5fe7268b18a22b",
+        "reference": "0a7c2eb16dd3b3703a2020ea70d84ca9a1a52801e4a4a55432a823a7e79f6f48"
+      },
+      "sourceProducerSha256": "60045acc2933bb07fb2a9b06e447869347a92b3df5cc61a4aa7916d3ba6cab78",
+      "raw": 99.9975,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "첫 쪽 제목과1.1.1~1.1.3 줄 소속·첫/마지막 줄 경계가 독립 Print와 대응한다.",
+      "review": "review/wasm/giant4138-current-ascii-p001-review.png",
+      "reviewSha256": "8e4cb01c837964189cac950025f18dd70a473906c29f3df97988234ed00a35a7",
+      "overlay": "review/wasm/giant4138-current-ascii-p001-overlay.png",
+      "overlaySha256": "89b493a2d1c0a5c86066bc703a6c25156b6b94b910d6863e7bad73e4fe54cdb5"
+    },
+    {
+      "case": "giant4138-current-ascii",
+      "backend": "wasm",
+      "page": 10,
+      "hashes": {
+        "actual": "bee3f70243950aefb4e1ac9ae8c173fda3e2131c5c5f2551238096d3e32766f2",
+        "reference": "a58f5902d59a0d62ec495e276818588b487e9b5d1ed789d06548289392bed02d"
+      },
+      "sourceProducerSha256": "60045acc2933bb07fb2a9b06e447869347a92b3df5cc61a4aa7916d3ba6cab78",
+      "raw": 99.7962,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "이어받은 수식과2.3.2.3~2.3.2.6 문단·아래첨자/지수·줄 끝의 소속이 Print와 대응한다. 루트·획·글리프 AA 미세 차이는 잔여이며 RGB 동일이라고 주장하지 않는다.",
+      "review": "review/wasm/giant4138-current-ascii-p010-review.png",
+      "reviewSha256": "b1a1b97b7b87cb2b1bef87d530eb877c002aa0ab389b39d62bb1c8b25e627e05",
+      "overlay": "review/wasm/giant4138-current-ascii-p010-overlay.png",
+      "overlaySha256": "afe29e23a4085abdfb49252f8fc27370a4079410541ae39f8a3f818e303a498b"
+    },
+    {
+      "case": "giant4138-current-ascii",
+      "backend": "wasm",
+      "page": 31,
+      "hashes": {
+        "actual": "137bcf885ed11e9e92b92cfee7655c23734ba827bb68540b3c1bfd3931822063",
+        "reference": "ffa81837744d3fe41198721f2efa193490c93aef1b9d7eb75582c9946df50d24"
+      },
+      "sourceProducerSha256": "60045acc2933bb07fb2a9b06e447869347a92b3df5cc61a4aa7916d3ba6cab78",
+      "raw": 100.0,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "상단 이어받기부터4.2.1.10/4.2.2.1/4.2.2.2의 순서·줄 끝과 쪽 끝 경계 보존.",
+      "review": "review/wasm/giant4138-current-ascii-p031-review.png",
+      "reviewSha256": "abd19c6b33f5fb6a0689b77ccb645e1be4a7e8598868dc19b25471047c47d7f7",
+      "overlay": "review/wasm/giant4138-current-ascii-p031-overlay.png",
+      "overlaySha256": "8f6cd8db07671ff812fe67b2c1222ce017900ab0c7198a83bd8f6b0243cde1f4"
+    },
+    {
+      "case": "giant4138-current-ascii",
+      "backend": "wasm",
+      "page": 197,
+      "hashes": {
+        "actual": "47859ffebd029fdd4ee58e3cfe95b8e6cb89ec6d4c4211a2eea2641d5cd4592e",
+        "reference": "ba9d8fc8813e5fc1e906ea9177bfb38c2bd5ae951bf57d40475a85fad6dc122c"
+      },
+      "sourceProducerSha256": "60045acc2933bb07fb2a9b06e447869347a92b3df5cc61a4aa7916d3ba6cab78",
+      "raw": 100.0,
+      "directInspection": "review-and-overlay-inspected",
+      "inspectionNoteKo": "마지막 문단의 시작/끝과6개 줄을 보존하며 중복·잘림·불필요한 추가 쪽을 관찰하지 않았다.",
+      "review": "review/wasm/giant4138-current-ascii-p197-review.png",
+      "reviewSha256": "945af488201e0b4eabe76c753cf2a2808769304afc37fea7747e3169cbdc3adc",
+      "overlay": "review/wasm/giant4138-current-ascii-p197-overlay.png",
+      "overlaySha256": "f935a3531acbeb0a91cd08ec7aeae9eb1a807712a0e5b9d17f469fefdd04a7c6"
+    },
+    {
+      "case": "rowbreak18",
+      "backend": "native",
+      "page": 16,
+      "hashes": {
+        "actual": "d2c5ee383d26fd83600b84b6bf3c45530b974489fdb996441afbbe65f9404c42",
+        "reference": "ac8fa41f30b9fcef36a3651ac718d904a0b7b69cd0383a4569a5b5e10f50db4a"
+      },
+      "sourceProducerSha256": "8ea211be70e2b36bd468ceb5ace090c3074428251f3fc2842afe1c4ac58fc596",
+      "raw": 93.06876,
+      "directInspection": "review-and-overlay-inspected",
+      "fixedBaseActualPngSha256": "a74bc7ab7d3a868cab532b00f9c860666a7d14b2d7f69d6b435bc1ef049f7eaf",
+      "fixedBaseByteIdentical": false,
+      "inspectionNoteKo": "상단 이어받은 표와 공공데이터 표준화 관리 표·본문·하단 제공관리 표 및 인용 상자·쪽 번호의 순서와 소속 보존. 하단 두번째 표의 얇은 선과 본문에 미세한 세로 위치/획 차이가 남는다. raw90% 통과를 RGB·좌표 동일성으로 확대하지 않는다. 고정 base PNG 동일 여부를 별도로 기록한다.",
+      "review": "review/native/rowbreak18-p016-review.png",
+      "reviewSha256": "59c8487d2c24732a1d5c6adc2a1454fe6a2852bb3362fd2aa9a2d9a98eb3c435",
+      "overlay": "review/native/rowbreak18-p016-overlay.png",
+      "overlaySha256": "2a04409e65822185e279788cc97e793c895c65d806fa9f59b16610ac648129b9"
+    },
+    {
+      "case": "rowbreak18",
+      "backend": "wasm",
+      "page": 16,
+      "hashes": {
+        "actual": "18b01e3c06b9c3622af3af9d2225f7f9798c07afee80e4cf6bf7e1a33d64d631",
+        "reference": "ac8fa41f30b9fcef36a3651ac718d904a0b7b69cd0383a4569a5b5e10f50db4a"
+      },
+      "sourceProducerSha256": "754dda34ffd6fb21288ee6810c3403d5b4232f428da80f8a08d71ead8abfa0fc",
+      "raw": 92.99291,
+      "directInspection": "review-and-overlay-inspected",
+      "fixedBaseActualPngSha256": "bd325a894ca3b09676df95331aee3afa5b18fad3e414270bfd01c5cb9d7d370b",
+      "fixedBaseByteIdentical": false,
+      "inspectionNoteKo": "상단 이어받은 표와 공공데이터 표준화 관리 표·본문·하단 제공관리 표 및 인용 상자·쪽 번호의 순서와 소속 보존. 하단 두번째 표의 얇은 선과 본문에 미세한 세로 위치/획 차이가 남는다. raw90% 통과를 RGB·좌표 동일성으로 확대하지 않는다. 고정 base PNG 동일 여부를 별도로 기록한다.",
+      "review": "review/wasm/rowbreak18-p016-review.png",
+      "reviewSha256": "150ede4ab08bc070d4c8227109d2de719165d456d856304710231104a8abb3e5",
+      "overlay": "review/wasm/rowbreak18-p016-overlay.png",
+      "overlaySha256": "d88b19502842500920aecc1e73e494214e79f7c96ca609ef60c11aa0c335af31"
+    }
+  ],
+  "scope": "Representative enlarged review and overlay of existing50-condition output. Not a claim that all pages are RGB identical.",
+  "fullPrAcceptance": false
+}

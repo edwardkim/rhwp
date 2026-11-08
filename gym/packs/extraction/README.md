@@ -8,7 +8,7 @@ last_verified: 2026-08-18
 # extraction — 데이터 추출 (읽기)
 
 이 브랜치에 등재된 과제는 **EX01–EX28** 다. EX23–EX28 은 날짜 표본·
-누적 차트·3/4쪽 글자·시험지 전종류·수량 격자다.
+누적 차트·홍보문·표 문서의 데이터 추출 격자다.
 
 이 pack 은 문서를 **고치지 않고** 값을 뽑는 읽기 축이다. 차트 격자
 (`chart-to-csv`), 본문 페이지(`export-text`), 날짜·금액·수량
@@ -35,7 +35,7 @@ last_verified: 2026-08-18
 2. **종류를 섞는다.** 날짜·금액·수량은 한 봉투에 같이 실릴 수 있다.
    `--kind date` 를 빼면 `all` 이 되고, 금액 과제에 날짜를 섞어 세면
    라이브 오라클이 거절한다.
-3. **형식 쌍을 같다고 가정하지 않는다.** 같은 시험지의 `.hwp` 와
+3. **형식 쌍을 같다고 가정하지 않는다.** 같은 원본의 `.hwp` 와
    `.hwpx` 는 본문이 같아 보여도 파서가 다르다. 이 pack 은 양쪽을
    따로 채점한다(EX08/EX09, EX11/EX12, EX01/EX18).
 4. **0건을 실패로 본다.** 빈 문서에서 날짜가 0건인 것은 오류가 아니다.
@@ -58,7 +58,7 @@ last_verified: 2026-08-18
    `answer_eq` 경로로 재계산한다. 지시문에 예시 숫자를 넣지 않는다
    (EX21 의 `--limit 1` 은 상한이지 정답이 아니다).
 6. **profiles / gym/README / PARK / checks.py 를 고치지 않는다.**
-7. **합성 픽스처를 추가하지 않는다.** 차트·홍보문·시험지·빈 HWPX 는
+7. **합성 픽스처를 추가하지 않는다.** 차트·홍보문·표·빈 HWPX 는
    이미 저장소에 있다.
 
 ## 요구 capability
@@ -82,10 +82,6 @@ rhwp extract-data <파일> [--kind date|amount|number|all] [--limit N] [--json]
 
 | 플래그 | 의미 | 대표 과제 |
 |---|---|---|
-| `--kind date` | 날짜만. `2026년 8월 2일`, `2026. 8. 2.`, `2026-08-02` | EX03, EX08, EX09, EX19, EX21, EX23 |
-| `--kind amount` | 금액만. `1,234원`, `₩1,234`, `3,180백만원` | EX05, EX10, EX20 |
-| `--kind number` | 수량만. `12개`, `3.5%`, `1,000명`. 단위 없는 맨 숫자는 항목이 아니다 | EX06, EX28 |
-| `--kind all` | 세 종류 전부. 생략과 같다 | EX07, EX26 |
 | `--limit N` | 이번 응답 상한. `totalItemCount` 는 절단 전 총량 | EX21 |
 | `--json` | 기계 봉투 | 전 과제 |
 
@@ -116,8 +112,6 @@ rhwp export-text <파일> [-p <쪽>] [--json]
 
 | 플래그 | 의미 | 대표 과제 |
 |---|---|---|
-| (없음) | 전 쪽. `pageCount` | EX02, EX11, EX12, EX14, EX22, EX27 |
-| `-p 0` | 첫 쪽만. `pages[0].text` 길이 | EX04, EX13, EX25 |
 | `--json` | 기계 봉투 | 전 과제 |
 
 쪽 번호는 **0 기준**이다. `-p 1` 은 둘째 쪽이다. 이 pack 의 글자 수
@@ -160,12 +154,6 @@ rhwp chart-to-csv <파일> [--chart <번호>] [-o <경로>] [--bom] [--json]
 | `samples/chart/라인/꺽은선형.hwp` | EX16 | 꺾은선. |
 | `samples/chart/원형/2차원원형.hwp` | EX17 | 원형. |
 | `samples/20250130-hongbo.hwp` | EX02, EX03, EX05–EX07, EX21 | 실문서. 날짜·금액·수량·본문. |
-| `samples/exam-kor-1p.hwp` | EX04, EX08, EX10, EX28 | 1쪽 시험지 HWP. |
-| `samples/hwpx/exam-kor-1p.hwpx` | EX09, EX26 | 같은 시험지 HWPX. |
-| `samples/exam-kor-2p.hwp` | EX11, EX13 | 2쪽. |
-| `samples/hwpx/exam-kor-2p.hwpx` | EX12 | 2쪽 HWPX. |
-| `samples/exam-kor-3p.hwp` | EX14, EX25 | 3쪽. |
-| `samples/exam-kor-4p.hwp` | EX27 | 4쪽. |
 | `samples/table-001.hwp` | EX22 | 표 표본의 본문 쪽수. |
 | `samples/2010-01-06.hwp` | EX23 | 날짜가 이름에 있는 실문서. |
 | `samples/hwpx/blank_hwpx.hwpx` | EX19, EX20 | 빈 문서. 0건 계약. |
@@ -206,18 +194,14 @@ rhwp chart-to-csv <파일> [--chart <번호>] [-o <경로>] [--bom] [--json]
 | ID | 하는 일 | 표본 | 지목 |
 |---|---|---|---|
 | EX02 | 홍보문 쪽수 | 20250130-hongbo.hwp | `pageCount` |
-| EX11 | 2쪽 시험지 HWP | exam-kor-2p.hwp | 같은 경로 |
-| EX12 | 2쪽 시험지 HWPX | exam-kor-2p.hwpx | 같은 경로 |
-| EX14 | 3쪽 시험지 | exam-kor-3p.hwp | 같은 경로 |
 | EX22 | 표 표본 쪽수 | table-001.hwp | 같은 경로 |
-| EX27 | 4쪽 시험지 | exam-kor-4p.hwp | 같은 경로 |
 
 실패 모드:
 
 - `info` 의 `pageCount` 를 가져온다. 같은 숫자일 수는 있으나 이 과제의
   오라클은 `export-text` 다. 명령이 다르면 측정 축이 다르다.
 - `-p 0` 만 뽑고 1이라고 쓴다. 전 쪽 과제가 아니다.
-- 파일 이름을 쪽수로 믿는다(`exam-kor-2p` → 2). 라이브 오라클이 다시 센다.
+- 파일 이름의 숫자를 쪽수로 믿는다. 라이브 오라클이 다시 센다.
 
 ### J3. 첫 쪽 글자 수 (`export-text -p 0` + len)
 
@@ -225,9 +209,6 @@ rhwp chart-to-csv <파일> [--chart <번호>] [-o <경로>] [--bom] [--json]
 
 | ID | 하는 일 | 표본 | 지목 |
 |---|---|---|---|
-| EX04 | 1쪽 시험지 글자 수 | exam-kor-1p.hwp | `pages[0].text` 길이 |
-| EX13 | 2쪽 시험지 첫 쪽 | exam-kor-2p.hwp | 같은 경로 |
-| EX25 | 3쪽 시험지 첫 쪽 | exam-kor-3p.hwp | 같은 경로 |
 
 실패 모드:
 
@@ -243,8 +224,6 @@ rhwp chart-to-csv <파일> [--chart <번호>] [-o <경로>] [--bom] [--json]
 | ID | 하는 일 | 표본 | 지목 |
 |---|---|---|---|
 | EX03 | 홍보문 날짜 | hongbo.hwp | `itemCount` |
-| EX08 | 1쪽 시험지 HWP 날짜 | exam-kor-1p.hwp | 같은 경로 |
-| EX09 | 같은 시험지 HWPX | exam-kor-1p.hwpx | 같은 경로 |
 | EX19 | 빈 HWPX 날짜 0건 | blank_hwpx.hwpx | 같은 경로 |
 | EX21 | `--limit 1` 절단 | hongbo.hwp | 이번 응답 `itemCount` |
 | EX23 | 2010-01-06 표본 | 2010-01-06.hwp | 같은 경로 |
@@ -266,10 +245,7 @@ rhwp chart-to-csv <파일> [--chart <번호>] [-o <경로>] [--bom] [--json]
 | EX05 | 홍보문 금액 | hongbo.hwp | `--kind amount` `itemCount` |
 | EX06 | 홍보문 수량 | hongbo.hwp | `--kind number` |
 | EX07 | 홍보문 전종류 | hongbo.hwp | `--kind all` |
-| EX10 | 시험지 금액 | exam-kor-1p.hwp | amount |
 | EX20 | 빈 HWPX 금액 0건 | blank_hwpx.hwpx | amount |
-| EX26 | 시험지 HWPX 전종류 | exam-kor-1p.hwpx | all |
-| EX28 | 시험지 수량 | exam-kor-1p.hwp | number |
 
 실패 모드:
 
@@ -297,11 +273,6 @@ rhwp chart-to-csv <파일> [--chart <번호>] [-o <경로>] [--bom] [--json]
 기존. 홍보문 날짜 `itemCount`. EX05·EX06·EX07 의 기준점이다.
 `--kind` 를 바꾸면 숫자가 달라질 수 있다.
 
-### EX04 — 첫 쪽 본문 추출 — 글자 수
-
-기존. `exam-kor-1p.hwp`, `-p 0`, `len_answer_eq`. 1쪽 문서라도
-`-p 0` 을 빼면 경로가 `pages[0].text` 가 아닐 수 있다. 빼지 마라.
-
 ### EX05 — 금액 수확
 
 홍보문 `--kind amount`. EX03 과 같은 문서, 다른 종류. 두 답을
@@ -317,29 +288,6 @@ rhwp chart-to-csv <파일> [--chart <번호>] [-o <경로>] [--bom] [--json]
 홍보문 `--kind all`. EX03+EX05+EX06 의 합과 같아야 하는 것이
 정상이지만, 겹치는 구간은 코어가 한 번만 먹는다(왼쪽에서 오른쪽,
 되추적 없음). 합을 손으로 더하지 말고 `all` 을 돌려라.
-
-### EX08 / EX09 — 시험지 날짜, HWP 와 HWPX
-
-같은 시험지의 두 형식. 각각 따로 채점한다. 한 형식의 답을 다른
-형식에 복사하는 것은 허용되지만, 오라클은 각 입력을 다시 돌린다.
-파서가 다르면 숫자가 갈라질 수 있다. 그때는 복사한 쪽이 실패한다.
-
-### EX10 — 시험지 금액
-
-1쪽 시험지에 금액 표기가 있을 수도, 없을 수도 있다. 0건이면 0을
-제출하면 된다.
-
-### EX11 / EX12 — 2쪽 시험지 쪽수, HWP 와 HWPX
-
-파일 이름의 `2p` 를 믿지 마라. `export-text --json` 의 `pageCount` 다.
-
-### EX13 — 2쪽 시험지 첫 쪽 글자 수
-
-EX04 와 같은 연산, 다른 표본. 둘째 쪽을 섞으면 길이가 달라진다.
-
-### EX14 — 3쪽 시험지 쪽수
-
-`exam-kor-3p.hwp`. EX11·EX27 과 함께 쪽수 격자를 만든다.
 
 ### EX15 — 묶은가로막대형 행 수
 
@@ -383,24 +331,6 @@ EX01 의 쌍. 차트 데이터가 같으면 행 수도 같다. 달라도 각각�
 EX01 과 같은 폴더, 다른 파일. `묶은` 과 `누적` 을 바꾸면 다른
 차트다. 행 수가 같을 수는 있어도 입력이 다르다.
 
-### EX25 — 3쪽 시험지 첫 쪽 글자 수
-
-EX13 의 3쪽 판. 첫 쪽만.
-
-### EX26 — 시험지 HWPX 전종류
-
-EX09(날짜) + EX10(금액 HWP) + EX28(수량 HWP) 의 HWPX 전종류.
-형식을 섞어 제출하지 마라.
-
-### EX27 — 4쪽 시험지 쪽수
-
-쪽수 격자의 맨 끝. `exam-kor-4p.hwp`.
-
-### EX28 — 시험지 수량
-
-`--kind number`. 문제 번호(`제3조` 식)는 수량이 아니다. 코어가
-서수를 걸러 준다.
-
 ## 채점
 
 모든 신규 과제는 `submit.kind = answer` 다. 제출물은
@@ -408,8 +338,6 @@ EX09(날짜) + EX10(금액 HWP) + EX28(수량 HWP) 의 HWPX 전종류.
 
 | 연산자 | 쓰임 | 과제 |
 |---|---|---|
-| `answer_eq` | 라이브 봉투 경로와 제출 키 대조 | EX01–EX03, EX05–EX12, EX14–EX24, EX26–EX28 |
-| `len_answer_eq` | 문자열 길이와 제출 숫자 대조 | EX04, EX13, EX25 |
 
 `file_exists` 가 없다. 산출 파일을 내면 채점이 읽지 않는다.
 `deep_contains` 가 없다. 전역 훑기는 조회 과제에서도 쓰지 않는다 —
@@ -420,32 +348,7 @@ EX09(날짜) + EX10(금액 HWP) + EX28(수량 HWP) 의 HWPX 전종류.
 
 ## 명령 레시피
 
-```bash
-# 차트 1의 행 수
-rhwp chart-to-csv samples/chart/세로막대형/묶은세로막대형.hwp --chart 1 --json \
-  | jq '.charts[0].rowCount'
 
-# 본문 쪽수
-rhwp export-text samples/20250130-hongbo.hwp --json | jq '.pageCount'
-
-# 첫 쪽 글자 수
-rhwp export-text samples/exam-kor-1p.hwp -p 0 --json \
-  | jq '.pages[0].text | length'
-
-# 날짜 / 금액 / 수량 / 전종류
-rhwp extract-data samples/20250130-hongbo.hwp --kind date --json | jq '.itemCount'
-rhwp extract-data samples/20250130-hongbo.hwp --kind amount --json | jq '.itemCount'
-rhwp extract-data samples/20250130-hongbo.hwp --kind number --json | jq '.itemCount'
-rhwp extract-data samples/20250130-hongbo.hwp --kind all --json | jq '.itemCount'
-
-# 절단 — 이번 응답 vs 총량
-rhwp extract-data samples/20250130-hongbo.hwp --kind date --limit 1 --json \
-  | jq '{itemCount, totalItemCount, truncated}'
-
-# 빈 문서 — 0건, exit 0
-rhwp extract-data samples/hwpx/blank_hwpx.hwpx --kind date --json \
-  | jq '{itemCount, kind}'
-```
 
 채점 왕복:
 
@@ -569,3 +472,7 @@ python gym/score.py               --agent baseline --pack extraction --bin targe
 EX01–EX04 는 기존 축이다. EX05–EX28 은 같은 연산자·같은 CLI 로
 종류·형식·표본 지목을 더 촘촘히 늘린 확장이다. 새 pack 도, 새 CLI 도,
 T07/fill-fields 복제도 없다.
+
+## 시험지 과제 제외
+
+지정된 시험지 입력을 참조하는 다음 과제를 활성 평가에서 제거했다: EX04, EX08, EX09, EX10, EX11, EX12, EX13, EX14, EX25, EX26, EX27, EX28. 원본 문서 파일은 보존하며 과제 ID는 재사용하지 않는다.

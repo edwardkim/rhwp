@@ -1,0 +1,67 @@
+{
+  "source_sha": "c96354d4e67fd88c0eadd9eecb5aebbe043d7373",
+  "base_sha": "80968497c2c178eeecb3b2e1d04d086ad27a0dc7",
+  "input": "samples/issue7840/1150200_youth_vision2030_application.hwp",
+  "input_sha256": "0ca950ef7424e197a432df115aabb8a8c4169f9f4a4f0ccce7816c8931bb6744",
+  "pdf": "pdf/pr-review-planet6897-20261018/1150200-source-hancom-print-2020.pdf",
+  "pdf_sha256": "416bc2b227b506a3dfdd172902099dde2f834861b505de6a7b846b9bcd0052c4",
+  "dpi": 96,
+  "compat": "2022",
+  "profile": "print",
+  "metric": "silhouette_raw_match_percent",
+  "pages": 4,
+  "native_min": 99.39534,
+  "wasm_min": 99.36649,
+  "selected_page": 4,
+  "native_selected_page": 99.93592,
+  "wasm_selected_page": 99.91154,
+  "pixel_tolerance": 2,
+  "expected_bounds_px": {
+    "left": 77.398666,
+    "top": 115.233317,
+    "right": 712.895996,
+    "bottom": 1023.840007
+  },
+  "direct_review": "Both current outputs compared with independent PDF: table edges, all six closing rows, final selection text, baselines and no missing or repeated contents. Native/WASM anti-alias and about 1px closing edge difference remain.",
+  "native_binary_sha256": "b35613b3f800ae812b789992106d44b29664ca8574eb9faa329d4677d9203893",
+  "wasm_sha256": "fa4cbbc59f6bf987923e3e61989b11bffcda46531332d6d96d1603726604f537",
+  "assets_sha256": {
+    "native-silhouette.tsv": "e16c841f488cc253f22466fdcb9a11708922845d643de4d83da6d317d7415d2b",
+    "wasm-silhouette.tsv": "28383e190551a82a7a9aa8036df7d276afd342e766e30fab63db4a9ea9a4bae3",
+    "native-p004-review.png": "91664439025a81f1d3545aa8c01a4dd4cc1b6c95ae1512b23fd2a5f3035588e8",
+    "native-p004-overlay.png": "0cf285f453cebe0e33b94ca0758202388f717555e413607def8ada9b57cecd5d",
+    "wasm-p004-review.png": "a27f5f0cdaa1b3765dc09b0dd035ddaeccce55e722bad408284dd25d28afe2b0",
+    "wasm-p004-overlay.png": "3a36ae1244643e76acb29779bf54655d2f37440f63fc95b395dbd1c28807c7c7"
+  },
+  "before_after": {
+    "before_pages": 5,
+    "before_test_exit_code": 101,
+    "after_pages": 4,
+    "after_test_exit_code": 0,
+    "before_failure": "Independent Print page count assertion, left 5 right 4; no compiler or fixture error."
+  },
+  "regression_source_sha256": "5c0ecf8981f30230fe527122a52b96a47588be20b90e75ffca903793db0cacc4",
+  "independent_carried_headings": [
+    {
+      "page": 2,
+      "text": "②교육분과"
+    },
+    {
+      "page": 2,
+      "text": "③가족분과"
+    },
+    {
+      "page": 2,
+      "text": "④직업/진로분과"
+    },
+    {
+      "page": 3,
+      "text": "⑤문화/여가분과"
+    },
+    {
+      "page": 3,
+      "text": "⑥환경분과"
+    }
+  ],
+  "additional_relation": "All carried row-0 contents are collected in page order from the source-owned table and compared with original paragraphs plus independently observed generated heading labels."
+}

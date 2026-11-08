@@ -1,0 +1,374 @@
+{
+  "parentHead": "cec3710f1dc5c06f5364c6f5af74a10b4772fef4",
+  "scope": "Focused Native/fresh WASM16conditions only; not full source acceptance",
+  "dpi": 96,
+  "referenceRasterizer": "canonical actual PDFium152.0.7947.0 smooth RGB v1",
+  "rawTolerancePx": 2,
+  "thresholdPercent": 90,
+  "conditions": [
+    {
+      "case": "biotoxin205",
+      "backend": "native",
+      "counts": {
+        "rhwp": 205,
+        "pdf": 205
+      },
+      "pages": [
+        {
+          "page": 11,
+          "raw": "100.00000"
+        },
+        {
+          "page": 79,
+          "raw": "99.92056"
+        },
+        {
+          "page": 80,
+          "raw": "99.99241"
+        },
+        {
+          "page": 81,
+          "raw": "99.99813"
+        },
+        {
+          "page": 82,
+          "raw": "100.00000"
+        },
+        {
+          "page": 83,
+          "raw": "99.96729"
+        },
+        {
+          "page": 84,
+          "raw": "99.91101"
+        }
+      ],
+      "below90": [],
+      "tsvSha256": "ac7523463480212d05c6b3bd7447c8a3d886b360f00d71567e3f885ab64c519b",
+      "tsv": "biotoxin205-native-focused.tsv"
+    },
+    {
+      "case": "sample16-hwpx",
+      "backend": "native",
+      "counts": {
+        "rhwp": 64,
+        "pdf": 64
+      },
+      "pages": [
+        {
+          "page": 18,
+          "raw": "76.57875"
+        },
+        {
+          "page": 35,
+          "raw": "82.56128"
+        }
+      ],
+      "below90": [
+        18,
+        35
+      ],
+      "tsvSha256": "a246ba19223492fab21de3cd358c903045feb1906c5c55fc167d53476fcfbc01",
+      "tsv": "sample16-hwpx-native-focused.tsv"
+    },
+    {
+      "case": "press12",
+      "backend": "native",
+      "counts": {
+        "rhwp": 12,
+        "pdf": 12
+      },
+      "pages": [
+        {
+          "page": 9,
+          "raw": "98.17586"
+        },
+        {
+          "page": 12,
+          "raw": "87.89806"
+        }
+      ],
+      "below90": [
+        12
+      ],
+      "tsvSha256": "a5ead731708077e68835547954aea9ed94940c01556d4097a50bdc3821e77ae9",
+      "tsv": "press12-native-focused.tsv"
+    },
+    {
+      "case": "roadmap302",
+      "backend": "native",
+      "counts": {
+        "rhwp": 302,
+        "pdf": 302
+      },
+      "pages": [
+        {
+          "page": 153,
+          "raw": "100.00000"
+        },
+        {
+          "page": 295,
+          "raw": "98.96693"
+        }
+      ],
+      "below90": [],
+      "tsvSha256": "982efe221c81a2235d088a30920ceb00d9be10af4418c913ec3fab9a01048f2f",
+      "tsv": "roadmap302-native-focused.tsv"
+    },
+    {
+      "case": "original-sample11-user-print",
+      "backend": "native",
+      "counts": {
+        "rhwp": 151,
+        "pdf": 151
+      },
+      "pages": [
+        {
+          "page": 2,
+          "raw": "99.83678"
+        },
+        {
+          "page": 50,
+          "raw": "93.13188"
+        }
+      ],
+      "below90": [],
+      "tsvSha256": "bb11202f879c5b30fe077eaaecc54d0fac8e2c73e91e22f36e810e0878cf4e7d",
+      "tsv": "original-sample11-user-print-native-focused.tsv"
+    },
+    {
+      "case": "phase",
+      "backend": "native",
+      "counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "100.00000"
+        }
+      ],
+      "below90": [],
+      "tsvSha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "tsv": "phase-native-focused.tsv"
+    },
+    {
+      "case": "color",
+      "backend": "native",
+      "counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "100.00000"
+        }
+      ],
+      "below90": [],
+      "tsvSha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "tsv": "color-native-focused.tsv"
+    },
+    {
+      "case": "faint",
+      "backend": "native",
+      "counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "100.00000"
+        }
+      ],
+      "below90": [],
+      "tsvSha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "tsv": "faint-native-focused.tsv"
+    },
+    {
+      "case": "biotoxin205",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 205,
+        "pdf": 205
+      },
+      "pages": [
+        {
+          "page": 11,
+          "raw": "100.00000"
+        },
+        {
+          "page": 79,
+          "raw": "99.92048"
+        },
+        {
+          "page": 80,
+          "raw": "99.99240"
+        },
+        {
+          "page": 81,
+          "raw": "99.99813"
+        },
+        {
+          "page": 82,
+          "raw": "100.00000"
+        },
+        {
+          "page": 83,
+          "raw": "99.96728"
+        },
+        {
+          "page": 84,
+          "raw": "99.91105"
+        }
+      ],
+      "below90": [],
+      "tsvSha256": "2d3dbe2b1591fab19e13286d4d2f8cdf909a9afb87be5547fe1f35ec1ca39e73",
+      "tsv": "biotoxin205-wasm-focused.tsv"
+    },
+    {
+      "case": "sample16-hwpx",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 64,
+        "pdf": 64
+      },
+      "pages": [
+        {
+          "page": 18,
+          "raw": "76.56403"
+        },
+        {
+          "page": 35,
+          "raw": "82.54824"
+        }
+      ],
+      "below90": [
+        18,
+        35
+      ],
+      "tsvSha256": "2ebd024f19077dd2c41e5951d2166c3714a88e6f16633c79ff0edd6f0f983278",
+      "tsv": "sample16-hwpx-wasm-focused.tsv"
+    },
+    {
+      "case": "press12",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 12,
+        "pdf": 12
+      },
+      "pages": [
+        {
+          "page": 9,
+          "raw": "98.11394"
+        },
+        {
+          "page": 12,
+          "raw": "87.84792"
+        }
+      ],
+      "below90": [
+        12
+      ],
+      "tsvSha256": "db32e73c737be49e39d4a03d84e61d790d069fec94416a198da985c13ce08692",
+      "tsv": "press12-wasm-focused.tsv"
+    },
+    {
+      "case": "roadmap302",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 302,
+        "pdf": 302
+      },
+      "pages": [
+        {
+          "page": 153,
+          "raw": "100.00000"
+        },
+        {
+          "page": 295,
+          "raw": "98.96600"
+        }
+      ],
+      "below90": [],
+      "tsvSha256": "b17b18868668ab04bdd97a4e2abd9e7d1e052c95ea8da7f18ccc4bd60c75ceb9",
+      "tsv": "roadmap302-wasm-focused.tsv"
+    },
+    {
+      "case": "original-sample11-user-print",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 151,
+        "pdf": 151
+      },
+      "pages": [
+        {
+          "page": 2,
+          "raw": "99.83678"
+        },
+        {
+          "page": 50,
+          "raw": "93.13713"
+        }
+      ],
+      "below90": [],
+      "tsvSha256": "501104230a245f7df9b7150b20173e2df38e1db6020ce2315349ef305bab953f",
+      "tsv": "original-sample11-user-print-wasm-focused.tsv"
+    },
+    {
+      "case": "phase",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "100.00000"
+        }
+      ],
+      "below90": [],
+      "tsvSha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "tsv": "phase-wasm-focused.tsv"
+    },
+    {
+      "case": "color",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "100.00000"
+        }
+      ],
+      "below90": [],
+      "tsvSha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "tsv": "color-wasm-focused.tsv"
+    },
+    {
+      "case": "faint",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "100.00000"
+        }
+      ],
+      "below90": [],
+      "tsvSha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+      "tsv": "faint-wasm-focused.tsv"
+    }
+  ],
+  "remaining": "Full affected document TSV and regression guards; sample16 HWPX18/35, press12p12, KTX remain unresolved; current new code full regression and actual consumers pending",
+  "fullPrAcceptance": false
+}

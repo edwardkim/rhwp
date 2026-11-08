@@ -43,6 +43,10 @@ function measurementSource(measurement) {
 }
 
 export function refreshDurationPolicy(policy, measurements) {
+  const labels = measurements.map(report => report?.archive_label).sort().join(",");
+  if (!["b,c,d", "b,c,d,e"].includes(labels)) {
+    fail("measurements must contain each B/C/D or B/C/D/E archive exactly once");
+  }
   if (policy.schema_version === 2) {
     if (
       !Number.isFinite(policy.fallback_seconds_per_test)
@@ -69,8 +73,8 @@ export function refreshDurationPolicy(policy, measurements) {
     const testCases = {};
     const sourceKeys = new Set();
     for (const measurement of measurements) {
-      if (!measurement || measurement.schema_version !== 2 || !["b", "c", "d"].includes(measurement.archive_label)) {
-        fail("measurement must be a B, C, or D schema_version 2 report");
+      if (!measurement || measurement.schema_version !== 2 || !["b", "c", "d", "e"].includes(measurement.archive_label)) {
+        fail("measurement must be a B, C, D, or E schema_version 2 report");
       }
       for (const [field, destination] of [["targets", targets], ["cases", cases], ["test_cases", testCases]]) {
         if (!measurement[field] || typeof measurement[field] !== "object" || Array.isArray(measurement[field])) {
@@ -93,7 +97,7 @@ export function refreshDurationPolicy(policy, measurements) {
       sourceKeys.add(JSON.stringify(source));
     }
     if (sourceKeys.size !== 1) {
-      fail("B, C, and D measurements must have identical run, ref, and sha provenance");
+      fail("Integration archive measurements must have identical run, ref, and sha provenance");
     }
     return {
       schema_version: 2,
@@ -111,8 +115,8 @@ export function refreshDurationPolicy(policy, measurements) {
   const durations = { ...policy.targets };
   const sourceKeys = new Set();
   for (const measurement of measurements) {
-    if (!measurement || measurement.schema_version !== 1 || !["b", "c", "d"].includes(measurement.archive_label)) {
-      fail("measurement must be a B, C, or D schema_version 1 report");
+    if (!measurement || measurement.schema_version !== 1 || !["b", "c", "d", "e"].includes(measurement.archive_label)) {
+      fail("measurement must be a B, C, D, or E schema_version 1 report");
     }
     if (!measurement.targets || typeof measurement.targets !== "object" || Array.isArray(measurement.targets)) {
       fail("measurement targets must be an object");
@@ -134,7 +138,7 @@ export function refreshDurationPolicy(policy, measurements) {
     }
   }
   if (sourceKeys.size !== 1) {
-    fail("B, C, and D measurements must have identical run, ref, and sha provenance");
+    fail("Integration archive measurements must have identical run, ref, and sha provenance");
   }
 
   return {
@@ -150,18 +154,14 @@ export function refreshDurationPolicy(policy, measurements) {
 function main() {
   const options = parseArgs(process.argv.slice(2));
   if (options.help) {
-    process.stdout.write("Usage: node scripts/refresh-nextest-target-duration-policy.mjs --policy policy.json --measurement b.json --measurement c.json --measurement d.json --output policy.json\n");
+    process.stdout.write("Usage: node scripts/refresh-nextest-target-duration-policy.mjs --policy policy.json --measurement b.json --measurement c.json --measurement d.json [--measurement e.json] --output policy.json\n");
     return;
   }
-  if (!options.policy || !options.output || options.measurements.length !== 3) {
-    fail("--policy, exactly three --measurement values, and --output are required");
+  if (!options.policy || !options.output || ![3, 4].includes(options.measurements.length)) {
+    fail("--policy, three or four --measurement values, and --output are required");
   }
   const policy = JSON.parse(fs.readFileSync(options.policy, "utf8"));
   const measurements = options.measurements.map((filePath) => JSON.parse(fs.readFileSync(filePath, "utf8")));
-  const labels = new Set(measurements.map((measurement) => measurement.archive_label));
-  if (labels.size !== 3 || !labels.has("b") || !labels.has("c") || !labels.has("d")) {
-    fail("measurements must contain exactly one B, C, and D report");
-  }
   const refreshed = refreshDurationPolicy(policy, measurements);
   fs.mkdirSync(path.dirname(options.output), { recursive: true });
   fs.writeFileSync(options.output, `${JSON.stringify(refreshed, null, 2)}\n`);

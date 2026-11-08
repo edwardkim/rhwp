@@ -1,0 +1,41 @@
+{
+  "status": "success",
+  "job_id": "b0c75d83-033c-4aa5-a79f-dfc550a78c5d",
+  "output_path": "pdf/issue8174/studio/button-after-2020.pdf",
+  "output_filename": "button-after-2020.pdf",
+  "size": 22164,
+  "sha256": "1d1474f379bc1be43d62a13f5f1ad69b5def0fac40feb54f29bfe3ec91f52aa1",
+  "server": {
+    "job_id": "b0c75d83-033c-4aa5-a79f-dfc550a78c5d",
+    "status": "success",
+    "target": "pdf",
+    "input_filename": "button-after-reference.hwp",
+    "output_filename": "button-after-reference-hwp2020.pdf",
+    "size": 22164,
+    "sha256": "1d1474f379bc1be43d62a13f5f1ad69b5def0fac40feb54f29bfe3ec91f52aa1",
+    "mime_type": "application/pdf",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "11.0.0.9136",
+    "backend": "hwp-managed-direct-dll-host",
+    "pdf_page_count": 1,
+    "logical_page_count": null,
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+    "font_scope": {
+      "mode": "session0",
+      "status": "verified",
+      "profile_source": "protected_config",
+      "session_id": 0,
+      "mapped_font_count": 2,
+      "registered_font_count": 2,
+      "failed_font_count": 0,
+      "parent_visibility": "verified",
+      "child_visibility": "verified"
+    },
+    "elapsed_ms": 11063,
+    "worker_elapsed_ms": 10271,
+    "worker_bits": 32,
+    "input_preprocess": "scripts_disabled"
+  }
+}

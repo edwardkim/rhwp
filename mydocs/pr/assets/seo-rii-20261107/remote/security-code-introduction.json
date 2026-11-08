@@ -1,0 +1,26 @@
+{
+  "source_introduction": "19d2fb9b9bd5b00984022cdf627a699d84fa978d",
+  "sink_introductions": {
+    "478": "6e1a463b612d95f7b39f0cd450d02576a94739b0",
+    "483": "ba964f94938dea6a9751dcd5794310e859c9420f",
+    "484": "a858322af71dbec16ed09c7f5607c2e0e2e74eb4"
+  },
+  "first_coexistence": [
+    {
+      "alert": 478,
+      "first_common_ancestor_in_selected_history": "19d2fb9b9bd5b00984022cdf627a699d84fa978d",
+      "commit": "19d2fb9b9bd5b00984022cdf627a699d84fa978d 2026-10-15T18:55:08+09:00 feat: add persistent native document and RGBA sessions"
+    },
+    {
+      "alert": 483,
+      "first_common_ancestor_in_selected_history": "ba964f94938dea6a9751dcd5794310e859c9420f",
+      "commit": "ba964f94938dea6a9751dcd5794310e859c9420f 2026-10-18T03:38:54+09:00 diag: \uc7ac\uc870\ud310 \ud589 \ucef7\uc758 \uc2e4\uc81c \uce78\ubcc4 \uc608\uc0b0\uacfc \uc218\uc6a9 \uc870\uac74\uc744 \ucd94\uc801"
+    },
+    {
+      "alert": 484,
+      "first_common_ancestor_in_selected_history": "a858322af71dbec16ed09c7f5607c2e0e2e74eb4",
+      "commit": "a858322af71dbec16ed09c7f5607c2e0e2e74eb4 2026-10-18T22:07:37+09:00 diag: \uac78\uce68 \uc140 \uc885\ub8cc \uc694\uad6c\uc758 \uc2e4\uc81c \uc0c1\uc790\uc640 \ucd94\uc815 \ub760 \uc6d0\uc7a5 \ucd94\uc801"
+    }
+  ],
+  "meaning": "earliest topological commit on selected HEAD ancestry containing source and sink introductions; direct current flow is proved by SARIF, not an analysis run on historical commit"
+}

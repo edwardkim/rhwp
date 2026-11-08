@@ -1,0 +1,27 @@
+# #8183 제출용 시각 증적
+
+메인테이너의 반투명 이미지 확인은 [확대 비교판](alpha-review/README.md)에서 시작한다.
+
+제품 source `cfc5be8fe`, 96 DPI·print·compat 2022의 전쪽 Native/fresh WASM TSV와 대표
+compare·standalone overlay·review다. TSV는 작업 원본을 바이트 그대로 복사했다.
+17쪽 모두 양쪽 raw 최저 100%이며, 색상·alpha·본문 누락 여부도 별도로 직접 판독했다.
+
+[입력·독립 기준](../../../../pdf/issue8183/README.md),
+[작업 기록](../../../working/task_m100_8183_stage3.md),
+[TSV hash](provenance.json)를 참고한다. Pixel 완전 일치율과 2px 내용 실루엣 일치율을 구분한다.
+
+![Native 전체 스캔](native/scan-jbig2-200_review.png)
+![fresh WASM 전체 스캔](wasm/scan-jpx-200_review.png)
+![fresh WASM Indexed 색상](wasm/jpx-indexed_review.png)
+![fresh WASM alpha](wasm/jpx-alpha_review.png)
+
+`base-native/`, `base-wasm/`는 고정 devel `d9fd85ed5`가 같은 HWPX를 렌더링한 전쪽 TSV다.
+[34행 대조](base-comparison.json)에서 최저 100%, 후보 대비 하락 0pp를 확인했다.
+[저장본 한컴 Print 대조](hancom-print/README.md)는 별도다. 작은 반투명 그림 두 쪽의 Print가
+90% 미만이므로 원본 PDF 대조 통과와 한컴 Print 통과를 동일시하지 않는다.
+
+## 2026-10-24 메인테이너 결정
+
+2026-10-24 메인테이너가 두 4×2 반투명 사례의 RHWP 처리를 정답으로 판정하고 PR 진행을 결정했다.
+Print의 미달 수치·TSV·원본은 보존하고 해당 두 Print를 alpha 정답지로 사용하지 않는다.
+수치 임계값·제품 alpha·회귀 기대값은 바꾸지 않는다.

@@ -1,0 +1,20 @@
+{
+  "result": "before FAIL / after PASS",
+  "rows": [
+    {
+      "name": "button-before-correction",
+      "sha256": "982fc8fc996c9939375b819f8fe74655613a3b8c7ccfc6c0270dbd0afcd806f6",
+      "scripts": [],
+      "calculationPreserved": false
+    },
+    {
+      "name": "button-after-correction",
+      "sha256": "8d6d896a6b34b055ba1674751e6ba7f07ec8d858c7072b15d477ed6f76953622",
+      "scripts": [
+        "Scripts/headerScripts",
+        "Scripts/sourceScripts"
+      ],
+      "calculationPreserved": true
+    }
+  ]
+}

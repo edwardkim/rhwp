@@ -1,0 +1,103 @@
+{
+  "source_sha": "0c3148ab54b3a4ca1bdc969e4d9283265625feec",
+  "prior_producer_sha": "803046519d82d20c71d85937b96a8eefabb200d0",
+  "note": "These controls are separate from the three target documents; KTX page 2 retains its prior 99.7 percent result.",
+  "results": [
+    {
+      "backend": "native",
+      "document": "bitmap-indexed-color-controls-2020",
+      "page": 1,
+      "source33_raw": 100.0,
+      "final_raw": 100.0,
+      "regression": false
+    },
+    {
+      "backend": "native",
+      "document": "bitmap-indexed-color-controls-2024",
+      "page": 1,
+      "source33_raw": 100.0,
+      "final_raw": 100.0,
+      "regression": false
+    },
+    {
+      "backend": "native",
+      "document": "bitmap-white-palette-controls-2020",
+      "page": 1,
+      "source33_raw": 100.0,
+      "final_raw": 100.0,
+      "regression": false
+    },
+    {
+      "backend": "native",
+      "document": "bitmap-white-palette-controls-2024",
+      "page": 1,
+      "source33_raw": 100.0,
+      "final_raw": 100.0,
+      "regression": false
+    },
+    {
+      "backend": "native",
+      "document": "ktx-toc",
+      "page": 2,
+      "source33_raw": 99.70954,
+      "final_raw": 99.70954,
+      "regression": false
+    },
+    {
+      "backend": "native",
+      "document": "sample16-basic-toc",
+      "page": 2,
+      "source33_raw": 100.0,
+      "final_raw": 100.0,
+      "regression": false
+    },
+    {
+      "backend": "wasm",
+      "document": "bitmap-indexed-color-controls-2020",
+      "page": 1,
+      "source33_raw": 100.0,
+      "final_raw": 100.0,
+      "regression": false
+    },
+    {
+      "backend": "wasm",
+      "document": "bitmap-indexed-color-controls-2024",
+      "page": 1,
+      "source33_raw": 100.0,
+      "final_raw": 100.0,
+      "regression": false
+    },
+    {
+      "backend": "wasm",
+      "document": "bitmap-white-palette-controls-2020",
+      "page": 1,
+      "source33_raw": 100.0,
+      "final_raw": 100.0,
+      "regression": false
+    },
+    {
+      "backend": "wasm",
+      "document": "bitmap-white-palette-controls-2024",
+      "page": 1,
+      "source33_raw": 100.0,
+      "final_raw": 100.0,
+      "regression": false
+    },
+    {
+      "backend": "wasm",
+      "document": "ktx-toc",
+      "page": 2,
+      "source33_raw": 99.68345,
+      "final_raw": 99.68345,
+      "regression": false
+    },
+    {
+      "backend": "wasm",
+      "document": "sample16-basic-toc",
+      "page": 2,
+      "source33_raw": 100.0,
+      "final_raw": 100.0,
+      "regression": false
+    }
+  ]
+}

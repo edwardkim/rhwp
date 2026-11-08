@@ -1,0 +1,172 @@
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct Issue2214TargetCut {
+    page_index: u32,
+    start_row: usize,
+    end_row: usize,
+    is_continuation: bool,
+    start_cut: Vec<usize>,
+    end_cut: Vec<usize>,
+    is_block_split: bool,
+}
+
+fn issue2214_target_cuts(doc: &HwpDocument) -> Vec<Issue2214TargetCut> {
+    use crate::renderer::pagination::PageItem;
+
+    let pages = doc
+        .core
+        .pagination
+        .iter()
+        .flat_map(|section| section.pages.iter())
+        .collect::<Vec<_>>();
+    assert_eq!(
+        pages.len(),
+        doc.page_count() as usize,
+        "pagination page coverage"
+    );
+    pages
+        .into_iter()
+        .enumerate()
+        .map(|(global_page, page)| {
+            assert_eq!(page.section_index, 0, "#2214 target section");
+            assert_eq!(
+                page.page_index as usize, global_page,
+                "#2214 global page index"
+            );
+            let matches = page
+                .column_contents
+                .iter()
+                .flat_map(|column| column.items.iter())
+                .filter_map(|item| match item {
+                    PageItem::PartialTable {
+                        para_index: 0,
+                        control_index: 2,
+                        start_row,
+                        end_row,
+                        is_continuation,
+                        start_cut,
+                        end_cut,
+                        is_block_split,
+                        ..
+                    } => Some(Issue2214TargetCut {
+                        page_index: page.page_index,
+                        start_row: *start_row,
+                        end_row: *end_row,
+                        is_continuation: *is_continuation,
+                        start_cut: start_cut.clone(),
+                        end_cut: end_cut.clone(),
+                        is_block_split: *is_block_split,
+                    }),
+                    _ => None,
+                })
+                .collect::<Vec<_>>();
+            assert_eq!(
+                matches.len(),
+                1,
+                "page {global_page}: exactly one target PartialTable fragment"
+            );
+            matches.into_iter().next().expect("one target fragment")
+        })
+        .collect()
+}
+
+fn issue2214_assert_cut_continuity(label: &str, state: &str, cuts: &[Issue2214TargetCut]) {
+    assert_eq!(cuts.len(), 115, "{label} {state}: target page coverage");
+    assert!(!cuts[0].is_continuation, "{label} {state}: first fragment");
+    assert!(
+        cuts[0].start_cut.is_empty(),
+        "{label} {state}: first fragment starts at row origin"
+    );
+    assert!(
+        cuts.last().expect("last target cut").end_cut.is_empty(),
+        "{label} {state}: final fragment consumes the target table"
+    );
+    assert!(
+        cuts.iter().all(|cut| !cut.is_block_split),
+        "{label} {state}: #2214 fixture must remain a non-block split chain"
+    );
+    for cut in cuts {
+        assert!(
+            cut.start_row < cut.end_row,
+            "{label} {state}: page {} row range must advance",
+            cut.page_index
+        );
+        if cut.start_row + 1 == cut.end_row && !cut.start_cut.is_empty() && !cut.end_cut.is_empty()
+        {
+            assert_eq!(
+                cut.start_cut.len(),
+                cut.end_cut.len(),
+                "{label} {state}: page {} cut arity",
+                cut.page_index
+            );
+            assert!(
+                cut.start_cut
+                    .iter()
+                    .zip(&cut.end_cut)
+                    .all(|(start, end)| end >= start),
+                "{label} {state}: page {} cut components must not rewind",
+                cut.page_index
+            );
+            assert!(
+                cut.start_cut
+                    .iter()
+                    .zip(&cut.end_cut)
+                    .any(|(start, end)| end > start),
+                "{label} {state}: page {} cut must consume at least one unit",
+                cut.page_index
+            );
+        }
+    }
+    for (page, pair) in cuts.windows(2).enumerate() {
+        assert!(
+            pair[1].is_continuation,
+            "{label} {state}: page {} must be a continuation",
+            page + 1
+        );
+        if pair[0].end_cut.is_empty() {
+            assert!(
+                pair[1].start_cut.is_empty(),
+                "{label} {state}: page {} row boundary must restart without a cut",
+                page + 1
+            );
+            assert_eq!(
+                pair[1].start_row,
+                pair[0].end_row,
+                "{label} {state}: page {} row boundary must be contiguous",
+                page + 1
+            );
+        } else {
+            assert_eq!(
+                pair[0].end_cut,
+                pair[1].start_cut,
+                "{label} {state}: page {} end_cut must equal page {} start_cut",
+                page,
+                page + 1
+            );
+            assert_eq!(
+                pair[1].start_row,
+                pair[0].end_row - 1,
+                "{label} {state}: page {} split row must continue",
+                page + 1
+            );
+        }
+    }
+}
+
+/// #2430의 giant-cell target 에 ASCII `1` 을 몇 개 붙이면 fifth line 이 생기는가.
+///
+/// [#7418] HWP·HWPX 모두 56 이다. 종전 HWPX 61 은 한/글 2020 이 한양신명조를 함초롬바탕으로
+/// **대체한** 환경의 출력(`pdf/task_m100_3820_stage86_wasm_boundary_oracle/*-2020.pdf`, 글꼴
+/// HCRBatang)에서 정한 값이었다. 한양신명조가 있는 환경에서 이 문단에 글을 붙이고 저장 줄을
+/// 지운 입력을 한/글이 직접 나누면 2024(13.0.0.564)·2020(11.0.0.1623) 모두 **55** 번째에서
+/// 전환한다(`[0, 44, 84, 122, 128]`). rhwp 는 56 번째에서 `[.., 122, 129]` 로 전환해 넷째
+/// 줄에 한 글자를 더 담는다 — 남은 차이다. 두 형식이 같은 문서이므로 경계도 같다.
+fn issue2214_flow_boundary_insert_count(label: &str) -> usize {
+    match label {
+        "hwp" => 56,
+        "hwpx" => 56,
+        other => panic!("unknown #2214 fixture label: {other}"),
+    }
+}
+
+/// #2214 Stage 3: scoped cache coherence는 deferred pagination geometry를 유지하면서
+/// warm tree/cursor만 최신 edit으로 복구하고, explicit flush에서만 cut/bounds를 갱신한다.

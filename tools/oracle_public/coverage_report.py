@@ -24,6 +24,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Sequence
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
+from regression_document_scope import is_deferred_regression_input
+
 SCHEMA_VERSION = "1.0"
 CLAIM_ID = "M01-3"
 GENERATOR = "tools/oracle_public/coverage_report.py"
@@ -97,11 +100,23 @@ def discover_repo_root(start: Path | None = None) -> Path:
 def walk_samples(samples_dir: Path, repo_root: Path) -> list[SampleDoc]:
     if not samples_dir.is_dir():
         raise UsageError(f"samples 디렉터리가 없습니다: {samples_dir}")
+    # 원본은 보존하고 공통 제외 목록만 활성 회귀 수집에 적용한다.
+    policy = repo_root / "tests/fixtures/transferred_exam_regressions.txt"
+    if not policy.is_file():
+        policy = Path(__file__).resolve().parents[2] / "tests/fixtures/transferred_exam_regressions.txt"
+    excluded = set(policy.read_text(encoding="utf-8").splitlines()) if policy.is_file() else set()
+    deferred = Path(__file__).resolve().parents[2] / "tests/fixtures/deferred_document_regressions.txt"
+    deferred_names = set(deferred.read_text(encoding="utf-8").splitlines())
+    excluded.update(deferred_names)
     found: list[SampleDoc] = []
     for path in samples_dir.rglob("*"):
+        if is_deferred_regression_input(path, axis="oracle"):
+            continue
         if not path.is_file():
             continue
         if path.suffix.lower() not in SAMPLE_EXTS:
+            continue
+        if path.name in deferred_names or path.relative_to(samples_dir).as_posix() in excluded:
             continue
         rel = Path(posix_rel(path, repo_root))
         parent = rel.parent.as_posix()

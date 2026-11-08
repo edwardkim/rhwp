@@ -1,0 +1,292 @@
+{
+  "status": "diagnostic_only_unresolved",
+  "note": "이전 디버그의 Chromium 글꼴 탐색 결과와 해당 family 이름의 두 fc-match 결과다. 서로 다른 조건의 Chromium 전체 실행이나 과거 글꼴 선택을 증명하지 않는다.",
+  "documents": {
+    "onsemiro": {
+      "probe_log_sha256": "91ff45d6b9203660d9d7c3b2b547170bca577c29670e8c6d02ac4e581fe93ffa",
+      "probes": [
+        {
+          "font": "20px a로케트, 한컴바탕, \"Malgun Gothic\", \"맑은 고딕\", \"Apple SD Gothic Neo\", \"HCR Dotum\", 함초롬돋움, \"Noto Sans KR ExtraLight\", \"Noto Sans KR\", Pretendard, \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", sans-serif",
+          "count": 52,
+          "platform": [
+            {
+              "familyName": "Haansoft Batang",
+              "postScriptName": "Haansoft Batang",
+              "isCustomFont": false,
+              "glyphCount": 1
+            }
+          ]
+        },
+        {
+          "font": "13.333px \"KoPubWorld돋움체_Pro Medium\", KoPubWorld돋움체_Pro, 한컴바탕, \"Malgun Gothic\", \"맑은 고딕\", \"Apple SD Gothic Neo\", \"HCR Dotum\", 함초롬돋움, \"Noto Sans KR ExtraLight\", \"Noto Sans KR\", Pretendard, \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", sans-serif",
+          "count": 14,
+          "platform": [
+            {
+              "familyName": "Haansoft Batang",
+              "postScriptName": "Haansoft Batang",
+              "isCustomFont": false,
+              "glyphCount": 1
+            }
+          ]
+        },
+        {
+          "font": "13.333px \"배달의민족 도현\", 한컴바탕, \"Malgun Gothic\", \"맑은 고딕\", \"Apple SD Gothic Neo\", \"HCR Dotum\", 함초롬돋움, \"Noto Sans KR ExtraLight\", \"Noto Sans KR\", Pretendard, \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", sans-serif",
+          "count": 10,
+          "platform": [
+            {
+              "familyName": "BM DoHyeon",
+              "postScriptName": "BMDoHyeon",
+              "isCustomFont": false,
+              "glyphCount": 1
+            }
+          ]
+        }
+      ]
+    },
+    "newsletter-korean": {
+      "probe_log_sha256": "60a5fb040591150ab5b55070c419123b15b645cde3b42ca958b5a3b0ce370a35",
+      "probes": [
+        {
+          "font": "13.333px \"맑은 고딕\", \"Malgun Gothic\", \"맑은 고딕\", \"Apple SD Gothic Neo\", \"HCR Dotum\", 함초롬돋움, \"Noto Sans KR ExtraLight\", \"Noto Sans KR\", Pretendard, \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", sans-serif",
+          "count": 1012,
+          "platform": [
+            {
+              "familyName": "Malgun Gothic",
+              "postScriptName": "MalgunGothic-Regular",
+              "isCustomFont": false,
+              "glyphCount": 1
+            }
+          ]
+        },
+        {
+          "font": "italic 12px \"맑은 고딕\", \"Malgun Gothic\", \"맑은 고딕\", \"Apple SD Gothic Neo\", \"HCR Dotum\", 함초롬돋움, \"Noto Sans KR ExtraLight\", \"Noto Sans KR\", Pretendard, \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", sans-serif",
+          "count": 98,
+          "platform": [
+            {
+              "familyName": "Malgun Gothic",
+              "postScriptName": "MalgunGothic-Regular",
+              "isCustomFont": false,
+              "glyphCount": 1
+            }
+          ]
+        },
+        {
+          "font": "bold 13.333px \"맑은 고딕\", \"Malgun Gothic\", \"맑은 고딕\", \"Apple SD Gothic Neo\", \"HCR Dotum\", 함초롬돋움, \"Noto Sans KR ExtraLight\", \"Noto Sans KR\", Pretendard, \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", sans-serif",
+          "count": 94,
+          "platform": [
+            {
+              "familyName": "Malgun Gothic",
+              "postScriptName": "MalgunGothic-Regular",
+              "isCustomFont": false,
+              "glyphCount": 1
+            }
+          ]
+        },
+        {
+          "font": "bold 16px \"맑은 고딕\", \"Malgun Gothic\", \"맑은 고딕\", \"Apple SD Gothic Neo\", \"HCR Dotum\", 함초롬돋움, \"Noto Sans KR ExtraLight\", \"Noto Sans KR\", Pretendard, \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", sans-serif",
+          "count": 60,
+          "platform": [
+            {
+              "familyName": "Malgun Gothic",
+              "postScriptName": "MalgunGothic-Regular",
+              "isCustomFont": false,
+              "glyphCount": 1
+            }
+          ]
+        },
+        {
+          "font": "16px 한컴돋움, \"Malgun Gothic\", \"맑은 고딕\", \"Apple SD Gothic Neo\", \"HCR Dotum\", 함초롬돋움, \"Noto Sans KR ExtraLight\", \"Noto Sans KR\", Pretendard, \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", sans-serif",
+          "count": 36,
+          "platform": [
+            {
+              "familyName": "한컴돋움",
+              "postScriptName": "Haansoft-Dotum",
+              "isCustomFont": false,
+              "glyphCount": 1
+            }
+          ]
+        },
+        {
+          "font": "bold 34.667px 휴먼굵은팸체, \"Malgun Gothic\", \"맑은 고딕\", \"Apple SD Gothic Neo\", \"HCR Dotum\", 함초롬돋움, \"Noto Sans KR ExtraLight\", \"Noto Sans KR\", Pretendard, \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", sans-serif",
+          "count": 22,
+          "platform": [
+            {
+              "familyName": "휴먼굵은팸체",
+              "postScriptName": "HMKBP",
+              "isCustomFont": false,
+              "glyphCount": 1
+            }
+          ]
+        },
+        {
+          "font": "bold 34.667px \"한컴 윤고딕 250\", \"Malgun Gothic\", \"맑은 고딕\", \"Apple SD Gothic Neo\", \"HCR Dotum\", 함초롬돋움, \"Noto Sans KR ExtraLight\", \"Noto Sans KR\", Pretendard, \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", sans-serif",
+          "count": 10,
+          "platform": [
+            {
+              "familyName": "Haan YGodic 250",
+              "postScriptName": "HaanYGodic25",
+              "isCustomFont": false,
+              "glyphCount": 1
+            }
+          ]
+        },
+        {
+          "font": "bold 20px \"맑은 고딕\", \"Malgun Gothic\", \"맑은 고딕\", \"Apple SD Gothic Neo\", \"HCR Dotum\", 함초롬돋움, \"Noto Sans KR ExtraLight\", \"Noto Sans KR\", Pretendard, \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", sans-serif",
+          "count": 10,
+          "platform": [
+            {
+              "familyName": "Malgun Gothic",
+              "postScriptName": "MalgunGothic-Regular",
+              "isCustomFont": false,
+              "glyphCount": 1
+            }
+          ]
+        },
+        {
+          "font": "13.333px 한컴돋움, \"Malgun Gothic\", \"맑은 고딕\", \"Apple SD Gothic Neo\", \"HCR Dotum\", 함초롬돋움, \"Noto Sans KR ExtraLight\", \"Noto Sans KR\", Pretendard, \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", sans-serif",
+          "count": 6,
+          "platform": [
+            {
+              "familyName": "한컴돋움",
+              "postScriptName": "Haansoft-Dotum",
+              "isCustomFont": false,
+              "glyphCount": 1
+            }
+          ]
+        }
+      ]
+    },
+    "endnotes-september": {
+      "probe_log_sha256": "3504a162f64f767df6cc7ae534ee079ccc1311a185266ad514c3b79a4598d4f6",
+      "probes": [
+        {
+          "font": "12px \"Haansoft Batang\", \"Haansoft Batang\", Batang, 바탕, \"Nanum Myeongjo\", AppleMyungjo, \"Noto Serif KR\", \"Noto Serif CJK KR\", \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", serif",
+          "count": 826,
+          "platform": [
+            {
+              "familyName": "Haansoft Batang",
+              "postScriptName": "Haansoft Batang",
+              "isCustomFont": false,
+              "glyphCount": 1
+            }
+          ]
+        },
+        {
+          "font": "26.667px 돋움, Dotum, \"Noto Sans KR ExtraLight\", \"Noto Sans KR\", \"Malgun Gothic\", \"맑은 고딕\", \"Apple SD Gothic Neo\", \"HCR Dotum\", 함초롬돋움, Pretendard, \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", sans-serif",
+          "count": 12,
+          "platform": [
+            {
+              "familyName": "Dotum",
+              "postScriptName": "Dotum",
+              "isCustomFont": false,
+              "glyphCount": 1
+            }
+          ]
+        },
+        {
+          "font": "12px 휴먼고딕, \"Malgun Gothic\", \"맑은 고딕\", \"Apple SD Gothic Neo\", \"HCR Dotum\", 함초롬돋움, \"Noto Sans KR ExtraLight\", \"Noto Sans KR\", Pretendard, \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", sans-serif",
+          "count": 4,
+          "platform": [
+            {
+              "familyName": "휴먼고딕",
+              "postScriptName": "OTS-derived-font",
+              "isCustomFont": true,
+              "glyphCount": 1
+            }
+          ]
+        }
+      ]
+    },
+    "endnotes-november": {
+      "probe_log_sha256": "43d99d22903b7efbeda2643e83197de2aa4675b94d657685e55966166fb5ae0e",
+      "probes": [
+        {
+          "font": "12px \"Haansoft Batang\", \"Haansoft Batang\", Batang, 바탕, \"Nanum Myeongjo\", AppleMyungjo, \"Noto Serif KR\", \"Noto Serif CJK KR\", \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", serif",
+          "count": 536,
+          "platform": [
+            {
+              "familyName": "Haansoft Batang",
+              "postScriptName": "Haansoft Batang",
+              "isCustomFont": false,
+              "glyphCount": 1
+            }
+          ]
+        },
+        {
+          "font": "12px \"Haansoft Dotum\", \"Malgun Gothic\", \"맑은 고딕\", \"Apple SD Gothic Neo\", \"HCR Dotum\", 함초롬돋움, \"Noto Sans KR ExtraLight\", \"Noto Sans KR\", Pretendard, \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", sans-serif",
+          "count": 8,
+          "platform": [
+            {
+              "familyName": "한컴돋움",
+              "postScriptName": "Haansoft-Dotum",
+              "isCustomFont": false,
+              "glyphCount": 1
+            }
+          ]
+        },
+        {
+          "font": "12px 휴먼고딕, \"Malgun Gothic\", \"맑은 고딕\", \"Apple SD Gothic Neo\", \"HCR Dotum\", 함초롬돋움, \"Noto Sans KR ExtraLight\", \"Noto Sans KR\", Pretendard, \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", sans-serif",
+          "count": 4,
+          "platform": [
+            {
+              "familyName": "휴먼고딕",
+              "postScriptName": "OTS-derived-font",
+              "isCustomFont": true,
+              "glyphCount": 1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "family_comparison": [
+    {
+      "family": "BM DoHyeon",
+      "current": "BM DoHyeon,배달의민족 도현: /usr/local/share/fonts/hwp-convert-mcp-safe/BMDOHYEON_ttf.ttf",
+      "excluded_font_paths": "BM DoHyeon,배달의민족 도현: /usr/local/share/fonts/hwp-convert-mcp-safe/BMDOHYEON_ttf.ttf",
+      "same": true
+    },
+    {
+      "family": "Dotum",
+      "current": "Dotum,돋움: /home/tsjang/.local/share/fonts/rhwp-validation-windows/gulim.ttc",
+      "excluded_font_paths": "Dotum,돋움: /home/tsjang/.local/share/fonts/rhwp-validation-windows/gulim.ttc",
+      "same": true
+    },
+    {
+      "family": "Haan YGodic 250",
+      "current": "Haan YGodic 250,한컴 윤고딕 250: /usr/local/share/fonts/hancom-office-2020/All/HANYGO250.ttf",
+      "excluded_font_paths": "Haan YGodic 250,한컴 윤고딕 250: /usr/local/share/fonts/hancom-office-2020/All/HANYGO250.ttf",
+      "same": true
+    },
+    {
+      "family": "Haansoft Batang",
+      "current": "Haansoft Batang,한컴바탕: /usr/local/share/fonts/hancom-office-2020/All/HBATANG.TTF",
+      "excluded_font_paths": "Haansoft Batang,한컴바탕: /usr/local/share/fonts/hancom-office-2020/All/HBATANG.TTF",
+      "same": true
+    },
+    {
+      "family": "Malgun Gothic",
+      "current": "Malgun Gothic,맑은 고딕: /usr/local/share/fonts/hancom-office-2020/Install/malgun.ttf",
+      "excluded_font_paths": "Malgun Gothic,맑은 고딕: /usr/local/share/fonts/hancom-office-2020/Install/malgun.ttf",
+      "same": true
+    },
+    {
+      "family": "한컴돋움",
+      "current": "Haansoft Dotum,한컴돋움: /usr/local/share/fonts/hancom-office-2020/All/HDOTUM.TTF",
+      "excluded_font_paths": "Haansoft Dotum,한컴돋움: /usr/local/share/fonts/hancom-office-2020/All/HDOTUM.TTF",
+      "same": true
+    },
+    {
+      "family": "휴먼고딕",
+      "current": "휴먼고딕: /usr/local/share/fonts/hancom-office-2020/Hwp/HMKMG.TTF",
+      "excluded_font_paths": "휴먼고딕: /usr/local/share/fonts/hancom-office-2020/Hwp/HMKMG.TTF",
+      "same": true
+    },
+    {
+      "family": "휴먼굵은팸체",
+      "current": "휴먼굵은팸체: /usr/local/share/fonts/hancom-office-2020/Hwp/HMKBP.TTF",
+      "excluded_font_paths": "휴먼굵은팸체: /usr/local/share/fonts/hancom-office-2020/Hwp/HMKBP.TTF",
+      "same": true
+    }
+  ]
+}

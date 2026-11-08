@@ -12,11 +12,11 @@ pub(in crate::renderer::typeset) struct EmptyTailPage<'a> {
     pub body_height: f64,
     pub current_zone_y_offset: f64,
     pub current_footnote_height: f64,
+    pub painted_footnote_area_reserved: bool,
 }
 
 pub(super) enum TailDisposition {
     Continue,
-    Hidden,
     Unadvanced,
 }
 
@@ -25,6 +25,8 @@ pub(super) fn hide_rowbreak_guide(
     para: &Paragraph,
     paragraphs: &[Paragraph],
     para_idx: usize,
+    current_height: f64,
+    dpi: f64,
 ) -> bool {
     // [Task #1686] RowBreak 표 조각 뒤에 남는 빈 guide 문단 흡수.
     // pr-1674처럼 표 셀 내부 vpos reset으로 페이지가 갈린 뒤, 뒤따르는 빈 문단들이
@@ -37,15 +39,39 @@ pub(super) fn hide_rowbreak_guide(
         && para.line_segs.len() == 1
     {
         let curr_vpos = para.line_segs.first().map(|s| s.vertical_pos);
-        let next_anchor_vpos = paragraphs
+        let anchor_idx = paragraphs
             .iter()
+            .enumerate()
             .skip(para_idx + 1)
-            .find(|p| para_has_visible_text(p) || !p.controls.is_empty())
-            .and_then(|p| p.line_segs.first().map(|s| s.vertical_pos));
-        if let (Some(curr), Some(next)) = (curr_vpos, next_anchor_vpos) {
+            .find(|(_, p)| para_has_visible_text(p) || !p.controls.is_empty())
+            .map(|(idx, _)| idx);
+        let next_anchor_vpos =
+            anchor_idx.and_then(|idx| paragraphs[idx].line_segs.first().map(|s| s.vertical_pos));
+        if let (Some(curr), Some(next), Some(anchor_idx)) =
+            (curr_vpos, next_anchor_vpos, anchor_idx)
+        {
             const EMPTY_GUIDE_RESET_GAP_HU: i32 = 2000;
             if curr > next + EMPTY_GUIDE_RESET_GAP_HU {
-                return true;
+                // 되감긴 다음 앵커의 저장 위치가 지금 흐름 위치에서 이 빈 줄들의 저장 전진을
+                // 모두 담을 만큼 아래면, 한컴은 새 쪽에서도 빈 줄 자리를 남겼다. 그 줄은
+                // 옛 좌표의 guide 가 아니다(1480000 44쪽 pi=264: 표 끝+아래 여백 677.8px
+                // + 빈 줄 26.4px = 앵커 pi=265 저장 704.2px, 한/글 2020 PDF 도 빈 줄을 둔다).
+                // pr-1674 처럼 앵커가 흐름 위치보다 위거나 빈 줄들을 담지 못하면 흡수한다.
+                let empty_advance_px: f64 = paragraphs[para_idx..anchor_idx]
+                    .iter()
+                    .filter_map(|p| p.line_segs.first())
+                    .map(|seg| {
+                        crate::renderer::hwpunit_to_px(
+                            seg.line_height + seg.line_spacing.max(0),
+                            dpi,
+                        )
+                    })
+                    .sum();
+                let anchor_px = crate::renderer::hwpunit_to_px(next, dpi);
+                const STORED_ADVANCE_ROUNDING_PX: f64 = 1.0;
+                let stored_room_keeps_lines =
+                    anchor_px - current_height >= empty_advance_px - STORED_ADVANCE_ROUNDING_PX;
+                return !stored_room_keeps_lines;
             }
         }
     }
@@ -72,7 +98,6 @@ pub(super) fn hide_overflowing_empty(
 pub(super) fn trailing_disposition(
     para: &Paragraph,
     fmt: &FormattedParagraph,
-    paragraphs: &[Paragraph],
     is_last_in_section: bool,
     available: f64,
     layout_drift_safety_px: f64,
@@ -93,26 +118,13 @@ pub(super) fn trailing_disposition(
                 total_h > available && total_h <= available + layout_drift_safety_px;
             let base_available = page.body_height - page.current_zone_y_offset;
             let fit_fail_only_after_footnote_reserve = page.current_footnote_height > 0.0
+                // 실제 paint 높이를 예약했으면 빈 문단도 남은 본문에 들어가야 한다.
+                // 추정 각주 예산의 과다 예약을 완화하던 경로로 소유를 지우지 않는다.
+                && !page.painted_footnote_area_reserved
                 && total_h > available
                 && total_h <= base_available;
-            let prior_trailing_drift = page.current_height > available
-                && page.current_height <= available + layout_drift_safety_px + 0.5;
-            let previous_item_is_empty_para = page
-                .current_items
-                .last()
-                .and_then(|item| match item {
-                    PageItem::FullParagraph { para_index } => Some(*para_index),
-                    _ => None,
-                })
-                .and_then(|prev_idx| paragraphs.get(prev_idx))
-                .map(|prev_para| {
-                    let trimmed = prev_para.text.replace(|c: char| c.is_control(), "");
-                    trimmed.trim().is_empty() && prev_para.controls.is_empty()
-                })
-                .unwrap_or(false);
-            if prior_trailing_drift && previous_item_is_empty_para {
-                return TailDisposition::Hidden;
-            }
+            // 앞 줄의 누적 간격이 조금 넘쳤어도 다음 줄 상자의 점유는 별개다.
+            // 이 문단 자체가 fit할 때만 흡수하고, 아니면 정상 이월을 진행한다.
             if fit_fail_within_safety || fit_fail_only_after_footnote_reserve {
                 return TailDisposition::Unadvanced;
             }

@@ -1,0 +1,14 @@
+image	case	page	dpi	crop_xyxy	scale	sha256	source
+borders-review.png	borders	1	96	[[95, 145, 710, 980]]	1	9d203056bf2333baffdc65ca453d30ed7bc60d6e5304c03d9baef82abaae6658	6337fe4d10
+borders-circle-detail.png	borders	1	96	[[95, 510, 710, 582]]	3	4fc1e0c9f18e3c3f695f38650e7ef4a26245669763809d2d27df6cad023e026d	6337fe4d10
+outline-review.png	outline	1	96	[[95, 120, 710, 680]]	1	d69edc9c93cd56fc9404626735723ec9d6cd3e87ca35cd6a7d7841f5910bf7d0	6337fe4d10
+footnote-review.png	footnote-shape	2	96	[[100, 120, 705, 235]]	3	c5f84f48172f96be8cebb5c0cf2c6aaef87d600623cc114bfeb621ecf80daad4	6337fe4d10
+footnote-saved-review.png	footnote-shape-corrected-hwpx	2	96	[[100, 120, 705, 235]]	3	b3b730dfe0f27f08a5fee6421e143062ad95763c666abb5325942d318aa2838f	6337fe4d10
+footnote-configured-review.png	footnote-shape-configured-hwpx	2	96	[[95, 120, 710, 195], [95, 930, 710, 1045]]	2	4dcea2ca9eb5b463445e100265196db9841f7683da73324af88114444a35788e	6337fe4d10
+master-review.png	endnote-restart5	1	96	[[0, 0, 710, 280]]	2	767380296e8626218dc02fb953e1d7bd31c4ae3d144a5a3faa28f89df4bd4ee5	6337fe4d10
+equal-height-edited-review.png	equal-height-edited-hwpx	2	96	[[60, 565, 730, 1080]]	1	4a148328c70cf5d3b57a0230872aec149e7ea61accb7077497d9a0b8bbd66b39	6337fe4d10
+formula-review.png	table-formula-recalculated-hwpx	1	96	[[55, 115, 745, 560]]	1	163f313d6cc79abb50088cd78bde0c919aa9a4dab66da64f60e573f689d3e166	6337fe4d10
+outline-id-review.png	outline-id2-hwpx	1	96	[[95, 120, 470, 260]]	3	8d73d0dc3039b8ecefd1e5d99de4a8c2bdf300fd67999b42c1a5a2064c073d17	6337fe4d10
+paragraph-head-review.png	paragraph-head-edited-hwpx	1	96	[[65, 115, 725, 640]]	1	b176b7d1e61a3f4ffe2dffc40da495514f8176ea6e30e0d34d507fffd5a6eaf6	6337fe4d10
+drop-cap-review.png	drop-cap	1	96	[[95, 120, 715, 650]]	1	48e226e0ee01bf9bb67c8a33ec23f9e0507717fc9916679ab5abfab1c4cd0df0	6337fe4d10
+outline-native-600dpi-detail.png	outline	1	600	independent PDF text bounds; first three glyphs of each of six outline types	1	45edc754961ed2181f03949e1b6e83f4bc67b1ab76fa8766bad0e84a6d1e5ebd	6337fe4d10

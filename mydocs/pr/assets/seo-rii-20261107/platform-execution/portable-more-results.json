@@ -1,0 +1,14 @@
+[
+  {
+    "name": "windows-portable",
+    "command": [
+      "python3",
+      "bindings/Flutter/windows/tests/check_windows_bridge.py",
+      "--output",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/windows-portable",
+      "--flutter-public",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/flutter-sdk/flutter/engine/src/flutter/shell/platform/common/public"
+    ],
+    "returncode": 0
+  }
+]

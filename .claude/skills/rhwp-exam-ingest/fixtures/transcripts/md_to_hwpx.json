@@ -14,8 +14,8 @@
       "expect": "exists"
     },
     {
-      "cmd": "build-from-ingest --media-dir",
-      "expect": "2. 한 번"
+      "cmd": "rhwp build-from-ingest ingest.json --media-dir $MEDIA -o out.hwpx",
+      "expect": "Picture/BinData와 실제 표시 확인"
     }
   ]
 }

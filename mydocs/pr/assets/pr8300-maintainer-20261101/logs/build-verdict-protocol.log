@@ -1,0 +1,9 @@
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling serde_json v1.0.154
+   Compiling memchr v2.8.3
+   Compiling syn v3.0.3
+   Compiling serde_derive v1.0.229
+   Compiling serde v1.0.229
+   Compiling llm-verifier-verdict-protocol v0.1.0 (/home/edward/mygithub/rhwp/tools/llm_verifier/verdict_protocol)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.28s

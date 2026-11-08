@@ -1,0 +1,165 @@
+{
+  "date": "2026-10-28",
+  "metric": "96dpi PDFium, 반경 2px raw 실루엣",
+  "wasm_before_sha256": "05bab1b50e9a17b380582e562e992c7189fc3d2e9c85a01187ef069c24ff56e7",
+  "wasm_after_sha256": "7b9684d74a850c6925ec981a2cf005d86e50fe166b21bf71669ce2fdfc9ebbb4",
+  "cases": [
+    {
+      "key": "hcar",
+      "input": "samples/hwpx/hcar-001.hwpx",
+      "input_sha256": "31c3c5a5758638bf7c653fc4c60e7df430395f6b78d6a04effcd53274a5948f0",
+      "pdf": "pdf/hwpx/hcar-001.pdf",
+      "pdf_sha256": "314ff5e27096103542ea00af74b48148478bb4852fb71550c57075c92acd8b3c",
+      "pages": [
+        1
+      ],
+      "results": {
+        "native_before": [
+          {
+            "page": 1,
+            "raw_percent": 74.87266,
+            "render_png_sha256": "9a6c6836c90d750a9fd51ddd545d678c812a60283e10380727d4be1122773def",
+            "pdf_png_sha256": "5582905b8268191a14fdcc685f14cf83ec841dc24866a213cc0808800305aa4c"
+          }
+        ],
+        "native_after": [
+          {
+            "page": 1,
+            "raw_percent": 94.24519,
+            "render_png_sha256": "a0dc815bdb2c8e3175ccd1aff85159159dfd117df9a43a9b90d94e5fbcff092a",
+            "pdf_png_sha256": "5582905b8268191a14fdcc685f14cf83ec841dc24866a213cc0808800305aa4c"
+          }
+        ],
+        "wasm_before": [
+          {
+            "page": 1,
+            "raw_percent": 75.42285,
+            "render_png_sha256": "ee83d70ca819be84757809b038e20b14767eb4304bf2dd32efcbccd56ac4a421",
+            "pdf_png_sha256": "5582905b8268191a14fdcc685f14cf83ec841dc24866a213cc0808800305aa4c"
+          }
+        ],
+        "wasm_after": [
+          {
+            "page": 1,
+            "raw_percent": 94.72286,
+            "render_png_sha256": "98f9d3d35f79469fee0fce90e9a97f7f4fa755a1a20186596fcde9eb6b51ceb7",
+            "pdf_png_sha256": "5582905b8268191a14fdcc685f14cf83ec841dc24866a213cc0808800305aa4c"
+          }
+        ]
+      }
+    },
+    {
+      "key": "rowbreak",
+      "input": "samples/rowbreak-problem-pages.hwpx",
+      "input_sha256": "4ccc321e7eb146f28b768654502a128ba1ae408238fd1ed37d51e963732eb5b0",
+      "pdf": "pdf/rowbreak-problem-pages-hwpx-2020.pdf",
+      "pdf_sha256": "e3dc7bb21707f92e42e83808023bf155f62475fc4eb0e0498709d03986c5afe5",
+      "pages": [
+        11
+      ],
+      "results": {
+        "native_before": [
+          {
+            "page": 11,
+            "raw_percent": 95.74925,
+            "render_png_sha256": "aaf773b74b3cb91bcd09e363083f0c8afb2430ec64a9bddbad2ca0c9be3193ad",
+            "pdf_png_sha256": "d276384f1731b0f307c0a035babc25a547c10da996d2b56de898f345b471d9c4"
+          }
+        ],
+        "native_after": [
+          {
+            "page": 11,
+            "raw_percent": 95.74925,
+            "render_png_sha256": "aaf773b74b3cb91bcd09e363083f0c8afb2430ec64a9bddbad2ca0c9be3193ad",
+            "pdf_png_sha256": "d276384f1731b0f307c0a035babc25a547c10da996d2b56de898f345b471d9c4"
+          }
+        ],
+        "wasm_before": [
+          {
+            "page": 11,
+            "raw_percent": 95.75079,
+            "render_png_sha256": "4cba079dcf398fca3de823795fbb6698259b873195ba65fa5a3cb84a49ae2110",
+            "pdf_png_sha256": "d276384f1731b0f307c0a035babc25a547c10da996d2b56de898f345b471d9c4"
+          }
+        ],
+        "wasm_after": [
+          {
+            "page": 11,
+            "raw_percent": 95.75079,
+            "render_png_sha256": "4cba079dcf398fca3de823795fbb6698259b873195ba65fa5a3cb84a49ae2110",
+            "pdf_png_sha256": "d276384f1731b0f307c0a035babc25a547c10da996d2b56de898f345b471d9c4"
+          }
+        ]
+      }
+    },
+    {
+      "key": "research",
+      "input": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+      "input_sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c",
+      "pdf": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+      "pdf_sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59",
+      "pages": [
+        174,
+        175
+      ],
+      "results": {
+        "native_before": [
+          {
+            "page": 174,
+            "raw_percent": 99.99397,
+            "render_png_sha256": "571c6703ba682ae039fd3a556e87f59eb8ff2fd1a1f45cd6cb924a07b2677e91",
+            "pdf_png_sha256": "1f4060c3f263a25a637af578127e025ab03e7e67c775d2626f4efc773f627a92"
+          },
+          {
+            "page": 175,
+            "raw_percent": 99.23434,
+            "render_png_sha256": "6067fcc73b50dc0b68bca81549933090cfa93605a87f4753b68e81a06680ae86",
+            "pdf_png_sha256": "7e8c0be7f08b04a5b1b69952fceecbf755fdfae87c90b2fd752bb594eb527b23"
+          }
+        ],
+        "native_after": [
+          {
+            "page": 174,
+            "raw_percent": 99.99397,
+            "render_png_sha256": "571c6703ba682ae039fd3a556e87f59eb8ff2fd1a1f45cd6cb924a07b2677e91",
+            "pdf_png_sha256": "1f4060c3f263a25a637af578127e025ab03e7e67c775d2626f4efc773f627a92"
+          },
+          {
+            "page": 175,
+            "raw_percent": 99.23434,
+            "render_png_sha256": "6067fcc73b50dc0b68bca81549933090cfa93605a87f4753b68e81a06680ae86",
+            "pdf_png_sha256": "7e8c0be7f08b04a5b1b69952fceecbf755fdfae87c90b2fd752bb594eb527b23"
+          }
+        ],
+        "wasm_before": [
+          {
+            "page": 174,
+            "raw_percent": 99.99405,
+            "render_png_sha256": "534c4997752587bec637dc77affa8324e98b10f2640905053fb8dd236a9593cc",
+            "pdf_png_sha256": "1f4060c3f263a25a637af578127e025ab03e7e67c775d2626f4efc773f627a92"
+          },
+          {
+            "page": 175,
+            "raw_percent": 99.20332,
+            "render_png_sha256": "b19b3bd588cf1edb29d1a679253562356156289e170c94a401d0bcfface275dd",
+            "pdf_png_sha256": "7e8c0be7f08b04a5b1b69952fceecbf755fdfae87c90b2fd752bb594eb527b23"
+          }
+        ],
+        "wasm_after": [
+          {
+            "page": 174,
+            "raw_percent": 99.99405,
+            "render_png_sha256": "534c4997752587bec637dc77affa8324e98b10f2640905053fb8dd236a9593cc",
+            "pdf_png_sha256": "1f4060c3f263a25a637af578127e025ab03e7e67c775d2626f4efc773f627a92"
+          },
+          {
+            "page": 175,
+            "raw_percent": 99.20332,
+            "render_png_sha256": "b19b3bd588cf1edb29d1a679253562356156289e170c94a401d0bcfface275dd",
+            "pdf_png_sha256": "7e8c0be7f08b04a5b1b69952fceecbf755fdfae87c90b2fd752bb594eb527b23"
+          }
+        ]
+      }
+    }
+  ]
+}

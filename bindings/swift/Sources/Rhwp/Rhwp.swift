@@ -86,7 +86,7 @@ public enum Rhwp {
     ) throws -> RhwpExportResult {
         try callNative(
             inputFile: inputFile,
-            outputDirectory: outputDirectory,
+            outputPath: outputDirectory,
             page: page,
             function: rhwp_export_text
         )
@@ -99,20 +99,35 @@ public enum Rhwp {
     ) throws -> RhwpExportResult {
         try callNative(
             inputFile: inputFile,
-            outputDirectory: outputDirectory,
+            outputPath: outputDirectory,
             page: page,
             function: rhwp_export_markdown
         )
     }
 
+    /// Export a print-profile direct PDF to a new file (native-skia required).
+    /// Input is limited to 128 MiB and a call may select at most 256 pages.
+    public static func exportPDFDirect(
+        inputFile: URL,
+        outputFile: URL,
+        page: RhwpPage = .all
+    ) throws -> RhwpExportResult {
+        try callNative(
+            inputFile: inputFile,
+            outputPath: outputFile,
+            page: page,
+            function: rhwp_export_pdf_direct
+        )
+    }
+
     private static func callNative(
         inputFile: URL,
-        outputDirectory: URL,
+        outputPath: URL,
         page: RhwpPage,
         function: (UnsafePointer<CChar>?, UnsafePointer<CChar>?, Int32) -> UnsafeMutablePointer<CChar>?
     ) throws -> RhwpExportResult {
         let pointer = inputFile.path.withCString { inputPath in
-            outputDirectory.path.withCString { outputPath in
+            outputPath.path.withCString { outputPath in
                 function(inputPath, outputPath, page.ffiValue)
             }
         }

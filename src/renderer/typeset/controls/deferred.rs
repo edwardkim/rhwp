@@ -28,6 +28,14 @@ pub(in crate::renderer::typeset) enum DeferredTableFlushPoint {
 }
 
 impl DeferredTableFlushPoint {
+    pub(in crate::renderer::typeset) fn successor_start(self, paragraph_count: usize) -> usize {
+        match self {
+            Self::BeforeTableParagraph(index) => index,
+            Self::AfterTableParagraph(index) => index.saturating_add(1),
+            Self::SectionEnd => paragraph_count,
+        }
+    }
+
     /// 문단 사이 가시 본문과 원래 문단 순서로 큐 유지 여부만 조회한다.
     pub(in crate::renderer::typeset) fn keeps_pending(
         self,
@@ -76,7 +84,7 @@ impl<'a> CoanchoredTableQuery<'a> {
             && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
             && matches!(table.common.vert_rel_to, VertRelTo::Para)
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && signed_hwpunit(table.common.vertical_offset) > 0
@@ -96,7 +104,7 @@ impl<'a> CoanchoredTableQuery<'a> {
             && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
             && matches!(table.common.vert_rel_to, VertRelTo::Para)
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
     }

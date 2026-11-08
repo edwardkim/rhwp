@@ -1,0 +1,47 @@
+{
+  "source_dpi": 96,
+  "display_scale": 4,
+  "purpose": "diagnostic magnification of unchanged raster pixels; no rendering correction or test coordinates",
+  "regions": {
+    "last-photo-row": [
+      132,
+      706,
+      365,
+      748
+    ],
+    "title": [
+      110,
+      119,
+      345,
+      146
+    ],
+    "following-body": [
+      124,
+      916,
+      359,
+      956
+    ]
+  },
+  "sources": [
+    [
+      "Independent WebHWP Print PDF",
+      "output/pr-review/pr8585/base-explicit/native/textbox-tac-picture-rows/pdf_png/pdf-001.png"
+    ],
+    [
+      "Latest devel - Native",
+      "output/pr-review/pr8585/base-explicit/native/textbox-tac-picture-rows/rhwp_png/rhwp_001.png"
+    ],
+    [
+      "Original PR - Native",
+      "output/pr-review/pr8585/head-explicit/native/textbox-tac-picture-rows/rhwp_png/rhwp_001.png"
+    ],
+    [
+      "Corrected Native",
+      "output/pr-review/pr8585/corrected-explicit/native/textbox-tac-picture-rows/rhwp_png/rhwp_001.png"
+    ],
+    [
+      "Corrected optimized WASM Canvas",
+      "output/pr-review/pr8585/corrected-explicit/wasm/textbox-tac-picture-rows/rhwp_png/rhwp_001.png"
+    ]
+  ]
+}

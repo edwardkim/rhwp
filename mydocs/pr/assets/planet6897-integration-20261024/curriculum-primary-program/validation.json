@@ -1,0 +1,269 @@
+{
+  "producer_parent": "9c8b2feff8705b602e33328e584ed5c03a81dc57",
+  "production_source_files": {
+    "src/renderer/composer/stored_cell_reflow.inc.rs": "190041edc5e969849fda7cfa3f4dcd5f4b1cea0b1de35f5247a46420f641d60b",
+    "src/renderer/font_environment.rs": "d7f8e9737b29524f1fdd94d6c409bc356cac2f8cc9b9f39ec28859a8c0b97e57",
+    "src/renderer/style_resolver.rs": "093cf79c86b303935cc55ac10937928d6992f618fbafb9315de7a641f6af4e28"
+  },
+  "native_sha256": "f1d671ab59f1ee6bf3e779b60866df53d26bf25ee4c687e80ef5196965fc1f64",
+  "wasm_files": {
+    "rhwp.js": "f90e8e9655657ea0f23b467ccb89b37b6af24f8f1b387dab9055dae747aea5b9",
+    "rhwp_bg.wasm": "5668ce93722c2b35d3a24b1f71e2a7c7f2f0c824b66801554eba0574628d3e44"
+  },
+  "mac_wasm_mode": "locked wrapper --target web --out-dir pkg --no-opt 로컬 대체 빌드. Docker 최적화 통과 아님.",
+  "print_pdf_sha256": "bc16ee92640644307fd1ce92ab8ffe663088210caa7740bef620daaa0187e197",
+  "input_sha256": "623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e",
+  "visual": [
+    {
+      "backend": "native",
+      "pages": 415,
+      "minimum_raw": 95.79585,
+      "below90": [],
+      "tsv": "native-silhouette.tsv",
+      "tsv_sha256": "85ade5276f87805891a34f38ab0b5f6660af5213730ac917cd45d544b8cbed67",
+      "provenance": {
+        "hwp": {
+          "path": "mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp",
+          "sha256": "623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issue7445/education-curriculum-map/existing-hwp-hancom2020-print.pdf",
+          "sha256": "bc16ee92640644307fd1ce92ab8ffe663088210caa7740bef620daaa0187e197"
+        },
+        "git_head": "9c8b2feff8705b602e33328e584ed5c03a81dc57",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "e05edaacad9ae7b9954b95b3c26fb97a20686e35a4502349ae64a0d4fb8af4e1"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_v1",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "script_sha256": "eda5cb9561ea417f55efdf2a36510a5db2563d4382adf2b5ef564389f6736faf",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/primary-program-ownership-v14/rhwp-native",
+          "path": "output/pr-review/planet6897-20261024/primary-program-ownership-v14/rhwp-native",
+          "sha256": "f1d671ab59f1ee6bf3e779b60866df53d26bf25ee4c687e80ef5196965fc1f64"
+        },
+        "raster_backend": "native-skia",
+        "png_exporter_sha256": "cdd15626217bec7bcfa475ac618847200770cfc13f670867c5bc95c10fbeee80",
+        "layout_generation": "2022",
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "explicit",
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/fonts-used/curriculum-control/000-0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8-0.ttf",
+              "sha256": "3eadb23023f4d8a4947b7f49bc3cd12f1ac43cd03bd07cc6c22fecf21d46bb3a"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/fonts-used/curriculum-control/001-bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068-0.ttf",
+              "sha256": "d10501295740bc29bf5a8fe3eb8fad1903ef63a54aa77c6cc744a609f3a627cf"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/fonts-used/curriculum-control/002-d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6-0.ttf",
+              "sha256": "e48a43385fc11e9460c905aa2e19780933307d85e56dcb0e3bfd9e2d4a9cfcf1"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/fonts-used/curriculum-control/003-ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c-0.ttf",
+              "sha256": "c5fc8854f7f8227a067e800da9d60b3bb5179f105b4530ac712c21c070564b21"
+            }
+          ]
+        }
+      },
+      "important_pages": [
+        {
+          "page": "4",
+          "silhouette_raw_match_percent": "99.96625"
+        },
+        {
+          "page": "271",
+          "silhouette_raw_match_percent": "98.73064"
+        }
+      ]
+    },
+    {
+      "backend": "wasm",
+      "pages": 415,
+      "minimum_raw": 95.79585,
+      "below90": [],
+      "tsv": "wasm-silhouette.tsv",
+      "tsv_sha256": "f76912345961c82aab2f9379eddc0835128ff6f0319ed7a0756a6be0de4551f5",
+      "provenance": {
+        "hwp": {
+          "path": "mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp",
+          "sha256": "623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issue7445/education-curriculum-map/existing-hwp-hancom2020-print.pdf",
+          "sha256": "bc16ee92640644307fd1ce92ab8ffe663088210caa7740bef620daaa0187e197"
+        },
+        "git_head": "9c8b2feff8705b602e33328e584ed5c03a81dc57",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "e05edaacad9ae7b9954b95b3c26fb97a20686e35a4502349ae64a0d4fb8af4e1"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_v1",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "script_sha256": "eda5cb9561ea417f55efdf2a36510a5db2563d4382adf2b5ef564389f6736faf",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/primary-program-ownership-v14/rhwp-native",
+          "path": "output/pr-review/planet6897-20261024/primary-program-ownership-v14/rhwp-native",
+          "sha256": "f1d671ab59f1ee6bf3e779b60866df53d26bf25ee4c687e80ef5196965fc1f64"
+        },
+        "raster_backend": "wasm-canvas2d",
+        "png_exporter_sha256": "cdd15626217bec7bcfa475ac618847200770cfc13f670867c5bc95c10fbeee80",
+        "layout_generation": "2022",
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/primary-program-ownership-v14/pkg/rhwp.js",
+              "sha256": "f90e8e9655657ea0f23b467ccb89b37b6af24f8f1b387dab9055dae747aea5b9"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/primary-program-ownership-v14/pkg/rhwp_bg.wasm",
+              "sha256": "5668ce93722c2b35d3a24b1f71e2a7c7f2f0c824b66801554eba0574628d3e44"
+            }
+          ],
+          "exporter_sha256": "b723139a685d823e485054fab5341257eabc4e3a42768c94baa0a1918c35f7c2",
+          "comparison_profile": "print",
+          "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "explicit",
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/fonts-used/curriculum-control/000-0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8-0.ttf",
+              "sha256": "3eadb23023f4d8a4947b7f49bc3cd12f1ac43cd03bd07cc6c22fecf21d46bb3a"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/fonts-used/curriculum-control/001-bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068-0.ttf",
+              "sha256": "d10501295740bc29bf5a8fe3eb8fad1903ef63a54aa77c6cc744a609f3a627cf"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/fonts-used/curriculum-control/002-d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6-0.ttf",
+              "sha256": "e48a43385fc11e9460c905aa2e19780933307d85e56dcb0e3bfd9e2d4a9cfcf1"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/fonts-used/curriculum-control/003-ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c-0.ttf",
+              "sha256": "c5fc8854f7f8227a067e800da9d60b3bb5179f105b4530ac712c21c070564b21"
+            }
+          ]
+        }
+      },
+      "important_pages": [
+        {
+          "page": "4",
+          "silhouette_raw_match_percent": "99.96556"
+        },
+        {
+          "page": "271",
+          "silhouette_raw_match_percent": "98.73127"
+        }
+      ]
+    }
+  ],
+  "content_ownership": {
+    "scope": "415쪽 실제 render tree의 표/셀/문단 소유·순서 집계. Native64/WASM32 usize 합성 마커는 같은 부호 값으로 정규화. 근거 layout/picture_footnote.rs1698의 usize::MAX-2000-p_idx. 공백 배치·독립 PDF 내용은 시각·회귀로 별도 확인.",
+    "pages": 415,
+    "native_wasm_owner_sequence_mismatch_pages": [],
+    "previous_source_owner_changed_pages": [
+      64,
+      65,
+      270,
+      271
+    ],
+    "characters_added": 0,
+    "characters_lost": 0,
+    "added_samples": [],
+    "lost_samples": [],
+    "checks_complete": true
+  },
+  "formal_before_after": {
+    "test_source": "tests/cases/issue_8152_completed_curriculum_primary_program.rs",
+    "test_source_sha256": "412ad806c49c3b0a02c4697b933c65dea3037adc0082a805c6f79910caaf88c7",
+    "suite": "/Users/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_020-f97afc15dbb390b3",
+    "suite_sha256": "9b18ce88e7eab2d3d22b34f75e0b6de3e2eceff4acaabd2c681b0f87b42ebb20",
+    "runs": [
+      {
+        "label": "before",
+        "native_binary": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/closing-slot-ownership-v10/rhwp-native",
+        "native_sha256": "48ced61ee0bf0938abf7ff6c4ba1fc8d1e0a83bbd7ea085ff96d58db297c947d",
+        "exit_code": 101,
+        "expected_exit_code": 101,
+        "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/primary-program-ownership-v14/px-formal-before.log",
+        "seconds": 8.198319124989212
+      },
+      {
+        "label": "after",
+        "native_binary": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/primary-program-ownership-v14/rhwp-native",
+        "native_sha256": "f1d671ab59f1ee6bf3e779b60866df53d26bf25ee4c687e80ef5196965fc1f64",
+        "exit_code": 0,
+        "expected_exit_code": 0,
+        "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/primary-program-ownership-v14/px-formal-after.log",
+        "seconds": 7.904363374982495
+      }
+    ],
+    "scope": "같은 Cargo 컴파일 검사 binary를 직접 실행하여 Native CLI 생산자만 교체한다. nextest의 CARGO_BIN_EXE 덮어쓰기에 의존하지 않음.",
+    "status": "complete"
+  },
+  "direct_read": {
+    "native_review_and_overlay": [
+      4,
+      64,
+      65,
+      270,
+      271
+    ],
+    "wasm_review_and_overlay": [
+      4,
+      271
+    ],
+    "findings": "4쪽 문단 시작·글자 전진이 Print에 맞고 271쪽의 앞 쪽 어절 꼬리·17.1px 유령 행이 사라져 다음 행이 보존됨. 다른 세 경계도 내용 누락 없이 이어짐. 글리프·AA의 미세한 차이는 남아 픽셀 동일로 주장하지 않음."
+  },
+  "remaining": "다른 문서의 전체 검증·전체 nextest·lint/Skia·실제 Studio 소비 경로는 별도 실행하며 이 문서의 통과로 대신하지 않음."
+}

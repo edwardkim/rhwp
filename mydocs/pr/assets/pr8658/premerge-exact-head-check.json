@@ -1,0 +1,12 @@
+{
+  "observed_at": "2026-11-06T11:42:11.519786+00:00",
+  "head": "d440ddc370026ba89ac79a6f6bc2385b24195973",
+  "base": "08963f6825956984d38b0d9392f44777db7107ab",
+  "tree": "bc7ffc8c344cb1351951a3596a0317591f94084a",
+  "virtual_merge": "5d3b0433412458ba78e01f78b06bb992127c443a",
+  "original_head_preserved": true,
+  "checks": 38,
+  "all_checks_satisfied": true,
+  "mergeable": true,
+  "state": "clean"
+}

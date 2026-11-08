@@ -1,0 +1,60 @@
+{
+  "before_producer": {
+    "compiled_base_head": "642d29dab1d06596de784c113527a2482073e828",
+    "tracked_patch_sha256": "8192881a7750b7e93c8f5c0332962b6937ed64499f3b14733b2f0aa72315afe8",
+    "additional_source_files": {
+      "src/renderer/layout/nested_table_origin.rs": "72397f4ee74d757da90699e70499ee82ac6f22051a3df2c1bc61aed72723311a"
+    },
+    "binary_sha256": "0cc0d001d3fbb28fc10246d039b48d8d6a3e2154bacc2fa5c8221118c6d9fe7e",
+    "binary": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/candidate-v11-origin-rhwp",
+    "scope": "All tracked production changes plus the explicitly hashed new25-line module. No source changes during compilation."
+  },
+  "after_producer": {
+    "compiled_base_head": "401d9070b6bf3cca3803c3c87ac88a0ad4a07a6b",
+    "tracked_patch_sha256": "9d9bd64de24952a3cd46b1fb2c47d2a54f2e1c5d891d238cecf1c0b55a468abb",
+    "binary_sha256": "d457b503ed7f2f1b1bd4f67c245c620d7eb0f91ebd85196fe5451b7084bfbffe",
+    "binary": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/candidate-v12-visual-row-rhwp",
+    "scope": "Native v12 horizontal-fragment alignment correction; original 49 whole-document comparisons."
+  },
+  "same_original_inputs_and_independent_pdfs": true,
+  "native_before_after": [
+    {
+      "key": "newsletter-chinese",
+      "before_raw": [
+        "81.20203",
+        "93.55035"
+      ],
+      "after_raw": [
+        "99.21476",
+        "93.55035"
+      ]
+    },
+    {
+      "key": "newsletter-korean",
+      "before_raw": [
+        "97.56934",
+        "93.09499"
+      ],
+      "after_raw": [
+        "97.56934",
+        "93.09499"
+      ]
+    }
+  ],
+  "same_original_frame_rule": "Stored fragments with same vertical_pos and differing column_start constitute one physical row; CellUnit producer and partial alignment consume the same existing predicate, tail advance consumed once from last fragment.",
+  "source_history": [
+    "bc695cd6c068a4782f6ef07056f4ad514c909cc1 (#6299)",
+    "6a193a648dba3df6d5c4cffa0182bc02f3e011ff",
+    "b56b6b50f32512646dd0170bf972524b1e991d39",
+    "60972534680a0c5e51e54ec189b92e252e81a867 (#8191)"
+  ],
+  "pending": [
+    "Fresh WASM v12 visual comparison",
+    "Existing full Rust/Native regression gates",
+    "Final optimized WASM all49 whole-document gate"
+  ],
+  "direct_reading": {
+    "panel": "images/stage-v12/newsletter-chinese-p001-before-after.png",
+    "observations": "Original and corrected title/frame/body/table/advice positions aligned. Text and pictures retained. Existing font-design and fine border differences are not claimed pixel-perfect."
+  }
+}

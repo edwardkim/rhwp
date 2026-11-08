@@ -29,7 +29,7 @@ export function durationFixture({ fork = true, legacy = false, attempt = legacy 
     base: { repo: run.repository, ref: "devel" },
     head: { ref: "feature", repo: { id: fork ? 20 : 10, full_name: fork ? "contributor/rhwp" : "edwardkim/rhwp" } } };
   const testedMergeSha = "3".repeat(40);
-  const reports = ["b", "c", "d"].map(label => ({ schema_version: 2, archive_label: label,
+  const reports = ["b", "c", "d", "e"].map(label => ({ schema_version: 2, archive_label: label,
     run_id: String(run.id), run_attempt: String(attempt), repository: run.repository.full_name,
     repository_id: "10", head_repository_id: String(pr.head.repo.id), pull_number: "42",
     head_sha: run.head_sha, head_ref: pr.head.ref, ref: "refs/pull/42/merge", sha: testedMergeSha,

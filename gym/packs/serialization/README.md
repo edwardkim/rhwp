@@ -71,15 +71,7 @@ last_verified: 2026-08-18
 
 | ID | 하는 일 | 표본 | 지목 |
 |---|---|---|---|
-| SR10 | 2쪽 문서에서 첫 쪽만 | `exam-kor-2p.hwp` | `pagesAfter` |
-| SR14 | 2쪽 전체를 남긴 뒤 원본 쪽수 | `exam-kor-2p.hwp` | `pagesBefore` |
-| SR18 | 둘째 쪽만 남긴 문단 수 | `exam-kor-2p.hwp` | `paragraphsKept` |
 | SR22 | 중첩 셀 문서에서 첫 쪽만 | `issue2007_…42065.hwp` | `pagesBefore` |
-| SR28 | 3쪽 문서에서 첫 쪽만 | `exam-kor-3p.hwp` | `pagesAfter` |
-| SR29 | 3쪽 전체 추출 전 쪽수 | `exam-kor-3p.hwp` | `pagesBefore` |
-| SR30 | 4쪽 문서에서 지운 문단 수 | `exam-kor-4p.hwp` | `paragraphsRemoved` |
-| SR31 | 1쪽 문서에서 그 쪽만 | `exam-kor-1p.hwp` | `pagesAfter` |
-| SR54 | 3쪽 문서에서 마지막 쪽만 | `exam-kor-3p.hwp` | `paragraphsKept` |
 
 **실패 모드**
 
@@ -101,8 +93,6 @@ last_verified: 2026-08-18
 | SR19 | 그림 문서 PDF 쪽수 | `pic2.hwp` | `pageCount` |
 | SR23 | HWPX 원본 렌더 쪽수 | `hwpx/143E…hwpx` | `renderedCount` |
 | SR32 | 표 문서 PDF 형식 | `table-001.hwp` | `format` |
-| SR33 | 2쪽 시험지 PDF 쪽수 | `exam-kor-2p.hwp` | `pageCount` |
-| SR34 | 같은 시험지 렌더 쪽수 | `exam-kor-2p.hwp` | `renderedCount` |
 | SR35 | HWPX 표본 백엔드 | `hwpx_sample2.hwpx` | `backend` |
 | SR49 | 각주 문서 PDF 쪽수 | `footnote-01.hwp` | `pageCount` |
 | SR50 | 가로 문서 백엔드 | `landscape-001.hwp` | `backend` |
@@ -128,7 +118,6 @@ last_verified: 2026-08-18
 | SR24 | 서로 다른 두 문서 | `table-001` vs `para-001` | `identical` |
 | SR36 | 문단 문서 자기대조 | `para-001.hwp` | `identical` |
 | SR37 | hwpx_sample2 쌍 | `.hwp` + `.hwpx` | `identical` |
-| SR38 | 표 vs 시험지 | `table-001` vs `exam-kor-2p` | `identical` |
 | SR39 | pic2 vs pic2-2018 | 연도 쌍 | `diffCount` |
 | SR53 | 각주 문서 자기대조 | `footnote-01.hwp` | `identical` |
 
@@ -173,7 +162,6 @@ last_verified: 2026-08-18
 | SR43 | DocLang 형식 | `para-001.hwp` | `format` |
 | SR44 | DocLang 버전 | `para-001.hwp` | `doclangVersion` |
 | SR45 | 표 문서 손실 계수 | `table-001.hwp` | `lossCount` |
-| SR46 | 2쪽 시험지 마크다운 | `exam-kor-2p.hwp` | `pageCount` |
 | SR47 | 그림 문서 마크다운 | `pic2.hwp` | `pageCount` |
 | SR52 | 다중 표 DocLang 손실 | `multi-table-001.hwp` | `lossCount` |
 | SR55 | 다른 HWPX 원본 조사 | `hwpx_sample2.hwpx` | `pageCount` |
@@ -291,3 +279,7 @@ python -m unittest scripts.tests.test_gym_serialization_pack -v
 와
 [mydocs/working/gym_serialization_exceptions.md](../../../mydocs/working/archives/gym_serialization_exceptions.md)
 를 본다.
+
+## 시험지 과제 제외
+
+지정된 시험지 입력을 참조하는 다음 과제를 활성 평가에서 제거했다: SR10, SR14, SR18, SR28, SR29, SR30, SR31, SR33, SR34, SR38, SR46, SR54. 원본 문서 파일은 보존하며 과제 ID는 재사용하지 않는다.

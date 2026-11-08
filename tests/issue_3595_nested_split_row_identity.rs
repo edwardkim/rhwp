@@ -83,16 +83,9 @@ fn nested_table_sharing_a_paragraph_with_text_is_not_dropped() {
     );
 }
 
-/// 같은 표의 **마지막** 문단까지 렌더되어야 한다.
-///
-/// [#3658] 종전 결함: 컷이 `end_cut=[]` 로 완료를 선언한 종료 조각에서, 렌더가
-/// start_row 를 처음부터 재적층해 행 그리드(747px)보다 커지고(766px+), 초과한
-/// 꼬리 줄이 "셀 하단 초과 줄 드롭"(다음 쪽 소속 줄 제외용)에 걸려 어느 쪽에도
-/// 렌더되지 않았다 — 이어받을 continuation 이 없어 영구 유실.
-///
-/// 수정: 종료 조각(`NestedTableSplit.terminal`)은 (1) 이전 쪽에 이미 보인
-/// start_row 상단 밴드만큼 `offset_within_start` 를 부여해 잔여 콘텐츠가 행
-/// 그리드 안에 들어가게 하고, (2) 셀 하단 초과 줄 드롭을 적용하지 않는다.
+/// 원본 마지막 프레임의 Source 컷과 물리 상자를 함께 소비해 서명까지 보존한다.
+/// 앞쪽에서 표시하지 않은 밴드를 이미 그린 높이로 빼거나,
+/// 보이는 제목/표만 사후 이동시키면 뒤 문단 소속과 순서가 달라진다.
 #[test]
 fn nested_table_tail_paragraph_is_rendered() {
     let rendered = rendered_text_without_spaces();

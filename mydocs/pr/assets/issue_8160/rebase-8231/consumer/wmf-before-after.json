@@ -1,0 +1,70 @@
+{
+  "passed": true,
+  "contract": "Same final regression source fails the intended assertion before the fix and passes after it",
+  "runs": [
+    {
+      "label": "before",
+      "producer": "74c5a813cb6904c372f7c133c86793aacb27900c",
+      "library_sha256": "79533d1afebf0702d7344c6c00b3cc58b40491b06dd820a7d8e72614938788d8",
+      "test_source_sha256": "4a156823671a3ff2c7bc3bbaade187abfd59f5cb17b427accef4c957b7e68037",
+      "compile_exit_code": 0,
+      "test_exit_code": 101,
+      "command": [
+        "rustc",
+        "--edition=2021",
+        "--test",
+        "--crate-name",
+        "issue_8160_wmf_clipped_print",
+        "/home/tsjang/rhwp/tests/cases/issue_8160_wmf_clipped_print.rs",
+        "-o",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/rebase8231/final-wmf-before",
+        "-L",
+        "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+        "--extern",
+        "rhwp=/home/tsjang/rhwp/output/pr-review/issue8160-20261022/rebase8231/native/librhwp.rlib",
+        "--extern",
+        "base64=/home/tsjang/rhwp/target/pr-review/release-test/deps/libbase64-e3f94b72ec3fea0f.rlib",
+        "--extern",
+        "roxmltree=/home/tsjang/rhwp/target/pr-review/release-test/deps/libroxmltree-5f6c7c0edbfb5bd5.rlib",
+        "-L",
+        "/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-d3bbd036d45b3a6c/out/skia",
+        "-L",
+        "native=/home/tsjang/rhwp/target/pr-review/release-test/build/blake3-7496182056f3c99a/out",
+        "-L",
+        "native=/usr/lib/x86_64-linux-gnu"
+      ]
+    },
+    {
+      "label": "after",
+      "producer": "e01e7540fd4c8a67ce5d1d1e5802170973acb998",
+      "library_sha256": "8eb4b6f448ae53b912c74d4c6f9a3a504d5cd059bf83fa7b054f1bfc335ce3a6",
+      "test_source_sha256": "4a156823671a3ff2c7bc3bbaade187abfd59f5cb17b427accef4c957b7e68037",
+      "compile_exit_code": 0,
+      "test_exit_code": 0,
+      "command": [
+        "rustc",
+        "--edition=2021",
+        "--test",
+        "--crate-name",
+        "issue_8160_wmf_clipped_print",
+        "/home/tsjang/rhwp/tests/cases/issue_8160_wmf_clipped_print.rs",
+        "-o",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/rebase8231/final-wmf-after",
+        "-L",
+        "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+        "--extern",
+        "rhwp=/home/tsjang/rhwp/output/pr-review/issue8160-20261022/rebase8231/fix1/native/librhwp.rlib",
+        "--extern",
+        "base64=/home/tsjang/rhwp/target/pr-review/release-test/deps/libbase64-e3f94b72ec3fea0f.rlib",
+        "--extern",
+        "roxmltree=/home/tsjang/rhwp/target/pr-review/release-test/deps/libroxmltree-5f6c7c0edbfb5bd5.rlib",
+        "-L",
+        "/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-d3bbd036d45b3a6c/out/skia",
+        "-L",
+        "native=/home/tsjang/rhwp/target/pr-review/release-test/build/blake3-7496182056f3c99a/out",
+        "-L",
+        "native=/usr/lib/x86_64-linux-gnu"
+      ]
+    }
+  ]
+}

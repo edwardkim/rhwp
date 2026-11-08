@@ -720,12 +720,12 @@ def main() -> int:
 
     trace_envelope = _read_child_json(
         font_trace_bin,
-        [str(fixture_path), "--page", "0", "--max-characters", "4096", "--json"],
+        ["font-trace", str(fixture_path), "--page", "0", "--max-characters", "4096", "--json"],
     )
     if trace_envelope.get("tool") != "rhwp-q-font-trace":
         raise Rank8MetricError("font trace envelope identity mismatch")
     layout = _read_child_json(
-        text_layout_bin, [str(fixture_path), "--page", "0", "--json"]
+        text_layout_bin, ["text-layout", str(fixture_path), "--page", "0", "--json"]
     )
     trace = trace_envelope["trace"]
     require_equal(

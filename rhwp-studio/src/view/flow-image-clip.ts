@@ -14,6 +14,12 @@ export interface FlowImageCrop {
 
 export interface FlowImagePaintOp {
   bbox: FlowImageBbox;
+  /** Shared unrotated paint frame, separate from occupied/clipped bounds. */
+  imagePaintBBox?: FlowImageBbox;
+  /** 실제 회전 전 출력 상자. bbox는 가시성과 clip의 외접 프레임이다. */
+  paintBbox?: FlowImageBbox;
+  paintClipPath?: [number,number][];
+  imageInterpolation?: 'nearest' | 'linear';
   /**
    * `<img>.src` 로 그대로 넣는 값.
    *
@@ -44,8 +50,13 @@ type LayerNodeLike = {
 };
 
 type LayerPaintOpLike = {
+  imageInterpolation?: unknown;
   type?: unknown;
   bbox?: unknown;
+  imagePaintBBox?: unknown;
+  paintBbox?: unknown;
+  paintClip?: unknown;
+  paintClipPath?: unknown;
   mime?: unknown;
   base64?: unknown;
   crop?: unknown;
@@ -113,8 +124,15 @@ export function collectFlowImagePaintOps(
         ) {
           continue;
         }
+        const imageClip = isFiniteBbox(op.paintClip) ? intersectBboxes(clip ?? undefined, op.paintClip) : clip;
+        if (imageClip === null) continue;
         images.push({
           bbox: op.bbox,
+          ...(isFiniteBbox(op.imagePaintBBox) ? { imagePaintBBox: op.imagePaintBBox } : {}),
+          ...(isFiniteClipPath(op.paintClipPath) ? {paintClipPath:op.paintClipPath} : {}),
+          ...(isFiniteBbox(op.paintBbox) ? { paintBbox: op.paintBbox } : {}),
+          ...(op.imageInterpolation === 'nearest' || op.imageInterpolation === 'linear'
+            ? { imageInterpolation: op.imageInterpolation } : {}),
           src: `data:${op.mime};base64,${op.base64}`,
           crop: isFiniteCrop(op.crop) ? op.crop : null,
           originalSizeHu: isPositiveSizeTuple(op.originalSizeHu) ? op.originalSizeHu : null,
@@ -122,7 +140,7 @@ export function collectFlowImagePaintOps(
           horzFlip: op.transform?.horzFlip === true,
           vertFlip: op.transform?.vertFlip === true,
           filter: composeImageFilter(op),
-          clip: clip ?? null,
+          clip: imageClip ?? null,
         });
       }
     }
@@ -142,7 +160,15 @@ export function collectFlowImagePaintOps(
 }
 
 export function visibleFlowImageBbox(image: FlowImagePaintOp): FlowImageBbox | null {
-  return image.clip === null ? image.bbox : intersectBboxes(image.bbox, image.clip);
+  let painted = image.bbox;
+  if (image.paintBbox) {
+    const frame = image.paintBbox;
+    const angle = image.rotation*Math.PI/180;
+    const width = Math.abs(Math.cos(angle))*frame.width+Math.abs(Math.sin(angle))*frame.height;
+    const height = Math.abs(Math.sin(angle))*frame.width+Math.abs(Math.cos(angle))*frame.height;
+    painted = {x:frame.x+(frame.width-width)/2,y:frame.y+(frame.height-height)/2,width,height};
+  }
+  return image.clip === null ? painted : intersectBboxes(painted, image.clip);
 }
 
 function isLayerNode(value: unknown): value is LayerNodeLike {
@@ -247,6 +273,11 @@ export function flowImageOpsFromNarrowQuery(
 
     images.push({
       bbox: op.bbox,
+      ...(isFiniteBbox(op.imagePaintBBox) ? { imagePaintBBox: op.imagePaintBBox } : {}),
+      ...(isFiniteClipPath(op.paintClipPath) ? {paintClipPath:op.paintClipPath} : {}),
+      ...(isFiniteBbox(op.paintBbox) ? { paintBbox: op.paintBbox } : {}),
+      ...(op.imageInterpolation === 'nearest' || op.imageInterpolation === 'linear'
+        ? { imageInterpolation: op.imageInterpolation } : {}),
       src,
       crop: isFiniteCrop(op.crop) ? op.crop : null,
       originalSizeHu: isPositiveSizeTuple(op.originalSizeHu) ? op.originalSizeHu : null,
@@ -258,4 +289,9 @@ export function flowImageOpsFromNarrowQuery(
     });
   }
   return images;
+}
+
+function isFiniteClipPath(value:unknown):value is [number,number][] {
+  return Array.isArray(value) && value.length===4
+    && value.every(p=>Array.isArray(p)&&p.length===2&&p.every(x=>typeof x==='number'&&Number.isFinite(x)));
 }

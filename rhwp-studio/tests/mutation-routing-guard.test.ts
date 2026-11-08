@@ -1,3 +1,5 @@
+// 관계형: 공개 뮤테이터와 Undo 기록 경로의 배선을 대조한다. 실물 px 고정 검사가 아니다.
+// 주석 갱신: 2026-11-05 18:52 KST. API·배선 계약이며 Native/fresh WASM 시각 수치는 비대상이다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
@@ -56,7 +58,7 @@ function bridgePublicMethods(): string[] {
 // 문서 변경을 시사하는 동사 접두어. MUTATING_METHODS 의 모든 이름을 커버해야
 // 하며(아래 자기정합 단언이 강제), 그래야 새 브리지 뮤테이터가 drift 에 걸린다.
 // find* 는 쿼리(findNextEditableControl 등)가 많아 findOrCreate 로 좁힌다.
-const MUTATING_VERB = /^(insert|delete|create|apply|add|remove|move|resize|merge|split|update|toggle|replace|paste|assign|group|ungroup|change|clear|evaluate|transpose|promote|ensure|findOrCreate|reflow|setPage|setSection|setColumn|setCell|setTable|setPicture|setShape|setEquation|setNote|setChar|setPara|setField|setForm|setNumbering|setHeaderFooter|setActiveField|renameBookmark)/;
+const MUTATING_VERB = /^(insert|delete|create|apply|add|remove|move|resize|merge|split|update|toggle|replace|paste|assign|group|ungroup|change|clear|evaluate|transpose|promote|ensure|findOrCreate|reflow|setPage|setSection|setColumn|setCell|setTable|setPicture|setShape|setEquation|setNote|setChar|setPara|setField|setForm|setNumbering|setHeaderFooter|setActiveField|renameBookmark|relocate)/;
 
 test('MUTATING_VERB 는 MUTATING_METHODS 전 항목을 커버한다(drift 사각 방지)', () => {
   // 목록에 있으나 동사 패턴에 안 걸리는 이름이 있으면, 그 계열의 신규 브리지
@@ -243,7 +245,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   'src/command/commands/format.ts': 1,
   'src/command/commands/insert.ts': 16, // -3: z순서 4 호출부를 changeZOrder 헬퍼 1곳으로 합침(#2370 A)
   'src/command/commands/page.ts': 13,
-  'src/command/commands/table.ts': 36, // +1: 블록계산 이관 시 evaluateTableFormula dry-run(write=false, 검증) 추가 / +2: 표 나누기·붙이기(splitTable·mergeTableWithNext) — 둘 다 executeOperation snapshot 으로 라우팅 (undo 기록됨)
+  'src/command/commands/table.ts': 37, // +1 [#8262]: 칸 안 표 만들기 createTableInCellByPath — 본문 생성과 같은 executeOperation snapshot 안 (undo 기록됨) / +1: 블록계산 이관 시 evaluateTableFormula dry-run(write=false, 검증) 추가 / +2: 표 나누기·붙이기(splitTable·mergeTableWithNext) — 둘 다 executeOperation snapshot 으로 라우팅 (undo 기록됨)
   'src/ui/bookmark-dialog.ts': 3,
   'src/ui/cell-border-bg-dialog.ts': 5,
   'src/ui/chart-data-dialog.ts': 3, // [#4694] dryRun 선검증 1 + snapshot 라우팅 실쓰기 1 + services 미주입 폴백 1
@@ -264,14 +266,16 @@ const BASELINE: Readonly<Record<string, number>> = {
   'src/ui/table-cell-props-dialog.ts': 2,
   'src/ui/toolbar.ts': 4,
   // engine/input-handler* — 드래그/nudge 등 직접-뮤테이션 최고밀도 영역.
-  'src/engine/input-handler.ts': 35, // +1: 누름틀 제거 이관 시 removeFieldAt 이 양식모드(직접 유지)/일반모드(snapshot) 두 분기로 분리 / +1: Edit 오버레이 커밋이 셀 내부는 setFormValueInCell 로 분기(CheckBox 와 동일 조건 — 기존 flat 호출은 표 컨트롤 슬롯을 가리켜 실패) / +1: 셀 블록 글자 서식이 applyCharFormatInCell 을 executeOperation snapshot 안에서 호출(여러 셀에 걸친 글자 서식 커맨드 부재) / +1: 중첩 셀 블록 글자 서식도 applyCharFormatInCellByPath 를 같은 snapshot 안에서 호출 / +2: 머리말·꼬리말(applyParaFormatInHf)과 각주(applyParaFormatInFootnote) 문단 서식 배선 — 둘 다 snapshot 라우팅 / +2: #4121 HF 범위 치환·부분 글자 서식을 SubmodeSelectionSnapshotCommand 안에서 원자 기록 / +2: #6741 셀 블록 내용 지우기가 deleteRangeInCell·deleteRangeInCellByPath 를 executeOperation snapshot 안에서 호출(선택 칸 전체를 한 엔트리로)
+  'src/engine/input-handler.ts': 38, // +1: 누름틀 제거 이관 시 removeFieldAt 이 양식모드(직접 유지)/일반모드(snapshot) 두 분기로 분리 / +1: Edit 오버레이 커밋이 셀 내부는 setFormValueInCell 로 분기(CheckBox 와 동일 조건 — 기존 flat 호출은 표 컨트롤 슬롯을 가리켜 실패) / +1: 셀 블록 글자 서식이 applyCharFormatInCell 을 executeOperation snapshot 안에서 호출(여러 셀에 걸친 글자 서식 커맨드 부재) / +1: 중첩 셀 블록 글자 서식도 applyCharFormatInCellByPath 를 같은 snapshot 안에서 호출 / +2: 머리말·꼬리말(applyParaFormatInHf)과 각주(applyParaFormatInFootnote) 문단 서식 배선 — 둘 다 snapshot 라우팅 / +2: #4121 HF 범위 치환·부분 글자 서식을 SubmodeSelectionSnapshotCommand 안에서 원자 기록 / +2: #6741 셀 블록 내용 지우기가 deleteRangeInCell·deleteRangeInCellByPath 를 executeOperation snapshot 안에서 호출(선택 칸 전체를 한 엔트리로) / +3: 셀 블록 구조 삭제 deleteTableControl·deleteTableRow·deleteTableColumn 은 deleteCellBlock snapshot 안에서 원자 기록(부분 실패는 throw로 rollback)
+  // #8174: addressed form updates + text insertion, both inside one formAction SnapshotCommand.
+  'src/engine/input-handler-form-action.ts': 2,
   'src/engine/input-handler-connector.ts': 1,
   'src/engine/input-handler-keyboard.ts': 21,
   'src/engine/input-handler-mouse.ts': 3,
-  'src/engine/input-handler-picture.ts': 11,
+  'src/engine/input-handler-picture.ts': 13, // #7375 셀 도형 삭제 + #8557 그림 재배치: 각각 기존 snapshot 안의 독립 호출 1개를 유지
   'src/engine/input-handler-table.ts': 10, // +1 [#7189]: 중첩 표 확정이 resizeTableCellsByPath 로 갈라진다 (같은 executeOperation snapshot 안, 평면 호출과 배타) / -2: 한컴 3모드 셀 크기 조절의 직접 WASM 호출을 executeOperation snapshot 경로로 이관 (undo 기록됨) / +2 [#7442]: applyKeyboardResize·resizeTableProportional 도 중첩 ctx 에서 resizeTableCellsByPath 로 갈라진다 (같은 snapshot 안, 평면 호출과 배타)
   'src/engine/input-handler-hyperlink-delete.ts': 3, // #6963: removeHyperlink + 본문/셀 deleteText는 모두 deleteHyperlink snapshot 안에서 실행. 실제 WASM runner가 원자 복구·undo/redo를 검증한다.
-  'src/engine/input-handler-text.ts': 11, // #2424: raw IME delete를 command 공통 typed helper로 이관
+  'src/engine/input-handler-text.ts': 13, // 개체 뒤 조합은 논리 삽입·텍스트 삭제 후 완료 명령으로 기록한다.
   // ── hwpctl — 의도적 미라우팅 (#3648 정책 판정, 2026-07-31) ──
   //
   // hwpctl 은 자동화·임베드 표면이고 소비자는 스크립트다. 스크립트는 자기 트랜잭션 경계를

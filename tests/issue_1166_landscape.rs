@@ -64,7 +64,7 @@ fn saved_hwpx_landscape(bytes: &[u8]) -> Option<String> {
     let mut xml = String::new();
     for i in 0..zip.len() {
         let mut f = zip.by_index(i).ok()?;
-        if f.name().contains("section0.xml") {
+        if f.name().expect("ZIP 엔트리 이름").contains("section0.xml") {
             f.read_to_string(&mut xml).ok()?;
             break;
         }

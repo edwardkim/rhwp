@@ -2,7 +2,8 @@
   "producer": "scripts/visual_sweep.py",
   "consumed_as": "data",
   "rewritten": false,
-  "runSchemaVersion": 1,
+  "runSchemaVersion": 2,
+  "supportedRunSchemaVersions": [1, 2],
   "pageSchemaVersion": 1,
   "runManifestFields": [
     "schema_version",
@@ -10,6 +11,7 @@
     "provenance",
     "dpi",
     "pixel_diff_threshold",
+    "font_mismatch_evidence",
     "requested_pages",
     "requested_page_shards",
     "run_state"

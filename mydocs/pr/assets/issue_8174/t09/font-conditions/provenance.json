@@ -1,0 +1,813 @@
+{
+  "configurations": [
+    {
+      "file": "print-2020.json",
+      "sha256": "52ff610398e9364e7657b1fa452766572442807c5f1c71e2d666294a6ecb2140",
+      "configuration": {
+        "id": "independent-2020-print-programs",
+        "substitutions": {
+          "휴먼명조": "Gulim",
+          "한양신명조": "한양신명조"
+        },
+        "trueTypeFaces": [
+          "Gulim"
+        ]
+      },
+      "copiedBytesUnchanged": true
+    },
+    {
+      "file": "print-2024.json",
+      "sha256": "46b8716a3944754224f92e0297f4e5a372bf7d569a7a809efd5adae884d5441c",
+      "configuration": {
+        "id": "independent-2024-print-programs",
+        "substitutions": {
+          "휴먼명조": "휴먼명조",
+          "한양신명조": "한양신명조"
+        },
+        "trueTypeFaces": [
+          "휴먼명조"
+        ]
+      },
+      "copiedBytesUnchanged": true
+    },
+    {
+      "file": "distribution.json",
+      "sha256": "f9c9a09e7047a4cc68f34c12adba3b64b2e209a004fb35ac006ffccdadd07a27",
+      "configuration": {
+        "id": "actual-installed-gulimche-face",
+        "substitutions": {
+          "굴림체": "GulimChe"
+        }
+      },
+      "copiedBytesUnchanged": true
+    },
+    {
+      "file": "cff-cid.json",
+      "sha256": "91e2c0a2e38f69965f284169b7134f57a6e8dbfe808d9903cf1166d895875f94",
+      "configuration": {
+        "id": "same-nimbus-cff-program-family",
+        "substitutions": {
+          "Nimbus Roman Regular": "Nimbus Roman"
+        }
+      },
+      "copiedBytesUnchanged": true
+    },
+    {
+      "file": "clip-text.json",
+      "sha256": "50b380c8ffa38a0ac36f489057cd691abe66bdbcaa6773cbae78a68fcfe498b2",
+      "configuration": {
+        "id": "actual-embedded-dejavu-book-family",
+        "substitutions": {
+          "DejaVu Sans Book": "DejaVu Sans"
+        }
+      },
+      "copiedBytesUnchanged": true
+    }
+  ],
+  "installedProgramProofs": [
+    {
+      "purpose": "Local validation font supply only; installed source programs retain all used glyph IDs, outlines and advances. No product limit changes.",
+      "matchedSuppliedPrograms": [
+        {
+          "name": "MS-UIGothic",
+          "source_sha256": "5c3ac744c0945b3fb6f6c1f0d4c9efb486e3dfe3b0d403beecf562403dd08c04",
+          "subset_sha256": "329c2c668461b613399cb36c63191826940418db764456a3d5dd0a55058f246c",
+          "source_bytes": 8763180,
+          "bytes": 273080,
+          "covered_input_codepoints": 290,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "MSUIGothic.ttf",
+            "bytes": 273080,
+            "sha256": "329c2c668461b613399cb36c63191826940418db764456a3d5dd0a55058f246c"
+          }
+        },
+        {
+          "name": "BatangChe",
+          "source_sha256": "c272a3a95e934588126e6886c77549c29eb26a17597c01212448627cab8a5824",
+          "subset_sha256": "65d8d14db25d9b672ae47a7733d7f8669c70cb3eb5eaf49d41b9de9752dac68d",
+          "source_bytes": 16115432,
+          "bytes": 1195084,
+          "covered_input_codepoints": 1791,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "BatangChe.ttf",
+            "bytes": 1195084,
+            "sha256": "65d8d14db25d9b672ae47a7733d7f8669c70cb3eb5eaf49d41b9de9752dac68d"
+          }
+        },
+        {
+          "name": "Dotum",
+          "source_sha256": "02b1990fba33061885930cb5badb01bcf30f1968805870923fa31af75bcfc4ba",
+          "subset_sha256": "6336a001d1fe2159a593de0f331d29f7b480e2f94fae48fd632f1f5d62df9940",
+          "source_bytes": 13374744,
+          "bytes": 808220,
+          "covered_input_codepoints": 1791,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "Dotum.ttf",
+            "bytes": 808220,
+            "sha256": "6336a001d1fe2159a593de0f331d29f7b480e2f94fae48fd632f1f5d62df9940"
+          }
+        },
+        {
+          "name": "DotumChe",
+          "source_sha256": "fa028e92a2971a3a8929883d42abeac3c00acf78708abb3835f6a26f6ad45a2c",
+          "subset_sha256": "63cce8ab8ed09fe69496a933a672d803d519df24969c920ed756e9c6e7a7b82b",
+          "source_bytes": 13375596,
+          "bytes": 808108,
+          "covered_input_codepoints": 1791,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "DotumChe.ttf",
+            "bytes": 808108,
+            "sha256": "63cce8ab8ed09fe69496a933a672d803d519df24969c920ed756e9c6e7a7b82b"
+          }
+        },
+        {
+          "name": "Gungsuh",
+          "source_sha256": "680c6f5bea715c7b1ffbba94f1577244c998e35a864acedb454878dcc7167ce3",
+          "subset_sha256": "c0d69ee66bbbfb140c1a11c423eab230af68463f0fa87035d42c3a1408da4a12",
+          "source_bytes": 16114588,
+          "bytes": 1089092,
+          "covered_input_codepoints": 1791,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "Gungsuh.ttf",
+            "bytes": 1089092,
+            "sha256": "c0d69ee66bbbfb140c1a11c423eab230af68463f0fa87035d42c3a1408da4a12"
+          }
+        },
+        {
+          "name": "Batang",
+          "source_sha256": "d41ebd3fd645cb12d5b11b5726a57b02d223c6c2bf12d5e16b6bc16157c27713",
+          "subset_sha256": "bf6a54f6d222a9ec8bb2d56ccf10be1895b1b807f829ac38da196013d2343b1f",
+          "source_bytes": 16114580,
+          "bytes": 1195300,
+          "covered_input_codepoints": 1791,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "Batang.ttf",
+            "bytes": 1195300,
+            "sha256": "bf6a54f6d222a9ec8bb2d56ccf10be1895b1b807f829ac38da196013d2343b1f"
+          }
+        },
+        {
+          "name": "GulimChe",
+          "source_sha256": "b3bd10b5c7b9c4464f4c636860bc569870084f750fce62c3091def6adbfddb99",
+          "subset_sha256": "9002c6ff2f921b3ab00883f7e2bb954d43226315ff0ac9b3cbaac27c6728bda1",
+          "source_bytes": 13375596,
+          "bytes": 841160,
+          "covered_input_codepoints": 1791,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "GulimChe.ttf",
+            "bytes": 841160,
+            "sha256": "9002c6ff2f921b3ab00883f7e2bb954d43226315ff0ac9b3cbaac27c6728bda1"
+          }
+        },
+        {
+          "name": "GungsuhChe",
+          "source_sha256": "d0a04ac8a1d905ceb261c6d2d4ec5702c35ecbf4b110f6715f334db5e42ce474",
+          "subset_sha256": "6449f38b9e24e6efe165d43441459232f11cfcfe97bcc68840edf388310a8240",
+          "source_bytes": 16115440,
+          "bytes": 1088996,
+          "covered_input_codepoints": 1791,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "GungsuhChe.ttf",
+            "bytes": 1088996,
+            "sha256": "6449f38b9e24e6efe165d43441459232f11cfcfe97bcc68840edf388310a8240"
+          }
+        },
+        {
+          "name": "Gulim",
+          "source_sha256": "45076cc42eee8b9f405d4949c17a1357d6c027ff53c6edfb707ebf012bc40d78",
+          "subset_sha256": "b9f7efdf7692d5687c674a0acf92befeec360faca17eb8d4725c3b1d7bd69c1c",
+          "source_bytes": 13374696,
+          "bytes": 841472,
+          "covered_input_codepoints": 1790,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "Gulim.ttf",
+            "bytes": 841472,
+            "sha256": "b9f7efdf7692d5687c674a0acf92befeec360faca17eb8d4725c3b1d7bd69c1c"
+          }
+        },
+        {
+          "name": "MS-Gothic",
+          "source_sha256": "d8a276a5e47d8024b2cdf05692fc8aaf9d5c7a15cfcaa5bd99d71a08e7a22bbc",
+          "subset_sha256": "e83465537a7a7d85433d1afc485102de053ca804e064c0fef906cf6c53415b40",
+          "source_bytes": 8739224,
+          "bytes": 261640,
+          "covered_input_codepoints": 290,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "MSGothic.ttf",
+            "bytes": 261640,
+            "sha256": "e83465537a7a7d85433d1afc485102de053ca804e064c0fef906cf6c53415b40"
+          }
+        },
+        {
+          "name": "MS-PGothic",
+          "source_sha256": "a08947b49b5aff0477f650eab6189c9a092c3da1a03775bc221f2c88c2943dde",
+          "subset_sha256": "6c552297bfc82ccc8d904015f990db9978f8ad6cb2466776d271426b9d107e3f",
+          "source_bytes": 8763108,
+          "bytes": 269300,
+          "covered_input_codepoints": 290,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "MSPGothic.ttf",
+            "bytes": 269300,
+            "sha256": "6c552297bfc82ccc8d904015f990db9978f8ad6cb2466776d271426b9d107e3f"
+          }
+        },
+        {
+          "name": "HCRDotum",
+          "source_sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+          "subset_sha256": "14627d1785ad46ff93d5cf2d2af63b0ab2ddf39955ea66f076a9493b1600ab5c",
+          "source_bytes": 22249768,
+          "bytes": 2790520,
+          "covered_input_codepoints": 1832,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "HCRDotum.ttf",
+            "bytes": 2790520,
+            "sha256": "14627d1785ad46ff93d5cf2d2af63b0ab2ddf39955ea66f076a9493b1600ab5c"
+          }
+        },
+        {
+          "name": "HCRDotum-Bold",
+          "source_sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+          "subset_sha256": "e19f3d74f3b9fcc1bc0919c9c809a50e224aad290f7aa2a5ce3b53b661b13ee0",
+          "source_bytes": 31085224,
+          "bytes": 2825260,
+          "covered_input_codepoints": 1832,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "HCRDotumBold.ttf",
+            "bytes": 2825260,
+            "sha256": "e19f3d74f3b9fcc1bc0919c9c809a50e224aad290f7aa2a5ce3b53b661b13ee0"
+          }
+        },
+        {
+          "name": "HCRBatang",
+          "source_sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "subset_sha256": "143d1827caf6b798d8d750366e8526438672783bcacba63ac4b87afa9f30cb62",
+          "source_bytes": 28412796,
+          "bytes": 3000068,
+          "covered_input_codepoints": 1832,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "HCRBatang.ttf",
+            "bytes": 3000068,
+            "sha256": "143d1827caf6b798d8d750366e8526438672783bcacba63ac4b87afa9f30cb62"
+          }
+        },
+        {
+          "name": "HCRBatang-Bold",
+          "source_sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+          "subset_sha256": "d60a436e684e2eced29b1fd2293e31ecb27f17baee92e052fd3b15eccb26e478",
+          "source_bytes": 30691556,
+          "bytes": 2892568,
+          "covered_input_codepoints": 1832,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "HCRBatangBold.ttf",
+            "bytes": 2892568,
+            "sha256": "d60a436e684e2eced29b1fd2293e31ecb27f17baee92e052fd3b15eccb26e478"
+          }
+        }
+      ]
+    },
+    {
+      "purpose": "Installed document faces supplied before unrelated fonts; local only; no product change.",
+      "matchedSuppliedPrograms": [
+        {
+          "name": "MalgunGothic",
+          "source_sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+          "subset_sha256": "51ec9107e00f2eee08c7ce7cf38590262f5ce1b38bb1550087ca4577d06e446d",
+          "source_bytes": 13459196,
+          "bytes": 1012088,
+          "covered_input_codepoints": 1796,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "MalgunGothic.ttf",
+            "bytes": 1012088,
+            "sha256": "51ec9107e00f2eee08c7ce7cf38590262f5ce1b38bb1550087ca4577d06e446d"
+          }
+        },
+        {
+          "name": "MalgunGothicBold",
+          "source_sha256": "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082",
+          "subset_sha256": "cee866286b11f371c6dc2501e8f736aa5f4e892bea17a2c7f0faac611139f4cf",
+          "source_bytes": 12600392,
+          "bytes": 1066952,
+          "covered_input_codepoints": 1796,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "MalgunGothicBold.ttf",
+            "bytes": 1066952,
+            "sha256": "cee866286b11f371c6dc2501e8f736aa5f4e892bea17a2c7f0faac611139f4cf"
+          }
+        },
+        {
+          "name": "ArialMT",
+          "source_sha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a",
+          "subset_sha256": "afe0340b89b5b4917bb97490d90e82631830a35bebe87c09c1068b2f47117af0",
+          "source_bytes": 1045720,
+          "bytes": 200764,
+          "covered_input_codepoints": 121,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "ArialMT.ttf",
+            "bytes": 200764,
+            "sha256": "afe0340b89b5b4917bb97490d90e82631830a35bebe87c09c1068b2f47117af0"
+          }
+        },
+        {
+          "name": "Arial-BoldMT",
+          "source_sha256": "e8f4e3baf6cc35fed6fcce3a540e8b39e8f6cda1d22a28f2ec8f526fef7a43f5",
+          "subset_sha256": "3b07a1469f05c5289bdd4dadda19bb294d5537aeb8bc609034714d736b4dcf22",
+          "source_bytes": 989780,
+          "bytes": 182716,
+          "covered_input_codepoints": 121,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "ArialBoldMT.ttf",
+            "bytes": 182716,
+            "sha256": "3b07a1469f05c5289bdd4dadda19bb294d5537aeb8bc609034714d736b4dcf22"
+          }
+        },
+        {
+          "name": "PalatinoLinotype-Roman",
+          "source_sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "subset_sha256": "8e211447dd3ca5e1853ae7e45745c958352bbe655cdf1458474b91ceef2462ac",
+          "source_bytes": 472284,
+          "bytes": 121656,
+          "covered_input_codepoints": 116,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "PalatinoLinotypeRoman.ttf",
+            "bytes": 121656,
+            "sha256": "8e211447dd3ca5e1853ae7e45745c958352bbe655cdf1458474b91ceef2462ac"
+          }
+        },
+        {
+          "name": "PalatinoLinotype-Bold",
+          "source_sha256": "8e14668bbae03f78ed668dbe3261218881960dcd9fb80ad6c1d1dfb4226a57c3",
+          "subset_sha256": "b343196be19bb1ecdbdf5c10e4cc0204fd35bd79af653efda9af8e8e6e8a93a6",
+          "source_bytes": 419932,
+          "bytes": 93832,
+          "covered_input_codepoints": 116,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "PalatinoLinotypeBold.ttf",
+            "bytes": 93832,
+            "sha256": "b343196be19bb1ecdbdf5c10e4cc0204fd35bd79af653efda9af8e8e6e8a93a6"
+          }
+        },
+        {
+          "name": "PalatinoLinotype-Italic",
+          "source_sha256": "99f0af2d1941707fecda23da38bafbed5144a73a3720d773c05b9d4c445920ed",
+          "subset_sha256": "a89f6a898b2306f186d5e792a7f95e03558f4309dc51f129687f3f4a5e4e941c",
+          "source_bytes": 413708,
+          "bytes": 98612,
+          "covered_input_codepoints": 116,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "PalatinoLinotypeItalic.ttf",
+            "bytes": 98612,
+            "sha256": "a89f6a898b2306f186d5e792a7f95e03558f4309dc51f129687f3f4a5e4e941c"
+          }
+        },
+        {
+          "name": "PalatinoLinotype-BoldItalic",
+          "source_sha256": "d0e722b91ffd5391cc2e7d6e976f274d5aee9fe0b8d0fedfffe093763e695cde",
+          "subset_sha256": "0f3f5229b74de4910b1d626e93959e78b5acd380e261531a8b24301667278781",
+          "source_bytes": 335292,
+          "bytes": 81956,
+          "covered_input_codepoints": 116,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "PalatinoLinotypeBoldItalic.ttf",
+            "bytes": 81956,
+            "sha256": "0f3f5229b74de4910b1d626e93959e78b5acd380e261531a8b24301667278781"
+          }
+        },
+        {
+          "name": "휴먼명조",
+          "source_sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "subset_sha256": "27fba65b5fe7b3b85a6620c92ae83443e40ad1419ab26cd530ed6c6135eb5a3d",
+          "source_bytes": 1820732,
+          "bytes": 559796,
+          "covered_input_codepoints": 1452,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "휴먼명조.ttf",
+            "bytes": 559796,
+            "sha256": "27fba65b5fe7b3b85a6620c92ae83443e40ad1419ab26cd530ed6c6135eb5a3d"
+          }
+        }
+      ]
+    },
+    {
+      "purpose": "Local validation font supply only; installed source programs retain all used glyph IDs, outlines and advances. No product limit changes.",
+      "matchedSuppliedPrograms": [
+        {
+          "name": "MS-UIGothic",
+          "source_sha256": "5c3ac744c0945b3fb6f6c1f0d4c9efb486e3dfe3b0d403beecf562403dd08c04",
+          "subset_sha256": "f01db09ec6e95af3982498005dfbf7130276e608dcb16850e6b5050bbbe78272",
+          "source_bytes": 8763180,
+          "bytes": 783652,
+          "covered_input_codepoints": 1854,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "MSUIGothic.ttf",
+            "bytes": 783652,
+            "sha256": "f01db09ec6e95af3982498005dfbf7130276e608dcb16850e6b5050bbbe78272"
+          }
+        },
+        {
+          "name": "BatangChe",
+          "source_sha256": "c272a3a95e934588126e6886c77549c29eb26a17597c01212448627cab8a5824",
+          "subset_sha256": "1dd13769102ff22078766f4f4c57d03809fa2f51eabda8fa2c64e0aad45ee20d",
+          "source_bytes": 16115432,
+          "bytes": 2148084,
+          "covered_input_codepoints": 3675,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "BatangChe.ttf",
+            "bytes": 2148084,
+            "sha256": "1dd13769102ff22078766f4f4c57d03809fa2f51eabda8fa2c64e0aad45ee20d"
+          }
+        },
+        {
+          "name": "Dotum",
+          "source_sha256": "02b1990fba33061885930cb5badb01bcf30f1968805870923fa31af75bcfc4ba",
+          "subset_sha256": "811380d6d4946b362e32253ae84a28bf184b293d0b83825e9eaa6d47cc740643",
+          "source_bytes": 13374744,
+          "bytes": 1466280,
+          "covered_input_codepoints": 3675,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "Dotum.ttf",
+            "bytes": 1466280,
+            "sha256": "811380d6d4946b362e32253ae84a28bf184b293d0b83825e9eaa6d47cc740643"
+          }
+        },
+        {
+          "name": "DotumChe",
+          "source_sha256": "fa028e92a2971a3a8929883d42abeac3c00acf78708abb3835f6a26f6ad45a2c",
+          "subset_sha256": "2bb457626abddbd8a63465846b39010e7e9eefd2b8320cfa5eab66debeb0c495",
+          "source_bytes": 13375596,
+          "bytes": 1465984,
+          "covered_input_codepoints": 3675,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "DotumChe.ttf",
+            "bytes": 1465984,
+            "sha256": "2bb457626abddbd8a63465846b39010e7e9eefd2b8320cfa5eab66debeb0c495"
+          }
+        },
+        {
+          "name": "Gungsuh",
+          "source_sha256": "680c6f5bea715c7b1ffbba94f1577244c998e35a864acedb454878dcc7167ce3",
+          "subset_sha256": "5b9a4e733becf50a6c5adbfb0aaed9f63b604f5c0f3a589dbab50ca1083c0da2",
+          "source_bytes": 16114588,
+          "bytes": 2028188,
+          "covered_input_codepoints": 3675,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "Gungsuh.ttf",
+            "bytes": 2028188,
+            "sha256": "5b9a4e733becf50a6c5adbfb0aaed9f63b604f5c0f3a589dbab50ca1083c0da2"
+          }
+        },
+        {
+          "name": "Batang",
+          "source_sha256": "d41ebd3fd645cb12d5b11b5726a57b02d223c6c2bf12d5e16b6bc16157c27713",
+          "subset_sha256": "592e66019cf56737a7f2a63f6805592dc9739e68b9ec10fcd99db3653d9b3a94",
+          "source_bytes": 16114580,
+          "bytes": 2148400,
+          "covered_input_codepoints": 3675,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "Batang.ttf",
+            "bytes": 2148400,
+            "sha256": "592e66019cf56737a7f2a63f6805592dc9739e68b9ec10fcd99db3653d9b3a94"
+          }
+        },
+        {
+          "name": "GulimChe",
+          "source_sha256": "b3bd10b5c7b9c4464f4c636860bc569870084f750fce62c3091def6adbfddb99",
+          "subset_sha256": "3a086513079cfa1c6c1f4a3a6d4e55707138e754aaa87af9a9d70a3dde59f511",
+          "source_bytes": 13375596,
+          "bytes": 1503760,
+          "covered_input_codepoints": 3675,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "GulimChe.ttf",
+            "bytes": 1503760,
+            "sha256": "3a086513079cfa1c6c1f4a3a6d4e55707138e754aaa87af9a9d70a3dde59f511"
+          }
+        },
+        {
+          "name": "GungsuhChe",
+          "source_sha256": "d0a04ac8a1d905ceb261c6d2d4ec5702c35ecbf4b110f6715f334db5e42ce474",
+          "subset_sha256": "0677938bc47ee928745c39efc72ff09849943762a7c78238ee8fb4ce15a614c1",
+          "source_bytes": 16115440,
+          "bytes": 2027988,
+          "covered_input_codepoints": 3675,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "GungsuhChe.ttf",
+            "bytes": 2027988,
+            "sha256": "0677938bc47ee928745c39efc72ff09849943762a7c78238ee8fb4ce15a614c1"
+          }
+        },
+        {
+          "name": "Gulim",
+          "source_sha256": "45076cc42eee8b9f405d4949c17a1357d6c027ff53c6edfb707ebf012bc40d78",
+          "subset_sha256": "56271f47377a2c36bd90afcd59bb650201333ca0f09d68c6b9e3fb53f599ab5b",
+          "source_bytes": 13374696,
+          "bytes": 1504312,
+          "covered_input_codepoints": 3674,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "Gulim.ttf",
+            "bytes": 1504312,
+            "sha256": "56271f47377a2c36bd90afcd59bb650201333ca0f09d68c6b9e3fb53f599ab5b"
+          }
+        },
+        {
+          "name": "MS-Gothic",
+          "source_sha256": "d8a276a5e47d8024b2cdf05692fc8aaf9d5c7a15cfcaa5bd99d71a08e7a22bbc",
+          "subset_sha256": "1562651a080e74606d3bf978c6957fe84e32e3521a72e9f97763850045ac2ebf",
+          "source_bytes": 8739224,
+          "bytes": 779496,
+          "covered_input_codepoints": 1854,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "MSGothic.ttf",
+            "bytes": 779496,
+            "sha256": "1562651a080e74606d3bf978c6957fe84e32e3521a72e9f97763850045ac2ebf"
+          }
+        },
+        {
+          "name": "MS-PGothic",
+          "source_sha256": "a08947b49b5aff0477f650eab6189c9a092c3da1a03775bc221f2c88c2943dde",
+          "subset_sha256": "e227fbd7dcb6c4207c0a996187d399cd1d28f577267b764ef268c994894f7d7a",
+          "source_bytes": 8763108,
+          "bytes": 783652,
+          "covered_input_codepoints": 1854,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "MSPGothic.ttf",
+            "bytes": 783652,
+            "sha256": "e227fbd7dcb6c4207c0a996187d399cd1d28f577267b764ef268c994894f7d7a"
+          }
+        },
+        {
+          "name": "HCRDotum",
+          "source_sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+          "subset_sha256": "cc4f06f5be3480e418968d2936731f74b9538ff947f4adc0c315fb92f87fbf74",
+          "source_bytes": 22249768,
+          "bytes": 3389516,
+          "covered_input_codepoints": 3877,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "HCRDotum.ttf",
+            "bytes": 3389516,
+            "sha256": "cc4f06f5be3480e418968d2936731f74b9538ff947f4adc0c315fb92f87fbf74"
+          }
+        },
+        {
+          "name": "HCRDotum-Bold",
+          "source_sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+          "subset_sha256": "ef1a48ce54457fbc828b91741f7468d7c1e15e633235735ab89b941a8b05c0fc",
+          "source_bytes": 31085224,
+          "bytes": 3795344,
+          "covered_input_codepoints": 3877,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "HCRDotumBold.ttf",
+            "bytes": 3795344,
+            "sha256": "ef1a48ce54457fbc828b91741f7468d7c1e15e633235735ab89b941a8b05c0fc"
+          }
+        },
+        {
+          "name": "HCRBatang",
+          "source_sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+          "subset_sha256": "508d118f8b03f72765619d609ac02353c293a7b756b14ad412b41e96dd10ba2c",
+          "source_bytes": 28412796,
+          "bytes": 3942968,
+          "covered_input_codepoints": 3886,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "HCRBatang.ttf",
+            "bytes": 3942968,
+            "sha256": "508d118f8b03f72765619d609ac02353c293a7b756b14ad412b41e96dd10ba2c"
+          }
+        },
+        {
+          "name": "HCRBatang-Bold",
+          "source_sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+          "subset_sha256": "60504afb8bc122cca7d5c837751afe89cff39d0f309b327355f0d3e5e141c798",
+          "source_bytes": 30691556,
+          "bytes": 3850360,
+          "covered_input_codepoints": 3886,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "HCRBatangBold.ttf",
+            "bytes": 3850360,
+            "sha256": "60504afb8bc122cca7d5c837751afe89cff39d0f309b327355f0d3e5e141c798"
+          }
+        }
+      ]
+    },
+    {
+      "purpose": "Installed document faces supplied before unrelated fonts; local only; no product change.",
+      "matchedSuppliedPrograms": [
+        {
+          "name": "MalgunGothic",
+          "source_sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+          "subset_sha256": "a535fb9468b09405aff9b280281bd476750301c1e19ea3eea34c89db380da90a",
+          "source_bytes": 13459196,
+          "bytes": 1842812,
+          "covered_input_codepoints": 3678,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "MalgunGothic.ttf",
+            "bytes": 1842812,
+            "sha256": "a535fb9468b09405aff9b280281bd476750301c1e19ea3eea34c89db380da90a"
+          }
+        },
+        {
+          "name": "MalgunGothicBold",
+          "source_sha256": "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082",
+          "subset_sha256": "9db9e34854dd1c708fb80fd74cf059902979ac09e98a1cc0d32e7293208c95d2",
+          "source_bytes": 12600392,
+          "bytes": 1930228,
+          "covered_input_codepoints": 3678,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "MalgunGothicBold.ttf",
+            "bytes": 1930228,
+            "sha256": "9db9e34854dd1c708fb80fd74cf059902979ac09e98a1cc0d32e7293208c95d2"
+          }
+        },
+        {
+          "name": "ArialMT",
+          "source_sha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a",
+          "subset_sha256": "ec75b73600b3a6a84e59c9f2e0242ea84db0aa74a51d0da596293092ff9b77d3",
+          "source_bytes": 1045720,
+          "bytes": 206548,
+          "covered_input_codepoints": 148,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "ArialMT.ttf",
+            "bytes": 206548,
+            "sha256": "ec75b73600b3a6a84e59c9f2e0242ea84db0aa74a51d0da596293092ff9b77d3"
+          }
+        },
+        {
+          "name": "Arial-BoldMT",
+          "source_sha256": "e8f4e3baf6cc35fed6fcce3a540e8b39e8f6cda1d22a28f2ec8f526fef7a43f5",
+          "subset_sha256": "4a2817309c291dfa82abc7c4e387ce964f21377abf53329f82920ffd134e9baf",
+          "source_bytes": 989780,
+          "bytes": 186908,
+          "covered_input_codepoints": 148,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "ArialBoldMT.ttf",
+            "bytes": 186908,
+            "sha256": "4a2817309c291dfa82abc7c4e387ce964f21377abf53329f82920ffd134e9baf"
+          }
+        },
+        {
+          "name": "PalatinoLinotype-Roman",
+          "source_sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "subset_sha256": "11c17d0715f5eafe25bf705f5636035cfec4c24efd1edeb726c171ebca984c8f",
+          "source_bytes": 472284,
+          "bytes": 137364,
+          "covered_input_codepoints": 142,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "PalatinoLinotypeRoman.ttf",
+            "bytes": 137364,
+            "sha256": "11c17d0715f5eafe25bf705f5636035cfec4c24efd1edeb726c171ebca984c8f"
+          }
+        },
+        {
+          "name": "PalatinoLinotype-Bold",
+          "source_sha256": "8e14668bbae03f78ed668dbe3261218881960dcd9fb80ad6c1d1dfb4226a57c3",
+          "subset_sha256": "1960b126122303ce86181fe5bb6ead8550ca9bbcc6c5a05ec10309549a37ef98",
+          "source_bytes": 419932,
+          "bytes": 109064,
+          "covered_input_codepoints": 142,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "PalatinoLinotypeBold.ttf",
+            "bytes": 109064,
+            "sha256": "1960b126122303ce86181fe5bb6ead8550ca9bbcc6c5a05ec10309549a37ef98"
+          }
+        },
+        {
+          "name": "PalatinoLinotype-Italic",
+          "source_sha256": "99f0af2d1941707fecda23da38bafbed5144a73a3720d773c05b9d4c445920ed",
+          "subset_sha256": "5ca9689301e8a6a0810438da1ab84646a29581e298666ab29a15b235f89cc99a",
+          "source_bytes": 413708,
+          "bytes": 112708,
+          "covered_input_codepoints": 142,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "PalatinoLinotypeItalic.ttf",
+            "bytes": 112708,
+            "sha256": "5ca9689301e8a6a0810438da1ab84646a29581e298666ab29a15b235f89cc99a"
+          }
+        },
+        {
+          "name": "PalatinoLinotype-BoldItalic",
+          "source_sha256": "d0e722b91ffd5391cc2e7d6e976f274d5aee9fe0b8d0fedfffe093763e695cde",
+          "subset_sha256": "751851ce0967920332ab2f99ca191b62fbd023c038037a2f253f33c2521b557f",
+          "source_bytes": 335292,
+          "bytes": 94956,
+          "covered_input_codepoints": 142,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "PalatinoLinotypeBoldItalic.ttf",
+            "bytes": 94956,
+            "sha256": "751851ce0967920332ab2f99ca191b62fbd023c038037a2f253f33c2521b557f"
+          }
+        },
+        {
+          "name": "휴먼명조",
+          "source_sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "subset_sha256": "40b72971a122c3ef77db3c5b1f8b75f39727c44d5bf28905e2e3ea1ce02d6dde",
+          "source_bytes": 1820732,
+          "bytes": 675108,
+          "covered_input_codepoints": 1853,
+          "preserved": "glyph IDs, cmap, hmtx and glyf bytecode for every used covered codepoint",
+          "suppliedProgram": {
+            "file": "휴먼명조.ttf",
+            "bytes": 675108,
+            "sha256": "40b72971a122c3ef77db3c5b1f8b75f39727c44d5bf28905e2e3ea1ce02d6dde"
+          }
+        }
+      ]
+    }
+  ],
+  "independentFontPrintPrograms": [
+    {
+      "sourceSha256": "a69c27fb9722394bd0cb618ec5721650476de137435a840e8741218c3d3fea42",
+      "fontSha256": "18ec28511e4bd2378b9904ea31602bf8555b5c8a1f612661902830c316d06eb4",
+      "requestedFace": "한양신명조",
+      "scope": "Complete modern Hangul alphabet only; ASCII intentionally absent and uses the existing supplied chain",
+      "symbolsOnly": false,
+      "validatedSourceGlyphs": 11172,
+      "standardBullets": "",
+      "standardArrows": "",
+      "glyphs": 11172,
+      "fontMatrix": [
+        0.001,
+        0,
+        0,
+        0.001,
+        0,
+        0
+      ],
+      "glyphTransform": "identity; no score-dependent shift, scale, hinting or contour changes",
+      "horizontalMetrics": "original advance and rounded CFF xMin; outlines are not translated",
+      "suppliedProgram": {
+        "file": "hanyang-original.otf",
+        "bytes": 3873736,
+        "sha256": "18ec28511e4bd2378b9904ea31602bf8555b5c8a1f612661902830c316d06eb4"
+      },
+      "sourceIsLocalFontAlphabetPrint": true,
+      "sourceFontProgramNotRepublished": true
+    }
+  ],
+  "mathPrograms": {
+    "mathPrograms": [
+      {
+        "program": "HYHWPEQ.TTF",
+        "bytes": 155612,
+        "sha256": "a3a3cd992a89ac38e7707b58143ebdb1da9511d3c462f019cda7f92c30467807",
+        "byteIdenticalToInstalledOriginal": true,
+        "glyphOrMetricTransformation": false
+      },
+      {
+        "program": "HancomEQN.ttf",
+        "bytes": 244816,
+        "sha256": "c249c422e4acbafe2757c0f4a5d714414f84305c728776d889224f6116186e35",
+        "byteIdenticalToInstalledOriginal": true,
+        "glyphOrMetricTransformation": false
+      }
+    ],
+    "combinedMathBytes": 400428,
+    "originalProgramsPublished": false
+  },
+  "programBinariesPublished": false,
+  "notes": "Configuration bytes and current supplied program hashes are preserved. Installed source programs and font alphabet extraction PDFs remain local; no score-dependent glyph or metric adjustment is applied."
+}

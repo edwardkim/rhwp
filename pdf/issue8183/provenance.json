@@ -1,0 +1,216 @@
+{
+  "generation": "Poppler / Pillow libopenjp2 and libtiff Group4; independent PDF wrappers",
+  "scan_source": "pdf/hwp_table_test-2022.pdf",
+  "scan_source_sha256": "c99250265f45c950965a1adf1ecccf95a42a40078e4e5da6eca6c91ddc3a7c90",
+  "scan_pixels": [
+    795,
+    1123
+  ],
+  "files": {
+    "corrupt-JBIG2Decode.pdf": {
+      "bytes": 673,
+      "sha256": "de52f1c9775df37588a374006663927a8669d9cd69ccfaa0bca296e530a3e7d1"
+    },
+    "corrupt-JPXDecode.pdf": {
+      "bytes": 671,
+      "sha256": "cbae1ac614897779f74de4457351e8740b2c55f4df9cd4818e17526ebce851d5"
+    },
+    "jbig2-generic_template0.pdf": {
+      "bytes": 1305,
+      "sha256": "2617c19a35fc9c918d43913b2152a795554f8b3488823f86b09b913fba9e14cb"
+    },
+    "jbig2-mask.pdf": {
+      "bytes": 1187,
+      "sha256": "eed2116d75f4b452b748cfa6aaa447b47e0683c902b32cf4aec682f1c5362026"
+    },
+    "jbig2-symbol_global.pdf": {
+      "bytes": 1011,
+      "sha256": "467ffd665567f6adcb61ffa0dc891cde393bccc468ffd6e9a927265cf97dd6d5"
+    },
+    "jbig2.pdf": {
+      "bytes": 747,
+      "sha256": "33c3d90071b8dd1f8eff093a1061ba7bb2f8b3a59f3fe3d144ddb7d62038debf"
+    },
+    "jpx-alpha.pdf": {
+      "bytes": 965,
+      "sha256": "5e33458486d6a2f347f2099818455bee6765949e2ef08cb3a16f37f241a0b9b7"
+    },
+    "jpx-indexed.pdf": {
+      "bytes": 935,
+      "sha256": "1fa2bbdb1928900907f11d41224073363e3b37a7c21b73b59227c1bf7a20bfe6"
+    },
+    "jpx-mask.pdf": {
+      "bytes": 1458,
+      "sha256": "7a9fc1fdb99ed99fc61b615cc92be736c0164659911aa413941f2bb040ecb889"
+    },
+    "jpx-palette.pdf": {
+      "bytes": 884,
+      "sha256": "53579f6f186a3b2f86a1aa39acdf2d8d4c786b40b93138f83a6dd7c014b6838b"
+    },
+    "jpx-premult.pdf": {
+      "bytes": 950,
+      "sha256": "8534391adcf72d0fb240e9bbc6c36ffdd89c1fb46c82e998efeef77dbef6c7da"
+    },
+    "jpx-tiles.pdf": {
+      "bytes": 2123,
+      "sha256": "23f23ffac01b5465028ce9ad50684a7d928207351c5ea463ad4d151a27d64340"
+    },
+    "jpx.pdf": {
+      "bytes": 1008,
+      "sha256": "98e1bfed3c77c2ef1ed9e5969b66387ea6402d3e6998744d248886b093bd8ea9"
+    },
+    "reference/jpx-alpha-gs.pdf": {
+      "bytes": 2862,
+      "sha256": "fdcbf063134a4b5c260ce5e821f518eedf88636c85063e67279de7a26e9b7be8"
+    },
+    "reference/jpx-indexed-gs.pdf": {
+      "bytes": 2507,
+      "sha256": "fc073eb15d222897c6b25ee9c2916b2550d8c33d524a624925cbc543baa78ef2"
+    },
+    "reference/jpx-premult-gs.pdf": {
+      "bytes": 2880,
+      "sha256": "82056512531f3b3a73dd5160a70e24f610d6d18cd3030039bd4a83482d68f34a"
+    },
+    "scan-jbig2-200.pdf": {
+      "bytes": 7295,
+      "sha256": "67abb4ebaf93df5e475fe4b13314dff4bf4402c81b00970c15453173dd57e2aa"
+    },
+    "scan-jbig2.pdf": {
+      "bytes": 4442,
+      "sha256": "41068e6c1654cb3eb1ad80fdabb3bf3958ef2ab6218bb62b69e7202dffeaab0f"
+    },
+    "scan-jpeg-control-200.pdf": {
+      "bytes": 207109,
+      "sha256": "43201727ca11b3997cc0f88e0ac12f9b60b3cdfa3399c7c2d872f8fdd2bd437a"
+    },
+    "scan-jpeg-control.pdf": {
+      "bytes": 80370,
+      "sha256": "b34cc355dede803ce08294041ce671737325d2cf611c2864a2fd9116ef433381"
+    },
+    "scan-jpx-200.pdf": {
+      "bytes": 149777,
+      "sha256": "c99023e5fd6fb76ab23c584547f408955398d272748382de248656d32d55b040"
+    },
+    "scan-jpx.pdf": {
+      "bytes": 69245,
+      "sha256": "cf77971d9816b1fefcf6b4d4e98fc0ffa96108c3cd4bde737cad63baed46751b"
+    },
+    "work-limit-jpx.pdf": {
+      "bytes": 149837,
+      "sha256": "8141bcdf583bbe686b8815693073bd217ac43424a8ff454a646fd0233511e5c1"
+    }
+  },
+  "scan_200_pixels": [
+    1655,
+    2339
+  ],
+  "jbig2_scan_generation": "Pillow TIFF Group4 forced to one strip; independent Poppler image extraction exact against complete source monochrome bitmap",
+  "full_scan_proof": [
+    {
+      "file": "scan-jbig2.pdf",
+      "pixels": [
+        795,
+        1123
+      ],
+      "strips": 1,
+      "rows_per_strip": 1123,
+      "source_mono_sha256": "8e1c18117f5cb96435fc69e52bfaf146d3ed450e91e494431c012ebea85bdeb9",
+      "independent_decoded_sha256": "8e1c18117f5cb96435fc69e52bfaf146d3ed450e91e494431c012ebea85bdeb9",
+      "pdf_sha256": "41068e6c1654cb3eb1ad80fdabb3bf3958ef2ab6218bb62b69e7202dffeaab0f",
+      "independent_decoder": "MuPDF image extraction; unscaled complete sample raster"
+    },
+    {
+      "file": "scan-jbig2-200.pdf",
+      "pixels": [
+        1655,
+        2339
+      ],
+      "strips": 1,
+      "rows_per_strip": 2339,
+      "source_mono_sha256": "92fd8685a948880daf9c78f3896ba31e940ae004e1b7218ae02b964703a0ea92",
+      "independent_decoded_sha256": "92fd8685a948880daf9c78f3896ba31e940ae004e1b7218ae02b964703a0ea92",
+      "pdf_sha256": "67abb4ebaf93df5e475fe4b13314dff4bf4402c81b00970c15453173dd57e2aa",
+      "independent_decoder": "MuPDF image extraction; unscaled complete sample raster"
+    }
+  ],
+  "references": {
+    "producer": "Ghostscript pdfwrite; source PDFs only, no RHWP outputs",
+    "ghostscript_version": "10.02.1",
+    "reference_pdfium": "153.0.7999.0 / pypdfium2 5.13.0",
+    "reason": "Original JPX alpha is decoded differently by PDFium. SMaskInData=1 yields alpha squared; SMaskInData=2 is unimplemented in cited upstream pixel test. Ghostscript agrees with ISO source sample compositing and RHWP. Re-encoding to PDF 1.4 Flate + external SMask lets the same fixed PDFium measurement consume those independent pixels. Original failed TSVs remain intact.",
+    "upstream": "https://pdfium.googlesource.com/pdfium.git/+/b18d018b2f9aa2913cc435b5ccdd59d0a5856ad8",
+    "files": [
+      {
+        "source": "jpx-alpha.pdf",
+        "source_sha256": "5e33458486d6a2f347f2099818455bee6765949e2ef08cb3a16f37f241a0b9b7",
+        "reference": "reference/jpx-alpha-gs.pdf",
+        "reference_sha256": "fdcbf063134a4b5c260ce5e821f518eedf88636c85063e67279de7a26e9b7be8",
+        "samples": {
+          "green_alpha64_over_white": [
+            191,
+            255,
+            191
+          ],
+          "blue_alpha128_over_white": [
+            127,
+            127,
+            255
+          ]
+        }
+      },
+      {
+        "source": "jpx-premult.pdf",
+        "source_sha256": "8534391adcf72d0fb240e9bbc6c36ffdd89c1fb46c82e998efeef77dbef6c7da",
+        "reference": "reference/jpx-premult-gs.pdf",
+        "reference_sha256": "82056512531f3b3a73dd5160a70e24f610d6d18cd3030039bd4a83482d68f34a",
+        "samples": {
+          "red_premult128_alpha128_over_white": [
+            255,
+            127,
+            127
+          ]
+        }
+      },
+      {
+        "source": "jpx-indexed.pdf",
+        "source_sha256": "1fa2bbdb1928900907f11d41224073363e3b37a7c21b73b59227c1bf7a20bfe6",
+        "reference": "reference/jpx-indexed-gs.pdf",
+        "reference_sha256": "fc073eb15d222897c6b25ee9c2916b2550d8c33d524a624925cbc543baa78ef2",
+        "reason": "PDF Indexed lookup overrides JP2 palette; Ghostscript produces blue/cyan while PDFium produces black",
+        "samples": [
+          [
+            0,
+            0,
+            255
+          ],
+          [
+            0,
+            255,
+            255
+          ]
+        ]
+      }
+    ]
+  },
+  "precondition": {
+    "code_source": "cfc5be8fe",
+    "native_pages": 17,
+    "wasm_pages": 17,
+    "min_raw_percent": 100,
+    "direct_review": "Nine representative image families; corrected full scan and Indexed colours explicitly re-read"
+  },
+  "upstream_sources": [
+    {
+      "path": "tests/fixtures/issue8183/source/generic_template0.jbig2",
+      "git_blob": "2c6fbd159b1b50ae5c9d6b4a8f07a64cd981fe83",
+      "url": "https://api.github.com/repos/LaurenzV/hayro/git/blobs/2c6fbd159b1b50ae5c9d6b4a8f07a64cd981fe83",
+      "sha256": "306b909c88b888f07d97ace0ca197b8b1544756f022684b3c7286476d6e26826"
+    },
+    {
+      "path": "tests/fixtures/issue8183/source/symbol_global.jbig2",
+      "git_blob": "bca6b2834bf4ccdfdcd754ded28ee90739080d74",
+      "url": "https://api.github.com/repos/LaurenzV/hayro/git/blobs/bca6b2834bf4ccdfdcd754ded28ee90739080d74",
+      "sha256": "e937cc1fd60c9972d92ffce3164b5940f5eb8ea088864582ebf96ea428eff679"
+    }
+  ]
+}

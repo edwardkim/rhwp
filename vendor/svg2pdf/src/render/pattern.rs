@@ -23,9 +23,16 @@ pub fn create(
 
     let pattern_rect = pattern.rect();
 
-    let pattern_matrix = matrix.pre_concat(pattern.transform()).pre_concat(
-        Transform::from_row(1.0, 0.0, 0.0, 1.0, pattern_rect.x(), pattern_rect.y()),
-    );
+    let pattern_matrix = matrix
+        .pre_concat(pattern.transform())
+        .pre_concat(Transform::from_row(
+            1.0,
+            0.0,
+            0.0,
+            1.0,
+            pattern_rect.x(),
+            pattern_rect.y(),
+        ));
 
     let mut content = Content::new();
     group::render(
@@ -50,8 +57,7 @@ pub fn create(
 
     // We already account for the x/y of the pattern by appending it to the matrix above, so here we just need to take the height / width
     // in consideration
-    let final_bbox =
-        pdf_writer::Rect::new(0.0, 0.0, pattern_rect.width(), pattern_rect.height());
+    let final_bbox = pdf_writer::Rect::new(0.0, 0.0, pattern_rect.width(), pattern_rect.height());
 
     tiling_pattern
         .tiling_type(TilingType::ConstantSpacing)

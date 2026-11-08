@@ -1,0 +1,72 @@
+{
+  "faces": [
+    {
+      "path": "/Applications/Hancom Office HWP Viewer.app/Contents/Resources/Hnc/Shared/TTF/Install/HANBatang.ttf",
+      "source": "/Applications/Hancom Office HWP Viewer.app/Contents/Resources/Hnc/Shared/TTF/Install/HANBatang.ttf",
+      "sourceSha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+      "sha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+      "faceIndex": 0,
+      "families": [
+        "HCR Batang",
+        "함초롬바탕"
+      ],
+      "weight": 400,
+      "style": "normal",
+      "nameDecodeWarnings": [],
+      "nameRecordErrors": [],
+      "repairs": []
+    },
+    {
+      "path": "/Applications/Hancom Office HWP Viewer.app/Contents/Resources/Hnc/Shared/TTF/Install/HANBatangB.ttf",
+      "source": "/Applications/Hancom Office HWP Viewer.app/Contents/Resources/Hnc/Shared/TTF/Install/HANBatangB.ttf",
+      "sourceSha256": "0d355f9766ffd1c7ec7648260611ddea9e12ea3c610423e552d52b921fc0f29f",
+      "sha256": "0d355f9766ffd1c7ec7648260611ddea9e12ea3c610423e552d52b921fc0f29f",
+      "faceIndex": 0,
+      "families": [
+        "HCR Batang",
+        "HCR Batang Bold",
+        "함초롬바탕",
+        "함초롬바탕 Bold"
+      ],
+      "weight": 700,
+      "style": "normal",
+      "nameDecodeWarnings": [],
+      "nameRecordErrors": [],
+      "repairs": []
+    },
+    {
+      "path": "/Applications/Hancom Office HWP Viewer.app/Contents/Resources/Hnc/Shared/TTF/Install/HANDotum.ttf",
+      "source": "/Applications/Hancom Office HWP Viewer.app/Contents/Resources/Hnc/Shared/TTF/Install/HANDotum.ttf",
+      "sourceSha256": "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+      "sha256": "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+      "faceIndex": 0,
+      "families": [
+        "HCR Dotum",
+        "함초롬돋움"
+      ],
+      "weight": 400,
+      "style": "normal",
+      "nameDecodeWarnings": [],
+      "nameRecordErrors": [],
+      "repairs": []
+    },
+    {
+      "path": "/Applications/Hancom Office HWP Viewer.app/Contents/Resources/Hnc/Shared/TTF/Install/HANDotumB.ttf",
+      "source": "/Applications/Hancom Office HWP Viewer.app/Contents/Resources/Hnc/Shared/TTF/Install/HANDotumB.ttf",
+      "sourceSha256": "5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51",
+      "sha256": "5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51",
+      "faceIndex": 0,
+      "families": [
+        "HCR Dotum",
+        "HCR Dotum Bold",
+        "함초롬돋움",
+        "함초롬돋움 Bold"
+      ],
+      "weight": 700,
+      "style": "normal",
+      "nameDecodeWarnings": [],
+      "nameRecordErrors": [],
+      "repairs": []
+    }
+  ]
+}

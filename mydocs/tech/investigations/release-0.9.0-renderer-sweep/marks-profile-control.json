@@ -1,0 +1,90 @@
+{
+  "browserVersion": "Chrome/152.0.7946.0",
+  "scope": "representative",
+  "sampleCount": 1,
+  "profiles": [
+    "screen",
+    "print"
+  ],
+  "canvaskitSurface": "auto",
+  "captureError": null,
+  "captureCount": 6,
+  "parity": {
+    "total": 4,
+    "compared": 4,
+    "passed": 4,
+    "failed": 0,
+    "missing": 0,
+    "errors": 0,
+    "identityMismatches": 0
+  },
+  "readiness": {
+    "total": 0,
+    "evaluated": 0,
+    "passed": 0,
+    "failed": 0,
+    "missing": 0
+  },
+  "inputs": [
+    {
+      "sampleId": "paragraph-text-marks",
+      "file": "lseg-05-tab.hwp",
+      "documentDigest": "sha256:0066108df04204324c0802414087563e7673e30f3d142dd014af14e318153d2c",
+      "page": 0,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen"
+    },
+    {
+      "sampleId": "paragraph-text-marks",
+      "file": "lseg-05-tab.hwp",
+      "documentDigest": "sha256:0066108df04204324c0802414087563e7673e30f3d142dd014af14e318153d2c",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "screen",
+      "actualProfile": "screen"
+    },
+    {
+      "sampleId": "paragraph-text-marks",
+      "file": "lseg-05-tab.hwp",
+      "documentDigest": "sha256:0066108df04204324c0802414087563e7673e30f3d142dd014af14e318153d2c",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "screen",
+      "actualProfile": "screen"
+    },
+    {
+      "sampleId": "paragraph-text-marks",
+      "file": "lseg-05-tab.hwp",
+      "documentDigest": "sha256:0066108df04204324c0802414087563e7673e30f3d142dd014af14e318153d2c",
+      "page": 0,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print"
+    },
+    {
+      "sampleId": "paragraph-text-marks",
+      "file": "lseg-05-tab.hwp",
+      "documentDigest": "sha256:0066108df04204324c0802414087563e7673e30f3d142dd014af14e318153d2c",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "print",
+      "actualProfile": "print"
+    },
+    {
+      "sampleId": "paragraph-text-marks",
+      "file": "lseg-05-tab.hwp",
+      "documentDigest": "sha256:0066108df04204324c0802414087563e7673e30f3d142dd014af14e318153d2c",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "print",
+      "actualProfile": "print"
+    }
+  ]
+}

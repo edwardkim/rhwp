@@ -3,10 +3,10 @@
 use crate::renderer::typeset::{
     column_def_design_spacing_px, controls, footnote_between_notes_margin_px,
     footnote_separator_overhead_px, hwpunit_to_px, is_synthetic_line_seg, para_has_visible_text,
-    paragraph, row_geometry_table, state, table, BlockTableContinuationSource, ColumnDef,
-    ComposedParagraph, Control, FootnoteShape, MeasuredTable, PageDef, PageLayoutInfo,
-    PaginationResult, Paragraph, ResolvedStyleSet, ResumablePaginationStep,
-    ResumableTablePaginationJob, TypesetEngine, TypesetState,
+    paragraph, state, table, BlockTableContinuationSource, ColumnDef, ComposedParagraph, Control,
+    FootnoteShape, MeasuredTable, PageDef, PageLayoutInfo, PaginationResult, Paragraph,
+    ResolvedStyleSet, ResumablePaginationStep, ResumableTablePaginationJob, TypesetEngine,
+    TypesetState,
 };
 
 impl TypesetEngine {
@@ -43,7 +43,7 @@ impl TypesetEngine {
         };
         if table.common.treat_as_char
             || !matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             || table.row_count <= 1
@@ -81,9 +81,9 @@ impl TypesetEngine {
             section_index,
             footnote_separator_overhead_px(footnote_shape, self.dpi),
             footnote_between_notes_margin_px(footnote_shape, self.dpi),
-            hwpunit_to_px(3000, self.dpi),
             column_def.column_type,
         );
+        state.configure_footnote_placement(footnote_shape.placement);
         state.initialize_source(
             hide_empty_line,
             profile,
@@ -92,8 +92,7 @@ impl TypesetEngine {
                 .any(|line| !is_synthetic_line_seg(line)),
             skip_spacing_before_prededuct,
         );
-        state.initialize_zone_spacing(column_def_design_spacing_px(column_def, self.dpi));
-        state.record_footer_presence(true);
+        state.initialize_zone_spacing(column_def_design_spacing_px(column_def, self.dpi), false);
         state.ensure_page();
 
         let column_width = state
@@ -164,8 +163,10 @@ impl TypesetEngine {
             control_index: job.control_index,
             paragraph,
             paragraphs_all,
+            // 재개 작업은 host 글이 없는 표만 받는다(`begin_resumable_table_pagination`).
+            composed_all: &[],
             table,
-            row_geometry_table: row_geometry_table(table),
+            row_geometry_table: measured_table.row_geometry_table(table),
             measured_table,
             styles,
         };

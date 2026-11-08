@@ -1,0 +1,22 @@
+[
+  {
+    "file": "hancom-original-save.hwpx",
+    "sha256": "2498ea4de362deeb5ca0c0dc8725d68e2f7b531297f630b821015db0736e6997",
+    "usage": "배치 정답지가 아닌 한컴 파일 형식의 enum 교차 저장 관측"
+  },
+  {
+    "file": "hancom-zoom-back.hwp",
+    "sha256": "7bca746a7f3ccb65b8495388d7d99fcf9dea95b63dac9b4c2d59de1c06a5dd1d",
+    "usage": "배치 정답지가 아닌 한컴 파일 형식의 enum 교차 저장 관측"
+  },
+  {
+    "file": "maintainer-total.hwpx",
+    "sha256": "3170b9bb12b8a1f381d5d02b704d90c23226c23cf48109a0f5a2b7808290465e",
+    "usage": "배치 정답지가 아닌 한컴 파일 형식의 enum 교차 저장 관측"
+  },
+  {
+    "file": "hancom-total-back.hwp",
+    "sha256": "caaf9395188294a70610d868d28aaeab6e18bb4838188e1e0d524727db439938",
+    "usage": "배치 정답지가 아닌 한컴 파일 형식의 enum 교차 저장 관측"
+  }
+]

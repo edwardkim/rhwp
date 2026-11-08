@@ -9,8 +9,7 @@ use rhwp::document_core::DocumentCore;
 use rhwp::model::paragraph::{CharShapeRef, Paragraph};
 use rhwp::paint::{LayerNode, LayerNodeKind, PaintOp};
 
-const SOURCE_HAN: &[u8] =
-    include_bytes!("../../ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf");
+const SOURCE_HAN: &[u8] = include_bytes!("../../ttfs/opensource/RHWPOldHangul-Regular.otf");
 const TEXT: &str = "가나다라마바사아자차";
 
 fn document_with_spacing(spacing: i8, content_width_hwp: u32) -> DocumentCore {
@@ -62,7 +61,9 @@ fn collect_text_runs<'a>(node: &'a LayerNode, runs: &mut Vec<(f64, &'a str)>) {
                 collect_text_runs(child, runs);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => collect_text_runs(child, runs),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            collect_text_runs(child, runs)
+        }
         LayerNodeKind::Leaf { ops } => {
             for op in ops {
                 if let PaintOp::TextRun { bbox, run, .. } = op {

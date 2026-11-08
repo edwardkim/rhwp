@@ -69,7 +69,7 @@ after(() => {
   }
 });
 
-test('five backend projections are deterministic and close all 831 registry rules', () => {
+test('five backend projections are deterministic and close all 854 active registry rules', () => {
   const registry = readRegistry();
   const first = buildProjectionBundle(registry);
   const second = buildProjectionBundle(registry);
@@ -81,14 +81,14 @@ test('five backend projections are deterministic and close all 831 registry rule
     registry,
   ), []);
   assert.equal(first.manifest.summary.outputCount, 5);
-  assert.equal(first.manifest.summary.activeRuleCount, 831);
+  assert.equal(first.manifest.summary.activeRuleCount, 854);
   assert.equal(first.manifest.summary.retiredRuleCount, registry.rules.filter(rule => rule.status === 'retired').length);
   assert.deepEqual(first.manifest.summary.countsByProjection, {
     'canvas2d-paint': 281,
-    'canvas2d-webfont': 153,
-    'canvaskit-sfnt': 158,
-    'rust-layout-metric': 68,
-    'rust-layout-name': 171,
+    'canvas2d-webfont': 159,
+    'canvaskit-sfnt': 164,
+    'rust-layout-metric': 71,
+    'rust-layout-name': 179,
   });
   assert.deepEqual(
     Object.fromEntries(first.outputs.map(output => [
@@ -97,11 +97,14 @@ test('five backend projections are deterministic and close all 831 registry rule
     ]).sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))),
     { ...SEALED_PROJECTION_SHA256,
       // Issue-scoped replacements preserve the sealed historical hashes above.
-      'canvas2d-webfont': 'b6ff0ce6d73634bc75b15d2ed20f70465d7a32f9c525b8030b365d7a7f464245',
-      // #7196: 같은 실물 글꼴의 한글 이름을 기존 영문 메트릭에 연결한다.
-      'rust-layout-metric': '10448dda2d70a29dba5346245af09d7e308262e94486e9a3da046b183921c44c',
-      // #6936 changes only the New Gulim layout-name decision.
-      'rust-layout-name': 'b619cf7584628d61d930696b1b9a8a6c9c08301b1343463cae054b7dc5c0f142',
+      // Existing #4969 supply rules were already active before #7958.
+      'canvas2d-webfont': '3a4759c7b701be8ee9552cf89ab7660abd6812df8990445a4548aa60bc87ad1c',
+      'canvaskit-sfnt': '4fafd58b3790c95660cf4100816854aa19d6260d9c35eb8d7a9c583290d9a15e',
+      // #7196 / #7966 / #7445: add only the verified public Batang metric identity.
+      'rust-layout-metric': 'fdca67b63b5f10b2f89fcf991e9d4d633461c1f1052dcc397884408af0e736ba',
+      // #7958 / #7959 / #7966 preserve PostScript name and full-face identities.
+      // #7445 adds a document-substitute field rule without changing primary aliases.
+      'rust-layout-name': '749f9cefc71c00116a80b475324d8abbf2a0d43ad3709a5a45f813f50a642c1f',
     },
   );
 });
@@ -219,7 +222,7 @@ test('retired rules remain in the registry but never reach runtime projections',
   const paint = bundle.outputs.find(output => output.projectionId === 'canvas2d-paint');
   assert.equal(paint.ruleCount, 280);
   assert.equal(paint.rows.some(row => row.ruleId === retired.ruleId), false);
-  assert.equal(bundle.manifest.summary.activeRuleCount, 830);
+  assert.equal(bundle.manifest.summary.activeRuleCount, 853);
   assert.equal(bundle.manifest.summary.retiredRuleCount, previousRetiredCount + 1);
 });
 
@@ -348,4 +351,38 @@ test('BatangChe supply retains serif paint without changing its metric rule', ()
   const metric = active.find(rule => rule.projections[0].id === 'rust-layout-metric');
   assert.equal(metric.targetFaceOrPolicy, 'BatangChe');
   assert.equal(supply.lifecycle.predecessorRuleIds.length, 1);
+});
+
+// The existing public trace links finite style decisions by this canonical
+// candidate identity. A schema-valid descriptive ruleId cannot satisfy it.
+test('layout-name rule IDs remain joinable by the public font decision trace', () => {
+  const registry = readRegistry();
+  for (const rule of registry.rules.filter(rule =>
+    rule.status === 'active' && rule.projections[0].id === 'rust-layout-name')) {
+    const identity = {
+      sourceBoundaryId: rule.sourceBoundaryId,
+      candidateKind: 'finite-mapping',
+      sourceFace: rule.sourceFace,
+      targetOrPolicy: rule.targetFaceOrPolicy,
+      conditions: rule.conditions,
+      order: rule.order,
+    };
+    assert.equal(rule.ruleId,
+      `rule.rust-style-resolution.${sha256Text(canonicalJson(identity)).slice(0, 20)}`,
+      rule.sourceFace);
+  }
+});
+
+
+test('missing-source public fallback is conditional and never an unconditional style alias', () => {
+  const active = readRegistry().rules.filter(rule => rule.status === 'active'
+    && rule.sourceFace === '하이텔울릉도제목체');
+  assert.equal(active.length, 1);
+  const [rule] = active;
+  assert.equal(rule.sourceBoundaryId, 'rust-style-resolution.missing-program');
+  assert.equal(rule.decisionPlane, 'layout-name');
+  assert.equal(rule.targetFaceOrPolicy, 'RHWP Public Batang');
+  assert.deepEqual(rule.conditions, {
+    availability: 'primary-and-document-substitute-missing', languageSlot: 'all',
+  });
 });

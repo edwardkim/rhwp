@@ -1,0 +1,83 @@
+[
+  {
+    "key": "header-hole",
+    "shiftPt": 20.0,
+    "sourceBytes": 17297,
+    "sourceSha256": "8237dce7fe5d462a53b6bb8a5d327c73610d96cc9f15ea9f972a00b8c7d6e1a5",
+    "referenceBytes": 17357,
+    "referenceSha256": "6dd1af6e9ee85bba3a8407b80078440b418abaa65670344d29a76c090ee9e1cd",
+    "derivation": "source PDF graphics cm from authored page margins, source shape extent and requested alignment; clipping unchanged or explicitly removed for normal control"
+  },
+  {
+    "key": "footer-top-hole",
+    "shiftPt": 240.0,
+    "sourceBytes": 17297,
+    "sourceSha256": "8237dce7fe5d462a53b6bb8a5d327c73610d96cc9f15ea9f972a00b8c7d6e1a5",
+    "referenceBytes": 17358,
+    "referenceSha256": "2b7c3ebfc1fb34c7a095b8a9ae35d37c97139a0b4b6b08e56ae83855e6239a76",
+    "derivation": "source PDF graphics cm from authored page margins, source shape extent and requested alignment; clipping unchanged or explicitly removed for normal control"
+  },
+  {
+    "key": "footer-center-hole",
+    "shiftPt": 263.39,
+    "sourceBytes": 17297,
+    "sourceSha256": "8237dce7fe5d462a53b6bb8a5d327c73610d96cc9f15ea9f972a00b8c7d6e1a5",
+    "referenceBytes": 17358,
+    "referenceSha256": "1b0b3afa20f06ee6e205b16600d5243b099adc56e278a60c8d8385817835b846",
+    "derivation": "source PDF graphics cm from authored page margins, source shape extent and requested alignment; clipping unchanged or explicitly removed for normal control"
+  },
+  {
+    "key": "footer-bottom-hole",
+    "shiftPt": 286.78000000000003,
+    "sourceBytes": 17297,
+    "sourceSha256": "8237dce7fe5d462a53b6bb8a5d327c73610d96cc9f15ea9f972a00b8c7d6e1a5",
+    "referenceBytes": 17360,
+    "referenceSha256": "9715a710279dcb77a3d90a4a038e78e82944429da283606c1f23ddf084efc189",
+    "derivation": "source PDF graphics cm from authored page margins, source shape extent and requested alignment; clipping unchanged or explicitly removed for normal control"
+  },
+  {
+    "key": "footer-no-room-hole",
+    "shiftPt": 290.0,
+    "sourceBytes": 17297,
+    "sourceSha256": "8237dce7fe5d462a53b6bb8a5d327c73610d96cc9f15ea9f972a00b8c7d6e1a5",
+    "referenceBytes": 17358,
+    "referenceSha256": "6f89880ec4cde1a04f9b1a1e868ccbf28a7045f3b2d2990dbbcc0fbf528678bf",
+    "derivation": "source PDF graphics cm from authored page margins, source shape extent and requested alignment; clipping unchanged or explicitly removed for normal control"
+  },
+  {
+    "key": "footer-bottom-curve",
+    "shiftPt": 286.78000000000003,
+    "sourceBytes": 17307,
+    "sourceSha256": "6b5aca87bf9c2b57ad2ffc920a99f4712f9422d9d182e1fc6322364db6222d5a",
+    "referenceBytes": 17371,
+    "referenceSha256": "f105db639e778f40d71d4108a899c48cc85a9686957526afcf7b3636a5ef8e14",
+    "derivation": "source PDF graphics cm from authored page margins, source shape extent and requested alignment; clipping unchanged or explicitly removed for normal control"
+  },
+  {
+    "key": "footer-bottom-parent",
+    "shiftPt": 286.78000000000003,
+    "sourceBytes": 17306,
+    "sourceSha256": "1109569e91ebe73fa70bcf09ff59f10e6f757c06102a370159eefa17d47da847",
+    "referenceBytes": 17368,
+    "referenceSha256": "1ad7df89ce6d6ea690aa86e529f7a65404aff2e0885b8bf2ab247180fb3de72b",
+    "derivation": "source PDF graphics cm from authored page margins, source shape extent and requested alignment; clipping unchanged or explicitly removed for normal control"
+  },
+  {
+    "key": "footer-bottom-unclipped",
+    "shiftPt": 286.78000000000003,
+    "sourceBytes": 17297,
+    "sourceSha256": "8237dce7fe5d462a53b6bb8a5d327c73610d96cc9f15ea9f972a00b8c7d6e1a5",
+    "referenceBytes": 17352,
+    "referenceSha256": "bc16e3603b14f456e10c80152a65f31e58d6e55c9dea03559934cc0e995db777",
+    "derivation": "source PDF graphics cm from authored page margins, source shape extent and requested alignment; clipping unchanged or explicitly removed for normal control"
+  },
+  {
+    "key": "header-unclipped",
+    "shiftPt": 20.0,
+    "sourceBytes": 17297,
+    "sourceSha256": "8237dce7fe5d462a53b6bb8a5d327c73610d96cc9f15ea9f972a00b8c7d6e1a5",
+    "referenceBytes": 17353,
+    "referenceSha256": "dafc938dd67f1d4f5108727e0ccdd6db9b7e3d77ca3101bd5745c8421c63442c",
+    "derivation": "source PDF graphics cm from authored page margins, source shape extent and requested alignment; clipping unchanged or explicitly removed for normal control"
+  }
+]

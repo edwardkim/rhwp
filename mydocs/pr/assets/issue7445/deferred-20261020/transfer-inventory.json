@@ -1,0 +1,246 @@
+{
+  "format_version": 1,
+  "scope": "2026-10-20 residual fidelity transfer; #7834-style whole source preservation",
+  "source_commit": "91ce04bdf0ac285d5e53a88f15a3e690baca2575",
+  "transfer_commit": "65ef09ad8d67e94babd9ce619465ee2c98e81369",
+  "runtime_base": "efc52afb738bd408ac821c4e156101b8d26e5cbd",
+  "observed_candidate": "a30dacfd037122ceacc65439ca03a1afc2bfe69c",
+  "metric": "silhouette_raw_match_percent",
+  "snapshots": [
+    {
+      "source_commit": "91ce04bdf0ac285d5e53a88f15a3e690baca2575",
+      "source_path": "tests/cases/issue_7644_stored_block_empty_paragraph.rs",
+      "archive_path": "mydocs/pr/assets/issue7445/deferred-20261020/tests/issue_7644_stored_block_empty_paragraph.rs.txt",
+      "git_blob": "3cf30e749ff43e93095fc4485edbee40be91d08a",
+      "bytes": 6385,
+      "sha256": "7b7a15d756a709bed59c98645a0584ea1243a85496735ced68f120103b579bca",
+      "test_functions": [
+        "stored_block_tail_preserves_child_cut_padding_and_the_empty_line_owner"
+      ],
+      "issue_numbers": [
+        7806
+      ],
+      "status": "retained-normal-contract",
+      "active_source_preserved": true,
+      "active_sha256": "7b7a15d756a709bed59c98645a0584ea1243a85496735ced68f120103b579bca"
+    },
+    {
+      "source_commit": "91ce04bdf0ac285d5e53a88f15a3e690baca2575",
+      "source_path": "tests/cases/issue_7677_rowbreak_host_line_after_last_fragment.rs",
+      "archive_path": "mydocs/pr/assets/issue7445/deferred-20261020/tests/issue_7677_rowbreak_host_line_after_last_fragment.rs.txt",
+      "git_blob": "583cae06d2dc8b29f052c1b5218afcc7295cdb87",
+      "bytes": 6907,
+      "sha256": "937a8f398e11c166ae78578a0f99e4cf911f8e5cf20f1691d9dfa3eedaa85d7d",
+      "test_functions": [
+        "host_line_after_the_last_fragment_sits_at_outer_bottom_not_spacing_before",
+        "host_text_is_not_drawn_twice_across_the_split",
+        "hwpx_without_stored_lines_follows_the_same_outer_bottom_rule"
+      ],
+      "issue_numbers": [
+        8100
+      ],
+      "status": "retained-normal-contract",
+      "active_source_preserved": true,
+      "active_sha256": "5c08f4cd1eb595657889228d4021705be4e1e8ad9c23457b047558ce1788b3dd"
+    },
+    {
+      "source_commit": "91ce04bdf0ac285d5e53a88f15a3e690baca2575",
+      "source_path": "tests/cases/issue_7678_float_host_post_text_line_split.rs",
+      "archive_path": "mydocs/pr/assets/issue7445/deferred-20261020/tests/issue_7678_float_host_post_text_line_split.rs.txt",
+      "git_blob": "277c06335a3d323c6e3d400e50f5e60ea0e785f8",
+      "bytes": 4124,
+      "sha256": "a0037cb6cd340e9ac4a711aad8a645dbe19e8290544aa5c55f3bfe84b471de60",
+      "test_functions": [
+        "host_text_after_float_table_splits_at_the_page_end_saved_hwp",
+        "host_text_after_float_table_splits_at_the_page_end_without_stored_lines"
+      ],
+      "issue_numbers": [
+        8100
+      ],
+      "status": "retained-normal-contract",
+      "active_source_preserved": true,
+      "active_sha256": "e8766dfa819579588c99e81a5bb22fb1513d30e2bea2a73e888f3bb60fda3864"
+    },
+    {
+      "source_commit": "91ce04bdf0ac285d5e53a88f15a3e690baca2575",
+      "source_path": "tests/cases/issue_7679_tac_table_after_host_line.rs",
+      "archive_path": "mydocs/pr/assets/issue7445/deferred-20261020/tests/issue_7679_tac_table_after_host_line.rs.txt",
+      "git_blob": "f91d2219b13b61e18cacb6e6bc583495b78a4cad",
+      "bytes": 4094,
+      "sha256": "ee1b9392131b34878c425280e7b43cc5f7942c3551bd90dd7d2418d179081e34",
+      "test_functions": [
+        "tac_table_after_host_line_does_not_take_spacing_before_again"
+      ],
+      "issue_numbers": [
+        8100
+      ],
+      "status": "retained-normal-hwp-contract",
+      "active_source_preserved": true,
+      "active_sha256": "ee1b9392131b34878c425280e7b43cc5f7942c3551bd90dd7d2418d179081e34"
+    },
+    {
+      "source_commit": "91ce04bdf0ac285d5e53a88f15a3e690baca2575",
+      "source_path": "tests/cases/issue_7695_footnote_page_tail_saved_lines.rs",
+      "archive_path": "mydocs/pr/assets/issue7445/deferred-20261020/tests/issue_7695_footnote_page_tail_saved_lines.rs.txt",
+      "git_blob": "6c893f084b46640e34e3249b61582dcc5af76e76",
+      "bytes": 3748,
+      "sha256": "4ce723256d4cdf3c5b7dae783866930cfe70ef3c191af733d8a74805d7dcc751",
+      "test_functions": [
+        "multi_line_paragraph_splits_at_stored_reset_above_footnote_area"
+      ],
+      "issue_numbers": [
+        8100
+      ],
+      "status": "retained-normal-hwp-contract",
+      "active_source_preserved": true,
+      "active_sha256": "4ce723256d4cdf3c5b7dae783866930cfe70ef3c191af733d8a74805d7dcc751"
+    },
+    {
+      "source_commit": "91ce04bdf0ac285d5e53a88f15a3e690baca2575",
+      "source_path": "tests/cases/issue_7874_stored_ladder_omitted_spacing_after.rs",
+      "archive_path": "mydocs/pr/assets/issue7445/deferred-20261020/tests/issue_7874_stored_ladder_omitted_spacing_after.rs.txt",
+      "git_blob": "009d11a48390b73fec53a516584ea671e17fba71",
+      "bytes": 3320,
+      "sha256": "734726858ce3d0bea4860b2d0e80a29a3c9821bb3d9eb676476e66919028cacb",
+      "test_functions": [
+        "paragraphs_keep_spacing_after_omitted_by_stored_ladder"
+      ],
+      "issue_numbers": [
+        8100
+      ],
+      "status": "removed-from-active-suite",
+      "active_source_preserved": false
+    },
+    {
+      "source_commit": "91ce04bdf0ac285d5e53a88f15a3e690baca2575",
+      "source_path": "tests/cases/issue_8060_joint_stored_row_restart.rs",
+      "archive_path": "mydocs/pr/assets/issue7445/deferred-20261020/tests/issue_8060_joint_stored_row_restart.rs.txt",
+      "git_blob": "68e52fb4349d08f82c071904ed5f988b5dd51478",
+      "bytes": 3978,
+      "sha256": "b2eb50aa09004cdcc4f1b447854eb1413d5f7b882002e5fe73a50837e386cd4b",
+      "test_functions": [
+        "joint_stored_row_restart_keeps_the_first_line_on_the_closing_page",
+        "row_restarts_at_different_heights_still_close_the_page"
+      ],
+      "issue_numbers": [
+        8060
+      ],
+      "status": "retained-normal-contract",
+      "active_source_preserved": true,
+      "active_sha256": "b2eb50aa09004cdcc4f1b447854eb1413d5f7b882002e5fe73a50837e386cd4b"
+    }
+  ],
+  "conditions": [
+    {
+      "target_key": "added-issue7677-float_push_spacing_before_continuation-2024-hwp",
+      "evidence_readme": "mydocs/pr/assets/issue7445/deferred-20261020/added-issue7677-float_push_spacing_before_continuation-2024-hwp/README.md",
+      "test_archives": [
+        "mydocs/pr/assets/issue7445/deferred-20261020/tests/issue_7677_rowbreak_host_line_after_last_fragment.rs.txt"
+      ],
+      "code_scope": "whole original test modules including helpers"
+    },
+    {
+      "target_key": "added-issue7677-float_push_spacing_before_continuation-hwpx",
+      "evidence_readme": "mydocs/pr/assets/issue7445/deferred-20261020/added-issue7677-float_push_spacing_before_continuation-hwpx/README.md",
+      "test_archives": [
+        "mydocs/pr/assets/issue7445/deferred-20261020/tests/issue_7677_rowbreak_host_line_after_last_fragment.rs.txt"
+      ],
+      "code_scope": "whole original test modules including helpers"
+    },
+    {
+      "target_key": "added-issue7678-float_push_spacing_before_continuation-2024-hwp",
+      "evidence_readme": "mydocs/pr/assets/issue7445/deferred-20261020/added-issue7678-float_push_spacing_before_continuation-2024-hwp/README.md",
+      "test_archives": [
+        "mydocs/pr/assets/issue7445/deferred-20261020/tests/issue_7678_float_host_post_text_line_split.rs.txt"
+      ],
+      "code_scope": "whole original test modules including helpers"
+    },
+    {
+      "target_key": "added-issue7678-float_push_spacing_before_continuation-hwpx",
+      "evidence_readme": "mydocs/pr/assets/issue7445/deferred-20261020/added-issue7678-float_push_spacing_before_continuation-hwpx/README.md",
+      "test_archives": [
+        "mydocs/pr/assets/issue7445/deferred-20261020/tests/issue_7678_float_host_post_text_line_split.rs.txt"
+      ],
+      "code_scope": "whole original test modules including helpers"
+    },
+    {
+      "target_key": "added-issue7679-tac-after-text-hwpx",
+      "evidence_readme": "mydocs/pr/assets/issue7445/deferred-20261020/added-issue7679-tac-after-text-hwpx/README.md",
+      "test_archives": [
+        "mydocs/pr/assets/issue7445/deferred-20261020/tests/issue_7679_tac_table_after_host_line.rs.txt"
+      ],
+      "code_scope": "whole original test modules including helpers"
+    },
+    {
+      "target_key": "added-issue7695-footnote-page-tail-hwpx",
+      "evidence_readme": "mydocs/pr/assets/issue7445/deferred-20261020/added-issue7695-footnote-page-tail-hwpx/README.md",
+      "test_archives": [
+        "mydocs/pr/assets/issue7445/deferred-20261020/tests/issue_7695_footnote_page_tail_saved_lines.rs.txt"
+      ],
+      "code_scope": "whole original test modules including helpers"
+    },
+    {
+      "target_key": "added-issue7874-omitted-spacing-after-hwpx",
+      "evidence_readme": "mydocs/pr/assets/issue7445/deferred-20261020/added-issue7874-omitted-spacing-after-hwpx/README.md",
+      "test_archives": [
+        "mydocs/pr/assets/issue7445/deferred-20261020/tests/issue_7874_stored_ladder_omitted_spacing_after.rs.txt"
+      ],
+      "code_scope": "whole original test modules including helpers"
+    },
+    {
+      "target_key": "added-issue8060-71352_lpg_regulatory_impact-hwp",
+      "evidence_readme": "mydocs/pr/assets/issue7445/deferred-20261020/added-issue8060-71352_lpg_regulatory_impact-hwp/README.md",
+      "test_archives": [
+        "mydocs/pr/assets/issue7445/deferred-20261020/tests/issue_8060_joint_stored_row_restart.rs.txt"
+      ],
+      "code_scope": "whole original test modules including helpers"
+    },
+    {
+      "target_key": "counter-22081993",
+      "evidence_readme": "mydocs/pr/assets/issue7445/deferred-20261020/counter-22081993/README.md",
+      "test_archives": [],
+      "code_scope": "visual-only/control condition; no dedicated Rust assertion was removed in this transfer"
+    },
+    {
+      "target_key": "footnote1937-control",
+      "evidence_readme": "mydocs/pr/assets/issue7445/deferred-20261020/footnote1937-control/README.md",
+      "test_archives": [],
+      "code_scope": "visual-only/control condition; no dedicated Rust assertion was removed in this transfer"
+    },
+    {
+      "target_key": "rowbreak-1480000-control",
+      "evidence_readme": "mydocs/pr/assets/issue7445/deferred-20261020/rowbreak-1480000-control/README.md",
+      "test_archives": [],
+      "code_scope": "visual-only/control condition; no dedicated Rust assertion was removed in this transfer"
+    },
+    {
+      "target_key": "rowbreak-1613000-control",
+      "evidence_readme": "mydocs/pr/assets/issue7445/deferred-20261020/rowbreak-1613000-control/README.md",
+      "test_archives": [],
+      "code_scope": "visual-only/control condition; no dedicated Rust assertion was removed in this transfer"
+    },
+    {
+      "target_key": "rowbreak-70833-control",
+      "evidence_readme": "mydocs/pr/assets/issue7445/deferred-20261020/rowbreak-70833-control/README.md",
+      "test_archives": [],
+      "code_scope": "visual-only/control condition; no dedicated Rust assertion was removed in this transfer"
+    },
+    {
+      "target_key": "source-pr8028",
+      "evidence_readme": "mydocs/pr/assets/issue7445/deferred-20261020/source-pr8028/README.md",
+      "test_archives": [],
+      "code_scope": "visual-only/control condition; no dedicated Rust assertion was removed in this transfer"
+    },
+    {
+      "target_key": "stored-empty-paragraph-56345",
+      "evidence_readme": "mydocs/pr/assets/issue7445/deferred-20261020/stored-empty-paragraph-56345/README.md",
+      "test_archives": [
+        "mydocs/pr/assets/issue7445/deferred-20261020/tests/issue_7644_stored_block_empty_paragraph.rs.txt"
+      ],
+      "code_scope": "whole original test modules including helpers"
+    }
+  ],
+  "restoration": "After whole Native/fresh WASM >=90%, page count/content/ownership and enlarged visual review, copy the archived full module back to source_path, resolve only recorded moved fixture paths and run canonical manifest --prepare/--check plus focused regressions. Preserve independently correct expectations. Snapshots of active normal contracts are reference copies and must not be collected as extra suites.",
+  "active_test_removal_count": 1,
+  "baseline_policy": "No baseline or explicit manifest row was removed by 65ef09ad8 for these modules. Only the #7874 module was deleted; generated suite/manifest is not archived as source."
+}

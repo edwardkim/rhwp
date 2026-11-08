@@ -1,3 +1,7 @@
+//! 고정형: 검사 대상 — PDF 내보내기 응답 형식과 오류 처리.
+//! 주석 갱신: 2026-11-01T06:05:18+09:00; 직전 파일 커밋: 2026-06-11T23:34:29+09:00 (`99fadab8c49f43c3906bdf1d1130e70fcd8df5ff`).
+//! 입력·기준: `samples/re-03-latin-only-hancom.hwp`와 PDF 내보내기 API.
+//! 출력 API 계약을 검사하며 화면 시각 일치율은 측정하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::error::HwpError;

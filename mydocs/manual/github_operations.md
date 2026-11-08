@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/github_operations.md
-last_verified: 2026-09-14
+last_verified: 2026-11-05
 ---
 
 # GitHub 저장소 운영 매뉴얼
@@ -20,7 +20,11 @@ roundtrip을 시작하지 않으며, Oracle advisory도 devel push를 구독하�
 없다는 이유로 병합 후 Full CI를 실행하거나 수동으로 재실행하지 않는다.
 
 `devel` push에서는 `Refresh nextest target duration data`가 실행 시간 메타데이터만 갱신한다.
-성공 PR CI의 정확한 head 또는 완전한 linear review-only 후행 변경을 확인한 후보에서 B/C/D
+단, PR CI의 trigger 생략 경로와 `AGENTS.md`, `CLAUDE.md`, `llms.txt`, 일반 `mydocs/**`만
+바뀐 push는 경로 필터로 생략한다. `mydocs/tech/canvaskit-parity-implementation.md`와
+`mydocs/tech/text-ir-v2.md`는 PR CI와 동일하게 렌더링 계약 문서로 분류해 실행한다.
+문서와 코드가 섞인 push 및 `devel`의 명시적인 `workflow_dispatch`는 계속 실행한다.
+성공 PR CI의 정확한 head 또는 완전한 linear review-only 후행 변경을 확인한 후보에서 B/C/D/E
 실측을 읽는다. artifact의 run/repository/head/PR/tested merge와 worker별 실제 attempt를
 검증하므로 lint만 재실행한 attempt 2에서도 성공 worker attempt 1의 실측을 사용할 수 있다.
 증거 누락·만료·불일치는 갱신 보류이며 검증 CI fallback이 아니다. 기록은
@@ -39,6 +43,28 @@ issue close 자동화는 업무 메타데이터 처리로 유지한다. release 
 push trigger 제거와 새 duration workflow는 해당 변경의 devel 병합부터 적용된다. 반면
 CI Impact Policy Controller의 `pull_request_target`/`workflow_run` 배선 변경은 기본 branch
 main에 정상 release된 뒤 활성화된다. policy 모듈은 live base에서 로드하므로 이를 구분해 보고한다.
+
+## Archive 분산과 로컬 실행 (#8267)
+
+기본 Rust CI는 A(lib)와 B/C/D/E(integration)의 다섯 archive를 각각 한 worker에서 실행한다.
+Integration target은 같은 고정 duration policy와 현재 source manifest로 배정하며, 다섯 archive의
+예상 runnable 수를 해당 worker의 실제 실행 수와 각각 대조한다. Worker timeout은 60분이고,
+archive builder는 checkout·setup 시간을 포함해 `release-test:60`·`release:60`분을 사용한다.
+Lint·Proptest는 45분, Frontend package는 60분이다. PR #8548에서 관측한 checkout 8–24분과
+후속 검사가 기존 20·30분 job 상한에 함께 계상되는 문제를 반영한 유한 상한이며,
+Cargo profile·검사 명령·assertion·required check는 그대로 유지한다. 정상 소요시간 목표는 아니다.
+
+로컬 전체 검증은 기존 `cargo nextest run --cargo-profile release-test --target-dir target/pr-review
+--tests --test-threads 12 --no-fail-fast`를 그대로 사용한다. 분할 자체를 재현할 때만
+`node scripts/rust-test-suite-manifest.mjs --prepare` 이후 Cargo metadata를
+`scripts/select-nextest-archive-targets.mjs --group integration-e --policy <policy.json>
+--manifest tests/suites/manifest.json`에 전달한다. B/C/D도 같은 방식이다.
+Duration 갱신기는 새 B/C/D/E 네 실측을 소비하며, 이전 B/C/D 세 실측은 trusted Jobs API에
+E caller가 없는 과거 실행임을 확인한 경우에만 구 layout으로 읽는다. 새 layout에서 E 누락은 실패다.
+
+루트 `AGENTS.md`·`CLAUDE.md`만 added/modified한 PR은 다섯 workflow의 review-only fast-pass와
+trusted policy가 같은 규칙을 사용한다. 코드·workflow와 함께 변경하거나 rename·삭제하면 이
+루트 문서 허용 항목으로 우회할 수 없다. [정확한 허용 범위](pr_review/review_only_fast_pass.md)를 따른다.
 
 ## 1. 목적과 범위
 
@@ -93,29 +119,57 @@ required check나 권한 변경을 단순 YAML 수정으로 취급하는 것도 
 7. **적용과 완료를 구분한다.** merge나 설정 변경은 적용일 뿐이다. 예상 event에서 기대한 run 또는
    no-run, required check, 비용·시간, 부작용과 rollback 가능성을 확인해야 완료다.
 
-### 2.3 이슈 폼 선택값의 자동 라벨링 (#7447)
+### 2.3 이슈 폼·자유 형식 보고서의 자동 라벨링 (#7447)
 
 `.github/ISSUE_TEMPLATE/`의 4개 폼은 사용 경로를 수집한다.
-`.github/workflows/issue-form-labels.yml`은 `issues.opened`와 본문이 바뀐 `issues.edited`에서
+`.github/workflows/issue-form-labels.yml`은 `issues.opened`와 본문·제목이 바뀐 `issues.edited`에서
 Studio → `rhwp-studio`, CLI → `cli`, 브라우저 확장 → `browser-extension`,
-라이브러리/API → `api`, MCP → `mcp`를 추가한다. OS·문서 형식·증상은 본문 정보로만 남긴다.
+라이브러리/API → `api`, MCP → `mcp`를 추가한다. 기존 완전한 폼의 기본 유형 라벨은 폼이
+담당한다. `Studio — 설명`, `CLI(native)`처럼 알려진 선택값 뒤에 설명을 붙인 경우도 단일
+사용 경로가 명확하면 처리한다. 복수 경로, 중복 필드, 여러 폼의 필수 필드가 섞이면 보류한다.
+
+자유 형식·GitHub API 등록 이슈에는 다음의 제한된 근거를 추가로 사용한다.
+
+- 제목에 명시한 Studio·CLI·브라우저 확장·API·MCP 또는 본문에 명시한
+  `rhwp-studio/`, `rhwp-chrome/`, `rhwp-firefox/`, `@rhwp/core`, `@rhwp/editor` 경로다.
+  여러 경로가 충돌하면 사용 경로만 보류한다. GitHub API로 등록했다는 사실은 `api` 근거가 아니다.
+  Visual Studio·Visual Studio Code·Android Studio라는 다른 IDE 이름은 Studio 근거에서 제외하되,
+  별도의 `[studio]` 표시나 `rhwp-studio/` 경로가 있으면 독립적인 근거로 사용한다.
+- 제목 선두의 `[Bug]`·`bug:`, `[Feature]`·`enhancement:`, `[Docs]`, `[Test]` 같은
+  명시적 유형을 각각 `bug`, `enhancement`, `documentation`, `test`로 대응한다.
+  같은 뜻의 한국어 표시도 지원한다. 서로 다른 유형 표시가 겹치면 유형 분류를 보류한다.
+  `[API]` 제목의 `API가 없다`와 본문의 별도 `제안하는 API입니다` 문장이 함께 있으면
+  미지원 API 제안으로 보고 `enhancement`를 선택한다. 저장 언급만으로 직렬화 결함을 추정하지 않는다.
+- 명확한 bug·enhancement 제목에서 글꼴·폰트·font를 명시하면 `font`, 조판·렌더링·rendering을
+  명시하면 `rendering`을 추가할 수 있다. 일반 본문 단어, OS, 문서 형식, 샘플 출처·생성 도구,
+  재현되지 않은 결함은 추정 분류하지 않는다. 명시적 유형이 없는 테스트·샘플 조사는 수동으로 남긴다.
+- 기존 사용 경로·유형 결정과 다른 자유 형식 추론은 보류한다. 완전한 폼의 명시적인 사용 경로
+  변경은 종전대로 추가 전용이다. 알 수 없는 폼 선택값을 제목·본문의 다른 언급으로 덮어쓰지 않는다.
+  완전한 폼의 미지원·복수 사용 경로와 중복·혼합 폼 구조는 유형·영역 추론도 수행하지 않는다.
+  불완전한 폼은 사용 경로를 보류하되 제목에 독립적으로 명시한 유형·영역은 분류할 수 있다.
 
 - **추가 전용**이다. Studio → CLI로 응답을 바꿔도 기존 Studio 라벨은 남는다.
   기존 라벨의 소유자를 추정해 삭제하지 않으며 잘못된 분류는 메인터너가 수동 정리한다.
 - 이슈 이벤트 이력에 제거된 기록이 있는 라벨은 재실행·응답 수정으로도 다시 붙이지 않는다.
   다시 필요하면 메인터너가 직접 추가한다. 자동화별 소유권 기록이나 자동 댓글은 만들지 않는다.
-- 최신 본문·라벨과 전체 제거 이력을 읽으며, 허용된 라벨이 저장소에 없으면 경고하고 건너뛴다.
-  일반 본문·알 수 없는 선택값은 건너뛰고 새 라벨은 생성하지 않는다.
+- 최신 제목·본문·라벨과 전체 제거 이력을 읽으며, 허용된 라벨이 저장소에 없으면 해당 라벨을
+  경고하고 건너뛴다. 독립적으로 판단된 다른 라벨은 처리할 수 있으며 새 라벨은 생성하지 않는다.
 - GitHub 응답은 수정 가능한 Markdown이므로 폼 출처 인증으로 취급하지 않는다. 알려진 폼의
-  제목 구조를 복사한 본문도 같은 입력으로 처리되지만 부여 가능한 라벨은 위 5개로 제한된다.
-- 본문을 실행하거나 로그에 출력하지 않는다. checkout 없이 SHA 고정 github-script와
+  제목 구조를 복사한 본문도 같은 입력으로 처리되지만 부여 가능한 라벨은 위 11개로 제한된다.
+- 코드 블록·인용·HTML 주석·URL은 근거에서 제외한다. 제목·본문을 실행하거나 로그에 출력하지 않는다.
+  `ambiguous-form`, `ambiguous-surface`, `ambiguous-kind`, `unknown-form-surface`, `incomplete-form`,
+  `no-surface-evidence`, `no-kind-evidence`, `existing-surface-decision`, `existing-kind-decision`,
+  `already-present`, `previously-removed`, `missing-repository-label`, `snapshot-changed`,
+  `not-open-issue`, `unsupported-event` 사유를 Actions 로그에 남긴다. 댓글은 생성하지 않는다.
+  checkout 없이 SHA 고정 github-script와
   `issues: write`만 사용하며 이슈별로 실행을 직렬화한다. 쓰기 직전 상태를 재확인하지만
   GitHub API의 읽기와 라벨 추가는 원자적 연산이 아니므로 동시 편집을 완전히 잠그지는 않는다.
 
 로컬 검증은 `node --test scripts/tests/issue-form-labels.test.mjs`와 YAML 파싱·actionlint로 한다.
 CI에서는 기존 Lint job의 `Validate workflow contracts` 단계가 같은 테스트를 실행한다.
 폼과 `issues` workflow는 기본 브랜치에서 활성화되므로 `devel` 병합과 `main` 적용을 구분한다.
-적용 후 실제 폼 표시, 이슈 생성·본문 수정의 라벨 추가, 기존/제거 라벨 보존과 Blank issue를 확인한다.
+적용 후 실제 폼 표시, 폼·자유 형식 이슈 생성과 본문·제목 수정의 라벨 추가, 기존/제거 라벨 보존과
+모호한 Blank issue의 보류 사유를 확인한다. 과거 이슈의 일괄 라벨링은 이 workflow의 실행 범위가 아니다.
 보안 신고는 기존 GitHub 보안 신고 경로를 유지하고, 사용법 질문은 config의 Discussions 링크로 안내한다.
 
 되돌릴 때는 해당 폼·workflow 변경을 revert한다. 이미 부여한 라벨을 일괄 삭제하지 않는다.
@@ -228,6 +282,26 @@ metadata와 ruleset 조회 결과를 함께 남긴다. secret은 목록과 갱�
 일반 변경은 최신 `upstream/devel` 기반 작업 branch에서 수행한다. workflow와 함께 그 계약을 고정하는
 테스트가 있으면 같은 변경에서 갱신한다. 주석만으로 정책을 보증하지 않는다.
 
+### 5.3.1 CI 테스트 호출 추가 기준
+
+테스트를 추가하거나 고칠 때는 기존 실행 경로를 우선 사용한다. `.github/workflows/ci.yml`에
+불필요한 개별 테스트 호출·전용 step·중복 job을 추가하지 않는다.
+
+1. 현재 `upstream/devel`을 fetch하고 기준 SHA의 workflow에서 실제 호출을 확인한다.
+   체리픽 검토에서는 커밋별 추가·삭제와 최종 base 대비 차이를 함께 확인한다. 앞선 PR 커밋이
+   추가한 호출을 후속 커밋이 되돌린 일을 기존 devel 검사의 삭제로 설명하지 않는다.
+2. 기존 자동 수집·생성 suite·논리 테스트 선택기와 필요한 feature/OS의 실행 경로를 확인한다.
+   기본 회귀가 이미 수집하는 case나 기존 Native 통합 검사에 포함된 검사는 그 경로로 실행한다.
+   Native 전용 검사를 default feature에서 수집했다는 사실만으로 실행됐다고 판단하지 않는다.
+3. 테스트 본체와 연결을 먼저 개선하고, 실제 test 목록·건수·결과로 새 검사의 실행을 확인한다.
+   0건 실행·전부 skip을 통과 근거로 쓰거나, 실패를 없애기 위해 workflow 호출·필터·검사를
+   제거하지 않는다. 기대값 보정에는 해당 검사의 독립 근거와 검증 절차를 적용한다.
+4. 기존 경로에서 실행되지 않는 검사가 실제로 확인된 경우에만 필요한 최소 CI 호출을 추가한다.
+   누락된 검사·feature/OS, 기존 경로로 해결할 수 없는 이유, 추가 뒤 실행 건수와 중복·비용을
+   기존 PR 기록에 남긴다. 새 검사를 만들었다는 이유만으로 CI 호출도 추가하지 않는다.
+5. 필요한 job command 변경에는 O3 검증과 fork 신뢰 경계를 적용한다. 기존 필수 검증 범위는
+   유지하며, 같은 검사를 여러 진입점에서 반복 실행하는 배선을 피한다.
+
 ### 5.4 적용 승인
 
 push 전에는 최신 base와 현재 head, diff, 로컬 검증, rollback을 보고한다. 메인테이너의 승인 뒤 push하고,
@@ -328,6 +402,10 @@ CI 영향 분류와 trigger mirror는 다음 파일에 있다.
 
 ### 7.5 workflow PR의 후행 review 기록
 
+후속 기록은 [옵션 2: 원 PR 병합 후 별도 기록 PR](pr_review/post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)로
+처리한다. workflow·action·CI 판정 정책을 수정한 원 PR에 문서-only trailing commit을 추가해
+전체 CI를 반복하지 않는다. 아래 trusted 재사용 기능의 존재는 이 운영 경로를 바꾸지 않는다.
+
 CI Impact Policy Controller의 감사 대상은 **base가 devel인 PR**이며 advisory로 유지한다.
 devel → main을 포함한 main 대상 PR, branch push, tag와 manual 실행은 감사·policy 게시 대상이
 아니다. 이 제외는 기존 main·릴리즈 CI나 Workflow promotion preflight를 없애는 정책이 아니다.
@@ -343,7 +421,7 @@ API pagination 경계, candidate의 fast-pass 실행, failed·pending run, GHAS 
 전부 Full 실행으로 fallback한다. 상세 허용 범위와 merge bridge 규칙은
 [review-only fast-pass](pr_review/review_only_fast_pass.md#a1-ci-실행-정책을-바꾼-pr의-trusted-재사용)를 따른다.
 
-발행 v6과 세 consumer의 지원 버전은 연결 테스트로 함께 검증한다. main 대상 PR은 trusted reuse
+발행 v7과 세 consumer의 지원 버전은 연결 테스트로 함께 검증한다. main 대상 PR은 trusted reuse
 조회 자체를 생략하며, devel 대상이라도 중복/누락 필드·다른 base·미지원 버전은 재사용하지 않는다.
 
 `workflow_run`의 branch 필터는 PR base가 아니다. 연결 PR이 하나이고 명확한 비devel 대상이면
@@ -392,17 +470,34 @@ mutation이므로 메인테이너 승인 뒤에만 실행한다. inventory에 �
 | --- | --- | --- |
 | Adapter inter-diff | `gh workflow run adapter-diff.yml --ref devel` | direct |
 | CI | `gh workflow run ci.yml --ref devel -f release_grade=false` | direct |
-| CodeQL | `gh workflow run codeql.yml --ref devel` | direct |
+| CodeQL | `gh workflow run codeql.yml --ref devel` | direct, JavaScript/TypeScript·Python·Rust·Actions 네 분석 job success 필수 |
 | Pages | `gh workflow run deploy-pages.yml --ref devel` | verify-only, Deploy job skipped |
 | Gym | `gh workflow run gym-release-gate.yml --ref devel -f mode=contracts` | contracts-only, full benchmark skipped |
+| Native host package | `gh workflow run ci.yml --ref devel -f release_grade=false -f native_host_package=true` | direct, 같은 commit의 reusable 호출, 3개 플랫폼 package job·artifact success 필수 |
 | Oracle advisory | `gh workflow run oracle-public-advisory.yml --ref devel` | verdict artifact 필수 |
 | Proptest roundtrip | `gh workflow run proptest-roundtrip.yml --ref devel` | direct |
 | Release Binary | `gh workflow run release-binary.yml --ref devel -f tag=test` | verify-only, Release·외부 publish skipped, 5-platform·package artifact 필수 |
 | Publish All Packages | `gh workflow run npm-publish.yml --ref devel -f publish=false -f publish_extensions=true` | verify-only, 네 외부 채널 skipped, `completed` verdict artifact 필수 |
 | Render Diff | `gh workflow run render-diff.yml --ref devel` | direct, artifact 필수 |
+| Full Renderer Sweep | `gh workflow run full-renderer-sweep.yml --ref devel -f corpus=representative` | direct, 실제 sweep와 artifact 필수 |
+| Fuzz smoke | `gh workflow run fuzz-smoke.yml --ref devel -f max_total_time=60` | direct, parser 6개 matrix job 모두 success |
+| Skill router gate | `gh workflow run skill-router-gate.yml --ref devel` | direct |
+| Layout anomaly advisory | `gh workflow run layout-anomaly-advisory.yml --ref devel` | 실제 scan의 `completed` verdict 필수; 발견한 조판 이상은 advisory 유지 |
+| Verify release WASM composite | 위 Publish All Packages의 같은 commit 호출 | verify-only, `release-wasm-validation` 및 package·publish verdict artifact 필수 |
+| CI Impact Policy Controller | 위 수동 CI의 Release operations contracts 호출 | contracts-only, write 권한 없이 정책·controller·실패 증거 계약 실행 |
 | Release operations contracts | 위 `gh workflow run ci.yml --ref devel -f release_grade=false`의 reusable job | contracts-only, issue label·duration refresh·trusted reuse의 실제 스크립트/API 실패 계약 |
 
-`build-nextest-archives.yml`과 `run-nextest-archives.yml`은 독립 dispatch 대신 같은 exact SHA의 CI caller run을 증적으로 쓴다. 각각 네 archive build/worker job과 CI preflight·Build & Test의 success를 모두 요구한다. metadata workflow 세 개와 `release-operations-contracts.yml`도 등록된 CI의 manual caller run을 사용하며, `CI preflight`, `Build & Test`, `release-operations-contracts / Release operations contracts`의 success를 모두 요구한다. 새 adapter를 main에 먼저 등록하지 않아도 같은 commit의 local reusable 호출로 검증할 수 있다. PR/push에서는 이 job을 실행하지 않는다. 원래 label/metrics 쓰기 이벤트를 실행하지 않으며, 공유 caller/adapter run에서도 각 변경 파일의 hash·mode·필수 job을 개별 유지한다. contracts-only는 실제 repository metadata 쓰기 성공의 증거와 구분한다. 독립 dispatch 표면은 10개다.
+`build-nextest-archives.yml`과 `run-nextest-archives.yml`은 독립 dispatch 대신 같은 exact SHA의 CI caller run을 증적으로 쓴다. 각각 다섯 archive build/worker job과 CI preflight·Build & Test의 success를 모두 요구한다. metadata workflow 네 개와 `release-operations-contracts.yml`도 등록된 CI의 manual caller run을 사용하며, `CI preflight`, `Build & Test`, `release-operations-contracts / Release operations contracts`의 success를 모두 요구한다. 새 adapter를 main에 먼저 등록하지 않아도 같은 commit의 local reusable 호출로 검증할 수 있다. PR/push에서는 이 job을 실행하지 않는다. 원래 label/metrics/status 쓰기 이벤트를 실행하지 않으며, 공유 caller/adapter run에서도 각 변경 파일의 hash·mode·필수 job을 개별 유지한다. contracts-only는 실제 repository metadata 쓰기 성공의 증거와 구분한다. 실행 횟수는 고정 숫자가 아니라 해당 inventory의 고유 `evidencePath`로 산출한다.
+
+Layout anomaly advisory의 job 성공만으로 승격하지 않는다. 빌드·실제 scan 종료·유효한 보고서와
+한 건 이상의 처리 결과를 확인하며, 입력 누락·파싱 오류·시간 초과·skip은 `incomplete`로 남긴다.
+실제 처리 중 발견한 `ANOMALY`는 기존 advisory 판정을 유지한다. 이 완료 증거를 required 품질
+check나 branch protection으로 승격하는 것은 아니다.
+
+Native host package는 기본값 false인 수동 입력을 켰을 때만 CI caller에서 실행한다. 새 workflow의
+기본 브랜치 등록 전에도 이 caller로 실행 증거를 만들며, PR/push와 일반 수동 CI에서는 package job을
+생략한다. promotion은 CI run의 `CI preflight`·`Build & Test`와
+`native-host-package / Package <platform>` 세 job 및 세 artifact를 함께 확인한다.
 
 `workflow_dispatch` API의 `ref`는 branch 또는 tag이므로 명령에 commit SHA를 직접 넘겨 exact성을
 보장하지 않는다. 따라서 dispatch 직전의 `candidate_sha`를 기록하고, 생성된 모든 run의

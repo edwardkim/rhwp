@@ -1,0 +1,10 @@
+{
+  "source": "a7feb849e11642b1438b7e9ee460ff4c8a7c946e",
+  "files": {
+    "src/model/paragraph.rs": "d7f640cb31e04994fae30e407eb929e0190b9a1a44ee252def95c2d751dd53e3",
+    "src/serializer/body_text.rs": "684a1fdb8afb5357db109755df283374d0157b62d64dbd941cf032019c539404",
+    "src/document_core/converters/hwpx_to_hwp.rs": "a1202f78174b7d187296208b8b880af9128ada00e1e25b6949594440a42c7c10",
+    "src/serializer/line_cache.rs": "8973f204008c077051515eb6eef2a327e47535887150505de7ac88c4a1ca515f",
+    "Cargo.lock": "60964851af87b670c2ee88a4f737c023beef42e4bc5f4ed6d9ca05faaca463db"
+  }
+}

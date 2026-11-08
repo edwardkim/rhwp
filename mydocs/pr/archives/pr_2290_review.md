@@ -25,7 +25,7 @@ PR은 다음 두 표 밀집 문서의 과소분할 결함을 보정한다.
   - SHA-256: `623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e`
 - 기준 PDF: HWP 2020 MCP print 결과 415쪽.
   - 검토 범위 p25-35 분리본:
-    [`pdf/task2287/1342000_edu_curriculum_map-2020-p025-p035.pdf`](../../../pdf/task2287/1342000_edu_curriculum_map-2020-p025-p035.pdf)
+    [`pdf/task2287/1342000_edu_curriculum_map-2020-p025-p035.pdf`](../assets/issue7445/education-curriculum-map/existing-pages025-035-excerpt.pdf)
   - 11쪽, 4,571,674 bytes, SHA-256
     `5f108f123b3ff4c1e5c6ca76072538a23e676e927a9b14fad799962de8c4cf7d`
 - 최종 head native SVG export: 380쪽. 기준 PDF와 문서 전체 쪽수는 아직 35쪽 차이가 나므로

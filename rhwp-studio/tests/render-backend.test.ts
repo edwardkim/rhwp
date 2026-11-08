@@ -2,6 +2,7 @@ import test from 'node:test';
 import { codeOnly } from './support/source-guard.ts';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { stripTypeScriptTypes } from 'node:module';
 
 import {
   clampRenderScale,
@@ -251,17 +252,23 @@ test('CanvasKit contains malformed images and bounds both decode caches', () => 
 
 test('CanvasKit translates a present missing-picture op without a profile gate', () => {
   const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
-  assert.match(codeOnly(source), /op\.kind === 'missingPicture'/);
-  assert.doesNotMatch(codeOnly(source), /profile === 'print' \|\| profile === 'highQuality'/);
+  const code = codeOnly(source);
+  const placeholder = code.slice(code.indexOf('private renderPlaceholder('), code.indexOf('private drawStyledShape('));
+  assert.match(placeholder, /private renderPlaceholder\(canvas: SkCanvas, op: LayerPlaceholderOp\): void/);
+  assert.match(placeholder, /op\.kind === 'missingPicture'/);
+  // Other paint operations may use the print profile. Missing-picture replay
+  // itself has no profile input and must keep its geometry in every profile.
+  assert.doesNotMatch(placeholder, /profile === 'print' \|\| profile === 'highQuality'/);
   assert.match(codeOnly(source), /this\.renderPlaceholder\(canvas, op\)/);
   assert.match(codeOnly(source), /MAX_PLACEHOLDER_DASH_SEGMENTS_PER_AXIS = 2048/);
   assert.match(source, /\.every\(Number\.isFinite\)/);
 });
 
-test('CanvasKit form replay accepts the canonical LayerTree form type names', () => {
+test('CanvasKit form replay consumes validated producer drawing rather than deriving control geometry', () => {
   const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
-  assert.match(codeOnly(source), /op\.formType === 'checkBox'/);
-  assert.match(codeOnly(source), /op\.formType === 'radioButton'/);
+  assert.match(codeOnly(source), /formDrawingReplayRejection\(op\)/);
+  assert.match(codeOnly(source), /const drawing = op\.drawing!/);
+  assert.match(codeOnly(source), /x: label\.x, y: label\.baseline/);
 });
 
 test('PageLayerTree bridge verifies the returned profile instead of relabeling it', () => {
@@ -372,12 +379,59 @@ test('[#5763] PageRenderer skips the flow-static split when an opaque flow fill 
   assert.match(source, /scan\.opaqueFlowFills\.some\(/);
 });
 
-test('CanvasKit and comparison canvas bitmap extents preserve fractional page edges', () => {
+test('CanvasKit은 공통 인쇄 종이의 소수 경계를 보존하고 편집 좌표는 원본으로 전달한다', () => {
   const pageRenderer = readFileSync(new URL('../src/view/page-renderer.ts', import.meta.url), 'utf8');
   const compareResult = readFileSync(new URL('../src/ui/compare-result-window.ts', import.meta.url), 'utf8');
 
-  assert.match(pageRenderer, /canvas\.width\s*=\s*Math\.max\(1,\s*Math\.ceil\(pageInfo\.width \* renderScale\)\)/);
-  assert.match(pageRenderer, /canvas\.height\s*=\s*Math\.max\(1,\s*Math\.ceil\(pageInfo\.height \* renderScale\)\)/);
+  // 제품 메서드를 그대로 실행한다. 조판 종이와 실제 인쇄 종이가 다른 경우도
+  // 포함해, 변수 이름이 아니라 표면의 우·하단 보존과 원본 좌표 전달을 검사한다.
+  const start = pageRenderer.indexOf('  private renderPageCanvasKit(');
+  const end = pageRenderer.indexOf('\n  /**', start);
+  assert(start >= 0 && end > start);
+  const executable = stripTypeScriptTypes(
+    `class Renderer {\n${pageRenderer.slice(start, end)}\n}`,
+    { mode: 'strip' },
+  );
+  const Renderer = new Function(`${executable}\nreturn Renderer;`)();
+  const cases = [
+    { profile: 'screen', layout: [100.25, 200.125], paper: [100.25, 200.125], scale: 1, pixels: [101, 201] },
+    { profile: 'print', layout: [100.25, 200.125], paper: [300.125, 400.25], scale: 1.5, pixels: [451, 601] },
+    { profile: 'print', layout: [300, 500], paper: [100.25, 200.125], scale: 2, pixels: [201, 401] },
+  ];
+  for (const item of cases) {
+    const pageInfo = { width: item.layout[0], height: item.layout[1] };
+    const tree = { pageWidth: item.paper[0], pageHeight: item.paper[1] };
+    const canvas = { width: 0, height: 0, parentElement: null };
+    const renderer = new Renderer();
+    renderer.renderProfile = item.profile;
+    renderer.canvaskitDiagnosticsByPage = new Map();
+    renderer.imageRetryCounts = new Map();
+    renderer.cancelReRender = () => {};
+    renderer.wasm = {
+      getPageInfo: (page: number) => { assert.equal(page, 7); return pageInfo; },
+      getPageLayerTreeObject: (page: number, profile: string) => {
+        assert.equal(page, 7);
+        assert.equal(profile, item.profile);
+        return tree;
+      },
+    };
+    let rendered = false;
+    renderer.canvaskitRenderer = {
+      diagnostics: () => ({}),
+      recordRenderFailure: (error: unknown) => { throw error; },
+      renderPage: (paint: unknown, target: unknown, scale: number, editPage: unknown) => {
+        assert.equal(paint, tree);
+        assert.equal(target, canvas);
+        assert.equal(scale, item.scale);
+        assert.equal(editPage, pageInfo);
+        assert.deepEqual([canvas.width, canvas.height], item.pixels, item.profile);
+        rendered = true;
+        return canvas;
+      },
+    };
+    assert.equal(renderer.renderPageCanvasKit(7, canvas, item.scale), canvas);
+    assert(rendered);
+  }
   assert.match(compareResult, /canvas\.width\s*=\s*Math\.max\(1,\s*Math\.ceil\(info\.width \* scale\)\)/);
   assert.match(compareResult, /canvas\.height\s*=\s*Math\.max\(1,\s*Math\.ceil\(info\.height \* scale\)\)/);
 });
@@ -819,12 +873,15 @@ test('CanvasKit image crop source follows the same HWPUNIT crop scale as SVG rep
   assert.equal(imageCropSelectionIsEmpty({ left: 0, top: 72900, right: 2096, bottom: 21632 }), true);
   assert.equal(imageCropSelectionIsEmpty({ left: 0, top: 0, right: 100, bottom: 100 }), false);
   assert.equal(imageCropSelectionIsEmpty(null), false);
-  // 자르기 없는 그림 — right/bottom 이 원본 전체 범위라 잘라 올 창이 없다.
-  assert.equal(
-    canvasKitImageSourceRect(2320, 354, { left: 0, top: 0, right: 102366, bottom: 26580 }),
-    null,
-  );
-  assert.equal(canvasKitImageSourceRect(2320, 354, { left: 0, top: 0, right: 174000, bottom: 26580 }), null);
+  // 기준 전체 크기가 없는 끝점은 무-crop이라는 증거가 아니다.
+  // 공통 단위로 환산한 창은 저장 crop의 종횡비를 유지한다.
+  const selection = canvasKitImageSourceRect(2320, 354, { left: 0, top: 0, right: 102366, bottom: 26580 });
+  assert.ok(selection);
+  assert.equal(selection.height, 354);
+  assert.ok(selection.width > 0 && selection.width < 2320);
+  assert.ok(Math.abs(selection.width / selection.height - 102366 / 26580) < 1e-9);
+  // 명시적 전체 기준 크기는 종횡비 추정 없이 두 축의 전 범위를 보존한다.
+  assert.equal(canvasKitImageSourceRect(2320, 354, { left: 0, top: 0, right: 174000, bottom: 26580 }, [174000, 26580]), null);
 
   // 156627451 1쪽 ② 로고 — 두 축을 모두 자른 그림. #6954 는 여기에 적응 배율을 써서
   // `x 104.05 / w 739.95` 를 고정했지만, 두 축 모두 crop 이 0 에서 시작하지 않으므로
@@ -859,14 +916,14 @@ test('image crop scale follows the rust fallback chain for both studio backends'
     { scaleX: 750, scaleY: 750 },
   );
 
-  // ② imgDim 이 없으면 시작이 0 인 축의 right/bottom 을 원본 전체 범위로 본다(#3239·#7015).
+  // ② imgDim 이 없으면 zero-origin 끝점의 후보로 공통 길이 단위를 유지한다.
   // #3239 200dpi 스캔 — 두 축 모두 자르지 않았으므로 두 축 모두 적응 배율(36 HU/px).
   const adaptive = imageCropScale(null, { left: 0, top: 0, right: 59520, bottom: 84240 }, 1654, 2340);
-  assert.ok(Math.abs(adaptive.scaleX - 59520 / 1654) < 1e-9);
-  assert.ok(Math.abs(adaptive.scaleY - 84240 / 2340) < 1e-9);
+  assert.equal(adaptive.scaleX, 7200 / 200);
+  assert.equal(adaptive.scaleY, 7200 / 200);
   assert.ok(adaptive.scaleX < HWPUNIT_PER_PIXEL, `scaleX=${adaptive.scaleX}`);
 
-  // 한 축만 전체 범위가 확인되면 그 배율을 두 축에 쓴다(30442 3쪽: x 축 75.0).
+  // 한 축만 후보로 사용할 수 있으면 그 배율을 두 축에 쓴다(30442 3쪽: x 축 75.0).
   const oneAxis = imageCropScale(null, { left: 0, top: 20745, right: 88560, bottom: 45453 }, 1181, 945);
   assert.ok(Math.abs(oneAxis.scaleX - 88560 / 1181) < 1e-9);
   assert.equal(oneAxis.scaleY, oneAxis.scaleX);
@@ -897,16 +954,18 @@ test('image crop scale follows the rust fallback chain for both studio backends'
     { scaleX: 500, scaleY: 500 },
   );
 
-  // 파리티 게이트 픽스처 `pic-crop-01` 2번 배너 — imgDim 이 없고 crop 이 원본 전체
-  // 범위다. 고정 75 HU/px 면 세로로 58.21px 만 잘라 와 70px 프레임에 늘려 그린다(+20%).
-  const banner = imageCropScale(null, { left: 0, top: 0, right: 47940, bottom: 4366 }, 639, 70);
-  assert.ok(Math.abs(4366 / banner.scaleY - 70) < 1e-9, `sourceHeight=${4366 / banner.scaleY}`);
-  assert.ok(Math.abs(4366 / HWPUNIT_PER_PIXEL - 58.21) < 0.01);
-
-  // 자를 것이 없으면 두 백엔드가 **함께** null 을 받는다. 한쪽만 소수점 창으로 다시
-  // 표본화하면 같은 그림이 다르게 그려져 파리티가 벌어진다(게이트 실측 2.17% > 2%).
-  assert.equal(imageCropSourceRect(639, 70, { left: 0, top: 0, right: 47940, bottom: 4366 }), null);
-  assert.equal(imageCropSourceRect(639, 70, { left: 0, top: 0, right: 47940, bottom: 5280 }), null);
+  // 동일 원문의 한컴 Print PDF: 첫 배너는 70행, 둘째는 약 58행만 보인다.
+  // imgDim 부재와 zero-origin만으로 아래쪽 자르기를 지우면 안 된다.
+  const secondCrop = { left: 0, top: 0, right: 47940, bottom: 4366 };
+  const second = imageCropSourceRect(639, 70, secondCrop);
+  const first = imageCropSourceRect(639, 70, { left: 0, top: 0, right: 47940, bottom: 5280 });
+  assert.ok(first && second);
+  assert.equal(first.height, 70);
+  assert.ok(first.width > 639 * 0.99 && first.width <= 639);
+  assert.equal(second.width, 639);
+  assert.ok(second.height > 57 && second.height < 60, `sourceHeight=${second.height}`);
+  assert.ok(second.height < first.height * 0.9);
+  assert.deepEqual(canvasKitImageSourceRect(639, 70, secondCrop), second);
 
   // CanvasKit 경로가 그 축척을 그대로 쓴다 — 같은 입력에서 잘라 오는 창이 일치한다.
   const crop = { left: 0, top: 20745, right: 88560, bottom: 45453 };
@@ -1189,7 +1248,7 @@ test('GlyphOutline payload resource keys are suppressed for incomplete payloads'
   }), null);
 });
 
-test('GlyphOutline COLRv1 gate reports unsupported graph node kind exactly', () => {
+test('GlyphOutline COLRv1 gate rejects an incomplete composite graph', () => {
   const status = glyphOutlinePayloadStatus({
     type: 'glyphOutline',
     bbox: { x: 0, y: 0, width: 10, height: 10 },
@@ -1203,7 +1262,7 @@ test('GlyphOutline COLRv1 gate reports unsupported graph node kind exactly', () 
     },
   }, { allowColrv1Stage1ColorGraph: true });
   assert.equal(status.reason, 'unsupportedColorGlyph');
-  assert.equal(status.detail, 'colrV1Node:composite');
+  assert.equal(status.detail, 'colrV1InvalidGraph');
 });
 
 test('GlyphOutline COLRv1 gradient graph subset can pass the explicit gate', () => {

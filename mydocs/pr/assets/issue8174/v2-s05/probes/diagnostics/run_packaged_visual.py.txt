@@ -1,0 +1,23 @@
+from pathlib import Path
+import json,os,subprocess,time,sys
+R=Path.cwd();O=R/'output/pr-review/issue8174/v2-s05-20261025';P=R/'output/pr-review/issue8174/v2-s04-20261025';runtime=sys.argv[1];assert runtime in ['native','wasm'];rows=[]
+env=dict(os.environ,VISUAL_SWEEP_CHROME='/home/edward/.cache/puppeteer/chrome-headless-shell/linux-155.0.8059.79/chrome-headless-shell-linux64/chrome-headless-shell')
+def run(name,args):
+ start=time.monotonic()
+ with (O/(name+'-'+runtime+'.log')).open('w') as log:r=subprocess.run(args,cwd=R,env=env,stdout=log,stderr=subprocess.STDOUT)
+ rows.append({'name':name,'runtime':runtime,'command':args,'exit_code':r.returncode,'seconds':time.monotonic()-start});(O/('visual-'+runtime+'-commands.json')).write_text(json.dumps(rows,indent=2)+'\n');print(name,runtime,r.returncode,round(rows[-1]['seconds'],2),flush=True)
+ if r.returncode:raise SystemExit(r.returncode)
+image=json.loads((P/'native-sweep-final-command.json').read_text());image[image.index('--out')+1]=str(O/'visual'/runtime);image[image.index('--rhwp-bin')+1]=str(O/'candidate-native/rhwp')
+for i,a in enumerate(image):
+ if a=='--file-target':image[i+2]=str(O/('final-consumer-pdf' if runtime=='native' else 'wasm-matrix')/(image[i+1]+'.hwpx'))
+if runtime=='wasm':image+=['--wasm-pkg',str(O/'wasm-on')]
+run('visual-images',image)
+old=json.loads((P/'final-visual-commands.json').read_text());form=next(r['command'] for r in old if r['name']=='form-final-tsv-native').copy();form[form.index('--out')+1]=str(O/'visual-forms'/runtime);form[form.index('--rhwp-bin')+1]=str(O/'candidate-native/rhwp')
+for i,a in enumerate(form):
+ if a=='--file-target':form[i+2]=str(R/'mydocs/pr/assets/issue8174/v2-s04/fixtures'/('button-calculation-scripted.hwp' if form[i+1]=='before' else 'button-after.hwp'))
+if runtime=='wasm':form+=['--wasm-pkg',str(O/'wasm-on')]
+run('visual-forms',form)
+control=[str(R/'venv/bin/python'),'scripts/visual_sweep.py','--silhouette-only','--out',str(O/'visual-controls'/runtime),'--rhwp-bin',str(O/'candidate-native/rhwp'),'--compat','2022','--dpi','96','--page-workers','2','--font-path','/mnt/c/Windows/Fonts','--file-target','table','samples/hwp_table_test.hwp','pdf/hwp_table_test-2022.pdf','--file-target','tac3','samples/issue6448/tac_cell_leftover_fits.hwpx','pdf/tac_cell_leftover_fits-2020.pdf']
+assert Path('/mnt/c/Windows/Fonts').is_dir()
+if runtime=='wasm':control+=['--wasm-pkg',str(O/'wasm-on')]
+run('visual-controls',control)

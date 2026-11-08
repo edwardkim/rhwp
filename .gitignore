@@ -68,6 +68,7 @@ Thumbs.db
 
 # 환경변수 (민감 정보)
 .env
+.env.local
 .env.docker
 
 # E2E 스크린샷

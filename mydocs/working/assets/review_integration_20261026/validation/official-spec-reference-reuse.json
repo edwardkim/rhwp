@@ -1,0 +1,42 @@
+{
+  "purpose": "Independent official Hancom reference reuse; this is not a successful new MCP Print.",
+  "input": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+  "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+  "pdf": "pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+  "pdf_sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+  "bytes": 830986,
+  "pages": 71,
+  "author": "(주)한글과컴퓨터",
+  "creator": "Hwp 2018 10.0.0.7282",
+  "producer": "Hancom PDF 1.3.0.532",
+  "source_lastSavedWith": {
+    "confidence": "metadata",
+    "product": "hancom-office-2018",
+    "version": "10.0.0.7282"
+  },
+  "original_source_path": "mydocs/pr/assets/issue7445/한글문서파일형식_5.0_revision1.3.hwp",
+  "source_and_pdf_bytes_identical_to": "b79d7af1d0e1f3de92b219b1de0cac0e7dbc9f8c",
+  "original_introduction_commit_reports": "Official source HWP SHA correspondence and official 71-page PDF of the identical saved product build.",
+  "new_mcp_print_attempts": [
+    {
+      "job_id": "d2686124-3f9a-41d9-a6c9-44cbbd4afc65",
+      "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+      "alias_used": false,
+      "status": "failed",
+      "error": "Hancom 2020 Print action unavailable",
+      "output_bytes": 0
+    },
+    {
+      "job_id": "d45fc2af-8415-4ede-8680-fc7a9023e684",
+      "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+      "alias_used": true,
+      "status": "failed",
+      "error": "Hancom 2020 Print action unavailable",
+      "output_bytes": 0
+    }
+  ],
+  "reuse_reason": "New 2020 Print unavailable on unchanged source bytes and ASCII alias. Existing official Hancom PDF has verified source correspondence and matching saved build. No byte/header bypass or alternate PDF export used.",
+  "restriction_interpretation": "Distribution header bit 2 does not prove a print prohibition; no such claim is made.",
+  "official_pdf_modified": false,
+  "spec_or_errata_edited": false
+}

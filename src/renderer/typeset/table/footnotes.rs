@@ -15,6 +15,8 @@ impl TypesetEngine {
         st: &mut TypesetState,
         footnote: &Footnote,
         source: FootnoteSource,
+        paragraphs: &[crate::model::paragraph::Paragraph],
+        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     ) {
         self.register_unqueued_table_footnote_with_content_height(
             st,
@@ -22,6 +24,32 @@ impl TypesetEngine {
             source,
             estimate_footnote_note_height(footnote, self.dpi),
         );
+        // 원본 HWP5의 줄 정보 없는 각주는 400HU 추정 대신 실제 각주 조판의
+        // 폭·줄 높이·빈 문단·구분선 간격을 예약한다. 뒤 본문과 마지막 빈 줄이
+        // paint 영역을 다시 사용할 수 없도록 같은 결과를 페이지 예산에 싣는다.
+        if st.col_count == 1
+            && st.profile.hwp5_stored_pagination_layout()
+            && footnote
+                .paragraphs
+                .iter()
+                .any(|para| para.line_segs.is_empty())
+        {
+            let refs = st
+                .pages
+                .last()
+                .map(|page| page.footnotes.as_slice())
+                .unwrap_or_default();
+            let height = crate::renderer::layout::LayoutEngine::new(self.dpi)
+                .estimate_footnote_area_height_with_metrics(
+                    refs,
+                    paragraphs,
+                    styles,
+                    st.footnote_area_width(),
+                    st.footnote_separator_overhead,
+                    st.footnote_between_notes_margin,
+                );
+            st.reserve_painted_footnote_area(height);
+        }
     }
 
     /// `register_unqueued_table_footnote`와 같은 owner/fragment 계약을 사용하되,
@@ -44,6 +72,7 @@ impl TypesetEngine {
             .filter(|split| split.force_next_page && st.col_count == 1);
         if let Some(split) = split {
             st.record_current_footnote(FootnoteRef {
+                column_index: 0,
                 number: footnote.number,
                 source: source.clone(),
                 fragment: Some(split.prefix),
@@ -51,6 +80,7 @@ impl TypesetEngine {
             st.add_footnote_fragment_height(split.prefix_height, split.prefix.draw_separator);
             st.force_new_page();
             st.record_current_footnote(FootnoteRef {
+                column_index: 0,
                 number: footnote.number,
                 source,
                 fragment: Some(split.suffix),
@@ -61,6 +91,7 @@ impl TypesetEngine {
         }
 
         st.record_current_footnote(FootnoteRef {
+            column_index: 0,
             number: footnote.number,
             source,
             fragment: None,
@@ -78,28 +109,28 @@ impl TypesetEngine {
         notes: &[TableCellFootnote],
         table: &crate::model::table::Table,
         paragraphs_all: &[crate::model::paragraph::Paragraph],
-        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+        styles: &crate::renderer::typeset::ResolvedStyleSet,
         layout_engine: &crate::renderer::layout::LayoutEngine,
         end_cut: &[usize],
         para_idx: usize,
         ctrl_idx: usize,
         fragment_start_row: usize,
         fragment_end_row: usize,
-        fragment_has_intra_row_cut: bool,
+        fragment_start_cut: &[usize],
         terminal_fragment: bool,
+        table_footnotes_follow_terminal: bool,
         relax_terminal_table_footnote_fit: bool,
         queued_fresh_page: bool,
     ) {
-        let body_bottom_queue = st.profile.hwpx_stored_layout() && st.col_count == 1;
+        // A single-column page has one physical footnote lane. Measure that
+        // lane through the same paragraph/control layout used by paint for
+        // every input container. A format-specific footer reclaim must not
+        // admit another note over an already accepted table fragment.
+        let body_bottom_queue = st.col_count == 1;
         let note_ref = |note: &TableCellFootnote, fragment| FootnoteRef {
+            column_index: 0,
             number: note.number,
-            source: FootnoteSource::TableCell {
-                para_index: para_idx,
-                table_control_index: ctrl_idx,
-                cell_index: note.cell_index,
-                cell_para_index: note.cell_para_index,
-                cell_control_index: note.cell_control_index,
-            },
+            source: FootnoteSource::table_cell_path(para_idx, ctrl_idx, &note.cell_path),
             fragment,
         };
         let painted_height = |st: &TypesetState, candidate: Option<FootnoteRef>| {
@@ -115,7 +146,7 @@ impl TypesetEngine {
                 &refs,
                 paragraphs_all,
                 styles,
-                st.layout.body_area.width,
+                st.footnote_area_width(),
                 st.footnote_separator_overhead,
                 st.footnote_between_notes_margin,
             )
@@ -133,9 +164,6 @@ impl TypesetEngine {
                     && st.current_height + projected <= physical_capacity + 0.5;
             }
             let draw_separator = fragment.map(|f| f.draw_separator).unwrap_or(true);
-            // 단일단의 중간 RowBreak fragment 뒤에는 같은 page에 이어질 본문이 없다.
-            // 다음 fragment가 새 page에서 시작하므로, 이 fragment의 table-cell 각주는
-            // 일반 본문 후속 배치를 위한 40px safety buffer를 중복 예약하지 않는다.
             // `current_height`는 flow origin 기준이고 FootnoteArea는 page-body 기준으로
             // 내려온다. native HWP5 table fragment에서는 이 두 origin의 차이만큼 table
             // 하단이 separator에 먼저 닿는다. queue 대상에만 32px 물리 guard를 둬
@@ -154,7 +182,6 @@ impl TypesetEngine {
             st.footnote_fragment_fits_current_page(
                 content_height,
                 draw_separator,
-                (terminal_fragment || st.col_count != 1) && !relax_terminal_table_footnote_fit,
                 table_footnote_overlap_guard,
             )
         };
@@ -163,14 +190,9 @@ impl TypesetEngine {
                         fragment: Option<FootnoteFragment>,
                         content_height: f64| {
             st.record_current_footnote(FootnoteRef {
+                column_index: 0,
                 number: note.number,
-                source: FootnoteSource::TableCell {
-                    para_index: para_idx,
-                    table_control_index: ctrl_idx,
-                    cell_index: note.cell_index,
-                    cell_para_index: note.cell_para_index,
-                    cell_control_index: note.cell_control_index,
-                },
+                source: FootnoteSource::table_cell_path(para_idx, ctrl_idx, &note.cell_path),
                 fragment,
             });
             let draw_separator = fragment
@@ -208,37 +230,61 @@ impl TypesetEngine {
         }
 
         while let Some(note) = notes.get(continuation.next_table_footnote) {
-            if st.profile.hwpx_stored_layout()
-                && !terminal_fragment
+            // A content cut owns the marker before a page budget can own its
+            // note. This is the same consumed CellUnit contract for HWP5 and
+            // HWPX; container format does not allow future markers to enter
+            // an earlier fragment's footnote lane. Keep source order so later
+            // notes cannot overtake a marker that is still on a future page.
+            if !terminal_fragment
                 && !queued_fresh_page
-                && !layout_engine.table_footnote_marker_precedes_cut(
+                && !layout_engine.table_footnote_path_precedes_cut(
                     table,
                     styles,
-                    note.cell_index,
-                    note.cell_para_index,
-                    note.cell_control_index,
+                    &note.cell_path,
                     fragment_end_row,
                     end_cut,
                 )
             {
                 break;
             }
+            // 조각이 다른 행의 중간에서 시작해도 이 표시를 온전히 소유할 수
+            // 있다. 전체 조각의 intra-row 여부로 거절하지 않고, paint와 같은
+            // CellUnit 컷 사이에 실제 표시가 소비됐는지 조회한다.
+            let marker_owned_in_fragment = !queued_fresh_page
+                && layout_engine.table_footnote_path_precedes_cut(
+                    table,
+                    styles,
+                    &note.cell_path,
+                    fragment_end_row,
+                    end_cut,
+                )
+                && !layout_engine.table_footnote_path_precedes_cut(
+                    table,
+                    styles,
+                    &note.cell_path,
+                    fragment_start_row + usize::from(!fragment_start_cut.is_empty()),
+                    fragment_start_cut,
+                );
             // [#5966] `force_next_page` 는 "이 각주를 다음 물리 쪽에 두라"는 저장
             // 지시다. 큐 소진을 위해 **강제로 연 새 쪽**에서는 이미 충족됐으므로
             // 일반 fit 경로(원자 배치)로 보낸다 — 종전에는 이 단락이 원자 배치를
             // 차단했고, 마커 행이 현재 fragment 밖이면 분할 필터도 기각해 빈 새
             // 쪽에서 진행 불가(디버그 불변식 패닉, 1130000-202100008: note 0
             // h=90.1px 가 avail 876.9px 에 들어가는데도 정지).
-            let force_source_page_split = !queued_fresh_page
+            // 표 끝이 소유하는 각주는 표시의 원래 행이 앞 조각에 있어도
+            // 이 terminal 영역이 본문을 소유한다. 새 쪽의 pending tail은 먼저 소비한다.
+            let terminal_note_owned_here =
+                terminal_fragment && table_footnotes_follow_terminal && !queued_fresh_page;
+            let note_owned_here = marker_owned_in_fragment || terminal_note_owned_here;
+            let force_source_page_split = note_owned_here
                 && note.fragment_split.is_some_and(|split| {
-                    split.force_next_page
+                    split.force_next_page || terminal_note_owned_here
                             // 유효한 HWPX 각주 영역 재시작은 표시가 속한
                             // 중간 표 조각 쪽에 속한다. 전체 각주 높이가 수치 예산에
                             // 들어가더라도 저장된 물리 경계를
                             // 수용 공간만으로 없애지 않는다.
                             || (st.profile.hwpx_stored_layout()
                                 && !terminal_fragment
-                                && !fragment_has_intra_row_cut
                                 && note.row >= fragment_start_row
                                 && note.row < fragment_end_row)
                 });
@@ -251,12 +297,12 @@ impl TypesetEngine {
                 // 명시한 다음 physical page이므로 terminal table에서도 보존한다
                 // (p176 note 234).
                 let split = note.fragment_split.filter(|split| {
-                    (!terminal_fragment || split.force_next_page)
+                    (!terminal_fragment || split.force_next_page || terminal_note_owned_here)
                         && st.col_count == 1
-                        && !fragment_has_intra_row_cut
+                        && note_owned_here
                         && continuation.pending_table_footnote_fragment.is_none()
-                        && note.row >= fragment_start_row
-                        && note.row < fragment_end_row
+                        && (terminal_note_owned_here
+                            || (note.row >= fragment_start_row && note.row < fragment_end_row))
                 });
                 let mut split_registered = false;
                 if let Some(split) = split
@@ -268,6 +314,10 @@ impl TypesetEngine {
                     if terminal_fragment && split.force_next_page {
                         st.force_new_page();
                         add_note(st, note, Some(split.suffix), split.suffix_height);
+                        // The accepted table belongs to the preceding page.
+                        // Preserve this new page's cursor just as the caller
+                        // does when it drains a pending suffix onto a fresh page.
+                        st.request_vpos_reset_after_queued_footnote();
                     } else {
                         continuation.pending_table_footnote_fragment =
                             Some(PendingTableFootnoteFragment {
@@ -277,7 +327,10 @@ impl TypesetEngine {
                     }
                     split_registered = true;
                 }
-                if !split_registered || !(terminal_fragment && force_source_page_split) {
+                if continuation.pending_table_footnote_fragment.is_some()
+                    || !split_registered
+                    || !(terminal_fragment && force_source_page_split)
+                {
                     break;
                 }
                 continue;
@@ -286,4 +339,35 @@ impl TypesetEngine {
             continuation.next_table_footnote += 1;
         }
     }
+}
+
+/// 표 칸 각주 앵커 가운데 표 위끝에서 가장 가까운 것의 세로 위치(px).
+///
+/// 행 위치는 `row_heights`(조각 컷이 쓰는 행 높이)와 칸 간격 `cs` 로 쌓고, 행 안 위치는
+/// 레이아웃의 문단 유닛 위치를 쓴다. 각주 앵커가 없거나 하나라도 위치를 잴 수 없으면
+/// `None` 이다 — 첫 단위 이월 판정과 첫 조각 재맞춤(#2097 `FN_REFIT`)이 같은 값을 쓴다.
+pub(in crate::renderer::typeset) fn first_table_footnote_anchor_offset(
+    layout_engine: &crate::renderer::layout::LayoutEngine,
+    table: &crate::model::table::Table,
+    styles: &crate::renderer::typeset::ResolvedStyleSet,
+    row_heights: &[f64],
+    cs: f64,
+) -> Option<f64> {
+    let mut first: Option<f64> = None;
+    for cell in &table.cells {
+        for (cp_idx, cp) in cell.paragraphs.iter().enumerate() {
+            if !cp
+                .controls
+                .iter()
+                .any(|c| matches!(c, crate::model::control::Control::Footnote(_)))
+            {
+                continue;
+            }
+            let row = (cell.row as usize).min(row_heights.len().saturating_sub(1));
+            let row_prefix: f64 = row_heights[..row].iter().map(|height| height + cs).sum();
+            let offset = layout_engine.cell_para_unit_offset(cell, table, styles, cp_idx)?;
+            first = Some(first.map_or(row_prefix + offset, |min| min.min(row_prefix + offset)));
+        }
+    }
+    first
 }

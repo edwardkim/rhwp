@@ -1,0 +1,35 @@
+[
+  {
+    "commit": "752e7d096a9559fc7f84574748549f5fe20ac694",
+    "prs": [
+      {
+        "number": 8622,
+        "title": "fix(renderer): planet6897 PR 39개 통합 및 표·글줄·PDF 가져오기 보정",
+        "state": "closed",
+        "merge_commit_sha": "6e1de406209ba9a58032f6ca6de45b18aa687d1c"
+      }
+    ]
+  },
+  {
+    "commit": "3b93a0f75c",
+    "prs": [
+      {
+        "number": 8622,
+        "title": "fix(renderer): planet6897 PR 39개 통합 및 표·글줄·PDF 가져오기 보정",
+        "state": "closed",
+        "merge_commit_sha": "6e1de406209ba9a58032f6ca6de45b18aa687d1c"
+      }
+    ]
+  },
+  {
+    "commit": "c45d89e236",
+    "prs": [
+      {
+        "number": 8622,
+        "title": "fix(renderer): planet6897 PR 39개 통합 및 표·글줄·PDF 가져오기 보정",
+        "state": "closed",
+        "merge_commit_sha": "6e1de406209ba9a58032f6ca6de45b18aa687d1c"
+      }
+    ]
+  }
+]

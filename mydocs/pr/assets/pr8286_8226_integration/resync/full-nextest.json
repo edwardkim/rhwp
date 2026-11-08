@@ -1,0 +1,27 @@
+{
+  "head": "ab1491d40b43c7d54941337b852f7e7f0a5eff5e",
+  "status": "passed",
+  "passed": 12789,
+  "failed": 0,
+  "skipped": 45,
+  "seconds": 557.763,
+  "testBinaries": 55,
+  "summary": "Summary [ 557.763s] 12789 tests run: 12789 passed (1 slow), 45 skipped",
+  "command": [
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--tests",
+    "--test-threads",
+    "3",
+    "--no-fail-fast"
+  ],
+  "environment": "Dedicated colima-r8286 container rhwp8286-final-validation, Rust 1.93.1, minimum fonts, CARGO_BUILD_JOBS=1",
+  "logSha256": "b9ba08769f90a4710a934688d4f5f5eb949a7e434969e327a0bb8636e472eedd",
+  "compileLogSha256": "70977309244ce31865b39a99dc65dd9ca1b5d23da8bd6f34cfa307f184d6cec2",
+  "initialFailure": "Before runtime, five cached ELF test binaries lacked execute bits; restored exact own ELF modes and restarted the complete suite",
+  "sourceOrExpectationsChanged": false
+}

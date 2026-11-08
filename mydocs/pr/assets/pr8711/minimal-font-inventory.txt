@@ -1,0 +1,5 @@
+/home/edward/mygithub/rhwp-worktrees/pr-8711-leading-definition-slots/ttfs/opensource/RHWPOldHangul-Regular.otf
+/home/edward/mygithub/rhwp-worktrees/pr-8711-leading-definition-slots/ttfs/opensource/NotoSansKR-ExtraLight.ttf
+/home/edward/mygithub/rhwp-worktrees/pr-8711-leading-definition-slots/ttfs/opensource/NotoSansSymbols2-Regular.ttf
+/home/edward/mygithub/rhwp-worktrees/pr-8711-leading-definition-slots/ttfs/opensource/NotoSansKR-Regular.ttf
+/home/edward/mygithub/rhwp-worktrees/pr-8711-leading-definition-slots/ttfs/opensource/RHWPPublicBatang-Regular.ttf

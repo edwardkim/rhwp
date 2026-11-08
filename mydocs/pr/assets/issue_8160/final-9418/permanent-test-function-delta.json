@@ -1,0 +1,87 @@
+{
+  "base_sha": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "test_head_sha": "ef69d163e05062f9c281968a0f9e0884a616aec3",
+  "rust_test_function_net": 6,
+  "new_contracts": {
+    "all_64_pages_per_requested_document": 3,
+    "legacy_equation_normal_controls": 2,
+    "selected_jamo_word_partition": 1
+  },
+  "corrected_existing_names_not_new": 3,
+  "restored_existing_native_border_contract": true,
+  "new_browser_contracts": 1,
+  "total_net_new_functions": 7,
+  "rows": [
+    {
+      "path": "tests/cases/hci_poppy_source_metric_contract.rs",
+      "before": 2,
+      "after": 2,
+      "added": [
+        "hci_poppy_measured_ascii_styles_use_source_advances_and_italic_keeps_display_metric"
+      ],
+      "removed": [
+        "hci_poppy_unmeasured_ascii_and_unverified_styles_keep_the_display_metric"
+      ],
+      "net": 0
+    },
+    {
+      "path": "tests/cases/issue_7292_tab_leader_head_gap.rs",
+      "before": 1,
+      "after": 1,
+      "added": [
+        "toc_first_dot_center_preserves_independent_head_gap"
+      ],
+      "removed": [
+        "toc_leader_starts_one_quarter_em_after_the_text"
+      ],
+      "net": 0
+    },
+    {
+      "path": "tests/cases/issue_7445_legacy_equation_source_contract.rs",
+      "before": 9,
+      "after": 11,
+      "added": [
+        "compound_fraction_color_keeps_the_same_frame_and_advance",
+        "compound_fraction_preserves_a_declared_frame_that_contains_its_natural_paint"
+      ],
+      "removed": [],
+      "net": 2
+    },
+    {
+      "path": "tests/cases/issue_7642_sample16_2022_paragraph_relations.rs",
+      "before": 3,
+      "after": 3,
+      "added": [
+        "sample16_2022_bcp_keeps_both_authored_rows_and_owned_successor"
+      ],
+      "removed": [
+        "sample16_2022_bcp_tail_keeps_print_line_ownership_and_source_successor"
+      ],
+      "net": 0
+    },
+    {
+      "path": "tests/cases/verified_hwp3_original_print_boundaries.rs",
+      "before": 4,
+      "after": 5,
+      "added": [
+        "selected_jamo_program_keeps_print_word_partition_and_source_ownership"
+      ],
+      "removed": [],
+      "net": 1
+    },
+    {
+      "path": "tests/cases/verified_sample16_all_pages.rs",
+      "before": 0,
+      "after": 3,
+      "added": [
+        "hwp2022_all_64_pages_preserve_independent_print_content_and_owners",
+        "hwp2024_all_64_pages_preserve_independent_print_content_and_owners",
+        "hwpx_all_64_pages_preserve_independent_print_content_and_owners"
+      ],
+      "removed": [],
+      "net": 3
+    }
+  ],
+  "prior_test_head_sha": "72c144f49c2531ee49fe9fd1b3b626052a7ee8e7",
+  "additional_existing_case_corrected_without_new_function": "issue_7445_hwp3_source_frame_ownership"
+}

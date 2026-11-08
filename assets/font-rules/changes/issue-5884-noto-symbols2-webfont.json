@@ -1,0 +1,64 @@
+{
+  "changeSetId": "issue-5884.noto-symbols2-webfont",
+  "decisionPlane": "supply",
+  "evidenceRecords": [
+    {
+      "evidenceId": "evidence.issue-5884.noto-symbols2-program",
+      "kind": "public-source",
+      "licenseOrProvenance": "SIL OFL 1.1 원본 Noto Sans Symbols2 Regular. font-program-evidence.json의 cmap/hmtx 직접 추출과 공개 라이선스를 보존한다.",
+      "parentEvidenceIds": [],
+      "sha256": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688",
+      "source": "rhwp-studio/public/fonts/NotoSansSymbols2-Regular.ttf"
+    }
+  ],
+  "expectedDelta": {
+    "activeRuleDelta": 1,
+    "projectionId": "canvas2d-webfont",
+    "unchangedProjectionIds": [
+      "rust-layout-name",
+      "rust-layout-metric",
+      "canvas2d-paint",
+      "canvaskit-sfnt"
+    ]
+  },
+  "issue": 5884,
+  "kind": "font-rule-change-set",
+  "operations": [
+    {
+      "operationId": "operation.issue-5884.noto-symbols2.webfont",
+      "rule": {
+        "conditions": {
+          "profile": "canvas2d-css-unknown"
+        },
+        "decisionPlane": "supply",
+        "evidenceIds": [
+          "evidence.issue-5884.noto-symbols2-program"
+        ],
+        "metricEntryIds": [],
+        "order": null,
+        "projection": {
+          "id": "canvas2d-webfont",
+          "mode": "direct"
+        },
+        "projectionSequence": 153,
+        "relationType": "supply-source",
+        "ruleId": "rule.issue-5884.noto-symbols2.webfont",
+        "sourceBoundaryId": "studio-supply.font-list",
+        "sourceFace": "Noto Sans Symbols2",
+        "supply": {
+          "external": false,
+          "fontFamily": "Noto Sans Symbols2",
+          "format": "truetype",
+          "kind": "canvas2d-webfont",
+          "sourceUrl": "fonts/NotoSansSymbols2-Regular.ttf",
+          "unicodeRange": null
+        },
+        "targetFaceOrPolicy": "'fonts/NotoSansSymbols2-Regular.ttf'"
+      },
+      "type": "add-rule"
+    }
+  ],
+  "parentRegistrySha256": "7f3147e68865b4e667230abd6049fb548945848b3360f14ef82e567bb4d1555c",
+  "schemaVersion": "2.0",
+  "sequence": 4
+}

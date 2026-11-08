@@ -1,0 +1,24 @@
+{
+  "job_id": "5cc99c9a-f703-4c27-9073-7a2f777eefc8",
+  "engine": "2024",
+  "hancom_version": "13.0.0.3901",
+  "backend": "hwp-managed-direct-dll-host",
+  "pdf_print_method": 0,
+  "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+  "input": "samples/hwp3-sample16-hwp5-2010.hwp",
+  "input_sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45",
+  "pdf": "pdf/hwp3-sample16-hwp5-2010-issue7723-mcp-2024.pdf",
+  "pdf_sha256": "4b03e8f1325654b423f4e2975890309c44b70cf3a1b1083879097aff2ad09c6a",
+  "pdf_page_count": 64,
+  "font_scope": {
+    "mode": "session0",
+    "status": "verified",
+    "profile_source": "protected_config",
+    "session_id": 0,
+    "mapped_font_count": 2,
+    "registered_font_count": 2,
+    "failed_font_count": 0,
+    "parent_visibility": "verified",
+    "child_visibility": "verified"
+  }
+}

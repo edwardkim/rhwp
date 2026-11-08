@@ -1,0 +1,31 @@
+[
+  {
+    "name": "rhwp",
+    "features": [
+      "console_error_panic_hook",
+      "default",
+      "pdf-icc",
+      "pdf-import",
+      "pdf-jbig2",
+      "pdf-jpeg2000",
+      "wasm-api"
+    ]
+  },
+  {
+    "name": "rhwp-pdf-import-backend",
+    "features": [
+      "icc-qcms",
+      "jbig2",
+      "jpeg2000",
+      "legacy-crypto"
+    ]
+  },
+  {
+    "name": "rhwp-qcms",
+    "features": [
+      "cmyk",
+      "default",
+      "iccv4-enabled"
+    ]
+  }
+]

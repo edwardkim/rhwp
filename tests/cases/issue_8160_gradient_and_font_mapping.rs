@@ -1,0 +1,142 @@
+//! #8160: sample16 회귀 검사 통합. 이전 등록: tests/issue_1008_gradient.rs
+//! Issue #1008 격차 A: HWP3 Shape 박스 배경 gradient IR 매핑 회귀 가드
+//!
+//! HWP3 raw stream 의 Hwp3DrawingObjectGradientAttr 는 이미 파싱되지만 (drawing.rs:149~170,
+//! basic_attr.has_gradient() 시 read), drawing.rs:792~806 의 Fill IR 구축에서 종전
+//! `fill_type=Solid, gradient=None` 으로 하드코딩되어 데이터가 무시되어왔음. 한컴 한글
+//! 정답지는 보라/라벤더 gradient — 본 회귀 가드는 HWP3 sample16 사업개요 박스 (pi=71)
+//! 의 fill.fill_type == Gradient 및 fill.gradient.is_some() 단언.
+
+use rhwp::model::control::Control;
+use rhwp::model::shape::ShapeObject;
+use rhwp::model::style::FillType;
+use rhwp::parser::hwp3::parse_hwp3;
+use rhwp::parser::parse_document;
+
+#[test]
+fn issue_8160_hwp3_sample16_business_box_has_gradient() {
+    let bytes = std::fs::read("samples/hwp3-sample16.hwp").expect("read hwp3-sample16.hwp");
+    let doc = parse_hwp3(&bytes).expect("parse hwp3-sample16.hwp");
+
+    // pi=71 사업개요 본문 박스 (1.추진목적) — Shape control 1 개
+    let para = &doc.sections[0].paragraphs[71];
+    let shape = para
+        .controls
+        .iter()
+        .find_map(|c| match c {
+            Control::Shape(s) => Some(s.as_ref()),
+            _ => None,
+        })
+        .expect("pi=71 에 Shape control 존재");
+
+    // 사각형 Shape 의 fill 단언
+    let rect = match shape {
+        ShapeObject::Rectangle(r) => r,
+        other => panic!("expected Rectangle, got {:?}", other),
+    };
+
+    assert_eq!(
+        rect.drawing.fill.fill_type,
+        FillType::Gradient,
+        "HWP3 Shape gradient_attr 이 IR Fill 에 매핑되어야 함 (격차 A)"
+    );
+
+    let grad = rect
+        .drawing
+        .fill
+        .gradient
+        .as_ref()
+        .expect("fill.gradient is Some");
+    assert!(
+        !grad.colors.is_empty(),
+        "gradient.colors 2-stop 이상 (start + end)"
+    );
+    assert_eq!(
+        grad.colors.len(),
+        2,
+        "HWP3 raw 는 start_color + end_color 2-stop"
+    );
+    assert_eq!(grad.step_center, 50, "전이 위치가 없는 V3는 중앙 전이");
+}
+
+/// HWPX shape-local fillBrush 의 `<hc:gradation><hc:color .../>` stop 파싱 회귀 가드.
+/// `samples/hwp3-sample16-hwp5.hwpx` 3쪽 사업개요 TAC 글상자는 그라데이션 채우기를 가지며,
+/// color stop 이 누락되면 SVG/WebCanvas 쪽에서 빈 gradient 가 생성되어 검정색으로 칠해진다.
+#[test]
+fn issue_8160_hwpx_sample16_business_box_gradient_colors_materialized() {
+    let bytes =
+        std::fs::read("samples/hwp3-sample16-hwp5.hwpx").expect("read hwp3-sample16-hwp5.hwpx");
+    let doc = parse_document(&bytes).expect("parse hwp3-sample16-hwp5.hwpx");
+
+    // HWPX 변환본도 pi=71 사업개요 본문 박스에 Shape control 이 존재한다.
+    let para = &doc.sections[0].paragraphs[71];
+    let shape = para
+        .controls
+        .iter()
+        .find_map(|c| match c {
+            Control::Shape(s) => Some(s.as_ref()),
+            _ => None,
+        })
+        .expect("pi=71 에 Shape control 존재");
+
+    let rect = match shape {
+        ShapeObject::Rectangle(r) => r,
+        other => panic!("expected Rectangle, got {:?}", other),
+    };
+
+    assert_eq!(
+        rect.drawing.fill.fill_type,
+        FillType::Gradient,
+        "HWPX shape fillBrush gradation 이 IR Fill::Gradient 로 매핑되어야 함"
+    );
+
+    let grad = rect
+        .drawing
+        .fill
+        .gradient
+        .as_ref()
+        .expect("fill.gradient is Some");
+    assert_eq!(
+        grad.colors,
+        vec![0x00F8CCC8, 0x00FFFFFF],
+        "HWPX shape-local gradation color stops 보존 필요"
+    );
+}
+
+// 원본의 작성 공백·제어 축·점선 및 최종 글상자 소유는 새 이름의
+// tests/cases/issue_8160_hwp3_print_boundaries.rs에서 보호한다.
+
+/// 격차 D: HWP3 legacy 폰트명 ("신명조" 등) → 한/글 변환기가 쓰는 이름 ("한양신명조" 등)
+/// 매핑 회귀 가드. 기대값은 한/글 변환본 `samples/hwp3-sample16-hwp5.hwp` 의 글꼴 이름이다
+/// (#7810 — 종전 기대값 `HY*` 는 한/글 변환본에 없는 별개의 TrueType 글꼴이었다).
+#[test]
+fn issue_8160_hwp3_sample16_font_name_mapped_to_hwp5_convention() {
+    let bytes = std::fs::read("samples/hwp3-sample16.hwp").expect("read hwp3-sample16.hwp");
+    let doc = parse_hwp3(&bytes).expect("parse hwp3-sample16.hwp");
+
+    let group0 = doc
+        .doc_info
+        .font_faces
+        .first()
+        .expect("group 0 (한글) 존재");
+
+    // HWP3 raw idx 1 = "신명조" 가 "한양신명조" 로 매핑된 후 alt_name 에 원본 보존
+    let f1 = &group0[1];
+    assert_eq!(
+        f1.name, "한양신명조",
+        "신명조 → 한양신명조 매핑 (격차 D, 한/글 변환기)"
+    );
+    assert_eq!(
+        f1.alt_name.as_deref(),
+        Some("신명조"),
+        "alt_name 에 원본 폰트명 보존"
+    );
+
+    // 다른 매핑 단언. sample16 변환본은 쓰지 않는 고딕을 뺐다 — 고딕을 고딕으로 두는
+    // 근거는 `hwp3-sample4-hwp5.hwp`·`hwp3-sample11-hwp5.hwp` 변환본이다.
+    assert_eq!(group0[0].name, "고딕", "고딕 → 고딕");
+    assert_eq!(group0[0].alt_name, None, "바뀌지 않은 이름은 alt_name 없음");
+    assert_eq!(group0[2].name, "한양중고딕", "중고딕 → 한양중고딕");
+    assert_eq!(group0[3].name, "한양견고딕", "견고딕 → 한양견고딕");
+    assert_eq!(group0[4].name, "한양그래픽", "그래픽 → 한양그래픽");
+}

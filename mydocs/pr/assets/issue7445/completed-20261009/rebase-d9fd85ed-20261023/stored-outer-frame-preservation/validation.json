@@ -1,0 +1,518 @@
+{
+  "parentHead": "a1c1096c38b1b29255ab35c0fd20f1ebbc7eebee",
+  "sourceProducer": {
+    "parentHead": "a1c1096c38b1b29255ab35c0fd20f1ebbc7eebee",
+    "base": "d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867",
+    "productionDiffSha256": "f735fea1686c8eecdf16ffebdeb742dfa889ba4d013e48be746af4652da2040a",
+    "sourceFiles": {
+      "src/renderer/layout/table_layout.rs": "c03bf279f18608f0ac12d14f21d0b35080e4d7a2e161307350bdb9bdf1b12cc7"
+    },
+    "sourceState": "Uncommitted common stored Square anchor footprint correction; preserve Stage88 per-fragment padding. Not accepted before focused/whole validation.",
+    "fullPrAcceptance": false
+  },
+  "regressionBeforeAfter": {
+    "testsSha256": "1aacdd084bd8534b3fe0508b0afcdc1f864e599decea7149701c7eb56e39d413",
+    "unchangedTests": true,
+    "restoredProductionHashes": {
+      "src/renderer/typeset/paragraph/flow.rs": "7826229b0e1af8497e2d5ab1b9eb0fea066c58164ef247bc89c9f5b4de7664d6",
+      "src/renderer/float_placement/stored_header_frame.rs": "583083874e0cb75c0007fdc9780d61cd9f138f34aa98e883198a4f161c9e78a7"
+    },
+    "tableCandidatePreserved": true,
+    "results": [
+      {
+        "phase": "biotoxin-before-stage85",
+        "exitCode": 100,
+        "seconds": 119.6766951084137,
+        "summary": [
+          "        FAIL [   0.627s] (4/5) rhwp::regression_suite_011 tac_picture_stored_rewind_next_page::sample_1480000_small_rewound_picture_keeps_its_page_and_caption",
+          "        FAIL [   0.637s] (5/5) rhwp::regression_suite_011 tac_picture_stored_rewind_next_page::sample_1480000_empty_host_keeps_the_table_outer_frame",
+          "     Summary [   0.638s] 5 tests run: 3 passed, 2 failed, 272 skipped",
+          "        FAIL [   0.627s] (4/5) rhwp::regression_suite_011 tac_picture_stored_rewind_next_page::sample_1480000_small_rewound_picture_keeps_its_page_and_caption",
+          "        FAIL [   0.637s] (5/5) rhwp::regression_suite_011 tac_picture_stored_rewind_next_page::sample_1480000_empty_host_keeps_the_table_outer_frame"
+        ]
+      },
+      {
+        "phase": "biotoxin-after-stage85",
+        "exitCode": 0,
+        "seconds": 120.73868179321289,
+        "summary": [
+          "     Summary [   0.642s] 5 tests run: 5 passed, 272 skipped"
+        ]
+      }
+    ],
+    "initialCompileErrorsAreNotFailureProof": true
+  },
+  "pr6813": {
+    "parentHead": "a1c1096c38b1b29255ab35c0fd20f1ebbc7eebee",
+    "before": {
+      "pass": 16,
+      "fail": 2,
+      "seconds": 0.165
+    },
+    "after": {
+      "pass": 18,
+      "fail": 0,
+      "seconds": 0.161
+    },
+    "testsChanged": false,
+    "sourceProducerSha256": "5e53c9e396f6250c6623ef1a4f4f0c12151edb8ae1ea9b7480c708dca51de789"
+  },
+  "biotoxinWhole": [
+    {
+      "backend": "native",
+      "pages": 205,
+      "counts": {
+        "rhwp": 205,
+        "pdf": 205
+      },
+      "minimumRaw": 98.42761,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage90-biotoxin-whole/native/biotoxin205/silhouette.tsv",
+      "tsvSha256": "6cdbb1d6e933608d3a45e788d6add659b450d721ed0884d849ddf12ca5b97828"
+    },
+    {
+      "backend": "wasm",
+      "pages": 205,
+      "counts": {
+        "rhwp": 205,
+        "pdf": 205
+      },
+      "minimumRaw": 98.42748,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage90-biotoxin-whole/wasm/biotoxin205/silhouette.tsv",
+      "tsvSha256": "ec6580946f1bec055c9f943400112b8d42a8841f559cc58f645ca027cd229024"
+    }
+  ],
+  "focus": [
+    {
+      "case": "press12",
+      "backend": "native",
+      "counts": {
+        "rhwp": 12,
+        "pdf": 12
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "98.42100"
+        },
+        {
+          "page": 2,
+          "raw": "94.23037"
+        },
+        {
+          "page": 3,
+          "raw": "99.28344"
+        },
+        {
+          "page": 4,
+          "raw": "99.99417"
+        },
+        {
+          "page": 5,
+          "raw": "97.97228"
+        },
+        {
+          "page": 6,
+          "raw": "99.89040"
+        },
+        {
+          "page": 7,
+          "raw": "99.59874"
+        },
+        {
+          "page": 8,
+          "raw": "99.40529"
+        },
+        {
+          "page": 9,
+          "raw": "98.18322"
+        },
+        {
+          "page": 10,
+          "raw": "99.53225"
+        },
+        {
+          "page": 11,
+          "raw": "99.94619"
+        },
+        {
+          "page": 12,
+          "raw": "99.25420"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage90-padding-preservation/focus/native/press12/silhouette.tsv",
+      "tsvSha256": "326ecdf7327ed6aba6e18eb0a1d46834410fb122969d4ef2a64dad5a6d3cfd9d"
+    },
+    {
+      "case": "ktx003",
+      "backend": "native",
+      "counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "99.36494"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage90-padding-preservation/focus/native/ktx003/silhouette.tsv",
+      "tsvSha256": "c048e8751248af75d1e4b7e38a1dbae56d5dc7a7e4d3ca0275bb6c15b49d18e1"
+    },
+    {
+      "case": "low-slack6535",
+      "backend": "native",
+      "counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "99.99852"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage90-padding-preservation/focus/native/low-slack6535/silhouette.tsv",
+      "tsvSha256": "c695e53ec9ac7f79dd928c699d70782ae3fe14f9a71966d32c528cf38f73af4a"
+    },
+    {
+      "case": "missing-lineseg1",
+      "backend": "native",
+      "counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "98.02990"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage90-padding-preservation/focus/native/missing-lineseg1/silhouette.tsv",
+      "tsvSha256": "4f8c8c80b4e18d34292841274662d94f68ec2146ceceefa14e8f4d5715e9afdd"
+    },
+    {
+      "case": "roadmap302",
+      "backend": "native",
+      "counts": {
+        "rhwp": 302,
+        "pdf": 302
+      },
+      "pages": [
+        {
+          "page": 153,
+          "raw": "100.00000"
+        },
+        {
+          "page": 295,
+          "raw": "98.96693"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage90-padding-preservation/focus/native/roadmap302/silhouette.tsv",
+      "tsvSha256": "982efe221c81a2235d088a30920ceb00d9be10af4418c913ec3fab9a01048f2f"
+    },
+    {
+      "case": "pr6813-korean-control",
+      "backend": "native",
+      "counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "98.57113"
+        },
+        {
+          "page": 2,
+          "raw": "93.68608"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage90-padding-preservation/focus/native/pr6813-korean-control/silhouette.tsv",
+      "tsvSha256": "836192d7ef4fd62db6b47ad04d1480ecce0284cd3293a5d8714119b9e22bace8"
+    },
+    {
+      "case": "press12",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 12,
+        "pdf": 12
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "98.41857"
+        },
+        {
+          "page": 2,
+          "raw": "94.18582"
+        },
+        {
+          "page": 3,
+          "raw": "99.21432"
+        },
+        {
+          "page": 4,
+          "raw": "99.99414"
+        },
+        {
+          "page": 5,
+          "raw": "97.96902"
+        },
+        {
+          "page": 6,
+          "raw": "99.88983"
+        },
+        {
+          "page": 7,
+          "raw": "99.37655"
+        },
+        {
+          "page": 8,
+          "raw": "99.33437"
+        },
+        {
+          "page": 9,
+          "raw": "98.12385"
+        },
+        {
+          "page": 10,
+          "raw": "99.52953"
+        },
+        {
+          "page": 11,
+          "raw": "99.94581"
+        },
+        {
+          "page": 12,
+          "raw": "99.25121"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage90-padding-preservation/focus/wasm/press12/silhouette.tsv",
+      "tsvSha256": "8ddc5c0267b07a3999151972a12e19bd6afa0e2ad02da08616bdcb13ce319c89"
+    },
+    {
+      "case": "ktx003",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "99.38975"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage90-padding-preservation/focus/wasm/ktx003/silhouette.tsv",
+      "tsvSha256": "1a03196c04a41d2d1bfd1b1140f40be92af65378d9ca275fe41e808f812e4d04"
+    },
+    {
+      "case": "low-slack6535",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "99.99851"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage90-padding-preservation/focus/wasm/low-slack6535/silhouette.tsv",
+      "tsvSha256": "5d4dd369a7994ef2752a30f0fb5551976a6aebc89be0847b46f4c88745aa37c1"
+    },
+    {
+      "case": "missing-lineseg1",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "98.02479"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage90-padding-preservation/focus/wasm/missing-lineseg1/silhouette.tsv",
+      "tsvSha256": "a6764df49f043a046f0ed32dc668f53edf69341823273f99005133d15823dc1a"
+    },
+    {
+      "case": "roadmap302",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 302,
+        "pdf": 302
+      },
+      "pages": [
+        {
+          "page": 153,
+          "raw": "100.00000"
+        },
+        {
+          "page": 295,
+          "raw": "98.96600"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage90-padding-preservation/focus/wasm/roadmap302/silhouette.tsv",
+      "tsvSha256": "b17b18868668ab04bdd97a4e2abd9e7d1e052c95ea8da7f18ccc4bd60c75ceb9"
+    },
+    {
+      "case": "pr6813-korean-control",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "98.99133"
+        },
+        {
+          "page": 2,
+          "raw": "93.89238"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage90-padding-preservation/focus/wasm/pr6813-korean-control/silhouette.tsv",
+      "tsvSha256": "4c57ffb1c731b44950ac6c02a70cce3ce81d637f692caa94cc79cc434bd4e0c6"
+    }
+  ],
+  "native": {
+    "binarySha256": "cfe9343574bfb310ccdd03a34c47dcc59c278193da7facc1d15f6ae95cd221f0",
+    "sourceProducerSha256": "5e53c9e396f6250c6623ef1a4f4f0c12151edb8ae1ea9b7480c708dca51de789"
+  },
+  "wasm": {
+    "files": {
+      "rhwp.js": "56b2836e71bbbde64097476cb009303b8eeff61777c480cae82a238cf4d47af3",
+      "rhwp_bg.wasm": "2f2493533b96dbe603bbfa9e7a410d1db1c988d5ee70f033ad13ec8bafd9c72f"
+    },
+    "rootAndStudioPublicMatch": true,
+    "method": "Mac locked wrapper --target web --out-dir pkg --no-opt; local substitute, not Docker optimized",
+    "sourceProducerSha256": "5e53c9e396f6250c6623ef1a4f4f0c12151edb8ae1ea9b7480c708dca51de789"
+  },
+  "directReview": {
+    "inspectedBeforeTests": true,
+    "findings": "Native/WASM p11 table/caption/borders and p80 graph/caption/body/order match independent Print. Text raster edges remain; no lost symbols, page-owner discrepancy or overlap observed.",
+    "artifacts": [
+      {
+        "backend": "native",
+        "pages": [
+          11,
+          80
+        ],
+        "overlayPageIndex": "Correct zero-based 10/79; initial diagnostic title had +1 but page PNG input was correct",
+        "reviewFiles": [
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage90-biotoxin-whole/native/biotoxin205/review/review_011.png",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage90-biotoxin-whole/native/biotoxin205/review/review_080.png"
+        ]
+      },
+      {
+        "backend": "wasm",
+        "pages": [
+          11,
+          80
+        ],
+        "overlayPageIndex": "Correct zero-based 10/79; initial diagnostic title had +1 but page PNG input was correct",
+        "reviewFiles": [
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage90-biotoxin-whole/wasm/biotoxin205/review/review_011.png",
+          "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage90-biotoxin-whole/wasm/biotoxin205/review/review_080.png"
+        ]
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "native-biotoxin205.tsv",
+      "sha256": "6cdbb1d6e933608d3a45e788d6add659b450d721ed0884d849ddf12ca5b97828"
+    },
+    {
+      "path": "native-biotoxin-p011-review.png",
+      "sha256": "ee90a4a9ce4604b0b1b6160ceddce73e9de31d545e2c9ec67b38fe33841ae7b0"
+    },
+    {
+      "path": "native-biotoxin-p011-overlay.png",
+      "sha256": "d1b70c0b5e62dfa6f080a5ecad04bfea5398f3766a7eaf83b0598abef6498acd"
+    },
+    {
+      "path": "native-biotoxin-p080-review.png",
+      "sha256": "a091bcddea16bd7bd7ef929efd82270c7a63536536c227cc570f6ff05a52cccf"
+    },
+    {
+      "path": "native-biotoxin-p080-overlay.png",
+      "sha256": "12fc40d160302da83ad6f3f28d82e4d0a6ab0e381e41f0fb0696557c9e9d607e"
+    },
+    {
+      "path": "native-pr6813-base.tsv",
+      "sha256": "6c60f58948b66cbd118c0bf3c895da5fbfb6325dabda1312a8c5d66dd2074106"
+    },
+    {
+      "path": "native-pr6813-candidate.tsv",
+      "sha256": "836192d7ef4fd62db6b47ad04d1480ecce0284cd3293a5d8714119b9e22bace8"
+    },
+    {
+      "path": "native-pr6813-p002-review.png",
+      "sha256": "ca1f1140f02b727edc2ad091eedbe5a19959393804a8f422b2046d8926108feb"
+    },
+    {
+      "path": "native-pr6813-p002-overlay.png",
+      "sha256": "861ab6a5fbc3a29dd094f89374d034affdcc91eec71c4b7e7daaec56b5a94ecc"
+    },
+    {
+      "path": "wasm-biotoxin205.tsv",
+      "sha256": "ec6580946f1bec055c9f943400112b8d42a8841f559cc58f645ca027cd229024"
+    },
+    {
+      "path": "wasm-biotoxin-p011-review.png",
+      "sha256": "fc934f74ed261ea98ca401910e6855e4729e1fab56bdbabd67b4343d9ac18e67"
+    },
+    {
+      "path": "wasm-biotoxin-p011-overlay.png",
+      "sha256": "2b85a60ef8d8cab107f649817660699a590f91f9b10e28c6f8f6e918747d070b"
+    },
+    {
+      "path": "wasm-biotoxin-p080-review.png",
+      "sha256": "32c8ed117dd75206f30d5d37ba66e7f99a2bdbb90b6e74b13b0afe51f0a288da"
+    },
+    {
+      "path": "wasm-biotoxin-p080-overlay.png",
+      "sha256": "d9ca597514e877545c6d1c8d81e39155f5702f88d479fcf65e33247efcdd403a"
+    },
+    {
+      "path": "wasm-pr6813-base.tsv",
+      "sha256": "aea51fe82e762e766451912a970d7d192e3123b08f5ce904f7946d290111b21b"
+    },
+    {
+      "path": "wasm-pr6813-candidate.tsv",
+      "sha256": "4c57ffb1c731b44950ac6c02a70cce3ce81d637f692caa94cc79cc434bd4e0c6"
+    },
+    {
+      "path": "wasm-pr6813-p002-review.png",
+      "sha256": "a5335256070238b6f4d434253c176511354cfd583858c830b768cefb5d268b61"
+    },
+    {
+      "path": "wasm-pr6813-p002-overlay.png",
+      "sha256": "0f3bdf19400b0ee1af27bdcd5771c250d6bb419c640348d024f7500c7cbb8ad4"
+    },
+    {
+      "path": "independent-pdf-geometry.json",
+      "sha256": "6fd170d07e3be21f9c550d7c46e313022772a94efecfda8dc3e25db06815906b"
+    }
+  ],
+  "fullPrAcceptance": false
+}

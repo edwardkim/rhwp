@@ -6,7 +6,9 @@ use std::path::Path;
 use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
-use crate::{load_document, truncate_page_texts, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
+use crate::{
+    load_document, load_document_core, truncate_page_texts, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE,
+};
 
 pub(crate) fn export_text(args: &[String]) -> i32 {
     // [#3237] --json: 결과를 파일 대신 stdout JSON 으로 낸다. stdout 은 순수 JSON 이어야
@@ -103,7 +105,7 @@ pub(crate) fn export_text(args: &[String]) -> i32 {
         }
     };
 
-    let doc = match load_document(&data) {
+    let doc = match load_document_core(&data) {
         Ok(d) => d,
         Err(e) => return e.report(),
     };

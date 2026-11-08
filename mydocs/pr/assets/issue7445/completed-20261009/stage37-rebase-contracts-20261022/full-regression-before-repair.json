@@ -1,0 +1,27 @@
+{
+  "head": "4eeea6d7b40a0edf237b24534bbad3999b0cf537",
+  "command": [
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "/Users/tsjang/rhwp/target/pr-review",
+    "--tests",
+    "--test-threads",
+    "8",
+    "--no-fail-fast"
+  ],
+  "exitCode": 100,
+  "elapsedSeconds": 1383.841412782669,
+  "logSha256": "96991de74d85752918e7d098a936a9cbe5c16c6c99c2bbf94137013ba5058c69",
+  "testElapsedSeconds": 827.413,
+  "testsRun": 11539,
+  "passed": 11392,
+  "failed": 147,
+  "skipped": 45,
+  "status": "FAIL",
+  "candidateRepairValidation": false
+}

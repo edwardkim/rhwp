@@ -1,0 +1,162 @@
+[
+  {
+    "input": "samples/issue8576/cell-square-six-pictures-60x30-grows.hwpx",
+    "checks": [
+      {
+        "kind": "hidden-text",
+        "exit_code": 0,
+        "clean": true
+      },
+      {
+        "kind": "injection",
+        "exit_code": 0,
+        "clean": true
+      },
+      {
+        "kind": "unicode",
+        "exit_code": 0,
+        "clean": true
+      }
+    ]
+  },
+  {
+    "input": "samples/issue8576/cell-square-six-pictures-35x25.hwpx",
+    "checks": [
+      {
+        "kind": "hidden-text",
+        "exit_code": 0,
+        "clean": true
+      },
+      {
+        "kind": "injection",
+        "exit_code": 0,
+        "clean": true
+      },
+      {
+        "kind": "unicode",
+        "exit_code": 0,
+        "clean": true
+      }
+    ]
+  },
+  {
+    "input": "samples/issue8576/split-row-picture-only-para.hwp",
+    "checks": [
+      {
+        "kind": "hidden-text",
+        "exit_code": 0,
+        "clean": true
+      },
+      {
+        "kind": "injection",
+        "exit_code": 0,
+        "clean": true
+      },
+      {
+        "kind": "unicode",
+        "exit_code": 0,
+        "clean": true
+      }
+    ]
+  },
+  {
+    "input": "tests/fixtures/pr8658/cell-square-stack-after-leading-lines.hwpx",
+    "checks": [
+      {
+        "kind": "hidden-text",
+        "exit_code": 0,
+        "clean": true
+      },
+      {
+        "kind": "injection",
+        "exit_code": 0,
+        "clean": true
+      },
+      {
+        "kind": "unicode",
+        "exit_code": 0,
+        "clean": true
+      }
+    ]
+  },
+  {
+    "input": "tests/fixtures/pr8658/cell-square-six-pictures-exact-fit.hwpx",
+    "checks": [
+      {
+        "kind": "hidden-text",
+        "exit_code": 0,
+        "clean": true
+      },
+      {
+        "kind": "injection",
+        "exit_code": 0,
+        "clean": true
+      },
+      {
+        "kind": "unicode",
+        "exit_code": 0,
+        "clean": true
+      }
+    ]
+  },
+  {
+    "input": "tests/fixtures/pr8658/cell-square-six-pictures-overlap-allowed.hwpx",
+    "checks": [
+      {
+        "kind": "hidden-text",
+        "exit_code": 0,
+        "clean": true
+      },
+      {
+        "kind": "injection",
+        "exit_code": 0,
+        "clean": true
+      },
+      {
+        "kind": "unicode",
+        "exit_code": 0,
+        "clean": true
+      }
+    ]
+  },
+  {
+    "input": "tests/fixtures/pr8658/cell-square-six-pictures-side-by-side.hwpx",
+    "checks": [
+      {
+        "kind": "hidden-text",
+        "exit_code": 0,
+        "clean": true
+      },
+      {
+        "kind": "injection",
+        "exit_code": 0,
+        "clean": true
+      },
+      {
+        "kind": "unicode",
+        "exit_code": 0,
+        "clean": true
+      }
+    ]
+  },
+  {
+    "input": "tests/fixtures/pr8658/cell-square-six-pictures-center.hwpx",
+    "checks": [
+      {
+        "kind": "hidden-text",
+        "exit_code": 0,
+        "clean": true
+      },
+      {
+        "kind": "injection",
+        "exit_code": 0,
+        "clean": true
+      },
+      {
+        "kind": "unicode",
+        "exit_code": 0,
+        "clean": true
+      }
+    ]
+  }
+]

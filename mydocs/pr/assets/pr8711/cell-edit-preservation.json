@@ -1,0 +1,11 @@
+{
+  "operation": "insertTextInCell(0,4,0,5,0,0,가) then deleteTextInCell(...,0,1); exportHwp and reopen",
+  "expected_original_baseline_hu": 600,
+  "text_height_hu": 1200,
+  "base_observation": "CENTER_PATH para=4 control=0 cell=5 cell_para=0 lines=[(1200, 600)]\nCENTER_PATH para=4 control=0 cell=8 cell_para=0 lines=[(1200, 600)]\nCENTER_PATH para=4 control=0 cell=11 cell_para=0 lines=[(1200, 600)]\n/home/edward/mygithub/rhwp-worktrees/pr-8711-leading-definition-slots/samples/issue8555/21868765_cell_text_edit.hwp\t[[335, 0], [0, 0], [111, 111], [0, 0]]\nCENTER_PATH para=4 control=0 cell=5 cell_para=0 lines=[(1200, 600)]\nCENTER_PATH para=4 control=0 cell=8 cell_para=0 lines=[(1200, 600)]\nCENTER_PATH para=4 control=0 cell=11 cell_para=0 lines=[(1200, 600)]\n/home/edward/mygithub/rhwp/output/pr-review/pr8711/base-browser-control/direct.hwp\t[[335, 0], [0, 0], [111, 111], [0, 0]]\n",
+  "candidate_observation": "CENTER_PATH para=4 control=0 cell=5 cell_para=0 lines=[(1200, 600)]\nCENTER_PATH para=4 control=0 cell=8 cell_para=0 lines=[(1200, 600)]\nCENTER_PATH para=4 control=0 cell=11 cell_para=0 lines=[(1200, 600)]\n/home/edward/mygithub/rhwp/output/pr-review/pr8711/candidate-browser-control/direct.hwp\t[[335, 0], [0, 0], [111, 111], [0, 0]]\n",
+  "original_text_characters": 4442,
+  "text_sha256": "72a2881819b93fde0cf3f9126e97dde9e59c6f391491f02d9bca870b4b8e3218",
+  "base_candidate_saved_sha256": "6d87b3553f936421f9a75370d692d5e9143ee87d298ad224b89d7ab2c7561307",
+  "assessment": "all 111 center-aligned lines retain their half-height stored baseline; original text is preserved"
+}

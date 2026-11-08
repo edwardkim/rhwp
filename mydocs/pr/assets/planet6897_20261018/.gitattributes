@@ -1,0 +1,2 @@
+# 측정 원본의 LF/CRLF와 빈 필드를 그대로 보존해 다운로드 SHA-256을 유지한다.
+*.tsv -text -whitespace

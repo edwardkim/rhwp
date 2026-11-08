@@ -16,16 +16,54 @@ function sameSnapshot(left, right) {
     && left.status === right.status && left.conclusion === right.conclusion;
 }
 
-async function collectWorkflowEvidence({
-  run: selected, getRun, listJobs, warn = () => {},
+// A completed event can arrive before the repository run listing exposes its run.
+// Recollect only missing identities; presence never implies completion or success.
+async function collectWorkflowRunList({
+  listRuns, missingWorkflows, warn = () => {},
   sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
   now = Date.now, maxAttempts = 4, delayMs = 5000, maxElapsedMs = 45000,
 }) {
+  validateRetryBudget(maxAttempts, delayMs, maxElapsedMs);
+  const started = now();
+  let runs = [];
+  let reason = '';
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    // Never keep a prior successful listing if a newer request fails.
+    runs = [];
+    try {
+      const response = await listRuns();
+      if (!Array.isArray(response)) throw new Error('invalid workflow run listing');
+      runs = response;
+      const missing = missingWorkflows(runs);
+      if (missing.length === 0) return runs;
+      reason = `missing-workflow:${missing.join('|')}`;
+    } catch (error) {
+      runs = [];
+      reason = 'workflow-list-unavailable';
+      warn(`Workflow run collection failed: ${error.message}`);
+    }
+    if (attempt === maxAttempts || now() - started + delayMs > maxElapsedMs) break;
+    warn(`Recollect workflow list: ${reason} (${attempt}/${maxAttempts}).`);
+    await sleep(delayMs);
+  }
+  warn(`Workflow listing remains unresolved: ${reason}; rerun this exact-head policy audit after API convergence.`);
+  return runs;
+}
+
+function validateRetryBudget(maxAttempts, delayMs, maxElapsedMs) {
   if (!Number.isInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > 4
       || !Number.isFinite(delayMs) || delayMs < 0 || delayMs > 5000
       || !Number.isFinite(maxElapsedMs) || maxElapsedMs < 0 || maxElapsedMs > 45000) {
     throw new Error('invalid evidence retry budget');
   }
+}
+
+async function collectWorkflowEvidence({
+  run: selected, getRun, listJobs, warn = () => {},
+  sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+  now = Date.now, maxAttempts = 4, delayMs = 5000, maxElapsedMs = 45000,
+}) {
+  validateRetryBudget(maxAttempts, delayMs, maxElapsedMs);
   const started = now();
   let last = { run: selected, jobs: [], jobsCollected: false };
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
@@ -77,4 +115,4 @@ async function collectWorkflowEvidence({
   return last;
 }
 
-module.exports = { collectWorkflowEvidence };
+module.exports = { collectWorkflowEvidence, collectWorkflowRunList };

@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-29",
+  "input": "samples/issue6712/한국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp",
+  "input_sha256": "70a6663e75fefedc001b2c249bd20f5b994596954120740252f484b1892e2097",
+  "pdf": "pdf/review-integration-20261026/newsletter-korean-2020.pdf",
+  "pdf_sha256": "4c1cbc3a4a08a5682ea4b4561874c1c8cf261cdba1c961d8e439c7e9a10e7a24",
+  "method": "과거 출력에 사용된 원래 바이너리와 이후 최종 후보를 같은 글꼴 공급·96dpi·compat 2022에서 재실행했다. Fontconfig 설정에서 설치된 맑은 고딕 Bold 파일 하나를 프로세스에만 제외한다. 과거에 보존된 PDF PNG를 고정하고 양방향 반경 2px 실루엣을 재계산했다.",
+  "excluded_font_sha256": "a541834fb9cdde9bd6d2c3ff1565cb0bb5ccf7a15e4e9daf2cb58d9b1cf282aa",
+  "historical_producer_git_head": "e18c33b6c1efa40006fc21ba1c5bfd8824dce1da",
+  "historical_producer_binary_sha256": "4be33bcbd8321197d0aea218321c6af3177479eedeada751f5ad8659a9e6b321",
+  "current_candidate_binary_sha256": "912cdeb0e74c3c14d3198a837fecd97a3f4d0971f69cd343f32b8ddca67d2ad5",
+  "pages": [
+    {
+      "page": 1,
+      "historical_rhwp_png_sha256": "3b5e2020a055d101eb6cd073fba47903d1fa6feb34add4426331c46115576c23",
+      "old_reproduced_rhwp_png_sha256": "3b5e2020a055d101eb6cd073fba47903d1fa6feb34add4426331c46115576c23",
+      "current_rhwp_png_sha256": "3b5e2020a055d101eb6cd073fba47903d1fa6feb34add4426331c46115576c23",
+      "fixed_historical_pdf_png_sha256": "faf32834c7f14dd5e077b1fa69cf047a4ebe61659466be701df9cd654168a56f",
+      "historical_raw_percent": 97.56961,
+      "current_fixed_raster_raw_percent": 97.56961
+    },
+    {
+      "page": 2,
+      "historical_rhwp_png_sha256": "16bf3c0da18a2d4d9d5b5ada63ca94912bc23b3c2af9429574e149417b2fc57d",
+      "old_reproduced_rhwp_png_sha256": "16bf3c0da18a2d4d9d5b5ada63ca94912bc23b3c2af9429574e149417b2fc57d",
+      "current_rhwp_png_sha256": "16bf3c0da18a2d4d9d5b5ada63ca94912bc23b3c2af9429574e149417b2fc57d",
+      "fixed_historical_pdf_png_sha256": "92dac4b45fcf034c3e116ffdc64383285089f2f6c58052496256c46794183ca8",
+      "historical_raw_percent": 93.09501,
+      "current_fixed_raster_raw_percent": 93.09501
+    }
+  ],
+  "result": "두 쪽 모두 이전·현재 제품의 렌더 PNG와 기존 PDF PNG의 해시가 과거 기록과 같고 점수도 같아 동일 글꼴 및 래스터 조건에서 0.1%p 이상 하락이 없다.",
+  "limitations": [
+    "기존 PDF PNG를 이용한 조건부 재현이며 현재 전체 시스템 글꼴 환경의 직접 점수 92.81548%와 별도다.",
+    "Fontconfig 변경 시 같은 PDF의 새 래스터가 달라져 이를 과거 기준과 혼합하지 않는다.",
+    "전체 문서 이외 다른 입력이나 fresh WASM의 새 실행을 주장하지 않는다.",
+    "폰트 파일을 테스트의 필수 설치 요건으로 추가하지 않았다."
+  ],
+  "prior_binary_sha_correction": "기존 newsletter-font-environment-diagnostic.json의 과거 실행 바이너리 해시를 원본 manifest에 맞게 정정했다."
+}

@@ -4,8 +4,7 @@
 //! 렌더 트리는 OLE preview를 RawSvg로 만들지만, 원본 control 좌표를 잃으면 Studio가
 //! 클릭 선택/개체 속성 진입을 할 수 없고 빈 문단 커서 rect도 찾지 못한다.
 
-use std::fs;
-use std::path::Path;
+use std::{fs, path::Path};
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
@@ -144,6 +143,16 @@ fn collect_text_run_nodes<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode
     for child in &node.children {
         collect_text_run_nodes(child, out);
     }
+}
+// 모델 자리표 대신 paint가 사용하는 표시 번호를 읽는다.
+fn visible_text(nodes: &[&RenderNode]) -> String {
+    nodes
+        .iter()
+        .filter_map(|node| match &node.node_type {
+            RenderNodeType::TextRun(run) => Some(run.display_or_text()),
+            _ => None,
+        })
+        .collect()
 }
 
 fn assert_enter_after_square_ole_keeps_wrap_zone(rel: &str) {
@@ -787,12 +796,14 @@ fn assert_ole_caption_properties_roundtrip(rel: &str) {
         .paragraphs
         .first()
         .unwrap_or_else(|| panic!("OLE caption paragraph missing for {}", rel));
-    assert_eq!(cap_para.text, "그림  ", "OLE caption text prefix");
+    assert_eq!(cap_para.text, "그림  ", "OLE 캡션 접두어");
     assert_eq!(
         cap_para.char_offsets,
-        vec![0, 1, 2, 11],
-        "OLE caption AutoNumber placeholder offsets"
+        vec![0, 1, 2, 3],
+        "OLE 캡션의 자동번호 자리 원시 위치"
     );
+    assert_eq!(cap_para.char_count, 12, "접두어 3 + 번호 8 + 문단 끝 1");
+    assert_eq!(cap_para.control_text_positions(), vec![3]);
     let auto_number = cap_para
         .controls
         .iter()
@@ -839,28 +850,43 @@ fn assert_ole_caption_properties_roundtrip(rel: &str) {
         .unwrap_or_else(|e| panic!("render tree after OLE caption {}: {:?}", rel, e));
     let mut text_runs = Vec::new();
     collect_text_run_nodes(&tree.root, &mut text_runs);
-    let rendered_text = text_runs
-        .iter()
-        .filter_map(|node| match &node.node_type {
-            RenderNodeType::TextRun(run) => Some(run.text.as_str()),
-            _ => None,
-        })
-        .collect::<String>();
+    let rendered_text = visible_text(&text_runs);
     let caption_run = text_runs
         .iter()
         .find(|node| {
             matches!(
                 &node.node_type,
                 RenderNodeType::TextRun(run)
-                    if run.text.contains("그림") && run.text.contains("1.")
+                    if run.display_or_text() == "1."
             )
         })
+        .filter(|_| rendered_text.contains("그림 1."))
         .unwrap_or_else(|| {
             panic!(
-                "OLE caption should render as visible figure text for {}: rendered={:?}",
+                "OLE 캡션의 표시 번호가 있어야 함 {}: 표시 문자열={:?}",
                 rel, rendered_text
             )
         });
+    assert!(
+        rendered_text.contains("그림 1."),
+        "접두어와 번호가 올바른 순서로 표시되어야 함: {rendered_text:?}"
+    );
+    let RenderNodeType::TextRun(number_run) = &caption_run.node_type else {
+        unreachable!();
+    };
+    assert_eq!(number_run.text, " ", "모델의 번호 공백 한 자리를 보존");
+    let svg = core.render_page_svg_native(0).expect("OLE 캡션 SVG");
+    let svg_document = roxmltree::Document::parse(&svg).expect("SVG XML");
+    let svg_visible_text = svg_document
+        .descendants()
+        .filter(|node| node.has_tag_name("text"))
+        .flat_map(|node| node.descendants().filter(|child| child.is_text()))
+        .filter_map(|node| node.text())
+        .collect::<String>();
+    assert!(
+        svg_visible_text.contains("그림1."),
+        "SVG의 글자별 출력에도 접두어와 번호가 순서대로 있어야 함: {svg_visible_text:?}"
+    );
     assert!(
         caption_run.bbox.x > ole_right,
         "OLE right caption should render to the right of the OLE preview for {}: caption={:?}, ole={}",
@@ -910,13 +936,7 @@ fn assert_ole_caption_properties_roundtrip(rel: &str) {
         .unwrap_or_else(|e| panic!("render tree after OLE caption removal {}: {:?}", rel, e));
     let mut text_runs = Vec::new();
     collect_text_run_nodes(&tree.root, &mut text_runs);
-    let rendered_text = text_runs
-        .iter()
-        .filter_map(|node| match &node.node_type {
-            RenderNodeType::TextRun(run) => Some(run.text.as_str()),
-            _ => None,
-        })
-        .collect::<String>();
+    let rendered_text = visible_text(&text_runs);
     assert!(
         !rendered_text.contains("그림"),
         "removed OLE caption should not remain visible for {}: rendered={:?}",
@@ -933,35 +953,6 @@ fn hwp_ole_preview_is_selectable_and_drives_empty_para_caret() {
 #[test]
 fn hwpx_ole_preview_is_selectable_and_drives_empty_para_caret() {
     assert_ole_layout_and_caret("samples/한셀OLE.hwpx");
-}
-
-#[test]
-fn so_sueop_hwpx_hmapsi_ole_preview_is_exposed_as_selectable_control() {
-    let core = load_core("samples/SO-SUEOP.hwpx");
-    let layout_json = core
-        .get_page_control_layout_native(0)
-        .expect("SO-SUEOP HWPX page 1 control layout");
-    let layout: Value = serde_json::from_str(&layout_json)
-        .unwrap_or_else(|e| panic!("parse SO-SUEOP HWPX control layout `{layout_json}`: {e}"));
-    let controls = layout["controls"]
-        .as_array()
-        .expect("SO-SUEOP HWPX control layout controls");
-    let ole = controls
-        .iter()
-        .find(|control| control["type"] == "ole")
-        .unwrap_or_else(|| panic!("HMapsi OLE must be selectable: {layout_json}"));
-
-    assert!(ole["secIdx"].is_u64(), "OLE section ref: {ole}");
-    assert!(ole["paraIdx"].is_u64(), "OLE paragraph ref: {ole}");
-    assert!(ole["controlIdx"].is_u64(), "OLE control ref: {ole}");
-    assert!(
-        ole["w"].as_f64().unwrap_or_default() > 0.0,
-        "OLE width: {ole}"
-    );
-    assert!(
-        ole["h"].as_f64().unwrap_or_default() > 0.0,
-        "OLE height: {ole}"
-    );
 }
 
 #[test]

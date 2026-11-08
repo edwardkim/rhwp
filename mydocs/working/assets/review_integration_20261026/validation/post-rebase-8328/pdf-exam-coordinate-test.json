@@ -1,0 +1,7 @@
+{
+  "date": "2026-10-28",
+  "scope": "PDF 시험지 문단 경계·독립 7쪽 좌표",
+  "log_sha256": "3ba717a71a9c96f598e3a7e862819f96da4635e71cf1f6a3ec7b23f6aaaa2db5",
+  "summary": "Summary [  13.379s] 2 tests run: 2 passed, 279 skipped",
+  "full_regression_rerun": false
+}

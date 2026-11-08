@@ -1,0 +1,34 @@
+[
+  {
+    "name": "main",
+    "exit": 0,
+    "seconds": 80.03
+  },
+  {
+    "name": "preservation",
+    "exit": 0,
+    "seconds": 220.05,
+    "font_supply_correction": "8572-font-supply-diagnosis.json",
+    "final_all_pages_at_least_90": true
+  },
+  {
+    "name": "svg",
+    "exit": 0,
+    "seconds": 40.03
+  },
+  {
+    "name": "api",
+    "exit": 0,
+    "seconds": 0.71
+  },
+  {
+    "name": "roundtrip",
+    "exit": 0,
+    "seconds": null,
+    "successful_command": [
+      "python3",
+      "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/finish-roundtrip-checks.py"
+    ],
+    "correction": "Both CLI subcommands take positional output paths; corrected helper was rerun and exited 0. 16 saves and 20-page Native/WASM sweeps passed."
+  }
+]

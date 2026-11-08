@@ -1,43 +1,102 @@
-//! [Issue #6127] 한컴 사각 안 숫자(U+F02B0~F02C4)를 평문에서 raw 통과시키면
-//! 함초롬 확장 글꼴이 없는 소비자(브라우저·PyMuPDF·PDF 뷰어)에서 빈칸이 된다 —
-//! 2599643 "② 입항회수" 칸의 "200"(네모 2·0·0) 소실. web_canvas 는 이미 평문
-//! 벡터 합성(draw_boxed_pua_number)을 갖고 있었고, SVG·Skia 백엔드에 같은
-//! 폴백이 없던 패리티 결손이다. U+F02B0(네모 0)은 기존 범위(F02B1~) 밖이라
-//! CharOverlap 합성(#4158)에서도 빠져 있었다.
-//!
-//! 수정: SVG·Skia 평문 경로에 같은 기하(상자 0.72em·숫자 0.5em)의 벡터 합성
-//! 추가 + boxed_pua_number 범위를 F02B0(0)까지 확장 + 텍스트 표면 ⓪ 매핑.
-//!
-//! 결함 상태에서는 SVG 에 raw PUA 3자가 남아 어서션이 실패한다.
+//! #6127: 사각 안 숫자의 내용과 벡터 프레임을 함께 보존한다.
+//! 고정 크기의 SVG 문자열 대신 원본 숫자 런 안의 프레임·숫자 포함 관계를 검사한다.
+//! 한컴 Print 대조: stage651/652, source8d8a2c415a, Native/fresh WASM 96.70382%.
 #![cfg(not(target_arch = "wasm32"))]
 
-use std::path::Path;
-
 use rhwp::document_core::DocumentCore;
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
-const SAMPLE: &str = "samples/issue6127/2599643_vessel_pass_application.hwp";
+fn boxed_owner(node: &RenderNode) -> Option<&RenderNode> {
+    if matches!(&node.node_type, RenderNodeType::TextRun(run)
+        if run.text == "\u{F02B2}\u{F02B0}\u{F02B0}")
+    {
+        return Some(node);
+    }
+    node.children.iter().find_map(boxed_owner)
+}
 
 #[test]
 fn issue_6127_boxed_numbers_render_as_vector_synthesis() {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
-    let core = DocumentCore::from_bytes(&std::fs::read(path).expect("read sample")).expect("open");
-
-    let svg = core.render_page_svg_native(0).expect("page 1 svg");
-
-    let raw = svg
-        .chars()
-        .filter(|c| (0xF02B0..=0xF02C4).contains(&(*c as u32)))
-        .count();
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/issue6127/2599643_vessel_pass_application.hwp");
+    let core =
+        DocumentCore::from_bytes(&std::fs::read(path).expect("정식 입력")).expect("문서 열기");
+    let page = core.build_page_render_tree(0).expect("번호의 소유 쪽");
+    let owner = boxed_owner(&page.root).expect("원본 네모 숫자 200");
+    let svg = core.render_page_svg_native(0).expect("같은 쪽 SVG");
     assert_eq!(
-        raw, 0,
-        "SVG 에 raw 사각 안 숫자 PUA 가 남았다 — 글꼴 부재 환경에서 빈칸이 된다 ({raw}자)"
+        svg.chars()
+            .filter(|c| (0xF02B0..=0xF02C4).contains(&(*c as u32)))
+            .count(),
+        0,
+        "글꼴 부재 환경에서 소실될 raw PUA를 남기지 않는다"
     );
-    // 합성 사각형 3개(2·0·0)가 있어야 한다 — 20pt(26.7px)의 0.72em ≈ 19.2px 상자.
-    let boxes = svg
-        .match_indices("width=\"19.20\" height=\"19.20\"")
-        .count();
-    assert!(
-        boxes >= 3,
-        "네모 안 숫자 2·0·0 의 합성 사각형이 3개여야 한다: {boxes}"
+    let xml = roxmltree::Document::parse(&svg).expect("SVG XML");
+    let mut frames = Vec::new();
+    for rect in xml.descendants().filter(|node| node.has_tag_name("rect")) {
+        let number = |key| {
+            rect.attribute(key)
+                .and_then(|value| value.parse::<f64>().ok())
+        };
+        let (Some(x), Some(y), Some(w), Some(h)) =
+            (number("x"), number("y"), number("width"), number("height"))
+        else {
+            continue;
+        };
+        if w <= 0.0
+            || h <= 0.0
+            || x < owner.bbox.x
+            || y < owner.bbox.y
+            || x + w > owner.bbox.x + owner.bbox.width
+            || y + h > owner.bbox.y + owner.bbox.height
+        {
+            continue;
+        }
+        let Some(text) = rect
+            .next_sibling_element()
+            .filter(|node| node.has_tag_name("text"))
+        else {
+            continue;
+        };
+        let Some(transform) = text
+            .attribute("transform")
+            .and_then(|value| value.strip_prefix("matrix("))
+            .and_then(|value| value.strip_suffix(')'))
+        else {
+            continue;
+        };
+        let matrix: Vec<f64> = transform
+            .split(|c: char| c.is_whitespace() || c == ',')
+            .filter(|part| !part.is_empty())
+            .map(|part| part.parse().expect("숫자 변환 행렬"))
+            .collect();
+        assert_eq!(matrix.len(), 6);
+        assert!(matrix.iter().all(|value| value.is_finite()));
+        assert!(
+            matrix[0] > 0.0 && matrix[3] > 0.0,
+            "숫자가 접히거나 소실되지 않는다"
+        );
+        assert!(
+            matrix[4] > x && matrix[4] < x + w && matrix[5] > y && matrix[5] < y + h,
+            "숫자의 표시 원점은 자신의 프레임 안에 있다"
+        );
+        assert_eq!(rect.attribute("fill"), Some("none"));
+        assert!(rect.attribute("stroke").is_some(), "프레임 윤곽을 보존한다");
+        frames.push((x, w, text.text().expect("숫자 내용")));
+    }
+    assert_eq!(
+        frames.len(),
+        3,
+        "소유 런 안의 숫자 프레임을 빠짐없이 확인한다"
     );
+    assert_eq!(
+        frames.iter().map(|(_, _, text)| *text).collect::<String>(),
+        "200"
+    );
+    for pair in frames.windows(2) {
+        assert!(
+            pair[0].0 + pair[0].1 <= pair[1].0,
+            "서로 다른 숫자 프레임은 겹치지 않는다"
+        );
+    }
 }

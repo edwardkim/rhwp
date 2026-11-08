@@ -1,0 +1,149 @@
+{
+  "identical": [
+    {
+      "sample": "exact-fit",
+      "backend": "canvas2d",
+      "profile": "screen",
+      "sha256": "f7edbfbeb5c86660eb26df33981372cc734777cd9d92bfab0b3614c3720ba1d6"
+    },
+    {
+      "sample": "exact-fit",
+      "backend": "canvaskit-compat",
+      "profile": "screen",
+      "sha256": "26a19e2977b1dd28d6ff70f98d579a7c53c496cd3a986fea379144e154367223"
+    },
+    {
+      "sample": "exact-fit",
+      "backend": "canvaskit-default",
+      "profile": "screen",
+      "sha256": "e79f0907a3daf5e63852282efc00fcf737473fe069e6d68df1ff814a44681141"
+    },
+    {
+      "sample": "exact-fit",
+      "backend": "canvas2d",
+      "profile": "print",
+      "sha256": "39f7dfd887f45aafa1aa9bd6b5457a58b98e0732ca45a4969131349af01e67a1"
+    },
+    {
+      "sample": "exact-fit",
+      "backend": "canvaskit-compat",
+      "profile": "print",
+      "sha256": "cb2b8905c8b889dc7de726100c55ead579555ac19614d3ade6853e36a38a2704"
+    },
+    {
+      "sample": "exact-fit",
+      "backend": "canvaskit-default",
+      "profile": "print",
+      "sha256": "cb2b8905c8b889dc7de726100c55ead579555ac19614d3ade6853e36a38a2704"
+    },
+    {
+      "sample": "large",
+      "backend": "canvas2d",
+      "profile": "screen",
+      "sha256": "6fc2d5013bf453740b6fe41c929479c5689671d364820c4ef19cf93444f6c5e1"
+    },
+    {
+      "sample": "large",
+      "backend": "canvaskit-compat",
+      "profile": "screen",
+      "sha256": "9799d6bf812a0b66365193b98abf53d063272c91e3d9894d2716fe2303ecc896"
+    },
+    {
+      "sample": "large",
+      "backend": "canvaskit-default",
+      "profile": "screen",
+      "sha256": "8b53329f8132ae45a9999b8a279c75c1199128ee99275577d9de06d58defbc54"
+    },
+    {
+      "sample": "large",
+      "backend": "canvas2d",
+      "profile": "print",
+      "sha256": "3df6ddd42182a629d701d37c84b4ee6dcc3c0c6d42b9709e1540f4061a939011"
+    },
+    {
+      "sample": "large",
+      "backend": "canvaskit-compat",
+      "profile": "print",
+      "sha256": "a9c98b8f66e241bf0b524ff4ec36f9adacf9d0a0a9c13abf29399822d475966e"
+    },
+    {
+      "sample": "large",
+      "backend": "canvaskit-default",
+      "profile": "print",
+      "sha256": "a9c98b8f66e241bf0b524ff4ec36f9adacf9d0a0a9c13abf29399822d475966e"
+    },
+    {
+      "sample": "split-opening",
+      "backend": "canvas2d",
+      "profile": "screen",
+      "sha256": "52ae3dc74bc6057a83b1335e44dbdd86366bb95fc2d33a56b95d9369ca83d352"
+    },
+    {
+      "sample": "split-opening",
+      "backend": "canvaskit-compat",
+      "profile": "screen",
+      "sha256": "2b0a6baa75a5f40823bb8a28a5ca7e7c549ef080e4d9e2a3ed061f377d533644"
+    },
+    {
+      "sample": "split-opening",
+      "backend": "canvaskit-default",
+      "profile": "screen",
+      "sha256": "9aaf684803dd155c89fe24e2a469ea8a3bb03702d20aaf3c97ab61dccb8c713f"
+    },
+    {
+      "sample": "split-opening",
+      "backend": "canvas2d",
+      "profile": "print",
+      "sha256": "d8c1d8473e882d4f9f2086173d7ff0ca51ff116e538003fe5358df7528c41ff3"
+    },
+    {
+      "sample": "split-opening",
+      "backend": "canvaskit-compat",
+      "profile": "print",
+      "sha256": "50755326451bee91181d4b65b9e34ca206584a05887228d0e1947705629c76fb"
+    },
+    {
+      "sample": "split-opening",
+      "backend": "canvaskit-default",
+      "profile": "print",
+      "sha256": "50755326451bee91181d4b65b9e34ca206584a05887228d0e1947705629c76fb"
+    },
+    {
+      "sample": "split-end",
+      "backend": "canvas2d",
+      "profile": "screen",
+      "sha256": "0997a4a852c2f2441f1914a99a698537a31f1f33fde1f031fd62ee933a1a09e5"
+    },
+    {
+      "sample": "split-end",
+      "backend": "canvaskit-compat",
+      "profile": "screen",
+      "sha256": "0c8ec958d1311356ee1138d8987c67fd86d564368a0366487b4b699179786952"
+    },
+    {
+      "sample": "split-end",
+      "backend": "canvaskit-default",
+      "profile": "screen",
+      "sha256": "0c8ec958d1311356ee1138d8987c67fd86d564368a0366487b4b699179786952"
+    },
+    {
+      "sample": "split-end",
+      "backend": "canvas2d",
+      "profile": "print",
+      "sha256": "83bfcf08ec34e7f2a895f756e3af0a3c399190b5447479631ecbd1485122e86b"
+    },
+    {
+      "sample": "split-end",
+      "backend": "canvaskit-compat",
+      "profile": "print",
+      "sha256": "fdc97a86b44c187fc8ffcc2f18dc99f0c8de437cdb1934ad688dd3a421d6c0bf"
+    },
+    {
+      "sample": "split-end",
+      "backend": "canvaskit-default",
+      "profile": "print",
+      "sha256": "fdc97a86b44c187fc8ffcc2f18dc99f0c8de437cdb1934ad688dd3a421d6c0bf"
+    }
+  ],
+  "different": []
+}

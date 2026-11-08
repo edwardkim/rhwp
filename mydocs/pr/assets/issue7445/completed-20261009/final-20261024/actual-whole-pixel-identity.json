@@ -1,0 +1,876 @@
+[
+  {
+    "case": "pii66-declared-p042",
+    "backend": "actual-native-skia-png",
+    "page": 42,
+    "scopeKey": "pii66-declared",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/native/pii66-declared-p042/actual_042.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/native/pii66-declared/rhwp_png/rhwp_042.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": true,
+    "actualPaddedRgbSha256": "42f3e68405fe411e2ad4ddc2fe8750e8e200c60c490a3e565eadc8ce3fcdcd3d",
+    "wholePaddedRgbSha256": "42f3e68405fe411e2ad4ddc2fe8750e8e200c60c490a3e565eadc8ce3fcdcd3d"
+  },
+  {
+    "case": "pii66-default-p050",
+    "backend": "actual-native-skia-png",
+    "page": 50,
+    "scopeKey": "pii66-declared",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/native/pii66-default-p050/actual_050.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/native/pii66-declared/rhwp_png/rhwp_050.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": true,
+    "actualPaddedRgbSha256": "f573e7e850944a11c15f4e3c729a9d51f74512810828749bfc11cf6ebb98ecb2",
+    "wholePaddedRgbSha256": "f573e7e850944a11c15f4e3c729a9d51f74512810828749bfc11cf6ebb98ecb2"
+  },
+  {
+    "case": "sample16-hwpx-p045",
+    "backend": "actual-native-skia-png",
+    "page": 45,
+    "scopeKey": "sample16-hwpx",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/native/sample16-hwpx-p045/actual_045.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/native/sample16-hwpx/rhwp_png/rhwp_045.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": true,
+    "actualPaddedRgbSha256": "33cdb9202edaf937cb3d7f0be63e4d5fc0d83e8ec8b54383428513d4f1baae41",
+    "wholePaddedRgbSha256": "33cdb9202edaf937cb3d7f0be63e4d5fc0d83e8ec8b54383428513d4f1baae41"
+  },
+  {
+    "case": "biotoxin205-p044",
+    "backend": "actual-native-skia-png",
+    "page": 44,
+    "scopeKey": "biotoxin205",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/native/biotoxin205-p044/actual_044.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/native/biotoxin205/rhwp_png/rhwp_044.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": true,
+    "actualPaddedRgbSha256": "5d100a7beef7b83d381c1b6b9ea091fb61356386331d8d5d9156303d9cf78003",
+    "wholePaddedRgbSha256": "5d100a7beef7b83d381c1b6b9ea091fb61356386331d8d5d9156303d9cf78003"
+  },
+  {
+    "case": "biotoxin205-p143",
+    "backend": "actual-native-skia-png",
+    "page": 143,
+    "scopeKey": "biotoxin205",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/native/biotoxin205-p143/actual_143.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/native/biotoxin205/rhwp_png/rhwp_143.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": true,
+    "actualPaddedRgbSha256": "62e0c034863efa7be644ca4ce6e7ea86a87d9c09dd703c316b117614201246cc",
+    "wholePaddedRgbSha256": "62e0c034863efa7be644ca4ce6e7ea86a87d9c09dd703c316b117614201246cc"
+  },
+  {
+    "case": "asset60-p013",
+    "backend": "actual-native-skia-png",
+    "page": 13,
+    "scopeKey": "asset60",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/native/asset60-p013/actual_013.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/native/asset60/rhwp_png/rhwp_013.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": true,
+    "actualPaddedRgbSha256": "5d983447594ff34d283ea136602311c0b494bc80d60cb69e0efabb6632193f8f",
+    "wholePaddedRgbSha256": "5d983447594ff34d283ea136602311c0b494bc80d60cb69e0efabb6632193f8f"
+  },
+  {
+    "case": "rowbreak18-p013",
+    "backend": "actual-native-skia-png",
+    "page": 13,
+    "scopeKey": "rowbreak18",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/native/rowbreak18-p013/actual_013.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/native/rowbreak18/rhwp_png/rhwp_013.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": true,
+    "actualPaddedRgbSha256": "f00c29c69d6d5a786d2a63228552cafdc38183f561c45651714c60a483b1301f",
+    "wholePaddedRgbSha256": "f00c29c69d6d5a786d2a63228552cafdc38183f561c45651714c60a483b1301f"
+  },
+  {
+    "case": "rowbreak18-p007",
+    "backend": "actual-native-skia-png",
+    "page": 7,
+    "scopeKey": "rowbreak18",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/native/rowbreak18-p007/actual_007.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/native/rowbreak18/rhwp_png/rhwp_007.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": true,
+    "actualPaddedRgbSha256": "4c55c7e966b61983b509852efaa330c60e2c139ee9183633aa4b55507700e7db",
+    "wholePaddedRgbSha256": "4c55c7e966b61983b509852efaa330c60e2c139ee9183633aa4b55507700e7db"
+  },
+  {
+    "case": "worklife6-p006",
+    "backend": "actual-native-skia-png",
+    "page": 6,
+    "scopeKey": "worklife6",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/native/worklife6-p006/actual_006.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/native/worklife6/rhwp_png/rhwp_006.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": true,
+    "actualPaddedRgbSha256": "6811ea2a8d35364ddb97adb0f2512d2c045b7bc20fed3ff851dbd353b6935e28",
+    "wholePaddedRgbSha256": "6811ea2a8d35364ddb97adb0f2512d2c045b7bc20fed3ff851dbd353b6935e28"
+  },
+  {
+    "case": "worklife6-p004",
+    "backend": "actual-native-skia-png",
+    "page": 4,
+    "scopeKey": "worklife6",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/native/worklife6-p004/actual_004.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/native/worklife6/rhwp_png/rhwp_004.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": true,
+    "actualPaddedRgbSha256": "1bf646989ffc980b752405f539194e74fd8ab16237e5266141171a45db531f47",
+    "wholePaddedRgbSha256": "1bf646989ffc980b752405f539194e74fd8ab16237e5266141171a45db531f47"
+  },
+  {
+    "case": "worklife6-p005",
+    "backend": "actual-native-skia-png",
+    "page": 5,
+    "scopeKey": "worklife6",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/native/worklife6-p005/actual_005.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/native/worklife6/rhwp_png/rhwp_005.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": true,
+    "actualPaddedRgbSha256": "1bc68888e275a0d0e30838ea928cb3506c9bf369079a0e3eab2098077c6009ea",
+    "wholePaddedRgbSha256": "1bc68888e275a0d0e30838ea928cb3506c9bf369079a0e3eab2098077c6009ea"
+  },
+  {
+    "case": "court2-p001",
+    "backend": "actual-native-skia-png",
+    "page": 1,
+    "scopeKey": "court2",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/native/court2-p001/actual_001.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/native/court2/rhwp_png/rhwp_001.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": true,
+    "actualPaddedRgbSha256": "b11f07967cbab11705e0100f03b14964efabe77b64f2cfb6baeff8d5b93f46d1",
+    "wholePaddedRgbSha256": "b11f07967cbab11705e0100f03b14964efabe77b64f2cfb6baeff8d5b93f46d1"
+  },
+  {
+    "case": "giant4138-original-p080",
+    "backend": "actual-native-skia-png",
+    "page": 80,
+    "scopeKey": "giant4138-original",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/native/giant4138-original-p080/actual_080.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/native/giant4138-original/rhwp_png/rhwp_080.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": true,
+    "actualPaddedRgbSha256": "b970971861689791183518a6b0403428c39c5f443ced375d048b390c5fcc4514",
+    "wholePaddedRgbSha256": "b970971861689791183518a6b0403428c39c5f443ced375d048b390c5fcc4514"
+  },
+  {
+    "case": "hwp3-original-p003",
+    "backend": "actual-native-skia-png",
+    "page": 3,
+    "scopeKey": "issue265",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/native/hwp3-original-p003/actual_003.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/native/issue265/rhwp_png/rhwp_003.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": true,
+    "actualPaddedRgbSha256": "1a6c73c970ac4096e23237d1e4131b213ea06917b04dac279addb465e4be5840",
+    "wholePaddedRgbSha256": "1a6c73c970ac4096e23237d1e4131b213ea06917b04dac279addb465e4be5840"
+  },
+  {
+    "case": "superscript3-p001",
+    "backend": "actual-native-skia-png",
+    "page": 1,
+    "scopeKey": "superscript3",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/native/superscript3-p001/actual_001.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/native/superscript3/rhwp_png/rhwp_001.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": true,
+    "actualPaddedRgbSha256": "17cdc3624a59ee1bf52943aca23846de93ca21a25239e37718655c77c1382af2",
+    "wholePaddedRgbSha256": "17cdc3624a59ee1bf52943aca23846de93ca21a25239e37718655c77c1382af2"
+  },
+  {
+    "case": "sample11-original-p002",
+    "backend": "actual-native-skia-png",
+    "page": 2,
+    "scopeKey": "original-sample11-user-print",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/native/sample11-original-p002/actual_002.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/native/original-sample11-user-print/rhwp_png/rhwp_002.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": true,
+    "actualPaddedRgbSha256": "dc9ba7dc8fdec5807035b41c37c5665f52024808f354e53a9e11048f699ab71f",
+    "wholePaddedRgbSha256": "dc9ba7dc8fdec5807035b41c37c5665f52024808f354e53a9e11048f699ab71f"
+  },
+  {
+    "case": "sample11-original-p050",
+    "backend": "actual-native-skia-png",
+    "page": 50,
+    "scopeKey": "original-sample11-user-print",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/native/sample11-original-p050/actual_050.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/native/original-sample11-user-print/rhwp_png/rhwp_050.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": true,
+    "actualPaddedRgbSha256": "a382cf14e698112a627635b5208c42699ca72482701dd6f47c1ffc1c11295243",
+    "wholePaddedRgbSha256": "a382cf14e698112a627635b5208c42699ca72482701dd6f47c1ffc1c11295243"
+  },
+  {
+    "case": "sample11-original-p100",
+    "backend": "actual-native-skia-png",
+    "page": 100,
+    "scopeKey": "original-sample11-user-print",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/native/sample11-original-p100/actual_100.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/native/original-sample11-user-print/rhwp_png/rhwp_100.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": true,
+    "actualPaddedRgbSha256": "01a34c5fe862693175371290aeaa081d7f507849701ec7aabbeea2b0d8e42ab5",
+    "wholePaddedRgbSha256": "01a34c5fe862693175371290aeaa081d7f507849701ec7aabbeea2b0d8e42ab5"
+  },
+  {
+    "case": "sample16-original-p006",
+    "backend": "actual-native-skia-png",
+    "page": 6,
+    "scopeKey": "original-sample16",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/native/sample16-original-p006/actual_006.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/native/original-sample16/rhwp_png/rhwp_006.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": true,
+    "actualPaddedRgbSha256": "938ed609f17f64780c5c427e64357175aa32e699c2a6c868ebdfe910ae687870",
+    "wholePaddedRgbSha256": "938ed609f17f64780c5c427e64357175aa32e699c2a6c868ebdfe910ae687870"
+  },
+  {
+    "case": "sample16-original-p033",
+    "backend": "actual-native-skia-png",
+    "page": 33,
+    "scopeKey": "original-sample16",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/native/sample16-original-p033/actual_033.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/native/original-sample16/rhwp_png/rhwp_033.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": true,
+    "actualPaddedRgbSha256": "6f8a9ed5704907658334690a5f806a46983133940b768c9ca8835becf9487515",
+    "wholePaddedRgbSha256": "6f8a9ed5704907658334690a5f806a46983133940b768c9ca8835becf9487515"
+  },
+  {
+    "case": "roadmap-p153",
+    "backend": "actual-native-skia-png",
+    "page": 153,
+    "scopeKey": "roadmap302",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/native/roadmap-p153/actual_153.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/native/roadmap302/rhwp_png/rhwp_153.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": true,
+    "actualPaddedRgbSha256": "e6f41254099a4d6d852f5e8a1679b1d820436b277bac25c295f408bd6bfd18da",
+    "wholePaddedRgbSha256": "e6f41254099a4d6d852f5e8a1679b1d820436b277bac25c295f408bd6bfd18da"
+  },
+  {
+    "case": "low-slack-p001",
+    "backend": "actual-native-skia-png",
+    "page": 1,
+    "scopeKey": "low-slack6535",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/native/low-slack-p001/actual_001.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/native/low-slack6535/rhwp_png/rhwp_001.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": true,
+    "actualPaddedRgbSha256": "38d1217e6691225ee74c3adde461ee2e72c45444978c8a9d8204bfd5aeeb2e29",
+    "wholePaddedRgbSha256": "38d1217e6691225ee74c3adde461ee2e72c45444978c8a9d8204bfd5aeeb2e29"
+  },
+  {
+    "case": "missing-lineseg1-p001",
+    "backend": "actual-native-skia-png",
+    "page": 1,
+    "scopeKey": "missing-lineseg1",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/native/missing-lineseg1-p001/actual_001.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/native/missing-lineseg1/rhwp_png/rhwp_001.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": true,
+    "actualPaddedRgbSha256": "08155d549e1ea21d3e85b3bb44ca810fa2f0ecd84380f087b3b68b8208f8a07f",
+    "wholePaddedRgbSha256": "08155d549e1ea21d3e85b3bb44ca810fa2f0ecd84380f087b3b68b8208f8a07f"
+  },
+  {
+    "case": "pii66-declared-p042",
+    "backend": "canvas2d",
+    "page": 42,
+    "scopeKey": "pii66-declared",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/studio/pii66-declared-p042/canvas2d-print/actual_042.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/wasm/pii66-declared/rhwp_png/rhwp_042.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": false,
+    "actualPaddedRgbSha256": "146c9206d6f3b05dc5afc5ea77d1018ac6081821fab9b80d18b6c086d7ec2305",
+    "wholePaddedRgbSha256": "eda9033d7bb3ef7b285d7ac4f3f8869f9a1ac9e8acf45ca841cb9a5bbf7d9a5f"
+  },
+  {
+    "case": "sample16-hwpx-p045",
+    "backend": "canvas2d",
+    "page": 45,
+    "scopeKey": "sample16-hwpx",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/studio/sample16-hwpx-p045/canvas2d-print/actual_045.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/wasm/sample16-hwpx/rhwp_png/rhwp_045.png",
+    "actualSize": [
+      794,
+      1123
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": false,
+    "actualPaddedRgbSha256": "e59e453b4de2ef5953de6aaf6de321b0dd439d17a51962365534137164ca9d88",
+    "wholePaddedRgbSha256": "56032dcda57e3b43e6889f77ba9d30647c63a02ce045b849b128e8055b67ae7d"
+  },
+  {
+    "case": "biotoxin205-p044",
+    "backend": "canvas2d",
+    "page": 44,
+    "scopeKey": "biotoxin205",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/studio/biotoxin205-p044/canvas2d-print/actual_044.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/wasm/biotoxin205/rhwp_png/rhwp_044.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": false,
+    "actualPaddedRgbSha256": "556f1b6b05dfac4c71c394d0b49fcd27946073c99bc6cf7cef2bfa84b5f29ccf",
+    "wholePaddedRgbSha256": "800994fe79858c3baed83606f45957e89b4d07a41d0cf0cfd4ce9f6c3267bf28"
+  },
+  {
+    "case": "asset60-p013",
+    "backend": "canvas2d",
+    "page": 13,
+    "scopeKey": "asset60",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/studio/asset60-p013/canvas2d-print/actual_013.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/wasm/asset60/rhwp_png/rhwp_013.png",
+    "actualSize": [
+      794,
+      1123
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": false,
+    "actualPaddedRgbSha256": "d6bb60869f276669ca97dd5f0a8d3775afbdd7375f69028dd7c1b0aca2277d3e",
+    "wholePaddedRgbSha256": "fa96dd288e25436cc0462e91dcb57f32c02813efcaad1da76d6233330c8f20d1"
+  },
+  {
+    "case": "rowbreak18-p013",
+    "backend": "canvas2d",
+    "page": 13,
+    "scopeKey": "rowbreak18",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/studio/rowbreak18-p013/canvas2d-print/actual_013.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/wasm/rowbreak18/rhwp_png/rhwp_013.png",
+    "actualSize": [
+      794,
+      1123
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": false,
+    "actualPaddedRgbSha256": "20188f6f1d0bab4e1c1148ba4b84464f4b690799716f1377413d36daff3a1eae",
+    "wholePaddedRgbSha256": "9a40210ede0237fc5ad6bbdaa0cacdbc528259c05528906b2e1395d07e08ea10"
+  },
+  {
+    "case": "worklife6-p006",
+    "backend": "canvas2d",
+    "page": 6,
+    "scopeKey": "worklife6",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/studio/worklife6-p006/canvas2d-print/actual_006.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/wasm/worklife6/rhwp_png/rhwp_006.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": false,
+    "actualPaddedRgbSha256": "159e866d17218fd6cc05f54c94b26036f7c970a069abe68e98e47029c51f564e",
+    "wholePaddedRgbSha256": "2f10df5ee223a351878afc0df808bc3b5681f475b736369d23a43f343dee5f38"
+  },
+  {
+    "case": "biotoxin205-p143",
+    "backend": "canvas2d",
+    "page": 143,
+    "scopeKey": "biotoxin205",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/studio/biotoxin205-p143/canvas2d-print/actual_143.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/wasm/biotoxin205/rhwp_png/rhwp_143.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": false,
+    "actualPaddedRgbSha256": "f1efd8a4768f5493f7ad075ac9d6683f7bacdf97333f721ae51436e43f6038c5",
+    "wholePaddedRgbSha256": "67b22a54357ea4c6b5e25a3d0de74b3ba7d2390a520674f023fca425075b0c1f"
+  },
+  {
+    "case": "worklife6-p004",
+    "backend": "canvas2d",
+    "page": 4,
+    "scopeKey": "worklife6",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/studio/worklife6-p004/canvas2d-print/actual_004.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/wasm/worklife6/rhwp_png/rhwp_004.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": false,
+    "actualPaddedRgbSha256": "96939537893cd5d1213f005aff23af376d9dfe7994a5e68ff811d4e2a566f52b",
+    "wholePaddedRgbSha256": "50f4b4b9a6f154febf0adc51541be66761a50d67d591437f99e67194d11159e9"
+  },
+  {
+    "case": "worklife6-p005",
+    "backend": "canvas2d",
+    "page": 5,
+    "scopeKey": "worklife6",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/studio/worklife6-p005/canvas2d-print/actual_005.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/wasm/worklife6/rhwp_png/rhwp_005.png",
+    "actualSize": [
+      794,
+      1123
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": false,
+    "actualPaddedRgbSha256": "2d367436970275dd59520233623d94911fb44618e7c3d1ddc2501d6535b7816a",
+    "wholePaddedRgbSha256": "9d54a44e017f13f58108c81234e115fb199d2a238df60e50f1b368e077d33f9e"
+  },
+  {
+    "case": "court2-p001",
+    "backend": "canvas2d",
+    "page": 1,
+    "scopeKey": "court2",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/studio/court2-p001/canvas2d-print/actual_001.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/wasm/court2/rhwp_png/rhwp_001.png",
+    "actualSize": [
+      794,
+      1123
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": false,
+    "actualPaddedRgbSha256": "835818ab2a6ea6fdb7ee8dac65d318331509a9d4389e8d1683f664be0af29ade",
+    "wholePaddedRgbSha256": "c8134dab24bef263889048b673d2f2e93e159969af48f53fa5de0a5399f7313c"
+  },
+  {
+    "case": "pii66-default-p050",
+    "backend": "canvas2d",
+    "page": 50,
+    "scopeKey": "pii66-default",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/studio/pii66-default-p050/canvas2d-print/actual_050.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/wasm/pii66-default/rhwp_png/rhwp_050.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": false,
+    "actualPaddedRgbSha256": "96e0de994b38478a26c31b9daa8da036604ab8f1f089ed67fcebd325144d1536",
+    "wholePaddedRgbSha256": "54b5467cf64779b4b0f152f9bb276453449f2d21ec4167b686d7d8411e0aad4e"
+  },
+  {
+    "case": "giant4138-original-p080",
+    "backend": "canvas2d",
+    "page": 80,
+    "scopeKey": "giant4138-original",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/studio/giant4138-original-p080/canvas2d-print/actual_080.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/wasm/giant4138-original/rhwp_png/rhwp_080.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": false,
+    "actualPaddedRgbSha256": "90382fc182f890f3054aacc3458956764a59231328a88ec4224f489ffb4ea40f",
+    "wholePaddedRgbSha256": "2eafc50ee0371279aa728202fc0dffd4cd4f08959b92c03ad80a359ff3131a32"
+  },
+  {
+    "case": "hwp3-original-p003",
+    "backend": "canvas2d",
+    "page": 3,
+    "scopeKey": "hwp3-alias",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/studio/hwp3-original-p003/canvas2d-print/actual_003.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/wasm/hwp3-alias/rhwp_png/rhwp_003.png",
+    "actualSize": [
+      794,
+      1123
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": false,
+    "actualPaddedRgbSha256": "7149b383376de4bdbf1cbeb8ab635e12d8c272a4d3fa271b336cb50fb76a62f2",
+    "wholePaddedRgbSha256": "0a8ab9f6e24d4d33e7084ef0b9dddc0581781bd81622ed10f24a12754aed3668"
+  },
+  {
+    "case": "superscript3-p001",
+    "backend": "canvas2d",
+    "page": 1,
+    "scopeKey": "superscript3",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/studio/superscript3-p001/canvas2d-print/actual_001.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/wasm/superscript3/rhwp_png/rhwp_001.png",
+    "actualSize": [
+      794,
+      1123
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": false,
+    "actualPaddedRgbSha256": "afd617231648728dc816e9ae59743bc48c8e2253e72a3d875f68d60e2edc0353",
+    "wholePaddedRgbSha256": "198badb0b00ff548187976491231adabcb7ad93129ee5c4f717662a4172e34bd"
+  },
+  {
+    "case": "sample11-original-p002",
+    "backend": "canvas2d",
+    "page": 2,
+    "scopeKey": "original-sample11-user-print",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/studio/sample11-original-p002/canvas2d-print/actual_002.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/wasm/original-sample11-user-print/rhwp_png/rhwp_002.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": false,
+    "actualPaddedRgbSha256": "baff0ad3b83fff590e8c3cfc6a61b3dab70b8821ed9d066f95c2b24226d6f3b5",
+    "wholePaddedRgbSha256": "25fd211a9c574155354d3c22eda4873e6f8a6279f963dd36080f40965dc3c326"
+  },
+  {
+    "case": "sample11-original-p050",
+    "backend": "canvas2d",
+    "page": 50,
+    "scopeKey": "original-sample11-user-print",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/studio/sample11-original-p050/canvas2d-print/actual_050.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/wasm/original-sample11-user-print/rhwp_png/rhwp_050.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": false,
+    "actualPaddedRgbSha256": "5314f36b04fd8fc0bcf96a9860e9c749f96568fed9ee1f2f9dcab6d820839652",
+    "wholePaddedRgbSha256": "d6b613bb3195feb8b7d8305668d28527e5307629882fc865629df4224af57b9f"
+  },
+  {
+    "case": "sample11-original-p100",
+    "backend": "canvas2d",
+    "page": 100,
+    "scopeKey": "original-sample11-user-print",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/studio/sample11-original-p100/canvas2d-print/actual_100.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/wasm/original-sample11-user-print/rhwp_png/rhwp_100.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": false,
+    "actualPaddedRgbSha256": "03678df6f89915437271630cfd47853ac5c39ac10cbd50a1d9f15fe6088e0406",
+    "wholePaddedRgbSha256": "034b62c894a7a997743512e3d7e6b5bbbd113aac6159631b3b66da170aee0216"
+  },
+  {
+    "case": "sample16-original-p006",
+    "backend": "canvas2d",
+    "page": 6,
+    "scopeKey": "original-sample16",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/studio/sample16-original-p006/canvas2d-print/actual_006.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/wasm/original-sample16/rhwp_png/rhwp_006.png",
+    "actualSize": [
+      794,
+      1122
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": false,
+    "actualPaddedRgbSha256": "16feb47435069c902bde8dabf00680cd0a6307a59a5d6c026218459372ab9c19",
+    "wholePaddedRgbSha256": "3637b97a91d1b0139402c32aed49b15e3e20f4223ba5eff3211f1c181c1e31b9"
+  },
+  {
+    "case": "sample16-original-p033",
+    "backend": "canvas2d",
+    "page": 33,
+    "scopeKey": "original-sample16",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/studio/sample16-original-p033/canvas2d-print/actual_033.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/wasm/original-sample16/rhwp_png/rhwp_033.png",
+    "actualSize": [
+      794,
+      1123
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": false,
+    "actualPaddedRgbSha256": "eb766cbdde1f19a10675027fc0ce9875b99da9e348ae62c15f4ddc406ce51d68",
+    "wholePaddedRgbSha256": "82c3d35d9bce23a8db99f84e774967dafd25edb06187240ada42792c8a3e1246"
+  },
+  {
+    "case": "rowbreak18-p007",
+    "backend": "canvas2d",
+    "page": 7,
+    "scopeKey": "rowbreak18",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/studio/rowbreak18-p007/canvas2d-print/actual_007.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/wasm/rowbreak18/rhwp_png/rhwp_007.png",
+    "actualSize": [
+      794,
+      1123
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": false,
+    "actualPaddedRgbSha256": "b05d050518088c0a6797d0772dc6e0f896542fa4e5ce590d2a9046252c19981c",
+    "wholePaddedRgbSha256": "fc2220ad9a56b29339935ce844ba2d9cf83a6244b8d20242396b0644dc0898ab"
+  },
+  {
+    "case": "roadmap-p153",
+    "backend": "canvas2d",
+    "page": 153,
+    "scopeKey": "roadmap302",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/studio/roadmap-p153/canvas2d-print/actual_153.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/wasm/roadmap302/rhwp_png/rhwp_153.png",
+    "actualSize": [
+      794,
+      1123
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": false,
+    "actualPaddedRgbSha256": "22be087727e8c073b3f4c8f3382851feefd472ccee7747cab037b7e5a7e594f7",
+    "wholePaddedRgbSha256": "67834f92bd5a21c590950318dfd328b69ead3aa96f30051ab2839880dd3bfe50"
+  },
+  {
+    "case": "low-slack-p001",
+    "backend": "canvas2d",
+    "page": 1,
+    "scopeKey": "low-slack6535",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/studio/low-slack-p001/canvas2d-print/actual_001.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/wasm/low-slack6535/rhwp_png/rhwp_001.png",
+    "actualSize": [
+      794,
+      1123
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": false,
+    "actualPaddedRgbSha256": "546421521ad7296aef06781b8dda19a5819edb3a71d2e727d3c1024e2874abe5",
+    "wholePaddedRgbSha256": "9a20bb940965860c8ceccd227f3f80e5aca2524d66589f8f62f43ca393bb2e7b"
+  },
+  {
+    "case": "missing-lineseg1-p001",
+    "backend": "canvas2d",
+    "page": 1,
+    "scopeKey": "missing-lineseg1",
+    "actual": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage97-actual-consumers-r2/studio/missing-lineseg1-p001/canvas2d-print/actual_001.png",
+    "whole": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage96-whole50/head/wasm/missing-lineseg1/rhwp_png/rhwp_001.png",
+    "actualSize": [
+      794,
+      1123
+    ],
+    "wholeSize": [
+      794,
+      1122
+    ],
+    "paddedPixelIdentity": false,
+    "actualPaddedRgbSha256": "9be18e1759bebafed44b7e1669bd30a77630ef4756c5f5ad11051ebd0acaf5e0",
+    "wholePaddedRgbSha256": "b0e54172ca38ca744bb5f0790cbb9060d6d0b54bd42c1c247c94ba23f43bbe47"
+  }
+]

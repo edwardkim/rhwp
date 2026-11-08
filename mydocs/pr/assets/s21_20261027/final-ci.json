@@ -1,0 +1,2149 @@
+{
+  "state": "finished",
+  "pid": 107701,
+  "head": "aee691ae596d288382369b9d5243f4cd06e7fa65",
+  "ci_run": 40489874571,
+  "merge_performed": false,
+  "passed": true,
+  "observed_at": "2026-10-27T11:21:37.151114+00:00",
+  "base": "faa885e8b54ffc7cdf4196cd43a3103f362499a2",
+  "mergeable": true,
+  "mergeable_state": "clean",
+  "ci_url": "https://github.com/edwardkim/rhwp/actions/runs/40489874571",
+  "ci_conclusion": "success",
+  "archive_counts": {
+    "a": {
+      "expected": 3801,
+      "actual": 3801,
+      "worker_job_id": 122146767833
+    },
+    "b": {
+      "expected": 1895,
+      "actual": 1895,
+      "worker_job_id": 122146199976
+    },
+    "c": {
+      "expected": 1163,
+      "actual": 1163,
+      "worker_job_id": 122146782026
+    },
+    "d": {
+      "expected": 2323,
+      "actual": 2323,
+      "worker_job_id": 122147711648
+    },
+    "e": {
+      "expected": 2456,
+      "actual": 2456,
+      "worker_job_id": 122147616486
+    }
+  },
+  "archive_total": 11638,
+  "archive_artifacts": [
+    {
+      "name": "archive-expected-40489874571-a",
+      "artifact_id": 12728088280,
+      "zip_sha256": "fb1ad4182a46b3bc1e71f1a2d4688a36412ccac0a1360e6ce85b7caf2486798f",
+      "filename": "archive-expected-total.txt",
+      "count": 3801
+    },
+    {
+      "name": "shard-count-a-1",
+      "artifact_id": 12729098245,
+      "zip_sha256": "e805e2075ae6b70624200e0192918aa1e54e34d93f33d469a8f61a045ce35be1",
+      "filename": "shard-count-a-1.txt",
+      "count": 3801
+    },
+    {
+      "name": "archive-expected-40489874571-b",
+      "artifact_id": 12727653216,
+      "zip_sha256": "9ec34c59c63bcb5acf14aa3ec7e471ba9ce13f965b663c2ed8bec7be9d797def",
+      "filename": "archive-expected-total.txt",
+      "count": 1895
+    },
+    {
+      "name": "shard-count-b-1",
+      "artifact_id": 12729221738,
+      "zip_sha256": "d236410b929518b84aa9c8a6e219836feec9ff77583d1f3cd93513d0d460b7b8",
+      "filename": "shard-count-b-1.txt",
+      "count": 1895
+    },
+    {
+      "name": "archive-expected-40489874571-c",
+      "artifact_id": 12727858485,
+      "zip_sha256": "a4c0969eb8d02eced6dcb2e4ab70891c3f1424e05137a6df7f03291ef8a625c2",
+      "filename": "archive-expected-total.txt",
+      "count": 1163
+    },
+    {
+      "name": "shard-count-c-1",
+      "artifact_id": 12729887873,
+      "zip_sha256": "10a8328264262aa45e1441df4fe684a9126cb79ff3baffc862f43cce6babf641",
+      "filename": "shard-count-c-1.txt",
+      "count": 1163
+    },
+    {
+      "name": "archive-expected-40489874571-d",
+      "artifact_id": 12727983957,
+      "zip_sha256": "37e51801b9b17295536ffc65808b0b5d7aa3b4ecdf1c3539d45437df565971d4",
+      "filename": "archive-expected-total.txt",
+      "count": 2323
+    },
+    {
+      "name": "shard-count-d-1",
+      "artifact_id": 12730726521,
+      "zip_sha256": "170b16c2beaeebec0292e842075bc27beb893592a796444c420e228206207bc4",
+      "filename": "shard-count-d-1.txt",
+      "count": 2323
+    },
+    {
+      "name": "archive-expected-40489874571-e",
+      "artifact_id": 12728898325,
+      "zip_sha256": "3f4bb60973d367e2e81457e82d6ef14527b9d01788cf0e4ddc1883ee4361cd0c",
+      "filename": "archive-expected-total.txt",
+      "count": 2456
+    },
+    {
+      "name": "shard-count-e-1",
+      "artifact_id": 12729677463,
+      "zip_sha256": "5ddfa03b6bd99c6d31b1bfcf9e48e9d8d87bb589199cc84d6493ba3179244503",
+      "filename": "shard-count-e-1.txt",
+      "count": 2456
+    }
+  ],
+  "native_skia_passed": 124,
+  "native_commands": 15,
+  "native_log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/ci8319-final-native-4829.log",
+  "native_log_sha256": "9adb200bba09f4ad9919dc2a5fdd1a74582d60b2b391d09657a2e84ddee6ffdc",
+  "checks": [
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:37:05Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489868290/job/122140806370",
+      "name": "cancel-stale-runs",
+      "startedAt": "2026-10-27T10:37:05Z",
+      "status": "COMPLETED",
+      "workflowName": "Cancel stale PR runs"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:37:19Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874581/job/122140824250",
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "startedAt": "2026-10-27T10:37:10Z",
+      "status": "COMPLETED",
+      "workflowName": "Adapter inter-diff"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:37:26Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874571/job/122140899939",
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "startedAt": "2026-10-27T10:37:20Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:37:37Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489868259/job/122140803831",
+      "name": "Evaluate trusted CI impact policy",
+      "startedAt": "2026-10-27T10:37:08Z",
+      "status": "COMPLETED",
+      "workflowName": "CI Impact Policy Controller"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:37:19Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874383/job/122140823111",
+      "name": "cancel-stale-runs",
+      "startedAt": "2026-10-27T10:37:10Z",
+      "status": "COMPLETED",
+      "workflowName": "Cancel stale PR runs"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:37:17Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874584/job/122140824120",
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "startedAt": "2026-10-27T10:37:10Z",
+      "status": "COMPLETED",
+      "workflowName": "CodeQL"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:40:18Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874369/job/122140822992",
+      "name": "Gym benchmark contracts",
+      "startedAt": "2026-10-27T10:37:10Z",
+      "status": "COMPLETED",
+      "workflowName": "Gym Benchmark Validation"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:37:18Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874518/job/122140823908",
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "startedAt": "2026-10-27T10:37:10Z",
+      "status": "COMPLETED",
+      "workflowName": "Proptest roundtrip"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:37:50Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874368/job/122140824132",
+      "name": "Render Diff preflight",
+      "startedAt": "2026-10-27T10:37:10Z",
+      "status": "COMPLETED",
+      "workflowName": "Render Diff"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:41:16Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874491/job/122140823242",
+      "name": "Skill router gate",
+      "startedAt": "2026-10-27T10:37:10Z",
+      "status": "COMPLETED",
+      "workflowName": "Skill router gate"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:37:17Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874571/job/122140901871",
+      "name": "WASM Build",
+      "startedAt": "2026-10-27T10:37:18Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:40:19Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874369/job/122142196409",
+      "name": "Full Gym benchmark validation",
+      "startedAt": "2026-10-27T10:40:19Z",
+      "status": "COMPLETED",
+      "workflowName": "Gym Benchmark Validation"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:37:40Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874581/job/122140911136",
+      "name": "adapter inter-diff preflight",
+      "startedAt": "2026-10-27T10:37:22Z",
+      "status": "COMPLETED",
+      "workflowName": "Adapter inter-diff"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:37:51Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874584/job/122140897192",
+      "name": "CodeQL preflight",
+      "startedAt": "2026-10-27T10:37:20Z",
+      "status": "COMPLETED",
+      "workflowName": "CodeQL"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:37:37Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874518/job/122140905678",
+      "name": "Proptest preflight",
+      "startedAt": "2026-10-27T10:37:21Z",
+      "status": "COMPLETED",
+      "workflowName": "Proptest roundtrip"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T11:04:22Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874368/job/122141135272",
+      "name": "Canvas visual diff",
+      "startedAt": "2026-10-27T10:37:53Z",
+      "status": "COMPLETED",
+      "workflowName": "Render Diff"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:43:14Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874581/job/122141060091",
+      "name": "adapter inter-diff",
+      "startedAt": "2026-10-27T10:37:42Z",
+      "status": "COMPLETED",
+      "workflowName": "Adapter inter-diff"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:38:03Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874571/job/122140964604",
+      "name": "CI preflight",
+      "startedAt": "2026-10-27T10:37:30Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:44:18Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874584/job/122141141527",
+      "name": "Analyze (javascript-typescript)",
+      "startedAt": "2026-10-27T10:37:54Z",
+      "status": "COMPLETED",
+      "workflowName": "CodeQL"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:44:40Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874518/job/122141040545",
+      "name": "prop roundtrip",
+      "startedAt": "2026-10-27T10:37:40Z",
+      "status": "COMPLETED",
+      "workflowName": "Proptest roundtrip"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:43:50Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874584/job/122141141562",
+      "name": "Analyze (python)",
+      "startedAt": "2026-10-27T10:37:54Z",
+      "status": "COMPLETED",
+      "workflowName": "CodeQL"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:53:06Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874584/job/122141141436",
+      "name": "Analyze (rust)",
+      "startedAt": "2026-10-27T10:37:54Z",
+      "status": "COMPLETED",
+      "workflowName": "CodeQL"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:41:20Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874584/job/122141141379",
+      "name": "Analyze (actions)",
+      "startedAt": "2026-10-27T10:37:54Z",
+      "status": "COMPLETED",
+      "workflowName": "CodeQL"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:38:04Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874571/job/122141230452",
+      "name": "release-operations-contracts",
+      "startedAt": "2026-10-27T10:38:04Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:38:11Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874571/job/122141228642",
+      "name": "Resolve nextest target duration policy",
+      "startedAt": "2026-10-27T10:38:07Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:50:58Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874571/job/122141228657",
+      "name": "build-test-archive-a / Build test archive (a)",
+      "startedAt": "2026-10-27T10:38:07Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:52:31Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874571/job/122141228545",
+      "name": "Lint (fmt, clippy, WASM check)",
+      "startedAt": "2026-10-27T10:38:06Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:59:42Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874571/job/122141228395",
+      "name": "Native Skia tests",
+      "startedAt": "2026-10-27T10:38:07Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:38:04Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874571/job/122141231496",
+      "name": "Frontend unit gates",
+      "startedAt": "2026-10-27T10:38:04Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:49:09Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874571/job/122141228514",
+      "name": "Frontend package gates",
+      "startedAt": "2026-10-27T10:38:06Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:38:04Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874571/job/122141230849",
+      "name": "Workflow promotion preflight",
+      "startedAt": "2026-10-27T10:38:04Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:49:39Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874571/job/122141279732",
+      "name": "build-test-archive-b / Build test archive (b)",
+      "startedAt": "2026-10-27T10:38:14Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:51:00Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874571/job/122141279692",
+      "name": "build-test-archive-c / Build test archive (c)",
+      "startedAt": "2026-10-27T10:38:14Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:53:09Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874571/job/122141279673",
+      "name": "build-test-archive-d / Build test archive (d)",
+      "startedAt": "2026-10-27T10:38:14Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:52:55Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874571/job/122141279514",
+      "name": "build-test-archive-e / Build test archive (e)",
+      "startedAt": "2026-10-27T10:38:14Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:55:25Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874571/job/122146767833",
+      "name": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+      "startedAt": "2026-10-27T10:51:01Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T11:07:59Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874571/job/122146199976",
+      "name": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+      "startedAt": "2026-10-27T10:49:42Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T11:20:09Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874571/job/122146782026",
+      "name": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+      "startedAt": "2026-10-27T10:51:03Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T11:16:05Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874571/job/122147711648",
+      "name": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+      "startedAt": "2026-10-27T10:53:12Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T11:15:01Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874571/job/122147616486",
+      "name": "test-archive-e-shard-1 / Default-feature tests (Archive E)",
+      "startedAt": "2026-10-27T10:52:58Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T11:20:19Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/40489874571/job/122159308773",
+      "name": "Build & Test",
+      "startedAt": "2026-10-27T11:20:12Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "StatusContext",
+      "context": "CI Impact Policy",
+      "startedAt": "2026-10-27T11:20:59Z",
+      "state": "SUCCESS",
+      "targetUrl": "https://github.com/edwardkim/rhwp/actions/runs/40495384655"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T10:41:14Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/runs/122142574439",
+      "name": "CodeQL",
+      "startedAt": "2026-10-27T10:41:11Z",
+      "status": "COMPLETED",
+      "workflowName": ""
+    }
+  ],
+  "policy": [
+    {
+      "url": "https://api.github.com/repos/edwardkim/rhwp/statuses/aee691ae596d288382369b9d5243f4cd06e7fa65",
+      "avatar_url": "https://avatars.githubusercontent.com/in/15368?v=4",
+      "id": 57357583988,
+      "node_id": "SC_kwDORyECHM8AAAANWsdGdA",
+      "state": "success",
+      "description": "v=8;cv=unavailable;mode=full;rfp=0;wf=111;rust=1;fe=package;render=1;skia=1;ql=js,py,rs,ac;b=faa885e8b54ffc7cdf4196cd43a3103f362499a2",
+      "target_url": "https://github.com/edwardkim/rhwp/actions/runs/40495384655",
+      "context": "CI Impact Policy",
+      "created_at": "2026-10-27T11:20:59Z",
+      "updated_at": "2026-10-27T11:20:59Z"
+    }
+  ],
+  "jobs": [
+    {
+      "id": 122140899939,
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122140901871,
+      "name": "WASM Build",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 122140964604,
+      "name": "CI preflight",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122141228395,
+      "name": "Native Skia tests",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122141228514,
+      "name": "Frontend package gates",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122141228545,
+      "name": "Lint (fmt, clippy, WASM check)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122141228642,
+      "name": "Resolve nextest target duration policy",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122141228657,
+      "name": "build-test-archive-a / Build test archive (a)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122141230452,
+      "name": "release-operations-contracts",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 122141230849,
+      "name": "Workflow promotion preflight",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 122141231496,
+      "name": "Frontend unit gates",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 122141279514,
+      "name": "build-test-archive-e / Build test archive (e)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122141279673,
+      "name": "build-test-archive-d / Build test archive (d)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122141279692,
+      "name": "build-test-archive-c / Build test archive (c)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122141279732,
+      "name": "build-test-archive-b / Build test archive (b)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122146199976,
+      "name": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122146767833,
+      "name": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122146782026,
+      "name": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122147616486,
+      "name": "test-archive-e-shard-1 / Default-feature tests (Archive E)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122147711648,
+      "name": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122159308773,
+      "name": "Build & Test",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "merge_sha": null,
+  "merged_at": null,
+  "record_mode": "same-pr-trailing",
+  "record_branch": "review/semanticist21-20261019",
+  "runtime_source": "04c92da78165ccbf63b467855591df183655a98d",
+  "local_ci_fix": {
+    "test_source_sha256": "70bf3517f4bcde8bb8824898b175559e7bdafdf6ed605b10186cc3b4744fb85d",
+    "jobs": 8,
+    "test_threads": 12,
+    "target": "target/pr-review",
+    "steps": [
+      {
+        "name": "native-suite-prepare",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "seconds": 1.5055753990309313,
+        "summary": []
+      },
+      {
+        "name": "native-pdf-paint-normal",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "--cargo-test",
+          "issue_7950_pdf_paint",
+          "--",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia"
+        ],
+        "exit_code": 0,
+        "seconds": 17.004660547012463,
+        "summary": [
+          "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 267 filtered out; finished in 1.76s"
+        ]
+      },
+      {
+        "name": "native-pdf-paint-minimal",
+        "command": [
+          "bwrap",
+          "--ro-bind",
+          "/",
+          "/",
+          "--proc",
+          "/proc",
+          "--dev",
+          "/dev",
+          "--unshare-pid",
+          "--tmpfs",
+          "/tmp",
+          "--ro-bind",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797/fonts",
+          "/usr/share/fonts",
+          "--bind",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+          "--tmpfs",
+          "/usr/local/share/fonts",
+          "--tmpfs",
+          "/home/tsjang/.local/share/fonts",
+          "--setenv",
+          "FONTCONFIG_FILE",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797/fonts.conf",
+          "--unsetenv",
+          "RHWP_FONT_PATH",
+          "--",
+          "/home/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_015-445566dbe9c3d9a1",
+          "issue_7950_pdf_paint::",
+          "--nocapture"
+        ],
+        "exit_code": 0,
+        "seconds": 0.26996610197238624,
+        "summary": [
+          "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 267 filtered out; finished in 0.25s"
+        ]
+      },
+      {
+        "name": "ci-native-skia-filter",
+        "command": [
+          "cargo",
+          "test",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "skia",
+          "--lib",
+          "--verbose"
+        ],
+        "exit_code": 0,
+        "seconds": 24.25777140597347,
+        "summary": [
+          "test result: ok. 58 passed; 0 failed; 0 ignored; 0 measured; 3812 filtered out; finished in 23.30s",
+          "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 0.00s",
+          "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 165 filtered out; finished in 0.00s",
+          "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s"
+        ]
+      },
+      {
+        "name": "ci-native-cli_exit_codes_native",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "--cargo-test",
+          "cli_exit_codes_native",
+          "--",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--verbose"
+        ],
+        "exit_code": 0,
+        "seconds": 22.856297228951007,
+        "summary": [
+          "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 21.50s"
+        ]
+      },
+      {
+        "name": "ci-native-issue_1144_native",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "--cargo-test",
+          "issue_1144_native",
+          "--",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--verbose"
+        ],
+        "exit_code": 0,
+        "seconds": 3.4128975180210546,
+        "summary": [
+          "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s"
+        ]
+      },
+      {
+        "name": "ci-native-issue_2225_missing_picture_placeholder",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "--cargo-test",
+          "issue_2225_missing_picture_placeholder",
+          "--",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--verbose"
+        ],
+        "exit_code": 0,
+        "seconds": 15.423563810996711,
+        "summary": [
+          "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 277 filtered out; finished in 1.20s"
+        ]
+      },
+      {
+        "name": "ci-native-render_p37_direct_pdf_export",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "--cargo-test",
+          "render_p37_direct_pdf_export",
+          "--",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--verbose"
+        ],
+        "exit_code": 0,
+        "seconds": 15.491065287962556,
+        "summary": [
+          "test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 259 filtered out; finished in 0.48s"
+        ]
+      },
+      {
+        "name": "ci-native-issue_7950_pdf_paint",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "--cargo-test",
+          "issue_7950_pdf_paint",
+          "--",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--verbose"
+        ],
+        "exit_code": 0,
+        "seconds": 2.6471082129282877,
+        "summary": [
+          "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 267 filtered out; finished in 1.79s"
+        ]
+      },
+      {
+        "name": "ci-native-issue_2083_hide_fill_page_background",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "--cargo-test",
+          "issue_2083_hide_fill_page_background",
+          "--",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--verbose"
+        ],
+        "exit_code": 0,
+        "seconds": 15.504816700005904,
+        "summary": [
+          "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 274 filtered out; finished in 0.79s"
+        ]
+      },
+      {
+        "name": "ci-native-issue_2292_chart_png_clip",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "--cargo-test",
+          "issue_2292_chart_png_clip",
+          "--",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--verbose"
+        ],
+        "exit_code": 0,
+        "seconds": 14.90041493496392,
+        "summary": [
+          "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 261 filtered out; finished in 0.27s"
+        ]
+      },
+      {
+        "name": "ci-native-issue_2293_chart_png_text",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "--cargo-test",
+          "issue_2293_chart_png_text",
+          "--",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--verbose"
+        ],
+        "exit_code": 0,
+        "seconds": 17.888108832994476,
+        "summary": [
+          "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 297 filtered out; finished in 5.87s"
+        ]
+      },
+      {
+        "name": "ci-native-issue_7820_sixel_contract",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "--cargo-test",
+          "issue_7820_sixel_contract",
+          "--",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--verbose"
+        ],
+        "exit_code": 0,
+        "seconds": 14.194138494087383,
+        "summary": [
+          "test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 260 filtered out; finished in 0.07s"
+        ]
+      },
+      {
+        "name": "ci-native-issue_8150_kitty_contract",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "--cargo-test",
+          "issue_8150_kitty_contract",
+          "--",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--verbose"
+        ],
+        "exit_code": 0,
+        "seconds": 12.838753232033923,
+        "summary": [
+          "test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 274 filtered out; finished in 0.06s"
+        ]
+      },
+      {
+        "name": "ci-native-issue_4961_font_decision_trace",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "--cargo-test",
+          "issue_4961_font_decision_trace",
+          "--",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--verbose"
+        ],
+        "exit_code": 0,
+        "seconds": 10.078008454060182,
+        "summary": [
+          "test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 263 filtered out; finished in 9.19s"
+        ]
+      },
+      {
+        "name": "ci-native-issue_7902_original_frame_and_content",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "--cargo-test",
+          "issue_7902_original_frame_and_content",
+          "--",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--verbose"
+        ],
+        "exit_code": 0,
+        "seconds": 26.640304355998524,
+        "summary": [
+          "test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 260 filtered out; finished in 25.73s"
+        ]
+      },
+      {
+        "name": "ci-native-issue_8160_hwp2022_paragraph_relations",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "--cargo-test",
+          "issue_8160_hwp2022_paragraph_relations",
+          "--",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--verbose"
+        ],
+        "exit_code": 0,
+        "seconds": 24.900831502047367,
+        "summary": [
+          "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 264 filtered out; finished in 23.98s"
+        ]
+      },
+      {
+        "name": "ci-native-native_fractional_glyph_origin",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "--cargo-test",
+          "native_fractional_glyph_origin",
+          "--",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--verbose"
+        ],
+        "exit_code": 0,
+        "seconds": 12.637733467970975,
+        "summary": [
+          "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 270 filtered out; finished in 0.43s"
+        ]
+      },
+      {
+        "name": "ci-fix-format",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 26.816941592027433,
+        "summary": []
+      },
+      {
+        "name": "ci-fix-native-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 2.4888045779662207,
+        "summary": []
+      },
+      {
+        "name": "ci-fix-wasm-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 2.0632427929667756,
+        "summary": []
+      },
+      {
+        "name": "ci-fix-workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace"
+        ],
+        "exit_code": 0,
+        "seconds": 141.6913587419549,
+        "summary": []
+      },
+      {
+        "name": "ci-fix-workspace-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 46.70699582295492,
+        "summary": []
+      },
+      {
+        "name": "ci-fix-skia-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--features",
+          "native-skia",
+          "--all-targets",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 27.493537073023617,
+        "summary": []
+      },
+      {
+        "name": "ci-fix-suite-policy",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "faa885e8b54ffc7cdf4196cd43a3103f362499a2"
+        ],
+        "exit_code": 0,
+        "seconds": 6.875337231089361,
+        "summary": []
+      }
+    ]
+  },
+  "local_chart_label_fix": {
+    "steps": [
+      {
+        "name": "ci-chart-format",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 32.61866448400542,
+        "summary": []
+      },
+      {
+        "name": "ci-chart-native-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 3.338113645091653,
+        "summary": []
+      },
+      {
+        "name": "ci-chart-wasm-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 2.881387098925188,
+        "summary": []
+      },
+      {
+        "name": "ci-chart-workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace"
+        ],
+        "exit_code": 0,
+        "seconds": 2.8385982300387695,
+        "summary": []
+      },
+      {
+        "name": "ci-chart-workspace-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 21.26522303407546,
+        "summary": []
+      },
+      {
+        "name": "ci-chart-skia-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--features",
+          "native-skia",
+          "--test",
+          "regression_suite_024",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 5.604767289943993,
+        "summary": []
+      },
+      {
+        "name": "ci-chart-suite-policy",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "faa885e8b54ffc7cdf4196cd43a3103f362499a2"
+        ],
+        "exit_code": 0,
+        "seconds": 1.7340935610700399,
+        "summary": []
+      }
+    ],
+    "evidence": "ci_chart_labels/evidence.json",
+    "coordinate_or_fixed_region_pins": false
+  },
+  "local_native_minimal_all": {
+    "source_reuse": "#2293은 4824의 새 실행 파일, 나머지는 동일 source의 4806 실행 파일을 재사용",
+    "font_inventory": [
+      "DejaVu Serif,DejaVu Serif Condensed\t/usr/share/fonts/truetype/dejavu/DejaVuSerifCondensed-Italic.ttf",
+      "DejaVu Serif\t/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf",
+      "DejaVu Math TeX Gyre\t/usr/share/fonts/truetype/dejavu/DejaVuMathTeXGyre.ttf",
+      "DejaVu Sans,DejaVu Sans Condensed\t/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed.ttf",
+      "DejaVu Serif,DejaVu Serif Condensed\t/usr/share/fonts/truetype/dejavu/DejaVuSerifCondensed.ttf",
+      "DejaVu Serif\t/usr/share/fonts/truetype/dejavu/DejaVuSerif-Italic.ttf",
+      "DejaVu Sans\t/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+      "DejaVu Sans,DejaVu Sans Condensed\t/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed-BoldOblique.ttf",
+      "DejaVu Sans,DejaVu Sans Condensed\t/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed-Oblique.ttf",
+      "DejaVu Sans,DejaVu Sans Condensed\t/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed-Bold.ttf",
+      "DejaVu Sans Mono\t/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Oblique.ttf",
+      "DejaVu Sans\t/usr/share/fonts/truetype/dejavu/DejaVuSans-BoldOblique.ttf",
+      "DejaVu Sans,DejaVu Sans Light\t/usr/share/fonts/truetype/dejavu/DejaVuSans-ExtraLight.ttf",
+      "DejaVu Serif\t/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
+      "DejaVu Sans Mono\t/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf",
+      "DejaVu Serif\t/usr/share/fonts/truetype/dejavu/DejaVuSerif-BoldItalic.ttf",
+      "DejaVu Sans Mono\t/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
+      "DejaVu Sans Mono\t/usr/share/fonts/truetype/dejavu/DejaVuSansMono-BoldOblique.ttf",
+      "DejaVu Sans\t/usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf",
+      "DejaVu Serif,DejaVu Serif Condensed\t/usr/share/fonts/truetype/dejavu/DejaVuSerifCondensed-Bold.ttf",
+      "DejaVu Sans\t/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+      "DejaVu Serif,DejaVu Serif Condensed\t/usr/share/fonts/truetype/dejavu/DejaVuSerifCondensed-BoldItalic.ttf"
+    ],
+    "steps": [
+      {
+        "case": "skia-filter",
+        "runs": [
+          {
+            "command": [
+              "bwrap",
+              "--ro-bind",
+              "/",
+              "/",
+              "--proc",
+              "/proc",
+              "--dev",
+              "/dev",
+              "--unshare-pid",
+              "--tmpfs",
+              "/tmp",
+              "--ro-bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797/fonts",
+              "/usr/share/fonts",
+              "--bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "--tmpfs",
+              "/usr/local/share/fonts",
+              "--tmpfs",
+              "/home/tsjang/.local/share/fonts",
+              "--setenv",
+              "FONTCONFIG_FILE",
+              "/etc/fonts/fonts.conf",
+              "--unsetenv",
+              "RHWP_FONT_PATH",
+              "--",
+              "/home/tsjang/rhwp/target/pr-review/release-test/deps/rhwp-85ee8397276af0f8",
+              "skia"
+            ],
+            "log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/ci-all-minimal-skia-filter-0-4833.log",
+            "exit_code": 0,
+            "seconds": 0.5678629950853065,
+            "summaries": [
+              [
+                "58",
+                "0"
+              ]
+            ]
+          },
+          {
+            "command": [
+              "bwrap",
+              "--ro-bind",
+              "/",
+              "/",
+              "--proc",
+              "/proc",
+              "--dev",
+              "/dev",
+              "--unshare-pid",
+              "--tmpfs",
+              "/tmp",
+              "--ro-bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797/fonts",
+              "/usr/share/fonts",
+              "--bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "--tmpfs",
+              "/usr/local/share/fonts",
+              "--tmpfs",
+              "/home/tsjang/.local/share/fonts",
+              "--setenv",
+              "FONTCONFIG_FILE",
+              "/etc/fonts/fonts.conf",
+              "--unsetenv",
+              "RHWP_FONT_PATH",
+              "--",
+              "/home/tsjang/rhwp/target/pr-review/release-test/deps/rhwp_contracts-35913d6581fbbc42",
+              "skia"
+            ],
+            "log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/ci-all-minimal-skia-filter-1-4833.log",
+            "exit_code": 0,
+            "seconds": 0.03275214589666575,
+            "summaries": [
+              [
+                "0",
+                "0"
+              ]
+            ]
+          },
+          {
+            "command": [
+              "bwrap",
+              "--ro-bind",
+              "/",
+              "/",
+              "--proc",
+              "/proc",
+              "--dev",
+              "/dev",
+              "--unshare-pid",
+              "--tmpfs",
+              "/tmp",
+              "--ro-bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797/fonts",
+              "/usr/share/fonts",
+              "--bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "--tmpfs",
+              "/usr/local/share/fonts",
+              "--tmpfs",
+              "/home/tsjang/.local/share/fonts",
+              "--setenv",
+              "FONTCONFIG_FILE",
+              "/etc/fonts/fonts.conf",
+              "--unsetenv",
+              "RHWP_FONT_PATH",
+              "--",
+              "/home/tsjang/rhwp/target/pr-review/release-test/deps/rhwp_ooxml_chart-b7d6fd33dc068424",
+              "skia"
+            ],
+            "log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/ci-all-minimal-skia-filter-2-4833.log",
+            "exit_code": 0,
+            "seconds": 0.04323313501663506,
+            "summaries": [
+              [
+                "0",
+                "0"
+              ]
+            ]
+          },
+          {
+            "command": [
+              "bwrap",
+              "--ro-bind",
+              "/",
+              "/",
+              "--proc",
+              "/proc",
+              "--dev",
+              "/dev",
+              "--unshare-pid",
+              "--tmpfs",
+              "/tmp",
+              "--ro-bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797/fonts",
+              "/usr/share/fonts",
+              "--bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "--tmpfs",
+              "/usr/local/share/fonts",
+              "--tmpfs",
+              "/home/tsjang/.local/share/fonts",
+              "--setenv",
+              "FONTCONFIG_FILE",
+              "/etc/fonts/fonts.conf",
+              "--unsetenv",
+              "RHWP_FONT_PATH",
+              "--",
+              "/home/tsjang/rhwp/target/pr-review/release-test/deps/rhwp_password_crypto-9876a4db586ab943",
+              "skia"
+            ],
+            "log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/ci-all-minimal-skia-filter-3-4833.log",
+            "exit_code": 0,
+            "seconds": 0.040238582994788885,
+            "summaries": [
+              [
+                "0",
+                "0"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "case": "cli_exit_codes_native",
+        "runs": [
+          {
+            "command": [
+              "bwrap",
+              "--ro-bind",
+              "/",
+              "/",
+              "--proc",
+              "/proc",
+              "--dev",
+              "/dev",
+              "--unshare-pid",
+              "--tmpfs",
+              "/tmp",
+              "--ro-bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797/fonts",
+              "/usr/share/fonts",
+              "--bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "--tmpfs",
+              "/usr/local/share/fonts",
+              "--tmpfs",
+              "/home/tsjang/.local/share/fonts",
+              "--setenv",
+              "FONTCONFIG_FILE",
+              "/etc/fonts/fonts.conf",
+              "--unsetenv",
+              "RHWP_FONT_PATH",
+              "--",
+              "/home/tsjang/rhwp/target/pr-review/release-test/deps/cli_exit_codes_native-d17c92c263fde73f"
+            ],
+            "log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/ci-all-minimal-cli_exit_codes_native-0-4833.log",
+            "exit_code": 0,
+            "seconds": 0.5718947169370949,
+            "summaries": [
+              [
+                "2",
+                "0"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "case": "issue_1144_native",
+        "runs": [
+          {
+            "command": [
+              "bwrap",
+              "--ro-bind",
+              "/",
+              "/",
+              "--proc",
+              "/proc",
+              "--dev",
+              "/dev",
+              "--unshare-pid",
+              "--tmpfs",
+              "/tmp",
+              "--ro-bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797/fonts",
+              "/usr/share/fonts",
+              "--bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "--tmpfs",
+              "/usr/local/share/fonts",
+              "--tmpfs",
+              "/home/tsjang/.local/share/fonts",
+              "--setenv",
+              "FONTCONFIG_FILE",
+              "/etc/fonts/fonts.conf",
+              "--unsetenv",
+              "RHWP_FONT_PATH",
+              "--",
+              "/home/tsjang/rhwp/target/pr-review/release-test/deps/issue_1144_native-887f75178f3550ce"
+            ],
+            "log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/ci-all-minimal-issue_1144_native-0-4833.log",
+            "exit_code": 0,
+            "seconds": 0.1250757569214329,
+            "summaries": [
+              [
+                "1",
+                "0"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "case": "issue_2225_missing_picture_placeholder",
+        "runs": [
+          {
+            "command": [
+              "bwrap",
+              "--ro-bind",
+              "/",
+              "/",
+              "--proc",
+              "/proc",
+              "--dev",
+              "/dev",
+              "--unshare-pid",
+              "--tmpfs",
+              "/tmp",
+              "--ro-bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797/fonts",
+              "/usr/share/fonts",
+              "--bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "--tmpfs",
+              "/usr/local/share/fonts",
+              "--tmpfs",
+              "/home/tsjang/.local/share/fonts",
+              "--setenv",
+              "FONTCONFIG_FILE",
+              "/etc/fonts/fonts.conf",
+              "--unsetenv",
+              "RHWP_FONT_PATH",
+              "--",
+              "/home/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_009-c079ed1b143255c9",
+              "issue_2225_missing_picture_placeholder::"
+            ],
+            "log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/ci-all-minimal-issue_2225_missing_picture_placeholder-0-4833.log",
+            "exit_code": 0,
+            "seconds": 0.4177828250685707,
+            "summaries": [
+              [
+                "2",
+                "0"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "case": "render_p37_direct_pdf_export",
+        "runs": [
+          {
+            "command": [
+              "bwrap",
+              "--ro-bind",
+              "/",
+              "/",
+              "--proc",
+              "/proc",
+              "--dev",
+              "/dev",
+              "--unshare-pid",
+              "--tmpfs",
+              "/tmp",
+              "--ro-bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797/fonts",
+              "/usr/share/fonts",
+              "--bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "--tmpfs",
+              "/usr/local/share/fonts",
+              "--tmpfs",
+              "/home/tsjang/.local/share/fonts",
+              "--setenv",
+              "FONTCONFIG_FILE",
+              "/etc/fonts/fonts.conf",
+              "--unsetenv",
+              "RHWP_FONT_PATH",
+              "--",
+              "/home/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_019-3bd323ecb397fad5",
+              "render_p37_direct_pdf_export::"
+            ],
+            "log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/ci-all-minimal-render_p37_direct_pdf_export-0-4833.log",
+            "exit_code": 0,
+            "seconds": 0.27071253897156566,
+            "summaries": [
+              [
+                "14",
+                "0"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "case": "issue_7950_pdf_paint",
+        "runs": [
+          {
+            "command": [
+              "bwrap",
+              "--ro-bind",
+              "/",
+              "/",
+              "--proc",
+              "/proc",
+              "--dev",
+              "/dev",
+              "--unshare-pid",
+              "--tmpfs",
+              "/tmp",
+              "--ro-bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797/fonts",
+              "/usr/share/fonts",
+              "--bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "--tmpfs",
+              "/usr/local/share/fonts",
+              "--tmpfs",
+              "/home/tsjang/.local/share/fonts",
+              "--setenv",
+              "FONTCONFIG_FILE",
+              "/etc/fonts/fonts.conf",
+              "--unsetenv",
+              "RHWP_FONT_PATH",
+              "--",
+              "/home/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_015-445566dbe9c3d9a1",
+              "issue_7950_pdf_paint::"
+            ],
+            "log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/ci-all-minimal-issue_7950_pdf_paint-0-4833.log",
+            "exit_code": 0,
+            "seconds": 0.6233168130274862,
+            "summaries": [
+              [
+                "4",
+                "0"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "case": "issue_2083_hide_fill_page_background",
+        "runs": [
+          {
+            "command": [
+              "bwrap",
+              "--ro-bind",
+              "/",
+              "/",
+              "--proc",
+              "/proc",
+              "--dev",
+              "/dev",
+              "--unshare-pid",
+              "--tmpfs",
+              "/tmp",
+              "--ro-bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797/fonts",
+              "/usr/share/fonts",
+              "--bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "--tmpfs",
+              "/usr/local/share/fonts",
+              "--tmpfs",
+              "/home/tsjang/.local/share/fonts",
+              "--setenv",
+              "FONTCONFIG_FILE",
+              "/etc/fonts/fonts.conf",
+              "--unsetenv",
+              "RHWP_FONT_PATH",
+              "--",
+              "/home/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_016-b906cb5138a63e9b",
+              "issue_2083_hide_fill_page_background::"
+            ],
+            "log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/ci-all-minimal-issue_2083_hide_fill_page_background-0-4833.log",
+            "exit_code": 0,
+            "seconds": 0.2194066799711436,
+            "summaries": [
+              [
+                "1",
+                "0"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "case": "issue_2292_chart_png_clip",
+        "runs": [
+          {
+            "command": [
+              "bwrap",
+              "--ro-bind",
+              "/",
+              "/",
+              "--proc",
+              "/proc",
+              "--dev",
+              "/dev",
+              "--unshare-pid",
+              "--tmpfs",
+              "/tmp",
+              "--ro-bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797/fonts",
+              "/usr/share/fonts",
+              "--bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "--tmpfs",
+              "/usr/local/share/fonts",
+              "--tmpfs",
+              "/home/tsjang/.local/share/fonts",
+              "--setenv",
+              "FONTCONFIG_FILE",
+              "/etc/fonts/fonts.conf",
+              "--unsetenv",
+              "RHWP_FONT_PATH",
+              "--",
+              "/home/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_023-857b9157fe408727",
+              "issue_2292_chart_png_clip::"
+            ],
+            "log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/ci-all-minimal-issue_2292_chart_png_clip-0-4833.log",
+            "exit_code": 0,
+            "seconds": 0.2235587170580402,
+            "summaries": [
+              [
+                "1",
+                "0"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "case": "issue_2293_chart_png_text",
+        "runs": [
+          {
+            "command": [
+              "bwrap",
+              "--ro-bind",
+              "/",
+              "/",
+              "--proc",
+              "/proc",
+              "--dev",
+              "/dev",
+              "--unshare-pid",
+              "--tmpfs",
+              "/tmp",
+              "--ro-bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797/fonts",
+              "/usr/share/fonts",
+              "--bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "--tmpfs",
+              "/usr/local/share/fonts",
+              "--tmpfs",
+              "/home/tsjang/.local/share/fonts",
+              "--setenv",
+              "FONTCONFIG_FILE",
+              "/etc/fonts/fonts.conf",
+              "--unsetenv",
+              "RHWP_FONT_PATH",
+              "--",
+              "/home/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_024-85f08c9b0ce1a567",
+              "issue_2293_chart_png_text::",
+              "--nocapture"
+            ],
+            "log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/ci-all-minimal-issue_2293_chart_png_text-0-4833.log",
+            "exit_code": 0,
+            "seconds": 5.8814852819778025,
+            "summaries": [
+              [
+                "2",
+                "0"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "case": "issue_7820_sixel_contract",
+        "runs": [
+          {
+            "command": [
+              "bwrap",
+              "--ro-bind",
+              "/",
+              "/",
+              "--proc",
+              "/proc",
+              "--dev",
+              "/dev",
+              "--unshare-pid",
+              "--tmpfs",
+              "/tmp",
+              "--ro-bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797/fonts",
+              "/usr/share/fonts",
+              "--bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "--tmpfs",
+              "/usr/local/share/fonts",
+              "--tmpfs",
+              "/home/tsjang/.local/share/fonts",
+              "--setenv",
+              "FONTCONFIG_FILE",
+              "/etc/fonts/fonts.conf",
+              "--unsetenv",
+              "RHWP_FONT_PATH",
+              "--",
+              "/home/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_005-f3e3fb829082fa6f",
+              "issue_7820_sixel_contract::"
+            ],
+            "log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/ci-all-minimal-issue_7820_sixel_contract-0-4833.log",
+            "exit_code": 0,
+            "seconds": 0.12032864498905838,
+            "summaries": [
+              [
+                "7",
+                "0"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "case": "issue_8150_kitty_contract",
+        "runs": [
+          {
+            "command": [
+              "bwrap",
+              "--ro-bind",
+              "/",
+              "/",
+              "--proc",
+              "/proc",
+              "--dev",
+              "/dev",
+              "--unshare-pid",
+              "--tmpfs",
+              "/tmp",
+              "--ro-bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797/fonts",
+              "/usr/share/fonts",
+              "--bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "--tmpfs",
+              "/usr/local/share/fonts",
+              "--tmpfs",
+              "/home/tsjang/.local/share/fonts",
+              "--setenv",
+              "FONTCONFIG_FILE",
+              "/etc/fonts/fonts.conf",
+              "--unsetenv",
+              "RHWP_FONT_PATH",
+              "--",
+              "/home/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_006-a23368df4b68b695",
+              "issue_8150_kitty_contract::"
+            ],
+            "log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/ci-all-minimal-issue_8150_kitty_contract-0-4833.log",
+            "exit_code": 0,
+            "seconds": 0.12500041804742068,
+            "summaries": [
+              [
+                "8",
+                "0"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "case": "issue_4961_font_decision_trace",
+        "runs": [
+          {
+            "command": [
+              "bwrap",
+              "--ro-bind",
+              "/",
+              "/",
+              "--proc",
+              "/proc",
+              "--dev",
+              "/dev",
+              "--unshare-pid",
+              "--tmpfs",
+              "/tmp",
+              "--ro-bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797/fonts",
+              "/usr/share/fonts",
+              "--bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "--tmpfs",
+              "/usr/local/share/fonts",
+              "--tmpfs",
+              "/home/tsjang/.local/share/fonts",
+              "--setenv",
+              "FONTCONFIG_FILE",
+              "/etc/fonts/fonts.conf",
+              "--unsetenv",
+              "RHWP_FONT_PATH",
+              "--",
+              "/home/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_016-b906cb5138a63e9b",
+              "issue_4961_font_decision_trace::"
+            ],
+            "log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/ci-all-minimal-issue_4961_font_decision_trace-0-4833.log",
+            "exit_code": 0,
+            "seconds": 9.241684371023439,
+            "summaries": [
+              [
+                "12",
+                "0"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "case": "issue_7902_original_frame_and_content",
+        "runs": [
+          {
+            "command": [
+              "bwrap",
+              "--ro-bind",
+              "/",
+              "/",
+              "--proc",
+              "/proc",
+              "--dev",
+              "/dev",
+              "--unshare-pid",
+              "--tmpfs",
+              "/tmp",
+              "--ro-bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797/fonts",
+              "/usr/share/fonts",
+              "--bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "--tmpfs",
+              "/usr/local/share/fonts",
+              "--tmpfs",
+              "/home/tsjang/.local/share/fonts",
+              "--setenv",
+              "FONTCONFIG_FILE",
+              "/etc/fonts/fonts.conf",
+              "--unsetenv",
+              "RHWP_FONT_PATH",
+              "--",
+              "/home/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_005-f3e3fb829082fa6f",
+              "issue_7902_original_frame_and_content::"
+            ],
+            "log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/ci-all-minimal-issue_7902_original_frame_and_content-0-4833.log",
+            "exit_code": 0,
+            "seconds": 8.890245870104991,
+            "summaries": [
+              [
+                "7",
+                "0"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "case": "issue_8160_hwp2022_paragraph_relations",
+        "runs": [
+          {
+            "command": [
+              "bwrap",
+              "--ro-bind",
+              "/",
+              "/",
+              "--proc",
+              "/proc",
+              "--dev",
+              "/dev",
+              "--unshare-pid",
+              "--tmpfs",
+              "/tmp",
+              "--ro-bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797/fonts",
+              "/usr/share/fonts",
+              "--bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "--tmpfs",
+              "/usr/local/share/fonts",
+              "--tmpfs",
+              "/home/tsjang/.local/share/fonts",
+              "--setenv",
+              "FONTCONFIG_FILE",
+              "/etc/fonts/fonts.conf",
+              "--unsetenv",
+              "RHWP_FONT_PATH",
+              "--",
+              "/home/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_005-f3e3fb829082fa6f",
+              "issue_8160_hwp2022_paragraph_relations::"
+            ],
+            "log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/ci-all-minimal-issue_8160_hwp2022_paragraph_relations-0-4833.log",
+            "exit_code": 0,
+            "seconds": 2.424661031924188,
+            "summaries": [
+              [
+                "3",
+                "0"
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "case": "native_fractional_glyph_origin",
+        "runs": [
+          {
+            "command": [
+              "bwrap",
+              "--ro-bind",
+              "/",
+              "/",
+              "--proc",
+              "/proc",
+              "--dev",
+              "/dev",
+              "--unshare-pid",
+              "--tmpfs",
+              "/tmp",
+              "--ro-bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797/fonts",
+              "/usr/share/fonts",
+              "--bind",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/ci-font-environment-4797",
+              "--tmpfs",
+              "/usr/local/share/fonts",
+              "--tmpfs",
+              "/home/tsjang/.local/share/fonts",
+              "--setenv",
+              "FONTCONFIG_FILE",
+              "/etc/fonts/fonts.conf",
+              "--unsetenv",
+              "RHWP_FONT_PATH",
+              "--",
+              "/home/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_007-a4661db38b2d6b5e",
+              "native_fractional_glyph_origin::"
+            ],
+            "log": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/logs/ci-all-minimal-native_fractional_glyph_origin-0-4833.log",
+            "exit_code": 0,
+            "seconds": 0.11575716291554272,
+            "summaries": [
+              [
+                "2",
+                "0"
+              ]
+            ]
+          }
+        ]
+      }
+    ],
+    "passed": true
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "head": "d440ddc370026ba89ac79a6f6bc2385b24195973",
+  "alert": 500,
+  "before": {
+    "check": 127859213805,
+    "conclusion": "failure",
+    "title": "1 new alert including 1 high severity security vulnerability"
+  },
+  "after": {
+    "check": 127859213805,
+    "conclusion": "success",
+    "title": "No new alerts in code changed by this pull request"
+  },
+  "authorized_false_positive": true,
+  "workflow_reruns": 0
+}

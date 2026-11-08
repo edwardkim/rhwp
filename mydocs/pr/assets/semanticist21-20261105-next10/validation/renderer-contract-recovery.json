@@ -1,0 +1,468 @@
+{
+  "observed_at": "2026-11-05T10:59:58.386590+00:00",
+  "before_head": "4c425b3f77800f5f16c3fd099f7ad8fe045edb0a",
+  "failure_run": 42011334625,
+  "failure_job": 127191010890,
+  "failure_step": "Check render diff script syntax / npm run e2e:renderer-contract",
+  "prior_contract": {
+    "issue": 536,
+    "original_pr": 3638,
+    "merge": "c7be19d7d07ea470e0690908db190aeffe19bc3d",
+    "old_file_latest_commit": "3ddf77af61b10a9ace10224588ad68841e79b2f1"
+  },
+  "before_local_exit": 1,
+  "after_local_exit": 0,
+  "product_source_unchanged": "584c9503baa651c62d0403dad9cb77c5cb9ffde6",
+  "unchanged_subtrees": {
+    "src": "e66b2bf4d66655b52e6f2db925ff058dbb181941",
+    "tests": "796169ee0e1c7e9c90ffd6f15d4c15ff7c3929cd",
+    "crates": "d9c7fcf02fe3d791fa1d33396385a1e372ddefab",
+    "vendor": "ba27f5cfbb36efffaa7fc8dc780c6cd14a809c35",
+    "Cargo.toml": "58cd8cb828326d314718f9ab9fe365973fe8ac88",
+    "Cargo.lock": "e249b95311567b3bf84f1c92800e80190eb3c089",
+    "rhwp-studio/src": "eade51126ac3e9913b2249781cabc1255d8b6db9",
+    "scripts": "f1adb4b78f80e26c1ddfe80a5c54dd06997f65c4",
+    ".github": "fd924360f7044a75d0e8e6e6d9fa8b07159e4663"
+  },
+  "changed_runtime_product_files": [],
+  "test_file_sha256": "400d6f7afe5dd206279c1a57bd357e7d9361ae9f44b46434c9e471a2e9ae4362",
+  "commands": [
+    {
+      "key": "renderer-contract",
+      "command": [
+        "npm",
+        "run",
+        "e2e:renderer-contract"
+      ],
+      "exit": 0,
+      "seconds": 1.57
+    },
+    {
+      "key": "font-coverage",
+      "command": [
+        "npm",
+        "run",
+        "e2e:canvaskit-font-coverage"
+      ],
+      "exit": 0,
+      "seconds": 0.57
+    },
+    {
+      "key": "canvas-and-pdf",
+      "command": [
+        "npm",
+        "run",
+        "e2e:render-diff:ci"
+      ],
+      "exit": 0,
+      "seconds": 41.7
+    },
+    {
+      "key": "readiness",
+      "command": [
+        "python3",
+        "scripts/renderer_baseline.py",
+        "--profiles",
+        "screen",
+        "--browser-mode",
+        "headless",
+        "--readiness-only",
+        "--output",
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105-next10/renderer-contract-recovery/readiness"
+      ],
+      "exit": 0,
+      "seconds": 79.26
+    }
+  ],
+  "canvas_results": [
+    {
+      "pageIndex": 0,
+      "legacyWidth": 1123,
+      "legacyHeight": 794,
+      "layerWidth": 1123,
+      "layerHeight": 794,
+      "width": 1123,
+      "height": 794,
+      "sameSize": true,
+      "diffPixels": 166,
+      "totalPixels": 891662,
+      "diffRatio": 0.00018616919864253496,
+      "maxChannelDelta": 84,
+      "averageChannelDelta": 0.004687875001962627,
+      "pass": true,
+      "fixture": "basic/KTX.hwp"
+    },
+    {
+      "pageIndex": 0,
+      "legacyWidth": 794,
+      "legacyHeight": 1123,
+      "layerWidth": 794,
+      "layerHeight": 1123,
+      "width": 794,
+      "height": 1123,
+      "sameSize": true,
+      "diffPixels": 0,
+      "totalPixels": 891662,
+      "diffRatio": 0,
+      "maxChannelDelta": 0,
+      "averageChannelDelta": 0,
+      "pass": true,
+      "fixture": "biz_plan.hwp"
+    },
+    {
+      "pageIndex": 0,
+      "legacyWidth": 794,
+      "legacyHeight": 1123,
+      "layerWidth": 794,
+      "layerHeight": 1123,
+      "width": 794,
+      "height": 1123,
+      "sameSize": true,
+      "diffPixels": 0,
+      "totalPixels": 891662,
+      "diffRatio": 0,
+      "maxChannelDelta": 0,
+      "averageChannelDelta": 0,
+      "pass": true,
+      "fixture": "tac-case-001.hwp"
+    }
+  ],
+  "pdf_results": [
+    {
+      "fixture": "basic/KTX.hwp",
+      "pageIndex": 0,
+      "directExpected": false,
+      "rhwpMode": "binary",
+      "reportStage": "complete",
+      "reportError": null,
+      "exceedsReportThreshold": true,
+      "directStage": null,
+      "directError": null,
+      "directComparison": null,
+      "directGateFailed": false
+    },
+    {
+      "fixture": "biz_plan.hwp",
+      "pageIndex": 0,
+      "directExpected": true,
+      "rhwpMode": "binary",
+      "reportStage": "complete",
+      "reportError": null,
+      "exceedsReportThreshold": true,
+      "directStage": "complete",
+      "directError": null,
+      "directComparison": {
+        "referenceWidth": 595,
+        "referenceHeight": 841,
+        "pdfWidth": 595,
+        "pdfHeight": 841,
+        "width": 595,
+        "height": 841,
+        "sameSize": true,
+        "majorSizeMismatch": false,
+        "sizeNormalization": null,
+        "diffPixels": 3792,
+        "totalPixels": 500395,
+        "diffRatio": 0.007578013369438144,
+        "maxChannelDelta": 255,
+        "averageChannelDelta": 0.9753694581280788
+      },
+      "directGateFailed": false
+    },
+    {
+      "fixture": "tac-case-001.hwp",
+      "pageIndex": 0,
+      "directExpected": true,
+      "rhwpMode": "binary",
+      "reportStage": "complete",
+      "reportError": null,
+      "exceedsReportThreshold": true,
+      "directStage": "complete",
+      "directError": null,
+      "directComparison": {
+        "referenceWidth": 595,
+        "referenceHeight": 841,
+        "pdfWidth": 595,
+        "pdfHeight": 841,
+        "width": 595,
+        "height": 841,
+        "sameSize": true,
+        "majorSizeMismatch": false,
+        "sizeNormalization": null,
+        "diffPixels": 1347,
+        "totalPixels": 500395,
+        "diffRatio": 0.0026918734199982016,
+        "maxChannelDelta": 255,
+        "averageChannelDelta": 0.4860160473226151
+      },
+      "directGateFailed": false
+    },
+    {
+      "fixture": "kps-ai.hwp",
+      "pageIndex": 0,
+      "directExpected": true,
+      "rhwpMode": "binary",
+      "reportStage": "complete",
+      "reportError": null,
+      "exceedsReportThreshold": true,
+      "directStage": "complete",
+      "directError": null,
+      "directComparison": {
+        "referenceWidth": 595,
+        "referenceHeight": 841,
+        "pdfWidth": 595,
+        "pdfHeight": 841,
+        "width": 595,
+        "height": 841,
+        "sameSize": true,
+        "majorSizeMismatch": false,
+        "sizeNormalization": null,
+        "diffPixels": 9420,
+        "totalPixels": 500395,
+        "diffRatio": 0.018825128148762478,
+        "maxChannelDelta": 255,
+        "averageChannelDelta": 1.8127605858038816
+      },
+      "directGateFailed": false
+    }
+  ],
+  "canvaskit_readiness": {
+    "total": 8,
+    "evaluated": 8,
+    "passed": 8,
+    "failed": 0,
+    "missing": 0
+  },
+  "canvaskit_replay_summary": null,
+  "wasm_sha256": "11012c56c9463f4eca27426ab118a2c73a54d90418597315f3df7c0211d2b78d",
+  "independent_visual_evidence": "post8622/summary.json; outline 1 page and explicit PDF TextPaint 7 pages, both Native/fresh WASM 100.00%",
+  "first_head_ci": [
+    {
+      "id": 42011334719,
+      "name": "CodeQL",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "id": 127190844591,
+          "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+          "conclusion": "success"
+        },
+        {
+          "id": 127190917919,
+          "name": "CodeQL preflight",
+          "conclusion": "success"
+        },
+        {
+          "id": 127191110252,
+          "name": "Analyze (actions)",
+          "conclusion": "success"
+        },
+        {
+          "id": 127191110351,
+          "name": "Analyze (javascript-typescript)",
+          "conclusion": "success"
+        },
+        {
+          "id": 127191110357,
+          "name": "Analyze (python)",
+          "conclusion": "success"
+        },
+        {
+          "id": 127191110406,
+          "name": "Analyze (rust)",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 42011334623,
+      "name": "Adapter inter-diff",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "id": 127190844156,
+          "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+          "conclusion": "success"
+        },
+        {
+          "id": 127190912767,
+          "name": "adapter inter-diff preflight",
+          "conclusion": "success"
+        },
+        {
+          "id": 127191037655,
+          "name": "adapter inter-diff",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 42011334625,
+      "name": "Render Diff",
+      "conclusion": "failure",
+      "jobs": [
+        {
+          "id": 127190843680,
+          "name": "Render Diff preflight",
+          "conclusion": "success"
+        },
+        {
+          "id": 127191010890,
+          "name": "Canvas visual diff",
+          "conclusion": "failure"
+        }
+      ]
+    },
+    {
+      "id": 42011334621,
+      "name": "CI",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "id": 127190845209,
+          "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+          "conclusion": "success"
+        },
+        {
+          "id": 127190847596,
+          "name": "WASM Build",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 127190913338,
+          "name": "CI preflight",
+          "conclusion": "success"
+        },
+        {
+          "id": 127191060331,
+          "name": "Lint (fmt, clippy, WASM check)",
+          "conclusion": "success"
+        },
+        {
+          "id": 127191060450,
+          "name": "Frontend package gates",
+          "conclusion": "success"
+        },
+        {
+          "id": 127191060486,
+          "name": "Native Skia tests",
+          "conclusion": "success"
+        },
+        {
+          "id": 127191060553,
+          "name": "build-test-archive-a / Build test archive (a)",
+          "conclusion": "success"
+        },
+        {
+          "id": 127191060644,
+          "name": "Resolve nextest target duration policy",
+          "conclusion": "success"
+        },
+        {
+          "id": 127191062286,
+          "name": "Frontend unit gates",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 127191062499,
+          "name": "native-host-package",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 127191062987,
+          "name": "Workflow promotion preflight",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 127191064974,
+          "name": "release-operations-contracts",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 127191105681,
+          "name": "build-test-archive-e / Build test archive (e)",
+          "conclusion": "success"
+        },
+        {
+          "id": 127191105888,
+          "name": "build-test-archive-c / Build test archive (c)",
+          "conclusion": "success"
+        },
+        {
+          "id": 127191105908,
+          "name": "build-test-archive-d / Build test archive (d)",
+          "conclusion": "success"
+        },
+        {
+          "id": 127191106037,
+          "name": "build-test-archive-b / Build test archive (b)",
+          "conclusion": "success"
+        },
+        {
+          "id": 127196724374,
+          "name": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+          "conclusion": "success"
+        },
+        {
+          "id": 127197690992,
+          "name": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+          "conclusion": "success"
+        },
+        {
+          "id": 127197701168,
+          "name": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+          "conclusion": "success"
+        },
+        {
+          "id": 127198390123,
+          "name": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+          "conclusion": "success"
+        },
+        {
+          "id": 127198985530,
+          "name": "test-archive-e-shard-1 / Default-feature tests (Archive E)",
+          "conclusion": "success"
+        },
+        {
+          "id": 127203571935,
+          "name": "Build & Test",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 42011334512,
+      "name": "CI Impact Policy Controller",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "id": 127190849230,
+          "name": "Evaluate trusted CI impact policy",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 42011334603,
+      "name": "Proptest roundtrip",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "id": 127190843841,
+          "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+          "conclusion": "success"
+        },
+        {
+          "id": 127190923361,
+          "name": "Proptest preflight",
+          "conclusion": "success"
+        },
+        {
+          "id": 127191047870,
+          "name": "prop roundtrip",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ]
+}

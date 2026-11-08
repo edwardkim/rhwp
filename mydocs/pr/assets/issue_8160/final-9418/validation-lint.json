@@ -1,0 +1,137 @@
+{
+  "source_sha": "ef69d163e05062f9c281968a0f9e0884a616aec3",
+  "base_sha": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "phase": "lint",
+  "steps": [
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "/home/tsjang/rhwp-8160-wasm-candidate6",
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/logs/final43-fmt.log",
+      "build_jobs": "4",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 48.518
+    },
+    {
+      "name": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/tsjang/rhwp-8160-wasm-candidate6",
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/logs/final43-native-clippy.log",
+      "build_jobs": "4",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 120.304
+    },
+    {
+      "name": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/tsjang/rhwp-8160-wasm-candidate6",
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/logs/final43-wasm-clippy.log",
+      "build_jobs": "4",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 108.728
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review"
+      ],
+      "cwd": "/home/tsjang/rhwp-8160-wasm-candidate6",
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/logs/final43-workspace-build.log",
+      "build_jobs": "4",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 325.048
+    },
+    {
+      "name": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/tsjang/rhwp-8160-wasm-candidate6",
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/logs/final43-workspace-clippy.log",
+      "build_jobs": "4",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 280.556
+    },
+    {
+      "name": "suite-policy",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a"
+      ],
+      "cwd": "/home/tsjang/rhwp-8160-wasm-candidate6",
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/logs/final43-suite-policy.log",
+      "build_jobs": "4",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 4.133
+    },
+    {
+      "name": "unit-policy",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a"
+      ],
+      "cwd": "/home/tsjang/rhwp-8160-wasm-candidate6",
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/logs/final43-unit-policy.log",
+      "build_jobs": "4",
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 39.878
+    }
+  ],
+  "status": "passed"
+}

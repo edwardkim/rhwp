@@ -1,0 +1,60 @@
+{
+  "date": "2026-10-29",
+  "source_pr": 8221,
+  "claim": "2020 시험 PDF 3쪽 보기 영역을 독립 PDF·base·후보로 직접 판독",
+  "reference_input": "samples/21_언어_기출_편집가능본-2020.pdf",
+  "reference_input_sha256": "a1a8b0ffd6ae9b23627f7b1bf58bbdfdc0714a369713cc057aa836c75b143f1e",
+  "source_claim_images": {
+    "native": {
+      "path": "mydocs/pr/assets/issue_8220/png/2020_native_review_p003.png",
+      "sha256": "b978ed0e7becb7e505270d6d883d3c0381403b30d7142bcd42be6845fc5e2228",
+      "git_blob": "e4d6fbd97bb28f755f697fdc23335c325d916e2f",
+      "contributor_commit": "1a69db15352e171d2a16b4195d78cc445af2e9e6"
+    },
+    "wasm": {
+      "path": "mydocs/pr/assets/issue_8220/png/2020_wasm_review_p003.png",
+      "sha256": "332b03abf661274c842ff8c0c93dd703d34a8aac04897ff758ed377d560ab9ad",
+      "git_blob": "9c98b3a69243f7373c0760d852a169e7c1a33185",
+      "contributor_commit": "1a69db15352e171d2a16b4195d78cc445af2e9e6"
+    }
+  },
+  "integrated_20261027_candidate_scores": {
+    "fidelity": {
+      "native": {
+        "page3_raw_percent": 99.45318,
+        "tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/pdf-2020-fidelity.tsv",
+        "tsv_sha256": "0ee924573fa68b7205f68390388dd017628aeee9fc6e834f3e37255265056eb5",
+        "page_count": 15,
+        "minimum_raw_percent": 99.22374
+      },
+      "wasm": {
+        "page3_raw_percent": 98.88718,
+        "tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/pdf-2020-fidelity.tsv",
+        "tsv_sha256": "0e0472aa4e94317b92d6f0aa44375fb6be01cc823036ad6c89961f6503a33987",
+        "page_count": 15,
+        "minimum_raw_percent": 98.69112
+      }
+    },
+    "editable": {
+      "native": {
+        "page3_raw_percent": 99.44626,
+        "tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/pdf-2020-editable.tsv",
+        "tsv_sha256": "4c00c1ab492b2837ce7ea6d31d1b2dc6e3e63805570bfdff1b139525e173bbe5",
+        "page_count": 15,
+        "minimum_raw_percent": 99.13134
+      },
+      "wasm": {
+        "page3_raw_percent": 98.88209,
+        "tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/pdf-2020-editable.tsv",
+        "tsv_sha256": "c8f55ea5ff315e8a0d1abc2e94dfc08a18abad40dabc32d1c836eab927b79e34",
+        "page_count": 15,
+        "minimum_raw_percent": 98.69133
+      }
+    }
+  },
+  "limitations": [
+    "원 PR의 review 이미지는 기여자의 고정 커밋에 있는 원본 이미지와 Git blob이 동일함을 확인했다.",
+    "통합 후보의 2026-10-27 TSV 수치는 원 PR 이미지의 실행 결과와 별개이며 후속 #8184 보정 이후의 새 측정으로 취급하지 않는다.",
+    "3쪽의 시각 자료 연결과 점수 대조만 기록하며 편집 후 문서나 모든 PR 주장 전체의 검증을 대신하지 않는다."
+  ]
+}

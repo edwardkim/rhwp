@@ -75,9 +75,6 @@ CR04 처럼 질의에 하이픈이 없더라도 `--` 뒤에 질의를 두는 습
 | CR13 | 메모 서식은 몇 쪽? | `samples/field-01-memo.hwp` |
 | CR14 | 2010년 표본은 몇 쪽? | `samples/2010-01-06.hwp` |
 | CR15 | 2010년 표본 문단은 몇 개? | `samples/2010-01-06.hwp` |
-| CR16 | 한 쪽 시험지는 몇 쪽? | `samples/exam-kor-1p.hwp` |
-| CR17 | 두 쪽 시험지는 몇 쪽? | `samples/exam-kor-2p.hwp` |
-| CR18 | 사회 시험지는 몇 쪽? | `samples/exam_social.hwp` |
 | CR19 | 초등학교 표본은 몇 쪽? | `samples/el-school-001.hwp` |
 | CR20 | 자동차 표본은 몇 쪽? | `samples/hcar-001.hwp` |
 | CR21 | 내부 표 문서는 표가 몇 개? | `samples/inner-table-01.hwp` |
@@ -99,7 +96,6 @@ CR04 처럼 질의에 하이픈이 없더라도 `--` 뒤에 질의를 두는 습
 | CR37 | 표 표본을 explain 으로 보면 형식은? | `samples/table-001.hwp` |
 | CR38 | 서식 문서에 '서식' 이 몇 번? | `samples/form-01.hwp` |
 | CR39 | 누름틀 표본 문단은 몇 개? | `samples/field-01.hwp` |
-| CR40 | 한 쪽 시험지에 '문제' 가 몇 번? | `samples/exam-kor-1p.hwp` |
 | CR41 | 중첩표 다쪽 문서는 몇 쪽? | `samples/basic/issue2007_nested_cell_pagination_42065.hwp` |
 | CR42 | 중첩표 다쪽 문서는 표가 몇 개? | `samples/basic/issue2007_nested_cell_pagination_42065.hwp` |
 | CR43 | 각주 문서는 몇 쪽? | `samples/footnote-01.hwp` |
@@ -114,3 +110,7 @@ python gym/tools/audit.py
 python -m unittest scripts.tests.test_gym_packs
 python -m unittest scripts.tests.test_gym_core_casual_packs
 ```
+
+## 시험지 과제 제외
+
+지정된 시험지 입력을 참조하는 다음 과제를 활성 평가에서 제거했다: CR16, CR17, CR18, CR40. 원본 문서 파일은 보존하며 과제 ID는 재사용하지 않는다.

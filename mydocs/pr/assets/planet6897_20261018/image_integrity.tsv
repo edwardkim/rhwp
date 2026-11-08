@@ -1,0 +1,116 @@
+asset	bytes	sha256	key	backend	page	kind
+images/merged-80168/p017-native-review.png	633152	4a9d7cd716f238eb3e8055af3525747f4d15406aeceeb6c6711718f3654e7fce	merged-80168	native	17	review
+images/merged-80168/p017-native-overlay.png	209693	f232463d4ee812a4b02c8f57634e1c1c076cbe45436634be17cef4d015099bf7	merged-80168	native	17	overlay
+images/merged-80168/p018-native-review.png	316975	960889490186e7dbac235da0ab83f305bc7025d6c04445f61a22eedeb18e27cd	merged-80168	native	18	review
+images/merged-80168/p018-native-overlay.png	113996	412f867a84590b8a4058352792adf867073a61c1d04445762568479b431d463f	merged-80168	native	18	overlay
+images/merged-80168/p153-native-review.png	38336	a0f25192aede549a0a7b8dc691066f477bbfadc1371cafa57daeb79512ca986c	merged-80168	native	153	review
+images/merged-80168/p153-native-overlay.png	30168	82a471802571f843156e80eca592c0dd993d2e78df26d74ca38438c117def82b	merged-80168	native	153	overlay
+images/curriculum-1342000/p202-native-review.png	394023	ca0f145be9609c4557953cad53d7fab32e65737283bfe2ca7ea991a89b8fba3b	curriculum-1342000	native	202	review
+images/curriculum-1342000/p202-native-overlay.png	138043	ce8df2635adf857c4b2d0dd6deb7d02afd3307139f0e22910c4273887df325ef	curriculum-1342000	native	202	overlay
+images/night-guard/p001-native-review.png	189197	841c3b275373b6fc997e46d0fe3a92f54bb1d950aa6adf2358e5a2fffcd9b6fa	night-guard	native	1	review
+images/night-guard/p001-native-overlay.png	78704	40ffe23916a3c0b92f35d1f17c35bda37efd087600f9088c353905ce333d4682	night-guard	native	1	overlay
+images/handbook-hwp/p155-native-review.png	572721	486a73668c08dde5b3709eeb9bdc917ff199c168c0857d576edd6850776ff8f6	handbook-hwp	native	155	review
+images/handbook-hwp/p155-native-overlay.png	192746	1af398ce089b77b9a37bf91a7d260bc4cb57193a1a5f516af4df5f183ade2fce	handbook-hwp	native	155	overlay
+images/handbook-hwpx/p155-native-review.png	572918	1483203a1a86ab719795586e767240a6013d8bd6c655c9a1fe3a5959aa63a82d	handbook-hwpx	native	155	review
+images/handbook-hwpx/p155-native-overlay.png	192936	d99de2bd5fe405b4f2f137f9dbdfd64131a6b816bedacca06be710304ca54301	handbook-hwpx	native	155	overlay
+images/148738070/p003-native-review.png	681902	3fca1721e3c43cfe614286a24d768b0fbc7381311a30388c9fa8e294934e1f05	148738070	native	3	review
+images/148738070/p003-native-overlay.png	223756	17e7217137ba180d4f10f3df7b6660e5269031cf850eee67765945521108fae9	148738070	native	3	overlay
+images/148738070/p004-native-review.png	558172	784e40ea8f1085ddf33da61cb2da06ed18189b998cfef0bc4045f0750cffd884	148738070	native	4	review
+images/148738070/p004-native-overlay.png	187800	5f4396bbb822b4f6760109dfb764e83c0ca04a97cb72f9f70741dad4de1d3109	148738070	native	4	overlay
+images/148738070/p005-native-review.png	464846	919bdf87d90c60c333e3d2da490d13529066626b65501f52820b84efcbb9409b	148738070	native	5	review
+images/148738070/p005-native-overlay.png	159122	c1dcdc59a03db1b06f81d9896e011f821dbf75048a083059399618fc59710cca	148738070	native	5	overlay
+images/148738070/p006-native-review.png	412539	ff1bdfba5c2c448db384b0c16eda8f8ec5ea177a187e4e5e1c226b51549f1e3c	148738070	native	6	review
+images/148738070/p006-native-overlay.png	139204	517d1cf50e1b96019885f28b92c60fa744197d4429ef5aa649b05fa06b979629	148738070	native	6	overlay
+images/76076-original-control/p018-native-review.png	518502	6d5831a92b8fa5f0a9af08af3a9f84188ee6506a56f09d759bad7466f6571cf7	76076-original-control	native	18	review
+images/76076-original-control/p018-native-overlay.png	173499	73ccf8ef3235b8df0191c661032524f94b75a91fd3ce71d3893740d810653c59	76076-original-control	native	18	overlay
+images/76076-original-control/p019-native-review.png	296007	b263322804b8de3866321698eafb35cd277376937eaed8b290c4ef11eeda3a3e	76076-original-control	native	19	review
+images/76076-original-control/p019-native-overlay.png	107962	ae3af5ba5d6d1a07ab2c2e774ad0e7e993d2c7dc08fd8f7b0b24cecb10f64125	76076-original-control	native	19	overlay
+images/merged-80168/p017-wasm-review.png	626010	b2a70c6597f728df596d7648876684a8792f1aefcf36eb967cd380919ed3dc4b	merged-80168	wasm	17	review
+images/merged-80168/p017-wasm-overlay.png	206698	4fc5a48dfaf27a700ac8ac18d2f2ec2babdc8dfb8aff63337c82ec5d7e7c8a85	merged-80168	wasm	17	overlay
+images/merged-80168/p018-wasm-review.png	309536	de73cebea1dc37212b39b40dffe7fda54e5bee4d981f6487c9e2012459d403bc	merged-80168	wasm	18	review
+images/merged-80168/p018-wasm-overlay.png	111371	79fb6513720d52da0081114e6a483ea1c512d7e4ee4d9ff586ddcdda9789e5b5	merged-80168	wasm	18	overlay
+images/merged-80168/p153-wasm-review.png	38424	a29c691b43e3fa850c72fa58feadc0a5fd84435adac725c5f57cfd6b97141f02	merged-80168	wasm	153	review
+images/merged-80168/p153-wasm-overlay.png	30217	0d777a23f3cafa0020084c32fa552de750c7628f802160d1d5701df49e54ef94	merged-80168	wasm	153	overlay
+images/curriculum-1342000/p202-wasm-review.png	390590	ec14140c0d2d61b5058f2c41698311e8493b63c35a9c51c506e283a3822560cd	curriculum-1342000	wasm	202	review
+images/curriculum-1342000/p202-wasm-overlay.png	138092	ccceb4eea55fabbd7daae8e50f71ca6053493c95b3fbacf4cdf5d8e113f38184	curriculum-1342000	wasm	202	overlay
+images/night-guard/p001-wasm-review.png	191679	63e5f2a94cf16dda6e84a9263894561ea41d2823744b281f22aa4983bc507ef1	night-guard	wasm	1	review
+images/night-guard/p001-wasm-overlay.png	80081	361237d712c7238e275e6ca42855ffa99424762d3ee8aea2c579ecfe34349140	night-guard	wasm	1	overlay
+images/handbook-hwp/p155-wasm-review.png	580448	047c52ce2e48c61fa560c3312e9ca8c0c5a0b3132367c49f9eb02291d16cf49f	handbook-hwp	wasm	155	review
+images/handbook-hwp/p155-wasm-overlay.png	203915	0cbdc148b2d98fa687631fc7112057f0513a1a5c1622355c75250f2ac85c8453	handbook-hwp	wasm	155	overlay
+images/handbook-hwpx/p155-wasm-review.png	580230	28419156f7bb1f6e1d22091ae3f57d69b576dd596e4ee3d3453f4cd63e534df0	handbook-hwpx	wasm	155	review
+images/handbook-hwpx/p155-wasm-overlay.png	203769	e1e39458fddfcaf696dd808832170713fa3d3567b64254292d43cafa39243628	handbook-hwpx	wasm	155	overlay
+images/148738070/p003-wasm-review.png	669560	42329a3ead4c35133a213028bc7563f7af68509b6313c0530e167b66835d07b6	148738070	wasm	3	review
+images/148738070/p003-wasm-overlay.png	218140	826988f00cd1ee6a2f29beed66f4e7a45c80f5af5328ffba7c024cba35b37a3d	148738070	wasm	3	overlay
+images/148738070/p004-wasm-review.png	548206	dba1fdbaab15dcb50415f3c2075722335edcd88261e30a031bfa74d3e8539aa9	148738070	wasm	4	review
+images/148738070/p004-wasm-overlay.png	183017	c8613d5e05e116797d387849a5add22414456a150532550b6db3a0f39d5cf128	148738070	wasm	4	overlay
+images/148738070/p005-wasm-review.png	453480	ffa3c6382a7d86eb3ca9f69ad30e14c39c5e43529b6815780a3c6a6f969c3bda	148738070	wasm	5	review
+images/148738070/p005-wasm-overlay.png	154231	87453ba1a2447d37e72e61479c0ddfc9be81e81e46448f6810d279ee7535a71e	148738070	wasm	5	overlay
+images/148738070/p006-wasm-review.png	417439	3746d98396df34139d124ab77ff59e79582bd172f1eea493d04b0c3c38b8dea6	148738070	wasm	6	review
+images/148738070/p006-wasm-overlay.png	138519	8378b984b3c916513ad2a95699aec8b21ae7853f7a680a0e02d192427bfe738a	148738070	wasm	6	overlay
+images/76076-original-control/p018-wasm-review.png	503384	1b9f00a11bb06cf69291553c8213020687c4cbbbece25e33ec8d256eaffec040	76076-original-control	wasm	18	review
+images/76076-original-control/p018-wasm-overlay.png	168746	f1b065e9c8a44b2bc8fe4f0bac75eff08fbe2b2f9250c404cd90888ddfcfb327	76076-original-control	wasm	18	overlay
+images/76076-original-control/p019-wasm-review.png	286467	184daf31360456da1309d0a834f2a2209a569dceaabad1e7b9bc08ac15288a9a	76076-original-control	wasm	19	review
+images/76076-original-control/p019-wasm-overlay.png	105308	4c9a181f2535edd1783b641eab8528aee0310e51eb6122139d40f70f5894a60e	76076-original-control	wasm	19	overlay
+images/handbook-hwp/p375-native-review.png	295371	4a44e91beacbaf0f0508feedd261f0580fc8b47c0ff39fdbf08c1ca3c44e8bf1	handbook-hwp	native	375	review
+images/handbook-hwp/p375-native-overlay.png	113045	b0df61dfa6e7e3fa120cc3696d060138834b86bbc501514a8131fb2d44782a0b	handbook-hwp	native	375	overlay
+images/handbook-hwpx/p375-native-review.png	295597	7b0546ac6484c21f862bb4cef63633a7cd406cd584e7003b67c0fb42cda34bfd	handbook-hwpx	native	375	review
+images/handbook-hwpx/p375-native-overlay.png	113268	707c44e040ccdb95a9f867f83e55abadacf3ab2d5d46ad6a989ae9f4ece0f36c	handbook-hwpx	native	375	overlay
+images/handbook-hwp/p375-wasm-review.png	288717	a2893ab77ebea75cb37a45f6c2208e1bfedc093f00ecf5406d05264b5d0c1e4b	handbook-hwp	wasm	375	review
+images/handbook-hwp/p375-wasm-overlay.png	112788	7331022c51edf3a898f014462d14b13c40e3fd542a467ab0ced2478e7c1e7d21	handbook-hwp	wasm	375	overlay
+images/handbook-hwpx/p375-wasm-review.png	288959	01850298fab9406d2f14d465824369b912ec66d31399fa538c499eadd38d8138	handbook-hwpx	wasm	375	review
+images/handbook-hwpx/p375-wasm-overlay.png	113016	13ddcfdc1ce82faca2872130a0230c0bf13a63cd0cba977b1f22667d15ee2eb2	handbook-hwpx	wasm	375	overlay
+images/eq-rm-space/p001-native-review.png	84127	f5018f4c8cee764ff4eb9e55e9dc0e498a7d58b25d10a3419017faa1f93b191c	eq-rm-space	native	1	review
+images/eq-rm-space/p001-native-overlay.png	45715	61f673689c0211825b1d37c82836e0dbd5688bdd55824bc1070dafae170cd966	eq-rm-space	native	1	overlay
+images/eq-plusminus/p001-native-review.png	46592	2c2370c24a6701d8aecc9d93ad1aeea720ef0516d40c3d5381edd36bcd8e487f	eq-plusminus	native	1	review
+images/eq-plusminus/p001-native-overlay.png	32080	a5bbecac6e257822d9ff67997f5b3b7b48eab85e081c029b1b79a520bc564814	eq-plusminus	native	1	overlay
+images/eq-uppercase-greek/p001-native-review.png	86850	ade0ffa38924ce283918b01ebc85fa4dd60426d8d833c07e24e320c25cbc98ca	eq-uppercase-greek	native	1	review
+images/eq-uppercase-greek/p001-native-overlay.png	47117	48650b1ff7949b812dd106141e4f10550ff87fd19f5e8764527f145670f29b0c	eq-uppercase-greek	native	1	overlay
+images/original-eq-rm-quarterspace/p001-native-review.png	115822	1bdf46942f2c23da6f5fe7fdbf646ee299c1a08e6d19079fd8bd564f69ddb952	original-eq-rm-quarterspace	native	1	review
+images/original-eq-rm-quarterspace/p001-native-overlay.png	58909	40f3b12c97ee10054975956444d7edf19d51c3dc31f365fbba579c0839b9d4f4	original-eq-rm-quarterspace	native	1	overlay
+images/eq-rm-space/p001-wasm-review.png	85437	d19cbef468c06c9972282d37ff45266b77bbcbbca1ff38d5faea1b2f56a69a35	eq-rm-space	wasm	1	review
+images/eq-rm-space/p001-wasm-overlay.png	46601	735fa6e8a7a97b9988d9b2a2580b552abdcb619946a1398526ac08bfcf243d57	eq-rm-space	wasm	1	overlay
+images/eq-plusminus/p001-wasm-review.png	46382	5bbd4a1ddb8334e57528ed350b17878d3de78cfbbd1641c862977017bbdb22e0	eq-plusminus	wasm	1	review
+images/eq-plusminus/p001-wasm-overlay.png	32006	e4d1fc7ddb33e70673ba54479e86fc907d3cbe1d17ad15ba6a6227ce9f49f563	eq-plusminus	wasm	1	overlay
+images/eq-uppercase-greek/p001-wasm-review.png	87632	e33a54e3ecec848d540360b48a2e6a74b7320f3aea6af9e2aaf359e69254663c	eq-uppercase-greek	wasm	1	review
+images/eq-uppercase-greek/p001-wasm-overlay.png	47471	5036e2d832c3f862bf160f3dd6df7a432383331966a3b6c74d84394edd06fd21	eq-uppercase-greek	wasm	1	overlay
+images/original-eq-rm-quarterspace/p001-wasm-review.png	113975	bb408d88b0d42b01c16a5fa48e25e042659a2940b4a4caae4b2c5b5171809c5d	original-eq-rm-quarterspace	wasm	1	review
+images/original-eq-rm-quarterspace/p001-wasm-overlay.png	57480	75d8c208255200da7a90667d27d55d2b43866a438a0b7150ccfe06a3f61ab4ec	original-eq-rm-quarterspace	wasm	1	overlay
+images/eq-rm-space/p001-native-zoom.png	45844	1afc10cb9a0f2644ca26d21e6e99e52e3b390651c0fea0d6024ac54cc650da3e	eq-rm-space	native	1	same-coordinate 3x nearest
+images/eq-plusminus/p001-native-zoom.png	12054	dbadedf90b3f4cf025d78db7cca3b97eedb130939bbed1d11a09afa2ecb1a316	eq-plusminus	native	1	same-coordinate 3x nearest
+images/eq-uppercase-greek/p001-native-zoom.png	47041	47796c1b3e8da12cb0c61f3804d85ed4f096bf53c0354827511ec2865b34f0c9	eq-uppercase-greek	native	1	same-coordinate 3x nearest
+images/original-eq-rm-quarterspace/p001-native-zoom.png	74318	c7ab93d40c0d733d30b769df4195363fa53e26dd1f343b7f1001ca1e00ee4a36	original-eq-rm-quarterspace	native	1	same-coordinate 3x nearest
+images/eq-rm-space/p001-wasm-zoom.png	46185	1fd5d0c2713b713817e212d6a1e595ed88cb97a77a08d7b1bd86946f5f454273	eq-rm-space	wasm	1	same-coordinate 3x nearest
+images/eq-plusminus/p001-wasm-zoom.png	12069	6062b8d59e6324d6f637e063a48f373c58cfc66bd0c7e0ec0e90259241fd7053	eq-plusminus	wasm	1	same-coordinate 3x nearest
+images/eq-uppercase-greek/p001-wasm-zoom.png	47333	4c523b4232a2080d2610184f0c5b4278589f81760e1ce6df3fecc35920eb9057	eq-uppercase-greek	wasm	1	same-coordinate 3x nearest
+images/original-eq-rm-quarterspace/p001-wasm-zoom.png	73277	098ec1f12f2296ca0f1e9e65124986fc5c78da026ffb7dd5445be0c943bad4dd	original-eq-rm-quarterspace	wasm	1	same-coordinate 3x nearest
+images/curriculum-1342000/p217-before-after-print.png	21922	662858ddc534dbc9e5ec9fb36698b52f150e84e1b1e4efa3c65550a303fed773	curriculum-1342000	both	217	before-after-Print same-coordinate 3x nearest
+images/curriculum-1342000/p218-before-after-print.png	12211	ce9b036fbf40b346c19a1f8e1b6f133a89db94d8f30f59943b01ec0accc524c6	curriculum-1342000	both	218	before-after-Print same-coordinate 3x nearest
+images/curriculum-1342000/p259-before-after-print.png	34089	de6a548587903885aa5c2fbcd36e7b383771730e5411aa74f0fa4e2f381067b9	curriculum-1342000	both	259	before-after-Print same-coordinate 3x nearest
+images/curriculum-1342000/p260-before-after-print.png	24435	787145a28e59d00b26aa589a601919f1a8722709ff9e9caecbcdc35717bf1e77	curriculum-1342000	both	260	before-after-Print same-coordinate 3x nearest
+images/curriculum-1342000/p366-before-after-print.png	21003	211debe97d6d418a53a6099c4e3bb8d96809376a2720a29438f7c1dd49f09b6f	curriculum-1342000	both	366	before-after-Print same-coordinate 3x nearest
+images/curriculum-1342000/p367-before-after-print.png	18554	37d9ce6a50f268d463d8b64d885793d3377db542edd7fdf7f1998de82ebcb1f7	curriculum-1342000	both	367	before-after-Print same-coordinate 3x nearest
+images/paragraph-border-exam-eng/p005-native-review.png	1290300	0f05962c49b6593dae85bcf41ca7997fb18abadeed6b88c94094b3e157b9e982	paragraph-border-exam-eng	native	5	review
+images/paragraph-border-exam-eng/p005-native-overlay.png	414062	a3b6038e736a7bc1ed6aea98163c3ea2fab62853ff16883ddc7dad24aa6348f0	paragraph-border-exam-eng	native	5	overlay
+images/paragraph-border-exam-eng/p008-native-review.png	1394692	4628517de0ff0549b23ae9eefd6a248ff9d43c5a62ff6fa49c162a2827138405	paragraph-border-exam-eng	native	8	review
+images/paragraph-border-exam-eng/p008-native-overlay.png	446386	3a81956fd911956785f5bd7bc89094b94fdee777e79a032f808e901135227fff	paragraph-border-exam-eng	native	8	overlay
+images/paragraph-border-exam-kor/p004-native-review.png	1333089	9431fbeb83de3d9fd6d5f74816db821d62848d1ba8da878a3a1d8712e61f204a	paragraph-border-exam-kor	native	4	review
+images/paragraph-border-exam-kor/p004-native-overlay.png	412885	c2f69da1675623b35ec54047fd71c42656f447223fae2313c8a843a1c84af92b	paragraph-border-exam-kor	native	4	overlay
+images/paragraph-border-exam-kor/p014-native-review.png	1578098	22a140f0565ff48d5e6fa54fdc298fca7c39d9c457ba11e48ee958f8ad7be875	paragraph-border-exam-kor	native	14	review
+images/paragraph-border-exam-kor/p014-native-overlay.png	481310	00f1e47732cd37891f6e68d70efdebf4b349cd0bc34ba9a814aed91c1a3bba4e	paragraph-border-exam-kor	native	14	overlay
+images/paragraph-border-exam-kor/p020-native-review.png	1605397	938ea7d9597678ebf21bab7428ea5a4f8d0392ed694e7328c5e7a17f97e7ca00	paragraph-border-exam-kor	native	20	review
+images/paragraph-border-exam-kor/p020-native-overlay.png	519488	8201779ba2b1ae9c0f167ff20353b424f8e8f794a810b118c66dbb57b553e6b0	paragraph-border-exam-kor	native	20	overlay
+images/paragraph-border-exam-eng/p005-wasm-review.png	1366961	656e5460dd326391543fbcf96cb86298bc9cdb232215f6244000922a696a85d7	paragraph-border-exam-eng	wasm	5	review
+images/paragraph-border-exam-eng/p005-wasm-overlay.png	434398	e8c453cb08d6cce8aa29c7cd2b6935cf3101d80a41466d5926b20a4a94912f32	paragraph-border-exam-eng	wasm	5	overlay
+images/paragraph-border-exam-eng/p008-wasm-review.png	1456992	2112cc589e8b3492b51075b32bf871babf1755eb991690b3bfee50a32cf2e442	paragraph-border-exam-eng	wasm	8	review
+images/paragraph-border-exam-eng/p008-wasm-overlay.png	461501	0e4e090c99b0d9db95ac9cc53e61b9c54bf11171227d5a84f91df17c9e247829	paragraph-border-exam-eng	wasm	8	overlay
+images/paragraph-border-exam-kor/p004-wasm-review.png	1391757	f487245c1c0d3c2b070a74fe3ad68e7e3073e3aa96fb96cdab5ff8e236f7ed67	paragraph-border-exam-kor	wasm	4	review
+images/paragraph-border-exam-kor/p004-wasm-overlay.png	431889	2f68bfc78bf6e7471479c2151f9108c4b20c1df62380ac4b0852929dbaa8458e	paragraph-border-exam-kor	wasm	4	overlay
+images/paragraph-border-exam-kor/p014-wasm-review.png	1638533	76e7041d52333124d575710c8d5e1f1fba3b69a7dbe631e85f892e8bd5be3c40	paragraph-border-exam-kor	wasm	14	review
+images/paragraph-border-exam-kor/p014-wasm-overlay.png	498097	3a9742a5f6d27226a95d5c6a511880dc9be022d9a29603f8c15307d5692be076	paragraph-border-exam-kor	wasm	14	overlay
+images/paragraph-border-exam-kor/p020-wasm-review.png	1620154	1546ab6befa0c48ca0251239a9a2b099e5f8740bfd3f9f161a975be032d95d2c	paragraph-border-exam-kor	wasm	20	review
+images/paragraph-border-exam-kor/p020-wasm-overlay.png	523563	f8c89fbf84fa8e8ed6f86d65323e8a4408b23ca2abb50726f2df68c6261d555d	paragraph-border-exam-kor	wasm	20	overlay
+images/paragraph-border-exam-eng/p008-border-end-zoom.png	15568	2664c7cbc8f1ff7f88f6d6e9d930ad5817f15790cc20a07946462ec360e2652b	paragraph-border-exam-eng	print-native-wasm-triptych	8	same-coordinate-zoom
+images/paragraph-border-exam-kor/p004-border-end-zoom.png	13274	f1ddd5d9804f2b01974d9d9902c7da147ec77cb42a44c84f8db9618a176e6f63	paragraph-border-exam-kor	print-native-wasm-triptych	4	same-coordinate-zoom
+images/paragraph-border-exam-kor/p020-border-end-zoom.png	9558	14fee6699b10284da74e19cd02587b6af1a650ec997479403fe7f2be288a9173	paragraph-border-exam-kor	print-native-wasm-triptych	20	same-coordinate-zoom
+images/paragraph-border-exam-eng/p005-question-origins-zoom.png	19971	2f111e3cadcf6fbc4f4bd6ba156aa33a7eb0f1aac52115f4583bb603adb39a4c	paragraph-border-exam-eng	print-native-wasm-triptych	5	same-coordinate-zoom
+images/paragraph-border-exam-kor/p014-header-frame-zoom.png	11951	aff3c9e2dfb6a1a532e4411bedff556f7c007a94d3ede1862cef4716844e1f6d	paragraph-border-exam-kor	print-native-wasm-triptych	14	same-coordinate-zoom

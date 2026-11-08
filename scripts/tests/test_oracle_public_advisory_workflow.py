@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -141,6 +142,30 @@ class OraclePublicAdvisoryWorkflowTests(unittest.TestCase):
         self.assertIn("LIMIT: ${{ inputs.limit || '0' }}", self.workflow)
         self.assertIn("continue-on-error: true", self.workflow)
         self.assertIn("이 잡은 advisory 이며 required check 가 아닙니다.", self.workflow)
+
+    def test_sparse_checkout_preserves_renderer_embedded_assets(self) -> None:
+        repo_root = WORKFLOW_PATH.parents[2]
+        checkout = self.workflow.split("          sparse-checkout: |\n", 1)[1]
+        entries = {Path(line.strip()) for line in checkout.split("\n\n", 1)[0].splitlines()}
+        # Actual include inputs that failed in the 0.9.0 promotion run. Check
+        # source-relative resolution, not a duplicated list of checkout rules.
+        for source in (
+            "src/renderer/enclosed_pua_geometry.rs",
+            "src/renderer/equation/variable_outline.rs",
+            "src/renderer/native_webfonts.rs",
+        ):
+            source_path = repo_root / source
+            includes = re.findall(r'include_(?:bytes|str)!\(\s*"([^"]+)"',
+                                  source_path.read_text(encoding="utf-8"))
+            self.assertTrue(includes, source)
+            for include in includes:
+                target = (source_path.parent / include).resolve()
+                relative = target.relative_to(repo_root)
+                self.assertTrue(target.is_file(), relative)
+                self.assertTrue(
+                    any(entry == relative or entry in relative.parents for entry in entries),
+                    f"Production include in {source}: sparse checkout omits {relative}",
+                )
 
     def test_sparse_checkout_covers_cargo_path_patches(self) -> None:
         repo_root = WORKFLOW_PATH.parents[2]

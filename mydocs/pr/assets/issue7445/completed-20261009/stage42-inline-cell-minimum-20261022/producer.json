@@ -1,0 +1,102 @@
+{
+  "source": {
+    "parentHead": "800f93fe610c4fbd0ed954b928c33ac2938dc512",
+    "files": {
+      "src/renderer/layout/table_layout/stored_plain_cell_minimum.rs": "bc2db4d7d39c18a87dfce93d1af34b87a59a5ffff341b91be793ef12262c74cd"
+    },
+    "patchSha256": "c1a67ab2657eaaff7a232ba8f3c4a31f7732d0d8ac2053b12e291dcb66b09bc8",
+    "cases": [
+      "issue_7445_stored_multicolumn_flow",
+      "issue_7972_inactive_cell_margin_row",
+      "issue_7872_nested_tac_second_table_rows",
+      "issue_8067_cell_padding_not_shrunk"
+    ]
+  },
+  "focusResult": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--features",
+      "native-skia",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "--test",
+      "regression_suite_002",
+      "--test",
+      "regression_suite_006",
+      "--test",
+      "regression_suite_027",
+      "-E",
+      "test(/(^|::)issue_7445_stored_multicolumn_flow::/) or test(/(^|::)issue_7972_inactive_cell_margin_row::/) or test(/(^|::)issue_7872_nested_tac_second_table_rows::/) or test(/(^|::)issue_8067_cell_padding_not_shrunk::/)"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 157.23310804367065,
+    "source": {
+      "parentHead": "800f93fe610c4fbd0ed954b928c33ac2938dc512",
+      "files": {
+        "src/renderer/layout/table_layout/stored_plain_cell_minimum.rs": "bc2db4d7d39c18a87dfce93d1af34b87a59a5ffff341b91be793ef12262c74cd"
+      },
+      "patchSha256": "c1a67ab2657eaaff7a232ba8f3c4a31f7732d0d8ac2053b12e291dcb66b09bc8",
+      "cases": [
+        "issue_7445_stored_multicolumn_flow",
+        "issue_7972_inactive_cell_margin_row",
+        "issue_7872_nested_tac_second_table_rows",
+        "issue_8067_cell_padding_not_shrunk"
+      ]
+    },
+    "logSha256": "01604eb3048a538428fff236ade2c22654d9a67bdc7d110d1b3bc0c94443fe80"
+  },
+  "artifacts": {
+    "rhwp-native": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/repair-focused-v8/rhwp-native",
+      "sha256": "a5ddee7d5f1b980664a27b5f4a5999b52fc1e6e945232a1923a846fff98b30cf"
+    },
+    "librhwp.rlib": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/repair-focused-v8/librhwp.rlib",
+      "sha256": "133d5ca407eae19bff43c852679731b12c4c5282ee8089837afa23f22f616f3f"
+    }
+  },
+  "fontLedger": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/candidate-source.json",
+  "visualToolSha256": "69d9d56394b26fcb7a64b41588a378da745475b3297bae89fd6b4d16903cede4",
+  "pdfRasterizer": {
+    "program": "pypdfium2",
+    "backend": "pdfium",
+    "policy": "pdfium_smooth_rgb_v1",
+    "antialias": {
+      "text": true,
+      "image": true,
+      "path": true
+    },
+    "script_sha256": "eda5cb9561ea417f55efdf2a36510a5db2563d4382adf2b5ef564389f6736faf",
+    "available": true,
+    "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+    "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+    "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+    "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+    "version": "152.0.7947.0",
+    "wrapper_version": "5.12.1",
+    "version_exit_code": 0
+  },
+  "dpi": 96,
+  "tolerancePx": 2,
+  "minimumRaw": 90,
+  "captureWorkers": 8,
+  "fullPrAcceptance": false,
+  "cases": [
+    {
+      "key": "science",
+      "input": "/Users/tsjang/rhwp-7445-completed-20261009/samples/exam_science.hwp",
+      "inputSha256": "22d29786a80d68a9b2ad9294c2dab4915e0eced941e790e37390b14312b8b6a8",
+      "pdf": "/Users/tsjang/rhwp-7445-completed-20261009/pdf/issue7642-exam-print/exam-07-exam_science-hwp-print-2020.pdf",
+      "pdfSha256": "1c828fef29d7761d8ef46c8da50cc59936a95128920453ca5cc0d6440ac82d14",
+      "compat": "2022"
+    }
+  ]
+}

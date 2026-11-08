@@ -1,0 +1,514 @@
+{
+  "source": "5d455015cbd79962416ca30741a778ce6eb58d06",
+  "base": "20c9678b01c5a564bb510c9fccd652cceafcd212",
+  "codeCandidate": "3ddf77af61b10a9ace10224588ad68841e79b2f1",
+  "pageComparison": [
+    {
+      "backend": "native",
+      "input": "seal-form",
+      "page": 1,
+      "baseRaw": 99.91,
+      "combinedRaw": 99.94,
+      "codeHeadRaw": 99.94
+    },
+    {
+      "backend": "native",
+      "input": "seal-form",
+      "page": 2,
+      "baseRaw": 100.0,
+      "combinedRaw": 100.0,
+      "codeHeadRaw": 100.0
+    },
+    {
+      "backend": "native",
+      "input": "bokhak",
+      "page": 1,
+      "baseRaw": 97.21,
+      "combinedRaw": 97.23,
+      "codeHeadRaw": 97.23
+    },
+    {
+      "backend": "native",
+      "input": "issue4680",
+      "page": 1,
+      "baseRaw": 98.91,
+      "combinedRaw": 99.12,
+      "codeHeadRaw": 99.12
+    },
+    {
+      "backend": "wasm",
+      "input": "seal-form",
+      "page": 1,
+      "baseRaw": 99.89,
+      "combinedRaw": 99.91,
+      "codeHeadRaw": 99.91
+    },
+    {
+      "backend": "wasm",
+      "input": "seal-form",
+      "page": 2,
+      "baseRaw": 100.0,
+      "combinedRaw": 100.0,
+      "codeHeadRaw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "input": "bokhak",
+      "page": 1,
+      "baseRaw": 97.12,
+      "combinedRaw": 97.13,
+      "codeHeadRaw": 97.13
+    },
+    {
+      "backend": "wasm",
+      "input": "issue4680",
+      "page": 1,
+      "baseRaw": 98.88,
+      "combinedRaw": 99.1,
+      "codeHeadRaw": 99.1
+    }
+  ],
+  "imageIdentityToGreenCodeCandidate": [
+    {
+      "backend": "native",
+      "input": "seal-form",
+      "page": 1,
+      "byteIdentical": true,
+      "combinedSha256": "79907cb0fc6f582dce52f175a8f736c9ac96ec313aaf4ff5b8d06aa5f4a9684c",
+      "codeHeadSha256": "79907cb0fc6f582dce52f175a8f736c9ac96ec313aaf4ff5b8d06aa5f4a9684c"
+    },
+    {
+      "backend": "native",
+      "input": "seal-form",
+      "page": 2,
+      "byteIdentical": true,
+      "combinedSha256": "c7c7f0706423ed4f15717626d90c47665ed4543a4175dde49e72faeb1dbe08ea",
+      "codeHeadSha256": "c7c7f0706423ed4f15717626d90c47665ed4543a4175dde49e72faeb1dbe08ea"
+    },
+    {
+      "backend": "native",
+      "input": "bokhak",
+      "page": 1,
+      "byteIdentical": true,
+      "combinedSha256": "a5102c8e077cd7ecf1fc9388b82721bfd142052194a74b621f2b590dab9f9ebf",
+      "codeHeadSha256": "a5102c8e077cd7ecf1fc9388b82721bfd142052194a74b621f2b590dab9f9ebf"
+    },
+    {
+      "backend": "native",
+      "input": "issue4680",
+      "page": 1,
+      "byteIdentical": true,
+      "combinedSha256": "b8aedc2faeea07f34233eb29b3fa61c65bf149ff2acca45cdc5e95adbd534a47",
+      "codeHeadSha256": "b8aedc2faeea07f34233eb29b3fa61c65bf149ff2acca45cdc5e95adbd534a47"
+    },
+    {
+      "backend": "wasm",
+      "input": "seal-form",
+      "page": 1,
+      "byteIdentical": true,
+      "combinedSha256": "082a0d02f4c967095a391653a9e7940befa246becd428a5a568f3781e37bee9b",
+      "codeHeadSha256": "082a0d02f4c967095a391653a9e7940befa246becd428a5a568f3781e37bee9b"
+    },
+    {
+      "backend": "wasm",
+      "input": "seal-form",
+      "page": 2,
+      "byteIdentical": true,
+      "combinedSha256": "b11e70edfa6e4bcfeb55d7062fa4d2daf4a6ff45fbc39fc8381932100974beac",
+      "codeHeadSha256": "b11e70edfa6e4bcfeb55d7062fa4d2daf4a6ff45fbc39fc8381932100974beac"
+    },
+    {
+      "backend": "wasm",
+      "input": "bokhak",
+      "page": 1,
+      "byteIdentical": true,
+      "combinedSha256": "d2a3df6aa12f4d77a9f2d5c38b8d2f027bb985f0700ab0cc033b30c61cd16862",
+      "codeHeadSha256": "d2a3df6aa12f4d77a9f2d5c38b8d2f027bb985f0700ab0cc033b30c61cd16862"
+    },
+    {
+      "backend": "wasm",
+      "input": "issue4680",
+      "page": 1,
+      "byteIdentical": true,
+      "combinedSha256": "a9a0a0b7049d2e800d9d8ddd35d33d468155621f399c944707e01408f481fc48",
+      "codeHeadSha256": "a9a0a0b7049d2e800d9d8ddd35d33d468155621f399c944707e01408f481fc48"
+    }
+  ],
+  "wasmBuild": {
+    "success": true,
+    "source_sha": "5d455015cbd79962416ca30741a778ce6eb58d06",
+    "profile": "release",
+    "artifacts": {
+      "rhwp.js": {
+        "sha256": "34a697dd2fbad6cd49efeb2f2cb6a59087f49fcf906a66578344230cc9bab334",
+        "bytes": 516666
+      },
+      "rhwp_bg.wasm": {
+        "sha256": "a65db888312503f7c16ed1c3dfad59d30c01972106bacfdcdae7286a82b1b28f",
+        "bytes": 27683147
+      }
+    }
+  },
+  "buildCommands": [
+    {
+      "name": "combined-native",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp"
+      ],
+      "exit": 0,
+      "seconds": 230.51
+    },
+    {
+      "name": "combined-wasm",
+      "command": [
+        "bash",
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--release",
+        "--mode",
+        "no-install"
+      ],
+      "exit": 0,
+      "seconds": 705.3
+    }
+  ],
+  "nativeChecksIncludingInitialFullPdfFailure": [
+    {
+      "name": "combined-native-seal-form",
+      "command": [
+        "/home/edward/mygithub/rhwp/venv/bin/python",
+        "/home/edward/mygithub/rhwp/scripts/visual_sweep.py",
+        "--file-target",
+        "seal-form",
+        "/home/edward/mygithub/rhwp/samples/issue8201/seal-delegation-form.hwp",
+        "/home/edward/mygithub/rhwp/samples/issue8201/seal-delegation-form-2020.pdf",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8296-acceptance/bin/combined-rhwp",
+        "--rasterizer",
+        "png",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "2",
+        "--silhouette-only",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8296-acceptance/combined-native"
+      ],
+      "exit": 0,
+      "seconds": 3.24,
+      "logSha256": "ae7737c0e639e8018aa99d68aba2038de118da58609e53063cd09fdb8e1bddac"
+    },
+    {
+      "name": "combined-native-bokhak",
+      "command": [
+        "/home/edward/mygithub/rhwp/venv/bin/python",
+        "/home/edward/mygithub/rhwp/scripts/visual_sweep.py",
+        "--file-target",
+        "bokhak",
+        "/home/edward/mygithub/rhwp/samples/복학원서.hwp",
+        "/home/edward/mygithub/rhwp/pdf/복학원서-2022.pdf",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8296-acceptance/bin/combined-rhwp",
+        "--rasterizer",
+        "png",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "2",
+        "--silhouette-only",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8296-acceptance/combined-native"
+      ],
+      "exit": 0,
+      "seconds": 2.66,
+      "logSha256": "bcec81a58247d5689e56dab0d55a1b0e6b4ff65962f3ac4604fff95d09c5f2a7"
+    },
+    {
+      "name": "combined-native-issue4680",
+      "command": [
+        "/home/edward/mygithub/rhwp/venv/bin/python",
+        "/home/edward/mygithub/rhwp/scripts/visual_sweep.py",
+        "--file-target",
+        "issue4680",
+        "/home/edward/mygithub/rhwp/samples/issue4680/20117321_gijang_handover_bond_ledger_form.hwp",
+        "/home/edward/mygithub/rhwp/pdf/issue4680/20117321_gijang_handover_bond_ledger_form-2020.pdf",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8296-acceptance/bin/combined-rhwp",
+        "--rasterizer",
+        "png",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "2",
+        "--silhouette-only",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8296-acceptance/combined-native"
+      ],
+      "exit": 0,
+      "seconds": 1.98,
+      "logSha256": "8e84fbe18147614865c7f3619a22ecdb96404a8ffe0589c54bfad8f57258558f"
+    },
+    {
+      "name": "combined-pdf-img_clipping_01",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8296-acceptance/bin/combined-rhwp",
+        "import-pdf",
+        "/home/edward/mygithub/rhwp/samples/issue8413/img_clipping_01.pdf",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8296-acceptance/combined-pdf/img_clipping_01.hwpx",
+        "--json"
+      ],
+      "exit": 1,
+      "seconds": 90.51,
+      "logSha256": "597f4b4af0bccd0f168a12efb34c7952dd6d83eb659962d443bd6964ca37629a"
+    }
+  ],
+  "wasmChecks": [
+    {
+      "name": "combined-wasm-seal-form",
+      "command": [
+        "/home/edward/mygithub/rhwp/venv/bin/python",
+        "/home/edward/mygithub/rhwp/scripts/visual_sweep.py",
+        "--file-target",
+        "seal-form",
+        "/home/edward/mygithub/rhwp/samples/issue8201/seal-delegation-form.hwp",
+        "/home/edward/mygithub/rhwp/samples/issue8201/seal-delegation-form-2020.pdf",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8296-acceptance/bin/combined-rhwp",
+        "--rasterizer",
+        "png",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "2",
+        "--silhouette-only",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8296-acceptance/combined-wasm",
+        "--wasm-pkg",
+        "/home/edward/mygithub/rhwp/pkg"
+      ],
+      "exit": 0,
+      "seconds": 9.3,
+      "logSha256": "33bb9624fbadaa1c915bca1618b7a5e0866800bd628e994b676c3358dcf6ec4a"
+    },
+    {
+      "name": "combined-wasm-bokhak",
+      "command": [
+        "/home/edward/mygithub/rhwp/venv/bin/python",
+        "/home/edward/mygithub/rhwp/scripts/visual_sweep.py",
+        "--file-target",
+        "bokhak",
+        "/home/edward/mygithub/rhwp/samples/복학원서.hwp",
+        "/home/edward/mygithub/rhwp/pdf/복학원서-2022.pdf",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8296-acceptance/bin/combined-rhwp",
+        "--rasterizer",
+        "png",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "2",
+        "--silhouette-only",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8296-acceptance/combined-wasm",
+        "--wasm-pkg",
+        "/home/edward/mygithub/rhwp/pkg"
+      ],
+      "exit": 0,
+      "seconds": 8.51,
+      "logSha256": "45467fd9e860c44f15eed4f600ec6e0e39e597f9e8adf8462a1f9fb165669268"
+    },
+    {
+      "name": "combined-wasm-issue4680",
+      "command": [
+        "/home/edward/mygithub/rhwp/venv/bin/python",
+        "/home/edward/mygithub/rhwp/scripts/visual_sweep.py",
+        "--file-target",
+        "issue4680",
+        "/home/edward/mygithub/rhwp/samples/issue4680/20117321_gijang_handover_bond_ledger_form.hwp",
+        "/home/edward/mygithub/rhwp/pdf/issue4680/20117321_gijang_handover_bond_ledger_form-2020.pdf",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8296-acceptance/bin/combined-rhwp",
+        "--rasterizer",
+        "png",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "2",
+        "--silhouette-only",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8296-acceptance/combined-wasm",
+        "--wasm-pkg",
+        "/home/edward/mygithub/rhwp/pkg"
+      ],
+      "exit": 0,
+      "seconds": 7.62,
+      "logSha256": "f92ed11d5e7c7cf059b880a82e81777286e90610b008db134460a6b821a2c445"
+    }
+  ],
+  "nativeBinarySha256": "0edb323e56cb96717b73d51b92ceb6e06875e83f5b020f272fa1a8792880e678",
+  "bridgeProof": {
+    "base": "20c9678b01c5a564bb510c9fccd652cceafcd212",
+    "bridge": "5d455015cbd79962416ca30741a778ce6eb58d06",
+    "originalCodeCandidate": "3ddf77af61b10a9ace10224588ad68841e79b2f1",
+    "conflictPaths": [
+      "mydocs/orders/20261101.md"
+    ],
+    "nonDocumentTreeMatchesCodeCandidateAutoMerge": true
+  },
+  "selectedPdfChecks": [
+    {
+      "name": "combined-pdf-selected-img_clipping_01",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8296-acceptance/bin/combined-rhwp",
+        "import-pdf",
+        "/home/edward/mygithub/rhwp/samples/issue8413/img_clipping_01.pdf",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8296-acceptance/combined-pdf/img_clipping_01.hwpx",
+        "--json",
+        "--source-pages",
+        "0,1,11"
+      ],
+      "exit": 0,
+      "seconds": 5.56,
+      "logSha256": "6d927cd98bb2319610f70ca4346ea53223b39afa3c6b7cef2e01674eba208d5d",
+      "sourcePageCount": 3,
+      "outputSha256": "da44f8220a66c67188c09cadec9fc2f97c6ec422424726f5afba20191dcab8ac"
+    },
+    {
+      "name": "combined-pdf-selected-img_bug_01",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8296-acceptance/bin/combined-rhwp",
+        "import-pdf",
+        "/home/edward/mygithub/rhwp/samples/issue8413/img_bug_01.pdf",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8296-acceptance/combined-pdf/img_bug_01.hwpx",
+        "--json",
+        "--source-pages",
+        "0"
+      ],
+      "exit": 0,
+      "seconds": 9.43,
+      "logSha256": "0e9967942a4fe314ddb753444c746edbc8044d4b39ad23f5df6a95609bd3547b",
+      "sourcePageCount": 1,
+      "outputSha256": "5ae2945f46502b284751a1345da1e2de9b8339665df99ddf5e285cce3df1e87b"
+    },
+    {
+      "name": "combined-pdf-selected-PDF_ENCRYPTION_UNSUPPORTED",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8296-acceptance/bin/combined-rhwp",
+        "import-pdf",
+        "/home/edward/mygithub/rhwp/samples/issue8413/PDF_ENCRYPTION_UNSUPPORTED.pdf",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8296-acceptance/combined-pdf/PDF_ENCRYPTION_UNSUPPORTED.hwpx",
+        "--json",
+        "--source-pages",
+        "9,20,42"
+      ],
+      "exit": 0,
+      "seconds": 0.71,
+      "logSha256": "e6d3239cb0f9a2454e4af68475b5758977f2752887ce41bfc306897a28215a4f",
+      "sourcePageCount": 3,
+      "outputSha256": "96d6778dd96742b5f44a42c4aa96370ad192f5c7c4f6af4d3b8344d91c4dd7f6"
+    },
+    {
+      "name": "combined-pdf-selected-f87pro",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8296-acceptance/bin/combined-rhwp",
+        "import-pdf",
+        "/home/edward/mygithub/rhwp/samples/issue8413/f87pro.pdf",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8296-acceptance/combined-pdf/f87pro.hwpx",
+        "--json",
+        "--source-pages",
+        "0"
+      ],
+      "exit": 0,
+      "seconds": 16.22,
+      "logSha256": "b567195385a98ac222e85c32dd852c5f1d4b0be39aa34d2048a5c7413f431d92",
+      "sourcePageCount": 1,
+      "outputSha256": "e72a9e1cc111e43cc2b549400fa1ec97d5f12dd3dac5618bef1ecbf237726fa8"
+    },
+    {
+      "name": "combined-tsc",
+      "command": [
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "exit": 0,
+      "seconds": 2.32,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "selectedPdfBaseComparison": [
+    {
+      "key": "img_clipping_01",
+      "selected": "0,1,11",
+      "exit": 0,
+      "sourcePages": 3,
+      "seconds": 10.67,
+      "baseOutputSha256": "da44f8220a66c67188c09cadec9fc2f97c6ec422424726f5afba20191dcab8ac",
+      "candidateOutputSha256": "da44f8220a66c67188c09cadec9fc2f97c6ec422424726f5afba20191dcab8ac",
+      "logSha256": "68cb7001338b040efeca40261d23c3c4434d034ab8a2167cc95e09ed37532ba8",
+      "byteIdentical": true
+    },
+    {
+      "key": "img_bug_01",
+      "selected": "0",
+      "exit": 0,
+      "sourcePages": 1,
+      "seconds": 11.99,
+      "baseOutputSha256": "5ae2945f46502b284751a1345da1e2de9b8339665df99ddf5e285cce3df1e87b",
+      "candidateOutputSha256": "5ae2945f46502b284751a1345da1e2de9b8339665df99ddf5e285cce3df1e87b",
+      "logSha256": "b5c52cacc861ba2792da2c4ddd25c1430a05ff16c383ff6ad9d7a4a6ef76a236",
+      "byteIdentical": true
+    },
+    {
+      "key": "PDF_ENCRYPTION_UNSUPPORTED",
+      "selected": "9,20,42",
+      "exit": 0,
+      "sourcePages": 3,
+      "seconds": 0.7,
+      "baseOutputSha256": "96d6778dd96742b5f44a42c4aa96370ad192f5c7c4f6af4d3b8344d91c4dd7f6",
+      "candidateOutputSha256": "96d6778dd96742b5f44a42c4aa96370ad192f5c7c4f6af4d3b8344d91c4dd7f6",
+      "logSha256": "b8dbb1d5be540ae75d8de2926a7e653cac7169cecc85df56fb56907dd845bd34",
+      "byteIdentical": true
+    },
+    {
+      "key": "f87pro",
+      "selected": "0",
+      "exit": 0,
+      "sourcePages": 1,
+      "seconds": 15.78,
+      "baseOutputSha256": "e72a9e1cc111e43cc2b549400fa1ec97d5f12dd3dac5618bef1ecbf237726fa8",
+      "candidateOutputSha256": "e72a9e1cc111e43cc2b549400fa1ec97d5f12dd3dac5618bef1ecbf237726fa8",
+      "logSha256": "4c0f3516fbec7eb0d201781e0b5ec7922c33b7db31bfe8d80ff4e6f82b1a4cdc",
+      "byteIdentical": true
+    }
+  ],
+  "pdfFullImportDiagnostic": {
+    "scope": "Extra full 32-page PDF import/save smoke, not PUA fidelity validation. Both current base and candidate exit 1 in this release-test/native-skia environment; not counted as passing. The current-base strace confirms RLIMIT_CPU soft/hard 90 seconds and SIGKILL; selected representative pages succeed and saved HWPX bytes match across base and candidate. PDF parser/backend/CLI source is unchanged. No limit or implementation was relaxed for this PR.",
+    "baseTimeLogSha256": "b838d6b81d948062eb7b19f4262f1ebc758d24daec9f0bd9a7c12a01f4a989d3",
+    "baseStraceSha256": "d5028ba21c6a68387538e895d312e2d992989a4e1b7647094522ef4cc2b90cbd",
+    "baseTimeLog": "오류: 경고: HWPX 저장 중 정밀 문자 획: rhwp 왕복 보존, 한컴 기본 표현 미지원 메타데이터 일부를 산출물에 담지 못했습니다\nCommand exited with non-zero status 1\n\tCommand being timed: \"strace -f -e trace=process,prlimit64 -e signal=SIGXCPU,SIGKILL -o output/pr-review/pr8296-acceptance/base-pdf-full.strace output/pr-review/pr8296-acceptance/bin/latest-base-rhwp import-pdf samples/issue8413/img_clipping_01.pdf output/pr-review/pr8296-acceptance/combined-pdf/base-full.hwpx --json\"\n\tUser time (seconds): 90.92\n\tSystem time (seconds): 11.08\n\tPercent of CPU this job got: 111%\n\tElapsed (wall clock) time (h:mm:ss or m:ss): 1:31.29\n\tAverage shared text size (kbytes): 0\n\tAverage unshared data size (kbytes): 0\n\tAverage stack size (kbytes): 0\n\tAverage total size (kbytes): 0\n\tMaximum resident set size (kbytes): 751952\n\tAverage resident set size (kbytes): 0\n\tMajor (requiring I/O) page faults: 363\n\tMinor (reclaiming a frame) page faults: 348356\n\tVoluntary context switches: 1038970\n\tInvoluntary context switches: 125276\n\tSwaps: 0\n\tFile system inputs: 68344\n\tFile system outputs: 1616\n\tSocket messages sent: 0\n\tSocket messages received: 0\n\tSignals delivered: 0\n\tPage size (bytes): 4096\n\tExit status: 1\n"
+  }
+}

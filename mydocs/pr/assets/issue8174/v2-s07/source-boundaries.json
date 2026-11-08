@@ -1,0 +1,154 @@
+{
+  "source": "0ca4dac5000e7fb888879fcac168376d0a9d4a2f",
+  "base": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "before": "4e2149dc65bdbc15413bf09d710c85882260e2ae",
+  "files": [
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/fonts/allocation.rs",
+      "gitBlob": "5b9eee25f380b3935f0a18844ba5443a3c5d58f0",
+      "sha256": "7d9e3e4d4ecb401df1412b4e70458fb535266900f45e711aaa4f908ef59d1c6e",
+      "boundaries": [
+        {
+          "needle": "fn entries",
+          "line": 24
+        },
+        {
+          "needle": "fn vec",
+          "line": 38
+        },
+        {
+          "needle": "fn map",
+          "line": 48
+        },
+        {
+          "needle": "fn insert",
+          "line": 55
+        },
+        {
+          "needle": "fn string_capacity",
+          "line": 75
+        }
+      ]
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/fonts/cff_encoding.rs",
+      "gitBlob": "5c8599f298a0f46ac719191a5d193360e7f9d80c",
+      "sha256": "5358c93e796db07ebb13fe42cd2271346430d346c2cf1b28e82bb681d401f5aa",
+      "boundaries": [
+        {
+          "needle": "fn parse_index_limited",
+          "line": 456
+        },
+        {
+          "needle": "fn parse_dict_real_limited",
+          "line": 566
+        },
+        {
+          "needle": "fn parse_cff_font_matrix_scale_with_budget",
+          "line": 636
+        },
+        {
+          "needle": "fn parse_cff_cid_to_gid_with_budget",
+          "line": 726
+        },
+        {
+          "needle": "fn parse_charset_limited",
+          "line": 940
+        },
+        {
+          "needle": "fn parse_cff_encoding_with_budget",
+          "line": 1150
+        },
+        {
+          "needle": "fn parse_cff_gid_mapping_with_pdf_encoding_with_budget",
+          "line": 1395
+        },
+        {
+          "needle": "fn resolve_bytes_via_pdf_encoding_limited",
+          "line": 1481
+        }
+      ]
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/fonts/font_dict.rs",
+      "gitBlob": "1b1a09f26935849c40546365a8aff5deab3395a6",
+      "sha256": "af9e892b23829c2a58e73a48c2048f5d5747303f97810412dacdac4756c41b07",
+      "boundaries": [
+        {
+          "needle": "fn embedded_glyph_name",
+          "line": 499
+        },
+        {
+          "needle": "parse_type1_encoding_with_budget(",
+          "line": 932
+        },
+        {
+          "needle": "parse_cff_cid_to_gid_with_budget(",
+          "line": 1355
+        },
+        {
+          "needle": "fn wrap_cff_in_opentype_with_budget",
+          "line": 2227
+        },
+        {
+          "needle": "fn char_to_unicode(",
+          "line": 4371
+        },
+        {
+          "needle": "fn char_to_unicode_uncached",
+          "line": 4405
+        },
+        {
+          "needle": "fn shift_jis_to_unicode",
+          "line": 5519
+        },
+        {
+          "needle": "fn normalize_cjk_radical_forms_owned",
+          "line": 5554
+        },
+        {
+          "needle": "fn decode_legacy_cjk",
+          "line": 6642
+        }
+      ]
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/fonts/cmap.rs",
+      "gitBlob": "df20697c38553a441c5a7d7c759276bf28a8a894",
+      "sha256": "5f1baeaa7fa71f5522a8d02ffa2440b74b35e57883396d79e6e7e2ff0cb39132",
+      "boundaries": [
+        {
+          "needle": "fn get_with_budget",
+          "line": 105
+        }
+      ]
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/fonts/character_mapper.rs",
+      "gitBlob": "325127ce74fadbbdfe72646638d2831dcb6985f1",
+      "sha256": "eab3ed459d54c20e9c31564fd528a8c349da46382e7f3e2f01880047a21565d8",
+      "boundaries": [
+        {
+          "needle": "fn glyph_name_to_unicode_char",
+          "line": 272
+        }
+      ]
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/fonts/type1_encoding.rs",
+      "gitBlob": "9c6976763b4c389912c1bbdf48b3de8a7329a992",
+      "sha256": "ffbfbc26714ecb12852b42424241f167a972d292800f0eae017edc9f8aecd3c7",
+      "boundaries": [
+        {
+          "needle": "fn parse_type1_encoding_with_budget",
+          "line": 35
+        },
+        {
+          "needle": "fn parse_dup_entry",
+          "line": 104
+        }
+      ]
+    }
+  ],
+  "note": "Only the font expansion/Unicode boundary is corrected. FontInfo payload clone/index, other parser/frontend/Core allocations and host confinement remain tracked separately."
+}

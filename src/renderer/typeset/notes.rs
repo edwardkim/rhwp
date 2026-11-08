@@ -7,7 +7,6 @@ pub(super) mod endnotes;
 pub(super) mod footnotes;
 
 use super::TypesetState;
-use crate::model::control::Control;
 use crate::model::footnote::Footnote;
 use crate::model::table::Table;
 use crate::renderer::pagination::FootnoteSource;
@@ -21,24 +20,12 @@ pub(super) fn register_unqueued_table_cells(
 ) {
     // 진입 때 한 번만 판단한다. 개별 등록이 쪽 상태를 바꾸어도 재판단하지 않는다.
     if !st.has_fragment_queued_table_footnotes(para_idx, ctrl_idx) {
-        for (cell_idx, cell) in table.cells.iter().enumerate() {
-            for (cp_idx, cp) in cell.paragraphs.iter().enumerate() {
-                for (cc_idx, cc) in cp.controls.iter().enumerate() {
-                    if let Control::Footnote(fn_ctrl) = cc {
-                        register(
-                            st,
-                            fn_ctrl,
-                            FootnoteSource::TableCell {
-                                para_index: para_idx,
-                                table_control_index: ctrl_idx,
-                                cell_index: cell_idx,
-                                cell_para_index: cp_idx,
-                                cell_control_index: cc_idx,
-                            },
-                        );
-                    }
-                }
-            }
+        for (cell_path, fn_ctrl) in crate::renderer::pagination::table_cell_footnotes(table) {
+            register(
+                st,
+                fn_ctrl,
+                FootnoteSource::table_cell_path(para_idx, ctrl_idx, &cell_path),
+            );
         }
     }
 }

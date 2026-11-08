@@ -50,7 +50,9 @@ fn find_master_group(
                 .iter()
                 .find_map(|child| find_master_group(child, active))
         }
-        LayerNodeKind::ClipRect { child, .. } => find_master_group(child, active),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            find_master_group(child, active)
+        }
         LayerNodeKind::Leaf { .. } => None,
     }
 }
@@ -68,7 +70,9 @@ fn collect_planes(
                 collect_planes(child, active, out);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => collect_planes(child, active, out),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            collect_planes(child, active, out)
+        }
         LayerNodeKind::Leaf { ops } => {
             for op in ops {
                 out.push(paint_op_replay_plane_with_layer(op, active));
@@ -130,7 +134,9 @@ fn issue_2318_master_page_layer_wrap_preserved_for_internal_order() {
         }
         match &node.kind {
             LayerNodeKind::Group { children, .. } => children.iter().any(has_front_wrap_layer),
-            LayerNodeKind::ClipRect { child, .. } => has_front_wrap_layer(child),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                has_front_wrap_layer(child)
+            }
             LayerNodeKind::Leaf { .. } => false,
         }
     }

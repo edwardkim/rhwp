@@ -91,7 +91,8 @@ FIDELITY_COMPARE_CONTRACT: dict[str, Any] = {
 
 VISUAL_SWEEP_CONTRACT: dict[str, Any] = {
     "path": "scripts/visual_sweep.py",
-    "run_schema_version": 1,
+    "run_schema_version": 2,
+    "supported_run_schema_versions": [1, 2],
     "page_schema_version": 1,
     "run_manifest_fields": [
         "schema_version",
@@ -99,6 +100,7 @@ VISUAL_SWEEP_CONTRACT: dict[str, Any] = {
         "provenance",
         "dpi",
         "pixel_diff_threshold",
+        "font_mismatch_evidence",
         "requested_pages",
         "requested_page_shards",
         "run_state",
@@ -257,7 +259,13 @@ def bind_visual_sweep_manifest(manifest: Mapping[str, Any]) -> BoundSignals:
     schema = manifest.get("schema_version")
     pdf = ((manifest.get("provenance") or {}).get("pdf") or {}).get("path")
     run_state = str(manifest.get("run_state") or "")
-    cheap_ok = schema == 1 and bool(pdf) and run_state != "incomplete"
+    # 저장된 schema1과 현재 schema2의 공통 provenance를 읽는다.
+    # 실패·미완료 실행을 완료된 비교 자료로 분류하지 않는다.
+    cheap_ok = (
+        schema in VISUAL_SWEEP_CONTRACT["supported_run_schema_versions"]
+        and bool(pdf)
+        and run_state == "complete"
+    )
     return BoundSignals(
         has_hangul_pdf=bool(pdf),
         versions=str(manifest.get("hancomVersion") or manifest.get("versions") or "unknown"),

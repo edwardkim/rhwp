@@ -6,7 +6,9 @@ use super::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::{Control, Field, FieldType, Parameter};
 use crate::model::event::DocumentEvent;
-use crate::model::hyperlink::{command_uri, web_command};
+use crate::model::hyperlink::{
+    bookmark_command, command_bookmark, command_uri, destination_command,
+};
 use crate::model::paragraph::{FieldRange, Paragraph};
 use crate::parser::tags;
 
@@ -37,6 +39,9 @@ pub struct HyperlinkInfo {
     pub end: usize,
     pub text: String,
     pub uri: String,
+    /// 문서 내부 책갈피 링크의 대상 이름. `uri`에는 원문 주소(`?<이름>`)가 그대로 남는다.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bookmark: Option<String>,
 }
 
 impl DocumentCore {
@@ -63,6 +68,7 @@ impl DocumentCore {
                         .take(range.end_char_idx.saturating_sub(range.start_char_idx))
                         .collect(),
                     uri: command_uri(&field.command),
+                    bookmark: command_bookmark(&field.command),
                 })
             })
             .collect())
@@ -77,7 +83,28 @@ impl DocumentCore {
         end: usize,
         uri: &str,
     ) -> Result<u32, HwpError> {
-        let command = web_command(uri)?;
+        self.insert_hyperlink_command(target, start, end, destination_command(uri)?)
+    }
+
+    /// 선택한 표시 문자열에 문서 내부 책갈피 링크를 붙인다. 책갈피가 문서에 있어야 한다.
+    pub fn insert_bookmark_hyperlink_native(
+        &mut self,
+        target: &HyperlinkTarget,
+        start: usize,
+        end: usize,
+        bookmark: &str,
+    ) -> Result<u32, HwpError> {
+        let command = self.existing_bookmark_command(bookmark)?;
+        self.insert_hyperlink_command(target, start, end, command)
+    }
+
+    fn insert_hyperlink_command(
+        &mut self,
+        target: &HyperlinkTarget,
+        start: usize,
+        end: usize,
+        command: String,
+    ) -> Result<u32, HwpError> {
         self.validate_hyperlink_paragraph(target)?;
         let mut candidate = self.hyperlink_paragraph(target)?.clone();
         let len = candidate.text.chars().count();
@@ -168,16 +195,50 @@ impl DocumentCore {
         field_id: u32,
         uri: &str,
     ) -> Result<bool, HwpError> {
-        let command = web_command(uri)?;
+        let command = destination_command(uri)?;
+        self.update_hyperlink_command(target, field_id, command, Some(uri))
+    }
+
+    /// 책갈피 링크의 대상 책갈피만 바꾼다. 동일 대상은 false를 반환한다.
+    pub fn update_bookmark_hyperlink_native(
+        &mut self,
+        target: &HyperlinkTarget,
+        field_id: u32,
+        bookmark: &str,
+    ) -> Result<bool, HwpError> {
+        let command = self.existing_bookmark_command(bookmark)?;
+        self.update_hyperlink_command(target, field_id, command, None)
+    }
+
+    /// `path`는 웹 링크의 `Path` 파라미터 값이다. 책갈피 링크는 `Path`를 쓰지 않는다.
+    fn update_hyperlink_command(
+        &mut self,
+        target: &HyperlinkTarget,
+        field_id: u32,
+        command: String,
+        path: Option<&str>,
+    ) -> Result<bool, HwpError> {
         self.validate_hyperlink_paragraph(target)?;
         let p = self.hyperlink_paragraph(target)?;
         let (_, idx) = find_link(p, field_id)?;
         let Control::Field(field) = &p.controls[idx] else {
             unreachable!()
         };
-        // 기존 mail/file/internal 링크를 웹 링크로 암묵적으로 바꾸지 않는다.
-        web_command(&command_uri(&field.command))?;
-        if command_uri(&field.command) == uri {
+        // 링크 종류(웹/책갈피)를 암묵적으로 바꾸지 않는다. Category/TargetType 파라미터가 어긋난다.
+        // 외부 목적지는 종류를 보존하고 책갈피 링크와 구별한다.
+        let same_kind = match path {
+            Some(_) => {
+                destination_command(&command_uri(&field.command)).is_ok()
+                    && command_bookmark(&field.command).is_none()
+            }
+            None => command_bookmark(&field.command).is_some(),
+        };
+        if !same_kind {
+            return Err(invalid(
+                "다른 종류의 하이퍼링크는 이 주소로 수정할 수 없습니다",
+            ));
+        }
+        if command_uri(&field.command) == command_uri(&command) {
             return Ok(false);
         }
         let mut candidate = p.clone();
@@ -199,7 +260,11 @@ impl DocumentCore {
                         *value = command.clone();
                         has_command = true;
                     }
-                    "Path" => *value = uri.to_string(),
+                    "Path" => {
+                        if let Some(path) = path {
+                            *value = path.to_string();
+                        }
+                    }
                     _ => {}
                 }
             }
@@ -261,6 +326,16 @@ impl DocumentCore {
             .find(|s| s.start_pos <= raw_start)
             .cloned();
         let new_len = text.chars().count();
+        // 다른 컨트롤은 바꾼 글자를 기준으로 옮긴다 — 지운 글자 사이·뒤 갭의 컨트롤은 새 글자 뒤로 간다.
+        let positions: Vec<usize> = candidate
+            .control_text_positions()
+            .into_iter()
+            .map(|at| match at {
+                _ if at <= start => at,
+                _ if at <= end => start + new_len,
+                _ => at - (end - start) + new_len,
+            })
+            .collect();
         // 먼저 삽입하여 빈 필드로 축소되는 중간 상태를 피한다.
         candidate.insert_text_at(start, text);
         candidate.delete_text_at(start + new_len, end - start);
@@ -281,14 +356,15 @@ impl DocumentCore {
         if let Control::Field(f) = &mut candidate.controls[ctrl_idx] {
             f.hyperlink_format = original_format;
         }
+        candidate.rebuild_char_offsets(&positions);
         // 새 글자는 기존 링크 첫 글자의 서식을 이어받는다.
         if let Some(mut shape) = shape {
-            shape.start_pos = raw_start;
-            candidate.char_shapes.retain(|s| s.start_pos != raw_start);
+            let new_start = raw_boundary(&candidate, start);
+            shape.start_pos = new_start;
+            candidate.char_shapes.retain(|s| s.start_pos != new_start);
             candidate.char_shapes.push(shape);
             candidate.char_shapes.sort_by_key(|s| s.start_pos);
         }
-        super::queries::field_query::rebuild_char_offsets(&mut candidate);
         candidate.stored_text_partition_dirty = true;
         self.commit_hyperlink_paragraph(target, candidate, field_id)?;
         Ok(true)
@@ -346,6 +422,7 @@ impl DocumentCore {
                 range.control_idx -= 1;
             }
         }
+        candidate.forget_para_text_if_emptied();
         for (start, end, mods) in formats {
             let ids = self
                 .document
@@ -359,6 +436,14 @@ impl DocumentCore {
         self.rebuild_resolved_styles();
         self.commit_hyperlink_paragraph(target, candidate, field_id)?;
         Ok(())
+    }
+
+    fn existing_bookmark_command(&self, bookmark: &str) -> Result<String, HwpError> {
+        let command = bookmark_command(bookmark)?;
+        if !self.has_bookmark_named(bookmark) {
+            return Err(invalid("문서에 없는 책갈피입니다"));
+        }
+        Ok(command)
     }
 
     pub(crate) fn hyperlink_paragraph(
@@ -395,8 +480,8 @@ impl DocumentCore {
                         .ok_or_else(|| invalid("셀 인덱스 초과"))?
                         .paragraphs
                 }
-                Some(Control::Shape(shape)) if cell_idx == 0 => {
-                    &super::get_textbox_from_shape(shape)
+                Some(Control::Shape(shape)) => {
+                    &super::helpers::get_textbox_at(shape, cell_idx)
                         .ok_or_else(|| invalid("글상자가 없는 도형"))?
                         .paragraphs
                 }

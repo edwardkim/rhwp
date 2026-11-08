@@ -1,0 +1,18 @@
+{
+  "base": "2e3b4f880bd11d35398e6ea0100846611f13a72d",
+  "candidate_receipt": "shape-host-baseline-and-header-text-build-results.json",
+  "input_sha256": "4e9b240082ba91b99669325292cae2b62e88765854d1e7bbbc6d44146dc14d55",
+  "exact_anomaly_envelope_equality": true,
+  "body_signals": [
+    {
+      "page": 11,
+      "node_type": "TextLine",
+      "over_bottom": 11.679999999999609,
+      "path": "Page/Body/Column0/TextLine40"
+    }
+  ],
+  "off_canvas_count": 1,
+  "base_and_candidate_whole_visual_evidence": "mydocs/pr/assets/issue7445/deferred-20261020/added-issue8060-71352_lpg_regulatory_impact-hwp/README.md",
+  "candidate_whole_visual_source_is_historical": true,
+  "rule": "existing already transferred original; corpus body signal not introduced by current branch; only exact body reference may be excluded, retain other axes and normal boundary regressions"
+}

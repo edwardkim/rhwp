@@ -1,0 +1,33 @@
+{
+  "at": "2026-11-07T07:50:17.903223+00:00",
+  "base": "b8dd67c5001dfb0410e9e192528676396cdd6a4e",
+  "changed_markdown_files": 58,
+  "link_exit": 0,
+  "link_output": "검사 문서: 58개\n내부 Markdown 상대 링크: 이상 없음\n",
+  "metadata_files": [
+    "mydocs/tech/direct_pdf_preflight.md",
+    "mydocs/tech/flutter_linux_texture.md",
+    "mydocs/tech/flutter_windows_texture.md",
+    "mydocs/tech/native_gl_presenter.md",
+    "mydocs/tech/native_gl_recovery.md",
+    "mydocs/tech/native_gl_tiles.md",
+    "mydocs/tech/native_glyph_followups.md",
+    "mydocs/tech/native_ime_edit.md",
+    "mydocs/tech/native_presentation.md",
+    "mydocs/tech/native_render_runtime_followups.md",
+    "mydocs/tech/native_render_snapshot.md",
+    "mydocs/tech/native_shared_layer_tree.md",
+    "mydocs/tech/native_skia_culling.md",
+    "mydocs/tech/native_skia_host_surface.md",
+    "mydocs/tech/native_skia_region.md",
+    "mydocs/tech/native_worker_recovery.md"
+  ],
+  "metadata_errors": [],
+  "repository_wide_existing_metadata_errors": 16,
+  "legacy_files_unchanged_from_base": {
+    "mydocs/tech/benchmark_vs_alternatives.md": true,
+    "mydocs/tech/investigations/issue-4964/README.md": true,
+    "mydocs/tech/investigations/issue-5511/README.md": true,
+    "mydocs/tech/investigations/issue-5511/task_m100_5511_cli_surface_inventory.md": true
+  }
+}

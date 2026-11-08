@@ -1,5 +1,8 @@
 //! 인라인 컨트롤 (Ruby, Hyperlink, Field, Bookmark 등)
 
+mod equation;
+pub use equation::{DeclaredEquationFrameSource, Equation};
+
 use std::collections::HashMap;
 
 use super::document::SectionDef;
@@ -78,6 +81,26 @@ pub enum Control {
 }
 
 impl Control {
+    /// 머리말·꼬리말의 문단 목록. 셀 경로는 이 컨트롤을 글상자처럼 셀 0 하나로 지나간다.
+    pub fn header_footer_paragraphs(&self) -> Option<&Vec<crate::model::paragraph::Paragraph>> {
+        match self {
+            Control::Header(header) => Some(&header.paragraphs),
+            Control::Footer(footer) => Some(&footer.paragraphs),
+            _ => None,
+        }
+    }
+
+    /// [`Control::header_footer_paragraphs`]의 가변 짝.
+    pub fn header_footer_paragraphs_mut(
+        &mut self,
+    ) -> Option<&mut Vec<crate::model::paragraph::Paragraph>> {
+        match self {
+            Control::Header(header) => Some(&mut header.paragraphs),
+            Control::Footer(footer) => Some(&mut footer.paragraphs),
+            _ => None,
+        }
+    }
+
     /// 개체가 글자처럼 취급(treat_as_char)되는가.
     ///
     /// 텍스트 흐름 안에서 한 글자 폭을 차지하는 개체 판정의 기반이다.
@@ -87,16 +110,25 @@ impl Control {
             Control::Table(table) => table.common.treat_as_char,
             Control::Picture(picture) => picture.common.treat_as_char,
             Control::Equation(equation) => equation.common.treat_as_char,
+            Control::Form(form) => form.common.treat_as_char,
             _ => false,
         }
     }
 
     /// 편집/커서 이동에서 논리적으로 한 글자 폭을 차지하는 컨트롤인가.
     ///
-    /// `treat_as_char` 개체에 각주·미주를 더한 것. `SectionDef`/`ColumnDef` 같은
-    /// 구조 컨트롤은 흐름에서 자리를 차지하지 않으므로 제외된다.
+    /// `treat_as_char` 개체에 각주·미주·글자겹침·덧말을 더한 것. `SectionDef`/`ColumnDef` 같은
+    /// 구조 컨트롤은 흐름에서 자리를 차지하지 않으므로 제외된다. 한컴처럼 덧말은 본말과
+    /// 덧말을 합쳐 캐럿 한 칸이다.
     pub fn is_logical_inline(&self) -> bool {
-        self.is_treat_as_char_object() || matches!(self, Control::Footnote(_) | Control::Endnote(_))
+        self.is_treat_as_char_object()
+            || matches!(
+                self,
+                Control::Footnote(_)
+                    | Control::Endnote(_)
+                    | Control::CharOverlap(_)
+                    | Control::Ruby(_)
+            )
     }
 
     /// HWP5 `PARA_TEXT` 에서 확장 제어문자 자리(`CTRL_CHAR_CODE_UNITS`)를 차지하는가.
@@ -123,46 +155,6 @@ pub const CTRL_CHAR_CODE_UNITS: u32 = 8;
 ///
 /// set = 줄 단위 (HWPX `lineMode="LINE"`), clear = 글자 단위 (`lineMode="CHAR"`).
 pub const EQUATION_LINE_MODE_BIT: u32 = 0x0000_0001;
-
-/// 수식 ('eqed' 컨트롤, HWP 스펙 표 105)
-#[derive(Debug, Clone, Default, serde::Serialize)]
-pub struct Equation {
-    /// 개체 공통 속성 (위치, 크기, 배치)
-    pub common: CommonObjAttr,
-    /// [#2727] HWPTAG_EQEDIT 속성 (HWP5 spec 표 105 attribute, UINT32).
-    ///
-    /// bit 0 = 수식이 차지하는 범위 (0 = 글자 단위, 1 = 줄 단위) — HWPX
-    /// `hp:equation@lineMode` (`CHAR` / `LINE`) 와 대응한다. 나머지 비트는 의미
-    /// 미상이므로 UINT32 전체를 원본 그대로 보존해 왕복시킨다. 기본값 0 은
-    /// OWPML `lineMode` 기본값 `CHAR` 와 일치한다.
-    pub attr: u32,
-    /// 수식 스크립트 ("1 over 2" 등)
-    pub script: String,
-    /// 글자 크기 (HWPUNIT)
-    pub font_size: u32,
-    /// 글자 색 (0x00BBGGRR)
-    pub color: u32,
-    /// 기준선 오프셋
-    pub baseline: i16,
-    /// 미지의 UINT16 필드 (HWP5 spec errata) — hwplib `ForEQEdit.readUInt2()` 정합.
-    /// HWP5 spec 표 105 에 누락되어 있으나 한컴 실제 저장본에 baseline 과 version_info
-    /// 사이에 UINT16 zero 가 위치. Task #1061 발견.
-    pub unknown: u16,
-    /// EQEDIT 속성 (UINT32, HWPTAG_EQEDIT 첫 필드).
-    /// bit 0: lineMode (0=글자 단위/CHAR, 1=줄 단위/LINE).
-    /// 종전엔 파싱 후 버려지고 저장 시 0으로 고정되어 lineMode 유실. Issue #2727.
-    pub eqedit: u32,
-    /// 버전 정보
-    pub version_info: String,
-    /// 수식 글꼴명
-    pub font_name: String,
-    /// 라운드트립용 원본 ctrl_data
-    pub raw_ctrl_data: Vec<u8>,
-    /// [#4495] raw_ctrl_data 출처 봉인 — 봉인 시점 `common` 의 다이제스트.
-    /// 계약은 Table::raw_ctrl_seal 과 동일 (`model::raw_provenance` 참조).
-    #[serde(skip)]
-    pub raw_ctrl_seal: Option<[u8; 32]>,
-}
 
 /// 자동 번호 ('atno' 컨트롤, HWP 스펙 표 144)
 #[derive(Debug, Clone, Default, serde::Serialize)]
@@ -224,6 +216,7 @@ pub struct PageNumberPos {
     /// 대시 문자 (WCHAR, 항상 '-')
     pub dash_char: char,
 }
+crate::storage::clone_fields!(PageNumberPos, {format, position, user_symbol, prefix_char, suffix_char, dash_char});
 
 /// 책갈피 ('bokm' 컨트롤)
 #[derive(Debug, Clone, Default, serde::Serialize)]
@@ -334,7 +327,8 @@ pub struct Ruby {
     pub ruby_text: String,
     /// 위치 (`posType`): 0=TOP, 1=BOTTOM. (#1587)
     pub pos_type: u8,
-    /// 정렬 (`align`): 0=LEFT, 1=RIGHT, 2=CENTER. (#1587)
+    /// 정렬 (`align`): HWP 문단 정렬 번호 0=양쪽, 1=왼쪽, 2=오른쪽, 3=가운데, 4=배분, 5=나눔.
+    /// 한컴 12.30은 가운데(3)만 저장한다. HWPX는 같은 값을 이름으로 쓴다.
     pub align: u8,
     /// 덧말 크기 비율 (`szRatio`, %). (#1587)
     pub sz_ratio: u8,
@@ -349,14 +343,46 @@ pub struct Ruby {
 pub struct CharOverlap {
     /// 겹칠 글자 목록 (최대 9글자)
     pub chars: Vec<char>,
-    /// 테두리 타입 (0=없음/글자끼리, 1=원, 2=반전원, 3=사각형, 4=반전사각형)
+    /// 테두리 타입 (0=없음/글자끼리, 1=원, 2=반전원, 3=사각형, 4=반전사각형, 5=삼각형,
+    /// 6=반전삼각형, 7=해, 8=마름모, 9=반전마름모, 10=둥근 사각형, 11~13=빈·얇은·굵은 순환 삼각형)
     pub border_type: u8,
-    /// 내부 글자 크기 (%, 양수=축소/확대, 기본 100)
+    /// 내부 글자 크기의 부호 있는 10% 단계 (0=원래 크기)
     pub inner_char_size: i8,
     /// 펼침
     pub expansion: u8,
     /// 글자 속성(charshape) ID 배열
     pub char_shape_ids: Vec<u32>,
+    /// HWP 바이너리 레코드의 문자 배열 여부. 원문 배열은 그대로 보존한다.
+    #[serde(skip)]
+    pub hwp_wire_chars: bool,
+}
+
+impl CharOverlap {
+    /// 한컴이 테두리로 찍는 글자. 한컴 HWP 저장본은 원문 배열 맨 앞에 이 글자를 둔다.
+    pub fn border_glyph(border_type: u8) -> Option<char> {
+        match border_type {
+            1 => Some('◯'),
+            2 => Some('●'),
+            3 => Some('□'),
+            4 => Some('■'),
+            5 => Some('△'),
+            6 => Some('▲'),
+            7 => Some('☼'),
+            8 => Some('◇'),
+            9 => Some('◆'),
+            10 => Some('▢'),
+            11 => Some('♲'),
+            12 => Some('♺'),
+            13 => Some('♻'),
+            _ => None,
+        }
+    }
+
+    /// HWP 원문 배열이 겹칠 글자 앞에 두는 표지. 글자끼리 펼친 겹침은 전각 공백이고,
+    /// 글자끼리 포갠 겹침은 표지가 없다 (한컴 12.30 저장본).
+    pub fn hwp_prefix(&self) -> Option<char> {
+        Self::border_glyph(self.border_type).or_else(|| (self.expansion == 0).then_some('\u{3000}'))
+    }
 }
 
 /// 감추기 ('pghd' 컨트롤)
@@ -375,6 +401,7 @@ pub struct PageHide {
     /// 쪽 번호 감추기
     pub hide_page_num: bool,
 }
+crate::storage::clone_fields!(PageHide, {hide_header, hide_footer, hide_master_page, hide_border, hide_fill, hide_page_num});
 
 /// 숨은 설명 ('tcmt' 컨트롤)
 #[derive(Debug, Default, Clone, serde::Serialize)]
@@ -721,112 +748,7 @@ fn unescape_parameter_xml(s: &str) -> String {
 }
 
 #[cfg(test)]
-mod parameter_list_codec_tests {
-    use super::*;
-
-    fn sample_tree() -> ParameterList {
-        ParameterList {
-            name: Some(String::new()),
-            items: vec![
-                Parameter::Integer {
-                    name: Some("Prop".to_string()),
-                    value: 9,
-                },
-                Parameter::String {
-                    name: Some("Command".to_string()),
-                    value: "Clickhere:set:66:Direction:wstring:23:이곳을 마우스로 누르고 <입력>하세요 & \"확인\""
-                        .to_string(),
-                    preserve_space: true,
-                },
-                Parameter::String {
-                    name: Some("Direction".to_string()),
-                    value: "이곳을 마우스로 누르고 내용을 입력하세요.".to_string(),
-                    preserve_space: false,
-                },
-                // [#4437] 실물 코퍼스 표기 그대로 — `1` 과 `false` 가 섞여 있다.
-                Parameter::Boolean {
-                    name: Some("Fiexde".to_string()),
-                    value: true,
-                    lexical: Some("1".to_string()),
-                },
-                Parameter::Boolean {
-                    name: Some("RefHyperLink".to_string()),
-                    value: false,
-                    lexical: Some("false".to_string()),
-                },
-                Parameter::Float {
-                    name: Some("Ratio".to_string()),
-                    value: 1.5,
-                },
-                Parameter::List(ParameterList {
-                    name: Some("623".to_string()),
-                    items: vec![Parameter::Integer {
-                        name: Some("16384".to_string()),
-                        value: 42,
-                    }],
-                }),
-            ],
-        }
-    }
-
-    #[test]
-    fn render_then_parse_round_trips_the_tree() {
-        let original = sample_tree();
-        let xml = original.render_xml("parameters");
-        assert!(xml.starts_with("<hp:parameters cnt=\"7\" name=\"\">"));
-        assert!(xml.ends_with("</hp:parameters>"));
-        let parsed = ParameterList::parse_xml(&xml).expect("parse_xml 실패");
-        assert_eq!(parsed, original);
-    }
-
-    /// [#4437] 원본 lexical(`false`/`true`) 이 정규화(`0`/`1`)되지 않고 바이트
-    /// 그대로 왕복해야 한다.
-    #[test]
-    fn issue4437_boolean_lexical_round_trips_verbatim() {
-        let xml = sample_tree().render_xml("parameters");
-        assert!(
-            xml.contains(r#"<hp:booleanParam name="RefHyperLink">false</hp:booleanParam>"#),
-            "원본 `false` 표기가 `0` 으로 정규화되면 안 된다: {xml}"
-        );
-        assert!(
-            xml.contains(r#"<hp:booleanParam name="Fiexde">1</hp:booleanParam>"#),
-            "원본 `1` 표기는 그대로: {xml}"
-        );
-        // parse → render 재왕복도 바이트 동일.
-        let reparsed = ParameterList::parse_xml(&xml).expect("parse_xml");
-        assert_eq!(reparsed.render_xml("parameters"), xml);
-
-        // lexical 이 없는(프로그램 생성) Boolean 은 종전대로 0/1 정규화.
-        let synth = ParameterList {
-            name: Some(String::new()),
-            items: vec![Parameter::Boolean {
-                name: Some("New".to_string()),
-                value: false,
-                lexical: None,
-            }],
-        };
-        assert!(synth
-            .render_xml("parameters")
-            .contains(r#"<hp:booleanParam name="New">0</hp:booleanParam>"#));
-    }
-
-    #[test]
-    fn empty_list_round_trips() {
-        let original = ParameterList {
-            name: Some(String::new()),
-            items: vec![],
-        };
-        let xml = original.render_xml("parameters");
-        let parsed = ParameterList::parse_xml(&xml).expect("parse_xml 실패");
-        assert_eq!(parsed, original);
-    }
-
-    #[test]
-    fn is_empty_reflects_items() {
-        assert!(ParameterList::default().is_empty());
-        assert!(!sample_tree().is_empty());
-    }
-}
+mod parameter_list_codec_tests;
 
 /// 필드 컨트롤
 #[derive(Debug, Clone, Default, serde::Serialize)]
@@ -1120,107 +1042,4 @@ pub struct UnknownControl {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_control_variants() {
-        let ctrl = Control::Bookmark(Bookmark {
-            name: "test".to_string(),
-        });
-        match ctrl {
-            Control::Bookmark(bm) => assert_eq!(bm.name, "test"),
-            _ => panic!("Expected Bookmark"),
-        }
-    }
-
-    #[test]
-    fn test_field_type_default() {
-        assert_eq!(FieldType::default(), FieldType::Unknown);
-    }
-
-    // ---------- #1434: 누름틀 command 한컴 포맷 정합 ----------
-
-    /// 한컴 정답지(field-01/form-01)의 command 문자열과 바이트 동형이어야 한다.
-    #[test]
-    fn task1434_clickhere_command_hancom_format() {
-        // 한컴 원본: `Clickhere:set:48:Direction:wstring:6:여기에 입력 HelpState:wstring:0:  `
-        assert_eq!(
-            Field::build_clickhere_command("여기에 입력", ""),
-            "Clickhere:set:48:Direction:wstring:6:여기에 입력 HelpState:wstring:0:  "
-        );
-        // 한컴 원본: `Clickhere:set:47:Direction:wstring:5:제목 입력 HelpState:wstring:0:  `
-        assert_eq!(
-            Field::build_clickhere_command("제목 입력", ""),
-            "Clickhere:set:47:Direction:wstring:5:제목 입력 HelpState:wstring:0:  "
-        );
-    }
-
-    /// command 에 Name 키가 들어가면 안 된다 (이름은 CTRL_DATA 전담). 한컴이 Name 키를
-    /// 만나면 Direction 범위를 잘못 잘라 안내문 바인딩 실패 (#1434 회귀 가드).
-    #[test]
-    fn task1434_command_has_no_name_key() {
-        let cmd = Field::build_clickhere_command("여기에 입력", "");
-        assert!(
-            !cmd.contains("Name:"),
-            "command 에 Name 키가 있으면 한컴 안내문 바인딩 실패: {cmd}"
-        );
-    }
-
-    /// 생성한 command 에서 guide_text/memo_text 가 정확히 재추출되어야 한다 (왕복 정합).
-    #[test]
-    fn task1434_command_guide_memo_roundtrip() {
-        let field = Field {
-            field_type: FieldType::ClickHere,
-            command: Field::build_clickhere_command("여기에 입력", "도움말"),
-            ..Default::default()
-        };
-        assert_eq!(field.guide_text(), Some("여기에 입력"));
-        assert_eq!(field.memo_text(), Some("도움말"));
-    }
-
-    /// set 길이는 inner 글자수 − 1 (마지막 trailing 공백 제외) 규칙을 따른다.
-    #[test]
-    fn task1434_set_length_excludes_trailing_space() {
-        let cmd = Field::build_clickhere_command("a", "");
-        // inner = "Direction:wstring:1:a HelpState:wstring:0:  " (trailing 2개)
-        let inner = cmd.strip_prefix("Clickhere:set:").unwrap();
-        let (set_str, body) = inner.split_once(':').unwrap();
-        let set_len: usize = set_str.parse().unwrap();
-        assert_eq!(
-            set_len,
-            body.chars().count() - 1,
-            "set 길이 = inner 글자수 − 1 (trailing 공백 제외): {cmd}"
-        );
-    }
-
-    /// §4.5: wstring {n}·set {N} 은 UTF-16 code unit(WCHAR) 수여야 한다.
-    /// BMP 밖 문자(U+20000)는 2 WCHAR 이므로 chars().count() 로는 1개 적게 세어진다.
-    #[test]
-    fn clickhere_wstring_len_counts_utf16_wchars() {
-        // guide "a𠀀b": a(1) + U+20000(2 WCHAR) + b(1) = 4 WCHAR (chars().count()=3)
-        let cmd = Field::build_clickhere_command("a\u{20000}b", "");
-        assert!(
-            cmd.contains("Direction:wstring:4:a\u{20000}b "),
-            "guide {{n}} 은 UTF-16 code unit 수(4)여야 한다(chars().count()=3 이면 RED): {cmd}"
-        );
-        // set 길이도 WCHAR 기준 (inner 의 UTF-16 수 − 1).
-        let body = cmd.strip_prefix("Clickhere:set:").unwrap();
-        let (set_str, inner) = body.split_once(':').unwrap();
-        let set_len: usize = set_str.parse().unwrap();
-        assert_eq!(
-            set_len,
-            inner.encode_utf16().count() - 1,
-            "set {{N}} 은 WCHAR 수: {cmd}"
-        );
-    }
-
-    #[test]
-    fn test_hyperlink() {
-        let link = Hyperlink {
-            url: "https://example.com".to_string(),
-            text: "Example".to_string(),
-        };
-        assert!(!link.url.is_empty());
-    }
-}
+mod tests;

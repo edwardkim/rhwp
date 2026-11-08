@@ -68,11 +68,6 @@ impl TypesetEngine {
                         && para_has_visible_text(p)
                         && prev_sb_hu < 250
                 });
-                let next_first_real_vpos = paragraphs
-                    .get(para_idx + 1)
-                    .and_then(|next_para| next_para.line_segs.first())
-                    .filter(|ls| !is_synthetic_line_seg(ls))
-                    .map(|ls| ls.vertical_pos);
                 let bridge_missing_count = (prev_real_idx + 1..para_idx)
                     .filter(|&i| {
                         paragraphs.get(i).is_some_and(|p| {
@@ -136,20 +131,12 @@ impl TypesetEngine {
                         && curr_first_vpos < 0
                         && prev_positive_wrap_end
                             .is_some_and(|end| end > body_height_hu_for_variant * 75 / 100);
-                    let bottom_heading_before_next_reset = prev_real_idx + 1 == para_idx
-                        && para.line_segs.len() == 1
-                        && para_sb_hu >= 250
-                        && para.controls.is_empty()
-                        && para_has_visible_text(para)
-                        && curr_first_vpos > body_height_hu_for_variant * 75 / 100
-                        && next_first_real_vpos.is_some_and(|next_vpos| {
-                            next_vpos > 0 && next_vpos <= 4000 && curr_first_vpos > next_vpos
-                        });
+                    // 다음 문단의 리셋은 다음 문단이 소유한다. 앞 간격의 크기만으로
+                    // 현재 본문을 제목이라 추정해 fit 전에 같은 새 쪽으로 옮기지 않는다.
                     strict_heading_reset
                         || delayed_heading_after_top_content_reset
                         || bridged_reset
                         || negative_wrap_heading_reset
-                        || bottom_heading_before_next_reset
                 });
 
                 if table_heading_reset || empty_bridge_heading_reset || real_heading_or_bridge_reset

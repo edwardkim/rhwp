@@ -1,0 +1,90 @@
+{
+  "head": "ab1491d40b43c7d54941337b852f7e7f0a5eff5e",
+  "stages": [
+    {
+      "name": "prepare",
+      "argv": [
+        "sandbox-exec",
+        "-f",
+        "/Users/melee/Documents/Codex/2026-11-07/task/font-isolation-final-v4.sb",
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "lib",
+      "argv": [
+        "sandbox-exec",
+        "-f",
+        "/Users/melee/Documents/Codex/2026-11-07/task/font-isolation-final-v4.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "2"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "placeholder",
+      "argv": [
+        "sandbox-exec",
+        "-f",
+        "/Users/melee/Documents/Codex/2026-11-07/task/font-isolation-final-v4.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "pdf",
+      "argv": [
+        "sandbox-exec",
+        "-f",
+        "/Users/melee/Documents/Codex/2026-11-07/task/font-isolation-final-v4.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0
+    }
+  ],
+  "summaries": {
+    "lib": [
+      "test result: ok. 3857 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 20.53s",
+      "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+      "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+      "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+    ],
+    "placeholder": [
+      "     Summary [  10.236s] 2 tests run: 2 passed, 327 skipped"
+    ],
+    "pdf": [
+      "     Summary [   8.952s] 22 tests run: 22 passed, 280 skipped"
+    ]
+  },
+  "logSha256": {
+    "lib": "6ea2ed7ccd7e08bb8d033882cc8b5b25d37c10dbd48cb1b7dc9d3f6fd0a48ad5",
+    "placeholder": "8409adae57ad77aec9c31dade96f43352586ef6643f8af6e373f45f3c077a524",
+    "pdf": "836dd84bad5be0b209156b6a0c486af27146765ddfea33b337b4035399a9accb"
+  }
+}

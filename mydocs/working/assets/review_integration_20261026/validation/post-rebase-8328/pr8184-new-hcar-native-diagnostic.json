@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-28",
+  "source": "samples/hwpx/hcar-001.hwpx",
+  "source_sha256": "31c3c5a5758638bf7c653fc4c60e7df430395f6b78d6a04effcd53274a5948f0",
+  "pdf": "pdf/hwpx/hcar-001.pdf",
+  "pdf_sha256": "314ff5e27096103542ea00af74b48148478bb4852fb71550c57075c92acd8b3c",
+  "page": 1,
+  "dpi": 96,
+  "compat": "2022",
+  "candidate_binary_sha256": "2a4915dfda39a74efbc903297d51e85a3d71634127ec01c47f65124624beedb0",
+  "candidate_raw_percent": 74.87266,
+  "candidate_first_table_y_px": 147.9,
+  "candidate_table_source": "render tree section 0 paragraph 2, 12x7 table",
+  "independent_pdf_table_border_y_px": 152.47,
+  "pdf_method": "PyMuPDF stroke drawing at 72 dpi scaled by 96/72",
+  "difference_px": -4.57,
+  "new_source_pr_head": "cc6d06077013daf6090021ab317c347dbd05b236",
+  "scope": "Native current source one-page diagnosis; no fresh WASM or full pages measured here"
+}

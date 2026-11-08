@@ -1,3 +1,5 @@
+// 관계형: 문서의 글꼴 선택·공급·첫 paint·입력 활성화의 순서를 검사한다.
+// 주석 갱신: 2026-11-07 20:13 KST. 글꼴 설치나 px 좌표에 의존하지 않는다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -36,12 +38,16 @@ function localFontsChangedHandlerSource(): string {
 
 test('문서 초기화는 로컬 글꼴 확인 후에만 입력 핸들러를 활성화한다', () => {
   const initializeDocument = initializeDocumentSource();
-  const promptIndex = initializeDocument.indexOf('await promptLocalFontsIfNeeded(docInfo, displayName);');
+  const promptIndex = initializeDocument.indexOf('await promptLocalFontsIfNeeded(displayName);');
+  const programIndex = initializeDocument.indexOf('await wasm.prepareDeclaredFontEnvironment(');
+  const canvasIndex = initializeDocument.indexOf('await canvasView?.loadDocument();');
   const activateIndex = initializeDocument.indexOf('inputHandler?.activateWithCaretPosition();');
   const completeIndex = initializeDocument.indexOf("documentState.markClean('document-initialized');");
 
   assert.ok(promptIndex >= 0, '로컬 글꼴 확인 단계가 있어야 한다');
-  assert.ok(activateIndex > promptIndex, '로컬 글꼴 확인 뒤에 캐럿을 활성화해야 한다');
+  assert.ok(programIndex > promptIndex, '로컬/대체 선택을 확정한 뒤 실제 프로그램을 공급한다');
+  assert.ok(canvasIndex > programIndex, '선택한 글꼴 환경으로 첫 paint를 준비한다');
+  assert.ok(activateIndex > canvasIndex, '글꼴 선택과 첫 paint 준비 뒤에 캐럿을 활성화해야 한다');
   assert.ok(completeIndex > activateIndex, '편집 준비 뒤에 문서 초기화를 완료해야 한다');
   assert.doesNotMatch(
     initializeDocument,
@@ -69,14 +75,18 @@ test('CanvasKit 첫 replay는 저장된 local face를 bundled fallback보다 먼
   const prepareDocument = main.slice(start, end);
 
   const storedIndex = prepareDocument.indexOf('await loadStoredLocalFonts();');
+  const resolveIndex = prepareDocument.indexOf(
+    'requiredFontFamilies = documentFontRequirements(fontRequirements);',
+  );
   const localIndex = prepareDocument.indexOf(
-    'await renderer.prepareLocalFonts(report.requiredFontFamilies);',
+    'await renderer.prepareLocalFonts(requiredFontFamilies);',
   );
   const catchIndex = prepareDocument.indexOf('} catch (error) {');
   const bundledIndex = prepareDocument.indexOf('await renderer.prepareBundledFonts(plan.sources);');
 
   assert.ok(storedIndex >= 0, '저장된 local font snapshot을 첫 replay 전에 로드해야 한다');
-  assert.ok(localIndex > storedIndex, 'snapshot 로드 뒤 정확한 local face를 준비해야 한다');
+  assert.ok(resolveIndex > storedIndex, 'snapshot 로드 뒤 문서의 실제 후보를 선택해야 한다');
+  assert.ok(localIndex > resolveIndex, '해소한 문서 후보의 정확한 local face를 준비해야 한다');
   assert.ok(catchIndex > localIndex, 'local face 실패는 bundled fallback으로 격리해야 한다');
   assert.ok(bundledIndex > catchIndex, 'local face 준비 뒤 bundled fallback도 항상 준비해야 한다');
 });

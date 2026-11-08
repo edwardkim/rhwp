@@ -1,0 +1,25 @@
+import { readFileSync, writeFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
+import { createHash } from 'node:crypto';
+const out='/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105';
+const wasm=await import(pathToFileURL(`${out}/final-pkg/rhwp.js`));
+await wasm.default({module_or_path:readFileSync(`${out}/final-pkg/rhwp_bg.wasm`)});
+const cases=JSON.parse(readFileSync(`${out}/visual-cases.json`)).filter(c=>['header-image-refs','image-bullet-newyear'].includes(c.key));
+const hash=b=>createHash('sha256').update(b).digest('hex');
+const rows=[];
+for(const c of cases){
+ const doc=new wasm.HwpDocument(readFileSync(c.hwp));
+ try{
+  doc.setHangul2024Compat(false);
+  const bytes=doc.exportHwpx();
+  writeFileSync(`${out}/wasm-export-${c.key}.hwpx`,bytes);
+  const reopened=new wasm.HwpDocument(bytes);
+  try{
+   const second=reopened.exportHwpx();
+   writeFileSync(`${out}/wasm-reexport-${c.key}.hwpx`,second);
+   rows.push({key:c.key,inputSha256:hash(readFileSync(c.hwp)),outputSha256:hash(bytes),reexportSha256:hash(second),nativeExportSha256:hash(readFileSync(`${out}/roundtrip-candidate-${c.key}.hwpx`)),nativeByteIdentical:hash(bytes)===hash(readFileSync(`${out}/roundtrip-candidate-${c.key}.hwpx`)),reopened:true});
+  }finally{reopened.free();}
+ }finally{doc.free();}
+}
+writeFileSync(`${out}/final-wasm-image-save.json`,JSON.stringify({source:'2f44d7d0ab19c743089ae309a8ca64eee57efae2',rows},null,2));
+console.log(JSON.stringify(rows));

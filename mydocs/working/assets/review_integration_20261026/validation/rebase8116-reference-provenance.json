@@ -1,0 +1,46 @@
+{
+  "baseline": "faa885e8b54ffc7cdf4196cd43a3103f362499a2",
+  "reference_count": 4,
+  "records": [
+    {
+      "input": "samples/issue8080/title_between_floating_shapes.hwp",
+      "pdf": "pdf/issue8080/title_between_floating_shapes-webhwp-print.pdf",
+      "input_sha256": "80ff065ac5f186bae54bc43ef5a61fe4bf059074762b139de6b1c57b7158d76c",
+      "pdf_sha256": "394bb941e71ba3232238471ba20db139d9f277ed2f6571be23eb5cecfae4322c",
+      "last_saved_product": null,
+      "source_pr": 8116,
+      "source_head": "16352fc09ef532844649580df84888c47ec688d3",
+      "reference_origin": "Independent contributor Hancom WebHWP Print, explicitly documented in source PR. Not a new MCP Office conversion."
+    },
+    {
+      "input": "samples/issue8080/picture_cell_row_height.hwp",
+      "pdf": "pdf/issue8080/picture_cell_row_height-webhwp-print.pdf",
+      "input_sha256": "2db234d895be0d6558f1b61c2195cea016a8ce5d7db91261979a505f92ec82ad",
+      "pdf_sha256": "d80780c13f8a46ba3cb23a4cdc43bdb7096d0521a123aeb29d1a0a7cad2b9c79",
+      "last_saved_product": null,
+      "source_pr": 8116,
+      "source_head": "16352fc09ef532844649580df84888c47ec688d3",
+      "reference_origin": "Independent contributor Hancom WebHWP Print, explicitly documented in source PR. Not a new MCP Office conversion."
+    },
+    {
+      "input": "samples/issue8080/cell_nested_table_rows.hwp",
+      "pdf": "pdf/issue8080/cell_nested_table_rows-webhwp-print.pdf",
+      "input_sha256": "7756e38c49dbccd961393a5e66f22c5660f2dd2653128a73903923044cb782f9",
+      "pdf_sha256": "e19cb10792a2c25558d95c22eaa75794bad52168a2370a2c9e9ffbeafb7d34d7",
+      "last_saved_product": null,
+      "source_pr": 8116,
+      "source_head": "16352fc09ef532844649580df84888c47ec688d3",
+      "reference_origin": "Independent contributor Hancom WebHWP Print, explicitly documented in source PR. Not a new MCP Office conversion."
+    },
+    {
+      "input": "samples/issue8080/overlay_table_beside_title.hwp",
+      "pdf": "pdf/issue8080/overlay_table_beside_title-webhwp-print.pdf",
+      "input_sha256": "33654561d40ed7a355ee2bdba29aae9e6e3dd91ab71a805570256283bdefafa8",
+      "pdf_sha256": "8bf9269c7aed625ade6b55cd70400763ac0e6ebaac0de3b38177c03fb93e0a32",
+      "last_saved_product": null,
+      "source_pr": 8116,
+      "source_head": "16352fc09ef532844649580df84888c47ec688d3",
+      "reference_origin": "Independent contributor Hancom WebHWP Print, explicitly documented in source PR. Not a new MCP Office conversion."
+    }
+  ]
+}

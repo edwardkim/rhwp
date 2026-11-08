@@ -1,0 +1,28 @@
+{
+  "head": "170dd2412206b48cfbf925c5f5a67dcf93437e81",
+  "status": "passed",
+  "passed": 12777,
+  "failed": 0,
+  "skipped": 45,
+  "seconds": 579.305,
+  "testBinaries": 55,
+  "command": [
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--tests",
+    "--test-threads",
+    "3",
+    "--no-fail-fast"
+  ],
+  "environment": "Dedicated colima-r8286 container rhwp8286-final-validation; Rust 1.93.1; CARGO_BUILD_JOBS=1; personal/Hancom host font directories not mounted",
+  "logSha256": "aec5bc2ea1c92876bc19615d00e2156f04cf47633c9482b28bb0e38fcf86776b",
+  "environmentRecoveries": [
+    "Initial j2 compilation exceeded the VM memory; repeated with j1",
+    "Five cached standalone ELF test artifacts lacked execute bits; restored their execute mode and restarted the full run"
+  ],
+  "sourceAndExpectationsChangedForRecovery": false
+}

@@ -1,0 +1,1156 @@
+{
+  "base-native-legacy_textbox.log": {
+    "sha256": "e375ca94a9af2175815510739de66478dff89781681ebeded5784e4187b1fe36",
+    "bytes": 1970,
+    "last_lines": [
+      "== p0001-0001 ==",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-rhwp dump-note-shape /home/edward/mygithub/rhwp/samples/issue8122/textbox_valign_no_lineseg.hwp",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-rhwp capabilities --search export-png --json",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-rhwp export-png /home/edward/mygithub/rhwp/samples/issue8122/textbox_valign_no_lineseg.hwp --profile print --json --dpi 96 --scale 1.0 --compat 2022 --font-path /home/edward/mygithub/ttfs/hwp/HBATANG.TTF --font-path /home/edward/mygithub/ttfs/windows/gulim.ttc -o /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/legacy_textbox/legacy_textbox/silhouette-parts/p0001-0001/native-png/0 --render-tree-output /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/legacy_textbox/legacy_textbox/silhouette-parts/p0001-0001/native-png/0/render_tree -p 0",
+      "PNG export pages: 1",
+      "+ /home/edward/mygithub/rhwp/venv/bin/python /home/edward/mygithub/rhwp/scripts/visual_sweep_pdf.py --pdf /home/edward/mygithub/rhwp/pdf/issue8122/textbox_valign_no_lineseg-webhwp-print.pdf --dpi 96 --prefix /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/legacy_textbox/legacy_textbox/silhouette-parts/p0001-0001/pdf_png/pdf --pages 1",
+      "실루엣 보조값 1쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/legacy_textbox/legacy_textbox/silhouette-parts/p0001-0001/silhouette.tsv",
+      "{\"key\": \"p0001-0001\", \"pages\": 1, \"minimum\": \"99.55\", \"exact100\": 0}",
+      "실루엣 보조값 1쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/legacy_textbox/legacy_textbox/silhouette.tsv",
+      "{\"key\": \"legacy_textbox\", \"pages\": 1, \"minimum\": \"99.55\", \"exact100\": 0}",
+      "summary: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/legacy_textbox/summary.json"
+    ]
+  },
+  "base-native-saved_bottom.log": {
+    "sha256": "31748def071145b192ecb0976eb62eebad122e972c9ebd707b39af68fad86c67",
+    "bytes": 2030,
+    "last_lines": [
+      "== p0001-0001 ==",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-rhwp dump-note-shape /home/edward/mygithub/rhwp/tests/fixtures/pr8309-latest/textbox-saved-bottom.hwp",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-rhwp capabilities --search export-png --json",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-rhwp export-png /home/edward/mygithub/rhwp/tests/fixtures/pr8309-latest/textbox-saved-bottom.hwp --profile print --json --dpi 96 --scale 1.0 --compat 2024 --font-path /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/fonts/HANBatang.ttf --font-path /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/fonts/HANDotum.ttf -o /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/saved_bottom/saved_bottom/silhouette-parts/p0001-0001/native-png/0 --render-tree-output /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/saved_bottom/saved_bottom/silhouette-parts/p0001-0001/native-png/0/render_tree -p 0",
+      "PNG export pages: 1",
+      "+ /home/edward/mygithub/rhwp/venv/bin/python /home/edward/mygithub/rhwp/scripts/visual_sweep_pdf.py --pdf /home/edward/mygithub/rhwp/pdf/pr8309-latest/textbox-saved-bottom-2024.pdf --dpi 96 --prefix /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/saved_bottom/saved_bottom/silhouette-parts/p0001-0001/pdf_png/pdf --pages 1",
+      "실루엣 보조값 1쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/saved_bottom/saved_bottom/silhouette-parts/p0001-0001/silhouette.tsv",
+      "{\"key\": \"p0001-0001\", \"pages\": 1, \"minimum\": \"100.00\", \"exact100\": 1}",
+      "실루엣 보조값 1쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/saved_bottom/saved_bottom/silhouette.tsv",
+      "{\"key\": \"saved_bottom\", \"pages\": 1, \"minimum\": \"100.00\", \"exact100\": 1}",
+      "summary: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/saved_bottom/summary.json"
+    ]
+  },
+  "base-native-wmf_fixed_face-correct-compat.log": {
+    "sha256": "da890f6d18eb62020d352a23d624447a1ef224d3ce50b36116e123b86c0d6466",
+    "bytes": 3495,
+    "last_lines": [
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-rhwp export-png /home/edward/mygithub/rhwp/samples/issue8160/wmf-fixed-face-dx-independent.hwpx --profile print --json --dpi 96 --scale 1.0 --compat 2022 --font-path /home/edward/mygithub/ttfs/windows/gulim.ttc -o /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/wmf_fixed_face/wmf_fixed_face/silhouette-parts/p0001-0001/native-png/0 --render-tree-output /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/wmf_fixed_face/wmf_fixed_face/silhouette-parts/p0001-0001/native-png/0/render_tree -p 0",
+      "PNG export pages: 1",
+      "+ /home/edward/mygithub/rhwp/venv/bin/python /home/edward/mygithub/rhwp/scripts/visual_sweep_pdf.py --pdf /home/edward/mygithub/rhwp/pdf/issue8160/wmf-fixed-face-dx-independent-2020.pdf --dpi 96 --prefix /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/wmf_fixed_face/wmf_fixed_face/silhouette-parts/p0001-0001/pdf_png/pdf --pages 1",
+      "실루엣 보조값 1쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/wmf_fixed_face/wmf_fixed_face/silhouette-parts/p0001-0001/silhouette.tsv",
+      "{\"key\": \"p0001-0001\", \"pages\": 1, \"minimum\": \"94.40\", \"exact100\": 0}",
+      "== p0002-0002 ==",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-rhwp dump-note-shape /home/edward/mygithub/rhwp/samples/issue8160/wmf-fixed-face-dx-independent.hwpx",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-rhwp capabilities --search export-png --json",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-rhwp export-png /home/edward/mygithub/rhwp/samples/issue8160/wmf-fixed-face-dx-independent.hwpx --profile print --json --dpi 96 --scale 1.0 --compat 2022 --font-path /home/edward/mygithub/ttfs/windows/gulim.ttc -o /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/wmf_fixed_face/wmf_fixed_face/silhouette-parts/p0002-0002/native-png/0 --render-tree-output /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/wmf_fixed_face/wmf_fixed_face/silhouette-parts/p0002-0002/native-png/0/render_tree -p 1",
+      "PNG export pages: 1",
+      "+ /home/edward/mygithub/rhwp/venv/bin/python /home/edward/mygithub/rhwp/scripts/visual_sweep_pdf.py --pdf /home/edward/mygithub/rhwp/pdf/issue8160/wmf-fixed-face-dx-independent-2020.pdf --dpi 96 --prefix /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/wmf_fixed_face/wmf_fixed_face/silhouette-parts/p0002-0002/pdf_png/pdf --pages 2",
+      "실루엣 보조값 1쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/wmf_fixed_face/wmf_fixed_face/silhouette-parts/p0002-0002/silhouette.tsv",
+      "{\"key\": \"p0002-0002\", \"pages\": 1, \"minimum\": \"94.59\", \"exact100\": 0}",
+      "실루엣 보조값 2쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/wmf_fixed_face/wmf_fixed_face/silhouette.tsv",
+      "{\"key\": \"wmf_fixed_face\", \"pages\": 2, \"minimum\": \"94.40\", \"exact100\": 0}",
+      "summary: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/wmf_fixed_face/summary.json"
+    ]
+  },
+  "base-native-wrapping_A.log": {
+    "sha256": "d389cf359ac91ff749f746d6846514b2a9fee48dbd6992bf97a15e2dc25c9886",
+    "bytes": 1930,
+    "last_lines": [
+      "== p0001-0001 ==",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-rhwp dump-note-shape /home/edward/mygithub/rhwp/samples/issue8399/A.hwpx",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-rhwp capabilities --search export-png --json",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-rhwp export-png /home/edward/mygithub/rhwp/samples/issue8399/A.hwpx --profile print --json --dpi 96 --scale 1.0 --compat 2024 --font-path /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/fonts/HANBatang.ttf --font-path /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/fonts/HANDotum.ttf -o /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/wrapping_A/wrapping_A/silhouette-parts/p0001-0001/native-png/0 --render-tree-output /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/wrapping_A/wrapping_A/silhouette-parts/p0001-0001/native-png/0/render_tree -p 0",
+      "PNG export pages: 1",
+      "+ /home/edward/mygithub/rhwp/venv/bin/python /home/edward/mygithub/rhwp/scripts/visual_sweep_pdf.py --pdf /home/edward/mygithub/rhwp/pdf/issue8399/A-hwpx-2024.pdf --dpi 96 --prefix /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/wrapping_A/wrapping_A/silhouette-parts/p0001-0001/pdf_png/pdf --pages 1",
+      "실루엣 보조값 1쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/wrapping_A/wrapping_A/silhouette-parts/p0001-0001/silhouette.tsv",
+      "{\"key\": \"p0001-0001\", \"pages\": 1, \"minimum\": \"100.00\", \"exact100\": 1}",
+      "실루엣 보조값 1쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/wrapping_A/wrapping_A/silhouette.tsv",
+      "{\"key\": \"wrapping_A\", \"pages\": 1, \"minimum\": \"100.00\", \"exact100\": 1}",
+      "summary: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-native/wrapping_A/summary.json"
+    ]
+  },
+  "base-wasm-raw-legacy_textbox.log": {
+    "sha256": "fd52206029512ce7a5f7596b2de727015c2f9f044de6ddf00a7881ba81eeef6c",
+    "bytes": 1906,
+    "last_lines": [
+      "== p0001-0001 ==",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-rhwp dump-note-shape /home/edward/mygithub/rhwp/samples/issue8122/textbox_valign_no_lineseg.hwp",
+      "+ node /home/edward/mygithub/rhwp/scripts/export-wasm-png-for-sweep.mjs --pkg /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-pkg --input /home/edward/mygithub/rhwp/samples/issue8122/textbox_valign_no_lineseg.hwp --out /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/legacy_textbox/legacy_textbox/silhouette-parts/p0001-0001 --fonts /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/legacy_textbox/legacy_textbox/silhouette-parts/p0001-0001/font-catalog.json --options /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/legacy_textbox/legacy_textbox/silhouette-parts/p0001-0001/canvas-options.json",
+      "PNG export pages: 1",
+      "+ /home/edward/mygithub/rhwp/venv/bin/python /home/edward/mygithub/rhwp/scripts/visual_sweep_pdf.py --pdf /home/edward/mygithub/rhwp/pdf/issue8122/textbox_valign_no_lineseg-webhwp-print.pdf --dpi 96 --prefix /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/legacy_textbox/legacy_textbox/silhouette-parts/p0001-0001/pdf_png/pdf --pages 1",
+      "실루엣 보조값 1쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/legacy_textbox/legacy_textbox/silhouette-parts/p0001-0001/silhouette.tsv",
+      "{\"key\": \"p0001-0001\", \"pages\": 1, \"minimum\": \"99.42\", \"exact100\": 0}",
+      "실루엣 보조값 1쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/legacy_textbox/legacy_textbox/silhouette.tsv",
+      "{\"key\": \"legacy_textbox\", \"pages\": 1, \"minimum\": \"99.42\", \"exact100\": 0}",
+      "summary: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/legacy_textbox/summary.json"
+    ]
+  },
+  "base-wasm-raw-saved_bottom.log": {
+    "sha256": "fe046b3cd61a7cc50b8e391e7d177023ec20b1edffe27a9644853f754d3ad257",
+    "bytes": 1883,
+    "last_lines": [
+      "== p0001-0001 ==",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-rhwp dump-note-shape /home/edward/mygithub/rhwp/tests/fixtures/pr8309-latest/textbox-saved-bottom.hwp",
+      "+ node /home/edward/mygithub/rhwp/scripts/export-wasm-png-for-sweep.mjs --pkg /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-pkg --input /home/edward/mygithub/rhwp/tests/fixtures/pr8309-latest/textbox-saved-bottom.hwp --out /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/saved_bottom/saved_bottom/silhouette-parts/p0001-0001 --fonts /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/saved_bottom/saved_bottom/silhouette-parts/p0001-0001/font-catalog.json --options /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/saved_bottom/saved_bottom/silhouette-parts/p0001-0001/canvas-options.json",
+      "PNG export pages: 1",
+      "+ /home/edward/mygithub/rhwp/venv/bin/python /home/edward/mygithub/rhwp/scripts/visual_sweep_pdf.py --pdf /home/edward/mygithub/rhwp/pdf/pr8309-latest/textbox-saved-bottom-2024.pdf --dpi 96 --prefix /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/saved_bottom/saved_bottom/silhouette-parts/p0001-0001/pdf_png/pdf --pages 1",
+      "실루엣 보조값 1쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/saved_bottom/saved_bottom/silhouette-parts/p0001-0001/silhouette.tsv",
+      "{\"key\": \"p0001-0001\", \"pages\": 1, \"minimum\": \"100.00\", \"exact100\": 1}",
+      "실루엣 보조값 1쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/saved_bottom/saved_bottom/silhouette.tsv",
+      "{\"key\": \"saved_bottom\", \"pages\": 1, \"minimum\": \"100.00\", \"exact100\": 1}",
+      "summary: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/saved_bottom/summary.json"
+    ]
+  },
+  "base-wasm-raw-wmf_fixed_face.log": {
+    "sha256": "7853c1eb907362e946eaa6d95ace05fff0c8cb46ab8dacc6c16c4e5a82909714",
+    "bytes": 3473,
+    "last_lines": [
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-rhwp dump-note-shape /home/edward/mygithub/rhwp/samples/issue8160/wmf-fixed-face-dx-independent.hwpx",
+      "+ node /home/edward/mygithub/rhwp/scripts/export-wasm-png-for-sweep.mjs --pkg /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-pkg --input /home/edward/mygithub/rhwp/samples/issue8160/wmf-fixed-face-dx-independent.hwpx --out /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/wmf_fixed_face/wmf_fixed_face/silhouette-parts/p0001-0001 --fonts /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/wmf_fixed_face/wmf_fixed_face/silhouette-parts/p0001-0001/font-catalog.json --options /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/wmf_fixed_face/wmf_fixed_face/silhouette-parts/p0001-0001/canvas-options.json",
+      "PNG export pages: 1",
+      "+ /home/edward/mygithub/rhwp/venv/bin/python /home/edward/mygithub/rhwp/scripts/visual_sweep_pdf.py --pdf /home/edward/mygithub/rhwp/pdf/issue8160/wmf-fixed-face-dx-independent-2020.pdf --dpi 96 --prefix /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/wmf_fixed_face/wmf_fixed_face/silhouette-parts/p0001-0001/pdf_png/pdf --pages 1",
+      "실루엣 보조값 1쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/wmf_fixed_face/wmf_fixed_face/silhouette-parts/p0001-0001/silhouette.tsv",
+      "{\"key\": \"p0001-0001\", \"pages\": 1, \"minimum\": \"98.77\", \"exact100\": 0}",
+      "== p0002-0002 ==",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-rhwp dump-note-shape /home/edward/mygithub/rhwp/samples/issue8160/wmf-fixed-face-dx-independent.hwpx",
+      "+ node /home/edward/mygithub/rhwp/scripts/export-wasm-png-for-sweep.mjs --pkg /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-pkg --input /home/edward/mygithub/rhwp/samples/issue8160/wmf-fixed-face-dx-independent.hwpx --out /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/wmf_fixed_face/wmf_fixed_face/silhouette-parts/p0002-0002 --fonts /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/wmf_fixed_face/wmf_fixed_face/silhouette-parts/p0002-0002/font-catalog.json --options /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/wmf_fixed_face/wmf_fixed_face/silhouette-parts/p0002-0002/canvas-options.json",
+      "PNG export pages: 1",
+      "+ /home/edward/mygithub/rhwp/venv/bin/python /home/edward/mygithub/rhwp/scripts/visual_sweep_pdf.py --pdf /home/edward/mygithub/rhwp/pdf/issue8160/wmf-fixed-face-dx-independent-2020.pdf --dpi 96 --prefix /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/wmf_fixed_face/wmf_fixed_face/silhouette-parts/p0002-0002/pdf_png/pdf --pages 2",
+      "실루엣 보조값 1쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/wmf_fixed_face/wmf_fixed_face/silhouette-parts/p0002-0002/silhouette.tsv",
+      "{\"key\": \"p0002-0002\", \"pages\": 1, \"minimum\": \"98.77\", \"exact100\": 0}",
+      "실루엣 보조값 2쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/wmf_fixed_face/wmf_fixed_face/silhouette.tsv",
+      "{\"key\": \"wmf_fixed_face\", \"pages\": 2, \"minimum\": \"98.77\", \"exact100\": 0}",
+      "summary: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/wmf_fixed_face/summary.json"
+    ]
+  },
+  "base-wasm-raw-wrapping_A.log": {
+    "sha256": "141b68ee0f812276ee4e482cc17bde7cafbcdb7a24841f2766bb87f0da6fd4bd",
+    "bytes": 1779,
+    "last_lines": [
+      "== p0001-0001 ==",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-rhwp dump-note-shape /home/edward/mygithub/rhwp/samples/issue8399/A.hwpx",
+      "+ node /home/edward/mygithub/rhwp/scripts/export-wasm-png-for-sweep.mjs --pkg /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-pkg --input /home/edward/mygithub/rhwp/samples/issue8399/A.hwpx --out /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/wrapping_A/wrapping_A/silhouette-parts/p0001-0001 --fonts /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/wrapping_A/wrapping_A/silhouette-parts/p0001-0001/font-catalog.json --options /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/wrapping_A/wrapping_A/silhouette-parts/p0001-0001/canvas-options.json",
+      "PNG export pages: 1",
+      "+ /home/edward/mygithub/rhwp/venv/bin/python /home/edward/mygithub/rhwp/scripts/visual_sweep_pdf.py --pdf /home/edward/mygithub/rhwp/pdf/issue8399/A-hwpx-2024.pdf --dpi 96 --prefix /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/wrapping_A/wrapping_A/silhouette-parts/p0001-0001/pdf_png/pdf --pages 1",
+      "실루엣 보조값 1쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/wrapping_A/wrapping_A/silhouette-parts/p0001-0001/silhouette.tsv",
+      "{\"key\": \"p0001-0001\", \"pages\": 1, \"minimum\": \"100.00\", \"exact100\": 1}",
+      "실루엣 보조값 1쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/wrapping_A/wrapping_A/silhouette.tsv",
+      "{\"key\": \"wrapping_A\", \"pages\": 1, \"minimum\": \"100.00\", \"exact100\": 1}",
+      "summary: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-base-wasm-raw/wrapping_A/summary.json"
+    ]
+  },
+  "base-wasm.log": {
+    "sha256": "de60116248f34f867f9b3dfc593cc29d9edc20db73e4efd979fa35a70fd47498",
+    "bytes": 2186,
+    "last_lines": [
+      "   Compiling rhwp v0.9.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102)",
+      "   Compiling rhwp-password-crypto v0.1.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/crates/rhwp-password-crypto)",
+      "   Compiling rhwp-ooxml-chart v0.1.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/crates/rhwp-ooxml-chart)",
+      "   Compiling rhwp-contracts v0.1.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/crates/rhwp-contracts)",
+      "   Compiling rhwp-jpeg-encoder v0.7.1-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/vendor/rhwp-jpeg-encoder)",
+      "   Compiling rhwp-hayro-ccitt v0.3.0-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/vendor/rhwp-hayro-ccitt)",
+      "   Compiling rhwp-qcms v0.3.0-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/vendor/rhwp-qcms)",
+      "   Compiling rhwp-hayro-jpeg2000 v0.4.0-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/vendor/rhwp-hayro-jpeg2000)",
+      "   Compiling rhwp-hayro-jbig2 v0.3.0-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/vendor/rhwp-hayro-jbig2)",
+      "   Compiling rhwp-pdf-import-backend v0.3.78-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/vendor/rhwp-pdf-import-backend)",
+      "    Finished `release` profile [optimized] target(s) in 10m 38s",
+      "[INFO]: ⬇️  Installing wasm-bindgen...",
+      "[INFO]: Optimizing wasm binaries with `wasm-opt`...",
+      "[INFO]: ✨   Done in 16m 49s",
+      "[INFO]: 📦   Your wasm pkg is ready to publish at /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-pkg.",
+      "[WARN]: ⚠️   There's a newer version of wasm-pack available, the new version is: 0.15.1, you are using: 0.15.0. To update, navigate to: https://wasm-bindgen.github.io/wasm-pack/installer/"
+    ]
+  },
+  "browser-e2e-without-observer.log": {
+    "sha256": "0d86ebaf3c053b62c9cbf85e50b9c2b5d2fd3f437603c708c5944801c0be3d5b",
+    "bytes": 9740,
+    "last_lines": [
+      "  PASS: TC8: 문서 교체 시 새 대화 안내",
+      "  PASS: TC4: 입력란 Ctrl+Z 가 문서로 새지 않음 ({\"canUndo\":true,\"text\":\"가나다라마\"})",
+      "  PASS: TC5: 선택이 없으면 빠른 동작 숨김",
+      "  PASS: TC5: 빠른 동작 프롬프트로 질문",
+      "  PASS: TC6: 중단 표시 (중단했습니다.)",
+      "2:27:54 PM [vite] (client) [console.error] [AI] 요청 실패 auth 401 ",
+      "  PASS: TC7: 401 문구 (API 키가 올바르지 않습니다.)",
+      "  PASS: TC7: 실패 뒤에도 이력은 user/assistant 짝 (6)",
+      "2:27:54 PM [vite] (client) [console.error] [AI] 요청 실패 bad-request 400 tools.0: probe reason",
+      "  PASS: TC7b: 400 사유 표시 (요청이 거절되었습니다. (tools.0: probe reason))",
+      "2:27:54 PM [vite] (client) [console.error] [AI] 요청 실패 billing 400 Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.",
+      "  PASS: TC7c: 크레딧 부족 안내 (API 계정의 크레딧이 부족합니다. Anthropic Console 의 Plans & Billing 에서 충전한 뒤 다시 시도하세요.)",
+      "  PASS: TC8: 새 대화는 이력·화면을 비움",
+      "",
+      "📋 HTML 보고서: ../output/e2e/ai-panel-report.html",
+      "END browser ai-panel 0"
+    ]
+  },
+  "browser-e2e.log": {
+    "sha256": "3a4dce83f496873fed48e98de2837331bfb7021e5da73698cb639c6372a2cb80",
+    "bytes": 10195,
+    "last_lines": [
+      "  PASS: TC8: 문서 교체 시 새 대화 안내",
+      "  PASS: TC4: 입력란 Ctrl+Z 가 문서로 새지 않음 ({\"canUndo\":true,\"text\":\"가나다라마\"})",
+      "  PASS: TC5: 선택이 없으면 빠른 동작 숨김",
+      "  PASS: TC5: 빠른 동작 프롬프트로 질문",
+      "  PASS: TC6: 중단 표시 (중단했습니다.)",
+      "2:30:03 PM [vite] (client) [console.error] [AI] 요청 실패 auth 401 ",
+      "  PASS: TC7: 401 문구 (API 키가 올바르지 않습니다.)",
+      "  PASS: TC7: 실패 뒤에도 이력은 user/assistant 짝 (6)",
+      "2:30:03 PM [vite] (client) [console.error] [AI] 요청 실패 bad-request 400 tools.0: probe reason",
+      "  PASS: TC7b: 400 사유 표시 (요청이 거절되었습니다. (tools.0: probe reason))",
+      "2:30:03 PM [vite] (client) [console.error] [AI] 요청 실패 billing 400 Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.",
+      "  PASS: TC7c: 크레딧 부족 안내 (API 계정의 크레딧이 부족합니다. Anthropic Console 의 Plans & Billing 에서 충전한 뒤 다시 시도하세요.)",
+      "  PASS: TC8: 새 대화는 이력·화면을 비움",
+      "",
+      "📋 HTML 보고서: ../output/e2e/ai-panel-report.html",
+      "END browser ai-panel 0"
+    ]
+  },
+  "browser-vite.log": {
+    "sha256": "f41edde870b9253f96ec7c02c68dce3b9596892f74d4cfd62492ddc01e8b6bb8",
+    "bytes": 1479,
+    "last_lines": [
+      "  ➜  Local:   http://127.0.0.1:7710/",
+      "[console.error] [AI] 변경 적용 실패 insert_hyperlink StudioCommandError: Studio 편집 명령을 완료하지 못했습니다.",
+      "    at CommandErrorBoundary.fail (http://127.0.0.1:7710/src/core/command-error.ts:107:20)",
+      "    at InputHandler.withCommandErrorBoundary (http://127.0.0.1:7710/src/engine/input-handler.ts:2890:19)",
+      "    at InputHandler.executeOperation (http://127.0.0.1:7710/src/engine/input-handler.ts:2920:8)",
+      "    at PluginHostFacade.transaction (http://127.0.0.1:7710/src/plugin/host.ts:70:7)",
+      "    at Object.transaction (http://127.0.0.1:7710/src/ai/agent/chat-controller.ts:140:42)",
+      "    at Object.apply (http://127.0.0.1:7710/src/ai/tools/write-tools.ts:2286:22)",
+      "    at ChatController.executeWrite (http://127.0.0.1:7710/src/ai/agent/chat-controller.ts:182:19)",
+      "    at async runAgent (http://127.0.0.1:7710/src/ai/agent/agent-loop.ts:140:19)",
+      "    at async ChatController.ask (http://127.0.0.1:7710/src/ai/agent/chat-controller.ts:80:11)",
+      "    at async AiPanel.send (http://127.0.0.1:7710/src/ai/ui/ai-panel.ts:550:13)",
+      "[console.warn] [InputHandler] getSelectionRects 실패: 렌더링 오류: 문단 (sec=0, para=3)이 페이지에 없습니다",
+      "[console.error] [AI] 요청 실패 auth 401 ",
+      "[console.error] [AI] 요청 실패 bad-request 400 tools.0: probe reason",
+      "[console.error] [AI] 요청 실패 billing 400 Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."
+    ]
+  },
+  "candidate-native-build.log": {
+    "sha256": "0252d64170cf5285027d41df5b2284df25ed0f8c7ea0964d5ca1d02dd07fb128",
+    "bytes": 2600,
+    "last_lines": [
+      "   Compiling zip v9.1.3",
+      "   Compiling cfb v0.15.0",
+      "   Compiling rhwp-ooxml-chart v0.1.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/crates/rhwp-ooxml-chart)",
+      "   Compiling usvg v0.45.1",
+      "   Compiling usvg v0.47.0",
+      "   Compiling rhwp-contracts v0.1.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/crates/rhwp-contracts)",
+      "   Compiling rhwp-password-crypto v0.1.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/crates/rhwp-password-crypto)",
+      "   Compiling rhwp-jpeg-encoder v0.7.1-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/vendor/rhwp-jpeg-encoder)",
+      "   Compiling office_oxide v0.1.9",
+      "   Compiling resvg v0.45.1",
+      "   Compiling rhwp-svg2pdf v0.13.0-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/vendor/svg2pdf)",
+      "   Compiling resvg v0.47.0",
+      "   Compiling skia-bindings v0.156.0",
+      "   Compiling skia-safe v0.156.0",
+      "   Compiling rhwp-pdf-import-backend v0.3.78-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/vendor/rhwp-pdf-import-backend)",
+      "    Finished `release-test` profile [optimized] target(s) in 3m 49s"
+    ]
+  },
+  "candidate-native-normal-legacy_textbox.log": {
+    "sha256": "ba1b11ed11070384f865f6814f14308f73ff8f7734af89d362dbdb41175455f2",
+    "bytes": 1740,
+    "last_lines": [
+      "== legacy_textbox ==",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/candidate-rhwp dump-note-shape /home/edward/mygithub/rhwp/samples/issue8122/textbox_valign_no_lineseg.hwp",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/candidate-rhwp capabilities --search export-png --json",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/candidate-rhwp export-png /home/edward/mygithub/rhwp/samples/issue8122/textbox_valign_no_lineseg.hwp --profile print --json --dpi 96 --scale 1.0 --compat 2022 --font-path /home/edward/mygithub/ttfs/hwp/HBATANG.TTF --font-path /home/edward/mygithub/ttfs/windows/gulim.ttc -o /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/legacy_textbox/legacy_textbox/native-png/0 --render-tree-output /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/legacy_textbox/legacy_textbox/native-png/0/render_tree",
+      "PNG export pages: 1",
+      "+ /home/edward/mygithub/rhwp/venv/bin/python /home/edward/mygithub/rhwp/scripts/visual_sweep_pdf.py --pdf /home/edward/mygithub/rhwp/pdf/issue8122/textbox_valign_no_lineseg-webhwp-print.pdf --dpi 96 --prefix /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/legacy_textbox/legacy_textbox/pdf_png/pdf",
+      "+ pdftotext -bbox-layout /home/edward/mygithub/rhwp/pdf/issue8122/textbox_valign_no_lineseg-webhwp-print.pdf /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/legacy_textbox/legacy_textbox/pdf_bbox.html",
+      "Raster PNG pages: rhwp=1, pdf=1",
+      "summary: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/legacy_textbox/summary.json"
+    ]
+  },
+  "candidate-native-normal-saved_bottom.log": {
+    "sha256": "3c34ac51c7cf4e088a13ac35ae896f7c68130ff7fb489482c0897391043ca64a",
+    "bytes": 1793,
+    "last_lines": [
+      "== saved_bottom ==",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/candidate-rhwp dump-note-shape /home/edward/mygithub/rhwp/tests/fixtures/pr8309-latest/textbox-saved-bottom.hwp",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/candidate-rhwp capabilities --search export-png --json",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/candidate-rhwp export-png /home/edward/mygithub/rhwp/tests/fixtures/pr8309-latest/textbox-saved-bottom.hwp --profile print --json --dpi 96 --scale 1.0 --compat 2024 --font-path /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/fonts/HANBatang.ttf --font-path /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/fonts/HANDotum.ttf -o /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/saved_bottom/saved_bottom/native-png/0 --render-tree-output /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/saved_bottom/saved_bottom/native-png/0/render_tree",
+      "PNG export pages: 1",
+      "+ /home/edward/mygithub/rhwp/venv/bin/python /home/edward/mygithub/rhwp/scripts/visual_sweep_pdf.py --pdf /home/edward/mygithub/rhwp/pdf/pr8309-latest/textbox-saved-bottom-2024.pdf --dpi 96 --prefix /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/saved_bottom/saved_bottom/pdf_png/pdf",
+      "+ pdftotext -bbox-layout /home/edward/mygithub/rhwp/pdf/pr8309-latest/textbox-saved-bottom-2024.pdf /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/saved_bottom/saved_bottom/pdf_bbox.html",
+      "Raster PNG pages: rhwp=1, pdf=1",
+      "summary: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/saved_bottom/summary.json"
+    ]
+  },
+  "candidate-native-normal-wmf_fixed_face.log": {
+    "sha256": "e1f08aff404491af2d9b1796789a090bc672582a823318e92335fff2b6070434",
+    "bytes": 1687,
+    "last_lines": [
+      "== wmf_fixed_face ==",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/candidate-rhwp dump-note-shape /home/edward/mygithub/rhwp/samples/issue8160/wmf-fixed-face-dx-independent.hwpx",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/candidate-rhwp capabilities --search export-png --json",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/candidate-rhwp export-png /home/edward/mygithub/rhwp/samples/issue8160/wmf-fixed-face-dx-independent.hwpx --profile print --json --dpi 96 --scale 1.0 --compat 2022 --font-path /home/edward/mygithub/ttfs/windows/gulim.ttc -o /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/wmf_fixed_face/wmf_fixed_face/native-png/0 --render-tree-output /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/wmf_fixed_face/wmf_fixed_face/native-png/0/render_tree",
+      "PNG export pages: 2",
+      "+ /home/edward/mygithub/rhwp/venv/bin/python /home/edward/mygithub/rhwp/scripts/visual_sweep_pdf.py --pdf /home/edward/mygithub/rhwp/pdf/issue8160/wmf-fixed-face-dx-independent-2020.pdf --dpi 96 --prefix /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/wmf_fixed_face/wmf_fixed_face/pdf_png/pdf",
+      "+ pdftotext -bbox-layout /home/edward/mygithub/rhwp/pdf/issue8160/wmf-fixed-face-dx-independent-2020.pdf /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/wmf_fixed_face/wmf_fixed_face/pdf_bbox.html",
+      "Raster PNG pages: rhwp=2, pdf=2",
+      "summary: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/wmf_fixed_face/summary.json"
+    ]
+  },
+  "candidate-native-normal-wrapping_A.log": {
+    "sha256": "d4dcc8b3e1e9fe18b4066343ee7071c9c641832bf3d563e91091cae90a0c521a",
+    "bytes": 1679,
+    "last_lines": [
+      "== wrapping_A ==",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/candidate-rhwp dump-note-shape /home/edward/mygithub/rhwp/samples/issue8399/A.hwpx",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/candidate-rhwp capabilities --search export-png --json",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/candidate-rhwp export-png /home/edward/mygithub/rhwp/samples/issue8399/A.hwpx --profile print --json --dpi 96 --scale 1.0 --compat 2024 --font-path /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/fonts/HANBatang.ttf --font-path /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/fonts/HANDotum.ttf -o /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/wrapping_A/wrapping_A/native-png/0 --render-tree-output /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/wrapping_A/wrapping_A/native-png/0/render_tree",
+      "PNG export pages: 1",
+      "+ /home/edward/mygithub/rhwp/venv/bin/python /home/edward/mygithub/rhwp/scripts/visual_sweep_pdf.py --pdf /home/edward/mygithub/rhwp/pdf/issue8399/A-hwpx-2024.pdf --dpi 96 --prefix /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/wrapping_A/wrapping_A/pdf_png/pdf",
+      "+ pdftotext -bbox-layout /home/edward/mygithub/rhwp/pdf/issue8399/A-hwpx-2024.pdf /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/wrapping_A/wrapping_A/pdf_bbox.html",
+      "Raster PNG pages: rhwp=1, pdf=1",
+      "summary: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-native-normal/wrapping_A/summary.json"
+    ]
+  },
+  "candidate-wasm-build.log": {
+    "sha256": "4d9dfd8880ee98b00f8b85d3ac31bdbb52fcb6406f041a2d692444bd80b8ea71",
+    "bytes": 1164,
+    "last_lines": [
+      "   Compiling roxmltree v0.21.2",
+      "   Compiling typed-path v0.13.0",
+      "   Compiling unicode-width v0.2.3",
+      "   Compiling office_oxide v0.1.9",
+      "   Compiling usvg v0.47.0",
+      "   Compiling zip v9.1.3",
+      "   Compiling resvg v0.47.0",
+      "   Compiling rhwp-password-crypto v0.1.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/crates/rhwp-password-crypto)",
+      "   Compiling rhwp-pdf-import-backend v0.3.78-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/vendor/rhwp-pdf-import-backend)",
+      "   Compiling rhwp v0.9.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102)",
+      "    Finished `release` profile [optimized] target(s) in 11m 01s",
+      "[INFO]: ⬇️  Installing wasm-bindgen...",
+      "[INFO]: Optimizing wasm binaries with `wasm-opt`...",
+      "[INFO]: ✨   Done in 17m 22s",
+      "[INFO]: 📦   Your wasm pkg is ready to publish at /home/edward/mygithub/rhwp-worktrees/dependabot-20261102/pkg.",
+      "[WARN]: ⚠️   There's a newer version of wasm-pack available, the new version is: 0.15.1, you are using: 0.15.0. To update, navigate to: https://wasm-bindgen.github.io/wasm-pack/installer/"
+    ]
+  },
+  "candidate-wasm-normal-legacy_textbox.log": {
+    "sha256": "efe45b350d810f469c84d0492a8c8e46af64ba040ae2bc7116739f45307e8728",
+    "bytes": 1617,
+    "last_lines": [
+      "== legacy_textbox ==",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/candidate-rhwp dump-note-shape /home/edward/mygithub/rhwp/samples/issue8122/textbox_valign_no_lineseg.hwp",
+      "+ node /home/edward/mygithub/rhwp/scripts/export-wasm-png-for-sweep.mjs --pkg /home/edward/mygithub/rhwp-worktrees/dependabot-20261102/pkg --input /home/edward/mygithub/rhwp/samples/issue8122/textbox_valign_no_lineseg.hwp --out /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-wasm-normal/legacy_textbox/legacy_textbox --fonts /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-wasm-normal/legacy_textbox/legacy_textbox/font-catalog.json --options /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-wasm-normal/legacy_textbox/legacy_textbox/canvas-options.json",
+      "PNG export pages: 1",
+      "+ /home/edward/mygithub/rhwp/venv/bin/python /home/edward/mygithub/rhwp/scripts/visual_sweep_pdf.py --pdf /home/edward/mygithub/rhwp/pdf/issue8122/textbox_valign_no_lineseg-webhwp-print.pdf --dpi 96 --prefix /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-wasm-normal/legacy_textbox/legacy_textbox/pdf_png/pdf",
+      "+ pdftotext -bbox-layout /home/edward/mygithub/rhwp/pdf/issue8122/textbox_valign_no_lineseg-webhwp-print.pdf /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-wasm-normal/legacy_textbox/legacy_textbox/pdf_bbox.html",
+      "Raster PNG pages: rhwp=1, pdf=1",
+      "summary: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-wasm-normal/legacy_textbox/summary.json"
+    ]
+  },
+  "candidate-wasm-normal-saved_bottom.log": {
+    "sha256": "428c98d7311b9279b5590dc6e7336b0f4d7aaa0dc740b075a695908dbb5dce4b",
+    "bytes": 1587,
+    "last_lines": [
+      "== saved_bottom ==",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/candidate-rhwp dump-note-shape /home/edward/mygithub/rhwp/tests/fixtures/pr8309-latest/textbox-saved-bottom.hwp",
+      "+ node /home/edward/mygithub/rhwp/scripts/export-wasm-png-for-sweep.mjs --pkg /home/edward/mygithub/rhwp-worktrees/dependabot-20261102/pkg --input /home/edward/mygithub/rhwp/tests/fixtures/pr8309-latest/textbox-saved-bottom.hwp --out /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-wasm-normal/saved_bottom/saved_bottom --fonts /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-wasm-normal/saved_bottom/saved_bottom/font-catalog.json --options /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-wasm-normal/saved_bottom/saved_bottom/canvas-options.json",
+      "PNG export pages: 1",
+      "+ /home/edward/mygithub/rhwp/venv/bin/python /home/edward/mygithub/rhwp/scripts/visual_sweep_pdf.py --pdf /home/edward/mygithub/rhwp/pdf/pr8309-latest/textbox-saved-bottom-2024.pdf --dpi 96 --prefix /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-wasm-normal/saved_bottom/saved_bottom/pdf_png/pdf",
+      "+ pdftotext -bbox-layout /home/edward/mygithub/rhwp/pdf/pr8309-latest/textbox-saved-bottom-2024.pdf /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-wasm-normal/saved_bottom/saved_bottom/pdf_bbox.html",
+      "Raster PNG pages: rhwp=1, pdf=1",
+      "summary: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-wasm-normal/saved_bottom/summary.json"
+    ]
+  },
+  "candidate-wasm-normal-wmf_fixed_face.log": {
+    "sha256": "e1a6255f016b5a21bee5c2e9340d7bc214922256506fb8205e2e503faef32966",
+    "bytes": 1619,
+    "last_lines": [
+      "== wmf_fixed_face ==",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/candidate-rhwp dump-note-shape /home/edward/mygithub/rhwp/samples/issue8160/wmf-fixed-face-dx-independent.hwpx",
+      "+ node /home/edward/mygithub/rhwp/scripts/export-wasm-png-for-sweep.mjs --pkg /home/edward/mygithub/rhwp-worktrees/dependabot-20261102/pkg --input /home/edward/mygithub/rhwp/samples/issue8160/wmf-fixed-face-dx-independent.hwpx --out /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-wasm-normal/wmf_fixed_face/wmf_fixed_face --fonts /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-wasm-normal/wmf_fixed_face/wmf_fixed_face/font-catalog.json --options /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-wasm-normal/wmf_fixed_face/wmf_fixed_face/canvas-options.json",
+      "PNG export pages: 2",
+      "+ /home/edward/mygithub/rhwp/venv/bin/python /home/edward/mygithub/rhwp/scripts/visual_sweep_pdf.py --pdf /home/edward/mygithub/rhwp/pdf/issue8160/wmf-fixed-face-dx-independent-2020.pdf --dpi 96 --prefix /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-wasm-normal/wmf_fixed_face/wmf_fixed_face/pdf_png/pdf",
+      "+ pdftotext -bbox-layout /home/edward/mygithub/rhwp/pdf/issue8160/wmf-fixed-face-dx-independent-2020.pdf /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-wasm-normal/wmf_fixed_face/wmf_fixed_face/pdf_bbox.html",
+      "Raster PNG pages: rhwp=2, pdf=2",
+      "summary: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-wasm-normal/wmf_fixed_face/summary.json"
+    ]
+  },
+  "candidate-wasm-normal-wrapping_A.log": {
+    "sha256": "eb888351e1e1cce0c6f55066488e35434e8f395c71bde7cc8894b3cf27115aeb",
+    "bytes": 1469,
+    "last_lines": [
+      "== wrapping_A ==",
+      "+ /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/candidate-rhwp dump-note-shape /home/edward/mygithub/rhwp/samples/issue8399/A.hwpx",
+      "+ node /home/edward/mygithub/rhwp/scripts/export-wasm-png-for-sweep.mjs --pkg /home/edward/mygithub/rhwp-worktrees/dependabot-20261102/pkg --input /home/edward/mygithub/rhwp/samples/issue8399/A.hwpx --out /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-wasm-normal/wrapping_A/wrapping_A --fonts /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-wasm-normal/wrapping_A/wrapping_A/font-catalog.json --options /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-wasm-normal/wrapping_A/wrapping_A/canvas-options.json",
+      "PNG export pages: 1",
+      "+ /home/edward/mygithub/rhwp/venv/bin/python /home/edward/mygithub/rhwp/scripts/visual_sweep_pdf.py --pdf /home/edward/mygithub/rhwp/pdf/issue8399/A-hwpx-2024.pdf --dpi 96 --prefix /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-wasm-normal/wrapping_A/wrapping_A/pdf_png/pdf",
+      "+ pdftotext -bbox-layout /home/edward/mygithub/rhwp/pdf/issue8399/A-hwpx-2024.pdf /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-wasm-normal/wrapping_A/wrapping_A/pdf_bbox.html",
+      "Raster PNG pages: rhwp=1, pdf=1",
+      "summary: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/visual-candidate-wasm-normal/wrapping_A/summary.json"
+    ]
+  },
+  "changed-npm-focused.log": {
+    "sha256": "e8680af8995bee2967deb3df9902ec84ad16c768d67f19c2e940e4da28e3d6fc",
+    "bytes": 3092,
+    "last_lines": [
+      "✔ embed 프로파일은 호스트를 우회하는 HTML과 Word 다운로드도 숨긴다 (0.224534ms)",
+      "✔ main은 embed에서 수명주기 커맨드 등록만 거르고 메뉴는 런타임에 정리한다 (21.018435ms)",
+      "✔ shortcut-map은 embed 프로파일과 무관하게 파일 단축키 매핑을 유지한다 (0.537783ms)",
+      "✔ embed 프로파일이 걸러내는 편집 커맨드는 문서 비교뿐이고 editCommands에 실존한다 (0.982351ms)",
+      "✔ embed에서는 메뉴·도구막대·단축키·팔레트 어느 경로로도 문서 비교가 실행되지 않는다 (1.17078ms)",
+      "✔ main은 embed에서 문서 비교 표면을 등록·노출하지 않는다 (1.259494ms)",
+      "✔ embed 저장·인쇄 단축키 판정은 문서 로드 여부와 무관한 순수 함수다 (1.255793ms)",
+      "✔ embed의 unsaved guard는 로컬 저장 선택지를 막고 자동 discard는 하지 않는다 (12.338799ms)",
+      "ℹ tests 28",
+      "ℹ suites 0",
+      "ℹ pass 28",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 472.638738"
+    ]
+  },
+  "gate-fmt.log": {
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "last_lines": []
+  },
+  "gate-full-nextest.log": {
+    "sha256": "24ab078a25b3d9661218f868e38c193bec1348314f3931023309bfdcfabf5657",
+    "bytes": 1707070,
+    "last_lines": [
+      "        PASS [   0.007s] (12358/12369) rhwp-ooxml-chart renderer::tests::test_stock_hilow_lines_per_category",
+      "        PASS [   0.007s] (12359/12369) rhwp-ooxml-chart renderer::tests::test_stock_ohlc_candles",
+      "        PASS [   0.007s] (12360/12369) rhwp-ooxml-chart renderer::tests::test_stock_series_count_and_line_are_independent",
+      "        PASS [   0.006s] (12361/12369) rhwp-password-crypto tests::hwp5_decrypt_matches_external_vector",
+      "        PASS [   0.006s] (12362/12369) rhwp-password-crypto tests::hwp5_stream_roundtrip_preserves_partial_block",
+      "        PASS [   1.775s] (12363/12369) rhwp::regression_suite_028 stored_partial_frame_alignment::repeated_source_frame_centers_selected_lines_without_losing_the_tail",
+      "        PASS [   2.461s] (12364/12369) rhwp::regression_suite_028 verified_september_2023_note_print_origins::completed_september_2023_hwp_note_starts_keep_print_coordinates_and_owned_equations",
+      "        PASS [   6.871s] (12365/12369) rhwp::regression_suite_028 issue_7379_rowbreak_table_footnote_reservation::terminal_caption_margin_budget_preserves_rows_and_footer_space",
+      "        PASS [   4.318s] (12366/12369) rhwp::regression_suite_028 verified_september_2023_note_print_origins::completed_september_2023_hwpx_note_starts_keep_print_coordinates_and_owned_equations",
+      "        PASS [  20.742s] (12367/12369) rhwp::regression_suite_027 issue_8220_pdf_editable_layout::editable_layout_flows_body_paragraphs_through_columns_and_pages",
+      "        PASS [  11.092s] (12368/12369) rhwp::regression_suite_028 issue_8153_handbook_print_boundaries::hwpx_keeps_independent_print_owners_picture_frames_and_nested_rows",
+      "        PASS [  11.177s] (12369/12369) rhwp::regression_suite_028 issue_8153_handbook_print_boundaries::hwp_keeps_independent_print_owners_picture_frames_and_nested_rows",
+      "────────────",
+      "     Summary [ 610.832s] 12369 tests run: 12369 passed (6 slow), 45 skipped",
+      "warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137",
+      "info: update nextest with cargo nextest self update, or bypass check with --override-version-check"
+    ]
+  },
+  "gate-hwpx_zip_determinism.log": {
+    "sha256": "ae60ebf20963c8bca0ea5dfc6da69469da69942415a2d1e70d800c2e166d138a",
+    "bytes": 2479,
+    "last_lines": [
+      "   Compiling rhwp-password-crypto v0.1.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/crates/rhwp-password-crypto)",
+      "   Compiling resvg v0.45.1",
+      "   Compiling resvg v0.47.0",
+      "   Compiling rhwp-svg2pdf v0.13.0-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/vendor/svg2pdf)",
+      "   Compiling rhwp-pdf-import-backend v0.3.78-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/vendor/rhwp-pdf-import-backend)",
+      "    Finished `release-test` profile [optimized] target(s) in 3m 38s",
+      "────────────",
+      " Nextest run ID a7c7c27b-ee6e-4a11-8812-1474fc306512 with nextest profile: default",
+      "    Starting 3 tests across 1 binary (265 tests skipped)",
+      "        PASS [   0.016s] (1/3) rhwp::regression_suite_017 hwpx_zip_determinism::export_pins_central_directory_host_byte",
+      "        PASS [   0.016s] (2/3) rhwp::regression_suite_017 hwpx_zip_determinism::stored_and_deflated_entries_share_deterministic_fields",
+      "        PASS [   0.026s] (3/3) rhwp::regression_suite_017 hwpx_zip_determinism::repeated_export_produces_identical_bytes",
+      "────────────",
+      "     Summary [   0.027s] 3 tests run: 3 passed, 265 skipped",
+      "warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137",
+      "info: update nextest with cargo nextest self update, or bypass check with --override-version-check"
+    ]
+  },
+  "gate-issue_8160_wmf_mask_ownership.log": {
+    "sha256": "ea1ff2124ea15f7ee18b499d10bdfc62bca4176f6607de1c5da1aa805bb1d7ef",
+    "bytes": 1402,
+    "last_lines": [
+      "[RustTestSuite] issue_8160_wmf_mask_ownership -> regression_suite_014::issue_8160_wmf_mask_ownership",
+      "[RustTestSuite] cargo nextest run --locked --test regression_suite_014 -E test(/(^|::)issue_8160_wmf_mask_ownership::/) --cargo-profile release-test --test-threads 12 --config profile.release-test.package.rhwp.opt-level=1 --config profile.release-test.package.rhwp.codegen-units=64",
+      "warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137",
+      "warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped",
+      "   Compiling rhwp v0.9.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102)",
+      "    Finished `release-test` profile [optimized] target(s) in 7.59s",
+      "────────────",
+      " Nextest run ID 2cfb8038-875a-493d-8bf8-accab3296f14 with nextest profile: default",
+      "    Starting 1 test across 1 binary (303 tests skipped)",
+      "        PASS [   0.191s] (1/1) rhwp::regression_suite_014 issue_8160_wmf_mask_ownership::issue_8160_sample16_pink_panels_preserve_their_original_brush_and_contained_mask",
+      "────────────",
+      "     Summary [   0.192s] 1 test run: 1 passed, 303 skipped",
+      "warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137",
+      "info: update nextest with cargo nextest self update, or bypass check with --override-version-check"
+    ]
+  },
+  "gate-issue_8174_hwpx_xml_wire.log": {
+    "sha256": "89eb9c703eda03efadf4804499527d2b0b4417543341db2f067fd50c81efc1f8",
+    "bytes": 1514,
+    "last_lines": [
+      "[RustTestSuite] issue_8174_hwpx_xml_wire -> regression_suite_015::issue_8174_hwpx_xml_wire",
+      "[RustTestSuite] cargo nextest run --locked --test regression_suite_015 -E test(/(^|::)issue_8174_hwpx_xml_wire::/) --cargo-profile release-test --test-threads 12 --config profile.release-test.package.rhwp.opt-level=1 --config profile.release-test.package.rhwp.codegen-units=64",
+      "warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137",
+      "warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped",
+      "   Compiling rhwp v0.9.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102)",
+      "    Finished `release-test` profile [optimized] target(s) in 7.45s",
+      "────────────",
+      " Nextest run ID b58ad6e4-6b76-4d52-8dcb-c8ef3d2d13a0 with nextest profile: default",
+      "    Starting 2 tests across 1 binary (280 tests skipped)",
+      "        PASS [   0.005s] (1/2) rhwp::regression_suite_015 issue_8174_hwpx_xml_wire::xml_events_preserve_writer_indentation_and_empty_text_behavior",
+      "        PASS [   0.005s] (2/2) rhwp::regression_suite_015 issue_8174_hwpx_xml_wire::xml_markup_and_invalid_characters_keep_the_public_wire_contract",
+      "────────────",
+      "     Summary [   0.006s] 2 tests run: 2 passed, 280 skipped",
+      "warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137",
+      "info: update nextest with cargo nextest self update, or bypass check with --override-version-check"
+    ]
+  },
+  "gate-issue_8302_roundtrip_lineage.log": {
+    "sha256": "50ca82dec633d9fd7fc44c30a65d8a7b9ae50ced3d02a1c70b10abf37e9d39de",
+    "bytes": 1651,
+    "last_lines": [
+      "[RustTestSuite] issue_8302_roundtrip_lineage -> regression_suite_026::issue_8302_roundtrip_lineage",
+      "[RustTestSuite] cargo nextest run --locked --test regression_suite_026 -E test(/(^|::)issue_8302_roundtrip_lineage::/) --cargo-profile release-test --test-threads 12 --config profile.release-test.package.rhwp.opt-level=1 --config profile.release-test.package.rhwp.codegen-units=64",
+      "warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137",
+      "warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped",
+      "   Compiling rhwp v0.9.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102)",
+      "    Finished `release-test` profile [optimized] target(s) in 7.39s",
+      "────────────",
+      " Nextest run ID c2d9261d-3c54-4650-ad55-23fc6adc6658 with nextest profile: default",
+      "    Starting 3 tests across 1 binary (268 tests skipped)",
+      "        PASS [   0.019s] (1/3) rhwp::regression_suite_026 issue_8302_roundtrip_lineage::native_hwp5_export_still_marks_hwp5_origin",
+      "        PASS [   0.024s] (2/3) rhwp::regression_suite_026 issue_8302_roundtrip_lineage::hwp5_roundtrip_through_hwpx_keeps_hwp5_lineage_and_pages",
+      "        PASS [   0.127s] (3/3) rhwp::regression_suite_026 issue_8302_roundtrip_lineage::hwpx_roundtrip_through_hwp_keeps_hwpx_lineage_and_pages",
+      "────────────",
+      "     Summary [   0.128s] 3 tests run: 3 passed, 268 skipped",
+      "warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137",
+      "info: update nextest with cargo nextest self update, or bypass check with --override-version-check"
+    ]
+  },
+  "gate-issue_8335_caption_category_roundtrip.log": {
+    "sha256": "da348971fa75359c1b63275e7024328aac6dba3c99e504dd413fd84dc6ea53a2",
+    "bytes": 1776,
+    "last_lines": [
+      "[RustTestSuite] issue_8335_caption_category_roundtrip -> regression_suite_024::issue_8335_caption_category_roundtrip",
+      "[RustTestSuite] cargo nextest run --locked --test regression_suite_024 -E test(/(^|::)issue_8335_caption_category_roundtrip::/) --cargo-profile release-test --test-threads 12 --config profile.release-test.package.rhwp.opt-level=1 --config profile.release-test.package.rhwp.codegen-units=64",
+      "warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137",
+      "warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped",
+      "    Finished `release-test` profile [optimized] target(s) in 0.17s",
+      "────────────",
+      " Nextest run ID 802f4ffb-60a8-4806-a4e1-9241e0b1c886 with nextest profile: default",
+      "    Starting 4 tests across 1 binary (262 tests skipped)",
+      "        PASS [   1.412s] (1/4) rhwp::regression_suite_024 issue_8335_caption_category_roundtrip::picture_numbered_tables_keep_category_on_hwp_save",
+      "        PASS [   1.503s] (2/4) rhwp::regression_suite_024 issue_8335_caption_category_roundtrip::hwpx_to_hwp_category_bits_match_hancom_hwp",
+      "        PASS [   2.105s] (3/4) rhwp::regression_suite_024 issue_8335_caption_category_roundtrip::none_category_pictures_stay_uncounted_through_hwpx_roundtrip",
+      "        PASS [   2.239s] (4/4) rhwp::regression_suite_024 issue_8335_caption_category_roundtrip::hancom_hwp_none_shapes_keep_category_through_hwpx_roundtrip",
+      "────────────",
+      "     Summary [   2.240s] 4 tests run: 4 passed, 262 skipped",
+      "warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137",
+      "info: update nextest with cargo nextest self update, or bypass check with --override-version-check"
+    ]
+  },
+  "gate-issue_8399_square_shape_band.log": {
+    "sha256": "f82383746172cd2ec31428f96ef6c2296a598e12478bdf735986ca2c8e3ebdd3",
+    "bytes": 2343,
+    "last_lines": [
+      "    Finished `release-test` profile [optimized] target(s) in 8.58s",
+      "────────────",
+      " Nextest run ID 79db860a-132d-4d99-8ad2-c3f7ba0784eb with nextest profile: default",
+      "    Starting 8 tests across 1 binary (277 tests skipped)",
+      "        PASS [   0.019s] (1/8) rhwp::regression_suite_006 issue_8399_square_shape_band::moving_the_textbox_reprojects_its_band",
+      "        PASS [   0.019s] (2/8) rhwp::regression_suite_006 issue_8399_square_shape_band::square_picture_in_the_first_paragraph_narrows_rows_like_hancom",
+      "        PASS [   0.019s] (3/8) rhwp::regression_suite_006 issue_8399_square_shape_band::textbox_above_the_body_leaves_rows_full_width",
+      "        PASS [   0.022s] (4/8) rhwp::regression_suite_006 issue_8399_square_shape_band::printed_fixtures_open_with_hancom_rows",
+      "        PASS [   0.023s] (5/8) rhwp::regression_suite_006 issue_8399_square_shape_band::textbox_on_the_right_trims_rows_to_its_outer_left_edge",
+      "        PASS [   0.026s] (6/8) rhwp::regression_suite_006 issue_8399_square_shape_band::square_textbox_over_host_rows_narrows_them_like_hancom",
+      "        PASS [   0.029s] (7/8) rhwp::regression_suite_006 issue_8399_square_shape_band::textbox_ink_sits_inside_its_outer_box_and_text_clears_it",
+      "        PASS [   0.035s] (8/8) rhwp::regression_suite_006 issue_8399_square_shape_band::square_like_textbox_below_host_narrows_next_paragraph",
+      "────────────",
+      "     Summary [   0.036s] 8 tests run: 8 passed, 277 skipped",
+      "warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137",
+      "info: update nextest with cargo nextest self update, or bypass check with --override-version-check"
+    ]
+  },
+  "gate-manifest.log": {
+    "sha256": "11a73c3d2b2e068fbbf3ebfaa0c56de29ead3221e0bb8e615196db21b4effef4",
+    "bytes": 179,
+    "last_lines": [
+      "[RustTestSuite] 확인 완료: 1980 sources / 8471 static test attrs / 28 suites + 20 exceptions = 48/48 integration targets / nextest 최소 6288 cases / weight 1766248..1770950"
+    ]
+  },
+  "gate-native-clippy-dns-unavailable.log": {
+    "sha256": "c06b54a3cf128e987a2ed680f30eaae5c96a24c74ae558311171b30925003b8a",
+    "bytes": 16798,
+    "last_lines": [
+      "  cargo:rerun-if-env-changed=SDKROOT",
+      "  cargo:rerun-if-env-changed=SKIA_NINJA_COMMAND",
+      "  cargo:rerun-if-env-changed=SKIA_GN_COMMAND",
+      "  Probing 'python'",
+      "  Probing 'python3'",
+      "  Python 3 found: \"python3\"",
+      "  Synchronizing Skia dependencies",
+      "  DOWNLOADING: https://codeload.github.com/rust-skia/skia/tar.gz/m156.5",
+      "",
+      "  --- stderr",
+      "",
+      "  thread 'main' (32154) panicked at /home/edward/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/skia-bindings-0.156.0/build_support/binary_cache/download.rs:162:35:",
+      "  Failed to download https://codeload.github.com/rust-skia/skia/tar.gz/m156.5 (curl error code: \"6\"",
+      "  curl stderr: \"curl: (6) Could not resolve host: codeload.github.com\\n\")",
+      "  note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "warning: build failed, waiting for other jobs to finish..."
+    ]
+  },
+  "gate-native-clippy-session-interrupted.log": {
+    "sha256": "9a8e799ab0aee18632c3a2e7a754b35956bf13c94a6804a35361322c8a4b44bc",
+    "bytes": 1756,
+    "last_lines": [
+      "   Compiling paste v1.0.15",
+      "    Checking resvg v0.47.0",
+      "    Checking pcx v0.2.5",
+      "    Checking ml-dsa v0.1.1",
+      "    Checking rhwp-svg2pdf v0.13.0-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/vendor/svg2pdf)",
+      "    Checking rhwp-ooxml-chart v0.1.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/crates/rhwp-ooxml-chart)",
+      "    Checking codepage v0.1.3",
+      "    Checking rhwp-contracts v0.1.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/crates/rhwp-contracts)",
+      "    Checking unicode-width v0.2.3",
+      "    Checking unicode-segmentation v1.13.3",
+      "    Checking rhwp-pdf-import-backend v0.3.78-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/vendor/rhwp-pdf-import-backend)",
+      "    Checking rhwp-jpeg-encoder v0.7.1-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/vendor/rhwp-jpeg-encoder)",
+      "    Checking embedded-io v0.7.1",
+      "    Checking icy_sixel v0.7.0",
+      "    Checking skera v0.9.0",
+      "    Checking skia-safe v0.156.0"
+    ]
+  },
+  "gate-native-clippy.log": {
+    "sha256": "e6819a2eee5f3fbbd8b4f0cbd03ad2f4c72ba2fe02470d528e5061d680991457",
+    "bytes": 157,
+    "last_lines": [
+      "    Checking rhwp v0.9.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102)",
+      "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1m 38s"
+    ]
+  },
+  "gate-native-issue_2225_missing_picture_placeholder.log": {
+    "sha256": "4a5cea9c49b20fec34d141d0a0d022d76ff580ec9e55dcf86c6c9501bf5ff928",
+    "bytes": 1580,
+    "last_lines": [
+      "[RustTestSuite] issue_2225_missing_picture_placeholder -> regression_suite_016::issue_2225_missing_picture_placeholder",
+      "[RustTestSuite] cargo nextest run --locked --test regression_suite_016 -E test(/(^|::)issue_2225_missing_picture_placeholder::/) --cargo-profile release-test --features native-skia --test-threads 12 --config profile.release-test.package.rhwp.opt-level=1 --config profile.release-test.package.rhwp.codegen-units=64",
+      "warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137",
+      "warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped",
+      "   Compiling rhwp v0.9.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102)",
+      "    Finished `release-test` profile [optimized] target(s) in 2m 35s",
+      "────────────",
+      " Nextest run ID b1573e36-726f-40ca-b085-17b4677b675a with nextest profile: default",
+      "    Starting 2 tests across 1 binary (319 tests skipped)",
+      "        PASS [   0.033s] (1/2) rhwp::regression_suite_016 issue_2225_missing_picture_placeholder::issue_2225_missing_picture_placeholder_split",
+      "        PASS [   0.151s] (2/2) rhwp::regression_suite_016 issue_2225_missing_picture_placeholder::issue_2225_export_png_defaults_to_screen_skia_profile",
+      "────────────",
+      "     Summary [   0.152s] 2 tests run: 2 passed, 319 skipped",
+      "warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137",
+      "info: update nextest with cargo nextest self update, or bypass check with --override-version-check"
+    ]
+  },
+  "gate-native-render_p37_direct_pdf_export.log": {
+    "sha256": "b0d9288797ef62367ca073b8426f12c271cc1be8777b5419dce647e9b50e92a8",
+    "bytes": 5227,
+    "last_lines": [
+      "        PASS [   0.056s] (11/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::image_adjustment_regressions::issue_4764_direct_pdf_applies_grayscale_before_hancom_encoded_contrast",
+      "        PASS [   0.050s] (12/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::image_adjustment_regressions::issue_4764_direct_pdf_embeds_adjusted_page_background_pixels_in_display_order",
+      "        PASS [   0.067s] (13/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::connector_arrow_regressions::direct_pdf_records_both_triangle_heads_at_the_original_line_and_connector_tips",
+      "        PASS [   0.011s] (14/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::image_adjustment_regressions::issue_4764_direct_pdf_still_rejects_unbaked_image_watermark_tone_or_opacity",
+      "        PASS [   0.023s] (15/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::image_adjustment_regressions::issue_4764_native_adjustments_preserve_alpha_and_object_opacity",
+      "        PASS [   0.024s] (16/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::image_adjustment_regressions::issue_7751_native_contrast_endpoints_match_independent_print_pixels",
+      "        PASS [   0.098s] (17/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::document_core_direct_pdf_exports_page_selection_and_document",
+      "        PASS [   0.089s] (18/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::image_adjustment_regressions::issue_4764_direct_pdf_embeds_adjusted_normal_image_pixels",
+      "        PASS [   0.106s] (19/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::export_pdf_cli_selects_direct_backend_explicitly",
+      "        PASS [   0.129s] (20/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::connector_arrow_regressions::direct_pdf_rejects_unproved_endpoint_controls_only_where_a_head_is_requested",
+      "        PASS [   0.156s] (21/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::connector_arrow_regressions::direct_pdf_rejects_head_outlines_collapsed_before_a_parent_translation",
+      "        PASS [   0.318s] (22/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::connector_arrow_regressions::direct_pdf_accepts_supported_open_filled_and_asymmetric_head_sizes",
+      "────────────",
+      "     Summary [   0.319s] 22 tests run: 22 passed, 271 skipped",
+      "warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137",
+      "info: update nextest with cargo nextest self update, or bypass check with --override-version-check"
+    ]
+  },
+  "gate-native-skia-lib.log": {
+    "sha256": "580a6e53380379c2eb0d58e9dcc6bef4efea3c4e6677afc93dbfbcdbec9dd139",
+    "bytes": 344825,
+    "last_lines": [
+      "test renderer::tests::test_stock_axis_unconditional_headroom ... ok",
+      "test renderer::tests::test_stock_close_marker_only ... ok",
+      "test renderer::tests::test_stock_hilow_lines_per_category ... ok",
+      "test renderer::tests::test_stock_ohlc_candles ... ok",
+      "test renderer::tests::test_stock_series_count_and_line_are_independent ... ok",
+      "",
+      "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+      "",
+      "     Running unittests src/lib.rs (/home/edward/mygithub/rhwp/target/pr-review/release-test/deps/rhwp_password_crypto-5d6336d458358239)",
+      "",
+      "running 2 tests",
+      "test tests::hwp5_decrypt_matches_external_vector ... ok",
+      "test tests::hwp5_stream_roundtrip_preserves_partial_block ... ok",
+      "",
+      "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      ""
+    ]
+  },
+  "gate-prepare.log": {
+    "sha256": "523599679d7bc33c6644d7aa62b10ebd0c2a86ddaa1bf85b177b6045b783cb91",
+    "bytes": 200145,
+    "last_lines": [
+      "[RustTestSuite] 자동 배정: tests/cases/picture_property_error_contract.rs -> regression_suite_019",
+      "[RustTestSuite] 자동 배정: tests/cases/issue_8174_hwp3_record_alignment.rs -> regression_suite_012",
+      "[RustTestSuite] 자동 배정: tests/cases/issue_8160_legacy_hwp5_page_count.rs -> regression_suite_018",
+      "[RustTestSuite] 자동 배정: tests/cases/issue_8174_rust_error_consumer.rs -> regression_suite_024",
+      "[RustTestSuite] 자동 배정: tests/cases/issue_3587_textbox_import_probe.rs -> regression_suite_016",
+      "[RustTestSuite] 자동 배정: tests/suites/issue_regression_pilot/issue_2087_document_core_send.rs -> regression_suite_013",
+      "[RustTestSuite] 자동 배정: tests/cases/issue_1042_k_water_version_read.rs -> regression_suite_028",
+      "[RustTestSuite] 자동 배정: tests/diag_1042_variant_check.rs -> regression_suite_009",
+      "[RustTestSuite] 자동 배정: tests/cases/issue_5584_single_unit_sliver_fragment.rs -> regression_suite_021",
+      "[RustTestSuite] 자동 배정: tests/cases/issue_5807_coanchored_float_tac_order.rs -> regression_suite_007",
+      "[RustTestSuite] 자동 배정: tests/cases/issue_6025_cell_fragment_budget_pin.rs -> regression_suite_004",
+      "[RustTestSuite] 자동 배정: tests/cases/issue_6923_wrapper_fragment_page_frame.rs -> regression_suite_020",
+      "[RustTestSuite] 자동 배정: tests/cases/issue_6923_wrapper_table_stored_page_frame.rs -> regression_suite_017",
+      "[RustTestSuite] 새 test source 없음",
+      "[RustTestSuite] 생성: 28 harnesses, 20 exceptions",
+      "[RustTestSuite] 확인 완료: 1980 sources / 8471 static test attrs / 28 suites + 20 exceptions = 48/48 integration targets / nextest 최소 6288 cases / weight 1766248..1770950"
+    ]
+  },
+  "gate-security_hwpx_password_xml_budget.log": {
+    "sha256": "bfbe9b34f601cf249a56789e058f557b611a58f691e26dccce75eec556f3a9ea",
+    "bytes": 1679,
+    "last_lines": [
+      "[RustTestSuite] security_hwpx_password_xml_budget -> regression_suite_021::security_hwpx_password_xml_budget",
+      "[RustTestSuite] cargo nextest run --locked --test regression_suite_021 -E test(/(^|::)security_hwpx_password_xml_budget::/) --cargo-profile release-test --test-threads 12 --config profile.release-test.package.rhwp.opt-level=1 --config profile.release-test.package.rhwp.codegen-units=64",
+      "warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137",
+      "warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped",
+      "   Compiling rhwp v0.9.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102)",
+      "    Finished `release-test` profile [optimized] target(s) in 7.02s",
+      "────────────",
+      " Nextest run ID 05bd3601-7cc6-4365-a579-075fdc1abb02 with nextest profile: default",
+      "    Starting 3 tests across 1 binary (290 tests skipped)",
+      "        PASS [   0.016s] (1/3) rhwp::regression_suite_021 security_hwpx_password_xml_budget::normal_password_document_still_opens",
+      "        PASS [   0.735s] (2/3) rhwp::regression_suite_021 security_hwpx_password_xml_budget::password_prepass_bounds_inner_decrypted_xml_output",
+      "        PASS [   1.212s] (3/3) rhwp::regression_suite_021 security_hwpx_password_xml_budget::password_prepass_bounds_unprotected_xml_members_before_the_reader",
+      "────────────",
+      "     Summary [   1.213s] 3 tests run: 3 passed, 290 skipped",
+      "warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137",
+      "info: update nextest with cargo nextest self update, or bypass check with --override-version-check"
+    ]
+  },
+  "gate-security_linked_images_and_xml_budget.log": {
+    "sha256": "ccd6631b08cf6f7184c046c33f0acf4253791169e3a764c5832baf69dd67d547",
+    "bytes": 1910,
+    "last_lines": [
+      "[RustTestSuite] cargo nextest run --locked --test regression_suite_024 -E test(/(^|::)security_linked_images_and_xml_budget::/) --cargo-profile release-test --test-threads 12 --config profile.release-test.package.rhwp.opt-level=1 --config profile.release-test.package.rhwp.codegen-units=64",
+      "warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137",
+      "warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped",
+      "   Compiling rhwp v0.9.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102)",
+      "    Finished `release-test` profile [optimized] target(s) in 7.12s",
+      "────────────",
+      " Nextest run ID 99c8d7af-a6eb-4d0c-b02a-77dc4c2ffc76 with nextest profile: default",
+      "    Starting 4 tests across 1 binary (262 tests skipped)",
+      "        PASS [   0.010s] (1/4) rhwp::regression_suite_024 security_linked_images_and_xml_budget::valid_linked_picture_is_loaded_and_retained_in_the_final_svg",
+      "        PASS [   0.010s] (2/4) rhwp::regression_suite_024 security_linked_images_and_xml_budget::missing_picture_label_exposes_basename_without_author_directory",
+      "        PASS [   0.010s] (3/4) rhwp::regression_suite_024 security_linked_images_and_xml_budget::nonimage_sidecar_is_never_loaded_or_exported_as_a_linked_picture",
+      "        PASS [   0.518s] (4/4) rhwp::regression_suite_024 security_linked_images_and_xml_budget::xml_reads_cannot_repeat_the_per_entry_allowance_without_a_document_budget",
+      "────────────",
+      "     Summary [   0.519s] 4 tests run: 4 passed, 262 skipped",
+      "warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137",
+      "info: update nextest with cargo nextest self update, or bypass check with --override-version-check"
+    ]
+  },
+  "gate-studio-build.log": {
+    "sha256": "b45f79dddad3029f381c2027a22a2a0327aac378b3d33279ad50885fcef3b282",
+    "bytes": 2101,
+    "last_lines": [
+      "dist/assets/plugin-CWy68Trn.js                 115.63 kB │ gzip:    33.16 kB",
+      "dist/assets/canvaskit-renderer-BthhByJg.js     338.10 kB │ gzip:   101.70 kB",
+      "dist/assets/claude-D0Y4ibcc.js                 345.76 kB │ gzip:    76.71 kB",
+      "dist/assets/index-B1jfqmgQ.js                2,297.55 kB │ gzip:   490.75 kB",
+      "",
+      "✓ built in 1.43s",
+      "Browserslist: browsers data (caniuse-lite) is 6 months old. Please run:",
+      "  npx update-browserslist-db@latest",
+      "  Why you should do it regularly: https://github.com/browserslist/update-db#readme",
+      "",
+      "PWA v2.0.0",
+      "mode      generateSW",
+      "precache  75 entries (31301.93 KiB)",
+      "files generated",
+      "  dist/sw.js",
+      "  dist/workbox-dcde9eb3.js"
+    ]
+  },
+  "gate-studio-test-session-interrupted.log": {
+    "sha256": "c0f1a5f82c264ff8124f1b41b14b2ba319377eca795c361fa2daa5333c967b97",
+    "bytes": 268981,
+    "last_lines": [
+      "✔ 수동 구간은 입력 사이의 정착과 다음 입력을 한 시간축에 보존한다 (0.854269ms)",
+      "✔ 상한을 넘겨도 호출 합계와 누락 수를 남기며 상세 버퍼는 유한하다 (0.618278ms)",
+      "✔ scope 전환·시간 초과·관찰 off는 중단이며 완료로 승격하지 않는다 (0.400385ms)",
+      "✔ off·종료·이전 시각은 무작업이고 snapshot과 다음 구간은 독립이다 (0.690375ms)",
+      "✔ 배율 가로바는 10%·100%·500%를 시작·중앙·끝에 배치한다 (1.449947ms)",
+      "✔ 10~500% 배율 변환은 구간별 로그 비율로 왕복한다 (0.590578ms)",
+      "✔ 중앙 근처를 드래그하면 100%에 즉시 스냅하고 범위를 벗어나면 풀린다 (0.308088ms)",
+      "✔ 확대·축소 호버 단축키는 플랫폼 표기를 사용한다 (1.146659ms)",
+      "ℹ tests 2718",
+      "ℹ suites 0",
+      "ℹ pass 2716",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 2",
+      "ℹ todo 0",
+      "ℹ duration_ms 27075.458894"
+    ]
+  },
+  "gate-studio-test.log": {
+    "sha256": "5da21a495aba275a180a76b14c22b3ef757c806b5e3f2db0e599d0944d77e0bd",
+    "bytes": 268653,
+    "last_lines": [
+      "✔ 수동 구간은 입력 사이의 정착과 다음 입력을 한 시간축에 보존한다 (0.560165ms)",
+      "✔ 상한을 넘겨도 호출 합계와 누락 수를 남기며 상세 버퍼는 유한하다 (0.496623ms)",
+      "✔ scope 전환·시간 초과·관찰 off는 중단이며 완료로 승격하지 않는다 (0.41497ms)",
+      "✔ off·종료·이전 시각은 무작업이고 snapshot과 다음 구간은 독립이다 (0.594588ms)",
+      "✔ 배율 가로바는 10%·100%·500%를 시작·중앙·끝에 배치한다 (1.18107ms)",
+      "✔ 10~500% 배율 변환은 구간별 로그 비율로 왕복한다 (0.361136ms)",
+      "✔ 중앙 근처를 드래그하면 100%에 즉시 스냅하고 범위를 벗어나면 풀린다 (0.203833ms)",
+      "✔ 확대·축소 호버 단축키는 플랫폼 표기를 사용한다 (0.508732ms)",
+      "ℹ tests 2718",
+      "ℹ suites 0",
+      "ℹ pass 2716",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 2",
+      "ℹ todo 0",
+      "ℹ duration_ms 17474.100234"
+    ]
+  },
+  "gate-textbox_vertical_align_hwp.log": {
+    "sha256": "bc5fe267debafaaf48ebca58f196f7c6c3873d281fc44b1b863878481b5b11c0",
+    "bytes": 1594,
+    "last_lines": [
+      "[RustTestSuite] textbox_vertical_align_hwp -> regression_suite_002::textbox_vertical_align_hwp",
+      "[RustTestSuite] cargo nextest run --locked --test regression_suite_002 -E test(/(^|::)textbox_vertical_align_hwp::/) --cargo-profile release-test --test-threads 12 --config profile.release-test.package.rhwp.opt-level=1 --config profile.release-test.package.rhwp.codegen-units=64",
+      "warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137",
+      "warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped",
+      "   Compiling rhwp v0.9.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102)",
+      "    Finished `release-test` profile [optimized] target(s) in 7.83s",
+      "────────────",
+      " Nextest run ID 6d8891fb-8e3d-4236-8ee5-8e755ec96e7b with nextest profile: default",
+      "    Starting 3 tests across 1 binary (264 tests skipped)",
+      "        PASS [   0.012s] (1/3) rhwp::regression_suite_002 textbox_vertical_align_hwp::new_textbox_is_top_aligned_in_hwp_and_hwpx",
+      "        PASS [   0.012s] (2/3) rhwp::regression_suite_002 textbox_vertical_align_hwp::hwp_keeps_other_list_attr_bits",
+      "        PASS [   0.017s] (3/3) rhwp::regression_suite_002 textbox_vertical_align_hwp::tb_vertical_align_change_reaches_hwp",
+      "────────────",
+      "     Summary [   0.018s] 3 tests run: 3 passed, 264 skipped",
+      "warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137",
+      "info: update nextest with cargo nextest self update, or bypass check with --override-version-check"
+    ]
+  },
+  "gate-typescript.log": {
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0,
+    "last_lines": []
+  },
+  "gate-vscode-compile.log": {
+    "sha256": "7dbc2a9d904efa5d7db307ff5412dd553fcd173faffa5e1d3dc5d465bbcb7132",
+    "bytes": 3226,
+    "last_lines": [
+      "asset ../media/rhwp_bg.wasm 25 MiB [emitted] [from: ../pkg/rhwp_bg.wasm] [copied] [big]",
+      "asset assets/canvaskit.4633a45d21f272b1f084.wasm 6.98 MiB [emitted] [immutable] [from: node_modules/canvaskit-wasm/bin/canvaskit.wasm?url] [big] (auxiliary id hint: vendors)",
+      "orphan modules 891 KiB [orphan] 67 modules",
+      "runtime modules 7.28 KiB 10 modules",
+      "cacheable modules 1.87 MiB (javascript) 6.98 MiB (asset)",
+      "  modules by path ./ 257 KiB (javascript) 6.98 MiB (asset)",
+      "    modules by path ./node_modules/@noble/hashes/*.js 76.3 KiB 2 modules",
+      "    modules by path ./node_modules/canvaskit-wasm/bin/ 118 KiB (javascript) 6.98 MiB (asset) 2 modules",
+      "    ./src/webview/viewer.ts + 2 modules 62.5 KiB [built] [code generated]",
+      "  modules by path ../ 1.62 MiB",
+      "    modules by path ../rhwp-studio/src/ 1.12 MiB 3 modules",
+      "    modules by path ../pkg/ 511 KiB",
+      "      ../pkg/rhwp.js 511 KiB [built] [code generated]",
+      "      ../pkg/rhwp_bg.wasm 1 bytes [built] [code generated]",
+      "  fs (ignored) 15 bytes [built] [code generated]",
+      "webpack 5.112.2 compiled successfully in 8667 ms"
+    ]
+  },
+  "gate-wasm-clippy.log": {
+    "sha256": "2d7cbd233079ddab8407615794aeb7855dd48e4421f92d22ba13665131db8d29",
+    "bytes": 4717,
+    "last_lines": [
+      "    Checking uuid v1.28.0",
+      "    Checking console_error_panic_hook v0.1.7",
+      "    Checking zip v9.1.3",
+      "    Checking skrifa v0.42.1",
+      "    Checking write-fonts v0.48.1",
+      "    Checking half v2.7.1",
+      "    Checking rhwp-password-crypto v0.1.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/crates/rhwp-password-crypto)",
+      "    Checking tiff v0.11.3",
+      "    Checking image v0.25.10",
+      "    Checking subsetter v0.2.6",
+      "    Checking chrono v0.4.45",
+      "    Checking web-time v1.1.0",
+      "    Checking web-sys v0.3.104",
+      "    Checking cfb v0.15.0",
+      "    Checking rhwp-pdf-import-backend v0.3.78-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/vendor/rhwp-pdf-import-backend)",
+      "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 01s"
+    ]
+  },
+  "gate-workspace-build.log": {
+    "sha256": "83f924a898aa9e39f62552ee237eb17a87488c1fec9d4408d711a41286ad7b30",
+    "bytes": 10161,
+    "last_lines": [
+      "   Compiling walkdir v2.5.0",
+      "   Compiling which v8.0.6",
+      "   Compiling rhwp-subsecond v0.0.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/tools/rhwp-subsecond)",
+      "   Compiling llm-verifier-verdict-protocol v0.1.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/tools/llm_verifier/verdict_protocol)",
+      "   Compiling llm-verifier-criteria-decomp v0.1.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/tools/llm_verifier/criteria_decomp)",
+      "   Compiling llm-verifier-claim-bind v0.1.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/tools/llm_verifier/claim_bind)",
+      "   Compiling clap v4.6.7",
+      "   Compiling batch-convert v0.1.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/tools/batch-convert)",
+      "   Compiling skrifa v0.49.0",
+      "   Compiling write-fonts v0.55.0",
+      "   Compiling subsetter v0.2.6",
+      "   Compiling rhwp-pdf-import-backend v0.3.78-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/vendor/rhwp-pdf-import-backend)",
+      "   Compiling rhwp-svg2pdf v0.13.0-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/vendor/svg2pdf)",
+      "   Compiling skera v0.9.0",
+      "   Compiling rhwp-native-ffi v0.1.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/bindings/Native)",
+      "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 55s"
+    ]
+  },
+  "gate-workspace-clippy.log": {
+    "sha256": "1dced0aa0ef38d4d8dcef8cb86f482ce418c98c141da29e1122d5618a2b22503",
+    "bytes": 3357,
+    "last_lines": [
+      "    Checking serde v1.0.229",
+      "    Checking quick-xml v0.41.0",
+      "    Checking rhwp-contracts v0.1.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/crates/rhwp-contracts)",
+      "    Checking llm-verifier-verdict-protocol v0.1.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/tools/llm_verifier/verdict_protocol)",
+      "    Checking llm-verifier-criteria-decomp v0.1.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/tools/llm_verifier/criteria_decomp)",
+      "    Checking llm-verifier-claim-bind v0.1.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/tools/llm_verifier/claim_bind)",
+      "    Checking batch-convert v0.1.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/tools/batch-convert)",
+      "    Checking resvg v0.45.1",
+      "    Checking resvg v0.47.0",
+      "    Checking rhwp-svg2pdf v0.13.0-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/vendor/svg2pdf)",
+      "    Checking office_oxide v0.1.9",
+      "    Checking rhwp-pdf-import-backend v0.3.78-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/vendor/rhwp-pdf-import-backend)",
+      "    Checking wasm-bindgen-futures v0.4.77",
+      "    Checking wasm-bindgen-test v0.3.77",
+      "    Checking rhwp-native-ffi v0.1.0 (/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/bindings/Native)",
+      "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 26s"
+    ]
+  },
+  "install-action-archive-a.log": {
+    "sha256": "7be257c3482a3ee22956881438559a4e80a60b6c1b623d016f61cb87535578ef",
+    "bytes": 369350,
+    "last_lines": [
+      "2026-11-02T03:18:05.8207400Z includeif.gitdir:/github/workspace/.git/worktrees/*.path",
+      "2026-11-02T03:18:05.8216607Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/rhwp/rhwp/.git.path",
+      "2026-11-02T03:18:05.8243138Z /home/runner/work/_temp/git-credentials-800ce98c-76b5-47c9-a991-016488ef9c6d.config",
+      "2026-11-02T03:18:05.8254455Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/rhwp/rhwp/.git.path \\/home\\/runner\\/work\\/_temp\\/git\\-credentials\\-800ce98c\\-76b5\\-47c9\\-a991\\-016488ef9c6d\\.config",
+      "2026-11-02T03:18:05.8294585Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/rhwp/rhwp/.git/worktrees/*.path",
+      "2026-11-02T03:18:05.8319593Z /home/runner/work/_temp/git-credentials-800ce98c-76b5-47c9-a991-016488ef9c6d.config",
+      "2026-11-02T03:18:05.8329538Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/rhwp/rhwp/.git/worktrees/*.path \\/home\\/runner\\/work\\/_temp\\/git\\-credentials\\-800ce98c\\-76b5\\-47c9\\-a991\\-016488ef9c6d\\.config",
+      "2026-11-02T03:18:05.8363625Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path",
+      "2026-11-02T03:18:05.8387484Z /github/runner_temp/git-credentials-800ce98c-76b5-47c9-a991-016488ef9c6d.config",
+      "2026-11-02T03:18:05.8396696Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \\/github\\/runner_temp\\/git\\-credentials\\-800ce98c\\-76b5\\-47c9\\-a991\\-016488ef9c6d\\.config",
+      "2026-11-02T03:18:05.8432380Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path",
+      "2026-11-02T03:18:05.8457266Z /github/runner_temp/git-credentials-800ce98c-76b5-47c9-a991-016488ef9c6d.config",
+      "2026-11-02T03:18:05.8465401Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \\/github\\/runner_temp\\/git\\-credentials\\-800ce98c\\-76b5\\-47c9\\-a991\\-016488ef9c6d\\.config",
+      "2026-11-02T03:18:05.8501501Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url",
+      "2026-11-02T03:18:05.8886259Z Removing credentials config '/home/runner/work/_temp/git-credentials-800ce98c-76b5-47c9-a991-016488ef9c6d.config'",
+      "2026-11-02T03:18:05.9039439Z Cleaning up orphan processes"
+    ]
+  },
+  "measure-candidate-native-legacy_textbox.log": {
+    "sha256": "ec5249e7ebd5fa1b312527f02507d60944909d28734f1f72c5ee76460a21032e",
+    "bytes": 214,
+    "last_lines": [
+      "실루엣 보조값 1쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/tsv-candidate-native/legacy_textbox/silhouette.tsv",
+      "{\"key\": \"legacy_textbox\", \"pages\": 1, \"minimum\": \"99.55\", \"exact100\": 0}"
+    ]
+  },
+  "measure-candidate-native-saved_bottom.log": {
+    "sha256": "4730e72d9471fc991c182eaf75d8c1013ec7e1f234cd69873ec24ef64a0ee89b",
+    "bytes": 211,
+    "last_lines": [
+      "실루엣 보조값 1쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/tsv-candidate-native/saved_bottom/silhouette.tsv",
+      "{\"key\": \"saved_bottom\", \"pages\": 1, \"minimum\": \"100.00\", \"exact100\": 1}"
+    ]
+  },
+  "measure-candidate-native-wmf_fixed_face.log": {
+    "sha256": "2ae7cf0016b4c91892e9b60cbe9c0fdf269e58281caec7e9f06fe783eacaaa36",
+    "bytes": 214,
+    "last_lines": [
+      "실루엣 보조값 2쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/tsv-candidate-native/wmf_fixed_face/silhouette.tsv",
+      "{\"key\": \"wmf_fixed_face\", \"pages\": 2, \"minimum\": \"94.40\", \"exact100\": 0}"
+    ]
+  },
+  "measure-candidate-native-wrapping_A.log": {
+    "sha256": "d522741c27178962faaa9fbc2252d9337cab666301c58df512db274f2fc065ff",
+    "bytes": 207,
+    "last_lines": [
+      "실루엣 보조값 1쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/tsv-candidate-native/wrapping_A/silhouette.tsv",
+      "{\"key\": \"wrapping_A\", \"pages\": 1, \"minimum\": \"100.00\", \"exact100\": 1}"
+    ]
+  },
+  "measure-candidate-wasm-legacy_textbox.log": {
+    "sha256": "8ef2e5070bfe941746548f74aba0c4cad258ee7540d5c8482dd0e4c041942264",
+    "bytes": 212,
+    "last_lines": [
+      "실루엣 보조값 1쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/tsv-candidate-wasm/legacy_textbox/silhouette.tsv",
+      "{\"key\": \"legacy_textbox\", \"pages\": 1, \"minimum\": \"99.42\", \"exact100\": 0}"
+    ]
+  },
+  "measure-candidate-wasm-saved_bottom.log": {
+    "sha256": "fbe50e91e279b3a7ea819100bf3faa3cade26a91011443120f94726804fd5ec4",
+    "bytes": 209,
+    "last_lines": [
+      "실루엣 보조값 1쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/tsv-candidate-wasm/saved_bottom/silhouette.tsv",
+      "{\"key\": \"saved_bottom\", \"pages\": 1, \"minimum\": \"100.00\", \"exact100\": 1}"
+    ]
+  },
+  "measure-candidate-wasm-wmf_fixed_face.log": {
+    "sha256": "cbf0fb7ea4e134e2e31ce600a02e3f1fcbf635c0ffaf55f3c2684b861e30ca82",
+    "bytes": 212,
+    "last_lines": [
+      "실루엣 보조값 2쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/tsv-candidate-wasm/wmf_fixed_face/silhouette.tsv",
+      "{\"key\": \"wmf_fixed_face\", \"pages\": 2, \"minimum\": \"98.77\", \"exact100\": 0}"
+    ]
+  },
+  "measure-candidate-wasm-wrapping_A.log": {
+    "sha256": "d3ba20839361c30a5d1cf0db5208f4713f0b9a585058c18cf189dc1473fc7c76",
+    "bytes": 205,
+    "last_lines": [
+      "실루엣 보조값 1쪽: /home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/tsv-candidate-wasm/wrapping_A/silhouette.tsv",
+      "{\"key\": \"wrapping_A\", \"pages\": 1, \"minimum\": \"100.00\", \"exact100\": 1}"
+    ]
+  },
+  "merge-skia-fix.log": {
+    "sha256": "751a4de4bcc1641433b3f27c1a0648432b5ab4dfba5532480e33b2baf4efcf8c",
+    "bytes": 188,
+    "last_lines": [
+      "Auto-merging Cargo.lock",
+      "Merge made by the 'ort' strategy.",
+      " Cargo.lock | 40 ++++++++++++----------------------------",
+      " Cargo.toml |  2 +-",
+      " 2 files changed, 13 insertions(+), 29 deletions(-)"
+    ]
+  },
+  "nextest-action-contracts.log": {
+    "sha256": "df1759413564e9fff6e2dc412df3e9c1f0f4cb37164715d3cab9703520fca97e",
+    "bytes": 117,
+    "last_lines": [
+      "..................",
+      "----------------------------------------------------------------------",
+      "Ran 18 tests in 0.116s",
+      "",
+      "OK"
+    ]
+  },
+  "node-validation-driver.log": {
+    "sha256": "719ae6ec98f9e90f2006f8e4b91600bf266053408bc357b0732dba2b7f206720",
+    "bytes": 149,
+    "last_lines": [
+      "REUSE successful gate typescript",
+      "START studio-test",
+      "END studio-test 0",
+      "START studio-build",
+      "END studio-build 0",
+      "START vscode-compile",
+      "END vscode-compile 0"
+    ]
+  },
+  "pr-8456-125069110998.log": {
+    "sha256": "52539a4036c8703066563f11d4a88269209e51f01bfbcedf46eb6bf27a8d5f67",
+    "bytes": 104508,
+    "last_lines": [
+      "2026-11-02T03:17:17.2832904Z includeif.gitdir:/github/workspace/.git/worktrees/*.path",
+      "2026-11-02T03:17:17.2841391Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/rhwp/rhwp/.git.path",
+      "2026-11-02T03:17:17.2868065Z /home/runner/work/_temp/git-credentials-73cf4665-f60d-4e91-94e6-c5162f619d42.config",
+      "2026-11-02T03:17:17.2881351Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/rhwp/rhwp/.git.path \\/home\\/runner\\/work\\/_temp\\/git\\-credentials\\-73cf4665\\-f60d\\-4e91\\-94e6\\-c5162f619d42\\.config",
+      "2026-11-02T03:17:17.2936414Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/rhwp/rhwp/.git/worktrees/*.path",
+      "2026-11-02T03:17:17.2964077Z /home/runner/work/_temp/git-credentials-73cf4665-f60d-4e91-94e6-c5162f619d42.config",
+      "2026-11-02T03:17:17.2976200Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/rhwp/rhwp/.git/worktrees/*.path \\/home\\/runner\\/work\\/_temp\\/git\\-credentials\\-73cf4665\\-f60d\\-4e91\\-94e6\\-c5162f619d42\\.config",
+      "2026-11-02T03:17:17.3015455Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path",
+      "2026-11-02T03:17:17.3041129Z /github/runner_temp/git-credentials-73cf4665-f60d-4e91-94e6-c5162f619d42.config",
+      "2026-11-02T03:17:17.3051807Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \\/github\\/runner_temp\\/git\\-credentials\\-73cf4665\\-f60d\\-4e91\\-94e6\\-c5162f619d42\\.config",
+      "2026-11-02T03:17:17.3090200Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path",
+      "2026-11-02T03:17:17.3118834Z /github/runner_temp/git-credentials-73cf4665-f60d-4e91-94e6-c5162f619d42.config",
+      "2026-11-02T03:17:17.3127279Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \\/github\\/runner_temp\\/git\\-credentials\\-73cf4665\\-f60d\\-4e91\\-94e6\\-c5162f619d42\\.config",
+      "2026-11-02T03:17:17.3168973Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url",
+      "2026-11-02T03:17:17.3565992Z Removing credentials config '/home/runner/work/_temp/git-credentials-73cf4665-f60d-4e91-94e6-c5162f619d42.config'",
+      "2026-11-02T03:17:17.3728050Z Cleaning up orphan processes"
+    ]
+  },
+  "pr-8456-125070083215.log": {
+    "sha256": "ba45e49a2d77c9001cc0de3c566d977860e2d05373c1d40313cdd106e2404fea",
+    "bytes": 609207,
+    "last_lines": [
+      "2026-11-02T03:12:03.8978732Z includeif.gitdir:/github/workspace/.git/worktrees/*.path",
+      "2026-11-02T03:12:03.8987603Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/rhwp/rhwp/.git.path",
+      "2026-11-02T03:12:03.9014360Z /home/runner/work/_temp/git-credentials-05f0a987-e1e4-44ce-9fbb-23ed3fa21686.config",
+      "2026-11-02T03:12:03.9025364Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/rhwp/rhwp/.git.path \\/home\\/runner\\/work\\/_temp\\/git\\-credentials\\-05f0a987\\-e1e4\\-44ce\\-9fbb\\-23ed3fa21686\\.config",
+      "2026-11-02T03:12:03.9067741Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/rhwp/rhwp/.git/worktrees/*.path",
+      "2026-11-02T03:12:03.9094709Z /home/runner/work/_temp/git-credentials-05f0a987-e1e4-44ce-9fbb-23ed3fa21686.config",
+      "2026-11-02T03:12:03.9104914Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/rhwp/rhwp/.git/worktrees/*.path \\/home\\/runner\\/work\\/_temp\\/git\\-credentials\\-05f0a987\\-e1e4\\-44ce\\-9fbb\\-23ed3fa21686\\.config",
+      "2026-11-02T03:12:03.9142138Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path",
+      "2026-11-02T03:12:03.9166583Z /github/runner_temp/git-credentials-05f0a987-e1e4-44ce-9fbb-23ed3fa21686.config",
+      "2026-11-02T03:12:03.9175971Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \\/github\\/runner_temp\\/git\\-credentials\\-05f0a987\\-e1e4\\-44ce\\-9fbb\\-23ed3fa21686\\.config",
+      "2026-11-02T03:12:03.9212046Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path",
+      "2026-11-02T03:12:03.9236534Z /github/runner_temp/git-credentials-05f0a987-e1e4-44ce-9fbb-23ed3fa21686.config",
+      "2026-11-02T03:12:03.9245313Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \\/github\\/runner_temp\\/git\\-credentials\\-05f0a987\\-e1e4\\-44ce\\-9fbb\\-23ed3fa21686\\.config",
+      "2026-11-02T03:12:03.9282982Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url",
+      "2026-11-02T03:12:03.9673737Z Removing credentials config '/home/runner/work/_temp/git-credentials-05f0a987-e1e4-44ce-9fbb-23ed3fa21686.config'",
+      "2026-11-02T03:12:03.9864508Z Cleaning up orphan processes"
+    ]
+  },
+  "rust-validation-driver.log": {
+    "sha256": "5fb0efe2191509363235c6c420ad2df258d78be79d0204cbde921c8f0f1ddc8e",
+    "bytes": 1194,
+    "last_lines": [
+      "END issue_8335_caption_category_roundtrip 0",
+      "START issue_8302_roundtrip_lineage",
+      "END issue_8302_roundtrip_lineage 0",
+      "START issue_8399_square_shape_band",
+      "END issue_8399_square_shape_band 0",
+      "START issue_8160_wmf_mask_ownership",
+      "END issue_8160_wmf_mask_ownership 0",
+      "START native-skia-lib",
+      "END native-skia-lib 0",
+      "START native-issue_2225_missing_picture_placeholder",
+      "END native-issue_2225_missing_picture_placeholder 0",
+      "START native-render_p37_direct_pdf_export",
+      "END native-render_p37_direct_pdf_export 0",
+      "START full-nextest",
+      "END full-nextest 0",
+      "All Rust gates passed"
+    ]
+  },
+  "skia-lock-fix.log": {
+    "sha256": "57637d71b0701fb4e8610076cbad795af09727238e20f6ea37327e95776bf640",
+    "bytes": 143,
+    "last_lines": [
+      "    Updating crates.io index",
+      "    Updating prettyplease v0.2.37 -> v0.3.0",
+      "note: pass `--verbose` to see 80 unchanged dependencies behind latest"
+    ]
+  },
+  "studio-npm-ci.log": {
+    "sha256": "fd2c033e64788dd665f497d5f4d7d261a03b2819d1d71026d50cde8a4eee026a",
+    "bytes": 429,
+    "last_lines": [
+      "npm warn deprecated source-map@0.8.0-beta.0: The work that was done in this beta branch won't be included in future versions",
+      "npm warn deprecated glob@11.1.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me",
+      "",
+      "added 385 packages in 10s"
+    ]
+  },
+  "vscode-npm-ci.log": {
+    "sha256": "42ce1f25b9aa27a111d6c8c7b2a92559d1d96d2287aa39f5674d36e56632212e",
+    "bytes": 26,
+    "last_lines": [
+      "",
+      "added 134 packages in 4s"
+    ]
+  }
+}

@@ -1,0 +1,432 @@
+[
+  {
+    "runtime": "native",
+    "name": "cff-cid",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "icc-cmyk-jpeg",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "icc-cmyk",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "icc-gray",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "icc-indexed",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "icc-indirect-filter",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "icc-jpeg",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "icc-path-cmyk",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "icc-path-rgb",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "icc-rgb",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "jpx-cmyk-alpha-boxed",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "jpx-cmyk-alpha",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "jpx-cmyk-premult-boxed",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "jpx-cmyk-premult",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "jpx-indexed-alpha-boxed",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "jpx-indexed-alpha",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "jpx-indexed-icc-premult-boxed",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "jpx-indexed-icc-premult",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "jpx-indexed-palette-premult-boxed",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "jpx-indexed-palette-premult",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "jpx-indexed-premult-boxed",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "jpx-indexed-premult",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "recovery-fake-header",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "recovery-incremental",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "recovery-missing-xref",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "old-jbig2-generic_template0",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "old-jbig2-mask",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "old-jbig2-symbol_global",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "old-jbig2",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "old-jpx-alpha",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "old-jpx-indexed",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "old-jpx-mask",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "old-jpx-palette",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "old-jpx-premult",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "old-jpx-tiles",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "old-jpx",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "old-scan-jbig2-200",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "old-scan-jbig2",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "old-scan-jpeg-control-200",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "old-scan-jpeg-control",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "old-scan-jpx-200",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "native",
+    "name": "old-scan-jpx",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "cff-cid",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "icc-cmyk-jpeg",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "icc-cmyk",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "icc-gray",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "icc-indexed",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "icc-indirect-filter",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "icc-jpeg",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "icc-path-cmyk",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "icc-path-rgb",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "icc-rgb",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "jpx-cmyk-alpha-boxed",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "jpx-cmyk-alpha",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "jpx-cmyk-premult-boxed",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "jpx-cmyk-premult",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "jpx-indexed-alpha-boxed",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "jpx-indexed-alpha",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "jpx-indexed-icc-premult-boxed",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "jpx-indexed-icc-premult",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "jpx-indexed-palette-premult-boxed",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "jpx-indexed-palette-premult",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "jpx-indexed-premult-boxed",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "jpx-indexed-premult",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "recovery-fake-header",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "recovery-incremental",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "recovery-missing-xref",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "old-jbig2-generic_template0",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "old-jbig2-mask",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "old-jbig2-symbol_global",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "old-jbig2",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "old-jpx-alpha",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "old-jpx-indexed",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "old-jpx-mask",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "old-jpx-palette",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "old-jpx-premult",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "old-jpx-tiles",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "old-jpx",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "old-scan-jbig2-200",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "old-scan-jbig2",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "old-scan-jpeg-control-200",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "old-scan-jpeg-control",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "old-scan-jpx-200",
+    "changedZipMembers": []
+  },
+  {
+    "runtime": "wasm",
+    "name": "old-scan-jpx",
+    "changedZipMembers": []
+  }
+]

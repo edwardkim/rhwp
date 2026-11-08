@@ -1,0 +1,89 @@
+{
+  "production_source": "ae8c413f84a01a4cc4591357056183709f21b150",
+  "wasm_build_head": "523af99acf2c53265e390a4e982eb07dd1071099",
+  "wasm_sha256": "c5b25dd8b22efce0d4ecb08291069e3ec625345c40957cbe457cc431f69737d8",
+  "recorded_at": "2026-10-27T07:34:07.648013+00:00",
+  "scope": "Actual six fresh WASM incoming devel preservation panels and nested-cell baseline/current/independent Print detail were opened and read. Not a whole-page pixel-perfect claim.",
+  "status": "direct reading complete;preservation verified with disclosed baseline residuals",
+  "records": [
+    {
+      "key": "rebase8116-overlay_table_beside_title",
+      "page": 2,
+      "raw_match_percent": 94.82501,
+      "review": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8116/reading/wasm-rebase8116-overlay_table_beside_title-p002.png",
+      "review_sha256": "73675226da0b9d5bd8211e764f02f2ff6d330a44ead8182071cc2ccaf02390fd",
+      "actual_png_sha256": "6f9aca9952514cb9d5d96c676b60faed9483349ce1b4b920fd05373dd7a5b832",
+      "reference_png_sha256": "cd2a5efb08ea4643d036d98fd70b762fbd852ce0eac4364483e3ec7a24642ec3",
+      "direct_observation": "작은 승인 표와 제목이 본문 표 위에 있으며 서로 겹치지 않는다. 본문 표의 행·원·텍스트가 셀에 남아 있다.",
+      "remaining_appearance": "기존 글꼴 굵기·래스터, title-between-shapes의 장식 크기·일부 셀 줄바꿈 차이를 해결했다고 주장하지 않는다."
+    },
+    {
+      "key": "rebase8116-cell_nested_table_rows",
+      "page": 1,
+      "raw_match_percent": 98.57262,
+      "review": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8116/reading/wasm-rebase8116-cell_nested_table_rows-p001.png",
+      "review_sha256": "069497afd040df9ceee1736c538850fc5f2b05e09a7b97e5527252b51ef26cd4",
+      "actual_png_sha256": "f0d052a9098d75afe6cc4307b35c7e4d65d47bce5e295b23c02694cd3c74ff38",
+      "reference_png_sha256": "241cc97ba73a733de63bb9a08dd54ea8dd4efe80d792a7ef50c16d37ab81ed75",
+      "direct_observation": "중첩 표가 원래 부모 셀 안에 있고 본문·후속 행 내용이 보존된다. 기준 대비 첫 셀 주변 RGB 2755화소가 다르지만 raw98.57262%는 같으며 기준/후보/독립 Print 확대 대조에서 누락·새 줄바꿈·겹침은 보이지 않는다.",
+      "remaining_appearance": "기존 글꼴 굵기·래스터, title-between-shapes의 장식 크기·일부 셀 줄바꿈 차이를 해결했다고 주장하지 않는다."
+    },
+    {
+      "key": "rebase8116-title_between_floating_shapes",
+      "page": 3,
+      "raw_match_percent": 99.02832,
+      "review": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8116/reading/wasm-rebase8116-title_between_floating_shapes-p003.png",
+      "review_sha256": "d2660ef023a29faf1e80d123da4fff75f4128fe1cb7c5b2a56ba941db1aaab74",
+      "actual_png_sha256": "7910ec649e09664560b3ad692565653e1239d8a0c34d5a3ef53c45488705ac68",
+      "reference_png_sha256": "0fb358d679f6f5cdb2d5ecb83ca6d8dafb00d71dbe50b24e00f4995ce83b6769",
+      "direct_observation": "상단 장식 사이 제목, 본문, 표, 하단 장식이 같은 쪽에 유지된다. 제목과 표·도형이 서로 겹치지 않는다.",
+      "remaining_appearance": "기존 글꼴 굵기·래스터, title-between-shapes의 장식 크기·일부 셀 줄바꿈 차이를 해결했다고 주장하지 않는다."
+    },
+    {
+      "key": "rebase8116-title_between_floating_shapes",
+      "page": 4,
+      "raw_match_percent": 93.56257,
+      "review": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8116/reading/wasm-rebase8116-title_between_floating_shapes-p004.png",
+      "review_sha256": "144a9e28172f11e290a92d97a9f08e6072ca86e76f614ffb46626e468f800252",
+      "actual_png_sha256": "d8f82d68b192b70c89836db7ad204a812ccac87f711957c11928eab4c37fe456",
+      "reference_png_sha256": "d547b989021aa12144ff27b6f86b9b69214c17c11cdd3efbe0caf89dd64db440",
+      "direct_observation": "제목이 한 줄로 유지되고 표 위 간격·행 경계·세 열의 소유가 보존된다. 오른쪽 둘째 행 셀의 일부 줄바꿈과 상단 장식 색상 영역 크기는 독립 Print와 다르지만 기준 devel과 후보의 해당 쪽 PNG가 동일해 새 후퇴와 구분한다.",
+      "remaining_appearance": "기존 글꼴 굵기·래스터, title-between-shapes의 장식 크기·일부 셀 줄바꿈 차이를 해결했다고 주장하지 않는다."
+    },
+    {
+      "key": "rebase8116-picture_cell_row_height",
+      "page": 5,
+      "raw_match_percent": 94.20833,
+      "review": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8116/reading/wasm-rebase8116-picture_cell_row_height-p005.png",
+      "review_sha256": "e7b044c3aefcd6ecc3e47bfcc4d6db4f3adcf608704a405a8403048f459a080c",
+      "actual_png_sha256": "392c1ea45be649fb969efa73d8975594c732c003fef1f873a21aa7e8112fb05c",
+      "reference_png_sha256": "f7d83da510d7ae35f58683f1e68b3a4b202f20c875c47e52e348f3254fab5313",
+      "direct_observation": "작은 표 아래의 제목·본문 표가 겹치지 않는다. 행 경계·소제목·후속 본문이 보존된다.",
+      "remaining_appearance": "기존 글꼴 굵기·래스터, title-between-shapes의 장식 크기·일부 셀 줄바꿈 차이를 해결했다고 주장하지 않는다."
+    },
+    {
+      "key": "rebase8116-overlay_table_beside_title",
+      "page": 5,
+      "raw_match_percent": 94.66255,
+      "review": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8116/reading/wasm-rebase8116-overlay_table_beside_title-p005.png",
+      "review_sha256": "2d800b581d28d8e659a081f2b7e9fd1caec4769b05330ad96a058704616a6aac",
+      "actual_png_sha256": "68c65e7252bcaf4dde917f42e71f2cc37032d318d6af8b843fad93ac012b77c1",
+      "reference_png_sha256": "b3863b27410a4262dfdd0dc09df2df1e8bd7fdba92926f6283c77edf4356a49b",
+      "direct_observation": "이 문서의 WASM 최저 쪽도 제목·작은 표·본문 표·꼬리말을 보존한다. 본문 표의 행 경계와 내용 순서가 이어진다.",
+      "remaining_appearance": "기존 글꼴 굵기·래스터, title-between-shapes의 장식 크기·일부 셀 줄바꿈 차이를 해결했다고 주장하지 않는다."
+    }
+  ],
+  "baseline_current_pixel_proof": "incoming-wasm-base-output-continuity.json",
+  "nested_rgb_difference": {
+    "pixels": 2755,
+    "bbox": [
+      86,
+      267,
+      710,
+      419
+    ],
+    "base_raw": "98.57262",
+    "candidate_raw": "98.57262",
+    "detail": "reading/wasm-nested-cell-base-head-detail.png"
+  }
+}

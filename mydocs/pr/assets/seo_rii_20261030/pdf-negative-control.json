@@ -1,0 +1,12 @@
+[
+  {
+    "page": 63,
+    "exit": 1,
+    "output": "LAYOUT_OVERFLOW: page=36, sec=2, col=0, para=414, type=FullParagraph, first=false, y=894.3, bottom=888.2, overflow=6.1px\n오류: PDF 변환 실패 - 렌더링 오류: direct PDF page 1 cannot replay path without visual loss: connector line style; use the svg backend\n"
+  },
+  {
+    "page": 289,
+    "exit": 1,
+    "output": "오류: PDF 변환 실패 - 렌더링 오류: direct PDF page 1 cannot replay line without visual loss: multi-line, arrow, or shadow style; use the svg backend\n"
+  }
+]

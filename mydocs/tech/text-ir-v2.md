@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/tech/text-ir-v2.md
-last_verified: 2026-09-03
+last_verified: 2026-10-14
 ---
 
 # Text IR v2 Migration Contract
@@ -219,6 +219,12 @@ turning them into default replay paths.
   false before a backend may consider the payload strict.
 - Each `GlyphOutline` op may carry only one payload family. Mixing stroke,
   color-layer, bitmap, and SVG payload fields is a validation error.
+- strict glyph의 경로·affine·baseline·gradient·stroke·bitmap/SVG geometry는
+  유한한 f32 범위(`abs(value) <= f32::MAX`) 안에 있어야 합니다. 사각형은
+  성분과 함께 `x + width`, `y + height`도 검사합니다. 공통 selector와 browser가
+  Native Skia의 scalar 경계를 공유하며, 한 part라도 초과하면 해당 variant 전체를
+  거부하고 `TextRun` fallback을 선택합니다. 이 검사는 자원 준비 또는 변환 후
+  geometry에 대한 backend 검증을 대체하지 않습니다.
 - CanvasKit and Canvas2D report the same high-level reject reasons for advanced
   payload families: `unsupportedColorGlyph`, `unsupportedBitmapGlyph`, and
   `unsupportedSvgGlyph`. Canvas2D can still add
@@ -441,3 +447,117 @@ improvement rather than a Canvas2D compatibility match.
   once writer emission starts.
 - Promote renderer diagnostics from report-only to backend selection telemetry
   once CanvasKit/native glyph alternatives are actually consumed.
+
+## P45 이관: 엄격한 글리프 자원 검증
+
+`GlyphRun` 선택은 정확한 face의 `maxp.numGlyphs`를 대조하며, glyph 0과 범위 밖 ID는
+`TextRun`으로 되돌린다. placement·position·advance는 저장형 `f64`의 유한성뿐 아니라
+소비형 `f32`의 표현 범위를 만족해야 한다. 개별 윤곽선 명령과 윤곽선 수는 각각 4096개로
+제한한다. Native SVG 준비는 파싱 불가능한 path를 부분적으로 생략하지 않고 전체 엄격한
+대안을 거부한다. 중첩 SVG의 viewport와 leaf별 글리프 준비 예산은 기존 계약을 유지한다.
+
+기존 selector 단위 검사에 표현 범위 양쪽 경계와 정확한 face 범위 검사를 추가했다.
+현재 이관 단계에서는 개별 파일 rustfmt와 diff 검사만 수행했다. Cargo·Native·fresh WASM 및
+독립 한컴 PDF 시각 검증은 저장 공간 확보 뒤 수행해야 하며, 과거 브랜치 결과를 재사용하지 않는다.
+
+## P45 이관: 보고 전용 shaping 측정
+
+`TextShapeReport`의 run·line·paragraph·page 측정과 `LineBreakShadowReport`는 진단값이다.
+기존 `shape_glyph_run` 결과를 한 번 관찰하며 추가 shaping 호출이나 레이아웃·variant 선택
+분기를 만들지 않는다. 줄 소속과 문맥은 호출자가 제공하며 `Unknown`을 값 없음과 구분한다.
+수평 advance span의 차이는 잉크 경계나 수직 메트릭의 정확성 증명이 아니다.
+
+합성 resolver 검사는 호출 수, 원래 배치 보존, 명시적 소속 집계와 문맥별 위험 보고를 검사한다.
+이 단계의 실행 검증은 파일 rustfmt·diff 확인까지이며 Cargo 실행은 대기 중이다.
+
+## P45 이관: 명시적 schema v2 내보내기와 borrowed slots
+
+기존 `to_json()`은 schema v1을 유지한다. `to_json_v2_compat()`는 원래 TextRun 자리에
+모든 대안을 묶고, `to_json_v2_strict_glyph_outline()`과 `to_json_v2_strict_glyph_run()`은
+공유 selector의 자원·geometry 검증을 통과한 대안만 내보낸다. 잘못된 공개 variant 메타데이터,
+불완전한 part와 남는 sidecar는 구조화된 오류로 거부한다. 진단 플래그만으로 엄격한 출력을
+허용하지 않는다. 엄격한 export는 fallback이 없으므로 schema v1 자동 downgrade를 금지한다.
+
+`LayerTextPaintOpV2`와 variant/part view는 원래 Rust PaintOp를 읽기 전용으로 빌린다.
+JSON 검증 경로를 공유하므로 직렬화 없는 API는 아니며, resource와 조상 clip은 원래 tree에 남는다.
+검사는 기존 bitmap/font producer를 사용한 자원 보존, source·paint order, 엄격한 거부와
+lossless compatibility downgrade에 한정한다. 새 font SVG producer 검사는 시각 증거 확보 후
+별도로 도입한다. 이관 파일의 rustfmt·diff 확인을 마쳤으며 실행 검증은 대기 중이다.
+
+## P45 이관: WASM object API
+
+`getPageLayerTreeValue*`는 정본 JSON writer의 필드를 재사용하고 resource의 그림·글꼴 bytes를
+`Uint8Array`로 제공한다. SVG resource는 문자열이며, 소비자가 이미 가진 content key의 slot만
+생략한다. resource hint는 최대 4096개 문자열, 각 UTF-8 문자열 1024 bytes로 제한한다.
+기본 JSON API와 Canvas2D 기본 선택은 바꾸지 않는다. v2 JSON/object API는 모두 명시적이다.
+
+기존 resource-key API와 연결할 수 있도록 v1 object API의 마지막 인수는 선택적인
+`omit_font_bytes`와 `omit_image_bytes`이다. 이미지 옵션은 기존 정본 writer의 source-key
+규칙을 따르며, 되찾을 key가 없는 payload를 무조건 생략하는 옵션이 아니다. paint 생성,
+직렬화와 resource 변환은 같은 hot render 경계 안에서 수행한다.
+
+hot boundary 등록 검사를 보완했다. rustfmt·정적 API 대조는 완료했으며 wasm32 빌드와 fresh
+WASM의 실제 object·편집 무효화 검사는 아직 실행하지 않았다. 직렬화 비용 감소를 주장하지 않는다.
+
+## P45 이관: COLRv0 producer helper
+
+`decode_colrv0_color_layers_payload`는 bounded COLR/CPAL 테이블에서 확정된 path·색상을 만들고
+CPAL digest를 resource identity에 포함한다. 전경색 palette entry, 선택 face와 palette, source
+범위를 검증하며 font 32 MiB, layer 256개, 전체 path command 65536개를 상한으로 둔다.
+이 helper는 일반 문서 lowerer에 자동 연결되어 있지 않다. 정상 문서의 COLRv0 출력 지원 완료를
+뜻하지 않는다. 합성 font producer 검사 패치는 독립 한컴 PDF 증거를 확보할 때까지 별도 보존하며,
+현재 source 확인·rustfmt 외 빌드와 출력 검증은 미실행이다.
+
+## P45 이관: bounded color graph와 Native 재생
+
+schema v1 minor 24는 `sourceOver` composite와 path clip을 명시한다. 64개 고유 node,
+깊이 64, 공유 subtree를 포함한 최대 4096회 방문을 검증하며 cycle·도달 불가능 node·혼합
+payload·같은 직접 source/backdrop child를 거부한다. Native는 backdrop 뒤 source 순으로
+재생하고 조상 transform으로 계산한 page-space clip을 자식 transform과 분리한다.
+leaf별 사전 준비 예산과 실패 후보의 비용 차감은 유지한다. 현재 Native renderer는
+각 leaf에서 예산을 만들며, 페이지 전체가 하나의 카운터를 공유한다는 의미는 아니다.
+
+기존 public payload 검사도 layer 수와 정규화 RGBA·opacity를 확인한다. 새로운 graph의
+렌더링 회귀 검사는 원래 브랜치의 합성 IR 계약과 독립 한컴 출력 증거가 서로 다르므로 현재
+활성 테스트에 추가하지 않았다. 별도 패치에 보존했으며 실제 Native·fresh WASM 실행,
+독립 출력 및 페이지별 90% gate는 미검증이다. 기존 scalar 검사는 신설 optional 필드만 채웠다.
+
+## P45 이관: font SVG baseline viewport
+
+bitmap producer가 성립하지 않을 때만 정적인 font SVG 후보를 검토한다. 단일 square viewBox와
+단일 root를 요구하며 root sizing/transform과 중첩 viewport는 거부한다. 통과한 payload에는
+page-space `fontEmBox=(run.x, run.y+baseline, fontSize, fontSize)`를 기록한다. Native와 browser
+consumer는 이를 같은 viewport로 쓰며, 일반 SVG decoder가 만든 `fontEmBox=None`은 기존 bbox
+배치를 유지한다. viewBox·em-box와 끝점은 공통 portable scalar 계약을 만족해야 한다.
+
+bitmap의 페이지 누적 예산을 decode 전에 확인하며, bitmap/SVG 자원은 scratch arena에서
+검증을 마친 뒤에만 실제 arena에 넣는다. 새 font SVG·color 출력 fixture 및 Native pixel 검사는
+별도 패치로 보존하고 시각 증거 확보 전에는 활성 회귀에 추가하지 않았다. 현재 확인은 rustfmt,
+신설 필드의 기존 생성자 정합성, 기존 producer JSON 필드·SVG depth·준비 예산 보존까지다.
+실제 빌드·출력 일치·성능 결과는 아직 없다.
+
+## P45/P47 통합 검토: gradient 자원 비용
+
+공유 DAG는 하나의 gradient leaf를 여러 번 준비할 수 있다. path 비용만 합산하면 shader가
+보유하는 색상·offset 배열이 64 MiB 준비 예산과 P47 cache 비용에서 빠진다. 예를 들어 두 leaf와
+`composite(n)=(n-1,n-2)`로 구성한 root16은 3193회 방문에 gradient leaf0를610회 재생한다.
+8192개의 RGBA-f32 색상과 f32 offset은 shader 배열만으로도 이 경우 약95 MiB를 차지한다.
+
+`gradient_stop_byte_cost(stop_count)`는 adapter의 color/offset 배열과 shader가 보유할
+배열을 함께 보수적으로 추정한다. shader에는 암묵적인 양 끝 stop 두 개의 여유를 더한다.
+이 값은 allocator 실측이 아니며, temporary 배열이 해제된 뒤에도 그 비용을 retained estimate에
+포함한다. linear/radial/sweep 모두 배열·shader를 만들기 전에 checked 연산으로 예약하며,
+실패하면 기존 `TextRun` fallback을 유지한다. P47 picture cache도 같은 helper의 expanded
+합계를 보유 추정에 포함해야 한다. 세 allocation 계약 검사는 버퍼 생성 없이 상한·반복 방문·
+overflow 거부를 검증하도록 후보 패치에 보존했다. source unit-test 수를 늘리는 정책 변경은
+하지 않으며, private Native 준비 검사의 실제 실행은 아직 하지 않았다.
+
+## P45/P47 통합 검토: Native admission 경계
+
+공유 selector는 개별 monochrome path를4096개 명령으로 제한하지만 Native의 일반 path
+builder는100000개까지 처리하므로 준비 입구에도 `has_portable_geometry()` 검사가 필요하다.
+이 검사를 Native의 자원 준비 전에 적용해4096은 수용하고4097은 TextRun fallback으로 남긴다.
+같은 경계의 공개 selector 검사는 기존 integration case에 추가했다. surface를 만들지 않는
+private Native preparation 검사는 source unit-test 정책에 따라 후보 패치에 보존했다.
+P47 cache는 거부된 준비 결과를 저장하지 않으며 실제 선택 결과로 진단을 갱신해야 한다.
+새 검사는 아직 실행하지 않았으며, source unit-test 정책과 변경 파일의 rustfmt·diff를 확인한다.

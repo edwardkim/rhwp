@@ -1,0 +1,41 @@
+{
+  "studio-test-final": {
+    "pass_assertions": 0,
+    "failed_assertions": [],
+    "summary": [
+      "ℹ tests 2718",
+      "ℹ suites 0",
+      "ℹ pass 2716",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 2",
+      "ℹ todo 0",
+      "ℹ duration_ms 16621.914404"
+    ],
+    "skips": [
+      "﹣ #6788 실제 WASM + Studio 혼합 모양 적용/Undo/Redo (1.453352ms) # fresh Node WASM 필요: scripts/wasm-pack-locked.sh --target nodejs --out-dir pkg-node --no-opt",
+      "﹣ 굵게/색/캐럿 대기 서식이 실제 문서에 반영된다 (자식 프로세스 + wasm 왕복) (2.455969ms) # pkg-node 빌드가 없어 wasm 왕복 테스트 skip (wasm-pack --target nodejs)"
+    ]
+  },
+  "highlighter-positive": {
+    "pass_assertions": 34,
+    "failed_assertions": [],
+    "summary": [],
+    "skips": []
+  },
+  "existing-6635": {
+    "pass_assertions": 64,
+    "failed_assertions": [],
+    "summary": [],
+    "skips": []
+  },
+  "typescript_exit": 0,
+  "build_exit": 0,
+  "e2e_manifest": "184 tracked /184 rows; no mismatch",
+  "base_F5": "PASS",
+  "candidate_F5": "PASS",
+  "actual_page_errors": [],
+  "local_code_head": "8eb7b8aab92551e173578e8c3c7effcef07cf725",
+  "prepared_source_code_head": "e6439bd3ca7e90bd3894ac7f8524df41c6553c93",
+  "verified_merge_tree": "c93a15af1757a7568f839a57c6c92ac183d83c53"
+}

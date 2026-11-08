@@ -10,12 +10,18 @@
  *   node e2e/text-flow.test.mjs --mode=headless  # headless Chrome
  */
 import path from 'path';
+import {isDeferredRegressionInput} from '../../scripts/lib/regression-document-scope.mjs';
 import pixelmatch from 'pixelmatch';
 import puppeteer from 'puppeteer-core';
-import { existsSync, readdirSync } from 'fs';
+import { existsSync, readFileSync, readdirSync } from 'fs';
 import os from 'os';
 import { PNG } from 'pngjs';
 import { TestReporter } from './report-generator.mjs';
+import { observeWasmArtifact } from './wasm-artifact-check.mjs';
+
+const DEFERRED_DOCUMENTS = new Set(readFileSync(
+  new URL('../../tests/fixtures/deferred_document_regressions.txt', import.meta.url), 'utf8',
+).trim().split(/\r?\n/u));
 
 const MAX_INK_MASK_MATCH_EDGES = 5_000_000;
 const CHROME_CDP = process.env.CHROME_CDP || 'http://172.21.192.1:19222';
@@ -88,6 +94,9 @@ function sampleFetchPath(filename) {
   const parts = value.split('/');
   if (parts.some(part => !part || part === '.' || part === '..')) {
     throw new Error(`샘플 파일명이 /samples 밖으로 벗어날 수 있음: ${filename}`);
+  }
+  if (DEFERRED_DOCUMENTS.has(parts.at(-1))) {
+    throw new Error(`별도 PR에서 회귀를 다시 추가할 문서입니다: ${filename}`);
   }
   return `/samples/${parts.map(encodeURIComponent).join('/')}`;
 }
@@ -189,6 +198,16 @@ const CANVAS_SELECTOR = '#scroll-container canvas';
 
 /** Vite dev server에서 앱을 로드하고 WASM 초기화 완료 대기 */
 export async function loadApp(page, search = '') {
+  const artifact = await observeWasmArtifact(page);
+  try {
+    await loadAppUnchecked(page, search);
+    await artifact.finish();
+  } finally {
+    await artifact.stop();
+  }
+}
+
+async function loadAppUnchecked(page, search) {
   await page.goto(`${VITE_URL}${search}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   const appReady = page.waitForFunction(() => !!window.__wasm && !!window.__canvasView, {
     timeout: 60000,
@@ -232,6 +251,9 @@ export async function createNewDocument(page) {
 
 /** HWP 파일을 fetch하여 문서 로드 + 캔버스 대기 */
 export async function loadHwpFile(page, filename) {
+  if (isDeferredRegressionInput(filename)) {
+    throw new Error(`별도 PR에서 재등록할 회귀 입력입니다: ${filename}`);
+  }
   const fetchPath = sampleFetchPath(filename);
   const result = await page.evaluate(async ({ fname, url }) => {
     const startedAt = performance.now();

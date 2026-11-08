@@ -1,0 +1,30 @@
+[
+  {
+    "side": "candidate",
+    "backend": "native",
+    "pages": 763,
+    "minimum": "96.61",
+    "below90": []
+  },
+  {
+    "side": "candidate",
+    "backend": "wasm",
+    "pages": 763,
+    "minimum": "99.17",
+    "below90": []
+  },
+  {
+    "side": "base",
+    "backend": "native",
+    "pages": 763,
+    "minimum": "96.61",
+    "below90": []
+  },
+  {
+    "side": "base",
+    "backend": "wasm",
+    "pages": 763,
+    "minimum": "99.17",
+    "below90": []
+  }
+]

@@ -3,6 +3,11 @@
 //! 새 CLI 를 만들지 않는다. 권위는 cli_commands.md 와 스킬 픽스처다.
 #![cfg(not(target_arch = "wasm32"))]
 
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/root_binary_contract.rs"
+));
+
 use std::fs;
 use std::path::PathBuf;
 
@@ -108,8 +113,7 @@ fn skill_does_not_add_cli_and_stays_out_of_peers() {
         "새 CLI 금지 문구"
     );
     let cargo = fs::read_to_string(repo().join("Cargo.toml")).expect("Cargo.toml");
-    let bins = cargo.matches("[[bin]]").count();
-    assert_eq!(bins, 2, "새 [[bin]] 금지: {bins}");
+    assert_root_binary_contract(&cargo);
     let idx = read_json("fixtures/skill_index.json");
     for name in idx["forbiddenSkillsTouch"].as_array().unwrap() {
         let slug = name.as_str().unwrap();

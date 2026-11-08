@@ -1,0 +1,222 @@
+{
+  "scope": "제품을 변경하지 않고 주 프로그램 인증과 공개 대체 미발동이라는 기존 의미를 직접 검사한다. null이라는 이전 응답 표현만의 assertion을 교정하며 허용치·원본·px·쪽수 baseline은 바꾸지 않는다.",
+  "parent_head": "6d60406d65f47a659f4ae1447dac772952115a48",
+  "product_head": "9816b97360b99cd7d04abd146007ba123f6a06ee",
+  "base": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "original_contract": "PR #8191의 원본/문서 지정 프로그램 우선, #4966의 primary-and-document-substitute-missing 조건을 유지한다. f5d996e의 실제 동일 주 TTF 인증은 공개 대체 선택이 아니므로 둘을 구분한다.",
+  "prior_full": {
+    "head": "6d60406d65f47a659f4ae1447dac772952115a48",
+    "exit_code": 100,
+    "summary": "     Summary [1062.241s] 11609 tests run: 11607 passed (11 slow), 2 failed, 45 skipped",
+    "finished": true,
+    "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/accepted-opening-alignment-v20/gate-full-nextest.log"
+  },
+  "new_assertions": [
+    "실제 공급 snapshot의 주 source→source 인증만 선택",
+    "공개 target 및 selectionRules 미선택",
+    "원본 document face와 canonical trace source 보존",
+    "조건부 공개 rule provenance가 생기지 않음",
+    "적용 뒤 HWP/HWPX 직렬화 바이트 불변",
+    "존재만 확인한 source는 여전히 null이며 프로그램 공급으로 승격하지 않음"
+  ],
+  "source_files_before": {
+    "tests/cases/issue_7445_public_font_selection_protocol.rs": "1ee5b30eaeb9dddf01dac2c73173bbfc73529283b44e5171dbf6993fed54b872",
+    "tests/cases/issue_4966_font_rule_projection.rs": "148ec8cacabb693627768fa85c3031b01a96768fd29fa4657cf638da49da8a4d"
+  },
+  "source_files_after": {
+    "tests/cases/issue_7445_public_font_selection_protocol.rs": "49efcce80f9124ce0db49c9af13c0949026a54efa2dc10eb216ea31c83c9a178",
+    "tests/cases/issue_4966_font_rule_projection.rs": "335cfb991b0d4446b6339ba5389c5726eacdda87856840f2afb0c17ac023ed9d"
+  },
+  "focused_and_lint": [
+    {
+      "name": "prepare-before-format",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "summary": null,
+      "seconds": 0.875
+    },
+    {
+      "name": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit_code": 0,
+      "summary": null,
+      "seconds": 12.116
+    },
+    {
+      "name": "prepare-after-format",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "summary": null,
+      "seconds": 1.013
+    },
+    {
+      "name": "fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "summary": null,
+      "seconds": 11.593
+    },
+    {
+      "name": "issue_7445_public_font_selection_protocol",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_7445_public_font_selection_protocol",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "summary": "     Summary [   0.138s] 11 tests run: 11 passed, 241 skipped",
+      "seconds": 163.325
+    },
+    {
+      "name": "issue_4966_font_rule_projection",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_4966_font_rule_projection",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "summary": "     Summary [   0.094s] 3 tests run: 3 passed, 249 skipped",
+      "seconds": 15.195
+    },
+    {
+      "name": "issue_7445_original_font_program_ownership",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_7445_original_font_program_ownership",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "summary": "     Summary [   0.765s] 22 tests run: 22 passed, 230 skipped",
+      "seconds": 2.242
+    },
+    {
+      "name": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "summary": null,
+      "seconds": 1.267
+    },
+    {
+      "name": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "summary": null,
+      "seconds": 1.064
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ],
+      "exit_code": 0,
+      "summary": null,
+      "seconds": 3.691
+    },
+    {
+      "name": "clippy-all-targets",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "summary": null,
+      "seconds": 89.847
+    },
+    {
+      "name": "manifest-check",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a"
+      ],
+      "exit_code": 0,
+      "summary": null,
+      "seconds": 1.0
+    },
+    {
+      "name": "diff-check",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "summary": null,
+      "seconds": 0.054
+    }
+  ],
+  "current_product_source_unchanged": true,
+  "product_visual_evidence": "mydocs/pr/assets/issue8152/curriculum-primary-program/validation.json",
+  "current_whole_producer": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/accepted-opening-alignment-v20/whole-visual-state.json",
+  "actual_e2e": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/accepted-opening-alignment-v20/e2e-current/e2e-state.json",
+  "frontend_validation": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/accepted-opening-alignment-v20/frontend-current/state.json",
+  "new_head_full_validation": "아직 미실행. 제품 바이트가 같아도 현재 집중 검사만으로 새 head 전체 PASS를 주장하지 않는다.",
+  "remaining": "CBTA 공통 WMF clip·다른 시각 미달 및 최종 전체 회귀/증적·제출 승인 남음.",
+  "logs": "원본 로그는 Git에서 제외한 output/pr-review/planet6897-20261024/primary-program-protocol-v21/에만 보존한다."
+}

@@ -1,0 +1,28 @@
+{
+  "status": "diagnostic_only_unresolved",
+  "note": "fc-list와 fc-match의 환경 진단이다. Chromium이 해당 글꼴을 실제 사용했는지, 과거 환경 전체가 복원됐는지 또는 수치 차이의 원인인지는 입증하지 않는다. 역사적 설정은 조사자가 구성한 조건이다.",
+  "runs": {
+    "pre-restoration-fontconfig.xml": {
+      "config_sha256": "28440f36b4d03be667315cec2dc781a27987c175c1d9e014326f3a3764a4545d",
+      "visible_font_entries": 1902,
+      "issue8160_font_entries": 220,
+      "survey_font_entries": 279,
+      "matches": {
+        "한양신명조": "한양신명조: /usr/local/share/fonts/rhwp-issue8160/original-hanyang-complete-symbols/hanyang-original-complete-symbols.otf",
+        "함초롬돋움": "HCR Dotum,함초롬돋움: /usr/local/share/fonts/hwp-convert-mcp-survey/1c0dce5aff03-HCRDotum.ttf",
+        "HCR Dotum": "HCR Dotum,함초롬돋움: /usr/local/share/fonts/hwp-convert-mcp-survey/1c0dce5aff03-HCRDotum.ttf"
+      }
+    },
+    "historical-hcr-fontconfig.xml": {
+      "config_sha256": "11b9658359bdeca2b92ed44d34555013c2a0822d79e64d8dd9c24cc71407a3ee",
+      "visible_font_entries": 1681,
+      "issue8160_font_entries": 0,
+      "survey_font_entries": 278,
+      "matches": {
+        "한양신명조": "Noto Sans: /usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
+        "함초롬돋움": "HCR Dotum,함초롬돋움: /usr/local/share/fonts/hancom-office-2020/Install/HANDotum.ttf",
+        "HCR Dotum": "HCR Dotum,함초롬돋움: /usr/local/share/fonts/hancom-office-2020/Install/HANDotum.ttf"
+      }
+    }
+  }
+}

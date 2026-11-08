@@ -4,6 +4,41 @@ name: Refresh nextest target duration data
 on:
   push:
     branches: [devel]
+    # #8277: PR CI의 경로 필터와 문서 전용 분류에 맞춰 checkout부터 생략한다.
+    # 렌더링 계약 문서는 PR CI와 같이 검증 대상에 다시 포함한다.
+    paths:
+      - '**'
+      - '!assets/chrome/**'
+      - '!assets/edge/**'
+      - '!assets/logo/**'
+      - '!assets/screenshots/**'
+      - '!CHANGELOG.md'
+      - '!CHANGELOG_EN.md'
+      - '!CONTRIBUTING.md'
+      - '!CONVENTIONS.md'
+      - '!GEMINI.md'
+      - '!QWEN.md'
+      - '!README.md'
+      - '!README_EN.md'
+      - '!ROADMAP.md'
+      - '!SECURITY.md'
+      - '!THIRD_PARTY.md'
+      - '!THIRD_PARTY_LICENSES.md'
+      - '!replit.md'
+      - '!LICENSE'
+      - '!.github/ISSUE_TEMPLATE/**'
+      - '!.github/FUNDING.yml'
+      - '!.github/CODE_OF_CONDUCT.md'
+      - '!.github/SECURITY.md'
+      - '!.github/pull_request_template.md'
+      - '!.github/dependabot.yml'
+      - '!rhwp-logo.*'
+      - '!AGENTS.md'
+      - '!CLAUDE.md'
+      - '!llms.txt'
+      - '!mydocs/**'
+      - 'mydocs/tech/canvaskit-parity-implementation.md'
+      - 'mydocs/tech/text-ir-v2.md'
   workflow_dispatch:
 
 permissions: {}
@@ -46,15 +81,16 @@ jobs:
             core.info(JSON.stringify(result));
             await core.summary.addHeading('PR duration metadata refresh')
               .addCodeBlock(JSON.stringify(result, null, 2), 'json').write();
-      - name: Refresh duration policy data branch
+      - name: Prepare duration policy data
+        id: refresh
         if: steps.collect.outputs.ready == 'true'
         shell: bash
         env:
-          METRICS_BRANCH: ci-metrics/nextest-target-durations
           DURATION_DIR: ${{ runner.temp }}/postmerge-duration-data
           OUTPUT_POLICY: ${{ runner.temp }}/nextest-target-duration-policy.json
         run: |
           set -euo pipefail
+          echo 'publish_ready=false' >> "$GITHUB_OUTPUT"
 
           current_devel_sha="$(git ls-remote origin refs/heads/devel | awk 'NR == 1 { print $1 }')"
           if [[ "${current_devel_sha}" != "${GITHUB_SHA}" ]]; then
@@ -62,31 +98,35 @@ jobs:
             exit 0
           fi
 
+          measurement_args=()
+          for label in b c d e; do
+            measurement="${DURATION_DIR}/duration-${label}/target-durations-${label}.json"
+            if [[ -f "$measurement" ]]; then
+              measurement_args+=(--measurement "$measurement")
+            fi
+          done
           node scripts/refresh-nextest-target-duration-policy.mjs \
             --policy tests/suites/nextest-target-duration-policy.json \
-            --measurement "${DURATION_DIR}/duration-b/target-durations-b.json" \
-            --measurement "${DURATION_DIR}/duration-c/target-durations-c.json" \
-            --measurement "${DURATION_DIR}/duration-d/target-durations-d.json" \
+            "${measurement_args[@]}" \
             --output "${OUTPUT_POLICY}"
 
-          if git ls-remote --exit-code origin "refs/heads/${METRICS_BRANCH}" >/dev/null 2>&1; then
-            git fetch --depth=1 origin \
-              "refs/heads/${METRICS_BRANCH}:refs/remotes/origin/${METRICS_BRANCH}"
-            git switch --detach "refs/remotes/origin/${METRICS_BRANCH}"
-          else
-            git switch --orphan "${METRICS_BRANCH}"
-            git rm -rf . >/dev/null 2>&1 || true
-          fi
+          echo 'publish_ready=true' >> "$GITHUB_OUTPUT"
 
-          cp "${OUTPUT_POLICY}" nextest-target-duration-policy.json
-          git add nextest-target-duration-policy.json
-          if git diff --cached --quiet; then
-            echo 'Duration policy data is unchanged.'
-            exit 0
-          fi
-
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m "ci: nextest target duration data ${GITHUB_SHA}"
-          git push origin "HEAD:refs/heads/${METRICS_BRANCH}"
-
+      - name: Publish duration policy with guarded Git Data API
+        if: steps.refresh.outputs.publish_ready == 'true'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const fs = require('node:fs');
+            const path = require('node:path');
+            const { pathToFileURL } = require('node:url');
+            const { publishNextestDurationData } = await import(pathToFileURL(path.join(
+              process.env.GITHUB_WORKSPACE, 'scripts/publish-nextest-duration-data.mjs',
+            )).href);
+            const result = await publishNextestDurationData({
+              github, ...context.repo, mergeSha: context.sha,
+              content: fs.readFileSync(path.join(process.env.RUNNER_TEMP, 'nextest-target-duration-policy.json'), 'utf8'),
+            });
+            core.info(JSON.stringify(result));
+            await core.summary.addHeading('Duration metadata publication')
+              .addCodeBlock(JSON.stringify(result, null, 2), 'json').write();

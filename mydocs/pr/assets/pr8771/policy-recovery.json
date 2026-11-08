@@ -1,0 +1,35 @@
+{
+  "sourceHead": "339f77f6f27fd15bae4db0b4201af3bd5e408eef",
+  "base": "80fc0c6b44bb270e5c14946cfb52e0eb0475a3a8",
+  "run": 42444774638,
+  "attempts": [
+    {
+      "attempt": 1,
+      "job": 128621289128,
+      "policy": "failure",
+      "reason": "CodeQL:Analyze (actions):missing-step:Skip unselected language"
+    },
+    {
+      "attempt": 2,
+      "job": 128622746078,
+      "policy": "pending",
+      "reason": "CI:completed-workflow-nonterminal-evidence|Render Diff:completed-workflow-nonterminal-evidence"
+    },
+    {
+      "attempt": 3,
+      "policy": "success"
+    }
+  ],
+  "readOnlyAuditObservedAt": "2026-11-08T04:10:21.462Z",
+  "readOnlyAuditResult": {
+    "publish": "true",
+    "conclusion": "success",
+    "reason": "audit:stage3-5-truth-table"
+  },
+  "manualReruns": 2,
+  "productReruns": 0,
+  "logHashes": {
+    "pr8771-policy-failure.log": "328418594b22b81462400f9412d5c0cb518c2d6280efe7de1595b8ad9523e11d",
+    "pr8771-policy-attempt2.log": "8a536335a7b92570113c2314bcb204d4c6c514b7e554d6f55c6ba71c78413524"
+  }
+}

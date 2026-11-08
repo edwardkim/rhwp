@@ -1,0 +1,38 @@
+{
+  "producer": "5b1d43f3cf321478a2a8dfb1b26be48acfc579d6",
+  "compile_command": [
+    "rustc",
+    "--edition=2021",
+    "--test",
+    "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/candidate-producer/probe.rs",
+    "--crate-name",
+    "kang_t_native_probe",
+    "-C",
+    "opt-level=1",
+    "-L",
+    "dependency=/home/edward/mygithub/rhwp/target/pr-review/release-test/deps",
+    "--extern",
+    "rhwp=/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/candidate-producer/librhwp.rlib",
+    "-o",
+    "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/candidate-producer/probe",
+    "--extern",
+    "serde_json=/home/edward/mygithub/rhwp/target/pr-review/release-test/deps/libserde_json-6b264a499acbc87b.rlib",
+    "-L",
+    "/home/edward/mygithub/rhwp/target/pr-review/release-test/build/skia-bindings-674521ba29e9d736/out/skia",
+    "-L",
+    "native=/home/edward/mygithub/rhwp/target/pr-review/release-test/build/blake3-7496182056f3c99a/out",
+    "-L",
+    "native=/home/edward/mygithub/rhwp/target/pr-review/release-test/build/ring-62411559129b98e5/out",
+    "-L",
+    "native=/usr/lib/x86_64-linux-gnu"
+  ],
+  "compile_exit": 0,
+  "run_command": [
+    "python3",
+    "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/run-minfont.py",
+    "/home/edward/mygithub/rhwp/output/pr-review/kang-t-20261106/candidate-producer/probe",
+    "--nocapture",
+    "--test-threads=2"
+  ],
+  "run_exit": 0
+}

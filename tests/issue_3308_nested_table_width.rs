@@ -1,9 +1,13 @@
-//! Issue #3308 회귀 가드 — 좁은 중첩 표의 선언 폭과 셀 안쪽 가운데 배치.
+//! Issue #3308 회귀 가드 — 좁은 중첩 표의 선언 폭·원본 오프셋·셀 내부 포함 관계.
 //!
 //! 한컴 2020으로 다시 출력한 9쪽 기준 PDF와 같은 원본을 사용한다.
 //! `직인` 글자 원점은 오른쪽 셀의 안쪽 여백 때문에 셀 경계와 다르므로
 //! 절대 x좌표 대신 포함 관계를 검사한다. 현재 head의 전쪽 시각 검증은 별도다.
 
+use rhwp::model::control::Control;
+use rhwp::model::paragraph::Paragraph;
+use rhwp::model::shape::{HorzAlign, HorzRelTo};
+use rhwp::model::table::Table;
 use std::path::PathBuf;
 use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -61,8 +65,51 @@ fn seal_geometry<'a>(
     found
 }
 
+// 출력 좌표를 기대값으로 재사용하지 않고 원본의 폭·정렬·오프셋을 읽는다.
+fn source_seal_placement(paragraphs: &[Paragraph]) -> Option<(f64, f64)> {
+    paragraphs.iter().find_map(|paragraph| {
+        paragraph.controls.iter().find_map(|control| {
+            let Control::Table(table) = control else {
+                return None;
+            };
+            source_seal_in_table(table)
+        })
+    })
+}
+
+fn source_seal_in_table(table: &Table) -> Option<(f64, f64)> {
+    table.cells.iter().find_map(|parent| {
+        for paragraph in &parent.paragraphs {
+            for control in &paragraph.controls {
+                let Control::Table(nested) = control else {
+                    continue;
+                };
+                if nested.cells.iter().any(|cell| {
+                    cell.paragraphs
+                        .iter()
+                        .any(|paragraph| paragraph.text.starts_with("직인"))
+                }) {
+                    assert!(!nested.common.treat_as_char, "원본 직인 표의 떠 있는 배치");
+                    assert_eq!(nested.common.horz_align, HorzAlign::Left);
+                    assert_eq!(nested.common.horz_rel_to, HorzRelTo::Column);
+                    assert!(parent.width > 0, "원본 부모 셀 폭");
+                    let padding = parent.effective_padding(&table.padding);
+                    let offset = f64::from(nested.common.horizontal_offset as i32)
+                        + f64::from(padding.left)
+                        + f64::from(nested.outer_margin_left);
+                    return Some((
+                        f64::from(nested.common.width) / f64::from(parent.width),
+                        offset / f64::from(parent.width),
+                    ));
+                }
+            }
+        }
+        source_seal_placement(&parent.paragraphs)
+    })
+}
+
 #[test]
-fn narrow_nested_table_keeps_declared_width_and_centers() {
+fn narrow_nested_table_preserves_source_width_offset_and_containment() {
     let unique = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .expect("현재 시각")
@@ -91,17 +138,24 @@ fn narrow_nested_table_keeps_declared_width_and_centers() {
     let (parent, nested, right, seal) =
         seal_geometry(&tree, &mut Vec::new()).expect("직인 중첩 표 계층");
 
-    // 원본의 중첩 표는 부모 셀보다 확실히 좁으며, 셀 안에서 가운데 정렬된다.
+    let original = rhwp::parse_document(
+        &std::fs::read(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(FIXTURE)).expect("원본 HWPX"),
+    )
+    .expect("원본 속성 파싱");
+    let (source_width_ratio, source_offset_ratio) = original
+        .sections
+        .iter()
+        .find_map(|section| source_seal_placement(&section.paragraphs))
+        .expect("원본 직인 표의 폭과 왼쪽 오프셋");
     let width_ratio = nested.w / parent.w;
     assert!(
-        (0.5..0.8).contains(&width_ratio),
-        "중첩 표가 부모 폭으로 늘어났다: 폭 비율 {width_ratio:.3}"
+        (width_ratio - source_width_ratio).abs() <= 0.001,
+        "중첩 표의 선언 폭 비율이 달라졌다: 실제 {width_ratio:.4}, 원본 {source_width_ratio:.4}"
     );
-    let left_gap = nested.x - parent.x;
-    let right_gap = parent.x + parent.w - nested.x - nested.w;
+    let offset_ratio = (nested.x - parent.x) / parent.w;
     assert!(
-        (left_gap - right_gap).abs() <= parent.w * 0.02,
-        "중첩 표가 셀 가운데를 벗어났다: 좌 {left_gap:.1}, 우 {right_gap:.1}"
+        (offset_ratio - source_offset_ratio).abs() <= 0.001,
+        "원본 왼쪽 기준 오프셋이 달라졌다: 실제 {offset_ratio:.4}, 원본 {source_offset_ratio:.4}"
     );
     assert!(
         nested.y >= parent.y && nested.y + nested.h <= parent.y + parent.h,

@@ -1,0 +1,90 @@
+{
+  "source_sha": "ef69d163e05062f9c281968a0f9e0884a616aec3",
+  "base_sha": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "phase": "focused",
+  "steps": [
+    {
+      "name": "focused",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--lib",
+        "--test",
+        "regression_suite_006",
+        "--test",
+        "regression_suite_007",
+        "--test",
+        "regression_suite_011",
+        "--test",
+        "regression_suite_013",
+        "--test",
+        "regression_suite_014",
+        "--test",
+        "regression_suite_017",
+        "--test",
+        "regression_suite_020",
+        "--test",
+        "regression_suite_021",
+        "--test",
+        "regression_suite_023",
+        "-E",
+        "test(/verified_sample16_all_pages::|issue_7642_sample16_2022_paragraph_relations::|hci_poppy_source_metric_contract::|issue_1116::|issue_5843_tab_dot_leader_pitch::|issue_7292_tab_leader_head_gap::|verified_hancom2024_reserved_palette::|verified_print_bitmap_visible_palette::|verified_hwp3_original_print_boundaries::|issue_7445_hft_glyph_paint_frame::|issue_7445_hwp3_source_frame_ownership::|issue_7445_legacy_equation_source_contract::|issue_6865_wmf_monochrome_mask_rop::|verified_png_sampling_contracts::/) | test(non_negative_letter_spacing_keeps_existing_canvas_font_fit_policy) | test(distribution_spacing_does_not_resize_ascii_canvas_glyph) | test(issue_2809_negative_letter_spacing_does_not_compress_canvas_glyph)",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-8160-wasm-candidate6",
+      "log": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/logs/final43-focused.log",
+      "build_jobs": "2",
+      "status": "passed",
+      "coverage": {
+        "expected": {
+          "verified_sample16_all_pages": 3,
+          "issue_7642_sample16_2022_paragraph_relations": 2,
+          "hci_poppy_source_metric_contract": 2,
+          "issue_1116": 6,
+          "issue_5843_tab_dot_leader_pitch": 4,
+          "issue_7292_tab_leader_head_gap": 1,
+          "verified_hancom2024_reserved_palette": 2,
+          "verified_print_bitmap_visible_palette": 2,
+          "verified_hwp3_original_print_boundaries": 5,
+          "issue_7445_hft_glyph_paint_frame": 5,
+          "issue_7445_hwp3_source_frame_ownership": 3,
+          "issue_7445_legacy_equation_source_contract": 11,
+          "issue_6865_wmf_monochrome_mask_rop": 18,
+          "verified_png_sampling_contracts": 3
+        },
+        "observed": {
+          "verified_sample16_all_pages": 3,
+          "issue_7642_sample16_2022_paragraph_relations": 2,
+          "hci_poppy_source_metric_contract": 2,
+          "issue_1116": 6,
+          "issue_5843_tab_dot_leader_pitch": 4,
+          "issue_7292_tab_leader_head_gap": 1,
+          "verified_hancom2024_reserved_palette": 2,
+          "verified_print_bitmap_visible_palette": 2,
+          "verified_hwp3_original_print_boundaries": 5,
+          "issue_7445_hft_glyph_paint_frame": 5,
+          "issue_7445_hwp3_source_frame_ownership": 3,
+          "issue_7445_legacy_equation_source_contract": 11,
+          "issue_6865_wmf_monochrome_mask_rop": 18,
+          "verified_png_sampling_contracts": 3
+        },
+        "unit_tests": {
+          "non_negative_letter_spacing_keeps_existing_canvas_font_fit_policy": 1,
+          "distribution_spacing_does_not_resize_ascii_canvas_glyph": 1,
+          "issue_2809_negative_letter_spacing_does_not_compress_canvas_glyph": 1
+        }
+      },
+      "exit_code": 0,
+      "seconds": 389.403
+    }
+  ],
+  "status": "passed"
+}

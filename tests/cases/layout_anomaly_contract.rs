@@ -9,7 +9,10 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
 const CLEAN: &str = "samples/hwp3-sample.hwp";
-const OVERFLOW: &str = "samples/table_giant_cell_overfill.hwpx";
+// Independent Print and Native/fresh WASM agree on this document's table
+// extending beyond the right text boundary. The repaired overfill document
+// is now clean and cannot serve as a positive anomaly fixture.
+const OVERFLOW: &str = "samples/issue2004_cell_image_stack.hwpx";
 
 fn sample(rel: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(rel)

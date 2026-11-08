@@ -1,0 +1,64 @@
+{
+  "changeSetId": "issue-7445.public-batang-webfont-supply",
+  "decisionPlane": "supply",
+  "evidenceRecords": [
+    {
+      "evidenceId": "evidence.issue-7445.public-batang-webfont",
+      "kind": "public-source",
+      "licenseOrProvenance": "공식 Google Fonts OFL 원본의 별도 RHWP family 파생본. 전체 WOFF2의 22772글리프·cmap·가로/세로 전진폭·힌팅과 기능 보존을 확인. 원 family의 자동 대체 선택과 문서 시각 수용은 별도 검증한다.",
+      "parentEvidenceIds": [],
+      "sha256": "ccae18164ba222f378da8f1334c7f78c06303be42cc845c5101159a68f1c13b1",
+      "source": "assets/font-rules/evidence/issue-7445-public-batang-webfont.json"
+    }
+  ],
+  "expectedDelta": {
+    "activeRuleDelta": 1,
+    "projectionId": "canvas2d-webfont",
+    "unchangedProjectionIds": [
+      "rust-layout-name",
+      "rust-layout-metric",
+      "canvas2d-paint",
+      "canvaskit-sfnt"
+    ]
+  },
+  "issue": 7445,
+  "kind": "font-rule-change-set",
+  "operations": [
+    {
+      "operationId": "operation.issue-7445.public-batang-webfont-supply",
+      "rule": {
+        "conditions": {
+          "profile": "canvas2d-css-unknown"
+        },
+        "decisionPlane": "supply",
+        "evidenceIds": [
+          "evidence.issue-7445.public-batang-webfont"
+        ],
+        "metricEntryIds": [],
+        "order": null,
+        "projection": {
+          "id": "canvas2d-webfont",
+          "mode": "direct"
+        },
+        "projectionSequence": 154,
+        "relationType": "supply-source",
+        "ruleId": "rule.issue-7445.public-batang-webfont-supply",
+        "sourceBoundaryId": "studio-supply.font-list",
+        "sourceFace": "RHWP Public Batang",
+        "supply": {
+          "external": false,
+          "fontFamily": "RHWP Public Batang",
+          "format": "woff2",
+          "kind": "canvas2d-webfont",
+          "sourceUrl": "fonts/RHWPPublicBatang-Regular.woff2",
+          "unicodeRange": null
+        },
+        "targetFaceOrPolicy": "'fonts/RHWPPublicBatang-Regular.woff2'"
+      },
+      "type": "add-rule"
+    }
+  ],
+  "parentRegistrySha256": "93e65d1677972630c31bef1b89aa54f80217b4c54ea5826f789323295b2ea0ba",
+  "schemaVersion": "2.0",
+  "sequence": 13
+}

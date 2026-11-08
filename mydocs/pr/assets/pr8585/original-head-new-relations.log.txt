@@ -1,0 +1,15 @@
+
+running 2 tests
+
+thread 'photos_wrap_into_rows_without_overlap' (46018) panicked at /home/edward/mygithub/rhwp/tests/cases/issue_7524_textbox_tac_picture_rows.rs:139:17:
+말미 공백은 사진 열의 정렬 원점을 바꾸지 않는다: [148.44, 350.41333333333336] / [138.44, 340.41333333333336]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test photos_stay_inside_the_textbox ... ok
+test photos_wrap_into_rows_without_overlap ... FAILED
+
+failures:
+
+failures:
+    photos_wrap_into_rows_without_overlap
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s

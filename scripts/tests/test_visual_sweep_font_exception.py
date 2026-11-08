@@ -24,22 +24,22 @@ class FontExceptionTests(unittest.TestCase):
 
     def test_unresolvable_font_allows_low_score_submission(self) -> None:
         gate = SWEEP.pr_review_gate(
-            [{"page": 3, "tolerant_content_match_percent": 28.4}],
+            [{"page": 3, "silhouette_raw_match_percent": 28.4}],
             font_mismatch_evidence=self.evidence(),
         )
         self.assertEqual(gate["status"], "font_mismatch_exception")
-        self.assertEqual(gate["below_threshold_pages"][0]["tolerant_content_match_percent"], 28.4)
+        self.assertEqual(gate["below_threshold_pages"][0]["silhouette_raw_match_percent"], 28.4)
 
     def test_exception_does_not_cover_unreviewed_low_page(self) -> None:
         gate = SWEEP.pr_review_gate(
-            [{"page": 4, "tolerant_content_match_percent": 28.4}],
+            [{"page": 4, "silhouette_raw_match_percent": 28.4}],
             font_mismatch_evidence=self.evidence(),
         )
         self.assertEqual(gate["status"], "re_review_required")
 
     def test_exception_does_not_waive_missing_page(self) -> None:
         gate = SWEEP.pr_review_gate(
-            [{"page": 3, "tolerant_content_match_percent": 28.4}],
+            [{"page": 3, "silhouette_raw_match_percent": 28.4}],
             expected_pages=[3, 4], font_mismatch_evidence=self.evidence(),
         )
         self.assertEqual(gate["status"], "re_review_required")
@@ -51,7 +51,7 @@ class FontExceptionTests(unittest.TestCase):
                 evidence = self.evidence()
                 evidence[field] = False
                 gate = SWEEP.pr_review_gate(
-                    [{"page": 3, "tolerant_content_match_percent": 28.4}],
+                    [{"page": 3, "silhouette_raw_match_percent": 28.4}],
                     font_mismatch_evidence=evidence,
                 )
                 self.assertEqual(gate["status"], "re_review_required")

@@ -1,0 +1,189 @@
+{
+  "prior_full": {
+    "source_sha": "5f7e7e7f00827a2cf3fc5dffbc4e8be89166b51e",
+    "nextest_run_id": "8383ccdc-8184-4c77-8dff-5ba47126f320",
+    "run": 11365,
+    "passed": 11357,
+    "failed": 8,
+    "skipped": 45,
+    "test_seconds": 2051.773,
+    "exit_code": 100
+  },
+  "corrected_contracts": {
+    "base_source_sha": "5f7e7e7f00827a2cf3fc5dffbc4e8be89166b51e",
+    "uncommitted_test_correction": true,
+    "product_source_unchanged": true,
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/tsjang/rhwp/target/pr-review",
+      "--test",
+      "regression_suite_006",
+      "--test",
+      "regression_suite_007",
+      "--test",
+      "regression_suite_019",
+      "--test",
+      "regression_suite_021",
+      "--test",
+      "regression_suite_024",
+      "-E",
+      "test(/hci_poppy_source_metric_contract::|issue_1116::|issue_5843_tab_dot_leader_pitch::|issue_7292_tab_leader_head_gap::|verified_hancom2024_reserved_palette::|verified_print_bitmap_visible_palette::/)",
+      "--test-threads",
+      "12",
+      "--no-fail-fast"
+    ],
+    "cases": [
+      "hci_poppy_source_metric_contract",
+      "issue_1116",
+      "issue_5843_tab_dot_leader_pitch",
+      "issue_7292_tab_leader_head_gap",
+      "verified_hancom2024_reserved_palette",
+      "verified_print_bitmap_visible_palette"
+    ],
+    "plans": [
+      {
+        "caseName": "hci_poppy_source_metric_contract",
+        "target": "regression_suite_024",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_1116",
+        "target": "regression_suite_021",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_5843_tab_dot_leader_pitch",
+        "target": "regression_suite_007",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_7292_tab_leader_head_gap",
+        "target": "regression_suite_019",
+        "grouped": true
+      },
+      {
+        "caseName": "verified_hancom2024_reserved_palette",
+        "target": "regression_suite_006",
+        "grouped": true
+      },
+      {
+        "caseName": "verified_print_bitmap_visible_palette",
+        "target": "regression_suite_024",
+        "grouped": true
+      }
+    ],
+    "status": "passed",
+    "exit_code": 0,
+    "seconds": 97.207,
+    "expected_counts": {
+      "hci_poppy_source_metric_contract": 2,
+      "issue_1116": 6,
+      "issue_5843_tab_dot_leader_pitch": 4,
+      "issue_7292_tab_leader_head_gap": 1,
+      "verified_hancom2024_reserved_palette": 2,
+      "verified_print_bitmap_visible_palette": 2
+    },
+    "observed_counts": {
+      "hci_poppy_source_metric_contract": 2,
+      "issue_1116": 6,
+      "issue_5843_tab_dot_leader_pitch": 4,
+      "issue_7292_tab_leader_head_gap": 1,
+      "verified_hancom2024_reserved_palette": 2,
+      "verified_print_bitmap_visible_palette": 2
+    },
+    "corrected_source_hashes": {
+      "tests/common/svg_tab_leaders.rs": "4ba7f2df1cb67e65101e7833128af55f14a6098beab899a9cb22c1fe6519496c",
+      "tests/issue_1116.rs": "55b39ccd60d71b6ef5e731852663d487cde41b8d631308c169518dae8e269f1b",
+      "tests/cases/hci_poppy_source_metric_contract.rs": "1aa39c9742d7189b49aec87d1049e112c1c62be210696fc812a00ce58b9713cb",
+      "tests/cases/issue_5843_tab_dot_leader_pitch.rs": "3d7c7de99bb562ef53d5b4dd1c5cdc221fc3770ba6be8815b7cfc44cc38e2703",
+      "tests/cases/issue_7292_tab_leader_head_gap.rs": "73cb235751d15d58ff18aaf3f35bdbdf445134e9491a6291e3dbf773fd4c6007",
+      "tests/cases/verified_hancom2024_reserved_palette.rs": "9d2ec0215b93ca5c452f46aa55646c047fbddde684026b673a01e54d4a48953e",
+      "tests/cases/verified_print_bitmap_visible_palette.rs": "e20b4c504f9b2debb0e613ac319d3761805240dc1c51546967b59cfa62cecf1b"
+    }
+  },
+  "visual_control_artifacts": {
+    "source_sha": "803046519d82d20c71d85937b96a8eefabb200d0",
+    "final_submission_artifact": false,
+    "pages": [
+      {
+        "tsv": "candidate34/contract-controls-source33/native/bitmap-indexed-color-controls-2020/bitmap-indexed-color-controls-2020/silhouette.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+        "page": "1",
+        "silhouette_raw_match_percent": "100.00000"
+      },
+      {
+        "tsv": "candidate34/contract-controls-source33/native/bitmap-indexed-color-controls-2024/bitmap-indexed-color-controls-2024/silhouette.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+        "page": "1",
+        "silhouette_raw_match_percent": "100.00000"
+      },
+      {
+        "tsv": "candidate34/contract-controls-source33/native/bitmap-white-palette-controls-2020/bitmap-white-palette-controls-2020/silhouette.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+        "page": "1",
+        "silhouette_raw_match_percent": "100.00000"
+      },
+      {
+        "tsv": "candidate34/contract-controls-source33/native/bitmap-white-palette-controls-2024/bitmap-white-palette-controls-2024/silhouette.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+        "page": "1",
+        "silhouette_raw_match_percent": "100.00000"
+      },
+      {
+        "tsv": "candidate34/contract-controls-source33/native/ktx-toc/ktx-toc/silhouette.tsv",
+        "sha256": "f411fb8d13854b0b0b0a2a263ce4b505f02f3d121fb767f0a083be9502f29c3d",
+        "page": "2",
+        "silhouette_raw_match_percent": "99.70954"
+      },
+      {
+        "tsv": "candidate34/contract-controls-source33/native/sample16-basic-toc/sample16-basic-toc/silhouette.tsv",
+        "sha256": "fbd4cb54e9fcf67487f0766d88012eaa58ce96e0d0bb06a071f889b9fcfb4416",
+        "page": "2",
+        "silhouette_raw_match_percent": "100.00000"
+      },
+      {
+        "tsv": "candidate34/contract-controls-source33/wasm/bitmap-indexed-color-controls-2020/bitmap-indexed-color-controls-2020/silhouette.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+        "page": "1",
+        "silhouette_raw_match_percent": "100.00000"
+      },
+      {
+        "tsv": "candidate34/contract-controls-source33/wasm/bitmap-indexed-color-controls-2024/bitmap-indexed-color-controls-2024/silhouette.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+        "page": "1",
+        "silhouette_raw_match_percent": "100.00000"
+      },
+      {
+        "tsv": "candidate34/contract-controls-source33/wasm/bitmap-white-palette-controls-2020/bitmap-white-palette-controls-2020/silhouette.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+        "page": "1",
+        "silhouette_raw_match_percent": "100.00000"
+      },
+      {
+        "tsv": "candidate34/contract-controls-source33/wasm/bitmap-white-palette-controls-2024/bitmap-white-palette-controls-2024/silhouette.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+        "page": "1",
+        "silhouette_raw_match_percent": "100.00000"
+      },
+      {
+        "tsv": "candidate34/contract-controls-source33/wasm/ktx-toc/ktx-toc/silhouette.tsv",
+        "sha256": "857bace3df893cfce2ea8e619cbf4a5dd6edcc0bbb8ec00c8bfc8859fec52793",
+        "page": "2",
+        "silhouette_raw_match_percent": "99.68345"
+      },
+      {
+        "tsv": "candidate34/contract-controls-source33/wasm/sample16-basic-toc/sample16-basic-toc/silhouette.tsv",
+        "sha256": "fbd4cb54e9fcf67487f0766d88012eaa58ce96e0d0bb06a071f889b9fcfb4416",
+        "page": "2",
+        "silhouette_raw_match_percent": "100.00000"
+      }
+    ]
+  },
+  "status": "Corrected regression contracts passed 17/17 before commit; final committed head validation and fresh rendering remain pending."
+}

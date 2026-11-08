@@ -244,6 +244,40 @@ runTest('편집 undo 계약 실동작 (Task #2301)', async ({ page }) => {
   assert(await hitCount(page, 'gamma') === 0, 'undo 후 gamma 0건');
   await screenshot(page, 'undo-01-find-replace');
 
+  // #7984: 소문자 확장 양방향과 ASCII 대조군에서 원문 뒤 글자를 보존한다.
+  for (const [text, query] of [['İX', 'i\u0307'], ['i\u0307X', 'İ'], ['aX', 'A']]) {
+    setTestCase(`#7984 모두 바꾸기와 undo/redo: ${JSON.stringify({ text, query })}`);
+    await createNewDocument(page);
+    await clickEditArea(page);
+    await typeText(page, text);
+    await page.keyboard.down('Control');
+    await page.keyboard.press('F2');
+    await page.keyboard.up('Control');
+    await page.waitForSelector('.find-dialog', { visible: true });
+    await page.evaluate((query) => {
+      const inputs = [...document.querySelectorAll('.find-dialog-input')];
+      inputs[0].value = query;
+      inputs[1].value = 'Z';
+      document.querySelector('#find-case-sensitive').checked = false;
+      const button = [...document.querySelectorAll('.find-dialog button, .dialog-btn')]
+        .find(b => b.offsetParent !== null && b.textContent.trim() === '모두 바꾸기');
+      if (!button) throw new Error('모두 바꾸기 버튼을 찾지 못함');
+      button.click();
+    }, query);
+    const read = () => page.evaluate(() => window.__wasm.getTextRange(0, 0, 0, 99));
+    assert(await read() === 'ZX', `치환 후 원문 X 보존: ${JSON.stringify({ text, query, actual: await read() })}`);
+    assert(await undoDepth(page) > 0, '#7984 치환은 history에 기록된다');
+    await page.keyboard.press('Escape');
+    await pressUndo(page);
+    assert(await read() === text, '#7984 undo는 원문을 복원한다');
+    await page.keyboard.down('Control');
+    await page.keyboard.down('Shift');
+    await page.keyboard.press('KeyZ');
+    await page.keyboard.up('Shift');
+    await page.keyboard.up('Control');
+    assert(await read() === 'ZX', '#7984 redo도 원문 X를 보존한다');
+  }
+
   // ── 케이스 2: 그림 속성 다이얼로그 undo (#2027) ─────────
   setTestCase('picture-props: 쪽 영역 제한 토글 → performUndo 복원(개체 모드 키 차단 우회)');
   await clearSelections(page);
@@ -444,4 +478,67 @@ runTest('편집 undo 계약 실동작 (Task #2301)', async ({ page }) => {
   assert(thAfter.textWrap === 'Through',
     `확인만 눌러도 Through 유지 (${thAfter.textWrap})`);
   await screenshot(page, 'undo-05-wrap-through');
+
+  // #7977: 비조합 input의 scalar 커서와 실제 키보드 undo/redo를 함께 검사한다.
+  for (const mode of ['header', 'footer', 'footnote']) {
+    for (const value of ['가', '😀', '𠮷']) {
+      setTestCase(`#7977 ${mode}: ${value} 입력 후 undo/redo`);
+      await createNewDocument(page);
+      await dismissSkinOnboarding(page);
+      const target = await page.evaluate((mode) => {
+        const ih = window.__inputHandler;
+        const wasm = window.__wasm;
+        ih.cursor.exitHeaderFooterMode();
+        ih.cursor.exitFootnoteMode();
+        let ci = 0;
+        let prefix = '';
+        if (mode === 'footnote') {
+          const ret = wasm.insertFootnote(0, 0, 0);
+          const note = typeof ret === 'string' ? JSON.parse(ret) : ret;
+          ci = note.controlIdx;
+          prefix = wasm.getFootnoteInfo(0, 0, ci).texts[0];
+          wasm.insertTextInFootnote(0, 0, ci, 0, [...prefix].length, 'A');
+          ih.cursor.enterFootnoteMode(0, 0, ci, 0, 0);
+          ih.cursor.setFnCursorPosition(0, [...prefix].length + 1);
+        } else {
+          wasm.createHeaderFooter(0, mode === 'header', 0);
+          wasm.insertTextInHeaderFooter(0, mode === 'header', 0, 0, 0, 'A');
+          ih.cursor.enterHeaderFooterMode(mode === 'header', 0, 0, 0);
+          ih.cursor.setHfCursorPosition(0, 1);
+        }
+        ih.history.clear(wasm);
+        ih.active = true;
+        ih.textarea.focus();
+        return { mode, ci, prefix };
+      }, mode);
+      const read = () => page.evaluate(({ mode, ci }) => {
+        const ih = window.__inputHandler;
+        const raw = mode === 'footnote'
+          ? window.__wasm.getFootnoteInfo(0, 0, ci).texts[0]
+          : JSON.parse(window.__wasm.getHeaderFooter(0, mode === 'header', 0)).text;
+        return { text: raw, offset: mode === 'footnote' ? ih.cursor.fnCharOffset : ih.cursor.hfCharOffset };
+      }, target);
+      await page.keyboard.type(value);
+      await page.keyboard.type('X');
+      const typed = await read();
+      assert(typed.text === `${target.prefix}A${value}X`, `${mode} input: ${JSON.stringify(typed)}`);
+      for (const expected of [`${target.prefix}A${value}`, `${target.prefix}A`]) {
+        await page.keyboard.down('Control');
+        await page.keyboard.press('KeyZ');
+        await page.keyboard.up('Control');
+        const result = await read();
+        assert(result.text === expected, `${mode} undo: ${JSON.stringify(result)} = ${JSON.stringify(expected)}`);
+      }
+      for (const expected of [`${target.prefix}A${value}`, `${target.prefix}A${value}X`]) {
+        await page.keyboard.down('Control');
+        await page.keyboard.down('Shift');
+        await page.keyboard.press('KeyZ');
+        await page.keyboard.up('Shift');
+        await page.keyboard.up('Control');
+        const result = await read();
+        assert(result.text === expected, `${mode} redo: ${JSON.stringify(result)} = ${JSON.stringify(expected)}`);
+        assert(result.offset === [...expected].length, 'redo 후 scalar 커서');
+      }
+    }
+  }
 });

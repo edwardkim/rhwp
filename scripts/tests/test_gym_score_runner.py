@@ -258,7 +258,10 @@ class FindBinTests(unittest.TestCase):
             old = os.getcwd()
             try:
                 os.chdir(d)
-                self.assertEqual(self.r.find_bin(name), os.path.abspath(target))
+                found = self.r.find_bin(name)
+                # macOS의 /var 별칭도 같은 바이너리를 가리키는 절대 경로여야 한다.
+                self.assertTrue(os.path.isabs(found))
+                self.assertTrue(os.path.samefile(found, target))
             finally:
                 os.chdir(old)
 

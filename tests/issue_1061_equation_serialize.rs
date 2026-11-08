@@ -1,3 +1,9 @@
+//! 관계형·고정형: HWPX 수식의 HWP 저장 속성과 한컴 저장본의 필드를 비교한다.
+//! 주석 갱신: 2026-11-01T05:40:06+09:00; 직전 파일 커밋: 2026-10-30T13:15:55+09:00 (`2447ecc89181010c85f87de159771eac221b33f5`).
+//! 입력·기준: `samples/hwpx/math-001.hwpx`, `samples/math-001.hwp`,
+//! `mydocs/tech/한글문서파일형식_5.0_revision1.3.md`의 표 105.
+//! 저장 필드·개수·스크립트 계약을 검사하며 화면 시각 일치율은 이 검사의 측정 대상이 아니다.
+//!
 //! Issue #1061: HWPX 수식 저장 회귀 가드.
 //!
 //! 본 task 정정 3 영역:
@@ -56,6 +62,9 @@ fn issue_1061_equation_attr_bit27_materialized() {
 }
 
 /// HWPX → HWP 라운드트립 시 첫 수식의 attr 가 정답지 (samples/math-001.hwp) 의 0x0C2A2211 정합.
+///
+/// [#8339] bit 28 만 다르다. 정답지 HWP 는 이 HWPX 를 저장한 것이 아니고, 한글 2024 가 이
+/// HWPX(trackchageConfig flags=56)를 HWP 로 저장하면 수식 전부 0x1C2A2211 이 된다.
 #[test]
 fn issue_1061_first_equation_attr_matches_oracle() {
     let mut doc = load("samples/hwpx/math-001.hwpx");
@@ -80,7 +89,7 @@ fn issue_1061_first_equation_attr_matches_oracle() {
     };
 
     let saved = first_attr(&re_doc).expect("저장본 첫 수식");
-    let oracle = first_attr(&oracle_doc).expect("정답지 첫 수식");
+    let oracle = first_attr(&oracle_doc).expect("정답지 첫 수식") | (1 << 28);
     assert_eq!(
         saved, oracle,
         "첫 수식 attr 정답지 정합 필요. saved=0x{:08X} oracle=0x{:08X}",

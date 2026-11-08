@@ -1,8 +1,8 @@
 //! 표 도메인 조정. 기존 평가·상태 쓰기 순서를 보존한다.
 
 use crate::renderer::typeset::{
-    paragraph, row_geometry_table, table, BlockTableContinuationContext,
-    BlockTableContinuationSource, Issue2424TypesetProfile, TypesetEngine, TypesetState,
+    paragraph, table, BlockTableContinuationContext, BlockTableContinuationSource,
+    Issue2424TypesetProfile, TypesetEngine, TypesetState,
 };
 
 use super::fragment::FragmentProfile;
@@ -17,6 +17,14 @@ impl TypesetEngine {
         let para_idx = source.para_index;
         let ctrl_idx = source.control_index;
         let row_count = continuation_context.prepared.row_count;
+        let _geometry_rows = continuation_context
+            .prepared
+            .layout_engine
+            .table_rows_scope(source.row_geometry_table);
+        let _host_rows = continuation_context
+            .prepared
+            .layout_engine
+            .table_rows_scope(source.table);
         // [#2424 Stage C] Native caller는 step을 동기 drain한다. 각 step은 budget만큼의
         // fragment만 처리하며 cursor와 shadow page-flow state는 context에 남는다.
         while !continuation_context.is_complete() {
@@ -50,6 +58,14 @@ impl TypesetEngine {
         let row_geometry_table = source.row_geometry_table;
         let mt = source.measured_table;
         let styles = source.styles;
+        let _geometry_rows = continuation_context
+            .prepared
+            .layout_engine
+            .table_rows_scope(row_geometry_table);
+        let _host_rows = continuation_context
+            .prepared
+            .layout_engine
+            .table_rows_scope(table);
         // [Issue #4326] 이 continuation이 방출하는 모든 PartialTable의 start_row/end_row/
         // start_cut/end_cut은 `row_geometry_table` 기준(투명 1×1 래퍼를 벗긴 표일 수
         // 있다)이다. 렌더러가 `end_row <= table.row_count` 로 값을 되추론하던 것을,
@@ -76,6 +92,25 @@ impl TypesetEngine {
                 &mut profile,
             )
         });
+        if continuation_context.is_complete() {
+            if let Some(tail) = continuation_context.prepared.computed_host_tail.take() {
+                let st = &mut continuation_context.flow_state;
+                let fmt = &tail.paragraph;
+                let range = tail.first_line..fmt.line_count();
+                let fit = fmt.line_content_height(range.clone(), 0.0);
+                if st.current_height + fit > st.available_height() && !st.current_items.is_empty() {
+                    st.advance_column_or_new_page();
+                }
+                st.record_host_text_fragment(para_idx, range.clone(), para, fmt, self.dpi);
+                st.append_item(crate::renderer::pagination::PageItem::PartialParagraph {
+                    para_index: para_idx,
+                    start_line: range.start,
+                    end_line: range.end,
+                });
+                st.advance_flow_by(fmt.line_advances_sum(range) + fmt.spacing_after);
+                st.record_stored_paragraph_flow_end(para_idx, st.current_height);
+            }
+        }
         if let Some(started) = issue2424_step_started {
             use crate::renderer::layout::table_layout as issue2424_tl;
             use std::sync::atomic::Ordering::Relaxed;

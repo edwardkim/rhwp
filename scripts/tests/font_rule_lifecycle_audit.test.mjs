@@ -1,3 +1,5 @@
+// 관계형: 봉인된 v1과 기록된 변경 원장으로 lifecycle 감사의 전체 귀속을 검증한다.
+// 주석 갱신: 2026-11-04 05:42:29 KST; 시각 배치를 고정하는 검사가 아니므로 페이지 일치율은 비해당이다.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -23,6 +25,34 @@ const temporaryDirectories = [];
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
+}
+
+function recordedPopulation(registry) {
+  const sealed = readJson(path.join(ROOT, 'assets/font-rules/font_rule_registry.json'));
+  const carried = new Set(sealed.rules.map(rule => rule.ruleId));
+  const introduced = new Set();
+  const replaced = new Set();
+  // 감사 결과나 현재 registry의 상태값을 기대값으로 복사하지 않는다.
+  // 별도 원장에 기록된 추가·교체 연산이 기대하는 귀속 목록을 구성한다.
+  for (const reference of registry.appliedChangeSets) {
+    const change = readJson(path.join(ROOT, reference.path));
+    for (const operation of change.operations) {
+      if (operation.type === 'add-rule') {
+        assert(!carried.has(operation.rule.ruleId) && !introduced.has(operation.rule.ruleId));
+        introduced.add(operation.rule.ruleId);
+      } else if (operation.type === 'retire-and-replace') {
+        assert(carried.has(operation.retiredRuleId) || introduced.has(operation.retiredRuleId));
+        carried.delete(operation.retiredRuleId);
+        introduced.delete(operation.retiredRuleId);
+        replaced.add(operation.retiredRuleId);
+        introduced.add(operation.replacementRule.ruleId);
+      } else {
+        assert(['carry-forward', 'evidence-only'].includes(operation.type),
+          `새 lifecycle 연산의 기대 귀속을 명시해야 합니다: ${operation.type}`);
+      }
+    }
+  }
+  return { carried, introduced, replaced };
 }
 
 function fixtureRegistry(name) {
@@ -132,31 +162,28 @@ test('current registry retains migration, introduction and replacement provenanc
   const trace = traceWithReferences(registry.rules.map(rule => rule.ruleId));
   const audit = buildFontRuleLifecycleAudit(trace, registry, { root: ROOT });
 
-  // 봉인된 830개 중 #7023·#6936의 두 교체와 #7196의 한 이름 추가를 구별한다.
-  assert.equal(audit.trace.ruleReferenceCount, 833);
-  assert.equal(audit.trace.uniqueRuleIdCount, 833);
+  const expected = recordedPopulation(registry);
+  const total = expected.carried.size + expected.introduced.size + expected.replaced.size;
+  assert.equal(audit.trace.ruleReferenceCount, total);
+  assert.equal(audit.trace.uniqueRuleIdCount, total);
   assert.deepEqual(audit.summary, {
-    carriedForwardActive: 828,
-    introducedActive: 3,
+    carriedForwardActive: expected.carried.size,
+    introducedActive: expected.introduced.size,
     historicalReferenceOnly: 0,
     traceSourceDrift: 0,
     retired: 0,
-    replaced: 2,
+    replaced: expected.replaced.size,
     dangling: 0,
   });
   assert.deepEqual(audit.references
     .filter(reference => reference.resolution === 'introduced-active')
-    .map(reference => reference.ruleId).sort(), [
-    'rule.rust-metric.ygodic230-name',
-    'rule.rust-style-resolution.100b7126dfe0ddd2d55c',
-    'rule.studio-supply.batangche-serif.canvas2d',
-  ]);
+    .map(reference => reference.ruleId).sort(), [...expected.introduced].sort());
   assert.deepEqual(audit.references
     .filter(reference => reference.status === 'retired')
-    .map(reference => reference.ruleId).sort(), [
-    'rule.rust-style-resolution.b6c97b846cf79ce168fa',
-    'rule.studio-supply.2f05addbdfe5f66a5bd0.canvas2d',
-  ]);
+    .map(reference => reference.ruleId).sort(), [...expected.replaced].sort());
+  assert.deepEqual(audit.references
+    .filter(reference => reference.resolution === 'carried-forward-active')
+    .map(reference => reference.ruleId).sort(), [...expected.carried].sort());
 });
 
 test('the complete W1 rule population closes as lifecycle or historical reference-only', () => {
@@ -173,9 +200,13 @@ test('the complete W1 rule population closes as lifecycle or historical referenc
   const audit = buildFontRuleLifecycleAudit(trace, registry, { root: ROOT });
 
   assert.equal(audit.trace.ruleReferenceCount, 1507);
-  // 역사적 W1은 두 원 규칙의 교체를 보존하고, 나중에 추가한 규칙을 포함하지 않는다.
-  assert.equal(audit.summary.carriedForwardActive, 828);
-  assert.equal(audit.summary.replaced, 2);
+  // 역사적 W1의 실제 rule ID와 기록된 교체를 대조하며 나중의 추가 규칙은 포함하지 않는다.
+  const expected = recordedPopulation(registry);
+  const originalIds = new Set(ledger.rules.map(rule => rule.ruleId));
+  assert.equal(audit.summary.carriedForwardActive,
+    [...expected.carried].filter(id => originalIds.has(id)).length);
+  assert.equal(audit.summary.replaced,
+    [...expected.replaced].filter(id => originalIds.has(id)).length);
   assert.equal(audit.summary.introducedActive, 0);
   assert.equal(audit.summary.historicalReferenceOnly, 677);
   assert.equal(audit.summary.dangling, 0);

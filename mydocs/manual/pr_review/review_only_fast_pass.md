@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-09-14
+last_verified: 2026-11-04
 ---
 
 # Review-only fast-pass
@@ -16,6 +16,9 @@ review-only인 경우에 적용하는 공용 modifier다. maintainer·collaborat
   올리는 PDF, HWP/HWPX, PNG 등 검토 증적도 문서-only PR과 같은 허용 범위다. 단,
   `mydocs/tech/text-ir-v2.md`와 `mydocs/tech/canvaskit-parity-implementation.md`는 렌더 검증이
   직접 소비하는 계약이므로 review-only에서 제외한다.
+- 루트 `AGENTS.md`·`CLAUDE.md`의 added 또는 modified 변경. rename·삭제와 하위 디렉터리의
+  동명 파일은 이 허용 항목에 포함하지 않는다. 코드와 함께 바뀌면 문서 전체 fast-pass가 아니다.
+  현재 base 병합의 충돌 해결도 이 두 루트 문서만 수정한 경우에는 문서 해결로 검사할 수 있다.
 - added 상태의 samples 아래 pdf, png
 - added 상태의 samples 아래 hwp, hwpx, hml은 review-only가 아니다. 새 문서 샘플은 Build & Test가
   실행되며, CI preflight가 PR에서 새로 추가된 문서 경로만 `RHWP_SECURITY_SWEEP_SAMPLES_JSON`으로
@@ -33,6 +36,11 @@ repository id와 PR 생성 이후 실행 여부를 함께 확인한다. 따라�
 `pull_requests` 배열이 비어 있어도, 다른 PR·다른 fork·PR 생성 전 실행 결과는 재사용하지 않는다.
 
 ## A. code PR 뒤의 trailing review-only commit
+
+collaborator self PR은 [역할별 기록 순서](collaborator_self_merge.md#821-pr-채번과-오늘할일-생성갱신-시점)에
+따라 **현재 code head의 GitHub Actions CI 성공을 먼저 확인한 뒤** review·오늘할일 trailing
+commit을 만든다. PR 번호 확보나 로컬 검증 완료만으로 기록을 먼저 push하지 않는다.
+이후 새 trailing head의 required check를 별도로 확인한다.
 
 contributor code PR의 뒤에 review 문서·오늘할일·허용된 신규 기준 자료를 추가하면 workflow는 현재 head에서
 거꾸로 확인해, **같은 PR source branch에서 실행된 녹색 code candidate SHA와 이후 변경이 모두 review-only인
@@ -106,6 +114,11 @@ PR review와 오늘할일만 추가하는 경우에는 다음 순서를 따른�
 `devel 동기화`를 매번 source branch merge를 수행하라는 상시 지시로 해석하지 않는다.
 
 ### A.1 CI 실행 정책을 바꾼 PR의 trusted 재사용
+
+**후속 기록의 작업 절차는 [옵션 2](post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)를 적용한다.**
+CI workflow·action·실행/재사용 판정 정책 변경 PR에는 review·오늘할일 trailing commit을 추가하지
+않고, 원 PR의 Full CI·검토·승인·병합 뒤 별도 기록 PR로 처리한다. 아래는 기존 trusted controller의
+기술적 수용 계약이며, 같은 PR에 시험 push하거나 Full CI를 생략하라는 운영 지시가 아니다.
 
 이 경로는 devel 대상 same-repository PR 전용이다. main 대상 PR은 Controller를 기다리거나
 해당 status로 검증을 생략하지 않는다. 발행 v6과 CI·CodeQL·Render Diff 소비 계약은 실제 발행

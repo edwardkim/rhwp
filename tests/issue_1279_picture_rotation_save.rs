@@ -1,3 +1,7 @@
+//! 관계형·고정형: 회전 그림의 원본 크기·저장 행렬 및 편집 후 행렬 계약.
+//! 주석 갱신: 2026-11-01T06:12:38+09:00; 직전 파일 커밋: 2026-06-06T21:33:47+09:00 (`ab0c47d70255f6962c21e0374df686f1e78531b6`).
+//! 입력·기준: `samples/ta-pic-001-r.hwp`, `samples/hwpx/ta-pic-001-r.hwpx`와 원본 회전 행렬.
+//! 모델·직렬화 행렬을 검사하며 화면 시각 일치율은 측정하지 않는다.
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
 use rhwp::model::document::Document;

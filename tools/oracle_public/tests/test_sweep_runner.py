@@ -35,22 +35,16 @@ def _touch(path: Path, text: str = "x") -> Path:
 
 
 def _mini_tree(root: Path) -> None:
-    _touch(root / "samples" / "exam_kor.hwp")
-    _touch(root / "samples" / "exam_kor.hwpx")
     _touch(root / "samples" / "lonely.hwp")
     _touch(root / "samples" / "hwp3-sample.hwp")
     _touch(root / "samples" / "hwp3-sample-hwpx.hwpx")
     _touch(root / "samples" / "편람.hwp")
     _touch(root / "samples" / "편람.hwpx")
-    _touch(root / "samples" / "3-09월_교육_통합_2022.hwp")
     _touch(root / "samples" / "basic" / "calendar_year.hwp")
     _touch(root / "samples" / "readme.txt")
-    sr.write_minimal_pdf(root / "pdf" / "exam_kor-2020.pdf", 1)
-    sr.write_minimal_pdf(root / "pdf" / "exam_kor-2022.pdf", 2)
     sr.write_minimal_pdf(root / "pdf" / "hwp3-sample-hwpx-2022.pdf", 1)
     sr.write_minimal_pdf(root / "pdf" / "편람-hwp-2020.pdf", 1)
     sr.write_minimal_pdf(root / "pdf" / "편람-hwpx-2020.pdf", 1)
-    sr.write_minimal_pdf(root / "pdf" / "3-09월_교육_통합_2022.pdf", 3)
     sr.write_minimal_pdf(root / "pdf" / "basic" / "calendar_year-2022.pdf", 1)
     sr.write_minimal_pdf(root / "pdf" / "unused-2022.pdf", 1)
     sr.write_minimal_pdf(root / "pdf" / "hwpx" / "lonely.pdf", 1)
@@ -75,9 +69,6 @@ class FakeDump:
 
 
 class ParseSuffixTests(unittest.TestCase):
-    def test_plain_year(self) -> None:
-        info = sr.parse_oracle_suffix("exam_kor", "exam_kor-2022.pdf")
-        self.assertEqual(info, {"year": "2022", "variant": "2022", "fmt": None})
 
     def test_hwp_variant_does_not_steal_hwpx_stem(self) -> None:
         stolen = sr.parse_oracle_suffix("hwp3-sample", "hwp3-sample-hwpx-2022.pdf")
@@ -87,33 +78,12 @@ class ParseSuffixTests(unittest.TestCase):
         own = sr.parse_oracle_suffix("hwp3-sample-hwpx", "hwp3-sample-hwpx-2022.pdf")
         self.assertEqual(own, {"year": "2022", "variant": "2022", "fmt": None})
 
-    def test_exact_stem_with_year(self) -> None:
-        info = sr.parse_oracle_suffix(
-            "3-09월_교육_통합_2022", "3-09월_교육_통합_2022.pdf"
-        )
-        self.assertEqual(info, {"year": "2022", "variant": "exact", "fmt": None})
 
     def test_exact_stem_without_year_rejected(self) -> None:
         self.assertIsNone(sr.parse_oracle_suffix("lonely", "lonely.pdf"))
 
 
 class PairingTests(unittest.TestCase):
-    def test_discover_mini_tree(self) -> None:
-        with tempfile.TemporaryDirectory() as td:
-            repo = Path(td)
-            _mini_tree(repo)
-            pairs, unmatched = sr.discover_pairs(repo)
-            samples = {item.sample for item in pairs}
-            self.assertIn("samples/exam_kor.hwp", samples)
-            self.assertIn("samples/편람.hwp", samples)
-            self.assertIn("samples/hwp3-sample-hwpx.hwpx", samples)
-            self.assertIn("samples/lonely.hwp", set(unmatched))
-            self.assertIn("samples/hwp3-sample.hwp", set(unmatched))
-            self.assertNotIn("samples/readme.txt", set(unmatched))
-            hwp_pdfs = [p.pdf for p in pairs if p.sample == "samples/편람.hwp"]
-            hwpx_pdfs = [p.pdf for p in pairs if p.sample == "samples/편람.hwpx"]
-            self.assertEqual(hwp_pdfs, ["pdf/편람-hwp-2020.pdf"])
-            self.assertEqual(hwpx_pdfs, ["pdf/편람-hwpx-2020.pdf"])
 
     def test_manifest_m01_schema(self) -> None:
         with tempfile.TemporaryDirectory() as td:

@@ -33,8 +33,6 @@ FORBIDDEN_TOKENS = ("fill-fields", "csv-to-table", "batch fill", "deep_contains"
 ALLOWED_SAMPLE_PREFIXES = (
     "samples/chart/",
     "samples/20250130-hongbo.hwp",
-    "samples/exam-kor-",
-    "samples/hwpx/exam-kor-",
     "samples/hwpx/blank_hwpx.hwpx",
     "samples/table-001.hwp",
     "samples/2010-01-06.hwp",
@@ -96,15 +94,15 @@ class PackSurfaceTests(unittest.TestCase):
 
 
 class TaskInventoryTests(unittest.TestCase):
-    def test_existing_ex01_ex04_remain(self):
+    def test_existing_non_exam_tasks_remain(self):
         ids = {read_json(p)["id"] for p in task_paths()}
-        for n in range(1, 5):
+        for n in range(1, 4):
             self.assertIn(f"EX{n:02d}", ids, f"기존 EX{n:02d} 가 사라졌다")
 
     def test_ex05_and_later_exist(self):
         nums = [task_id_num(read_json(p)["id"]) for p in task_paths()]
         self.assertGreaterEqual(max(nums), 20)
-        self.assertGreaterEqual(len(nums), 20)
+        self.assertEqual(set(nums), set(range(1, 29)) - {4, 8, 9, 10, 11, 12, 13, 14, 25, 26, 27, 28})
 
     def test_task_ids_are_ex_prefixed_and_unique(self):
         ids = [read_json(p)["id"] for p in task_paths()]

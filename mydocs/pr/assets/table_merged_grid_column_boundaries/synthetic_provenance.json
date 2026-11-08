@@ -1,0 +1,65 @@
+{
+ "input": {
+  "path": "samples/table_merged_grid_column_boundaries.hwpx",
+  "sha256": "8290845671a0acf23491b76e4af41d331fb78aa64e2cdbb87da66c7dce355c5d",
+  "generator": "tools/fixture_generators/build_merged_grid_column_fixture.py",
+  "lastSavedWith": "hancom-office-2020 11.0.0.7257 (template metadata)"
+ },
+ "reference_pdf": {
+  "path": "pdf/table_merged_grid_column_boundaries-2020.pdf",
+  "sha256": "ebbf1a59060b91099175a260e1acc7cd141883082166bbb130d576e9ecfcf4b7",
+  "converter": "hwp2024Convert MCP, engine 2020, target pdf",
+  "job_id": "cddea1b5-ce9e-4e2d-876e-83daa150b668",
+  "creator": "Hwp 2020 0.0.0.0",
+  "producer": "Hancom PDF 1.3.0.550",
+  "pages": 1,
+  "embedded_fonts": [
+   "Haansoft Batang (CID TrueType, embedded subset)"
+  ]
+ },
+ "hancom_resave": {
+  "converter": "hwp2024Convert MCP, engine 2020, target hwp",
+  "job_id": "fffbad60-c735-48b4-aad5-c4460e9730f6",
+  "sha256": "fec7217918a3fbea0f6e18a1aee29a52714f425dd4540560f49f500bf07eecc0",
+  "cells_identical_to_input": true,
+  "table_declared_width_hu": {
+   "T1": [
+    36000,
+    36000
+   ],
+   "T2": [
+    36000,
+    39000
+   ],
+   "T3": [
+    36000,
+    35800
+   ],
+   "T4": [
+    36000,
+    36000
+   ],
+   "T5": [
+    48188,
+    48188
+   ]
+  },
+  "note": "[input, Hancom re-save]. Hancom keeps every cell row/col/span/width and rewrites only the T2/T3 declared widths."
+ },
+ "rhwp": {
+  "base_source": "463c48cc2",
+  "fix_source": "65ba3e3e8 (Rust unchanged after it)",
+  "native_base_sha256": "66e72c7821f7bb7b4a01a02ae2531a9be332c89c4935af96d13110ae2c16f237",
+  "native_fix_sha256": "71a7fc90e2a1d6cd8aa30d6467ac8e88a3f5cf05a9b7179a75c1a985a426c254",
+  "wasm_base_sha256": "1fa0bd48ab1eb826e2412470331b620de74122c811376620bddf071b10124cfb",
+  "wasm_fix_sha256": "5970ea8b5c542c29cb5d94f1dc38d56eb14878073fa09ca47a31ae8de17b94fa",
+  "font_path": "RHWP_FONT_PATH=/home/planet/iop/rhwp/ttfs/hwp:/home/planet/iop/rhwp/ttfs/windows (HBATANG.TTF = Haansoft Batang/한컴바탕)",
+  "visual_sweep": "scripts/visual_sweep.py --compat 2022 --embed-fonts --dpi 96 --pages 1 [--rasterizer png|svg | --wasm-pkg pkg] (--silhouette-only for TSV)"
+ },
+ "silhouette_tsv": "synthetic_silhouette.tsv",
+ "vertical_rules": "synthetic_vertical_rules.tsv",
+ "out_of_scope_differences": [
+  "T2: Hancom draws a per-column max grid (col0 12000, table 39000); rhwp before and after draws per-row partitions (#5590), table 36000.",
+  "T3: Hancom ends both rows at the cell sum 35800; rhwp before and after stretches the last column to the declared 36000 (+2.7px)."
+ ]
+}

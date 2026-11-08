@@ -134,8 +134,8 @@ const VOLUME_PROBE_GOLDENS: [(&str, [u64; 50]); 3] = [
 ];
 
 fn bin() -> String {
-    std::env::var("CARGO_BIN_EXE_rhwp-q-more")
-        .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp-q-more").to_string())
+    std::env::var("CARGO_BIN_EXE_rhwp-q")
+        .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp-q").to_string())
 }
 
 fn sample() -> PathBuf {
@@ -144,6 +144,7 @@ fn sample() -> PathBuf {
 
 fn run(args: &[&str]) -> Output {
     Command::new(bin())
+        .arg("more")
         .args(args)
         .output()
         .expect("rhwp-q-more")

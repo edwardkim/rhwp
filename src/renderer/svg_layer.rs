@@ -135,7 +135,9 @@ fn project_debug_overlay(root: &LayerNode) -> LayerDebugOverlayProjection {
                     visit(projection, child, child_skip_depth);
                 }
             }
-            LayerNodeKind::ClipRect { child, .. } => visit(projection, child, skip_depth),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                visit(projection, child, skip_depth)
+            }
             LayerNodeKind::Leaf { ops } if skip_depth == 0 => {
                 for op in ops {
                     if let PaintOp::Image { bbox, image, .. } = op {
@@ -223,7 +225,7 @@ impl SvgLayerRenderer {
             LayerNodeKind::Group { children, .. } => children
                 .iter()
                 .any(|child| Self::node_has_plane(child, active_layer, plane)),
-            LayerNodeKind::ClipRect { child, .. } => {
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
                 Self::node_has_plane(child, active_layer, plane)
             }
             LayerNodeKind::Leaf { ops } => ops.iter().any(|op| {
@@ -244,9 +246,36 @@ impl SvgLayerRenderer {
         }
         let active_layer = Self::active_layer(node, inherited_layer);
         match &node.kind {
-            LayerNodeKind::Group { children, .. } => {
+            LayerNodeKind::Group {
+                children,
+                group_kind,
+                ..
+            } => {
+                let matrix = match group_kind {
+                    crate::paint::GroupKind::Group(group) => group.paint_transform,
+                    _ => None,
+                };
+                if let Some(matrix) = matrix {
+                    if !matrix.iter().all(|value| value.is_finite()) {
+                        return Err(HwpError::RenderError(
+                            "invalid PageLayerTree group affine".into(),
+                        ));
+                    }
+                    self.renderer.begin_layer_transform(matrix);
+                }
                 for child in children {
                     self.render_node(child, active_layer, plane)?;
+                }
+                if matrix.is_some() {
+                    self.renderer.end_layer_transform();
+                }
+            }
+            LayerNodeKind::ClipPath { paths, child } => {
+                let id = format!("source-text-clip-{}-{}", self.node_id(node), plane.as_str());
+                self.renderer.begin_layer_path_clip(paths, &id);
+                self.render_node(child, active_layer, plane)?;
+                for _ in paths {
+                    self.renderer.end_layer_clip();
                 }
             }
             LayerNodeKind::ClipRect {
@@ -266,6 +295,7 @@ impl SvgLayerRenderer {
                     ClipKind::TableCell => "cell",
                     ClipKind::TextBox => "textbox",
                     ClipKind::Generic => "generic",
+                    ClipKind::PrintBitmapFill => "print-bitmap-fill",
                 };
                 let pass_count = PaintReplayPlane::ORDERED
                     .iter()
@@ -353,6 +383,6 @@ impl LayerRenderer for SvgLayerRenderer {
             }
         }
         self.renderer.end_layer_page();
-        Ok(())
+        self.renderer.check_output()
     }
 }

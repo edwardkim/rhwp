@@ -1,0 +1,148 @@
+[
+  {
+    "input": "hwp3-sample16-hwp5-2022.hwp",
+    "stream": "BodyText/Section0",
+    "text_record_offset": 352530,
+    "needle": "한국수자원공사는 우리나라",
+    "source_hwp_position": 4,
+    "char_shape": [
+      0,
+      19
+    ],
+    "font_ids": [
+      2,
+      8,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "font_records": [
+      {
+        "attribute": "0x61",
+        "type": 1,
+        "face": "휴먼명조",
+        "substitute": null
+      },
+      {
+        "attribute": "0x81",
+        "type": 1,
+        "face": "HCI Poppy",
+        "substitute": {
+          "type": 1,
+          "name": "Batang"
+        }
+      },
+      {
+        "attribute": "0x81",
+        "type": 1,
+        "face": "한양신명조",
+        "substitute": {
+          "type": 1,
+          "name": "Batang"
+        }
+      },
+      {
+        "attribute": "0x81",
+        "type": 1,
+        "face": "한양신명조",
+        "substitute": {
+          "type": 1,
+          "name": "Batang"
+        }
+      },
+      {
+        "attribute": "0x81",
+        "type": 1,
+        "face": "한양신명조",
+        "substitute": {
+          "type": 1,
+          "name": "Batang"
+        }
+      },
+      {
+        "attribute": "0x81",
+        "type": 1,
+        "face": "한양신명조",
+        "substitute": {
+          "type": 1,
+          "name": "Batang"
+        }
+      },
+      {
+        "attribute": "0x81",
+        "type": 1,
+        "face": "명조",
+        "substitute": {
+          "type": 1,
+          "name": "Batang"
+        }
+      }
+    ]
+  },
+  {
+    "input": "hwp3-sample16-hwp5-2024.hwp",
+    "stream": "BodyText/Section0",
+    "text_record_offset": 356984,
+    "needle": "한국수자원공사는 우리나라",
+    "source_hwp_position": 4,
+    "char_shape": [
+      0,
+      19
+    ],
+    "font_ids": [
+      7,
+      1,
+      2,
+      2,
+      0,
+      2,
+      0
+    ],
+    "font_records": [
+      {
+        "attribute": "0x62",
+        "type": 2,
+        "face": "휴먼명조",
+        "substitute": null
+      },
+      {
+        "attribute": "0x62",
+        "type": 2,
+        "face": "HCI Poppy",
+        "substitute": null
+      },
+      {
+        "attribute": "0x62",
+        "type": 2,
+        "face": "한양신명조",
+        "substitute": null
+      },
+      {
+        "attribute": "0x62",
+        "type": 2,
+        "face": "한양신명조",
+        "substitute": null
+      },
+      {
+        "attribute": "0x62",
+        "type": 2,
+        "face": "한양신명조",
+        "substitute": null
+      },
+      {
+        "attribute": "0x62",
+        "type": 2,
+        "face": "한양신명조",
+        "substitute": null
+      },
+      {
+        "attribute": "0x62",
+        "type": 2,
+        "face": "명조",
+        "substitute": null
+      }
+    ]
+  }
+]

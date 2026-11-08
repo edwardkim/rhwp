@@ -13,7 +13,7 @@
  */
 import { createHwpCtrl } from './index.mjs';
 import { createAdoptDocument, isMutating } from './adapter.mjs';
-import { listToStudio, studioToList, listDepth } from './cursor-map.mjs';
+import { listToStudio, studioToList, listDepth, caretToCursor } from './cursor-map.mjs';
 
 const PLUGIN_ID = 'hwpctrl';
 
@@ -106,6 +106,23 @@ export const hwpctrlStudioPlugin = {
         host.read((doc) => studioToList(JSON.parse(doc.getCursorModel()), position)),
       listDepthOf: (listId) =>
         host.read((doc) => listDepth(JSON.parse(doc.getCursorModel()), listId)),
+
+      /**
+       * 이 층의 커서를 **사용자 캐럿**으로 옮긴다.
+       *
+       * 이 층은 자체 커서(`GetPos`)를 들고 있어 사용자가 화면에서 캐럿을 옮겨도 따라가지 않는다.
+       * 캐럿 자리에서 `CreateField`·`GetCurFieldName` 따위를 부르기 전에 한 번 부른다. 커서만
+       * 옮기므로 트랜잭션도 undo 항목도 만들지 않는다. 캐럿이 머리말·꼬리말·각주·글상자처럼
+       * 한글 좌표로 옮길 수 없는 곳이면 커서를 그대로 두고 `null` 을 준다.
+       */
+      syncCursorFromCaret: () => {
+        const caret = typeof host.getCaret === 'function' ? host.getCaret() : null;
+        if (!caret) return null;
+        const at = host.read((doc) => caretToCursor(doc, caret));
+        if (!at) return null;
+        ctrl.SetPos(at.list, at.para, at.pos);
+        return ctrl.GetPos();
+      },
 
       /** 분류 확인용 — 어떤 이름이 트랜잭션을 타는지 밖에서 볼 수 있어야 한다. */
       isMutating: (method) => isMutating(method),

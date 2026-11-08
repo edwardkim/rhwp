@@ -27,8 +27,10 @@ test('외부 웹폰트 비활성 상태는 로컬 글꼴 감지 모달에 표시
   assertShowsText(modal, '외부 CDN 폰트를 요청하지 않고');
 });
 
-test('문서 열기는 로컬 글꼴 감지 모달을 자동으로 띄우지 않는다', () => {
+test('저장된 감지 결과가 없을 때 문서 글꼴 감지 여부를 묻는다', () => {
   const main = source('src/main.ts');
 
-  assert.doesNotMatch(main, /showLocalFontsModalIfNeeded/);
+  assert.match(main, /if \(getLocalFontState\(\)\.stored\) return/);
+  assert.match(main, /await showLocalFontsModalIfNeeded\(report, extensionViewerSettings\)/);
+  assert.match(main, /if \(choice !== 'detect'\) return/);
 });

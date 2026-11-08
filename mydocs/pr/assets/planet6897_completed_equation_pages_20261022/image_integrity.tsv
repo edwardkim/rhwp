@@ -1,0 +1,16 @@
+key	page	kind	backend	asset	bytes	sha256
+eq-rm-space	1	before_after_3x	native+wasm	images/eq-rm-space/eq-rm-space-p001-before-after-3x.png	63320	41683b69840b7179e4fe0fad18976d08d569eb12b4a672c24e691ea5a07208ff
+eq-plusminus	1	before_after_3x	native+wasm	images/eq-plusminus/eq-plusminus-p001-before-after-3x.png	14846	3201ed93a8f6f5053482bd94a29fd9bbaeeae61777b1aad1d229c99747025885
+eq-uppercase-greek	1	before_after_3x	native+wasm	images/eq-uppercase-greek/eq-uppercase-greek-p001-before-after-3x.png	65476	8d8db7220475b22260e6e01c30e789f15cc0fb7f03d0dbd0329a6bab19d8c062
+eq7873-eq-font-fraction	1	before_after_3x	native+wasm	images/eq7873-eq-font-fraction/eq7873-eq-font-fraction-p001-before-after-3x.png	37961	130e85c4701e3f7c7a8e079c2fc58dbc12033448db469b539cde731fd5bf05d3
+eq7873-eq-font-fraction	1	review	native	images/eq7873-eq-font-fraction/native/review_001.png	86152	bb1be9354da1c8a80f9f5e678bb6466ab2b52182bb1cb8c4fbfffb471a6d068b
+eq7873-eq-font-fraction	1	overlay	native	images/eq7873-eq-font-fraction/native/overlay_001.png	44715	34d3c3bd24c3c5320debf2fd3c25955bcaff0b8fa8374675987be35d093fd7b5
+eq7873-eq-font-fraction	1	review	wasm	images/eq7873-eq-font-fraction/wasm/review_001.png	86104	08a732fa3c932c6adc51b86c3cbff2b294e9e4e588e9c41034b7593daba202df
+eq7873-eq-font-fraction	1	overlay	wasm	images/eq7873-eq-font-fraction/wasm/overlay_001.png	44751	486c770d95a73f6070d84f860d6d7cfdef5a1f0e8b5e77a1e0fbe01fb7f5d146
+eq7873-eq-font-state	1	before_after_3x	native+wasm	images/eq7873-eq-font-state/eq7873-eq-font-state-p001-before-after-3x.png	66935	3f4e3a0534eff4a40492651074dff958ba60f5c67d5dc03c9de7cbb67fa2d8a8
+eq7873-eq-font-state	1	review	native	images/eq7873-eq-font-state/native/review_001.png	113941	a934420af6caf2ddf3c07ed2604bc09de27f76d6b8a522fa00b9fcd566b54f0b
+eq7873-eq-font-state	1	overlay	native	images/eq7873-eq-font-state/native/overlay_001.png	53613	c3b3158ac844bba549dfcd89723dcdc4a3d2f7735a2ba533f82164c31f6b0999
+eq7873-eq-font-state	1	review	wasm	images/eq7873-eq-font-state/wasm/review_001.png	113572	39ac8dba123c74689286ead08a77358cbbf0b26f163627ff8c3cbdbacf2224fc
+eq7873-eq-font-state	1	overlay	wasm	images/eq7873-eq-font-state/wasm/overlay_001.png	53791	34c296c3bfc6f8e84cb8cf9cae14d0294c31f1a344fb854098ab116af11425d9
+eq7873-eq-font-fraction	1	final_equation_before_after_3x	native+wasm	images/eq7873-eq-font-fraction/eq7873-eq-font-fraction-p001-lower-before-after-3x.png	25514	426986a3ede2cd2ade7b66aba30b693c9f6da8efa406eaca77b23ef0cb1dd184
+eq7873-eq-font-state	1	final_equation_before_after_3x	native+wasm	images/eq7873-eq-font-state/eq7873-eq-font-state-p001-lower-before-after-3x.png	25330	2b395674a597c6d27f0fc7f0fd4d7d2f7d5f64debf3b7ef10786351bbc7a1386

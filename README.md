@@ -41,11 +41,23 @@ rhwp는 Rust + WebAssembly 기반의 오픈소스 HWP/HWPX 뷰어/에디터입�
   <img src="assets/screenshots/render-example-1.png" alt="rhwp 렌더링 예시 — KTX 노선도" width="700" />
 </p>
 
+## 0.9.0과 PDF 개발자 안내
+
+PDF를 편집 가능한 HWP/HWPX로 가져오는 기능을 CLI·Rust·WASM·Studio에서 제공합니다.
+JBIG2·JPEG 2000·ICC, 암호 인증, 자원 프로필과 취소 가능한 쪽별 진행률이 포함됩니다.
+[PDF 시작 안내](mydocs/manual/pdf_developer_onboarding.md)에서 빌드부터 첫 변환·Worker 통합까지
+따라 할 수 있습니다. [0.9.0 릴리즈 노트](mydocs/release/release_notes_v0.9.0.md)에 변경과 기여자를
+정리했습니다. **0.9.0부터 crates.io 배포를 시작합니다.** Rust 라이브러리와 Cargo 설치 CLI가
+주 대상이며, 게시 후에는 `rhwp = "0.9.0"` 또는
+`cargo install rhwp --version 0.9.0 --locked --bin rhwp`로 사용할 수 있습니다.
+[Rust API·feature·CLI 설치 안내](packaging/crates-io/README_PACKAGE.md)를
+참고하세요. PNG·PDF 출력·Sixel·Kitty에는 `--features native-skia`를 추가합니다.
+
 ## 로드맵
 
 혼자 뼈대를 세우고, 함께 살을 붙이고, 모두의 것으로 완성한다.
 
-현재는 **v0.8.7 — v1.0 조판 엔진 체계화**를 중심으로 작업하면서, 40명이 넘는 외부 기여자와
+현재는 **v0.9.0 — v1.0 조판 엔진 체계화**를 중심으로 작업하면서, 40명이 넘는 외부 기여자와
 두 명의 공동 유지보수자(콜레보레이터)가 참여하는 **v2.0 협업 기반**도 함께 발전시키고 있습니다.
 버전별 목표와 완료 기준, 함께 진행되는 작업, AI 활용 세부 로드맵의 위치는
 [프로젝트 로드맵](ROADMAP.md)에서 설명합니다. rhwp 업스트림에 기여할 기능과 별도 다운스트림

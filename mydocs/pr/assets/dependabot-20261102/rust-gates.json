@@ -1,0 +1,371 @@
+[
+  {
+    "gate": "prepare",
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--prepare"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 1.89,
+    "at": "2026-11-02T05:22:43.169520+00:00"
+  },
+  {
+    "gate": "fmt",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 24.45,
+    "at": "2026-11-02T05:23:07.617528+00:00"
+  },
+  {
+    "gate": "native-clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "rhwp",
+      "--lib",
+      "--features",
+      "native-skia",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 98.96,
+    "at": "2026-11-02T05:28:37.752275+00:00"
+  },
+  {
+    "gate": "wasm-clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "rhwp",
+      "--lib",
+      "--target",
+      "wasm32-unknown-unknown",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 122.08,
+    "at": "2026-11-02T05:30:39.812821+00:00"
+  },
+  {
+    "gate": "workspace-build",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--workspace"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 175.44,
+    "at": "2026-11-02T05:33:35.238789+00:00"
+  },
+  {
+    "gate": "workspace-clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 147.23,
+    "at": "2026-11-02T05:36:02.445769+00:00"
+  },
+  {
+    "gate": "manifest",
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--check",
+      "--base-ref",
+      "d3f7209bbb0fdb1711c5f40a70ad22f0ca0be66d"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 0.75,
+    "at": "2026-11-02T05:36:03.198691+00:00"
+  },
+  {
+    "gate": "hwpx_zip_determinism",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "hwpx_zip_determinism",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--test-threads",
+      "12",
+      "--config",
+      "profile.release-test.package.rhwp.opt-level=1",
+      "--config",
+      "profile.release-test.package.rhwp.codegen-units=64"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 219.06,
+    "at": "2026-11-02T05:39:42.233460+00:00"
+  },
+  {
+    "gate": "security_linked_images_and_xml_budget",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "security_linked_images_and_xml_budget",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--test-threads",
+      "12",
+      "--config",
+      "profile.release-test.package.rhwp.opt-level=1",
+      "--config",
+      "profile.release-test.package.rhwp.codegen-units=64"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 8.43,
+    "at": "2026-11-02T05:39:50.661697+00:00"
+  },
+  {
+    "gate": "security_hwpx_password_xml_budget",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "security_hwpx_password_xml_budget",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--test-threads",
+      "12",
+      "--config",
+      "profile.release-test.package.rhwp.opt-level=1",
+      "--config",
+      "profile.release-test.package.rhwp.codegen-units=64"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 8.99,
+    "at": "2026-11-02T05:39:59.656328+00:00"
+  },
+  {
+    "gate": "issue_8174_hwpx_xml_wire",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_8174_hwpx_xml_wire",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--test-threads",
+      "12",
+      "--config",
+      "profile.release-test.package.rhwp.opt-level=1",
+      "--config",
+      "profile.release-test.package.rhwp.codegen-units=64"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 8.24,
+    "at": "2026-11-02T05:40:07.894787+00:00"
+  },
+  {
+    "gate": "textbox_vertical_align_hwp",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "textbox_vertical_align_hwp",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--test-threads",
+      "12",
+      "--config",
+      "profile.release-test.package.rhwp.opt-level=1",
+      "--config",
+      "profile.release-test.package.rhwp.codegen-units=64"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 8.63,
+    "at": "2026-11-02T05:40:16.524140+00:00"
+  },
+  {
+    "gate": "issue_8335_caption_category_roundtrip",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_8335_caption_category_roundtrip",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--test-threads",
+      "12",
+      "--config",
+      "profile.release-test.package.rhwp.opt-level=1",
+      "--config",
+      "profile.release-test.package.rhwp.codegen-units=64"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 3.18,
+    "at": "2026-11-02T05:40:19.705590+00:00"
+  },
+  {
+    "gate": "issue_8302_roundtrip_lineage",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_8302_roundtrip_lineage",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--test-threads",
+      "12",
+      "--config",
+      "profile.release-test.package.rhwp.opt-level=1",
+      "--config",
+      "profile.release-test.package.rhwp.codegen-units=64"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 8.29,
+    "at": "2026-11-02T05:40:27.998047+00:00"
+  },
+  {
+    "gate": "issue_8399_square_shape_band",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_8399_square_shape_band",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--test-threads",
+      "12",
+      "--config",
+      "profile.release-test.package.rhwp.opt-level=1",
+      "--config",
+      "profile.release-test.package.rhwp.codegen-units=64"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 9.38,
+    "at": "2026-11-02T05:40:37.382922+00:00"
+  },
+  {
+    "gate": "issue_8160_wmf_mask_ownership",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_8160_wmf_mask_ownership",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--test-threads",
+      "12",
+      "--config",
+      "profile.release-test.package.rhwp.opt-level=1",
+      "--config",
+      "profile.release-test.package.rhwp.codegen-units=64"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 8.57,
+    "at": "2026-11-02T05:40:45.945046+00:00"
+  },
+  {
+    "gate": "native-skia-lib",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--lib",
+      "--config",
+      "profile.release-test.package.rhwp.opt-level=1",
+      "--config",
+      "profile.release-test.package.rhwp.codegen-units=64"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 174.09,
+    "at": "2026-11-02T05:43:40.023003+00:00"
+  },
+  {
+    "gate": "native-issue_2225_missing_picture_placeholder",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_2225_missing_picture_placeholder",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--test-threads",
+      "12",
+      "--config",
+      "profile.release-test.package.rhwp.opt-level=1",
+      "--config",
+      "profile.release-test.package.rhwp.codegen-units=64"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 156.24,
+    "at": "2026-11-02T05:46:16.245175+00:00"
+  },
+  {
+    "gate": "native-render_p37_direct_pdf_export",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "render_p37_direct_pdf_export",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--test-threads",
+      "12",
+      "--config",
+      "profile.release-test.package.rhwp.opt-level=1",
+      "--config",
+      "profile.release-test.package.rhwp.codegen-units=64"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 8.51,
+    "at": "2026-11-02T05:46:24.750842+00:00"
+  },
+  {
+    "gate": "full-nextest",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--tests",
+      "--test-threads",
+      "12",
+      "--no-fail-fast",
+      "--config",
+      "profile.release-test.package.rhwp.opt-level=1",
+      "--config",
+      "profile.release-test.package.rhwp.codegen-units=64"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 938.68,
+    "at": "2026-11-02T06:02:03.333878+00:00"
+  }
+]

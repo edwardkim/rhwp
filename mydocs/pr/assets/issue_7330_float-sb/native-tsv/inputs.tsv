@@ -1,0 +1,14 @@
+key	input	reference_pdf	pages
+hwpctl_AP_1	samples/hwpctl_API_v2.4.hwp	pdf/hwpctl_API_v2.4-2022.pdf	61
+__________2	samples/한글문서파일형식_5.0_revision1.3.hwp	pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf	19
+1790242-2_3	corpus:1790242	corpus:1790242	25
+36302240__4	corpus:36302240	corpus:36302240	1
+36328928__5	corpus:36328928	(MCP 2024, 비공개 보관) 36328928-2024.pdf	1
+36432723__6	corpus:36432723	corpus:36432723	1
+36353292__7	corpus:36353292	(MCP 2024, 비공개 보관) 36353292-2024.pdf	1
+36326677__8	corpus:36326677	(MCP 2024, 비공개 보관) 36326677-2024.pdf	1
+36388027__9	corpus:36388027	corpus:36388027	1
+36492984__10	corpus:36492984	corpus:36492984	1
+36434203__11	corpus:36434203	corpus:36434203	1
+36325626__12	corpus:36325626	(MCP 2024, 비공개 보관) 36325626-2024.pdf	1
+synthetic	samples/float_push_spacing_before/float_push_spacing_before.hwp	pdf/float_push_spacing_before/float_push_spacing_before-2020.pdf	all

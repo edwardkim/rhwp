@@ -1,0 +1,297 @@
+//! Synthetic request/CLI contracts, not layout coordinates or render goldens.
+#![cfg(feature = "pdf-import")]
+use rhwp::parser::pdf::{parse_pdf_with_policy, PdfImportPolicy, PdfImportProfile};
+use serde_json::json;
+use std::path::{Path, PathBuf};
+use std::process::{Command, Output};
+
+fn image_pdf() -> Vec<u8> {
+    let content = b"q 40 0 0 20 10 10 cm /Im1 Do Q";
+    let pixels = [255u8, 0, 0].repeat(8);
+    let mut stream = format!("<< /Length {} >>\nstream\n", content.len()).into_bytes();
+    stream.extend(content);
+    stream.extend(b"\nendstream");
+    let mut image = format!("<< /Type /XObject /Subtype /Image /Width 4 /Height 2 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Length {} >>\nstream\n", pixels.len()).into_bytes();
+    image.extend(pixels);
+    image.extend(b"\nendstream");
+    let objects = [
+        b"<< /Type /Catalog /Pages 2 0 R >>".to_vec(),
+        b"<< /Type /Pages /Count 1 /Kids [3 0 R] >>".to_vec(),
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 100 100] /Resources << /XObject << /Im1 5 0 R >> >> /Contents 4 0 R >>".to_vec(),
+        stream, image,
+    ];
+    let mut bytes = b"%PDF-1.4\n".to_vec();
+    let mut offsets = Vec::new();
+    for (index, object) in objects.iter().enumerate() {
+        offsets.push(bytes.len());
+        bytes.extend(format!("{} 0 obj\n", index + 1).as_bytes());
+        bytes.extend(object);
+        bytes.extend(b"\nendobj\n");
+    }
+    let xref = bytes.len();
+    bytes.extend(format!("xref\n0 {}\n0000000000 65535 f \n", objects.len() + 1).as_bytes());
+    for offset in offsets {
+        bytes.extend(format!("{offset:010} 00000 n \n").as_bytes());
+    }
+    bytes.extend(
+        format!(
+            "trailer\n<< /Size {} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n",
+            objects.len() + 1
+        )
+        .as_bytes(),
+    );
+    bytes
+}
+
+#[test]
+fn profiles_preserve_standard_and_reject_ambiguous_limit_documents() {
+    assert_eq!(
+        serde_json::to_value(PdfImportPolicy::for_profile(PdfImportProfile::Standard)).unwrap(),
+        serde_json::to_value(PdfImportPolicy::default()).unwrap()
+    );
+    let standard = PdfImportPolicy::default();
+    for invalid in [
+        "null",
+        "[]",
+        "true",
+        "{\"unknown\":1}",
+        "{\"maxSelectedPages\":0}",
+        "{\"maxSelectedPages\":null}",
+        "{\"maxSelectedPages\":-1}",
+        "{\"maxSelectedPages\":1.5}",
+        "{\"maxSelectedPages\":\"2\"}",
+        "{\"maxSelectedPages\":1025}",
+        "{\"maxSelectedPages\":1,\"maxSelectedPages\":2}",
+        "{\"backend\":null}",
+        "{\"backend\":[]}",
+        "{\"backend\":{\"inputBytes\":null}}",
+        "{\"backend\":{\"inputBytes\":1,\"inputBytes\":2}}",
+        "{\"backend\":{\"unknown\":1}}",
+        "{\"backend\":{\"inputBytes\":18446744073709551616}}",
+    ] {
+        let error = standard.with_limits_json(invalid).expect_err(invalid);
+        assert_eq!(error.code, "PDF_RESOURCE_POLICY", "{invalid}");
+    }
+    let constrained = PdfImportPolicy::for_profile(PdfImportProfile::Constrained);
+    assert_eq!(constrained.max_selected_pages, 64);
+    assert!(constrained
+        .with_limits_json("{\"maxSelectedPages\":65}")
+        .is_err());
+}
+
+#[test]
+fn lower_input_and_backend_budgets_reach_core_and_do_not_poison_next_request() {
+    let source = image_pdf();
+    for cap in [source.len() - 1, source.len()] {
+        let policy = PdfImportPolicy::default()
+            .with_limits_json(&json!({"backend": {"inputBytes": cap}}).to_string())
+            .unwrap();
+        let result =
+            rhwp::DocumentCore::from_pdf_bytes_with_policy(&source, &Default::default(), policy);
+        assert_eq!(result.is_ok(), cap == source.len());
+        if let Err(error) = result {
+            assert!(error.to_string().contains("PDF_RESOURCE_LIMIT"));
+        }
+    }
+    let policy = PdfImportPolicy::default()
+        .with_limits_json("{\"backend\":{\"objects\":1}}")
+        .unwrap();
+    assert!(
+        rhwp::DocumentCore::from_pdf_bytes_with_policy(&source, &Default::default(), policy)
+            .is_err()
+    );
+    let normal = rhwp::DocumentCore::from_pdf_bytes(&source, &Default::default()).unwrap();
+    let explicit = rhwp::DocumentCore::from_pdf_bytes_with_policy(
+        &source,
+        &Default::default(),
+        PdfImportPolicy::default(),
+    )
+    .unwrap();
+    assert_eq!(
+        normal.export_hwpx_native().unwrap(),
+        explicit.export_hwpx_native().unwrap()
+    );
+}
+
+#[test]
+fn pixel_budgets_use_declared_image_area_and_exact_document_boundary() {
+    let source = image_pdf();
+    for key in ["maxImagePixels", "maxDocumentImagePixels"] {
+        for cap in [7, 8] {
+            let policy = PdfImportPolicy::default()
+                .with_limits_json(&json!({key: cap}).to_string())
+                .unwrap();
+            let result = parse_pdf_with_policy(&source, &Default::default(), policy);
+            assert_eq!(result.is_ok(), cap == 8, "{key}: {cap}");
+            if let Err(error) = result {
+                assert_eq!(error.code, "PDF_RESOURCE_LIMIT");
+            }
+        }
+    }
+}
+
+struct Scratch(PathBuf);
+impl Scratch {
+    fn new() -> Self {
+        let path = std::env::temp_dir().join(format!(
+            "rhwp-8174-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir(&path).unwrap();
+        Self(path)
+    }
+    fn file(&self, name: &str) -> PathBuf {
+        self.0.join(name)
+    }
+}
+impl Drop for Scratch {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_dir_all(&self.0);
+    }
+}
+
+fn run(input: &Path, output: &Path, config: &Path, extra: &[&str]) -> Output {
+    Command::new(env!("CARGO_BIN_EXE_rhwp"))
+        .arg("import-pdf")
+        .arg(input)
+        .arg(output)
+        .args(["--resource-limits", config.to_str().unwrap(), "--json"])
+        .args(extra)
+        .output()
+        .unwrap()
+}
+
+#[test]
+fn worker_endpoint_rejects_direct_unsupervised_invocation() {
+    let result = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+        .arg("__pdf-import-worker-v1")
+        .env_remove("RHWP_PDF_WORKER_NONCE")
+        .stdin(std::process::Stdio::null())
+        .output()
+        .unwrap();
+    assert_eq!(result.status.code(), Some(1));
+    assert!(result.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&result.stderr).contains("PDF_PROCESS_PROTOCOL"));
+}
+
+#[test]
+fn cli_policy_errors_precede_input_read_and_preserve_existing_output() {
+    let dir = Scratch::new();
+    let input = dir.file("absent.pdf");
+    let output = dir.file("keep.hwpx");
+    let config = dir.file("limits.json");
+    std::fs::write(&output, b"KEEP").unwrap();
+    for invalid in [
+        json!([]),
+        json!({"policy": []}),
+        json!({"policy":{"backend":[]}}),
+        json!({"execution": []}),
+        json!({"unknown":1}),
+        json!({"policy":{"backend":{"inputBytes":0}}}),
+        json!({"execution":{"wallTimeoutMs":null}}),
+        json!({"execution":{"wallTimeoutMs":0}}),
+        json!({"execution":{"outputBytes":134217729u64}}),
+        json!({"policy":{"maxSelectedPages":1025}}),
+    ] {
+        std::fs::write(&config, invalid.to_string()).unwrap();
+        let result = run(&input, &output, &config, &[]);
+        assert_eq!(result.status.code(), Some(2));
+        assert!(result.stdout.is_empty());
+        assert!(String::from_utf8_lossy(&result.stderr).contains("PDF_RESOURCE_POLICY"));
+        assert_eq!(std::fs::read(&output).unwrap(), b"KEEP");
+    }
+    std::fs::write(
+        &config,
+        "{\"execution\":{\"wallTimeoutMs\":1,\"wallTimeoutMs\":2}}",
+    )
+    .unwrap();
+    assert_eq!(run(&input, &output, &config, &[]).status.code(), Some(2));
+    std::fs::write(&config, "{}").unwrap();
+    for flags in [
+        vec!["--resource-profile", "unknown"],
+        vec!["--resource-profile"],
+        vec![
+            "--resource-profile",
+            "standard",
+            "--resource-profile",
+            "constrained",
+        ],
+        vec!["--resource-limits", "extra.json"],
+    ] {
+        let result = run(&input, &output, &config, &flags);
+        assert_eq!(result.status.code(), Some(2));
+        assert!(result.stdout.is_empty());
+        assert_eq!(std::fs::read(&output).unwrap(), b"KEEP");
+    }
+}
+
+#[test]
+fn cli_supervised_limits_atomic_output_and_healthy_followup() {
+    let dir = Scratch::new();
+    let input = dir.file("input.pdf");
+    let source = image_pdf();
+    std::fs::write(&input, &source).unwrap();
+    let output = dir.file("keep.hwpx");
+    let config = dir.file("limits.json");
+    for (limits, code) in [
+        (
+            json!({"policy":{"backend":{"inputBytes":source.len()-1}}}),
+            "PDF_RESOURCE_LIMIT",
+        ),
+        (json!({"policy":{"maxImagePixels":7}}), "PDF_RESOURCE_LIMIT"),
+        (
+            json!({"execution":{"outputBytes":1}}),
+            "PDF_PROCESS_OUTPUT_LIMIT",
+        ),
+        (
+            json!({"execution":{"diagnosticsBytes":1}}),
+            "PDF_PROCESS_OUTPUT_LIMIT",
+        ),
+        (
+            json!({"execution":{"wallTimeoutMs":1}}),
+            "PDF_PROCESS_TIMEOUT",
+        ),
+    ] {
+        std::fs::write(&output, b"KEEP").unwrap();
+        std::fs::write(&config, limits.to_string()).unwrap();
+        let result = run(&input, &output, &config, &[]);
+        assert_eq!(result.status.code(), Some(1));
+        assert!(result.stdout.is_empty());
+        assert!(
+            String::from_utf8_lossy(&result.stderr).contains(code),
+            "{}",
+            String::from_utf8_lossy(&result.stderr)
+        );
+        assert_eq!(std::fs::read(&output).unwrap(), b"KEEP");
+        std::fs::write(&config, "{}").unwrap();
+        let result = run(
+            &input,
+            &output,
+            &config,
+            &["--resource-profile", "constrained"],
+        );
+        assert!(
+            result.status.success(),
+            "{}",
+            String::from_utf8_lossy(&result.stderr)
+        );
+        let envelope: serde_json::Value = serde_json::from_slice(&result.stdout).unwrap();
+        assert_eq!(envelope["resourceProfile"], "constrained");
+        assert_eq!(
+            envelope["diagnostics"]["resourcePolicy"]["backend"]["inputBytes"],
+            16 * 1024 * 1024
+        );
+        assert_eq!(envelope["execution"]["filesystemNetworkSandbox"], false);
+        #[cfg(target_os = "linux")]
+        assert_eq!(envelope["execution"]["addressSpaceLimitEnforced"], true);
+        let saved = std::fs::read(&output).unwrap();
+        assert_eq!(envelope["bytes"], saved.len());
+        assert!(rhwp::DocumentCore::from_bytes(&saved).is_ok());
+    }
+    assert_eq!(std::fs::read(&input).unwrap(), source);
+    assert_eq!(std::fs::read_dir(&dir.0).unwrap().count(), 3);
+}

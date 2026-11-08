@@ -1,0 +1,132 @@
+{
+  "passed": true,
+  "phases": [
+    {
+      "name": "canvas-contracts",
+      "command": [
+        "node",
+        "--test",
+        "scripts/tests/visual-sweep-canvas-fonts.browser.mjs"
+      ],
+      "exit_code": 0,
+      "seconds": 49.97968390304595
+    },
+    {
+      "name": "canvaskit-crop",
+      "command": [
+        "node",
+        "e2e/run-with-vite.mjs",
+        "--",
+        "node",
+        "e2e/canvaskit-cropped-contain.test.mjs"
+      ],
+      "exit_code": 0,
+      "seconds": 11.56813070899807
+    },
+    {
+      "name": "canvaskit-picture-18",
+      "command": [
+        "node",
+        "e2e/run-with-vite.mjs",
+        "--",
+        "node",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/rebase8231/canvaskit_picture.mjs",
+        "18"
+      ],
+      "exit_code": 0,
+      "seconds": 37.617478028987534
+    },
+    {
+      "name": "canvaskit-picture-35",
+      "command": [
+        "node",
+        "e2e/run-with-vite.mjs",
+        "--",
+        "node",
+        "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/rebase8231/canvaskit_picture.mjs",
+        "35"
+      ],
+      "exit_code": 0,
+      "seconds": 31.922576297074556
+    }
+  ],
+  "canvaskit_regions": [
+    {
+      "backend": "canvaskit",
+      "document": "hwp2022",
+      "page": 18,
+      "candidate_png_sha256": "6e047a58ee5ce5f7a1ade85243b0e625baf1db2936d6d40f88bfe7c5ebe0cf8e",
+      "reference_png_sha256": "8f64b07dd5a139d80b96cdb48faec50315f80f5177464eb2b4c342c9629e29bb",
+      "candidate_unmatched": 0,
+      "reference_unmatched": 0,
+      "raw100": true,
+      "region": "source-figure-text",
+      "box": [
+        499,
+        389,
+        550,
+        465
+      ],
+      "candidate_file": "canvaskit/ck-source-figure-text.png",
+      "reference_file": "canvaskit/ck-source-figure-text-print.png"
+    },
+    {
+      "backend": "canvaskit",
+      "document": "hwp2022",
+      "page": 18,
+      "candidate_png_sha256": "be4d2c0986951e9fc0fd5a5ee46a1d732511727657fab9d8f903e92d44713b72",
+      "reference_png_sha256": "cbc89707319672024a22e1cb8a94ca821262391545c1b475d3cef8a46f4460f1",
+      "candidate_unmatched": 0,
+      "reference_unmatched": 0,
+      "raw100": true,
+      "region": "source-figure-edge",
+      "box": [
+        349,
+        517,
+        400,
+        569
+      ],
+      "candidate_file": "canvaskit/ck-source-figure-edge.png",
+      "reference_file": "canvaskit/ck-source-figure-edge-print.png"
+    },
+    {
+      "backend": "canvaskit",
+      "document": "hwp2022",
+      "page": 18,
+      "candidate_png_sha256": "d29e743f5aa0dc3535fb213ab766a92bd4a9c47b5fe901978c3d7427b3a3ddb4",
+      "reference_png_sha256": "776eb0dc81f6cf77cdd38c1aa2a56d964fee2a42d993850c682023f517a71d49",
+      "candidate_unmatched": 0,
+      "reference_unmatched": 0,
+      "raw100": true,
+      "region": "source-figure-full",
+      "box": [
+        108,
+        340,
+        716,
+        752
+      ],
+      "candidate_file": "canvaskit/ck-source-figure-full.png",
+      "reference_file": "canvaskit/ck-source-figure-full-print.png"
+    },
+    {
+      "backend": "canvaskit",
+      "document": "hwp2022",
+      "page": 35,
+      "candidate_png_sha256": "949cfb4d5f304234df59b9fabb26125e45fcaa0fd3455e475fabe1ffbfbff794",
+      "reference_png_sha256": "b3eecdfe897bb721ea78b1870d514f01dff49fce0157564ebec04073a77d05a8",
+      "candidate_unmatched": 0,
+      "reference_unmatched": 0,
+      "raw100": true,
+      "region": "source-diagram-full",
+      "box": [
+        88,
+        522,
+        712,
+        980
+      ],
+      "candidate_file": "canvaskit/ck-source-diagram-full.png",
+      "reference_file": "canvaskit/ck-source-diagram-full-print.png"
+    }
+  ],
+  "scope": "Actual Canvas contracts, actual CanvasKit four crop modes, and prepared Native WMF figures replayed by current optimized WASM in CanvasKit software. Figure regions are not full-document CanvasKit rendering."
+}

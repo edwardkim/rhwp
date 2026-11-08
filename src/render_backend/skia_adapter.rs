@@ -5,7 +5,7 @@
 //! `LayerRasterRenderer::render_raster`) 를 호출만 한다. `render_png` /
 //! `render_png_with_options` 는 쓰지 않는다 — PNG 바이트열만 내는 어댑터는
 //! M06-1 `PngBackend` 의 몫이다. 이 어댑터의 산출물은 레이어 래스터 문서
-//! (`RasterRenderOutput`: 바이트 + 폭·높이·dpi·색공간·형식)다.
+//! (`RasterRenderOutput`: 바이트 + 폭·높이·dpi·색공간·형식 + 재생 진단)다.
 //!
 //! 그 피처가 없으면 어댑터는 그대로 컴파일되고 생명주기는 지키지만 래스터는
 //! **건너뛴다** (`finish` 산출물은 빈 문서 — 바이트 없음, 0×0). 능력 선언은 그
@@ -158,6 +158,7 @@ fn empty_document() -> RasterRenderOutput {
         height: 0,
         dpi: None,
         color_space: RasterColorSpace::Srgb,
+        diagnostics: Default::default(),
     }
 }
 

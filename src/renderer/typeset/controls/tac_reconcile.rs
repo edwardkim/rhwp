@@ -26,12 +26,122 @@ pub(super) struct TacHeightCap {
     pub ladder_omits_spacing: bool,
 }
 
+/// A source frame with a text prefix and a terminal table owns every row,
+/// including the prefix's closing spacing. A table-only cap must not reclaim
+/// rows already admitted by the paragraph formatter and emitted by paint.
+fn complete_stored_prefix_advance(
+    para_idx: usize,
+    para: &Paragraph,
+    next: &Paragraph,
+    fmt: &FormattedParagraph,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    measured_tables: &[MeasuredTable],
+    dpi: f64,
+) -> Option<f64> {
+    use crate::model::paragraph::LineSeg;
+    if para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+        || next.stored_text_partition_is_dirty()
+        || next.cell_format_vpos_dirty
+        || para.line_segs.len() < 2
+        || fmt.line_count() != para.line_segs.len()
+        || !para.controls.iter().all(|control| {
+            matches!(control, Control::Table(_))
+                || crate::renderer::composer::control_is_width_neutral_marker(control)
+        })
+    {
+        return None;
+    }
+    let mut tables = para.controls.iter().enumerate().filter_map(|(i, c)| {
+        if let Control::Table(t) = c {
+            Some((i, t))
+        } else {
+            None
+        }
+    });
+    let (control, table) = tables.next()?;
+    if tables.next().is_some()
+        || !table.common.treat_as_char
+        || table.caption.is_some()
+        || table.cells.iter().any(|cell| cell.dirty_flag)
+        || crate::renderer::composer::control_slot_line_index(para, control)? + 1
+            != para.line_segs.len()
+    {
+        return None;
+    }
+    let measured = measured_tables
+        .iter()
+        .find(|m| m.para_index == para_idx && m.control_index == control)?;
+    if (measured.total_height - hwpunit_to_px(table.common.height as i32, dpi)).abs() > dpi / 7200.0
+    {
+        return None;
+    }
+    for (index, line) in para.line_segs.iter().enumerate() {
+        if line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            || line.line_height <= 0
+            || line.line_spacing < 0
+            || (fmt.line_heights[index] - hwpunit_to_px(line.line_height, dpi)).abs() > dpi / 7200.0
+            || (fmt.line_spacings[index] - hwpunit_to_px(line.line_spacing, dpi)).abs()
+                > dpi / 7200.0
+        {
+            return None;
+        }
+    }
+    for pair in para.line_segs.windows(2) {
+        if pair[0]
+            .vertical_pos
+            .checked_add(pair[0].line_height)?
+            .checked_add(pair[0].line_spacing)?
+            != pair[1].vertical_pos
+        {
+            return None;
+        }
+    }
+    let first = para.line_segs.first()?;
+    let last = para.line_segs.last()?;
+    let outer_height = i64::from(table.common.height)
+        + i64::from(table.outer_margin_top)
+        + i64::from(table.outer_margin_bottom);
+    if i64::from(last.line_height) != outer_height || i64::from(last.text_height) != outer_height {
+        return None;
+    }
+    let successor = next.line_segs.first()?;
+    let after = styles
+        .para_styles
+        .get(para.para_shape_id as usize)?
+        .spacing_after;
+    let before = styles
+        .para_styles
+        .get(next.para_shape_id as usize)?
+        .spacing_before;
+    if successor.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || last
+            .vertical_pos
+            .checked_add(last.line_height)?
+            .checked_add(last.line_spacing)?
+            .checked_add(crate::renderer::px_to_hwpunit(after + before, dpi))?
+            != successor.vertical_pos
+    {
+        return None;
+    }
+    Some(
+        hwpunit_to_px(
+            last.vertical_pos
+                .checked_add(last.line_height)?
+                .checked_add(last.line_spacing)?
+                .checked_sub(first.vertical_pos)?,
+            dpi,
+        ) + after,
+    )
+}
+
 #[allow(clippy::too_many_arguments)]
 pub(super) fn measure(
     para_idx: usize,
     para: &Paragraph,
     next_para: Option<&Paragraph>,
     fmt: &FormattedParagraph,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     measured_tables: &[MeasuredTable],
     tac_count: usize,
     height_before: f64,
@@ -44,15 +154,20 @@ pub(super) fn measure(
     // layout에서 따로 맞추며, 그 간격 전량을 분할 예산에 또 더하지 않는다.
     let mut tac_seg_total = 0.0;
     let mut tac_idx = 0;
+    // TAC 개체가 소유한 줄. 나머지 줄은 같은 문단의 글줄이다.
+    let mut tac_owned_lines = Vec::new();
     for (ci, c) in para.controls.iter().enumerate() {
         if let Control::Table(t) = c {
             if flow.is_effective_tac_table(para, t, fmt) {
-                let seg_index =
-                    if profile.hwp5_stored_pagination_layout() && !profile.session_edited() {
-                        crate::renderer::layout::control_line_seg_index(para, ci).unwrap_or(tac_idx)
-                    } else {
-                        tac_idx
-                    };
+                let composed_rows = crate::renderer::para_has_composed_object_rows(para);
+                let seg_index = if composed_rows
+                    || (profile.hwp5_stored_pagination_layout() && !profile.session_edited())
+                {
+                    crate::renderer::layout::control_line_seg_index(para, ci).unwrap_or(tac_idx)
+                } else {
+                    tac_idx
+                };
+                tac_owned_lines.push(seg_index);
                 if let Some(seg) = para.line_segs.get(seg_index) {
                     let seg_lh = hwpunit_to_px(seg.line_height, dpi);
                     let mt_h = measured_tables
@@ -61,9 +176,16 @@ pub(super) fn measure(
                         .map(|mt| mt.total_height)
                         .unwrap_or(0.0);
                     let effective_h = crate::renderer::tac_table_effective_height(seg_lh, mt_h);
-                    let trailing = if seg.line_spacing > 0 {
-                        crate::renderer::composer::tac_host_trailing_spacing(
+                    let percent_spacing = styles
+                        .para_styles
+                        .get(para.para_shape_id as usize)
+                        .is_some_and(|style| {
+                            style.line_spacing_type == crate::model::style::LineSpacingType::Percent
+                        });
+                    let trailing = if seg.line_spacing > 0 || percent_spacing {
+                        crate::renderer::composer::tac_host_trailing_spacing_at_boundary(
                             para,
+                            next_para,
                             ci,
                             seg,
                             profile.hwpx_stored_layout(),
@@ -120,10 +242,22 @@ pub(super) fn measure(
                 _ => false,
             })
             .count();
-        if prior_tac_count == 0 {
+        // 개체가 소유한 줄. 저장 HWP5 는 원시 제어 위치로, 그 밖은 앞 TAC 개체 수로 정한다.
+        let owned_line = if profile.hwp5_stored_pagination_layout() && !profile.session_edited() {
+            crate::renderer::layout::control_line_seg_index(para, ci).unwrap_or(prior_tac_count)
+        } else {
+            prior_tac_count
+        };
+        // [#8543] 맨 앞 TAC 그림/도형도 자기 줄을 소유하면 그 줄을 센다. 종전에는 앞 TAC 개체가
+        // 없으면 건너뛰어, 쪽 머리 글뒤로 묶음 도형 줄(i270 문단 44 줄 0, 53.4px)을 상한이 되감고
+        // 뒤 표가 그만큼 위에 놓였다. 이미 센 줄(같은 줄의 표 등)은 다시 세지 않는다.
+        if (prior_tac_count == 0 && owned_line == 0 && para.line_segs.len() <= 1)
+            || tac_owned_lines.contains(&owned_line)
+        {
             continue;
         }
-        if let Some(seg) = para.line_segs.get(prior_tac_count) {
+        tac_owned_lines.push(owned_line);
+        if let Some(seg) = para.line_segs.get(owned_line) {
             let lh = hwpunit_to_px(seg.line_height, dpi);
             let ls_extra = if seg.line_spacing > 0 {
                 hwpunit_to_px(seg.line_spacing, dpi)
@@ -132,6 +266,45 @@ pub(super) fn measure(
             };
             tac_seg_total += lh + ls_extra;
             trace_sibling(ci, prior_tac_count, lh, ls_extra);
+        }
+    }
+    // 같은 문단에서 TAC 개체가 소유하지 않은 저장 글줄(표 줄 뒤 제목 줄 등)도
+    // 문단의 흐름을 전진시킨다. 표 줄만 세면 상한이 그 글줄을 되감아, 뒤 문단의
+    // 조판 원점이 저장 사다리보다 그만큼 위로 간다(#8095, 156465345 1쪽 pi=0:
+    // 표 줄 231.6px 만 세어 제목 줄 44.8px 를 잃었다).
+    // [#8507] 재조판한 개체 줄의 표 앞 줄(필드 시작만 남은 빈 줄)은 이 문단이 쌓는 줄이다.
+    // 저장 앵커 줄의 회수 계약(#5524)과 달리 rhwp 가 정한 줄 구성이라 그대로 센다.
+    if crate::renderer::para_has_composed_object_rows(para)
+        && fmt.line_heights.len() == para.line_segs.len()
+        && fmt.line_spacings.len() == fmt.line_heights.len()
+    {
+        if let Some(&first_owned) = tac_owned_lines.iter().min() {
+            tac_seg_total += (0..first_owned)
+                .map(|index| fmt.line_heights[index] + fmt.line_spacings[index])
+                .sum::<f64>();
+        }
+    }
+    // 표 줄 **뒤** 같은 저장 프레임의 글줄만 센다. 표 앞 앵커 줄(한/글 2024 는 흐름에서
+    // 회수한다, #5524)과 저장 되감김 뒤 줄(다음 쪽 몫, #5700)은 이 문단 상한에 넣지 않는다.
+    if tac_seg_total > 0.0
+        && fmt.computed_host_lines.is_none()
+        && fmt.line_heights.len() == para.line_segs.len()
+        && fmt.line_spacings.len() == fmt.line_heights.len()
+    {
+        if let Some(&first_owned) = tac_owned_lines.iter().min() {
+            let mut previous_vpos = para.line_segs.get(first_owned).map(|seg| seg.vertical_pos);
+            for index in first_owned + 1..para.line_segs.len() {
+                let seg = &para.line_segs[index];
+                if seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                    || previous_vpos.is_none_or(|previous| seg.vertical_pos <= previous)
+                {
+                    break;
+                }
+                previous_vpos = Some(seg.vertical_pos);
+                if !tac_owned_lines.contains(&index) {
+                    tac_seg_total += fmt.line_heights[index] + fmt.line_spacings[index];
+                }
+            }
         }
     }
     let cap = if tac_seg_total > 0.0 {
@@ -147,6 +320,13 @@ pub(super) fn measure(
                 _ => None,
             })
             .sum();
+        // 재조판한 개체 줄 높이는 줄 재조판이 표 + 바깥 위·아래 여백으로 만든 값이다(#8507).
+        // 그 줄을 센 합에 바깥 위 여백을 다시 더하지 않는다.
+        let outer_top = if crate::renderer::para_has_composed_object_rows(para) {
+            0.0
+        } else {
+            outer_top
+        };
         let owned_row_total = effective_sb + outer_top + tac_seg_total;
         if has_owned_rowbreak_tac_frame {
             owned_row_total
@@ -155,6 +335,147 @@ pub(super) fn measure(
         }
     } else {
         fmt.total_height
+    };
+    // 개체 줄 뒤의 본문도 같은 문단이 이미 소비한 독립 줄이다.
+    // 표 줄만 합산한 상한으로 그 본문과 줄 사이 간격을 회수하지 않는다.
+    let cap = if profile.hwp5_stored_pagination_layout() && !profile.session_edited() {
+        crate::renderer::composer::stored_tac_host_frame(para)
+            .map(|frame| {
+                let before = if height_before < 1.0 {
+                    0.0
+                } else {
+                    fmt.spacing_before
+                };
+                before + hwpunit_to_px(frame.paragraph_advance_hu, dpi) + fmt.spacing_after
+            })
+            .unwrap_or(cap)
+    } else {
+        cap
+    };
+    // 원본 장식 앵커 줄과 표 소유 줄을 실제 배치가 함께 소비한 프레임이다.
+    // 표 본체와 반간격만 다시 합산하면 앞 빈 줄·문단 간격을 회수해 다음
+    // 문단이 다른 lazy 원점을 세운다. 배치가 쓰는 원본 프레임 판정과
+    // 같은 format 결과의 전체 전진을 보존한다.
+    let decorated_stored_frame = profile.hwp5_stored_pagination_layout()
+        && !profile.session_edited()
+        && tac_count == 1
+        && para.text.trim().is_empty()
+        && fmt.computed_host_lines.is_none()
+        && fmt.line_count() == para.line_segs.len()
+        && para.line_segs.iter().all(|line| {
+            line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        })
+        && para.controls.iter().enumerate().any(|(index, control)| {
+            let Control::Table(table) = control else {
+                return false;
+            };
+            flow.is_effective_tac_table(para, table, fmt)
+                && (next_para.is_some_and(|next| {
+                    crate::renderer::layout::stored_empty_full_band_tac_successor_vpos_hu(
+                        para, index, table, next,
+                    )
+                    .is_some()
+                }) || crate::renderer::layout::tac_in_front_decoration_fixed_line_spacing_deduction_hu(
+                    para, index,
+                )
+                .is_some())
+        });
+    let cap = if decorated_stored_frame {
+        fmt.total_height
+    } else {
+        cap
+    };
+    // A complete source slot includes its outer margins and full closing
+    // advance. Reuse the same producer as table paint instead of independently
+    // halving spacing or adding a margin already owned by the stored line.
+    let cap =
+        if !profile.session_edited() && tac_count == 1 && fmt.line_count() == 1 {
+            next_para
+                .and_then(|next| {
+                    para.controls
+                        .iter()
+                        .enumerate()
+                        .find_map(|(index, control)| {
+                            let Control::Table(table) = control else {
+                                return None;
+                            };
+                            flow.is_effective_tac_table(para, table, fmt)
+                    .then(|| {
+                        crate::renderer::float_placement::stored_tac_line_successor_advance(
+                            para, index, next, styles, dpi,
+                        )
+                        .or_else(|| {
+                            let seg = para.line_segs.first()?;
+                            // 현재 구성한 개체 줄도 배치가 인증한 닫힌 끝을 공유한다.
+                            // 줄 높이가 이미 바깥여백을 소유하므로 legacy cap의
+                            // 위 여백이나 반간격으로 그 끝을 다시 계산하지 않는다.
+                            if !profile.hwpx_stored_layout()
+                                || seg.tag
+                                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                    == 0
+                                || seg.line_spacing < 0
+                                || !crate::renderer::composer::tac_next_line_full_spacing(
+                                    para,
+                                    Some(next),
+                                    fmt.spacing_after,
+                                    styles
+                                        .para_styles
+                                        .get(next.para_shape_id as usize)
+                                        .map_or(0.0, |shape| shape.spacing_before),
+                                    seg,
+                                    profile,
+                                    dpi,
+                                )
+                            {
+                                return None;
+                            }
+                            let height = crate::renderer::composer::owned_rowbreak_tac_height(
+                                para, index,
+                            )?;
+                            Some(
+                                hwpunit_to_px(height.checked_add(seg.line_spacing)?, dpi)
+                                    + fmt.spacing_after,
+                            )
+                        })
+                    }).flatten()
+                        })
+                })
+                .map(|advance| {
+                    advance
+                        + if height_before < 1.0 {
+                            0.0
+                        } else {
+                            fmt.spacing_before
+                        }
+                })
+                .unwrap_or(cap)
+        } else {
+            cap
+        };
+    let cap = if !profile.session_edited() && tac_count == 1 {
+        next_para
+            .and_then(|next| {
+                complete_stored_prefix_advance(
+                    para_idx,
+                    para,
+                    next,
+                    fmt,
+                    styles,
+                    measured_tables,
+                    dpi,
+                )
+            })
+            .map(|advance| {
+                advance
+                    + if height_before < 1.0 {
+                        0.0
+                    } else {
+                        fmt.spacing_before
+                    }
+            })
+            .unwrap_or(cap)
+    } else {
+        cap
     };
     // [#2279 누적Δ] 저장 ladder 가 host paraPr spacing 을 누락한 기계생성
     // 결재문서(HWPX, 빈 host TAC 표): 저장 스텝(다음 문단 vpos−현 vpos)이
@@ -264,13 +585,32 @@ pub(super) fn capped_bottom(
     cap: f64,
     page: TacHeightPage<'_>,
 ) -> f64 {
+    // 같은 문단의 실제 수용 끝은 줄간격과 문단 위 간격도 이미 소비했다.
+    // 선언 높이의 상한으로 다시 역산하면 첫 줄의 원점과 뒤 흐름이 갈라진다.
+    if let Some(end) = page
+        .inline_placements
+        .iter()
+        .filter(|((pi, _), _)| *pi == para_idx)
+        .filter_map(|(_, placement)| placement.advance_end)
+        .reduce(f64::max)
+    {
+        return end.max(page.inline_box_flow_bottom);
+    }
     let side_wrap_clearance: f64 = page
         .inline_placements
         .iter()
         .filter(|((pi, _), _)| *pi == para_idx)
         .map(|(_, placement)| placement.clearance)
         .sum();
-    let capped_bottom = snapped_base + cap + side_wrap_clearance;
+    let shared_end = page
+        .inline_placements
+        .iter()
+        .filter(|((pi, _), _)| *pi == para_idx)
+        .filter_map(|(_, placement)| placement.advance_end)
+        .fold(0.0_f64, f64::max);
+    // 확정 줄 프레임의 뒤 간격은 다음 문단도 실제로 소비한다.
+    // 오래된 분리 예산 cap으로 fit/paint 공통 끝을 되감지 않는다.
+    let capped_bottom = (snapped_base + cap + side_wrap_clearance).max(shared_end);
     // 저장 host가 4px여도 회피 줄의 실측 표 높이는 되돌릴 수 없다.
     // 뒤 표까지 같은 단에서 물리 하단을 이어야 렌더와 fit의 cursor가 같다.
     if page.inline_placements.is_empty() {

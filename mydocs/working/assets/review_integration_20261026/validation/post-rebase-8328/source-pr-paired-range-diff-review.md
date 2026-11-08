@@ -1,0 +1,12 @@
+# 원 PR 재베이스 커밋 대조 — 2026-10-28
+
+[원 head·patch-id 원장](source-pr-patch-refresh-20261028.json)에서 같은 제목의 이전·현재 커밋 13쌍을 `git range-diff <old>^! <new>^!`로 비교했다. [명령 결과](source-pr-paired-range-diff-20261028.json)는 각 전체 SHA와 출력을 보존한다. 명령은 모두 성공했다. 이 비교의 `!`는 수정된 patch를 뜻하며 구현 동등성이나 검증 통과를 단독으로 증명하지 않는다.
+
+- #8202: 현재 브랜치의 도형 삽입은 `reflow_body_inline_object_change`를 호출한다. 최신 원 PR 커밋 `163a24ce99`과 현재 후보의 `shape.rs`, `common.rs`는 바이트 단위로 같다. 공용 호출은 문단 재조판과 후속 문단 위치 갱신을 차례로 수행한다. 원 PR 적용 확인과 시각 수용 판정은 별개다.
+- #8205: 수식 캐시 키의 `legacy_source_frame_seal`과 `document_script::parse` 사용은 현재 브랜치에 있다. 원본 단위 검사는 후속 `c28d998091`에서 공개 API 검사 `tests/cases/equation_render_cache_contract.rs`로 옮겨졌다. 공개 API 검사는 script·fontSize·color·baseline을 다루며 모든 키 필드의 검사를 의미하지는 않는다.
+- #8210·#8213: 새 기반의 저장 첫 행 프레임 fallback이 patch에 포함된 것을 확인했다. 현재 `table_layout.rs`의 대상 행은 우선 캐시 행에서 해당 행을 찾고 없으면 저장 첫 행 프레임에서 찾는다. 최신 원 PR은 먼저 행 배열을 선택한 뒤 해당 행을 찾는다. 두 경로의 행 범위를 확인했다. 전체 행 프레임이 `Some`이면 길이가 `table.row_count`와 같고(`stored_plain_object_row_frame_heights`), 첫 행 프레임은 그 이하로 잘린다(`stored_plain_opening_row_frame`). 그러므로 전체 프레임에서 없는 행은 첫 행 프레임에도 없어 두 순서 모두 `None`이다. 캐시도 같은 전체 행 함수를 호출한다. 이 조건하에서 평가 순서 차이는 선택 높이를 바꾸지 않는다. #8213 글꼴 접미사 fallback은 현재 최근 이름 캐시를 거치는 구현으로 존재한다. 접미사 fallback은 최신 원 PR의 직접 alias·색인 조회 대신 `resolve_metric_name(family)`를 사용한다. 해당 함수는 동일한 alias·색인 함수를 호출하고 캐시 키를 `Box<str>`로 소유하며 결과는 정적 alias·색인 참조를 담는다. 따라서 호출 수는 달라도 선택 alias·색인·굵기 조건은 같다.
+- #8128: 최신 원 PR 변경 파일 `src/renderer/typeset/paragraph.rs`는 현재 후보와 바이트 단위로 같다. 범위의 실제 시각 검증은 별도로 기록한다.
+- #8283: 최신 원 PR 커밋의 변경 파일 중 후보와 차이가 있는 것은 `line_breaking.rs`와 회귀 검사 파일이다. 전자의 차이는 #8167 도형 바깥 여백 계산 3개 구간이며 #8271의 그림 호스트 분기 차이는 없다. 검사 파일은 원 PR의 기존 검사를 유지하며 두 실측 fixture의 그림 네 변을 독립 Print 좌표 ±2px로 확인하는 검사를 추가했다. 측정 근거는 검사 파일 첫머리에 기록돼 있다.
+- #8133: 최신 원 PR의 Skia 굵기 보정과 회귀 검사는 후보에 유지됐다. `line_replay.rs`에는 이후 통합 보정인 선언 굵기 기준 픽셀 중심 계획과 최소 굵기 유지가 추가됐고, 회귀 파일에는 실측 페이지 경계 검사와 근거 주석이 추가됐다. CI의 차이는 Visual Sweep Brotli 의존성 추가이며 classifier와 그 검사는 같다. 최종 시각 결과는 별도 측정으로 판단한다.
+- #8184 기존 3개 패치는 range-diff상 앞뒤 코드 문맥 및 새 기반의 호출 인자 차이가 주로 나타난다. 후보에는 아래 캡션 높이 소비(`layout/paragraph_layout.rs`), 첫 조각 예약 helper의 진입·예산 양쪽 소비(`table/block/prepare.rs`, `continuation/fragment/budget.rs`), 다음 문단의 저장 줄에 근거한 단 원점 계산(`float_placement.rs`, `state/stored_tac.rs`)이 있다. 이후 추가 체리픽과 별도 통합 보정도 적용되어 있으므로 이 호출 확인만으로 전체 동작 동등성이나 전쪽 검증을 주장하지 않는다.
+- #8184의 추가 세 커밋 중 두 체리픽과 충돌 보존 범위는 [별도 구현 검토](../../../../../pr/archives/pr_8184_review_impl.md)에 기록한다. 이 기록은 전쪽 시각 검증을 대체하지 않는다.

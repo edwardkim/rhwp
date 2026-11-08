@@ -1,7 +1,7 @@
 //! Issue #2287 / PR #2290 P1 — 47×9 RowBreak rowspan 블록의 연속 조각 내용
 //! 보존 + frame-tail overflow 부재 통합 회귀.
 //!
-//! `samples/task2287/1342000_edu_curriculum_map.hwp` (교육부 범교과 연결 맵)
+//! `mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp` (교육부 범교과 연결 맵)
 //! s1 pi0 47×9 표: rowspan 블록(rows 2..4, 셀[2] 85문단+중첩표 123유닛)이
 //! p25~p31 로 분할된다. 문서 총 페이지 수만으로는 잡히지 않는 회귀(리뷰
 //! 지적: 내용이 p26 에서 p30 으로 이동 + page frame 아래 tail overflow)를
@@ -23,7 +23,8 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 fn core() -> DocumentCore {
     let repo_root = env!("CARGO_MANIFEST_DIR");
-    let path = Path::new(repo_root).join("samples/task2287/1342000_edu_curriculum_map.hwp");
+    let path = Path::new(repo_root)
+        .join("mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp");
     let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {}", path.display(), e));
     DocumentCore::from_bytes(&bytes).expect("parse 1342000_edu_curriculum_map.hwp")
 }

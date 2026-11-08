@@ -1,0 +1,3109 @@
+[
+  {
+    "key": "pdf-2010-fidelity",
+    "mode": "fidelity",
+    "version": "2010",
+    "exported": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/v15-ui/wasm-pdf-import/pdf-2010-fidelity.hwpx",
+    "diagnostics": {
+      "pdfImportSupport": {
+        "enabled": true,
+        "jbig2": false,
+        "jpeg2000": false
+      },
+      "sourcePageCount": 16,
+      "pages": [
+        {
+          "sourcePage": 0,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 708,
+            "sha256": "7495baea7e1f19d393c9e95f11a75b75f279a0d945a2ef4780efd6b4a5b1f98f",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 2,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "0b09c4d6afe602a675a14ca3dcd3debc5228bea682bb5b2f6f2794306b852664",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 1,
+          "outputSection": 1,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 897,
+            "sha256": "53f6f5142101026b3ea9186b5be12c1962b55d1ef811164e84b51c88ec5faa08",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "57ce6e533d12a40ebdcf16ea1142e13f5f2f0314b6a0fa785fbdb320b1a6157d",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 2,
+          "outputSection": 2,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 700,
+            "sha256": "b5fa1215e447a353119260bd7ecbba51339ec0fe041e5658553115f40f01113a",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "e3efb5393fab6bef614e04432dadd48554ab393982ae99f496b2f7e5956ca1d4",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 3,
+          "outputSection": 3,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 1012,
+            "sha256": "14357677fb06b015afbba3e2892daa2e96f8e15d86bebaa5ba2adb46f108ca74",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "90b90fbdf20be325209a4f772eb950f69963d3a5f1dd614c7139da6fe59c8c75",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 4,
+          "outputSection": 4,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 867,
+            "sha256": "c78f68bd161fdd181acd0a0d7b48b7961e6a3fa5607df052a91985b423a52410",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "4981fedd430925d7ca5e6e0601f5b66ae26fdaa9bcb81169ae5f1f596e7b086f",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 5,
+          "outputSection": 5,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 727,
+            "sha256": "ca5b184b3f96a1659e6c74ea12dc3218c20a72cdc2b9dec89801d471ce26362e",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "598c7b5915fe90e6f1d5e408862a6a3a657ffadde02c7c1ad9849bd94d5f627e",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 6,
+          "outputSection": 6,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 959,
+            "sha256": "e022565cd9006154a2bd22452417499ca47825a2ecb82f8213d3930e87e46721",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "3f07876108d422e12e3f2514ae1ce3bb5450609b134fce90ac9720130d0a64b8",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 7,
+          "outputSection": 7,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 1151,
+            "sha256": "10b9cc2d3938a8bee5f0ef9e623f1b0b610b46b9c44fda9fac71333d5179f034",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "6c67e0dbbd4e082ae48585c9ae6814835881e1210df51206e7212a01724ded3c",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 8,
+          "outputSection": 8,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 780,
+            "sha256": "b33b96e4ae28c7c8e23f3698440643076484f1838ee442309cc098c63a8d3639",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "ee25be9c41a88f3b282f64678455b1e4e1922cde3be13882c1e6795931b78c03",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 9,
+          "outputSection": 9,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 992,
+            "sha256": "613c2b8f92b5efd1ed97353f36317459a5f90237d230516689df465963c62bf7",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "bc5041c0a425ebaa69d203b0b5285ea57261fcf7b4e3152bb461c1dbdc319ffa",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 10,
+          "outputSection": 10,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 876,
+            "sha256": "a22bc585e1b821502f1a4ef7affe5b6475546738790489cdead35447188fafeb",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "10395e568e4827dbbac81e30c7d63be2215201253956cef20e52fd79e8c59b2d",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 11,
+          "outputSection": 11,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 484,
+            "sha256": "ae35bd44850d053903649b470fa9be57a08c39e07943cd5ec094eb5f36c61e77",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "883ac5153e3e1c05b3ca52c7727ac33542dd1992d204c926f5cce65d7901c3ea",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 12,
+          "outputSection": 12,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 900,
+            "sha256": "87188f9d44bdb480f57c69787b7fb0f47007dbdd1ac7732be851505c17a82774",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "35f34e8700393f47db6575b74190177010d68651446bb56b05256f861fda32db",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 13,
+          "outputSection": 13,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 532,
+            "sha256": "913417e4efcc597b960fc78a34e8f6605ae38c3b1ac8127695dd035ffb42af73",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "0fb0b463eace2e9803d5eeb7b27c0bf850fc180b91d229fa3990c04efbbbde8d",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 14,
+          "outputSection": 14,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 1009,
+            "sha256": "d43d7ffae6594236e8b53b3e1036dbad5e901ae230a7d1d1199a5afc057a2c68",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "98b04d355028bf3ae639bc429cf87b2099dcde8ad8e8a8887c24a6cb9b923adf",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 15,
+          "outputSection": 15,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 316,
+            "sha256": "e9e399b92f8d7c884abd3ef37c23d756a75335997a672b7f5244ffadc230efa2",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "458f450f08045bd45984b613967e97c55b3d433def89eaec298e595ce1f23dbc",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        }
+      ],
+      "paragraphPolicy": "observed-lines; authored paragraph boundaries are not recovered",
+      "layout": "fidelity",
+      "parserAllocationBoundsProven": false,
+      "warnings": [
+        "Experimental PDF frontend; upstream allocation bounds remain unproven",
+        "Clipping, transparency, embedded fonts and complex paint are not fully reconstructed",
+        "Deferred table families retain positional content; inspect page diagnostics"
+      ],
+      "resourcePolicy": {
+        "schemaVersion": 1,
+        "maxSourcePages": 100000,
+        "maxSelectedPages": 1024,
+        "maxPathOperations": 20000,
+        "maxDocumentPathOperations": 320000,
+        "maxDocumentImagePlacements": 4000000,
+        "backend": {
+          "inputBytes": 67108864,
+          "streamBytes": 33554432,
+          "codecAllocationBytes": 33554432,
+          "codecWorkUnits": 1000000000,
+          "decodedBytes": 1073741824,
+          "filters": 8,
+          "nesting": 16,
+          "objects": 50000,
+          "entries": 400000,
+          "operators": 1600000,
+          "graphicsStack": 128,
+          "stringBytes": 65536,
+          "textBytes": 2097152,
+          "spans": 40000,
+          "cmapBytes": 1048576,
+          "cmapEntries": 100000,
+          "cmapScanBytes": 67108864,
+          "fontEntries": 1000000,
+          "referenceDepth": 32,
+          "referenceVisits": 1600000,
+          "formDepth": 16,
+          "xobjectVisits": 1600000
+        }
+      },
+      "resourceUsage": {
+        "decodedBytes": 37022662,
+        "codecAllocatedBytes": 11894288,
+        "codecWorkUnits": 0,
+        "parsedObjects": 3027,
+        "collectionEntries": 69044,
+        "operators": 148863,
+        "textBytes": 25268,
+        "spans": 12910,
+        "referenceVisits": 684,
+        "xobjectVisits": 52,
+        "contentParseCalls": 16,
+        "pageOperatorCacheHits": 48,
+        "pageStreamCacheHits": 48,
+        "formStreamCacheHits": 0,
+        "failure": null
+      }
+    },
+    "pages": 16,
+    "source": "pdf",
+    "exported_sha256": "851144435ef1102cd4727f0635819973915d5718c130812c288cbc3e85fbe2dc",
+    "exported_bytes": 589479,
+    "wasm_sha256": "c5b25dd8b22efce0d4ecb08291069e3ec625345c40957cbe457cc431f69737d8"
+  },
+  {
+    "key": "pdf-2020-fidelity",
+    "mode": "fidelity",
+    "version": "2020",
+    "exported": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/v15-ui/wasm-pdf-import/pdf-2020-fidelity.hwpx",
+    "diagnostics": {
+      "pdfImportSupport": {
+        "enabled": true,
+        "jbig2": false,
+        "jpeg2000": false
+      },
+      "sourcePageCount": 15,
+      "pages": [
+        {
+          "sourcePage": 0,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 729,
+            "sha256": "95ed4cb9058337b399023cf43f26fba8327ef015a8725a8bfda98f4b23e46460",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 2,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "7d806c339bd2b223c2c9c4d7eaaa70371669df1d08366400dce2d1c91938fd38",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 1,
+          "outputSection": 1,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 907,
+            "sha256": "8418155cdfbeaef723d9500a3abacd0a1c7ec1a4af796af12d30f1e8059ec0cf",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "a1f879db7e920311e0852b897cbc631ad3045602bec78a97bfb5eba4a69a0d0f",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 2,
+          "outputSection": 2,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 680,
+            "sha256": "572a3375fa271a5e6fb5b997fe61a502cefee737edc62d8949b1f987aa2b84d1",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "c0138072ef1032ebe96f572920e29443b6eb74fe0b00720a4b5b9ed04569ccff",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 3,
+          "outputSection": 3,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 1013,
+            "sha256": "fff1a3fb4e22cfec65e933fe85ed7c88e3c06ef7514bc160d6e92114e1c82fc8",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "456f96bfb04384742b8ffb591c7958f7bfc86430d8160f2ce807598d5e971133",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 4,
+          "outputSection": 4,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 894,
+            "sha256": "8f4085f047c3c820dc85a86431be46c621bfcc3c3d02289eb9f9492e24f9e59f",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "d6cafc27c475b49995499627185f28a45848bf1357baa079e5a237d27b439bd6",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 5,
+          "outputSection": 5,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 704,
+            "sha256": "55228cb88ce03dc8e6a117695cc53709321ba389ba75b718d85322c3e363880f",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "4bce3fe8e371d2503b69893e1e5c880792409cc68f224c67a28616e37cc26dab",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 6,
+          "outputSection": 6,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 962,
+            "sha256": "177681df47e53d02bd2b93dad48e8fb6ad09c826fb796082b89a18c8ac38ceb1",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "728c8a82908fa5b726ae4d70906cc4934db27c4d8514de18c446c0f21b329287",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 7,
+          "outputSection": 7,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 1196,
+            "sha256": "141067a7137d8742c680463a7a746e4491026421c8e52e58bc5222d2828197b5",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "46f7e3881ddba0375f7b3fdd59b6a35e3bcd192ae157d5b2391efa698b499f6e",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 8,
+          "outputSection": 8,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 737,
+            "sha256": "55dfe28575c52c89c3f80804297015336df6d9679d705f36a77e8d9b781b98b1",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "5e4e9bba69c3c39eaea1e8ea1fdbc5a90f943335f6157b41390afd369ec5a803",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 9,
+          "outputSection": 9,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 993,
+            "sha256": "37a736f328b21281800f470b92951a32a5d8de1776959b632e355a7868f110f0",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "54083cd6e120be87308780b18115fc3235585322979719a352f985f8bde88ea3",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 10,
+          "outputSection": 10,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 923,
+            "sha256": "433504a4b25db9ccacb49a17ba6b3f764b392ebe9633c493eda2f5a97e2dedf4",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "311e5998dcd017ec7a1080e4cd812e7180bd5307deb4547755bc690aeee31f1c",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 11,
+          "outputSection": 11,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 658,
+            "sha256": "440f234e75a8d09facec79780bee0f8883c2d30417caa3b6ad8ffca2356959d1",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "db6f32736ec1e79ade989b1105f2f0f225dcb3df7114871ece66428f2c04ced4",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 12,
+          "outputSection": 12,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 1022,
+            "sha256": "294fc9ef045068ff37804f5c7a34f48558104d4a076cee0fb35f3cc7e33c4719",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "13ee8153f2a0eedf60c4a2dfd45cbab0ef7b4bc07088b519d74205b377eb854b",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 13,
+          "outputSection": 13,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 817,
+            "sha256": "f7b2a709a65549deeb84e292859e74c3a0e1f30e2ba5499ff9bf0fe8430c98d1",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "1275908a0bbcbdd512615b33caa3bc7d6295428ba6154003f264154750d72115",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 14,
+          "outputSection": 14,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 702,
+            "sha256": "528fef45369966c9717a6156ff304fe5778bea81c20d42a8e29ff0f018972d31",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "5b7d86c4a29e6385aba8f6322dee2524132a49dd63f3312696b4a49503504a92",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        }
+      ],
+      "paragraphPolicy": "observed-lines; authored paragraph boundaries are not recovered",
+      "layout": "fidelity",
+      "parserAllocationBoundsProven": false,
+      "warnings": [
+        "Experimental PDF frontend; upstream allocation bounds remain unproven",
+        "Clipping, transparency, embedded fonts and complex paint are not fully reconstructed",
+        "Deferred table families retain positional content; inspect page diagnostics"
+      ],
+      "resourcePolicy": {
+        "schemaVersion": 1,
+        "maxSourcePages": 100000,
+        "maxSelectedPages": 1024,
+        "maxPathOperations": 20000,
+        "maxDocumentPathOperations": 300000,
+        "maxDocumentImagePlacements": 4000000,
+        "backend": {
+          "inputBytes": 67108864,
+          "streamBytes": 33554432,
+          "codecAllocationBytes": 33554432,
+          "codecWorkUnits": 1000000000,
+          "decodedBytes": 1006632960,
+          "filters": 8,
+          "nesting": 16,
+          "objects": 50000,
+          "entries": 400000,
+          "operators": 1500000,
+          "graphicsStack": 128,
+          "stringBytes": 65536,
+          "textBytes": 2097152,
+          "spans": 40000,
+          "cmapBytes": 1048576,
+          "cmapEntries": 100000,
+          "cmapScanBytes": 67108864,
+          "fontEntries": 1000000,
+          "referenceDepth": 32,
+          "referenceVisits": 1500000,
+          "formDepth": 16,
+          "xobjectVisits": 1500000
+        }
+      },
+      "resourceUsage": {
+        "decodedBytes": 38123975,
+        "codecAllocatedBytes": 11894288,
+        "codecWorkUnits": 0,
+        "parsedObjects": 3003,
+        "collectionEntries": 69189,
+        "operators": 149752,
+        "textBytes": 25411,
+        "spans": 12937,
+        "referenceVisits": 654,
+        "xobjectVisits": 52,
+        "contentParseCalls": 15,
+        "pageOperatorCacheHits": 45,
+        "pageStreamCacheHits": 45,
+        "formStreamCacheHits": 0,
+        "failure": null
+      }
+    },
+    "pages": 15,
+    "source": "pdf",
+    "exported_sha256": "621ed0ce5dc918e5246a0e0f4ed853812bfe36009560a4b81fc4a25b64b58d8f",
+    "exported_bytes": 611113,
+    "wasm_sha256": "c5b25dd8b22efce0d4ecb08291069e3ec625345c40957cbe457cc431f69737d8"
+  },
+  {
+    "key": "pdf-mac-fidelity",
+    "mode": "fidelity",
+    "version": "mac",
+    "exported": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/v15-ui/wasm-pdf-import/pdf-mac-fidelity.hwpx",
+    "diagnostics": {
+      "pdfImportSupport": {
+        "enabled": true,
+        "jbig2": false,
+        "jpeg2000": false
+      },
+      "sourcePageCount": 15,
+      "pages": [
+        {
+          "sourcePage": 0,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1325,
+            "sha256": "c7cececb3107ebc16cff00ad87c8e862316d1d87d7725f19818789470e151bcc",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 2,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "4260fe503294632066f4c42f3da34a14538163dc2cd2ce1a1ad0487917694fc6",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 1,
+          "outputSection": 1,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1520,
+            "sha256": "be1556fc2b5532bc76c71c32223ec03e8bb8e988cd2d5f640f7356d64fecfdfb",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "e1a5ace03aff3f76262068ac485b6e56273a555d215ea7fca67deaf83d0218d5",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 2,
+          "outputSection": 2,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1089,
+            "sha256": "03308ff4e211d6c6697a981636c95468659eab2ee7646304165c119537f15d14",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "742d2aa1c4817dce37d304034c17884fe9a06971be8ff58f78655cb9a734d1b8",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 3,
+          "outputSection": 3,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1614,
+            "sha256": "0f68423778a94438bc93cf7f50b1f1bc5daa706b7a91e71164327f260b2ae6bd",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "eaf096d1f60ff788ad1b29b7dd5118b7ad759583485b4d7d1735de33615d3442",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 4,
+          "outputSection": 4,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1415,
+            "sha256": "456cd7c5b9511af55f38c237d4f6378fed36a279bfcc01a3848295d66feb2b0c",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "b33d0a82337ba2fa0e7591f00b438c5aed0202b59a41d5181e32f26d7e3de7da",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 5,
+          "outputSection": 5,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1082,
+            "sha256": "00a9168cfc0e4f7b170b6250d6d7bddc126da4c675dc9e16ca052868b793cbd4",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "ab3c2427f5870419614bc78ba17c7aff7c25625a1566afa5f95d8ece82d631b8",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 6,
+          "outputSection": 6,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1525,
+            "sha256": "fc75e961ca535c89ee4aa80c0227f8407517c2f3e156e6915c7c5f74c72ac500",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "8cfb1213fbf3e99664716fafb799de3bed3693bec9845c20f29ccb9fc4544c8b",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 7,
+          "outputSection": 7,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1905,
+            "sha256": "28ae47b09d3f833394c5a637ac9b502978d5e17af286935f3a299f8fb6a01f1f",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "d48ef2e393685b99273659348ae8ad03750d9704f58acc2d809c0e8db2ecb7cd",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 8,
+          "outputSection": 8,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1033,
+            "sha256": "6a70ddee751ca2c3a3d238d9bbeea961a7c7cde4624d2fc479d56a87086d5385",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "95466592383ef33b71318dd5a78d2db82fe4a27557aa14f4035e16d39eb988dd",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 9,
+          "outputSection": 9,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1635,
+            "sha256": "1c41a9f8c0b4730e7a62e79daad929e0c5f693d5b503e5b6a7d794c5ae11c191",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "6d544b8f460dde4830c739760f2a6822e50d69d97d7d69d37910606118c30d5b",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 10,
+          "outputSection": 10,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1543,
+            "sha256": "474da8a3d1ed962e964880916571d8f23e52a50920a611f62ae823e4144d3974",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "98a48bebc9b91916f58ee59323739caee4aa05d0ceedfc5c0d8a5356667dcfc7",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 11,
+          "outputSection": 11,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1002,
+            "sha256": "4e0c024f624d70919c0dec9927ceabd4699050f297eaec67ed796764d17fbaf4",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "b571a227b407b729d365f0326d59cb666ea8d732d33292134c4a3d2794ce48ea",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 12,
+          "outputSection": 12,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1584,
+            "sha256": "c26d771e25b7581b0cb37e3a1ac1258cfdd747f23fa3fcb5ac2e9c9a3070227c",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "f24dd768f33693e75e090a382d714c96a05d4b29b98c5c5bc2287c76b7ad72b7",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 13,
+          "outputSection": 13,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1329,
+            "sha256": "f1ad630bea65c492a4fbbe3ae1d0022425d5bc4772de693c47dc2a97c92d6f54",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "e1338287ab128e3ac10cdf6ad63855e9e0c253551948937179cd8f9140d92436",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 14,
+          "outputSection": 14,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1151,
+            "sha256": "375662b8bc93b97ce2c7540a36ae60c08fc7df851a06741cb6a84613ae85d128",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "86c9826754621460ffc7f97dd89f2e5198cfc363b151c07f17f9ba808d1fc94d",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        }
+      ],
+      "paragraphPolicy": "observed-lines; authored paragraph boundaries are not recovered",
+      "layout": "fidelity",
+      "parserAllocationBoundsProven": false,
+      "warnings": [
+        "Experimental PDF frontend; upstream allocation bounds remain unproven",
+        "Clipping, transparency, embedded fonts and complex paint are not fully reconstructed",
+        "Deferred table families retain positional content; inspect page diagnostics"
+      ],
+      "resourcePolicy": {
+        "schemaVersion": 1,
+        "maxSourcePages": 100000,
+        "maxSelectedPages": 1024,
+        "maxPathOperations": 20000,
+        "maxDocumentPathOperations": 300000,
+        "maxDocumentImagePlacements": 4000000,
+        "backend": {
+          "inputBytes": 67108864,
+          "streamBytes": 33554432,
+          "codecAllocationBytes": 33554432,
+          "codecWorkUnits": 1000000000,
+          "decodedBytes": 1006632960,
+          "filters": 8,
+          "nesting": 16,
+          "objects": 50000,
+          "entries": 400000,
+          "operators": 1500000,
+          "graphicsStack": 128,
+          "stringBytes": 65536,
+          "textBytes": 2097152,
+          "spans": 40000,
+          "cmapBytes": 1048576,
+          "cmapEntries": 100000,
+          "cmapScanBytes": 67108864,
+          "fontEntries": 1000000,
+          "referenceDepth": 32,
+          "referenceVisits": 1500000,
+          "formDepth": 16,
+          "xobjectVisits": 1500000
+        }
+      },
+      "resourceUsage": {
+        "decodedBytes": 62132127,
+        "codecAllocatedBytes": 427210,
+        "codecWorkUnits": 0,
+        "parsedObjects": 2165,
+        "collectionEntries": 51804,
+        "operators": 286056,
+        "textBytes": 32481,
+        "spans": 20752,
+        "referenceVisits": 43749,
+        "xobjectVisits": 4,
+        "contentParseCalls": 15,
+        "pageOperatorCacheHits": 45,
+        "pageStreamCacheHits": 45,
+        "formStreamCacheHits": 0,
+        "failure": null
+      }
+    },
+    "pages": 15,
+    "source": "pdf",
+    "exported_sha256": "0b24eb722daed8821fd688fa7af1064172572cde0a79e21c729834465ee0929b",
+    "exported_bytes": 456201,
+    "wasm_sha256": "c5b25dd8b22efce0d4ecb08291069e3ec625345c40957cbe457cc431f69737d8"
+  },
+  {
+    "key": "pdf-2010-editable",
+    "mode": "editable",
+    "version": "2010",
+    "exported": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/v15-ui/wasm-pdf-import/pdf-2010-editable.hwpx",
+    "diagnostics": {
+      "pdfImportSupport": {
+        "enabled": true,
+        "jbig2": false,
+        "jpeg2000": false
+      },
+      "sourcePageCount": 16,
+      "pages": [
+        {
+          "sourcePage": 0,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 708,
+            "sha256": "7495baea7e1f19d393c9e95f11a75b75f279a0d945a2ef4780efd6b4a5b1f98f",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 2,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "0b09c4d6afe602a675a14ca3dcd3debc5228bea682bb5b2f6f2794306b852664",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 1,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 897,
+            "sha256": "53f6f5142101026b3ea9186b5be12c1962b55d1ef811164e84b51c88ec5faa08",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "57ce6e533d12a40ebdcf16ea1142e13f5f2f0314b6a0fa785fbdb320b1a6157d",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 2,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 700,
+            "sha256": "b5fa1215e447a353119260bd7ecbba51339ec0fe041e5658553115f40f01113a",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "e3efb5393fab6bef614e04432dadd48554ab393982ae99f496b2f7e5956ca1d4",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 3,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 1012,
+            "sha256": "14357677fb06b015afbba3e2892daa2e96f8e15d86bebaa5ba2adb46f108ca74",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "90b90fbdf20be325209a4f772eb950f69963d3a5f1dd614c7139da6fe59c8c75",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 4,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 867,
+            "sha256": "c78f68bd161fdd181acd0a0d7b48b7961e6a3fa5607df052a91985b423a52410",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "4981fedd430925d7ca5e6e0601f5b66ae26fdaa9bcb81169ae5f1f596e7b086f",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 5,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 727,
+            "sha256": "ca5b184b3f96a1659e6c74ea12dc3218c20a72cdc2b9dec89801d471ce26362e",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "598c7b5915fe90e6f1d5e408862a6a3a657ffadde02c7c1ad9849bd94d5f627e",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 6,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 959,
+            "sha256": "e022565cd9006154a2bd22452417499ca47825a2ecb82f8213d3930e87e46721",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "3f07876108d422e12e3f2514ae1ce3bb5450609b134fce90ac9720130d0a64b8",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 7,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 1151,
+            "sha256": "10b9cc2d3938a8bee5f0ef9e623f1b0b610b46b9c44fda9fac71333d5179f034",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "6c67e0dbbd4e082ae48585c9ae6814835881e1210df51206e7212a01724ded3c",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 8,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 780,
+            "sha256": "b33b96e4ae28c7c8e23f3698440643076484f1838ee442309cc098c63a8d3639",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "ee25be9c41a88f3b282f64678455b1e4e1922cde3be13882c1e6795931b78c03",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 9,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 992,
+            "sha256": "613c2b8f92b5efd1ed97353f36317459a5f90237d230516689df465963c62bf7",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "bc5041c0a425ebaa69d203b0b5285ea57261fcf7b4e3152bb461c1dbdc319ffa",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 10,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 876,
+            "sha256": "a22bc585e1b821502f1a4ef7affe5b6475546738790489cdead35447188fafeb",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "10395e568e4827dbbac81e30c7d63be2215201253956cef20e52fd79e8c59b2d",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 11,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 484,
+            "sha256": "ae35bd44850d053903649b470fa9be57a08c39e07943cd5ec094eb5f36c61e77",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "883ac5153e3e1c05b3ca52c7727ac33542dd1992d204c926f5cce65d7901c3ea",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 12,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 900,
+            "sha256": "87188f9d44bdb480f57c69787b7fb0f47007dbdd1ac7732be851505c17a82774",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "35f34e8700393f47db6575b74190177010d68651446bb56b05256f861fda32db",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 13,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 532,
+            "sha256": "913417e4efcc597b960fc78a34e8f6605ae38c3b1ac8127695dd035ffb42af73",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "0fb0b463eace2e9803d5eeb7b27c0bf850fc180b91d229fa3990c04efbbbde8d",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 14,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 1009,
+            "sha256": "d43d7ffae6594236e8b53b3e1036dbad5e901ae230a7d1d1199a5afc057a2c68",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "98b04d355028bf3ae639bc429cf87b2099dcde8ad8e8a8887c24a6cb9b923adf",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 15,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 316,
+            "sha256": "e9e399b92f8d7c884abd3ef37c23d756a75335997a672b7f5244ffadc230efa2",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "458f450f08045bd45984b613967e97c55b3d433def89eaec298e595ce1f23dbc",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        }
+      ],
+      "paragraphPolicy": "observed-lines; authored paragraph boundaries are not recovered",
+      "layout": "editable",
+      "editableLayout": {
+        "layout": "editable",
+        "sections": [
+          {
+            "columnGap": 2836,
+            "columns": 2,
+            "joinedParagraphs": 8,
+            "margins": [
+              8774,
+              15704,
+              8781,
+              10715
+            ],
+            "pages": [
+              {
+                "bodyParagraphs": 16,
+                "columns": 2,
+                "positionedFrames": 5,
+                "sourceSection": 0
+              },
+              {
+                "bodyParagraphs": 19,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 1
+              },
+              {
+                "bodyParagraphs": 19,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 2
+              },
+              {
+                "bodyParagraphs": 19,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 3
+              },
+              {
+                "bodyParagraphs": 16,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 4
+              },
+              {
+                "bodyParagraphs": 23,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 5
+              },
+              {
+                "bodyParagraphs": 13,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 6
+              },
+              {
+                "bodyParagraphs": 20,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 7
+              },
+              {
+                "bodyParagraphs": 21,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 8
+              },
+              {
+                "bodyParagraphs": 7,
+                "columns": 2,
+                "positionedFrames": 3,
+                "sourceSection": 9
+              },
+              {
+                "bodyParagraphs": 19,
+                "columns": 2,
+                "positionedFrames": 2,
+                "sourceSection": 10
+              },
+              {
+                "bodyParagraphs": 12,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 11
+              },
+              {
+                "bodyParagraphs": 13,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 12
+              },
+              {
+                "bodyParagraphs": 22,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 13
+              },
+              {
+                "bodyParagraphs": 16,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 14
+              },
+              {
+                "bodyParagraphs": 0,
+                "columns": 2,
+                "positionedFrames": 2,
+                "sourceSection": 15
+              }
+            ]
+          }
+        ]
+      },
+      "parserAllocationBoundsProven": false,
+      "warnings": [
+        "Experimental PDF frontend; upstream allocation bounds remain unproven",
+        "Clipping, transparency, embedded fonts and complex paint are not fully reconstructed",
+        "Deferred table families retain positional content; inspect page diagnostics"
+      ],
+      "resourcePolicy": {
+        "schemaVersion": 1,
+        "maxSourcePages": 100000,
+        "maxSelectedPages": 1024,
+        "maxPathOperations": 20000,
+        "maxDocumentPathOperations": 320000,
+        "maxDocumentImagePlacements": 4000000,
+        "backend": {
+          "inputBytes": 67108864,
+          "streamBytes": 33554432,
+          "codecAllocationBytes": 33554432,
+          "codecWorkUnits": 1000000000,
+          "decodedBytes": 1073741824,
+          "filters": 8,
+          "nesting": 16,
+          "objects": 50000,
+          "entries": 400000,
+          "operators": 1600000,
+          "graphicsStack": 128,
+          "stringBytes": 65536,
+          "textBytes": 2097152,
+          "spans": 40000,
+          "cmapBytes": 1048576,
+          "cmapEntries": 100000,
+          "cmapScanBytes": 67108864,
+          "fontEntries": 1000000,
+          "referenceDepth": 32,
+          "referenceVisits": 1600000,
+          "formDepth": 16,
+          "xobjectVisits": 1600000
+        }
+      },
+      "resourceUsage": {
+        "decodedBytes": 37022662,
+        "codecAllocatedBytes": 11894288,
+        "codecWorkUnits": 0,
+        "parsedObjects": 3027,
+        "collectionEntries": 69044,
+        "operators": 148863,
+        "textBytes": 25268,
+        "spans": 12910,
+        "referenceVisits": 684,
+        "xobjectVisits": 52,
+        "contentParseCalls": 16,
+        "pageOperatorCacheHits": 48,
+        "pageStreamCacheHits": 48,
+        "formStreamCacheHits": 0,
+        "failure": null
+      }
+    },
+    "pages": 16,
+    "source": "pdf",
+    "bodyParagraphs": 255,
+    "exported_sha256": "a09263bd2cb6c5e8dfd3be425b888f5708dc34bd4485308868c03894b9f2a0f5",
+    "exported_bytes": 553888,
+    "wasm_sha256": "c5b25dd8b22efce0d4ecb08291069e3ec625345c40957cbe457cc431f69737d8"
+  },
+  {
+    "key": "pdf-2020-editable",
+    "mode": "editable",
+    "version": "2020",
+    "exported": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/v15-ui/wasm-pdf-import/pdf-2020-editable.hwpx",
+    "diagnostics": {
+      "pdfImportSupport": {
+        "enabled": true,
+        "jbig2": false,
+        "jpeg2000": false
+      },
+      "sourcePageCount": 15,
+      "pages": [
+        {
+          "sourcePage": 0,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 729,
+            "sha256": "95ed4cb9058337b399023cf43f26fba8327ef015a8725a8bfda98f4b23e46460",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 2,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "7d806c339bd2b223c2c9c4d7eaaa70371669df1d08366400dce2d1c91938fd38",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 1,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 907,
+            "sha256": "8418155cdfbeaef723d9500a3abacd0a1c7ec1a4af796af12d30f1e8059ec0cf",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "a1f879db7e920311e0852b897cbc631ad3045602bec78a97bfb5eba4a69a0d0f",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 2,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 680,
+            "sha256": "572a3375fa271a5e6fb5b997fe61a502cefee737edc62d8949b1f987aa2b84d1",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "c0138072ef1032ebe96f572920e29443b6eb74fe0b00720a4b5b9ed04569ccff",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 3,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 1013,
+            "sha256": "fff1a3fb4e22cfec65e933fe85ed7c88e3c06ef7514bc160d6e92114e1c82fc8",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "456f96bfb04384742b8ffb591c7958f7bfc86430d8160f2ce807598d5e971133",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 4,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 894,
+            "sha256": "8f4085f047c3c820dc85a86431be46c621bfcc3c3d02289eb9f9492e24f9e59f",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "d6cafc27c475b49995499627185f28a45848bf1357baa079e5a237d27b439bd6",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 5,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 704,
+            "sha256": "55228cb88ce03dc8e6a117695cc53709321ba389ba75b718d85322c3e363880f",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "4bce3fe8e371d2503b69893e1e5c880792409cc68f224c67a28616e37cc26dab",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 6,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 962,
+            "sha256": "177681df47e53d02bd2b93dad48e8fb6ad09c826fb796082b89a18c8ac38ceb1",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "728c8a82908fa5b726ae4d70906cc4934db27c4d8514de18c446c0f21b329287",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 7,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 1196,
+            "sha256": "141067a7137d8742c680463a7a746e4491026421c8e52e58bc5222d2828197b5",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "46f7e3881ddba0375f7b3fdd59b6a35e3bcd192ae157d5b2391efa698b499f6e",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 8,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 737,
+            "sha256": "55dfe28575c52c89c3f80804297015336df6d9679d705f36a77e8d9b781b98b1",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "5e4e9bba69c3c39eaea1e8ea1fdbc5a90f943335f6157b41390afd369ec5a803",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 9,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 993,
+            "sha256": "37a736f328b21281800f470b92951a32a5d8de1776959b632e355a7868f110f0",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "54083cd6e120be87308780b18115fc3235585322979719a352f985f8bde88ea3",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 10,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 923,
+            "sha256": "433504a4b25db9ccacb49a17ba6b3f764b392ebe9633c493eda2f5a97e2dedf4",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "311e5998dcd017ec7a1080e4cd812e7180bd5307deb4547755bc690aeee31f1c",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 11,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 658,
+            "sha256": "440f234e75a8d09facec79780bee0f8883c2d30417caa3b6ad8ffca2356959d1",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "db6f32736ec1e79ade989b1105f2f0f225dcb3df7114871ece66428f2c04ced4",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 12,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 1022,
+            "sha256": "294fc9ef045068ff37804f5c7a34f48558104d4a076cee0fb35f3cc7e33c4719",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "13ee8153f2a0eedf60c4a2dfd45cbab0ef7b4bc07088b519d74205b377eb854b",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 13,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 817,
+            "sha256": "f7b2a709a65549deeb84e292859e74c3a0e1f30e2ba5499ff9bf0fe8430c98d1",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "1275908a0bbcbdd512615b33caa3bc7d6295428ba6154003f264154750d72115",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 14,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            841,
+            1190
+          ],
+          "sourceSpans": {
+            "count": 702,
+            "sha256": "528fef45369966c9717a6156ff304fe5778bea81c20d42a8e29ff0f018972d31",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "5b7d86c4a29e6385aba8f6322dee2524132a49dd63f3312696b4a49503504a92",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        }
+      ],
+      "paragraphPolicy": "observed-lines; authored paragraph boundaries are not recovered",
+      "layout": "editable",
+      "editableLayout": {
+        "layout": "editable",
+        "sections": [
+          {
+            "columnGap": 2837,
+            "columns": 2,
+            "joinedParagraphs": 5,
+            "margins": [
+              8774,
+              15596,
+              8781,
+              11290
+            ],
+            "pages": [
+              {
+                "bodyParagraphs": 16,
+                "columns": 2,
+                "positionedFrames": 5,
+                "sourceSection": 0
+              },
+              {
+                "bodyParagraphs": 17,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 1
+              },
+              {
+                "bodyParagraphs": 19,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 2
+              },
+              {
+                "bodyParagraphs": 19,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 3
+              },
+              {
+                "bodyParagraphs": 17,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 4
+              },
+              {
+                "bodyParagraphs": 22,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 5
+              },
+              {
+                "bodyParagraphs": 13,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 6
+              },
+              {
+                "bodyParagraphs": 20,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 7
+              },
+              {
+                "bodyParagraphs": 21,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 8
+              },
+              {
+                "bodyParagraphs": 4,
+                "columns": 2,
+                "positionedFrames": 6,
+                "sourceSection": 9
+              },
+              {
+                "bodyParagraphs": 12,
+                "columns": 2,
+                "positionedFrames": 5,
+                "sourceSection": 10
+              },
+              {
+                "bodyParagraphs": 19,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 11
+              },
+              {
+                "bodyParagraphs": 19,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 12
+              },
+              {
+                "bodyParagraphs": 17,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 13
+              },
+              {
+                "bodyParagraphs": 21,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 14
+              }
+            ]
+          }
+        ]
+      },
+      "parserAllocationBoundsProven": false,
+      "warnings": [
+        "Experimental PDF frontend; upstream allocation bounds remain unproven",
+        "Clipping, transparency, embedded fonts and complex paint are not fully reconstructed",
+        "Deferred table families retain positional content; inspect page diagnostics"
+      ],
+      "resourcePolicy": {
+        "schemaVersion": 1,
+        "maxSourcePages": 100000,
+        "maxSelectedPages": 1024,
+        "maxPathOperations": 20000,
+        "maxDocumentPathOperations": 300000,
+        "maxDocumentImagePlacements": 4000000,
+        "backend": {
+          "inputBytes": 67108864,
+          "streamBytes": 33554432,
+          "codecAllocationBytes": 33554432,
+          "codecWorkUnits": 1000000000,
+          "decodedBytes": 1006632960,
+          "filters": 8,
+          "nesting": 16,
+          "objects": 50000,
+          "entries": 400000,
+          "operators": 1500000,
+          "graphicsStack": 128,
+          "stringBytes": 65536,
+          "textBytes": 2097152,
+          "spans": 40000,
+          "cmapBytes": 1048576,
+          "cmapEntries": 100000,
+          "cmapScanBytes": 67108864,
+          "fontEntries": 1000000,
+          "referenceDepth": 32,
+          "referenceVisits": 1500000,
+          "formDepth": 16,
+          "xobjectVisits": 1500000
+        }
+      },
+      "resourceUsage": {
+        "decodedBytes": 38123975,
+        "codecAllocatedBytes": 11894288,
+        "codecWorkUnits": 0,
+        "parsedObjects": 3003,
+        "collectionEntries": 69189,
+        "operators": 149752,
+        "textBytes": 25411,
+        "spans": 12937,
+        "referenceVisits": 654,
+        "xobjectVisits": 52,
+        "contentParseCalls": 15,
+        "pageOperatorCacheHits": 45,
+        "pageStreamCacheHits": 45,
+        "formStreamCacheHits": 0,
+        "failure": null
+      }
+    },
+    "pages": 15,
+    "source": "pdf",
+    "bodyParagraphs": 256,
+    "exported_sha256": "f4261a6c67b4390a74cedd7dfb2c0e1462548a4002f46526b98261ff6aa7000a",
+    "exported_bytes": 576626,
+    "wasm_sha256": "c5b25dd8b22efce0d4ecb08291069e3ec625345c40957cbe457cc431f69737d8"
+  },
+  {
+    "key": "pdf-mac-editable",
+    "mode": "editable",
+    "version": "mac",
+    "exported": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/v15-ui/wasm-pdf-import/pdf-mac-editable.hwpx",
+    "diagnostics": {
+      "pdfImportSupport": {
+        "enabled": true,
+        "jbig2": false,
+        "jpeg2000": false
+      },
+      "sourcePageCount": 15,
+      "pages": [
+        {
+          "sourcePage": 0,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1325,
+            "sha256": "c7cececb3107ebc16cff00ad87c8e862316d1d87d7725f19818789470e151bcc",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 2,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "4260fe503294632066f4c42f3da34a14538163dc2cd2ce1a1ad0487917694fc6",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 1,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1520,
+            "sha256": "be1556fc2b5532bc76c71c32223ec03e8bb8e988cd2d5f640f7356d64fecfdfb",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "e1a5ace03aff3f76262068ac485b6e56273a555d215ea7fca67deaf83d0218d5",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 2,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1089,
+            "sha256": "03308ff4e211d6c6697a981636c95468659eab2ee7646304165c119537f15d14",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "742d2aa1c4817dce37d304034c17884fe9a06971be8ff58f78655cb9a734d1b8",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 3,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1614,
+            "sha256": "0f68423778a94438bc93cf7f50b1f1bc5daa706b7a91e71164327f260b2ae6bd",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "eaf096d1f60ff788ad1b29b7dd5118b7ad759583485b4d7d1735de33615d3442",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 4,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1415,
+            "sha256": "456cd7c5b9511af55f38c237d4f6378fed36a279bfcc01a3848295d66feb2b0c",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "b33d0a82337ba2fa0e7591f00b438c5aed0202b59a41d5181e32f26d7e3de7da",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 5,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1082,
+            "sha256": "00a9168cfc0e4f7b170b6250d6d7bddc126da4c675dc9e16ca052868b793cbd4",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "ab3c2427f5870419614bc78ba17c7aff7c25625a1566afa5f95d8ece82d631b8",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 6,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1525,
+            "sha256": "fc75e961ca535c89ee4aa80c0227f8407517c2f3e156e6915c7c5f74c72ac500",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "8cfb1213fbf3e99664716fafb799de3bed3693bec9845c20f29ccb9fc4544c8b",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 7,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1905,
+            "sha256": "28ae47b09d3f833394c5a637ac9b502978d5e17af286935f3a299f8fb6a01f1f",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "d48ef2e393685b99273659348ae8ad03750d9704f58acc2d809c0e8db2ecb7cd",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 8,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1033,
+            "sha256": "6a70ddee751ca2c3a3d238d9bbeea961a7c7cde4624d2fc479d56a87086d5385",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "95466592383ef33b71318dd5a78d2db82fe4a27557aa14f4035e16d39eb988dd",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 9,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1635,
+            "sha256": "1c41a9f8c0b4730e7a62e79daad929e0c5f693d5b503e5b6a7d794c5ae11c191",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "6d544b8f460dde4830c739760f2a6822e50d69d97d7d69d37910606118c30d5b",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 10,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1543,
+            "sha256": "474da8a3d1ed962e964880916571d8f23e52a50920a611f62ae823e4144d3974",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "98a48bebc9b91916f58ee59323739caee4aa05d0ceedfc5c0d8a5356667dcfc7",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 11,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1002,
+            "sha256": "4e0c024f624d70919c0dec9927ceabd4699050f297eaec67ed796764d17fbaf4",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "b571a227b407b729d365f0326d59cb666ea8d732d33292134c4a3d2794ce48ea",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 12,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1584,
+            "sha256": "c26d771e25b7581b0cb37e3a1ac1258cfdd747f23fa3fcb5ac2e9c9a3070227c",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "f24dd768f33693e75e090a382d714c96a05d4b29b98c5c5bc2287c76b7ad72b7",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 13,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1329,
+            "sha256": "f1ad630bea65c492a4fbbe3ae1d0022425d5bc4772de693c47dc2a97c92d6f54",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "e1338287ab128e3ac10cdf6ad63855e9e0c253551948937179cd8f9140d92436",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        },
+        {
+          "sourcePage": 14,
+          "outputSection": 0,
+          "mediaBox": [
+            0,
+            0,
+            842,
+            1191
+          ],
+          "sourceSpans": {
+            "count": 1151,
+            "sha256": "375662b8bc93b97ce2c7540a36ae60c08fc7df851a06741cb6a84613ae85d128",
+            "omitted_payload": "Temporary detailed source diagnostics; counts and digest retained."
+          },
+          "semanticTables": 0,
+          "nestedTables": 0,
+          "deferredTables": 0,
+          "unsupportedPaths": 0,
+          "tableInference": {
+            "actual_json_type": "dict",
+            "actual_item_count": 27,
+            "source_json_sha256": "86c9826754621460ffc7f97dd89f2e5198cfc363b151c07f17f9ba808d1fc94d",
+            "preservation": "Diagnostic summary only; actual source page and output section retained. Not a regression golden."
+          }
+        }
+      ],
+      "paragraphPolicy": "observed-lines; authored paragraph boundaries are not recovered",
+      "layout": "editable",
+      "editableLayout": {
+        "layout": "editable",
+        "sections": [
+          {
+            "columnGap": 2527,
+            "columns": 2,
+            "joinedParagraphs": 6,
+            "margins": [
+              8784,
+              15602,
+              8487,
+              11258
+            ],
+            "pages": [
+              {
+                "bodyParagraphs": 22,
+                "columns": 2,
+                "positionedFrames": 3,
+                "sourceSection": 0
+              },
+              {
+                "bodyParagraphs": 16,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 1
+              },
+              {
+                "bodyParagraphs": 22,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 2
+              },
+              {
+                "bodyParagraphs": 20,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 3
+              },
+              {
+                "bodyParagraphs": 18,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 4
+              },
+              {
+                "bodyParagraphs": 23,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 5
+              },
+              {
+                "bodyParagraphs": 15,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 6
+              },
+              {
+                "bodyParagraphs": 21,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 7
+              },
+              {
+                "bodyParagraphs": 21,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 8
+              },
+              {
+                "bodyParagraphs": 2,
+                "columns": 2,
+                "positionedFrames": 5,
+                "sourceSection": 9
+              },
+              {
+                "bodyParagraphs": 12,
+                "columns": 2,
+                "positionedFrames": 6,
+                "sourceSection": 10
+              },
+              {
+                "bodyParagraphs": 18,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 11
+              },
+              {
+                "bodyParagraphs": 20,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 12
+              },
+              {
+                "bodyParagraphs": 16,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 13
+              },
+              {
+                "bodyParagraphs": 21,
+                "columns": 2,
+                "positionedFrames": 0,
+                "sourceSection": 14
+              }
+            ]
+          }
+        ]
+      },
+      "parserAllocationBoundsProven": false,
+      "warnings": [
+        "Experimental PDF frontend; upstream allocation bounds remain unproven",
+        "Clipping, transparency, embedded fonts and complex paint are not fully reconstructed",
+        "Deferred table families retain positional content; inspect page diagnostics"
+      ],
+      "resourcePolicy": {
+        "schemaVersion": 1,
+        "maxSourcePages": 100000,
+        "maxSelectedPages": 1024,
+        "maxPathOperations": 20000,
+        "maxDocumentPathOperations": 300000,
+        "maxDocumentImagePlacements": 4000000,
+        "backend": {
+          "inputBytes": 67108864,
+          "streamBytes": 33554432,
+          "codecAllocationBytes": 33554432,
+          "codecWorkUnits": 1000000000,
+          "decodedBytes": 1006632960,
+          "filters": 8,
+          "nesting": 16,
+          "objects": 50000,
+          "entries": 400000,
+          "operators": 1500000,
+          "graphicsStack": 128,
+          "stringBytes": 65536,
+          "textBytes": 2097152,
+          "spans": 40000,
+          "cmapBytes": 1048576,
+          "cmapEntries": 100000,
+          "cmapScanBytes": 67108864,
+          "fontEntries": 1000000,
+          "referenceDepth": 32,
+          "referenceVisits": 1500000,
+          "formDepth": 16,
+          "xobjectVisits": 1500000
+        }
+      },
+      "resourceUsage": {
+        "decodedBytes": 62132127,
+        "codecAllocatedBytes": 427210,
+        "codecWorkUnits": 0,
+        "parsedObjects": 2165,
+        "collectionEntries": 51804,
+        "operators": 286056,
+        "textBytes": 32481,
+        "spans": 20752,
+        "referenceVisits": 43749,
+        "xobjectVisits": 4,
+        "contentParseCalls": 15,
+        "pageOperatorCacheHits": 45,
+        "pageStreamCacheHits": 45,
+        "formStreamCacheHits": 0,
+        "failure": null
+      }
+    },
+    "pages": 15,
+    "source": "pdf",
+    "bodyParagraphs": 267,
+    "exported_sha256": "c10fe5f1b5f5a653a2b9e1d0fccd382a5f0602ca14744c247ea5ec5b73223df1",
+    "exported_bytes": 421832,
+    "wasm_sha256": "c5b25dd8b22efce0d4ecb08291069e3ec625345c40957cbe457cc431f69737d8"
+  },
+  {
+    "mode": "editable-non-pdf-control",
+    "source": "hwp",
+    "diagnostics": null,
+    "pages": 1
+  }
+]

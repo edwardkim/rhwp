@@ -1,0 +1,305 @@
+{
+  "purpose": "Original page34 line operations only; original hierarchy/clips preserved. Actual Skia paint widths are captured. Dashed-ink pixel oracle matches the independently verified Native test, min channel <232 within ±20px along/±2px across; the solid-line 50% contrast condition is not applied to subpixel dash endpoints.",
+  "results": [
+    {
+      "mode": "compat",
+      "scale": 1,
+      "originalOps": 11,
+      "keptLines": 4,
+      "checked": [
+        {
+          "nominalWidth": 0.32,
+          "actualPaintDeviceWidths": [
+            1
+          ],
+          "windows": [
+            169,
+            169,
+            169
+          ],
+          "color": "#333399",
+          "dash": [
+            0.48,
+            0.64
+          ]
+        },
+        {
+          "nominalWidth": 0.32,
+          "actualPaintDeviceWidths": [
+            1
+          ],
+          "windows": [
+            205,
+            205,
+            205
+          ],
+          "color": "#333399",
+          "dash": [
+            0.48,
+            0.64
+          ]
+        },
+        {
+          "nominalWidth": 0.32,
+          "actualPaintDeviceWidths": [
+            1
+          ],
+          "windows": [
+            157,
+            157,
+            157
+          ],
+          "color": "#333399",
+          "dash": [
+            0.48,
+            0.64
+          ]
+        },
+        {
+          "nominalWidth": 0.32,
+          "actualPaintDeviceWidths": [
+            1
+          ],
+          "windows": [
+            185,
+            185,
+            185
+          ],
+          "color": "#333399",
+          "dash": [
+            0.48,
+            0.64
+          ]
+        }
+      ],
+      "completed": true,
+      "error": null,
+      "unsupported": []
+    },
+    {
+      "mode": "compat",
+      "scale": 0.5,
+      "originalOps": 11,
+      "keptLines": 4,
+      "checked": [
+        {
+          "nominalWidth": 0.16,
+          "actualPaintDeviceWidths": [
+            1
+          ],
+          "windows": [
+            181,
+            181,
+            181
+          ],
+          "color": "#333399",
+          "dash": [
+            0.48,
+            0.64
+          ]
+        },
+        {
+          "nominalWidth": 0.16,
+          "actualPaintDeviceWidths": [
+            1
+          ],
+          "windows": [
+            207,
+            207,
+            207
+          ],
+          "color": "#333399",
+          "dash": [
+            0.48,
+            0.64
+          ]
+        },
+        {
+          "nominalWidth": 0.16,
+          "actualPaintDeviceWidths": [
+            1
+          ],
+          "windows": [
+            186,
+            186,
+            186
+          ],
+          "color": "#333399",
+          "dash": [
+            0.48,
+            0.64
+          ]
+        },
+        {
+          "nominalWidth": 0.16,
+          "actualPaintDeviceWidths": [
+            1
+          ],
+          "windows": [
+            174,
+            174,
+            174
+          ],
+          "color": "#333399",
+          "dash": [
+            0.48,
+            0.64
+          ]
+        }
+      ],
+      "completed": true,
+      "error": null,
+      "unsupported": []
+    },
+    {
+      "mode": "default",
+      "scale": 1,
+      "originalOps": 11,
+      "keptLines": 4,
+      "checked": [
+        {
+          "nominalWidth": 0.32,
+          "actualPaintDeviceWidths": [
+            1
+          ],
+          "windows": [
+            169,
+            169,
+            169
+          ],
+          "color": "#333399",
+          "dash": [
+            0.48,
+            0.64
+          ]
+        },
+        {
+          "nominalWidth": 0.32,
+          "actualPaintDeviceWidths": [
+            1
+          ],
+          "windows": [
+            205,
+            205,
+            205
+          ],
+          "color": "#333399",
+          "dash": [
+            0.48,
+            0.64
+          ]
+        },
+        {
+          "nominalWidth": 0.32,
+          "actualPaintDeviceWidths": [
+            1
+          ],
+          "windows": [
+            157,
+            157,
+            157
+          ],
+          "color": "#333399",
+          "dash": [
+            0.48,
+            0.64
+          ]
+        },
+        {
+          "nominalWidth": 0.32,
+          "actualPaintDeviceWidths": [
+            1
+          ],
+          "windows": [
+            185,
+            185,
+            185
+          ],
+          "color": "#333399",
+          "dash": [
+            0.48,
+            0.64
+          ]
+        }
+      ],
+      "completed": true,
+      "error": null,
+      "unsupported": []
+    },
+    {
+      "mode": "default",
+      "scale": 0.5,
+      "originalOps": 11,
+      "keptLines": 4,
+      "checked": [
+        {
+          "nominalWidth": 0.16,
+          "actualPaintDeviceWidths": [
+            1
+          ],
+          "windows": [
+            181,
+            181,
+            181
+          ],
+          "color": "#333399",
+          "dash": [
+            0.48,
+            0.64
+          ]
+        },
+        {
+          "nominalWidth": 0.16,
+          "actualPaintDeviceWidths": [
+            1
+          ],
+          "windows": [
+            207,
+            207,
+            207
+          ],
+          "color": "#333399",
+          "dash": [
+            0.48,
+            0.64
+          ]
+        },
+        {
+          "nominalWidth": 0.16,
+          "actualPaintDeviceWidths": [
+            1
+          ],
+          "windows": [
+            186,
+            186,
+            186
+          ],
+          "color": "#333399",
+          "dash": [
+            0.48,
+            0.64
+          ]
+        },
+        {
+          "nominalWidth": 0.16,
+          "actualPaintDeviceWidths": [
+            1
+          ],
+          "windows": [
+            174,
+            174,
+            174
+          ],
+          "color": "#333399",
+          "dash": [
+            0.48,
+            0.64
+          ]
+        }
+      ],
+      "completed": true,
+      "error": null,
+      "unsupported": []
+    }
+  ]
+}

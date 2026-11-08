@@ -559,6 +559,7 @@ export function onClick(this: any, e: MouseEvent): void {
                 origHorzOffset: multiMoveRefs[0].origHorzOffset,
                 origVertOffset: multiMoveRefs[0].origVertOffset,
                 startPageX: px, startPageY: py,
+                grabOffsetX: px - minX, grabOffsetY: py - minY,
                 lastPageX: px, lastPageY: py,
                 totalDeltaH: 0, totalDeltaV: 0,
                 pageIndex: pi,
@@ -701,6 +702,7 @@ export function onClick(this: any, e: MouseEvent): void {
                     origHorzOffset: props.horzOffset,
                     origVertOffset: props.vertOffset,
                     startPageX: px, startPageY: py,
+                    grabOffsetX: px - picBbox.x, grabOffsetY: py - picBbox.y,
                     lastPageX: px, lastPageY: py,
                     totalDeltaH: 0, totalDeltaV: 0,
                     pageIndex: pi,
@@ -1460,22 +1462,32 @@ export function onDblClick(this: any, e: MouseEvent): void {
     // 글상자 객체 → 텍스트 편집 진입
     if (ref && ref.type === 'shape') {
       e.preventDefault();
-      // #686: ppi=0 앵커 도형 (master page 글상자 등)은 모든 페이지에 반복 표시됨.
-      // 텍스트 진입 시 cursor가 page 0으로 잡혀 뷰가 점프하므로, page 0이 아닐 때 차단.
-      if (ref.ppi === 0) {
-        const cursorPage = this.cursor.getRect()?.pageIndex ?? -1;
-        if (cursorPage !== 0) {
-          this.cursor.exitPictureObjectSelection();
-          this.pictureObjectRenderer?.clear();
-          this.eventBus.emit('picture-object-selection-changed', false);
-          this.textarea.focus();
-          return;
+      const pagePoint = this.pagePointFromClientPoint(e.clientX, e.clientY);
+      const hit = this.hitTestFromEvent(e);
+      let canEnter = false;
+      if (pagePoint && hit?.isTextBox && hit.sectionIndex === ref.sec
+          && hit.parentParaIndex === ref.ppi && hit.controlIndex === ref.ci) {
+        try {
+          const path = hit.cellPath ?? [{ controlIndex: ref.ci, cellIndex: 0, cellParaIndex: hit.cellParaIndex ?? 0 }];
+          const target = this.wasm.getCursorRectByPathNear(
+            ref.sec, ref.ppi, JSON.stringify(path), hit.charOffset, pagePoint.pageIdx,
+          );
+          // #686 protects repeated master-page objects whose editable target is
+          // on another page. Paragraph 0 alone does not establish that origin.
+          canEnter = target.pageIndex === pagePoint.pageIdx;
+        } catch {
+          // Unresolvable/repeated drawing is not a body TextBox editing target.
         }
       }
       this.cursor.exitPictureObjectSelection();
       this.pictureObjectRenderer?.clear();
       this.eventBus.emit('picture-object-selection-changed', false);
-      this.enterTextboxEditing(ref.sec, ref.ppi, ref.ci);
+      if (canEnter && hit) {
+        this.cursor.clearSelection();
+        this.cursor.moveToHit(hit);
+        this.cursor.resetPreferredX();
+        this.updateCaret();
+      }
       this.textarea.focus();
       return;
     }
@@ -2076,6 +2088,9 @@ function finishMouseUp(this: any, _e: MouseEvent): void {
       && hfSel.start.charOffset === hfSel.end.charOffset;
     if (samePos) this.cursor.clearSelection();
   }
+
+  // 연속 형광펜 모드: 드래그로 잡은 블록에 바로 칠한다
+  this.applyHighlightPenToSelection();
 
   // [Task #779] mouseup 영역 의 updateCaret 은 scrollCaretIntoView skip.
   // 본질: cursor 변경 trigger 영역 (mousedown / drag selection move 등) 에서 이미 cursor 위치

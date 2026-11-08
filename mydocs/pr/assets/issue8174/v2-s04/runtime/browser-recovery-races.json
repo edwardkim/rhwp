@@ -1,0 +1,18 @@
+{
+  "checked": [
+    "cancelled normal Save preserves the original recovery key and protection",
+    "cancel storage failure does not publish a candidate recovery key",
+    "fail storage failure does not publish a candidate recovery key",
+    "successful normal Save rotates the key and retains password protection",
+    "the persisted HWP requires the changed password",
+    "new recovery draft also rejects the old password",
+    "document replacement during a queued encrypted write deletes the stale draft and clears the key",
+    "a protected document without its key is blocked before the plaintext exporter"
+  ],
+  "race": {
+    "gone": true,
+    "keyCleared": true,
+    "protected": false
+  },
+  "storage": "Fake File System Access sink captures actual encrypted WASM export. No user filesystem writes."
+}

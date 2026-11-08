@@ -12,7 +12,16 @@
 
 mod evaluator;
 mod parser;
+mod result_format;
 mod tokenizer;
 
 pub use evaluator::{evaluate_formula, TableContext};
+pub(crate) use evaluator::{
+    evaluate_formula_in_table, formula_references, is_invalid_result_error,
+};
 pub use parser::FormulaNode;
+pub use result_format::{
+    format_formula_result, formula_command, split_formula_command, FORMULA_FIELD_PROP,
+    INVALID_RESULT_TEXT,
+};
+pub(crate) use tokenizer::{tokenize, DirectionKind, Token};

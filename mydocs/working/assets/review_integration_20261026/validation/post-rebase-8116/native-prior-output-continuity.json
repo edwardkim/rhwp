@@ -1,0 +1,389 @@
+{
+  "previous_production_source": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+  "current_production_source": "ae8c413f84a01a4cc4591357056183709f21b150",
+  "cases": 63,
+  "page_comparisons": 941,
+  "byte_identical_pages": 941,
+  "pixel_identical_pages": 941,
+  "different": [],
+  "records": [
+    {
+      "key": "fiscal-anchor",
+      "pages": 4,
+      "byte_identical_pages": 4,
+      "pixel_identical_pages": 4
+    },
+    {
+      "key": "picture-countercase-normalized-quarter-reflow-false",
+      "pages": 2,
+      "byte_identical_pages": 2,
+      "pixel_identical_pages": 2
+    },
+    {
+      "key": "picture-countercase-normalized-quarter-reflow-true",
+      "pages": 2,
+      "byte_identical_pages": 2,
+      "pixel_identical_pages": 2
+    },
+    {
+      "key": "picture-countercase-picture-flow-authored-break-no-ls",
+      "pages": 2,
+      "byte_identical_pages": 2,
+      "pixel_identical_pages": 2
+    },
+    {
+      "key": "picture-countercase-picture-flow-center-row-no-ls",
+      "pages": 2,
+      "byte_identical_pages": 2,
+      "pixel_identical_pages": 2
+    },
+    {
+      "key": "picture-countercase-picture-flow-column-transition-no-ls",
+      "pages": 2,
+      "byte_identical_pages": 2,
+      "pixel_identical_pages": 2
+    },
+    {
+      "key": "picture-countercase-picture-flow-mixed-center-row-no-ls",
+      "pages": 2,
+      "byte_identical_pages": 2,
+      "pixel_identical_pages": 2
+    },
+    {
+      "key": "picture-countercase-picture-flow-mixed-end-picture-no-ls",
+      "pages": 2,
+      "byte_identical_pages": 2,
+      "pixel_identical_pages": 2
+    },
+    {
+      "key": "picture-countercase-picture-flow-outer-margin-row-no-ls",
+      "pages": 2,
+      "byte_identical_pages": 2,
+      "pixel_identical_pages": 2
+    },
+    {
+      "key": "picture-countercase-picture-flow-relative-font-row-no-ls",
+      "pages": 2,
+      "byte_identical_pages": 2,
+      "pixel_identical_pages": 2
+    },
+    {
+      "key": "picture-countercase-picture-flow-same-row-no-ls",
+      "pages": 2,
+      "byte_identical_pages": 2,
+      "pixel_identical_pages": 2
+    },
+    {
+      "key": "picture-countercase-picture-flow-tail-gap-boundary-no-ls",
+      "pages": 2,
+      "byte_identical_pages": 2,
+      "pixel_identical_pages": 2
+    },
+    {
+      "key": "picture-countercase-picture-flow-tail-gap-only-fit-no-ls",
+      "pages": 2,
+      "byte_identical_pages": 2,
+      "pixel_identical_pages": 2
+    },
+    {
+      "key": "picture-countercase-picture-flow-wrapped-row-no-ls",
+      "pages": 2,
+      "byte_identical_pages": 2,
+      "pixel_identical_pages": 2
+    },
+    {
+      "key": "newsletter-korean",
+      "pages": 2,
+      "byte_identical_pages": 2,
+      "pixel_identical_pages": 2
+    },
+    {
+      "key": "newsletter-chinese",
+      "pages": 2,
+      "byte_identical_pages": 2,
+      "pixel_identical_pages": 2
+    },
+    {
+      "key": "onsemiro-hwp",
+      "pages": 46,
+      "byte_identical_pages": 46,
+      "pixel_identical_pages": 46
+    },
+    {
+      "key": "onsemiro-hwpx",
+      "pages": 46,
+      "byte_identical_pages": 46,
+      "pixel_identical_pages": 46
+    },
+    {
+      "key": "civil-form",
+      "pages": 2,
+      "byte_identical_pages": 2,
+      "pixel_identical_pages": 2
+    },
+    {
+      "key": "nested-height-cache",
+      "pages": 17,
+      "byte_identical_pages": 17,
+      "pixel_identical_pages": 17
+    },
+    {
+      "key": "cellnotes_plain_N2_L7",
+      "pages": 11,
+      "byte_identical_pages": 11,
+      "pixel_identical_pages": 11
+    },
+    {
+      "key": "cellnotes_span_N2",
+      "pages": 2,
+      "byte_identical_pages": 2,
+      "pixel_identical_pages": 2
+    },
+    {
+      "key": "r110_cellnotes_span_N2",
+      "pages": 3,
+      "byte_identical_pages": 3,
+      "pixel_identical_pages": 3
+    },
+    {
+      "key": "trim_n0_F02",
+      "pages": 2,
+      "byte_identical_pages": 2,
+      "pixel_identical_pages": 2
+    },
+    {
+      "key": "trim_n0_h6630_F02",
+      "pages": 2,
+      "byte_identical_pages": 2,
+      "pixel_identical_pages": 2
+    },
+    {
+      "key": "trim_n0_h6660_F02",
+      "pages": 2,
+      "byte_identical_pages": 2,
+      "pixel_identical_pages": 2
+    },
+    {
+      "key": "trim_n0_l1_big_h6500_F01",
+      "pages": 2,
+      "byte_identical_pages": 2,
+      "pixel_identical_pages": 2
+    },
+    {
+      "key": "trim_n1_F01",
+      "pages": 2,
+      "byte_identical_pages": 2,
+      "pixel_identical_pages": 2
+    },
+    {
+      "key": "trim_n1_F04",
+      "pages": 2,
+      "byte_identical_pages": 2,
+      "pixel_identical_pages": 2
+    },
+    {
+      "key": "cont_reset_F20_L70_N0",
+      "pages": 3,
+      "byte_identical_pages": 3,
+      "pixel_identical_pages": 3
+    },
+    {
+      "key": "cont_reset_F20_L70_N4",
+      "pages": 3,
+      "byte_identical_pages": 3,
+      "pixel_identical_pages": 3
+    },
+    {
+      "key": "cont_reset_F20_L70_N6",
+      "pages": 3,
+      "byte_identical_pages": 3,
+      "pixel_identical_pages": 3
+    },
+    {
+      "key": "caption-negative-offset",
+      "pages": 2,
+      "byte_identical_pages": 2,
+      "pixel_identical_pages": 2
+    },
+    {
+      "key": "rowspan-band-fit",
+      "pages": 9,
+      "byte_identical_pages": 9,
+      "pixel_identical_pages": 9
+    },
+    {
+      "key": "captioned-host-2020",
+      "pages": 3,
+      "byte_identical_pages": 3,
+      "pixel_identical_pages": 3
+    },
+    {
+      "key": "headerrow-2020",
+      "pages": 31,
+      "byte_identical_pages": 31,
+      "pixel_identical_pages": 31
+    },
+    {
+      "key": "reservefit-2020",
+      "pages": 65,
+      "byte_identical_pages": 65,
+      "pixel_identical_pages": 65
+    },
+    {
+      "key": "rowfit-2020",
+      "pages": 33,
+      "byte_identical_pages": 33,
+      "pixel_identical_pages": 33
+    },
+    {
+      "key": "mcp2020-issue8271-tac_picture_topandbottom_textbox",
+      "pages": 1,
+      "byte_identical_pages": 1,
+      "pixel_identical_pages": 1
+    },
+    {
+      "key": "mcp2020-issue8271-tac_picture_behindtext_textbox",
+      "pages": 1,
+      "byte_identical_pages": 1,
+      "pixel_identical_pages": 1
+    },
+    {
+      "key": "mcp2020-issue8167-tac_rectangle_inline",
+      "pages": 1,
+      "byte_identical_pages": 1,
+      "pixel_identical_pages": 1
+    },
+    {
+      "key": "mcp2020-issue8167-tac_textbox_inline",
+      "pages": 1,
+      "byte_identical_pages": 1,
+      "pixel_identical_pages": 1
+    },
+    {
+      "key": "mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_above",
+      "pages": 1,
+      "byte_identical_pages": 1,
+      "pixel_identical_pages": 1
+    },
+    {
+      "key": "mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_below",
+      "pages": 1,
+      "byte_identical_pages": 1,
+      "pixel_identical_pages": 1
+    },
+    {
+      "key": "mcp2020-issue8168-tac_picture_with_page_relative_topandbottom_textbox",
+      "pages": 1,
+      "byte_identical_pages": 1,
+      "pixel_identical_pages": 1
+    },
+    {
+      "key": "mcp2020-issue8168-tac_picture_with_topandbottom_textbox",
+      "pages": 1,
+      "byte_identical_pages": 1,
+      "pixel_identical_pages": 1
+    },
+    {
+      "key": "issue1937",
+      "pages": 50,
+      "byte_identical_pages": 50,
+      "pixel_identical_pages": 50
+    },
+    {
+      "key": "hwp5-spec-official",
+      "pages": 71,
+      "byte_identical_pages": 71,
+      "pixel_identical_pages": 71
+    },
+    {
+      "key": "hwpml-spec-2020",
+      "pages": 178,
+      "byte_identical_pages": 178,
+      "pixel_identical_pages": 178
+    },
+    {
+      "key": "tac-shape-source",
+      "pages": 24,
+      "byte_identical_pages": 24,
+      "pixel_identical_pages": 24
+    },
+    {
+      "key": "equation-lim",
+      "pages": 1,
+      "byte_identical_pages": 1,
+      "pixel_identical_pages": 1
+    },
+    {
+      "key": "endnotes-november",
+      "pages": 21,
+      "byte_identical_pages": 21,
+      "pixel_identical_pages": 21
+    },
+    {
+      "key": "endnotes-september",
+      "pages": 23,
+      "byte_identical_pages": 23,
+      "pixel_identical_pages": 23
+    },
+    {
+      "key": "hairline-calendar",
+      "pages": 1,
+      "byte_identical_pages": 1,
+      "pixel_identical_pages": 1
+    },
+    {
+      "key": "hairline-sungeo",
+      "pages": 94,
+      "byte_identical_pages": 94,
+      "pixel_identical_pages": 94
+    },
+    {
+      "key": "topbottom-original",
+      "pages": 1,
+      "byte_identical_pages": 1,
+      "pixel_identical_pages": 1
+    },
+    {
+      "key": "rowspan-header-original",
+      "pages": 52,
+      "byte_identical_pages": 52,
+      "pixel_identical_pages": 52
+    },
+    {
+      "key": "pdf-2010-fidelity",
+      "pages": 16,
+      "byte_identical_pages": 16,
+      "pixel_identical_pages": 16
+    },
+    {
+      "key": "pdf-2020-fidelity",
+      "pages": 15,
+      "byte_identical_pages": 15,
+      "pixel_identical_pages": 15
+    },
+    {
+      "key": "pdf-mac-fidelity",
+      "pages": 15,
+      "byte_identical_pages": 15,
+      "pixel_identical_pages": 15
+    },
+    {
+      "key": "pdf-2010-editable",
+      "pages": 16,
+      "byte_identical_pages": 16,
+      "pixel_identical_pages": 16
+    },
+    {
+      "key": "pdf-2020-editable",
+      "pages": 15,
+      "byte_identical_pages": 15,
+      "pixel_identical_pages": 15
+    },
+    {
+      "key": "pdf-mac-editable",
+      "pages": 15,
+      "byte_identical_pages": 15,
+      "pixel_identical_pages": 15
+    }
+  ]
+}

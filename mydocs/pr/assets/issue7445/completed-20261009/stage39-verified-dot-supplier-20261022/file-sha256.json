@@ -1,0 +1,14 @@
+{
+  "image-stack-003-review.png": "384400fcd68ded94d887b632d29c8cdacf140a94d0632a314caf995dce80b528",
+  "glyph-before-after.json": "e3b78c87a87de5b83614bf468b01bd6ee87d163f72b6b9bab563c183f804c65c",
+  "producer.json": "49017111be99e7e292a0b7334411490880adbd008e8e1068cc8c8a0be1cc50af",
+  "comparison.json": "d99cf7d7874ae4268de70aec714b4488906cd5203a7c07536eb6e9e997a5bc2c",
+  "base-image-stack.tsv": "2cc778f9fc3cad4611a41bf629b1f8da606634b64d58bf96f264919247aaa8cd",
+  "candidate-regulatory17.tsv": "68378050466cb1a9754a49d83565c057bdb2bc2ddf127128ddf966b7deaa2d84",
+  "installed-glyph-coverage.json": "08654d64b5e7be0967a454bb0e2a48bbc8ef812ae91aaa45861773f64b6ef406",
+  "image-stack-003-overlay.png": "dcc600d906a28c8236ed1e82d734afda6fd20dfbf6ebe9050981cc4c4685773b",
+  "focused-result.json": "1f55a43d368f5d5f8af3cf10c1fbf27d38172e12ba6bd866d1b47528bcda36ac",
+  "pdf-dot-advance.json": "258c2e76334a5cfbe011a5495a20160355e93e6beae9a0fba3b7d42862661ab9",
+  "candidate-image-stack.tsv": "a3a9e1755f8dde1bfa01697286d75c6350308aa2a7833faee5c1f926fb6f7372",
+  "base-regulatory17.tsv": "5d8e870cc3fdf7599056e01d673696aed1f7b412d38dfdcd2e8503f6b83b7856"
+}

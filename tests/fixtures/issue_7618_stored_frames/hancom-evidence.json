@@ -1,0 +1,211 @@
+{
+  "source_sha": "64862832e66d26159f77e6513a4d79e4f8e5e33c",
+  "cases": [
+    {
+      "key": "cell-negative",
+      "input_sha256": "cd78bc69ad51d97b8ef72858addceea15361f0a867f0c6a675afd32e2b062736",
+      "pdf_sha256": "f28ad3d4ea83f8254e90fa5f2d14fcc24c9baf73171c0e7360f8716d379fb0d4",
+      "print_evidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdf_pages": 1,
+      "input_file": "cell-negative.hwpx",
+      "pdf_file": "cell-negative-2020.pdf",
+      "metrics": {
+        "native": [
+          100.0
+        ],
+        "wasm": [
+          100.0
+        ]
+      }
+    },
+    {
+      "key": "cell-zero",
+      "input_sha256": "9e88bb68da9b4f9cc93a39dc2d6fa44aee8fc5cbbb0cd31f82e4232eaf903dc1",
+      "pdf_sha256": "8143e1f5e7e10cf36fc80c992a5fad0b65d9d6c453b0cc61a508d0ff27a9ead9",
+      "print_evidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdf_pages": 1,
+      "input_file": "cell-zero.hwpx",
+      "pdf_file": "cell-zero-2020.pdf",
+      "metrics": {
+        "native": [
+          100.0
+        ],
+        "wasm": [
+          100.0
+        ]
+      }
+    },
+    {
+      "key": "cell-positive",
+      "input_sha256": "77dd8f0a9874c126aee4987d61f1100981df0723a39328b1cc438f5ab2ce89f1",
+      "pdf_sha256": "237e8588a964a0b03bc949e483a74f473255e69226a6269a9b825dfffaa52222",
+      "print_evidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdf_pages": 1,
+      "input_file": "cell-positive.hwpx",
+      "pdf_file": "cell-positive-2020.pdf",
+      "metrics": {
+        "native": [
+          100.0
+        ],
+        "wasm": [
+          100.0
+        ]
+      }
+    },
+    {
+      "key": "cell-overlay",
+      "input_sha256": "60c6706cc41776925b9bb8410baec020bc61186d9ceec5166dd5835fae448ff6",
+      "pdf_sha256": "47da2d4002329c64af76af4f8de8b34a236f36829acb5e4c83e5584091c18c38",
+      "print_evidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdf_pages": 1,
+      "input_file": "cell-overlay.hwpx",
+      "pdf_file": "cell-overlay-2020.pdf",
+      "metrics": {
+        "native": [
+          92.59797
+        ],
+        "wasm": [
+          92.59797
+        ]
+      }
+    },
+    {
+      "key": "cell-fragments",
+      "input_sha256": "9c64fbd271bb16320bc64c5462fd85c5fbc1cc6e24c6c7403774983bc646f6ad",
+      "pdf_sha256": "6a68f96120b79933a38ab7743f17f7da3684835395fa2ea522c082c9c61ae250",
+      "print_evidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdf_pages": 1,
+      "input_file": "cell-fragments.hwpx",
+      "pdf_file": "cell-fragments-2020.pdf",
+      "metrics": {
+        "native": [
+          100.0
+        ],
+        "wasm": [
+          100.0
+        ]
+      }
+    },
+    {
+      "key": "body-original",
+      "input_sha256": "cfea5caa5c326bda38cce97dbb5af32b1d0eb30ea3f683dcc534d43b3fce82c9",
+      "pdf_sha256": "0865bdcfdf72676cd8d7c70a900917cc172d4e28d164adc432f3afe9df517e03",
+      "print_evidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdf_pages": 2,
+      "input_file": "body-original.hwpx",
+      "pdf_file": "body-original-2020.pdf",
+      "metrics": {
+        "native": [
+          99.87192,
+          100.0
+        ],
+        "wasm": [
+          99.87192,
+          100.0
+        ]
+      }
+    },
+    {
+      "key": "body-reflow",
+      "input_sha256": "510e42cd26e17aa4cc014628ce8d114fdd1c8bf1d8169955389ccd1db73250ce",
+      "pdf_sha256": "ac7892a21938e4c6dd3d58be15c060d10e722bd30baa22eab2ba1abf2b339900",
+      "print_evidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdf_pages": 1,
+      "input_file": "body-reflow.hwpx",
+      "pdf_file": "body-reflow-2020.pdf",
+      "metrics": {
+        "native": [
+          100.0
+        ],
+        "wasm": [
+          100.0
+        ]
+      }
+    },
+    {
+      "key": "body-explicit",
+      "input_sha256": "a72f9a8f23997ccc8b51c7fff10b6385e4ad9000aeae79b90a9a65972b0785fb",
+      "pdf_sha256": "ad64c999d25a497e91b533af990141417f4ddeca36058ca1ba0f61a69b4f3a3b",
+      "print_evidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdf_pages": 2,
+      "input_file": "body-explicit.hwpx",
+      "pdf_file": "body-explicit-2020.pdf",
+      "metrics": {
+        "native": [
+          100.0,
+          100.0
+        ],
+        "wasm": [
+          100.0,
+          100.0
+        ]
+      }
+    },
+    {
+      "key": "body-single-symbol",
+      "input_sha256": "4643feafeeea4d42a4b2aaee08c60b878fddefcbe7f615ee9520c11a9813d877",
+      "pdf_sha256": "2aa1b5072b4cd2b0a145fbeda5acbeb85c845a1812ce851d6909740e30ee603a",
+      "print_evidence": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "pdf_pages": 1,
+      "input_file": "body-single-symbol.hwpx",
+      "pdf_file": "body-single-symbol-2020.pdf",
+      "metrics": {
+        "native": [
+          93.31372
+        ],
+        "wasm": [
+          93.31372
+        ]
+      }
+    }
+  ],
+  "scope": "public independent counterexamples, private corpus excluded",
+  "limitations": [
+    "Background image has a pre-existing signed-offset placement difference; its non-flow ownership, not absolute offset, is asserted."
+  ]
+}

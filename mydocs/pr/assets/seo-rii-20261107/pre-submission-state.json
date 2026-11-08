@@ -1,0 +1,141 @@
+{
+  "observed_at": "2026-11-07T07:43:05.471005+00:00",
+  "devel": "b8dd67c5001dfb0410e9e192528676396cdd6a4e",
+  "all_29_heads_unchanged": true,
+  "all_29_reviewer_confirmed": true,
+  "selected": [
+    {
+      "number": 8666,
+      "head": "67d46ba6b5a1fd8e98f6316af1aa6388ff166ec6"
+    },
+    {
+      "number": 8667,
+      "head": "ca1f63c157401fbc8a95f53a4c2582bf2c1e87a6"
+    },
+    {
+      "number": 8668,
+      "head": "8a679ed90b1f73aeac67ef384513e44a04b9ef0a"
+    },
+    {
+      "number": 8669,
+      "head": "fd2df407040097db4172c6c40dd855426c8e8a5a"
+    },
+    {
+      "number": 8670,
+      "head": "5847f6f25627faf09e4c72f19c2311ec89798d21"
+    },
+    {
+      "number": 8671,
+      "head": "a4e839d1c504d9adc122c1ef381ac4a49c11bfcb"
+    },
+    {
+      "number": 8672,
+      "head": "2fb8d6f0a70a5d1c07d6cbfe704714ff36dfc966"
+    },
+    {
+      "number": 8673,
+      "head": "47bdb1caee3fb8ddfa2b669dc17aff95f452a178"
+    },
+    {
+      "number": 8674,
+      "head": "0d70e975806ef52eca1506b960f80a23dd0f9aa5"
+    },
+    {
+      "number": 8675,
+      "head": "a0b8824f5fb54b33af6ecc694e7c962f8d4f182a"
+    },
+    {
+      "number": 8702,
+      "head": "c22449e8b5921502aafbacf143e11b65db497400"
+    },
+    {
+      "number": 8703,
+      "head": "03a235362d2cf478ac2dcb174133056643e1e69d"
+    },
+    {
+      "number": 8704,
+      "head": "7dadd5afd6c83f26c7155cad92d9798ae6a082f6"
+    },
+    {
+      "number": 8705,
+      "head": "fc27113c3e95193e8bb2a9e41db0289c837639e6"
+    },
+    {
+      "number": 8706,
+      "head": "16a15d2aa19bdedac086c9b10daa59bb26281c9c"
+    },
+    {
+      "number": 8707,
+      "head": "48382f79cdf2d7f511bcbc174c99cd974d6d23c5"
+    },
+    {
+      "number": 8712,
+      "head": "101899925c90cd050d66659e65440d5acb1e995f"
+    },
+    {
+      "number": 8713,
+      "head": "f4ded9d0d35878f433483671653a820addbc4a2c"
+    },
+    {
+      "number": 8714,
+      "head": "91cb75e870e7e1d22f2ba506ababddd5181638f3"
+    },
+    {
+      "number": 8716,
+      "head": "18149728631d47baefc707b7cb27ff924d96d955"
+    },
+    {
+      "number": 8718,
+      "head": "8b69fde69046c9014c3d19af601f72f2d0f40842"
+    },
+    {
+      "number": 8720,
+      "head": "21fac65baabdb550e597e96ea676d913de054304"
+    },
+    {
+      "number": 8721,
+      "head": "4ac991f97bce8147a2828093aeec392912651533"
+    },
+    {
+      "number": 8722,
+      "head": "6098e175eb8f473c2d1d16005c7558c459f56274"
+    },
+    {
+      "number": 8723,
+      "head": "0f629e936bd6d3f96a05c36a1fe18c9dcac663dc"
+    },
+    {
+      "number": 8724,
+      "head": "9d8b56ecef4d78e5b40bd28e96eff7ce0f6df5ee"
+    },
+    {
+      "number": 8726,
+      "head": "d9570e04cc5e520820026d5208e2a93edd5fd50b"
+    },
+    {
+      "number": 8727,
+      "head": "ac393935254caa9fd27c1b0c92346913d4f015af"
+    },
+    {
+      "number": 8728,
+      "head": "629f204f82e95c4f2f1a12d318698d1a01fe1cf7"
+    }
+  ],
+  "own_open": [
+    {
+      "number": 8738,
+      "title": "fix: 표와 셀의 단색 배경 무늬 없음 저장 보존 (#8733)",
+      "head": "0352c9deee13130f374cfc8015384512ecc6256c",
+      "draft": true,
+      "review_requests": [],
+      "checks": {
+        "SUCCESS": 32,
+        "SKIPPED": 6,
+        "NEUTRAL": 1
+      },
+      "failures": [],
+      "action": "read only; separate user work preserved"
+    }
+  ],
+  "remote_mutations_for_this_batch": "none"
+}

@@ -49,7 +49,8 @@ impl Server {
             .arg("mcp-serve")
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
+            // 진단 출력은 테스트 실행기가 받도록 해 읽지 않는 파이프가 서버를 막지 않게 한다.
+            .stderr(Stdio::inherit())
             .spawn()
             .expect("rhwp mcp-serve 실행 실패");
         let stdin = child.stdin.take().expect("stdin");

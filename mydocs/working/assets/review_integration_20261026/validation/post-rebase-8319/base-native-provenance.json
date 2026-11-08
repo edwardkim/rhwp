@@ -1,0 +1,9 @@
+{
+  "source_sha": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+  "backend": "native-skia",
+  "binary": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/base-native-rhwp",
+  "sha256": "1b3c9ea601a4e464a6b96ca71c3de539fd64f4b9aeca001ebeb1c37ff1f7976a",
+  "build_log": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/rebase-8319/base-native-build.log",
+  "command": "CARGO_BUILD_JOBS=4 cargo build --locked --profile release-test --features native-skia --bin rhwp --target-dir /home/tsjang/rhwp/target/pr-review",
+  "exit_code": 0
+}

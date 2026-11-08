@@ -1,0 +1,135 @@
+{
+  "merge_sha": "67adf83672eedd0672a4a1b0cb81db7ef7e85574",
+  "source_pr": 8658,
+  "images": [
+    {
+      "path": "mydocs/pr/assets/pr8658/final/corrected-native/primary/small/review/review_001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/67adf83672eedd0672a4a1b0cb81db7ef7e85574/mydocs/pr/assets/pr8658/final/corrected-native/primary/small/review/review_001.png",
+      "bytes": 86647,
+      "sha256": "32adb63cc39440a06506ee14c0b501b1c00555c5c92fddc49b8c110183460e58",
+      "content_type": "image/png",
+      "equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr8658/final/corrected-native/primary/small/overlay/overlay_001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/67adf83672eedd0672a4a1b0cb81db7ef7e85574/mydocs/pr/assets/pr8658/final/corrected-native/primary/small/overlay/overlay_001.png",
+      "bytes": 50685,
+      "sha256": "f87f92ea39a600c6bee8b6c71d55268426fecff23032b9d8a8cb1dc34d3bac15",
+      "content_type": "image/png",
+      "equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr8658/final/corrected-wasm/primary/small/review/review_001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/67adf83672eedd0672a4a1b0cb81db7ef7e85574/mydocs/pr/assets/pr8658/final/corrected-wasm/primary/small/review/review_001.png",
+      "bytes": 85545,
+      "sha256": "92ed9993929155d37bf038b993af06f3bed3905e64722869ba1bf59058e54c74",
+      "content_type": "image/png",
+      "equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr8658/final/corrected-wasm/primary/small/overlay/overlay_001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/67adf83672eedd0672a4a1b0cb81db7ef7e85574/mydocs/pr/assets/pr8658/final/corrected-wasm/primary/small/overlay/overlay_001.png",
+      "bytes": 50706,
+      "sha256": "850e849ead12e7a94fbc53ea467aabdbcd3cf2be48acdf885962dc077bc5ba65",
+      "content_type": "image/png",
+      "equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr8658/final/corrected-native/primary/large/review/review_001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/67adf83672eedd0672a4a1b0cb81db7ef7e85574/mydocs/pr/assets/pr8658/final/corrected-native/primary/large/review/review_001.png",
+      "bytes": 125226,
+      "sha256": "4f1ec6e669fe0d961290e96977705cda09ce31f4faac1c515248f25f9f2eb24c",
+      "content_type": "image/png",
+      "equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr8658/final/corrected-native/primary/large/overlay/overlay_001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/67adf83672eedd0672a4a1b0cb81db7ef7e85574/mydocs/pr/assets/pr8658/final/corrected-native/primary/large/overlay/overlay_001.png",
+      "bytes": 69780,
+      "sha256": "751e392e8169390fc0def9152468c3592ae8c36a85ba3be3c427e2f34ace9b57",
+      "content_type": "image/png",
+      "equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr8658/final/corrected-wasm/primary/large/review/review_001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/67adf83672eedd0672a4a1b0cb81db7ef7e85574/mydocs/pr/assets/pr8658/final/corrected-wasm/primary/large/review/review_001.png",
+      "bytes": 123236,
+      "sha256": "e47741695ee09f795307883520784dece0c129b30f19a3eb7ad996bedae2b64a",
+      "content_type": "image/png",
+      "equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr8658/final/corrected-wasm/primary/large/overlay/overlay_001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/67adf83672eedd0672a4a1b0cb81db7ef7e85574/mydocs/pr/assets/pr8658/final/corrected-wasm/primary/large/overlay/overlay_001.png",
+      "bytes": 69805,
+      "sha256": "a57e554b6b845cf596bde3e08e9363975d40030731a512255002463fa44003bd",
+      "content_type": "image/png",
+      "equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr8658/final/corrected-native/primary/split/review/review_001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/67adf83672eedd0672a4a1b0cb81db7ef7e85574/mydocs/pr/assets/pr8658/final/corrected-native/primary/split/review/review_001.png",
+      "bytes": 106420,
+      "sha256": "54adb699a170de94d0d48f1bd550e630883504d843ff4756d28cf10f6c52453e",
+      "content_type": "image/png",
+      "equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr8658/final/corrected-native/primary/split/overlay/overlay_001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/67adf83672eedd0672a4a1b0cb81db7ef7e85574/mydocs/pr/assets/pr8658/final/corrected-native/primary/split/overlay/overlay_001.png",
+      "bytes": 49703,
+      "sha256": "3f8205d8393846050e599fef44f26a8f2ad760fcdac3f00d6065f14252ef8876",
+      "content_type": "image/png",
+      "equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr8658/final/corrected-wasm/primary/split/review/review_001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/67adf83672eedd0672a4a1b0cb81db7ef7e85574/mydocs/pr/assets/pr8658/final/corrected-wasm/primary/split/review/review_001.png",
+      "bytes": 106123,
+      "sha256": "a5ff03639b816161741d84e89176b245c0372356e895c5af0b69744aaa796197",
+      "content_type": "image/png",
+      "equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr8658/final/corrected-wasm/primary/split/overlay/overlay_001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/67adf83672eedd0672a4a1b0cb81db7ef7e85574/mydocs/pr/assets/pr8658/final/corrected-wasm/primary/split/overlay/overlay_001.png",
+      "bytes": 49880,
+      "sha256": "7930aef1e344f1207b39a69c8625dcb237a82e4594b1a2a176c22e5979c88184",
+      "content_type": "image/png",
+      "equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr8658/final/corrected-native/primary/split/review/review_002.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/67adf83672eedd0672a4a1b0cb81db7ef7e85574/mydocs/pr/assets/pr8658/final/corrected-native/primary/split/review/review_002.png",
+      "bytes": 85652,
+      "sha256": "d5c93ff40200c90c74453283d1ce0697068280e4cb1dff59e75d9cca539a1390",
+      "content_type": "image/png",
+      "equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr8658/final/corrected-native/primary/split/overlay/overlay_002.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/67adf83672eedd0672a4a1b0cb81db7ef7e85574/mydocs/pr/assets/pr8658/final/corrected-native/primary/split/overlay/overlay_002.png",
+      "bytes": 38926,
+      "sha256": "ab12dd0cb31468c0cf62820d03dc1c673ed3a85d3799b9f942563db3024ae2ef",
+      "content_type": "image/png",
+      "equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr8658/final/corrected-wasm/primary/split/review/review_002.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/67adf83672eedd0672a4a1b0cb81db7ef7e85574/mydocs/pr/assets/pr8658/final/corrected-wasm/primary/split/review/review_002.png",
+      "bytes": 85550,
+      "sha256": "b0b41f96dfaf95f3a8708543e925a686d09e0f5d6206aa40646f0eee08a50c52",
+      "content_type": "image/png",
+      "equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr8658/final/corrected-wasm/primary/split/overlay/overlay_002.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/67adf83672eedd0672a4a1b0cb81db7ef7e85574/mydocs/pr/assets/pr8658/final/corrected-wasm/primary/split/overlay/overlay_002.png",
+      "bytes": 38616,
+      "sha256": "46abf2a49232300dbae9d98ea311372817bafdfcf7802bd94cc51471de20f982",
+      "content_type": "image/png",
+      "equal": true
+    }
+  ],
+  "verified": 16
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "name": "highlighter-positive",
+    "args": [
+      "npm",
+      "run",
+      "e2e:continuous-highlighter"
+    ],
+    "exit_code": 0,
+    "started_at": "2026-11-02T16:20:23.131307+09:00",
+    "finished_at": "2026-11-02T16:20:40.822458+09:00"
+  },
+  {
+    "name": "existing-6635",
+    "args": [
+      "npm",
+      "run",
+      "e2e:issue-6635"
+    ],
+    "exit_code": 0,
+    "started_at": "2026-11-02T16:20:40.822727+09:00",
+    "finished_at": "2026-11-02T16:20:50.935101+09:00"
+  },
+  {
+    "name": "boundaries-final",
+    "args": [
+      "node",
+      "e2e/run-with-vite.mjs",
+      "--",
+      "node",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr8379/highlighter-boundaries.mjs",
+      "--mode=headless"
+    ],
+    "exit_code": 0,
+    "started_at": "2026-11-02T16:20:50.935387+09:00",
+    "finished_at": "2026-11-02T16:21:07.125467+09:00"
+  }
+]

@@ -31,8 +31,8 @@ fn page_number_position_does_not_prefix_hwp3_title_with_object_marker() {
     assert!(
         // [#4680] 고정폭 빈칸(코드 31)은 U+2007 로 보존한다 — 같은 문서의 HWPX 판과 일치.
         title.text.starts_with("ᄒᆞᆫ글\u{2007}97 안내문"),
-        "PageNumberPos는 title 앞에 U+FFFC를 남기면 안 됨: {:?}",
-        title.text
+        // #8745: 실패 진단에 복호화한 본문 전체를 출력하지 않는다.
+        "PageNumberPos는 title 앞에 U+FFFC를 남기면 안 됨"
     );
     assert!(
         !title.text.starts_with('\u{FFFC}'),

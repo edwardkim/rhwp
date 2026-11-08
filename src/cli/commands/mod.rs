@@ -9,4 +9,5 @@ pub(crate) mod conversion;
 pub(crate) mod edit;
 pub(crate) mod generation;
 pub(crate) mod internal_validation;
+pub(crate) mod pdf_import;
 pub(crate) mod tabular_import;

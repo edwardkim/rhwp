@@ -278,6 +278,21 @@ export interface RhwpDocumentChangedEventV1 {
   commandId: string;
 }
 
+/** 누름틀 진입·이탈 이벤트(`field-focus-events-v1`). 밖으로 나오면 `inField:false` 만 온다 */
+export type RhwpFieldChangedEventV1 =
+  | { schemaVersion: 1; inField: false }
+  | {
+    schemaVersion: 1;
+    inField: true;
+    fieldId: number;
+    /** 예: `clickhere` */
+    fieldType: string;
+    /** 필드 이름(「누름틀 고치기」의 이름). 없으면 빈 문자열 */
+    name: string;
+    /** 안내문 */
+    guide: string;
+  };
+
 export interface RhwpDocumentAgentError extends Error {
   code: string;
   /** TRANSACTION_FAILED/RENDER_FAILED에서 snapshot 복구 성공 여부 */
@@ -290,8 +305,8 @@ export declare class RhwpEditor {
   loadFile(data: ArrayBuffer | Uint8Array, fileName?: string, options?: LoadFileOptions): Promise<LoadResult>;
   /** 현재 문서의 페이지 수를 반환합니다 */
   pageCount(): Promise<number>;
-  /** 특정 페이지를 SVG 문자열로 렌더링합니다 */
-  getPageSvg(page?: number): Promise<string>;
+  /** 특정 페이지를 SVG 문자열로 렌더링합니다. `profile: 'print'` 는 편집 화면 전용 요소를 뺀 인쇄용 SVG 입니다 */
+  getPageSvg(page?: number, options?: { profile?: 'fastPreview' | 'screen' | 'print' | 'highQuality' }): Promise<string>;
   /** 선택된 renderer와 페이지별 readiness 진단을 반환합니다 */
   getRendererDiagnostics(page?: number): Promise<RendererDiagnosticsV1>;
   /** 현재 snapshot만 읽는 bounded font 결정 계보를 반환합니다 */
@@ -325,6 +340,11 @@ export declare class RhwpEditor {
   focusTarget(target: RhwpBodyParagraphTargetV1): Promise<{ focused: boolean; page: number }>;
   /** agent apply/revert가 commit된 뒤 strict v1 변경 이벤트 구독 */
   onDocumentChanged(listener: (event: RhwpDocumentChangedEventV1) => void): () => void;
+  /**
+   * 캐럿이 누름틀에 들어가거나 다른 누름틀로 옮기거나 나올 때 구독. 같은 누름틀 안의 이동은
+   * 다시 알리지 않는다. 스튜디오가 field-focus-events-v1 을 광고하지 않으면 던진다
+   */
+  onFieldChanged(listener: (event: RhwpFieldChangedEventV1) => void): () => void;
   /** iframe 엘리먼트를 반환합니다 */
   readonly element: HTMLIFrameElement;
   // ── 브리지 표면 ────────────────────────────────────────────────
@@ -359,6 +379,11 @@ export declare class RhwpEditor {
     exportBytes(format?: 'hwp' | 'hwpx' | 'hml'): Promise<Uint8Array>;
     undo(): Promise<CommandResult>;
     redo(): Promise<CommandResult>;
+    /**
+     * HwpCtrl 커서를 사용자 캐럿 자리로 옮기고 새 `GetPos` 값을 준다. 캐럿이 머리말·꼬리말·각주·
+     * 글상자 안이면 커서를 두고 `null`. 문서는 바꾸지 않으며 undo 항목도 만들지 않는다.
+     */
+    syncCursorFromCaret(): Promise<{ list: number; para: number; pos: number } | null>;
   };
 
   /** 메뉴·툴바·상태표시줄 표시. 숨겨도 커맨드는 실행된다 */

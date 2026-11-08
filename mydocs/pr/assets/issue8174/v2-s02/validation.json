@@ -1,0 +1,454 @@
+{
+  "validationSource": "7d85ef57a036a0725f406c64cbb664ae77e764ff",
+  "productSource": "5a77054519216f9f2dae6a779e7e334f3894466d",
+  "baseSource": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "productionCodeUnchangedBetweenProductAndValidation": true,
+  "fullNativeNextest": {
+    "passed": 11798,
+    "summary": "Summary [1175.233s] 11798 tests run: 11798 passed (8 slow), 45 skipped",
+    "skipped": 45
+  },
+  "nativeLibtest": {
+    "passed": 3863,
+    "ignored": 12,
+    "workspaceMembers": [
+      {
+        "passed": 15,
+        "ignored": 0
+      },
+      {
+        "passed": 165,
+        "ignored": 0
+      },
+      {
+        "passed": 2,
+        "ignored": 0
+      }
+    ],
+    "totalPassed": 4045,
+    "scope": "passed/ignored identify rhwp root; workspaceMembers were executed by the same command"
+  },
+  "gates": [
+    {
+      "sourceSha": "7d85ef57a036a0725f406c64cbb664ae77e764ff",
+      "productSourceSha": "5a77054519216f9f2dae6a779e7e334f3894466d",
+      "name": "focused-default-features",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8174_pdf_default_features",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 322.00466043001506
+    },
+    {
+      "sourceSha": "7d85ef57a036a0725f406c64cbb664ae77e764ff",
+      "productSourceSha": "5a77054519216f9f2dae6a779e7e334f3894466d",
+      "name": "focused-links",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8174_link_destinations",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 13.759133809013292
+    },
+    {
+      "sourceSha": "7d85ef57a036a0725f406c64cbb664ae77e764ff",
+      "productSourceSha": "5a77054519216f9f2dae6a779e7e334f3894466d",
+      "name": "focused-mask",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_7911_pdf_resource_limits",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 13.176872486015782
+    },
+    {
+      "sourceSha": "7d85ef57a036a0725f406c64cbb664ae77e764ff",
+      "productSourceSha": "5a77054519216f9f2dae6a779e7e334f3894466d",
+      "name": "fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 20.470503540011123
+    },
+    {
+      "sourceSha": "7d85ef57a036a0725f406c64cbb664ae77e764ff",
+      "productSourceSha": "5a77054519216f9f2dae6a779e7e334f3894466d",
+      "name": "clippy-root",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 84.5482751809759
+    },
+    {
+      "sourceSha": "7d85ef57a036a0725f406c64cbb664ae77e764ff",
+      "productSourceSha": "5a77054519216f9f2dae6a779e7e334f3894466d",
+      "name": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--profile",
+        "release-test",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 80.28517568693496
+    },
+    {
+      "sourceSha": "7d85ef57a036a0725f406c64cbb664ae77e764ff",
+      "productSourceSha": "5a77054519216f9f2dae6a779e7e334f3894466d",
+      "name": "build-workspace",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--workspace",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review"
+      ],
+      "exit": 0,
+      "seconds": 312.2358392699389
+    },
+    {
+      "sourceSha": "7d85ef57a036a0725f406c64cbb664ae77e764ff",
+      "productSourceSha": "5a77054519216f9f2dae6a779e7e334f3894466d",
+      "name": "clippy-workspace",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 110.44318644097075
+    },
+    {
+      "sourceSha": "7d85ef57a036a0725f406c64cbb664ae77e764ff",
+      "productSourceSha": "5a77054519216f9f2dae6a779e7e334f3894466d",
+      "name": "nextest-final",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--tests",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 1858.9218813630287
+    },
+    {
+      "sourceSha": "7d85ef57a036a0725f406c64cbb664ae77e764ff",
+      "productSourceSha": "5a77054519216f9f2dae6a779e7e334f3894466d",
+      "name": "native-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "4"
+      ],
+      "exit": 0,
+      "seconds": 32.78198919002898
+    },
+    {
+      "sourceSha": "7d85ef57a036a0725f406c64cbb664ae77e764ff",
+      "productSourceSha": "5a77054519216f9f2dae6a779e7e334f3894466d",
+      "name": "native-issue_2225_missing_picture_placeholder",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--test-threads",
+        "4",
+        "--no-fail-fast",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "seconds": 1.6865348250139505
+    },
+    {
+      "sourceSha": "7d85ef57a036a0725f406c64cbb664ae77e764ff",
+      "productSourceSha": "5a77054519216f9f2dae6a779e7e334f3894466d",
+      "name": "native-render_p37_direct_pdf_export",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--test-threads",
+        "4",
+        "--no-fail-fast",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "seconds": 1.0485080380458385
+    },
+    {
+      "sourceSha": "7d85ef57a036a0725f406c64cbb664ae77e764ff",
+      "productSourceSha": "5a77054519216f9f2dae6a779e7e334f3894466d",
+      "name": "native-skia_native_glyph_replay",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "skia_native_glyph_replay",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--test-threads",
+        "4",
+        "--no-fail-fast",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "seconds": 1.6314899149583653
+    },
+    {
+      "sourceSha": "7d85ef57a036a0725f406c64cbb664ae77e764ff",
+      "productSourceSha": "5a77054519216f9f2dae6a779e7e334f3894466d",
+      "name": "reduced-native-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--no-default-features",
+        "--features",
+        "wasm-api,pdf-import",
+        "--bin",
+        "rhwp"
+      ],
+      "exit": 0,
+      "seconds": 307.9086347579723
+    },
+    {
+      "sourceSha": "7d85ef57a036a0725f406c64cbb664ae77e764ff",
+      "productSourceSha": "5a77054519216f9f2dae6a779e7e334f3894466d",
+      "name": "reduced-wasm-check",
+      "command": [
+        "cargo",
+        "check",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--no-default-features",
+        "--features",
+        "wasm-api,pdf-import",
+        "--lib"
+      ],
+      "exit": 0,
+      "seconds": 76.59463111695368
+    },
+    {
+      "sourceSha": "7d85ef57a036a0725f406c64cbb664ae77e764ff",
+      "productSourceSha": "5a77054519216f9f2dae6a779e7e334f3894466d",
+      "name": "manifest-final",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a"
+      ],
+      "exit": 0,
+      "seconds": 0.6863140410277992
+    }
+  ],
+  "reducedNative": {
+    "support": {
+      "enabled": true,
+      "jbig2": false,
+      "jpeg2000": false,
+      "icc": false,
+      "boundedXrefRecovery": true
+    },
+    "cases": [
+      {
+        "case": "jbig2",
+        "exit": 1,
+        "stderr": "오류: 유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed\n",
+        "preserved": true
+      },
+      {
+        "case": "jpx",
+        "exit": 1,
+        "stderr": "오류: 유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed\n",
+        "preserved": true
+      },
+      {
+        "case": "jpeg",
+        "exit": 0,
+        "pageCount": 1
+      },
+      {
+        "case": "icc",
+        "exit": 0,
+        "pageCount": 1
+      },
+      {
+        "case": "recovery",
+        "exit": 0,
+        "pageCount": 1
+      }
+    ]
+  },
+  "sourcePreflight": {
+    "source": "5a77054519216f9f2dae6a779e7e334f3894466d",
+    "count": 14,
+    "sourceCheck": "pass",
+    "publishReady": false,
+    "cargoVerified": false,
+    "registryConsumptionVerified": false
+  },
+  "wasmCodecContract": {
+    "cases": 19,
+    "checks": 158
+  },
+  "wasmImportContract": {
+    "assertions": 138,
+    "pages": 12,
+    "actualWorkers": 7
+  },
+  "studioNode": {
+    "passed": 2438,
+    "skipped": 2
+  },
+  "visual": {
+    "native": {
+      "documents": 41,
+      "pages": 41,
+      "minimumRaw": 100
+    },
+    "wasm": {
+      "documents": 41,
+      "pages": 41,
+      "minimumRaw": 100
+    }
+  },
+  "svgNativeStandalone": {
+    "cases": 6,
+    "minimumRaw": 100,
+    "reference": "independent Chrome; browser product replay remains S03/S04"
+  },
+  "remainingStages": [
+    "V2-S03 WASM policies and Worker",
+    "V2-S04 Studio and F07/F08",
+    "V2-S05 actual package and registry consumption"
+  ],
+  "githubMutations": false,
+  "nativePdfBookmarkReader": {
+    "source": "5a77054519216f9f2dae6a779e7e334f3894466d",
+    "paths": 2,
+    "targetContainsDestination": true,
+    "openAction": null,
+    "coordinateContract": "PyMuPDF Document.resolve_names returns PDF bottom-left coordinates; transform into word-box coordinates before comparison"
+  },
+  "whitespace": {
+    "changeCheck": "pass",
+    "exceptions": [
+      "original PDF binary/xref bytes",
+      "upstream qcms COPYING/LICENSE original notice bytes",
+      "four original qcms src/c_bindings.rs comment lines; matched verbatim against original archive"
+    ],
+    "qcmsSourceArchiveSha256": "edecfcd5d755a5e5d98e24cf43113e7cdaec5a070edd0f6b250c03a573da30fa"
+  }
+}

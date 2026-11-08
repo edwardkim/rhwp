@@ -1,0 +1,14 @@
+{
+  "sourceParent": "66ba7e3cdd80c7bda647cad6bc0060c08e40e35f",
+  "sourceFiles": {
+    "src/renderer/layout/table_layout.rs": "bc33d6fd5ef23c31829c79c9b629b484b961dc9d1be3b8ba02492a5a835c6b5f",
+    "src/renderer/layout/table_layout/row_block_cut.rs": "82e18c607011c0ca87f90720050e783a05c3109a79d999cfd5ea9d59ffdc651b",
+    "src/renderer/layout/table_partial.rs": "eac71ba1ad488b3f26e99f580ccc366f251637715f068001f68e805ae8bc1792",
+    "src/renderer/layout/table_layout/stored_mixed_opening_frame.rs": "be923a407ec81bf5f2c0dfcc7d6403004470948a56667f1a1235fdc740c372de"
+  },
+  "trace": [
+    "DIAG_CELL_ALIGN row=3 col=1 cut=Some((0, 16)) align=Center cell_y=641.306667 text_y=646.633333 cell_h=366.013333 pad=3.760000 content=363.840000 centered=355.360000 owners=[(\"mixed_declared\", true), (\"frame\", false), (\"ordinary\", false), (\"opening\", false), (\"closing\", false), (\"full_width\", false), (\"restart_span\", false)]",
+    "TARGET_RUN BoundingBox { x: 268.1555555555556, y: 646.6333333333332, width: 445.3644444444444, height: 14.666666666666666 } context=Some(CellContext { parent_para_index: 21, path: [CellPathEntry { control_index: 0, cell_index: 6, cell_para_index: 0, text_direction: 0 }], in_textbox: false })"
+  ],
+  "fullPrAcceptance": false
+}

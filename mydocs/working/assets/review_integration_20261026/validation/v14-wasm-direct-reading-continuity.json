@@ -1,0 +1,126 @@
+{
+  "production_source": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+  "scope": "Earlier directly read independent Print comparison pixels remain byte-identical in actual final optimized WASM outputs. Additional current Chinese/onsemiro readings are recorded separately.",
+  "records": [
+    {
+      "key": "hairline-sungeo",
+      "page": 21,
+      "prior_path": "mydocs/working/assets/review_integration_20261026/validation/detail/wasm/hairline-sungeo-p021.png",
+      "prior_sha256": "d93e08affdb55709d7bf2b32a69c150d538a4e7a40bc84a41d334036a4573c3d",
+      "current_sha256": "d93e08affdb55709d7bf2b32a69c150d538a4e7a40bc84a41d334036a4573c3d",
+      "byte_identical": true
+    },
+    {
+      "key": "hairline-sungeo",
+      "page": 22,
+      "prior_path": "mydocs/working/assets/review_integration_20261026/validation/detail/wasm/hairline-sungeo-p022.png",
+      "prior_sha256": "92c9aab75a2ea3e296d93bb613dbc3dba430db382478611e0aa0e29a3c4e2878",
+      "current_sha256": "92c9aab75a2ea3e296d93bb613dbc3dba430db382478611e0aa0e29a3c4e2878",
+      "byte_identical": true
+    },
+    {
+      "key": "hairline-sungeo",
+      "page": 34,
+      "prior_path": "mydocs/working/assets/review_integration_20261026/validation/detail/wasm/hairline-sungeo-p034.png",
+      "prior_sha256": "2eb580f34a89e113d32c46951825aa080deb655afc37812c0278e13303d7ce05",
+      "current_sha256": "2eb580f34a89e113d32c46951825aa080deb655afc37812c0278e13303d7ce05",
+      "byte_identical": true
+    },
+    {
+      "key": "nested-height-cache",
+      "page": 2,
+      "prior_path": "mydocs/working/assets/review_integration_20261026/validation/detail/wasm/nested-height-cache-p002.png",
+      "prior_sha256": "4f36cfe434f5ec6400c0c9053f620fab5198a07cf25329d2ff5850ae9793c0d8",
+      "current_sha256": "4f36cfe434f5ec6400c0c9053f620fab5198a07cf25329d2ff5850ae9793c0d8",
+      "byte_identical": true
+    },
+    {
+      "key": "nested-height-cache",
+      "page": 9,
+      "prior_path": "mydocs/working/assets/review_integration_20261026/validation/detail/wasm/nested-height-cache-p009.png",
+      "prior_sha256": "3827cf184740e7e41f8c08c2068e6c2483e16dc7cecc1288cd187834e3cf3151",
+      "current_sha256": "3827cf184740e7e41f8c08c2068e6c2483e16dc7cecc1288cd187834e3cf3151",
+      "byte_identical": true
+    },
+    {
+      "key": "nested-height-cache",
+      "page": 10,
+      "prior_path": "mydocs/working/assets/review_integration_20261026/validation/detail/wasm/nested-height-cache-p010.png",
+      "prior_sha256": "ec089527b497d9495c9bb86484ea3bb16cac7a485de6861d6881432c5e429bc3",
+      "current_sha256": "ec089527b497d9495c9bb86484ea3bb16cac7a485de6861d6881432c5e429bc3",
+      "byte_identical": true
+    },
+    {
+      "key": "nested-height-cache",
+      "page": 11,
+      "prior_path": "mydocs/working/assets/review_integration_20261026/validation/detail/wasm/nested-height-cache-p011.png",
+      "prior_sha256": "d3246229c15cc711a004f01032e976e34ec12af31857284399e5cccbcfcb88cd",
+      "current_sha256": "d3246229c15cc711a004f01032e976e34ec12af31857284399e5cccbcfcb88cd",
+      "byte_identical": true
+    },
+    {
+      "key": "nested-height-cache",
+      "page": 12,
+      "prior_path": "mydocs/working/assets/review_integration_20261026/validation/detail/wasm/nested-height-cache-p012.png",
+      "prior_sha256": "e77cacdcaef51887efbbcf22c0bc058fb2329f1d7365a9d812ede80231b754d5",
+      "current_sha256": "e77cacdcaef51887efbbcf22c0bc058fb2329f1d7365a9d812ede80231b754d5",
+      "byte_identical": true
+    },
+    {
+      "key": "nested-height-cache",
+      "page": 14,
+      "prior_path": "mydocs/working/assets/review_integration_20261026/validation/detail/wasm/nested-height-cache-p014.png",
+      "prior_sha256": "0d969455176ce44bee64a54dd1e169a95ceeebf3c0885ab962f8d63fea6c390d",
+      "current_sha256": "0d969455176ce44bee64a54dd1e169a95ceeebf3c0885ab962f8d63fea6c390d",
+      "byte_identical": true
+    },
+    {
+      "key": "nested-height-cache",
+      "page": 15,
+      "prior_path": "mydocs/working/assets/review_integration_20261026/validation/detail/wasm/nested-height-cache-p015.png",
+      "prior_sha256": "c7993a05adbd38d2918467c60ad749cd414bc6b9e6a73603941f801306ef73b6",
+      "current_sha256": "c7993a05adbd38d2918467c60ad749cd414bc6b9e6a73603941f801306ef73b6",
+      "byte_identical": true
+    },
+    {
+      "key": "nested-height-cache",
+      "page": 16,
+      "prior_path": "mydocs/working/assets/review_integration_20261026/validation/detail/wasm/nested-height-cache-p016.png",
+      "prior_sha256": "71128ebe6e6f653c7a74e3424913eeb4e7756bed3272478e82ca2ff5a2fad93e",
+      "current_sha256": "71128ebe6e6f653c7a74e3424913eeb4e7756bed3272478e82ca2ff5a2fad93e",
+      "byte_identical": true
+    },
+    {
+      "key": "hwpml-spec-2020",
+      "page": 23,
+      "prior_path": "mydocs/working/assets/review_integration_20261026/validation/detail/wasm/hwpml-spec-2020-p023.png",
+      "prior_sha256": "a25cfb270ee98fd6aec811da437ed1dd4c5ffe8dd0f98e92a0196a193fd6330e",
+      "current_sha256": "a25cfb270ee98fd6aec811da437ed1dd4c5ffe8dd0f98e92a0196a193fd6330e",
+      "byte_identical": true
+    },
+    {
+      "key": "hwpml-spec-2020",
+      "page": 54,
+      "prior_path": "mydocs/working/assets/review_integration_20261026/validation/detail/wasm/hwpml-spec-2020-p054.png",
+      "prior_sha256": "73f44a77bbe08db54c5655aa6636baa55fc3bab7c0281c5e3d21dcc74e1f4c5d",
+      "current_sha256": "73f44a77bbe08db54c5655aa6636baa55fc3bab7c0281c5e3d21dcc74e1f4c5d",
+      "byte_identical": true
+    },
+    {
+      "key": "hwp5-spec-official",
+      "page": 20,
+      "prior_path": "mydocs/working/assets/review_integration_20261026/validation/detail/wasm/hwp5-spec-official-p020.png",
+      "prior_sha256": "afe3a99e37388ef05b8dedeb20b50ebe4bb41dbc2553f0e1be67d0ea9c571d89",
+      "current_sha256": "afe3a99e37388ef05b8dedeb20b50ebe4bb41dbc2553f0e1be67d0ea9c571d89",
+      "byte_identical": true
+    },
+    {
+      "key": "hwp5-spec-official",
+      "page": 31,
+      "prior_path": "mydocs/working/assets/review_integration_20261026/validation/detail/wasm/hwp5-spec-official-p031.png",
+      "prior_sha256": "4c0b2994d12b1fbbb4709c5754cd115a215fc06a64a9187b6f9f607ffc3eb1c8",
+      "current_sha256": "4c0b2994d12b1fbbb4709c5754cd115a215fc06a64a9187b6f9f607ffc3eb1c8",
+      "byte_identical": true
+    }
+  ]
+}

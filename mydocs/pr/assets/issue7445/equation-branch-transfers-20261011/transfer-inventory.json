@@ -1,0 +1,438 @@
+{
+  "source_commit": "592a7a889769d047d6ae035694923ad48249810b",
+  "scope": "사용자가 승인한 #7445 하위 이슈의 이관 검사. 원본/PDF·생산 구현·이관 철회·정상 계약은 보존한다.",
+  "files": [
+    {
+      "path": "src/wasm_api/tests.rs",
+      "archive": "mydocs/pr/assets/issue7445/equation-branch-transfers-20261011/src/wasm_api/tests.rs.txt",
+      "sha256": "b4548e1d534cd4dc31df6c75e7976cbd12f0e1aed866abadac3f7a5663c04517",
+      "removed": [
+        {
+          "name": "issue2214_scoped_cache_coherence_preserves_transient_pagination",
+          "issue": 7813,
+          "node_type": "function_item"
+        },
+        {
+          "name": "issue2424_resumable_pagination_commits_only_after_final_fragment",
+          "issue": 7813,
+          "node_type": "function_item"
+        },
+        {
+          "name": "issue2424_resumable_delete_commits_only_after_final_fragment",
+          "issue": 7813,
+          "node_type": "function_item"
+        },
+        {
+          "name": "issue2424_new_edit_stales_old_job_and_sync_flush_restarts_latest_revision",
+          "issue": 7813,
+          "node_type": "function_item"
+        },
+        {
+          "name": "issue2214_target_cuts",
+          "issue": 7813,
+          "node_type": "function_item"
+        },
+        {
+          "name": "issue2214_assert_cut_continuity",
+          "issue": 7813,
+          "node_type": "function_item"
+        },
+        {
+          "name": "issue2214_flow_boundary_insert_count",
+          "issue": 7813,
+          "node_type": "function_item"
+        },
+        {
+          "name": "Issue2214TargetCut",
+          "issue": 7813,
+          "node_type": "struct_item"
+        }
+      ]
+    },
+    {
+      "path": "tests/cases/issue_5792_overlay_table_split_overlap.rs",
+      "archive": "mydocs/pr/assets/issue7445/equation-branch-transfers-20261011/tests/cases/issue_5792_overlay_table_split_overlap.rs.txt",
+      "sha256": "de4e1f6f076f192c002612e6b4c1ad36a543914533fa2d0ba192257f3302b7e7",
+      "removed": [
+        {
+          "name": "issue_5792_split_overlay_table_keeps_every_row_and_clears_following_text",
+          "issue": 7811
+        }
+      ],
+      "whole_file_removed": true
+    },
+    {
+      "path": "tests/cases/issue_5908_giant_cell_last_fragment_overfill.rs",
+      "archive": "mydocs/pr/assets/issue7445/equation-branch-transfers-20261011/tests/cases/issue_5908_giant_cell_last_fragment_overfill.rs.txt",
+      "sha256": "1331143b60d7569aa98f825128e8ebd4e7d72c2a6dabb3b0b1c59659bc3e9730",
+      "removed": [
+        {
+          "name": "issue_5908_giant_cell_last_fragment_keeps_splitting",
+          "issue": 7812
+        },
+        {
+          "name": "issue_5908_collapsed_page_stays_inside_the_paper",
+          "issue": 7812
+        },
+        {
+          "name": "issue_5908_annex_two_moves_off_the_collapsed_page",
+          "issue": 7812
+        }
+      ],
+      "whole_file_removed": true
+    },
+    {
+      "path": "tests/cases/issue_6366_infront_flow_paginate.rs",
+      "archive": "mydocs/pr/assets/issue7445/equation-branch-transfers-20261011/tests/cases/issue_6366_infront_flow_paginate.rs.txt",
+      "sha256": "8c504fd0f82007507e63d79280ef91a92cba26d3a172745b37596e859264bfd3",
+      "removed": [
+        {
+          "name": "issue_6366_infront_flow_table_matches_hangul_six_pages",
+          "issue": 7811
+        }
+      ],
+      "whole_file_removed": true
+    },
+    {
+      "path": "tests/cases/issue_6761_stored_vpos_rewind_page_break.rs",
+      "archive": "mydocs/pr/assets/issue7445/equation-branch-transfers-20261011/tests/cases/issue_6761_stored_vpos_rewind_page_break.rs.txt",
+      "sha256": "a198dd52544224281b9b1bd55cdbb61e81a5fa94634fb9ca69660fa539127f88",
+      "removed": [
+        {
+          "name": "partial_retreat_inside_a_page_does_not_break",
+          "issue": 7743,
+          "node_type": "function_item"
+        }
+      ]
+    },
+    {
+      "path": "tests/cases/issue_6976_page_ending_fragment_row_fold.rs",
+      "archive": "mydocs/pr/assets/issue7445/equation-branch-transfers-20261011/tests/cases/issue_6976_page_ending_fragment_row_fold.rs.txt",
+      "sha256": "e3886934df28e5d46c3e39fcba6f4ab639aa0a9ee9324a26ddc48363fab2cc6c",
+      "removed": [
+        {
+          "name": "the_fold_stops_at_the_slack_the_layout_actually_left",
+          "issue": 7812,
+          "node_type": "function_item"
+        }
+      ]
+    },
+    {
+      "path": "tests/cases/issue_7140_nested_row_unit_paint_height.rs",
+      "archive": "mydocs/pr/assets/issue7445/equation-branch-transfers-20261011/tests/cases/issue_7140_nested_row_unit_paint_height.rs.txt",
+      "sha256": "b45794c3e52dd6a87d3873d21041c605865cbeada08a0335e464f86cbdc6baac",
+      "removed": [
+        {
+          "name": "hwpx_page_count_matches_the_oracle",
+          "issue": 7812,
+          "node_type": "function_item"
+        }
+      ]
+    },
+    {
+      "path": "tests/cases/issue_7226_rowspan_only_row_cut.rs",
+      "archive": "mydocs/pr/assets/issue7445/equation-branch-transfers-20261011/tests/cases/issue_7226_rowspan_only_row_cut.rs.txt",
+      "sha256": "c334eab663f5bb8234fa70f351eae9fc9489b3b9d73ec0fbd7b5d3034af7c6dd",
+      "removed": [
+        {
+          "name": "the_fix_does_not_add_a_page",
+          "issue": 7743,
+          "node_type": "function_item"
+        }
+      ]
+    },
+    {
+      "path": "tests/cases/issue_7518_reflow_row_physical_frame.rs",
+      "archive": "mydocs/pr/assets/issue7445/equation-branch-transfers-20261011/tests/cases/issue_7518_reflow_row_physical_frame.rs.txt",
+      "sha256": "ed941033596e1a38fc30bc93ae0d8704f0a319418a7976b3b32a5b9ca15c3c55",
+      "removed": [
+        {
+          "name": "trailing_empty_paragraphs_keep_their_continued_cell_outline",
+          "issue": 7788,
+          "node_type": "function_item"
+        }
+      ]
+    },
+    {
+      "path": "tests/cases/layout_anomaly_contract.rs",
+      "archive": "mydocs/pr/assets/issue7445/equation-branch-transfers-20261011/tests/cases/layout_anomaly_contract.rs.txt",
+      "sha256": "83618eede4c4c96affa48715faba58e4a6936ea7bd51ba9fe9d6ac939c3adc62",
+      "removed": [
+        {
+          "name": "layout_anomaly_default_exit_zero_even_with_signal",
+          "issue": 7812,
+          "node_type": "function_item"
+        },
+        {
+          "name": "layout_anomaly_strict_signal_exits_three",
+          "issue": 7812,
+          "node_type": "function_item"
+        },
+        {
+          "name": "layout_anomaly_page_filter_scopes_counts_and_strict_exit",
+          "issue": 7812,
+          "node_type": "function_item"
+        },
+        {
+          "name": "layout_anomaly_batch_json_streams_ndjson_and_keeps_failed_loads",
+          "issue": 7812,
+          "node_type": "function_item"
+        },
+        {
+          "name": "layout_anomaly_batch_report_is_order_stable_and_recursive",
+          "issue": 7812,
+          "node_type": "function_item"
+        },
+        {
+          "name": "layout_anomaly_batch_strict_without_load_fail_exits_three",
+          "issue": 7812,
+          "node_type": "function_item"
+        },
+        {
+          "name": "layout_anomaly_types_filter_changes_overflow_set",
+          "issue": 7812,
+          "node_type": "function_item"
+        }
+      ]
+    },
+    {
+      "path": "tests/issue_1086.rs",
+      "archive": "mydocs/pr/assets/issue7445/equation-branch-transfers-20261011/tests/issue_1086.rs.txt",
+      "sha256": "c55673fb22e52388bf4d75ce593345d8f8ec9893c7c373acf3099194ffe208fd",
+      "removed": [
+        {
+          "name": "task1086_hwpspec_page_count_matches_hancom_office",
+          "issue": 7772,
+          "node_type": "function_item"
+        },
+        {
+          "name": "task1086_hwpspec_extended_control_figure_starts_on_next_page",
+          "issue": 7772,
+          "node_type": "function_item"
+        }
+      ]
+    },
+    {
+      "path": "tests/issue_2308_render_normalized_derived_state.rs",
+      "archive": "mydocs/pr/assets/issue7445/equation-branch-transfers-20261011/tests/issue_2308_render_normalized_derived_state.rs.txt",
+      "sha256": "fc7530bf69e573d28cdfc39e75942bd7cb98864361b37c1d31f60034f0c50df1",
+      "removed": [
+        {
+          "name": "issue_2308_saved_nested_width_keeps_fragment_geometry",
+          "issue": 7784,
+          "node_type": "function_item"
+        }
+      ]
+    },
+    {
+      "path": "tests/issue_418.rs",
+      "archive": "mydocs/pr/assets/issue7445/equation-branch-transfers-20261011/tests/issue_418.rs.txt",
+      "sha256": "1751d77f6fc0e4ac3f85bbc66a55c351259c5843a152534e71584cfb21d63ee7",
+      "removed": [
+        {
+          "name": "hwpspec_split_control_figures_no_duplicate_image_emit",
+          "issue": 7772
+        }
+      ],
+      "whole_file_removed": true
+    },
+    {
+      "path": "tests/issue_874_ktx_toc_page_number_right_align.rs",
+      "archive": "mydocs/pr/assets/issue7445/equation-branch-transfers-20261011/tests/issue_874_ktx_toc_page_number_right_align.rs.txt",
+      "sha256": "61c041aaf234356f5887b5adb9d0cfe2d69ab35e6327e490244a2b55b98b5dcf",
+      "removed": [
+        {
+          "name": "ktx_toc_page_numbers_aligned_to_cell_right_inner",
+          "issue": 7786
+        }
+      ],
+      "whole_file_removed": true
+    },
+    {
+      "path": "tests/svg_snapshot.rs",
+      "archive": "mydocs/pr/assets/issue7445/equation-branch-transfers-20261011/tests/svg_snapshot.rs.txt",
+      "sha256": "90407cf22f6dcd2c20ef9c5e3fdf878f3a7fdeb69ce25ae4b8ba57fba741b0e5",
+      "removed": [
+        {
+          "name": "issue_267_ktx_toc_page",
+          "issue": 7786,
+          "node_type": "function_item"
+        },
+        {
+          "name": "issue_147_aift_page3",
+          "issue": 7791,
+          "node_type": "function_item"
+        }
+      ]
+    }
+  ],
+  "baseline_rows_removed": [
+    {
+      "file": "tests/fixtures/body_overflow_baseline.tsv",
+      "line": "2025 행정업무운영 편람(최종).hwpx\t43",
+      "issue": 7752
+    },
+    {
+      "file": "tests/fixtures/body_overflow_baseline.tsv",
+      "line": "aift.hwp\t3",
+      "issue": 7791
+    },
+    {
+      "file": "tests/fixtures/body_overflow_baseline.tsv",
+      "line": "issue1949_giant_cell_nested_tables_perf.hwp\t9",
+      "issue": 7813
+    },
+    {
+      "file": "tests/fixtures/body_overflow_baseline.tsv",
+      "line": "issue1949_giant_cell_nested_tables_perf.hwpx\t9",
+      "issue": 7813
+    },
+    {
+      "file": "tests/fixtures/body_overflow_baseline.tsv",
+      "line": "table_giant_cell_overfill.hwpx\t2",
+      "issue": 7812
+    },
+    {
+      "file": "tests/fixtures/body_overflow_baseline.tsv",
+      "line": "task2287/1342000_edu_curriculum_map.hwp\t83",
+      "issue": 7743
+    },
+    {
+      "file": "tests/fixtures/off_canvas_baseline.tsv",
+      "line": "2025 행정업무운영 편람(최종).hwpx\t20",
+      "issue": 7752
+    },
+    {
+      "file": "tests/fixtures/off_canvas_baseline.tsv",
+      "line": "issue1949_giant_cell_nested_tables_perf.hwp\t1",
+      "issue": 7813
+    },
+    {
+      "file": "tests/fixtures/off_canvas_baseline.tsv",
+      "line": "issue1949_giant_cell_nested_tables_perf.hwpx\t1",
+      "issue": 7813
+    },
+    {
+      "file": "tests/fixtures/off_canvas_baseline.tsv",
+      "line": "table_giant_cell_overfill.hwpx\t6",
+      "issue": 7812
+    },
+    {
+      "file": "tests/fixtures/text_overlap_baseline.tsv",
+      "line": "2025 행정업무운영 편람(최종).hwpx\t21",
+      "issue": 7752
+    },
+    {
+      "file": "tests/fixtures/text_overlap_baseline.tsv",
+      "line": "issue1949_giant_cell_nested_tables_perf.hwp\t8",
+      "issue": 7813
+    },
+    {
+      "file": "tests/fixtures/text_overlap_baseline.tsv",
+      "line": "issue1949_giant_cell_nested_tables_perf.hwpx\t8",
+      "issue": 7813
+    },
+    {
+      "file": "tests/fixtures/text_overlap_baseline.tsv",
+      "line": "table_giant_cell_overfill.hwpx\t16",
+      "issue": 7812
+    },
+    {
+      "file": "tests/fixtures/overflow_cell_baseline.tsv",
+      "line": "2025 행정업무운영 편람(최종).hwpx\t51",
+      "issue": 7752
+    },
+    {
+      "file": "tests/fixtures/overflow_cell_baseline.tsv",
+      "line": "table_giant_cell_overfill.hwpx\t76",
+      "issue": 7812
+    },
+    {
+      "file": "tests/fixtures/oracle_page_count_baseline.tsv",
+      "line": "samples/2025 행정업무운영 편람(최종).hwpx\t384\t382",
+      "issue": 7752
+    },
+    {
+      "file": "tests/fixtures/oracle_page_count_baseline.tsv",
+      "line": "samples/hwpspec.hwp\t178\t178",
+      "issue": 7772
+    },
+    {
+      "file": "tests/fixtures/oracle_page_count_baseline.tsv",
+      "line": "samples/issue1949_giant_cell_nested_tables_perf.hwp\t115\t115",
+      "issue": 7813
+    },
+    {
+      "file": "tests/fixtures/oracle_page_count_baseline.tsv",
+      "line": "samples/issue1949_giant_cell_nested_tables_perf.hwpx\t115\t115",
+      "issue": 7813
+    },
+    {
+      "file": "tests/fixtures/oracle_page_count_baseline.tsv",
+      "line": "samples/issue5792/2700727_animal_facility_standards.hwpx\t6\t6",
+      "issue": 7811
+    },
+    {
+      "file": "tests/fixtures/oracle_page_count_baseline.tsv",
+      "line": "samples/table_giant_cell_overfill.hwpx\t48\t48",
+      "issue": 7812
+    },
+    {
+      "file": "tests/fixtures/oracle_page_count_baseline.tsv",
+      "line": "samples/table_text_anchor_wrap.hwpx\t3\t3",
+      "issue": 7792
+    },
+    {
+      "file": "tests/fixtures/oracle_page_count_baseline.tsv",
+      "line": "samples/task2287/1342000_edu_curriculum_map.hwp\t415\t413",
+      "issue": 7743
+    },
+    {
+      "file": "tests/fixtures/render_page_samples.tsv",
+      "line": "samples/aift.hwp\t74\t74\t0",
+      "issue": 7791
+    },
+    {
+      "file": "tests/fixtures/render_page_samples.tsv",
+      "line": "samples/issue1949_giant_cell_nested_tables_perf.hwp\t115\t115\t0",
+      "issue": 7813
+    },
+    {
+      "file": "tests/fixtures/render_page_samples.tsv",
+      "line": "samples/table_giant_cell_overfill.hwpx\t48\t47\t-1",
+      "issue": 7812
+    },
+    {
+      "file": "tests/fixtures/render_page_samples.tsv",
+      "line": "samples/table_text_anchor_wrap.hwpx\t3\t3\t0",
+      "issue": 7792
+    },
+    {
+      "file": "tests/fixtures/render_page_samples.tsv",
+      "line": "samples/task2287/1342000_edu_curriculum_map.hwp\t415\t413\t-2",
+      "issue": 7743
+    }
+  ],
+  "matrix_inputs_removed": [
+    {
+      "file": "tests/cases/issue_7140_nested_row_unit_paint_height.rs",
+      "input": "samples/table_giant_cell_overfill.hwpx",
+      "issue": 7812
+    }
+  ],
+  "assertions_removed": [
+    {
+      "file": "tests/cases/stored_nested_content_flow.rs",
+      "assertion": "overlay-top 세로 advance 16px +/-0.6px",
+      "issue": 7787
+    }
+  ],
+  "unused_helpers_removed": {
+    "tests/cases/layout_anomaly_contract.rs": [
+      "ndjson"
+    ],
+    "tests/issue_1086.rs": [
+      "page_dump"
+    ]
+  }
+}

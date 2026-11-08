@@ -1,0 +1,381 @@
+{
+  "source_head": "263b1e753c006d1631d25794588b6638fa1172ae",
+  "recorded_at": "2026-11-07T07:42:19.579029+00:00",
+  "status": "passed",
+  "results": [
+    {
+      "name": "native-focused-final",
+      "source_head": "263b1e753c006d1631d25794588b6638fa1172ae",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia-gl",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--test",
+        "regression_suite_004",
+        "--test",
+        "regression_suite_005",
+        "--test",
+        "regression_suite_008",
+        "--test",
+        "regression_suite_010",
+        "--test",
+        "regression_suite_012",
+        "--test",
+        "regression_suite_016",
+        "--test",
+        "regression_suite_018",
+        "--test",
+        "regression_suite_022",
+        "--test",
+        "regression_suite_024",
+        "--test",
+        "regression_suite_026",
+        "--test",
+        "regression_suite_027",
+        "-E",
+        "test(issue_536_native_region_cache::) | test(issue_536_shared_layer_tree::) | test(issue_536_native_runtime::) | test(skia_native_glyph_replay::) | test(issue_7688_native_equation_fonts::) | test(issue_536_direct_pdf_linear_gradient::) | test(issue_4969_shaping_atomic_activation::) | test(issue_536_native_render_snapshot::) | test(issue_536_native_presentation::) | test(issue_536_native_gl::) | test(issue_536_native_gpu_tiles::) | test(issue_536_native_gl_recovery::) | test(issue_536_native_ime_edit::) | test(issue_536_native_recovery_open::) | test(issue_536_raster_diagnostics_contract::) | test(skia_host_surface::) | test(render_p37_direct_pdf_export::)",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-07T06:15:08.426273+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T06:25:17.254057+00:00"
+    },
+    {
+      "name": "full-nextest",
+      "source_head": "263b1e753c006d1631d25794588b6638fa1172ae",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--tests",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-07T06:25:17.254816+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T07:03:33.611412+00:00"
+    },
+    {
+      "name": "native-lib",
+      "source_head": "263b1e753c006d1631d25794588b6638fa1172ae",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "4"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-07T07:03:33.617552+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T07:10:30.333161+00:00"
+    },
+    {
+      "name": "native-placeholder",
+      "source_head": "263b1e753c006d1631d25794588b6638fa1172ae",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-07T07:10:30.337143+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T07:16:36.516320+00:00"
+    },
+    {
+      "name": "native-direct-pdf",
+      "source_head": "263b1e753c006d1631d25794588b6638fa1172ae",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-07T07:16:36.517333+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T07:16:57.376246+00:00"
+    },
+    {
+      "name": "format",
+      "source_head": "263b1e753c006d1631d25794588b6638fa1172ae",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-07T07:16:57.376566+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T07:17:23.660292+00:00"
+    },
+    {
+      "name": "diff",
+      "source_head": "263b1e753c006d1631d25794588b6638fa1172ae",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-07T07:17:23.660807+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T07:17:23.905019+00:00"
+    },
+    {
+      "name": "root-clippy",
+      "source_head": "263b1e753c006d1631d25794588b6638fa1172ae",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--all-targets",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-07T07:17:23.905425+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T07:20:36.481438+00:00"
+    },
+    {
+      "name": "wasm-clippy",
+      "source_head": "263b1e753c006d1631d25794588b6638fa1172ae",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-07T07:20:36.481979+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T07:22:43.296316+00:00"
+    },
+    {
+      "name": "workspace-build",
+      "source_head": "263b1e753c006d1631d25794588b6638fa1172ae",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-07T07:22:43.296767+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T07:26:18.388684+00:00"
+    },
+    {
+      "name": "workspace-clippy",
+      "source_head": "263b1e753c006d1631d25794588b6638fa1172ae",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-07T07:26:18.389413+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T07:29:07.101827+00:00"
+    },
+    {
+      "name": "native-ffi-gl-clippy",
+      "source_head": "263b1e753c006d1631d25794588b6638fa1172ae",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp-native-ffi",
+        "--all-targets",
+        "--features",
+        "native-skia-gl",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-07T07:29:07.102611+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T07:31:58.225774+00:00"
+    },
+    {
+      "name": "doc-tests",
+      "source_head": "263b1e753c006d1631d25794588b6638fa1172ae",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+        "cargo",
+        "test",
+        "--locked",
+        "--doc",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-07T07:31:58.226535+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T07:35:46.089873+00:00"
+    },
+    {
+      "name": "surface-probe-run",
+      "source_head": "263b1e753c006d1631d25794588b6638fa1172ae",
+      "command": [
+        "python3",
+        "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261107/run-minfont.py",
+        "env",
+        "VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json",
+        "CARGO_PROFILE_DEV_DEBUG=1",
+        "cargo",
+        "run",
+        "--locked",
+        "--manifest-path",
+        "tools/skia-surface-probe/Cargo.toml",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-07T07:35:46.090346+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T07:38:15.458182+00:00"
+    },
+    {
+      "name": "surface-probe-fmt",
+      "source_head": "263b1e753c006d1631d25794588b6638fa1172ae",
+      "command": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "tools/skia-surface-probe/Cargo.toml",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-07T07:38:15.458629+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T07:38:41.471386+00:00"
+    },
+    {
+      "name": "surface-probe-clippy",
+      "source_head": "263b1e753c006d1631d25794588b6638fa1172ae",
+      "command": [
+        "env",
+        "CARGO_PROFILE_DEV_DEBUG=1",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--manifest-path",
+        "tools/skia-surface-probe/Cargo.toml",
+        "--all-targets",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-07T07:38:41.471803+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T07:39:58.667199+00:00"
+    },
+    {
+      "name": "studio-tests",
+      "source_head": "263b1e753c006d1631d25794588b6638fa1172ae",
+      "command": [
+        "npm",
+        "--prefix",
+        "rhwp-studio",
+        "test"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-07T07:39:58.668447+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-07T07:40:25.327510+00:00"
+    }
+  ],
+  "summaries": {
+    "focused": "194 passed; 3324 filtered/skipped",
+    "full_nextest": "12825 passed; 45 skipped; 1 slow (huge 52694-cell sentinel348.284s); execution1130.228s",
+    "native_official": "4077 passed =4040lib+2placeholder+35DirectPDF; 12 lib ignored",
+    "doctests": "8 passed; 3 ignored; remaining internal crates0 doctests",
+    "studio_tests": "2745 passed; 2 skipped; 2747 total; fail0",
+    "studio_build": "TypeScript and Vite build passed separately at263b"
+  },
+  "test_header_followup": "11 leading module documentation blocks only; unchanged executable bodies verified in test-header-metadata-receipt.json; no product/assertion/fixture change"
+}

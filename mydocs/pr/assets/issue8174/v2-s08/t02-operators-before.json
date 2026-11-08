@@ -1,0 +1,9 @@
+[
+  {
+    "variant": "before",
+    "name": "dense",
+    "error": "유효하지 않은 파일: PDF 오류: PDF_RESOURCE_LIMIT: operator copy buffer",
+    "ms": 292.60000002384186,
+    "memoryBytes": 248774656
+  }
+]

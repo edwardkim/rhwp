@@ -1,0 +1,1042 @@
+[
+  {
+    "key": "nested-same-line",
+    "group": "original",
+    "input": "tests/fixtures/issue7419-boundaries/nested-same-line.hwpx",
+    "pdf": "pdf/issue7419/nested-same-line-print-2024.pdf",
+    "paths": {
+      "base-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-same-line.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-same-line.json",
+        "rhwpPngSha256": "f09c0bc80a85a73a00955a4df0a24d2ef12948a327b91ce50f6a112c75ea0200",
+        "pdfPngSha256": "43bc0f95f94aed7a6d5d000c9752d6c04f1711d1a9ca95774c8f8548c5f55109"
+      },
+      "base-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-same-line.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-same-line.json",
+        "rhwpPngSha256": "f18e31b4ca8af09b983e6e50e9655a4126aceedecead1933fe40c19f4f6c8805",
+        "pdfPngSha256": "43bc0f95f94aed7a6d5d000c9752d6c04f1711d1a9ca95774c8f8548c5f55109"
+      },
+      "candidate-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-same-line.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-same-line.json",
+        "rhwpPngSha256": "f09c0bc80a85a73a00955a4df0a24d2ef12948a327b91ce50f6a112c75ea0200",
+        "pdfPngSha256": "43bc0f95f94aed7a6d5d000c9752d6c04f1711d1a9ca95774c8f8548c5f55109",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      },
+      "candidate-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-same-line.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-same-line.json",
+        "rhwpPngSha256": "f18e31b4ca8af09b983e6e50e9655a4126aceedecead1933fe40c19f4f6c8805",
+        "pdfPngSha256": "43bc0f95f94aed7a6d5d000c9752d6c04f1711d1a9ca95774c8f8548c5f55109",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      }
+    }
+  },
+  {
+    "key": "nested-same-line-restored",
+    "group": "restored",
+    "input": "mydocs/pr/assets/nested-cell-paragraph-format/nested-same-line-restored.hwpx",
+    "pdf": "pdf/issue7419/nested-same-line-print-2024.pdf",
+    "paths": {
+      "base-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-same-line-restored.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-same-line-restored.json",
+        "rhwpPngSha256": "f09c0bc80a85a73a00955a4df0a24d2ef12948a327b91ce50f6a112c75ea0200",
+        "pdfPngSha256": "43bc0f95f94aed7a6d5d000c9752d6c04f1711d1a9ca95774c8f8548c5f55109"
+      },
+      "base-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-same-line-restored.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-same-line-restored.json",
+        "rhwpPngSha256": "f18e31b4ca8af09b983e6e50e9655a4126aceedecead1933fe40c19f4f6c8805",
+        "pdfPngSha256": "43bc0f95f94aed7a6d5d000c9752d6c04f1711d1a9ca95774c8f8548c5f55109"
+      },
+      "candidate-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-same-line-restored.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-same-line-restored.json",
+        "rhwpPngSha256": "f09c0bc80a85a73a00955a4df0a24d2ef12948a327b91ce50f6a112c75ea0200",
+        "pdfPngSha256": "43bc0f95f94aed7a6d5d000c9752d6c04f1711d1a9ca95774c8f8548c5f55109",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      },
+      "candidate-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-same-line-restored.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-same-line-restored.json",
+        "rhwpPngSha256": "f18e31b4ca8af09b983e6e50e9655a4126aceedecead1933fe40c19f4f6c8805",
+        "pdfPngSha256": "43bc0f95f94aed7a6d5d000c9752d6c04f1711d1a9ca95774c8f8548c5f55109",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      }
+    }
+  },
+  {
+    "key": "nested-width-wrap",
+    "group": "original",
+    "input": "tests/fixtures/issue7419-boundaries/nested-width-wrap.hwpx",
+    "pdf": "pdf/issue7419/nested-width-wrap-print-2024.pdf",
+    "paths": {
+      "base-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-width-wrap.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-width-wrap.json",
+        "rhwpPngSha256": "006eef7ae35f09d239f6e6cc74126b83bbf4ba3e4c5f71e421942798f792a2d5",
+        "pdfPngSha256": "4f47afee873ba475bf062d160f6e8a7b6207b918664e990264ac1c580b466d9e"
+      },
+      "base-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-width-wrap.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-width-wrap.json",
+        "rhwpPngSha256": "88c632993ea47551ff31bd416fb54327ceb8efab0cb64590853a3621617dd79e",
+        "pdfPngSha256": "4f47afee873ba475bf062d160f6e8a7b6207b918664e990264ac1c580b466d9e"
+      },
+      "candidate-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-width-wrap.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-width-wrap.json",
+        "rhwpPngSha256": "006eef7ae35f09d239f6e6cc74126b83bbf4ba3e4c5f71e421942798f792a2d5",
+        "pdfPngSha256": "4f47afee873ba475bf062d160f6e8a7b6207b918664e990264ac1c580b466d9e",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      },
+      "candidate-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-width-wrap.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-width-wrap.json",
+        "rhwpPngSha256": "88c632993ea47551ff31bd416fb54327ceb8efab0cb64590853a3621617dd79e",
+        "pdfPngSha256": "4f47afee873ba475bf062d160f6e8a7b6207b918664e990264ac1c580b466d9e",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      }
+    }
+  },
+  {
+    "key": "nested-width-wrap-restored",
+    "group": "restored",
+    "input": "mydocs/pr/assets/nested-cell-paragraph-format/nested-width-wrap-restored.hwpx",
+    "pdf": "pdf/issue7419/nested-width-wrap-print-2024.pdf",
+    "paths": {
+      "base-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-width-wrap-restored.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-width-wrap-restored.json",
+        "rhwpPngSha256": "006eef7ae35f09d239f6e6cc74126b83bbf4ba3e4c5f71e421942798f792a2d5",
+        "pdfPngSha256": "4f47afee873ba475bf062d160f6e8a7b6207b918664e990264ac1c580b466d9e"
+      },
+      "base-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-width-wrap-restored.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-width-wrap-restored.json",
+        "rhwpPngSha256": "88c632993ea47551ff31bd416fb54327ceb8efab0cb64590853a3621617dd79e",
+        "pdfPngSha256": "4f47afee873ba475bf062d160f6e8a7b6207b918664e990264ac1c580b466d9e"
+      },
+      "candidate-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-width-wrap-restored.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-width-wrap-restored.json",
+        "rhwpPngSha256": "006eef7ae35f09d239f6e6cc74126b83bbf4ba3e4c5f71e421942798f792a2d5",
+        "pdfPngSha256": "4f47afee873ba475bf062d160f6e8a7b6207b918664e990264ac1c580b466d9e",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      },
+      "candidate-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-width-wrap-restored.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-width-wrap-restored.json",
+        "rhwpPngSha256": "88c632993ea47551ff31bd416fb54327ceb8efab0cb64590853a3621617dd79e",
+        "pdfPngSha256": "4f47afee873ba475bf062d160f6e8a7b6207b918664e990264ac1c580b466d9e",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      }
+    }
+  },
+  {
+    "key": "nested-same-line-center-hwpx",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-same-line-center.hwpx",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-same-line-center-hwpx-print-2024.pdf",
+    "paths": {
+      "base-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-same-line-center-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-same-line-center-hwpx.json",
+        "rhwpPngSha256": "8739a595a238c2141f26bf5f72021869bd9de20657b20dc6e07ef81d4d9cd962",
+        "pdfPngSha256": "e0d73c07dc9479d7feba742c90cb6272caa6eb4e160d0e6d5fbb73d2b5940dce"
+      },
+      "base-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-same-line-center-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-same-line-center-hwpx.json",
+        "rhwpPngSha256": "2e82a05192936a49ec4eb13265dd32e73089bdad8ee84f816cb78c20ae357330",
+        "pdfPngSha256": "e0d73c07dc9479d7feba742c90cb6272caa6eb4e160d0e6d5fbb73d2b5940dce"
+      },
+      "candidate-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-same-line-center-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-same-line-center-hwpx.json",
+        "rhwpPngSha256": "8739a595a238c2141f26bf5f72021869bd9de20657b20dc6e07ef81d4d9cd962",
+        "pdfPngSha256": "e0d73c07dc9479d7feba742c90cb6272caa6eb4e160d0e6d5fbb73d2b5940dce",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      },
+      "candidate-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-same-line-center-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-same-line-center-hwpx.json",
+        "rhwpPngSha256": "2e82a05192936a49ec4eb13265dd32e73089bdad8ee84f816cb78c20ae357330",
+        "pdfPngSha256": "e0d73c07dc9479d7feba742c90cb6272caa6eb4e160d0e6d5fbb73d2b5940dce",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      }
+    }
+  },
+  {
+    "key": "nested-same-line-right-hwpx",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-same-line-right.hwpx",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-same-line-right-hwpx-print-2024.pdf",
+    "paths": {
+      "base-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-same-line-right-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-same-line-right-hwpx.json",
+        "rhwpPngSha256": "e60e434cc9590e374b6abf26928f3347d090e46bbf56b3d48c1791bc6dfe0e09",
+        "pdfPngSha256": "16bbf8756720b07b54f5bfa6f4d2e15ec0480f2b27d9fefcc439fcffdb4a8a36"
+      },
+      "base-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-same-line-right-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-same-line-right-hwpx.json",
+        "rhwpPngSha256": "f8787ebbaf4f6479587da99ccfb1b7b9445c40453c660317794fabd54d784797",
+        "pdfPngSha256": "16bbf8756720b07b54f5bfa6f4d2e15ec0480f2b27d9fefcc439fcffdb4a8a36"
+      },
+      "candidate-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-same-line-right-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-same-line-right-hwpx.json",
+        "rhwpPngSha256": "e60e434cc9590e374b6abf26928f3347d090e46bbf56b3d48c1791bc6dfe0e09",
+        "pdfPngSha256": "16bbf8756720b07b54f5bfa6f4d2e15ec0480f2b27d9fefcc439fcffdb4a8a36",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      },
+      "candidate-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-same-line-right-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-same-line-right-hwpx.json",
+        "rhwpPngSha256": "f8787ebbaf4f6479587da99ccfb1b7b9445c40453c660317794fabd54d784797",
+        "pdfPngSha256": "16bbf8756720b07b54f5bfa6f4d2e15ec0480f2b27d9fefcc439fcffdb4a8a36",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      }
+    }
+  },
+  {
+    "key": "nested-same-line-before-hwpx",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-same-line-before.hwpx",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-same-line-before-hwpx-print-2024.pdf",
+    "paths": {
+      "base-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-same-line-before-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-same-line-before-hwpx.json",
+        "rhwpPngSha256": "af4f6d60ae2b8185bc4a51b80a38bb1aae59776c0757e8311817666fbf5fcca6",
+        "pdfPngSha256": "386315203a971c0194258196d4942dea2f47ae595677913f9a52f48a086c6f41"
+      },
+      "base-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-same-line-before-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-same-line-before-hwpx.json",
+        "rhwpPngSha256": "5a2a62e52d7c47731ff40c8732792fe394058aad5669331d8eee6320c6834b99",
+        "pdfPngSha256": "386315203a971c0194258196d4942dea2f47ae595677913f9a52f48a086c6f41"
+      },
+      "candidate-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-same-line-before-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-same-line-before-hwpx.json",
+        "rhwpPngSha256": "af4f6d60ae2b8185bc4a51b80a38bb1aae59776c0757e8311817666fbf5fcca6",
+        "pdfPngSha256": "386315203a971c0194258196d4942dea2f47ae595677913f9a52f48a086c6f41",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      },
+      "candidate-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-same-line-before-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-same-line-before-hwpx.json",
+        "rhwpPngSha256": "5a2a62e52d7c47731ff40c8732792fe394058aad5669331d8eee6320c6834b99",
+        "pdfPngSha256": "386315203a971c0194258196d4942dea2f47ae595677913f9a52f48a086c6f41",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      }
+    }
+  },
+  {
+    "key": "nested-same-line-line-hwpx",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-same-line-line.hwpx",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-same-line-line-hwpx-print-2024.pdf",
+    "paths": {
+      "base-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-same-line-line-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-same-line-line-hwpx.json",
+        "rhwpPngSha256": "3af167a1dcb6aa4dfa4d0ae4b29ac9811da22e123797c91c5a6835b0bce35fa4",
+        "pdfPngSha256": "d7d9ef84e57245617c6fca8ee66ae123aa387b843181788ea601415382d940c9"
+      },
+      "base-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-same-line-line-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-same-line-line-hwpx.json",
+        "rhwpPngSha256": "91644e444eb3cce1a27bf8e591f3e2fd999f5f722c8b7ab7841dacdc97e9d3e5",
+        "pdfPngSha256": "d7d9ef84e57245617c6fca8ee66ae123aa387b843181788ea601415382d940c9"
+      },
+      "candidate-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-same-line-line-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-same-line-line-hwpx.json",
+        "rhwpPngSha256": "3af167a1dcb6aa4dfa4d0ae4b29ac9811da22e123797c91c5a6835b0bce35fa4",
+        "pdfPngSha256": "d7d9ef84e57245617c6fca8ee66ae123aa387b843181788ea601415382d940c9",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      },
+      "candidate-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-same-line-line-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-same-line-line-hwpx.json",
+        "rhwpPngSha256": "91644e444eb3cce1a27bf8e591f3e2fd999f5f722c8b7ab7841dacdc97e9d3e5",
+        "pdfPngSha256": "d7d9ef84e57245617c6fca8ee66ae123aa387b843181788ea601415382d940c9",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      }
+    }
+  },
+  {
+    "key": "nested-same-line-before-line-hwpx",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-same-line-before-line.hwpx",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-same-line-before-line-hwpx-print-2024.pdf",
+    "paths": {
+      "base-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-same-line-before-line-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-same-line-before-line-hwpx.json",
+        "rhwpPngSha256": "cf7593578b6407c75d91d532b22abf87a02ae9c6c311aa837245dd6e90485807",
+        "pdfPngSha256": "4fae56458ed8a9106e94cf4acf42281f5f7a8612fda9a9991f535bec07954859"
+      },
+      "base-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-same-line-before-line-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-same-line-before-line-hwpx.json",
+        "rhwpPngSha256": "d1d4907d83c693c2d9761af18b36b9e3b94637cc4d67bcda3a69817c47389df4",
+        "pdfPngSha256": "4fae56458ed8a9106e94cf4acf42281f5f7a8612fda9a9991f535bec07954859"
+      },
+      "candidate-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-same-line-before-line-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-same-line-before-line-hwpx.json",
+        "rhwpPngSha256": "cf7593578b6407c75d91d532b22abf87a02ae9c6c311aa837245dd6e90485807",
+        "pdfPngSha256": "4fae56458ed8a9106e94cf4acf42281f5f7a8612fda9a9991f535bec07954859",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      },
+      "candidate-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-same-line-before-line-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-same-line-before-line-hwpx.json",
+        "rhwpPngSha256": "d1d4907d83c693c2d9761af18b36b9e3b94637cc4d67bcda3a69817c47389df4",
+        "pdfPngSha256": "4fae56458ed8a9106e94cf4acf42281f5f7a8612fda9a9991f535bec07954859",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      }
+    }
+  },
+  {
+    "key": "nested-same-line-before-line-hwp",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-same-line-before-line.hwp",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-same-line-before-line-hwp-print-2024.pdf",
+    "paths": {
+      "base-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-same-line-before-line-hwp.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-same-line-before-line-hwp.json",
+        "rhwpPngSha256": "cf7593578b6407c75d91d532b22abf87a02ae9c6c311aa837245dd6e90485807",
+        "pdfPngSha256": "4fae56458ed8a9106e94cf4acf42281f5f7a8612fda9a9991f535bec07954859"
+      },
+      "base-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-same-line-before-line-hwp.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-same-line-before-line-hwp.json",
+        "rhwpPngSha256": "d1d4907d83c693c2d9761af18b36b9e3b94637cc4d67bcda3a69817c47389df4",
+        "pdfPngSha256": "4fae56458ed8a9106e94cf4acf42281f5f7a8612fda9a9991f535bec07954859"
+      },
+      "candidate-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-same-line-before-line-hwp.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-same-line-before-line-hwp.json",
+        "rhwpPngSha256": "cf7593578b6407c75d91d532b22abf87a02ae9c6c311aa837245dd6e90485807",
+        "pdfPngSha256": "4fae56458ed8a9106e94cf4acf42281f5f7a8612fda9a9991f535bec07954859",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      },
+      "candidate-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-same-line-before-line-hwp.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-same-line-before-line-hwp.json",
+        "rhwpPngSha256": "d1d4907d83c693c2d9761af18b36b9e3b94637cc4d67bcda3a69817c47389df4",
+        "pdfPngSha256": "4fae56458ed8a9106e94cf4acf42281f5f7a8612fda9a9991f535bec07954859",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      }
+    }
+  },
+  {
+    "key": "nested-same-line-indent-hwpx",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-same-line-indent.hwpx",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-same-line-indent-hwpx-print-2024.pdf",
+    "paths": {
+      "base-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-same-line-indent-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-same-line-indent-hwpx.json",
+        "rhwpPngSha256": "4b3f3acd1b3b7163ea89cd06e1ce8d7da97cb22e003fc5622e7ec83ed454ae05",
+        "pdfPngSha256": "75caebb3f3570bccb8b1e53eb53b380ae266ccda42d848adf0eea34a3d94de69"
+      },
+      "base-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-same-line-indent-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-same-line-indent-hwpx.json",
+        "rhwpPngSha256": "1a57604a31e9d8c80e89d59a8dd8ca37f3cdc782d8379c19c4a0f4e447e0bb48",
+        "pdfPngSha256": "75caebb3f3570bccb8b1e53eb53b380ae266ccda42d848adf0eea34a3d94de69"
+      },
+      "candidate-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-same-line-indent-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-same-line-indent-hwpx.json",
+        "rhwpPngSha256": "4b3f3acd1b3b7163ea89cd06e1ce8d7da97cb22e003fc5622e7ec83ed454ae05",
+        "pdfPngSha256": "75caebb3f3570bccb8b1e53eb53b380ae266ccda42d848adf0eea34a3d94de69",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      },
+      "candidate-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-same-line-indent-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-same-line-indent-hwpx.json",
+        "rhwpPngSha256": "1a57604a31e9d8c80e89d59a8dd8ca37f3cdc782d8379c19c4a0f4e447e0bb48",
+        "pdfPngSha256": "75caebb3f3570bccb8b1e53eb53b380ae266ccda42d848adf0eea34a3d94de69",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      }
+    }
+  },
+  {
+    "key": "nested-width-wrap-center-hwpx",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-width-wrap-center.hwpx",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-width-wrap-center-hwpx-print-2024.pdf",
+    "paths": {
+      "base-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-width-wrap-center-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-width-wrap-center-hwpx.json",
+        "rhwpPngSha256": "23130278901d41c12d8e64b49e93fc772ab25025293d6bd4783cae4448573f36",
+        "pdfPngSha256": "f3c6380459dd656ad37f64d5a1865a7e05170e1d36ad6addbc48b112bc8462c4"
+      },
+      "base-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-width-wrap-center-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-width-wrap-center-hwpx.json",
+        "rhwpPngSha256": "4a0fefdd8ed31f278d47c65d88a8e7503f58a36924ffd7983f187e2d637ba2d1",
+        "pdfPngSha256": "f3c6380459dd656ad37f64d5a1865a7e05170e1d36ad6addbc48b112bc8462c4"
+      },
+      "candidate-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-width-wrap-center-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-width-wrap-center-hwpx.json",
+        "rhwpPngSha256": "23130278901d41c12d8e64b49e93fc772ab25025293d6bd4783cae4448573f36",
+        "pdfPngSha256": "f3c6380459dd656ad37f64d5a1865a7e05170e1d36ad6addbc48b112bc8462c4",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      },
+      "candidate-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-width-wrap-center-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-width-wrap-center-hwpx.json",
+        "rhwpPngSha256": "4a0fefdd8ed31f278d47c65d88a8e7503f58a36924ffd7983f187e2d637ba2d1",
+        "pdfPngSha256": "f3c6380459dd656ad37f64d5a1865a7e05170e1d36ad6addbc48b112bc8462c4",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      }
+    }
+  },
+  {
+    "key": "nested-width-wrap-right-hwpx",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-width-wrap-right.hwpx",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-width-wrap-right-hwpx-print-2024.pdf",
+    "paths": {
+      "base-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-width-wrap-right-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-width-wrap-right-hwpx.json",
+        "rhwpPngSha256": "ed0f9406e07de0db74a774e484fcd6e793b2a284b07ce3e1ba3ba81acbbda267",
+        "pdfPngSha256": "3948b3b639f76a127788563b33ecc4bb37b80aab413e1119547fe279426fa9e1"
+      },
+      "base-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-width-wrap-right-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-width-wrap-right-hwpx.json",
+        "rhwpPngSha256": "483d674e84455fe7945eafa08dbd4f01488fc401f1cba3937d1fe8348e194662",
+        "pdfPngSha256": "3948b3b639f76a127788563b33ecc4bb37b80aab413e1119547fe279426fa9e1"
+      },
+      "candidate-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-width-wrap-right-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-width-wrap-right-hwpx.json",
+        "rhwpPngSha256": "ed0f9406e07de0db74a774e484fcd6e793b2a284b07ce3e1ba3ba81acbbda267",
+        "pdfPngSha256": "3948b3b639f76a127788563b33ecc4bb37b80aab413e1119547fe279426fa9e1",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      },
+      "candidate-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-width-wrap-right-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-width-wrap-right-hwpx.json",
+        "rhwpPngSha256": "483d674e84455fe7945eafa08dbd4f01488fc401f1cba3937d1fe8348e194662",
+        "pdfPngSha256": "3948b3b639f76a127788563b33ecc4bb37b80aab413e1119547fe279426fa9e1",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      }
+    }
+  },
+  {
+    "key": "nested-width-wrap-before-hwpx",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-width-wrap-before.hwpx",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-width-wrap-before-hwpx-print-2024.pdf",
+    "paths": {
+      "base-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-width-wrap-before-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-width-wrap-before-hwpx.json",
+        "rhwpPngSha256": "26313adffc443bb1cc4db478c2efeec138c5e31010d37db3feca1ff4610f89e6",
+        "pdfPngSha256": "69774111e179ea9e5890400ebddf6105f88cd3dcfdba4348a499627cd4eab0d7"
+      },
+      "base-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-width-wrap-before-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-width-wrap-before-hwpx.json",
+        "rhwpPngSha256": "e8ef916429eb5328b4a24b884b98c4000a002f0a0c74758f7a695e3152b7944f",
+        "pdfPngSha256": "69774111e179ea9e5890400ebddf6105f88cd3dcfdba4348a499627cd4eab0d7"
+      },
+      "candidate-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-width-wrap-before-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-width-wrap-before-hwpx.json",
+        "rhwpPngSha256": "26313adffc443bb1cc4db478c2efeec138c5e31010d37db3feca1ff4610f89e6",
+        "pdfPngSha256": "69774111e179ea9e5890400ebddf6105f88cd3dcfdba4348a499627cd4eab0d7",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      },
+      "candidate-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-width-wrap-before-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-width-wrap-before-hwpx.json",
+        "rhwpPngSha256": "e8ef916429eb5328b4a24b884b98c4000a002f0a0c74758f7a695e3152b7944f",
+        "pdfPngSha256": "69774111e179ea9e5890400ebddf6105f88cd3dcfdba4348a499627cd4eab0d7",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      }
+    }
+  },
+  {
+    "key": "nested-width-wrap-line-hwpx",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-width-wrap-line.hwpx",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-width-wrap-line-hwpx-print-2024.pdf",
+    "paths": {
+      "base-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-width-wrap-line-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-width-wrap-line-hwpx.json",
+        "rhwpPngSha256": "2dd8372d55af615cab99209f28788962b81d7048388eebdd17d1579299187968",
+        "pdfPngSha256": "54ad6171a1e4dfd989a0a113e03e42b9231c9d71db558eae04240690cdf437e4"
+      },
+      "base-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-width-wrap-line-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-width-wrap-line-hwpx.json",
+        "rhwpPngSha256": "7fc56bcefaf471fdc2d06513e30def3a701414f6219c8b1f1a5a8a8341e691fb",
+        "pdfPngSha256": "54ad6171a1e4dfd989a0a113e03e42b9231c9d71db558eae04240690cdf437e4"
+      },
+      "candidate-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-width-wrap-line-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-width-wrap-line-hwpx.json",
+        "rhwpPngSha256": "2dd8372d55af615cab99209f28788962b81d7048388eebdd17d1579299187968",
+        "pdfPngSha256": "54ad6171a1e4dfd989a0a113e03e42b9231c9d71db558eae04240690cdf437e4",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      },
+      "candidate-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-width-wrap-line-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-width-wrap-line-hwpx.json",
+        "rhwpPngSha256": "7fc56bcefaf471fdc2d06513e30def3a701414f6219c8b1f1a5a8a8341e691fb",
+        "pdfPngSha256": "54ad6171a1e4dfd989a0a113e03e42b9231c9d71db558eae04240690cdf437e4",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      }
+    }
+  },
+  {
+    "key": "nested-width-wrap-before-line-hwpx",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-width-wrap-before-line.hwpx",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-width-wrap-before-line-hwpx-print-2024.pdf",
+    "paths": {
+      "base-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-width-wrap-before-line-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-width-wrap-before-line-hwpx.json",
+        "rhwpPngSha256": "346aff24c2eb96a19821134e90daf5d8d9c054d14b8ce770c193c7e5bc3a3357",
+        "pdfPngSha256": "a79cf6cbbe7930ccb4490d014c36b3742318db5f38f66293af6984fad62819f0"
+      },
+      "base-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-width-wrap-before-line-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-width-wrap-before-line-hwpx.json",
+        "rhwpPngSha256": "6389bcdd0a58eb432384ce449345d514b59a77eaf0a69a951a0178326675c7b4",
+        "pdfPngSha256": "a79cf6cbbe7930ccb4490d014c36b3742318db5f38f66293af6984fad62819f0"
+      },
+      "candidate-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-width-wrap-before-line-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-width-wrap-before-line-hwpx.json",
+        "rhwpPngSha256": "346aff24c2eb96a19821134e90daf5d8d9c054d14b8ce770c193c7e5bc3a3357",
+        "pdfPngSha256": "a79cf6cbbe7930ccb4490d014c36b3742318db5f38f66293af6984fad62819f0",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      },
+      "candidate-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-width-wrap-before-line-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-width-wrap-before-line-hwpx.json",
+        "rhwpPngSha256": "6389bcdd0a58eb432384ce449345d514b59a77eaf0a69a951a0178326675c7b4",
+        "pdfPngSha256": "a79cf6cbbe7930ccb4490d014c36b3742318db5f38f66293af6984fad62819f0",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      }
+    }
+  },
+  {
+    "key": "nested-width-wrap-before-line-hwp",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-width-wrap-before-line.hwp",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-width-wrap-before-line-hwp-print-2024.pdf",
+    "paths": {
+      "base-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-width-wrap-before-line-hwp.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-width-wrap-before-line-hwp.json",
+        "rhwpPngSha256": "346aff24c2eb96a19821134e90daf5d8d9c054d14b8ce770c193c7e5bc3a3357",
+        "pdfPngSha256": "a79cf6cbbe7930ccb4490d014c36b3742318db5f38f66293af6984fad62819f0"
+      },
+      "base-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-width-wrap-before-line-hwp.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-width-wrap-before-line-hwp.json",
+        "rhwpPngSha256": "6389bcdd0a58eb432384ce449345d514b59a77eaf0a69a951a0178326675c7b4",
+        "pdfPngSha256": "a79cf6cbbe7930ccb4490d014c36b3742318db5f38f66293af6984fad62819f0"
+      },
+      "candidate-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-width-wrap-before-line-hwp.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-width-wrap-before-line-hwp.json",
+        "rhwpPngSha256": "346aff24c2eb96a19821134e90daf5d8d9c054d14b8ce770c193c7e5bc3a3357",
+        "pdfPngSha256": "a79cf6cbbe7930ccb4490d014c36b3742318db5f38f66293af6984fad62819f0",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      },
+      "candidate-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-width-wrap-before-line-hwp.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-width-wrap-before-line-hwp.json",
+        "rhwpPngSha256": "6389bcdd0a58eb432384ce449345d514b59a77eaf0a69a951a0178326675c7b4",
+        "pdfPngSha256": "a79cf6cbbe7930ccb4490d014c36b3742318db5f38f66293af6984fad62819f0",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      }
+    }
+  },
+  {
+    "key": "nested-width-wrap-indent-hwpx",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-width-wrap-indent.hwpx",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-width-wrap-indent-hwpx-print-2024.pdf",
+    "paths": {
+      "base-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-width-wrap-indent-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-width-wrap-indent-hwpx.json",
+        "rhwpPngSha256": "3a490d2dc4baca3562313fb25251f877211c636f7281273b4690533e4c1d10a0",
+        "pdfPngSha256": "3c27ca783ddf95b4edc503829f17f320eee74c3fa1283301469be0a04f0d7473"
+      },
+      "base-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-width-wrap-indent-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-width-wrap-indent-hwpx.json",
+        "rhwpPngSha256": "5e4beeebc25e163a21a88b8730e6e17b764dad24c9f983f4e81013366a2b15e1",
+        "pdfPngSha256": "3c27ca783ddf95b4edc503829f17f320eee74c3fa1283301469be0a04f0d7473"
+      },
+      "candidate-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-width-wrap-indent-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-width-wrap-indent-hwpx.json",
+        "rhwpPngSha256": "3a490d2dc4baca3562313fb25251f877211c636f7281273b4690533e4c1d10a0",
+        "pdfPngSha256": "3c27ca783ddf95b4edc503829f17f320eee74c3fa1283301469be0a04f0d7473",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      },
+      "candidate-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-width-wrap-indent-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-width-wrap-indent-hwpx.json",
+        "rhwpPngSha256": "5e4beeebc25e163a21a88b8730e6e17b764dad24c9f983f4e81013366a2b15e1",
+        "pdfPngSha256": "3c27ca783ddf95b4edc503829f17f320eee74c3fa1283301469be0a04f0d7473",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      }
+    }
+  },
+  {
+    "key": "nested-same-line-studio-right-hwpx",
+    "group": "browser",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-same-line-studio-right.hwpx",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-same-line-studio-right-hwpx-print-2024.pdf",
+    "paths": {
+      "base-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-same-line-studio-right-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-same-line-studio-right-hwpx.json",
+        "rhwpPngSha256": "5400d758890a79434f5c381416d26ff0d18c8de9eadb533703e28c6f297a5d47",
+        "pdfPngSha256": "41dd9514b10553f7e92c58d9e43bd325f3fae53c7b5ce8752a620d569ef780c3"
+      },
+      "base-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-same-line-studio-right-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-same-line-studio-right-hwpx.json",
+        "rhwpPngSha256": "d7a5690ac415c77c33b625d8a4bc0585117a3edcbc5a87f63f9d43ee3fc5d6ea",
+        "pdfPngSha256": "41dd9514b10553f7e92c58d9e43bd325f3fae53c7b5ce8752a620d569ef780c3"
+      },
+      "candidate-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-same-line-studio-right-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-same-line-studio-right-hwpx.json",
+        "rhwpPngSha256": "5400d758890a79434f5c381416d26ff0d18c8de9eadb533703e28c6f297a5d47",
+        "pdfPngSha256": "41dd9514b10553f7e92c58d9e43bd325f3fae53c7b5ce8752a620d569ef780c3",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      },
+      "candidate-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-same-line-studio-right-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-same-line-studio-right-hwpx.json",
+        "rhwpPngSha256": "d7a5690ac415c77c33b625d8a4bc0585117a3edcbc5a87f63f9d43ee3fc5d6ea",
+        "pdfPngSha256": "41dd9514b10553f7e92c58d9e43bd325f3fae53c7b5ce8752a620d569ef780c3",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      }
+    }
+  },
+  {
+    "key": "nested-width-wrap-studio-right-hwpx",
+    "group": "browser",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-width-wrap-studio-right.hwpx",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-width-wrap-studio-right-hwpx-print-2024.pdf",
+    "paths": {
+      "base-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-width-wrap-studio-right-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/native/nested-width-wrap-studio-right-hwpx.json",
+        "rhwpPngSha256": "a8dd9fe331339f7b83d4a78b46e19b381e1e6afcc1127b49e31ed0832f6a4464",
+        "pdfPngSha256": "1c6b19a0d56294b61e3ab3808c69edc8d7e77316faed30e16de6c834b1db0d07"
+      },
+      "base-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-width-wrap-studio-right-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/base/wasm/nested-width-wrap-studio-right-hwpx.json",
+        "rhwpPngSha256": "994b57d93b229796b37fc4c12701b6e976debef2a836cbc31975cab1c22d171f",
+        "pdfPngSha256": "1c6b19a0d56294b61e3ab3808c69edc8d7e77316faed30e16de6c834b1db0d07"
+      },
+      "candidate-native": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-width-wrap-studio-right-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/native/nested-width-wrap-studio-right-hwpx.json",
+        "rhwpPngSha256": "a8dd9fe331339f7b83d4a78b46e19b381e1e6afcc1127b49e31ed0832f6a4464",
+        "pdfPngSha256": "1c6b19a0d56294b61e3ab3808c69edc8d7e77316faed30e16de6c834b1db0d07",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      },
+      "candidate-wasm": {
+        "raw": 100.0,
+        "raw_unmatched_pixels": 0,
+        "pageCount": 1,
+        "pdfPageCount": 1,
+        "tsv": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-width-wrap-studio-right-hwpx.tsv",
+        "manifest": "mydocs/pr/assets/pr8340-maintainer-20261101/scores/candidate/wasm/nested-width-wrap-studio-right-hwpx.json",
+        "rhwpPngSha256": "994b57d93b229796b37fc4c12701b6e976debef2a836cbc31975cab1c22d171f",
+        "pdfPngSha256": "1c6b19a0d56294b61e3ab3808c69edc8d7e77316faed30e16de6c834b1db0d07",
+        "base_minus_candidate_percentage_points": "0.0",
+        "baseCandidatePngBytesEqual": true
+      }
+    }
+  }
+]

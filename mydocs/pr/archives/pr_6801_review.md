@@ -87,9 +87,9 @@
 
 대상 문서는 실제 1쪽이다. sweep의 review_202100017.png는 문서 식별자에서 유래한 파일명이며 대표 PNG를 물리 1쪽으로 정규화했다. 일부 대체 글리프가 남아 있고 픽셀 대조는 charX/hit-test의 직접 검증이 아니므로 공개 API 회귀 결과를 별도로 사용한다.
 
-- 원본: [samples/issue6800/1192000-202100017-policy-research-report.hwp](../../../samples/issue6800/1192000-202100017-policy-research-report.hwp), 90,112 bytes.
+- 원본: [samples/issue6800/1192000-202100017-policy-research-report.hwp](../assets/issue7922/trailing-tab-regressions-20261015/1192000-202100017-policy-research-report.hwp), 90,112 bytes.
 - 원본 SHA-256: `fd0b95cb4239b08e2ab9130b6b697af56dda379f1c9029dbf5f5a0b97af5ceee`.
-- [기준 PDF](../../../pdf/1192000-202100017-policy-research-report-2020.pdf): engine 2020, 1쪽, 62,122 bytes.
+- [기준 PDF](../assets/issue7922/trailing-tab-regressions-20261015/1192000-202100017-policy-research-report-2020.pdf): engine 2020, 1쪽, 62,122 bytes.
 - 기준 PDF SHA-256: `34c9173724fa5d2ef5e0b2a796b56c9b564d3f5e0c9224609dffd507921ada48`.
 - 기존에 준비된 PDF를 재사용했다. 해시·크기는 이번에 확인한 파일 값이며 옛 재변환 파일의 메타데이터를 재사용하지 않는다.
 - 이 대표 PNG는 이전 메인터너 보정 단계의 `maintainer-all` sweep 산출물이며 이번에 다시 생성했다고 쓰지 않는다. 이후 #6796 후속은 음수 오프셋 조건식의 설명·변수명 정리와 별도 입력/회귀 추가로, 기존 원본의 렌더 조건을 확대하지 않았다. 새 축소본 대조는 #6796 기록에 별도로 보관한다.

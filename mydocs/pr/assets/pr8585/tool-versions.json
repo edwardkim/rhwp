@@ -1,0 +1,59 @@
+[
+  {
+    "command": [
+      "rustc",
+      "--version"
+    ],
+    "exit": 0,
+    "version": "rustc 1.93.1 (01f6ddf75 2026-02-11)"
+  },
+  {
+    "command": [
+      "cargo",
+      "--version"
+    ],
+    "exit": 0,
+    "version": "cargo 1.93.1 (083ac5135 2025-12-15)"
+  },
+  {
+    "command": [
+      "cargo",
+      "nextest",
+      "--version"
+    ],
+    "exit": 0,
+    "version": "cargo-nextest 0.9.137 (75ddba7e9 2026-05-26)\nrelease: 0.9.137\ncommit-hash: 75ddba7e911b44c5c0700dac0415d824403de9bd\ncommit-date: 2026-05-26\nhost: x86_64-unknown-linux-gnu"
+  },
+  {
+    "command": [
+      "wasm-pack",
+      "--version"
+    ],
+    "exit": 0,
+    "version": "wasm-pack 0.15.0"
+  },
+  {
+    "command": [
+      "node",
+      "--version"
+    ],
+    "exit": 0,
+    "version": "v24.15.0"
+  },
+  {
+    "command": [
+      "/home/edward/.cache/puppeteer/chromium/linux-1660786/chrome-linux/chrome",
+      "--version"
+    ],
+    "exit": 0,
+    "version": "Chromium 152.0.7946.0"
+  },
+  {
+    "command": [
+      "/home/edward/.cache/.wasm-pack/wasm-opt-1ceaaea8b7b5f7e0/bin/wasm-opt",
+      "--version"
+    ],
+    "exit": 0,
+    "version": "wasm-opt version 117 (version_117)"
+  }
+]

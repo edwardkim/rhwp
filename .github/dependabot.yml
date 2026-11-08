@@ -48,6 +48,12 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
+    # init/analyze가 서로 다른 버전이면 저장된 CodeQL 설정을 읽지 못한다.
+    # PR #7851/#7854처럼 단계별 업데이트가 갈라지지 않도록 함께 갱신한다.
+    groups:
+      codeql-action:
+        patterns:
+          - "github/codeql-action/*"
 
   # [#1649] 확장(chrome/firefox)도 vite 를 추적한다. studio 가 vite 8 까지 따라온
   # 사이 확장만 vite 6 에 방치되어 있었다(고정 의도 아님). 확장 빌드는 build.mjs 가

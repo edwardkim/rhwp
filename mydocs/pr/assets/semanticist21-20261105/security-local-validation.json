@@ -1,0 +1,212 @@
+{
+  "source": "d75809517f9185277248dd6be995e89792563222",
+  "full_nextest": {
+    "runtime_seconds": 703.112,
+    "run": 12499,
+    "passed": 12499,
+    "skipped": 45,
+    "failed": 0
+  },
+  "native_ci_commands": [
+    {
+      "label": "native-ci-00",
+      "counts": [
+        58,
+        0,
+        0
+      ]
+    },
+    {
+      "label": "native-ci-01",
+      "counts": [
+        2,
+        0,
+        0
+      ]
+    },
+    {
+      "label": "native-ci-02",
+      "counts": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "label": "native-ci-03",
+      "counts": [
+        2,
+        0,
+        0
+      ]
+    },
+    {
+      "label": "native-ci-04",
+      "counts": [
+        22,
+        0,
+        0
+      ]
+    },
+    {
+      "label": "native-ci-05",
+      "counts": [
+        4,
+        0,
+        0
+      ]
+    },
+    {
+      "label": "native-ci-06",
+      "counts": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "label": "native-ci-07",
+      "counts": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "label": "native-ci-08",
+      "counts": [
+        2,
+        0,
+        0
+      ]
+    },
+    {
+      "label": "native-ci-09",
+      "counts": [
+        7,
+        0,
+        0
+      ]
+    },
+    {
+      "label": "native-ci-10",
+      "counts": [
+        8,
+        0,
+        0
+      ]
+    },
+    {
+      "label": "native-ci-11",
+      "counts": [
+        12,
+        0,
+        0
+      ]
+    },
+    {
+      "label": "native-ci-12",
+      "counts": [
+        7,
+        0,
+        0
+      ]
+    },
+    {
+      "label": "native-ci-13",
+      "counts": [
+        3,
+        0,
+        0
+      ]
+    },
+    {
+      "label": "native-ci-14",
+      "counts": [
+        4,
+        0,
+        0
+      ]
+    },
+    {
+      "label": "native-ci-15",
+      "counts": [
+        10,
+        0,
+        0
+      ]
+    },
+    {
+      "label": "native-ci-16",
+      "counts": [
+        2,
+        0,
+        0
+      ]
+    },
+    {
+      "label": "native-ci-17",
+      "counts": [
+        5,
+        0,
+        0
+      ]
+    },
+    {
+      "label": "native-ci-18",
+      "counts": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "label": "native-ci-19",
+      "counts": [
+        21,
+        0,
+        0
+      ]
+    },
+    {
+      "label": "native-ci-20",
+      "counts": [
+        10,
+        0,
+        0
+      ]
+    },
+    {
+      "label": "native-ci-21",
+      "counts": [
+        9,
+        0,
+        0
+      ]
+    }
+  ],
+  "native_ci_passed": 192,
+  "native_lib_all": {
+    "passed": 4040,
+    "failed": 0,
+    "ignored": 12
+  },
+  "doc_tests": {
+    "passed": 8,
+    "failed": 0,
+    "ignored": 3
+  },
+  "all_local_followup_gates_passed": true,
+  "native_before_after_svg_pages_byte_identical": 24,
+  "named_rowh_diagnostic_prefixes_after": {
+    "DIAG_TRUST": 0,
+    "DIAG_ROWH": 0,
+    "DIAG_ROWH_PARA": 0,
+    "DIAG_ROWH_LINE": 0,
+    "DIAG_SPANH": 0
+  },
+  "visual_evidence_producer_reused": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+  "source_equivalence": "security-source-equivalence.json",
+  "fresh_visual_measurement_claimed": false,
+  "github_new_head_codeql": "Pending independent analysis; no dismissal or security-setting changes"
+}

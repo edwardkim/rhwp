@@ -15,7 +15,8 @@ import { selectLayerTextVariantsForLeaf } from '../src/view/canvaskit/text-varia
 const studioRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const fontPath = path.resolve(studioRoot, '../assets/fonts/NotoSansKR-Regular.woff2');
 const symbolFontPath = path.resolve(studioRoot, '../assets/fonts/D2Coding-Regular.woff2');
-const oldHangulFontPath = path.resolve(studioRoot, '../assets/fonts/SourceHanSerifK-OldHangul-subset.woff2');
+const mathFontPath = path.resolve(studioRoot, '../assets/fonts/NotoSansMath-Regular.woff2');
+const oldHangulFontPath = path.resolve(studioRoot, '../assets/fonts/RHWPOldHangul-Regular.woff2');
 const exactFaceFontPath = path.resolve(studioRoot, '../tests/fixtures/fonts/RHWPExactFaceSmoke.ttc');
 const canvasKitBundle = path.resolve(studioRoot, 'node_modules/canvaskit-wasm/bin/full');
 const CanvasKit = await CanvasKitInit({
@@ -64,6 +65,19 @@ try {
 } finally {
   symbolFont.delete();
   symbolTypeface.delete();
+}
+
+// U+2AFD는 기본 CJK face에 없으며 누락 시 복합 dyad 수식 전체가 버려졌던 기호다.
+const mathTypeface = CanvasKit.Typeface.MakeFreeTypeFaceFromData(fs.readFileSync(mathFontPath));
+assert.ok(mathTypeface, 'Noto Sans Math 수식 폴백 typeface를 만들 수 있어야 한다');
+const mathFont = new CanvasKit.Font(mathTypeface, 16);
+try {
+  for (const character of ['\u2AFD', '\u2225', '\u2194']) {
+    assert.notEqual(mathFont.getGlyphIDs(character, 1)[0], 0, `${character}의 수학 glyph를 공급한다`);
+  }
+} finally {
+  mathFont.delete();
+  mathTypeface.delete();
 }
 
 const oldHangulTypeface = CanvasKit.Typeface.MakeFreeTypeFaceFromData(fs.readFileSync(oldHangulFontPath));
@@ -207,17 +221,35 @@ const oversizedResourceTableStatus = glyphRunFontCache.replayStatus(glyphRunOp, 
 assert.equal(oversizedResourceTableStatus.replayable, false);
 assert.equal(oversizedResourceTableStatus.reason, 'fontResourceTableTooLarge');
 
+// P46 admits proven horizontal synthetic instances; malformed instance metadata
+// still fails before selection. This checks admission only, without changing pixels.
+for (const [syntheticBold, syntheticItalic] of [[true, false], [false, true], [true, true]]) {
+  const run = {
+    ...glyphRunOp,
+    shapeKey: { ...glyphRunOp.shapeKey,
+      fontInstance: { ...glyphRunOp.shapeKey.fontInstance, syntheticBold, syntheticItalic } },
+  };
+  assert.equal(glyphRunFontCache.replayStatus(run, glyphRunFontResources).replayable, true,
+    'proven horizontal synthetic instances should be eligible for strict GlyphRun selection');
+  const fallback = { type: 'textRun', bbox: glyphRunOp.bbox, text: '\uE104', variant: {
+    equivalenceGroup: run.variant.equivalenceGroup, variantId: 'textRun', variantKind: 'textRun',
+    isDefaultFallback: true,
+  } };
+  assert.deepEqual([...selectLayerTextVariantsForLeaf([fallback, run], () => false,
+    op => glyphRunFontCache.replayStatus(op, glyphRunFontResources).replayable)], [run]);
+}
+
 for (const [name, mutate, expectedReason] of [
   [
-    'synthetic',
+    'synthetic-malformed',
     op => ({
       ...op,
       shapeKey: {
         ...op.shapeKey,
-        fontInstance: { ...op.shapeKey.fontInstance, syntheticBold: true },
+        fontInstance: { ...op.shapeKey.fontInstance, syntheticBold: 'true' },
       },
     }),
-    'syntheticStyleAuthorityPending',
+    'syntheticStyleMalformed',
   ],
   [
     'bidi-direction',
@@ -337,6 +369,62 @@ const missingBlobTableStatus = glyphRunFontCache.replayStatus(glyphRunOp, {
 });
 assert.equal(missingBlobTableStatus.replayable, false);
 assert.equal(missingBlobTableStatus.reason, 'fontResourceTableMalformed');
+
+// The renderer selects all leaves before drawing any of them. Admission must
+// reserve the bounded native Font now, or a selected run can disappear later.
+const boundedFontCache = new CanvasKitGlyphRunFontCache(CanvasKit);
+boundedFontCache.registerResources(glyphRunFontResources, glyphRunResources);
+try {
+  const runs = Array.from({ length: 1025 }, (_, index) => ({
+    ...glyphRunOp,
+    variant: { ...glyphRunOp.variant, equivalenceGroup: `font-budget-${index}` },
+    shapeKey: { ...glyphRunOp.shapeKey,
+      fontInstance: { ...glyphRunOp.shapeKey.fontInstance, sizePx: 16 + index / 100 } },
+  }));
+  const fallbacks = runs.map(run => ({
+    type: 'textRun', text: '\uE104', bbox: run.bbox,
+    variant: { ...run.variant, variantId: 'textRun', variantKind: 'textRun', isDefaultFallback: true },
+  }));
+  const selected = runs.map((run, index) => [...selectLayerTextVariantsForLeaf(
+    [fallbacks[index], run], () => false,
+    candidate => boundedFontCache.replayStatus(candidate, glyphRunFontResources).replayable,
+  )]);
+  assert.deepEqual(selected.at(-1), [fallbacks.at(-1)],
+    'the 1025th distinct font must retain its TextRun during preselection');
+  assert.equal(boundedFontCache.replayStatus(runs.at(-1), glyphRunFontResources).reason,
+    'fontInstanceLimitExceeded');
+  assert.equal(boundedFontCache.diagnostics().fonts, 1024);
+  for (let index = 0; index < 1024; index++) {
+    assert.deepEqual(selected[index], [runs[index]]);
+    assert.ok(boundedFontCache.font(runs[index], glyphRunFontResources),
+      'every admitted run must still have its native Font at draw time');
+  }
+} finally {
+  boundedFontCache.clear();
+}
+
+// Allocation and configuration errors must keep the fallback selectable and
+// release any partially constructed Font. The exact face is still real Skia.
+for (const failure of ['constructor', 'configuration']) {
+  let deleted = 0;
+  const failingKit = Object.create(CanvasKit);
+  failingKit.Font = class {
+    constructor() { if (failure === 'constructor') throw new Error('allocation failed'); }
+    setSubpixel() { throw new Error('configuration failed'); }
+    delete() { deleted++; }
+  };
+  const failingCache = new CanvasKitGlyphRunFontCache(failingKit);
+  failingCache.registerResources(glyphRunFontResources, glyphRunResources);
+  try {
+    const status = failingCache.replayStatus(glyphRunOp, glyphRunFontResources);
+    assert.equal(status.replayable, false, `${failure} failure must not suppress TextRun`);
+    assert.equal(status.reason, 'fontInstanceInstantiationFailed');
+    assert.equal(failingCache.diagnostics().fonts, 0);
+    assert.equal(deleted, failure === 'configuration' ? 1 : 0);
+  } finally {
+    failingCache.clear();
+  }
+}
 glyphRunFontCache.clear();
 assert.deepEqual(
   glyphRunFontCache.diagnostics(),

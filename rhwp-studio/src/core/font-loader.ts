@@ -1,9 +1,8 @@
 /**
  * 웹폰트 로더 — web/editor.html의 폰트 로딩 시스템을 TypeScript로 포팅
  *
- * 2계층 로딩:
- *   1. CSS @font-face 규칙 생성 (Canvas 2D 호환)
- *   2. FontFace API로 즉시 로드 + document.fonts.add()
+ * 유한한 바이트 요청 뒤 FontFace와 CSS에 같은 자원을 공급한다.
+ * URL FontFace.load의 취소 불가 요청이 문서 초기화를 붙잡지 않게 한다.
  */
 
 import {
@@ -61,8 +60,8 @@ const FONT_LIST: readonly FontEntry[] = FONT_RULE_WEBFONT_ENTRIES;
 /** @font-face에 등록된 폰트 이름 Set */
 export const REGISTERED_FONTS = new Set(FONT_LIST.map(f => f.name));
 
-/** 초기 렌더링에 필수인 폰트 (대부분의 HWP 문서 기본 서체) */
-const CRITICAL_FONTS = new Set(['함초롬바탕', '함초롬돋움']);
+/** 문서 기본 서체와 Canvas 옛한글 paint가 직접 요청하는 공급 자원. */
+const CRITICAL_FONTS = new Set(['함초롬바탕', '함초롬돋움', 'RHWP Old Hangul']);
 
 /** CSS @font-face에 등록한 글꼴 (문서 요청 단위로 누적) */
 const registeredFontFaces: FontEntry[] = [];
@@ -72,6 +71,108 @@ const registeredFontFaceKeys = new Set<string>();
 const loadedFiles = new Set<string>();
 /** FontFace API로 등록한 이름과 파일 조합 (별칭의 지연 등록 지원) */
 const loadedFontFaceKeys = new Set<string>();
+// 실패한 공급은 페이지 수명 동안 재요청하지 않는다. 재시도하려면 페이지를 다시 연다.
+const failedFontFiles = new Set<string>();
+const pendingFontFaces = new Map<string, Promise<void>>();
+const loadedFontFaces = new Map<string, { file: string; face: FontFace }>();
+const WEB_FONT_LOAD_TIMEOUT_MS = 5_000;
+interface FontResource { bytes: ArrayBuffer; cssUrl: string }
+const fontResources = new Map<string, FontResource>();
+const pendingFontResources = new Map<string, Promise<FontResource>>();
+
+/** URL FontFace.load는 취소할 수 없고 문서 load/fonts.ready까지 붙잡을 수 있다. */
+async function loadFontResource(file: string): Promise<FontResource> {
+  const cached = fontResources.get(file);
+  if (cached) return cached;
+  const pending = pendingFontResources.get(file);
+  if (pending) return pending;
+  const controller = new AbortController();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const request = (async () => {
+    try {
+      const bytes = await Promise.race([
+        fetch(file, { signal: controller.signal }).then(response => {
+          if (!response.ok) throw new Error(`WEB_FONT_HTTP_${response.status}`);
+          return response.arrayBuffer();
+        }),
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(() => {
+            reject(new Error('WEB_FONT_LOAD_TIMEOUT'));
+            controller.abort();
+          }, WEB_FONT_LOAD_TIMEOUT_MS);
+        }),
+      ]);
+      if (failedFontFiles.has(file)) throw new Error('WEB_FONT_FILE_UNAVAILABLE');
+      // CSS도 같은 바이트를 사용해야 캐시 불가 응답을 다시 요청하지 않는다.
+      const resource = { bytes, cssUrl: URL.createObjectURL(new Blob([bytes])) };
+      fontResources.set(file, resource);
+      return resource;
+    } finally {
+      if (timer !== undefined) clearTimeout(timer);
+    }
+  })();
+  pendingFontResources.set(file, request);
+  try { return await request; }
+  finally { pendingFontResources.delete(file); }
+}
+
+async function loadFontFace(entry: FontEntry, options?: WebFontLoadOptions): Promise<void> {
+  const key = fontFaceKey(entry);
+  if (failedFontFiles.has(entry.file)) throw new Error('WEB_FONT_FILE_UNAVAILABLE');
+  if (loadedFontFaceKeys.has(key)) return;
+  const pending = pendingFontFaces.get(key);
+  if (pending) return pending;
+  const request = (async () => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const result = await Promise.race([
+        (async () => {
+          const resource = await loadFontResource(entry.file);
+          if (failedFontFiles.has(entry.file)) throw new Error('WEB_FONT_FILE_UNAVAILABLE');
+          const face = new FontFace(entry.name, resource.bytes);
+          return face.load();
+        })(),
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(() => reject(new Error('WEB_FONT_LOAD_TIMEOUT')), WEB_FONT_LOAD_TIMEOUT_MS);
+        }),
+      ]);
+      // 다른 별칭이 먼저 실패했거나 timeout 뒤 load가 끝나도 공급을 뒤늦게 바꾸지 않는다.
+      if (failedFontFiles.has(entry.file)) throw new Error('WEB_FONT_FILE_UNAVAILABLE');
+      document.fonts.add(result);
+      loadedFontFaces.set(key, { file: entry.file, face: result });
+      loadedFontFaceKeys.add(key);
+      registerFontFaces([entry], options);
+    } finally {
+      if (timer !== undefined) clearTimeout(timer);
+    }
+  })();
+  pendingFontFaces.set(key, request);
+  try { await request; }
+  finally { pendingFontFaces.delete(key); }
+}
+
+function removeFailedFontFile(file: string, options?: WebFontLoadOptions): void {
+  failedFontFiles.add(file);
+  loadedFiles.delete(file);
+  const resource = fontResources.get(file);
+  if (resource) {
+    URL.revokeObjectURL(resource.cssUrl);
+    fontResources.delete(file);
+  }
+  for (const [key, loaded] of loadedFontFaces) {
+    if (loaded.file !== file) continue;
+    document.fonts.delete(loaded.face);
+    loadedFontFaces.delete(key);
+    loadedFontFaceKeys.delete(key);
+  }
+  for (let i = registeredFontFaces.length - 1; i >= 0; i--) {
+    if (registeredFontFaces[i].file !== file) continue;
+    registeredFontFaceKeys.delete(fontFaceKey(registeredFontFaces[i]));
+    registeredFontFaces.splice(i, 1);
+  }
+  // CSS에서도 제거해야 document.fonts.ready와 paint가 실패한 URL을 다시 기다리지 않는다.
+  registerFontFaces([], options);
+}
 
 function isExternalFontFile(file: string): boolean {
   return /^https?:\/\//i.test(file);
@@ -123,7 +224,7 @@ function registerFontFaces(entries: readonly FontEntry[], options?: WebFontLoadO
   const disableExternal = options?.disableExternalWebFonts === true;
   for (const entry of entries) {
     const key = fontFaceKey(entry);
-    if (!registeredFontFaceKeys.has(key)) {
+    if (!failedFontFiles.has(entry.file) && !registeredFontFaceKeys.has(key)) {
       registeredFontFaceKeys.add(key);
       registeredFontFaces.push(entry);
     }
@@ -138,10 +239,12 @@ function registerFontFaces(entries: readonly FontEntry[], options?: WebFontLoadO
   }
   style.textContent = registeredFontFaces
     .filter(entry => !(disableExternal && isExternalFontFile(entry.file)))
-    .map(f => {
-    const fmt = f.format ?? 'woff2';
-    const ur = f.unicodeRange ? ` unicode-range: ${f.unicodeRange};` : '';
-    return `@font-face { font-family: "${f.name}"; src: url("${f.file}") format("${fmt}"); font-display: swap;${ur} }`;
+    .flatMap(f => {
+      const resource = fontResources.get(f.file);
+      if (!resource || !loadedFontFaceKeys.has(fontFaceKey(f))) return [];
+      const fmt = f.format ?? 'woff2';
+      const ur = f.unicodeRange ? ` unicode-range: ${f.unicodeRange};` : '';
+      return [`@font-face { font-family: "${f.name}"; src: url("${resource.cssUrl}") format("${fmt}"); font-display: swap;${ur} }`];
     }).join('\n');
 }
 
@@ -160,6 +263,36 @@ const OS_FONT_CANDIDATES = [
 ];
 const detectedOSFonts = new Set<string>();
 const detectedOSFontFamilies = new Set<string>();
+const resettableLocalFaces = new Set<FontFace>();
+
+/** 실제 바이트를 로드해 등록한 face다. 이름 probe나 OS 목록과 구분한다. */
+export function hasLoadedLocalFontFamily(name: string): boolean {
+  const requested = normalizeFontFamily(name);
+  return [...resettableLocalFaces].some(face => face.status === 'loaded'
+    && normalizeFontFamily(face.family.replace(/^['"]|['"]$/g, '')) === requested
+    && (typeof document.fonts.has !== 'function' || document.fonts.has(face)));
+}
+
+/** 실제 local() 프로그램 로드가 끝난 face만 공급하고 CDN 덮어쓰기를 막는다. */
+export function registerLoadedLocalFontFace(face: FontFace, resettable = true): void {
+  if (face.status !== 'loaded') throw new Error('로컬 글꼴 프로그램이 로드되지 않았습니다');
+  document.fonts.add(face);
+  if (resettable) resettableLocalFaces.add(face);
+  const name = face.family.replace(/^['"]|['"]$/g, '');
+  detectedOSFonts.add(name);
+  detectedOSFontFamilies.add(normalizeFontFamily(name));
+}
+
+/** 사용자가 감지 결과를 초기화하면 이 세션에서 등록한 로컬 face도 해제한다. */
+export function clearLoadedLocalFontFaces(): void {
+  for (const face of resettableLocalFaces) {
+    document.fonts.delete(face);
+    const name = face.family.replace(/^['"]|['"]$/g, '');
+    detectedOSFonts.delete(name);
+    detectedOSFontFamilies.delete(normalizeFontFamily(name));
+  }
+  resettableLocalFaces.clear();
+}
 
 /**
  * 등록 전 시스템 글꼴을 generic fallback과의 폭 비교로 감지한다.
@@ -250,8 +383,8 @@ export function getWebFontSupplySnapshotWithRules(fontName: string): WebFontSupp
 
 /**
  * 웹폰트를 선별 로드한다.
- *   1단계(동기): CSS @font-face 등록
- *   2단계: 대상 폰트 로드 (이미 로드된 파일은 건너뜀)
+ * 대상 파일을 공유 요청하고, 준비된 바이트만 FontFace/CSS에 등록한다.
+ * 요청 시작부터 face 로드까지 5초로 제한하며 실패 파일은 페이지 재시작 전까지 제외한다.
  *
  * @param docFonts 문서에서 사용하는 폰트 이름 목록 (있으면 해당 폰트 + CRITICAL만 로드, 없으면 전체)
  * @param onProgress 폰트 로드 진행률 콜백 (loaded, total)
@@ -282,17 +415,17 @@ export async function loadWebFonts(
   // 시스템 글꼴이 감지되면 CSS 규칙도 추가하지 않아 원격 face가 이를 덮어쓰지 않는다.
   const targetSet = new Set(targetNames.map(normalizeFontFamily));
   const requestedEntries = selectableFontList(options).filter(entry => (
-    targetSet.has(normalizeFontFamily(entry.name)) && !isDetectedOSFont(entry.name)
+    !failedFontFiles.has(entry.file) && targetSet.has(normalizeFontFamily(entry.name)) && !isDetectedOSFont(entry.name)
   ));
   if (requestedEntries.length > 0) {
     console.debug(
       `[FontLoader][debug] CDN 후보: ${requestedEntries.map(entry => entry.name).join(', ')}`,
     );
   }
-  registerFontFaces(requestedEntries, options);
+  registerFontFaces([], options);
 
   // 2) 같은 파일을 쓰더라도 새 별칭은 FontFace에 별도로 등록한다.
-  // 이미 받아 둔 URL은 브라우저 캐시를 사용하므로 추가 네트워크 전송은 발생하지 않는다.
+  // 파일 바이트와 blob URL을 공유하므로 별칭이 추가돼도 네트워크 요청을 반복하지 않는다.
   const toLoad = requestedEntries.filter(entry => !loadedFontFaceKeys.has(fontFaceKey(entry)));
   const entriesByFile = new Map<string, FontEntry[]>();
   for (const entry of toLoad) {
@@ -319,17 +452,14 @@ export async function loadWebFonts(
       console.debug(`[FontLoader][debug] CDN 로드 시작: ${fontNames} <- ${f.file}`);
       try {
         for (const entry of entries) {
-          const fmt = entry.format ?? 'woff2';
-          const face = new FontFace(entry.name, `url(${entry.file}) format('${fmt}')`);
-          const result = await face.load();
-          document.fonts.add(result);
-          loadedFontFaceKeys.add(fontFaceKey(entry));
+          await loadFontFace(entry, options);
         }
         loadedFiles.add(f.file);
         loaded++;
         console.debug(`[FontLoader][debug] CDN 로드 성공: ${fontNames} <- ${f.file}`);
       } catch (error) {
         failed++;
+        removeFailedFontFile(f.file, options);
         console.debug(`[FontLoader][debug] CDN 로드 실패: ${fontNames} <- ${f.file}`, error);
       }
       onProgress?.(loaded + failed, total);

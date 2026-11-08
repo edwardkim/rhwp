@@ -4,6 +4,68 @@ use crate::renderer::typeset::{
     Issue2424TypesetProfile, MeasuredTable, PageDef, PageItem, Paragraph, ResolvedStyleSet,
     TypesetEngine, TypesetState,
 };
+// 저장된 TAC 줄의 끝뿐 아니라 다음 원본 줄의 앞 간격도 같은 축에서
+// 실제 수용 끝을 인증해야 한다. 단순 advance_end는 축 보존의 근거가 아니다.
+fn stored_tac_successor_keeps_axis(
+    host: &Paragraph,
+    next: &Paragraph,
+    placement: &crate::renderer::float_placement::InlineBoxPlacement,
+    source_base: Option<i32>,
+    next_spacing_before: f64,
+    current_height: f64,
+    dpi: f64,
+) -> bool {
+    use crate::model::paragraph::LineSeg;
+    use crate::renderer::hwpunit_to_px;
+    let Some(base) = source_base else {
+        return false;
+    };
+    let ([line], Some(successor)) = (host.line_segs.as_slice(), next.line_segs.first()) else {
+        return false;
+    };
+    let ([Control::Table(table)], [Control::Table(next_table)]) =
+        (host.controls.as_slice(), next.controls.as_slice())
+    else {
+        return false;
+    };
+    if !table.common.treat_as_char
+        || !next_table.common.treat_as_char
+        || table.caption.is_some()
+        || !host.text.trim().is_empty()
+        || !next.text.trim().is_empty()
+        || [host, next].iter().any(|para| {
+            para.stored_text_partition_is_dirty()
+                || para.cell_format_vpos_dirty
+                || para
+                    .source_line_seg_vertical_pos
+                    .as_ref()
+                    .is_some_and(|source| {
+                        source.first() != para.line_segs.first().map(|seg| &seg.vertical_pos)
+                    })
+        })
+        || [line, successor]
+            .iter()
+            .any(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 || seg.line_height <= 0)
+        || successor.vertical_pos <= line.vertical_pos
+        || i64::from(line.line_height)
+            != i64::from(table.common.height)
+                + i64::from(table.outer_margin_top)
+                + i64::from(table.outer_margin_bottom)
+        || !next_spacing_before.is_finite()
+        || next_spacing_before < 0.0
+    {
+        return false;
+    }
+    let host_pen = hwpunit_to_px(line.vertical_pos.saturating_sub(base), dpi);
+    let successor_flow =
+        hwpunit_to_px(successor.vertical_pos.saturating_sub(base), dpi) - next_spacing_before;
+    let epsilon = dpi / 7200.0;
+    (host_pen - placement.y).abs() <= epsilon
+        && placement.advance_end.is_some_and(|end| {
+            (end - current_height).abs() <= epsilon && (successor_flow - end).abs() <= epsilon
+        })
+}
+
 impl TypesetEngine {
     #[allow(clippy::too_many_arguments)]
     pub(super) fn finish_paragraph_anchor_state(
@@ -25,6 +87,53 @@ impl TypesetEngine {
         // PartialTable 배치 후 page/lazy base 무효화(LINE_SEG lh 가 개체 높이를
         // 반영 못 해 drift 유발 → 직후 paragraph 는 lazy 역산으로 재산출). 단단 전용.
         if st.col_count == 1 {
+            // 단 첫 개체 줄과 같은 문단의 뒤 본문은 이전 쪽 continuation이 아니다.
+            // 실제 수용한 첫 pen과 원본 줄이 같은 축을 인증할 때만 보존한다.
+            let opening_host_frame = (!st.profile.session_edited()
+                && st.profile.hwp5_stored_pagination_layout()
+                && st.current_start_height == 0.0
+                && !st.current_endnote_flow)
+                .then(|| crate::renderer::composer::stored_tac_host_frame(para))
+                .flatten()
+                .filter(|frame| {
+                    matches!(st.current_items.first(), Some(PageItem::Table {
+                        para_index: owner, control_index,
+                    }) if *owner == para_idx && *control_index == frame.control)
+                        && st
+                            .inline_placements
+                            .get(&(para_idx, frame.control))
+                            .is_some_and(|placement| placement.y.abs() <= self.dpi / 7200.0)
+                });
+            if opening_host_frame.is_some() {
+                let origin = para.line_segs[0].vertical_pos;
+                st.record_vpos_page_origin(Some(origin));
+                st.record_vpos_lazy_origin(None);
+                st.record_vpos_column_anchor(0.0);
+                st.record_vpos_origin_provenance(true);
+                st.record_stored_column_origin(Some((origin, 0.0)));
+            }
+            let first_continuation = !st.current_endnote_flow
+                && matches!(st.current_items.first(),
+                    Some(PageItem::PartialParagraph { para_index: owner, start_line, .. })
+                        if *owner == para_idx && *start_line > 0)
+                && matches!(st.current_items.last(),
+                    Some(PageItem::PartialParagraph { para_index: owner, .. })
+                        if *owner == para_idx);
+            let current_origin_rewinds = st
+                .vpos_prev_layout_para
+                // A table may have emitted several new columns before this
+                // paragraph is finalized. The preceding column's owner is
+                // not a predecessor in the accepted continuation column.
+                // Paint compares only the owners actually placed together.
+                .filter(|previous| {
+                    st.current_items
+                        .iter()
+                        .any(|item| item.para_index() == *previous)
+                })
+                .and_then(|previous| paragraphs.get(previous))
+                .is_some_and(|previous| {
+                    crate::renderer::height_cursor::paragraph_origin_rewinds(previous, para)
+                });
             if st.reset_vpos_after_queued_table_footnote_page {
                 // RowBreak 표가 남은 cell-footnote만 든 fresh page를 만든 경우,
                 // 표 host의 저장 VPOS를 이 새 page 본문에 상속하면 빈 첫 문단도
@@ -32,6 +141,23 @@ impl TypesetEngine {
                 // 본문 문단이 자체 stored VPOS에서 시작하게 한다.
                 st.reset_vpos_cursor();
                 st.acknowledge_queued_footnote_reset(false);
+            } else if first_continuation {
+                // paint의 첫 continuation은 앞 쪽의 문단을 이전 owner로
+                // 이어받지 않는다. 첫 수용 줄의 저장 축은 별도로 보존한다.
+                st.record_previous_layout_paragraph(None);
+                st.record_vpos_page_origin(None);
+                let seed = st.vpos_stored_column_origin.and_then(|(source, anchor)| {
+                    source.checked_sub(crate::renderer::px_to_hwpunit(anchor, self.dpi))
+                });
+                st.record_vpos_lazy_origin(seed);
+            } else if current_origin_rewinds {
+                // Paint closes the preceding coordinate frame after this
+                // owner. Apply the same transition before the next fit;
+                // keeping the old page base here makes fit silently trim
+                // advances that paint has already preserved.
+                st.record_previous_layout_paragraph(None);
+                st.record_vpos_page_origin(None);
+                st.record_vpos_lazy_origin(None);
             } else {
                 st.record_previous_layout_paragraph(Some(para_idx));
                 // [#2243] 저장-앵커 사다리 dirty 태깅: 저장 lineseg 없는 문단(생성기
@@ -39,7 +165,9 @@ impl TypesetEngine {
                 // v0 로의 **역스냅**은 성장분을 뭉갠다 (36398599: p33~36 누락 구간
                 // fresh +4320HU → 한글 4쪽 vs 역스냅 3쪽). dirty 이후 스냅은 전방만
                 // 허용한다. 합성-앵커(전면 NO_LS 문서)는 자기정합이므로 무관.
+                // 다음 원본 줄로 실제 소비를 확인한 경계는 줄 부재만으로 무효화하지 않는다.
                 if st.vpos_page_base_stored
+                    && !st.paragraph_origins.contains_key(&para_idx)
                     && paragraphs.get(para_idx).is_some_and(|p| {
                         p.line_segs.first().map_or(true, |s| {
                             s.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
@@ -70,7 +198,14 @@ impl TypesetEngine {
                     // 케이스는 종전대로 무효화. HWPX(기계생성 결재문서 계열) 한정 —
                     // HWP5 native 는 종전 핀 보존 (issue_1418 2026_oss_rst 6쪽).
                     let host_line_covers_object = st.profile.hwpx_stored_layout()
-                        && matches!(last, Some(PageItem::Table { .. }))
+                        // TAC placement closes the object-derived coordinate frame in
+                        // paint. A tall saved line alone cannot keep that frame
+                        // alive for subsequent paragraphs.
+                        && matches!(last, Some(PageItem::Table { para_index, control_index })
+                            if paragraphs.get(*para_index)
+                                .and_then(|host| host.controls.get(*control_index))
+                                .is_some_and(|control| matches!(control, Control::Table(table)
+                                    if !table.common.treat_as_char)))
                         && para.line_segs.first().is_some_and(|s| {
                             s.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
                                 == 0
@@ -101,15 +236,50 @@ impl TypesetEngine {
                         };
                     // 확정 인라인 끝점은 이미 간격을 소비한 현재 흐름과 연결돼 있다.
                     // 후처리에서 그 기준을 지우면 다음 lazy 역산이 같은 간격을 재가산한다.
+                    // TAC의 advance_end만으로 다음 원본 축을 인증하지 않는다.
+                    // 원본 외곽·수용 pen·다음 TAC의 앞 간격까지 같은 축으로 닫힐
+                    // 때만 유지해 후속 paint에도 확정 inline placement를 전달한다.
                     let resolved_inline_end = match last {
                         Some(PageItem::Table {
                             para_index,
                             control_index,
-                        }) => st
-                            .inline_placements
-                            .get(&(*para_index, *control_index))
-                            .and_then(|placement| placement.advance_end)
-                            .is_some_and(|end| (end - st.current_height).abs() < 0.01),
+                        }) => paragraphs.get(*para_index).is_some_and(|host| {
+                            host.controls.get(*control_index).is_some_and(|control| {
+                                let Control::Table(table) = control else {
+                                    return false;
+                                };
+                                st.inline_placements
+                                    .get(&(*para_index, *control_index))
+                                    .is_some_and(|placement| {
+                                        if !table.common.treat_as_char {
+                                            return placement.advance_end.is_some_and(|end| {
+                                                (end - st.current_height).abs() < 0.01
+                                            });
+                                        }
+                                        !st.profile.session_edited()
+                                            && paragraphs.get(*para_index + 1).is_some_and(|next| {
+                                                let style_id = composed
+                                                    .get(*para_index + 1)
+                                                    .map_or(next.para_shape_id as usize, |para| {
+                                                        para.para_style_id as usize
+                                                    });
+                                                let before = styles
+                                                    .para_styles
+                                                    .get(style_id)
+                                                    .map_or(0.0, |style| style.spacing_before);
+                                                stored_tac_successor_keeps_axis(
+                                                    host,
+                                                    next,
+                                                    placement,
+                                                    st.vpos_page_base.or(st.vpos_lazy_base),
+                                                    before,
+                                                    st.current_height,
+                                                    self.dpi,
+                                                )
+                                            })
+                                    })
+                            })
+                        }),
                         _ => false,
                     };
                     // 저장 컷으로 본문을 나눈 어울림 표는 마지막 글줄의 실제
@@ -134,12 +304,79 @@ impl TypesetEngine {
                         && matches!(last, Some(PageItem::PartialTable {
                             is_continuation: true, start_cut, ..
                         }) if start_cut.len() == 1 && start_cut[0] > 0);
+                    // [#7552] 문단 기준 자리차지 표(비-TAC) 뒤에는 렌더(`layout.rs`
+                    // `is_para_float_table`)처럼 쪽 저장 기준을 유지한다. 지우면 뒤 문단이 지연
+                    // 경로로 가고, 빈 표 host 뒤 스냅을 막는 #2243 규칙 때문에 순차 흐름 오차가
+                    // 표마다 쌓여 조판과 렌더가 갈린다(hwpspec 50쪽: 표 다섯 개 −57.8px, 렌더는
+                    // 한/글 괘선과 일치).
+                    let para_float_table = matches!(last, Some(PageItem::Table {
+                        para_index,
+                        control_index,
+                    }) if paragraphs
+                        .get(*para_index)
+                        .and_then(|host| host.controls.get(*control_index))
+                        .is_some_and(|control| matches!(control, Control::Table(t)
+                            if !t.common.treat_as_char
+                                && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
+                                && matches!(t.common.vert_rel_to, crate::model::shape::VertRelTo::Para))));
+                    // 저장 TAC의 수용 계획이 발행한 축을 paint와 같은 후처리에서 보존한다.
+                    // 일반 표의 선언 높이만으로 축을 추측하지 않는다.
+                    let accepted_tac_frame = match last {
+                        Some(PageItem::Table {
+                            para_index,
+                            control_index,
+                        }) => st
+                            .inline_placements
+                            .get(&(*para_index, *control_index))
+                            .and_then(|placement| placement.stored_column_frame),
+                        _ => None,
+                    };
+                    let opening_tac_origin = (st.current_start_height == 0.0
+                        && !st.current_endnote_flow
+                        && !st.profile.session_edited()
+                        && (st.profile.hwp5_stored_pagination_layout()
+                            || st.profile.hwpx_stored_layout())
+                        && st.page_start_square_pictures.is_empty()
+                        && st.page_start_stored_frames.is_empty())
+                    .then(|| {
+                        crate::renderer::float_placement::restarted_tac::accepted_column_origin(
+                            &st.current_items,
+                            &st.inline_placements,
+                            paragraphs,
+                            styles,
+                            self.dpi,
+                        )
+                    })
+                    .flatten()
+                    .filter(|(owner, _)| *owner == para_idx);
+                    if let Some((_, origin)) = opening_tac_origin {
+                        // 옛 host vpos는 새 단에서 직전 본문 줄이 아니다.
+                        st.record_previous_layout_paragraph(None);
+                        st.record_vpos_page_origin(Some(origin));
+                        st.record_vpos_lazy_origin(None);
+                        st.record_stored_column_origin(Some((origin, 0.0)));
+                    }
+                    if para_float_table {
+                        st.seed_whole_table_column_origin(para_idx, paragraphs);
+                    }
+                    if let Some(frame) = accepted_tac_frame {
+                        st.record_vpos_page_origin(Some(frame.source_origin_hu));
+                        st.record_vpos_lazy_origin(None);
+                        st.record_vpos_origin_provenance(true);
+                        st.record_vpos_column_anchor(frame.column_anchor_y);
+                        st.record_stored_column_origin(Some((
+                            frame.source_origin_hu,
+                            frame.column_anchor_y,
+                        )));
+                    }
                     if !host_line_covers_object
                         && !resolved_inline_end
                         && !resolved_stored_wrap_fragment
                         && !resolved_stored_page_frame
+                        && !para_float_table
+                        && opening_tac_origin.is_none()
+                        && accepted_tac_frame.is_none()
                     {
-                        // Para-float TopAndBottom 표 예외(렌더러 2513)는 Stage E.
                         st.record_vpos_page_origin(None);
                         st.record_vpos_lazy_origin(None);
                     }
@@ -170,7 +407,13 @@ impl TypesetEngine {
                     // 띠 (cs, sw) 를 도출해 후속 문단 매칭에 사용 (한글: 후속 문단을
                     // 표 옆 잔여 띠에 배치 — samples/task1745).
                     if let Some((strip_cs, strip_sw)) =
-                        crate::renderer::text_anchor_square_table_strip(para).or_else(|| {
+                        crate::renderer::stored_empty_square_successor_strip(
+                            para,
+                            paragraphs.get(para_idx + 1),
+                            st.layout.column_width_hu(),
+                        )
+                        .or_else(|| crate::renderer::text_anchor_square_table_strip(para))
+                        .or_else(|| {
                             crate::renderer::empty_host_square_table_left_strip(
                                 para,
                                 st.layout.column_width_hu(),

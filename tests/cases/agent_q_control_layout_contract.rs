@@ -5,8 +5,8 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
 fn bin() -> String {
-    std::env::var("CARGO_BIN_EXE_rhwp-q-control-layout")
-        .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp-q-control-layout").to_string())
+    std::env::var("CARGO_BIN_EXE_rhwp-q")
+        .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp-q").to_string())
 }
 
 fn sample() -> PathBuf {
@@ -15,6 +15,7 @@ fn sample() -> PathBuf {
 
 fn run(args: &[&str]) -> Output {
     Command::new(bin())
+        .arg("control-layout")
         .args(args)
         .output()
         .expect("rhwp-q-control-layout 실행 실패")
@@ -101,7 +102,7 @@ fn help_exits_ok() {
 fn source_never_calls_mutators() {
     let src = include_str!(concat!(
         env!("CARGO_MANIFEST_DIR"),
-        "/src/bin/rhwp-q-control-layout.rs"
+        "/src/bin/rhwp-q/commands/rhwp-q-control-layout.rs"
     ));
     for needle in [".apply_", ".insert_", ".delete_", ".set_"] {
         assert!(

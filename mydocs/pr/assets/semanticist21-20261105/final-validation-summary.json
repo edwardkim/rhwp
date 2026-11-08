@@ -1,0 +1,296 @@
+{
+  "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+  "full_nextest": {
+    "passed": 12499,
+    "failed": 0,
+    "existing_skipped": 45,
+    "runtime_seconds": 713.614,
+    "log_sha256": "0547261681d4518ba35f5eab1854ab29a963c6cb4b920b2c95a664848500db53"
+  },
+  "native_official": {
+    "passed": 4064,
+    "lib_existing_ignored": 12,
+    "commands": 3
+  },
+  "studio": {
+    "passed": 2720,
+    "existing_skipped": 2,
+    "failed": 0,
+    "typescript": true,
+    "production_build": true
+  },
+  "focused": {
+    "passed": 21
+  },
+  "handbook": {
+    "pages": 383,
+    "minimum": 99.96,
+    "exact100": 370,
+    "status": "passed"
+  },
+  "functional_visual": {
+    "documents_per_backend": 30,
+    "pages_per_backend": 75,
+    "native_and_fresh_wasm_all_at_least90": true
+  },
+  "performance_controls": {
+    "pages_per_backend": 39,
+    "base_candidate_png_pairs": 78,
+    "all_byte_identical": true,
+    "fidelity_exception": "2026-11-05 작업지시자가 #8331·#8332의 변경 전부터 있던 동일 출력 차이에 한정한 수용 예외와 10건의 통합 push·Open PR·해당 head CI·self-review·merge·원 PR 완료/감사 댓글·동기화·정리를 승인했다. 새 회귀·검사 실패·쪽수 차이·누락·90% 미만의 새 렌더링 회귀 추가는 예외 대상이 아니다."
+  },
+  "security_cli": {
+    "documents": 31,
+    "calls": 93,
+    "all_clean": true
+  },
+  "rust_lint_bundle": "passed",
+  "test_policy": {
+    "source_unit_tests": 4099,
+    "source_unit_modules": 296,
+    "integration_targets": 48,
+    "groupable_test_sources": 2018
+  },
+  "derived_harness_refresh": "Source bodies and collection unchanged; final all-target Clippy and policy checks passed. See generated-harness-refresh.json.",
+  "doc_test_summaries": [
+    [
+      "8",
+      "0",
+      "3"
+    ],
+    [
+      "0",
+      "0",
+      "0"
+    ],
+    [
+      "0",
+      "0",
+      "0"
+    ],
+    [
+      "0",
+      "0",
+      "0"
+    ]
+  ],
+  "remote_operations": "Complete: PR #8609 and all ten originals MERGED; CI, GHAS, self-review, duration publication, ten thank-you comments, 56 displayed images, devel sync and dedicated cleanup verified.",
+  "all_required_local_gates": "passed",
+  "final_metadata_checks": "final-metadata-check-runs.json",
+  "security_followup": "ci-security-followup.md",
+  "security_followup_local": {
+    "source": "d75809517f9185277248dd6be995e89792563222",
+    "full_nextest": {
+      "runtime_seconds": 703.112,
+      "run": 12499,
+      "passed": 12499,
+      "skipped": 45,
+      "failed": 0
+    },
+    "native_ci_commands": [
+      {
+        "label": "native-ci-00",
+        "counts": [
+          58,
+          0,
+          0
+        ]
+      },
+      {
+        "label": "native-ci-01",
+        "counts": [
+          2,
+          0,
+          0
+        ]
+      },
+      {
+        "label": "native-ci-02",
+        "counts": [
+          1,
+          0,
+          0
+        ]
+      },
+      {
+        "label": "native-ci-03",
+        "counts": [
+          2,
+          0,
+          0
+        ]
+      },
+      {
+        "label": "native-ci-04",
+        "counts": [
+          22,
+          0,
+          0
+        ]
+      },
+      {
+        "label": "native-ci-05",
+        "counts": [
+          4,
+          0,
+          0
+        ]
+      },
+      {
+        "label": "native-ci-06",
+        "counts": [
+          1,
+          0,
+          0
+        ]
+      },
+      {
+        "label": "native-ci-07",
+        "counts": [
+          1,
+          0,
+          0
+        ]
+      },
+      {
+        "label": "native-ci-08",
+        "counts": [
+          2,
+          0,
+          0
+        ]
+      },
+      {
+        "label": "native-ci-09",
+        "counts": [
+          7,
+          0,
+          0
+        ]
+      },
+      {
+        "label": "native-ci-10",
+        "counts": [
+          8,
+          0,
+          0
+        ]
+      },
+      {
+        "label": "native-ci-11",
+        "counts": [
+          12,
+          0,
+          0
+        ]
+      },
+      {
+        "label": "native-ci-12",
+        "counts": [
+          7,
+          0,
+          0
+        ]
+      },
+      {
+        "label": "native-ci-13",
+        "counts": [
+          3,
+          0,
+          0
+        ]
+      },
+      {
+        "label": "native-ci-14",
+        "counts": [
+          4,
+          0,
+          0
+        ]
+      },
+      {
+        "label": "native-ci-15",
+        "counts": [
+          10,
+          0,
+          0
+        ]
+      },
+      {
+        "label": "native-ci-16",
+        "counts": [
+          2,
+          0,
+          0
+        ]
+      },
+      {
+        "label": "native-ci-17",
+        "counts": [
+          5,
+          0,
+          0
+        ]
+      },
+      {
+        "label": "native-ci-18",
+        "counts": [
+          1,
+          0,
+          0
+        ]
+      },
+      {
+        "label": "native-ci-19",
+        "counts": [
+          21,
+          0,
+          0
+        ]
+      },
+      {
+        "label": "native-ci-20",
+        "counts": [
+          10,
+          0,
+          0
+        ]
+      },
+      {
+        "label": "native-ci-21",
+        "counts": [
+          9,
+          0,
+          0
+        ]
+      }
+    ],
+    "native_ci_passed": 192,
+    "native_lib_all": {
+      "passed": 4040,
+      "failed": 0,
+      "ignored": 12
+    },
+    "doc_tests": {
+      "passed": 8,
+      "failed": 0,
+      "ignored": 3
+    },
+    "all_local_followup_gates_passed": true,
+    "native_before_after_svg_pages_byte_identical": 24,
+    "named_rowh_diagnostic_prefixes_after": {
+      "DIAG_TRUST": 0,
+      "DIAG_ROWH": 0,
+      "DIAG_ROWH_PARA": 0,
+      "DIAG_ROWH_LINE": 0,
+      "DIAG_SPANH": 0
+    },
+    "visual_evidence_producer_reused": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+    "source_equivalence": "security-source-equivalence.json",
+    "fresh_visual_measurement_claimed": false,
+    "github_new_head_codeql": "Pending independent analysis; no dismissal or security-setting changes"
+  },
+  "independent_codeql": "security-codeql-after.json",
+  "root_clippy_separate_check": "security-root-clippy.json",
+  "remote_completion": "remote-completion.json"
+}

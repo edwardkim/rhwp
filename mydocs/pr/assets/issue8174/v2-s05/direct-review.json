@@ -1,0 +1,21 @@
+{
+  "source": "9c9c272fe1670baf305800dfc906349fa7933d4a",
+  "runtimes": [
+    "native-skia",
+    "fresh-wasm-canvas2d"
+  ],
+  "viewed": [
+    "icc-indirect-filter",
+    "jpx-indexed-icc-premult",
+    "recovery-fake-header",
+    "old-scan-jbig2-200",
+    "form-before",
+    "form-after"
+  ],
+  "observations": [
+    "ICC colour bands, premultiplied alpha, recovered page and 200 DPI scan retain geometry and visible content.",
+    "Form source, control origins and computed text remain as S04; pre-existing serif/sans fallback and control theme differences remain.",
+    "All 98 actual RGBA outputs and raw TSVs equal S04 in the same backend.",
+    "Raw silhouette agreement is not strict RGB agreement with the independent reference. No new rendering fixtures or expected coordinates."
+  ]
+}

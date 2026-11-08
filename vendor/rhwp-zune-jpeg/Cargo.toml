@@ -1,0 +1,33 @@
+[package]
+include = [
+    "/Cargo.toml",
+    "/src/**",
+    "/README.md",
+    "/README.ijg",
+    "/RHWP_PATCHES.md",
+    "/UPSTREAM.json",
+    "/LICENSE-*"
+]
+name = "rhwp-zune-jpeg"
+version = "0.5.15-rhwp.1"
+edition = "2021"
+rust-version = "1.93.1"
+publish = ["crates-io"]
+license = "(MIT OR Apache-2.0 OR Zlib) AND IJG"
+description = "Request-bounded security patch of zune-jpeg for rhwp PDF import"
+[workspace]
+[lib]
+name = "zune_jpeg_limited"
+path = "src/lib.rs"
+[features]
+default = ["x86", "neon", "std"]
+x86 = []
+neon = []
+portable_simd = []
+std = ["zune-core/std"]
+log = ["zune-core/log"]
+[dependencies.zune-core]
+version = "=0.5.3"
+[lints.rust.unexpected_cfgs]
+level = "warn"
+check-cfg = ["cfg(fuzzing)"]

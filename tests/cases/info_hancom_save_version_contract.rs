@@ -1,3 +1,5 @@
+//! 관계형·고정형: 글꼴 선택 계획은 Native 모델과 비교하고 저장 제품 메타데이터는 고정값과 비교한다.
+//! 주석 갱신: 2026-11-03 19:10:30 KST; 직전 변경 3e02fe2749866a8453af3eb3901b9c1a674cccaf (2026-10-25 22:58:32 KST).
 //! `info --json`의 HWP5/HWPX 마지막 저장 한컴오피스 제품 메타데이터 계약.
 //!
 //! FileHeader의 HWP 형식 버전은 2022와 2024가 모두 `5.1.1.0`일 수 있으므로,
@@ -9,11 +11,39 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-const HWP3: &str = "samples/hwp3-sample16.hwp";
+#[test]
+fn info_font_plan_matches_the_document_selection_plan() {
+    for relative in [
+        "samples/task-001.hwp",
+        "samples/task2136/neartop_reset_sb2500.hwpx",
+    ] {
+        let sample = sample_path(relative);
+        let bytes = std::fs::read(&sample).expect("문서 읽기");
+        let document = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("문서 열기");
+        let expected: serde_json::Value =
+            serde_json::from_str(&document.get_document_font_selection_plan())
+                .expect("모델 글꼴 선택 계획");
+        let scoped = expected["scopedRequests"].as_array().expect("슬롯별 요청");
+        assert_eq!(scoped.len(), expected["requests"].as_array().unwrap().len());
+        assert!(scoped.iter().all(|request| request["languageSlot"].is_u64()
+            && request["fontId"].is_u64()
+            && request["source"].is_string()));
+        let output = Command::new(rhwp_bin())
+            .args(["info", "--font-plan", sample.to_str().expect("UTF-8 경로")])
+            .output()
+            .expect("rhwp 실행");
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let actual: serde_json::Value =
+            serde_json::from_slice(&output.stdout).expect("CLI 글꼴 선택 계획");
+        assert_eq!(actual, expected, "{relative}");
+    }
+}
+
 const HWP2010: &str = "samples/basic/Hyper(hwp2010).hwp";
-const HWP2018: &str = "samples/hwp3-sample16-hwp5-2018.hwp";
-const HWP2022: &str = "samples/hwp3-sample16-hwp5-2022.hwp";
-const HWP2024: &str = "samples/hwp3-sample16-hwp5-2024.hwp";
 const NEW_SAVE_HWP2010: &str = "samples/pr5935/test-2010.hwp";
 const NEW_SAVE_HWP2018: &str = "samples/pr5935/test-2018.hwp";
 const NEW_SAVE_HWP2022: &str = "samples/pr5935/test-2022.hwp";
@@ -46,9 +76,6 @@ fn info_json(relative: &str) -> serde_json::Value {
 fn info_distinguishes_hancom_office_save_editions_for_hwp5_and_hwpx() {
     for (sample, format, product, version) in [
         (HWP2010, "hwp5", "hancom-office-2010", "8.0.0.460"),
-        (HWP2018, "hwp5", "hancom-office-2018", "10.0.0.14727"),
-        (HWP2022, "hwp5", "hancom-office-2022", "12.0.0.535"),
-        (HWP2024, "hwp5", "hancom-office-2024", "13.0.0.3457"),
         (NEW_SAVE_HWP2010, "hwp5", "hancom-office-2010", "8.0.0.466"),
         (
             NEW_SAVE_HWP2018,
@@ -103,13 +130,6 @@ fn info_distinguishes_hancom_office_save_editions_for_hwp5_and_hwpx() {
             "{sample}: {info}"
         );
     }
-}
-
-#[test]
-fn info_does_not_guess_a_saving_product_without_supported_metadata() {
-    let info = info_json(HWP3);
-    assert_eq!(info["format"], "hwp3", "{HWP3}: {info}");
-    assert!(info["lastSavedWith"].is_null(), "{HWP3}: {info}");
 }
 
 #[test]

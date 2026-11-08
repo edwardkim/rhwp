@@ -1,0 +1,24 @@
+[
+  {
+    "depth": 2,
+    "pathDepth": 2,
+    "targets": 0,
+    "operations": 0,
+    "apis": {
+      "getCellParaPropertiesAtByPath": "undefined",
+      "applyParaFormatInCellByPath": "undefined",
+      "setCellParaShapeIdByPath": "undefined"
+    }
+  },
+  {
+    "depth": 3,
+    "pathDepth": 3,
+    "targets": 0,
+    "operations": 0,
+    "apis": {
+      "getCellParaPropertiesAtByPath": "undefined",
+      "applyParaFormatInCellByPath": "undefined",
+      "setCellParaShapeIdByPath": "undefined"
+    }
+  }
+]

@@ -1,0 +1,246 @@
+{
+  "date": "2026-10-28",
+  "note": "PR API 관측값과 기여자 저장소에서 가져온 정확한 head SHA. upstream refs/pull은 일부 뒤처짐; 머지 전 재조회",
+  "prs": [
+    {
+      "number": 8115,
+      "state": "OPEN",
+      "head": "7f29ae9b311a963702142cab91e7c53383de8e84",
+      "base_observed_by_pr": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+      "updated_at": "2026-10-27T12:25:12Z",
+      "author": "planet6897",
+      "reviewers": [
+        "jangster77"
+      ],
+      "unresolved_threads": 0
+    },
+    {
+      "number": 8128,
+      "state": "OPEN",
+      "head": "063763a3a374d32d2b74f031c1603c317334e661",
+      "base_observed_by_pr": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+      "updated_at": "2026-10-27T12:30:49Z",
+      "author": "planet6897",
+      "reviewers": [
+        "jangster77"
+      ],
+      "unresolved_threads": 0
+    },
+    {
+      "number": 8133,
+      "state": "OPEN",
+      "head": "695c354ee46cf793c9620a927daeb61355cd32e1",
+      "base_observed_by_pr": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+      "updated_at": "2026-10-27T12:35:40Z",
+      "author": "planet6897",
+      "reviewers": [
+        "jangster77"
+      ],
+      "unresolved_threads": 0
+    },
+    {
+      "number": 8142,
+      "state": "OPEN",
+      "head": "500f5b8825f0b5cc7c4409b04d2a53e0cbdb2ed8",
+      "base_observed_by_pr": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+      "updated_at": "2026-10-27T12:40:32Z",
+      "author": "planet6897",
+      "reviewers": [
+        "jangster77"
+      ],
+      "unresolved_threads": 0
+    },
+    {
+      "number": 8184,
+      "state": "OPEN",
+      "head": "cc6d06077013daf6090021ab317c347dbd05b236",
+      "base_observed_by_pr": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+      "updated_at": "2026-10-28T10:42:03Z",
+      "author": "planet6897",
+      "reviewers": [
+        "jangster77"
+      ],
+      "unresolved_threads": 0
+    },
+    {
+      "number": 8202,
+      "state": "OPEN",
+      "head": "75357ec08a6417fb0d9eaf688c2f5267ebe00e70",
+      "base_observed_by_pr": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+      "updated_at": "2026-10-27T12:55:15Z",
+      "author": "planet6897",
+      "reviewers": [
+        "jangster77"
+      ],
+      "unresolved_threads": 0
+    },
+    {
+      "number": 8205,
+      "state": "OPEN",
+      "head": "2ef5f3f2c9ff0184f8c0c74ed5ff97a74f656d7c",
+      "base_observed_by_pr": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+      "updated_at": "2026-10-27T14:56:53Z",
+      "author": "planet6897",
+      "reviewers": [
+        "jangster77"
+      ],
+      "unresolved_threads": 0
+    },
+    {
+      "number": 8206,
+      "state": "OPEN",
+      "head": "da54116c8597a4d1ba6c6c29a4cf1771bad45fe3",
+      "base_observed_by_pr": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+      "updated_at": "2026-10-27T13:05:25Z",
+      "author": "planet6897",
+      "reviewers": [
+        "jangster77"
+      ],
+      "unresolved_threads": 0
+    },
+    {
+      "number": 8209,
+      "state": "OPEN",
+      "head": "40174966a35149fbd4dcb5f6dd17ebaafef8e412",
+      "base_observed_by_pr": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+      "updated_at": "2026-10-27T13:11:11Z",
+      "author": "planet6897",
+      "reviewers": [
+        "jangster77"
+      ],
+      "unresolved_threads": 0
+    },
+    {
+      "number": 8210,
+      "state": "OPEN",
+      "head": "d5c4895563711039cd1b110940531f6b76a0b4c6",
+      "base_observed_by_pr": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+      "updated_at": "2026-10-27T13:24:10Z",
+      "author": "planet6897",
+      "reviewers": [
+        "jangster77"
+      ],
+      "unresolved_threads": 0
+    },
+    {
+      "number": 8213,
+      "state": "OPEN",
+      "head": "73d77a2a05f8d9523aedd0e53b22ed1faca14b8a",
+      "base_observed_by_pr": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+      "updated_at": "2026-10-27T14:56:54Z",
+      "author": "planet6897",
+      "reviewers": [
+        "jangster77"
+      ],
+      "unresolved_threads": 0
+    },
+    {
+      "number": 8215,
+      "state": "OPEN",
+      "head": "a232a87a4fe825c928b59ed872e880d7206029de",
+      "base_observed_by_pr": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+      "updated_at": "2026-10-27T13:31:41Z",
+      "author": "planet6897",
+      "reviewers": [
+        "jangster77"
+      ],
+      "unresolved_threads": 0
+    },
+    {
+      "number": 8217,
+      "state": "OPEN",
+      "head": "283b9f83c91ca32f9d084f195f939a8d27cb38e2",
+      "base_observed_by_pr": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+      "updated_at": "2026-10-27T13:37:19Z",
+      "author": "planet6897",
+      "reviewers": [
+        "jangster77"
+      ],
+      "unresolved_threads": 0
+    },
+    {
+      "number": 8219,
+      "state": "OPEN",
+      "head": "ed9d725e522595959fc703ba8f8e6ecc8d757975",
+      "base_observed_by_pr": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+      "updated_at": "2026-10-27T13:42:59Z",
+      "author": "planet6897",
+      "reviewers": [
+        "jangster77"
+      ],
+      "unresolved_threads": 0
+    },
+    {
+      "number": 8221,
+      "state": "OPEN",
+      "head": "3e230b6d724d2712a7f0f3694a5117340f4ccc26",
+      "base_observed_by_pr": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+      "updated_at": "2026-10-27T13:48:05Z",
+      "author": "planet6897",
+      "reviewers": [
+        "jangster77"
+      ],
+      "unresolved_threads": 0
+    },
+    {
+      "number": 8227,
+      "state": "OPEN",
+      "head": "fe855d85935c47b3ff5fd1b93839e5926f468828",
+      "base_observed_by_pr": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+      "updated_at": "2026-10-27T13:56:00Z",
+      "author": "planet6897",
+      "reviewers": [
+        "jangster77"
+      ],
+      "unresolved_threads": 0
+    },
+    {
+      "number": 8229,
+      "state": "OPEN",
+      "head": "dc375dca931c4198225805e6de26ca379ec5297d",
+      "base_observed_by_pr": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+      "updated_at": "2026-10-27T13:57:20Z",
+      "author": "planet6897",
+      "reviewers": [
+        "jangster77"
+      ],
+      "unresolved_threads": 0
+    },
+    {
+      "number": 8237,
+      "state": "OPEN",
+      "head": "18637f022c69ee1b4a5d12cb994bf060a4306f7d",
+      "base_observed_by_pr": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+      "updated_at": "2026-10-27T14:02:21Z",
+      "author": "planet6897",
+      "reviewers": [
+        "jangster77"
+      ],
+      "unresolved_threads": 0
+    },
+    {
+      "number": 8265,
+      "state": "OPEN",
+      "head": "3d99386bb15ccb30b39735594e5771a01653acb8",
+      "base_observed_by_pr": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+      "updated_at": "2026-10-27T14:10:14Z",
+      "author": "planet6897",
+      "reviewers": [
+        "jangster77"
+      ],
+      "unresolved_threads": 0
+    },
+    {
+      "number": 8283,
+      "state": "OPEN",
+      "head": "3d77e870874596b96275b9c0f48ec73dd3cde5ec",
+      "base_observed_by_pr": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+      "updated_at": "2026-10-27T14:20:02Z",
+      "author": "planet6897",
+      "reviewers": [
+        "jangster77"
+      ],
+      "unresolved_threads": 0
+    }
+  ]
+}

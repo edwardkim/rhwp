@@ -1,49 +1,192 @@
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
+use std::sync::{Arc, OnceLock};
 
 use skia_safe::{FontMgr, FontStyle, Typeface};
 
-use crate::renderer::base_family_without_weight_suffix;
+use super::font_catalog::TypefaceCatalog;
+use crate::renderer::{
+    base_family_without_weight_suffix, generic_fallback_for_weight, installed_render_font_aliases,
+    internal_font_family_members,
+};
 
-pub(super) type SystemFontFamilies = HashSet<String>;
+#[derive(Clone, Default)]
+pub(super) struct SystemFontFamilies {
+    names: HashSet<String>,
+    postscript_faces: Arc<OnceLock<HashMap<String, Typeface>>>,
+}
 
-const TEXT_FALLBACK_FAMILIES: &[&str] = &[
-    "Noto Sans KR",
-    "Noto Serif KR",
-    "Noto Sans CJK KR",
-    "Noto Serif CJK KR",
-    "Nanum Gothic",
-    "Nanum Myeongjo",
-    "Malgun Gothic",
-    "맑은 고딕",
-    "Batang",
-    "바탕",
-    "Apple SD Gothic Neo",
-    "AppleMyungjo",
-    "DejaVu Sans",
-    "Arial",
-    "sans-serif",
-];
+impl SystemFontFamilies {
+    fn postscript_face(&self, font_mgr: &FontMgr, requested: &str) -> Option<Typeface> {
+        // OpenType name ID 6은 공백·비ASCII·PostScript 구분 문자를 허용하지 않는다.
+        // 일반 family의 이름 수용과 구별하며 없는 한국어 family를 색인하지 않는다.
+        if requested.is_empty()
+            || !requested
+                .bytes()
+                .all(|byte| (33..=126).contains(&byte) && !b"[](){}<>/%".contains(&byte))
+        {
+            return None;
+        }
+        // family와 다른 식별자다. FULL_NAME이나 추측한 접미사를 색인하지 않는다.
+        self.postscript_faces
+            .get_or_init(|| {
+                let mut faces = HashMap::new();
+                for family in 0..font_mgr.count_families() {
+                    let mut styles = font_mgr.new_style_set(family);
+                    for style in 0..styles.count() {
+                        if let Some(face) = styles.new_typeface(style) {
+                            if let Some(name) = face.post_script_name() {
+                                faces.entry(name).or_insert(face);
+                            }
+                        }
+                    }
+                }
+                faces
+            })
+            .get(requested)
+            .cloned()
+    }
+}
+
+pub(super) fn font_style_for_text(style: &crate::renderer::TextStyle) -> FontStyle {
+    let weight = match style.css_font_weight() {
+        Some("bold") => 700,
+        Some("300") => 300,
+        Some("500") => 500,
+        _ => 400,
+    };
+    FontStyle::new(
+        skia_safe::font_style::Weight::from(weight),
+        skia_safe::font_style::Width::NORMAL,
+        if style.italic {
+            skia_safe::font_style::Slant::Italic
+        } else {
+            skia_safe::font_style::Slant::Upright
+        },
+    )
+}
+
+pub(super) fn match_supplied_family(
+    families: &TypefaceCatalog,
+    family: &str,
+    requested: FontStyle,
+) -> Option<Typeface> {
+    families.candidates(family, requested).into_iter().next()
+}
 
 #[derive(Clone)]
 pub(super) struct TypefaceCandidate {
     pub(super) typeface: Typeface,
     pub(super) source: &'static str,
+    family_order: usize,
+}
+
+impl TypefaceCandidate {
+    /// 독립적인 원본 face는 그 요청의 첫 family다. 내부 정렬 키를 호출자가 복제하지 않는다.
+    pub(super) fn primary(typeface: Typeface, source: &'static str) -> Self {
+        Self {
+            typeface,
+            source,
+            family_order: 0,
+        }
+    }
+}
+
+/// A supplied face has one Skia primary name, but its SFNT naming table may
+/// declare localized or typographic family names for that same program.
+/// Match family records only: a full face or PostScript name is not a family.
+pub(super) fn supplied_family_names(data: &[u8], face_index: u32, primary: &str) -> Vec<String> {
+    let mut families = vec![primary.to_string()];
+    // Read the same collection face that the bounded catalog constructed.
+    if let Ok(face) = ttf_parser::Face::parse(data, face_index) {
+        for name in face.names() {
+            if !matches!(
+                name.name_id,
+                ttf_parser::name_id::FAMILY
+                    | ttf_parser::name_id::TYPOGRAPHIC_FAMILY
+                    | ttf_parser::name_id::WWS_FAMILY
+            ) {
+                continue;
+            }
+            if let Some(family) = name.to_string() {
+                let family = family.trim();
+                if !family.is_empty() && !families.iter().any(|name| name == family) {
+                    families.push(family.to_string());
+                }
+            }
+        }
+    }
+    families
+}
+
+/// 실제 선택된 face의 family 레코드로 요청 계열 소속을 확인한다.
+pub(super) fn typeface_declares_family(typeface: &Typeface, requested: &str) -> bool {
+    let primary = typeface.family_name();
+    if primary.eq_ignore_ascii_case(requested) {
+        return true;
+    }
+    let matches = |data: &[u8], index| {
+        supplied_family_names(data, index, &primary)
+            .iter()
+            .any(|family| family.eq_ignore_ascii_case(requested))
+    };
+    if let Some((data, index)) = typeface.to_existing_font_data() {
+        return matches(data.as_bytes(), index);
+    }
+    typeface
+        .to_font_bytes()
+        .is_some_and(|(bytes, index)| matches(&bytes, index))
 }
 
 pub(super) fn text_family_candidates(requested: &str) -> Vec<String> {
-    let mut families = Vec::new();
-    if !requested.trim().is_empty() {
-        families.push(requested.to_string());
-    }
-    if let Some(base) = base_family_without_weight_suffix(requested) {
-        if !families.iter().any(|family| family == &base) {
-            families.push(base);
+    text_family_candidates_for_weight(requested, false)
+}
+
+fn text_family_candidates_for_weight(requested: &str, bold: bool) -> Vec<String> {
+    let mut families = declared_family_candidates(requested);
+    let requested_members = internal_font_family_members(requested);
+    // SVG/Canvas와 같은 서체 분류·굵기 계약을 소비한다. 원 바탕 face가
+    // 없다는 이유로 고딕을 우선하거나 굵은 본문에 ExtraLight를 고르지 않는다.
+    // 공통 정책의 정적 CSS 이름만 해제하며 사용자 요청 이름은 아래에서 보존한다.
+    let fallback =
+        generic_fallback_for_weight(requested_members.first().copied().unwrap_or(""), bold);
+    for family in fallback
+        .split(',')
+        .map(|name| name.trim().trim_matches('\''))
+    {
+        if !families.iter().any(|candidate| candidate == family) {
+            families.push(family.to_string());
         }
     }
-    for family in TEXT_FALLBACK_FAMILIES {
-        if !families.iter().any(|candidate| candidate == family) {
-            families.push((*family).to_string());
+    families
+}
+
+pub(super) fn declared_family_candidates(requested: &str) -> Vec<String> {
+    let mut families = Vec::new();
+    // CSS 체인을 하나의 family 이름으로 조회하면 설치된 첫 face도 놓친다.
+    // SVG/Canvas와 같은 원본 순서·설치 별칭·굵기 접미사 해소를 소비한다.
+    let requested_members = internal_font_family_members(requested);
+    for requested_family in &requested_members {
+        let requested_family = *requested_family;
+        if !families.iter().any(|family| family == requested_family) {
+            families.push(requested_family.to_string());
+        }
+        for alias in installed_render_font_aliases(requested_family) {
+            if !families.iter().any(|family| family == alias) {
+                families.push((*alias).to_string());
+            }
+        }
+        if let Some(base) = base_family_without_weight_suffix(requested_family) {
+            if !families.iter().any(|family| family == &base) {
+                families.push(base);
+            }
+        }
+        // 고정 advance 여부와 무관하게 같은 원 face의 설치 별칭을 먼저 찾는다.
+        // paint와 renderer snapshot 진단이 이 후보 순서를 함께 소비한다.
+        for alias in crate::renderer::installed_render_font_aliases(requested) {
+            if !families.iter().any(|family| family == alias) {
+                families.push((*alias).to_string());
+            }
         }
     }
     families
@@ -52,53 +195,277 @@ pub(super) fn text_family_candidates(requested: &str) -> Vec<String> {
 pub(super) fn text_typeface_candidates(
     font_mgr: &FontMgr,
     system_families: &SystemFontFamilies,
-    custom_typefaces: &HashMap<String, Typeface>,
-    bundled_typefaces: &HashMap<String, Typeface>,
+    custom_typefaces: &TypefaceCatalog,
+    bundled_typefaces: &TypefaceCatalog,
     requested: &str,
     style: FontStyle,
 ) -> (Vec<String>, Vec<TypefaceCandidate>) {
-    let families = text_family_candidates(requested);
+    text_typeface_candidates_for_source(
+        font_mgr,
+        system_families,
+        custom_typefaces,
+        bundled_typefaces,
+        requested,
+        style,
+        false,
+    )
+}
+
+/// 명시적 TTF 슬롯은 같은 family의 CFF보다 OS가 선택한 TTF를 먼저 쓴다.
+pub(super) fn text_typeface_candidates_for_source(
+    font_mgr: &FontMgr,
+    system_families: &SystemFontFamilies,
+    custom_typefaces: &TypefaceCatalog,
+    bundled_typefaces: &TypefaceCatalog,
+    requested: &str,
+    style: FontStyle,
+    source_ttf: bool,
+) -> (Vec<String>, Vec<TypefaceCandidate>) {
+    let families = text_family_candidates_for_weight(requested, *style.weight() >= 600);
+    let chain = typeface_candidates_for_families_for_source(
+        font_mgr,
+        system_families,
+        custom_typefaces,
+        bundled_typefaces,
+        &families,
+        &declared_family_candidates(requested),
+        style,
+        source_ttf,
+    );
+    (families, chain)
+}
+
+/// 본문과 수식이 같은 글꼴 계열 순서와 공급 경로로 후보를 조회한다.
+pub(super) fn typeface_candidates_for_families(
+    font_mgr: &FontMgr,
+    system_families: &SystemFontFamilies,
+    custom_typefaces: &TypefaceCatalog,
+    bundled_typefaces: &TypefaceCatalog,
+    families: &[String],
+    postscript_requests: &[String],
+    style: FontStyle,
+) -> Vec<TypefaceCandidate> {
+    typeface_candidates_for_families_for_source(
+        font_mgr,
+        system_families,
+        custom_typefaces,
+        bundled_typefaces,
+        families,
+        postscript_requests,
+        style,
+        false,
+    )
+}
+
+fn typeface_candidates_for_families_for_source(
+    font_mgr: &FontMgr,
+    system_families: &SystemFontFamilies,
+    custom_typefaces: &TypefaceCatalog,
+    bundled_typefaces: &TypefaceCatalog,
+    families: &[String],
+    postscript_requests: &[String],
+    style: FontStyle,
+    source_ttf: bool,
+) -> Vec<TypefaceCandidate> {
     let mut chain = Vec::new();
     let mut seen = HashSet::new();
-    let mut push = |typeface: Typeface, source: &'static str| {
-        let key = typeface.family_name();
+    let mut push = |typeface: Typeface, source: &'static str, family_order: usize| {
+        if is_placeholder_typeface(&typeface) {
+            return;
+        }
+        let key = typeface.unique_id();
         if seen.insert(key) {
-            chain.push(TypefaceCandidate { typeface, source });
+            chain.push(TypefaceCandidate {
+                typeface,
+                source,
+                family_order,
+            });
         }
     };
-    for family in &families {
-        if let Some(typeface) = custom_typefaces.get(family).cloned() {
-            push(typeface, "custom");
+    for (family_order, family) in families.iter().enumerate() {
+        for typeface in custom_typefaces.candidates(family, style) {
+            push(typeface, "custom", family_order);
         }
-    }
-    for family in &families {
-        if let Some(typeface) = match_system_family_style(font_mgr, system_families, family, style)
+        // 원 face의 system 프로그램보다 뒤 face의 custom 프로그램을 먼저
+        // 고르면 선언 순서를 뒤집는다. 공급 출처는 각 face 내부에서 우선한다.
+        // 생성 fallback은 family 요청이다. 원본/설치 별칭의 명시 ID 6만
+        // 별도 프로그램으로 해석하며 같은 family의 문자 fallback은 유지한다.
+        if let Some(typeface) = (has_system_family(system_families, family)
+            || postscript_requests.contains(family))
+        .then(|| match_system_family_style(font_mgr, system_families, family, style))
+        .flatten()
         {
-            push(typeface, "system");
+            if source_ttf && has_system_family(system_families, family) {
+                // 명시 TrueType 원본은 OS가 선택한 같은 스타일의 face도 확인한다.
+                // 명시 TTF에서는 먼저 OS 원래 선택을 확인하고, 그것이 CFF이면
+                // 같은 스타일의 설치 TTF를 찾는다. 없는 경우 기존 사다리를 유지한다.
+                let original = font_mgr.match_family_style(family, style);
+                let ttf = original
+                    .filter(|face| !is_placeholder_typeface(face) && typeface_is_truetype(face))
+                    .or_else(|| {
+                        matching_system_programs(font_mgr, family, style)
+                            .into_iter()
+                            .find(typeface_is_truetype)
+                    });
+                if let Some(ttf) = ttf {
+                    push(ttf, "system", family_order);
+                }
+            }
+            // 같은 family와 스타일이라도 한글·영문 OTF와 TTF가 서로 다른
+            // 글리프를 담을 수 있다. 원 family의 모든 프로그램을 먼저 찾고, 없는
+            // 글리프는 같은 family의 다른 프로그램을 대체 family보다 앞에 둔다.
+            if has_system_family(system_families, family) {
+                // fontconfig의 합성 Bold는 매칭 결과의 스타일만 바꾼다.
+                // 실제 Regular 프로그램을 기준으로 같은 family의 분리된
+                // 글리프 공급자를 찾고, paint에서 요청한 굵기를 적용한다.
+                let program_style =
+                    super::synthetic_typeface::unemboldened_typeface(font_mgr, &typeface)
+                        .map_or_else(|| typeface.font_style(), |face| face.font_style());
+                for candidate in matching_system_programs(font_mgr, family, program_style) {
+                    push(candidate, "system", family_order);
+                }
+            }
+            push(typeface, "system", family_order);
         }
-    }
-    for family in &families {
-        if let Some(typeface) = bundled_typefaces.get(family).cloned() {
-            push(typeface, "bundled");
+        for typeface in bundled_typefaces.candidates(family, style) {
+            push(typeface, "bundled", family_order);
         }
     }
     if let Some(typeface) = legacy_typeface_for_style(font_mgr, style) {
-        push(typeface, "legacy");
+        push(typeface, "legacy", families.len());
     }
-    (families, chain)
+    chain.sort_by_key(|candidate| {
+        (
+            candidate.family_order,
+            super::font_catalog::supplied_style_rank(style, candidate.typeface.font_style()),
+            typeface_program_order(&candidate.typeface),
+        )
+    });
+    chain
 }
 
 pub(super) fn select_typeface_for_character<'a>(
     chain: &'a [TypefaceCandidate],
     character: char,
 ) -> Option<&'a TypefaceCandidate> {
-    if character.is_whitespace() {
-        return chain.first();
+    if crate::renderer::text_glyph_visibility::is_nonprinting_character(character) {
+        return chain
+            .iter()
+            .find(|candidate| !is_placeholder_typeface(&candidate.typeface));
     }
     let codepoint = character as i32;
-    chain
-        .iter()
-        .find(|candidate| candidate.typeface.unichar_to_glyph(codepoint) != 0)
+    chain.iter().find(|candidate| {
+        !is_placeholder_typeface(&candidate.typeface)
+            && candidate.typeface.unichar_to_glyph(codepoint) != 0
+            && !has_empty_symbol_glyph(&candidate.typeface, character)
+    })
+}
+
+fn has_empty_symbol_glyph(typeface: &Typeface, character: char) -> bool {
+    if !crate::renderer::font_symbol_coverage::is_visible_symbol(character) {
+        return false;
+    }
+    EMPTY_SYMBOL_CACHE.with(|cache| {
+        let mut cache = cache.borrow_mut();
+        let empty = cache.entry(typeface.unique_id()).or_insert_with(|| {
+            typeface
+                .to_existing_font_data()
+                .map_or_else(Default::default, |(data, index)| {
+                    crate::renderer::font_symbol_coverage::empty_symbol_codepoints(
+                        data.as_bytes(),
+                        index,
+                    )
+                })
+        });
+        empty.contains(&(character as u32))
+    })
+}
+
+/// CoreText는 요청한 family 이름을 유지한 채 LastResort를 반환할 수 있다.
+/// 그 프로그램의 비영 gid는 문자 대신 Unicode 블록 대용 기호이므로,
+/// family_name이나 unichar_to_glyph만으로 실제 문자 공급이라고 판단하지 않는다.
+fn is_placeholder_typeface(typeface: &Typeface) -> bool {
+    let id = typeface.unique_id();
+    PLACEHOLDER_TYPEFACE_CACHE.with(|cache| {
+        if let Some(value) = cache.borrow().get(&id).copied() {
+            return value;
+        }
+        let reserved = |name: &str| matches!(name, ".LastResort" | "LastResort");
+        let placeholder = reserved(&typeface.family_name())
+            || typeface
+                .copy_table_data(u32::from_be_bytes(*b"name"))
+                .is_some_and(|data| {
+                    ttf_parser::name::Table::parse(data.as_bytes()).is_some_and(|table| {
+                        table.names.into_iter().any(|name| {
+                            matches!(name.name_id, 1 | 4 | 6 | 16)
+                                && name.to_string().is_some_and(|value| reserved(&value))
+                        })
+                    })
+                });
+        cache.borrow_mut().insert(id, placeholder);
+        placeholder
+    })
+}
+
+/// OS 조회가 실제 프로그램을 공급하지 못할 때 같은 설치 family를 파일로 찾는다.
+/// 정상 OS 스타일 매칭은 유지하며, family당 regular 한 개로 덮어쓰지 않는다.
+fn recover_installed_system_typeface(
+    font_mgr: &FontMgr,
+    family: &str,
+    style: FontStyle,
+) -> Option<Typeface> {
+    SYSTEM_PROGRAM_DATABASE.with(|database| {
+        let mut database = database.borrow_mut();
+        let database = database.get_or_insert_with(|| {
+            let mut database = usvg::fontdb::Database::new();
+            for directory in crate::renderer::font_paths::system_font_dirs() {
+                if directory.exists() {
+                    database.load_fonts_dir(directory);
+                }
+            }
+            database
+        });
+        query_database_typeface(database, font_mgr, family, style)
+    })
+}
+
+/// custom·bundled·설치 프로그램 복구가 같은 CSS 스타일 선택을 사용한다.
+fn query_database_typeface(
+    database: &usvg::fontdb::Database,
+    font_mgr: &FontMgr,
+    family: &str,
+    style: FontStyle,
+) -> Option<Typeface> {
+    use usvg::fontdb::{Family, Query, Stretch, Style, Weight};
+    let families = [Family::Name(family)];
+    let stretch = match *style.width() {
+        1 => Stretch::UltraCondensed,
+        2 => Stretch::ExtraCondensed,
+        3 => Stretch::Condensed,
+        4 => Stretch::SemiCondensed,
+        6 => Stretch::SemiExpanded,
+        7 => Stretch::Expanded,
+        8 => Stretch::ExtraExpanded,
+        9 => Stretch::UltraExpanded,
+        _ => Stretch::Normal,
+    };
+    let font_style = match style.slant() {
+        skia_safe::font_style::Slant::Italic => Style::Italic,
+        skia_safe::font_style::Slant::Oblique => Style::Oblique,
+        _ => Style::Normal,
+    };
+    let id = database.query(&Query {
+        families: &families,
+        weight: Weight((*style.weight()).clamp(1, 1000) as u16),
+        stretch,
+        style: font_style,
+    })?;
+    database
+        .with_face_data(id, |bytes, index| {
+            super::font_catalog::typeface_from_data(font_mgr, bytes, index)
+        })
+        .flatten()
+        .filter(|typeface| !is_placeholder_typeface(typeface))
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -125,18 +492,98 @@ struct FontLookupKey {
 }
 
 thread_local! {
+    static EMPTY_SYMBOL_CACHE: RefCell<HashMap<u32, std::collections::BTreeSet<u32>>> =
+        RefCell::new(HashMap::new());
+    static PLACEHOLDER_TYPEFACE_CACHE: RefCell<HashMap<u32, bool>> =
+        RefCell::new(HashMap::new());
+    static SYSTEM_PROGRAM_DATABASE: RefCell<Option<usvg::fontdb::Database>> =
+        const { RefCell::new(None) };
     static SYSTEM_TYPEFACE_CACHE: RefCell<HashMap<FontLookupKey, Option<Typeface>>> =
+        RefCell::new(HashMap::new());
+    static SYSTEM_PROGRAM_CANDIDATES: RefCell<HashMap<FontLookupKey, Vec<Typeface>>> =
         RefCell::new(HashMap::new());
     static LEGACY_TYPEFACE_CACHE: RefCell<HashMap<FontStyleCacheKey, Option<Typeface>>> =
         RefCell::new(HashMap::new());
 }
 
+fn typeface_is_cff(typeface: &Typeface) -> bool {
+    if let Some((data, index)) = typeface.to_existing_font_data() {
+        return crate::renderer::native_pua_fonts::is_cff_program(data.as_bytes(), index);
+    }
+    typeface.to_font_bytes().is_some_and(|(bytes, index)| {
+        crate::renderer::native_pua_fonts::is_cff_program(&bytes, index)
+    })
+}
+
+fn typeface_is_truetype(typeface: &Typeface) -> bool {
+    let has_glyf = |bytes: &[u8], index| {
+        ttf_parser::Face::parse(bytes, index).is_ok_and(|face| face.tables().glyf.is_some())
+    };
+    if let Some((data, index)) = typeface.to_existing_font_data() {
+        return has_glyf(data.as_bytes(), index);
+    }
+    typeface
+        .to_font_bytes()
+        .is_some_and(|(bytes, index)| has_glyf(&bytes, index))
+}
+
+/// 파일 확장자 대신 실제 SFNT/collection의 선택 face를 확인한다.
+fn typeface_program_order(face: &Typeface) -> u8 {
+    if typeface_is_truetype(face) {
+        face.to_existing_font_data().map_or(0, |(bytes, _)| {
+            u8::from(bytes.as_bytes().get(..4) == Some(b"ttcf"))
+        })
+    } else if typeface_is_cff(face) {
+        2
+    } else {
+        3
+    }
+}
+
+fn matching_system_programs(font_mgr: &FontMgr, family: &str, style: FontStyle) -> Vec<Typeface> {
+    let key = FontLookupKey {
+        family: family.to_owned(),
+        style: FontStyleCacheKey::new(style),
+    };
+    SYSTEM_PROGRAM_CANDIDATES.with(|cache| {
+        if let Some(found) = cache.borrow().get(&key) {
+            return found.clone();
+        }
+        let mut set = font_mgr.match_family(family);
+        let mut found: Vec<_> = (0..set.count())
+            .filter_map(|index| {
+                if FontStyleCacheKey::new(set.style(index).0) != key.style {
+                    return None;
+                }
+                let candidate = set.new_typeface(index)?;
+                let cff = typeface_is_cff(&candidate);
+                Some((candidate, cff))
+            })
+            .collect();
+        // 같은 family의 TTF → TTC face → OTF를 모두 다른 family보다 앞에 둔다.
+        found.sort_by_key(|(candidate, _)| typeface_program_order(candidate));
+        let found: Vec<_> = found.into_iter().map(|(candidate, _)| candidate).collect();
+        cache.borrow_mut().insert(key, found.clone());
+        found
+    })
+}
+
 pub(super) fn collect_system_families(font_mgr: &FontMgr) -> SystemFontFamilies {
-    font_mgr.family_names().collect()
+    SystemFontFamilies {
+        names: font_mgr.family_names().collect(),
+        ..Default::default()
+    }
 }
 
 pub(super) fn has_system_family(system_families: &SystemFontFamilies, family: &str) -> bool {
-    system_families.contains(family)
+    // Skia의 실제 family 조회는 ASCII 대소문자를 구분하지 않는다.
+    // 설치 이름 HyhwpEQ를 요청 HYhwpEQ의 사전 필터에서 제외하면
+    // 측정 face 대신 대체 글꼴로 표시하게 된다. 없는 이름은 계속 제외한다.
+    system_families.names.contains(family)
+        || system_families
+            .names
+            .iter()
+            .any(|installed| installed.eq_ignore_ascii_case(family))
 }
 
 pub(super) fn match_system_family_style(
@@ -145,10 +592,6 @@ pub(super) fn match_system_family_style(
     family: &str,
     style: FontStyle,
 ) -> Option<Typeface> {
-    if !has_system_family(system_families, family) {
-        return None;
-    }
-
     let key = FontLookupKey {
         family: family.to_string(),
         style: FontStyleCacheKey::new(style),
@@ -158,7 +601,35 @@ pub(super) fn match_system_family_style(
             return cached;
         }
 
-        let matched = font_mgr.match_family_style(family, style);
+        let system_family = has_system_family(system_families, family);
+        let matched = (if system_family {
+            font_mgr.match_family_style(family, style)
+        } else {
+            // 설치된 style set의 name ID 6만 조회한다. 없는 이름을 OS에
+            // 질의하면 headless CoreText의 다운로드 IPC를 유발할 수 있다.
+            system_families.postscript_face(font_mgr, family)
+        })
+        .filter(|typeface| !is_placeholder_typeface(typeface))
+        .or_else(|| recover_installed_system_typeface(font_mgr, family, style));
+        // 같은 family와 같은 스타일의 설치본이 여러 형식이면 TrueType을 먼저
+        // 표시한다. PostScript 지정과 서로 다른 스타일은 바꾸지 않는다.
+        let matched = if system_family {
+            matched.map(|original| {
+                let original_style = FontStyleCacheKey::new(original.font_style());
+                let mut set = font_mgr.match_family(family);
+                let selected = (0..set.count()).find_map(|index| {
+                    let (candidate_style, _) = set.style(index);
+                    if FontStyleCacheKey::new(candidate_style) != original_style {
+                        return None;
+                    }
+                    let candidate = set.new_typeface(index)?;
+                    typeface_is_truetype(&candidate).then_some(candidate)
+                });
+                selected.unwrap_or(original)
+            })
+        } else {
+            matched
+        };
         cache.borrow_mut().insert(key, matched.clone());
         matched
     })
@@ -181,10 +652,12 @@ pub(super) fn legacy_typeface_for_style(font_mgr: &FontMgr, style: FontStyle) ->
 mod tests {
     use super::*;
 
+    #[cfg(target_os = "linux")]
     #[test]
     fn missing_family_is_filtered_before_system_lookup() {
+        installed_localized_family_is_not_discarded_by_primary_name_enumeration();
         let font_mgr = FontMgr::default();
-        let system_families = SystemFontFamilies::new();
+        let mut system_families = SystemFontFamilies::default();
 
         assert!(match_system_family_style(
             &font_mgr,
@@ -193,15 +666,111 @@ mod tests {
             FontStyle::normal(),
         )
         .is_none());
+        system_families
+            .names
+            .insert("RHWP membership witness".into());
+        for name in [
+            "없는 가족",
+            "Missing Family",
+            "Missing/Program",
+            "Font[Face]",
+        ] {
+            assert!(match_system_family_style(
+                &font_mgr,
+                &system_families,
+                name,
+                FontStyle::normal(),
+            )
+            .is_none());
+        }
+        // 사양상 ID 6일 수 없는 요청은 실제 시스템 색인을 시작하지 않는다.
+        assert!(system_families.postscript_faces.get().is_none());
+
+        // macOS의 LastResort는 비영(非零) gid를 반환하지만 문자의 실제
+        // 글리프가 아니다. 네이티브 글꼴 공급에서 이를 coverage로 세지 않는다.
+        #[cfg(target_os = "macos")]
+        {
+            let placeholder = font_mgr
+                .match_family_style(".LastResort", FontStyle::normal())
+                .expect("macOS의 내장 LastResort 프로그램");
+            assert_ne!(placeholder.unichar_to_glyph('나' as i32), 0);
+            let chain = [TypefaceCandidate::primary(placeholder, "system")];
+            assert!(
+                select_typeface_for_character(&chain, '나').is_none(),
+                "블록 대용 글리프를 실제 한글 coverage로 사용하지 않음"
+            );
+        }
     }
 
     #[test]
-    fn system_family_membership_uses_exact_family_name() {
-        let mut system_families = SystemFontFamilies::new();
-        system_families.insert("AppleGothic".to_string());
+    fn system_family_membership_matches_skia_family_lookup() {
+        let mut system_families = SystemFontFamilies::default();
+        system_families.names.insert("AppleGothic".to_string());
 
         assert!(has_system_family(&system_families, "AppleGothic"));
-        assert!(!has_system_family(&system_families, "applegothic"));
+        assert!(has_system_family(&system_families, "applegothic"));
+        assert!(has_system_family(&system_families, "APPLEGOTHIC"));
+        assert!(!has_system_family(&system_families, "AppleGothic Extra"));
         assert!(!has_system_family(&system_families, "Missing Family"));
+    }
+
+    fn installed_localized_family_is_not_discarded_by_primary_name_enumeration() {
+        let font_mgr = FontMgr::default();
+        let mut database = usvg::fontdb::Database::new();
+        database.load_font_data(
+            include_bytes!("../../../tests/fixtures/native_font_family_names/family-contract.ttf")
+                .to_vec(),
+        );
+        let localized = "검사용 표기 가족";
+        let source = query_database_typeface(&database, &font_mgr, localized, FontStyle::normal())
+            .expect("SFNT 자체가 선언한 한국어 family");
+        let mut enumerated = SystemFontFamilies::default();
+        enumerated.names.insert(source.family_name());
+        assert!(!has_system_family(&enumerated, localized));
+
+        struct RestoreDatabase(Option<usvg::fontdb::Database>);
+        impl Drop for RestoreDatabase {
+            fn drop(&mut self) {
+                SYSTEM_PROGRAM_DATABASE.with(|database| {
+                    *database.borrow_mut() = self.0.take();
+                });
+                SYSTEM_TYPEFACE_CACHE.with(|cache| cache.borrow_mut().clear());
+            }
+        }
+        let _restore = RestoreDatabase(
+            SYSTEM_PROGRAM_DATABASE.with(|slot| slot.borrow_mut().replace(database)),
+        );
+        let recovered =
+            match_system_family_style(&font_mgr, &enumerated, localized, FontStyle::normal())
+                .expect("OS의 대표 이름 목록에 없어도 설치 파일의 실제 family는 조회한다");
+        assert_eq!(recovered.family_name(), source.family_name());
+        assert_eq!(
+            recovered.unichar_to_glyph('A' as i32),
+            source.unichar_to_glyph('A' as i32)
+        );
+        let empty_catalog = TypefaceCatalog::default();
+        let (_, candidates) = text_typeface_candidates_for_source(
+            &font_mgr,
+            &enumerated,
+            &empty_catalog,
+            &empty_catalog,
+            localized,
+            FontStyle::normal(),
+            true,
+        );
+        assert_eq!(
+            candidates
+                .first()
+                .map(|candidate| candidate.typeface.family_name()),
+            Some(source.family_name()),
+            "현지화 이름은 fallback보다 먼저 실제 설치 family로 선택한다"
+        );
+        assert!(match_system_family_style(
+            &font_mgr,
+            &enumerated,
+            "RHWP Nonexistent Installed Family",
+            FontStyle::normal(),
+        )
+        .is_none());
     }
 }

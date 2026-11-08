@@ -73,7 +73,7 @@ fn issue_2099_revision13_page1_prioritizes_old_hangul_font() {
         .expect("`ᄒᆞᆫ` 클러스터는 독립 SVG text node로 출력되어야 함");
     let text_node = &svg[text_start..text_end];
     assert!(
-        text_node.contains("font-family=\"&apos;Source Han Serif K Old Hangul&apos;,"),
+        text_node.contains("font-family=\"&apos;RHWP Old Hangul&apos;,"),
         "`ᄒᆞᆫ` 클러스터는 일반 고딕 폰트보다 옛한글 전용 폰트를 우선해야 함: {text_node}",
     );
 }

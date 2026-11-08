@@ -150,6 +150,23 @@ fn first_table_ctrl_data_record(hwp: &[u8]) -> (Record, Record) {
     )
 }
 
+// A metadata-only fixture still needs a valid logical cell grid. Empty cells
+// preserve the adapter predicate without asking HWPX to encode an empty row.
+fn policy_grid_cells() -> Vec<Cell> {
+    (0..3)
+        .flat_map(|row| {
+            (0..2).map(move |col| Cell {
+                row,
+                col,
+                row_span: 1,
+                col_span: 1,
+                paragraphs: vec![Paragraph::default()],
+                ..Default::default()
+            })
+        })
+        .collect()
+}
+
 fn synthetic_hwpx_source() -> DocumentCore {
     // 이 합성 표는 현재 adapter predicate를 격리하는 policy fixture다. 모든 3x2 표의
     // 보편적인 HWP5 의미를 주장하는 근거로 사용하지 않는다.
@@ -164,6 +181,7 @@ fn synthetic_hwpx_source() -> DocumentCore {
         col_count: 2,
         page_break: TablePageBreak::RowBreak,
         repeat_header: true,
+        cells: policy_grid_cells(),
         ..Default::default()
     })));
     paragraph.align_ctrl_data_records();
@@ -181,6 +199,7 @@ fn synthetic_nested_hwpx_source() -> DocumentCore {
             col_count: 2,
             page_break: TablePageBreak::RowBreak,
             repeat_header: true,
+            cells: policy_grid_cells(),
             ..Default::default()
         })));
     nested_paragraph.align_ctrl_data_records();

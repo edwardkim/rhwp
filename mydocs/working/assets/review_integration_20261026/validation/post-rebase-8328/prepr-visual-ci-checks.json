@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-29",
+  "head": "67a3779b16ecefcd1e661c6a105b203b549e87c6",
+  "checks": [
+    {
+      "command": "PYTHONPATH=scripts/tests venv/bin/python -m unittest scripts.tests.test_visual_sweep_raw_gate",
+      "passed": 7,
+      "exit_code": 0,
+      "log_sha256": "8448ddc47850b44ffe0b9b35343fb7bfdc112fda3e2aa8a2a4e0a74e9b976ea7"
+    },
+    {
+      "command": "node --test scripts/tests/visual-sweep-observed-fonts.test.mjs",
+      "passed": 6,
+      "exit_code": 0,
+      "log_sha256": "cdebda261e8b8767b674d604cc23a5ca33c3d57d3f5657d14b90681f768703b9"
+    },
+    {
+      "command": "actionlint .github/workflows/ci.yml",
+      "exit_code": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "scope": "최신 Visual Sweep 변경의 선택 검사와 CI workflow 구문. 전체 Rust·Studio 회귀 및 원격 CI를 대체하지 않는다."
+}

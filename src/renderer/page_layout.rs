@@ -33,6 +33,7 @@ pub struct PageLayoutInfo {
     /// 페이지네이션 하단 허용치 (px). body_area 를 변경하지 않고 paginator 에게만 추가 공간 제공.
     pub pagination_tolerance_px: f64,
 }
+crate::storage::clone_fields!(PageLayoutInfo, {page_width, page_height, header_area, body_area, column_areas, column_direction, footnote_area, footer_area, dpi, separator_type, separator_width, separator_color, pagination_tolerance_px});
 
 /// 레이아웃 영역 (픽셀 단위)
 #[derive(Debug, Clone, Copy, Default)]
@@ -42,6 +43,7 @@ pub struct LayoutRect {
     pub width: f64,
     pub height: f64,
 }
+crate::storage::clone_copy!(LayoutRect);
 
 impl LayoutRect {
     pub fn from_hwpunit_rect(rect: &Rect, dpi: f64) -> Self {
@@ -58,7 +60,24 @@ impl LayoutRect {
 impl PageLayoutInfo {
     /// PageDef와 ColumnDef로부터 페이지 레이아웃을 계산한다.
     pub fn from_page_def(page_def: &PageDef, column_def: &ColumnDef, dpi: f64) -> Self {
-        Self::from_page_def_for_page(page_def, column_def, dpi, 1)
+        match Self::from_page_def_with_storage(
+            page_def,
+            column_def,
+            dpi,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(v) => v,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn from_page_def_with_storage<S: crate::storage::Storage>(
+        page_def: &PageDef,
+        column_def: &ColumnDef,
+        dpi: f64,
+        storage: &S,
+    ) -> Result<Self, S::Error> {
+        Self::from_page_def_for_page_with_storage(page_def, column_def, dpi, 1, storage)
     }
 
     /// PageDef, ColumnDef, 최종 쪽번호로부터 페이지 레이아웃을 계산한다.
@@ -68,6 +87,25 @@ impl PageLayoutInfo {
         dpi: f64,
         page_number: u32,
     ) -> Self {
+        match Self::from_page_def_for_page_with_storage(
+            page_def,
+            column_def,
+            dpi,
+            page_number,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(v) => v,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn from_page_def_for_page_with_storage<S: crate::storage::Storage>(
+        page_def: &PageDef,
+        column_def: &ColumnDef,
+        dpi: f64,
+        page_number: u32,
+        storage: &S,
+    ) -> Result<Self, S::Error> {
         // landscape=true이면 width/height 교환
         let (width_hwp, height_hwp) = if page_def.landscape {
             (page_def.height, page_def.width)
@@ -92,7 +130,8 @@ impl PageLayoutInfo {
         let footnote_area = LayoutRect::from_hwpunit_rect(&areas.footnote_area, dpi);
 
         // 다단 영역 계산
-        let mut column_areas = calculate_column_areas(&body_area, column_def, dpi);
+        let mut column_areas =
+            calculate_column_areas_with_storage(&body_area, column_def, dpi, storage)?;
         if column_def.direction == ColumnDirection::RightToLeft
             || (column_def.direction == ColumnDirection::Mirror
                 && page_number != 0
@@ -103,8 +142,7 @@ impl PageLayoutInfo {
 
         let pagination_tolerance_px =
             hwpunit_to_px(page_def.pagination_bottom_tolerance as i32, dpi);
-
-        Self {
+        Ok(Self {
             page_width,
             page_height,
             header_area,
@@ -118,7 +156,7 @@ impl PageLayoutInfo {
             separator_width: column_def.separator_width,
             separator_color: column_def.separator_color,
             pagination_tolerance_px,
-        }
+        })
     }
 
     /// 기본 DPI(96)로 계산
@@ -177,9 +215,15 @@ impl PageLayoutInfo {
         }
     }
 
-    /// 본문 영역의 사용 가능한 높이 (각주 영역 제외 + 페이지네이션 허용치 포함)
+    /// 각주 영역을 제외한 물리 본문 높이. 저장 형식의 허용치로 용지를 늘리지 않는다.
+    pub fn physical_body_height(&self) -> f64 {
+        self.body_area.height - self.footnote_area.height
+    }
+
+    /// 레거시 미주 흐름에서 사용하는 추가 페이지네이션 예산.
+    /// 일반 본문의 줄·표 점유는 `physical_body_height`를 사용한다.
     pub fn available_body_height(&self) -> f64 {
-        self.body_area.height - self.footnote_area.height + self.pagination_tolerance_px
+        self.physical_body_height() + self.pagination_tolerance_px
     }
 
     /// 단 너비 (HWPUNIT) — vpos 보정에서 segment_width 비교에 사용
@@ -208,23 +252,40 @@ impl PageLayoutInfo {
 }
 
 /// 다단 영역 계산
-fn calculate_column_areas(
+pub(crate) fn calculate_column_areas(
     body_area: &LayoutRect,
     column_def: &ColumnDef,
     dpi: f64,
 ) -> Vec<LayoutRect> {
+    match calculate_column_areas_with_storage(
+        body_area,
+        column_def,
+        dpi,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(v) => v,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn calculate_column_areas_with_storage<S: crate::storage::Storage>(
+    body_area: &LayoutRect,
+    column_def: &ColumnDef,
+    dpi: f64,
+    storage: &S,
+) -> Result<Vec<LayoutRect>, S::Error> {
     let col_count = column_def.column_count.max(1) as usize;
     if col_count <= 1 {
-        return vec![*body_area];
+        return storage.collect([*body_area]);
     }
 
     // same_width=false이고 개별 너비가 있으면 사용
     if !column_def.same_width && column_def.widths.len() >= col_count {
-        let mut areas = Vec::with_capacity(col_count);
+        let mut areas = storage.vec(col_count)?;
         let mut x = body_area.x;
 
         if column_def.proportional_widths {
-            // HWP 5.0 바이너리: widths/gaps는 비례값 (합계=32768)
+            // 한컴 HWP5·HWPX: widths/gaps는 비례값(합계=32768)
             // body_area.width에 대한 비례로 변환
             let total: f64 = column_def
                 .widths
@@ -245,12 +306,15 @@ fn calculate_column_areas(
                 } else {
                     0.0
                 };
-                areas.push(LayoutRect {
-                    x,
-                    y: body_area.y,
-                    width: w,
-                    height: body_area.height,
-                });
+                storage.push(
+                    &mut areas,
+                    LayoutRect {
+                        x,
+                        y: body_area.y,
+                        width: w,
+                        height: body_area.height,
+                    },
+                )?;
                 x += w + gap;
             }
         } else {
@@ -262,31 +326,31 @@ fn calculate_column_areas(
                 } else {
                     0.0
                 };
-                areas.push(LayoutRect {
-                    x,
-                    y: body_area.y,
-                    width: w,
-                    height: body_area.height,
-                });
+                storage.push(
+                    &mut areas,
+                    LayoutRect {
+                        x,
+                        y: body_area.y,
+                        width: w,
+                        height: body_area.height,
+                    },
+                )?;
                 x += w + gap;
             }
         }
-        return areas;
+        return Ok(areas);
     }
 
     // same_width=true: 균등 분할
     let spacing = hwpunit_to_px(column_def.spacing as i32, dpi);
     let total_spacing = spacing * (col_count - 1) as f64;
     let col_width = (body_area.width - total_spacing) / col_count as f64;
-
-    (0..col_count)
-        .map(|i| LayoutRect {
-            x: body_area.x + (col_width + spacing) * i as f64,
-            y: body_area.y,
-            width: col_width,
-            height: body_area.height,
-        })
-        .collect()
+    storage.collect((0..col_count).map(|i| LayoutRect {
+        x: body_area.x + (col_width + spacing) * i as f64,
+        y: body_area.y,
+        width: col_width,
+        height: body_area.height,
+    }))
 }
 
 #[cfg(test)]

@@ -39,6 +39,24 @@ fn stored_vpos(para: &Paragraph) -> Option<i64> {
     stored_seg(para).map(|seg| i64::from(seg.vertical_pos))
 }
 
+/// A successor on a new saved page does not authenticate spacing between two
+/// stacked empty anchors. The preceding table's split policy does not change
+/// which frame owns that successor. Both pagination and paint use this query.
+pub(crate) fn stored_anchor_successor_rewinds(para: &Paragraph, next: &Paragraph) -> bool {
+    !para.stored_text_partition_is_dirty()
+        && !para.cell_format_vpos_dirty
+        && !next.stored_text_partition_is_dirty()
+        && !next.cell_format_vpos_dirty
+        && para.line_segs.len() == 1
+        && next.line_segs.len() == 1
+        && [&para.line_segs[0], &next.line_segs[0]].iter().all(|line| {
+            line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                && line.vertical_pos >= 0
+                && line.line_height > 0
+        })
+        && next.line_segs[0].vertical_pos < para.line_segs[0].vertical_pos
+}
+
 /// 저장 host 기준의 표 윗변 offset 과 흐름 점유 끝(HWPUNIT).
 ///
 /// 저장 사다리가 무엇을 쟀는지에 따라 `vpos` 의 뜻이 갈린다.
@@ -62,21 +80,12 @@ pub(crate) fn stored_topbottom_object_span(
     para: &Paragraph,
     next_para: Option<&Paragraph>,
     table: &Table,
+    hwpx_object_frame: bool,
 ) -> (i64, i64) {
     if let Some(outer_box_height) = stored_topbottom_flow_advance_hu(para, next_para, table) {
-        // 사방 균등일 때만 `vpos` 를 상자 위끝으로 읽는다. 저장소의 좁은 술어 셋
-        // (`#6378` · `#3820 Stage 120` · `native_empty_host_physical_outer_box_paint_inset`)
-        // 이 모두 같은 조건을 쓰고, 정본도 같은 말을 한다 —
-        // `76076_regulatory_analysis.hwp` pi=323·324 는 (**0**/**0**/566/566) 이고
-        // 한/글이 여백을 싣지 않는다(정본 괘선 400.52 로 확인).
-        let uniform = table.outer_margin_top == table.outer_margin_bottom
-            && table.outer_margin_top == table.outer_margin_left
-            && table.outer_margin_top == table.outer_margin_right;
-        let top = if uniform {
-            i64::from(table.outer_margin_top)
-        } else {
-            0
-        };
+        // 닫힌 세로 바깥 상자의 위여백은 좌우 여백과 별개다.
+        // 위·아래가 0인 구분선 표도 같은 값 0을 소비한다.
+        let top = stored_outer_box_table_top_hu(table);
         let offset = if offset_float_follows_inline_line(para, table) {
             i64::from(table.common.vertical_offset)
         } else {
@@ -90,6 +99,12 @@ pub(crate) fn stored_topbottom_object_span(
             top + i64::from(table.common.height) + i64::from(table.outer_margin_bottom),
         )
     }
+}
+
+/// 다음 저장 줄로 인증된 바깥 상자 안에서 표 본체가 시작하는 위치.
+/// 세로 원점은 원본 위여백을 소비하며, 좌우 여백의 대칭 여부로 바꾸지 않는다.
+pub(crate) fn stored_outer_box_table_top_hu(table: &Table) -> i64 {
+    i64::from(table.outer_margin_top)
 }
 
 /// 저장 사다리가 증명한 전체 흐름 상자의 advance. 단순 테두리 원점은
@@ -190,7 +205,7 @@ pub(crate) fn stored_ladder_leaves_object_room(
     next_para: Option<&Paragraph>,
     table: &Table,
 ) -> bool {
-    let (_, occupied_bottom) = stored_topbottom_object_span(para, next_para, table);
+    let (_, occupied_bottom) = stored_topbottom_object_span(para, next_para, table, false);
     let need = occupied_bottom.max(0);
     match (stored_vpos(para), next_para.and_then(stored_vpos)) {
         (Some(current), Some(next)) => next - current >= need,
@@ -208,6 +223,7 @@ pub(crate) fn stored_single_topbottom_top_px(
     table: &Table,
     available_px: f64,
     dpi: f64,
+    hwpx_object_frame: bool,
 ) -> Option<f64> {
     // 문단 기준 세로 오프셋이 걸린 개체는 상자 윗변이 `앵커 + 오프셋` 이라 이 산식이
     // 성립하지 않는다. 오프셋을 더해 읽을 근거(정본 실측)가 없으므로 흐름 배치에 맡긴다.
@@ -226,9 +242,82 @@ pub(crate) fn stored_single_topbottom_top_px(
     if !stored_ladder_leaves_object_room(para, next_para, table) {
         return None;
     }
-    let (top_offset, _) = stored_topbottom_object_span(para, next_para, table);
+    let (top_offset, _) = stored_topbottom_object_span(para, next_para, table, hwpx_object_frame);
     let top = hwpunit_to_px((current + top_offset) as i32, dpi);
     let bottom = top + hwpunit_to_px(table.common.height as i32, dpi);
     // 본문 안에 온전히 드는 앵커만 물리 좌표로 읽는다.
     (top >= -0.5 && bottom <= available_px + 0.5).then_some(top)
+}
+
+/// 단일 셀의 저장 높이는 내용 뒤의 빈 밴드까지 소유할 수 있다.
+/// 첫 개체 높이 뒤의 잔여 셀 높이와 양끝 바깥 여백이 다음 쪽 첫 줄 위치와
+/// 같으면, 작은 개체 높이는 전체 표가 아니라 첫 조각의 높이다.
+/// 저장 문자 줄이 첫 조각에 모두 들어가는 경우만 빈 꼬리 밴드를 이어받는다.
+pub(crate) fn stored_single_cell_first_frame_height_hu(
+    para: &Paragraph,
+    next_para: Option<&Paragraph>,
+    table: &Table,
+) -> Option<i32> {
+    use crate::model::paragraph::LineSeg;
+    use crate::model::table::TablePageBreak;
+    if para.stored_text_partition_is_dirty()
+        || !para.text.trim().is_empty()
+        || para.controls.len() != 1
+        || para.line_segs.len() != 1
+        || para.line_segs[0].segment_width != 0
+        || table.common.treat_as_char
+        || !crate::renderer::float_placement::is_para_topbottom_float(&table.common)
+        || table.common.vertical_offset != 0
+        || table.caption.is_some()
+        || table.row_count != 1
+        || table.col_count != 1
+        || table.cells.len() != 1
+        || table.layout_page_break() != TablePageBreak::RowBreak
+        || table.common.height == 0
+        || table.common.height > i32::MAX as u32
+    {
+        return None;
+    }
+    let cell = &table.cells[0];
+    let next = next_para?;
+    let host_y = stored_vpos(para)?;
+    let next_y = stored_vpos(next)?;
+    if next.stored_text_partition_is_dirty()
+        || cell.row != 0
+        || cell.col != 0
+        || cell.row_span != 1
+        || cell.col_span != 1
+        || cell.height <= table.common.height
+        || host_y <= 0
+        || next_y <= 0
+        || next_y >= host_y
+        || cell.paragraphs.is_empty()
+    {
+        return None;
+    }
+    let tail = i64::from(cell.height) - i64::from(table.common.height);
+    let continuation_end =
+        tail + i64::from(table.outer_margin_top) + i64::from(table.outer_margin_bottom);
+    if continuation_end != next_y {
+        return None;
+    }
+    let padding = cell.effective_padding(&table.padding);
+    for paragraph in &cell.paragraphs {
+        if paragraph.stored_text_partition_is_dirty()
+            || !paragraph.controls.is_empty()
+            || paragraph.line_segs.is_empty()
+            || paragraph.line_segs.iter().any(|line| {
+                line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                    || line.vertical_pos < 0
+                    || i64::from(line.vertical_pos)
+                        + i64::from(line.line_height)
+                        + i64::from(padding.top)
+                        + i64::from(padding.bottom)
+                        > i64::from(table.common.height)
+            })
+        {
+            return None;
+        }
+    }
+    Some(table.common.height as i32)
 }

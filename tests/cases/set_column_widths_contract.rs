@@ -148,3 +148,50 @@ fn mcp_declared() {
         .iter()
         .any(|t| t["name"] == "hwp_set_column_widths"));
 }
+
+// 독립 Printで全1쪽の원문・동일 편집을확인한 병합 열 폭 API 경계.
+fn merged_resize_fixture() -> HwpDocument {
+    HwpDocument::from_bytes(
+        &std::fs::read(
+            Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("samples/issue6190/center_align_first_line_indent.hwp"),
+        )
+        .unwrap(),
+    )
+    .unwrap()
+}
+#[test]
+fn fully_merged_columns_keep_the_requested_total_in_model_reply_and_save() {
+    let mut d = merged_resize_fixture();
+    let widths = vec![5000u32, 7000];
+    let total: u32 = widths.iter().sum();
+    let reply = d.set_table_column_widths_native(0, 7, 0, widths).unwrap();
+    let reply: serde_json::Value = serde_json::from_str(&reply).unwrap();
+    assert_eq!(reply["tableWidth"], total);
+    d.insert_text_native(0, 7, 0, "가").unwrap();
+    for reopen in [false, true] {
+        if reopen {
+            let bytes = d.export_hwp_native().unwrap();
+            d = HwpDocument::from_bytes(&bytes).unwrap();
+        }
+        let Control::Table(t) = &d.document().sections[0].paragraphs[7].controls[0] else {
+            panic!()
+        };
+        assert!(t.cells.iter().all(|c| c.col_span == t.col_count));
+        assert_eq!(t.common.width, total);
+        assert!(t.cells.iter().all(|c| c.width == total));
+        assert_eq!(
+            u32::from_le_bytes(t.raw_ctrl_data[12..16].try_into().unwrap()),
+            total
+        );
+    }
+}
+#[test]
+fn overflowing_requested_total_is_rejected_atomically() {
+    let mut d = merged_resize_fixture();
+    let before = d.export_hwp_native().unwrap();
+    assert!(d
+        .set_table_column_widths_native(0, 7, 0, vec![u32::MAX, u32::MAX])
+        .is_err());
+    assert_eq!(d.export_hwp_native().unwrap(), before);
+}

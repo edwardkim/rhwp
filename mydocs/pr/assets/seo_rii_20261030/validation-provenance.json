@@ -1,0 +1,9 @@
+{
+  "candidate": "f3a57f2e6b7d6c59172cd76b5a597ae9c1439ff7",
+  "productSource": "c3f5cbd6d7beecdaa231cd3a40080f2e7f3c8c1e",
+  "base": "96ccd557592a711f215e7ad28822f4c7a3f00c15",
+  "cargoTarget": "/home/edward/mygithub/rhwp/target/pr-review",
+  "cargoJobs": 6,
+  "nextestThreads": 8,
+  "reason": "31 GiB host; native build and browser comparison share host memory; serialize Cargo/rustc/wasm-opt for the shared target."
+}

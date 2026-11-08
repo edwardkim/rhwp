@@ -1,0 +1,120 @@
+{
+  "production_head": "56a638b9960e8bad9c3f73185a17665d7f7c94b1",
+  "status": "passed",
+  "steps": [
+    {
+      "name": "v12-source-frame-seven-final",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "source_frame_control_ownership",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "expected_exit": 0,
+      "log": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/v12-source-frame-seven-final.log",
+      "seconds": 37.97568021307234
+    },
+    {
+      "name": "v12-center-contract-before",
+      "command": [
+        "/home/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_011-38cda0638626b790",
+        "source_frame_control_ownership::horizontal_fragments_share_one_centered_source_frame",
+        "--exact",
+        "--nocapture",
+        "--test-threads",
+        "1"
+      ],
+      "exit": 101,
+      "expected_exit": 101,
+      "log": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/v12-center-contract-before.log",
+      "seconds": 1.1327903209021315
+    },
+    {
+      "name": "v12-source-frame-seven-direct-after",
+      "command": [
+        "/home/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_011-38cda0638626b790",
+        "source_frame_control_ownership::",
+        "--nocapture",
+        "--test-threads",
+        "1"
+      ],
+      "exit": 0,
+      "expected_exit": 0,
+      "log": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/v12-source-frame-seven-direct-after.log",
+      "seconds": 12.998964451020584
+    },
+    {
+      "name": "v12-focused-issue_6712_cell_visual_row_units",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_6712_cell_visual_row_units",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "expected_exit": 0,
+      "log": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/v12-focused-issue_6712_cell_visual_row_units.log",
+      "seconds": 35.93188982398715
+    },
+    {
+      "name": "v12-focused-issue_4068_column_top_table_outer_margin",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_4068_column_top_table_outer_margin",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "expected_exit": 0,
+      "log": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/v12-focused-issue_4068_column_top_table_outer_margin.log",
+      "seconds": 40.0750907730544
+    },
+    {
+      "name": "v12-focused-issue_4068_unclipped_cell_honors_valign",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_4068_unclipped_cell_honors_valign",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "expected_exit": 0,
+      "log": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/v12-focused-issue_4068_unclipped_cell_honors_valign.log",
+      "seconds": 62.61264520289842
+    }
+  ],
+  "compiled_contract_binary": {
+    "path": "/home/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_011-38cda0638626b790",
+    "sha256": "a379e5f27ceda14271c2b84997aa889471848985c90e79e00125575ff60299dd"
+  },
+  "completed_at": "2026-10-26T23:59:52.981424+00:00",
+  "unique_focused_tests": 33,
+  "same_compiled_test_before_after": true,
+  "new_test_count": 1,
+  "corrected_existing_test_count": 1
+}

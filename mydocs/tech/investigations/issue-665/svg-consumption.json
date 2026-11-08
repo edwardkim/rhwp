@@ -1,0 +1,18 @@
+{
+  "base": {
+    "svg_sha256": "6ff72643df4aa4e4e1ad63d04c276ffbf15fc96701fb294a845c3c518fdae87d",
+    "image_payloads": [
+      "fd0e482d42be815e2a45ea5c93cdb7f983c0889f43cc3a77f54c851abf4fc84a",
+      "dfc8ab80abf69896057c0d8ab690b71ffd145206e94797c98cdbe97a2a897482",
+      "fd0e482d42be815e2a45ea5c93cdb7f983c0889f43cc3a77f54c851abf4fc84a"
+    ]
+  },
+  "head": {
+    "svg_sha256": "6ff72643df4aa4e4e1ad63d04c276ffbf15fc96701fb294a845c3c518fdae87d",
+    "image_payloads": [
+      "fd0e482d42be815e2a45ea5c93cdb7f983c0889f43cc3a77f54c851abf4fc84a",
+      "dfc8ab80abf69896057c0d8ab690b71ffd145206e94797c98cdbe97a2a897482",
+      "fd0e482d42be815e2a45ea5c93cdb7f983c0889f43cc3a77f54c851abf4fc84a"
+    ]
+  }
+}

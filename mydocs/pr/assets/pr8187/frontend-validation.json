@@ -1,0 +1,31 @@
+{
+  "source": "054ef1cd2dcd6060e1cf4a98ea9c65a72fb40ee1",
+  "wasm_sha256": "f92b4c31ae7fdd323ef15eb859e0168211db0e286d40c74b569d5a41903bc83a",
+  "pkg_binding": "bwrap read-only overlay; deployed root pkg/public files preserved",
+  "studio_tests": {
+    "command": "npm test",
+    "cwd": "rhwp-studio",
+    "exit": 0,
+    "passed": 2716,
+    "skipped": 2,
+    "failed": 0,
+    "skip_reasons": [
+      "#6788 mixed-shape Node WASM test requires pkg-node",
+      "pending formatting child-process WASM roundtrip requires pkg-node"
+    ],
+    "log_sha256": "ba692bfc1c6e40764ace6c3117a0bb82ba0d64d991ae096f3a37e9cefef19578"
+  },
+  "typescript": {
+    "command": "npx tsc --noEmit",
+    "cwd": "rhwp-studio",
+    "exit": 0,
+    "log_bytes": 0
+  },
+  "frontend_declarations": {
+    "command": "node --test scripts/frontend-wasm-bindings.test.mjs",
+    "exit": 0,
+    "passed": 1,
+    "failed": 0,
+    "log_sha256": "c1707d54820ebe161f736ae913ff2a22870e8f26520ab377a0e32642356e2d65"
+  }
+}

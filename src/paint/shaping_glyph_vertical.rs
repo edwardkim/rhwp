@@ -246,8 +246,7 @@ fn build_vertical_leaf_glyph_run(
 ) -> Result<LayerGlyphRunPaint, VerticalGlyphLinePublicationRejectReason> {
     let paint_style = PaintTextStyle::from(&fallback.style);
     if !paint_style.is_fill_only_glyph_replay()
-        || !paint_style.font_size.is_finite()
-        || paint_style.font_size <= 0.0
+        || !super::font::glyph_font_size_is_portable(paint_style.font_size)
     {
         return Err(VerticalGlyphLinePublicationRejectReason::UnsupportedFallbackStyle);
     }
@@ -410,7 +409,10 @@ fn prepare_vertical_line_publication(
                 VerticalGlyphLayerShadowRejectReason::UnsupportedLineSurface,
             ));
         };
-        let [PaintOp::TextRun { bbox, run, source }] = ops.as_slice() else {
+        let [PaintOp::TextRun {
+            bbox, run, source, ..
+        }] = ops.as_slice()
+        else {
             return Err(VerticalGlyphLinePublicationRejectReason::Shadow(
                 VerticalGlyphLayerShadowRejectReason::UnsupportedLineSurface,
             ));
@@ -431,6 +433,7 @@ fn prepare_vertical_line_publication(
             resource_delta.face.id.clone(),
         )?;
         ops.push(PaintOp::GlyphRun {
+            paint_transform: None,
             bbox: *bbox,
             run: Box::new(glyph_run),
         });
@@ -515,7 +518,7 @@ pub(crate) fn lower_vertical_shaping_page_sidecars(
                     lower_node(child, frame, resources, next_text_source_id, claimed);
                 }
             }
-            LayerNodeKind::ClipRect { child, .. } => {
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
                 lower_node(child, frame, resources, next_text_source_id, claimed);
             }
             LayerNodeKind::Leaf { ops } => {

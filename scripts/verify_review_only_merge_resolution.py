@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate that a conflicted current-base merge resolved only mydocs paths."""
+"""Validate that a conflicted current-base merge resolved only review documentation paths."""
 
 from __future__ import annotations
 
@@ -59,7 +59,8 @@ def is_current_base_merge(repository: Path, merge_sha: str, base_sha: str) -> bo
 
 def is_mydocs_only(paths: list[str]) -> bool:
     return bool(paths) and all(
-        path.startswith("mydocs/") and path not in NON_REVIEW_ONLY_MYDOCS_PATHS
+        (path.startswith("mydocs/") and path not in NON_REVIEW_ONLY_MYDOCS_PATHS)
+        or path in {"AGENTS.md", "CLAUDE.md"}
         for path in paths
     )
 

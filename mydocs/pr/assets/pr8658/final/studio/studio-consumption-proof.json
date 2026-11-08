@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "source_code": "19de2f3b54",
+  "initial_js_responses": 24,
+  "observed_js_body_sha256": "63717c57cf2b953737937380268f739c8149df60a5f2c8883c1bc6c45e183864",
+  "mapped_source_sha256": "365cffbbb621d39655b318df26ffc863fc0dabd5d1ebc3c86e451363437b4cf8",
+  "normalized_source_sha256": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138",
+  "expected_package_js_sha256": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138",
+  "normalization": {
+    "count": 1,
+    "from": "new URL(\"/@fs/home/edward/mygithub/rhwp-worktrees/pr-8658-cell-square-no-overlap/pkg/rhwp_bg.wasm\", '' + import.meta.url)",
+    "to": "new URL('rhwp_bg.wasm', import.meta.url)"
+  },
+  "initial_wasm_responses": 24,
+  "wasm_sha256": "2b8259b27596cf4c38d63404a61106c8ae1f9886e9a29c66adf283a689c7bf7b",
+  "all_initial_wasm_matches": true,
+  "original_derived_driver_exit": 1,
+  "original_failure": "post-capture raw JS matcher did not account for the exact Vite new-URL rewrite; all captures and WASM identity checks completed",
+  "resolution": "Retrieved served module bytes hash-matched to every recorded initial JS response, decoded its source map and verified all source bytes after exactly one documented Vite URL rewrite; no capture, metric, source or threshold changed"
+}

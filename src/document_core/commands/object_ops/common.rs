@@ -31,7 +31,131 @@ pub(crate) fn shape_transform_fingerprint(
     )
 }
 
+/// 다각형의 실제 편집 변환을 저장 행렬에 합성한다.
+/// 위치만 옮기거나 같은 속성을 재적용할 때는 원본 행렬을 보존한다.
+fn compose_affine(a: [f64; 6], b: [f64; 6]) -> [f64; 6] {
+    [
+        a[0] * b[0] + a[1] * b[3],
+        a[0] * b[1] + a[1] * b[4],
+        a[0] * b[2] + a[1] * b[5] + a[2],
+        a[3] * b[0] + a[4] * b[3],
+        a[3] * b[1] + a[4] * b[4],
+        a[3] * b[2] + a[4] * b[5] + a[5],
+    ]
+}
+
+pub(crate) fn update_changed_polygon_geometry(
+    shape: &mut ShapeObject,
+    before: (u32, u32, u32, u32, u32, u32, i16, bool, bool),
+) {
+    let after = shape_transform_fingerprint(shape.common(), shape.shape_attr());
+    let geometry =
+        |f: (u32, u32, u32, u32, u32, u32, i16, bool, bool)| (f.0, f.1, f.4, f.5, f.6, f.7, f.8);
+    if geometry(before) == geometry(after) {
+        return;
+    }
+    let current_frame =
+        super::shape::group_geometry::frame_matrix(shape.common(), shape.shape_attr());
+    let old_frame = super::shape::group_geometry::frame_matrix(
+        &crate::model::shape::CommonObjAttr {
+            width: before.0,
+            height: before.1,
+            ..Default::default()
+        },
+        &crate::model::shape::ShapeComponentAttr {
+            original_width: shape.shape_attr().original_width,
+            original_height: shape.shape_attr().original_height,
+            current_width: before.4,
+            current_height: before.5,
+            rotation_angle: before.6,
+            horz_flip: before.7,
+            vert_flip: before.8,
+            ..Default::default()
+        },
+    );
+    let ShapeObject::Polygon(poly) = shape else {
+        return;
+    };
+    let sa = &mut poly.drawing.shape_attr;
+    let determinant = old_frame[0] * old_frame[4] - old_frame[1] * old_frame[3];
+    if determinant == 0.0 || !determinant.is_finite() || poly.points.is_empty() {
+        sa.raw_rendering.clear();
+        return;
+    }
+    let inverse = [
+        old_frame[4] / determinant,
+        -old_frame[1] / determinant,
+        (old_frame[1] * old_frame[5] - old_frame[4] * old_frame[2]) / determinant,
+        -old_frame[3] / determinant,
+        old_frame[0] / determinant,
+        (old_frame[3] * old_frame[2] - old_frame[0] * old_frame[5]) / determinant,
+    ];
+    let source = if sa.has_saved_affine_geometry() {
+        [
+            sa.render_sx,
+            sa.render_b,
+            sa.render_tx,
+            sa.render_c,
+            sa.render_sy,
+            sa.render_ty,
+        ]
+    } else {
+        old_frame
+    };
+    // 원본 저장 행렬과 이상적인 배치 프레임 사이의 잔여 변환을 한 번 보존한다.
+    // 매번 현재 frame에 합성하므로 회전 외곽 크기를 로컬 배율로 다시 쓰지 않고,
+    // 여러 편집과 역연산도 직전 계산의 오차를 누적하지 않는다.
+    let reference =
+        poly.affine_edit_reference
+            .get_or_insert(crate::model::shape::PolygonAffineEditReference {
+                width: before.4,
+                height: before.5,
+                rotation: before.6,
+                horz_flip: before.7,
+                vert_flip: before.8,
+                matrix: compose_affine(inverse, source),
+            });
+    let m = compose_affine(current_frame, reference.matrix);
+    sa.render_sx = m[0];
+    sa.render_b = m[1];
+    sa.render_tx = m[2];
+    sa.render_c = m[3];
+    sa.render_sy = m[4];
+    sa.render_ty = m[5];
+    sa.raw_rendering = crate::serializer::control::serialize_affine_rendering(sa);
+}
+
 impl DocumentCore {
+    /// 인라인 개체 편집 뒤 실제 줄과 후속 문단의 저장 흐름을 함께 갱신한다.
+    pub(crate) fn reflow_body_inline_object_change(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        stored_end_before: Option<i32>,
+    ) {
+        self.reflow_paragraph(section_idx, para_idx);
+        self.finish_body_inline_object_reflow(section_idx, para_idx, stored_end_before);
+    }
+
+    /// 이미 구성한 줄 결과를 후속 본문 원점에 반영한다. 같은 문단을 다시 조판하지 않는다.
+    pub(crate) fn finish_body_inline_object_reflow(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        stored_end_before: Option<i32>,
+    ) {
+        let hwp3_layout = self.document.layout_profile().hwp3_layout();
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut self.document.sections[section_idx].paragraphs,
+            para_idx,
+            None,
+            stored_end_before,
+            &self.styles,
+            self.dpi,
+            hwp3_layout,
+        );
+    }
+
     const COMMON_OBJ_ATTR_KNOWN_MASK: u32 = 0x01
         | (0x03 << 3)
         | (0x07 << 5)
@@ -60,24 +184,50 @@ impl DocumentCore {
                 .iter()
                 .all(|ctrl| matches!(ctrl, Control::SectionDef(_) | Control::ColumnDef(_)))
     }
-    /// 본문 문단 `controls[control_idx]` 에 컨트롤을 넣었을 때 같은 문단의 활성 누름틀 번호를 민다.
-    ///
-    /// 셀 활성 주소에는 본문 부모 문단 번호가 없어 같은 문단인지 가릴 수 없으므로 그대로 둔다.
+    /// 본문 컨트롤 배열의 변경을 활성 누름틀의 같은 소유 주소에 반영한다.
+    /// 셀 안의 필드는 맨 앞 경로가 본문 소유자이고, 나머지 경로와 필드 번호는 그대로다.
+    pub(crate) fn remap_active_field_root_control(
+        active_field: &mut Option<crate::document_core::ActiveFieldInfo>,
+        section_idx: usize,
+        para_idx: usize,
+        remap: impl FnOnce(usize) -> Option<usize>,
+    ) {
+        let Some(active) = active_field.as_mut() else {
+            return;
+        };
+        if active.section_idx != section_idx || active.para_idx != para_idx {
+            return;
+        }
+        let owner = match active.cell_path.as_mut().and_then(|path| path.first_mut()) {
+            Some((control_idx, _, _)) => control_idx,
+            None => &mut active.control_idx,
+        };
+        if let Some(updated) = remap(*owner) {
+            *owner = updated;
+        } else {
+            *active_field = None;
+        }
+    }
+
+    /// 본문 컨트롤 삽입 뒤 같은 문단의 본문 또는 셀 활성 주소를 민다.
     pub(crate) fn shift_active_field_for_control_insert(
         &mut self,
         section_idx: usize,
         para_idx: usize,
         control_idx: usize,
     ) {
-        if let Some(active) = self.active_field.as_mut() {
-            if active.section_idx == section_idx
-                && active.para_idx == para_idx
-                && active.cell_path.is_none()
-                && active.control_idx >= control_idx
-            {
-                active.control_idx += 1;
-            }
-        }
+        Self::remap_active_field_root_control(
+            &mut self.active_field,
+            section_idx,
+            para_idx,
+            |index| {
+                Some(if index >= control_idx {
+                    index + 1
+                } else {
+                    index
+                })
+            },
+        );
     }
     /// 컨트롤 삭제 후 문단의 line_segs를 재계산한다.
     ///
@@ -115,12 +265,17 @@ impl DocumentCore {
                 ls.baseline_distance = (max_remaining_ctrl_height * 850) / 1000;
             }
         } else if para.text.is_empty() {
-            // 텍스트도 컨트롤도 없음 → 기본 텍스트 높이로 리셋
-            if let Some(ls) = para.line_segs.first_mut() {
+            // 글도 높이를 차지하는 컨트롤도 없음 → 기본 텍스트 높이의 한 줄로 다시 둔다.
+            // 글 없는 문단의 줄 나눔은 0에서 시작하는 한 줄뿐이라 이 줄이 곧 새 줄 구성이다.
+            // 위 무효화 표지만 남기면 저장기가 이 문단을 줄 없이 써서, 한/글이 쓰는 빈 문단
+            // (PARA_TEXT 없이 줄 하나)과 달라진다.
+            if let Some(mut ls) = para.line_segs.first().cloned() {
+                ls.text_start = 0;
                 ls.line_height = 1000;
                 ls.text_height = 1000;
                 ls.baseline_distance = 850;
                 ls.line_spacing = 600;
+                para.replace_line_segs(vec![ls]);
             }
         } else {
             // 텍스트가 있으면 reflow_line_segs로 재계산.
@@ -187,7 +342,7 @@ impl DocumentCore {
              \"zOrder\":{},\"instanceId\":{},\
              \"outerMarginLeft\":{},\"outerMarginTop\":{},\
              \"outerMarginRight\":{},\"outerMarginBottom\":{},\
-             \"description\":\"{}\"",
+             \"description\":\"{}\",\"dropCapStyle\":\"{}\"",
             c.width,
             c.height,
             c.treat_as_char,
@@ -208,6 +363,7 @@ impl DocumentCore {
             c.margin.right,
             c.margin.bottom,
             desc_escaped,
+            crate::serializer::hwpx::shape::drop_cap_style_str(c.drop_cap_style),
         )
     }
     /// JSON → CommonObjAttr 필드 업데이트 (Shape/Picture 공용)
@@ -264,6 +420,16 @@ impl DocumentCore {
                 "Center" => crate::model::shape::HorzAlign::Center,
                 "Right" => crate::model::shape::HorzAlign::Right,
                 _ => c.horz_align,
+            };
+        }
+        // 문단 첫 글자 장식 방식(한/글이 장식 글자를 담는 글상자에 둔다).
+        if let Some(v) = json_str(props_json, "dropCapStyle") {
+            c.drop_cap_style = match v.as_str() {
+                "None" => crate::model::shape::DropCapStyle::None,
+                "DoubleLine" => crate::model::shape::DropCapStyle::DoubleLine,
+                "TripleLine" => crate::model::shape::DropCapStyle::TripleLine,
+                "Margin" => crate::model::shape::DropCapStyle::Margin,
+                _ => c.drop_cap_style,
             };
         }
         if let Some(v) = json_str(props_json, "textWrap") {

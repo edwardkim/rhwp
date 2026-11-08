@@ -308,8 +308,7 @@ impl DocumentCore {
         let explicit_height = json_u32(props_json, "height").is_some();
         let size_driver_changed = eq.script != script_before || eq.font_size != font_size_before;
         if size_driver_changed && (!explicit_width || !explicit_height) {
-            let (width, height) =
-                crate::renderer::equation::intrinsic_size_hwp(&eq.script, eq.font_size);
+            let (width, height) = crate::renderer::equation::edited_size_hwp(eq);
             if !explicit_width {
                 eq.common.width = width;
             }
@@ -367,7 +366,61 @@ impl DocumentCore {
             cell_idx,
             cell_para_idx,
         )?;
+        let previous_flow = (
+            eq.common.treat_as_char,
+            crate::renderer::equation::flow_metrics_hwp(eq),
+            (
+                eq.common.margin.left,
+                eq.common.margin.right,
+                eq.common.margin.top,
+                eq.common.margin.bottom,
+            ),
+            eq.common.affect_line_spacing,
+        );
         Self::apply_equation_properties(eq, dpi, props_json);
+        let current_flow = (
+            eq.common.treat_as_char,
+            crate::renderer::equation::flow_metrics_hwp(eq),
+            (
+                eq.common.margin.left,
+                eq.common.margin.right,
+                eq.common.margin.top,
+                eq.common.margin.bottom,
+            ),
+            eq.common.affect_line_spacing,
+        );
+        let inline_flow_changed =
+            (previous_flow.0 || current_flow.0) && previous_flow != current_flow;
+
+        // 편집한 슬롯·기준선은 공통 줄 구성에서도 소비해야 한다. paint만
+        // 재조판하면 저장 LineSeg의 옛 기준선·점유 높이가 그대로 남는다.
+        // 색상·getter 봉지 같은 비기하 편집은 기존 저장 프레임을 유지한다.
+        if inline_flow_changed {
+            if let (Some(cell), Some(paragraph)) = (cell_idx, cell_para_idx) {
+                self.reflow_cell_paragraph(
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell,
+                    paragraph,
+                );
+            } else {
+                let stored_end = crate::renderer::composer::paragraph_flow_end(
+                    &self.document.sections[section_idx].paragraphs[parent_para_idx],
+                );
+                self.reflow_paragraph(section_idx, parent_para_idx);
+                let hwp3_layout = self.document.layout_profile().hwp3_layout();
+                crate::renderer::composer::recalculate_section_vpos(
+                    &mut self.document.sections[section_idx].paragraphs,
+                    parent_para_idx,
+                    None,
+                    stored_end,
+                    &self.styles,
+                    self.dpi,
+                    hwp3_layout,
+                );
+            }
+        }
 
         // 셀 수식은 최외곽 문단의 측정 revision을 무효화한다.
         if cell_idx.is_some() {
@@ -389,14 +442,14 @@ impl DocumentCore {
         font_size_hwpunit: u32,
         color: u32,
     ) -> Result<String, HwpError> {
+        use crate::renderer::equation::document_script::tokenize;
         use crate::renderer::equation::layout::EqLayout;
         use crate::renderer::equation::parser::EqParser;
         use crate::renderer::equation::svg_render::{eq_color_to_svg, render_equation_svg};
-        use crate::renderer::equation::tokenizer::tokenize;
 
         let font_size_px = crate::renderer::hwpunit_to_px(font_size_hwpunit as i32, self.dpi);
         let tokens = tokenize(script);
-        let ast = EqParser::new(tokens).parse();
+        let ast = EqParser::for_document(tokens).parse();
         let layout_box = EqLayout::new(font_size_px).layout(&ast);
         let color_str = eq_color_to_svg(color);
         let svg_fragment = render_equation_svg(&layout_box, &color_str, font_size_px);
@@ -440,60 +493,7 @@ impl DocumentCore {
             return Err(not_an_equation_error(&para.controls[control_idx]));
         }
 
-        let text_chars: Vec<char> = para.text.chars().collect();
-        let mut ci = 0usize;
-        let mut prev_end: u32 = 0;
-        let mut gap_start: Option<u32> = None;
-        'outer: for i in 0..text_chars.len() {
-            let offset = if i < para.char_offsets.len() {
-                para.char_offsets[i]
-            } else {
-                prev_end
-            };
-            while prev_end + 8 <= offset && ci < para.controls.len() {
-                if ci == control_idx {
-                    gap_start = Some(prev_end);
-                    break 'outer;
-                }
-                ci += 1;
-                prev_end += 8;
-            }
-            let char_size: u32 = if text_chars[i] == '\t' {
-                8
-            } else if text_chars[i].len_utf16() == 2 {
-                2
-            } else {
-                1
-            };
-            prev_end = offset + char_size;
-        }
-        if gap_start.is_none() {
-            while ci < para.controls.len() {
-                if ci == control_idx {
-                    gap_start = Some(prev_end);
-                    break;
-                }
-                ci += 1;
-                prev_end += 8;
-            }
-        }
-
-        if let Some(gs) = gap_start {
-            let threshold = gs + 8;
-            for offset in para.char_offsets.iter_mut() {
-                if *offset >= threshold {
-                    *offset -= 8;
-                }
-            }
-        }
-
-        para.controls.remove(control_idx);
-        if control_idx < para.ctrl_data_records.len() {
-            para.ctrl_data_records.remove(control_idx);
-        }
-        if para.char_count >= 8 {
-            para.char_count -= 8;
-        }
+        para.remove_control(control_idx);
 
         Self::reflow_paragraph_line_segs_after_control_delete(para, &self.styles, self.dpi);
         section.raw_stream = None;
@@ -567,8 +567,9 @@ impl DocumentCore {
             common: CommonObjAttr {
                 ctrl_id: CTRL_EQUATION,
                 // 한컴 저장본의 인라인 수식 계약: 문단 기준 위치, 절대 크기,
-                // 글자처럼 취급, 글과 함께 이동, 위아래 배치.
+                // 글자처럼 취급, 글과 함께 이동, 위아래 배치, 수식 번호 범주(bit 26-27 = 3).
                 attr: 0x0C2A_2311,
+                numbering_type: crate::model::shape::ObjectNumberingType::Equation,
                 treat_as_char: true,
                 width,
                 height,
@@ -584,7 +585,6 @@ impl DocumentCore {
                 vert_rel_to: VertRelTo::Para,
                 horz_rel_to: HorzRelTo::Para,
                 text_wrap: TextWrap::TopAndBottom,
-                hwp5_gen_shape_attr_bit26: true,
                 description: "수식입니다.".to_string(),
                 ..Default::default()
             },

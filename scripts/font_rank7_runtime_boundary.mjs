@@ -146,7 +146,7 @@ function runChild(binary, args, label) {
 function runNative(nativeBin, fixturePath) {
   const envelope = runChild(
     nativeBin,
-    [fixturePath, '--page', '0', '--max-characters', '4096', '--json'],
+    ['font-trace', fixturePath, '--page', '0', '--max-characters', '4096', '--json'],
     'native trace',
   );
   if (envelope?.tool !== 'rhwp-q-font-trace' || typeof envelope.trace !== 'object') {
@@ -156,7 +156,7 @@ function runNative(nativeBin, fixturePath) {
 }
 
 function runLayout(layoutBin, fixturePath) {
-  const envelope = runChild(layoutBin, [fixturePath, '--page', '0', '--json'], 'text layout');
+  const envelope = runChild(layoutBin, ['text-layout', fixturePath, '--page', '0', '--json'], 'text layout');
   if (envelope?.tool !== 'rhwp-q-text-layout' || !Array.isArray(envelope.runs)) {
     throw new Error('text-layout envelope identity mismatch');
   }

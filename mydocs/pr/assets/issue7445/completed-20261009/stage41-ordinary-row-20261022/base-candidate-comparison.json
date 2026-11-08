@@ -1,0 +1,98 @@
+[
+  {
+    "key": "bottom15",
+    "page": "1",
+    "base": "98.05950",
+    "candidate": "98.05890",
+    "deltaPp": "-0.00060",
+    "dropAtLeastPointOne": false
+  },
+  {
+    "key": "bottom15",
+    "page": "2",
+    "base": "97.43087",
+    "candidate": "99.29276",
+    "deltaPp": "1.86189",
+    "dropAtLeastPointOne": false
+  },
+  {
+    "key": "bottom15",
+    "page": "3",
+    "base": "50.30717",
+    "candidate": "100.00000",
+    "deltaPp": "49.69283",
+    "dropAtLeastPointOne": false
+  },
+  {
+    "key": "footer15",
+    "page": "1",
+    "base": "98.05950",
+    "candidate": "98.05890",
+    "deltaPp": "-0.00060",
+    "dropAtLeastPointOne": false
+  },
+  {
+    "key": "footer15",
+    "page": "2",
+    "base": "97.43087",
+    "candidate": "99.29276",
+    "deltaPp": "1.86189",
+    "dropAtLeastPointOne": false
+  },
+  {
+    "key": "footer15",
+    "page": "3",
+    "base": "50.30717",
+    "candidate": "100.00000",
+    "deltaPp": "49.69283",
+    "dropAtLeastPointOne": false
+  },
+  {
+    "key": "original-hwp",
+    "page": "1",
+    "base": "98.05950",
+    "candidate": "98.05890",
+    "deltaPp": "-0.00060",
+    "dropAtLeastPointOne": false
+  },
+  {
+    "key": "original-hwp",
+    "page": "2",
+    "base": "99.30318",
+    "candidate": "99.30381",
+    "deltaPp": "0.00063",
+    "dropAtLeastPointOne": false
+  },
+  {
+    "key": "original-hwp",
+    "page": "3",
+    "base": "100.00000",
+    "candidate": "100.00000",
+    "deltaPp": "0.00000",
+    "dropAtLeastPointOne": false
+  },
+  {
+    "key": "original-hwpx",
+    "page": "1",
+    "base": "98.04591",
+    "candidate": "98.04532",
+    "deltaPp": "-0.00059",
+    "dropAtLeastPointOne": false
+  },
+  {
+    "key": "original-hwpx",
+    "page": "2",
+    "base": "99.30345",
+    "candidate": "99.30408",
+    "deltaPp": "0.00063",
+    "dropAtLeastPointOne": false
+  },
+  {
+    "key": "original-hwpx",
+    "page": "3",
+    "base": "100.00000",
+    "candidate": "100.00000",
+    "deltaPp": "0.00000",
+    "dropAtLeastPointOne": false
+  }
+]

@@ -3,9 +3,9 @@
 이 장은 기존 규칙의 소비 분기만 적는다. 새 kind 를 제안하지 않는다.
 개별 봉투는 `tests/fixtures/inspect_msec/envelopes/` 가 정본이다.
 
-## 가족 `zero_width` (16건)
+## 가족 `zero_width` (15건)
 
-- 양성 12 / 음성 4 / 그 외 0
+- 양성 12 / 음성 3 / 그 외 0
 - 대표 `uni-zw-u+200b-run1-hwp`
 - 출처 `src/document_core/text_security.rs` `is_zero_width`
 - 대표 분기: {'branch': 'clean == false', 'compareRenderedRaw': True, 'detectionIsNotFailure': True}
@@ -24,7 +24,6 @@
 - `uni-zw-excluded-u+00ad` polarity=negative exit=0 pair=-
 - `uni-zw-excluded-u+180e` polarity=negative exit=0 pair=-
 - `uni-zw-excluded-u+061c` polarity=negative exit=0 pair=-
-- `uni-zw-hangul-pua-typesetting` polarity=negative exit=0 pair=-
 - `uni-loc-body` polarity=positive exit=0 pair=-
 - `uni-loc-cell_0_0_.para_0` polarity=positive exit=0 pair=-
 

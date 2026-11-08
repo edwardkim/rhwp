@@ -352,9 +352,7 @@ fn run_surface_supported(run: &TextRunNode) -> bool {
         && matches!(run.field_marker, FieldMarkerType::None)
         && !style.bold
         && !style.italic
-        && style.font_size.is_finite()
-        && style.font_size > 0.0
-        && style.font_size <= 4_096.0
+        && super::font_size::glyph_font_size_is_portable(style.font_size)
         && style.ratio.is_finite()
         && style.ratio > 0.0
         && style.ratio <= 16.0
@@ -839,10 +837,8 @@ fn project_replay_geometry(
         );
     }
 
-    let (draw_font_size_px, draw_x_scale) =
-        crate::renderer::condensed_ratio_draw_params(run.style.font_size, run.style.ratio);
-    if !draw_font_size_px.is_finite()
-        || draw_font_size_px <= 0.0
+    let (draw_font_size_px, draw_x_scale) = run.style.ratio_draw_params(run.style.font_size);
+    if !super::font_size::glyph_font_size_is_portable(draw_font_size_px)
         || !draw_x_scale.is_finite()
         || draw_x_scale <= 0.0
     {
@@ -1256,7 +1252,8 @@ pub(crate) fn lower_horizontal_shaping_page_sidecars(
                     );
                 }
             }
-            crate::paint::LayerNodeKind::ClipRect { child, .. } => {
+            crate::paint::LayerNodeKind::ClipRect { child, .. }
+            | crate::paint::LayerNodeKind::ClipPath { child, .. } => {
                 lower_node(
                     child,
                     sidecars,
@@ -1269,7 +1266,10 @@ pub(crate) fn lower_horizontal_shaping_page_sidecars(
             crate::paint::LayerNodeKind::Leaf { ops } => {
                 let mut lowered = Vec::with_capacity(ops.len());
                 for op in ops.drain(..) {
-                    if let crate::paint::PaintOp::TextRun { bbox, run, source } = op {
+                    if let crate::paint::PaintOp::TextRun {
+                        bbox, run, source, ..
+                    } = op
+                    {
                         let source = source.unwrap_or_else(|| {
                             crate::paint::TextSourceSpan::for_text_run(*next_text_source_id, &run)
                         });
@@ -1286,6 +1286,7 @@ pub(crate) fn lower_horizontal_shaping_page_sidecars(
                             prepared_sources,
                         );
                         lowered.push(crate::paint::PaintOp::TextRun {
+                            paint_transform: None,
                             bbox,
                             run,
                             source: Some(source),
@@ -1296,10 +1297,12 @@ pub(crate) fn lower_horizontal_shaping_page_sidecars(
                                     (report.glyph_run, report.glyph_outline)
                                 {
                                     lowered.push(crate::paint::PaintOp::GlyphRun {
+                                        paint_transform: None,
                                         bbox,
                                         run: Box::new(glyph_run),
                                     });
                                     lowered.push(crate::paint::PaintOp::GlyphOutline {
+                                        paint_transform: None,
                                         bbox,
                                         outline: Box::new(glyph_outline),
                                     });
@@ -1307,6 +1310,7 @@ pub(crate) fn lower_horizontal_shaping_page_sidecars(
                                 }
                             } else if let Some(glyph_run) = report.glyph_run {
                                 lowered.push(crate::paint::PaintOp::GlyphRun {
+                                    paint_transform: None,
                                     bbox,
                                     run: Box::new(glyph_run),
                                 });

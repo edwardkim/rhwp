@@ -333,7 +333,7 @@ pub(crate) fn export_svg(args: &[String]) -> i32 {
         respect_vpos_reset,
         hangul2024_compat,
         font_embed_mode,
-        font_paths,
+        mut font_paths,
         render_profile,
         backend,
         json_mode,
@@ -358,10 +358,14 @@ pub(crate) fn export_svg(args: &[String]) -> i32 {
         Ok(d) => d,
         Err(e) => return e.report(),
     };
-    if let Err(e) = doc.set_font_environment(font_environment) {
-        eprintln!("오류: 폰트 환경 적용 실패: {e}");
-        return EXIT_RUNTIME;
-    }
+    let font_supply =
+        match super::apply_font_environment(&mut doc, font_environment, &mut font_paths) {
+            Ok(supply) => supply,
+            Err(e) => {
+                eprintln!("오류: 폰트 환경 적용 실패: {e}");
+                return EXIT_RUNTIME;
+            }
+        };
 
     // [Task #741 후속] 외부 file path 그림 영역 영역 HWP file 영역 영역 같은 dir 영역
     // 영역 image 영역 영역 자동 load (basename 매칭).
@@ -447,6 +451,16 @@ pub(crate) fn export_svg(args: &[String]) -> i32 {
         overflow_cell_total += u64::from(page_overflow_cell_lines);
         match svg_result {
             Ok(mut svg) => {
+                if matches!(
+                    font_embed_mode,
+                    rhwp::renderer::svg::FontEmbedMode::None
+                        | rhwp::renderer::svg::FontEmbedMode::Style
+                ) && !font_supply.svg_style.is_empty()
+                {
+                    if let Some(end) = svg.find('>') {
+                        svg.insert_str(end + 1, &font_supply.svg_style);
+                    }
+                }
                 // 격자 오버레이 삽입
                 if let Some(mm) = grid_mm {
                     let origin_mm = match grid_origin {
@@ -517,6 +531,9 @@ pub(crate) fn export_svg(args: &[String]) -> i32 {
             "overflowCellLines": overflow_cell_total,
             "pages": manifest,
         });
+        if let Some(report) = &font_supply.report {
+            envelope["nativeFontSupply"] = report.clone();
+        }
         if let Some(environment) = doc.font_environment() {
             envelope["fontEnvironment"] =
                 serde_json::to_value(environment).expect("font environment JSON");
@@ -633,7 +650,7 @@ pub(crate) fn export_render_tree(args: &[String]) -> i32 {
         Ok(d) => d,
         Err(e) => return e.report(),
     };
-    if let Err(e) = doc.set_font_environment(font_environment) {
+    if let Err(e) = super::apply_font_environment(&mut doc, font_environment, &mut Vec::new()) {
         eprintln!("오류: 폰트 환경 적용 실패: {e}");
         return EXIT_RUNTIME;
     }

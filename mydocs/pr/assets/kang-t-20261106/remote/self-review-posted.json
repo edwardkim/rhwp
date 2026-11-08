@@ -1,0 +1,42 @@
+{
+  "id": 5808706524,
+  "node_id": "PRR_kwDORyECHM8AAAABWjnT3A",
+  "user": {
+    "login": "edwardkim",
+    "id": 3311384,
+    "node_id": "MDQ6VXNlcjMzMTEzODQ=",
+    "avatar_url": "https://avatars.githubusercontent.com/u/3311384?u=f71b8314f89f5343b73678d5ba9b4a7ce011b447&v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/edwardkim",
+    "html_url": "https://github.com/edwardkim",
+    "followers_url": "https://api.github.com/users/edwardkim/followers",
+    "following_url": "https://api.github.com/users/edwardkim/following{/other_user}",
+    "gists_url": "https://api.github.com/users/edwardkim/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/edwardkim/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/edwardkim/subscriptions",
+    "organizations_url": "https://api.github.com/users/edwardkim/orgs",
+    "repos_url": "https://api.github.com/users/edwardkim/repos",
+    "events_url": "https://api.github.com/users/edwardkim/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/edwardkim/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "body": "작성자 self-review를 완료했습니다. 검토 head는 `07510f602a6081d90c94397fe29613420f3e7f63`, 최신 기준은 `a7feb849e11642b1438b7e9ee460ff4c8a7c946e`입니다. **최종 판정: 승인.** 원 기여 SHA 3개를 보존하며, 동일 head의 39개 check/status와 CLEAN·merge-tree를 재확인했습니다.\n\n- 공통 계약: 편집 재조판의 정렬 기준선, 칸 문단 삽입·실패 원자성·기본 오프셋, 제거 뒤 재번호된 실제 소유 경로, 실제 포인터가 잡은 점과 도착 원점·Undo snapshot의 연결을 대조했습니다. 문서별 좌표·높이 우회는 없습니다.\n- 로컬: 최소 글꼴 전체 12,778건·Native 공식 4,064건·집중 34건·Studio 2,745건과 필수 fmt/Clippy/build/suite·타입·관련 E2E를 통과했습니다.\n- 시각·실사용: 원 13쪽 Native/fresh optimized WASM 최저 99.13472%/99.09683%, 독립 Print·변경 영역 직접 판독을 완료했습니다. 최신 devel 정상 대조군 20쌍과 새 글꼴 사례 6쌍 PNG 동일, Native 편람 383쪽 후퇴 0쪽입니다. CDP 19222 실제 앞/뒤·같은 쪽·칸→본문 이동, 실제 소유·선택·포인터·Undo/Redo·HWP 저장 재열기를 확인했습니다.\n- 보안: CodeQL 전체 성공이며 기존 #478·#483·#484는 10월 31일 생성·해당 파일 Git blob 불변을 확인했습니다. 신규 경고는 없고 기존 분류·탐지 설정을 바꾸지 않았습니다.\n\n| 필수 원격 검사 | 실제 성공 실행 |\n| --- | --- |\n| CI (Archive 12,584 passed·기존 45 skipped, Native·Lint·Frontend 포함) | [42308262394](https://github.com/edwardkim/rhwp/actions/runs/42308262394) |\n| CodeQL | [42308262423](https://github.com/edwardkim/rhwp/actions/runs/42308262423) |\n| Render Diff | [42308262421](https://github.com/edwardkim/rhwp/actions/runs/42308262421) |\n| Adapter / Proptest | [42308262441](https://github.com/edwardkim/rhwp/actions/runs/42308262441) / [42308262352](https://github.com/edwardkim/rhwp/actions/runs/42308262352) |\n| 최종 CI Impact Policy | [42315950854](https://github.com/edwardkim/rhwp/actions/runs/42315950854) — success |\n\n[원본/PDF·전쪽 TSV·확대 판독·실제 CDP 증거](https://github.com/edwardkim/rhwp/blob/07510f602a6081d90c94397fe29613420f3e7f63/mydocs/pr/assets/kang-t-20261106/README.md)를 근거로 수용합니다. 작업지시자가 CI 성공 후 merge·원 PR/이슈 완료 반영·감사 댓글·기록·devel 동기화·종료 정리까지 승인했습니다. 병합 직전 같은 head와 CI를 다시 확인하고 그 순서를 따릅니다.\n",
+  "state": "COMMENTED",
+  "html_url": "https://github.com/edwardkim/rhwp/pull/8725#pullrequestreview-5808706524",
+  "pull_request_url": "https://api.github.com/repos/edwardkim/rhwp/pulls/8725",
+  "author_association": "OWNER",
+  "is_copilot_code_review": false,
+  "copilot_code_review_effort": null,
+  "_links": {
+    "html": {
+      "href": "https://github.com/edwardkim/rhwp/pull/8725#pullrequestreview-5808706524"
+    },
+    "pull_request": {
+      "href": "https://api.github.com/repos/edwardkim/rhwp/pulls/8725"
+    }
+  },
+  "submitted_at": "2026-11-07T00:07:01Z",
+  "commit_id": "07510f602a6081d90c94397fe29613420f3e7f63"
+}

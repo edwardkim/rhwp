@@ -95,6 +95,7 @@ fn build(page_break: u8, lines: usize) -> DocumentCore {
     }
     doc.set_table_properties_native(0, LEAD, 0, &format!(r#"{{"pageBreak":{page_break}}}"#))
         .expect("«쪽 경계에서» 설정");
+    // 강제 줄바꿈 없이 자동 줄바꿈으로 높이를 만든다. CR은 이제 실제 LF로 정규화된다.
     for i in (1..=lines).rev() {
         doc.insert_text_in_cell_native(
             0,
@@ -103,7 +104,7 @@ fn build(page_break: u8, lines: usize) -> DocumentCore {
             0,
             0,
             0,
-            &format!("줄{i} 한글 본문 내용입니다 길게 씁니다.\r"),
+            &format!("줄{i} 한글 본문 내용입니다 길게 씁니다."),
         )
         .expect("첫 행 칸 텍스트");
     }
@@ -178,14 +179,24 @@ fn none_moves_the_whole_table_instead_of_splitting() {
     }
 }
 
-/// 값 0 의 규칙이 다른 값으로 새지 않는다 — 값 1·2 는 종전대로 나뉜다.
-///
-/// 값 1 «셀 단위로 나눔» 의 행 경계 계약은 이번 범위 밖이다(모듈 주석 참조). 여기서는
-/// 두 값이 **여전히 쪼개진다**는 것만 잠가, 원자 규칙의 과적용을 막는다.
+/// 값 1은 행 경계에서, 값 2는 행 내부에서 나뉜다.
 #[test]
 fn other_values_still_split() {
     for page_break in [1u8, 2] {
-        let doc = build(page_break, 100);
+        let mut doc = build(page_break, 100);
+        // 두 행 전체가 한 쪽에 맞으면 CELL도 나눌 이유가 없다. 둘째 행도 채운다.
+        for i in (1..=100).rev() {
+            doc.insert_text_in_cell_native(
+                0,
+                LEAD,
+                0,
+                1,
+                0,
+                0,
+                &format!("줄{i} 한글 본문 내용입니다 길게 씁니다."),
+            )
+            .expect("둘째 행 칸 텍스트");
+        }
         let fs = frags(&doc);
         assert!(
             !fs.is_empty(),
@@ -198,6 +209,19 @@ fn other_values_still_split() {
              한다. 조각: {}",
             describe(&fs)
         );
+        let first_row_pages = pages_of(&fs, Some(0));
+        if page_break == 1 {
+            assert_eq!(
+                first_row_pages.len(),
+                1,
+                "CELL은 첫 행을 통째로 옮겨야 한다"
+            );
+        } else {
+            assert!(
+                first_row_pages.len() >= 2,
+                "나눔은 첫 행 내부를 잘라야 한다"
+            );
+        }
     }
 }
 

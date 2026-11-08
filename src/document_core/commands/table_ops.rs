@@ -78,12 +78,12 @@ impl DocumentCore {
         row_idx: u16,
         below: bool,
     ) -> Result<String, HwpError> {
-        let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
-        table
-            .insert_row(row_idx, below)
-            .map_err(|e| HwpError::RenderError(e))?;
-        let row_count = table.row_count;
-        let col_count = table.col_count;
+        let (row_count, col_count) = self.mutate_table_structure(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            super::border_paint_structure::StructureEdit::InsertRow(row_idx, below),
+        )?;
 
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
@@ -109,12 +109,12 @@ impl DocumentCore {
         col_idx: u16,
         right: bool,
     ) -> Result<String, HwpError> {
-        let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
-        table
-            .insert_column(col_idx, right)
-            .map_err(|e| HwpError::RenderError(e))?;
-        let row_count = table.row_count;
-        let col_count = table.col_count;
+        let (row_count, col_count) = self.mutate_table_structure(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            super::border_paint_structure::StructureEdit::InsertColumn(col_idx, right),
+        )?;
 
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
@@ -139,12 +139,12 @@ impl DocumentCore {
         control_idx: usize,
         row_idx: u16,
     ) -> Result<String, HwpError> {
-        let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
-        table
-            .delete_row(row_idx)
-            .map_err(|e| HwpError::RenderError(e))?;
-        let row_count = table.row_count;
-        let col_count = table.col_count;
+        let (row_count, col_count) = self.mutate_table_structure(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            super::border_paint_structure::StructureEdit::DeleteRow(row_idx),
+        )?;
 
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
@@ -169,12 +169,12 @@ impl DocumentCore {
         control_idx: usize,
         col_idx: u16,
     ) -> Result<String, HwpError> {
-        let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
-        table
-            .delete_column(col_idx)
-            .map_err(|e| HwpError::RenderError(e))?;
-        let row_count = table.row_count;
-        let col_count = table.col_count;
+        let (row_count, col_count) = self.mutate_table_structure(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            super::border_paint_structure::StructureEdit::DeleteColumn(col_idx),
+        )?;
 
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
@@ -589,6 +589,7 @@ impl DocumentCore {
         end_row: u16,
         end_col: u16,
     ) -> Result<String, HwpError> {
+        self.ensure_table_cell_topology_supported(section_idx, parent_para_idx, control_idx)?;
         let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
         table
             .merge_cells(start_row, start_col, end_row, end_col)
@@ -621,6 +622,15 @@ impl DocumentCore {
                     cell_para_idx,
                 );
             }
+            // The paragraphs came from separate cell coordinate frames. Width
+            // reflow alone preserves their old vpos and can overlap them; consume
+            // the same occupied-line ladder used after a cell split.
+            self.rebuild_table_cell_vpos_ladder_native(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+            );
         }
 
         self.document.sections[section_idx].raw_stream = None;
@@ -646,6 +656,7 @@ impl DocumentCore {
         row: u16,
         col: u16,
     ) -> Result<String, HwpError> {
+        self.ensure_table_cell_topology_supported(section_idx, parent_para_idx, control_idx)?;
         let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
         table
             .split_cell(row, col)
@@ -682,6 +693,9 @@ impl DocumentCore {
         equal_row_height: bool,
         merge_first: bool,
     ) -> Result<String, HwpError> {
+        if n_rows != 1 || m_cols != 1 {
+            self.ensure_table_cell_topology_supported(section_idx, parent_para_idx, control_idx)?;
+        }
         let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
         table
             .split_cell_into(row, col, n_rows, m_cols, equal_row_height, merge_first)
@@ -778,6 +792,9 @@ impl DocumentCore {
         m_cols: u16,
         equal_row_height: bool,
     ) -> Result<String, HwpError> {
+        if n_rows != 1 || m_cols != 1 {
+            self.ensure_table_cell_topology_supported(section_idx, parent_para_idx, control_idx)?;
+        }
         let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
         table
             .split_cells_in_range(
@@ -1292,7 +1309,9 @@ impl DocumentCore {
                 .map(ToOwned::to_owned)
         };
 
-        let has_border_fill_change = json.contains("\"borderLeft\"")
+        let has_border_fill_change = super::border_paint_edit::KEYS
+            .iter()
+            .any(|key| obj.is_some_and(|m| m.contains_key(*key)))
             || json.contains("\"fillType\"")
             || json.contains("\"diagonalLine\"")
             || json.contains("\"diagonalSlash\"")
@@ -1301,16 +1320,115 @@ impl DocumentCore {
             || json.contains("\"diagonalColor\"")
             || json.contains("\"centerLine\"");
         let cell_border_fill_json = if has_border_fill_change {
-            Some(self.normalize_cell_border_fill_json_for_edit(
+            let normalized = self.normalize_cell_border_fill_json_for_edit(
                 section_idx,
                 parent_para_idx,
                 control_idx,
                 cell_idx,
                 json,
-            ))
+            );
+            let mut value: serde_json::Value =
+                serde_json::from_str(&normalized).unwrap_or_default();
+            if value.get("borderFillId").is_none() {
+                let id = self
+                    .get_table_mut(section_idx, parent_para_idx, control_idx)?
+                    .cells
+                    .get(cell_idx)
+                    .ok_or_else(|| HwpError::RenderError("셀 인덱스 범위 초과".into()))?
+                    .border_fill_id;
+                value["borderFillId"] = id.into();
+            }
+            Some(value.to_string())
         } else {
             None
         };
+
+        // A dialog sends all four displayed sides even on a background-only edit.
+        // Explicit UI clicks carry a mask; sparse API patches express intent by key.
+        let mut changed_sides = [false; 4];
+        let mut paint_sides = [false; 4];
+        if let Some(value) = cell_border_fill_json.as_deref() {
+            let value: serde_json::Value = serde_json::from_str(value).unwrap_or_default();
+            let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
+            let id = table
+                .cells
+                .get(cell_idx)
+                .ok_or_else(|| HwpError::RenderError("셀 인덱스 범위 초과".into()))?
+                .border_fill_id;
+            let bf = self
+                .document
+                .doc_info
+                .border_fills
+                .get(usize::from(id).saturating_sub(1));
+            let keys = super::border_paint_edit::KEYS;
+            let complete = keys.iter().all(|k| value.get(*k).is_some());
+            if let Some(mask) = obj.and_then(|o| o.get("borderPaintSides")) {
+                if mask
+                    .as_array()
+                    .is_none_or(|a| a.len() != 4 || a.iter().any(|v| !v.is_boolean()))
+                {
+                    return Err(HwpError::RenderError(
+                        "borderPaintSides는 네 방향 boolean 배열이어야 합니다".into(),
+                    ));
+                }
+            }
+            for (i, key) in keys.iter().enumerate() {
+                if let Some(b) = value.get(*key) {
+                    let old = bf.map(|v| v.borders[i]).unwrap_or_default();
+                    changed_sides[i] = b.get("type").and_then(|v| v.as_u64())
+                        != Some(u64::from(border_line_type_to_u8_val(old.line_type)))
+                        || b.get("width").and_then(|v| v.as_u64()) != Some(u64::from(old.width))
+                        || b.get("color")
+                            .and_then(|v| v.as_str())
+                            .is_none_or(|v| !v.eq_ignore_ascii_case(&color_ref_to_css(old.color)));
+                    let explicit = obj
+                        .and_then(|o| o.get("borderPaintSides"))
+                        .and_then(|v| v.get(i))
+                        .and_then(|v| v.as_bool());
+                    paint_sides[i] = changed_sides[i] || explicit.unwrap_or(!complete);
+                    changed_sides[i] |= paint_sides[i];
+                }
+            }
+        }
+        let paint_plan = {
+            self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
+            let parent = &self.document.sections[section_idx].paragraphs[parent_para_idx];
+            let Control::Table(table) = &parent.controls[control_idx] else {
+                unreachable!()
+            };
+            super::border_paint_edit::plan(
+                table,
+                cell_idx,
+                paint_sides,
+                parent,
+                control_idx,
+                &mut crate::model::border_paint::Resources::new(&self.document.bin_data_content),
+            )?
+        };
+        if !paint_plan.is_empty()
+            && (self.border_paint_store.len() >= 4096 || self.next_border_paint_id == u32::MAX)
+        {
+            return Err(HwpError::RenderError(
+                "테두리 조각 undo 보관 한도 초과".into(),
+            ));
+        }
+        if !paint_plan.is_empty()
+            && [
+                "width",
+                "height",
+                "paddingLeft",
+                "paddingRight",
+                "paddingTop",
+                "paddingBottom",
+                "applyInnerMargin",
+            ]
+            .iter()
+            .any(|k| obj.is_some_and(|o| o.contains_key(*k)))
+        {
+            return Err(HwpError::RenderError(
+                "테두리 조각 교체와 셀 크기·안여백 변경은 별도로 적용해야 합니다".into(),
+            ));
+        }
 
         // [#5959] 역연산 기록 기준선 — 스타일 테이블 길이·dirty 플래그는 이 호출이
         // 손대기 전 값이다. 응답으로 돌려 TS 커맨드가 undo 때 원상 복구에 쓴다.
@@ -1382,9 +1500,11 @@ impl DocumentCore {
                     _ => crate::model::table::VerticalAlign::Top,
                 };
             }
-            if let Some(v) = top_u8("textDirection") {
+            let text_direction_changed = top_u8("textDirection").is_some_and(|v| {
+                let changed = cell.text_direction != v;
                 cell.text_direction = v;
-            }
+                changed
+            });
             if let Some(v) = top_bool("isHeader") {
                 cell.set_header(v);
             }
@@ -1415,6 +1535,9 @@ impl DocumentCore {
                         &original_width.to_le_bytes(),
                     );
                 }
+            }
+            if text_direction_changed {
+                table.invalidate_layout_page_break();
             }
             (needs_reflow, table.cells[cell_idx].paragraphs.len())
         };
@@ -1510,22 +1633,40 @@ impl DocumentCore {
 
             // 이웃 셀의 공유 엣지 테두리를 갱신
             // borders 배열: [좌(0), 우(1), 상(2), 하(3)]
-            bf_changes.extend(self.update_neighbor_borders(
-                section_idx,
-                parent_para_idx,
-                control_idx,
-                cell_idx,
-                target_row,
-                target_col,
-                target_col_span,
-                target_row_span,
-                &new_borders,
-            ));
+            let neighbors = if changed_sides == [true; 4] {
+                self.update_neighbor_borders(
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    target_row,
+                    target_col,
+                    target_col_span,
+                    target_row_span,
+                    &new_borders,
+                )
+            } else {
+                self.update_neighbor_borders_for_sides(
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    target_row,
+                    target_col,
+                    target_col_span,
+                    target_row_span,
+                    &new_borders,
+                    &changed_sides,
+                )
+            };
+            bf_changes.extend(neighbors);
             if new_bf_id != target_bf_before {
                 bf_changes.push((cell_idx, target_bf_before, new_bf_id));
             }
         }
 
+        let border_paint_undo_id =
+            self.commit_border_paint_plan((section_idx, parent_para_idx, control_idx), paint_plan);
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
         self.paginate_if_needed();
@@ -1555,6 +1696,7 @@ impl DocumentCore {
                 .collect::<Vec<_>>(),
             "borderFillLenBefore": border_fill_len_before,
             "docInfoDirtyBefore": doc_info_dirty_before,
+            "borderPaintUndoId": border_paint_undo_id,
         });
         Ok(response.to_string())
     }
@@ -1860,12 +2002,18 @@ impl DocumentCore {
             cells: Vec<CellIdPair>,
             #[serde(default)]
             zones: Vec<ZoneIdEntry>,
+            #[serde(default, rename = "borderPaintUndoIds")]
+            border_paint_undo_ids: Vec<u32>,
         }
 
         let payload: Payload = serde_json::from_str(json)
             .map_err(|e| HwpError::RenderError(format!("border fill ids 파싱 실패: {}", e)))?;
 
         let max_bf = self.document.doc_info.border_fills.len() as u16;
+        let paint_restores = self.border_paint_restores(
+            (section_idx, parent_para_idx, control_idx),
+            &payload.border_paint_undo_ids,
+        )?;
 
         // 1단계 전수 검증 — 하나라도 어긋나면 아무것도 적용하지 않는다.
         {
@@ -1940,6 +2088,18 @@ impl DocumentCore {
                     (None, None) => {}
                 }
             }
+            for ((cell, paragraph), value) in &paint_restores {
+                if let Some(cell) = cell {
+                    table.cells[*cell].paragraphs[*paragraph] = value.clone();
+                }
+            }
+        }
+        if let Some(value) = paint_restores.get(&(None, 0)) {
+            let p = &mut self.document.sections[section_idx].paragraphs[parent_para_idx];
+            *p = super::border_paint_edit::restore_parent(value.clone(), p);
+        }
+        for id in payload.border_paint_undo_ids {
+            self.discard_border_paint_undo_native(id);
         }
         self.rebuild_resolved_styles();
 
@@ -2067,6 +2227,33 @@ impl DocumentCore {
         target_row_span: usize,
         new_borders: &[crate::model::style::BorderLine; 4],
     ) -> Vec<(usize, u16, u16)> {
+        self.update_neighbor_borders_for_sides(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            skip_cell_idx,
+            target_row,
+            target_col,
+            target_col_span,
+            target_row_span,
+            new_borders,
+            &[true; 4],
+        )
+    }
+
+    fn update_neighbor_borders_for_sides(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        skip_cell_idx: usize,
+        target_row: usize,
+        target_col: usize,
+        target_col_span: usize,
+        target_row_span: usize,
+        new_borders: &[crate::model::style::BorderLine; 4],
+        sides: &[bool; 4],
+    ) -> Vec<(usize, u16, u16)> {
         use crate::model::style::BorderLine;
 
         // [#5959] 되돌림 기록 — (셀 인덱스, 이전 id, 새 id). id 이동이 없던 이웃은
@@ -2091,28 +2278,32 @@ impl DocumentCore {
                 let bf = cell.border_fill_id;
 
                 // 대상 셀의 좌측 엣지 공유 → 이웃 우측
-                if cc + cs == target_col
+                if sides[0]
+                    && cc + cs == target_col
                     && cr < target_row + target_row_span
                     && cr + rs > target_row
                 {
                     updates.push((ci, bf, 1, new_borders[0]));
                 }
                 // 대상 셀의 우측 엣지 공유 → 이웃 좌측
-                if cc == target_col + target_col_span
+                if sides[1]
+                    && cc == target_col + target_col_span
                     && cr < target_row + target_row_span
                     && cr + rs > target_row
                 {
                     updates.push((ci, bf, 0, new_borders[1]));
                 }
                 // 대상 셀의 상측 엣지 공유 → 이웃 하측
-                if cr + rs == target_row
+                if sides[2]
+                    && cr + rs == target_row
                     && cc < target_col + target_col_span
                     && cc + cs > target_col
                 {
                     updates.push((ci, bf, 3, new_borders[2]));
                 }
                 // 대상 셀의 하측 엣지 공유 → 이웃 상측
-                if cr == target_row + target_row_span
+                if sides[3]
+                    && cr == target_row + target_row_span
                     && cc < target_col + target_col_span
                     && cc + cs > target_col
                 {
@@ -2424,6 +2615,100 @@ impl DocumentCore {
         Ok("{\"ok\":true}".to_string())
     }
 
+    /// 셀 블록의 너비 또는 높이를 같게 맞춘다 (한컴 [표 - 셀 너비를 같게 / 셀 높이를 같게]).
+    ///
+    /// 블록은 `(start_row, start_col)`~`(end_row, end_col)` 격자 범위의 직사각형이다.
+    /// 너비는 저장한 셀 너비로, 높이는 화면에 그린 행 높이로 블록 길이를 재고 블록의
+    /// 셀 수로 나눈다. 블록 밖 셀은 제자리를 지키도록 격자를 다시 나눈다
+    /// (`Table::equalize_cell_block`). 반환: `{"ok":true,"rowCount":..,"colCount":..,"cellMap":[..]}`
+    /// — `cellMap[옛 셀 번호]`는 다시 정렬한 뒤의 셀 번호다.
+    #[allow(clippy::too_many_arguments)]
+    pub fn equalize_table_cell_sizes_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        block: (u16, u16, u16, u16),
+        axis: crate::model::table::CellSizeAxis,
+    ) -> Result<String, HwpError> {
+        use crate::model::table::CellSizeAxis;
+        self.ensure_table_cell_topology_supported(section_idx, parent_para_idx, control_idx)?;
+        let bounds = match axis {
+            CellSizeAxis::Width => self
+                .get_table_mut(section_idx, parent_para_idx, control_idx)?
+                .column_bounds()
+                .ok_or_else(|| {
+                    HwpError::RenderError(
+                        "행마다 칸 경계가 달라 셀 너비를 같게 맞출 수 없습니다".to_string(),
+                    )
+                })?,
+            CellSizeAxis::Height => {
+                self.paginate_if_needed();
+                let row_count = usize::from(
+                    self.get_table_mut(section_idx, parent_para_idx, control_idx)?
+                        .row_count,
+                );
+                let rows = self
+                    .measured_tables
+                    .get(section_idx)
+                    .and_then(|tables| {
+                        tables.iter().find(|t| {
+                            t.para_index == parent_para_idx
+                                && t.control_index == control_idx
+                                && t.unwrapped_table_depth == 0
+                                && t.row_heights.len() == row_count
+                        })
+                    })
+                    .ok_or_else(|| {
+                        HwpError::RenderError(
+                            "표의 행 높이를 재지 못해 셀 높이를 같게 맞출 수 없습니다".to_string(),
+                        )
+                    })?;
+                let mut bounds = vec![0i64];
+                let mut total = 0.0f64;
+                for height in &rows.row_heights {
+                    total += height * 7200.0 / self.dpi;
+                    bounds.push(total.round() as i64);
+                }
+                bounds
+            }
+        };
+        let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
+        let (moved_to, widened) = table
+            .equalize_cell_block(axis, block, &bounds)
+            .map_err(HwpError::RenderError)?;
+        let (row_count, col_count) = (table.row_count, table.col_count);
+        let reflow: Vec<(usize, usize)> = widened
+            .into_iter()
+            .map(|i| (i, table.cells[i].paragraphs.len()))
+            .collect();
+        self.reflow_table_cell_paragraphs(section_idx, parent_para_idx, control_idx, &reflow);
+        // 편집 세션의 재측정은 직전 측정의 행 배분을 행별 하한으로 둔다. 맞춘 크기가 새 기준이므로
+        // 이 표의 직전 측정을 버린다. 그대로 두면 행 수가 같은 블록에서 줄인 행이 옛 높이로 돌아간다.
+        if let Some(measured) = self.measured_sections.get_mut(section_idx) {
+            measured
+                .tables
+                .retain(|t| t.para_index != parent_para_idx || t.control_index != control_idx);
+        }
+
+        self.document.sections[section_idx].raw_stream = None;
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+
+        self.event_log.push(DocumentEvent::CellSplit {
+            section: section_idx,
+            para: parent_para_idx,
+            ctrl: control_idx,
+        });
+        let moved_to: Vec<String> = moved_to.iter().map(usize::to_string).collect();
+        Ok(super::super::helpers::json_ok_with(&format!(
+            "\"rowCount\":{},\"colCount\":{},\"cellMap\":[{}]",
+            row_count,
+            col_count,
+            moved_to.join(",")
+        )))
+    }
+
     /// 표의 열별 폭(HWPUNIT)을 절대값으로 설정한다 (네이티브).
     ///
     /// `widths.len()` 은 표의 열 수와 같아야 한다. `insert_table_column` 과 달리
@@ -2441,7 +2726,7 @@ impl DocumentCore {
             .set_column_widths(&widths)
             .map_err(HwpError::RenderError)?;
         let col_count = table.col_count;
-        let total: u32 = table.get_column_widths().iter().sum();
+        let total = table.common.width;
 
         // 폭이 바뀐 셀의 모든 문단을 재배치(line_segs 재계산)한다.
         let reflow: Vec<(usize, usize)> = {
@@ -2525,7 +2810,7 @@ impl DocumentCore {
 
         let new_total: u32 = {
             let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
-            table.get_column_widths().iter().sum()
+            table.common.width
         };
         Ok(super::super::helpers::json_ok_with(&format!(
             "\"colCount\":{},\"tableWidth\":{},\"pageContentWidth\":{},\"changed\":true",
@@ -2694,10 +2979,12 @@ impl DocumentCore {
         let common = &table.common;
         let table_width = common.width;
         let table_height = common.height;
-        let outer_left = common.margin.left;
-        let outer_right = common.margin.right;
-        let outer_top = common.margin.top;
-        let outer_bottom = common.margin.bottom;
+        // 바깥 여백은 조판과 HWPX 저장이 읽는 표 필드에서 조회한다. 새로 만든 표는
+        // `common.margin` 이 0이라, 그 값을 돌려주면 다시 쓸 때 여백이 사라진다.
+        let outer_left = table.outer_margin_left;
+        let outer_right = table.outer_margin_right;
+        let outer_top = table.outer_margin_top;
+        let outer_bottom = table.outer_margin_bottom;
 
         // 캡션 정보
         let caption_json = if let Some(ref cap) = table.caption {
@@ -2824,6 +3111,8 @@ impl DocumentCore {
         if let Some(v) = json_bool(json, "repeatHeader") {
             table.repeat_header = v;
         }
+        // [#7606] 넘긴 키가 바꾼 attr 비트. raw_ctrl_data FLAGS 에는 이 비트만 옮긴다.
+        let mut touched_attr: u32 = 0;
         if let Some(v) = json_bool(json, "treatAsChar") {
             if v {
                 table.attr |= 0x01;
@@ -2831,6 +3120,7 @@ impl DocumentCore {
                 table.attr &= !0x01;
             }
             table.common.treat_as_char = v;
+            touched_attr |= 0x01;
         }
 
         // 위치 속성: attr 비트 필드
@@ -2843,6 +3133,7 @@ impl DocumentCore {
                 _ => 0,
             };
             table.attr = (table.attr & !(0x07 << 21)) | (bits << 21);
+            touched_attr |= 0x07 << 21;
             table.common.text_wrap = match bits {
                 1 => crate::model::shape::TextWrap::TopAndBottom,
                 2 => crate::model::shape::TextWrap::BehindText,
@@ -2858,6 +3149,7 @@ impl DocumentCore {
                 _ => 0,
             };
             table.attr = (table.attr & !(0x03 << 3)) | (bits << 3);
+            touched_attr |= 0x03 << 3;
             table.common.vert_rel_to = match bits {
                 1 => crate::model::shape::VertRelTo::Page,
                 2 => crate::model::shape::VertRelTo::Para,
@@ -2874,6 +3166,7 @@ impl DocumentCore {
                 _ => 0,
             };
             table.attr = (table.attr & !(0x07 << 5)) | (bits << 5);
+            touched_attr |= 0x07 << 5;
             table.common.vert_align = match bits {
                 1 => crate::model::shape::VertAlign::Center,
                 2 => crate::model::shape::VertAlign::Bottom,
@@ -2891,6 +3184,7 @@ impl DocumentCore {
                 _ => 0,
             };
             table.attr = (table.attr & !(0x03 << 8)) | (bits << 8);
+            touched_attr |= 0x03 << 8;
             table.common.horz_rel_to = match bits {
                 1 => crate::model::shape::HorzRelTo::Page,
                 2 => crate::model::shape::HorzRelTo::Column,
@@ -2908,6 +3202,7 @@ impl DocumentCore {
                 _ => 0,
             };
             table.attr = (table.attr & !(0x07 << 10)) | (bits << 10);
+            touched_attr |= 0x07 << 10;
             table.common.horz_align = match bits {
                 1 => crate::model::shape::HorzAlign::Center,
                 2 => crate::model::shape::HorzAlign::Right,
@@ -2946,6 +3241,7 @@ impl DocumentCore {
                 table.common.flow_with_text = false;
             }
             table.common.attr = table.attr;
+            touched_attr |= 1 << 13;
         }
         // allowOverlap → attr bit 14
         if let Some(v) = json_bool(json, "allowOverlap") {
@@ -2957,20 +3253,33 @@ impl DocumentCore {
                 table.common.allow_overlap = false;
             }
             table.common.attr = table.attr;
+            touched_attr |= 1 << 14;
         }
         // attr 비트 변경을 raw_ctrl_data FLAGS(0..4)에도 반영. HWP5 직렬화기
         // (serialize_table)는 raw_ctrl_data 가 있으면 그대로 기록하므로, 여기
         // 반영하지 않으면 글자처럼 취급/배치/기준/정렬/쪽영역제한/겹침 변경이
         // 저장 파일에서 통째로 유실되고 재로드 시 원복된다. V_OFFSET/H_OFFSET/
-        // PREVENT_PAGE_BREAK/MARGIN_* 패치와 동일 규칙 (미변경 시에는 파싱
-        // 원본 attr 를 그대로 다시 쓰는 항등 연산이라 무해).
+        // PREVENT_PAGE_BREAK/MARGIN_* 패치와 동일 규칙.
+        // [#7606] 넘긴 키의 비트만 옮긴다. `table.attr` 를 통째로 쓰면 `table.attr` 가
+        // raw FLAGS 와 다른 표(생성 경로)에서 손대지 않은 비트까지 덮인다 — 글자처럼
+        // 취급으로 만든 표는 `table.attr` 가 0x04000006 이라 너비·높이 기준(bit 15–19)이
+        // 용지(0)로 저장됐다. 파싱한 표는 `table.attr` 가 raw FLAGS 와 같아(`parse_table`)
+        // 결과가 종전과 같다.
         // [#6388] raw 가 빌 수 있으므로(HWPX 파스본) 가드를 거친다. 종전에는 바로 위
         // 위치 오프셋 블록의 0 확장이 길이 4 를 보장해 무조건 색인해도 됐다.
-        patch_raw_ctrl_field(
-            &mut table.raw_ctrl_data,
-            common_obj_offsets::FLAGS,
-            &table.attr.to_le_bytes(),
-        );
+        let raw_flags = table
+            .raw_ctrl_data
+            .get(common_obj_offsets::FLAGS)
+            .and_then(|b| <[u8; 4]>::try_from(b).ok())
+            .map(u32::from_le_bytes);
+        if let Some(raw_flags) = raw_flags {
+            let flags = (raw_flags & !touched_attr) | (table.attr & touched_attr);
+            patch_raw_ctrl_field(
+                &mut table.raw_ctrl_data,
+                common_obj_offsets::FLAGS,
+                &flags.to_le_bytes(),
+            );
+        }
         // keepWithAnchor → prevent_page_break
         // CommonObjAttr::PREVENT_PAGE_BREAK (parse_common_obj_attr 정합)
         if let Some(v) = json_bool(json, "keepWithAnchor") {
@@ -2983,28 +3292,43 @@ impl DocumentCore {
             );
         }
 
-        // 바깥 여백 (CommonObjAttr margin ranges, parse_common_obj_attr 정합)
-        if table.raw_ctrl_data.len() >= common_obj_offsets::MARGIN_BOTTOM.end {
-            if let Some(v) = json_i16(json, "outerLeft") {
-                table.raw_ctrl_data[common_obj_offsets::MARGIN_LEFT]
-                    .copy_from_slice(&v.to_le_bytes());
-                table.common.margin.left = v;
-            }
-            if let Some(v) = json_i16(json, "outerRight") {
-                table.raw_ctrl_data[common_obj_offsets::MARGIN_RIGHT]
-                    .copy_from_slice(&v.to_le_bytes());
-                table.common.margin.right = v;
-            }
-            if let Some(v) = json_i16(json, "outerTop") {
-                table.raw_ctrl_data[common_obj_offsets::MARGIN_TOP]
-                    .copy_from_slice(&v.to_le_bytes());
-                table.common.margin.top = v;
-            }
-            if let Some(v) = json_i16(json, "outerBottom") {
-                table.raw_ctrl_data[common_obj_offsets::MARGIN_BOTTOM]
-                    .copy_from_slice(&v.to_le_bytes());
-                table.common.margin.bottom = v;
-            }
+        // 바깥 여백: 조판과 HWPX 저장은 `outer_margin_*`, HWP 저장 합성은 `common.margin` 을
+        // 읽는다. 둘을 함께 바꾸고, raw 는 길이가 허락할 때만 덧쓴다(HWPX 파스본은 비어 있다).
+        if let Some(v) = json_i16(json, "outerLeft") {
+            table.outer_margin_left = v;
+            table.common.margin.left = v;
+            patch_raw_ctrl_field(
+                &mut table.raw_ctrl_data,
+                common_obj_offsets::MARGIN_LEFT,
+                &v.to_le_bytes(),
+            );
+        }
+        if let Some(v) = json_i16(json, "outerRight") {
+            table.outer_margin_right = v;
+            table.common.margin.right = v;
+            patch_raw_ctrl_field(
+                &mut table.raw_ctrl_data,
+                common_obj_offsets::MARGIN_RIGHT,
+                &v.to_le_bytes(),
+            );
+        }
+        if let Some(v) = json_i16(json, "outerTop") {
+            table.outer_margin_top = v;
+            table.common.margin.top = v;
+            patch_raw_ctrl_field(
+                &mut table.raw_ctrl_data,
+                common_obj_offsets::MARGIN_TOP,
+                &v.to_le_bytes(),
+            );
+        }
+        if let Some(v) = json_i16(json, "outerBottom") {
+            table.outer_margin_bottom = v;
+            table.common.margin.bottom = v;
+            patch_raw_ctrl_field(
+                &mut table.raw_ctrl_data,
+                common_obj_offsets::MARGIN_BOTTOM,
+                &v.to_le_bytes(),
+            );
         }
 
         // 캡션 생성/수정
@@ -3017,23 +3341,15 @@ impl DocumentCore {
                     number_type: crate::model::control::AutoNumberType::Table,
                     ..Default::default()
                 };
-                let mut cap_para = crate::model::paragraph::Paragraph::new_empty();
                 // 한컴 표 캡션은 AutoNumber 앞에 "표" 접두어를 함께 표시한다.
-                cap_para.text = "표  ".to_string();
-                cap_para.char_count = 13;
-                cap_para.char_count_msb = true;
-                cap_para.control_mask = 1u32 << 0x12;
-                cap_para.char_offsets = vec![0, 1, 2, 11];
+                let mut cap_para =
+                    crate::model::paragraph::Paragraph::new_auto_number_caption("표 ", an);
                 cap_para.style_id = caption_style_id;
                 cap_para.para_shape_id = caption_para_shape_id;
                 cap_para.char_shapes = vec![crate::model::paragraph::CharShapeRef {
                     start_pos: 0,
                     char_shape_id: caption_char_shape_id,
                 }];
-                cap_para
-                    .controls
-                    .push(crate::model::control::Control::AutoNumber(an));
-                cap_para.ctrl_data_records.push(None);
                 // max_width = 표 전체 폭 (열 폭 합산)
                 let total_width: u32 = table
                     .cells
@@ -3113,7 +3429,7 @@ impl DocumentCore {
         }
 
         // 캡션 생성/수정/삭제 후에는 문서 전체 AutoNumber를 다시 배정한다.
-        // 중간 표 캡션 삭제 시 남은 표 번호가 한컴처럼 1부터 이어지도록 보장한다.
+        // 번호 종류를 가진 표는 캡션을 지워도 개체 순번을 계속 소유한다.
         if caption_created || caption_changed {
             crate::parser::assign_auto_numbers(&mut self.document);
             if let Some(crate::model::control::Control::Table(ref mut tbl)) =
@@ -3147,6 +3463,29 @@ impl DocumentCore {
             }
         }
 
+        if (caption_created || caption_changed)
+            && self
+                .get_table_mut(section_idx, parent_para_idx, control_idx)?
+                .common
+                .treat_as_char
+        {
+            // 캡션 문단만 다시 조판하면 host의 저장 줄은 옛 상자 높이를
+            // 유지한다. 인라인 표의 점유 결과를 본문 줄과 후속 문단도 소비한다.
+            let stored_end = crate::renderer::composer::paragraph_flow_end(
+                &self.document.sections[section_idx].paragraphs[parent_para_idx],
+            );
+            self.reflow_paragraph(section_idx, parent_para_idx);
+            let hwp3_layout = self.document.layout_profile().hwp3_layout();
+            crate::renderer::composer::recalculate_section_vpos(
+                &mut self.document.sections[section_idx].paragraphs,
+                parent_para_idx,
+                None,
+                stored_end,
+                &self.styles,
+                self.dpi,
+                hwp3_layout,
+            );
+        }
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
         self.paginate_if_needed();
@@ -3441,68 +3780,7 @@ impl DocumentCore {
                 ));
             }
 
-            // 컨트롤이 차지하는 갭의 시작 위치를 찾아 char_offsets 조정
-            // serialize_para_text와 동일한 로직으로 control_idx번째 컨트롤의 위치를 찾는다
-            let text_chars: Vec<char> = para.text.chars().collect();
-            let mut ci = 0usize;
-            let mut prev_end: u32 = 0;
-            let mut gap_start: Option<u32> = None;
-            'outer: for i in 0..text_chars.len() {
-                let offset = if i < para.char_offsets.len() {
-                    para.char_offsets[i]
-                } else {
-                    prev_end
-                };
-                while prev_end + 8 <= offset && ci < para.controls.len() {
-                    if ci == control_idx {
-                        gap_start = Some(prev_end);
-                        break 'outer;
-                    }
-                    ci += 1;
-                    prev_end += 8;
-                }
-                // 문자 크기 산정
-                let char_size: u32 = if text_chars[i] == '\t' {
-                    8
-                } else if text_chars[i].len_utf16() == 2 {
-                    2
-                } else {
-                    1
-                };
-                prev_end = offset + char_size;
-            }
-            // 텍스트 뒤에 배치된 컨트롤 (남은 컨트롤)
-            if gap_start.is_none() {
-                while ci < para.controls.len() {
-                    if ci == control_idx {
-                        gap_start = Some(prev_end);
-                        break;
-                    }
-                    ci += 1;
-                    prev_end += 8;
-                }
-            }
-
-            // char_offsets 조정: 컨트롤 이후의 모든 offset을 8 감소
-            if let Some(gs) = gap_start {
-                let threshold = gs + 8;
-                for offset in para.char_offsets.iter_mut() {
-                    if *offset >= threshold {
-                        *offset -= 8;
-                    }
-                }
-            }
-
-            // 컨트롤 및 대응하는 ctrl_data_record 제거
-            let removed = para.controls.remove(control_idx);
-            if control_idx < para.ctrl_data_records.len() {
-                para.ctrl_data_records.remove(control_idx);
-            }
-
-            // char_count 갱신 (확장 컨트롤 = 8 code unit)
-            if para.char_count >= 8 {
-                para.char_count -= 8;
-            }
+            let removed = para.remove_control(control_idx);
 
             section.raw_stream = None;
             match removed {
@@ -3884,7 +4162,7 @@ impl DocumentCore {
 }
 
 /// 셀 텍스트에서 숫자를 추출한다 (콤마 제거, 공백 무시).
-fn parse_cell_number(text: &str) -> Option<f64> {
+pub(super) fn parse_cell_number(text: &str) -> Option<f64> {
     let cleaned: String = text
         .chars()
         .filter(|c| !c.is_whitespace() && *c != ',')

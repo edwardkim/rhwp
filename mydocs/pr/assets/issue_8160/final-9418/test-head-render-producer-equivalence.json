@@ -1,0 +1,15 @@
+{
+  "test_head_sha": "ef69d163e05062f9c281968a0f9e0884a616aec3",
+  "actual_render_producer": "5df67d3299befb467a49dc4eaafd12d6e1877e2d",
+  "paths": [
+    "src",
+    "crates",
+    "Cargo.toml",
+    "Cargo.lock",
+    "rhwp-studio",
+    "rhwp-vscode"
+  ],
+  "different_paths": [],
+  "actual_build_relabelled": false,
+  "prior_test_head_sha": "72c144f49c2531ee49fe9fd1b3b626052a7ee8e7"
+}

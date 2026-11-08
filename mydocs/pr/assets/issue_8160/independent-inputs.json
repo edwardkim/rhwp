@@ -1,0 +1,571 @@
+{
+  "role": "Independent diagnostic evidence; not normal whole-page golden outputs. Main three-document 384-page gate is separate.",
+  "files": [
+    {
+      "path": "pdf/issue8160/anisotropic-palette-independent-2020.pdf",
+      "sha256": "94c8cdbc354ae06ee4aa874c3d6ac6d923422c1be953c62c5bc79391a6e471f7",
+      "bytes": 10418,
+      "proofs": [
+        "print-raster-transfer-contract.json"
+      ],
+      "mcp": {
+        "job_id": "0e808b24-65fe-44cb-815b-524f899c069d",
+        "status": "succeeded",
+        "engine": "2020",
+        "result": {
+          "hancom_version": "11.0.0.9136",
+          "backend": "hwp-managed-direct-dll-host",
+          "input_format": "hwpx",
+          "format": "pdf",
+          "bytes": 10418,
+          "pdf_page_count": 1,
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+        }
+      }
+    },
+    {
+      "path": "samples/issue8160/anisotropic-palette-independent.hwpx",
+      "sha256": "3176ad49bce8bca7f7a3e4bf469da5fe566338a095605183f568bfbd522e40f6",
+      "bytes": 24882,
+      "proofs": [
+        "print-raster-transfer-contract.json"
+      ]
+    },
+    {
+      "path": "pdf/issue8160/bitmap-channel-transfer-independent-2020.pdf",
+      "sha256": "a26ce51e31a76f7649c23a45b9f9711a735058ef2168487250ff29135229ecc3",
+      "bytes": 6713,
+      "proofs": [
+        "print-raster-transfer-contract.json"
+      ],
+      "mcp": {
+        "job_id": "7f3fee9f-a41d-4cd9-8928-428866e29748",
+        "status": "succeeded",
+        "engine": "2020",
+        "result": {
+          "hancom_version": "11.0.0.9136",
+          "backend": "hwp-managed-direct-dll-host",
+          "input_format": "hwpx",
+          "format": "pdf",
+          "bytes": 6713,
+          "pdf_page_count": 1,
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+        }
+      }
+    },
+    {
+      "path": "pdf/issue8160/bitmap-channel-transfer-independent-2024.pdf",
+      "sha256": "cb99add7db63dc4f783a7484a611b43175fbd08ab68fa5d3b22ddd223dcf4880",
+      "bytes": 6115,
+      "proofs": [
+        "print-raster-transfer-contract.json"
+      ],
+      "mcp": {
+        "job_id": "c809e4c5-6378-463f-8f07-0086d93d3ef1",
+        "status": "succeeded",
+        "engine": "2024",
+        "result": {
+          "hancom_version": "13.0.0.3901",
+          "backend": "hwp-managed-direct-dll-host",
+          "input_format": "hwpx",
+          "format": "pdf",
+          "bytes": 6115,
+          "pdf_page_count": 1,
+          "pdf_print_method": 0,
+          "pdf_output_mode": "frame_print_to_pdf_ex_one_up"
+        }
+      }
+    },
+    {
+      "path": "samples/issue8160/bitmap-channel-transfer-independent.hwpx",
+      "sha256": "cdb26249443ca1a2e0200245ece0df75255acc7b20278fbdaa8378e398db9784",
+      "bytes": 19887,
+      "proofs": [
+        "print-raster-transfer-contract.json"
+      ]
+    },
+    {
+      "path": "pdf/issue8160/bitmap-color-transfer-independent-2024.pdf",
+      "sha256": "e6a2960d0b6bef74548bfd581d992a829037f5224a6a20a7394010c93563bf4f",
+      "bytes": 7403,
+      "proofs": [
+        "print-raster-transfer-contract.json"
+      ],
+      "mcp": {
+        "job_id": "ff11bfda-2642-4b2c-bd7b-a5ee679adf51",
+        "status": "succeeded",
+        "engine": "2024",
+        "result": {
+          "hancom_version": "13.0.0.3901",
+          "backend": "hwp-managed-direct-dll-host",
+          "input_format": "hwpx",
+          "format": "pdf",
+          "bytes": 7403,
+          "pdf_page_count": 1,
+          "pdf_print_method": 0,
+          "pdf_output_mode": "frame_print_to_pdf_ex_one_up"
+        }
+      }
+    },
+    {
+      "path": "samples/issue8160/bitmap-color-transfer-independent.hwpx",
+      "sha256": "eed906786a2a128d2c9a2e3799b4ae594d35c1f2b66b6b125f9b5e4760eff4c5",
+      "bytes": 20703,
+      "proofs": [
+        "print-raster-transfer-contract.json"
+      ]
+    },
+    {
+      "path": "samples/issue8160/mixed-fit-frontiers-independent.hwpx",
+      "sha256": "03ce9a277b3d209c592ef7bdd13e7df60992b9a752e817b1f9d42123f968d303",
+      "bytes": 11748,
+      "proofs": [
+        "poppy-original-widths.json"
+      ]
+    },
+    {
+      "path": "pdf/issue8160/poppy-math-fallback-independent-2024.pdf",
+      "sha256": "8e37787a811c9952a7bccc8985d98daabd97669db1ed16404683ceab2ab02bbe",
+      "bytes": 8829,
+      "proofs": [
+        "poppy-original-widths.json"
+      ]
+    },
+    {
+      "path": "samples/issue8160/poppy-math-fallback-independent.hwpx",
+      "sha256": "530d31df7872c76ae918674a1767e9c20ecb2d7988b1ba9de851a36323f20ded",
+      "bytes": 11785,
+      "proofs": [
+        "poppy-original-widths.json"
+      ]
+    },
+    {
+      "path": "pdf/issue8160/print-raster-frame-a3-independent-2024.pdf",
+      "sha256": "6093b128fe7e96bbe3b2fe1d462e304dab6f12f30f13e2dc55a486679cbb4488",
+      "bytes": 5942,
+      "proofs": [
+        "print-raster-frame-contract.json"
+      ],
+      "mcp": {
+        "job_id": "ac0533ff-7cc7-45e7-ad55-1f18ce582ba8",
+        "status": "succeeded",
+        "engine": "2024",
+        "result": {
+          "hancom_version": "13.0.0.3901",
+          "backend": "hwp-managed-direct-dll-host",
+          "input_format": "hwpx",
+          "format": "pdf",
+          "bytes": 5942,
+          "pdf_page_count": 1,
+          "pdf_print_method": 0,
+          "pdf_output_mode": "frame_print_to_pdf_ex_one_up"
+        }
+      }
+    },
+    {
+      "path": "samples/issue8160/print-raster-frame-a3-independent.hwpx",
+      "sha256": "ce5999d41e011a4e8604abe7a5a05c3935e9a7dec4f7a769f32f5fe8c360a5ba",
+      "bytes": 16237,
+      "proofs": [
+        "print-raster-frame-contract.json"
+      ]
+    },
+    {
+      "path": "pdf/issue8160/print-raster-frame-a4-independent-2024.pdf",
+      "sha256": "de8c2b695997525268acc8e18cc20fed48529e16acbb7600339e56c5b4306f43",
+      "bytes": 5936,
+      "proofs": [
+        "print-raster-frame-contract.json"
+      ],
+      "mcp": {
+        "job_id": "25ef7240-c812-47df-8ee3-a274703baaf3",
+        "status": "succeeded",
+        "engine": "2024",
+        "result": {
+          "hancom_version": "13.0.0.3901",
+          "backend": "hwp-managed-direct-dll-host",
+          "input_format": "hwpx",
+          "format": "pdf",
+          "bytes": 5936,
+          "pdf_page_count": 1,
+          "pdf_print_method": 0,
+          "pdf_output_mode": "frame_print_to_pdf_ex_one_up"
+        }
+      }
+    },
+    {
+      "path": "samples/issue8160/print-raster-frame-a4-independent.hwpx",
+      "sha256": "c832748ac560000d00c0ca4b8c119c042e2ebd5dfa4edd2fae42da0dd86f800b",
+      "bytes": 16236,
+      "proofs": [
+        "print-raster-frame-contract.json"
+      ]
+    },
+    {
+      "path": "pdf/issue8160/print-raster-frame-a5-independent-2024.pdf",
+      "sha256": "abcad257305119881fffbbf6bf7cbd68a226796413baf87a7fa8c353129bf52f",
+      "bytes": 5946,
+      "proofs": [
+        "print-raster-frame-contract.json"
+      ],
+      "mcp": {
+        "job_id": "06b780e1-37ec-4b6a-990d-45ee3e53c41d",
+        "status": "succeeded",
+        "engine": "2024",
+        "result": {
+          "hancom_version": "13.0.0.3901",
+          "backend": "hwp-managed-direct-dll-host",
+          "input_format": "hwpx",
+          "format": "pdf",
+          "bytes": 5946,
+          "pdf_page_count": 1,
+          "pdf_print_method": 0,
+          "pdf_output_mode": "frame_print_to_pdf_ex_one_up"
+        }
+      }
+    },
+    {
+      "path": "samples/issue8160/print-raster-frame-a5-independent.hwpx",
+      "sha256": "5673ff338de17194f009acdeccdb642c8217d872bf65e3e91064c252307ab6a3",
+      "bytes": 16235,
+      "proofs": [
+        "print-raster-frame-contract.json"
+      ]
+    },
+    {
+      "path": "pdf/issue8160/print-raster-frame-attributes-a4-independent-2024.pdf",
+      "sha256": "8915ef02bc70dee24d300f37b8e06d58ccf1b198e337982394128cacb7a57cae",
+      "bytes": 5970,
+      "proofs": [
+        "print-raster-frame-contract.json"
+      ],
+      "mcp": {
+        "job_id": "c6e86e70-664e-4da0-ac2d-52776cfb4325",
+        "status": "succeeded",
+        "engine": "2024",
+        "result": {
+          "hancom_version": "13.0.0.3901",
+          "backend": "hwp-managed-direct-dll-host",
+          "input_format": "hwpx",
+          "format": "pdf",
+          "bytes": 5970,
+          "pdf_page_count": 1,
+          "pdf_print_method": 0,
+          "pdf_output_mode": "frame_print_to_pdf_ex_one_up"
+        }
+      }
+    },
+    {
+      "path": "samples/issue8160/print-raster-frame-attributes-a4-independent.hwpx",
+      "sha256": "9178b057be9a9f6a3738b4c7274abf76b9ec2566c291863244f9082c03502e17",
+      "bytes": 17056,
+      "proofs": [
+        "print-raster-frame-contract.json"
+      ]
+    },
+    {
+      "path": "pdf/issue8160/print-raster-frame-phase-a4-independent-2024.pdf",
+      "sha256": "02ca7fcd84c8ca8a052f102986514cdec1982af22aa35cfc95551e881a7ec704",
+      "bytes": 5869,
+      "proofs": [
+        "print-raster-frame-contract.json"
+      ],
+      "mcp": {
+        "job_id": "b738ab98-3309-4aac-93ec-93c6f3712ea2",
+        "status": "succeeded",
+        "engine": "2024",
+        "result": {
+          "hancom_version": "13.0.0.3901",
+          "backend": "hwp-managed-direct-dll-host",
+          "input_format": "hwpx",
+          "format": "pdf",
+          "bytes": 5869,
+          "pdf_page_count": 1,
+          "pdf_print_method": 0,
+          "pdf_output_mode": "frame_print_to_pdf_ex_one_up"
+        }
+      }
+    },
+    {
+      "path": "samples/issue8160/print-raster-frame-phase-a4-independent.hwpx",
+      "sha256": "e7e404d5d274013d0658ba4853e8cf9194fb761f40c81cfa35930094a3011813",
+      "bytes": 15821,
+      "proofs": [
+        "print-raster-frame-contract.json"
+      ]
+    },
+    {
+      "path": "pdf/issue8160/synthetic-italic-independent-2020.pdf",
+      "sha256": "78d83546a8c3fa812de1692bd7b71731a98827cb682a2a84e972817efca3906f",
+      "bytes": 66578,
+      "proofs": [
+        "synthetic-italic-print-contract.json"
+      ],
+      "mcp": {
+        "job_id": "e295c953-a2e3-4987-9499-3570e93e819a",
+        "status": "succeeded",
+        "engine": "2020",
+        "result": {
+          "hancom_version": "11.0.0.9136",
+          "backend": "hwp-managed-direct-dll-host",
+          "input_format": "hwpx",
+          "format": "pdf",
+          "bytes": 66578,
+          "pdf_page_count": 2,
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+        }
+      }
+    },
+    {
+      "path": "pdf/issue8160/synthetic-italic-independent-2024.pdf",
+      "sha256": "c75b32fcd9b2977349490d2a3b68db42f49d598865cd99f9986cc95754adfc9d",
+      "bytes": 55890,
+      "proofs": [
+        "synthetic-italic-print-contract.json"
+      ],
+      "mcp": {
+        "job_id": "507af5e7-cfa0-4bad-b9d9-34c068bcbd18",
+        "status": "succeeded",
+        "engine": "2024",
+        "result": {
+          "hancom_version": "13.0.0.3901",
+          "backend": "hwp-managed-direct-dll-host",
+          "input_format": "hwpx",
+          "format": "pdf",
+          "bytes": 55890,
+          "pdf_page_count": 2,
+          "pdf_print_method": 0,
+          "pdf_output_mode": "frame_print_to_pdf_ex_one_up"
+        }
+      }
+    },
+    {
+      "path": "samples/issue8160/synthetic-italic-independent.hwpx",
+      "sha256": "9dab270ebc6b9c35359c249687fcd1ba899c82a2362110ff5a869dc0dac8ce7c",
+      "bytes": 12552,
+      "proofs": [
+        "synthetic-italic-print-contract.json"
+      ]
+    },
+    {
+      "path": "pdf/issue8160/tab-leader-independent-2024.pdf",
+      "sha256": "3c8ee47dea976547f3321008e06847a430af0341292d7438f962046465a68c27",
+      "bytes": 17294,
+      "proofs": [
+        "tab-leader-print-contract.json"
+      ]
+    },
+    {
+      "path": "samples/issue8160/tab-leader-independent-saved-2024.hwp",
+      "sha256": "cfe615850e895ca2e47ea7b6592ef44e217bec7d6b155a96eebe07f7c231d4a2",
+      "bytes": 24064,
+      "proofs": [
+        "tab-leader-print-contract.json"
+      ]
+    },
+    {
+      "path": "samples/issue8160/tab-leader-independent.hwpx",
+      "sha256": "f0b72e57ca14b3e4d5d4b050a797745abef7fde3e418621dcd36567fc5b3650d",
+      "bytes": 12220,
+      "proofs": [
+        "tab-leader-print-contract.json"
+      ]
+    },
+    {
+      "path": "pdf/issue8160/wmf-fixed-face-dx-independent-2020.pdf",
+      "sha256": "8aec7d494b2fa1a0372e2b402119fa864c243ede29271c014ca0f78748984a08",
+      "bytes": 14914,
+      "proofs": [],
+      "mcp": {
+        "job_id": "652ed048-5b8a-433c-aae0-cb6b804333aa",
+        "status": "succeeded",
+        "engine": "2020",
+        "result": {
+          "hancom_version": "11.0.0.9136",
+          "backend": "hwp-managed-direct-dll-host",
+          "input_format": "hwpx",
+          "format": "pdf",
+          "bytes": 14914,
+          "pdf_page_count": 2,
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+        }
+      }
+    },
+    {
+      "path": "samples/issue8160/wmf-fixed-face-dx-independent.hwpx",
+      "sha256": "5ca98aa53a60467113d8a1e5a1103a72fd377a6d5dcf5a061cbbaa7f04159919",
+      "bytes": 13147,
+      "proofs": []
+    },
+    {
+      "path": "pdf/issue8160/wmf-nested-raster-unique-independent-2020.pdf",
+      "sha256": "916a2297dbc382c81487bd4680d41a426271af8b7c31cc6bcc4e03f15a78a220",
+      "bytes": 30985,
+      "proofs": [],
+      "mcp": {
+        "job_id": "25628ea1-f51c-46cf-9a25-d67152dd5e57",
+        "status": "succeeded",
+        "engine": "2020",
+        "result": {
+          "hancom_version": "11.0.0.9136",
+          "backend": "hwp-managed-direct-dll-host",
+          "input_format": "hwpx",
+          "format": "pdf",
+          "bytes": 30985,
+          "pdf_page_count": 1,
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+        }
+      }
+    },
+    {
+      "path": "samples/issue8160/wmf-nested-raster-unique-independent.hwpx",
+      "sha256": "241722af26b96490606f8700be32090bfb2b95e551412fe29ec2821d1a5f5b4c",
+      "bytes": 25101,
+      "proofs": []
+    },
+    {
+      "path": "pdf/issue8160/wmf-polygon-order-independent-2020.pdf",
+      "sha256": "9e411d80fa497f40b065aa8994fda2bc66056b97746cbcd23b3bacf1219ca2ea",
+      "bytes": 10835,
+      "proofs": [],
+      "mcp": {
+        "job_id": "688a4560-6816-41c3-ba0c-be838da425fb",
+        "status": "succeeded",
+        "engine": "2020",
+        "result": {
+          "hancom_version": "11.0.0.9136",
+          "backend": "hwp-managed-direct-dll-host",
+          "input_format": "hwpx",
+          "format": "pdf",
+          "bytes": 10835,
+          "pdf_page_count": 1,
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+        }
+      }
+    },
+    {
+      "path": "samples/issue8160/wmf-polygon-order-independent.hwpx",
+      "sha256": "9fc8b19be9ee857cca1c2196788fc0ed5891286eb50ac1c2501345b0550cb045",
+      "bytes": 15561,
+      "proofs": []
+    },
+    {
+      "path": "pdf/issue8160/wmf-position-dx-independent-2020.pdf",
+      "sha256": "1cc4a1bded103ec75a1a320d11a6e9150809eaa6a199b39c9617c624f19e2a9a",
+      "bytes": 12066,
+      "proofs": [],
+      "mcp": {
+        "job_id": "94e55112-adfe-4110-a70e-7d6429d1ee08",
+        "status": "succeeded",
+        "engine": "2020",
+        "result": {
+          "hancom_version": "11.0.0.9136",
+          "backend": "hwp-managed-direct-dll-host",
+          "input_format": "hwpx",
+          "format": "pdf",
+          "bytes": 12066,
+          "pdf_page_count": 4,
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+        }
+      }
+    },
+    {
+      "path": "samples/issue8160/wmf-position-dx-independent.hwpx",
+      "sha256": "0367e35d748a07837be883cd50f0b382e96dd76bbac0c32a7795a30f29cc877c",
+      "bytes": 13396,
+      "proofs": []
+    },
+    {
+      "path": "pdf/issue8160/wmf-size-dx-independent-2020.pdf",
+      "sha256": "54d4ee403d1c34d53f47b2fc7ba68402c8de77a44f0ffb5d925c26116c7f2d19",
+      "bytes": 11510,
+      "proofs": [
+        "wmf-gdi-text-contract.json"
+      ],
+      "mcp": {
+        "job_id": "72d98e4e-0f97-4de2-841b-7fc617d3a3d1",
+        "status": "succeeded",
+        "engine": "2020",
+        "result": {
+          "hancom_version": "11.0.0.9136",
+          "backend": "hwp-managed-direct-dll-host",
+          "input_format": "hwpx",
+          "format": "pdf",
+          "bytes": 11510,
+          "pdf_page_count": 2,
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+        }
+      }
+    },
+    {
+      "path": "samples/issue8160/wmf-size-dx-independent.hwpx",
+      "sha256": "a7100dc7f8a09846351ee0bb44706a7655600b1b740ad2239dfe32cddcdbdbf0",
+      "bytes": 13307,
+      "proofs": [
+        "wmf-gdi-text-contract.json"
+      ]
+    },
+    {
+      "path": "pdf/issue8160/wmf-source-pair-independent-2020.pdf",
+      "sha256": "1b8ee8c664e807f288a62fd402b80b7ac1daeb6f8b96e8aafa42f17e10bf84c1",
+      "bytes": 31731,
+      "proofs": [
+        "wmf-source-rop-pair-contract.json"
+      ],
+      "mcp": {
+        "job_id": "6f61f0f2-3a41-4981-9ce3-726a36f54932",
+        "status": "succeeded",
+        "engine": "2020",
+        "result": {
+          "hancom_version": "11.0.0.9136",
+          "backend": "hwp-managed-direct-dll-host",
+          "input_format": "hwpx",
+          "format": "pdf",
+          "bytes": 31731,
+          "pdf_page_count": 1,
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+        }
+      }
+    },
+    {
+      "path": "pdf/issue8160/wmf-source-pair-independent-2024.pdf",
+      "sha256": "1db8090530751c18dc74ef31ef55958138e78c6def23994f7490b2c224b20fe9",
+      "bytes": 66363,
+      "proofs": [
+        "wmf-source-rop-pair-contract.json"
+      ],
+      "mcp": {
+        "job_id": "b9e96ccd-f5dd-4d5d-91b3-dce445955599",
+        "status": "succeeded",
+        "engine": "2024",
+        "result": {
+          "hancom_version": "13.0.0.3901",
+          "backend": "hwp-managed-direct-dll-host",
+          "input_format": "hwpx",
+          "format": "pdf",
+          "bytes": 66363,
+          "pdf_page_count": 1,
+          "pdf_print_method": 0,
+          "pdf_output_mode": "frame_print_to_pdf_ex_one_up"
+        }
+      }
+    },
+    {
+      "path": "samples/issue8160/wmf-source-pair-independent.hwpx",
+      "sha256": "14315791a1d81b0706a835bf52017cdd9ce4ecca6d0e4baf2cafad5c250956e8",
+      "bytes": 35813,
+      "proofs": [
+        "wmf-source-rop-pair-contract.json"
+      ]
+    }
+  ]
+}

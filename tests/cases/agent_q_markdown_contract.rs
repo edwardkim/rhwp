@@ -5,8 +5,8 @@ use std::path::Path;
 use std::process::{Command, Output};
 
 fn bin() -> String {
-    std::env::var("CARGO_BIN_EXE_rhwp-q-markdown")
-        .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp-q-markdown").to_string())
+    std::env::var("CARGO_BIN_EXE_rhwp-q")
+        .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp-q").to_string())
 }
 
 fn sample() -> String {
@@ -18,6 +18,7 @@ fn sample() -> String {
 
 fn run(args: &[&str]) -> Output {
     Command::new(bin())
+        .arg("markdown")
         .args(args)
         .output()
         .expect("rhwp-q-markdown 실행 실패")
@@ -74,7 +75,7 @@ fn out_of_range_page_is_runtime() {
 
 #[test]
 fn source_never_calls_mutators() {
-    let src = include_str!("../../src/bin/rhwp-q-markdown.rs");
+    let src = include_str!("../../src/bin/rhwp-q/commands/rhwp-q-markdown.rs");
     for needle in [".apply_", ".insert_", ".delete_", ".set_"] {
         assert!(
             !src.contains(needle),

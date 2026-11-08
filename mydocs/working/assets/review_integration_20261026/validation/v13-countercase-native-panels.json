@@ -1,0 +1,38 @@
+[
+  {
+    "key": "picture-countercase-picture-flow-tail-gap-only-fit-no-ls",
+    "page": 2,
+    "compare": "mydocs/working/assets/review_integration_20261026/validation/images/stage-v13/picture-flow-tail-gap-only-fit-no-ls-p002-native-compare.png",
+    "actual_sha256": "73b527eaa92d2de453c2efb4778ee997e684cc1a613d6fca5d02362b664d8c28",
+    "reference_sha256": "251649689853ee26ba2abe5dc52b3b43f6d10022c7c460bcadc4850069614886",
+    "directly_viewed": true,
+    "observed": "Picture ownership, shared-row order/alignment and following paragraph preserved against the independent Print. Diagnostic source is not treated as proof that original p122 matches."
+  },
+  {
+    "key": "picture-countercase-picture-flow-tail-gap-boundary-no-ls",
+    "page": 2,
+    "compare": "mydocs/working/assets/review_integration_20261026/validation/images/stage-v13/picture-flow-tail-gap-boundary-no-ls-p002-native-compare.png",
+    "actual_sha256": "ba6d0ead15304f74741111495a8c799dec5c68b36e26147c6d9f4f9b8177c343",
+    "reference_sha256": "bbab439b96c56e19f2cc1dd96290f19cf314a7519d4c06326f6efb0d6b202cf5",
+    "directly_viewed": true,
+    "observed": "Picture ownership, shared-row order/alignment and following paragraph preserved against the independent Print. Diagnostic source is not treated as proof that original p122 matches."
+  },
+  {
+    "key": "picture-countercase-picture-flow-column-transition-no-ls",
+    "page": 2,
+    "compare": "mydocs/working/assets/review_integration_20261026/validation/images/stage-v13/picture-flow-column-transition-no-ls-p002-native-compare.png",
+    "actual_sha256": "8bfb7d16f12d121fa7485f7f1c0b27754529dc5c949c5813ec0bc6f27432bf6d",
+    "reference_sha256": "94f8250c836cf53a7f6f6a1fb7b955a610acbceec3f552c88441b0a7d91db16e",
+    "directly_viewed": true,
+    "observed": "Picture ownership, shared-row order/alignment and following paragraph preserved against the independent Print. Diagnostic source is not treated as proof that original p122 matches."
+  },
+  {
+    "key": "picture-countercase-picture-flow-mixed-center-row-no-ls",
+    "page": 2,
+    "compare": "mydocs/working/assets/review_integration_20261026/validation/images/stage-v13/picture-flow-mixed-center-row-no-ls-p002-native-compare.png",
+    "actual_sha256": "26adbe29aea9a98270e6934f7f1c37c02a894a0aded576c54383e9fe6adce3bd",
+    "reference_sha256": "78a812e1cedf97e190879d21397911dc14749b2f9d38f0a29dcbf14396b0b57c",
+    "directly_viewed": true,
+    "observed": "Picture ownership, shared-row order/alignment and following paragraph preserved against the independent Print. Diagnostic source is not treated as proof that original p122 matches."
+  }
+]

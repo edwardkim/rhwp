@@ -1,0 +1,32 @@
+{
+  "status": "invalid_stale_chart_dependency",
+  "source_commit": "f5c3972844442d7d2c74496bfd4db06cec26615b",
+  "native_binary_sha256": "4be33bcbd8321197d0aea218321c6af3177479eedeada751f5ad8659a9e6b321",
+  "font_condition": "이전 시스템 대체 선택과 동일한 51개 글꼴",
+  "note": "선분 보정에 따른 Native 비교만 통과. fresh WASM, 전 범위, #8188 최종 검증 및 전체 회귀 미완료.",
+  "results": [
+    {
+      "input": "issue3307",
+      "pages": 9,
+      "page_sets_equal": true,
+      "minimum": 96.67154,
+      "drops": [],
+      "before_tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8319/dash3307-all-before-native.tsv",
+      "before_sha256": "6eb3d83f0662ffc9a4cb32e37f669b303406b16709592e690081bb91acb96b38",
+      "after_tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8319/dash3307-all-after-native.tsv",
+      "after_sha256": "585e6fc0bfcc5af544381608dbf61cd4a0cf2372a99d3370cdaff34aa278e4ed"
+    },
+    {
+      "input": "issue2007",
+      "pages": 17,
+      "page_sets_equal": true,
+      "minimum": 94.47057,
+      "drops": [],
+      "before_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/nested-height-cache.tsv",
+      "before_sha256": "af48c16fe41eb6361e2fbee4f812aa50c184df3f6b57639f9c248094b10b60b7",
+      "after_tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8319/issue2007-all-after-native.tsv",
+      "after_sha256": "be160b3609aeaa27552bc0416e7f852300c16b7dfa625a77d1c332a57813ffc6"
+    }
+  ],
+  "invalidation_note": "이 Native 실행 파일은 이전 차트 라이브러리를 포함하므로 현재 소스의 최종 결과가 아니다."
+}

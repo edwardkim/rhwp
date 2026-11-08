@@ -6,6 +6,7 @@ import io
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -82,30 +83,32 @@ class PrReviewGateTests(unittest.TestCase):
             check=True,
             text=True,
             capture_output=True,
+            encoding="utf-8",
+            env={**os.environ, "PYTHONIOENCODING": "utf-8"},
         )
         self.assertIn("90% 실루엣 gate", completed.stdout)
 
     def test_below_ninety_requires_re_review(self) -> None:
         gate = SWEEP.pr_review_gate(
-            [{"page": 3, "tolerant_content_match_percent": 89.99}],
+            [{"page": 3, "silhouette_raw_match_percent": 89.99}],
             font_mismatch_evidence=None,
         )
         self.assertEqual(gate["status"], "re_review_required")
         self.assertEqual(
             gate["below_threshold_pages"],
-            [{"page": 3, "tolerant_content_match_percent": 89.99}],
+            [{"page": 3, "silhouette_raw_match_percent": 89.99}],
         )
 
     def test_ninety_and_above_passes(self) -> None:
         gate = SWEEP.pr_review_gate(
-            [{"page": 3, "tolerant_content_match_percent": 90.0}],
+            [{"page": 3, "silhouette_raw_match_percent": 90.0}],
             font_mismatch_evidence=None,
         )
         self.assertEqual(gate["status"], "passed")
 
     def test_missing_requested_metric_requires_re_review(self) -> None:
         gate = SWEEP.pr_review_gate(
-            [{"page": 7, "tolerant_content_match_percent": 99.0}],
+            [{"page": 7, "silhouette_raw_match_percent": 99.0}],
             expected_pages=[7, 8],
             font_mismatch_evidence=None,
         )
@@ -115,7 +118,7 @@ class PrReviewGateTests(unittest.TestCase):
     def test_hashed_font_mismatch_evidence_does_not_waive_low_metric(self) -> None:
         evidence = {"path": "scratch/font-mismatch.md", "sha256": "a" * 64}
         gate = SWEEP.pr_review_gate(
-            [{"page": 3, "tolerant_content_match_percent": 28.4}],
+            [{"page": 3, "silhouette_raw_match_percent": 28.4}],
             font_mismatch_evidence=evidence,
         )
         self.assertEqual(gate["status"], "re_review_required")
@@ -123,7 +126,7 @@ class PrReviewGateTests(unittest.TestCase):
 
     def test_hashed_font_evidence_does_not_waive_missing_page(self) -> None:
         gate = SWEEP.pr_review_gate(
-            [{"page": 3, "tolerant_content_match_percent": 90.0}],
+            [{"page": 3, "silhouette_raw_match_percent": 90.0}],
             expected_pages=[3, 4],
             font_mismatch_evidence={"path": "scratch/font.md", "sha256": "a" * 64},
         )
@@ -133,8 +136,8 @@ class PrReviewGateTests(unittest.TestCase):
     def test_one_low_page_cannot_be_offset_by_high_pages(self) -> None:
         gate = SWEEP.pr_review_gate(
             [
-                {"page": 1, "tolerant_content_match_percent": 100.0},
-                {"page": 2, "tolerant_content_match_percent": 89.99},
+                {"page": 1, "silhouette_raw_match_percent": 100.0},
+                {"page": 2, "silhouette_raw_match_percent": 89.99},
             ],
         )
         self.assertEqual(gate["status"], "re_review_required")
@@ -211,7 +214,7 @@ class OverlayLabelFitTests(unittest.TestCase):
             fast_dir = temp_dir / "fast"
             manifest = SWEEP.write_silhouette_tsv([(14, rhwp_path, pdf_path)], fast_dir, "summary")
             row = (fast_dir / "silhouette.tsv").read_text().splitlines()[1].split("\t")
-            self.assertEqual(float(row[1]), summary["worst_tolerant_content_match_percent"])
+            self.assertEqual(row[1], f"{summary['worst_tolerant_content_match_percent']:.2f}")
             self.assertFalse(list(fast_dir.rglob("*.png")))
             self.assertNotEqual(manifest["pr_review_gate"]["status"], "passed")
             with self.assertRaises(SystemExit):
@@ -402,17 +405,67 @@ class SelectedRasterTests(unittest.TestCase):
             Path("reference.pdf"), 144, Path("out/pdf"), [1, 3]
         )
 
-        self.assertEqual(len(commands), 2)
-        self.assertEqual(commands[0][1:5], ["-f", "1", "-l", "1"])
-        self.assertEqual(commands[1][1:5], ["-f", "3", "-l", "3"])
-        self.assertEqual(commands[0][-2:], ["reference.pdf", "out/pdf"])
+        self.assertEqual(len(commands), 1)
+        command = commands[0]
+        self.assertEqual(command[0], sys.executable)
+        self.assertEqual(Path(command[1]).name, "visual_sweep_pdf.py")
+        self.assertEqual(command[2:], ["--pdf", "reference.pdf", "--dpi", "144",
+                                      "--prefix", str(Path("out") / "pdf"), "--pages", "1,3"])
 
     def test_pdf_raster_commands_keeps_full_document_default(self) -> None:
         commands = SWEEP.pdf_raster_commands(
             Path("reference.pdf"), 144, Path("out/pdf"), None
         )
 
-        self.assertEqual(commands, [["pdftoppm", "-r", "144", "-png", "reference.pdf", "out/pdf"]])
+        self.assertEqual(len(commands), 1)
+        self.assertEqual(commands[0][0], sys.executable)
+        self.assertEqual(Path(commands[0][1]).name, "visual_sweep_pdf.py")
+        self.assertEqual(commands[0][2:], ["--pdf", "reference.pdf", "--dpi", "144",
+                                         "--prefix", str(Path("out") / "pdf")])
+
+@unittest.skipUnless(shutil.which("pdftoppm"), "Poppler is required for the actual reference raster contract")
+class PdfRasterFillStateTests(unittest.TestCase):
+    @staticmethod
+    def pdf(content: str) -> bytes:
+        # Independent PDF contract: w changes strokes, never the following fill.
+        objects = [
+            "<< /Type /Catalog /Pages 2 0 R >>",
+            "<< /Type /Pages /Count 1 /Kids [3 0 R] >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 80 100] /Resources << >> /Contents 4 0 R >>",
+            f"<< /Length {len(content)} >>\nstream\n{content}endstream",
+        ]
+        data = bytearray(b"%PDF-1.4\n")
+        offsets = []
+        for number, body in enumerate(objects, 1):
+            offsets.append(len(data))
+            data.extend(f"{number} 0 obj\n{body}\nendobj\n".encode("ascii"))
+        xref = len(data)
+        data.extend(f"xref\n0 {len(objects) + 1}\n0000000000 65535 f \n".encode("ascii"))
+        for offset in offsets:
+            data.extend(f"{offset:010} 00000 n \n".encode("ascii"))
+        data.extend(
+            f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n".encode("ascii")
+        )
+        return bytes(data)
+
+    def test_stroke_width_cannot_erase_or_change_a_filled_rectangle(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            for rule, fill in [("nonzero", "f"), ("evenodd", "f*")]:
+                with self.subTest(fill=fill):
+                    outputs = []
+                    for index, state in enumerate(["", ".14 w "]):
+                        source = Path(directory) / f"source-{rule}-{index}.pdf"
+                        source.write_bytes(self.pdf(state + f"0 g 10 20 60 .12 re {fill}\n"))
+                        prefix = Path(directory) / f"page-{rule}-{index}"
+                        for command in SWEEP.pdf_raster_commands(source, 96, prefix, [1]):
+                            subprocess.run(command, check=True, capture_output=True)
+                        with Image.open(prefix.with_name(prefix.name + "-001.png")) as raster:
+                            outputs.append(raster.convert("RGB"))
+                    self.assertLess(min(outputs[0].convert("L").getdata()), 255, "the declared black fill must be visible")
+                    self.assertEqual(
+                        outputs[0].tobytes(), outputs[1].tobytes(),
+                        "the PDF reference must preserve identical fill geometry when only an unused stroke width changes",
+                    )
 
 
 class EmbeddedFontPreflightTests(unittest.TestCase):
@@ -447,7 +500,7 @@ class EmbeddedFontPreflightTests(unittest.TestCase):
             report = Path(temp) / 'font-check.json'
             with self.assertRaisesRegex(SystemExit, 'Unicode cmap'):
                 SWEEP.check_sweep_embedded_fonts([svg], report)
-            record = json.loads(report.read_text())
+            record = json.loads(report.read_text(encoding="utf-8"))
             self.assertEqual(record['status'], 'failed')
             self.assertEqual(record['pages'][0]['fonts'][0]['family'], 'Fixture')
 
@@ -495,6 +548,15 @@ class EmbeddedFontPreflightTests(unittest.TestCase):
             self.assertEqual(args, ['--embed-fonts=full', '--font-path', str(fonts)])
             self.assertEqual(supply['source'], 'macOS_user_fonts')
 
+    def test_inaccessible_macos_user_font_directory_is_not_an_installed_source(self):
+        with (
+            patch.dict(os.environ, {'RHWP_FONT_PATH': ''}),
+            patch.object(SWEEP.platform, 'system', return_value='Darwin'),
+            patch.object(Path, 'home', return_value=Path('/isolated-user')),
+            patch.object(Path, 'is_dir', side_effect=PermissionError('격리된 사용자 글꼴')),
+        ):
+            self.assertEqual(SWEEP.default_sweep_font_paths(), [])
+
     def test_missing_configured_font_directory_fails_before_capture(self):
         with tempfile.TemporaryDirectory() as temp:
             missing = Path(temp) / 'missing-fonts'
@@ -509,9 +571,23 @@ class EmbeddedFontPreflightTests(unittest.TestCase):
                 patch.object(SWEEP, 'ensure_tools'),
                 patch.object(SWEEP, 'ensure_default_rhwp_binary_is_current'),
                 patch.object(SWEEP, 'render_target', return_value={}) as render,
+                patch.object(SWEEP, 'enforce_required_handbook') as handbook,
             ):
                 SWEEP.main()
             self.assertEqual(render.call_args.kwargs['embed_fonts'], 'full')
+            handbook.assert_not_called()
+
+    def test_normal_target_runs_handbook_when_requested(self):
+        with tempfile.TemporaryDirectory() as temp:
+            with (
+                patch.object(sys, 'argv', ['visual_sweep.py', '--file-target', 'fixture', 'a.hwp', 'a.pdf', '--out', temp, '--handbook-gate']),
+                patch.object(SWEEP, 'ensure_tools'),
+                patch.object(SWEEP, 'ensure_default_rhwp_binary_is_current'),
+                patch.object(SWEEP, 'render_target', return_value={}),
+                patch.object(SWEEP, 'enforce_required_handbook') as handbook,
+            ):
+                SWEEP.main()
+            handbook.assert_called_once()
 
     def test_font_failure_invalidates_old_passed_summary_before_raster_or_resume(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -615,7 +691,7 @@ class WasmSweepTests(unittest.TestCase):
                     for page in (1, 2):
                         (output / f'raw_svg/wasm_{page:03}.svg').write_text('<svg><text x="4">WASM</text></svg>')
                         (output / f'render_tree/render_tree_{page:03}.json').write_text('{"type":"Page","bbox":{"x":4}}')
-                    (output / 'manifest.json').write_text('{"pageCount":2}')
+                    (output / 'manifest.json').write_text('{"pageCount":2,"layoutGeneration":"2022"}')
                 else:
                     # Native pagination is deliberately different: only its font CSS is used.
                     (Path(command[command.index('-o') + 1]) / 'native.svg').write_text('<svg><style>@font-face {font-family: "A";src:local("A")}</style><text x="99">Native</text></svg>')
@@ -637,7 +713,7 @@ class WasmSweepTests(unittest.TestCase):
             def incomplete_run(command, **kwargs):
                 result = fake_run(command, **kwargs)
                 if command[0] == 'node':
-                    (Path(command[-1]) / 'render_tree/render_tree_002.json').unlink()
+                    (Path(command[command.index('--out') + 1]) / 'render_tree/render_tree_002.json').unlink()
                 return result
 
             with patch.object(SWEEP, 'run', side_effect=incomplete_run):

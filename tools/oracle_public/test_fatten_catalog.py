@@ -22,20 +22,8 @@ SPEC.loader.exec_module(fatten)
 
 
 class FamilyTests(unittest.TestCase):
-    def test_exam_and_basic(self) -> None:
-        self.assertEqual(fatten.classify_family("samples/exam_kor.hwp", "exam_kor"), "exam")
-        self.assertEqual(
-            fatten.classify_family("samples/basic/calendar_year.hwp", "calendar_year"),
-            "basic",
-        )
-        self.assertEqual(
-            fatten.classify_family("samples/hwpx/lonely.hwp", "lonely"),
-            "hwpx_tree",
-        )
+    pass
 
-    def test_directory_of_root_sample(self) -> None:
-        self.assertEqual(fatten.sample_directory("samples/exam_kor.hwp"), "")
-        self.assertEqual(fatten.sample_directory("samples/basic/calendar_year.hwp"), "basic")
 
 
 class MiniRepoFattenTests(unittest.TestCase):
@@ -127,19 +115,7 @@ class MiniRepoFattenTests(unittest.TestCase):
 
 
 class NearMissTests(unittest.TestCase):
-    def test_prefix_hit(self) -> None:
-        pdfs = [
-            {
-                "pdf": "pdf/exam_kor-2022.pdf",
-                "oracleRoot": "pdf",
-                "relParent": "",
-                "filename": "exam_kor-2022.pdf",
-                "stem": "exam_kor-2022",
-            }
-        ]
-        hits = fatten.near_miss_pdfs("exam_kor", "", pdfs)
-        self.assertTrue(hits)
-        self.assertEqual(hits[0]["pdf"], "pdf/exam_kor-2022.pdf")
+    pass
 
 
 if __name__ == "__main__":

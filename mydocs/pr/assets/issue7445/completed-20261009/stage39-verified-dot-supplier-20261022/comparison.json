@@ -1,0 +1,162 @@
+[
+  {
+    "key": "image-stack",
+    "rows": [
+      {
+        "page": 1,
+        "base": "97.42222",
+        "candidate": "96.94292",
+        "deltaPp": "-0.47930"
+      },
+      {
+        "page": 2,
+        "base": "99.12796",
+        "candidate": "98.81702",
+        "deltaPp": "-0.31094"
+      },
+      {
+        "page": 3,
+        "base": "98.50524",
+        "candidate": "98.12236",
+        "deltaPp": "-0.38288"
+      },
+      {
+        "page": 4,
+        "base": "99.94824",
+        "candidate": "99.94634",
+        "deltaPp": "-0.00190"
+      },
+      {
+        "page": 5,
+        "base": "100.00000",
+        "candidate": "100.00000",
+        "deltaPp": "0.00000"
+      },
+      {
+        "page": 6,
+        "base": "99.99772",
+        "candidate": "99.99770",
+        "deltaPp": "-0.00002"
+      },
+      {
+        "page": 7,
+        "base": "99.99883",
+        "candidate": "99.99885",
+        "deltaPp": "0.00002"
+      },
+      {
+        "page": 8,
+        "base": "99.99873",
+        "candidate": "99.99807",
+        "deltaPp": "-0.00066"
+      }
+    ]
+  },
+  {
+    "key": "regulatory17",
+    "rows": [
+      {
+        "page": 1,
+        "base": "83.57000",
+        "candidate": "99.39670",
+        "deltaPp": "15.82670"
+      },
+      {
+        "page": 2,
+        "base": "99.13863",
+        "candidate": "99.26826",
+        "deltaPp": "0.12963"
+      },
+      {
+        "page": 3,
+        "base": "99.64289",
+        "candidate": "99.63758",
+        "deltaPp": "-0.00531"
+      },
+      {
+        "page": 4,
+        "base": "94.89919",
+        "candidate": "100.00000",
+        "deltaPp": "5.10081"
+      },
+      {
+        "page": 5,
+        "base": "95.02835",
+        "candidate": "100.00000",
+        "deltaPp": "4.97165"
+      },
+      {
+        "page": 6,
+        "base": "94.41365",
+        "candidate": "100.00000",
+        "deltaPp": "5.58635"
+      },
+      {
+        "page": 7,
+        "base": "86.57817",
+        "candidate": "100.00000",
+        "deltaPp": "13.42183"
+      },
+      {
+        "page": 8,
+        "base": "81.56829",
+        "candidate": "100.00000",
+        "deltaPp": "18.43171"
+      },
+      {
+        "page": 9,
+        "base": "85.25300",
+        "candidate": "99.96492",
+        "deltaPp": "14.71192"
+      },
+      {
+        "page": 10,
+        "base": "94.34597",
+        "candidate": "100.00000",
+        "deltaPp": "5.65403"
+      },
+      {
+        "page": 11,
+        "base": "95.93277",
+        "candidate": "100.00000",
+        "deltaPp": "4.06723"
+      },
+      {
+        "page": 12,
+        "base": "85.54828",
+        "candidate": "100.00000",
+        "deltaPp": "14.45172"
+      },
+      {
+        "page": 13,
+        "base": "97.45215",
+        "candidate": "100.00000",
+        "deltaPp": "2.54785"
+      },
+      {
+        "page": 14,
+        "base": "96.86896",
+        "candidate": "100.00000",
+        "deltaPp": "3.13104"
+      },
+      {
+        "page": 15,
+        "base": "73.73353",
+        "candidate": "100.00000",
+        "deltaPp": "26.26647"
+      },
+      {
+        "page": 16,
+        "base": "83.14280",
+        "candidate": "100.00000",
+        "deltaPp": "16.85720"
+      },
+      {
+        "page": 17,
+        "base": "100.00000",
+        "candidate": "100.00000",
+        "deltaPp": "0.00000"
+      }
+    ]
+  }
+]

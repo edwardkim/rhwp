@@ -1,0 +1,18 @@
+{
+  "key": "partial_table_following_text",
+  "page": 1,
+  "row": 0,
+  "col": 1,
+  "base": "5716a226b562b7300193dd0b573ded9cd71ac890",
+  "candidate_src_tree": "c1ea19fbc94dd6aac77d4368755b6da5a9544e42",
+  "crop": [
+    238,
+    138,
+    351,
+    267
+  ],
+  "base_pixels_sha256": "3be727d6d1c0f72a9c2b3536596c22af019fc2219df8d5701d156a33b25acb13",
+  "candidate_pixels_sha256": "3be727d6d1c0f72a9c2b3536596c22af019fc2219df8d5701d156a33b25acb13",
+  "identical": true,
+  "note": "Existing Square picture/text overlap and anchor difference remain; no improvement claimed for this cell."
+}

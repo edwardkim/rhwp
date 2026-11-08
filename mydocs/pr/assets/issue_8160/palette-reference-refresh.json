@@ -1,0 +1,77 @@
+{
+  "purpose": "Independent synthetic palette controls for regression correction. Identical source bytes printed with actual Hancom 2020 and 2024; 2020 is the explicit compatibility control.",
+  "conversions": [
+    {
+      "input": "pdf/issue7642-metafile-palette-visibility-20261017/bitmap-white-palette-controls.hwpx",
+      "input_sha256": "0460afdbe6ed8f9a4272cac1828645760038421a6aa03338c96d6e730a8cab55",
+      "pdf": "pdf/issue8160/bitmap-white-palette-controls-2020.pdf",
+      "pdf_sha256": "55b213c8164c59f4bdda482a4c7bd0756e5b1490db5df8d6f9f47a13af40a99c",
+      "job_id": "f18056ef-f258-47b5-a9a9-eb15ad481fef",
+      "requested_engine": "2020",
+      "pages": 1,
+      "painted_images": 6,
+      "all_embedded_images": "JPEG",
+      "print_execution": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "backend": "hwp-managed-direct-dll-host"
+      }
+    },
+    {
+      "input": "pdf/issue7642-metafile-palette-visibility-20261017/bitmap-white-palette-controls.hwpx",
+      "input_sha256": "0460afdbe6ed8f9a4272cac1828645760038421a6aa03338c96d6e730a8cab55",
+      "pdf": "pdf/issue8160/bitmap-white-palette-controls-2024.pdf",
+      "pdf_sha256": "8cf7dbe4ce8b1cd52c72ddbf9f9177e8c1a70a4fa49bae5e9971510ac84a8750",
+      "job_id": "9cfedee1-4452-422d-9d6a-8bbac54ba3b5",
+      "requested_engine": "2024",
+      "pages": 1,
+      "painted_images": 6,
+      "all_embedded_images": "JPEG",
+      "print_execution": {
+        "engine": "2024",
+        "hancom_version": "13.0.0.3901",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "backend": "hwp-managed-direct-dll-host"
+      }
+    },
+    {
+      "input": "pdf/issue7642-metafile-palette-visibility-20261017/bitmap-indexed-color-controls.hwpx",
+      "input_sha256": "b6e326a5a7b486a85cb49c599611ec80f39e516b3ac2c6a93efaf6241542e04b",
+      "pdf": "pdf/issue8160/bitmap-indexed-color-controls-2020.pdf",
+      "pdf_sha256": "40e2a63219f62a1bef22c229205e169261bdaeb2b070f2e29b4128ee51325859",
+      "job_id": "bb3dfe02-0aaf-4903-8893-9a4788d72267",
+      "requested_engine": "2020",
+      "pages": 1,
+      "painted_images": 12,
+      "all_embedded_images": "JPEG",
+      "print_execution": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "backend": "hwp-managed-direct-dll-host"
+      }
+    },
+    {
+      "input": "pdf/issue7642-metafile-palette-visibility-20261017/bitmap-indexed-color-controls.hwpx",
+      "input_sha256": "b6e326a5a7b486a85cb49c599611ec80f39e516b3ac2c6a93efaf6241542e04b",
+      "pdf": "pdf/issue8160/bitmap-indexed-color-controls-2024.pdf",
+      "pdf_sha256": "7a09f328926e0dccbc5b2a61f0cb8a763cbdaaf0455cc86aca3f789af0ccef63",
+      "job_id": "9b8bd85f-7052-40f5-ac17-1b439f0ca62f",
+      "requested_engine": "2024",
+      "pages": 1,
+      "painted_images": 12,
+      "all_embedded_images": "JPEG",
+      "print_execution": {
+        "engine": "2024",
+        "hancom_version": "13.0.0.3901",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "backend": "hwp-managed-direct-dll-host"
+      }
+    }
+  ]
+}

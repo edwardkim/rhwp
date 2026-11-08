@@ -1,7 +1,10 @@
+#[path = "column_width_contract_tests.rs"]
+mod column_width_contract_tests;
+
 use super::super::page_layout::PageLayoutInfo;
 use super::super::pagination::{ColumnContent, PageContent, PageItem};
 use super::text_measurement::estimate_text_width;
-use super::utils::{expand_numbering_format, numbering_format_to_number_format};
+use super::utils::expand_numbering_format;
 use super::*;
 use crate::model::image::Picture;
 use crate::model::page::{ColumnDef, PageDef};
@@ -112,9 +115,9 @@ fn note_separator_length_resolves_schema_sentinels_and_absolute_hwpunit() {
     assert!((note_separator_length_px(72_000, width, dpi) - width).abs() < 1e-9);
     assert_eq!(note_separator_length_px(0, width, dpi), 0.0);
 
-    // FootnoteArea가 실제 단 폭/시작점을 갖기 전에는 상대 sentinel을 넓히지 않는다.
+    // 실제 각주 프레임이 넘긴 폭에서 1/3·전체 너비 sentinel을 해석한다.
     assert!((footnote_separator_length_px(-3, width, dpi) - 200.0).abs() < 1e-9);
-    assert!((footnote_separator_length_px(-4, width, dpi) - 200.0).abs() < 1e-9);
+    assert!((footnote_separator_length_px(-4, width, dpi) - width).abs() < 1e-9);
 }
 
 #[test]
@@ -181,6 +184,7 @@ fn footnote_separator_caller_uses_absolute_hwpunit_width() {
         ..Default::default()
     }];
     let footnotes = vec![FootnoteRef {
+        column_index: 0,
         number: 1,
         source: FootnoteSource::Body {
             para_index: 0,
@@ -203,6 +207,8 @@ fn footnote_separator_caller_uses_absolute_hwpunit_width() {
         &ResolvedStyleSet::default(),
         &area,
         &shape,
+        &[0],
+        &[],
     );
 
     let line = footnote_area
@@ -464,63 +470,19 @@ fn stored_layout_relocated_picture_caption_uses_next_saved_flow_anchor() {
         height: 900.0,
     };
 
-    let flow_top = stored_layout_relocated_empty_rowbreak_picture_next_flow_top(
-        true,
-        &host,
-        &table,
-        Some(&next),
-        &col,
-        96.0,
-    )
-    .expect("이월 그림의 다음 저장 anchor");
+    let flow_top =
+        stored_relocated_picture_successor_origin(true, &host, &table, Some(&next), 96.0)
+            .filter(|origin| *origin <= col.height)
+            .map(|origin| col.y + origin)
+            .expect("이월 그림의 다음 저장 원점");
     assert!(
         (flow_top - 488.386_666_7).abs() < 0.001,
         "flow_top={flow_top}"
     );
     assert!(
-        stored_layout_relocated_empty_rowbreak_picture_next_flow_top(
-            false,
-            &host,
-            &table,
-            Some(&next),
-            &col,
-            96.0,
-        )
-        .is_none()
+        stored_relocated_picture_successor_origin(false, &host, &table, Some(&next), 96.0)
+            .is_none()
     );
-}
-
-#[test]
-fn oversized_row_width_outlier_does_not_expand_base_columns() {
-    let mut cells = Vec::new();
-    for row in 0..3 {
-        for col in 0..2 {
-            cells.push(Cell {
-                row,
-                col,
-                row_span: 1,
-                col_span: 1,
-                width: if row == 0 && col == 0 { 150 } else { 100 },
-                ..Default::default()
-            });
-        }
-    }
-    let table = Table {
-        row_count: 3,
-        col_count: 2,
-        cells,
-        common: CommonObjAttr {
-            width: 200,
-            ..Default::default()
-        },
-        ..Default::default()
-    };
-    let engine = LayoutEngine::with_default_dpi();
-    let widths = engine.resolve_column_widths(&table, 2);
-    let expected = hwpunit_to_px(100, DEFAULT_DPI);
-
-    assert!((widths[0] - expected).abs() < 0.01, "widths={widths:?}");
-    assert!((widths[1] - expected).abs() < 0.01, "widths={widths:?}");
 }
 
 #[test]
@@ -581,6 +543,8 @@ fn test_build_page_with_paragraph() {
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
+            paragraph_origins: Default::default(),
+            computed_paragraphs: Default::default(),
             column_index: 0,
             start_height: 0.0,
             endnote_flow: false,
@@ -594,7 +558,12 @@ fn test_build_page_with_paragraph() {
             overlay_cuts: Vec::new(),
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
+            stored_paragraph_flow_ends: Default::default(),
+            host_compositions: Default::default(),
+            stored_column_top_spacings: Default::default(),
             paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
+            page_band_flow_starts: Default::default(),
         }],
         active_header: None,
         active_footer: None,
@@ -663,6 +632,8 @@ fn partial_paragraph_start_line_beyond_lines_does_not_panic() {
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
+            paragraph_origins: Default::default(),
+            computed_paragraphs: Default::default(),
             column_index: 0,
             start_height: 0.0,
             endnote_flow: false,
@@ -681,7 +652,12 @@ fn partial_paragraph_start_line_beyond_lines_does_not_panic() {
             overlay_cuts: Vec::new(),
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
+            stored_paragraph_flow_ends: Default::default(),
+            host_compositions: Default::default(),
+            stored_column_top_spacings: Default::default(),
             paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
+            page_band_flow_starts: Default::default(),
         }],
         active_header: None,
         active_footer: None,
@@ -743,7 +719,19 @@ fn test_layout_with_composed_styles() {
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
 
     let styles = ResolvedStyleSet {
+        section_tab_width_bits: Default::default(),
+        source_hwp3_native: false,
+        source_program_projection_slots: Default::default(),
+        isolated_jamo_font: None,
+        script_metrics: Default::default(),
+        native_pua_fonts: Default::default(),
+        display_only_otf_slots: Default::default(),
+        char_overlap_size_bounds: None,
+        source_char_shapes: Default::default(),
+        resolved_dpi: None,
         page_number_char_style_id: None,
+        style_char_shapes: Vec::new(),
+        page_number_font_is_hft: false,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         char_styles: vec![
@@ -777,6 +765,8 @@ fn test_layout_with_composed_styles() {
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
+            paragraph_origins: Default::default(),
+            computed_paragraphs: Default::default(),
             column_index: 0,
             start_height: 0.0,
             endnote_flow: false,
@@ -790,7 +780,12 @@ fn test_layout_with_composed_styles() {
             overlay_cuts: Vec::new(),
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
+            stored_paragraph_flow_ends: Default::default(),
+            host_compositions: Default::default(),
+            stored_column_top_spacings: Default::default(),
             paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
+            page_band_flow_starts: Default::default(),
         }],
         active_header: None,
         active_footer: None,
@@ -887,7 +882,19 @@ fn test_layout_multi_run_x_position() {
 
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
     let styles = ResolvedStyleSet {
+        section_tab_width_bits: Default::default(),
+        source_hwp3_native: false,
+        source_program_projection_slots: Default::default(),
+        isolated_jamo_font: None,
+        script_metrics: Default::default(),
+        native_pua_fonts: Default::default(),
+        display_only_otf_slots: Default::default(),
+        char_overlap_size_bounds: None,
+        source_char_shapes: Default::default(),
+        resolved_dpi: None,
         page_number_char_style_id: None,
+        style_char_shapes: Vec::new(),
+        page_number_font_is_hft: false,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         char_styles: vec![
@@ -916,6 +923,8 @@ fn test_layout_multi_run_x_position() {
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
+            paragraph_origins: Default::default(),
+            computed_paragraphs: Default::default(),
             column_index: 0,
             start_height: 0.0,
             endnote_flow: false,
@@ -929,7 +938,12 @@ fn test_layout_multi_run_x_position() {
             overlay_cuts: Vec::new(),
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
+            stored_paragraph_flow_ends: Default::default(),
+            host_compositions: Default::default(),
+            stored_column_top_spacings: Default::default(),
             paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
+            page_band_flow_starts: Default::default(),
         }],
         active_header: None,
         active_footer: None,
@@ -981,7 +995,19 @@ fn test_resolved_to_text_style() {
     use crate::renderer::style_resolver::ResolvedCharStyle;
 
     let styles = ResolvedStyleSet {
+        section_tab_width_bits: Default::default(),
+        source_hwp3_native: false,
+        source_program_projection_slots: Default::default(),
+        isolated_jamo_font: None,
+        script_metrics: Default::default(),
+        native_pua_fonts: Default::default(),
+        display_only_otf_slots: Default::default(),
+        char_overlap_size_bounds: None,
+        source_char_shapes: Default::default(),
+        resolved_dpi: None,
         page_number_char_style_id: None,
+        style_char_shapes: Vec::new(),
+        page_number_font_is_hft: false,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
@@ -1019,7 +1045,19 @@ fn test_resolved_to_text_style_with_ratio() {
     use crate::renderer::style_resolver::ResolvedCharStyle;
 
     let styles = ResolvedStyleSet {
+        section_tab_width_bits: Default::default(),
+        source_hwp3_native: false,
+        source_program_projection_slots: Default::default(),
+        isolated_jamo_font: None,
+        script_metrics: Default::default(),
+        native_pua_fonts: Default::default(),
+        display_only_otf_slots: Default::default(),
+        char_overlap_size_bounds: None,
+        source_char_shapes: Default::default(),
+        resolved_dpi: None,
         page_number_char_style_id: None,
+        style_char_shapes: Vec::new(),
+        page_number_font_is_hft: false,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
@@ -1294,7 +1332,9 @@ fn test_layout_table_basic() {
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
     // border_fill_id=1은 styles.border_styles[0]을 참조 (1-indexed)
     let styles = ResolvedStyleSet {
+        section_tab_width_bits: Default::default(),
         page_number_char_style_id: None,
+        style_char_shapes: Vec::new(),
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         border_styles: vec![ResolvedBorderStyle::default()],
@@ -1308,6 +1348,8 @@ fn test_layout_table_basic() {
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
+            paragraph_origins: Default::default(),
+            computed_paragraphs: Default::default(),
             column_index: 0,
             start_height: 0.0,
             endnote_flow: false,
@@ -1327,7 +1369,12 @@ fn test_layout_table_basic() {
             overlay_cuts: Vec::new(),
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
+            stored_paragraph_flow_ends: Default::default(),
+            host_compositions: Default::default(),
+            stored_column_top_spacings: Default::default(),
             paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
+            page_band_flow_starts: Default::default(),
         }],
         active_header: None,
         active_footer: None,
@@ -1466,6 +1513,8 @@ fn test_layout_table_cell_positions() {
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
+            paragraph_origins: Default::default(),
+            computed_paragraphs: Default::default(),
             column_index: 0,
             start_height: 0.0,
             endnote_flow: false,
@@ -1485,7 +1534,12 @@ fn test_layout_table_cell_positions() {
             overlay_cuts: Vec::new(),
             inline_placements: Default::default(),
             inline_flow_plans: Default::default(),
+            stored_paragraph_flow_ends: Default::default(),
+            host_compositions: Default::default(),
+            stored_column_top_spacings: Default::default(),
             paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
+            page_band_flow_starts: Default::default(),
         }],
         active_header: None,
         active_footer: None,
@@ -1587,7 +1641,7 @@ fn test_expand_numbering_format_digit() {
         heads: [NumberingHead {
             number_format: 0,
             ..Default::default()
-        }; 7],
+        }; 10],
         level_formats: [
             "^1.".to_string(),
             "^2.".to_string(),
@@ -1596,12 +1650,15 @@ fn test_expand_numbering_format_digit() {
             String::new(),
             String::new(),
             String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
         ],
         start_number: 0,
-        level_start_numbers: [1, 1, 1, 1, 1, 1, 1],
+        level_start_numbers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         raw_para_heads: None,
     };
-    let counters = [3, 2, 1, 0, 0, 0, 0];
+    let counters = [3, 2, 1, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^1.",
         &counters,
@@ -1632,7 +1689,7 @@ fn test_expand_numbering_format_digit() {
 
 #[test]
 fn test_expand_numbering_format_hangul() {
-    let mut heads = [NumberingHead::default(); 7];
+    let mut heads = [NumberingHead::default(); 10];
     heads[1].number_format = 8; // HangulGaNaDa
     let numbering = Numbering {
         raw_data: None,
@@ -1645,12 +1702,15 @@ fn test_expand_numbering_format_hangul() {
             String::new(),
             String::new(),
             String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
         ],
         start_number: 0,
-        level_start_numbers: [1, 1, 1, 1, 1, 1, 1],
+        level_start_numbers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         raw_para_heads: None,
     };
-    let counters = [1, 3, 0, 0, 0, 0, 0];
+    let counters = [1, 3, 0, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^2.",
         &counters,
@@ -1668,7 +1728,7 @@ fn test_expand_numbering_format_zero_start_number_does_not_underflow() {
         heads: [NumberingHead {
             number_format: 0,
             ..Default::default()
-        }; 7],
+        }; 10],
         level_formats: [
             "^1.".to_string(),
             String::new(),
@@ -1677,12 +1737,15 @@ fn test_expand_numbering_format_zero_start_number_does_not_underflow() {
             String::new(),
             String::new(),
             String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
         ],
         start_number: 0,
-        level_start_numbers: [0, 1, 1, 1, 1, 1, 1],
+        level_start_numbers: [0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         raw_para_heads: None,
     };
-    let counters = [1, 0, 0, 0, 0, 0, 0];
+    let counters = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
     let result = expand_numbering_format(
         "^1.",
@@ -1703,7 +1766,7 @@ fn test_expand_numbering_format_level_path() {
         heads: [NumberingHead {
             number_format: 0,
             ..Default::default()
-        }; 7],
+        }; 10],
         level_formats: [
             "^N".to_string(),
             "^N".to_string(),
@@ -1712,14 +1775,17 @@ fn test_expand_numbering_format_level_path() {
             String::new(),
             String::new(),
             String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
         ],
         start_number: 0,
-        level_start_numbers: [1, 1, 1, 1, 1, 1, 1],
+        level_start_numbers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         raw_para_heads: None,
     };
 
     // level 0: "1.", 카운터 전진 후 "2."
-    let counters = [1, 0, 0, 0, 0, 0, 0];
+    let counters = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^N",
         &counters,
@@ -1728,7 +1794,7 @@ fn test_expand_numbering_format_level_path() {
         0,
     );
     assert_eq!(result, "1.");
-    let counters = [2, 0, 0, 0, 0, 0, 0];
+    let counters = [2, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^N",
         &counters,
@@ -1739,7 +1805,7 @@ fn test_expand_numbering_format_level_path() {
     assert_eq!(result, "2.");
 
     // level 1: "1.1." → "1.4."
-    let counters = [1, 1, 0, 0, 0, 0, 0];
+    let counters = [1, 1, 0, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^N",
         &counters,
@@ -1748,7 +1814,7 @@ fn test_expand_numbering_format_level_path() {
         1,
     );
     assert_eq!(result, "1.1.");
-    let counters = [1, 4, 0, 0, 0, 0, 0];
+    let counters = [1, 4, 0, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^N",
         &counters,
@@ -1759,7 +1825,7 @@ fn test_expand_numbering_format_level_path() {
     assert_eq!(result, "1.4.");
 
     // ^n: 후행 마침표 없음
-    let counters = [2, 3, 0, 0, 0, 0, 0];
+    let counters = [2, 3, 0, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^n",
         &counters,
@@ -1780,7 +1846,7 @@ fn test_expand_numbering_format_level_path() {
     assert_eq!(result, "[2.3]");
 
     // 상위 수준 카운터 0이면 시작번호로 폴백
-    let counters = [0, 2, 0, 0, 0, 0, 0];
+    let counters = [0, 2, 0, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^N",
         &counters,
@@ -1794,7 +1860,7 @@ fn test_expand_numbering_format_level_path() {
 #[test]
 fn test_expand_numbering_format_level_path_mixed_format() {
     // 수준별 number_format 혼합: L1=Digit, L2=HangulGaNaDa → "1.가."
-    let mut heads = [NumberingHead::default(); 7];
+    let mut heads = [NumberingHead::default(); 10];
     heads[1].number_format = 8; // HangulGaNaDa
     let numbering = Numbering {
         raw_data: None,
@@ -1807,12 +1873,15 @@ fn test_expand_numbering_format_level_path_mixed_format() {
             String::new(),
             String::new(),
             String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
         ],
         start_number: 0,
-        level_start_numbers: [1, 1, 1, 1, 1, 1, 1],
+        level_start_numbers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         raw_para_heads: None,
     };
-    let counters = [1, 1, 0, 0, 0, 0, 0];
+    let counters = [1, 1, 0, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^N",
         &counters,
@@ -1825,27 +1894,12 @@ fn test_expand_numbering_format_level_path_mixed_format() {
 
 #[test]
 fn test_numbering_format_to_number_format() {
-    assert_eq!(numbering_format_to_number_format(10), NumFmt::HangulJamo);
-    assert!(matches!(
-        numbering_format_to_number_format(0),
-        NumFmt::Digit
-    ));
-    assert!(matches!(
-        numbering_format_to_number_format(1),
-        NumFmt::CircledDigit
-    ));
-    assert!(matches!(
-        numbering_format_to_number_format(2),
-        NumFmt::RomanUpper
-    ));
-    assert!(matches!(
-        numbering_format_to_number_format(8),
-        NumFmt::HangulGaNaDa
-    ));
-    assert!(matches!(
-        numbering_format_to_number_format(255),
-        NumFmt::Digit
-    ));
+    assert_eq!(NumFmt::from_hwp_format(10), NumFmt::HangulJamo);
+    assert!(matches!(NumFmt::from_hwp_format(0), NumFmt::Digit));
+    assert!(matches!(NumFmt::from_hwp_format(1), NumFmt::CircledDigit));
+    assert!(matches!(NumFmt::from_hwp_format(2), NumFmt::RomanUpper));
+    assert!(matches!(NumFmt::from_hwp_format(8), NumFmt::HangulGaNaDa));
+    assert!(matches!(NumFmt::from_hwp_format(255), NumFmt::Digit));
 }
 
 // =====================================================================
@@ -1985,16 +2039,17 @@ fn test_square_bullet_with_space_preserves_layout() {
         "positions[1] expected 18.4, got {}",
         positions[1]
     );
-    // 공백: 반각(10) + 자간(10×-8% = -0.8) = advance 9.2 (min_clamp 5.0 미작동)
+    // 공백: [#7702] 한/글 장치 격자(ppem 375) — 반각 187.5 를 공백은 내려 187 단위,
+    // 자간 187×-8% = -14.96 → -15 단위, 172 단위 × 4/75 = 9.1733 (min_clamp 5.0 미작동)
     assert!(
-        (positions[2] - 27.6).abs() < 0.01,
-        "positions[2] expected 27.6, got {}",
+        (positions[2] - (18.4 + 172.0 * 4.0 / 75.0)).abs() < 0.01,
+        "positions[2] expected 27.573, got {}",
         positions[2]
     );
     // 가: 전각(20) + 자간(-1.6) = advance 18.4
     assert!(
-        (positions[3] - 46.0).abs() < 0.01,
-        "positions[3] expected 46.0, got {}",
+        (positions[3] - (18.4 + 172.0 * 4.0 / 75.0 + 18.4)).abs() < 0.01,
+        "positions[3] expected 45.973, got {}",
         positions[3]
     );
 }
@@ -2031,9 +2086,12 @@ fn test_tac_leading_width_block_table_full_line() {
         footnote_positions: Vec::new(),
         tab_extended: Vec::new(),
         horizontal_shaping: None,
+        frame_geometry: None,
     };
     let styles = ResolvedStyleSet {
+        section_tab_width_bits: Default::default(),
         page_number_char_style_id: None,
+        style_char_shapes: Vec::new(),
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
@@ -2043,7 +2101,7 @@ fn test_tac_leading_width_block_table_full_line() {
         }],
         ..Default::default()
     };
-    let width = super::compute_tac_leading_width(&composed, 0, &styles, None);
+    let width = super::compute_tac_leading_width(&composed, 0, &styles, None, None);
     // [#2279] 자간 글자폭 비례: 4 spaces × (10 base + 10×-8% = 9.2) = 36.8
     // (min_clamp 5.0 미작동)
     assert!((width - 36.8).abs() < 0.5, "expected ~36.8, got {}", width);
@@ -2129,9 +2187,12 @@ fn test_tac_leading_width_inline_table_partial() {
         footnote_positions: Vec::new(),
         tab_extended: Vec::new(),
         horizontal_shaping: None,
+        frame_geometry: None,
     };
     let styles = ResolvedStyleSet {
+        section_tab_width_bits: Default::default(),
         page_number_char_style_id: None,
+        style_char_shapes: Vec::new(),
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
@@ -2140,7 +2201,7 @@ fn test_tac_leading_width_inline_table_partial() {
         }],
         ..Default::default()
     };
-    let width = super::compute_tac_leading_width(&composed, 0, &styles, None);
+    let width = super::compute_tac_leading_width(&composed, 0, &styles, None, None);
     // "ab" 2 chars, 반각 × font_size/2 = 20*0.5*2 = 20
     assert!((width - 20.0).abs() < 0.5, "expected ~20.0, got {}", width);
 }
@@ -2178,11 +2239,76 @@ fn task290_inline_left_returns_none() {
         "abc\t", 0, &ext, &ts, &tab_stops, 48.0, true, 420.0,
     );
     assert_eq!(result, None, "LEFT inline 은 pending 없음");
+    {
+        use super::paragraph_layout::{resolve_last_tab_pending, PendingTab};
+        let style = TextStyle {
+            font_size: 16.0,
+            line_x_offset: 20.0,
+            ..Default::default()
+        };
+        let stops = [TabStop {
+            position: 300.0,
+            tab_type: 1,
+            fill_type: 3,
+        }];
+        for fill in [0, 3] {
+            let extensions = [mk_ext(7500, 2, fill)];
+            let pending =
+                resolve_last_tab_pending("\t", 0, &extensions, &style, &stops, 48.0, false, 420.0)
+                    .unwrap();
+            assert_eq!(
+                pending,
+                PendingTab::StoredStart {
+                    position: 120.0,
+                    fill_type: fill
+                }
+            );
+            // 독립 한컴 저장/Print 대조: fwSpace는 저장 탭 뒤에서 1/4em을 전진한다.
+            let carried = pending.carry_over_blank("\u{2007}", &style);
+            assert_eq!(
+                carried,
+                PendingTab::StoredStart {
+                    position: 124.0,
+                    fill_type: fill
+                }
+            );
+            let same_run = resolve_last_tab_pending(
+                "\t\u{2007}",
+                0,
+                &extensions,
+                &style,
+                &stops,
+                48.0,
+                false,
+                420.0,
+            );
+            assert_eq!(
+                same_run,
+                Some(carried),
+                "공백의 런 분리와 무관하게 전진 유지"
+            );
+            for aligned in [
+                PendingTab::Right {
+                    position: 300.0,
+                    fill_type: fill,
+                },
+                PendingTab::Center {
+                    position: 300.0,
+                    fill_type: fill,
+                },
+            ] {
+                assert_eq!(aligned.carry_over_blank("\u{2007}", &style), aligned);
+            }
+        }
+    }
 }
 
 #[test]
-fn task290_inline_right_uses_tabdef() {
-    // inline 이 RIGHT (ext[2] high=2) 면 TabDef find_next_tab_stop 경로로 폴스루
+fn task290_inline_right_preserves_stored_advance_with_auto_tab() {
+    // 같은 저장 탭 계약의 조각별 순서와 동적 정지도 함께 확인한다.
+    source_fragment_tab_record_order_preserves_stored_advance();
+    source_fragment_tab_record_boundaries_preserve_dynamic_stop();
+    // 유효한 저장 줄의 전진은 자동 우측 속성과 별개다. 재조판은 생산자가 제거한다.
     let ext = vec![mk_ext(200, 2, 3)]; // RIGHT, fill=dot
     let ts = mk_text_style();
     let tab_stops = vec![TabStop {
@@ -2191,13 +2317,39 @@ fn task290_inline_right_uses_tabdef() {
         fill_type: 3,
     }];
     let result = super::paragraph_layout::resolve_last_tab_pending(
-        "abc\t", 0, &ext, &ts, &tab_stops, 48.0, false, 420.0,
+        "\t", 0, &ext, &ts, &tab_stops, 48.0, true, 420.0,
     );
     assert_eq!(
         result,
-        Some((300.0, 1, 3)),
-        "RIGHT inline → TabDef 기반 위치, fill=dot"
+        Some(super::paragraph_layout::PendingTab::StoredStart {
+            position: 200.0 * 96.0 / 7200.0,
+            fill_type: 3
+        }),
+        "RIGHT inline → 원본 전진 유지, 자동 속성으로 TabDef 정지를 재적용하지 않음"
     );
+    {
+        use super::paragraph_layout::{resolve_last_tab_pending, PendingTab};
+        let style = TextStyle {
+            line_x_offset: 20.0,
+            ..Default::default()
+        };
+        let extensions = [[0, 1, 0x0203, 0, 0, 0, 9]];
+        let stops = [TabStop {
+            position: 300.0,
+            tab_type: 1,
+            fill_type: 3,
+        }];
+        let pending =
+            resolve_last_tab_pending("\t", 0, &extensions, &style, &stops, 48.0, false, 420.0)
+                .unwrap();
+        assert_eq!(
+            pending,
+            PendingTab::StoredStart {
+                position: 20.0 + 65536.0 * 96.0 / 7200.0,
+                fill_type: 3
+            }
+        );
+    }
 }
 
 #[test]
@@ -2215,7 +2367,10 @@ fn task290_inline_center_uses_tabdef() {
     );
     assert_eq!(
         result,
-        Some((200.0, 2, 0)),
+        Some(super::paragraph_layout::PendingTab::Center {
+            position: 200.0,
+            fill_type: 0
+        }),
         "CENTER inline → TabDef 기반 위치, fill 없음"
     );
 }
@@ -2235,9 +2390,40 @@ fn task290_no_inline_fallback_to_tabdef() {
     );
     assert_eq!(
         result,
-        Some((250.0, 1, 0)),
+        Some(super::paragraph_layout::PendingTab::Right {
+            position: 250.0,
+            fill_type: 0
+        }),
         "inline 없음 → TabDef RIGHT stop 사용, fill 없음"
     );
+    {
+        use super::paragraph_layout::{resolve_last_tab_pending, PendingTab};
+        let style = TextStyle::default();
+        let stops = [TabStop {
+            position: 300.0,
+            tab_type: 1,
+            fill_type: 3,
+        }];
+        let zero_advance = [mk_ext(0, 2, 3)];
+        let placeholder = [[0, 0, 0, 0, 0, 0, 9]];
+        for (extensions, auto_right) in [
+            (&zero_advance[..], true),
+            (&placeholder[..], false),
+            (&[][..], false),
+        ] {
+            let pending = resolve_last_tab_pending(
+                "\t", 0, extensions, &style, &stops, 48.0, auto_right, 420.0,
+            )
+            .unwrap();
+            assert_eq!(
+                pending,
+                PendingTab::Right {
+                    position: 300.0,
+                    fill_type: 3
+                }
+            );
+        }
+    }
 }
 
 #[test]
@@ -2254,11 +2440,12 @@ fn task290_no_inline_auto_tab_right_fallthrough() {
         "abcdef\t", 0, &ext, &ts, &tab_stops, 48.0, true, 420.0,
     );
     assert!(result.is_some(), "auto_tab_right 폴스루 → Some");
-    let (tp, tt, _ft) = result.unwrap();
-    assert_eq!(tt, 1, "auto_tab_right 은 RIGHT(1)");
-    assert!(
-        (tp - 420.0).abs() < 0.1,
-        "tab_pos 는 available_width 에 고정"
+    assert_eq!(
+        result.unwrap(),
+        super::paragraph_layout::PendingTab::Right {
+            position: 420.0,
+            fill_type: 0
+        }
     );
 }
 
@@ -2390,6 +2577,7 @@ fn task1197_paper_nodes_sort_by_plane_z_order_and_stable_index() {
         RenderNode::new(
             id,
             RenderNodeType::Group(GroupNode {
+                paint_transform: None,
                 section_index: Some(0),
                 para_index: Some(0),
                 control_index: Some(control_index),
@@ -2739,31 +2927,6 @@ fn render_tree_with_header_control(control: Control) -> PageRenderTree {
     )
 }
 
-#[test]
-fn header_paper_relative_shape_uses_page_origin() {
-    let tree = render_tree_with_header_control(Control::Shape(Box::new(ShapeObject::Rectangle(
-        RectangleShape {
-            common: CommonObjAttr {
-                width: 7_500,
-                height: 3_000,
-                horizontal_offset: 1_500,
-                vertical_offset: 2_250,
-                horz_rel_to: HorzRelTo::Paper,
-                vert_rel_to: VertRelTo::Paper,
-                text_wrap: TextWrap::InFrontOfText,
-                ..Default::default()
-            },
-            ..Default::default()
-        },
-    ))));
-
-    let bbox = first_header_child_bbox(&tree, |node_type| {
-        matches!(node_type, RenderNodeType::Rectangle(_))
-    });
-    assert!((bbox.x - hwpunit_to_px(1_500, DEFAULT_DPI)).abs() < 0.01);
-    assert!((bbox.y - hwpunit_to_px(2_250, DEFAULT_DPI)).abs() < 0.01);
-}
-
 /// [#6608] 머리말 안 용지 기준 그림은 물리 용지가 아니라 **머리말 틀 원점**에서
 /// 오프셋을 잰다. PR #1682 는 바탕쪽의 용지 원점 규칙을 머리말에도 유추해
 /// 이 테스트를 용지 원점으로 적었지만, 실문서 `pic-in-head-02.hwp` 를 한/글 2020·2022
@@ -2804,12 +2967,15 @@ fn header_paper_relative_picture_uses_header_frame_origin() {
     assert!((bbox.y - (header_area.y + hwpunit_to_px(2_250, DEFAULT_DPI))).abs() < 0.01);
 }
 
-// [Task #2102] 쪽 배경 이미지 채우기는 구역 첫 쪽에만 적용된다.
-// 색 채우기는 첫 쪽 여부와 무관하게 유지된다.
+// 쪽 배경의 첫 쪽 제한은 PageDef의 채우기 플래그에 따라
+// 이미지와 색 채우기에 함께 적용된다.
 
 /// 이미지 채우기 + 색 채우기를 가진 쪽 테두리/배경으로 렌더 트리를 만든 뒤
 /// 루트 자식에서 PageBackground 노드를 찾아 (background_color, image 유무) 를 반환.
-fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
+fn page_bg_color_and_image_present(
+    is_section_first: bool,
+    fill_first_only: bool,
+) -> (Option<u32>, bool) {
     use crate::model::bin_data::BinDataContent;
     use crate::model::image::ImageEffect;
     use crate::model::page::PageBorderFill;
@@ -2836,7 +3002,9 @@ fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
     };
 
     let styles = ResolvedStyleSet {
+        section_tab_width_bits: Default::default(),
         page_number_char_style_id: None,
+        style_char_shapes: Vec::new(),
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         border_styles: vec![ResolvedBorderStyle {
@@ -2863,6 +3031,7 @@ fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
     };
 
     engine.set_current_page_is_section_first(is_section_first);
+    engine.set_page_border_fill_first_page_only(false, fill_first_only);
     let tree = engine.build_render_tree(
         &page_content,
         &[],
@@ -2884,20 +3053,27 @@ fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
         _ => None,
     });
     let bg = bg.expect("PageBackground 노드가 있어야 함");
-    (bg.background_color.is_some(), bg.image.is_some())
+    (bg.background_color, bg.image.is_some())
 }
 
 #[test]
 fn page_bg_image_only_on_section_first_page() {
-    // 구역 첫 쪽: 이미지 채우기 적용
-    let (color_first, image_first) = page_bg_color_and_image_present(true);
+    // 첫 쪽 제한을 명시한 구역의 첫 쪽: 이미지와 색 채우기 적용.
+    let (color_first, image_first) = page_bg_color_and_image_present(true, true);
     assert!(image_first, "구역 첫 쪽에는 배경 이미지가 있어야 한다");
-    assert!(color_first, "색 채우기는 유지되어야 한다");
+    assert_eq!(color_first, Some(0x00F0F0F0), "문서의 색 채우기를 적용한다");
 
-    // 구역 첫 쪽 아님: 이미지 채우기 억제, 색 채우기는 유지
-    let (color_rest, image_rest) = page_bg_color_and_image_present(false);
+    // 같은 구역의 다음 쪽: 채우기를 숨기고 기본 흰 종이만 유지한다.
+    let (color_rest, image_rest) = page_bg_color_and_image_present(false, true);
     assert!(!image_rest, "구역 첫 쪽이 아니면 배경 이미지가 없어야 한다");
-    assert!(color_rest, "이미지가 억제돼도 색 채우기는 유지되어야 한다");
+    assert_eq!(color_rest, Some(0x00FFFFFF), "뒤쪽은 기본 흰 종이 배경이다");
+    // 제한 플래그가 없으면 뒤쪽에서도 같은 이미지 채우기가 남는다.
+    let (color_unrestricted, image_unrestricted) = page_bg_color_and_image_present(false, false);
+    assert!(
+        image_unrestricted,
+        "첫 쪽 제한이 없으면 이미지 채우기를 유지한다"
+    );
+    assert_eq!(color_unrestricted, Some(0x00F0F0F0));
 }
 
 /// [Task #2835] TAC picture/shape 배치 경로의 좌측 margin 이 paragraph_layout.rs
@@ -3010,8 +3186,10 @@ fn collect_top_level_table_spans_domain() {
             border_fill_id: 0,
             text_direction: 0,
             clip: false,
+            closed_reflow_frame: false,
             page_fragment: false,
             model_cell_index: None,
+            model_para_range: None,
         }),
         BoundingBox::new(75.6, 202.5, 100.0, 100.0),
     );
@@ -3196,5 +3374,102 @@ fn whitespace_tac_carrier_paint_y_rejects_missing_or_block_tac() {
             96.0,
         ),
         None
+    );
+}
+
+// 저장 탭 세 개 중 첫 탭은 선행 인라인 개체 이전에 있고, 나머지 둘은 뒤 조각에 있다.
+// 각 저장 전진은 차례로 7200·14400·21600 HU이고 마지막 탭은 오른쪽 정렬이다.
+fn source_fragment_tab_record_order_preserves_stored_advance() {
+    use super::paragraph_layout::{resolve_last_tab_pending, PendingTab};
+    let extensions = [mk_ext(7200, 1, 0), mk_ext(14400, 1, 0), mk_ext(21600, 2, 0)];
+    let mut style = TextStyle {
+        line_x_offset: 20.0,
+        ..mk_text_style()
+    };
+    style.inline_tabs = extensions.to_vec();
+    let unsliced =
+        resolve_last_tab_pending("\t\t", 2, &extensions, &style, &[], 48.0, false, 1000.0);
+    let source = ['\t', 'X', '\t', '\t'];
+    style = style.for_source_text_fragment(2, &source);
+    let aligned = resolve_last_tab_pending(
+        "\t\t",
+        1,
+        &style.inline_tabs,
+        &style,
+        &[],
+        48.0,
+        false,
+        1000.0,
+    );
+    assert_eq!(
+        aligned,
+        Some(PendingTab::StoredStart {
+            position: 500.0,
+            fill_type: 0
+        })
+    );
+    assert_ne!(
+        unsliced, aligned,
+        "조각 앞에서 소비한 탭의 레코드를 다시 사용하면 안 된다"
+    );
+}
+
+fn source_fragment_tab_record_boundaries_preserve_dynamic_stop() {
+    use super::paragraph_layout::{resolve_last_tab_pending, PendingTab};
+    let extensions = [mk_ext(7200, 1, 0), mk_ext(14400, 2, 3)];
+    let style = TextStyle {
+        inline_tabs: extensions.to_vec(),
+        line_x_offset: 20.0,
+        ..mk_text_style()
+    };
+    let source = ['가', '\t', '나', '\t'];
+    assert_eq!(
+        style.for_source_text_fragment(1, &source).inline_tabs,
+        extensions
+    );
+    let suffix = style.for_source_text_fragment(3, &source);
+    assert_eq!(suffix.inline_tabs, extensions[1..]);
+    assert_eq!(
+        resolve_last_tab_pending(
+            "\t",
+            0,
+            &suffix.inline_tabs,
+            &suffix,
+            &[],
+            48.0,
+            false,
+            1000.0
+        ),
+        Some(PendingTab::StoredStart {
+            position: 212.0,
+            fill_type: 3
+        }),
+    );
+    let stops = [TabStop {
+        position: 300.0,
+        tab_type: 1,
+        fill_type: 0,
+    }];
+    let dynamic = TextStyle {
+        inline_tabs: Vec::new(),
+        ..style
+    }
+    .for_source_text_fragment(3, &source);
+    assert!(dynamic.inline_tabs.is_empty());
+    assert_eq!(
+        resolve_last_tab_pending(
+            "\t",
+            0,
+            &dynamic.inline_tabs,
+            &dynamic,
+            &stops,
+            48.0,
+            false,
+            1000.0
+        ),
+        Some(PendingTab::Right {
+            position: 300.0,
+            fill_type: 0
+        }),
     );
 }

@@ -1,0 +1,17 @@
+from pathlib import Path
+import json,sys,subprocess,os,time
+R=Path.cwd();O=R/'output/pr-review/issue8174/v2-s05-20261025';runtime=sys.argv[1];rows=[];env=dict(os.environ,VISUAL_SWEEP_CHROME='/home/edward/.cache/puppeteer/chrome-headless-shell/linux-155.0.8059.79/chrome-headless-shell-linux64/chrome-headless-shell')
+for group in ['images','forms']:
+ x=json.loads((O/f'visual-{runtime}-commands.json').read_text());command=next(r['command'].copy() for r in x if r['name']=='visual-'+group);command.remove('--silhouette-only');command[command.index('--out')+1]=str(O/'review'/runtime/group)
+ if group=='images':
+  keep={'icc-indirect-filter','jpx-indexed-icc-premult','recovery-fake-header','old-scan-jbig2-200'};new=[];i=0
+  while i<len(command):
+   if command[i]=='--file-target':
+    if command[i+1] in keep:new+=command[i:i+4]
+    i+=4
+   else:new.append(command[i]);i+=1
+  command=new
+ start=time.monotonic()
+ with (O/f'review-{runtime}-{group}.log').open('w') as log:r=subprocess.run(command,cwd=R,env=env,stdout=log,stderr=subprocess.STDOUT)
+ rows.append({'group':group,'runtime':runtime,'command':command,'exit_code':r.returncode,'seconds':time.monotonic()-start});(O/f'review-{runtime}-commands.json').write_text(json.dumps(rows,indent=2)+'\n');print(group,runtime,r.returncode,flush=True)
+ if r.returncode:raise SystemExit(r.returncode)

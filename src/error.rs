@@ -11,6 +11,8 @@ pub enum HwpError {
     PageOutOfRange(u32),
     /// 렌더링 오류
     RenderError(String),
+    /// 명시된 자원 상한을 초과함 (할당/렌더링 전에 거절)
+    ResourceLimit(String),
     /// 필드 관련 오류
     InvalidField(String),
 }
@@ -40,10 +42,13 @@ impl std::fmt::Display for HwpError {
             HwpError::InvalidFile(msg) => write!(f, "유효하지 않은 파일: {}", msg),
             HwpError::PageOutOfRange(n) => write!(f, "페이지 {}을(를) 찾을 수 없습니다", n),
             HwpError::RenderError(msg) => write!(f, "렌더링 오류: {}", msg),
+            HwpError::ResourceLimit(msg) => write!(f, "자원 상한 초과: {}", msg),
             HwpError::InvalidField(msg) => write!(f, "필드 오류: {}", msg),
         }
     }
 }
+
+impl std::error::Error for HwpError {}
 
 #[cfg(test)]
 mod tests {

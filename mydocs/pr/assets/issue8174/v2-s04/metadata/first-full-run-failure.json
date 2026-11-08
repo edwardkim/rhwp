@@ -1,0 +1,15 @@
+{
+  "sourceSha": "3d021f944d841807fd35093e2210ae93c1743c96",
+  "summary": "11803 tests run:11799 passed(9 slow),4failed,45skipped",
+  "failedModule": "issue_5128_spec_page_roundtrip",
+  "failure": "FORM_ACTION_INVALID before export; no layout assertion reached",
+  "cause": "HWP5 distribution Scripts stream has a valid DISTRIBUTE_DOC_DATA envelope; newly shared decoder assumed raw deflate",
+  "fixSourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+  "fix": "Use exact stream envelope and existing bounded crypto helper;1MiB stored and decoded caps retained; no layout/test expectation change",
+  "focusedAfter": {
+    "issue_8174_form_actions": 6,
+    "issue_5128_spec_page_roundtrip": 5
+  },
+  "priorEvidence": "output/pr-review/issue8174/v2-s04-20261025-before-distribution-correction",
+  "finalStatus": "See validation.json after all final gates, not this first run"
+}

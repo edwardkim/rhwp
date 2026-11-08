@@ -1,0 +1,64 @@
+{
+  "fonts": {
+    "HANBatang.ttf": {
+      "bytes": 28412796,
+      "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014"
+    },
+    "arial.ttf": {
+      "bytes": 1045720,
+      "sha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a"
+    },
+    "arialbd.ttf": {
+      "bytes": 989780,
+      "sha256": "e8f4e3baf6cc35fed6fcce3a540e8b39e8f6cda1d22a28f2ec8f526fef7a43f5"
+    },
+    "arialbi.ttf": {
+      "bytes": 724872,
+      "sha256": "267a411525980d648f10a7222a6ff1ebe4d4feeefbf9b3100cae2b5cfab5594a"
+    },
+    "ariali.ttf": {
+      "bytes": 721584,
+      "sha256": "86b32db9a06f9694e2a3760c42e5117bcdc5cc1255bb5186ca8ce0305e22f288"
+    },
+    "batang.ttc": {
+      "bytes": 16273348,
+      "sha256": "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8"
+    },
+    "kopub/KoPub Batang Bold.ttf": {
+      "bytes": 6536212,
+      "sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b"
+    },
+    "kopub/KoPub Batang Light.ttf": {
+      "bytes": 6481172,
+      "sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f"
+    },
+    "kopub/KoPub Batang Medium.ttf": {
+      "bytes": 6414208,
+      "sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4"
+    },
+    "kopub/KoPub Dotum Bold.ttf": {
+      "bytes": 2968028,
+      "sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275"
+    },
+    "kopub/KoPub Dotum Light.ttf": {
+      "bytes": 2994860,
+      "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+    },
+    "kopub/KoPub Dotum Medium.ttf": {
+      "bytes": 2975032,
+      "sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7"
+    },
+    "wingding.ttf": {
+      "bytes": 82180,
+      "sha256": "9bcd6064e3b52fa30a347edd6e82506e2ec8b1602930b423c629a82c10468a5b"
+    }
+  },
+  "handbookSubset": {
+    "source": "/home/edward/mygithub/ttfs/hwp/HBATANG.TTF",
+    "sourceSha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+    "subset": "output/pr-review/seo-rii-20261030/handbook-fonts/HBATANG.TTF",
+    "subsetSha256": "ae9f215db17735ef0d03e929749c68589f6d472b7733d2ac5a518f116ebe1e19",
+    "verifiedDecomposedOutlineAdvanceCharacters": 951,
+    "bytes": 457560
+  }
+}

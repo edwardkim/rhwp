@@ -260,6 +260,51 @@ fn text_pair_count(first: RenderNode, second: RenderNode) -> usize {
         .len()
 }
 
+#[test]
+fn text_overlap_uses_the_visible_intersection_of_nested_clips() {
+    // 진단 계약의 독립 기하: 두 글자 띠는 y=20..40에서 겹치지만
+    // 명시한 두 clip의 교집합 y=0..18에는 글자가 남지 않는다.
+    let mut clipped = RenderNode::new(
+        200,
+        RenderNodeType::Body {
+            clip_rect: Some(BoundingBox::new(0.0, 0.0, 100.0, 18.0)),
+        },
+        BoundingBox::new(0.0, 0.0, 100.0, 100.0),
+    );
+    clipped.children = vec![run("가", 10.0, 20.0, 20.0, 20.0, 20.0)];
+    let neighbor = run("나", 10.0, 20.0, 20.0, 20.0, 20.0);
+    let scan = |clipped: RenderNode| {
+        scan_page(
+            0,
+            &page_root(vec![clipped, neighbor.clone()]),
+            2,
+            &AnomalyOptions::default(),
+        )
+        .text_overlap
+        .len()
+    };
+    assert_eq!(scan(clipped.clone()), 0, "잘린 글자는 교차 후보가 아니다");
+    // 일부가 보이는 정상 대조군: 10px 교차는 기존 2px 관용보다 크다.
+    clipped.node_type = RenderNodeType::Body {
+        clip_rect: Some(BoundingBox::new(0.0, 0.0, 100.0, 30.0)),
+    };
+    assert_eq!(scan(clipped.clone()), 1, "남아 있는 교차는 계속 검출한다");
+    clipped.node_type = RenderNodeType::TextBox;
+    clipped.bbox.height = 18.0;
+    assert_eq!(scan(clipped.clone()), 0, "글상자 자체도 paint clip이다");
+    clipped.node_type = RenderNodeType::Group(rhwp::renderer::render_tree::GroupNode {
+        paint_transform: None,
+        section_index: None,
+        para_index: None,
+        control_index: None,
+    });
+    assert_eq!(
+        scan(clipped),
+        1,
+        "일반 그룹 bbox를 clip으로 오인하지 않는다"
+    );
+}
+
 fn replay_run(text: &str, positions: Vec<f64>, x: f64, y: f64) -> RenderNode {
     let width = *positions.last().expect("advance");
     let mut node = run(text, x, y, width, 20.0, 20.0);
@@ -293,6 +338,26 @@ fn space_trimming_uses_visible_glyph_replay_positions() {
         ),
         0
     );
+    // 원점 간격은 40·30·40이지만 각 가시 글리프의 폭은 20이다.
+    // 배분 간격까지 포함한 끝 경계 120은 이웃 글자를 침범하나,
+    // 실제 마지막 글리프는 80..100에 그려진다.
+    let mut distributed = replay_run("가 나", vec![0.0, 40.0, 70.0, 110.0], 10.0, 100.0);
+    if let RenderNodeType::TextRun(tr) = &mut distributed.node_type {
+        tr.style.extra_char_spacing = 20.0;
+    }
+    assert_eq!(
+        text_pair_count(
+            distributed.clone(),
+            replay_run("다", vec![0.0, 20.0], 105.0, 102.0)
+        ),
+        0,
+        "마지막 배분 간격은 잉크가 아니다"
+    );
+    assert_eq!(
+        text_pair_count(distributed, replay_run("다", vec![0.0, 20.0], 90.0, 102.0)),
+        1,
+        "실제 마지막 글리프와 겹치면 계속 검출한다"
+    );
 }
 
 #[test]
@@ -312,6 +377,28 @@ fn trailing_space_does_not_erase_the_last_visible_glyph() {
             beyond_ink
         ),
         0
+    );
+}
+
+#[test]
+fn distributed_terminal_advance_is_not_visible_text() {
+    // 전각 글자 점유는 각각 [0,20], [50,70]이다. 분산 전진의 끝100은 잉크가 아니다.
+    let mut distributed = replay_run("가나", vec![0.0, 50.0, 100.0], 10.0, 100.0);
+    if let RenderNodeType::TextRun(run) = &mut distributed.node_type {
+        run.style.extra_char_spacing = 30.0;
+    }
+    assert_eq!(
+        text_pair_count(
+            distributed.clone(),
+            replay_run("다", vec![0.0, 20.0], 90.0, 102.0)
+        ),
+        0,
+        "말미 분산 간격에만 놓인 글자를 겹침으로 세지 않는다"
+    );
+    assert_eq!(
+        text_pair_count(distributed, replay_run("다", vec![0.0, 20.0], 75.0, 102.0)),
+        1,
+        "말미 글자의 실제 점유와 겹치면 계속 검출한다"
     );
 }
 

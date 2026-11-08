@@ -1,0 +1,44 @@
+{
+  "date": "2026-10-28",
+  "input": "samples/issue1937_rowbreak_footnote_overpagination.hwp",
+  "pdf": "pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf",
+  "pdf_sha256": "7f14bc85eb389a68cc88bd40fcafeb7a638d8454293a30bb2c8fe884a16978eb",
+  "method": "PDF table horizontal stroke y in points * 96/72; direct side-by-side inspection",
+  "tolerance_px": 2,
+  "pages": [
+    {
+      "page": 32,
+      "top_96dpi_px": 463.6533203125,
+      "rect_pt": [
+        65.00499725341797,
+        347.739990234375,
+        528.7960205078125,
+        347.739990234375
+      ]
+    },
+    {
+      "page": 33,
+      "top_96dpi_px": 117.15201822916667,
+      "rect_pt": [
+        65.00499725341797,
+        87.864013671875,
+        528.7960205078125,
+        87.864013671875
+      ]
+    },
+    {
+      "page": 35,
+      "top_96dpi_px": 385.0186360677083,
+      "rect_pt": [
+        78.0780029296875,
+        288.76397705078125,
+        526.8770141601562,
+        288.76397705078125
+      ]
+    }
+  ],
+  "visual_inspection": {
+    "path": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/issue1937-table-print-crops.png",
+    "sha256": "479a37dd9c019fa8bade2cc31eaf2daa97324b6a50a95f1d330a61268c902d09"
+  }
+}

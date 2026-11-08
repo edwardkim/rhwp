@@ -635,12 +635,16 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
         page_break_synthesized: _,
         // [#5847] reflow 이전 원본 vertpos 스냅샷 — IR 전용 부수 채널, 비교 대상 아님.
         source_line_seg_vertical_pos: _,
+        // 로드 후 재구성된 본문 축의 조판 전용 출처는 원본 IR 비교 대상이 아니다.
+        layout_rebased_body_axis: _,
         // [#5961] 저장 lineseg 의 축 보정폭 — 출처 컨테이너가 결정하는 IR 전용 부수
         // 채널이라 비교 대상 아님. 같은 문서를 HWPX/HWP5 로 읽으면 이 값은 정당하게
         // 다르므로(8 vs 0), 비교에 넣으면 x2h ir-diff 가 없는 차이를 만든다.
         hwpx_axis_shift: _,
         text,
         char_offsets,
+        literal_figure_spaces,
+        nb_space_control_indices,
         char_shapes,
         line_segs,
         range_tags,
@@ -661,8 +665,14 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
         layout_only_fill_lines: _,
         cell_format_vpos_dirty: _,
         cell_vpos_reset: _,
+        stored_flow_shifted: _,
         // 행 메트릭의 출처와 계산한 번호는 직렬화 원문에 없는 파생값이다.
         layout_space_metrics: _,
+        hwp3_saved_space_corrections: _,
+        layout_object_projection: _,
+        layout_float_band: _,
+        layout_cell_grid: _,
+        layout_field_values: _,
         numbering_marker: _,
     } = a;
 
@@ -679,6 +689,12 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
     f!(raw_break_type);
     f!(text);
     f!(char_offsets);
+    f!(literal_figure_spaces);
+    // 개별 출처를 읽을 수 있는 두 형식만 비교한다. 옛 입력의 None은
+    // 제어가 없다는 뜻이 아니라 문자별 출처가 알려지지 않았다는 뜻이다.
+    if nb_space_control_indices.is_some() && b.nb_space_control_indices.is_some() {
+        f!(nb_space_control_indices);
+    }
     f!(char_shapes);
     f!(line_segs);
     f!(range_tags);
@@ -939,6 +955,7 @@ fn sweep_table(base: &str, a: &Table, b: &Table, out: &mut DivergenceCollector) 
         raw_ctrl_seal: _,
         raw_table_record_attr,
         raw_table_record_extra,
+        layout_page_break_cache: _,
     } = a;
 
     macro_rules! f {

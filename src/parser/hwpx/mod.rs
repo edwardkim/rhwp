@@ -16,6 +16,7 @@ mod crypto;
 pub mod header;
 pub mod reader;
 pub mod section;
+mod tracked_changes;
 pub mod utils;
 
 use std::collections::{HashMap, HashSet};
@@ -148,6 +149,17 @@ impl crate::model::bin_data::BinDataResolver for HwpxBinResolver {
 
     fn resolved_is_empty(&self, key: &str) -> bool {
         self.resolved_len(key) == 0
+    }
+
+    fn resolve_deflated_zip_entry(
+        &self,
+        key: &str,
+    ) -> Option<crate::model::bin_data::DeflatedZipEntry> {
+        let mut reader = match self.reader.lock() {
+            Ok(reader) => reader,
+            Err(poisoned) => poisoned.into_inner(),
+        };
+        reader.raw_deflated_entry(key)
     }
 }
 
@@ -301,6 +313,25 @@ fn resolve_master_page_hrefs<'a, 'b>(
 /// `binaryItemIDRef` 값을 정확히 한 번만 다시 쓴다. 맵에 없는 참조(BinData
 /// 항목이 아닌 것)는 그대로 둔다.
 fn canonicalize_bin_item_refs(xml: &str, bin_data_items: &[content::PackageItem]) -> String {
+    canonicalize_bin_item_refs_where(xml, bin_data_items, |_| true)
+}
+
+/// header.xml 은 그림 참조(`img`/`image`: 테두리·배경의 그림 채우기, 그림 글머리표)만 정규화한다.
+/// 이 참조도 숫자만 뽑아 쓰므로 매니페스트 이름 번호가 위치와 어긋나면(rhwp 가 내보낸
+/// `image2`…`image12` 처럼 구멍이 있는 이름 포함) 다른 그림을 가리키거나 사라진다.
+/// 글꼴 참조는 매니페스트 ID 를 그대로 찾으므로(`resolve_embedded_font_references`) 두지 않는다.
+fn canonicalize_header_image_refs(xml: &str, bin_data_items: &[content::PackageItem]) -> String {
+    canonicalize_bin_item_refs_where(xml, bin_data_items, |tag| {
+        matches!(tag.rsplit(':').next(), Some("img" | "image"))
+    })
+}
+
+/// `binaryItemIDRef` 를 담은 요소 이름이 `rewrite_tag` 를 만족할 때만 다시 쓴다.
+fn canonicalize_bin_item_refs_where(
+    xml: &str,
+    bin_data_items: &[content::PackageItem],
+    rewrite_tag: impl Fn(&str) -> bool,
+) -> String {
     let canonical: HashMap<&str, String> = bin_data_items
         .iter()
         .enumerate()
@@ -320,13 +351,57 @@ fn canonicalize_bin_item_refs(xml: &str, bin_data_items: &[content::PackageItem]
             break;
         };
         let value = &rest[..end];
-        match canonical.get(value) {
+        let tag = out.rfind('<').map_or("", |start| {
+            out[start + 1..]
+                .split(|c: char| c.is_ascii_whitespace())
+                .next()
+                .unwrap_or("")
+        });
+        match canonical.get(value).filter(|_| rewrite_tag(tag)) {
             Some(canon) => out.push_str(canon),
             None => out.push_str(value),
         }
         rest = &rest[end..]; // 닫는 따옴표부터 이어 붙인다.
     }
     out.push_str(rest);
+    out
+}
+
+/// 그림 글머리표의 manifest 참조도 본문 그림과 같은 BinData 순번으로 정규화한다.
+/// 글꼴 등의 다른 header 참조는 원본 ID로 별도 해석하므로 글머리표 구간만 바꾼다.
+fn canonicalize_bullet_image_refs(xml: &str, items: &[content::PackageItem]) -> String {
+    use quick_xml::events::Event;
+    let mut reader = quick_xml::Reader::from_str(xml);
+    let mut ranges = Vec::new();
+    let mut start = None;
+    loop {
+        let before = reader.buffer_position() as usize;
+        match reader.read_event() {
+            Ok(Event::Start(e)) if e.local_name().as_ref() == "bullet" => start = Some(before),
+            Ok(Event::End(e)) if e.local_name().as_ref() == "bullet" => {
+                if let Some(begin) = start.take() {
+                    ranges.push((begin, reader.buffer_position() as usize));
+                }
+            }
+            Ok(Event::Eof) | Err(_) => break,
+            _ => {}
+        }
+    }
+    let mut out = String::with_capacity(xml.len());
+    let mut last = 0;
+    for (begin, end) in ranges {
+        if begin < last
+            || end > xml.len()
+            || !xml.is_char_boundary(begin)
+            || !xml.is_char_boundary(end)
+        {
+            return xml.to_string();
+        }
+        out.push_str(&xml[last..begin]);
+        out.push_str(&canonicalize_bin_item_refs(&xml[begin..end], items));
+        last = end;
+    }
+    out.push_str(&xml[last..]);
     out
 }
 
@@ -376,8 +451,15 @@ fn parse_settings_print_method(xml: &str) -> Option<u32> {
 }
 
 pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
+    parse_hwpx_with_reservation(data, None)
+}
+
+pub(crate) fn parse_hwpx_with_reservation(
+    data: &[u8],
+    reservation: Option<std::sync::Arc<dyn crate::storage::Reservation>>,
+) -> Result<Document, HwpxError> {
     // 1. ZIP 컨테이너 열기
-    let mut reader = reader::HwpxReader::open(data)?;
+    let mut reader = reader::HwpxReader::open_with_reservation(data, reservation.clone())?;
 
     // [Issue #1946] 암호화 HWPX 조기 감지. META-INF/manifest.xml 은 암호화 문서에서도
     // 평문이며, 암호화된 엔트리마다 <odf:encryption-data> 블록을 갖는다. 감지하면
@@ -404,6 +486,8 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         "Preview/PrvImage.png",
         crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH,
         crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH,
+        crate::model::document::HWP3_ORIGIN_HWPX_PARAGRAPH_AXIS_PATH,
+        crate::model::document::HWP3_EXTERNAL_REALIGN_HWPX_PATH,
     ];
     let mut hwpx_aux_entries: Vec<(String, Vec<u8>)> = Vec::new();
     for path in HWPX_AUX_PATHS {
@@ -456,14 +540,26 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
 
     // 3. header.xml → DocInfo, DocProperties
     let header_xml = reader.read_file("Contents/header.xml")?;
+    let header_xml = canonicalize_bullet_image_refs(&header_xml, &package_info.bin_data_items);
+    let tracking_visibility = tracked_changes::Visibility::from_header(&header_xml)?;
     // 평문 여백의 단위 전환은 header.xml이 아닌 패키지 xmlVersion에 따른다.
     let physical_plain_margin = hwpx_aux_entries
         .iter()
         .find(|(path, _)| path == "version.xml")
         .and_then(|(_, bytes)| std::str::from_utf8(bytes).ok())
         .is_some_and(physical_para_margin_units_from_version);
-    let (mut doc_info, doc_properties) =
-        header::parse_hwpx_header_with_plain_margin_units(&header_xml, physical_plain_margin)?;
+    let (mut doc_info, doc_properties) = header::parse_hwpx_header_with_plain_margin_units(
+        &canonicalize_header_image_refs(&header_xml, &package_info.bin_data_items),
+        physical_plain_margin,
+    )?;
+    let default_para_shape_id = u16::try_from(doc_info.para_shapes.len()).ok();
+    let default_para_shape_scope = section::DefaultParaShapeScope::enter(default_para_shape_id);
+    if let Ok(bytes) = reader.read_file_bytes_limited(
+        crate::model::native_font_program::HWPX_ENTRY,
+        crate::model::native_font_program::MAX_BYTES,
+    ) {
+        crate::model::native_font_program::decode(&mut doc_info, header_xml.as_bytes(), &bytes);
+    }
     resolve_embedded_font_references(&mut doc_info, &package_info.bin_data_items);
 
     // [Task #1608] head version("1.4")은 HWPML **스키마 버전**일 뿐 HWP3→HWPX 변환 지표가
@@ -484,6 +580,43 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         .find(|(path, _)| path == "settings.xml")
         .and_then(|(_, bytes)| std::str::from_utf8(bytes).ok())
         .and_then(parse_settings_print_method);
+
+    // HWP 저장에 사용하는 DOC_DATA 기본값을 실제 HWPX 인쇄 설정과 맞춘다.
+    // 원문 settings.xml은 그대로 보존하고 다른 인쇄 키도 변경하지 않는다.
+    let crop_mark = hwpx_aux_entries
+        .iter()
+        .find(|(path, _)| path == "settings.xml")
+        .and_then(|(_, bytes)| Document::hwpx_print_crop_mark(bytes));
+    if let Some(enabled) = crop_mark {
+        let mut found = false;
+        for record in &mut doc_info.extra_records {
+            if record.tag_id != crate::parser::tags::HWPTAG_DOC_DATA {
+                continue;
+            }
+            for pair in record.data.chunks_exact_mut(8) {
+                if u32::from_le_bytes(pair[..4].try_into().unwrap()) == 0x0006_401a {
+                    pair[4..].copy_from_slice(&u32::from(enabled).to_le_bytes());
+                    found = true;
+                }
+            }
+        }
+        if !found {
+            // linkInfo가 없는 HWPX도 유효한 DOC_DATA 매개변수 집합을 만든다.
+            let mut data = Vec::with_capacity(24);
+            for word in [0x021c_u16, 1, 0, 0x0207, 0x8000, 0x0207, 1, 0] {
+                data.extend_from_slice(&word.to_le_bytes());
+            }
+            data.extend_from_slice(&0x0006_401a_u32.to_le_bytes());
+            data.extend_from_slice(&u32::from(enabled).to_le_bytes());
+            doc_info
+                .extra_records
+                .push(crate::model::document::RawRecord {
+                    tag_id: crate::parser::tags::HWPTAG_DOC_DATA,
+                    level: 0,
+                    data,
+                });
+        }
+    }
 
     // BinData 목록을 DocInfo에 등록
     // [Task #873] isEmbeded="0" 인 외부 file 참조 (예: HWP3 → HWPX 변환본 의 절대 경로)
@@ -518,8 +651,11 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     let has_hwp3_origin = hwpx_aux_entries
         .iter()
         .any(|(path, _)| path == crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH);
+    // [#8303] HWP3 원본 산출물도 같은 문단 축 표지를 별도 엔트리로 싣는다.
     let paragraph_axis = hwpx_aux_entries.iter().any(|(path, value)| {
-        path == crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH
+        (path == crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH
+            || (has_hwp3_origin
+                && path == crate::model::document::HWP3_ORIGIN_HWPX_PARAGRAPH_AXIS_PATH))
             && value == crate::model::document::HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS
     });
     let _hwp5_origin_guard = section::Hwp5OriginSourceGuard::set(has_hwp5_origin, paragraph_axis);
@@ -527,10 +663,50 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     // TAC 계약을 쓴다.
     let _hwp3_origin_guard =
         section::Hwp3OriginSourceGuard::set(has_hwp3_origin && !has_hwp5_origin);
+    // 한/글은 header.xml `secCnt` 가 선언한 수만큼의 앞 구역만 읽는다. spine 이 더 많은
+    // 구역 파일을 나열하면(옛 rhwp 저장본, #1557 이전) 뒤 구역은 문서에 없다.
+    // 선언이 없거나 0 이거나 spine 보다 크면 spine 을 그대로 따른다.
+    let loaded_section_count = header::parse_hwpx_declared_section_count(&header_xml)
+        .filter(|&declared| declared >= 1 && declared < package_info.section_files.len())
+        .unwrap_or(package_info.section_files.len());
+    if loaded_section_count < package_info.section_files.len() {
+        eprintln!(
+            "경고: header.xml secCnt={} < spine 구역 {}개 — 한/글처럼 앞 {}개 구역만 읽는다",
+            loaded_section_count,
+            package_info.section_files.len(),
+            loaded_section_count
+        );
+    }
+    let hwp3_page_ownership = (!has_hwp5_origin)
+        .then(|| {
+            hwpx_aux_entries.iter().find_map(|(path, bytes)| {
+                (path == crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH)
+                    .then(|| {
+                        crate::model::hwp3_page_ownership::PageOwnership::decode(
+                            bytes,
+                            header_xml.as_bytes(),
+                            loaded_section_count,
+                        )
+                    })
+                    .flatten()
+            })
+        })
+        .flatten();
     let mut sections = Vec::new();
-    for (section_idx, section_href) in package_info.section_files.iter().enumerate() {
+    for (section_idx, section_href) in package_info
+        .section_files
+        .iter()
+        .take(loaded_section_count)
+        .enumerate()
+    {
         let section_xml = reader.read_file(section_href)?;
+        let stored_xml_digest = hwp3_page_ownership
+            .as_ref()
+            .map(|_| crate::model::hwp3_page_ownership::digest(section_xml.as_bytes()));
         let section_xml = canonicalize_bin_item_refs(&section_xml, &package_info.bin_data_items);
+        let projected_xml = tracking_visibility.project(&section_xml)?;
+        let can_restore_page_ownership = projected_xml.is_none();
+        let section_xml = projected_xml.unwrap_or(section_xml);
         let master_page_refs = match section::collect_hwpx_section_master_page_refs(&section_xml) {
             Ok(refs) => refs,
             Err(e) => {
@@ -540,6 +716,13 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         };
         match section::parse_hwpx_section(&section_xml) {
             Ok(mut section) => {
+                if can_restore_page_ownership {
+                    if let (Some(ownership), Some(xml_digest)) =
+                        (&hwp3_page_ownership, &stored_xml_digest)
+                    {
+                        ownership.restore_section(section_idx, xml_digest, &mut section);
+                    }
+                }
                 let (master_page_hrefs, missing_master_page_refs) =
                     resolve_master_page_hrefs(&master_page_refs, &package_info.master_page_items);
                 for missing_ref in missing_master_page_refs {
@@ -611,7 +794,10 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         .collect();
     let bin_resolver: std::sync::Arc<dyn crate::model::bin_data::BinDataResolver> =
         std::sync::Arc::new(HwpxBinResolver {
-            reader: std::sync::Mutex::new(reader::HwpxReader::open(data)?),
+            reader: std::sync::Mutex::new(reader::HwpxReader::open_with_reservation(
+                data,
+                reservation.clone(),
+            )?),
             ole_hrefs,
         });
 
@@ -653,6 +839,17 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     }
 
     // Document 조립
+    if default_para_shape_scope.used() {
+        // 한컴 2020 저장 대조: 참조 생략은 명시적 0번이 아닌 160% 기본 모양이다.
+        // 명시 참조는 그대로 보존하며 중첩 문단도 같은 모델 모양을 사용한다.
+        doc_info.para_shapes.push(crate::model::style::ParaShape {
+            attr1: 0x180,
+            line_spacing: 160,
+            line_spacing_v2: 160,
+            border_fill_id: u16::from(!doc_info.border_fills.is_empty()),
+            ..Default::default()
+        });
+    }
     let model_header = FileHeader {
         version: HwpVersion {
             major: 5,
@@ -694,6 +891,7 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
             hwp3_lineage: false,
             hwpx_lineage: false,
             hft_ascii_halfwidth_witnessed: false,
+            stored_rows_before_hancom_2020: false,
         },
     };
     // HWP3-origin 마커가 있으면 계보를 복원한다 — 직파싱 HWP3 와 같은
@@ -710,11 +908,39 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     // dir 영역 basename 매칭 영역 image 영역 자동 load. HWP5 parser 와 동일 처리.
     super::populate_link_image_paths(&mut doc);
 
+    // Restore the logical row owners before resolving paint ownership hashes.
+    if let Ok(bytes) = reader.read_file_bytes_limited(
+        crate::model::table_row_grid::HWPX_ENTRY,
+        crate::model::table_row_grid::MAX_BYTES,
+    ) {
+        crate::model::table_row_grid::decode(&mut doc, &bytes);
+    }
+    if let Ok(bytes) = reader.read_file_bytes_limited(
+        crate::model::border_paint::HWPX_ENTRY,
+        crate::model::border_paint::MAX_BYTES,
+    ) {
+        crate::model::border_paint::decode(&mut doc, &bytes);
+    }
+    if let Ok(bytes) = reader.read_file_bytes_limited(
+        crate::model::text_clip::HWPX_ENTRY,
+        crate::model::text_clip::MAX_BYTES,
+    ) {
+        crate::model::text_clip::decode(&mut doc, &bytes);
+    }
+    if let Ok(bytes) = reader.read_file_bytes_limited(
+        crate::model::text_paint::HWPX_ENTRY,
+        crate::model::text_paint::MAX_BYTES,
+    ) {
+        crate::model::text_paint::decode(&mut doc, &bytes);
+    }
     if let Ok(bytes) =
         reader.read_file_bytes_limited(crate::model::hyperlink_format::HWPX_ENTRY, 16 * 1024 * 1024)
     {
         crate::model::hyperlink_format::decode(&mut doc, &bytes);
     }
+    // 개체 번호는 autoNum 필드의 저장 캐시나 필드 개수가 아니라 실제 소유 개체의
+    // numberingType과 순번에서 결정한다. 각주·쪽 번호의 별도 저장 계약은 유지한다.
+    super::auto_numbers::assign_object_numbers(&mut doc);
     Ok(doc)
 }
 

@@ -1,3 +1,4 @@
+import { compareFontNames } from '../core/font-name-order.ts';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { EventBus } from '@/core/event-bus';
 import type { CharProperties, ParaProperties } from '@/core/types';
@@ -387,7 +388,7 @@ export class Toolbar {
     btnNone.addEventListener('click', () => {
       this.highlightColor = '#ffffff';
       this.highlightBar.style.background = '#ffffff';
-      this.eventBus.emit('format-char', { shadeColor: '#ffffff' } as CharProperties);
+      this.eventBus.emit('highlight-pick', '#ffffff');
       this.highlightDropdown.classList.remove('open');
     });
     const btnOther = document.createElement('button');
@@ -407,7 +408,7 @@ export class Toolbar {
     hiddenPicker.addEventListener('input', () => {
       this.highlightColor = hiddenPicker.value;
       this.highlightBar.style.background = this.highlightColor;
-      this.eventBus.emit('format-char', { shadeColor: this.highlightColor } as CharProperties);
+      this.eventBus.emit('highlight-pick', this.highlightColor);
       this.highlightDropdown.classList.remove('open');
     });
     actRow.appendChild(btnNone);
@@ -427,7 +428,7 @@ export class Toolbar {
           e.preventDefault();
           this.highlightColor = color;
           this.highlightBar.style.background = color;
-          this.eventBus.emit('format-char', { shadeColor: color } as CharProperties);
+          this.eventBus.emit('highlight-pick', color);
           this.highlightDropdown.classList.remove('open');
         });
         rowEl.appendChild(swatch);
@@ -441,7 +442,17 @@ export class Toolbar {
       e.stopPropagation();
     });
     this.btnHighlight.addEventListener('click', () => {
+      // 연속 형광펜 모드 중이면 버튼 클릭으로 모드 종료
+      if (this.btnHighlight.classList.contains('active')) {
+        this.eventBus.emit('highlight-pen-exit');
+        return;
+      }
       this.highlightDropdown.classList.toggle('open');
+    });
+
+    // 연속 형광펜 모드 진입/종료 시 버튼 눌림 상태 동기화
+    this.eventBus.on('highlight-pen-changed', (color) => {
+      this.btnHighlight.classList.toggle('active', color != null);
     });
 
     this.highlightDropdown.addEventListener('keydown', (event) => {
@@ -551,7 +562,7 @@ export class Toolbar {
   /** 문서 로드 시 글꼴 드롭다운을 초기화한다 (기본 글꼴 + 문서 글꼴 + 대표/로컬) */
   initFontDropdown(docFonts?: string[]): void {
     this.lastFontFamilies = docFonts ? [...docFonts] : undefined;
-    this.fontMenuDocumentFonts = this.normalizeFontNames(docFonts ?? []);
+    this.fontMenuDocumentFonts = this.normalizeFontNames(docFonts ?? []).sort(compareFontNames);
     this.fontMenuCategory = this.fontMenuDocumentFonts.length > 0 ? 'document' : 'current';
     this.closeFontMenu();
     this.fontName.replaceChildren();
@@ -719,7 +730,7 @@ export class Toolbar {
 
   /** 대표 글꼴 optgroup을 #font-name 드롭다운에 추가 */
   private populateFontSetOptions(): void {
-    const fontSets = userSettings.getAllFontSets();
+    const fontSets = userSettings.getAllFontSets().sort((left, right) => compareFontNames(left.name, right.name));
     if (fontSets.length === 0) return;
 
     // 기존 optgroup 제거 (재호출 대비)
@@ -844,7 +855,8 @@ export class Toolbar {
     const list = menu.querySelector<HTMLElement>('[data-role="list"]');
     if (!heading || !list) return;
     const category = FONT_MENU_CATEGORIES.find(item => item.id === this.fontMenuCategory)!;
-    const entries = this.getFontMenuEntries(this.fontMenuCategory);
+    const entries = this.getFontMenuEntries(this.fontMenuCategory)
+      .sort((left, right) => compareFontNames(left.label, right.label));
     heading.textContent = `${category.label} (${entries.length})`;
     for (const button of menu.querySelectorAll<HTMLButtonElement>('.font-picker-category')) {
       const active = button.dataset.category === this.fontMenuCategory;

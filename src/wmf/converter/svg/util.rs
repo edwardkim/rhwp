@@ -419,10 +419,18 @@ impl Font {
 
         let mut font_family: Vec<String> = vec![];
 
-        font_family.push(self.facename.clone());
-        self.fallback_facename.iter().for_each(|f| {
-            font_family.push(f.clone());
-        });
+        // 본문과 같은 설치 별칭을 사용해 한국어 face가 영문 family로 설치된 경우도 찾는다.
+        for face in std::iter::once(&self.facename).chain(&self.fallback_facename) {
+            for name in std::iter::once(face.as_str()).chain(
+                crate::renderer::installed_render_font_aliases(face)
+                    .iter()
+                    .copied(),
+            ) {
+                if !font_family.iter().any(|existing| existing == name) {
+                    font_family.push(name.to_owned());
+                }
+            }
+        }
 
         // 한컴 WMF 의 한국어 폰트 (예: "굴림체") 가 시스템에 미설치된 환경에서
         // SVG renderer 가 fallback 못 찾으면 글자가 깨져 보임. facename/fallback
@@ -439,6 +447,33 @@ impl Font {
                 "sans-serif",
             ] {
                 font_family.push(fallback.to_string());
+            }
+        } else {
+            // 영문 face(예: "Calibri")만 지정된 글자도 미설치 환경에서 renderer 기본 글꼴(명조)로
+            // 떨어지지 않게 LOGFONT 계열로 대체 사슬을 단다. 한글은 Windows 글꼴 연결처럼
+            // 맑은 고딕 계열로 간다(1790387 35쪽 차트: "Calibri" 의 "2018년" — 한/글 PDF 는 고딕).
+            let chain: &[&str] = match self.pitch_and_family.family {
+                FamilyFont::FF_ROMAN => &[
+                    "Times New Roman",
+                    "Batang",
+                    "바탕",
+                    "Noto Serif CJK KR",
+                    "serif",
+                ],
+                FamilyFont::FF_MODERN => &["Courier New", "monospace"],
+                _ => &[
+                    "Arial",
+                    "Malgun Gothic",
+                    "맑은 고딕",
+                    "Apple SD Gothic Neo",
+                    "Noto Sans CJK KR",
+                    "sans-serif",
+                ],
+            };
+            for fallback in chain {
+                if !font_family.iter().any(|existing| existing == fallback) {
+                    font_family.push((*fallback).to_string());
+                }
             }
         }
 

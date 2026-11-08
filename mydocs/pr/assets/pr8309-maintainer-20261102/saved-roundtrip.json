@@ -1,0 +1,122 @@
+{
+  "source": "01e9f4ff012acceaa477c7f4f0a085b86747ef42",
+  "wasm_sha256": "bff12af51b68ac60b07ec91b47bc7787352c69a839ff9587363b0cb834ebf6f8",
+  "cases": [
+    {
+      "action": "default",
+      "alignment": "Top",
+      "location": {
+        "ok": true,
+        "paraIdx": 0,
+        "controlIdx": 2
+      },
+      "formats": [
+        {
+          "ext": "hwp",
+          "input": "tests/fixtures/pr8309/textbox-saved-default.hwp",
+          "sha256": "6035f5e84b8f189c90c91767a011405035e9ff72100d84e1016a51d4bfa4b957",
+          "bytes": 13312,
+          "reopenedAlignment": "Top",
+          "pages": 1
+        },
+        {
+          "ext": "hwpx",
+          "input": "tests/fixtures/pr8309/textbox-saved-default.hwpx",
+          "sha256": "1aa9243888fec3cfcffb9212e601957487f1fdcb648310be819b8ed932b87d8d",
+          "bytes": 8060,
+          "reopenedAlignment": "Top",
+          "pages": 1,
+          "referenceHash": "1aa9243888fec3cfcffb9212e601957487f1fdcb648310be819b8ed932b87d8d",
+          "byteEqualReference": true
+        }
+      ]
+    },
+    {
+      "action": "Center",
+      "alignment": "Center",
+      "location": {
+        "ok": true,
+        "paraIdx": 0,
+        "controlIdx": 2
+      },
+      "formats": [
+        {
+          "ext": "hwp",
+          "input": "tests/fixtures/pr8309/textbox-saved-center.hwp",
+          "sha256": "d2763e39c4da953c1429ff9af314397723b7ed35ce305ccb14fafc20dac1f457",
+          "bytes": 13312,
+          "reopenedAlignment": "Center",
+          "pages": 1
+        },
+        {
+          "ext": "hwpx",
+          "input": "tests/fixtures/pr8309/textbox-saved-center.hwpx",
+          "sha256": "d7e851d41bcb81073c30eb5bfce57fcd25fffefc477f3e294c00c4f0fa12d1f5",
+          "bytes": 8065,
+          "reopenedAlignment": "Center",
+          "pages": 1,
+          "referenceHash": "d7e851d41bcb81073c30eb5bfce57fcd25fffefc477f3e294c00c4f0fa12d1f5",
+          "byteEqualReference": true
+        }
+      ]
+    },
+    {
+      "action": "Bottom",
+      "alignment": "Bottom",
+      "location": {
+        "ok": true,
+        "paraIdx": 0,
+        "controlIdx": 2
+      },
+      "formats": [
+        {
+          "ext": "hwp",
+          "input": "tests/fixtures/pr8309/textbox-saved-bottom.hwp",
+          "sha256": "ba89b94fbefd06841b666d3b94e95a59110397f4ccfe879fb4a34644f056c3af",
+          "bytes": 13312,
+          "reopenedAlignment": "Bottom",
+          "pages": 1
+        },
+        {
+          "ext": "hwpx",
+          "input": "tests/fixtures/pr8309/textbox-saved-bottom.hwpx",
+          "sha256": "5e21c5c7c4c137d25c068426b1d9c47c4b09ed84253ad3660cc1729a7287545d",
+          "bytes": 8063,
+          "reopenedAlignment": "Bottom",
+          "pages": 1,
+          "referenceHash": "5e21c5c7c4c137d25c068426b1d9c47c4b09ed84253ad3660cc1729a7287545d",
+          "byteEqualReference": true
+        }
+      ]
+    },
+    {
+      "action": "Top",
+      "alignment": "Top",
+      "location": {
+        "ok": true,
+        "paraIdx": 0,
+        "controlIdx": 2
+      },
+      "formats": [
+        {
+          "ext": "hwp",
+          "input": "tests/fixtures/pr8309/textbox-saved-top.hwp",
+          "sha256": "6035f5e84b8f189c90c91767a011405035e9ff72100d84e1016a51d4bfa4b957",
+          "bytes": 13312,
+          "reopenedAlignment": "Top",
+          "pages": 1
+        },
+        {
+          "ext": "hwpx",
+          "input": "tests/fixtures/pr8309/textbox-saved-top.hwpx",
+          "sha256": "1aa9243888fec3cfcffb9212e601957487f1fdcb648310be819b8ed932b87d8d",
+          "bytes": 8060,
+          "reopenedAlignment": "Top",
+          "pages": 1,
+          "referenceHash": "1aa9243888fec3cfcffb9212e601957487f1fdcb648310be819b8ed932b87d8d",
+          "byteEqualReference": true
+        }
+      ]
+    }
+  ]
+}

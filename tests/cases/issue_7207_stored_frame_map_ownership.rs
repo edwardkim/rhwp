@@ -183,6 +183,47 @@ fn notes_follow_the_terminal_fishing_row_on_page_ten() {
 }
 #[test]
 fn map_continuations_keep_all_six_images_and_caption_order() {
+    let source = rhwp::document_core::DocumentCore::from_bytes(
+        &std::fs::read(
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/task2097/18095317_eogu_geumji.hwp"),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    let map_cell = source
+        .document()
+        .sections
+        .iter()
+        .flat_map(|section| &section.paragraphs)
+        .flat_map(|paragraph| &paragraph.controls)
+        .filter_map(|control| match control {
+            rhwp::model::control::Control::Table(table) => Some(table),
+            _ => None,
+        })
+        .flat_map(|table| &table.cells)
+        .find(|cell| {
+            cell.paragraphs.iter().any(|paragraph| {
+                paragraph
+                    .text
+                    .chars()
+                    .filter(|ch| !ch.is_whitespace())
+                    .collect::<String>()
+                    .contains("[부도1]")
+            })
+        })
+        .expect("original map cell");
+    assert_eq!(
+        map_cell.vertical_align,
+        rhwp::model::table::VerticalAlign::Center,
+        "the original stored frame owns center alignment"
+    );
+    let (first_caption, frame) = unique_line("[부도1]", 16);
+    // The independent PDF's opening map fragment has a blank band larger
+    // than one caption line. A Top fallback collapses that source-owned band.
+    assert!(
+        top(first_caption) - top(frame) > first_caption["bbox"]["h"].as_f64().unwrap(),
+        "the centered opening map fragment must preserve its blank band"
+    );
     let mut total = 0;
     for (page, count) in [(16, 1), (17, 2), (18, 1), (19, 1), (20, 1)] {
         let images: Vec<_> = nodes(&pages()[page])

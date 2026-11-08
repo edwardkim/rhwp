@@ -14,13 +14,14 @@ use rhwp::renderer::layout::map_pua_bullet_char;
 
 #[test]
 fn issue_826_pua_f080f_substitution() {
-    // U+F080F (한컴 PUA, 굵은 가로선) → U+2501 ━ BOX DRAWINGS HEAVY HORIZONTAL.
+    // 독립 한컴2020 Print의 원본 HNC 괘선은 가는 반각 선이다.
+    // C144 원본 sample11 전151쪽 Native/fresh WASM90% 이상을 확인했다.
     let input = '\u{F080F}';
-    let expected = '\u{2501}';
+    let expected = '\u{2500}';
     let result = map_pua_bullet_char(input);
     assert_eq!(
         result, expected,
-        "U+F080F 는 U+2501 (━) 로 substitution 되어야 함. got: U+{:04X}",
+        "U+F080F 는 독립 Print의 가는 선 U+2500 (─)이어야 함. got: U+{:04X}",
         result as u32,
     );
 }
@@ -60,5 +61,6 @@ fn issue_826_other_pua_existing_unchanged() {
         '\u{F02B1}',
         "사각 안 ① (raw passthrough)"
     );
-    assert_eq!(map_pua_bullet_char('\u{F0854}'), '\u{300A}', "《");
+    // #6057 전쪽 Native/fresh WASM과 독립 Print: 반각 흰 겹낫표다.
+    assert_eq!(map_pua_bullet_char('\u{F0854}'), '\u{300E}', "『");
 }

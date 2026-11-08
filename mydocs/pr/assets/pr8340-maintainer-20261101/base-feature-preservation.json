@@ -1,0 +1,24 @@
+[
+  {
+    "source": "base",
+    "createdDepth": 2,
+    "dimensions": {
+      "rowCount": 2,
+      "colCount": 2,
+      "cellCount": 4
+    },
+    "originalAnchorPreserved": true,
+    "newFormattingInteroperation": false
+  },
+  {
+    "source": "candidate",
+    "createdDepth": 2,
+    "dimensions": {
+      "rowCount": 2,
+      "colCount": 2,
+      "cellCount": 4
+    },
+    "originalAnchorPreserved": true,
+    "newFormattingInteroperation": true
+  }
+]

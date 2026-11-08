@@ -577,7 +577,11 @@ export function isObjectSizeProtected(this: any, ref: PictureObjectRef | null | 
 /** 개체를 타입에 따라 삭제한다. */
 export function deleteObjectControl(this: any, ref: PictureObjectRef): void {
   if (ref.type === 'shape' || ref.type === 'group' || ref.type === 'line' || ref.type === 'ole') {
-    this.wasm.deleteShapeControl(ref.sec, ref.ppi, ref.ci);
+    if (hasCellPath(ref)) {
+      this.wasm.deleteCellShapeControlByPath(ref.sec, ref.ppi, ref.cellPath, ref.ci);
+    } else {
+      this.wasm.deleteShapeControl(ref.sec, ref.ppi, ref.ci);
+    }
   } else if (ref.type === 'equation') {
     this.wasm.deleteEquationControl(ref.sec, ref.ppi, ref.ci);
   } else {
@@ -782,6 +786,10 @@ export function updatePictureResizeDrag(this: any, e: MouseEvent): void {
   if (!this.pictureResizeState || !this.pictureObjectRenderer) return;
   const zoom = this.viewportManager.getZoom();
   const state = this.pictureResizeState;
+  // Tiny TextBox handles overlap their text. A click without pointer movement
+  // must not round the stored frame through the rendered selection bbox.
+  if (!state.pointerMoved && e.clientX === state.startClientX && e.clientY === state.startClientY) return;
+  state.pointerMoved = true;
   if (isObjectSizeProtected.call(this, state.ref)) {
     this.cleanupPictureResizeDrag();
     this.renderPictureObjectSelection();
@@ -879,6 +887,11 @@ export function updatePictureResizeDrag(this: any, e: MouseEvent): void {
 export function finishPictureResizeDrag(this: any, e: MouseEvent): void {
   const state = this.pictureResizeState;
   if (!state) { this.cleanupPictureResizeDrag(); return; }
+  if (!state.pointerMoved && e.clientX === state.startClientX && e.clientY === state.startClientY) {
+    this.cleanupPictureResizeDrag();
+    this.renderPictureObjectSelection();
+    return;
+  }
   if (isObjectSizeProtected.call(this, state.ref) ||
       state.multiRefs?.some((r: PictureObjectRef) => isObjectSizeProtected.call(this, r))) {
     this.cleanupPictureResizeDrag();
@@ -1067,12 +1080,15 @@ export function updatePictureMoveDrag(this: any, e: MouseEvent): void {
   const cr = sc.getBoundingClientRect();
   const cx = e.clientX - cr.left;
   const cy = e.clientY - cr.top;
+  // 이동량은 끌기를 시작한 쪽의 좌표로 잰다. 마우스가 있는 쪽의 좌표로 재면 쪽 경계를
+  // 넘는 순간 원점이 바뀌어 그림이 한 쪽 높이만큼 튄다. 놓은 쪽과 그 쪽 안 위치는 따로 둔다.
+  const state = this.pictureMoveState;
   const pi = this.virtualScroll.getPageAtPoint(cx, cy);
-  const po = this.virtualScroll.getPageOffset(pi);
-  const pw = this.virtualScroll.getPageWidth(pi);
-  const pl = this.virtualScroll.getPageLeftResolved(pi, sc.clientWidth);
-  const px = (cx - pl) / zoom;
-  const py = (cy - po) / zoom;
+  const px = (cx - this.virtualScroll.getPageLeftResolved(state.pageIndex, sc.clientWidth)) / zoom;
+  const py = (cy - this.virtualScroll.getPageOffset(state.pageIndex)) / zoom;
+  state.dropPage = pi;
+  state.dropX = (cx - this.virtualScroll.getPageLeftResolved(pi, sc.clientWidth)) / zoom;
+  state.dropY = (cy - this.virtualScroll.getPageOffset(pi)) / zoom;
 
   const deltaXpx = px - this.pictureMoveState.lastPageX;
   const deltaYpx = py - this.pictureMoveState.lastPageY;
@@ -1107,7 +1123,9 @@ export function updatePictureMoveDrag(this: any, e: MouseEvent): void {
 export function finishPictureMoveDrag(this: any): void {
   if (this.pictureMoveState) {
     const { totalDeltaH, totalDeltaV, multiRefs } = this.pictureMoveState;
-    if (totalDeltaH !== 0 || totalDeltaV !== 0) {
+    if ((totalDeltaH !== 0 || totalDeltaV !== 0) && relocatePictureToDropPage.call(this, this.pictureMoveState)) {
+      // 놓은 쪽의 문단으로 옮겨 붙였다 (되돌리기 기록 포함).
+    } else if (totalDeltaH !== 0 || totalDeltaV !== 0) {
       const targets = multiRefs || [{ ...this.pictureMoveState.ref, origHorzOffset: this.pictureMoveState.origHorzOffset, origVertOffset: this.pictureMoveState.origVertOffset }];
       for (const r of targets) {
         const CmdClass = (r.type === 'shape' || r.type === 'line' || r.type === 'group' || r.type === 'ole') ? MoveShapeCommand : MovePictureCommand;
@@ -1131,6 +1149,78 @@ export function finishPictureMoveDrag(this: any): void {
     cancelAnimationFrame(this.dragRafId);
     this.dragRafId = 0;
   }
+}
+
+/**
+ * 다른 쪽에 놓은 그림 하나를 그 쪽의 문단·셀 문단으로 옮겨 붙인다.
+ *
+ * 한컴은 개체를 다른 쪽으로 끌어 놓으면 조판 부호(앵커)를 놓은 자리의 문단으로 옮긴다.
+ * 앵커가 원래 쪽에 남으면 그림이 원래 쪽 기준으로 그려져 쪽 밖으로 잘려 보이지 않는다.
+ * 옮겨 붙인 뒤 놓은 자리와 실제 그려진 자리의 차이만큼 위치를 맞춘다.
+ */
+function relocatePictureToDropPage(this: any, state: any): boolean {
+  const ref = state.ref as PictureObjectRef;
+  const single = !state.multiRefs || state.multiRefs.length === 1;
+  if (!single || state.dropPage === undefined || state.dropPage === state.pageIndex) return false;
+  if (ref.type !== 'image' || ref.headerFooter || ref.noteRef) return false;
+  const sc = this.container.querySelector('#scroll-content');
+  if (!sc) return false;
+  const find = (r: PictureObjectRef, page: number) => this.wasm.getPageControlLayout(page).controls
+    .find((ctrl: any) => matchesControlRef(ctrl, r, 'image'));
+  // 셀의 위치 제한이나 본문 회피로 미리보기 배치가 포인터를 따라오지 않을 수 있다.
+  // 처음 잡은 점을 보존해 놓은 쪽의 좌표를 결정한다. 현재 그림의 배치로 추측하지 않는다.
+  const target = {
+    x: state.dropX - state.grabOffsetX,
+    y: state.dropY - state.grabOffsetY,
+  };
+  const hit = this.wasm.hitTest(state.dropPage, state.dropX, state.dropY);
+  if (!hit || hit.sectionIndex === undefined) return false;
+  const inCell = Array.isArray(hit.cellPath) && hit.cellPath.length > 0;
+  const pathJson = (path: any) => JSON.stringify((path ?? []).map((e: any) => ({
+    controlIndex: e.controlIndex ?? e.controlIdx, cellIndex: e.cellIndex ?? e.cellIdx, cellParaIndex: e.cellParaIndex ?? e.cellParaIdx,
+  })));
+  // 끄는 동안 바꾼 위치를 되돌려 두어야 되돌리기(⌘Z)가 끌기 전 상태로 돌아간다.
+  setObjectProperties.call(this, ref, { horzOffset: state.origHorzOffset, vertOffset: state.origVertOffset });
+  let moved: PictureObjectRef | null = null;
+  try {
+    this.executeOperation({ kind: 'snapshot', operationType: 'relocatePicture', operation: (wasm: any) => {
+      // 원래 컨테이너의 오프셋을 넘기지 않고 도착 컨테이너 원점의 배치부터 구한다.
+      const r = wasm.relocateFloatingPicture(ref.sec, ref.ppi, pathJson(ref.cellPath), ref.ci,
+        hit.sectionIndex, inCell ? hit.parentParaIndex : hit.paragraphIndex, hit.charOffset,
+        inCell ? pathJson(hit.cellPath) : '[]', 0, 0);
+      // 원본 그림을 빼면 hit-test 당시의 표 번호가 바뀔 수 있다.
+      // Native가 반환한 실제 소유 경로를 위치 보정과 선택에서 함께 쓴다.
+      moved = { sec: r.sec, ppi: r.paraIdx, ci: r.controlIdx, type: 'image', ...(r.cellPath.length ? { cellPath: r.cellPath } : {}) };
+      const now = find(moved, state.dropPage);
+      if (now) {
+        const props = getObjectProperties.call(this, moved);
+        setObjectProperties.call(this, moved, {
+          horzOffset: Math.round(props.horzOffset + (target.x - now.x) * 75),
+          vertOffset: Math.round(props.vertOffset + (target.y - now.y) * 75),
+        });
+      }
+      return this.cursor.getPosition();
+    }});
+  } catch (err) {
+    console.warn('[InputHandler] 다른 쪽으로 그림 옮겨 붙이기 실패:', err);
+    // 종전 이동 기록이 이어받도록 끈 위치로 되돌려 놓는다.
+    try {
+      setObjectProperties.call(this, ref, {
+        horzOffset: state.origHorzOffset + state.totalDeltaH,
+        vertOffset: state.origVertOffset + state.totalDeltaV,
+      });
+    } catch { /* 문서가 바뀌었으면 그대로 둔다 */ }
+    return false;
+  }
+  if (moved) {
+    const m = moved as PictureObjectRef;
+    this.cursor.exitPictureObjectSelection();
+    this.cursor.enterPictureObjectSelectionDirect(m.sec, m.ppi, m.ci, 'image',
+      undefined, undefined, undefined, undefined, m.cellPath, undefined);
+    this.renderPictureObjectSelection();
+    this.eventBus.emit('picture-object-selection-changed', true);
+  }
+  return true;
 }
 
 // ─── 회전 드래그 ─────────────────────────────────

@@ -1,0 +1,42 @@
+[
+  {
+    "key": "onsemiro-hwp",
+    "page": 5,
+    "backend": "native",
+    "representative": "mydocs/working/assets/review_integration_20261026/validation/representative/native/onsemiro-hwp-p005.png",
+    "sha256": "023991b5a5fc100cc4f80d31936543405db46dac07b18cf31065d897ca2c6b0e",
+    "producer_head": "56a638b9960e8bad9c3f73185a17665d7f7c94b1"
+  },
+  {
+    "key": "onsemiro-hwpx",
+    "page": 5,
+    "backend": "native",
+    "representative": "mydocs/working/assets/review_integration_20261026/validation/representative/native/onsemiro-hwpx-p005.png",
+    "sha256": "023991b5a5fc100cc4f80d31936543405db46dac07b18cf31065d897ca2c6b0e",
+    "producer_head": "56a638b9960e8bad9c3f73185a17665d7f7c94b1"
+  },
+  {
+    "key": "newsletter-korean",
+    "page": 2,
+    "backend": "native",
+    "representative": "mydocs/working/assets/review_integration_20261026/validation/representative/native/newsletter-korean-p002.png",
+    "sha256": "32d3ccbbc76525f6e57c853facdaad37a870f0de9657cfc1cdfd79887cbf34b1",
+    "producer_head": "56a638b9960e8bad9c3f73185a17665d7f7c94b1"
+  },
+  {
+    "key": "newsletter-chinese",
+    "page": 2,
+    "backend": "native",
+    "representative": "mydocs/working/assets/review_integration_20261026/validation/representative/native/newsletter-chinese-p002.png",
+    "sha256": "afd3e8bf8955f085b261f6d387a5c4cfe6417124617f33f0bc8482332a29e782",
+    "producer_head": "56a638b9960e8bad9c3f73185a17665d7f7c94b1"
+  },
+  {
+    "key": "civil-form",
+    "page": 2,
+    "backend": "native",
+    "representative": "mydocs/working/assets/review_integration_20261026/validation/representative/native/civil-form-p002.png",
+    "sha256": "2298337d00b26a625178a347262c3345615588ff4fe88fb184b6b88318ab0053",
+    "producer_head": "56a638b9960e8bad9c3f73185a17665d7f7c94b1"
+  }
+]

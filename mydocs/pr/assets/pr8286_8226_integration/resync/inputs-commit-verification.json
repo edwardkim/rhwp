@@ -1,0 +1,1445 @@
+{
+  "codeHead": "ab1491d40b43c7d54941337b852f7e7f0a5eff5e",
+  "files": [
+    {
+      "path": "mydocs/pr/assets/leading-definition-slots/input/report-implicit-column.hwpx",
+      "sha256": "28768b01550ba2596c5e2bd182454a39a6700c8789fbe95e198d83c3898c4a40",
+      "gitBlob": "1c9e3f7edf95c999bcefd58866e504c33fede392",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr8286_8226_integration/inputs/final-resaved.hwp",
+      "sha256": "4f01f3a9275025971f26c17691ef23d580b86174415643b843d23aae1dbd6b86",
+      "gitBlob": "6c515229331b4db7df5616c436789a87f31b107c",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr8286_8226_integration/inputs/final-resaved.hwpx",
+      "sha256": "ba83298033ebb82be766453f2708d56a9114ee6edd732fd6437e9fe78c58eff6",
+      "gitBlob": "bc13c2345751630a79ead0d13f82b71fb0abecf3",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr8286_8226_integration/inputs/leading-definition-final.hwp",
+      "sha256": "729ed729fec4da78c376bcfb5b18eaf12497554b5daabb846ad57e2b35f1bbf2",
+      "gitBlob": "b0f05764432833d14c9b89b3d250c127a4434f59",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr8286_8226_integration/inputs/old-resaved.hwp",
+      "sha256": "2584b91045a04f4ec666ff183c1981a2d5f8d542b740e2aa3602cf756a3003eb",
+      "gitBlob": "637f828dbcddba60d4e52dc9eb89a5eadd749e65",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr8286_8226_integration/inputs/previous-resaved.hwp",
+      "sha256": "4706677cdce14ca759edeaedff55f6241b7e05e2c760ed4b983455155f56923c",
+      "gitBlob": "6bb9d1c239a513ff3490622bec7f485d665bacb4",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr8286_8226_integration/inputs/previous-resaved.hwpx",
+      "sha256": "eb6d9f1e3308dd80589321fffd5d7fdfa97a2e3a5ccde0433733a4744aeaef10",
+      "gitBlob": "a0846c9b52b5dfd8f8341aaf28a49ef02b67ed10",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/container-chart-inline-anchor/footer-anchor-2020.pdf",
+      "sha256": "d70e38cb69fda569ec276b04f63b6021e7bc1ab3c30268ea12d9e89bb1a66b46",
+      "gitBlob": "3b3a04a54231569067614ded42709c4eb1ec4aa2",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/container-chart-inline-anchor/narrow-table-2020.pdf",
+      "sha256": "9b030c54d89b636d8e66f55acec8a8afb6b230c78f7f0f51475545266b64746f",
+      "gitBlob": "6a7c2857be75309fb8bc55d755b8cdc09940e1b9",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/container-chart-inline-anchor/no-header-2020.pdf",
+      "sha256": "7c5ee5b6638b7a51abb793f7434435966f0f9f043997015ba66c47aaaf8e2b56",
+      "gitBlob": "74b9b8f79d6343dc97a102a1141339e311e3069f",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/container-chart-inline-anchor/source-2020.pdf",
+      "sha256": "37d427c3cf4818f8f7423fcf271f47c8d0a7cc2265bd9f1a275cbe0c2f2669a8",
+      "gitBlob": "c19c8854df399a43ab8a5e0df91bd728bd304a37",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/container-chart-inline-anchor/zero-outer-margin-2020.pdf",
+      "sha256": "e61def3eb9496d77e46a63fe0b6a5165b02dad0313d7cbacb0cb5eaa22d7f30c",
+      "gitBlob": "3ab688c78b43be31bc3d73c944b6a12ce10801e4",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/container-chart-roundtrip/final-hwp-2020.pdf",
+      "sha256": "8ff6568eb73c1171c49233db4f828dbb2e425f86b10d6571208829c86ad29f85",
+      "gitBlob": "a1e92ca002c23b3c658cdc7f6f6b6b5974e83183",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/container-chart-roundtrip/final-hwpx-2020.pdf",
+      "sha256": "20e62305100b06fa60e4fc68466e1cd8e8dae6ffe5df298d68a95fe9ea6a7e17",
+      "gitBlob": "71c88588fe2503e6a1023fd40ec9f3f4271b47b3",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/container-chart-roundtrip/old-hwp-2020.pdf",
+      "sha256": "d574310a2830662f5742f70d8f7b1590a962c0500a4d1b9f72eb09cb9321765f",
+      "gitBlob": "0e61cc9a7934c82d3b361e3b8d4612d7471dbd7f",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/container-chart-roundtrip/old-hwpx-2020.pdf",
+      "sha256": "851789a393a974916dcd0cf92ee6c4003171b41f010069dfaa71245c14604b86",
+      "gitBlob": "dd6a9867b93da737c65a5309fc2a08a406a65f0f",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/container-chart-roundtrip/previous-hwp-2020.pdf",
+      "sha256": "8a6c150e570878511c88e0e60025ec769fac32ad77cdc4dfef262f36b9b9b2bf",
+      "gitBlob": "e66eaa76ec63034ddf7d5b0a66e06c867084eb63",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/container-chart-roundtrip/previous-hwpx-2020.pdf",
+      "sha256": "61df2860f784ca80e2d0b7c6066cb255d1c0fc987b35d8993fcee7c96af18b01",
+      "gitBlob": "3fc9b4adb76f3214f1638da2c8334002be2d75d2",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue6737-156487948-2020.pdf",
+      "sha256": "c5fd06be9c0d3c982fccb41837e71e6b28147a6bdd8e81fd9bf699df408d9a19",
+      "gitBlob": "4fc537b1031f8257723fe70691869406c17e10bc",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue7419/common-height-4838-print-2024.pdf",
+      "sha256": "13e52d61463c4725cb52e4e55d7e51651bf88e97136152d4ecf163f39cfc9099",
+      "gitBlob": "e6714e0197b9a91530560390ead10a08a7160bcd",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue7419/mixed-child-storage-print-2024.pdf",
+      "sha256": "5516c3b313cf2b9e78563e7ec2620cc498ecbfcb3cfc6eeb37f777fddb454668",
+      "gitBlob": "f0a76fc4aa31ec3d1578c739b00c128abda1ba36",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue7419/nested-explicit-break-print-2024.pdf",
+      "sha256": "723e2a09c5b883edbd3fb8a055eb3aa187da2c01eb3131fd1d72888de1d26088",
+      "gitBlob": "bc88c0b71f3084fcdb917b2716d62b48be75210e",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue7419/nested-outer-margins-print-2024.pdf",
+      "sha256": "c01bdbcfe939328d8ede43958689a61c5382e7cbe85b1e8f2f9cf2bfcd6f9703",
+      "gitBlob": "62781013edcf919c2f6735615cb7ed9c2feb6cbf",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue7419/nested-same-line-print-2024.pdf",
+      "sha256": "86facc427943289a3854da58614813ca1d391210e8bb6092c6f7e0fa5a9db91c",
+      "gitBlob": "40ee408c48eed525e8a9eedf77e78dddcd96c12a",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue7419/nested-surrounding-text-print-2024.pdf",
+      "sha256": "efdb4dea26c76eb6ecc2f0245470e78a67a84a0df0397a38d35a55e8be213e96",
+      "gitBlob": "e802339123cb82f0053fd81379437fa030209c7b",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue7419/nested-width-wrap-print-2024.pdf",
+      "sha256": "8e1164da675863c542c2d9873f104b6485e294bcbf6bcd9087d66c9fe5afb1d1",
+      "gitBlob": "35f538dfd6b833589a3c27c1fdb146c606b64c4e",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue7419/no-child-storage-print-2024.pdf",
+      "sha256": "fc6966e6066793f917808cdae4f990ca461e7ae9cbe1fd0c77c28c054d7c202c",
+      "gitBlob": "9be1f4c8b50a21f2f279a6445def1cf35d1be245",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue7419/page-height-28000-print-2024.pdf",
+      "sha256": "42e48d3c85a14186dd2b9b7a7fada8cfcbdd88906552df9de998c798d31d31f6",
+      "gitBlob": "7b88140cae4456e1248e40a92a2171c813e626bf",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue7419/partial-nested-width-wrap-print-2024.pdf",
+      "sha256": "c159d38e6a2acadd70f295e1c02323168b71e9edd5722b548446d8e9c77557ff",
+      "gitBlob": "d8fea2048f5a9d6a92835e5ba69e5422112de626",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue7419/partial-nested-wrapper-print-2024.pdf",
+      "sha256": "be1e12d3736b35869804451be7a59b972547f40de6a204cb81fe2d5b4d78a6b8",
+      "gitBlob": "d3b22ac76c7cd5b19ac9dda911e0f863ed74c3c6",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue7419/tac_nested_two_line_cell_no_lineseg-print-2024.pdf",
+      "sha256": "80bce03f48471797f672f904eb1c06931e59243f7d3b6143373efe6d96ced7af",
+      "gitBlob": "83fb6d70d969089f423fdf49c37c415db6294a54",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue7419/tac_two_line_cell_no_lineseg-print-2024.pdf",
+      "sha256": "8521966a066ecff427158a1d092379c8a9b06b546c8cf6b44d97358d800c2bd7",
+      "gitBlob": "31331cc27be1bef3af48a7060ff6ee67bdc1a5ec",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue7679/tac-after-text-2024.pdf",
+      "sha256": "e866a99dd98c9a572baee13f9d62db06a4a17f7026957a1cb3893132524d5425",
+      "gitBlob": "52e67459a83153494e303ed29ff5cbcf817a828d",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue7872/nested-tac-row-drop-2020.pdf",
+      "sha256": "32bbdaca5d3c6d7a47882583d78832836124c1effcdf97b22b8672047a64c7e1",
+      "gitBlob": "6cc4d220453ebb10bef52245a880c02f59f0203b",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue7872/nested-tac-row-drop-original-2020.pdf",
+      "sha256": "bb8f105fb46aa5dafd81e717f7f1ea2a506defaaf7e23248024ff34812df5993",
+      "gitBlob": "c720141cc28970ebd552d86775c30034cc7cc3d8",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue8399/A-hwp-2024.pdf",
+      "sha256": "45777e3678de4f0558867697c5bf2f71535c4b71bf9f70955be71367421c2e59",
+      "gitBlob": "873696a69c832a913025e191ea9f9c86df8f556e",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue8399/A-hwpx-2024.pdf",
+      "sha256": "0450bebb11625b1acbcc1ce06ff36a12474a76b3a52b6ac143b10b000226633a",
+      "gitBlob": "1ac9bb8e1b60907085e519879264692df28d7164",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue8399/D-hwp-2024.pdf",
+      "sha256": "c058a040a80938dc448ea6e9181235ae6cb55c77320d45d459932d82f68ed46f",
+      "gitBlob": "e3aa139ef2b77bceaf5858c3faec04c0ab5854a0",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue8399/D-hwpx-2024.pdf",
+      "sha256": "8f554dea4519655eed59fbff7259c763e367795fef4fe400f9ee209aac098b9c",
+      "gitBlob": "98e54dc2f039dcdb0ef96604a049030ef023d70a",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue8399/E-hwp-2024.pdf",
+      "sha256": "5f94ff87ec244609bae5efef5e741f8d7207648771e8b4c8a6c4c9336f5af136",
+      "gitBlob": "bb6f0f46ff56e4fa0192a38bf2258410f40ce2ef",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue8399/E-hwpx-2024.pdf",
+      "sha256": "bf580bc15a7b8f9c50763b4eecb3ac15eeb9ed0f80eb8defbb4772c6249ed643",
+      "gitBlob": "db12ef0d522bd9ae7db0f26ba13f001b92609e2c",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue8399/P-hwp-2024.pdf",
+      "sha256": "bf586386e33796adee12082a3173d995e3614cf745973ae5a715a4e12506a889",
+      "gitBlob": "1327b02dab70ac8a4b49e0afa5070b7fd2b1a2e8",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue8399/P-hwpx-2024.pdf",
+      "sha256": "5d53dc4942b5639f16b306f5d29be6b1a80cecafd3bfae31391ee194215cffb1",
+      "gitBlob": "104486ddd745ef4828e6a74f9a42fa979d37cef0",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue8418/30026-safety-reform-toc-2022.pdf",
+      "sha256": "b3051ce501580d74fbdaec8b2490a76b099846ae0658c7a44c0b5f540799a572",
+      "gitBlob": "9fe1cb2039cfaed7f85b137842f415642de0a307",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue8555/21868765_cell_text_edit-hwp-mac-12.30.pdf",
+      "sha256": "aa6a2bf0fb12525a5108fab7a812e7ba81f8b879e9a50651b5128dc36f722c93",
+      "gitBlob": "0bef2b9810f017a36c35cc7271380a296b50fcdc",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue8556/21868765_cell_picture_insert-hwp-mac-12.30.pdf",
+      "sha256": "bf19f16e555477bdbe63862bb196a0ad35e65942b77a3d11d41e65a1e3b1a57a",
+      "gitBlob": "f33691a9e3fb1699d69c5c82790da5019a031c5b",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/issue8557/21868765_relocated_picture-hwp-mac-12.30.pdf",
+      "sha256": "568d2037f8b132c25b70c4a26b3bca0f13168b92d755ad1a13891ddc2e929107",
+      "gitBlob": "be5a472fa909b9f51e38319d63368823c4234c28",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/leading-definition-slots/report-implicit-column-hancom-print.pdf",
+      "sha256": "8e7af1fcc369dbc45405bd0073850d085122a9d3f9f637678f119b324831d0d7",
+      "gitBlob": "cfc021da583fab860f8b76fcd0a34f3b0f15c8e9",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "pdf/task2319/20544835_jinan_apt_form-hwp-2020.pdf",
+      "sha256": "4df6c4788cc4e57bc11c216135b6fe40cee08b6e92cff61deeffe44fac8e035e",
+      "gitBlob": "7c07baa0545ff0eee8cfa75429e07ade84a79a9e",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "samples/issue6737/156487948-marine-pollution-law.hwp",
+      "sha256": "a1eb5fc5a893d2f0638cb3ce8c40ffb2e763815c0c7815e875b7e246237caae9",
+      "gitBlob": "f61af632c7dd10ed7d54de29091607ab08338b19",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "samples/issue7419/tac_nested_two_line_cell_no_lineseg.hwpx",
+      "sha256": "59f8fa47e3766124d7e267e4b95e97f9a7050ca8b963261c6bd24c46f517dd76",
+      "gitBlob": "30b9caeb4f8bfff656de75febde82f69d66756a3",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "samples/issue7419/tac_two_line_cell_no_lineseg.hwpx",
+      "sha256": "08a6740ac106b24fbe8dd6d632137ba5748ab8fb2a95187882b6be734f5c36c2",
+      "gitBlob": "a6c4fef7e8cd3f51eafa300348709688b3abc395",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "samples/issue7679/tac-after-text-2024.hwp",
+      "sha256": "ca4b125c0f97ad767819647d5f6eb563ae5b1e4f8f1497b021f3e230b85779be",
+      "gitBlob": "99aafc982647f091f5efa0eb0eb2e3cbe3d13dba",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "samples/issue7872/nested-tac-row-drop.hwpx",
+      "sha256": "b03c45c38b7460fd39f80c8e032762a36fc9d15ee29ffb92268058dc38b6f930",
+      "gitBlob": "2f81631d627ee76960cfdda781491da23ebe646e",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "samples/issue8399/A.hwp",
+      "sha256": "98c5ef50de81d704fcfa03b81c99ef89badfafb839a1ea78334a46b76f9e6987",
+      "gitBlob": "9a69d006ce041be947ad0876c9c146105e0fc3b1",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "samples/issue8399/A.hwpx",
+      "sha256": "fddd90eed7c4f8818e723bb526c50cad8269c7b1a02eddd64d5a0cda2a5773c7",
+      "gitBlob": "fe781942a29cd930d1f7c26a5d2cacf8b92b9b69",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "samples/issue8399/D.hwp",
+      "sha256": "08faf214ad31724f027fc222616e8fa58e03ea77cc04771c801a510f32661b91",
+      "gitBlob": "3fa2696a5fc36684b2ff3ae098b2842b3c753c61",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "samples/issue8399/D.hwpx",
+      "sha256": "fb3a7c5425cb7a42438988a267a3416e95bd8884bbb2cd7f21c9acbc7160492c",
+      "gitBlob": "0f7dc8edb6e4fa73a2b684efddd30baf00f0cfd9",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "samples/issue8399/E.hwp",
+      "sha256": "7427d910a308fb1c0a2daf8cdf31fce429a45c194899d7d5a79b264743277057",
+      "gitBlob": "e7e7657e288c784d1a9b0cbd96d4dce40742e4a8",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "samples/issue8399/E.hwpx",
+      "sha256": "a4141e83a0dc8ecbd94bec888893be702a87b7fd3b6fefaad451720763eece1c",
+      "gitBlob": "eb003faa579813d6ff6a13912562d54000802a60",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "samples/issue8399/P.hwp",
+      "sha256": "b305d6d267ef5e23a42321e9ddbfd6388cfd576a9381cb49ae9fc6500f928907",
+      "gitBlob": "d6d972ca29224653f2eeeb44f2ae0a46505958b8",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "samples/issue8399/P.hwpx",
+      "sha256": "72016c8b292cd8325e910e165e6a5a0a7b82a05ca6f1f27ad20316a98018464f",
+      "gitBlob": "89a9f4c91c7aa4ff7825c0fb44391e2a2616b71a",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "samples/issue8418/30026-safety-reform-toc.hwp",
+      "sha256": "36ed67903e2a06b4be2a8af24b939439babfb266751159a07a0a51b9643c936e",
+      "gitBlob": "4fb89de75992f903c3be95fb570fe1dd0cf8217d",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "samples/issue8555/21868765_cell_text_edit.hwp",
+      "sha256": "bbf1f72951b6ff5de258f806c5d2569214538b76a867ecebce10f9da8718ff9e",
+      "gitBlob": "7f6e4eba45461895a83fddd6bf7ea2e73a0a948d",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "samples/issue8556/21868765_cell_picture_insert.hwp",
+      "sha256": "507362e6c73d6db4db73fe4b42ae8110c945747ec4b7564e9b83044cb9ceb074",
+      "gitBlob": "94daa6908c7e47a105cd9e18b7e6019f2b08dfcd",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "samples/issue8557/21868765_relocated_picture.hwp",
+      "sha256": "0d7cfc1df9f86da46cb12ebe5aa1eb0fbd9e660d4302f7a6facee8296ee09001",
+      "gitBlob": "572e0c4bd19311060172e4d65605a31f6f5dd538",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "samples/task2319/20544835_jinan_apt_form.hwp",
+      "sha256": "515fb049d24c0f3a26b7a35d7ff99244af3837f32254f30077d9557f8c2d6b25",
+      "gitBlob": "055a3a8fc6e748f0e52f513e7dc73f28514c2364",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "tests/fixtures/container_charts/container-charts.hwpx",
+      "sha256": "f1648ee13a230529b00acc815735bb57d70b39a6c3ab40d765d1745f7d4735e7",
+      "gitBlob": "38f3ced03ac98f592c0c9bfac592782b69f27caa",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "tests/fixtures/container_charts/inline-anchor/footer-anchor-hancom.hwp",
+      "sha256": "da384674039b9c75b7d2c52c58c4b323e4e0ec7011e5d3c766fa889df02dd152",
+      "gitBlob": "5c28cb657dbbca30a0a58eb72e2a5987a0a082fb",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "tests/fixtures/container_charts/inline-anchor/footer-anchor.hwpx",
+      "sha256": "23448e04ae6f84adef5444c959ff4d63b0cfdf66f84bc32ed4a2100304187a27",
+      "gitBlob": "e39d1ed8ad9cc6c1ddcbdf6cbfab8e70d546ddf0",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "tests/fixtures/container_charts/inline-anchor/narrow-table-hancom.hwp",
+      "sha256": "11d3bf828978a268509d45b1984bc24012803688b46426d21b4b4ac764e3b61c",
+      "gitBlob": "b195963fac5fb413f5867bae19ef2b9bc0648739",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "tests/fixtures/container_charts/inline-anchor/narrow-table.hwpx",
+      "sha256": "3d2229a826e25eba7bed74760f7f5d6513620ef9af979676d93f321f3ec78526",
+      "gitBlob": "60d161c99a0b22067e82972ffa920d35303477e2",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "tests/fixtures/container_charts/inline-anchor/no-header-hancom.hwp",
+      "sha256": "1c5ad17a897aaafe3057baaaef54cf09029c2dd01fafe7a147c840dd4b86a529",
+      "gitBlob": "043c31153d63efd196509b9a0a980c0aad209217",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "tests/fixtures/container_charts/inline-anchor/no-header.hwpx",
+      "sha256": "4e0c95cc4ab5f05242595c2cb7e8d951144482ac6476270cab786ab78394adfc",
+      "gitBlob": "dd32082cdbd7a9c83ee4ddcedc4525438e80475b",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "tests/fixtures/container_charts/inline-anchor/source-hancom.hwp",
+      "sha256": "279de30dd9380ba0dd46abba140a56c3524c58e2d83ecd0d6718f487486a3a49",
+      "gitBlob": "3e073355a42c9ff1c0299cf8a195802262f256d9",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "tests/fixtures/container_charts/inline-anchor/zero-outer-margin-hancom.hwp",
+      "sha256": "1dabeb5e8a3722f721a8eb310bad5d738dd70cae3a82df7e0df33b8a725c1a6f",
+      "gitBlob": "2f47b5da763d6374df747b88388ffa32f58330c2",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "tests/fixtures/container_charts/inline-anchor/zero-outer-margin.hwpx",
+      "sha256": "fc48c2fdc2560eb5de89607849ab534433e0aba7d972858fc8e08a6fcaaac7d5",
+      "gitBlob": "c2968358f2f615f21b877fc09e984558a19d7618",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "tests/fixtures/container_charts/legacy-resaved.hwpx",
+      "sha256": "8b0fa69e8174f0ff26ff9f8caac98728e499575b805b1f67f55479c6618e0c12",
+      "gitBlob": "1e37d59d6eec8b046150a780e3f78b4e761d87d3",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "tests/fixtures/issue7419-boundaries/common-height-4838.hwpx",
+      "sha256": "bbfb52b87f03ea5e2a73abbcf3f2e17fbe76a7566d92f62c357d67d4479ccf42",
+      "gitBlob": "f280b337ca6c4b3ac80f0f0961607326ad343d2f",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "tests/fixtures/issue7419-boundaries/mixed-child-storage.hwpx",
+      "sha256": "8758c38c662d09ccca949a4551a645aeef31a639e8f3c09b78ae2321513d53a4",
+      "gitBlob": "f62c94df058ef7d0efeac3c0c86ecac48d42c28d",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "tests/fixtures/issue7419-boundaries/nested-explicit-break.hwpx",
+      "sha256": "605cadab0527822e11afd3370e1546040e73f0f1798ce646e6ce41cb68625a09",
+      "gitBlob": "b78e495d4e8f18ba27044600ed71f0b0ee0a9a46",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "tests/fixtures/issue7419-boundaries/nested-outer-margins.hwpx",
+      "sha256": "79c872d0a949b13d5d2191d3c39cff4fecbcee0aa3802648a810d9435324dcc7",
+      "gitBlob": "a3a940ca174c0b203c53e67f2037cd1b198db5ff",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "tests/fixtures/issue7419-boundaries/nested-same-line.hwpx",
+      "sha256": "0340236f0d79a68a343bd771266544781f9313db63ded04168f62b8fb2770d7c",
+      "gitBlob": "58e8c5bc04a7abb8cd6eb1957f2a216bf8cc988b",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "tests/fixtures/issue7419-boundaries/nested-surrounding-text.hwpx",
+      "sha256": "052a2460132202b24dc392bcd74cb2e3957d229026eacc88767b59c55cc8fe1c",
+      "gitBlob": "ee66f324bdbb035ce8cdc0dd8e25a376b1c393c5",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "tests/fixtures/issue7419-boundaries/nested-width-wrap.hwpx",
+      "sha256": "8f102ecbd644d720f3766c794fa6b3ba55d7f93e8441f07d0004f519ec0d0f3c",
+      "gitBlob": "6d4f831e792e75931a44b276b6b1cc03b0808c48",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "tests/fixtures/issue7419-boundaries/no-child-storage.hwpx",
+      "sha256": "d323de426683eb052e5715015f11d41597d22308a23ef8e739e64db5893f2018",
+      "gitBlob": "f93baf781a82c2fdebb6e67e3d7e1d2c8eed5ddb",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "tests/fixtures/issue7419-boundaries/page-height-28000.hwpx",
+      "sha256": "8d3a298e85cf65d64e06da76c3911b927b6d1d1b056714f1fd1cf3c27be37d71",
+      "gitBlob": "4df1f712e80d5a89752b106037d89e032335e46e",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "tests/fixtures/issue7419-boundaries/partial-nested-width-wrap.hwpx",
+      "sha256": "500fb3d32f015808c3c4c4d5304fdd561e33ec233bbae7e6cdd536911c55d096",
+      "gitBlob": "2f5042599a995b1d7731a1cded89530a865f3671",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "tests/fixtures/issue7419-boundaries/partial-nested-wrapper.hwpx",
+      "sha256": "95e9b90b1b2fa47e51566235e210291e093f886254ae2d82571c715574c7dd61",
+      "gitBlob": "73bd1eb43b9f12350963be12dd73bdc65ebea9e3",
+      "matchesExecutedBytes": true
+    },
+    {
+      "path": "tests/fixtures/issue7872/nested-tac-row-drop-original.hwpx",
+      "sha256": "b9f285f0ce01773c9c64240392477a374e5c67bef00eabe0ace36af66ccae0ba",
+      "gitBlob": "330b2e3d871295d6b0f778126453cc9ecec956e7",
+      "matchesExecutedBytes": true
+    }
+  ],
+  "verifiedFileCount": 90,
+  "allMatch": true,
+  "matrixExecutionMappings": [
+    {
+      "backend": "native",
+      "key": "7419-common-height-4838",
+      "kind": "inputSha256",
+      "path": "tests/fixtures/issue7419-boundaries/common-height-4838.hwpx",
+      "executionSha256": "bbfb52b87f03ea5e2a73abbcf3f2e17fbe76a7566d92f62c357d67d4479ccf42"
+    },
+    {
+      "backend": "native",
+      "key": "7419-common-height-4838",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/common-height-4838-print-2024.pdf",
+      "executionSha256": "13e52d61463c4725cb52e4e55d7e51651bf88e97136152d4ecf163f39cfc9099"
+    },
+    {
+      "backend": "native",
+      "key": "7419-mixed-child-storage",
+      "kind": "inputSha256",
+      "path": "tests/fixtures/issue7419-boundaries/mixed-child-storage.hwpx",
+      "executionSha256": "8758c38c662d09ccca949a4551a645aeef31a639e8f3c09b78ae2321513d53a4"
+    },
+    {
+      "backend": "native",
+      "key": "7419-mixed-child-storage",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/mixed-child-storage-print-2024.pdf",
+      "executionSha256": "5516c3b313cf2b9e78563e7ec2620cc498ecbfcb3cfc6eeb37f777fddb454668"
+    },
+    {
+      "backend": "native",
+      "key": "7419-nested-explicit-break",
+      "kind": "inputSha256",
+      "path": "tests/fixtures/issue7419-boundaries/nested-explicit-break.hwpx",
+      "executionSha256": "605cadab0527822e11afd3370e1546040e73f0f1798ce646e6ce41cb68625a09"
+    },
+    {
+      "backend": "native",
+      "key": "7419-nested-explicit-break",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/nested-explicit-break-print-2024.pdf",
+      "executionSha256": "723e2a09c5b883edbd3fb8a055eb3aa187da2c01eb3131fd1d72888de1d26088"
+    },
+    {
+      "backend": "native",
+      "key": "7419-nested-outer-margins",
+      "kind": "inputSha256",
+      "path": "tests/fixtures/issue7419-boundaries/nested-outer-margins.hwpx",
+      "executionSha256": "79c872d0a949b13d5d2191d3c39cff4fecbcee0aa3802648a810d9435324dcc7"
+    },
+    {
+      "backend": "native",
+      "key": "7419-nested-outer-margins",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/nested-outer-margins-print-2024.pdf",
+      "executionSha256": "c01bdbcfe939328d8ede43958689a61c5382e7cbe85b1e8f2f9cf2bfcd6f9703"
+    },
+    {
+      "backend": "native",
+      "key": "7419-nested-same-line",
+      "kind": "inputSha256",
+      "path": "tests/fixtures/issue7419-boundaries/nested-same-line.hwpx",
+      "executionSha256": "0340236f0d79a68a343bd771266544781f9313db63ded04168f62b8fb2770d7c"
+    },
+    {
+      "backend": "native",
+      "key": "7419-nested-same-line",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/nested-same-line-print-2024.pdf",
+      "executionSha256": "86facc427943289a3854da58614813ca1d391210e8bb6092c6f7e0fa5a9db91c"
+    },
+    {
+      "backend": "native",
+      "key": "7419-nested-surrounding-text",
+      "kind": "inputSha256",
+      "path": "tests/fixtures/issue7419-boundaries/nested-surrounding-text.hwpx",
+      "executionSha256": "052a2460132202b24dc392bcd74cb2e3957d229026eacc88767b59c55cc8fe1c"
+    },
+    {
+      "backend": "native",
+      "key": "7419-nested-surrounding-text",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/nested-surrounding-text-print-2024.pdf",
+      "executionSha256": "efdb4dea26c76eb6ecc2f0245470e78a67a84a0df0397a38d35a55e8be213e96"
+    },
+    {
+      "backend": "native",
+      "key": "7419-nested-width-wrap",
+      "kind": "inputSha256",
+      "path": "tests/fixtures/issue7419-boundaries/nested-width-wrap.hwpx",
+      "executionSha256": "8f102ecbd644d720f3766c794fa6b3ba55d7f93e8441f07d0004f519ec0d0f3c"
+    },
+    {
+      "backend": "native",
+      "key": "7419-nested-width-wrap",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/nested-width-wrap-print-2024.pdf",
+      "executionSha256": "8e1164da675863c542c2d9873f104b6485e294bcbf6bcd9087d66c9fe5afb1d1"
+    },
+    {
+      "backend": "native",
+      "key": "7419-no-child-storage",
+      "kind": "inputSha256",
+      "path": "tests/fixtures/issue7419-boundaries/no-child-storage.hwpx",
+      "executionSha256": "d323de426683eb052e5715015f11d41597d22308a23ef8e739e64db5893f2018"
+    },
+    {
+      "backend": "native",
+      "key": "7419-no-child-storage",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/no-child-storage-print-2024.pdf",
+      "executionSha256": "fc6966e6066793f917808cdae4f990ca461e7ae9cbe1fd0c77c28c054d7c202c"
+    },
+    {
+      "backend": "native",
+      "key": "7419-page-height-28000",
+      "kind": "inputSha256",
+      "path": "tests/fixtures/issue7419-boundaries/page-height-28000.hwpx",
+      "executionSha256": "8d3a298e85cf65d64e06da76c3911b927b6d1d1b056714f1fd1cf3c27be37d71"
+    },
+    {
+      "backend": "native",
+      "key": "7419-page-height-28000",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/page-height-28000-print-2024.pdf",
+      "executionSha256": "42e48d3c85a14186dd2b9b7a7fada8cfcbdd88906552df9de998c798d31d31f6"
+    },
+    {
+      "backend": "native",
+      "key": "7419-partial-nested-width-wrap",
+      "kind": "inputSha256",
+      "path": "tests/fixtures/issue7419-boundaries/partial-nested-width-wrap.hwpx",
+      "executionSha256": "500fb3d32f015808c3c4c4d5304fdd561e33ec233bbae7e6cdd536911c55d096"
+    },
+    {
+      "backend": "native",
+      "key": "7419-partial-nested-width-wrap",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/partial-nested-width-wrap-print-2024.pdf",
+      "executionSha256": "c159d38e6a2acadd70f295e1c02323168b71e9edd5722b548446d8e9c77557ff"
+    },
+    {
+      "backend": "native",
+      "key": "7419-partial-nested-wrapper",
+      "kind": "inputSha256",
+      "path": "tests/fixtures/issue7419-boundaries/partial-nested-wrapper.hwpx",
+      "executionSha256": "95e9b90b1b2fa47e51566235e210291e093f886254ae2d82571c715574c7dd61"
+    },
+    {
+      "backend": "native",
+      "key": "7419-partial-nested-wrapper",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/partial-nested-wrapper-print-2024.pdf",
+      "executionSha256": "be1e12d3736b35869804451be7a59b972547f40de6a204cb81fe2d5b4d78a6b8"
+    },
+    {
+      "backend": "native",
+      "key": "7419-tac_nested_two_line_cell_no_lineseg",
+      "kind": "inputSha256",
+      "path": "samples/issue7419/tac_nested_two_line_cell_no_lineseg.hwpx",
+      "executionSha256": "59f8fa47e3766124d7e267e4b95e97f9a7050ca8b963261c6bd24c46f517dd76"
+    },
+    {
+      "backend": "native",
+      "key": "7419-tac_nested_two_line_cell_no_lineseg",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/tac_nested_two_line_cell_no_lineseg-print-2024.pdf",
+      "executionSha256": "80bce03f48471797f672f904eb1c06931e59243f7d3b6143373efe6d96ced7af"
+    },
+    {
+      "backend": "native",
+      "key": "7419-tac_two_line_cell_no_lineseg",
+      "kind": "inputSha256",
+      "path": "samples/issue7419/tac_two_line_cell_no_lineseg.hwpx",
+      "executionSha256": "08a6740ac106b24fbe8dd6d632137ba5748ab8fb2a95187882b6be734f5c36c2"
+    },
+    {
+      "backend": "native",
+      "key": "7419-tac_two_line_cell_no_lineseg",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/tac_two_line_cell_no_lineseg-print-2024.pdf",
+      "executionSha256": "8521966a066ecff427158a1d092379c8a9b06b546c8cf6b44d97358d800c2bd7"
+    },
+    {
+      "backend": "native",
+      "key": "7679-after-text",
+      "kind": "inputSha256",
+      "path": "samples/issue7679/tac-after-text-2024.hwp",
+      "executionSha256": "ca4b125c0f97ad767819647d5f6eb563ae5b1e4f8f1497b021f3e230b85779be"
+    },
+    {
+      "backend": "native",
+      "key": "7679-after-text",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7679/tac-after-text-2024.pdf",
+      "executionSha256": "e866a99dd98c9a572baee13f9d62db06a4a17f7026957a1cb3893132524d5425"
+    },
+    {
+      "backend": "native",
+      "key": "7872-nested",
+      "kind": "inputSha256",
+      "path": "samples/issue7872/nested-tac-row-drop.hwpx",
+      "executionSha256": "b03c45c38b7460fd39f80c8e032762a36fc9d15ee29ffb92268058dc38b6f930"
+    },
+    {
+      "backend": "native",
+      "key": "7872-nested",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7872/nested-tac-row-drop-2020.pdf",
+      "executionSha256": "32bbdaca5d3c6d7a47882583d78832836124c1effcdf97b22b8672047a64c7e1"
+    },
+    {
+      "backend": "native",
+      "key": "7872-original",
+      "kind": "inputSha256",
+      "path": "tests/fixtures/issue7872/nested-tac-row-drop-original.hwpx",
+      "executionSha256": "b9f285f0ce01773c9c64240392477a374e5c67bef00eabe0ace36af66ccae0ba"
+    },
+    {
+      "backend": "native",
+      "key": "7872-original",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7872/nested-tac-row-drop-original-2020.pdf",
+      "executionSha256": "bb8f105fb46aa5dafd81e717f7f1ea2a506defaaf7e23248024ff34812df5993"
+    },
+    {
+      "backend": "native",
+      "key": "2319-native-height",
+      "kind": "inputSha256",
+      "path": "samples/task2319/20544835_jinan_apt_form.hwp",
+      "executionSha256": "515fb049d24c0f3a26b7a35d7ff99244af3837f32254f30077d9557f8c2d6b25"
+    },
+    {
+      "backend": "native",
+      "key": "2319-native-height",
+      "kind": "pdfSha256",
+      "path": "pdf/task2319/20544835_jinan_apt_form-hwp-2020.pdf",
+      "executionSha256": "4df6c4788cc4e57bc11c216135b6fe40cee08b6e92cff61deeffe44fac8e035e"
+    },
+    {
+      "backend": "native",
+      "key": "8418-trailing-spacing",
+      "kind": "inputSha256",
+      "path": "samples/issue8418/30026-safety-reform-toc.hwp",
+      "executionSha256": "36ed67903e2a06b4be2a8af24b939439babfb266751159a07a0a51b9643c936e"
+    },
+    {
+      "backend": "native",
+      "key": "8418-trailing-spacing",
+      "kind": "pdfSha256",
+      "path": "pdf/issue8418/30026-safety-reform-toc-2022.pdf",
+      "executionSha256": "b3051ce501580d74fbdaec8b2490a76b099846ae0658c7a44c0b5f540799a572"
+    },
+    {
+      "backend": "native",
+      "key": "6737-trailing-spacing",
+      "kind": "inputSha256",
+      "path": "samples/issue6737/156487948-marine-pollution-law.hwp",
+      "executionSha256": "a1eb5fc5a893d2f0638cb3ce8c40ffb2e763815c0c7815e875b7e246237caae9"
+    },
+    {
+      "backend": "native",
+      "key": "6737-trailing-spacing",
+      "kind": "pdfSha256",
+      "path": "pdf/issue6737-156487948-2020.pdf",
+      "executionSha256": "c5fd06be9c0d3c982fccb41837e71e6b28147a6bdd8e81fd9bf699df408d9a19"
+    },
+    {
+      "backend": "native",
+      "key": "8226-input",
+      "kind": "inputSha256",
+      "path": "mydocs/pr/assets/leading-definition-slots/input/report-implicit-column.hwpx",
+      "executionSha256": "28768b01550ba2596c5e2bd182454a39a6700c8789fbe95e198d83c3898c4a40"
+    },
+    {
+      "backend": "native",
+      "key": "8226-input",
+      "kind": "pdfSha256",
+      "path": "pdf/leading-definition-slots/report-implicit-column-hancom-print.pdf",
+      "executionSha256": "8e7af1fcc369dbc45405bd0073850d085122a9d3f9f637678f119b324831d0d7"
+    },
+    {
+      "backend": "native",
+      "key": "8226-saved",
+      "kind": "inputSha256",
+      "path": "mydocs/pr/assets/pr8286_8226_integration/inputs/leading-definition-final.hwp",
+      "executionSha256": "729ed729fec4da78c376bcfb5b18eaf12497554b5daabb846ad57e2b35f1bbf2"
+    },
+    {
+      "backend": "native",
+      "key": "8226-saved",
+      "kind": "pdfSha256",
+      "path": "pdf/leading-definition-slots/report-implicit-column-hancom-print.pdf",
+      "executionSha256": "8e7af1fcc369dbc45405bd0073850d085122a9d3f9f637678f119b324831d0d7"
+    },
+    {
+      "backend": "native",
+      "key": "8399-A-hwp",
+      "kind": "inputSha256",
+      "path": "samples/issue8399/A.hwp",
+      "executionSha256": "98c5ef50de81d704fcfa03b81c99ef89badfafb839a1ea78334a46b76f9e6987"
+    },
+    {
+      "backend": "native",
+      "key": "8399-A-hwp",
+      "kind": "pdfSha256",
+      "path": "pdf/issue8399/A-hwp-2024.pdf",
+      "executionSha256": "45777e3678de4f0558867697c5bf2f71535c4b71bf9f70955be71367421c2e59"
+    },
+    {
+      "backend": "native",
+      "key": "8399-A-hwpx",
+      "kind": "inputSha256",
+      "path": "samples/issue8399/A.hwpx",
+      "executionSha256": "fddd90eed7c4f8818e723bb526c50cad8269c7b1a02eddd64d5a0cda2a5773c7"
+    },
+    {
+      "backend": "native",
+      "key": "8399-A-hwpx",
+      "kind": "pdfSha256",
+      "path": "pdf/issue8399/A-hwpx-2024.pdf",
+      "executionSha256": "0450bebb11625b1acbcc1ce06ff36a12474a76b3a52b6ac143b10b000226633a"
+    },
+    {
+      "backend": "native",
+      "key": "8399-D-hwp",
+      "kind": "inputSha256",
+      "path": "samples/issue8399/D.hwp",
+      "executionSha256": "08faf214ad31724f027fc222616e8fa58e03ea77cc04771c801a510f32661b91"
+    },
+    {
+      "backend": "native",
+      "key": "8399-D-hwp",
+      "kind": "pdfSha256",
+      "path": "pdf/issue8399/D-hwp-2024.pdf",
+      "executionSha256": "c058a040a80938dc448ea6e9181235ae6cb55c77320d45d459932d82f68ed46f"
+    },
+    {
+      "backend": "native",
+      "key": "8399-D-hwpx",
+      "kind": "inputSha256",
+      "path": "samples/issue8399/D.hwpx",
+      "executionSha256": "fb3a7c5425cb7a42438988a267a3416e95bd8884bbb2cd7f21c9acbc7160492c"
+    },
+    {
+      "backend": "native",
+      "key": "8399-D-hwpx",
+      "kind": "pdfSha256",
+      "path": "pdf/issue8399/D-hwpx-2024.pdf",
+      "executionSha256": "8f554dea4519655eed59fbff7259c763e367795fef4fe400f9ee209aac098b9c"
+    },
+    {
+      "backend": "native",
+      "key": "8399-E-hwp",
+      "kind": "inputSha256",
+      "path": "samples/issue8399/E.hwp",
+      "executionSha256": "7427d910a308fb1c0a2daf8cdf31fce429a45c194899d7d5a79b264743277057"
+    },
+    {
+      "backend": "native",
+      "key": "8399-E-hwp",
+      "kind": "pdfSha256",
+      "path": "pdf/issue8399/E-hwp-2024.pdf",
+      "executionSha256": "5f94ff87ec244609bae5efef5e741f8d7207648771e8b4c8a6c4c9336f5af136"
+    },
+    {
+      "backend": "native",
+      "key": "8399-E-hwpx",
+      "kind": "inputSha256",
+      "path": "samples/issue8399/E.hwpx",
+      "executionSha256": "a4141e83a0dc8ecbd94bec888893be702a87b7fd3b6fefaad451720763eece1c"
+    },
+    {
+      "backend": "native",
+      "key": "8399-E-hwpx",
+      "kind": "pdfSha256",
+      "path": "pdf/issue8399/E-hwpx-2024.pdf",
+      "executionSha256": "bf580bc15a7b8f9c50763b4eecb3ac15eeb9ed0f80eb8defbb4772c6249ed643"
+    },
+    {
+      "backend": "native",
+      "key": "8399-P-hwp",
+      "kind": "inputSha256",
+      "path": "samples/issue8399/P.hwp",
+      "executionSha256": "b305d6d267ef5e23a42321e9ddbfd6388cfd576a9381cb49ae9fc6500f928907"
+    },
+    {
+      "backend": "native",
+      "key": "8399-P-hwp",
+      "kind": "pdfSha256",
+      "path": "pdf/issue8399/P-hwp-2024.pdf",
+      "executionSha256": "bf586386e33796adee12082a3173d995e3614cf745973ae5a715a4e12506a889"
+    },
+    {
+      "backend": "native",
+      "key": "8399-P-hwpx",
+      "kind": "inputSha256",
+      "path": "samples/issue8399/P.hwpx",
+      "executionSha256": "72016c8b292cd8325e910e165e6a5a0a7b82a05ca6f1f27ad20316a98018464f"
+    },
+    {
+      "backend": "native",
+      "key": "8399-P-hwpx",
+      "kind": "pdfSha256",
+      "path": "pdf/issue8399/P-hwpx-2024.pdf",
+      "executionSha256": "5d53dc4942b5639f16b306f5d29be6b1a80cecafd3bfae31391ee194215cffb1"
+    },
+    {
+      "backend": "native",
+      "key": "8555",
+      "kind": "inputSha256",
+      "path": "samples/issue8555/21868765_cell_text_edit.hwp",
+      "executionSha256": "bbf1f72951b6ff5de258f806c5d2569214538b76a867ecebce10f9da8718ff9e"
+    },
+    {
+      "backend": "native",
+      "key": "8555",
+      "kind": "pdfSha256",
+      "path": "pdf/issue8555/21868765_cell_text_edit-hwp-mac-12.30.pdf",
+      "executionSha256": "aa6a2bf0fb12525a5108fab7a812e7ba81f8b879e9a50651b5128dc36f722c93"
+    },
+    {
+      "backend": "native",
+      "key": "8556",
+      "kind": "inputSha256",
+      "path": "samples/issue8556/21868765_cell_picture_insert.hwp",
+      "executionSha256": "507362e6c73d6db4db73fe4b42ae8110c945747ec4b7564e9b83044cb9ceb074"
+    },
+    {
+      "backend": "native",
+      "key": "8556",
+      "kind": "pdfSha256",
+      "path": "pdf/issue8556/21868765_cell_picture_insert-hwp-mac-12.30.pdf",
+      "executionSha256": "bf19f16e555477bdbe63862bb196a0ad35e65942b77a3d11d41e65a1e3b1a57a"
+    },
+    {
+      "backend": "native",
+      "key": "8557",
+      "kind": "inputSha256",
+      "path": "samples/issue8557/21868765_relocated_picture.hwp",
+      "executionSha256": "0d7cfc1df9f86da46cb12ebe5aa1eb0fbd9e660d4302f7a6facee8296ee09001"
+    },
+    {
+      "backend": "native",
+      "key": "8557",
+      "kind": "pdfSha256",
+      "path": "pdf/issue8557/21868765_relocated_picture-hwp-mac-12.30.pdf",
+      "executionSha256": "568d2037f8b132c25b70c4a26b3bca0f13168b92d755ad1a13891ddc2e929107"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-common-height-4838",
+      "kind": "inputSha256",
+      "path": "tests/fixtures/issue7419-boundaries/common-height-4838.hwpx",
+      "executionSha256": "bbfb52b87f03ea5e2a73abbcf3f2e17fbe76a7566d92f62c357d67d4479ccf42"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-common-height-4838",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/common-height-4838-print-2024.pdf",
+      "executionSha256": "13e52d61463c4725cb52e4e55d7e51651bf88e97136152d4ecf163f39cfc9099"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-mixed-child-storage",
+      "kind": "inputSha256",
+      "path": "tests/fixtures/issue7419-boundaries/mixed-child-storage.hwpx",
+      "executionSha256": "8758c38c662d09ccca949a4551a645aeef31a639e8f3c09b78ae2321513d53a4"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-mixed-child-storage",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/mixed-child-storage-print-2024.pdf",
+      "executionSha256": "5516c3b313cf2b9e78563e7ec2620cc498ecbfcb3cfc6eeb37f777fddb454668"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-nested-explicit-break",
+      "kind": "inputSha256",
+      "path": "tests/fixtures/issue7419-boundaries/nested-explicit-break.hwpx",
+      "executionSha256": "605cadab0527822e11afd3370e1546040e73f0f1798ce646e6ce41cb68625a09"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-nested-explicit-break",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/nested-explicit-break-print-2024.pdf",
+      "executionSha256": "723e2a09c5b883edbd3fb8a055eb3aa187da2c01eb3131fd1d72888de1d26088"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-nested-outer-margins",
+      "kind": "inputSha256",
+      "path": "tests/fixtures/issue7419-boundaries/nested-outer-margins.hwpx",
+      "executionSha256": "79c872d0a949b13d5d2191d3c39cff4fecbcee0aa3802648a810d9435324dcc7"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-nested-outer-margins",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/nested-outer-margins-print-2024.pdf",
+      "executionSha256": "c01bdbcfe939328d8ede43958689a61c5382e7cbe85b1e8f2f9cf2bfcd6f9703"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-nested-same-line",
+      "kind": "inputSha256",
+      "path": "tests/fixtures/issue7419-boundaries/nested-same-line.hwpx",
+      "executionSha256": "0340236f0d79a68a343bd771266544781f9313db63ded04168f62b8fb2770d7c"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-nested-same-line",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/nested-same-line-print-2024.pdf",
+      "executionSha256": "86facc427943289a3854da58614813ca1d391210e8bb6092c6f7e0fa5a9db91c"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-nested-surrounding-text",
+      "kind": "inputSha256",
+      "path": "tests/fixtures/issue7419-boundaries/nested-surrounding-text.hwpx",
+      "executionSha256": "052a2460132202b24dc392bcd74cb2e3957d229026eacc88767b59c55cc8fe1c"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-nested-surrounding-text",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/nested-surrounding-text-print-2024.pdf",
+      "executionSha256": "efdb4dea26c76eb6ecc2f0245470e78a67a84a0df0397a38d35a55e8be213e96"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-nested-width-wrap",
+      "kind": "inputSha256",
+      "path": "tests/fixtures/issue7419-boundaries/nested-width-wrap.hwpx",
+      "executionSha256": "8f102ecbd644d720f3766c794fa6b3ba55d7f93e8441f07d0004f519ec0d0f3c"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-nested-width-wrap",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/nested-width-wrap-print-2024.pdf",
+      "executionSha256": "8e1164da675863c542c2d9873f104b6485e294bcbf6bcd9087d66c9fe5afb1d1"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-no-child-storage",
+      "kind": "inputSha256",
+      "path": "tests/fixtures/issue7419-boundaries/no-child-storage.hwpx",
+      "executionSha256": "d323de426683eb052e5715015f11d41597d22308a23ef8e739e64db5893f2018"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-no-child-storage",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/no-child-storage-print-2024.pdf",
+      "executionSha256": "fc6966e6066793f917808cdae4f990ca461e7ae9cbe1fd0c77c28c054d7c202c"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-page-height-28000",
+      "kind": "inputSha256",
+      "path": "tests/fixtures/issue7419-boundaries/page-height-28000.hwpx",
+      "executionSha256": "8d3a298e85cf65d64e06da76c3911b927b6d1d1b056714f1fd1cf3c27be37d71"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-page-height-28000",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/page-height-28000-print-2024.pdf",
+      "executionSha256": "42e48d3c85a14186dd2b9b7a7fada8cfcbdd88906552df9de998c798d31d31f6"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-partial-nested-width-wrap",
+      "kind": "inputSha256",
+      "path": "tests/fixtures/issue7419-boundaries/partial-nested-width-wrap.hwpx",
+      "executionSha256": "500fb3d32f015808c3c4c4d5304fdd561e33ec233bbae7e6cdd536911c55d096"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-partial-nested-width-wrap",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/partial-nested-width-wrap-print-2024.pdf",
+      "executionSha256": "c159d38e6a2acadd70f295e1c02323168b71e9edd5722b548446d8e9c77557ff"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-partial-nested-wrapper",
+      "kind": "inputSha256",
+      "path": "tests/fixtures/issue7419-boundaries/partial-nested-wrapper.hwpx",
+      "executionSha256": "95e9b90b1b2fa47e51566235e210291e093f886254ae2d82571c715574c7dd61"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-partial-nested-wrapper",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/partial-nested-wrapper-print-2024.pdf",
+      "executionSha256": "be1e12d3736b35869804451be7a59b972547f40de6a204cb81fe2d5b4d78a6b8"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-tac_nested_two_line_cell_no_lineseg",
+      "kind": "inputSha256",
+      "path": "samples/issue7419/tac_nested_two_line_cell_no_lineseg.hwpx",
+      "executionSha256": "59f8fa47e3766124d7e267e4b95e97f9a7050ca8b963261c6bd24c46f517dd76"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-tac_nested_two_line_cell_no_lineseg",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/tac_nested_two_line_cell_no_lineseg-print-2024.pdf",
+      "executionSha256": "80bce03f48471797f672f904eb1c06931e59243f7d3b6143373efe6d96ced7af"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-tac_two_line_cell_no_lineseg",
+      "kind": "inputSha256",
+      "path": "samples/issue7419/tac_two_line_cell_no_lineseg.hwpx",
+      "executionSha256": "08a6740ac106b24fbe8dd6d632137ba5748ab8fb2a95187882b6be734f5c36c2"
+    },
+    {
+      "backend": "wasm",
+      "key": "7419-tac_two_line_cell_no_lineseg",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7419/tac_two_line_cell_no_lineseg-print-2024.pdf",
+      "executionSha256": "8521966a066ecff427158a1d092379c8a9b06b546c8cf6b44d97358d800c2bd7"
+    },
+    {
+      "backend": "wasm",
+      "key": "7679-after-text",
+      "kind": "inputSha256",
+      "path": "samples/issue7679/tac-after-text-2024.hwp",
+      "executionSha256": "ca4b125c0f97ad767819647d5f6eb563ae5b1e4f8f1497b021f3e230b85779be"
+    },
+    {
+      "backend": "wasm",
+      "key": "7679-after-text",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7679/tac-after-text-2024.pdf",
+      "executionSha256": "e866a99dd98c9a572baee13f9d62db06a4a17f7026957a1cb3893132524d5425"
+    },
+    {
+      "backend": "wasm",
+      "key": "7872-nested",
+      "kind": "inputSha256",
+      "path": "samples/issue7872/nested-tac-row-drop.hwpx",
+      "executionSha256": "b03c45c38b7460fd39f80c8e032762a36fc9d15ee29ffb92268058dc38b6f930"
+    },
+    {
+      "backend": "wasm",
+      "key": "7872-nested",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7872/nested-tac-row-drop-2020.pdf",
+      "executionSha256": "32bbdaca5d3c6d7a47882583d78832836124c1effcdf97b22b8672047a64c7e1"
+    },
+    {
+      "backend": "wasm",
+      "key": "7872-original",
+      "kind": "inputSha256",
+      "path": "tests/fixtures/issue7872/nested-tac-row-drop-original.hwpx",
+      "executionSha256": "b9f285f0ce01773c9c64240392477a374e5c67bef00eabe0ace36af66ccae0ba"
+    },
+    {
+      "backend": "wasm",
+      "key": "7872-original",
+      "kind": "pdfSha256",
+      "path": "pdf/issue7872/nested-tac-row-drop-original-2020.pdf",
+      "executionSha256": "bb8f105fb46aa5dafd81e717f7f1ea2a506defaaf7e23248024ff34812df5993"
+    },
+    {
+      "backend": "wasm",
+      "key": "2319-native-height",
+      "kind": "inputSha256",
+      "path": "samples/task2319/20544835_jinan_apt_form.hwp",
+      "executionSha256": "515fb049d24c0f3a26b7a35d7ff99244af3837f32254f30077d9557f8c2d6b25"
+    },
+    {
+      "backend": "wasm",
+      "key": "2319-native-height",
+      "kind": "pdfSha256",
+      "path": "pdf/task2319/20544835_jinan_apt_form-hwp-2020.pdf",
+      "executionSha256": "4df6c4788cc4e57bc11c216135b6fe40cee08b6e92cff61deeffe44fac8e035e"
+    },
+    {
+      "backend": "wasm",
+      "key": "8418-trailing-spacing",
+      "kind": "inputSha256",
+      "path": "samples/issue8418/30026-safety-reform-toc.hwp",
+      "executionSha256": "36ed67903e2a06b4be2a8af24b939439babfb266751159a07a0a51b9643c936e"
+    },
+    {
+      "backend": "wasm",
+      "key": "8418-trailing-spacing",
+      "kind": "pdfSha256",
+      "path": "pdf/issue8418/30026-safety-reform-toc-2022.pdf",
+      "executionSha256": "b3051ce501580d74fbdaec8b2490a76b099846ae0658c7a44c0b5f540799a572"
+    },
+    {
+      "backend": "wasm",
+      "key": "6737-trailing-spacing",
+      "kind": "inputSha256",
+      "path": "samples/issue6737/156487948-marine-pollution-law.hwp",
+      "executionSha256": "a1eb5fc5a893d2f0638cb3ce8c40ffb2e763815c0c7815e875b7e246237caae9"
+    },
+    {
+      "backend": "wasm",
+      "key": "6737-trailing-spacing",
+      "kind": "pdfSha256",
+      "path": "pdf/issue6737-156487948-2020.pdf",
+      "executionSha256": "c5fd06be9c0d3c982fccb41837e71e6b28147a6bdd8e81fd9bf699df408d9a19"
+    },
+    {
+      "backend": "wasm",
+      "key": "8226-input",
+      "kind": "inputSha256",
+      "path": "mydocs/pr/assets/leading-definition-slots/input/report-implicit-column.hwpx",
+      "executionSha256": "28768b01550ba2596c5e2bd182454a39a6700c8789fbe95e198d83c3898c4a40"
+    },
+    {
+      "backend": "wasm",
+      "key": "8226-input",
+      "kind": "pdfSha256",
+      "path": "pdf/leading-definition-slots/report-implicit-column-hancom-print.pdf",
+      "executionSha256": "8e7af1fcc369dbc45405bd0073850d085122a9d3f9f637678f119b324831d0d7"
+    },
+    {
+      "backend": "wasm",
+      "key": "8226-saved",
+      "kind": "inputSha256",
+      "path": "mydocs/pr/assets/pr8286_8226_integration/inputs/leading-definition-final.hwp",
+      "executionSha256": "729ed729fec4da78c376bcfb5b18eaf12497554b5daabb846ad57e2b35f1bbf2"
+    },
+    {
+      "backend": "wasm",
+      "key": "8226-saved",
+      "kind": "pdfSha256",
+      "path": "pdf/leading-definition-slots/report-implicit-column-hancom-print.pdf",
+      "executionSha256": "8e7af1fcc369dbc45405bd0073850d085122a9d3f9f637678f119b324831d0d7"
+    },
+    {
+      "backend": "wasm",
+      "key": "8399-A-hwp",
+      "kind": "inputSha256",
+      "path": "samples/issue8399/A.hwp",
+      "executionSha256": "98c5ef50de81d704fcfa03b81c99ef89badfafb839a1ea78334a46b76f9e6987"
+    },
+    {
+      "backend": "wasm",
+      "key": "8399-A-hwp",
+      "kind": "pdfSha256",
+      "path": "pdf/issue8399/A-hwp-2024.pdf",
+      "executionSha256": "45777e3678de4f0558867697c5bf2f71535c4b71bf9f70955be71367421c2e59"
+    },
+    {
+      "backend": "wasm",
+      "key": "8399-A-hwpx",
+      "kind": "inputSha256",
+      "path": "samples/issue8399/A.hwpx",
+      "executionSha256": "fddd90eed7c4f8818e723bb526c50cad8269c7b1a02eddd64d5a0cda2a5773c7"
+    },
+    {
+      "backend": "wasm",
+      "key": "8399-A-hwpx",
+      "kind": "pdfSha256",
+      "path": "pdf/issue8399/A-hwpx-2024.pdf",
+      "executionSha256": "0450bebb11625b1acbcc1ce06ff36a12474a76b3a52b6ac143b10b000226633a"
+    },
+    {
+      "backend": "wasm",
+      "key": "8399-D-hwp",
+      "kind": "inputSha256",
+      "path": "samples/issue8399/D.hwp",
+      "executionSha256": "08faf214ad31724f027fc222616e8fa58e03ea77cc04771c801a510f32661b91"
+    },
+    {
+      "backend": "wasm",
+      "key": "8399-D-hwp",
+      "kind": "pdfSha256",
+      "path": "pdf/issue8399/D-hwp-2024.pdf",
+      "executionSha256": "c058a040a80938dc448ea6e9181235ae6cb55c77320d45d459932d82f68ed46f"
+    },
+    {
+      "backend": "wasm",
+      "key": "8399-D-hwpx",
+      "kind": "inputSha256",
+      "path": "samples/issue8399/D.hwpx",
+      "executionSha256": "fb3a7c5425cb7a42438988a267a3416e95bd8884bbb2cd7f21c9acbc7160492c"
+    },
+    {
+      "backend": "wasm",
+      "key": "8399-D-hwpx",
+      "kind": "pdfSha256",
+      "path": "pdf/issue8399/D-hwpx-2024.pdf",
+      "executionSha256": "8f554dea4519655eed59fbff7259c763e367795fef4fe400f9ee209aac098b9c"
+    },
+    {
+      "backend": "wasm",
+      "key": "8399-E-hwp",
+      "kind": "inputSha256",
+      "path": "samples/issue8399/E.hwp",
+      "executionSha256": "7427d910a308fb1c0a2daf8cdf31fce429a45c194899d7d5a79b264743277057"
+    },
+    {
+      "backend": "wasm",
+      "key": "8399-E-hwp",
+      "kind": "pdfSha256",
+      "path": "pdf/issue8399/E-hwp-2024.pdf",
+      "executionSha256": "5f94ff87ec244609bae5efef5e741f8d7207648771e8b4c8a6c4c9336f5af136"
+    },
+    {
+      "backend": "wasm",
+      "key": "8399-E-hwpx",
+      "kind": "inputSha256",
+      "path": "samples/issue8399/E.hwpx",
+      "executionSha256": "a4141e83a0dc8ecbd94bec888893be702a87b7fd3b6fefaad451720763eece1c"
+    },
+    {
+      "backend": "wasm",
+      "key": "8399-E-hwpx",
+      "kind": "pdfSha256",
+      "path": "pdf/issue8399/E-hwpx-2024.pdf",
+      "executionSha256": "bf580bc15a7b8f9c50763b4eecb3ac15eeb9ed0f80eb8defbb4772c6249ed643"
+    },
+    {
+      "backend": "wasm",
+      "key": "8399-P-hwp",
+      "kind": "inputSha256",
+      "path": "samples/issue8399/P.hwp",
+      "executionSha256": "b305d6d267ef5e23a42321e9ddbfd6388cfd576a9381cb49ae9fc6500f928907"
+    },
+    {
+      "backend": "wasm",
+      "key": "8399-P-hwp",
+      "kind": "pdfSha256",
+      "path": "pdf/issue8399/P-hwp-2024.pdf",
+      "executionSha256": "bf586386e33796adee12082a3173d995e3614cf745973ae5a715a4e12506a889"
+    },
+    {
+      "backend": "wasm",
+      "key": "8399-P-hwpx",
+      "kind": "inputSha256",
+      "path": "samples/issue8399/P.hwpx",
+      "executionSha256": "72016c8b292cd8325e910e165e6a5a0a7b82a05ca6f1f27ad20316a98018464f"
+    },
+    {
+      "backend": "wasm",
+      "key": "8399-P-hwpx",
+      "kind": "pdfSha256",
+      "path": "pdf/issue8399/P-hwpx-2024.pdf",
+      "executionSha256": "5d53dc4942b5639f16b306f5d29be6b1a80cecafd3bfae31391ee194215cffb1"
+    },
+    {
+      "backend": "wasm",
+      "key": "8555",
+      "kind": "inputSha256",
+      "path": "samples/issue8555/21868765_cell_text_edit.hwp",
+      "executionSha256": "bbf1f72951b6ff5de258f806c5d2569214538b76a867ecebce10f9da8718ff9e"
+    },
+    {
+      "backend": "wasm",
+      "key": "8555",
+      "kind": "pdfSha256",
+      "path": "pdf/issue8555/21868765_cell_text_edit-hwp-mac-12.30.pdf",
+      "executionSha256": "aa6a2bf0fb12525a5108fab7a812e7ba81f8b879e9a50651b5128dc36f722c93"
+    },
+    {
+      "backend": "wasm",
+      "key": "8556",
+      "kind": "inputSha256",
+      "path": "samples/issue8556/21868765_cell_picture_insert.hwp",
+      "executionSha256": "507362e6c73d6db4db73fe4b42ae8110c945747ec4b7564e9b83044cb9ceb074"
+    },
+    {
+      "backend": "wasm",
+      "key": "8556",
+      "kind": "pdfSha256",
+      "path": "pdf/issue8556/21868765_cell_picture_insert-hwp-mac-12.30.pdf",
+      "executionSha256": "bf19f16e555477bdbe63862bb196a0ad35e65942b77a3d11d41e65a1e3b1a57a"
+    },
+    {
+      "backend": "wasm",
+      "key": "8557",
+      "kind": "inputSha256",
+      "path": "samples/issue8557/21868765_relocated_picture.hwp",
+      "executionSha256": "0d7cfc1df9f86da46cb12ebe5aa1eb0fbd9e660d4302f7a6facee8296ee09001"
+    },
+    {
+      "backend": "wasm",
+      "key": "8557",
+      "kind": "pdfSha256",
+      "path": "pdf/issue8557/21868765_relocated_picture-hwp-mac-12.30.pdf",
+      "executionSha256": "568d2037f8b132c25b70c4a26b3bca0f13168b92d755ad1a13891ddc2e929107"
+    }
+  ]
+}

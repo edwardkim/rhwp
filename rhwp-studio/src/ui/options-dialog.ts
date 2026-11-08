@@ -6,15 +6,19 @@
 import { ModalDialog } from './dialog';
 import { userSettings } from '@/core/user-settings';
 import { FontSetDialog } from './font-set-dialog';
+import { LocalFontListDialog } from './local-font-list-dialog';
 import {
   clearStoredLocalFonts,
+  changedLocalFontNames,
   detectLocalFonts,
+  getLocalFontRecords,
   getLocalFontState,
   isLocalFontAccessSupported,
   loadStoredLocalFonts,
   type LocalFontState,
 } from '@/core/local-fonts';
 import type { EventBus } from '@/core/event-bus';
+import type { PdfImportLayout } from '@/core/pdf-import-layout';
 
 import { t as i18nText } from '../i18n/index.ts';
 export class OptionsDialog extends ModalDialog {
@@ -25,8 +29,9 @@ export class OptionsDialog extends ModalDialog {
   private idleSaveEnabledCheck!: HTMLInputElement;
   private idleDelayInput!: HTMLInputElement;
   private pdfPrintGuidanceCheck!: HTMLInputElement;
+  private pdfImportEditableRadio!: HTMLInputElement;
 
-  constructor(private readonly eventBus?: EventBus) {
+  constructor(private readonly eventBus?: EventBus, private readonly documentFontCandidates?: () => string[]) {
     super(i18nText('dialog.options.title'), 480);
   }
 
@@ -169,6 +174,14 @@ export class OptionsDialog extends ModalDialog {
     localBtn.className = 'dialog-btn opt-fontset-btn';
     localBtn.textContent = i18nText('dialog.options.localBtn.text');
 
+    const listBtn = document.createElement('button');
+    listBtn.className = 'dialog-btn opt-fontset-btn';
+    listBtn.textContent = i18nText('dialog.localFontList.button');
+    listBtn.addEventListener('click', async () => {
+      try { await loadStoredLocalFonts(); } catch { /* 현재 메모리의 목록을 표시한다. */ }
+      new LocalFontListDialog().show();
+    });
+
     const resetBtn = document.createElement('button');
     resetBtn.className = 'dialog-btn opt-fontset-btn';
     resetBtn.textContent = i18nText('dialog.options.resetBtn.text');
@@ -200,9 +213,11 @@ export class OptionsDialog extends ModalDialog {
       resetBtn.disabled = true;
       localStatus.textContent = i18nText('dialog.options.localStatus.text.xfd877c');
       try {
-        const fonts = await detectLocalFonts({ force: true });
-        updateLocalStatus(i18nText('dialog.options.updateLocalStatus.label.x97c46b', { p1: fonts.length }));
-        this.eventBus?.emit('local-fonts-changed', { fonts, source: 'options-dialog' });
+        const before = getLocalFontRecords({ includeRegistered: true });
+        const fonts = await detectLocalFonts({ force: true, candidateFamilies: this.documentFontCandidates?.() });
+        updateLocalStatus();
+        const changedNames = changedLocalFontNames(before, getLocalFontRecords({ includeRegistered: true }));
+        this.eventBus?.emit('local-fonts-changed', { fonts, changedNames, source: 'options-dialog' });
       } catch (error) {
         updateLocalStatus(describeLocalFontDetectionError(error));
       }
@@ -214,9 +229,10 @@ export class OptionsDialog extends ModalDialog {
       resetBtn.disabled = true;
       localStatus.textContent = i18nText('dialog.options.localStatus.text.x4e6625');
       try {
+        const before = getLocalFontRecords({ includeRegistered: true });
         await clearStoredLocalFonts();
         updateLocalStatus(i18nText('dialog.options.updateLocalStatus.label.xcbeff3'));
-        this.eventBus?.emit('local-fonts-changed', { fonts: [], source: 'options-dialog-clear' });
+        this.eventBus?.emit('local-fonts-changed', { fonts: [], changedNames: changedLocalFontNames(before, []), source: 'options-dialog-clear' });
       } catch {
         updateLocalStatus(i18nText('dialog.options.updateLocalStatus.label.x1ca5cc'));
       }
@@ -224,6 +240,7 @@ export class OptionsDialog extends ModalDialog {
     });
 
     localRow.appendChild(localBtn);
+    localRow.appendChild(listBtn);
     localRow.appendChild(resetBtn);
     localSection.appendChild(localRow);
     localSection.appendChild(localStatus);
@@ -329,7 +346,48 @@ export class OptionsDialog extends ModalDialog {
     pdfSection.appendChild(pdfRow);
     panel.appendChild(pdfSection);
 
+    panel.appendChild(this.createPdfImportSection());
+
     return panel;
+  }
+
+  /** PDF를 열 때 본문 문단 배치를 고르는 구역. 다음에 여는 PDF부터 적용된다. */
+  private createPdfImportSection(): HTMLElement {
+    const section = document.createElement('div');
+    section.className = 'dialog-section';
+
+    const title = document.createElement('div');
+    title.className = 'dialog-section-title';
+    title.textContent = i18nText('dialog.options.pdfImportTitle.text');
+    section.appendChild(title);
+
+    const desc = document.createElement('p');
+    desc.className = 'opt-desc';
+    desc.textContent = i18nText('dialog.options.pdfImportDesc.text');
+    section.appendChild(desc);
+
+    const current = userSettings.getPdfImportLayout();
+    const choices: { value: PdfImportLayout; labelKey: string }[] = [
+      { value: 'fidelity', labelKey: 'dialog.options.pdfImportFidelity.text' },
+      { value: 'editable', labelKey: 'dialog.options.pdfImportEditable.text' },
+    ];
+    for (const choice of choices) {
+      const row = document.createElement('div');
+      row.className = 'dialog-row opt-row';
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'opt-pdf-import-layout';
+      radio.id = `opt-pdf-import-${choice.value}`;
+      radio.value = choice.value;
+      radio.checked = current === choice.value;
+      const label = document.createElement('label');
+      label.htmlFor = radio.id;
+      label.textContent = i18nText(choice.labelKey);
+      row.append(radio, label);
+      section.appendChild(row);
+      if (choice.value === 'editable') this.pdfImportEditableRadio = radio;
+    }
+    return section;
   }
 
   protected onConfirm(): void {
@@ -345,6 +403,7 @@ export class OptionsDialog extends ModalDialog {
       idleDelaySeconds: clampInteger(this.idleDelayInput.value, 10, 5, 600),
     });
     userSettings.setShowPdfPrintGuidance(this.pdfPrintGuidanceCheck.checked);
+    userSettings.setPdfImportLayout(this.pdfImportEditableRadio.checked ? 'editable' : 'fidelity');
     this.eventBus?.emit('autosave-settings-changed', { source: 'options-dialog' });
   }
 }
@@ -396,12 +455,12 @@ function formatLocalFontStatus(state: LocalFontState): string {
   const detectedAt = formatDetectedAt(state.detectedAt);
   const dateSuffix = detectedAt ? ` · ${detectedAt}` : '';
   if (state.source === 'font-presence-probe') {
-    return `문서별 확인 결과 저장됨: 사용 가능 ${state.count}개 / 확인한 글꼴 ${state.checkedFamilies.length}개${dateSuffix}`;
+    return `문서별 확인 결과 저장됨: 사용 가능 ${state.count}개 face / 확인한 글꼴 ${state.checkedFamilies.length}개${dateSuffix}`;
   }
   if (state.checkedFamilies.length > 0) {
-    return `로컬 글꼴 결과 저장됨: 사용 가능 ${state.count}개 / 문서 후보 ${state.checkedFamilies.length}개 / 열거 누락 확인 ${state.probedFamilies.length}개${dateSuffix}`;
+    return `로컬 글꼴 결과 저장됨: 사용 가능 ${state.count}개 face / 문서 후보 ${state.checkedFamilies.length}개 / 열거 누락 확인 ${state.probedFamilies.length}개${dateSuffix}`;
   }
-  return `로컬 글꼴 열거 결과 저장됨: ${state.count}개 · 문서별 누락 후보는 문서를 열 때 추가 확인${dateSuffix}`;
+  return `로컬 글꼴 열거 결과 저장됨: ${state.count}개 face · 문서별 누락 후보는 문서를 열 때 추가 확인${dateSuffix}`;
 }
 
 function formatDetectedAt(value: string | null): string {

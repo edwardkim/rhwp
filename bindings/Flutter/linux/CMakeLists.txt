@@ -1,0 +1,28 @@
+cmake_minimum_required(VERSION 3.16)
+project(rhwp_native_reference LANGUAGES CXX)
+
+option(RHWP_TEXTURE_CORE_TESTS_ONLY "Build portable texture lifetime checks without Flutter/GTK" OFF)
+if(RHWP_TEXTURE_CORE_TESTS_ONLY)
+  enable_testing()
+  find_package(Threads REQUIRED)
+  add_executable(texture_state_test texture_state.cc tests/texture_state_test.cc)
+  target_include_directories(texture_state_test PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+  target_compile_features(texture_state_test PRIVATE cxx_std_17)
+  target_compile_options(texture_state_test PRIVATE -Wall -Wextra -Werror)
+  target_link_libraries(texture_state_test PRIVATE Threads::Threads)
+  add_test(NAME texture_state COMMAND texture_state_test)
+  return()
+endif()
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0)
+pkg_check_modules(EPOXY REQUIRED IMPORTED_TARGET epoxy)
+add_library(rhwp_native_reference_plugin SHARED
+  rhwp_texture_plugin.cc texture_state.cc gl_state_guard.cc)
+target_compile_features(rhwp_native_reference_plugin PRIVATE cxx_std_17)
+target_compile_options(rhwp_native_reference_plugin PRIVATE -Wall -Wextra -Werror)
+target_include_directories(rhwp_native_reference_plugin PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_include_directories(rhwp_native_reference_plugin PRIVATE
+  "${CMAKE_CURRENT_SOURCE_DIR}/../../swift/Sources/CRhwpNative")
+target_link_libraries(rhwp_native_reference_plugin PRIVATE flutter PkgConfig::GTK PkgConfig::EPOXY ${CMAKE_DL_LIBS})
+set(rhwp_native_reference_bundled_libraries "" PARENT_SCOPE)

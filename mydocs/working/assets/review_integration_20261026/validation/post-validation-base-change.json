@@ -1,0 +1,7 @@
+{
+  "completed_validation_head": "1cd656fdf9a09e88cd1ee9eb92f4c43358ea2559",
+  "tested_base": "0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c",
+  "new_base": "faa885e8b54ffc7cdf4196cd43a3103f362499a2",
+  "new_pr": 8116,
+  "current_state": "pre-rebase snapshot; post-rebase functional preservation pending"
+}

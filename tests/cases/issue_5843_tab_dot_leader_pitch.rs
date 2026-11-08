@@ -6,7 +6,7 @@
 //! 이 저장소가 가운뎃점용으로 실측 보정해 둔 0.12 em(≈2.24px)의 절반이 안 된다.
 //! 그래서 목차 점선이 점이 아니라 가는 실선으로 보였다.
 //!
-//! 오라클은 `pdf/KTX-2022.pdf` 2쪽이다 — 한글이 낱개 `·` 글리프로 그린 점 1,435개를
+//! 오라클은 `mydocs/pr/assets/issue7445/ktx-toc27/KTX-2022.pdf` 2쪽이다 — 한글이 낱개 `·` 글리프로 그린 점 1,435개를
 //! 좌표로 재면 글꼴 14.04pt 에서 3.48pt, 15.00pt 에서 3.72pt → **두 크기 모두 0.248 em**.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -24,7 +24,7 @@ fn repo_root() -> std::path::PathBuf {
 
 /// 목차가 있는 쪽. `-p` 는 0 기준이라 이 값이 문서 2쪽이다.
 const PAGE_ARG: &str = "1";
-const SAMPLE: &str = "samples/KTX.hwp";
+const SAMPLE: &str = "mydocs/pr/assets/issue7445/ktx-toc27/KTX.hwp";
 
 fn render_toc_page() -> String {
     static SEQ: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
@@ -60,47 +60,13 @@ fn render_toc_page() -> String {
     text
 }
 
-/// 점선 리더 한 줄 — (선 두께, 점 간격) px.
-struct Leader {
-    width: f64,
-    pitch: f64,
+mod svg_tab_leaders {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/common/svg_tab_leaders.rs"
+    ));
 }
-
-/// `stroke-linecap="round"` 가 붙은 가로선만 점선 리더다(표 괘선·밑줄과 구별된다).
-fn dot_leaders(svg: &str) -> Vec<Leader> {
-    let mut out = Vec::new();
-    for chunk in svg.split("<line ").skip(1) {
-        let Some(end) = chunk.find('>') else { continue };
-        let attrs = &chunk[..end];
-        if !attrs.contains("stroke-linecap=\"round\"") {
-            continue;
-        }
-        let pick = |key: &str| -> Option<String> {
-            let at = attrs.find(&format!("{key}=\""))? + key.len() + 2;
-            let tail = &attrs[at..];
-            let stop = tail.find('"')?;
-            Some(tail[..stop].to_string())
-        };
-        let Some(width) = pick("stroke-width").and_then(|v| v.parse::<f64>().ok()) else {
-            continue;
-        };
-        let Some(dash) = pick("stroke-dasharray") else {
-            continue;
-        };
-        let parts: Vec<f64> = dash
-            .split_whitespace()
-            .filter_map(|v| v.parse::<f64>().ok())
-            .collect();
-        if parts.len() != 2 {
-            continue;
-        }
-        out.push(Leader {
-            width,
-            pitch: parts[0] + parts[1],
-        });
-    }
-    out
-}
+use svg_tab_leaders::dot_leaders;
 
 #[test]
 fn toc_page_draws_dot_leaders() {
@@ -117,7 +83,9 @@ fn dot_pitch_follows_the_hancom_oracle() {
     // 정본 실측: 0.248 em. 이 쪽 글꼴은 14.04pt(18.72px)·15.00pt(20px) 이므로
     // 간격은 4.6~5.0px 범위여야 한다. 종전 고정값 3.1px 는 이 범위 밖이다.
     let leaders = dot_leaders(&render_toc_page());
+    assert!(!leaders.is_empty(), "실제 리더를 검사해야 한다");
     for l in &leaders {
+        assert!(l.max_step_error < 0.01, "같은 리더의 점은 균일 간격이다");
         assert!(
             (4.0..=5.6).contains(&l.pitch),
             "점 간격이 정본 범위(글꼴 크기 × 0.248 em)를 벗어났다: {:.3}px \
@@ -132,11 +100,12 @@ fn dot_size_matches_the_middle_dot_calibration() {
     // 리더의 점도 한글이 그리는 `·` 다 — 지름은 가운뎃점 실측(0.12 em)을 따라야 한다.
     // 이 쪽 글꼴이면 2.2~2.5px. 종전 고정값 1.0px 는 절반이 안 됐다.
     let leaders = dot_leaders(&render_toc_page());
+    assert!(!leaders.is_empty(), "실제 리더를 검사해야 한다");
     for l in &leaders {
         assert!(
-            (1.8..=2.8).contains(&l.width),
+            (1.8..=2.8).contains(&l.diameter),
             "점 지름이 가운뎃점 실측(0.12 em)에서 벗어났다: {:.3}px (종전 1.0px 고정)",
-            l.width
+            l.diameter
         );
     }
 }
@@ -146,7 +115,10 @@ fn leader_geometry_tracks_font_size_rather_than_a_constant() {
     // 이 쪽에는 글꼴 크기가 다른 리더 줄이 섞여 있다(제목 15pt · 항목 14.04pt).
     // 고정값으로 되돌아가면 모든 줄이 같은 값이 되므로, **두 종류 이상**이어야 한다.
     let leaders = dot_leaders(&render_toc_page());
-    let mut widths: Vec<i64> = leaders.iter().map(|l| (l.width * 100.0) as i64).collect();
+    let mut widths: Vec<i64> = leaders
+        .iter()
+        .map(|l| (l.diameter * 100.0) as i64)
+        .collect();
     widths.sort_unstable();
     widths.dedup();
     assert!(

@@ -24,7 +24,6 @@ pub(super) struct WholeFitInput {
 
 pub(super) struct WholeFit {
     pub(super) para_has_stored_line_seg: bool,
-    pub(super) single_row_object_height_advance: Option<f64>,
     pub(super) fits_after_overlay_shapes: bool,
     pub(super) stored_rewinding_rowbreak_uses_painted_row_footprint: bool,
     pub(super) whole_fit_table_total: f64,
@@ -36,10 +35,9 @@ pub(super) struct WholeFit {
 }
 
 impl TypesetEngine {
-    /// A complete source cell can own two physical row frames even when
-    /// sequential measurement would fit both. Whole placement must retain
-    /// the same source boundary consumed by the row scanner and paint.
-    pub(in crate::renderer::typeset) fn stored_two_line_row_frames_require_split(
+    /// 완전한 원본 셀도 여러 물리 프레임을 소유할 수 있다. 통째 수용과
+    /// 빈 호스트 빠른 경로가 실제 스캐너의 같은 저장 경계를 보존한다.
+    pub(in crate::renderer::typeset) fn stored_cell_page_frames_require_split(
         &self,
         table: &crate::model::table::Table,
         styles: &crate::renderer::style_resolver::ResolvedStyleSet,
@@ -47,15 +45,17 @@ impl TypesetEngine {
         if !self.profile.get().hwp5_stored_pagination_layout()
             || self.profile.get().session_edited()
             || table.common.treat_as_char
-            || table.page_break != crate::model::table::TablePageBreak::RowBreak
+            || table.layout_page_break() != crate::model::table::TablePageBreak::RowBreak
         {
             return false;
         }
         let engine = crate::renderer::layout::LayoutEngine::new(self.dpi);
+        self.prime_section_cell_context(&engine);
         engine.set_layout_profile(self.profile.get());
         engine.set_render_normalization_overlay(std::sync::Arc::clone(&self.render_normalization));
-        (0..usize::from(table.row_count))
-            .any(|row| engine.native_saved_two_line_row_frame(table, row, styles))
+        engine.native_stored_table_has_intra_paragraph_frames(table, styles)
+            || (0..usize::from(table.row_count))
+                .any(|row| engine.native_saved_two_line_row_frame(table, row, styles))
     }
 
     /// 원본 공동 앵커의 첫 수용 원점과 이월 후 소비된 오프셋을 함께 조회한다.
@@ -83,7 +83,10 @@ impl TypesetEngine {
             || !is_para_topbottom_float(&table.common)
             || !table.common.flow_with_text
             || table.common.allow_overlap
-            || !matches!(table.page_break, crate::model::table::TablePageBreak::None)
+            || !matches!(
+                table.layout_page_break(),
+                crate::model::table::TablePageBreak::None
+            )
             || !matches!(table.common.vert_align, crate::model::shape::VertAlign::Top)
             || table.caption.is_some()
             || self.render_normalization.table_text_reflowed(table)
@@ -124,7 +127,7 @@ impl TypesetEngine {
         let consumed = prior_line_flow
             || placement::para_offset_consumed_by_page_break(
                 para,
-                &table.common,
+                table,
                 st.base_available_height(),
                 self.dpi,
             );
@@ -262,6 +265,7 @@ impl TypesetEngine {
         table: &crate::model::table::Table,
         effective_height: f64,
         host_spacing_before: f64,
+        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     ) -> Option<crate::renderer::float_placement::ParagraphFloatPlacement> {
         if st.col_count != 1
             || !(st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
@@ -272,47 +276,79 @@ impl TypesetEngine {
         }
         let para = paragraphs.get(para_idx)?;
         let next = paragraphs.get(para_idx + 1)?;
-        let mut placement = crate::renderer::float_placement::stored_float_frame_before_tac_line(
-            para,
-            ctrl_idx,
-            table,
-            effective_height,
-            self.dpi,
-        )
-        .or_else(|| {
-            crate::renderer::float_placement::stored_interior_control_table_frame(
-                para,
-                next,
-                ctrl_idx,
-                table,
-                effective_height,
-                st.vpos_page_base.unwrap_or(0),
-                self.dpi,
-            )
-        })
-        .or_else(|| {
-            crate::renderer::float_placement::stored_empty_control_table_frame(
-                para,
-                next,
-                table,
-                effective_height,
-                host_spacing_before,
-                // 빈 호스트의 닫힌 개체 프레임은 물리 쪽 기준 저장 좌표다.
-                // 글줄 호스트의 상대 원점처럼 page base를 다시 빼지 않는다.
-                0,
-                self.dpi,
-            )
-        })
-        .or_else(|| {
-            crate::renderer::float_placement::stored_adjacent_line_table_frame(
-                paragraphs.get(para_idx.checked_sub(1)?)?,
-                para,
-                next,
-                table,
-                effective_height,
-                self.dpi,
-            )
-        })?;
+        let opening = (st.current_items.is_empty()
+            && st.current_height == 0.0
+            && st.current_zone_y_offset == 0.0)
+            .then(|| {
+                crate::renderer::float_placement::stored_opening_table_before_host_frame(
+                    para,
+                    next,
+                    table,
+                    ctrl_idx,
+                    effective_height,
+                    self.dpi,
+                )
+            })
+            .flatten();
+        let mut placement = opening
+            .or_else(|| {
+                crate::renderer::float_placement::stored_float_frame_before_tac_line(
+                    para,
+                    ctrl_idx,
+                    table,
+                    effective_height,
+                    self.dpi,
+                )
+            })
+            .or_else(|| {
+                crate::renderer::float_placement::stored_interior_control_table_frame(
+                    para,
+                    next,
+                    ctrl_idx,
+                    table,
+                    effective_height,
+                    st.vpos_page_base.unwrap_or(0),
+                    self.dpi,
+                )
+            })
+            .or_else(|| {
+                crate::renderer::float_placement::stored_empty_control_table_frame(
+                    para,
+                    next,
+                    table,
+                    effective_height,
+                    host_spacing_before,
+                    // 빈 호스트의 닫힌 개체 프레임은 물리 쪽 기준 저장 좌표다.
+                    // 글줄 호스트의 상대 원점처럼 page base를 다시 빼지 않는다.
+                    0,
+                    self.dpi,
+                    st.profile.hwpx_stored_layout(),
+                )
+            })
+            .or_else(|| {
+                crate::renderer::float_placement::stored_float_before_whitespace_line_frame(
+                    paragraphs.get(para_idx.checked_sub(1)?)?,
+                    para,
+                    next,
+                    table,
+                    effective_height,
+                    styles
+                        .para_styles
+                        .get(next.para_shape_id as usize)
+                        .map_or(0.0, |style| style.spacing_before),
+                    self.dpi,
+                )
+            })
+            .or_else(|| {
+                crate::renderer::float_placement::stored_adjacent_line_table_frame(
+                    paragraphs.get(para_idx.checked_sub(1)?)?,
+                    para,
+                    next,
+                    table,
+                    effective_height,
+                    self.dpi,
+                )
+            })?;
         // 저장한 본문 좌표를 현재 단 영역 좌표로 한 번 변환한다.
         placement.anchor_y -= st.current_zone_y_offset;
         placement.table_top -= st.current_zone_y_offset;
@@ -333,8 +369,42 @@ impl TypesetEngine {
         host_before: f64,
         table_and_caption_height: f64,
     ) -> Option<crate::renderer::float_placement::ParagraphFloatPlacement> {
+        // This plan opens a column from its flow origin. Within a populated
+        // column the saved paragraph anchor owns the table and caption; the
+        // measured cursor alone cannot replace that anchor.
+        if !st.current_items.is_empty() || st.current_height > 0.5 {
+            return None;
+        }
+        self.query_captioned_rowbreak_frame(
+            st,
+            para,
+            table,
+            host_before,
+            table_and_caption_height,
+            None,
+        )
+    }
+
+    /// A caption closes the same object frame as its rows. A declared row
+    /// height cannot substitute for the caption or its closing outer space.
+    /// Preserve an independently resolved origin within a populated column.
+    pub(in crate::renderer::typeset) fn query_captioned_rowbreak_frame(
+        &self,
+        st: &TypesetState,
+        para: &crate::model::paragraph::Paragraph,
+        table: &crate::model::table::Table,
+        host_before: f64,
+        table_and_caption_height: f64,
+        resolved_origin: Option<crate::renderer::float_placement::ParagraphFloatPlacement>,
+    ) -> Option<crate::renderer::float_placement::ParagraphFloatPlacement> {
         use crate::renderer::float_placement as placement;
-        let opens = placement::column_rowbreak_fragment_opens_outer_top(
+        let opens = placement::stored_hwpx_cut_owns_outer_frame(
+            st.profile.hwpx_stored_layout()
+                && !st.profile.hwp5_origin_hwpx()
+                && !st.profile.session_edited(),
+            para,
+            table,
+        ) || placement::column_rowbreak_fragment_opens_outer_top(
             st.profile.hwpx_stored_layout(),
             (st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
                 .then_some(para),
@@ -373,7 +443,7 @@ impl TypesetEngine {
             && st.current_height < 1.0
             && placement::para_offset_consumed_by_page_break(
                 para,
-                &table.common,
+                table,
                 st.base_available_height(),
                 self.dpi,
             );
@@ -384,17 +454,19 @@ impl TypesetEngine {
             } else {
                 hwpunit_to_px(signed_offset, self.dpi)
             };
-        Some(placement::ParagraphFloatPlacement {
+        let mut frame = resolved_origin.unwrap_or(placement::ParagraphFloatPlacement {
             flow: placement::ParagraphFloatFlow::NextLine,
             anchor_y: st.current_height,
             stored_host_origin: None,
             stored_successor_line_origin: None,
             table_left: None,
             table_top: top,
-            occupied_bottom: top
-                + table_and_caption_height
-                + placement::column_rowbreak_caption_outer_spacing_px(opens, para, table, self.dpi),
-        })
+            occupied_bottom: top,
+        });
+        frame.occupied_bottom = frame.table_top
+            + table_and_caption_height
+            + placement::column_rowbreak_caption_outer_spacing_px(opens, para, table, self.dpi);
+        Some(frame)
     }
 
     pub(super) fn query_whole_table_fit(
@@ -411,6 +483,7 @@ impl TypesetEngine {
             ft,
             fmt,
             mt,
+            styles,
             paragraphs_all,
             ..
         } = input;
@@ -424,19 +497,6 @@ impl TypesetEngine {
             single_row_object_declared_fits_current,
         } = fit;
         let para_has_stored_line_seg = para.line_segs.iter().any(|ls| !is_synthetic_line_seg(ls));
-        let single_row_object_height_fits_current = single_row_object_declared_fits_current;
-        // HWP5-origin HWPX는 저장 object 높이 기준으로는 현재 쪽에 들어가지만,
-        // cell 내용 측정치는 더 큰 1행 자리차지 표를 쪽 하단까지 차지한 것으로
-        // 기록한다. native HWP는 RowBreak fragment의 실제 소비량을 따라야 하므로
-        // 이 HWPX 호환 보정을 적용하지 않는다.
-        let single_row_object_height_advance =
-            (st.profile.hwp5_origin_hwpx() && single_row_object_height_fits_current).then(|| {
-                if st.current_height + table_total > available {
-                    (available - st.current_height).max(0.0)
-                } else {
-                    declared_object_total
-                }
-            });
 
         let fits_after_overlay_shapes =
             st.current_column_has_only_overlay_shapes() && table_total <= available + 12.0;
@@ -455,7 +515,7 @@ impl TypesetEngine {
                 && !table.common.treat_as_char
                 && is_para_topbottom_float(&table.common)
                 && matches!(
-                    table.page_break,
+                    table.layout_page_break(),
                     crate::model::table::TablePageBreak::RowBreak
                 )
                 && table.row_count > 1
@@ -473,26 +533,16 @@ impl TypesetEngine {
                     + measured.cell_spacing * measured.row_heights.len().saturating_sub(1) as f64
             })
         });
-        // 재조판한 온전한 일반 행도 실제 배치 높이로 통째 수용 여부를 정한다.
-        // 원본의 저장 되감김/프레임 원점 조건과 별개이며 중첩 내용 컷은 제외한다.
-        let reflowed_table_uses_painted_whole_rows = if table.row_count > 0
+        // 통째 표는 중첩 셀을 포함한 모든 측정 행을 실제로 그린다.
+        // 부분 컷의 저장 프레임/viewport 술어로 이 전체 footprint를 제외하면
+        // 한 정상 셀 때문에 실제 행 합보다 작은 개체 선언 높이만 수용하게 된다.
+        // 내용 컷이 필요한 경우의 예약·배치는 fragment 경로가 별도로 소유한다.
+        let reflowed_table_uses_painted_whole_rows = table.row_count > 0
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
-            && self.render_normalization.table_text_reflowed(table)
-        {
-            let layout_engine = crate::renderer::layout::LayoutEngine::new(self.dpi);
-            layout_engine.set_layout_profile(st.profile);
-            layout_engine.prime_column_layout_env(&st.layout);
-            layout_engine.set_render_normalization_overlay(std::sync::Arc::clone(
-                &self.render_normalization,
-            ));
-            (0..table.row_count as usize)
-                .all(|row| layout_engine.reflowed_fragment_row_uses_measured_height(table, row))
-        } else {
-            false
-        };
+            && self.render_normalization.table_text_reflowed(table);
         let uses_painted_row_footprint_for_whole_fit =
             (stored_rewinding_rowbreak_uses_painted_row_footprint
                 || reflowed_table_uses_painted_whole_rows)
@@ -543,7 +593,7 @@ impl TypesetEngine {
                     top_hu.saturating_add(table.common.height.min(i32::MAX as u32) as i32);
                 hwpunit_to_px(bottom_hu, self.dpi) <= available
             });
-        let declared_fit_scope_ok = match table.page_break {
+        let declared_fit_scope_ok = match table.layout_page_break() {
             crate::model::table::TablePageBreak::None => true,
             crate::model::table::TablePageBreak::RowBreak => {
                 rowbreak_at_fragment_start || midpage_rowbreak_has_saved_object_bottom
@@ -557,7 +607,7 @@ impl TypesetEngine {
         let declared_excess_has_source_frame =
             table_declared_height_has_stored_cell_content_frame(table, self.dpi)
                 && (!matches!(
-                    table.page_break,
+                    table.layout_page_break(),
                     crate::model::table::TablePageBreak::RowBreak
                 ) || table_declared_object_covers_cell_row_frames(table, self.dpi));
         // HWPX에서는 `treatAsChar` bit만으로 inline 표가 되지 않는다. stored-layout
@@ -569,7 +619,10 @@ impl TypesetEngine {
         let hwpx_noninline_tac_measured_fit = self.profile.get().hwpx_stored_layout()
             && table.common.treat_as_char
             && !self.uses_tac_table_flow(table)
-            && matches!(table.page_break, crate::model::table::TablePageBreak::None)
+            && matches!(
+                table.layout_page_break(),
+                crate::model::table::TablePageBreak::None
+            )
             && ft.table_footnotes.is_empty()
             && st.current_height + ft.effective_height <= available + 0.5;
         // [편집 세션] 셀 편집으로 실측이 선언을 넘게 자란 표는 선언 기준 whole-fit
@@ -597,7 +650,7 @@ impl TypesetEngine {
             .any(|cell| cell.row == 0 && cell.row_span > 1);
         let near_measured_rowbreak_fits = !table.common.treat_as_char
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && ft.table_footnotes.is_empty()
@@ -622,7 +675,7 @@ impl TypesetEngine {
             && table.common.treat_as_char
             && table.common.flow_with_text
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && para.controls.len() == 1
@@ -644,7 +697,7 @@ impl TypesetEngine {
         let hwpx_tac_cell_leftover_declared_fits = st.profile.hwpx_stored_layout()
             && table.common.treat_as_char
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && ft.table_footnotes.is_empty()
@@ -696,11 +749,13 @@ impl TypesetEngine {
         // 다행 RowBreak 표는 common.height가 첫 fragment만 뜻할 수도 있다. cell
         // 내부 reset 없이 다음 host가 새 물리 page를 명시할 때만, object frame을
         // 현 page 전체를 소유한 frame으로 쓴다.
-        let saved_rowbreak_object_frame = ((st.profile.hwpx_container()
-            || st.profile.native_hwp5_layout())
+        // 전체 저장 프레임은 컨테이너가 아니라 원본 조판 계보의 계약이다.
+        // HWPX에서 저장한 HWP와 HWP5 원본에서 내보낸 HWPX도 같은 근거를 소비한다.
+        let saved_rowbreak_object_frame = ((st.profile.hwpx_stored_layout()
+            || st.profile.hwp5_stored_pagination_layout())
             && !table.common.treat_as_char
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && table.row_count > 1
@@ -733,8 +788,27 @@ impl TypesetEngine {
         .flatten()
         .and_then(|(source_top, _)| {
             let source_bottom = source_top + declared_object_total - host_spacing_total;
-            let source_frame_matches_profile = if st.profile.hwpx_container() {
-                source_top < st.current_height && source_bottom <= available
+            // 선언 높이는 첫 조각의 프레임일 수 있다. 표 전체가 빈 쪽에 들어가도
+            // 현재 저장 원점에서 실측 행을 놓으면 용지 밖으로 나갈 수 있으므로,
+            // 같은 원점의 실제 점유 끝도 검사한다. 글앞으로/rowspan 표 역시
+            // 블록 흐름에 들어온 뒤에는 선언 프레임으로 남은 행을 숨길 수 없다.
+            let below_body_slack = (st.layout.page_height
+                - (st.layout.body_area.y + st.layout.body_area.height))
+                .max(0.0);
+            let painted_source_bottom = source_top + (table_total - host_spacing_total).max(0.0);
+            if painted_source_bottom > available + below_body_slack + 0.5 {
+                return None;
+            }
+            // A ZIP container does not change the origin of its saved frames.
+            // HWP5-origin HWPX keeps the HWP5 frame-acceptance contract.
+            let source_frame_matches_profile = if st.profile.hwpx_stored_layout() {
+                // A preceding paragraph can finish exactly at the stored table
+                // origin. This is the same complete frame as one whose origin
+                // the measured cursor has passed; trailing host spacing must
+                // not split its last row. The frame/one-page/reset guards above
+                // still exclude a first-fragment height of a multi-page table.
+                source_top <= st.current_height + source_top.abs().max(1.0) * 1e-9
+                    && source_bottom <= available
             } else {
                 native_hwp5_saved_rowbreak_tail_frame_matches(
                     source_top,
@@ -765,11 +839,11 @@ impl TypesetEngine {
                     table,
                     ft.effective_height,
                     fmt.spacing_before,
+                    styles,
                 )
             });
         WholeFit {
             para_has_stored_line_seg,
-            single_row_object_height_advance,
             fits_after_overlay_shapes,
             stored_rewinding_rowbreak_uses_painted_row_footprint,
             whole_fit_table_total,

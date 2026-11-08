@@ -67,7 +67,7 @@ fn hwp3_converted_documents_keep_the_last_line_tolerance() {
     let mut checked = 0usize;
     for rel in [
         "samples/hwp3-sample-hwp5.hwp",
-        "samples/hwp3-sample10-hwp5.hwp",
+        "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwp5.hwp",
         "samples/hwp3-sample11-hwp5.hwp",
         "samples/hwp3-sample4-hwp5.hwp",
         "samples/hwp3-sample5-hwp5.hwp",

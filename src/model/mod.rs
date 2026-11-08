@@ -4,24 +4,34 @@
 //! 구조체로 표현한다. 모든 크기 단위는 HWPUNIT(1/7200인치)을 사용한다.
 
 pub mod bin_data;
+pub mod border_paint;
 pub mod color;
 pub mod control;
 pub mod document;
 pub mod event;
 pub mod footnote;
+pub(crate) mod form_script;
 pub mod header_footer;
+pub(crate) mod hwp3_page_ownership;
 pub mod hyperlink;
 pub mod hyperlink_format;
 pub(crate) mod identity;
 pub mod image;
+pub(crate) mod native_font_program;
+pub(crate) mod owned_work;
 pub mod page;
 pub mod paragraph;
 pub mod path;
+pub(crate) mod pdf_stroke;
 pub mod provenance;
 pub mod raw_provenance;
+pub mod section_tail;
 pub mod shape;
 pub mod style;
 pub mod table;
+pub(crate) mod table_row_grid;
+pub mod text_clip;
+pub mod text_paint;
 
 /// HWP 내부 단위 (1/7200 인치, 부호 없음)
 pub type HwpUnit = u32;
@@ -95,3 +105,5 @@ mod tests {
         assert_eq!((red >> 16) & 0xFF, 0x00); // B
     }
 }
+
+pub(crate) mod memo_time;

@@ -1,0 +1,104 @@
+{
+  "rows": [
+    {
+      "case": "F5-cell-block-palette",
+      "before": {
+        "mode": false,
+        "active": false,
+        "textSelection": false,
+        "cellBlock": {
+          "sec": 0,
+          "ppi": 0,
+          "ci": 2,
+          "cellIndices": [
+            0
+          ]
+        },
+        "undo": 2
+      },
+      "after": {
+        "mode": false,
+        "active": false,
+        "textSelection": false,
+        "cellBlock": {
+          "sec": 0,
+          "ppi": 0,
+          "ci": 2,
+          "cellIndices": [
+            0
+          ]
+        },
+        "undo": 3
+      },
+      "beforeShade": "#ffffff",
+      "afterShade": "#00ff00",
+      "expected": "Selected cell text receives green immediately; continuous mode stays off.",
+      "pass": true
+    },
+    {
+      "case": "collapsed-keyboard-selection",
+      "before": {
+        "selection": {
+          "start": {
+            "sectionIndex": 0,
+            "paragraphIndex": 0,
+            "charOffset": 0,
+            "cursorRect": {
+              "pageIndex": 0,
+              "x": 113.4,
+              "y": 132.9,
+              "height": 13.3
+            }
+          },
+          "end": {
+            "sectionIndex": 0,
+            "paragraphIndex": 0,
+            "charOffset": 0
+          }
+        },
+        "mode": null
+      },
+      "after": {
+        "mode": true,
+        "active": true,
+        "textSelection": true,
+        "cellBlock": null,
+        "undo": 2
+      },
+      "expected": "No visible selected characters enters continuous mode.",
+      "pass": true
+    },
+    {
+      "case": "normal-to-form-mode",
+      "after": {
+        "mode": true,
+        "active": true,
+        "textSelection": true,
+        "cellBlock": null,
+        "undo": 2
+      },
+      "shade": "#ffffff",
+      "expected": "Form mode preserves read-only text selection and does not paint.",
+      "pass": true
+    },
+    {
+      "case": "document-switch-observation",
+      "before": {
+        "mode": true,
+        "active": true,
+        "textSelection": false,
+        "cellBlock": null,
+        "undo": 2
+      },
+      "after": {
+        "mode": true,
+        "active": true,
+        "textSelection": false,
+        "cellBlock": null,
+        "undo": 3
+      },
+      "shade": "#00ff00"
+    }
+  ],
+  "pageErrors": []
+}

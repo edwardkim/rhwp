@@ -1,0 +1,7 @@
+{
+  "reason": "An existing >400px pin for the verified tab fixture was replaced with character-boundary containment.",
+  "gateOrchestrator": "Paused after workspace build; no concurrent Cargo. Workspace duration includes this pause; Cargo reported 2m50s.",
+  "staleSelection": "Initial focused wrapper derived new suite013 while generated files still placed the case in suite006. Zero selected tests excluded; prepare regenerated sources before actual final run.",
+  "finalFocus": "tab-bbox-relation-final.log: 1 passed",
+  "scope": "Only tests and evidence changed. Product/Native/WASM source unchanged."
+}

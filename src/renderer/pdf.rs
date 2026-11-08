@@ -4,6 +4,9 @@
 //! opt-in direct backend records PageLayerTree replay into a Skia PDF canvas.
 //! Both backends support single and multiple pages and are native-only.
 
+// 같은 판정 소스를 각 usvg 버전이 실제 선택한 face에 적용한다.
+use usvg as style_usvg;
+
 #[cfg(not(target_arch = "wasm32"))]
 #[path = "pdf_synthetic_bold.rs"]
 mod synthetic_bold;
@@ -77,89 +80,752 @@ impl Default for DirectPdfExportOptions {
     }
 }
 
+/// Limits for static direct-PDF inspection. Values are clamped to the documented
+/// hard bounds, including zero (which becomes one).
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DirectPdfPreflightLimits {
+    /// Stored issues: 1..=4096, default 256.
+    pub max_issues: usize,
+    /// Visited pages, layer nodes, and paint operations combined:
+    /// 1..=1_000_000, default 100_000.
+    pub max_work_items: usize,
+}
+
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+impl Default for DirectPdfPreflightLimits {
+    fn default() -> Self {
+        Self {
+            max_issues: 256,
+            max_work_items: 100_000,
+        }
+    }
+}
+
+/// Stable static rejection codes. Callers must not classify human messages.
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DirectPdfPreflightReason {
+    EmptyDocument,
+    InvalidRasterDpi,
+    InvalidPageWidth,
+    InvalidPageHeight,
+    PageWidthTooLarge,
+    PageHeightTooLarge,
+    InvalidLayerBounds,
+    InvalidClipBounds,
+    InvalidPaintBounds,
+    InvalidTextClipPath,
+    UnsupportedLineStyle,
+    InvalidStrokeWidth,
+    InvalidArrowSize,
+    InvalidArrowGeometry,
+    InvalidConnectorShaft,
+    UnsupportedArrowTangent,
+    InvalidRotation,
+    UnsupportedGradientType,
+    GradientColorCountOutOfRange,
+    InvalidGradientStops,
+    InvalidGradientBounds,
+    InvalidExpandedGradientStops,
+    InvalidGradientAxis,
+    InvalidRadialGradientCenter,
+    InvalidRadialGradientCircle,
+    UnsupportedPatternFill,
+    UnsupportedShapeShadow,
+    InvalidOpacity,
+    UnsupportedImageFormat,
+    InvalidImagePayload,
+    InvalidBackgroundBorderWidth,
+    UnsupportedBlackWhiteAdjustment,
+    UnsupportedImageWatermark,
+    UnsupportedPattern8x8,
+    InvalidLineGeometry,
+    InvalidCornerRadius,
+    InvalidPathGeometry,
+    InvalidConnectorEndpoints,
+    InvalidTextGeometry,
+    InvalidFootnoteFontSize,
+    InvalidEquationGeometry,
+}
+
+/// Zero-based location in the supplied page selection. Node indices count a
+/// depth-first pre-order traversal; operation indices count all ops on a page.
+/// Document/option issues have no page, page issues no node, and layer/clip
+/// issues no operation. `operation` names the PaintOp rather than message text.
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct DirectPdfPreflightLocation {
+    pub page_index: Option<usize>,
+    pub node_index: Option<usize>,
+    pub op_index: Option<usize>,
+    pub operation: Option<&'static str>,
+}
+
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DirectPdfPreflightIssue {
+    pub location: DirectPdfPreflightLocation,
+    pub reason: DirectPdfPreflightReason,
+    /// The existing export diagnostic, retained for display and compatibility.
+    pub message: String,
+}
+
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DirectPdfPreflightLimit {
+    Issues,
+    WorkItems,
+}
+
+/// A bounded static inspection, not a font/resource or successful-replay proof.
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DirectPdfPreflightReport {
+    pub issues: Vec<DirectPdfPreflightIssue>,
+    /// True only when inspection stopped before completing the input. Reaching
+    /// exactly the issue limit without another issue does not truncate a report.
+    pub truncated: bool,
+    pub limit_reached: Option<DirectPdfPreflightLimit>,
+    pub work_items_checked: usize,
+    /// Effective limits after applying the hard bounds.
+    pub limits: DirectPdfPreflightLimits,
+}
+
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+impl DirectPdfPreflightReport {
+    /// True means all static checks completed without rejection. It does not
+    /// promise image decoding, exact fonts, text-alternative preparation, or PDF
+    /// recording. Export continues to fail closed on those runtime failures.
+    pub fn is_admitted(&self) -> bool {
+        self.issues.is_empty() && !self.truncated
+    }
+}
+
+/// Inspect the static direct-PDF subset without creating fonts or a PDF canvas.
+///
+/// Pages follow selection order, nodes depth-first pre-order, ops source order,
+/// and checks the same order as export. Each reason occurs at most once at one
+/// location; equal reasons at distinct locations are retained. Independent
+/// invalid fields on one op are all reported. Derived geometry is checked only
+/// after its prerequisite fields pass. Image formats are inspected, but encoded
+/// images are decoded only by export. A bounded report cannot guarantee that
+/// font/resource preparation or actual strict replay will succeed.
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+pub fn preflight_direct_pdf(
+    layer_trees: &[crate::paint::PageLayerTree],
+    options: &DirectPdfExportOptions,
+    limits: DirectPdfPreflightLimits,
+) -> DirectPdfPreflightReport {
+    direct_pdf_validation::preflight(layer_trees, options, limits)
+}
+
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
 fn validate_direct_pdf_tree(
     tree: &crate::paint::PageLayerTree,
     page_index: usize,
 ) -> Result<(), String> {
+    let mut inspection = direct_pdf_validation::Inspection::first_error();
+    direct_pdf_validation::validate_tree(tree, page_index, &mut inspection);
+    match inspection.report.issues.into_iter().next() {
+        Some(issue) => Err(issue.message),
+        None => Ok(()),
+    }
+}
+
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+mod direct_pdf_validation {
+    use super::{
+        DirectPdfExportOptions, DirectPdfPreflightIssue, DirectPdfPreflightLimit,
+        DirectPdfPreflightLimits, DirectPdfPreflightLocation, DirectPdfPreflightReason as Reason,
+        DirectPdfPreflightReport,
+    };
     use crate::model::image::ImageEffect;
-    use crate::paint::{LayerNode, LayerNodeKind, PaintOp};
-    use crate::renderer::render_tree::{BoundingBox, ShapeTransform};
-    use crate::renderer::{ArrowStyle, LineRenderType, PathCommand, ShapeStyle};
+    use crate::paint::{LayerNodeKind, PageLayerTree, PaintOp};
+    use crate::renderer::render_tree::{BoundingBox, PathNode, ShapeTransform};
+    use crate::renderer::{
+        ArrowStyle, GradientFillInfo, LineRenderType, LineStyle, PathCommand, ShapeStyle,
+    };
+
+    pub(super) const CSS_PX_TO_PDF_POINT: f64 = 72.0 / 96.0;
+    const MAX_PDF_PAGE_DIMENSION_POINTS: f64 = 14_400.0;
+
+    pub(super) struct Failure {
+        reason: Reason,
+        pub(super) message: String,
+    }
+
+    fn failure(reason: Reason, message: String) -> Failure {
+        Failure { reason, message }
+    }
+
+    pub(super) struct Inspection {
+        pub(super) report: DirectPdfPreflightReport,
+        location: DirectPdfPreflightLocation,
+        location_start: usize,
+        first_error: bool,
+        stopped: bool,
+    }
+
+    impl Inspection {
+        fn new(limits: DirectPdfPreflightLimits) -> Self {
+            Self {
+                report: DirectPdfPreflightReport {
+                    issues: Vec::new(),
+                    truncated: false,
+                    limit_reached: None,
+                    work_items_checked: 0,
+                    limits: DirectPdfPreflightLimits {
+                        max_issues: limits.max_issues.clamp(1, 4096),
+                        max_work_items: limits.max_work_items.clamp(1, 1_000_000),
+                    },
+                },
+                location: DirectPdfPreflightLocation::default(),
+                location_start: 0,
+                first_error: false,
+                stopped: false,
+            }
+        }
+
+        pub(super) fn first_error() -> Self {
+            let mut result = Self::new(DirectPdfPreflightLimits::default());
+            result.first_error = true;
+            result
+        }
+
+        fn locate(&mut self, location: DirectPdfPreflightLocation) {
+            self.location = location;
+            self.location_start = self.report.issues.len();
+        }
+
+        fn begin_item(&mut self) -> bool {
+            if self.stopped {
+                return false;
+            }
+            if !self.first_error
+                && self.report.work_items_checked == self.report.limits.max_work_items
+            {
+                self.truncate(DirectPdfPreflightLimit::WorkItems);
+                return false;
+            }
+            self.report.work_items_checked = self.report.work_items_checked.saturating_add(1);
+            true
+        }
+
+        fn truncate(&mut self, limit: DirectPdfPreflightLimit) {
+            self.report.truncated = true;
+            self.report.limit_reached = Some(limit);
+            self.stopped = true;
+        }
+
+        fn reject(&mut self, failure: Failure) {
+            if self.stopped
+                || self.report.issues[self.location_start..]
+                    .iter()
+                    .any(|issue| issue.reason == failure.reason)
+            {
+                return;
+            }
+            if self.report.issues.len() == self.report.limits.max_issues {
+                self.truncate(DirectPdfPreflightLimit::Issues);
+                return;
+            }
+            self.report.issues.push(DirectPdfPreflightIssue {
+                location: self.location,
+                reason: failure.reason,
+                message: failure.message,
+            });
+            if self.first_error {
+                self.stopped = true;
+            }
+        }
+
+        fn check(&mut self, result: Result<(), Failure>) -> bool {
+            match result {
+                Ok(()) => true,
+                Err(error) => {
+                    self.reject(error);
+                    false
+                }
+            }
+        }
+    }
 
     fn is_valid_skia_scalar(value: f64) -> bool {
         value.is_finite() && value.abs() <= f32::MAX as f64
     }
 
-    fn validate_bbox(bbox: BoundingBox, page_index: usize, context: &str) -> Result<(), String> {
+    fn same_skia_point(left: (f64, f64), right: (f64, f64)) -> bool {
+        (left.0 as f32, left.1 as f32) == (right.0 as f32, right.1 as f32)
+    }
+
+    fn valid_path_commands(commands: &[PathCommand]) -> bool {
+        commands.iter().all(|command| match *command {
+            PathCommand::MoveTo(x, y) | PathCommand::LineTo(x, y) => {
+                is_valid_skia_scalar(x) && is_valid_skia_scalar(y)
+            }
+            PathCommand::CurveTo(x1, y1, x2, y2, x, y) => [x1, y1, x2, y2, x, y]
+                .iter()
+                .all(|value| is_valid_skia_scalar(*value)),
+            PathCommand::ArcTo(rx, ry, rotation, _, _, x, y) => [rx, ry, rotation, x, y]
+                .iter()
+                .all(|value| is_valid_skia_scalar(*value)),
+            PathCommand::ClosePath => true,
+        })
+    }
+
+    fn validate_bbox(
+        bbox: BoundingBox,
+        page_index: usize,
+        context: &str,
+        reason: Reason,
+    ) -> Result<(), Failure> {
         if [bbox.x, bbox.y, bbox.width, bbox.height]
             .iter()
             .any(|value| !is_valid_skia_scalar(*value))
             || bbox.width < 0.0
             || bbox.height < 0.0
         {
-            return Err(format!(
-                "direct PDF page {} has invalid {context} bounds",
-                page_index + 1
+            return Err(failure(
+                reason,
+                format!(
+                    "direct PDF page {} has invalid {context} bounds",
+                    page_index + 1
+                ),
             ));
         }
         Ok(())
     }
 
-    fn unsupported(page_index: usize, op: &str, detail: &str) -> String {
-        format!(
+    fn unsupported(page_index: usize, op: &str, reason: Reason, detail: &str) -> Failure {
+        failure(reason, format!(
             "direct PDF page {} cannot replay {op} without visual loss: {detail}; use the svg backend",
             page_index + 1
-        )
+        ))
+    }
+
+    fn validate_line_style(
+        style: &LineStyle,
+        page_index: usize,
+        op: &str,
+        inspection: &mut Inspection,
+    ) -> bool {
+        let mut valid = true;
+        if style.line_type != LineRenderType::Single || style.shadow.is_some() {
+            inspection.reject(unsupported(
+                page_index,
+                op,
+                Reason::UnsupportedLineStyle,
+                "multi-line or shadow style",
+            ));
+            valid = false;
+        }
+        if !is_valid_skia_scalar(style.width) || style.width < 0.0 {
+            inspection.reject(failure(
+                Reason::InvalidStrokeWidth,
+                format!(
+                    "direct PDF page {} has invalid {op} stroke width: {}",
+                    page_index + 1,
+                    style.width
+                ),
+            ));
+            valid = false;
+        }
+        if [
+            (style.start_arrow, style.start_arrow_size),
+            (style.end_arrow, style.end_arrow_size),
+        ]
+        .into_iter()
+        .any(|(arrow, size)| arrow != ArrowStyle::None && size > 8)
+        {
+            inspection.reject(unsupported(
+                page_index,
+                op,
+                Reason::InvalidArrowSize,
+                "invalid arrow size",
+            ));
+            valid = false;
+        }
+        valid
+    }
+
+    fn has_skia_outline_area(commands: &[PathCommand]) -> bool {
+        // Test the actual f32 outline, including translations that expose a
+        // collapsed arrowhead. Compute the determinant in f64 to avoid overflow.
+        let point = |x: f64, y: f64| (f64::from(x as f32), f64::from(y as f32));
+        let mut points = Vec::new();
+        for command in commands {
+            match *command {
+                PathCommand::MoveTo(x, y) | PathCommand::LineTo(x, y) => points.push(point(x, y)),
+                PathCommand::CurveTo(a, b, c, d, e, f) => {
+                    points.extend([point(a, b), point(c, d), point(e, f)]);
+                }
+                PathCommand::ClosePath => {}
+                PathCommand::ArcTo(..) => return false,
+            }
+        }
+        let Some(&(x0, y0)) = points.first() else {
+            return false;
+        };
+        let Some(&(x1, y1)) = points.iter().find(|&&p| p != (x0, y0)) else {
+            return false;
+        };
+        points
+            .iter()
+            .any(|&(x, y)| (x1 - x0) * (y - y0) != (y1 - y0) * (x - x0))
+    }
+
+    fn validate_arrow_heads(
+        heads: &[crate::renderer::arrow::ArrowHead],
+        style: &LineStyle,
+        page_index: usize,
+        op: &str,
+    ) -> Result<(), Failure> {
+        let requested = usize::from(style.start_arrow != ArrowStyle::None)
+            + usize::from(style.end_arrow != ArrowStyle::None);
+        if heads.len() != requested
+            || heads.iter().any(|head| {
+                !valid_path_commands(&head.commands) || !has_skia_outline_area(&head.commands)
+            })
+        {
+            return Err(unsupported(
+                page_index,
+                op,
+                Reason::InvalidArrowGeometry,
+                "invalid arrow geometry",
+            ));
+        }
+        Ok(())
+    }
+
+    fn validate_connector_shaft(
+        path: &PathNode,
+        style: &LineStyle,
+        page_index: usize,
+    ) -> Result<(), Failure> {
+        let invalid = || {
+            unsupported(
+                page_index,
+                "connector",
+                Reason::InvalidConnectorShaft,
+                "invalid connector shaft",
+            )
+        };
+        let Some((PathCommand::MoveTo(x1, y1), segments)) = path.commands.split_first() else {
+            return Err(invalid());
+        };
+        if segments.is_empty()
+            || segments.iter().any(|command| {
+                !matches!(command, PathCommand::LineTo(..) | PathCommand::CurveTo(..))
+            })
+        {
+            return Err(invalid());
+        }
+        let endpoint = |command: &PathCommand| match *command {
+            PathCommand::LineTo(x, y) | PathCommand::CurveTo(_, _, _, _, x, y) => (x, y),
+            _ => unreachable!("validated open connector segment"),
+        };
+        let (x2, y2) = endpoint(segments.last().expect("nonempty connector"));
+        if path.connector_endpoints != Some((*x1, *y1, x2, y2)) {
+            return Err(invalid());
+        }
+        // The shared producer uses first/last controls, rather than deriving a
+        // higher-order Bezier tangent for an endpoint-coincident control.
+        let start_control = match segments[0] {
+            PathCommand::LineTo(x, y) | PathCommand::CurveTo(x, y, ..) => (x, y),
+            _ => unreachable!("validated open connector segment"),
+        };
+        let end_control = match *segments.last().expect("nonempty connector") {
+            PathCommand::CurveTo(_, _, x, y, _, _) => (x, y),
+            PathCommand::LineTo(..) => {
+                if segments.len() == 1 {
+                    (*x1, *y1)
+                } else {
+                    endpoint(&segments[segments.len() - 2])
+                }
+            }
+            _ => unreachable!("validated open connector segment"),
+        };
+        if (style.start_arrow != ArrowStyle::None && same_skia_point(start_control, (*x1, *y1)))
+            || (style.end_arrow != ArrowStyle::None && same_skia_point(end_control, (x2, y2)))
+        {
+            return Err(unsupported(
+                page_index,
+                "connector",
+                Reason::UnsupportedArrowTangent,
+                "unsupported arrow tangent",
+            ));
+        }
+        Ok(())
     }
 
     fn validate_transform(
         transform: ShapeTransform,
         page_index: usize,
         op: &str,
-    ) -> Result<(), String> {
+    ) -> Result<(), Failure> {
         if !is_valid_skia_scalar(transform.rotation) {
-            return Err(format!(
-                "direct PDF page {} has invalid {op} rotation",
-                page_index + 1
+            return Err(failure(
+                Reason::InvalidRotation,
+                format!(
+                    "direct PDF page {} has invalid {op} rotation",
+                    page_index + 1
+                ),
             ));
+        }
+        Ok(())
+    }
+
+    fn validate_gradient(
+        gradient: &GradientFillInfo,
+        bbox: BoundingBox,
+        page_index: usize,
+        op: &str,
+        inspection: &mut Inspection,
+    ) {
+        if inspection.stopped {
+            return;
+        }
+        let supported_type = matches!(gradient.gradient_type, 1 | 2);
+        if !supported_type {
+            inspection.reject(unsupported(
+                page_index,
+                op,
+                Reason::UnsupportedGradientType,
+                "non-linear gradient fill",
+            ));
+        }
+        let valid_center = gradient.gradient_type != 2
+            || ((0..=100).contains(&gradient.center_x) && (0..=100).contains(&gradient.center_y));
+        if !valid_center {
+            inspection.reject(unsupported(
+                page_index,
+                op,
+                Reason::InvalidRadialGradientCenter,
+                "radial gradient center outside 0..=100 percent",
+            ));
+        }
+        let valid_count = (2..=4096).contains(&gradient.colors.len());
+        if !valid_count {
+            inspection.reject(unsupported(
+                page_index,
+                op,
+                Reason::GradientColorCountOutOfRange,
+                "gradient color count outside 2..=4096",
+            ));
+        }
+        let valid_stops = gradient.positions.is_empty()
+            || (gradient.positions.len() == gradient.colors.len()
+                && gradient
+                    .positions
+                    .iter()
+                    .all(|position| position.is_finite() && (0.0..=1.0).contains(position))
+                && gradient.positions.windows(2).all(|pair| pair[0] <= pair[1]));
+        if !valid_stops {
+            inspection.reject(unsupported(
+                page_index,
+                op,
+                Reason::InvalidGradientStops,
+                "invalid gradient stop positions",
+            ));
+        }
+        let bounds = skia_safe::Rect::from_xywh(
+            bbox.x as f32,
+            bbox.y as f32,
+            bbox.width as f32,
+            bbox.height as f32,
+        );
+        let valid_bounds = bounds.is_finite()
+            && !bounds.is_empty()
+            && bounds.width().is_finite()
+            && bounds.height().is_finite();
+        if !valid_bounds {
+            inspection.reject(unsupported(
+                page_index,
+                op,
+                Reason::InvalidGradientBounds,
+                "invalid gradient replay bounds",
+            ));
+        }
+        // Derived checks require a valid, bounded source. Independent source
+        // failures above are still all reported, without normalizing bad stops.
+        if inspection.stopped
+            || !supported_type
+            || !valid_center
+            || !valid_count
+            || !valid_stops
+            || !valid_bounds
+        {
+            return;
+        }
+        let (colors, positions) = crate::renderer::linear_gradient_color_stops(
+            gradient,
+            bbox.x,
+            bbox.y,
+            bbox.width,
+            bbox.height,
+        );
+        if colors.len() < 2
+            || colors.len() > 8192
+            || colors.len() != positions.len()
+            || positions
+                .iter()
+                .any(|position| !position.is_finite() || !(0.0..=1.0).contains(position))
+            || positions.windows(2).any(|pair| pair[0] > pair[1])
+        {
+            inspection.reject(unsupported(
+                page_index,
+                op,
+                Reason::InvalidExpandedGradientStops,
+                "invalid expanded gradient stop positions",
+            ));
+        }
+        if gradient.gradient_type == 2 {
+            // Distinct source stops must remain distinct in the f32 shader.
+            // Deliberate equal-position hard stops are preserved unchanged.
+            if positions
+                .windows(2)
+                .any(|pair| pair[0] < pair[1] && pair[0] as f32 == pair[1] as f32)
+            {
+                inspection.reject(unsupported(
+                    page_index,
+                    op,
+                    Reason::InvalidExpandedGradientStops,
+                    "collapsed radial gradient stop positions",
+                ));
+            }
+            inspection.check(validate_radial_circle(gradient, bbox, page_index, op));
+            return;
+        }
+        let (x1, y1, x2, y2) = crate::renderer::linear_gradient_axis(
+            gradient.angle,
+            bbox.x,
+            bbox.y,
+            bbox.width,
+            bbox.height,
+        );
+        let dx = x2 as f32 - x1 as f32;
+        let dy = y2 as f32 - y1 as f32;
+        let length_squared = dx * dx + dy * dy;
+        if [x1, y1, x2, y2]
+            .into_iter()
+            .any(|value| !is_valid_skia_scalar(value))
+            || !length_squared.is_finite()
+            || length_squared < 1.0
+        {
+            inspection.reject(unsupported(
+                page_index,
+                op,
+                Reason::InvalidGradientAxis,
+                "invalid gradient axis",
+            ));
+        }
+    }
+
+    fn validate_radial_circle(
+        gradient: &GradientFillInfo,
+        bbox: BoundingBox,
+        page_index: usize,
+        op: &str,
+    ) -> Result<(), Failure> {
+        let invalid = || {
+            unsupported(
+                page_index,
+                op,
+                Reason::InvalidRadialGradientCircle,
+                "invalid radial gradient circle",
+            )
+        };
+        // Native and direct PDF replay consume this same physical circle:
+        // source center to the farthest corner, without per-axis normalization.
+        let (cx, cy, radius) = crate::renderer::gradient_geometry::radial_circle(
+            (bbox.x, bbox.y, bbox.width, bbox.height),
+            gradient.center_x,
+            gradient.center_y,
+        )
+        .ok_or_else(invalid)?;
+        if [cx, cy, radius]
+            .into_iter()
+            .any(|value| !is_valid_skia_scalar(value))
+        {
+            return Err(invalid());
+        }
+        let (cx, cy, radius) = (cx as f32, cy as f32, radius as f32);
+        let squared_radius = radius * radius;
+        // Keep the initial numerical subset explicit. Tiny/huge radii and
+        // circles collapsed against a large center must fail before Skia can
+        // substitute a solid fill or a degenerate shader.
+        if !squared_radius.is_finite()
+            || squared_radius < 1.0
+            || ![cx - radius, cx + radius, cy - radius, cy + radius]
+                .into_iter()
+                .all(f32::is_finite)
+            || cx - radius >= cx
+            || cx + radius <= cx
+            || cy - radius >= cy
+            || cy + radius <= cy
+        {
+            return Err(invalid());
         }
         Ok(())
     }
 
     fn validate_shape_style(
         style: &ShapeStyle,
-        has_gradient: bool,
+        gradient: Option<&GradientFillInfo>,
+        bbox: BoundingBox,
         page_index: usize,
         op: &str,
-    ) -> Result<(), String> {
-        if has_gradient {
-            return Err(unsupported(page_index, op, "gradient fill"));
+        inspection: &mut Inspection,
+    ) {
+        if let Some(gradient) = gradient {
+            validate_gradient(gradient, bbox, page_index, op, inspection);
         }
         if style.pattern.is_some() {
-            return Err(unsupported(page_index, op, "pattern fill"));
+            inspection.reject(unsupported(
+                page_index,
+                op,
+                Reason::UnsupportedPatternFill,
+                "pattern fill",
+            ));
         }
         if style.shadow.is_some() {
-            return Err(unsupported(page_index, op, "shape shadow"));
+            inspection.reject(unsupported(
+                page_index,
+                op,
+                Reason::UnsupportedShapeShadow,
+                "shape shadow",
+            ));
         }
         if !is_valid_skia_scalar(style.opacity) || !(0.0..=1.0).contains(&style.opacity) {
-            return Err(format!(
-                "direct PDF page {} has invalid {op} opacity: {}",
-                page_index + 1,
-                style.opacity
+            inspection.reject(failure(
+                Reason::InvalidOpacity,
+                format!(
+                    "direct PDF page {} has invalid {op} opacity: {}",
+                    page_index + 1,
+                    style.opacity
+                ),
             ));
         }
         if !is_valid_skia_scalar(style.stroke_width) || style.stroke_width < 0.0 {
-            return Err(format!(
-                "direct PDF page {} has invalid {op} stroke width: {}",
-                page_index + 1,
-                style.stroke_width
+            inspection.reject(failure(
+                Reason::InvalidStrokeWidth,
+                format!(
+                    "direct PDF page {} has invalid {op} stroke width: {}",
+                    page_index + 1,
+                    style.stroke_width
+                ),
             ));
         }
-        Ok(())
     }
 
-    fn validate_image_payload(data: &[u8], page_index: usize, context: &str) -> Result<(), String> {
+    fn validate_image_payload(
+        data: &[u8],
+        page_index: usize,
+        context: &str,
+        decode: bool,
+    ) -> Result<(), Failure> {
         let format = match crate::renderer::image_resolver::detect_image_mime_type(data) {
             "image/png" => image::ImageFormat::Png,
             "image/jpeg" => image::ImageFormat::Jpeg,
@@ -167,252 +833,492 @@ fn validate_direct_pdf_tree(
             "image/bmp" => image::ImageFormat::Bmp,
             "image/tiff" => image::ImageFormat::Tiff,
             format => {
-                return Err(format!(
+                return Err(failure(Reason::UnsupportedImageFormat, format!(
                     "direct PDF page {} does not support {context} payload format {format}; use the svg backend",
                     page_index + 1
-                ));
+                )));
             }
         };
+        if !decode {
+            return Ok(());
+        }
         image::load_from_memory_with_format(data, format)
             .map(|_| ())
             .map_err(|error| {
-                format!(
-                    "direct PDF page {} cannot decode {context} payload: {error}",
-                    page_index + 1
+                failure(
+                    Reason::InvalidImagePayload,
+                    format!(
+                        "direct PDF page {} cannot decode {context} payload: {error}",
+                        page_index + 1
+                    ),
                 )
             })
     }
 
-    fn validate_node(node: &LayerNode, page_index: usize) -> Result<(), String> {
-        validate_bbox(node.bounds, page_index, "layer")?;
-        match &node.kind {
-            LayerNodeKind::Group { children, .. } => {
-                for child in children {
-                    validate_node(child, page_index)?;
+    fn op_name(op: &PaintOp) -> &'static str {
+        match op {
+            PaintOp::PageBackground { .. } => "pageBackground",
+            PaintOp::TextRun { .. } => "textRun",
+            PaintOp::GlyphRun { .. } => "glyphRun",
+            PaintOp::GlyphOutline { .. } => "glyphOutline",
+            PaintOp::CharOverlap { .. } => "charOverlap",
+            PaintOp::TextControlMark { .. } => "textControlMark",
+            PaintOp::TabLeader { .. } => "tabLeader",
+            PaintOp::TextDecoration { .. } => "textDecoration",
+            PaintOp::ControlLabel { .. } => "controlLabel",
+            PaintOp::FootnoteMarker { .. } => "footnoteMarker",
+            PaintOp::Line { .. } => "line",
+            PaintOp::Rectangle { .. } => "rectangle",
+            PaintOp::Ellipse { .. } => "ellipse",
+            PaintOp::Path { .. } => "path",
+            PaintOp::Image { .. } => "image",
+            PaintOp::Equation { .. } => "equation",
+            PaintOp::FormObject { .. } => "formObject",
+            PaintOp::Placeholder { .. } => "placeholder",
+            PaintOp::RawSvg { .. } => "rawSvg",
+        }
+    }
+
+    fn validate_op(op: &PaintOp, page_index: usize, inspection: &mut Inspection) {
+        inspection.check(validate_bbox(
+            op.bounds(),
+            page_index,
+            "paint operation",
+            Reason::InvalidPaintBounds,
+        ));
+        match op {
+            PaintOp::PageBackground { bbox, background } => {
+                if let Some(gradient) = background.gradient.as_deref() {
+                    validate_gradient(gradient, *bbox, page_index, "page background", inspection);
+                }
+                if !is_valid_skia_scalar(background.border_width) || background.border_width < 0.0 {
+                    inspection.reject(failure(
+                        Reason::InvalidBackgroundBorderWidth,
+                        format!(
+                            "direct PDF page {} has invalid page background border width",
+                            page_index + 1
+                        ),
+                    ));
+                }
+                if inspection.stopped {
+                    return;
+                }
+                if let Some(image) = &background.image {
+                    inspection.check(validate_image_payload(
+                        &image.data,
+                        page_index,
+                        "page background image",
+                        inspection.first_error,
+                    ));
+                    if image.effect == ImageEffect::BlackWhite
+                        && (image.brightness != 0 || image.contrast != 0)
+                    {
+                        inspection.reject(unsupported(
+                            page_index,
+                            "page background image",
+                            Reason::UnsupportedBlackWhiteAdjustment,
+                            "unbaked BlackWhite brightness or contrast",
+                        ));
+                    }
+                    if image.is_real_picture_watermark_tone_preset() {
+                        inspection.reject(unsupported(
+                            page_index,
+                            "page background image",
+                            Reason::UnsupportedImageWatermark,
+                            "unbaked RealPic watermark tone",
+                        ));
+                    }
+                    if image.effect == ImageEffect::Pattern8x8 {
+                        inspection.reject(unsupported(
+                            page_index,
+                            "page background image",
+                            Reason::UnsupportedPattern8x8,
+                            "Pattern8x8 effect",
+                        ));
+                    }
                 }
             }
-            LayerNodeKind::ClipRect { clip, child, .. } => {
-                validate_bbox(*clip, page_index, "clip")?;
-                validate_node(child, page_index)?;
+            PaintOp::Line { line, .. } => {
+                inspection.check(validate_transform(line.transform, page_index, "line"));
+                let valid_style = validate_line_style(&line.style, page_index, "line", inspection);
+                let valid_geometry = [line.x1, line.y1, line.x2, line.y2]
+                    .iter()
+                    .all(|value| is_valid_skia_scalar(*value))
+                    && !((line.style.start_arrow != ArrowStyle::None
+                        || line.style.end_arrow != ArrowStyle::None)
+                        && same_skia_point((line.x1, line.y1), (line.x2, line.y2)));
+                if !valid_geometry {
+                    inspection.reject(failure(
+                        Reason::InvalidLineGeometry,
+                        format!(
+                            "direct PDF page {} has invalid line geometry",
+                            page_index + 1
+                        ),
+                    ));
+                }
+                if valid_style && valid_geometry && !inspection.stopped {
+                    inspection.check(validate_arrow_heads(
+                        &crate::renderer::arrow::line_heads(
+                            (line.x1, line.y1, line.x2, line.y2),
+                            &line.style,
+                        ),
+                        &line.style,
+                        page_index,
+                        "line",
+                    ));
+                }
             }
-            LayerNodeKind::Leaf { ops } => {
-                for op in ops {
-                    validate_bbox(op.bounds(), page_index, "paint operation")?;
-                    match op {
-                        PaintOp::PageBackground { background, .. } => {
-                            if background.gradient.is_some() {
-                                return Err(unsupported(
-                                    page_index,
-                                    "page background",
-                                    "gradient fill",
-                                ));
-                            }
-                            if !is_valid_skia_scalar(background.border_width)
-                                || background.border_width < 0.0
-                            {
-                                return Err(format!(
-                                    "direct PDF page {} has invalid page background border width",
-                                    page_index + 1
-                                ));
-                            }
-                            if let Some(image) = &background.image {
-                                validate_image_payload(
-                                    &image.data,
-                                    page_index,
-                                    "page background image",
-                                )?;
-                                if image.brightness != 0 || image.contrast != 0 {
-                                    return Err(unsupported(
-                                        page_index,
-                                        "page background image",
-                                        "unbaked brightness or contrast",
-                                    ));
-                                }
-                                if image.effect == ImageEffect::Pattern8x8 {
-                                    return Err(unsupported(
-                                        page_index,
-                                        "page background image",
-                                        "Pattern8x8 effect",
-                                    ));
-                                }
-                            }
-                        }
-                        PaintOp::Line { line, .. } => {
-                            validate_transform(line.transform, page_index, "line")?;
-                            if line.style.line_type != LineRenderType::Single
-                                || line.style.start_arrow != ArrowStyle::None
-                                || line.style.end_arrow != ArrowStyle::None
-                                || line.style.shadow.is_some()
-                            {
-                                return Err(unsupported(
-                                    page_index,
-                                    "line",
-                                    "multi-line, arrow, or shadow style",
-                                ));
-                            }
-                            if [line.x1, line.y1, line.x2, line.y2, line.style.width]
-                                .iter()
-                                .any(|value| !is_valid_skia_scalar(*value))
-                                || line.style.width < 0.0
-                            {
-                                return Err(format!(
-                                    "direct PDF page {} has invalid line geometry",
-                                    page_index + 1
-                                ));
-                            }
-                        }
-                        PaintOp::Rectangle { rect, .. } => {
-                            validate_transform(rect.transform, page_index, "rectangle")?;
-                            if !is_valid_skia_scalar(rect.corner_radius) || rect.corner_radius < 0.0
-                            {
-                                return Err(format!(
-                                    "direct PDF page {} has invalid rectangle corner radius",
-                                    page_index + 1
-                                ));
-                            }
-                            validate_shape_style(
-                                &rect.style,
-                                rect.gradient.is_some(),
+            PaintOp::Rectangle { bbox, rect } => {
+                inspection.check(validate_transform(rect.transform, page_index, "rectangle"));
+                if !is_valid_skia_scalar(rect.corner_radius) || rect.corner_radius < 0.0 {
+                    inspection.reject(failure(
+                        Reason::InvalidCornerRadius,
+                        format!(
+                            "direct PDF page {} has invalid rectangle corner radius",
+                            page_index + 1
+                        ),
+                    ));
+                }
+                validate_shape_style(
+                    &rect.style,
+                    rect.gradient.as_deref(),
+                    *bbox,
+                    page_index,
+                    "rectangle",
+                    inspection,
+                );
+            }
+            PaintOp::Ellipse { bbox, ellipse } => {
+                inspection.check(validate_transform(ellipse.transform, page_index, "ellipse"));
+                validate_shape_style(
+                    &ellipse.style,
+                    ellipse.gradient.as_deref(),
+                    *bbox,
+                    page_index,
+                    "ellipse",
+                    inspection,
+                );
+            }
+            PaintOp::Path { bbox, path } => {
+                inspection.check(validate_transform(path.transform, page_index, "path"));
+                validate_shape_style(
+                    &path.style,
+                    path.gradient.as_deref(),
+                    *bbox,
+                    page_index,
+                    "path",
+                    inspection,
+                );
+                let valid_geometry = valid_path_commands(&path.commands);
+                if !valid_geometry {
+                    inspection.reject(failure(
+                        Reason::InvalidPathGeometry,
+                        format!(
+                            "direct PDF page {} has invalid path geometry",
+                            page_index + 1
+                        ),
+                    ));
+                }
+                let valid_endpoints = path.connector_endpoints.is_none_or(|(x1, y1, x2, y2)| {
+                    [x1, y1, x2, y2].into_iter().all(is_valid_skia_scalar)
+                });
+                if !valid_endpoints {
+                    inspection.reject(failure(
+                        Reason::InvalidConnectorEndpoints,
+                        format!(
+                            "direct PDF page {} has invalid connector endpoints",
+                            page_index + 1
+                        ),
+                    ));
+                }
+                if let Some(style) = &path.line_style {
+                    let valid_style =
+                        validate_line_style(style, page_index, "connector", inspection);
+                    let has_arrows = style.start_arrow != ArrowStyle::None
+                        || style.end_arrow != ArrowStyle::None;
+                    let valid_tangent = !has_arrows
+                        || !path.commands.iter().any(|command| {
+                            matches!(command, PathCommand::ArcTo(..) | PathCommand::ClosePath)
+                        });
+                    if !valid_tangent {
+                        inspection.reject(unsupported(
+                            page_index,
+                            "connector",
+                            Reason::UnsupportedArrowTangent,
+                            "unsupported arrow tangent",
+                        ));
+                    }
+                    if valid_style
+                        && valid_geometry
+                        && valid_endpoints
+                        && valid_tangent
+                        && !inspection.stopped
+                    {
+                        let valid_shaft = !has_arrows
+                            || inspection.check(validate_connector_shaft(path, style, page_index));
+                        if valid_shaft && !inspection.stopped {
+                            inspection.check(validate_arrow_heads(
+                                &crate::renderer::arrow::connector_heads(path),
+                                style,
                                 page_index,
-                                "rectangle",
-                            )?;
+                                "connector",
+                            ));
                         }
-                        PaintOp::Ellipse { ellipse, .. } => {
-                            validate_transform(ellipse.transform, page_index, "ellipse")?;
-                            validate_shape_style(
-                                &ellipse.style,
-                                ellipse.gradient.is_some(),
-                                page_index,
-                                "ellipse",
-                            )?;
+                    }
+                }
+            }
+            PaintOp::Image {
+                image, resolved, ..
+            } => {
+                inspection.check(validate_transform(image.transform, page_index, "image"));
+                if inspection.stopped {
+                    return;
+                }
+                if let Some(data) = resolved
+                    .as_deref()
+                    .map(|payload| &payload.data[..])
+                    .or(image.data.as_deref())
+                {
+                    inspection.check(validate_image_payload(
+                        data,
+                        page_index,
+                        "image",
+                        inspection.first_error,
+                    ));
+                }
+                let baked = resolved
+                    .as_deref()
+                    .is_some_and(|payload| payload.suppress_effects);
+                if !baked
+                    && image.effect == ImageEffect::BlackWhite
+                    && (image.brightness != 0 || image.contrast != 0)
+                {
+                    inspection.reject(unsupported(
+                        page_index,
+                        "image",
+                        Reason::UnsupportedBlackWhiteAdjustment,
+                        "unbaked BlackWhite brightness or contrast",
+                    ));
+                }
+                if !baked && image.is_watermark() {
+                    inspection.reject(unsupported(
+                        page_index,
+                        "image",
+                        Reason::UnsupportedImageWatermark,
+                        "unbaked image watermark tone or opacity",
+                    ));
+                }
+                if !baked && image.effect == ImageEffect::Pattern8x8 {
+                    inspection.reject(unsupported(
+                        page_index,
+                        "image",
+                        Reason::UnsupportedPattern8x8,
+                        "Pattern8x8 effect",
+                    ));
+                }
+                if !is_valid_skia_scalar(image.opacity) || !(0.0..=1.0).contains(&image.opacity) {
+                    inspection.reject(failure(
+                        Reason::InvalidOpacity,
+                        format!(
+                            "direct PDF page {} has invalid image opacity: {}",
+                            page_index + 1,
+                            image.opacity
+                        ),
+                    ));
+                }
+            }
+            PaintOp::TextRun { run, .. } => {
+                if [
+                    run.baseline,
+                    run.rotation,
+                    run.style.font_size,
+                    run.style.letter_spacing,
+                    run.style.ratio,
+                ]
+                .iter()
+                .any(|value| !is_valid_skia_scalar(*value))
+                {
+                    inspection.reject(failure(
+                        Reason::InvalidTextGeometry,
+                        format!(
+                            "direct PDF page {} has invalid text geometry",
+                            page_index + 1
+                        ),
+                    ));
+                }
+            }
+            PaintOp::FootnoteMarker { marker, .. } => {
+                if !is_valid_skia_scalar(marker.base_font_size) {
+                    inspection.reject(failure(
+                        Reason::InvalidFootnoteFontSize,
+                        format!(
+                            "direct PDF page {} has invalid footnote marker font size",
+                            page_index + 1
+                        ),
+                    ));
+                }
+            }
+            PaintOp::Equation { equation, .. } => {
+                if !is_valid_skia_scalar(equation.font_size)
+                    || !is_valid_skia_scalar(equation.layout_box.width)
+                    || !is_valid_skia_scalar(equation.layout_box.height)
+                {
+                    inspection.reject(failure(
+                        Reason::InvalidEquationGeometry,
+                        format!(
+                            "direct PDF page {} has invalid equation geometry",
+                            page_index + 1
+                        ),
+                    ));
+                }
+            }
+            PaintOp::GlyphRun { .. }
+            | PaintOp::GlyphOutline { .. }
+            | PaintOp::CharOverlap { .. }
+            | PaintOp::TextControlMark { .. }
+            | PaintOp::TabLeader { .. }
+            | PaintOp::TextDecoration { .. }
+            | PaintOp::ControlLabel { .. }
+            | PaintOp::FormObject { .. }
+            | PaintOp::Placeholder { .. }
+            | PaintOp::RawSvg { .. } => {}
+        }
+    }
+
+    pub(super) fn validate_tree(
+        tree: &PageLayerTree,
+        page_index: usize,
+        inspection: &mut Inspection,
+    ) {
+        // A stack of iterators bounds traversal storage by visited depth rather
+        // than allocating a copy of every sibling. No recursive validator stack.
+        let mut pending = vec![std::slice::from_ref(&tree.root).iter()];
+        let mut node_index = 0;
+        let mut op_index = 0;
+        while let Some(siblings) = pending.last_mut() {
+            let Some(node) = siblings.next() else {
+                pending.pop();
+                continue;
+            };
+            if !inspection.begin_item() {
+                break;
+            }
+            let location = DirectPdfPreflightLocation {
+                page_index: Some(page_index),
+                node_index: Some(node_index),
+                ..Default::default()
+            };
+            node_index += 1;
+            inspection.locate(location);
+            inspection.check(validate_bbox(
+                node.bounds,
+                page_index,
+                "layer",
+                Reason::InvalidLayerBounds,
+            ));
+            if inspection.stopped {
+                break;
+            }
+            match &node.kind {
+                LayerNodeKind::Group { children, .. } => pending.push(children.iter()),
+                LayerNodeKind::ClipPath { paths, child } => {
+                    if !crate::model::text_clip::valid(paths) {
+                        inspection.reject(failure(
+                            Reason::InvalidTextClipPath,
+                            "invalid text clip path".into(),
+                        ));
+                    }
+                    if !inspection.stopped {
+                        pending.push(std::slice::from_ref(child.as_ref()).iter());
+                    }
+                }
+                LayerNodeKind::ClipRect { clip, child, .. } => {
+                    inspection.check(validate_bbox(
+                        *clip,
+                        page_index,
+                        "clip",
+                        Reason::InvalidClipBounds,
+                    ));
+                    if !inspection.stopped {
+                        pending.push(std::slice::from_ref(child.as_ref()).iter());
+                    }
+                }
+                LayerNodeKind::Leaf { ops } => {
+                    for op in ops {
+                        if !inspection.begin_item() {
+                            break;
                         }
-                        PaintOp::Path { path, .. } => {
-                            validate_transform(path.transform, page_index, "path")?;
-                            validate_shape_style(
-                                &path.style,
-                                path.gradient.is_some(),
-                                page_index,
-                                "path",
-                            )?;
-                            if path.connector_endpoints.is_some() || path.line_style.is_some() {
-                                return Err(unsupported(
-                                    page_index,
-                                    "path",
-                                    "connector line style",
-                                ));
-                            }
-                            let finite = path.commands.iter().all(|command| match *command {
-                                PathCommand::MoveTo(x, y) | PathCommand::LineTo(x, y) => {
-                                    is_valid_skia_scalar(x) && is_valid_skia_scalar(y)
-                                }
-                                PathCommand::CurveTo(x1, y1, x2, y2, x, y) => {
-                                    [x1, y1, x2, y2, x, y]
-                                        .iter()
-                                        .all(|value| is_valid_skia_scalar(*value))
-                                }
-                                PathCommand::ArcTo(rx, ry, rotation, _, _, x, y) => {
-                                    [rx, ry, rotation, x, y]
-                                        .iter()
-                                        .all(|value| is_valid_skia_scalar(*value))
-                                }
-                                PathCommand::ClosePath => true,
-                            });
-                            if !finite {
-                                return Err(format!(
-                                    "direct PDF page {} has invalid path geometry",
-                                    page_index + 1
-                                ));
-                            }
-                        }
-                        PaintOp::Image {
-                            image, resolved, ..
-                        } => {
-                            validate_transform(image.transform, page_index, "image")?;
-                            if let Some(data) = resolved
-                                .as_deref()
-                                .map(|payload| &payload.data[..])
-                                .or(image.data.as_deref())
-                            {
-                                validate_image_payload(data, page_index, "image")?;
-                            }
-                            let effects_are_baked = resolved
-                                .as_deref()
-                                .is_some_and(|payload| payload.suppress_effects);
-                            if !effects_are_baked && (image.brightness != 0 || image.contrast != 0)
-                            {
-                                return Err(unsupported(
-                                    page_index,
-                                    "image",
-                                    "unbaked brightness or contrast",
-                                ));
-                            }
-                            if !effects_are_baked && image.effect == ImageEffect::Pattern8x8 {
-                                return Err(unsupported(page_index, "image", "Pattern8x8 effect"));
-                            }
-                            if !is_valid_skia_scalar(image.opacity)
-                                || !(0.0..=1.0).contains(&image.opacity)
-                            {
-                                return Err(format!(
-                                    "direct PDF page {} has invalid image opacity: {}",
-                                    page_index + 1,
-                                    image.opacity
-                                ));
-                            }
-                        }
-                        PaintOp::TextRun { run, .. } => {
-                            if [
-                                run.baseline,
-                                run.rotation,
-                                run.style.font_size,
-                                run.style.letter_spacing,
-                                run.style.ratio,
-                            ]
-                            .iter()
-                            .any(|value| !is_valid_skia_scalar(*value))
-                            {
-                                return Err(format!(
-                                    "direct PDF page {} has invalid text geometry",
-                                    page_index + 1
-                                ));
-                            }
-                        }
-                        PaintOp::FootnoteMarker { marker, .. } => {
-                            if !is_valid_skia_scalar(marker.base_font_size) {
-                                return Err(format!(
-                                    "direct PDF page {} has invalid footnote marker font size",
-                                    page_index + 1
-                                ));
-                            }
-                        }
-                        PaintOp::Equation { equation, .. } => {
-                            if !is_valid_skia_scalar(equation.font_size)
-                                || !is_valid_skia_scalar(equation.layout_box.width)
-                                || !is_valid_skia_scalar(equation.layout_box.height)
-                            {
-                                return Err(format!(
-                                    "direct PDF page {} has invalid equation geometry",
-                                    page_index + 1
-                                ));
-                            }
-                        }
-                        PaintOp::GlyphRun { .. }
-                        | PaintOp::GlyphOutline { .. }
-                        | PaintOp::CharOverlap { .. }
-                        | PaintOp::TextControlMark { .. }
-                        | PaintOp::TabLeader { .. }
-                        | PaintOp::TextDecoration { .. }
-                        | PaintOp::ControlLabel { .. }
-                        | PaintOp::FormObject { .. }
-                        | PaintOp::Placeholder { .. }
-                        | PaintOp::RawSvg { .. } => {}
+                        inspection.locate(DirectPdfPreflightLocation {
+                            op_index: Some(op_index),
+                            operation: Some(op_name(op)),
+                            ..location
+                        });
+                        op_index += 1;
+                        validate_op(op, page_index, inspection);
                     }
                 }
             }
         }
-        Ok(())
     }
 
-    validate_node(&tree.root, page_index)
+    pub(super) fn page_dimension(value: f64, width: bool) -> Result<f32, Failure> {
+        let label = if width { "width" } else { "height" };
+        let points = value * CSS_PX_TO_PDF_POINT;
+        let skia_points = points as f32;
+        // A positive f64 page extent can underflow to zero in Skia's scalar
+        // type. Reject before begin_page, whose native canvas must be non-null.
+        if !points.is_finite() || points <= 0.0 || skia_points <= 0.0 {
+            return Err(failure(
+                if width {
+                    Reason::InvalidPageWidth
+                } else {
+                    Reason::InvalidPageHeight
+                },
+                format!("invalid direct PDF page {label}: {value}"),
+            ));
+        }
+        if points > MAX_PDF_PAGE_DIMENSION_POINTS {
+            return Err(failure(if width { Reason::PageWidthTooLarge } else { Reason::PageHeightTooLarge },
+                format!("direct PDF page {label} exceeds {MAX_PDF_PAGE_DIMENSION_POINTS} points: {points}")));
+        }
+        Ok(skia_points)
+    }
+
+    pub(super) fn preflight(
+        trees: &[PageLayerTree],
+        options: &DirectPdfExportOptions,
+        limits: DirectPdfPreflightLimits,
+    ) -> DirectPdfPreflightReport {
+        let mut inspection = Inspection::new(limits);
+        if trees.is_empty() {
+            inspection.reject(failure(
+                Reason::EmptyDocument,
+                "direct PDF export requires at least one page".into(),
+            ));
+        }
+        if !options.raster_dpi.is_finite() || options.raster_dpi <= 0.0 {
+            inspection.reject(failure(
+                Reason::InvalidRasterDpi,
+                format!("invalid direct PDF raster dpi: {}", options.raster_dpi),
+            ));
+        }
+        for (page_index, tree) in trees.iter().enumerate() {
+            if !inspection.begin_item() {
+                break;
+            }
+            validate_tree(tree, page_index, &mut inspection);
+            if inspection.stopped {
+                break;
+            }
+            inspection.locate(DirectPdfPreflightLocation {
+                page_index: Some(page_index),
+                ..Default::default()
+            });
+            inspection.check(page_dimension(tree.page_width, true).map(|_| ()));
+            inspection.check(page_dimension(tree.page_height, false).map(|_| ()));
+        }
+        inspection.report
+    }
 }
 
 /// PDF 내보내기 폰트 설정.
@@ -1242,7 +2148,40 @@ pub fn svgs_to_pdf_with_links_and_to_chunk<F>(
     svg_pages: &[String],
     links: &[Vec<super::hyperlinks::PdfLink>],
     export_options: &PdfExportOptions,
+    to_chunk: F,
+) -> Result<Vec<u8>, String>
+where
+    F: FnMut(
+        &usvg::Tree,
+        bool,
+    ) -> Result<(pdf_writer::Chunk, pdf_writer::Ref), svg2pdf::ConversionError>,
+{
+    svgs_to_pdf_annotations_impl(
+        svg_pages,
+        links,
+        export_options,
+        to_chunk,
+        &vec![Vec::new(); svg_pages.len()],
+    )
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+pub fn svgs_to_pdf_with_annotations(
+    svg_pages: &[String],
+    links: &[Vec<super::hyperlinks::PdfLink>],
+    destinations: &[Vec<super::hyperlinks::PdfNamedDestination>],
+    options: &PdfExportOptions,
+) -> Result<Vec<u8>, String> {
+    svgs_to_pdf_annotations_impl(svg_pages, links, options, svg2pdf_to_chunk, destinations)
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn svgs_to_pdf_annotations_impl<F>(
+    svg_pages: &[String],
+    links: &[Vec<super::hyperlinks::PdfLink>],
+    export_options: &PdfExportOptions,
     mut to_chunk: F,
+    destinations: &[Vec<super::hyperlinks::PdfNamedDestination>],
 ) -> Result<Vec<u8>, String>
 where
     F: FnMut(
@@ -1349,7 +2288,34 @@ where
 
     // PDF 생성
     let mut pdf = Pdf::new();
-    pdf.catalog(catalog_ref).pages(page_tree_ref);
+    let destinations_ref = alloc.bump();
+    pdf.catalog(catalog_ref)
+        .pages(page_tree_ref)
+        .destinations(destinations_ref);
+    {
+        let mut named = pdf.destinations(destinations_ref);
+        let mut names = std::collections::HashSet::new();
+        for (index, page) in page_datas.iter().enumerate() {
+            for destination in destinations.get(page.source_index).into_iter().flatten() {
+                if destination.x.is_finite()
+                    && destination.y.is_finite()
+                    && names.insert(destination.name.as_str())
+                {
+                    named
+                        .insert(pdf_writer::Name(
+                            super::hyperlinks::pdf_destination_key(&destination.name).as_bytes(),
+                        ))
+                        .page(page_refs[index])
+                        .xyz(
+                            (destination.x * 0.75) as f32,
+                            page.height - (destination.y * 0.75) as f32,
+                            None,
+                        );
+                }
+            }
+        }
+        named.finish();
+    }
     pdf.pages(page_tree_ref)
         .count(page_refs.len() as i32)
         .kids(page_refs.iter().copied());
@@ -1393,10 +2359,35 @@ where
                 ))
                 .page(page_ref)
                 .border(0.0, 0.0, 0.0, None);
-            annotation
-                .action()
-                .action_type(pdf_writer::types::ActionType::Uri)
-                .uri(pdf_writer::Str(link.uri.as_bytes()));
+            use crate::model::hyperlink::{classify_destination, LinkDestinationKind};
+            let mut action = annotation.action();
+            match classify_destination(&link.uri) {
+                Some(LinkDestinationKind::DocumentAnchor) => {
+                    action
+                        .action_type(pdf_writer::types::ActionType::GoTo)
+                        .destination_named(pdf_writer::Name(
+                            super::hyperlinks::pdf_destination_key(&link.uri[1..]).as_bytes(),
+                        ));
+                }
+                Some(LinkDestinationKind::RelativeFile | LinkDestinationKind::LocalFile)
+                    if !link.uri.to_ascii_lowercase().starts_with("file:") =>
+                {
+                    action.action_type(pdf_writer::types::ActionType::Launch);
+                    action
+                        .file_spec()
+                        .path(pdf_writer::Str(link.uri.as_bytes()))
+                        .unic_file(pdf_writer::TextStr(&link.uri));
+                }
+                Some(_) => {
+                    let uri = super::hyperlinks::export_uri(&link.uri)
+                        .ok_or("invalid PDF link destination")?;
+                    action
+                        .action_type(pdf_writer::types::ActionType::Uri)
+                        .uri(pdf_writer::Str(uri.as_bytes()));
+                }
+                None => return Err("invalid PDF link destination".into()),
+            }
+            action.finish();
             annotation.finish();
         }
 
@@ -1451,11 +2442,25 @@ pub fn layer_trees_to_pdf_with_links(
     links: &[Vec<super::hyperlinks::PdfLink>],
     options: &DirectPdfExportOptions,
 ) -> Result<Vec<u8>, String> {
+    layer_trees_to_pdf_with_annotations(
+        layer_trees,
+        links,
+        &vec![Vec::new(); layer_trees.len()],
+        options,
+    )
+}
+
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+pub fn layer_trees_to_pdf_with_annotations(
+    layer_trees: &[crate::paint::PageLayerTree],
+    links: &[Vec<super::hyperlinks::PdfLink>],
+    destinations: &[Vec<super::hyperlinks::PdfNamedDestination>],
+    options: &DirectPdfExportOptions,
+) -> Result<Vec<u8>, String> {
     if links.len() != layer_trees.len() {
         return Err("PDF 페이지와 링크 목록의 길이가 다릅니다".into());
     }
-    const CSS_PX_TO_PDF_POINT: f64 = 72.0 / 96.0;
-    const MAX_PDF_PAGE_DIMENSION_POINTS: f64 = 14_400.0;
+    use direct_pdf_validation::CSS_PX_TO_PDF_POINT;
 
     if layer_trees.is_empty() {
         return Err("direct PDF export requires at least one page".to_string());
@@ -1467,27 +2472,16 @@ pub fn layer_trees_to_pdf_with_links(
         ));
     }
 
-    let page_dimension = |value: f64, label: &str| -> Result<f32, String> {
-        let points = value * CSS_PX_TO_PDF_POINT;
-        if !points.is_finite() || points <= 0.0 {
-            return Err(format!("invalid direct PDF page {label}: {value}"));
-        }
-        if points > MAX_PDF_PAGE_DIMENSION_POINTS {
-            return Err(format!(
-                "direct PDF page {label} exceeds {MAX_PDF_PAGE_DIMENSION_POINTS} points: {points}"
-            ));
-        }
-        Ok(points as f32)
-    };
-
     let page_sizes = layer_trees
         .iter()
         .enumerate()
         .map(|(page_index, tree)| {
             validate_direct_pdf_tree(tree, page_index)?;
             Ok((
-                page_dimension(tree.page_width, "width")?,
-                page_dimension(tree.page_height, "height")?,
+                direct_pdf_validation::page_dimension(tree.page_width, true)
+                    .map_err(|error| error.message)?,
+                direct_pdf_validation::page_dimension(tree.page_height, false)
+                    .map_err(|error| error.message)?,
             ))
         })
         .collect::<Result<Vec<_>, String>>()?;
@@ -1508,8 +2502,11 @@ pub fn layer_trees_to_pdf_with_links(
 
     {
         let mut document = skia_safe::pdf::new_document(&mut output, Some(&metadata));
-        for ((tree, &(width, height)), links) in
-            layer_trees.iter().zip(page_sizes.iter()).zip(links)
+        for (page_index, ((tree, &(width, height)), links)) in layer_trees
+            .iter()
+            .zip(page_sizes.iter())
+            .zip(links)
+            .enumerate()
         {
             let mut page = document.begin_page((width, height), None);
             let canvas = page.canvas();
@@ -1518,19 +2515,37 @@ pub fn layer_trees_to_pdf_with_links(
             renderer
                 .render_page_to_canvas_strict(canvas, tree, options.raster_dpi / 96.0)
                 .map_err(|error| format!("direct PDF page replay failed: {error}"))?;
+            for destination in destinations.get(page_index).into_iter().flatten() {
+                if destination.x.is_finite() && destination.y.is_finite() {
+                    let mut name =
+                        super::hyperlinks::pdf_destination_key(&destination.name).into_bytes();
+                    name.push(0);
+                    canvas.annotate_named_destination(
+                        (destination.x as f32, destination.y as f32),
+                        &skia_safe::Data::new_copy(&name),
+                    );
+                }
+            }
             for link in super::hyperlinks::page_links(links, tree.page_width, tree.page_height) {
                 let r = link.rect;
-                let mut uri = link.uri.into_bytes();
+                let mut uri = super::hyperlinks::export_uri(&link.uri)
+                    .ok_or("invalid PDF link destination")?
+                    .into_bytes();
                 uri.push(0); // Skia URL annotation payload는 NUL 종료 문자열이다.
-                canvas.annotate_rect_with_url(
-                    skia_safe::Rect::from_xywh(
-                        r.x as f32,
-                        r.y as f32,
-                        r.width as f32,
-                        r.height as f32,
-                    ),
-                    &skia_safe::Data::new_copy(&uri),
+                let rect = skia_safe::Rect::from_xywh(
+                    r.x as f32,
+                    r.y as f32,
+                    r.width as f32,
+                    r.height as f32,
                 );
+                if link.uri.starts_with('#') {
+                    let mut name =
+                        super::hyperlinks::pdf_destination_key(&link.uri[1..]).into_bytes();
+                    name.push(0);
+                    canvas.annotate_link_to_destination(rect, &skia_safe::Data::new_copy(&name));
+                } else {
+                    canvas.annotate_rect_with_url(rect, &skia_safe::Data::new_copy(&uri));
+                }
             }
             document = page.end_page();
         }
@@ -1860,32 +2875,36 @@ endbfchar <DB80DEB1>";
         use crate::renderer::render_tree::{BoundingBox, RectangleNode};
         use crate::renderer::{GradientFillInfo, ShapeStyle};
 
-        let bbox = BoundingBox::new(0.0, 0.0, 96.0, 96.0);
-        let gradient = GradientFillInfo {
-            gradient_type: 1,
-            angle: 0,
-            center_x: 50,
-            center_y: 50,
-            colors: vec![0x000000ff, 0x00ff0000],
-            positions: vec![0.0, 1.0],
-        };
-        let tree = crate::paint::PageLayerTree::with_profile(
-            96.0,
-            96.0,
-            LayerNode::leaf(
-                bbox,
-                None,
-                vec![PaintOp::rectangle(
+        // Type 2 now has bounded exact radial admission. The approximate
+        // cone and SkSL square gradients remain unsupported by Direct PDF.
+        for gradient_type in [3, 4] {
+            let bbox = BoundingBox::new(0.0, 0.0, 96.0, 96.0);
+            let gradient = GradientFillInfo {
+                gradient_type,
+                angle: 0,
+                center_x: 50,
+                center_y: 50,
+                colors: vec![0x000000ff, 0x00ff0000],
+                positions: vec![0.0, 1.0],
+            };
+            let tree = crate::paint::PageLayerTree::with_profile(
+                96.0,
+                96.0,
+                LayerNode::leaf(
                     bbox,
-                    RectangleNode::new(0.0, ShapeStyle::default(), Some(Box::new(gradient))),
-                )],
-            ),
-            RenderProfile::Print,
-        );
+                    None,
+                    vec![PaintOp::rectangle(
+                        bbox,
+                        RectangleNode::new(0.0, ShapeStyle::default(), Some(Box::new(gradient))),
+                    )],
+                ),
+                RenderProfile::Print,
+            );
 
-        let error = layer_trees_to_pdf(&[tree]).unwrap_err();
-        assert!(error.contains("gradient fill"), "unexpected error: {error}");
-        assert!(error.contains("use the svg backend"));
+            let error = layer_trees_to_pdf(&[tree]).unwrap_err();
+            assert!(error.contains("gradient fill"), "unexpected error: {error}");
+            assert!(error.contains("use the svg backend"));
+        }
     }
 
     #[cfg(feature = "native-skia")]

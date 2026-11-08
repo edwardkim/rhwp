@@ -1,0 +1,181 @@
+{
+  "date": "2026-10-29",
+  "head": "ada391497a5b106d6a04b5ef729169e4bddd6add",
+  "command": "python3 scripts/check_markdown_links.py <20개 review·impl과 통합 계획·본문>",
+  "exit_code": 0,
+  "documents": 42,
+  "log_sha256": "19faa3d1bbb8c7fc5b3de3e141dd97bb53e3230e93436fa67831dc0e24d92386",
+  "files": [
+    {
+      "path": "mydocs/pr/archives/pr_8115_review.md",
+      "sha256": "efbcb84c9b2f21680c9ceb6975426299d4323855e4cab0db566336a196aec4f6"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8115_review_impl.md",
+      "sha256": "928be6e9d525adb7b5a64e9d2533d25b99a43878ba1a101bf23029aee34fa17e"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8128_review.md",
+      "sha256": "3dc38a7be3a8bddc9d801007103fcae1fcc49d4d8aefdf3132d5cc5de809a982"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8128_review_impl.md",
+      "sha256": "4ff52f97d685bc2dace912a8288479658b33f5a44fbe57e100327b1faef5b93c"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8133_review.md",
+      "sha256": "aa20a7015a26615b6293d1c08c8fbeeb261603424c9b5d54633b7d4a6c700578"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8133_review_impl.md",
+      "sha256": "dc8b78a92e91d7a169c1b8573c001d7e41c18c93a89229713f2046d8ade471ba"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8142_review.md",
+      "sha256": "1abda23bcef1ff38368e76959ba0b593ddcfafbe822a6c889cbda453ac6e893c"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8142_review_impl.md",
+      "sha256": "81dedfdd798fd42db2396f40771ce8764d3e48ce49c7c98b7d78ec164a4491f7"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8184_review.md",
+      "sha256": "65521d6c499e503c6e7296b81dfeef1f6d422f7f4a43c573e307e5941cc2ede6"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8184_review_impl.md",
+      "sha256": "f3c04a1184e1461388d47561c5a37fdd94702322e99f12c15326e73aa8c924d6"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8202_review.md",
+      "sha256": "0bc37ff34c77160cb0b385a44bd0690897e6135c948b5f70e9182b0636f902af"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8202_review_impl.md",
+      "sha256": "459d659d0c8fd3fb8ef225c4218a19be64ce2b927674a921b496c8b53dcbb0c1"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8205_review.md",
+      "sha256": "9b9de89849e58cd613502c35f990f7ce7e8196f707b41feb05cfa2086e73f792"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8205_review_impl.md",
+      "sha256": "0d08cd766ee3bf69410f1990379011e8e2870a63442e015e3319220e2db13fde"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8206_review.md",
+      "sha256": "6f80a7c0f78ef798a045cd68dad4e22e7343a06649c188b6f7e501c3813b9cbf"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8206_review_impl.md",
+      "sha256": "1a87aaab47963ff044a0ebb739fd9470b223cbda6365198cf17710299801a09c"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8209_review.md",
+      "sha256": "1d05fcbc64cbec01a71181c79bdc60101db0d5a99f1bf94e4036bdbb77a7ef99"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8209_review_impl.md",
+      "sha256": "f26ef9c6aa2e188290d13ad81a5728abec4da609b060c2824fa77a235c4295a9"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8210_review.md",
+      "sha256": "1ef105a4baa9df3aa87367452811c98351784831e99f955f480e1534d4b03007"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8210_review_impl.md",
+      "sha256": "ec8739b0239417e12a513b6baad11b2cc9a6ddc78e41326f6798bda02b375238"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8213_review.md",
+      "sha256": "cdd208b9637e8430b40363d6cefb66d0f86f8fa233f8fbc5fd42f8f3892cb386"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8213_review_impl.md",
+      "sha256": "5eb84c2649325bf5fc4073ed7a66986380cff8738cde6ef0e625562c55bbc0aa"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8215_review.md",
+      "sha256": "83cf2391323bd238795cd9c91e4c5fabb075bd4c3f594368584dc3fa00c6df79"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8215_review_impl.md",
+      "sha256": "4d17c5f38e64198e17cc1cec25c70801127a966a1ed321be01e8c5c342269da6"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8217_review.md",
+      "sha256": "9991deb5c1509a394e3bc6e90afdce825f69b591f871067d4947cf7754876ac0"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8217_review_impl.md",
+      "sha256": "b39afd1de1270d8bf2a83aa944c2ec7f935a97cc0df1d58fa0c5d6c6bd288a0e"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8219_review.md",
+      "sha256": "b55eddd4bbf1b21211079f14963048729ee80615933329055498e7b4ed0baed5"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8219_review_impl.md",
+      "sha256": "17ca9021c4aabddd0816a641542319045e09ee68666c3b3a5cd7d5ef0334fd60"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8221_review.md",
+      "sha256": "f146bb3c50d9df7f0c794e6ee3ccc4f61bf3af51c72dd4525dead1e978e190ab"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8221_review_impl.md",
+      "sha256": "27868b4cd41ce990023bb9951dcc12c8f5740f06a337392bdf591cd5abb3a0a3"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8227_review.md",
+      "sha256": "8fee560f8ec87f8bdaacfd0135189a0cc14a112a42f74c3e4b3c110b3a5c8caa"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8227_review_impl.md",
+      "sha256": "e5f9835492ef397e3aa426cf37fd621863570871de304cc269ff602e7e0dd99b"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8229_review.md",
+      "sha256": "b913fe9ded946fd634192ef8d617f12dd5e52b49917d5090f41ea172a5032d55"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8229_review_impl.md",
+      "sha256": "00404712012612b593ac5e653b17f99113404db48ac9138dcbd7fdbc3345169c"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8237_review.md",
+      "sha256": "aaba70e9f100c174dadae8de5f0bdc1f14e0ea4ab681a4b74c98230dd48950a8"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8237_review_impl.md",
+      "sha256": "0e20ec77dd9ee1e2c857804c78ec9dff160799989811b71f48782305edad844a"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8265_review.md",
+      "sha256": "0b611706c8ce402818879a5095ddce3e231698fd2650c3e530161848d43c92f8"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8265_review_impl.md",
+      "sha256": "f2a83275bfda9cd92ba0ee29cd6dde1df8d8f4a471f05a4474f446546b888c28"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8283_review.md",
+      "sha256": "c2b8385d7da755a1ed0e6ba7f0184c232c5f25831ab53c3fe0f9818bbd7c601a"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8283_review_impl.md",
+      "sha256": "bc993274fb6ba7796faccf5307aa9a4d9d82c55a7c6413e96872554bc295a385"
+    },
+    {
+      "path": "mydocs/working/review_integration_20261026_pr_body_draft.md",
+      "sha256": "9db36e562039cb28f4b29d99c73aed7a3d7f54313e01d10563930a873f1884c6"
+    },
+    {
+      "path": "mydocs/working/review_integration_20261026_document_updates_plan.md",
+      "sha256": "d828310b7a3dce29c48a48e120c02d035cd02202f2586a8d183e39e06d9c9734"
+    }
+  ],
+  "limitations": [
+    "파일 존재를 검사하며 외부 URL과 문서 앵커의 유효성은 검사하지 않는다."
+  ]
+}

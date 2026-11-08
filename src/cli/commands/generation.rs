@@ -8,6 +8,9 @@ use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use crate::{EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
 
+#[path = "ingest_media.rs"]
+mod ingest_media;
+
 /// `rhwp build-from-ingest <ingest.json> [--media-dir <dir>] -o <out.hwpx>`
 ///
 /// Claude Code Skill (`rhwp-exam-ingest`)이 생성한 JSON 중간 표현을 HWPX로 변환한다.
@@ -21,6 +24,7 @@ pub(crate) fn build_from_ingest(args: &[String]) -> i32 {
     let mut input_path: Option<&str> = None;
     let mut output_path: Option<&str> = None;
     let mut media_dir: Option<&str> = None;
+    let mut image_limits = rhwp::document_core::builders::exam_paper::IngestImageLimits::default();
     // [#3600] --json: 생성 봉투를 stdout 순수 JSON 으로. 생성 동작 무변경.
     let mut json_mode = false;
 
@@ -41,6 +45,28 @@ pub(crate) fn build_from_ingest(args: &[String]) -> i32 {
                     return EXIT_USAGE;
                 }
                 media_dir = Some(&args[i + 1]);
+                i += 2;
+            }
+            flag @ ("--max-image-bytes"
+            | "--max-total-image-bytes"
+            | "--max-image-pixels"
+            | "--max-total-image-pixels"
+            | "--max-image-instances") => {
+                let value = args.get(i + 1).and_then(|v| v.parse::<u64>().ok());
+                let Some(value) = value.filter(|v| *v > 0 && *v <= usize::MAX as u64) else {
+                    eprintln!("오류: {flag}에는 양의 정수가 필요합니다");
+                    return EXIT_USAGE;
+                };
+                match flag {
+                    "--max-image-bytes" => image_limits.max_image_bytes = value as usize,
+                    "--max-total-image-bytes" => {
+                        image_limits.max_total_image_bytes = value as usize
+                    }
+                    "--max-image-pixels" => image_limits.max_image_pixels = value,
+                    "--max-total-image-pixels" => image_limits.max_total_image_pixels = value,
+                    "--max-image-instances" => image_limits.max_image_instances = value as usize,
+                    _ => unreachable!(),
+                }
                 i += 2;
             }
             "--json" => {
@@ -93,17 +119,37 @@ pub(crate) fn build_from_ingest(args: &[String]) -> i32 {
         }
     };
 
-    if let Some(md) = media_dir {
-        let p = Path::new(md);
-        if !p.exists() {
-            eprintln!(
-                "경고: 미디어 디렉토리가 존재하지 않습니다 ({}). 본 단계는 이미지 placeholder로 처리됩니다.",
-                md
-            );
+    let input_media_dir = Path::new(input)
+        .parent()
+        .filter(|p| !p.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."));
+    let input_media_dir = input_media_dir.to_string_lossy();
+    let images = match ingest_media::load_images(
+        &ingest,
+        media_dir.or(Some(input_media_dir.as_ref())),
+        image_limits,
+    ) {
+        Ok(images) => images,
+        Err(e) => {
+            eprintln!("오류: {e}");
+            return EXIT_RUNTIME;
         }
-    }
-
-    let doc = rhwp::document_core::builders::exam_paper::build_exam_paper(&ingest);
+    };
+    let doc = if images.is_empty() {
+        rhwp::document_core::builders::exam_paper::build_exam_paper(&ingest)
+    } else {
+        match rhwp::document_core::builders::exam_paper::build_exam_paper_with_images(
+            &ingest,
+            &images,
+            image_limits,
+        ) {
+            Ok(doc) => doc,
+            Err(e) => {
+                eprintln!("오류: {e}");
+                return EXIT_RUNTIME;
+            }
+        }
+    };
 
     let hwpx_bytes = match rhwp::serializer::serialize_hwpx(&doc) {
         Ok(b) => b,

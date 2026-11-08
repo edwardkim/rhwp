@@ -215,3 +215,27 @@ export function validateDocumentChangedEvent(value) {
   }
   return event;
 }
+
+/** 누름틀 진입·이탈 이벤트(`field-focus-events-v1`). 밖이면 `{schemaVersion, inField:false}` 만 온다. */
+export function validateFieldChangedEvent(value) {
+  const code = 'INVALID_RESPONSE';
+  const event = record(value, 'field changed event', code);
+  if (event.schemaVersion !== 1) {
+    throw contractError(code, 'field changed event schemaVersion must be 1');
+  }
+  if (event.inField === false) {
+    exactKeys(event, ['schemaVersion', 'inField'], 'field changed event', code);
+    return event;
+  }
+  if (event.inField !== true) throw contractError(code, 'field changed event inField is invalid');
+  exactKeys(event, [
+    'schemaVersion', 'inField', 'fieldId', 'fieldType', 'name', 'guide',
+  ], 'field changed event', code);
+  safeInteger(event.fieldId, 'field changed event fieldId', 0, code);
+  for (const key of ['fieldType', 'name', 'guide']) {
+    if (typeof event[key] !== 'string') {
+      throw contractError(code, `field changed event ${key} must be a string`);
+    }
+  }
+  return event;
+}

@@ -11,7 +11,6 @@ from dataclasses import dataclass, field
 from typing import Any
 
 SAMPLE_HWP = "samples/basic/issue2007_nested_cell_pagination_42065.hwp"
-SAMPLE_HWPX = "samples/exam_kor.hwpx"
 SAMPLE_FORM = "samples/basic/blank2010.hwp"
 SAMPLE_TABLE = "samples/basic/calendar_year.hwp"
 
@@ -98,7 +97,6 @@ def set_checkbox(name: str, checked: bool) -> dict[str, Any]:
 
 def _scenarios() -> list[Scenario]:
     s = SAMPLE_HWP
-    x = SAMPLE_HWPX
     f = SAMPLE_FORM
     t = SAMPLE_TABLE
     return [
@@ -307,18 +305,6 @@ def _scenarios() -> list[Scenario]:
             "seal-caption.hwp",
             [replace_text("(인)", "(인)")],
             "idempotent",
-        ),
-        Scenario(
-            "hwpx_year",
-            "공문",
-            "hwpx",
-            "HWPX 본문 연도 2024→2026",
-            "입력 확장자가 hwpx 면 스냅샷도 hwpx. 산출 확장자는 output 을 따른다.",
-            x,
-            "hwpx-year.hwpx",
-            [replace_text("2024", "2026")],
-            "ext=hwpx",
-            ext="hwpx",
         ),
         Scenario(
             "newline_keep",
@@ -539,31 +525,6 @@ def _scenarios() -> list[Scenario]:
             "bid-price.hwp",
             [replace_text("예정가격 900,000,000원", "예정가격 800,000,000원")],
             "입찰 금액 축",
-        ),
-        Scenario(
-            "exam_year",
-            "시험",
-            "학년도",
-            "2025학년도→2026학년도",
-            "시험지 표지 학년도. HWPX 시험 샘플을 쓴다.",
-            x,
-            "exam-year.hwpx",
-            [replace_text("2025학년도", "2026학년도")],
-            "ext=hwpx",
-            related=("#4391", "#5478"),
-            ext="hwpx",
-        ),
-        Scenario(
-            "exam_subject",
-            "시험",
-            "과목",
-            "한국사→한국사(필수)",
-            "표지 과목 표기. 학년도와 다른 필드.",
-            x,
-            "exam-subject.hwpx",
-            [replace_text("과목: 한국사", "과목: 한국사(필수)")],
-            "ext=hwpx",
-            ext="hwpx",
         ),
         Scenario(
             "minutes_date",

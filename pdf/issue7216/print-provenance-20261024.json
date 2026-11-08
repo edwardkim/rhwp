@@ -1,0 +1,13 @@
+{
+  "input": "samples/issue7216/tall_table_before.hwpx",
+  "input_sha256": "82386dde2f8bc8b47a212fda9c623cf7094a6a1fb385be426e334f6990aa9df4",
+  "pdf": "pdf/issue7216/tall_table_before-2020.pdf",
+  "pdf_sha256": "3b6f5dc51170b23c78e9991622612861c082f08e8ebfa5914711902217e08e8a",
+  "engine": "2020",
+  "hancom_version": "11.0.0.9136",
+  "pdf_print_method": 0,
+  "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+  "input_preprocess": "none",
+  "job_id": "4fde79e8-c41c-41c3-8e46-a4f04e43ec45",
+  "pages": 2
+}

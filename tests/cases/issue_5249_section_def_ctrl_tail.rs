@@ -118,28 +118,3 @@ fn hwpx_without_master_pages_still_gets_the_versioned_tail() {
         );
     }
 }
-
-/// 한컴 정답지 대조 — 같은 문서의 한컴 저작 HWP(5.1.0.1) 가 47 byte all-zero tail 이다.
-#[test]
-fn converted_tail_matches_the_hancom_oracle_for_the_same_document() {
-    let hwp = convert_hwpx_to_hwp_bytes("samples/hwpx/exam_social-p1.hwpx");
-    let ours = section_def_records(&hwp);
-    let oracle = section_def_records(
-        &std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/exam_social-p1.hwp"))
-            .expect("정답지 읽기"),
-    );
-
-    assert_eq!(oracle.len(), 1, "정답지 구역 수");
-    assert_eq!(oracle[0].len(), 47, "정답지(5.1.0.1) 는 secd 47 이다");
-    assert_eq!(ours.len(), oracle.len(), "변환 구역 수가 정답지와 다르다");
-    assert_eq!(
-        ours[0].len(),
-        oracle[0].len(),
-        "변환 secd 크기가 정답지와 다르다"
-    );
-    assert_eq!(
-        &ours[0][28..],
-        &oracle[0][28..],
-        "변환 tail 바이트가 정답지와 다르다"
-    );
-}

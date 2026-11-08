@@ -346,6 +346,7 @@ const sampleIds = [...new Set([
 ])].sort();
 
 const comparisons = [];
+const fontFallbacks = [];
 for (const sampleId of sampleIds) {
   for (const profile of profiles) {
     const native = nativeSkiaResult(nativeResults, sampleId, profile, rootDir);
@@ -363,6 +364,11 @@ for (const sampleId of sampleIds) {
       ?? [];
     const page = canvaskit.entry?.page ?? native.sample?.page ?? null;
     const documentDigest = canvaskit.entry?.documentDigest ?? native.sample?.documentDigest ?? null;
+    if (canvaskit.entry?.fontFallback) {
+      fontFallbacks.push({ sampleId, page, profile, requestedBackend: 'canvaskit-default',
+        actualBackend: canvaskit.entry.actualBackend, evidence: canvaskit.entry.fontFallback });
+      continue; // Independently checked against Canvas2D, not Native/CanvasKit parity.
+    }
     if (!nativePath || !canvaskitPath) {
       comparisons.push({
         sampleId,
@@ -499,6 +505,7 @@ fs.writeFileSync(
       summaryByDiagnosticAxis,
       summaryByCanvasKitSurface,
       worstComparisons: worst,
+      fontFallbacks,
       comparisons,
     },
     null,

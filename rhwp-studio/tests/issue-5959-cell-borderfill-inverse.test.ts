@@ -211,3 +211,69 @@ test('execute 실패가 아무 뮤테이션 전이면 롤백 호출 없이 캡�
   assert.ok(!names.includes('removeBorderFillTails'), '빈 절단은 table.dirty 만 세운다');
   assert.throws(() => cmd.undo(wasm), /변경 기록이 없다/);
 });
+
+test('source paint만 지워도 no-op이 아니며 ID 0과 배치 역순 복원 기록을 전달한다', () => {
+  const { wasm, calls } = recordingWasm({ setCellProperties: {
+    ok: true, changes: [], borderPaintUndoId: 0,
+    borderFillLenBefore: 9, docInfoDirtyBefore: false,
+  } });
+  const cmd = new SetCellBorderFillCommand(0, 0, 1,
+    { kind: 'cells', cellIdxes: [0] }, { borderRight: { type: 0 } }, { sectionIndex: 0 });
+  cmd.execute(wasm);
+  assert.equal(cmd.isNoOp(), false, 'ID 0 is a real source-paint change');
+  cmd.undo(wasm);
+  const payload = calls.find(c => c.fn === 'applyCellBorderFillIds')!.args[3] as any;
+  assert.deepEqual(payload.borderPaintUndoIds, [0]);
+  assert.equal(cmd.snapshotResourceCount(), 0);
+});
+
+test('다중 셀 실패의 rollback도 이미 제거한 source paint를 복원한다', () => {
+  const { wasm, calls } = recordingWasm({ setCellProperties: {
+    ok: true, changes: [], borderPaintUndoId: 31,
+    borderFillLenBefore: 9, docInfoDirtyBefore: false,
+  } });
+  const first = wasm.setCellProperties;
+  let n = 0;
+  wasm.setCellProperties = (...args: unknown[]) => {
+    if (++n === 2) throw new Error('unsupported shared edge');
+    return first(...args);
+  };
+  const cmd = new SetCellBorderFillCommand(0, 0, 1,
+    { kind: 'cells', cellIdxes: [0, 1] }, {}, { sectionIndex: 0 });
+  assert.throws(() => cmd.execute(wasm), /unsupported shared edge/);
+  const payload = calls.find(c => c.fn === 'applyCellBorderFillIds')!.args[3] as any;
+  assert.deepEqual(payload.borderPaintUndoIds, [31]);
+  assert.ok(calls.some(c => c.fn === 'restoreSectionRaw'));
+});
+
+test('history에서 제거한 command는 source paint 저널을 해제한다', () => {
+  const { wasm } = recordingWasm({ setCellProperties: {
+    ok: true, changes: [], borderPaintUndoId: 42,
+    borderFillLenBefore: 9, docInfoDirtyBefore: false,
+  } });
+  const ids: number[] = [];
+  wasm.discardBorderPaintUndo = (id: number) => ids.push(id);
+  const cmd = new SetCellBorderFillCommand(0, 0, 1,
+    { kind: 'cells', cellIdxes: [0] }, {}, { sectionIndex: 0 });
+  cmd.execute(wasm);
+  cmd.discard(wasm);
+  cmd.discard(wasm);
+  assert.deepEqual(ids, [42]);
+});
+
+test('범위 적용은 첫 셀의 미변경 preview 변과 BorderFill ID를 다른 셀에 복사하지 않는다', () => {
+  const { wasm, calls } = recordingWasm({ setCellProperties: {
+    ok: true, changes: [], borderFillLenBefore: 9, docInfoDirtyBefore: false,
+  } });
+  const edge = { type: 1, width: 5, color: '#d00000' };
+  const cmd = new SetCellBorderFillCommand(0, 0, 1,
+    { kind: 'cells', cellIdxes: [0, 1] },
+    { borderFillId: 77, borderLeft: edge, borderRight: edge, borderTop: edge,
+      borderBottom: edge, borderPaintSides: [false, true, false, false] }, { sectionIndex: 0 });
+  cmd.execute(wasm);
+  const patches = calls.filter(c => c.fn === 'setCellProperties').map(c => c.args[4]);
+  assert.equal(patches.length, 2);
+  for (const patch of patches) assert.deepEqual(patch, {
+    borderRight: edge, borderPaintSides: [false, true, false, false],
+  });
+});

@@ -1,0 +1,17 @@
+[
+  {
+    "pr": 8566,
+    "source_head": "ec64701aca2c20ab2ad17bcac6238e14a96f210b",
+    "ancestor_of_candidate": true
+  },
+  {
+    "pr": 8595,
+    "source_head": "c2f05a26f38fc314c012d0655067cd664be35bd1",
+    "ancestor_of_candidate": true
+  },
+  {
+    "pr": 8632,
+    "source_head": "a1146f76a0cbafcb11691f73b576dcb428bd62e0",
+    "ancestor_of_candidate": true
+  }
+]

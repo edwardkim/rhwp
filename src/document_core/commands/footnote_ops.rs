@@ -4,7 +4,7 @@ use super::super::helpers::{
     build_tab_def_from_json, json_has_border_keys, json_has_tab_keys, parse_json_i16_array,
     parse_para_shape_mods,
 };
-use super::formatting::restore_para_meta;
+use super::formatting::{para_shape_mods_affect_text_flow, restore_para_meta};
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
@@ -13,33 +13,24 @@ use crate::model::paragraph::{ParaMeta, Paragraph};
 use crate::renderer::composer::{reflow_line_segs, restamp_indentation, ParagraphBox};
 
 impl DocumentCore {
+    /// 구역의 각주 번호를 문서 순서대로 1부터 다시 매긴다.
     fn renumber_footnotes_in_section(&mut self, section_idx: usize) {
-        let mut number = 1u16;
-        for para in &mut self.document.sections[section_idx].paragraphs {
+        let section = &mut self.document.sections[section_idx];
+        let mut footnote_number = 1u16;
+        for para in &mut section.paragraphs {
             for ctrl in &mut para.controls {
                 match ctrl {
                     Control::Footnote(footnote) => {
-                        footnote.number = number;
-                        number += 1;
-                    }
-                    Control::Endnote(endnote) => {
-                        endnote.number = number;
-                        number += 1;
+                        footnote.number = footnote_number;
+                        footnote_number = footnote_number.saturating_add(1);
                     }
                     Control::Table(table) => {
                         for cell in &mut table.cells {
                             for cell_para in &mut cell.paragraphs {
                                 for cell_ctrl in &mut cell_para.controls {
-                                    match cell_ctrl {
-                                        Control::Footnote(footnote) => {
-                                            footnote.number = number;
-                                            number += 1;
-                                        }
-                                        Control::Endnote(endnote) => {
-                                            endnote.number = number;
-                                            number += 1;
-                                        }
-                                        _ => {}
+                                    if let Control::Footnote(footnote) = cell_ctrl {
+                                        footnote.number = footnote_number;
+                                        footnote_number = footnote_number.saturating_add(1);
                                     }
                                 }
                             }
@@ -51,16 +42,9 @@ impl DocumentCore {
                         {
                             for text_para in &mut text_box.paragraphs {
                                 for text_ctrl in &mut text_para.controls {
-                                    match text_ctrl {
-                                        Control::Footnote(footnote) => {
-                                            footnote.number = number;
-                                            number += 1;
-                                        }
-                                        Control::Endnote(endnote) => {
-                                            endnote.number = number;
-                                            number += 1;
-                                        }
-                                        _ => {}
+                                    if let Control::Footnote(footnote) = text_ctrl {
+                                        footnote.number = footnote_number;
+                                        footnote_number = footnote_number.saturating_add(1);
                                     }
                                 }
                             }
@@ -209,15 +193,20 @@ impl DocumentCore {
             {
                 para.control_mask &= !(1u32 << 0x0011);
             }
+            para.forget_para_text_if_emptied();
 
             Self::reflow_paragraph_line_segs_after_control_delete(para, &self.styles, self.dpi);
             section.raw_stream = None;
         }
 
         self.renumber_footnotes_in_section(section_idx);
+        // 미주 번호는 구역마다 미주 모양의 번호 매기기를 따른다(뒤 구역까지).
+        self.refresh_endnote_numbers(section_idx);
         self.mark_section_dirty(section_idx);
         self.recompose_section(section_idx);
         self.paginate_if_needed();
+        // 각주 번호는 구역의 각주 모양(시작 번호·이어 세기·쪽마다 새로 시작)을 따른다.
+        self.refresh_footnote_numbers(section_idx);
         self.invalidate_page_tree_cache();
 
         self.event_log.push(DocumentEvent::FootnoteDeleted {
@@ -237,7 +226,7 @@ impl DocumentCore {
     }
 
     /// 각주 컨트롤 내부 문단의 가변 참조를 얻는다.
-    fn get_footnote_paragraph_mut(
+    pub(crate) fn get_footnote_paragraph_mut(
         &mut self,
         section_idx: usize,
         para_idx: usize,
@@ -283,7 +272,7 @@ impl DocumentCore {
     }
 
     /// 각주 컨트롤 내부 문단의 불변 참조를 얻는다.
-    fn get_footnote_paragraph_ref(
+    pub(crate) fn get_footnote_paragraph_ref(
         &self,
         section_idx: usize,
         para_idx: usize,
@@ -319,6 +308,11 @@ impl DocumentCore {
             hwpunit_to_px(text_width, self.dpi)
         };
 
+        // 문단 모양 변경 직후에는 새 id가 이전 rebuild의 styles에 없을 수 있다.
+        // 머리말/꼬리말과 셀의 재조판처럼 현재 doc_info에서 해석한 같은 스타일로
+        // 줄 폭과 들여쓰기 플래그를 만든다.
+        let styles = self.resolve_render_styles();
+
         // 문단 여백 적용
         let para_shape_id = match self.get_footnote_paragraph_ref(
             section_idx,
@@ -329,7 +323,7 @@ impl DocumentCore {
             Some(p) => p.para_shape_id,
             None => return,
         };
-        let para_style = self.styles.para_styles.get(para_shape_id as usize);
+        let para_style = styles.para_styles.get(para_shape_id as usize);
         let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
         let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
         let final_width = (available_width - margin_left - margin_right).max(0.0);
@@ -344,7 +338,7 @@ impl DocumentCore {
                     reflow_line_segs(
                         para,
                         ParagraphBox::content_width_px(final_width, self.dpi),
-                        &self.styles,
+                        &styles,
                         self.dpi,
                     );
                 }
@@ -355,7 +349,7 @@ impl DocumentCore {
                     reflow_line_segs(
                         para,
                         ParagraphBox::content_width_px(final_width, self.dpi),
-                        &self.styles,
+                        &styles,
                         self.dpi,
                     );
                 }
@@ -437,12 +431,7 @@ impl DocumentCore {
             restamp_indentation(&mut fn_para.line_segs, old_indent, new_indent);
         }
 
-        if mods.line_spacing.is_some()
-            || mods.line_spacing_type.is_some()
-            || mods.margin_left.is_some()
-            || mods.margin_right.is_some()
-            || mods.indent.is_some()
-        {
+        if para_shape_mods_affect_text_flow(&mods) {
             self.reflow_footnote_paragraph(section_idx, para_idx, control_idx, fn_para_idx);
         }
 

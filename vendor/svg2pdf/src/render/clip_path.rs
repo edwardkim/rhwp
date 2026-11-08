@@ -6,9 +6,7 @@ use usvg::{ClipPath, FillRule, Group, Node, Transform};
 use super::group;
 use super::path::draw_path;
 use crate::util::context::Context;
-use crate::util::helper::{
-    bbox_to_non_zero_rect, ContentExt, NameExt, RectExt, TransformExt,
-};
+use crate::util::helper::{bbox_to_non_zero_rect, ContentExt, NameExt, RectExt, TransformExt};
 use crate::util::resources::ResourceContainer;
 use crate::Result;
 
@@ -97,11 +95,7 @@ fn collect_clip_rules(group: &Group) -> Vec<FillRule> {
     clip_rules
 }
 
-fn create_simple_clip_path(
-    clip_path: &ClipPath,
-    content: &mut Content,
-    clip_rule: FillRule,
-) {
+fn create_simple_clip_path(clip_path: &ClipPath, content: &mut Content, clip_rule: FillRule) {
     if let Some(clip_path) = clip_path.clip_path() {
         create_simple_clip_path(clip_path, content, clip_rule);
     }
@@ -150,9 +144,7 @@ fn extend_segments_from_group(
                         PathSegment::CubicTo(p1, p2, p3) => {
                             let mut points = [p1, p2, p3];
                             transform.map_points(&mut points);
-                            segments.push(PathSegment::CubicTo(
-                                points[0], points[1], points[2],
-                            ));
+                            segments.push(PathSegment::CubicTo(points[0], points[1], points[2]));
                         }
                         PathSegment::Close => segments.push(PathSegment::Close),
                     })

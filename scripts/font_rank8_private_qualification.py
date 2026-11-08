@@ -294,6 +294,7 @@ def _evidence_page(
     payload = _run_private(
         [
             str(binary),
+            "font-layout-evidence",
             str(source),
             "--page",
             str(page),

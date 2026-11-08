@@ -2,7 +2,7 @@
   "schemaVersion": "1.0",
   "claim": "M01-f",
   "kind": "unusedOraclePdfCatalog",
-  "count": 216,
+  "count": 213,
   "pdfs": [
     {
       "pdf": "pdf/05434_vehicle_log_form-2020.pdf",
@@ -159,29 +159,6 @@
         },
         {
           "sample": "samples/2025 행정업무운영 편람(최종).hwpx",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwpx"
-        }
-      ]
-    },
-    {
-      "pdf": "pdf/3-09월_교육_통합_2023.pdf",
-      "oracleRoot": "pdf",
-      "relParent": "",
-      "filename": "3-09월_교육_통합_2023.pdf",
-      "stem": "3-09월_교육_통합_2023",
-      "bytes": 798138,
-      "pdfPages": 20,
-      "signature": "PDF",
-      "reason": "suffix_not_oracle",
-      "candidateSamples": [
-        {
-          "sample": "samples/3-09월_교육_통합_2023.hwp",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwp"
-        },
-        {
-          "sample": "samples/3-09월_교육_통합_2023.hwpx",
           "why": "suffix_not_oracle",
           "sourceFormat": "hwpx"
         }
@@ -433,29 +410,6 @@
       "candidateSamples": []
     },
     {
-      "pdf": "pdf/exam_social-current-2020.pdf",
-      "oracleRoot": "pdf",
-      "relParent": "",
-      "filename": "exam_social-current-2020.pdf",
-      "stem": "exam_social-current-2020",
-      "bytes": 3756350,
-      "pdfPages": 4,
-      "signature": "PDF",
-      "reason": "suffix_not_oracle",
-      "candidateSamples": [
-        {
-          "sample": "samples/exam_social.hwp",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwp"
-        },
-        {
-          "sample": "samples/hwpx/exam_social.hwpx",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwpx"
-        }
-      ]
-    },
-    {
       "pdf": "pdf/exclusion_probe_line_spacing-2024.pdf",
       "oracleRoot": "pdf",
       "relParent": "",
@@ -634,29 +588,6 @@
         },
         {
           "sample": "samples/el-school-001.hwp",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwp"
-        }
-      ]
-    },
-    {
-      "pdf": "pdf/hwpx/eq-002.pdf",
-      "oracleRoot": "pdf",
-      "relParent": "hwpx",
-      "filename": "eq-002.pdf",
-      "stem": "eq-002",
-      "bytes": 23807,
-      "pdfPages": 1,
-      "signature": "PDF",
-      "reason": "suffix_not_oracle",
-      "candidateSamples": [
-        {
-          "sample": "samples/hwpx/eq-002.hwpx",
-          "why": "suffix_not_oracle",
-          "sourceFormat": "hwpx"
-        },
-        {
-          "sample": "samples/eq-002.hwp",
           "why": "suffix_not_oracle",
           "sourceFormat": "hwp"
         }

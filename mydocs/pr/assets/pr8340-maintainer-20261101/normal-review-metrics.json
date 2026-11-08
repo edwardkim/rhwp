@@ -1,0 +1,48 @@
+{
+  "dpi": 96,
+  "note": "RGB threshold and ink-region proxy metrics are separate from the 2px raw silhouette gate. Direct same-coordinate magnified review completed.",
+  "pages": [
+    {
+      "backend": "native",
+      "state": "nested-same-line-right-hwpx",
+      "page": 1,
+      "pixel_match_percent": 98.76188,
+      "visual_accuracy_proxy_percent": 34.83013
+    },
+    {
+      "backend": "native",
+      "state": "nested-width-wrap-before-line-hwpx",
+      "page": 1,
+      "pixel_match_percent": 98.61955,
+      "visual_accuracy_proxy_percent": 27.20923
+    },
+    {
+      "backend": "native",
+      "state": "nested-width-wrap-indent-hwpx",
+      "page": 1,
+      "pixel_match_percent": 98.69161,
+      "visual_accuracy_proxy_percent": 31.41109
+    },
+    {
+      "backend": "wasm",
+      "state": "nested-same-line-right-hwpx",
+      "page": 1,
+      "pixel_match_percent": 98.92588,
+      "visual_accuracy_proxy_percent": 42.50781
+    },
+    {
+      "backend": "wasm",
+      "state": "nested-width-wrap-before-line-hwpx",
+      "page": 1,
+      "pixel_match_percent": 98.90534,
+      "visual_accuracy_proxy_percent": 39.37962
+    },
+    {
+      "backend": "wasm",
+      "state": "nested-width-wrap-indent-hwpx",
+      "page": 1,
+      "pixel_match_percent": 98.92869,
+      "visual_accuracy_proxy_percent": 41.98882
+    }
+  ]
+}

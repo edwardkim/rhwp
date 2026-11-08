@@ -1,0 +1,140 @@
+{
+  "head": "170dd2412206b48cfbf925c5f5a67dcf93437e81",
+  "binarySha256": "9b1b7d8c9c2d68d69c1fd775b2125840e4f78dc28f6e0b0849807cd0a7035b59",
+  "wasmSha256": "4b6646e95d1060e999192b1c1cd4067c7c73a9e78e419860079f4eccaac1daa1",
+  "runs": [
+    {
+      "extension": "hwp",
+      "backend": "native",
+      "inputSha256": "4f01f3a9275025971f26c17691ef23d580b86174415643b843d23aae1dbd6b86",
+      "argv": [
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/rhwp-final",
+        "export-png",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/final-documentcore/resaved.hwp",
+        "--profile",
+        "print",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--scale",
+        "1",
+        "--json",
+        "--font-path",
+        "/Volumes/T7/DeveloperArtifacts/rhwp/workspaces/pr8286-review-a30f3c22/output/pr-review/pr8286-mac/local-fonts",
+        "-o",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/final-saves-native/hwp/render"
+      ],
+      "exit": 0,
+      "independentPdf": {
+        "path": "pdf/container-chart-roundtrip/final-hwp-2020.pdf",
+        "sha256": "8ff6568eb73c1171c49233db4f828dbb2e425f86b10d6571208829c86ad29f85",
+        "jobId": "d3913f80-dc19-49b0-a6ed-0862757ea9ba",
+        "pages": 1,
+        "silhouetteRawMatchPercent": 95.51
+      }
+    },
+    {
+      "extension": "hwp",
+      "backend": "wasm",
+      "inputSha256": "4f01f3a9275025971f26c17691ef23d580b86174415643b843d23aae1dbd6b86",
+      "argv": [
+        "node",
+        "scripts/export-wasm-png-for-sweep.mjs",
+        "--pkg",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/final-pkg",
+        "--input",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/final-documentcore/resaved.hwp",
+        "--out",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/final-saves-wasm/hwp/render",
+        "--fonts",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/font-catalog.json",
+        "--options",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/wasm-options.json"
+      ],
+      "exit": 0,
+      "independentPdf": {
+        "path": "pdf/container-chart-roundtrip/final-hwp-2020.pdf",
+        "sha256": "8ff6568eb73c1171c49233db4f828dbb2e425f86b10d6571208829c86ad29f85",
+        "jobId": "d3913f80-dc19-49b0-a6ed-0862757ea9ba",
+        "pages": 1,
+        "silhouetteRawMatchPercent": 99.56
+      }
+    },
+    {
+      "extension": "hwpx",
+      "backend": "native",
+      "inputSha256": "ba83298033ebb82be766453f2708d56a9114ee6edd732fd6437e9fe78c58eff6",
+      "argv": [
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/rhwp-final",
+        "export-png",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/final-documentcore/resaved.hwpx",
+        "--profile",
+        "print",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--scale",
+        "1",
+        "--json",
+        "--font-path",
+        "/Volumes/T7/DeveloperArtifacts/rhwp/workspaces/pr8286-review-a30f3c22/output/pr-review/pr8286-mac/local-fonts",
+        "-o",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/final-saves-native/hwpx/render"
+      ],
+      "exit": 0,
+      "independentPdf": {
+        "path": "pdf/container-chart-roundtrip/final-hwpx-2020.pdf",
+        "sha256": "20e62305100b06fa60e4fc68466e1cd8e8dae6ffe5df298d68a95fe9ea6a7e17",
+        "jobId": "eaf6cf8e-a1af-41e0-9a8d-136e2f9f7ae9",
+        "pages": 1,
+        "silhouetteRawMatchPercent": 95.51
+      }
+    },
+    {
+      "extension": "hwpx",
+      "backend": "wasm",
+      "inputSha256": "ba83298033ebb82be766453f2708d56a9114ee6edd732fd6437e9fe78c58eff6",
+      "argv": [
+        "node",
+        "scripts/export-wasm-png-for-sweep.mjs",
+        "--pkg",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/final-pkg",
+        "--input",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/final-documentcore/resaved.hwpx",
+        "--out",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/final-saves-wasm/hwpx/render",
+        "--fonts",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/font-catalog.json",
+        "--options",
+        "/Users/melee/Documents/Codex/2026-11-07/task/rhwp-pr8286/output/pr-review/pr8286-resume/wasm-options.json"
+      ],
+      "exit": 0,
+      "independentPdf": {
+        "path": "pdf/container-chart-roundtrip/final-hwpx-2020.pdf",
+        "sha256": "20e62305100b06fa60e4fc68466e1cd8e8dae6ffe5df298d68a95fe9ea6a7e17",
+        "jobId": "eaf6cf8e-a1af-41e0-9a8d-136e2f9f7ae9",
+        "pages": 1,
+        "silhouetteRawMatchPercent": 99.56
+      }
+    }
+  ],
+  "saveProducer": {
+    "codeHead": "170dd2412206b48cfbf925c5f5a67dcf93437e81",
+    "binarySha256": "a80b9f278bbcc669312938ad96b6b455b8415a897915e681f288498bfe12b7c9",
+    "api": [
+      "DocumentCore::from_bytes",
+      "DocumentCore::export_hwp_native",
+      "DocumentCore::export_hwpx_native"
+    ],
+    "sourceSha256": "f1648ee13a230529b00acc815735bb57d70b39a6c3ab40d765d1745f7d4735e7",
+    "log": "logs/diagnostic-final.log"
+  },
+  "samePngAsPreviousExactInput": {
+    "native-hwp": true,
+    "native-hwpx": true,
+    "wasm-hwp": true,
+    "wasm-hwpx": true
+  }
+}

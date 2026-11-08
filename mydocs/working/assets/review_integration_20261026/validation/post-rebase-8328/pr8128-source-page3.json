@@ -1,0 +1,82 @@
+{
+  "date": "2026-10-29",
+  "source_pr": 8128,
+  "source_image_commit": "21c40f21c5ee019fdf1ee4e68bdfeed35d3ae26c",
+  "claim": "N4 3쪽 수정 전·후 Native 및 WASM과 N6 3쪽 overlay 직접 판독",
+  "cases": [
+    {
+      "case": "N0",
+      "page": 3,
+      "before_followup_raw": {
+        "native": 100.0,
+        "wasm": 100.0
+      },
+      "after_followup_png_sha256": {
+        "native": "9ea68c61d505b3177258033e7fd1448b4cd71a614ec4f6e04e66fe924abea162",
+        "wasm": "ab91eaf68a1452cbf2c7b9260a7446dc0e57ca64b0e6be852ef08c9417e825bd"
+      },
+      "input": "samples/continuation_reset/cont_reset_F20_L70_N0.hwp",
+      "input_sha256": "04ec268cadf7bb9283b0422b5bda7431fc7f174e7f19e2b893bd6a275313050d",
+      "pdf": "pdf/continuation_reset/cont_reset_F20_L70_N0-2020.pdf",
+      "pdf_sha256": "0c499ee0834a5e36852df00eaa19d14133adee285c29a2861735a2df7372fa02"
+    },
+    {
+      "case": "N4",
+      "page": 3,
+      "before_followup_raw": {
+        "native": 100.0,
+        "wasm": 100.0
+      },
+      "after_followup_png_sha256": {
+        "native": "076648a760f3581bb277b42c3c47fe6cbab6326b94c912ae3a71262ebf3c5465",
+        "wasm": "9e806e33769f9c580ed4f4ab18719bf0ef2ae03fb251d893347e6c7425534255"
+      },
+      "input": "samples/continuation_reset/cont_reset_F20_L70_N4.hwp",
+      "input_sha256": "5e66adeb20610d965ff21661d88fda8252a547120ca777827f9cf984f540a9ab",
+      "pdf": "pdf/continuation_reset/cont_reset_F20_L70_N4-2020.pdf",
+      "pdf_sha256": "7e6fb30bda1e57b5b00010069ea781e283fc2d7a304305290c368fd95994921c"
+    },
+    {
+      "case": "N6",
+      "page": 3,
+      "before_followup_raw": {
+        "native": 100.0,
+        "wasm": 100.0
+      },
+      "after_followup_png_sha256": {
+        "native": "ab58ccfc860249a46d890f15f2b94c6455d75e482a1ffe59e328e8a2cb202c8c",
+        "wasm": "fd57a57615ce1d0e6651cf3a0fbd0a5959149b399d1e85a301cd7ee1da6d18d6"
+      },
+      "input": "samples/continuation_reset/cont_reset_F20_L70_N6.hwp",
+      "input_sha256": "111b7ac9235f390005cfc848c5892f294b8a180e998221769afb0311751ccd8d",
+      "pdf": "pdf/continuation_reset/cont_reset_F20_L70_N6-2020.pdf",
+      "pdf_sha256": "23c172162334477f2b5c7ce85b44e2b2e1f373bf0a4942054b8f1d3dfeec0512"
+    }
+  ],
+  "contributor_images": {
+    "cont_reset_N4_p003_base_review.png": {
+      "path": "mydocs/report/continuation_stored_reset_own_notes/cont_reset_N4_p003_base_review.png",
+      "sha256": "d485e6f6d49667fd0e17e1bc4bd02d72f19a7c28a0f75971aa6f0a40c052a252",
+      "git_blob": "8865671e53f2fdd893fe5e54335f5da27ba54e36"
+    },
+    "cont_reset_N4_p003_head_review.png": {
+      "path": "mydocs/report/continuation_stored_reset_own_notes/cont_reset_N4_p003_head_review.png",
+      "sha256": "1b11d390a1d843e585c66f2379b7254278dbfb233b82a99f72370b11b61578f2",
+      "git_blob": "ceaa0a8bbea4a70dde7fafe8b0df7106228f5561"
+    },
+    "cont_reset_N4_p003_wasm_review.png": {
+      "path": "mydocs/report/continuation_stored_reset_own_notes/cont_reset_N4_p003_wasm_review.png",
+      "sha256": "5da5e67add5d4ac0bbbd8a90674a9f1b3a69049ee3953ac52a43bf273baf3930",
+      "git_blob": "72d34ebee76bd518a78f77365ba0a79ee83d9738"
+    },
+    "cont_reset_N6_p003_head_overlay.png": {
+      "path": "mydocs/report/continuation_stored_reset_own_notes/cont_reset_N6_p003_head_overlay.png",
+      "sha256": "d76cc1048a3ea670c157221a4285d05d6026f0bceb05eaae3989c2eefd17a9b1",
+      "git_blob": "d80fb84540dbe691ac8ae091e99c7e1f75e95a00"
+    }
+  },
+  "limitations": [
+    "원 PR 이미지와 기존 통합 후보 TSV는 별도 실행이다.",
+    "후속 보정 전후 렌더 PNG가 같다는 사실로 기존 PDF 래스터 기준 점수가 같음을 기록하며 새 래스터 직접 측정으로 취급하지 않는다."
+  ]
+}

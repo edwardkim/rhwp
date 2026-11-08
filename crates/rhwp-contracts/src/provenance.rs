@@ -23,7 +23,7 @@
 //! - `untrustedFields: [경로…]` — 담고 있다면 어느 필드인가.
 //!
 //! 표지는 **항상 실린다**. 문서 텍스트를 전혀 담지 않는 봉투(`info` 의 pageCount
-//! 축, `export-svg` 매니페스트 등)도 `untrustedContent:false` 를 명시한다 —
+//! 축, `word-count` 계수 등)도 `untrustedContent:false` 를 명시한다 —
 //! `textSecurity`(#3707)와 같은 이유다. 키가 없으면 "깨끗함"이 아니라 "이 바이너리는
 //! 출처를 판정하지 않음"으로 읽어야 소비자가 옛 바이너리와 구별할 수 있다.
 //!
@@ -67,6 +67,31 @@ const fn f(path: &'static str, origin: &'static str) -> UntrustedField {
 
 /// 문서를 열지 않는 명령의 공통 선언(빈 목록).
 const NONE: &[UntrustedField] = &[];
+
+const NATIVE_FONT_SUPPLY: UntrustedField = f(
+    "nativeFontSupply",
+    "native_webfonts::prepare — DocInfo 글꼴명·명시 대체 이름을 담는 공급 보고와 문서별 글꼴 매핑",
+);
+
+const FONT_ENVIRONMENT: UntrustedField = f(
+    "fontEnvironment",
+    "apply_font_environment — DocInfo 글꼴명·명시 대체 이름에서 구성한 substitutions·selectedPrograms 등의 글꼴 환경",
+);
+
+const RENDER_FONT_FIELDS: &[UntrustedField] = &[NATIVE_FONT_SUPPLY, FONT_ENVIRONMENT];
+
+const PNG_FONT_FIELDS: &[UntrustedField] = &[
+    NATIVE_FONT_SUPPLY,
+    FONT_ENVIRONMENT,
+    f(
+        "observedFontFallbacks",
+        "observed_font_fallbacks — 실제 공급에서 관측한 문서의 원래 글꼴명과 대체 이름",
+    ),
+    f(
+        "declaredFontEnvironment",
+        "core.font_environment — 대체 관측에 함께 실리는 선언 환경과 문서 글꼴 매핑",
+    ),
+];
 
 /// 출처 지도 — `capabilities` 의 `--json` 계약 명령 전부를 덮는다.
 ///
@@ -584,14 +609,21 @@ pub const MAP: &[CommandProvenance] = &[
     },
     CommandProvenance {
         command: "export-svg",
-        untrusted: NONE,
-        note: "매니페스트는 산출 경로·바이트·쪽수뿐이다. 문서 텍스트는 SVG 파일 \
-               안에 있고 봉투에는 없다.",
+        untrusted: RENDER_FONT_FIELDS,
+        note: "산출 경로·바이트·쪽수는 엔진 값이고 본문은 SVG 파일에 있다. \
+               선택적으로 실리는 글꼴 공급 보고·환경에는 문서가 정한 이름이 포함된다.",
+    },
+    CommandProvenance {
+        command: "export-png",
+        untrusted: PNG_FONT_FIELDS,
+        note: "본문은 PNG와 별도 render tree 파일에 있다. 글꼴 공급 보고·환경의 \
+               이름과 실제 대체 관측은 문서 파생이며 metadata-only 응답에도 실제 포함될 때 표지한다.",
     },
     CommandProvenance {
         command: "export-pdf",
-        untrusted: NONE,
-        note: "매니페스트는 backend·경로·바이트·쪽수뿐이다.",
+        untrusted: RENDER_FONT_FIELDS,
+        note: "backend·경로·바이트·쪽수는 엔진 값이다. 선택적인 글꼴 공급 보고의 \
+               글꼴명·대체 이름은 문서가 정한 문자열이다.",
     },
     CommandProvenance {
         command: "export-markdown",
@@ -602,6 +634,13 @@ pub const MAP: &[CommandProvenance] = &[
         command: "export-hwpx",
         untrusted: NONE,
         note: "저장 봉투는 경로·바이트·verify 판정값뿐이다.",
+    },
+    CommandProvenance {
+        command: "import-pdf",
+        untrusted: &[
+            f("diagnostics.pages", "PDF MediaBox와 추출 span의 원본 좌표·쪽 대응"),
+        ],
+        note: "본문은 저장 파일에 있다. 진단의 원본 좌표는 문서 파생 값이며, 경고·문단 정책은 엔진 상수다.",
     },
     CommandProvenance {
         command: "export-hml",

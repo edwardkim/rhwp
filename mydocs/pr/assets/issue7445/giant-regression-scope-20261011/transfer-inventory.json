@@ -1,0 +1,187 @@
+{
+  "source_before": "4e447dfe0c570bba834fd944f147570fdc928b31",
+  "parent": "https://github.com/edwardkim/rhwp/issues/7445",
+  "issue": "https://github.com/edwardkim/rhwp/issues/7812",
+  "reason": "사용자 범위 정정: 초기 18개 적용 커밋41개에 giant 원본 변경 없음. 다른 브랜치에서 보정하는 이관 원본의 회귀를 분리한다.",
+  "removed_functions": [
+    {
+      "path": "tests/cases/issue_5908_giant_cell_last_fragment_overfill.rs",
+      "test": "issue_5908_giant_cell_last_fragment_keeps_splitting"
+    },
+    {
+      "path": "tests/cases/issue_5908_giant_cell_last_fragment_overfill.rs",
+      "test": "issue_5908_collapsed_page_stays_inside_the_paper"
+    },
+    {
+      "path": "tests/cases/issue_5908_giant_cell_last_fragment_overfill.rs",
+      "test": "issue_5908_annex_two_moves_off_the_collapsed_page"
+    },
+    {
+      "path": "tests/cases/issue_7140_nested_row_unit_paint_height.rs",
+      "test": "hwpx_page_count_matches_the_oracle"
+    },
+    {
+      "path": "tests/cases/issue_6976_page_ending_fragment_row_fold.rs",
+      "test": "the_fold_stops_at_the_slack_the_layout_actually_left"
+    },
+    {
+      "path": "tests/cases/layout_anomaly_contract.rs",
+      "test": "layout_anomaly_default_exit_zero_even_with_signal"
+    },
+    {
+      "path": "tests/cases/layout_anomaly_contract.rs",
+      "test": "layout_anomaly_strict_signal_exits_three"
+    },
+    {
+      "path": "tests/cases/layout_anomaly_contract.rs",
+      "test": "layout_anomaly_page_filter_scopes_counts_and_strict_exit"
+    },
+    {
+      "path": "tests/cases/layout_anomaly_contract.rs",
+      "test": "layout_anomaly_batch_json_streams_ndjson_and_keeps_failed_loads"
+    },
+    {
+      "path": "tests/cases/layout_anomaly_contract.rs",
+      "test": "layout_anomaly_batch_report_is_order_stable_and_recursive"
+    },
+    {
+      "path": "tests/cases/layout_anomaly_contract.rs",
+      "test": "layout_anomaly_batch_strict_without_load_fail_exits_three"
+    },
+    {
+      "path": "tests/cases/layout_anomaly_contract.rs",
+      "test": "layout_anomaly_types_filter_changes_overflow_set"
+    }
+  ],
+  "removed_input_from_retained_test": "issue_7140_nested_row_unit_paint_height::nested_row_units_reserve_painted_height HWPX only",
+  "removed_baseline_rows": [
+    {
+      "path": "tests/fixtures/body_overflow_baseline.tsv",
+      "removed_row": "table_giant_cell_overfill.hwpx\t2"
+    },
+    {
+      "path": "tests/fixtures/off_canvas_baseline.tsv",
+      "removed_row": "table_giant_cell_overfill.hwpx\t6"
+    },
+    {
+      "path": "tests/fixtures/text_overlap_baseline.tsv",
+      "removed_row": "table_giant_cell_overfill.hwpx\t16"
+    },
+    {
+      "path": "tests/fixtures/overflow_cell_baseline.tsv",
+      "removed_row": "table_giant_cell_overfill.hwpx\t76"
+    },
+    {
+      "path": "tests/fixtures/oracle_page_count_baseline.tsv",
+      "removed_row": "samples/table_giant_cell_overfill.hwpx\t48\t48"
+    },
+    {
+      "path": "tests/fixtures/render_page_samples.tsv",
+      "removed_row": "samples/table_giant_cell_overfill.hwpx\t48\t47\t-1"
+    }
+  ],
+  "inputs_preserved_sha256": {
+    "samples/table_giant_cell_overfill.hwpx": "5d7eb4a21e46d9ad01a0f631eea2b1f2ec8a71750b4d448868e944e1b95042f4",
+    "pdf/table_giant_cell_overfill-hwpx-2024.pdf": "7669a8f468fd47e3180a09b5ea60526785e968fcb9ad5f1039d1f585d55d59be",
+    "samples/task1718/table_giant_cell_overfill.hwp": "eb630b0bb9ae67c539323b5d1944a52fc7b61cecd8805adbf152064a306f9a61"
+  },
+  "production_change": false,
+  "partition_policy": "original partition assignment first, exclude transferred HWPX from active workers afterwards",
+  "retained": "CGMP maintainer scope; distinct HWP counterpart; all other document, parser, serializer and security contracts",
+  "restore_condition": "같은 원본과 독립 Print의 전쪽 Native/fresh WASM 최저90% 이상 및 직접 판독 뒤 관계형 회귀 복원",
+  "validation": {
+    "first_existing_related_tests": {
+      "summary": "     Summary [  48.044s] 20 tests run: 19 passed, 1 failed, 1366 skipped",
+      "exit_code": 100,
+      "seconds": 104.509,
+      "remaining_failure": "#7813 original HWPX body overflow9 ->11; scope correction recorded separately"
+    },
+    "post_correction_body_test": {
+      "summary": "     Summary [  28.756s] 1 test run: 1 passed, 225 skipped",
+      "exit_code": 0,
+      "seconds": 81.365
+    },
+    "policy_steps": [
+      {
+        "name": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all"
+        ],
+        "exit_code": 0,
+        "seconds": 41.212,
+        "log": "output/pr-review/semanticist21-20261008/logs/giant-transfer-post-format-fmt-v155.log"
+      },
+      {
+        "name": "prepare",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "seconds": 2.788,
+        "log": "output/pr-review/semanticist21-20261008/logs/giant-transfer-post-format-prepare-v155.log"
+      },
+      {
+        "name": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 30.529,
+        "log": "output/pr-review/semanticist21-20261008/logs/giant-transfer-post-format-fmt-check-v155.log"
+      },
+      {
+        "name": "manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "8761ac90270a5dddfa0860e3de700ee83d2bf7c8"
+        ],
+        "exit_code": 0,
+        "seconds": 1.877,
+        "log": "output/pr-review/semanticist21-20261008/logs/giant-transfer-post-format-manifest-v155.log"
+      },
+      {
+        "name": "unit-tiers",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "8761ac90270a5dddfa0860e3de700ee83d2bf7c8"
+        ],
+        "exit_code": 0,
+        "seconds": 24.713,
+        "log": "output/pr-review/semanticist21-20261008/logs/giant-transfer-post-format-unit-tiers-v155.log"
+      }
+    ],
+    "other_baseline_rows_byte_identical": [
+      "tests/fixtures/body_overflow_baseline.tsv",
+      "tests/fixtures/off_canvas_baseline.tsv",
+      "tests/fixtures/text_overlap_baseline.tsv",
+      "tests/fixtures/overflow_cell_baseline.tsv",
+      "tests/fixtures/oracle_page_count_baseline.tsv",
+      "tests/fixtures/render_page_samples.tsv"
+    ],
+    "production_files_byte_identical_to_frozen_v153": 1102,
+    "new_rendering_tests": 0,
+    "scope_limit": "Existing19 plus corrected corpus1 verified separately; not whole Rust, full visual or lint completion. Removed functions/inputs not counted as pass."
+  },
+  "additional_current_failure": {
+    "issue": "https://github.com/edwardkim/rhwp/issues/7813",
+    "input": "samples/issue1949_giant_cell_nested_tables_perf.hwpx",
+    "input_sha256": "fc6e5f156de470dfbb14aab392389491720ee7fb1bf6f03fe9a018e93b420c65",
+    "removed_corpus_row": "issue1949_giant_cell_nested_tables_perf.hwpx\t9",
+    "observed_current_failure": "body_overflow partition9: former9 -> current11; focused20 had19PASS/1FAIL",
+    "reason": "현재 직접 보정 대상 밖이며 동일 원본이 #7813으로 이관되고 고정base의 전115쪽 Native 미달이 기록됨. 사용자 지시에 따라 현재 실패한 렌더링 입력만 분리한다. 새 결함 해결을 주장하지 않는다. 다른 브랜치의27FAIL 및4 API 실패는 가져오지 않는다."
+  }
+}

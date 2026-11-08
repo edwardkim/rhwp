@@ -1,0 +1,21 @@
+{
+  "source_sha": "5df67d3299befb467a49dc4eaafd12d6e1877e2d",
+  "status": "passed",
+  "command": [
+    "node",
+    "--test",
+    "scripts/tests/pdf-codec-wasm.test.mjs"
+  ],
+  "cases": 19,
+  "checks": 50,
+  "artifacts": {
+    "rhwp.js": {
+      "bytes": 489079,
+      "sha256": "eb7d0eef282086b1369e71989543400fb159ba93a50dbaca056dd6d8a9f1a062"
+    },
+    "rhwp_bg.wasm": {
+      "bytes": 22520674,
+      "sha256": "c6a073a989a47d58198d1c85aadc39060744f7973d36ff5aa8cb59b24c00a7cd"
+    }
+  }
+}

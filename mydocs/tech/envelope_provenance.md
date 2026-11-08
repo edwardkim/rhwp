@@ -55,8 +55,11 @@ rhwp 는 한국 공공문서를 다루는 도구라, 열람 대상 문서가 **�
   `untrusted` 목록의 **부분집합**이다.
 
 **표지는 항상 실린다.** 문서를 전혀 열지 않는 명령(`capabilities`,
-`export-provenance-map`)이나 산출 매니페스트만 내는 명령(`export-svg`,
+`export-provenance-map`)이나 문서 문자열 없는 매니페스트만 내는 명령(`export-markdown`,
 `convert` 등)의 봉투도 `untrustedContent: false`, `untrustedFields: []` 를 명시한다.
+`export-svg`·`export-pdf`·`export-png`의 선택적 글꼴 공급 보고·환경에는 문서 글꼴명과
+대체 이름이 들어가므로 실제 포함된 필드를 문서 파생 값으로 표지한다. PNG의 대체 관측도
+같은 규칙을 적용한다. 문서 문자열이 객체 키에 들어가는 보고는 객체 전체를 선언한다.
 키가 없으면 소비자는 "문서 값 없음"과 "출처를 판정하지 않는 옛 바이너리"를 구별할 수
 없다 — `textSecurity`(#3707)와 같은 규약이다.
 
@@ -97,7 +100,7 @@ rhwp export-provenance-map --json
       },
       "note": "query 는 호출자가 준 값이고 주소(section/paragraph/page/charOffset)는 엔진값이다."
     },
-    "export-svg": { "untrusted": [], "origins": {}, "note": "매니페스트는 산출 경로·바이트·쪽수뿐이다. …" }
+    "export-markdown": { "untrusted": [], "origins": {}, "note": "매니페스트는 쪽별 산출 경로·바이트뿐이다. 본문은 MD 파일에 있다." }
   }
 }
 ```

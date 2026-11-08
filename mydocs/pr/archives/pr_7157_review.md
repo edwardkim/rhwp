@@ -76,7 +76,7 @@ Native와 WASM은 #7168까지 포함한 소스에서 새로 빌드했다. `git d
 | 저장소 파일 | SHA-256 | 마지막 입력 commit |
 | --- | --- | --- |
 | [samples/hwp3-sample10.hwp](../../../samples/hwp3-sample10.hwp) | `d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48` | `e184718b10599266103a1137e58f0a5430fa22e3` |
-| [samples/hwp3-sample10-hwp5.hwp](../../../samples/hwp3-sample10-hwp5.hwp) | `a660a0d41898c8316479392c9687d81a15555431a581bdda988bf3598f6f0d51` | `e184718b10599266103a1137e58f0a5430fa22e3` |
+| [samples/hwp3-sample10-hwp5.hwp](../assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwp5.hwp) | `a660a0d41898c8316479392c9687d81a15555431a581bdda988bf3598f6f0d51` | `e184718b10599266103a1137e58f0a5430fa22e3` |
 
 [검증 manifest](../assets/pr7155_7168_review_evidence.json)에 원 head의 CI 스냅샷, 바이너리·입력·PNG 해시와 sweep 수치를 보존한다. macOS Chrome webfont rasterizer, 96dpi를 사용했다.
 

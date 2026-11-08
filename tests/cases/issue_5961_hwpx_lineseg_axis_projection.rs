@@ -1,43 +1,24 @@
-//! [Issue #5961] HWPX 저장 lineseg 의 축이 IR 안에서 통일돼 있지 않다.
+//! #5961: HWPX 저장 축과 명시적으로 기록한 소비 시점 투영의 계약.
 //!
-//! `LineSeg::text_start` 는 파서가 **파일 값을 그대로** 담으므로 출처마다 축이 다르다.
-//! HWP5·HWP3·HML 은 확장 제어 하나가 8 UTF-16 유닛을 차지하는 HWP5 축이고, HWPX 는
-//! `hp:secPr`(구역 머리 run 소속)이 자리를 차지하지 않는 더 짧은 축이다. 반면 같은 문단의
-//! `char_count`·`char_offsets`·`char_shapes` 는 **출처와 무관하게 언제나 HWP5 축**이다.
-//! 그래서 HWPX 출처의 구역 첫 문단은 IR 안에서 두 축이 섞인다.
+//! 저장 `text_start`는 파일 값 그대로 보존한다. 명시적 rhwp-origin 생산자가 생략한
+//! 슬롯은 `hwpx_axis_shift`로 투영하지만 일반 한컴 원본의 `secPr` 존재만으로
+//! 구역 슬롯 생략을 추정하지 않는다. raw 값을 바꾸면 x2x 왕복에서 축이 누적 이동한다.
 //!
-//! 그 상태로 `text_start` 를 `char_offsets` 에 투영하면 줄이 보정폭만큼 **일찍** 끊긴다.
+//! 원 PR #5970의 한컴 2024 캐럿 관측과 원본 저장 버전에 맞는 한컴 2020 Print를
+//! 구분한다. 같은 대조 원본의 2020 Print 둘째 줄은 본문 인덱스 46에서 시작하며
+//! 현재 Native/fresh WASM 전체 1쪽 raw 일치율이 각각 100%다. 독립 출처·SHA와
+//! 직접 판독은 `mydocs/working/task_m100_7642_stage3885.md`에 연결했다.
 //!
-//! ## 정답지 — 한글 2024 에게 직접 물었다
-//!
-//! `MoveDocBegin` + `MoveLineDown` 으로 캐럿이 앉는 `(Para, Pos)` 를 읽으면 한글 자신의 줄
-//! 분할이 나온다. 코퍼스 `36497307_결재문서본문.hwpx` 문단 0:
-//!
-//! ```text
-//! LINE0  para=0  pos=24   <- 본문 시작 (컨트롤 4개 중 3개만 자리를 차지)
-//! LINE1  para=0  pos=78   <- 둘째 줄
-//! ```
-//!
-//! 본문이 24 에서 시작하므로 둘째 줄의 글자 인덱스는 `78 - 24 = 54` 다. 보정 없이
-//! 투영하면 `78 - 32 = 46` 이 나온다 — 정확히 8유닛 어긋난다. 실제로 그 문서는
-//! `… 위하여 지방` / `세징수법 제106조 …` 로 끊기고, 한글은 `… 제10` / `6조 …` 로 끊는다.
-//! HWPX 500건 표본 중 49건(9.9%)이 해당한다.
-//!
-//! ## 계약
-//!
-//! 축은 **읽는 쪽에서만** 맞춘다. `text_start` 자체는 파일 값 그대로 두고
-//! `Paragraph::hwpx_axis_shift` 를 함께 실어, 소비자가 `line_seg_text_start()` 로 올려 본다.
-//!
-//! 파일 축을 옮기면 안 되는 이유는 실측돼 있다 — 파서가 값을 고치면 x2x 재수출이 왕복마다
-//! 8씩 흘러내려 3회 만에 `textpos` 가 0 으로 무너지고(24 → 16 → 8 → 0), h2x 의 #5943
-//! 재기준화(02502 는 40 이면 한글이 열지 못하고 32 여야 한다)와도 충돌한다.
+//! `aift` raw 24(컨트롤 슬롯)와 본문 시작 32는 같은 첫 표시 글자로 대응하므로
+//! 이 사실로 보정폭 8을 강제하지 않는다. 파일 값·표시 글자 소유 관계와 별도로,
+//! 명시적 투영폭·문단 끝 경계의 일반 계약도 아래에서 보호한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
 
 /// `aift.hwpx` 문단 0 의 슬롯 사다리는 `secd@0 · cold@8 · tbl@16 · pgnp@24 · text@32` 이고
-/// `char_count` 는 56(= 32 + 텍스트 23 + 문단부호)이다. 파일이 실은 둘째 줄 `textpos` 는
-/// 24 — `hp:secPr` 한 자리만큼 짧은 HWPX 축이다.
+/// `char_count` 는 56(= 32 + 텍스트 23 + 문단부호)이다. 둘째 줄 raw `textpos` 24는
+/// 쪽번호 제어의 경계이며, 별도 명시적 축 마커가 없는 원본 값을 보존한다.
 fn aift_first_paragraph() -> rhwp::model::paragraph::Paragraph {
     let path = Path::new("samples/hwpx/aift.hwpx");
     assert!(path.exists(), "샘플이 없다: {}", path.display());
@@ -57,35 +38,33 @@ fn the_stored_text_start_keeps_the_file_value() {
     );
 }
 
-/// 보정폭은 파서가 만들어 넣은 비점유 슬롯 수 × 8 이다.
+/// 일반 한컴 원본의 명시적 구역 정의를 생략된 슬롯으로 세지 않는다.
 #[test]
-fn the_axis_shift_counts_the_slots_the_parser_synthesized() {
+fn unmarked_hwpx_section_keeps_its_explicit_control_axis() {
     let para = aift_first_paragraph();
     assert_eq!(
-        para.hwpx_axis_shift, 8,
-        "`hp:secPr` 한 자리(8유닛)가 보정폭이어야 한다. 이 문서의 `hp:colPr` 은 secPr 안이 \
-         아니라 별도 `hp:ctrl` 이라 HWPX 축을 차지한다(한글 실측: 본문 시작 pos 24)."
+        para.hwpx_axis_shift, 0,
+        "명시적 생산자 축 마커가 없는 원본에 구역 슬롯 생략을 추정하면 안 된다"
     );
 }
 
-/// 투영하면 `char_offsets` 와 같은 자가 된다 — 둘째 줄은 본문 시작(32)에서 시작한다.
+/// 저장된 컨트롤 경계와 첫 표시 글자는 같은 줄에 속한다.
 #[test]
-fn the_projection_puts_the_line_on_the_hwp5_axis() {
+fn stored_control_boundary_keeps_the_first_visible_character_on_its_line() {
     let para = aift_first_paragraph();
-
+    let start = para.line_seg_text_start(1);
     assert_eq!(
-        para.line_seg_text_start(1),
-        32,
-        "투영값이 HWP5 축이 아니다. 이 문단은 컨트롤 4개(=32유닛) 뒤에서 본문이 시작하고 \
-         둘째 줄이 곧 본문 시작이다."
+        start, para.line_segs[1].text_start,
+        "일반 원본의 저장 컨트롤 경계를 임의의 다른 축으로 옮기면 안 된다"
     );
-    // 투영값을 char_offsets 에 넣으면 텍스트 0번 글자가 나와야 한다.
-    let idx = para
-        .char_offsets
-        .partition_point(|&o| o < para.line_seg_text_start(1));
+    assert!(
+        start <= *para.char_offsets.first().expect("원본의 본문 시작"),
+        "줄 머리 컨트롤 경계가 첫 표시 글자 뒤로 이동했다"
+    );
+    let first_visible = para.char_offsets.partition_point(|&offset| offset < start);
     assert_eq!(
-        idx, 0,
-        "투영값을 char_offsets 로 옮기니 본문 첫 글자가 아니다 — 축이 여전히 섞여 있다."
+        first_visible, 0,
+        "저장 줄에 속한 첫 표시 글자를 이전 줄로 넘기면 안 된다"
     );
 }
 

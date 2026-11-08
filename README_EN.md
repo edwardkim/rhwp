@@ -43,11 +43,22 @@ rhwp changes that. Built with Rust and compiled to WebAssembly, it renders HWP d
   <img src="assets/screenshots/render-example-1.png" alt="rhwp rendering example — KTX route map" width="700" />
 </p>
 
+## 0.9.0: PDF developer onboarding
+
+Import PDF into editable HWP/HWPX through the CLI, Rust, WASM and Studio. Default codecs include
+JBIG2, JPEG 2000 and ICC, with password authentication, resource profiles and cancellable page progress.
+Follow the [PDF quick start](mydocs/manual/pdf_developer_onboarding_EN.md) for builds, conversion and Worker hosting.
+See [0.9.0 release notes and credits](mydocs/release/release_notes_v0.9.0_EN.md).
+**crates.io distribution starts with 0.9.0** for Rust library and CLI users. Once published, add
+`rhwp = "0.9.0"` or run `cargo install rhwp --version 0.9.0 --locked --bin rhwp`.
+See the [Rust API, features and CLI guide](packaging/crates-io/README_PACKAGE.md).
+Add `--features native-skia` for PNG/PDF export, Sixel or Kitty graphics.
+
 ## Roadmap
 
 Build the skeleton solo, grow the muscle together, complete it as a public good.
 
-The project is currently **v0.8.7 — systematizing the v1.0 typesetting engine** while also
+The project is currently **v0.9.0 — systematizing the v1.0 typesetting engine** while also
 growing its v2.0 collaboration foundation with more than 40 external contributors and two
 collaborators. The single [project roadmap](ROADMAP.md) explains what each version aims to achieve,
 how overlapping work is tracked, how completion is judged, and where the detailed AI-agent roadmap

@@ -19,6 +19,16 @@ pub struct PageLayerTree {
 }
 
 impl PageLayerTree {
+    /// 명시적 인쇄 세대가 없으면 기존 Print layer의 기하 정책을 보존한다.
+    pub fn preserves_raster_text_geometry(&self) -> bool {
+        self.profile == RenderProfile::Print && self.resources.print_2024_raster().unwrap_or(true)
+    }
+
+    /// 2024 Print는 원본 clip의 장치 포함 경계를 사용한다.
+    pub fn uses_raster_clip_coverage(&self) -> bool {
+        self.profile == RenderProfile::Print && self.resources.print_2024_raster().unwrap_or(true)
+    }
+
     pub fn new(page_width: f64, page_height: f64, mut root: LayerNode) -> Self {
         let mut next_text_source_id = 0;
         bind_text_run_sources(&mut root, &mut next_text_source_id);
@@ -171,7 +181,7 @@ impl TextSourceTable {
                     self.collect_from_node(child);
                 }
             }
-            LayerNodeKind::ClipRect { child, .. } => {
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
                 self.collect_from_node(child);
             }
             LayerNodeKind::Leaf { ops } => {
@@ -209,7 +219,9 @@ pub(crate) fn bind_text_run_sources(node: &mut LayerNode, next_id: &mut u32) {
                 bind_text_run_sources(child, next_id);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => bind_text_run_sources(child, next_id),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            bind_text_run_sources(child, next_id)
+        }
         LayerNodeKind::Leaf { ops } => {
             for op in &mut *ops {
                 if let PaintOp::TextRun { run, source, .. } = op {
@@ -228,8 +240,11 @@ pub(crate) fn bind_text_run_sources(node: &mut LayerNode, next_id: &mut u32) {
                         bbox,
                         run,
                         source: Some(source),
+                        ..
                     } => active_fallback = Some((*bbox, run.clone(), source.clone())),
-                    PaintOp::CharOverlap { bbox, run, source }
+                    PaintOp::CharOverlap {
+                        bbox, run, source, ..
+                    }
                     | PaintOp::TextControlMark { bbox, run, source }
                     | PaintOp::TabLeader { bbox, run, source }
                     | PaintOp::TextDecoration {
@@ -354,6 +369,8 @@ pub enum ClipKind {
     TableCell,
     TextBox,
     Generic,
+    /// 원본 물리 clip을 보존하고 raster에서만 장치 픽셀의 포함 경계를 적용한다.
+    PrintBitmapFill,
 }
 
 #[derive(Debug, Clone)]
@@ -420,6 +437,10 @@ impl LayerNode {
 
 #[derive(Debug, Clone)]
 pub enum LayerNodeKind {
+    ClipPath {
+        paths: Vec<crate::model::text_clip::TextClipPath>,
+        child: Box<LayerNode>,
+    },
     Group {
         children: Vec<LayerNode>,
         cache_hint: CacheHint,

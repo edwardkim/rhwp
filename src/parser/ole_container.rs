@@ -479,7 +479,7 @@ fn wmf_start_offset(data: &[u8]) -> Option<usize> {
 /// 복원본이 첫 청크의 `EnhancedMetafileDataSize` 선언값과 `EMR_HEADER` 서명을 **함께**
 /// 만족할 때만 채택한다. 아니면 `None` 을 돌려 종전 바이트 스캔으로 내려간다.
 /// 10k 코퍼스 실측: 해당 40문서·246스트림 전부가 이 두 조건을 만족한다.
-fn emf_from_wmf_comment_chunks(data: &[u8]) -> Option<Vec<u8>> {
+pub(crate) fn emf_from_wmf_comment_chunks(data: &[u8]) -> Option<Vec<u8>> {
     /// WMF 레코드 함수 코드 META_ESCAPE.
     const META_ESCAPE: u16 = 0x0626;
     /// Escape 함수 META_ESCAPE_ENHANCED_METAFILE.

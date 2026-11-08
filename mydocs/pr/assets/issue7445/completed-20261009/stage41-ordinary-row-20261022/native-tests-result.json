@@ -1,0 +1,53 @@
+{
+  "command": [
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "/Users/tsjang/rhwp/target/pr-review",
+    "--features",
+    "native-skia",
+    "--test-threads",
+    "8",
+    "--no-fail-fast",
+    "--test",
+    "regression_suite_008",
+    "--test",
+    "regression_suite_012",
+    "--test",
+    "regression_suite_018",
+    "--test",
+    "regression_suite_019",
+    "--test",
+    "regression_suite_022",
+    "--test",
+    "regression_suite_025",
+    "--test",
+    "regression_suite_026",
+    "-E",
+    "test(/(^|::)issue_1133_partial_row_frame::/) or test(/(^|::)issue_8105_declared_row_blank_tail::/) or test(/(^|::)issue_8101_no_adjust_fragment_bottom::/) or test(/(^|::)rowbreak_carried_row_band::/) or test(/(^|::)issue_8105_fragment_outer_top_and_restart_trim::/) or test(/(^|::)first_frame_remainder_capped_by_row_box::/) or test(/(^|::)issue_8060_joint_stored_row_restart::/) or test(/(^|::)stored_zero_origin_later_page_row_fits::/)"
+  ],
+  "exitCode": 0,
+  "elapsedSeconds": 169.8876211643219,
+  "source": {
+    "parentHead": "37c7979fa77344b00ecaf64b757966203ebc1317",
+    "files": {
+      "src/renderer/layout/table_layout/stored_ordinary_row_frame.rs": "19966c0bee60f702f744ae3d006b504f5df440f935844a8de9807921db4d7df0"
+    },
+    "patchSha256": "48f6b5c643d8d2f9edb21bf7ebe80cb326f7b4cda2beac95757b2acde9886831",
+    "cases": [
+      "issue_1133_partial_row_frame",
+      "issue_8105_declared_row_blank_tail",
+      "issue_8101_no_adjust_fragment_bottom",
+      "rowbreak_carried_row_band",
+      "issue_8105_fragment_outer_top_and_restart_trim",
+      "first_frame_remainder_capped_by_row_box",
+      "issue_8060_joint_stored_row_restart",
+      "stored_zero_origin_later_page_row_fits"
+    ]
+  },
+  "logSha256": "055212f801dc1d1210a293fecea96f9b9d7e23978c2a62db251467d6b18e0d4e"
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "group": "native",
+    "key": "body-list-typed",
+    "pages": 1,
+    "differentPages": []
+  },
+  {
+    "group": "native",
+    "key": "helvetica-styles",
+    "pages": 1,
+    "differentPages": []
+  },
+  {
+    "group": "native",
+    "key": "pic-crop-01",
+    "pages": 1,
+    "differentPages": []
+  },
+  {
+    "group": "native",
+    "key": "shape-group-02",
+    "pages": 1,
+    "differentPages": []
+  },
+  {
+    "group": "native",
+    "key": "re-03-latin",
+    "pages": 1,
+    "differentPages": []
+  },
+  {
+    "group": "native-handbook",
+    "key": "handbook-hwp",
+    "pages": 383,
+    "differentPages": []
+  }
+]

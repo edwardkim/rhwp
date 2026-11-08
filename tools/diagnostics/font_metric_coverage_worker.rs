@@ -73,7 +73,9 @@ fn main() {
         FileFormat::Hwp | FileFormat::Hwpx => {}
         FileFormat::Empty => failure("empty"),
         FileFormat::DrmProtected => failure("drm"),
-        FileFormat::Hwp3 | FileFormat::Hml | FileFormat::Unknown => failure("unsupported"),
+        FileFormat::Hwp3 | FileFormat::Hml | FileFormat::Pdf | FileFormat::Unknown => {
+            failure("unsupported")
+        }
     }
 
     let core = match DocumentCore::from_bytes(&bytes) {

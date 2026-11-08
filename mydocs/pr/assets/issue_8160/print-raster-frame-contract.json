@@ -1,0 +1,340 @@
+{
+  "issue": 8160,
+  "status": "Candidate28 Native all192 pages completed:188 raw100. Remaining only WMF pages: HWPX35, HWP2024 35, HWP2022 18/35. Fresh optimized WASM sweep pending. Regression expectations unchanged.",
+  "source_rule": "Round source content reference origin and relative ink coordinate independently in 600dpi device units; separately round image size and clip endpoint. Preserve source model bbox. No document-text or document-ID predicate.",
+  "device_page": "Round effective paper HU / 12; physical PDF page is floor(HU / 100) point. Serialized coordinates have three decimal places and f32 matrix reconstruction. Output viewport follows actual device scale, not a fixed 96dpi bitmap.",
+  "rasterizer": "PDFium 153.0.7999.0 / pdfium_smooth_rgb_v1; threshold min RGB < 232; symmetric radius 2 pixels unchanged.",
+  "sampling": "Two-pass 16.16 area reduction and bilinear magnification with intermediate 8-bit quantization. Typed output JPEG frame is separate from authored BinData.",
+  "independent_comparisons": [
+    {
+      "paper": "a3",
+      "source_input_sha256": "ce5999d41e011a4e8604abe7a5a05c3935e9a7dec4f7a769f32f5fe8c360a5ba",
+      "pdf_sha256": "6093b128fe7e96bbe3b2fe1d462e304dab6f12f30f13e2dc55a486679cbb4488",
+      "cases": 13,
+      "pixels": [
+        1587,
+        1122
+      ],
+      "proposed_unmatched": 0,
+      "pdf_unmatched": 0
+    },
+    {
+      "paper": "a4",
+      "source_input_sha256": "c832748ac560000d00c0ca4b8c119c042e2ebd5dfa4edd2fae42da0dd86f800b",
+      "pdf_sha256": "de8c2b695997525268acc8e18cc20fed48529e16acbb7600339e56c5b4306f43",
+      "cases": 13,
+      "pixels": [
+        1122,
+        794
+      ],
+      "proposed_unmatched": 0,
+      "pdf_unmatched": 0
+    },
+    {
+      "paper": "a5",
+      "source_input_sha256": "5673ff338de17194f009acdeccdb642c8217d872bf65e3e91064c252307ab6a3",
+      "pdf_sha256": "abcad257305119881fffbbf6bf7cbd68a226796413baf87a7fa8c353129bf52f",
+      "cases": 13,
+      "pixels": [
+        794,
+        559
+      ],
+      "proposed_unmatched": 0,
+      "pdf_unmatched": 0
+    },
+    {
+      "input": "print-raster-frame-phase-a4-independent",
+      "source_input_sha256": "e7e404d5d274013d0658ba4853e8cf9194fb761f40c81cfa35930094a3011813",
+      "pdf_sha256": "02ca7fcd84c8ca8a052f102986514cdec1982af22aa35cfc95551e881a7ec704",
+      "cases": 12,
+      "dpi": 96,
+      "pixels": [
+        794,
+        1122
+      ],
+      "proposed_unmatched": 0,
+      "pdf_unmatched": 0
+    },
+    {
+      "input": "print-raster-frame-phase-a4-independent",
+      "source_input_sha256": "e7e404d5d274013d0658ba4853e8cf9194fb761f40c81cfa35930094a3011813",
+      "pdf_sha256": "02ca7fcd84c8ca8a052f102986514cdec1982af22aa35cfc95551e881a7ec704",
+      "cases": 12,
+      "dpi": 144,
+      "pixels": [
+        1190,
+        1682
+      ],
+      "proposed_unmatched": 0,
+      "pdf_unmatched": 0
+    },
+    {
+      "input": "print-raster-frame-phase-a4-independent",
+      "source_input_sha256": "e7e404d5d274013d0658ba4853e8cf9194fb761f40c81cfa35930094a3011813",
+      "pdf_sha256": "02ca7fcd84c8ca8a052f102986514cdec1982af22aa35cfc95551e881a7ec704",
+      "cases": 12,
+      "dpi": 300,
+      "pixels": [
+        2480,
+        3505
+      ],
+      "proposed_unmatched": 0,
+      "pdf_unmatched": 0
+    },
+    {
+      "input": "print-raster-frame-attributes-a4-independent",
+      "source_input_sha256": "9178b057be9a9f6a3738b4c7274abf76b9ec2566c291863244f9082c03502e17",
+      "pdf_sha256": "8915ef02bc70dee24d300f37b8e06d58ccf1b198e337982394128cacb7a57cae",
+      "cases": 16,
+      "dpi": 96,
+      "pixels": [
+        794,
+        1122
+      ],
+      "proposed_unmatched": 0,
+      "pdf_unmatched": 0
+    },
+    {
+      "input": "print-raster-frame-attributes-a4-independent",
+      "source_input_sha256": "9178b057be9a9f6a3738b4c7274abf76b9ec2566c291863244f9082c03502e17",
+      "pdf_sha256": "8915ef02bc70dee24d300f37b8e06d58ccf1b198e337982394128cacb7a57cae",
+      "cases": 16,
+      "dpi": 144,
+      "pixels": [
+        1190,
+        1682
+      ],
+      "proposed_unmatched": 0,
+      "pdf_unmatched": 0
+    },
+    {
+      "input": "print-raster-frame-attributes-a4-independent",
+      "source_input_sha256": "9178b057be9a9f6a3738b4c7274abf76b9ec2566c291863244f9082c03502e17",
+      "pdf_sha256": "8915ef02bc70dee24d300f37b8e06d58ccf1b198e337982394128cacb7a57cae",
+      "cases": 16,
+      "dpi": 300,
+      "pixels": [
+        2480,
+        3505
+      ],
+      "proposed_unmatched": 0,
+      "pdf_unmatched": 0
+    }
+  ],
+  "sampler_sha256": "8e79c48de937d071c84e7e167d74af8473a13526246668e705ceb59cc703455b",
+  "original_diagnostic": "HWPX source resolved JPEGs decoded with libjpeg, source positions and reference origin only: picture 1/2 on page1, picture4 page20, picture6 page39 each symmetric unmatched 0. Diagnostic is not an engine sweep. Rust image JPEG decoder at the right edge differs; actual Native decoder still needs validation.",
+  "candidate28_native": [
+    {
+      "document": "sample16-hwp2022",
+      "pages": 64,
+      "raw100": 62,
+      "remaining": [
+        {
+          "page": 18,
+          "raw": "99.99929"
+        },
+        {
+          "page": 35,
+          "raw": "99.96986"
+        }
+      ]
+    },
+    {
+      "document": "sample16-hwpx",
+      "pages": 64,
+      "raw100": 63,
+      "remaining": [
+        {
+          "page": 35,
+          "raw": "99.99244"
+        }
+      ]
+    },
+    {
+      "document": "sample16-hwp2024",
+      "pages": 64,
+      "raw100": 63,
+      "remaining": [
+        {
+          "page": 35,
+          "raw": "99.99244"
+        }
+      ]
+    }
+  ],
+  "candidate28_producer": {
+    "head": "f0f434b8f5f31386fa4f2c2ff881d0f150ceac45",
+    "snapshot_paths": [
+      "src",
+      "crates",
+      "rhwp-studio",
+      "Cargo.toml",
+      "Cargo.lock",
+      "vendor/rhwp-jpeg-encoder"
+    ],
+    "patch_sha256": "b503c3c7d15a0886eb532b72653dbe0bba730ebd225865b9ae33bcab3c958029",
+    "new_sources": [
+      {
+        "path": "rhwp-studio/src/view/canvaskit/anisotropic-image.ts",
+        "sha256": "3659a105982650c9542c350d278dcf300de5d8707672ce562969cf5714ceed07"
+      },
+      {
+        "path": "src/renderer/anisotropic_sampling.rs",
+        "sha256": "84046dee6f7ec63f8996dccb1a03c97c4bbfa5ecba600f6b1b970f461feab9e2"
+      },
+      {
+        "path": "src/renderer/composer/conjoining_jamo.rs",
+        "sha256": "9c89cc60f3c55e924a33a16d9bbe3443b5f26b3cbb69f025e9d57c5f0f2f344c"
+      },
+      {
+        "path": "src/renderer/conjoining_jamo.rs",
+        "sha256": "cedc1b448325a715ffdf5ffecd619178556d78208f051afdb97cebe32aedcfa2"
+      },
+      {
+        "path": "src/renderer/equation/layout/legacy.rs",
+        "sha256": "3aabc472bf1204f2007c3822653b2611a41e35d00e2cc3a3b15061c91f32c37c"
+      },
+      {
+        "path": "src/renderer/image_resolver/print_jpeg.rs",
+        "sha256": "5bca2b522379594137749f011377fe3356354b751ada687764cbaacf89349304"
+      },
+      {
+        "path": "src/renderer/layout/paragraph_layout/trailing_space_fit.rs",
+        "sha256": "ace0c3aae4d175b7ada3ef109458e6500adafd5ae38c8fee7087eb3d4bde61b7"
+      },
+      {
+        "path": "src/renderer/print_raster.rs",
+        "sha256": "8e79c48de937d071c84e7e167d74af8473a13526246668e705ceb59cc703455b"
+      },
+      {
+        "path": "src/renderer/skia/anisotropic_image.rs",
+        "sha256": "237496a8a084315b1077584b2b869f15fde6a3bbffb732ffcd384fc221b79b1b"
+      },
+      {
+        "path": "src/renderer/tab_leader.rs",
+        "sha256": "b104aeb5d104da7b15890247eaefff3a8397a45b913746fbde453e49d8c07e10"
+      },
+      {
+        "path": "src/renderer/text_transform.rs",
+        "sha256": "2135086e28fdcd112c2645b0a621e3b8e3e9cb12e65b8bae14f6a77905277fd5"
+      },
+      {
+        "path": "src/wasm_api/print_image_sampling.rs",
+        "sha256": "617d1e044fcdc5750b4145266c8ebcc5fc35d1e32d6bf6d4da0c342a78745e9a"
+      },
+      {
+        "path": "vendor/rhwp-jpeg-encoder/Cargo.toml",
+        "sha256": "5e54528121bc3c88e6373d14323da18f7d93f053e10e0e2180db1fcafce26c6d"
+      },
+      {
+        "path": "vendor/rhwp-jpeg-encoder/Cargo.toml.orig",
+        "sha256": "bd80a589e17ad71f28ad47158ee5156aa42ffa5029183605f3fa4f2e1e73697d"
+      },
+      {
+        "path": "vendor/rhwp-jpeg-encoder/LICENSE-APACHE",
+        "sha256": "85a884980abd6032fc6b5439ba918ab16db9ac9051b5cf18db9c27c587df07c0"
+      },
+      {
+        "path": "vendor/rhwp-jpeg-encoder/LICENSE-IJG",
+        "sha256": "a21e92ec88aefc6823f0c51994783571a849e8d9b43d9ade61ec9d886776721e"
+      },
+      {
+        "path": "vendor/rhwp-jpeg-encoder/LICENSE-MIT",
+        "sha256": "4d022727ea392ebba2fe5e9a5f78c610a0eae506b491f3db29c78b6d430d6503"
+      },
+      {
+        "path": "vendor/rhwp-jpeg-encoder/README.md",
+        "sha256": "7ec1a0e72320be06edcbac3c3e3c6d775b72fe50e483b4d7234988239a9e951b"
+      },
+      {
+        "path": "vendor/rhwp-jpeg-encoder/RHWP_PATCHES.md",
+        "sha256": "e2ffe4141eddb86ed057e2f4d9a0ba1069dfd0fe8d2d4617606f1fc351acb7a5"
+      },
+      {
+        "path": "vendor/rhwp-jpeg-encoder/UPSTREAM.json",
+        "sha256": "07353114229852e39a2ac0a11f74dc9d18080094a3d41b54140da5e4476c6e2d"
+      },
+      {
+        "path": "vendor/rhwp-jpeg-encoder/src/avx2.rs",
+        "sha256": "5da4e32b33624ea554f715658c459fd69de6392af855727b7bf6dcdf54929f7a"
+      },
+      {
+        "path": "vendor/rhwp-jpeg-encoder/src/avx2/fdct.rs",
+        "sha256": "c9c77c0feddbb4bf0f929754321b2d03af123d2b82b661d8caee6a9ead7b15eb"
+      },
+      {
+        "path": "vendor/rhwp-jpeg-encoder/src/avx2/ycbcr.rs",
+        "sha256": "d8ead2213f8809a880112c838b60aee0886dc01b5855aa587690e2990a820a29"
+      },
+      {
+        "path": "vendor/rhwp-jpeg-encoder/src/encoder.rs",
+        "sha256": "2ba07ee29a53597e24b54f8401acaac497e0c8650ade1a51de16e210f087bd1b"
+      },
+      {
+        "path": "vendor/rhwp-jpeg-encoder/src/error.rs",
+        "sha256": "bd73ebcc55e3bc8b2349d5ff6bec816da05bbb04561b7524a40b0cccc3560644"
+      },
+      {
+        "path": "vendor/rhwp-jpeg-encoder/src/fdct.rs",
+        "sha256": "e3f0fc38274c240548ac4604d5dca4107a4f0fe7cd6d617e3ce458dc061beafa"
+      },
+      {
+        "path": "vendor/rhwp-jpeg-encoder/src/huffman.rs",
+        "sha256": "36c117186433440c0def0d34c5d63d189415f014f72d87a903890c4e5b0cbb04"
+      },
+      {
+        "path": "vendor/rhwp-jpeg-encoder/src/image_buffer.rs",
+        "sha256": "880a89022bfce0d9bc48522e4c2b84fd18176a3bb2f73d17239ed1b1d034ffc7"
+      },
+      {
+        "path": "vendor/rhwp-jpeg-encoder/src/lib.rs",
+        "sha256": "a5804c3af11b0d30c35f26a25fc2cda5d5f7b5f03f26d956893bf96307fa2085"
+      },
+      {
+        "path": "vendor/rhwp-jpeg-encoder/src/marker.rs",
+        "sha256": "ade459241d689f2706d40242e9d5463517cebc4a04fa37067738d56703c1216f"
+      },
+      {
+        "path": "vendor/rhwp-jpeg-encoder/src/quantization.rs",
+        "sha256": "04c80160088446faa849c51ec0bbfab9ac492993103a75632c641b9512f5ea94"
+      },
+      {
+        "path": "vendor/rhwp-jpeg-encoder/src/writer.rs",
+        "sha256": "d2af30c643192372d349a2a173782c25b4ad66a94e65a49d81b47a5716c9b343"
+      }
+    ],
+    "description": "\uacf5\ud1b5 Print raster \ud504\ub808\uc784\uacfc 16.16 \ud45c\ubcf8 \uc7ac\uad6c\uc131. \ud6c4\ubcf427 \ucef4\ud30c\uc77c \uc624\ub958 \uc815\uc815.",
+    "build_status": "complete",
+    "build_started_at": "2026-10-23T09:41:03.120356+00:00",
+    "build_command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--bin",
+      "rhwp",
+      "--features",
+      "native-skia"
+    ],
+    "build_exit_code": 0,
+    "build_seconds": 524.37,
+    "artifacts": [
+      {
+        "file": "output/pr-review/issue8160-20261022/candidate28/native/rhwp",
+        "sha256": "add5ec734d1f042caa6491bf0beb2a35e0f55092956e0b13c901cc2fabfcd077"
+      },
+      {
+        "file": "output/pr-review/issue8160-20261022/candidate28/native/librhwp.rlib",
+        "sha256": "7ac7a84d86afd46a8e9921d93849f6db85b306129724d07e5ec09ef5be8d2b2a"
+      }
+    ]
+  },
+  "compile_checks": {
+    "wasm_target_check_exit": 0,
+    "native_library_clippy_with_native_skia_exit": 0,
+    "studio_tsc_exit": 0
+  }
+}

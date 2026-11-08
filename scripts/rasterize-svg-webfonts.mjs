@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, delimiter, dirname, resolve } from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -40,6 +40,58 @@ function fontFaceRanges(source) {
     offset = close + 1;
   }
   return ranges;
+}
+
+// 반복된 전체 글꼴을 HTML에서 다시 해석하지 않고 같은 바이트의 파일을 참조한다.
+// 원본 SVG와 글꼴 선택·별칭·형상은 보존하며 공용 검토 cache를 재사용한다.
+function externalizeEmbeddedFontSources(source) {
+  const cacheDir = resolve(ROOT, 'output/pr-review/font-raster-cache');
+  const payloads = new Map();
+  const chunks = [];
+  let cursor = 0;
+  for (const [start, end] of fontFaceRanges(source)) {
+    chunks.push(source.slice(cursor, start));
+    let face = source.slice(start, end);
+    const dataStart = face.indexOf('data:');
+    const header = dataStart < 0 ? null : face.slice(dataStart, dataStart + 256)
+      .match(/^data:(?:font\/[^;,\s]+|application\/[^;,\s]+);(?:charset=[^;,]+;)?base64,/u);
+    if (header) {
+      const payloadStart = dataStart + header[0].length;
+      const closing = face.indexOf(')', payloadStart);
+      if (closing < 0) throw new Error('내장 글꼴 URL의 끝을 찾지 못했습니다.');
+      const payloadEnd = ['"', "'"].includes(face[closing - 1]) ? closing - 1 : closing;
+      const encoded = face.slice(payloadStart, payloadEnd);
+      const bytes = Buffer.from(encoded, 'base64');
+      if (bytes.toString('base64') !== encoded) {
+        throw new Error('내장 글꼴의 base64 바이트가 올바르지 않습니다.');
+      }
+      const sha256 = createHash('sha256').update(bytes).digest('hex');
+      const path = resolve(cacheDir, `${sha256}.font`);
+      if (!payloads.has(sha256)) {
+        mkdirSync(cacheDir, { recursive: true });
+        if (existsSync(path)) {
+          if (createHash('sha256').update(readFileSync(path)).digest('hex') !== sha256) {
+            throw new Error(`공용 글꼴 cache hash 불일치: ${path}`);
+          }
+        } else {
+          // 병렬 캡처도 완성된 동일 payload만 읽도록 원자적으로 게시한다.
+          const temporary = `${path}.${process.pid}.tmp`;
+          try {
+            writeFileSync(temporary, bytes, { flag: 'wx' });
+            renameSync(temporary, path);
+          } finally {
+            rmSync(temporary, { force: true });
+          }
+        }
+        payloads.set(sha256, { sha256, bytes: bytes.length, path });
+      }
+      face = face.slice(0, dataStart) + pathToFileURL(path).href + face.slice(payloadEnd);
+    }
+    chunks.push(face);
+    cursor = end;
+  }
+  chunks.push(source.slice(cursor));
+  return { svg: chunks.join(''), payloads: [...payloads.values()] };
 }
 
 function declaredFontFaceFamilies(source) {
@@ -251,13 +303,16 @@ export async function recoverUnavailableLocalBoldFaces(page) {
   });
 }
 
-async function renderWithChrome({ chrome, htmlPath, outputPath, viewport, zoom, profileDir }) {
-  // 전체 글꼴을 포함한 대형 SVG는 로딩 시간이 기본 30초를 넘을 수 있다.
-  // 대기 한도만 조절하며 글꼴·좌표·캡처 완료 조건은 그대로 유지한다.
+function rasterTimeout() {
   const timeoutMs = Number(process.env.RHWP_VISUAL_RASTER_TIMEOUT_MS ?? '30000');
   if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0) {
     throw new Error('RHWP_VISUAL_RASTER_TIMEOUT_MS는 양의 정수여야 합니다.');
   }
+  return timeoutMs;
+}
+
+async function launchRasterBrowser(chrome, profileDir) {
+  const timeoutMs = rasterTimeout();
   const studioRequire = createRequire(resolve(ROOT, 'rhwp-studio/package.json'));
   let puppeteerPath;
   try {
@@ -266,7 +321,7 @@ async function renderWithChrome({ chrome, htmlPath, outputPath, viewport, zoom, 
     throw new Error('puppeteer-core가 없습니다. npm --prefix rhwp-studio ci를 먼저 실행하세요.');
   }
   const { default: puppeteer } = await import(pathToFileURL(puppeteerPath).href);
-  const browser = await puppeteer.launch({
+  return puppeteer.launch({
     executablePath: chrome,
     headless: true,
     userDataDir: profileDir,
@@ -274,10 +329,25 @@ async function renderWithChrome({ chrome, htmlPath, outputPath, viewport, zoom, 
     protocolTimeout: timeoutMs,
     args: ['--disable-gpu', '--hide-scrollbars', '--allow-file-access-from-files'],
   });
+}
+
+async function closeRasterBrowser(browser) {
+  if (!browser) return;
   try {
-    const page = await browser.newPage();
-    // Window size includes browser chrome on some platforms. Set the content
-    // viewport through CDP so the full SVG survives capture at every DPI.
+    await browser.close();
+  } finally {
+    // 이 실행의 Chrome만 종료하고 남은 자식 출력 스트림도 닫는다.
+    for (const stream of browser.process()?.stdio ?? []) stream?.destroy();
+  }
+}
+
+async function renderWithChrome({ browser, htmlPath, outputPath, viewport, zoom }) {
+  const timeoutMs = rasterTimeout();
+  // 시작 때의 빈 탭도 재사용한다. 캡처마다 닫아 문서 DOM·글꼴 선언이 쌓이지 않는다.
+  const initialPages = await browser.pages();
+  const page = initialPages.find(candidate => candidate.url() === 'about:blank')
+    ?? await browser.newPage();
+  try {
     await page.setViewport({
       width: Math.ceil(viewport.width),
       height: Math.ceil(viewport.height),
@@ -286,52 +356,62 @@ async function renderWithChrome({ chrome, htmlPath, outputPath, viewport, zoom, 
     await page.goto(pathToFileURL(htmlPath).href, { waitUntil: 'load', timeout: timeoutMs });
     await page.evaluate(() => document.fonts.ready.then(() => undefined));
     const recoveredFontFaces = await recoverUnavailableLocalBoldFaces(page);
+    const openPageCount = (await browser.pages()).length;
     await page.screenshot({ path: outputPath, type: 'png' });
-    return recoveredFontFaces;
+    return { recoveredFontFaces, openPageCount };
   } finally {
-    await browser.close();
-    // 브라우저 종료 뒤 자식의 출력 파이프가 남으면 Node가 캡처 완료 후에도
-    // 대기한다. 이 실행이 소유한 스트림만 닫고 화면·글꼴 완료 조건은 유지한다.
-    for (const stream of browser.process()?.stdio ?? []) {
-      stream?.destroy();
-    }
+    await page.close();
   }
 }
 
-async function main() {
-  const input = optionValue(process.argv, '--input');
-  const output = optionValue(process.argv, '--output');
-  const zoom = Number(optionValue(process.argv, '--zoom') ?? '1');
-  const configuredChrome = optionValue(process.argv, '--chrome');
-  if (!input || !output || !Number.isFinite(zoom) || zoom <= 0) {
-    throw new Error('사용법: rasterize-svg-webfonts.mjs --input <svg> --output <png> [--zoom <양수>] [--chrome <경로>]');
-  }
+export function rasterJobs(args) {
+  const batch = optionValue(args, '--batch-json');
+  const input = optionValue(args, '--input');
+  const output = optionValue(args, '--output');
+  const zoom = Number(optionValue(args, '--zoom') ?? '1');
+  if (batch && (input || output)) throw new Error('--batch-json과 --input/--output은 함께 쓰지 않습니다.');
+  const jobs = batch ? JSON.parse(readFileSync(batch, 'utf8')) : [{ input, output, zoom }];
+  if (!Array.isArray(jobs) || jobs.length === 0) throw new Error('캡처할 SVG 목록이 비어 있습니다.');
+  return jobs.map(job => {
+    if (!job || typeof job.input !== 'string' || !job.input
+      || typeof job.output !== 'string' || !job.output
+      || !Number.isFinite(Number(job.zoom ?? zoom)) || Number(job.zoom ?? zoom) <= 0) {
+      throw new Error('SVG input/output과 양수 zoom이 필요합니다.');
+    }
+    return { input: job.input, output: job.output, zoom: Number(job.zoom ?? zoom) };
+  });
+}
 
+async function captureSvg({ input, output, zoom }, session) {
   const inputPath = resolve(input);
   const outputPath = resolve(output);
   const svgSource = readFileSync(inputPath, 'utf8');
   const projectionSource = readFileSync(resolve(ROOT, PROJECTION_PATH), 'utf8');
-  const rules = selectWebfontRules(svgSource, parseWebfontRules(projectionSource));
+  // 내장 글꼴을 같은 바이트의 공용 파일로 먼저 바꿔 규칙 탐색의 입력 크기를 줄인다.
+  const prepared = externalizeEmbeddedFontSources(svgSource);
+  const rules = selectWebfontRules(prepared.svg, parseWebfontRules(projectionSource));
   const webfontCss = buildWebfontCss(ROOT, rules);
-  const preparedSvg = prepareSvgForWebfontRaster(svgSource, webfontCss);
+  const preparedSvg = prepareSvgForWebfontRaster(prepared.svg, webfontCss);
   const viewport = svgViewport(preparedSvg);
   const wrapperPath = resolve(dirname(inputPath), `.${basename(inputPath)}.webfont-${process.pid}.html`);
-  const profileDir = resolve(dirname(outputPath), `.webfont-chrome-profile-${process.pid}`);
   const html = `<!doctype html><meta charset="utf-8"><style>html,body{margin:0;padding:0;overflow:hidden;width:${viewport.width}px;height:${viewport.height}px}svg{display:block}</style>${preparedSvg}`;
   writeFileSync(wrapperPath, html);
+  session.wrappers.add(wrapperPath);
   let recoveredFontFaces;
   try {
-    recoveredFontFaces = await renderWithChrome({
-      chrome: findChrome(configuredChrome),
+    session.browser ??= await launchRasterBrowser(session.chrome, session.profileDir);
+    const capture = await renderWithChrome({
+      browser: session.browser,
       htmlPath: wrapperPath,
       outputPath,
       viewport,
       zoom,
-      profileDir,
     });
+    recoveredFontFaces = capture.recoveredFontFaces;
+    session.openPageCount = capture.openPageCount;
   } finally {
-    unlinkSync(wrapperPath, { force: true });
-    rmSync(profileDir, { recursive: true, force: true });
+    rmSync(wrapperPath, { force: true });
+    session.wrappers.delete(wrapperPath);
   }
   console.log(JSON.stringify({
     rasterizer: 'chrome-webfont',
@@ -344,7 +424,75 @@ async function main() {
     preservedFontFaceFamilies: [...declaredFontFaceFamilies(svgSource)],
     recoveredFontFaces,
     terminalFallbackFamily: TERMINAL_FALLBACK_FAMILY,
+    externalizedFontPayloads: prepared.payloads,
+    browserPid: session.browser.process()?.pid ?? null,
+    openPageCount: session.openPageCount,
+    pagesAfterCapture: (await session.browser.pages()).length,
   }));
+}
+
+async function main() {
+  const jobs = rasterJobs(process.argv);
+  const workers = Number(optionValue(process.argv, '--workers') ?? '1');
+  if (!Number.isSafeInteger(workers) || workers < 1) {
+    throw new Error('--workers는 양의 정수여야 합니다.');
+  }
+  if (new Set(jobs.map(job => resolve(job.output))).size !== jobs.length) {
+    throw new Error('같은 PNG에 여러 캡처 작업을 배정할 수 없습니다.');
+  }
+  if (workers > 1 && jobs.length > 1) {
+    const { runParallelRasterJobs } = await import('./rasterize-svg-webfont-workers.mjs');
+    await runParallelRasterJobs(jobs, workers, fileURLToPath(import.meta.url),
+      findChrome(optionValue(process.argv, '--chrome')));
+    return;
+  }
+  const session = {
+    chrome: findChrome(optionValue(process.argv, '--chrome')),
+    profileDir: resolve(dirname(resolve(jobs[0].output)), `.webfont-chrome-profile-${process.pid}`),
+    browser: null,
+    wrappers: new Set(),
+  };
+  let closing = false;
+  const onSignal = async signal => {
+    if (closing) return;
+    closing = true;
+    try {
+      await closeRasterBrowser(session.browser);
+    } finally {
+      for (const wrapper of session.wrappers) rmSync(wrapper, { force: true });
+      rmSync(session.profileDir, { recursive: true, force: true });
+      process.exit(signal === 'SIGINT' ? 130 : 143);
+    }
+  };
+  const interrupt = () => { void onSignal('SIGINT'); };
+  const terminate = () => { void onSignal('SIGTERM'); };
+  // Windows의 강제 terminate 대신 부모가 stdin으로 정상 정리를 요청한다.
+  let control = '';
+  const onControl = chunk => {
+    control += chunk.toString('utf8');
+    if (control.includes('\n')) {
+      if (control.trim() === 'stop') terminate();
+      control = '';
+    }
+  };
+  if (optionValue(process.argv, '--batch-json')) {
+    process.stdin.on('data', onControl);
+    process.stdin.unref?.();
+  }
+  process.once('SIGINT', interrupt);
+  process.once('SIGTERM', terminate);
+  try {
+    // 각 쪽의 PNG 완료를 즉시 알린다. 호출자는 기존 쪽별 checkpoint를 계속 저장한다.
+    for (const job of jobs) await captureSvg(job, session);
+  } finally {
+    process.removeListener('SIGINT', interrupt);
+    process.removeListener('SIGTERM', terminate);
+    process.stdin.removeListener('data', onControl);
+    process.stdin.pause();
+    await closeRasterBrowser(session.browser);
+    for (const wrapper of session.wrappers) rmSync(wrapper, { force: true });
+    rmSync(session.profileDir, { recursive: true, force: true });
+  }
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

@@ -1,0 +1,106 @@
+{
+  "date": "2026-10-29",
+  "source_pr": 8210,
+  "source_contributor_commit": "276d569c2f5abce5b77bfb89aed016951e314bd3",
+  "source_hwp": "samples/[2027] 온새미로 1 본교재.hwp",
+  "source_hwp_sha256": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce",
+  "source_pdf": "pdf/[2027] 온새미로 1 본교재-hwp-2020.pdf",
+  "source_pdf_sha256": "450c793f33a134198936504b38d3b21c01a343a11c09c13e5a7a00e39e2d58c7",
+  "source_hwp_pdf_git_blobs_identical_to_contributor_commit": true,
+  "other_pdf": "pdf/review-integration-20261026/onsemiro-hwp-2020.pdf",
+  "other_pdf_sha256": "94f2ae8b745ab043aeca2a0b2a25f62dd3d97ec2fed3e1c1e75c982cc8c6f6c4",
+  "pdf_difference_same_raster_dpi96": {
+    "page": 11,
+    "source_pdf_png_sha256": "68d2fb9193dbc3aafee78149fee9d491755243dc324c452a1add1f6a3ea5a353",
+    "other_pdf_png_sha256": "24ad725780d2c8e7f7bd6b6819401fbd5197385f5d42e916cfdb8247b8a705cd",
+    "different_rgb_pixels": 134,
+    "bbox_px": [
+      171,
+      673,
+      194,
+      685
+    ]
+  },
+  "source_pr_images": {
+    "native_review": {
+      "path": "mydocs/pr/assets/issue_8208/온새미로_p11_native_review.png",
+      "sha256": "c08416a54cce42be2ee9e1e52f3131f4f804599eab4ddfe1e5c116fcba0cb4d8",
+      "git_blob": "9296867ca570c8fd8b48c7482272ae3d524021ba"
+    },
+    "native_overlay": {
+      "path": "mydocs/pr/assets/issue_8208/온새미로_p11_native_overlay.png",
+      "sha256": "af68a39ffe70de3a1509bd54b169d76149f7aa5b86870e12ca7c8ea151585542",
+      "git_blob": "e0e0e08bc07aa49290ec7bba0d4902b839053858"
+    },
+    "wasm_review": {
+      "path": "mydocs/pr/assets/issue_8208/온새미로_p11_wasm_review.png",
+      "sha256": "2eff1ff343e68f0b7f35a01e28939f0b9a19b98d18fedc42a9b3297b8c9ad055",
+      "git_blob": "c9846ba6e3e329b692926e3f8d90080c9cc2a1bf"
+    },
+    "wasm_overlay": {
+      "path": "mydocs/pr/assets/issue_8208/온새미로_p11_wasm_overlay.png",
+      "sha256": "3b582fdd09ad51af13d02240c16a6e3e95abf7587a2fa0d952cb6f7cc61f1921",
+      "git_blob": "f8410b5389bafee60caadfa204d86d6db9f5d31d"
+    }
+  },
+  "measurements_after_followup": {
+    "native": {
+      "page11_raw_percent": 96.14455,
+      "rhwp_png_sha256": "347271ce54af9918fcbf53b490eeccab07fc5ce3d8bb27b8bfde95392c2df9b1",
+      "pdf_png_sha256": "68d2fb9193dbc3aafee78149fee9d491755243dc324c452a1add1f6a3ea5a353",
+      "silhouette_manifest_sha256": "e9f255b5e995a5951e82355ce69b94e59c094996a9c11f7741c8bc53e2937f5d",
+      "run_manifest_sha256": "daaca61174cdae9ecb5f2c6825472b0344a8d93ccd8edd3fd2e225f18764ee77",
+      "document_pages": 46,
+      "gate": "1쪽 실루엣만 측정하여 전체 시각 gate는 미평가"
+    },
+    "wasm": {
+      "page11_raw_percent": 95.7796,
+      "rhwp_png_sha256": "1557db2b414eaf6a217c5b8f55b83e7ce8f61ffd085082f04ae746faa20886a2",
+      "pdf_png_sha256": "68d2fb9193dbc3aafee78149fee9d491755243dc324c452a1add1f6a3ea5a353",
+      "silhouette_manifest_sha256": "c1507bd55a8942896ae8a25eddfb20caa36f966a4d82147aa428c715f4a19e62",
+      "run_manifest_sha256": "019173117d217a95b537e34a26cc8b87d5c8679d14eaece2426271d26c955b27",
+      "document_pages": 46,
+      "gate": "1쪽 실루엣만 측정하여 전체 시각 gate는 미평가"
+    }
+  },
+  "limitations": [
+    "원 PR의 온새미로 11쪽을 동일 입력과 원 PR PDF로 직접 측정했다. 원 PR의 기여자 이미지와 이 측정은 서로 다른 실행이다.",
+    "다른 재출력 PDF는 입력 PDF와 해시 및 11쪽 래스터가 달라 수치를 같은 기준으로 섞지 않는다.",
+    "원 PR 11쪽의 실루엣은 90% 이상이지만 전46쪽 재측정과 세부 직접 판독을 이 측정만으로 주장하지 않는다.",
+    "행정업무운영 편람은 이 PR에서 제외한다."
+  ],
+  "other_source_claim_pages": [
+    {
+      "page": 21,
+      "measurements_before_followup": {
+        "native": 90.80955,
+        "wasm": 90.84255
+      },
+      "followup_png_identical": {
+        "native": "7d07102fc1772da79ac5c68dfd02099b9efbd4c7a96d76912a1a5de2af949851",
+        "wasm": "ac71341ab053fff94916a9e679d4d89b976d0e340b644e4e49e88346b574decc"
+      },
+      "scope": "후속 보정의 렌더 PNG가 동일해 기존 PDF 래스터 기준 점수 동일; 새 래스터의 직접 측정은 아님",
+      "input": "samples/3-11월_실전_통합_2022.hwp",
+      "input_sha256": "bc8bccbb954c337d813d1af96f4e3047242124c2f2939163e282634eb721accd",
+      "pdf": "pdf/3-11월_실전_통합_2022-hwp-2020.pdf",
+      "pdf_sha256": "efad255e305326b5b84507481b2158e59941ae2bf4d87dbf97cb5a93b9664a57"
+    },
+    {
+      "page": 20,
+      "measurements_before_followup": {
+        "native": 95.06161,
+        "wasm": 95.32108
+      },
+      "followup_png_identical": {
+        "native": "4458f994f547c5439e328115464259967386ffde978d1d8d60534069d81dcb83",
+        "wasm": "21af915422da57cbb70203a3f9aa6869aa4e1feadbb736d4a1ea49ccf5dfd480"
+      },
+      "scope": "후속 보정의 렌더 PNG가 동일해 기존 PDF 래스터 기준 점수 동일; 새 래스터의 직접 측정은 아님",
+      "input": "samples/3-09월_교육_통합_2022.hwp",
+      "input_sha256": "d451ffbc72e8c84433f380c0cbcc8472f23286d53dce4b793a4bbb82f8715108",
+      "pdf": "pdf/3-09월_교육_통합_2022-hwp-2020.pdf",
+      "pdf_sha256": "748900124e771baf6ce7d90c2ef869b9078b53437c59bc47bdbcc42cba81bb80"
+    }
+  ]
+}

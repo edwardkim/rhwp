@@ -48,12 +48,32 @@ fn walk(node: &serde_json::Value, found: &mut Found) {
         .and_then(|b| b.get("y"))
         .and_then(|v| v.as_f64());
     match ty {
-        "TextRun" => {
-            let text = node.get("text").and_then(|t| t.as_str()).unwrap_or("");
-            if text.contains(CAPTION_TEXT) {
-                found
-                    .caption_ys
-                    .push((text.to_string(), y.unwrap_or(f64::NAN)));
+        "TextLine" => {
+            // 글꼴 프로그램별 run 분할은 같은 캡션의 줄 소속을 바꾸지 않는다.
+            // 페이지 전체를 합치지 않고 한 줄의 실제 직계 text run만 묶는다.
+            let runs: Vec<_> = node
+                .get("children")
+                .and_then(|children| children.as_array())
+                .into_iter()
+                .flatten()
+                .filter(|child| child.get("type").and_then(|ty| ty.as_str()) == Some("TextRun"))
+                .collect();
+            let text: String = runs
+                .iter()
+                .filter_map(|run| run.get("text").and_then(|value| value.as_str()))
+                .collect();
+            if text == CAPTION_TEXT {
+                let line_y = y.expect("캡션 줄의 원점");
+                assert!(
+                    runs.iter().all(|run| {
+                        run.get("bbox")
+                            .and_then(|bbox| bbox.get("y"))
+                            .and_then(|value| value.as_f64())
+                            .is_some_and(|run_y| (run_y - line_y).abs() < 0.01)
+                    }),
+                    "분리한 캡션 run은 같은 줄 원점을 보존해야 한다"
+                );
+                found.caption_ys.push((text, line_y));
             }
         }
         "Table" => {

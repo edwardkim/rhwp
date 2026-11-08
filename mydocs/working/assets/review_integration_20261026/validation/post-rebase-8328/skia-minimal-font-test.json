@@ -1,0 +1,100 @@
+{
+  "date": "2026-10-28",
+  "test": "native_fractional_glyph_origin",
+  "fontconfig_directory": "/usr/share/fonts/truetype/dejavu",
+  "system_font_files": [
+    {
+      "path": "/usr/share/fonts/truetype/dejavu/DejaVuMathTeXGyre.ttf",
+      "sha256": "75a6cb527b0175f9d13af29c33a6915ae38645016c6fe9881653155cd1f62485"
+    },
+    {
+      "path": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+      "sha256": "5c1247acef7f2b8522a31742c76d6adcb5569bacc0be7ceaa4dc39dd252ce895"
+    },
+    {
+      "path": "/usr/share/fonts/truetype/dejavu/DejaVuSans-BoldOblique.ttf",
+      "sha256": "58d78a24ddff9ab30427550d68f0b9b7dd28d6690f9f4b3e4ebac7105252e9b2"
+    },
+    {
+      "path": "/usr/share/fonts/truetype/dejavu/DejaVuSans-ExtraLight.ttf",
+      "sha256": "fab10cd1c5680872c4d8db8059af93e3ff2b5e2ebc6120574d3c0d414334e979"
+    },
+    {
+      "path": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf",
+      "sha256": "2d7b524ce7d51db78591b4e19c8185b89f3af0aa6534c5e524cf0c6f4ea673de"
+    },
+    {
+      "path": "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+      "sha256": "ae7b7855e115a5966d8b1b3f80f254ccc117ec86f9965e202ee2940453837280"
+    },
+    {
+      "path": "/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed-Bold.ttf",
+      "sha256": "8d9984f4eaae48bb3677966491b55538738283c1de177d60df1681a1b7844ffc"
+    },
+    {
+      "path": "/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed-BoldOblique.ttf",
+      "sha256": "817ffe1976a879cad74e0299fc76c66884f5247c6c50a77dd71fffe4fa009712"
+    },
+    {
+      "path": "/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed-Oblique.ttf",
+      "sha256": "e31968dabb045c534579e667b181f1fa965ab3a59b8278f09bbe88e5895fd08b"
+    },
+    {
+      "path": "/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed.ttf",
+      "sha256": "8b4d7f13947aa922594024f078cc9e89e8aa1ae6172150cbfe83f234be4f8985"
+    },
+    {
+      "path": "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf",
+      "sha256": "3a3c502eeff669a231549e80df9f7c49de109bafe303170409e905d0b31a38fe"
+    },
+    {
+      "path": "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-BoldOblique.ttf",
+      "sha256": "a5251173370e30760e6919711dcd33e149d216ca4814eb74332bda03fcc7e834"
+    },
+    {
+      "path": "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Oblique.ttf",
+      "sha256": "3d7955616e69721f7edb8e1b7a580f8fbd7d737111c6b54266ddc1d9ef13202f"
+    },
+    {
+      "path": "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
+      "sha256": "c805f9436dbc268644c1d9584f01a601a653e028e08fd74b9b949f6cf8304d88"
+    },
+    {
+      "path": "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf",
+      "sha256": "847b33e13925f19ff87e4d934d6b3cf7cac35ce16424f6f670e40c2f377cf2df"
+    },
+    {
+      "path": "/usr/share/fonts/truetype/dejavu/DejaVuSerif-BoldItalic.ttf",
+      "sha256": "e4662d0bcf9039a5d1fb7b52f964aebdde4563be9e5a8521299936f4818c0ab2"
+    },
+    {
+      "path": "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Italic.ttf",
+      "sha256": "1d7476da447f9455a47c41adfd6ac2b1fc1b65e660f3ea4bf36128506c7e094c"
+    },
+    {
+      "path": "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
+      "sha256": "8f2c103bfa3fd5de71f1b92b18f21906b5a26871fb7e19a9a4c9af539c3cc7ab"
+    },
+    {
+      "path": "/usr/share/fonts/truetype/dejavu/DejaVuSerifCondensed-Bold.ttf",
+      "sha256": "3a48e198db686dcea39b3116c582b66427c2bc41c44409f19e5af7e0da446190"
+    },
+    {
+      "path": "/usr/share/fonts/truetype/dejavu/DejaVuSerifCondensed-BoldItalic.ttf",
+      "sha256": "14f03c4313f276e7e5604413c18e87c7ce76e578b1baff8112523802378ef156"
+    },
+    {
+      "path": "/usr/share/fonts/truetype/dejavu/DejaVuSerifCondensed-Italic.ttf",
+      "sha256": "d938442b1c5ca73fef154c73bee02a8cd276a1a98dad837c038947d84eb31d99"
+    },
+    {
+      "path": "/usr/share/fonts/truetype/dejavu/DejaVuSerifCondensed.ttf",
+      "sha256": "1eae1e560d251f6bd759c70dcc2285e1a34e1951b2427feeab56a0d2e3b136ad"
+    }
+  ],
+  "explicit_test_font_path": "ttfs/opensource (two glyph tests register this path directly)",
+  "fontconfig_file_sha256": "d5e2df460a8fd166c70e6d800a9dc428e843a6ba1fea78037d0504c7dfbb72f0",
+  "log_sha256": "e323a617befd3ad694e9444779b07f0de9721dee1f81b9aa597c54fc286c30c2",
+  "result": "4 passed, 0 failed",
+  "full_regression_rerun": false
+}

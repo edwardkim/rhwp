@@ -26,18 +26,27 @@ export function isSupportedPictureControl(control: {
 }
 
 /**
- * `cellPath` 첫 항목은 표 또는 글상자처럼 안쪽 개체를 소유한 바깥 control을 가리킨다.
- * 같은 문단의 독립 도형은 이 경로의 조상이 아니므로, 그 도형과 셀 그림이 겹쳐도
- * 도형 클릭을 셀 그림으로 바꾸면 안 된다.
+ * 개체의 전체 셀 경로 다음 항목이 그 개체를 가리킬 때만 자손 관계다.
+ * control 번호는 각 셀 문단 안에서 다시 시작하므로, 앞선 깊이의 같은 번호나
+ * 형제 셀의 번호를 조상으로 오인해 독립 도형 클릭을 뒤 그림으로 바꾸면 안 된다.
  */
 export function isNestedCellDescendantOfControl(
-  candidate: { secIdx?: number; paraIdx?: number; controlIdx?: number },
+  candidate: { secIdx?: number; paraIdx?: number; controlIdx?: number; cellPath?: unknown },
   nested: { secIdx?: number; paraIdx?: number; cellPath?: unknown },
 ): boolean {
   if (candidate.secIdx !== nested.secIdx || candidate.paraIdx !== nested.paraIdx) return false;
   if (!Array.isArray(nested.cellPath) || candidate.controlIdx === undefined) return false;
-  return nested.cellPath.some((entry: any) =>
-    (entry?.controlIndex ?? entry?.controlIdx) === candidate.controlIdx);
+  const candidatePath = Array.isArray(candidate.cellPath) ? candidate.cellPath : [];
+  const nestedPath = nested.cellPath;
+  if (nestedPath.length <= candidatePath.length) return false;
+  if (!candidatePath.every((entry: any, index: number) => {
+    const other = nestedPath[index];
+    return (entry?.controlIndex ?? entry?.controlIdx) === (other?.controlIndex ?? other?.controlIdx)
+      && (entry?.cellIndex ?? entry?.cellIdx) === (other?.cellIndex ?? other?.cellIdx)
+      && (entry?.cellParaIndex ?? entry?.cellParaIdx) === (other?.cellParaIndex ?? other?.cellParaIdx);
+  })) return false;
+  const child = nestedPath[candidatePath.length];
+  return (child?.controlIndex ?? child?.controlIdx) === candidate.controlIdx;
 }
 
 /**

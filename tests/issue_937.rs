@@ -1,12 +1,17 @@
-//! Issue #937: 복학원서 서명란 `(인)` PUA 기호 렌더링 불일치.
+//! Issue #937: 복학원서 서명란 PUA 기호 렌더링 불일치.
 //!
-//! `samples/복학원서.hwp` 1페이지 서명란은 한컴/PDF 기준 `(인)` 으로 표시된다.
-//! 원본 HWP5 IR 에서는 이 기호가 한컴 PUA `U+F012B` 1글자로 저장되어 있으므로,
-//! 원문 문자는 보존하되 렌더링/측정 경로에서 표시 문자열 `(인)` 으로 치환해야 한다.
+//! 원본 HWP5 IR 에서는 서명란 기호가 한컴 PUA `U+F012B` 1글자로 저장되어 있다.
+//! 원문 문자는 보존하고 렌더러가 기호를 그린다.
+//!
+//! [#8201] 기대값 정정: `pdf/복학원서-2022.pdf` 의 같은 자리는 `(인)` 세 글자가 아니라
+//! 내장 Haansoft Batang GID 3 한 글리프(타원 안 '인', 1em)다. 평문 paint·폭은 합성 기호
+//! 경로가 소유하고, `(인)` 은 텍스트 표면·글자겹침이 쓰는 읽기 문자열로 남는다.
 
 use rhwp::model::control::Control;
 use rhwp::model::paragraph::Paragraph;
-use rhwp::renderer::composer::{expand_pua_render_text, pua_to_display_text};
+use rhwp::renderer::composer::{
+    expand_pua_display_text, expand_pua_render_text, pua_to_display_text,
+};
 use rhwp::wasm_api::HwpDocument;
 use std::fs;
 use std::path::Path;
@@ -111,22 +116,28 @@ fn issue_937_f012b_display_text_should_be_signature_seal() {
     assert_eq!(
         display.as_deref(),
         Some("(인)"),
-        "U+F012B 한컴 PUA 서명/날인 기호는 렌더링 시 `(인)` 으로 표시되어야 함",
+        "U+F012B 서명/날인 기호의 읽기 문자열(텍스트 표면·글자겹침)은 `(인)` 이어야 함",
     );
 }
 
 #[test]
-fn issue_937_f081c_filler_should_not_render_as_text() {
-    assert_eq!(
-        expand_pua_render_text("\u{F081C}"),
-        "",
-        "U+F081C HWP TAC filler 는 실제 렌더 출력에 글리프로 표시되면 안 됨",
-    );
-    assert_eq!(
-        expand_pua_render_text("A\u{F081C}B"),
-        "AB",
-        "U+F081C filler 제거가 주변 텍스트 순서를 바꾸면 안 됨",
-    );
+fn issue_937_f081c_flow_filler_and_paint_dot_keep_distinct_contracts() {
+    // 이 helper 계약은 복학원서의 위치/그림 핀이 아니다. 독립 한컴 Print의
+    // #7017 절취선 60자가 실제 점선인 반면, TAC 흐름 판정에서 이 기호만
+    // 있는 줄은 기존처럼 빈 표시로 취급한다. C171 Native97.96961%,
+    // fresh WASM98.00636% 전1쪽과 review/overlay를 대조했다.
+    for (source, flow, paint) in [("\u{F081C}", "", "┈"), ("A\u{F081C}B", "AB", "A┈B")] {
+        assert_eq!(
+            expand_pua_display_text(source),
+            flow,
+            "TAC 흐름 판정은 filler를 숨기고 주변 글자의 순서를 보존한다",
+        );
+        assert_eq!(
+            expand_pua_render_text(source),
+            paint,
+            "실제 paint는 원문 점선과 주변 글자의 순서를 보존한다",
+        );
+    }
 }
 
 #[test]
@@ -167,8 +178,12 @@ fn issue_937_svg_renders_f012b_as_signature_seal() {
     let text = svg_text_content(&svg);
 
     assert!(
-        text.contains("(인)(Signature)"),
-        "복학원서 1페이지 SVG는 서명란 기호를 `(인)` 으로 렌더링해야 함",
+        text.contains("인(Signature)") && !text.contains("(인)(Signature)"),
+        "복학원서 1페이지 SVG는 서명란 기호를 괄호 없이 타원 안 '인' 으로 그려야 함(#8201)",
+    );
+    assert!(
+        svg.contains("<ellipse"),
+        "서명란 기호의 타원 테두리가 SVG 에 있어야 함(#8201)",
     );
     assert!(
         !svg.contains('\u{F012B}'),

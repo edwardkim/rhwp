@@ -1,8 +1,13 @@
+// 관계형: 스타일 API의 성공·실패와 모양 적용·snapshot 반환·후속 알림의 관계.
+// 주석 갱신: 2026-11-06T01:29:04+09:00. 직전 파일 commit: b3ceeb3303ad033218237a61e4d24dea8a8d7227 (2026-08-13T17:14:22+09:00).
+// UI 트랜잭션 계약 검사이며 문서 배치나 px 좌표를 측정하지 않는다. #8526의 실제 API 근거는 해당 PR 리뷰에 연결한다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { stripTypeScriptTypes } from 'node:module';
+import { functionBodyFrom } from './support/source-guard.ts';
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 
@@ -68,8 +73,8 @@ test('스타일 생성·수정은 모양 적용까지 한 스냅샷으로 원자
     1,
     '스냅샷은 하나여야 한다(2뮤테이션 원자화)',
   );
-  // createStyle 는 항상 새 ID를 반환한다. 존재하지 않는 음수 실패값을 다시 가정하면 안 된다.
-  assert.doesNotMatch(applyFn, /newId >= 0|스타일 생성 실패/, 'createStyle의 존재하지 않는 실패 신호를 검사하지 않음');
+  // #8526은 잘못된 삽입 위치를 -1로 거절한다. 이 실패를 성공한 snapshot으로 남기지 않는다.
+  assert.match(applyFn, /if \(newId < 0\) return false;/, '실제 생성 실패는 모양 적용 전에 중단');
   // 반면 기존 style ID를 받는 두 API는 false를 반환하므로, 실패를 무시하면 스냅샷에
   // 무변 엔트리가 남거나 부분 변경을 성공처럼 처리하게 된다.
   assert.match(applyFn, /if \(!wasm\.updateStyle\(this\.styleInfo\.id/, 'updateStyle false를 확인');
@@ -86,17 +91,68 @@ test('스타일 생성·수정은 모양 적용까지 한 스냅샷으로 원자
   assert.match(save, /this\.eventBus\.emit\('document-changed'\)/, '미주입 fallback 유지');
 });
 
-test('스타일 WASM 반환 계약은 생성 성공 ID와 기존 ID 갱신 실패를 구분한다', () => {
+test('기존 스타일 갱신 API는 없는 ID에 false를 반환한다', () => {
   const wasmApi = source('../src/wasm_api.rs');
   const updateStyle = slice(wasmApi, 'pub fn update_style', '\n    /// 스타일의 CharShape/ParaShape를 수정한다.');
   const updateStyleShapes = slice(wasmApi, 'pub fn update_style_shapes', '\n    /// 새 스타일을 생성한다.');
-  const createStyle = slice(wasmApi, 'pub fn create_style', '\n    /// 스타일을 삭제한다.');
 
   assert.match(updateStyle, /None => return false/, '없는 기존 스타일은 updateStyle=false');
   assert.match(updateStyleShapes, /None => return false/, '없는 기존 스타일은 updateStyleShapes=false');
-  assert.match(createStyle, /styles\.push\(new_style\)/, 'createStyle은 새 스타일을 추가');
-  assert.match(createStyle, /\n\s*new_id\n/, 'createStyle은 추가한 ID를 반환');
-  assert.doesNotMatch(createStyle, /return -\d+/, 'createStyle은 음수 실패 ID를 계약으로 두지 않음');
+  // 생성·삽입·실패 시 문서 보존은 inserted_style_keeps_references.rs의 실제 API 검사로 보호한다.
+  // Vec의 push/insert나 반환 지역 변수 이름을 생성 계약의 대용으로 고정하지 않는다.
+});
+
+function styleCreation(id: number, routed: boolean, withFormatting: boolean) {
+  const method = functionBodyFrom(source('src/ui/style-edit-dialog.ts'), 'protected onConfirm(');
+  const executable = stripTypeScriptTypes(`const holder = { ${method.replace('protected ', '')} };`);
+  const confirm = new Function('MAX_STYLE_NAME_LEN', 't', `${executable}; return holder.onConfirm;`)(250, () => '입력 오류');
+  const effects = { shapes: [] as number[], notifications: 0, saved: 0, operations: [] as unknown[] };
+  const cursor = { sectionIndex: 0, paragraphIndex: 0, charOffset: 0 };
+  const wasm = {
+    createStyle: () => id,
+    updateStyleShapes: (actual: number) => { effects.shapes.push(actual); return true; },
+  };
+  const dialog = {
+    nameInput: { value: '새 스타일' }, enNameInput: { value: '' },
+    typePara: { checked: true }, nextStyleSelect: { value: '0' },
+    styleInfo: { type: 0, nextStyleId: 0 }, addMode: true, baseInfo: {},
+    charModsJson: withFormatting ? '{"bold":true}' : '{}', paraModsJson: '{}',
+    wasm, eventBus: { emit: () => { effects.notifications++; } },
+    onSave: () => { effects.saved++; },
+    services: routed ? { getInputHandler: () => ({
+      getPosition: () => cursor,
+      executeOperation: (operation: { operation: (value: typeof wasm) => unknown }) => {
+        effects.operations.push(operation.operation(wasm));
+      },
+    }) } : undefined,
+  };
+  return { confirm: () => confirm.call(dialog), effects, cursor };
+}
+
+test('스타일 생성 실패는 실제 확인 경로에서 모양 적용·성공 알림을 생략한다', () => {
+  for (const routed of [false, true]) {
+    for (const withFormatting of [false, true]) {
+      const run = styleCreation(-1, routed, withFormatting);
+      assert.equal(run.confirm(), false, `routed=${routed}, formatting=${withFormatting}`);
+      assert.deepEqual(run.effects.shapes, [], '실패 ID로 다른 스타일을 수정하지 않는다');
+      assert.equal(run.effects.saved, 0);
+      assert.equal(run.effects.notifications, 0);
+      assert.deepEqual(run.effects.operations, routed ? [null] : [], '실패 snapshot은 no-op을 반환');
+    }
+  }
+});
+
+test('0을 포함한 성공 스타일 ID는 모양 적용과 성공 후속 처리를 유지한다', () => {
+  for (const id of [0, 3]) {
+    for (const routed of [false, true]) {
+      const run = styleCreation(id, routed, true);
+      assert.equal(run.confirm(), true);
+      assert.deepEqual(run.effects.shapes, [id]);
+      assert.equal(run.effects.saved, 1);
+      assert.equal(run.effects.notifications, routed ? 0 : 1);
+      assert.deepEqual(run.effects.operations, routed ? [run.cursor] : []);
+    }
+  }
 });
 
 test('스타일 다이얼로그 생성 지점이 services 를 넘긴다', () => {

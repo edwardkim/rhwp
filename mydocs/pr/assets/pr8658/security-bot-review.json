@@ -1,0 +1,188 @@
+{
+  "pr": 8694,
+  "source_pr": 8658,
+  "head": "d440ddc370026ba89ac79a6f6bc2385b24195973",
+  "base": "08963f6825956984d38b0d9392f44777db7107ab",
+  "alerts": [
+    {
+      "alert": 500,
+      "rule": "rust/cleartext-logging",
+      "location": {
+        "path": "src/renderer/layout/table_layout.rs",
+        "start_line": 8942,
+        "end_line": 8942,
+        "start_column": 37,
+        "end_column": 97
+      },
+      "github_classification_changed": true,
+      "guard": "explicit opt-in geometry diagnostic",
+      "base_same_file": false,
+      "base_same_sink_and_guard": true,
+      "sink_guard_sha256": "038bc6e705e38645f34f8415de31a72c076cf219206a13fbf3f0cc3c12836f7a",
+      "sink_arguments": [
+        "pic_y: f64",
+        "pic_h: f64",
+        "pic_x: f64"
+      ],
+      "sarif_analysis": 2111442527,
+      "flows": 4,
+      "flow_lengths": [
+        45,
+        121,
+        80,
+        118
+      ],
+      "source": "DocumentCore return value from from_bytes_with_password; trace follows document geometry, not password argument",
+      "password_named_steps": [
+        [
+          "...::from_bytes_with_password(...)"
+        ],
+        [
+          "...::from_bytes_with_password(...)"
+        ],
+        [
+          "...::from_bytes_with_password(...)"
+        ],
+        [
+          "...::from_bytes_with_password(...)"
+        ]
+      ],
+      "conclusion": "New alert number on an existing unchanged opt-in numeric geometry log; no password/document text emitted by this sink"
+    },
+    {
+      "alert": 484,
+      "rule": "rust/cleartext-logging",
+      "location": {
+        "path": "src/renderer/layout/table_layout/unit_diagnostics.rs",
+        "start_line": 103,
+        "end_line": 104,
+        "start_column": 13,
+        "end_column": 44
+      },
+      "github_classification_changed": false,
+      "guard": "explicit opt-in geometry diagnostic",
+      "base_same_file": true,
+      "sha256": "117053368af6101d84f31c4e95b4f0fb2c2057469b2c4e4d91728bb420a7efd7",
+      "prior_review": "mydocs/pr/assets/hyunmyungjanelee-20261106/security-bot-review.json",
+      "conclusion": "Same unchanged previously reviewed diagnostic file, no credential/text sink added"
+    },
+    {
+      "alert": 483,
+      "rule": "rust/cleartext-logging",
+      "location": {
+        "path": "src/renderer/layout/table_layout/capacity_tolerance.rs",
+        "start_line": 37,
+        "end_line": 48,
+        "start_column": 17,
+        "end_column": 27
+      },
+      "github_classification_changed": false,
+      "guard": "explicit opt-in geometry diagnostic",
+      "base_same_file": true,
+      "sha256": "06a2d06698a8c844b9f733e56c4ff9e46bc23aad780f02b40f04177cd63fb9f7",
+      "prior_review": "mydocs/pr/assets/hyunmyungjanelee-20261106/security-bot-review.json",
+      "conclusion": "Same unchanged previously reviewed diagnostic file, no credential/text sink added"
+    },
+    {
+      "alert": 478,
+      "rule": "rust/cleartext-logging",
+      "location": {
+        "path": "src/renderer/typeset/table/scan/runner.rs",
+        "start_line": 120,
+        "end_line": 121,
+        "start_column": 33,
+        "end_column": 49
+      },
+      "github_classification_changed": false,
+      "guard": "explicit opt-in geometry diagnostic",
+      "base_same_file": true,
+      "sha256": "caab95876d21db5c430d01293a20f3a1e407db77c369eca43da7a655e791f2be",
+      "prior_review": "mydocs/pr/assets/hyunmyungjanelee-20261106/security-bot-review.json",
+      "conclusion": "Same unchanged previously reviewed diagnostic file, no credential/text sink added"
+    }
+  ],
+  "classification_mutation_performed": true,
+  "conclusion": "#500 explicitly approved and dismissed as false positive; three prior warnings retained OPEN. CodeQL check auto-updated to success without rerun.",
+  "provenance": {
+    "sink": {
+      "sha": "dd5ffb9ee70faa2208341d375df611cead0bac0a",
+      "author_time": "2026-08-28T22:39:32+09:00",
+      "committer_time": "2026-08-30T02:55:39+09:00"
+    },
+    "source": {
+      "sha": "19d2fb9b9bd5b00984022cdf627a699d84fa978d",
+      "author_time": "2026-10-15T18:55:08+09:00",
+      "committer_time": "2026-10-17T12:37:55+09:00"
+    }
+  },
+  "first_registered_analysis": {
+    "id": 2111442527,
+    "ref": "refs/pull/8694/merge",
+    "commit": "5d3b0433412458ba78e01f78b06bb992127c443a",
+    "created_at": "2026-11-06T11:23:58Z"
+  },
+  "runtime_flow_first_introduction": "Not inferred from alert creation time; source and sink predate this PR and current four geometry flows are reviewed separately.",
+  "authorized_classification": {
+    "approval": "explicit user approval for #500 false positive and at most one conditional same-head CodeQL Rust rerun",
+    "observed_at": "2026-11-06T11:40:04.787478+00:00",
+    "head": "d440ddc370026ba89ac79a6f6bc2385b24195973",
+    "before": {
+      "500": {
+        "global": null,
+        "instance": "open",
+        "ref": "refs/pull/8694/merge",
+        "dismissed_reason": null
+      },
+      "478": {
+        "global": null,
+        "instance": "open",
+        "ref": "refs/pull/8694/merge",
+        "dismissed_reason": null
+      },
+      "483": {
+        "global": null,
+        "instance": "open",
+        "ref": "refs/pull/8694/merge",
+        "dismissed_reason": null
+      },
+      "484": {
+        "global": null,
+        "instance": "open",
+        "ref": "refs/pull/8694/merge",
+        "dismissed_reason": null
+      }
+    },
+    "after": {
+      "500": {
+        "global": "dismissed",
+        "instance": "dismissed",
+        "ref": "refs/pull/8694/merge",
+        "dismissed_reason": "false positive"
+      },
+      "478": {
+        "global": null,
+        "instance": "open",
+        "ref": "refs/pull/8694/merge",
+        "dismissed_reason": null
+      },
+      "483": {
+        "global": null,
+        "instance": "open",
+        "ref": "refs/pull/8694/merge",
+        "dismissed_reason": null
+      },
+      "484": {
+        "global": null,
+        "instance": "open",
+        "ref": "refs/pull/8694/merge",
+        "dismissed_reason": null
+      }
+    },
+    "alert": 500,
+    "dismissed_reason": "false positive",
+    "dismissed_by": "edwardkim",
+    "dismissed_at": "2026-11-06T11:40:01Z",
+    "workflow_rerun_used": false,
+    "other_alerts_unchanged": true
+  }
+}

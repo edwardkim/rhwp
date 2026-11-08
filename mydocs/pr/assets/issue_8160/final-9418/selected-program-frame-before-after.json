@@ -1,0 +1,18 @@
+{
+  "case_sha256": "e70d2b8ffedbeb3dfe4403f7294938b828fae5d0a5e7b4da0264e73413277738",
+  "before_producer": "cfad19a23c44d4e70e155643db42519530a6c5e3",
+  "before_exit": 101,
+  "before_assertion": "selected original program inherited prior-slot HFT frame",
+  "after_producer": "5df67d3299befb467a49dc4eaafd12d6e1877e2d",
+  "after_tests_passed": 5,
+  "after_tests_failed": 0,
+  "existing_default_HFT_controls_preserved": true,
+  "registered": false,
+  "historical_private_execution": true,
+  "later_permanent_registration": {
+    "test_head_sha": "ef69d163e05062f9c281968a0f9e0884a616aec3",
+    "case": "tests/cases/issue_7445_hft_glyph_paint_frame.rs",
+    "case_sha256": "e70d2b8ffedbeb3dfe4403f7294938b828fae5d0a5e7b4da0264e73413277738",
+    "registered_cargo_validation": "validation-focused.json"
+  }
+}

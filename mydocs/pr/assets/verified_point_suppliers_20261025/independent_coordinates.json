@@ -1,0 +1,350 @@
+{
+  "gulim": {
+    "input_sha256": "446a7d75666788b9dde8586716a592b507ad1c689dd50709890771d84735e3e8",
+    "pdf_sha256": "31d9188b0212d222d7eb46e391febaaf0bc591516fa8939a12c2720f7c1fdcc5",
+    "glyph_supplier": "Haansoft Dotum",
+    "point_program_is_primary": false,
+    "glyphs": [
+      {
+        "text": "․",
+        "font": "Haansoft Dotum",
+        "x_css96": 140.08407592773438,
+        "baseline_css96": 143.52315266927084
+      },
+      {
+        "text": "․",
+        "font": "Haansoft Dotum",
+        "x_css96": 169.02839152018228,
+        "baseline_css96": 143.52315266927084
+      },
+      {
+        "text": "․",
+        "font": "Haansoft Dotum",
+        "x_css96": 122.01387532552083,
+        "baseline_css96": 164.77991739908853
+      },
+      {
+        "text": "B",
+        "font": "Gulim",
+        "x_css96": 124.25265502929688,
+        "baseline_css96": 164.77991739908853
+      },
+      {
+        "text": "C",
+        "font": "Gulim",
+        "x_css96": 151.59783935546875,
+        "baseline_css96": 164.77991739908853
+      },
+      {
+        "text": "‧",
+        "font": "Haansoft Dotum",
+        "x_css96": 181.82145182291666,
+        "baseline_css96": 164.77991739908853
+      },
+      {
+        "text": "E",
+        "font": "Gulim",
+        "x_css96": 192.53564453125,
+        "baseline_css96": 164.77991739908853
+      }
+    ],
+    "qualification": {
+      "runtime": "8dc75860cec88ddf7c3f8aeee230b2ca7e2e5537",
+      "dpi": 96,
+      "coordinate_tolerance_css_px": 2,
+      "direct_read": "current full-page review/overlay3594,3608 and same-coordinate details3609",
+      "native": {
+        "pages": 1,
+        "minimum_raw": 100,
+        "tsv": "mydocs/pr/assets/verified_point_suppliers_20261025/tsv/native/gulim.tsv",
+        "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+        "command": [
+          "/home/tsjang/rhwp/venv/bin/python",
+          "/home/tsjang/rhwp/scripts/visual_sweep.py",
+          "--silhouette-only",
+          "--file-target",
+          "native224-point-gulim-native",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/pr8057-explicit-font-controls-3444/gulim.hwpx",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-pr8057-explicit-font-controls-3445/print/gulim/gulim-2020.pdf",
+          "--rhwp-bin",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-224",
+          "--compat",
+          "2022",
+          "--dpi",
+          "96",
+          "--page-workers",
+          "1",
+          "--out",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/current-runtime-native224-3574/native224-point-gulim-native",
+          "--font-path",
+          "/usr/share/fonts",
+          "--font-path",
+          "/usr/local/share/fonts",
+          "--font-path",
+          "/home/tsjang/.local/share/fonts",
+          "--font-path",
+          "/home/tsjang/rhwp/assets/fonts"
+        ]
+      },
+      "wasm": {
+        "pages": 1,
+        "minimum_raw": 100,
+        "tsv": "mydocs/pr/assets/verified_point_suppliers_20261025/tsv/wasm/gulim.tsv",
+        "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+        "command": [
+          "/home/tsjang/rhwp/venv/bin/python",
+          "/home/tsjang/rhwp/scripts/visual_sweep.py",
+          "--silhouette-only",
+          "--file-target",
+          "fresh063-point-gulim-native",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/pr8057-explicit-font-controls-3444/gulim.hwpx",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-pr8057-explicit-font-controls-3445/print/gulim/gulim-2020.pdf",
+          "--rhwp-bin",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-224",
+          "--compat",
+          "2022",
+          "--dpi",
+          "96",
+          "--page-workers",
+          "1",
+          "--out",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/current-runtime-fresh063-3574/fresh063-point-gulim-native",
+          "--wasm-pkg",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-063",
+          "--font-path",
+          "/usr/share/fonts",
+          "--font-path",
+          "/usr/local/share/fonts",
+          "--font-path",
+          "/home/tsjang/.local/share/fonts",
+          "--font-path",
+          "/home/tsjang/rhwp/assets/fonts"
+        ]
+      }
+    }
+  },
+  "arial": {
+    "input_sha256": "becf0ad351d50183a2c003cd5ec94fd8e67fc5a9cc810a0b01e7609685786284",
+    "pdf_sha256": "f8208b65d3fabe28180cbde9ed5a81d49d9c3740e395dbc0869d98d9a0080934",
+    "glyph_supplier": "Haansoft Batang",
+    "point_program_is_primary": false,
+    "glyphs": [
+      {
+        "text": "․",
+        "font": "Haansoft Batang",
+        "x_css96": 122.33369954427083,
+        "baseline_css96": 143.52315266927084
+      },
+      {
+        "text": "B",
+        "font": "ArialMT",
+        "x_css96": 124.57248942057292,
+        "baseline_css96": 143.52315266927084
+      },
+      {
+        "text": "C",
+        "font": "ArialMT",
+        "x_css96": 151.27801513671875,
+        "baseline_css96": 143.52315266927084
+      },
+      {
+        "text": "‧",
+        "font": "Haansoft Batang",
+        "x_css96": 180.86197916666666,
+        "baseline_css96": 143.52315266927084
+      },
+      {
+        "text": "E",
+        "font": "ArialMT",
+        "x_css96": 189.8171183268229,
+        "baseline_css96": 143.52315266927084
+      }
+    ],
+    "qualification": {
+      "runtime": "8dc75860cec88ddf7c3f8aeee230b2ca7e2e5537",
+      "dpi": 96,
+      "coordinate_tolerance_css_px": 2,
+      "direct_read": "current full-page review/overlay3594,3608 and same-coordinate details3609",
+      "native": {
+        "pages": 1,
+        "minimum_raw": 100,
+        "tsv": "mydocs/pr/assets/verified_point_suppliers_20261025/tsv/native/arial.tsv",
+        "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+        "command": [
+          "/home/tsjang/rhwp/venv/bin/python",
+          "/home/tsjang/rhwp/scripts/visual_sweep.py",
+          "--silhouette-only",
+          "--file-target",
+          "native224-point-arial-native",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/pr8057-explicit-font-controls-3444/arial.hwpx",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-pr8057-explicit-font-controls-3445/print/arial/arial-2020.pdf",
+          "--rhwp-bin",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-224",
+          "--compat",
+          "2022",
+          "--dpi",
+          "96",
+          "--page-workers",
+          "1",
+          "--out",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/current-runtime-native224-3574/native224-point-arial-native",
+          "--font-path",
+          "/usr/share/fonts",
+          "--font-path",
+          "/usr/local/share/fonts",
+          "--font-path",
+          "/home/tsjang/.local/share/fonts",
+          "--font-path",
+          "/home/tsjang/rhwp/assets/fonts"
+        ]
+      },
+      "wasm": {
+        "pages": 1,
+        "minimum_raw": 100,
+        "tsv": "mydocs/pr/assets/verified_point_suppliers_20261025/tsv/wasm/arial.tsv",
+        "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+        "command": [
+          "/home/tsjang/rhwp/venv/bin/python",
+          "/home/tsjang/rhwp/scripts/visual_sweep.py",
+          "--silhouette-only",
+          "--file-target",
+          "fresh063-point-arial-native",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/pr8057-explicit-font-controls-3444/arial.hwpx",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-pr8057-explicit-font-controls-3445/print/arial/arial-2020.pdf",
+          "--rhwp-bin",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-224",
+          "--compat",
+          "2022",
+          "--dpi",
+          "96",
+          "--page-workers",
+          "1",
+          "--out",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/current-runtime-fresh063-3574/fresh063-point-arial-native",
+          "--wasm-pkg",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-063",
+          "--font-path",
+          "/usr/share/fonts",
+          "--font-path",
+          "/usr/local/share/fonts",
+          "--font-path",
+          "/home/tsjang/.local/share/fonts",
+          "--font-path",
+          "/home/tsjang/rhwp/assets/fonts"
+        ]
+      }
+    }
+  },
+  "hcr-batang": {
+    "input_sha256": "f6fac0b8db297d8461a41ff4ec5b53383b0a7bb91e3eab2b9729ea7615a210b4",
+    "pdf_sha256": "ae1fdf650ec961b1fbf9001933f2a4501691f7df04c67821145fd7b2a00ed546",
+    "glyph_supplier": "HCR Batang",
+    "point_program_is_primary": true,
+    "glyphs": [
+      {
+        "text": "․",
+        "font": "HCRBatang",
+        "x_css96": 122.81343587239583,
+        "baseline_css96": 143.52315266927084
+      },
+      {
+        "text": "B",
+        "font": "HCRBatang",
+        "x_css96": 126.65135701497395,
+        "baseline_css96": 143.52315266927084
+      },
+      {
+        "text": "C",
+        "font": "HCRBatang",
+        "x_css96": 152.23748779296875,
+        "baseline_css96": 143.52315266927084
+      },
+      {
+        "text": "‧",
+        "font": "HCRBatang",
+        "x_css96": 181.98136393229166,
+        "baseline_css96": 143.52315266927084
+      },
+      {
+        "text": "E",
+        "font": "HCRBatang",
+        "x_css96": 192.375732421875,
+        "baseline_css96": 143.52315266927084
+      }
+    ],
+    "qualification": {
+      "runtime": "8dc75860cec88ddf7c3f8aeee230b2ca7e2e5537",
+      "dpi": 96,
+      "coordinate_tolerance_css_px": 2,
+      "direct_read": "current full-page review/overlay3594,3608 and same-coordinate details3609",
+      "native": {
+        "pages": 1,
+        "minimum_raw": 100,
+        "tsv": "mydocs/pr/assets/verified_point_suppliers_20261025/tsv/native/hcr-batang.tsv",
+        "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+        "command": [
+          "/home/tsjang/rhwp/venv/bin/python",
+          "/home/tsjang/rhwp/scripts/visual_sweep.py",
+          "--silhouette-only",
+          "--file-target",
+          "native224-point-hcr-batang-native",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/pr8057-primary-hit-control-3452/hcr-batang.hwpx",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-pr8057-primary-hit-control-3453/print/hcr-batang/hcr-batang-2020.pdf",
+          "--rhwp-bin",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-224",
+          "--compat",
+          "2022",
+          "--dpi",
+          "96",
+          "--page-workers",
+          "1",
+          "--out",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/current-runtime-native224-3574/native224-point-hcr-batang-native",
+          "--font-path",
+          "/usr/share/fonts",
+          "--font-path",
+          "/usr/local/share/fonts",
+          "--font-path",
+          "/home/tsjang/.local/share/fonts",
+          "--font-path",
+          "/home/tsjang/rhwp/assets/fonts"
+        ]
+      },
+      "wasm": {
+        "pages": 1,
+        "minimum_raw": 100,
+        "tsv": "mydocs/pr/assets/verified_point_suppliers_20261025/tsv/wasm/hcr-batang.tsv",
+        "tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+        "command": [
+          "/home/tsjang/rhwp/venv/bin/python",
+          "/home/tsjang/rhwp/scripts/visual_sweep.py",
+          "--silhouette-only",
+          "--file-target",
+          "fresh063-point-hcr-batang-native",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/pr8057-primary-hit-control-3452/hcr-batang.hwpx",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/mcp-pr8057-primary-hit-control-3453/print/hcr-batang/hcr-batang-2020.pdf",
+          "--rhwp-bin",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-rebase-224",
+          "--compat",
+          "2022",
+          "--dpi",
+          "96",
+          "--page-workers",
+          "1",
+          "--out",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/current-runtime-fresh063-3574/fresh063-point-hcr-batang-native",
+          "--wasm-pkg",
+          "/home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-063",
+          "--font-path",
+          "/usr/share/fonts",
+          "--font-path",
+          "/usr/local/share/fonts",
+          "--font-path",
+          "/home/tsjang/.local/share/fonts",
+          "--font-path",
+          "/home/tsjang/rhwp/assets/fonts"
+        ]
+      }
+    }
+  }
+}

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from datetime import date, datetime
 from pathlib import Path
 
@@ -21,6 +22,8 @@ TRANS = FIXT / "transcripts"
 TRACES = FIXT / "traces"
 REPO = Path(__file__).resolve().parents[4]
 RECIPES_DIR = REPO / "mydocs" / "manual" / "recipes"
+sys.path.insert(0, str(REPO / "scripts"))
+from regression_document_scope import references_deferred_regression_input
 
 ISSUE = 5331
 SCHEMA = "1.0"
@@ -1113,6 +1116,8 @@ def extract_transcripts() -> list[dict]:
         json_blocks = extract_json_blocks(text)
         bash_blocks = extract_bash_blocks(text)
         for i, raw in enumerate(json_blocks, 1):
+            if references_deferred_regression_input(raw):
+                continue
             parsed = parse_json_loose(raw)
             tid = f"T{card['id']}-J{i:02d}"
             rec = {
@@ -1130,6 +1135,8 @@ def extract_transcripts() -> list[dict]:
             items.append(rec)
             dump(TRANS / f"{tid}.json", rec)
         for i, raw in enumerate(bash_blocks, 1):
+            if references_deferred_regression_input(raw):
+                continue
             tid = f"T{card['id']}-B{i:02d}"
             rec = {
                 "id": tid,

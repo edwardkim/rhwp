@@ -41,8 +41,6 @@ const TEXTBOX_HML: &str = r#"<HWPML Version="2.91"><HEAD/><BODY><SECTION>
   </RECTANGLE></TEXT></P>
 </SECTION></BODY><TAIL/></HWPML>"#;
 
-const EQUATION_SAMPLE: &str = "samples/exam_math.hwp";
-
 fn core() -> DocumentCore {
     DocumentCore::from_bytes(TABLE_HML.as_bytes()).expect("표 픽스처가 열려야 한다")
 }
@@ -132,26 +130,6 @@ fn total_match_count_tracks_the_include_cells_navigation_set() {
     assert!(
         with_cells.contains(r#""totalMatchCount":2"#),
         "{with_cells}"
-    );
-}
-
-#[test]
-fn find_navigation_count_excludes_equation_script_matches() {
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(EQUATION_SAMPLE);
-    let data = std::fs::read(path).expect("샘플 파일 읽기 실패");
-    let core = DocumentCore::from_bytes(&data).expect("샘플 파일 파싱 실패");
-
-    assert_ne!(
-        core.search_all_text_native("lim", true, true)
-            .expect("전체 검색 실패"),
-        "[]",
-        "대조군: 전체 검색은 수식 스크립트를 포함해야 한다"
-    );
-    assert_eq!(
-        core.search_text_native("lim", 0, 0, 0, true, true, true)
-            .expect("Find 검색 실패"),
-        r#"{"found":false}"#,
-        "Find/F3가 이동할 수 없는 수식 매치는 카운트와 탐색에서 제외해야 한다"
     );
 }
 

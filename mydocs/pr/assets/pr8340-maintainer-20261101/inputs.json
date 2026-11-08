@@ -1,0 +1,1230 @@
+[
+  {
+    "key": "nested-same-line",
+    "group": "original",
+    "input": "tests/fixtures/issue7419-boundaries/nested-same-line.hwpx",
+    "input_sha256": "0340236f0d79a68a343bd771266544781f9313db63ded04168f62b8fb2770d7c",
+    "pdf": "pdf/issue7419/nested-same-line-print-2024.pdf",
+    "pdf_sha256": "86facc427943289a3854da58614813ca1d391210e8bb6092c6f7e0fa5a9db91c",
+    "props": null
+  },
+  {
+    "key": "nested-same-line-restored",
+    "group": "restored",
+    "input": "mydocs/pr/assets/nested-cell-paragraph-format/nested-same-line-restored.hwpx",
+    "input_sha256": "00688a5c4afad7a75ad6f09507a85337d579ec9ae58f7d49add7612ca3eb4933",
+    "pdf": "pdf/issue7419/nested-same-line-print-2024.pdf",
+    "pdf_sha256": "86facc427943289a3854da58614813ca1d391210e8bb6092c6f7e0fa5a9db91c",
+    "props": null
+  },
+  {
+    "key": "nested-width-wrap",
+    "group": "original",
+    "input": "tests/fixtures/issue7419-boundaries/nested-width-wrap.hwpx",
+    "input_sha256": "8f102ecbd644d720f3766c794fa6b3ba55d7f93e8441f07d0004f519ec0d0f3c",
+    "pdf": "pdf/issue7419/nested-width-wrap-print-2024.pdf",
+    "pdf_sha256": "8e1164da675863c542c2d9873f104b6485e294bcbf6bcd9087d66c9fe5afb1d1",
+    "props": null
+  },
+  {
+    "key": "nested-width-wrap-restored",
+    "group": "restored",
+    "input": "mydocs/pr/assets/nested-cell-paragraph-format/nested-width-wrap-restored.hwpx",
+    "input_sha256": "2e388422e9b25744678431da949e355e050c551f58bfbb76aaf148fb365562fc",
+    "pdf": "pdf/issue7419/nested-width-wrap-print-2024.pdf",
+    "pdf_sha256": "8e1164da675863c542c2d9873f104b6485e294bcbf6bcd9087d66c9fe5afb1d1",
+    "props": null
+  },
+  {
+    "key": "nested-same-line-center-hwpx",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-same-line-center.hwpx",
+    "input_sha256": "7662867359a119499621926a923460dd8acc7e81600c4c171b35e6fbe58011d1",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-same-line-center-hwpx-print-2024.pdf",
+    "pdf_sha256": "27c367b923c8f4ff033f143b965aa3fcdcbd77d344baea654ccf39384a6b4fbc",
+    "original": "tests/fixtures/issue7419-boundaries/nested-same-line.hwpx",
+    "props": {
+      "alignment": "center"
+    },
+    "targets": [
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "nested-same-line-right-hwpx",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-same-line-right.hwpx",
+    "input_sha256": "1347a74e29c57ed72b28ac5946399c6af9a2c7c23d6ede2139dd9815a177f797",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-same-line-right-hwpx-print-2024.pdf",
+    "pdf_sha256": "f2315f8d17d7a087db1e2795514de2189d53e200da83d48c9bf964acde040b6e",
+    "original": "tests/fixtures/issue7419-boundaries/nested-same-line.hwpx",
+    "props": {
+      "alignment": "right"
+    },
+    "targets": [
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "nested-same-line-before-hwpx",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-same-line-before.hwpx",
+    "input_sha256": "014c4ff22a9f8df4255f7af68171acda88efb214119a5cf9b940346a206c4918",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-same-line-before-hwpx-print-2024.pdf",
+    "pdf_sha256": "54f7c10cc9537d7a7e95d07ac9d5154bfad5e80e934b3242dd8b2ce051b6a162",
+    "original": "tests/fixtures/issue7419-boundaries/nested-same-line.hwpx",
+    "props": {
+      "spacingBefore": 600
+    },
+    "targets": [
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "nested-same-line-line-hwpx",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-same-line-line.hwpx",
+    "input_sha256": "33b00050f0bd829f7a88d46248f1be9c7a1d0c7acd91fc00ebc8357a675c63d3",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-same-line-line-hwpx-print-2024.pdf",
+    "pdf_sha256": "86f801b6a295236625ea09a0f231671894cd4d48168b4d8a3c2704937597a903",
+    "original": "tests/fixtures/issue7419-boundaries/nested-same-line.hwpx",
+    "props": {
+      "lineSpacing": 200
+    },
+    "targets": [
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "nested-same-line-before-line-hwpx",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-same-line-before-line.hwpx",
+    "input_sha256": "3bd7b5d64260ceefec6843d69b7012c1015b64d93d929ffb19009db8bebd03cf",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-same-line-before-line-hwpx-print-2024.pdf",
+    "pdf_sha256": "dfb8af7631b59d13706e41faf1d11ff45acb6b7bd763ccd375c3f589fc09c70c",
+    "original": "tests/fixtures/issue7419-boundaries/nested-same-line.hwpx",
+    "props": {
+      "spacingBefore": 600,
+      "lineSpacing": 200
+    },
+    "targets": [
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "nested-same-line-before-line-hwp",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-same-line-before-line.hwp",
+    "input_sha256": "8416677db00b3e4b18e8d9dd645f202ff2b53d7258c8022f3dba98fc9be745ec",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-same-line-before-line-hwp-print-2024.pdf",
+    "pdf_sha256": "8f528447617811b3fe76301c72c87a45c3c5b7a6e539c5003669de066c764639",
+    "original": "tests/fixtures/issue7419-boundaries/nested-same-line.hwpx",
+    "props": {
+      "spacingBefore": 600,
+      "lineSpacing": 200
+    },
+    "targets": [
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "nested-same-line-indent-hwpx",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-same-line-indent.hwpx",
+    "input_sha256": "564aa24e15da5d1b6e5267cca5c6492d99eaf0d86d16686c6ab31e91bd651899",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-same-line-indent-hwpx-print-2024.pdf",
+    "pdf_sha256": "8fb7bba60a0bf8180ab1b6e9e6043a9b0f606822957ab1d8b7887fbb863f632d",
+    "original": "tests/fixtures/issue7419-boundaries/nested-same-line.hwpx",
+    "props": {
+      "marginLeft": 300,
+      "marginRight": 200,
+      "indent": -100
+    },
+    "targets": [
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "nested-width-wrap-center-hwpx",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-width-wrap-center.hwpx",
+    "input_sha256": "ff00d387bcfae3a8cd830345f064139fab50e670ba8cc4dcc9ce6484396a6f53",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-width-wrap-center-hwpx-print-2024.pdf",
+    "pdf_sha256": "4f78099af08f914f13eaa21645266e342c1be38567e9d6cb08f62ac646ade316",
+    "original": "tests/fixtures/issue7419-boundaries/nested-width-wrap.hwpx",
+    "props": {
+      "alignment": "center"
+    },
+    "targets": [
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "nested-width-wrap-right-hwpx",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-width-wrap-right.hwpx",
+    "input_sha256": "0ac4328126b502bcb4aab5d077a1029200e314dbcb0df64f21e6ec10e17539e6",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-width-wrap-right-hwpx-print-2024.pdf",
+    "pdf_sha256": "7b8009bcfc6b207a77783bc132e70fa2f7915d985212bc3151e14ca8e47932d4",
+    "original": "tests/fixtures/issue7419-boundaries/nested-width-wrap.hwpx",
+    "props": {
+      "alignment": "right"
+    },
+    "targets": [
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "nested-width-wrap-before-hwpx",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-width-wrap-before.hwpx",
+    "input_sha256": "b66938248ba38630d1350a199ce30ef0ff9dddea7e273278faef2f3aebcb181e",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-width-wrap-before-hwpx-print-2024.pdf",
+    "pdf_sha256": "c53bf1d48da5331a4f41fb8ccb1edef8b863d3a6cdb34a968e36a84d306efe39",
+    "original": "tests/fixtures/issue7419-boundaries/nested-width-wrap.hwpx",
+    "props": {
+      "spacingBefore": 600
+    },
+    "targets": [
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "nested-width-wrap-line-hwpx",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-width-wrap-line.hwpx",
+    "input_sha256": "67c425aa581d1b3449dba164199a98fab6bd8004c0531f880229cfc786f50224",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-width-wrap-line-hwpx-print-2024.pdf",
+    "pdf_sha256": "fbfa8b2b1e8a12330c1cdf1a0aedd8981f0198bb17254313f3d476f96c6c703f",
+    "original": "tests/fixtures/issue7419-boundaries/nested-width-wrap.hwpx",
+    "props": {
+      "lineSpacing": 200
+    },
+    "targets": [
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "nested-width-wrap-before-line-hwpx",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-width-wrap-before-line.hwpx",
+    "input_sha256": "33b3e50145a171dd142cf3d49f8dee2a0a5fd9315ef3c4fd4ec01e6431fabe7b",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-width-wrap-before-line-hwpx-print-2024.pdf",
+    "pdf_sha256": "32a027d9fa40fc302446f47611b2b1a2a8a96987930426e8f2bbffaaff9e20f7",
+    "original": "tests/fixtures/issue7419-boundaries/nested-width-wrap.hwpx",
+    "props": {
+      "spacingBefore": 600,
+      "lineSpacing": 200
+    },
+    "targets": [
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "nested-width-wrap-before-line-hwp",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-width-wrap-before-line.hwp",
+    "input_sha256": "ebde301f65ab0cfb177b8949a122c314ddd116174917722a70eb1aa5dd64ec82",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-width-wrap-before-line-hwp-print-2024.pdf",
+    "pdf_sha256": "87f5ddfc482ada65ea77a327c318f77aafd54507bd3a735f5f6438c47360a75b",
+    "original": "tests/fixtures/issue7419-boundaries/nested-width-wrap.hwpx",
+    "props": {
+      "spacingBefore": 600,
+      "lineSpacing": 200
+    },
+    "targets": [
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "nested-width-wrap-indent-hwpx",
+    "group": "edited",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-width-wrap-indent.hwpx",
+    "input_sha256": "1670ae22683e0f4816e1d100886a79450b66891292e8343863743184ded52cc1",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-width-wrap-indent-hwpx-print-2024.pdf",
+    "pdf_sha256": "84418eee15ae4f24ab8590f9445d65b34e71a1c7ce1709cfe214b435508b4b32",
+    "original": "tests/fixtures/issue7419-boundaries/nested-width-wrap.hwpx",
+    "props": {
+      "marginLeft": 300,
+      "marginRight": 200,
+      "indent": -100
+    },
+    "targets": [
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 1,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "nested-same-line-studio-right-hwpx",
+    "group": "browser",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-same-line-studio-right.hwpx",
+    "input_sha256": "4d0500174706045a6d6bf59bb01938041d88f631f8e8ce9475e3e2ecad52bd8a",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-same-line-studio-right-hwpx-print-2024.pdf",
+    "pdf_sha256": "3c67d310300d6262718ca778b2680f5aacf5db9317dbef8d605fef4b7f510e23",
+    "original": "tests/fixtures/issue7419-boundaries/nested-same-line.hwpx",
+    "props": {
+      "alignment": "right"
+    },
+    "targets": [
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "nested-width-wrap-studio-right-hwpx",
+    "group": "browser",
+    "input": "mydocs/pr/assets/pr8340-maintainer-20261101/inputs/nested-width-wrap-studio-right.hwpx",
+    "input_sha256": "881fd59b4e8aa80c538675517008671d224295de71c955fd2f395032e10cfe97",
+    "pdf": "mydocs/pr/assets/pr8340-maintainer-20261101/pdf/nested-width-wrap-studio-right-hwpx-print-2024.pdf",
+    "pdf_sha256": "51ba42e71b435dc095549f2ad4acf2bc9d9b32532bf75cf40ca664422fe73ca2",
+    "original": "tests/fixtures/issue7419-boundaries/nested-width-wrap.hwpx",
+    "props": {
+      "alignment": "right"
+    },
+    "targets": [
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      },
+      {
+        "sec": 0,
+        "parentPara": 4,
+        "path": [
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 1,
+            "cellParaIndex": 0
+          }
+        ]
+      }
+    ]
+  }
+]

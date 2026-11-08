@@ -1,0 +1,62 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 1 /Kids [3 0 R] >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 600 720] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 850 >>
+stream
+q 1 0 0 1 0 360 cm
+BT /F1 10 Tf 1 0 0 1 20 345 Tm (OUTSIDE ABOVE) Tj ET
+q 0 G 0.5 w 
+20 30 m 380 30 l
+20 330 m 380 330 l
+S 0.7 w
+20 30 m 20 330 l
+380 30 m 380 330 l
+200.0 30 m 200.0 330 l
+S 0.5 w
+20 180.0 m 380 180.0 l S
+Q
+BT /F1 10 Tf 1 0 0 1 210 315 Tm (UPPER RIGHT) Tj ET
+BT /F1 10 Tf 1 0 0 1 30 165 Tm (LOWER LEFT) Tj ET
+BT /F1 10 Tf 1 0 0 1 210 165 Tm (LOWER RIGHT) Tj ET
+BT /F1 10 Tf 1 0 0 1 20 -300 Tm (OUTSIDE AFTER) Tj ET
+BT /F1 10 Tf 1 0 0 1 30 315 Tm (BEFORE CHILD) Tj ET
+q 0 G 0.5 w
+40 220 m 180 220 l S
+40 280 m 180 280 l S
+40 220 m 40 280 l S
+180 220 m 180 280 l S
+110.0 220 m 110.0 280 l S
+40 250.0 m 180 250.0 l S
+Q
+BT /F1 10 Tf 1 0 0 1 48 265 Tm (A) Tj ET
+BT /F1 10 Tf 1 0 0 1 118 265 Tm (B) Tj ET
+BT /F1 10 Tf 1 0 0 1 48 235 Tm (C) Tj ET
+BT /F1 10 Tf 1 0 0 1 118 235 Tm (D) Tj ET
+BT /F1 10 Tf 1 0 0 1 30 200 Tm (AFTER CHILD) Tj ET
+Q
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000001142 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1212
+%%EOF

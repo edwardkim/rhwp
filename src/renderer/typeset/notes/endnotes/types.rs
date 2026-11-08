@@ -25,6 +25,7 @@ pub(in crate::renderer::typeset) struct EnMetricsVars {
     pub(in crate::renderer::typeset) local_vpos_rewind_crosses_prev_content: bool,
     pub(in crate::renderer::typeset) min_vpos_rewind_height: f64,
     pub(in crate::renderer::typeset) new_endnote_between_notes_px: Option<f64>,
+    pub(in crate::renderer::typeset) reserved_tail_spacing_px: f64,
     pub(in crate::renderer::typeset) no_separator_new_note_head_fits_current_column: bool,
     pub(in crate::renderer::typeset) ssot_debug: bool,
     pub(in crate::renderer::typeset) ssot_level: EnSsotLevel,
@@ -50,6 +51,7 @@ pub(in crate::renderer::typeset) struct EndnoteFlowState {
 /// [#2026] en_para 루프의 미주-당 읽기 플래그/스칼라 묶음.
 #[derive(Clone, Copy)]
 pub(in crate::renderer::typeset) struct EndnoteEmitVars {
+    pub(in crate::renderer::typeset) reserved_tail_spacing_px: f64,
     pub(in crate::renderer::typeset) boundary_prev_endnote_had_vpos_rewind: bool,
     pub(in crate::renderer::typeset) endnote_has_vpos_rewind: bool,
     pub(in crate::renderer::typeset) continued_endnote_tail_before_new_note: bool,

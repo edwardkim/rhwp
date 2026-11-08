@@ -163,7 +163,11 @@ fn hwpx_section0_xml(bytes: &[u8]) -> String {
     let mut zip = zip::ZipArchive::new(reader).expect("open hwpx zip");
     for index in 0..zip.len() {
         let mut file = zip.by_index(index).expect("zip entry");
-        if file.name().contains("section0.xml") {
+        if file
+            .name()
+            .expect("ZIP 엔트리 이름")
+            .contains("section0.xml")
+        {
             let mut xml = String::new();
             file.read_to_string(&mut xml).expect("read section0.xml");
             return xml;

@@ -1,0 +1,8 @@
+use rhwp::parser::pdf::{parse_pdf_with_policy,PdfImportPolicy,PdfImportOptions};
+fn main()->Result<(),Box<dyn std::error::Error>> {
+ let base=std::path::PathBuf::from(std::env::args().nth(1).unwrap());
+ let fixtures:Vec<serde_json::Value>=serde_json::from_slice(&std::fs::read(base.join("negative-fixtures.json"))?)?;
+ let normal=std::fs::read(std::env::args().nth(2).unwrap())?;let mut rows=Vec::new();
+ for fixture in &fixtures {let bytes=std::fs::read(fixture["input"].as_str().unwrap())?;let e=parse_pdf_with_policy(&bytes,&PdfImportOptions::default(),PdfImportPolicy::default()).err().expect("negative input must fail");if fixture["name"]=="encrypted"{assert_eq!(e.code,"PDF_ENCRYPTION_UNSUPPORTED");}assert!(parse_pdf_with_policy(&normal,&PdfImportOptions::default(),PdfImportPolicy::default()).is_ok());rows.push(serde_json::json!({"name":fixture["name"],"code":e.code,"healthyFollowup":true}));}
+ std::fs::write(base.join("negative-rust-results.json"),serde_json::to_vec_pretty(&rows)?)?;println!("RUST NEGATIVE PASS {}",rows.len());Ok(())
+}

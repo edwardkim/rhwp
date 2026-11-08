@@ -37,7 +37,7 @@ fn header_xml(hwpx: &[u8]) -> String {
     let mut out = String::new();
     for i in 0..zip.len() {
         let mut f = zip.by_index(i).expect("zip 항목");
-        if f.name() == "Contents/header.xml" {
+        if f.name().expect("ZIP 엔트리 이름") == "Contents/header.xml" {
             f.read_to_string(&mut out).expect("header.xml 읽기");
             break;
         }

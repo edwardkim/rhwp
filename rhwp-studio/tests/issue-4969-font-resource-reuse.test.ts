@@ -22,7 +22,7 @@ type ResolverAwareRegister = (
 
 const studioRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const bytes = new Uint8Array(fs.readFileSync(
-  path.join(studioRoot, '../ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf'),
+  path.join(studioRoot, '../ttfs/opensource/RHWPOldHangul-Regular.otf'),
 ));
 
 function fontFixture() {

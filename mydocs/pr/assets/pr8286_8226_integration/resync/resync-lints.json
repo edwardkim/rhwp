@@ -1,0 +1,110 @@
+{
+  "head": "ab1491d40b43c7d54941337b852f7e7f0a5eff5e",
+  "checks": [
+    {
+      "label": "prepare",
+      "argv": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit": 0
+    },
+    {
+      "label": "unit-tier",
+      "argv": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "b8dd67c500"
+      ],
+      "exit": 0
+    },
+    {
+      "label": "fmt",
+      "argv": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0
+    },
+    {
+      "label": "clippy-root",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "label": "clippy-wasm",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "label": "build-workspace",
+      "argv": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ],
+      "exit": 0
+    },
+    {
+      "label": "clippy-workspace",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "label": "test-manifest",
+      "argv": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "b8dd67c500"
+      ],
+      "exit": 0
+    },
+    {
+      "label": "doc",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--doc"
+      ],
+      "exit": 0
+    }
+  ]
+}

@@ -302,10 +302,8 @@ pub(in crate::renderer::typeset) fn native_hwp5_first_footnote_overlap_break_lin
     }
 
     let footnote_top = st.layout.body_area.height - footnote_height;
-    let projected_reclaim = st.footer_band_reclaim_for_height(footnote_height);
     let projected_available = (st.base_available_height()
-        - (footnote_height - projected_reclaim).max(0.0)
-        - st.footnote_safety_margin
+        - footnote_height.max(0.0)
         - st.current_zone_y_offset
         - st.current_bottom_fixed_exclusion)
         .max(0.0);
@@ -390,11 +388,7 @@ pub(in crate::renderer::typeset) fn native_hwp5_final_marker_footnote_uses_next_
         || para.controls.len() != 1
         || !matches!(para.controls.get(ctrl_idx), Some(Control::Footnote(_)))
         || !para_has_visible_text(para)
-        || footnote.paragraphs.len() != 1
-        || crate::renderer::composer::compose_paragraph(&footnote.paragraphs[0])
-            .lines
-            .len()
-            != 1
+        || footnote.paragraphs.is_empty()
         || !matches!(
             st.current_items.last(),
             Some(PageItem::FullParagraph { para_index }) if *para_index == para_idx
@@ -440,8 +434,9 @@ pub(in crate::renderer::typeset) fn native_hwp5_final_marker_footnote_uses_next_
         return false;
     }
 
-    // marker 뒤의 다음 문단이 stored `vpos=0`으로 새 physical page를 시작할 때,
-    // 현재 page의 마지막 note를 새 page로 소유시킬지 판정한다.
+    // 마지막 참조 뒤의 저장 vpos=0은 다음 물리 쪽의 본문 시작을 나타낸다.
+    // 각주의 줄 수와 관계없이 전체 예약 높이가 현재 본문과 함께 들어가는지 본다.
+    // 각주 내부 재시작의 조각 소속은 호출자의 기존 분할 큐가 먼저 처리한다.
     //
     // 첫 각주뿐 아니라 기존 각주 뒤의 마지막 note도 같은 계약을 가질 수 있다. 예를
     // 들어 이 fixture의 p199에는 257)이 남고 258)의 marker는 p199 tail에 있지만,
@@ -450,15 +445,22 @@ pub(in crate::renderer::typeset) fn native_hwp5_final_marker_footnote_uses_next_
     // page-top reset과 projected footnote collision을 둘 다 요구하므로, 일반 multi-note
     // owner를 이동시키지는 않는다.
     let projected_footnote_height = st.projected_footnote_height(footnote_height, 1);
-    let projected_reclaim = st.footer_band_reclaim_for_height(projected_footnote_height);
     let projected_available = (st.base_available_height()
-        - (projected_footnote_height - projected_reclaim).max(0.0)
-        - st.footnote_safety_margin
+        - projected_footnote_height.max(0.0)
         - st.current_zone_y_offset
         - st.current_bottom_fixed_exclusion)
         .max(0.0);
 
-    st.current_height > projected_available + 0.5
+    // 수용한 마지막 본문의 내용 끝과 다음 줄로의 흐름 끝은 별개다.
+    // 후속 항목이 없는 같은 종료점에서만 fit/paint에 발행한 내용 끝을 공유한다.
+    // 원시 LINE_SEG의 마지막 간격을 다시 빼면 재구성한 줄을 오인할 수 있으므로,
+    // 수용 결과가 없으면 기존의 보수적인 흐름 끝 판정을 유지한다.
+    let body_bottom = st
+        .paragraph_fragment_content_bottoms
+        .get(&(para_idx, para.line_segs.len()))
+        .filter(|bounds| bounds.flow_end == st.current_height)
+        .map_or(st.current_height, |bounds| bounds.content_bottom);
+    body_bottom > projected_available + 0.5
 }
 
 /// 현재 page의 일반 Body 각주를 layout과 같은 composed line metric으로 재측정한다.
@@ -471,8 +473,9 @@ pub(in crate::renderer::typeset) fn native_hwp5_final_marker_footnote_uses_next_
 pub(in crate::renderer::typeset) fn native_hwp5_existing_body_footnote_area_height(
     st: &TypesetState,
     paragraphs: &[Paragraph],
-    dpi: f64,
+    note_measure: &super::measure::BodyFootnoteMeasure<'_>,
 ) -> Option<f64> {
+    let dpi = note_measure.engine.dpi;
     let footnotes = &st.pages.last()?.footnotes;
     if footnotes.is_empty() {
         return None;
@@ -494,7 +497,11 @@ pub(in crate::renderer::typeset) fn native_hwp5_existing_body_footnote_area_heig
             return None;
         };
 
-        total += if let Some(fragment) = footnote_ref.fragment {
+        total += if let Some(height) =
+            note_measure.block_content_height(st, footnote, footnote_ref.fragment)
+        {
+            height
+        } else if let Some(fragment) = footnote_ref.fragment {
             // 저장 reset으로 확정한 조각의 줄 범위·번호·구분선까지 일치해야
             // 예약과 충돌 판정이 같은 각주 공간을 소비한다.
             if let Some(split) = native_hwp5_footnote_reset_fragments(footnote, dpi) {
@@ -529,13 +536,20 @@ pub(in crate::renderer::typeset) fn native_hwp5_existing_body_footnote_area_heig
 /// 현재 flow와 맞고 reset 직전 줄은 FootnoteArea 위에 끝나며 다음 줄만 실제 각주 경계를
 /// 침범하는 경우에만 허용한다. 이 조건은 p43의 pi=512처럼 body tail이 separator/첫 각주를
 /// 덮는 경우를 고치되, 일반적인 paragraph reset은 건드리지 않는다.
-pub(in crate::renderer::typeset) fn native_hwp5_existing_footnote_reset_overlap_break_line(
+#[derive(Clone, Copy)]
+pub(in crate::renderer::typeset) struct NativeHwp5FootnoteBodyBoundary {
+    pub(in crate::renderer::typeset) break_line: usize,
+    pub(in crate::renderer::typeset) footnote_area_height: f64,
+}
+
+pub(in crate::renderer::typeset) fn native_hwp5_existing_footnote_reset_boundary(
     st: &TypesetState,
     para: &Paragraph,
     fmt: &FormattedParagraph,
     paragraphs: &[Paragraph],
-    dpi: f64,
-) -> Option<usize> {
+    note_measure: &super::measure::BodyFootnoteMeasure<'_>,
+) -> Option<NativeHwp5FootnoteBodyBoundary> {
+    let dpi = note_measure.engine.dpi;
     if !stored_body_note_pagination(st)
         || st.col_count != 1
         || st.current_footnote_height <= 0.0
@@ -547,7 +561,7 @@ pub(in crate::renderer::typeset) fn native_hwp5_existing_footnote_reset_overlap_
 
     let page_vpos_base = st.vpos_page_base.or(st.vpos_lazy_base).unwrap_or(0);
     let actual_footnote_height =
-        native_hwp5_existing_body_footnote_area_height(st, paragraphs, dpi)?;
+        native_hwp5_existing_body_footnote_area_height(st, paragraphs, note_measure)?;
     let control_positions = para.control_text_positions();
     let mut current_footnotes = Vec::with_capacity(para.controls.len());
     for (control_index, control) in para.controls.iter().enumerate() {
@@ -581,36 +595,62 @@ pub(in crate::renderer::typeset) fn native_hwp5_existing_footnote_reset_overlap_
                 return None;
             }
 
-            // 현재 문단의 각주는 본문을 배치한 뒤 등록된다. marker가 reset 직전 줄에
-            // 있으면 이미 존재하는 각주만으로 계산한 top은 늦고, 새 note가 사후에
-            // FootnoteArea를 위로 키워 방금 배치한 다음 줄과 겹친다. 이 candidate보다
-            // 앞에 marker가 있는 현재 문단 각주만 exact 높이로 투영한다.
+            // 현재 문단의 각주는 본문을 배치한 뒤 등록된다. 재시작보다 앞의 참조는
+            // 직전 줄에 있지 않아도 현재 쪽의 각주 영역을 점유한다. 이 경계 앞의
+            // 참조만 실제 구성 높이로 투영하고 뒤쪽 참조는 다음 조각에 남긴다.
             let next_text_start = next.text_start as usize;
-            let prev_text_range = prev.text_start as usize..next_text_start;
-            let marker_on_prev_line = current_footnotes
-                .iter()
-                .any(|(position, _)| prev_text_range.contains(position));
-            if !current_footnotes.is_empty() && !marker_on_prev_line {
-                return None;
-            }
             let projected_current_notes: Vec<&Footnote> = current_footnotes
                 .iter()
                 .filter(|(position, _)| *position < next_text_start)
                 .map(|(_, footnote)| *footnote)
                 .collect();
+            let notes_margin =
+                projected_current_notes.len() as f64 * st.footnote_between_notes_margin;
             let projected_footnote_height = actual_footnote_height
-                + projected_current_notes.len() as f64 * st.footnote_between_notes_margin
+                + notes_margin
                 + projected_current_notes
                     .iter()
-                    .map(|footnote| composed_footnote_content_height(footnote, dpi))
+                    .map(|footnote| {
+                        // 본문 경계 앞의 표시는 같은 각주 원장의 앞조각만 예약한다.
+                        // 실제 등록도 이 저장 컷을 쓰므로 뒤조각의 공간을 중복 차감하지 않는다.
+                        native_hwp5_footnote_reset_fragments(footnote, dpi)
+                            .map(|split| split.prefix_height)
+                            .unwrap_or_else(|| note_measure.content_height(st, footnote))
+                    })
                     .sum::<f64>();
             let footnote_top = (st.layout.body_area.height - projected_footnote_height).max(0.0);
+            // 한/글은 앵커 줄의 각주를 줄 단위로 다음 쪽에 잇는다(issue1937 44쪽 44) 마지막
+            // 줄이 45쪽). 앵커 줄은 새 각주의 첫 줄과 함께 들어가면 이 쪽에 남는다.
+            let anchored_footnote_top = projected_current_notes
+                .last()
+                .map(|last| {
+                    let leading: f64 = projected_current_notes[..projected_current_notes.len() - 1]
+                        .iter()
+                        .map(|footnote| note_measure.content_height(st, footnote))
+                        .sum();
+                    (st.layout.body_area.height
+                        - (actual_footnote_height
+                            + notes_margin
+                            + leading
+                            + note_measure.first_line_content_height(st, last)))
+                        .max(0.0)
+                })
+                .unwrap_or(footnote_top);
             let flow_prev_bottom = flow_prev_top + fmt.line_heights[prev_idx];
             let flow_next_bottom =
                 flow_prev_top + fmt.line_advance(prev_idx) + fmt.line_heights[next_idx];
-            (flow_prev_bottom <= footnote_top + FOOTNOTE_BOUNDARY_TOLERANCE_PX
+            if std::env::var("RHWP_DIAG_SPLIT_BUDGET").is_ok() {
+                eprintln!(
+                    "DIAG_FN_RESET_OVERLAP line={next_idx} prev_bottom={flow_prev_bottom:.1} next_bottom={flow_next_bottom:.1} top={footnote_top:.1} anchored_top={anchored_footnote_top:.1} existing={actual_footnote_height:.1} current_notes={}",
+                    projected_current_notes.len()
+                );
+            }
+            (flow_prev_bottom <= anchored_footnote_top + FOOTNOTE_BOUNDARY_TOLERANCE_PX
                 && flow_next_bottom > footnote_top + FOOTNOTE_BOUNDARY_TOLERANCE_PX)
-                .then_some(next_idx)
+                .then_some(NativeHwp5FootnoteBodyBoundary {
+                    break_line: next_idx,
+                    footnote_area_height: projected_footnote_height,
+                })
         })
 }
 /// RowBreak 표가 쪽 경계를 넘을 때 순서대로 배치할 셀 각주.
@@ -627,6 +667,7 @@ pub(in crate::renderer::typeset) struct NativeHwp5FootnoteFragmentSplit {
     /// 첫 두 stored line이 모두 `vpos=0`인 명시적 다음 physical page 시작.
     pub(in crate::renderer::typeset) force_next_page: bool,
 }
+crate::storage::clone_copy!(NativeHwp5FootnoteFragmentSplit);
 
 /// 실제 각주 영역과 겹치는 native HWP5 본문 문단의 저장 reset을 찾는다.
 ///

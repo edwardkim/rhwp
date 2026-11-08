@@ -49,7 +49,7 @@
 //! `SetMapMode`·`SetWindow*`·`SetViewport*` 를 DC 에 담아만 두고 **아무도 소비하지
 //! 않았다**. 논리 좌표가 장치 좌표인 양 31배로 그려져 셀에는 그림 왼쪽 위 3%(흰 여백)만
 //! 들어왔다. 종전에는 이 EMF 가 파싱에 실패해 WMF 폴백으로 내려가 가려져 있었다.
-//! `the_page_transform_maps_logical_units_onto_the_device` 가 이 계약을 잠근다.
+//! `anisotropic_geometry_respects_physical_frame_and_target`가 이 계약을 잠근다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -249,29 +249,43 @@ fn contents_with_a_u32_length_prefix_is_recognised_as_emf() {
 /// 여기서는 배율 10:1 로 축약해, 논리 1000×1000 사각형이 장치 100×100 에 정확히
 /// 들어앉는지 **합성 변환을 실제로 계산해** 확인한다. 수정 전에는 1000×1000 이 나온다.
 #[test]
-fn the_page_transform_maps_logical_units_onto_the_device() {
-    let emf = emf_with_anisotropic_page(1000, 100);
-    let svg = rhwp::emf::convert_to_svg(&emf, (0.0, 0.0, 100.0, 100.0)).expect("EMF → SVG");
-
-    let (x, y, w, h) = device_rect(&svg);
-    let bad =
-        format!("window 1000 → viewport 100 인데 장치 사각형이 {x} {y} {w} {h} 다 — svg={svg}");
-    assert!((x - 0.0).abs() < 0.5 && (y - 0.0).abs() < 0.5, "{bad}");
-    assert!((w - 100.0).abs() < 0.5 && (h - 100.0).abs() < 0.5, "{bad}");
+fn anisotropic_geometry_respects_physical_frame_and_target() {
+    for (window, viewport, target, frame) in [
+        (1000, 100, 100.0_f32, 1000),
+        (600, 150, 75.0, 1000),
+        (1000, 100, 200.0, 2000),
+    ] {
+        let emf = emf_with_anisotropic_page(window, viewport, frame);
+        let svg = rhwp::emf::convert_to_svg(&emf, (0.0, 0.0, target, target)).expect("EMF → SVG");
+        let (x, y, w, h) = device_geometry(&svg);
+        // 참조 장치는 10mm당 viewport 픽셀이다. Frame은 0.01mm 단위이므로
+        // 논리 사각형이 채우는 viewport의 물리 10mm를 목표 영역에 대응시킨다.
+        // 세 번째 사례는 잉크 Bounds 대신 물리 Frame을 사용해야 절반을 차지한다.
+        let expected = target * 1000.0 / frame as f32;
+        let bad = format!(
+            "window={window}, viewport={viewport}, frame={frame}, target={target}: \
+             도형 경계 {x} {y} {w} {h}, 기대 크기 {expected} — svg={svg}"
+        );
+        assert!(x.abs() < 0.5 && y.abs() < 0.5, "{bad}");
+        assert!(
+            (w - expected).abs() < 0.5 && (h - expected).abs() < 0.5,
+            "{bad}"
+        );
+    }
 }
 
 /// `MM_ANISOTROPIC` + window/viewport + 논리 사각형 하나를 담은 최소 EMF.
-fn emf_with_anisotropic_page(window: i32, viewport: i32) -> Vec<u8> {
+fn emf_with_anisotropic_page(window: i32, viewport: i32, frame: i32) -> Vec<u8> {
     const MM_ANISOTROPIC: u32 = 8;
     let total = 108 + 12 + 16 + 16 + 16 + 24 + 20;
 
     let mut emf = Vec::with_capacity(total);
     let push = |value: i32, out: &mut Vec<u8>| out.extend_from_slice(&value.to_le_bytes());
 
-    // EMR_HEADER — bounds 는 장치 좌표(= viewport)라 루트 매핑이 항등이 된다.
+    // EMR_HEADER — Bounds는 장치 픽셀, Frame은 물리 0.01mm 단위다.
     push(1, &mut emf);
     push(108, &mut emf);
-    for bound in [0, 0, viewport, viewport, 0, 0, 1000, 1000] {
+    for bound in [0, 0, viewport, viewport, 0, 0, frame, frame] {
         push(bound, &mut emf);
     }
     emf.extend_from_slice(b" EMF");
@@ -280,7 +294,7 @@ fn emf_with_anisotropic_page(window: i32, viewport: i32) -> Vec<u8> {
     push(6, &mut emf);
     emf.extend_from_slice(&0u16.to_le_bytes());
     emf.extend_from_slice(&0u16.to_le_bytes());
-    for tail in [0, 0, 0, 1920, 1080, 527, 296, 0, 0, 0] {
+    for tail in [0, 0, 0, viewport, viewport, 10, 10, 0, 0, 0] {
         push(tail, &mut emf);
     }
     emf.resize(108, 0);
@@ -321,46 +335,24 @@ fn emf_with_anisotropic_page(window: i32, viewport: i32) -> Vec<u8> {
     emf
 }
 
-/// SVG fragment 의 `<rect>` 를 감싼 `matrix(…)` 들을 **실제로 합성해** 장치 사각형을 구한다.
-///
-/// 변환의 철자가 아니라 좌표의 의미를 검사하기 위한 것이다.
-fn device_rect(svg: &str) -> (f32, f32, f32, f32) {
-    // 바깥 → 안쪽 순서로 나오는 matrix 를 차례로 곱한다.
-    let mut m = [1.0_f32, 0.0, 0.0, 1.0, 0.0, 0.0];
-    let mut rest = svg;
-    while let Some(at) = rest.find("matrix(") {
-        let body = &rest[at + "matrix(".len()..];
-        let end = body.find(')').expect("matrix( 가 닫히지 않았다");
-        let v: Vec<f32> = body[..end]
-            .split_whitespace()
-            .map(|t| t.parse().expect("matrix 성분"))
-            .collect();
-        assert_eq!(v.len(), 6, "matrix 성분이 여섯이 아니다: {}", &body[..end]);
-        // SVG matrix 합성: m = m * v
-        m = [
-            m[0] * v[0] + m[2] * v[1],
-            m[1] * v[0] + m[3] * v[1],
-            m[0] * v[2] + m[2] * v[3],
-            m[1] * v[2] + m[3] * v[3],
-            m[0] * v[4] + m[2] * v[5] + m[4],
-            m[1] * v[4] + m[3] * v[5] + m[5],
-        ];
-        rest = &body[end..];
+/// 도형 태그나 행렬 문자열의 형태 대신 최종 기하 경계를 검사한다.
+fn device_geometry(svg: &str) -> (f32, f32, f32, f32) {
+    fn collect(group: &usvg::Group, boxes: &mut Vec<usvg::Rect>) {
+        for node in group.children() {
+            match node {
+                usvg::Node::Group(child) => collect(child, boxes),
+                usvg::Node::Path(path) => boxes.push(path.abs_bounding_box()),
+                _ => panic!("합성 사각형 외의 출력 노드: {node:?}"),
+            }
+        }
     }
-
-    let attr = |name: &str| -> f32 {
-        let key = format!("{name}=\"");
-        let at = svg
-            .find(&key)
-            .unwrap_or_else(|| panic!("{name} 속성 없음: {svg}"));
-        let body = &svg[at + key.len()..];
-        let end = body.find('"').expect("속성이 닫히지 않았다");
-        body[..end].parse().expect("속성 수치")
-    };
-    let (rx, ry, rw, rh) = (attr("x"), attr("y"), attr("width"), attr("height"));
-
-    let map = |px: f32, py: f32| (m[0] * px + m[2] * py + m[4], m[1] * px + m[3] * py + m[5]);
-    let (x0, y0) = map(rx, ry);
-    let (x1, y1) = map(rx + rw, ry + rh);
-    (x0, y0, x1 - x0, y1 - y0)
+    let document = format!(
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1000\" height=\"1000\">{svg}</svg>"
+    );
+    let tree = usvg::Tree::from_str(&document, &usvg::Options::default()).expect("SVG 기하 해석");
+    let mut boxes = Vec::new();
+    collect(tree.root(), &mut boxes);
+    assert_eq!(boxes.len(), 1, "합성 사각형이 누락되거나 중복됐다");
+    let rect = boxes[0];
+    (rect.x(), rect.y(), rect.width(), rect.height())
 }

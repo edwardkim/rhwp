@@ -1,0 +1,484 @@
+//! #7902: 원본 표의 분할 내용과 이어받기 뒤 그림을 함께 보호한다.
+//!
+//! 독립 Print PDF와 Native/fresh WASM 전쪽 증거는
+//! mydocs/working/task_m100_7902_stage3.md의 rebase-7923-opening-frame-full에 있다.
+//! 고정한 쪽은 양쪽 모두 98% 이상이며 독립 Print와 직접 판독했다.
+//! 위치 검사와 별도로 원본 셀의 내용 보존·소유·정렬 관계를 검사한다.
+#![cfg(not(target_arch = "wasm32"))]
+
+use rhwp::model::{
+    control::Control,
+    paragraph::Paragraph,
+    table::{Cell, Table},
+};
+use serde_json::Value;
+use std::{path::Path, process::Command, sync::OnceLock};
+
+const OVERFILL: &str = "samples/table_giant_cell_overfill.hwpx";
+const NESTED_HWP: &str = "samples/issue1949_giant_cell_nested_tables_perf.hwp";
+const NESTED_HWPX: &str = "samples/issue1949_giant_cell_nested_tables_perf.hwpx";
+
+fn hft_number_baseline(sample: &str, page: u32) {
+    // 독립 Print의 rawdict chars[].origin을 72pt→96dpi로 환산했다.
+    // 같은 번호 동작을 검증하는 후보 중 양쪽 실루엣 100%인 쪽을 선정했다.
+    // fresh 증거와 확대 판독: task_m100_7902_stage3.md.
+    let (expected, origins): (&str, &[f64]) = match page {
+        29 => ("-7-", &[375.519_979, 392.479_980, 409.279_989]),
+        100 => (
+            "-78-",
+            &[371.039_998, 388.159_993, 396.960_002, 413.760_010],
+        ),
+        _ => panic!("독립 기대값이 없는 쪽: {page}"),
+    };
+    let stamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let directory = Trees(
+        std::env::temp_dir().join(format!("rhwp-7902-number-{}-{stamp}", std::process::id())),
+    );
+    std::fs::create_dir(&directory.0).unwrap();
+    let bin = std::env::var("CARGO_BIN_EXE_rhwp")
+        .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_owned());
+    let output = Command::new(bin)
+        .arg("export-svg")
+        .arg(Path::new(env!("CARGO_MANIFEST_DIR")).join(sample))
+        .args(["--compat", "2022", "--profile", "print", "-p"])
+        .arg((page - 1).to_string())
+        .arg("-o")
+        .arg(&directory.0)
+        .output()
+        .expect("선택한 쪽의 최종 글리프 출력");
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let files: Vec<_> = std::fs::read_dir(&directory.0)
+        .unwrap()
+        .map(|entry| entry.unwrap().path())
+        .filter(|path| path.extension().is_some_and(|ext| ext == "svg"))
+        .collect();
+    assert_eq!(files.len(), 1, "선택한 쪽 하나만 내보낸다");
+    let svg = std::fs::read_to_string(&files[0]).unwrap();
+    let xml = roxmltree::Document::parse(&svg).unwrap();
+    let glyphs: Vec<_> = xml
+        .descendants()
+        .filter(|node| node.has_tag_name("text"))
+        .collect();
+    // 독립 Print의 이 쪽은 본문 없이 쪽번호만 있다. 빈 본문 때문에
+    // 번호까지 빠지거나 중복되는 것을 위치 검사와 별도로 검출한다.
+    assert_eq!(
+        glyphs
+            .iter()
+            .filter_map(|node| node.text())
+            .collect::<String>(),
+        expected
+    );
+    assert_eq!(glyphs.len(), origins.len(), "번호의 글리프 누락·중복 방지");
+    for (glyph, expected_x) in glyphs.into_iter().zip(origins) {
+        let x: f64 = glyph.attribute("x").unwrap().parse().unwrap();
+        let y: f64 = glyph.attribute("y").unwrap().parse().unwrap();
+        // Print PDF의 실제 797.039978pt 원점. Native100%, WASM100%
+        // 페이지에 한해 허용되는 ±2px이며 구현의 descent 값을 재인용하지 않는다.
+        assert!(
+            (x - expected_x).abs() <= 2.0,
+            "{sample} {page}쪽: 글리프 원점 {x}, 독립 PDF {expected_x}"
+        );
+        assert!((y - 1062.719971).abs() <= 2.0, "{sample}: 기준선 {y}");
+        assert_eq!(glyph.attribute("font-size"), Some("16"), "원본12pt");
+        let bold = glyph.attribute("font-weight") == Some("bold")
+            || glyph
+                .attribute("stroke-width")
+                .is_some_and(|width| width.parse::<f64>().unwrap() > 0.0);
+        assert!(bold, "원본 쪽 번호 스타일의 진하게 속성");
+    }
+}
+
+#[test]
+fn hwp_generated_hft_number_keeps_print_baseline_and_content() {
+    for page in [29, 100] {
+        hft_number_baseline(
+            "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+            page,
+        );
+    }
+}
+
+#[test]
+fn hwpx_generated_hft_number_keeps_print_baseline_and_content() {
+    for variant in ["control", "shifted", "later"] {
+        let sample = format!("tests/fixtures/pr7704_manual_reflow/6761-{variant}.hwpx");
+        hft_number_baseline(&sample, 29);
+        // later의 100쪽은 본문 쪽이다. 같은 쪽 번호로 다른 내용을 고정하지 않는다.
+        if variant != "later" {
+            hft_number_baseline(&sample, 100);
+        }
+    }
+}
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn native_generated_hft_font_trace_uses_paint_aliases() {
+    use rhwp::{document_core::DocumentCore, renderer::skia::SkiaLayerRenderer};
+
+    for sample in [
+        "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+        "tests/fixtures/pr7704_manual_reflow/6761-control.hwpx",
+    ] {
+        let bytes = std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(sample)).unwrap();
+        let core = DocumentCore::from_bytes(&bytes).unwrap();
+        let trace: Value = serde_json::from_str(
+            &SkiaLayerRenderer::new()
+                .get_font_decision_trace(&core, 28, r#"{"maxCharacters":16}"#)
+                .unwrap(),
+        )
+        .unwrap();
+        let records = trace["records"].as_array().unwrap();
+        assert!(!records.is_empty(), "생성 번호도 진단 대상이다");
+        for record in records {
+            let native = &record["paint"]["native"];
+            // 한양중고딕의 설치 TTF 이름은 HY중고딕이다. 실제 paint가
+            // 이 별칭을 찾는데 진단만 generic 후보를 바로 고르면 안 된다.
+            let candidates = native["candidates"].as_array().unwrap();
+            assert_eq!(candidates[0], "한양중고딕", "원 face 우선");
+            assert_eq!(
+                candidates[1], "HY중고딕",
+                "generic보다 원 face의 설치 별칭 우선"
+            );
+        }
+    }
+}
+
+struct Trees(std::path::PathBuf);
+
+impl Drop for Trees {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_dir_all(&self.0);
+    }
+}
+
+fn pages(sample: &str) -> &'static Vec<Value> {
+    static OVERFILL_PAGES: OnceLock<Vec<Value>> = OnceLock::new();
+    static HWP_PAGES: OnceLock<Vec<Value>> = OnceLock::new();
+    static HWPX_PAGES: OnceLock<Vec<Value>> = OnceLock::new();
+    let cache = match sample {
+        OVERFILL => &OVERFILL_PAGES,
+        NESTED_HWP => &HWP_PAGES,
+        NESTED_HWPX => &HWPX_PAGES,
+        _ => panic!("등록하지 않은 원본: {sample}"),
+    };
+    cache.get_or_init(|| {
+        let stamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let directory =
+            Trees(std::env::temp_dir().join(format!("rhwp-7902-{}-{stamp}", std::process::id())));
+        std::fs::create_dir(&directory.0).expect("검사 전용 임시 경로");
+        let bin = std::env::var("CARGO_BIN_EXE_rhwp")
+            .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_owned());
+        let output = Command::new(bin)
+            .arg("export-render-tree")
+            .arg(Path::new(env!("CARGO_MANIFEST_DIR")).join(sample))
+            .args([
+                "--compat",
+                if sample == OVERFILL || sample == NESTED_HWP {
+                    "2024"
+                } else {
+                    "2022"
+                },
+                "-o",
+            ])
+            .arg(&directory.0)
+            .output()
+            .expect("원본 최종 렌더 트리");
+        assert!(
+            output.status.success(),
+            "{sample}: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let mut files: Vec<_> = std::fs::read_dir(&directory.0)
+            .unwrap()
+            .map(|entry| entry.unwrap().path())
+            .filter(|path| path.extension().is_some_and(|ext| ext == "json"))
+            .collect();
+        files.sort();
+        files
+            .iter()
+            .map(|path| serde_json::from_slice(&std::fs::read(path).unwrap()).unwrap())
+            .collect()
+    })
+}
+
+fn nodes(node: &Value) -> Vec<&Value> {
+    let mut result = vec![node];
+    if let Some(children) = node["children"].as_array() {
+        for child in children {
+            result.extend(nodes(child));
+        }
+    }
+    result
+}
+
+fn compact(text: &str) -> String {
+    text.chars()
+        .filter(|ch| !ch.is_whitespace() && !ch.is_control() && *ch != '\u{fffc}')
+        .collect()
+}
+
+fn text(node: &Value) -> String {
+    nodes(node)
+        .iter()
+        .filter_map(|node| node["text"].as_str())
+        .collect()
+}
+
+fn cell(page: &Value, row: u16, col: u16) -> &Value {
+    let matches: Vec<_> = nodes(page)
+        .into_iter()
+        .filter(|node| node["type"] == "Cell" && node["row"] == row && node["col"] == col)
+        .collect();
+    assert_eq!(matches.len(), 1, "원본 셀 ({row},{col})의 단일 쪽 소유");
+    matches[0]
+}
+
+fn top(node: &Value) -> f64 {
+    node["bbox"]["y"].as_f64().unwrap()
+}
+
+fn bottom(node: &Value) -> f64 {
+    top(node) + node["bbox"]["h"].as_f64().unwrap()
+}
+
+fn source_table(paragraphs: &[Paragraph]) -> Option<&Table> {
+    for paragraph in paragraphs {
+        for control in &paragraph.controls {
+            if let Control::Table(table) = control {
+                if table.cells.iter().any(|cell| {
+                    cell.row == 21
+                        && cell.col == 8
+                        && cell.paragraphs.iter().any(|p| p.text.contains("기인"))
+                }) {
+                    return Some(table);
+                }
+                for cell in &table.cells {
+                    if let Some(found) = source_table(&cell.paragraphs) {
+                        return Some(found);
+                    }
+                }
+            }
+        }
+    }
+    None
+}
+
+#[test]
+fn original_cells_survive_the_print_page_cuts_without_loss_or_duplication() {
+    let bytes = std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(OVERFILL)).unwrap();
+    let document = rhwp::parser::parse_document(&bytes).unwrap();
+    let source = document
+        .sections
+        .iter()
+        .find_map(|section| source_table(&section.paragraphs))
+        .expect("원본 재시작을 가진 표");
+    let actual = pages(OVERFILL);
+    assert_eq!(actual.len(), 48, "독립 Print PDF와 전체 쪽수 일치");
+    let opening = document
+        .sections
+        .iter()
+        .flat_map(|section| &section.paragraphs)
+        .flat_map(|paragraph| &paragraph.controls)
+        .find_map(|control| match control {
+            Control::Table(table) if table.row_count == 5 && table.col_count == 1 => {
+                table.cell_at(4, 0)
+            }
+            _ => None,
+        })
+        .expect("정의·일반사항을 담은 원본 바깥 셀");
+    let source_text = |range: std::ops::Range<usize>| {
+        compact(
+            &opening.paragraphs[range]
+                .iter()
+                .map(|paragraph| paragraph.text.as_str())
+                .collect::<String>(),
+        )
+    };
+    // 독립 Print: 1쪽은 구동 너트 설명으로 끝나고 2쪽은 3.7로 시작한다.
+    // 양수1500HU 재시작을 잃으면 마지막 문장이 2쪽으로 이동한다.
+    // 앞·뒤 전체 원문과 일치시켜 이월 경계의 유닛 누락·중복도 검출한다.
+    assert_eq!(compact(&text(cell(&actual[0], 4, 0))), source_text(0..22));
+    assert_eq!(compact(&text(cell(&actual[1], 4, 0))), source_text(22..45));
+    // 같은 인증의 후속 경계: Print 4쪽은 내화성 설명, 5쪽은 정격속도다.
+    let fourth = compact(&text(cell(&actual[3], 4, 0)));
+    let fifth = compact(&text(cell(&actual[4], 4, 0)));
+    assert!(
+        fourth.ends_with(&source_text(87..88)),
+        "4쪽 마지막 본문의 소유"
+    );
+    assert!(
+        fifth.starts_with(&source_text(88..90)),
+        "5쪽 제목·후속 본문의 순서"
+    );
+    assert!(
+        !fourth.contains(&source_text(88..89)),
+        "제목의 앞 쪽 중복 방지"
+    );
+    assert!(
+        !fifth.contains(&source_text(87..88)),
+        "앞 본문의 잘못된 이월 방지"
+    );
+    for (row, col, first, last, prefix_end, suffix_start) in [
+        (21, 8, 43, 44, "비율의변화에기인", "한다."),
+        (24, 6, 44, 45, "감소될수있", "다."),
+    ] {
+        let original = source.cell_at(row, col).expect("원본 셀");
+        let expected = compact(
+            &original
+                .paragraphs
+                .iter()
+                .map(|paragraph| paragraph.text.as_str())
+                .collect::<String>(),
+        );
+        let prefix = compact(&text(cell(&actual[first - 1], row, col)));
+        let suffix = compact(&text(cell(&actual[last - 1], row, col)));
+        assert!(prefix.ends_with(prefix_end), "앞 조각의 원본 내용 컷");
+        assert!(suffix.starts_with(suffix_start), "뒤 조각의 이어받기 컷");
+        assert_eq!(format!("{prefix}{suffix}"), expected, "누락·중복·순서 변경");
+    }
+}
+
+#[test]
+fn closed_source_frames_keep_center_alignment_instead_of_extra_line_spacing() {
+    let actual = pages(OVERFILL);
+    // Print PDF43쪽 마지막 가로 괘선: 790.414978pt → 1053.886637px.
+    // 선언보다 큰 원본 잉크 끝 이후에 마지막 줄간격까지 더한 프레임을 검출한다.
+    let first_frame = cell(&actual[42], 21, 8);
+    assert!(
+        (bottom(first_frame) - 1_053.886_637_369_791_7).abs() <= 2.0,
+        "43쪽 첫 프레임에 마지막 줄간격을 중복 예약함: {}",
+        bottom(first_frame)
+    );
+    // 첫 프레임의 잉크가 선언 높이보다 큰 셀과 선언 높이에 여유가 있는 대조군이다.
+    // 마지막 줄간격을 다시 예약하거나 정렬을 Top으로 덮으면 대칭성이 깨진다.
+    for (page, row, col) in [(43, 21, 6), (43, 21, 8), (44, 24, 6)] {
+        let frame = cell(&actual[page - 1], row, col);
+        let lines: Vec<_> = nodes(frame)
+            .into_iter()
+            .filter(|node| node["type"] == "TextLine" && !text(node).trim().is_empty())
+            .collect();
+        assert!(lines.len() > 1, "한 줄짜리 대조군으로 대신하지 않음");
+        let upper = top(lines[0]) - top(frame);
+        let lower = bottom(frame) - bottom(lines[lines.len() - 1]);
+        assert!(upper >= 0.0 && lower >= 0.0, "선택 줄의 셀 내부 포함");
+        assert!(
+            (upper - lower).abs() <= 0.3,
+            "{page}쪽 ({row},{col}) 원본 가운데 정렬: 위 {upper}, 아래 {lower}"
+        );
+    }
+}
+
+fn rotary_control_host(paragraphs: &[Paragraph]) -> Option<(&Table, &Cell, usize)> {
+    for control in paragraphs.iter().flat_map(|paragraph| &paragraph.controls) {
+        let Control::Table(table) = control else {
+            continue;
+        };
+        for cell in &table.cells {
+            for (index, paragraph) in cell.paragraphs.iter().enumerate() {
+                if paragraph.controls.iter().any(|control| {
+                    matches!(control, Control::Table(child)
+                        if child.row_count == 14 && child.col_count == 2
+                            && child.cells.iter().flat_map(|cell| &cell.paragraphs)
+                                .any(|paragraph| paragraph.text.contains("Rotary")))
+                }) {
+                    return Some((table, cell, index));
+                }
+            }
+            if let Some(host) = rotary_control_host(&cell.paragraphs) {
+                return Some(host);
+            }
+        }
+    }
+    None
+}
+
+fn assert_following_source_lines(sample: &str, page: &Value) {
+    let bytes = std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(sample)).unwrap();
+    let document = rhwp::parser::parse_document(&bytes).unwrap();
+    let (table, source_cell, host_index) = document
+        .sections
+        .iter()
+        .find_map(|section| rotary_control_host(&section.paragraphs))
+        .expect("로터리 조종기 표를 소유하는 원본 셀");
+    let owner = cell(page, source_cell.row, source_cell.col);
+    let padding = source_cell.effective_padding(&table.padding);
+    let descendants = nodes(owner);
+    for index in [host_index + 1, host_index + 2] {
+        let source = &source_cell.paragraphs[index];
+        let saved = source.line_segs.first().expect("원본 후속 문단의 저장 줄");
+        let lines: Vec<_> = descendants
+            .iter()
+            .copied()
+            .filter(|node| node["type"] == "TextLine" && node["pi"] == index)
+            .collect();
+        assert_eq!(lines.len(), 1, "후속 원본 줄의 누락·중복 방지");
+        assert_eq!(compact(&text(lines[0])), compact(&source.text));
+        // 원본의 빈 줄과 뒤 제목은 같은 셀 좌표계를 쓴다. 저장 vpos를 독립
+        // 기대값으로 삼아 시작 여백의 누락·중복을 검출한다. 출력 JSON의
+        // 0.1px 반올림만 허용하며 그림의 ±2px 위치 검사와 구분한다.
+        let actual = top(lines[0]) - top(owner);
+        let expected = f64::from(saved.vertical_pos + i32::from(padding.top)) * 96.0 / 7200.0;
+        assert!(
+            (actual - expected).abs() <= 0.11,
+            "{sample}: 원본 후속 줄 {index}의 셀 상대 위치 {actual}, 저장 원점 {expected}"
+        );
+    }
+}
+
+fn assert_following_image(sample: &str) {
+    let actual = pages(sample);
+    assert_eq!(actual.len(), 115, "독립 Print PDF 전체 쪽수");
+    let page = &actual[103];
+    assert_following_source_lines(sample, page);
+    let all = nodes(page);
+    let images: Vec<_> = all
+        .iter()
+        .copied()
+        .filter(|n| n["type"] == "Image")
+        .collect();
+    assert_eq!(images.len(), 1, "104쪽 후속 그림의 단일 소유");
+    let image = images[0];
+    let tables: Vec<_> = all
+        .iter()
+        .copied()
+        .filter(|node| node["type"] == "Table" && node["rows"] == 14 && node["cols"] == 2)
+        .collect();
+    assert_eq!(tables.len(), 1, "앞 조각의 14×2 중첩 표");
+    // 두 독립 Print PDF의 동일한 이어받기 표 위끝: 62.211975pt.
+    assert!(
+        (top(tables[0]) - 82.949_300_130_208_33).abs() <= 2.0,
+        "{sample}: 제목행 반복 여부와 무관하게 원본 위 여백을 보존해야 함"
+    );
+    assert!(
+        bottom(tables[0]) <= top(image),
+        "그림은 이어받은 표 뒤에 배치"
+    );
+    // 독립 Print PDF 104쪽 그림 bbox의 위끝(72pt→96dpi 환산)이다.
+    // 두 형식의 해당 쪽은 Native/fresh WASM 모두 98% 이상이며 직접 판독했다.
+    // 중복 아래 여백이 있던 516.7px를 허용하지 않고 ±2px 범위를 유지한다.
+    assert!(
+        (top(image) - 514.157_333_333_333_3).abs() <= 2.0,
+        "{sample}: 원본 아래 여백을 한 번만 소비한 후속 그림, 실제 {}",
+        top(image)
+    );
+}
+
+#[test]
+fn hwp_nested_continuation_does_not_charge_bottom_margin_twice() {
+    assert_following_image(NESTED_HWP);
+}
+
+#[test]
+fn hwpx_nested_continuation_does_not_charge_bottom_margin_twice() {
+    assert_following_image(NESTED_HWPX);
+}

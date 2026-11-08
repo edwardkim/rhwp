@@ -1,0 +1,22 @@
+   Compiling rhwp-pdf-import-backend v0.3.78-rhwp.1 (/home/edward/mygithub/rhwp/vendor/rhwp-pdf-import-backend)
+   Compiling rhwp v0.9.0 (/home/edward/mygithub/rhwp)
+error[E0425]: cannot find value `section_idx` in this scope
+   --> src/document_core/commands/object_ops/table.rs:919:62
+    |
+919 |         let inherited_line = creation_line::for_cursor(self, section_idx, para_idx, char_offset);
+    |                                                              ^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `para_idx` in this scope
+   --> src/document_core/commands/object_ops/table.rs:919:75
+    |
+919 |         let inherited_line = creation_line::for_cursor(self, section_idx, para_idx, char_offset);
+    |                                                                           ^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `char_offset` in this scope
+   --> src/document_core/commands/object_ops/table.rs:919:85
+    |
+919 |         let inherited_line = creation_line::for_cursor(self, section_idx, para_idx, char_offset);
+    |                                                                                     ^^^^^^^^^^^ not found in this scope
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `rhwp` (lib) due to 3 previous errors

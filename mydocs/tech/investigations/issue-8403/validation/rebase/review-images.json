@@ -1,0 +1,178 @@
+[
+  {
+    "name": "native-pattern",
+    "page": 3,
+    "metrics": {
+      "page": 3,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/candidate/final-native/patterns/image-patterns_003.png",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/candidate/pattern-controls-reference/page-3.png",
+      "overlay_png": "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/review-images/native-pattern/overlay_003.png",
+      "width": 267,
+      "height": 187,
+      "pixel_diff_threshold": 32,
+      "overlay_color_legend": {
+        "rhwp_only": "blue",
+        "pdf_only": "red",
+        "both_different": "orange",
+        "matching": "gray"
+      },
+      "total_pixels": 49929,
+      "diff_pixels": 2518,
+      "diff_ratio": 0.05043161,
+      "pixel_match_percent": 94.95684,
+      "ink_union_pixels": 11131,
+      "ink_diff_pixels": 2518,
+      "ink_diff_ratio": 0.22621508,
+      "ink_match_percent": 77.37849,
+      "visual_accuracy_proxy_percent": 77.37849,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 11131,
+      "tolerant_content_match_percent": 100.0,
+      "mean_abs_channel_delta": 5.624,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        33,
+        32,
+        193,
+        159
+      ]
+    }
+  },
+  {
+    "name": "wasm-pattern",
+    "page": 3,
+    "metrics": {
+      "page": 3,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/candidate-browser/wasm-controls/page-3.png",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/candidate/pattern-controls-reference/page-3.png",
+      "overlay_png": "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/review-images/wasm-pattern/overlay_003.png",
+      "width": 267,
+      "height": 187,
+      "pixel_diff_threshold": 32,
+      "overlay_color_legend": {
+        "rhwp_only": "blue",
+        "pdf_only": "red",
+        "both_different": "orange",
+        "matching": "gray"
+      },
+      "total_pixels": 49929,
+      "diff_pixels": 1740,
+      "diff_ratio": 0.03484949,
+      "pixel_match_percent": 96.51505,
+      "ink_union_pixels": 10896,
+      "ink_diff_pixels": 1740,
+      "ink_diff_ratio": 0.15969163,
+      "ink_match_percent": 84.03084,
+      "visual_accuracy_proxy_percent": 84.03084,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 10896,
+      "tolerant_content_match_percent": 100.0,
+      "mean_abs_channel_delta": 5.434,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        33,
+        32,
+        193,
+        159
+      ]
+    }
+  },
+  {
+    "name": "native-stroke",
+    "page": 2,
+    "metrics": {
+      "page": 2,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/candidate/final-native/stroke/text-stroke_002.png",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/candidate/stroke-reference-final/page-2.png",
+      "overlay_png": "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/review-images/native-stroke/overlay_002.png",
+      "width": 560,
+      "height": 320,
+      "pixel_diff_threshold": 32,
+      "overlay_color_legend": {
+        "rhwp_only": "blue",
+        "pdf_only": "red",
+        "both_different": "orange",
+        "matching": "gray"
+      },
+      "total_pixels": 179200,
+      "diff_pixels": 3188,
+      "diff_ratio": 0.01779018,
+      "pixel_match_percent": 98.22098,
+      "ink_union_pixels": 6901,
+      "ink_diff_pixels": 3188,
+      "ink_diff_ratio": 0.46196203,
+      "ink_match_percent": 53.8038,
+      "visual_accuracy_proxy_percent": 53.8038,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 6901,
+      "tolerant_content_match_percent": 100.0,
+      "mean_abs_channel_delta": 1.499,
+      "max_channel_delta": 243,
+      "diff_bbox": [
+        28,
+        48,
+        257,
+        202
+      ]
+    }
+  },
+  {
+    "name": "wasm-stroke",
+    "page": 2,
+    "metrics": {
+      "page": 2,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/candidate-browser/wasm-stroke/page-2.png",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/candidate/stroke-reference-final/page-2.png",
+      "overlay_png": "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/review-images/wasm-stroke/overlay_002.png",
+      "width": 560,
+      "height": 320,
+      "pixel_diff_threshold": 32,
+      "overlay_color_legend": {
+        "rhwp_only": "blue",
+        "pdf_only": "red",
+        "both_different": "orange",
+        "matching": "gray"
+      },
+      "total_pixels": 179200,
+      "diff_pixels": 3442,
+      "diff_ratio": 0.01920759,
+      "pixel_match_percent": 98.07924,
+      "ink_union_pixels": 7028,
+      "ink_diff_pixels": 3442,
+      "ink_diff_ratio": 0.48975526,
+      "ink_match_percent": 51.02447,
+      "visual_accuracy_proxy_percent": 51.02447,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 7028,
+      "tolerant_content_match_percent": 100.0,
+      "mean_abs_channel_delta": 1.654,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        28,
+        48,
+        257,
+        202
+      ]
+    }
+  }
+]

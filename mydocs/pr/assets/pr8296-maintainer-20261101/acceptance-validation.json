@@ -1,0 +1,113 @@
+{
+  "codeHead": "3ddf77af61b10a9ace10224588ad68841e79b2f1",
+  "originalHead": "f3e2128edca7b188080b2a94f25e0988e26c9699",
+  "base": "20c9678b01c5a564bb510c9fccd652cceafcd212",
+  "modifiedProductPaths": [
+    "rhwp-studio/src/core/enclosed-pua.ts",
+    "rhwp-studio/src/view/canvaskit-renderer.ts"
+  ],
+  "rustSourceUnchanged": true,
+  "pageComparison": [
+    {
+      "backend": "native",
+      "input": "seal-form",
+      "page": 1,
+      "baseRaw": 99.91,
+      "headRaw": 99.94,
+      "dropPercentagePoints": -0.03
+    },
+    {
+      "backend": "native",
+      "input": "seal-form",
+      "page": 2,
+      "baseRaw": 100.0,
+      "headRaw": 100.0,
+      "dropPercentagePoints": 0.0
+    },
+    {
+      "backend": "native",
+      "input": "bokhak",
+      "page": 1,
+      "baseRaw": 97.21,
+      "headRaw": 97.23,
+      "dropPercentagePoints": -0.02
+    },
+    {
+      "backend": "native",
+      "input": "issue4680",
+      "page": 1,
+      "baseRaw": 98.91,
+      "headRaw": 99.12,
+      "dropPercentagePoints": -0.21
+    },
+    {
+      "backend": "wasm",
+      "input": "seal-form",
+      "page": 1,
+      "baseRaw": 99.89,
+      "headRaw": 99.91,
+      "dropPercentagePoints": -0.02
+    },
+    {
+      "backend": "wasm",
+      "input": "seal-form",
+      "page": 2,
+      "baseRaw": 100.0,
+      "headRaw": 100.0,
+      "dropPercentagePoints": 0.0
+    },
+    {
+      "backend": "wasm",
+      "input": "bokhak",
+      "page": 1,
+      "baseRaw": 97.12,
+      "headRaw": 97.13,
+      "dropPercentagePoints": -0.01
+    },
+    {
+      "backend": "wasm",
+      "input": "issue4680",
+      "page": 1,
+      "baseRaw": 98.88,
+      "headRaw": 99.1,
+      "dropPercentagePoints": -0.22
+    }
+  ],
+  "frontend": {
+    "tsc": 0,
+    "unitPassed": 2700,
+    "unitSkipped": 2,
+    "rendererContract": 0,
+    "negativeControl": "Original renderer injected through a Vite diagnostic loader; new actual-glyph face assertion failed as expected."
+  },
+  "actualBrowser": {
+    "sealCoverage": "All seven actual inner draw calls select a nonzero public-font glyph; missing-Hangul body face succeeds.",
+    "fullPageCanvasKit": "Three full portable print pages complete on actual CanvasKit software; explicit open-font aliases; no unexpected unsupported ops. U+2024 gets a covering DejaVu face. This is backend replay validation, not Hancom glyph-fidelity scoring.",
+    "normalBoxedControl": "Native full-page PNG and five CanvasKit font/ratio PNGs are byte-identical to baseline."
+  },
+  "rustEvidenceReuse": "Original exact Rust source graph and integration tests unchanged; original Full CI and local 28 focused Native cases retained. New mixed PR Full CI must pass on codeHead before final approval.",
+  "builds": {
+    "latestBaseNative": {
+      "source": "20c9678b01c5a564bb510c9fccd652cceafcd212",
+      "sha256": "cdb49a5638dbe5fb96ce5ddcb21b2f50a43574eb46cc63aa3d0258b94ac7b019",
+      "features": [
+        "native-skia"
+      ],
+      "profile": "release-test",
+      "exit": 0
+    },
+    "headNativeSha256": "6cd62bf5ac6dfe6cfea9d31dea0f531ba3fa4c5603169450ad6d2e4acfbacb77",
+    "headWasmSha256": "3659b8e32f10e89179b9d0c8984291de17198b460caa0f4006503cae0a445068",
+    "baseWasmSha256": "298f8db9462c965ecbb329249790c3f3223f8bf5d0f0a10446b82b901f2d779e",
+    "baseWasmReuse": "Validated original #8420 bundle from f17ca45e14; latest 20c9678b01 has identical non-test production content."
+  },
+  "logs": {
+    "renderer-contract.log": "d22ea6be4cd4694fa6356c547d15ad1b2e102a7e3c7aadaebefa33f56e77c2c0",
+    "renderer-contract-red.log": "5d84eb199001b15ebd63783df2c36e320fbffd1e30f1e987183854e6e0d4b725",
+    "tsc.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "studio-unit.log": "b920830583a8a3eafe8ee2ef1881d7854f4a7aa972c1fe9ac018d51473658279",
+    "fixed-canvaskit.log": "2f80a4e8b662b47dd7461ad925ca8bb8329adda713112da7295cc54697e07933",
+    "full-canvaskit.log": "7ac13773b180ccbc24181978d7a0552764858fb0fdb8db59a9e8d4f1e1639520",
+    "fixed-boxed.log": "01db6d0aaf52bcbd3a0b0a044292de47a4febb476207ca9bfc673de4110e6b09"
+  }
+}

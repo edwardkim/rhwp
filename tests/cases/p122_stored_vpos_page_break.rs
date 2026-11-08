@@ -73,82 +73,172 @@ fn p122_picture_sits_alone_on_second_page() {
     );
 }
 
-/// 2쪽 SVG 의 그림은 본문 영역 맨 위(상단 여백 20mm + 머리말 15mm = 35mm)에 놓이고,
-/// HWP5 `PAPER` 기준 크기(425.20% × 222.38%)를 유지한다.
-#[test]
-fn p122_second_page_picture_uses_paper_relative_size_at_body_top() {
+/// 독립 한컴 Print의 2쪽 그림은 소유 줄·본문 상단을 공유하고 용지 상대 비율을 유지한다.
+/// 전체 3쪽 Native/fresh WASM의 시각 gate와 확대 판독을 먼저 확인한다.
+fn assert_picture_line_geometry(rel: &str) {
+    use rhwp::model::{control::Control, shape::SizeCriterion};
+
+    fn collect<'a>(node: &'a serde_json::Value, out: &mut Vec<&'a serde_json::Value>) {
+        out.push(node);
+        for child in node["children"].as_array().into_iter().flatten() {
+            collect(child, out);
+        }
+    }
+    fn image_attr(tag: &str, name: &str) -> f64 {
+        tag.split(&format!("{name}=\""))
+            .nth(1)
+            .and_then(|rest| rest.split('"').next())
+            .and_then(|v| v.parse().ok())
+            .unwrap_or_else(|| panic!("그림 속성 {name} 누락"))
+    }
+    fn close_ratio(actual: f64, expected: f64, tolerance: f64, relation: &str) {
+        assert!(
+            (actual - expected).abs() <= tolerance,
+            "{relation}: 비율 {actual} != {expected}"
+        );
+    }
+
+    let bytes =
+        std::fs::read(sample(rel)).unwrap_or_else(|error| panic!("검증 입력 {rel}: {error}"));
+    let source = rhwp::parser::parse_document(&bytes).expect("원본 파싱");
+    let picture = match &source.sections[0].paragraphs[1].controls[0] {
+        Control::Picture(picture) => picture,
+        _ => panic!("원본 둘째 문단의 첫 개체는 그림이어야 한다"),
+    };
+    assert!(picture.common.treat_as_char);
+    assert!(matches!(
+        picture.common.width_criterion,
+        SizeCriterion::Paper | SizeCriterion::Absolute
+    ));
+    assert_eq!(picture.common.height_criterion, SizeCriterion::Paper);
     let out_dir: PathBuf = std::env::temp_dir().join(format!(
-        "rhwp-p122-{}-{}",
+        "rhwp-p122-relation-{}-{}",
         std::process::id(),
         std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
             .as_nanos()
     ));
-    let out = Command::new(rhwp_bin())
-        .args([
-            "export-svg",
-            &sample("samples/p122.hwp"),
-            "-p",
-            "1",
-            "-o",
-            &out_dir.to_string_lossy(),
-        ])
-        .output()
-        .expect("export-svg 실행 실패");
-    assert!(out.status.success(), "export-svg 실패");
-
-    let svg_path = std::fs::read_dir(&out_dir)
-        .unwrap_or_else(|e| panic!("{}: {e}", out_dir.display()))
-        .filter_map(Result::ok)
-        .map(|e| e.path())
-        .find(|p| p.extension().is_some_and(|ext| ext == "svg"))
-        .expect("2쪽 SVG 가 생성되어야 한다");
-    let svg = std::fs::read_to_string(&svg_path).expect("SVG 읽기 실패");
-    let _ = std::fs::remove_dir_all(&out_dir);
-
-    let image_tag = svg.split("<image ").nth(1).unwrap_or_else(|| {
-        panic!(
-            "2쪽에 <image> 가 있어야 한다:\n{}",
-            &svg[..svg.len().min(600)]
-        )
-    });
-    let y = image_tag
-        .split("y=\"")
-        .nth(1)
-        .and_then(|rest| rest.split('"').next())
-        .and_then(|v| v.parse::<f64>().ok())
-        .expect("<image> 의 y 값을 읽어야 한다");
-    let width = image_tag
-        .split("width=\"")
-        .nth(1)
-        .and_then(|rest| rest.split('"').next())
-        .and_then(|v| v.parse::<f64>().ok())
-        .expect("<image> 의 width 값을 읽어야 한다");
-    let height = image_tag
-        .split("height=\"")
-        .nth(1)
-        .and_then(|rest| rest.split('"').next())
-        .and_then(|v| v.parse::<f64>().ok())
-        .expect("<image> 의 height 값을 읽어야 한다");
-
-    // 35mm = 35 / 25.4 * 96 px = 132.28px (본문 영역 상단).
-    let body_top_px = 35.0 / 25.4 * 96.0;
+    for command in ["export-svg", "export-render-tree"] {
+        let out = Command::new(rhwp_bin())
+            .args([
+                command,
+                &sample(rel),
+                "-p",
+                "1",
+                "-o",
+                &out_dir.to_string_lossy(),
+            ])
+            .output()
+            .expect("2쪽 출력 실행");
+        assert!(
+            out.status.success(),
+            "{command}: {}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+    }
+    let files: Vec<_> = std::fs::read_dir(&out_dir)
+        .unwrap()
+        .map(|x| x.unwrap().path())
+        .collect();
+    let svg = std::fs::read_to_string(
+        files
+            .iter()
+            .find(|p| p.extension().is_some_and(|e| e == "svg"))
+            .expect("SVG 출력"),
+    )
+    .unwrap();
+    let json = std::fs::read_to_string(
+        files
+            .iter()
+            .find(|p| p.extension().is_some_and(|e| e == "json"))
+            .expect("render tree 출력"),
+    )
+    .unwrap();
+    std::fs::remove_dir_all(&out_dir).expect("검사 산출물 정리");
+    let root: serde_json::Value = serde_json::from_str(&json).expect("render tree JSON");
+    let mut nodes = Vec::new();
+    collect(&root, &mut nodes);
+    let images: Vec<_> = nodes
+        .iter()
+        .copied()
+        .filter(|n| n["type"] == "Image")
+        .collect();
+    assert_eq!(images.len(), 1, "2쪽 그림은 누락·중복 없이 한 번 출력한다");
+    assert_eq!(images[0]["pi"], 1, "그림의 문단 소유");
+    assert_eq!(images[0]["ci"], 0, "그림의 개체 소유");
+    let lines: Vec<_> = nodes
+        .iter()
+        .copied()
+        .filter(|n| n["type"] == "TextLine" && n["pi"] == 1)
+        .collect();
+    assert_eq!(lines.len(), 1, "원본 그림 문단은 한 줄을 소유한다");
     assert!(
-        (y - body_top_px).abs() < 1.0,
-        "그림은 본문 상단({body_top_px:.2}px)에 놓여야 하는데 y={y}"
+        lines[0]["children"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|n| n == images[0]),
+        "그림은 자기 문단의 줄 안에 있어야 한다"
     );
-    // A4 210×297mm @96dpi에서 425.20%×222.38%.
-    let paper_width_px = 210.0 / 25.4 * 96.0;
-    let paper_height_px = 297.0 / 25.4 * 96.0;
-    let expected_width = paper_width_px * 4.252;
-    let expected_height = paper_height_px * 2.2238;
-    assert!(
-        (width - expected_width).abs() < 2.0,
-        "그림 너비는 PAPER 425.20%({expected_width:.2}px)여야 하는데 width={width}"
+    let body = nodes
+        .iter()
+        .copied()
+        .find(|n| n["type"] == "Body")
+        .expect("본문 영역");
+    assert_eq!(
+        lines[0]["bbox"]["y"], body["bbox"]["y"],
+        "소유 줄과 본문 상단"
     );
-    assert!(
-        (height - expected_height).abs() < 2.0,
-        "그림 높이는 PAPER 222.38%({expected_height:.2}px)여야 하는데 height={height}"
+    let image_tags: Vec<_> = svg.split("<image ").skip(1).collect();
+    assert_eq!(image_tags.len(), 1, "최종 SVG에도 그림을 한 번 출력한다");
+    let tag = image_tags[0];
+    let svg_tag = svg.split('>').next().expect("SVG 루트");
+    let paper_width = image_attr(svg_tag, "width");
+    let paper_height = image_attr(svg_tag, "height");
+    let page = &source.sections[0].section_def.page_def;
+    // 정수 HWPUNIT 저장 기준선의 한 단위 오차만 무차원 비율로 허용한다.
+    close_ratio(
+        image_attr(tag, "y") / paper_height,
+        f64::from(page.margin_top + page.margin_header) / f64::from(page.height),
+        1.0 / f64::from(page.height),
+        "그림과 본문 상단",
     );
+    close_ratio(
+        image_attr(tag, "x") / paper_width,
+        f64::from(page.margin_left) / f64::from(page.width),
+        1.0 / f64::from(page.width),
+        "그림과 본문 시작",
+    );
+    close_ratio(
+        image_attr(tag, "width") / paper_width,
+        match picture.common.width_criterion {
+            SizeCriterion::Paper => f64::from(picture.common.width) / 10000.0,
+            SizeCriterion::Absolute => f64::from(picture.common.width) / f64::from(page.width),
+            _ => unreachable!(),
+        },
+        f64::EPSILON * 8.0,
+        "너비 기준과 용지의 비율",
+    );
+    close_ratio(
+        image_attr(tag, "height") / paper_height,
+        f64::from(picture.common.height) / 10000.0,
+        f64::EPSILON * 8.0,
+        "용지 상대 높이",
+    );
+}
+
+#[test]
+fn p122_second_page_picture_uses_paper_relative_size_at_body_top() {
+    assert_picture_line_geometry("samples/p122.hwp");
+}
+
+/// 비율값과 현재 HWPUNIT가 다른 한컴 정상 저장본도 자기 줄의 원점을 유지한다.
+#[test]
+fn relative_picture_current_size_keeps_the_owned_line_origin() {
+    for name in ["false", "true"] {
+        assert_picture_line_geometry(&format!(
+            "tests/fixtures/issue_7642/relative-quarter-affect-{name}-hancom-2020.hwp"
+        ));
+    }
 }

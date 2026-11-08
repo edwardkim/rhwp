@@ -1,0 +1,22 @@
+{
+  "job_id": "5ea451f8-4b75-4816-84ac-b51474acaf75",
+  "input_sha256": "85fd71222f2d779fc638ff988cd2c03c7be1b3df878f069cf275c852bf17f81d",
+  "pdf_sha256": "8f89e38c0dc209e117b20f9488f4eb54ef80386987054e250d3ef59c297ed5e2",
+  "engine": "2024",
+  "pdf_print_method": 0,
+  "alignment": "LEFT",
+  "kerning": false,
+  "nominal_sizes_pt": [
+    12,
+    16,
+    20,
+    32,
+    52
+  ],
+  "printable_ascii_cycles_per_style": 3,
+  "observation": "Bold Type3 Widths match regular glyph widths but do not generally own actual text advances; preserve unverified existing bold metrics. Only source symbols confirmed against actual independent advances are selected.",
+  "actual_advance_observations": 2697,
+  "grouped_observations": 927,
+  "grouped_tsv": "poppy-ascii-neutral-advances.tsv",
+  "grouped_tsv_sha256": "f5fd656e86275f865558092926d319f2a49369b698866ca04d0017f9386a8603"
+}

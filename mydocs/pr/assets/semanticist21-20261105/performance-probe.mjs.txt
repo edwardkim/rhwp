@@ -1,0 +1,51 @@
+import {readFileSync, writeFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+import {join} from 'node:path';
+import {createSweepServer, preparePrintReadbackCanvas} from '/home/edward/mygithub/rhwp/scripts/export-wasm-png-for-sweep.mjs';
+const root='/home/edward/mygithub/rhwp', out=join(root,'output/pr-review/semanticist21-20261105');
+const require=createRequire(join(root,'rhwp-studio/package.json'));
+const cases=JSON.parse(readFileSync(join(out,'visual-cases.json')));
+const fonts=JSON.parse(readFileSync(join(out,'font-catalog.json'))).faces.map((f,i)=>({...f,url:`/font/${i}`}));
+const files=new Map([
+ ['/sweep-font-environment.js',['application/javascript',readFileSync(join(root,'scripts/visual-sweep-font-environment.mjs'))]],
+]);
+for (const role of ['base','candidate']) for(const [name,type] of [['rhwp.js','application/javascript'],['rhwp_bg.wasm','application/wasm']])
+ files.set(`/${role}/${name}`,[type,readFileSync(join(out,`${role}-pkg`,name))]);
+for(const key of ['jpeg-sandbox','equation-flow']) files.set(`/source/${key}`,['application/octet-stream',readFileSync(cases.find(c=>c.key===key).hwp)]);
+const server=createSweepServer(files,new Map(fonts.map(f=>[f.url,f])));
+await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+const browser=await require('puppeteer-core').launch({executablePath:JSON.parse(readFileSync(join(out,'browser.json'))).executable,headless:true,protocolTimeout:300000});
+const results=[];
+try {
+ for(let iteration=0;iteration<3;iteration++) for(const role of (iteration%2?['candidate','base']:['base','candidate'])) for(const key of ['jpeg-sandbox','equation-flow']) {
+  const page=await browser.newPage();await page.goto(`http://127.0.0.1:${server.address().port}`);
+  await page.$eval('#page',preparePrintReadbackCanvas);
+  const result=await page.evaluate(async({role,key,fonts})=>{
+   const module=await import(`/${role}/rhwp.js`);const wasm=await module.default({module_or_path:`/${role}/rhwp_bg.wasm`});
+   const bytes=new Uint8Array(await (await fetch(`/source/${key}`)).arrayBuffer());
+   let t=performance.now();const doc=new module.HwpDocument(bytes);const openMs=performance.now()-t;
+   doc.setHangul2024Compat(key==='equation-flow');
+   t=performance.now();const {applySweepFontEnvironment,loadSweepFontPrograms}=await import('/sweep-font-environment.js');
+   const fontEnvironment=await applySweepFontEnvironment(doc,null,plan=>loadSweepFontPrograms(plan,fonts,globalThis,doc));
+   await document.fonts.ready;doc.selectCanvasMetrics(false);const fontSetupMs=performance.now()-t;
+   const count=doc.pageCount(),canvas=document.getElementById('page');
+   const hash=async bytes=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(x=>x.toString(16).padStart(2,'0')).join('');
+   const draw=number=>{const t=performance.now();doc.renderPageToCanvasFilteredWithProfile(number,canvas,2,'all','print');return performance.now()-t;};
+   const memory=()=>wasm.memory.buffer.byteLength;
+   let firstMs=null,warmMs=null,allMs=null,editMs=null,svgHashes=[],pixelHashes=[];
+   if(key==='jpeg-sandbox') {
+    draw(0);firstMs=draw(10);warmMs=draw(10);
+    t=performance.now();for(let p=0;p<count;p++)draw(p);allMs=performance.now()-t;
+    for(let p=0;p<count;p++){draw(p);pixelHashes.push(await hash(canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data));}
+   } else {
+    for(let p=0;p<count;p++)svgHashes.push(await hash(new TextEncoder().encode(doc.renderPageSvgWithProfile(p,'print'))));
+    t=performance.now();doc.insertTextLogical(0,0,0,'A');const editedCount=doc.pageCount();editMs=performance.now()-t;
+    const editedHashes=[];for(let p=0;p<editedCount;p++)editedHashes.push(await hash(new TextEncoder().encode(doc.renderPageSvgWithProfile(p,'print'))));
+    svgHashes={before:svgHashes,after:editedHashes,editedCount};
+   }
+   const result={openMs,fontSetupMs,count,firstMs,warmMs,allMs,editMs,memoryBytes:memory(),pixelHashes,svgHashes,fontEnvironment};doc.free();return result;
+  },{role,key,fonts});
+  results.push({role,key,iteration,...result});writeFileSync(join(out,'wasm-performance.json'),JSON.stringify(results,null,2));
+  console.log(JSON.stringify({role,key,iteration,openMs:result.openMs,firstMs:result.firstMs,editMs:result.editMs,memoryBytes:result.memoryBytes}));await page.close();
+ }
+} finally {await browser.close();await new Promise(resolve=>server.close(resolve));}

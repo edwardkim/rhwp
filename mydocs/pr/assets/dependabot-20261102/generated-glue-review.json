@@ -1,0 +1,5 @@
+{
+  "fresh_base_glue_equals_candidate": true,
+  "candidate_glue_sha256": "d5a84985620c90581d6078773cb46445a3237075a3b216a04130fe7e7e18c25b",
+  "tracked_public_glue_delta": "Both fresh builds expose two pre-existing Rust font registration APIs missing in the checked-in public glue. Wrapper synchronization modified only this owned worktree. Generated glue is excluded from dependency submission and will be restored to HEAD after validation; current user deployment remains unchanged."
+}

@@ -1,0 +1,589 @@
+{
+  "parentHead": "544a2932d6e6f9c2146a7f16127a2d8d9e062c43",
+  "base": "d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867",
+  "source": {
+    "parentHead": "544a2932d6e6f9c2146a7f16127a2d8d9e062c43",
+    "base": "d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867",
+    "productionDiffSha256": "1fc0d418a365a381d3a37b6b79a32b6a6b2c7cc738de81039a9c08ff056c7146",
+    "sourceFiles": {
+      "src/renderer/layout/table_layout.rs": "eb96e74d6f39990596cfb35870b911a7adc8280c3b9e2aae1cf55b9752492431"
+    },
+    "sourceState": "Uncommitted common physical-fragment padding correction; no page/document selector, no threshold change",
+    "removedExceptionOrigin": "6a193a648dba3df6d5c4cffa0182bc02f3e011ff PR6813",
+    "independentEvidence": "press-footer source/record/vector/paint diagnostics; nested atom height and source font size ruled out",
+    "fullPrAcceptance": false
+  },
+  "builds": [
+    {
+      "step": "native-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--jobs",
+        "8"
+      ],
+      "exitCode": 0,
+      "seconds": 109.91255617141724
+    },
+    {
+      "step": "fresh-wasm",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exitCode": 0,
+      "seconds": 204.37342286109924
+    }
+  ],
+  "native": {
+    "binarySha256": "2b7e5e85eb354ae890b599874ba609e0476f3194841fa535bc01df52d12cf396",
+    "sourceProducerSha256": "3e503a508cea84d68dd35dfafb49972e18aa1a66039d071e5e484da3497e1d18"
+  },
+  "wasm": {
+    "files": {
+      "rhwp.js": "56b2836e71bbbde64097476cb009303b8eeff61777c480cae82a238cf4d47af3",
+      "rhwp_bg.wasm": "b440eff813e944ad28505dfca800a63ac4e91a3bf353f409ba91cf8141196b90"
+    },
+    "rootAndStudioPublicMatch": true,
+    "method": "Mac locked wrapper --target web --out-dir pkg --no-opt; local substitute, not Docker optimized",
+    "sourceProducerSha256": "3e503a508cea84d68dd35dfafb49972e18aa1a66039d071e5e484da3497e1d18"
+  },
+  "beforeCaptureProducer": {
+    "sourceHead": "544a2932d6e6f9c2146a7f16127a2d8d9e062c43",
+    "frozenProducer": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage87-multicolumn-flow-v2",
+    "verifiedProductionDiffSha256": "d3be566527f34f5ef68f213f2edf5bf131791ac2e86947faf52b267489675752",
+    "artifacts": {
+      "rhwp-native": "2f8f952b7fbe326320ead4877b8221b2245fbb71b36b109017ecfb3887aabf51",
+      "frozen-pkg/rhwp.js": "56b2836e71bbbde64097476cb009303b8eeff61777c480cae82a238cf4d47af3",
+      "frozen-pkg/rhwp_bg.wasm": "77f44c82074e830a900ba0847f18def0dafee18bda1002d9eeceb3dc0089fcdc"
+    },
+    "case": {
+      "key": "press12",
+      "source": "samples/issue3637/press_release_split_cell_nested_table.hwpx",
+      "pdf": "pdf/issue3637/press_release_split_cell_nested_table-hwpx-2020.pdf",
+      "pages": 12,
+      "review": [
+        2,
+        6,
+        8,
+        9,
+        12
+      ],
+      "compat": "2022",
+      "dpi": 96,
+      "sourceSha256": "e2cb077d51293ae081a83e49c3bf2bca701087fddb4068d29295607b326be410",
+      "pdfSha256": "731ff37070a7a5fedbd239920323244aecd10d8913a1a49351956263e45bc2cc",
+      "kind": "original",
+      "latestCandidateValidation": "pending",
+      "latestHeadValidation": "pending",
+      "environment": null,
+      "environmentSha256": null,
+      "fontProgramScope": {
+        "includeOriginalHftSymbolOverlay": true,
+        "sourceDeclarationEvidence": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4296fa04-20261018/font-scope-diagnostic-c163/source-fonts.json",
+        "reason": "Overlay family matches an explicitly declared HFT source face"
+      },
+      "previousDpi": 192
+    },
+    "toolHashes": {
+      "scripts/visual_sweep.py": "e05edaacad9ae7b9954b95b3c26fb97a20686e35a4502349ae64a0d4fb8af4e1",
+      "scripts/visual_sweep_pdf.py": "eda5cb9561ea417f55efdf2a36510a5db2563d4382adf2b5ef564389f6736faf",
+      "scripts/visual_sweep_png.py": "cdd15626217bec7bcfa475ac618847200770cfc13f670867c5bc95c10fbeee80",
+      "scripts/export-wasm-png-for-sweep.mjs": "b723139a685d823e485054fab5341257eabc4e3a42768c94baa0a1918c35f7c2",
+      "scripts/export-wasm-for-sweep.mjs": "480f5d7c8b8463058e12958fed013ad2c011ea59f41f0b0706ee4bc0c3f2c218",
+      "scripts/visual-sweep-font-environment.mjs": "7bfd1d694d68c71371f880064b28ffd249cd816fb198f9a378233b97523ec354",
+      "scripts/rasterize-svg-webfonts.mjs": "1d56c41b0b7dcb8b8d6da9c90c9105456c21a09d01c4068e6a958d2653a1d219"
+    },
+    "fontInventorySha256": "9874ac3b0296013b93f7e1af62d16a11b21582c778453dc5c6a9751c440e5d67",
+    "purpose": "Fresh before p12 capture using immutable Stage87 artifacts; not current head acceptance"
+  },
+  "beforeCapture": [
+    {
+      "backend": "native",
+      "counts": {
+        "rhwp": 12,
+        "pdf": 12
+      },
+      "rows": [
+        {
+          "page": "12",
+          "tolerant_content_match_percent": "88.02427",
+          "below_90": "1",
+          "silhouette_raw_match_percent": "87.89806",
+          "silhouette_boundary_reconciled_pixels": "125"
+        }
+      ],
+      "tsvSha256": "d788b9cfb2f41644eccf643458a1bfb230f3f15e58c744a6ef07a12374f251d6"
+    },
+    {
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 12,
+        "pdf": 12
+      },
+      "rows": [
+        {
+          "page": "12",
+          "tolerant_content_match_percent": "87.97462",
+          "below_90": "1",
+          "silhouette_raw_match_percent": "87.84792",
+          "silhouette_boundary_reconciled_pixels": "125"
+        }
+      ],
+      "tsvSha256": "ac392f1b858532e232832ff90fd118f5facc8a665fbe3f26dbe8d57a0d6ca40d"
+    }
+  ],
+  "focusedResults": [
+    {
+      "case": "press12",
+      "backend": "native",
+      "counts": {
+        "rhwp": 12,
+        "pdf": 12
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "98.42100"
+        },
+        {
+          "page": 2,
+          "raw": "94.23037"
+        },
+        {
+          "page": 3,
+          "raw": "99.28344"
+        },
+        {
+          "page": 4,
+          "raw": "99.99417"
+        },
+        {
+          "page": 5,
+          "raw": "97.97228"
+        },
+        {
+          "page": 6,
+          "raw": "99.89040"
+        },
+        {
+          "page": 7,
+          "raw": "99.59874"
+        },
+        {
+          "page": 8,
+          "raw": "99.40529"
+        },
+        {
+          "page": 9,
+          "raw": "98.18322"
+        },
+        {
+          "page": 10,
+          "raw": "99.53225"
+        },
+        {
+          "page": 11,
+          "raw": "99.94619"
+        },
+        {
+          "page": 12,
+          "raw": "99.25420"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/native/press12/silhouette.tsv",
+      "tsvSha256": "326ecdf7327ed6aba6e18eb0a1d46834410fb122969d4ef2a64dad5a6d3cfd9d"
+    },
+    {
+      "case": "ktx003",
+      "backend": "native",
+      "counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "99.36494"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/native/ktx003/silhouette.tsv",
+      "tsvSha256": "c048e8751248af75d1e4b7e38a1dbae56d5dc7a7e4d3ca0275bb6c15b49d18e1"
+    },
+    {
+      "case": "low-slack6535",
+      "backend": "native",
+      "counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "99.99852"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/native/low-slack6535/silhouette.tsv",
+      "tsvSha256": "c695e53ec9ac7f79dd928c699d70782ae3fe14f9a71966d32c528cf38f73af4a"
+    },
+    {
+      "case": "missing-lineseg1",
+      "backend": "native",
+      "counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "98.02990"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/native/missing-lineseg1/silhouette.tsv",
+      "tsvSha256": "4f8c8c80b4e18d34292841274662d94f68ec2146ceceefa14e8f4d5715e9afdd"
+    },
+    {
+      "case": "roadmap302",
+      "backend": "native",
+      "counts": {
+        "rhwp": 302,
+        "pdf": 302
+      },
+      "pages": [
+        {
+          "page": 153,
+          "raw": "100.00000"
+        },
+        {
+          "page": 295,
+          "raw": "98.96693"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/native/roadmap302/silhouette.tsv",
+      "tsvSha256": "982efe221c81a2235d088a30920ceb00d9be10af4418c913ec3fab9a01048f2f"
+    },
+    {
+      "case": "press12",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 12,
+        "pdf": 12
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "98.41857"
+        },
+        {
+          "page": 2,
+          "raw": "94.18582"
+        },
+        {
+          "page": 3,
+          "raw": "99.21432"
+        },
+        {
+          "page": 4,
+          "raw": "99.99414"
+        },
+        {
+          "page": 5,
+          "raw": "97.96902"
+        },
+        {
+          "page": 6,
+          "raw": "99.88983"
+        },
+        {
+          "page": 7,
+          "raw": "99.37655"
+        },
+        {
+          "page": 8,
+          "raw": "99.33437"
+        },
+        {
+          "page": 9,
+          "raw": "98.12385"
+        },
+        {
+          "page": 10,
+          "raw": "99.52953"
+        },
+        {
+          "page": 11,
+          "raw": "99.94581"
+        },
+        {
+          "page": 12,
+          "raw": "99.25121"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/wasm/press12/silhouette.tsv",
+      "tsvSha256": "8ddc5c0267b07a3999151972a12e19bd6afa0e2ad02da08616bdcb13ce319c89"
+    },
+    {
+      "case": "ktx003",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "99.38975"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/wasm/ktx003/silhouette.tsv",
+      "tsvSha256": "1a03196c04a41d2d1bfd1b1140f40be92af65378d9ca275fe41e808f812e4d04"
+    },
+    {
+      "case": "low-slack6535",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "99.99851"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/wasm/low-slack6535/silhouette.tsv",
+      "tsvSha256": "5d4dd369a7994ef2752a30f0fb5551976a6aebc89be0847b46f4c88745aa37c1"
+    },
+    {
+      "case": "missing-lineseg1",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "98.02479"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/wasm/missing-lineseg1/silhouette.tsv",
+      "tsvSha256": "a6764df49f043a046f0ed32dc668f53edf69341823273f99005133d15823dc1a"
+    },
+    {
+      "case": "roadmap302",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 302,
+        "pdf": 302
+      },
+      "pages": [
+        {
+          "page": 153,
+          "raw": "100.00000"
+        },
+        {
+          "page": 295,
+          "raw": "98.96600"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/wasm/roadmap302/silhouette.tsv",
+      "tsvSha256": "b17b18868668ab04bdd97a4e2abd9e7d1e052c95ea8da7f18ccc4bd60c75ceb9"
+    }
+  ],
+  "regression": {
+    "steps": [
+      {
+        "role": "before",
+        "exitCode": 100,
+        "seconds": 126.55714106559753,
+        "sourceHashes": {
+          "src/renderer/layout/table_layout.rs": "43355675778a70fe9417f49b95581d07d8abf110ab6f92dc6c71447865aa6b3a"
+        }
+      },
+      {
+        "role": "after",
+        "exitCode": 0,
+        "seconds": 120.70775699615479,
+        "sourceHashes": {
+          "src/renderer/layout/table_layout.rs": "eb96e74d6f39990596cfb35870b911a7adc8280c3b9e2aae1cf55b9752492431"
+        }
+      }
+    ],
+    "testSourceSha256": "98e56b6e893c68003dac5bd5793158e619b2023a70c2c3f9cca6e885b5fbef91",
+    "sourceRestored": true,
+    "expectationsUnchanged": true,
+    "beforeRuntimeFailure": true,
+    "afterRuntimePass": true
+  },
+  "regressionLogHashes": {
+    "cell-regression-before.log": "dddf78097e7dc91f23250cc33931894ad61fb10c98305074d9a9a0d3c2375433",
+    "cell-regression-after.log": "c2376dcb9f9e64f886771a7d29eaf4836d2bec4fa9cee4728287f1d271e3b916"
+  },
+  "directReview": {
+    "pages": [
+      8,
+      9,
+      12
+    ],
+    "lastPageNativeAndWasm": true,
+    "observed": "Final body line, cell end, empty following paragraph and footer preserved. Corrected footer moves with physical padding; thin stroke/raster and glyph fringes remain. Actual paint horizontal borders agree with independent PDF within 2 CSSpx."
+  },
+  "fullPrAcceptance": false,
+  "assets": [
+    {
+      "asset": "after/native/press12.tsv",
+      "sha256": "326ecdf7327ed6aba6e18eb0a1d46834410fb122969d4ef2a64dad5a6d3cfd9d",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/native/press12/silhouette.tsv"
+    },
+    {
+      "asset": "after/native/ktx003.tsv",
+      "sha256": "c048e8751248af75d1e4b7e38a1dbae56d5dc7a7e4d3ca0275bb6c15b49d18e1",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/native/ktx003/silhouette.tsv"
+    },
+    {
+      "asset": "after/native/low-slack6535.tsv",
+      "sha256": "c695e53ec9ac7f79dd928c699d70782ae3fe14f9a71966d32c528cf38f73af4a",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/native/low-slack6535/silhouette.tsv"
+    },
+    {
+      "asset": "after/native/missing-lineseg1.tsv",
+      "sha256": "4f8c8c80b4e18d34292841274662d94f68ec2146ceceefa14e8f4d5715e9afdd",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/native/missing-lineseg1/silhouette.tsv"
+    },
+    {
+      "asset": "after/native/roadmap302.tsv",
+      "sha256": "982efe221c81a2235d088a30920ceb00d9be10af4418c913ec3fab9a01048f2f",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/native/roadmap302/silhouette.tsv"
+    },
+    {
+      "asset": "after/wasm/press12.tsv",
+      "sha256": "8ddc5c0267b07a3999151972a12e19bd6afa0e2ad02da08616bdcb13ce319c89",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/wasm/press12/silhouette.tsv"
+    },
+    {
+      "asset": "after/wasm/ktx003.tsv",
+      "sha256": "1a03196c04a41d2d1bfd1b1140f40be92af65378d9ca275fe41e808f812e4d04",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/wasm/ktx003/silhouette.tsv"
+    },
+    {
+      "asset": "after/wasm/low-slack6535.tsv",
+      "sha256": "5d4dd369a7994ef2752a30f0fb5551976a6aebc89be0847b46f4c88745aa37c1",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/wasm/low-slack6535/silhouette.tsv"
+    },
+    {
+      "asset": "after/wasm/missing-lineseg1.tsv",
+      "sha256": "a6764df49f043a046f0ed32dc668f53edf69341823273f99005133d15823dc1a",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/wasm/missing-lineseg1/silhouette.tsv"
+    },
+    {
+      "asset": "after/wasm/roadmap302.tsv",
+      "sha256": "b17b18868668ab04bdd97a4e2abd9e7d1e052c95ea8da7f18ccc4bd60c75ceb9",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/wasm/roadmap302/silhouette.tsv"
+    },
+    {
+      "asset": "before/native/press12-p012.tsv",
+      "sha256": "d788b9cfb2f41644eccf643458a1bfb230f3f15e58c744a6ef07a12374f251d6",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/before-frozen/native/press12/silhouette.tsv"
+    },
+    {
+      "asset": "before-native-p012-review.png",
+      "sha256": "40668fa97e42f5ce8e0723a9d5a4597df397dd9377c86c463fb7edca35f263c3",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/before-frozen/native/press12/review/review_012.png"
+    },
+    {
+      "asset": "before-native-p012-overlay.png",
+      "sha256": "d415c27d63a602fa96921637fd95ae7acd591fbf5366d4b1e1c6ab378c6601f4",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/before-frozen/native/press12/overlay/overlay_012.png"
+    },
+    {
+      "asset": "after-native-p012-review.png",
+      "sha256": "2ec6f6799026f144563c87cd07b295857258357e28583a57d745abd814e6334f",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/native/press12/review/review_012.png"
+    },
+    {
+      "asset": "after-native-p012-overlay.png",
+      "sha256": "ef13f106ca1e40c4f7d3722514f2af0ba6742d7395ad68226291190f091902a3",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/native/press12/overlay/overlay_012.png"
+    },
+    {
+      "asset": "before/wasm/press12-p012.tsv",
+      "sha256": "ac392f1b858532e232832ff90fd118f5facc8a665fbe3f26dbe8d57a0d6ca40d",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/before-frozen/wasm/press12/silhouette.tsv"
+    },
+    {
+      "asset": "before-wasm-p012-review.png",
+      "sha256": "682289bf3ec94f3ab377d7a6de663dc61c72fc3a4614e606b1d2647d3ff2c276",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/before-frozen/wasm/press12/review/review_012.png"
+    },
+    {
+      "asset": "before-wasm-p012-overlay.png",
+      "sha256": "850dc614d152ce736a22416ef3be9c2c5bfab8dde27820993c05120822d9d3aa",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/before-frozen/wasm/press12/overlay/overlay_012.png"
+    },
+    {
+      "asset": "after-wasm-p012-review.png",
+      "sha256": "d7b4103d0935771bd80991438b20cf4603772f1df6f81c55f13e37f9584b7ea8",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/wasm/press12/review/review_012.png"
+    },
+    {
+      "asset": "after-wasm-p012-overlay.png",
+      "sha256": "d4fdfb1a4edb6d20325049cc3b283bed084fe4ff76d2a12bf968ac42a68f4206",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/wasm/press12/overlay/overlay_012.png"
+    },
+    {
+      "asset": "after-native-p008-review.png",
+      "sha256": "6ff146461996d045fe5519015a077654d8fc85dd7c1fb25462fb4eed0a982042",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/native/press12/review/review_008.png"
+    },
+    {
+      "asset": "after-native-p008-overlay.png",
+      "sha256": "b8f6cab1226f08c85d8351224f528791c326c6431d36be3d750bd456f0a0cc45",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/native/press12/overlay/overlay_008.png"
+    },
+    {
+      "asset": "after-native-p009-review.png",
+      "sha256": "089cf679fe51c267ffe3c9080a530da3021e4a36cd28e48ff75eedf5eb79114c",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/native/press12/review/review_009.png"
+    },
+    {
+      "asset": "after-native-p009-overlay.png",
+      "sha256": "ef3447f7fd4e92d0575f7f57ff125dbf89202698dac26f5c879b00e712b09105",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage88-fragment-padding/focus/native/press12/overlay/overlay_009.png"
+    },
+    {
+      "asset": "independent-footer-vector.json",
+      "sha256": "cf57fb66f01be2738ff72b299fa8ff5dda264f07e8853c715491a38a0a08bfc0",
+      "producerPath": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/other-existing-lows/source-geometry-audit/press-footer/independent-footer-vector.json"
+    }
+  ],
+  "scopeGates": {
+    "fmt": 0,
+    "manifest": 0,
+    "markdownLinks": 0,
+    "diffCheck": 0
+  }
+}

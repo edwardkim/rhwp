@@ -1,4 +1,6 @@
-//! Canvas measurement lifetime and output isolation, using the original #7084 fixtures.
+//! 관계형: Canvas 보충 측정의 세션 수명·글자 소속과 portable 인쇄 격리를 검사한다.
+//! 주석 갱신: 2026-11-04 14:56 KST; 화면 폭을 활성화한 인쇄 진입의 거부·복귀를 보완.
+//! #7084 실물 입력과 합성 공급자 계약이며 절대 px 좌표의 일치율을 주장하지 않는다.
 use rhwp::document_core::{CanvasMetricBatch, CanvasMetricReply};
 use rhwp::paint::layer_tree::{LayerNode, LayerNodeKind};
 use rhwp::paint::paint_op::PaintOp;
@@ -103,7 +105,9 @@ fn active_emoji_metric_preserves_unrelated_nominal_grapheme_run() {
     fn has_whole_run(node: &LayerNode) -> bool {
         match &node.kind {
             LayerNodeKind::Group { children, .. } => children.iter().any(has_whole_run),
-            LayerNodeKind::ClipRect { child, .. } => has_whole_run(child),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                has_whole_run(child)
+            }
             LayerNodeKind::Leaf { ops } => ops.iter().any(|op| {
                 matches!(op,
                 PaintOp::TextRun { run, .. } if run.text == "ᄒᆞᆫ말")
@@ -147,7 +151,7 @@ fn active_emoji_metric_preserves_unrelated_nominal_grapheme_run() {
 }
 
 #[test]
-fn cached_standalone_metric_does_not_leak_into_a_style_split_cluster() {
+fn cached_standalone_metrics_preserve_cluster_ownership_and_width_provenance() {
     for ext in ["hwp", "hwpx"] {
         let mut core = core(ext);
         core.insert_text_in_cell_native(0, 12, 1, 5, 0, 6, " 😀")
@@ -167,6 +171,34 @@ fn cached_standalone_metric_does_not_leak_into_a_style_split_cluster() {
             )
         };
         let (baseline_offset, baseline_advance) = emoji_measurement(&baseline);
+        let width_sources = |core: &DocumentCore| {
+            let mut sources = Vec::new();
+            for page in 0..core.page_count() {
+                let trace: serde_json::Value =
+                    serde_json::from_str(&core.get_font_decision_trace_native(page, "{}").unwrap())
+                        .unwrap();
+                for record in trace["records"].as_array().unwrap() {
+                    if record["source"]["character"] == "😀" {
+                        sources.push(
+                            record["layoutMetric"]["widthSource"]
+                                .as_str()
+                                .unwrap()
+                                .to_owned(),
+                        );
+                    }
+                }
+            }
+            sources
+        };
+        let baseline_sources = width_sources(&core);
+        assert_eq!(
+            baseline_sources.len(),
+            2,
+            "두 원문 이모지의 측정 출처: {ext}"
+        );
+        assert!(baseline_sources
+            .iter()
+            .all(|source| source != "supplementalBackendMeasured"));
         let batch = core.collect_canvas_metric_requests(context()).unwrap();
         assert_eq!(
             batch.requests.len(),
@@ -183,25 +215,10 @@ fn cached_standalone_metric_does_not_leak_into_a_style_split_cluster() {
             (active_advance - baseline_advance).abs() < 1e-9,
             "protected first emoji advance: {ext}: {baseline_advance} -> {active_advance}"
         );
-        let mut sources = Vec::new();
-        for page in 0..2 {
-            let trace: serde_json::Value =
-                serde_json::from_str(&core.get_font_decision_trace_native(page, "{}").unwrap())
-                    .unwrap();
-            for record in trace["records"].as_array().unwrap() {
-                if record["source"]["character"] == "😀" {
-                    sources.push(
-                        record["layoutMetric"]["widthSource"]
-                            .as_str()
-                            .unwrap()
-                            .to_owned(),
-                    );
-                }
-            }
-        }
+        let sources = width_sources(&core);
         assert_eq!(
             sources,
-            ["heuristicHalfwidth", "supplementalBackendMeasured"],
+            [baseline_sources[0].as_str(), "supplementalBackendMeasured"],
             "{ext}"
         );
         assert_eq!(format!("{:?}", core.document()), original);
@@ -312,7 +329,9 @@ fn core(ext: &str) -> DocumentCore {
 fn find(node: &LayerNode) -> Option<TextRunNode> {
     match &node.kind {
         LayerNodeKind::Group { children, .. } => children.iter().find_map(find),
-        LayerNodeKind::ClipRect { child, .. } => find(child),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            find(child)
+        }
         LayerNodeKind::Leaf { ops } => ops.iter().find_map(|op| match op {
             PaintOp::TextRun { run, .. } if run.text.contains('😀') => Some((**run).clone()),
             _ => None,
@@ -367,6 +386,16 @@ fn canvas_session_switch_rebuilds_positions_and_protects_portable_output() {
         assert!(core.select_canvas_metrics(true).unwrap());
         let active = run(&core);
         assert!(active.style.supplemental_metrics.is_some());
+        assert!(
+            core.build_canvas_page_layer_tree_with_profile(0, RenderProfile::Print)
+                .is_err(),
+            "화면 전용 보충 폭으로 인쇄 쪽을 만들지 않는다: {ext}"
+        );
+        assert!(
+            core.build_canvas_page_layer_tree_with_profile(0, RenderProfile::Screen)
+                .is_ok(),
+            "화면의 실제 보충 측정은 유지한다: {ext}"
+        );
         assert_ne!(
             positions(&active),
             positions(&baseline),
@@ -382,6 +411,9 @@ fn canvas_session_switch_rebuilds_positions_and_protects_portable_output() {
             .unwrap());
         assert!(!core.select_canvas_metrics(true).unwrap());
         assert!(core.select_canvas_metrics(false).unwrap());
+        assert!(core
+            .build_canvas_page_layer_tree_with_profile(0, RenderProfile::Print)
+            .is_ok());
         assert_eq!(positions(&run(&core)), positions(&baseline));
         assert_eq!(core.render_page_svg_native(0).unwrap(), svg);
         assert_eq!(

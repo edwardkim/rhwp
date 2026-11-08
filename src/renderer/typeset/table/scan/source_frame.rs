@@ -10,6 +10,7 @@ pub(in crate::renderer::typeset) struct SourceFrameQuery<'a> {
     pub(in crate::renderer::typeset) row_start_cut: &'a [usize],
     pub(in crate::renderer::typeset) row_count: usize,
     pub(in crate::renderer::typeset) is_continuation: bool,
+    pub(in crate::renderer::typeset) source_frame_origin_unverified: bool,
     pub(in crate::renderer::typeset) profile: &'a LayoutCompatibilityProfile,
 }
 
@@ -49,6 +50,7 @@ impl SourceFrameQuery<'_> {
             row_start_cut,
             row_count,
             is_continuation,
+            source_frame_origin_unverified,
             profile,
         } = *self;
         let RowScanQuery {
@@ -91,14 +93,24 @@ impl SourceFrameQuery<'_> {
             && table.outer_margin_bottom > 0)
             .then(|| layout_engine.row_two_line_source_frame_height(table, r, styles))
             .flatten();
-        // 저장 vpos reset은 같은 문단 안에서 양수 좌표가 0으로 되감긴 경우에만
-        // 물리 조각 경계를 소유한다. 문단 전환의 0은 HWPX writer-local cursor라
-        // 저장 프레임 컷으로 선택하지 않고 일반 행 용량 계산에 맡긴다.
-        let stored_source_frame = (profile.hwpx_stored_layout()
+        // Same-paragraph HWPX resets and original Native plain-text frame
+        // boundaries retain their physical fragment ownership. Native paragraph
+        // resets require a coherent cell coordinate stream and original row
+        // boxes extending beyond the declared object frame; local zeros alone
+        // do not establish a source-owned cut.
+        let native_text_source_frame = layout_engine
+            .native_stored_row_has_text_frame_boundary(table, r, styles)
+            && !rowspan_touched.get(r).copied().unwrap_or(true);
+        // 현재 이어받기 컷이 원본 프레임 중간이면 저장 재시작을 이 물리 쪽의
+        // 끝으로 강제할 수 없다. whole-row fit도 같은 소유 판정을 소비한다.
+        let stored_source_frame = (!source_frame_origin_unverified
+            && layout_engine.row_start_owns_stored_frame(table, r, row_start_cut, styles)
+            && (native_text_source_frame
+                || (profile.hwpx_stored_layout()
+                    && layout_engine.row_has_stored_vpos_frame_rewind(table, r)
+                    && layout_engine.row_has_single_visible_source_cell(table, r, styles)))
             && !table.common.treat_as_char
             && mt.allows_row_break_split()
-            && layout_engine.row_has_stored_vpos_frame_rewind(table, r)
-            && layout_engine.row_has_single_visible_source_cell(table, r, styles)
             && !rowspan_touched.get(r).copied().unwrap_or(true))
         .then(|| layout_engine.stored_frame_cut_for_row(table, r, row_start_cut, styles))
         .flatten();
@@ -143,9 +155,10 @@ impl SourceFrameQuery<'_> {
         // 실제 예산 안에 들어가는 행은 기존대로 수용하고, 초과 수용만 컷에 맡긴다.
         let terminal_zero_origin_cut = (profile.hwpx_stored_layout()
             || profile.hwp5_stored_pagination_layout())
+            && row_start_cut.is_empty()
             && !table_text_reflowed()
             && layout_engine
-                .row_stored_terminal_zero_origin_cut(table, r, styles)
+                .row_stored_zero_origin_cut(table, r, styles)
                 .is_some();
         let source_frame_whole_row_fits = !terminal_zero_origin_cut
             // #5585: 일반 선언 행의 초과 밴드는 다음 쪽에 이어져야 한다.
@@ -154,6 +167,17 @@ impl SourceFrameQuery<'_> {
             && !ordinary_declared_band_can_split
             && source_first_fragment_overflow_allowance > 0.0
             && source_first_fragment_row_end == Some(r + 1)
+            // Source object-height slack may absorb an empty physical band,
+            // but it cannot consume visible content that belongs beyond the
+            // actual row budget. The same content/alignment query is used by
+            // ordinary band splitting, independently of the stored border.
+            && layout_engine.row_aligned_content_bottom(
+                table,
+                r,
+                layout_engine.row_complete_cut_content_height(table, r, styles),
+                row_total,
+                styles,
+            ) <= avail_for_rows - consumed - cs_before + 0.5
             && consumed + cs_before + row_total
                 <= avail_for_rows + source_first_fragment_overflow_allowance;
         // A direct HWPX row with one visible owner and a structural empty
@@ -162,13 +186,36 @@ impl SourceFrameQuery<'_> {
         // measured whole-row fast path. The same rule applies to original
         // Native cells whose two local-zero line boxes close the stored row.
         // Spare capacity cannot merge their independently owned source frames.
-        let declared_source_frame = row_start_cut.is_empty()
-            && !table_text_reflowed()
-            && (layout_engine.row_has_declared_stored_frame(table, r)
-                || layout_engine.native_saved_two_line_row_frame(table, r, styles));
+        // HU-derived row sums can exceed the identical source frame by binary
+        // summation error. Bound that error by the number of accumulated rows;
+        // this does not grant any additional physical layout space.
+        let candidate_end = consumed + cs_before + row_total;
+        let sum_roundoff =
+            f64::EPSILON * (r + 3) as f64 * candidate_end.abs().max(avail_for_rows.abs());
+        // 원본 원점0 재시작은 둘로 나뉜다. 첫 개체 프레임을 가로지르는 재시작은 선언
+        // 기하가 인증하므로 언제나 물리 경계다. 그 뒤 행의 재시작은 저장 당시 쪽 나눔의
+        // 기록이라, 지금 흐름에서 그 행이 남은 예산에 통째로 들어가면 경계가 아니다 —
+        // 저장 쪽 나눔이 다른 자리로 옮겨 간 것이다(1342000 구역 12 표 행 132: 저장 2줄
+        // `vpos 0/0` 이 쪽 위 120px 지점에서 행을 끊어 한 쪽이 213px 만 쓰고 끝났다.
+        // 한/글 2022 PDF 는 그 행을 끊지 않는다). 쪽 끝에 걸린 행은 종전대로 그 재시작에서
+        // 자른다(table_scattered_header_rowbreak 47→48쪽 row99 「6가 크로 / 뮴)」).
+        let saved_zero_origin_frame = match layout_engine.row_saved_zero_origin_text_frame(table, r)
+        {
+            Some(crate::renderer::layout::SavedZeroOriginWitness::OpeningFrame) => true,
+            Some(crate::renderer::layout::SavedZeroOriginWitness::LaterPage) => {
+                candidate_end > avail_for_rows + sum_roundoff
+            }
+            None => false,
+        };
+        let declared_source_frame = (native_text_source_frame && stored_source_frame.is_some())
+            || (row_start_cut.is_empty()
+                && !table_text_reflowed()
+                && (layout_engine.row_has_declared_stored_frame(table, r)
+                    || layout_engine.native_saved_two_line_row_frame(table, r, styles)
+                    || saved_zero_origin_frame));
         let whole_row_fits = !declared_source_frame
-            && ((!single_visible_source_frame
-                && consumed + cs_before + row_total <= avail_for_rows)
+            && !terminal_zero_origin_cut
+            && ((!single_visible_source_frame && candidate_end <= avail_for_rows + sum_roundoff)
                 || strict_nonterminal_rounding_fit
                 || source_frame_whole_row_fits);
 

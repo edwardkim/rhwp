@@ -1,0 +1,18 @@
+{
+  "run": {
+    "id": 42330802884,
+    "name": "Refresh nextest target duration data",
+    "head_sha": "e724c6caff896a9478dc537cab4e99a57cf879cf",
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42330802884",
+    "created_at": "2026-11-07T02:45:36Z",
+    "updated_at": "2026-11-07T02:48:22Z"
+  },
+  "observations": [
+    "2026-11-07T02:48:14.6557754Z {\"ready\":true,\"reason\":\"successful-pr-worker-measurements\",\"pullNumber\":8711,\"finalHeadRunId\":42327643464,\"finalHeadRunAttempt\":1,\"finalHeadSha\":\"cbe5a6f4dfbc2775913af10ee42098137b27e088\",\"reviewOnlyTail\":false,\"sourceRunId\":42327643464,\"latestRunAttempt\":1,\"measurementAttempts\":{\"b\":1,\"c\":1,\"d\":1,\"e\":1},\"testedMergeSha\":\"5e977a734d687279f6ebc90edc7883259fe3175c\",\"sourceHeadSha\":\"cbe5a6f4dfbc2775913af10ee42098137b27e088\",\"artifactIds\":[13556862409,13557040939,13556627479,13557305076]}",
+    "2026-11-07T02:48:15.2498173Z [NextestTargetDuration] refreshed_targets=46",
+    "2026-11-07T02:48:19.4203530Z {\"published\":true,\"reason\":\"published\",\"previousSha\":\"abfc1b95606c2801e3b79c867d7ab67379739160\",\"commitSha\":\"5a95b7077acda54968b2e9b3c1343ec90eb35b0a\",\"blobSha\":\"0404e1a6ecae945542b786a66b161081d9cf5aa0\",\"sourceMergeSha\":\"e724c6caff896a9478dc537cab4e99a57cf879cf\"}"
+  ],
+  "log_sha256": "ff6c440fd033940c0906cfafcb42ea705459c5bdb1ead66b1757d2c8e7113d1a"
+}

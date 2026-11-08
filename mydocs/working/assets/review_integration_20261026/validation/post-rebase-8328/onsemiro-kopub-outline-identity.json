@@ -1,0 +1,54 @@
+{
+  "status": "pass",
+  "method": "PDF ToUnicode와 Identity CIDToGID로 유니코드 글리프 대응을 구성하고 fontTools 분해 윤곽 명령·좌표를 비교한다.",
+  "note": "글리프 윤곽 동일성은 과거 Chromium 글꼴 선택, 모든 글꼴 메트릭 또는 과거 TSV 재현을 증명하지 않는다.",
+  "pdf": "pdf/review-integration-20261026/onsemiro-hwp-2020.pdf",
+  "pdf_sha256": "94f2ae8b745ab043aeca2a0b2a25f62dd3d97ec2fed3e1c1e75c982cc8c6f6c4",
+  "fonts": [
+    {
+      "pdf_font_object": 12,
+      "pdf_font_name": "INPILL+KoPubWorldDotumLight",
+      "pdf_font_program_sha256": "96d288ceb516c4f8a4a73948c5af7da81291f607525c274fe77e5caf9e599fad",
+      "pdf_to_unicode_stream_sha256": "ca5b775ea5cc673dd2a4f0296a0d47b476788df1c837a131fe5a899a1a19b11e",
+      "cid_to_gid": "Identity",
+      "local_font": "/usr/local/share/fonts/hwp-convert-mcp-kopub/KoPubWorld Dotum Light.ttf",
+      "local_font_sha256": "069494cce21a4222c88e537f256b6f46fee209375aba769f82431b2d382bc84f",
+      "pdf_upm": 1000,
+      "local_upm": 1000,
+      "unicode_mappings": 82,
+      "matching_decomposed_outlines": 82,
+      "different_outlines": 0,
+      "missing": 0
+    },
+    {
+      "pdf_font_object": 43,
+      "pdf_font_name": "INPILL+KoPubWorldDotumBold",
+      "pdf_font_program_sha256": "94d7917db4d0f47a7d8a7bda0b5f7c96b47ac52ed560641792a8281d11659347",
+      "pdf_to_unicode_stream_sha256": "658fbbf85795be1b1648a1df8106b052e609649e8f066c2191ff9c6b47a5d34c",
+      "cid_to_gid": "Identity",
+      "local_font": "/usr/local/share/fonts/hwp-convert-mcp-kopub/KoPubWorld Dotum Bold.ttf",
+      "local_font_sha256": "896a4952ab3c28108c095c638548989a82295cf644bcced1d4c53f5616a90db6",
+      "pdf_upm": 1000,
+      "local_upm": 1000,
+      "unicode_mappings": 12,
+      "matching_decomposed_outlines": 12,
+      "different_outlines": 0,
+      "missing": 0
+    },
+    {
+      "pdf_font_object": 79,
+      "pdf_font_name": "INPILL+KoPubWorldBatangLight",
+      "pdf_font_program_sha256": "092177382143cc8a9fdddfe63b15110b32bbbd056134c6835c524e982c3af45d",
+      "pdf_to_unicode_stream_sha256": "14a169b282c826be17348f5debeb4c124488941a2f04346d51cd30451cbbff00",
+      "cid_to_gid": "Identity",
+      "local_font": "/usr/local/share/fonts/hwp-convert-mcp-kopub/KoPubWorld Batang Light.ttf",
+      "local_font_sha256": "e3ee21a86b6a6728c567a95aaebd8883480f27ce4f230207b0d7266b5cb3fb18",
+      "pdf_upm": 1000,
+      "local_upm": 1000,
+      "unicode_mappings": 855,
+      "matching_decomposed_outlines": 855,
+      "different_outlines": 0,
+      "missing": 0
+    }
+  ]
+}

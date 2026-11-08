@@ -30,9 +30,12 @@ pub(super) mod deferred_placement;
 pub(super) mod empty_float;
 pub(super) mod flow_table;
 pub(super) mod host_wrap;
+pub(super) mod mixed_host_line;
 pub(super) mod order;
 pub(super) mod paragraph_flow;
+pub(super) mod physical_tac;
 pub(super) mod shape_flow;
+mod square_host_frame;
 pub(super) mod stored_tac;
 pub(super) mod table_entry;
 pub(super) mod tac_fit;
@@ -93,21 +96,101 @@ pub(super) fn place_decoration_table(
     para: &Paragraph,
     table: &Table,
     next_para: Option<&Paragraph>,
+    paragraphs: &[Paragraph],
     dpi: f64,
+    anchor_origin: Option<f64>,
     format: impl FnOnce(bool) -> FormattedTable,
+    engine: &super::TypesetEngine,
+    styles: &ResolvedStyleSet,
 ) {
-    st.emit_decoration_table(para_idx, ctrl_idx);
+    match place_decoration_table_with_storage(
+        st,
+        para_idx,
+        ctrl_idx,
+        para,
+        table,
+        next_para,
+        paragraphs,
+        dpi,
+        anchor_origin,
+        |top| Ok(format(top)),
+        engine,
+        styles,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(super) fn place_decoration_table_with_storage<S: crate::storage::Storage>(
+    st: &mut TypesetState,
+    para_idx: usize,
+    ctrl_idx: usize,
+    para: &Paragraph,
+    table: &Table,
+    next_para: Option<&Paragraph>,
+    paragraphs: &[Paragraph],
+    dpi: f64,
+    anchor_origin: Option<f64>,
+    format: impl FnOnce(bool) -> Result<FormattedTable, S::Error>,
+    engine: &super::TypesetEngine,
+    styles: &ResolvedStyleSet,
+    storage: &S,
+) -> Result<(), S::Error> {
+    if anchor_origin.is_none()
+        && !st.profile.session_edited()
+        && (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
+        && st.col_count == 1
+        && st.current_zone_y_offset.abs() < f64::EPSILON
+        && st.current_items.iter().skip(1).all(|item| {
+            matches!(item, crate::renderer::pagination::PageItem::FullParagraph { para_index }
+                if st.hidden_empty_paras.contains(para_index))
+        })
+    {
+        let anchor = st.current_items.first().and_then(|item| match item {
+            crate::renderer::pagination::PageItem::PartialTable {
+                para_index,
+                is_continuation: true,
+                ..
+            } => Some(*para_index),
+            _ => None,
+        });
+        let placement = anchor.and_then(|anchor| {
+            crate::renderer::float_placement::ParagraphFloatPlacement::from_stored_overlay_guide_chain(
+                paragraphs, anchor, para_idx, st.current_height,
+                st.layout.body_area.height, styles, dpi,
+            )
+        });
+        if let Some(placement) = placement {
+            st.align_flow_to(placement.anchor_y);
+            let base = para.line_segs.first().map(|line| {
+                line.vertical_pos - crate::renderer::px_to_hwpunit(placement.anchor_y, dpi)
+            });
+            st.record_vpos_lazy_origin(base);
+            st.record_paragraph_float_placement_with_storage(
+                (para_idx, ctrl_idx),
+                placement,
+                storage,
+            )?;
+        }
+    }
+    st.emit_decoration_table_with_storage(para_idx, ctrl_idx, storage)?;
     // [#4568] 현재 쪽을 넘는 잔여 행만 다음 쪽 대기열에 남긴다.
     // 포맷은 Shape 발행 뒤, 앵커/가용 영역 조회 전에 수행한다.
-    let ft = format(st.decoration_table_flow_height() < 1.0);
+    let origin = anchor_origin.unwrap_or_else(|| st.decoration_table_flow_height());
+    let ft = format(origin < 1.0)?;
     let continuation = decoration_table::continuation(
         para,
         table,
         next_para,
         &ft,
-        st.decoration_table_flow_height(),
+        origin,
         dpi,
         || st.base_available_height(),
+        |row, available| {
+            decoration_table::partial_row_query(engine, st, table, &ft, styles, row, available)
+        },
     );
     if let Some(ref continuation) = continuation {
         if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
@@ -122,7 +205,9 @@ pub(super) fn place_decoration_table(
             );
         }
     }
-    st.finish_decoration_table(para_idx, ctrl_idx, continuation);
+    st.finish_decoration_table_with_storage(para_idx, ctrl_idx, continuation, storage)?;
+
+    Ok(())
 }
 
 /// 저장 줄 경계의 이월을 먼저 적용한 뒤, 갱신된 단 상태로 장식 표 경로를 선택한다.
@@ -141,6 +226,63 @@ pub(super) fn prepare_table_control(
     dpi: f64,
     original_hwpx: impl FnOnce() -> bool,
 ) -> bool {
+    match prepare_table_control_with_storage(
+        st,
+        para,
+        table,
+        para_idx,
+        ctrl_idx,
+        order_pos,
+        next_para,
+        measured_tables,
+        has_tac,
+        host_col_w,
+        dpi,
+        original_hwpx,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(super) fn prepare_table_control_with_storage<S: crate::storage::Storage>(
+    st: &mut TypesetState,
+    para: &Paragraph,
+    table: &Table,
+    para_idx: usize,
+    ctrl_idx: usize,
+    order_pos: usize,
+    next_para: Option<&Paragraph>,
+    measured_tables: &[MeasuredTable],
+    has_tac: bool,
+    host_col_w: f64,
+    dpi: f64,
+    original_hwpx: impl FnOnce() -> bool,
+    storage: &S,
+) -> Result<bool, S::Error> {
+    let page = st.table_control_page();
+    let follows_tac_frame = !page.profile.session_edited()
+        && (page.profile.hwpx_stored_layout() || page.profile.hwp5_stored_pagination_layout())
+        && crate::renderer::stored_control_frame::following_first_tac_frame(
+            para,
+            (st.base_available_height() * 7200.0 / dpi).round() as i32,
+        )
+        .is_some_and(|frame| {
+            crate::renderer::layout::control_line_seg_index(para, ctrl_idx) == Some(frame.line)
+                && st.coanchored_table_page().1.iter().any(|item| {
+                    use crate::renderer::pagination::PageItem;
+                    matches!(item,
+                        PageItem::Table { para_index, control_index }
+                        | PageItem::PartialTable { para_index, control_index, .. }
+                        | PageItem::Shape { para_index, control_index }
+                        if *para_index == para_idx && *control_index == frame.before_control)
+                })
+        });
+    // 앞 줄 개체가 현재 쪽에 남아 있을 때만 경계를 건넌다. 새 줄 형제는 다시 넘기지 않는다.
+    if follows_tac_frame {
+        st.advance_column_or_new_page_with_storage(storage)?;
+    }
     if table_entry::needs_stored_line_advance(
         para,
         table,
@@ -148,9 +290,10 @@ pub(super) fn prepare_table_control(
         st.table_control_page().has_items,
         dpi,
     ) {
-        st.advance_column_or_new_page();
+        st.advance_column_or_new_page_with_storage(storage)?;
     }
-    table_entry::uses_decoration_placement(
+    let frame = st.inline_flow_input(0.0, false);
+    Ok(table_entry::uses_decoration_placement(
         para,
         table,
         para_idx,
@@ -160,10 +303,12 @@ pub(super) fn prepare_table_control(
         st.table_control_page().col_count,
         has_tac,
         host_col_w,
+        *frame.body,
+        frame.page_height,
         dpi,
         || st.base_available_height(),
         original_hwpx,
-    )
+    ))
 }
 
 /// 모든 컨트롤 앵커 확정 뒤, TAC 높이 정산 전에 host 텍스트를 한 번 반영한다.
@@ -180,7 +325,38 @@ pub(super) fn place_decoration_host_text(
     dpi: f64,
     stored_layout: impl FnOnce() -> bool,
 ) {
-    if let Some(fragment) = decoration_host::plan(
+    match place_decoration_host_text_with_storage(
+        st,
+        para_idx,
+        para,
+        next_para,
+        fmt,
+        decoration_host_text_pending,
+        flow_table_owns_host_text,
+        styles,
+        dpi,
+        stored_layout,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(super) fn place_decoration_host_text_with_storage<S: crate::storage::Storage>(
+    st: &mut TypesetState,
+    para_idx: usize,
+    para: &Paragraph,
+    next_para: Option<&Paragraph>,
+    fmt: &FormattedParagraph,
+    decoration_host_text_pending: bool,
+    flow_table_owns_host_text: bool,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    stored_layout: impl FnOnce() -> bool,
+    storage: &S,
+) -> Result<(), S::Error> {
+    let _: () = if let Some(fragment) = decoration_host::plan(
         para_idx,
         para,
         next_para,
@@ -191,8 +367,9 @@ pub(super) fn place_decoration_host_text(
         dpi,
         stored_layout,
     ) {
-        st.commit_decoration_host_text(fragment);
-    }
+        st.commit_decoration_host_text_with_storage(fragment, storage)?;
+    };
+    Ok(())
 }
 
 /// TAC 높이 조회 → 누락 표시/진단/무효화 → 앵커·상한 확정 순서를 보존한다.
@@ -203,6 +380,7 @@ pub(super) fn reconcile_tac_height(
     para: &Paragraph,
     next_para: Option<&Paragraph>,
     fmt: &FormattedParagraph,
+    styles: &ResolvedStyleSet,
     measured_tables: &[MeasuredTable],
     tac_count: usize,
     height_before: f64,
@@ -221,6 +399,7 @@ pub(super) fn reconcile_tac_height(
         para,
         next_para,
         fmt,
+        styles,
         measured_tables,
         tac_count,
         height_before,
@@ -313,17 +492,152 @@ pub(super) fn place_table_host_shape(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) {
+    match place_table_host_shape_with_storage(
+        st,
+        para_idx,
+        ctrl_idx,
+        ctrl,
+        para,
+        para_start_height,
+        styles,
+        dpi,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(super) fn place_table_host_shape_with_storage<S: crate::storage::Storage>(
+    st: &mut TypesetState,
+    para_idx: usize,
+    ctrl_idx: usize,
+    ctrl: &Control,
+    para: &Paragraph,
+    para_start_height: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    storage: &S,
+) -> Result<(), S::Error> {
     // [#6146] 저장 리셋 경계에서 떠나는 쪽의 흐름 말미에 이미 흘려
     // 놓은 자리차지 밴드는 다시 배치하지 않는다.
     if st.has_spilled_page_tail_float(para_idx, ctrl_idx) {
-        return;
+        return Ok(());
     }
-    let flow = shape_flow::prepare(ctrl, para, ctrl_idx, dpi);
-    if flow.needs_advance(st.table_host_shape_page(), || st.available_height()) {
-        st.advance_column_or_new_page();
+    let mut flow = shape_flow::prepare(ctrl, para, ctrl_idx, dpi);
+    // [#8458] 자기 줄이 이미 글줄 항목으로 이 쪽에 놓였으면 그 줄 높이는 소비됐다.
+    // 글자처럼 취급한 개체는 그 줄 안에 있으므로 줄 높이를 다시 판정·누적하지 않는다
+    // (156759019 pi=29 줄1: 공백 글자 + TAC 로고, 글줄 53.1px 를 두 번 세어 로고만 다음 쪽).
+    if flow.tac_separate_line_h.is_some()
+        && shape_flow::own_line_already_placed(para_idx, para, ctrl_idx, &st.current_items)
+    {
+        flow.tac_separate_line_h = None;
     }
-    st.commit_table_host_shape(para_idx, ctrl_idx, flow);
+    // [#8462] 문단 위끝에서 용지 밖에 놓인 비-TAC 개체는 이 쪽 본문 흐름을 밀지 않는다.
+    let offpage_top = (matches!(ctrl, Control::Shape(_)) && flow.non_tac_pushdown_h.is_some())
+        .then(|| shape_flow::para_offset_top_px(ctrl, dpi))
+        .flatten()
+        .filter(|top| para_start_height + top >= st.available_height());
+    // [#8491] 자기 저장 줄들 아래에서 시작하는 개체는 자기 줄을 밀지 않고
+    // 개체 띠를 뒤 문단의 배제 영역으로 남긴다.
+    let below_own_lines = if offpage_top.is_none() {
+        flow.non_tac_pushdown_h
+            .and_then(|height| {
+                shape_flow::below_own_lines_top_px(ctrl, para, dpi).map(|top| (top, height))
+            })
+            .map(|(top, height)| (para_start_height + top, height))
+    } else {
+        None
+    };
+    if offpage_top.is_some() || below_own_lines.is_some() {
+        flow.non_tac_pushdown_h = None;
+    }
+    if st.defer_table_host_ole_to_next_column(para_idx, ctrl_idx, ctrl, dpi) {
+        return Ok(());
+    }
+    // [#8446] 앵커 줄이 저장 사다리에서 다음 쪽으로 되감긴(vpos 리셋) 비-TAC 자리차지 개체는
+    // 그 줄을 따라 넘기지 않고 떠나는 쪽의 흐름 말미에 남긴다. 줄 머리 리셋의 #6146 과 같은
+    // 규칙을 문단 중간 줄 리셋에 적용한다(156571452 로고: 한컴 1쪽 y 1030.7, 본문 아래끝 1028.1).
+    // 개체 아래끝이 용지 안에 남을 때만이다. 같은 줄의 뒤 내용은 리셋대로 다음 쪽에 놓인다.
+    let spills_to_leaving_page = flow.non_tac_pushdown_h.is_some_and(|extra| {
+        shape_flow::anchor_line_rewinds_to_next_page(para, ctrl_idx)
+            && shape_flow::page_still_holds_lines_before_anchor(
+                para_idx,
+                para,
+                ctrl_idx,
+                &st.current_items,
+            )
+            && st.layout.body_area.y + st.current_height + extra <= st.layout.page_height + 0.5
+    });
+    while !spills_to_leaving_page
+        && flow.needs_advance(st.table_host_shape_page(), || st.available_height())
+    {
+        // 단 기준 개체가 다음 단에 들어가면 개체만 이월한다. 뒤 본문은 남은
+        // 현재 단을 채우며, 저장 줄의 단 경계에서 예약 개체 뒤로 이어진다.
+        let common = match ctrl {
+            Control::Shape(shape) => Some(shape.common()),
+            Control::Picture(picture) => Some(&picture.common),
+            _ => None,
+        };
+        let column_frame = common.is_some_and(|common| {
+            matches!(common.horz_rel_to, crate::model::shape::HorzRelTo::Column)
+                && common.width as f64 <= st.layout.column_width_hu() as f64
+        });
+        if column_frame && st.defer_table_host_shape_to_next_column(para_idx, ctrl_idx, flow) {
+            return Ok(());
+        }
+        st.advance_column_or_new_page_with_storage(storage)?;
+    }
+    // [#8435] 앞 TAC 줄 뒤 줄을 밀어낸 개체의 원점은 저장 사다리의 앵커 줄 자리다.
+    // TAC 줄의 흐름 전진은 마지막 줄 간격을 쓸 수 있어 그 자리와 다를 수 있다.
+    let pushed_anchor_origin = match ctrl {
+        Control::Shape(shape) => {
+            let common = shape.common();
+            crate::renderer::layout::stored_pushed_anchor_line_offset_hu(
+                para,
+                common,
+                i64::from(common.margin.top) + i64::from(common.margin.bottom),
+                ctrl_idx,
+            )
+            .filter(|_| crate::renderer::layout::has_line_taking_tac_sibling_before(para, ctrl_idx))
+            .map(|hu| para_start_height + crate::renderer::hwpunit_to_px(hu, dpi))
+        }
+        _ => None,
+    };
+    let accepted_frame = if let Some(top) = offpage_top {
+        Some(shape_flow::offpage_shape_frame(
+            para_start_height,
+            top,
+            st.current_height,
+        ))
+    } else if let Some((top, _)) = below_own_lines {
+        Some(shape_flow::below_own_lines_frame(
+            para_start_height,
+            top,
+            st.current_height,
+        ))
+    } else {
+        match pushed_anchor_origin {
+            Some(origin) => flow.pushed_anchor_shape_frame(ctrl, origin, dpi),
+            None => flow.accepted_shape_frame(ctrl, st.current_height),
+        }
+    };
+    st.commit_table_host_shape_with_storage(para_idx, ctrl_idx, flow, accepted_frame, storage)?;
+    if let Some((top, height)) = below_own_lines {
+        st.add_visible_float_exclusion(super::VisibleFloatExclusion {
+            para_index: para_idx,
+            top,
+            bottom: top + height,
+        });
+    }
     st.register_side_wrap_picture(para_idx, ctrl_idx, para, Some(para_start_height), styles);
+    if spills_to_leaving_page {
+        // 개체만 남기고 그 줄은 저장 리셋대로 다음 쪽에서 시작한다. 줄에 다른 내용이 없어도
+        // 쪽은 열린다(156569782: 한컴 2쪽은 빈 줄 하나뿐인 쪽).
+        st.advance_column_or_new_page_with_storage(storage)?;
+    }
+
+    Ok(())
 }
 
 /// 조회가 후보를 수용한 경우에만 표 항목·lane·흐름 상태를 함께 반영한다.
@@ -336,11 +650,14 @@ pub(super) fn try_place_empty_para_float_table(
     table: &crate::model::table::Table,
     ft: &FormattedTable,
     composed: Option<&ComposedParagraph>,
+    prev_para: Option<&Paragraph>,
     next_para: Option<&Paragraph>,
     styles: &ResolvedStyleSet,
     para_start_height: f64,
     lanes: &mut FloatLaneSet,
+    paragraphs: &[Paragraph],
     table_reflowed: bool,
+    preceding_fragment_reflowed: bool,
     dpi: f64,
 ) -> bool {
     let Some(placement) = empty_float::prepare(
@@ -350,12 +667,14 @@ pub(super) fn try_place_empty_para_float_table(
         table,
         ft,
         composed,
+        prev_para,
         next_para,
         styles,
         para_start_height,
         lanes,
-        st.empty_float_page(),
+        st.empty_float_page(paragraphs),
         table_reflowed,
+        preceding_fragment_reflowed,
         || st.empty_float_available_height(ft.table_footnote_height, ft.table_footnote_count),
         dpi,
     ) else {
@@ -383,7 +702,13 @@ pub(super) fn flush_deferred_tables(
             remaining.push(deferred);
             continue;
         }
+        // 지연 표의 원래 host 뒤 문단은 이미 출력됐을 수 있다. 배치 시점의
+        // 실제 문단 cursor를 마지막 조각의 후속 줄 조회에 전달한다.
+        let previous = st.replace_deferred_table_successor_start(Some(
+            flush_point.successor_start(paragraphs.len()),
+        ));
         place(st, deferred);
+        st.replace_deferred_table_successor_start(previous);
     }
     st.restore_deferred_table_controls(remaining);
 }
@@ -420,18 +745,35 @@ pub(super) fn try_place_stored_tac_paragraph(
     para: &Paragraph,
     fmt: &FormattedParagraph,
     measured_tables: &[MeasuredTable],
-    dpi: f64,
+    engine: &super::TypesetEngine,
     paragraphs: &[Paragraph],
     styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    composed: Option<&ComposedParagraph>,
 ) -> bool {
+    let dpi = engine.dpi;
+    // 커진 인라인 줄은 원본 저장 TAC 계획의 수용 증거가 아니다.
+    // 공통 표 경로가 실제 상자와 뒤 본문의 전체 점유를 함께 검사한다.
+    if para.controls.iter().any(|control| {
+        matches!(control, Control::Table(table)
+            if engine.render_normalization.inline_host_frame_expanded(table))
+    }) {
+        return false;
+    }
+    let source_frame = st.stored_tac_line_frame(para, paragraphs.get(para_idx + 1), styles);
     if let Some(placement) = stored_tac::prepare_computed(
         para_idx,
         para,
         paragraphs.get(para_idx + 1),
+        paragraphs
+            .get(para_idx + 1)
+            .and_then(|next| styles.para_styles.get(next.para_shape_id as usize))
+            .map_or(0.0, |style| style.spacing_before),
         fmt,
         measured_tables,
+        styles,
         st.stored_tac_page(paragraphs),
         || st.available_height(),
+        source_frame,
         dpi,
     ) {
         // 합성 표 줄의 간격은 확정 끝에 이미 포함된다. 같은 끝점에서 좌표축을
@@ -443,11 +785,63 @@ pub(super) fn try_place_stored_tac_paragraph(
                 .saturating_add(seg.line_spacing)
                 .saturating_sub(crate::renderer::px_to_hwpunit(placement.end, dpi))
         });
+        // 일반 표 문단 경로는 장식 개체도 원래 컨트롤 순서대로 발행한다.
+        // 줄 계획의 단축이 그 경로를 생략해도, 흐름을 점유하지 않는 장식의
+        // paint 소유권은 남는다. 표의 저장 pen을 같은 문단 앵커로 전달한다.
+        let owner = placement.control_index;
+        let host_origin = placement.inline.y;
+        let emit_decoration = |st: &mut TypesetState, index: usize, control: &Control| {
+            if let Control::Table(table) = control {
+                place_decoration_table(
+                    st,
+                    para_idx,
+                    index,
+                    para,
+                    table,
+                    paragraphs.get(para_idx + 1),
+                    paragraphs,
+                    dpi,
+                    Some(host_origin),
+                    |is_column_top| {
+                        engine.format_table(
+                            para,
+                            para_idx,
+                            index,
+                            table,
+                            measured_tables,
+                            styles,
+                            composed,
+                            paragraphs.get(para_idx + 1),
+                            is_column_top,
+                        )
+                    },
+                    engine,
+                    styles,
+                );
+            } else {
+                place_table_host_shape(
+                    st,
+                    para_idx,
+                    index,
+                    control,
+                    para,
+                    host_origin,
+                    styles,
+                    dpi,
+                );
+            }
+        };
+        for (index, control) in para.controls.iter().enumerate().take(owner) {
+            emit_decoration(st, index, control);
+        }
         st.commit_stored_tac_control(para_idx, placement);
+        for (index, control) in para.controls.iter().enumerate().skip(owner + 1) {
+            emit_decoration(st, index, control);
+        }
         // 원본 저장 줄의 좌표축은 이미 확립돼 있다. 합성 줄의 확정 끝만
         // lazy 원점으로 역산하며, 실제 저장 표 뒤 사다리는 유지한다.
         if rebase_line_origin {
-            st.commit_deferred_table_anchor(para_idx);
+            st.commit_deferred_table_anchor(para_idx, paragraphs);
             st.record_vpos_lazy_origin(lazy_origin);
             st.mark_vpos_ladder_dirty();
         }
@@ -467,14 +861,28 @@ pub(super) fn try_place_stored_tac_paragraph(
         para,
         fmt,
         measured_tables,
+        styles,
         st.stored_tac_page(paragraphs),
         shared_spacing_before,
+        para_idx
+            .checked_sub(1)
+            .and_then(|index| paragraphs.get(index)),
+        para_idx
+            .checked_sub(1)
+            .and_then(|index| paragraphs.get(index))
+            .and_then(|previous| styles.para_styles.get(previous.para_shape_id as usize))
+            .map_or(0.0, |shape| shape.spacing_after),
         paragraphs.get(para_idx + 1),
         paragraphs
             .get(para_idx + 1)
             .and_then(|next| styles.para_styles.get(next.para_shape_id as usize))
             .map_or(0.0, |shape| shape.spacing_before),
+        styles
+            .para_styles
+            .get(para.para_shape_id as usize)
+            .is_some_and(|style| style.page_break_before),
         || st.available_height(),
+        source_frame,
         dpi,
     ) else {
         return false;
@@ -483,9 +891,10 @@ pub(super) fn try_place_stored_tac_paragraph(
         let placement = plan.placement(line, fmt.spacing_after, dpi);
         st.commit_stored_tac_control(para_idx, placement);
     }
-    if plan.source_origin.is_some() {
-        st.commit_deferred_table_anchor(para_idx);
-        st.record_vpos_page_origin(plan.source_origin);
+    if let Some(frame) = plan.source_frame {
+        st.commit_deferred_table_anchor(para_idx, paragraphs);
+        st.record_vpos_page_origin(Some(frame.source_origin_hu));
+        st.record_vpos_column_anchor(frame.column_anchor_y);
         st.record_vpos_origin_provenance(true);
         st.record_vpos_lazy_origin(None);
     }

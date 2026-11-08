@@ -86,6 +86,8 @@ const PINS: &[(&str, u32)] = &[
     ("samples/task2097/21217935_simsa_jipyo.hwp", 8),
     // 동계열 (22→21쪽). debug/release 동일 (21 = 한글 COM 실측).
     ("samples/task2097/18095317_eogu_geumji.hwp", 21),
+    // 정상 Print PDF의 전체 66쪽과 Native/fresh 전쪽 90%를 확인해 PII 항목을 복원한다.
+    ("samples/task2097/75544_pii_bunseok.hwpx", 66),
     // 쪽나눔=None 표의 fresh-쪽 초과 통째 배치 (6→2쪽). 선언=실측 1005px >
     // 본문 933.5px 인 표 2건을 한글은 각 1쪽 통째 + 하단 오버플로로 렌더
     // (한글 PDF 실측) — rhwp 는 각 3조각(헤더/본체/꼬리 sliver)으로 분할했다.

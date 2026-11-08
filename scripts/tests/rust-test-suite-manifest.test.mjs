@@ -153,12 +153,18 @@ test('전체 integration source는 파생 산출물을 쓰지 않고 검증한�
 });
 
 test('일반 case는 weighted suite로 해석한다', () => {
-  const target = resolveCase('issue_1035_alignment');
-  assert.match(target, /^regression_suite_\d{3}$/);
-  const plan = resolveCasePlan('issue_1035_alignment');
-  assert.equal(plan.grouped, true);
-  assert.match(nextestArguments(plan).join(' '), /issue_1035_alignment::/);
-  assert.match(cargoTestArguments(plan).at(-1), /issue_1035_alignment::/);
+  const root = mkdtempSync(path.join(os.tmpdir(), 'rhwp-suite-resolver-'));
+  try {
+    writeRepositoryFixture(root);
+    const target = resolveCase('existing', root);
+    assert.match(target, /^regression_suite_\d{3}$/);
+    const plan = resolveCasePlan('existing', root);
+    assert.equal(plan.grouped, true);
+    assert.match(nextestArguments(plan).join(' '), /existing::/);
+    assert.match(cargoTestArguments(plan).at(-1), /existing::/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test('경로 의존 case는 기존 target 이름을 유지한다', () => {
@@ -233,6 +239,24 @@ test('harness와 Cargo target 렌더링은 입력 순서와 무관하다', () =>
     renderHarness(suite, sources),
   );
   assert.match(renderCargoTestBlock(manifest), /\[\[test\]\]/);
+});
+
+test('공용 helper는 소비 검사가 함께 또는 따로 배정돼도 harness마다 한 번 공급한다', () => {
+  const consumers = [
+    'tests/cases/issue_8153_symbol_coverage.rs',
+    'tests/cases/issue_8153_symbol_fallback.rs',
+  ];
+  for (const sources of [consumers, ...consumers.map((source) => [source])]) {
+    const harness = renderHarness('regression_suite_001', sources);
+    assert.equal((harness.match(/^mod symbol_font_program;$/gm) ?? []).length, 1);
+    assert.match(harness, /#\[path = "\.\.\/common\/symbol_font_program\.rs"\]/);
+    for (const source of sources) {
+      const name = path.basename(source, '.rs');
+      assert.ok(harness.includes(`mod ${name};`));
+    }
+  }
+  const unrelated = renderHarness('regression_suite_001', ['tests/cases/unrelated.rs']);
+  assert.doesNotMatch(unrelated, /symbol_font_program/);
 });
 
 test('신규 source는 선택된 suite에 정확히 한 번만 배정한다', (t) => {

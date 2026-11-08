@@ -1,0 +1,60 @@
+{
+  "pr": 8683,
+  "head": "71052fccc6fc5090fa94ca9dd013be0ff5984ff7",
+  "prior_ref": "refs/pull/8659/merge",
+  "alerts": [
+    {
+      "alert": 478,
+      "created_at": "2026-10-31T11:15:27Z",
+      "rule": "rust/cleartext-logging",
+      "location": {
+        "path": "src/renderer/typeset/table/scan/runner.rs",
+        "start_line": 120,
+        "end_line": 121,
+        "start_column": 33,
+        "end_column": 49
+      },
+      "present_in_prior_pr_8659": true,
+      "same_as_base": true,
+      "sha256": "caab95876d21db5c430d01293a20f3a1e407db77c369eca43da7a655e791f2be",
+      "sink_arguments": "row/column indices, heights/capacities, counts, boolean ownership fields; no password or document text string at the flagged sink",
+      "guard": "explicit RHWP_DIAG_* environment opt-in; default disabled"
+    },
+    {
+      "alert": 483,
+      "created_at": "2026-10-31T11:15:27Z",
+      "rule": "rust/cleartext-logging",
+      "location": {
+        "path": "src/renderer/layout/table_layout/capacity_tolerance.rs",
+        "start_line": 37,
+        "end_line": 48,
+        "start_column": 17,
+        "end_column": 27
+      },
+      "present_in_prior_pr_8659": true,
+      "same_as_base": true,
+      "sha256": "06a2d06698a8c844b9f733e56c4ff9e46bc23aad780f02b40f04177cd63fb9f7",
+      "sink_arguments": "row/column indices, heights/capacities, counts, boolean ownership fields; no password or document text string at the flagged sink",
+      "guard": "explicit RHWP_DIAG_* environment opt-in; default disabled"
+    },
+    {
+      "alert": 484,
+      "created_at": "2026-10-31T11:15:27Z",
+      "rule": "rust/cleartext-logging",
+      "location": {
+        "path": "src/renderer/layout/table_layout/unit_diagnostics.rs",
+        "start_line": 103,
+        "end_line": 104,
+        "start_column": 13,
+        "end_column": 44
+      },
+      "present_in_prior_pr_8659": true,
+      "same_as_base": true,
+      "sha256": "117053368af6101d84f31c4e95b4f0fb2c2057469b2c4e4d91728bb420a7efd7",
+      "sink_arguments": "row/column indices, heights/capacities, counts, boolean ownership fields; no password or document text string at the flagged sink",
+      "guard": "explicit RHWP_DIAG_* environment opt-in; default disabled"
+    }
+  ],
+  "classification_mutation_performed": false,
+  "conclusion": "existing unchanged opt-in geometry diagnostic alerts; no newly introduced password/plaintext logging at the flagged sinks"
+}

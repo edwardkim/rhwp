@@ -1,0 +1,41 @@
+{
+  "command": [
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "/Users/tsjang/rhwp/target/pr-review",
+    "--features",
+    "native-skia",
+    "--test-threads",
+    "8",
+    "--no-fail-fast",
+    "--test",
+    "regression_suite_002",
+    "--test",
+    "regression_suite_006",
+    "--test",
+    "regression_suite_027",
+    "-E",
+    "test(/(^|::)issue_7445_stored_multicolumn_flow::/) or test(/(^|::)issue_7972_inactive_cell_margin_row::/) or test(/(^|::)issue_7872_nested_tac_second_table_rows::/) or test(/(^|::)issue_8067_cell_padding_not_shrunk::/)"
+  ],
+  "exitCode": 0,
+  "elapsedSeconds": 157.23310804367065,
+  "source": {
+    "parentHead": "800f93fe610c4fbd0ed954b928c33ac2938dc512",
+    "files": {
+      "src/renderer/layout/table_layout/stored_plain_cell_minimum.rs": "bc2db4d7d39c18a87dfce93d1af34b87a59a5ffff341b91be793ef12262c74cd"
+    },
+    "patchSha256": "c1a67ab2657eaaff7a232ba8f3c4a31f7732d0d8ac2053b12e291dcb66b09bc8",
+    "cases": [
+      "issue_7445_stored_multicolumn_flow",
+      "issue_7972_inactive_cell_margin_row",
+      "issue_7872_nested_tac_second_table_rows",
+      "issue_8067_cell_padding_not_shrunk"
+    ]
+  },
+  "logSha256": "01604eb3048a538428fff236ade2c22654d9a67bdc7d110d1b3bc0c94443fe80"
+}

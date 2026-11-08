@@ -1,0 +1,45 @@
+{
+  "parent": "4eeea6d7b40a0edf237b24534bbad3999b0cf537",
+  "picture": {
+    "before": {
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-7752-20261022/picture-margin-repair/before-regression",
+        "--exact",
+        "issue_7445_picture_source_frame::editing_inline_picture_margins_updates_the_owned_line_and_successor_once",
+        "--nocapture",
+        "--test-threads",
+        "1"
+      ],
+      "exitCode": 101,
+      "testSourceSha256": "97f9b9d7ba989a3cd1365017408c91b5ade837b8d71f636259a89d67d508a336",
+      "parent": "4eeea6d7b40a0edf237b24534bbad3999b0cf537",
+      "scope": "Same independent 5980/5083/6580 assertions, live edited measurement and reopened successor ownership; frozen pre-fix production library."
+    },
+    "independentExpectedHu": {
+      "height": 5980,
+      "baseline": 5083,
+      "successor": 6580
+    },
+    "observedBeforeHu": {
+      "height": 9980,
+      "baseline": 8483,
+      "successor": 10580
+    },
+    "after": "existing six picture tests PASS in the frozen v3 Native run"
+  },
+  "pua": {
+    "independentAdvanceEm": 0.9,
+    "observedBeforeEm": 1.0,
+    "beforeExitCode": 101,
+    "after": "all four existing host font protocol tests PASS in same v3 run"
+  },
+  "focus": {
+    "testsRun": 12,
+    "passed": 10,
+    "failed": 2,
+    "filterSkipped": 752,
+    "unresolvedModule": "issue_4068_reclassified_float_offset"
+  },
+  "logsIgnoredOnly": true,
+  "fullPrAcceptance": false
+}

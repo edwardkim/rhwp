@@ -1,0 +1,104 @@
+{
+  "product_code": "19de2f3b546c706682c4dae75339aaee3075eea1",
+  "test_head": "08cd5ab83343a9546f881805a8e5af75656b310b",
+  "src_tree": "a8a2ebb96d2ab7d05c7952d76ef6ff8e086cddd8",
+  "native": {
+    "head_before_source_commit": "87dd38f9c98463c09e564a0ec31c9a905c905856",
+    "diff_sha256": "07120060574fb045e7c402b7fb29bb5ce3c0e34605d68dbfa93fe06a0b71ff24",
+    "binary_sha256": "99f2223c3d994f7f2d7bb3818cc16d4a9cd528d54e23b2b2756e3fe0abcaef73",
+    "exit_code": 0,
+    "build_log": "correction-native-build.log"
+  },
+  "corrected_wasm": {
+    "mode": "corrected",
+    "head": "19de2f3b546c706682c4dae75339aaee3075eea1",
+    "command": [
+      "/home/edward/mygithub/rhwp-worktrees/pr-8658-cell-square-no-overlap/scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "/home/edward/mygithub/rhwp-worktrees/pr-8658-cell-square-no-overlap/pkg"
+    ],
+    "exit_code": 0,
+    "seconds": 746.1256041526794,
+    "files": {
+      "rhwp.js": {
+        "bytes": 559617,
+        "sha256": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138"
+      },
+      "rhwp_bg.wasm": {
+        "bytes": 28309027,
+        "sha256": "2b8259b27596cf4c38d63404a61106c8ae1f9886e9a29c66adf283a689c7bf7b"
+      },
+      "rhwp.d.ts": {
+        "bytes": 224571,
+        "sha256": "09c34203f1cfdb1b7cdca1dc14c31033da9cde3dbade3383ec41a8a5c0364c9e"
+      },
+      "rhwp_bg.wasm.d.ts": {
+        "bytes": 78001,
+        "sha256": "ccd7c7e5d5411b02e190750a8d6c819a7632659d1643fd19be2c4d32d38cd873"
+      }
+    }
+  },
+  "actual_base_wasm": {
+    "mode": "actual-base",
+    "head": "08963f6825956984d38b0d9392f44777db7107ab",
+    "command": [
+      "/home/edward/mygithub/rhwp/scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr8658/pkg-base-actual"
+    ],
+    "exit_code": 0,
+    "seconds": 752.0616867542267,
+    "recompile_trigger": "lib.rs mtime only; source bytes unchanged",
+    "source_lib_sha256": "02049d37656973486cfee45609728847ef415c9836bac1afdf29d6e4c222d737",
+    "files": {
+      "rhwp.js": {
+        "bytes": 559617,
+        "sha256": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138"
+      },
+      "rhwp_bg.wasm": {
+        "bytes": 28295710,
+        "sha256": "8e73b0a901811c4038a2d2370dc2ca3c515bf8368872c4b22d8ae2f9b27be698"
+      },
+      "rhwp.d.ts": {
+        "bytes": 224571,
+        "sha256": "a4d702f58a21460958b2b668eaddc2dfaa2a3889bc452e02bb10401b13814921"
+      },
+      "rhwp_bg.wasm.d.ts": {
+        "bytes": 78001,
+        "sha256": "0ebb394f8982c0995179a229517696a8c11b085130417f852649934645ba0ac3"
+      }
+    }
+  },
+  "public_handoff": [
+    {
+      "file": "rhwp.js",
+      "sha256": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138",
+      "equal": true
+    },
+    {
+      "file": "rhwp_bg.wasm",
+      "sha256": "2b8259b27596cf4c38d63404a61106c8ae1f9886e9a29c66adf283a689c7bf7b",
+      "equal": true
+    },
+    {
+      "file": "rhwp.d.ts",
+      "sha256": "09c34203f1cfdb1b7cdca1dc14c31033da9cde3dbade3383ec41a8a5c0364c9e",
+      "equal": true
+    },
+    {
+      "file": "rhwp_bg.wasm.d.ts",
+      "sha256": "ccd7c7e5d5411b02e190750a8d6c819a7632659d1643fd19be2c4d32d38cd873",
+      "equal": true
+    }
+  ],
+  "invalid_cache_reuse": {
+    "excluded": "initial pkg-base, same hash as pre-correction 759f35 diagnostic; not devel evidence",
+    "wasm_sha256": "ca5b5cfa7709597f4eccabb112913035023f3598c68d8a3688883502cc156b47",
+    "remedy": "forced package recompile without modifying source bytes, exact root dep-info and expected original failure verified"
+  },
+  "public_declarations_note": "All four package/public files matched during actual browser verification. High-level declaration prefix unchanged; generated low-level InitOutput/WASM export alias differences excluded by restoring only the two tracked declaration files. Rust tests do not consume these declaration files."
+}

@@ -1,0 +1,99 @@
+{
+  "head": "170dd2412206b48cfbf925c5f5a67dcf93437e81",
+  "checks": [
+    {
+      "label": "fmt",
+      "argv": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0
+    },
+    {
+      "label": "clippy-root",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "label": "clippy-wasm",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "label": "build-workspace",
+      "argv": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ],
+      "exit": 0
+    },
+    {
+      "label": "clippy-workspace",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "label": "test-manifest",
+      "argv": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "a7feb849e11642b1438b7e9ee460ff4c8a7c946e"
+      ],
+      "exit": 1
+    },
+    {
+      "label": "doc",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--doc"
+      ],
+      "exit": 0
+    }
+  ],
+  "manifestRecheck": {
+    "exit": 0,
+    "log": "logs/final-manifest-recheck.log",
+    "cause": "Generated harness drift after formatting; regenerated canonical harnesses without source/expectation changes"
+  },
+  "postPrepareFmt": {
+    "exit": 0,
+    "log": "logs/final-fmt-post-prepare.log"
+  }
+}

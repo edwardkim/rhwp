@@ -87,20 +87,109 @@ fn read_limited_accounted<R: Read>(
     Ok(buf)
 }
 
+// The generated PDF editor handoff shares its request through real decoded
+// backing growth. The ordinary reader retains its existing read semantics.
+fn read_limited_reserved<R: Read>(
+    reader: &mut R,
+    maximum: usize,
+    consumed: &mut usize,
+    reservation: &dyn crate::storage::Reservation,
+) -> io::Result<Vec<u8>> {
+    let mut result = Vec::new();
+    let mut chunk = [0u8; 8192];
+    loop {
+        reservation.hash_payload(0, 0).map_err(io::Error::other)?;
+        let remaining = maximum.saturating_sub(result.len()).saturating_add(1);
+        let count = reader.read(&mut chunk[..remaining.min(8192)])?;
+        if count == 0 {
+            break;
+        }
+        *consumed = consumed.saturating_add(count);
+        let required = result
+            .len()
+            .checked_add(count)
+            .filter(|v| *v <= maximum)
+            .ok_or_else(|| {
+                io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    reservation.reject("HWPX decoded entry limit"),
+                )
+            })?;
+        if required > result.capacity() {
+            let capacity = required
+                .max(result.capacity().saturating_mul(2))
+                .min(maximum);
+            reservation
+                .hash_payload(1, capacity)
+                .map_err(io::Error::other)?;
+            result
+                .try_reserve_exact(capacity - result.len())
+                .map_err(|_| {
+                    io::Error::other(
+                        reservation.reject("decoded archive backing allocation failed"),
+                    )
+                })?;
+        }
+        result.extend_from_slice(&chunk[..count]);
+    }
+    Ok(result)
+}
+
 /// HWPX ZIP 컨테이너 리더
 pub struct HwpxReader {
     archive: ZipArchive<Cursor<Vec<u8>>>,
+    file_names: Vec<String>,
     xml_read_remaining: usize,
+    reservation: Option<std::sync::Arc<dyn crate::storage::Reservation>>,
 }
 
 impl HwpxReader {
     /// ZIP 아카이브를 연다.
     pub fn open(data: &[u8]) -> Result<Self, HwpxError> {
-        let cursor = Cursor::new(data.to_vec());
+        Self::open_with_reservation(data, None)
+    }
+
+    pub(crate) fn open_with_reservation(
+        data: &[u8],
+        reservation: Option<std::sync::Arc<dyn crate::storage::Reservation>>,
+    ) -> Result<Self, HwpxError> {
+        let copy = if let Some(reservation) = &reservation {
+            reservation
+                .hash_payload(1, data.len())
+                .map_err(HwpxError::ZipError)?;
+            let mut copy = Vec::new();
+            copy.try_reserve_exact(data.len())
+                .map_err(|_| HwpxError::ZipError("PDF_WORKER_MEMORY: archive copy".into()))?;
+            copy.extend_from_slice(data);
+            copy
+        } else {
+            data.to_vec()
+        };
+        let cursor = Cursor::new(copy);
         let archive = ZipArchive::new(cursor)?;
+        let mut file_names = Vec::new();
+        if let Some(reservation) = &reservation {
+            reservation
+                .hash_payload(std::mem::size_of::<String>(), archive.len())
+                .map_err(HwpxError::ZipError)?;
+            file_names
+                .try_reserve_exact(archive.len())
+                .map_err(|_| HwpxError::ZipError("PDF_WORKER_MEMORY: archive index".into()))?;
+        }
+        for name in archive.file_names() {
+            let name = name?;
+            if let Some(reservation) = &reservation {
+                reservation
+                    .hash_payload(1, name.len())
+                    .map_err(HwpxError::ZipError)?;
+            }
+            file_names.push(name.into_owned());
+        }
         Ok(HwpxReader {
             archive,
+            file_names,
             xml_read_remaining: MAX_TOTAL_XML_BYTES,
+            reservation,
         })
     }
 
@@ -159,9 +248,10 @@ impl HwpxReader {
         max_bytes: usize,
         charge_xml: bool,
     ) -> Result<Vec<u8>, HwpxError> {
+        let index = self.file_index(path)?;
         let mut file = self
             .archive
-            .by_name(path)
+            .by_index(index)
             .map_err(|e| HwpxError::MissingFile(format!("{}: {}", path, e)))?;
         let entry_limit = max_bytes.min(if charge_xml {
             MAX_XML_SIZE
@@ -186,7 +276,11 @@ impl HwpxReader {
             });
         }
         let mut consumed = 0;
-        let result = read_limited_accounted(&mut file, allowance, &mut consumed);
+        let result = if let Some(reservation) = &self.reservation {
+            read_limited_reserved(&mut file, allowance, &mut consumed, reservation.as_ref())
+        } else {
+            read_limited_accounted(&mut file, allowance, &mut consumed)
+        };
         if charge_xml {
             // Account actual output even when CRC/truncation makes the read fail.
             self.xml_read_remaining = self.xml_read_remaining.saturating_sub(consumed);
@@ -207,9 +301,10 @@ impl HwpxReader {
     /// [`Self::read_file_bytes_limited`]를 다시 거치므로, 손상된 size 메타데이터를
     /// 신뢰해 상한을 우회하지 않는다.
     pub fn file_size_limited(&mut self, path: &str, max_bytes: usize) -> Result<usize, HwpxError> {
+        let index = self.file_index(path)?;
         let file = self
             .archive
-            .by_name(path)
+            .by_index(index)
             .map_err(|e| HwpxError::MissingFile(format!("{}: {}", path, e)))?;
         let max_bytes = max_bytes.min(MAX_BINDATA_SIZE);
         let size = usize::try_from(file.size()).map_err(|_| {
@@ -227,9 +322,61 @@ impl HwpxReader {
         Ok(size)
     }
 
+    fn file_index(&self, path: &str) -> Result<usize, HwpxError> {
+        // zip 9의 이름 조회는 raw bytes를 비교한다. UTF-8 경로는 기존 빠른
+        // 조회를 쓰고, CP437 등 디코딩된 경로는 같은 디렉터리 순서의 인덱스로 읽는다.
+        self.archive
+            .index_for_name(path)
+            .or_else(|| self.file_names.iter().position(|name| name == path))
+            .ok_or_else(|| HwpxError::MissingFile(path.into()))
+    }
+
+    /// deflate 로 저장된 엔트리의 압축 바이트와 CRC-32·비압축 크기 (압축 해제 없음).
+    ///
+    /// deflate 가 아니거나 압축 크기가 [`MAX_BINDATA_SIZE`] 를 넘으면 `None` 이다.
+    pub fn raw_deflated_entry(
+        &mut self,
+        path: &str,
+    ) -> Option<crate::model::bin_data::DeflatedZipEntry> {
+        let index = self.file_index(path).ok()?;
+        let mut file = self.archive.by_index_raw(index).ok()?;
+        if file.compression() != zip::CompressionMethod::Deflated {
+            return None;
+        }
+        let compressed = usize::try_from(file.compressed_size())
+            .ok()
+            .filter(|size| *size <= MAX_BINDATA_SIZE)?;
+        let mut compressed_bytes = Vec::with_capacity(compressed);
+        file.read_to_end(&mut compressed_bytes).ok()?;
+        Some(crate::model::bin_data::DeflatedZipEntry {
+            crc32: file.crc32(),
+            uncompressed_size: file.size(),
+            compressed_bytes,
+        })
+    }
+
     /// 아카이브 내 파일 목록을 반환한다.
     pub fn file_names(&self) -> Vec<String> {
-        self.archive.file_names().map(|s| s.to_string()).collect()
+        let Some(reservation) = &self.reservation else {
+            return self.file_names.clone();
+        };
+        let copy = (|| -> Result<Vec<String>, String> {
+            reservation.hash_payload(std::mem::size_of::<String>(), self.file_names.len())?;
+            let mut names = Vec::new();
+            names
+                .try_reserve_exact(self.file_names.len())
+                .map_err(|_| reservation.reject("HWPX file-name index allocation failed"))?;
+            for name in &self.file_names {
+                reservation.hash_payload(1, name.len())?;
+                let mut copy = String::new();
+                copy.try_reserve_exact(name.len())
+                    .map_err(|_| reservation.reject("HWPX file-name allocation failed"))?;
+                copy.push_str(name);
+                names.push(copy);
+            }
+            Ok(names)
+        })();
+        copy.unwrap_or_default() // A failed reservation remains fatal in the owner.
     }
 }
 
@@ -241,6 +388,33 @@ mod tests {
     fn test_open_invalid_zip() {
         let result = HwpxReader::open(&[0u8; 100]);
         assert!(result.is_err());
+
+        // 정상 Unicode 및 CP437 파일명은 zip 9의 fallible 조회 뒤에도 보존한다.
+        use std::io::Write;
+        for original_name in ["한.xml", "cafe.xml"] {
+            let mut writer = zip::ZipWriter::new(Cursor::new(Vec::new()));
+            writer
+                .start_file(original_name, zip::write::SimpleFileOptions::default())
+                .unwrap();
+            writer.write_all(b"<root/>").unwrap();
+            let mut bytes = writer.finish().unwrap().into_inner();
+            let expected_name = if original_name == "cafe.xml" {
+                let central = bytes
+                    .windows(4)
+                    .position(|signature| signature == b"PK\x01\x02")
+                    .expect("ZIP 중앙 디렉터리");
+                // CP437의 0x82는 é다. 로컬·중앙 디렉터리 이름을 함께 바꾼다.
+                bytes[30 + 3] = 0x82;
+                bytes[central + 46 + 3] = 0x82;
+                "café.xml"
+            } else {
+                original_name
+            };
+            let mut reader = HwpxReader::open(&bytes).expect("정상 ZIP 이름");
+            assert_eq!(reader.file_names(), vec![expected_name]);
+            assert_eq!(reader.file_size_limited(expected_name, 7).unwrap(), 7);
+            assert_eq!(reader.read_file(expected_name).unwrap(), "<root/>");
+        }
     }
 
     /// [#1946] ODF 암호화 manifest 감지 + 비암호화 manifest 무시.

@@ -1,0 +1,322 @@
+{
+  "source_head": "263b1e753c006d1631d25794588b6638fa1172ae",
+  "build": "passed",
+  "started_at": "2026-11-07T05:44:09.832389+00:00",
+  "finished_at": "2026-11-07T05:54:40.726254+00:00",
+  "artifacts": {
+    "rhwp_native_ffi.dll": "28376b83606bdce84ce943d4c7fa653239ba400b1ef42ee2ded416ce990aad63",
+    "rhwp_native_ffi.dll.lib": "9291811a2d73c3a5f6965755a7f6db099814841f90a3c0c7967a24ede2787cdc"
+  },
+  "runtime": [
+    {
+      "name": "session",
+      "returncode": 0,
+      "response": null
+    },
+    {
+      "name": "worker",
+      "returncode": 0,
+      "response": null
+    },
+    {
+      "name": "presentation",
+      "returncode": 0,
+      "response": null
+    },
+    {
+      "name": "ime",
+      "returncode": 0,
+      "response": null
+    },
+    {
+      "name": "d3d-opaque-stale.py",
+      "returncode": 0,
+      "response": {
+        "ok": true,
+        "softwareAdapter": false,
+        "verificationReadbacks": 1,
+        "native": {
+          "frame": {
+            "alpha": "premultiplied",
+            "backend": "d3d12Ganesh",
+            "colorSpace": "srgb",
+            "consumerGpuComplete": false,
+            "origin": "topLeft",
+            "pageCount": 1,
+            "pixelFormat": "bgra8UnormPremultiplied",
+            "producerFenceValue": 1,
+            "producerGpuComplete": true,
+            "resourceCommon": true,
+            "stamp": {
+              "deviceGeneration": 1,
+              "deviceScale": 1.0,
+              "documentId": 1,
+              "fontGeneration": 0,
+              "revision": 0,
+              "viewGeneration": 1
+            },
+            "submission": 1,
+            "target": {
+              "deviceGeneration": 1,
+              "height": 4,
+              "width": 4
+            },
+            "wholeFrameReadbacks": 0
+          },
+          "ok": true
+        },
+        "staleRejected": {
+          "code": "staleFrame",
+          "error": "stale presentation render stamp",
+          "ok": false,
+          "retryable": true,
+          "unpublishedTargetSafeToDiscard": true
+        },
+        "bgraSamples": [
+          [
+            153,
+            102,
+            51,
+            255
+          ],
+          [
+            153,
+            102,
+            51,
+            255
+          ],
+          [
+            153,
+            102,
+            51,
+            255
+          ],
+          [
+            153,
+            102,
+            51,
+            255
+          ],
+          [
+            153,
+            102,
+            51,
+            255
+          ],
+          [
+            255,
+            255,
+            255,
+            255
+          ],
+          [
+            255,
+            255,
+            255,
+            255
+          ],
+          [
+            255,
+            255,
+            255,
+            255
+          ],
+          [
+            153,
+            102,
+            51,
+            255
+          ],
+          [
+            255,
+            255,
+            255,
+            255
+          ],
+          [
+            255,
+            255,
+            255,
+            255
+          ],
+          [
+            255,
+            255,
+            255,
+            255
+          ],
+          [
+            153,
+            102,
+            51,
+            255
+          ],
+          [
+            255,
+            255,
+            255,
+            255
+          ],
+          [
+            255,
+            255,
+            255,
+            255
+          ],
+          [
+            255,
+            255,
+            255,
+            255
+          ]
+        ]
+      }
+    },
+    {
+      "name": "d3d-alpha-stale.py",
+      "returncode": 0,
+      "response": {
+        "ok": true,
+        "softwareAdapter": false,
+        "verificationReadbacks": 1,
+        "native": {
+          "frame": {
+            "alpha": "premultiplied",
+            "backend": "d3d12Ganesh",
+            "colorSpace": "srgb",
+            "consumerGpuComplete": false,
+            "origin": "topLeft",
+            "pageCount": 1,
+            "pixelFormat": "bgra8UnormPremultiplied",
+            "producerFenceValue": 1,
+            "producerGpuComplete": true,
+            "resourceCommon": true,
+            "stamp": {
+              "deviceGeneration": 1,
+              "deviceScale": 1.0,
+              "documentId": 1,
+              "fontGeneration": 0,
+              "revision": 0,
+              "viewGeneration": 1
+            },
+            "submission": 1,
+            "target": {
+              "deviceGeneration": 1,
+              "height": 4,
+              "width": 4
+            },
+            "wholeFrameReadbacks": 0
+          },
+          "ok": true
+        },
+        "staleRejected": {
+          "code": "staleFrame",
+          "error": "stale presentation render stamp",
+          "ok": false,
+          "retryable": true,
+          "unpublishedTargetSafeToDiscard": true
+        },
+        "bgraSamples": [
+          [
+            77,
+            51,
+            26,
+            128
+          ],
+          [
+            77,
+            51,
+            26,
+            128
+          ],
+          [
+            77,
+            51,
+            26,
+            128
+          ],
+          [
+            77,
+            51,
+            26,
+            128
+          ],
+          [
+            77,
+            51,
+            26,
+            128
+          ],
+          [
+            255,
+            255,
+            255,
+            255
+          ],
+          [
+            255,
+            255,
+            255,
+            255
+          ],
+          [
+            255,
+            255,
+            255,
+            255
+          ],
+          [
+            77,
+            51,
+            26,
+            128
+          ],
+          [
+            255,
+            255,
+            255,
+            255
+          ],
+          [
+            255,
+            255,
+            255,
+            255
+          ],
+          [
+            255,
+            255,
+            255,
+            255
+          ],
+          [
+            77,
+            51,
+            26,
+            128
+          ],
+          [
+            255,
+            255,
+            255,
+            255
+          ],
+          [
+            255,
+            255,
+            255,
+            255
+          ],
+          [
+            255,
+            255,
+            255,
+            255
+          ]
+        ]
+      }
+    }
+  ],
+  "collector_correction": "GPU_PROBE_RESPONSE prefix parsed separately; no product build change; successful compiler result retained",
+  "scope": "actual Windows SDK/native D3D12 hardware controls; sustained Flutter D3D11 consumer qualification remains outside bounded foundation claim"
+}

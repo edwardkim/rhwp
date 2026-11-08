@@ -1,0 +1,72 @@
+{
+  "status": "interim_failed",
+  "candidate_source": "1c885d3110b768799eb9463c61a2be7a1f862755",
+  "font_condition": "51 ordered exact font programs and prior OS fallback selection",
+  "records": 67,
+  "pages": 956,
+  "threshold_decline_pp": 0.1,
+  "drops": [
+    {
+      "input": "hwp5-spec-official",
+      "page": 24,
+      "pre_rebase": 99.75514,
+      "candidate": 76.71379,
+      "decline_pp": 23.04135,
+      "exit_code": 1,
+      "candidate_tsv_sha256": "866e52dd8d350f8bf8a90bd028462797ede38111e64e6b9bd0f7c56cf797f888",
+      "pre_rebase_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/hwp5-spec-official.tsv"
+    },
+    {
+      "input": "hwp5-spec-official",
+      "page": 20,
+      "pre_rebase": 99.9956,
+      "candidate": 78.31096,
+      "decline_pp": 21.68464,
+      "exit_code": 1,
+      "candidate_tsv_sha256": "866e52dd8d350f8bf8a90bd028462797ede38111e64e6b9bd0f7c56cf797f888",
+      "pre_rebase_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/hwp5-spec-official.tsv"
+    },
+    {
+      "input": "hwp5-spec-official",
+      "page": 21,
+      "pre_rebase": 99.58762,
+      "candidate": 99.11991,
+      "decline_pp": 0.46771,
+      "exit_code": 1,
+      "candidate_tsv_sha256": "866e52dd8d350f8bf8a90bd028462797ede38111e64e6b9bd0f7c56cf797f888",
+      "pre_rebase_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/hwp5-spec-official.tsv"
+    },
+    {
+      "input": "hwpml-spec-2020",
+      "page": 24,
+      "pre_rebase": 99.88729,
+      "candidate": 99.45262,
+      "decline_pp": 0.43467,
+      "exit_code": 0,
+      "candidate_tsv_sha256": "06f5e727ebb711b362702231f57c57db1cb34680e60f560f9889d68f74776de1",
+      "pre_rebase_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/hwpml-spec-2020.tsv"
+    },
+    {
+      "input": "nested-height-cache",
+      "page": 3,
+      "pre_rebase": 99.79139,
+      "candidate": 99.40903,
+      "decline_pp": 0.38236,
+      "exit_code": 0,
+      "candidate_tsv_sha256": "1633c5c9d25271475b6120b98d99c11f718cbe02a3a65e483ea05e8df29afdf5",
+      "pre_rebase_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/nested-height-cache.tsv"
+    },
+    {
+      "input": "hwpml-spec-2020",
+      "page": 23,
+      "pre_rebase": 99.99389,
+      "candidate": 99.69138,
+      "decline_pp": 0.30251,
+      "exit_code": 0,
+      "candidate_tsv_sha256": "06f5e727ebb711b362702231f57c57db1cb34680e60f560f9889d68f74776de1",
+      "pre_rebase_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/hwpml-spec-2020.tsv"
+    }
+  ],
+  "note": "exit 1 denotes failed visual gate and its complete TSV is included",
+  "run_log": "output/pr-review/planet6897-20261026/rebase-8319/original-prior-os-candidate-native.log"
+}

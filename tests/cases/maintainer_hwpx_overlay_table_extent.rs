@@ -59,3 +59,51 @@ fn overtime_footer_keeps_its_independent_painted_position() {
         1044.0,
     );
 }
+
+#[test]
+fn low_slack_footer_keeps_its_independent_painted_position() {
+    let bytes = std::fs::read(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("samples/issue6535/36339092_low_slack_absorb_block.hwpx"),
+    )
+    .expect("저슬랙 원본 문서 읽기");
+    let document = HwpDocument::from_bytes(&bytes).expect("저슬랙 원본 문서 로드");
+    assert_eq!(
+        document.page_count(),
+        1,
+        "하단 서명 틀이 별도 쪽으로 밀렸다"
+    );
+    let root = document.build_page_render_tree(0).expect("첫 쪽 배치").root;
+
+    // 독립 PDF의 같은 쪽 하단 연락처를 검사한다. 절대 위치를 고정하지 않는다.
+    fn collect(node: &RenderNode, phone: &str, frame: Option<&RenderNode>, hits: &mut usize) {
+        let frame = if matches!(node.node_type, RenderNodeType::Table(_)) {
+            Some(node)
+        } else {
+            frame
+        };
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            if run.display_or_text().contains(phone) {
+                *hits += 1;
+                let frame = frame.expect("연락처는 하단 표의 내용이어야 한다");
+                let center_x = node.bbox.x + node.bbox.width / 2.0;
+                let center_y = node.bbox.y + node.bbox.height / 2.0;
+                assert!(
+                    frame.bbox.x <= center_x
+                        && center_x <= frame.bbox.x + frame.bbox.width
+                        && frame.bbox.y <= center_y
+                        && center_y <= frame.bbox.y + frame.bbox.height,
+                    "연락처가 소속 하단 표 밖에 배치됐다: {phone}"
+                );
+            }
+        }
+        for child in &node.children {
+            collect(child, phone, frame, hits);
+        }
+    }
+    for phone in ["02-2133-9778", "02-2133-1021"] {
+        let mut hits = 0;
+        collect(&root, phone, None, &mut hits);
+        assert_eq!(hits, 1, "하단 연락처의 누락 또는 중복: {phone}");
+    }
+}

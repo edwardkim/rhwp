@@ -1,8 +1,14 @@
+import { setLinkHostHandler } from './core/link-navigation';
+import { RecoveryCipher, sameRecoveryDraft } from './recovery/recovery-crypto';
+import { setFormActionsEnabled } from './core/form-action-policy';
+import { isPdfInput, type PdfInputSource } from './core/pdf-open';
+import { showPdfImportDialog, cancelPdfImport } from './ui/pdf-import-dialog';
+import { installCommandErrorGlobalRouting, StudioCommandError, inspectCommandError, type CommandErrorV1 } from '@/core/command-error';
 import { setHostFontProvider, onHostFontsChanged, hasHostFontProvider, prepareHostFontCatalog, getHostFontState, localFontFaceKey, type LocalFontRecord } from '@/core/local-fonts';
-import { collectHostFontRequests } from '@/core/host-font-requests';
+import { collectHostFontRequests, collectDocumentCanvasKitFontUsage, resolveDocumentCanvasKitFontUsage, type DocumentCanvasKitFontUsage } from '@/core/host-font-requests';
 import { WasmBridge } from '@/core/wasm-bridge';
 import { installDocumentTitle } from '@/ui/document-title';
-import type { DocumentInfo, PageInfo } from '@/core/types';
+import type { CanvasKitDocumentPreflight, DocumentInfo, PageInfo } from '@/core/types';
 import { EventBus } from '@/core/event-bus';
 import { assertRemoteDocumentBytes } from '@/core/document-signature';
 import { CanvasView } from '@/view/canvas-view';
@@ -41,9 +47,11 @@ import { toolCommands } from '@/command/commands/tool';
 import { installPwaFileHandling, type FileHandlingWindowLike } from '@/command/pwa-file-handling';
 import {
   isSupportedDocumentFileName,
+  documentFileInputAccept,
+  unsupportedDocumentMessage,
   type FileSystemFileHandleLike,
 } from '@/command/file-system-access';
-import { forgetConvertedHmlSaveHandle } from '@/command/save-target';
+import { forgetConvertedHmlSaveHandle, forgetConvertedPdfSaveHandle } from '@/command/save-target';
 import { ContextMenu } from '@/ui/context-menu';
 import { CommandPalette } from '@/ui/command-palette';
 import { MODAL_DIALOG_CLOSED_EVENT } from '@/ui/dialog';
@@ -63,17 +71,20 @@ import { DocumentDirtyState } from '@/core/document-dirty-state';
 import { initThemeSync, setThemeMode, getThemeMode, getEffectiveTheme } from '@/core/theme';
 import { maybeShowSkinOnboarding } from '@/ui/skin-onboarding-dialog';
 import { analyzeDocumentFonts } from '@/core/document-font-status';
+import { clearDeclaredLocalPrograms } from '@/core/declared-font-environment';
+import { showLocalFontsModalIfNeeded } from '@/ui/local-fonts-modal';
 import { setDocumentFontSubstitutions } from '@/core/font-substitution';
 import {
   clearStoredLocalFonts,
   detectLocalFonts,
   getLocalFontState,
+  localFontNamesIntersect,
   loadStoredLocalFonts,
   resolveLocalFont,
 } from '@/core/local-fonts';
 import { userSettings } from '@/core/user-settings';
 import { AutosaveManager, type AutosaveScheduleSettings, type AutosaveStatus } from '@/recovery/autosave-manager';
-import { clearAutosaveDrafts, deleteAutosaveDraft, listAutosaveDrafts, type AutosaveDraft } from '@/recovery/autosave-store';
+import { clearAutosaveDrafts, deleteAutosaveDraft, getAutosaveDraft, listAutosaveDrafts, type AutosaveDraft } from '@/recovery/autosave-store';
 import { recoveryFileName } from '@/recovery/recovery-format';
 import { showAutosaveRecoveryDialog } from '@/recovery/recovery-ui';
 import { CellSelectionRenderer } from '@/engine/cell-selection-renderer';
@@ -104,10 +115,13 @@ import { CENTER_ZOOM_ANCHOR } from '@/view/zoom-anchor';
 import { withBusyCursor } from '@/view/busy-cursor';
 import { formatPageIndicator } from '@/view/page-indicator';
 import { installEmbedRuntime } from '@/embed/runtime';
+import { subscribeFieldChanges } from '@/embed/field-events';
 import type { EmbedRendererRuntimeRequestV1 } from '@/embed/rpc-router';
 import { enrichFontDecisionTrace } from '@/core/font-decision-trace';
 import { DocumentAgentController } from '@/document-agent/controller';
 import { initI18n, t } from '@/i18n/index.ts';
+import { SidePanelController, createDomSidePanelView } from '@/view/side-panel-host';
+import { navigateToSearchHit } from '@/ui/find-dialog';
 
 // 언어팩 초기화 — 정적 마크업의 라벨을 결정된 로케일로 갱신한다. 카탈로그에 없는 키는
 // 원문(ko)으로 물러나므로 번역이 없는 상태에서도 화면은 도입 전과 같다.
@@ -117,15 +131,30 @@ const wasm = new WasmBridge();
 installDocumentTitle(wasm);
 const eventBus = new EventBus();
 const documentState = new DocumentDirtyState(eventBus);
+installCommandErrorGlobalRouting(window);
+// WKWebView 등 직접 호스트는 EventTarget을 구독하고 이 조회로 현재 문서 세션을 확인한다.
+Object.defineProperty(window, 'rhwpCommandErrors', { value: Object.freeze({
+  capability: 'command-error-v1',
+  isHandledError: (error: unknown) => error instanceof StudioCommandError,
+  inspect: inspectCommandError,
+  getState: () => inputHandler?.getCommandErrorState() ?? null,
+}), configurable: true });
 documentState.installBeforeUnload(window);
 const autosaveManager = new AutosaveManager({
   exportBytes: () => wasm.exportHwp(),
-  // exportHwp()는 평문 HWP 바이트를 만든다. 보호 문서에서는 복구본을 남기지 않는다 (#5992).
-  isRecoveryBlocked: () => wasm.requiresPasswordForSave,
+  // No plaintext persistence: protected documents need a session-only recovery key.
+  isRecoveryBlocked: () => wasm.requiresPasswordForSave && !wasm.recoveryCipher,
+  protectDraft: async draft => {
+    if (!wasm.requiresPasswordForSave) return draft;
+    const cipher = wasm.recoveryCipher;
+    if (!cipher) throw new Error('RECOVERY_LOCKED');
+    return cipher.protect(draft);
+  },
   schedule: autosaveScheduleFromUserSettings(),
   onStatus: handleAutosaveStatus,
 });
 autosaveManager.connect(eventBus);
+wasm.onRecoveryProtectionChanged = () => { void autosaveManager.discardCurrentDraft('protection-changed'); };
 initThemeSync((effective, mode) => {
   eventBus.emit('theme-changed', { mode, effective });
   eventBus.emit('command-state-changed');
@@ -155,6 +184,8 @@ async function completeHostSave(fileName?: string): Promise<{ ok: true; wasDirty
 // 호스트를 위해 프로덕션 빌드에도 항상 노출한다 (iframe 호스트는 embed RPC 사용).
 (window as any).rhwpStudio = {
   notifySaved: (fileName?: string) => completeHostSave(fileName),
+  links: { setHandler: setLinkHostHandler },
+  forms: { setActionsEnabled: setFormActionsEnabled },
   fonts: { setProvider: setHostFontProvider, getState: getHostFontState },
 };
 
@@ -253,7 +284,7 @@ function getContext(): EditorContext {
     showControlCodes: wasm.getShowControlCodes(),
     showParagraphMarks: wasm.getShowParagraphMarks(),
     isDirty: documentState.isDirty(),
-    sourceFormat: hasDoc ? (wasm.getSourceFormat() as 'hwp' | 'hwpx' | 'hml') : undefined,
+    sourceFormat: hasDoc ? (wasm.getSourceFormat() as 'hwp' | 'hwpx' | 'hml' | 'pdf') : undefined,
   };
 }
 
@@ -309,11 +340,27 @@ async function resolvePlugin(id: string): Promise<StudioPlugin> {
     // 번들에 있는 이름만 허용한다. 동적 import 라 올리지 않으면 코드도 로드되지 않는다.
     return (await import('@rhwp/hwpctrl/studio-plugin')).hwpctrlStudioPlugin as StudioPlugin;
   }
+  // `RHWP_WITHOUT_AI=1` 빌드에서는 이 분기와 AI 청크·SDK 가 통째로 사라진다.
+  if (__RHWP_AI__ && id === 'ai-assistant') {
+    return (await import('@/ai/plugin')).aiAssistantPlugin;
+  }
   if (import.meta.env.DEV && id === 'dev-probe') {
     return (await import('@/plugin/dev-probe-plugin')).devProbePlugin;
   }
   throw new Error(`허용되지 않은 플러그인: ${id}`);
 }
+
+/**
+ * 오른쪽 패널 자리. embed 모드에는 두지 않는다 — 문서를 어디로 보낼지는 embed 호스트가 정한다.
+ */
+const sidePanelRoot = document.getElementById('side-panel-host');
+const sidePanels = chromeMode !== 'embed' && sidePanelRoot
+  ? new SidePanelController(createDomSidePanelView(
+    sidePanelRoot,
+    t('ui.sidePanel.close'),
+    () => document.getElementById('scroll-container')?.focus(),
+  ))
+  : undefined;
 
 const plugins = new PluginHostRegistry({
   wasm,
@@ -321,8 +368,30 @@ const plugins = new PluginHostRegistry({
   eventBus,
   getInputHandler: () => inputHandler,
   loadDocument: (bytes, fileName) => loadBytes(bytes, fileName ?? 'document.hwp', null),
-  createBlankDocument: () => { void createNewDocument(); },
+  createBlankDocument: async (options) => {
+    if (options?.confirmUnsaved && !await canReplaceCurrentDocument()) return false;
+    await createNewDocument();
+    return true;
+  },
   resolve: resolvePlugin,
+  sidePanels,
+  selectTextRange: (range) => {
+    if (!inputHandler) return false;
+    navigateToSearchHit(inputHandler, {
+      found: true,
+      sec: range.section,
+      para: range.paragraph,
+      charOffset: range.charOffset,
+      length: range.length,
+      ...(range.cell ? {
+        cellContext: {
+          parentPara: range.cell.parentPara, ctrlIdx: range.cell.controlIndex,
+          cellIdx: range.cell.cellIndex, cellPara: range.cell.cellPara,
+        },
+      } : {}),
+    });
+    return true;
+  },
 });
 (window as any).rhwpStudio.plugins = plugins;
 
@@ -428,7 +497,7 @@ function handleAutosaveStatus(status: AutosaveStatus): void {
   autosavePreviousMessage = null;
   let nextMessage: string;
   if (status.state === 'saved') {
-    nextMessage = `복구용 자동 저장 완료 (${formatBytes(status.byteLength)})`;
+    nextMessage = `${status.encrypted ? '암호화 복구본 자동 저장' : '복구용 자동 저장'} 완료 (${formatBytes(status.byteLength)})`;
   } else if (status.state === 'blocked') {
     // 실패가 아니라 의도된 차단이므로 구분해서 알린다 (#5992).
     nextMessage = '보호 문서는 복구용 자동 저장을 하지 않습니다';
@@ -477,15 +546,15 @@ async function updateLoadProgress(percent: number, label: string): Promise<void>
  * face는 prepareCanvasKitDocument에서 먼저 준비하고, 여기서는 문서 전체 face 및 사용자가
  * 새로 승인한 local face를 보충한 뒤 현재 뷰만 다시 그린다.
  */
-function prepareCanvasKitLocalFonts(fontNames: readonly string[] | undefined): void {
+function prepareCanvasKitLocalFonts(fontNames: readonly string[] | undefined, refresh = false): void {
   const renderer = canvasView?.getRenderBackend() === 'canvaskit'
     ? rendererSession?.getCanvasKitRenderer() ?? null
     : null;
-  if (!renderer || !fontNames?.length) return;
-  const requestedFonts = [...fontNames];
+  if (!renderer || (!fontNames?.length && !refresh)) return;
+  const requestedFonts = [...(fontNames ?? [])];
   void (async () => {
     await loadStoredLocalFonts();
-    await renderer.prepareLocalFonts(requestedFonts);
+    await renderer.prepareLocalFonts(requestedFonts, { refresh });
     if (
       renderer === rendererSession?.getCanvasKitRenderer()
       && canvasView?.getRenderBackend() === 'canvaskit'
@@ -519,6 +588,25 @@ async function initialize(): Promise<void> {
     const canvaskitMode = canvaskitModeRequest.mode;
     const canvaskitSurfaceRequest = resolveCanvasKitSurfaceRequest(window.location.search);
     const renderProfile = resolveRenderProfile(window.location.search);
+    // Each renderer decision owns a fresh report (document/edit/resource revision).
+    // Share declarations only; local/host availability is resolved again after preparation.
+    const documentFontUsage = new WeakMap<CanvasKitDocumentPreflight, DocumentCanvasKitFontUsage[]>();
+    const documentFontRequirements = (report: CanvasKitDocumentPreflight) => {
+      const required = report.requiredFontFamilies;
+      if (!report.complete || required.length === 0) return required;
+      let usage = documentFontUsage.get(report);
+      if (!usage) {
+        if (!wasm.getDocumentInfo().fontSubstitutions?.length) return required;
+        function* pageTrees() {
+          for (let page = 0; page < wasm.pageCount; page++) {
+            yield wasm.getPageLayerTreeObject(page, renderProfile);
+          }
+        }
+        usage = collectDocumentCanvasKitFontUsage(pageTrees());
+        documentFontUsage.set(report, usage);
+      }
+      return resolveDocumentCanvasKitFontUsage(required, usage);
+    };
     const diagnosticsBackendRequest: EmbedRendererRuntimeRequestV1['backend'] =
       renderBackendRequest.backend === 'auto'
         ? { ...renderBackendRequest, backend: 'canvas2d' }
@@ -549,20 +637,21 @@ async function initialize(): Promise<void> {
         msg.textContent = 'CanvasKit 로딩 중...';
         const { CanvasKitLayerRenderer } = await import('@/view/canvaskit-renderer');
         return CanvasKitLayerRenderer.create(mode, surface, {
-          requirePreparedFontFamilies: renderBackendRequest.backend === 'auto',
+          requirePreparedFontFamilies: true,
         });
       },
       {
         transformCanvasKitPreflight(report) {
+          if (!report.complete) return report;
           const plan = resolveCanvasKitFontPlan(
-            report.requiredFontFamilies,
+            documentFontRequirements(report),
             extensionViewerSettings,
           );
           const blockers = plan.unavailableFonts.map(font => `fontUnavailable:${font}`);
-          return withCanvasKitSurfaceBlockers(
-            report,
-            blockers,
-          );
+          const transformed = withCanvasKitSurfaceBlockers(report, blockers);
+          const usage = documentFontUsage.get(report);
+          if (usage) documentFontUsage.set(transformed, usage);
+          return transformed;
         },
         async prepareCanvasKitDocument(renderer, report) {
           if (hasHostFontProvider()) {
@@ -576,28 +665,40 @@ async function initialize(): Promise<void> {
                 records.set(localFontFaceKey(record), record);
               }
             }
-            await renderer.prepareHostFonts([...records.values()]);
+            await renderer.prepareHostFonts([...records.values()],
+              (bytes, faceIndex) => wasm.prepareOrdinaryTextFont(bytes, faceIndex));
           }
-          // Explicit CanvasKit has no document-wide auto-selection preflight.
-          if (!report) return;
-          const plan = resolveCanvasKitFontPlan(
-            report.requiredFontFamilies,
-            extensionViewerSettings,
+          // Explicit selection bypasses auto eligibility, not font preparation.
+          const fontRequirements = report ?? wasm.getCanvasKitDocumentPreflight(
+            canvaskitModeRequest.mode,
+            renderProfile,
           );
-          if (plan.unavailableFonts.length > 0) {
-            throw new Error(`CanvasKit font family가 준비되지 않았습니다: ${plan.unavailableFonts.join(', ')}`);
+          if (!fontRequirements.complete) {
+            throw new Error('CanvasKit 문서 글꼴 요구 목록이 완전하지 않습니다');
           }
+          let requiredFontFamilies: readonly string[] = fontRequirements.requiredFontFamilies;
           try {
             // 저장된 Local Font Access 권한이 있으면 첫 replay부터 원 face의 SFNT bytes를
             // CanvasKit에 전달한다. CSS local()에서 EBDT face가 두부로 바뀌는 경로를 타지 않는다.
             await loadStoredLocalFonts();
-            await renderer.prepareLocalFonts(report.requiredFontFamilies);
+            requiredFontFamilies = documentFontRequirements(fontRequirements);
+            await renderer.prepareLocalFonts(requiredFontFamilies);
           } catch (error) {
             // 로컬 권한이 만료됐거나 face 읽기에 실패해도 portable bundled face로 계속 연다.
             console.warn(
               '[CanvasKit] 저장된 로컬 Typeface 사전 준비 실패, bundled fallback으로 계속합니다:',
               error,
             );
+          }
+          const plan = resolveCanvasKitFontPlan(
+            requiredFontFamilies,
+            extensionViewerSettings,
+          );
+          const unavailableFonts = plan.unavailableFonts.filter(
+            family => !renderer.hasPreparedFontFamily(family),
+          );
+          if (unavailableFonts.length > 0) {
+            throw new Error(`CanvasKit font family가 준비되지 않았습니다: ${unavailableFonts.join(', ')}`);
           }
           await renderer.prepareBundledFonts(plan.sources);
         },
@@ -637,6 +738,18 @@ async function initialize(): Promise<void> {
       canvasView.getVirtualScroll(),
       canvasView.getViewportManager(),
     );
+    inputHandler.configureCommandErrors({
+      isDirty: () => documentState.isDirty(),
+      render: () => canvasView!.refreshDocumentAgentMutation(),
+      publish: (payload: CommandErrorV1) => {
+        window.dispatchEvent(new CustomEvent('rhwp-command-error', { detail: payload }));
+        eventBus.emit('command-error', payload);
+        if (payload.documentSessionId !== inputHandler?.getCommandErrorState()?.documentSessionId) return;
+        showToast({ message: payload.recovery === 'succeeded'
+          ? '명령을 완료하지 못했습니다. 편집 상태를 복구했습니다.'
+          : '편집 상태를 확인할 수 없습니다. 문서를 다시 열어 주세요.' });
+      },
+    });
     inputHandler.setEditMode(editMode);
     documentAgent?.dispose();
     documentAgent = new DocumentAgentController({
@@ -948,6 +1061,7 @@ function setupGlobalShortcuts(): void {
 
 function setupFileInput(): void {
   const fileInput = document.getElementById('file-input') as HTMLInputElement;
+  fileInput.accept = documentFileInputAccept(wasm.hasPdfImportCapability());
 
   fileInput.addEventListener('change', async (e) => {
     const input = e.target as HTMLInputElement;
@@ -955,8 +1069,8 @@ function setupFileInput(): void {
     delete input.dataset.skipUnsavedGuard;
     const file = input.files?.[0];
     if (!file) return;
-    if (!isSupportedDocumentFileName(file.name)) {
-      alert('HWP/HWPX/HML 파일만 지원합니다.');
+    if (!isSupportedDocumentFileName(file.name, wasm.hasPdfImportCapability())) {
+      alert(unsupportedDocumentMessage(file.name, wasm.hasPdfImportCapability()));
       fileInput.value = '';
       return;
     }
@@ -985,12 +1099,12 @@ function setupFileInput(): void {
     const dropName = file.name.toLowerCase();
     const imageExts = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp'];
     const isImage = imageExts.some(ext => dropName.endsWith(ext));
-    const isDoc = isSupportedDocumentFileName(dropName);
+    const isDoc = isSupportedDocumentFileName(dropName, wasm.hasPdfImportCapability());
     // embed 프로파일: 문서 드롭은 호스트가 감지할 수 없는 문서 교체 경로이므로 무시한다.
     // 이미지 드롭은 수명주기가 아니라 편집 기능이라 그대로 둔다.
     if (chromeMode === 'embed' && isDoc) return;
     if (!isImage && !isDoc) {
-      alert('HWP/HWPX/HML 파일 또는 이미지 파일만 지원합니다.');
+      alert(unsupportedDocumentMessage(dropName, wasm.hasPdfImportCapability(), true));
       return;
     }
 
@@ -1194,21 +1308,44 @@ function setupEventListeners(): void {
     });
   });
 
-  eventBus.on('local-fonts-changed', () => {
+  eventBus.on('local-fonts-changed', (payload) => {
+    if ((payload as { source?: string } | undefined)?.source === 'options-dialog-clear') {
+      clearDeclaredLocalPrograms();
+    }
     if (!canvasView || wasm.pageCount === 0) return;
     const state = getLocalFontState();
     const generation = `${state.detectedAt ?? 'none'}:${state.source ?? 'none'}:${state.count}`;
     if (generation === lastAppliedLocalFontGeneration) return;
     lastAppliedLocalFontGeneration = generation;
-    wasm.invalidateCanvasMetricFonts();
+    const changedNames = (payload as { changedNames?: string[] } | undefined)?.changedNames;
+    const relevant = !changedNames || localFontNamesIntersect(wasm.getDocumentFontCandidates(), changedNames);
+    const documentGeneration = wasm.documentGeneration;
 
     if (canvasView.getRenderBackend() === 'canvaskit') {
       // CanvasKit은 browser CSS를 쓰지 않으므로 local SFNT 준비가 끝난 뒤 helper가 한 번 갱신한다.
-      prepareCanvasKitLocalFonts(currentDocumentFonts);
+      if (relevant) {
+        wasm.invalidateCanvasMetricFonts();
+        wasm.refreshLayout();
+        prepareCanvasKitLocalFonts(currentDocumentFonts, true);
+      }
       return;
     }
-    // Canvas2D는 Rust layout과 문서를 다시 열지 않고 현재 보이는 view만 새 family chain으로 그린다.
-    eventBus.emit('document-view-changed');
+    // 새로 감지한 프로그램을 문서의 자동 글꼴 환경에도 반영한다.
+    void wasm.prepareDeclaredFontEnvironment('canvas2d').then(changed => {
+      if (!canvasView || wasm.pageCount === 0 || wasm.documentGeneration !== documentGeneration) return;
+      if (!changed && !relevant) return;
+      if (!changed) {
+        wasm.invalidateCanvasMetricFonts();
+        wasm.refreshLayout();
+      }
+      const info = wasm.getDocumentInfo();
+      setDocumentFontSubstitutions(info.fontSubstitutions);
+      currentDocumentFonts = [...new Set([
+        ...(info.fontsUsed ?? []),
+        ...(info.fontSubstitutions ?? []).map(([, target]) => target),
+      ])];
+      eventBus.emit('document-view-changed');
+    }).catch(error => console.warn('[LocalFonts] View refresh failed:', error));
   });
 
   document.fonts.addEventListener('loadingdone', () => {
@@ -1361,25 +1498,35 @@ function applySavedTextMarkSettings(): void {
 async function initializeDocument(
   docInfo: DocumentInfo,
   displayName: string,
-  options: { suppressDialogs?: boolean } = {},
+  options: { suppressDialogs?: boolean; suppressLocalFontPrompt?: boolean } = {},
 ): Promise<void> {
   const msg = sbMessage();
   try {
+    // 이미 승인된 snapshot을 권한 prompt 없이 준비한 뒤 프로그램을 선택한다.
+    await loadStoredLocalFonts();
+    // 초기화 후 첫 문서 로드의 선택을 프로그램 공급·조판보다 먼저 확정한다.
+    // 감지 완료와 이전 대체 환경의 비동기 갱신이 경합하지 않게 한다.
+    if (!options.suppressDialogs && !options.suppressLocalFontPrompt) {
+      await promptLocalFontsIfNeeded(displayName);
+    }
+    // 실제 프로그램을 먼저 확정한 뒤 같은 문서 정보로 공급과 view를 준비한다.
+    await wasm.prepareDeclaredFontEnvironment(canvasView?.getRenderBackend());
+    docInfo = wasm.getDocumentInfo();
     setDocumentFontSubstitutions(docInfo.fontSubstitutions);
-    currentDocumentFonts = [...(docInfo.fontsUsed ?? [])];
+    currentDocumentFonts = [...new Set([
+      ...(docInfo.fontsUsed ?? []),
+      ...(docInfo.fontSubstitutions ?? []).map(([, target]) => target),
+    ])];
     lastAppliedLocalFontGeneration = null;
     console.log('[initDoc] 1. 폰트 로딩 시작');
     await updateLoadProgress(55, '폰트 준비 중...');
-    if (docInfo.fontsUsed?.length) {
-      await loadWebFonts(docInfo.fontsUsed, (loaded, total) => {
+    if (currentDocumentFonts.length) {
+      await loadWebFonts(currentDocumentFonts, (loaded, total) => {
         const fontPercent = total > 0 ? 55 + Math.round((loaded / total) * 20) : 65;
         msg.textContent = `파일 로딩 ${fontPercent}% - 폰트 로딩 중... (${loaded}/${total})`;
       }, extensionViewerSettings);
     }
     console.log('[initDoc] 2. 폰트 로딩 완료');
-    // 저장 snapshot은 권한 prompt 없이 읽을 수 있다. Canvas2D 첫 paint의 family 해소가
-    // 이미 승인된 exact local face를 놓치지 않도록 문서 view보다 먼저 준비한다 (#4739).
-    await loadStoredLocalFonts();
     await updateLoadProgress(75, '문서 상태 적용 중...');
     totalSections = docInfo.sectionCount ?? 1;
     sbSection().textContent = t('ui.sbSection.text', { p1: 1, p2: totalSections });
@@ -1420,10 +1567,6 @@ async function initializeDocument(
       console.warn('[validation] 감지 실패 (치명적이지 않음):', e);
     }
 
-    if (!options.suppressDialogs) {
-      await promptLocalFontsIfNeeded(docInfo, displayName);
-    }
-
     // 로컬 글꼴 감지 결과가 뷰를 갱신한 뒤에 캐럿을 연결해야 입력 포커스가 재설정과 경합하지 않는다.
     console.log('[initDoc] 8. inputHandler activateWithCaretPosition');
     await updateLoadProgress(96, '편집 상태 초기화 중...');
@@ -1440,21 +1583,20 @@ async function initializeDocument(
   }
 }
 
-async function promptLocalFontsIfNeeded(docInfo: DocumentInfo, displayName: string): Promise<void> {
-  if (!docInfo.fontsUsed?.length) return;
-
-  // 문서를 열 때마다 로컬 글꼴 감지 안내 모달을 띄우면 열람 흐름이 끊긴다. 저장된 감지 결과가
-  // 있으면 그대로 재사용하고, 없으면 대체 글꼴로 조용히 표시한다. 수동 감지는 옵션 대화상자의
-  // '로컬 글꼴 감지하기'로 계속 실행할 수 있다.
+async function promptLocalFontsIfNeeded(displayName: string): Promise<void> {
   try {
     if (!getLocalFontState().loaded) await loadStoredLocalFonts();
-    const report = analyzeDocumentFonts(docInfo.fontsUsed);
+    if (getLocalFontState().stored) return;
+    const candidates = wasm.getDocumentFontCandidates();
+    if (!candidates.length) return;
+    const report = analyzeDocumentFonts(candidates);
     if (!report.shouldPromptLocalAccess) return;
-    console.log(
-      `[local-fonts] 감지 안내 모달 생략 — 대체 글꼴로 표시 (확인 필요 ${report.summary.needsLocalCheck}개, 문서 ${displayName})`,
-    );
+    const choice = await showLocalFontsModalIfNeeded(report, extensionViewerSettings);
+    if (choice !== 'detect') return;
+    // 호출한 문서 초기화가 이 결과로 공급·조판·뷰를 순서대로 준비한다.
+    await detectLocalFonts({ force: true, candidateFamilies: candidates });
   } catch (error) {
-    console.warn('[local-fonts] 저장된 감지 결과 로드 실패 (치명적이지 않음):', error);
+    console.warn(`[local-fonts] ${displayName} 글꼴 확인 실패:`, error);
   }
 }
 
@@ -1473,7 +1615,7 @@ const PASSWORD_REQUIRED_MESSAGE = '비밀번호가 필요한 암호 문서';
 const PASSWORD_REJECTED_MESSAGE = '비밀번호가 일치하지 않거나 암호화 데이터가 손상되었습니다';
 
 function isDocumentOpenCancelled(error: unknown): error is DocumentOpenCancelledError {
-  return error instanceof DocumentOpenCancelledError;
+  return error instanceof DocumentOpenCancelledError || (error as { code?: string })?.code === 'PDF_IMPORT_CANCELLED';
 }
 
 function isPasswordRequiredError(error: unknown): boolean {
@@ -1504,15 +1646,23 @@ function passwordOpenFailure(error: unknown): Error {
  */
 async function openPasswordProtectedDocument(data: Uint8Array, fileName: string): Promise<void> {
   let retryMessage: string | undefined;
+  const generation = wasm.documentGeneration;
 
   while (true) {
     let password = await showHwpPasswordDialog(fileName, retryMessage);
     if (password === null) throw new DocumentOpenCancelledError();
 
+    let cipher: RecoveryCipher | null = null;
     try {
+      if (wasm.documentGeneration !== generation) throw new DocumentOpenCancelledError();
+      cipher = await RecoveryCipher.create(password);
+      if (wasm.documentGeneration !== generation) throw new DocumentOpenCancelledError();
       wasm.loadDocumentWithPassword(data, password, fileName);
+      wasm.setRecoveryCipher(cipher);
+      cipher = null;
       return;
     } catch (error) {
+      if (isDocumentOpenCancelled(error)) throw error;
       // CFB 암호문은 인증 태그가 없으므로 오입력과 암호화 데이터 손상을 완전히 구분할 수
       // 없다. 두 경우만 재입력 상태로 안내하고, 지원하지 않는 암호화/DRM 등은 원래의
       // 명시적 거부 오류를 유지한다.
@@ -1524,12 +1674,24 @@ async function openPasswordProtectedDocument(data: Uint8Array, fileName: string)
     } finally {
       // JavaScript 문자열을 확실히 zeroize할 수는 없지만, 대화상자 DOM과 이 지역 참조는
       // 시도 직후 해제한다. 최근 문서·URL·저장소·문서 메타데이터에는 전달하지 않는다.
+      cipher?.dispose();
       password = '';
     }
   }
 }
 
-async function loadDocumentForOpen(data: Uint8Array, fileName: string): Promise<DocumentInfo> {
+async function loadDocumentForOpen(data: Uint8Array, fileName: string, pdfSource?: PdfInputSource): Promise<DocumentInfo> {
+  if (pdfSource || isPdfInput(data, fileName)) {
+    if (!wasm.hasPdfImportCapability()) throw new Error('PDF_IMPORT_DISABLED: 이 빌드에서는 PDF 가져오기를 사용할 수 없습니다.');
+    const generation = wasm.documentGeneration;
+    let imported: DocumentInfo | undefined;
+    await showPdfImportDialog(pdfSource ?? { byteLength: data.byteLength, read: async () => data },
+      fileName, options => wasm.getPdfImportPolicy(options), async (prepared, signal) => {
+        imported = await wasm.loadImportedPdf(prepared, fileName, signal, generation);
+      }, userSettings.getPdfImportLayout());
+    if (!imported) throw new Error('PDF_IMPORT_CANCELLED');
+    return imported;
+  }
   try {
     return wasm.loadDocument(data, fileName);
   } catch (error) {
@@ -1565,15 +1727,20 @@ async function loadFile(
 ): Promise<boolean> {
   try {
     if (!await canReplaceCurrentDocument(options.skipUnsavedGuard)) return false;
-    // 대기 커서는 저장 여부 확인(모달) 다음부터 — 사용자가 답해야 하는 동안은 평소 커서다.
-    return await withBusyCursor(document.documentElement, async () => {
-      const startTime = performance.now();
+    const startTime = performance.now();
+    // 파일 읽기만 감싼다. loadBytes가 여는 PDF 선택 대화창까지 busy를 소유하지 않는다.
+    const { pdf, data } = await withBusyCursor(document.documentElement, async () => {
       await updateLoadProgress(0, '파일 읽는 중...');
-      const data = new Uint8Array(await file.arrayBuffer());
-      await updateLoadProgress(15, '파일 읽기 완료');
-      await loadBytes(data, file.name, options.fileHandle ?? null, startTime, { dataReadProgressShown: true });
-      return true;
+      const pdf = /\.pdf$/i.test(file.name)
+        || isPdfInput(new Uint8Array(await file.slice(0, 1024).arrayBuffer()), file.name);
+      const data = pdf ? new Uint8Array() : new Uint8Array(await file.arrayBuffer());
+      if (!pdf) await updateLoadProgress(15, '파일 읽기 완료');
+      return { pdf, data };
     });
+    await loadBytes(data, file.name, options.fileHandle ?? null, startTime, { dataReadProgressShown: true,
+      ...(pdf ? { pdfSource: { byteLength: file.size, read: async () => new Uint8Array(await file.arrayBuffer()) } } : {}),
+    });
+    return true;
   } catch (error) {
     showLoadErrorUnlessCancelled(error);
     return false;
@@ -1589,19 +1756,36 @@ async function loadBytes(
   fileName: string,
   fileHandle: typeof wasm.currentFileHandle,
   startTime = performance.now(),
-  options: { dataReadProgressShown?: boolean; skipRecent?: boolean; suppressDialogs?: boolean } = {},
+  options: { dataReadProgressShown?: boolean; skipRecent?: boolean; suppressDialogs?: boolean; pdfSource?: PdfInputSource; recoveryCipher?: RecoveryCipher; validateBeforeOpen?: () => Promise<void> } = {},
 ): Promise<void> {
   // 바이트로 여는 모든 경로(파일 열기 · ?url= · 자동저장 복구 · 호스트 API)의 공통 깔때기다.
-  // 파싱·쪽 계산 동안 빈 화면만 보이므로 여기서 대기 커서를 든다.
+  const pdf = Boolean(options.pdfSource) || isPdfInput(data, fileName);
+  cancelPdfImport();
+  let imported: DocumentInfo | undefined;
+  if (pdf) {
+    // 선택·재시도 대기는 처리 중이 아니다. 변환 진행은 취소 가능한 PDF 대화창이
+    // 표시하며, 성공 뒤의 뷰 초기화부터 아래 busy 범위가 소유한다 (#8398).
+    sbMessage().textContent = 'PDF 가져오기';
+    await options.validateBeforeOpen?.();
+    imported = await loadDocumentForOpen(data, fileName, options.pdfSource);
+  }
+  // 일반 문서의 파싱·쪽 계산과 성공한 PDF의 뷰 초기화 동안 대기 커서를 든다.
   await withBusyCursor(document.documentElement, async () => {
     // 파싱 전에 먼저 빈 쪽 상태로 만든다 — 이전 문서를 붙잡고 있다가 한 번에 갈아치우면
     // 화면이 튀어 보인다. 파싱이 실패하면 아래 catch가 이전 문서 뷰를 되살린다.
-    canvasView?.showBlankPage();
-    if (!options.dataReadProgressShown) {
-      await updateLoadProgress(0, '문서 데이터 준비 중...');
+    if (!pdf) canvasView?.showBlankPage();
+    if (!pdf) {
+      if (!options.dataReadProgressShown) {
+        await updateLoadProgress(0, '문서 데이터 준비 중...');
+      }
+      await updateLoadProgress(25, '문서 파싱 및 쪽 계산 중...');
+      await options.validateBeforeOpen?.();
     }
-    await updateLoadProgress(25, '문서 파싱 및 쪽 계산 중...');
-    const docInfo = await loadDocumentForOpen(data, fileName);
+    const docInfo = imported ?? await loadDocumentForOpen(data, fileName);
+    if (options.recoveryCipher) {
+      wasm.requiresPasswordForSave = true;
+      wasm.setRecoveryCipher(options.recoveryCipher);
+    }
     prepareCanvasRendererDocument();
     // 문서가 갈렸다 — 빌린 핸들을 쥔 플러그인에 새 lease 를 준다. 알리지 않으면 그쪽만 옛
     // 문서를 계속 만진다(세대 검사가 잡아 DOCUMENT_RELEASED 로 끊긴다).
@@ -1615,6 +1799,9 @@ async function loadBytes(
     eventBus.emit('document-swapped');
     await updateLoadProgress(45, '자동 저장 준비 중...');
     forgetConvertedHmlSaveHandle(fileHandle);
+    forgetConvertedPdfSaveHandle(fileHandle);
+    // Imported PDF handles are retained for identity checks/recent files; resolveSaveTarget
+    // forces a different output until a converted HWP/HWPX handle has been published.
     wasm.currentFileHandle = fileHandle;
 
     // 최근 문서 기록 — 문서 로드 성공 직후, 폰트/모달 등 블로킹 UI 단계 이전에 기록한다.
@@ -1768,7 +1955,31 @@ async function offerAutosaveRecoveryIfIdle(): Promise<void> {
 
 async function restoreAutosaveDraft(draft: AutosaveDraft): Promise<void> {
   const fileName = recoveryFileName(draft.fileName);
-  await loadBytes(new Uint8Array(draft.data), fileName, null, performance.now(), { skipRecent: true });
+  const generation = wasm.documentGeneration;
+  let data: Uint8Array = new Uint8Array(draft.data);
+  let cipher: RecoveryCipher | undefined;
+  if (draft.protection) {
+    let retryMessage: string | undefined;
+    while (true) {
+      let password = await showHwpPasswordDialog(fileName, retryMessage);
+      if (password === null) throw new DocumentOpenCancelledError();
+      try {
+        const unlocked = await RecoveryCipher.unlock(draft, password);
+        data = unlocked.data; cipher = unlocked.cipher; break;
+      } catch { retryMessage = '암호가 다르거나 복구본이 변경되었습니다. 다시 확인하세요.'; }
+      finally { password = ''; }
+    }
+  }
+  try {
+    await loadBytes(data, fileName, null, performance.now(), { skipRecent: true, recoveryCipher: cipher,
+      validateBeforeOpen: async () => {
+        if (wasm.documentGeneration !== generation) throw new DocumentOpenCancelledError();
+        if (!sameRecoveryDraft(draft, await getAutosaveDraft(draft.id))) throw new Error('RECOVERY_STALE: 복구본이 삭제되거나 변경되었습니다.');
+        if (wasm.documentGeneration !== generation) throw new DocumentOpenCancelledError();
+      },
+    });
+  } catch (error) { cipher?.dispose(); throw error; }
+  finally { if (draft.protection) data.fill(0); }
   await deleteAutosaveDraft(draft.id);
   documentState.markDirty('autosave-recovered');
   showToast({
@@ -1779,18 +1990,23 @@ async function restoreAutosaveDraft(draft: AutosaveDraft): Promise<void> {
 
 
 async function createNewDocument(): Promise<void> {
+  cancelPdfImport();
   const msg = sbMessage();
   try {
     await withBusyCursor(document.documentElement, async () => {
       msg.textContent = '새 문서 생성 중...';
       const docInfo = wasm.createNewDocument();
+      eventBus.emit('document-swapped');
       prepareCanvasRendererDocument();
       plugins.notifyDocumentSwap();
       await autosaveManager.beginDocument(
         { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
         { discardPreviousDraft: true },
       );
-      await initializeDocument(docInfo, t('ui.sbMessage.newDocPages', { p1: docInfo.pageCount }));
+      // 빈 문서는 사용자 파일의 원본 글꼴이 없으므로 확인창 없이 바로 편집한다.
+      await initializeDocument(docInfo, t('ui.sbMessage.newDocPages', { p1: docInfo.pageCount }), {
+        suppressLocalFontPrompt: true,
+      });
     });
   } catch (error) {
     msg.textContent = `새 문서 생성 실패: ${error}`;
@@ -2001,12 +2217,29 @@ const initPromise = initialize();
 void initPromise.then(() => {
   if (!rendererInitialized) return;
   maybeShowSkinOnboarding();
+  // 내장 AI 도우미. 최상위 창의 studio 에서만 자동으로 올린다 — iframe 으로 넣은 studio 는
+  // 호스트가 고른 플러그인만 가진다(`plugins.load('ai-assistant')` 로 직접 올릴 수는 있다).
+  // 실패해도 편집기는 그대로 쓸 수 있어야 하므로 로그만 남긴다.
+  if (__RHWP_AI__ && sidePanels && window.parent === window) {
+    plugins.load('ai-assistant').catch((error) => console.error('[main] AI 도우미 로드 실패', error));
+  }
 });
 
 installEmbedRuntime({
   hostWindow: window,
   parentWindow: window.parent,
+  subscribeCommandError: (listener) => eventBus.on('command-error', listener),
   subscribeDocumentChanged: (listener) => eventBus.on('document-agent-changed', listener),
+  subscribeFieldChanged: (listener) => {
+    // 연결마다 새로 센다 — 직전 누름틀 기억이 다른 세션으로 새지 않게.
+    return subscribeFieldChanges(eventBus, (fieldId) => {
+      try {
+        return wasm.getFieldList().find((field) => field.fieldId === fieldId && !field.cellField)?.name ?? '';
+      } catch {
+        return '';
+      }
+    }, listener);
+  },
   handlers: {
     async ready() {
       await initPromise;
@@ -2019,6 +2252,10 @@ installEmbedRuntime({
       }
       await loadBytes(data, fileName, null, undefined, { suppressDialogs });
       return { pageCount: wasm.pageCount };
+    },
+    async getCommandErrorState() {
+      await initPromise;
+      return inputHandler?.getCommandErrorState() ?? null;
     },
     async pageCount() {
       await initPromise;
@@ -2051,9 +2288,11 @@ installEmbedRuntime({
         },
       );
     },
-    async getPageSvg(page) {
+    async getPageSvg(page, profile) {
       await initPromise;
-      return wasm.renderPageSvg(page);
+      // 인자 없는 기존 호출은 종전 경로 그대로(화면 렌더). 인쇄·PDF 호스트는 'print' 를 넘겨
+      // editor_only 노드(#3375/#4379)를 뺀 SVG 를 받는다.
+      return profile === undefined ? wasm.renderPageSvg(page) : wasm.renderPageSvgWithProfile(page, profile);
     },
     async exportHwp() {
       await initPromise;

@@ -1,0 +1,222 @@
+{
+  "source_code_commit": "429dee416e64e26ae6b66e0e7f395caf35e0735b",
+  "validation_base": "552f5228d2dbfd6046c838f14241704f1bcb8a05",
+  "cases": [
+    {
+      "key": "6761-later",
+      "compat": 2022,
+      "input": {
+        "path": "tests/fixtures/pr7704_manual_reflow/6761-later.hwpx",
+        "sha256": "197b592eb3f1ea43661bf0da125298b9aed50b145434ec15078c86080f2c0648"
+      },
+      "pdf": {
+        "path": "pdf/pr7704/6761-later-2020.pdf",
+        "sha256": "53344e9460f5dd88b8043b86b0ddb435509c57a6e7581f0f8044e78ffbcea6ff"
+      }
+    },
+    {
+      "key": "6761-shifted",
+      "compat": 2022,
+      "input": {
+        "path": "tests/fixtures/pr7704_manual_reflow/6761-shifted.hwpx",
+        "sha256": "864d27394638934874459ab7b1b263f51760a9498e515fac6e686207a0ca75de"
+      },
+      "pdf": {
+        "path": "pdf/pr7704/6761-shifted-2020.pdf",
+        "sha256": "de9a3588c0c5cbcf9c9a32337a32eb788817a2429a094bd49cff08d96894c14f"
+      }
+    },
+    {
+      "key": "6761-control",
+      "compat": 2022,
+      "input": {
+        "path": "tests/fixtures/pr7704_manual_reflow/6761-control.hwpx",
+        "sha256": "89d2e361bc277580c1e01e62ec1edb5cb7bd201bb1b2b47f6d24d3eed1189644"
+      },
+      "pdf": {
+        "path": "pdf/pr7704/6761-control-2020.pdf",
+        "sha256": "7eddf0ff671d42578dbeaa145cf51fd623e4a952717e75b8315233d688d8ddeb"
+      }
+    },
+    {
+      "key": "chemical-original",
+      "compat": 2022,
+      "input": {
+        "path": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+        "sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860"
+      },
+      "pdf": {
+        "path": "pdf/pr7704/chemical-original-2020.pdf",
+        "sha256": "00d7f6f0248e6202ceda999c665e8d390f2d9b762406d213dd7b350f11aa06be"
+      }
+    },
+    {
+      "key": "6778-square",
+      "compat": 2022,
+      "input": {
+        "path": "samples/issue6778/156757920-animal-welfare-husbandry-guidelines.hwp",
+        "sha256": "309494bf58da7c092eca2c6fe55918063d2f538820cbc3fc6f8c8196fcd3586a"
+      },
+      "pdf": {
+        "path": "pdf/pr7704/6778-square-2020.pdf",
+        "sha256": "d4c1fe7a8a3c025b2be3648ba6e2ad1123eff3dde008983edadcef7e8f7b6656"
+      }
+    },
+    {
+      "key": "7336-nested",
+      "compat": 2024,
+      "input": {
+        "path": "samples/issue7336/nested_table_fragment_cut.hwp",
+        "sha256": "53f4abb0f76f6366931e0c1b3610c58ca44ad3120869a4ea8e86a0ab7ff42543"
+      },
+      "pdf": {
+        "path": "pdf/issue7336/nested_table_fragment_cut-2024.pdf",
+        "sha256": "5a9c86314c7592ef7972790f996a6586a35255ed3458214dafdf8fccb7ce8edd"
+      }
+    },
+    {
+      "key": "7336-stored",
+      "compat": 2024,
+      "input": {
+        "path": "samples/issue7336/stored_frame_page_larger_rowbreak.hwpx",
+        "sha256": "042633046ab469b971aa155417ecd568c8825d586d37f87a76194145edb903dc"
+      },
+      "pdf": {
+        "path": "pdf/issue7336/stored_frame_page_larger_rowbreak-2024.pdf",
+        "sha256": "34f07c944eb86d83747432208f66d2c634b85e2c7da1e7e961586da614507423"
+      }
+    },
+    {
+      "key": "scattered-hwp",
+      "compat": 2024,
+      "input": {
+        "path": "samples/table_scattered_header_rowbreak.hwp",
+        "sha256": "65bbf7f22c8ab664f0f916b3a25257faf7a65ad564d58706955580e4f63c649b"
+      },
+      "pdf": {
+        "path": "pdf/table_scattered_header_rowbreak-hwp-2024.pdf",
+        "sha256": "83a02aa2ce248cf3a16c78eebf0e2ecfe89349b012f11855799af0c52e23e4e2"
+      }
+    },
+    {
+      "key": "rowbreak-hwp",
+      "compat": 2024,
+      "input": {
+        "path": "samples/rowbreak-problem-pages.hwp",
+        "sha256": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed"
+      },
+      "pdf": {
+        "path": "pdf/rowbreak-problem-pages-hwp-2024.pdf",
+        "sha256": "2c49bda9cc21dc8b93b554d2607da241dd7e894657eb308ed823e7d44654e85c"
+      }
+    },
+    {
+      "key": "rowbreak-hwpx",
+      "compat": 2022,
+      "input": {
+        "path": "samples/rowbreak-problem-pages.hwpx",
+        "sha256": "4ccc321e7eb146f28b768654502a128ba1ae408238fd1ed37d51e963732eb5b0"
+      },
+      "pdf": {
+        "path": "pdf/rowbreak-problem-pages-hwpx-2020.pdf",
+        "sha256": "e3dc7bb21707f92e42e83808023bf155f62475fc4eb0e0498709d03986c5afe5"
+      }
+    },
+    {
+      "key": "overfill-hwpx",
+      "compat": 2024,
+      "input": {
+        "path": "samples/table_giant_cell_overfill.hwpx",
+        "sha256": "5d7eb4a21e46d9ad01a0f631eea2b1f2ec8a71750b4d448868e944e1b95042f4"
+      },
+      "pdf": {
+        "path": "pdf/table_giant_cell_overfill-hwpx-2024.pdf",
+        "sha256": "7669a8f468fd47e3180a09b5ea60526785e968fcb9ad5f1039d1f585d55d59be"
+      }
+    },
+    {
+      "key": "cellimg-hwp",
+      "compat": 2022,
+      "input": {
+        "path": "samples/issue2004_cell_image_stack.hwp",
+        "sha256": "c633fd086323075ab25777d8ee10357869d037bd17c9e74d444d5b8297c40d50"
+      },
+      "pdf": {
+        "path": "pdf/issue2004_cell_image_stack-hwp-2020.pdf",
+        "sha256": "b5e2f962620d8d7cdd2ec8b10571c53fbe959eb9ce7b3428ff09a595f12fee90"
+      }
+    },
+    {
+      "key": "cellimg-hwpx",
+      "compat": 2022,
+      "input": {
+        "path": "samples/issue2004_cell_image_stack.hwpx",
+        "sha256": "e91cf067de71c6c567e27974415bc67462f3e777997d41853db949fea4265fa7"
+      },
+      "pdf": {
+        "path": "pdf/issue2004_cell_image_stack-hwpx-2020.pdf",
+        "sha256": "ed5fea4e1fa6e21134088f905c717eb51396d398d6398636754b49d8ff83477b"
+      }
+    },
+    {
+      "key": "vpos-hwp",
+      "compat": 2022,
+      "input": {
+        "path": "samples/table-vpos-01.hwp",
+        "sha256": "2e6c5bb4bf29f60d97d332414a0ded023b894e59ae49b5f9d6bb11476d39d766"
+      },
+      "pdf": {
+        "path": "pdf/table-vpos-01-hwp-2020.pdf",
+        "sha256": "3439059430495acc264bb6924195d5a8065265e405fb6e68cd05869f506185cf"
+      }
+    },
+    {
+      "key": "vpos-hwpx",
+      "compat": 2022,
+      "input": {
+        "path": "samples/table-vpos-01.hwpx",
+        "sha256": "95768dadad966b3ba7853bb3904e9cc8409be21d7e795afcef1ec17fd7c75622"
+      },
+      "pdf": {
+        "path": "pdf/table-vpos-01-hwpx-2020.pdf",
+        "sha256": "2816a7b54ebef1c7b7d7fee231b3ae8fe4475cafb414dd947538871d5ccb7c25"
+      }
+    },
+    {
+      "key": "pictoggle-hwp",
+      "compat": 2022,
+      "input": {
+        "path": "samples/pic-in-table-with-toggle.hwp",
+        "sha256": "e69b29f30d683d206f100fc36f6cc69a284dbf62aa18e05896684b6c585e2df1"
+      },
+      "pdf": {
+        "path": "pdf/pic-in-table-with-toggle-2020.pdf",
+        "sha256": "ee92c9183ad5afa9f16fe92d3a2a9f1c420493310d19245e29e5196d295f8c1b"
+      }
+    },
+    {
+      "key": "nested-hwp",
+      "compat": 2024,
+      "input": {
+        "path": "samples/issue1949_giant_cell_nested_tables_perf.hwp",
+        "sha256": "ef10261cd29325116028e4f4f3e6be1a72c675eb771bddfd8484e7fe5aa94b4e"
+      },
+      "pdf": {
+        "path": "pdf/issue1949_giant_cell_nested_tables_perf-hwp-2024.pdf",
+        "sha256": "9fb08dea604813eed90a0449f29682d400be54dacd413352cc4f680f37cd4a44"
+      }
+    },
+    {
+      "key": "nested-hwpx",
+      "compat": 2022,
+      "input": {
+        "path": "samples/issue1949_giant_cell_nested_tables_perf.hwpx",
+        "sha256": "fc6e5f156de470dfbb14aab392389491720ee7fb1bf6f03fe9a018e93b420c65"
+      },
+      "pdf": {
+        "path": "pdf/issue1949_giant_cell_nested_tables_perf-hwpx-2020.pdf",
+        "sha256": "ba065afdd3ace7fd6b87fe82848e6cae3d01915a1606e4d8a70e4c2153d57d73"
+      }
+    }
+  ]
+}

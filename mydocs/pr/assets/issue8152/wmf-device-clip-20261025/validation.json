@@ -1,0 +1,402 @@
+{
+  "scope": "공통 WMF 장치 클립과 SVG 표시 외곽. CBTA의 동일 원문/2020 Print 전204쪽 검증 뒤 표지의 실제 로고와 장치 상태 계약을 보호한다. 전체 #7445/CBTA 모든 잔여의 해결은 주장하지 않는다.",
+  "parent": "f5ef1a2efcd5333a7f8319c8ea917bf030ca7aaf",
+  "base": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "source_files": {
+    "src/wmf/converter/svg/mod.rs": "7000f29f219af918dcfbe25146ab73e75db313ad715408cc5dca1604b7f09416",
+    "src/wmf/converter/svg/node.rs": "c01db5be964ed742c0e0141b5ac0ee74d8bbec0584f6e4da9a0a57f5c0de718e",
+    "src/wmf/converter/svg/clipping.rs": "4b8e3f6dab91f0c3ddde4f22241deb20e898caacc7a074abdef26c7d064f0a30"
+  },
+  "source_document": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+  "source_sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7",
+  "source_saved_product": "hancom-office-2018 / 10.0.0.7888",
+  "oracle": "pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf",
+  "oracle_sha256": "1e15e26100e3b4c4cd9737a0d2b116a449c5895efec9765680d79baa3b8f4380",
+  "oracle_bytes": 5007605,
+  "oracle_page_count": 204,
+  "print": {
+    "engine": "2020",
+    "hancom_version": "11.0.0.9136",
+    "backend": "hwp-managed-direct-dll-host",
+    "job_id": "feb051d0-c87b-4ec6-b507-0f18108fcaff",
+    "timeout_seconds": 1800,
+    "print_method": 0,
+    "output_mode": "hancom2020_pdf_driver_one_up",
+    "input_preprocess": "scripts_disabled",
+    "old_pdf": "pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf",
+    "old_pdf_preserved": true,
+    "old_vs_new_extracted_page_text_differences": 0,
+    "reference_change_reason": "새 Print의 source/제품/인쇄 경로를 고정했다. 원문 clip의 로고가 새2020Print에 존재한다. 기존 PDF의 생략 및32쪽 인쇄 보간 차이를 코드 개선 수치와 구분한다. 기존 PDF/TSV는 덮어쓰지 않았다."
+  },
+  "upstream_sources": [
+    "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wmf/7334bf67-dd00-4786-b43d-777a733c5adc",
+    "PR#6617/cb1df750d5",
+    "Task#860",
+    "PR#8191/6097253468"
+  ],
+  "consumer_chain": "WMF 논리 clip → 당시 Window::to_device → 불변 DeviceClipBounds → SVG clipPath/그림 clip-path → 같은 bounds의 visible_element_maxima → 내재 SVG크기 → Native/fresh WASM PNG. 기존 SavedDeviceContext의 clipId가 동일 장치 영역을 복원한다.",
+  "source_geometry": {
+    "command": [
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/wmf-device-clip-v22/rhwp-native",
+      "export-svg",
+      "/Users/tsjang/rhwp/samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+      "--compat",
+      "2022",
+      "--profile",
+      "print",
+      "--page",
+      "0",
+      "-o",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/wmf-device-clip-v22/source-svg"
+    ],
+    "records": [
+      {
+        "outer": {
+          "x": "509.96000000000004",
+          "y": "949.7466666666667",
+          "width": "201.28",
+          "height": "60.373333333333335",
+          "preserveAspectRatio": "none"
+        },
+        "inner_root": {
+          "height": "108",
+          "viewBox": "0 0 359 108",
+          "width": "359"
+        },
+        "clip": [
+          {
+            "clipPathUnits": "userSpaceOnUse",
+            "id": "clip2031"
+          },
+          {
+            "clipPathUnits": "userSpaceOnUse",
+            "id": "clip2034"
+          }
+        ],
+        "rectangles": [
+          {
+            "height": "108",
+            "width": "360",
+            "x": "-1",
+            "y": "0"
+          },
+          {
+            "height": "108",
+            "width": "360",
+            "x": "-1",
+            "y": "0"
+          }
+        ],
+        "image_frames": [
+          {
+            "clip-path": "url(#clip2034)",
+            "height": "1042",
+            "id": "elem2049",
+            "width": "3700",
+            "x": "-2752",
+            "y": "-644"
+          }
+        ],
+        "svg_sha256": "baa0927be651aa34d0c347e57e34c210cd991c97e05e2b31a5cf19e4e4a67a25"
+      }
+    ]
+  },
+  "visual_results": [
+    {
+      "backend": "native",
+      "pages": 204,
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/wmf-device-clip-v22/whole/native/cbta1613/silhouette.tsv",
+      "tsv_sha256": "314497538b3450220fb5f6c7f345339db59990c61dea7051397af1c168d91b83",
+      "minimum": 91.87422,
+      "below90": []
+    },
+    {
+      "backend": "wasm",
+      "pages": 204,
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/wmf-device-clip-v22/whole/wasm/cbta1613/silhouette.tsv",
+      "tsv_sha256": "9a663e5e969a875f0580b6da1fd126b8ae8e3d6719570e8ebdc97a9062e6e155",
+      "minimum": 91.82753,
+      "below90": []
+    }
+  ],
+  "comparison": {
+    "base": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+    "parent": "f5ef1a2efcd5333a7f8319c8ea917bf030ca7aaf",
+    "head": "같은 parent + 현재 device clip3파일 후보",
+    "pdf_sha256": "1e15e26100e3b4c4cd9737a0d2b116a449c5895efec9765680d79baa3b8f4380",
+    "pdf_raster_same_for_before_and_base_qualification": true,
+    "records": [
+      {
+        "backend": "native",
+        "pages": 204,
+        "final_tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/wmf-device-clip-v22/whole/native/cbta1613/silhouette.tsv",
+        "final_tsv_sha256": "314497538b3450220fb5f6c7f345339db59990c61dea7051397af1c168d91b83",
+        "final_minimum": 91.87422,
+        "below90": [],
+        "base_drops_ge_0p1": [],
+        "preclip_drops_ge_0p1": [],
+        "raster_changed_pages": [
+          1
+        ],
+        "p1": {
+          "before": 92.83705,
+          "after": 99.99681
+        }
+      },
+      {
+        "backend": "wasm",
+        "pages": 204,
+        "final_tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/wmf-device-clip-v22/whole/wasm/cbta1613/silhouette.tsv",
+        "final_tsv_sha256": "9a663e5e969a875f0580b6da1fd126b8ae8e3d6719570e8ebdc97a9062e6e155",
+        "final_minimum": 91.82753,
+        "below90": [],
+        "base_drops_ge_0p1": [],
+        "preclip_drops_ge_0p1": [],
+        "raster_changed_pages": [
+          1
+        ],
+        "p1": {
+          "before": 93.0011,
+          "after": 99.99361
+        }
+      }
+    ],
+    "threshold_pp": 0.1
+  },
+  "native_binary_sha256": "4009d3b9b0713360aaf23ab2605e073804fda31345a2c033e0a3a6188496dd0f",
+  "wasm_files": {
+    "rhwp.js": "f90e8e9655657ea0f23b467ccb89b37b6af24f8f1b387dab9055dae747aea5b9",
+    "rhwp_bg.wasm": "4c34d1f31cdb1de561560cedfeb0647600477d751032077f75719c02670d7b07"
+  },
+  "wasm_build": "Mac locked wrapper --target web --out-dir pkg --no-opt 로컬 대체. Docker 최적화로 보고하지 않음.",
+  "formal_tests": {
+    "source": "tests/cases/wmf_device_clip_contract.rs",
+    "source_sha256": "96be353fbccb4b4adaecc2dfe906773cfd5a345795adbd532c6a5db4e3b4d6ed",
+    "new_nextest": "     Summary [   4.399s] 5 tests run: 5 passed, 250 skipped",
+    "same_compiled_suite": {
+      "path": "/Users/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_023-82687671095a298d",
+      "sha256": "2261f3254dafa4d5897371d43423746a44c3e099b5f5bd2b615103f567eb672f"
+    },
+    "before_after": [
+      {
+        "name": "formal-cli-before",
+        "exit_code": 101,
+        "expected_exit": 101,
+        "summary": "test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 253 filtered out; finished in 3.14s",
+        "native_sha256": "cd77cb8af7f52575805a33a1fd49a30e82e74df9fc4cfccd8d32a2795053b291"
+      },
+      {
+        "name": "formal-cli-after",
+        "exit_code": 0,
+        "expected_exit": 0,
+        "summary": "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 253 filtered out; finished in 2.64s",
+        "native_sha256": "4009d3b9b0713360aaf23ab2605e073804fda31345a2c033e0a3a6188496dd0f"
+      }
+    ],
+    "normal_controls": [
+      {
+        "name": "normal-wmf-controls",
+        "exit_code": 0,
+        "summary": "     Summary [   0.200s] 27 tests run: 27 passed, 1042 skipped"
+      },
+      {
+        "name": "oracle-all-partitions",
+        "exit_code": 0,
+        "summary": "     Summary [   2.901s] 16 tests run: 16 passed, 260 skipped"
+      }
+    ],
+    "setup_error": "controls plan map callback에 index를 root로 전달한 진단 driver 오류는 수정했다. 기존 전후 실행은 그대로 보존하고 미실행 대조군만 재개했다. 제품·검사 기준은 바꾸지 않았다."
+  },
+  "px_precondition": {
+    "page": 1,
+    "native_raw": 99.99681,
+    "wasm_raw": 99.99361,
+    "whole_pages": 204,
+    "whole_both_minimum_over90": true,
+    "dpi": 96,
+    "coordinate_space": "CSSpx/PNG96DPI",
+    "independent_ink_bounds": [
+      518,
+      959,
+      704,
+      1003
+    ],
+    "tolerance_px": 2,
+    "ink_criterion": "같은 그림 소유 frame 안의 RGB 명도(299R+587G+114B)/1000<160",
+    "source": {
+      "dpi": 96,
+      "coordinate_system": "CSS px / PNG96DPI",
+      "source_frame": {
+        "x": "509.96000000000004",
+        "y": "949.7466666666667",
+        "width": "201.28",
+        "height": "60.373333333333335",
+        "preserveAspectRatio": "none"
+      },
+      "criterion": "정규화된 동일 그림 frame 안의 RGB 명도(299R+587G+114B)/1000 <160. 원문 bitmap이기 때문에 private폰트와 무관.",
+      "records": {
+        "before": {
+          "png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/cbta-wmf-clip-analysis-v20/new-print-focus/cbta1613/rhwp_png/rhwp_001.png",
+          "ink_bounds": [
+            510,
+            950,
+            711,
+            1010
+          ],
+          "count": 1648
+        },
+        "pdf": {
+          "png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/cbta-wmf-clip-analysis-v20/new-print-focus/cbta1613/pdf_png/pdf-001.png",
+          "ink_bounds": [
+            518,
+            959,
+            704,
+            1003
+          ],
+          "count": 2500
+        },
+        "after": {
+          "png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/wmf-device-clip-v22/focus/native/cbta1613/rhwp_png/rhwp_001.png",
+          "ink_bounds": [
+            517,
+            959,
+            703,
+            1002
+          ],
+          "count": 2403
+        }
+      }
+    },
+    "direct_reading": "Native/fresh WASM1쪽 review/overlay에서 로고 크기·위치와 desktop 조각 제거를 직접 확인했다. min48쪽도 Native에서 직접 열어 내용/표·본문 순서와 기존 이미지 획/대비 차이를 구분했다. 48쪽을 px핀으로 고정하지 않는다."
+  },
+  "baseline_registration": {
+    "method": "기존 regenerate.py의 rhwp_info·pick_oracles를 같은 Native에 호출하여 새 정답지1건을 현재 원장에만 등록. 다른 원본의 baseline은 재산출/수정하지 않음.",
+    "source": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+    "source_sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7",
+    "pdf": "pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf",
+    "pdf_sha256": "1e15e26100e3b4c4cd9737a0d2b116a449c5895efec9765680d79baa3b8f4380",
+    "product": "hancom-office-2018",
+    "native_page_count": 204,
+    "pdf_page_count": 204,
+    "print_method_implies_nup": false,
+    "canonical_choice": [
+      "pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf"
+    ],
+    "added_row": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp\t204\t204",
+    "prior_other_rows_unchanged": true,
+    "visual_precondition": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/wmf-device-clip-v22/state.json",
+    "old_pdf_preserved": "pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf"
+  },
+  "files": [
+    {
+      "file": "base-native-silhouette.tsv",
+      "bytes": 5616,
+      "sha256": "49ac7ab1906361fe3578021981539efa7bf0efc378f65006a409ba862685482c",
+      "producer_source": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/cbta-wmf-clip-analysis-v20/new-print-qualification/base/native/silhouette.tsv"
+    },
+    {
+      "file": "head-native-silhouette.tsv",
+      "bytes": 5611,
+      "sha256": "314497538b3450220fb5f6c7f345339db59990c61dea7051397af1c168d91b83",
+      "producer_source": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/wmf-device-clip-v22/whole/native/cbta1613/silhouette.tsv"
+    },
+    {
+      "file": "native-p001-review.png",
+      "bytes": 225287,
+      "sha256": "ce439c79725e703d51ae59c16d93a7f173e73c532de5bb60c5c70414c5cec4c1",
+      "producer_source": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/wmf-device-clip-v22/review-current/native/review/review_001.png"
+    },
+    {
+      "file": "native-p001-overlay.png",
+      "bytes": 84771,
+      "sha256": "70fafdbbe578c0f8fd6fb38e9c1d9988f42fee93457601b9b1498f7f16674054",
+      "producer_source": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/wmf-device-clip-v22/review-current/native/overlay/overlay_001.png"
+    },
+    {
+      "file": "native-p032-review.png",
+      "bytes": 497162,
+      "sha256": "61e596fb3e8e6ef227434d523a60150900d545d36493fa5b1b57ca9f0021b6a3",
+      "producer_source": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/wmf-device-clip-v22/review-current/native/review/review_032.png"
+    },
+    {
+      "file": "native-p032-overlay.png",
+      "bytes": 156288,
+      "sha256": "03dd5c5f2772e174fe9c35423e653c448d91ee12c2560b907d58d0d65e749197",
+      "producer_source": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/wmf-device-clip-v22/review-current/native/overlay/overlay_032.png"
+    },
+    {
+      "file": "native-p048-review.png",
+      "bytes": 506955,
+      "sha256": "7d75e7e0422157237712a863c33f335463ee5f76dac9fecc176ef56a3fbd0009",
+      "producer_source": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/wmf-device-clip-v22/review-current/native/review/review_048.png"
+    },
+    {
+      "file": "native-p048-overlay.png",
+      "bytes": 159022,
+      "sha256": "77d3f10e6e0e5c6670f45e578cb83d020868fac5efe60bdccdea2ec59f185433",
+      "producer_source": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/wmf-device-clip-v22/review-current/native/overlay/overlay_048.png"
+    },
+    {
+      "file": "base-wasm-silhouette.tsv",
+      "bytes": 5698,
+      "sha256": "8396e45b41a6998566ff800e8238c71acf7d711c85b63f87e9da92feb3d25a9b",
+      "producer_source": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/cbta-wmf-clip-analysis-v20/new-print-qualification/base/wasm/silhouette.tsv"
+    },
+    {
+      "file": "head-wasm-silhouette.tsv",
+      "bytes": 5695,
+      "sha256": "9a663e5e969a875f0580b6da1fd126b8ae8e3d6719570e8ebdc97a9062e6e155",
+      "producer_source": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/wmf-device-clip-v22/whole/wasm/cbta1613/silhouette.tsv"
+    },
+    {
+      "file": "wasm-p001-review.png",
+      "bytes": 224912,
+      "sha256": "1685fa2e4e565b3d37814c31cd5365acc3aebb5b4a2db8672588e52746a2ae22",
+      "producer_source": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/wmf-device-clip-v22/review-current/wasm/review/review_001.png"
+    },
+    {
+      "file": "wasm-p001-overlay.png",
+      "bytes": 84454,
+      "sha256": "e5d60a0560317c9356b679e43f2af10303f0c1ce9c9a749e98759a2f241882dc",
+      "producer_source": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/wmf-device-clip-v22/review-current/wasm/overlay/overlay_001.png"
+    },
+    {
+      "file": "wasm-p032-review.png",
+      "bytes": 494988,
+      "sha256": "48a1b85fc854c6459bb8782ecb95061949993fe52d2e1c3cfc650ffa1f1753db",
+      "producer_source": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/wmf-device-clip-v22/review-current/wasm/review/review_032.png"
+    },
+    {
+      "file": "wasm-p032-overlay.png",
+      "bytes": 154589,
+      "sha256": "5cbd5688a5112f46ac3236468e30556b79e04a966bf845c118956e5c8b5b6fde",
+      "producer_source": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/wmf-device-clip-v22/review-current/wasm/overlay/overlay_032.png"
+    },
+    {
+      "file": "wasm-p048-review.png",
+      "bytes": 506772,
+      "sha256": "2bb5860f24e2163af4d54e47e10385cb854073c2c709633160669f00254ffbd0",
+      "producer_source": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/wmf-device-clip-v22/review-current/wasm/review/review_048.png"
+    },
+    {
+      "file": "wasm-p048-overlay.png",
+      "bytes": 159701,
+      "sha256": "428d0751df5112dcd8a790a47ce9dba027fc4d7c1d59369b58b08d96415217d6",
+      "producer_source": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/wmf-device-clip-v22/review-current/wasm/overlay/overlay_048.png"
+    },
+    {
+      "file": "before-native-p001-review.png",
+      "bytes": 215204,
+      "sha256": "f61eb2ec81b65d72513ccdb47f7cc14a735a8224315bf696a9e7bf4b7f154150",
+      "producer_source": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/cbta-wmf-clip-analysis-v20/new-print-focus/cbta1613/review/review_001.png"
+    },
+    {
+      "file": "before-native-p001-overlay.png",
+      "bytes": 83538,
+      "sha256": "bc72eb9dd895e711aa5a416d439ad10794a07c6058e10feaed247c467a68168a",
+      "producer_source": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/cbta-wmf-clip-analysis-v20/new-print-focus/cbta1613/overlay/overlay_001.png"
+    }
+  ],
+  "remaining": "현재 branch 전36조건의 새 source 재검증·전체 nextest/lint/Skia와 실제 소비 확인은 아직 미완료. 86712/온새미로 변환본의 기존 미달·출처/범위 판정도 남는다. 원격 push/PR 생성/issue 게시 없음.",
+  "logs": "Git에서 제외한 output/pr-review/planet6897-20261024/wmf-device-clip-v22/ 및 cbta-wmf-clip-analysis-v20/에만 로그를 보존한다."
+}

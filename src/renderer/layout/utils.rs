@@ -2,12 +2,10 @@
 
 use super::super::page_layout::LayoutRect;
 use super::super::render_tree::*;
-use super::super::{
-    format_number, ArrowStyle, LineStyle, NumberFormat as NumFmt, ShapeStyle, StrokeDash,
-};
+use super::super::{format_number, ArrowStyle, LineStyle, NumberFormat as NumFmt, ShapeStyle};
 use crate::model::bin_data::BinDataContent;
 use crate::model::image::Picture;
-use crate::model::style::{HeadType, Numbering};
+use crate::model::style::{HeadType, Numbering, NUMBERING_LEVELS};
 
 /// bin_data_id(1-indexed 순번)로 BinDataContent를 찾는다.
 /// bin_data_id는 doc_info의 BinData 레코드 순번(1부터 시작)이며,
@@ -33,16 +31,7 @@ pub(crate) fn find_bin_data_index(
     bin_data_content: &[BinDataContent],
     bin_data_id: u16,
 ) -> Option<usize> {
-    if bin_data_id == 0 {
-        return None;
-    }
-    // 1-indexed 순번으로 BinDataContent 배열 접근
-    let idx = (bin_data_id - 1) as usize;
-    if idx < bin_data_content.len() {
-        return Some(idx);
-    }
-    // 인덱스 범위 밖 (HWPX 차트 sparse id 60000+N 등) — id 직접 검색
-    bin_data_content.iter().position(|c| c.id == bin_data_id)
+    crate::model::bin_data::content_index(bin_data_content, bin_data_id)
 }
 
 /// [#2550] `find_bin_data` + 압축 해제 상한 로드.
@@ -89,6 +78,28 @@ pub(crate) fn picture_data_is_unusable(data: Option<&[u8]>) -> bool {
 /// 되어(00493: 188.5×134.0mm 가 712×712px) 지면 밖으로 나간다. 프레임 값이 온전하면
 /// 회전 후 프레임(common)을 그대로 쓴다.
 pub(crate) fn picture_display_size_hu(picture: &Picture) -> (i32, i32) {
+    // 변환 행렬의 합성이 원래 그림을 저장된 개체 틀로 축소하는 경우 curSz는
+    // 중간 단계의 크기다. 이를 최종 틀과 축별 max하면 그림이 다시 커진다.
+    // 행렬과 HWPUNIT의 직렬화 반올림 차이만 허용하고, 서로 다른 크기를 나타내는
+    // 손상된 common/current 사례는 기존 폴백을 유지한다.
+    let attr = &picture.shape_attr;
+    if picture.common.width > 0
+        && picture.common.height > 0
+        && attr.original_width > 0
+        && attr.original_height > 0
+        && !attr.raw_rendering.is_empty()
+        && attr.render_b == 0.0
+        && attr.render_c == 0.0
+        && attr.rotation_angle.rem_euclid(360) == 0
+    {
+        let transformed_width = f64::from(attr.original_width) * attr.render_sx.abs();
+        let transformed_height = f64::from(attr.original_height) * attr.render_sy.abs();
+        if (transformed_width - f64::from(picture.common.width)).abs() <= 2.0
+            && (transformed_height - f64::from(picture.common.height)).abs() <= 2.0
+        {
+            return (picture.common.width as i32, picture.common.height as i32);
+        }
+    }
     if picture.shape_attr.rotation_angle.rem_euclid(360) != 0
         && picture.common.width > 0
         && picture.common.height > 0
@@ -119,9 +130,12 @@ pub(crate) fn picture_display_size_hu(picture: &Picture) -> (i32, i32) {
 /// 비-TAC + 텍스트가 옆으로 흐르는 wrap(Square/Tight/Through)에서는 파일
 /// LINE_SEG(sw)/레이아웃이 `common`(개체 틀) 크기로 자리를 예약하므로, 표시도
 /// 그 틀에 맞춰야 본문과 겹치지 않는다 (한컴 정합 — KICE EMF: common=198px 로
-/// 그림, current=367px 는 과대). 그 외(TAC 인라인, TopAndBottom 등)는 종전
+/// 그림, current=367px 는 과대). 저장 아핀 변환을 가진 비-TAC 그림도 변환 전
+/// 크기를 개체 틀로 다시 사용하지 않고 공통 개체 크기를 소비한다. 그 외는 종전
 /// `picture_display_size_hu`(max(common, current)) 유지 — #1122 문26(주머니
 /// 그림: TAC, common.width 가 손상되어 current 가 정답) 회귀 방지.
+/// 상대 크기 축의 common 값은 비율이므로 저장된 현재 HU 크기를 사용한다.
+/// 이 물리 프레임을 배제 영역·저장 앵커 측정과 실제 그림 배치가 함께 소비한다.
 pub(crate) fn picture_flow_frame_size_hu(picture: &Picture) -> (i32, i32) {
     let flows_beside = !picture.common.treat_as_char
         && matches!(
@@ -130,8 +144,14 @@ pub(crate) fn picture_flow_frame_size_hu(picture: &Picture) -> (i32, i32) {
                 | crate::model::shape::TextWrap::Tight
                 | crate::model::shape::TextWrap::Through
         );
-    if flows_beside && picture.common.width > 0 && picture.common.height > 0 {
-        (picture.common.width as i32, picture.common.height as i32)
+    let saved_float_transform = !picture.common.treat_as_char
+        && picture.shape_attr.group_level == 0
+        && picture.shape_attr.has_saved_affine_geometry();
+    if (flows_beside || saved_float_transform)
+        && picture.common.width > 0
+        && picture.common.height > 0
+    {
+        crate::renderer::stored_picture_metrics::stored_picture_size_hu(picture)
     } else {
         picture_display_size_hu(picture)
     }
@@ -185,28 +205,47 @@ pub fn resolve_numbering_id(
 /// (fixture 수준 스윕을 한컴 2020 MCP 로 실측, task #3307 Stage 1). 이는 기존
 /// `^N` 제어코드와 동일하므로 형식 문자열만 합성한다. 기본 모양은 한컴이 파일에
 /// 실체화하지 않는 편집기 내장 동작이라(재저장 실험으로 확인) 합성이 유일한 경로다.
+///
+/// [#8425] 머리 모양도 한컴 내장 값으로 합성한다. 한컴 2020(11.0.0.9136)·2024(13.0.0.3901)
+/// Print 출력에서 12pt 개요 제목의 본문은 `번호 시작 + 수준별 참조 형식 폭 + 6.0pt`
+/// (= 거리 50%)에서 시작한다. ^N의 예약 폭은 수준당 1em이며 실제 숫자·마침표의
+/// 글리프 폭과 구분한다. 두 줄로 넘친 제목의 둘째 줄은 번호가 아니라 본문
+/// 시작 위치에서 이어진다(자동 내어쓰기). 너비 보정은 0, 정렬은 왼쪽이다. 글자 모양은
+/// 참조하지 않아(`u32::MAX`) 번호를 문단 글자 모양으로 재고 그린다 — 정의 없는 기본
+/// 글머리표(`paragraph_layout` 의 `●` 합성)와 같은 머리 모양이다.
 pub(crate) fn default_outline_numbering() -> Numbering {
     let mut n = Numbering::default();
     for f in n.level_formats.iter_mut() {
         *f = "^N".to_string();
     }
+    for head in n.heads.iter_mut() {
+        head.attr = DEFAULT_OUTLINE_HEAD_AUTO_INDENT;
+        head.width_adjust = 0;
+        head.text_distance = DEFAULT_OUTLINE_HEAD_TEXT_DISTANCE_PERCENT;
+        head.char_shape_id = u32::MAX;
+    }
     n.start_number = 1;
-    n.level_start_numbers = [1; 7];
+    n.level_start_numbers = [1; NUMBERING_LEVELS];
     n
 }
 
+/// 머리 모양 속성 bit 3: 자동 내어쓰기. bit 4(거리 단위) 0 은 글자 크기 대비 % 다.
+const DEFAULT_OUTLINE_HEAD_AUTO_INDENT: u32 = 1 << 3;
+/// 한컴 내장 기본 개요의 본문과의 거리 — 글자 크기의 50%.
+const DEFAULT_OUTLINE_HEAD_TEXT_DISTANCE_PERCENT: i16 = 50;
+
 /// 번호 형식 문자열의 `^` 제어코드를 실제 번호로 치환.
 ///
-/// - `^1`~`^7`: 해당 수준의 번호
+/// - `^1`~`^9`, `^:`: 해당 수준(1~10)의 번호. 한/글은 10수준을 `^:`(숫자 9 다음 글자)로 쓴다
 /// - `^n`: 수준 1~현재 수준의 레벨 경로 (예: `1.1.1`)
 /// - `^N`: 레벨 경로 + 후행 마침표 (예: `1.1.1.`)
 ///
 /// `current_level`은 0-based 수준 인덱스(`para_level`).
 pub(crate) fn expand_numbering_format(
     format_str: &str,
-    counters: &[u32; 7],
+    counters: &[u32; NUMBERING_LEVELS],
     numbering: &Numbering,
-    start_numbers: &[u32; 7],
+    start_numbers: &[u32; NUMBERING_LEVELS],
     current_level: usize,
 ) -> String {
     let format_level = |idx: usize| -> String {
@@ -218,7 +257,7 @@ pub(crate) fn expand_numbering_format(
             start
         };
         let fmt_code = numbering.heads[idx].number_format;
-        let num_fmt = numbering_format_to_number_format(fmt_code);
+        let num_fmt = NumFmt::from_hwp_format(fmt_code);
         format_number(num as u16, num_fmt)
     };
 
@@ -228,17 +267,17 @@ pub(crate) fn expand_numbering_format(
     while let Some(ch) = chars.next() {
         if ch == '^' {
             match chars.peek() {
-                Some(&digit) if digit.is_ascii_digit() => {
+                Some(&digit @ '0'..=':') => {
                     chars.next();
                     let level_ref = (digit as u8 - b'0') as usize;
-                    if level_ref >= 1 && level_ref <= 7 {
+                    if (1..=NUMBERING_LEVELS).contains(&level_ref) {
                         result.push_str(&format_level(level_ref - 1));
                     }
                     continue;
                 }
                 Some(&code @ ('n' | 'N')) => {
                     chars.next();
-                    for idx in 0..=current_level.min(6) {
+                    for idx in 0..=current_level.min(NUMBERING_LEVELS - 1) {
                         if idx > 0 {
                             result.push('.');
                         }
@@ -257,23 +296,6 @@ pub(crate) fn expand_numbering_format(
     result
 }
 
-/// HWP 표 41 번호 형식 코드 → NumberFormat 변환
-pub(crate) fn numbering_format_to_number_format(code: u8) -> NumFmt {
-    match code {
-        0 => NumFmt::Digit,         // 1, 2, 3
-        1 => NumFmt::CircledDigit,  // ①, ②, ③
-        2 => NumFmt::RomanUpper,    // I, II, III
-        3 => NumFmt::RomanLower,    // i, ii, iii
-        4 => NumFmt::LatinUpper,    // A, B, C
-        5 => NumFmt::LatinLower,    // a, b, c
-        8 => NumFmt::HangulGaNaDa,  // 가, 나, 다
-        10 => NumFmt::HangulJamo,   // ㄱ, ㄴ, ㄷ
-        12 => NumFmt::HangulNumber, // 일, 이, 삼
-        13 => NumFmt::HanjaNumber,  // 一, 二, 三
-        _ => NumFmt::Digit,
-    }
-}
-
 /// 쪽 번호를 형식에 맞게 문자열로 변환 (mod.rs의 format_number 재사용)
 pub(crate) fn format_page_number(
     page_num: u32,
@@ -281,9 +303,9 @@ pub(crate) fn format_page_number(
     prefix_char: char,
     suffix_char: char,
     dash_char: char,
+    user_symbol: char,
 ) -> String {
-    let num_fmt = NumFmt::from_hwp_format(format);
-    let formatted = format_number(page_num as u16, num_fmt);
+    let formatted = crate::renderer::note_marker::number_text(page_num as u16, format, user_symbol);
     let prefix = if prefix_char != '\0' {
         prefix_char.to_string()
     } else {
@@ -318,11 +340,32 @@ pub(crate) fn extract_shape_transform(
         rotation: sa.rotation_angle as f64,
         horz_flip: sa.horz_flip,
         vert_flip: sa.vert_flip,
+        image_frame_ratio: None,
     }
+}
+
+/// Common은 회전 후 점유 프레임, current는 회전 전 표시 크기다.
+/// 기존 그림 레이아웃의 같은 source 계약을 paint에도 보존한다.
+pub(crate) fn extract_picture_transform(picture: &Picture) -> ShapeTransform {
+    let mut transform = extract_shape_transform(&picture.shape_attr);
+    let shape = &picture.shape_attr;
+    if shape.rotation_angle.rem_euclid(360) != 0
+        && shape.current_width > 0
+        && shape.current_height > 0
+        && picture.common.width > 0
+        && picture.common.height > 0
+    {
+        transform.image_frame_ratio = Some([
+            f64::from(shape.current_width) / f64::from(picture.common.width),
+            f64::from(shape.current_height) / f64::from(picture.common.height),
+        ]);
+    }
+    transform
 }
 
 pub(crate) fn drawing_to_shape_style(
     drawing: &crate::model::shape::DrawingObjAttr,
+    dpi: f64,
 ) -> (ShapeStyle, Option<Box<super::super::GradientFillInfo>>) {
     use super::super::GradientFillInfo;
     use crate::model::style::FillType;
@@ -379,7 +422,10 @@ pub(crate) fn drawing_to_shape_style(
         // 선 종류 "없음" → 테두리 그리지 않음
         (0.0, None)
     } else {
-        let sw = shape_border_width_to_px(border.width);
+        let sw = crate::renderer::stroke_pattern::shape_pen_width_to_px(
+            border.width,
+            shape_line_type as u8,
+        );
         let sc = if sw > 0.0 { Some(border.color) } else { None };
         (sw, sc)
     };
@@ -390,24 +436,8 @@ pub(crate) fn drawing_to_shape_style(
         stroke_width = 0.5; // 최소 0.5px (0.12mm 한컴 기본값)
         stroke_color = Some(border.color);
     }
-    // [Task #877 Stage 4] 점선 (LineType=2~7) 의 가시성 보강.
-    // sample16 paragraph 393 본문 점선 외곽선 width=56 HU (0.747 px) 가
-    // 점선 dash gap 으로 시각 인식 어려움. 점선 종류만 최소 1.0 px 보강 (실선 width
-    // 는 SVG snapshot 회귀 방지로 영향 안 줌).
-    if (2..=7).contains(&shape_line_type) && stroke_width > 0.0 && stroke_width < 1.0 {
-        stroke_width = 1.0;
-    }
-
-    // stroke dash 매핑 (hwplib LineType 참조)
-    // 0=None, 1=Solid, 2=Dash, 3=Dot, 4=DashDot, 5=DashDotDot,
-    // 6=LongDash, 7=CircleDot, 8=Double, 9=ThinBold, 10=BoldThin, 11=ThinBoldThin
-    let stroke_dash = match shape_line_type {
-        2 | 6 => StrokeDash::Dash,
-        3 | 7 => StrokeDash::Dot,
-        4 => StrokeDash::DashDot,
-        5 => StrokeDash::DashDotDot,
-        _ => StrokeDash::Solid,
-    };
+    // 도형의 반복 구간은 선언 선 굵기에 비례하며, 임의 최소 픽셀 보강을 하지 않는다.
+    let stroke_dash = crate::renderer::line_style::hwp_shape_line_type(shape_line_type as u8).0;
 
     // 채우기 투명도: 한컴 호환 — alpha=0은 불투명, alpha=255은 완전 투명
     let opacity = if drawing.fill.alpha > 0 {
@@ -420,6 +450,7 @@ pub(crate) fn drawing_to_shape_style(
         if s.pattern_type > 0 {
             Some(super::super::PatternFillInfo {
                 pattern_type: s.pattern_type,
+                tile_size: super::super::hwpunit_to_px(576, dpi),
                 pattern_color: s.pattern_color,
                 background_color: s.background_color,
             })
@@ -456,7 +487,6 @@ pub(crate) fn drawing_to_shape_style(
 /// DrawingObjAttr → LineStyle 변환 (직선용)
 pub(crate) fn drawing_to_line_style(drawing: &crate::model::shape::DrawingObjAttr) -> LineStyle {
     let border = &drawing.border_line;
-    let width = shape_border_width_to_px(border.width);
     let attr = border.attr;
 
     // 테두리 선 속성 비트 레이아웃 (hwplib LineInfoProperty 참조):
@@ -469,30 +499,11 @@ pub(crate) fn drawing_to_line_style(drawing: &crate::model::shape::DrawingObjAtt
     //   bit 30:    시작 화살표 채움
     //   bit 31:    끝 화살표 채움
     let shape_line_type = attr & 0x3F;
+    let width =
+        crate::renderer::stroke_pattern::shape_pen_width_to_px(border.width, shape_line_type as u8);
 
-    let (dash, line_render_type) = match shape_line_type {
-        0 | 1 => (StrokeDash::Solid, super::super::LineRenderType::Single),
-        2 => (StrokeDash::Dash, super::super::LineRenderType::Single),
-        3 => (StrokeDash::Dot, super::super::LineRenderType::Single),
-        4 => (StrokeDash::DashDot, super::super::LineRenderType::Single),
-        5 => (StrokeDash::DashDotDot, super::super::LineRenderType::Single),
-        6 => (StrokeDash::Dash, super::super::LineRenderType::Single), // LongDash
-        7 => (StrokeDash::Dot, super::super::LineRenderType::Single),  // CircleDot
-        8 => (StrokeDash::Solid, super::super::LineRenderType::Double),
-        9 => (
-            StrokeDash::Solid,
-            super::super::LineRenderType::ThinThickDouble,
-        ),
-        10 => (
-            StrokeDash::Solid,
-            super::super::LineRenderType::ThickThinDouble,
-        ),
-        11 => (
-            StrokeDash::Solid,
-            super::super::LineRenderType::ThinThickThinTriple,
-        ),
-        _ => (StrokeDash::Solid, super::super::LineRenderType::Single),
-    };
+    let (dash, line_render_type) =
+        crate::renderer::line_style::hwp_shape_line_type(shape_line_type as u8);
 
     // 화살표 시작 모양: bit 10-15
     let start_arrow_val = (attr >> 10) & 0x3F;
@@ -522,9 +533,12 @@ pub(crate) fn drawing_to_line_style(drawing: &crate::model::shape::DrawingObjAtt
 
     LineStyle {
         color: border.color,
-        width: width.max(0.5),
+        width: if width > 0.0 { width } else { 0.5 },
         dash,
+        dash_pattern: None,
         line_type: line_render_type,
+        compound_component: false,
+        preserve_fractional_position: false,
         start_arrow,
         end_arrow,
         start_arrow_size,
@@ -542,7 +556,7 @@ fn arrow_type_from_hwp(hwp_type: u32, fill: bool) -> ArrowStyle {
     match hwp_type {
         0 => ArrowStyle::None,
         1 => ArrowStyle::Arrow,
-        2 => ArrowStyle::Arrow, // LinedArrow (선형 화살표) → Arrow로 근사
+        2 => ArrowStyle::OpenArrow, // SPEAR는 두 사선으로 된 열린 화살촉이다.
         3 => ArrowStyle::ConcaveArrow,
         4 => {
             if fill {
@@ -567,18 +581,6 @@ fn arrow_type_from_hwp(hwp_type: u32, fill: bool) -> ArrowStyle {
         }
         _ => ArrowStyle::None,
     }
-}
-
-/// ShapeBorderLine의 width(HWPUNIT 단위, INT32) → 픽셀 변환
-/// HWP 스펙: 1인치 = 7200 HWPUNIT = 25.4mm
-fn shape_border_width_to_px(width: i32) -> f64 {
-    if width <= 0 {
-        return 0.0;
-    }
-    // HWPUNIT → px: width * 96 / 7200
-    let px = width as f64 * 96.0 / 7200.0;
-    // 최소 0.5px 보장 (너무 얇으면 안 보임)
-    px.max(0.5).min(38.0)
 }
 
 /// LayoutRect → BoundingBox 변환
@@ -642,6 +644,19 @@ mod tests {
         picture.shape_attr.current_height = 18956;
 
         assert_eq!(picture_flow_frame_size_hu(&picture), (14847, 10230));
+        // 저장 행렬이 있는 떠 있는 그림도 변환 전 크기로 틀을 확대하지 않는다.
+        let mut picture = Picture::default();
+        picture.common.treat_as_char = false;
+        picture.common.text_wrap = crate::model::shape::TextWrap::BehindText;
+        picture.common.width = 6000;
+        picture.common.height = 5000;
+        picture.shape_attr.current_width = 12000;
+        picture.shape_attr.current_height = 10000;
+        picture.shape_attr.raw_rendering = vec![1];
+        picture.shape_attr.render_sx = 0.5;
+        picture.shape_attr.render_sy = 0.5;
+
+        assert_eq!(picture_flow_frame_size_hu(&picture), (6000, 5000));
     }
 
     /// [Issue #1230/#1122] TAC 인라인은 종전 max 유지 (문26 주머니 그림 회귀 방지).

@@ -44,8 +44,7 @@ use shaping_publication::HorizontalShapingPageSidecars;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen_test::wasm_bindgen_test;
 
-const SOURCE_HAN: &[u8] =
-    include_bytes!("../../ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf");
+const SOURCE_HAN: &[u8] = include_bytes!("../../ttfs/opensource/RHWPOldHangul-Regular.otf");
 const SLOT: ExactFontSlot = ExactFontSlot {
     char_shape_id: 4969,
     language_index: 0,
@@ -585,7 +584,9 @@ fn collect_product_text_ops<'a>(node: &'a LayerNode, ops: &mut Vec<&'a PaintOp>)
                 collect_product_text_ops(child, ops);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => collect_product_text_ops(child, ops),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            collect_product_text_ops(child, ops)
+        }
         LayerNodeKind::Leaf { ops: leaf_ops } => ops.extend(
             leaf_ops
                 .iter()
@@ -612,7 +613,7 @@ fn issue_4969_q2_d5_n1_product_no_lineseg_uses_one_common_run_without_nominal_du
     let common_runs = ops
         .iter()
         .filter_map(|op| match op {
-            PaintOp::GlyphRun { bbox, run }
+            PaintOp::GlyphRun { bbox, run, .. }
                 if run.diagnostics.reason.as_deref()
                     == Some("q2CommonShapingCondensedDrawProjectionV1") =>
             {

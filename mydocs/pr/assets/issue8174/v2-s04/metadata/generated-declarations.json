@@ -1,0 +1,19 @@
+{
+  "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+  "declarations": [
+    {
+      "path": "rhwp-studio/public/rhwp.d.ts",
+      "oldSha256": "9d7f71b7c86e52a992d345ad124984f9c88a9ebbd14ca8e463295f7305214bff",
+      "newSha256": "ab26851d9261ab709007119bbf6b8c756b1d2e9cdab1c825424534547efa59ac",
+      "change": "Only version/init_panic_hook declaration order; all other lines identical"
+    },
+    {
+      "path": "rhwp-studio/public/rhwp_bg.wasm.d.ts",
+      "oldSha256": "1e3a223d4f7a774e045fb238c63ae6bb90f94856814dd4a8f4230f8681d2bbf3",
+      "newSha256": "c9a787427f2793012c4f7c7d5537ffd684ffcf0b3394466111bc967632a782f5",
+      "change": "Only version/init_panic_hook declaration order; all other lines identical"
+    }
+  ],
+  "allFourFilesMatchFreshProducerInBothDirectories": true,
+  "runtimeJsMatchesSourceHead": true
+}

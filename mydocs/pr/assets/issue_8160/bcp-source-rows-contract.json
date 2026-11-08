@@ -1,0 +1,101 @@
+{
+  "issue": 8160,
+  "source": {
+    "file": "samples/hwp3-sample16-hwp5-2022.hwp",
+    "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+    "section": 0,
+    "paragraph": 83,
+    "line_records": [
+      {
+        "text_start": 0,
+        "segment_width_hu": 46024,
+        "line_height_hu": 1300,
+        "tag": "0x00060000"
+      },
+      {
+        "text_start": 64,
+        "segment_width_hu": 46024,
+        "line_height_hu": 1300,
+        "tag": "0x00160000"
+      }
+    ]
+  },
+  "hancom_reference": {
+    "file": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+    "sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+    "engine": "2020",
+    "page": 3,
+    "last_row": "립"
+  },
+  "change": "Remove text-literal-specific stored line collapse; retain both authored rows. No replacement exception.",
+  "negative_probe": {
+    "candidate": 16,
+    "exit_code": 101,
+    "observed_rows": 1,
+    "expected_rows": 2
+  },
+  "positive_probe": {
+    "candidate": 17,
+    "exit_code": 0,
+    "owner": [
+      0,
+      83
+    ],
+    "rows": 2,
+    "row2_text": "립",
+    "row2_bbox": [
+      143.36,
+      916.1066666666667,
+      580.32,
+      17.333333333333332
+    ],
+    "successor_owner": [
+      0,
+      84
+    ],
+    "successor_top": 947.6266666666667,
+    "complete_source_content": true,
+    "successor_clearance": true
+  },
+  "probe_sha256": "233db57f64721195e0a4e28b7005574ccfa572c82c8739efe1b06b9bd7b4ae42",
+  "producer": {
+    "head": "328ac4d4420f47969f7fff12586072f33baf4982",
+    "patch_sha256": "112aa09b908dcee991f59665c5cec568c850a140575a55883f3e822953301c30",
+    "new_sources": [
+      {
+        "path": "src/renderer/composer/conjoining_jamo.rs",
+        "sha256": "9c89cc60f3c55e924a33a16d9bbe3443b5f26b3cbb69f025e9d57c5f0f2f344c"
+      },
+      {
+        "path": "src/renderer/conjoining_jamo.rs",
+        "sha256": "cedc1b448325a715ffdf5ffecd619178556d78208f051afdb97cebe32aedcfa2"
+      },
+      {
+        "path": "src/renderer/equation/layout/legacy.rs",
+        "sha256": "3aabc472bf1204f2007c3822653b2611a41e35d00e2cc3a3b15061c91f32c37c"
+      },
+      {
+        "path": "src/renderer/layout/paragraph_layout/trailing_space_fit.rs",
+        "sha256": "ace0c3aae4d175b7ada3ef109458e6500adafd5ae38c8fee7087eb3d4bde61b7"
+      }
+    ],
+    "changes_from_candidate16": [
+      "Remove document-text-specific BCP row collapse; preserve both authored HWP5 rows corroborated by fresh Hancom Print"
+    ],
+    "build_status": "complete",
+    "artifacts": [
+      {
+        "file": "output/pr-review/issue8160-20261022/candidate17/native/rhwp",
+        "sha256": "b3ac7e95de5b6e9b2a0e264ecb1d31707a69a1ad8c5ab11e49b3ad7ed58fe1ff"
+      },
+      {
+        "file": "output/pr-review/issue8160-20261022/candidate17/native/librhwp.rlib",
+        "sha256": "b38f82c97aba2a523ff3bd2f509082cf8fe3105bd5118511ada0022f4d805bea"
+      }
+    ],
+    "build_exit_code": 0,
+    "build_seconds": 723,
+    "build_log": "logs/candidate17-native-build.log"
+  },
+  "regression_status": "Existing one-owned-line expectation remains pending. Correct and merge related regressions only after all pages pass raw100 in Native and fresh optimized WASM."
+}

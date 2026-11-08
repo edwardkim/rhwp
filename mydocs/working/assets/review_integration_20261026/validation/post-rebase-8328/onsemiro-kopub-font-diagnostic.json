@@ -1,0 +1,27 @@
+{
+  "status": "diagnostic_only_unresolved",
+  "note": "CDP 탐색은 단일 표본 글자에 대한 결과이며 모든 글자·모든 글꼴의 실제 출력이나 과거 환경 선택을 증명하지 않는다. 글꼴을 강제 변경하지 않았다.",
+  "pdf_sha256": "94f2ae8b745ab043aeca2a0b2a25f62dd3d97ec2fed3e1c1e75c982cc8c6f6c4",
+  "pdf_kopub_fonts": [
+    "INPILL+KoPubWorldDotumLight",
+    "INPILL+KoPubWorldDotumBold",
+    "INPILL+KoPubWorldBatangLight"
+  ],
+  "platform_probe_log_sha256": "91ff45d6b9203660d9d7c3b2b547170bca577c29670e8c6d02ac4e581fe93ffa",
+  "font_catalog_sha256": "35866f3c4d3832fcbc67d2956623e65d98802dd77948e6d3e34c77fdb3032bbc",
+  "kopub_catalog_families": [],
+  "kopub_requested_probes": [
+    {
+      "font": "13.333px \"KoPubWorld돋움체_Pro Medium\", KoPubWorld돋움체_Pro, 한컴바탕, \"Malgun Gothic\", \"맑은 고딕\", \"Apple SD Gothic Neo\", \"HCR Dotum\", 함초롬돋움, \"Noto Sans KR ExtraLight\", \"Noto Sans KR\", Pretendard, \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", sans-serif",
+      "count": 14,
+      "platform": [
+        {
+          "familyName": "Haansoft Batang",
+          "postScriptName": "Haansoft Batang",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ]
+    }
+  ]
+}

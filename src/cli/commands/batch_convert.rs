@@ -148,7 +148,10 @@ pub(crate) fn record(
         let expected = verify_expected
             .as_ref()
             .expect("verify expected snapshot must exist");
-        let diff = rhwp::serializer::hwpx::roundtrip::diff_documents(expected, reloaded.document());
+        let diff = rhwp::serializer::hwpx::roundtrip::diff_exported_hwp_documents(
+            expected,
+            reloaded.document(),
+        );
         // [#3505, #3930] 출처별로 대상 포맷에 표현 자리가 없는 항목만 걷어낸다.
         let diff = match source_format {
             rhwp::parser::FileFormat::Hwp => diff,

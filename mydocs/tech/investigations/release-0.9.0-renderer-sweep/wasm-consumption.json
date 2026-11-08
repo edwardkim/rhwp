@@ -1,0 +1,313 @@
+{
+  "sourceSha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+  "initializationResponses": [
+    {
+      "source_sha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "profile": "release",
+      "expected_sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5",
+      "page": "http://127.0.0.1:7701/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7701/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5"
+        }
+      ]
+    },
+    {
+      "source_sha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "profile": "release",
+      "expected_sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5",
+      "page": "http://127.0.0.1:17888/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:17888/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5"
+        }
+      ]
+    },
+    {
+      "source_sha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "profile": "release",
+      "expected_sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5",
+      "page": "http://127.0.0.1:17888/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:17888/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5"
+        }
+      ]
+    },
+    {
+      "source_sha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "profile": "release",
+      "expected_sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5",
+      "page": "http://127.0.0.1:7701/?renderer=canvaskit&canvaskitMode=compat&renderProfile=high-quality",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7701/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5"
+        }
+      ]
+    },
+    {
+      "source_sha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "profile": "release",
+      "expected_sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5",
+      "page": "http://127.0.0.1:7701/?renderer=canvaskit&canvaskitMode=compat&renderProfile=screen",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7701/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5"
+        }
+      ]
+    },
+    {
+      "source_sha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "profile": "release",
+      "expected_sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5",
+      "page": "http://127.0.0.1:7701/?renderer=canvaskit&canvaskitMode=compat&renderProfile=fast-preview",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7701/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5"
+        }
+      ]
+    },
+    {
+      "source_sha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "profile": "release",
+      "expected_sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5",
+      "page": "http://127.0.0.1:7701/?renderer=canvas2d&renderProfile=screen",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7701/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5"
+        }
+      ]
+    },
+    {
+      "source_sha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "profile": "release",
+      "expected_sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5",
+      "page": "http://127.0.0.1:7701/?renderer=canvaskit&canvaskitMode=compat&renderProfile=print",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7701/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5"
+        }
+      ]
+    },
+    {
+      "source_sha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "profile": "release",
+      "expected_sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5",
+      "page": "http://127.0.0.1:7701/?renderer=canvaskit&canvaskitMode=default&renderProfile=print",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7701/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5"
+        }
+      ]
+    },
+    {
+      "source_sha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "profile": "release",
+      "expected_sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5",
+      "page": "http://127.0.0.1:7701/?renderer=canvas2d&renderProfile=screen",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7701/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5"
+        }
+      ]
+    },
+    {
+      "source_sha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "profile": "release",
+      "expected_sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5",
+      "page": "http://127.0.0.1:7701/?renderer=canvas2d&renderProfile=print",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7701/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5"
+        }
+      ]
+    },
+    {
+      "source_sha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "profile": "release",
+      "expected_sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5",
+      "page": "http://127.0.0.1:7701/?renderer=canvaskit&canvaskitMode=default&renderProfile=high-quality",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7701/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5"
+        }
+      ]
+    },
+    {
+      "source_sha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "profile": "release",
+      "expected_sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5",
+      "page": "http://127.0.0.1:7701/?renderer=canvas2d&renderProfile=fast-preview",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7701/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5"
+        }
+      ]
+    },
+    {
+      "source_sha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "profile": "release",
+      "expected_sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5",
+      "page": "http://127.0.0.1:7701/?renderer=canvaskit&canvaskitMode=default&renderProfile=screen",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7701/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5"
+        }
+      ]
+    },
+    {
+      "source_sha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "profile": "release",
+      "expected_sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5",
+      "page": "http://127.0.0.1:7701/?renderer=canvas2d&renderProfile=high-quality",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7701/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5"
+        }
+      ]
+    },
+    {
+      "source_sha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "profile": "release",
+      "expected_sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5",
+      "page": "http://127.0.0.1:7701/?renderer=canvaskit&canvaskitMode=default&renderProfile=fast-preview",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7701/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5"
+        }
+      ]
+    },
+    {
+      "source_sha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "profile": "release",
+      "expected_sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5",
+      "page": "http://127.0.0.1:7701/?renderer=canvaskit&canvaskitMode=default&renderProfile=screen",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7701/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5"
+        }
+      ]
+    },
+    {
+      "source_sha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "profile": "release",
+      "expected_sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5",
+      "page": "http://127.0.0.1:7701/?renderer=canvaskit&canvaskitMode=compat&renderProfile=print",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7701/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5"
+        }
+      ]
+    },
+    {
+      "source_sha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "profile": "release",
+      "expected_sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5",
+      "page": "http://127.0.0.1:7701/?renderer=canvas2d&renderProfile=screen",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7701/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5"
+        }
+      ]
+    },
+    {
+      "source_sha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "profile": "release",
+      "expected_sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5",
+      "page": "http://127.0.0.1:7701/?renderer=canvaskit&canvaskitMode=compat&renderProfile=screen",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7701/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5"
+        }
+      ]
+    },
+    {
+      "source_sha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "profile": "release",
+      "expected_sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5",
+      "page": "http://127.0.0.1:7701/?renderer=canvaskit&canvaskitMode=default&renderProfile=print",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7701/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5"
+        }
+      ]
+    },
+    {
+      "source_sha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "profile": "release",
+      "expected_sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5",
+      "page": "http://127.0.0.1:7701/?renderer=canvas2d&renderProfile=print",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7701/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5"
+        }
+      ]
+    }
+  ]
+}

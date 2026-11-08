@@ -1,3 +1,7 @@
+//! 관계형·고정형: 검사 대상 — 합성 IR 진단의 사례 수 상한과 변경 전후 차이.
+//! 주석 갱신: 2026-11-01T05:59:30+09:00; 직전 파일 커밋: 2026-08-10T06:21:51+09:00 (`eb47eacdeb138a7626337cbde55eccdf28af609a`).
+//! 입력·기준: 이 파일의 합성 문서와 `src/diagnostics/ir_field_sweep.rs` 진단 계약.
+//! 모델·API·직렬화 계약을 검사하며 화면 시각 일치율은 측정하지 않는다.
 use rhwp::diagnostics::ir_field_sweep::{sweep_documents, MAX_DIVERGENCE_EXAMPLES};
 use rhwp::model::document::{Document, Section};
 use rhwp::model::paragraph::Paragraph;

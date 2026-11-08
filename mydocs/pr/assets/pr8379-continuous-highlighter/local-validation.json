@@ -1,0 +1,33 @@
+[
+  {
+    "name": "tsc-final",
+    "args": [
+      "./node_modules/.bin/tsc",
+      "--noEmit"
+    ],
+    "exit_code": 0,
+    "started_at": "2026-11-02T16:20:23.130173+09:00",
+    "finished_at": "2026-11-02T16:20:23.971650+09:00"
+  },
+  {
+    "name": "studio-test-final",
+    "args": [
+      "npm",
+      "test"
+    ],
+    "exit_code": 0,
+    "started_at": "2026-11-02T16:20:23.971918+09:00",
+    "finished_at": "2026-11-02T16:20:40.747770+09:00"
+  },
+  {
+    "name": "studio-build-final",
+    "args": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "exit_code": 0,
+    "started_at": "2026-11-02T16:20:40.748117+09:00",
+    "finished_at": "2026-11-02T16:20:45.498913+09:00"
+  }
+]

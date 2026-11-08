@@ -178,7 +178,7 @@ class TrustedPostmergeReuseWorkflowTests(unittest.TestCase):
 
     def test_fork_upload_remains_read_only_and_attempt_bound(self) -> None:
         runner = (REPO_ROOT / ".github/workflows/run-nextest-archives.yml").read_text(encoding="utf-8")
-        upload = runner.split("- name: Upload upstream PR B/C/D target durations", 1)[1].split("# Only successful devel", 1)[0]
+        upload = runner.split("- name: Upload upstream PR B/C/D/E target durations", 1)[1].split("# Only successful devel", 1)[0]
         self.assertIn("github.repository == 'edwardkim/rhwp'", upload)
         self.assertIn("github.event.pull_request.base.repo.id == github.repository_id", upload)
         self.assertIn("github.event.pull_request.base.ref == 'devel'", upload)

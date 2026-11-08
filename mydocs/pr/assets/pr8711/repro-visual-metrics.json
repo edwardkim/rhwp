@@ -1,0 +1,60 @@
+[
+  {
+    "backend": "native",
+    "profile": "print",
+    "compat": 2022,
+    "dpi": 96,
+    "page": 1,
+    "analyzed_pages": 1,
+    "flagged_page_count": 0,
+    "pr_review_gate": {
+      "status": "passed",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false
+    },
+    "metrics": {
+      "pixel_match_percent": 99.66377,
+      "visual_accuracy_proxy_percent": 29.04142,
+      "silhouette_raw_match_percent": 100.0
+    },
+    "png_sha256": "09257f5dd5563563c118ef918b4bfffcf484d612da97a157bbc5c61430abbae4",
+    "direct_read": "Header, body prefix, inline table and suffix preserved; no missing/duplicate content or clipping; glyph density and edge raster differ from Mac reference."
+  },
+  {
+    "backend": "wasm",
+    "profile": "print",
+    "compat": 2022,
+    "dpi": 96,
+    "page": 1,
+    "analyzed_pages": 1,
+    "flagged_page_count": 0,
+    "pr_review_gate": {
+      "status": "passed",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "page_count_mismatch": false
+    },
+    "metrics": {
+      "pixel_match_percent": 99.62015,
+      "visual_accuracy_proxy_percent": 21.6335,
+      "silhouette_raw_match_percent": 100.0
+    },
+    "png_sha256": "a17ea1bbe53fa902734835d855bf3e8a8432eed64eb736d34e34ef1c2945474a",
+    "direct_read": "Header, body prefix, inline table and suffix preserved; no missing/duplicate content or clipping; glyph density and edge raster differ from Mac reference."
+  }
+]

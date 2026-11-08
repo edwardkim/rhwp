@@ -1,0 +1,10 @@
+{
+  "native": {
+    "p5ChangedRGB": [],
+    "realChangedRGB": []
+  },
+  "wasm": {
+    "p5ChangedRGB": [],
+    "realChangedRGB": []
+  }
+}

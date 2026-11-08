@@ -102,6 +102,9 @@ pub struct MasterPage {
     /// HWPX에서 이 값은 바탕쪽 내부 PAGE 필드의 치환 가능 여부를 판단하는 힌트로 쓰인다.
     /// HWP5에서 읽은 바탕쪽은 해당 XML 속성이 없으므로 None으로 둔다.
     pub hwpx_page_number: Option<u16>,
+    /// 임의 바탕쪽을 적용할 구역 안의 쪽 번호(1부터 시작). 표시 숫자와 구분한다.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub optional_page_number: Option<u16>,
     /// LIST_HEADER raw data (라운드트립 보존용)
     pub raw_list_header: Vec<u8>,
 }

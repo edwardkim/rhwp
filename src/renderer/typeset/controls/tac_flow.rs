@@ -61,8 +61,49 @@ impl<'a> TacFlowQuery<'a> {
         table: &crate::model::table::Table,
         fmt: &FormattedParagraph,
     ) -> Option<usize> {
-        if !table.common.treat_as_char || fmt.line_heights.len() <= 1 {
+        if !table.common.treat_as_char
+            || fmt.line_heights.is_empty()
+            || (fmt.line_heights.len() == 1 && !crate::renderer::para_has_no_stored_line_segs(para))
+        {
             return None;
+        }
+
+        // 저장 사다리가 없는 현재 단일 줄도 같은 줄 구성에서 실제 표 높이를
+        // 소유할 수 있다. 아래 높이 대조를 통과한 줄만 사용하며, 별도 쪽 제한
+        // 속성(flowWithText)을 줄 소속의 대용으로 사용하지 않는다. 저장 줄의
+        // #3930 판정은 기존 경로에 남긴다.
+
+        // 같은 사다리를 측정하는 경로에서는 실제 제어 슬롯의 소유 줄을 쓴다.
+        // 셀 편집으로 표가 커지면 선언 높이와의 매칭은 더 이상 소속 증거가 아니다.
+        if fmt.computed_host_lines.is_none() && fmt.line_heights.len() == para.line_segs.len() {
+            if let Some(control_index) = para.controls.iter().position(|control| {
+                matches!(control, crate::model::control::Control::Table(candidate)
+                    if std::ptr::eq(candidate.as_ref(), table))
+            }) {
+                if let Some(line) =
+                    crate::renderer::composer::control_slot_line_index(para, control_index)
+                {
+                    return Some(line);
+                }
+            }
+        }
+
+        // 저장 줄이 없는 문단은 현재 줄 구성의 제어 소속을 따른다.
+        // 셀 내용으로 실제 표 높이가 커져도 선언 높이는 그대로일 수 있다.
+        if crate::renderer::para_has_no_stored_line_segs(para) {
+            if let (Some(comp), Some(control_index)) = (
+                fmt.host_composition.as_deref(),
+                para.controls.iter().position(|control| {
+                    matches!(control, crate::model::control::Control::Table(candidate)
+                        if std::ptr::eq(candidate.as_ref(), table))
+                }),
+            ) {
+                if let Some(owner) = comp.inline_controls.iter().find(|owner| {
+                    owner.control_index == control_index && owner.line_index < comp.lines.len()
+                }) {
+                    return Some(owner.line_index);
+                }
+            }
         }
 
         let om_top = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);

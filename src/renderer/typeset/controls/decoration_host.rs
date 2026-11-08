@@ -1,7 +1,7 @@
 //! 데코레이션 표 host의 텍스트 소유 여부와 줄 전진량 조회.
 //! 확정 항목/높이만 반환하며 페이지 상태와 원본 IR은 변경하지 않는다.
+use super::super::para_has_non_whitespace_text;
 use super::super::paragraph::{metrics::FormattedParagraph, placement::ParagraphFragment};
-use super::super::{para_has_non_whitespace_text, para_has_visible_text};
 use crate::model::paragraph::Paragraph;
 use crate::renderer::{hwpunit_to_px, pagination::PageItem, style_resolver::ResolvedStyleSet};
 
@@ -31,6 +31,7 @@ pub(super) fn plan(
                 },
                 height: fmt.line_advances_sum(0..total_lines),
                 content_height: None,
+                last_line_spacing: None,
             });
         }
     } else if decoration_host_text_pending && !flow_table_owns_host_text {
@@ -45,6 +46,7 @@ pub(super) fn plan(
                 },
                 height: fmt.total_height,
                 content_height: None,
+                last_line_spacing: None,
             });
         }
         // [#7047] **글자 없는** 데코레이션 표 host 도 자기 줄을 흐름에 낸다.
@@ -70,6 +72,7 @@ pub(super) fn plan(
                 },
                 height: hwpunit_to_px(advance_hu, dpi),
                 content_height: None,
+                last_line_spacing: None,
             });
         }
     }
@@ -89,7 +92,9 @@ fn stored_decoration_host_line_advance_hu(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> Option<i32> {
-    if !stored_layout || para_has_visible_text(para) {
+    // [#8510] 첫 분기(`para_has_non_whitespace_text`)와 같은 술어로 거른다. 공백만 있는 host 도
+    // 글자 없는 host 다 — `para_has_visible_text` 는 공백을 글자로 세어 두 분기 모두에서 빠졌다.
+    if !stored_layout || para_has_non_whitespace_text(para) {
         return None;
     }
     let next = next_para?;

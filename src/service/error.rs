@@ -47,11 +47,12 @@ pub enum ServiceError {
         /// 갈래만 보존한다.
         kind: std::io::ErrorKind,
     },
-    /// 매직 바이트로 판별한 형식이 rhwp 가 여는 4형식(HWP5·HWPX·HWP3·HML)이 아니다.
+    /// 매직 바이트로 판별한 형식이 현재 빌드의 지원 형식이 아니다.
     ///
     /// 파서를 부르기 **전에** 판정하므로, 손상된 대용량 입력이 파서를 통과할 기회를
     /// 얻지 못한다. `detected` 에는 [`FileFormat::Unknown`]·[`FileFormat::Empty`]·
-    /// [`FileFormat::DrmProtected`] 중 하나가 담긴다 — DRM 컨테이너를 "알 수 없음"과
+    /// [`FileFormat::DrmProtected`] 또는 feature-off [`FileFormat::Pdf`]가 담긴다.
+    /// DRM 컨테이너를 "알 수 없음"과
     /// 같은 말로 보고하면 사용자가 할 수 있는 조치(DRM 해제 후 저장)를 알 수 없다.
     UnsupportedFormat {
         /// 매직 바이트로 감지한 형식.
@@ -165,6 +166,7 @@ impl std::fmt::Display for ServiceError {
                 write!(f, "파일을 읽을 수 없습니다: {} ({kind:?})", path.display())
             }
             ServiceError::UnsupportedFormat { detected } => match detected {
+                FileFormat::Pdf => write!(f, "PDF_IMPORT_DISABLED: {}", crate::parser::PDF_IMPORT_DISABLED_HINT),
                 FileFormat::Empty => write!(f, "빈 파일(0 바이트)입니다."),
                 FileFormat::DrmProtected => write!(
                     f,

@@ -1,0 +1,5 @@
+/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-kang-t-picture-editing/ttfs/opensource/NotoSansKR-Regular.ttf
+/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-kang-t-picture-editing/ttfs/opensource/RHWPPublicBatang-Regular.ttf
+/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-kang-t-picture-editing/ttfs/opensource/RHWPOldHangul-Regular.otf
+/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-kang-t-picture-editing/ttfs/opensource/NotoSansSymbols2-Regular.ttf
+/home/edward/mygithub/rhwp-worktrees/review-integration-20261106-kang-t-picture-editing/ttfs/opensource/NotoSansKR-ExtraLight.ttf

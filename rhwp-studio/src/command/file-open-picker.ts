@@ -1,5 +1,6 @@
 import {
   canUseOpenFilePicker,
+  documentFileInputAccept,
   pickOpenFileHandle,
   readFileFromHandle,
   type FileSystemFileHandleLike,
@@ -7,6 +8,7 @@ import {
 } from './file-system-access.ts';
 
 export interface OpenFilePickerDependencies {
+  pdfImportEnabled?: boolean;
   canReplace: () => Promise<boolean>;
   windowLike: FileSystemWindowLike;
   findFileInput: () => HTMLInputElement | null;
@@ -31,7 +33,7 @@ export async function openDocumentViaPicker(deps: OpenFilePickerDependencies): P
   let handle: FileSystemFileHandleLike | null = null;
   if (nativeOpenPickerAvailable) {
     try {
-      handle = await pickOpenFileHandle(deps.windowLike);
+      handle = await pickOpenFileHandle(deps.windowLike, deps.pdfImportEnabled);
     } catch (error) {
       // 교차 출처 서브프레임 등에서 showOpenFilePicker 자체가 거부되는 경우(SecurityError 등).
       deps.warn('[file:open] File System Access API 실패, 폴백:', error);
@@ -44,6 +46,7 @@ export async function openDocumentViaPicker(deps: OpenFilePickerDependencies): P
     if (nativeOpenPickerAvailable) return;
     const fileInput = deps.findFileInput();
     if (fileInput) {
+      fileInput.accept = documentFileInputAccept(deps.pdfImportEnabled);
       fileInput.dataset.skipUnsavedGuard = 'true';
       fileInput.click();
     }

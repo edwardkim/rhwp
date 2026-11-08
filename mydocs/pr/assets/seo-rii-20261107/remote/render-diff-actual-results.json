@@ -1,0 +1,10 @@
+{
+  "run": 42353615806,
+  "head": "0d2548fd88ea76b10e53eec841376b4bcbecbc4a",
+  "actual_comparisons": [
+    "Canvas visual diff\tRun canvas visual diff and PDF report\t2026-11-07T08:18:51.4918073Z   PASS: basic/KTX.hwp page 1: 168/891662 pixels differ (0.01884%), max channel delta 123, size 1123x794",
+    "Canvas visual diff\tRun canvas visual diff and PDF report\t2026-11-07T08:18:53.6014920Z   PASS: biz_plan.hwp page 1: 0/891662 pixels differ (0.00000%), max channel delta 0, size 794x1123",
+    "Canvas visual diff\tRun canvas visual diff and PDF report\t2026-11-07T08:18:55.3103360Z   PASS: tac-case-001.hwp page 1: 0/891662 pixels differ (0.00000%), max channel delta 0, size 794x1123"
+  ],
+  "source": "completed job log"
+}

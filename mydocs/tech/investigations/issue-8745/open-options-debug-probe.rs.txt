@@ -1,0 +1,41 @@
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct OpenOptions {
+    /// 암호 문서 비밀번호. `None` 이면 평문 경로로 연다.
+    ///
+    /// 값은 [`OpenedDocument`] 에 보존되지 않는다 — 열기가 끝나면 잊는다.
+    pub password: Option<String>,
+    /// 이 호출에만 적용할 크기 상한. `None` 이면 서비스 기본값을 쓴다.
+    ///
+    /// 무제한으로 열려면 서비스 쪽을 [`DocumentService::with_max_bytes`]`(None)`
+    /// 으로 만든다 — 호출 단위 `None` 은 "지정 안 함"이지 "무제한"이 아니다.
+    pub max_bytes: Option<usize>,
+}
+
+impl OpenOptions {
+    /// 비밀번호 없이, 서비스 기본 상한으로 여는 옵션.
+    pub fn new() -> Self {
+        OpenOptions::default()
+    }
+
+    /// 비밀번호를 붙인다.
+    pub fn with_password(mut self, password: impl Into<String>) -> Self {
+        self.password = Some(password.into());
+        self
+    }
+
+    /// 이 호출에만 적용할 크기 상한을 붙인다.
+    pub fn with_max_bytes(mut self, max_bytes: usize) -> Self {
+        self.max_bytes = Some(max_bytes);
+        self
+    }
+}
+
+
+fn main() {
+ let synthetic = "synthetic-debug-probe-not-a-real-password";
+ let options = OpenOptions::new().with_password(synthetic).with_max_bytes(4096);
+ let compact = format!("{:?}", options);
+ let pretty = format!("{:#?}", options);
+ println!("compact_contains_synthetic_password={}", compact.contains(synthetic));
+ println!("pretty_contains_synthetic_password={}", pretty.contains(synthetic));
+}

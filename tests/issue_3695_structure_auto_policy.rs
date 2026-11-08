@@ -49,15 +49,6 @@ fn load_auto(relative: &str) -> StructureDoc {
     build_structure(&document, StructureMode::Auto)
 }
 
-fn contains_marker(
-    nodes: &[rhwp::document_core::queries::structure::StructureNode],
-    marker: &str,
-) -> bool {
-    nodes
-        .iter()
-        .any(|node| node.marker == marker || contains_marker(&node.children, marker))
-}
-
 #[test]
 fn auto_primary_clause_marker_outweighs_ambiguous_number() {
     let document = synthetic_document(&[
@@ -183,7 +174,7 @@ fn auto_pure_clause_document_remains_clause() {
 
 #[test]
 fn real_explicit_outline_document_remains_outline() {
-    let structure = load_auto("samples/hwpctl_API_v2.4.hwp");
+    let structure = load_auto("mydocs/pr/assets/issue7445/hwpctl_API_v2.4.hwp");
 
     assert_eq!(structure.mode, "outline");
     assert!(structure.node_count > 100, "실제 개요 노드가 사라짐");
@@ -212,25 +203,4 @@ fn real_market_report_with_section_markers_remains_outline() {
 
     assert_eq!(structure.mode, "outline");
     assert_eq!(structure.node_count, 3);
-}
-
-#[test]
-fn real_clause_document_with_ambiguous_number_evidence_remains_clause() {
-    let mut document = load_document("samples/hwp3-sample16-hwp5.hwp");
-    let number_shape_id = document.doc_info.para_shapes.len() as u16;
-    document.doc_info.para_shapes.push(ParaShape {
-        head_type: HeadType::Number,
-        para_level: 0,
-        ..ParaShape::default()
-    });
-    document.sections[0].paragraphs.push(Paragraph {
-        text: "자동번호 참고 목록".to_string(),
-        para_shape_id: number_shape_id,
-        ..Paragraph::new_empty()
-    });
-
-    let structure = build_structure(&document, StructureMode::Auto);
-
-    assert_eq!(structure.mode, "clause");
-    assert!(contains_marker(&structure.roots, "제1조"));
 }

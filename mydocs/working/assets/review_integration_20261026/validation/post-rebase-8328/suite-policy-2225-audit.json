@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-28",
+  "policy": "tests/suites/suite-policy.json",
+  "policy_sha256": "366028c56afe1845caafb0e176c0b316d2c77e84661d8912bcb716a9b2085c82",
+  "change": "그룹 실행 override와 중복된 #2225 독립 target 선언만 제거",
+  "suite": "28 grouped + 20 standalone = 48/48",
+  "manifest_check": "pass",
+  "node_tests": {
+    "passed": 23,
+    "failed": 0
+  },
+  "native_skia_test": {
+    "fontconfig": "minimal DejaVu only",
+    "passed": 2,
+    "failed": 0,
+    "nextest_run_id": "a23f85dc-4da2-4586-9830-d0d914f30c5c"
+  },
+  "restored_case_routes": {
+    "hwpx_precompressed_entry": "regression_suite_021",
+    "hwpx_bindata_save_passthrough": "regression_suite_013"
+  },
+  "logs_sha256": {
+    "hwpx-restored-suite-prepare.log": "ddfb244ef326fd4e183f720a2191305a4c3a97ed7b5251295ef42931c606baa5",
+    "hwpx-restored-suite-check.log": "c3941d13732d8e1ff98041b970c5690663c8fefbbfa0c9340f94e9892b9fd148",
+    "hwpx-restored-routing.log": "edcf24ffdd85105bc370eee91b1354d2f58428a5798cb7026aa7a1a3ec1b92f3",
+    "hwpx-restored-suite-node-tests.log": "e6b7ff22d3458ba4ff715e9e0622846dbc695048e2f6a35e588a8945bc037091",
+    "issue2225-minimal-skia-nextest.log": "a662d673e9cc94d567f7ddbb83b936d21a515413e4462b1949fa73de89f4fb66"
+  }
+}

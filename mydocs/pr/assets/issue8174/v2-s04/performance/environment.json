@@ -1,0 +1,13 @@
+{
+  "platform": "linux",
+  "release": "6.6.114.1-microsoft-standard-WSL2",
+  "cpu": "Intel(R) Core(TM) i9-9900KF CPU @ 3.60GHz",
+  "logicalCPUs": 16,
+  "node": "v24.15.0",
+  "browser": "HeadlessChrome/155.0.8059.79",
+  "method": "4 fresh tabs/package, alternate S03/S04 order, 12 iterations/input; same producer direct/Worker uses 4 tabs x 6 rounds with alternate order; crypto 4 rounds x 10 encryptions/size; exclude upload/UI waits/render; memory is WASM linear high-water, not RSS; OS/JIT/cache not globally cold",
+  "sizes": {
+    "baseWasmBytes": 23340325,
+    "candidateWasmBytes": 23453911
+  }
+}

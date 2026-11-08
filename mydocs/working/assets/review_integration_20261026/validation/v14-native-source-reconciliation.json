@@ -1,0 +1,12 @@
+{
+  "compiled_base_head": "8b7f48e6929030cc53e324c0ffba637616c28213",
+  "tracked_patch_sha256": "3f06adb182201a59ec74a95671ce2f004fd780228be2a3a1ac2c79a46e06204d",
+  "binary": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/candidate-v14-row-fit-rhwp",
+  "binary_sha256": "7f15d43e210f42beb790e975c69d7e56945e917fb6c5c992bd263896a900fc97",
+  "build_log": "v14-native-build-1.log",
+  "scope": "Existing common physical row end for fit; separate text_rows owner and decorative floating-shape owner retained. Flow advance end unchanged.",
+  "committed_head": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+  "production_tree_matches_compiled_base_plus_patch": true,
+  "source_paths_checked": 1828,
+  "source_path_hashes_sha256": "97f5132426b14f5f383052a5ea92a061758b0df62017023c479622f61e259b59"
+}

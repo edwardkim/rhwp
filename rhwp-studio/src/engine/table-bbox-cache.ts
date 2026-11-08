@@ -2,8 +2,8 @@
  * [#4117] 표 셀 bbox 캐시의 단일 채움 지점.
  *
  * 셀 선택 모드 클릭 없이도 표 경계 hover/리사이즈가 동작하도록 hover 경로가
- * 이 함수로 캐시를 채운다. 엔진 질의(getTableCellBboxes)는 페이지 렌더 트리
- * 캐시를 읽는 warm 질의지만 마우스 이동마다 부를 만큼 싸지는 않으므로:
+ * 이 함수로 캐시를 채운다. 평면 표는 현재 페이지 조각만 조회한다. 전체 표 질의는
+ * 미방문 페이지까지 렌더 트리를 준비할 수 있으므로 선택 API와 범위를 구분한다:
  *
  * - 같은 표(+ 해당 페이지 포함)가 캐시돼 있으면 질의 없이 캐시를 돌려준다.
  * - 실패(빈 결과·예외)도 (표, 페이지)당 1회만 시도한다 — 이동마다 재시도 금지.
@@ -46,6 +46,7 @@ export interface CachedTableRef extends TableRef {
 export interface TableBboxCacheHost<B extends PageScopedBbox = PageScopedBbox> {
   wasm: {
     getTableCellBboxes(sec: number, ppi: number, ci: number, pageHint?: number): B[];
+    getTableCellBboxesAtPage?(sec: number, ppi: number, ci: number, page: number): B[];
     /** [#7189] 중첩 표 전용. 깊이 2 이상 경로에서만 부른다. */
     getTableCellBboxesByPath(sec: number, ppi: number, pathJson: string): B[];
   };
@@ -161,7 +162,9 @@ export function ensureTableCellBboxCache<B extends PageScopedBbox>(
     const path = tableRef.path;
     const bboxes = path && path.length > 1
       ? host.wasm.getTableCellBboxesByPath(tableRef.sec, tableRef.ppi, JSON.stringify(path))
-      : host.wasm.getTableCellBboxes(tableRef.sec, tableRef.ppi, tableRef.ci, pageIdx);
+      : host.wasm.getTableCellBboxesAtPage
+        ? host.wasm.getTableCellBboxesAtPage(tableRef.sec, tableRef.ppi, tableRef.ci, pageIdx)
+        : host.wasm.getTableCellBboxes(tableRef.sec, tableRef.ppi, tableRef.ci, pageIdx);
     if (bboxes && bboxes.length > 0) {
       return cacheTableCellBboxes(host, tableRef, pageIdx, bboxes);
     }

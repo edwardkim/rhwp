@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-28",
+  "source": "samples/equation-lim.hwp",
+  "source_sha256": "ba168d388df614e7b9390c4685d368cf3019595c5fecbce0e681dc8fb9bea36d",
+  "edit": {
+    "section": 0,
+    "paragraph": 0,
+    "control": 2,
+    "script": " lim _{h ``rarrow`` 0} {f left(2+h  right)-f left(2  right)} over {h}` + 1",
+    "width": 9096,
+    "height": 2715
+  },
+  "serialized_edit_sha256": "4907428713edecaa729fdb4bb3682603f1176a763c9119b85f276b421ba673f4",
+  "independent_pdf": "pdf/issue8205-equation-lim-edited-2020.pdf",
+  "pdf_sha256": "cebeb720e071b2f5e8c3324dfcd310951771954ddbb352716fbd53164f0cfd82",
+  "job_id": "d8ddc268-f599-4412-814e-cd4f16b87ac6",
+  "engine": "2020",
+  "hancom_version": "11.0.0.9136",
+  "print_method": 0,
+  "output_mode": "hancom2020_pdf_driver_one_up",
+  "dpi": 96,
+  "pdf_limiter_glyph_left_px": 113.86,
+  "pdf_numerator_top_px": 132.22,
+  "coordinates_method": "PyMuPDF 72dpi text bbox × 96/72",
+  "pages": 1,
+  "native_raw": 99.89669,
+  "wasm_raw": 100.0,
+  "note": "한컴·Native 출력의 +1 직접 확인; 초기 잘못된 공백 JSON으로 수식이 바뀌지 않은 출력은 폐기"
+}

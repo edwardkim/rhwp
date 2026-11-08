@@ -1,0 +1,103 @@
+{
+  "prints": [
+    {
+      "input_pdf": "pdf/issue8183/scan-jbig2-200.pdf",
+      "saved_hwpx_sha256": "f3cc255ef69e21c4eedf0cd9713f897c2a0b7512082d8a3aefc68a4b8b4d8465",
+      "print_pdf": "pdf/issue8183/hancom-print/scan-jbig2-200-2024.pdf",
+      "print_sha256": "86a924c63419aa2b7ac2cf942dc8040c3efdb2fc64647cc0c1f8a9cffa0dd194",
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "pdf_print_method": 0
+    },
+    {
+      "input_pdf": "pdf/issue8183/scan-jpx-200.pdf",
+      "saved_hwpx_sha256": "3c502d7b93d9c339ad0b7c83aa575ce5fae6202000d641c8477b3e82689c2ab2",
+      "print_pdf": "pdf/issue8183/hancom-print/scan-jpx-200-2024.pdf",
+      "print_sha256": "5a5faa30386db02eaef74a280b4e95ca9ba50764af5c02f54310a8d4f87653a8",
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "pdf_print_method": 0
+    },
+    {
+      "input_pdf": "pdf/issue8183/jbig2-symbol_global.pdf",
+      "saved_hwpx_sha256": "287c4743ed4ab8069a889dc4957082faf2fdaf54cd7d96e9f94782a4787666ea",
+      "print_pdf": "pdf/issue8183/hancom-print/jbig2-symbol_global-2024.pdf",
+      "print_sha256": "55ee69fdd3b510a250e44c9fcc0158cf737e732bdcac5c231b5b1a3f87b7cddd",
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "pdf_print_method": 0
+    },
+    {
+      "input_pdf": "pdf/issue8183/jpx-palette.pdf",
+      "saved_hwpx_sha256": "5eab458e56415d7ddf7a757eb15a8d1abe9ad5a1256bbab24b956549b9ec6427",
+      "print_pdf": "pdf/issue8183/hancom-print/jpx-palette-2024.pdf",
+      "print_sha256": "d222f7489705edce71847f7eecee02209c7252fdff2f810f47acc62caff7c388",
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "pdf_print_method": 0
+    },
+    {
+      "input_pdf": "pdf/issue8183/jpx-indexed.pdf",
+      "saved_hwpx_sha256": "20ae41151c1359d5ca50c4c48911d67a80f2e28650f216324517013c2dec3f16",
+      "print_pdf": "pdf/issue8183/hancom-print/jpx-indexed-2024.pdf",
+      "print_sha256": "44baac84e0a44e0601e95d2a76f804dc7c3136f66397ceb2f372b430f17ededd",
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "pdf_print_method": 0
+    },
+    {
+      "input_pdf": "pdf/issue8183/jpx-alpha.pdf",
+      "saved_hwpx_sha256": "8483bf67a0f51cbe387ad5ff4f30b512562c9c9347a9041b6e18596a8b6213ae",
+      "print_pdf": "pdf/issue8183/hancom-print/jpx-alpha-2024.pdf",
+      "print_sha256": "65b637d2800ec7592dbaadc980a1a5d70af8848ec160453960ec722c010a2fe2",
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "pdf_print_method": 0
+    },
+    {
+      "input_pdf": "pdf/issue8183/jpx-premult.pdf",
+      "saved_hwpx_sha256": "459a3488ace773ac6ade68d6b14e918551072830c37d2fc039a7baf5d81b1f1d",
+      "print_pdf": "pdf/issue8183/hancom-print/jpx-premult-2024.pdf",
+      "print_sha256": "fd0e676fbd0b32cb8bdc4eaed5f7e00f80c8cb1e95d531776a876f71c28a0825",
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "pdf_print_method": 0
+    },
+    {
+      "input_pdf": "pdf/issue8183/jbig2-mask.pdf",
+      "saved_hwpx_sha256": "c0d3750330c0ad12a585294b74ea99aa0a2d91cc17eadd392810c5ed130f2e17",
+      "print_pdf": "pdf/issue8183/hancom-print/jbig2-mask-2024.pdf",
+      "print_sha256": "742d60b2a5444bed91f0a22f0179730bdfe12f78a4dd92d8e5e95e8ba5d1b083",
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "pdf_print_method": 0
+    },
+    {
+      "input_pdf": "pdf/issue8183/jpx-mask.pdf",
+      "saved_hwpx_sha256": "722e6db10f81477308a73dc2f4e8ff96ad585c5ec3061d5018afc04b6870cdc1",
+      "print_pdf": "pdf/issue8183/hancom-print/jpx-mask-2024.pdf",
+      "print_sha256": "7813c3bd3955acb3b28eb1760698b9b44a7bc4e48c91f86e3724b3c209fb3047",
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "pdf_print_method": 0
+    }
+  ],
+  "hancom_resaved_controls": [
+    {
+      "path": "pdf/issue8183/hancom-print/jpx-alpha-hancom-resaved-2024.pdf",
+      "sha256": "0afd2c4e7a5ebd17537b86d3c3089bbab800ce9620c4e137a70923748465ab21"
+    },
+    {
+      "path": "pdf/issue8183/hancom-print/jpx-alpha-hancom-resaved.hwp",
+      "sha256": "32eacab86d657cf5d829e26127c516d7184dd1b7659676d7a9165b26b2975ca1"
+    },
+    {
+      "path": "pdf/issue8183/hancom-print/jpx-premult-hancom-resaved-2024.pdf",
+      "sha256": "feda6d8c6db8a496ff0ca7b7bb07636f4b5feb03bbd6ce46b454ec67c3e4366d"
+    },
+    {
+      "path": "pdf/issue8183/hancom-print/jpx-premult-hancom-resaved.hwp",
+      "sha256": "9cadc4d1805f6268c6aebae73d52602f8f7b2e2f72b5453b0ec2b0d912decaab"
+    }
+  ]
+}

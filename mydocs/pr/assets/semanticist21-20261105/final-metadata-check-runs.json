@@ -1,0 +1,81 @@
+[
+  {
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "started": "2026-11-04T19:16:53.001154+00:00",
+    "ended": "2026-11-04T19:17:17.079181+00:00",
+    "exit": 0,
+    "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+    "comment_only_test_changes": "test-header-comment-only.json",
+    "derived_group_equivalence": "generated-harness-refresh.json"
+  },
+  {
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "started": "2026-11-04T19:17:17.079466+00:00",
+    "ended": "2026-11-04T19:17:31.877453+00:00",
+    "exit": 0,
+    "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+    "comment_only_test_changes": "test-header-comment-only.json",
+    "derived_group_equivalence": "generated-harness-refresh.json"
+  },
+  {
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--check",
+      "--base-ref",
+      "e96b500e3ea259c821f05440f0388355916a9e9b"
+    ],
+    "started": "2026-11-04T19:17:31.877727+00:00",
+    "ended": "2026-11-04T19:17:32.643716+00:00",
+    "exit": 0,
+    "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+    "comment_only_test_changes": "test-header-comment-only.json",
+    "derived_group_equivalence": "generated-harness-refresh.json"
+  },
+  {
+    "command": [
+      "node",
+      "scripts/rust-unit-test-tiers.mjs",
+      "--check",
+      "--base-ref",
+      "e96b500e3ea259c821f05440f0388355916a9e9b"
+    ],
+    "started": "2026-11-04T19:17:32.644012+00:00",
+    "ended": "2026-11-04T19:17:42.946411+00:00",
+    "exit": 0,
+    "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+    "comment_only_test_changes": "test-header-comment-only.json",
+    "derived_group_equivalence": "generated-harness-refresh.json"
+  },
+  {
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--doc"
+    ],
+    "started": "2026-11-04T19:17:42.946713+00:00",
+    "ended": "2026-11-04T19:21:47.668169+00:00",
+    "exit": 0,
+    "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+    "comment_only_test_changes": "test-header-comment-only.json",
+    "derived_group_equivalence": "generated-harness-refresh.json"
+  }
+]

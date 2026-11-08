@@ -38,13 +38,17 @@ fn horizontally_overlaps(a: &BoundingBox, b: &BoundingBox) -> bool {
     a.x < b.x + b.width && a.x + a.width > b.x
 }
 
-fn expected_dash(line_type: BorderLineType) -> StrokeDash {
-    match line_type {
-        BorderLineType::Dash | BorderLineType::LongDash => StrokeDash::Dash,
-        BorderLineType::Dot | BorderLineType::Circle => StrokeDash::Dot,
-        BorderLineType::DashDot => StrokeDash::DashDot,
-        BorderLineType::DashDotDot => StrokeDash::DashDotDot,
-        _ => StrokeDash::Solid,
+fn has_short_dots(dash: StrokeDash) -> bool {
+    match dash {
+        StrokeDash::Dot => true,
+        // 독립 Print의 이 박스는 짧은 선과 그보다 긴 공백을 반복한다.
+        // 물리 반복 구간을 방출하는 경로를 옛 열거형의 이름으로 거부하지 않는다.
+        StrokeDash::Explicit(values) => {
+            values[0] > 0.0
+                && values[1] > values[0]
+                && values[2..].iter().all(|value| *value == 0.0)
+        }
+        _ => false,
     }
 }
 
@@ -349,17 +353,13 @@ fn issue_1440_page6_box_border_connect_and_dash_line_are_preserved() {
             .border_fills
             .get(ps.border_fill_id.saturating_sub(1) as usize)
             .unwrap_or_else(|| panic!("{sample}: 지문 박스 BorderFill 없음"));
-        let expected_line_dash = expected_dash(border_fill.borders[0].line_type);
+        assert_eq!(border_fill.borders[0].line_type, BorderLineType::Dot);
         assert!(
             border_fill
                 .borders
                 .iter()
-                .all(|border| expected_dash(border.line_type) == expected_line_dash),
+                .all(|border| border.line_type == BorderLineType::Dot),
             "{sample}: 지문 박스 테두리는 네 면의 선 모양이 같아야 함"
-        );
-        assert!(
-            expected_line_dash != StrokeDash::Solid,
-            "{sample}: 지문 박스 테두리는 실선 최적화 대상이 아니어야 함"
         );
 
         let tree = doc
@@ -396,20 +396,58 @@ fn issue_1440_page6_box_border_connect_and_dash_line_are_preserved() {
             .iter()
             .map(|b| b.y + b.height)
             .fold(0.0, f64::max);
-        let dotted_near_box = nodes.iter().any(|node| {
-            let RenderNodeType::Line(line) = &node.node_type else {
-                return false;
-            };
-            line.style.dash == expected_line_dash
-                && node.bbox.x >= min_x - 80.0
-                && node.bbox.x <= max_x + 80.0
-                && node.bbox.y >= min_y - 80.0
-                && node.bbox.y <= max_y + 80.0
-        });
-        assert!(
-            dotted_near_box,
-            "{sample}: 6쪽 지문 박스 주변에 원본 선 모양 LineNode가 렌더되어야 함"
-        );
+        let dotted: Vec<_> = nodes
+            .iter()
+            .filter_map(|node| match &node.node_type {
+                RenderNodeType::Line(line)
+                    if has_short_dots(line.style.dash)
+                        && line.style.color == border_fill.borders[0].color =>
+                {
+                    Some(line)
+                }
+                _ => None,
+            })
+            .collect();
+        let vertical: Vec<_> = dotted
+            .iter()
+            .filter(|line| {
+                line.x1 == line.x2 && line.y1.min(line.y2) <= min_y && line.y1.max(line.y2) >= max_y
+            })
+            .collect();
+        let horizontal: Vec<_> = dotted
+            .iter()
+            .filter(|line| {
+                line.y1 == line.y2 && line.x1.min(line.x2) <= min_x && line.x1.max(line.x2) >= max_x
+            })
+            .collect();
+        let left = vertical
+            .iter()
+            .filter(|line| line.x1 <= min_x)
+            .max_by(|a, b| a.x1.total_cmp(&b.x1))
+            .expect("지문 왼쪽 점선");
+        let right = vertical
+            .iter()
+            .filter(|line| line.x1 >= max_x)
+            .min_by(|a, b| a.x1.total_cmp(&b.x1))
+            .expect("지문 오른쪽 점선");
+        let top = horizontal
+            .iter()
+            .filter(|line| line.y1 <= min_y)
+            .max_by(|a, b| a.y1.total_cmp(&b.y1))
+            .expect("지문 위쪽 점선");
+        let bottom = horizontal
+            .iter()
+            .filter(|line| line.y1 >= max_y)
+            .min_by(|a, b| a.y1.total_cmp(&b.y1))
+            .expect("지문 아래쪽 점선");
+        for line in [top, bottom] {
+            assert_eq!(line.x1.min(line.x2), left.x1, "네 면의 왼쪽 연결");
+            assert_eq!(line.x1.max(line.x2), right.x1, "네 면의 오른쪽 연결");
+        }
+        for line in [left, right] {
+            assert_eq!(line.y1.min(line.y2), top.y1, "네 면의 위쪽 연결");
+            assert_eq!(line.y1.max(line.y2), bottom.y1, "네 면의 아래쪽 연결");
+        }
     }
 }
 

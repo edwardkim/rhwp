@@ -117,6 +117,28 @@ fn page_number_and_file_name_template_survives_save_and_reopen() {
     }
 }
 
+/// 파일 이름·탭·쪽 번호 마당(5·10)도 저장본에서 탭 뒤에 쪽 번호를 그린다. 저장본의 쪽 번호는
+/// 문단 마지막 글자인 자동 번호 자리표라, 그 자리를 놓치면 앞의 탭이 번호로 그려진다.
+#[test]
+fn file_name_then_page_number_template_keeps_tab_after_save_and_reopen() {
+    for template in [5, 10] {
+        let doc = doc_with_template(template);
+        let before = page_text(&doc, 0);
+        assert!(
+            before.starts_with(&format!("{FILE_NAME}\t1")),
+            "마당 {template} 저장 전 머리말: {before:?}"
+        );
+
+        for format in [Format::Hwp, Format::Hwpx] {
+            assert_eq!(
+                page_text(&reopen(&doc, format), 0),
+                before,
+                "마당 {template} {format:?} 저장본도 파일 이름·탭·쪽 번호를 그려야 한다"
+            );
+        }
+    }
+}
+
 /// 필드 넣기로 넣은 전체 쪽수도 저장본에서 같은 수로 그려진다.
 #[test]
 fn inserted_total_page_field_survives_save_and_reopen() {

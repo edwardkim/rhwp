@@ -6,6 +6,11 @@
 
 #![cfg(not(target_arch = "wasm32"))]
 
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/root_binary_contract.rs"
+));
+
 use serde_json::Value;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -374,11 +379,7 @@ fn working_doc_exists() {
 #[test]
 fn no_new_bin_target() {
     let cargo = fs::read_to_string(repo().join("Cargo.toml")).expect("Cargo.toml");
-    let bins = cargo.matches("[[bin]]").count();
-    assert_eq!(
-        bins, 2,
-        "새 [[bin]] 을 추가하지 마세요 (rhwp, font-metric-gen 만): {bins}"
-    );
+    assert_root_binary_contract(&cargo);
 }
 
 #[test]

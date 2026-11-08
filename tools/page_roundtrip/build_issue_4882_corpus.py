@@ -243,12 +243,6 @@ def build_ledger() -> None:
     LEDGER_DIR.mkdir(parents=True, exist_ok=True)
     entries = [
         CatalogEntry(
-            "samples/hwp3-sample16.hwp",
-            "hwpx",
-            3518,
-            "HWPX 내보내기 전후 쪽수 불일치 (64→65) — M05-2",
-        ),
-        CatalogEntry(
             "samples/synam-001.hwp",
             "hwpx",
             3521,

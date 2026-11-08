@@ -11,6 +11,12 @@ last_verified: 2026-08-12
 각 원 PR의 reviewer assign, review 문서, CI 판정은 [PR 접수와 리뷰 기록](intake_and_review.md)처럼
 PR 번호별로 분리한다.
 
+새 체리픽 통합 브랜치는 `review/integration-<대표 이슈번호>-<설명>`으로 명명한다.
+대표 이슈가 없으면 `review/integration-<YYYYMMDD>-<설명>`을 사용한다. 원 PR·고정한 head·
+적용 commit과 순서를 기록하며, 같은 통합 작업의 리베이스·추가 체리픽은 같은 브랜치에서 이어 간다.
+단독 검토와 새 head 분리까지 포함한 정본은
+[브랜치 명명 규칙](../codex/docs_and_git_workflow.md#외부-pr-검토와-체리픽-통합-브랜치-명명)이다.
+
 ## 2.0 대량 PR 유입 사전 분류
 
 한 contributor의 열린 PR이 많으면 개별 review 전에 통합 그룹과 변경 축을 사실로만 수집한다.
@@ -123,7 +129,7 @@ git fetch upstream devel
 git fetch upstream pull/N/head:refs/remotes/upstream/prN-head
 git switch devel
 git merge --ff-only upstream/devel
-git switch review/<contributor>-<YYYYMMDD>
+git switch review/pr-N-<description>
 git merge --ff-only upstream/prN-head
 git merge-base --is-ancestor upstream/devel HEAD
 git diff --stat upstream/devel...HEAD
@@ -133,7 +139,8 @@ git rev-parse HEAD
 
 위 예시의 `git merge --ff-only`가 실패하면 마지막 두 `switch`/`merge`를 억지로 재시도하거나 history를
 재작성하지 않는다. 새 PR head가 force-push된 경우에는 최초 검토 branch를 보존하고, 새 head에서 만든
-별도 visibility review branch와 전용 target으로 검증을 다시 시작한다.
+별도 visibility review branch에서 검증을 다시 시작한다. target은 모든 OS에서 기존 기본 작업공간의
+공용 `target/pr-review` 절대 경로를 그대로 사용하며, branch·worktree별 cache를 만들지 않는다.
 
 ### 2.6.1 외부 PR review 기록의 source head 정렬
 

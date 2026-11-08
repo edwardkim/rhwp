@@ -1,0 +1,44 @@
+{
+  "started_at": "2026-11-07T02:52:37.565125+00:00",
+  "pr": 8711,
+  "sizes_before_allocated_bytes": {
+    "/home/edward/mygithub/rhwp/output": 1002430464,
+    "/home/edward/mygithub/rhwp/target/pr-review/debug": 12221095936,
+    "/home/edward/mygithub/rhwp-worktrees/pr-8711-leading-definition-slots": 9852612608
+  },
+  "free_before_bytes": 193239437312,
+  "running_build_processes": [],
+  "active_file_uses": [],
+  "cwd_only_refs": [],
+  "output_inventory": [
+    "pr-review/pr8711: completed #8711 review only"
+  ],
+  "backup_archive_or_migration_created": false,
+  "absent": {
+    "/home/edward/mygithub/rhwp-worktrees/pr-8711-leading-definition-slots": true,
+    "/home/edward/mygithub/rhwp/output": true,
+    "/home/edward/mygithub/rhwp/target/pr-review/debug": true
+  },
+  "local_branch_absent": true,
+  "fetch_ref_absent": true,
+  "free_after_bytes": 216326385664,
+  "free_delta_bytes": 23086948352,
+  "preserved": {
+    "root_workspace": true,
+    "foreign_worktree": true,
+    "user_vite_pid_99334": true,
+    "collaborator_upstream_branch": "review/pr-8226-save-recheck",
+    "other_target_profiles": [
+      "package",
+      "release-test",
+      "wasm32-unknown-unknown",
+      "doc",
+      "tmp",
+      "release",
+      "x86_64-unknown-linux-gnu"
+    ],
+    "root_studio_wasm_sha256": "46ef070e9e5b656598a42bdfe9e8ddcb81955cbff77623ccaf572238ec9f160e"
+  },
+  "completed_at": "2026-11-07T02:52:43.921084+00:00",
+  "completed": true
+}

@@ -1,0 +1,92 @@
+{
+  "runtimeCommit": "98c2a364e68731e4f4911d765756904a0258dd46",
+  "nativeRuntimeEquivalence": "native229-committed-runtime-equivalence-3698.json",
+  "inputSha256": "205145c62660bf924d2364e41d196ac46e0a8dc83b6aa76656722b139efcf5cb",
+  "pdfSha256": "57297c74c4c2660ed680eeebf166ef733658d329ff8429452dc6bd311412ee65",
+  "engine": "2024",
+  "hancomVersion": "13.0.0.3901",
+  "printMethod": 0,
+  "printMode": "frame_print_to_pdf_ex_one_up",
+  "inputPreprocess": "scripts_disabled",
+  "jobId": "6d9fdd28-0a76-4587-8241-563d39a98402",
+  "pages": 197,
+  "dpi": 96,
+  "tsv": [
+    {
+      "path": "mydocs/pr/assets/issue4138_line_advance_20261025/tsv/native/original115.tsv",
+      "sha256": "8b40144b09d25a5e82cc2b0361b10cde965f2e9c2844db7a699aee2a447e38b7",
+      "pages": 115,
+      "minimumRaw": 97.54281
+    },
+    {
+      "path": "mydocs/pr/assets/issue4138_line_advance_20261025/tsv/native/saved197.tsv",
+      "sha256": "50a43b33bd0b7911b0c1bb56e33542d189fdc5b44b8b48b984fb93ec6705bb0e",
+      "pages": 197,
+      "minimumRaw": 97.88065
+    },
+    {
+      "path": "mydocs/pr/assets/issue4138_line_advance_20261025/tsv/wasm/original115.tsv",
+      "sha256": "adeeae8dc6634a11b2e594630f1c4f04ed2ed821391ade8fcc53d090af1673d6",
+      "pages": 115,
+      "minimumRaw": 97.5392
+    },
+    {
+      "path": "mydocs/pr/assets/issue4138_line_advance_20261025/tsv/wasm/saved197.tsv",
+      "sha256": "685c7e5b5e69bd2e45c8c96a6e0c37c679a78a8ba7346bcf598be156820b799c",
+      "pages": 197,
+      "minimumRaw": 97.8492
+    }
+  ],
+  "page130IndependentBodyBaselinesCssPx": [
+    372.393,
+    398.7642
+  ],
+  "previousModuleSha256": "f876e75aa5411a7dfdc0149f8bacd8c566cff8e2575549e5a8d165278de4ca5b",
+  "historicalLineAdvanceAndBaselineHU": [
+    [
+      1685,
+      2826,
+      1411
+    ],
+    [
+      1698,
+      3572,
+      1540
+    ],
+    [
+      1701,
+      1980,
+      1020
+    ],
+    [
+      1704,
+      2218,
+      1040
+    ]
+  ],
+  "independentLineAdvanceHU": [
+    [
+      1685,
+      2826
+    ],
+    [
+      1698,
+      3572
+    ],
+    [
+      1701,
+      1980
+    ],
+    [
+      1704,
+      2218
+    ]
+  ],
+  "baselineContract": "0 < baseline_distance <= line_height; cache baseline integer not pinned",
+  "formalTests": {
+    "run": 5,
+    "passed": 5,
+    "exitCode": 0,
+    "log": "output/pr-review/semanticist21-20261019/logs/issue4138-nextest-3722.log"
+  }
+}

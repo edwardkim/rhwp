@@ -25,11 +25,12 @@
 //! 이 시험은 `samples/mel-001.hwp` 로 잠근다 — 정본 `pdf/mel-001-hwp-2020.pdf` 가
 //! 이 문서의 `·` 를 1.000em 으로 그린다.
 //!
-//! # 반례
+//! # 영문 슬롯의 `·` — #7702
 //!
-//! `휴먼명조` 는 정본이 전각인데도 **아직 좁힌다** — 메트릭 표의 Latin-1 구간이 `0`/`em`
-//! 두 값뿐이라(`latin1_table_is_uninformative`) 표를 근거로 쓸 수 없기 때문이다. 표를
-//! 고치는 다른 갈래이므로, 여기서는 그 face 가 움직이지 않는 것까지 함께 잠근다.
+//! 한/글은 `·` 를 앞 글자가 한글이어도 **영문 슬롯** 글꼴로 재고 그린다.
+//! `k-water-rfp` 는 한글 휴먼명조 + 영문 `HCI Poppy`(HFT) 이고, 정본
+//! `pdf/k-water-rfp-hwp-2020.pdf` 의 `·` 17개는 휴먼명조가 아니라 ASCII 를 함께 그리는
+//! Type3 영문 글꼴로 0.35~0.39 em(중앙 0.38) 전진한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
@@ -38,8 +39,8 @@ use rhwp::document_core::DocumentCore;
 
 /// `HY헤드라인M` 앵커. 정본 `pdf/mel-001-hwp-2020.pdf`.
 const SAMPLE_MEL: &str = "samples/mel-001.hwp";
-/// `휴먼명조` 반례. 같은 문서의 정본 `pdf/k-water-rfp-hwp-2020.pdf`.
-const SAMPLE_HUMAN: &str = "samples/k-water-rfp.hwp";
+/// 영문 슬롯 `HCI Poppy` 앵커. 정본 `pdf/k-water-rfp-hwp-2020.pdf`.
+const SAMPLE_KWATER: &str = "samples/k-water-rfp.hwp";
 
 /// 한 문서에서 `·` 의 (글꼴, 글자크기 대비 전진폭) 을 모은다.
 fn middle_dot_advances(sample: &str, max_pages: u32) -> Vec<(String, f64)> {
@@ -103,20 +104,31 @@ fn verified_face_middle_dot_keeps_the_written_full_width() {
     }
 }
 
-/// 반례 — 메트릭 표가 폭 정보를 담지 못한 face 는 종전 폭 그대로다.
+/// [#7702] 한글 휴먼명조 사이의 `·` 는 영문 슬롯 `HCI Poppy` 의 HFT 폭으로 전진한다.
+///
+/// 수정 전에는 한글 슬롯 휴먼명조로 재고 0.3 em 으로 눌러 전건 0.27~0.33 이었다.
+/// 영문 슬롯은 표시를 `Palatino Linotype` 으로 대신하지만 폭은 HCI Poppy 실측
+/// (786/2048 = 0.384 em)이다 — Palatino 자신의 `·` 는 0.25 em 이다.
 #[test]
-fn uninformative_metric_face_middle_dot_stays_narrow() {
-    let advances = advances_for(SAMPLE_HUMAN, 24, "휴먼명조");
+fn latin_slot_middle_dot_follows_the_hancom_advance() {
+    let seen = middle_dot_advances(SAMPLE_KWATER, 24);
     assert!(
-        !advances.is_empty(),
-        "반례 문서에서 휴먼명조 가운뎃점을 찾지 못했다"
+        advances_for(SAMPLE_KWATER, 24, "휴먼명조").is_empty(),
+        "`·` 는 한글 슬롯 휴먼명조로 재지 않는다 — 관측: {seen:?}"
     );
-    // 좁힘은 `0.3em` 오버레이지만 실제 전진에는 자간·장평이 섞여 0.27~0.33 으로 관측된다.
-    // 이 반례가 잠그는 것은 "전각으로 넓어지지 않는다"이다.
-    for adv in &advances {
-        assert!(
-            *adv < 0.5,
-            "휴먼명조 `·` 은 이 변경의 범위 밖이라 좁은 채로 있어야 한다 — got {adv:.3}, 전체 {advances:?}"
-        );
-    }
+    let advances = advances_for(SAMPLE_KWATER, 24, "Palatino Linotype");
+    assert!(
+        advances.len() >= 17,
+        "영문 슬롯 `·` 를 17개 이상 봐야 한다 — 관측: {seen:?}"
+    );
+    let median = advances[advances.len() / 2];
+    assert!(
+        (0.36..=0.40).contains(&median),
+        "영문 슬롯 `·` 전진 중앙값은 정본 0.38 em 이어야 한다(수정 전 0.30) — got {median:.3}, 전체 {advances:?}"
+    );
+    let off: Vec<_> = advances
+        .iter()
+        .filter(|adv| !(0.33..=0.42).contains(*adv))
+        .collect();
+    assert!(off.is_empty(), "정본 범위 0.35~0.39 em 밖: {off:?}");
 }

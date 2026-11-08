@@ -1,0 +1,675 @@
+[workspace]
+members = [".", "pdf_oxide_mcp", "pdf_oxide_cli", "pdf_oxide_jni"]
+exclude = ["js", "fuzz"]
+
+# cargo-shear exemptions: these optional deps are referenced from `[features]`
+# via `dep:X` and only link when their feature is on. cargo-shear reports them
+# as "unused" because the default feature set doesn't activate them.
+[workspace.metadata.cargo-shear]
+ignored = [
+    # Digital signatures stack (gated on `signatures` feature)
+    "cms",
+    "der",
+    "pkcs1",
+    "pkcs8",
+    "rsa",
+    "signature",
+    "spki",
+    "x509-parser",
+    # ML / table detection / OCR (gated on `ml`, `table-ml`, `ocr` features)
+    "linfa",
+    "linfa-clustering",
+    "pdfium-render",
+    "tract-onnx",
+    # WASM-only runtime deps (gated on `wasm` feature)
+    "getrandom_02",
+    "web-sys",
+    # Press-grade ICC backend (gated on `icc-lcms2` feature)
+    "lcms2",
+]
+ignored-paths = [
+    # Runnable examples — not declared as [[example]] targets because they use
+    # `cargo run --manifest-path examples/rust/.../Cargo.toml` pattern.
+    "examples/rust/*/main.rs",
+    # Placeholder modules kept disabled for future work (see src/pipeline/mod.rs)
+    "src/pipeline/input_parsers/mod.rs",
+    "src/structure/builder.rs",
+]
+
+# Clippy lint configuration shared by every workspace member and every target
+# (lib, bin, test, example, bench). Keeps the allow-list in a single place so
+# new bin targets don't need their own #![allow] attributes. Mirrors the stance
+# previously declared only in src/lib.rs.
+[workspace.lints.clippy]
+# `iter_over_hash_type` and the cast lints (`cast_possible_truncation`,
+# `cast_sign_loss`, `cast_possible_wrap`) are not set here yet: CI's
+# `-D warnings` makes any `warn` fatal, and there were 64 hash-iteration sites
+# at v0.3.78. The "Advisory lints" step of the clippy CI job counts them on
+# every run; they enter this table at `warn` once the count is one change's
+# worth of fixes.
+type_complexity = "allow"
+too_many_arguments = "allow"
+needless_range_loop = "allow"
+enum_variant_names = "allow"
+wrong_self_convention = "allow"
+explicit_counter_loop = "allow"
+doc_overindented_list_items = "allow"
+should_implement_trait = "allow"
+redundant_guards = "allow"
+regex_creation_in_loops = "allow"
+manual_find = "allow"
+match_like_matches_macro = "allow"
+collapsible_match = "allow"
+manual_checked_ops = "allow"
+
+[package]
+name = "pdf_oxide"
+version = "0.3.78"
+# MSRV — driven up from 1.82 for v0.3.38. Transitive deps pulled in
+# this release push the floor to 1.88:
+#   - hybrid-array 0.4.10 (via RustCrypto) → edition 2024 → 1.85
+#   - image 0.25.10 → 1.87
+#   - nalgebra 0.34.2 → 1.87
+#   - libloading 0.9.0, ort 2.0.0-rc.13, ort-sys 2.0.0-rc.13 → 1.88
+# 1.88 was released 2025-06-26, so this is still a reasonable floor.
+rust-version = "1.88"
+# Anchor patterns with a leading slash — Cargo uses gitignore-style globs, so
+# a bare "README.md" matches every README.md recursively (was pulling in 20+
+# subdir READMEs plus js/node_modules/*/README.md into the sdist). Leading /
+# anchors to the package root.
+include = [
+    "/src/**/*",
+    "/benches/**/*",
+    "/Cargo.toml",
+    "/LICENSE-MIT",
+    "/LICENSE-APACHE",
+    "/NOTICE",
+    "/TRADEMARKS.md",
+    "/README.md",
+    "/include/**/*",
+]
+edition = "2021"
+authors = ["Yury Fedoseev <yfedoseev@gmail.com>"]
+license = "MIT OR Apache-2.0"
+description = "The fastest Rust PDF library — 0.8ms mean, 5× faster than the industry leaders, 100% pass rate on 3,830 real-world PDFs. Text extraction, Markdown/HTML conversion, PDF creation and editing."
+repository = "https://github.com/yfedoseev/pdf_oxide"
+homepage = "https://oxide.fyi"
+documentation = "https://pdf.oxide.fyi/docs/getting-started/rust"
+readme = "README.md"
+keywords = ["pdf", "text-extraction", "pdf-parser", "pdf-to-markdown", "document-parser"]
+categories = ["parsing", "text-processing"]
+
+[lib]
+name = "pdf_oxide"
+# cdylib: Python (maturin), WASM, C# (P/Invoke), Node.js (N-API dynamic link)
+# rlib: native Rust consumers
+# staticlib: Go CGo (#334) and Node.js (#335) — produces libpdf_oxide.a for
+# self-contained binaries with no runtime LD_LIBRARY_PATH/PATH lookups
+crate-type = ["cdylib", "rlib", "staticlib"]
+
+[lints]
+workspace = true
+
+[dependencies]
+# ── cargo-geiger audit (last run: 2026-04-26) ─────────────────────────────────
+# pdf_oxide itself: 91.4% fn coverage, 96.3% expr coverage. Remaining unsafe is
+# in ffi.rs (C ABI boundary), python.rs/wasm.rs (PyO3/wasm-bindgen internals),
+# and font/image parsers (pointer arithmetic for binary format decoding).
+#
+# Dependencies marked ! (unsafe present) are accepted:
+#   aes/sha2/md-5/cbc  — RustCrypto; SIMD intrinsics, formally audited
+#   brotli             — C-derived decompressor; unavoidable unsafe
+#   bytemuck           — safe-transmute library; unsafe is its raison d'être
+#   bytes              — Buf/BufMut ring buffer; unsafe for performance
+#   byteorder          — binary parsing; minimal, well-audited unsafe
+#   chrono             — OS timezone lookup; syscall boundary
+#   encoding_rs        — Mozilla SIMD text decode; audited
+#   getrandom          — OS RNG; syscall boundary
+#   hybrid-array/zerocopy — zero-copy type aliasing; unsafe by design
+#   libc               — OS interface crate; entirely unsafe by design
+#   smallvec           — stack alloc optimisation; well-audited
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Core dependencies
+thiserror = "2.0"
+log = "0.4"
+libc = "0.2"        # malloc/free for FFI byte buffers (free_bytes needs length-free dealloc)
+env_logger = "0.11"
+chrono = "0.4"      # Timestamp generation for benchmark results
+
+# Parsing
+nom = "8.0"
+regex = "1.13"
+
+# Data structures
+bytes = "1.12"
+memchr = "2"      # SIMD-accelerated byte/substring search for content stream scanning
+byteorder = "1.5" # For binary parsing (TrueType cmap tables)
+bitflags = "2"    # For form field flags
+smallvec = "1.16" # Stack-allocated small vectors for content stream operands (#165)
+
+# Compression/Decompression
+flate2 = { version = "1.1", default-features = false, features = ["zlib-rs"] }
+weezl = "0.2"                                                                  # LZW compression
+brotli = "9"                                                                   # Brotli compression (PDF 2.0, ISO 32000-2:2020)
+
+# Font parsing
+ttf-parser = "0.25" # TrueType/OpenType parsing: embedded-font cmap, glyph outlines, metrics, name records.
+# Unmaintained (RUSTSEC-2026-0192); fontations (skrifa) migration is upstream-gated — rationale in osv-scanner.toml.
+subsetter = "0.2" # Binary TrueType/OpenType subsetting (Typst's; MIT/Apache). Used by writer-side
+# EmbeddedFont to shrink embedded fonts to only the glyphs actually used.
+taffy = { version = "0.14", default-features = false, features = [
+    "std",
+    "taffy_tree",
+    "block_layout",
+    "flexbox",
+    "grid",
+] }
+unicode-linebreak = "0.1" # UAX #14 line-break opportunities for the inline formatter (LAYOUT-3)
+# Block/flex/grid layout (Dioxus; MIT, no MPL). Used by Phase LAYOUT to position
+# box tree nodes; inline formatting is ours (Phase LAYOUT inline_formatting module).
+phf = { version = "0.14", features = ["macros"] } # Perfect hash maps for Adobe Glyph List
+encoding_rs = "0.8"                               # Shift-JIS, EUC-JP, and other CJK encodings for predefined CMaps
+
+# Unicode bidirectional algorithm (UAX #9) — used by both the HTML+CSS
+# inline formatter (Phase LAYOUT-3) and the markdown converter's RTL
+# emphasis cleanup (#377 D7).
+unicode-bidi = { version = "0.3", default-features = false }
+unicode-normalization = "0.1"                                # NFC composition of overlapping combining marks emitted as separate glyph runs (e.g. "´" + "E" → "É")
+
+# Image processing
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "tiff"] }
+jpeg-decoder = "0.3"                                                                       # Direct decoder access for CMYK JPEGs (Adobe inversion handling)
+base64 = "0.23"                                                                            # For embedding images as data URIs
+fax = "0.3"                                                                                # CCITT Group 3/4 decompression for scanned PDFs (more lenient with malformed EOFB)
+
+# Encryption support
+# aes 0.9.3 raised its own rust-version to 1.89, above this crate's 1.88
+# floor, so Cargo.lock holds 0.9.2 — the newest release that still builds on
+# the MSRV. The requirement stays open: a consumer on 1.89+ resolves 0.9.3.
+aes = "0.9"                                  # AES encryption for PDF 1.6+
+cbc = "0.2"                                  # CBC mode for AES
+md-5 = { version = "0.11", optional = true } # MD5 for legacy R≤4 key derivation
+sha2 = "0.11"                                # SHA-256 for newer encryption
+stringprep = "0.1"                           # SASLprep for Unicode PDF passwords (R>=5)
+
+# FIPS-validated CryptoProvider backend (issue #236).
+# `aws-lc-rs` is Amazon's BoringSSL fork; the `fips` feature gates it
+# to NIST FIPS 140-3 algorithms only (validated 2024). Optional
+# because compiling AWS-LC source adds ~5 minutes to a fresh build.
+# Enable via `--features fips` (default: off, falls back to
+# `RustCryptoProvider`).
+aws-lc-rs = { version = "1", optional = true, features = ["fips"] }
+
+# Digital signatures (optional)
+# NOTE: der/spki/pkcs1/pkcs8/rsa/signature/cms are pinned to 0.7/0.9/0.10/2.x track.
+# Dependabot PRs #469/#467/#429/#389 track the 0.8 stack upgrades; merge once CI green.
+# cms 0.3 is still pre-release; upgrade cms + rsa + pkcs1 together when stable.
+x509-parser = { version = "0.18", optional = true }   # X.509 certificate parsing
+cms = { version = "0.3.0-pre.1", optional = true }    # CMS/PKCS#7 — pinned exactly by pkcs12, which p12-keystore pulls
+rsa = { version = "0.10.0-rc.18", optional = true }   # RSA signing — rc line is what cms 0.3 requires
+der = { version = "0.8", optional = true }            # DER encoding
+spki = { version = "0.8", optional = true }           # SubjectPublicKeyInfo — matches der 0.8
+pkcs1 = { version = "0.8.0-rc.4", optional = true }   # PKCS#1 RSA format — rc line is what rsa 0.10 requires
+pkcs8 = { version = "0.11", optional = true }         # PKCS#8 private keys
+p12-keystore = { version = "0.3.1", optional = true } # PKCS#12 (.p12/.pfx) parsing
+signature = { version = "3.0", optional = true }      # Signature traits
+sha1 = { version = "0.11", optional = true }          # SHA-1 for legacy signatures
+# sha2 v0.10 alias: rsa 0.9 and p256/p384 0.13 require digest 0.10 trait bounds.
+# Our main codebase uses sha2 0.11 (digest 0.11). The alias lets the signatures
+# module use sha2 0.10 types specifically where rsa::pss / ecdsa crate generics
+# require it, without changing the rest of the codebase. See issue #420.
+p256 = { version = "0.14", optional = true } # ECDSA P-256 signature verification
+p384 = { version = "0.14", optional = true } # ECDSA P-384 signature verification
+
+# Parallel extraction
+rayon = { version = "1.12", optional = true }
+
+# ICC colour management — pure-Rust qcms (Firefox's colour engine).
+# Default features bring in `cmyk` + `iccv4-enabled` which cover every
+# colour space PDF /ICCBased streams actually use.  Gated on
+# `icc-qcms`; the legacy `icc` feature aliases to it.
+qcms = { version = "0.3", optional = true }
+
+# ICC colour management — press-grade lcms2 (Little CMS, C). Opt-in
+# behind `icc-lcms2` because it pulls in the lcms2-sys C dependency.
+# Required for CMYK→CMYK profile retargeting, Black Point Compensation,
+# and per-intent dispatch — the bits qcms 0.3 doesn't implement. Real
+# prepress / packaging consumers turn this on; library embedders
+# targeting WASM or C# AOT stay on the qcms default.
+lcms2 = { version = "6", optional = true }
+
+# Math and algorithms
+ndarray = { version = "0.17", optional = true, features = ["std"] }
+linfa = { version = "0.8", optional = true }
+linfa-clustering = { version = "0.8", optional = true }
+
+# ML (CPU-only)
+# Held at 0.22: tract 0.23 pulls `dyn-eq` (MPL-2.0) into the graph, which
+# `deny.toml` does not allow, and raises the ML features' rustc floor to 1.91.
+tract-onnx = { version = "0.22", optional = true }
+
+# OCR - PaddleOCR via ONNX Runtime (optional)
+ort = { version = "=2.0.0-rc.13", optional = true, default-features = false, features = [
+    "ndarray",
+    "load-dynamic",
+] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# XML parsing (for XMP metadata)
+quick-xml = "0.42"
+
+# Python bindings (optional)
+# Using latest version to support Python 3.14+
+pyo3 = { version = "0.29", features = [
+    "abi3-py38",
+    "generate-import-lib",
+    "multiple-pymethods",
+], optional = true }
+# Bridges Rust `log` macros to Python `logging` module (issue #280)
+pyo3-log = { version = "0.13", optional = true }
+
+# WASM support (optional)
+wasm-bindgen = { version = "0.2", optional = true }
+web-sys = { version = "0.3", optional = true, features = ["console"] }
+js-sys = { version = "0.3", optional = true }
+console_error_panic_hook = { version = "0.1", optional = true }
+# Forwards Rust `log` macros to the browser console (issue #280)
+console_log = { version = "1", optional = true, features = ["color"] }
+getrandom = "0.4"
+getrandom_02 = { package = "getrandom", version = "0.2", optional = true, features = ["js"] }
+serde-wasm-bindgen = { version = "0.6", optional = true }
+
+# Table detection - page rendering (optional)
+pdfium-render = { version = "0.9", optional = true }
+
+# Rendering (optional - for page to image conversion)
+tiny-skia = { version = "0.12", optional = true }
+fast_image_resize = { version = "6", optional = true }                          # SIMD-accelerated image downscaling
+hayro-jbig2 = { version = "0.3", optional = true, default-features = false }    # Pure-Rust JBIG2 decoder (Apache-2.0 OR MIT)
+hayro-jpeg2000 = { version = "0.4", optional = true, default-features = false } # Pure-Rust JPEG 2000 decoder, no_std + WASM-safe (Apache-2.0 OR MIT)
+fontdb = { version = "0.24", optional = true }
+harfrust = { version = "0.13", optional = true }
+
+uuid = { version = "1.26", features = ["v4", "js"] }
+
+# Barcode/QR code generation (optional)
+qrcode = { version = "0.14", optional = true }
+barcoders = { version = "2.0", optional = true, features = ["image"] }
+
+# Office document creation and export via office_oxide (always required)
+office_oxide = { version = "0.1.9", default-features = false }
+ureq = { version = "3", default-features = false, features = ["rustls"], optional = true }
+
+# `getrandom`'s `wasm_js` backend is only meaningful when targeting
+# `wasm32-unknown-unknown` (browser / WASI runtimes that route entropy
+# via `crypto.getRandomValues`). Pinning it here avoids dragging
+# wasm-specific cfg into native dependency graphs while still keeping
+# the WASM build's RNG functional.
+[target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
+getrandom = { version = "0.4", features = ["wasm_js"] }
+# tract-onnx (the `wasm-ocr` OCR path, #524) pulls getrandom 0.3
+# transitively via ahash/rand. Its wasm32-unknown-unknown backend
+# needs the `wasm_js` feature AND the `--cfg getrandom_backend="wasm_js"`
+# rustflag (see the OCR guide build recipe). Aliased + optional so it
+# coexists with the 0.4 entry and is only pulled for `wasm-ocr`, never
+# bloating the existing non-OCR wasm build.
+getrandom_03 = { package = "getrandom", version = "0.3", features = ["wasm_js"], optional = true }
+
+[dev-dependencies]
+tempfile = "3.27"
+crc32fast = "1.5"
+wasm-bindgen-test = "0.3"
+hex-literal = "1.1.0"
+jpeg-encoder = "0.7.1"
+
+# `criterion` pulls `rayon`, which cannot target wasm32. Benches only
+# ever run natively, so keep criterion out of the wasm32 dev-dep graph
+# — without this, `wasm-pack test` (any wasm integration test, not
+# just OCR) fails to build the test harness at all (#524 / #7).
+[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
+criterion = "0.8"
+
+[features]
+default = ["icc", "legacy-crypto"]
+
+# Enable logging for the extraction pipeline
+logging = []
+
+# Bundle fallback fonts (Droid Sans Fallback for CJK + Noto Emoji) so that
+# flattening a filled form field can bake non-Latin / emoji values that the
+# field's own /DA font cannot render (ISO 32000-1 §12.7.3.3). Opt-in because
+# it adds ~4.5 MB of font data to the binary; when disabled, flattening such a
+# value falls back to the /DA font and emits a warning instead of embedding.
+cjk-form-fonts = []
+
+# Bundle Droid Sans Fallback so the page-render path can substitute a covering
+# CJK font when the source PDF references an Adobe predefined CIDFont
+# (Ryumin-Light, GothicBBB-Medium, HeiseiMin-W3, STSong-Light, MHei-Medium,
+# HYSMyeongJo-Medium, …) without embedding glyph outlines — ISO 32000-2 §9.7.5.2
+# requires a conforming reader to ship the Adobe-CNS1, Adobe-GB1,
+# Adobe-Japan1 and Adobe-KR character collections. CID → Unicode (via the
+# bundled cid_mappings tables) → Droid Sans glyph_id; produces a sans-serif
+# rendering even when the document asked for Mincho / Gothic. Opt-in because
+# the bundled font adds ~3.4 MB to the binary. Independent of `cjk-form-fonts`
+# so the form-flatten path's behaviour is unchanged when only one is on.
+cjk-render-fallback = []
+
+# FIPS 140-3 validated cryptographic backend (issue #236).
+# When enabled, opt into `AwsLcProvider` (Amazon's `aws-lc-rs` with
+# the `fips` feature) as an alternative to the default
+# `RustCryptoProvider`. Pulls in the AWS-LC C source — fresh builds
+# add ~5 minutes. The provider must still be installed at runtime
+# via `pdf_oxide::crypto::set_provider(...)` in your application's
+# main(); compiling with this feature alone does not change the
+# default behaviour.
+#
+# IMPORTANT: `fips` is mutually exclusive with `legacy-crypto` (which
+# is on by default). Always build FIPS without default features:
+#   cargo build --no-default-features --features fips,icc
+# Combining `fips` with `legacy-crypto` is a compile-time error.
+fips = ["dep:aws-lc-rs", "aws-lc-rs/fips"]
+
+# Real ICC colour management.
+#
+# Three modes:
+#
+#  - `icc-qcms` (default, via the `icc` alias): pure-Rust Firefox-derived
+#    colour engine. CMYK→RGB through the embedded profile, no CMYK→CMYK
+#    retargeting, no Black Point Compensation. Pure Rust so WASM and
+#    C# AOT targets keep working without a C toolchain dependency.
+#
+#  - `icc-lcms2`: opt-in C-dep press-grade CMM. Adds CMYK→CMYK profile
+#    retargeting through Lab PCS (closes the DeviceN /Process ICC
+#    profile-mismatch gap for prepress/packaging workloads), BPC, and
+#    per-intent dispatch the spec asks for. Drags in lcms2-sys (C).
+#
+#  - both: when both `icc-qcms` and `icc-lcms2` are enabled the active
+#    backend is lcms2 — it's the strict superset.
+#
+# Backwards-compat alias: `icc` resolves to `icc-qcms`. Users who built
+# with `--features icc` keep the same behaviour and the same dep graph.
+icc = ["icc-qcms"]
+icc-qcms = ["dep:qcms"]
+icc-lcms2 = ["dep:lcms2"]
+
+# Gate MD5 key-derivation (R≤4 PDF Standard Security) and RC4 cipher
+# behind this feature. Default-on so existing users keep full R≤4 read/write
+# support; opt out with `default-features = false` when building for
+# environments that must not load legacy cryptography.
+legacy-crypto = ["dep:md-5"]
+
+# Python bindings (v0.1.0)
+python = [
+    "pyo3",
+    "pyo3-log",
+    "rendering",
+    "parallel",
+    "logging",
+    "signatures",
+    "tsa-client",
+    "barcodes",
+]
+
+# The following features are planned for v1.0 and are not yet production-ready.
+# We define them here to avoid check-cfg warnings, but their dependencies are commented out.
+# Lean pure-Rust ONNX inference backend (tract): the *only* ML deps the
+# OCR path needs. Kept separate from `ml` so the wasm OCR build does not
+# drag in `linfa`. `ml` is a strict superset, so native `ml` / `table-ml`
+# consumers are unchanged.
+ocr-tract = ["dep:tract-onnx", "dep:ndarray"]
+ml = ["ocr-tract", "dep:linfa", "dep:linfa-clustering"]
+table-ml = ["ml", "dep:pdfium-render"]
+ocr = ["dep:ort", "dep:ndarray", "dep:ureq"]
+gpu = ["dep:ort", "ml"]
+wasm = [
+    "dep:wasm-bindgen",
+    "dep:web-sys",
+    "dep:js-sys",
+    "dep:console_error_panic_hook",
+    "dep:console_log",
+    "dep:getrandom_02",
+    "dep:serde-wasm-bindgen",
+    "logging",
+    "signatures",
+    "barcodes",
+]
+# OCR in the browser/Deno/edge build: wasm + the *lean* tract backend
+# only (`ocr-tract`, NOT full `ml` — `ml` adds the linfa clustering
+# stack, which the browser build has no use for).
+# `getrandom_03` activates the `wasm_js` backend for the getrandom 0.3
+# that tract drags in (a no-op off-wasm32: the dep only exists under
+# the wasm32 target table).
+wasm-ocr = ["wasm", "ocr-tract", "dep:getrandom_03"]
+# Back-compat alias: `wasm-ml` predates #524 on `main` (it was
+# `["wasm", "ml"]`). Kept as a thin alias so `--features wasm-ml`
+# keeps resolving, but `wasm-ocr` is the accurate, documented name
+# (this path is OCR-only — it does not pull full `ml`).
+wasm-ml = ["wasm-ocr"]
+
+# Debug feature for span merging analysis
+debug-span-merging = []
+
+# Test-support hooks for integration tests. Currently exposes
+# `PageRenderer::icc_transform_cache_build_count()`, backed by an
+# instance-local `Cell<usize>` on the `IccTransformCache`, so the
+# per-page qcms transform-cache test can assert exact build counts
+# without resorting to noisy wall-clock measurement. Production builds
+# never enable this feature — the counter increment pays zero overhead
+# when the feature is off.
+test-support = []
+
+# JPEG 2000 (/JPXDecode) image decoding via hayro-jpeg2000 (pure Rust, no_std,
+# WASM-safe). Pulled in by `rendering`; can also be enabled standalone so
+# `extract_image_bytes` decodes JPX images without the full rendering stack.
+jpeg2000 = ["dep:hayro-jpeg2000"]
+
+# Page rendering to images (pure Rust via tiny-skia)
+rendering = [
+    "dep:tiny-skia",
+    "dep:fast_image_resize",
+    "system-fonts",
+    "dep:hayro-jbig2",
+    "jpeg2000",
+]
+
+# System font discovery (fontdb) + shaping (harfrust). v0.3.35 splits
+# this out of `rendering` so HTML+CSS→PDF can pick it up without pulling
+# in tiny-skia. Default-on for native bindings; off for WASM (no
+# filesystem) and off for the bare Rust crate so library embedders opt in.
+system-fonts = ["dep:fontdb", "dep:harfrust"]
+
+# Digital signatures (create and verify PDF signatures)
+signatures = [
+    "dep:x509-parser",
+    "dep:cms",
+    "dep:rsa",
+    "dep:der",
+    "dep:spki",
+    "dep:pkcs1",
+    "dep:pkcs8",
+    "dep:p12-keystore",
+    "dep:signature",
+    "dep:sha1",
+    "dep:p256",
+    "dep:p384",
+]
+
+# RFC 3161 TSA HTTP client (optional, on top of signatures). Adds ureq
+# for POSTing the TimeStampReq to a Time Stamp Authority. Kept behind a
+# dedicated feature so embedded / WASM / AOT C# builds don't pull in an
+# HTTP stack unless the consumer actually needs it.
+tsa-client = ["signatures", "dep:ureq"]
+
+# Barcode/QR code generation
+barcodes = ["dep:qrcode", "dep:barcoders"]
+
+# Parallel page extraction via rayon
+parallel = ["dep:rayon"]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+
+# Size-optimized release (for WASM)
+[profile.release-small]
+inherits = "release"
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
+
+[profile.bench]
+opt-level = 3
+lto = true
+
+# Benchmarks
+[[bench]]
+name = "pdf_extraction_performance"
+harness = false
+
+[[bench]]
+name = "word_boundary_benchmarks"
+harness = false
+
+[[bench]]
+name = "script_detection_benchmarks"
+harness = false
+
+[[bench]]
+name = "ligature_benchmarks"
+harness = false
+
+[[bench]]
+name = "cjk_benchmarks"
+harness = false
+
+[[bench]]
+name = "rtl_benchmarks"
+harness = false
+
+[[bench]]
+name = "complex_script_benchmarks"
+harness = false
+
+[[bench]]
+name = "full_pipeline_benchmarks"
+harness = false
+
+# #393 release gate: StreamingTable must stay linear at 30k rows.
+# Runs 1k / 5k / 10k / 30k sizes via criterion; CI smoke job exercises
+# only the 5k size (see tools/benchmark-harness for the dedicated CI
+# invocation).
+[[bench]]
+name = "streaming_table_scaling"
+harness = false
+
+# Cross-language benchmark runner (Rust baseline for comparing against Go/C#/JS bindings)
+[[bin]]
+name = "rust_bench"
+path = "bench/rust_bench.rs"
+
+# ── v0.3.39 per-feature examples (examples/rust/09-new-features/) ─────────────
+[[example]]
+name = "showcase_barcode_svg"
+path = "examples/rust/09-new-features/barcode_svg/main.rs"
+required-features = ["barcodes"]
+
+[[example]]
+name = "showcase_compliance_validation"
+path = "examples/rust/09-new-features/compliance_validation/main.rs"
+
+[[example]]
+name = "showcase_dashed_stroke"
+path = "examples/rust/09-new-features/dashed_stroke/main.rs"
+
+[[example]]
+name = "showcase_encrypted_bytes"
+path = "examples/rust/09-new-features/encrypted_bytes/main.rs"
+
+[[example]]
+name = "showcase_page_extraction"
+path = "examples/rust/09-new-features/page_extraction/main.rs"
+
+[[example]]
+name = "showcase_streaming_table"
+path = "examples/rust/09-new-features/streaming_table/main.rs"
+
+[[example]]
+name = "showcase_image_embedding"
+path = "examples/rust/09-new-features/image_embedding/main.rs"
+
+[[example]]
+name = "showcase_pdf_ua_image"
+path = "examples/rust/09-new-features/pdf_ua_image/main.rs"
+
+[[example]]
+name = "showcase_in_memory_roundtrip"
+path = "examples/rust/09-new-features/in_memory_roundtrip/main.rs"
+
+[[example]]
+name = "showcase_pdfa_conversion"
+path = "examples/rust/09-new-features/pdfa_conversion/main.rs"
+
+[[example]]
+name = "showcase_office_conversion"
+path = "examples/rust/09-new-features/office_conversion/main.rs"
+
+[[example]]
+name = "showcase_pkcs12_signing"
+path = "examples/rust/09-new-features/pkcs12_signing/main.rs"
+required-features = ["signatures"]
+
+[[example]]
+name = "showcase_rfc3161_timestamp"
+path = "examples/rust/09-new-features/rfc3161_timestamp/main.rs"
+required-features = ["signatures"]
+
+# ── Tutorial examples 01-08 (examples/rust/) ──────────────────────────────────
+[[example]]
+name = "tutorial_extract_text"
+path = "examples/rust/01-extract-text/main.rs"
+
+[[example]]
+name = "tutorial_convert_formats"
+path = "examples/rust/02-convert-formats/main.rs"
+
+[[example]]
+name = "tutorial_create_pdf"
+path = "examples/rust/03-create-pdf/main.rs"
+
+[[example]]
+name = "tutorial_search_text"
+path = "examples/rust/04-search-text/main.rs"
+
+[[example]]
+name = "tutorial_extract_structured"
+path = "examples/rust/05-extract-structured/main.rs"
+
+[[example]]
+name = "tutorial_edit_document"
+path = "examples/rust/06-edit-document/main.rs"
+
+[[example]]
+name = "tutorial_forms_annotations"
+path = "examples/rust/07-forms-annotations/main.rs"
+
+[[example]]
+name = "tutorial_batch_processing"
+path = "examples/rust/08-batch-processing/main.rs"
+
+[package.metadata.docs.rs]
+# Document with safe features only (tesseract-rs fails on docs.rs sandbox)
+features = ["python", "logging", "debug-span-merging", "parallel"]
+rustdoc-args = ["--cfg", "docsrs"]
+
+# Python packaging (Maturin)
+[package.metadata.maturin]
+name = "pdf_oxide"
+python-source = "python"

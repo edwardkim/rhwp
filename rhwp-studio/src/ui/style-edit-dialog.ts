@@ -308,6 +308,7 @@ export class StyleEditDialog extends ModalDialog {
           ...(typeof baseParaShapeId === 'number' ? { baseParaShapeId } : {}),
           ...(typeof baseCharShapeId === 'number' ? { baseCharShapeId } : {}),
         }));
+        if (newId < 0) return false;
         if (this.charModsJson !== '{}' || this.paraModsJson !== '{}') {
           if (!wasm.updateStyleShapes(newId, this.charModsJson, this.paraModsJson)) {
             throw new Error('[StyleEditDialog] 생성한 스타일의 모양 적용 실패');

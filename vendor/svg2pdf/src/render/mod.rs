@@ -31,12 +31,19 @@ pub fn tree_to_stream(
     content.save_state_checked()?;
 
     // From PDF coordinate system to SVG coordinate system
-    let initial_transform =
-        Transform::from_row(1.0, 0.0, 0.0, -1.0, 0.0, tree.size().height());
+    let initial_transform = Transform::from_row(1.0, 0.0, 0.0, -1.0, 0.0, tree.size().height());
 
     content.transform(initial_transform.to_pdf_transform());
 
-    group::render(tree.root(), chunk, content, ctx, initial_transform, None, rc)?;
+    group::render(
+        tree.root(),
+        chunk,
+        content,
+        ctx,
+        initial_transform,
+        None,
+        rc,
+    )?;
     content.restore_state();
 
     Ok(())
@@ -109,7 +116,9 @@ impl Render for Node {
             ),
             #[cfg(not(feature = "image"))]
             Node::Image(_) => {
-                log::warn!("Failed convert image because the image feature was disabled. Skipping.");
+                log::warn!(
+                    "Failed convert image because the image feature was disabled. Skipping."
+                );
                 Ok(())
             }
             #[cfg(feature = "text")]

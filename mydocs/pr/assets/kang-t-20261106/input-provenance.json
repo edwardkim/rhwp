@@ -1,0 +1,47 @@
+[
+  {
+    "issue": "8555",
+    "expected_pages": 4,
+    "source_head": "ec64701aca2c20ab2ad17bcac6238e14a96f210b",
+    "hwp": {
+      "formal_path": "samples/issue8555/21868765_cell_text_edit.hwp",
+      "sha256": "bbf1f72951b6ff5de258f806c5d2569214538b76a867ecebce10f9da8718ff9e",
+      "bytes": 57344
+    },
+    "pdf": {
+      "formal_path": "pdf/issue8555/21868765_cell_text_edit-hwp-mac-12.30.pdf",
+      "sha256": "aa6a2bf0fb12525a5108fab7a812e7ba81f8b879e9a50651b5128dc36f722c93",
+      "bytes": 593720
+    }
+  },
+  {
+    "issue": "8556",
+    "expected_pages": 5,
+    "source_head": "c2f05a26f38fc314c012d0655067cd664be35bd1",
+    "hwp": {
+      "formal_path": "samples/issue8556/21868765_cell_picture_insert.hwp",
+      "sha256": "507362e6c73d6db4db73fe4b42ae8110c945747ec4b7564e9b83044cb9ceb074",
+      "bytes": 83456
+    },
+    "pdf": {
+      "formal_path": "pdf/issue8556/21868765_cell_picture_insert-hwp-mac-12.30.pdf",
+      "sha256": "bf19f16e555477bdbe63862bb196a0ad35e65942b77a3d11d41e65a1e3b1a57a",
+      "bytes": 628655
+    }
+  },
+  {
+    "issue": "8557",
+    "expected_pages": 4,
+    "source_head": "a1146f76a0cbafcb11691f73b576dcb428bd62e0",
+    "hwp": {
+      "formal_path": "samples/issue8557/21868765_relocated_picture.hwp",
+      "sha256": "0d7cfc1df9f86da46cb12ebe5aa1eb0fbd9e660d4302f7a6facee8296ee09001",
+      "bytes": 83456
+    },
+    "pdf": {
+      "formal_path": "pdf/issue8557/21868765_relocated_picture-hwp-mac-12.30.pdf",
+      "sha256": "568d2037f8b132c25b70c4a26b3bca0f13168b92d755ad1a13891ddc2e929107",
+      "bytes": 622845
+    }
+  }
+]

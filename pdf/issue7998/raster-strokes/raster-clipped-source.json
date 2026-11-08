@@ -1,0 +1,11 @@
+{
+  "source": "independent variation of original PDF operators; no engine output used as expected result",
+  "sha256": "4708e61398340b34b030497d59a87f278cebb6973cdad8bde6fed55b6d558b08",
+  "tables": 2,
+  "clipPt": [
+    19.75,
+    29.75,
+    360.5,
+    300.5
+  ]
+}

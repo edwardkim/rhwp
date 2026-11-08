@@ -1,0 +1,35 @@
+{
+  "pr": 8586,
+  "sourceSha": "ec814abd46434dc613a568ee43547b3ce5b8b992",
+  "wasmSha256": "251c54c1194265e74e7a76863c5645da74330e12044b7f877e9c2fe14405a98f",
+  "runtime": "지정한 제품 SHA의 실제 WASM 공개 API",
+  "observations": {
+    "before": {
+      "ok": true,
+      "exists": true,
+      "position": 1,
+      "format": 0,
+      "dash": true
+    },
+    "set": {
+      "ok": true,
+      "controlIdx": 2,
+      "removed": [
+        [
+          2,
+          0
+        ]
+      ]
+    },
+    "after": {
+      "ok": true,
+      "exists": true,
+      "position": 5,
+      "format": 0,
+      "dash": true
+    },
+    "page-number-updated_hwp": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-8659-api/pr8586/page-number-updated.hwp",
+    "page-number-updated_hwpx": "/home/edward/mygithub/rhwp/output/pr-review/hyunmyungJaneLee-20261106/completion-8659-api/pr8586/page-number-updated.hwpx"
+  },
+  "status": "passed"
+}

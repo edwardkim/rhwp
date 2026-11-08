@@ -1,0 +1,172 @@
+{
+  "label": "candidate",
+  "browser": "Chrome/155.0.8059.40",
+  "ownTarget": "DD06A9F21EE09C8E47C196DF23C33813",
+  "assertions": [
+    "actual public API through snapshot and warmed mutation/layout cache",
+    "keyboard undo/redo preserves cell ownership",
+    "save/reopen keeps the picture inside the cell"
+  ],
+  "warnings": [],
+  "before": [],
+  "insertion": {
+    "ok": true,
+    "paraIdx": 4,
+    "controlIdx": 0,
+    "logicalOffset": 1
+  },
+  "after": [
+    {
+      "page": 0,
+      "type": "image",
+      "x": 510.4,
+      "y": 270.7,
+      "w": 37.3,
+      "h": 37.3,
+      "secIdx": 0,
+      "paraIdx": 4,
+      "controlIdx": 0,
+      "wrap": "square",
+      "cellIdx": 11,
+      "cellParaIdx": 0,
+      "outerTableControlIdx": 0,
+      "parentParaIdx": 4,
+      "cellPath": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 11,
+          "cellParaIndex": 0
+        }
+      ],
+      "plane": 2,
+      "zOrder": 0,
+      "stableIndex": [
+        0,
+        4,
+        0,
+        11,
+        0,
+        0
+      ]
+    }
+  ],
+  "properties": {
+    "width": 2800,
+    "height": 2800,
+    "treatAsChar": false,
+    "vertRelTo": "Para",
+    "vertAlign": "Top",
+    "horzRelTo": "Column",
+    "horzAlign": "Left",
+    "vertOffset": 0,
+    "horzOffset": 22000,
+    "textWrap": "Square",
+    "restrictInPage": true,
+    "allowOverlap": false,
+    "sizeProtect": false,
+    "brightness": 0,
+    "contrast": 0,
+    "effect": "RealPic",
+    "transparency": 0,
+    "description": "cell insertion CDP",
+    "rotationAngle": 0,
+    "horzFlip": false,
+    "vertFlip": false,
+    "originalWidth": 2800,
+    "originalHeight": 2800,
+    "cropLeft": 0,
+    "cropTop": 0,
+    "cropRight": 0,
+    "cropBottom": 0,
+    "paddingLeft": 0,
+    "paddingTop": 0,
+    "paddingRight": 0,
+    "paddingBottom": 0,
+    "outerMarginLeft": 0,
+    "outerMarginTop": 0,
+    "outerMarginRight": 0,
+    "outerMarginBottom": 0,
+    "borderColor": 0,
+    "borderWidth": 0,
+    "hasCaption": false,
+    "captionDirection": "Bottom",
+    "captionVertAlign": "Top",
+    "captionWidth": 0,
+    "captionSpacing": 0,
+    "captionMaxWidth": 0,
+    "captionIncludeMargin": false
+  },
+  "undo": [],
+  "redo": [
+    {
+      "page": 0,
+      "type": "image",
+      "x": 510.4,
+      "y": 270.7,
+      "w": 37.3,
+      "h": 37.3,
+      "secIdx": 0,
+      "paraIdx": 4,
+      "controlIdx": 0,
+      "wrap": "square",
+      "cellIdx": 11,
+      "cellParaIdx": 0,
+      "outerTableControlIdx": 0,
+      "parentParaIdx": 4,
+      "cellPath": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 11,
+          "cellParaIndex": 0
+        }
+      ],
+      "plane": 2,
+      "zOrder": 0,
+      "stableIndex": [
+        0,
+        4,
+        0,
+        11,
+        0,
+        0
+      ]
+    }
+  ],
+  "savedSha256": "953f943750117a09a562cf8cd8b2b436b17e822754ae41a1fbda27d5ab60365a",
+  "reopened": [
+    {
+      "page": 0,
+      "type": "image",
+      "x": 510.4,
+      "y": 269.3,
+      "w": 37.3,
+      "h": 37.3,
+      "secIdx": 0,
+      "paraIdx": 4,
+      "controlIdx": 0,
+      "wrap": "square",
+      "cellIdx": 11,
+      "cellParaIdx": 0,
+      "outerTableControlIdx": 0,
+      "parentParaIdx": 4,
+      "cellPath": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 11,
+          "cellParaIndex": 0
+        }
+      ],
+      "plane": 2,
+      "zOrder": 0,
+      "stableIndex": [
+        0,
+        4,
+        0,
+        11,
+        0,
+        0
+      ]
+    }
+  ],
+  "success": true
+}

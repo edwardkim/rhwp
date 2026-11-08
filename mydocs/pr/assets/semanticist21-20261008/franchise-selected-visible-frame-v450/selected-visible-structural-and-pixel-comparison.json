@@ -1,0 +1,32 @@
+[
+  {
+    "page": 55,
+    "same_render_tree_as_c174": true,
+    "same_RGBA_as_c174": true
+  },
+  {
+    "page": 56,
+    "same_render_tree_as_c174": true,
+    "same_RGBA_as_c174": true
+  },
+  {
+    "page": 57,
+    "same_render_tree_as_c174": true,
+    "same_RGBA_as_c174": true
+  },
+  {
+    "page": 78,
+    "same_render_tree_as_c174": true,
+    "same_RGBA_as_c174": true
+  },
+  {
+    "page": 79,
+    "same_render_tree_as_c174": false,
+    "same_RGBA_as_c174": false
+  },
+  {
+    "page": 80,
+    "same_render_tree_as_c174": true,
+    "same_RGBA_as_c174": true
+  }
+]

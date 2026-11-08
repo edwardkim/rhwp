@@ -1,3 +1,8 @@
+//! 고정형: 기존 본문 넘침 원장 상한. #7727은 전쪽 수용한 CBTA 입력의 검사 범위만 복원한다.
+//! 주석 갱신: 2026-11-06T08:29:51+09:00; 직전 파일 커밋: 2026-10-27T12:59:19+09:00 (bd0a42c14949).
+//! 복원 입력 2026-11-06 측정: 96DPI·compat2022·PDFium·2px raw 전204쪽,
+//! 최저 Native 92.05232% / fresh WASM 92.16419%; 나머지 입력·원장 상한은 변경하지 않는다.
+//! 근거: mydocs/pr/assets/issue7727/verification-20261106/README.md.
 //! 본문 바닥 넘김(`layout-anomaly` overflow 의 `over_bottom` 축) 원장 게이트 — samples 전수 래칫.
 //!
 //! # 왜 필요한가 (`#6976` 단계 0)
@@ -44,6 +49,28 @@
 
 #![cfg(not(target_arch = "wasm32"))]
 
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/deferred_exam_scope.rs"
+));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/exam_fixtures.rs"
+));
+mod retired_exam_baseline_scope {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/support/retired_exam_baseline_scope.rs"
+    ));
+}
+
+mod deferred_visual_regression_scope {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/support/deferred_visual_regression_scope.rs"
+    ));
+}
+
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
@@ -70,6 +97,17 @@ const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"]
 /// 각 원문의 증가/시각 근거는 #7445 증적과 corpus_scope_restore_validation.json에 연결한다.
 /// 원문은 samples에 유지하며 다른 래칫·쪽수·렌더러 비교 대상에서는 제외하지 않는다.
 const DEFERRED_BODY_OVERFLOW_FIXTURES: &[&str] = &[
+    // #7834: 고정 devel bfa28a77a 전15쪽 Native/fresh 최저45.18405%.
+    // 본문 넘침 원문과 기존0행을 보존하여 이 입력만 이관한다.
+    "issue6854/22037757-chuncheon-personnel-rule-annex13.hwpx",
+    // #7445: upstream/devel 74f9b71b1과 같은 원문의 한컴2024 Print
+    // 전2쪽 최저79.32995%; 중국어 원문의 본문 넘침 원장만 이관한다.
+    "issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp",
+    // 사용자 요청: 아래 세 HWPX의 조판 보정은 다른 브랜치에서 진행한다.
+    "table_giant_cell_overfill.hwpx",
+    "issue5792/2700727_animal_facility_standards.hwpx",
+    // #7445: CGMP 48쪽은 다른 작업이 보정한다. 사용자 요청으로 이 입력의 회귀를 제거한다.
+    "issue6035/cgmp_evaluation_table.hwpx",
     // #7445: PDF49쪽/Native47쪽, 공통47쪽 최저0.22%로 렌더링 회귀 보류.
     "issue5699/37787_regulatory_impact.hwp",
     // #7445: 전74쪽 최저22.71%, 전체 피델리티 개선 후 회귀 복원.
@@ -83,15 +121,10 @@ const DEFERRED_BODY_OVERFLOW_FIXTURES: &[&str] = &[
     // #7445: 전52쪽 최저39.97%로 캡션·쪽수·본문 넘침 회귀를 함께 보류한다.
     // deferred_caption1853_validation.json의 전체 비교 근거를 따른다.
     "issue1853_caption_precedes_body_split.hwpx",
-    "exam_eng.hwp",
-    "hwpctl_API_v2.4.hwp",
-    "hwp3-sample16-hwp5.hwp",
-    "hwp3-sample16-hwp5-2010.hwp",
-    "hwp3-sample16-hwp5-2022.hwp",
     "issue3637/press_release_split_cell_nested_table.hwpx",
     "issue6031/3249937_asset_management_rules.hwpx",
+    "hwpctl_API_v2.4.hwp",
     "task2097/75544_pii_bunseok.hwpx",
-    "issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
     "issue6023/30269_reform_recommendation.hwp",
     "issue6844/30269-anticorruption-recommendation-toc.hwp",
     "issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp",
@@ -118,6 +151,9 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
         let entries = std::fs::read_dir(dir).expect("samples 읽기 실패");
         for entry in entries {
             let path = entry.expect("dir entry").path();
+            if is_deferred_exam_document(path.to_string_lossy().as_ref()) {
+                continue;
+            }
             if path.is_dir() {
                 walk(&path, root, acc);
             } else if matches!(
@@ -139,6 +175,9 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
         !DEDICATED_SLOW_FIXTURES.contains(&rel.as_str())
             && !DEFERRED_BODY_OVERFLOW_FIXTURES.contains(&rel.as_str())
     });
+    acc.retain(|(path, _)| !is_deferred_fixture(path));
+    acc.retain(|(path, _)| !retired_exam_baseline_scope::is_retired(path));
+    acc.retain(|(path, _)| !deferred_visual_regression_scope::is_deferred(path, "body"));
     acc.sort_by(|a, b| a.1.cmp(&b.1));
     assert!(!acc.is_empty(), "samples 에 hwp/hwpx 샘플이 없음");
     acc
@@ -149,6 +188,16 @@ fn load_baseline() -> BTreeMap<String, u64> {
         .unwrap_or_else(|e| panic!("baseline 읽기 실패 {BASELINE_PATH}: {e}"));
     text.lines()
         .filter(|l| !l.trim().is_empty() && !l.starts_with('#'))
+        .filter(|line| !is_deferred_exam_document(line.split('\t').next().unwrap_or_default()))
+        .filter(|line| {
+            let rel = line.split('\t').next().unwrap_or_default();
+            !DEDICATED_SLOW_FIXTURES.contains(&rel)
+                && !DEFERRED_BODY_OVERFLOW_FIXTURES.contains(&rel)
+                && !deferred_visual_regression_scope::is_deferred(
+                    &Path::new(SAMPLES_ROOT).join(rel),
+                    "body",
+                )
+        })
         .map(|l| {
             let (rel, n) = l.rsplit_once('\t').expect("baseline TSV 행 형식");
             (rel.to_string(), n.parse::<u64>().expect("baseline 수치"))
@@ -224,7 +273,7 @@ fn body_overflow_does_not_grow_partition(part: usize) {
         "baseline 샘플이 삭제되거나 누락됨: {absent:?}"
     );
     let buckets = partition_samples(all_samples, PARTITIONS);
-    let samples = buckets
+    let mut samples = buckets
         .into_iter()
         .nth(part)
         .unwrap_or_else(|| panic!("없는 partition: {part}"));
@@ -232,6 +281,16 @@ fn body_overflow_does_not_grow_partition(part: usize) {
         !samples.is_empty(),
         "body-overflow partition {part} 이 비어 있음"
     );
+    // #7812: 다른 브랜치의 보정 대상은 원본을 보존하고 활성 회귀에서 분리한다.
+    // partition 배정 뒤 제외하므로 다른 문서의 배정은 바뀌지 않는다.
+    // #7813: 같은 원본의 기존 전쪽 미달이 이관된 거대 중첩 셀 문서.
+    samples.retain(|(_, rel)| {
+        ![
+            "table_giant_cell_overfill.hwpx",
+            "issue1949_giant_cell_nested_tables_perf.hwpx",
+        ]
+        .contains(&rel.as_str())
+    });
     let selected_rels: BTreeSet<String> = samples.iter().map(|(_, rel)| rel.clone()).collect();
 
     let workers = std::thread::available_parallelism()

@@ -15,6 +15,8 @@
 //!     ...
 //! ```
 
+mod master_page_scope;
+
 use super::byte_reader::ByteReader;
 use super::record::Record;
 use super::tags;
@@ -36,6 +38,7 @@ use crate::model::paragraph::{
 /// `PARA_TEXT` 한 레코드에서 뽑아낸 문단 본문 축 정보.
 struct ParaTextParts {
     text: String,
+    literal_figure_spaces: Vec<usize>,
     char_offsets: Vec<u32>,
     field_ranges: Vec<FieldRange>,
     tab_extended: Vec<[u16; 7]>,
@@ -47,6 +50,7 @@ struct ParaTextParts {
     /// `control_mask` 비트 30 을 그대로 믿으면 안 된다 — 한컴 원본에도 제어코드는 있는데
     /// 비트가 없는 문단이 있다(한글 2022 오라클 실측 9경로).
     nb_space_control: bool,
+    nb_space_control_indices: Vec<usize>,
 }
 
 /// BodyText 파싱 에러
@@ -56,6 +60,8 @@ pub enum BodyTextError {
     ParseError(String),
     /// An owned drawing text area is incomplete; never replace its section with an empty one.
     DrawingTextStructure(String),
+    /// A hidden change range cannot be projected without corrupting ownership.
+    ChangeTrackingStructure(String),
 }
 
 impl std::fmt::Display for BodyTextError {
@@ -64,6 +70,9 @@ impl std::fmt::Display for BodyTextError {
             BodyTextError::RecordError(e) => write!(f, "BodyText 레코드 오류: {}", e),
             BodyTextError::DrawingTextStructure(e) => {
                 write!(f, "그리기 내부 영역 구조 오류: {}", e)
+            }
+            BodyTextError::ChangeTrackingStructure(e) => {
+                write!(f, "변경 추적 표시 구조 오류: {}", e)
             }
             BodyTextError::ParseError(e) => write!(f, "BodyText 파싱 오류: {}", e),
         }
@@ -76,20 +85,41 @@ impl std::error::Error for BodyTextError {}
 ///
 /// data: 압축 해제된(배포용은 복호화+해제된) 레코드 바이트 스트림
 pub fn parse_body_text_section(data: &[u8]) -> Result<Section, BodyTextError> {
+    parse_section_with_previous(data, &mut [])
+}
+
+pub(super) fn parse_section_with_previous(
+    data: &[u8],
+    previous: &mut [Section],
+) -> Result<Section, BodyTextError> {
     let records = Record::read_all(data).map_err(|e| BodyTextError::RecordError(e.to_string()))?;
     drawing_text_structure::validate(&records)?;
 
+    // 본문 뒤 level 1 LIST_HEADER/MEMO_LIST는 독립된 저장 범위다.
+    let tail_start = records
+        .iter()
+        .rposition(|r| r.tag_id == tags::HWPTAG_PARA_HEADER && r.level == 0)
+        .and_then(|last| {
+            records[last + 1..]
+                .iter()
+                .position(|r| {
+                    r.level == 1
+                        && matches!(r.tag_id, tags::HWPTAG_LIST_HEADER | tags::HWPTAG_MEMO_LIST)
+                })
+                .map(|offset| last + 1 + offset)
+        });
+    let body_end = tail_start.unwrap_or(records.len());
     let mut section = Section::default();
     let mut idx = 0;
 
-    while idx < records.len() {
+    while idx < body_end {
         if records[idx].tag_id == tags::HWPTAG_PARA_HEADER {
             let base_level = records[idx].level;
             let start = idx;
             idx += 1;
 
             // 자식 레코드 수집 (level > base_level)
-            while idx < records.len() && records[idx].level > base_level {
+            while idx < body_end && records[idx].level > base_level {
                 idx += 1;
             }
 
@@ -111,42 +141,139 @@ pub fn parse_body_text_section(data: &[u8]) -> Result<Section, BodyTextError> {
 
     link_orphan_field_ends(&mut section.paragraphs);
 
-    // 확장 바탕쪽 파싱: 마지막 문단 이후의 LIST_HEADER (level=1)
-    // HWP 바이너리에서 확장 바탕쪽(마지막 쪽, 임의 쪽)은 Section 스트림 끝에 저장되지만,
-    // level=1로 태그되어 마지막 문단의 자식으로 오인됨.
-    // 전체 레코드를 재스캔하여 마지막 PARA_HEADER(level=0) 이후의 LIST_HEADER(level=1)를 추출.
-    {
-        let all_records = Record::read_all(data).unwrap_or_default();
-        let last_para0_idx = all_records
-            .iter()
-            .rposition(|r| r.tag_id == tags::HWPTAG_PARA_HEADER && r.level == 0);
-        if let Some(lp) = last_para0_idx {
-            // 마지막 문단의 본래 자식 레코드 범위 결정 (PARA_TEXT, PARA_CHAR_SHAPE 등)
-            // LIST_HEADER(level=1)가 나타나면 그 이후는 확장 바탕쪽
-            let mut scan = lp + 1;
-            while scan < all_records.len() {
-                if all_records[scan].tag_id == tags::HWPTAG_LIST_HEADER
-                    && all_records[scan].level == 1
-                {
-                    // 확장 바탕쪽 발견
-                    let tail: Vec<RawRecord> = all_records[scan..]
-                        .iter()
-                        .map(|r| RawRecord {
-                            tag_id: r.tag_id,
-                            level: r.level,
-                            data: r.data.clone(),
-                        })
-                        .collect();
-                    let ext_mps = parse_master_pages_from_raw(&tail, 0);
-                    section.section_def.master_pages.extend(ext_mps);
-                    break;
+    if let Some(start) = tail_start {
+        let tail = &records[start..];
+        let saved = crate::model::section_tail::SectionTail {
+            records: tail
+                .iter()
+                .map(|record| RawRecord {
+                    tag_id: record.tag_id,
+                    level: record.level,
+                    data: record.data.clone(),
+                })
+                .collect(),
+            ..Default::default()
+        };
+        let mut offset = 0;
+        for (memo, group) in saved.record_groups() {
+            let end = offset + group.len();
+            if memo {
+                let number = u32::from_le_bytes(group[0].data[..4].try_into().unwrap());
+                let mut body = Some(parse_paragraph_list(&tail[offset + 2..end]));
+                for owner in previous.iter_mut().chain(std::iter::once(&mut section)) {
+                    if assign_memo_paragraphs(&mut owner.paragraphs, number, &mut body) {
+                        break;
+                    }
                 }
-                scan += 1;
+            } else {
+                section
+                    .section_def
+                    .master_pages
+                    .extend(master_page_scope::parse_extended_master_pages(group));
             }
+            offset = end;
         }
+        section.trailing_lists = Some(saved);
     }
 
     Ok(section)
+}
+
+/// Attach one memo body to the first matching memo field that has none.
+fn assign_memo_paragraphs(
+    paragraphs: &mut [Paragraph],
+    number: u32,
+    body: &mut Option<Vec<Paragraph>>,
+) -> bool {
+    for para in paragraphs {
+        for ctrl in &mut para.controls {
+            match ctrl {
+                Control::Field(field)
+                    if field_is_memo(field) && memo_field_number(field) == number =>
+                {
+                    if field.memo_paragraphs.is_empty() {
+                        if let Some(body) = body.take() {
+                            field.memo_paragraphs = body;
+                            return true;
+                        }
+                    }
+                }
+                Control::Table(table) => {
+                    for cell in &mut table.cells {
+                        if assign_memo_paragraphs(&mut cell.paragraphs, number, body) {
+                            return true;
+                        }
+                    }
+                }
+                Control::Shape(shape) => {
+                    if assign_memo_in_shape(shape, number, body) {
+                        return true;
+                    }
+                }
+                Control::Header(header) => {
+                    if assign_memo_paragraphs(&mut header.paragraphs, number, body) {
+                        return true;
+                    }
+                }
+                Control::Footer(footer) => {
+                    if assign_memo_paragraphs(&mut footer.paragraphs, number, body) {
+                        return true;
+                    }
+                }
+                Control::Footnote(note) => {
+                    if assign_memo_paragraphs(&mut note.paragraphs, number, body) {
+                        return true;
+                    }
+                }
+                Control::Endnote(note) => {
+                    if assign_memo_paragraphs(&mut note.paragraphs, number, body) {
+                        return true;
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+    false
+}
+
+pub(crate) fn field_is_memo(field: &crate::model::control::Field) -> bool {
+    field.field_type == crate::model::control::FieldType::Memo || field.command.starts_with("MEMO/")
+}
+
+pub(crate) fn memo_field_number(field: &crate::model::control::Field) -> u32 {
+    if field.memo_index != 0 {
+        return field.memo_index;
+    }
+    field
+        .command
+        .split('/')
+        .nth(2)
+        .and_then(|token| token.parse().ok())
+        .unwrap_or(0)
+}
+
+fn assign_memo_in_shape(
+    shape: &mut crate::model::shape::ShapeObject,
+    number: u32,
+    body: &mut Option<Vec<Paragraph>>,
+) -> bool {
+    use crate::model::shape::ShapeObject;
+    if let Some(drawing) = shape.drawing_mut() {
+        if let Some(text_box) = &mut drawing.text_box {
+            if assign_memo_paragraphs(&mut text_box.paragraphs, number, body) {
+                return true;
+            }
+        }
+    }
+    if let ShapeObject::Group(group) = shape {
+        for child in &mut group.children {
+            if assign_memo_in_shape(child, number, body) {
+                return true;
+            }
+        }
+    }
+    false
 }
 
 /// 다단락 필드의 종료 마커에 짝 `fieldBegin` 의 id 를 채운다.
@@ -158,8 +285,8 @@ pub fn parse_body_text_section(data: &[u8]) -> Result<Section, BodyTextError> {
 /// 매달린 참조(`beginIDRef="0"`)를 그대로 내보내면 **한글이 파일을 열지 못한다**
 /// (01752 실측). 짝을 못 찾은 종료 마커는 8유닛 슬롯만 지키고 id 는 0 으로 남긴다.
 fn link_orphan_field_ends(paragraphs: &mut [Paragraph]) {
-    // (필드 인스턴스 id, HWP5 ctrl_id)
-    let mut open_fields: Vec<(u32, u32)> = Vec::new();
+    // (필드 인스턴스 id, HWP5 ctrl_id, 메모 번호)
+    let mut open_fields: Vec<(u32, u32, u32)> = Vec::new();
     link_orphan_field_ends_with(paragraphs, &mut open_fields);
 }
 
@@ -168,16 +295,27 @@ fn link_orphan_field_ends(paragraphs: &mut [Paragraph]) {
 /// **짝을 이미 채운 종료 마커에서도 스택을 pop 한다.** HWP5 종료 마커에는 짝 id 가 없어
 /// 순서만이 짝이므로, 이미 이은 마커를 건너뛰면 그 짝이 스택에 남아 뒤에 오는 마커가
 /// **엉뚱한 필드를 닫는다**. 채우기만 조건부로 한다.
-fn link_orphan_field_ends_with(paragraphs: &mut [Paragraph], open_fields: &mut Vec<(u32, u32)>) {
+fn link_orphan_field_ends_with(
+    paragraphs: &mut [Paragraph],
+    open_fields: &mut Vec<(u32, u32, u32)>,
+) {
     for para in paragraphs.iter_mut() {
         // 이 문단의 종료 마커는 **앞서 열린** 필드를 닫는다.
         for ofe in para.orphan_field_ends.iter_mut() {
-            let Some((id, ctrl_id)) = open_fields.pop() else {
+            let Some((id, ctrl_id, memo_index)) = open_fields.pop() else {
                 continue;
             };
             if ofe.begin_id_ref == 0 {
                 ofe.begin_id_ref = id;
+            }
+            // Non-memo multi-paragraph fields need this to write their closing
+            // marker at all; HWPX already carries beginIDRef, so it must be set
+            // even when the id was present.
+            if ofe.begin_ctrl_id == 0 {
                 ofe.begin_ctrl_id = ctrl_id;
+            }
+            if memo_index != 0 && ofe.memo_index == 0 {
+                ofe.memo_index = memo_index;
             }
         }
 
@@ -188,7 +326,19 @@ fn link_orphan_field_ends_with(paragraphs: &mut [Paragraph], open_fields: &mut V
             };
             let closed_here = para.field_ranges.iter().any(|fr| fr.control_idx == i);
             if !closed_here && field.field_id != 0 {
-                open_fields.push((field.field_id, field.ctrl_id));
+                // 메모의 진짜 여는 글자는 `%%me`이고, 저장할 때는 한컴의
+                // 메모 전용 종료 표식(번호 포함)을 써야 한다.
+                let memo_index = if field_is_memo(field) {
+                    memo_field_number(field)
+                } else {
+                    0
+                };
+                let ctrl_id = if memo_index != 0 {
+                    tags::FIELD_MEMO
+                } else {
+                    field.ctrl_id
+                };
+                open_fields.push((field.field_id, ctrl_id, memo_index));
             }
         }
     }
@@ -209,7 +359,7 @@ fn link_orphan_field_ends_with(paragraphs: &mut [Paragraph], open_fields: &mut V
 /// 진짜로 짝이 없는 종료 마커는 여전히 `begin_id_ref == 0` 으로 남아 `#5252` 가드가
 /// 그대로 버린다 — 07276·02899 의 본문 폐기 방지는 유지된다.
 pub fn link_orphan_field_ends_across_sections(sections: &mut [crate::model::document::Section]) {
-    let mut open_fields: Vec<(u32, u32)> = Vec::new();
+    let mut open_fields: Vec<(u32, u32, u32)> = Vec::new();
     for section in sections.iter_mut() {
         link_orphan_field_ends_with(&mut section.paragraphs, &mut open_fields);
     }
@@ -294,7 +444,14 @@ pub fn parse_paragraph(records: &[Record]) -> Result<Paragraph, BodyTextError> {
             tags::HWPTAG_PARA_TEXT => {
                 let parts = parse_para_text(&record.data);
                 para.text = parts.text;
+                para.literal_figure_spaces = parts.literal_figure_spaces;
+                if para.text.chars().filter(|&ch| ch == '\u{2007}').count()
+                    > para.literal_figure_spaces.len()
+                {
+                    para.control_mask |= 1u32 << 0x001F;
+                }
                 para.char_offsets = parts.char_offsets;
+                para.nb_space_control_indices = Some(parts.nb_space_control_indices);
                 para.field_ranges = parts.field_ranges;
                 para.tab_extended = parts.tab_extended;
                 para.title_marks = parts.title_marks;
@@ -336,6 +493,15 @@ pub fn parse_paragraph(records: &[Record]) -> Result<Paragraph, BodyTextError> {
                 let ctrl_data_record = if matches!(control, Control::SectionDef(_)) {
                     section_def_ctrl_data_index(&ctrl_records[1..], ctrl_records[0].level)
                         .map(|index| &ctrl_records[index + 1])
+                } else if matches!(control, Control::Shape(_)) {
+                    // [#8225] 그리기 개체는 CTRL_HEADER 바로 아래나 맨 위 SHAPE_COMPONENT 바로 아래의
+                    // CTRL_DATA 만 이 컨트롤의 것이다. 묶음 안 자식 도형의 CTRL_DATA 는 그 자식이
+                    // `ShapeComponentAttr.ctrl_data` 로 갖는다 — 여기서 가져가면 저장 때 두 번 쓰인다.
+                    let max_level = ctrl_records[0].level + 2;
+                    ctrl_records[1..]
+                        .iter()
+                        .take_while(|r| r.tag_id != tags::HWPTAG_CTRL_HEADER)
+                        .find(|r| r.tag_id == tags::HWPTAG_CTRL_DATA && r.level <= max_level)
                 } else {
                     ctrl_records[1..]
                         .iter()
@@ -343,6 +509,18 @@ pub fn parse_paragraph(records: &[Record]) -> Result<Paragraph, BodyTextError> {
                         .find(|r| r.tag_id == tags::HWPTAG_CTRL_DATA)
                 };
                 let ctrl_data = ctrl_data_record.map(|r| r.data.clone());
+
+                // 첫 글자 장식 방식은 그리기 개체 CTRL_DATA의 파라미터 셋에 있다(HWPX dropcapstyle).
+                if let Some(style) = ctrl_data
+                    .as_deref()
+                    .and_then(crate::model::shape::DropCapStyle::from_hwp5_ctrl_data)
+                {
+                    match &mut control {
+                        Control::Shape(shape) => shape.common_mut().drop_cap_style = style,
+                        Control::Picture(picture) => picture.common.drop_cap_style = style,
+                        _ => {}
+                    }
+                }
 
                 // CTRL_DATA에서 필드 이름 추출 → Field.ctrl_data_name에 설정
                 if let Control::Field(ref mut field) = control {
@@ -434,12 +612,14 @@ fn parse_para_text(data: &[u8]) -> ParaTextParts {
     // 예약값으로 쓴다(ASCII 는 여유, 전각은 doubling 1회 이내).
     let n_units = data.len() / 2;
     let mut text = String::with_capacity(data.len());
+    let mut literal_figure_spaces = Vec::new();
     let mut char_offsets: Vec<u32> = Vec::with_capacity(n_units);
     let mut field_ranges: Vec<FieldRange> = Vec::new();
     let mut tab_extended: Vec<[u16; 7]> = Vec::new();
     let mut title_marks: Vec<TitleMark> = Vec::new();
     let mut orphan_field_ends: Vec<OrphanFieldEnd> = Vec::new();
     let mut nb_space_control = false;
+    let mut nb_space_control_indices = Vec::new();
     let mut pos = 0;
     // 확장 컨트롤(extended) 카운터 → controls[] 인덱스와 1:1 대응
     let mut ctrl_idx: usize = 0;
@@ -473,6 +653,12 @@ fn parse_para_text(data: &[u8]) -> ParaTextParts {
                 }
             }
             let end_cu = (pos / 2) as u32;
+            literal_figure_spaces.extend(
+                data[run_start..pos]
+                    .chunks_exact(2)
+                    .enumerate()
+                    .filter_map(|(i, bytes)| (bytes == [0x07, 0x20]).then_some(char_count + i)),
+            );
             char_offsets.extend(start_cu..end_cu);
             text.extend(data[run_start..pos].chunks_exact(2).map(|c| {
                 char::from_u32(u16::from_le_bytes([c[0], c[1]]) as u32).unwrap_or('\u{FFFD}')
@@ -552,6 +738,7 @@ fn parse_para_text(data: &[u8]) -> ParaTextParts {
                         begin_id_ref: 0,
                         field_id: 0,
                         begin_ctrl_id: 0,
+                        memo_index: 0,
                     });
                 }
             } else if is_extended_only_ctrl_char(ch) {
@@ -584,7 +771,7 @@ fn parse_para_text(data: &[u8]) -> ParaTextParts {
                 }
             }
             // 자동번호(0x12) / 새번호(0x12): 텍스트에 공백 placeholder 추가
-            // → apply_auto_numbers_to_composed에서 "  " (연속 2공백)으로 번호 삽입
+            // → 렌더러가 이 자리표 글자의 표시 문자열로 번호를 투영한다
             if ch == 0x0012 {
                 char_offsets.push(code_unit_pos);
                 text.push(' ');
@@ -612,6 +799,7 @@ fn parse_para_text(data: &[u8]) -> ParaTextParts {
                 }
                 0x001E => {
                     char_offsets.push(code_unit_pos);
+                    nb_space_control_indices.push(char_count);
                     text.push('\u{00A0}'); // 묶음 빈칸 (HWP 5.0 표 7: 코드 30, NO-BREAK SPACE)
                     char_count += 1;
                     // [#5174] 표기 출처를 남긴다 — 같은 U+00A0 이라도 리터럴 `a0 00` 이었던
@@ -672,12 +860,14 @@ fn parse_para_text(data: &[u8]) -> ParaTextParts {
 
     ParaTextParts {
         text,
+        literal_figure_spaces,
         char_offsets,
         field_ranges,
         tab_extended,
         title_marks,
         orphan_field_ends,
         nb_space_control,
+        nb_space_control_indices,
     }
 }
 
@@ -1068,6 +1258,7 @@ fn parse_master_pages_from_raw(raw_records: &[RawRecord], section_flags: u32) ->
             text_ref,
             num_ref,
             hwpx_page_number: None,
+            optional_page_number: None,
             raw_list_header,
         });
     }
@@ -1187,10 +1378,12 @@ fn parse_footnote_shape_record(data: &[u8]) -> FootnoteShape {
     fs.prefix_char = char::from_u32(r.read_u16().unwrap_or(0) as u32).unwrap_or('\0');
     fs.suffix_char = char::from_u32(r.read_u16().unwrap_or(0) as u32).unwrap_or('\0');
     fs.start_number = r.read_u16().unwrap_or(1);
-    fs.separator_length = r.read_i16().unwrap_or(0) as i32;
-    fs.separator_margin_top = r.read_i16().unwrap_or(0);
-    // HWP5 실파일에서는 이 슬롯이 한컴 UI "구분선 위" 값으로 쓰이는 사례가 있다.
-    // HWPX aboveLine 은 separator_margin_top 에 들어오므로 정규화 접근자에서 합친다.
+    // [#7862] 구분선 길이는 4바이트다. 한/글 기본 미주 모양 `12280 | 224` 는 상위 워드까지
+    // 합친 14692344 이고, 한/글 자신의 HWPX 도 `noteLine length="14692344"` 로 적는다.
+    // 상위 워드를 "구분선 위" 여백으로 읽으면 구분선이 짧아지고 미주가 위로 올라간다.
+    fs.separator_length = r.read_i32().unwrap_or(0);
+    // HWP5 에는 HWPX `aboveLine` 슬롯이 없다. "구분선 위" 는 다음 i16 이다.
+    fs.separator_margin_top = 0;
     fs.separator_margin_bottom = r.read_i16().unwrap_or(0);
     fs.note_spacing = r.read_i16().unwrap_or(0);
 

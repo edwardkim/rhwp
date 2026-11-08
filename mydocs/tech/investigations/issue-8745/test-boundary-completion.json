@@ -1,0 +1,280 @@
+{
+  "recorded_at": "2026-11-07T23:16:37.692635+09:00",
+  "implementation_commit": "f922a759aa99ef84210df0451545bff87268c5dc",
+  "changed_existing_tests": [
+    {
+      "path": "tests/cases/issue_7911_pdf_frontend.rs",
+      "prior_file_commit": "20c9678b01c5a564bb510c9fccd652cceafcd212 2026-11-01T13:14:23+09:00",
+      "before_sha256": "fe903dac851eaf01f5279f12c1e13653f022eb825a4fd8b2a19df93e6006543f",
+      "after_sha256": "ed571e41f2004dfa0faac661d60505b2c278c0907032a52b15c1eb93d1d24d4b",
+      "matches_analysis_snapshot": true
+    },
+    {
+      "path": "tests/cases/issue_8160_hwp5_password.rs",
+      "prior_file_commit": "df85dd5967fd1a7e6eefc928ad553837af0d5288 2026-10-25T20:20:40+09:00",
+      "before_sha256": "ed6f1c6549f3869538675978b48c5a74c61b1f27b93691899a55e404e894d718",
+      "after_sha256": "91b8592f1e79b7b7db54a77cee2246d77f82572be3a62b53f7b4b9f33d04f912",
+      "matches_analysis_snapshot": true
+    },
+    {
+      "path": "tests/cases/issue_8303_hwp3_hwpx_textpos_idempotent.rs",
+      "prior_file_commit": "a942678e0f5aef6b58c8c9c530a8a2e592117c5e 2026-11-01T10:05:20+09:00",
+      "before_sha256": "2bf2191384bd269b3830a1b8ee3d9ca648fa90c293d263c04ffd2930ef88d3e3",
+      "after_sha256": "23e39616d70fd93b04d0adb0edf805f515243a25e628d4754f5451b0032345aa",
+      "matches_analysis_snapshot": true
+    },
+    {
+      "path": "tests/cases/issue_8304_hwp3_index_mark.rs",
+      "prior_file_commit": "a65b70d4265f8ebaa8aef1da331f87ec420efe5f 2026-11-01T16:24:53+09:00",
+      "before_sha256": "05e354e5b399ec57f64427786831e7c28d4abb63c31d8d07b9f2a44601a4341c",
+      "after_sha256": "9b48a9ef9ef1d9b34b5c154ebe0c0ced3a05348a391356c95fa9416bf006be7c",
+      "matches_analysis_snapshot": true
+    },
+    {
+      "path": "tests/hwp3_page_number_pos_fixture.rs",
+      "prior_file_commit": "d5fbe8b5d8ad15dc39f1b20be3bd97796f958c44 2026-09-15T23:23:54+09:00",
+      "before_sha256": "dfd7812a551114bf282f6c6e19a2b19a89c15b3a6196ab3c86f9f4e06dcd7b9f",
+      "after_sha256": "65b952a53a8782c2310a4f8f22b1aad3f27c78297e79c53d9bf8b6c4cc42bb17",
+      "matches_analysis_snapshot": true
+    },
+    {
+      "path": "tests/hwp3_password_fixture.rs",
+      "prior_file_commit": "f89b07600c9df92134a7846cf5457cd9a5bb46b6 2026-10-28T19:21:22+09:00",
+      "before_sha256": "70fbc07cbe6764a7e43ebaa49d45d49d470c4b08783ac4460cbe6842d29aaefd",
+      "after_sha256": "c79751e82ef3b7b40374a08c6bea33a480683ce899ce675bca8ccc2315e5fd87",
+      "matches_analysis_snapshot": true
+    },
+    {
+      "path": "tests/issue_3546_chart_preserved_on_save.rs",
+      "prior_file_commit": "552f5228d2dbfd6046c838f14241704f1bcb8a05 2026-10-13T01:25:14+09:00",
+      "before_sha256": "721bb74505e924e2c51ce2db9671e59f93a111d7718c9be006a766071316e64a",
+      "after_sha256": "cf7426a1b7d13e82af2f5f00942dbcf693a277d088d8b70e91691403146891b5",
+      "matches_analysis_snapshot": true
+    },
+    {
+      "path": "tests/issue_4430_export_content_loss.rs",
+      "prior_file_commit": "e2c59ca4b0d5b6e14d6fecdd0d87d3d1bd0f6676 2026-08-10T08:23:05+09:00",
+      "before_sha256": "4b9153cff286b04a5bd842470c06541b3454faee1baee009dfcc7e323460e57a",
+      "after_sha256": "7c2ab4b463edf0d434e9420907c8517c5e7ba277a2b888d2328a63aac5c1fcac",
+      "matches_analysis_snapshot": true
+    }
+  ],
+  "validation_status": "passed",
+  "retained_constructor_checks": [
+    "tests/hwpx_password_fixture.rs: public HwpDocument constructor opens authenticated HWPX without further rendering/export",
+    "tests/cases/issue_8745_password_boundary.rs: explicit constructor compatibility comparison",
+    "tests/cases/issue_7911_pdf_detection.rs: disabled PDF feature preserves constructor error contract"
+  ],
+  "second_full_analysis_counts": {
+    "logging": 43,
+    "rhwp_logging": 7,
+    "vendor_logging": 36
+  },
+  "second_full_analysis_root_sources": [
+    "tests/hwp3_password_fixture.rs:194",
+    "tests/hwp3_password_fixture.rs:556",
+    "tests/issue_3546_chart_preserved_on_save.rs:251"
+  ],
+  "product_validation_completed_at": "2026-11-07T23:42:59.321090+09:00",
+  "checks": [
+    {
+      "name": "suite-prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "start": "2026-11-07T23:15:33.906624+09:00",
+      "exit_code": 0,
+      "end": "2026-11-07T23:15:35.394038+09:00",
+      "log_sha256": "ca12e3042e846bf6d6fa00b2fa99b48f441ce55bef2c129209a83055a5232779"
+    },
+    {
+      "name": "full-regressions",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/codeql-password-investigation/minimal-font/run.sh",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--tests",
+        "--test-threads",
+        "6",
+        "--no-fail-fast"
+      ],
+      "start": "2026-11-07T23:15:35.394892+09:00",
+      "exit_code": 0,
+      "end": "2026-11-07T23:38:31.455832+09:00",
+      "log_sha256": "e04f903d09ca11b4f54599f212f9765310ab4f81ad5d9a8f89f46f3f06734492"
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "start": "2026-11-07T23:38:31.500457+09:00",
+      "exit_code": 0,
+      "end": "2026-11-07T23:39:02.634168+09:00",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "clippy-workspace",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "start": "2026-11-07T23:39:02.635382+09:00",
+      "exit_code": 0,
+      "end": "2026-11-07T23:39:27.947852+09:00",
+      "log_sha256": "230c3adf7970960df2457239e8995c21eb35681e96655bba96b7812c003c8ec2"
+    },
+    {
+      "name": "suite-check",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "e4ffabea38062e716f6c333cc950fa31b42b4dd7"
+      ],
+      "start": "2026-11-07T23:39:27.948247+09:00",
+      "exit_code": 0,
+      "end": "2026-11-07T23:39:28.937141+09:00",
+      "log_sha256": "c0e9e199f9301886fc6184143b548c758b5c423fdae4458a08667ff14ea562c5"
+    }
+  ],
+  "full_regression_summary": "Summary [ 963.800s] 12831 tests run: 12831 passed (2 slow), 45 skipped",
+  "changed_file_tests": [
+    {
+      "file": "tests/cases/issue_7911_pdf_frontend.rs",
+      "passed": 17,
+      "tests": [
+        "all_pages_share_valid_style_pools_and_unique_instance_ids",
+        "blank_pages_are_not_silently_dropped",
+        "automatic_parser_and_core_share_pdf_origin_and_page_mapping",
+        "common_loader_errors_keep_pdf_codes_and_do_not_poison_later_imports",
+        "embedded_images_keep_their_bytes_and_references_in_both_save_formats",
+        "hwp_save_materializes_wire_contract_without_mutating_pdf_or_hwpx",
+        "input_policy_accepts_exact_limit_and_rejects_before_parsing_over_limit",
+        "invalid_or_over_budget_input_does_not_poison_next_import",
+        "password_pdf_authentication_keeps_plaintext_and_images_in_both_save_formats",
+        "password_pdf_unicode_empty_permissions_and_resource_rejection_are_request_local",
+        "positional_selection_never_extracts_unselected_pages_for_header_classification",
+        "public_wrapper_exposes_import_snapshot_without_inventing_saved_pdf_provenance",
+        "selected_core_uses_common_loader_and_saved_documents_keep_selected_content",
+        "selection_is_explicit_and_keeps_source_page_mapping",
+        "service_exposes_pdf_format_without_a_synthetic_hwp_version",
+        "successful_import_reports_consumed_policy_and_request_local_work",
+        "source_indices_are_independent_of_the_selected_page_ceiling"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_8160_hwp5_password.rs",
+      "passed": 2,
+      "tests": [
+        "issue_8160_actual_encryptversion4_fixture_requires_the_password_and_preserves_structure",
+        "issue_8160_cli_password_exit_contract_uses_the_actual_fixture"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_8303_hwp3_hwpx_textpos_idempotent.rs",
+      "passed": 3,
+      "tests": [
+        "hwp3_table_caption_line_start_survives_repeated_hwpx_save",
+        "legacy_hwp3_origin_hwpx_without_axis_marker_is_lifted_once",
+        "hwp3_origin_hwpx_resave_is_idempotent_and_keeps_source_axis"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_8304_hwp3_index_mark.rs",
+      "passed": 9,
+      "tests": [
+        "hchar_array_reads_little_endian_internal_codes",
+        "hwp3_folder_description_tabs_align_with_continuation",
+        "hwp3_custom_outline_marker_matches_hancom_heading",
+        "hwp3_gyeonmyeongjo_matches_hancom_saved_font",
+        "hwp3_index_marks_match_hancom_hwp5_keywords",
+        "password_hwp3_page_background_is_first_page_only",
+        "password_hwp3_hypertext_box_keeps_its_text",
+        "password_hwp3_paragraph_spacing_and_line_positions_match_hancom_hwp5",
+        "hwp3_index_marks_survive_hwp5_and_hwpx_save"
+      ]
+    },
+    {
+      "file": "tests/hwp3_page_number_pos_fixture.rs",
+      "passed": 1,
+      "tests": [
+        "page_number_position_does_not_prefix_hwp3_title_with_object_marker"
+      ]
+    },
+    {
+      "file": "tests/hwp3_password_fixture.rs",
+      "passed": 11,
+      "tests": [
+        "actual_hwp3_password_fixture_anchors_inline_folder_table_to_paragraph",
+        "actual_hwp3_password_fixture_keeps_icon_outline_at_column_origin_without_fill",
+        "actual_hwp3_password_fixture_keeps_white_shaded_table_cells_white",
+        "actual_hwp3_password_fixture_normalizes_hanging_indent_first_line_margin",
+        "actual_hwp3_password_fixture_preserves_p3_inline_object_vertical_contract",
+        "actual_hwp3_password_fixture_preserves_table_triangle_bullets",
+        "actual_hwp3_password_fixture_keeps_hyperlink_internal_vpos_reset_on_next_page",
+        "actual_hwp3_password_fixture_preserves_toc_inline_shape_vertical_contract",
+        "actual_hwp3_password_fixture_keeps_regular_page_background_opaque",
+        "cli_password_exit_contract_uses_the_actual_hwp3_fixture",
+        "actual_hwp3_password_fixture_requires_the_password_and_preserves_structure"
+      ]
+    },
+    {
+      "file": "tests/issue_3546_chart_preserved_on_save.rs",
+      "passed": 2,
+      "tests": [
+        "issue_3546_chart_part_is_password_protected",
+        "issue_3546_chart_preserved_on_save"
+      ]
+    },
+    {
+      "file": "tests/issue_4430_export_content_loss.rs",
+      "passed": 4,
+      "tests": [
+        "document_export_report_survives_byte_take_and_failure_has_no_artifact",
+        "hwp_to_hwpx_to_hwp_reports_nested_resource_once_without_mutating_source",
+        "password_reported_wasm_exports_keep_report_attached_to_each_encrypted_artifact",
+        "hwpx_to_hwp_to_hwpx_reports_one_shared_resource_across_many_nested_owners"
+      ]
+    }
+  ],
+  "changed_file_pass_count": 49,
+  "existing_test_expectations_unchanged": true,
+  "codeql_validation": "full-codeql-validation.json",
+  "codeql_final_counts": {
+    "rust/access-invalid-pointer": 6,
+    "rust/hard-coded-cryptographic-value": 121,
+    "rust/cleartext-logging": 36,
+    "rust/weak-sensitive-data-hashing": 1,
+    "rust/weak-cryptographic-algorithm": 2
+  },
+  "codeql_rhwp_logging": 0,
+  "completed_at": "2026-11-07T23:48:17.458993+09:00",
+  "documentation_validation": {
+    "relative_links": "passed, 9 Markdown files",
+    "long_lived_metadata": "passed, 5 files",
+    "evidence_json_parse": "passed, 28 files",
+    "git_diff_check": "passed"
+  }
+}

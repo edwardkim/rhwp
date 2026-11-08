@@ -252,7 +252,7 @@ function validateFixture(manifest, fixturePath) {
 export function runNative(nativeBin, fixturePath) {
   const result = spawnSync(
     regularInput(nativeBin, 512 * 1024 * 1024),
-    [fixturePath, '--page', '0', '--max-characters', '4096', '--json'],
+    ['font-trace', fixturePath, '--page', '0', '--max-characters', '4096', '--json'],
     {
       cwd: ROOT,
       encoding: 'utf8',
@@ -274,7 +274,7 @@ export function runNative(nativeBin, fixturePath) {
 function runLayout(layoutBin, fixturePath) {
   const result = spawnSync(
     regularInput(layoutBin, 512 * 1024 * 1024),
-    [fixturePath, '--page', '0', '--json'],
+    ['text-layout', fixturePath, '--page', '0', '--json'],
     {
       cwd: ROOT,
       encoding: 'utf8',

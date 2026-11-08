@@ -1,4 +1,9 @@
-//! Issue #6520: production SVG consumes the canonical `PageLayerTree` paint contract.
+//! 관계형·고정형: 합성 트리와 실제 SVG API·글꼴 자원 계약.
+//! 주석 갱신: 2026-10-30T10:05:44+09:00; 직전 파일 커밋: 2026-10-30T02:17:47+09:00 (55d447871d).
+//! 당시 공개 편집 저장본 2026-10-20 측정 raw(192dpi, PDFium): 전 1쪽 직접 PNG Native·fresh WASM 각 100.00%,
+//! SVG webfont 각 97.86%; 근거: mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/svg-unicode-subset/README.md.
+//! 다른 검사는 합성 트리와 기존 샘플의 SVG API 결과 관계이며 해당 시각 수치와 구분한다.
+//! #6520: 실제 SVG 출력이 정규 `PageLayerTree` 그리기 계약을 소비한다.
 
 use rhwp::model::shape::TextWrap;
 use rhwp::paint::{
@@ -68,7 +73,9 @@ fn collect_text_visual_roles(node: &LayerNode, roles: &mut Vec<TextVisualReplayR
                 collect_text_visual_roles(child, roles);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => collect_text_visual_roles(child, roles),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            collect_text_visual_roles(child, roles)
+        }
         LayerNodeKind::Leaf { ops } => roles.extend(ops.iter().map(text_visual_replay_role)),
     }
 }
@@ -80,7 +87,9 @@ fn collect_control_labels<'a>(node: &'a LayerNode, labels: &mut Vec<&'a str>) {
                 collect_control_labels(child, labels);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => collect_control_labels(child, labels),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            collect_control_labels(child, labels)
+        }
         LayerNodeKind::Leaf { ops } => labels.extend(ops.iter().filter_map(|op| match op {
             PaintOp::ControlLabel { label, .. } => Some(label.as_str()),
             _ => None,
@@ -91,7 +100,9 @@ fn collect_control_labels<'a>(node: &'a LayerNode, labels: &mut Vec<&'a str>) {
 fn has_missing_picture(node: &LayerNode) -> bool {
     match &node.kind {
         LayerNodeKind::Group { children, .. } => children.iter().any(has_missing_picture),
-        LayerNodeKind::ClipRect { child, .. } => has_missing_picture(child),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            has_missing_picture(child)
+        }
         LayerNodeKind::Leaf { ops } => ops.iter().any(|op| {
             matches!(
                 op,
@@ -110,7 +121,9 @@ fn body_clip(node: &LayerNode) -> Option<BoundingBox> {
             clip_kind: rhwp::paint::ClipKind::Body,
             ..
         } => Some(*clip),
-        LayerNodeKind::ClipRect { child, .. } => body_clip(child),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            body_clip(child)
+        }
         LayerNodeKind::Group { children, .. } => children.iter().find_map(body_clip),
         LayerNodeKind::Leaf { .. } => None,
     }
@@ -124,7 +137,9 @@ fn remove_underline_visual(node: &mut LayerNode) {
                 remove_underline_visual(child);
             }
         }
-        LayerNodeKind::ClipRect { child, .. } => remove_underline_visual(child),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            remove_underline_visual(child)
+        }
         LayerNodeKind::Leaf { ops } => {
             ops.retain(|op| {
                 !matches!(
@@ -280,19 +295,22 @@ fn production_svg_sorts_multiple_document_embedded_font_rules() {
 
 #[test]
 fn subset_font_bytes_are_deterministic_for_multiple_codepoints() {
-    let bytes = std::fs::read("samples/para-001.hwp").expect("sample");
-    let mut document = HwpDocument::from_bytes(&bytes).expect("parse sample");
-    let mut model = document.document().clone();
-    for font in model.doc_info.font_faces.iter_mut().flatten() {
-        font.name = "한컴돋움".to_string();
-        font.is_embedded = false;
-        font.resolved_bin_data_id = None;
-    }
-    let paragraph = &mut model.sections[0].paragraphs[0];
-    paragraph.text = "가나다ABC123".to_string();
-    paragraph.char_count = 9;
-    paragraph.char_offsets = (0..9).collect();
-    document.set_document(model);
+    use base64::Engine;
+    use rhwp::document_core::DocumentCore;
+
+    // C435: 관계없는 저장 줄 폭을 유지하는 문단 교체가 아니라 공개 빈 문서 생성·
+    // 삽입·글꼴·서식·저장 작업이다. 같은 저장본에 한컴 2020 Print 기준이 있으며
+    // Native와 fresh WASM의 1쪽 raw 일치율은 모두 100%다.
+    let text = "가나다ABC123";
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().expect("public blank");
+    core.insert_text_native(0, 0, 0, text)
+        .expect("public insert");
+    let font_id = core.find_or_create_font_id_native("한컴돋움");
+    core.apply_char_format_native(0, 0, 0, 9, &format!(r#"{{"fontId":{font_id}}}"#))
+        .expect("public font assignment");
+    let bytes = core.export_hwp_native().expect("public save");
+    let document = HwpDocument::from_bytes(&bytes).expect("reopen saved input");
     let font_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("ttfs/opensource");
 
     let outputs = (0..8)
@@ -308,6 +326,60 @@ fn subset_font_bytes_are_deterministic_for_multiple_codepoints() {
         .collect::<Vec<_>>();
     assert!(outputs[0].contains("data:font/opentype;base64,"));
     assert!(outputs.windows(2).all(|pair| pair[0] == pair[1]));
+
+    fn embedded_face(svg: &str) -> Vec<u8> {
+        let uri = svg.split("data:font/").nth(1).expect("embedded face");
+        let encoded = uri
+            .split_once(";base64,")
+            .expect("font data URI")
+            .1
+            .split('"')
+            .next()
+            .expect("font bytes");
+        base64::engine::general_purpose::STANDARD
+            .decode(encoded)
+            .expect("valid base64")
+    }
+
+    // PDF 전용 부분 글꼴은 결정적으로 만들어져도 브라우저 <text>에서 쓸 수 없을
+    // 수 있다. glyph ID만으로는 Unicode 검색·메트릭·윤곽을 보존하지 못한다.
+    let full_svg = document
+        .render_page_svg_with_fonts(0, FontEmbedMode::Full, &[font_path])
+        .expect("full-face control");
+    assert_eq!(svg_text(&full_svg), text, "saved source text ownership");
+    assert_eq!(svg_text(&outputs[0]), text, "no missing/duplicate glyphs");
+    let full_bytes = embedded_face(&full_svg);
+    let subset_bytes = embedded_face(&outputs[0]);
+    let full = ttf_parser::Face::parse(&full_bytes, 0).expect("full sfnt");
+    let subset = ttf_parser::Face::parse(&subset_bytes, 0).expect("subset sfnt");
+    assert!(
+        subset.tables().cmap.is_some(),
+        "web Unicode cmap is required"
+    );
+    assert!(
+        subset.tables().os2.is_some(),
+        "web font metadata is required"
+    );
+    assert_eq!(subset.units_per_em(), full.units_per_em());
+    assert_eq!(subset.ascender(), full.ascender());
+    assert_eq!(subset.descender(), full.descender());
+    for ch in text.chars() {
+        let source = full.glyph_index(ch).expect("source Unicode glyph");
+        let target = subset.glyph_index(ch).expect("subset Unicode glyph");
+        assert_ne!(target.0, 0, "U+{:04X} must not become .notdef", ch as u32);
+        assert_eq!(
+            subset.glyph_hor_advance(target),
+            full.glyph_hor_advance(source)
+        );
+        assert_eq!(
+            subset.glyph_bounding_box(target),
+            full.glyph_bounding_box(source)
+        );
+        assert!(
+            subset.glyph_bounding_box(target).is_some(),
+            "visible glyph outline"
+        );
+    }
 }
 
 #[test]
@@ -427,6 +499,8 @@ fn layer_builder_char_overlap_selects_only_the_explicit_visual() {
     overlap.char_overlap = Some(rhwp::renderer::composer::CharOverlapInfo {
         border_type: 1,
         inner_char_size: 100,
+        composition: None,
+        empty_ink: false,
     });
     tree.root.children.push(RenderNode::new(
         44,
@@ -523,11 +597,15 @@ fn same_bounds_visual_op_cannot_cover_a_different_text_run() {
     fallback.char_overlap = Some(rhwp::renderer::composer::CharOverlapInfo {
         border_type: 1,
         inner_char_size: 100,
+        composition: None,
+        empty_ink: false,
     });
     let mut different = fallback.clone();
     different.char_overlap = Some(rhwp::renderer::composer::CharOverlapInfo {
         border_type: 3,
         inner_char_size: 100,
+        composition: None,
+        empty_ink: false,
     });
     let tree = PageLayerTree::new(
         80.0,
@@ -651,6 +729,8 @@ fn raw_svg_placeholder_and_explicit_text_visual_ops_are_serialized() {
     overlap.char_overlap = Some(rhwp::renderer::composer::CharOverlapInfo {
         border_type: 1,
         inner_char_size: 100,
+        composition: None,
+        empty_ink: false,
     });
     let mut control_mark = text_run(" ");
     control_mark.is_para_end = true;
@@ -784,6 +864,7 @@ fn image_and_equation_control_labels_replay_as_canonical_ops() {
             RenderNodeType::Equation(EquationNode {
                 svg_content: "<text>x</text>".to_string(),
                 layout_box: LayoutBox {
+                    font_size: 12.0,
                     x: 0.0,
                     y: 0.0,
                     width: 8.0,
@@ -854,7 +935,14 @@ fn image_and_equation_control_labels_replay_as_canonical_ops() {
     let json = tree.to_json();
     assert_eq!(json.matches("\"type\":\"controlLabel\"").count(), 7);
     let json: serde_json::Value = serde_json::from_str(&json).unwrap();
-    assert_eq!(json["schemaMinorVersion"], 23);
+    assert_eq!(json["schemaVersion"], 1);
+    assert!(
+        json["schemaMinorVersion"]
+            .as_u64()
+            .expect("정수 minor 버전")
+            >= 23,
+        "controlLabel은 additive schema 1.23부터 지원한다: {json}"
+    );
     assert!(json["usedFeatures"]
         .as_array()
         .unwrap()
@@ -1185,7 +1273,7 @@ fn direct_replay_preserves_plane_order_nested_clips_and_debug_projection() {
         ),
         rhwp::paint::ClipKind::Body,
     );
-    // Deliberately shuffled: the shared replay planes, not tree insertion order, own stacking.
+    // 의도적으로 순서를 섞는다. 트리 삽입 순서가 아니라 공통 재생 평면이 쌓임을 결정한다.
     let root = LayerNode::group(
         page,
         Some(1),
@@ -1324,10 +1412,9 @@ fn soft_wrap_decoration_trim_does_not_depend_on_source_node_id() {
             _ => None,
         }
     }
-    assert_eq!(
-        underline_x2(&first),
-        10.0 + decoration_end(&json).expect("serialized decoration endpoint")
-    );
+    // 렌더 트리 JSON 은 끝점을 소수 셋째 자리로 직렬화한다 — SVG 좌표를 그 정밀도에서 비교한다.
+    let endpoint = 10.0 + decoration_end(&json).expect("serialized decoration endpoint");
+    assert_eq!((underline_x2(&first) * 1000.0).round() / 1000.0, endpoint);
 
     #[cfg(feature = "native-skia")]
     {
@@ -1343,7 +1430,9 @@ fn soft_wrap_decoration_trim_does_not_depend_on_source_node_id() {
                         clear_trim(child);
                     }
                 }
-                LayerNodeKind::ClipRect { child, .. } => clear_trim(child),
+                LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                    clear_trim(child)
+                }
                 LayerNodeKind::Leaf { ops } => {
                     for op in ops {
                         if let PaintOp::TextDecoration {

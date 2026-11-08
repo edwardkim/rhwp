@@ -1,7 +1,7 @@
 import type { DocumentPosition, CursorRect, LineInfo, CellPathEntry, NavContextEntry, CellBbox } from '@/core/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
 // [#2756] 셀 좌표 축 헬퍼는 command.ts 와 단일 정의를 공유한다(축 유도 복제 금지).
-import { cellAxisPath, type FocusedCellCursorGeometry } from './command';
+import { cellAxisPath, cellPathForEdit, type FocusedCellCursorGeometry } from './command';
 // 제외 셀 Set 의 키 형식은 조립하는 쪽과 조회하는 쪽이 반드시 같아야 한다 → 단일 정의.
 import { excludedCellKey } from './cell-block-format';
 import type { CellSelectionPhase, CellSelectionPoint } from './cell-selection-phase';
@@ -119,6 +119,96 @@ export class CursorState {
   private selectedTableRef: { sec: number; ppi: number; ci: number; cellPath?: CellPathEntry[] } | null = null;
 
   constructor(private wasm: WasmBridge) {}
+
+  /** 실패한 명령의 논리 편집 상태. WASM handle과 파생 geometry는 복제하지 않는다. */
+  recoveryCheckpoint(): { restore(): void; unchanged(): boolean } {
+    const read = () => ({
+      position: this.position,
+      preferredX: this.preferredX,
+      atLineEnd: this.atLineEnd,
+      anchor: this.anchor,
+      fnAnchor: this.fnAnchor,
+      hfAnchor: this.hfAnchor,
+      _headerFooterMode: this._headerFooterMode,
+      _hfSectionIdx: this._hfSectionIdx,
+      _hfApplyTo: this._hfApplyTo,
+      _hfParaIdx: this._hfParaIdx,
+      _hfCharOffset: this._hfCharOffset,
+      _hfPreviewPage: this._hfPreviewPage,
+      _savedBodyPosition: this._savedBodyPosition,
+      _footnoteMode: this._footnoteMode,
+      _fnParaIdx: this._fnParaIdx,
+      _fnControlIdx: this._fnControlIdx,
+      _fnInnerParaIdx: this._fnInnerParaIdx,
+      _fnCharOffset: this._fnCharOffset,
+      _fnPageNum: this._fnPageNum,
+      _fnFootnoteIndex: this._fnFootnoteIndex,
+      _fnSectionIdx: this._fnSectionIdx,
+      _cellSelectionMode: this._cellSelectionMode,
+      _cellSelectionPhase: this._cellSelectionPhase,
+      _cellSelectionReason: this._cellSelectionReason,
+      cellAnchor: this.cellAnchor,
+      cellFocus: this.cellFocus,
+      cellTableCtx: this.cellTableCtx,
+      _blockSelectionMode: this._blockSelectionMode,
+      _expandPhase: this._expandPhase,
+      _tableObjectSelected: this._tableObjectSelected,
+      selectedTableRef: this.selectedTableRef,
+      _pictureObjectSelected: this._pictureObjectSelected,
+      selectedPictureRef: this.selectedPictureRef,
+      selectedPictureRefs: this.selectedPictureRefs,
+      excludedCells: [...this.excludedCells],
+    });
+    const saved = structuredClone(read());
+    const signature = JSON.stringify(saved);
+    return {
+      restore: () => {
+        const state = structuredClone(saved);
+        this.position = state.position;
+        this.preferredX = state.preferredX;
+        this.atLineEnd = state.atLineEnd;
+        this.anchor = state.anchor;
+        this.fnAnchor = state.fnAnchor;
+        this.hfAnchor = state.hfAnchor;
+        this._headerFooterMode = state._headerFooterMode;
+        this._hfSectionIdx = state._hfSectionIdx;
+        this._hfApplyTo = state._hfApplyTo;
+        this._hfParaIdx = state._hfParaIdx;
+        this._hfCharOffset = state._hfCharOffset;
+        this._hfPreviewPage = state._hfPreviewPage;
+        this._savedBodyPosition = state._savedBodyPosition;
+        this._footnoteMode = state._footnoteMode;
+        this._fnParaIdx = state._fnParaIdx;
+        this._fnControlIdx = state._fnControlIdx;
+        this._fnInnerParaIdx = state._fnInnerParaIdx;
+        this._fnCharOffset = state._fnCharOffset;
+        this._fnPageNum = state._fnPageNum;
+        this._fnFootnoteIndex = state._fnFootnoteIndex;
+        this._fnSectionIdx = state._fnSectionIdx;
+        this._cellSelectionMode = state._cellSelectionMode;
+        this._cellSelectionPhase = state._cellSelectionPhase;
+        this._cellSelectionReason = state._cellSelectionReason;
+        this.cellAnchor = state.cellAnchor;
+        this.cellFocus = state.cellFocus;
+        this.cellTableCtx = state.cellTableCtx;
+        this._blockSelectionMode = state._blockSelectionMode;
+        this._expandPhase = state._expandPhase;
+        this._tableObjectSelected = state._tableObjectSelected;
+        this.selectedTableRef = state.selectedTableRef;
+        this._pictureObjectSelected = state._pictureObjectSelected;
+        this.selectedPictureRef = state.selectedPictureRef;
+        this.selectedPictureRefs = state.selectedPictureRefs;
+        this.excludedCells = new Set(state.excludedCells);
+        this.focusedGeometryValid = false;
+        this.focusedGeometryRevision = null;
+        this.preparedFocusedGeometry = null;
+        this.updateRect(true);
+      },
+      unchanged: () => JSON.stringify(read()) === signature,
+    };
+  }
+
+
 
   // ─── Selection (선택 영역) ──────────────────────────────
 
@@ -1292,26 +1382,32 @@ export class CursorState {
   selectAllInCell(): boolean {
     if (!this.isInCell()) return false;
     const pos = this.position;
-    const { sectionIndex: sec, parentParaIndex: ppi, controlIndex: ci, cellIndex: cei, cellPath } = pos;
-    if (ppi === undefined) return false;
-    // 글상자(1-depth)는 flat 축, 표 셀·중첩은 경로 기반 — moveToCellByIndex 와 같은 규약.
-    const useCellPath = (cellPath?.length ?? 0) > 1 || ((cellPath?.length ?? 0) > 0 && !this.isInTextBox());
+    const { sectionIndex: sec, parentParaIndex: ppi } = pos;
+    if (ppi === undefined) throw new Error('셀 편집 대상의 부모 문단이 없습니다.');
     try {
+      const cellPath = cellPathForEdit(pos);
+      const outer = cellPath[0];
+      // 글상자(1-depth)는 flat 조회 규약을 보존하되 선택 주소는 같은 경로를 가진다.
+      const useCellPath = cellPath.length > 1 || !this.isInTextBox();
       const paraCount = useCellPath && cellPath
         ? this.wasm.getCellParagraphCountByPath(sec, ppi, JSON.stringify(cellPath))
-        : this.wasm.getCellParagraphCount(sec, ppi, ci!, cei!);
-      const lastCpi = Math.max(0, paraCount - 1);
-      const pathAtCpi = (cpi: number): CellPathEntry[] | undefined => cellPath
-        ? cellPath.map((e, i) => i < cellPath.length - 1 ? e : { ...e, cellParaIndex: cpi })
-        : cellPath;
+        : this.wasm.getCellParagraphCount(sec, ppi, outer.controlIndex, outer.cellIndex);
+      if (!Number.isSafeInteger(paraCount) || paraCount < 1) {
+        throw new Error('셀 편집 대상에 문단이 없습니다.');
+      }
+      const lastCpi = paraCount - 1;
+      const pathAtCpi = (cpi: number): CellPathEntry[] =>
+        cellPath.map((e, i) => i < cellPath.length - 1 ? e : { ...e, cellParaIndex: cpi });
       const lastPath = pathAtCpi(lastCpi);
       const lastLen = lastPath && useCellPath
         ? this.wasm.getCellParagraphLengthByPath(sec, ppi, JSON.stringify(lastPath))
-        : this.wasm.getCellParagraphLength(sec, ppi, ci!, cei!, lastCpi);
+        : this.wasm.getCellParagraphLength(sec, ppi, outer.controlIndex, outer.cellIndex, lastCpi);
       const atCpi = (cpi: number, charOffset: number): DocumentPosition => ({
         ...pos,
         paragraphIndex: cpi,
-        cellParaIndex: cpi,
+        controlIndex: outer.controlIndex,
+        cellIndex: outer.cellIndex,
+        cellParaIndex: cellPath.length === 1 ? cpi : outer.cellParaIndex,
         charOffset,
         cellPath: pathAtCpi(cpi),
       });
@@ -1324,7 +1420,8 @@ export class CursorState {
       return true;
     } catch (e) {
       console.warn('[CursorState] selectAllInCell 실패:', e);
-      return false;
+      // false는 상위 단축키에서 본문 전체 선택으로 이어진다. 잘못된 셀은 확장하지 않는다.
+      throw e;
     }
   }
 
@@ -1347,7 +1444,7 @@ export class CursorState {
   // ─── 캐럿 좌표 갱신 ───────────────────────────────────
 
   /** WASM에서 캐럿 좌표를 갱신한다 */
-  updateRect(): void {
+  updateRect(strict = false): void {
     try {
       // 머리말/꼬리말 편집 모드
       if (this._headerFooterMode !== 'none') {
@@ -1410,6 +1507,7 @@ export class CursorState {
       // WASM 결과가 hitTest의 cursorRect와 페이지가 다르면 잘못된 좌표 → 폴백
       if (this.rect && this.position.cursorRect &&
           this.rect.pageIndex !== this.position.cursorRect.pageIndex) {
+        if (strict) throw new Error('복구한 커서 페이지를 확인할 수 없습니다.');
         console.warn('[CursorState] 캐럿 페이지 불일치 (WASM=%d, hitTest=%d) → hitTest 폴백',
           this.rect.pageIndex, this.position.cursorRect.pageIndex);
         this.rect = { ...this.position.cursorRect };
@@ -1418,6 +1516,7 @@ export class CursorState {
       this.focusedGeometryRevision = null;
     } catch (e) {
       this.invalidateFocusedCellCursorGeometry();
+      if (strict) throw e;
       // getCursorRect 실패 시 hitTest에서 전달된 cursorRect 폴백
       const pos = this.position;
       if (pos.cursorRect) {
@@ -2015,6 +2114,41 @@ export class CursorState {
     if (!this.selectedPictureRef) return;
     const outside = this.positionOutsideSelectedPicture();
     if (outside) this.position = outside;
+    this.exitPictureObjectSelection();
+    this.updateRect();
+  }
+
+  /** Esc는 선택 개체의 원래 편집 컨테이너로 복귀한다. 삭제·붙여넣기의 인접 문단 착지와 구분한다. */
+  returnToSelectedObjectOwner(): void {
+    const ref = this.selectedPictureRef;
+    if (!ref) return;
+    // 머리말·각주 모드는 이미 해당 컨테이너의 커서를 보존하고 있다.
+    if (!ref.headerFooter && !ref.noteRef) {
+      const path = ref.cellPath?.map(entry => ({ ...entry }));
+      if (path?.length) {
+        const last = path[path.length - 1];
+        this.position = {
+          sectionIndex: ref.sec,
+          paragraphIndex: last.cellParaIndex,
+          charOffset: 0,
+          parentParaIndex: ref.ppi,
+          controlIndex: path[0].controlIndex,
+          cellIndex: last.cellIndex,
+          cellParaIndex: last.cellParaIndex,
+          cellPath: path,
+          isTextBox: this.position.isTextBox,
+        };
+      } else if (ref.cellIdx !== undefined && ref.outerTableControlIdx !== undefined) {
+        this.position = {
+          sectionIndex: ref.sec, paragraphIndex: ref.cellParaIdx ?? 0, charOffset: 0,
+          parentParaIndex: ref.ppi, controlIndex: ref.outerTableControlIdx,
+          cellIndex: ref.cellIdx, cellParaIndex: ref.cellParaIdx ?? 0,
+        };
+      } else {
+        this.position = { sectionIndex: ref.sec, paragraphIndex: ref.ppi, charOffset: 0 };
+      }
+    }
+    this.clearSelection();
     this.exitPictureObjectSelection();
     this.updateRect();
   }

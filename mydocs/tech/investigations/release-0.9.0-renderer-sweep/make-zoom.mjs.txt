@@ -1,0 +1,21 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {createRequire} from 'node:module';
+const require=createRequire(path.resolve('rhwp-studio/package.json'));
+const puppeteer=require('puppeteer-core');
+const assets='mydocs/tech/investigations/release-0.9.0-renderer-sweep';
+const out='output/release-v0.9.0-execution/promotion/clip-review/reproduced-zoom';
+fs.mkdirSync(out,{recursive:true});
+const chrome=process.env.VISUAL_SWEEP_CHROME;
+if(!chrome)throw new Error('Set VISUAL_SWEEP_CHROME to the verified Chrome executable');
+const inputs=[
+ ['Independent Print','reference-print.png'],
+ ['Before Legacy','legacy-before.png'],
+ ['After Legacy','legacy-after.png'],
+ ['After Layer screen','layer-after.png'],
+ ['After WASM Print','wasm-print.png'],
+];
+inputs.push(['After Native Print','native-print.png']);
+const html=`<!doctype html><style>body{font:14px sans-serif;margin:16px;background:white}main{display:flex;gap:14px}h2{font-size:14px;width:160px}.crop{position:relative;width:160px;overflow:hidden;border:1px solid #ddd;margin:12px 0}.crop img{position:absolute;max-width:none;image-rendering:pixelated;transform:scale(4);transform-origin:top left;left:-1920px}</style><p>Unmodified PNG pixels, 4x nearest-neighbor. Crop: x480..520, y180..320 / y730..780 (96 dpi).</p><main>${inputs.map(([name,file])=>{const data='data:image/png;base64,'+fs.readFileSync(`${assets}/${file}`).toString('base64');return `<section><h2>${name}</h2><div class="crop" style="height:560px"><img src="${data}" style="top:-720px"></div><div class="crop" style="height:200px"><img src="${data}" style="top:-2920px"></div></section>`}).join('')}</main>`;
+const browser=await puppeteer.launch({executablePath:chrome,headless:true,args:['--no-sandbox']});
+try {const page=await browser.newPage();await page.setViewport({width:inputs.length*178+32,height:900,deviceScaleFactor:1});await page.setContent(html);await page.evaluate(()=>Promise.all(Array.from(document.images).map(i=>i.decode())));await page.screenshot({path:`${out}/right-border-zoom.png`,fullPage:true});}finally{await browser.close();}

@@ -20,7 +20,8 @@ jobs:
     name: Full Renderer Sweep
     runs-on: ubuntu-latest
     # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
-    timeout-minutes: 60
+    # Cold WASM build and all multi-profile/surface captures retain their full scope.
+    timeout-minutes: 90
     permissions:
       contents: read
 
@@ -49,7 +50,7 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Setup Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 20
           cache: npm
