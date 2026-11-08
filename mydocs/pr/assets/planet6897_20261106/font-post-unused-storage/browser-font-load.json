@@ -1,0 +1,20 @@
+{
+  "results": [
+    {
+      "key": "raw",
+      "error": "SyntaxError: Invalid font data in ArrayBuffer."
+    },
+    {
+      "key": "roundtrip",
+      "status": "loaded"
+    },
+    {
+      "key": "sanitized",
+      "status": "loaded"
+    }
+  ],
+  "messages": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "OTS parsing error: post: Bad string of length 46\npost: Failed to parse table"
+  ]
+}

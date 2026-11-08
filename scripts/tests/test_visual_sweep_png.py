@@ -1,4 +1,9 @@
-"""직접 PNG 공급의 cmap 보존·부분 출력·이어받기 계약."""
+"""직접 PNG 공급의 cmap 보존·부분 출력·이어받기 계약.
+
+검사 유형: 관계형 API 계약. 공개 합성 글꼴·모의 출력으로 자원 보존을 확인한다.
+실물 PDF의 px 좌표 고정 검사가 아니며 해당 fixture의 독립 PDF 일치율은 비해당이다.
+주석 갱신: 2026-11-09 07:29 KST.
+"""
 import json
 import hashlib
 import shutil
@@ -437,6 +442,45 @@ class RasterDispatchTests(unittest.TestCase):
 
 
 class EmbeddedFontCatalogueTests(unittest.TestCase):
+    def test_referenced_post_names_are_not_guessed_or_truncated(self):
+        header = b'\x00\x02\x00\x00' + bytes(28)
+        prefix = header + struct.pack('>HH', 1, 258)
+        complete = prefix + b'\x05hello'
+        self.assertIsNone(png.repair_post_format2_unused_strings(complete, 1))
+        self.assertEqual(png.repair_post_format2_unused_strings(complete + b'\xffbad', 1), complete)
+        self.assertIsNone(png.repair_post_format2_unused_strings(complete, 2))
+        for length in range(len(complete)):
+            self.assertIsNone(png.repair_post_format2_unused_strings(complete[:length], 1))
+
+    def test_unused_post_suffix_is_removed_without_changing_glyphs_or_metrics(self):
+        # 관계형: 참조되지 않는 이름 저장소의 손상이 실제 SFNT 공급을 막지 않아야 한다.
+        # 공개 합성 fixture만 사용하며 실물 페이지의 좌표나 점수를 고정하지 않는다.
+        from fontTools.ttLib import TTFont
+        from fontTools.ttLib.sfnt import SFNTWriter
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            original = Path(__file__).parents[2] / 'tests/fixtures/fonts/RHWPHostFixture-Regular.ttf'
+            source = root / 'unused-post-suffix.ttf'
+            with TTFont(original, lazy=True) as font, source.open('wb') as output:
+                tags = sorted(font.reader.keys())
+                writer = SFNTWriter(output, len(tags), font.sfntVersion)
+                for tag in tags:
+                    value = font.reader[tag]
+                    writer[tag] = value + b'\xffunfinished-unused-name' if tag == 'post' else value
+                writer.close()
+            adapter = SimpleNamespace(resolve_input_path=lambda base, path: Path(path),
+                sha256_file=lambda path: hashlib.sha256(Path(path).read_bytes()).hexdigest(),
+                write_json_atomic=lambda path, value: Path(path).write_text(json.dumps(value)))
+            # 같은 원본의 새 공급과 캐시 재사용이 모두 보정된 프로그램을 선택한다.
+            for _ in range(2):
+                record = json.loads(png.font_catalog(adapter, root, [source], root).read_text())['faces'][0]
+                self.assertIn('post-format2-unused-strings', record['repairs'])
+                with TTFont(original, lazy=True) as before, TTFont(record['path'], lazy=True) as after:
+                    self.assertEqual(before.getGlyphOrder(), after.getGlyphOrder())
+                    for tag in ('glyf', 'loca', 'hmtx', 'cmap', 'fpgm', 'prep'):
+                        if tag in before:
+                            self.assertEqual(before.reader[tag], after.reader[tag], tag)
+
     def test_post_glyph_count_repair_preserves_rendering_tables(self):
         from fontTools.ttLib import TTFont
         from fontTools.ttLib.sfnt import SFNTWriter

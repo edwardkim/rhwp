@@ -1,0 +1,46 @@
+{
+  "product_code_head": "0322cfe65b99c24685e5a30f67ae49c7e7f11272",
+  "tool_source_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+  "tests": "public synthetic regression before1FAIL -> after1PASS; full relevant Visual Sweep Python group162PASS",
+  "rerun_results": [
+    {
+      "key": "incoming8754-science",
+      "prs": [
+        8754
+      ],
+      "finished": true,
+      "exit_code": 0,
+      "pages": 4,
+      "expected_pages": 4,
+      "page_set_matches": true,
+      "minimum": 99.22,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-hankc-repair-wasm/incoming8754-science/incoming8754-science/silhouette.tsv",
+      "tsv_sha256": "340842a7ab2a4ef5ce984b4b16b87514c4611bda63b53978e525ac8709fba1e4",
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-hankc-repair-wasm/incoming8754-science/run.log",
+      "dpi": 96,
+      "compat": "2022"
+    },
+    {
+      "key": "incoming8754-clip5587",
+      "prs": [
+        8754
+      ],
+      "finished": true,
+      "exit_code": 0,
+      "pages": 4,
+      "expected_pages": 4,
+      "page_set_matches": true,
+      "minimum": 92.29,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-hankc-repair-wasm/incoming8754-clip5587/incoming8754-clip5587/silhouette.tsv",
+      "tsv_sha256": "16006a69cfad9af6b56049508023df0496606e0192ed1de2d533794dfd003334",
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-hankc-repair-wasm/incoming8754-clip5587/run.log",
+      "dpi": 96,
+      "compat": "2022"
+    }
+  ],
+  "font_binary_committed": false,
+  "scope": "tool font preparation; does not resolve protected WASM score declines",
+  "full_python_log_sha256": "953c36439c613b696f526d42365f5d5d8c62f7ecda0ecced76907ccb8188e61d"
+}
