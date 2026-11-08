@@ -474,6 +474,7 @@ impl TypesetState {
         y: f64,
     ) {
         self.data.vpos_snapped_flow_start = Some((para_idx, y));
+        self.data.vpos_snapped_flow_page = Some((self.data.pages.len(), self.data.current_column));
     }
     pub(in crate::renderer::typeset) fn record_vpos_lazy_origin(&mut self, value: Option<i32>) {
         self.data.vpos_lazy_base = value;

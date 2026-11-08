@@ -49,6 +49,22 @@ impl TypesetEngine {
         native_hwp5_footnote_break: Option<notes::footnotes::boundary::NativeHwp5FootnoteBreak>,
         storage: &S,
     ) -> Result<(), S::Error> {
+        // [#8795] 그림을 다음 쪽으로 미루는지 판정할 때의 앵커 문단 시작은 저장 vpos
+        // 스냅(VPOS_CORR)을 마친 위치다. 스냅 전 측정 누적에는 앞 문단의 trailing_ls 등
+        // drift 가 남는다(1351000-201500141 pi969: 786.67 ↔ 저장 59600 = 794.67).
+        // 이 값은 저장 사다리가 그림을 다음 쪽에 둔 경우에만 앵커 원점이다 — 그때 앵커의
+        // 첫 저장 줄 앞에는 자기 개체가 없다. 그림이 같은 쪽에 남으면 첫 저장 줄은 자기
+        // 그림 아래로 밀린 본문 위치이므로(1351000-201800239 pi838: 48506 = 19380 + 654 +
+        // 28472) 같은 쪽 배치는 스냅 전 원점을 그대로 쓴다.
+        let deferral_host_y = match (st.vpos_snapped_flow_start, st.vpos_snapped_flow_page) {
+            (Some((snapped, y)), Some(page))
+                if snapped == para_idx
+                    && page == (picture_host_origin.0, picture_host_origin.1) =>
+            {
+                y
+            }
+            _ => picture_host_origin.2,
+        };
         // [#1995] 한 문단에 근접-전면(near-full-page) non-TAC 그림이 여러 장이면
         // (임베드 매뉴얼을 페이지 이미지로 삽입한 경우 등) 각 이미지는 공존 불가하므로
         // 각각 한 페이지에 단독 배치해야 한다. 미수정 시 96장이 한 앵커에 스택되어
@@ -194,7 +210,7 @@ impl TypesetEngine {
                         {
                             if let Some(placements) = crate::renderer::float_placement::stored_picture_group_next_page_placements(
                                 para, &paragraphs[para_idx + 1..], st.vpos_page_base.unwrap_or(0),
-                                picture_host_origin.2, st.available_height(), self.dpi,
+                                deferral_host_y, st.available_height(), self.dpi,
                             ) {
                                 let placement = placements[ctrl_idx];
                                 st.defer_stored_frame(crate::renderer::typeset::DeferredStoredFrameControl {
@@ -213,14 +229,14 @@ impl TypesetEngine {
                                     para,
                                     &paragraphs[para_idx + 1..],
                                     st.vpos_page_base.unwrap_or(0),
-                                    picture_host_origin.2,
+                                    deferral_host_y,
                                     st.available_height(),
                                     self.dpi,
                                 )
                                 .map(|(placement, reset)| (placement, Some(para_idx + 1 + reset)))
                                 .or_else(|| crate::renderer::float_placement::stored_background_picture_next_page_placement(
                                     para, &paragraphs[para_idx + 1..],
-                                    st.vpos_page_base.unwrap_or(0), picture_host_origin.2,
+                                    st.vpos_page_base.unwrap_or(0), deferral_host_y,
                                     st.available_height(), self.dpi).map(|placement| (placement, None)))
                             {
                                 if let Some(index) = following_body_para_index {
@@ -535,6 +551,10 @@ impl TypesetEngine {
                             .para_styles
                             .get(para.para_shape_id as usize)
                             .map_or(0.0, |style| style.spacing_before);
+                        let host_spacing_after = styles
+                            .para_styles
+                            .get(para.para_shape_id as usize)
+                            .map_or(0.0, |style| style.spacing_after);
                         // (obj_h, extra=obj_h+margin_bottom, h_left, h_right px)
                         let pushdown_h: Option<(f64, f64, f64, f64)> = match ctrl {
                             Control::Picture(pic)
@@ -556,6 +576,7 @@ impl TypesetEngine {
                                         para,
                                         &pic.common,
                                         host_spacing_before,
+                                        host_spacing_after,
                                         self.dpi,
                                     )
                                 } else {
@@ -610,6 +631,7 @@ impl TypesetEngine {
                                         para,
                                         cm,
                                         host_spacing_before,
+                                        host_spacing_after,
                                         self.dpi,
                                     );
                                 Some((h, (h + mb - absorbed_host_line).max(0.0), hl, hr))
@@ -681,7 +703,7 @@ impl TypesetEngine {
                                 let single_picture_overflows = pushdown_topbottom_ctrl_count == 1
                                     && picture_host_origin.0 == st.pages.len()
                                     && picture_host_origin.1 == st.current_column
-                                    && picture_host_origin.2 > 1.0
+                                    && deferral_host_y > 1.0
                                     && stored_ladder_restarts_after(
                                         para,
                                         paragraphs.get(para_idx + 1),
@@ -695,7 +717,7 @@ impl TypesetEngine {
                                                 .max(0),
                                                 self.dpi,
                                             );
-                                            picture_host_origin.2 + v_off + obj_h
+                                            deferral_host_y + v_off + obj_h
                                                 > st.available_height() + 0.5
                                         }
                                         _ => false,

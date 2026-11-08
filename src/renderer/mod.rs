@@ -4407,12 +4407,16 @@ pub(crate) fn empty_host_line_absorbed_by_topbottom_float(
 }
 
 /// 띠에 흡수된 빈 host 줄([`empty_host_line_absorbed_by_topbottom_float`])이 흐름에서 돌려받는
-/// 높이(px). 문단 측정은 `위 간격 + 줄 높이 + 줄간격` 을 이미 더했고, 띠는 문단 시작에서
-/// `max(위 간격, 세로 오프셋)` 아래에 놓이므로 위 간격을 넘는 오프셋만큼은 돌려주지 않는다.
+/// 높이(px). 문단 측정은 `위 간격 + 줄 높이 + 줄간격 + 아래 간격` 을 이미 더했고, 띠는 문단
+/// 시작에서 `max(위 간격, 세로 오프셋)` 아래에 놓이므로 위 간격을 넘는 오프셋만큼은 돌려주지
+/// 않는다. 다음 문단은 띠 아래끝에서 시작하므로 host 의 아래 간격도 띠 안에 든다([#8795]
+/// 1351000-201500141 pi975: 아래 간격 1000HU, 다음 저장 vpos 32185 = 오프셋 307 + 그림 31878.
+/// 배치 `layout_shape_item` 도 그림 아래끝에서 다음 문단을 잇는다).
 pub(crate) fn absorbed_host_line_return_px(
     para: &crate::model::paragraph::Paragraph,
     common: &crate::model::shape::CommonObjAttr,
     spacing_before_px: f64,
+    spacing_after_px: f64,
     dpi: f64,
 ) -> f64 {
     if !empty_host_line_absorbed_by_topbottom_float(para, common) {
@@ -4425,7 +4429,7 @@ pub(crate) fn absorbed_host_line_return_px(
         crate::renderer::float_placement::signed_hwpunit(common.vertical_offset),
         dpi,
     );
-    (hwpunit_to_px(seg.line_height + seg.line_spacing, dpi)
+    (hwpunit_to_px(seg.line_height + seg.line_spacing, dpi) + spacing_after_px.max(0.0)
         - (offset - spacing_before_px.max(0.0)).max(0.0))
     .max(0.0)
 }
