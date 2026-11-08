@@ -10304,6 +10304,21 @@ export class HwpDocument {
         return ret[0] !== 0;
     }
     /**
+     * FontFace에 적재된 SFNT 조각들을 같은 family의 실제 조회 순서로 등록한다.
+     * @param {string} family
+     * @param {Array<any>} programs
+     * @returns {boolean}
+     */
+    registerHftOutlineFontCandidates(family, programs) {
+        const ptr0 = passStringToWasm0(family, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_registerHftOutlineFontCandidates(this.__wbg_ptr, ptr0, len0, programs);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ret[0] !== 0;
+    }
+    /**
      * @param {string} family
      * @param {boolean} bold
      * @param {boolean} italic
