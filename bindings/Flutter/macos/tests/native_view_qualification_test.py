@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 """Portable rejection controls for the Mac qualifier; never target execution."""
 
+from contextlib import contextmanager
+import hashlib
 import importlib.util
+import json
 from pathlib import Path
 import plistlib
+import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest import mock
 
@@ -275,6 +280,285 @@ class CoverTests(unittest.TestCase):
             value[key] = wrong
             with self.subTest(key=key), self.assertRaises(ValueError):
                 qualifier.validate_cover(value, nonce="owned", pid=123, previous=stage())
+
+
+class HeldCaptureTests(unittest.TestCase):
+    """Fake capture I/O only; independent CPU pixels use the real comparator."""
+
+    width, height = 16, 16
+
+    def oracle(self, background=255):
+        # Three independently generated colors, observable edges and over 32
+        # dark pixels satisfy the same content controls as actual capture.
+        return b"".join(bytes((20, 30, 40, 255) if x < 4 and y < 8 else
+                              (160, 40, 80, 255) if 4 <= x < 8 and y < 8 else
+                              (background, background, background, 255))
+                        for y in range(self.height) for x in range(self.width))
+
+    def reference(self, expected):
+        rows = []
+        for y in range(self.height):
+            row = b"".join(expected[(y*self.width+x)*4:(y*self.width+x+1)*4] * 2
+                           for x in range(self.width))
+            rows.extend((row, row))
+        return b"".join(rows)
+
+    def metadata(self):
+        return {"pid": 123, "deviceScale": 1, "actualWindowServerCapture": True,
+                "colorSpace": "srgb", "dynamicRange": "sdr", "windowId": 7,
+                "width": self.width, "height": self.height,
+                "windowBoundsPoints": [0, 0, self.width, self.height]}
+
+    @contextmanager
+    def capture_harness(self, samples, *, expected=None, metadata=None,
+                        deadline=10, comparison_seconds=0, cover=False):
+        expected = self.oracle() if expected is None else expected
+        reference = self.reference(expected)
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        output = Path(temporary.name)
+        clock = SimpleNamespace(now=0.0, sleeps=[])
+        calls, comparisons = [], []
+        width, height = self.width, self.height
+
+        class PortableImage:
+            # This is raw temporary test data, never a real compositor PNG.
+            def __init__(self, pixels, image_width=width, image_height=height):
+                self.pixels = pixels
+                self.width, self.height = image_width, image_height
+                self.size = (image_width, image_height)
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_):
+                return False
+
+            def convert(self, mode):
+                self_test.assertEqual(mode, "RGBA")
+                return self
+
+            def crop(self, rectangle):
+                left, top, right, bottom = rectangle
+                pixels = b"".join(self.pixels[(y*self.width+left)*4:(y*self.width+right)*4]
+                                  for y in range(top, bottom))
+                return PortableImage(pixels, right-left, bottom-top)
+
+            def tobytes(self):
+                return self.pixels
+
+        self_test = self
+        fake_pillow = SimpleNamespace(Image=SimpleNamespace(
+            open=lambda path: PortableImage(Path(path).read_bytes())))
+
+        def run(command, *, capture_output, text, timeout):
+            self.assertTrue(capture_output and text)
+            self.assertGreater(timeout, 0)
+            self.assertLessEqual(timeout, min(30, deadline-clock.now))
+            index = len(calls)
+            calls.append({"command": command, "timeout": timeout})
+            self.assertLess(index, len(samples), "capture exceeded the supplied bounded observations")
+            sample = samples[index]
+            if isinstance(sample, BaseException):
+                raise sample
+            destination = Path(command[-1])
+            destination.write_bytes(sample)
+            destination.chmod(0o600)
+            meta = self.metadata() if metadata is None else metadata[index]
+            return SimpleNamespace(returncode=0, stdout=json.dumps(meta), stderr="")
+
+        def sleep(seconds):
+            clock.sleeps.append(seconds)
+            clock.now += seconds
+
+        def validate(pixels):
+            try:
+                value = qualifier.compare_pixels(expected, pixels, width, height,
+                    source_reference=reference, reference_scale=2)
+            except ValueError as error:
+                comparisons.append({"error": str(error)})
+                raise
+            comparisons.append(value)
+            clock.now += comparison_seconds
+            return value
+
+        def capture():
+            return qualifier.capture_pair({"capture": Path("portable-capture-not-executed")},
+                output=output, label="control", pid=123, width=width, height=height,
+                offset=(0, 0), dpr=1, deadline=deadline,
+                validate_sample=None if cover else validate)
+
+        def trace():
+            return json.loads((output / "held-pair-control.json").read_text())
+
+        with mock.patch.dict(sys.modules, {"PIL": fake_pillow}), \
+                mock.patch.object(qualifier.subprocess, "run", side_effect=run), \
+                mock.patch.object(qualifier.time, "monotonic", side_effect=lambda: clock.now), \
+                mock.patch.object(qualifier.time, "sleep", side_effect=sleep):
+            yield SimpleNamespace(capture=capture, trace=trace, calls=calls,
+                                  comparisons=comparisons, clock=clock, output=output)
+
+    def assert_observations_preserved(self, harness, samples):
+        trace = harness.trace()
+        self.assertEqual(len(trace["samples"]), len(samples))
+        for item, pixels in zip(trace["samples"], samples):
+            self.assertEqual(item["compositorSha256"], hashlib.sha256(pixels).hexdigest())
+            self.assertEqual((harness.output / f'window-control-{item["suffix"]}.png').read_bytes(), pixels)
+        return trace
+
+    def test_one_unit_quantization_requires_three_samples_and_an_exact_pair(self):
+        samples = [self.oracle(254), self.oracle(), self.oracle()]
+        with self.capture_harness(samples) as harness:
+            actual, metadata = harness.capture()
+            self.assertEqual(actual, samples[-1])
+            trace = self.assert_observations_preserved(harness, samples)
+            self.assertEqual(trace["state"], "passed")
+            self.assertTrue(trace["exactSelectedPair"])
+            self.assertEqual(trace["selectedSuffixes"], ["b", "c"])
+            self.assertEqual(trace["maximumSamples"], 4)
+            self.assertEqual(metadata["heldCapture"], trace)
+            self.assertEqual(len(harness.calls), 3)
+            self.assertEqual([sample["comparison"] for sample in trace["samples"]], harness.comparisons)
+
+    def test_already_exact_pair_uses_two_validated_observations(self):
+        samples = [self.oracle()] * 2
+        with self.capture_harness(samples) as harness:
+            harness.capture()
+            trace = self.assert_observations_preserved(harness, samples)
+            self.assertEqual(trace["selectedSuffixes"], ["a", "b"])
+            self.assertEqual(len(harness.calls), 2)
+            self.assertEqual([sample["comparison"] for sample in trace["samples"]], harness.comparisons)
+
+    def test_alternating_one_unit_samples_fail_after_four_without_a_fifth_capture(self):
+        samples = [self.oracle(254), self.oracle()] * 2
+        with self.capture_harness(samples) as harness:
+            with self.assertRaisesRegex(ValueError, "exact consecutive pair"):
+                harness.capture()
+            trace = self.assert_observations_preserved(harness, samples)
+            self.assertEqual(trace["state"], "failed")
+            self.assertFalse(trace["exactSelectedPair"])
+            self.assertEqual(len(harness.calls), 4)
+            self.assertEqual([sample["comparison"] for sample in trace["samples"]], harness.comparisons)
+
+    def test_exact_pair_can_be_found_at_the_fourth_and_final_sample(self):
+        samples = [self.oracle(254), self.oracle(), self.oracle(254), self.oracle(254)]
+        with self.capture_harness(samples) as harness:
+            harness.capture()
+            trace = self.assert_observations_preserved(harness, samples)
+            self.assertEqual(trace["selectedSuffixes"], ["c", "d"])
+            self.assertEqual(len(harness.calls), 4)
+
+    def test_cpu_valid_127_to_128_to_129_drift_is_not_an_adjacent_only_cluster(self):
+        samples = [self.oracle(127), self.oracle(128), self.oracle(129)]
+        with self.capture_harness(samples, expected=self.oracle(128)) as harness:
+            with self.assertRaisesRegex(ValueError, "one-unit RGB cluster"):
+                harness.capture()
+            trace = self.assert_observations_preserved(harness, samples)
+            self.assertEqual(trace["state"], "failed")
+            self.assertEqual(len(harness.calls), 3)
+            self.assertEqual([sample["comparison"] for sample in trace["samples"]], harness.comparisons)
+
+    def test_greater_than_one_unit_cpu_valid_difference_fails_without_settling(self):
+        samples = [self.oracle(127), self.oracle(129)]
+        with self.capture_harness(samples, expected=self.oracle(128)) as harness:
+            with self.assertRaisesRegex(ValueError, "one-unit RGB cluster"):
+                harness.capture()
+            trace = self.assert_observations_preserved(harness, samples)
+            self.assertEqual(trace["state"], "failed")
+            self.assertEqual(len(harness.calls), 2)
+            self.assertEqual([sample["comparison"] for sample in trace["samples"]], harness.comparisons)
+
+    def test_cpu_mismatch_on_first_observation_does_not_wait_for_an_identical_bad_pair(self):
+        wrong = bytearray(self.oracle())
+        wrong[(12*self.width+12)*4:(12*self.width+13)*4] = bytes((0, 0, 255, 255))
+        with self.capture_harness([bytes(wrong), bytes(wrong)]) as harness:
+            with self.assertRaisesRegex(ValueError, "uniform CPU interior"):
+                harness.capture()
+            trace = self.assert_observations_preserved(harness, [bytes(wrong)])
+            self.assertEqual(trace["state"], "failed")
+            self.assertIn(harness.comparisons[-1]["error"], trace["error"])
+            self.assertEqual(len(harness.calls), 1)
+
+    def test_metadata_change_fails_without_retry_and_preserves_the_first_cpu_comparison(self):
+        samples = [self.oracle(), self.oracle()]
+        changed = self.metadata() | {"windowId": 8}
+        with self.capture_harness(samples, metadata=[self.metadata(), changed]) as harness:
+            with self.assertRaisesRegex(ValueError, "metadata changed"):
+                harness.capture()
+            trace = self.assert_observations_preserved(harness, samples)
+            self.assertEqual(trace["state"], "failed")
+            self.assertEqual(trace["samples"][0]["comparison"], harness.comparisons[0])
+            self.assertEqual(len(harness.calls), 2)
+
+    def test_nonopaque_alpha_fails_the_independent_cpu_control_without_retry(self):
+        wrong = bytearray(self.oracle())
+        wrong[(12*self.width+12)*4+3] = 254
+        with self.capture_harness([self.oracle(), bytes(wrong), self.oracle()]) as harness:
+            with self.assertRaisesRegex(ValueError, "opaque"):
+                harness.capture()
+            trace = self.assert_observations_preserved(harness, [self.oracle(), bytes(wrong)])
+            self.assertEqual(trace["state"], "failed")
+            self.assertIn(harness.comparisons[-1]["error"], trace["error"])
+            self.assertEqual(len(harness.calls), 2)
+
+    def test_cover_rejects_one_unit_change_without_settling_or_cpu_tolerance(self):
+        samples = [self.oracle(254), self.oracle(), self.oracle()]
+        with self.capture_harness(samples, cover=True) as harness:
+            with self.assertRaisesRegex(ValueError, "changed during a held publication"):
+                harness.capture()
+            trace = self.assert_observations_preserved(harness, samples[:2])
+            self.assertEqual(trace["state"], "failed")
+            self.assertEqual(trace["maximumSamples"], 2)
+            self.assertEqual(len(harness.calls), 2)
+            self.assertFalse(harness.comparisons)
+
+    def test_already_expired_deadline_records_failure_without_starting_capture(self):
+        with self.capture_harness([], deadline=0) as harness:
+            with self.assertRaisesRegex(TimeoutError, "overall deadline"):
+                harness.capture()
+            self.assertFalse(harness.calls)
+            self.assertEqual(harness.trace()["state"], "failed")
+
+    def test_deadline_during_settling_keeps_failed_trace_and_cpu_comparison(self):
+        with self.capture_harness([self.oracle(254), self.oracle()], deadline=.05) as harness:
+            with self.assertRaisesRegex(TimeoutError, "overall deadline"):
+                harness.capture()
+            self.assertEqual(len(harness.calls), 1)
+            trace = self.assert_observations_preserved(harness, [self.oracle(254)])
+            self.assertEqual(trace["state"], "failed")
+            self.assertEqual(trace["samples"][0]["comparison"], harness.comparisons[0])
+
+    def test_cpu_processing_cannot_return_success_after_the_overall_deadline(self):
+        with self.capture_harness([self.oracle()] * 2, deadline=.5,
+                                  comparison_seconds=.25) as harness:
+            with self.assertRaisesRegex(TimeoutError, "overall deadline"):
+                harness.capture()
+            self.assertEqual(len(harness.calls), 2)
+            trace = self.assert_observations_preserved(harness, [self.oracle()] * 2)
+            self.assertEqual(trace["state"], "failed")
+            self.assertEqual([sample["comparison"] for sample in trace["samples"]], harness.comparisons)
+
+    def test_capture_timeout_records_failure_and_preserves_prior_comparison(self):
+        expired = qualifier.subprocess.TimeoutExpired("portable-capture-not-executed", .5)
+        with self.capture_harness([self.oracle(254), expired]) as harness:
+            with self.assertRaises(qualifier.subprocess.TimeoutExpired):
+                harness.capture()
+            trace = harness.trace()
+            self.assertEqual(trace["state"], "failed")
+            self.assertIn("TimeoutExpired", trace["error"])
+            self.assertEqual(trace["samples"][0]["comparison"], harness.comparisons[0])
+            self.assertEqual(len(harness.calls), 2)
+
+    def test_invalid_capture_metadata_records_failure_before_any_retry(self):
+        changed = self.metadata() | {"pid": 124}
+        with self.capture_harness([self.oracle()] * 2,
+                                  metadata=[self.metadata(), changed]) as harness:
+            with self.assertRaisesRegex(ValueError, "foreign/unsupported"):
+                harness.capture()
+            trace = harness.trace()
+            self.assertEqual(trace["state"], "failed")
+            self.assertEqual(trace["samples"][0]["comparison"], harness.comparisons[0])
+            self.assertEqual(len(harness.calls), 2)
 
 
 if __name__ == "__main__":

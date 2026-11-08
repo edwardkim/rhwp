@@ -149,7 +149,14 @@ Debug sandbox만 해제합니다. 제품 example과 production entitlement는 �
 
 동일한 snapshot의 독립 CPU replay와 고해상도 CPU source reference를 공통 pixel
 검사에 사용합니다. 32회 publication에는 실제 source revision과 viewport resize가
-포함됩니다. 각 단계의 실제 창을 두 번 수집해 고정된 publication인지 확인합니다.
+포함됩니다. 각 단계에서 연속된 두 실제 화면이 byte 단위로 같아야 합니다.
+실제 실행의 31번째 단계에서는 같은 geometry의 두 화면에서 RGB 최대 1 차이가
+관측됐으며, 정확한 발생 원인은 확정하지 않았습니다. 모든 수집 화면을 원래 CPU
+snapshot과 독립 source reference로 먼저 검사한 뒤, metadata·alpha가 같고 전체
+sample의 RGB 최소·최대 폭이 1 이내인 경우에만 최대 네 번까지 수집해 연속된 exact
+pair를 확인합니다. CPU 불일치·폭 1 초과·metadata/alpha 변화는 즉시 실패하며,
+네 번 안에 exact pair가 없어도 실패합니다. 기존 pixel 허용 범위는 바꾸지 않습니다.
+선택 전 sample도 PNG·hash·CPU 판정과 `held-pair-N.json`에 보존합니다.
 첫 publication 뒤에는 controller를 pause한 채 같은 AppKitView를 mount 상태로
 유지하고, Native cover ack와 두 Flutter paint frame 뒤의 창을 두 번 수집합니다.
 이때 viewport 전체가 지정한 opaque Flutter cover와 정확히 일치해야 합니다.

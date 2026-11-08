@@ -195,39 +195,82 @@ def validate_cover(value, *, nonce, pid, previous):
     return bytes(((color >> 16) & 0xff, (color >> 8) & 0xff, color & 0xff, 0xff))
 
 
-def capture_pair(files, *, output, label, pid, width, height, offset, dpr, deadline):
-    """Two stable actual WindowServer frames, normalized by the Swift helper."""
+def capture_pair(files, *, output, label, pid, width, height, offset, dpr, deadline,
+                 validate_sample=None):
+    """Require an exact held pair; settle only CPU-valid one-unit quantization."""
     from PIL import Image
     captures, metadata = [], []
-    for suffix in ("a", "b"):
-        png = output / f"window-{label}-{suffix}.png"
-        command = [str(files["capture"]), str(pid), str(dpr), str(png)]
-        remaining = deadline-time.monotonic()
-        if remaining <= 0:
-            raise TimeoutError("actual Mac capture exceeded its overall deadline")
-        completed = subprocess.run(command, capture_output=True, text=True, timeout=min(30, remaining))
-        if completed.returncode:
-            raise RuntimeError("actual WindowServer capture failed: " + completed.stderr[-2000:])
-        if len(completed.stdout) > 64 * 1024:
-            raise ValueError("capture helper metadata exceeded its bound")
-        meta = json.loads(completed.stdout)
-        if meta.get("pid") != pid or meta.get("deviceScale") != dpr or meta.get("actualWindowServerCapture") is not True or meta.get("colorSpace") != "srgb" or meta.get("dynamicRange") != "sdr":
-            raise ValueError("capture helper returned a foreign/unsupported image")
-        positive_integer(meta.get("windowId"), 2**32-1)
-        capture_width = positive_integer(meta.get("width"), 4096)
-        capture_height = positive_integer(meta.get("height"), 4096)
-        if capture_width * capture_height > 4194304 or png.stat().st_size > 64 * 1024**2:
-            raise ValueError("captured image exceeded its physical byte/pixel bound")
-        with Image.open(png) as image:
-            if image.size != (capture_width, capture_height) or offset[0]+width > image.width or offset[1]+height > image.height:
-                raise ValueError("physical viewport escaped the actual Mac window")
-            captures.append(image.convert("RGBA").crop((offset[0], offset[1], offset[0]+width, offset[1]+height)).tobytes())
-        metadata.append(meta)
-        if suffix == "a":
+    low = high = None
+    trace = {"state": "pending", "maximumSamples": 4 if validate_sample else 2,
+             "samples": [], "exactSelectedPair": False}
+    trace_path = output / f"held-pair-{label}.json"
+    write_json(trace_path, trace)
+    try:
+        for suffix in (("a", "b", "c", "d") if validate_sample else ("a", "b")):
+            png = output / f"window-{label}-{suffix}.png"
+            command = [str(files["capture"]), str(pid), str(dpr), str(png)]
+            remaining = deadline-time.monotonic()
+            if remaining <= 0:
+                raise TimeoutError("actual Mac capture exceeded its overall deadline")
+            completed = subprocess.run(command, capture_output=True, text=True, timeout=min(30, remaining))
+            if completed.returncode:
+                raise RuntimeError("actual WindowServer capture failed: " + completed.stderr[-2000:])
+            if len(completed.stdout) > 64 * 1024:
+                raise ValueError("capture helper metadata exceeded its bound")
+            meta = json.loads(completed.stdout)
+            if meta.get("pid") != pid or meta.get("deviceScale") != dpr or meta.get("actualWindowServerCapture") is not True or meta.get("colorSpace") != "srgb" or meta.get("dynamicRange") != "sdr":
+                raise ValueError("capture helper returned a foreign/unsupported image")
+            positive_integer(meta.get("windowId"), 2**32-1)
+            capture_width = positive_integer(meta.get("width"), 4096)
+            capture_height = positive_integer(meta.get("height"), 4096)
+            if capture_width * capture_height > 4194304 or png.stat().st_size > 64 * 1024**2:
+                raise ValueError("captured image exceeded its physical byte/pixel bound")
+            with Image.open(png) as image:
+                if image.size != (capture_width, capture_height) or offset[0]+width > image.width or offset[1]+height > image.height:
+                    raise ValueError("physical viewport escaped the actual Mac window")
+                captures.append(image.convert("RGBA").crop((offset[0], offset[1], offset[0]+width, offset[1]+height)).tobytes())
+            metadata.append(meta)
+            sample = {"suffix": suffix, "capture": meta,
+                      "compositorSha256": hashlib.sha256(captures[-1]).hexdigest()}
+            trace["samples"].append(sample)
+            write_json(trace_path, trace)
+            try:
+                if meta != metadata[0]:
+                    raise ValueError("actual Mac window metadata changed during a held publication")
+                if validate_sample:
+                    # Every observation must match the independent immutable CPU
+                    # snapshot, including observations before the selected pair.
+                    sample["comparison"] = validate_sample(captures[-1])
+                if time.monotonic() >= deadline:
+                    raise TimeoutError("actual Mac capture validation exceeded its overall deadline")
+                if low is None:
+                    low, high = bytearray(captures[-1]), bytearray(captures[-1])
+                else:
+                    for i, value in enumerate(captures[-1]):
+                        low[i], high[i] = min(low[i], value), max(high[i], value)
+                        if high[i] - low[i] > (0 if i % 4 == 3 else 1):
+                            raise ValueError("actual Mac held samples exceeded their one-unit RGB cluster")
+                if len(captures) >= 2:
+                    if captures[-1] == captures[-2]:
+                        trace.update(state="passed", exactSelectedPair=True,
+                                     selectedSuffixes=[trace["samples"][-2]["suffix"], suffix])
+                        write_json(trace_path, trace)
+                        return captures[-1], dict(meta, heldCapture=trace)
+                    if not validate_sample:
+                        raise ValueError("actual Mac compositor/window changed during a held publication")
+                write_json(trace_path, trace)
+            except BaseException as error:
+                trace.update(state="failed", error=f"{type(error).__name__}: {error}")
+                write_json(trace_path, trace)
+                raise
             time.sleep(.1)
-    if captures[0] != captures[1] or metadata[0] != metadata[1]:
-        raise ValueError("actual Mac compositor/window changed during a held publication")
-    return captures[0], metadata[0]
+        trace.update(state="failed", error="no exact consecutive pair within the four-sample bound")
+        write_json(trace_path, trace)
+        raise ValueError("actual Mac held samples never formed an exact consecutive pair")
+    except BaseException as error:
+        trace.update(state="failed", error=f"{type(error).__name__}: {error}")
+        write_json(trace_path, trace)
+        raise
 
 
 def require_macos():
@@ -460,7 +503,9 @@ def capture(args):
                 if index == 2 and digest(oracle) == state["stages"][0]["cpuSha256"]:
                     raise ValueError("revision control did not change the independently replayed CPU pixels")
                 actual, metadata = capture_pair(files, output=output, label=str(index), pid=process.pid,
-                    width=width, height=height, offset=offset, dpr=dpr, deadline=deadline)
+                    width=width, height=height, offset=offset, dpr=dpr, deadline=deadline,
+                    validate_sample=lambda pixels: compare_pixels(expected, pixels, width, height,
+                        source_reference=source_reference, reference_scale=reference_scale))
                 if previous is not None and metadata["windowId"] != state["stages"][0]["capture"]["windowId"]:
                     raise ValueError("publication used a different native window")
                 comparison = compare_pixels(expected, actual, width, height,
