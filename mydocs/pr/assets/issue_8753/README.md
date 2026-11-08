@@ -9,9 +9,9 @@
 - 측정 명령: `scripts/visual_sweep.py --silhouette-only --dpi 96 --rasterizer png --compat 2022`
   - 판정값은 `silhouette_raw_match_percent`입니다.
 - 글꼴 환경: 문서가 쓰는 face만 공급했습니다(맑은 고딕, 한컴돋움, 굴림/굴림체, HY견고딕, HY헤드라인M, HY견명조).
-- head는 `184d207aa3`입니다.
+- head는 `7f76cee60e` 위로 rebase한 브랜치입니다(rebase 전 `184d207aa3`과 대상 SVG 출력이 같습니다).
   - Native: native-skia release 빌드
-  - fresh WASM: `wasm-pack-locked.sh` 빌드, `rhwp_bg.wasm` sha256 `b25997accf299e0b5937c8c5da73ed580b709a00492b8fb7ac47d8bff3f1a476`
+  - fresh WASM: `wasm-pack-locked.sh` 빌드, `rhwp_bg.wasm` sha256 `321283b1fdcc456d08c8b9e2d051d059738397689329850136ac1f63d3a1e65e`
 - base `5077b216cb`는 7쪽이라 쪽수가 맞지 않아 쪽별 비교를 하지 못했습니다.
 
 | 쪽 | Native | WASM |
@@ -20,7 +20,7 @@
 | 2 | 99.97 | 100.00 |
 | 3 | 97.67 | 98.53 |
 | 4 | 95.96 | 98.40 |
-| 5 | 99.18 | 99.15 |
+| 5 | 98.42 | 98.37 |
 | 6 | 100.00 | 100.00 |
 
 - TSV 원본은 `head/native/`, `head/wasm/`에 있습니다.
@@ -55,6 +55,7 @@
 | 6500000-201700118 관광교육 종합계획 | 2 | 95.47 | 98.86 |
 | 36390766 결재문서본문 | 8 | 69.08 | 84.21 |
 | 〃 | 9 | 38.74 | 98.19 |
+| 〃 rebase 뒤(`7f76cee60e`) | 9 | 39.08 | 99.93 |
 | 36341965 제안서 평가계획 | 7 | 24.36 | 23.62 |
 | 36348919 결재문서본문 | 2 | 75.59 | 90.26 |
 | 〃 | 4 | 82.15 | 82.15 |
@@ -65,3 +66,4 @@
 - 36341965는 한컴 8쪽, rhwp 9쪽(base·head 같음)이라 같은 번호의 쪽이 서로 다른 내용입니다.
   - rhwp 7쪽을 그 내용이 있는 한컴 6쪽과 맞춰 보면 head가 PDF와 같은 위치입니다(「□ 평가위원 제척」: PDF 260, base 256, head 260).
 - 남은 90 미만 쪽은 base부터 미달이던 쪽이며, 이번 변경으로 내려간 쪽은 없습니다.
+- rebase 뒤(`7f76cee60e`) 10,000건 A/B를 다시 돌렸습니다. 바뀐 문서 집합은 같은 15건이고, rebase 전 head와 비교하면 36390766 한 쪽만 출력이 달라 새 base·head로 다시 쟀습니다(위 표의 36390766 「rebase 뒤」 줄).
