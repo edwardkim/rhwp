@@ -59,6 +59,33 @@ class ReleaseGatePresentation extends FakePresentation {
   }
 }
 
+class NegotiatedClosePlugin extends FakeTexturePlugin {
+  NegotiatedClosePlugin(super.platform);
+  bool topEcho = true, limitsEcho = true, requested = false;
+  final requests = <({String method, Map<String, Object?> arguments})>[];
+  bool get negotiated => requested && topEcho && limitsEcho;
+  @override
+  Map<String, Object?> status() => {
+    ...super.status(),
+    if (topEcho) 'closeAcknowledgementRequired': requested,
+    'limits': {
+      ...super.status()['limits']! as Map,
+      if (limitsEcho) 'closeAcknowledgementRequired': requested,
+    },
+  };
+  @override
+  Future<Object?> handle(MethodCall call) async {
+    final args = Map<String, Object?>.from(call.arguments as Map? ?? const {});
+    requests.add((method: call.method, arguments: args));
+    if (call.method == 'create') {
+      requested = args['closeAcknowledgementRequired'] == true;
+    } else if (negotiated && args['deviceGeneration'] != 1) {
+      throw PlatformException(code: 'contextChanged');
+    }
+    return super.handle(call);
+  }
+}
+
 Future<void> until(WidgetTester tester, bool Function() ready) async {
   for (var index = 0; index < 100 && !ready(); ++index) {
     await tester.pump(const Duration(milliseconds: 10));
@@ -433,4 +460,240 @@ void main() {
       }
     },
   );
+
+  for (final platform in [
+    NativeTexturePlatform.windows,
+    NativeTexturePlatform.macos,
+  ]) {
+    testWidgets(
+      '${platform.name} negotiates generation-checked retirement independently of publication mode',
+      (tester) async {
+        final plugin = NegotiatedClosePlugin(platform)..install();
+        final metadata = FakePresentation();
+        final owner = await document(tester, GpuTransport());
+        final controller = NativeTextureController(
+          document: owner,
+          presentation: metadata,
+          platform: platform,
+          pollInterval: const Duration(milliseconds: 10),
+        );
+        try {
+          await tester.pumpWidget(viewport(controller));
+          await until(tester, () => controller.canDisplay);
+          expect(
+            plugin.requests.first.arguments['closeAcknowledgementRequired'],
+            isTrue,
+          );
+          final gate = Completer<void>();
+          plugin.retireAckGate = gate;
+          plugin.retireAckOverrides = {'nativeViewLayerDetached': false};
+          var complete = false;
+          final closing = controller.close().then((_) {
+            complete = true;
+          });
+          await until(tester, () => plugin.retireAcks.isNotEmpty);
+          expect(plugin.retireAcks.single, {
+            'textureId': controller.textureId,
+            'deviceGeneration': 1,
+          });
+          expect(complete, isFalse);
+          gate.complete();
+          await until(tester, () => complete);
+          await closing;
+          expect(controller.retirementPending, isFalse);
+          expect(
+            plugin.requests
+                .where((request) => request.method != 'create')
+                .every((request) => request.arguments['deviceGeneration'] == 1),
+            isTrue,
+          );
+          expect(plugin.retireAcks, hasLength(1));
+          expect(metadata.released, isEmpty);
+        } finally {
+          if (plugin.retireAckGate case final gate? when !gate.isCompleted) {
+            gate.complete();
+          }
+          await cleanup(tester, controller, owner, plugin);
+        }
+      },
+    );
+
+    testWidgets(
+      '${platform.name} rejects an acknowledgement for another device generation',
+      (tester) async {
+        final plugin = NegotiatedClosePlugin(platform)..install();
+        final owner = await document(tester, GpuTransport());
+        final controller = NativeTextureController(
+          document: owner,
+          presentation: FakePresentation(),
+          platform: platform,
+          pollInterval: const Duration(milliseconds: 10),
+          operationTimeout: const Duration(milliseconds: 100),
+        );
+        try {
+          await tester.pumpWidget(viewport(controller));
+          await until(tester, () => controller.canDisplay);
+          plugin.retireAckOverrides = {'deviceGeneration': 2};
+          final closing = controller.close();
+          await tester.pump(const Duration(milliseconds: 150));
+          await closing;
+          expect(controller.retirementPending, isTrue);
+          expect(plugin.retireAcks, hasLength(1));
+          await tester.pump(const Duration(milliseconds: 200));
+          expect(plugin.retireAcks, hasLength(1));
+        } finally {
+          await cleanup(tester, controller, owner, plugin);
+        }
+      },
+    );
+
+    for (final echoes in [(false, true), (true, false), (false, false)]) {
+      testWidgets(
+        '${platform.name} incomplete close negotiation $echoes preserves the old plugin path',
+        (tester) async {
+          final plugin = NegotiatedClosePlugin(platform)
+            ..topEcho = echoes.$1
+            ..limitsEcho = echoes.$2;
+          plugin.install();
+          final owner = await document(tester, GpuTransport());
+          final controller = NativeTextureController(
+            document: owner,
+            presentation: FakePresentation(),
+            platform: platform,
+            pollInterval: const Duration(milliseconds: 10),
+          );
+          try {
+            await tester.pumpWidget(viewport(controller));
+            await until(tester, () => controller.canDisplay);
+            final closing = controller.close();
+            await tester.pump(const Duration(milliseconds: 30));
+            await closing;
+            expect(controller.retirementPending, isFalse);
+            expect(plugin.retireAcks, isEmpty);
+            expect(
+              plugin.requests
+                  .where((request) => request.method != 'create')
+                  .every(
+                    (request) =>
+                        !request.arguments.containsKey('deviceGeneration'),
+                  ),
+              isTrue,
+            );
+          } finally {
+            await cleanup(tester, controller, owner, plugin);
+          }
+        },
+      );
+    }
+
+    testWidgets(
+      '${platform.name} negotiated retireAck errors stay pending without retries',
+      (tester) async {
+        final plugin = NegotiatedClosePlugin(platform)..install();
+        final owner = await document(tester, GpuTransport());
+        final controller = NativeTextureController(
+          document: owner,
+          presentation: FakePresentation(),
+          platform: platform,
+          pollInterval: const Duration(milliseconds: 10),
+          operationTimeout: const Duration(milliseconds: 100),
+        );
+        try {
+          await tester.pumpWidget(viewport(controller));
+          await until(tester, () => controller.canDisplay);
+          plugin.retireAckError = 'retirePending';
+          final closing = controller.close();
+          await tester.pump(const Duration(milliseconds: 150));
+          await closing;
+          expect(controller.retirementPending, isTrue);
+          expect(plugin.retireAcks, hasLength(1));
+          await tester.pump(const Duration(milliseconds: 200));
+          expect(plugin.retireAcks, hasLength(1));
+        } finally {
+          await cleanup(tester, controller, owner, plugin);
+        }
+      },
+    );
+
+    testWidgets(
+      '${platform.name} original late acknowledgement settles retirement without replay',
+      (tester) async {
+        final plugin = NegotiatedClosePlugin(platform)..install();
+        final owner = await document(tester, GpuTransport());
+        final controller = NativeTextureController(
+          document: owner,
+          presentation: FakePresentation(),
+          platform: platform,
+          pollInterval: const Duration(milliseconds: 10),
+          operationTimeout: const Duration(milliseconds: 100),
+        );
+        try {
+          await tester.pumpWidget(viewport(controller));
+          await until(tester, () => controller.canDisplay);
+          final gate = Completer<void>();
+          plugin.retireAckGate = gate;
+          final closing = controller.close();
+          await until(tester, () => plugin.retireAcks.isNotEmpty);
+          await tester.pump(const Duration(milliseconds: 150));
+          await closing;
+          expect(controller.retirementPending, isTrue);
+          gate.complete();
+          await until(
+            tester,
+            () => controller.phase == NativeTexturePhase.closed,
+          );
+          expect(controller.retirementPending, isFalse);
+          expect(plugin.retireAcks, hasLength(1));
+        } finally {
+          if (plugin.retireAckGate case final gate? when !gate.isCompleted) {
+            gate.complete();
+          }
+          await cleanup(tester, controller, owner, plugin);
+        }
+      },
+    );
+
+    testWidgets(
+      '${platform.name} late create negotiates before its closing observer sends identity',
+      (tester) async {
+        final gate = Completer<void>();
+        final plugin = NegotiatedClosePlugin(platform)..createGate = gate;
+        plugin.install();
+        final transport = GpuTransport();
+        final owner = await document(tester, transport);
+        final controller = NativeTextureController(
+          document: owner,
+          presentation: FakePresentation(),
+          platform: platform,
+          pollInterval: const Duration(milliseconds: 10),
+          operationTimeout: const Duration(milliseconds: 100),
+        );
+        try {
+          await tester.pumpWidget(viewport(controller));
+          await until(tester, () => plugin.calls.contains('create'));
+          final closing = controller.close();
+          await tester.pump(const Duration(milliseconds: 150));
+          await closing;
+          expect(controller.retirementPending, isTrue);
+          gate.complete();
+          await until(
+            tester,
+            () => controller.phase == NativeTexturePhase.closed,
+          );
+          expect(plugin.retireAcks.single['deviceGeneration'], 1);
+          expect(
+            plugin.requests
+                .where((request) => request.method == 'close')
+                .single
+                .arguments['deviceGeneration'],
+            1,
+          );
+          expect(transport.snapshots, isEmpty);
+        } finally {
+          if (!gate.isCompleted) gate.complete();
+          await cleanup(tester, controller, owner, plugin);
+        }
+      },
+    );
+  }
 }

@@ -18,7 +18,7 @@ def main():
     command = ["g++", "-std=c++17", "-pthread", "-Wall", "-Wextra", "-Werror", "-I" + str(source)]
     if args.sanitize:
         command += ["-fsanitize=address,undefined", "-fno-omit-frame-pointer", "-g"]
-    for name in ["frame_lifetime_test", "import_lifetime_test"]:
+    for name in ["frame_lifetime_test", "import_lifetime_test", "close_registry_test"]:
         executable = output / name
         subprocess.run(command + [str(source / "tests" / (name + ".cpp")), "-o", str(executable)], check=True, timeout=60)
         subprocess.run([str(executable)], check=True, timeout=30)

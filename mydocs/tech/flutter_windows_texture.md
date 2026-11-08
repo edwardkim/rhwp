@@ -225,14 +225,18 @@ Plugin class `RhwpD3dPlugin`, C registrar `RhwpD3dPluginRegisterWithRegistrar`,
 channel `rhwp_native/texture_windows`, standard method codec. P101 changes neither
 Dart nor pubspec. Add Windows `pluginClass: RhwpD3dPlugin` to the package's plugin
 stanza and use a separate Flutter runner/example depending on it. The generated
-registrant includes `<rhwp_native_reference/rhwp_d3d_plugin_c_api.h>` and links
+registrant includes `<rhwp_native_reference/rhwp_d3d_plugin.h>` and links
 `rhwp_native_reference_plugin`. Do not overwrite this plugin's Windows CMake
 definition by generating a runner in the same directory. CMake builds no Rust
 library and bundles none implicitly.
 
-- `create({libraryPath:canonicalAbsolute,publicationMode?:string})` registers asynchronously and returns
+- `create({libraryPath:canonicalAbsolute,publicationMode?:string,closeAcknowledgementRequired?:bool})` registers asynchronously and returns
   `textureId`, `deviceGeneration`, `ready` and limits. Poll until ready; init can
-  fail without accepting any snapshot IDs.
+  fail without accepting any snapshot IDs. A true optional close-ack request is
+  negotiated only when both the top-level reply and limits echo
+  `closeAcknowledgementRequired:true`. Older clients/plugins retain their prior
+  close protocol. Negotiated calls include the returned `deviceGeneration` on
+  every subsequent texture RPC, including submit/status/close/retireAck.
 - `submit({textureId,stamp,width,height,clearColor,placements})` uses P99's six-key
   stamp and page placement schema. Scale is `zoom*DPR`; origins are physical
   NativeView page positions. View generation strictly advances. A successful
@@ -248,8 +252,16 @@ library and bundles none implicitly.
   does not acknowledge sampling or completion. `publicationMode` is returned both
   at the top level and in `limits`.
 - `close({textureId})` stops admission, clears pending/current job references,
-  wakes the producer and unregisters asynchronously. The last closed record is
-  retained as one bounded tombstone so completion can still be observed. Neither
+  wakes the producer and unregisters asynchronously. Negotiated closing records
+  remain in the two-record admission bound until the client explicitly sends
+  `retireAck({textureId,deviceGeneration})`. Owner completion and unregister must
+  both be observed first. Successful ack replies echo both identity fields and
+  `acknowledged:true`, `closed:true`, `ownerFinished:true`, `registered:false`,
+  `unregistered:true`. Only then may the record become resource-free metadata in
+  the recent-two terminal cache. Unobserved closing records cannot be evicted by
+  creating more textures. Late/wrong generations cannot acknowledge a reused
+  Flutter texture ID. Legacy non-negotiated records retain create-time automatic
+  retirement. Neither
   close nor unregister refunds legacy immutable/quarantine credit. In transfer
   mode, confirmed unregister also retires CPU descriptor storage whose opening
   was observed; an unacknowledged import stays charged for a possible late reply.

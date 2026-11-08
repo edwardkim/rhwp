@@ -50,10 +50,10 @@ using SurfaceImports = SurfaceImportTickets<FlutterDesktopGpuSurfaceDescriptor>;
 struct State : std::enable_shared_from_this<State> {
   State(uint64_t generation, std::string path, ComPtr<IDXGIAdapter1> adapter,
         FlutterDesktopTextureRegistrarRef registrar, std::shared_ptr<int> producer_slot,
-        PublicationMode publication_mode = PublicationMode::LegacyImmutable)
+        PublicationMode publication_mode = PublicationMode::LegacyImmutable, bool close_ack_required = false)
       : generation(generation), path(std::move(path)), adapter(std::move(adapter)),
         registrar(registrar), producer_slot(std::move(producer_slot)), gate(generation),
-        publication_mode(publication_mode) {}
+        publication_mode(publication_mode), close_ack_required(close_ack_required) {}
   std::mutex mutex;
   std::condition_variable changed;
   const uint64_t generation;
@@ -63,6 +63,7 @@ struct State : std::enable_shared_from_this<State> {
   std::shared_ptr<int> producer_slot;
   GenerationGate gate;
   const PublicationMode publication_mode;
+  const bool close_ack_required;
   bool ready = false, closed = false, finished = false, in_flight = false, unregistered = false;
   int64_t texture_id = -1;
   std::string error;

@@ -264,6 +264,7 @@ class NativeTextureController extends ChangeNotifier {
       _createAttempted = false,
       _platformUnregistered = false,
       _nativeCloseComplete = false,
+      _negotiatedRetireAck = false,
       _nativeRetireReady = false,
       _retirementPending = false;
   int _attachedViews = 0;
@@ -284,6 +285,7 @@ class NativeTextureController extends ChangeNotifier {
   bool get needsCpuFallback => _phase == NativeTexturePhase.fallback;
   bool get isPaused => _paused;
   bool get _nativeView => platform == NativeTexturePlatform.macosMetalView;
+  bool get _requiresRetireAck => _nativeView || _negotiatedRetireAck;
 
   /// Tracks owner/registration close only, not immutable consumer GPU credits.
   bool get retirementPending => _retirementPending;
@@ -573,7 +575,13 @@ class NativeTextureController extends ChangeNotifier {
     }
     ++_rpc;
     ++_globalRpc;
-    final future = channel.invokeMethod<Object?>(method, arguments).then(_map);
+    final future = channel
+        .invokeMethod<Object?>(method, {
+          ...arguments,
+          if (_negotiatedRetireAck && arguments.containsKey('textureId'))
+            'deviceGeneration': _device,
+        })
+        .then(_map);
     final observed = future.then(
       (value) {
         --_rpc;
@@ -723,12 +731,22 @@ class NativeTextureController extends ChangeNotifier {
           'create',
           {
             'libraryPath': presentation.libraryPath,
+            if (platform == NativeTexturePlatform.windows ||
+                platform == NativeTexturePlatform.macos)
+              'closeAcknowledgementRequired': true,
             if (allowImmutableOwnershipTransfer)
               'publicationMode': 'immutableOwnershipTransfer',
           },
           received: (reply) {
             final id = reply['textureId'], device = reply['deviceGeneration'];
             if (id is int && id > 0 && device is int && device > 0) {
+              _negotiatedRetireAck =
+                  (platform == NativeTexturePlatform.windows ||
+                      platform == NativeTexturePlatform.macos) &&
+                  reply['closeAcknowledgementRequired'] == true &&
+                  reply['limits'] is Map &&
+                  (reply['limits'] as Map)['closeAcknowledgementRequired'] ==
+                      true;
               textureId = id;
               _device = device;
               if (_nativeView) unawaited(_flushNativeCover());
@@ -1090,26 +1108,31 @@ class NativeTextureController extends ChangeNotifier {
         status['textureUnregisteredNotification'] == true;
     final registrationChanged = unregistered && !_platformUnregistered;
     if (unregistered) _platformUnregistered = true;
-    if (_nativeView &&
-        status['registered'] == false &&
+    if (_requiresRetireAck &&
+        unregistered &&
+        status['closed'] == true &&
         status['ownerFinished'] == true &&
-        status['nativeViewLayerDetached'] == true) {
+        (!_nativeView || status['nativeViewLayerDetached'] == true)) {
       _nativeRetireReady = true;
     }
     final complete = switch (platform) {
       NativeTexturePlatform.linux =>
         status['cleanupComplete'] == true && status['registered'] == false,
-      NativeTexturePlatform.macosMetalView =>
-        fromRetireAck &&
-            _nativeRetireReady &&
-            status['textureId'] == textureId &&
-            status['acknowledged'] == true &&
-            status['closed'] == true &&
-            status['ownerFinished'] == true &&
-            status['registered'] == false &&
-            status['nativeViewLayerDetached'] == true,
-      NativeTexturePlatform.macos || NativeTexturePlatform.windows =>
-        status['ownerFinished'] == true && unregistered,
+      NativeTexturePlatform.macosMetalView ||
+      NativeTexturePlatform.macos ||
+      NativeTexturePlatform.windows =>
+        _requiresRetireAck
+            ? fromRetireAck &&
+                  _nativeRetireReady &&
+                  status['textureId'] == textureId &&
+                  status['acknowledged'] == true &&
+                  status['closed'] == true &&
+                  status['ownerFinished'] == true &&
+                  status['registered'] == false &&
+                  (_nativeView
+                      ? status['nativeViewLayerDetached'] == true
+                      : status['deviceGeneration'] == _device)
+            : status['ownerFinished'] == true && unregistered,
     };
     if (complete) {
       // Owner/registration completion is not consumer GPU completion or a
@@ -1122,7 +1145,7 @@ class NativeTextureController extends ChangeNotifier {
     } else if (registrationChanged) {
       _signal();
     }
-    if (_nativeView &&
+    if (_requiresRetireAck &&
         _nativeRetireReady &&
         !_platformCloseActive &&
         !_nativeCloseComplete &&
@@ -1195,7 +1218,7 @@ class NativeTextureController extends ChangeNotifier {
       }
       // A bounded close wait may expire just after observing owner completion.
       // Send its one explicit ack; its original late observer remains live.
-      if (_nativeView && _nativeRetireReady && !_nativeCloseComplete) {
+      if (_requiresRetireAck && _nativeRetireReady && !_nativeCloseComplete) {
         _ackRetirementWhenAvailable();
       }
       done.complete();
@@ -1223,7 +1246,7 @@ class NativeTextureController extends ChangeNotifier {
       if (_rpc >= 3 || _globalRpc >= 8) return;
       invoking = true;
       try {
-        if (_nativeView && _nativeRetireReady) {
+        if (_requiresRetireAck && _nativeRetireReady) {
           await _ackNativeRetirement();
           if (_nativeCloseComplete) finish();
           return;

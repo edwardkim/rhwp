@@ -1,5 +1,6 @@
 #include "rhwp_native_reference/rhwp_d3d_plugin.h"
 #include "Producer.h"
+#include "CloseRecordRegistry.h"
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar_windows.h>
 #include <flutter/standard_method_codec.h>
@@ -82,11 +83,13 @@ std::string stamp_json(const Stamp& stamp) {
       << ",\"viewGeneration\":" << stamp.view << ",\"deviceGeneration\":" << stamp.device << ",\"deviceScale\":" << stamp.scale << '}';
   return out.str();
 }
-Value limits(PublicationMode mode = PublicationMode::LegacyImmutable) {
+Value limits(PublicationMode mode = PublicationMode::LegacyImmutable, bool close_ack = false) {
   const auto stats = frames().stats();
   const auto imports = SurfaceImports::stats();
   const bool transfer = mode == PublicationMode::ImmutableOwnershipTransfer;
   return Value(Map{{Value("publicationMode"), Value(publication_mode_name(mode))},
+      {Value("closeAcknowledgementRequired"), Value(close_ack)},
+      {Value("maxRetainedCloseRecords"), Value(2)}, {Value("maxClosedReceipts"), Value(2)},
       {Value("consumerRetirement"), Value(false)}, {Value("continuousPresentationSupported"), Value(transfer)},
       {Value("consumerGpuCompletionVerified"), Value(false)}, {Value("targetReuse"), Value(false)},
       {Value("backpressureRetryable"), Value(transfer && stats.permanent < 4)},
@@ -119,9 +122,11 @@ Value status(const std::shared_ptr<State>& state) {
       state->gate.current(state->current->job->serial, state->current->job->stamp);
   Map value{{Value("textureId"), Value(state->texture_id)}, {Value("deviceGeneration"), unsigned_value(state->generation)},
       {Value("publicationMode"), Value(publication_mode_name(state->publication_mode))},
+      {Value("closeAcknowledgementRequired"), Value(state->close_ack_required)},
       {Value("ready"), Value(state->ready && !state->closed)}, {Value("closed"), Value(state->closed)},
       {Value("ownerFinished"), Value(state->finished)}, {Value("inFlight"), Value(state->in_flight)},
-      {Value("unregistered"), Value(state->unregistered)}, {Value("error"), Value(state->error)},
+      {Value("unregistered"), Value(state->unregistered)}, {Value("registered"), Value(!state->unregistered)},
+      {Value("error"), Value(state->error)},
       {Value("errorCode"), Value(state->error_code)}, {Value("deviceFailure"), Value(state->device_failure)},
       {Value("acceptedSerial"), unsigned_value(state->accepted_serial)}, {Value("acceptedStamp"), Value(stamp_value(state->accepted_stamp))},
       {Value("acceptedSnapshots"), Value(ids)}, {Value("staleDrops"), unsigned_value(state->stale_drops)},
@@ -129,7 +134,7 @@ Value status(const std::shared_ptr<State>& state) {
       {Value("descriptorOpenedSerial"), unsigned_value(has_frame && state->current->pixels->opened_notifications.load() ?
           state->current->job->serial : 0)},
       {Value("renderedSerial"), unsigned_value(has_frame ? state->current->job->serial : 0)},
-      {Value("limits"), limits(state->publication_mode)}};
+      {Value("limits"), limits(state->publication_mode, state->close_ack_required)}};
   value[Value("renderedStamp")] = has_frame ? Value(stamp_value(state->current->job->stamp)) : Value();
   return Value(std::move(value));
 }
@@ -190,38 +195,65 @@ class RhwpD3dPlugin final : public flutter::Plugin {
   }
   ~RhwpD3dPlugin() override {
     channel_->SetMethodCallHandler(nullptr);
-    for (auto& item : textures_) close(item.second);
+    for (auto& item : textures_.records()) close(item.second);
   }
  private:
   struct Record { std::shared_ptr<State> state; Registration* registration; };
+  struct ClosedReceipt { Value value; PublicationMode mode; bool close_ack; uint64_t generation; };
   flutter::PluginRegistrarWindows* registrar_;
   FlutterDesktopTextureRegistrarRef texture_registrar_;
   std::unique_ptr<flutter::MethodChannel<Value>> channel_;
-  std::map<int64_t, Record> textures_;
-  std::shared_ptr<State> last_closed_;
+  CloseRecordRegistry<Record, ClosedReceipt> textures_;
   void close(Record& record) {
     record.state->close();
     if (!record.registration) return;
     auto* cookie = record.registration; record.registration = nullptr;
     FlutterDesktopTextureRegistrarUnregisterExternalTexture(texture_registrar_, record.state->texture_id, [](void* value) {
       auto* cookie = static_cast<Registration*>(value);
+      // Finish our descriptor/creator bookkeeping before exposing retirement.
+      // The engine has already removed this registration at this point.
+      retire_surface_imports(cookie->state);
+      cookie->credit.reset();
       {
         std::lock_guard<std::mutex> lock(cookie->state->mutex);
         cookie->state->unregistered = true; cookie->state->registrar = nullptr;
       }
-      retire_surface_imports(cookie->state);
       delete cookie;  // CPU registration/descriptor quiescence is not a GPU fence.
     }, cookie);
   }
   void prune() {
-    for (auto it = textures_.begin(); it != textures_.end();) {
-      bool done;
-      { std::lock_guard<std::mutex> lock(it->second.state->mutex); done = it->second.state->closed && it->second.state->unregistered && it->second.state->finished; }
-      if (done) { last_closed_ = it->second.state; it = textures_.erase(it); } else ++it;
+    // Old clients never negotiated retireAck. Preserve their existing automatic
+    // create-time retirement; new clients retain closing records until ack.
+    for (auto it = textures_.records().begin(); it != textures_.records().end();) {
+      const auto id = (it++)->first;
+      auto* item = record(uint64_t(id));
+      if (item && !item->state->close_ack_required) retire(id, false);
     }
   }
   Record* record(uint64_t id) {
-    auto found = textures_.find(int64_t(id)); return found == textures_.end() ? nullptr : &found->second;
+    return textures_.find(int64_t(id));
+  }
+  bool retire(int64_t id, bool acknowledged) {
+    return textures_.retire(id, [](const Record& record) {
+      std::lock_guard<std::mutex> lock(record.state->mutex);
+      return CloseCompletion{record.state->closed, record.state->finished, record.state->unregistered, record.state->in_flight}.ready();
+    }, [acknowledged](const Record& record) {
+      auto value = status(record.state);
+      std::get_if<Map>(&value)->emplace(Value("acknowledged"), Value(acknowledged));
+      return ClosedReceipt{std::move(value), record.state->publication_mode, record.state->close_ack_required, record.state->generation};
+    });
+  }
+  Value closed_status(const ClosedReceipt& receipt) {
+    auto value = receipt.value;
+    (*std::get_if<Map>(&value))[Value("limits")] = limits(receipt.mode, receipt.close_ack);
+    return value;
+  }
+  void check_generation(const Map& args, uint64_t generation, bool required) {
+    const auto found = args.find(Value("deviceGeneration"));
+    const bool present = found != args.end();
+    if (!close_generation_matches(generation, present ? integer(found->second) : 0, present, required)) {
+      throw MethodError(present ? "contextChanged" : "invalidArgument", "texture calls require the correct deviceGeneration");
+    }
   }
   Value error_limits(const Value* arguments) {
     PublicationMode mode = PublicationMode::LegacyImmutable;
@@ -229,9 +261,8 @@ class RhwpD3dPlugin final : public flutter::Plugin {
       const auto& args = map(arguments);
       auto found = args.find(Value("textureId"));
       if (found != args.end()) {
-        if (auto* item = record(integer(found->second))) mode = item->state->publication_mode;
-        else if (last_closed_ && last_closed_->texture_id == int64_t(integer(found->second)))
-          mode = last_closed_->publication_mode;
+        if (auto* item = record(integer(found->second))) return limits(item->state->publication_mode, item->state->close_ack_required);
+        else if (const auto* receipt = textures_.completed(int64_t(integer(found->second)))) return limits(receipt->mode, receipt->close_ack);
       } else mode = publication_mode(args);
     } catch (...) { /* Invalid request metadata cannot choose a transfer mode. */ }
     return limits(mode);
@@ -239,8 +270,15 @@ class RhwpD3dPlugin final : public flutter::Plugin {
   Value invoke(const std::string& method, const Map& args) {
     if (method == "create") {
       prune();
-      if (textures_.size() >= 2) throw MethodError("backpressure", "two GPU textures are already active or closing");
+      if (!textures_.can_create()) throw MethodError("backpressure", "two GPU textures are active or awaiting close acknowledgement");
       const auto mode = publication_mode(args);
+      bool close_ack = false;
+      const auto request_ack = args.find(Value("closeAcknowledgementRequired"));
+      if (request_ack != args.end()) {
+        const auto* requested = std::get_if<bool>(&request_ack->second);
+        if (!requested) throw MethodError("invalidArgument", "closeAcknowledgementRequired must be a boolean");
+        close_ack = *requested;
+      }
       const auto* path = std::get_if<std::string>(&field(args, "libraryPath"));
       if (!path || path->empty() || path->size() > 32768 || !std::filesystem::u8path(*path).is_absolute())
         throw MethodError("invalidArgument", "libraryPath must be a bounded canonical absolute path");
@@ -251,7 +289,7 @@ class RhwpD3dPlugin final : public flutter::Plugin {
         throw MethodError("notReady", "Flutter graphics adapter is unavailable; select CPU");
       const auto generation = next_generation.fetch_add(1);
       if (!generation) throw MethodError("backpressure", "device generation exhausted");
-      auto state = std::make_shared<State>(generation, *path, adapter1, texture_registrar_, producer_credit, mode);
+      auto state = std::make_shared<State>(generation, *path, adapter1, texture_registrar_, producer_credit, mode, close_ack);
       auto cookie = std::make_unique<Registration>(Registration{state, registration_credit});
       FlutterDesktopTextureInfo info{}; info.type = kFlutterDesktopGpuSurfaceTexture;
       info.gpu_surface_config.struct_size = sizeof(FlutterDesktopGpuSurfaceTextureConfig);
@@ -265,19 +303,36 @@ class RhwpD3dPlugin final : public flutter::Plugin {
       }
       Record inserted{state, cookie.release()};
       try {
-        textures_.emplace(state->texture_id, inserted);
+        if (!textures_.insert(state->texture_id, inserted))
+          throw MethodError("backpressure", "texture ID is retained by an unacknowledged owner");
         std::thread([state] { run_producer(state); }).detach();
-      } catch (...) { close(inserted); textures_.erase(state->texture_id); throw; }
+      } catch (...) {
+        close(inserted);
+        // A rejected reused ID still belongs to its previous unacknowledged
+        // record. Erase only a record that actually owns this new generation.
+        auto* rollback = record(uint64_t(state->texture_id));
+        if (rollback && rollback->state == state) textures_.erase_failed_creation(state->texture_id);
+        throw;
+      }
       return status(state);
     }
     const auto id = integer(args, "textureId");
     auto* item = record(id);
     if (!item) {
-      if (method == "status" && last_closed_ && last_closed_->texture_id == int64_t(id)) return status(last_closed_);
+      if (const auto* receipt = textures_.completed(int64_t(id))) {
+        check_generation(args, receipt->generation, receipt->close_ack);
+        if (method == "status" || method == "close" || (method == "retireAck" && receipt->close_ack)) return closed_status(*receipt);
+      }
       throw MethodError("invalidArgument", "unknown GPU texture ID");
     }
+    check_generation(args, item->state->generation, item->state->close_ack_required);
     if (method == "status") return status(item->state);
     if (method == "close") { close(*item); return status(item->state); }
+    if (method == "retireAck") {
+      if (!item->state->close_ack_required) throw MethodError("unsupported", "close acknowledgement was not negotiated");
+      if (!retire(int64_t(id), true)) throw MethodError("retirePending", "producer and unregister completion are still pending");
+      return closed_status(*textures_.completed(int64_t(id)));
+    }
     if (method == "submit") {
       std::shared_ptr<NativeApi> api;
       {
@@ -291,7 +346,7 @@ class RhwpD3dPlugin final : public flutter::Plugin {
       List ids; for (auto snapshot : job->ids) ids.emplace_back(unsigned_value(snapshot));
       Map receipt{{Value("accepted"), Value(true)}, {Value("acceptedSerial"), Value(int64_t(0))},
           {Value("acceptedStamp"), Value(stamp_value(job->stamp))}, {Value("acceptedSnapshots"), Value(ids)},
-          {Value("limits"), limits(item->state->publication_mode)}};
+          {Value("limits"), limits(item->state->publication_mode, item->state->close_ack_required)}};
       auto serial = receipt.find(Value("acceptedSerial"));
       if (!item->state->accept(job)) throw MethodError("staleFrame", "closed, superseded or invalid frame generation");
       // All response storage was allocated before ID ownership transferred.

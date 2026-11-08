@@ -245,6 +245,7 @@ class FakeTexturePlugin {
         }
         return {
           'textureId': arguments['textureId'],
+          'deviceGeneration': 1,
           'acknowledged': closed,
           'closed': closed,
           'ownerFinished': closed,
