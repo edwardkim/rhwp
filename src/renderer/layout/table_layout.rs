@@ -23580,10 +23580,13 @@ impl LayoutEngine {
         (minimum > content).then_some(minimum)
     }
 
-    /// [#8715] 쪽에서 나뉜 자식 표의 첫 조각은 저장 개체 높이(`sz.height`)를 물리 상자로
-    /// 갖는다. 한/글은 첫 조각 상자를 그 높이와 가용 공간 중 작은 값으로 그리며, 이어받는
-    /// 조각과 마지막 조각은 내용 높이로 그린다. 저장 높이가 컷의 물리 높이보다 큰 몫을
-    /// 돌려주고, 가용 공간 제한은 호출부가 적용한다.
+    /// [#8715] 쪽에서 나뉜 글 앞/뒤 자식 표의 첫 조각은 저장 개체 높이(`sz.height`)를 물리
+    /// 상자로 갖는다. 글 앞/뒤 표는 칸의 글 흐름에 참여하지 않아 그 크기가 흐름 내용의 컷으로
+    /// 정해지지 않는다. 한/글은 첫 조각 상자를 저장 높이와 가용 공간 중 작은 값으로 그리며,
+    /// 이어받는 조각과 마지막 조각은 내용 높이로 그린다. 흐름에 참여하는 자리차지 표의 조각은
+    /// 소비한 내용 높이를 차지하므로 여기서 늘리지 않는다(rowbreak-problem-pages HWPX 7쪽:
+    /// 저장 높이 12482HU 가 내용보다 크지만 한/글 행 조각은 내용에서 닫힌다). 저장 높이가
+    /// 컷의 물리 높이보다 큰 몫을 돌려주고, 가용 공간 제한은 호출부가 적용한다.
     fn stored_child_first_fragment_frame_extra(
         &self,
         table: &crate::model::table::Table,
@@ -23598,6 +23601,10 @@ impl LayoutEngine {
                 .borrow()
                 .table_text_reflowed(table)
             || table.common.treat_as_char
+            || !matches!(
+                table.common.text_wrap,
+                TextWrap::BehindText | TextWrap::InFrontOfText
+            )
             || table.layout_page_break() != TablePageBreak::RowBreak
             || table.common.height == 0
             || table.common.height > i32::MAX as u32
