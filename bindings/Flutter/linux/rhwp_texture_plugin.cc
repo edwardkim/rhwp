@@ -299,6 +299,14 @@ class LinuxContext final : public Context {
     const auto* context = dynamic_cast<const LinuxContext*>(&other);
     return context && context->gdk == gdk && context->native == native && context->get_current == get_current;
   }
+  DriverInfo driver_info() const override {
+    if (!same_current()) return {};
+    auto text = [](GLenum key) {
+      const auto* value = reinterpret_cast<const char*>(glGetString(key));
+      return value ? std::string(value, strnlen(value, 256)) : std::string();
+    };
+    return {text(GL_VENDOR), text(GL_RENDERER), text(GL_VERSION)};
+  }
   const void* procedure(const char* name) noexcept override {
     return same_current() ? get_proc(name) : nullptr;
   }
@@ -503,6 +511,9 @@ FlValue* status_value(const std::shared_ptr<Notice>& notice) {
   set_int(value, "rasterSlotLimit", kMaxRasterSlots);
   const auto release_failures = notice->state->bridge->snapshot_release_failures();
   set_int(value, "snapshotReleaseFailures", release_failures);
+  set_text(value, "glVendor", status.driver.vendor);
+  set_text(value, "glRenderer", status.driver.renderer);
+  set_text(value, "glVersion", status.driver.version);
   set_bool(value, "closing", status.closing);
   set_bool(value, "cleanupComplete", status.cleanup_complete && !release_failures && !status.orphaned_owners);
   set_bool(value, "ownerThreadExit", status.owner_thread_exit);

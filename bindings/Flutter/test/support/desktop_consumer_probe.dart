@@ -130,8 +130,9 @@ class DesktopConsumerOracle {
 }
 
 class _ObservedPresentation implements NativePresentation {
-  _ObservedPresentation(this.inner);
+  _ObservedPresentation(this.inner, {this.maxChecks = 1024});
   final NativePresentation inner;
+  final int maxChecks;
   int? snapshot;
   NativePresentationStamp? stamp;
   int checks = 0;
@@ -149,7 +150,7 @@ class _ObservedPresentation implements NativePresentation {
     int snapshot,
     NativePresentationStamp stamp,
   ) async {
-    _require(++checks <= 1024, 'probe metadata call bound');
+    _require(++checks <= maxChecks, 'probe metadata call bound');
     final current = await inner.snapshotCheck(snapshot, stamp);
     if (current) {
       this.snapshot = snapshot;
@@ -180,10 +181,11 @@ class _ProbeState extends State<_Probe> {
   late Timer _watchdog;
   var _physicalSize = const Size(320, 240);
   var _stage = 'setup';
+  var _frameCount = 3;
   @override
   void initState() {
     super.initState();
-    _watchdog = Timer(const Duration(seconds: 110), () {
+    _watchdog = Timer(Duration(seconds: Platform.isLinux ? 290 : 110), () {
       stderr.writeln('RHWP_DESKTOP_CONSUMER_PROBE watchdog at $_stage');
       exit(124);
     });
@@ -241,7 +243,11 @@ class _ProbeState extends State<_Probe> {
     final status = await _status(), stamp = metadata.stamp!;
     _require(
       stamp.matches(status['renderedStamp'] ?? status['acceptedStamp']) &&
-          status['hasFrame'] == true &&
+          (Platform.isLinux
+              ? status['registered'] == true &&
+                    status['framesSubmitted'] is int &&
+                    (status['framesSubmitted']! as int) >= index
+              : status['hasFrame'] == true) &&
           await metadata.inner.snapshotCheck(metadata.snapshot!, stamp),
       'native publication/source changed before compositor capture',
     );
@@ -276,6 +282,7 @@ class _ProbeState extends State<_Probe> {
       'deviceScale': dpr,
       'stamp': stamp.toJson(),
       'limits': status['limits'],
+      if (Platform.isLinux) 'nativeStatus': status,
     });
     final ack = File('${_output.path}/ack-$index.json');
     await _until(
@@ -295,7 +302,7 @@ class _ProbeState extends State<_Probe> {
     var succeeded = false;
     try {
       _require(
-        Platform.isWindows || Platform.isMacOS,
+        Platform.isWindows || Platform.isMacOS || Platform.isLinux,
         'actual desktop target is required',
       );
       final config = jsonDecode(
@@ -307,6 +314,13 @@ class _ProbeState extends State<_Probe> {
         'invalid driver config',
       );
       _nonce = config['nonce']! as String;
+      _frameCount = (config['frames'] as int?) ?? 3;
+      _require(
+        Platform.isLinux
+            ? _frameCount >= 3 && _frameCount <= 64
+            : _frameCount == 3,
+        'probe frame count exceeds its platform contract',
+      );
       _output = Directory(config['output']! as String);
       final native = await File(config['native']! as String)
           .resolveSymbolicLinks();
@@ -338,6 +352,7 @@ class _ProbeState extends State<_Probe> {
       });
       final metadata = _metadata = _ObservedPresentation(
         await NativePresentation.connect(nativeLibrary: native),
+        maxChecks: Platform.isLinux ? 8192 : 1024,
       );
       _require(
         metadata.available,
@@ -372,6 +387,18 @@ class _ProbeState extends State<_Probe> {
       );
       setState(() {});
       await _publication(3, 'resize');
+      final baseline = _viewport!;
+      for (var index = 4; index <= _frameCount; index++) {
+        final dpr = MediaQuery.devicePixelRatioOf(context);
+        _viewport = NativePageViewport.placed(
+          baseline.page,
+          baseline.viewport,
+          zoom: baseline.zoom,
+          origin: baseline.origin + Offset(index.isEven ? 4 / dpr : 0, 2 / dpr),
+        );
+        setState(() {});
+        await _publication(index, 'continuous');
+      }
       _stage = 'close';
       await _controller!.close();
       _require(
@@ -380,7 +407,14 @@ class _ProbeState extends State<_Probe> {
       );
       final closed = await _status();
       _require(
-        closed['ownerFinished'] == true,
+        Platform.isLinux
+            ? closed['cleanupComplete'] == true &&
+                  closed['liveRasterSlots'] == 0 &&
+                  closed['pendingRetireSlots'] == 0 &&
+                  closed['orphanedRasterSlots'] == 0 &&
+                  closed['abandonedTargets'] == 0 &&
+                  closed['snapshotReleaseFailures'] == 0
+            : closed['ownerFinished'] == true,
         'producer owner did not finish',
       );
       _require(
@@ -411,7 +445,8 @@ class _ProbeState extends State<_Probe> {
         'closed': closed,
         'stats': stats,
         'consumerGpuCompletionVerified': false,
-        'continuousPresentationSupported': false,
+        'continuousPresentationSupported': Platform.isLinux && _frameCount > 4,
+        'publications': _frameCount,
       });
       succeeded = true;
     } catch (error, stack) {

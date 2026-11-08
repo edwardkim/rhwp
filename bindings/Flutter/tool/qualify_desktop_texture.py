@@ -153,7 +153,7 @@ def require_actual_windows(*, platform=None, load_library=None):
         raise RuntimeError("Wine is not an actual Windows qualification target")
 
 
-def verify_runtime_artifacts(files, receipt):
+def verify_runtime_artifacts(files, receipt, *, platform="windows"):
     """Bind the copied runner to the plugin/engine it will actually load.
 
     A relocated executable loads its adjacent runtime DLLs. Recorded artifact
@@ -161,8 +161,15 @@ def verify_runtime_artifacts(files, receipt):
     """
     verified = {key: Path(value).resolve(strict=True) for key, value in files.items()}
     directory = verified["runner"].parent
-    verified["plugin"] = (directory / "rhwp_native_reference_plugin.dll").resolve(strict=True)
-    verified["engineRuntime"] = (directory / "flutter_windows.dll").resolve(strict=True)
+    locations = {
+        "windows": ("rhwp_native_reference_plugin.dll", "flutter_windows.dll"),
+        "linux": ("lib/librhwp_native_reference_plugin.so", "lib/libflutter_linux_gtk.so"),
+    }
+    if platform not in locations:
+        raise ValueError("unsupported runtime bundle platform")
+    plugin, engine = locations[platform]
+    verified["plugin"] = (directory / plugin).resolve(strict=True)
+    verified["engineRuntime"] = (directory / engine).resolve(strict=True)
     artifacts = receipt.get("artifacts")
     if not isinstance(artifacts, dict):
         raise ValueError("build receipt has no runtime artifact identities")
@@ -179,13 +186,13 @@ def positive_integer(value, maximum):
     return value
 
 
-def validate_stage(value, *, nonce, index, pid):
+def validate_stage_identity(value, *, nonce, index, pid, platform, name):
     if value.get("protocol") != 1 or value.get("nonce") != nonce:
         raise ValueError("foreign or unsupported probe stage")
-    if value.get("stage") != STAGES[index - 1] or value.get("index") != index:
+    if value.get("stage") != name or value.get("index") != index:
         raise ValueError("out-of-order probe stage")
-    if value.get("pid") != pid or value.get("platform") != "windows":
-        raise ValueError("probe did not come from the launched Windows process")
+    if value.get("pid") != pid or value.get("platform") != platform:
+        raise ValueError("probe did not come from the launched " + platform + " process")
     width = positive_integer(value.get("width"), 4096)
     height = positive_integer(value.get("height"), 4096)
     if width * height > MAX_PIXELS:
@@ -209,6 +216,12 @@ def validate_stage(value, *, nonce, index, pid):
             raise ValueError("invalid source generation")
     if stamp.get("deviceScale") != dpr:
         raise ValueError("DPR and full source stamp disagree")
+    return width, height, tuple(offset)
+
+
+def validate_stage(value, *, nonce, index, pid):
+    width, height, offset = validate_stage_identity(
+        value, nonce=nonce, index=index, pid=pid, platform="windows", name=STAGES[index - 1])
     limits = value.get("limits")
     if not isinstance(limits, dict):
         raise ValueError("missing immutable frame budget receipt")
