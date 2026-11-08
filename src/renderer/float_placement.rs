@@ -4596,10 +4596,23 @@ pub(crate) fn stored_paragraph_successor_flow(
         && next_before >= 0.0
         && flow_end_hu.checked_add((next_before * hu_per_px).round() as i32)
             == Some(source_line_position(next, 0)?))
-    .then_some(StoredParagraphSuccessorFlow {
-        flow_origin_hu,
-        content_bottom_hu,
-        flow_end_hu,
+    .then_some(())?;
+    // [#8790] 위 등식은 원본 저장 축 안의 상대 관계다. 투영(`project`)의 기준점은 현재
+    // 줄 축(`line_segs`)에서 잡히므로, 원본 축 값을 그대로 넘기면 문서를 열 때 다시 계산한
+    // 축 이동량만큼 어긋난다(36302427: 합성 줄 첫 문단 뒤 모든 문단이 3840HU 당겨져, 표
+    // 문단 앞 글줄마다 흐름이 51.2px 더 전진). 이 문단의 줄이 같은 양만큼 옮겨졌을 때만
+    // 그 양으로 현재 축에 맞춘다.
+    let mut shifts = para.line_segs.iter().enumerate().map(|(index, line)| {
+        source_line_position(para, index).and_then(|source| line.vertical_pos.checked_sub(source))
+    });
+    let shift = shifts.next()??;
+    if shifts.any(|other| other != Some(shift)) {
+        return None;
+    }
+    Some(StoredParagraphSuccessorFlow {
+        flow_origin_hu: flow_origin_hu.checked_add(shift)?,
+        content_bottom_hu: content_bottom_hu.checked_add(shift)?,
+        flow_end_hu: flow_end_hu.checked_add(shift)?,
     })
 }
 
