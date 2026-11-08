@@ -2,15 +2,19 @@
 """Portable rejection controls; these are not actual GTK/GL execution evidence."""
 
 from pathlib import Path
+from contextlib import contextmanager
 import os
 import shutil
 import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tool"))
 from qualify_linux_texture import stage_name, validate_result, validate_stage, verify_loaded_artifacts
 from qualify_desktop_texture import compare_pixels, validate_source_reference
+import qualify_linux_texture as qualification
 
 
 def stage(index=1):
@@ -249,6 +253,124 @@ class IndependentSourcePalette(unittest.TestCase):
         reference = self.reference[36 * 256:37 * 256] * 64
         with self.assertRaisesRegex(ValueError, "alignment.*ambiguous"):
             compare_pixels(low, actual, 16, 16, source_reference=reference, reference_scale=4)
+
+
+class CollectorDeadlineContracts(unittest.TestCase):
+    """Portable orchestration controls, not genuine GTK execution evidence."""
+
+    @contextmanager
+    def harness(self, expire_at=None):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            runtime = root / "runtime"
+            runtime.mkdir()
+            files = {}
+            for key in ("runner", "native", "dispatcher", "fixture", "plugin", "engineRuntime"):
+                files[key] = runtime / key
+                files[key].write_bytes(key.encode())
+            receipt = {"platform": "linux", "buildExitCode": 0,
+                       **dict.fromkeys(("sourceHead", "nativeSourceHead", "flutterRevision", "engineRevision"), "a" * 40)}
+            build = root / "build.json"
+            qualification.write_json(build, receipt)
+            output = root / "capture"
+            clock = SimpleNamespace(now=0.)
+            case = SimpleNamespace(output=output, captures=0, closed=False)
+            process = SimpleNamespace(pid=42, returncode=None)
+            process.poll = lambda: process.returncode
+            def wait(**kwargs):
+                process.returncode = 0
+                if expire_at == "wait":
+                    clock.now = 31.
+                return 0
+            process.wait = wait
+            frames = []
+
+            def launch(*args, **kwargs):
+                config = qualification.read_json(output / "config.json")
+                for index in range(1, 4):
+                    value = stage(index)
+                    value["nonce"] = config["nonce"]
+                    value["stamp"]["revision"] = 0 if index == 1 else 1
+                    value["nativeStatus"]["renderedStamp"] = dict(value["stamp"])
+                    value.update(width=16, height=16)
+                    for name, factor in (("cpu", 1), ("reference", 4)):
+                        geometry = value["geometryProof"][name]
+                        geometry["stamp"] = dict(value["stamp"])
+                        geometry["viewport"] = {"width": 16 * factor, "height": 16 * factor}
+                        geometry["descriptor"].update(width=16 * factor, height=16 * factor, stride=64 * factor)
+                    low = bytearray([255] * (16 * 16 * 4))
+                    for y in range(3, 13):
+                        for x in range(2, 10):
+                            at = (y * 16 + x) * 4
+                            low[at:at + 4] = bytes([30 + index] * 3 + [255])
+                    for y in range(2, 14):
+                        at = (y * 16 + 12) * 4
+                        low[at:at + 4] = bytes([0, 0, 255, 255])
+                    high = b"".join(b"".join(bytes(low[y * 64 + x * 4:y * 64 + x * 4 + 4]) * 4
+                                            for x in range(16)) * 4 for y in range(16))
+                    qualification.write_json(output / f"stage-{index}.json", value)
+                    (output / f"cpu-{index}.rgba").write_bytes(low)
+                    (output / f"cpu-reference-{index}.rgba").write_bytes(high)
+                    frames.append(bytes(low))
+                completion = result()
+                completion.update(nonce=config["nonce"], publications=3, continuousPresentationSupported=False)
+                qualification.write_json(output / "result.json", completion)
+                return process
+
+            def capture(*args):
+                pixels = frames[case.captures // 2]
+                case.captures += 1
+                if expire_at == "capture" and case.captures == 2:
+                    clock.now = 31.
+                return pixels
+            def compare(*args, **kwargs):
+                value = compare_pixels(*args, **kwargs)
+                if expire_at == "comparison":
+                    clock.now = 31.
+                return value
+            bundle_checks = 0
+            def bundle(*args):
+                nonlocal bundle_checks
+                bundle_checks += 1
+                if expire_at == "final artifacts" and bundle_checks == 2:
+                    clock.now = 31.
+            def stop(child):
+                child.returncode = -9
+            def close():
+                case.closed = True
+            argv = ["qualify_linux_texture.py",
+                    *(part for name in ("runner", "native", "dispatcher", "fixture")
+                      for part in ("--" + name, str(files[name]))),
+                    "--build-receipt", str(build), "--output", str(output), "--frames", "3", "--timeout", "30"]
+            with mock.patch.object(sys, "argv", argv), \
+                    mock.patch.object(qualification.subprocess, "Popen", side_effect=launch), \
+                    mock.patch.object(qualification, "X11Compositor", return_value=SimpleNamespace(capture=capture, close=close)), \
+                    mock.patch.object(qualification, "verify_runtime_artifacts", return_value=files), \
+                    mock.patch.object(qualification, "verify_runtime_bundle", side_effect=bundle), \
+                    mock.patch.object(qualification, "verify_loaded_artifacts", return_value={}), \
+                    mock.patch.object(qualification, "stop_process_tree", side_effect=stop), \
+                    mock.patch.object(qualification.time, "monotonic", side_effect=lambda: clock.now), \
+                    mock.patch.object(qualification.time, "sleep"), \
+                    mock.patch.object(qualification, "compare_pixels", side_effect=compare), \
+                    mock.patch("builtins.print"):
+                yield case
+
+    def test_on_time_held_frames_and_cleanup_still_qualify(self):
+        with self.harness() as case:
+            qualification.main()
+            self.assertEqual(qualification.read_json(case.output / "receipt.json")["qualification"], "linux-consumer-passed")
+            self.assertEqual(len(list(case.output.glob("ack-*.json"))), 3)
+            self.assertTrue(case.closed)
+
+    def test_expired_work_cannot_acknowledge_or_finish_qualification(self):
+        for phase in ("comparison", "capture", "wait", "final artifacts"):
+            with self.subTest(phase=phase), self.harness(expire_at=phase) as case:
+                with self.assertRaisesRegex(TimeoutError, "deadline"):
+                    qualification.main()
+                self.assertEqual(qualification.read_json(case.output / "receipt.json")["qualification"], "failed")
+                if phase in ("comparison", "capture"):
+                    self.assertFalse((case.output / "ack-1.json").exists())
+                self.assertTrue(case.closed)
 
 
 if __name__ == "__main__":

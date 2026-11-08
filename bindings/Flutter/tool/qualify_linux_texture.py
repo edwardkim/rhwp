@@ -308,6 +308,8 @@ def main():
                     if process.poll() is not None or time.monotonic() >= deadline:
                         raise TimeoutError("runner exited or timed out before " + stage_name(index))
                     time.sleep(.025)
+                if time.monotonic() >= deadline:
+                    raise TimeoutError("Linux qualification deadline expired before stage validation")
                 stage = read_json(stage_path)
                 width, height, offset = validate_stage(stage, nonce=nonce, index=index, pid=process.pid)
                 if previous is not None:
@@ -338,9 +340,13 @@ def main():
                 source_reference = reference_path.read_bytes()
                 comparison = compare_pixels(expected, captured, width, height,
                                             source_reference=source_reference, reference_scale=scale)
+                if time.monotonic() >= deadline:
+                    raise TimeoutError("Linux qualification deadline expired during pixel comparison")
                 time.sleep(.1)
                 if compositor.capture(width, height, offset) != captured:
                     raise ValueError("visible compositor pixels changed during a held publication")
+                if time.monotonic() >= deadline:
+                    raise TimeoutError("Linux qualification deadline expired during held capture")
                 state["stages"].append({"stage": stage, "comparison": comparison, "cpuSha256": cpu_hash,
                                         "sourceReferenceSha256": hashlib.sha256(source_reference).hexdigest(),
                                         "compositorSha256": hashlib.sha256(captured).hexdigest()})
@@ -349,15 +355,24 @@ def main():
                         key: files[key] for key in ("runner", "native", "dispatcher", "plugin", "engineRuntime")})
                     state.setdefault("loadedArtifacts", []).append({"index": index, "modules": loaded})
                 write_json(output / "receipt.json", state)
+                if time.monotonic() >= deadline:
+                    raise TimeoutError("Linux qualification deadline expired before acknowledgement")
                 write_json(output / f"ack-{index}.json", {"protocol": 1, "nonce": nonce, "index": index})
                 previous = stage["stamp"]
-            code = process.wait(timeout=max(.1, deadline - time.monotonic()))
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise TimeoutError("Linux qualification deadline expired before runner exit")
+            code = process.wait(timeout=remaining)
+            if time.monotonic() >= deadline:
+                raise TimeoutError("Linux qualification deadline expired during runner exit")
             result = read_json(output / "result.json")
             if code:
                 raise ValueError("runner did not complete its actual close/unregister checks")
             validate_result(result, nonce=nonce, frames=args.frames)
             verify_runtime_artifacts(files, receipt, platform="linux")
             verify_runtime_bundle(files["runner"].parent, receipt.get("runtimeBundle"))
+            if time.monotonic() >= deadline:
+                raise TimeoutError("Linux qualification deadline expired during final artifact validation")
             state.update(qualification="linux-consumer-passed", exitCode=code, result=result,
                          continuousPresentationSupported=args.frames > 4)
         except BaseException as error:
