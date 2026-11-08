@@ -1,5 +1,5 @@
 //! 관계형: 실제 주 프로그램의 전진과 HFT 대체 프로그램의 굵기 전진 소유를 구분한다.
-//! 주석 갱신: 2026-11-08T18:17:17+09:00.
+//! 주석 갱신: 2026-11-08T18:32:04+09:00.
 //! 공개 CFF·문서/글꼴 환경 API의 합성 계약이며 설치 글꼴·실문서 px·쪽수 기대값에 의존하지 않는다.
 //! 실문서 raw·DPI·Print 쪽수는 이 합성 계약에 비해당이다. 원인 및 실제 Print 대조는
 //! mydocs/pr/assets/planet6897_20261106/native-weight-r46g-analysis.md의 R52 절을 따른다.
@@ -88,13 +88,7 @@ fn positions(style: &TextStyle) -> Vec<f64> {
 
 #[test]
 fn real_primary_program_does_not_inherit_inferred_hft_decoration() {
-    let id = format!(
-        "{:x}",
-        Sha256::digest(include_bytes!(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/tests/fixtures/fonts/RHWPHftOutline.otf"
-        )))
-    );
+    let id = program_identity(false);
     for spacing in [-10, 0, 10] {
         let regular = selected_style(false, spacing, false, &id);
         let bold = selected_style(true, spacing, false, &id);
@@ -119,13 +113,7 @@ fn another_program_does_not_borrow_primary_selection_identity() {
 
 #[test]
 fn original_hwp3_decoration_keeps_its_independent_ownership() {
-    let id = format!(
-        "{:x}",
-        Sha256::digest(include_bytes!(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/tests/fixtures/fonts/RHWPHftOutline.otf"
-        )))
-    );
+    let id = program_identity(false);
     let regular = selected_style(false, 0, true, &id);
     let bold = selected_style(true, 0, true, &id);
     assert!(
@@ -136,17 +124,47 @@ fn original_hwp3_decoration_keeps_its_independent_ownership() {
 
 #[test]
 fn document_substitute_does_not_become_the_original_primary_program() {
-    let id = format!(
-        "{:x}",
-        Sha256::digest(include_bytes!(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/tests/fixtures/fonts/RHWPHftOutline.otf"
-        )))
-    );
+    let id = program_identity(false);
     let regular = supplied_style(false, 0, false, &id, true);
     let bold = supplied_style(true, 0, false, &id, true);
     assert!(
         positions(&bold)[1] > positions(&regular)[1],
         "문서 지정 대체 프로그램도 원본 주 프로그램 선택으로 승격하지 않는다"
     );
+}
+
+fn program_identity(standalone: bool) -> String {
+    let bytes = include_bytes!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/fixtures/fonts/RHWPHftOutline.otf"
+    ));
+    let mut hash = Sha256::new();
+    hash.update(bytes);
+    if !standalone {
+        hash.update(0u32.to_be_bytes());
+    }
+    let digest: String = hash
+        .finalize()
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect();
+    if standalone {
+        format!("sweep-{digest}")
+    } else {
+        digest
+    }
+}
+
+#[test]
+fn standalone_browser_program_uses_the_same_primary_ownership() {
+    let id = program_identity(true);
+    for spacing in [-10, 0, 10] {
+        let regular = selected_style(false, spacing, false, &id);
+        let bold = selected_style(true, spacing, false, &id);
+        assert_eq!(
+            positions(&bold),
+            positions(&regular),
+            "브라우저의 실제 독립 SFNT 신원도 같은 주 프로그램 전진을 소비한다: {spacing}"
+        );
+    }
 }

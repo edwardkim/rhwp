@@ -395,7 +395,7 @@ pub struct TextStyle {
     pub source_font_is_ttf: bool,
     /// 실제 원본 주 프로그램 선택. 같은 글리프의 실제 공급자와 대조한다.
     #[serde(skip)]
-    pub selected_primary_font_program: Option<[u8; 32]>,
+    pub selected_primary_font_program: Option<font_environment::FontProgramIdentity>,
     /// 독립 출력에서 굵기 전진이 확인된 원본 글꼴 프로그램 선언이다.
     #[serde(skip_serializing)]
     pub source_verified_hft_bold_tracking: bool,
@@ -611,7 +611,7 @@ pub struct LatinSlotMetrics {
     pub source_font_is_hft: bool,
     /// 영문 슬롯의 명시적 TTF 선언이다.
     pub source_font_is_ttf: bool,
-    pub selected_primary_font_program: Option<[u8; 32]>,
+    pub selected_primary_font_program: Option<font_environment::FontProgramIdentity>,
     pub source_verified_hft_bold_tracking: bool,
     pub letter_spacing: f64,
     pub ratio: f64,

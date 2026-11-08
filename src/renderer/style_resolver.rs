@@ -218,7 +218,7 @@ pub(crate) fn resolve_styles_with_environment(
                             .then_some(())?;
                         Some((
                             (*lang, *id),
-                            env.selected_program_digest_for(&request.source, *lang, *id)?,
+                            env.selected_program_identity_for(&request.source, *lang, *id)?,
                         ))
                     })
                     .collect()

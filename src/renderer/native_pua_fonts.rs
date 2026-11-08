@@ -51,7 +51,7 @@ pub struct NativePuaMetrics {
 }
 
 /// 실제 paint 후보 순서에 따른 CFF 전진과 앞선 TTF의 선택 경계다.
-type NativeOtfAdvance = (f64, bool, bool, [u8; 32]);
+type NativeOtfAdvance = (f64, bool, bool, usize);
 
 #[derive(Debug)]
 pub struct NativeOtfMetrics {
@@ -67,6 +67,7 @@ struct NativeOtfProgram {
     bytes: Arc<[u8]>,
     face_index: u32,
     digest: [u8; 32],
+    selection_digest: [u8; 32],
     faux_bold: bool,
     cff: bool,
     verified_hft_bold_tracking: bool,
@@ -145,9 +146,20 @@ impl NativeOtfMetrics {
             .is_some_and(|(_, _, verified, _)| verified)
     }
     /// 요청한 주 프로그램이 실제로 이 글리프의 CFF 전진을 공급했는지 확인한다.
-    pub(crate) fn glyph_program_matches(&self, character: char, digest: &[u8; 32]) -> bool {
+    pub(crate) fn glyph_program_matches(
+        &self,
+        character: char,
+        identity: &super::font_environment::FontProgramIdentity,
+    ) -> bool {
         self.glyph_metric(character)
-            .is_some_and(|(_, _, _, actual)| &actual == digest)
+            .and_then(|(_, _, _, index)| self.programs.get(index))
+            .is_some_and(|program| {
+                identity.matches(
+                    &program.digest,
+                    &program.selection_digest,
+                    program.face_index,
+                )
+            })
     }
     fn glyph_metric(&self, character: char) -> Option<NativeOtfAdvance> {
         let mut cache = self.advances.lock().ok()?;
@@ -155,7 +167,7 @@ impl NativeOtfMetrics {
             return *advance;
         }
         let mut value = None;
-        for program in &self.programs {
+        for (program_index, program) in self.programs.iter().enumerate() {
             let Ok(face) = ttf_parser::Face::parse(&program.bytes, program.face_index) else {
                 continue;
             };
@@ -170,7 +182,7 @@ impl NativeOtfMetrics {
                         f64::from(width) / f64::from(face.units_per_em()),
                         program.faux_bold,
                         program.verified_hft_bold_tracking,
-                        program.digest,
+                        program_index,
                     )
                 });
             }
@@ -239,6 +251,11 @@ impl NativePuaFonts {
         let face =
             ttf_parser::Face::parse(bytes, face_index).map_err(|_| "invalid native font face")?;
         let cff = is_cff_program(bytes, face_index);
+        // FontEnvironment의 Native 신원 생성과 같은 입력·collection face를 소비한다.
+        let mut selection_digest = Sha256::new();
+        selection_digest.update(bytes);
+        selection_digest.update(face_index.to_be_bytes());
+        let selection_digest: [u8; 32] = selection_digest.finalize().into();
         let faux_bold = bold && !face.is_bold();
         let verified_hft_bold_tracking = face.names().into_iter().any(|name| {
             matches!(
@@ -300,6 +317,7 @@ impl NativePuaFonts {
             bytes: shared.unwrap_or_else(|| Arc::from(bytes)),
             face_index,
             digest,
+            selection_digest,
             faux_bold,
             cff,
             verified_hft_bold_tracking,

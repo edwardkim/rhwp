@@ -28,7 +28,8 @@ pub struct ResolvedCharStyle {
     /// 유형 미상과 구별한 원본 언어 슬롯의 명시적 TTF 선언이다.
     pub font_families_source_ttf: Vec<bool>,
     /// 실제 원본 주 이름으로 선택한 프로그램. 대체 후보의 신원과 구분한다.
-    pub font_families_primary_program: Vec<Option<[u8; 32]>>,
+    pub font_families_primary_program:
+        Vec<Option<crate::renderer::font_environment::FontProgramIdentity>>,
     /// 독립 Print로 굵기 전진 계약을 확인한 원본 HFT 프로그램이다.
     pub font_families_verified_hft_bold_tracking: Vec<bool>,
     pub font_families_hft_print_frame: Vec<bool>,
