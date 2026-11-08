@@ -188,3 +188,12 @@ Legacy clip 소비와 공통 paint 경계를 위 원문·정상 대조군 및 �
 Oracle 후속 운영 기록 4개만 추가된다. 제품 소스는 검증 후보와 같다.
 원격 push·새 PR·CI·self-review·merge는 준비된 후보에 대한 추가 원격 승인 뒤 진행한다.
 그 뒤 이미 승인된 최종 devel의 13개 승격 workflow로 돌아간다.
+
+
+## PR #8771 source CI·self-review 완료
+
+사용자가 후보의 push·PR·CI·self-review·머지를 승인했고 #8771을 Open으로 제출했다.
+정확한 source head `339f77f6f27fd15bae4db0b4201af3bd5e408eef`의 제품 CI와 최종 정책
+감사가 성공했다. GitHub 단계 metadata 지연은 별도 승인된 최종 감사 두 번으로 해소했으며
+제품 CI는 반복하지 않았다. [검토 기록](../pr/archives/pr_8771_review.md)에 실제 결과를
+남겼다. 문서-only trailing head의 실제 검사와 머지 뒤 최종 승격·게시로 이어간다.
