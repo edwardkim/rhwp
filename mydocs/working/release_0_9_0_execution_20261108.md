@@ -44,3 +44,17 @@ include하지 않았으나 #8389에서 include가 추가됐고, #8757의 `cd71fa
 변경하지 않는다. 공통 사전 검사는 Cargo 생성 루트 파일의 직접·wildcard·extra mapping
 선택을 거부하며 하위 upstream 경로는 허용한다. 신규 계약은 수정 전 5개 subcase 실패를
 재현했다. 수정 후 계약·실제 14개 포장과 독립 소비 결과는 다음 검증에서 확정한다.
+
+## PR #8763 제출 head 검증 완료
+
+보정한 `d30e12e0d09c3b1afb500bb8f5b0e781c058d35e`에서 source/publish·기여 감사·
+릴리즈 계약 57건과 14개 실제 `.crate` 포장/무결성 점검이 통과했다. 업로드는 하지 않았다.
+path/patch 없는 Rust 기본·최소·PDF/codec 제외 소비와 README 예제·실패 후 복구를 확인했다.
+기본/native-skia CLI 설치와 실제 PDF → HWPX·PNG 출력도 통과했다. no-PDF CLI와
+최적화 WASM/브라우저 검증은 이어서 실행한다.
+
+[Full CI](https://github.com/edwardkim/rhwp/actions/runs/42431522165)의 Archive 12,803건,
+선택 Native 237건, Studio 2,777건이 통과했고 기존 skip은 2건이다. CodeQL·Adapter·Proptest와
+최종 정책 감사도 성공했다. [self-review](../pr/archives/pr_8763_review.md)와 실제 증거를
+CI 성공 뒤 기록했다. 이 문서-only trailing head의 검사·devel 병합이 다음 단계이며,
+최종 main source와 공개 registry 소비·태그·배포가 완료됐다는 뜻은 아니다.
