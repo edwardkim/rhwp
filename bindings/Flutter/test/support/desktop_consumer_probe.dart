@@ -272,7 +272,7 @@ class _ProbeState extends State<_Probe> {
         stamp: stamp,
         viewport: NativePageViewport.placed(
           view.page,
-          view.viewport * factor,
+          view.viewport * factor.toDouble(),
           zoom: view.zoom * factor,
           origin: view.origin * factor.toDouble(),
         ),
