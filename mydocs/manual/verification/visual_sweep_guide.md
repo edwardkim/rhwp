@@ -9,6 +9,13 @@ last_verified: 2026-11-08
 
 ## 목적
 
+일반 사용자·외부 contributor는 변경 범위의 일반 시각 검증과 증적 제출을 수행한다.
+**조판 영향 PR의 편람 `--handbook-gate` 실행·통과는 일반 기여자도 준수한다.** 필요한 글꼴은
+지원 웹폰트 공급 경로를 사용할 수 있다. **정본 보호 TSV 전체의 특별 하락 금지 검증은 통합 담당
+collaborator·maintainer의 추가 책임이다.** 일반 기여자에게 비공개 원본 OTF 보유·설치나
+이 특별 검증 전체의 재현을 요구하지 않는다.
+일반 90%·쪽수·내용 보존·페이지별 98% px 회귀 조건의 적용 범위는 유지한다.
+
 조판·렌더링 영향 변경은 실제 소비 경로 기준으로 Native/fresh WASM Visual Sweep·페이지별 TSV를
 반드시 산출한다. 편집 command·parser·model·serializer도 적용 대상이 될 수 있다.
 검증 범위의 한 페이지라도 **90% 미만** 또는 측정 불가이면 작성자가 자기 branch에서 PDF/overlay
@@ -132,15 +139,19 @@ RHWP 조판 개선으로 바꾸어 보고하지 않는다. 실루엣 임계값·
 기본 경로는 비교용 Native/WASM PNG와 PDF raster를 생성하며, 이미 있는 PNG는
 `--png-pair`로 재사용해 원문 export·raster 작업도 생략할 수 있다.
 행정업무운영 편람 HWPX의 Native 383쪽 기준 비교는 일반 실행에 자동 포함되지 않는다.
-**조판에 영향을 주는 변경이 포함된 PR은 제출 전에 최종 head에서 `--handbook-gate`를
-반드시 실행해 통과해야 한다.**
+**조판에 영향을 주는 변경이 포함된 PR은 일반 기여자를 포함하여 제출 전에 최종 head에서
+`--handbook-gate`를 반드시 실행해 통과해야 한다.** 지원 웹폰트를 사용할 수 있으며 비공개
+원본 OTF 보유는 요구하지 않는다. 이 gate의 실행 의무와 통합 담당자의 정본 보호 TSV 전체에
+대한 특별 하락 금지 검증은 구분한다.
 다른 대상 실행에 옵션을 추가하거나 해당 옵션만 지정해 별도로 실행할 수 있다.
-383쪽 전체의 90% 및 #8389 페이지별 기준 하락 검사를 적용하며 미실행·실패·누락·쪽수
+383쪽 전체의 90% 및 [정본 보호 TSV](../../pr/assets/visual-protected-baseline/final.tsv)의
+편람 HWPX Native 페이지별 기준 하락 검사를 적용하며 미실행·실패·누락·쪽수
 불일치이면 PR 제출을 보류한다. 실행 head·명령·결과와 TSV를 검증 기록에 남긴다.
 편람 PDF 130쪽(TSV `page=130`, 인쇄 쪽 번호 122)의 알려진 WMF 렌더링 차이는 100%
 일치 대상으로 삼지 않는다. 2026-11-07 실제 raw는 HWP/HWPX의 Native·fresh WASM 모두
 **99.96%**이며 경계 보정 후 보조값은 99.97%다. **나머지 382쪽은 네 결과 모두 raw
-100.00%이며 이를 유지한다.** 130쪽은 raw 99.96% 대비 하락 여부를 확인하고 실제
+100.00%다.** 일반 기여자도 실행하는 편람 gate는 HWPX Native의 이 페이지별 보호값을 유지한다.
+130쪽은 raw 99.96% 대비 하락 여부를 확인하고 실제
 raw·review·overlay를 보존한다. [130쪽 검토 범위](../pr_review/local_validation.md#편람-130쪽의-wmf-렌더링-차이)를 따른다.
 실행이 중단되면 같은 명령에 `--resume`을 추가해 이어간다. Native와 fresh WASM은
 완료한 쪽 묶음의 입력·실행 환경과 산출물 해시를 검사한 뒤 재사용하며, 완료되지 않은
@@ -213,7 +224,7 @@ overlay의 일치율도 동일한 입력의 `silhouette_raw_match_percent`를 �
 색상 경계 보정값은 overlay에 함께 표시하지 않으며 진단 지표에서 확인한다.
 정확한 점수와 90%·98%·100% 및 기준 대비 하락 판정에는 같은 실행의
 `silhouette_manifest.json`에 기록된 페이지별 정밀값을 사용한다.
-단, collaborator·maintainer의 [#8389·#8397 보호 TSV 비교](visual_verification_governance.md#기존-pr-보호-tsv의-공식-표시값-보존)는
+단, collaborator·maintainer의 [정본 보호 TSV 비교](visual_verification_governance.md#정본-보호-tsv의-공식-표시값-보존)는
 해당 정본이 지정한 공식 두 자리 표시값으로 상승·동일 여부를 판정한다. 일반 사용자·외부 contributor에게
 원본 OTF 설치나 이 특별 보호 검증의 재현을 요구하지 않는다.
 raw도2px 이웃을 허용하며, RGB까지 동일해야 하는 엄격 픽셀 지표와는 다르다.

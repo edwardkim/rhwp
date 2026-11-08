@@ -1,0 +1,2050 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-11-08T22:37:56.286882+09:00",
+  "baseline_kind": "수용된 과거 최종 검증의 보호 하한. 현재 통합 후보의 통과 결과가 아님.",
+  "table": "final.tsv",
+  "table_sha256": "ee41455cf7f05585487d92961ccb9fd8160d5d1e15c3567019ea89e2b7bf2aeb",
+  "row_count": 3542,
+  "document_count": 18,
+  "dataset_count": 36,
+  "source_dataset_count": 56,
+  "removed_duplicate_datasets": 20,
+  "older_source_declines": [],
+  "selection_policy": "최신 수용 검증을 우선한다. 같은 수용 시점에서는 명시된 최종 전쪽 재출력을 선택한다. 동일 대조 표는 하나만 남긴다. 페이지별 최댓값 조합이나 현재 미달 후보의 값으로 기준을 변경하지 않는다.",
+  "normalization_policy": "공식 두 자리 원문이 있으면 그대로 복사한다. 최신 수용된 정밀 전쪽 재검증 표만 있으면 Decimal ROUND_HALF_EVEN으로 한 번 두 자리로 표시하고 기존 TSV 작성기의 float .2f 결과와 일치함을 확인한다. 원본 열과 SHA는 보존한다.",
+  "comparison_key": [
+    "document_id",
+    "backend",
+    "page"
+  ],
+  "metric": "silhouette_raw_match_percent",
+  "decrease_tolerance_pp": "0.00",
+  "roles": [
+    "collaborator",
+    "maintainer"
+  ],
+  "datasets": [
+    {
+      "document_id": "0b7e7d0538284271",
+      "logical_key": "yeongwol",
+      "backend": "native",
+      "input": {
+        "path": "samples/issue5699/20099369_yeongwol_forms.hwp",
+        "sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+        "bytes": 20800
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7642-failed-inputs-followup-20261011/20099369_yeongwol_forms-2020.pdf",
+        "sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+        "bytes": 91696
+      },
+      "identity": {
+        "input_sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+        "reference_pdf_sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 4,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/regression/yeongwol-native.tsv",
+        "sha256": "5f1744f878fdec322f3e8a87516971e2afc86f99a42f3d0fc33023e16ec0e564",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8371/regression/README.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "75a961130b09da6cca1ffd58fc7dfafcececeb32198aa1eb9b1346f0c4ab3c8a"
+      },
+      "minimum_display": "99.60"
+    },
+    {
+      "document_id": "0b7e7d0538284271",
+      "logical_key": "yeongwol",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/issue5699/20099369_yeongwol_forms.hwp",
+        "sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+        "bytes": 20800
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7642-failed-inputs-followup-20261011/20099369_yeongwol_forms-2020.pdf",
+        "sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+        "bytes": 91696
+      },
+      "identity": {
+        "input_sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+        "reference_pdf_sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 4,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/regression/yeongwol-wasm.tsv",
+        "sha256": "b0607d64177e31378108c159ecc3a294c69c0928365d1fa48fc099392e8333dd",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8371/regression/README.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "75a961130b09da6cca1ffd58fc7dfafcececeb32198aa1eb9b1346f0c4ab3c8a"
+      },
+      "minimum_display": "99.59"
+    },
+    {
+      "document_id": "2b43ec3782a748e1",
+      "logical_key": "seo-body-list-typed",
+      "backend": "native",
+      "input": {
+        "path": "tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp",
+        "sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687",
+        "bytes": 4096
+      },
+      "reference_pdf": {
+        "path": "pdf/issue8109/print/body-list-typed-hwp-2020.pdf",
+        "sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3",
+        "bytes": 19110
+      },
+      "identity": {
+        "input_sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687",
+        "reference_pdf_sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 1,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/seo-final-native-exact.tsv",
+        "sha256": "bafa994a7b487aafe3e5819bbdb47ff2a36a98a310f9bc82fcd14cb2de6dc38d",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "body-list-typed",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "100.00"
+    },
+    {
+      "document_id": "2b43ec3782a748e1",
+      "logical_key": "seo-body-list-typed",
+      "backend": "wasm",
+      "input": {
+        "path": "tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp",
+        "sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687",
+        "bytes": 4096
+      },
+      "reference_pdf": {
+        "path": "pdf/issue8109/print/body-list-typed-hwp-2020.pdf",
+        "sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3",
+        "bytes": 19110
+      },
+      "identity": {
+        "input_sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687",
+        "reference_pdf_sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 1,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/seo-wasm-exact.tsv",
+        "sha256": "f3f531849c2d27d5053895c0d74fd227517b6c7a948f58f819b5b82042da9501",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "body-list-typed",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "100.00"
+    },
+    {
+      "document_id": "2fb2575d58042dcf",
+      "logical_key": "handbook-hwp",
+      "backend": "native",
+      "input": {
+        "path": "samples/2025 행정업무운영 편람(최종).hwp",
+        "sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+        "bytes": 10687488
+      },
+      "reference_pdf": {
+        "path": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+        "sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+        "bytes": 4692840
+      },
+      "identity": {
+        "input_sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+        "reference_pdf_sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+        "compat": "2024",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 383,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-final-native-exact.tsv",
+        "sha256": "609dc47ec50866890bebafae6b1b11514596deb5242da36b7c4a38f76d986901",
+        "metric_column": "최종_raw_%",
+        "page_column": "쪽",
+        "document_filter": "handbook-hwp",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "99.96"
+    },
+    {
+      "document_id": "2fb2575d58042dcf",
+      "logical_key": "handbook-hwp",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/2025 행정업무운영 편람(최종).hwp",
+        "sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+        "bytes": 10687488
+      },
+      "reference_pdf": {
+        "path": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+        "sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+        "bytes": 4692840
+      },
+      "identity": {
+        "input_sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+        "reference_pdf_sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+        "compat": "2024",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 383,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-wasm-exact.tsv",
+        "sha256": "80ebc86c0e80620d6e859ff5715adfb9f3ae79410ba49845266058d517c53a2a",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "handbook-hwp",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "99.96"
+    },
+    {
+      "document_id": "4314830495cfde87",
+      "logical_key": "seo-helvetica-styles",
+      "backend": "native",
+      "input": {
+        "path": "tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp",
+        "sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
+        "bytes": 4096
+      },
+      "reference_pdf": {
+        "path": "pdf/issue8109/print/control-styles-hwp-2020.pdf",
+        "sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba",
+        "bytes": 43664
+      },
+      "identity": {
+        "input_sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
+        "reference_pdf_sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 1,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/seo-final-native-exact.tsv",
+        "sha256": "bafa994a7b487aafe3e5819bbdb47ff2a36a98a310f9bc82fcd14cb2de6dc38d",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "helvetica-styles",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "98.93"
+    },
+    {
+      "document_id": "4314830495cfde87",
+      "logical_key": "seo-helvetica-styles",
+      "backend": "wasm",
+      "input": {
+        "path": "tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp",
+        "sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
+        "bytes": 4096
+      },
+      "reference_pdf": {
+        "path": "pdf/issue8109/print/control-styles-hwp-2020.pdf",
+        "sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba",
+        "bytes": 43664
+      },
+      "identity": {
+        "input_sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
+        "reference_pdf_sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 1,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/seo-wasm-exact.tsv",
+        "sha256": "f3f531849c2d27d5053895c0d74fd227517b6c7a948f58f819b5b82042da9501",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "helvetica-styles",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "98.79"
+    },
+    {
+      "document_id": "43c0a207f6daa0bb",
+      "logical_key": "sample16-hwpx",
+      "backend": "native",
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5.hwpx",
+        "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+        "bytes": 3061900
+      },
+      "reference_pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+        "sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+        "bytes": 2234018
+      },
+      "identity": {
+        "input_sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+        "reference_pdf_sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+        "compat": "2024",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 64,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-final-native-exact.tsv",
+        "sha256": "609dc47ec50866890bebafae6b1b11514596deb5242da36b7c4a38f76d986901",
+        "metric_column": "최종_raw_%",
+        "page_column": "쪽",
+        "document_filter": "sample16-hwpx",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "99.99"
+    },
+    {
+      "document_id": "43c0a207f6daa0bb",
+      "logical_key": "sample16-hwpx",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5.hwpx",
+        "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+        "bytes": 3061900
+      },
+      "reference_pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+        "sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+        "bytes": 2234018
+      },
+      "identity": {
+        "input_sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+        "reference_pdf_sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+        "compat": "2024",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 64,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-wasm-exact.tsv",
+        "sha256": "80ebc86c0e80620d6e859ff5715adfb9f3ae79410ba49845266058d517c53a2a",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "sample16-hwpx",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "99.99"
+    },
+    {
+      "document_id": "4bac5a5d1702df5f",
+      "logical_key": "sample16-hwp2022",
+      "backend": "native",
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5-2022.hwp",
+        "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+        "bytes": 3048448
+      },
+      "reference_pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+        "sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+        "bytes": 1830277
+      },
+      "identity": {
+        "input_sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+        "reference_pdf_sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 64,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-final-native-exact.tsv",
+        "sha256": "609dc47ec50866890bebafae6b1b11514596deb5242da36b7c4a38f76d986901",
+        "metric_column": "최종_raw_%",
+        "page_column": "쪽",
+        "document_filter": "sample16-hwp2022",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "100.00"
+    },
+    {
+      "document_id": "4bac5a5d1702df5f",
+      "logical_key": "sample16-hwp2022",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5-2022.hwp",
+        "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+        "bytes": 3048448
+      },
+      "reference_pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+        "sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+        "bytes": 1830277
+      },
+      "identity": {
+        "input_sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+        "reference_pdf_sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 64,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-wasm-exact.tsv",
+        "sha256": "80ebc86c0e80620d6e859ff5715adfb9f3ae79410ba49845266058d517c53a2a",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "sample16-hwp2022",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "100.00"
+    },
+    {
+      "document_id": "52ee61fe7201e36b",
+      "logical_key": "seo-re-03-latin",
+      "backend": "native",
+      "input": {
+        "path": "samples/re-03-latin-only-hancom.hwp",
+        "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+        "bytes": 9216
+      },
+      "reference_pdf": {
+        "path": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+        "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+        "bytes": 11752
+      },
+      "identity": {
+        "input_sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+        "reference_pdf_sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 1,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/seo-final-native-exact.tsv",
+        "sha256": "bafa994a7b487aafe3e5819bbdb47ff2a36a98a310f9bc82fcd14cb2de6dc38d",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "re-03-latin",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "100.00"
+    },
+    {
+      "document_id": "52ee61fe7201e36b",
+      "logical_key": "seo-re-03-latin",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/re-03-latin-only-hancom.hwp",
+        "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+        "bytes": 9216
+      },
+      "reference_pdf": {
+        "path": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+        "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+        "bytes": 11752
+      },
+      "identity": {
+        "input_sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+        "reference_pdf_sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 1,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/seo-wasm-exact.tsv",
+        "sha256": "f3f531849c2d27d5053895c0d74fd227517b6c7a948f58f819b5b82042da9501",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "re-03-latin",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "100.00"
+    },
+    {
+      "document_id": "59f6ab1155623bda",
+      "logical_key": "angle-narrow",
+      "backend": "native",
+      "input": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+        "sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+        "bytes": 6848
+      },
+      "reference_pdf": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+        "sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+        "bytes": 10328
+      },
+      "identity": {
+        "input_sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+        "reference_pdf_sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 1,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/native.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/archives/pr_8397_review.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "a432c7d8067d50418798bf03fd4c8b00c6b3f105ae6d7a6786bfa560cdbd49e6"
+      },
+      "minimum_display": "100.00"
+    },
+    {
+      "document_id": "59f6ab1155623bda",
+      "logical_key": "angle-narrow",
+      "backend": "wasm",
+      "input": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+        "sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+        "bytes": 6848
+      },
+      "reference_pdf": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+        "sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+        "bytes": 10328
+      },
+      "identity": {
+        "input_sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+        "reference_pdf_sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 1,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/wasm.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/archives/pr_8397_review.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "a432c7d8067d50418798bf03fd4c8b00c6b3f105ae6d7a6786bfa560cdbd49e6"
+      },
+      "minimum_display": "100.00"
+    },
+    {
+      "document_id": "69bcf084e2ae31a5",
+      "logical_key": "outline",
+      "backend": "native",
+      "input": {
+        "path": "samples/task3307/issue3307_outline_number.hwpx",
+        "sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+        "bytes": 57890
+      },
+      "reference_pdf": {
+        "path": "pdf/task3307/issue3307_outline_number-2020.pdf",
+        "sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+        "bytes": 237518
+      },
+      "identity": {
+        "input_sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+        "reference_pdf_sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 9,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/regression/outline-native.tsv",
+        "sha256": "1eda9a706779da4ebfbc94254963cc999eadd9fd33d05d5c9ec1e29a110f45ea",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8371/regression/README.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "75a961130b09da6cca1ffd58fc7dfafcececeb32198aa1eb9b1346f0c4ab3c8a"
+      },
+      "minimum_display": "97.89"
+    },
+    {
+      "document_id": "69bcf084e2ae31a5",
+      "logical_key": "outline",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/task3307/issue3307_outline_number.hwpx",
+        "sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+        "bytes": 57890
+      },
+      "reference_pdf": {
+        "path": "pdf/task3307/issue3307_outline_number-2020.pdf",
+        "sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+        "bytes": 237518
+      },
+      "identity": {
+        "input_sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+        "reference_pdf_sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 9,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/regression/outline-wasm.tsv",
+        "sha256": "83ab3a0425317dd69647ebdc56a41ce7c795bd949bac9e64504829b97da2563e",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8371/regression/README.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "75a961130b09da6cca1ffd58fc7dfafcececeb32198aa1eb9b1346f0c4ab3c8a"
+      },
+      "minimum_display": "97.81"
+    },
+    {
+      "document_id": "71f98206e45c354a",
+      "logical_key": "issue8040-insert",
+      "backend": "native",
+      "input": {
+        "path": "samples/pr8040/exam-social-insert.hwp",
+        "sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+        "bytes": 514560
+      },
+      "reference_pdf": {
+        "path": "pdf/pr8040/exam-social-insert-2020.pdf",
+        "sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+        "bytes": 641866
+      },
+      "identity": {
+        "input_sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+        "reference_pdf_sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 4,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-final-native-exact.tsv",
+        "sha256": "609dc47ec50866890bebafae6b1b11514596deb5242da36b7c4a38f76d986901",
+        "metric_column": "최종_raw_%",
+        "page_column": "쪽",
+        "document_filter": "issue8040-insert",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "99.72"
+    },
+    {
+      "document_id": "71f98206e45c354a",
+      "logical_key": "issue8040-insert",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/pr8040/exam-social-insert.hwp",
+        "sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+        "bytes": 514560
+      },
+      "reference_pdf": {
+        "path": "pdf/pr8040/exam-social-insert-2020.pdf",
+        "sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+        "bytes": 641866
+      },
+      "identity": {
+        "input_sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+        "reference_pdf_sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 4,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-wasm-exact.tsv",
+        "sha256": "80ebc86c0e80620d6e859ff5715adfb9f3ae79410ba49845266058d517c53a2a",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "issue8040-insert",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "98.82"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "logical_key": "nested",
+      "backend": "native",
+      "input": {
+        "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+        "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+        "bytes": 51712
+      },
+      "reference_pdf": {
+        "path": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+        "sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+        "bytes": 625577
+      },
+      "identity": {
+        "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+        "reference_pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 17,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/regression/nested-native.tsv",
+        "sha256": "d8b72033b81c3cb82e1557089927e869f2833fec8b9e05678d8935972bcafc57",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8371/regression/README.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "75a961130b09da6cca1ffd58fc7dfafcececeb32198aa1eb9b1346f0c4ab3c8a"
+      },
+      "minimum_display": "94.96"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "logical_key": "nested",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+        "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+        "bytes": 51712
+      },
+      "reference_pdf": {
+        "path": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+        "sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+        "bytes": 625577
+      },
+      "identity": {
+        "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+        "reference_pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 17,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/regression/nested-wasm.tsv",
+        "sha256": "7958b7064ec7b2c9193d54f5b151008c6eb036276ed90b0e4f60c7b68f0b7a48",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8371/regression/README.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "75a961130b09da6cca1ffd58fc7dfafcececeb32198aa1eb9b1346f0c4ab3c8a"
+      },
+      "minimum_display": "96.32"
+    },
+    {
+      "document_id": "7df4af8174abd82a",
+      "logical_key": "sample16-hwp2024",
+      "backend": "native",
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5-2024.hwp",
+        "sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+        "bytes": 3044864
+      },
+      "reference_pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
+        "sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+        "bytes": 2234015
+      },
+      "identity": {
+        "input_sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+        "reference_pdf_sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+        "compat": "2024",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 64,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-final-native-exact.tsv",
+        "sha256": "609dc47ec50866890bebafae6b1b11514596deb5242da36b7c4a38f76d986901",
+        "metric_column": "최종_raw_%",
+        "page_column": "쪽",
+        "document_filter": "sample16-hwp2024",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "99.99"
+    },
+    {
+      "document_id": "7df4af8174abd82a",
+      "logical_key": "sample16-hwp2024",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5-2024.hwp",
+        "sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+        "bytes": 3044864
+      },
+      "reference_pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
+        "sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+        "bytes": 2234015
+      },
+      "identity": {
+        "input_sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+        "reference_pdf_sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+        "compat": "2024",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 64,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-wasm-exact.tsv",
+        "sha256": "80ebc86c0e80620d6e859ff5715adfb9f3ae79410ba49845266058d517c53a2a",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "sample16-hwp2024",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "99.99"
+    },
+    {
+      "document_id": "941fe0c3549c0017",
+      "logical_key": "handbook-hwpx",
+      "backend": "native",
+      "input": {
+        "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+        "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+        "bytes": 13639865
+      },
+      "reference_pdf": {
+        "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+        "sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+        "bytes": 4692840
+      },
+      "identity": {
+        "input_sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+        "reference_pdf_sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+        "compat": "2024",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 383,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-final-native-exact.tsv",
+        "sha256": "609dc47ec50866890bebafae6b1b11514596deb5242da36b7c4a38f76d986901",
+        "metric_column": "최종_raw_%",
+        "page_column": "쪽",
+        "document_filter": "handbook-hwpx",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "99.96"
+    },
+    {
+      "document_id": "941fe0c3549c0017",
+      "logical_key": "handbook-hwpx",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+        "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+        "bytes": 13639865
+      },
+      "reference_pdf": {
+        "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+        "sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+        "bytes": 4692840
+      },
+      "identity": {
+        "input_sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+        "reference_pdf_sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+        "compat": "2024",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 383,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-wasm-exact.tsv",
+        "sha256": "80ebc86c0e80620d6e859ff5715adfb9f3ae79410ba49845266058d517c53a2a",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "handbook-hwpx",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "99.96"
+    },
+    {
+      "document_id": "a8e95b4accc79fa8",
+      "logical_key": "issue7905",
+      "backend": "native",
+      "input": {
+        "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx",
+        "sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+        "bytes": 140149
+      },
+      "reference_pdf": {
+        "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law_hancom2018_print.pdf",
+        "sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+        "bytes": 287952
+      },
+      "identity": {
+        "input_sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+        "reference_pdf_sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+        "compat": "2024",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 6,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-final-native-exact.tsv",
+        "sha256": "609dc47ec50866890bebafae6b1b11514596deb5242da36b7c4a38f76d986901",
+        "metric_column": "최종_raw_%",
+        "page_column": "쪽",
+        "document_filter": "issue7905",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "98.86"
+    },
+    {
+      "document_id": "a8e95b4accc79fa8",
+      "logical_key": "issue7905",
+      "backend": "wasm",
+      "input": {
+        "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx",
+        "sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+        "bytes": 140149
+      },
+      "reference_pdf": {
+        "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law_hancom2018_print.pdf",
+        "sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+        "bytes": 287952
+      },
+      "identity": {
+        "input_sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+        "reference_pdf_sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+        "compat": "2024",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 6,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-wasm-exact.tsv",
+        "sha256": "80ebc86c0e80620d6e859ff5715adfb9f3ae79410ba49845266058d517c53a2a",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "issue7905",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "98.19"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "logical_key": "sample10",
+      "backend": "native",
+      "input": {
+        "path": "samples/hwp3-sample10.hwp",
+        "sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+        "bytes": 945360
+      },
+      "reference_pdf": {
+        "path": "pdf/issue8371/hwp3-sample10-2020.pdf",
+        "sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+        "bytes": 96185197
+      },
+      "identity": {
+        "input_sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+        "reference_pdf_sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 763,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/sample10-native-exact.tsv",
+        "sha256": "24c6170ef82aceb7d3f4e7d21d46654a0299592f0f63751cf40a1a6067d23a44",
+        "metric_column": "new_raw_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "99.41"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "logical_key": "sample10",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/hwp3-sample10.hwp",
+        "sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+        "bytes": 945360
+      },
+      "reference_pdf": {
+        "path": "pdf/issue8371/hwp3-sample10-2020.pdf",
+        "sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+        "bytes": 96185197
+      },
+      "identity": {
+        "input_sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+        "reference_pdf_sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 763,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/sample10-wasm-exact.tsv",
+        "sha256": "2029ba6276fac452ece10f3e088ae61e9c4b922c99d86c98dc4718ad6a710a4b",
+        "metric_column": "new_raw_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "99.40"
+    },
+    {
+      "document_id": "ccd0cd0b7e76fe2f",
+      "logical_key": "issue8040-insert-delete",
+      "backend": "native",
+      "input": {
+        "path": "samples/pr8040/exam-social-insert-delete.hwp",
+        "sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+        "bytes": 514560
+      },
+      "reference_pdf": {
+        "path": "pdf/pr8040/exam-social-insert-delete-2020.pdf",
+        "sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+        "bytes": 641867
+      },
+      "identity": {
+        "input_sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+        "reference_pdf_sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 4,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-final-native-exact.tsv",
+        "sha256": "609dc47ec50866890bebafae6b1b11514596deb5242da36b7c4a38f76d986901",
+        "metric_column": "최종_raw_%",
+        "page_column": "쪽",
+        "document_filter": "issue8040-insert-delete",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "99.72"
+    },
+    {
+      "document_id": "ccd0cd0b7e76fe2f",
+      "logical_key": "issue8040-insert-delete",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/pr8040/exam-social-insert-delete.hwp",
+        "sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+        "bytes": 514560
+      },
+      "reference_pdf": {
+        "path": "pdf/pr8040/exam-social-insert-delete-2020.pdf",
+        "sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+        "bytes": 641867
+      },
+      "identity": {
+        "input_sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+        "reference_pdf_sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 4,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-wasm-exact.tsv",
+        "sha256": "80ebc86c0e80620d6e859ff5715adfb9f3ae79410ba49845266058d517c53a2a",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "issue8040-insert-delete",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "98.82"
+    },
+    {
+      "document_id": "cdacd874b6e6ac66",
+      "logical_key": "seo-pic-crop-01",
+      "backend": "native",
+      "input": {
+        "path": "samples/pic-crop-01.hwp",
+        "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+        "bytes": 131072
+      },
+      "reference_pdf": {
+        "path": "pdf/pic-crop-01-2022.pdf",
+        "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+        "bytes": 19211
+      },
+      "identity": {
+        "input_sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+        "reference_pdf_sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 1,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/seo-final-native-exact.tsv",
+        "sha256": "bafa994a7b487aafe3e5819bbdb47ff2a36a98a310f9bc82fcd14cb2de6dc38d",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "pic-crop-01",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "100.00"
+    },
+    {
+      "document_id": "cdacd874b6e6ac66",
+      "logical_key": "seo-pic-crop-01",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/pic-crop-01.hwp",
+        "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+        "bytes": 131072
+      },
+      "reference_pdf": {
+        "path": "pdf/pic-crop-01-2022.pdf",
+        "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+        "bytes": 19211
+      },
+      "identity": {
+        "input_sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+        "reference_pdf_sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 1,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/seo-wasm-exact.tsv",
+        "sha256": "f3f531849c2d27d5053895c0d74fd227517b6c7a948f58f819b5b82042da9501",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "pic-crop-01",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "94.65"
+    },
+    {
+      "document_id": "d03a9dde3d5dc7ac",
+      "logical_key": "seo-shape-group-02",
+      "backend": "native",
+      "input": {
+        "path": "samples/shape-group-02.hwp",
+        "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+        "bytes": 16384
+      },
+      "reference_pdf": {
+        "path": "pdf/shape-group-02-hwp-2020.pdf",
+        "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+        "bytes": 89651
+      },
+      "identity": {
+        "input_sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+        "reference_pdf_sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 1,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/seo-final-native-exact.tsv",
+        "sha256": "bafa994a7b487aafe3e5819bbdb47ff2a36a98a310f9bc82fcd14cb2de6dc38d",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "shape-group-02",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "100.00"
+    },
+    {
+      "document_id": "d03a9dde3d5dc7ac",
+      "logical_key": "seo-shape-group-02",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/shape-group-02.hwp",
+        "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+        "bytes": 16384
+      },
+      "reference_pdf": {
+        "path": "pdf/shape-group-02-hwp-2020.pdf",
+        "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+        "bytes": 89651
+      },
+      "identity": {
+        "input_sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+        "reference_pdf_sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 1,
+      "accepted_at": "2026-10-31T03:43:28Z",
+      "source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/seo-wasm-exact.tsv",
+        "sha256": "f3f531849c2d27d5053895c0d74fd227517b6c7a948f58f819b5b82042da9501",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "shape-group-02",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "minimum_display": "100.00"
+    }
+  ],
+  "deduplicated_sources": [
+    {
+      "document_id": "2fb2575d58042dcf",
+      "backend": "native",
+      "selected_source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-final-native-exact.tsv",
+        "sha256": "609dc47ec50866890bebafae6b1b11514596deb5242da36b7c4a38f76d986901",
+        "metric_column": "최종_raw_%",
+        "page_column": "쪽",
+        "document_filter": "handbook-hwp",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "superseded_source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/seo-final-native-exact.tsv",
+        "sha256": "bafa994a7b487aafe3e5819bbdb47ff2a36a98a310f9bc82fcd14cb2de6dc38d",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "handbook-hwp",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "different_display_rows": 1,
+      "selected_is_not_lower": true
+    },
+    {
+      "document_id": "2fb2575d58042dcf",
+      "backend": "native",
+      "selected_source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-final-native-exact.tsv",
+        "sha256": "609dc47ec50866890bebafae6b1b11514596deb5242da36b7c4a38f76d986901",
+        "metric_column": "최종_raw_%",
+        "page_column": "쪽",
+        "document_filter": "handbook-hwp",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "superseded_source": {
+        "pr": 8389,
+        "evidence_commit": "c417310cab62bd7dcf8ef131f72001bb4a1fd3d9",
+        "path": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/handbook-hwp-native.tsv",
+        "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/README.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "23059ba895ac9072f52918cf3577fcbc6bd84de8a24c2a666805dbdffc737bd1"
+      },
+      "different_display_rows": 0,
+      "selected_is_not_lower": true
+    },
+    {
+      "document_id": "2fb2575d58042dcf",
+      "backend": "wasm",
+      "selected_source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-wasm-exact.tsv",
+        "sha256": "80ebc86c0e80620d6e859ff5715adfb9f3ae79410ba49845266058d517c53a2a",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "handbook-hwp",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "superseded_source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/seo-wasm-exact.tsv",
+        "sha256": "f3f531849c2d27d5053895c0d74fd227517b6c7a948f58f819b5b82042da9501",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "handbook-hwp",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "different_display_rows": 2,
+      "selected_is_not_lower": true
+    },
+    {
+      "document_id": "2fb2575d58042dcf",
+      "backend": "wasm",
+      "selected_source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-wasm-exact.tsv",
+        "sha256": "80ebc86c0e80620d6e859ff5715adfb9f3ae79410ba49845266058d517c53a2a",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "handbook-hwp",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "superseded_source": {
+        "pr": 8389,
+        "evidence_commit": "c417310cab62bd7dcf8ef131f72001bb4a1fd3d9",
+        "path": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/handbook-hwp-wasm.tsv",
+        "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/README.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "23059ba895ac9072f52918cf3577fcbc6bd84de8a24c2a666805dbdffc737bd1"
+      },
+      "different_display_rows": 0,
+      "selected_is_not_lower": true
+    },
+    {
+      "document_id": "43c0a207f6daa0bb",
+      "backend": "native",
+      "selected_source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-final-native-exact.tsv",
+        "sha256": "609dc47ec50866890bebafae6b1b11514596deb5242da36b7c4a38f76d986901",
+        "metric_column": "최종_raw_%",
+        "page_column": "쪽",
+        "document_filter": "sample16-hwpx",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "superseded_source": {
+        "pr": 8389,
+        "evidence_commit": "c417310cab62bd7dcf8ef131f72001bb4a1fd3d9",
+        "path": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/sample16-hwpx-native.tsv",
+        "sha256": "804fedcc655075b2739abaf7adfb4764c1938357fcaeaaceb62dca421ecb4f49",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/README.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "23059ba895ac9072f52918cf3577fcbc6bd84de8a24c2a666805dbdffc737bd1"
+      },
+      "different_display_rows": 0,
+      "selected_is_not_lower": true
+    },
+    {
+      "document_id": "43c0a207f6daa0bb",
+      "backend": "wasm",
+      "selected_source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-wasm-exact.tsv",
+        "sha256": "80ebc86c0e80620d6e859ff5715adfb9f3ae79410ba49845266058d517c53a2a",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "sample16-hwpx",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "superseded_source": {
+        "pr": 8389,
+        "evidence_commit": "c417310cab62bd7dcf8ef131f72001bb4a1fd3d9",
+        "path": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/sample16-hwpx-wasm.tsv",
+        "sha256": "b63dc2408d611890f7d966e88f036d930fb514dcaf3e7d82e017d10da28b0ffa",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/README.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "23059ba895ac9072f52918cf3577fcbc6bd84de8a24c2a666805dbdffc737bd1"
+      },
+      "different_display_rows": 0,
+      "selected_is_not_lower": true
+    },
+    {
+      "document_id": "4bac5a5d1702df5f",
+      "backend": "native",
+      "selected_source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-final-native-exact.tsv",
+        "sha256": "609dc47ec50866890bebafae6b1b11514596deb5242da36b7c4a38f76d986901",
+        "metric_column": "최종_raw_%",
+        "page_column": "쪽",
+        "document_filter": "sample16-hwp2022",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "superseded_source": {
+        "pr": 8389,
+        "evidence_commit": "c417310cab62bd7dcf8ef131f72001bb4a1fd3d9",
+        "path": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/sample16-hwp2022-native.tsv",
+        "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/README.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "23059ba895ac9072f52918cf3577fcbc6bd84de8a24c2a666805dbdffc737bd1"
+      },
+      "different_display_rows": 0,
+      "selected_is_not_lower": true
+    },
+    {
+      "document_id": "4bac5a5d1702df5f",
+      "backend": "wasm",
+      "selected_source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-wasm-exact.tsv",
+        "sha256": "80ebc86c0e80620d6e859ff5715adfb9f3ae79410ba49845266058d517c53a2a",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "sample16-hwp2022",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "superseded_source": {
+        "pr": 8389,
+        "evidence_commit": "c417310cab62bd7dcf8ef131f72001bb4a1fd3d9",
+        "path": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/sample16-hwp2022-wasm.tsv",
+        "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/README.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "23059ba895ac9072f52918cf3577fcbc6bd84de8a24c2a666805dbdffc737bd1"
+      },
+      "different_display_rows": 0,
+      "selected_is_not_lower": true
+    },
+    {
+      "document_id": "71f98206e45c354a",
+      "backend": "native",
+      "selected_source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-final-native-exact.tsv",
+        "sha256": "609dc47ec50866890bebafae6b1b11514596deb5242da36b7c4a38f76d986901",
+        "metric_column": "최종_raw_%",
+        "page_column": "쪽",
+        "document_filter": "issue8040-insert",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "superseded_source": {
+        "pr": 8389,
+        "evidence_commit": "c417310cab62bd7dcf8ef131f72001bb4a1fd3d9",
+        "path": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/issue8040-insert-native.tsv",
+        "sha256": "9f894b9dc7b78efff1d152b090a924b611630b4e94aefb20d2dc27aca6451c26",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/README.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "23059ba895ac9072f52918cf3577fcbc6bd84de8a24c2a666805dbdffc737bd1"
+      },
+      "different_display_rows": 4,
+      "selected_is_not_lower": true
+    },
+    {
+      "document_id": "71f98206e45c354a",
+      "backend": "wasm",
+      "selected_source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-wasm-exact.tsv",
+        "sha256": "80ebc86c0e80620d6e859ff5715adfb9f3ae79410ba49845266058d517c53a2a",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "issue8040-insert",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "superseded_source": {
+        "pr": 8389,
+        "evidence_commit": "c417310cab62bd7dcf8ef131f72001bb4a1fd3d9",
+        "path": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/issue8040-insert-wasm.tsv",
+        "sha256": "0e9ef18698dd82c10d23b762b0278f191f7fe5e99d493c79fa89cf6441402ef3",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/README.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "23059ba895ac9072f52918cf3577fcbc6bd84de8a24c2a666805dbdffc737bd1"
+      },
+      "different_display_rows": 0,
+      "selected_is_not_lower": true
+    },
+    {
+      "document_id": "7df4af8174abd82a",
+      "backend": "native",
+      "selected_source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-final-native-exact.tsv",
+        "sha256": "609dc47ec50866890bebafae6b1b11514596deb5242da36b7c4a38f76d986901",
+        "metric_column": "최종_raw_%",
+        "page_column": "쪽",
+        "document_filter": "sample16-hwp2024",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "superseded_source": {
+        "pr": 8389,
+        "evidence_commit": "c417310cab62bd7dcf8ef131f72001bb4a1fd3d9",
+        "path": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/sample16-hwp2024-native.tsv",
+        "sha256": "804fedcc655075b2739abaf7adfb4764c1938357fcaeaaceb62dca421ecb4f49",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/README.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "23059ba895ac9072f52918cf3577fcbc6bd84de8a24c2a666805dbdffc737bd1"
+      },
+      "different_display_rows": 0,
+      "selected_is_not_lower": true
+    },
+    {
+      "document_id": "7df4af8174abd82a",
+      "backend": "wasm",
+      "selected_source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-wasm-exact.tsv",
+        "sha256": "80ebc86c0e80620d6e859ff5715adfb9f3ae79410ba49845266058d517c53a2a",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "sample16-hwp2024",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "superseded_source": {
+        "pr": 8389,
+        "evidence_commit": "c417310cab62bd7dcf8ef131f72001bb4a1fd3d9",
+        "path": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/sample16-hwp2024-wasm.tsv",
+        "sha256": "b63dc2408d611890f7d966e88f036d930fb514dcaf3e7d82e017d10da28b0ffa",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/README.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "23059ba895ac9072f52918cf3577fcbc6bd84de8a24c2a666805dbdffc737bd1"
+      },
+      "different_display_rows": 0,
+      "selected_is_not_lower": true
+    },
+    {
+      "document_id": "941fe0c3549c0017",
+      "backend": "native",
+      "selected_source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-final-native-exact.tsv",
+        "sha256": "609dc47ec50866890bebafae6b1b11514596deb5242da36b7c4a38f76d986901",
+        "metric_column": "최종_raw_%",
+        "page_column": "쪽",
+        "document_filter": "handbook-hwpx",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "superseded_source": {
+        "pr": 8389,
+        "evidence_commit": "c417310cab62bd7dcf8ef131f72001bb4a1fd3d9",
+        "path": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/handbook-hwpx-native.tsv",
+        "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/README.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "23059ba895ac9072f52918cf3577fcbc6bd84de8a24c2a666805dbdffc737bd1"
+      },
+      "different_display_rows": 0,
+      "selected_is_not_lower": true
+    },
+    {
+      "document_id": "941fe0c3549c0017",
+      "backend": "wasm",
+      "selected_source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-wasm-exact.tsv",
+        "sha256": "80ebc86c0e80620d6e859ff5715adfb9f3ae79410ba49845266058d517c53a2a",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "handbook-hwpx",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "superseded_source": {
+        "pr": 8389,
+        "evidence_commit": "c417310cab62bd7dcf8ef131f72001bb4a1fd3d9",
+        "path": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/handbook-hwpx-wasm.tsv",
+        "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/README.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "23059ba895ac9072f52918cf3577fcbc6bd84de8a24c2a666805dbdffc737bd1"
+      },
+      "different_display_rows": 0,
+      "selected_is_not_lower": true
+    },
+    {
+      "document_id": "a8e95b4accc79fa8",
+      "backend": "native",
+      "selected_source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-final-native-exact.tsv",
+        "sha256": "609dc47ec50866890bebafae6b1b11514596deb5242da36b7c4a38f76d986901",
+        "metric_column": "최종_raw_%",
+        "page_column": "쪽",
+        "document_filter": "issue7905",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "superseded_source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/law-split-20261030/native.tsv",
+        "sha256": "97de18886071ca5bbfaa012b44d4d9986367f1ed0ff6f4a97cb8a0c3fa762a24",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8371/law-split-20261030/README.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "0f2dc3362772965f88a9d0b04253d313f304feaa0cb38e7cc6ccc1b8ed78e33a"
+      },
+      "different_display_rows": 0,
+      "selected_is_not_lower": true
+    },
+    {
+      "document_id": "a8e95b4accc79fa8",
+      "backend": "native",
+      "selected_source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-final-native-exact.tsv",
+        "sha256": "609dc47ec50866890bebafae6b1b11514596deb5242da36b7c4a38f76d986901",
+        "metric_column": "최종_raw_%",
+        "page_column": "쪽",
+        "document_filter": "issue7905",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "superseded_source": {
+        "pr": 8389,
+        "evidence_commit": "c417310cab62bd7dcf8ef131f72001bb4a1fd3d9",
+        "path": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/issue7905-native.tsv",
+        "sha256": "3d7f99f46297f0d21f8cc159decd5245b654f7730093909d7c5d4226beb0a95c",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/README.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "23059ba895ac9072f52918cf3577fcbc6bd84de8a24c2a666805dbdffc737bd1"
+      },
+      "different_display_rows": 6,
+      "selected_is_not_lower": true
+    },
+    {
+      "document_id": "a8e95b4accc79fa8",
+      "backend": "wasm",
+      "selected_source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-wasm-exact.tsv",
+        "sha256": "80ebc86c0e80620d6e859ff5715adfb9f3ae79410ba49845266058d517c53a2a",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "issue7905",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "superseded_source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/law-split-20261030/wasm.tsv",
+        "sha256": "039060283fb34b5ebccfe2e5962587fa5b1deb4fa92ca77355dc9a9678e24301",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8371/law-split-20261030/README.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "0f2dc3362772965f88a9d0b04253d313f304feaa0cb38e7cc6ccc1b8ed78e33a"
+      },
+      "different_display_rows": 0,
+      "selected_is_not_lower": true
+    },
+    {
+      "document_id": "a8e95b4accc79fa8",
+      "backend": "wasm",
+      "selected_source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-wasm-exact.tsv",
+        "sha256": "80ebc86c0e80620d6e859ff5715adfb9f3ae79410ba49845266058d517c53a2a",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "issue7905",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "superseded_source": {
+        "pr": 8389,
+        "evidence_commit": "c417310cab62bd7dcf8ef131f72001bb4a1fd3d9",
+        "path": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/issue7905-wasm.tsv",
+        "sha256": "a5383687e7e1ce0851b3ad33b1db4174296dc97bc6900f5cb09a1a2d0781adbc",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/README.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "23059ba895ac9072f52918cf3577fcbc6bd84de8a24c2a666805dbdffc737bd1"
+      },
+      "different_display_rows": 6,
+      "selected_is_not_lower": true
+    },
+    {
+      "document_id": "ccd0cd0b7e76fe2f",
+      "backend": "native",
+      "selected_source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-final-native-exact.tsv",
+        "sha256": "609dc47ec50866890bebafae6b1b11514596deb5242da36b7c4a38f76d986901",
+        "metric_column": "최종_raw_%",
+        "page_column": "쪽",
+        "document_filter": "issue8040-insert-delete",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "superseded_source": {
+        "pr": 8389,
+        "evidence_commit": "c417310cab62bd7dcf8ef131f72001bb4a1fd3d9",
+        "path": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/issue8040-insert-delete-native.tsv",
+        "sha256": "9f894b9dc7b78efff1d152b090a924b611630b4e94aefb20d2dc27aca6451c26",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/README.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "23059ba895ac9072f52918cf3577fcbc6bd84de8a24c2a666805dbdffc737bd1"
+      },
+      "different_display_rows": 4,
+      "selected_is_not_lower": true
+    },
+    {
+      "document_id": "ccd0cd0b7e76fe2f",
+      "backend": "wasm",
+      "selected_source": {
+        "pr": 8397,
+        "evidence_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+        "path": "mydocs/pr/assets/issue_8371/rebase-55f40/pr8389-wasm-exact.tsv",
+        "sha256": "80ebc86c0e80620d6e859ff5715adfb9f3ae79410ba49845266058d517c53a2a",
+        "metric_column": "후보_raw_%",
+        "page_column": "쪽",
+        "document_filter": "issue8040-insert-delete",
+        "condition_evidence": "mydocs/pr/assets/issue_8371/rebase-55f40/README.md",
+        "precision": "수용된 정밀 최종값을 공식 소수 둘째 자리로 한 번 표시",
+        "condition_evidence_sha256": "52b06fd6d769570925ab5bd2370221bb0cbc9b13745dec037be87cb7d31cd2f8"
+      },
+      "superseded_source": {
+        "pr": 8389,
+        "evidence_commit": "c417310cab62bd7dcf8ef131f72001bb4a1fd3d9",
+        "path": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/issue8040-insert-delete-wasm.tsv",
+        "sha256": "0e9ef18698dd82c10d23b762b0278f191f7fe5e99d493c79fa89cf6441402ef3",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/README.md",
+        "precision": "공식 소수 둘째 자리 원문",
+        "condition_evidence_sha256": "23059ba895ac9072f52918cf3577fcbc6bd84de8a24c2a666805dbdffc737bd1"
+      },
+      "different_display_rows": 0,
+      "selected_is_not_lower": true
+    }
+  ],
+  "acceptance_sources": [
+    {
+      "pr": 8389,
+      "url": "https://github.com/edwardkim/rhwp/pull/8389",
+      "merged_at": "2026-10-30T10:50:12Z",
+      "merge_commit": "c417310cab62bd7dcf8ef131f72001bb4a1fd3d9",
+      "final_pr_head": "d84569dfc3ce05869e15f4fa67f54e4108a918fa"
+    },
+    {
+      "pr": 8397,
+      "url": "https://github.com/edwardkim/rhwp/pull/8397",
+      "merged_at": "2026-10-31T03:43:28Z",
+      "merge_commit": "99a176b7cb34fde54454c03433baa1382b2de9fa",
+      "final_pr_head": "050ccc15d9c682f7a7ffa60d795787a88fddef04"
+    }
+  ]
+}

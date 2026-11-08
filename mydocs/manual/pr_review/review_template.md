@@ -53,7 +53,7 @@ TSV를 같은 조건·페이지로 비교한 증거를 적는다. 원본/PDF·pr
 [상세 비교 기준](../verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)을 따른다.
 
 collaborator·maintainer의 조판·렌더링 PR review에는
-[#8389·#8397 보호 TSV 비교](../verification/visual_verification_governance.md#기존-pr-보호-tsv의-공식-표시값-보존)도 기록한다.
+[정본 보호 TSV 비교](../verification/visual_verification_governance.md#정본-보호-tsv의-공식-표시값-보존)도 기록한다.
 공식 두 자리 표시값의 페이지별 하락은 허용하지 않는다. 일반 사용자·외부 contributor에게 이 검증이나
 원본 OTF 설치를 제출 의무로 요구하지 않으며, 통합 담당자가 보호 기준·후보 TSV와 실제 결과를 연결한다.
 
