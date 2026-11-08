@@ -532,3 +532,40 @@ Native/WASM Clippy·workspace build·all-target Clippy는 통과했다. 새 테�
 원인을 보정하며 검사와 기대값은 유지한다. 최종 제출 검증 완료로 기록하지 않는다.
 이관 manifest의 Linux 절대 경로 때문에 0쪽에서 멈춘 실행과 최초 harness drift는 환경·준비 오류로
 보존하고, 동일 파일의 Mac 경로 및 현재 파생 suite를 확인한 재실행만 유효 결과로 사용한다.
+
+
+## 2026-11-09: #7518 Print 글꼴 조건과 회귀 검사의 정합
+
+원 해결 `a9dfc4e664`·후속 `646aa19edfcd` 및
+[기존 검토 기록](../../archives/pr_7518_review_impl.md)의 Palatino 근거를 확인했다.
+현재 Mac에는 실제 HCI Poppy CFF가 설치되어 있다. CLI 자동 공급은 이 원본을 선택하며,
+같은 환경을 적용한 추적에서 측정과 paint 모두 HCI Poppy를 선택한다. 앞선 진단에서
+자동 환경을 적용한 CLI와 환경 없는 DocumentCore를 비교해 얻었던 소비 불일치 추정은 철회한다.
+독립 Print는 Palatino Linotype을 사용하므로, 서로 다른 글꼴 조건에 같은 줄 경계를 요구하던
+검사 조건이 잘못된 것이다. 원본 프로그램 우선 선택을 되돌리는 제품 보정은 하지 않았다.
+
+검사는 Print의 `HCI Poppy → Palatino Linotype` 환경을 fixture로 명시했다. 기존
+`덮개·`/`울`과 인용문 `사고`/`하다가`/`회전날` 줄 소속 assertion은 모두 그대로다.
+공용 도우미의 기본 자동 공급 동작도 유지하며 이 한 검사만 명시 환경을 전달한다.
+글꼴 파일은 추가하지 않고 기존 검증 메트릭 경로를 사용한다.
+
+변경 전 전체 회귀는 13,070건 중 13,069 PASS·이 검사 1 FAIL·45 skip이었다.
+변경 후 해당 모듈 23건은 23 PASS·0 FAIL(11.241초), 283건은 선택 밖이다.
+전체 회귀 재통과로 확대하지 않는다. 검사 변경 전에 같은 원본·독립 Print·명시 환경으로
+22쪽 Native **99.94307%**, fresh WASM **99.94699%** 및 직접 판독을 확인했다.
+82쪽 전체 수용을 의미하지 않는다.
+
+[생산자·hash·실행 범위](regulatory22-print-environment/validation.json) ·
+[Native TSV](regulatory22-print-environment/native-p022-silhouette.tsv) ·
+[WASM TSV](regulatory22-print-environment/wasm-p022-silhouette.tsv) ·
+[Native review](regulatory22-print-environment/native-p022-review.png) ·
+[Native overlay](regulatory22-print-environment/native-p022-overlay.png) ·
+[WASM review](regulatory22-print-environment/wasm-p022-review.png) ·
+[WASM overlay](regulatory22-print-environment/wasm-p022-overlay.png).
+
+같은 시점의 Native 전 범위 측정은 93조건·2,994쪽이다. 이 중 새 devel의
+`incoming8754-nov-original`·`incoming8754-nov-resaved`는 각각 17·18·19쪽이 90% 미만이다.
+이는 최종 제출 통과가 아니며, 고정 base 출력과 원 PR을 대조해 보정을 계속한다.
+정본 보호 Native의 편람 HWP 24쪽·sample10 126쪽·outline 8쪽 및 앞서 기록한 nested 3쪽의
+공식 표시값 하락도 남아 있다. 편람 HWPX 383쪽의 보호값은 유지됐다.
+이번 한 회귀 검사 복구로 이 잔여를 면제하거나 제출 완료로 처리하지 않는다.

@@ -1,0 +1,127 @@
+{
+  "scope": "#7518 독립 Print의 글꼴 조건 명시; 제품 원본 글꼴 선택과 검사 기대값 유지",
+  "parent_head": "832558cec570bc74750c844005cb50867ad5d096",
+  "recorded_at": "2026-11-09T00:56:56.388645+09:00",
+  "original_fix_commits": [
+    "a9dfc4e664bc8e4c20fd0bbb26118d8f6310ca55",
+    "646aa19edfcd00737c3110c0f79c1475993ecc00"
+  ],
+  "input": {
+    "path": "samples/76076_regulatory_analysis.hwp",
+    "sha256": "3308ba8505391bae2d0d62963e9399f4e48cdae574304cc0f89a311c6efbb6b5"
+  },
+  "independent_print": {
+    "path": "pdf/issue1891/76076-original-hwp-exact-2024-20261005.pdf",
+    "sha256": "515133a656a78a9e77db3429f324b0a1f84b658b7a07bc846aa360533cf74072",
+    "pages": 82
+  },
+  "font_environment": {
+    "path": "tests/fixtures/pr7518_review_page_budget/legacy-latin-print-font-environment.json",
+    "sha256": "b492f3861537a092af08de932eb812210dd34cdb81bbba360ca0516125450066",
+    "substitutions": {
+      "HCI Poppy": "Palatino Linotype"
+    },
+    "source_metrics": false
+  },
+  "before": {
+    "run": 13070,
+    "passed": 13069,
+    "failed": 1,
+    "skipped": 45,
+    "log": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/full-nextest.log",
+    "log_sha256": "feb6807420feeb970b4cd3a971d6239173e6369c9bc891743ef2185836ecadcb"
+  },
+  "after": {
+    "run": 23,
+    "passed": 23,
+    "failed": 0,
+    "not_selected": 283,
+    "seconds": 11.241,
+    "log": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/regulatory22-focused-after.log",
+    "log_sha256": "4a545643953cef71639734ffa5df6439ac5465f79ce9e3888b8997ad6a19ce5d"
+  },
+  "visual_scope": "가운뎃점·인용부호가 있는 22쪽; 전체 82쪽 통과를 의미하지 않음",
+  "native_raw": 99.94307,
+  "wasm_raw": 99.94699,
+  "native_producer": {
+    "parent": "f1e6ac11eba00f73b4a7439243f822e9ccc8fc3a",
+    "binary_sha256": "98808a6b3a5df980dc83535ca96818eff6e51d1e4becf2b3af236314c2437a09",
+    "sources": {
+      "src/renderer/font_metrics_overlays.rs": "d638f7d5827ffcb62b497324c459ca5b9276c42a357f7cd231ee1aa37a8156d4",
+      "src/renderer/mod.rs": "7fb5bbb30a8395195e27b112488a2da6c53a7e56c4cf73bda600c6c3f2408bb9",
+      "src/renderer/web_canvas.rs": "a2b26540c5078aefb667178c0b61837b27cde84cf2458518eb71215a5e57afd0",
+      "src/renderer/web_canvas/image_reduction.rs": "f4d0cdd8e3a2c0e090d59935a0b2efa05def89ac5e64ad8ae10e322f44691b54",
+      "src/renderer/web_canvas/print_image_sampling.rs": "f555ae4feddadb6b973c92be461fb540a25db8c133f94c71afcd4e2f09ee606a",
+      "tests/cases/hft_outline_font_contract.rs": "496784f4ff415d750b2e963149df755cd1db4a694b2114546b472c16e1ab019f",
+      "tests/suites/suite-policy.json": "1b24bd00e7f78dbbb49a300c451f257d6e791c59526819bfc63bb6b601c67889",
+      "src/renderer/mipmap_sampling.rs": "b8b11a46afe0143e619c19abe8408b3ebfdd40644216706fcc50883d0943c1fb",
+      "tests/cases/native_metafile_mipmap_sampling.rs": "0113565091a99dcbad44c83af7513a96910ad9a1ef09480b0bbd674daeeabebd"
+    },
+    "source_diff_sha256": "787d310839312a30edf6c70a5d26f93c40303472983d62b48fff9b5817162ef1",
+    "build_evidence": "../paint-consumer-trace/focused-after.log"
+  },
+  "wasm_producer": {
+    "head": "f1e6ac11eba00f73b4a7439243f822e9ccc8fc3a",
+    "built_at": "2026-11-08T14:42:57.016466+00:00",
+    "command": "CARGO_BUILD_JOBS=8 CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg --no-opt",
+    "local_alternative_no_docker": true,
+    "files": {
+      "rhwp.js": {
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/fresh-wasm-pkg/rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+        "/Users/tsjang/rhwp/pkg/rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+        "/Users/tsjang/rhwp/rhwp-studio/public/rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568"
+      },
+      "rhwp_bg.wasm": {
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/fresh-wasm-pkg/rhwp_bg.wasm": "a5a3a89f6a3e447fc5b67fc42b7df7361a260726133a6f60b0330661505b4bcc",
+        "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm": "a5a3a89f6a3e447fc5b67fc42b7df7361a260726133a6f60b0330661505b4bcc",
+        "/Users/tsjang/rhwp/rhwp-studio/public/rhwp_bg.wasm": "a5a3a89f6a3e447fc5b67fc42b7df7361a260726133a6f60b0330661505b4bcc"
+      }
+    },
+    "source_changes": "diff --git a/src/renderer/font_metrics_overlays.rs b/src/renderer/font_metrics_overlays.rs\nindex 0b734d8a5d..34477fab0e 100644\n--- a/src/renderer/font_metrics_overlays.rs\n+++ b/src/renderer/font_metrics_overlays.rs\n@@ -188,6 +188,12 @@ pub(crate) fn declared_original_glyph_advance_em(\n     italic: bool,\n     character: char,\n ) -> Option<f64> {\n+    // 원본 HFT U+2027은 기존 독립 Print의 Type3 /Widths=500/1000em이다.\n+    // 표시용 OTF의 cmap 결측에서 일반 구두점 폭으로 내려가면 뒤 글자가 당겨진다.\n+    // glyph 표의 같은 반각 계약을 측정·paint가 함께 소비한다. 명시 TTF/OTF는 비대상이다.\n+    if face == \"한양신명조\" && !bold && !italic && character == '\\u{2027}' {\n+        return Some(f64::from(HANYANGSINMYEONGJO_HYPHENATION_POINT[0]) / 1024.0);\n+    }\n     // 독립 Type3로 확인한 원본 HFT 한양신명조의 두 원형 기호는 1em이다.\n     // 표시용 HY Sinmyeongjo OTF의 반각 hmtx와 원본 전진을 구분한다.\n     // 평가결과서 Print도 U+2219 뒤 한글 원점까지 1em이며 원문에 공백은 없다.\ndiff --git a/src/renderer/mod.rs b/src/renderer/mod.rs\nindex 419db2e629..c2c4614ff0 100644\n--- a/src/renderer/mod.rs\n+++ b/src/renderer/mod.rs\n@@ -23,6 +23,8 @@ pub mod char_overlap;\n pub mod composer;\n mod conjoining_jamo;\n pub(crate) mod footnote_frames;\n+#[cfg(target_arch = \"wasm32\")]\n+pub(crate) mod mipmap_sampling;\n pub use conjoining_jamo::IsolatedJamoFont;\n pub(crate) mod emphasis;\n pub(crate) mod enclosed_pua_geometry;\ndiff --git a/src/renderer/web_canvas.rs b/src/renderer/web_canvas.rs\nindex 15dc11238b..4d1f89ad1c 100644\n--- a/src/renderer/web_canvas.rs\n+++ b/src/renderer/web_canvas.rs\n@@ -3296,6 +3296,12 @@ impl Renderer for WebCanvasRenderer {\n             return;\n         }\n         let _sampling = self.image_sampling_scope(data, None, w, h);\n+        if self.high_quality_images\n+            && self.ctx.image_smoothing_enabled()\n+            && image_reduction::draw_metafile_surface(&self.ctx, data, (x, y, w, h))\n+        {\n+            return;\n+        }\n         // 독립 Print의 장치 프레임이 표본을 소유하면 그 프레임을 먼저 재생한다.\n         // 일반 비트맵 준비가 JPEG를 PNG로 바꾸면 프레임 선언까지 사라진다.\n         // Native Skia와 같은 순서이며, 재생할 수 없는 변환은 기존 경로로 간다.\ndiff --git a/src/renderer/web_canvas/image_reduction.rs b/src/renderer/web_canvas/image_reduction.rs\nindex a08bb47812..6ddeebc9cf 100644\n--- a/src/renderer/web_canvas/image_reduction.rs\n+++ b/src/renderer/web_canvas/image_reduction.rs\n@@ -3,6 +3,53 @@\n use wasm_bindgen::JsValue;\n use web_sys::CanvasRenderingContext2d;\n \n+/// 원본 장치에서 합성된 WMF 표면도 실제 출력이 더 작으면 Native와 같은 mip를 쓴다.\n+/// Canvas의 quality 문자열은 실제 mip 레벨 선택을 보장하지 않으므로 그 결과에 맡기지 않는다.\n+pub(super) fn draw_metafile_surface(\n+    context: &CanvasRenderingContext2d,\n+    bytes: &[u8],\n+    (x, y, width, height): (f64, f64, f64, f64),\n+) -> bool {\n+    if !crate::renderer::image_resolver::png_sampling::metafile_surface(bytes) {\n+        return false;\n+    }\n+    let draw = || {\n+        let matrix = context.get_transform().ok()?;\n+        if matrix.b() != 0.0 || matrix.c() != 0.0 || matrix.a() <= 0.0 || matrix.d() <= 0.0 {\n+            return None;\n+        }\n+        let header = crate::renderer::image_header::canvaskit_encoded_image_header(bytes)\n+            .filter(|header| header.is_within_decode_limits())?;\n+        if u64::from(header.width) * u64::from(header.height) > 32 * 1024 * 1024 {\n+            return None;\n+        }\n+        let source = image::load_from_memory_with_format(bytes, image::ImageFormat::Png)\n+            .ok()?\n+            .into_rgba8();\n+        let raster = crate::renderer::mipmap_sampling::rasterize(\n+            source.as_raw(),\n+            source.dimensions(),\n+            (\n+                matrix.a() * x + matrix.e(),\n+                matrix.d() * y + matrix.f(),\n+                matrix.a() * width,\n+                matrix.d() * height,\n+            ),\n+        )?;\n+        super::print_image_sampling::replay_raster(\n+            context,\n+            &crate::renderer::print_image_sampling::DeviceRaster {\n+                left: raster.left,\n+                top: raster.top,\n+                width: raster.width,\n+                height: raster.height,\n+                rgba: raster.rgba,\n+            },\n+        )\n+    };\n+    draw().is_some()\n+}\n+\n pub(super) struct ReductionQuality<'a> {\n     context: &'a CanvasRenderingContext2d,\n     previous: Option<JsValue>,\ndiff --git a/src/renderer/web_canvas/print_image_sampling.rs b/src/renderer/web_canvas/print_image_sampling.rs\nindex 6f88e26cb6..610c003c9f 100644\n--- a/src/renderer/web_canvas/print_image_sampling.rs\n+++ b/src/renderer/web_canvas/print_image_sampling.rs\n@@ -93,7 +93,7 @@ fn draw_inner(\n     replay_raster(context, &raster)\n }\n \n-fn replay_raster(\n+pub(super) fn replay_raster(\n     context: &CanvasRenderingContext2d,\n     raster: &crate::renderer::print_image_sampling::DeviceRaster,\n ) -> Option<()> {\ndiff --git a/tests/cases/hft_outline_font_contract.rs b/tests/cases/hft_outline_font_contract.rs\nindex 93b008ded6..cbc8cd4977 100644\n--- a/tests/cases/hft_outline_font_contract.rs\n+++ b/tests/cases/hft_outline_font_contract.rs\n@@ -1,5 +1,5 @@\n //! 검사 유형: 관계형. 합성 글꼴 프로그램의 선택·대체 계약을 검증한다.\n-//! 주석 갱신: 2026-11-08T21:00:56+09:00; 직전 변경: 2026-11-01T19:39:20+09:00, e64921811f349385d06aa6bc29928b1f4e200e1a.\n+//! 주석 갱신: 2026-11-08T23:28:54+09:00; 직전 변경: 2026-11-01T19:39:20+09:00, e64921811f349385d06aa6bc29928b1f4e200e1a.\n //! 실제 입력 `samples/hwp3-sample10.hwp`, 한컴 2020 Print, 96 DPI, 2px 이웃 raw.\n //! 2026-10-30 측정: 1쪽 Native/fresh WASM 각 99.96%; 전 763쪽 최저 각 99.41% / 99.40%.\n //! 근거: `mydocs/pr/assets/issue_8371/sample10-native.tsv`, `sample10-wasm.tsv`, `sample10-validation.md`.\n@@ -68,6 +68,52 @@ fn verified_hft_advance_survives_a_supplied_display_otf() {\n     );\n }\n \n+#[test]\n+fn declared_hft_hyphenation_point_keeps_its_half_em_before_display_fallback() {\n+    use rhwp::renderer::layout::{EmbeddedTextMeasurer, TextMeasurer};\n+    use rhwp::renderer::native_pua_fonts::NativePuaFonts;\n+    use rhwp::renderer::TextStyle;\n+\n+    // 관계형·원본 전진 계약: worklife Print의 Type3 Widths=500/1000과\n+    // nested 17쪽의 구분점→뒤 글자 원점을 대조했다. 실물 좌표를 고정하지 않는다.\n+    // MIT 합성 CFF는 표시 글꼴만 공급하며 비공개 HFT 설치를 요구하지 않는다.\n+    let mut fonts = NativePuaFonts::default();\n+    fonts\n+        .register_otf(\"synthetic\", false, false, CFF, 0)\n+        .unwrap();\n+    let mut style = TextStyle {\n+        font_family: \"HY Sinmyeongjo\".into(),\n+        original_glyph_metric_family: Some(std::sync::Arc::new(\"한양신명조\".into())),\n+        source_font_is_hft: true,\n+        font_size: 20.0,\n+        native_otf_metrics: fonts.get_otf(\"synthetic\", false, false),\n+        ..Default::default()\n+    };\n+    let measure = |style: &TextStyle| {\n+        EmbeddedTextMeasurer.compute_char_positions(\"‧\", style)[1] / style.font_size\n+    };\n+    // 실제 전진은 독립 Print로 확인한 4HU 장치 격자에서 반올림된다.\n+    // 자연 전진 0.5em을 검사하되 그 반 격자인 2HU를 계산에서 구분한다.\n+    let half_device_unit = |style: &TextStyle| 2.0 / 75.0 / style.font_size;\n+    assert!(\n+        (measure(&style) - 0.5).abs() <= half_device_unit(&style) + f64::EPSILON,\n+        \"표시용 결측 폭으로 원본 전진을 바꾸지 않는다: {}\",\n+        measure(&style)\n+    );\n+    style.font_size *= 2.0;\n+    assert!(\n+        (measure(&style) - 0.5).abs() <= half_device_unit(&style) + f64::EPSILON,\n+        \"원본 반각 계약은 장치 반올림 범위에서 크기에 비례한다\"\n+    );\n+    style.source_font_is_hft = false;\n+    style.original_glyph_metric_family = None;\n+    assert_ne!(\n+        measure(&style),\n+        0.5,\n+        \"원본 HFT 소유가 없는 명시 OTF에는 확장하지 않는다\"\n+    );\n+}\n+\n #[test]\n fn hft_mapped_symbol_retains_source_advance_with_display_otf() {\n     use rhwp::renderer::layout::{EmbeddedTextMeasurer, TextMeasurer};\ndiff --git a/tests/suites/suite-policy.json b/tests/suites/suite-policy.json\nindex 568f802498..1d2f3f379a 100644\n--- a/tests/suites/suite-policy.json\n+++ b/tests/suites/suite-policy.json\n@@ -103,6 +103,13 @@\n         \"path_attr\",\n         \"root_mod\"\n       ]\n+    },\n+    {\n+      \"path\": \"tests/cases/native_metafile_mipmap_sampling.rs\",\n+      \"allowBlockers\": [\n+        \"path_attr\",\n+        \"root_mod\"\n+      ]\n     }\n   ],\n   \"exceptions\": [\n"
+  },
+  "visual_source_note": "기존 고정 producer의 동일 제품 동작. source의 parity 표현 lint 수정만 빌드 후 변경됐으며 동작 변경은 없음. 이번 수정은 검사·도우미·환경 fixture만 변경함.",
+  "direct_reading": "Native review와 fresh WASM overlay에서 덮개·/울 및 사고/하다가/회전날 줄 소속 보존 확인. 미세 raster 차이는 잔여로 표시.",
+  "artifacts": [
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/regulatory22-print-environment/native-p022-review.png",
+      "sha256": "869276ef24c6722eec212ee10083733def3906752c260ac5624fd38c6aac71eb"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/regulatory22-print-environment/native-p022-overlay.png",
+      "sha256": "f099fe2e50ce3668f0d57c8784c98e20f9fee0d335b22e99d2eddaacf01e46da"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/regulatory22-print-environment/native-p022-raw.png",
+      "sha256": "0ecd0608c20c6b5ef9f96fabc05f04b700e648c5aa1769e3aee3a8b874ae1971"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/regulatory22-print-environment/native-p022-pdf.png",
+      "sha256": "d8b6dc4b54c3a0a5cde50f38ce85d086b7307eb72aea3cc5c4a5b0a2c6b2872e"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/regulatory22-print-environment/native-p022-silhouette.tsv",
+      "sha256": "0246222e1aa0ed73ab4880585e241600ae0c70922d6c111eaad6b093b93fa995"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/regulatory22-print-environment/wasm-p022-review.png",
+      "sha256": "ee6d360070f7b7fbb90f0af5ee5c70a4d211d77f89172bbdf56876aa47641666"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/regulatory22-print-environment/wasm-p022-overlay.png",
+      "sha256": "456eb949171ea13284da56cd7dd7d5457fcf37823ad21fe62737fd18ad20fa60"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/regulatory22-print-environment/wasm-p022-raw.png",
+      "sha256": "8311ae7b6aefc6eb73680e85edf69a22af795e46afe1f2ed18ab4e3f11cd4a2e"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/regulatory22-print-environment/wasm-p022-pdf.png",
+      "sha256": "d8b6dc4b54c3a0a5cde50f38ce85d086b7307eb72aea3cc5c4a5b0a2c6b2872e"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/regulatory22-print-environment/wasm-p022-silhouette.tsv",
+      "sha256": "9579d429f4a0c87e8eae6e578c05d91cb008ba24a55d66571c0cf99b2017aa9c"
+    }
+  ],
+  "completion": "집중 회귀만 복구; 다른 보호 TSV 하락·최종 전체 검증은 미완료"
+}
