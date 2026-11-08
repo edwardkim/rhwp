@@ -1,0 +1,245 @@
+{
+  "source_sha": "d30e12e0d09c3b1afb500bb8f5b0e781c058d35e",
+  "packages": [
+    {
+      "name": "rhwp-codec-resource",
+      "version": "0.1.0",
+      "bytes": 5325,
+      "sha256": "f253428602625f73b711f0fe54efeea11aabf057064aefafd730513426726b2e",
+      "files": 7,
+      "publish_guard": [
+        "crates-io"
+      ],
+      "cargo_verified": false
+    },
+    {
+      "name": "rhwp-contracts",
+      "version": "0.1.0",
+      "bytes": 32415,
+      "sha256": "b302f2d3b1f1ec50db447871ca546e3250a8f7a902eb6a182f4e86edd7dee47b",
+      "files": 11,
+      "publish_guard": [
+        "crates-io"
+      ],
+      "cargo_verified": false
+    },
+    {
+      "name": "rhwp-jpeg-decoder",
+      "version": "0.3.2-rhwp.1",
+      "bytes": 53260,
+      "sha256": "f68b4ec978f0417192d92a4d56d0fc7bc362d0fb0817cff816cc2eb2ec34f50e",
+      "files": 27,
+      "publish_guard": [
+        "crates-io"
+      ],
+      "cargo_verified": false
+    },
+    {
+      "name": "rhwp-jpeg-encoder",
+      "version": "0.7.1-rhwp.1",
+      "bytes": 44575,
+      "sha256": "731df183f57c2390c7ba41df6b7b2d70d572de92a1dc300e51b27a7a5ba4b089",
+      "files": 24,
+      "publish_guard": [
+        "crates-io"
+      ],
+      "cargo_verified": false
+    },
+    {
+      "name": "rhwp-ooxml-chart",
+      "version": "0.1.0",
+      "bytes": 111706,
+      "sha256": "1285bf9d66594c90da9ddf793ded4ff88f076a3be3cd64c469639b57dc3fae5d",
+      "files": 18,
+      "publish_guard": [
+        "crates-io"
+      ],
+      "cargo_verified": false
+    },
+    {
+      "name": "rhwp-password-crypto",
+      "version": "0.1.0",
+      "bytes": 16235,
+      "sha256": "9b74aeed442bc38c2c8a8ed5fa914bd73ba0150d94cc51d330634f509b967ff4",
+      "files": 7,
+      "publish_guard": [
+        "crates-io"
+      ],
+      "cargo_verified": false
+    },
+    {
+      "name": "rhwp-svg2pdf",
+      "version": "0.13.0-rhwp.1",
+      "bytes": 59107,
+      "sha256": "587f8a753788a47db314ea4bbe186514cd61566064d9cbbdd979c2a72dbac893",
+      "files": 27,
+      "publish_guard": [
+        "crates-io"
+      ],
+      "cargo_verified": false
+    },
+    {
+      "name": "rhwp-zune-jpeg",
+      "version": "0.5.15-rhwp.1",
+      "bytes": 103383,
+      "sha256": "a294ae75d22fefa9015f214d27105b63f16e890e628bc9430bbefcb83b5d1689",
+      "files": 44,
+      "publish_guard": [
+        "crates-io"
+      ],
+      "cargo_verified": false
+    },
+    {
+      "name": "rhwp-hayro-ccitt",
+      "version": "0.3.0-rhwp.1",
+      "bytes": 16769,
+      "sha256": "3613e14558648614f815b36dc833f3a2ecd4c3f4686c0ffd4945c84cd34694c5",
+      "files": 15,
+      "publish_guard": [
+        "crates-io"
+      ],
+      "cargo_verified": false
+    },
+    {
+      "name": "rhwp-hayro-jpeg2000",
+      "version": "0.4.0-rhwp.1",
+      "bytes": 96178,
+      "sha256": "5a4c93b061134e5bc90f2da3a4f4830171e3c9e6a387695709c76aa4b0d9238c",
+      "files": 42,
+      "publish_guard": [
+        "crates-io"
+      ],
+      "cargo_verified": false
+    },
+    {
+      "name": "rhwp-qcms",
+      "version": "0.3.0-rhwp.1",
+      "bytes": 56536,
+      "sha256": "97fbf29e50d496802fd5a488a16eb33cf05fc3974fcbee2b5fb94e68df87aac2",
+      "files": 22,
+      "publish_guard": [
+        "crates-io"
+      ],
+      "cargo_verified": false
+    },
+    {
+      "name": "rhwp-hayro-jbig2",
+      "version": "0.3.0-rhwp.1",
+      "bytes": 70551,
+      "sha256": "a913afe7b1dafb7e7b1f237fe8d74cac34087c38d28ff296314c86924f4d6e3c",
+      "files": 34,
+      "publish_guard": [
+        "crates-io"
+      ],
+      "cargo_verified": false
+    },
+    {
+      "name": "rhwp-pdf-import-backend",
+      "version": "0.3.78-rhwp.1",
+      "bytes": 6981606,
+      "sha256": "d5e54b17302353f8c6dcbb6319614f47998b1f7b7b27b3f06e19bf4b784f3be7",
+      "files": 434,
+      "publish_guard": [
+        "crates-io"
+      ],
+      "cargo_verified": false
+    },
+    {
+      "name": "rhwp",
+      "version": "0.9.0",
+      "bytes": 9544123,
+      "sha256": "4827e10d43bc25e5a29ab1ede766e7b8e63293bb091d5b6653d7b25a6efe21ad",
+      "files": 2090,
+      "publish_guard": [
+        "crates-io"
+      ],
+      "cargo_verified": false
+    }
+  ],
+  "preflight_status": "local-preflight-passed",
+  "upload_performed": false,
+  "registry_mode": "read-only loopback sparse registry; no repository path/patch in consumer",
+  "completed_consumer_commands": [
+    {
+      "name": "cli-default-version",
+      "exit_code": 0,
+      "seconds": 0.0,
+      "source_sha": "d30e12e0d09c3b1afb500bb8f5b0e781c058d35e"
+    },
+    {
+      "name": "cli-default",
+      "exit_code": 0,
+      "seconds": 415.8,
+      "source_sha": "d30e12e0d09c3b1afb500bb8f5b0e781c058d35e"
+    },
+    {
+      "name": "cli-native-version",
+      "exit_code": 0,
+      "seconds": 0.01,
+      "source_sha": "d30e12e0d09c3b1afb500bb8f5b0e781c058d35e"
+    },
+    {
+      "name": "cli-native",
+      "exit_code": 0,
+      "seconds": 412.48,
+      "source_sha": "d30e12e0d09c3b1afb500bb8f5b0e781c058d35e"
+    },
+    {
+      "name": "cli-no-pdf-version",
+      "exit_code": 0,
+      "seconds": 0.0,
+      "source_sha": "d30e12e0d09c3b1afb500bb8f5b0e781c058d35e"
+    },
+    {
+      "name": "cli-no-pdf",
+      "exit_code": 0,
+      "seconds": 270.76,
+      "source_sha": "d30e12e0d09c3b1afb500bb8f5b0e781c058d35e"
+    },
+    {
+      "name": "consumer-default",
+      "exit_code": 0,
+      "seconds": 408.36,
+      "source_sha": "d30e12e0d09c3b1afb500bb8f5b0e781c058d35e"
+    },
+    {
+      "name": "consumer-error-contract",
+      "exit_code": 0,
+      "seconds": 1.63,
+      "source_sha": "d30e12e0d09c3b1afb500bb8f5b0e781c058d35e"
+    },
+    {
+      "name": "consumer-guide",
+      "exit_code": 0,
+      "seconds": 1.79,
+      "source_sha": "d30e12e0d09c3b1afb500bb8f5b0e781c058d35e"
+    },
+    {
+      "name": "consumer-metadata",
+      "exit_code": 0,
+      "seconds": 4.52,
+      "source_sha": "d30e12e0d09c3b1afb500bb8f5b0e781c058d35e"
+    },
+    {
+      "name": "consumer-minimal",
+      "exit_code": 0,
+      "seconds": 214.06,
+      "source_sha": "d30e12e0d09c3b1afb500bb8f5b0e781c058d35e"
+    },
+    {
+      "name": "consumer-pdf-only",
+      "exit_code": 0,
+      "seconds": 280.3,
+      "source_sha": "d30e12e0d09c3b1afb500bb8f5b0e781c058d35e"
+    },
+    {
+      "name": "consumer-pdf",
+      "exit_code": 0,
+      "seconds": 1.9,
+      "source_sha": "d30e12e0d09c3b1afb500bb8f5b0e781c058d35e"
+    }
+  ],
+  "cli_default_pdf_import": "PASS: ICC PDF -> HWPX, Linux address-space/CPU/time and filesystem/network sandbox applied",
+  "cli_native_png": "PASS: installed native-skia CLI rendered HWP table using explicit licensed font",
+  "remaining_release_validation": "no-pdf CLI and optimized WASM/browser checks still running; final main archive/public registry verification follows promotion"
+}

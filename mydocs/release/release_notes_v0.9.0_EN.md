@@ -1,8 +1,8 @@
-# rhwp v0.9.0 — release notes draft
+# rhwp v0.9.0 — release notes
 
-## [0.9.0] — Release preparation
+## [0.9.0]
 
-This release prepares PDF import into editable documents, Rust/CLI consumption contracts, and accumulated editing, layout and serialization improvements. Publication date and per-channel outcomes remain to be confirmed.
+This release introduces PDF import into editable documents, Rust/CLI consumption contracts, and accumulated editing, layout and serialization improvements. See the [GitHub Release](https://github.com/edwardkim/rhwp/releases/tag/v0.9.0) for publication time and distribution artifacts.
 
 ### PDF and developer onboarding
 
@@ -26,7 +26,7 @@ This release prepares PDF import into editable documents, Rust/CLI consumption c
 ### CLI, packaging and Native hosts
 
 - Sixel and Kitty graphics with document-font guidance ([#7829](https://github.com/edwardkim/rhwp/pull/7829), [#8154](https://github.com/edwardkim/rhwp/pull/8154)). Official CLI archives use `native-skia` and execute a PNG packaging smoke test, addressing its absence from v0.8.7 official archives ([#7818](https://github.com/edwardkim/rhwp/pull/7818)).
-- **crates.io distribution begins with 0.9.0.** Rust developers can add `rhwp = "0.9.0"`; CLI users can install with `cargo install rhwp --version 0.9.0 --locked --bin rhwp` once published. Initial publication and consumption from the public registry are release completion requirements for the 14-package graph, using Rust 1.93.1. Publication is still in preparation.
+- **crates.io distribution begins with 0.9.0.** Rust developers can add `rhwp = "0.9.0"`; CLI users can install with `cargo install rhwp --version 0.9.0 --locked --bin rhwp` once published. Initial publication and consumption from the public registry are release completion requirements for the 14-package graph, using Rust 1.93.1. Installation becomes available when version 0.9.0 is published to the relevant registry.
 - Native snapshots, tiles, caches and Qt/Flutter host foundations. macOS Metal remains disabled-by-default experimental infrastructure awaiting Apple SDK validation; this is not a claim of a complete cross-platform GPU editor ([#8739](https://github.com/edwardkim/rhwp/pull/8739)).
 - Image insertion in exam ingest and agent/MCP guidance ([#8499](https://github.com/edwardkim/rhwp/pull/8499)).
 - Separated password authentication from diagnostic flows and redacted Debug output without disabling CodeQL. A protected-branch full security scan remains a separate follow-up ([#8750](https://github.com/edwardkim/rhwp/pull/8750)).
@@ -39,7 +39,7 @@ Other editors may render RHWP text-paint extensions or transparent PNGs differen
 
 ### Contributors
 
-The audit covers 4,852 commits after v0.8.7 through functional source `5077b216cbc51d2046da07350de562f6f521a7c1`, including authors, co-authors, original PRs and cherry-pick origins. It identifies 33 people and one separately credited bot (Dependabot), with zero unresolved human identities or reference dispositions. Nine unavailable cherry-pick source objects are disclosed; integrated commit authors remain included. Refresh credits if the final promotion SHA changes.
+The audit covers 4,896 commits after v0.8.7 through the release finalization baseline `41e08ae19e360a32179d851ca2534c1195a8dced`, including authors, co-authors, original PRs and cherry-pick origins. It identifies 33 people and one separately credited bot (Dependabot), with zero unresolved human identities or reference dispositions. Nine unavailable cherry-pick source objects are disclosed; integrated commit authors remain included. Verify that release-record changes after this baseline introduce no uncredited authors.
 
 [Contributor ledger](https://github.com/edwardkim/rhwp/blob/devel/mydocs/tech/investigations/release-v0.9.0/contributor-ledger.json) · [Identity evidence](https://github.com/edwardkim/rhwp/blob/devel/mydocs/tech/investigations/release-v0.9.0/contributor-overrides.json)
 
@@ -79,4 +79,4 @@ The audit covers 4,852 commits after v0.8.7 through functional source `5077b216c
 - @wook8170
 <!-- release-contributors:v0.9.0:end -->
 
-[Full change range](https://github.com/edwardkim/rhwp/compare/v0.8.7...5077b216cbc51d2046da07350de562f6f521a7c1)
+[Full change range](https://github.com/edwardkim/rhwp/compare/v0.8.7...41e08ae19e360a32179d851ca2534c1195a8dced)

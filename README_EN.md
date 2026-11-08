@@ -43,12 +43,12 @@ rhwp changes that. Built with Rust and compiled to WebAssembly, it renders HWP d
   <img src="assets/screenshots/render-example-1.png" alt="rhwp rendering example — KTX route map" width="700" />
 </p>
 
-## Preparing 0.9.0: PDF developer onboarding
+## 0.9.0: PDF developer onboarding
 
 Import PDF into editable HWP/HWPX through the CLI, Rust, WASM and Studio. Default codecs include
 JBIG2, JPEG 2000 and ICC, with password authentication, resource profiles and cancellable page progress.
 Follow the [PDF quick start](mydocs/manual/pdf_developer_onboarding_EN.md) for builds, conversion and Worker hosting.
-See [0.9.0 release notes and credits](mydocs/release/release_notes_v0.9.0_EN.md). This is release preparation;
+See [0.9.0 release notes and credits](mydocs/release/release_notes_v0.9.0_EN.md).
 **crates.io distribution starts with 0.9.0** for Rust library and CLI users. Once published, add
 `rhwp = "0.9.0"` or run `cargo install rhwp --version 0.9.0 --locked --bin rhwp`.
 See the [Rust API, features and CLI guide](packaging/crates-io/README_PACKAGE.md).

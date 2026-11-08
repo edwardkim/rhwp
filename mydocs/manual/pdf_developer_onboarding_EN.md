@@ -8,7 +8,7 @@ last_verified: 2026-11-08
 # PDF import: developer quick start for 0.9.0
 
 [Complete guide and examples (Korean)](pdf_developer_onboarding.md). These instructions describe
-**0.9.0 preparation sources**, not a claim that registries or stores have published this release.
+the **0.9.0** API and consumption contract. Check each registry or store for availability of that version.
 Pin CLI, JS glue, WASM, Worker and Studio to the same release. Initial crates.io publication is included in the 0.9.0 release.
 
 PDF import produces editable Document IR and saves HWP/HWPX. It is not an embedded PDF viewer or OCR.

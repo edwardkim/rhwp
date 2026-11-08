@@ -4,9 +4,9 @@
 
 ## [Unreleased]
 
-## [0.9.0] — 배포 준비
+## [0.9.0]
 
-PDF를 편집 가능한 문서로 가져오는 기본 경로와 Rust·CLI 소비 계약을 갖추고, 표·글상자·수식·저장 및 편집의 누적 보정을 반영합니다. 실제 배포일과 채널별 게시 결과는 최종 릴리즈에서 확정합니다.
+PDF를 편집 가능한 문서로 가져오는 기본 경로와 Rust·CLI 소비 계약을 갖추고, 표·글상자·수식·저장 및 편집의 누적 보정을 반영합니다. 채널별 게시 시각과 배포 파일은 [GitHub Release](https://github.com/edwardkim/rhwp/releases/tag/v0.9.0)에서 확인할 수 있습니다.
 
 ### PDF와 개발자 온보딩
 
@@ -30,7 +30,7 @@ PDF를 편집 가능한 문서로 가져오는 기본 경로와 Rust·CLI 소비
 ### CLI·배포·Native 호스트
 
 - Sixel·Kitty graphics 출력과 글꼴 지정 안내를 추가했습니다 ([#7829](https://github.com/edwardkim/rhwp/pull/7829), [#8154](https://github.com/edwardkim/rhwp/pull/8154)). 공식 CLI는 `native-skia`와 실제 PNG 실행 검사로 패키징합니다. v0.8.7 공식 archive의 Native Skia 누락을 보정하는 배포 계약입니다 ([#7818](https://github.com/edwardkim/rhwp/pull/7818)).
-- **0.9.0부터 crates.io 배포를 시작합니다.** Rust 개발자는 `rhwp = "0.9.0"`으로 의존성을 추가하고, CLI 사용자는 `cargo install rhwp --version 0.9.0 --locked --bin rhwp`로 설치하는 경로를 제공합니다. Rust 1.93.1과 본체·내부 의존성 14개 패키지를 대상으로 하며, 초회 게시·공개 registry 소비 검증을 이번 릴리즈의 완료 조건에 포함합니다. 현재는 게시 준비 단계입니다.
+- **0.9.0부터 crates.io 배포를 시작합니다.** Rust 개발자는 `rhwp = "0.9.0"`으로 의존성을 추가하고, CLI 사용자는 `cargo install rhwp --version 0.9.0 --locked --bin rhwp`로 설치하는 경로를 제공합니다. Rust 1.93.1과 본체·내부 의존성 14개 패키지를 대상으로 하며, 초회 게시·공개 registry 소비 검증을 이번 릴리즈의 완료 조건에 포함합니다. 채널별 설치 가능 여부는 해당 registry의 0.9.0 게시 상태를 따릅니다.
 - Native snapshot·타일·캐시·Qt/Flutter host 통합 기반을 추가했습니다. macOS Metal은 기본 비활성 실험 기반으로만 수용했고 Apple SDK 실검증이 남아 있습니다. 모든 플랫폼의 완성된 GPU 편집기를 배포한다는 뜻은 아닙니다 ([#8739](https://github.com/edwardkim/rhwp/pull/8739)).
 - 시험지 ingest의 이미지 삽입과 에이전트·MCP 사용 안내를 보강했습니다 ([#8499](https://github.com/edwardkim/rhwp/pull/8499)).
 - 암호 문서 인증과 진단 흐름을 분리하고 Debug 출력을 비식별화했습니다. CodeQL 탐지를 끄지 않았으며 보호 브랜치 전체 분석은 별도 후속 조건입니다 ([#8750](https://github.com/edwardkim/rhwp/pull/8750)).
@@ -43,7 +43,7 @@ PDF는 원저작 문서 구조를 완벽히 복원하지 않으며 스캔 글자
 
 ### 기여자
 
-v0.8.7 이후 기능 기준 `5077b216cbc51d2046da07350de562f6f521a7c1`의 4,852개 커밋에서 저자·공동 저자·원 PR·cherry-pick 출처를 대조했습니다. 사람 33명, bot 1개(Dependabot)를 분리했으며 사람 identity와 번호 판정의 미해결은 0건입니다. 조회 불가한 cherry-pick 원본 9개는 통합된 커밋 저자로 보완하고 원장에 한계를 남겼습니다. 최종 승격 SHA가 바뀌면 명단을 갱신합니다.
+v0.8.7 이후 릴리즈 마감 기준 `41e08ae19e360a32179d851ca2534c1195a8dced`의 4,896개 커밋에서 저자·공동 저자·원 PR·cherry-pick 출처를 대조했습니다. 사람 33명, bot 1개(Dependabot)를 분리했으며 사람 identity와 번호 판정의 미해결은 0건입니다. 조회 불가한 cherry-pick 원본 9개는 통합된 커밋 저자로 보완하고 원장에 한계를 남겼습니다. 이 기준 이후의 릴리즈 기록 변경에는 새 기여자가 없는지도 확인합니다.
 
 [기여자 감사 원장](mydocs/tech/investigations/release-v0.9.0/contributor-ledger.json) · [별칭·판정 근거](mydocs/tech/investigations/release-v0.9.0/contributor-overrides.json)
 

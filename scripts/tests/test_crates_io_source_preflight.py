@@ -12,7 +12,30 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.crates_io_source_preflight import PreflightError, build_report
+from scripts.crates_io_source_preflight import PreflightError, build_report, select_files
+
+
+class CargoReservedFileTests(unittest.TestCase):
+    def test_cargo_generated_root_names_cannot_be_selected_as_source(self):
+        for name in ("Cargo.toml.orig", ".cargo_vcs_info.json"):
+            for pattern in (name, "*"):
+                with self.subTest(name=name, pattern=pattern):
+                    tree = {p: ("100644", "blob") for p in ("Cargo.toml", name)}
+                    spec = {"source": ".", "include": ["Cargo.toml", pattern]}
+                    with self.assertRaisesRegex(PreflightError, "Cargo-reserved"):
+                        select_files(spec, tree)
+
+    def test_extra_source_mapping_cannot_override_generated_manifest(self):
+        tree = {p: ("100644", "blob") for p in ("Cargo.toml", "upstream/Cargo.toml.orig")}
+        spec = {"source": ".", "include": ["Cargo.toml"],
+                "extra_repository_files": {"Cargo.toml.orig": "upstream/Cargo.toml.orig"}}
+        with self.assertRaisesRegex(PreflightError, "Cargo-reserved"):
+            select_files(spec, tree)
+
+    def test_original_manifest_can_be_preserved_under_upstream(self):
+        tree = {p: ("100644", "blob") for p in ("Cargo.toml", "upstream/Cargo.toml.orig")}
+        selected = select_files({"source": ".", "include": ["Cargo.toml", "upstream/**"]}, tree)
+        self.assertEqual(selected["upstream/Cargo.toml.orig"], "upstream/Cargo.toml.orig")
 
 
 class SourcePreflightTests(unittest.TestCase):

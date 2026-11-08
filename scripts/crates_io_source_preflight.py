@@ -66,6 +66,10 @@ def select_files(spec: dict, tree: dict) -> dict[str, str]:
         require(destination not in files, f"duplicate archive destination: {destination}")
         files[destination] = origin
     require("Cargo.toml" in files, f"manifest omitted: {source}")
+    # Cargo creates these root entries during normalization; upstream copies
+    # must live under a different path, e.g. upstream/Cargo.toml.orig.
+    for reserved in ("Cargo.toml.orig", ".cargo_vcs_info.json"):
+        require(reserved not in files, f"Cargo-reserved source filename: {source}/{reserved}")
     for destination, origin in files.items():
         relative(destination)
         parts = PurePosixPath(origin).parts
