@@ -9,6 +9,7 @@ dependencies:
   flutter:
     sdk: flutter
   ffi: ^2.1.4
+  crypto: ^3.0.7
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -18,14 +18,15 @@ def main():
     command = ["g++", "-std=c++17", "-pthread", "-Wall", "-Wextra", "-Werror", "-I" + str(source)]
     if args.sanitize:
         command += ["-fsanitize=address,undefined", "-fno-omit-frame-pointer", "-g"]
-    executable = output / "frame-lifetime-test"
-    subprocess.run(command + [str(source / "tests/frame_lifetime_test.cpp"), "-o", str(executable)], check=True, timeout=60)
-    subprocess.run([str(executable)], check=True, timeout=30)
+    for name in ["frame_lifetime_test", "import_lifetime_test", "close_registry_test"]:
+        executable = output / name
+        subprocess.run(command + [str(source / "tests" / (name + ".cpp")), "-o", str(executable)], check=True, timeout=60)
+        subprocess.run([str(executable)], check=True, timeout=30)
     subprocess.run([sys.executable, "-B", str(source / "tests/native_d3d_disabled.py"), "--output", str(output / "disabled")], check=True, timeout=60)
     if args.flutter_public:
         header_test = output / "public-texture-contract"
         native = source.parents[1] / "swift/Sources/CRhwpNative"
-        subprocess.run(command + ["-I" + str(native), "-I" + str(args.flutter_public.resolve()),
+        subprocess.run(command + ["-I" + str(source / "include"), "-I" + str(native), "-I" + str(args.flutter_public.resolve()),
             str(source / "tests/public_texture_contract.cpp"), "-o", str(header_test)], check=True, timeout=60)
         subprocess.run([str(header_test)], check=True, timeout=10)
         print("actual Flutter common-header descriptor + typed native C header contract passed")

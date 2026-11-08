@@ -9,6 +9,12 @@ namespace rhwp::d3d {
 namespace {
 std::atomic<size_t> producer_count{0};
 std::atomic<uint64_t> opened_count{0};
+void descriptor_opened(void* context) noexcept {
+  auto* pixels = static_cast<Pixels*>(context);
+  pixels->opened_notifications.fetch_add(1, std::memory_order_relaxed);
+  opened_count.fetch_add(1, std::memory_order_relaxed);
+  // Opening transfers creator references only. No GPU fence/reuse is claimed.
+}
 struct NativeFailure : std::runtime_error {
   std::string code;
   NativeFailure(std::string code, const std::string& message) : std::runtime_error(message), code(std::move(code)) {}
@@ -104,12 +110,7 @@ struct Device {
     pixels->descriptor.height = pixels->descriptor.visible_height = job.height;
     pixels->descriptor.format = kFlutterDesktopPixelFormatBGRA8888;
     pixels->descriptor.release_context = pixels.get();
-    pixels->descriptor.release_callback = [](void* context) {
-      auto* pixels = static_cast<Pixels*>(context);
-      pixels->opened_notifications.fetch_add(1, std::memory_order_relaxed);
-      opened_count.fetch_add(1, std::memory_order_relaxed);
-      // This callback only acknowledges opening, never GPU-complete/recycle.
-    };
+    pixels->descriptor.release_callback = &descriptor_opened;
     return pixels;
   }
   void copy_and_wait(const std::shared_ptr<Pixels>& pixels) {
@@ -132,6 +133,16 @@ struct Device {
 
 ImmutableFrames& frames() { static auto* value = new ImmutableFrames; return *value; }
 uint64_t descriptor_opened_notifications() { return opened_count.load(std::memory_order_relaxed); }
+void register_surface_imports(const std::shared_ptr<State>& state) {
+  if (state->publication_mode == PublicationMode::ImmutableOwnershipTransfer)
+    SurfaceImports::register_owner(state->generation);
+}
+void retire_surface_imports(const std::shared_ptr<State>& state) noexcept {
+  try {
+    if (state->publication_mode == PublicationMode::ImmutableOwnershipTransfer)
+      SurfaceImports::unregistered(state->generation);
+  } catch (...) { /* Failed CPU retirement remains bounded and pinned. */ }
+}
 std::shared_ptr<int> reserve_producer() {
   size_t current = producer_count.load();
   do { if (current >= 2) return {}; } while (!producer_count.compare_exchange_weak(current, current + 1));
@@ -270,6 +281,11 @@ void run_producer(const std::shared_ptr<State>& state) noexcept {
 const FlutterDesktopGpuSurfaceDescriptor* surface_callback(size_t, size_t, void* user) {
   auto state = static_cast<Registration*>(user)->state;
   try {
+    const bool transfer = state->publication_mode == PublicationMode::ImmutableOwnershipTransfer;
+    // The next callback on this same raster OS thread proves prior descriptor
+    // CPU reads ended. Closing alone does not retire that descriptor storage.
+    auto callback = transfer ? SurfaceImports::begin_callback(state->generation) : SurfaceImports::Callback{};
+    if (transfer && !callback) return nullptr;
     std::shared_ptr<Published> frame;
     {
       std::lock_guard<std::mutex> lock(state->mutex);
@@ -280,7 +296,22 @@ const FlutterDesktopGpuSurfaceDescriptor* surface_callback(size_t, size_t, void*
       state->fail("source changed; hide Texture and refresh owner snapshots", "staleFrame"); return nullptr;
     }
     std::lock_guard<std::mutex> lock(state->mutex);
-    return state->gate.current(frame->job->serial, frame->job->stamp) ? &frame->pixels->descriptor : nullptr;
-  } catch (...) { return nullptr; }
+    if (!state->gate.current(frame->job->serial, frame->job->stamp)) return nullptr;
+    if (!transfer) return &frame->pixels->descriptor;
+    const auto* descriptor = SurfaceImports::offer(state->generation, frame->pixels->descriptor,
+        frame, frame->job->credit, &descriptor_opened, frame->pixels.get());
+    if (!descriptor) throw std::runtime_error("bounded surface import ticket capacity exceeded");
+    return descriptor;
+  } catch (const std::exception& error) {
+    if (state->publication_mode == PublicationMode::ImmutableOwnershipTransfer) {
+      state->fail(error.what(), "consumerImportError"); state->close();
+    }
+    return nullptr;
+  } catch (...) {
+    if (state->publication_mode == PublicationMode::ImmutableOwnershipTransfer) {
+      state->fail("surface import callback failed", "consumerImportError"); state->close();
+    }
+    return nullptr;
+  }
 }
 }  // namespace rhwp::d3d

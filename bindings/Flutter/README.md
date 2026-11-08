@@ -144,3 +144,113 @@ close/status 확인은 기존 controller별 3개·isolate 전체 8개 RPC 한도
 credit을 보유한다. 늦게 도착한 create ID는 기존 소유권 observer에서 bounded close를 진행할 수 있다.
 등록 해제가 확인되지 않은 Texture는 여전히 cover 아래 paint할 수 있으며, 이미 등록이 해제된 것은
 제거한다. snapshot 전달·미수령 reply의 별도 해제 observer도 계속 유효하다.
+
+## Dart 저장·복구 연결 (P103)
+
+`NativeFileStore(document)`는 기존 worker의 prepareSave → Native buffer 복사/해제 →
+파일 게시 → acknowledgeSave/cancelSave를 사용한다. Rust serializer나 worker를 새로 만들지 않는다.
+`openPath`, `openRecovery`, `save`, `writeRecovery`, `sourcePath`, `isBusy`, `whenIdle`를 제공한다.
+
+```dart
+final files = NativeFileStore(document);
+await files.openPath('/absolute/input.hwpx');
+final saved = await files.save(
+  destination: '/absolute/output.hwpx',
+  approveLoss: (report) async => await confirmLoss(report),
+  approveOverwrite: (observedStamp) async => await confirmOverwrite(observedStamp),
+);
+// saved.cancelled면 게시하지 않았다. 이후 편집이 있으면 saved.info.isDirty는 true다.
+final recovery = await files.writeRecovery('/absolute/dedicated-recovery');
+// 복구 파일 선택은 명시적이며 원본 경로를 자동으로 덮어쓰지 않는다.
+if (recovery != null) await files.openRecovery(recovery);
+```
+
+같은 prepare의 bytes/report/token을 승인 대기 동안 유지한다. loss 승인 거절은 token을 취소하며,
+승인 도중 새 편집이 생겨도 준비했던 revision만 저장하고 이후 편집의 dirty 상태를 유지한다.
+Native serialization은 실행 전에 최대 문서 크기를 예약하므로 owner worker는 capability의
+`maxDocumentBytes`(최대 128 MiB)를 예약 한도로 사용한다. Dart/shim의 요청·복사·문서·저장 payload
+한도는 계속 16 MiB다. 128 MiB 예약이 같은 크기의 선할당이나 전송 허용을 뜻하지 않는다.
+
+저장 파일은 같은 파일시스템의 임시 파일에 쓰고 flush한 뒤 게시한다. 새 파일은 hard link의
+exclusive 이름 생성으로 완성된 bytes만 공개하며, 기존 파일은 읽을 때 함께 얻은 SHA-256·크기·
+수정/변경 시각·mode stamp를 staging 전후에 검사하고 rename한다. POSIX는 별도 isolate에서
+디렉터리 fsync까지 수행한 뒤 ack하며 Windows는 기존 Native 참조 호스트처럼 디렉터리 fsync를
+제공하지 않는다. hard link를 지원하지 않는 파일시스템에서는 새 파일 게시를 거절한다.
+기존 파일 교체의 두 stamp 검사는 임의의 외부 writer에 대한 파일시스템 compare-and-swap은 아니다.
+
+파일 게시 뒤 Native ack·최종 검증이 실패하면 `NativePublicationError.path`의 완성된 파일을 보존한다.
+재시도 전에 경로를 확인한다. cleanup은 일반 입력 FIFO가 가득 차도 한 개의 예약 slot을 쓰며,
+동시 cancel 호출은 같은 Future를 공유한다. cleanup 실패나 출처를 확인할 수 없는 prepared reply는
+같은 문서의 새 prepare를 차단한다. worker 종료/명시적인 문서 교체 후에만 그 상태가 해제된다.
+파일 작업 중 문서를 교체하거나 닫는 호스트는 먼저 `files.whenIdle`을 기다린다.
+
+`newDocument`, `openBytes`, `openRecoveryBytes`, `files.openPath/openRecovery`의 선택적인
+`replacing`에는 사용자 확인 직후의 `NativeDocumentInfo`를 전달할 수 있다. 문서 ID·revision·font
+세대가 enqueue 또는 실제 실행 전에 달라지면 교체를 거절한다. 파일 읽기 때문에 늦어진 open도
+읽기 전 snapshot을 유지한다.
+
+복구는 Python/Qt 참조 호스트와 같은 `RHWP-R1\n` + little-endian header 길이 + JSON + HWPX
+envelope이며, header 64 KiB·payload 16 MiB·전용 디렉터리 32개/256 MiB와 256-entry 조회 한도를
+적용한다. source path/stamp는 provenance이고 원본 저장 목적지로 채택하지 않는다. 같은 dirty
+revision의 중복 artifact는 생략하며 타이머·목록 선택·정리 정책은 호출 호스트가 소유한다.
+
+저장·복구 검사와 실제 Native opt-in을 실행한다. Python envelope 상호 운용 검사는 `python3`와
+`../Native/examples/native_file_store.py`를 사용하며 별도 package 사본에서는
+`--dart-define=RHWP_NATIVE_EXAMPLES=/absolute/native/examples`로 지정한다.
+
+```bash
+flutter test --no-pub test/native_file_store_test.dart test/native_file_store_integration_test.dart \
+  --dart-define=RHWP_OWNER_LIBRARY=/absolute/owner.so \
+  --dart-define=RHWP_NATIVE_LIBRARY=/absolute/native.so
+```
+
+## 참조 문서 수명 (P104)
+
+`NativeDocumentLifecycle`는 기존 `NativeFileStore` 위에서 편집 입력·파일 작업이 끝난 뒤
+저장/폐기/취소와 문서 교체·복구 열기·종료를 조정한다. 경로/승인 대기 중 문서 교체를 거절하고,
+GPU 종료 Future가 반환되어도 `retirePending`이면 view와 owner를 유지한다.
+예제의 작은 경로·결정 UI와 실제 Native 저장/복구/종료 검사는
+[문서 수명 계약](DOCUMENT_LIFECYCLE.md)을 따른다. OS 창 닫기 hook과 제품 앱은 범위에 포함하지 않는다.
+
+## 다중 페이지 CPU 참조 viewport (P105)
+
+`NativePagedDocumentView(document: document, controller: controller)`는 문서당 하나의
+view generation으로 보이는 페이지 영역만 순서대로 요청한다. `NativePagedViewportController`의
+`scrollTo`, `jumpToPage`, `setZoom`과 휠/수평 휠, Ctrl/Cmd+휠을 지원한다. `editable:false`는
+읽기 전용이며 기본값은 기존 단일 `NativeEditorController`를 통한 입력이다. `onViewportReady`는
+현재 viewport의 디코딩 완료를 알리며 Flutter/GPU의 소비 완료를 뜻하지 않는다.
+
+페이지 크기는 Native가 반환한 값을 사용하고 조판하지 않는다. 페이지 metadata는 최대 256개,
+보이는 영역은 최대 4쪽이며, 보이는 raster 계획과 게시할 decoded batch는 각각 16 MiB로 제한한다.
+디코딩 중 입력 RGBA와 codec의 임시 복사본도 존재하며 이 수치는 process RSS나 전체 GPU 메모리 한도가 아니다.
+현재 batch를 제거한 paint frame에서 이미지를 해제한 뒤 다음 decode를 시작하므로 스크롤로
+미해제 image batch가 쌓이지 않는다. 렌더링은 한 번에 하나이며 새 탐색은 진행 중인 tiled
+렌더를 기존 Native 취소 경로로 취소하고 가장 최근 viewport만 남긴다. 제한을 넘는 요청은
+본문 일부를 조용히 생략하지 않고 진단으로 거부한다.
+
+페이지 배치·포인터 hit-test·선택/caret overlay·IME candidate는 같은 `NativePageViewport`
+변환을 사용한다. DPR은 raster 해상도에만 적용한다. Native caret가 화면 밖으로 이동하면
+같은 배치 결과로 스크롤하고, 새 문서 ID는 이전 문서의 탐색 위치를 초기화한다.
+이 뷰는 CPU 참조 경로다. 기존 단일 페이지 `NativeTextureView`와 별도로 사용하며,
+여러 페이지의 GPU consumer 완료·texture 재사용이 검증됐다고 표시하지 않는다.
+
+```bash
+flutter test --no-pub test/native_multipage_view_test.dart
+flutter test --no-pub test/native_multipage_integration_test.dart \
+  --dart-define=RHWP_OWNER_LIBRARY=/absolute/path/librhwp_flutter_owner.so \
+  --dart-define=RHWP_NATIVE_LIBRARY=/absolute/path/librhwp_native_ffi.so \
+  --dart-define=RHWP_MULTIPAGE_DOCUMENT=/absolute/path/radial-corner-print-contract.hwpx
+```
+
+실제 integration 검사는 기존 공개 6쪽 입력의 두 번째 페이지를 Flutter에서 표시한 pixels와
+동일한 Native CPU 영역 출력으로 대조한다. 합성 geometry/worker 검사와 구분하며, 한컴 독립
+전쪽 비교·실물 OS IME/AT 및 GPU qualification은 별도 범위다.
+
+기본 example은 CPU 다중 페이지 뷰와 최소 이전/다음·확대/축소 조작을 사용한다.
+`RHWP_GPU=true`로 GPU controller가 연결되면 기존 단일 페이지 texture 참조 경로를 유지한다.
+다중 페이지 뷰도 `onControllerChanged`로 같은 view-owned editor를 전달하므로 P104 lifecycle은
+문서 교체 전에 입력 큐를 기다릴 수 있다.
+
+다른 `NativeDocument` owner에 viewport/controller를 다시 연결하면 이전 문서의 탐색 위치와
+대기 중 page jump를 초기화한다. 같은 문서가 재조판되어 쪽수가 줄면 대기 jump를 새 쪽수에
+맞춰 처리하며, 이전 page index 때문에 viewport 오류가 고정되지 않게 한다.

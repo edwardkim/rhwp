@@ -292,6 +292,7 @@ Target RasterRegistry::populate(const std::shared_ptr<Shared>& state, std::share
       slot->context = std::move(context);
       slot->identity = next_context.fetch_add(1);
       if (!slot->identity) throw Failure("limitExceeded", "context identity exhausted");
+      const auto driver = slot->context->driver_info();
       {
         std::lock_guard<std::mutex> lock(state->mutex_);
         if (state->status_.closing) throw Failure("closing", "texture is retiring");
@@ -302,6 +303,8 @@ Target RasterRegistry::populate(const std::shared_ptr<Shared>& state, std::share
           throw Failure("contextChanged", "frame belongs to an earlier device generation");
         }
         slot->generation = state->status_.device;
+        state->status_.driver = {driver.vendor.substr(0, 256), driver.renderer.substr(0, 256),
+                                driver.version.substr(0, 256)};
         state->status_.raster_owner = true;
         state->status_.owner_thread_exit = false;
         claimed = true;

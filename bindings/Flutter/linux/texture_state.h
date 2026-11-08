@@ -43,6 +43,7 @@ struct SnapshotInfo {
 struct Target {
   uint32_t texture = 0, fbo = 0, width = 0, height = 0;
 };
+struct DriverInfo { std::string vendor, renderer, version; };
 struct Callbacks {
   const void* (*load)(void*, const char*);
   int32_t (*current)(void*, uint64_t);
@@ -69,6 +70,9 @@ class Context {
   virtual ~Context() = default;
   virtual bool same_current() const noexcept = 0;
   virtual bool same_context(const Context&) const noexcept = 0;
+  // Called once when this raster context becomes a retained owner, while it is
+  // current. This describes the actual consumer/producer context, not a probe.
+  virtual DriverInfo driver_info() const { return {}; }
   virtual const void* procedure(const char*) noexcept = 0;
   virtual Target allocate(uint32_t width, uint32_t height) = 0;
   virtual void destroy(Target&) noexcept = 0;
@@ -95,6 +99,7 @@ struct Status {
   std::string code, message;
   Stamp accepted_stamp;
   Stamp rendered_stamp;
+  DriverInfo driver;
 };
 
 class Shared : public std::enable_shared_from_this<Shared> {
