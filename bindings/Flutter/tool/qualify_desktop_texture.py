@@ -14,6 +14,7 @@ import math
 import os
 from pathlib import Path
 import re
+import stat
 import subprocess
 import sys
 import time
@@ -21,12 +22,20 @@ import uuid
 
 MAX_PIXELS = 1024 * 1024
 STAGES = ("initial", "revision", "resize")
+MAX_BUNDLE_FILES = 1024
+MAX_BUNDLE_ENTRIES = 4096
+MAX_BUNDLE_BYTES = 1024 * 1024 * 1024
+MAX_BUILD_RECEIPT_BYTES = 512 * 1024
 
 
-def digest(path):
+def digest(path, maximum=None):
     result = hashlib.sha256()
+    total = 0
     with Path(path).open("rb") as source:
         for block in iter(lambda: source.read(1024 * 1024), b""):
+            total += len(block)
+            if maximum is not None and total > maximum:
+                raise ValueError("artifact exceeds its byte bound")
             result.update(block)
     return result.hexdigest()
 
@@ -48,6 +57,81 @@ def write_json(path, value):
     temporary.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
     temporary.chmod(0o600)
     temporary.replace(path)
+
+
+def runtime_bundle_manifest(directory):
+    """Hash the exact app directory: Dart kernel/data, DLLs and owned inputs.
+
+    This supports only the helper's debug runner, whose executable starts the
+    Dart project from ``data``. No generated or diagnostic file is silently
+    excluded. Capture output must be outside this runtime directory.
+    """
+    directory = Path(directory)
+    original = os.stat(directory, follow_symlinks=False)
+    if directory.is_symlink() or getattr(original, "st_file_attributes", 0) & 0x400:
+        raise ValueError("runtime bundle must not be a symlink or reparse point")
+    root = directory.resolve(strict=True)
+    if not root.is_dir():
+        raise ValueError("runtime bundle must be a directory")
+    pending = [root]
+    files = {}
+    entries = total = 0
+    while pending:
+        folder = pending.pop()
+        with os.scandir(folder) as children:
+            for child in children:
+                entries += 1
+                if entries > MAX_BUNDLE_ENTRIES:
+                    raise ValueError("runtime bundle entry bound exceeded")
+                metadata = child.stat(follow_symlinks=False)
+                if child.is_symlink() or getattr(metadata, "st_file_attributes", 0) & 0x400:
+                    raise ValueError("runtime bundle symlink/reparse point is not allowed")
+                path = Path(child.path)
+                try:
+                    path.resolve(strict=True).relative_to(root)
+                except ValueError as error:
+                    raise ValueError("runtime bundle path escapes its root") from error
+                if stat.S_ISDIR(metadata.st_mode):
+                    pending.append(path)
+                    continue
+                if not stat.S_ISREG(metadata.st_mode):
+                    raise ValueError("runtime bundle entry is not a regular file")
+                if len(files) >= MAX_BUNDLE_FILES:
+                    raise ValueError("runtime bundle file bound exceeded")
+                remaining = MAX_BUNDLE_BYTES - total
+                if metadata.st_size > remaining:
+                    raise ValueError("runtime bundle byte bound exceeded")
+                relative = path.relative_to(root).as_posix()
+                if len(relative.encode("utf-8")) > 1024:
+                    raise ValueError("runtime bundle relative path is too long")
+                fingerprint = digest(path, maximum=remaining)
+                after = os.stat(path, follow_symlinks=False)
+                identity = lambda value: (value.st_size, value.st_mtime_ns, value.st_ctime_ns)
+                if identity(metadata) != identity(after):
+                    raise ValueError("runtime bundle input changed while hashing")
+                total += metadata.st_size
+                files[relative] = {"sha256": fingerprint, "bytes": metadata.st_size}
+    kernel = files.get("data/flutter_assets/kernel_blob.bin")
+    if kernel is None or kernel["bytes"] <= 0:
+        raise ValueError("debug runtime bundle requires data/flutter_assets/kernel_blob.bin")
+    return {"files": dict(sorted(files.items())), "bytes": total}
+
+
+def verify_runtime_bundle(directory, expected):
+    if not isinstance(expected, dict) or not isinstance(expected.get("files"), dict):
+        raise ValueError("build receipt has no full runtime bundle manifest")
+    if len(expected["files"]) > MAX_BUNDLE_FILES:
+        raise ValueError("recorded runtime bundle file bound exceeded")
+    for relative in expected["files"]:
+        if not isinstance(relative, str) or not relative or "\\" in relative or ":" in relative:
+            raise ValueError("invalid runtime bundle relative path")
+        parts = relative.split("/")
+        if any(part in ("", ".", "..") for part in parts):
+            raise ValueError("runtime bundle path escapes or aliases its root")
+    actual = runtime_bundle_manifest(directory)
+    if actual != expected:
+        raise ValueError("runtime bundle files or content differ from the build receipt")
+    return actual
 
 
 def require_actual_windows(*, platform=None, load_library=None):
@@ -332,14 +416,21 @@ def main():
     files = {key: getattr(args, key).resolve(strict=True) for key in ("runner", "native", "dispatcher", "fixture")}
     if files["fixture"].stat().st_size > 16 * 1024 * 1024:
         raise ValueError("reference input exceeds its document byte limit")
-    receipt = read_json(args.build_receipt)
+    receipt = read_json(args.build_receipt, limit=MAX_BUILD_RECEIPT_BYTES)
     if receipt.get("platform") != "windows" or receipt.get("buildExitCode") != 0:
         raise ValueError("matching successful Windows build receipt is required")
     files = verify_runtime_artifacts(files, receipt)
+    verify_runtime_bundle(files["runner"].parent, receipt.get("runtimeBundle"))
     for key in ("sourceHead", "nativeSourceHead", "flutterRevision", "engineRevision"):
         if not re.fullmatch(r"[0-9a-f]{40}", str(receipt.get(key, ""))):
             raise ValueError("build receipt has no pinned source/engine identity: " + key)
     output = args.output.resolve()
+    try:
+        output.relative_to(files["runner"].parent)
+    except ValueError:
+        pass
+    else:
+        raise ValueError("capture output must be outside the runtime bundle")
     output.mkdir(mode=0o700, parents=True, exist_ok=False)
     nonce = uuid.uuid4().hex
     config = {"protocol": 1, "nonce": nonce, "output": str(output),
@@ -406,6 +497,7 @@ def main():
             raise ValueError("probe did not complete its real close/unregister checks")
         validate_result(result, nonce=nonce, last_limits=state["stages"][-1]["stage"]["limits"])
         verify_runtime_artifacts(files, receipt)
+        verify_runtime_bundle(files["runner"].parent, receipt.get("runtimeBundle"))
         state.update(qualification="bounded-windows-consumer-passed", exitCode=code, result=result)
     except BaseException as error:
         state.update(qualification="failed", error=f"{type(error).__name__}: {error}")

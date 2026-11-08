@@ -15,7 +15,8 @@ import subprocess
 import sys
 import time
 
-from qualify_desktop_texture import digest, read_json, write_json, require_actual_windows
+from qualify_desktop_texture import (digest, read_json, write_json, require_actual_windows,
+                                     runtime_bundle_manifest, MAX_BUILD_RECEIPT_BYTES)
 
 
 def checked_sha(value, name):
@@ -144,9 +145,12 @@ def main():
         artifacts = {"runner": executable, "plugin": plugin, "engineRuntime": engine_runtime,
                      "dispatcher": dispatcher, "native": native, "fixture": fixture}
         receipt["artifacts"] = {key: artifact(value) for key, value in artifacts.items()}
+        receipt["runtimeBundle"] = runtime_bundle_manifest(executable.parent)
         if sources(repository) != original_sources:
             raise ValueError("source checkout changed while building")
         receipt["copiedRuntimeSources"] = verify_copied_sources(copied, original_sources)
+        if len((json.dumps(receipt, indent=2) + "\n").encode("utf-8")) > MAX_BUILD_RECEIPT_BYTES - 1024:
+            raise ValueError("build receipt exceeds its bounded runtime manifest size")
         receipt["buildExitCode"] = 0
     except BaseException as error:
         receipt.update(buildExitCode=1, error=f"{type(error).__name__}: {error}")
