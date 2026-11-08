@@ -98,6 +98,24 @@ def release_binary_matrix() -> dict[str, dict[str, str]]:
 
 
 class ReleaseChannelPolicyWorkflowTests(unittest.TestCase):
+    def test_full_renderer_budget_keeps_all_capture_commands(self):
+        workflow = (REPO_ROOT / ".github/workflows/full-renderer-sweep.yml").read_text()
+        self.assertIn("timeout-minutes: 90", workflow)
+        self.assertIn("--profiles screen,print,high-quality,fast-preview --include-pdf", workflow)
+        self.assertIn("--canvaskit-surface webgpu --skip-native", workflow)
+        self.assertIn("--canvaskit-surface software --skip-native", workflow)
+
+    def test_linux_release_runtime_is_pinned_to_verified_lts(self):
+        entries = release_binary_matrix()
+        self.assertEqual(entries["x86_64-unknown-linux-gnu"]["runner"], "ubuntu-24.04")
+        self.assertEqual(entries["aarch64-unknown-linux-gnu"]["runner"], "ubuntu-24.04-arm")
+
+    def test_runner_switch_keeps_native_build_cache_separate(self):
+        workflow = RELEASE_BINARY_WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("key: ${{ matrix.target }}-${{ matrix.runner }}-cargo-", workflow)
+        restore = workflow.split("restore-keys:", 1)[1].split("- name:", 1)[0]
+        self.assertIn("${{ matrix.target }}-${{ matrix.runner }}-cargo-", restore)
+
     def test_packaged_cli_has_png_backend_on_every_release_target(self):
         workflow = RELEASE_BINARY_WORKFLOW.read_text(encoding="utf-8")
         build = workflow.split("      - name: Build release binary\n", 1)[1].split(

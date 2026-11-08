@@ -490,6 +490,17 @@ invalid direct-only plans, incomplete renders, render errors, and unexpected
 runtime operations fail the baseline contract. Known direct-replay gaps remain
 visible as report inventory instead of being reclassified as successful output.
 
+For samples outside the strict readiness corpus, an actual missing-font preparation
+failure may be classified as a separate Canvas2D fallback check. The harness requires
+a matching resource-preparation selection reason, no initialization error, and an
+independent complete font plan confirming every unavailable family. It compares the
+same document, page, profile and actual backend with explicit Canvas2D at exact pixel
+identity and requires non-empty ink. These captures are excluded from CanvasKit replay,
+parity and performance success counts; `fontFallbackGate` records their result separately.
+Unknown fallback, unrelated errors and any fallback in a readiness sample remain failures.
+Diagnostic LayerTree/replay-plan queries use a synchronous portable-metrics transaction
+that restores the active Canvas2D metrics, including when the diagnostic call throws.
+
 The cross-backend corpus also renders the manifest's exact page index into a
 dedicated intrinsic-scale capture surface. This keeps nonzero-page diagnostics,
 repeated headers, and HWP/HWPX paired fixtures tied to the same page/profile
