@@ -1,6 +1,8 @@
 //! 관계형: 사용자 선택 원본의 자연 전진과 다른 원본의 저장 메트릭 소유를 구분한다.
 //! Native/fresh WASM 일치율: 비해당. 공개 API로 생성한 합성 문서의 프로그램 선택 계약이다.
 //! 주석 갱신: 2026-11-08 00:47 KST. 사설 글꼴 설치·실물 px 좌표에 의존하지 않는다.
+//! 주석 갱신: 2026-11-08T19:43:46.094614+09:00. 직전 파일 변경: 2026-11-08T06:19:56+09:00, 7f76cee60e38fceb63feacaff706cf984b19c427.
+//! 자연 전진 선택과 윤곽 보존을 분리한 합성 계약이며 설치 글꼴·실물 좌표에 의존하지 않는다.
 use rhwp::{
     model::style::Font,
     renderer::{
@@ -143,9 +145,9 @@ fn omitted_natural_program_selection_keeps_legacy_leader() {
         let tree = core.build_page_render_tree(0).unwrap();
         let run = find(&tree.root, "-----. ").unwrap();
         assert_eq!(
-            run.style.preserve_glyph_ink,
+            run.style.natural_program_metrics,
             choice.is_some(),
-            "기존 메트릭 선언은 자연 윤곽 선택을 대신하지 않는다"
+            "기존 메트릭 선언은 자연 전진 선택을 대신하지 않는다"
         );
         let positions = EmbeddedTextMeasurer.compute_char_positions(&run.text, &run.style);
         if choice.is_none() {

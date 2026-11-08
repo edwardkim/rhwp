@@ -1,5 +1,44 @@
 # Native 굵기 기능 보존 분석
 
+
+## R55: sample16 원 해결의 윤곽 계약 복원과 nested 분리 조사
+
+원 해결 [PR #8188](https://github.com/edwardkim/rhwp/pull/8188)의 실제 보정
+`0862655314f7d141052c7183c3bea1c6f9358473`과
+`mydocs/working/task_m100_8160_stage2.md`·`stage3.md`를 대조했다.
+38쪽 HCI Poppy는 다음 글자까지의 전진과 실제 윤곽 폭이 다르며, 일반 글자의 윤곽을
+전진 칸 안에 축소하지 않는 계약이다. 후속 [PR #8754](https://github.com/edwardkim/rhwp/pull/8754)의
+실제 통합 `7f76cee60e38fceb63feacaff706cf984b19c427`은 생략된 `preserveSourceMetrics`와
+명시 false를 구분하는 과정에서 자연 전진 선택뿐 아니라 기존 `preserve_glyph_ink`도
+함께 껐다. 실제 후보의 전진·글자 위치를 보존한 paint 진단에서 sample16 HWPX 38쪽이
+raw 99.99464%, 미대응4 → 100.00000%, 미대응0으로 복원됐다. 기준 PDF·96 DPI·임계값232·2px는
+바꾸지 않았다. 이는 수정 전 코드의 진단 결과이며 정식 제품 완료는 아니다.
+
+공통 생산자 `ResolvedCharStyle`에서 자연 전진 선택을 `font_families_natural_program_metrics`로
+분리하고 `TextStyle.natural_program_metrics`로 전달한다. 측정의 HFT 굵기·leader 분기만 이 값을
+소비한다. paint의 `preserve_glyph_ink`는 기존 명시 공급의 윤곽 계약을 계속 소비한다.
+명시적인 자연 프로그램 선택은 두 계약을 함께 선택하고, 원본 메트릭 보존은 둘 다 바꾸지 않는다.
+문서명·쪽 번호·좌표·특정 글자 분기를 제품에 추가하지 않는다.
+
+사설 글꼴 없는 공개 API 합성 검사 `legacy_program_ink_metric_separation`은 수정 전 고정
+Native library에서 의도한 윤곽 단언 FAIL(0 PASS·1 FAIL, exit101)을 확인했다. 처음 진단 코드의
+소유권 컴파일 오류는 별도 기록이며 테스트 실패나 통과로 합산하지 않는다. 기존 자연 전진 검사는
+검사 목적에 맞는 새 전용 값을 확인하며 기존 leader·꾸밈 보호를 유지한다. 수정 후 실제 집중 검사와
+Native/fresh WASM 측정은 아직 수행 전이다.
+
+nested의 원 입력은 [PR #2052](https://github.com/edwardkim/rhwp/pull/2052), 원 반영
+`eac1ac0cb73e905b5a32523d427f43b88e84c481`이며 1×1 중첩 셀의 실제 분할을 도입했다.
+이후 [PR #8397](https://github.com/edwardkim/rhwp/pull/8397)의 기존 회귀 입력 재측정이
+17쪽을 검증했다. 현재도 17쪽·내용 소유는 유지되며 보호 기준8쪽99.49% 대비99.48%를
+복구해야 한다. 윤곽 보존만 바꾼 진단은 raw99.48284→99.48285%로 표시값을 복구하지 못했다.
+따라서 sample16 수정으로 해결됐다고 표시하지 않으며 실제 선택 프로그램·같은 원본 글줄을
+별도로 대조한다. 원 프로그램 재개방·물리 스타일 정렬의 단독 및 결합 진단도 아직 이 차이를
+복구하지 못했다. 미해결 항목은 삭제·기준 완화하지 않는다.
+
+실행 로그·중간 JSON은 ignored `output/pr-review/planet6897-integration-20261106/`의
+`r55-paint-ink-only-metrics.json`, `r55-native-glyph-frame-diagnostic.json`,
+`r55-combined-glyph-frame-diagnostic.json`, `logs/r55-legacy-program-ink-before-test.log`에 있다.
+
 ## R52 추가 전쪽 대조에서 발견한 제목 전진 차이
 
 대기 중이던 추가 전쪽 검증을 실제로 진행해 `report-628` 195쪽 중 4·6·8·11·13·21·27·28쪽의

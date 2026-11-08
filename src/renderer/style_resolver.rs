@@ -365,11 +365,12 @@ pub(crate) fn resolve_styles_with_environment(
                             .as_deref()
                             .is_some_and(|face| env.replacement(face).is_some())
                     });
-                    // 원본 메트릭을 유지하는 표시용 대체는 기존 paint 폭 맞춤도 유지한다.
-                    // 원 프로그램의 자연 윤곽은 그 메트릭까지 선택한 세션만 보존한다.
-                    style.font_families_preserve_glyph_ink[lang] = (explicit_true_type
-                        || explicit_replacement)
-                        && !preserve_source_metrics
+                    // 기존 명시 공급의 윤곽은 전진 칸에 눌러 그리지 않는다(#8188).
+                    // 생략된 설정의 기존 전진/leader와 명시 자연 전진은 별도로 선택한다.
+                    style.font_families_preserve_glyph_ink[lang] =
+                        (explicit_true_type || explicit_replacement) && !preserve_source_metrics;
+                    style.font_families_natural_program_metrics[lang] = style
+                        .font_families_preserve_glyph_ink[lang]
                         && environment.is_some_and(|env| {
                             original
                                 .requested_face
@@ -1024,6 +1025,7 @@ pub(crate) fn try_resolve_single_char_style<A: storage::Storage>(
         font_families_verified_hft_bold_tracking,
         font_families_hft_print_frame,
         font_families_preserve_glyph_ink: vec![false; LANG_COUNT],
+        font_families_natural_program_metrics: vec![false; LANG_COUNT],
         font_families_hft_fullwidth_dot,
         ascii_punct_latin_slot,
         explicit_latin_slot,

@@ -1002,6 +1002,11 @@ fn try_char_style_to_text_style<S: crate::renderer::style_resolver::storage::Sto
                 .get(lang_index)
                 .copied()
                 .unwrap_or(false),
+            natural_program_metrics: cs
+                .font_families_natural_program_metrics
+                .get(lang_index)
+                .copied()
+                .unwrap_or(false),
             isolated_jamo_font: styles.isolated_jamo_font.or_else(|| {
                 matches!(
                     cs.font_family_for_lang(lang_index)
@@ -2531,7 +2536,7 @@ fn char_width_decision_with_hft_tracking<'a>(
     // intrinsic 전진과 별개다. 공급 뒤 width_source가 nativeOtf로 바뀌어도
     // 공급 전의 꾸밈 소유를 보존한다. 자연 전진을 직접 선택한 세션과
     // 원본 family 주소가 없는 합성 스타일은 이 소유를 추정하지 않는다.
-    let inferred_hft_fullwidth = !style.preserve_glyph_ink
+    let inferred_hft_fullwidth = !style.natural_program_metrics
         && !source_ttf
         && latin.map_or(style.source_font_is_hft, |slot| slot.source_font_is_hft)
         && latin.map_or(!style.font_family.trim().is_empty(), |slot| {
@@ -2542,7 +2547,7 @@ fn char_width_decision_with_hft_tracking<'a>(
     // 선언된 TTF 유형과 폭 표의 hit만으로 기존 leader를 자연 전진으로 승격하지
     // 않는다. 특히 유형 미상 원본을 HWPX로 저장해 TTF로 표기해도 폭은 같아야 한다.
     let clamp_dash_leader = dash_leader
-        && !(style.preserve_glyph_ink
+        && !(style.natural_program_metrics
             && character_match == "hit"
             && width_source == "embeddedMetric");
     // Native paint와 동일한 OTF의 글리프를 우선 사용한다. 다만 독립 Print와
