@@ -1,0 +1,966 @@
+{
+  "schema": "rhwp-windows-consumer-evidence-v1",
+  "sourceRevision": "ebd10e523d8f33b864791d3fdf893e00c29f87cd",
+  "publishedRuntimeRevision": "daf9e7d40aeffbda430d3c3d5631e4bf3e7a3453",
+  "foundationRevision": "a0e36187b0fbde75a4cac300f99748ba7a48493d",
+  "develRevision": "1b78dc23fd8add8d2bc61958be5533cbeafdbd20",
+  "qualification": "windows-immutable-transfer-consumer-passed",
+  "ci": {
+    "repository": "seo-rii/rhwp",
+    "runId": 42455059831,
+    "jobId": 128652215624,
+    "jobConclusion": "success",
+    "jobUrl": "https://github.com/seo-rii/rhwp/actions/runs/42455059831/job/128652215624",
+    "startedAt": "2026-11-08T06:31:03Z",
+    "completedAt": "2026-11-08T06:35:21Z",
+    "artifactId": 13606959599,
+    "artifactArchiveSha256": "f8e53fcb3372191a1c8a60136daa69bd29a47e0e1cb9eec477c6cdfdf3517ab2",
+    "artifactArchiveDigestAuthority": "GitHub Actions artifact API",
+    "artifactArchiveBytes": 30072944
+  },
+  "native": {
+    "declaredSourceRevision": "9452099dc796ca5626f1c4b52396a9ca07dc445e",
+    "sha256": "79dac58c30367d477e87c8c13f962f30a2d8f336a1be57016aac7428ca4c1895",
+    "bytes": 67580416,
+    "rebuiltInThisRun": false,
+    "seedNativeBuildPassed": true,
+    "seedSdkQualificationPassed": false,
+    "target": "x86_64-pc-windows-msvc",
+    "features": [
+      "native-skia-d3d"
+    ],
+    "rustToolchain": "1.93.1",
+    "sourceEquivalenceVerified": true,
+    "sourceManifestSha256": "4c23b6eaca5a87cd7199a200905782885ddd531dbb086f0c5f9027dea45ee350",
+    "currentSourceManifestSha256": "4c23b6eaca5a87cd7199a200905782885ddd531dbb086f0c5f9027dea45ee350",
+    "nativeInputEntries": 81672
+  },
+  "toolchain": {
+    "flutterVersion": "3.47.9",
+    "flutterRevision": "c197ca5199e9ee5661e865596c9c07294dfab51c",
+    "engineRevision": "89c39edfdfae2949f6806e4a315c0c08522238b7"
+  },
+  "actualContext": {
+    "runnerLabel": "windows-latest",
+    "capture": "visible-win32-desktop",
+    "presentationKind": "externalTexture",
+    "nativeProducerApi": "D3D12",
+    "sharedTextureApi": "D3D11",
+    "flutterRenderingBackendLog": "Impeller (OpenGLESSDF)",
+    "deviceGeneration": 1,
+    "adapterIdentityRecorded": false,
+    "hardwareAccelerationVerified": false
+  },
+  "sourceEquivalence": {
+    "publishedRuntimeMatchesQualifiedInputs": true,
+    "comparedRuntimeFileCount": 42,
+    "runtimeModeTypeBlobPathManifestSha256": "5e63ebc87955ffb9297ada6c433155876fe2570fd1f74451d77549b0739d1ae7",
+    "qualificationBuildCopiedSourcesMatch": true,
+    "qualificationCheckoutForms": {
+      "exactGitBytes": 0,
+      "lfToCrlfCheckout": 42
+    },
+    "evidenceCommitChangesRuntime": false
+  },
+  "execution": {
+    "publications": 32,
+    "distinctViewGenerations": 32,
+    "documentRevisions": [
+      0,
+      1
+    ],
+    "subsequentMutation": "alternating viewport offsets after physical resize",
+    "consecutiveCpuHashesDiffer": true,
+    "heldCapturesPerStage": 2,
+    "heldCapturesStable": true,
+    "buildExitCode": 0,
+    "runnerExitCode": 0,
+    "allSdkCommandExitCodes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "originalComparisonsReproducedFromSelectedRawFrames": [
+      {
+        "mode": "legacyImmutable",
+        "index": 1,
+        "originalComparisonExactlyReproduced": true
+      },
+      {
+        "mode": "legacyImmutable",
+        "index": 2,
+        "originalComparisonExactlyReproduced": true
+      },
+      {
+        "mode": "legacyImmutable",
+        "index": 3,
+        "originalComparisonExactlyReproduced": true
+      },
+      {
+        "mode": "immutableOwnershipTransfer",
+        "index": 1,
+        "originalComparisonExactlyReproduced": true
+      },
+      {
+        "mode": "immutableOwnershipTransfer",
+        "index": 2,
+        "originalComparisonExactlyReproduced": true
+      },
+      {
+        "mode": "immutableOwnershipTransfer",
+        "index": 3,
+        "originalComparisonExactlyReproduced": true
+      },
+      {
+        "mode": "immutableOwnershipTransfer",
+        "index": 32,
+        "originalComparisonExactlyReproduced": true
+      }
+    ]
+  },
+  "resources": {
+    "maxObservedAtHeldStages": {
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576,
+      "importPendingFrames": 0,
+      "importPendingBytes": 0,
+      "descriptorTickets": 1,
+      "wholeFrameReadbacks": 0,
+      "quarantinedFrames": 0
+    },
+    "producerFrameLimit": 4,
+    "producerTargetByteLimit": 67108864,
+    "singleFrameByteLimit": 16777216,
+    "descriptorTicketLimit": 8,
+    "budgetScope": "legacy retained targets and plugin-owned creator references; excludes consumer/driver allocations",
+    "maximumIndependentReferenceBytes": 5767168,
+    "close": {
+      "publicationMode": "immutableOwnershipTransfer",
+      "acknowledged": true,
+      "closeAcknowledgementRequired": true,
+      "closed": true,
+      "ownerFinished": true,
+      "registered": false,
+      "unregistered": true,
+      "inFlight": false,
+      "deviceGeneration": 1,
+      "deviceFailure": false,
+      "hasFrame": false,
+      "error": "",
+      "errorCode": "",
+      "limits": {
+        "backpressureRetryable": true,
+        "closeAcknowledgementRequired": true,
+        "consumerAndDriverMemoryIncluded": false,
+        "consumerGpuCompletionVerified": false,
+        "consumerRetirement": false,
+        "continuousPresentationSupported": true,
+        "cpuFallbackRequiredWhenSaturated": true,
+        "descriptorAwaitingOpenedTickets": 0,
+        "descriptorCpuPendingTickets": 0,
+        "descriptorDuplicateOrLateNotifications": 0,
+        "descriptorOpenedNotifications": 32,
+        "descriptorReleaseIsGpuComplete": false,
+        "descriptorTickets": 0,
+        "discardedUnexposedFrames": 0,
+        "frameAccountingScope": "legacyRetainedAndPluginOwnedReferences",
+        "handedOffFrames": 32,
+        "immutableFrames": 0,
+        "importPendingBytes": 0,
+        "importPendingFrames": 0,
+        "legacyRetainedFrames": 0,
+        "maxClosedReceipts": 2,
+        "maxDescriptorTickets": 8,
+        "maxFrames": 4,
+        "maxRetainedCloseRecords": 2,
+        "maxSingleFrameBytes": 16777216,
+        "maxTargetBytes": 67108864,
+        "outstandingFrames": 0,
+        "pendingRetireFrames": 0,
+        "producerOwnedBytes": 0,
+        "producerOwnedFrames": 0,
+        "publicationMode": "immutableOwnershipTransfer",
+        "quarantinedFrames": 0,
+        "reservedTargetBytes": 0,
+        "targetReuse": false,
+        "wholeFrameReadbacks": 0
+      }
+    },
+    "nativeStatsAfterClose": {
+      "frameBytes": 0,
+      "frameHandles": 0,
+      "inFlightReplays": 0,
+      "leases": 0,
+      "retainedFrames": 0,
+      "retainedSnapshots": 0,
+      "snapshotEstimatedBytes": 0,
+      "snapshotHandles": 0,
+      "sources": 0
+    }
+  },
+  "legacy": {
+    "qualification": "bounded-windows-consumer-passed",
+    "publications": 3,
+    "continuousPresentationSupported": false,
+    "runnerExitCode": 0,
+    "selectedRawFramesEqualContinuousStages1To3": true,
+    "close": {
+      "publicationMode": "legacyImmutable",
+      "acknowledged": true,
+      "closeAcknowledgementRequired": true,
+      "closed": true,
+      "ownerFinished": true,
+      "registered": false,
+      "unregistered": true,
+      "inFlight": false,
+      "deviceGeneration": 1,
+      "deviceFailure": false,
+      "hasFrame": false,
+      "error": "",
+      "errorCode": "",
+      "limits": {
+        "backpressureRetryable": false,
+        "closeAcknowledgementRequired": true,
+        "consumerAndDriverMemoryIncluded": false,
+        "consumerGpuCompletionVerified": false,
+        "consumerRetirement": false,
+        "continuousPresentationSupported": false,
+        "cpuFallbackRequiredWhenSaturated": true,
+        "descriptorAwaitingOpenedTickets": 0,
+        "descriptorCpuPendingTickets": 0,
+        "descriptorDuplicateOrLateNotifications": 0,
+        "descriptorOpenedNotifications": 3,
+        "descriptorReleaseIsGpuComplete": false,
+        "descriptorTickets": 0,
+        "discardedUnexposedFrames": 0,
+        "frameAccountingScope": "legacyRetainedAndPluginOwnedReferences",
+        "handedOffFrames": 0,
+        "immutableFrames": 3,
+        "importPendingBytes": 0,
+        "importPendingFrames": 0,
+        "legacyRetainedFrames": 3,
+        "maxClosedReceipts": 2,
+        "maxDescriptorTickets": 8,
+        "maxFrames": 4,
+        "maxRetainedCloseRecords": 2,
+        "maxSingleFrameBytes": 16777216,
+        "maxTargetBytes": 67108864,
+        "outstandingFrames": 3,
+        "pendingRetireFrames": 3,
+        "producerOwnedBytes": 0,
+        "producerOwnedFrames": 0,
+        "publicationMode": "legacyImmutable",
+        "quarantinedFrames": 0,
+        "reservedTargetBytes": 3145728,
+        "targetReuse": false,
+        "wholeFrameReadbacks": 0
+      }
+    },
+    "nativeStatsAfterClose": {
+      "frameBytes": 0,
+      "frameHandles": 0,
+      "inFlightReplays": 0,
+      "leases": 0,
+      "retainedFrames": 0,
+      "retainedSnapshots": 0,
+      "snapshotEstimatedBytes": 0,
+      "snapshotHandles": 0,
+      "sources": 0
+    }
+  },
+  "scope": {
+    "hardwareAccelerationVerified": false,
+    "consumerGpuCompletionVerified": false,
+    "targetReuse": false,
+    "consumerAndDriverMemoryIncluded": false,
+    "standaloneNativeCaptureSeparatelyVerified": false,
+    "hancomQualificationVerified": false,
+    "windowsConsumerVerified": true,
+    "macosOrWaylandConsumerVerifiedByThisEvidence": false
+  },
+  "artifacts": {
+    "runner": {
+      "sha256": "85567f924b89ded12f4343f52222c3d391d822bfb7dcec8bea8ea9d46c6aef90",
+      "bytes": 1270784
+    },
+    "plugin": {
+      "sha256": "8ac1721160394404f232b3c53e05062c6037839d7e7da35d3029ea9e8b0abcaa",
+      "bytes": 1780224
+    },
+    "engineRuntime": {
+      "sha256": "93aa235aeacabaf33dce6e73fb0a221826c56aa9478b3fff781acb4c061a6962",
+      "bytes": 46636544
+    },
+    "dispatcher": {
+      "sha256": "c9a940752167c0205553d164eb2a45e0683fa0dc1fdacc71374230fdf062e0b5",
+      "bytes": 147456
+    },
+    "native": {
+      "sha256": "79dac58c30367d477e87c8c13f962f30a2d8f336a1be57016aac7428ca4c1895",
+      "bytes": 67580416
+    },
+    "fixture": {
+      "sha256": "648dade82585fa2845b80ec510b5f55c67e8b6127688dd3748b9a2068d87a3d9",
+      "bytes": 8082
+    }
+  },
+  "receiptSha256": {
+    "sdk": "b062bc2d07c3393246fa4bdf07697b77c2441cd7e74e1e6ad54559fcde866478",
+    "nativeBuild": "ac5c13d11db360b42c19f8f5a187334f2020e0ec9fea2fcecef3922e4b360fc0",
+    "desktopBuild": "877aa781c13ee5bf0c428a68ace1fa75880049af5a4e9b35b30b6d280f2911fa",
+    "legacy": "ef155d9f322390a98a4b04790f877da5e98f3d81949311935405b4f0a71d7b39",
+    "legacyClose": "1e84a9f084f1e9ba0db619273987806df326f9f4bfda7bebed5fa6bf98e8b7a9",
+    "continuous": "41995c69035b9cf1a2b6312b337461f3d804b9df9f1e04fd4cc1adfccfcdc38e",
+    "continuousClose": "554eaf504095c2cbb1ce073b97660858cd5d5884ed9f7a8b66313ad800473333"
+  },
+  "comparisonContract": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+  "comparePixelsFunctionChangedForThisEvidence": false,
+  "representativeFrames": [
+    {
+      "index": 1,
+      "stage": "initial",
+      "stamp": {
+        "documentId": 1,
+        "revision": 0,
+        "fontGeneration": 0,
+        "viewGeneration": 1,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 2,
+      "cpuReferenceScale": 4,
+      "images": {
+        "cpu": {
+          "file": "cpu-01.png",
+          "width": 320,
+          "height": 240,
+          "rgbaSha256": "d111f1c10eda92a6ff17788523ed52956fdc1c1a4966a074fb78e7a39a73ec50",
+          "pngSha256": "b9b5898187ff693aa00a22104ae21f0723c2ace7de913adbbbbc2665071d5f5c"
+        },
+        "display": {
+          "file": "display-01.png",
+          "width": 320,
+          "height": 240,
+          "rgbaSha256": "5205eb34fde149ea0aa1ab26e90091411d01885ac653e6b13aed76b098cd0d8b",
+          "pngSha256": "0b40ac58bf2c9af51f4246673aeb0c1c53c2b3e127f85777416dbd729ccd1e20"
+        },
+        "reference": {
+          "file": "reference-01.png",
+          "width": 1280,
+          "height": 960,
+          "rgbaSha256": "318be5ebf3a9fac0e2714bda1b6366547eaac5553e5b7fcb7d23a507f1f0bc5c",
+          "pngSha256": "9a2cdb83b4e08e957d90dae8318389ebf7c16373494d78ce5c28d232cbebebd9"
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 76131,
+        "aaEdgeDifferentPixels": 233,
+        "maxChannelDifference": 49,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 4915200,
+        "integerAlignmentErrors": {
+          "-1,-1": 141710,
+          "0,-1": 70650,
+          "1,-1": 140566,
+          "-1,0": 77174,
+          "0,0": 1632,
+          "1,0": 76316,
+          "-1,1": 140992,
+          "0,1": 70148,
+          "1,1": 140432
+        }
+      }
+    },
+    {
+      "index": 2,
+      "stage": "revision",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 3,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 7,
+      "cpuReferenceScale": 4,
+      "images": {
+        "cpu": {
+          "file": "cpu-02.png",
+          "width": 320,
+          "height": 240,
+          "rgbaSha256": "08b52ce9d00bf237d53787744471670e6cfbf8e635140d2f0737164f47e6b870",
+          "pngSha256": "9a6078c6f9b5dac9398f060080c50cfb9e4b2d7776a66114eec4d01b49d27488"
+        },
+        "display": {
+          "file": "display-02.png",
+          "width": 320,
+          "height": 240,
+          "rgbaSha256": "e6d24492a0f9f48852924618db4e9c290d565d708f7ccea23930bf4175ef952d",
+          "pngSha256": "c345c1ef987325d876220dbdff9d30e4e3d5be46aa65eaf41c86e7b7bf547c64"
+        },
+        "reference": {
+          "file": "reference-02.png",
+          "width": 1280,
+          "height": 960,
+          "rgbaSha256": "21bcc2f3e7a7679039f54306a1c6dbb662a3bf0737c49cd6470c2868533df024",
+          "pngSha256": "3146e2fab61f9bf811031461ef4c1a62534f832ba789551cee406d19ac3c9c33"
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 76139,
+        "aaEdgeDifferentPixels": 157,
+        "maxChannelDifference": 47,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 4915200,
+        "integerAlignmentErrors": {
+          "-1,-1": 146443,
+          "0,-1": 75719,
+          "1,-1": 145569,
+          "-1,0": 77041,
+          "0,0": 1167,
+          "1,0": 76181,
+          "-1,1": 146389,
+          "0,1": 75693,
+          "1,1": 145589
+        }
+      }
+    },
+    {
+      "index": 3,
+      "stage": "resize",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 4,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 12,
+      "cpuReferenceScale": 4,
+      "images": {
+        "cpu": {
+          "file": "cpu-03.png",
+          "width": 352,
+          "height": 256,
+          "rgbaSha256": "6063ee387d9dfd2505e82f1bc6c7473615a96dc79c0d41d457fde139425617a5",
+          "pngSha256": "5d276a33336b90c4312fd4f637afbbcb07c22d918fd99222d20b761b4fcdfb7a"
+        },
+        "display": {
+          "file": "display-03.png",
+          "width": 352,
+          "height": 256,
+          "rgbaSha256": "562bb1fbb90dc3048a812e9e366f8b5d733d0818d40d46d9c90bbff5d991ba9c",
+          "pngSha256": "95b7f81fb5525c0c5190a6304a4bb6287e2e2616f53f36636a23ddb2a944d85c"
+        },
+        "reference": {
+          "file": "reference-03.png",
+          "width": 1408,
+          "height": 1024,
+          "rgbaSha256": "27e4e1af8c6854ca5e54aace52ea0ddeb6aae608cab456c53b0b8d08dfc27f4e",
+          "pngSha256": "db83f02c5561df5ec79ad8e6f28e841f35d1f404a60ae18595cb0933f7648428"
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 89352,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 152782,
+          "0,-1": 79706,
+          "1,-1": 152642,
+          "-1,0": 79534,
+          "0,0": 1230,
+          "1,0": 79552,
+          "-1,1": 151728,
+          "0,1": 78854,
+          "1,1": 151866
+        }
+      }
+    },
+    {
+      "index": 32,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 33,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 157,
+      "cpuReferenceScale": 4,
+      "images": {
+        "cpu": {
+          "file": "cpu-32.png",
+          "width": 352,
+          "height": 256,
+          "rgbaSha256": "2da3703912f2f4b789e22119ea91f9f42a5aab5bfce5321feb97dbe510584d16",
+          "pngSha256": "36834ac8fa78efb7733e93172658971de3e9e8dd30d40b50e42511095e60685b"
+        },
+        "display": {
+          "file": "display-32.png",
+          "width": 352,
+          "height": 256,
+          "rgbaSha256": "f190adf0fc0b436efc06f7dc540dfec13f03b48346a28aec84d5c260a18ca45e",
+          "pngSha256": "eecfe6883e00309f091ad67bdaf32a40d9aa5f1c03f46a428fd96388f61ce372"
+        },
+        "reference": {
+          "file": "reference-32.png",
+          "width": 1408,
+          "height": 1024,
+          "rgbaSha256": "0d8acf384f9e6f8b15f9421381920475e5ee1d545df18a4167da48218f0488c5",
+          "pngSha256": "0e30b08eaf3a4fe3e46d7290aa66bd1fad136bb1a9bd4521e3b012e70bc00394"
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88148,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 454079,
+          "0,-1": 254247,
+          "1,-1": 453939,
+          "-1,0": 206793,
+          "0,0": 1230,
+          "1,0": 206811,
+          "-1,1": 453025,
+          "0,1": 253395,
+          "1,1": 454169
+        }
+      }
+    }
+  ],
+  "publicationProofs": [
+    {
+      "index": 1,
+      "revision": 0,
+      "viewGeneration": 1,
+      "cpuSha256": "d111f1c10eda92a6ff17788523ed52956fdc1c1a4966a074fb78e7a39a73ec50",
+      "displaySha256": "5205eb34fde149ea0aa1ab26e90091411d01885ac653e6b13aed76b098cd0d8b",
+      "referenceSha256": "318be5ebf3a9fac0e2714bda1b6366547eaac5553e5b7fcb7d23a507f1f0bc5c",
+      "descriptorOpenedSerial": 1,
+      "descriptorOpenedNotifications": 1,
+      "handedOffFrames": 0,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 2,
+      "revision": 1,
+      "viewGeneration": 3,
+      "cpuSha256": "08b52ce9d00bf237d53787744471670e6cfbf8e635140d2f0737164f47e6b870",
+      "displaySha256": "e6d24492a0f9f48852924618db4e9c290d565d708f7ccea23930bf4175ef952d",
+      "referenceSha256": "21bcc2f3e7a7679039f54306a1c6dbb662a3bf0737c49cd6470c2868533df024",
+      "descriptorOpenedSerial": 2,
+      "descriptorOpenedNotifications": 2,
+      "handedOffFrames": 1,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 3,
+      "revision": 1,
+      "viewGeneration": 4,
+      "cpuSha256": "6063ee387d9dfd2505e82f1bc6c7473615a96dc79c0d41d457fde139425617a5",
+      "displaySha256": "562bb1fbb90dc3048a812e9e366f8b5d733d0818d40d46d9c90bbff5d991ba9c",
+      "referenceSha256": "27e4e1af8c6854ca5e54aace52ea0ddeb6aae608cab456c53b0b8d08dfc27f4e",
+      "descriptorOpenedSerial": 3,
+      "descriptorOpenedNotifications": 3,
+      "handedOffFrames": 2,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 4,
+      "revision": 1,
+      "viewGeneration": 5,
+      "cpuSha256": "2da3703912f2f4b789e22119ea91f9f42a5aab5bfce5321feb97dbe510584d16",
+      "displaySha256": "f190adf0fc0b436efc06f7dc540dfec13f03b48346a28aec84d5c260a18ca45e",
+      "referenceSha256": "0d8acf384f9e6f8b15f9421381920475e5ee1d545df18a4167da48218f0488c5",
+      "descriptorOpenedSerial": 4,
+      "descriptorOpenedNotifications": 4,
+      "handedOffFrames": 3,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 5,
+      "revision": 1,
+      "viewGeneration": 6,
+      "cpuSha256": "574e8241006013a27fcd00f00c0cf9d4c4fabd993d23a9ff65bb21c59caf1fcb",
+      "displaySha256": "a7bc3ff910beb73d2a8383741c0b1b1d0aef71269b9b2c90e64459a21afce525",
+      "referenceSha256": "5047b3a69efeb763a1f4876cd58dd2a1806f91872da8df2eea11654847cc655b",
+      "descriptorOpenedSerial": 5,
+      "descriptorOpenedNotifications": 5,
+      "handedOffFrames": 4,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 6,
+      "revision": 1,
+      "viewGeneration": 7,
+      "cpuSha256": "2da3703912f2f4b789e22119ea91f9f42a5aab5bfce5321feb97dbe510584d16",
+      "displaySha256": "f190adf0fc0b436efc06f7dc540dfec13f03b48346a28aec84d5c260a18ca45e",
+      "referenceSha256": "0d8acf384f9e6f8b15f9421381920475e5ee1d545df18a4167da48218f0488c5",
+      "descriptorOpenedSerial": 6,
+      "descriptorOpenedNotifications": 6,
+      "handedOffFrames": 5,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 7,
+      "revision": 1,
+      "viewGeneration": 8,
+      "cpuSha256": "574e8241006013a27fcd00f00c0cf9d4c4fabd993d23a9ff65bb21c59caf1fcb",
+      "displaySha256": "a7bc3ff910beb73d2a8383741c0b1b1d0aef71269b9b2c90e64459a21afce525",
+      "referenceSha256": "5047b3a69efeb763a1f4876cd58dd2a1806f91872da8df2eea11654847cc655b",
+      "descriptorOpenedSerial": 7,
+      "descriptorOpenedNotifications": 7,
+      "handedOffFrames": 6,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 8,
+      "revision": 1,
+      "viewGeneration": 9,
+      "cpuSha256": "2da3703912f2f4b789e22119ea91f9f42a5aab5bfce5321feb97dbe510584d16",
+      "displaySha256": "f190adf0fc0b436efc06f7dc540dfec13f03b48346a28aec84d5c260a18ca45e",
+      "referenceSha256": "0d8acf384f9e6f8b15f9421381920475e5ee1d545df18a4167da48218f0488c5",
+      "descriptorOpenedSerial": 8,
+      "descriptorOpenedNotifications": 8,
+      "handedOffFrames": 7,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 9,
+      "revision": 1,
+      "viewGeneration": 10,
+      "cpuSha256": "574e8241006013a27fcd00f00c0cf9d4c4fabd993d23a9ff65bb21c59caf1fcb",
+      "displaySha256": "a7bc3ff910beb73d2a8383741c0b1b1d0aef71269b9b2c90e64459a21afce525",
+      "referenceSha256": "5047b3a69efeb763a1f4876cd58dd2a1806f91872da8df2eea11654847cc655b",
+      "descriptorOpenedSerial": 9,
+      "descriptorOpenedNotifications": 9,
+      "handedOffFrames": 8,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 10,
+      "revision": 1,
+      "viewGeneration": 11,
+      "cpuSha256": "2da3703912f2f4b789e22119ea91f9f42a5aab5bfce5321feb97dbe510584d16",
+      "displaySha256": "f190adf0fc0b436efc06f7dc540dfec13f03b48346a28aec84d5c260a18ca45e",
+      "referenceSha256": "0d8acf384f9e6f8b15f9421381920475e5ee1d545df18a4167da48218f0488c5",
+      "descriptorOpenedSerial": 10,
+      "descriptorOpenedNotifications": 10,
+      "handedOffFrames": 9,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 11,
+      "revision": 1,
+      "viewGeneration": 12,
+      "cpuSha256": "574e8241006013a27fcd00f00c0cf9d4c4fabd993d23a9ff65bb21c59caf1fcb",
+      "displaySha256": "a7bc3ff910beb73d2a8383741c0b1b1d0aef71269b9b2c90e64459a21afce525",
+      "referenceSha256": "5047b3a69efeb763a1f4876cd58dd2a1806f91872da8df2eea11654847cc655b",
+      "descriptorOpenedSerial": 11,
+      "descriptorOpenedNotifications": 11,
+      "handedOffFrames": 10,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 12,
+      "revision": 1,
+      "viewGeneration": 13,
+      "cpuSha256": "2da3703912f2f4b789e22119ea91f9f42a5aab5bfce5321feb97dbe510584d16",
+      "displaySha256": "f190adf0fc0b436efc06f7dc540dfec13f03b48346a28aec84d5c260a18ca45e",
+      "referenceSha256": "0d8acf384f9e6f8b15f9421381920475e5ee1d545df18a4167da48218f0488c5",
+      "descriptorOpenedSerial": 12,
+      "descriptorOpenedNotifications": 12,
+      "handedOffFrames": 11,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 13,
+      "revision": 1,
+      "viewGeneration": 14,
+      "cpuSha256": "574e8241006013a27fcd00f00c0cf9d4c4fabd993d23a9ff65bb21c59caf1fcb",
+      "displaySha256": "a7bc3ff910beb73d2a8383741c0b1b1d0aef71269b9b2c90e64459a21afce525",
+      "referenceSha256": "5047b3a69efeb763a1f4876cd58dd2a1806f91872da8df2eea11654847cc655b",
+      "descriptorOpenedSerial": 13,
+      "descriptorOpenedNotifications": 13,
+      "handedOffFrames": 12,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 14,
+      "revision": 1,
+      "viewGeneration": 15,
+      "cpuSha256": "2da3703912f2f4b789e22119ea91f9f42a5aab5bfce5321feb97dbe510584d16",
+      "displaySha256": "f190adf0fc0b436efc06f7dc540dfec13f03b48346a28aec84d5c260a18ca45e",
+      "referenceSha256": "0d8acf384f9e6f8b15f9421381920475e5ee1d545df18a4167da48218f0488c5",
+      "descriptorOpenedSerial": 14,
+      "descriptorOpenedNotifications": 14,
+      "handedOffFrames": 13,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 15,
+      "revision": 1,
+      "viewGeneration": 16,
+      "cpuSha256": "574e8241006013a27fcd00f00c0cf9d4c4fabd993d23a9ff65bb21c59caf1fcb",
+      "displaySha256": "a7bc3ff910beb73d2a8383741c0b1b1d0aef71269b9b2c90e64459a21afce525",
+      "referenceSha256": "5047b3a69efeb763a1f4876cd58dd2a1806f91872da8df2eea11654847cc655b",
+      "descriptorOpenedSerial": 15,
+      "descriptorOpenedNotifications": 15,
+      "handedOffFrames": 14,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 16,
+      "revision": 1,
+      "viewGeneration": 17,
+      "cpuSha256": "2da3703912f2f4b789e22119ea91f9f42a5aab5bfce5321feb97dbe510584d16",
+      "displaySha256": "f190adf0fc0b436efc06f7dc540dfec13f03b48346a28aec84d5c260a18ca45e",
+      "referenceSha256": "0d8acf384f9e6f8b15f9421381920475e5ee1d545df18a4167da48218f0488c5",
+      "descriptorOpenedSerial": 16,
+      "descriptorOpenedNotifications": 16,
+      "handedOffFrames": 15,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 17,
+      "revision": 1,
+      "viewGeneration": 18,
+      "cpuSha256": "574e8241006013a27fcd00f00c0cf9d4c4fabd993d23a9ff65bb21c59caf1fcb",
+      "displaySha256": "a7bc3ff910beb73d2a8383741c0b1b1d0aef71269b9b2c90e64459a21afce525",
+      "referenceSha256": "5047b3a69efeb763a1f4876cd58dd2a1806f91872da8df2eea11654847cc655b",
+      "descriptorOpenedSerial": 17,
+      "descriptorOpenedNotifications": 17,
+      "handedOffFrames": 16,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 18,
+      "revision": 1,
+      "viewGeneration": 19,
+      "cpuSha256": "2da3703912f2f4b789e22119ea91f9f42a5aab5bfce5321feb97dbe510584d16",
+      "displaySha256": "f190adf0fc0b436efc06f7dc540dfec13f03b48346a28aec84d5c260a18ca45e",
+      "referenceSha256": "0d8acf384f9e6f8b15f9421381920475e5ee1d545df18a4167da48218f0488c5",
+      "descriptorOpenedSerial": 18,
+      "descriptorOpenedNotifications": 18,
+      "handedOffFrames": 17,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 19,
+      "revision": 1,
+      "viewGeneration": 20,
+      "cpuSha256": "574e8241006013a27fcd00f00c0cf9d4c4fabd993d23a9ff65bb21c59caf1fcb",
+      "displaySha256": "a7bc3ff910beb73d2a8383741c0b1b1d0aef71269b9b2c90e64459a21afce525",
+      "referenceSha256": "5047b3a69efeb763a1f4876cd58dd2a1806f91872da8df2eea11654847cc655b",
+      "descriptorOpenedSerial": 19,
+      "descriptorOpenedNotifications": 19,
+      "handedOffFrames": 18,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 20,
+      "revision": 1,
+      "viewGeneration": 21,
+      "cpuSha256": "2da3703912f2f4b789e22119ea91f9f42a5aab5bfce5321feb97dbe510584d16",
+      "displaySha256": "f190adf0fc0b436efc06f7dc540dfec13f03b48346a28aec84d5c260a18ca45e",
+      "referenceSha256": "0d8acf384f9e6f8b15f9421381920475e5ee1d545df18a4167da48218f0488c5",
+      "descriptorOpenedSerial": 20,
+      "descriptorOpenedNotifications": 20,
+      "handedOffFrames": 19,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 21,
+      "revision": 1,
+      "viewGeneration": 22,
+      "cpuSha256": "574e8241006013a27fcd00f00c0cf9d4c4fabd993d23a9ff65bb21c59caf1fcb",
+      "displaySha256": "a7bc3ff910beb73d2a8383741c0b1b1d0aef71269b9b2c90e64459a21afce525",
+      "referenceSha256": "5047b3a69efeb763a1f4876cd58dd2a1806f91872da8df2eea11654847cc655b",
+      "descriptorOpenedSerial": 21,
+      "descriptorOpenedNotifications": 21,
+      "handedOffFrames": 20,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 22,
+      "revision": 1,
+      "viewGeneration": 23,
+      "cpuSha256": "2da3703912f2f4b789e22119ea91f9f42a5aab5bfce5321feb97dbe510584d16",
+      "displaySha256": "f190adf0fc0b436efc06f7dc540dfec13f03b48346a28aec84d5c260a18ca45e",
+      "referenceSha256": "0d8acf384f9e6f8b15f9421381920475e5ee1d545df18a4167da48218f0488c5",
+      "descriptorOpenedSerial": 22,
+      "descriptorOpenedNotifications": 22,
+      "handedOffFrames": 21,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 23,
+      "revision": 1,
+      "viewGeneration": 24,
+      "cpuSha256": "574e8241006013a27fcd00f00c0cf9d4c4fabd993d23a9ff65bb21c59caf1fcb",
+      "displaySha256": "a7bc3ff910beb73d2a8383741c0b1b1d0aef71269b9b2c90e64459a21afce525",
+      "referenceSha256": "5047b3a69efeb763a1f4876cd58dd2a1806f91872da8df2eea11654847cc655b",
+      "descriptorOpenedSerial": 23,
+      "descriptorOpenedNotifications": 23,
+      "handedOffFrames": 22,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 24,
+      "revision": 1,
+      "viewGeneration": 25,
+      "cpuSha256": "2da3703912f2f4b789e22119ea91f9f42a5aab5bfce5321feb97dbe510584d16",
+      "displaySha256": "f190adf0fc0b436efc06f7dc540dfec13f03b48346a28aec84d5c260a18ca45e",
+      "referenceSha256": "0d8acf384f9e6f8b15f9421381920475e5ee1d545df18a4167da48218f0488c5",
+      "descriptorOpenedSerial": 24,
+      "descriptorOpenedNotifications": 24,
+      "handedOffFrames": 23,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 25,
+      "revision": 1,
+      "viewGeneration": 26,
+      "cpuSha256": "574e8241006013a27fcd00f00c0cf9d4c4fabd993d23a9ff65bb21c59caf1fcb",
+      "displaySha256": "a7bc3ff910beb73d2a8383741c0b1b1d0aef71269b9b2c90e64459a21afce525",
+      "referenceSha256": "5047b3a69efeb763a1f4876cd58dd2a1806f91872da8df2eea11654847cc655b",
+      "descriptorOpenedSerial": 25,
+      "descriptorOpenedNotifications": 25,
+      "handedOffFrames": 24,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 26,
+      "revision": 1,
+      "viewGeneration": 27,
+      "cpuSha256": "2da3703912f2f4b789e22119ea91f9f42a5aab5bfce5321feb97dbe510584d16",
+      "displaySha256": "f190adf0fc0b436efc06f7dc540dfec13f03b48346a28aec84d5c260a18ca45e",
+      "referenceSha256": "0d8acf384f9e6f8b15f9421381920475e5ee1d545df18a4167da48218f0488c5",
+      "descriptorOpenedSerial": 26,
+      "descriptorOpenedNotifications": 26,
+      "handedOffFrames": 25,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 27,
+      "revision": 1,
+      "viewGeneration": 28,
+      "cpuSha256": "574e8241006013a27fcd00f00c0cf9d4c4fabd993d23a9ff65bb21c59caf1fcb",
+      "displaySha256": "a7bc3ff910beb73d2a8383741c0b1b1d0aef71269b9b2c90e64459a21afce525",
+      "referenceSha256": "5047b3a69efeb763a1f4876cd58dd2a1806f91872da8df2eea11654847cc655b",
+      "descriptorOpenedSerial": 27,
+      "descriptorOpenedNotifications": 27,
+      "handedOffFrames": 26,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 28,
+      "revision": 1,
+      "viewGeneration": 29,
+      "cpuSha256": "2da3703912f2f4b789e22119ea91f9f42a5aab5bfce5321feb97dbe510584d16",
+      "displaySha256": "f190adf0fc0b436efc06f7dc540dfec13f03b48346a28aec84d5c260a18ca45e",
+      "referenceSha256": "0d8acf384f9e6f8b15f9421381920475e5ee1d545df18a4167da48218f0488c5",
+      "descriptorOpenedSerial": 28,
+      "descriptorOpenedNotifications": 28,
+      "handedOffFrames": 27,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 29,
+      "revision": 1,
+      "viewGeneration": 30,
+      "cpuSha256": "574e8241006013a27fcd00f00c0cf9d4c4fabd993d23a9ff65bb21c59caf1fcb",
+      "displaySha256": "a7bc3ff910beb73d2a8383741c0b1b1d0aef71269b9b2c90e64459a21afce525",
+      "referenceSha256": "5047b3a69efeb763a1f4876cd58dd2a1806f91872da8df2eea11654847cc655b",
+      "descriptorOpenedSerial": 29,
+      "descriptorOpenedNotifications": 29,
+      "handedOffFrames": 28,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 30,
+      "revision": 1,
+      "viewGeneration": 31,
+      "cpuSha256": "2da3703912f2f4b789e22119ea91f9f42a5aab5bfce5321feb97dbe510584d16",
+      "displaySha256": "f190adf0fc0b436efc06f7dc540dfec13f03b48346a28aec84d5c260a18ca45e",
+      "referenceSha256": "0d8acf384f9e6f8b15f9421381920475e5ee1d545df18a4167da48218f0488c5",
+      "descriptorOpenedSerial": 30,
+      "descriptorOpenedNotifications": 30,
+      "handedOffFrames": 29,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 31,
+      "revision": 1,
+      "viewGeneration": 32,
+      "cpuSha256": "574e8241006013a27fcd00f00c0cf9d4c4fabd993d23a9ff65bb21c59caf1fcb",
+      "displaySha256": "a7bc3ff910beb73d2a8383741c0b1b1d0aef71269b9b2c90e64459a21afce525",
+      "referenceSha256": "5047b3a69efeb763a1f4876cd58dd2a1806f91872da8df2eea11654847cc655b",
+      "descriptorOpenedSerial": 31,
+      "descriptorOpenedNotifications": 31,
+      "handedOffFrames": 30,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    },
+    {
+      "index": 32,
+      "revision": 1,
+      "viewGeneration": 33,
+      "cpuSha256": "2da3703912f2f4b789e22119ea91f9f42a5aab5bfce5321feb97dbe510584d16",
+      "displaySha256": "f190adf0fc0b436efc06f7dc540dfec13f03b48346a28aec84d5c260a18ca45e",
+      "referenceSha256": "0d8acf384f9e6f8b15f9421381920475e5ee1d545df18a4167da48218f0488c5",
+      "descriptorOpenedSerial": 32,
+      "descriptorOpenedNotifications": 32,
+      "handedOffFrames": 31,
+      "producerOwnedFrames": 1,
+      "producerOwnedBytes": 1048576
+    }
+  ]
+}
