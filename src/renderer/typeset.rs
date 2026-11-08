@@ -2668,6 +2668,13 @@ pub(in crate::renderer::typeset) fn stored_vpos_overflow_defers_paragraph(
 /// 판별력 실측(r29 `PI_MISMATCH` n=1 코호트 66건): 어긋난 항목의 36% 가 되돌아감인데,
 /// 같은 문서 **다른 쪽**의 마지막 항목은 1,134개 중 2개(0.2%)뿐이다 — 180배 농축.
 fn stored_vpos_rewinds(prev_vpos: Option<i32>, para: &Paragraph) -> bool {
+    stored_vpos_rewinds_after(prev_vpos.map(|vpos| (vpos, vpos)), para)
+}
+
+/// [`stored_vpos_rewinds`] 의 앞 줄 `(시작, 아래끝)` 판 — 하한 `5000` 을 앞 줄이 차지한
+/// 아래끝까지로 잰다. 되돌아감 자체는 새 줄이 앞 줄의 **시작**보다 위인 것 그대로다.
+/// 쓰는 곳은 통째로 안 들어가는 문단의 쪽 경계뿐이다(#8805, `whole_fit`).
+fn stored_vpos_rewinds_after(prev_line: Option<(i32, i32)>, para: &Paragraph) -> bool {
     let Some(nv) = para
         .line_segs
         .iter()
@@ -2678,7 +2685,7 @@ fn stored_vpos_rewinds(prev_vpos: Option<i32>, para: &Paragraph) -> bool {
     };
     // `cl > 5000` 은 기존 vpos-reset 가드와 같은 하한 — 쪽 상단 근처에서 시작한 항목을
     // 기준으로 삼으면 되돌아감이 아니라 정상 흐름을 끊는다.
-    prev_vpos.is_some_and(|cl| nv < cl && cl > 5000)
+    prev_line.is_some_and(|(start, bottom)| nv < start && start.max(bottom) > 5000)
 }
 
 /// 저장 사다리가 **쪽 위쪽 띠에서 다시 시작**하는가 — 쪽 경계 되감김의 표지.
@@ -2755,6 +2762,25 @@ fn stored_rewind_boundary_matches_current_flow(
     // 되감김과 새 쪽 상단이라는 소유 조건은 호출부에서 그대로 확인한다.
     let tolerance_px = hwpunit_to_px(advance_hu.max(0), dpi) * 1.5;
     (current_height_px - stored_end_px).abs() <= tolerance_px
+}
+
+/// 값이 있는 가장 가까운 앞 문단의 마지막 저장 줄 `(vpos, vpos + line_height)`.
+fn preceding_stored_line_span(paragraphs: &[Paragraph], para_idx: usize) -> Option<(i32, i32)> {
+    paragraphs[..para_idx.min(paragraphs.len())]
+        .iter()
+        .rev()
+        .find_map(|p| {
+            p.line_segs
+                .iter()
+                .rev()
+                .find(|s| !is_synthetic_line_seg(s))
+                .map(|s| {
+                    (
+                        s.vertical_pos,
+                        s.vertical_pos.saturating_add(s.line_height.max(0)),
+                    )
+                })
+        })
 }
 
 /// 값이 있는 가장 가까운 앞 문단의 마지막 저장 `vpos` — 직전 문단이 비어 line_segs 가
