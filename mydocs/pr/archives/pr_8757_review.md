@@ -49,6 +49,6 @@
 - [공개 self-review](https://github.com/edwardkim/rhwp/pull/8757#pullrequestreview-5815557037)와 [정식 CI·병합 증거](../assets/pr8757/ci-results.json)를 남겼다. Native CI 실제 선택 검사는 237건 통과이며 로컬 공식 전체 Native 검사 수와 구분한다.
 - 로컬 devel을 같은 merge SHA로 fast-forward했다. 다른 작업의 `pr-8296-seal-pua` worktree는 유지했다.
 - [duration 갱신](https://github.com/edwardkim/rhwp/actions/runs/42425380606)은 성공했다. B–E의 실제 attempt 1 측정을 확인하고 메타데이터 commit `767b5c82509bf83339f744ae66403a95b7295118`로 게시했다. 검증 CI를 병합 후 다시 실행하지 않았다.
-- CI 정의 변경의 옵션 2에 따라 이 검토·오늘할일·CI 증거를 `docs/pr-8757-release-record`에 준비했다. 별도 기록 PR의 원격 제출·CI·머지는 아직 수행하지 않았다.
-- #8745는 보호 브랜치 전체 보안 분석이 남아 OPEN이다. main 승격·수동 검증 workflow·태그·실제 게시·crates.io는 별도 절차다.
+- CI 정의 변경의 옵션 2에 따라 이 검토·오늘할일·CI 증거를 별도 [PR #8760](https://github.com/edwardkim/rhwp/pull/8760)에 포함했다. 0.9.0 사용자 문서와 crates.io 초회 배포 범위 보완도 같은 PR에 반영했다. #8760 제출 head의 Full CI는 성공했으며 해당 PR의 [self-review](pr_8760_review.md)와 trailing head 검증·머지 후 종료 정리를 진행한다.
+- #8745는 보호 브랜치 전체 보안 분석이 남아 OPEN이다. crates.io 초회 배포는 2026-11-08 결정에 따라 0.9.0 릴리즈 범위에 포함됐다. main 승격·수동 검증 workflow·태그·실제 게시 실행은 최종 릴리즈 절차로 진행한다.
 - 후속 기록이 진행 중이므로 임시 `output/`과 원 PR branch는 아직 종료 정리하지 않았다. 기록 반영 완료 후 규정에 따라 정리한다.
