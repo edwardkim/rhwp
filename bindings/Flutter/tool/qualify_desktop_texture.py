@@ -303,7 +303,8 @@ def compare_pixels(expected, captured, width, height):
             if any(not min(item[channel] for item in neighbors) - 1 <= sample[channel]
                        <= max(item[channel] for item in neighbors) + 1
                    for channel in range(3)):
-                raise ValueError("compositor color escaped the CPU AA envelope")
+                raise ValueError(f"compositor color escaped the CPU AA envelope ({x},{y}): "
+                                 f"CPU {tuple(color)}, display {tuple(sample)}")
     if uniform < width * height // 4:
         raise ValueError("oracle has too few independent uniform interior controls")
     return {"uniformInteriorPixels": uniform, "aaEdgeDifferentPixels": edge_differences,

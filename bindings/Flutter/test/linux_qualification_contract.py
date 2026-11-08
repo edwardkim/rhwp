@@ -2,11 +2,14 @@
 """Portable rejection controls; these are not actual GTK/GL execution evidence."""
 
 from pathlib import Path
+import os
+import shutil
 import sys
+import tempfile
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tool"))
-from qualify_linux_texture import stage_name, validate_result, validate_stage
+from qualify_linux_texture import stage_name, validate_result, validate_stage, verify_loaded_artifacts
 
 
 def stage(index=1):
@@ -116,6 +119,21 @@ class LinuxQualification(unittest.TestCase):
             validate_result(value, nonce="owned", frames=4)
         value["continuousPresentationSupported"] = False
         validate_result(value, nonce="owned", frames=4)
+
+    @unittest.skipUnless(sys.platform == "linux", "requires actual Linux process mappings")
+    def test_loaded_elf_identity_uses_the_actual_process(self):
+        executable = Path("/proc/self/exe").resolve()
+        actual = verify_loaded_artifacts(os.getpid(), {"runner": executable})
+        self.assertEqual(set(actual), {"runner"})
+
+    @unittest.skipUnless(sys.platform == "linux", "requires actual Linux process mappings")
+    def test_identical_module_bytes_in_another_inode_are_not_the_loaded_artifact(self):
+        executable = Path("/proc/self/exe").resolve()
+        with tempfile.TemporaryDirectory() as directory:
+            other = Path(directory) / executable.name
+            shutil.copyfile(executable, other)
+            with self.assertRaises(ValueError):
+                verify_loaded_artifacts(os.getpid(), {"engineRuntime": other})
 
 
 if __name__ == "__main__":

@@ -71,6 +71,38 @@ def validate_result(value, *, nonce, frames):
             raise ValueError("Native owner teardown was not observed: " + key)
 
 
+def verify_loaded_artifacts(pid, files):
+    """Bind ELF mappings to the files whose hashes the receipt verified.
+
+    LD_LIBRARY_PATH can otherwise select an identically named engine/plugin
+    outside the immutable bundle. Check actual kernel device/inode identities.
+    """
+    with (Path("/proc") / str(pid) / "maps").open("rb") as source:
+        data = source.read(2 * 1024 * 1024 + 1)
+    if len(data) > 2 * 1024 * 1024:
+        raise ValueError("process mapping evidence exceeds its bound")
+    expected = {key: Path(path).resolve(strict=True) for key, path in files.items()}
+    if "runner" in expected and not os.path.samefile(Path("/proc") / str(pid) / "exe", expected["runner"]):
+        raise ValueError("launched PID is not the recorded runner")
+    found = {}
+    for line in data.decode("utf-8", errors="strict").splitlines():
+        fields = line.split(None, 5)
+        if len(fields) != 6 or not fields[5].startswith("/"):
+            continue
+        mapped = fields[5]
+        for key, path in expected.items():
+            if Path(mapped.removesuffix(" (deleted)")).name != path.name:
+                continue
+            metadata = path.stat()
+            device = f"{os.major(metadata.st_dev):02x}:{os.minor(metadata.st_dev):02x}"
+            if mapped.endswith(" (deleted)") or fields[3] != device or int(fields[4]) != metadata.st_ino:
+                raise ValueError("loaded module differs from its build artifact: " + key)
+            found[key] = {"path": mapped, "device": device, "inode": metadata.st_ino}
+    if set(found) != set(expected):
+        raise ValueError("recorded artifacts are not all mapped by the actual runner")
+    return found
+
+
 class X11Compositor:
     """Sample visible root-window pixels, with PID and occlusion checks."""
 
@@ -292,13 +324,19 @@ def main():
                 if index >= 2 and cpu_hash == state["stages"][-1]["cpuSha256"]:
                     raise ValueError("the held publication did not change observable CPU pixels")
                 captured = compositor.capture(width, height, offset)
+                # Preserve the real pixels even when the strict comparison
+                # rejects them, so renderer failures remain independently diagnosable.
+                (output / f"compositor-{index}.rgba").write_bytes(captured)
                 comparison = compare_pixels(expected, captured, width, height)
                 time.sleep(.1)
                 if compositor.capture(width, height, offset) != captured:
                     raise ValueError("visible compositor pixels changed during a held publication")
-                (output / f"compositor-{index}.rgba").write_bytes(captured)
                 state["stages"].append({"stage": stage, "comparison": comparison, "cpuSha256": cpu_hash,
                                         "compositorSha256": hashlib.sha256(captured).hexdigest()})
+                if index in (1, args.frames):
+                    loaded = verify_loaded_artifacts(process.pid, {
+                        key: files[key] for key in ("runner", "native", "dispatcher", "plugin", "engineRuntime")})
+                    state.setdefault("loadedArtifacts", []).append({"index": index, "modules": loaded})
                 write_json(output / "receipt.json", state)
                 write_json(output / f"ack-{index}.json", {"protocol": 1, "nonce": nonce, "index": index})
                 previous = stage["stamp"]

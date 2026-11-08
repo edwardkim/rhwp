@@ -21,6 +21,8 @@ python3 -B bindings/Flutter/tool/build_linux_probe.py \
 
 빌드 영수증은 원본/복사본 Dart·C·C++·CMake 입력, 실제 SDK header, Flutter/engine revision,
 Native·dispatcher·plugin·engine·runner·공개 입력 및 Debug kernel/data 전체 bundle의 hash를 고정한다.
+첫/마지막 표시 중 `/proc/<pid>/maps`의 실제 ELF device/inode도 대조하므로 `LD_LIBRARY_PATH`가
+bundle 밖의 같은 이름의 다른 engine/plugin을 선택한 실행은 통과하지 않는다.
 출력은 checkout 외부에 두며 기존 경로를 덮어쓰지 않는다. 각 명령은 시작부터 private log·PID·종료
 상태를 기록하고 deadline을 넘으면 소유 process group을 정리한다. 원본 소스는 빌드 중 유지한다.
 
