@@ -211,3 +211,46 @@ flutter test --no-pub test/native_file_store_test.dart test/native_file_store_in
 GPU 종료 Future가 반환되어도 `retirePending`이면 view와 owner를 유지한다.
 예제의 작은 경로·결정 UI와 실제 Native 저장/복구/종료 검사는
 [문서 수명 계약](DOCUMENT_LIFECYCLE.md)을 따른다. OS 창 닫기 hook과 제품 앱은 범위에 포함하지 않는다.
+
+## 다중 페이지 CPU 참조 viewport (P105)
+
+`NativePagedDocumentView(document: document, controller: controller)`는 문서당 하나의
+view generation으로 보이는 페이지 영역만 순서대로 요청한다. `NativePagedViewportController`의
+`scrollTo`, `jumpToPage`, `setZoom`과 휠/수평 휠, Ctrl/Cmd+휠을 지원한다. `editable:false`는
+읽기 전용이며 기본값은 기존 단일 `NativeEditorController`를 통한 입력이다. `onViewportReady`는
+현재 viewport의 디코딩 완료를 알리며 Flutter/GPU의 소비 완료를 뜻하지 않는다.
+
+페이지 크기는 Native가 반환한 값을 사용하고 조판하지 않는다. 페이지 metadata는 최대 256개,
+보이는 영역은 최대 4쪽이며, 보이는 raster 계획과 게시할 decoded batch는 각각 16 MiB로 제한한다.
+디코딩 중 입력 RGBA와 codec의 임시 복사본도 존재하며 이 수치는 process RSS나 전체 GPU 메모리 한도가 아니다.
+현재 batch를 제거한 paint frame에서 이미지를 해제한 뒤 다음 decode를 시작하므로 스크롤로
+미해제 image batch가 쌓이지 않는다. 렌더링은 한 번에 하나이며 새 탐색은 진행 중인 tiled
+렌더를 기존 Native 취소 경로로 취소하고 가장 최근 viewport만 남긴다. 제한을 넘는 요청은
+본문 일부를 조용히 생략하지 않고 진단으로 거부한다.
+
+페이지 배치·포인터 hit-test·선택/caret overlay·IME candidate는 같은 `NativePageViewport`
+변환을 사용한다. DPR은 raster 해상도에만 적용한다. Native caret가 화면 밖으로 이동하면
+같은 배치 결과로 스크롤하고, 새 문서 ID는 이전 문서의 탐색 위치를 초기화한다.
+이 뷰는 CPU 참조 경로다. 기존 단일 페이지 `NativeTextureView`와 별도로 사용하며,
+여러 페이지의 GPU consumer 완료·texture 재사용이 검증됐다고 표시하지 않는다.
+
+```bash
+flutter test --no-pub test/native_multipage_view_test.dart
+flutter test --no-pub test/native_multipage_integration_test.dart \
+  --dart-define=RHWP_OWNER_LIBRARY=/absolute/path/librhwp_flutter_owner.so \
+  --dart-define=RHWP_NATIVE_LIBRARY=/absolute/path/librhwp_native_ffi.so \
+  --dart-define=RHWP_MULTIPAGE_DOCUMENT=/absolute/path/radial-corner-print-contract.hwpx
+```
+
+실제 integration 검사는 기존 공개 6쪽 입력의 두 번째 페이지를 Flutter에서 표시한 pixels와
+동일한 Native CPU 영역 출력으로 대조한다. 합성 geometry/worker 검사와 구분하며, 한컴 독립
+전쪽 비교·실물 OS IME/AT 및 GPU qualification은 별도 범위다.
+
+기본 example은 CPU 다중 페이지 뷰와 최소 이전/다음·확대/축소 조작을 사용한다.
+`RHWP_GPU=true`로 GPU controller가 연결되면 기존 단일 페이지 texture 참조 경로를 유지한다.
+다중 페이지 뷰도 `onControllerChanged`로 같은 view-owned editor를 전달하므로 P104 lifecycle은
+문서 교체 전에 입력 큐를 기다릴 수 있다.
+
+다른 `NativeDocument` owner에 viewport/controller를 다시 연결하면 이전 문서의 탐색 위치와
+대기 중 page jump를 초기화한다. 같은 문서가 재조판되어 쪽수가 줄면 대기 jump를 새 쪽수에
+맞춰 처리하며, 이전 page index 때문에 viewport 오류가 고정되지 않게 한다.

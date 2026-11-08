@@ -13,12 +13,16 @@ class NativeReferenceApp extends StatefulWidget {
 
 class _NativeReferenceAppState extends State<NativeReferenceApp> {
   final _path = TextEditingController();
+  final _pages = NativePagedViewportController();
   NativeDocument? _document;
   NativeTextureController? _texture;
   NativeDocumentLifecycle? _lifecycle;
   NativeEditorController? _editor;
   String? _error;
   bool _busy = true;
+  bool get _usesGpuViewport =>
+      _texture != null &&
+      _document?.transport.capabilities['atomicImeEdits'] == true;
 
   @override
   void initState() {
@@ -34,6 +38,8 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
     _lifecycle = null;
     _texture = null;
     _editor = null;
+    _pages.scrollTo(0, horizontal: 0);
+    _pages.setZoom(1);
     setState(() {
       _busy = true;
       _error = null;
@@ -295,6 +301,47 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
             ],
           ),
         if (_lifecycle?.sourcePath != null) Text(_lifecycle!.sourcePath!),
+        if (_document != null && !_usesGpuViewport)
+          Wrap(
+            spacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              TextButton(
+                onPressed: _lifecycle?.isBusy == true || _pages.currentPage == 0
+                    ? null
+                    : () => _pages.jumpToPage(_pages.currentPage - 1),
+                child: const Text('이전 쪽'),
+              ),
+              Text(
+                '${_pages.currentPage + 1} / ${_document!.info?.pageCount ?? 0}쪽',
+              ),
+              TextButton(
+                onPressed:
+                    _lifecycle?.isBusy == true ||
+                        _pages.currentPage + 1 >= _pages.pageCount
+                    ? null
+                    : () => _pages.jumpToPage(_pages.currentPage + 1),
+                child: const Text('다음 쪽'),
+              ),
+              TextButton(
+                onPressed: _lifecycle?.isBusy == true || _pages.zoom <= .25
+                    ? null
+                    : () => _pages.setZoom(
+                        (_pages.zoom / 1.25).clamp(.25, 4.0).toDouble(),
+                      ),
+                child: const Text('축소'),
+              ),
+              Text('${(_pages.zoom * 100).round()}%'),
+              TextButton(
+                onPressed: _lifecycle?.isBusy == true || _pages.zoom >= 4
+                    ? null
+                    : () => _pages.setZoom(
+                        (_pages.zoom * 1.25).clamp(.25, 4.0).toDouble(),
+                      ),
+                child: const Text('확대'),
+              ),
+            ],
+          ),
         if (_document?.info?.isDirty == true) const Text('저장하지 않은 변경 사항'),
         if (_busy || _lifecycle?.isBusy == true)
           const LinearProgressIndicator(),
@@ -306,9 +353,7 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
               ? const SizedBox.shrink()
               : AbsorbPointer(
                   absorbing: _lifecycle?.isBusy == true,
-                  child:
-                      _document!.transport.capabilities['atomicImeEdits'] ==
-                          true
+                  child: _usesGpuViewport
                       ? NativeEditorView(
                           document: _document!,
                           onControllerChanged: (editor) => _editor = editor,
@@ -327,7 +372,19 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
                                   cpuFallback: cpuFallback,
                                 ),
                         )
-                      : NativeDocumentView(document: _document!),
+                      : NativePagedDocumentView(
+                          document: _document!,
+                          controller: _pages,
+                          editable:
+                              _document!
+                                  .transport
+                                  .capabilities['atomicImeEdits'] ==
+                              true,
+                          onControllerChanged: (editor) => _editor = editor,
+                          onViewportReady: (_) {
+                            if (mounted) setState(() {});
+                          },
+                        ),
                 ),
         ),
       ],
@@ -337,6 +394,7 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
   @override
   void dispose() {
     _path.dispose();
+    _pages.dispose();
     _lifecycle?.removeListener(_lifecycleChanged);
     _lifecycle?.dispose();
     final document = _document;
