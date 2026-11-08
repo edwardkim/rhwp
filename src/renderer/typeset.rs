@@ -2729,6 +2729,18 @@ fn stored_rewind_boundary_matches_current_flow(
     else {
         return false;
     };
+    // [#8786] 저장 끝과 현재 문단 사이에 재조판 줄(합성 줄)로 소비한 문단이 있으면 지금
+    // 흐름 위치는 그 문단들의 재조판 높이를 담는다. 저장 끝은 그 앞 지점이라 같은 경계를
+    // 가리키지 않는다(36431892 2쪽: 저장 끝 문단 15 = 817.9px, 재조판 문단 16·17 소비 뒤
+    // 흐름 838.6px 이 한 줄 반 허용치 안에서 우연히 맞아 낡은 되감김이 쪽을 끊었다).
+    if paragraphs[owner + 1..para_idx.min(paragraphs.len())]
+        .iter()
+        .any(|between| {
+            !between.line_segs.is_empty() && crate::renderer::para_has_no_stored_line_segs(between)
+        })
+    {
+        return false;
+    }
     // 이전 물리 쪽의 저장 끝과 현재 쪽의 재조판 끝은 숫자가 같아도 같은 경계가 아니다.
     // 저장 끝을 제공한 실제 소유자가 현재 frame에서 소비됐는지 먼저 확인한다.
     if !current_items
