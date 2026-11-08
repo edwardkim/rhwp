@@ -242,3 +242,5 @@ issue8677/1411000-201000007_final_report.hwp	1
 # 수정 후의 값이 같다 — 68쪽 본문 줄이 바닥 아래로 18.6px 넘치는 기존 형상이며 표 분할 축(#8735) 범위다.
 issue8732/1741000-202200045_second_interim_report.hwp	1
 issue8786/reflowed_gap_stored_rewind.hwpx	1
+# #8778 신규 공개 샘플(결재문서 36495398 축소본, 한/글 2020 저장): 1쪽 결재 표(첫 구역, 이 PR 이 바꾸지 않는 쪽)가 본문 바닥 아래로 47.6px 넘는다 — 수정 전후 값이 같고, 같은 쪽 한컴 engine 2020 Print 대조 silhouette 100.00%(한/글도 아래 여백까지 그린다).
+issue8778/36495398-split-row-segments-reduced.hwpx	1
