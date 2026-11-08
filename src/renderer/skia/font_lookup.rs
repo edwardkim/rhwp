@@ -557,6 +557,11 @@ fn matching_system_programs(font_mgr: &FontMgr, family: &str, style: FontStyle) 
                     return None;
                 }
                 let candidate = set.new_typeface(index)?;
+                // Fontconfig의 스타일 목록에는 pattern 대체 계열도 섞인다.
+                // 목록의 요청 이름을 실제 프로그램의 family 선언으로 간주하지 않는다.
+                if !typeface_declares_family(&candidate, family) {
+                    return None;
+                }
                 let cff = typeface_is_cff(&candidate);
                 Some((candidate, cff))
             })
@@ -624,7 +629,10 @@ pub(super) fn match_system_family_style(
                         return None;
                     }
                     let candidate = set.new_typeface(index)?;
-                    typeface_is_truetype(&candidate).then_some(candidate)
+                    // TTF 우선순위는 요청한 같은 family의 프로그램 사이에만 적용한다.
+                    (typeface_declares_family(&candidate, family)
+                        && typeface_is_truetype(&candidate))
+                    .then_some(candidate)
                 });
                 selected.unwrap_or(original)
             })
