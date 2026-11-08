@@ -10,14 +10,23 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tool"))
 from qualify_linux_texture import stage_name, validate_result, validate_stage, verify_loaded_artifacts
+from qualify_desktop_texture import compare_pixels, validate_source_reference
 
 
 def stage(index=1):
     stamp = {"documentId": 1, "revision": 0, "fontGeneration": 0,
              "viewGeneration": index, "deviceGeneration": 1, "deviceScale": 1}
+    def geometry(scale):
+        return {"snapshot": 7, "stamp": dict(stamp), "coordinateSpace": "viewportPixels",
+                "viewport": {"width": 320 * scale, "height": 240 * scale},
+                "placement": {"scale": .4 * scale, "originX": 0, "originY": 0},
+                "descriptor": {"width": 320 * scale, "height": 240 * scale,
+                               "stride": 320 * scale * 4, "pixelFormat": "rgba8Premultiplied",
+                               "colorSpace": "srgb", "origin": "topLeft"}}
     return {"protocol": 1, "nonce": "owned", "pid": 42, "platform": "linux", "index": index,
             "stage": stage_name(index), "width": 320, "height": 240,
             "physicalOffset": [16, 16], "deviceScale": 1, "stamp": stamp,
+            "cpuReferenceScale": 4, "geometryProof": {"cpu": geometry(1), "reference": geometry(4)},
             "nativeStatus": {"renderedStamp": dict(stamp), "framesSubmitted": index,
                              "wholeFrameReadbacks": 0, "abandonedTargets": 0,
                              "orphanedOwners": 0, "orphanedRasterSlots": 0,
@@ -61,6 +70,31 @@ class LinuxQualification(unittest.TestCase):
                 value["stamp"][key] = replacement
                 with self.assertRaises(ValueError):
                     validate_stage(value, nonce="owned", index=1, pid=42)
+
+    def test_reference_keeps_the_same_snapshot_stamp_and_scaled_geometry(self):
+        for field, change in (("snapshot", 8), ("snapshot", True), ("coordinateSpace", "pagePixels")):
+            with self.subTest(field=field, value=change):
+                value = stage()
+                value["geometryProof"]["reference"][field] = change
+                with self.assertRaises(ValueError):
+                    validate_source_reference(value, 320, 240)
+        for field, change in (("scale", 1.7), ("originX", 1), ("originY", float("nan"))):
+            with self.subTest(field=field):
+                value = stage()
+                value["geometryProof"]["reference"]["placement"][field] = change
+                with self.assertRaises(ValueError):
+                    validate_source_reference(value, 320, 240)
+        value = stage()
+        value["geometryProof"]["reference"]["stamp"]["deviceScale"] = 4
+        with self.assertRaises(ValueError):
+            validate_source_reference(value, 320, 240)
+
+    def test_reference_unavailable_is_closed_at_native_bounds(self):
+        for scale, width, height in ((1, 320, 240), (4, 4096, 240), (2, 2048, 1024)):
+            value = stage()
+            value["cpuReferenceScale"] = scale
+            with self.assertRaisesRegex(ValueError, "referenceUnavailable"):
+                validate_source_reference(value, width, height)
 
     def test_readback_and_orphan_retirement_are_failures(self):
         for key in ("wholeFrameReadbacks", "abandonedTargets", "orphanedOwners",
@@ -134,6 +168,87 @@ class LinuxQualification(unittest.TestCase):
             shutil.copyfile(executable, other)
             with self.assertRaises(ValueError):
                 verify_loaded_artifacts(os.getpid(), {"engineRuntime": other})
+
+
+class IndependentSourcePalette(unittest.TestCase):
+    def setUp(self):
+        self.width = self.height = 16
+        self.low = bytearray([255] * (16 * 16 * 4))
+        self.reference = bytearray([255] * (64 * 64 * 4))
+        for y in range(8, 14):
+            for x in range(8, 14):
+                self.put(self.low, 16, x, y, (40, 40, 40, 255))
+        for y in range(32, 56):
+            for x in range(32, 56):
+                self.put(self.reference, 64, x, y, (40, 40, 40, 255))
+        # The independently specified source stripe has a pure-blue region.
+        # Its low-res AA samples need not contain that source color at all.
+        for y in range(2, 14):
+            self.put(self.low, 16, 3, y, (64, 64, 255, 255))
+        for y in range(8, 56):
+            for x in range(12, 15):
+                self.put(self.reference, 64, x, y, (0, 0, 255, 255))
+        self.actual = bytearray(self.low)
+        for y in range(2, 14):
+            self.put(self.actual, 16, 3, y, (32, 32, 255, 255))
+        self.low = bytes(self.low)
+        self.reference = bytes(self.reference)
+
+    @staticmethod
+    def put(data, width, x, y, color):
+        offset = (y * width + x) * 4
+        data[offset:offset + 4] = bytes(color)
+
+    def compare(self, candidate):
+        return compare_pixels(self.low, candidate, 16, 16,
+                              source_reference=self.reference, reference_scale=4)
+
+    def test_independent_source_supports_coverage_absent_from_low_resolution_samples(self):
+        with self.assertRaises(ValueError):
+            compare_pixels(self.low, self.actual, 16, 16)
+        result = self.compare(self.actual)
+        self.assertEqual(result["sourceReferenceScale"], 4)
+        self.assertGreater(result["aaEdgeDifferentPixels"], 0)
+
+    def test_color_correlation_rejects_hues_inside_the_source_rgb_box(self):
+        for color in ((255, 0, 255, 255), (0, 255, 255, 255)):
+            with self.subTest(color=color):
+                candidate = bytearray(self.actual)
+                self.put(candidate, 16, 3, 6, color)
+                with self.assertRaises(ValueError):
+                    self.compare(candidate)
+
+    def test_uniform_interior_and_outside_edge_halo_remain_strict(self):
+        for x, y, color in ((10, 10, (0, 255, 0, 255)), (1, 1, (0, 0, 255, 255))):
+            candidate = bytearray(self.actual)
+            self.put(candidate, 16, x, y, color)
+            with self.assertRaises(ValueError):
+                self.compare(candidate)
+
+    def test_one_and_two_pixel_translation_and_stale_image_are_rejected(self):
+        for dx in (1, 2, 4):
+            with self.subTest(dx=dx):
+                candidate = bytearray([255] * len(self.actual))
+                for y in range(16):
+                    start = y * 16 * 4
+                    candidate[start + dx * 4:start + 64] = self.actual[start:start + (16 - dx) * 4]
+                with self.assertRaises(ValueError):
+                    self.compare(candidate)
+
+    def test_blank_cover_is_not_source_color_support(self):
+        with self.assertRaises(ValueError):
+            self.compare(bytes([255] * len(self.actual)))
+
+    def test_unavailable_reference_is_not_a_fallback_to_a_weaker_comparison(self):
+        with self.assertRaisesRegex(ValueError, "referenceUnavailable"):
+            compare_pixels(self.low, self.actual, 16, 16, source_reference=b"", reference_scale=4)
+
+    def test_ambiguous_integer_alignment_is_not_qualified(self):
+        low = self.low[9 * 64:10 * 64] * 16
+        actual = self.actual[9 * 64:10 * 64] * 16
+        reference = self.reference[36 * 256:37 * 256] * 64
+        with self.assertRaisesRegex(ValueError, "alignment.*ambiguous"):
+            compare_pixels(low, actual, 16, 16, source_reference=reference, reference_scale=4)
 
 
 if __name__ == "__main__":

@@ -43,10 +43,25 @@ DISPLAY=:99 python3 -B bindings/Flutter/tool/qualify_linux_texture.py \
 
 첫 표시→실제 편집→resize 이후 viewport 위치를 바꿔 최대 64회, 기본 32회의 서로 다른 publication을
 관측한다. 매번 nonce·실행 PID·문서/revision/font/view/device/DPR 전체 stamp를 확인하고 Native CPU와
-실제 root 화면의 pixel을 비교한다. 균일한 내부 영역은 채널 오차 1 이하, 나머지 차이는 CPU 경계의
-1 pixel 영역과 색상 범위 안에 있어야 한다. 빈 cover·오래된 표시·의미 있는 내용 누락은 실패다.
+실제 root 화면의 pixel을 비교한다. 균일한 내부 영역은 채널 오차 1 이하이며, 나머지 차이는 CPU
+경계의 1 pixel 영역 안에 있어야 한다. 빈 cover·오래된 표시·의미 있는 내용 누락은 실패다.
 revision과 각 후속 viewport의 CPU pixel hash도 달라야 한다. held publication을 두 번 수집해 화면의
 안정성을 확인한 뒤에만 다음 frame을 허용한다.
+
+얇은 stroke에서는 저해상도 CPU의 혼합색 표본에 원래 source의 순수색이 하나도 없을 수 있다.
+이 표본의 RGB 최솟값/최댓값만 쓰면 정상적인 GPU coverage를 잘못 거절한다. 이를 임의의 색상
+오차 상향으로 대신하지 않는다. 같은 snapshot/full stamp를 configure/capture 교체 없이 2–4배 CPU
+해상도로 독립 재생하고, viewport와 placement만 같은 비율로 확대한다. geometryProof의 실제 CPU
+descriptor·snapshot·stamp·비율을 대조하며 4096 dimension·4 MP·16 MiB와 Native scale/좌표 한도 안에서
+가장 큰 배율을 선택한다. 2배도 불가능하면 `referenceUnavailable`로 실패한다.
+
+AA 경계 색상은 그 독립 source의 1 pixel 주변 palette에서 13개 고정 RGB 방향
+(`{-1,0,1}³`의 0·반대 방향 중복 제외)의 지원 범위 안에 있어야 한다. 채널별 양자화 1을 방향의 L1
+크기로 투영하며, 단순 RGB 상자가 허용할 수 있는 source에 없는 색상 상관관계도 거절한다. GPU
+캡처에서 기대 색상이나 보정값을 만들지 않는다. 추가로 CPU 경계 표본의 RGB 오차가 3×3 정수 이동 중
+zero-shift에서 유일하게 가장 작아야 한다. 더 나은 이동이나 동률로 모호한 정렬은 실패한다. 기존
+uniform interior 한도와 1 pixel 경계 지원은 유지한다. reference가 없는 기존 Windows 수집기의 엄격한
+계약은 그대로이며 Linux 수집기는 reference 누락 시 약한 비교로 fallback하지 않는다.
 
 Linux의 기존 `RasterRegistry`는 같은 raster OS thread/current context에서 front/back target을
 사용한다. 이번 도구는 새 범용 GPU retirement API를 만드는 것이 아니라 그 실제 consumer 표시를
@@ -68,5 +83,6 @@ python3 -B test/desktop_qualification_contract.py
 ```
 
 위 portable 검사는 잘못된 nonce/PID/stamp, 실제 raster 진행/driver identity 누락, whole-frame
-readback·orphan 자원·등록 해제/Native 정리 누락을 거절한다. Linux SDK나 실제 compositor를 실행한
+readback·orphan 자원·등록 해제/Native 정리 누락, source에 없는 hue·경계 밖 halo·1/2 pixel 이동·
+잘못된 단색·빈 cover·stale 표시와 모호한 정렬을 거절한다. Linux SDK나 실제 compositor를 실행한
 결과와 구분한다. 실제 표시 성공은 별도 target 실행 영수증으로 확인한다.

@@ -36,6 +36,7 @@ class DesktopConsumerOracle {
   late final _RequestDart _request;
   late final _FreeDart _free;
   late final _DataDart _data;
+  Map<String, Object?>? lastGeometry;
 
   Map<String, Object?> call(Map<String, Object?> request) {
     final bytes = utf8.encode(jsonEncode(request));
@@ -73,7 +74,11 @@ class DesktopConsumerOracle {
     required int width,
     required int height,
   }) {
-    _require(width * height <= 4 * 1024 * 1024, 'oracle pixel bound');
+    lastGeometry = null;
+    _require(
+      width > 0 && height > 0 && width * height <= 4 * 1024 * 1024,
+      'oracle pixel bound',
+    );
     final frame = call({
       'op': 'renderCpuBatch',
       'stamp': stamp.toJson(),
@@ -117,7 +122,20 @@ class DesktopConsumerOracle {
         pointer != nullptr && length.value == width * height * 4,
         'invalid CPU oracle lease span',
       );
-      return Uint8List.fromList(pointer.asTypedList(length.value));
+      final copied = Uint8List.fromList(pointer.asTypedList(length.value));
+      lastGeometry = {
+        'snapshot': snapshot,
+        'stamp': stamp.toJson(),
+        'viewport': {'width': width, 'height': height},
+        'placement': {
+          'scale': viewport.zoom * dpr,
+          'originX': viewport.origin.dx * dpr,
+          'originY': viewport.origin.dy * dpr,
+        },
+        'coordinateSpace': info['coordinateSpace'],
+        'descriptor': Map<String, Object?>.from(descriptor),
+      };
+      return copied;
     } finally {
       calloc.free(length);
       try {
@@ -182,6 +200,7 @@ class _ProbeState extends State<_Probe> {
   var _physicalSize = const Size(320, 240);
   var _stage = 'setup';
   var _frameCount = 3;
+  var _sourceReferenceEnabled = false;
   @override
   void initState() {
     super.initState();
@@ -260,13 +279,32 @@ class _ProbeState extends State<_Probe> {
       width: _physicalSize.width.toInt(),
       height: _physicalSize.height.toInt(),
     );
+    final cpuGeometry = _oracle!.lastGeometry!;
     await File('${_output.path}/cpu-$index.rgba')
         .writeAsBytes(pixels, flush: true);
-    if (Platform.isLinux) {
+    var referenceScale = 1;
+    Map<String, Object?>? referenceGeometry;
+    if (_sourceReferenceEnabled) {
       // The same immutable snapshot and complete stamp are replayed directly.
       // Only target/placement geometry is scaled; configure/capture is not run.
-      const factor = 4;
       final view = _viewport!;
+      for (final factor in [4, 3, 2]) {
+        if (_physicalSize.width * factor <= 4096 &&
+            _physicalSize.height * factor <= 4096 &&
+            _physicalSize.width * _physicalSize.height * factor * factor <=
+                4 * 1024 * 1024 &&
+            view.zoom * dpr * factor <= 64 &&
+            (view.origin.dx * dpr * factor).abs() <= 16777216 &&
+            (view.origin.dy * dpr * factor).abs() <= 16777216) {
+          referenceScale = factor;
+          break;
+        }
+      }
+      _require(
+        referenceScale > 1,
+        'referenceUnavailable: CPU geometry/16 MiB cap',
+      );
+      final factor = referenceScale;
       final reference = _oracle!.pixels(
         snapshot: metadata.snapshot!,
         stamp: stamp,
@@ -284,6 +322,7 @@ class _ProbeState extends State<_Probe> {
         await metadata.inner.snapshotCheck(metadata.snapshot!, stamp),
         'source changed during independent CPU reference replay',
       );
+      referenceGeometry = _oracle!.lastGeometry!;
       await File('${_output.path}/cpu-reference-$index.rgba')
           .writeAsBytes(reference, flush: true);
     }
@@ -307,7 +346,10 @@ class _ProbeState extends State<_Probe> {
       'deviceScale': dpr,
       'stamp': stamp.toJson(),
       'limits': status['limits'],
-      if (Platform.isLinux) 'cpuReferenceScale': 4,
+      if (_sourceReferenceEnabled) ...{
+        'cpuReferenceScale': referenceScale,
+        'geometryProof': {'cpu': cpuGeometry, 'reference': referenceGeometry},
+      },
       if (Platform.isLinux) 'nativeStatus': status,
     });
     final ack = File('${_output.path}/ack-$index.json');
@@ -340,7 +382,16 @@ class _ProbeState extends State<_Probe> {
         'invalid driver config',
       );
       _nonce = config['nonce']! as String;
-      _frameCount = (config['frames'] as int?) ?? 3;
+      _sourceReferenceEnabled =
+          (config['cpuReference'] as bool?) ?? Platform.isLinux;
+      _frameCount =
+          (config['frameCount'] as int?) ?? (config['frames'] as int?) ?? 3;
+      _require(
+        config['frameCount'] == null ||
+            config['frames'] == null ||
+            config['frameCount'] == config['frames'],
+        'ambiguous probe frame count',
+      );
       _require(
         Platform.isLinux
             ? _frameCount >= 3 && _frameCount <= 64
@@ -378,7 +429,7 @@ class _ProbeState extends State<_Probe> {
       });
       final metadata = _metadata = _ObservedPresentation(
         await NativePresentation.connect(nativeLibrary: native),
-        maxChecks: Platform.isLinux ? 8192 : 1024,
+        maxChecks: _frameCount > 4 ? 8192 : 1024,
       );
       _require(
         metadata.available,

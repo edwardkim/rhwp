@@ -19,6 +19,7 @@ from build_linux_probe import require_linux
 from check_macos_metal_sdk import stop_process_tree
 from qualify_desktop_texture import (MAX_BUILD_RECEIPT_BYTES, compare_pixels,
                                      read_json, validate_stage_identity,
+                                     validate_source_reference,
                                      verify_runtime_artifacts, verify_runtime_bundle,
                                      write_json)
 
@@ -30,6 +31,7 @@ def stage_name(index):
 def validate_stage(value, *, nonce, index, pid):
     dimensions = validate_stage_identity(value, nonce=nonce, index=index, pid=pid,
                                          platform="linux", name=stage_name(index))
+    validate_source_reference(value, dimensions[0], dimensions[1])
     status = value.get("nativeStatus")
     if not isinstance(status, dict) or status.get("renderedStamp") != value["stamp"]:
         raise ValueError("Linux publication did not bind its full rendered source stamp")
@@ -277,7 +279,8 @@ def main():
         raise ValueError("capture output must be outside the immutable runtime bundle")
     output.mkdir(mode=0o700, parents=True, exist_ok=False)
     nonce = uuid.uuid4().hex
-    config = {"protocol": 1, "nonce": nonce, "output": str(output), "frames": args.frames,
+    config = {"protocol": 1, "nonce": nonce, "output": str(output), "frameCount": args.frames,
+              "cpuReference": True,
               **{key: str(value) for key, value in files.items()}}
     write_json(output / "config.json", config)
     env = dict(os.environ, GDK_BACKEND="x11", GTK_CSD="0",
@@ -327,11 +330,19 @@ def main():
                 # Preserve the real pixels even when the strict comparison
                 # rejects them, so renderer failures remain independently diagnosable.
                 (output / f"compositor-{index}.rgba").write_bytes(captured)
-                comparison = compare_pixels(expected, captured, width, height)
+                scale = validate_source_reference(stage, width, height)
+                reference_path = output / f"cpu-reference-{index}.rgba"
+                reference_bytes = width * height * 4 * scale**2
+                if reference_path.stat().st_size != reference_bytes:
+                    raise ValueError("independent CPU source reference byte length changed")
+                source_reference = reference_path.read_bytes()
+                comparison = compare_pixels(expected, captured, width, height,
+                                            source_reference=source_reference, reference_scale=scale)
                 time.sleep(.1)
                 if compositor.capture(width, height, offset) != captured:
                     raise ValueError("visible compositor pixels changed during a held publication")
                 state["stages"].append({"stage": stage, "comparison": comparison, "cpuSha256": cpu_hash,
+                                        "sourceReferenceSha256": hashlib.sha256(source_reference).hexdigest(),
                                         "compositorSha256": hashlib.sha256(captured).hexdigest()})
                 if index in (1, args.frames):
                     loaded = verify_loaded_artifacts(process.pid, {
