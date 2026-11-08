@@ -111,13 +111,16 @@ int main() {
     require(visibility.covered());
     require(visibility.apply(1, true, false));
     require(visibility.apply(2, false, true) && !visibility.covered());
-    require(visibility.apply(3, true, false) && visibility.covered());
+    visibility.invalidate();  // New accepted work/stale source covers immediately.
+    require(visibility.covered() && visibility.serial() == 2);
     require(!visibility.apply(2, false, true) && visibility.covered());
-    require(!visibility.apply(4, false, false) && visibility.covered());
-    require(visibility.apply(5, false, true) && !visibility.covered());
+    require(visibility.apply(3, false, true) && !visibility.covered());
+    require(visibility.apply(4, true, false) && visibility.covered());
+    require(!visibility.apply(5, false, false) && visibility.covered());
+    require(visibility.apply(6, false, true) && !visibility.covered());
     require(!visibility.apply(3, true, false) && !visibility.covered());
     visibility.close();
-    require(visibility.covered() && !visibility.apply(6, false, true));
+    require(visibility.covered() && !visibility.apply(7, false, true));
   }
   std::cout << "CAMetalLayer lifecycle: 7 scenarios passed\n";
 }

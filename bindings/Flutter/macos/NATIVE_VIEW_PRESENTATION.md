@@ -75,6 +75,9 @@ texture registry ID가 아니라 native view state의 양수 handle입니다.
 새 요청은 기존 generation gate를 갱신하고 pending을 최신 요청 하나로 합칩니다.
 worker가 오래된 요청을 완료해도 전체 source와 gate를 다시 확인해 표시를 거절합니다.
 metadata `hasFrame`도 전체 Native stamp와 현재 gate를 검사합니다.
+수락한 새 요청과 오래된 프레임의 status 판정은 native view를 즉시 가립니다.
+이 내부 무효화는 visibility serial을 소모하지 않으며 새 full-stamp uncover가
+수락될 때까지 가림을 유지합니다.
 
 close는 먼저 새 요청을 막고 pending과 displayed lease를 해제합니다. native view를
 가리고 Metal layer를 분리하며, 진행 중인 Native GPU 작업과 같은 queue의

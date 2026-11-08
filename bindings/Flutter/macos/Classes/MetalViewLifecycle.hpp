@@ -34,6 +34,7 @@ class VisibilityGate {
     covered_ = covered || !currentFrameMatches;
     return covered || currentFrameMatches;
   }
+  void invalidate() { covered_ = true; }
   void close() { closed_ = true; covered_ = true; }
   uint64_t serial() const { return serial_; }
   bool covered() const { return covered_; }

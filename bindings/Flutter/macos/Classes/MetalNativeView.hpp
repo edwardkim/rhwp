@@ -430,6 +430,11 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
     auto job=ParseJob(arguments,owner->generation,false);
     if(!job){result([FlutterError errorWithCode:@"arguments" message:@"Invalid full stamp, placements, or bounded geometry." details:nil]);return;}
     const bool accepted=found!=_views.end()&&owner->enqueue(job);
+    if(accepted){
+      NSView* nativeView=nil;
+      {std::lock_guard<std::mutex> lock(owner->mutex);view->visibility.invalidate();nativeView=view->view;}
+      nativeView.hidden=YES;
+    }
     result(@{@"accepted":@(accepted),@"acceptedStamp":accepted?StampValue(job->stamp):@{},
       @"reason":accepted?@"accepted":@"notReadyOrStale",@"limits":MetalViewLimits()});return;
   }
@@ -445,6 +450,7 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
     const bool current=displayed&&api&&MetalJobCurrent(api,displayed);
     std::unique_lock<std::mutex> lock(owner->mutex);
     const bool hasFrame=current&&!owner->closed&&owner->gate.current(displayed->sequence,displayed->stamp)&&view->displayed==displayed;
+    if(!hasFrame)view->visibility.invalidate();
     if([call.method isEqualToString:@"setCovered"]){
       id covered=arguments[@"covered"];
       if(![covered isKindOfClass:[NSNumber class]]||CFGetTypeID((__bridge CFTypeRef)covered)!=CFBooleanGetTypeID()){
@@ -468,7 +474,7 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
     NSMutableArray* ids=[NSMutableArray arrayWithCapacity:owner->acceptedSnapshots.size()];
     for(const auto id:owner->acceptedSnapshots)[ids addObject:@(id)];
     NSString* error=[[NSString alloc] initWithBytes:owner->error.data() length:owner->error.size() encoding:NSUTF8StringEncoding];
-    result(@{@"ready":@(owner->ready&&view->layerReady),@"apiReady":@(owner->ready),@"closed":@(owner->closed),@"ownerFinished":@(owner->finished),
+    NSDictionary* status=@{@"ready":@(owner->ready&&view->layerReady),@"apiReady":@(owner->ready),@"closed":@(owner->closed),@"ownerFinished":@(owner->finished),
       @"registered":@(_views.count(handle)!=0),@"pending":@(owner->pending!=nullptr),@"inFlight":@(owner->inFlight),
       @"hasFrame":@(hasFrame),@"renderedStamp":hasFrame?StampValue(view->renderedStamp):@{},
       @"acceptedStamp":StampValue(owner->acceptedStamp),@"acceptedSnapshots":ids,@"deviceGeneration":@(owner->generation),
@@ -479,7 +485,11 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
       @"frames":@(view->flow.scheduled()),@"discardedFrames":@(view->flow.discarded()),
       @"quarantined":@(view->flow.quarantined()),@"drawableTimeouts":@(view->drawableTimeouts),
       @"sizeMismatches":@(view->sizeMismatches),@"staleFramesDropped":@(owner->staleDrops),
-      @"wholeFrameReadbacks":@0,@"error":error?:@"",@"limits":MetalViewLimits()});return;
+      @"wholeFrameReadbacks":@0,@"error":error?:@"",@"limits":MetalViewLimits()};
+    NSView* staleView=hasFrame?nil:view->view;
+    lock.unlock();
+    staleView.hidden=YES;
+    result(status);return;
   }
   result(FlutterMethodNotImplemented);
 }
