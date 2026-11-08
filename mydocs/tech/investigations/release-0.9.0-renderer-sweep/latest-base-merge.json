@@ -1,0 +1,13 @@
+{
+  "head": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+  "base": "80fc0c6b44bb270e5c14946cfb52e0eb0475a3a8",
+  "mergeTree": "8120b13146b54f4ab39d45ce9a452d36a55262c6",
+  "mergeClean": true,
+  "changedFromCandidate": [
+    "mydocs/orders/20261108.md",
+    "mydocs/pr/archives/pr_8766_review.md",
+    "mydocs/pr/assets/pr8766/ci-results.json",
+    "mydocs/pr/assets/pr8766/oracle-verdict.json"
+  ],
+  "onlyOperationalRecords": true
+}

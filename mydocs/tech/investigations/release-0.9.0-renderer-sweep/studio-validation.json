@@ -1,0 +1,29 @@
+{
+  "sourceSha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+  "workingDirectory": "rhwp-studio",
+  "steps": [
+    {
+      "command": "npm test",
+      "observedExitCode": 0,
+      "counts": {
+        "tests": 2780,
+        "pass": 2778,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 2,
+        "todo": 0
+      },
+      "logSha256": "47eb1104bfcd95382b564e7b8541abafc749e9f5aba5c1ee9d7fa9cd8910a4b5"
+    },
+    {
+      "command": "npm run build",
+      "observedExitCode": 0,
+      "includes": [
+        "TypeScript",
+        "Vite production build",
+        "PWA generation"
+      ],
+      "logSha256": "81372d74353b8044f6cecfb4447e6288066faadf475e9b5540a9a1c47377ad61"
+    }
+  ]
+}

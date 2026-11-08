@@ -1,0 +1,20 @@
+{
+  "source": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+  "inputs": {
+    "samples/basic/BlogForm_BookReview.hwp": {
+      "sha256": "1dff1f9a721924e9a2dbad7f23a98c36432921c37ac97d06474ae651778a4b8c",
+      "bytes": 24576,
+      "gitBlob": "bb1ef6e38a2b230ff5e068d7dee88dd6b9bd6595"
+    },
+    "rhwp-studio/public/samples/BlogForm_BookReview.hwp": {
+      "sha256": "1dff1f9a721924e9a2dbad7f23a98c36432921c37ac97d06474ae651778a4b8c",
+      "bytes": 24576,
+      "gitBlob": "bb1ef6e38a2b230ff5e068d7dee88dd6b9bd6595"
+    },
+    "pdf/BlogForm_BookReview-2020.pdf": {
+      "sha256": "38a833d5ca3fdb00517d9d9fe4a6399ac2ebc4c0c529b5e24988cb818ff5a7b6",
+      "bytes": 20850,
+      "gitBlob": "33b010606a0e1e8d602ccb1c510de53a1f6ce1de"
+    }
+  }
+}

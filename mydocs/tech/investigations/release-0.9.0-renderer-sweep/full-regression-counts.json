@@ -1,0 +1,11 @@
+{
+  "sourceSha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+  "passed": 12997,
+  "skipped": 45,
+  "passedByPackage": {
+    "rhwp": 12815,
+    "rhwp-contracts": 15,
+    "rhwp-ooxml-chart": 165,
+    "rhwp-password-crypto": 2
+  }
+}

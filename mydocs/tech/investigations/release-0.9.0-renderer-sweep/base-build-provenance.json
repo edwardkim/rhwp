@@ -1,0 +1,86 @@
+{
+  "wasm": {
+    "source_sha": "78615c52a7c7d7a6b25fad57c3bf1041fb2dfcf2",
+    "success": true,
+    "profile": "release",
+    "optimized": true,
+    "build_run": "https://github.com/edwardkim/rhwp/actions/runs/42434338951",
+    "artifact_id": 13599253771,
+    "source_relation": "569020c1cc differs only in Oracle workflow, workflow test, working record; current WIP is Vite serving and its HTTP test",
+    "artifacts": {
+      "rhwp.js": {
+        "sha256": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+        "bytes": 570533
+      },
+      "rhwp_bg.wasm": {
+        "sha256": "385adc68f5a817ad8aa557f4572a7366f4ea04a7efde3bbe9af9fae1f6d8c378",
+        "bytes": 26835504
+      },
+      "rhwp.d.ts": {
+        "sha256": "7746cbd5271086269c80121cd1e9bc6506fd5b9e55fcef16d207e71a8d502dac",
+        "bytes": 228600
+      },
+      "rhwp_bg.wasm.d.ts": {
+        "sha256": "f97fb71cdf9f10f0f9bbc8a0c07d686cd4194fe09f06f9abeeae7414dae00676",
+        "bytes": 79293
+      }
+    },
+    "comparisonBaseSha": "80fc0c6b44bb270e5c14946cfb52e0eb0475a3a8",
+    "sourceChangesToComparisonBase": [
+      ".github/workflows/oracle-public-advisory.yml",
+      "mydocs/orders/20261108.md",
+      "mydocs/pr/archives/pr_8766_review.md",
+      "mydocs/pr/assets/pr8766/ci-results.json",
+      "mydocs/pr/assets/pr8766/oracle-verdict.json",
+      "mydocs/working/release_0_9_0_execution_20261108.md",
+      "scripts/tests/test_oracle_public_advisory_workflow.py"
+    ],
+    "productSourceIdenticalToComparisonBase": true
+  },
+  "native": {
+    "command": [
+      "cargo",
+      "--config",
+      "source.crates-io.replace-with=\"rhwp-validation\"",
+      "--config",
+      "source.rhwp-validation.registry=\"sparse+http://127.0.0.1:38165/index/\"",
+      "install",
+      "rhwp",
+      "--registry",
+      "crates-io",
+      "--version",
+      "=0.9.0",
+      "--bin",
+      "rhwp",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--root",
+      "/home/edward/mygithub/rhwp/output/release-v0.9.0-execution/package-finalization/cli-native",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review"
+    ],
+    "cwd": "/home/edward/mygithub/rhwp/output/release-v0.9.0-execution/consumer-rust",
+    "source_sha": "d30e12e0d09c3b1afb500bb8f5b0e781c058d35e",
+    "exit_code": 0,
+    "seconds": 412.48,
+    "binarySha256": "8c6e759e638012ecb0220f32502c6ed5061e2b6025d9795d6373f39f3daab4e0",
+    "binaryBytes": 88197464,
+    "comparisonBaseSha": "80fc0c6b44bb270e5c14946cfb52e0eb0475a3a8",
+    "sourceChangesToComparisonBase": [
+      ".github/workflows/oracle-public-advisory.yml",
+      "mydocs/orders/20261108.md",
+      "mydocs/pr/archives/pr_8763_review.md",
+      "mydocs/pr/archives/pr_8766_review.md",
+      "mydocs/pr/assets/pr8763/ci-results.json",
+      "mydocs/pr/assets/pr8763/package-validation.json",
+      "mydocs/pr/assets/pr8766/ci-results.json",
+      "mydocs/pr/assets/pr8766/oracle-verdict.json",
+      "mydocs/working/release_0_9_0_execution_20261108.md",
+      "scripts/tests/test_oracle_public_advisory_workflow.py"
+    ],
+    "productSourceIdenticalToComparisonBase": true
+  }
+}
