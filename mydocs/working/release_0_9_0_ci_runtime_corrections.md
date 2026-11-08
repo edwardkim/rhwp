@@ -60,8 +60,37 @@ CanvasKit parity 통과는 아니다. 하네스는 이 전환을 실패로 기�
 그 밖의 사례는 실제 자원 준비 실패와 독립 font plan이 모두 증명된 경우에만 별도
 `fontFallbackGate`에서 명시적 Canvas2D와 동일 픽셀·비어 있지 않은 내용을 요구한다.
 알 수 없는 오류·GPU 초기화 실패는 계속 실패하며 CanvasKit 성공 건수로 세지 않는다.
-실제 브라우저 검증은 진행 중이며, Full Renderer 또는 릴리즈 승격 완료를 아직 선언하지 않는다. 기존 13개 workflow 중 12개 성공·1개 시간 초과이며,
-main PR·태그·실제 게시를 아직 수행하지 않았다.
+실제 브라우저 검증은 다음과 같이 완료했다. 제품 코드가 바뀌지 않았으므로 제품 기준
+`1b78dc23fd8`의 최적화 CI WASM을 재사용했고, 모든 capture에서 실제 소비한 파일의 SHA-256을
+확인했다. 새 후보의 WASM을 다시 빌드했다고 주장하지 않는다.
+
+| 실행 | 결과 |
+| --- | --- |
+| Native 전체 manifest 선택 쪽 | 210개 export 성공, Cargo 빌드 2회, SVG·PNG 189쌍 동일, PDF 21개 생성 |
+| 다중 profile | 252개 capture 완료, hard gate 오류 0건, 별도 폴백 24건 동일 픽셀 |
+| WebGPU 요청·software 요청 | 각각 63개 capture 완료, hard gate 오류 0건, 별도 폴백 각각 6건 동일 픽셀 |
+| 원인 두 사례 집중 확인 | 24개 capture 완료, 별도 폴백 16건 동일 픽셀 |
+| 필수 CanvasKit readiness | 16개 capture, 실제 CanvasKit readiness·parity 각각 8건 통과, 폴백 0건 |
+| 계약·복구 검사 | Python 46건, renderer backend 계약, 메트릭 복구 6건, Native parity provenance self-test 통과 |
+
+브라우저 합계는 기존 전체 matrix 378개와 집중·readiness 40개를 합한 418개다. manifest가
+선정한 21쪽의 검증이며 모든 입력 문서의 전쪽 시각 검증을 새로 수행했다는 뜻은 아니다.
+WebGPU는 요청 모드의 실행 증거이며 실제 surface identity를 별도로 기록했다. GPU 하드웨어
+사용 성공으로 확대 해석하지 않는다. 새 분류가 인정한 폴백 세 문서의 print 출력도 직접
+읽어 내용이 비어 있지 않음을 확인했다.
+
+기존 report-only 차이는 성공으로 바꾸지 않았다. 다중 profile 브라우저 비교 144건 중
+36건, 두 surface 요청의 비교 각각 36건 중 10건, Native/CanvasKit 비교 72건 중 49건이
+차이로 남는다. 누락·실행 오류·identity 불일치는 모두 0건이다. Native/CanvasKit의 폴백
+12건도 성공 건수에서 제외해 별도 inventory로 기록했다.
+
+[최종 실행 원장](../tech/investigations/release-0.9.0-ci-runtime/runtime-validation.json),
+[브라우저별 집계](../tech/investigations/release-0.9.0-ci-runtime/browser-capture-matrix.tsv),
+[Native 동일 출력 대조](../tech/investigations/release-0.9.0-ci-runtime/native-output-comparison.tsv)를
+보존했다. workflow 구조 차이는 runner·상한 두 값뿐이며, 판정기는 이번 변경을 Full CI로
+분류한다. 원격 Full Renderer 및 새 Linux archive 검증은 다음 승격 실행에서 확인한다.
+기존 13개 workflow의 결과는 12개 성공·1개 시간 초과이며 main PR·태그·실제 게시는 아직
+수행하지 않았다.
 
 ## 운영 영향과 복구
 

@@ -1,0 +1,169 @@
+{
+  "recorded_at": "2026-11-08T15:39:47.201743+09:00",
+  "product_source": "1b78dc23fd8add8d2bc61958be5533cbeafdbd20",
+  "harness_source": "60eb0361b140d91a3a56db3a6afe944825766077",
+  "wasm_sha256": "9b10e79dfc65bf9943b575f89c1ae3b98bc4790c90bc781bee2fa0a29957486a",
+  "stages": [
+    {
+      "stage": "focus-table-2",
+      "seconds": 69.24,
+      "exit_code": 0,
+      "captures": 12,
+      "report_sha256": "660fa981b167301364d25ac72095b3dbccbfb4d8f27f1813d76fc3863a8424d3",
+      "font_fallbacks": 8,
+      "readiness": {
+        "total": 0,
+        "evaluated": 0,
+        "passed": 0,
+        "failed": 0,
+        "missing": 0
+      },
+      "report_only_parity": {
+        "total": 0,
+        "compared": 0,
+        "passed": 0,
+        "failed": 0,
+        "missing": 0,
+        "errors": 0,
+        "identityMismatches": 0
+      }
+    },
+    {
+      "stage": "focus-image",
+      "seconds": 74.29,
+      "exit_code": 0,
+      "captures": 12,
+      "report_sha256": "8ebdab75cdf729cf0709726038e745f3cefe076e095ae0e00cdeccad525e8d2c",
+      "font_fallbacks": 8,
+      "readiness": {
+        "total": 0,
+        "evaluated": 0,
+        "passed": 0,
+        "failed": 0,
+        "missing": 0
+      },
+      "report_only_parity": {
+        "total": 0,
+        "compared": 0,
+        "passed": 0,
+        "failed": 0,
+        "missing": 0,
+        "errors": 0,
+        "identityMismatches": 0
+      }
+    },
+    {
+      "stage": "readiness",
+      "seconds": 80.89,
+      "exit_code": 0,
+      "captures": 16,
+      "report_sha256": "8d32590b18d85cda8bc9165f36850bc3e7ed10005096f8f6bfad22fe7e78a0c8",
+      "font_fallbacks": 0,
+      "readiness": {
+        "total": 8,
+        "evaluated": 8,
+        "passed": 8,
+        "failed": 0,
+        "missing": 0
+      },
+      "report_only_parity": {
+        "total": 8,
+        "compared": 8,
+        "passed": 8,
+        "failed": 0,
+        "missing": 0,
+        "errors": 0,
+        "identityMismatches": 0
+      }
+    },
+    {
+      "stage": "multi-profile",
+      "seconds": 1414.44,
+      "exit_code": 0,
+      "captures": 252,
+      "report_sha256": "f679499be3a7ab9531a5bd3931b1bf82fe34163c80a9162d352f0ee55e618335",
+      "font_fallbacks": 24,
+      "readiness": {
+        "total": 0,
+        "evaluated": 0,
+        "passed": 0,
+        "failed": 0,
+        "missing": 0
+      },
+      "report_only_parity": {
+        "total": 144,
+        "compared": 144,
+        "passed": 108,
+        "failed": 36,
+        "missing": 0,
+        "errors": 0,
+        "identityMismatches": 0
+      }
+    },
+    {
+      "stage": "webgpu",
+      "seconds": 342.21,
+      "exit_code": 0,
+      "captures": 63,
+      "report_sha256": "ad4805483ebfb85467e87d5338bb90e4b3c455143106b267c7f20c1f0e0bc46e",
+      "font_fallbacks": 6,
+      "readiness": {
+        "total": 0,
+        "evaluated": 0,
+        "passed": 0,
+        "failed": 0,
+        "missing": 0
+      },
+      "report_only_parity": {
+        "total": 36,
+        "compared": 36,
+        "passed": 26,
+        "failed": 10,
+        "missing": 0,
+        "errors": 0,
+        "identityMismatches": 0
+      }
+    },
+    {
+      "stage": "software",
+      "seconds": 332.96,
+      "exit_code": 0,
+      "captures": 63,
+      "report_sha256": "03346e775633035ef26f2662a690743bacdb0dc17335485e673726259e63078a",
+      "font_fallbacks": 6,
+      "readiness": {
+        "total": 0,
+        "evaluated": 0,
+        "passed": 0,
+        "failed": 0,
+        "missing": 0
+      },
+      "report_only_parity": {
+        "total": 36,
+        "compared": 36,
+        "passed": 26,
+        "failed": 10,
+        "missing": 0,
+        "errors": 0,
+        "identityMismatches": 0
+      }
+    }
+  ],
+  "native_canvas_kit_report_only": {
+    "total": 72,
+    "compared": 72,
+    "passed": 23,
+    "failed": 49,
+    "missing": 0,
+    "errors": 0,
+    "identityMismatches": 0
+  },
+  "native_canvas_kit_report_sha256": "c1e6640f24e258763e8073fd916264ca3cd4436a9e613c77ee7821dcfbb340d6",
+  "native_canvas_kit_separate_fallbacks": 12,
+  "native": {
+    "commands": 210,
+    "cargo_builds": 2,
+    "identical_svg_png_pairs": 189,
+    "nonempty_pdfs": 21
+  }
+}
