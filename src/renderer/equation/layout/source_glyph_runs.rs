@@ -40,7 +40,13 @@ impl EqLayout {
             if self.variable_bold {
                 return None;
             }
-            let mut run = super::super::legacy_glyphs::measure(text, role, fs, self.dpi, pad)?;
+            let frame = if self.implicit_legacy_font {
+                super::super::legacy_glyphs::AdvanceFrame::ImplicitLegacy
+            } else {
+                super::super::legacy_glyphs::AdvanceFrame::OriginalChar
+            };
+            let mut run =
+                super::super::legacy_glyphs::measure(text, role, fs, self.dpi, pad, frame)?;
             if self.implicit_legacy_font {
                 // 독립 Print에서 같은 행의 수학 본체는 한글 대체보다 위에 놓인다.
                 run.baseline_shift = -fs * 0.06;

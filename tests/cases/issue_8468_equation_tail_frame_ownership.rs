@@ -1,5 +1,7 @@
 //! 관계형·고정형 — 생략 속성 수식의 셀 포함과 후행 표·각주 쪽 소속을 검사한다.
-//! 주석 갱신: 2026-11-07T06:50:29+09:00; 새 파일, 직전 파일 커밋 없음.
+//! 주석 갱신: 2026-11-08T16:02:19+09:00.
+//! 추가 전 파일 변경: 59d83dc9ccdf6ae52d7ec77e00f2e0e22dea2a10 (2026-11-07T07:46:00+09:00).
+//! 추가 합성 계약은 선택 문자열 생략의 연속 배율·정체/기울임 전진 관계이며 설치 글꼴·실물 px를 사용하지 않는다.
 //! 2026-11-07 측정: 96 DPI, 색상 경계 보정 전 2px 내용 실루엣, Print·compat 2022.
 //! report-628 전195쪽 최저 Native92.99% / fresh WASM96.06%, 독립 Print 전195쪽과 일치.
 //! 18쪽99.72/99.73%,122쪽99.58/99.59%,123쪽99.77/99.77%,124쪽99.92/99.91%,125쪽99.81/99.79%.
@@ -94,4 +96,61 @@ fn recomposed_equation_tail_preserves_following_tables_and_notes_on_their_pages(
             "같은 표 캡션을 중복 배치하지 않는다"
         );
     }
+}
+
+fn implicit_formula(script: &str, font_size: u32) -> rhwp::renderer::equation::layout::LayoutBox {
+    use rhwp::model::control::Control;
+    fn find(node: &RenderNode) -> Option<rhwp::renderer::equation::layout::LayoutBox> {
+        if let RenderNodeType::Equation(value) = &node.node_type {
+            return Some(value.layout_box.clone());
+        }
+        node.children.iter().find_map(find)
+    }
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.insert_equation_native(0, 0, 0, script, font_size, 0)
+        .unwrap();
+    let mut doc = core.document().clone();
+    let equation = doc.sections[0].paragraphs[0]
+        .controls
+        .iter_mut()
+        .find_map(|control| {
+            if let Control::Equation(value) = control {
+                Some(value)
+            } else {
+                None
+            }
+        })
+        .expect("실제 삽입 경로가 만든 수식");
+    equation.implicit_legacy_font = true;
+    equation.font_name.clear();
+    equation.version_info.clear();
+    equation.common.size_protect = false;
+    core.set_document(doc);
+    find(&core.build_page_render_tree(0).unwrap().root).expect("생략 출처를 가진 최종 수식 상자")
+}
+
+#[test]
+fn implicit_font_keeps_continuous_advances_and_separate_italic_shear() {
+    // 독립 10/20pt 생략 문자열 Print의 전진 소유다. 원 CHAR의 정수 장치 격자를
+    // 이 호환 계약에 이식하거나 정체 전진을 별도 이탤릭 표로 바꾸지 않는다.
+    for script in ["a", "x+y", "rm{123}"] {
+        let small = implicit_formula(script, 1000);
+        let large = implicit_formula(script, 2000);
+        assert!(small.width > 0.0);
+        assert!(
+            (large.width - small.width * 2.0).abs() < 1e-8,
+            "생략 표시의 두 배 크기는 같은 전진의 두 배다: {script}: {} -> {}",
+            small.width,
+            large.width
+        );
+    }
+    let italic = implicit_formula("a", 1000);
+    let roman = implicit_formula("rm{a}", 1000);
+    assert!(
+        (italic.width - roman.width).abs() < 1e-8,
+        "생략 표시의 기울임은 같은 정체 전진 위의 shear다: {} / {}",
+        italic.width,
+        roman.width
+    );
 }
