@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/publish_guide.md
-last_verified: 2026-10-28
+last_verified: 2026-11-09
 ---
 
 # 배포 가이드
@@ -40,13 +40,16 @@ GitHub repository·Actions의 공통 권한, 승인, 적용 후 관찰과 rollba
 게시·보안 업데이트·부분 실패 복구 책임자는 edwardkim이다. 토큰 준비 여부와 실제 업로드
 승인은 구분하며, 아래 기존 npm/확장 배포 절차로 Cargo 게시를 실행하지 않는다.
 
+0.9.0의 실제 게시 결과, 패키지별 소스·체크섬과 공개 소비 검증은
+[배포 결과 보고서](../report/release_0_9_0_execution_report.md)에 기록했다.
+
 ## CI/CD 워크플로우 (GitHub Actions)
 
 ### 자동 실행되는 워크플로우
 
 | 파일 | 트리거 | 역할 |
 |------|--------|------|
-| `.github/workflows/ci.yml` | push/PR (main, devel) | cargo build + test + clippy 검증 |
+| `.github/workflows/ci.yml` | main/devel 대상 PR, `v*` 태그, 수동 실행 | 변경 범위에 따른 build·test·clippy 검증; main/devel push는 구독하지 않음 |
 | `.github/workflows/gym-release-gate.yml` | Gym 관련 PR, 수동 실행 | AI 에이전트 벤치마크 계약·전건 판별력 검증 |
 | `.github/workflows/deploy-pages.yml` | main push, 태그 | WASM 빌드 → rhwp-studio 빌드 → GitHub Pages 배포 |
 | `.github/workflows/release-binary.yml` | `v*` 태그, 수동 실행 | 5플랫폼 CLI → Release 첨부 → 같은 commit의 package workflow 직접 호출 |
@@ -57,7 +60,7 @@ GitHub repository·Actions의 공통 권한, 승인, 적용 후 관찰과 rollba
 ```
 코드 작업 완료
   ↓
-devel 대상 PR merge → CI 자동 실행 (build + test + clippy)
+devel 대상 PR CI 성공·검토 → merge
   ↓
 main 대상 release PR merge → GitHub Pages 자동 배포
   ↓
@@ -160,14 +163,35 @@ GitHub Actions에서 사용하는 시크릿 (Settings → Secrets and variables 
 | `VSCE_PAT` | VS Code Marketplace 배포 인증 |
 | `OVSX_PAT` | Open VSX 배포 인증 |
 
-> npm 배포는 GitHub Actions OIDC 기반 Trusted Publishing을 사용한다.
-> `@rhwp/core`, `@rhwp/editor` 각각의 npm package settings에서
-> trusted publisher를 `edwardkim/rhwp`, workflow `npm-publish.yml`, allowed action `npm publish`로 등록해야 한다.
-> npm package settings의 Environment name을 지정했다면 GitHub Actions publish job의 `environment:`와
-> 정확히 같아야 한다. 현재 배포 환경명은 `NPM_TOKEN`이다.
-> 여기서 `NPM_TOKEN`은 GitHub Actions environment 이름이며, npm token secret 이름이 아니다.
-> npm publish job에는 장기 토큰(`NPM_TOKEN`, `NODE_AUTH_TOKEN`)을 주입하지 않는다.
-> `npm publish`는 GitHub Actions OIDC로 인증하며 provenance는 npm이 자동 생성한다.
+### npm Trusted Publisher 등록과 확인
+
+npm 배포는 GitHub Actions OIDC를 사용한다. npm은 재사용 workflow에서 게시하더라도
+**호출한 workflow의 이름**을 검증한다. 자동 배포는 `release-binary.yml`이
+`npm-publish.yml`을 호출하므로 `npm-publish.yml`만 등록하면 인증되지 않는다.
+[npm 공식 안내](https://docs.npmjs.com/trusted-publishers/#troubleshooting)를 따른다.
+
+`@rhwp/core`와 `@rhwp/editor` **각각**의 Settings → Trusted Publisher에 GitHub Actions를
+등록한다. 두 패키지 모두 Organization or user는 `edwardkim`, Repository는 `rhwp`,
+Environment name은 `NPM_TOKEN`, Allowed actions는 **Allow npm publish**로 설정한다.
+
+| 실행 경로 | 등록할 Workflow filename |
+| --- | --- |
+| 정식 태그 자동 배포 또는 `release-binary.yml` 수동 실행 → `npm-publish.yml` 호출 | `release-binary.yml` |
+| `npm-publish.yml` 자체를 독립 수동 실행해 exact-tag 복구 | `npm-publish.yml` |
+
+두 경로를 모두 사용하면 publisher를 별도로 등록한다. 파일명만 입력하며
+`.github/workflows/` 경로를 넣지 않는다. 기존 연결의 필수 필드는 수정할 수 없으므로,
+호출 경로를 추가할 때는 새 연결을 만들고 다른 배포 경로의 유효한 연결은 유지한다.
+
+`NPM_TOKEN`은 현재 GitHub Actions **environment 이름**이다. npm 설정과 publish job의
+`environment:`가 정확히 일치해야 하며, 같은 이름의 Secret을 갱신해도 publisher 등록을
+대신하지 못한다. 현재 publish job에는 장기 토큰(`NPM_TOKEN`, `NODE_AUTH_TOKEN`)을 주입하지
+않고 호출자·피호출자 양쪽의 `id-token: write`로 인증한다. provenance는 npm이 자동 생성한다.
+
+`ENEEDAUTH`가 발생하면 실패한 실행의 호출자, 두 패키지 각각의 저장된 publisher 필드,
+`Allow npm publish`와 OIDC 권한을 대조한다. 설정 저장만으로 인증 성공을 단정하지 않고,
+승인된 게시·복구 실행의 성공과 공개 버전·provenance를 확인한다.
+0.9.0의 복구 결과는 [배포 보고서](../report/release_0_9_0_execution_report.md#ci와-인증-복구)를 참고한다.
 
 ### 보안 원칙
 
