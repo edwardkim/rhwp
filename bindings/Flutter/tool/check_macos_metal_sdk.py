@@ -25,6 +25,13 @@ def platform_required(system):
         raise RuntimeError("actual macOS and Apple SDK are required")
 
 
+def find_apple_cxx():
+    # The clang++ symlink selects C++ driver/linker behavior. Resolving it to
+    # clang compiles .mm but omits libc++ and the C++ exception runtime at link.
+    return Path(subprocess.check_output(
+        ["xcrun", "--sdk", "macosx", "--find", "clang++"], text=True).strip()).absolute()
+
+
 def command_plan(repository, output, sdk, clang, framework, architecture, toolchain):
     if architecture not in ("arm64", "x86_64"):
         raise ValueError("unsupported macOS probe architecture")
@@ -164,7 +171,7 @@ def main():
     if any(not re.fullmatch(r"[0-9a-f]{40}", value) for value in [flutter_head, engine_head]):
         raise ValueError("Flutter SDK/framework must have pinned framework and engine revisions")
     sdk = Path(subprocess.check_output(["xcrun", "--sdk", "macosx", "--show-sdk-path"], text=True).strip()).resolve(strict=True)
-    clang = Path(subprocess.check_output(["xcrun", "--sdk", "macosx", "--find", "clang++"], text=True).strip()).resolve(strict=True)
+    clang = find_apple_cxx()
     compiler = subprocess.check_output([str(clang), "--version"], text=True)
     if "Apple clang" not in compiler:
         raise ValueError("an Apple SDK compiler is required, not a portable stub")
