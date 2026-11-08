@@ -26,5 +26,6 @@ painter에 맡긴다. 저장 IR·조판 전진을 바꾸지 않는다. 후보 �
   [후보 raw](sample10-wasm-p757-raw.png)·[독립 PDF raw](sample10-p757-pdf-raw.png)에 본문·ASCII 도식·쪽 번호를 보존한다.
 
 [검증·producer·hash](validation.json)에 측정한 WASM과 후속 Unicode 비교 보정 소스를 구분했다.
-후속 소스의 fresh WASM·전쪽·전체 회귀와 남은 하락 보정은 계속 필요하다. 비공개 글꼴과
+후속 소스 `785194d2df`의 fresh WASM도 다시 빌드해 실제 브라우저 **6 PASS**와 집중 10쪽 재출력을
+완료했고, 10쪽 PNG 모두 앞선 측정과 바이트가 같았다. 전쪽·전체 회귀와 남은 하락 보정은 계속 필요하다. 비공개 글꼴과
 윤곽 추출 진단 자료는 ignored output에만 보관하며 이 증적에 포함하지 않았다.
