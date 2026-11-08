@@ -8,6 +8,29 @@ import ScreenCaptureKit
 
 @main
 struct CaptureMetalWindow {
+  // AppKit's documented startup creates NSApp before using its other services.
+  // A CLI async entry point does not perform NSApplicationMain's initialization.
+  // Prohibited policy prevents finishLaunching from activating this helper.
+  @MainActor
+  private static func initializeAppKit() throws {
+    guard Thread.isMainThread else {
+      throw NSError(domain: "rhwp-capture", code: 10,
+                    userInfo: [NSLocalizedDescriptionKey: "AppKit capture initialization requires the main thread"])
+    }
+    let application = NSApplication.shared
+    _ = application.setActivationPolicy(.prohibited)
+    guard application.activationPolicy() == .prohibited else {
+      throw NSError(domain: "rhwp-capture", code: 11,
+                    userInfo: [NSLocalizedDescriptionKey: "capture helper could not prohibit foreground activation"])
+    }
+    application.finishLaunching()
+    guard application.activationPolicy() == .prohibited, !application.isActive else {
+      throw NSError(domain: "rhwp-capture", code: 12,
+                    userInfo: [NSLocalizedDescriptionKey: "capture helper unexpectedly became active"])
+    }
+  }
+
+  @MainActor
   static func main() async {
     do {
       let args = CommandLine.arguments
@@ -16,6 +39,7 @@ struct CaptureMetalWindow {
         throw NSError(domain: "rhwp-capture", code: 1,
                       userInfo: [NSLocalizedDescriptionKey: "expected PID DPR OUTPUT.png"])
       }
+      try initializeAppKit()
       guard CGPreflightScreenCaptureAccess() else {
         throw NSError(domain: "rhwp-capture", code: 2,
                       userInfo: [NSLocalizedDescriptionKey: "Screen Recording permission is required; no TCC bypass or mock fallback"])
@@ -75,7 +99,8 @@ struct CaptureMetalWindow {
                                   "windowBoundsPoints": [window.frame.origin.x, window.frame.origin.y,
                                                          window.frame.width, window.frame.height],
                                   "deviceScale": dpr, "actualWindowServerCapture": true,
-                                  "colorSpace": "srgb", "dynamicRange": "sdr"]
+                                  "colorSpace": "srgb", "dynamicRange": "sdr",
+                                  "appKitInitialized": true, "captureActivationPolicy": "prohibited"]
       let data = try JSONSerialization.data(withJSONObject: result, options: [.sortedKeys])
       print(String(decoding: data, as: UTF8.self))
     } catch {
