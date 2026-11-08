@@ -58,3 +58,50 @@ path/patch 없는 Rust 기본·최소·PDF/codec 제외 소비와 README 예제�
 최종 정책 감사도 성공했다. [self-review](../pr/archives/pr_8763_review.md)와 실제 증거를
 CI 성공 뒤 기록했다. 이 문서-only trailing head의 검사·devel 병합이 다음 단계이며,
 최종 main source와 공개 registry 소비·태그·배포가 완료됐다는 뜻은 아니다.
+
+## devel 병합과 승격 검증에서 발견한 Oracle 입력 누락
+
+#8763은 2026-11-08 10:27:07 KST에 `78615c52a7c7d7a6b25fad57c3bf1041fb2dfcf2`로
+병합됐다. trailing head `927be2076f`는 실제 fast-pass로 source CI를 재사용했고 required
+check와 최종 정책 감사도 성공했다. 병합 후 duration 갱신 `42434310949`도 성공했다.
+review·오늘할일은 병합 head에 이미 포함됐고 전용 local/upstream branch는 삭제했다.
+실행 중인 릴리즈 registry·WASM이 사용하는 output/target과 다른 작업은 보존한다.
+
+위 exact devel에서 승격 inventory의 22개 실행 표면을 13개 고유 workflow로 시작했다.
+모든 run의 head SHA가 같음을 확인했다. 실제 게시·태그는 아직 하지 않았다.
+
+[Oracle 실행](https://github.com/edwardkim/rhwp/actions/runs/42434354283)은 job 자체는
+success지만 `oracle-public-advisory-verdict/verdict.json`이 `build-failed`,
+`promotionEligible=false`다. 따라서 승격 완료가 아니다. 컴파일 오류는 다음 세 경로가
+sparse checkout에서 제외된 데서 발생했다.
+
+- `assets/fonts/enclosed-pua-metrics.json`: `enclosed_pua_geometry.rs`의 include.
+- `assets/fonts/LatinModernMath-VariableOutline-subset.otf`: `equation/variable_outline.rs`의 include.
+- `assets/font-rules/font_rule_registry_v2.json`: `native_webfonts.rs`의 include.
+
+기존 #6689는 외부 include 입력을, #7605의 `c687bfd1fa`는 vendored Cargo patch를
+보강했다. 이후 `75fadf3152`·`08e4192d15`·#8565의 `5551091085`에 해당하는 현재
+조판 코드와 입력을 대조했다. 제품 Rust는 정상이며 기존 Oracle 목록의 `assets` 누락이 원인이다.
+
+보정 후보 `release/0.9.0-promotion-fix-20261108`은 Oracle sparse 목록에 `assets`
+한 줄을 추가한다. 실제 source-relative include 경로를 대조하는 기존 workflow 계약을 보강해
+수정 전 실패를 재현했고, 보정 뒤 관련 계약 65건이 통과했다. 실제 cone-mode checkout에서
+세 입력의 바이트 동일성도 확인했다. 제품 코드·검사 명령·advisory 판정·권한·배포 설정은 바꾸지 않는다.
+
+실제 sparse compile 검사를 완료한 뒤 CI 실행 정의 변경의 diff·검증·원상복구 범위를 제시하고
+원격 적용 승인을 받는다. 같은 SHA의 재실행으로는 입력 누락이 해결되지 않는다.
+승인 후 devel 보정 PR·Full CI·self-review·병합을 먼저 완료하고 새 devel SHA에서 승격
+증거를 다시 확보한다. CI 변경 PR의 운영 기록은 옵션 2로 남긴다. 현재 다른 workflow는
+취소하지 않고 결과를 확인한다.
+
+보정 목록으로 새로 만든 실제 Git cone-mode sparse checkout에서
+`cargo check --locked --profile release-test --bin rhwp`가 118초에 통과했다.
+원격과 같은 파일 선택 조건의 include 오류가 해결됐음을 확인한 것이며, 아직 원격 Oracle
+비교와 verdict가 성공했다고 주장하지 않는다. 관련 계약 65건·공백·문서 링크를 확인한다.
+원격 적용 후 문제가 있으면 보정 commit을 별도 PR에서 revert하며 검사 기준을 낮추지 않는다.
+
+병행한 registry 소비 검증도 완료됐다. 기본/최소/PDF 구성의 Rust, 기본/native-skia/no-PDF
+CLI 설치와 실제 사용 7건, 두 최적화 WASM의 CDP 19222 브라우저 검사 10건이 통과했다.
+Worker의 입력 한도·시간 초과·기존 문서 보존·정상 재시도를 확인했다. 이 검증의 archive
+source는 `d30e12e0d0`이며 이후 차이는 운영 문서·Oracle workflow/계약뿐이다.
+읽기 전용 loopback registry는 모든 소비가 끝난 뒤 종료했다. 공개 registry 검증과 구분한다.

@@ -67,6 +67,7 @@ jobs:
             src
             crates
             vendor
+            assets
             tests
             samples
             saved/blank2010.hwp
