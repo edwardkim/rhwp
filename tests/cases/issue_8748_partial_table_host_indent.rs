@@ -1,5 +1,14 @@
 //! 검사 유형: 관계형(들여쓰기 유무에 따른 표 조각 가로 위치의 동일성); 절대 페이지 좌표 핀 없음.
-//! 주석 갱신: MEASURE_PLACEHOLDER
+//! 주석 갱신: 2026-11-08T22:20:00+09:00.
+//! 측정 source: aab541f6c6(기준 upstream/devel 7f76cee60e). 2026-11-08 측정, 96 DPI·Print·PDFium·2px raw 실루엣.
+//! 측정 실행: Native 2026-11-08T08:38:17+09:00 ~ 08:41:54+09:00, fresh WASM 08:41:54+09:00 ~ 08:48:54+09:00.
+//!   기준 PDF는 한컴 2024 Print(pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf), compat 2024.
+//! 2025 행정업무운영 편람(최종).hwpx: 대상 47·48·49쪽 Native 100.00% / fresh WASM 100.00%;
+//!   전383쪽 최저 Native 99.96% / fresh WASM 99.93%; 누락 없음, 쪽수 PDF와 같음.
+//! 재측정: upstream/devel 41e08ae19e 로 rebase 한 코드 커밋 6c2ec2dbd0 에서 같은 조건으로 다시 산출했다
+//!   (Native 21:38:38+09:00, fresh WASM 21:45:01+09:00 완료). 전383쪽 Native·fresh WASM TSV 가 위 증거와 바이트까지 같다.
+//! 증거: mydocs/pr/assets/issue_8748/{native,wasm}/handbook_silhouette.tsv. 들여쓰기 0/2000 변형은
+//!   원본을 메모리에서 바꾼 합성 입력이라 시각 일치 측정 대상이 아니며, 두 변형 사이 관계만 잠근다.
 //!
 //! [Issue #8748] 쪽을 넘어 나뉜 자리차지 표(글자처럼 취급 아님)는 host 문단의 첫 줄
 //! 들여쓰기만큼 오른쪽으로 밀리지 않는다. 문단 기준 개체의 원점은 문단 상자이며, 첫 줄
