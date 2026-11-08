@@ -50,6 +50,45 @@ def write_json(path, value):
     temporary.replace(path)
 
 
+def require_actual_windows(*, platform=None, load_library=None):
+    """Reject Wine even when its Windows Python reports ``sys.platform=win32``.
+
+    The injectable loader exists for portable rejection controls, not as an
+    execution mode for the qualification entry points.
+    """
+    if (sys.platform if platform is None else platform) != "win32":
+        raise RuntimeError("actual Windows desktop is required; Linux/Wine is not qualification")
+    loader = load_library if load_library is not None else getattr(ctypes, "WinDLL", None)
+    if loader is None:
+        raise RuntimeError("actual Windows NT loader is required")
+    try:
+        ntdll = loader("ntdll", use_last_error=True)
+    except (OSError, AttributeError) as error:
+        raise RuntimeError("actual Windows NT environment could not be verified") from error
+    if getattr(ntdll, "wine_get_version", None) is not None:
+        raise RuntimeError("Wine is not an actual Windows qualification target")
+
+
+def verify_runtime_artifacts(files, receipt):
+    """Bind the copied runner to the plugin/engine it will actually load.
+
+    A relocated executable loads its adjacent runtime DLLs. Recorded artifact
+    paths are provenance, not authority to inspect DLLs in a different folder.
+    """
+    verified = {key: Path(value).resolve(strict=True) for key, value in files.items()}
+    directory = verified["runner"].parent
+    verified["plugin"] = (directory / "rhwp_native_reference_plugin.dll").resolve(strict=True)
+    verified["engineRuntime"] = (directory / "flutter_windows.dll").resolve(strict=True)
+    artifacts = receipt.get("artifacts")
+    if not isinstance(artifacts, dict):
+        raise ValueError("build receipt has no runtime artifact identities")
+    for key in ("runner", "native", "dispatcher", "fixture", "plugin", "engineRuntime"):
+        entry = artifacts.get(key)
+        if not isinstance(entry, dict) or digest(verified[key]) != entry.get("sha256"):
+            raise ValueError("runtime artifact does not match the build receipt: " + key)
+    return verified
+
+
 def positive_integer(value, maximum):
     if type(value) is not int or not 0 < value <= maximum:
         raise ValueError("expected a bounded positive integer")
@@ -178,8 +217,7 @@ class WindowsCompositor:
     """DPI-aware visible desktop capture, not producer texture readback."""
 
     def __init__(self, pid):
-        if sys.platform != "win32":
-            raise RuntimeError("actual Windows desktop is required; Wine is not qualification")
+        require_actual_windows()
         self.user = ctypes.WinDLL("user32", use_last_error=True)
         self.gdi = ctypes.WinDLL("gdi32", use_last_error=True)
         handle = wintypes.HANDLE
@@ -285,8 +323,10 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--timeout", type=float, default=120)
     args = parser.parse_args()
-    if sys.platform != "win32":
-        parser.error("run on an actual interactive Windows desktop, not Linux/Wine")
+    try:
+        require_actual_windows()
+    except RuntimeError as error:
+        parser.error(str(error))
     if not 10 <= args.timeout <= 300:
         parser.error("timeout must be between 10 and 300 seconds")
     files = {key: getattr(args, key).resolve(strict=True) for key in ("runner", "native", "dispatcher", "fixture")}
@@ -295,9 +335,7 @@ def main():
     receipt = read_json(args.build_receipt)
     if receipt.get("platform") != "windows" or receipt.get("buildExitCode") != 0:
         raise ValueError("matching successful Windows build receipt is required")
-    for key in ("runner", "native", "dispatcher", "fixture"):
-        if digest(files[key]) != receipt.get("artifacts", {}).get(key, {}).get("sha256"):
-            raise ValueError("runtime artifact does not match the build receipt: " + key)
+    files = verify_runtime_artifacts(files, receipt)
     for key in ("sourceHead", "nativeSourceHead", "flutterRevision", "engineRevision"):
         if not re.fullmatch(r"[0-9a-f]{40}", str(receipt.get(key, ""))):
             raise ValueError("build receipt has no pinned source/engine identity: " + key)
@@ -367,6 +405,7 @@ def main():
         if code:
             raise ValueError("probe did not complete its real close/unregister checks")
         validate_result(result, nonce=nonce, last_limits=state["stages"][-1]["stage"]["limits"])
+        verify_runtime_artifacts(files, receipt)
         state.update(qualification="bounded-windows-consumer-passed", exitCode=code, result=result)
     except BaseException as error:
         state.update(qualification="failed", error=f"{type(error).__name__}: {error}")
