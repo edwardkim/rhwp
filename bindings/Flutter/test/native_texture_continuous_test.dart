@@ -466,6 +466,81 @@ void main() {
     NativeTexturePlatform.macos,
   ]) {
     testWidgets(
+      '${platform.name} explicit close preserves completed automatic fallback retirement',
+      (tester) async {
+        final plugin = NegotiatedClosePlugin(platform)
+          ..submitError = 'contextChanged';
+        plugin.install();
+        final metadata = FakePresentation();
+        final owner = await document(tester, GpuTransport());
+        final controller = NativeTextureController(
+          document: owner,
+          presentation: metadata,
+          platform: platform,
+          pollInterval: const Duration(milliseconds: 10),
+        );
+        try {
+          await tester.pumpWidget(viewport(controller));
+          await until(tester, () => plugin.retireAcks.length == 1);
+          await tester.pump(const Duration(milliseconds: 20));
+          expect(controller.needsCpuFallback, isTrue);
+          expect(controller.retirementPending, isFalse);
+          final closing = controller.close();
+          await tester.pump(const Duration(milliseconds: 30));
+          await closing;
+          expect(controller.phase, NativeTexturePhase.closed);
+          expect(controller.retirementPending, isFalse);
+          expect(
+            plugin.calls.where((method) => method == 'close'),
+            hasLength(1),
+          );
+          expect(plugin.retireAcks, hasLength(1));
+          expect(metadata.released, [101]);
+        } finally {
+          await cleanup(tester, controller, owner, plugin);
+        }
+      },
+    );
+
+    testWidgets(
+      '${platform.name} automatic fallback keeps an unconfirmed acknowledgement pending through explicit close',
+      (tester) async {
+        final gate = Completer<void>();
+        final plugin = NegotiatedClosePlugin(platform)
+          ..submitError = 'contextChanged'
+          ..retireAckGate = gate;
+        plugin.install();
+        final owner = await document(tester, GpuTransport());
+        final controller = NativeTextureController(
+          document: owner,
+          presentation: FakePresentation(),
+          platform: platform,
+          pollInterval: const Duration(milliseconds: 10),
+          operationTimeout: const Duration(milliseconds: 100),
+        );
+        try {
+          await tester.pumpWidget(viewport(controller));
+          await until(tester, () => plugin.retireAcks.length == 1);
+          final closing = controller.close();
+          await tester.pump(const Duration(milliseconds: 150));
+          await closing;
+          expect(controller.retirementPending, isTrue);
+          expect(controller.phase, NativeTexturePhase.retirePending);
+          gate.complete();
+          await until(
+            tester,
+            () => controller.phase == NativeTexturePhase.closed,
+          );
+          expect(controller.retirementPending, isFalse);
+          expect(plugin.retireAcks, hasLength(1));
+        } finally {
+          if (!gate.isCompleted) gate.complete();
+          await cleanup(tester, controller, owner, plugin);
+        }
+      },
+    );
+
+    testWidgets(
       '${platform.name} negotiates generation-checked retirement independently of publication mode',
       (tester) async {
         final plugin = NegotiatedClosePlugin(platform)..install();
@@ -696,4 +771,34 @@ void main() {
       },
     );
   }
+
+  testWidgets(
+    'old Windows plugin automatic fallback remains retired after explicit close',
+    (tester) async {
+      final plugin = WindowsTransferPlugin()..submitError = 'contextChanged';
+      plugin.install();
+      final owner = await document(tester, GpuTransport());
+      final controller = NativeTextureController(
+        document: owner,
+        presentation: FakePresentation(),
+        platform: NativeTexturePlatform.windows,
+        pollInterval: const Duration(milliseconds: 10),
+      );
+      try {
+        await tester.pumpWidget(viewport(controller));
+        await until(tester, () => plugin.closed);
+        await tester.pump(const Duration(milliseconds: 20));
+        expect(controller.needsCpuFallback, isTrue);
+        final closing = controller.close();
+        await tester.pump(const Duration(milliseconds: 30));
+        await closing;
+        expect(controller.phase, NativeTexturePhase.closed);
+        expect(controller.retirementPending, isFalse);
+        expect(plugin.retireAcks, isEmpty);
+        expect(plugin.calls.where((method) => method == 'close'), hasLength(1));
+      } finally {
+        await cleanup(tester, controller, owner, plugin);
+      }
+    },
+  );
 }

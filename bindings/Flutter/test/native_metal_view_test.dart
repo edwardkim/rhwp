@@ -256,6 +256,14 @@ void main() {
         expect(f.plugin.covered, isTrue);
         expect(f.metadata.released, isEmpty);
         expect(f.plugin.releasedByPlugin, {101});
+        await until(tester, () => f.plugin.retireAcks.length == 1);
+        await tester.pump(const Duration(milliseconds: 20));
+        final closing = f.controller.close();
+        await tester.pump(const Duration(milliseconds: 30));
+        await closing;
+        expect(f.controller.phase, NativeTexturePhase.closed);
+        expect(f.controller.retirementPending, isFalse);
+        expect(f.plugin.retireAcks, hasLength(1));
       } finally {
         await f.close(tester);
       }
