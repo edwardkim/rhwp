@@ -576,5 +576,32 @@ class HeldCaptureTests(unittest.TestCase):
             self.assertEqual(len(harness.calls), 2)
 
 
+class OwnedBuildStepTests(unittest.TestCase):
+    def test_initial_receipt_failure_stops_the_owned_child_and_records_exit(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary)
+            child = mock.Mock(pid=123, returncode=None)
+            state = {"steps": []}
+            record_error = OSError("receipt write failed")
+
+            def stopped(process):
+                self.assertIs(process, child)
+                process.returncode = -9
+
+            with mock.patch.object(qualifier.subprocess, "Popen", return_value=child) as spawn, \
+                    mock.patch.object(qualifier, "write_json", side_effect=[record_error, None]) as record, \
+                    mock.patch.object(qualifier, "stop_owned_process_group", side_effect=stopped) as stop:
+                with self.assertRaises(OSError) as raised:
+                    qualifier.run_step(["portable-child-not-executed"], cwd=output, env={},
+                        output=output, receipt=output / "receipt.json", state=state)
+            self.assertIs(raised.exception, record_error)
+            self.assertTrue(spawn.call_args.kwargs["start_new_session"])
+            stop.assert_called_once_with(child)
+            child.wait.assert_not_called()
+            self.assertEqual(record.call_count, 2)
+            self.assertEqual(state["steps"][0]["exitCode"], -9)
+            self.assertIn("finished", state["steps"][0])
+
+
 if __name__ == "__main__":
     unittest.main()

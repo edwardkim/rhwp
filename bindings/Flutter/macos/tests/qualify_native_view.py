@@ -306,8 +306,8 @@ def run_step(command, *, cwd, env, output, receipt, state, timeout=600, read_out
         child = subprocess.Popen(command, cwd=cwd, env=env, stdin=subprocess.DEVNULL,
                                  stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
         step["pid"] = child.pid
-        write_json(receipt, state)
         try:
+            write_json(receipt, state)
             code = child.wait(timeout=timeout)
         except BaseException:
             stop_owned_process_group(child)
