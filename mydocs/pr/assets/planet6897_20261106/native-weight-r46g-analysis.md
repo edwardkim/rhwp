@@ -46,9 +46,9 @@ Haansoft face를 다시 우선한다. OS의 한 번의 face 매칭과 스타일 
   양방향 소유를 검사한다. 설치된 한컴·OTF나 다른 검사에서 초기화한 FontMgr에 의존하지 않는다.
   합성 이름 선택 계약이며 실문서의 px·쪽수·이미지 기대값을 만들지 않는다.
 
-[수정 전 정식 검사 실패](native-family-ownership-r46g/before-test.log) ·
+[수정 전 정식 검사 실패](native-family-ownership-r46g/before-test.txt) ·
 [실패 실행 출처](native-family-ownership-r46g/before-provenance.json) ·
-[사전 진단](native-family-ownership-r46g/before.log) ·
+[사전 진단](native-family-ownership-r46g/before-probe.txt) ·
 [실제 후보 묶음](native-family-ownership-r46g/actual-chain-before.json).
 
 구현 보정 후 재검증은 아직 완료 전이다. 현재 기록만으로 통과나 PR 제출을 선언하지 않는다.
