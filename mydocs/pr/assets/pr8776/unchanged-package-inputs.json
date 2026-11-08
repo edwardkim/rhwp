@@ -1,0 +1,20 @@
+{
+  "base": "1b78dc23fd8add8d2bc61958be5533cbeafdbd20",
+  "candidate": "c09e8c9f5e0389776f1fc29c6fe9ca75779a6d56",
+  "identical_packages": [
+    "rhwp-codec-resource.files.json",
+    "rhwp-contracts.files.json",
+    "rhwp-hayro-ccitt.files.json",
+    "rhwp-hayro-jbig2.files.json",
+    "rhwp-hayro-jpeg2000.files.json",
+    "rhwp-jpeg-decoder.files.json",
+    "rhwp-jpeg-encoder.files.json",
+    "rhwp-ooxml-chart.files.json",
+    "rhwp-password-crypto.files.json",
+    "rhwp-pdf-import-backend.files.json",
+    "rhwp-qcms.files.json",
+    "rhwp-svg2pdf.files.json",
+    "rhwp-zune-jpeg.files.json",
+    "rhwp.files.json"
+  ]
+}
