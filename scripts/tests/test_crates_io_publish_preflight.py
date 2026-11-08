@@ -25,6 +25,7 @@ class PublishPreflightTests(unittest.TestCase):
         self.policy = {"packages": [{"published_name": "leaf", "version": "0.1.0",
                                      "local_dependencies": []}]}
         self.manifest = ('[package]\nname="leaf"\nversion="0.1.0"\n'
+                         'description="Publication fixture"\nlicense="MIT"\n'
                          'publish=["crates-io"]\nrust-version="1.93.1"\n')
         self.vcs = {"git": {"sha1": self.sha}}
 
@@ -48,6 +49,15 @@ class PublishPreflightTests(unittest.TestCase):
 
     def test_immutable_archive_identity(self):
         self.assertEqual(self.audit(self.archive())["leaf"], self.row)
+
+    def test_registry_required_description_is_rejected_before_upload(self):
+        original = self.manifest
+        for declaration in ['', 'description=""\n', 'description="   "\n']:
+            with self.subTest(declaration=declaration):
+                self.manifest = original.replace('description="Publication fixture"\n', declaration)
+                with self.assertRaisesRegex(CheckError, "description metadata missing"):
+                    self.audit(self.archive())
+        self.manifest = original
 
     def test_archive_tampering(self):
         ledger = self.archive()

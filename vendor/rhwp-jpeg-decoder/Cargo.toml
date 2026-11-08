@@ -9,6 +9,7 @@ include = [
 ]
 name = "rhwp-jpeg-decoder"
 version = "0.3.2-rhwp.1"
+description = "Bounded JPEG decoder for rhwp PDF import, based on jpeg-decoder 0.3.2"
 edition = "2021"
 rust-version = "1.93.1"
 license = "MIT OR Apache-2.0"
