@@ -4020,6 +4020,33 @@ pub(super) fn supports_inline_form_frame_controls(para: &Paragraph) -> bool {
         })
 }
 
+/// 글자 앞에 놓인 개체 가운데 원시 스트림에서 필드 시작이 앞선 개체.
+///
+/// [#8773] 필드 시작(누름틀 등)은 폭이 없어도 줄 안의 제어 문자다. 그 뒤에 남은 폭에
+/// 들어가지 않는 개체가 오면 한/글은 필드 시작만 담은 첫 줄을 두고 개체를 다음 줄
+/// (개체 원시 위치)에서 시작한다. 공개 결재문서 한/글 저장 사다리 26건이 모두 이 모양이다
+/// (첫 줄 textpos 0, 표 줄 textpos 8). 앞에 아무 제어 문자도 없거나 구역·단 정의만 있으면
+/// 개체는 첫 줄에 남는다 — 구역·단 정의는 줄 내용이 아니다.
+fn field_led_leading_control(
+    para: &Paragraph,
+    occupied_controls: &[(usize, u32, i32, i32)],
+) -> Option<(usize, u32, i32, i32)> {
+    let mut leading = occupied_controls
+        .iter()
+        .copied()
+        .filter(|(position, _, _, _)| *position == 0);
+    let candidate = leading.next()?;
+    if leading.next().is_some() {
+        return None;
+    }
+    let field_before = para
+        .controls
+        .iter()
+        .zip(para.control_utf16_positions())
+        .any(|(control, start)| matches!(control, Control::Field(_)) && start < candidate.1);
+    field_before.then_some(candidate)
+}
+
 /// 본문 뒤 남은 폭에 놓이지 않는 inline control은 별도 physical line을 가진다.
 ///
 /// 종전 cell reflow는 text token만 줄바꿈한 뒤 첫 LineSeg를 표 높이만큼 키웠다.
@@ -4046,12 +4073,17 @@ fn inline_control_requires_own_line(
         .iter()
         .copied()
         .filter(|(position, _, _, _)| *position > 0 && *position <= text_len);
-    let (position, utf16_start, control_width, height) = candidates.next()?;
-    // 여러 inline control은 일반 placement가 순서를 보존해야 하므로 이 좁은
-    // single-control 계약 밖이다.
-    if candidates.next().is_some() {
-        return None;
-    }
+    let (position, utf16_start, control_width, height) = match candidates.next() {
+        Some(candidate) => {
+            // 여러 inline control은 일반 placement가 순서를 보존해야 하므로 이 좁은
+            // single-control 계약 밖이다.
+            if candidates.next().is_some() {
+                return None;
+            }
+            candidate
+        }
+        None => field_led_leading_control(para, occupied_controls)?,
+    };
 
     // 같은 text offset에서 새 줄이 시작되면 control은 그 줄의 선두에 놓인다.
     // 그렇지 않으면 control 직전 text가 실제로 속한 줄을 선택한다. 마지막 글자
@@ -6667,12 +6699,19 @@ fn try_reflow_line_segs_impl<S: Storage>(
         // A control assigned its own row after this text prefix owns that
         // row's height only. A terminal anchor can also equal text_len; the
         // general last-line ownership rule must not reserve it in both rows.
-        let control_after_text = forced_inline_line.is_some_and(|(position, ..)| {
-            position > lb.start_idx
-                && (position < lb.end_idx
-                    || (position == lb.end_idx && line_idx + 1 == line_breaks.len()))
-        });
-        if forced_inline_line.is_some_and(|(position, ..)| position == lb.start_idx) {
+        // 글자 위치 0 의 개체 줄은 앞 필드 시작이 첫 줄을 소유할 때만 발행된다
+        // (`field_led_leading_control`). 첫 줄은 필드 시작만 담고 개체는 다음 줄이다.
+        let field_led_row =
+            line_idx == 0 && forced_inline_line.is_some_and(|(position, ..)| position == 0);
+        let control_after_text = field_led_row
+            || forced_inline_line.is_some_and(|(position, ..)| {
+                position > lb.start_idx
+                    && (position < lb.end_idx
+                        || (position == lb.end_idx && line_idx + 1 == line_breaks.len()))
+            });
+        if !field_led_row
+            && forced_inline_line.is_some_and(|(position, ..)| position == lb.start_idx)
+        {
             let (_, _, height_hwp, _) = forced_inline_line.expect("checked inline control");
             apply_inline_control_line_height(&mut text_seg, height_hwp);
         }

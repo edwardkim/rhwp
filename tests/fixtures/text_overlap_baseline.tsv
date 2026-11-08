@@ -164,3 +164,5 @@ issue8641/labor_standards_report.hwp	2
 # 글자 조각끼리 겹치는 기존 형상 90건(11~53쪽 등)이다. 수정 전(devel 08963f6825) 104건 중 15쪽 표 셀 각주
 # 14건이 이 PR 로 사라지고 나머지 90건은 수정 전과 같다. #8677 최종보고서의 27쪽 14건은 이 PR 로 0건이라 행을 뺀다.
 issue8685/1311000-201100125_saemaul_oda_pilot_report.hwp	90
+issue8773/field_led_wide_table.hwpx	1
+issue8773/field_led_wide_table_nofield.hwpx	1
