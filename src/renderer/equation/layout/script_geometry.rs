@@ -29,7 +29,7 @@ impl EqLayout {
         } else {
             self.layout_node(base, fs)
         };
-        if self.legacy_math_face {
+        if self.legacy_math_face && !self.implicit_legacy_font {
             return self.original_script_base(value, base);
         }
         value.width += self.script_base_operator_gap(base, fs);

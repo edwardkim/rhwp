@@ -1,0 +1,15 @@
+{
+  "base_product_source": "0275f9c3bb69b216c96146e98506271eead9a601",
+  "source_files": [
+    {
+      "path": "src/renderer/equation/layout/legacy_original_geometry.rs",
+      "sha256": "655815dfd85dd8a0d998d84524a1926e0a1463c1b7c2b11a300f689c3c25a370"
+    },
+    {
+      "path": "src/renderer/equation/layout/script_geometry.rs",
+      "sha256": "18feb5aeb13ba0779a6b1472c29d5d52f8a1f69d8f3f3458586293087d8585cd"
+    }
+  ],
+  "patch": "diff --git a/src/renderer/equation/layout/legacy_original_geometry.rs b/src/renderer/equation/layout/legacy_original_geometry.rs\nindex a07af44bf8..9fb47d61e9 100644\n--- a/src/renderer/equation/layout/legacy_original_geometry.rs\n+++ b/src/renderer/equation/layout/legacy_original_geometry.rs\n@@ -61,7 +61,9 @@ impl EqLayout {\n     }\n \n     pub(super) fn original_group_unit(&self) -> Option<f64> {\n-        self.legacy_math_face.then(|| {\n+        // 선택 문자열이 생략된 HWP5 수식은 implicit_legacy의 독립 줄 계약을 쓴다.\n+        // 그 표시 face 재사용을 원본 CHAR 평면의 그룹 여백 소유로 해석하지 않는다.\n+        (self.legacy_math_face && !self.implicit_legacy_font).then(|| {\n             // 기존 HFT 논리 em과 같은 짝수 화면 화소 격자다. child의 0.64배\n             // 표시 글자 크기로 그룹·첨자 프레임의 root 여백까지 축소하지 않는다.\n             let logical_em = (self.font_size * 96.0 / self.dpi / 2.0).round() * 2.0;\ndiff --git a/src/renderer/equation/layout/script_geometry.rs b/src/renderer/equation/layout/script_geometry.rs\nindex c6a33716b9..b6a3df703e 100644\n--- a/src/renderer/equation/layout/script_geometry.rs\n+++ b/src/renderer/equation/layout/script_geometry.rs\n@@ -29,7 +29,7 @@ impl EqLayout {\n         } else {\n             self.layout_node(base, fs)\n         };\n-        if self.legacy_math_face {\n+        if self.legacy_math_face && !self.implicit_legacy_font {\n             return self.original_script_base(value, base);\n         }\n         value.width += self.script_base_operator_gap(base, fs);\n",
+  "note": "수식의 표시 세대 소유 경계에 대한 진단 빌드. 보정 검증 전 결과를 제출 완료로 주장하지 않는다."
+}

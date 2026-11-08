@@ -61,7 +61,9 @@ impl EqLayout {
     }
 
     pub(super) fn original_group_unit(&self) -> Option<f64> {
-        self.legacy_math_face.then(|| {
+        // 선택 문자열이 생략된 HWP5 수식은 implicit_legacy의 독립 줄 계약을 쓴다.
+        // 그 표시 face 재사용을 원본 CHAR 평면의 그룹 여백 소유로 해석하지 않는다.
+        (self.legacy_math_face && !self.implicit_legacy_font).then(|| {
             // 기존 HFT 논리 em과 같은 짝수 화면 화소 격자다. child의 0.64배
             // 표시 글자 크기로 그룹·첨자 프레임의 root 여백까지 축소하지 않는다.
             let logical_em = (self.font_size * 96.0 / self.dpi / 2.0).round() * 2.0;
