@@ -173,7 +173,7 @@ fn horizontal_pen(
     // 표의 가로 pen만 확인한 결과로 그 prefix까지 소비했다고 선언하면
     // before_text가 0이 되어 측정·배치 모두 표를 앞 줄 위에 놓는다.
     // 이미 앞 TAC가 소비한 개체 줄들은 각자의 기존 소유 경로를 유지한다.
-    if crate::renderer::composer::ordinary_tac_prefix_rows(para, owner)
+    if crate::renderer::composer::owned_tac_prefix_rows(para, owner)
         && !para.controls.iter().enumerate().any(|(ci, item)| {
             matches!(item, Control::Table(candidate) if candidate.common.treat_as_char)
                 && crate::renderer::composer::control_slot_line_index(para, ci)
