@@ -64,6 +64,9 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
               document: document,
               presentation: presentation,
               platform: platform,
+              allowImmutableOwnershipTransfer:
+                  platform == NativeTexturePlatform.windows &&
+                  const bool.fromEnvironment('RHWP_GPU_CONTINUOUS'),
             );
           }
         }

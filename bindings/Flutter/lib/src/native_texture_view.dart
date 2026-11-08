@@ -192,7 +192,14 @@ class NativeTextureController extends ChangeNotifier {
     MethodChannel? channel,
     this.pollInterval = const Duration(milliseconds: 100),
     this.operationTimeout = const Duration(seconds: 2),
+    this.allowImmutableOwnershipTransfer = false,
   }) : channel = channel ?? MethodChannel(platform.channelName) {
+    if (allowImmutableOwnershipTransfer &&
+        platform != NativeTexturePlatform.windows) {
+      throw ArgumentError(
+        'Immutable ownership transfer is supported only by the Windows texture backend.',
+      );
+    }
     if (pollInterval < const Duration(milliseconds: 10) ||
         pollInterval > const Duration(seconds: 1) ||
         operationTimeout <= Duration.zero ||
@@ -225,6 +232,7 @@ class NativeTextureController extends ChangeNotifier {
   final NativeTexturePlatform platform;
   final MethodChannel channel;
   final Duration pollInterval, operationTimeout;
+  final bool allowImmutableOwnershipTransfer;
   late final Timer _timer;
   late final StreamSubscription<NativeDocumentInfo> _infoChanges;
   late final StreamSubscription<int> _invalidations;
@@ -254,7 +262,7 @@ class NativeTextureController extends ChangeNotifier {
       _retirementPending = false;
   int _attachedViews = 0;
   Object? _retirementDiagnostic;
-  Timer? _frameTimeout;
+  Timer? _frameTimeout, _admissionTimeout, _retryTimer;
   final _releases = <Future<void>>{};
   static int get retainedOwnedSnapshots => _OwnedSnapshot.retained.length;
 
@@ -329,6 +337,20 @@ class NativeTextureController extends ChangeNotifier {
     _wanted = true;
     _phase = NativeTexturePhase.pending;
     _frameTimeout?.cancel();
+    _retryTimer?.cancel();
+    _retryTimer = null;
+    _admissionTimeout?.cancel();
+    if (allowImmutableOwnershipTransfer) {
+      final generation = _generation;
+      _admissionTimeout = Timer(operationTimeout, () {
+        if (_current(generation)) {
+          _fail(
+            TimeoutException('GPU frame admission timed out.'),
+            fallback: true,
+          );
+        }
+      });
+    }
     _signal(); // Cover cached platform pixels in this same UI turn.
     unawaited(_pump());
   }
@@ -444,6 +466,7 @@ class NativeTextureController extends ChangeNotifier {
             'closing',
             'invalidArgument',
             'limitExceeded',
+            'targetTooLarge',
             'retireLimit',
             'featureDisabled',
             'unsupported',
@@ -469,6 +492,26 @@ class NativeTextureController extends ChangeNotifier {
     } else {
       snapshot.ambiguous = true;
     }
+  }
+
+  bool _retryableBackpressure(Object error) =>
+      allowImmutableOwnershipTransfer &&
+      error is PlatformException &&
+      error.code == 'backpressure' &&
+      error.details is Map &&
+      (error.details as Map)['backpressureRetryable'] == true;
+
+  void _retryAdmission(int generation) {
+    if (!_current(generation)) return;
+    _retryTimer?.cancel();
+    _retryTimer = Timer(pollInterval, () {
+      _retryTimer = null;
+      if (!_current(generation)) return;
+      _view = document.beginPresentation();
+      _raster = document.rasterInvalidationGeneration;
+      _wanted = true;
+      unawaited(_pump());
+    });
   }
 
   Future<void> _pump() async {
@@ -499,9 +542,13 @@ class NativeTextureController extends ChangeNotifier {
       }
       if (textureId == null) {
         _createAttempted = true;
-        await _invoke(
+        final created = await _invoke(
           'create',
-          {'libraryPath': presentation.libraryPath},
+          {
+            'libraryPath': presentation.libraryPath,
+            if (allowImmutableOwnershipTransfer)
+              'publicationMode': 'immutableOwnershipTransfer',
+          },
           received: (reply) {
             final id = reply['textureId'], device = reply['deviceGeneration'];
             if (id is int && id > 0 && device is int && device > 0) {
@@ -522,6 +569,16 @@ class NativeTextureController extends ChangeNotifier {
           throw const NativeCallException(
             'invalidTextureReply',
             'Missing texture identity/device generation.',
+          );
+        }
+        if (allowImmutableOwnershipTransfer &&
+            (created['publicationMode'] != 'immutableOwnershipTransfer' ||
+                created['limits'] is! Map ||
+                (created['limits'] as Map)['continuousPresentationSupported'] !=
+                    true)) {
+          throw const NativeCallException(
+            'unsupportedPresentation',
+            'The Windows plugin did not negotiate immutable ownership transfer.',
           );
         }
       }
@@ -585,7 +642,18 @@ class NativeTextureController extends ChangeNotifier {
           received: (reply) => _submitReply(owned, reply),
           failed: (error) => _submitError(owned, error),
         );
-      } catch (_) {
+      } catch (error) {
+        // P109 reserves credit before accepting IDs. Only this explicit native
+        // rejection may release the caller snapshot and retry a fresh capture.
+        // Accepted/status errors and ambiguous transport outcomes never replay.
+        if (_retryableBackpressure(error) &&
+            !snapshot.sending &&
+            !snapshot.ambiguous &&
+            _current(generation)) {
+          await snapshot.releaseOwned().timeout(operationTimeout);
+          if (_current(generation)) _retryAdmission(generation);
+          return;
+        }
         if (!snapshot.settled && (snapshot.sending || snapshot.ambiguous)) {
           snapshot.ambiguous = true;
           await _reconcile(snapshot);
@@ -600,6 +668,8 @@ class NativeTextureController extends ChangeNotifier {
         );
       }
       if (!_current(generation)) return;
+      _admissionTimeout?.cancel();
+      _admissionTimeout = null;
       _frame = snapshot;
       _phase = NativeTexturePhase.pending;
       _publicationDeadline(generation);
@@ -703,6 +773,7 @@ class NativeTextureController extends ChangeNotifier {
             'unsupported',
             'featureDisabled',
             'backpressure',
+            'targetTooLarge',
             'retireLimit',
             'snapshotCreditLimit',
             'contextChanged',
@@ -718,6 +789,7 @@ class NativeTextureController extends ChangeNotifier {
             'unsupported',
             'featureDisabled',
             'backpressure',
+            'targetTooLarge',
             'retireLimit',
             'notReady',
             'closing',
@@ -734,12 +806,17 @@ class NativeTextureController extends ChangeNotifier {
     _phase = fallback ? NativeTexturePhase.fallback : NativeTexturePhase.failed;
     _timer.cancel();
     _frameTimeout?.cancel();
+    _admissionTimeout?.cancel();
+    _retryTimer?.cancel();
+    _retryTimer = null;
     _signal();
     unawaited(_closePlatform());
   }
 
   void _tick() {
-    if (_working || _polling || _closing || _stopped) return;
+    if (_working || _polling || _closing || _stopped || _retryTimer != null) {
+      return;
+    }
     if (_wanted) {
       unawaited(_pump());
       return;
@@ -920,6 +997,9 @@ class NativeTextureController extends ChangeNotifier {
     _retirementPending = textureId != null || _createAttempted;
     _timer.cancel();
     _frameTimeout?.cancel();
+    _admissionTimeout?.cancel();
+    _retryTimer?.cancel();
+    _retryTimer = null;
     _signal();
     unawaited(_infoChanges.cancel());
     unawaited(_invalidations.cancel());
