@@ -38,6 +38,14 @@ const Value& field(const Map& values, const char* name) {
   if (found == values.end()) throw MethodError("invalidArgument", "missing argument field");
   return found->second;
 }
+PublicationMode publication_mode(const Map& args) {
+  auto found = args.find(Value("publicationMode"));
+  if (found == args.end()) return PublicationMode::LegacyImmutable;
+  const auto* mode = std::get_if<std::string>(&found->second);
+  if (mode && *mode == "legacyImmutable") return PublicationMode::LegacyImmutable;
+  if (mode && *mode == "immutableOwnershipTransfer") return PublicationMode::ImmutableOwnershipTransfer;
+  throw MethodError("invalidArgument", "publicationMode must be legacyImmutable or immutableOwnershipTransfer");
+}
 uint64_t integer(const Value& value) {
   int64_t result;
   if (auto* wide = std::get_if<int64_t>(&value)) result = *wide;
@@ -74,12 +82,31 @@ std::string stamp_json(const Stamp& stamp) {
       << ",\"viewGeneration\":" << stamp.view << ",\"deviceGeneration\":" << stamp.device << ",\"deviceScale\":" << stamp.scale << '}';
   return out.str();
 }
-Value limits() {
+Value limits(PublicationMode mode = PublicationMode::LegacyImmutable) {
   const auto stats = frames().stats();
-  return Value(Map{{Value("consumerRetirement"), Value(false)}, {Value("continuousPresentationSupported"), Value(false)},
+  const auto imports = SurfaceImports::stats();
+  const bool transfer = mode == PublicationMode::ImmutableOwnershipTransfer;
+  return Value(Map{{Value("publicationMode"), Value(publication_mode_name(mode))},
+      {Value("consumerRetirement"), Value(false)}, {Value("continuousPresentationSupported"), Value(transfer)},
+      {Value("consumerGpuCompletionVerified"), Value(false)}, {Value("targetReuse"), Value(false)},
+      {Value("backpressureRetryable"), Value(transfer && stats.permanent < 4)},
+      {Value("frameAccountingScope"), Value("legacyRetainedAndPluginOwnedReferences")},
+      {Value("consumerAndDriverMemoryIncluded"), Value(false)},
       {Value("cpuFallbackRequiredWhenSaturated"), Value(true)}, {Value("outstandingFrames"), unsigned_value(stats.outstanding)},
       {Value("immutableFrames"), unsigned_value(stats.immutable)}, {Value("quarantinedFrames"), unsigned_value(stats.quarantined)},
-      {Value("pendingRetireFrames"), unsigned_value(stats.immutable + stats.quarantined)},
+      {Value("pendingRetireFrames"), unsigned_value(transfer ? stats.outstanding : stats.immutable + stats.quarantined)},
+      {Value("legacyRetainedFrames"), unsigned_value(stats.legacy_retained)},
+      {Value("producerOwnedFrames"), unsigned_value(stats.producer_owned)},
+      {Value("producerOwnedBytes"), unsigned_value(stats.producer_owned_bytes)},
+      {Value("importPendingFrames"), unsigned_value(stats.import_pending)},
+      {Value("importPendingBytes"), unsigned_value(stats.import_pending_bytes)},
+      {Value("handedOffFrames"), unsigned_value(stats.handed_off)},
+      {Value("discardedUnexposedFrames"), unsigned_value(stats.unexposed_discarded)},
+      {Value("descriptorTickets"), unsigned_value(imports.tickets)},
+      {Value("descriptorCpuPendingTickets"), unsigned_value(imports.cpu_pending)},
+      {Value("descriptorAwaitingOpenedTickets"), unsigned_value(imports.awaiting_opened)},
+      {Value("descriptorDuplicateOrLateNotifications"), unsigned_value(imports.ignored)},
+      {Value("maxDescriptorTickets"), Value(int64_t(SurfaceImports::kMaxTickets))},
       {Value("reservedTargetBytes"), unsigned_value(stats.bytes)}, {Value("maxFrames"), Value(4)},
       {Value("maxTargetBytes"), Value(int64_t(64 * 1024 * 1024))}, {Value("maxSingleFrameBytes"), Value(16 * 1024 * 1024)},
       {Value("descriptorOpenedNotifications"), unsigned_value(descriptor_opened_notifications())},
@@ -91,6 +118,7 @@ Value status(const std::shared_ptr<State>& state) {
   const bool has_frame = state->current && state->error.empty() &&
       state->gate.current(state->current->job->serial, state->current->job->stamp);
   Map value{{Value("textureId"), Value(state->texture_id)}, {Value("deviceGeneration"), unsigned_value(state->generation)},
+      {Value("publicationMode"), Value(publication_mode_name(state->publication_mode))},
       {Value("ready"), Value(state->ready && !state->closed)}, {Value("closed"), Value(state->closed)},
       {Value("ownerFinished"), Value(state->finished)}, {Value("inFlight"), Value(state->in_flight)},
       {Value("unregistered"), Value(state->unregistered)}, {Value("error"), Value(state->error)},
@@ -98,11 +126,14 @@ Value status(const std::shared_ptr<State>& state) {
       {Value("acceptedSerial"), unsigned_value(state->accepted_serial)}, {Value("acceptedStamp"), Value(stamp_value(state->accepted_stamp))},
       {Value("acceptedSnapshots"), Value(ids)}, {Value("staleDrops"), unsigned_value(state->stale_drops)},
       {Value("hasFrame"), Value(has_frame)},
-      {Value("renderedSerial"), unsigned_value(has_frame ? state->current->job->serial : 0)}, {Value("limits"), limits()}};
+      {Value("descriptorOpenedSerial"), unsigned_value(has_frame && state->current->pixels->opened_notifications.load() ?
+          state->current->job->serial : 0)},
+      {Value("renderedSerial"), unsigned_value(has_frame ? state->current->job->serial : 0)},
+      {Value("limits"), limits(state->publication_mode)}};
   value[Value("renderedStamp")] = has_frame ? Value(stamp_value(state->current->job->stamp)) : Value();
   return Value(std::move(value));
 }
-std::shared_ptr<Job> parse_job(const Map& args) {
+std::shared_ptr<Job> parse_job(const Map& args, PublicationMode mode) {
   auto job = std::make_shared<Job>();
   const auto& source = map(&field(args, "stamp"));
   job->stamp = {integer(source, "documentId"), integer(source, "revision"), integer(source, "fontGeneration"),
@@ -110,7 +141,8 @@ std::shared_ptr<Job> parse_job(const Map& args) {
   if (!job->stamp.valid()) throw MethodError("invalidArgument", "invalid source/view/device stamp");
   job->width = integer32(args, "width"); job->height = integer32(args, "height");
   const auto charge = frame_charge(job->width, job->height);
-  if (!charge) throw MethodError("backpressure", "two-surface viewport exceeds the immutable frame budget; use CPU");
+  if (!charge) throw MethodError(mode == PublicationMode::ImmutableOwnershipTransfer ? "targetTooLarge" : "backpressure",
+      "two-surface viewport exceeds the immutable frame budget; use CPU");
   const auto* pages = std::get_if<List>(&field(args, "placements"));
   if (!pages || pages->empty() || pages->size() > 8) throw MethodError("invalidArgument", "expected 1..8 placements");
   std::ostringstream out; out.imbue(std::locale::classic()); out << std::setprecision(17);
@@ -138,7 +170,7 @@ std::shared_ptr<Job> parse_job(const Map& args) {
   check << "]}"; job->check_json = check.str();
   if (job->render_json.size() > 64 * 1024 || job->check_json.size() > 64 * 1024)
     throw MethodError("invalidArgument", "request metadata exceeds 64 KiB");
-  job->credit = frames().reserve(charge);
+  job->credit = frames().reserve(charge, mode);
   if (!job->credit) throw MethodError("backpressure", "immutable GPU frame credits are exhausted; use CPU");
   return job;
 }
@@ -152,8 +184,8 @@ class RhwpD3dPlugin final : public flutter::Plugin {
         &flutter::StandardMethodCodec::GetInstance());
     channel_->SetMethodCallHandler([this](const auto& call, auto result) {
       try { result->Success(invoke(call.method_name(), map(call.arguments()))); }
-      catch (const MethodError& error) { result->Error(error.code, error.what(), limits()); }
-      catch (const std::exception& error) { result->Error("nativeError", error.what(), limits()); }
+      catch (const MethodError& error) { result->Error(error.code, error.what(), error_limits(call.arguments())); }
+      catch (const std::exception& error) { result->Error("nativeError", error.what(), error_limits(call.arguments())); }
     });
   }
   ~RhwpD3dPlugin() override {
@@ -177,7 +209,8 @@ class RhwpD3dPlugin final : public flutter::Plugin {
         std::lock_guard<std::mutex> lock(cookie->state->mutex);
         cookie->state->unregistered = true; cookie->state->registrar = nullptr;
       }
-      delete cookie;  // Callback userdata lifetime only, never a frame/GPU credit.
+      retire_surface_imports(cookie->state);
+      delete cookie;  // CPU registration/descriptor quiescence is not a GPU fence.
     }, cookie);
   }
   void prune() {
@@ -190,10 +223,24 @@ class RhwpD3dPlugin final : public flutter::Plugin {
   Record* record(uint64_t id) {
     auto found = textures_.find(int64_t(id)); return found == textures_.end() ? nullptr : &found->second;
   }
+  Value error_limits(const Value* arguments) {
+    PublicationMode mode = PublicationMode::LegacyImmutable;
+    try {
+      const auto& args = map(arguments);
+      auto found = args.find(Value("textureId"));
+      if (found != args.end()) {
+        if (auto* item = record(integer(found->second))) mode = item->state->publication_mode;
+        else if (last_closed_ && last_closed_->texture_id == int64_t(integer(found->second)))
+          mode = last_closed_->publication_mode;
+      } else mode = publication_mode(args);
+    } catch (...) { /* Invalid request metadata cannot choose a transfer mode. */ }
+    return limits(mode);
+  }
   Value invoke(const std::string& method, const Map& args) {
     if (method == "create") {
       prune();
       if (textures_.size() >= 2) throw MethodError("backpressure", "two GPU textures are already active or closing");
+      const auto mode = publication_mode(args);
       const auto* path = std::get_if<std::string>(&field(args, "libraryPath"));
       if (!path || path->empty() || path->size() > 32768 || !std::filesystem::u8path(*path).is_absolute())
         throw MethodError("invalidArgument", "libraryPath must be a bounded canonical absolute path");
@@ -204,14 +251,18 @@ class RhwpD3dPlugin final : public flutter::Plugin {
         throw MethodError("notReady", "Flutter graphics adapter is unavailable; select CPU");
       const auto generation = next_generation.fetch_add(1);
       if (!generation) throw MethodError("backpressure", "device generation exhausted");
-      auto state = std::make_shared<State>(generation, *path, adapter1, texture_registrar_, producer_credit);
+      auto state = std::make_shared<State>(generation, *path, adapter1, texture_registrar_, producer_credit, mode);
       auto cookie = std::make_unique<Registration>(Registration{state, registration_credit});
       FlutterDesktopTextureInfo info{}; info.type = kFlutterDesktopGpuSurfaceTexture;
       info.gpu_surface_config.struct_size = sizeof(FlutterDesktopGpuSurfaceTextureConfig);
       info.gpu_surface_config.type = kFlutterDesktopGpuSurfaceTypeDxgiSharedHandle;
       info.gpu_surface_config.callback = surface_callback; info.gpu_surface_config.user_data = cookie.get();
+      register_surface_imports(state);
       state->texture_id = FlutterDesktopTextureRegistrarRegisterExternalTexture(texture_registrar_, &info);
-      if (state->texture_id < 0) throw MethodError("notReady", "Flutter D3D11/DXGI texture registration failed");
+      if (state->texture_id < 0) {
+        retire_surface_imports(state);
+        throw MethodError("notReady", "Flutter D3D11/DXGI texture registration failed");
+      }
       Record inserted{state, cookie.release()};
       try {
         textures_.emplace(state->texture_id, inserted);
@@ -235,12 +286,12 @@ class RhwpD3dPlugin final : public flutter::Plugin {
         if (!item->state->ready) throw MethodError("notReady", "GPU producer is not ready");
         api = item->state->api;
       }
-      auto job = parse_job(args);
+      auto job = parse_job(args, item->state->publication_mode);
       if (!api->current(job->check_json)) throw MethodError("staleFrame", "source/view/device stamp is stale");
       List ids; for (auto snapshot : job->ids) ids.emplace_back(unsigned_value(snapshot));
       Map receipt{{Value("accepted"), Value(true)}, {Value("acceptedSerial"), Value(int64_t(0))},
           {Value("acceptedStamp"), Value(stamp_value(job->stamp))}, {Value("acceptedSnapshots"), Value(ids)},
-          {Value("limits"), limits()}};
+          {Value("limits"), limits(item->state->publication_mode)}};
       auto serial = receipt.find(Value("acceptedSerial"));
       if (!item->state->accept(job)) throw MethodError("staleFrame", "closed, superseded or invalid frame generation");
       // All response storage was allocated before ID ownership transferred.

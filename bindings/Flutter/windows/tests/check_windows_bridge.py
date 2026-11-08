@@ -18,9 +18,10 @@ def main():
     command = ["g++", "-std=c++17", "-pthread", "-Wall", "-Wextra", "-Werror", "-I" + str(source)]
     if args.sanitize:
         command += ["-fsanitize=address,undefined", "-fno-omit-frame-pointer", "-g"]
-    executable = output / "frame-lifetime-test"
-    subprocess.run(command + [str(source / "tests/frame_lifetime_test.cpp"), "-o", str(executable)], check=True, timeout=60)
-    subprocess.run([str(executable)], check=True, timeout=30)
+    for name in ["frame_lifetime_test", "import_lifetime_test"]:
+        executable = output / name
+        subprocess.run(command + [str(source / "tests" / (name + ".cpp")), "-o", str(executable)], check=True, timeout=60)
+        subprocess.run([str(executable)], check=True, timeout=30)
     subprocess.run([sys.executable, "-B", str(source / "tests/native_d3d_disabled.py"), "--output", str(output / "disabled")], check=True, timeout=60)
     if args.flutter_public:
         header_test = output / "public-texture-contract"

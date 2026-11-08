@@ -1,4 +1,5 @@
 #include "rhwp_native_ffi.h"
+#include "SurfaceImportTickets.h"
 #include "include/rhwp_native_reference/rhwp_d3d_plugin_c_api.h"
 #include <flutter_texture_registrar.h>
 #include <type_traits>
@@ -24,5 +25,22 @@ int main() {
   texture.gpu_surface_config.struct_size = sizeof(FlutterDesktopGpuSurfaceTextureConfig);
   texture.gpu_surface_config.type = kFlutterDesktopGpuSurfaceTypeDxgiSharedHandle;
   texture.gpu_surface_config.callback = populate; texture.gpu_surface_config.user_data = nullptr;
-  return texture.gpu_surface_config.callback(1, 1, nullptr)->width != 1;
+  if (texture.gpu_surface_config.callback(1, 1, nullptr)->width != 1) return 1;
+  using Imports = rhwp::d3d::SurfaceImportTickets<FlutterDesktopGpuSurfaceDescriptor>;
+  rhwp::d3d::ImmutableFrames pool;
+  auto credit = pool.reserve(128 * 1024, rhwp::d3d::PublicationMode::ImmutableOwnershipTransfer);
+  auto frame = std::make_shared<int>(1);
+  if (!credit || !credit->begin_gpu(frame) || !credit->producer_complete() || !credit->publish_immutable()) return 2;
+  Imports::register_owner(1);
+  const FlutterDesktopGpuSurfaceDescriptor* borrowed;
+  {
+    auto callback = Imports::begin_callback(1);
+    borrowed = Imports::offer(1, descriptor, frame, credit);
+    if (!callback || !borrowed) return 3;
+  }
+  borrowed->release_callback(borrowed->release_context);
+  // Match the real engine ordering: dimensions are read after release_callback.
+  if (borrowed->visible_width != 1 || borrowed->visible_height != 1) return 4;
+  Imports::unregistered(1); credit.reset(); frame.reset();
+  return pool.stats().outstanding != 0;
 }
