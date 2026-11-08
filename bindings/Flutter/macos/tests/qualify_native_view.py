@@ -386,7 +386,9 @@ def capture(args):
     write_json(output / "config.json", config)
     state = {"platform": "macos", "qualification": "pending", "started": time.time(), "stages": [],
              "consumerGpuCompletionVerified": False, "hardwareAccelerationVerified": False,
-             "continuousPresentationSupported": True, "build": receipt, "heldCoverVerified": False}
+             "continuousPresentationSupported": True, "build": receipt, "heldCoverVerified": False,
+             "nativeCoverStrategy": "nativeHideAndOpaqueFlutterCover",
+             "flutterOverlayOccludesVisibleNativeViewVerified": False}
     process = None
     log_path = output / "runner.log"
     try:

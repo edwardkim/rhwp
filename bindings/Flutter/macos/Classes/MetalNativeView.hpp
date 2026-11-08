@@ -28,7 +28,8 @@ NSDictionary* MetalViewLimits() {
     @"maximumDrawableCount":@3,@"maxTargetBytes":@(kMaxFrameBytes),
     @"continuousPresentationSupported":@YES,@"drawableReuseManagedByCoreAnimation":@YES,
     @"consumerGpuCompletionVerified":@NO,@"wholeFrameReadbacks":@0,
-    @"nativeCoverSupported":@YES,@"experimental":@YES,@"requiresTargetQualification":@YES};
+    @"nativeCoverSupported":@YES,@"nativeCoverRequired":@YES,
+    @"experimental":@YES,@"requiresTargetQualification":@YES};
 }
 bool MetalJobCurrent(const std::shared_ptr<NativeApi>& api, const std::shared_ptr<Job>& job) {
   NSDictionary* checked = api->read(api->checkFrame(

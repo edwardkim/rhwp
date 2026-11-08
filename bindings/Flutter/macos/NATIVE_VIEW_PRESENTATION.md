@@ -25,7 +25,7 @@ texture registry ID가 아니라 native view state의 양수 handle입니다.
    `status {textureId}`, `close {textureId}`를 사용합니다. view가 attach되기 전
    수락한 최신 요청은 pending으로 보존하며 실제 layer/geometry가 준비될 때까지
    UI thread를 막지 않습니다.
-4. 선택적인 `setCovered {textureId, covered: bool, visibilitySerial, stamp?}`은 native NSView도 가립니다.
+4. 필수 가림 계약인 `setCovered {textureId, covered: bool, visibilitySerial, stamp?}`은 native NSView도 가립니다.
    `covered: false`는 현재 전체 Native stamp가 유효한 게시 프레임이 있을 때만
    허용합니다. visibilitySerial은 증가하는 양수이고 오래된 요청은 새 가림을 풀 수
    없습니다. 응답은 `textureId`, `covered`, `visibilitySerial`, `accepted`,
@@ -137,6 +137,10 @@ Debug sandbox만 해제합니다. 제품 example과 production entitlement는 �
 첫 publication 뒤에는 controller를 pause한 채 같은 AppKitView를 mount 상태로
 유지하고, Native cover ack와 두 Flutter paint frame 뒤의 창을 두 번 수집합니다.
 이때 viewport 전체가 지정한 opaque Flutter cover와 정확히 일치해야 합니다.
+이 검사는 Native hide와 Flutter opaque cover를 함께 적용한 경로를 검증합니다.
+아직 표시 중인 NSView를 Flutter overlay 하나만으로 가릴 수 있다는 z-order 보장은
+하지 않으며, 결과에도 `flutterOverlayOccludesVisibleNativeViewVerified: false`를
+남깁니다. controller의 Native cover ack를 생략하면 안 됩니다.
 마지막에는 producer 종료, layer detach, registration 해제와 모든 Native lease
 counter 0을 확인합니다. 이 화면 검증도 consumer GPU fence를 증명하지 않습니다.
 
