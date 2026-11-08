@@ -52,6 +52,10 @@ python bindings/Flutter/tool/qualify_desktop_texture.py `
   --output C:/Temp/rhwp-consumer-capture
 ```
 
+`--timeout`은 stage 대기뿐 아니라 CPU 비교·두 실제 held capture·acknowledgement·종료 대기와
+마지막 runtime identity 검증에도 적용합니다. 이미 생성된 stage라도 deadline 뒤에는 캡처하거나
+성공으로 확인하지 않습니다. 실패한 실제 raw는 보존하고 소유 runner를 정리합니다.
+
 probe 창은 다른 창에 가려지지 않은 전경으로 유지합니다. 수집기는 per-monitor-v2 물리 좌표와
 Win32의 실제 desktop 화면을 사용합니다. `PrintWindow`, 가짜 registrar, widget screenshot이나
 producer readback으로 대체하지 않습니다. 원 문서→revision 변경→viewport resize의 세 프레임을

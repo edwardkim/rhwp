@@ -560,6 +560,8 @@ def main():
                 if process.poll() is not None or time.monotonic() >= deadline:
                     raise TimeoutError("probe exited or timed out before " + name)
                 time.sleep(0.025)
+            if time.monotonic() >= deadline:
+                raise TimeoutError("Windows capture deadline expired before a ready stage")
             stage = read_json(stage_file)
             width, height, offset = validate_stage(stage, nonce=nonce, index=index, pid=process.pid)
             if previous_stamp is not None:
@@ -601,26 +603,38 @@ def main():
                 source_hash = hashlib.sha256(source_reference).hexdigest()
                 comparison_arguments = {"source_reference": source_reference, "reference_scale": scale}
             comparison = compare_pixels(expected, captured, width, height, **comparison_arguments)
+            if time.monotonic() >= deadline:
+                raise TimeoutError("Windows capture deadline expired during CPU comparison")
             time.sleep(0.1)
             repeated = compositor.capture(width, height, offset)
             if repeated != captured:
                 raise ValueError("visible compositor pixels changed during held publication")
+            if time.monotonic() >= deadline:
+                raise TimeoutError("Windows capture deadline expired during held publication")
             evidence = {"stage": stage, "comparison": comparison, "cpuSha256": cpu_hash,
                         "compositorSha256": hashlib.sha256(captured).hexdigest()}
             if source_hash is not None:
                 evidence["sourceReferenceSha256"] = source_hash
             state["stages"].append(evidence)
             write_json(output / "receipt.json", state)
+            if time.monotonic() >= deadline:
+                raise TimeoutError("Windows capture deadline expired before acknowledgement")
             write_json(output / f"ack-{index}.json", {"protocol": 1, "nonce": nonce, "index": index})
             previous_stamp = stage["stamp"]
-        remaining = max(0.1, deadline - time.monotonic())
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise TimeoutError("Windows capture deadline expired before close completion")
         code = process.wait(timeout=remaining)
+        if time.monotonic() >= deadline:
+            raise TimeoutError("Windows capture deadline expired during close completion")
         result = read_json(output / "result.json")
         if code:
             raise ValueError("probe did not complete its real close/unregister checks")
         validate_result(result, nonce=nonce, last_limits=state["stages"][-1]["stage"]["limits"])
         verify_runtime_artifacts(files, receipt)
         verify_runtime_bundle(files["runner"].parent, receipt.get("runtimeBundle"))
+        if time.monotonic() >= deadline:
+            raise TimeoutError("Windows capture deadline expired during final runtime verification")
         state.update(qualification="bounded-windows-consumer-passed", exitCode=code, result=result)
     except BaseException as error:
         state.update(qualification="failed", error=f"{type(error).__name__}: {error}")

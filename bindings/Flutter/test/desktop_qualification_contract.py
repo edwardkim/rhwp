@@ -501,6 +501,83 @@ class SourceReferenceCaptureContracts(unittest.TestCase):
                     mock.patch("builtins.print"):
                 yield case
 
+    def assert_deadline_failure(self, expire):
+        with self.harness(reference=True, coverage=True) as case:
+            clock = SimpleNamespace(now=0.0, reads=0, bundle_checks=0)
+            original_compare = qualification.compare_pixels
+            original_capture = qualification.WindowsCompositor.return_value.capture
+            original_launch = qualification.subprocess.Popen
+            original_bundle = qualification.verify_runtime_bundle
+
+            def monotonic():
+                clock.reads += 1
+                if expire == "ready-stage" and clock.reads > 1:
+                    clock.now = 121.0
+                return clock.now
+
+            def compare(*args, **kwargs):
+                result = original_compare(*args, **kwargs)
+                if expire == "comparison":
+                    clock.now = 121.0
+                return result
+
+            def capture(*args, **kwargs):
+                result = original_capture(*args, **kwargs)
+                if expire == "held-capture" and len(case.captures) == 2:
+                    clock.now = 121.0
+                return result
+
+            def launch(*args, **kwargs):
+                process = original_launch(*args, **kwargs)
+                wait = process.wait
+
+                def finish(**options):
+                    result = wait(**options)
+                    if expire == "close-wait":
+                        clock.now = 121.0
+                    return result
+
+                process.wait = finish
+                return process
+
+            def bundle(*args, **kwargs):
+                result = original_bundle(*args, **kwargs)
+                clock.bundle_checks += 1
+                if expire == "final-identity" and clock.bundle_checks == 2:
+                    clock.now = 121.0
+                return result
+
+            with mock.patch.object(qualification.time, "monotonic", side_effect=monotonic), \
+                    mock.patch.object(qualification, "compare_pixels", side_effect=compare), \
+                    mock.patch.object(qualification.WindowsCompositor.return_value, "capture", side_effect=capture), \
+                    mock.patch.object(qualification.subprocess, "Popen", side_effect=launch), \
+                    mock.patch.object(qualification, "verify_runtime_bundle", side_effect=bundle):
+                with self.assertRaisesRegex(TimeoutError, "deadline"):
+                    qualification.main()
+            receipt = qualification.read_json(case.output / "receipt.json")
+            self.assertEqual(receipt["qualification"], "failed")
+            if expire in ("ready-stage", "comparison", "held-capture"):
+                self.assertFalse((case.output / "ack-1.json").exists())
+            if expire == "ready-stage":
+                self.assertEqual(case.captures, [])
+            elif expire in ("comparison", "held-capture"):
+                self.assertTrue((case.output / "compositor-1.rgba").exists())
+
+    def test_expired_deadline_rejects_an_already_ready_stage_without_capture_or_ack(self):
+        self.assert_deadline_failure("ready-stage")
+
+    def test_cpu_comparison_crossing_deadline_cannot_ack_a_publication(self):
+        self.assert_deadline_failure("comparison")
+
+    def test_held_capture_crossing_deadline_cannot_ack_a_publication(self):
+        self.assert_deadline_failure("held-capture")
+
+    def test_successful_close_wait_finishing_after_deadline_is_not_qualification(self):
+        self.assert_deadline_failure("close-wait")
+
+    def test_final_runtime_identity_check_crossing_deadline_is_not_qualification(self):
+        self.assert_deadline_failure("final-identity")
+
     def test_default_cli_keeps_strict_no_reference_comparison(self):
         with self.harness() as case:
             qualification.main()
