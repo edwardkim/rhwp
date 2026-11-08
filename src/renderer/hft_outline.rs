@@ -311,7 +311,11 @@ impl HftOutlineFonts {
             self.pua_coverage
                 .text_faces
                 .select(&families, &character.to_string(), false, false)?;
-        if selected.family == first_family(&style.font_family).to_lowercase() {
+        // 앞 후보의 coverage가 없으면 그 글자의 실제 공급자를 확정할 수 없다.
+        // faux bold와 같이 실제 CSS 사다리를 아는 Canvas painter에 맡긴다.
+        if !selected.predecessors_known
+            || selected.family == first_family(&style.font_family).to_lowercase()
+        {
             return None;
         }
         let source = self.print_faces.get(&(selected.family, selected.weight))?;

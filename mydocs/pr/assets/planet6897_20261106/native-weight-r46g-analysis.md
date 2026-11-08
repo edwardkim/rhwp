@@ -614,3 +614,34 @@ HWPX 198쪽은 Native100.00%지만 WASM99.65%가 남는다. 처음에는 새 기
 윤곽 경계를 대조해 확인했다. `predecessors_known`를 판독하는 기존 합성 굵기 경로와 달리
 보통 TTF fallback 윤곽 경로에는 이 소유 확인이 빠져 있다. 이 차이는 다음 단계에서 실제
 Canvas 공급자를 유지하도록 보정하며, 본 커밋으로 전체 통합 PR 준비 완료를 선언하지 않는다.
+
+
+## 2026-11-09: Print 대체 윤곽의 앞 후보 coverage 소유 보존
+
+편람 HWPX 198쪽의 WASM 99.64940%는 앞 Native 보정에서 생긴 새 하락이 아니었다.
+수정 전 frozen WASM도 같은 조건에서 같은 값을 냈다. 실제 Canvas는 Haansoft Batang의
+점 기호를 선택하지만, Print 윤곽 경로는 coverage를 수집하지 않은 앞 후보를 건너뛰고
+뒤의 Malgun Gothic Semilight 윤곽을 대신 그렸다. `predecessors_known`으로 이미 보존하던
+faux-bold의 소유 규칙을 보통 TTF Print 대체 윤곽에도 적용했다. 미확인 앞 후보가 있으면
+실제 CSS 사다리를 아는 Canvas painter에 맡긴다. 글리프를 숨기거나 글꼴 순서를 바꾸지 않았다.
+
+기존 실제 브라우저 검사 파일에 MIT 합성 TTF 세 개의 관계형 검사를 추가했다. 앞 글꼴의
+coverage가 미확인인 경우 Canvas 문자 호출·PNG 보존을 확인하고, 전부 등록한 정상 조건의
+윤곽 재생과 원 face의 문자 paint도 확인한다. 수정 전 실제 1 FAIL → 수정 후 통과다.
+Print/faux-bold 묶음 4 PASS, 기존 자동 수집 Canvas 묶음 전체 17 PASS/0 FAIL이다.
+기존 CI가 해당 파일을 import하므로 CI 호출을 추가하지 않았다. fmt와 WASM Clippy도 통과했다.
+
+같은 입력·Print·글꼴 조건의 HWPX 198쪽은 fresh WASM 100.00%로 복원됐고 review·overlay를
+직접 판독했다. HWP 197/198/224쪽도 각각100.00%, outline8쪽99.95%, sample10 629쪽99.96%다.
+이 여섯 쪽 결과로 전쪽 통과를 주장하지 않는다. HWP/HWPX 각383쪽의 WASM 전쪽 비교는
+이 기록 시점에 실행 중이며, 다른 보호값과 새 devel 수식 문서의 하락도 보정 대상이다.
+
+[생산자·검사·실행 범위](print-predecessor-coverage/validation.json) ·
+[수정 전 review](print-predecessor-coverage/before-wasm-p198-review.png) ·
+[수정 전 overlay](print-predecessor-coverage/before-wasm-p198-overlay.png) ·
+[수정 후 review](print-predecessor-coverage/after-wasm-p198-review.png) ·
+[수정 후 overlay](print-predecessor-coverage/after-wasm-p198-overlay.png).
+
+이 단계 전 `975450f54d`까지 커밋한 후 최신 `06181802e5`로173개를 충돌 없이 리베이스했다.
+새 후보 `4b55aea528`와 리베이스 전 후보 사이의 변경은 #8793 배포 문서·기록8개뿐이며,
+제품 소스·검사·입력·시각 도구는 동일하다. 기존 producer의 근거를 새 실행으로 재표기하지 않았다.
