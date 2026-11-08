@@ -3341,6 +3341,12 @@ impl Renderer for WebCanvasRenderer {
             return;
         }
         let _sampling = self.image_sampling_scope(data, None, w, h);
+        if self.high_quality_images
+            && self.ctx.image_smoothing_enabled()
+            && image_reduction::draw_metafile_surface(&self.ctx, data, (x, y, w, h))
+        {
+            return;
+        }
         // 독립 Print의 장치 프레임이 표본을 소유하면 그 프레임을 먼저 재생한다.
         // 일반 비트맵 준비가 JPEG를 PNG로 바꾸면 프레임 선언까지 사라진다.
         // Native Skia와 같은 순서이며, 재생할 수 없는 변환은 기존 경로로 간다.

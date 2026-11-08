@@ -462,3 +462,73 @@ Docker 최적화 빌드 결과는 아니다. fresh WASM 전 209쪽도 산출했�
 
 이 단계의 실제 로그·진단 원장은 ignored output의
 `pr-review/native-program-resume-20261108/`에 보존한다. PDF·점수 문턱·원본·보호 TSV는 변경하지 않았다.
+
+## Mac 후속: WMF 축소 표본과 HFT 가운뎃점 전진의 실제 소비 복구
+
+2026-11-09 KST에 부모 `f1e6ac11eb`와 미커밋 보정의 실제 Native/fresh WASM으로
+sample16 3종 192쪽과 nested 17쪽을 각각 다시 산출했다. 이 단계는 통합 검증의 중간 보정이며
+PR 제출 완료를 뜻하지 않는다. [전쪽 TSV·producer·같은 페이지의 raw/review/overlay](device-mipmap-hft-repair/validation.json)에
+실제 결과를 보존한다. 임시 스크립트·추출한 글꼴·로그는 ignored output에만 둔다.
+
+### WMF 최종 표면의 축소 표본
+
+WASM의 sample16 HWP2024·HWPX 18쪽은 87.44904%, 35쪽은 93.60137%였다.
+실제 `drawImage`의 최종 WMF 표면 PNG, 장치 CTM, 출력 사각형을 기록했다.
+같은 PNG를 Native Skia의 mipmap으로 재생하면 실제 Native 그림 영역과 100% 일치했고,
+단일 레벨 선형·cubic 및 Chrome의 `high`/`medium`/`low` 선택은 같은 결과를 보장하지 못했다.
+JPEG 복호화 교체 대조도 PNG가 같아 원인으로 인정하지 않고 되돌렸다.
+
+Canvas의 quality 문자열에 맡기던 경계를 최종 metafile 표면 marker의 실제 축소율로 제한했다.
+짝수 축의 2표본 평균·홀수 축의 `[1,2,1]` 표본, premultiplied RGBA,
+두 mip 레벨의 선형 보간을 Native Skia와 대조한 공통 수치 모듈에 둔다.
+장치 픽셀 재생은 기존 `replay_raster`를 사용한다. 이 경로는 회전·반전 CTM,
+일반 bitmap·JPEG·잘라낸 원본 창을 대신하지 않으며 잘못된 크기·할당 한도는 기존 painter로 넘긴다.
+문서명·쪽 번호·목표 점수로 분기하지 않는다. 실제 수학 계약은
+[SkMipmap.cpp](https://github.com/google/skia/blob/main/src/core/SkMipmap.cpp),
+[SkMipmapHQDownSampler.cpp](https://github.com/google/skia/blob/main/src/core/SkMipmapHQDownSampler.cpp)와
+같은 바이트를 재생한 Native oracle로 교차 확인했다.
+
+새 합성 관계 검사 3개는 홀수·짝수 축, 투명 픽셀의 숨은 RGB, 원본·장치 한도를 확인한다.
+Native 실행 안에서 실제 생산 수치 모듈과 Skia mip 결과를 비교하며 실물 문서 px 위치를 고정하지 않는다.
+현재 suite 48개 제한 안에서 자동 수집한다. 실제 fresh WASM 전쪽 결과에서 HWP2024·HWPX는
+각 최저 99.99%, HWP2022는 64쪽 모두 100.00%다.
+
+### HFT 가운뎃점의 원본 전진
+
+nested 17쪽의 `예방‧관리하고`는 설치한 Gulim 두 버전의 366개 사용 글리프 윤곽이
+독립 PDF의 embedded subset과 같았다. 문제의 U+2027은 별도 HFT 한양신명조 run이며
+표시 CFF에 글리프가 없어 자연 전진이 약 0.30133em으로 바뀌었다. 이미 검증된 원본
+512/1024em 전진을 실제 측정·paint의 공통 선언 경계로 전달한다. 일반 TTF의 자연 전진과 구분한다.
+새 검사는 MIT 합성 CFF만 사용하고 비공개 설치 글꼴에 의존하지 않는다.
+기존 4HU 장치 반올림의 최대 반 양자 2HU와 배율 관계·비 HFT 반례를 함께 확인한다.
+
+최종 집중 검사는 HFT 15건과 mip 3건의 **18 PASS / 0 FAIL**이다. 최초 harness의
+`Arc<String>` 타입 오류, 장치 반올림을 빠뜨린 exact assert 실패는 최종 검증으로 세지 않는다.
+실제 소스 전진 결함은 수정 전 8 PASS / 1 FAIL, 수정 후 최종 묶음 통과로 확인했다.
+같은 원본·Print·글꼴 환경에서 nested 17쪽은 Native 99.97771%, WASM 99.97805%로 복구됐다.
+review와 overlay에서 가운뎃점 뒤의 간격 복원과 본문·쪽 번호 보존을 직접 확인했다.
+
+### 남은 보호값과 전체 검증 상태
+
+| 범위 | 실제 전쪽 수 | 공식 보호값보다 낮은 쪽 |
+| --- | --- | --- |
+| Native sample16 3종 | 192 | 없음 |
+| fresh WASM sample16 3종 | 192 | HWP2024·HWPX 35쪽 각 100.00% → 99.99% |
+| Native nested | 17 | 3쪽 99.76% → 99.75% |
+| fresh WASM nested | 17 | 없음 |
+
+35쪽의 raw 미대응 7픽셀은 Native에도 같은 위치에 남고, 내용 판정 경계의 옅은 색 차이다.
+유사색 보조값이 100%인 것으로 raw 보호값을 대신하지 않는다. nested 3쪽은 이전 Linux와
+새 Mac의 반올림된 render tree 134개가 같지만 이것만으로 세부 paint 일치를 입증하지 못한다.
+원본 Type3·선택 CFF의 윤곽·공백 전진·실제 소비를 계속 대조한다. 허용폭·PDF·보호 TSV·마스크를 바꾸지 않는다.
+
+Native/WASM Clippy·workspace build·all-target Clippy는 통과했다. 새 테스트의 표현을
+`is_multiple_of(2)`로 정리한 것은 같은 짝수 판정이다. 시각 producer는 그 표현 정리 전의
+동일 동작 보정 바이트로 고정했으며 이후 source/head의 최종 검증과 구분한다.
+현재 manifest 재준비 후 manifest·unit-tier 검사는 통과했다. 전체 nextest는 436.279초에
+**13,069 PASS / 1 FAIL / 45 skip**으로 완료됐다. 실패한
+`regulatory_22_legacy_latin_dot_preserves_the_source_word_boundary`는 `덮개·울`의 줄 소속을
+검사하며 관측한 두 번째 줄은 `덮`으로 끝났다. 원 해결 근거·독립 PDF·현재 글꼴 소비를 대조해
+원인을 보정하며 검사와 기대값은 유지한다. 최종 제출 검증 완료로 기록하지 않는다.
+이관 manifest의 Linux 절대 경로 때문에 0쪽에서 멈춘 실행과 최초 harness drift는 환경·준비 오류로
+보존하고, 동일 파일의 Mac 경로 및 현재 파생 suite를 확인한 재실행만 유효 결과로 사용한다.

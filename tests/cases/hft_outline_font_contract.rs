@@ -1,5 +1,5 @@
 //! 검사 유형: 관계형. 합성 글꼴 프로그램의 선택·대체 계약을 검증한다.
-//! 주석 갱신: 2026-11-08T21:00:56+09:00; 직전 변경: 2026-11-01T19:39:20+09:00, e64921811f349385d06aa6bc29928b1f4e200e1a.
+//! 주석 갱신: 2026-11-08T23:28:54+09:00; 직전 변경: 2026-11-01T19:39:20+09:00, e64921811f349385d06aa6bc29928b1f4e200e1a.
 //! 실제 입력 `samples/hwp3-sample10.hwp`, 한컴 2020 Print, 96 DPI, 2px 이웃 raw.
 //! 2026-10-30 측정: 1쪽 Native/fresh WASM 각 99.96%; 전 763쪽 최저 각 99.41% / 99.40%.
 //! 근거: `mydocs/pr/assets/issue_8371/sample10-native.tsv`, `sample10-wasm.tsv`, `sample10-validation.md`.
@@ -65,6 +65,52 @@ fn verified_hft_advance_survives_a_supplied_display_otf() {
         measure(&style),
         source_width,
         "명시 OTF는 해당 프로그램의 전진을 사용한다"
+    );
+}
+
+#[test]
+fn declared_hft_hyphenation_point_keeps_its_half_em_before_display_fallback() {
+    use rhwp::renderer::layout::{EmbeddedTextMeasurer, TextMeasurer};
+    use rhwp::renderer::native_pua_fonts::NativePuaFonts;
+    use rhwp::renderer::TextStyle;
+
+    // 관계형·원본 전진 계약: worklife Print의 Type3 Widths=500/1000과
+    // nested 17쪽의 구분점→뒤 글자 원점을 대조했다. 실물 좌표를 고정하지 않는다.
+    // MIT 합성 CFF는 표시 글꼴만 공급하며 비공개 HFT 설치를 요구하지 않는다.
+    let mut fonts = NativePuaFonts::default();
+    fonts
+        .register_otf("synthetic", false, false, CFF, 0)
+        .unwrap();
+    let mut style = TextStyle {
+        font_family: "HY Sinmyeongjo".into(),
+        original_glyph_metric_family: Some(std::sync::Arc::new("한양신명조".into())),
+        source_font_is_hft: true,
+        font_size: 20.0,
+        native_otf_metrics: fonts.get_otf("synthetic", false, false),
+        ..Default::default()
+    };
+    let measure = |style: &TextStyle| {
+        EmbeddedTextMeasurer.compute_char_positions("‧", style)[1] / style.font_size
+    };
+    // 실제 전진은 독립 Print로 확인한 4HU 장치 격자에서 반올림된다.
+    // 자연 전진 0.5em을 검사하되 그 반 격자인 2HU를 계산에서 구분한다.
+    let half_device_unit = |style: &TextStyle| 2.0 / 75.0 / style.font_size;
+    assert!(
+        (measure(&style) - 0.5).abs() <= half_device_unit(&style) + f64::EPSILON,
+        "표시용 결측 폭으로 원본 전진을 바꾸지 않는다: {}",
+        measure(&style)
+    );
+    style.font_size *= 2.0;
+    assert!(
+        (measure(&style) - 0.5).abs() <= half_device_unit(&style) + f64::EPSILON,
+        "원본 반각 계약은 장치 반올림 범위에서 크기에 비례한다"
+    );
+    style.source_font_is_hft = false;
+    style.original_glyph_metric_family = None;
+    assert_ne!(
+        measure(&style),
+        0.5,
+        "원본 HFT 소유가 없는 명시 OTF에는 확장하지 않는다"
     );
 }
 

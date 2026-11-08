@@ -188,6 +188,12 @@ pub(crate) fn declared_original_glyph_advance_em(
     italic: bool,
     character: char,
 ) -> Option<f64> {
+    // 원본 HFT U+2027은 기존 독립 Print의 Type3 /Widths=500/1000em이다.
+    // 표시용 OTF의 cmap 결측에서 일반 구두점 폭으로 내려가면 뒤 글자가 당겨진다.
+    // glyph 표의 같은 반각 계약을 측정·paint가 함께 소비한다. 명시 TTF/OTF는 비대상이다.
+    if face == "한양신명조" && !bold && !italic && character == '\u{2027}' {
+        return Some(f64::from(HANYANGSINMYEONGJO_HYPHENATION_POINT[0]) / 1024.0);
+    }
     // 독립 Type3로 확인한 원본 HFT 한양신명조의 두 원형 기호는 1em이다.
     // 표시용 HY Sinmyeongjo OTF의 반각 hmtx와 원본 전진을 구분한다.
     // 평가결과서 Print도 U+2219 뒤 한글 원점까지 1em이며 원문에 공백은 없다.
