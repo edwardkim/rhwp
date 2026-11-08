@@ -26,6 +26,28 @@ HFT의 추정 꾸밈을 새로 붙이지 않고 원본 자간과 자연 전진�
 실제 미달 8쪽·정상 대조군으로 수정 전후를 확인한 뒤 완료를 판정한다. 현재는 원인 분석 및
 수정 전 재현 단계이며, 보정 후 통과를 선기록하지 않는다.
 
+### R54 집중 회귀와 실제 프로그램 신원
+
+제품 source `e2ca9b0c52ce705cddaf34dd67bbf5c787f9e445`에서 최소 공개 글꼴 환경의 집중 회귀
+**55 passed / 0 failed**를 확인했다. 1,880건은 필터 밖 검사이며 전체 회귀의 skipped에 합산하지
+않는다. 새 주 프로그램 계약 5건은 -10/0/+10 자간, 실제 주 공급자·문서 지정 대체·다른 프로그램·
+기존 HWP3 꾸밈·브라우저 독립 SFNT를 구분한다. 기존 #8418 공개 CFF 및 원 프로그램 소유·
+문장부호·굵은 제목의 관계 검사도 유지했다.
+
+원 Native 프로그램 신원은 파일 SHA만이 아니라 `SHA-256(SFNT bytes || face index big endian)`
+이다. 실제 공급자가 같은 face인지 이 규칙으로 확인하며, 브라우저 `sweep-` 신원은 독립 SFNT
+자원의 실제 바이트 해시와 index 0을 확인한다. 서로 다른 face나 결측 글리프의 뒤 프로그램에
+신원을 넘기지 않는다. 확인한 공급자의 배열 인덱스를 캐시해 글자마다 프로그램 바이트를 다시
+해시하지 않는다. 원본 자간·장평·자연 glyph-fit과 HWP3/HFT의 독립 꾸밈 계약은 유지했다.
+
+[동일 수정 전 실행 파일의 정식 Native 신원 재현](primary-program-decoration-r52/before-native-identity-test.txt),
+[최소 글꼴 수정 전 실패](primary-program-decoration-r52/before-minimal-fonts-test.txt),
+[수정 후 집중 회귀](primary-program-decoration-r52/after-focused-test.txt),
+[실제 source·명령·실행 파일 SHA](primary-program-decoration-r52/after-focused-provenance.json).
+중간 R53은 새 검사의 SHA 문자열 표현 컴파일 오류로 실행되지 않았다. 해당 오류를 수정하고
+실제 신원 계약을 반영한 위 R54 실행만 최종 집중 결과로 사용한다. 전쪽 Native/fresh WASM과
+실물 8쪽·정상 대조군의 출력 복구는 별도로 확인 중이며, 이 통과로 대체하지 않는다.
+
 ## 관측한 차이
 
 같은 `pr8642/report-838-original.hwp`와 기존 독립 한컴 Print PDF의 24쪽을 비교했다.
