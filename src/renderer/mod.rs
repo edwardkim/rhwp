@@ -811,13 +811,19 @@ pub(crate) fn canvas_cluster_fit(
     // 원본 TTF에 없는 작은 수학 기호는 대체 face로 그리되 원본의 반각
     // 칸을 사용한다. 음수 자간은 윤곽을 누르지 않지만, 전각 대체 face의
     // 양쪽 빈 공간은 반각 칸 중앙에 맞춰야 독립 Print와 같은 원점이 된다.
-    if style.source_font_is_ttf
-        && style.letter_spacing < 0.0
+    if style.letter_spacing < 0.0
         && matches!(cluster, "\u{2218}" | "\u{2219}")
-        && style
-            .native_otf_metrics
-            .as_ref()
-            .is_some_and(|font| cluster.chars().next().is_some_and(|ch| !font.has_glyph(ch)))
+        && style.native_otf_metrics.as_ref().is_some_and(|font| {
+            cluster.chars().next().is_some_and(|ch| {
+                // HWP5의 유형 미상은 TTF 선언이 아니다. 실제 첫 TTF가 결측이면
+                // 뒤 표시 후보가 glyph를 갖더라도 같은 반각 칸의 정렬을 보존한다.
+                // CFF/HFT의 원본 전진 계약을 이 조건으로 승격하지 않는다.
+                (style.source_font_is_ttf && !font.has_glyph(ch))
+                    || (!style.source_font_is_ttf
+                        && !style.source_font_is_hft
+                        && font.primary_truetype_lacks_glyph(ch))
+            })
+        })
     {
         let advance =
             style.glyph_fit_advance(layout_cluster_advance)? * style.script_advance_scale();

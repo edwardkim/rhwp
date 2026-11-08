@@ -569,3 +569,48 @@ Native/WASM Clippy·workspace build·all-target Clippy는 통과했다. 새 테�
 정본 보호 Native의 편람 HWP 24쪽·sample10 126쪽·outline 8쪽 및 앞서 기록한 nested 3쪽의
 공식 표시값 하락도 남아 있다. 편람 HWPX 383쪽의 보호값은 유지됐다.
 이번 한 회귀 검사 복구로 이 잔여를 면제하거나 제출 완료로 처리하지 않는다.
+
+## 2026-11-09: 유형 미상 슬롯의 실제 주 TTF 결측과 기호 칸 정렬
+
+편람 HWP의 198쪽 raw 미대응 225픽셀은 표 안의 U+2219 점 기호에만 모여 있었다.
+동일 쪽 HWP/HWPX의 문단·표 프레임은 같았다. 원 HWP5 FACE_NAME 하위 비트를 TTF로
+단정하지 않는 현재 사양 보정은 유지한다. 그 비트를 다시 TTF로 인정해 수치를 맞추지 않았다.
+
+실제 적재한 첫 프로그램은 KoPub TrueType이며 점은 해당 프로그램에 없다. 유형 미상 공급은
+뒤 표시 후보의 coverage도 보존하므로, 전체 사다리의 `has_glyph`를 주 프로그램의 보유 여부로
+사용하면 결측 판단을 놓친다. 공통 `canvas_cluster_fit`에서 유형 미상·비HFT 슬롯에 한해
+실제 첫 TrueType의 cmap 결측을 조회하고, 기존 음수 자간·반각 칸·작은 잉크의 정렬 규칙을
+소비하도록 보정했다. 측정 전진·문단 원점·원본 유형·CFF/HFT의 원본 전진은 바꾸지 않는다.
+명시 TTF의 기존 판정도 유지한다. 같은 함수를 Native Skia와 Canvas가 소비한다.
+
+MIT 합성 TTF의 결측과 뒤 CFF의 실제 표시를 메모리에서 공급하는 최종 Native paint 검사로
+수정 전 standalone 1 FAIL을 재현했다. 보정 후 현재 파생 suite의 새 검사와 기존 빈 cmap
+정상 대조군은 2 PASS·0 FAIL(2.733초), 331건은 선택 밖이다. 상용 글꼴·OS 설치에 의존하지
+않으며, helper 반환값이나 실물 좌표 핀으로 대신하지 않는다. 기존 CI의
+`issue_8153_symbol_fallback` 모듈 호출에 함께 수집되므로 CI 호출은 추가하지 않았다.
+
+현재 후보 Native HWP **383/383쪽**, 최저 표시 **99.96%**, 표시100.00% **382쪽**,
+정본 보호값 하락 **0쪽**이다. 198쪽은 Native **99.71102→100.00000%**,
+fresh WASM **99.68423→100.00000%**로 복원됐다. fresh WASM의 197·198·224쪽도
+각각100.00%다. WASM은 이 선택3쪽 결과이며 전383쪽 검증으로 확대하지 않는다.
+Skia root lib3852 PASS·12ignore, 다른 lib182 PASS, PNG2 PASS·PDF35 PASS,
+fmt·manifest·unit tiers도 통과했다. 전체 nextest 재통과와 다른 최종 게이트를 뜻하지 않는다.
+
+[생산자·조건·실행 범위](primary-truetype-symbol-repair/validation.json) ·
+[Native 전383쪽 TSV](primary-truetype-symbol-repair/native-handbook-hwp-383-silhouette.tsv) ·
+[WASM 선택3쪽 TSV](primary-truetype-symbol-repair/wasm-handbook-hwp-selected-silhouette.tsv) ·
+[Native 수정 전 review](primary-truetype-symbol-repair/native-before-p198-review.png) ·
+[수정 전 overlay](primary-truetype-symbol-repair/native-before-p198-overlay.png) ·
+[Native 수정 후 review](primary-truetype-symbol-repair/native-after-p198-review.png) ·
+[수정 후 overlay](primary-truetype-symbol-repair/native-after-p198-overlay.png) ·
+[WASM 수정 후 review](primary-truetype-symbol-repair/wasm-after-p198-review.png) ·
+[WASM 수정 후 overlay](primary-truetype-symbol-repair/wasm-after-p198-overlay.png).
+
+HWPX 198쪽은 Native100.00%지만 WASM99.65%가 남는다. 처음에는 새 기호 보정의 회귀로
+추정했으나, 보정 전 고정 WASM을 같은 조건으로 실행해도99.65%인 것을 확인해 그 인과
+판정을 철회했다. Native의100%와 수정 후 WASM만 대조해 새 회귀라고 부를 수 없다.
+실제 Canvas는 Haansoft Batang의 점을 측정하는데, 별도 Print 윤곽은 미확인 앞 family를
+건너뛰어 맑은 고딕 Semilight의 점을 그린다. 같은 canvas의 최종 path와 후보 프로그램의
+윤곽 경계를 대조해 확인했다. `predecessors_known`를 판독하는 기존 합성 굵기 경로와 달리
+보통 TTF fallback 윤곽 경로에는 이 소유 확인이 빠져 있다. 이 차이는 다음 단계에서 실제
+Canvas 공급자를 유지하도록 보정하며, 본 커밋으로 전체 통합 PR 준비 완료를 선언하지 않는다.

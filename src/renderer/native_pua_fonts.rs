@@ -88,6 +88,15 @@ impl NativeOtfMetrics {
     pub fn uses_original_truetype(&self) -> bool {
         self.original_truetype
     }
+    /// 실제 첫 TrueType 프로그램의 결측 여부다. 뒤 표시 후보의 coverage와 구분한다.
+    /// 유형 미상 문서에서도 공급된 프로그램을 확인할 뿐 원본 유형을 추정하지 않는다.
+    pub(crate) fn primary_truetype_lacks_glyph(&self, character: char) -> bool {
+        self.programs.first().is_some_and(|program| {
+            !program.cff
+                && ttf_parser::Face::parse(&program.bytes, program.face_index)
+                    .is_ok_and(|face| face.glyph_index(character).is_none_or(|glyph| glyph.0 == 0))
+        })
+    }
     /// 첫 글리프 공급자가 TrueType일 때 그 프로그램의 자연 전진을 읽는다.
     /// 원본 폭이 확인되지 않은 명시적 TrueType 슬롯에서만 호출한다.
     pub fn source_ttf_advance_em(&self, character: char) -> Option<f64> {
