@@ -15,6 +15,7 @@
 | `contributors`, `main_merge_exception`, `issue8745_flow_comparison` | 기여자 수 대조, 승인된 main 승격 예외, 보안 이슈 종료 근거 |
 | `tag_ci`, `release_binary` | 태그 CI 미완료와 실제 Release Binary 성공을 구분한 상태 |
 | [cleanup.json](cleanup.json) | 삭제 범위·확보 공간·소스 ref·보존한 로컬 환경의 파일 해시 |
+| [closeout-review.json](closeout-review.json) | #8793 제출 head CI·실제 fast-pass와 2026-11-09 스토어 조회; trailing head CI는 병합 전에 별도 확인 |
 
 개별 관측 시각을 그대로 보존한다. 후속 문서 PR을 작성하면서 모든 채널의 실행을 반복한
 기록은 아니다. `source_record_hashes`와 명령 인자의 `output/` 경로는 검증 당시 임시 원본의
