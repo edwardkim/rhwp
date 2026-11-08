@@ -18,7 +18,7 @@ Rust 제품 구현·Cargo 의존성·Studio/shared 구현은 이 devel과 동일
 - CLI 압축 파일에도 `PDF_QUICKSTART.md`와 영문판을 넣는다. PNG 출력 인자는 디렉터리이며
   PDF 출력 인자는 파일인 실제 차이를 명시했다.
 - npm core/editor, VS Code, Chrome/Edge 제출 초안과 기존 PDF 매뉴얼의 낡은 opt-in 설명을 정리했다.
-  crates.io 게시 일정은 기존 MD01 결정대로 제품 0.9.0과 별도다.
+  2026-11-08 추가 지시에 따라 crates.io 초회 배포도 0.9.0 릴리즈에 포함한다. 기존 MD01의 별도 일정 결정을 갱신했다.
 
 ## 기여자 감사
 
@@ -82,18 +82,25 @@ GitHub 계정을 대조했다. 사람 **33명**, 별도 bot **1개(Dependabot)**
 Cargo 소비 빌드를 이번에 다시 완료했다는 뜻은 아니다. crates.io 검사는 source archive 검사이며
 실제 registry 게시·Cargo registry 소비 검증과 구분한다.
 
-## 남은 원격 절차
+## 원격 처리와 남은 절차
 
-1. 승인 후 준비 branch를 push하고 **devel 대상 Open PR**을 만든다. 해당 head의 필수 CI·self-review를
-   완료하고 merge commit으로 통합한다. 본 작업은 CI workflow/실행 증거 정책을 변경하므로 후속
-   기록은 [post-merge 옵션 2](../manual/pr_review/post_merge.md)의 별도 기록 PR로 처리한다.
+1. **devel 준비 PR 완료:** [#8757](https://github.com/edwardkim/rhwp/pull/8757)의 head
+   `d778ab7bfd28c858c638d7f2c38238bea5a58412`에서 필수 CI와 self-review를 완료하고
+   `0e6cfe91df7aabb886319346f78af568def25a64` merge commit으로 통합했다.
+   Native의 checkout 시간 초과는 사용자 승인에 따라 해당 job·종속 집계만 1회 재실행해 해소했다.
+   전체 회귀 12,777건·CI 선택 Native 237건·Studio 2,769건이 통과했다. 최신 #8269까지의 제품 소스를
+   그대로 보존한 병합과 main ancestry를 확인했다. [최종 검토](../pr/archives/pr_8757_review.md),
+   [CI 증거](../pr/assets/pr8757/ci-results.json)를 별도 기록 후보로 준비했다.
+   CI 정의 변경의 [옵션 2](../manual/pr_review/post_merge.md)에 따른 이 기록 PR의 원격 반영은 남았다.
 2. 통합된 devel의 exact SHA로 [승격 preflight](../manual/github_operations.md#76-workflow-promotion-preflight)를
    실행한다. 원격 full CI/CodeQL, direct/adapter 실행과 5플랫폼 Release Binary·WASM·VSIX verify-only
    결과를 확인한다. `#8745`의 보호 브랜치 전체 보안 분석도 여기서 실제 결과를 확인해야 한다.
 3. 성공 후 devel → main 릴리즈 PR을 진행한다. 원격 SHA가 달라지면 기여자·변경 범위·실행 증거를 갱신한다.
 4. 승인된 main SHA에 `v0.9.0` 태그를 게시하고 GitHub Release 및 npm core/editor·VS Code·Open VSX의
-   실제 게시 결과를 확인한다. Chrome/Edge/Firefox 스토어 제출·Safari 검증과 crates.io 첫 게시는
-   각각의 별도 승인·환경·절차를 따른다.
+   실제 게시 결과를 확인한다. **crates.io 초회 게시도 0.9.0의 배포 단계에서 수행**한다.
+   최종 source의 14개 `.crate`·의존 순서·checksum을 확인하고 수동 게시 뒤 공개 registry의
+   Rust·CLI·WASM 소비와 docs.rs 결과를 확인한다. Chrome/Edge/Firefox 스토어 제출과 Safari 검증은
+   해당 채널의 환경·절차를 따른다.
 
 조회 시 npm 두 패키지의 latest는 0.8.7이고, npm·VS Code Marketplace·Open VSX의 0.9.0은 미게시다.
 게시 직전에 다시 확인한다. 토큰 값·권한·보호 규칙은 변경하지 않았다.
@@ -108,3 +115,23 @@ Cargo 소비 빌드를 이번에 다시 완료했다는 뜻은 아니다. crates
 - 문서 metadata의 기존 오류 16건은 기준 devel과 동일하고 신규 오류는 0건이다.
 - Linux 외 공식 Native 플랫폼, 실제 스토어 설치·심사, 신규 릴리즈 registry 소비는 로컬 성공으로
   대신하지 않는다. 게시 날짜와 채널별 완료 표시는 실제 성공 뒤 확정한다.
+
+
+## 2026-11-08 문서 보완과 crates.io 결정 반영
+
+#8757 병합 뒤 메인테이너는 배포 문서의 0.9.0 현행화를 지적하고,
+crates.io 배포도 0.9.0부터 시작하도록 결정했다. 사용자 배포 문서는 main 승격 전에 devel에서
+완성하며, 기존 MD01의 별도 일정 결정을 이번 지시로 대체했다.
+
+- 국·영문 README·CHANGELOG·릴리즈 노트, PDF 온보딩, crates.io 소비·게시 가이드와
+  패키지 README에 초회 게시·공개 registry 소비 확인을 0.9.0의 범위로 반영했다.
+- Chrome·Firefox README의 최신 항목을 0.9.0으로 보완하고 0.8.7 변경 이력은 보존했다.
+  [Firefox AMO 0.9.0 심사 안내](../feedback/firefox-0.9.0_amo_notes.md)를 신설했으며
+  [게시 가이드](../manual/publish_guide.md)에 네 스토어 제출 문서와 반영 순서를 연결했다.
+- 과거 What's New 제안은 제출용 안내와 구분했다. 예전 0.8.7 제출 파일은 바꾸지 않았다.
+- 준비 중 병합된 #8754·#8269의 기능을 국·영문 변경 목록에 추가했다. 해당 저자들은 기존
+  33명 명단에 포함되어 있다. 최종 승격 SHA의 기여 원장 재감사는 게시 전 수행한다.
+- 문서 19개 링크 검사, 기존 버전·기여자·배포 계약 검사 6건, 공백 검사를 통과했다.
+  Chrome·Firefox manifest의 권한·CSP·Firefox 최소 버전은 v0.8.7과 같음을 실제 대조했다.
+- 제품 코드·feature·workflow·버전·토큰을 변경하지 않았다. 본 문서 후보의 원격 PR·CI·머지와
+  최종 14개 `.crate` 검증·실제 게시·공개 소비 확인은 아직 남아 있다.

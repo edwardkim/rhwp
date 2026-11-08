@@ -24,10 +24,13 @@ PDF를 편집 가능한 문서로 가져오는 기본 경로와 Rust·CLI 소비
 - HWP/HWPX 저장 후 재열기에서 컨테이너 안 글줄·표 앞뒤 본문·머리말/꼬리말 정의 슬롯을 보존하도록 보강했습니다 ([#8741](https://github.com/edwardkim/rhwp/pull/8741)).
 - 큰 표 조회·수식/JPEG 그리기 비용을 줄이고, 웹 폰트의 지연/무응답 처리를 보강했습니다. 입력과 환경에 따라 성능 효과가 다릅니다.
 
+- 준비 중 병합된 셀 도형 이동·수식 글꼴/원본 프레임·연속 표 보존을 포함합니다 ([#8754](https://github.com/edwardkim/rhwp/pull/8754)).
+- 메모 읽기·삽입·수정·삭제 API와 HWP/HWPX 왕복, 작성자·생성일 보존, Studio의 기준 글자 삭제 Undo/Redo를 추가했습니다. 새 메모 UI는 별도 작업입니다 ([#8269](https://github.com/edwardkim/rhwp/pull/8269)).
+
 ### CLI·배포·Native 호스트
 
 - Sixel·Kitty graphics 출력과 글꼴 지정 안내를 추가했습니다 ([#7829](https://github.com/edwardkim/rhwp/pull/7829), [#8154](https://github.com/edwardkim/rhwp/pull/8154)). 공식 CLI는 `native-skia`와 실제 PNG 실행 검사로 패키징합니다. v0.8.7 공식 archive의 Native Skia 누락을 보정하는 배포 계약입니다 ([#7818](https://github.com/edwardkim/rhwp/pull/7818)).
-- Rust 1.93.1·14개 패키지의 crates.io 사전 검사와 parser/IR/DocumentCore/service/저장 계약을 준비했습니다. **crates.io 실제 게시는 별도 일정**이며 이번 릴리즈 번호만으로 설치 가능 상태를 뜻하지 않습니다.
+- **0.9.0부터 crates.io 배포를 시작합니다.** Rust 개발자는 `rhwp = "0.9.0"`으로 의존성을 추가하고, CLI 사용자는 `cargo install rhwp --version 0.9.0 --locked --bin rhwp`로 설치하는 경로를 제공합니다. Rust 1.93.1과 본체·내부 의존성 14개 패키지를 대상으로 하며, 초회 게시·공개 registry 소비 검증을 이번 릴리즈의 완료 조건에 포함합니다. 현재는 게시 준비 단계입니다.
 - Native snapshot·타일·캐시·Qt/Flutter host 통합 기반을 추가했습니다. macOS Metal은 기본 비활성 실험 기반으로만 수용했고 Apple SDK 실검증이 남아 있습니다. 모든 플랫폼의 완성된 GPU 편집기를 배포한다는 뜻은 아닙니다 ([#8739](https://github.com/edwardkim/rhwp/pull/8739)).
 - 시험지 ingest의 이미지 삽입과 에이전트·MCP 사용 안내를 보강했습니다 ([#8499](https://github.com/edwardkim/rhwp/pull/8499)).
 - 암호 문서 인증과 진단 흐름을 분리하고 Debug 출력을 비식별화했습니다. CodeQL 탐지를 끄지 않았으며 보호 브랜치 전체 분석은 별도 후속 조건입니다 ([#8750](https://github.com/edwardkim/rhwp/pull/8750)).

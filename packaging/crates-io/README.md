@@ -8,7 +8,7 @@
 기존 8개 패키지의 source 선별을 Cargo manifest에도 반영했다. 이후 #8183의 codec/resource
 4개, #8191의 JPEG encoder 1개와 #8174의 qcms 1개가 추가돼 현재 `source-policy.json`의
 후보는 14개다. 기존 8개의 Cargo/registry 소비, #8183 이후 12개의 source 검사와 현재
-14개 후보의 실제 소비 검증을 구분한다. 본체의 현행 준비 버전은 0.9.0이다. 제품 릴리즈와 registry 게시 일정은 별도다. 사용자용 API·feature·설치 안내는
+14개 후보의 실제 소비 검증을 구분한다. 본체의 현행 준비 버전은 0.9.0이다. 2026-11-08 메인테이너 결정에 따라 crates.io 초회 게시도 0.9.0 릴리즈 범위에 포함한다. source 사전 검사 통과와 실제 게시 완료는 구분한다. 사용자용 API·feature·설치 안내는
 [패키지 README](README_PACKAGE.md)에 둔다. 이 사전 검사 자체는 실제 Cargo 검증을 실행하지 않는다.
 
 #8160의 인쇄 JPEG encoder fork `rhwp-jpeg-encoder`도 실제 path 의존성과 source 사전 검사에 포함한다.

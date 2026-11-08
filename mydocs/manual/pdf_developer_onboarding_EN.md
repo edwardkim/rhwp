@@ -9,7 +9,7 @@ last_verified: 2026-11-08
 
 [Complete guide and examples (Korean)](pdf_developer_onboarding.md). These instructions describe
 **0.9.0 preparation sources**, not a claim that registries or stores have published this release.
-Pin CLI, JS glue, WASM, Worker and Studio to the same release. crates.io publication is scheduled separately.
+Pin CLI, JS glue, WASM, Worker and Studio to the same release. Initial crates.io publication is included in the 0.9.0 release.
 
 PDF import produces editable Document IR and saves HWP/HWPX. It is not an embedded PDF viewer or OCR.
 Scanned text remains an image; reconstructed paragraphs and tables may differ from the original authoring document.
@@ -42,13 +42,14 @@ Imported output does not inherit PDF encryption. Keep password input files and d
 
 ## Rust
 
-Before crates.io publication, use a checkout dependency. After the exact version is published, replace
-`path` with `version = "0.9.0"`:
+The 0.9.0 release includes initial crates.io distribution. After publication, use:
 
 ```toml
 [dependencies]
-rhwp = { path = "/path/to/rhwp", default-features = false, features = ["pdf-import", "pdf-jbig2", "pdf-jpeg2000", "pdf-icc"] }
+rhwp = { version = "0.9.0", default-features = false, features = ["pdf-import", "pdf-jbig2", "pdf-jpeg2000", "pdf-icc"] }
 ```
+
+While publication is pending, replace `version = "0.9.0"` with `path = "/path/to/rhwp"` to consume the matching checkout.
 
 Use `DocumentCore::from_pdf_bytes_with_policy(bytes, &options, policy)` with `PdfImportOptions` and
 `PdfImportPolicy::for_profile(PdfImportProfile::Constrained)`. Serialize `core.document()` with

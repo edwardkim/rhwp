@@ -20,10 +20,13 @@ This release prepares PDF import into editable documents, Rust/CLI consumption c
 - Preserved container lines, text around inline tables, and header/footer definition slots after HWP/HWPX saving and reopening ([#8741](https://github.com/edwardkim/rhwp/pull/8741)).
 - Reduced large-table lookup and equation/JPEG rendering costs, plus handling for slow/unresponsive web fonts. Performance benefits depend on input and environment.
 
+- Includes cell-shape movement, equation font/original-frame preservation and continued-table corrections merged during release preparation ([#8754](https://github.com/edwardkim/rhwp/pull/8754)).
+- Memo read/insert/update/delete APIs, HWP/HWPX round trips, author/creation-time preservation, and Undo/Redo for anchor-text deletion in Studio. A new memo UI remains separate work ([#8269](https://github.com/edwardkim/rhwp/pull/8269)).
+
 ### CLI, packaging and Native hosts
 
 - Sixel and Kitty graphics with document-font guidance ([#7829](https://github.com/edwardkim/rhwp/pull/7829), [#8154](https://github.com/edwardkim/rhwp/pull/8154)). Official CLI archives use `native-skia` and execute a PNG packaging smoke test, addressing its absence from v0.8.7 official archives ([#7818](https://github.com/edwardkim/rhwp/pull/7818)).
-- Rust 1.93.1, a 14-package crates.io preflight and parser/IR/DocumentCore/service/save contracts. **Actual crates.io publication is scheduled separately**; the version number does not imply registry availability.
+- **crates.io distribution begins with 0.9.0.** Rust developers can add `rhwp = "0.9.0"`; CLI users can install with `cargo install rhwp --version 0.9.0 --locked --bin rhwp` once published. Initial publication and consumption from the public registry are release completion requirements for the 14-package graph, using Rust 1.93.1. Publication is still in preparation.
 - Native snapshots, tiles, caches and Qt/Flutter host foundations. macOS Metal remains disabled-by-default experimental infrastructure awaiting Apple SDK validation; this is not a claim of a complete cross-platform GPU editor ([#8739](https://github.com/edwardkim/rhwp/pull/8739)).
 - Image insertion in exam ingest and agent/MCP guidance ([#8499](https://github.com/edwardkim/rhwp/pull/8499)).
 - Separated password authentication from diagnostic flows and redacted Debug output without disabling CodeQL. A protected-branch full security scan remains a separate follow-up ([#8750](https://github.com/edwardkim/rhwp/pull/8750)).

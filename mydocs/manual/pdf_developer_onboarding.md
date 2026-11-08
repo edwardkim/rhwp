@@ -67,14 +67,15 @@ Standard Security R2–R6를 인증하며 빈 열기 암호이면 자동으로 �
 
 ## 2. Rust 라이브러리
 
-crates.io 초회 게시 일정은 제품 릴리즈와 별도다. 게시 전에는 다음처럼 checkout을 소비한다.
+0.9.0부터 crates.io 배포를 시작한다. 아래는 게시 후 사용할 Rust 의존성이다.
 
 ```toml
 [dependencies]
-rhwp = { path = "/path/to/rhwp", default-features = false, features = ["pdf-import", "pdf-jbig2", "pdf-jpeg2000", "pdf-icc"] }
+rhwp = { version = "0.9.0", default-features = false, features = ["pdf-import", "pdf-jbig2", "pdf-jpeg2000", "pdf-icc"] }
 ```
 
-게시 후 해당 버전이 실제 존재하는지 확인한 뒤 `path`를 `version = "0.9.0"`으로 바꾼다.
+게시 준비 중에는 `version = "0.9.0"`을 `path = "/path/to/rhwp"`로 바꾸어 같은 버전의 checkout을 사용한다.
+실제 공개 버전과 설치 확인은 [crates.io 소비 안내](../../packaging/crates-io/README_PACKAGE.md)를 따른다.
 `wasm-api`를 제외해 JS 자동 초기화를 연결하지 않는 구성이다. parser-only 빌드는 아니다.
 
 ```rust
