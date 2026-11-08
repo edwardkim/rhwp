@@ -29,3 +29,18 @@
 - 공개 GitHub의 현재 commit→PR 연결을 다시 조회해 원장의 provenance가 갱신됐다. 기존 33명 모두 유지했으며 이전 감사 근거도 Git 이력에 보존돼 있다.
 - 마감 문서는 collaborator self-merge 경로로 처리한다. 보조 절차는 intake_and_review, local_validation, review_only_fast_pass, post_merge이며 제품·workflow·버전 변경은 없다. PR 번호 기반 검토 기록은 해당 head CI 성공 뒤 추가한다.
 - 최종 `.crate`·원격 promotion·공개 배포는 아직 실행 전이다.
+
+## 실제 포장에서 확인한 예약 파일명 보정
+
+`22e56b1349`의 실제 `cargo package`는 네 번째 패키지 `rhwp-jpeg-encoder`에서
+`invalid inclusion of reserved file name Cargo.toml.orig in package source`로 실패했다.
+첫 세 패키지는 포장됐으며 업로드는 수행하지 않았다. #8360의 초기 manifest는 이 파일을
+include하지 않았으나 #8389에서 include가 추가됐고, #8757의 `cd71fa9c33`은 중복 후보를
+제거하면서 source 원장에 해당 경로를 유지했다. source 후보 검사만으로 Cargo의 예약 이름
+충돌을 발견하지 못했다.
+
+원본 manifest를 `upstream/Cargo.toml.orig`로 옮겨 바이트·원 archive provenance를
+보존하고 실제 include와 source 정책을 일치시킨다. 제품 Rust source·feature·version은
+변경하지 않는다. 공통 사전 검사는 Cargo 생성 루트 파일의 직접·wildcard·extra mapping
+선택을 거부하며 하위 upstream 경로는 허용한다. 신규 계약은 수정 전 5개 subcase 실패를
+재현했다. 수정 후 계약·실제 14개 포장과 독립 소비 결과는 다음 검증에서 확정한다.

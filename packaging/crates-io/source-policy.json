@@ -54,7 +54,7 @@
         "RHWP_PATCHES.md",
         "UPSTREAM.json",
         "LICENSE-*",
-        "Cargo.toml.orig"
+        "upstream/Cargo.toml.orig"
       ],
       "extra_repository_files": {},
       "local_dependencies": []

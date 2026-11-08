@@ -7,7 +7,7 @@
 #
 # If you are reading this file be aware that the original Cargo.toml
 # will likely look very different (and much more reasonable).
-# See Cargo.toml.orig for the original contents.
+# See upstream/Cargo.toml.orig for the upstream original contents.
 
 [package]
 edition = "2024"
@@ -15,7 +15,7 @@ rust-version = "1.93.1"
 name = "rhwp-jpeg-encoder"
 version = "0.7.1-rhwp.1"
 publish = ["crates-io"]
-include = ["/Cargo.toml", "/Cargo.toml.orig", "/src/**", "/README.md", "/RHWP_PATCHES.md", "/UPSTREAM.json", "/LICENSE-*"]
+include = ["/Cargo.toml", "/upstream/Cargo.toml.orig", "/src/**", "/README.md", "/RHWP_PATCHES.md", "/UPSTREAM.json", "/LICENSE-*"]
 authors = ["Volker Ströbel <volkerstroebel@mysurdity.de>"]
 build = false
 autolib = false

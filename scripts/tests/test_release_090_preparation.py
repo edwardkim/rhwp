@@ -1,5 +1,6 @@
 """Release surfaces must not silently lose credits or disagree on product version."""
 import json
+import hashlib
 from pathlib import Path
 import re
 import tomllib
@@ -23,7 +24,11 @@ class Release090PreparationTests(unittest.TestCase):
             dependencies = package['local_dependencies']
             self.assertEqual(len(dependencies), len(set(dependencies)), package['published_name'])
         jpeg = next(p for p in packages if p['published_name'] == 'rhwp-jpeg-encoder')
-        self.assertIn('Cargo.toml.orig', jpeg['include'])
+        self.assertIn('upstream/Cargo.toml.orig', jpeg['include'])
+        original = ROOT / jpeg['source'] / 'upstream/Cargo.toml.orig'
+        provenance = json.loads((ROOT / jpeg['source'] / 'UPSTREAM.json').read_text())
+        self.assertEqual(hashlib.sha256(original.read_bytes()).hexdigest(),
+                         provenance['files']['Cargo.toml.orig'])
 
     def test_release_credits_match_resolved_ledger_without_duplicates(self):
         ledger = json.loads((ROOT / 'mydocs/tech/investigations/release-v0.9.0/contributor-ledger.json').read_text())

@@ -26,6 +26,11 @@ README의 원본 두 줄 끝 공백만 정리했으며
 `publish = ["crates-io"]`, 필요한 source·README·원본/패치 기록·세 라이선스 파일만 포함하는
 package include와 source 사전 검사 후보를 등록한다. 실제 게시·registry 업로드는 수행하지 않는다.
 
+0.9.0 포장 검증에서 원본 manifest를 `upstream/Cargo.toml.orig`로 옮겼다.
+패키지 루트의 `Cargo.toml.orig`는 Cargo가 정규화 전 manifest를 기록하는 예약 이름이다.
+원본 바이트와 `UPSTREAM.json`의 원 archive 경로·SHA-256은 보존하며, rhwp의
+정규화 전 manifest와 upstream 원본 manifest를 실제 `.crate`에 모두 담는다.
+
 ## 세로 평균 표본화의 하단 패딩
 
 마지막 유효 행 그룹을 평균한 뒤 iMCU의 남은 출력 행에 반복한다. 원본 마지막 행을
