@@ -113,11 +113,18 @@ class MetalReceiptContracts(unittest.TestCase):
         commands, artifacts = builder.command_plan(
             Path("/source"), Path("/private/probe"), Path("/SDK/MacOSX.sdk"),
             Path("/Xcode/clang++"), Path("/Flutter/FlutterMacOS.framework"), "arm64", "1.93.1")
-        cargo = commands[1]
+        cargo = next(command for command in commands if "cargo" in command)
         self.assertEqual(cargo[cargo.index("--target-dir") + 1], "/private/probe/native-target")
         self.assertEqual(cargo[cargo.index("--features") + 1], "native-skia-metal")
         self.assertEqual(artifacts["native"], Path("/private/probe/native-target/aarch64-apple-darwin/debug/librhwp_native_ffi.dylib"))
-        for command in commands[2:4]:
+        compilers = [command for command in commands if command[0] == "/Xcode/clang++"]
+        self.assertEqual(len(compilers), 3)
+        self.assertLess(max(commands.index(command) for command in compilers), commands.index(cargo))
+        cv_status = next(command for command in compilers if any(value.endswith("cv_closed_status_sdk_test.mm") for value in command))
+        self.assertNotIn("-dynamiclib", cv_status)
+        self.assertIn("-framework", cv_status)
+        self.assertLess(commands.index([str(artifacts["cvCloseStatus"])]), commands.index(cargo))
+        for command in compilers:
             self.assertIn("-fobjc-arc", command)
             self.assertIn("-fblocks", command)
             self.assertIn("-Werror", command)
@@ -127,6 +134,20 @@ class MetalReceiptContracts(unittest.TestCase):
             with self.assertRaises(ValueError):
                 builder.command_plan(Path("/source"), Path("/probe"), Path("/SDK"),
                                      Path("/clang"), Path("/Flutter.framework"), architecture, toolchain)
+
+    def test_verified_native_reuse_still_compiles_plugin_and_runs_producer(self):
+        native = Path("/verified/librhwp_native_ffi.dylib")
+        commands, artifacts = builder.command_plan(
+            Path("/source"), Path("/probe"), Path("/SDK"), Path("/Xcode/clang++"),
+            Path("/FlutterMacOS.framework"), "arm64", "1.93.1", native)
+        self.assertEqual(artifacts["native"], native)
+        self.assertFalse(any("cargo" in command for command in commands))
+        self.assertEqual(sum(command[0] == "/Xcode/clang++" for command in commands), 3)
+        self.assertIn([str(artifacts["cvCloseStatus"])], commands)
+        producer = commands[-1]
+        self.assertIn(str(native), producer)
+        self.assertIn("--native-source-head", producer)
+        self.assertIn("NATIVE_SOURCE_HEAD", producer)
 
 
 class SourceAndProcessContracts(unittest.TestCase):
@@ -186,7 +207,7 @@ class SourceAndProcessContracts(unittest.TestCase):
             commands, artifacts = builder.command_plan(
                 self.repository, self.root, Path("/SDK"), Path("/clang"),
                 Path("/Flutter/FlutterMacOS.framework"), architecture, "1.93.1")
-            cargo = commands[1]
+            cargo = next(command for command in commands if "cargo" in command)
             self.assertEqual(cargo[cargo.index("--target") + 1], target)
             self.assertEqual(commands[2][commands[2].index("-arch") + 1], architecture)
             self.assertEqual(artifacts["native"], self.root / "native-target" / target /

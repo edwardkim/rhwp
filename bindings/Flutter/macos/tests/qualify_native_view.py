@@ -8,6 +8,7 @@ import math
 import os
 from pathlib import Path
 import platform
+import plistlib
 import re
 import shutil
 import signal
@@ -26,6 +27,31 @@ MAX_ENTRIES = 4096
 MAX_FILES = 2048
 MAX_BYTES = 2 * 1024**3
 MAX_RECEIPT = 1024 * 1024
+
+
+def app_executable(bundle):
+    """Use the bundle entry point even when Xcode emits adjacent debug dylibs."""
+    bundle = Path(bundle).resolve(strict=True)
+    info = bundle / "Contents/Info.plist"
+    if info.is_symlink() or not info.is_file():
+        raise ValueError("Mac app Info.plist must be an owned regular file")
+    with info.open("rb") as source:
+        data = source.read(64 * 1024 + 1)
+    if len(data) > 64 * 1024:
+        raise ValueError("Mac app Info.plist exceeds its byte bound")
+    try:
+        metadata = plistlib.loads(data)
+    except Exception as error:
+        raise ValueError("invalid Mac app Info.plist") from error
+    name = metadata.get("CFBundleExecutable") if isinstance(metadata, dict) else None
+    if not isinstance(name, str) or name in (".", "..") or not re.fullmatch(r"[^/\\\x00-\x1f]+", name):
+        raise ValueError("Mac app lacks a bounded executable basename")
+    executable = bundle / "Contents/MacOS" / name
+    resolved = executable.resolve(strict=True)
+    resolved.relative_to(bundle)
+    if executable.is_symlink() or not resolved.is_file() or not os.access(resolved, os.X_OK):
+        raise ValueError("Mac bundle entry point must be an owned executable file")
+    return resolved
 
 
 def bundle_manifest(directory):
@@ -261,7 +287,7 @@ def build(args):
     source_head = checked_sha(subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repository, text=True).strip(), "source head")
     native = args.native.resolve(strict=True)
     native_receipt = read_json(args.native_receipt, limit=16 * 1024 * 1024)
-    native_head = checked_sha(native_receipt.get("source_head"), "Native source head")
+    native_head = checked_sha(native_receipt.get("nativeSourceHead", native_receipt.get("source_head")), "Native source head")
     native_hash = digest(native)
     if native_receipt.get("platform") != "macos" or native_receipt.get("build") != "passed" or native_receipt.get("artifacts", {}).get("native", {}).get("sha256") != native_hash:
         raise ValueError("Native library does not match its actual successful Apple SDK receipt")
@@ -319,14 +345,12 @@ class MainFlutterWindow: NSWindow {
         if len(apps) != 1:
             raise ValueError("expected exactly one built actual Mac app")
         app = apps[0]
-        binaries = [item for item in (app / "Contents/MacOS").iterdir() if item.is_file()]
-        if len(binaries) != 1:
-            raise ValueError("expected exactly one Mac app executable")
+        executable = app_executable(app)
         dispatcher = output / "librhwp_flutter_owner.dylib"
         run_step([sys.executable, str(copied / "bindings/Flutter/tool/build_dispatcher.py"), "--output", str(dispatcher)], cwd=output, env=env, output=output, receipt=receipt, state=state)
         capture = output / "capture-metal-window"
         run_step(["xcrun", "swiftc", "-parse-as-library", "-target", platform.machine()+"-apple-macos14.0", str(copied / "bindings/Flutter/macos/tests/capture_metal_window.swift"), "-framework", "AppKit", "-framework", "ScreenCaptureKit", "-framework", "CoreGraphics", "-framework", "ImageIO", "-o", str(capture)], cwd=output, env=env, output=output, receipt=receipt, state=state)
-        state["artifacts"] = {key: artifact(path) for key, path in {"runner": binaries[0], "native": native,
+        state["artifacts"] = {key: artifact(path) for key, path in {"runner": executable, "native": native,
             "dispatcher": dispatcher, "fixture": copied / "bindings/Flutter/test/fixtures/desktop-consumer.hwpx", "capture": capture}.items()}
         state["runtimeBundle"] = bundle_manifest(app)
         actual_sources = sources(repository)

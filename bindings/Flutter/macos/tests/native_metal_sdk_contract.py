@@ -50,6 +50,7 @@ def main():
     parser.add_argument("--native", type=Path, required=True)
     parser.add_argument("--bridge", type=Path, required=True)
     parser.add_argument("--source-head", required=True)
+    parser.add_argument("--native-source-head")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if sys.platform != "darwin":
@@ -70,6 +71,7 @@ def main():
     free.argtypes = [ctypes.c_void_p]
     free.restype = None
     report = {"platform": "macos", "source_head": args.source_head,
+              "nativeSourceHead": args.native_source_head or args.source_head,
               "nativeSha256": hashlib.sha256(native.read_bytes()).hexdigest(),
               "bridgeSha256": hashlib.sha256(bridge_path.read_bytes()).hexdigest(),
               "consumerGpuCompletionVerified": False, "continuousPresentationSupported": False,

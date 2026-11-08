@@ -3,6 +3,7 @@
 
 import importlib.util
 from pathlib import Path
+import plistlib
 import tempfile
 import unittest
 from unittest import mock
@@ -38,6 +39,64 @@ def result():
             "sources", "snapshotHandles", "retainedSnapshots", "snapshotEstimatedBytes",
             "frameHandles", "retainedFrames", "frameBytes", "leases", "inFlightReplays")},
     }
+
+
+class AppEntryPointTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.bundle = Path(temporary.name) / "probe.app"
+        self.main = self.bundle / "Contents/MacOS/probe"
+        self.main.parent.mkdir(parents=True)
+        self.main.write_bytes(b"portable selection control; never executed")
+        self.main.chmod(0o700)
+        self.info = self.bundle / "Contents/Info.plist"
+        self.set_info({"CFBundleExecutable": "probe"})
+
+    def set_info(self, value, fmt=plistlib.FMT_XML):
+        self.info.write_bytes(plistlib.dumps(value, fmt=fmt))
+
+    def test_plist_entry_point_permits_adjacent_debug_dylib(self):
+        (self.main.parent / "probe.debug.dylib").write_bytes(b"separate debug code")
+        for fmt in (plistlib.FMT_XML, plistlib.FMT_BINARY):
+            self.set_info({"CFBundleExecutable": "probe"}, fmt)
+            self.assertEqual(qualifier.app_executable(self.bundle), self.main)
+
+    def test_missing_or_nonbasename_entry_point_is_rejected(self):
+        for value in ({}, [], {"CFBundleExecutable": True}, *[
+            {"CFBundleExecutable": name} for name in ("", ".", "..", "../probe", "/tmp/probe", "nested/probe", "nested\\probe", "probe\n")
+        ]):
+            with self.subTest(value=value):
+                self.set_info(value)
+                with self.assertRaises(ValueError):
+                    qualifier.app_executable(self.bundle)
+
+    def test_invalid_or_oversized_plist_is_rejected(self):
+        for data in (b"not a plist", b"x" * (64 * 1024 + 1)):
+            self.info.write_bytes(data)
+            with self.assertRaises(ValueError):
+                qualifier.app_executable(self.bundle)
+
+    def test_missing_nonexecutable_and_linked_main_are_rejected(self):
+        self.main.chmod(0o600)
+        with self.assertRaises(ValueError):
+            qualifier.app_executable(self.bundle)
+        self.main.unlink()
+        with self.assertRaises(FileNotFoundError):
+            qualifier.app_executable(self.bundle)
+        other = self.main.parent / "other"
+        other.write_bytes(b"not the declared main")
+        other.chmod(0o700)
+        self.main.symlink_to("other")
+        with self.assertRaises(ValueError):
+            qualifier.app_executable(self.bundle)
+
+    def test_linked_plist_is_rejected(self):
+        other = self.info.with_name("external.plist")
+        self.info.rename(other)
+        self.info.symlink_to(other.name)
+        with self.assertRaises(ValueError):
+            qualifier.app_executable(self.bundle)
 
 
 class RuntimeBundleTests(unittest.TestCase):
