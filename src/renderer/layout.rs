@@ -15376,6 +15376,114 @@ impl LayoutEngine {
                                     } if *pi == para_index && *end_line == host_text_line_count)
                                 })
                             });
+                        // [#8778] 앞 줄 항목 없이 표가 자기 문단 원점에 놓이는데 저장 사다리가 표
+                        // 줄을 문단 첫 줄 아래에 두었으면(누름틀 시작만 든 줄 등), 표는 그 저장 줄
+                        // 차이만큼 아래다. 조판은 그 줄 전진을 이미 문단 높이에 셌다 — 쪽 맨 위
+                        // 문단에서는 저장 vpos 로 표 줄을 잡아 줄 앞 항목이 없어 그 차이를 잃었다.
+                        if !host_text_precedes
+                            && host_text_line_count > 0
+                            && para_start_y
+                                .get(&para_index)
+                                .is_some_and(|start| (*start - y_offset).abs() < 0.5)
+                            && (self.profile.get().hwp5_stored_pagination_layout()
+                                || self.profile.get().hwpx_stored_layout())
+                        {
+                            // 앞 줄에 글자처럼 놓인 개체가 있으면 그 줄은 표 줄과 같은 흐름 줄 상자를
+                            // 쓰므로 저장 줄 차이로 표를 내리지 않는다.
+                            let prefix_has_inline_object =
+                                para.controls.iter().enumerate().any(|(ci, control)| {
+                                    let inline = match control {
+                                        Control::Table(t) => t.common.treat_as_char,
+                                        Control::Picture(p) => p.common.treat_as_char,
+                                        Control::Shape(s) => s.common().treat_as_char,
+                                        Control::Equation(e) => e.common.treat_as_char,
+                                        _ => false,
+                                    };
+                                    inline
+                                        && control_line_seg_index(para, ci)
+                                            .is_some_and(|line| line < host_text_line_count)
+                                });
+                            // 앞 줄에 보이는 글자가 있으면 그 줄은 문단 글줄 배치가 그리고 전진한다
+                            // (합성 날인선 filler 등). 이 보정은 그리지 않는 줄(빈칸·누름틀 시작뿐)의
+                            // 자리만 잇는다.
+                            let prefix_has_visible_text =
+                                composed.get(para_index).is_some_and(|comp| {
+                                    comp.lines.iter().take(host_text_line_count).any(|line| {
+                                        line.runs.iter().any(|run| {
+                                            run.text.chars().any(|c| {
+                                                c > '\u{001F}'
+                                                    && c != '\u{FFFC}'
+                                                    && !c.is_whitespace()
+                                            })
+                                        })
+                                    })
+                                });
+                            // 표 높이를 담은 저장 줄이 앞 줄에 있으면 그 줄이 표 자신의 줄이다 —
+                            // 컨트롤 줄 귀속이 뒤 개체 줄로 밀린 경우라 앞 줄 차이는 없다.
+                            let table_height_hu = match para.controls.get(control_index) {
+                                Some(Control::Table(t)) => t.common.height as i32,
+                                _ => 0,
+                            };
+                            let prefix_holds_table_row = table_height_hu > 0
+                                && para.line_segs[..host_text_line_count]
+                                    .iter()
+                                    .any(|seg| seg.text_height >= table_height_hu);
+                            // 저장 사다리는 재계산 전 원본 vpos 로 읽는다(재계산은 쪽 리셋을 지운다).
+                            let source_vpos = |p: &Paragraph, line: usize| {
+                                p.source_line_seg_vertical_pos
+                                    .as_ref()
+                                    .and_then(|v| v.get(line).copied())
+                                    .or_else(|| p.line_segs.get(line).map(|s| s.vertical_pos))
+                            };
+                            let rows: Option<Vec<i32>> = (0..=host_text_line_count)
+                                .map(|line| source_vpos(para, line))
+                                .collect();
+                            let table_seg = &para.line_segs[host_text_line_count];
+                            let offset = rows.as_ref().and_then(|rows| {
+                                let synthetic = para.line_segs[..=host_text_line_count]
+                                    .iter()
+                                    .any(|seg| seg.tag & 0x8000_0000 != 0);
+                                // 저장 쪽 리셋이 앞 줄과 표 줄 사이에 있으면 앞 줄은 앞 쪽에 남았다.
+                                let increasing = rows.windows(2).all(|w| w[1] > w[0]);
+                                let offset = rows[host_text_line_count] - rows[0];
+                                // 리셋이 표 줄 뒤(다음 문단 앞)에 있을 때, 다음 문단 첫 줄에서 표 줄
+                                // 전진을 뺀 값이 0 이상이면 표 줄은 다음 문단과 같은 새 쪽에 있고 그 값이
+                                // 쪽 안 위치다. 그 위치가 앞 줄 차이보다 위면 표 줄만 새 쪽 맨 위로
+                                // 넘어갔고 앞 줄은 앞 쪽에 남았다. 음수면 표 줄은 앞 줄과 같은 쪽에서
+                                // 끝나고 다음 문단부터 새 쪽이다.
+                                let table_row_on_prefix_page = paragraphs
+                                    .get(para_index + 1)
+                                    .and_then(|next| source_vpos(next, 0))
+                                    .filter(|next| *next < rows[host_text_line_count])
+                                    .is_none_or(|next| {
+                                        let table_top =
+                                            next - (table_seg.line_height + table_seg.line_spacing);
+                                        table_top < 0 || table_top >= offset
+                                    });
+                                (!prefix_has_inline_object
+                                    && !prefix_has_visible_text
+                                    && !prefix_holds_table_row
+                                    && !synthetic
+                                    && increasing
+                                    && table_row_on_prefix_page)
+                                    .then_some(offset)
+                            });
+                            if let (Some(offset), Some(rows)) = (offset, rows.as_ref()) {
+                                // 표 줄은 흐름 원점에서 앞 줄 차이만큼 아래다. 다만 저장 첫 줄의 쪽 안
+                                // 위치가 흐름과 맞으면(#6598 과 같은 4px) 표 줄의 저장 위치가 상한이다 —
+                                // 앞 줄 자리를 앞 개체(떠 있는 표 등)가 정해 흐름 원점이 저장보다 아래면
+                                // 차이를 더한 위치가 저장 표 줄을 지나친다.
+                                let para_start = y_offset;
+                                y_offset += hwpunit_to_px(offset, self.dpi);
+                                let stored_first = col_area.y + hwpunit_to_px(rows[0], self.dpi);
+                                if (stored_first - para_start).abs() <= 4.0 {
+                                    y_offset = y_offset.min(
+                                        col_area.y
+                                            + hwpunit_to_px(rows[host_text_line_count], self.dpi),
+                                    );
+                                }
+                            }
+                        }
                         if host_text_precedes
                             && (self.profile.get().hwp5_stored_pagination_layout()
                                 || self.profile.get().hwpx_stored_layout())
