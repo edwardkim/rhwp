@@ -334,10 +334,15 @@ fn typeface_candidates_for_families_for_source(
     if let Some(typeface) = legacy_typeface_for_style(font_mgr, style) {
         push(typeface, "legacy", families.len());
     }
-    chain.sort_by_key(|candidate| {
+    chain.sort_by_cached_key(|candidate| {
+        // OS가 Regular에 붙인 가상 Bold는 실제 Bold 프로그램이 아니다.
+        // 후보 열거와 같은 물리 스타일을 소비해 마지막 정렬이 이를 뒤집지 않게 한다.
+        let program_style =
+            super::synthetic_typeface::unemboldened_typeface(font_mgr, &candidate.typeface)
+                .map_or_else(|| candidate.typeface.font_style(), |face| face.font_style());
         (
             candidate.family_order,
-            super::font_catalog::supplied_style_rank(style, candidate.typeface.font_style()),
+            super::font_catalog::supplied_style_rank(style, program_style),
             typeface_program_order(&candidate.typeface),
         )
     });

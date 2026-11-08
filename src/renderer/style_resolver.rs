@@ -282,12 +282,32 @@ pub(crate) fn resolve_styles_with_environment(
                         .font_faces
                         .get(lang)
                         .and_then(|faces| faces.get(shape.font_ids[lang] as usize));
+                    // 실제 원본 TTF를 조회해 인증한 family 별칭은 기존 폭 신뢰를
+                    // 잃지 않는다. 대체 쿼리·HFT·다른 메트릭의 선택은 포함하지 않는다.
+                    let verified_source_alias = original.substitution_boundary.is_none()
+                        && original.alt_type == Some(1)
+                        && style.font_families_metric_trusted[lang]
+                        && original.requested_face.as_deref().is_some_and(|source| {
+                            environment.is_some_and(|env| {
+                                env.selected_program_query_for(source, lang, shape.font_ids[lang])
+                                    == Some(source)
+                            }) && primary_font_name(&style.font_families[lang]) == source
+                                && original_font_slots::keeps_source_metric_table(
+                                    source,
+                                    &source_metric_face,
+                                    target,
+                                    style.bold,
+                                    style.italic,
+                                )
+                        });
                     let primary_true_type_program = environment
                         .is_some_and(|env| env.selects_true_type(target))
                         && original.substitution_boundary.is_none()
-                        && original.normalized_face.as_deref() == Some(target)
+                        && (original.normalized_face.as_deref() == Some(target)
+                            || verified_source_alias)
                         && source_font.is_some_and(|face| face.native_program.is_none())
                         && (metric_widths_verified_face(target)
+                            || verified_source_alias
                             || matches!(target, "휴먼명조" | "HumanMyeongJo"));
                     // 자동 표시용 선택은 저장된 원본 HFT 메트릭의 변경이 아니다.
                     let keep_source_metrics = !primary_true_type_program
@@ -345,6 +365,7 @@ pub(crate) fn resolve_styles_with_environment(
                         latin_program_changed |= lang == 1;
                         style.font_families_metric_trusted[lang] = explicit_true_type
                             && (metric_widths_verified_face(target)
+                                || verified_source_alias
                                 || matches!(target, "휴먼명조" | "HumanMyeongJo"));
                     }
                     if explicit_true_type {

@@ -1,5 +1,6 @@
 //! 관계형: 실제 프로그램의 가족 이름 조회와 원본 슬롯 요청 자격을 검사한다.
-//! 주석 갱신: 2026-11-06T20:48:46+09:00.
+//! 주석 갱신: 2026-11-08T14:57:17+09:00.
+//! 추가 전 파일 변경: 8e092b09fc37d91f787765b0b538281a8261320f (2026-11-06T21:02:16+09:00).
 //! 이동 직전 두 원본의 변경: 2026-11-06T20:11:29+09:00 6844f6ec0854b1c8150244d65cc1a099031287ac.
 //! 기존 내부 검사 2건을 공개 FontEnvironment·DocumentCore 경로로 이동한다.
 //! 합성 글꼴 선언·기존 OFL 글꼴 fixture의 프로그램 신원을 비교하며 설치 글꼴에 의존하지 않는다.
@@ -103,5 +104,89 @@ fn another_sources_display_family_does_not_authorize_original_truetype() {
     assert!(
         !original_program_requested(1),
         "표시 family가 같아도 원본이 다른 슬롯의 TrueType 요청 자격을 빌리지 않는다"
+    );
+}
+
+fn alias_metric_style(
+    source: &str,
+    alt_type: u8,
+    query: &str,
+    family: &str,
+) -> rhwp::renderer::TextStyle {
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    fn text_style(node: &RenderNode) -> Option<rhwp::renderer::TextStyle> {
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            if run.text.contains('·') {
+                return Some(run.style.clone());
+            }
+        }
+        node.children.iter().find_map(text_style)
+    }
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    let mut doc = core.document().clone();
+    doc.provenance.format = rhwp::model::provenance::SourceFormat::Hwpx;
+    for font in doc.doc_info.font_faces.iter_mut().flatten() {
+        font.name = source.into();
+        font.alt_type = alt_type;
+        font.subst_font = None;
+        font.is_embedded = false;
+    }
+    for shape in &mut doc.doc_info.char_shapes {
+        shape.bold = false;
+        shape.italic = false;
+        shape.base_size = 1500;
+    }
+    let environment = FontEnvironment::from_available_programs(
+        &doc.doc_info,
+        &json!([{
+            "query": query, "family": family, "programId": "explicit-alias-contract",
+            "trueType": true, "openTypeCff": false
+        }])
+        .to_string(),
+    )
+    .unwrap()
+    .expect("명시적으로 공급한 원본 프로그램의 인증 결과");
+    core.set_document(doc);
+    core.insert_text_native(0, 0, 0, "가·나").unwrap();
+    core.set_font_environment(Some(environment)).unwrap();
+    text_style(&core.build_page_render_tree(0).unwrap().root).expect("문장부호를 소유한 실제 run")
+}
+
+#[test]
+fn verified_original_truetype_alias_keeps_its_metric_and_punctuation_advance() {
+    use rhwp::renderer::layout::{EmbeddedTextMeasurer, TextMeasurer};
+    // 원 #7092의 검증된 주 TTF 폭 계약이다. 설치 글꼴의 윤곽을 읽지 않는다.
+    let original = alias_metric_style("HY헤드라인M", 1, "HY헤드라인M", "HY헤드라인M");
+    let alias = alias_metric_style("HY헤드라인M", 1, "HY헤드라인M", "HYHeadLine M");
+    assert!(original.font_metric_trusted);
+    assert!(
+        alias.font_metric_trusted,
+        "같은 원본 쿼리와 같은 표의 영문 family 별칭"
+    );
+    let measurer = EmbeddedTextMeasurer;
+    assert_eq!(
+        measurer.compute_char_positions("가·나", &alias),
+        measurer.compute_char_positions("가·나", &original),
+        "표기 인증만으로 가운데점과 뒤 글자의 전진을 줄이지 않는다"
+    );
+}
+
+#[test]
+fn unrelated_or_legacy_program_does_not_inherit_verified_truetype_metrics() {
+    let unrelated = alias_metric_style("HY헤드라인M", 1, "HY헤드라인M", "Arial");
+    assert!(
+        !unrelated.font_metric_trusted,
+        "다른 메트릭을 원래 검증된 표로 승격하지 않는다"
+    );
+    let legacy = alias_metric_style("HY헤드라인M", 2, "HY헤드라인M", "HYHeadLine M");
+    assert!(
+        !legacy.font_metric_trusted,
+        "원본 HFT에는 주 TTF의 신뢰를 새로 부여하지 않는다"
+    );
+    let different_query = alias_metric_style("HY헤드라인M", 1, "HYHeadLine-Medium", "HYHeadLine M");
+    assert!(
+        !different_query.font_metric_trusted,
+        "다른 조회 이름의 선택으로 원본 TTF의 인증을 대신하지 않는다"
     );
 }
