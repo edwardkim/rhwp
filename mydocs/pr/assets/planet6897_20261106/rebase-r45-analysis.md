@@ -181,3 +181,43 @@ producer·범위·실제 종료 코드를 보존했다.
 계약이 아니다. 원 FontFace/윤곽의 래스터 방식 차이로 순서를 정하지 않는다. 같은 공개 글꼴과
 같은 원문에서 bold만 끈 독립 대조군을 각 경로에 추가해 `합성 굵기 > 보통 굵기`를 양쪽
 경로·Print/Screen에서 각각 검사한다. 수정 전 실패한 공통 장치 폭 검사는 그대로 유지한다.
+
+
+## R46 최종 전체 회귀의 유일한 실패 분석
+
+제품 source `65195e9730f35bdbd7ea0c9a393e07e66125202e`의 최소 공개 글꼴 5개 전체
+Rust 실행은 13,043건 중 13,042건 통과·1건 실패·45건 skip으로 실제 종료했다.
+실패 함수는 `issue_7445_document_substitute_lookup::document_substitute_preserves_the_print_heading_owner_and_width`다.
+원 API 검사의 도입 커밋 `6097253468`과 PR #8191, 실물 좌표 검사의 반영 PR #8754 및
+`mydocs/pr/assets/issue7445/completed-20261009/stage35-20261021/README.md`의 독립 Print 근거를 먼저 대조했다.
+
+원 HWP의 대체 필드는 한컴바탕이며 HWPX는 HCR Batang이다. 동일 mock 가용 프로그램으로
+최적화 WASM의 공개 API를 실행하면 두 원본 모두 46쪽과 제목의 동일 셀 소유·내용·순서를
+유지하고 시작 58.853333px·끝 284.826667px로 독립 Print의 58.88px·285.04px에 해당한다.
+실제 문자열은 HWP `Haansoft Batang,한컴바탕`, HWPX `Haansoft Batang`이다.
+첫 프로그램은 같으며 HWP가 원래 선언한 후순위 glyph fallback을 보존한 것이다.
+전체 CSS 후보 목록이 단일 문자열과 같아야 한다는 assertion은 선택 프로그램의 검사가 아니다.
+선두 family를 정확히 비교하도록 고치고 독립 좌표·셀 소유·겹침·원본 직렬화 검사는 유지한다.
+
+이 조사에는 새 온새미로 조판 개선을 추가하지 않는다. 실패한 기존 검사의 환경과 실물 선행
+조건만 같은 원본·이미 보존된 독립 Print·제품 producer로 확인 중이다. 전체 실행의 exit 100과
+원 로그는 보존하며 보정 후 집중 실행 결과와 분리해 보고한다. 원래 통과한 13,042건을 다시
+실행하거나 새 source에서 단일 전체 실행이 통과했다고 표시하지 않는다.
+
+
+## R46 최종 실행 계획의 호환 모드 정정
+
+이전 실제 R43 체크포인트와 R45 manifest를 대조해 `trailing-space-2024`, `sample16`,
+`policy-track2024`, `policy-flags0`, `overflow-space-2024`의 compat가 기존 2024와 달리
+2022로 기록된 실행 계획 오류를 발견했다. 제품·기준 PDF·관용 거리·판정값은 바꾸지 않고
+기존에 실제 검증한 compat2024로 복구했다. 첫 잘못 실행된 결과는 진단 이력으로만 보존한다.
+작업 중이던 WASM 문서가 끝나고 렌더 lane이 비었는지 확인한 뒤 계획을 정정했으며,
+원본·PDF·호환 모드·DPI·producer가 모두 같은 완료 건만 바이트 검증 후 재사용했다.
+Native 원 PR 전쪽 실행은 아직 시작 전이어서 처음부터 올바른 계획을 사용한다.
+
+
+실제 최종 전쪽 재검증은 HWP Native 최저94.65%·fresh94.55%, HWPX Native94.62%·fresh94.43%로 각각46쪽이다.
+46쪽은 HWP Native99.78%·fresh100.00%, HWPX 양쪽100.00%이며 review·overlay를 직접 판독했다.
+[현재 실측 원장과 PNG](substitute-lookup-r46/README.md)에 연결한다. 기존 제목의 ±2px·소유·내용·직렬화 assertion은 유지했다.
+이 단계는 테스트 전용 변경이며 제품 source·Native/WASM producer·Studio 결과는 바이트 확인 뒤 재사용한다.
+집중 재검증과 남은 lint는 별도 실제 로그로 확인하며 전체 실행의 실패 이력은 덮어쓰지 않는다.
