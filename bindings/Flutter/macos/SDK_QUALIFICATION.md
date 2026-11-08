@@ -9,7 +9,10 @@ GPU 완료를 구현한 단계가 아닙니다.
 
 준비된 Xcode·macOS SDK, Rust 1.93.1, 해당 Mac용 Flutter SDK의 `FlutterMacOS.framework`가
 필요합니다. source·lockfile·검사를 커밋한 완전한 checkout에서 실행합니다. 지원 architecture는
-현재 Python host와 일치하는 `arm64` 또는 `x86_64`입니다. framework의 Headers와 binary는 지정한
+현재 Python host와 일치하는 `arm64` 또는 `x86_64`입니다. Native Cargo 빌드도 각각
+`--target aarch64-apple-darwin` 또는 `--target x86_64-apple-darwin`으로 고정합니다.
+선택한 Rust target의 표준 라이브러리를 미리 설치해야 하며, Rosetta Python에서도 암묵적인
+Rust host와 혼합하지 않습니다. framework의 Headers와 binary는 지정한
 Flutter SDK 안에 있어야 하며 SDK의 Flutter·engine revision과 framework binary hash를 기록합니다.
 
 ```bash
@@ -41,6 +44,19 @@ consumer 정책을 변경하지 않습니다. 이 명시적 옵션이 없거나 
 호출자가 완료를 확인하고, 종료된 명령의 로그를 확인합니다. 기존 출력 경로는 덮어쓰지 않습니다.
 source가 변경되거나 실제 명령이 실패하면 해당 실행은 실패로 기록합니다.
 
+source identity는 prefix 목록이 아닌 전체 tracked Git 파일의 mode·blob OID manifest입니다.
+매 step 전후 전체 working tree/index의 clean 상태를 검사하므로 `vendor` path 의존성,
+workspace manifest, 내장 글꼴·template·compile-time 문서 변경도 거절합니다. 이 manifest의
+Git blob hash는 artifact의 SHA-256과 구분해 `sourceHashKind`에 명시합니다. 별도 untracked
+source도 허용하지 않으며 출력·cache는 checkout 외부의 고유 scratch 경로를 사용합니다.
+소스 checkout이나 기본 feature를 수정하지 않습니다.
+
+각 step은 별도 process group에서 실행하고 private log에 처음부터 기록합니다.
+compile/link 기본 상한은 3600초(`--step-timeout`, 30~7200초), disposable Metal producer는
+120초(`--producer-timeout`, 1~300초)입니다. timeout/중단이면 소유한 process group에
+TERM 후 KILL을 보내고 실제 종료를 기다립니다. `timedOut`·종료 코드와 실패 영수증을
+남기며, 부모가 종료한 뒤에도 compiler/device helper 자식이 남지 않게 합니다.
+
 ## pixel·수명 계약
 
 실제 MTLDevice·MTLCommandQueue와 새 BGRA8 target을 사용합니다. Native의 producer 완료를
@@ -70,6 +86,8 @@ python3 -B bindings/Flutter/macos/tests/sdk_qualification_contract.py
 ```
 
 이 검사는 독립 premultiplied 색상, 잘못된 pixel·stamp·backend·완료 근거 거절, stale target 보존,
-격리된 빌드 출력과 비 Apple 플랫폼 거절을 검사합니다. Apple SDK를 컴파일하거나 Metal 장치에서
+격리된 빌드 출력과 비 Apple 플랫폼 거절을 검사합니다. 임시 Git 저장소의 vendor 변경·
+untracked source, architecture별 Cargo target/artifact 경로 및 실제 child timeout·descendant
+종료·private log 기록도 검증합니다. Apple SDK를 컴파일하거나 Metal 장치에서
 실행한 결과가 아닙니다. 실제 target 환경에서 위 도구를 끝까지 실행해 영수증을 확보하기 전까지
 SDK·실물 Metal의 검증은 **미완료**입니다.

@@ -7,10 +7,12 @@ No repository feature defaults, plugin policy or consumer frame credits change.
 
 import argparse
 import json
+import math
 import os
 from pathlib import Path
 import platform
 import re
+import signal
 import subprocess
 import sys
 import time
@@ -29,7 +31,8 @@ def command_plan(repository, output, sdk, clang, framework, architecture, toolch
     if not re.fullmatch(r"[A-Za-z0-9_.-]+", toolchain):
         raise ValueError("invalid Rust toolchain name")
     header = repository / "bindings/swift/Sources/CRhwpNative"
-    native = output / "native-target/debug/librhwp_native_ffi.dylib"
+    rust_target = {"arm64": "aarch64-apple-darwin", "x86_64": "x86_64-apple-darwin"}[architecture]
+    native = output / "native-target" / rust_target / "debug/librhwp_native_ffi.dylib"
     plugin = output / "RhwpMetalPlugin.dylib"
     bridge = output / "rhwp_metal_sdk_probe.dylib"
     common = [str(clang), "-std=c++17", "-fobjc-arc", "-fblocks", "-Wall", "-Wextra", "-Werror",
@@ -38,7 +41,7 @@ def command_plan(repository, output, sdk, clang, framework, architecture, toolch
         ["rustup", "run", toolchain, "rustc", "--version", "--verbose"],
         ["rustup", "run", toolchain, "cargo", "build", "--locked", "--manifest-path",
          str(repository / "bindings/Native/Cargo.toml"), "--features", "native-skia-metal",
-         "--lib", "--target-dir", str(output / "native-target")],
+         "--lib", "--target", rust_target, "--target-dir", str(output / "native-target")],
         [*common, "-F", str(framework.parent), "-Wl,-rpath," + str(framework.parent),
          "-framework", "FlutterMacOS", "-framework", "Metal", "-framework", "CoreVideo",
          "-framework", "CoreGraphics", "-framework", "IOSurface", "-framework", "Foundation",
@@ -56,12 +59,75 @@ def command_plan(repository, output, sdk, clang, framework, architecture, toolch
 
 
 def source_hashes(repository):
-    paths = subprocess.check_output(["git", "ls-files", "-z", "--", "Cargo.toml", "Cargo.lock", "build.rs",
-                                    "src", "crates", "bindings/Native", "bindings/Flutter/macos",
-                                    "bindings/Flutter/tool/check_macos_metal_sdk.py",
-                                    "bindings/Flutter/tool/qualify_desktop_texture.py",
-                                    "bindings/swift/Sources/CRhwpNative"], cwd=repository).split(b"\0")
-    return {os.fsdecode(value): digest(repository / os.fsdecode(value)) for value in paths if value}
+    """Pin every tracked byte without repeatedly reading the large fixture corpus.
+
+    Git blob identities cover Cargo path/vendor dependencies, all workspace
+    manifests, embedded data/fonts and compile-time include_str documents too.
+    A whole-tree clean check is mandatory on every invocation, so these are
+    identities of the actual tracked working files, not merely of an old index.
+    """
+    changed = subprocess.check_output(
+        ["git", "-c", "gc.auto=0", "status", "--porcelain=v1", "--untracked-files=all"],
+        cwd=repository, text=True)
+    if changed:
+        raise ValueError("commit all tracked build inputs and remove untracked source before verification")
+    entries = subprocess.check_output(
+        ["git", "-c", "gc.auto=0", "ls-files", "--stage", "--full-name", "-z"], cwd=repository).split(b"\0")
+    result = {}
+    for entry in entries:
+        if not entry:
+            continue
+        metadata, path = entry.split(b"\t", 1)
+        mode, blob, stage = metadata.split()
+        if stage != b"0":
+            raise ValueError("unmerged source index cannot qualify an SDK build")
+        result[os.fsdecode(path)] = mode.decode("ascii") + ":" + blob.decode("ascii")
+    return result
+
+
+def stop_process_tree(process, grace=5):
+    """Only for children created with start_new_session=True in execute_step."""
+    try:
+        os.killpg(process.pid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+    try:
+        process.wait(timeout=grace)
+    except subprocess.TimeoutExpired:
+        pass
+    finally:
+        # A parent can exit on TERM while a compiler/device helper ignores it.
+        # Its descendants still belong to this owned group and must not survive.
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        process.wait()
+
+
+def execute_step(command, *, repository, env, log_path, step, record, timeout, stop_grace=5):
+    if not math.isfinite(timeout) or timeout <= 0 or timeout > 7200:
+        raise ValueError("step timeout must be finite and within two hours")
+    step["timeoutSeconds"] = timeout
+    with Path(log_path).open("wb") as log:
+        Path(log_path).chmod(0o600)
+        process = subprocess.Popen(command, cwd=repository, env=env, stdin=subprocess.DEVNULL,
+                                   stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+        step["pid"] = process.pid
+        try:
+            record()
+            return process.wait(timeout=timeout)
+        except subprocess.TimeoutExpired as error:
+            step["timedOut"] = True
+            stop_process_tree(process, grace=stop_grace)
+            raise TimeoutError("SDK step exceeded its deadline: " + str(log_path)) from error
+        except BaseException:
+            step["interrupted"] = True
+            stop_process_tree(process, grace=stop_grace)
+            raise
+        finally:
+            step.update(exitCode=process.returncode, finished=time.time())
+            record()
 
 
 def main():
@@ -71,7 +137,15 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--toolchain", default="1.93.1")
     parser.add_argument("--enable-metal-experiment", action="store_true")
+    parser.add_argument("--step-timeout", type=float, default=3600,
+                        help="maximum seconds per compile/link step (30..7200)")
+    parser.add_argument("--producer-timeout", type=float, default=120,
+                        help="maximum seconds for the disposable Metal producer (1..300)")
     args = parser.parse_args()
+    if not math.isfinite(args.step_timeout) or not 30 <= args.step_timeout <= 7200:
+        parser.error("step timeout must be finite and between 30 and 7200 seconds")
+    if not math.isfinite(args.producer_timeout) or not 1 <= args.producer_timeout <= 300:
+        parser.error("producer timeout must be finite and between 1 and 300 seconds")
     try:
         platform_required(sys.platform)
     except RuntimeError as error:
@@ -94,19 +168,16 @@ def main():
     compiler = subprocess.check_output([str(clang), "--version"], text=True)
     if "Apple clang" not in compiler:
         raise ValueError("an Apple SDK compiler is required, not a portable stub")
-    changed = subprocess.check_output(["git", "status", "--porcelain", "--", "Cargo.toml", "Cargo.lock",
-                                      "build.rs", "src", "crates", "bindings/Native", "bindings/Flutter/macos",
-                                      "bindings/Flutter/tool", "bindings/swift/Sources/CRhwpNative"],
-                                     cwd=repository, text=True)
-    if changed:
-        raise ValueError("commit the source before starting the stable SDK verification")
+    before = source_hashes(repository)
     source_head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repository, text=True).strip()
     output = args.output.resolve()
     commands, artifacts = command_plan(repository, output, sdk, clang, framework, platform.machine(), args.toolchain)
     output.mkdir(mode=0o700, parents=True, exist_ok=False)
     (output / "tmp").mkdir(mode=0o700)
-    before = source_hashes(repository)
     state = {"platform": "macos", "source_head": source_head, "sourceFiles": before,
+             "sourceHashKind": "git-index-mode-and-blob-oid; whole tracked tree verified clean each step",
+             "architecture": platform.machine(),
+             "rustTarget": {"arm64": "aarch64-apple-darwin", "x86_64": "x86_64-apple-darwin"}[platform.machine()],
              "flutterRevision": flutter_head, "engineRevision": engine_head,
              "frameworkSha256": digest(framework_binary), "sdk": str(sdk), "compiler": compiler,
              "experimentalFeatureExplicitlyEnabled": True, "productionDefaultsChanged": False,
@@ -125,14 +196,11 @@ def main():
                     "log": str(output / f"step-{index}.log")}
             state["steps"].append(step)
             write_json(receipt, state)
-            with Path(step["log"]).open("wb") as log:
-                process = subprocess.Popen(command, cwd=repository, env=env, stdin=subprocess.DEVNULL,
-                                           stdout=log, stderr=subprocess.STDOUT)
-                step["pid"] = process.pid
-                write_json(receipt, state)
-                code = process.wait()
-            step.update(exitCode=code, finished=time.time())
-            write_json(receipt, state)
+            if source_hashes(repository) != before:
+                raise ValueError("source changed before target SDK verification step")
+            timeout = args.producer_timeout if index == len(commands) - 1 else args.step_timeout
+            code = execute_step(command, repository=repository, env=env, log_path=step["log"],
+                                step=step, record=lambda: write_json(receipt, state), timeout=timeout)
             if code:
                 raise RuntimeError("SDK step failed; inspect the completed log: " + step["log"])
             if source_hashes(repository) != before:
