@@ -1088,8 +1088,8 @@ def write_reports(
         for item in browser_data["results"]:
             timings = item.get("timings") or {}
             image_effects = (item.get("diagnostics") or {}).get("imageEffects") or {}
-            backend = item.get("backend", "")
-            if backend == "canvas2d":
+            backend = "canvas2d-font-fallback" if item.get("fontFallback") else item.get("backend", "")
+            if backend in {"canvas2d", "canvas2d-font-fallback"}:
                 effect_diagnostics = image_effects.get("canvas2d") or {}
             else:
                 effect_diagnostics = image_effects.get("canvaskit") or {}
