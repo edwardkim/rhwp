@@ -22,6 +22,7 @@ struct MetalViewState {
   Stamp renderedStamp;
   uint32_t drawableWidth = 0, drawableHeight = 0;
 };
+struct MetalViewReceipt { __strong NSDictionary* status = nil; };
 std::atomic<uint64_t> nextMetalViewHandle{1};
 NSDictionary* MetalViewLimits() {
   return @{@"backend":@"appkitMetalLayer",@"presentationKind":@"nativeView",@"maxViews":@2,
@@ -29,6 +30,7 @@ NSDictionary* MetalViewLimits() {
     @"continuousPresentationSupported":@YES,@"drawableReuseManagedByCoreAnimation":@YES,
     @"consumerGpuCompletionVerified":@NO,@"wholeFrameReadbacks":@0,
     @"nativeCoverSupported":@YES,@"nativeCoverRequired":@YES,
+    @"closeAcknowledgementRequired":@YES,@"maxRetainedCloseRecords":@2,@"maxClosedReceipts":@2,
     @"experimental":@YES,@"requiresTargetQualification":@YES};
 }
 bool MetalJobCurrent(const std::shared_ptr<NativeApi>& api, const std::shared_ptr<Job>& job) {
@@ -338,6 +340,38 @@ void UpdateMetalViewGeometry(const std::shared_ptr<MetalViewState>& view) {
   {std::lock_guard<std::mutex> lock(view->owner->mutex);nativeView=view->view;}
   if ([nativeView isKindOfClass:[RhwpNativeMetalView class]]) [(RhwpNativeMetalView*)nativeView updateMetalGeometry];
 }
+NSDictionary* MetalViewStatus(const std::shared_ptr<MetalViewState>& view, bool registered) {
+  auto owner=view->owner;
+  std::shared_ptr<Job> displayed;std::shared_ptr<NativeApi> api;
+  {std::lock_guard<std::mutex> lock(owner->mutex);displayed=view->displayed;api=owner->api;}
+  const bool current=displayed&&api&&MetalJobCurrent(api,displayed);
+  std::unique_lock<std::mutex> lock(owner->mutex);
+  const bool hasFrame=current&&!owner->closed&&owner->gate.current(displayed->sequence,displayed->stamp)&&view->displayed==displayed;
+  if(!hasFrame)view->visibility.invalidate();
+  NSMutableArray* ids=[NSMutableArray arrayWithCapacity:owner->acceptedSnapshots.size()];
+  for(const auto id:owner->acceptedSnapshots)[ids addObject:@(id)];
+  NSString* error=[[NSString alloc] initWithBytes:owner->error.data() length:owner->error.size() encoding:NSUTF8StringEncoding];
+  NSDictionary* status=@{@"ready":@(owner->ready&&view->layerReady),@"apiReady":@(owner->ready),@"closed":@(owner->closed),@"ownerFinished":@(owner->finished),
+    @"registered":@(registered),@"pending":@(owner->pending!=nullptr),@"inFlight":@(owner->inFlight),
+    @"hasFrame":@(hasFrame),@"renderedStamp":hasFrame?StampValue(view->renderedStamp):@{},
+    @"acceptedStamp":StampValue(owner->acceptedStamp),@"acceptedSnapshots":ids,@"deviceGeneration":@(owner->generation),
+    @"presentationKind":@"nativeView",@"viewBound":@(view->bound),@"layerReady":@(view->layerReady),
+    @"nativeViewLayerDetached":@(view->layerDetached),@"covered":@(view->visibility.covered()),
+    @"visibilitySerial":@(view->visibility.serial()),
+    @"drawableWidth":@(view->drawableWidth),@"drawableHeight":@(view->drawableHeight),
+    @"frames":@(view->flow.scheduled()),@"discardedFrames":@(view->flow.discarded()),
+    @"quarantined":@(view->flow.quarantined()),@"drawableTimeouts":@(view->drawableTimeouts),
+    @"sizeMismatches":@(view->sizeMismatches),@"staleFramesDropped":@(owner->staleDrops),
+    @"wholeFrameReadbacks":@0,@"error":error?:@"",@"limits":MetalViewLimits()};
+  NSView* staleView=hasFrame?nil:view->view;
+  lock.unlock();
+  staleView.hidden=YES;
+  return status;
+}
+NSDictionary* MetalRetireAck(uint64_t handle) {
+  return @{@"textureId":@(handle),@"acknowledged":@YES,@"closed":@YES,@"ownerFinished":@YES,
+    @"registered":@NO,@"nativeViewLayerDetached":@YES};
+}
 void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
   auto owner = view->owner;
   owner->close();
@@ -358,9 +392,7 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
 - (void)handleCall:(FlutterMethodCall*)call result:(FlutterResult)result;
 @end
 @implementation RhwpMetalViewPlugin {
-  std::map<uint64_t, std::shared_ptr<MetalViewState>> _views;
-  std::shared_ptr<MetalViewState> _lastClosedView;
-  uint64_t _lastClosedViewId;
+  rhwp::metal::RetirementRegistry<MetalViewState,MetalViewReceipt> _views;
 }
 + (void)registerWithRegistrar:(id<FlutterPluginRegistrar>)registrar {
   RhwpMetalViewPlugin* plugin = [[RhwpMetalViewPlugin alloc] init];
@@ -374,9 +406,8 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
   uint64_t handle;
   if (![NSThread isMainThread] || viewId < 0 || ![args isKindOfClass:[NSDictionary class]] ||
       !Unsigned(args[@"handle"], handle) || !handle) return [[NSView alloc] initWithFrame:NSZeroRect];
-  auto found = _views.find(handle);
-  if (found == _views.end()) return [[NSView alloc] initWithFrame:NSZeroRect];
-  auto state = found->second;
+  if (!_views.registered(handle)) return [[NSView alloc] initWithFrame:NSZeroRect];
+  auto state = _views.lookup(handle);
   {std::lock_guard<std::mutex> lock(state->owner->mutex);
     if (state->bound || state->owner->closed) return [[NSView alloc] initWithFrame:NSZeroRect];
     state->bound=true;state->viewIdentifier=static_cast<uint64_t>(viewId);}
@@ -393,8 +424,9 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
   NSDictionary* arguments = call.arguments;
   if ([call.method isEqualToString:@"create"]) {
     NSString* input=arguments[@"libraryPath"];
-    if (![input isKindOfClass:[NSString class]] || !input.isAbsolutePath || input.length>4096 || _views.size()>=2) {
+    if (![input isKindOfClass:[NSString class]] || !input.isAbsolutePath || input.length>4096) {
       result([FlutterError errorWithCode:@"arguments" message:@"Absolute libraryPath and at most two native views are required." details:nil]);return;}
+    if(_views.size()>=2){result([FlutterError errorWithCode:@"backpressure" message:@"Two native views or unacknowledged close records are retained." details:nil]);return;}
     auto slot=std::shared_ptr<int>(new int(0),[](int* value){if(*value)--activeProducers;delete value;});
     int active=activeProducers.load();
     while(active<2&&!activeProducers.compare_exchange_weak(active,active+1)){}
@@ -408,21 +440,41 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
     if(!generation||generation>INT64_MAX||!handle||handle>INT64_MAX||!path.UTF8String){result([FlutterError errorWithCode:@"generation" message:@"Native view identity is exhausted or path invalid." details:nil]);return;}
     auto owner=std::make_shared<State>(generation,path.UTF8String,std::move(slot));
     auto view=std::make_shared<MetalViewState>(owner);
-    _views.emplace(handle,view);
+    if(!_views.insert(handle,view)){result([FlutterError errorWithCode:@"backpressure" message:@"Native view registry capacity is exhausted." details:nil]);return;}
     try {std::thread([view] {
       try {RunMetalView(view);}
       catch (const std::exception&) {view->owner->fail(@"Native Metal view owner stopped unexpectedly; completion remains unconfirmed.");view->owner->close();}
     }).detach();}
-    catch(const std::exception&){_views.erase(handle);owner->close();throw;}
+    catch(const std::exception&){_views.erase_unstarted(handle);owner->close();throw;}
     result(@{@"textureId":@(handle),@"deviceGeneration":@(generation),@"initializing":@YES,@"ready":@NO,
       @"presentationKind":@"nativeView",@"viewType":@"rhwp_native/metal_view",@"limits":MetalViewLimits()});return;
   }
   uint64_t handle;
   if(!Unsigned(arguments[@"textureId"],handle)||!handle){result([FlutterError errorWithCode:@"arguments" message:@"Invalid native view handle." details:nil]);return;}
-  auto found=_views.find(handle);
-  auto view=found==_views.end()?(_lastClosedViewId==handle?_lastClosedView:nullptr):found->second;
-  if(!view){result([FlutterError errorWithCode:@"closed" message:@"Unknown native view or expired closed receipt." details:nil]);return;}
+  auto view=_views.lookup(handle);
+  if(!view){
+    const auto* receipt=_views.receipt(handle);
+    if(receipt&&([call.method isEqualToString:@"status"]||[call.method isEqualToString:@"close"])){
+      result(receipt->status);return;
+    }
+    if(receipt&&[call.method isEqualToString:@"retireAck"]){result(MetalRetireAck(handle));return;}
+    result([FlutterError errorWithCode:@"closed" message:@"Unknown native view or expired acknowledged close receipt." details:nil]);return;
+  }
   auto owner=view->owner;
+  if([call.method isEqualToString:@"status"]){result(MetalViewStatus(view,_views.registered(handle)));return;}
+  if([call.method isEqualToString:@"retireAck"]){
+    bool complete;
+    {std::lock_guard<std::mutex> lock(owner->mutex);
+      complete=owner->closed&&owner->finished&&!owner->inFlight&&view->layerDetached&&!view->flow.quarantined();}
+    if(_views.registered(handle)||!complete){
+      result([FlutterError errorWithCode:@"retirePending" message:@"Producer completion and layer detach must be observed before close acknowledgment." details:nil]);return;
+    }
+    NSDictionary* status=MetalViewStatus(view,false);
+    if(!_views.acknowledge(handle,complete,MetalViewReceipt{status})){
+      result([FlutterError errorWithCode:@"retirePending" message:@"Native view close acknowledgment is not ready." details:nil]);return;
+    }
+    result(MetalRetireAck(handle));return;
+  }
   if([call.method isEqualToString:@"submit"]){
     uint64_t clear;
     if(!Unsigned(arguments[@"clearColor"],clear,UINT32_MAX)||(clear>>24)!=0xff){
@@ -430,7 +482,7 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
     }
     auto job=ParseJob(arguments,owner->generation,false);
     if(!job){result([FlutterError errorWithCode:@"arguments" message:@"Invalid full stamp, placements, or bounded geometry." details:nil]);return;}
-    const bool accepted=found!=_views.end()&&owner->enqueue(job);
+    const bool accepted=_views.registered(handle)&&owner->enqueue(job);
     if(accepted){
       NSView* nativeView=nil;
       {std::lock_guard<std::mutex> lock(owner->mutex);view->visibility.invalidate();nativeView=view->view;}
@@ -440,59 +492,38 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
       @"reason":accepted?@"accepted":@"notReadyOrStale",@"limits":MetalViewLimits()});return;
   }
   if([call.method isEqualToString:@"close"]){
+    _views.close(handle);
     StopMetalView(view);
-    if(found!=_views.end()){_views.erase(found);_lastClosedView=view;_lastClosedViewId=handle;}
     bool finished;{std::lock_guard<std::mutex> lock(owner->mutex);finished=owner->finished;}
     result(@{@"closed":@YES,@"ownerCompletionPending":@(!finished),@"limits":MetalViewLimits()});return;
   }
-  if([call.method isEqualToString:@"status"]||[call.method isEqualToString:@"setCovered"]){
+  if([call.method isEqualToString:@"setCovered"]){
     std::shared_ptr<Job> displayed;std::shared_ptr<NativeApi> api;
     {std::lock_guard<std::mutex> lock(owner->mutex);displayed=view->displayed;api=owner->api;}
     const bool current=displayed&&api&&MetalJobCurrent(api,displayed);
     std::unique_lock<std::mutex> lock(owner->mutex);
     const bool hasFrame=current&&!owner->closed&&owner->gate.current(displayed->sequence,displayed->stamp)&&view->displayed==displayed;
     if(!hasFrame)view->visibility.invalidate();
-    if([call.method isEqualToString:@"setCovered"]){
-      id covered=arguments[@"covered"];
-      if(![covered isKindOfClass:[NSNumber class]]||CFGetTypeID((__bridge CFTypeRef)covered)!=CFBooleanGetTypeID()){
-        result([FlutterError errorWithCode:@"arguments" message:@"covered must be a boolean." details:nil]);return;}
-      uint64_t serial;
-      if(!Unsigned(arguments[@"visibilitySerial"],serial)||!serial){
-        result([FlutterError errorWithCode:@"arguments" message:@"visibilitySerial must be a positive integer." details:nil]);return;}
-      const bool wantCover=[covered boolValue];
-      const bool stampMatches=hasFrame&&[arguments[@"stamp"] isKindOfClass:[NSDictionary class]]&&
-        [arguments[@"stamp"] isEqual:StampValue(displayed->stamp)];
-      const bool accepted=view->visibility.apply(serial,wantCover,stampMatches);
-      NSView* nativeView=view->view;
-      const bool hide=view->visibility.covered();
-      const auto appliedSerial=view->visibility.serial();
-      NSDictionary* renderedStamp=hasFrame?StampValue(view->renderedStamp):@{};
-      lock.unlock();
-      if(accepted||appliedSerial==serial)nativeView.hidden=hide;
-      result(@{@"textureId":@(handle),@"covered":@(hide),@"visibilitySerial":@(appliedSerial),
-        @"accepted":@(accepted),@"renderedStamp":renderedStamp});return;
-    }
-    NSMutableArray* ids=[NSMutableArray arrayWithCapacity:owner->acceptedSnapshots.size()];
-    for(const auto id:owner->acceptedSnapshots)[ids addObject:@(id)];
-    NSString* error=[[NSString alloc] initWithBytes:owner->error.data() length:owner->error.size() encoding:NSUTF8StringEncoding];
-    NSDictionary* status=@{@"ready":@(owner->ready&&view->layerReady),@"apiReady":@(owner->ready),@"closed":@(owner->closed),@"ownerFinished":@(owner->finished),
-      @"registered":@(_views.count(handle)!=0),@"pending":@(owner->pending!=nullptr),@"inFlight":@(owner->inFlight),
-      @"hasFrame":@(hasFrame),@"renderedStamp":hasFrame?StampValue(view->renderedStamp):@{},
-      @"acceptedStamp":StampValue(owner->acceptedStamp),@"acceptedSnapshots":ids,@"deviceGeneration":@(owner->generation),
-      @"presentationKind":@"nativeView",@"viewBound":@(view->bound),@"layerReady":@(view->layerReady),
-      @"nativeViewLayerDetached":@(view->layerDetached),@"covered":@(view->visibility.covered()),
-      @"visibilitySerial":@(view->visibility.serial()),
-      @"drawableWidth":@(view->drawableWidth),@"drawableHeight":@(view->drawableHeight),
-      @"frames":@(view->flow.scheduled()),@"discardedFrames":@(view->flow.discarded()),
-      @"quarantined":@(view->flow.quarantined()),@"drawableTimeouts":@(view->drawableTimeouts),
-      @"sizeMismatches":@(view->sizeMismatches),@"staleFramesDropped":@(owner->staleDrops),
-      @"wholeFrameReadbacks":@0,@"error":error?:@"",@"limits":MetalViewLimits()};
-    NSView* staleView=hasFrame?nil:view->view;
+    id covered=arguments[@"covered"];
+    if(![covered isKindOfClass:[NSNumber class]]||CFGetTypeID((__bridge CFTypeRef)covered)!=CFBooleanGetTypeID()){
+      result([FlutterError errorWithCode:@"arguments" message:@"covered must be a boolean." details:nil]);return;}
+    uint64_t serial;
+    if(!Unsigned(arguments[@"visibilitySerial"],serial)||!serial){
+      result([FlutterError errorWithCode:@"arguments" message:@"visibilitySerial must be a positive integer." details:nil]);return;}
+    const bool wantCover=[covered boolValue];
+    const bool stampMatches=hasFrame&&[arguments[@"stamp"] isKindOfClass:[NSDictionary class]]&&
+      [arguments[@"stamp"] isEqual:StampValue(displayed->stamp)];
+    const bool accepted=view->visibility.apply(serial,wantCover,stampMatches);
+    NSView* nativeView=view->view;
+    const bool hide=view->visibility.covered();
+    const auto appliedSerial=view->visibility.serial();
+    NSDictionary* renderedStamp=hasFrame?StampValue(view->renderedStamp):@{};
     lock.unlock();
-    staleView.hidden=YES;
-    result(status);return;
+    if(accepted||appliedSerial==serial)nativeView.hidden=hide;
+    result(@{@"textureId":@(handle),@"covered":@(hide),@"visibilitySerial":@(appliedSerial),
+      @"accepted":@(accepted),@"renderedStamp":renderedStamp});return;
   }
   result(FlutterMethodNotImplemented);
 }
-- (void)dealloc {for(const auto& item:_views)StopMetalView(item.second);}
+- (void)dealloc {for(const auto& item:_views.records())StopMetalView(item.second.value);}
 @end

@@ -1,11 +1,69 @@
 #ifndef RHWP_METAL_VIEW_LIFECYCLE_HPP
 #define RHWP_METAL_VIEW_LIFECYCLE_HPP
 
+#include <array>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
+#include <map>
+#include <memory>
 #include <optional>
 
 namespace rhwp::metal {
+
+// Platform-thread registry: unfinished and unacknowledged closes retain their
+// exact handle. Only an explicit acknowledgment after producer completion can
+// release a record; a bounded cache holds resource-free completion receipts.
+template <typename Value, typename Receipt, size_t Capacity = 2>
+class RetirementRegistry {
+ public:
+  static_assert(Capacity > 0, "retirement registry requires a positive bound");
+  struct Record { std::shared_ptr<Value> value; bool closing = false; };
+  bool insert(uint64_t handle, std::shared_ptr<Value> value) {
+    if (!handle || !value || records_.size() >= Capacity || records_.count(handle) || receipts_.count(handle)) return false;
+    return records_.emplace(handle, Record{std::move(value), false}).second;
+  }
+  std::shared_ptr<Value> lookup(uint64_t handle) const {
+    auto found = records_.find(handle);
+    return found == records_.end() ? nullptr : found->second.value;
+  }
+  bool registered(uint64_t handle) const {
+    auto found = records_.find(handle);
+    return found != records_.end() && !found->second.closing;
+  }
+  bool close(uint64_t handle) {
+    auto found = records_.find(handle);
+    if (found == records_.end()) return false;
+    found->second.closing = true;
+    return true;
+  }
+  bool acknowledge(uint64_t handle, bool completionConfirmed, Receipt receipt) {
+    if (receipts_.count(handle)) return true;
+    auto found = records_.find(handle);
+    if (!completionConfirmed || found == records_.end() || !found->second.closing) return false;
+    // Allocate before removing the only observable owner-completion record.
+    receipts_.emplace(handle, std::move(receipt));
+    records_.erase(found);
+    if (receipts_.size() > Capacity) {
+      receipts_.erase(receipt_order_[0]);
+      for (size_t i = 1; i < Capacity; ++i) receipt_order_[i-1] = receipt_order_[i];
+      receipt_order_[Capacity-1] = handle;
+    } else receipt_order_[receipts_.size()-1] = handle;
+    return true;
+  }
+  const Receipt* receipt(uint64_t handle) const {
+    auto found = receipts_.find(handle);
+    return found == receipts_.end() ? nullptr : &found->second;
+  }
+  void erase_unstarted(uint64_t handle) { records_.erase(handle); }
+  size_t size() const { return records_.size(); }
+  size_t receipt_count() const { return receipts_.size(); }
+  const std::map<uint64_t, Record>& records() const { return records_; }
+ private:
+  std::map<uint64_t, Record> records_;
+  std::map<uint64_t, Receipt> receipts_;
+  std::array<uint64_t, Capacity> receipt_order_{};
+};
 
 // Matches the Dart controller's ceil(logical viewport * DPR) admission. A
 // resize never clamps an old drawable into the new requested geometry.

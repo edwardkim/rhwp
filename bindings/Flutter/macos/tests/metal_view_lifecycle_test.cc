@@ -122,5 +122,70 @@ int main() {
     visibility.close();
     require(visibility.covered() && !visibility.apply(7, false, true));
   }
-  std::cout << "CAMetalLayer lifecycle: 7 scenarios passed\n";
+  {
+    // Two legitimate concurrent closes must remain independently observable.
+    struct Owner { bool finished = false; };
+    using Registry = rhwp::metal::RetirementRegistry<Owner, uint64_t>;
+    Registry registry;
+    auto first = std::make_shared<Owner>(), second = std::make_shared<Owner>();
+    std::weak_ptr<Owner> firstWeak = first;
+    require(registry.insert(1, first) && registry.insert(2, second));
+    require(registry.close(1) && registry.close(2));
+    require(!registry.registered(1) && !registry.registered(2));
+    require(registry.lookup(1) == first && registry.lookup(2) == second);
+    require(!registry.acknowledge(1, first->finished, 1));
+    first->finished = true;
+    require(!registry.insert(3, std::make_shared<Owner>())); // Finished alone is no acknowledgment.
+    require(registry.lookup(1)->finished && !registry.lookup(2)->finished);
+    require(registry.acknowledge(1, first->finished, 1));
+    first.reset();
+    require(firstWeak.expired() && registry.receipt(1) && *registry.receipt(1) == 1);
+    require(registry.insert(3, std::make_shared<Owner>()));
+    require(registry.lookup(2) == second && !registry.acknowledge(2, false, 2));
+    require(registry.acknowledge(1, false, 99)); // Repeated acknowledgment replays its terminal proof.
+    require(*registry.receipt(1) == 1);
+    require(!registry.acknowledge(3, true, 3)); // An active view cannot be retired.
+  }
+  {
+    // Completion order differs from handle order. Preserve the two most recent
+    // acknowledgments, even when a much older producer finally exits.
+    rhwp::metal::RetirementRegistry<int, uint64_t> registry;
+    require(registry.insert(1, std::make_shared<int>(1)));
+    require(registry.insert(2, std::make_shared<int>(2)));
+    require(registry.close(1) && registry.close(2));
+    require(registry.acknowledge(2, true, 2));
+    require(registry.insert(3, std::make_shared<int>(3)) && registry.close(3));
+    require(registry.acknowledge(3, true, 3));
+    require(registry.lookup(1) != nullptr && registry.receipt_count() == 2);
+    require(registry.acknowledge(1, true, 1));
+    require(registry.receipt(1) && registry.receipt(3) && !registry.receipt(2));
+    require(!registry.lookup(1) && registry.size() == 0 && registry.receipt_count() == 2);
+    require(!registry.acknowledge(2, false, 2)); // Expired acknowledged receipt is explicit.
+  }
+  {
+    // Quarantine cannot be acknowledged, replaced, or hidden by a newer close.
+    rhwp::metal::RetirementRegistry<DrawableLifecycle, uint64_t> registry;
+    auto first = std::make_shared<DrawableLifecycle>(), second = std::make_shared<DrawableLifecycle>();
+    require(first->acquire(1) && second->acquire(1));
+    first->unknown_failure(1);
+    require(registry.insert(1, first) && registry.insert(2, second));
+    require(registry.close(1) && registry.close(2));
+    require(!registry.acknowledge(1, first->finish_owner(), 1));
+    require(!registry.acknowledge(2, second->finish_owner(), 2));
+    require(!registry.insert(3, std::make_shared<DrawableLifecycle>()));
+    require(registry.lookup(1)->quarantined() && registry.lookup(2)->busy());
+  }
+  {
+    rhwp::metal::RetirementRegistry<int, uint64_t> registry;
+    for (uint64_t handle = 1; handle <= 400; ++handle) {
+      auto owner = std::make_shared<int>(1);
+      std::weak_ptr<int> weak = owner;
+      require(registry.insert(handle, owner) && registry.close(handle));
+      require(registry.acknowledge(handle, true, handle));
+      owner.reset();
+      require(weak.expired() && registry.size() == 0 && registry.receipt_count() <= 2);
+    }
+    require(!registry.receipt(398) && registry.receipt(399) && registry.receipt(400));
+  }
+  std::cout << "CAMetalLayer lifecycle: 11 scenarios passed\n";
 }

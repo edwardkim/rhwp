@@ -30,6 +30,11 @@ texture registry ID가 아니라 native view state의 양수 handle입니다.
    허용합니다. visibilitySerial은 증가하는 양수이고 오래된 요청은 새 가림을 풀 수
    없습니다. 응답은 `textureId`, `covered`, `visibilitySerial`, `accepted`,
    `renderedStamp`입니다. 가림은 GPU 완료나 frame credit 환급 신호가 아닙니다.
+5. close 후 `ownerFinished: true`, `registered: false`,
+   `nativeViewLayerDetached: true`를 확인하면 `retireAck {textureId}`를 보냅니다.
+   성공 응답은 동일 `textureId`와 `acknowledged: true`, `closed: true`,
+   `ownerFinished: true`, `registered: false`, `nativeViewLayerDetached: true`입니다.
+   미완료·quarantine은 `retirePending`이며 해당 상태와 한도를 보존합니다.
 
 기존 Native loader, JSON/geometry parser, snapshot lease와 generation gate를
 같은 translation unit에서 재사용합니다. 새 경로는 CV 불변 frame credit을 예약하지
@@ -85,6 +90,15 @@ presentation command가 끝난 뒤 Native presenter를 그 생성 thread에서 �
 `ownerFinished`와 `registered: false`는 이 Native bridge의 종료를 뜻합니다.
 Flutter platform view 객체의 늦은 dispose나 화면 consumer GPU의 완료와 구분합니다.
 
+활성 view와 아직 `retireAck`하지 않은 close record를 합쳐 최대 두 개 보존합니다.
+두 view를 함께 닫아도 handle별 상태를 덮어쓰지 않습니다. worker가 완료됐어도
+caller가 이를 확인하고 ack하기 전에는 record를 버리거나 새 create에 그 공간을
+사용하지 않습니다. ack는 producer 완료·layer 분리·quarantine 없음이 모두
+확인됐을 때만 수락합니다. 이후에는 Native owner/resource 참조가 없는 완료 status
+metadata를 최근 ack 순서로 두 개만 보존해 반복 status·close·ack에 응답합니다.
+더 오래된 ack의 status는 `closed` 오류로 만료를 명시합니다. 미완료 record를
+내보내거나 완료 map을 무한히 누적하지 않습니다.
+
 Native/command completion이 확인되지 않으면 drawable, queue, layer, job과 producer
 thread/slot을 process lifetime으로 보존하고 명시적 오류를 보고합니다. close나
 재생성으로 이 한도를 환급하지 않습니다. 불명확한 GPU 작업에 대해 대상 재사용이나
@@ -95,7 +109,9 @@ Native owner 종료를 추정하지 않습니다.
 `tests/metal_view_lifecycle_test.cc`는 실제 backend가 사용하는 portable lifecycle과
 geometry/generation gate를 검사합니다. 400번 handoff, 늦은 uncover 거절, 중복/옛 ticket 거절,
 작업 중 close, 불명확한 완료의 quarantine, DPR/resize ceil과 최신 세대 보존을
-확인합니다. 이 검사는 Apple SDK compile 또는 실제 macOS 화면 수집의 대체가 아닙니다.
+확인합니다. 동시 close 두 개·완료 전 ack 거절·ack 전 create 제한·역순 완료·400회
+닫기/재생성에서도 완료 metadata와 owner 상태가 정해진 한도를 지키는지 검사합니다.
+이 검사는 Apple SDK compile 또는 실제 macOS 화면 수집의 대체가 아닙니다.
 
 실제 Apple SDK compile/link, 실제 AppKitView 표시·32회 이상 갱신·revision·resize·
 cover·close와 Native lease 정리는 별도의 target runner에서 수행해야 합니다.
