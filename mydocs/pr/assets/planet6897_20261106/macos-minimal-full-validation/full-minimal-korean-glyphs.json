@@ -1,0 +1,21 @@
+{
+  "requested": "Apple SD Gothic Neo",
+  "actual_postscript": "AppleSDGothicNeo-Regular",
+  "text": "한글Aa01",
+  "glyphs": [
+    3296,
+    1238,
+    34,
+    66,
+    17,
+    18
+  ],
+  "nonempty_outline_paths": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+  ]
+}
