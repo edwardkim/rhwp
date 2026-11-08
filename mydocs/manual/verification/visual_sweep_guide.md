@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-11-07
+last_verified: 2026-11-08
 ---
 
 # PDF/PNG visual sweep 가이드
@@ -213,6 +213,9 @@ overlay의 일치율도 동일한 입력의 `silhouette_raw_match_percent`를 �
 색상 경계 보정값은 overlay에 함께 표시하지 않으며 진단 지표에서 확인한다.
 정확한 점수와 90%·98%·100% 및 기준 대비 하락 판정에는 같은 실행의
 `silhouette_manifest.json`에 기록된 페이지별 정밀값을 사용한다.
+단, collaborator·maintainer의 [#8389·#8397 보호 TSV 비교](visual_verification_governance.md#기존-pr-보호-tsv의-공식-표시값-보존)는
+해당 정본이 지정한 공식 두 자리 표시값으로 상승·동일 여부를 판정한다. 일반 사용자·외부 contributor에게
+원본 OTF 설치나 이 특별 보호 검증의 재현을 요구하지 않는다.
 raw도2px 이웃을 허용하며, RGB까지 동일해야 하는 엄격 픽셀 지표와는 다르다.
 232 이진화 경계가 유색 PDF 픽셀을 빈 영역으로 오판하는 경우를 구분하기 위해 원값을 보존한다.
 내용 마스크232·2px 반경은 유지하며, 원래 불일치 픽셀 중 같은 위치 양쪽 모두 흰 배경

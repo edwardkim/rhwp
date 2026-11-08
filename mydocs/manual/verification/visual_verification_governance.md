@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-10-23
+last_verified: 2026-11-08
 ---
 
 # PR 시각 검증 거버넌스 (OVL-step)
@@ -82,6 +82,34 @@ fresh WASM을 각각 비교하며 어느 한 문서·페이지·출력 경로라
 review와 PR 본문에 base/head·producer SHA, 입력/PDF·글꼴·backend 조건, 기준/후보
 Native·fresh WASM TSV 원본, 비교 명령·전쪽 수·최대 하락폭 및 문서/backend/페이지/
 기준/후보/하락폭 목록을 연결한다. 목록이 비면 실제 비교 범위와 2%p 초과 하락 0쪽을 기록한다.
+
+## 기존 PR 보호 TSV의 공식 표시값 보존
+
+**이 절은 조판·렌더링 영향 PR을 검토·통합하는 collaborator·maintainer에게만 적용한다.**
+PR [#8389](https://github.com/edwardkim/rhwp/pull/8389)·[#8397](https://github.com/edwardkim/rhwp/pull/8397)의
+보호 TSV를 품질 하한으로 적용한다. 일반 사용자·외부 contributor에게 원본 OTF의 보유·설치나
+이 특별 보호 검증의 재현을 제출 조건으로 요구하지 않는다. 통합 담당 collaborator·maintainer가
+원본 글꼴 공급 조건을 확인한 환경에서 수행하며, 이를 위해 비공개 글꼴을 저장소에 배포하지 않는다.
+일반 시각 검증 의무와 90%·완료 페이지 98% 기준은 각 정본의 적용 범위를 유지한다.
+
+1. 원 PR이 수용한 보호 TSV의 commit SHA·경로·SHA-256과 문서·backend·page 대응을 고정한다.
+   같은 입력·독립 Print PDF·compat·DPI·글꼴 프로그램·계산 방법으로 후보의 전쪽 TSV를 산출한다.
+   Native는 Native, fresh WASM은 fresh WASM과 각각 비교한다. 조건 불일치·원본 글꼴 미확보·
+   기준 없음·쪽 누락·중복·측정 실패·쪽수 불일치는 검증 완료가 아니며 통합 담당자가 해소한다.
+2. 비교 열은 **`silhouette_raw_match_percent`의 공식 소수 둘째 자리 표시값**이다.
+   기준·후보 TSV에 기록된 두 자리 십진수를 `Decimal` 등으로 직접 비교한다.
+   임의 재반올림·정수화·허용 오차로 하락을 숨기지 않는다. 같은 실행의 정밀값과 PNG도 보존하되,
+   이 특별 보호 판정의 기준을 표시값 대신 다른 정밀도나 색상 경계 보정값으로 바꾸지 않는다.
+3. **각 문서·backend·페이지의 공식 두 자리 표시값은 상승 가능, 하락 불가다.**
+   `후보 >= 보호값`이어야 한다. 99.49% → 99.49%·99.50%는 이 보호 기준을 충족하고,
+   99.49% → 99.48% 또는 100.00% → 99.99%는 하락이다. 정밀값에 차이가 있어도 공식 두 자리
+   표시값이 같으면 이 특별 보호 기준의 하락은 아니다. 일반 90%·98% 판정은 정밀값을 계속 쓴다.
+4. 한 페이지·한 backend라도 하락하면 **준비 완료·PR 생성·승인·통합을 보류**한다.
+   일반 devel 대비 2%p 허용폭, 평균 상승, 다른 페이지 개선, 98% 유지 또는 CI 통과로 면제하지 않는다.
+   보호 TSV·PDF·글꼴·DPI·마스크·판정 기준을 바꿔 통과시키지 않고 원인을 보정한 후보에서 재검증한다.
+5. review에는 보호 TSV와 후보 TSV, source/producer SHA, 비교 조건·명령·전쪽 수와
+   문서/backend/페이지별 보호값·후보값·하락 목록을 기록한다. 하락 쪽은 같은 쪽의 review·overlay로
+   확인한다. 이 특별 보호 검증의 미완료를 일반 사용자에게 원본 OTF 설치 요구로 전가하지 않는다.
 
 ## 원칙
 

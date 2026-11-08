@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-11-07
+last_verified: 2026-11-08
 ---
 
 # 로컬 사전 검증
@@ -176,6 +176,10 @@ review·overlay에서 확인한 WMF 차이를 그대로 기록한다.
    유지/개선/후퇴/미검증 → 보정·재검증 결과`를 연결한다. 리베이스 전 실행은 출처 기록이며 새
    후보의 검증으로 표시하지 않는다. 실행으로 확인한 후퇴와 필수 증거 부족을 구분하고, 어느 쪽이든
    해소 전에는 준비 완료·새 PR 생성·승인·통합을 보류한다. 별도 보고서 파일을 중복 작성할 필요는 없다.
+
+collaborator·maintainer는 이 기능 보존 검증에
+[#8389·#8397 보호 TSV의 공식 두 자리 표시값 보존](../verification/visual_verification_governance.md#기존-pr-보호-tsv의-공식-표시값-보존)도
+적용한다. 일반 사용자·외부 contributor에게 원본 OTF 설치나 이 특별 보호 검증의 재현을 요구하지 않는다.
 
 ### 고정 review target과 실행 환경
 

@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-11-07
+last_verified: 2026-11-08
 ---
 
 # PR 리뷰 · 통합 워크플로우 매뉴얼
@@ -42,6 +42,11 @@ collaborator 매개 외부 PR 모두 같은 기준을 사용하며, CI 통과가
 후보 head와 같은 조건·페이지로 비교한다. **한 쪽·한 경로라도 2%p 초과 하락하면 90% 이상이어도
 PR을 재검토하고 승인·통합을 보류한다.** 평균 상승·CI 통과로 상쇄하지 않는다.
 계산·증거·base 갱신은 [devel 대비 실루엣 하락 재검토](verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)를 따른다.
+
+collaborator·maintainer의 조판·렌더링 PR 검토에는
+[#8389·#8397 보호 TSV의 공식 두 자리 표시값 보존](verification/visual_verification_governance.md#기존-pr-보호-tsv의-공식-표시값-보존)을
+추가 적용한다. 페이지별 상승·동일만 허용하며 하락 시 준비 완료·PR 생성·승인·통합을 보류한다.
+이 특별 보호 검증이나 원본 OTF 설치를 일반 사용자·외부 contributor의 제출 의무로 요구하지 않는다.
 
 검증에 사용한 HWP/HWPX/PDF는 [검증 입력 커밋 확인](pr_review/intake_and_review.md#28-검증-입력-커밋-확인)을
 모든 정식 PR review의 공통 항목으로 점검한다. 수용 근거로 쓴 파일은 검토 대상 commit에 포함하고,
