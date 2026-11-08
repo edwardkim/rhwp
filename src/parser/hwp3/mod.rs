@@ -146,6 +146,38 @@ pub(crate) fn check_record_count(count: usize) -> Result<(), io::Error> {
 }
 
 // HWP3 spec (한글문서파일구조3.0.md:248) doc_info offset 122 "빈줄감춤"(0 이외=on).
+/// HWP3 표 셀마다 같은 행(열)에 걸친 다음 이웃 셀의 시작 좌표 — `horizontal` 이면 오른쪽 이웃의
+/// 왼쪽 변, 아니면 아래 이웃의 위쪽 변. 이웃이 이 셀 끝 변보다 조금 안쪽에서 시작해도(저장 반올림
+/// 40HU 안) 이웃으로 본다. 정렬한 시작 좌표에서 이분 탐색한 뒤 전진하고, 손상 파일의 계단형 셀이
+/// O(n²) 로 돌지 않게 전진 횟수를 묶는다.
+fn hwp3_next_cell_starts(geo: &[(i32, i32, i32, i32)], horizontal: bool) -> Vec<Option<i32>> {
+    const SLACK: i32 = 40;
+    const MAX_SCAN: usize = 2048;
+    let start = |g: &(i32, i32, i32, i32)| if horizontal { g.0 } else { g.1 };
+    let end = |g: &(i32, i32, i32, i32)| if horizontal { g.2 } else { g.3 };
+    let overlap = |a: &(i32, i32, i32, i32), b: &(i32, i32, i32, i32)| {
+        if horizontal {
+            b.1 < a.3 && b.3 > a.1
+        } else {
+            b.0 < a.2 && b.2 > a.0
+        }
+    };
+    let mut order: Vec<usize> = (0..geo.len()).collect();
+    order.sort_by_key(|&i| start(&geo[i]));
+    geo.iter()
+        .map(|a| {
+            let from = (end(a) - SLACK).max(start(a) + 1);
+            let k = order.partition_point(|&i| start(&geo[i]) < from);
+            order[k..]
+                .iter()
+                .take(MAX_SCAN)
+                .map(|&i| &geo[i])
+                .find(|b| start(b) > start(a) && overlap(a, b))
+                .map(|b| start(b))
+        })
+        .collect()
+}
+
 fn hwp3_hide_empty_line(doc_info: &Hwp3DocInfo) -> bool {
     doc_info.hide_empty_line != 0
 }
@@ -1424,44 +1456,40 @@ fn parse_hwp3_object_dispatch(
             return Ok(Some(true));
         }
 
-        let mut xs_raw = Vec::new();
-        let mut ys_raw = Vec::new();
-
-        for i in 0..cell_count as usize {
-            let offset = i * 27;
-            let cell_info = &cell_buf[offset..offset + 27];
-            let x = (&cell_info[4..6]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
-            let y = (&cell_info[6..8]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
-            let w = (&cell_info[8..10]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
-            let h = (&cell_info[10..12]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
-            xs_raw.push(x);
-            xs_raw.push(x + w);
-            ys_raw.push(y);
-            ys_raw.push(y + h);
-        }
-
-        xs_raw.sort_unstable();
-        ys_raw.sort_unstable();
-
-        let mut xs = Vec::new();
-        for &x in &xs_raw {
-            if let Some(&last) = xs.last() {
-                if i32::abs(x - last) < 40 {
-                    continue;
-                }
-            }
-            xs.push(x);
-        }
-
-        let mut ys = Vec::new();
-        for &y in &ys_raw {
-            if let Some(&last) = ys.last() {
-                if i32::abs(y - last) < 40 {
-                    continue;
-                }
-            }
-            ys.push(y);
-        }
+        // 격자 경계는 셀 왼쪽 변 x 전부(허용치 없음)와 표 오른쪽 끝, 위쪽 변 y 전부와 표 아래쪽 끝이다.
+        // 오른쪽·아래쪽 변은 경계를 만들지 않는다 — 셀 높이 합이 틀보다 짧은 칸이 가짜 행을 만들고,
+        // 1단위 어긋난 변을 허용치로 묶으면 다른 열이 합쳐진다. 셀이 끝나는 자리는 같은 행에 걸친
+        // 오른쪽 이웃의 왼쪽 변(아래는 아래 이웃의 위쪽 변)이다. 한컴 HWP3→HWPX 변환본
+        // (samples/hwp3-sample16-hwp5.hwpx 의 "접 수 번 호"·"사업책임자(주계약자)"·"투입인력 개인별 경력사항
+        // 확인서", hwp3-table-cell-order 한컴 2020 재저장본)의 rowCnt·colCnt·셀 앵커와 일치한다.
+        let geo: Vec<(i32, i32, i32, i32)> = (0..cell_count as usize)
+            .map(|i| {
+                let c = &cell_buf[i * 27..i * 27 + 27];
+                let x = (&c[4..6]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
+                let y = (&c[6..8]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
+                let w = (&c[8..10]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
+                let h = (&c[10..12]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
+                (x, y, x + w, y + h)
+            })
+            .collect();
+        let right = geo.iter().map(|g| g.2).max().unwrap_or(0);
+        let bottom = geo.iter().map(|g| g.3).max().unwrap_or(0);
+        let mut xs: Vec<i32> = geo
+            .iter()
+            .map(|g| g.0)
+            .chain(std::iter::once(right))
+            .collect();
+        let mut ys: Vec<i32> = geo
+            .iter()
+            .map(|g| g.1)
+            .chain(std::iter::once(bottom))
+            .collect();
+        xs.sort_unstable();
+        xs.dedup();
+        ys.sort_unstable();
+        ys.dedup();
+        let next_x = hwp3_next_cell_starts(&geo, true);
+        let next_y = hwp3_next_cell_starts(&geo, false);
 
         table.col_count = if xs.len() > 1 {
             (xs.len() - 1) as u16
@@ -1485,22 +1513,14 @@ fn parse_hwp3_object_dispatch(
             let w = (&cell_info[8..10]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
             let h = (&cell_info[10..12]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
 
-            let c1 = xs
-                .iter()
-                .position(|&val| (val - x).abs() < 40)
-                .unwrap_or(cell_info[1] as usize);
-            let c2 = xs
-                .iter()
-                .position(|&val| (val - (x + w)).abs() < 40)
-                .unwrap_or(c1 + 1);
-            let r1 = ys
-                .iter()
-                .position(|&val| (val - y).abs() < 40)
-                .unwrap_or(cell_info[0] as usize);
-            let r2 = ys
-                .iter()
-                .position(|&val| (val - (y + h)).abs() < 40)
-                .unwrap_or(r1 + 1);
+            let c1 = xs.binary_search(&x).unwrap_or(cell_info[1] as usize);
+            let c2 = next_x[i]
+                .and_then(|v| xs.binary_search(&v).ok())
+                .unwrap_or(xs.len() - 1);
+            let r1 = ys.binary_search(&y).unwrap_or(cell_info[0] as usize);
+            let r2 = next_y[i]
+                .and_then(|v| ys.binary_search(&v).ok())
+                .unwrap_or(ys.len() - 1);
 
             cell.row = r1 as u16;
             cell.col = c1 as u16;
