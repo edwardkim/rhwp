@@ -15,6 +15,10 @@ python bindings/Flutter/tool/qualify_windows_continuous.py `
   --output C:/Temp/rhwp-continuous-capture --frames 32 --timeout 600
 ```
 
+제한 시간은 stage 대기·CPU 비교·두 held capture·acknowledgement·종료와 최종 runtime identity
+검증을 모두 포함한다. 준비된 stage라도 deadline 뒤에는 승인하거나 성공으로 기록하지 않는다.
+실패한 실제 raw와 진단은 보존하고 소유 runner를 정리한다.
+
 새 출력 디렉터리는 runtime bundle 밖에 둔다. frame 수는 32..64, 제한 시간은 30..600초다.
 도구는 `backend:windowsImmutableTransfer`, `presentationKind:externalTexture`,
 `frameCount:32`, `cpuReference:true`를 config로 전달한다. 기본 legacy backend의 세 프레임

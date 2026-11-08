@@ -10,6 +10,8 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+from types import SimpleNamespace
+from unittest import mock
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tool"))
@@ -277,6 +279,142 @@ class WindowsContinuousContracts(unittest.TestCase):
             wine_get_version = object()
         with self.assertRaisesRegex(RuntimeError, "Wine"):
             qualification.require_actual_windows(platform="win32", load_library=lambda *a, **k: Wine())
+
+
+class WindowsContinuousDeadlineContracts(unittest.TestCase):
+    """Fake process/capture orchestration, never actual Windows evidence."""
+
+    def run_capture(self, expire=None):
+        from desktop_qualification_contract import (BuildAndRuntimeIdentityContracts,
+                                                    RuntimeBundleContracts, source_images)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            runtime = root / "runtime"
+            runtime.mkdir()
+            RuntimeBundleContracts.bundle(self, runtime)
+            _, supplied, build = BuildAndRuntimeIdentityContracts.artifacts(self, runtime)
+            from qualify_desktop_texture import runtime_bundle_manifest
+            build.update(platform="windows", buildExitCode=0, runtimeBundle=runtime_bundle_manifest(runtime),
+                         sourceHead="1" * 40, nativeSourceHead="2" * 40,
+                         flutterRevision="3" * 40, engineRevision="4" * 40)
+            build_receipt = root / "build.json"
+            qualification.write_json(build_receipt, build)
+            output = root / "capture"
+            clock = SimpleNamespace(now=0.0, reads=0, bundle_checks=0)
+            case = SimpleNamespace(captures=0, config=None)
+            process = SimpleNamespace(pid=42, returncode=None)
+            process.poll = lambda: process.returncode
+            process.kill = lambda: setattr(process, "returncode", -9)
+            frames = []
+
+            def wait(**kwargs):
+                process.returncode = 0
+                if expire == "close-wait":
+                    clock.now = 31.0
+                return 0
+
+            process.wait = wait
+
+            def launch(*args, **kwargs):
+                case.config = qualification.read_json(kwargs["env"]["RHWP_CONSUMER_PROBE_CONFIG"])
+                for index in range(1, 33):
+                    value = stage(index)
+                    value["nonce"] = case.config["nonce"]
+                    qualification.write_json(output / f"stage-{index}.json", value)
+                    low, reference, _ = source_images(index, width=value["width"], height=value["height"])
+                    low, reference = bytearray(low), bytearray(reference)
+                    # Keep every publication independently observable after the
+                    # resize. Both CPU images come from the same synthetic shape.
+                    for pixels, width, factor in ((low, value["width"], 1),
+                                                   (reference, value["width"] * 4, 4)):
+                        for y in range(8 * factor, 14 * factor):
+                            for x in range(8 * factor, 14 * factor):
+                                at = (y * width + x) * 4
+                                pixels[at:at + 4] = bytes([20 + index] * 3 + [255])
+                    frames.append((value["width"], value["height"], bytes(low)))
+                    (output / f"cpu-{index}.rgba").write_bytes(low)
+                    (output / f"cpu-reference-{index}.rgba").write_bytes(reference)
+                result = completion()
+                result["nonce"] = case.config["nonce"]
+                qualification.write_json(output / "result.json", result)
+                return process
+
+            def capture(width, height, offset):
+                expected_width, expected_height, pixels = frames[case.captures // 2]
+                self.assertEqual((width, height, offset), (expected_width, expected_height, (16, 16)))
+                case.captures += 1
+                if expire == "held-capture" and case.captures == 2:
+                    clock.now = 31.0
+                return pixels
+
+            original_compare = qualification.compare_pixels
+            original_bundle = qualification.verify_runtime_bundle
+
+            def compare(*args, **kwargs):
+                result = original_compare(*args, **kwargs)
+                if expire == "comparison":
+                    clock.now = 31.0
+                return result
+
+            def bundle(*args, **kwargs):
+                result = original_bundle(*args, **kwargs)
+                clock.bundle_checks += 1
+                if expire == "final-identity" and clock.bundle_checks == 2:
+                    clock.now = 31.0
+                return result
+
+            def monotonic():
+                clock.reads += 1
+                if expire == "ready-stage" and clock.reads > 1:
+                    clock.now = 31.0
+                return clock.now
+
+            argv = [str(Path(qualification.__file__)),
+                    *(argument for key, path in supplied.items() for argument in ("--" + key, str(path))),
+                    "--build-receipt", str(build_receipt), "--output", str(output), "--timeout", "30"]
+            with mock.patch.object(sys, "argv", argv), \
+                    mock.patch.object(qualification, "require_actual_windows"), \
+                    mock.patch.object(qualification.subprocess, "Popen", side_effect=launch), \
+                    mock.patch.object(qualification, "WindowsCompositor", return_value=SimpleNamespace(capture=capture)), \
+                    mock.patch.object(qualification, "compare_pixels", side_effect=compare), \
+                    mock.patch.object(qualification, "verify_runtime_bundle", side_effect=bundle), \
+                    mock.patch.object(qualification.time, "monotonic", side_effect=monotonic), \
+                    mock.patch.object(qualification.time, "sleep"), mock.patch("builtins.print"):
+                if expire is None:
+                    qualification.main()
+                else:
+                    with self.assertRaisesRegex(TimeoutError, "deadline"):
+                        qualification.main()
+            receipt = qualification.read_json(output / "receipt.json", limit=1024 * 1024)
+            if expire is None:
+                self.assertEqual(receipt["qualification"], "windows-immutable-transfer-consumer-passed")
+                self.assertEqual(len(list(output.glob("ack-*.json"))), 32)
+            else:
+                self.assertEqual(receipt["qualification"], "failed")
+                if expire in ("ready-stage", "comparison", "held-capture"):
+                    self.assertFalse((output / "ack-1.json").exists())
+                if expire == "ready-stage":
+                    self.assertEqual(case.captures, 0)
+                elif expire in ("comparison", "held-capture"):
+                    self.assertTrue((output / "compositor-1.rgba").exists())
+
+    def test_on_time_complete_publications_still_qualify(self):
+        self.run_capture()
+
+    def test_expired_deadline_rejects_an_already_ready_stage_without_capture_or_ack(self):
+        self.run_capture("ready-stage")
+
+    def test_cpu_comparison_crossing_deadline_cannot_ack_a_publication(self):
+        self.run_capture("comparison")
+
+    def test_held_capture_crossing_deadline_cannot_ack_a_publication(self):
+        self.run_capture("held-capture")
+
+    def test_successful_close_wait_finishing_after_deadline_is_not_qualification(self):
+        self.run_capture("close-wait")
+
+    def test_final_runtime_identity_check_crossing_deadline_is_not_qualification(self):
+        self.run_capture("final-identity")
 
 
 class WindowsSourcePixelControls(unittest.TestCase):
