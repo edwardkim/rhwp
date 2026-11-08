@@ -3349,24 +3349,75 @@ pub(crate) fn control_line_seg_index_with_storage<S: crate::storage::Storage>(
 /// 20쪽: 제목 앞 간격 284 HU, 뒤 저장 문단 pi=290 이 3.8px 위로). 저장 줄 경우
 /// (`stored_first_margin_is_page_relative`)와 달리 명시적 쪽 나눔 문단도 포함한다 — 그 20쪽
 /// 제목이 `pageBreak="1"` 문단이고, 한/글 2024 PDF 는 거기서도 앞 간격을 둔다.
-pub(crate) fn synthesized_first_margin_hu(
-    first: &Paragraph,
+/// [#8797] 한/글 저장 줄이어도 첫 vpos 가 앞 간격보다 작으면 그 vpos 는 간격을 담지 못한다.
+/// 이 문단의 마지막 저장 줄 끝 + 뒤 간격 + 다음 문단 앞 간격이 다음 문단 첫 vpos 와 정확히
+/// 닫히면, 원본 사다리가 계상하지 않은 양은 이 첫 문단 앞 간격뿐이다. 흐름은 그 간격을 쪽
+/// 맨 위에 두므로(36392221: 제목 앞 간격 852HU, 저장 vpos 0) 같은 양을 뺀다. 원점이 그대로면
+/// 뒤 단일 저장 개체 줄의 투영이 간격만큼 위로 어긋난다. 사다리가 닫히지 않으면 원본 축의
+/// 의미를 알 수 없으므로 원점을 바꾸지 않는다. vpos 가 간격을 담는 경우는
+/// `stored_first_margin_is_page_relative` 가 먼저 원점 0 으로 처리한다.
+pub(crate) fn unstored_first_margin_hu(
+    paragraphs: &[Paragraph],
+    index: usize,
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> i32 {
-    let synthesized = first.line_segs.first().is_some_and(|seg| {
-        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
-    });
-    if !synthesized {
+    let Some(first) = paragraphs.get(index) else {
         return 0;
-    }
-    styles
-        .para_styles
-        .get(first.para_shape_id as usize)
+    };
+    let Some(seg) = first.line_segs.first() else {
+        return 0;
+    };
+    let style = |para: &Paragraph| styles.para_styles.get(para.para_shape_id as usize);
+    let before = style(first)
         .map(|style| style.spacing_before)
         .filter(|before| *before > 0.5)
         .map(|before| px_to_hwpunit(before, dpi))
-        .unwrap_or(0)
+        .unwrap_or(0);
+    if seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 {
+        return before;
+    }
+    if seg.vertical_pos >= before {
+        return 0;
+    }
+    let closes_next = || -> Option<bool> {
+        let next = paragraphs.get(index.checked_add(1)?)?;
+        let last = first.line_segs.last()?;
+        let next_seg = next.line_segs.first()?;
+        let stored = |line: &crate::model::paragraph::LineSeg| {
+            line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        };
+        if first.stored_text_partition_is_dirty()
+            || next.stored_text_partition_is_dirty()
+            || first.cell_format_vpos_dirty
+            || next.cell_format_vpos_dirty
+            || !first.line_segs.iter().all(stored)
+            || !stored(next_seg)
+            || !first.line_segs.windows(2).all(|pair| {
+                i64::from(pair[0].vertical_pos)
+                    + i64::from(pair[0].line_height)
+                    + i64::from(pair[0].line_spacing)
+                    == i64::from(pair[1].vertical_pos)
+            })
+        {
+            return Some(false);
+        }
+        let after = style(first).map_or(0, |style| px_to_hwpunit(style.spacing_after, dpi));
+        let next_before = style(next).map_or(0, |style| px_to_hwpunit(style.spacing_before, dpi));
+        Some(
+            i64::from(last.vertical_pos)
+                + i64::from(last.line_height)
+                + i64::from(last.line_spacing)
+                + i64::from(after)
+                + i64::from(next_before)
+                == i64::from(next_seg.vertical_pos),
+        )
+    };
+    if closes_next().unwrap_or(false) {
+        before
+    } else {
+        0
+    }
 }
 
 /// 새 쪽으로 이월된 첫 한 줄의 간격을 다음 원본 줄의 새 축에서 확인한다.
@@ -8355,10 +8406,8 @@ impl LayoutEngine {
                 }) {
                     frame.source_origin_hu
                 } else if let Some(PageItem::FullParagraph { para_index }) = first_flow_item {
-                    let margin = paragraphs
-                        .get(*para_index)
-                        .map(|first| synthesized_first_margin_hu(first, styles, self.dpi))
-                        .unwrap_or(0);
+                    let margin =
+                        unstored_first_margin_hu(paragraphs, *para_index, styles, self.dpi);
                     base - margin
                 } else {
                     base
