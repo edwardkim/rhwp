@@ -106,6 +106,9 @@ def audit_archives(ledger, policy, archive_dir):
             vcs = json.loads(archive.extractfile(prefix + ".cargo_vcs_info.json").read())
         pkg = manifest["package"]
         require((pkg["name"], pkg["version"]) == (name, version), f"identity differs: {name}")
+        description = pkg.get("description")
+        require(isinstance(description, str) and bool(description.strip()),
+                f"description metadata missing: {name}")
         require(pkg.get("publish") == ["crates-io"], f"publication guard differs: {name}")
         require(pkg.get("rust-version") == "1.93.1", f"Rust support differs: {name}")
         require(vcs["git"]["sha1"] == sha and not vcs["git"].get("dirty", False),
