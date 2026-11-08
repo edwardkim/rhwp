@@ -1,0 +1,438 @@
+{
+  "code_head": "0322cfe65b99c24685e5a30f67ae49c7e7f11272",
+  "conditions": 93,
+  "pages": 2994,
+  "below90": 0,
+  "minimum": "92.29",
+  "protected_pages": 1771,
+  "supplemental": [
+    {
+      "case": "protected-angle",
+      "page": "1",
+      "silhouette_raw_match_percent": "100.00"
+    }
+  ],
+  "missing": [],
+  "changes": [
+    {
+      "case": "issue7905",
+      "page": 1,
+      "before": "99.90",
+      "after": "99.92",
+      "decline": false
+    },
+    {
+      "case": "issue7905",
+      "page": 2,
+      "before": "98.19",
+      "after": "98.70",
+      "decline": false
+    },
+    {
+      "case": "issue7905",
+      "page": 3,
+      "before": "99.82",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "issue7905",
+      "page": 4,
+      "before": "99.99",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 1,
+      "before": "96.35",
+      "after": "98.45",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 2,
+      "before": "98.84",
+      "after": "99.98",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 3,
+      "before": "99.75",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 4,
+      "before": "99.91",
+      "after": "99.95",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 5,
+      "before": "99.24",
+      "after": "99.98",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 6,
+      "before": "98.23",
+      "after": "99.98",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 7,
+      "before": "98.29",
+      "after": "99.98",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 8,
+      "before": "99.50",
+      "after": "99.52",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 9,
+      "before": "99.74",
+      "after": "99.94",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 10,
+      "before": "97.89",
+      "after": "98.75",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 11,
+      "before": "98.79",
+      "after": "99.04",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 12,
+      "before": "99.46",
+      "after": "99.84",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 13,
+      "before": "99.19",
+      "after": "99.62",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 14,
+      "before": "97.98",
+      "after": "98.59",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 15,
+      "before": "98.31",
+      "after": "99.11",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 16,
+      "before": "96.32",
+      "after": "98.37",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 17,
+      "before": "98.46",
+      "after": "99.98",
+      "decline": false
+    },
+    {
+      "case": "sample10",
+      "page": 15,
+      "before": "99.99",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "sample10",
+      "page": 18,
+      "before": "99.99",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "sample10",
+      "page": 133,
+      "before": "99.98",
+      "after": "99.96",
+      "decline": true
+    },
+    {
+      "case": "sample10",
+      "page": 251,
+      "before": "99.83",
+      "after": "99.81",
+      "decline": true
+    },
+    {
+      "case": "sample10",
+      "page": 474,
+      "before": "99.90",
+      "after": "99.91",
+      "decline": false
+    },
+    {
+      "case": "sample10",
+      "page": 509,
+      "before": "99.90",
+      "after": "99.86",
+      "decline": true
+    },
+    {
+      "case": "sample10",
+      "page": 658,
+      "before": "99.95",
+      "after": "99.94",
+      "decline": true
+    },
+    {
+      "case": "sample10",
+      "page": 659,
+      "before": "99.98",
+      "after": "99.97",
+      "decline": true
+    },
+    {
+      "case": "sample10",
+      "page": 660,
+      "before": "99.98",
+      "after": "99.96",
+      "decline": true
+    },
+    {
+      "case": "sample10",
+      "page": 690,
+      "before": "99.94",
+      "after": "99.95",
+      "decline": false
+    },
+    {
+      "case": "sample10",
+      "page": 705,
+      "before": "99.99",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "sample10",
+      "page": 708,
+      "before": "99.82",
+      "after": "99.81",
+      "decline": true
+    },
+    {
+      "case": "sample10",
+      "page": 757,
+      "before": "99.40",
+      "after": "99.38",
+      "decline": true
+    },
+    {
+      "case": "sample16-hwp2024",
+      "page": 35,
+      "before": "100.00",
+      "after": "99.99",
+      "decline": true
+    },
+    {
+      "case": "sample16-hwpx",
+      "page": 35,
+      "before": "100.00",
+      "after": "99.99",
+      "decline": true
+    },
+    {
+      "case": "yeongwol",
+      "page": 1,
+      "before": "99.59",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "seo-pic-crop-01",
+      "page": 1,
+      "before": "94.65",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "issue8040-insert-delete",
+      "page": 1,
+      "before": "98.82",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "issue8040-insert-delete",
+      "page": 2,
+      "before": "99.87",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "issue8040-insert-delete",
+      "page": 3,
+      "before": "99.70",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "issue8040-insert-delete",
+      "page": 4,
+      "before": "99.59",
+      "after": "99.99",
+      "decline": false
+    },
+    {
+      "case": "issue8040-insert",
+      "page": 1,
+      "before": "98.82",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "issue8040-insert",
+      "page": 2,
+      "before": "99.87",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "issue8040-insert",
+      "page": 3,
+      "before": "99.70",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "issue8040-insert",
+      "page": 4,
+      "before": "99.59",
+      "after": "99.99",
+      "decline": false
+    },
+    {
+      "case": "outline",
+      "page": 7,
+      "before": "97.81",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "outline",
+      "page": 8,
+      "before": "99.94",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "seo-helvetica-styles",
+      "page": 1,
+      "before": "98.79",
+      "after": "100.00",
+      "decline": false
+    }
+  ],
+  "regressions": [
+    {
+      "case": "sample10",
+      "page": 133,
+      "before": "99.98",
+      "after": "99.96",
+      "decline": true
+    },
+    {
+      "case": "sample10",
+      "page": 251,
+      "before": "99.83",
+      "after": "99.81",
+      "decline": true
+    },
+    {
+      "case": "sample10",
+      "page": 509,
+      "before": "99.90",
+      "after": "99.86",
+      "decline": true
+    },
+    {
+      "case": "sample10",
+      "page": 658,
+      "before": "99.95",
+      "after": "99.94",
+      "decline": true
+    },
+    {
+      "case": "sample10",
+      "page": 659,
+      "before": "99.98",
+      "after": "99.97",
+      "decline": true
+    },
+    {
+      "case": "sample10",
+      "page": 660,
+      "before": "99.98",
+      "after": "99.96",
+      "decline": true
+    },
+    {
+      "case": "sample10",
+      "page": 708,
+      "before": "99.82",
+      "after": "99.81",
+      "decline": true
+    },
+    {
+      "case": "sample10",
+      "page": 757,
+      "before": "99.40",
+      "after": "99.38",
+      "decline": true
+    },
+    {
+      "case": "sample16-hwp2024",
+      "page": 35,
+      "before": "100.00",
+      "after": "99.99",
+      "decline": true
+    },
+    {
+      "case": "sample16-hwpx",
+      "page": 35,
+      "before": "100.00",
+      "after": "99.99",
+      "decline": true
+    }
+  ],
+  "original_failures_remeasured": [
+    "incoming8754-science",
+    "incoming8754-clip5587"
+  ],
+  "scope": "wasm whole93; failed Hankc cases replaced only by matching full successful reruns; other backend separate"
+}
