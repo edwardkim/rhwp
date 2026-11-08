@@ -364,7 +364,7 @@ std::shared_ptr<Job> ParseJob(NSDictionary* arguments, uint64_t generation, bool
   NSArray* placements = placementsValue;
   if (!placements.count || placements.count > 8) return {};
   auto job = std::make_shared<Job>();
-  uint64_t width, height, clear;
+  uint64_t width = 0, height = 0, clear = 0;
   if (!Unsigned(arguments[@"width"], width, 4096) || !Unsigned(arguments[@"height"], height, 4096) ||
       !width || !height || !Unsigned(arguments[@"clearColor"], clear, UINT32_MAX) ||
       !Unsigned(stamp[@"documentId"], job->stamp.document) || !Unsigned(stamp[@"revision"], job->stamp.revision) ||
@@ -379,8 +379,8 @@ std::shared_ptr<Job> ParseJob(NSDictionary* arguments, uint64_t generation, bool
   std::set<uint64_t> ids;
   for (id item in placements) {
     if (![item isKindOfClass:[NSDictionary class]]) return {};
-    uint64_t snapshot, background = 0;
-    double scale, x, y;
+    uint64_t snapshot = 0, background = 0;
+    double scale = 0, x = 0, y = 0;
     if (!Unsigned(item[@"snapshot"], snapshot) || !snapshot || !Number(item[@"scale"], scale) ||
         scale <= 0 || scale > 16 || !Number(item[@"originX"], x) || !Number(item[@"originY"], y) ||
         std::abs(x) > 16777216 || std::abs(y) > 16777216) return {};
@@ -605,7 +605,7 @@ NSDictionary* CVClosedStatus(const CVCloseReceipt& receipt) {
       @"closeAcknowledgementRequired":@(negotiated),@"limits":CVLimits(negotiated)});
     return;
   }
-  uint64_t textureId;
+  uint64_t textureId = 0;
   if (!Unsigned(arguments[@"textureId"], textureId) || !textureId) {
     result([FlutterError errorWithCode:@"arguments" message:@"Invalid textureId." details:nil]);return;
   }

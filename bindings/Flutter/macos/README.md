@@ -47,6 +47,13 @@ Plugin class는 `RhwpMetalPlugin`, channel은 `rhwp_native/texture_macos`다. ma
 별도 runner의 generated registrant 또는 `registerWithRegistrar:`로 등록한다. 이 디렉터리를
 `flutter create .`로 덮어쓰지 않는다. macOS deployment target은 12.0이다.
 
+이 ObjC++ CocoaPods target은 `FlutterMacOS`를 명시적으로 framework link한다.
+Flutter 3.47의 SwiftPM host와 CocoaPods plugin을 함께 쓰는 경우에도 필요하다.
+`s.dependency 'FlutterMacOS'`는 Flutter의 placeholder pod와 framework 검색 경로를
+설정하지만, 순수 ObjC++ pod의 dynamic link를 Swift import의 autolink로 대신할 수
+없다. engine의 실제 framework 배치는 Flutter tooling에 맡기고, unresolved symbol을
+허용하거나 자체 Flutter runtime을 중복해서 배포하지 않는다.
+
 | Method | 인자 / 결과 |
 | --- | --- |
 | `capabilities` | 인자 없음. 프레임 크레딧과 `consumerRetirement:false`, `continuousPresentationSupported:false`, `cpuFallbackRequiredWhenSaturated:true` 반환 |

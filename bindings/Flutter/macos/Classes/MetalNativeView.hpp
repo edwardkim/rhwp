@@ -403,7 +403,7 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
 }
 - (NSObject<FlutterMessageCodec>*)createArgsCodec { return [FlutterStandardMessageCodec sharedInstance]; }
 - (NSView*)createWithViewIdentifier:(int64_t)viewId arguments:(id)args {
-  uint64_t handle;
+  uint64_t handle = 0;
   if (![NSThread isMainThread] || viewId < 0 || ![args isKindOfClass:[NSDictionary class]] ||
       !Unsigned(args[@"handle"], handle) || !handle) return [[NSView alloc] initWithFrame:NSZeroRect];
   if (!_views.registered(handle)) return [[NSView alloc] initWithFrame:NSZeroRect];
@@ -449,7 +449,7 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
     result(@{@"textureId":@(handle),@"deviceGeneration":@(generation),@"initializing":@YES,@"ready":@NO,
       @"presentationKind":@"nativeView",@"viewType":@"rhwp_native/metal_view",@"limits":MetalViewLimits()});return;
   }
-  uint64_t handle;
+  uint64_t handle = 0;
   if(!Unsigned(arguments[@"textureId"],handle)||!handle){result([FlutterError errorWithCode:@"arguments" message:@"Invalid native view handle." details:nil]);return;}
   auto view=_views.lookup(handle);
   if(!view){
@@ -476,7 +476,7 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
     result(MetalRetireAck(handle));return;
   }
   if([call.method isEqualToString:@"submit"]){
-    uint64_t clear;
+    uint64_t clear = 0;
     if(!Unsigned(arguments[@"clearColor"],clear,UINT32_MAX)||(clear>>24)!=0xff){
       result([FlutterError errorWithCode:@"arguments" message:@"AppKit Metal presentation requires an opaque ARGB clear color." details:nil]);return;
     }
@@ -507,7 +507,7 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
     id covered=arguments[@"covered"];
     if(![covered isKindOfClass:[NSNumber class]]||CFGetTypeID((__bridge CFTypeRef)covered)!=CFBooleanGetTypeID()){
       result([FlutterError errorWithCode:@"arguments" message:@"covered must be a boolean." details:nil]);return;}
-    uint64_t serial;
+    uint64_t serial = 0;
     if(!Unsigned(arguments[@"visibilitySerial"],serial)||!serial){
       result([FlutterError errorWithCode:@"arguments" message:@"visibilitySerial must be a positive integer." details:nil]);return;}
     const bool wantCover=[covered boolValue];
