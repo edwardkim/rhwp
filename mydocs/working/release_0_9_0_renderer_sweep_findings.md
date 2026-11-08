@@ -67,3 +67,24 @@ BlogForm 1쪽은 `570 / 440,960 = 0.12926%`로 현행 `0.05%` 기준을 넘었�
 
 #8766의 승인된 CI·self-review·병합은 계속한다. 위 추가 실패를 알고 있는 상태에서
 비용이 큰 13개 승격 workflow를 먼저 반복하지 않는다. main 승격·태그·실제 게시도 미완료다.
+
+## 추가 제품 보정 승인과 구현
+
+작업지시자는 위 clipping 보정·필수 검증을 이번 릴리즈 전에 진행하도록 승인했다.
+HTTP 보정·진단 기록은 로컬 `069ff65549`에 커밋했다. 원격 push·새 PR 승인은 아직 요청하지 않았다.
+
+기준 devel의 같은 원문과 `pdf/BlogForm_BookReview-2020.pdf`를 96dpi, 2022 호환 세대
+(2020 Print 대응)로 비교했다. 명시적 `/home/edward/mygithub/ttfs` 공급으로 Native/fresh CI
+WASM 각각 1/1쪽 raw 100%, 쪽수 일치다. `venv/bin/python`, Chrome revision 1660786을
+사용했다. PDF 이름만 보고 도구에 존재하지 않는 `--compat 2020`을 전달했던 첫 명령은
+입력 검사에서 거부됐고 측정 결과로 쓰지 않았다.
+
+공통 `body_clip_with_editor_marks`는 layout이 산출한 본문 잉크 경계를 유지하고 기존
+비인쇄 편집 표식 gutter만 명시적으로 확장한다. LayerBuilder와 Legacy WebCanvas가 이를
+소비한다. Layer의 후속 텍스트 그림자 확장·실제 ClipRect replay는 그대로 유지한다.
+측정·쪽 나눔·표 기하·기본 Layer 출력은 변경하지 않는다.
+
+원 해결 #6269의 `LineNode::ink_bbox()`·본문 clip 포함 계약도 확인했다. 선의 반 획을
+본문 경계 생산자가 계상하는데 Legacy에서 다시 4px를 더하는 것을 제거한다. 48px는
+기존 편집 표식 전용 계약을 공통 위치로 옮긴 것이며 문서 수치 맞춤용 확장이 아니다.
+새 제품 후보의 최적화 WASM·전쪽 직접 비교·표식 대조·필수 회귀는 다음 실행에서 확정한다.

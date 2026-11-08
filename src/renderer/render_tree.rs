@@ -860,6 +860,17 @@ impl BoundingBox {
     }
 }
 
+/// Preserve the body ink boundary already resolved by layout. Only editor marks
+/// have a separate, nonprinting right gutter; paint backends must not add one
+/// when those marks are hidden.
+pub fn body_clip_with_editor_marks(clip: BoundingBox, show_editor_marks: bool) -> BoundingBox {
+    if show_editor_marks {
+        BoundingBox::new(clip.x, clip.y, clip.width + 48.0, clip.height)
+    } else {
+        clip
+    }
+}
+
 /// 페이지 노드
 #[derive(Debug, Clone, Serialize)]
 pub struct PageNode {
