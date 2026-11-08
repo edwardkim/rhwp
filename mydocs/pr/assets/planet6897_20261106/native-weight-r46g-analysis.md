@@ -400,3 +400,65 @@ R50 라이브러리에서 실패했다. 이 실패를 허용하거나 기대 전
 원장은 `r51-alias-before.json`이다. `r51-source-metric-identity-unit-provenance.json`의
 작은 대조는 함수의 구조 동등성만 확인하며 실제 집중 회귀·Native/fresh WASM·전쪽 판독을
 대체하지 않는다. 보정 후 같은 원본·Print로 세 쪽과 대조군을 다시 확인한다.
+
+## Mac 이관: CoreText 원본 프로그램 식별과 OS별 검사
+
+2026-11-08 Mac 이관 후보는 `1b159d1f855c82a28de8b909b6f15a9b1d65c7b7` 위의
+로컬 보정이다. 원 해결 PR #2052의 셀 내부 분할, #8397의 HFT 윤곽·전진 공급,
+#8389의 보호 TSV를 각각 대조했다. 중첩 표 8쪽의 하락은 분할 정책 변경으로 해결하지 않았다.
+
+Mac과 Ubuntu의 `HMKMG.otf` 원본 SHA-256은
+`62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9`로 같다.
+그런데 CoreText의 선택 face를 SFNT stream으로 얻으면 테이블 내용은 같아도 컨테이너가
+재포장된다. 원본의 프로그램 식별값은 `d1d1d8e02020ebe081cb0af257453477ca781ae9cda063e18c8f10cb46aa18c7`,
+재포장본은 `0070b8a6ccd84820c1bcba132b5e56e49af106f25e4e149587db40fd6afbb999`다.
+원본 파일과 collection index로 인증한 주 프로그램을 다른 대체 프로그램으로 오인해,
+합성 굵기의 HFT 추가 전진이 들어갔다. ‘인도네시아’ 상자는 67.5px에서 70.9px로 늘었다.
+
+OS face의 PostScript 이름으로 CoreText의 실제 파일 URL을 조회하되, 이름 일치만으로
+공급하지 않는다. 선택 Typeface와 후보 파일의 **모든 SFNT 테이블**을 바이트 단위로
+대조한 경우에만 원본 바이트와 collection index를 보존한다. 파일 크기·collection 수의
+상한을 두고, 로컬 파일을 확인하지 못하면 기존 stream 경로를 사용한다. PUA 공급과
+Native OTF 메트릭 준비가 이 공통 공급 결과를 소비한다. 글꼴 설치나 대체 설정은 바꾸지 않는다.
+
+`tests/cases/native_fractional_glyph_origin.rs`의 MIT CFF 검사에서 실제 CoreText 시스템
+공급을 사용했다. 수정 전에는 보통/합성 굵기 전진이 각각
+`[0, 18.0266667, 36.0533333]` / `[0, 18.9866667, 37.9733333]`로 달라 실패했고,
+수정 후 같은 관계 검사가 통과했다. 명시적인 custom 공급으로 시스템 경계를 우회하지 않는다.
+
+Linux의 Fontconfig 재현은 유지한다. Mac은 검사 자식 프로세스의 CoreText 등록만 사용하고
+사용자·시스템 글꼴을 설치하거나 삭제하지 않는다. Windows는 DirectWrite가 실제 선택한
+OS 기본 face의 출력과 같은 프로그램을 명시 공급한 출력을 대조한다. GDI private 등록을
+DirectWrite 등록으로 간주하지 않는다. 다른 MIT fixture와 출력이 달라야 하는 반례도 유지한다.
+공통 CFF 분할·family 선택과 SVG 검색 루트 경계도 Mac·Windows에서 수집되도록 했다.
+
+Mac 최종 집중 회귀는 **28 PASS / 0 FAIL**이며 선택 밖 1,282건은 이번 실행 결과가 아니다.
+Native Clippy도 통과했다. Windows 첫 실행의 `to_existing_font_data()` 없음은 검사 harness의
+잘못된 가정이었다. 동일 Typeface의 stream fallback으로 보정한 Windows 10 Pro 19045의
+SSH·PowerShell 재실행은 네 case 묶음 **27 PASS / 0 FAIL**로 완료됐다.
+Windows와 Mac의 수정 소스 7개 SHA-256도 모두 일치했다. `rhwp` cdylib와 동명 CLI의
+`rhwp.pdb` 충돌 경고는 남았지만 빌드·검사는 통과했다. 사용자가 output 정리 중 일부 검증 소스를 삭제한 뒤에는 해당
+worktree를 제거하지 않고 누락된 compile 입력만 복원했다. Windows 주 작업장의 별도 변경은 보존했다.
+
+새 Mac Native producer SHA-256은
+`8b3cbc3f5f43b1ee6f7c68af2913d0dd98a7e43b6cd525970cbb303b6fb80b56`이다.
+동일 원본·Print·기존 독립 PDF PNG의 해시를 확인하고 공식 Sweep으로 TSV를 다시 산출했다.
+sample16 3종 전 192쪽은 보호 TSV의 공식 두 자리 표시값 대비 하락이 없다.
+중첩 표 전 17쪽은 최저 96.04%이며 8쪽은 99.36147%에서 99.49328%(표시99.49%)로 복원됐다.
+다만 **3쪽은 99.76% → 99.75%**로 남으므로 보호 조건을 전체 통과했다고 기록하지 않는다.
+3쪽의 이전·후보 렌더 트리 134개 노드는 같고, 동일 PDF PNG와 재측정한 불일치 픽셀은
+각각 83/87개다. 원본 CFF와 이전 Malgun/HCR 프로그램을 명시 공급한 대조도 99.75%이므로
+글꼴 버전 교체를 해결책으로 채택하지 않았다. 이 후보의 fresh WASM·전체 통합 검증은 미완료다.
+
+이후 Mac의 locked wrapper `--target web --out-dir pkg --no-opt` 빌드는 성공했다.
+root pkg·Studio public·캡처 브라우저 서버의 실제 HTTP 응답 JS/WASM SHA-256이 일치했다.
+Docker 최적화 빌드 결과는 아니다. fresh WASM 전 209쪽도 산출했으나 보호 TSV 대비 하락이 남았다.
+중첩 표는 3·8·11·17쪽, sample16 HWP2024·HWPX는 각각 18·35쪽이다. 후자의 18쪽은 87.45%,
+35쪽은 93.60%로, Native의 전쪽 유지 결과를 WASM 통과로 재인용하지 않는다.
+중첩 표 첫 WASM 실행은 이관한 글꼴 디렉터리의 0바이트 임시 TTF 때문에 실패했다.
+유효한 글꼴이나 엄격한 파서를 바꾸지 않고 임시 파일만 별도 output으로 보존·분리한 뒤 전 17쪽을
+다시 산출했다. 최종 부분 결과와 하락 목록은 [실행 증거](macos-program-identity/validation.json)에 남긴다.
+보호 조건 전체 충족과 PR 준비 완료를 뜻하지 않는다.
+
+이 단계의 실제 로그·진단 원장은 ignored output의
+`pr-review/native-program-resume-20261108/`에 보존한다. PDF·점수 문턱·원본·보호 TSV는 변경하지 않았다.

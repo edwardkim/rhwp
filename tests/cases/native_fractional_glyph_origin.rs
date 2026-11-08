@@ -1,6 +1,10 @@
 //! 검사 유형: 관계형·고정형.
-//! 주석 갱신: 2026-11-08T20:19:47.944403+09:00. 직전 변경: 2026-11-08T06:19:56+09:00, 7f76cee60e38fceb63feacaff706cf984b19c427.
-//! 추가 프로그램 선택 검사는 MIT 합성 TTF 두 개만 사용하는 관계형 계약이며 실문서 raw는 비해당이다.
+//! 주석 갱신: 2026-11-08 21:40:40 KST. 직전 변경: 2026-11-08T20:27:19+09:00, 1b159d1f855c82a28de8b909b6f15a9b1d65c7b7.
+//! 프로그램 선택은 관계형 계약이며 실문서 raw는 비해당이다. Linux·Mac은 MIT 합성 TTF 두 개만 공급한다.
+//! Linux는 자식의 Fontconfig, macOS는 CoreText의 process 범위 등록으로 실제 OS 선택을 대조한다.
+//! Windows는 DirectWrite의 기본 face를 독립 조회한 뒤 같은 프로그램의 명시 공급 출력과 대조한다.
+//! Windows에서는 GDI의 private 등록을 DirectWrite 등록으로 간주하지 않으며 개인·한컴 글꼴을 요구하지 않는다.
+//! macOS의 사용자·시스템 글꼴을 설치·삭제하지 않으며, 운영체제 사이의 raster 바이트는 비교하지 않는다.
 //! 2026-10-28 측정 raw(96dpi, PDFium): calendar_year.hwp 1쪽 Native 98.82866% / fresh WASM 98.50891%; 전1쪽 최저 98.82866% / 98.50891%.
 //! sungeo.hwp 34쪽 Native 99.97528% / fresh WASM 99.98763%; 전94쪽 최저 99.85164% / 99.92219%.
 //! 합성 글리프 검사는 독립 원본 문서가 없는 raster 격자 검사다.
@@ -352,7 +356,7 @@ mod subpixel_stroke_hairline {
 }
 
 // 기존 Native CI 진입점으로 실제 glyph 프로그램 선택 계약도 실행한다.
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
 mod system_program_preference {
     use rhwp::{
         paint::RenderProfile,
@@ -362,21 +366,109 @@ mod system_program_preference {
         },
         DocumentCore,
     };
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
     use std::path::PathBuf;
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
     const FAMILY: &str = "RHWP Host Fixture";
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
     const CHILD: &str = "RHWP_SYSTEM_PROGRAM_PREFERENCE_CHILD";
+    #[cfg(target_os = "macos")]
+    mod coretext {
+        use std::{
+            ffi::c_void,
+            os::unix::ffi::OsStrExt,
+            path::{Path, PathBuf},
+        };
+
+        #[link(name = "CoreFoundation", kind = "framework")]
+        unsafe extern "C" {
+            fn CFURLCreateFromFileSystemRepresentation(
+                allocator: *const c_void,
+                buffer: *const u8,
+                length: isize,
+                is_directory: u8,
+            ) -> *const c_void;
+            fn CFRelease(value: *const c_void);
+        }
+        #[link(name = "CoreText", kind = "framework")]
+        unsafe extern "C" {
+            fn CTFontManagerRegisterFontsForURL(
+                url: *const c_void,
+                scope: u32,
+                error: *mut *const c_void,
+            ) -> bool;
+            fn CTFontManagerUnregisterFontsForURL(
+                url: *const c_void,
+                scope: u32,
+                error: *mut *const c_void,
+            ) -> bool;
+        }
+
+        // Apple의 kCTFontManagerScopeProcess: 현재 자식 프로세스에만 노출한다.
+        // https://developer.apple.com/documentation/coretext/ctfontmanagerscope/process
+        const PROCESS: u32 = 1;
+        pub(super) struct Fonts(Vec<*const c_void>);
+        impl Fonts {
+            pub(super) fn register(directory: &Path) -> Self {
+                Self::register_paths(&[
+                    directory.join("a-other.ttf"),
+                    directory.join("z-preferred.ttf"),
+                ])
+            }
+            pub(super) fn register_paths(paths: &[PathBuf]) -> Self {
+                let mut fonts = Self(Vec::new());
+                for path in paths {
+                    let bytes = path.as_os_str().as_bytes();
+                    // CFURL은 등록 해제까지 보존하며, 원본 파일도 그동안 유지한다.
+                    let url = unsafe {
+                        CFURLCreateFromFileSystemRepresentation(
+                            std::ptr::null(),
+                            bytes.as_ptr(),
+                            bytes.len() as isize,
+                            0,
+                        )
+                    };
+                    assert!(!url.is_null(), "합성 글꼴 파일의 CoreFoundation URL");
+                    let registered = unsafe {
+                        CTFontManagerRegisterFontsForURL(url, PROCESS, std::ptr::null_mut())
+                    };
+                    if !registered {
+                        unsafe { CFRelease(url) };
+                    }
+                    assert!(registered, "CoreText process 글꼴 등록: {}", path.display());
+                    fonts.0.push(url);
+                }
+                fonts
+            }
+        }
+        impl Drop for Fonts {
+            fn drop(&mut self) {
+                for url in self.0.drain(..).rev() {
+                    let removed = unsafe {
+                        let removed =
+                            CTFontManagerUnregisterFontsForURL(url, PROCESS, std::ptr::null_mut());
+                        CFRelease(url);
+                        removed
+                    };
+                    assert!(removed, "이 자식이 등록한 CoreText 글꼴만 해제한다");
+                }
+            }
+        }
+    }
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
     struct Directory(PathBuf);
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
     impl Drop for Directory {
         fn drop(&mut self) {
             std::fs::remove_dir_all(&self.0).expect("이 검사만 만든 자료 정리");
         }
     }
-    fn render(renderer: &SkiaLayerRenderer) -> Vec<u8> {
+    fn render_family(renderer: &SkiaLayerRenderer, family: &str) -> Vec<u8> {
         let mut core = DocumentCore::new_empty();
         core.create_blank_document_native().unwrap();
         let mut doc = core.document().clone();
         for font in doc.doc_info.font_faces.iter_mut().flatten() {
-            font.name = FAMILY.into();
+            font.name = family.into();
             font.alt_type = 1;
             font.native_program = None;
             font.is_embedded = false;
@@ -384,7 +476,14 @@ mod system_program_preference {
         }
         core.set_document(doc);
         core.insert_text_native(0, 0, 0, "A").unwrap();
-        core.set_font_environment(Some(FontEnvironment::from_json(&format!(r#"{{"id":"fixture","substitutions":{{"{FAMILY}":"{FAMILY}"}},"trueTypeFaces":["{FAMILY}"],"preserveSourceMetrics":false}}"#)).unwrap())).unwrap();
+        let environment = serde_json::json!({
+            "id": "fixture", "substitutions": {family: family},
+            "trueTypeFaces": [family], "preserveSourceMetrics": false,
+        });
+        core.set_font_environment(Some(
+            FontEnvironment::from_json(&environment.to_string()).unwrap(),
+        ))
+        .unwrap();
         renderer.prepare_declared_font_fallbacks(&mut core).unwrap();
         renderer.prepare_native_pua_fonts(&mut core).unwrap();
         renderer.prepare_native_otf_fonts(&mut core).unwrap();
@@ -402,41 +501,109 @@ mod system_program_preference {
             .unwrap()
             .bytes
     }
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
+    fn render(renderer: &SkiaLayerRenderer) -> Vec<u8> {
+        render_family(renderer, FAMILY)
+    }
+    #[cfg(target_os = "linux")]
     fn xml(s: &str) -> String {
         s.replace('&', "&amp;")
             .replace('<', "&lt;")
             .replace('>', "&gt;")
             .replace('"', "&quot;")
     }
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
     pub(super) fn check_system_program_preference() {
         if std::env::var_os(CHILD).is_some() {
+            #[cfg(target_os = "macos")]
+            let _fonts = coretext::Fonts::register(&PathBuf::from(
+                std::env::var_os(CHILD).expect("현재 자식에만 공급할 글꼴 디렉터리"),
+            ));
             let manager = skia_safe::FontMgr::default();
             let names: Vec<_> = manager.family_names().collect();
+            #[cfg(target_os = "linux")]
             assert_eq!(
                 names,
                 vec![FAMILY.to_string()],
                 "공개 합성 family 외의 시스템 폰트를 사용하지 않는다"
             );
+            #[cfg(target_os = "macos")]
+            assert!(
+                names.iter().any(|name| name == FAMILY),
+                "CoreText 등록을 실제 Skia가 조회한다"
+            );
             let chosen = manager
                 .match_family_style(FAMILY, skia_safe::FontStyle::normal())
                 .unwrap();
+            #[cfg(target_os = "linux")]
             assert_eq!(
                 chosen.post_script_name().as_deref(),
                 Some("RHWPHostFixture-Preferred"),
                 "OS가 선택한 프로그램을 독립 확인"
             );
-            let (data, index) = chosen.to_existing_font_data().unwrap();
-            assert_eq!(index, 0);
+            let chosen_name = chosen
+                .post_script_name()
+                .expect("선택한 합성 프로그램의 이름");
+            assert!(matches!(
+                chosen_name.as_str(),
+                "RHWPHostFixture-Preferred" | "RHWPHostFixture-Regular"
+            ));
+            #[cfg(target_os = "linux")]
+            let data = {
+                let (data, index) = chosen.to_existing_font_data().unwrap();
+                assert_eq!(index, 0);
+                data.as_bytes().to_vec()
+            };
+            #[cfg(target_os = "macos")]
+            let data = {
+                // CoreText의 process face는 파일 스트림을 반환하지 않을 수 있다.
+                // 이름만 믿지 않고 실제 cmap·윤곽·폭 테이블을 독립 fixture와 대조한다.
+                let source = if chosen_name == "RHWPHostFixture-Preferred" {
+                    include_bytes!("../fixtures/fonts/RHWPHostFixture-Preferred.ttf").as_slice()
+                } else {
+                    include_bytes!("../fixtures/fonts/RHWPHostFixture-Regular.ttf").as_slice()
+                };
+                let face = ttf_parser::Face::parse(source, 0).unwrap();
+                assert_eq!(chosen.units_per_em(), Some(i32::from(face.units_per_em())));
+                for tag in [b"cmap", b"glyf", b"hmtx"] {
+                    let actual = chosen.copy_table_data(u32::from_be_bytes(*tag)).unwrap();
+                    let expected = face
+                        .raw_face()
+                        .table(ttf_parser::Tag::from_bytes(tag))
+                        .unwrap();
+                    assert_eq!(
+                        actual.as_bytes(),
+                        expected,
+                        "CoreText가 선택한 실제 프로그램 테이블 {tag:?}"
+                    );
+                }
+                source.to_vec()
+            };
             let actual = render(&SkiaLayerRenderer::new());
             let expected = render(
                 &SkiaLayerRenderer::new()
-                    .try_with_font_data(&[data.as_bytes().to_vec()])
+                    .try_with_font_data(&[data])
                     .unwrap(),
             );
             assert!(
                 actual == expected,
                 "같은 형식의 다른 TTF가 OS의 프로그램 선택을 덮어쓰지 않는다"
             );
+            let other = if chosen_name == "RHWPHostFixture-Preferred" {
+                include_bytes!("../fixtures/fonts/RHWPHostFixture-Regular.ttf").as_slice()
+            } else {
+                include_bytes!("../fixtures/fonts/RHWPHostFixture-Preferred.ttf").as_slice()
+            };
+            assert!(
+                actual
+                    != render(
+                        &SkiaLayerRenderer::new()
+                            .try_with_font_data(&[other.to_vec()])
+                            .unwrap()
+                    ),
+                "빈 출력이나 같은 윤곽으로 프로그램 선택 검사가 무력화되지 않는다"
+            );
+            println!("OS={} selected={chosen_name}; 시스템 출력=해당 프로그램 명시 공급 출력, 다른 프로그램과는 다름", std::env::consts::OS);
             return;
         }
         let directory = Directory(std::env::temp_dir().join(format!(
@@ -462,28 +629,179 @@ mod system_program_preference {
             include_bytes!("../fixtures/fonts/RHWPHostFixture-Preferred.ttf"),
         )
         .unwrap();
+        #[cfg(target_os = "linux")]
         let config = directory.0.join("fonts.conf");
+        #[cfg(target_os = "linux")]
         std::fs::write(&config,format!(r#"<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd"><fontconfig><dir>{}</dir><cachedir>{}</cachedir><match target="pattern"><test name="family" compare="eq"><string>{FAMILY}</string></test><edit name="file" mode="assign"><string>{}</string></edit></match></fontconfig>"#,xml(&fonts.to_string_lossy()),xml(&cache.to_string_lossy()),xml(&preferred.to_string_lossy()))).unwrap();
         let name = std::thread::current().name().unwrap().to_string();
-        let output = std::process::Command::new(std::env::current_exe().unwrap())
+        let mut command = std::process::Command::new(std::env::current_exe().unwrap());
+        command
             .args(["--exact", &name, "--nocapture"])
-            .env(CHILD, "1")
-            .env("FONTCONFIG_FILE", config)
+            .env(CHILD, &fonts)
             .env_remove("FONTCONFIG_PATH")
-            .env_remove("RHWP_FONT_PATH")
-            .output()
-            .unwrap();
+            .env_remove("RHWP_FONT_PATH");
+        #[cfg(target_os = "linux")]
+        command.env("FONTCONFIG_FILE", config);
+        let output = command.output().unwrap();
         assert!(
             output.status.success(),
             "격리된 Native 프로그램 선택 실패:\n{}\n{}",
             String::from_utf8_lossy(&output.stdout),
             String::from_utf8_lossy(&output.stderr)
         );
+        print!("{}", String::from_utf8_lossy(&output.stdout));
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn coretext_system_cff_keeps_selected_primary_program_identity() {
+        use rhwp::renderer::layout::{EmbeddedTextMeasurer, TextMeasurer};
+        use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+        use sha2::{Digest, Sha256};
+        const MARKER: &str = "RHWP_CORETEXT_PRIMARY_CFF_CHILD";
+        const CFF: &[u8] = include_bytes!("../fixtures/fonts/RHWPHftOutline.otf");
+        const NAME: &str = "RHWP HFT Outline Fixture";
+        if let Some(path) = std::env::var_os(MARKER) {
+            let _fonts = coretext::Fonts::register_paths(&[PathBuf::from(path)]);
+            let mut hash = Sha256::new();
+            hash.update(CFF);
+            hash.update(0u32.to_be_bytes());
+            let id: String = hash
+                .finalize()
+                .iter()
+                .map(|byte| format!("{byte:02x}"))
+                .collect();
+            fn style(node: &RenderNode) -> Option<&rhwp::renderer::TextStyle> {
+                if let RenderNodeType::TextRun(run) = &node.node_type {
+                    if run.text.contains('가') {
+                        return Some(&run.style);
+                    }
+                }
+                node.children.iter().find_map(style)
+            }
+            let mut positions = Vec::new();
+            for bold in [false, true] {
+                let mut core = DocumentCore::new_empty();
+                core.create_blank_document_native().unwrap();
+                let mut doc = core.document().clone();
+                doc.provenance.format = rhwp::model::provenance::SourceFormat::Hwp5;
+                for font in doc.doc_info.font_faces.iter_mut().flatten() {
+                    font.name = NAME.into();
+                    font.alt_type = 2;
+                    font.native_program = None;
+                    font.subst_font = None;
+                }
+                for shape in &mut doc.doc_info.char_shapes {
+                    shape.bold = bold;
+                    shape.base_size = 1500;
+                    shape.ratios = [100; 7];
+                    shape.spacings = [0; 7];
+                }
+                let supplied = serde_json::json!([{
+                    "query": NAME, "family": NAME, "programId": id,
+                    "trueType": false, "openTypeCff": true,
+                }]);
+                let environment =
+                    FontEnvironment::from_available_programs(&doc.doc_info, &supplied.to_string())
+                        .unwrap()
+                        .unwrap();
+                core.set_document(doc);
+                core.insert_text_native(0, 0, 0, "가가").unwrap();
+                core.set_font_environment(Some(environment)).unwrap();
+                // 명시 custom 공급으로 시스템/CoreText의 재포장 경계를 우회하지 않는다.
+                let renderer = SkiaLayerRenderer::new();
+                renderer.prepare_native_otf_fonts(&mut core).unwrap();
+                let tree = core.build_page_render_tree(0).unwrap();
+                let style = style(&tree.root).unwrap();
+                assert!(
+                    style.native_otf_metrics.is_some(),
+                    "실제 시스템 CFF가 공급됐다"
+                );
+                positions.push(EmbeddedTextMeasurer.compute_char_positions("가가", style));
+            }
+            assert_eq!(
+                positions[0], positions[1],
+                "같은 주 CFF의 CoreText 컨테이너 재포장이 HFT 대체 굵기 전진을 추가하지 않는다"
+            );
+            return;
+        }
+        let directory = Directory(std::env::temp_dir().join(format!(
+                "rhwp-coretext-cff-{}-{}",
+                std::process::id(),
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_nanos()
+            )));
+        std::fs::create_dir(&directory.0).unwrap();
+        let font = directory.0.join("primary.otf");
+        std::fs::write(&font, CFF).unwrap();
+        let name = std::thread::current().name().unwrap().to_owned();
+        let output = std::process::Command::new(std::env::current_exe().unwrap())
+            .args(["--exact", &name, "--nocapture"])
+            .env(MARKER, font)
+            .env_remove("RHWP_FONT_PATH")
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "CoreText의 실제 주 프로그램 계약:\n{}\n{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
+
+    #[cfg(target_os = "windows")]
+    pub(super) fn check_system_program_preference() {
+        // GDI AddFontResourceEx(FR_PRIVATE)는 DirectWrite의 시스템 collection이 아니다.
+        // HKCU/HKLM·사용자 Fonts를 바꾸지 않고 OS의 기본 face를 독립적인 기대값으로 쓴다.
+        // https://learn.microsoft.com/en-us/windows/win32/directwrite/custom-font-collections
+        let manager = skia_safe::FontMgr::default();
+        let chosen = manager
+            .legacy_make_typeface(None::<&str>, skia_safe::FontStyle::normal())
+            .expect("DirectWrite의 OS 기본 글꼴은 필수이며 없으면 검사 실패");
+        let family = chosen.family_name();
+        assert!(!family.is_empty());
+        let (data, index) = chosen
+            .to_existing_font_data()
+            .map(|(data, index)| (data.as_bytes().to_vec(), index))
+            .or_else(|| chosen.to_font_bytes())
+            .expect("DirectWrite의 실제 프로그램과 face index");
+        let face = ttf_parser::Face::parse(&data, index).unwrap();
+        assert!(
+            face.tables().glyf.is_some(),
+            "이 검사는 같은 TrueType 형식 선택을 보호한다"
+        );
+        assert!(face.glyph_index('A').is_some());
+        let actual = render_family(&SkiaLayerRenderer::new(), &family);
+        let expected = render_family(
+            &SkiaLayerRenderer::new()
+                .try_with_font_data(&[data])
+                .unwrap(),
+            &family,
+        );
+        assert!(
+            actual == expected,
+            "DirectWrite가 선택한 실제 face의 윤곽을 Native가 그대로 사용한다"
+        );
+        let fixture = SkiaLayerRenderer::new()
+            .try_with_font_data(&[include_bytes!(
+                "../fixtures/fonts/RHWPHostFixture-Preferred.ttf"
+            )
+            .to_vec()])
+            .unwrap()
+            .with_font_family_alias(&family, "RHWP Host Fixture")
+            .unwrap();
+        assert!(
+            actual != render_family(&fixture, &family),
+            "다른 프로그램을 같은 출력으로 세지 않는다"
+        );
+        println!("OS=windows family={family} face_index={index}; 실제 DirectWrite 선택과 명시 공급 출력 일치");
     }
 }
 
 #[test]
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
 fn same_format_system_program_keeps_os_preference() {
     system_program_preference::check_system_program_preference();
 }

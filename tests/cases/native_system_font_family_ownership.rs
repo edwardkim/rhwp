@@ -1,28 +1,34 @@
 //! 관계형: 시스템 스타일 목록의 대체 계열이 요청한 실제 글꼴 프로그램을 대신하지 않는다.
-//! 주석 작성: 2026-11-08T11:47:44+09:00 (새 파일; 실제 검증 시각은 증적 원장에 구분한다).
+//! 주석 갱신: 2026-11-08T21:00:56+09:00; 직전 변경: 2026-11-08T17:16:11+09:00, 57827f09aebeb97e9e347e3940b5dd568177a4c6.
 //! 합성 이름 선택 계약으로서 조판 좌표·쪽수·golden을 고정하지 않는다. raw·DPI·독립 PDF는 비해당이다.
-//! 저장소의 GUST/OFL 확인 글꼴 두 개만 별도 Fontconfig에 공급하며 호스트의 한컴·OTF 설치에 의존하지 않는다.
+//! Linux 시스템 선택은 별도 Fontconfig로, 공통 선택은 Linux·Mac·Windows의 Native backend에
+//! GUST/OFL 확인 글꼴 두 개를 명시 공급해 검사한다. 호스트의 한컴·개인 글꼴 설치에 의존하지 않는다.
 //! 수정 전 공개 Native 관측은 요청 CFF 대신 다른 family의 TTF를 골라 실패했다.
 //! 근거: mydocs/pr/assets/planet6897_20261106/native-weight-r46g-analysis.md.
-#![cfg(all(feature = "native-skia", target_os = "linux"))]
+#![cfg(feature = "native-skia")]
 
 use rhwp::model::paragraph::{CharShapeRef, Paragraph};
 use rhwp::renderer::skia::SkiaLayerRenderer;
 use rhwp::DocumentCore;
+#[cfg(target_os = "linux")]
 use std::path::PathBuf;
 
 const REQUESTED: &str = "Latin Modern Math";
 const OTHER: &str = "Rhwp Family Contract";
+#[cfg(target_os = "linux")]
 const CHILD: &str = "RHWP_FONTCONFIG_STYLE_CONTRACT_CHILD";
 
+#[cfg(target_os = "linux")]
 struct Directory(PathBuf);
 
+#[cfg(target_os = "linux")]
 impl Drop for Directory {
     fn drop(&mut self) {
         std::fs::remove_dir_all(&self.0).expect("이 검사만 만든 글꼴·cache 디렉터리 정리");
     }
 }
 
+#[cfg(target_os = "linux")]
 fn escaped(value: &str) -> String {
     value
         .replace('&', "&amp;")
@@ -32,7 +38,7 @@ fn escaped(value: &str) -> String {
         .replace('\'', "&apos;")
 }
 
-fn observe(bold: bool, requested: &str) -> serde_json::Value {
+fn observe(renderer: &SkiaLayerRenderer, bold: bool, requested: &str) -> serde_json::Value {
     let mut core = DocumentCore::from_bytes(include_bytes!("../../samples/task-001.hwp"))
         .expect("공개 원본의 정상 구역·스타일 기본값");
     let mut document = core.document().clone();
@@ -56,7 +62,7 @@ fn observe(bold: bool, requested: &str) -> serde_json::Value {
     document.doc_info.char_shapes[0].bold = bold;
     core.set_document(document);
     let trace: serde_json::Value = serde_json::from_str(
-        &SkiaLayerRenderer::new()
+        &renderer
             .get_font_decision_trace(&core, 0, r#"{"maxCharacters":64}"#)
             .expect("현재 renderer의 실제 선택"),
     )
@@ -72,6 +78,7 @@ fn observe(bold: bool, requested: &str) -> serde_json::Value {
 }
 
 #[test]
+#[cfg(target_os = "linux")]
 fn system_style_list_keeps_requested_family_before_other_truetype() {
     if std::env::var_os(CHILD).is_some() {
         // 각 자식은 새 FontMgr를 만들므로 다른 검사의 전역 글꼴 cache에 기대지 않는다.
@@ -92,7 +99,7 @@ fn system_style_list_keeps_requested_family_before_other_truetype() {
         );
         for bold in [false, true] {
             for requested in [REQUESTED, OTHER] {
-                let native = observe(bold, requested);
+                let native = observe(&SkiaLayerRenderer::new(), bold, requested);
                 assert_eq!(native["status"], "complete");
                 assert_eq!(native["source"], "system");
                 assert_eq!(
@@ -155,4 +162,29 @@ fn system_style_list_keeps_requested_family_before_other_truetype() {
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     );
+}
+
+#[test]
+fn supplied_style_list_keeps_requested_family_before_other_truetype_on_each_native_os() {
+    // CoreText·DirectWrite에서도 실제 Native 요청과 resolved family를 관측한다.
+    // Fontconfig의 pattern 규칙 자체를 타 OS에서 실행했다고 주장하지 않는다.
+    let renderer = SkiaLayerRenderer::new()
+        .try_with_font_data(&[
+            include_bytes!("../../assets/fonts/LatinModernMath-VariableOutline-subset.otf")
+                .to_vec(),
+            include_bytes!("../fixtures/native_font_family_names/family-contract.ttf").to_vec(),
+        ])
+        .unwrap();
+    for bold in [false, true] {
+        for requested in [REQUESTED, OTHER] {
+            let native = observe(&renderer, bold, requested);
+            assert_eq!(native["status"], "complete");
+            assert_eq!(native["source"], "custom");
+            assert_eq!(
+                native["resolved"], requested,
+                "TTF 형식 우선으로 다른 계열의 CFF 요청을 바꾸지 않는다"
+            );
+            assert_eq!(native["failures"], serde_json::json!([]));
+        }
+    }
 }

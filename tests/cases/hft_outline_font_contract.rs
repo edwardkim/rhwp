@@ -1,9 +1,11 @@
 //! 검사 유형: 관계형. 합성 글꼴 프로그램의 선택·대체 계약을 검증한다.
-//! 주석 갱신: 2026-10-31T07:12:47+09:00; 직전 파일 커밋: 2026-10-31T03:34:36+09:00 (`f3a88f72646d7682ae48804e78332f5dea1f34f4`).
+//! 주석 갱신: 2026-11-08T21:00:56+09:00; 직전 변경: 2026-11-01T19:39:20+09:00, e64921811f349385d06aa6bc29928b1f4e200e1a.
 //! 실제 입력 `samples/hwp3-sample10.hwp`, 한컴 2020 Print, 96 DPI, 2px 이웃 raw.
 //! 2026-10-30 측정: 1쪽 Native/fresh WASM 각 99.96%; 전 763쪽 최저 각 99.41% / 99.40%.
 //! 근거: `mydocs/pr/assets/issue_8371/sample10-native.tsv`, `sample10-wasm.tsv`, `sample10-validation.md`.
 //! 합성 fixture의 계약 검사와 실제 문서의 한컴 출력 판독은 별도다.
+//! Linux Fontconfig의 합성 Bold 재현은 유지하며, Mac·Windows도 명시 공급한 분할 CFF의
+//! 글리프 소유를 실제 Native backend에서 검사한다. 이 합성 계약의 raw·독립 PDF는 비해당이다.
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::style::Font;
@@ -257,6 +259,11 @@ fn skia_synthetic_bold_selects_both_split_family_glyphs() {
         );
         return;
     }
+    assert_split_family_glyphs(&SkiaLayerRenderer::new(), "system");
+}
+
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+fn assert_split_family_glyphs(renderer: &rhwp::renderer::skia::SkiaLayerRenderer, source: &str) {
     let mut core = DocumentCore::new_empty();
     core.create_blank_document_native().unwrap();
     core.insert_text_native(0, 0, 0, "가나").unwrap();
@@ -270,7 +277,6 @@ fn skia_synthetic_bold_selects_both_split_family_glyphs() {
         shape.bold = true;
     }
     core.set_document(document);
-    let renderer = SkiaLayerRenderer::new();
     let trace: serde_json::Value = serde_json::from_str(
         &renderer
             .get_font_decision_trace(&core, 0, r#"{"maxCharacters":16}"#)
@@ -284,12 +290,21 @@ fn skia_synthetic_bold_selects_both_split_family_glyphs() {
             .iter()
             .find(|record| record["source"]["character"] == character)
             .expect("입력 글자마다 글꼴 선택 기록");
-        assert_eq!(record["paint"]["native"]["source"], "system");
+        assert_eq!(record["paint"]["native"]["source"], source);
         assert_eq!(
             record["paint"]["native"]["resolved"], FAMILY,
             "각 글리프를 같은 분할 family에서 선택한다"
         );
     }
+}
+
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+#[test]
+fn supplied_synthetic_bold_keeps_both_split_glyphs_on_each_native_os() {
+    let renderer = rhwp::renderer::skia::SkiaLayerRenderer::new()
+        .try_with_font_data(&[CFF.to_vec(), synthetic_cff_for('나')])
+        .unwrap();
+    assert_split_family_glyphs(&renderer, "custom");
 }
 
 #[test]
