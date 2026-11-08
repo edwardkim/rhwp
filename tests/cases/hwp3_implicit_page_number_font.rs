@@ -1,6 +1,6 @@
 //! 검사 유형: 고정형(기본 글꼴·독립 Print의 시작점/폭/기준선 ±2 CSSpx), 관계형(명시 스타일 우선·번호 유일성).
-//! 주석 갱신: 2026-11-09T04:29:26+09:00; 신규 파일로 직전 파일 변경 커밋 없음.
-//! 2026-11-09 canonical raw 2px, 96 DPI, compat2022, 독립 한컴2020 Print·pdftoppm 대조.
+//! 주석 갱신: 2026-11-09T05:01:27+09:00; 직전 파일 변경: 2db97cee036c398232b377c293cf2521fed8ae92 (2026-11-09T04:38:00+09:00).
+//! 2026-11-09 canonical raw 2px, 96 DPI, compat2022, 독립 한컴2020 Print의 Linux PDFium PNG를 SHA 검증 후 재사용.
 //! hwp3-sample10.hwp 전 763쪽 Native 최저 99.41%, fresh WASM 최저 99.38%.
 //! 고정하는 629쪽은 Native/fresh WASM 모두 100.00%; 같은 쪽 review·overlay와 번호 원점을 직접 판독했다.
 //! 명시 스타일 HWPX 대조군 전 2쪽은 두 경로 모두 100.00%; 기존 Native PNG와도 동일하다.

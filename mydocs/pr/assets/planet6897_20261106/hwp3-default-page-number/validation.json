@@ -267,7 +267,13 @@
   },
   "source_test": {
     "path": "tests/cases/hwp3_implicit_page_number_font.rs",
-    "sha256": "9126f7f9db904dbb1ae7f109d99bca1b2eeb6608616e795e93cb37eec04116af"
+    "sha256": "008b22a2c6eb85c237147e875e8ac436e0e4e4d2e24f25b58b5870b9ac3f686e",
+    "comment_only_correction": true,
+    "canonical_recheck": {
+      "log": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-focused-nextest.log",
+      "sha256": "63bf4e209990f7d803d8be6b81f88eff7dc35d3f722315b1e69b56a8f3db74de",
+      "result": "쪽번호3건 모두 PASS; 전체 집중7 PASS"
+    }
   },
   "checks": {
     "hwp3-number-owner-fmt.log": {
@@ -295,5 +301,45 @@
       "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/hwp3-number-owner-links.log",
       "sha256": "c229e3b3dd8f86ec00ae184c8deed96c8565a475f48564e7fe2eddf8c2a0f6fa"
     }
+  },
+  "reference_png_provenance": {
+    "rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "reuse_index": {
+      "path": "output/pr-review/planet6897-integration-20261106/transfer-from-ubuntu/r46-reference-png-cache-96.json",
+      "sha256": "3c325ee8ba6f5bbd88f5ffa940ce7cb0d69e87a21075d8d7291e7da909f70e67"
+    },
+    "source_manifest": {
+      "path": "output/pr-review/planet6897-integration-20261106/r41-base-e4-native-protected/sample10/sample10/silhouette_manifest.json",
+      "sha256": "a7c7135a7b73a178ee6d8aff0b13266ee0beed524bcb75370a32ab204f002f31"
+    },
+    "p629": {
+      "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r41-base-e4-native-protected/sample10/sample10/pdf_png/pdf-629.png",
+      "sha256": "df1b60080f0f58e391340def412e6e6c02de643793eb7448b05db205cdb15f10",
+      "bytes": 14208
+    },
+    "correction": "기존 주석의 pdftoppm 표기는 실행한 wrapper의 실제 provenance와 달라 정정했다. PNG·TSV·점수·판정은 변경하지 않았다."
   }
 }

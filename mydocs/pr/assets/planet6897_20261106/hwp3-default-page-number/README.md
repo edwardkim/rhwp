@@ -6,7 +6,7 @@ Batang TTC를 선택해 독립 한컴2020 Print의 Haansoft Batang과 줄표 폭
 Native HWP3의 암시적 기본값만 명확하게 하고 측정·paint가 같은 글꼴 소유자를 소비하도록 했다.
 명시 스타일·HWP5/HWPX 기본값·입력·Print·DPI·판정 기준은 바꾸지 않았다.
 
-96 DPI·compat2022·pdftoppm·canonical 2px raw로 sample10 Native/fresh WASM 각각763쪽을
+동일 PDF·96 DPI의 기존 Linux PDFium PNG를 SHA 검증 후 재사용하고 compat2022·canonical 2px raw로 sample10 Native/fresh WASM 각각763쪽을
 끝까지 산출했다. Native 최저99.41%, WASM99.38%; 90% 미달·쪽 누락·중복은0이다.
 629쪽은 두 경로 모두99.96→100.00%다. review와 overlay에서 번호의 시작점·줄표 폭을
 직접 확인했고 미세한 기준선·안티앨리어싱 차이를 남아 있는 차이로 구분했다.

@@ -725,3 +725,38 @@ Print 원점 확대 판독 이후에만 ±2 CSSpx 검사와 정식 suite 등록�
 [overlay](hwp3-default-page-number/after-p629-overlay.png) ·
 [fresh WASM review](hwp3-default-page-number/after-wasm-p629-review.png) ·
 [overlay](hwp3-default-page-number/after-wasm-p629-overlay.png).
+
+
+## 2026-11-09: 일반 양쪽 정렬의 자연 대시·낱말 공백 예산 복원
+
+outline8쪽의 첫 대시는 Native595.57333 CSSpx, 독립 Print591.67867 CSSpx였다.
+처음 문단 끝 분기를 보정한 후보는 실제9쪽PNG가 모두 같아 제외했다. 실제 대상은 끝 줄이
+아닌 일반 Justify 줄이었고, `justified_dash_restoration`이 자연 폭 복원 부족을 대시에만 배분했다.
+이미 음수 여백에 쓰는 공백20% 한도로 자연 대시를 수용하되 글자 압축·탭·다른 정렬이면
+기존 배분을 유지하도록 공통 경로를 보정했다. 각 런의 자연 폭과 필드·선두 공백 소유는 유지한다.
+마지막 줄의 #5830 경로는 변경하지 않았다. 문서/쪽별 좌표·글꼴·판정 기준 변경은 없다.
+
+Native9쪽·fresh WASM9쪽 모두100.00%, 누락·중복·보호 표시값 하락0이다.
+Native8쪽99.94275→100.00000%, 첫 대시591.86133 CSSpx로 복원됐고 마지막 낱말 원점도
+독립 Print ±2 CSSpx 안이다. 두 경로의 review·overlay와 확대 판독 뒤 고정형/관계형2개를 등록했다.
+실제 수정 전2 FAIL→수정 후 최소 글꼴 standalone2 PASS다. 새2건·기존PII 대시2건·앞 단계
+쪽번호3건은 같은 최종 코드의 정식 suite에서 최소 글꼴7 PASS/0 FAIL(1015건은 선택 밖)다.
+
+standalone가 갱신되지 않은 `release-test/librhwp.rlib` 별칭을 링크한 실패는 무효로 분리했다.
+실제 새 `release-test/deps/librhwp.rlib`를 hash 고정해 재링크한 결과만 위PASS로 인용했다.
+역사적 #5830 Print 대조군은 수정 전부터 Native64쪽/PDF65쪽으로 달라 정상 검증으로 쓰지 않았다.
+별도 원본의 기존 미달을 새 golden·신규 회귀로 등록하거나 이번 변경의 실패라고 바꾸지 않았다.
+
+새 후보의 Native 영향 대조는 sample16 세 저장본17·35·38쪽과 nested3·8·17쪽, 총12쪽을 완료했다.
+아래의 기존 미복원과 sample10 WASM 보호값 미달은 계속 남는다. sample10의 기존 미달8쪽과629쪽
+WASM 집중 재측정도 완료했으며 최저99.38%다. outline18쪽 완료로 전체93조건/2994쪽씩의
+검증·다른 보호 문서·전체 회귀·실제 소비 경로를 완료했다고 주장하지 않는다.
+
+앞 단계 쪽번호 주석의 `pdftoppm` 표기는 실제 wrapper와 달라 Linux PDFium PNG의 SHA 검증
+재사용으로 정정했다. 입력·PNG·TSV·점수·판정은 바꾸지 않았다.
+
+[입력·producer·전쪽 TSV·검사·확대 판독 증거](justified-dash-space-budget/validation.json) ·
+[Native review](justified-dash-space-budget/after-native-p008-review.png) ·
+[overlay](justified-dash-space-budget/after-native-p008-overlay.png) ·
+[fresh WASM review](justified-dash-space-budget/after-wasm-p008-review.png) ·
+[overlay](justified-dash-space-budget/after-wasm-p008-overlay.png).
