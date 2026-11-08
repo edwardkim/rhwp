@@ -8,6 +8,7 @@ import importlib.util
 from pathlib import Path
 import sys
 import shutil
+from unittest import mock
 import tempfile
 import unittest
 
@@ -279,6 +280,90 @@ class BuildAndRuntimeIdentityContracts(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             with self.assertRaises(FileNotFoundError):
                 build.verify_copied_sources(Path(temporary), {"bindings/Flutter/windows/NativeApi.h": "0" * 64})
+
+
+class RuntimeBundleContracts(unittest.TestCase):
+    def bundle(self, root):
+        # The real debug runner starts DartProject("data"). These portable bytes
+        # exercise identity rejection and are never executable Windows evidence.
+        files = {"probe.exe": b"portable runner", "flutter_windows.dll": b"portable engine",
+                 "rhwp_native_reference_plugin.dll": b"portable plugin",
+                 "data/icudtl.dat": b"portable ICU",
+                 "data/flutter_assets/kernel_blob.bin": bytes(range(256)) * 64,
+                 "data/flutter_assets/AssetManifest.bin": b"portable asset manifest"}
+        for relative, content in files.items():
+            path = root / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(content)
+        return files
+
+    def test_dart_program_and_data_match_after_complete_bundle_relocation(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            original = root / "original"
+            original.mkdir()
+            files = self.bundle(original)
+            expected = qualification.runtime_bundle_manifest(original)
+            self.assertEqual(expected["files"]["data/flutter_assets/kernel_blob.bin"]["bytes"], 16384)
+            relocated = root / "relocated"
+            shutil.copytree(original, relocated)
+            self.assertEqual(qualification.verify_runtime_bundle(relocated, expected), expected)
+            self.assertEqual(set(expected["files"]), set(files))
+
+    def test_changed_missing_added_runtime_files_are_rejected(self):
+        for operation in ("changed", "missing", "added"):
+            with self.subTest(operation=operation), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                self.bundle(root)
+                expected = qualification.runtime_bundle_manifest(root)
+                if operation == "changed":
+                    (root / "data/flutter_assets/kernel_blob.bin").write_bytes(b"different Dart program")
+                elif operation == "missing":
+                    (root / "data/icudtl.dat").unlink()
+                else:
+                    (root / "unexpected.dll").write_bytes(b"unrecorded app dependency")
+                with self.assertRaisesRegex(ValueError, "runtime bundle files or content"):
+                    qualification.verify_runtime_bundle(root, expected)
+
+    def test_non_debug_or_missing_kernel_is_not_qualified(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.bundle(root)
+            (root / "data/flutter_assets/kernel_blob.bin").unlink()
+            with self.assertRaisesRegex(ValueError, "kernel_blob"):
+                qualification.runtime_bundle_manifest(root)
+
+    def test_relative_path_escape_and_alias_in_receipt_are_rejected(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.bundle(root)
+            for bad in ("../outside", "/absolute", "C:/absolute", "data/../kernel", "data//alias", "data\\alias"):
+                expected = qualification.runtime_bundle_manifest(root)
+                expected["files"][bad] = {"sha256": "0" * 64, "bytes": 0}
+                with self.subTest(path=bad), self.assertRaisesRegex(ValueError, "path"):
+                    qualification.verify_runtime_bundle(root, expected)
+
+    @unittest.skipIf(sys.platform == "win32", "symlink setup requires Windows privilege; NT reparse check remains in code")
+    def test_symlink_or_link_escape_is_rejected_before_reading(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            directory = root / "bundle"
+            directory.mkdir()
+            self.bundle(directory)
+            outside = root / "outside"
+            outside.write_bytes(b"not a bundle input")
+            (directory / "linked-input").symlink_to(outside)
+            with self.assertRaisesRegex(ValueError, "symlink/reparse"):
+                qualification.runtime_bundle_manifest(directory)
+
+    def test_runtime_file_count_and_total_byte_bounds_are_enforced(self):
+        for name, value in (("MAX_BUNDLE_FILES", 2), ("MAX_BUNDLE_BYTES", 16383),
+                            ("MAX_BUNDLE_ENTRIES", 2)):
+            with self.subTest(bound=name), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                self.bundle(root)
+                with mock.patch.object(qualification, name, value), self.assertRaisesRegex(ValueError, "bound"):
+                    qualification.runtime_bundle_manifest(root)
 
 
 if __name__ == "__main__":

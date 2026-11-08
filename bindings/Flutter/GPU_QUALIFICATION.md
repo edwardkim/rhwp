@@ -27,7 +27,13 @@ python bindings/Flutter/tool/build_desktop_probe.py `
 ```
 
 빌드 도구는 참조 소스·Native 소스 SHA, Flutter·engine revision, 소스별 hash와 runner·plugin·
-dispatcher·DLL·입력 hash를 기록합니다. 실행 파일 옆의 실제 plugin DLL과 `flutter_windows.dll`도
+dispatcher·DLL·입력 hash를 기록합니다. debug runner가 실제로 실행하는
+`data/flutter_assets/kernel_blob.bin`을 필수로 포함해 실행 파일 디렉터리 전체의 상대 경로·hash·
+바이트 manifest를 기록합니다. runtime bundle은 최대 1,024개 파일·4,096개 entry·1 GiB이며
+symlink/reparse point·경로 이탈·빠진/추가/변경된 파일을 거절합니다. Windows runner·그에 딸린
+의존 파일과 data를 함께 옮긴 경우에만 같은 manifest로 재검증할 수 있습니다. 빌드 영수증은
+512 KiB 이하로 제한하고 capture 출력은 runtime bundle 밖에 둡니다.
+실행 파일 옆의 실제 plugin DLL과 `flutter_windows.dll`도
 별도 artifact로 기록하며 수집 시작·완료 때 hash를 다시 확인합니다. 실행 파일을 다른 경로로
 옮긴 경우 원래 영수증 경로 대신 새 실행 파일 옆에서 실제로 로드할 DLL을 검사합니다. 각 명령은 시작할 때 로그와 PID를 남기며 종료 상태를
 `build-receipt.json`에 기록합니다. 완료할 때까지 원본 소스를 유지하고, 명령이 종료된 뒤에
@@ -88,7 +94,8 @@ python3 -B test/desktop_qualification_contract.py
 이식 가능한 검사는 nonce·PID·전체 stamp·DPR 거절, byte 한도, 잘못된 pixel·빈 cover·stale 화면,
 등록 해제 누락과 credit 환급 금지를 검사합니다. 실제 Windows SDK나 Flutter D3D consumer를
 실행한 결과가 아닙니다. 실제 빌드·화면 수집 도구는 Linux를 거절하며, Windows Python을 쓰는 Wine도
-`ntdll.wine_get_version` export로 확인해 거절합니다. NT loader를 확인할 수 없는 경우도
+`ntdll.wine_get_version` export로 확인해 거절합니다. Dart kernel·data나 plugin/engine DLL을
+변경한 결과를 이전 source/engine 영수증으로 처리하지 않습니다. NT loader를 확인할 수 없는 경우도
 실행을 보류합니다. 이 guard의 대역 검사는 실제 Windows 실행 증거가 아닙니다.
 
 `test/desktop_oracle_test.dart`는 실제 Native/owner 라이브러리를 지정했을 때만 CPU oracle의
