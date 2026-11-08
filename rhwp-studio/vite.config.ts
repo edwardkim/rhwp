@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import { resolve, extname, join } from 'path';
-import { readFileSync, readFile } from 'fs';
+import { readFileSync, readFile, stat } from 'fs';
 import { VitePWA } from 'vite-plugin-pwa';
 
 const configDir = import.meta.dirname;
@@ -121,6 +121,15 @@ export default defineConfig({
           const full = join(samplesDir, relPath);
           if (!full.startsWith(samplesDir)) { res.statusCode = 403; return res.end(); }
           readFile(full, (err: NodeJS.ErrnoException | null, data: Buffer) => {
+            // Repository samples take precedence; Vite serves existing public-only fixtures.
+            if (err?.code === 'ENOENT') {
+              stat(join(configDir, 'public', 'samples', relPath), (publicError, entry) => {
+                if (!publicError && entry.isFile()) return next();
+                res.statusCode = 404;
+                res.end();
+              });
+              return;
+            }
             if (err) { res.statusCode = 404; return res.end(); }
             const ext = extname(full).toLowerCase();
             const mime: Record<string, string> = {

@@ -1,0 +1,1482 @@
+{
+  "run": 42442759209,
+  "artifactId": 13603420204,
+  "artifactSha256": "615789ce07b3bc2357f2fef600c45e06b4928680781aac92f38c1bb0e4649632",
+  "syntheticMergeCommit": "425bcfbc3b82d611d73c8fc5049f6e63638ed765",
+  "mergeParents": [
+    "80fc0c6b44bb270e5c14946cfb52e0eb0475a3a8",
+    "339f77f6f27fd15bae4db0b4201af3bd5e408eef"
+  ],
+  "mergeTree": "95a910cb779c789ca5251953871857df9e13ad84",
+  "build": {
+    "source_sha": "425bcfbc3b82d611d73c8fc5049f6e63638ed765",
+    "source_dirty": false,
+    "profile": "release",
+    "build_configuration": {
+      "profile": "release",
+      "build_mode": "standard",
+      "cdylib_only": "0",
+      "crate_types": "rlib+cdylib",
+      "lto_policy": "manifest",
+      "cache_variant": "release-rlib-cdylib-lto-manifest"
+    },
+    "command": [
+      "sh",
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--release"
+    ],
+    "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+    "wasm_pack": "wasm-pack 0.15.0",
+    "cargo_cache_hit": "false",
+    "cargo_cache_matched_key": "",
+    "cargo_lock_sha256": "6184ebd0c4d86f71314b11e756f1e910001b8eac7f4fc7d4cbd2acfac393c86f",
+    "cargo_manifest_sha256": "f9b27a36d6feb82f66e456489398b6406b48e6ebbe1c8d2dc4c7f960edb5c505",
+    "wrapper_sha256": "556e5cc3e62ac8f3adb69b1419e8078c61d0a85615f59317103f10e3fda6e37c",
+    "runner": {
+      "platform": "Linux-7.0.0-1019-azure-x86_64-with-glibc2.43",
+      "logical_cpus": 4,
+      "image": "ubuntu26",
+      "image_version": "20261101.186.1",
+      "cpu_model": "AMD EPYC 9V74 80-Core Processor"
+    },
+    "cargo_target_dir": "target",
+    "cargo_build_jobs": "default",
+    "timing_method": "log receipt boundaries; includes setup/finalization, not isolated process timings",
+    "success": true,
+    "wall_seconds": 930.184,
+    "returncode": 0,
+    "events_seconds": {
+      "cargo_start": 2.8972261239999852,
+      "bindgen_start": 662.144296218,
+      "opt_start": 670.136763249,
+      "package_done": 930.167329664
+    },
+    "phase_seconds_approx": {
+      "preparation": 2.897,
+      "cargo": 659.247,
+      "bindgen_setup_and_run": 7.992,
+      "wasm_opt_and_finalize": 260.031,
+      "after_package": 0.017
+    },
+    "tool_commands": {
+      "wasm-bindgen": [
+        "/home/runner/.cache/.wasm-pack/wasm-bindgen-834c8396d913406b/wasm-bindgen",
+        "/home/runner/work/rhwp/rhwp/target/wasm32-unknown-unknown/release/rhwp.wasm",
+        "--out-dir",
+        "/home/runner/work/rhwp/rhwp/pkg",
+        "--typescript",
+        "--target",
+        "web"
+      ],
+      "wasm-opt": [
+        "/home/runner/.cache/.wasm-pack/wasm-opt-1ceaaea8b7b5f7e0/bin/wasm-opt",
+        "/home/runner/work/rhwp/rhwp/pkg/rhwp_bg.wasm",
+        "-o",
+        "/home/runner/work/rhwp/rhwp/pkg/rhwp_bg.wasm-opt.wasm",
+        "-O"
+      ]
+    },
+    "tools": {
+      "wasm-bindgen": {
+        "version": "wasm-bindgen 0.2.127",
+        "sha256": "f36dbe1938e78a79ce34d0ab3700907555161e293954f6f35bf6785a2f0cf916"
+      },
+      "wasm-opt": {
+        "version": "wasm-opt version 117 (version_117)",
+        "sha256": "621b5a984f16d0323ea7aa8b389ac9ccda0950ddee5de0e99292970129f571ed"
+      }
+    },
+    "artifacts": {
+      "rhwp.js": {
+        "sha256": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+        "bytes": 570533
+      },
+      "rhwp_bg.wasm": {
+        "sha256": "9b10e79dfc65bf9943b575f89c1ae3b98bc4790c90bc781bee2fa0a29957486a",
+        "bytes": 26835494
+      }
+    }
+  },
+  "wasmInitializationResponses": {
+    "count": 18,
+    "allMatched": true
+  },
+  "canvas": {
+    "config": {
+      "fixtures": [
+        "basic/KTX.hwp",
+        "biz_plan.hwp",
+        "tac-case-001.hwp"
+      ],
+      "scale": 1,
+      "maxPages": "1",
+      "channelTolerance": 1,
+      "maxDiffRatio": 0.0005,
+      "writeImages": false
+    },
+    "results": [
+      {
+        "pageIndex": 0,
+        "legacyWidth": 1123,
+        "legacyHeight": 794,
+        "layerWidth": 1123,
+        "layerHeight": 794,
+        "width": 1123,
+        "height": 794,
+        "sameSize": true,
+        "diffPixels": 96,
+        "totalPixels": 891662,
+        "diffRatio": 0.00010766411487761058,
+        "maxChannelDelta": 84,
+        "averageChannelDelta": 0.0017531867456502576,
+        "pass": true,
+        "fixture": "basic/KTX.hwp"
+      },
+      {
+        "pageIndex": 0,
+        "legacyWidth": 794,
+        "legacyHeight": 1123,
+        "layerWidth": 794,
+        "layerHeight": 1123,
+        "width": 794,
+        "height": 1123,
+        "sameSize": true,
+        "diffPixels": 0,
+        "totalPixels": 891662,
+        "diffRatio": 0,
+        "maxChannelDelta": 0,
+        "averageChannelDelta": 0,
+        "pass": true,
+        "fixture": "biz_plan.hwp"
+      },
+      {
+        "pageIndex": 0,
+        "legacyWidth": 794,
+        "legacyHeight": 1123,
+        "layerWidth": 794,
+        "layerHeight": 1123,
+        "width": 794,
+        "height": 1123,
+        "sameSize": true,
+        "diffPixels": 0,
+        "totalPixels": 891662,
+        "diffRatio": 0,
+        "maxChannelDelta": 0,
+        "averageChannelDelta": 0,
+        "pass": true,
+        "fixture": "tac-case-001.hwp"
+      }
+    ]
+  },
+  "readiness": {
+    "mode": "selectedCorpus",
+    "criteria": {
+      "sampleFlag": "canvaskitReadinessGate",
+      "profile": "screen",
+      "targetBackend": "canvaskit-default (explicit auto request)",
+      "canvaskitSurface": "auto",
+      "requireActiveBackend": true,
+      "requireRuntimeReadiness": true,
+      "requireNoImageReplayFailures": true,
+      "requireVisualParity": true,
+      "requireColdAndWarmPerformanceBudget": true
+    },
+    "summary": {
+      "total": 8,
+      "evaluated": 8,
+      "passed": 8,
+      "failed": 0,
+      "missing": 0
+    },
+    "captureError": null,
+    "checks": [
+      {
+        "sampleId": "paragraph-line-basic",
+        "category": "paragraph",
+        "profile": "screen",
+        "targetBackend": "canvaskit-default",
+        "canvaskitSurface": "auto",
+        "passed": true,
+        "blockers": [],
+        "activeBackend": "canvaskit",
+        "canvasOwnershipTracked": true,
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "auto"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "screen"
+        },
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "auto",
+            "source": "url",
+            "requested": "auto"
+          },
+          "requestedBackend": "auto",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "autoEligible",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:4c33f45c0c5200a4f5e6e90cfc3ba3a0dd771a31da8955c72f2d388cc858ec60",
+          "decisionKey": "blake3:4c33f45c0c5200a4f5e6e90cfc3ba3a0dd771a31da8955c72f2d388cc858ec60|revision:3|profile:screen|resources:3|request:auto|mode:default",
+          "preflight": {
+            "schemaVersion": 1,
+            "mode": "default",
+            "profile": "screen",
+            "status": "eligible",
+            "eligible": true,
+            "complete": true,
+            "pageCount": 1,
+            "scannedPages": 1,
+            "scannedWorkUnits": 214,
+            "limits": {
+              "maxPages": 128,
+              "maxWorkUnits": 50000,
+              "maxBlockers": 32,
+              "maxRequiredFontFamilies": 256
+            },
+            "summary": {
+              "totalItems": 9,
+              "directItems": 9,
+              "directRequiredItems": 0,
+              "compatOverlayItems": 0,
+              "textFallbackItems": 0,
+              "unsupportedItems": 0,
+              "hiddenOverlayViolations": 0
+            },
+            "blockers": [],
+            "requiredFontFamilies": [
+              "바탕체"
+            ],
+            "capabilityDigest": "blake3:cee69786e8eaa5df4944712399c696a137e31bb25892e00cb7747cdfd797a953"
+          },
+          "initializationError": null,
+          "selectionError": null
+        },
+        "backendFallbackReason": null,
+        "expectedUnsupportedOps": [],
+        "unexpectedUnsupportedOps": [],
+        "imageFailures": [],
+        "renderError": null,
+        "surfaceBackend": "default",
+        "surfaceFallbackReason": null,
+        "visualComparisonStatus": "compared",
+        "visualComparisonPassed": true,
+        "selectedDiffRatio": 0.014060260502297956,
+        "expectedInkPixels": 8683,
+        "actualInkPixels": 8403,
+        "minimumInkPixels": 5000,
+        "minimumInkBudgetPassed": true,
+        "performanceBudget": {
+          "maxColdDocumentLoadAndInitialRenderMs": 30000,
+          "maxWarmReplayMs": 5000,
+          "maxWarmRendererDurationMs": 4000,
+          "maxImageCachePixels": 67108864
+        },
+        "readinessExpectations": null,
+        "layerFeatureProbe": {
+          "featureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "glyphOutlinePayloadCounts": {}
+        },
+        "coldDocumentLoadAndInitialRenderMs": 425.4000000001397,
+        "warmReplay": {
+          "replayMs": 41.800000000046566,
+          "rerendered": true,
+          "rendererDurationMs": 40.5999999998603,
+          "renderCountDelta": 1,
+          "imageCacheHitDelta": 0,
+          "imageCacheMissDelta": 0,
+          "imageCachePixels": 0
+        }
+      },
+      {
+        "sampleId": "paragraph-text-marks",
+        "category": "paragraph",
+        "profile": "screen",
+        "targetBackend": "canvaskit-default",
+        "canvaskitSurface": "auto",
+        "passed": true,
+        "blockers": [],
+        "activeBackend": "canvaskit",
+        "canvasOwnershipTracked": true,
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "auto"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "screen"
+        },
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "auto",
+            "source": "url",
+            "requested": "auto"
+          },
+          "requestedBackend": "auto",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "autoEligible",
+          "fallbackReason": null,
+          "documentRevision": 4,
+          "resourceGeneration": 4,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:2e88b5b3edc88c7b4e2503b0982d79991a70372db017a62896ccbcf15b0f9098",
+          "decisionKey": "blake3:2e88b5b3edc88c7b4e2503b0982d79991a70372db017a62896ccbcf15b0f9098|revision:4|profile:screen|resources:4|request:auto|mode:default",
+          "preflight": {
+            "schemaVersion": 1,
+            "mode": "default",
+            "profile": "screen",
+            "status": "eligible",
+            "eligible": true,
+            "complete": true,
+            "pageCount": 1,
+            "scannedPages": 1,
+            "scannedWorkUnits": 1566,
+            "limits": {
+              "maxPages": 128,
+              "maxWorkUnits": 50000,
+              "maxBlockers": 32,
+              "maxRequiredFontFamilies": 256
+            },
+            "summary": {
+              "totalItems": 42,
+              "directItems": 42,
+              "directRequiredItems": 0,
+              "compatOverlayItems": 0,
+              "textFallbackItems": 0,
+              "unsupportedItems": 0,
+              "hiddenOverlayViolations": 0
+            },
+            "blockers": [],
+            "requiredFontFamilies": [
+              "바탕체"
+            ],
+            "capabilityDigest": "blake3:46f5038e93cd106aad1f27ec7886979a5d98a793d8e1652cd6fe911deba61ebb"
+          },
+          "initializationError": null,
+          "selectionError": null
+        },
+        "backendFallbackReason": null,
+        "expectedUnsupportedOps": [],
+        "unexpectedUnsupportedOps": [],
+        "imageFailures": [],
+        "renderError": null,
+        "surfaceBackend": "default",
+        "surfaceFallbackReason": null,
+        "visualComparisonStatus": "compared",
+        "visualComparisonPassed": true,
+        "selectedDiffRatio": 0.006032554936736117,
+        "expectedInkPixels": 35300,
+        "actualInkPixels": 34513,
+        "minimumInkPixels": 1000,
+        "minimumInkBudgetPassed": true,
+        "performanceBudget": {
+          "maxColdDocumentLoadAndInitialRenderMs": 30000,
+          "maxWarmReplayMs": 5000,
+          "maxWarmRendererDurationMs": 4000,
+          "maxImageCachePixels": 67108864
+        },
+        "readinessExpectations": null,
+        "layerFeatureProbe": {
+          "featureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "glyphOutlinePayloadCounts": {}
+        },
+        "coldDocumentLoadAndInitialRenderMs": 501.9000000001397,
+        "warmReplay": {
+          "replayMs": 106.80000000004657,
+          "rerendered": true,
+          "rendererDurationMs": 103.69999999995343,
+          "renderCountDelta": 1,
+          "imageCacheHitDelta": 0,
+          "imageCacheMissDelta": 0,
+          "imageCachePixels": 0
+        }
+      },
+      {
+        "sampleId": "pua-special-glyphs",
+        "category": "font",
+        "profile": "screen",
+        "targetBackend": "canvaskit-default",
+        "canvaskitSurface": "auto",
+        "passed": true,
+        "blockers": [],
+        "activeBackend": "canvaskit",
+        "canvasOwnershipTracked": true,
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "auto"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "screen"
+        },
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "auto",
+            "source": "url",
+            "requested": "auto"
+          },
+          "requestedBackend": "auto",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "autoEligible",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:c221688d49232b7bfb5468af022f96126701cd6439acedb64aa8e9af5d52724c",
+          "decisionKey": "blake3:c221688d49232b7bfb5468af022f96126701cd6439acedb64aa8e9af5d52724c|revision:3|profile:screen|resources:3|request:auto|mode:default",
+          "preflight": {
+            "schemaVersion": 1,
+            "mode": "default",
+            "profile": "screen",
+            "status": "eligible",
+            "eligible": true,
+            "complete": true,
+            "pageCount": 1,
+            "scannedPages": 1,
+            "scannedWorkUnits": 1412,
+            "limits": {
+              "maxPages": 128,
+              "maxWorkUnits": 50000,
+              "maxBlockers": 32,
+              "maxRequiredFontFamilies": 256
+            },
+            "summary": {
+              "totalItems": 130,
+              "directItems": 130,
+              "directRequiredItems": 0,
+              "compatOverlayItems": 0,
+              "textFallbackItems": 0,
+              "unsupportedItems": 0,
+              "hiddenOverlayViolations": 0
+            },
+            "blockers": [],
+            "requiredFontFamilies": [
+              "RHWP Old Hangul",
+              "함초롬바탕"
+            ],
+            "capabilityDigest": "blake3:4ede2ef20ba9094ac77f1c869a37d56a99bbd65e7293cbe17566d45d582d1888"
+          },
+          "initializationError": null,
+          "selectionError": null
+        },
+        "backendFallbackReason": null,
+        "expectedUnsupportedOps": [],
+        "unexpectedUnsupportedOps": [],
+        "imageFailures": [],
+        "renderError": null,
+        "surfaceBackend": "default",
+        "surfaceFallbackReason": null,
+        "visualComparisonStatus": "compared",
+        "visualComparisonPassed": true,
+        "selectedDiffRatio": 0.004307686096301065,
+        "expectedInkPixels": 26200,
+        "actualInkPixels": 24627,
+        "minimumInkPixels": 20000,
+        "minimumInkBudgetPassed": true,
+        "performanceBudget": {
+          "maxColdDocumentLoadAndInitialRenderMs": 30000,
+          "maxWarmReplayMs": 5000,
+          "maxWarmRendererDurationMs": 4000,
+          "maxImageCachePixels": 67108864
+        },
+        "readinessExpectations": null,
+        "layerFeatureProbe": {
+          "featureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "glyphOutlinePayloadCounts": {}
+        },
+        "coldDocumentLoadAndInitialRenderMs": 866.7000000001863,
+        "warmReplay": {
+          "replayMs": 187.19999999995343,
+          "rerendered": true,
+          "rendererDurationMs": 182,
+          "renderCountDelta": 1,
+          "imageCacheHitDelta": 0,
+          "imageCacheMissDelta": 0,
+          "imageCachePixels": 0
+        }
+      },
+      {
+        "sampleId": "font-batang-hancom",
+        "category": "font",
+        "profile": "screen",
+        "targetBackend": "canvaskit-default",
+        "canvaskitSurface": "auto",
+        "passed": true,
+        "blockers": [],
+        "activeBackend": "canvaskit",
+        "canvasOwnershipTracked": true,
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "auto"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "screen"
+        },
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "auto",
+            "source": "url",
+            "requested": "auto"
+          },
+          "requestedBackend": "auto",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "autoEligible",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:f512a39fe05937652c97758efcda35919d71c8f2ccd4d95144287ea578986e19",
+          "decisionKey": "blake3:f512a39fe05937652c97758efcda35919d71c8f2ccd4d95144287ea578986e19|revision:3|profile:screen|resources:3|request:auto|mode:default",
+          "preflight": {
+            "schemaVersion": 1,
+            "mode": "default",
+            "profile": "screen",
+            "status": "eligible",
+            "eligible": true,
+            "complete": true,
+            "pageCount": 1,
+            "scannedPages": 1,
+            "scannedWorkUnits": 127,
+            "limits": {
+              "maxPages": 128,
+              "maxWorkUnits": 50000,
+              "maxBlockers": 32,
+              "maxRequiredFontFamilies": 256
+            },
+            "summary": {
+              "totalItems": 14,
+              "directItems": 14,
+              "directRequiredItems": 0,
+              "compatOverlayItems": 0,
+              "textFallbackItems": 0,
+              "unsupportedItems": 0,
+              "hiddenOverlayViolations": 0
+            },
+            "blockers": [],
+            "requiredFontFamilies": [
+              "함초롬바탕"
+            ],
+            "capabilityDigest": "blake3:7ec6b442975b75a65a8624271c917a7d996cff350343384f31268966b05092f1"
+          },
+          "initializationError": null,
+          "selectionError": null
+        },
+        "backendFallbackReason": null,
+        "expectedUnsupportedOps": [],
+        "unexpectedUnsupportedOps": [],
+        "imageFailures": [],
+        "renderError": null,
+        "surfaceBackend": "default",
+        "surfaceFallbackReason": null,
+        "visualComparisonStatus": "compared",
+        "visualComparisonPassed": true,
+        "selectedDiffRatio": 0.0007794433316660349,
+        "expectedInkPixels": 3128,
+        "actualInkPixels": 2647,
+        "minimumInkPixels": 1000,
+        "minimumInkBudgetPassed": true,
+        "performanceBudget": {
+          "maxColdDocumentLoadAndInitialRenderMs": 30000,
+          "maxWarmReplayMs": 5000,
+          "maxWarmRendererDurationMs": 4000,
+          "maxImageCachePixels": 67108864
+        },
+        "readinessExpectations": null,
+        "layerFeatureProbe": {
+          "featureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "glyphOutlinePayloadCounts": {}
+        },
+        "coldDocumentLoadAndInitialRenderMs": 723,
+        "warmReplay": {
+          "replayMs": 29.100000000093132,
+          "rerendered": true,
+          "rendererDurationMs": 28.200000000186265,
+          "renderCountDelta": 1,
+          "imageCacheHitDelta": 0,
+          "imageCacheMissDelta": 0,
+          "imageCachePixels": 0
+        }
+      },
+      {
+        "sampleId": "font-native-bitmap",
+        "category": "font-native-glyph",
+        "profile": "screen",
+        "targetBackend": "canvaskit-default",
+        "canvaskitSurface": "auto",
+        "passed": true,
+        "blockers": [],
+        "activeBackend": "canvaskit",
+        "canvasOwnershipTracked": true,
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "auto"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "screen"
+        },
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "auto",
+            "source": "url",
+            "requested": "auto"
+          },
+          "requestedBackend": "auto",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "autoEligible",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:52048de7407688f2aca852c47df8e24adbaa4f0484ffa1eeb04fd820ebc9da2e",
+          "decisionKey": "blake3:52048de7407688f2aca852c47df8e24adbaa4f0484ffa1eeb04fd820ebc9da2e|revision:3|profile:screen|resources:3|request:auto|mode:default",
+          "preflight": {
+            "schemaVersion": 1,
+            "mode": "default",
+            "profile": "screen",
+            "status": "eligible",
+            "eligible": true,
+            "complete": true,
+            "pageCount": 1,
+            "scannedPages": 1,
+            "scannedWorkUnits": 19,
+            "limits": {
+              "maxPages": 128,
+              "maxWorkUnits": 50000,
+              "maxBlockers": 32,
+              "maxRequiredFontFamilies": 256
+            },
+            "summary": {
+              "totalItems": 6,
+              "directItems": 5,
+              "directRequiredItems": 1,
+              "compatOverlayItems": 0,
+              "textFallbackItems": 0,
+              "unsupportedItems": 0,
+              "hiddenOverlayViolations": 0
+            },
+            "blockers": [],
+            "requiredFontFamilies": [],
+            "capabilityDigest": "blake3:38de25cabbf2eb5ff14b1e06469b546029e24833e5ca7058f5238f9cc59ea373"
+          },
+          "initializationError": null,
+          "selectionError": null
+        },
+        "backendFallbackReason": null,
+        "expectedUnsupportedOps": [],
+        "unexpectedUnsupportedOps": [],
+        "imageFailures": [],
+        "renderError": null,
+        "surfaceBackend": "default",
+        "surfaceFallbackReason": null,
+        "visualComparisonStatus": "compared",
+        "visualComparisonPassed": true,
+        "selectedDiffRatio": 0.0004968250301123072,
+        "expectedInkPixels": 220,
+        "actualInkPixels": 110,
+        "minimumInkPixels": 40,
+        "minimumInkBudgetPassed": true,
+        "performanceBudget": {
+          "maxColdDocumentLoadAndInitialRenderMs": 30000,
+          "maxWarmReplayMs": 5000,
+          "maxWarmRendererDurationMs": 4000,
+          "maxImageCachePixels": 67108864
+        },
+        "readinessExpectations": {
+          "glyphOutlinePayloadKinds": [
+            "bitmapGlyph"
+          ],
+          "minLayerFeatureCounts": {},
+          "minWarmImageCacheHits": 1
+        },
+        "layerFeatureProbe": {
+          "featureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "glyphOutlinePayloadCounts": {
+            "bitmapGlyph": 1
+          }
+        },
+        "coldDocumentLoadAndInitialRenderMs": 99.5999999998603,
+        "warmReplay": {
+          "replayMs": 15.299999999813735,
+          "rerendered": true,
+          "rendererDurationMs": 14.900000000139698,
+          "renderCountDelta": 1,
+          "imageCacheHitDelta": 3,
+          "imageCacheMissDelta": 0,
+          "imageCachePixels": 256
+        }
+      },
+      {
+        "sampleId": "table-core",
+        "category": "table",
+        "profile": "screen",
+        "targetBackend": "canvaskit-default",
+        "canvaskitSurface": "auto",
+        "passed": true,
+        "blockers": [],
+        "activeBackend": "canvaskit",
+        "canvasOwnershipTracked": true,
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "auto"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "screen"
+        },
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "auto",
+            "source": "url",
+            "requested": "auto"
+          },
+          "requestedBackend": "auto",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "autoEligible",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:ef075058b2780d0c0afd71c9448466b0fcef2b0b51afc8f3b9f4f10fdb01b7ad",
+          "decisionKey": "blake3:ef075058b2780d0c0afd71c9448466b0fcef2b0b51afc8f3b9f4f10fdb01b7ad|revision:3|profile:screen|resources:3|request:auto|mode:default",
+          "preflight": {
+            "schemaVersion": 1,
+            "mode": "default",
+            "profile": "screen",
+            "status": "eligible",
+            "eligible": true,
+            "complete": true,
+            "pageCount": 3,
+            "scannedPages": 3,
+            "scannedWorkUnits": 2035,
+            "limits": {
+              "maxPages": 128,
+              "maxWorkUnits": 50000,
+              "maxBlockers": 32,
+              "maxRequiredFontFamilies": 256
+            },
+            "summary": {
+              "totalItems": 357,
+              "directItems": 357,
+              "directRequiredItems": 0,
+              "compatOverlayItems": 0,
+              "textFallbackItems": 0,
+              "unsupportedItems": 0,
+              "hiddenOverlayViolations": 0
+            },
+            "blockers": [],
+            "requiredFontFamilies": [
+              "한컴 윤고딕 230",
+              "함초롬바탕"
+            ],
+            "capabilityDigest": "blake3:9d602c480285337e49e24a3f7abf2f017e6fe47d8dc4400a6363a3d025473b21"
+          },
+          "initializationError": null,
+          "selectionError": null
+        },
+        "backendFallbackReason": null,
+        "expectedUnsupportedOps": [],
+        "unexpectedUnsupportedOps": [],
+        "imageFailures": [],
+        "renderError": null,
+        "surfaceBackend": "default",
+        "surfaceFallbackReason": null,
+        "visualComparisonStatus": "compared",
+        "visualComparisonPassed": true,
+        "selectedDiffRatio": 0.028788935717794412,
+        "expectedInkPixels": 61548,
+        "actualInkPixels": 60146,
+        "minimumInkPixels": 30000,
+        "minimumInkBudgetPassed": true,
+        "performanceBudget": {
+          "maxColdDocumentLoadAndInitialRenderMs": 30000,
+          "maxWarmReplayMs": 5000,
+          "maxWarmRendererDurationMs": 4000,
+          "maxImageCachePixels": 67108864
+        },
+        "readinessExpectations": null,
+        "layerFeatureProbe": {
+          "featureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "glyphOutlinePayloadCounts": {}
+        },
+        "coldDocumentLoadAndInitialRenderMs": 996.5999999998603,
+        "warmReplay": {
+          "replayMs": 78,
+          "rerendered": true,
+          "rendererDurationMs": 75.69999999995343,
+          "renderCountDelta": 1,
+          "imageCacheHitDelta": 0,
+          "imageCacheMissDelta": 0,
+          "imageCachePixels": 0
+        }
+      },
+      {
+        "sampleId": "table-border-style",
+        "category": "table",
+        "profile": "screen",
+        "targetBackend": "canvaskit-default",
+        "canvaskitSurface": "auto",
+        "passed": true,
+        "blockers": [],
+        "activeBackend": "canvaskit",
+        "canvasOwnershipTracked": true,
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "auto"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "screen"
+        },
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "auto",
+            "source": "url",
+            "requested": "auto"
+          },
+          "requestedBackend": "auto",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "autoEligible",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:671e1e8ab253f31b52395a3cd7832ff06ee7b370ff79a0795db0ef33d4b7e559",
+          "decisionKey": "blake3:671e1e8ab253f31b52395a3cd7832ff06ee7b370ff79a0795db0ef33d4b7e559|revision:3|profile:screen|resources:3|request:auto|mode:default",
+          "preflight": {
+            "schemaVersion": 1,
+            "mode": "default",
+            "profile": "screen",
+            "status": "eligible",
+            "eligible": true,
+            "complete": true,
+            "pageCount": 1,
+            "scannedPages": 1,
+            "scannedWorkUnits": 1693,
+            "limits": {
+              "maxPages": 128,
+              "maxWorkUnits": 50000,
+              "maxBlockers": 32,
+              "maxRequiredFontFamilies": 256
+            },
+            "summary": {
+              "totalItems": 293,
+              "directItems": 293,
+              "directRequiredItems": 0,
+              "compatOverlayItems": 0,
+              "textFallbackItems": 0,
+              "unsupportedItems": 0,
+              "hiddenOverlayViolations": 0
+            },
+            "blockers": [],
+            "requiredFontFamilies": [
+              "한양중고딕"
+            ],
+            "capabilityDigest": "blake3:324c295dd51e36354cc173ebaf5128af4b6b0ea013c24db4c15596ea0e56ef87"
+          },
+          "initializationError": null,
+          "selectionError": null
+        },
+        "backendFallbackReason": null,
+        "expectedUnsupportedOps": [],
+        "unexpectedUnsupportedOps": [],
+        "imageFailures": [],
+        "renderError": null,
+        "surfaceBackend": "default",
+        "surfaceFallbackReason": null,
+        "visualComparisonStatus": "compared",
+        "visualComparisonPassed": true,
+        "selectedDiffRatio": 0.004811240133593223,
+        "expectedInkPixels": 66097,
+        "actualInkPixels": 64952,
+        "minimumInkPixels": 50000,
+        "minimumInkBudgetPassed": true,
+        "performanceBudget": {
+          "maxColdDocumentLoadAndInitialRenderMs": 30000,
+          "maxWarmReplayMs": 5000,
+          "maxWarmRendererDurationMs": 4000,
+          "maxImageCachePixels": 67108864
+        },
+        "readinessExpectations": {
+          "glyphOutlinePayloadKinds": [],
+          "minLayerFeatureCounts": {
+            "dashedStrokes": 12,
+            "verticalPresentationPunctuation": 2,
+            "verticalTextRuns": 14
+          },
+          "minWarmImageCacheHits": 0
+        },
+        "layerFeatureProbe": {
+          "featureCounts": {
+            "dashedStrokes": 12,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 2,
+            "verticalTextRuns": 14
+          },
+          "glyphOutlinePayloadCounts": {}
+        },
+        "coldDocumentLoadAndInitialRenderMs": 484.9000000001397,
+        "warmReplay": {
+          "replayMs": 170.70000000018626,
+          "rerendered": true,
+          "rendererDurationMs": 165.69999999995343,
+          "renderCountDelta": 1,
+          "imageCacheHitDelta": 0,
+          "imageCacheMissDelta": 0,
+          "imageCachePixels": 0
+        }
+      },
+      {
+        "sampleId": "image-crop",
+        "category": "image",
+        "profile": "screen",
+        "targetBackend": "canvaskit-default",
+        "canvaskitSurface": "auto",
+        "passed": true,
+        "blockers": [],
+        "activeBackend": "canvaskit",
+        "canvasOwnershipTracked": true,
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "auto"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "screen"
+        },
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "auto",
+            "source": "url",
+            "requested": "auto"
+          },
+          "requestedBackend": "auto",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "autoEligible",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:a1916cd259cb6357ab1e7cb882ff98d403698df0369218d1c5fb913d08cb3bb7",
+          "decisionKey": "blake3:a1916cd259cb6357ab1e7cb882ff98d403698df0369218d1c5fb913d08cb3bb7|revision:3|profile:screen|resources:3|request:auto|mode:default",
+          "preflight": {
+            "schemaVersion": 1,
+            "mode": "default",
+            "profile": "screen",
+            "status": "eligible",
+            "eligible": true,
+            "complete": true,
+            "pageCount": 1,
+            "scannedPages": 1,
+            "scannedWorkUnits": 121,
+            "limits": {
+              "maxPages": 128,
+              "maxWorkUnits": 50000,
+              "maxBlockers": 32,
+              "maxRequiredFontFamilies": 256
+            },
+            "summary": {
+              "totalItems": 9,
+              "directItems": 9,
+              "directRequiredItems": 0,
+              "compatOverlayItems": 0,
+              "textFallbackItems": 0,
+              "unsupportedItems": 0,
+              "hiddenOverlayViolations": 0
+            },
+            "blockers": [],
+            "requiredFontFamilies": [
+              "함초롬바탕"
+            ],
+            "capabilityDigest": "blake3:fe85ff5735f1248ab4646f17333621a7032de0e4aad22389204a75a918e469ba"
+          },
+          "initializationError": null,
+          "selectionError": null
+        },
+        "backendFallbackReason": null,
+        "expectedUnsupportedOps": [],
+        "unexpectedUnsupportedOps": [],
+        "imageFailures": [],
+        "renderError": null,
+        "surfaceBackend": "default",
+        "surfaceFallbackReason": null,
+        "visualComparisonStatus": "compared",
+        "visualComparisonPassed": true,
+        "selectedDiffRatio": 0.015440828475363983,
+        "expectedInkPixels": 36358,
+        "actualInkPixels": 34407,
+        "minimumInkPixels": 20000,
+        "minimumInkBudgetPassed": true,
+        "performanceBudget": {
+          "maxColdDocumentLoadAndInitialRenderMs": 30000,
+          "maxWarmReplayMs": 5000,
+          "maxWarmRendererDurationMs": 4000,
+          "maxImageCachePixels": 67108864
+        },
+        "readinessExpectations": null,
+        "layerFeatureProbe": {
+          "featureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "glyphOutlinePayloadCounts": {}
+        },
+        "coldDocumentLoadAndInitialRenderMs": 551.3000000000466,
+        "warmReplay": {
+          "replayMs": 32.0999999998603,
+          "rerendered": true,
+          "rendererDurationMs": 26.800000000046566,
+          "renderCountDelta": 1,
+          "imageCacheHitDelta": 4,
+          "imageCacheMissDelta": 0,
+          "imageCachePixels": 44730
+        }
+      }
+    ]
+  },
+  "backendParitySummary": {
+    "total": 8,
+    "compared": 8,
+    "passed": 8,
+    "failed": 0,
+    "missing": 0,
+    "errors": 0,
+    "identityMismatches": 0
+  },
+  "pdf": {
+    "config": {
+      "fixtures": [
+        "basic/KTX.hwp",
+        "biz_plan.hwp",
+        "tac-case-001.hwp",
+        "kps-ai.hwp"
+      ],
+      "requestedFixtures": [
+        "basic/KTX.hwp",
+        "biz_plan.hwp",
+        "tac-case-001.hwp"
+      ],
+      "scale": 1,
+      "maxPages": "1",
+      "channelTolerance": 8,
+      "maxDiffRatio": null,
+      "commandTimeoutMs": 120000,
+      "writeImages": true,
+      "directPdfEnabled": true,
+      "directPdfGate": true,
+      "directPdfFixtures": [
+        "biz_plan.hwp",
+        "kps-ai.hwp",
+        "tac-case-001.hwp"
+      ],
+      "directFallbackRasterDpi": 144,
+      "directMaxDiffRatio": 0.02,
+      "rasterDpi": 72
+    },
+    "results": [
+      {
+        "fixture": "basic/KTX.hwp",
+        "pageIndex": 0,
+        "directExpected": false,
+        "rhwpMode": "binary",
+        "reportStage": "complete",
+        "reportError": null,
+        "reportComparison": {
+          "referenceWidth": 1123,
+          "referenceHeight": 794,
+          "pdfWidth": 841,
+          "pdfHeight": 595,
+          "width": 1123,
+          "height": 794,
+          "sameSize": false,
+          "majorSizeMismatch": true,
+          "sizeNormalization": null,
+          "diffPixels": 507993,
+          "totalPixels": 891662,
+          "diffRatio": 0.5697147573856461,
+          "maxChannelDelta": 255,
+          "averageChannelDelta": 25.764801759710146
+        },
+        "exceedsReportThreshold": true,
+        "directStage": null,
+        "directError": null,
+        "directComparison": null,
+        "directGateFailed": false,
+        "artifactFiles": {
+          "reference": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-pdf-reference.png",
+          "pdf": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01.pdf",
+          "pdfRaster": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-pdf-raster.png",
+          "diff": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-pdf-diff.png"
+        },
+        "directArtifactFiles": {
+          "compatibilityPdf": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01.pdf",
+          "compatibilityRaster": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-pdf-raster.png"
+        },
+        "referenceWidth": 1123,
+        "referenceHeight": 794,
+        "pdfWidth": 841,
+        "pdfHeight": 595,
+        "width": 1123,
+        "height": 794,
+        "sameSize": false,
+        "majorSizeMismatch": true,
+        "sizeNormalization": null,
+        "diffPixels": 507993,
+        "totalPixels": 891662,
+        "diffRatio": 0.5697147573856461,
+        "maxChannelDelta": 255,
+        "averageChannelDelta": 25.764801759710146
+      },
+      {
+        "fixture": "biz_plan.hwp",
+        "pageIndex": 0,
+        "directExpected": true,
+        "rhwpMode": "binary",
+        "reportStage": "complete",
+        "reportError": null,
+        "reportComparison": {
+          "referenceWidth": 794,
+          "referenceHeight": 1123,
+          "pdfWidth": 595,
+          "pdfHeight": 841,
+          "width": 794,
+          "height": 1123,
+          "sameSize": false,
+          "majorSizeMismatch": true,
+          "sizeNormalization": null,
+          "diffPixels": 21575,
+          "totalPixels": 891662,
+          "diffRatio": 0.024196388317546336,
+          "maxChannelDelta": 255,
+          "averageChannelDelta": 4.149705830236121
+        },
+        "exceedsReportThreshold": true,
+        "directStage": "complete",
+        "directError": null,
+        "directComparison": {
+          "referenceWidth": 595,
+          "referenceHeight": 841,
+          "pdfWidth": 595,
+          "pdfHeight": 841,
+          "width": 595,
+          "height": 841,
+          "sameSize": true,
+          "majorSizeMismatch": false,
+          "sizeNormalization": null,
+          "diffPixels": 3792,
+          "totalPixels": 500395,
+          "diffRatio": 0.007578013369438144,
+          "maxChannelDelta": 255,
+          "averageChannelDelta": 0.9753694581280788
+        },
+        "directGateFailed": false,
+        "artifactFiles": {
+          "reference": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-pdf-reference.png",
+          "pdf": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01.pdf",
+          "pdfRaster": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-pdf-raster.png",
+          "diff": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-pdf-diff.png"
+        },
+        "directArtifactFiles": {
+          "compatibilityPdf": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01.pdf",
+          "compatibilityRaster": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-pdf-raster.png",
+          "directPdf": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-direct.pdf",
+          "directRaster": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-direct-raster.png",
+          "diff": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-direct-vs-compat-diff.png"
+        },
+        "referenceWidth": 794,
+        "referenceHeight": 1123,
+        "pdfWidth": 595,
+        "pdfHeight": 841,
+        "width": 794,
+        "height": 1123,
+        "sameSize": false,
+        "majorSizeMismatch": true,
+        "sizeNormalization": null,
+        "diffPixels": 21575,
+        "totalPixels": 891662,
+        "diffRatio": 0.024196388317546336,
+        "maxChannelDelta": 255,
+        "averageChannelDelta": 4.149705830236121
+      },
+      {
+        "fixture": "tac-case-001.hwp",
+        "pageIndex": 0,
+        "directExpected": true,
+        "rhwpMode": "binary",
+        "reportStage": "complete",
+        "reportError": null,
+        "reportComparison": {
+          "referenceWidth": 794,
+          "referenceHeight": 1123,
+          "pdfWidth": 595,
+          "pdfHeight": 841,
+          "width": 794,
+          "height": 1123,
+          "sameSize": false,
+          "majorSizeMismatch": true,
+          "sizeNormalization": null,
+          "diffPixels": 4911,
+          "totalPixels": 891662,
+          "diffRatio": 0.005507692376707766,
+          "maxChannelDelta": 255,
+          "averageChannelDelta": 0.7249585605307841
+        },
+        "exceedsReportThreshold": true,
+        "directStage": "complete",
+        "directError": null,
+        "directComparison": {
+          "referenceWidth": 595,
+          "referenceHeight": 841,
+          "pdfWidth": 595,
+          "pdfHeight": 841,
+          "width": 595,
+          "height": 841,
+          "sameSize": true,
+          "majorSizeMismatch": false,
+          "sizeNormalization": null,
+          "diffPixels": 1347,
+          "totalPixels": 500395,
+          "diffRatio": 0.0026918734199982016,
+          "maxChannelDelta": 255,
+          "averageChannelDelta": 0.4860160473226151
+        },
+        "directGateFailed": false,
+        "artifactFiles": {
+          "reference": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-pdf-reference.png",
+          "pdf": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01.pdf",
+          "pdfRaster": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-pdf-raster.png",
+          "diff": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-pdf-diff.png"
+        },
+        "directArtifactFiles": {
+          "compatibilityPdf": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01.pdf",
+          "compatibilityRaster": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-pdf-raster.png",
+          "directPdf": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-direct.pdf",
+          "directRaster": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-direct-raster.png",
+          "diff": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-direct-vs-compat-diff.png"
+        },
+        "referenceWidth": 794,
+        "referenceHeight": 1123,
+        "pdfWidth": 595,
+        "pdfHeight": 841,
+        "width": 794,
+        "height": 1123,
+        "sameSize": false,
+        "majorSizeMismatch": true,
+        "sizeNormalization": null,
+        "diffPixels": 4911,
+        "totalPixels": 891662,
+        "diffRatio": 0.005507692376707766,
+        "maxChannelDelta": 255,
+        "averageChannelDelta": 0.7249585605307841
+      },
+      {
+        "fixture": "kps-ai.hwp",
+        "pageIndex": 0,
+        "directExpected": true,
+        "rhwpMode": "binary",
+        "reportStage": "complete",
+        "reportError": null,
+        "reportComparison": {
+          "referenceWidth": 794,
+          "referenceHeight": 1123,
+          "pdfWidth": 595,
+          "pdfHeight": 841,
+          "width": 794,
+          "height": 1123,
+          "sameSize": false,
+          "majorSizeMismatch": true,
+          "sizeNormalization": null,
+          "diffPixels": 52706,
+          "totalPixels": 891662,
+          "diffRatio": 0.059109842070201486,
+          "maxChannelDelta": 255,
+          "averageChannelDelta": 7.756439099120518
+        },
+        "exceedsReportThreshold": true,
+        "directStage": "complete",
+        "directError": null,
+        "directComparison": {
+          "referenceWidth": 595,
+          "referenceHeight": 841,
+          "pdfWidth": 595,
+          "pdfHeight": 841,
+          "width": 595,
+          "height": 841,
+          "sameSize": true,
+          "majorSizeMismatch": false,
+          "sizeNormalization": null,
+          "diffPixels": 9426,
+          "totalPixels": 500395,
+          "diffRatio": 0.018837118676245764,
+          "maxChannelDelta": 255,
+          "averageChannelDelta": 1.8169952404267296
+        },
+        "directGateFailed": false,
+        "artifactFiles": {
+          "reference": "e2e/screenshots/render-diff/kps-ai.hwp-1f4dbe57-p01-pdf-reference.png",
+          "pdf": "e2e/screenshots/render-diff/kps-ai.hwp-1f4dbe57-p01.pdf",
+          "pdfRaster": "e2e/screenshots/render-diff/kps-ai.hwp-1f4dbe57-p01-pdf-raster.png",
+          "diff": "e2e/screenshots/render-diff/kps-ai.hwp-1f4dbe57-p01-pdf-diff.png"
+        },
+        "directArtifactFiles": {
+          "compatibilityPdf": "e2e/screenshots/render-diff/kps-ai.hwp-1f4dbe57-p01.pdf",
+          "compatibilityRaster": "e2e/screenshots/render-diff/kps-ai.hwp-1f4dbe57-p01-pdf-raster.png",
+          "directPdf": "e2e/screenshots/render-diff/kps-ai.hwp-1f4dbe57-p01-direct.pdf",
+          "directRaster": "e2e/screenshots/render-diff/kps-ai.hwp-1f4dbe57-p01-direct-raster.png",
+          "diff": "e2e/screenshots/render-diff/kps-ai.hwp-1f4dbe57-p01-direct-vs-compat-diff.png"
+        },
+        "referenceWidth": 794,
+        "referenceHeight": 1123,
+        "pdfWidth": 595,
+        "pdfHeight": 841,
+        "width": 794,
+        "height": 1123,
+        "sameSize": false,
+        "majorSizeMismatch": true,
+        "sizeNormalization": null,
+        "diffPixels": 52706,
+        "totalPixels": 891662,
+        "diffRatio": 0.059109842070201486,
+        "maxChannelDelta": 255,
+        "averageChannelDelta": 7.756439099120518
+      }
+    ]
+  },
+  "scope": "Canvas 3 pages and CanvasKit readiness 8 checks passed; direct-PDF required checks passed. PDF report-only comparisons exceed advisory threshold and are not counted as visual PASS."
+}

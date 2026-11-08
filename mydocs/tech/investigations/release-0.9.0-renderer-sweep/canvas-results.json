@@ -1,0 +1,266 @@
+{
+  "config": {
+    "fixtures": [
+      "BlogForm_BookReview.hwp",
+      "basic/KTX.hwp",
+      "biz_plan.hwp",
+      "footnote-01.hwp",
+      "form-002.hwpx",
+      "kps-ai.hwp",
+      "number-bullet.hwp",
+      "oullim-01.hwp",
+      "para-head-num-2.hwp",
+      "shift-return.hwp",
+      "tac-case-001.hwp"
+    ],
+    "scale": 1,
+    "maxPages": "1",
+    "channelTolerance": 1,
+    "maxDiffRatio": 0.0005,
+    "writeImages": true
+  },
+  "results": [
+    {
+      "pageIndex": 0,
+      "legacyWidth": 530,
+      "legacyHeight": 832,
+      "layerWidth": 530,
+      "layerHeight": 832,
+      "width": 530,
+      "height": 832,
+      "sameSize": true,
+      "diffPixels": 0,
+      "totalPixels": 440960,
+      "diffRatio": 0,
+      "maxChannelDelta": 0,
+      "averageChannelDelta": 0,
+      "pass": true,
+      "artifactFiles": {
+        "legacy": "e2e/screenshots/render-diff/BlogForm_BookReview.hwp-6bfb8992-p01-legacy.png",
+        "layer": "e2e/screenshots/render-diff/BlogForm_BookReview.hwp-6bfb8992-p01-layer.png",
+        "diff": "e2e/screenshots/render-diff/BlogForm_BookReview.hwp-6bfb8992-p01-diff.png"
+      },
+      "fixture": "BlogForm_BookReview.hwp"
+    },
+    {
+      "pageIndex": 0,
+      "legacyWidth": 1123,
+      "legacyHeight": 794,
+      "layerWidth": 1123,
+      "layerHeight": 794,
+      "width": 1123,
+      "height": 794,
+      "sameSize": true,
+      "diffPixels": 96,
+      "totalPixels": 891662,
+      "diffRatio": 0.00010766411487761058,
+      "maxChannelDelta": 84,
+      "averageChannelDelta": 0.0017531867456502576,
+      "pass": true,
+      "artifactFiles": {
+        "legacy": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-legacy.png",
+        "layer": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-layer.png",
+        "diff": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-diff.png"
+      },
+      "fixture": "basic/KTX.hwp"
+    },
+    {
+      "pageIndex": 0,
+      "legacyWidth": 794,
+      "legacyHeight": 1123,
+      "layerWidth": 794,
+      "layerHeight": 1123,
+      "width": 794,
+      "height": 1123,
+      "sameSize": true,
+      "diffPixels": 0,
+      "totalPixels": 891662,
+      "diffRatio": 0,
+      "maxChannelDelta": 0,
+      "averageChannelDelta": 0,
+      "pass": true,
+      "artifactFiles": {
+        "legacy": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-legacy.png",
+        "layer": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-layer.png",
+        "diff": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-diff.png"
+      },
+      "fixture": "biz_plan.hwp"
+    },
+    {
+      "pageIndex": 0,
+      "legacyWidth": 794,
+      "legacyHeight": 1123,
+      "layerWidth": 794,
+      "layerHeight": 1123,
+      "width": 794,
+      "height": 1123,
+      "sameSize": true,
+      "diffPixels": 0,
+      "totalPixels": 891662,
+      "diffRatio": 0,
+      "maxChannelDelta": 0,
+      "averageChannelDelta": 0,
+      "pass": true,
+      "artifactFiles": {
+        "legacy": "e2e/screenshots/render-diff/footnote-01.hwp-b0cf7495-p01-legacy.png",
+        "layer": "e2e/screenshots/render-diff/footnote-01.hwp-b0cf7495-p01-layer.png",
+        "diff": "e2e/screenshots/render-diff/footnote-01.hwp-b0cf7495-p01-diff.png"
+      },
+      "fixture": "footnote-01.hwp"
+    },
+    {
+      "pageIndex": 0,
+      "legacyWidth": 794,
+      "legacyHeight": 1123,
+      "layerWidth": 794,
+      "layerHeight": 1123,
+      "width": 794,
+      "height": 1123,
+      "sameSize": true,
+      "diffPixels": 0,
+      "totalPixels": 891662,
+      "diffRatio": 0,
+      "maxChannelDelta": 0,
+      "averageChannelDelta": 0,
+      "pass": true,
+      "artifactFiles": {
+        "legacy": "e2e/screenshots/render-diff/form-002.hwpx-3da68cba-p01-legacy.png",
+        "layer": "e2e/screenshots/render-diff/form-002.hwpx-3da68cba-p01-layer.png",
+        "diff": "e2e/screenshots/render-diff/form-002.hwpx-3da68cba-p01-diff.png"
+      },
+      "fixture": "form-002.hwpx"
+    },
+    {
+      "pageIndex": 0,
+      "legacyWidth": 794,
+      "legacyHeight": 1123,
+      "layerWidth": 794,
+      "layerHeight": 1123,
+      "width": 794,
+      "height": 1123,
+      "sameSize": true,
+      "diffPixels": 0,
+      "totalPixels": 891662,
+      "diffRatio": 0,
+      "maxChannelDelta": 0,
+      "averageChannelDelta": 0,
+      "pass": true,
+      "artifactFiles": {
+        "legacy": "e2e/screenshots/render-diff/kps-ai.hwp-1f4dbe57-p01-legacy.png",
+        "layer": "e2e/screenshots/render-diff/kps-ai.hwp-1f4dbe57-p01-layer.png",
+        "diff": "e2e/screenshots/render-diff/kps-ai.hwp-1f4dbe57-p01-diff.png"
+      },
+      "fixture": "kps-ai.hwp"
+    },
+    {
+      "pageIndex": 0,
+      "legacyWidth": 794,
+      "legacyHeight": 1123,
+      "layerWidth": 794,
+      "layerHeight": 1123,
+      "width": 794,
+      "height": 1123,
+      "sameSize": true,
+      "diffPixels": 0,
+      "totalPixels": 891662,
+      "diffRatio": 0,
+      "maxChannelDelta": 0,
+      "averageChannelDelta": 0,
+      "pass": true,
+      "artifactFiles": {
+        "legacy": "e2e/screenshots/render-diff/number-bullet.hwp-1af4d3a9-p01-legacy.png",
+        "layer": "e2e/screenshots/render-diff/number-bullet.hwp-1af4d3a9-p01-layer.png",
+        "diff": "e2e/screenshots/render-diff/number-bullet.hwp-1af4d3a9-p01-diff.png"
+      },
+      "fixture": "number-bullet.hwp"
+    },
+    {
+      "pageIndex": 0,
+      "legacyWidth": 794,
+      "legacyHeight": 1123,
+      "layerWidth": 794,
+      "layerHeight": 1123,
+      "width": 794,
+      "height": 1123,
+      "sameSize": true,
+      "diffPixels": 0,
+      "totalPixels": 891662,
+      "diffRatio": 0,
+      "maxChannelDelta": 0,
+      "averageChannelDelta": 0,
+      "pass": true,
+      "artifactFiles": {
+        "legacy": "e2e/screenshots/render-diff/oullim-01.hwp-3569d5f4-p01-legacy.png",
+        "layer": "e2e/screenshots/render-diff/oullim-01.hwp-3569d5f4-p01-layer.png",
+        "diff": "e2e/screenshots/render-diff/oullim-01.hwp-3569d5f4-p01-diff.png"
+      },
+      "fixture": "oullim-01.hwp"
+    },
+    {
+      "pageIndex": 0,
+      "legacyWidth": 794,
+      "legacyHeight": 1123,
+      "layerWidth": 794,
+      "layerHeight": 1123,
+      "width": 794,
+      "height": 1123,
+      "sameSize": true,
+      "diffPixels": 0,
+      "totalPixels": 891662,
+      "diffRatio": 0,
+      "maxChannelDelta": 0,
+      "averageChannelDelta": 0,
+      "pass": true,
+      "artifactFiles": {
+        "legacy": "e2e/screenshots/render-diff/para-head-num-2.hwp-cb7f287e-p01-legacy.png",
+        "layer": "e2e/screenshots/render-diff/para-head-num-2.hwp-cb7f287e-p01-layer.png",
+        "diff": "e2e/screenshots/render-diff/para-head-num-2.hwp-cb7f287e-p01-diff.png"
+      },
+      "fixture": "para-head-num-2.hwp"
+    },
+    {
+      "pageIndex": 0,
+      "legacyWidth": 794,
+      "legacyHeight": 1123,
+      "layerWidth": 794,
+      "layerHeight": 1123,
+      "width": 794,
+      "height": 1123,
+      "sameSize": true,
+      "diffPixels": 0,
+      "totalPixels": 891662,
+      "diffRatio": 0,
+      "maxChannelDelta": 0,
+      "averageChannelDelta": 0,
+      "pass": true,
+      "artifactFiles": {
+        "legacy": "e2e/screenshots/render-diff/shift-return.hwp-99b23a67-p01-legacy.png",
+        "layer": "e2e/screenshots/render-diff/shift-return.hwp-99b23a67-p01-layer.png",
+        "diff": "e2e/screenshots/render-diff/shift-return.hwp-99b23a67-p01-diff.png"
+      },
+      "fixture": "shift-return.hwp"
+    },
+    {
+      "pageIndex": 0,
+      "legacyWidth": 794,
+      "legacyHeight": 1123,
+      "layerWidth": 794,
+      "layerHeight": 1123,
+      "width": 794,
+      "height": 1123,
+      "sameSize": true,
+      "diffPixels": 0,
+      "totalPixels": 891662,
+      "diffRatio": 0,
+      "maxChannelDelta": 0,
+      "averageChannelDelta": 0,
+      "pass": true,
+      "artifactFiles": {
+        "legacy": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-legacy.png",
+        "layer": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-layer.png",
+        "diff": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-diff.png"
+      },
+      "fixture": "tac-case-001.hwp"
+    }
+  ]
+}

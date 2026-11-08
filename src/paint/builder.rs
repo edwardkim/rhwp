@@ -14,8 +14,6 @@ use crate::renderer::render_tree::{
 };
 use std::collections::HashMap;
 
-const TEXT_MARK_BODY_CLIP_RIGHT_PAD: f64 = 48.0;
-
 #[derive(Clone, Copy)]
 struct ImagePaintFrame {
     source: BoundingBox,
@@ -753,18 +751,11 @@ impl LayerBuilder {
             RenderNodeType::Body {
                 clip_rect: Some(clip),
             } => {
-                let effective_clip = if self.output_options.show_paragraph_marks
-                    || self.output_options.show_control_codes
-                {
-                    crate::renderer::render_tree::BoundingBox::new(
-                        clip.x,
-                        clip.y,
-                        clip.width + TEXT_MARK_BODY_CLIP_RIGHT_PAD,
-                        clip.height,
-                    )
-                } else {
-                    *clip
-                };
+                let effective_clip = crate::renderer::render_tree::body_clip_with_editor_marks(
+                    *clip,
+                    self.output_options.show_paragraph_marks
+                        || self.output_options.show_control_codes,
+                );
                 let child = LayerNode::group(
                     node.bbox,
                     Some(node.id),

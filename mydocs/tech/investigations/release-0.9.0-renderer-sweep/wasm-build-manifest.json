@@ -1,0 +1,26 @@
+{
+  "source_sha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+  "success": true,
+  "profile": "release",
+  "optimized": true,
+  "builtAt": "2026-11-08T02:28:36.722735+00:00",
+  "toolchain": "Rust 1.93.1, Docker Compose wasm, wasm-pack-locked.sh --target web --out-dir pkg",
+  "artifacts": {
+    "rhwp.js": {
+      "sha256": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+      "bytes": 570533
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "23cdca6248a2532499bbf09c2a92d0268403643e48b0f28d7d8e8885b8f7f3f5",
+      "bytes": 26835977
+    },
+    "rhwp.d.ts": {
+      "sha256": "7746cbd5271086269c80121cd1e9bc6506fd5b9e55fcef16d207e71a8d502dac",
+      "bytes": 228600
+    },
+    "rhwp_bg.wasm.d.ts": {
+      "sha256": "f97fb71cdf9f10f0f9bbc8a0c07d686cd4194fe09f06f9abeeae7414dae00676",
+      "bytes": 79293
+    }
+  }
+}

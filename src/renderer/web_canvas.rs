@@ -56,8 +56,6 @@ use crate::paint::{
     PaintReplayPlane, TextDecorationKind, TextVisualReplayRole,
 };
 
-const TEXT_MARK_CLIP_RIGHT_PAD: f64 = 48.0;
-
 struct ImageSmoothingScope {
     context: CanvasRenderingContext2d,
     previous: bool,
@@ -693,12 +691,11 @@ impl WebCanvasRenderer {
             } => {
                 self.ctx.save();
                 self.ctx.begin_path();
-                let right_pad = if self.show_paragraph_marks || self.show_control_codes {
-                    TEXT_MARK_CLIP_RIGHT_PAD
-                } else {
-                    4.0
-                };
-                self.ctx.rect(cr.x, cr.y, cr.width + right_pad, cr.height);
+                let clip = super::render_tree::body_clip_with_editor_marks(
+                    *cr,
+                    self.show_paragraph_marks || self.show_control_codes,
+                );
+                self.ctx.rect(clip.x, clip.y, clip.width, clip.height);
                 self.ctx.clip();
             }
             RenderNodeType::TableCell(ref tc) if tc.clip => {

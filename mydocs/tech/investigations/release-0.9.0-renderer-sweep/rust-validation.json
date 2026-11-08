@@ -1,0 +1,290 @@
+{
+  "verifiedAt": "2026-11-08T12:23:09.108369+09:00",
+  "sourceSha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+  "allRequiredStepsPassed": true,
+  "steps": [
+    {
+      "name": "suite-prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exitCode": 0,
+      "seconds": 1.536,
+      "sourceSha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "actualSummaryLines": [],
+      "logSha256": "5e01f8e8dbf351d3b61406acfad50c1ca4d9f2a297e6dc4091f83b95e7b4d9f2"
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exitCode": 0,
+      "seconds": 26.08,
+      "sourceSha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "actualSummaryLines": [],
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "clippy-root",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exitCode": 0,
+      "seconds": 134.035,
+      "sourceSha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "actualSummaryLines": [
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 14s"
+      ],
+      "logSha256": "b392b5a62af27b192a38dad3dfbdaba30d0603df9e40d5959bb1a38116f117b4"
+    },
+    {
+      "name": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exitCode": 0,
+      "seconds": 108.688,
+      "sourceSha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "actualSummaryLines": [
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 1m 49s"
+      ],
+      "logSha256": "376f1b0a189d972d66969e3bc8cc1d2b6d773a7fcd80a6b7404d94cb5bab01df"
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--workspace"
+      ],
+      "exitCode": 0,
+      "seconds": 189.408,
+      "sourceSha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "actualSummaryLines": [
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 3m 11s"
+      ],
+      "logSha256": "60f8eddb00ff09a882d6463855fca1bb420c8742ad4f9a5b1d207ff720555420"
+    },
+    {
+      "name": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exitCode": 0,
+      "seconds": 145.391,
+      "sourceSha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "actualSummaryLines": [
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 25s"
+      ],
+      "logSha256": "0f8c0e5502810f0bbad4b3d5dd88acf8dee9717da3f83f3b08c451c1b82c8197"
+    },
+    {
+      "name": "suite-check",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "78615c52a7c7d7a6b25fad57c3bf1041fb2dfcf2"
+      ],
+      "exitCode": 0,
+      "seconds": 0.818,
+      "sourceSha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "actualSummaryLines": [],
+      "logSha256": "0c61e08a4c8958d9dea26c82461f5925dfa260148e26d81e60480b310a8c7684"
+    },
+    {
+      "name": "focused",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--cargo-profile",
+        "release-test",
+        "--no-fail-fast",
+        "-E",
+        "test(issue_6590_nearfit_tac_table_body_width) | test(issue_7059_nearfit_shrink_stored_ladder) | test(issue_6269_body_clip_line_stroke) | test(raised_decoration_body_clip)"
+      ],
+      "exitCode": 0,
+      "seconds": 762.575,
+      "sourceSha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "actualSummaryLines": [
+        "PASS [   0.008s] (1/9) rhwp::regression_suite_015 issue_6269_body_clip_line_stroke::issue_6269_line_ink_bbox_straddles_the_path",
+        "PASS [   0.013s] (2/9) rhwp::regression_suite_025 raised_decoration_body_clip::first_line_emphasis_dot_ink_is_inside_body_clip",
+        "PASS [   0.013s] (3/9) rhwp::regression_suite_026 issue_6590_nearfit_tac_table_body_width::nearfit_tac_table_keeps_declared_width_like_the_oracle",
+        "PASS [   0.014s] (4/9) rhwp::regression_suite_005 issue_7059_nearfit_shrink_stored_ladder::recipe_still_disagrees_with_its_oracle",
+        "PASS [   0.014s] (5/9) rhwp::regression_suite_026 issue_6590_nearfit_tac_table_body_width::table_within_body_width_keeps_declared_width",
+        "PASS [   0.015s] (6/9) rhwp::regression_suite_025 raised_decoration_body_clip::first_line_top_underline_ink_is_inside_body_clip",
+        "PASS [   0.015s] (7/9) rhwp::regression_suite_005 issue_7059_nearfit_shrink_stored_ladder::ladder_says_declared_so_table_keeps_its_width",
+        "PASS [   0.139s] (8/9) rhwp::regression_suite_005 issue_7059_nearfit_shrink_stored_ladder::ladder_says_shrunk_so_the_rule_still_fires",
+        "PASS [   0.266s] (9/9) rhwp::regression_suite_015 issue_6269_body_clip_line_stroke::issue_6269_body_clip_contains_line_ink",
+        "Summary [   0.286s] 9 tests run: 9 passed, 13033 skipped"
+      ],
+      "logSha256": "7fd77ec1bb2707f7b0a9c4f99db4342985543902b2ed276c34b6b2c4b91ecd1f"
+    },
+    {
+      "name": "full-nextest",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--cargo-profile",
+        "release-test",
+        "--tests",
+        "--no-fail-fast"
+      ],
+      "exitCode": 0,
+      "seconds": 639.834,
+      "sourceSha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "actualSummaryLines": [
+        "PASS [  13.349s] (12989/12997) rhwp::regression_suite_028 issue_7518_reflow_row_physical_frame::auto_height_nested_row_shares_its_reserved_origin_and_child_cut",
+        "PASS [  12.194s] (12990/12997) rhwp::regression_suite_028 issue_7518_reflow_row_physical_frame::one_cell_nested_fragments_reuse_the_child_unit_ledger",
+        "PASS [   2.247s] (12991/12997) rhwp::regression_suite_028 verified_original_bitmap_sampling_ownership::completed_legal_page_nineteen_keeps_source_owned_bitmap_print_bounds",
+        "PASS [   6.720s] (12992/12997) rhwp::regression_suite_028 issue_7862_note_separator_length_dword::hwpx_to_hwp5_note_shape_records_match_hancom_bytes",
+        "PASS [   9.350s] (12993/12997) rhwp::regression_suite_028 issue_7862_note_separator_length_dword::hancom_hwp5_and_hwpx_of_the_same_document_agree",
+        "PASS [  14.958s] (12994/12997) rhwp::regression_suite_028 issue_7518_reflow_row_physical_frame::independently_regenerated_reflow_context_preserves_units_and_following_rows",
+        "PASS [  10.206s] (12995/12997) rhwp::regression_suite_028 issue_8153_kopub_circled_symbol::hwp_circled_symbol_keeps_source_advance",
+        "PASS [  10.077s] (12996/12997) rhwp::regression_suite_028 issue_8153_kopub_circled_symbol::hwpx_circled_symbol_keeps_source_advance",
+        "PASS [ 341.584s] (12997/12997) rhwp::regression_suite_017 issue_2063::huge_cellbreak_table_paginates_without_quadratic_blowup",
+        "Summary [ 653.145s] 12997 tests run: 12997 passed (6 slow), 45 skipped"
+      ],
+      "logSha256": "92fd0364d0a26c3c7ef922c851cf4ce433740aafdf7fa41c47dbe45761ae9654"
+    },
+    {
+      "name": "native-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib"
+      ],
+      "exitCode": 0,
+      "seconds": 354.31,
+      "sourceSha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "actualSummaryLines": [
+        "Finished `release-test` profile [optimized] target(s) in 5m 43s",
+        "test result: ok. 3858 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 18.69s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ],
+      "logSha256": "45292bf3a452de8d60ae65ae9b0abccb4707b29366edf7b2b437046c03934d6e"
+    },
+    {
+      "name": "native-placeholder",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exitCode": 0,
+      "seconds": 298.959,
+      "sourceSha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "actualSummaryLines": [
+        "Finished `release-test` profile [optimized] target(s) in 5m 03s",
+        "PASS [   0.031s] (1/2) rhwp::regression_suite_024 issue_2225_missing_picture_placeholder::issue_2225_missing_picture_placeholder_split",
+        "PASS [   1.951s] (2/2) rhwp::regression_suite_024 issue_2225_missing_picture_placeholder::issue_2225_export_png_defaults_to_screen_skia_profile",
+        "Summary [   1.952s] 2 tests run: 2 passed, 318 skipped"
+      ],
+      "logSha256": "7830ac995ae1dc855329c542a5ba83e2d209ca29b835363160f893db11f04502"
+    },
+    {
+      "name": "native-pdf",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exitCode": 0,
+      "seconds": 16.029,
+      "sourceSha": "8118ccb14d092f767cd1caf1aaece4753a8e61d8",
+      "actualSummaryLines": [
+        "PASS [   0.109s] (27/35) rhwp::regression_suite_008 render_p37_direct_pdf_export::direct_pdf_radial_gradient_contract::direct_pdf_radial_records_clip_and_opacity_and_native_preserves_both",
+        "PASS [   0.113s] (28/35) rhwp::regression_suite_008 render_p37_direct_pdf_export::direct_pdf_radial_gradient_contract::direct_pdf_radial_preserves_even_spacing_hard_stops_and_color_bound",
+        "PASS [   0.113s] (29/35) rhwp::regression_suite_008 render_p37_direct_pdf_export::document_core_direct_pdf_exports_page_selection_and_document",
+        "PASS [   0.095s] (30/35) rhwp::regression_suite_008 render_p37_direct_pdf_export::image_adjustment_regressions::issue_4764_direct_pdf_embeds_adjusted_normal_image_pixels",
+        "PASS [   0.174s] (31/35) rhwp::regression_suite_008 render_p37_direct_pdf_export::connector_arrow_regressions::direct_pdf_rejects_head_outlines_collapsed_before_a_parent_translation",
+        "PASS [   0.194s] (32/35) rhwp::regression_suite_008 render_p37_direct_pdf_export::connector_arrow_regressions::direct_pdf_rejects_unproved_endpoint_controls_only_where_a_head_is_requested",
+        "PASS [   0.351s] (33/35) rhwp::regression_suite_008 render_p37_direct_pdf_export::direct_pdf_radial_gradient_contract::direct_pdf_admits_radial_background_rectangle_ellipse_and_path_at_source_centers",
+        "PASS [   0.362s] (34/35) rhwp::regression_suite_008 render_p37_direct_pdf_export::connector_arrow_regressions::direct_pdf_accepts_supported_open_filled_and_asymmetric_head_sizes",
+        "PASS [   2.014s] (35/35) rhwp::regression_suite_008 render_p37_direct_pdf_export::export_pdf_cli_selects_direct_backend_explicitly",
+        "Summary [   2.061s] 35 tests run: 35 passed, 285 skipped"
+      ],
+      "logSha256": "63c3fffdcba6948cbf4e0b4b13d54f75e60b0284834f5abf32421d96ee547024"
+    }
+  ],
+  "counts": {
+    "focusedPassed": 9,
+    "fullRegressionPassed": 12997,
+    "fullRegressionSkipped": 45,
+    "nativeLibraryPassed": 4040,
+    "nativeLibraryIgnored": 12,
+    "nativePlaceholderPassed": 2,
+    "nativeDirectPdfPassed": 35,
+    "nativeOfficialTotalPassed": 4077
+  }
+}
