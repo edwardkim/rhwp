@@ -23,6 +23,25 @@ struct DrawableSize {
   }
 };
 
+// Visibility requests are ordered independently of producer generations. A
+// delayed uncover can never undo a newer cover, even when the Native source has
+// not applied a queued edit yet. The caller supplies a full-stamp check result.
+class VisibilityGate {
+ public:
+  bool apply(uint64_t serial, bool covered, bool currentFrameMatches) {
+    if (closed_ || !serial || serial <= serial_) return false;
+    serial_ = serial;
+    covered_ = covered || !currentFrameMatches;
+    return covered || currentFrameMatches;
+  }
+  void close() { closed_ = true; covered_ = true; }
+  uint64_t serial() const { return serial_; }
+  bool covered() const { return covered_; }
+ private:
+  uint64_t serial_ = 0;
+  bool covered_ = true, closed_ = false;
+};
+
 // One worker borrows at most one drawable. Handoff transfers presentation to
 // CAMetalLayer's bounded pool; it is not a consumer-GPU completion receipt.
 // Access is serialized by the associated producer state mutex.

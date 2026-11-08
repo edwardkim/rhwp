@@ -25,9 +25,11 @@ texture registry ID가 아니라 native view state의 양수 handle입니다.
    `status {textureId}`, `close {textureId}`를 사용합니다. view가 attach되기 전
    수락한 최신 요청은 pending으로 보존하며 실제 layer/geometry가 준비될 때까지
    UI thread를 막지 않습니다.
-4. 선택적인 `setCovered {textureId, covered: bool}`은 native NSView도 가립니다.
+4. 선택적인 `setCovered {textureId, covered: bool, visibilitySerial, stamp?}`은 native NSView도 가립니다.
    `covered: false`는 현재 전체 Native stamp가 유효한 게시 프레임이 있을 때만
-   허용합니다. 가림은 GPU 완료나 frame credit 환급 신호가 아닙니다.
+   허용합니다. visibilitySerial은 증가하는 양수이고 오래된 요청은 새 가림을 풀 수
+   없습니다. 응답은 `textureId`, `covered`, `visibilitySerial`, `accepted`,
+   `renderedStamp`입니다. 가림은 GPU 완료나 frame credit 환급 신호가 아닙니다.
 
 기존 Native loader, JSON/geometry parser, snapshot lease와 generation gate를
 같은 translation unit에서 재사용합니다. 새 경로는 CV 불변 frame credit을 예약하지
@@ -87,7 +89,7 @@ Native owner 종료를 추정하지 않습니다.
 ## 검증 상태
 
 `tests/metal_view_lifecycle_test.cc`는 실제 backend가 사용하는 portable lifecycle과
-geometry/generation gate를 검사합니다. 400번 handoff, 중복/옛 ticket 거절,
+geometry/generation gate를 검사합니다. 400번 handoff, 늦은 uncover 거절, 중복/옛 ticket 거절,
 작업 중 close, 불명확한 완료의 quarantine, DPR/resize ceil과 최신 세대 보존을
 확인합니다. 이 검사는 Apple SDK compile 또는 실제 macOS 화면 수집의 대체가 아닙니다.
 

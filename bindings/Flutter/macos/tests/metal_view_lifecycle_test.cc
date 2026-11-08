@@ -106,5 +106,18 @@ int main() {
     life.close();
     require(!gate.current(next, latest) && life.finish_owner());
   }
-  std::cout << "CAMetalLayer lifecycle: 6 scenarios passed\n";
+  {
+    rhwp::metal::VisibilityGate visibility;
+    require(visibility.covered());
+    require(visibility.apply(1, true, false));
+    require(visibility.apply(2, false, true) && !visibility.covered());
+    require(visibility.apply(3, true, false) && visibility.covered());
+    require(!visibility.apply(2, false, true) && visibility.covered());
+    require(!visibility.apply(4, false, false) && visibility.covered());
+    require(visibility.apply(5, false, true) && !visibility.covered());
+    require(!visibility.apply(3, true, false) && !visibility.covered());
+    visibility.close();
+    require(visibility.covered() && !visibility.apply(6, false, true));
+  }
+  std::cout << "CAMetalLayer lifecycle: 7 scenarios passed\n";
 }

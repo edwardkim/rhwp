@@ -14,8 +14,9 @@ struct MetalViewState {
   __weak NSView* view = nil;
   __strong id<MTLDevice> device = nil;
   DrawableLifecycle flow;
+  rhwp::metal::VisibilityGate visibility;
   std::shared_ptr<Job> displayed;
-  bool bound = false, layerReady = false, layerDetached = false, covered = false;
+  bool bound = false, layerReady = false, layerDetached = false;
   uint64_t viewIdentifier = 0, drawableTimeouts = 0, sizeMismatches = 0;
   uint64_t renderedSequence = 0;
   Stamp renderedStamp;
@@ -274,6 +275,7 @@ void RunMetalView(const std::shared_ptr<MetalViewState>& view) {
   if ((self = [super initWithFrame:NSZeroRect])) {
     _metalState = std::move(state);
     self.wantsLayer = YES;
+    self.hidden = YES;
     auto owner = _metalState->owner;
     std::shared_ptr<int> slot;
     {std::lock_guard<std::mutex> lock(owner->mutex);slot=owner->slot;}
@@ -341,7 +343,7 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
     std::shared_ptr<Job> oldDisplayed;
     NSView* nativeView = nil;
     {std::lock_guard<std::mutex> lock(owner->mutex);
-      view->flow.close();view->layerReady=false;view->layerDetached=true;
+      view->flow.close();view->visibility.close();view->layerReady=false;view->layerDetached=true;
       nativeView=view->view;view->view=nil;view->layer=nil;oldDisplayed=std::move(view->displayed);}
     if ([nativeView isKindOfClass:[RhwpNativeMetalView class]]) [(RhwpNativeMetalView*)nativeView detachMetalLayer];
   };
@@ -410,7 +412,7 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
       catch (const std::exception&) {view->owner->fail(@"Native Metal view owner stopped unexpectedly; completion remains unconfirmed.");view->owner->close();}
     }).detach();}
     catch(const std::exception&){_views.erase(handle);owner->close();throw;}
-    result(@{@"textureId":@(handle),@"deviceGeneration":@(generation),@"initializing":@YES,
+    result(@{@"textureId":@(handle),@"deviceGeneration":@(generation),@"initializing":@YES,@"ready":@NO,
       @"presentationKind":@"nativeView",@"viewType":@"rhwp_native/metal_view",@"limits":MetalViewLimits()});return;
   }
   uint64_t handle;
@@ -442,22 +444,32 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
       id covered=arguments[@"covered"];
       if(![covered isKindOfClass:[NSNumber class]]||CFGetTypeID((__bridge CFTypeRef)covered)!=CFBooleanGetTypeID()){
         result([FlutterError errorWithCode:@"arguments" message:@"covered must be a boolean." details:nil]);return;}
-      view->covered=[covered boolValue]||!hasFrame;
+      uint64_t serial;
+      if(!Unsigned(arguments[@"visibilitySerial"],serial)||!serial){
+        result([FlutterError errorWithCode:@"arguments" message:@"visibilitySerial must be a positive integer." details:nil]);return;}
+      const bool wantCover=[covered boolValue];
+      const bool stampMatches=hasFrame&&[arguments[@"stamp"] isKindOfClass:[NSDictionary class]]&&
+        [arguments[@"stamp"] isEqual:StampValue(displayed->stamp)];
+      const bool accepted=view->visibility.apply(serial,wantCover,stampMatches);
       NSView* nativeView=view->view;
-      const bool hide=view->covered;
+      const bool hide=view->visibility.covered();
+      const auto appliedSerial=view->visibility.serial();
+      NSDictionary* renderedStamp=hasFrame?StampValue(view->renderedStamp):@{};
       lock.unlock();
-      nativeView.hidden=hide;
-      result(@{@"covered":@(hide)});return;
+      if(accepted||appliedSerial==serial)nativeView.hidden=hide;
+      result(@{@"textureId":@(handle),@"covered":@(hide),@"visibilitySerial":@(appliedSerial),
+        @"accepted":@(accepted),@"renderedStamp":renderedStamp});return;
     }
     NSMutableArray* ids=[NSMutableArray arrayWithCapacity:owner->acceptedSnapshots.size()];
     for(const auto id:owner->acceptedSnapshots)[ids addObject:@(id)];
     NSString* error=[[NSString alloc] initWithBytes:owner->error.data() length:owner->error.size() encoding:NSUTF8StringEncoding];
-    result(@{@"ready":@(owner->ready),@"closed":@(owner->closed),@"ownerFinished":@(owner->finished),
+    result(@{@"ready":@(owner->ready&&view->layerReady),@"apiReady":@(owner->ready),@"closed":@(owner->closed),@"ownerFinished":@(owner->finished),
       @"registered":@(_views.count(handle)!=0),@"pending":@(owner->pending!=nullptr),@"inFlight":@(owner->inFlight),
       @"hasFrame":@(hasFrame),@"renderedStamp":hasFrame?StampValue(view->renderedStamp):@{},
       @"acceptedStamp":StampValue(owner->acceptedStamp),@"acceptedSnapshots":ids,@"deviceGeneration":@(owner->generation),
       @"presentationKind":@"nativeView",@"viewBound":@(view->bound),@"layerReady":@(view->layerReady),
-      @"nativeViewLayerDetached":@(view->layerDetached),@"covered":@(view->covered),
+      @"nativeViewLayerDetached":@(view->layerDetached),@"covered":@(view->visibility.covered()),
+      @"visibilitySerial":@(view->visibility.serial()),
       @"drawableWidth":@(view->drawableWidth),@"drawableHeight":@(view->drawableHeight),
       @"frames":@(view->flow.scheduled()),@"discardedFrames":@(view->flow.discarded()),
       @"quarantined":@(view->flow.quarantined()),@"drawableTimeouts":@(view->drawableTimeouts),
