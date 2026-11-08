@@ -11,6 +11,7 @@ import subprocess
 import tempfile
 import time
 import unittest
+from unittest import mock
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parents[1] / "tool"))
@@ -41,6 +42,18 @@ def response(*, stale=False):
 
 
 class MetalReceiptContracts(unittest.TestCase):
+    def test_cxx_driver_invocation_preserves_its_symlink_name(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            compiler = directory / "clang"
+            compiler.write_text("portable path control; never executed")
+            alias = directory / "clang++"
+            alias.symlink_to(compiler.name)
+            with mock.patch.object(builder.subprocess, "check_output", return_value=str(alias) + "\n"):
+                selected = builder.find_apple_cxx()
+            self.assertEqual(selected, alias.absolute())
+            self.assertNotEqual(selected, compiler.resolve())
+
     def test_independent_opaque_and_premultiplied_color_controls(self):
         self.assertEqual(producer.expected_bgra(0xff102030), (0x30, 0x20, 0x10, 0xff))
         self.assertEqual(producer.expected_bgra(0x80402010), (8, 16, 32, 128))

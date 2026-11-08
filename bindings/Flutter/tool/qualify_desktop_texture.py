@@ -516,6 +516,8 @@ def main():
     parser.add_argument("--build-receipt", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--timeout", type=float, default=120)
+    parser.add_argument("--cpu-reference", action="store_true",
+                        help="require an independent same-snapshot supersampled CPU source reference")
     args = parser.parse_args()
     try:
         require_actual_windows()
@@ -545,12 +547,16 @@ def main():
     nonce = uuid.uuid4().hex
     config = {"protocol": 1, "nonce": nonce, "output": str(output),
               **{key: str(value) for key, value in files.items()}}
+    if args.cpu_reference:
+        config["cpuReference"] = True
     write_json(output / "config.json", config)
     env = dict(os.environ, RHWP_CONSUMER_PROBE_CONFIG=str(output / "config.json"))
     state = {"platform": "windows", "qualification": "pending", "build": receipt,
              "stages": [], "consumerGpuCompletionVerified": False,
              "continuousPresentationSupported": False, "hardwareAccelerationVerified": False,
              "started": time.time()}
+    if args.cpu_reference:
+        state["cpuReferenceRequested"] = True
     process = None
     log = (output / "runner.log").open("wb")
     try:
@@ -567,6 +573,8 @@ def main():
                 if process.poll() is not None or time.monotonic() >= deadline:
                     raise TimeoutError("probe exited or timed out before " + name)
                 time.sleep(0.025)
+            if time.monotonic() >= deadline:
+                raise TimeoutError("Windows capture deadline expired before a ready stage")
             stage = read_json(stage_file)
             width, height, offset = validate_stage(stage, nonce=nonce, index=index, pid=process.pid)
             if previous_stamp is not None:
@@ -588,26 +596,58 @@ def main():
             with oracle_path.open("rb") as oracle:
                 expected = oracle.read(width * height * 4 + 1)
             captured = compositor.capture(width, height, offset)
-            comparison = compare_pixels(expected, captured, width, height)
+            # Keep failed real captures too. Reference validation and the pixel
+            # oracle must never discard the evidence they are rejecting.
+            captured_path = output / f"compositor-{index}.rgba"
+            captured_path.write_bytes(captured)
+            captured_path.chmod(0o600)
+            comparison_arguments = {}
+            source_hash = None
+            if args.cpu_reference:
+                scale = validate_source_reference(stage, width, height)
+                reference_path = output / f"cpu-reference-{index}.rgba"
+                reference_bytes = width * height * 4 * scale**2
+                if reference_path.stat().st_size != reference_bytes:
+                    raise ValueError("independent CPU source reference byte length changed")
+                with reference_path.open("rb") as reference:
+                    source_reference = reference.read(reference_bytes + 1)
+                if len(source_reference) != reference_bytes:
+                    raise ValueError("independent CPU source reference byte length changed while reading")
+                source_hash = hashlib.sha256(source_reference).hexdigest()
+                comparison_arguments = {"source_reference": source_reference, "reference_scale": scale}
+            comparison = compare_pixels(expected, captured, width, height, **comparison_arguments)
+            if time.monotonic() >= deadline:
+                raise TimeoutError("Windows capture deadline expired during CPU comparison")
             time.sleep(0.1)
             repeated = compositor.capture(width, height, offset)
             if repeated != captured:
                 raise ValueError("visible compositor pixels changed during held publication")
-            (output / f"compositor-{index}.rgba").write_bytes(captured)
-            state["stages"].append({"stage": stage, "comparison": comparison,
-                                    "cpuSha256": cpu_hash,
-                                    "compositorSha256": hashlib.sha256(captured).hexdigest()})
+            if time.monotonic() >= deadline:
+                raise TimeoutError("Windows capture deadline expired during held publication")
+            evidence = {"stage": stage, "comparison": comparison, "cpuSha256": cpu_hash,
+                        "compositorSha256": hashlib.sha256(captured).hexdigest()}
+            if source_hash is not None:
+                evidence["sourceReferenceSha256"] = source_hash
+            state["stages"].append(evidence)
             write_json(output / "receipt.json", state)
+            if time.monotonic() >= deadline:
+                raise TimeoutError("Windows capture deadline expired before acknowledgement")
             write_json(output / f"ack-{index}.json", {"protocol": 1, "nonce": nonce, "index": index})
             previous_stamp = stage["stamp"]
-        remaining = max(0.1, deadline - time.monotonic())
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise TimeoutError("Windows capture deadline expired before close completion")
         code = process.wait(timeout=remaining)
+        if time.monotonic() >= deadline:
+            raise TimeoutError("Windows capture deadline expired during close completion")
         result = read_json(output / "result.json")
         if code:
             raise ValueError("probe did not complete its real close/unregister checks")
         validate_result(result, nonce=nonce, last_limits=state["stages"][-1]["stage"]["limits"])
         verify_runtime_artifacts(files, receipt)
         verify_runtime_bundle(files["runner"].parent, receipt.get("runtimeBundle"))
+        if time.monotonic() >= deadline:
+            raise TimeoutError("Windows capture deadline expired during final runtime verification")
         state.update(qualification="bounded-windows-consumer-passed", exitCode=code, result=result)
     except BaseException as error:
         state.update(qualification="failed", error=f"{type(error).__name__}: {error}")

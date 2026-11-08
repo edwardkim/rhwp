@@ -48,8 +48,13 @@ python bindings/Flutter/tool/qualify_desktop_texture.py `
   --dispatcher C:/Temp/rhwp-consumer-build/rhwp_flutter_owner.dll `
   --fixture C:/Temp/rhwp-consumer-build/source/bindings/Flutter/test/fixtures/desktop-consumer.hwpx `
   --build-receipt C:/Temp/rhwp-consumer-build/build-receipt.json `
+  --cpu-reference `
   --output C:/Temp/rhwp-consumer-capture
 ```
+
+`--timeout`은 stage 대기뿐 아니라 CPU 비교·두 실제 held capture·acknowledgement·종료 대기와
+마지막 runtime identity 검증에도 적용합니다. 이미 생성된 stage라도 deadline 뒤에는 캡처하거나
+성공으로 확인하지 않습니다. 실패한 실제 raw는 보존하고 소유 runner를 정리합니다.
 
 probe 창은 다른 창에 가려지지 않은 전경으로 유지합니다. 수집기는 per-monitor-v2 물리 좌표와
 Win32의 실제 desktop 화면을 사용합니다. `PrintWindow`, 가짜 registrar, widget screenshot이나
@@ -62,6 +67,12 @@ stamp를 검증하며, 같은 불변 snapshot을 Native CPU batch API로 독립 
 viewport에는 불투명한 clear·종이 배경을 사용합니다. CPU의 균일한 내부 pixel은 8비트 채널 값
 1 이내여야 합니다. 나머지 차이는 CPU 경계에서 한 pixel 이내와 그 주변 색상 범위에 있어야 합니다.
 빈 cover·오래된 이미지·누락된 내용·균일 영역의 잘못된 색·source 변경·불안정한 화면은 실패합니다.
+`--cpu-reference`는 같은 immutable snapshot·full stamp를 유지한 독립 2–4배 CPU 재생을
+명시적으로 선택합니다. target/placement만 확대하고 4,096 dimension·4 MP·16 MiB를 넘으면
+실패합니다. 저해상도 CPU 3×3 box가 표현하지 못하는 얇은 선의 coverage는 독립 source palette의
+13 RGB projection으로 검사하며, 균일 내부 ±1·한 pixel 경계 지원과 유일한 zero-shift 정렬을
+유지합니다. GPU 화면에서 expected 색상을 만들지 않습니다. 옵션을 생략하면 기존 strict
+저해상도 비교 계약을 유지합니다. 실패한 실제 compositor raw도 비교 전에 보존합니다.
 이는 명시된 비교 계약이며 CPU/GPU 안티앨리어싱의 byte 단위 동일성이나 최종 한컴 일치 판정이 아닙니다.
 
 세 화면을 수집한 뒤 실제 controller를 mount한 상태로 닫습니다. Native의 source/snapshot/frame/
