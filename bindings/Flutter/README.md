@@ -144,3 +144,62 @@ close/status 확인은 기존 controller별 3개·isolate 전체 8개 RPC 한도
 credit을 보유한다. 늦게 도착한 create ID는 기존 소유권 observer에서 bounded close를 진행할 수 있다.
 등록 해제가 확인되지 않은 Texture는 여전히 cover 아래 paint할 수 있으며, 이미 등록이 해제된 것은
 제거한다. snapshot 전달·미수령 reply의 별도 해제 observer도 계속 유효하다.
+
+## Dart 저장·복구 연결 (P103)
+
+`NativeFileStore(document)`는 기존 worker의 prepareSave → Native buffer 복사/해제 →
+파일 게시 → acknowledgeSave/cancelSave를 사용한다. Rust serializer나 worker를 새로 만들지 않는다.
+`openPath`, `openRecovery`, `save`, `writeRecovery`, `sourcePath`, `isBusy`, `whenIdle`를 제공한다.
+
+```dart
+final files = NativeFileStore(document);
+await files.openPath('/absolute/input.hwpx');
+final saved = await files.save(
+  destination: '/absolute/output.hwpx',
+  approveLoss: (report) async => await confirmLoss(report),
+  approveOverwrite: (observedStamp) async => await confirmOverwrite(observedStamp),
+);
+// saved.cancelled면 게시하지 않았다. 이후 편집이 있으면 saved.info.isDirty는 true다.
+final recovery = await files.writeRecovery('/absolute/dedicated-recovery');
+// 복구 파일 선택은 명시적이며 원본 경로를 자동으로 덮어쓰지 않는다.
+if (recovery != null) await files.openRecovery(recovery);
+```
+
+같은 prepare의 bytes/report/token을 승인 대기 동안 유지한다. loss 승인 거절은 token을 취소하며,
+승인 도중 새 편집이 생겨도 준비했던 revision만 저장하고 이후 편집의 dirty 상태를 유지한다.
+Native serialization은 실행 전에 최대 문서 크기를 예약하므로 owner worker는 capability의
+`maxDocumentBytes`(최대 128 MiB)를 예약 한도로 사용한다. Dart/shim의 요청·복사·문서·저장 payload
+한도는 계속 16 MiB다. 128 MiB 예약이 같은 크기의 선할당이나 전송 허용을 뜻하지 않는다.
+
+저장 파일은 같은 파일시스템의 임시 파일에 쓰고 flush한 뒤 게시한다. 새 파일은 hard link의
+exclusive 이름 생성으로 완성된 bytes만 공개하며, 기존 파일은 읽을 때 함께 얻은 SHA-256·크기·
+수정/변경 시각·mode stamp를 staging 전후에 검사하고 rename한다. POSIX는 별도 isolate에서
+디렉터리 fsync까지 수행한 뒤 ack하며 Windows는 기존 Native 참조 호스트처럼 디렉터리 fsync를
+제공하지 않는다. hard link를 지원하지 않는 파일시스템에서는 새 파일 게시를 거절한다.
+기존 파일 교체의 두 stamp 검사는 임의의 외부 writer에 대한 파일시스템 compare-and-swap은 아니다.
+
+파일 게시 뒤 Native ack·최종 검증이 실패하면 `NativePublicationError.path`의 완성된 파일을 보존한다.
+재시도 전에 경로를 확인한다. cleanup은 일반 입력 FIFO가 가득 차도 한 개의 예약 slot을 쓰며,
+동시 cancel 호출은 같은 Future를 공유한다. cleanup 실패나 출처를 확인할 수 없는 prepared reply는
+같은 문서의 새 prepare를 차단한다. worker 종료/명시적인 문서 교체 후에만 그 상태가 해제된다.
+파일 작업 중 문서를 교체하거나 닫는 호스트는 먼저 `files.whenIdle`을 기다린다.
+
+`newDocument`, `openBytes`, `openRecoveryBytes`, `files.openPath/openRecovery`의 선택적인
+`replacing`에는 사용자 확인 직후의 `NativeDocumentInfo`를 전달할 수 있다. 문서 ID·revision·font
+세대가 enqueue 또는 실제 실행 전에 달라지면 교체를 거절한다. 파일 읽기 때문에 늦어진 open도
+읽기 전 snapshot을 유지한다.
+
+복구는 Python/Qt 참조 호스트와 같은 `RHWP-R1\n` + little-endian header 길이 + JSON + HWPX
+envelope이며, header 64 KiB·payload 16 MiB·전용 디렉터리 32개/256 MiB와 256-entry 조회 한도를
+적용한다. source path/stamp는 provenance이고 원본 저장 목적지로 채택하지 않는다. 같은 dirty
+revision의 중복 artifact는 생략하며 타이머·목록 선택·정리 정책은 호출 호스트가 소유한다.
+
+저장·복구 검사와 실제 Native opt-in을 실행한다. Python envelope 상호 운용 검사는 `python3`와
+`../Native/examples/native_file_store.py`를 사용하며 별도 package 사본에서는
+`--dart-define=RHWP_NATIVE_EXAMPLES=/absolute/native/examples`로 지정한다.
+
+```bash
+flutter test --no-pub test/native_file_store_test.dart test/native_file_store_integration_test.dart \
+  --dart-define=RHWP_OWNER_LIBRARY=/absolute/owner.so \
+  --dart-define=RHWP_NATIVE_LIBRARY=/absolute/native.so
+```

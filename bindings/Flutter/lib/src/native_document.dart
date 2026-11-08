@@ -83,10 +83,38 @@ class NativeRasterFrame {
   final NativeFrameStamp stamp;
 }
 
+/// One immutable serialization/checkpoint; Native still owns its save token.
+/// Dispose/cancel or acknowledge it exactly once after publication.
+class NativePreparedSave {
+  NativePreparedSave._(
+    this._owner,
+    this.documentId,
+    this.revision,
+    this.token,
+    Uint8List bytes,
+    Map<String, Object?> report,
+  ) : bytes = bytes.asUnmodifiableView(),
+      _report = jsonEncode(report);
+  final NativeDocument _owner;
+  final int documentId;
+  final int revision;
+  final int token;
+  final Uint8List bytes;
+  final String _report;
+  bool _finished = false;
+  bool _acknowledging = false;
+  Future<void>? _cancelFuture;
+  Map<String, Object?> get report =>
+      Map<String, Object?>.from(jsonDecode(_report) as Map);
+  bool get requiresLossAcceptance => (report['count']! as int) > 0;
+}
+
 class _Operation {
   _Operation(
     this.build, {
     this.openBytes,
+    this.recoveryOpen = false,
+    this.prepareSave = false,
     this.render = false,
     this.viewGeneration = 0,
     this.inputBytes = 0,
@@ -96,6 +124,9 @@ class _Operation {
   });
   final Map<String, Object?>? Function() build;
   final Uint8List? openBytes;
+  final bool recoveryOpen;
+  final bool prepareSave;
+  NativeDocumentInfo? preparedInfo;
   final bool render;
   final int viewGeneration;
   final int inputBytes;
@@ -153,6 +184,11 @@ class NativeDocument {
   int _presentationGeneration = 0;
   NativeDocumentInfo? _info;
   Future<void>? _closeFuture;
+  bool _preparingSave = false;
+  NativePreparedSave? _preparedSave;
+  Future<void>? _saveCleanup;
+  (int, int)? _saveCleanupKey;
+  int? _saveProtocolFailureDocument;
 
   NativeDocumentInfo? get info => _info;
   bool get isDisposed => _disposed;
@@ -223,16 +259,50 @@ class NativeDocument {
     }
   }
 
-  Future<NativeDocumentInfo> newDocument() {
+  Future<NativeDocumentInfo> newDocument({NativeDocumentInfo? replacing}) {
+    _checkReplacement(replacing);
     _checkAdmission(0);
     beginView();
     return _enqueueRasterIntent(
-      _Operation(() => {'op': 'new', 'replace': _info?.target}),
+      _Operation(() {
+        _checkReplacement(replacing);
+        return {'op': 'new', 'replace': replacing?.target ?? _info?.target};
+      }),
       invalidate: true,
     ).then((value) => value! as NativeDocumentInfo);
   }
 
-  Future<NativeDocumentInfo> openBytes(Uint8List bytes) {
+  Future<NativeDocumentInfo> openBytes(
+    Uint8List bytes, {
+    NativeDocumentInfo? replacing,
+  }) => _openBytes(bytes, recovery: false, replacing: replacing);
+
+  /// Explicit recovery selection opens dirty; it never adopts the source save.
+  Future<NativeDocumentInfo> openRecoveryBytes(
+    Uint8List bytes, {
+    NativeDocumentInfo? replacing,
+  }) => _openBytes(bytes, recovery: true, replacing: replacing);
+
+  void _checkReplacement(NativeDocumentInfo? replacing) {
+    if (replacing == null) return;
+    final current = _info;
+    if (current == null ||
+        current.documentId != replacing.documentId ||
+        current.revision != replacing.revision ||
+        current.fontGeneration != replacing.fontGeneration) {
+      throw const NativeCallException(
+        'staleDocument',
+        'Document changed while replacement was awaiting confirmation or I/O.',
+      );
+    }
+  }
+
+  Future<NativeDocumentInfo> _openBytes(
+    Uint8List bytes, {
+    required bool recovery,
+    NativeDocumentInfo? replacing,
+  }) {
+    _checkReplacement(replacing);
     if (bytes.length > maxReferenceBytes) {
       throw const NativeCallException(
         'documentLimit',
@@ -243,7 +313,14 @@ class NativeDocument {
     beginView();
     final owned = Uint8List.fromList(bytes);
     return _enqueueRasterIntent(
-      _Operation(() => const {'op': 'open'}, openBytes: owned),
+      _Operation(
+        () {
+          _checkReplacement(replacing);
+          return {'op': 'open', 'replace': replacing?.target ?? _info?.target};
+        },
+        openBytes: owned,
+        recoveryOpen: recovery,
+      ),
       invalidate: true,
     ).then((value) => value! as NativeDocumentInfo);
   }
@@ -251,6 +328,184 @@ class NativeDocument {
   Future<NativeDocumentInfo> refreshInfo() =>
       _enqueue(_Operation(() => const {'op': 'info'}))
           .then((value) => value! as NativeDocumentInfo);
+
+  /// Serialize the current FIFO revision once; the bytes and report stay paired
+  /// while the host obtains loss/overwrite approval and publishes the file.
+  Future<NativePreparedSave> prepareSave(String format) {
+    if (format != 'hwp' && format != 'hwpx') {
+      throw ArgumentError.value(format, 'format', 'Expected hwp or hwpx.');
+    }
+    if (_saveCleanupKey != null && _saveCleanupKey!.$1 != _info?.documentId) {
+      _saveCleanup = null;
+      _saveCleanupKey = null;
+    }
+    if (_preparedSave != null &&
+        _preparedSave!.documentId != _info?.documentId) {
+      _preparedSave!._finished = true;
+      _preparedSave = null;
+    }
+    if (_saveProtocolFailureDocument != _info?.documentId) {
+      _saveProtocolFailureDocument = null;
+    }
+    if (_preparingSave ||
+        _preparedSave != null ||
+        _saveCleanup != null ||
+        _saveProtocolFailureDocument != null) {
+      throw StateError('Finish the pending save before preparing another.');
+    }
+    _checkAdmission(0);
+    final documentId = _requireInfo().documentId;
+    late _Operation operation;
+    operation = _Operation(() {
+      final info = _requireInfo();
+      if (info.documentId != documentId) {
+        throw const NativeCallException(
+          'staleDocument',
+          'Save source changed.',
+        );
+      }
+      operation.preparedInfo = info;
+      return {'op': 'prepareSave', 'target': info.target, 'format': format};
+    }, prepareSave: true);
+    _preparingSave = true;
+    return _enqueue(operation)
+        .then((value) => value! as NativePreparedSave)
+        .whenComplete(() => _preparingSave = false);
+  }
+
+  Future<NativeDocumentInfo> acknowledgeSave(
+    NativePreparedSave prepared,
+  ) async {
+    _checkPrepared(prepared);
+    if (prepared._acknowledging || prepared._cancelFuture != null) {
+      throw StateError(
+        'Save acknowledgement or cancellation is already pending.',
+      );
+    }
+    prepared._acknowledging = true;
+    try {
+      final result = await _enqueue(
+        _Operation(
+          () => {
+            'op': 'acknowledgeSave',
+            'documentId': prepared.documentId,
+            'token': prepared.token,
+          },
+          refreshAfter: true,
+        ),
+      ) as Map<String, Object?>;
+      final status = result['status'];
+      if (result['kind'] != 'saveStatus' ||
+          result['documentId'] != prepared.documentId ||
+          status is! Map ||
+          status['savedRevision'] != prepared.revision ||
+          status['revision'] is! int ||
+          (status['revision']! as int) < prepared.revision ||
+          result['isDirty'] is! bool ||
+          status['dirty'] != result['isDirty'] ||
+          result['isDirty'] != (status['revision'] != prepared.revision)) {
+        throw const NativeCallException(
+          'saveStatus',
+          'Invalid saved checkpoint.',
+        );
+      }
+      final info = _requireInfo();
+      if (info.documentId != prepared.documentId) {
+        throw const NativeCallException(
+          'staleDocument',
+          'Saved document was replaced.',
+        );
+      }
+      prepared._finished = true;
+      _preparedSave = null;
+      return info;
+    } finally {
+      prepared._acknowledging = false;
+    }
+  }
+
+  /// Cleanup gets a reserved zero-byte FIFO slot, including when user input has
+  /// filled the normal admission queue. Closing the worker owns late tokens.
+  Future<void> cancelSave(NativePreparedSave prepared) {
+    if (!identical(prepared._owner, this)) throw ArgumentError('Foreign save.');
+    if (prepared._finished) return Future<void>.value();
+    if (prepared._acknowledging) {
+      throw StateError('Acknowledgement is already pending.');
+    }
+    return prepared._cancelFuture ??= _cancelPrepared(prepared);
+  }
+
+  Future<void> _cancelPrepared(NativePreparedSave prepared) async {
+    try {
+      if (!_disposed) {
+        await _reservedSaveCleanup(prepared.documentId, prepared.token);
+      }
+      prepared._finished = true;
+      if (identical(_preparedSave, prepared)) _preparedSave = null;
+    } catch (_) {
+      if (_disposed || _info?.documentId != prepared.documentId) {
+        prepared._finished = true;
+        if (identical(_preparedSave, prepared)) _preparedSave = null;
+      }
+      rethrow;
+    }
+  }
+
+  void _checkPrepared(NativePreparedSave prepared) {
+    if (!identical(prepared._owner, this) ||
+        prepared._finished ||
+        !identical(prepared, _preparedSave)) {
+      throw StateError('Save token is foreign or already finished.');
+    }
+    if (_disposed) throw const NativeDisposedException();
+  }
+
+  Future<void> _reservedSaveCleanup(int documentId, int token) {
+    if (_disposed) return Future<void>.value();
+    final existing = _saveCleanup;
+    if (existing != null) {
+      if (_saveCleanupKey == (documentId, token)) return existing;
+      throw StateError('A prior save token has not been retired.');
+    }
+    final done = Completer<void>();
+    _saveCleanup = done.future;
+    _saveCleanupKey = (documentId, token);
+    final operation = _Operation(
+      () => {'op': 'cancelSave', 'documentId': documentId, 'token': token},
+    );
+    _queue.addFirst(operation);
+    operation.done.future.then<void>(
+      (value) {
+        try {
+          final result = value as Map<String, Object?>;
+          if (result['kind'] != 'saveStatus' ||
+              result['documentId'] != documentId) {
+            throw const NativeCallException(
+              'saveCleanup',
+              'Invalid save token cleanup.',
+            );
+          }
+          if (identical(_saveCleanup, done.future)) {
+            _saveCleanup = null;
+            _saveCleanupKey = null;
+            if (_saveProtocolFailureDocument == documentId) {
+              _saveProtocolFailureDocument = null;
+            }
+          }
+          done.complete();
+        } catch (error, stack) {
+          done.completeError(error, stack);
+        }
+      },
+      onError: (Object error, StackTrace stack) {
+        // Keep the failed Future/key: a malformed prepare cannot silently reopen
+        // admission while its Native token's retirement remains uncertain.
+        done.completeError(error, stack);
+      },
+    );
+    unawaited(_pump());
+    return done.future;
+  }
 
   /// Bounded editor/accessibility requests retain their accepted document ID.
   /// Mutations keep the FIFO slot through a fresh info response, so following
@@ -500,9 +755,11 @@ class NativeDocument {
           }
           final accepted = operation.openBytes != null
               ? await transport.hostRequest({
-                  'op': 'workerOpen',
+                  'op': operation.recoveryOpen
+                      ? 'workerOpenRecovery'
+                      : 'workerOpen',
                   'worker': worker,
-                  'replace': _info?.target,
+                  'replace': command['replace'],
                 }, data: operation.openBytes)
               : await transport.hostRequest({
                   'op': 'workerSubmit',
@@ -639,6 +896,68 @@ class NativeDocument {
                 'Document request was cancelled.',
               ),
       );
+      return;
+    }
+    if (operation.prepareSave) {
+      final expected = operation.preparedInfo!;
+      final token = result['token'];
+      final matchingToken =
+          result['documentId'] == expected.documentId &&
+          token is int &&
+          token > 0;
+      var copying = false;
+      try {
+        final length = result['byteLength'];
+        final report = result['report'];
+        if (result['kind'] != 'preparedSave' ||
+            !matchingToken ||
+            result['revision'] != expected.revision ||
+            buffer is! int ||
+            buffer <= 0 ||
+            length is! int ||
+            length < 0 ||
+            length > maxReferenceBytes ||
+            report is! Map ||
+            report['count'] is! int ||
+            (report['count']! as int) < 0 ||
+            utf8.encode(jsonEncode(report)).length > 64 * 1024) {
+          throw const NativeCallException(
+            'preparedSave',
+            'Invalid prepared save.',
+          );
+        }
+        copying = true;
+        final bytes = await transport.copyAndReleaseBuffer(buffer, length);
+        if (bytes.length != length) {
+          throw const NativeCallException(
+            'saveBytes',
+            'Incomplete prepared bytes.',
+          );
+        }
+        if (_disposed) throw const NativeDisposedException();
+        final prepared = NativePreparedSave._(
+          this,
+          expected.documentId,
+          expected.revision,
+          token,
+          bytes,
+          Map<String, Object?>.from(report),
+        );
+        _preparedSave = prepared;
+        _finish(operation, prepared);
+      } catch (error, stack) {
+        _saveProtocolFailureDocument = expected.documentId;
+        if (!copying && buffer is int) await transport.releaseBuffer(buffer);
+        _finish(operation, null, error, stack);
+        if (matchingToken && !_disposed) {
+          unawaited(
+            _reservedSaveCleanup(
+              expected.documentId,
+              token,
+            ).catchError((Object _) {}),
+          );
+        }
+      }
       return;
     }
     if (operation.releaseSnapshot != null &&

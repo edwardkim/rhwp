@@ -369,11 +369,25 @@ final class NativeOwnerTransport implements NativeWorkerTransport {
 
   @override
   Future<int> createWorker() async {
+    final serializationReservation = capabilities['maxDocumentBytes'];
+    if (serializationReservation is! int ||
+        serializationReservation < maxReferenceBytes ||
+        serializationReservation > 128 * 1024 * 1024) {
+      throw const NativeCallException(
+        'nativeLimit',
+        'Invalid Native serialization reservation limit.',
+      );
+    }
     final result = await _request(
       2,
       request: {
         'op': 'workerCreate',
-        'config': {'maxOutstanding': 4, 'maxPendingBytes': 32 * 1024 * 1024},
+        // PrepareSave reserves the Native serialization ceiling before execution.
+        // This does not allocate that amount or raise the 16 MiB transfer limit.
+        'config': {
+          'maxOutstanding': 4,
+          'maxPendingBytes': serializationReservation,
+        },
       },
     );
     return result.json['worker']! as int;
@@ -387,6 +401,7 @@ final class NativeOwnerTransport implements NativeWorkerTransport {
     const allowed = {
       'workerSubmit',
       'workerOpen',
+      'workerOpenRecovery',
       'workerCancel',
       'workerClose',
       'workerStatus',
