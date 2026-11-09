@@ -2294,8 +2294,8 @@ fn fixed_auto_tab_prefix_by_run(line: &ComposedLine) -> Vec<usize> {
         .collect()
 }
 
-/// 낱말 공백과 대시가 함께 있는 양쪽 정렬 줄의 복원 예산.
-/// 대시는 해당 런의 자연 전진까지만 복원하고 남은 폭은 낱말 공백이 소비한다.
+/// 양쪽 정렬 및 마지막 줄의 대시 복원 예산.
+/// 대시는 해당 런의 자연 전진까지만 복원하고, 배분 대상 낱말 공백이 있으면 남은 폭을 소비한다.
 /// 방출과 같은 정규화 런·표시 문자열을 사용하여 다른 글꼴/크기의 대시에도
 /// 한 런에서 측정한 복원량을 일괄 적용하지 않는다.
 fn justified_dash_restoration(
@@ -2383,7 +2383,12 @@ fn justified_dash_restoration(
     } else {
         0.0
     };
-    ((slack - restored) / word_slots as f64, average, extras)
+    let word_extra = if word_slots > 0 {
+        (slack - restored) / word_slots as f64
+    } else {
+        0.0
+    };
+    (word_extra, average, extras)
 }
 
 fn line_fit_width(
@@ -2521,60 +2526,58 @@ fn compute_line_extra_spacing_with_dash_plan(
     //
     // 정렬이 여백까지 채우는 종류(Justify·Split)일 때만 연다 — 왼쪽/가운데 정렬의
     // 짧은 dash 는 저자가 의도한 길이일 수 있다.
-    let last_line_leader_fill = if !needs_justify
-        && matches!(alignment, Alignment::Justify | Alignment::Split)
-    {
-        let all_chars: Vec<char> = comp_line.runs.iter().flat_map(|r| r.text.chars()).collect();
-        let trailing_spaces = all_chars
-            .iter()
-            .rev()
-            .take_while(|c| **c == ' ')
-            .count()
-            .min(trailing_space_limit);
-        let visible_count = all_chars.len() - trailing_spaces;
-        let leader_dashes = count_dash_leaders(&all_chars[..visible_count]);
-        if leader_dashes > 0 {
-            // 클램프가 깎아낸 폭 = 자연 advance − min(자연, 0.3em). 단독 '-' 는 3+ 연속
-            // leader 가 아니므로 estimate_text_width 가 클램프 없는 자연 폭을 돌려준다.
-            let per_dash_restore = comp_line
+    let last_line_leader_fill =
+        if !needs_justify && matches!(alignment, Alignment::Justify | Alignment::Split) {
+            let all_chars: Vec<char> = leading_space_plan
+                .line
                 .runs
                 .iter()
-                .find(|r| {
-                    let chars: Vec<char> = r.text.chars().collect();
-                    (0..chars.len()).any(|i| {
-                        chars[i] == '-' && chars[i..].iter().take_while(|c| **c == '-').count() >= 3
-                    })
-                })
-                .map(|r| {
-                    let mut ts = r.text_style(styles);
-                    ts.default_tab_width = tab_width;
-                    // 복원량은 한 글자의 소수 자연 전진이다. run 전체를 위한
-                    // 정수 반올림을 한 글자마다 쓰면 대시 수만큼 오차가 누적된다.
-                    let natural = estimate_text_width_exact("-", &ts);
-                    (natural - natural.min(ts.font_size * 0.3)).max(0.0)
-                })
-                .unwrap_or(0.0);
-            let trailing_width = if trailing_spaces > 0 {
-                if let Some(last_run) = comp_line.runs.last() {
-                    let mut ts = last_run.text_style(styles);
-                    ts.default_tab_width = tab_width;
-                    estimate_text_width_exact(&" ".repeat(trailing_spaces), &ts)
+                .flat_map(|run| effective_text_for_metrics(run).chars())
+                .collect();
+            let trailing_spaces = all_chars
+                .iter()
+                .rev()
+                .take_while(|c| **c == ' ')
+                .count()
+                .min(trailing_space_limit);
+            let visible_count = all_chars.len() - trailing_spaces;
+            let leader_dashes = count_dash_leaders(&all_chars[..visible_count]);
+            if leader_dashes > 0 {
+                let trailing_width = if trailing_spaces > 0 {
+                    if let Some(last_run) = comp_line.runs.last() {
+                        let mut ts = last_run.text_style(styles);
+                        ts.default_tab_width = tab_width;
+                        estimate_text_width_exact(&" ".repeat(trailing_spaces), &ts)
+                    } else {
+                        0.0
+                    }
                 } else {
                     0.0
+                };
+                let slack = available_width - (total_text_width - trailing_width);
+                // 슬랙이 없으면(이미 꽉 찬 줄) 아래 기존 분기(오버플로우 압축 등)로 흘린다.
+                if slack > 0.0 {
+                    // 같은 측정에서 제거된 leader 폭만 각 런에 되돌린다. 단순 0.3em과
+                    // 비교하면 이미 남아 있는 저자 자간·굵기 전진까지 이중 복원한다.
+                    let (_, extra, by_run) = justified_dash_restoration(
+                        leading_space_plan,
+                        styles,
+                        tab_width,
+                        slack,
+                        0,
+                        trailing_spaces,
+                        None,
+                    );
+                    (extra > 0.0).then_some((extra, by_run))
+                } else {
+                    None
                 }
             } else {
-                0.0
-            };
-            let slack = available_width - (total_text_width - trailing_width);
-            // 슬랙이 없으면(이미 꽉 찬 줄) 아래 기존 분기(오버플로우 압축 등)로 흘린다.
-            let extra = (slack / leader_dashes as f64).min(per_dash_restore);
-            (extra > 0.0).then_some(extra)
+                None
+            }
         } else {
             None
-        }
-    } else {
-        None
-    };
+        };
 
     if needs_justify {
         // 양쪽 정렬: 후행 공백 제외한 내부 공백에 분배.
@@ -2802,8 +2805,9 @@ fn compute_line_extra_spacing_with_dash_plan(
         } else {
             (0.0, 0.0, 0.0)
         }
-    } else if let Some(extra_dash) = last_line_leader_fill {
+    } else if let Some((extra_dash, by_run)) = last_line_leader_fill {
         // [#5830] 마지막 줄·강제 줄바꿈 줄의 dash leader 채움.
+        *dash_extra_by_run = Some(by_run);
         (0.0, 0.0, extra_dash)
     } else if needs_distribute && total_char_count > 1 {
         // [#4657] 배분 정렬: 남는 폭을 글자 **사이**(N-1곳)에 균등 분배.
