@@ -13,7 +13,7 @@
 
 **9건 모두 로컬 수용 권고다.** [최종 검증](final-local-matrix.json)에서 Rust lint·workspace·정책 검사,
 전체 회귀 13,005건(기존 skip 45건), Native 공식 3종 합계 4,077건이 통과했다.
-원격 push·통합 PR·공개 review/comment·merge는 아직 수행하지 않았다.
+작업지시자의 원격 처리 승인을 받았다. 제출 직전 검토 문서의 최종 판정·원 PR별 댓글 증거 계획을 보완했으며 제품 소스·테스트는 같다.
 
 ## 기존 해결 여부와 공통 계약
 
@@ -117,3 +117,10 @@ PNG/raw 해시를 연결하며 Windows RGBA의 PNG 변환도 무손실임을 확
   Linux는 llvmpipe, Apple은 Paravirtual 환경이므로 실물 GPU 성능·장시간 표시·OS IME/접근성 완료를 의미하지 않는다.
 
 과거 #8726의 실험 기반 예외를 새 P110의 SDK·실제 표시 증거 대신 사용하지 않았다.
+
+## 원 PR별 공개 댓글 증거
+
+[댓글 계획](contributor-comment-plans.json)과 각 review의 `Merge 후 contributor PR comment 계획`을 따른다.
+[비교 지표](comment-visual-metrics.json)는 기존 검증 raster에 정본 overlay·review 도구를 적용한 결과다.
+[실제 SDK 화면 원본](comment-visual-sources.json)과 [P106 exact head의 세 화면](windows-p106-exact.json)을
+구분해 보존했다. 다른 PR의 대표 이미지를 대신 사용하지 않는다.

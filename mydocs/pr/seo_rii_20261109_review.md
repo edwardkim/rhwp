@@ -1,23 +1,24 @@
 # seo-rii PR 9건 최종 로컬 검토
 
-## 판정
+## 최종 판정
 
-**9건 모두 수용 권고 — 로컬 필수 검증 완료, 원격 처리 승인 대기.**
+**승인 — 측정 근거 주석 보정을 포함한 통합 소스의 로컬 필수 검증 완료.**
+작업지시자의 원격 처리 승인을 받았으며 최신 제출 head CI·self-review·mergeability를 확인한 뒤 병합한다.
 추가 제품 보정은 필요하지 않았다. 메인테이너는 두 Rust 회귀 파일의 측정 근거 주석과 독립 검증
 증거를 보완했으며 검사 본문·fixture·기준값은 바꾸지 않았다. GitHub 공개 승인 review·push·새 PR·
 merge·close는 수행하지 않았다.
 
 | 원 PR | 검토 범위 | 개별 판정·근거 |
 | --- | --- | --- |
-| #8749 | 명시적 Canvas2D strict-outline preview | [수용 권고](pr_8749_review.md) |
-| #8761 | P103: 안전한 worker 저장·복구 | [수용 권고](pr_8761_review.md) |
-| #8764 | P104: 문서 lifecycle | [수용 권고](pr_8764_review.md) |
-| #8765 | P105: bounded 다중 페이지 CPU viewport | [수용 권고](pr_8765_review.md) |
-| #8767 | P106: 실제 Windows texture consumer | [수용 권고](pr_8767_review.md) |
-| #8769 | P107: 실제 Apple SDK Metal producer | [수용 권고](pr_8769_review.md) |
-| #8777 | P108: 실제 Linux consumer·연속 GL | [수용 권고](pr_8777_review.md) |
-| #8779 | P109: Windows immutable ownership transfer | [수용 권고](pr_8779_review.md) |
-| #8781 | P110: AppKit Metal 연속 표시 | [수용 권고](pr_8781_review.md) |
+| #8749 | 명시적 Canvas2D strict-outline preview | [메인터너 보정 후 수용 가능](pr_8749_review.md) |
+| #8761 | P103: 안전한 worker 저장·복구 | [승인](pr_8761_review.md) |
+| #8764 | P104: 문서 lifecycle | [승인](pr_8764_review.md) |
+| #8765 | P105: bounded 다중 페이지 CPU viewport | [승인](pr_8765_review.md) |
+| #8767 | P106: 실제 Windows texture consumer | [승인](pr_8767_review.md) |
+| #8769 | P107: 실제 Apple SDK Metal producer | [승인](pr_8769_review.md) |
+| #8777 | P108: 실제 Linux consumer·연속 GL | [승인](pr_8777_review.md) |
+| #8779 | P109: Windows immutable ownership transfer | [승인](pr_8779_review.md) |
+| #8781 | P110: AppKit Metal 연속 표시 | [승인](pr_8781_review.md) |
 
 ## 통합 소스
 

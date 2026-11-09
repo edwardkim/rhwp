@@ -1,6 +1,6 @@
 # seo-rii 9건 원격 처리 계획
 
-현재 원격 source 변경·새 PR·공개 comment·merge는 미승인이다. 이 문서는 로컬 검증 완료 후보의 승인 요청용 계획이다.
+작업지시자가 2026-11-09 통합 push·Open PR·CI 성공 뒤 self-review·merge·후속 처리 전 범위를 승인했다. 제품 소스와 테스트를 보존하고 검토 문서·댓글 증거 계획만 정본에 맞춰 보완해 제출한다.
 
 대상은 #8749·#8761·#8764·#8765·#8767·#8769·#8777·#8779·#8781이며 Draft는 없다.
 upstream/devel 기준 원 기여 SHA 9개를 모두 포함하는 `review/integration-536-seo-rii-preview-flutter`를 사용한다.

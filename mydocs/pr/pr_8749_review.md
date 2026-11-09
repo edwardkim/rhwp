@@ -1,10 +1,10 @@
 # PR #8749 검토 — Canvas2D strict-outline 미리보기
 
-## 판정
+## 최종 판정
 
-**수용 권고 — 로컬 필수 검증 완료, 원격 처리 승인 대기.** 전체 회귀 13,005건,
+**메인터너 보정 후 수용 가능 — Canvas2D preview와 회귀 측정 근거 보완 범위의 로컬 검증 완료.** 전체 회귀 13,005건,
 Native 공식 3종 합계 4,077건, 모든 Rust lint와 아래 실제 경로 검증이 통과했다.
-원격 push·공개 review/comment·merge는 별도 승인 전이다. 이 문서는 로컬 검토 판정이며 GitHub 승인 review를 게시한 상태가 아니다.
+작업지시자의 push·Open PR·CI·self-review·merge·후속 처리 승인을 받았다. 최신 제출 head의 필수 CI 성공과 mergeability 재확인 뒤 진행한다. GitHub 승인 review는 아직 게시하지 않았다.
 
 ## 고정 소스와 선행 확인
 
@@ -18,6 +18,8 @@ Native 공식 3종 합계 4,077건, 모든 Rust lint와 아래 실제 경로 검
 - 원 head는 통합 후보의 ancestor로 [보존](assets/seo-rii-20261109/original-head-preservation.json)했다.
   현재 devel의 [미해결 기능 대조](assets/seo-rii-20261109/already-resolved-check.json)와 기존 #8739의
   통합·보정 이력을 선행 확인했다. 원 head의 CI와 새 통합 head의 CI를 혼동하지 않는다.
+
+원 head의 두 회귀 파일에는 정본이 요구하는 측정 근거가 부족했다. 메인테이너가 `5bccdb7b90`에서 모듈 주석을 보완했고 검사 본문 해시는 보존했다. 이 보정이 포함된 통합 head를 수용 대상으로 삼는다.
 
 ## 코드 경로와 실제 확인
 
@@ -40,8 +42,23 @@ Rust 집중 8건, 실제 wasm32 Chromium 12건, 최적화 패키지 공개 API�
 Canvas2D의 typed producer/variant 계약과 OS별 consumer 계약 차이를 공통 조판 규칙의 예외로
 대신하지 않았다. 실제 실행·명시적 상한·fallback과 정상 대조군을 원장에 구분했다.
 
+
+## Merge 후 contributor PR comment 계획
+
+bitmap-channel-transfer-independent.hwpx / 독립 2024 PDF 전 1쪽의 Native·fresh WASM review/overlay와 공개 embedded bitmap font의 명시 preview를 구분한다. 후보 1개, 두 경로의 raw·pixel match·visual_accuracy_proxy_percent와 사람 판독을 기록한다.
+
+- 실제 integration PR·merge SHA·CI URL·개별 archive 검토를 direct link로 적고 한국어 존댓말로 감사를 전한다.
+- 아래 원본과 대응하는 이미지 전부를 merge SHA 고정 raw URL로 첫 comment부터 표시한다. 게시 전 응답 형식·해시, 게시 후 API 본문·이미지 표시를 확인한다.
+- Visual Sweep 정본을 연결하며 자동 일치율 보조값과 사람의 최종 판독을 구분한다. 실제 지표 원장은 `assets/seo-rii-20261109/comment-visual-metrics.json`이다.
+- 이미지: `mydocs/pr/assets/seo-rii-20261109/visual/bitmap-channel-native-review.png`.
+- 이미지: `mydocs/pr/assets/seo-rii-20261109/visual/bitmap-channel-native-overlay.png`.
+- 이미지: `mydocs/pr/assets/seo-rii-20261109/visual/bitmap-channel-wasm-review.png`.
+- 이미지: `mydocs/pr/assets/seo-rii-20261109/visual/bitmap-channel-wasm-overlay.png`.
+- 이미지: `mydocs/pr/assets/seo-rii-20261109/optimized-preview.png`.
+- #536·#8701 전체 로드맵은 OPEN을 유지한다. 같은 merge·증거의 기존 댓글이 있으면 중복 게시하지 않는다.
+
 ## 다음 원격 절차
 
 [공통 계획](seo_rii_20261109_review_impl.md)과 [원격 처리안](assets/seo-rii-20261109/remote-action-plan.md)을 따른다.
 현재 원 기여 branch를 변경하거나 공개 댓글·승인 review·merge·close를 수행하지 않았다.
-로컬 필수 검증을 완료했으며 원격 처리 승인을 요청한다. #536·#8701 전체 로드맵은 OPEN으로 유지한다.
+로컬 필수 검증과 원격 승인 게이트를 완료했다. #536·#8701 전체 로드맵은 OPEN으로 유지한다.

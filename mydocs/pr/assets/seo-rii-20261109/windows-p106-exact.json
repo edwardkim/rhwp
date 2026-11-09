@@ -1,0 +1,152 @@
+{
+  "qualification": "bounded-windows-consumer-passed",
+  "exitCode": 0,
+  "sourceHead": "2e6268c8187ed5eda59f19ca4cb729371c1776da",
+  "nativeSourceHead": "9452099dc796ca5626f1c4b52396a9ca07dc445e",
+  "stages": [
+    {
+      "index": 1,
+      "stage": "initial",
+      "width": 320,
+      "height": 240,
+      "comparison": {
+        "uniformInteriorPixels": 76131,
+        "aaEdgeDifferentPixels": 233,
+        "maxChannelDifference": 49,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 4915200,
+        "integerAlignmentErrors": {
+          "-1,-1": 141710,
+          "0,-1": 70650,
+          "1,-1": 140566,
+          "-1,0": 77174,
+          "0,0": 1632,
+          "1,0": 76316,
+          "-1,1": 140992,
+          "0,1": 70148,
+          "1,1": 140432
+        }
+      },
+      "cpuSha256": "d111f1c10eda92a6ff17788523ed52956fdc1c1a4966a074fb78e7a39a73ec50",
+      "compositorSha256": "5205eb34fde149ea0aa1ab26e90091411d01885ac653e6b13aed76b098cd0d8b"
+    },
+    {
+      "index": 2,
+      "stage": "revision",
+      "width": 320,
+      "height": 240,
+      "comparison": {
+        "uniformInteriorPixels": 76139,
+        "aaEdgeDifferentPixels": 157,
+        "maxChannelDifference": 47,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 4915200,
+        "integerAlignmentErrors": {
+          "-1,-1": 146443,
+          "0,-1": 75719,
+          "1,-1": 145569,
+          "-1,0": 77041,
+          "0,0": 1167,
+          "1,0": 76181,
+          "-1,1": 146389,
+          "0,1": 75693,
+          "1,1": 145589
+        }
+      },
+      "cpuSha256": "08b52ce9d00bf237d53787744471670e6cfbf8e635140d2f0737164f47e6b870",
+      "compositorSha256": "e6d24492a0f9f48852924618db4e9c290d565d708f7ccea23930bf4175ef952d"
+    },
+    {
+      "index": 3,
+      "stage": "resize",
+      "width": 352,
+      "height": 256,
+      "comparison": {
+        "uniformInteriorPixels": 89352,
+        "aaEdgeDifferentPixels": 92,
+        "maxChannelDifference": 51,
+        "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "integerAlignmentErrors": {
+          "-1,-1": 152782,
+          "0,-1": 79706,
+          "1,-1": 152642,
+          "-1,0": 79534,
+          "0,0": 1230,
+          "1,0": 79552,
+          "-1,1": 151728,
+          "0,1": 78854,
+          "1,1": 151866
+        }
+      },
+      "cpuSha256": "6063ee387d9dfd2505e82f1bc6c7473615a96dc79c0d41d457fde139425617a5",
+      "compositorSha256": "562bb1fbb90dc3048a812e9e366f8b5d733d0818d40d46d9c90bbff5d991ba9c"
+    }
+  ],
+  "result": {
+    "protocol": 1,
+    "nonce": "e84026e04334438da6c46866e97a9b0e",
+    "ok": true,
+    "closed": {
+      "acceptedSerial": 3,
+      "acceptedSnapshots": [
+        12
+      ],
+      "acceptedStamp": {
+        "deviceGeneration": 1,
+        "deviceScale": 1.0,
+        "documentId": 1,
+        "fontGeneration": 0,
+        "revision": 1,
+        "viewGeneration": 4
+      },
+      "closed": true,
+      "deviceFailure": false,
+      "deviceGeneration": 1,
+      "error": "",
+      "errorCode": "",
+      "hasFrame": false,
+      "inFlight": false,
+      "limits": {
+        "consumerRetirement": false,
+        "continuousPresentationSupported": false,
+        "cpuFallbackRequiredWhenSaturated": true,
+        "descriptorOpenedNotifications": 3,
+        "descriptorReleaseIsGpuComplete": false,
+        "immutableFrames": 3,
+        "maxFrames": 4,
+        "maxSingleFrameBytes": 16777216,
+        "maxTargetBytes": 67108864,
+        "outstandingFrames": 3,
+        "pendingRetireFrames": 3,
+        "quarantinedFrames": 0,
+        "reservedTargetBytes": 3145728,
+        "wholeFrameReadbacks": 0
+      },
+      "ownerFinished": true,
+      "ready": false,
+      "renderedSerial": 0,
+      "renderedStamp": null,
+      "staleDrops": 0,
+      "textureId": 2135596973872,
+      "unregistered": true
+    },
+    "stats": {
+      "frameBytes": 0,
+      "frameHandles": 0,
+      "inFlightReplays": 0,
+      "leases": 0,
+      "retainedFrames": 0,
+      "retainedSnapshots": 0,
+      "snapshotEstimatedBytes": 0,
+      "snapshotHandles": 0,
+      "sources": 0
+    },
+    "consumerGpuCompletionVerified": false,
+    "continuousPresentationSupported": false
+  },
+  "run": "https://github.com/seo-rii/rhwp/actions/runs/42496859868"
+}
