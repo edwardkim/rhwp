@@ -783,7 +783,12 @@ impl TypesetEngine {
                 if is_para_relative_table && v > 0 {
                     hwpunit_to_px(v, self.dpi)
                 } else {
-                    0.0
+                    // [#8810] 분할 예산(`budget.rs`)과 같은 쪽 기준 첫 조각 원점.
+                    crate::renderer::float_placement::page_relative_first_fragment_offset_px(
+                        table, self.dpi,
+                    )
+                    .filter(|_| st.current_items.is_empty() && st.current_height < 0.5)
+                    .unwrap_or(0.0)
                 }
             };
             // [#8149] 첫 조각 행 예산과 같은 빈 host 바닥 예약으로 첫 행 수용을 판정한다.
