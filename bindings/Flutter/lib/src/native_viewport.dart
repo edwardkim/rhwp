@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'native_document.dart';
 import 'native_ffi.dart';
+import 'native_gpu_tiles.dart';
 
 /// A page placement in viewport logical pixels. The same transform is used by
 /// CPU images, native hit testing, selection overlays and IME candidate bounds.
@@ -63,6 +64,8 @@ class NativePageViewport {
 
 /// One bounded layout plan for all visible pages, in viewport logical pixels.
 /// Page sizes come from Native; this does not repaginate or infer document layout.
+enum NativeViewportRasterPolicy { cpuBounded, gpuTiled }
+
 class NativeDocumentViewport {
   NativeDocumentViewport({
     required List<NativePageSize> pages,
@@ -73,6 +76,7 @@ class NativeDocumentViewport {
     this.deviceScale = 1,
     this.pageGap = 16,
     this.maxVisiblePages = 4,
+    this.rasterPolicy = NativeViewportRasterPolicy.cpuBounded,
   }) : pages = List.unmodifiable(pages) {
     if (pages.isEmpty ||
         pages.length > 256 ||
@@ -93,6 +97,12 @@ class NativeDocumentViewport {
         maxVisiblePages < 1 ||
         maxVisiblePages > 4) {
       throw ArgumentError('Invalid bounded document viewport.');
+    }
+    if (rasterPolicy == NativeViewportRasterPolicy.gpuTiled) {
+      NativeGpuTilePlan(
+        width: (viewport.width * deviceScale).ceil(),
+        height: (viewport.height * deviceScale).ceil(),
+      );
     }
     double widest = 0;
     for (final page in pages) {
@@ -152,7 +162,8 @@ class NativeDocumentViewport {
           (region.bottom * rasterScale).ceil() -
           (region.top * rasterScale).floor();
       bytes += width * height * 4;
-      if (width > 4096 || height > 4096 || bytes > maxReferenceBytes) {
+      if (rasterPolicy == NativeViewportRasterPolicy.cpuBounded &&
+          (width > 4096 || height > 4096 || bytes > maxReferenceBytes)) {
         throw const NativeCallException(
           'viewportLimit',
           'Visible page regions exceed the 16 MiB reference raster budget.',
@@ -167,11 +178,41 @@ class NativeDocumentViewport {
   final Size viewport;
   final double scrollOffset, horizontalOffset, zoom, deviceScale, pageGap;
   final int maxVisiblePages;
+  final NativeViewportRasterPolicy rasterPolicy;
   final List<double> _tops = [];
   late final double scale, contentWidth, contentHeight;
   late final double maxScrollExtent, maxHorizontalExtent;
   late final Map<int, NativePageViewport> visiblePages;
   late final int rasterBytes;
+
+  /// Keeps every logical page placement while reducing only raster resolution.
+  /// The previous decoded batch is retired before the replacement is allocated;
+  /// all new page regions together retain the existing 16 MiB CPU ceiling.
+  NativeDocumentViewport boundedCpuFallback() {
+    var dpr = deviceScale;
+    for (var attempt = 0; attempt < 16; ++attempt) {
+      try {
+        return NativeDocumentViewport(
+          pages: pages,
+          viewport: viewport,
+          scrollOffset: scrollOffset,
+          horizontalOffset: horizontalOffset,
+          zoom: zoom,
+          deviceScale: dpr,
+          pageGap: pageGap,
+          maxVisiblePages: maxVisiblePages,
+        );
+      } on NativeCallException catch (error) {
+        if (error.code != 'viewportLimit') rethrow;
+        dpr /= 2;
+      }
+    }
+    throw const NativeCallException(
+      'viewportLimit',
+      'The complete viewport cannot fit the CPU raster budget.',
+    );
+  }
+
   double pageTop(int page) => _tops[page];
   NativePageViewport geometryFor(int page) => NativePageViewport.placed(
     pages[page],

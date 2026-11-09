@@ -146,6 +146,7 @@ class _NativePagedDocumentViewState extends State<NativePagedDocumentView> {
   List<NativePageSize>? _pages;
   List<_PageImage> _images = [];
   NativeDocumentViewport? _layout;
+  double? _cpuDeviceScale;
   Object? _identity, _key, _error;
   int _serial = 0;
   bool _running = false, _cpuFallbackRequested = false;
@@ -232,6 +233,7 @@ class _NativePagedDocumentViewState extends State<NativePagedDocumentView> {
 
   void _navigate() => _invalidate();
   void _clearImages() {
+    _cpuDeviceScale = null;
     if (_images.isEmpty) return;
     final previous = _images;
     _images = [];
@@ -349,6 +351,9 @@ class _NativePagedDocumentViewState extends State<NativePagedDocumentView> {
         horizontalOffset: _controller.horizontalOffset,
         zoom: _controller.zoom,
         deviceScale: request.dpr,
+        rasterPolicy: widget.gpuController?.useTileGroups == true
+            ? NativeViewportRasterPolicy.gpuTiled
+            : NativeViewportRasterPolicy.cpuBounded,
       );
       final targetPage = _controller._requestedPage;
       if (targetPage != null) {
@@ -362,6 +367,9 @@ class _NativePagedDocumentViewState extends State<NativePagedDocumentView> {
           horizontalOffset: _controller.horizontalOffset,
           zoom: _controller.zoom,
           deviceScale: request.dpr,
+          rasterPolicy: widget.gpuController?.useTileGroups == true
+              ? NativeViewportRasterPolicy.gpuTiled
+              : NativeViewportRasterPolicy.cpuBounded,
         );
         _controller._requestedPage = null;
       }
@@ -376,6 +384,8 @@ class _NativePagedDocumentViewState extends State<NativePagedDocumentView> {
         widget.onViewportReady?.call(layout);
         return;
       }
+      final cpuLayout = layout.boundedCpuFallback();
+      final rasterDpr = cpuLayout.deviceScale;
       int decodedBytes = 0;
       for (final entry in layout.visiblePages.entries) {
         final region = layout.regionFor(entry.key);
@@ -385,7 +395,7 @@ class _NativePagedDocumentViewState extends State<NativePagedDocumentView> {
           y: region.top,
           width: region.width,
           height: region.height,
-          scale: layout.scale * request.dpr,
+          scale: layout.scale * rasterDpr,
           viewGeneration: request.generation,
         );
         if (!_current(request) || frame == null) return;
@@ -406,11 +416,8 @@ class _NativePagedDocumentViewState extends State<NativePagedDocumentView> {
             image,
             entry.key,
             entry.value.origin +
-                Offset(
-                  frame.originX / request.dpr,
-                  frame.originY / request.dpr,
-                ),
-            Size(frame.width / request.dpr, frame.height / request.dpr),
+                Offset(frame.originX / rasterDpr, frame.originY / rasterDpr),
+            Size(frame.width / rasterDpr, frame.height / rasterDpr),
           ),
         );
       }
@@ -427,6 +434,7 @@ class _NativePagedDocumentViewState extends State<NativePagedDocumentView> {
       setState(() {
         _layout = layout;
         _images = List.of(images);
+        _cpuDeviceScale = rasterDpr;
         _error = null;
       });
       images.clear();
@@ -492,6 +500,16 @@ class _NativePagedDocumentViewState extends State<NativePagedDocumentView> {
               )
             else
               background(context),
+            if (_cpuDeviceScale != null &&
+                layout != null &&
+                _cpuDeviceScale! < layout.deviceScale)
+              const Align(
+                alignment: Alignment.bottomCenter,
+                child: ColoredBox(
+                  color: Color(0xeeffffff),
+                  child: Text('큰 화면을 낮은 해상도로 표시합니다.'),
+                ),
+              ),
             if (_error != null)
               Align(
                 alignment: Alignment.bottomCenter,

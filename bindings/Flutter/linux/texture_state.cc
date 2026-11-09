@@ -1,4 +1,5 @@
 #include "texture_state.h"
+#include "../common/bounded_tile_group.h"
 
 #include <algorithm>
 #include <cmath>
@@ -121,6 +122,71 @@ uint64_t Shared::submit(Description description) {
   // Registry release never happens while holding the GUI/raster metadata lock.
   previous.reset();
   return serial;
+}
+
+void Shared::submit_group(const std::shared_ptr<Shared>& first, const std::shared_ptr<Shared>& second,
+                          Description a, Description b) {
+  validate(a); validate(b);
+  if (!first || !second || first == second || first->bridge != second->bridge)
+    throw Failure("invalidArgument", "tile members must have distinct owners in one Native module");
+  const auto x = a.stamp, y = b.stamp;
+  if (x.document != y.document || x.revision != y.revision || x.font != y.font ||
+      x.view != y.view || x.device != y.device || x.dpr != y.dpr)
+    throw Failure("staleFrame", "both tiles require the same full stamp");
+  std::array<std::vector<uint64_t>, 2> page_ids;
+  for (const auto& page : a.pages) page_ids[0].push_back(page.snapshot);
+  for (const auto& page : b.pages) page_ids[1].push_back(page.snapshot);
+  const auto ids = rhwp::tiles::unique_snapshots(page_ids);
+  for (const auto id : ids) {
+    const auto info = first->bridge->inspect(id);
+    if (!info.current || !info.screen || info.document != x.document ||
+        info.revision != x.revision || info.font != x.font)
+      throw Failure("staleFrame", "tile snapshot source changed before acceptance");
+  }
+  auto fa = std::make_shared<Frame>(), fb = std::make_shared<Frame>();
+  fa->description = std::move(a); fb->description = std::move(b);
+  std::shared_ptr<const Frame> old_a, old_b;
+  {
+    std::scoped_lock lock(first->mutex_, second->mutex_);
+    for (const auto& state : {first, second}) {
+      if (state->status_.closing) throw Failure("closing", "tile group is closing");
+      if (state->status_.device != x.device) throw Failure("contextChanged", "tile group device changed");
+      if ((state->latest_ && state->latest_->description.stamp.view >= x.view) ||
+          state->status_.accepted == std::numeric_limits<uint64_t>::max())
+        throw Failure("staleFrame", "tile group view must strictly advance");
+    }
+    auto leases = rhwp::tiles::prepare_leases<SnapshotLease>(ids, [&](uint64_t id) {
+      std::shared_ptr<SnapshotLease> lease;
+      for (const auto& state : {first, second}) for (const auto& weak : state->leases_) {
+        auto retained = weak.lock();
+        if (retained && retained->id == id) {
+          if (lease && retained != lease) throw Failure("ownership", "snapshot has two destructive leases");
+          lease = std::move(retained);
+        }
+      }
+      if (!lease) { lease = std::make_shared<SnapshotLease>(); lease->bridge = first->bridge; lease->id = id; }
+      return lease;
+    });
+    fa->leases = leases; fb->leases = leases;
+    auto weak_a = first->leases_, weak_b = second->leases_;
+    for (auto* retained : {&weak_a, &weak_b}) {
+      retained->erase(std::remove_if(retained->begin(), retained->end(), [](const auto& item) { return item.expired(); }), retained->end());
+      if (retained->size() + leases.size() > 2 * kMaxPages)
+        throw Failure("limitExceeded", "tile group snapshot leases are full");
+      for (const auto& lease : leases) retained->push_back(lease);
+    }
+    fa->serial = first->status_.accepted + 1; fb->serial = second->status_.accepted + 1;
+    // Every fallible allocation and check completed. Both metadata commits are
+    // made under both locks before either raster owner can observe new work.
+    for (const auto& lease : leases) lease->owned = true;
+    old_a = std::move(first->latest_); old_b = std::move(second->latest_);
+    first->latest_ = fa; second->latest_ = fb;
+    first->leases_ = std::move(weak_a); second->leases_ = std::move(weak_b);
+    first->status_.accepted = fa->serial; second->status_.accepted = fb->serial;
+    first->status_.accepted_stamp = x; second->status_.accepted_stamp = x;
+    first->status_.code.clear(); first->status_.message.clear();
+    second->status_.code.clear(); second->status_.message.clear();
+  }
 }
 
 void Shared::close() {

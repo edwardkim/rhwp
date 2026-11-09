@@ -22,6 +22,9 @@ def main():
         executable = output / name
         subprocess.run(command + [str(source / "tests" / (name + ".cpp")), "-o", str(executable)], check=True, timeout=60)
         subprocess.run([str(executable)], check=True, timeout=30)
+    tiles = output / "bounded-tile-group-test"
+    subprocess.run(command + [str(source.parent / "common/bounded_tile_group_test.cc"), "-o", str(tiles)], check=True, timeout=60)
+    subprocess.run([str(tiles)], check=True, timeout=30)
     subprocess.run([sys.executable, "-B", str(source / "tests/native_d3d_disabled.py"), "--output", str(output / "disabled")], check=True, timeout=60)
     if args.flutter_public:
         header_test = output / "public-texture-contract"

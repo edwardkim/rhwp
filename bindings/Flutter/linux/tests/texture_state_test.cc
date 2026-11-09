@@ -339,6 +339,47 @@ void in_flight_snapshot_credit_rejection_preserves_caller_ownership() {
   }
 }
 
+void tile_group_acceptance_and_shared_snapshot_ownership() {
+  auto bridge=std::make_shared<FakeBridge>();
+  auto first=std::make_shared<Shared>(bridge,7), second=std::make_shared<Shared>(bridge,7);
+  auto a=frame(1,901),b=frame(1,901);a.stamp.device=7;b.stamp.device=7;
+  a.pages.push_back({902,1,0,0,0xffffff});b.pages.push_back({903,1,0,0,0xffffff});
+  b.pages[0].x=-400;a.width=b.width=400;
+  Shared::submit_group(first,second,a,b);
+  CHECK(first->status().accepted==1&&second->status().accepted==1);
+  CHECK(first->status().device==second->status().device);
+  first->close();CHECK(bridge->releases[901]==0&&bridge->releases[902]==0&&bridge->releases[903]==0);
+  second->close();CHECK(bridge->releases[901]==1&&bridge->releases[902]==1&&bridge->releases[903]==1);
+}
+void tile_group_second_failure_keeps_both_caller_owned() {
+  auto bridge=std::make_shared<FakeBridge>();
+  auto first=std::make_shared<Shared>(bridge), second=std::make_shared<Shared>(bridge);
+  auto a=frame(1,911),b=frame(1,912);b.width=4097;
+  rejected("invalidArgument",[&]{Shared::submit_group(first,second,a,b);});
+  CHECK(first->status().accepted==0&&second->status().accepted==0);
+  CHECK(bridge->releases.empty());
+  b=frame(1,912);b.stamp.device=2;
+  rejected("staleFrame",[&]{Shared::submit_group(first,second,a,b);});
+  CHECK(first->status().accepted==0&&second->status().accepted==0);
+  second->close();b=frame(1,912);
+  rejected("closing",[&]{Shared::submit_group(first,second,a,b);});
+  CHECK(first->status().accepted==0&&bridge->releases.empty());
+  first->close();CHECK(bridge->releases.empty());
+}
+void tile_group_snapshot_bound_is_union_not_placement_count() {
+  auto bridge=std::make_shared<FakeBridge>();
+  auto first=std::make_shared<Shared>(bridge), second=std::make_shared<Shared>(bridge);
+  auto a=frame(1,921),b=frame(1,921);
+  for(auto id:{922,923,924}){a.pages.push_back({uint64_t(id),1,0,0,0xffffff});b.pages.push_back({uint64_t(id),1,0,0,0xffffff});}
+  Shared::submit_group(first,second,a,b);
+  auto c=a,d=b;c.stamp.view=d.stamp.view=2;d.pages.push_back({925,1,0,0,0xffffff});
+  bool limited=false;try{Shared::submit_group(first,second,c,d);}catch(const std::invalid_argument&){limited=true;}
+  CHECK(limited&&first->status().accepted==1&&second->status().accepted==1);
+  CHECK(bridge->releases[925]==0);
+  first->close();second->close();
+  for(auto id:{921,922,923,924})CHECK(bridge->releases[uint64_t(id)]==1);
+}
+
 void unproven_driver_orphans_permanently_consume_the_process_budget() {
   auto bridge = std::make_shared<FakeBridge>();
   auto device = std::make_shared<Device>(); device->reclaim_on_abandon = false;
@@ -373,8 +414,11 @@ int main() {
     a_live_texture_cannot_gain_a_second_raster_thread_owner();
     owner_slot_pins_bridge_and_callback_userdata_after_ui_drops_references();
     in_flight_snapshot_credit_rejection_preserves_caller_ownership();
+    tile_group_acceptance_and_shared_snapshot_ownership();
+    tile_group_second_failure_keeps_both_caller_owned();
+    tile_group_snapshot_bound_is_union_not_placement_count();
     unproven_driver_orphans_permanently_consume_the_process_budget();
-    std::cout << "texture state: 13 cases, " << checks << " checks passed\n";
+    std::cout << "texture state: 16 cases, " << checks << " checks passed\n";
     return 0;
   } catch (const std::exception& error) {
     std::cerr << error.what() << '\n'; return 1;

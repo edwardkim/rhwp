@@ -6,6 +6,7 @@
 
 #include "MetalFrameLifetime.hpp"
 #include "TextureCloseRouting.hpp"
+#include "../../common/bounded_tile_group.h"
 #include <atomic>
 #include <condition_variable>
 #include <cstdio>
@@ -210,6 +211,47 @@ struct State {
     error = text ? std::string(text).substr(0, 2048) : "Metal producer failed";
   }
 };
+
+bool EnqueueTileGroup(const std::shared_ptr<State>& first, const std::shared_ptr<State>& second,
+                      const std::shared_ptr<Job>& a, const std::shared_ptr<Job>& b) {
+  if (!first || !second || first == second || !(a->stamp == b->stamp)) return false;
+  const auto ids = rhwp::tiles::unique_snapshots({a->ids,b->ids});
+  std::shared_ptr<Job> old_a, old_b;
+  std::shared_ptr<PublishedFrame> frame_a, frame_b;
+  {
+    std::scoped_lock lock(first->mutex, second->mutex);
+    if (first->closed || second->closed || !first->ready || !second->ready ||
+        !first->api || first->api != second->api || first->generation != second->generation) return false;
+    auto gate_a = first->gate, gate_b = second->gate;
+    const auto serial_a = gate_a.accept(a->stamp), serial_b = gate_b.accept(b->stamp);
+    if (!serial_a || !serial_b) return false;
+    auto leases_a = first->leases, leases_b = second->leases;
+    for (auto* leases : {&leases_a, &leases_b})
+      for (auto it = leases->begin(); it != leases->end();) if (it->second.expired()) it = leases->erase(it); else ++it;
+    auto leases = rhwp::tiles::prepare_leases<SnapshotLease>(ids,[&](uint64_t id) {
+      auto left = leases_a.find(id), right = leases_b.find(id);
+      auto l = left == leases_a.end() ? nullptr : left->second.lock();
+      auto r = right == leases_b.end() ? nullptr : right->second.lock();
+      if (l && r && l != r) throw std::invalid_argument("two destructive tile leases");
+      auto lease = l ? l : r;
+      if (!lease) {lease = std::make_shared<SnapshotLease>();lease->id=id;lease->api=first->api;}
+      leases_a[id]=lease;leases_b[id]=lease;return lease;
+    });
+    if (leases_a.size()>32 || leases_b.size()>32) return false;
+    a->snapshots=leases;b->snapshots=leases;
+    auto receipt_a=a->ids,receipt_b=b->ids;
+    a->sequence=serial_a;b->sequence=serial_b;
+    for(const auto& lease:leases)lease->transferred=true;
+    first->gate=gate_a;second->gate=gate_b;
+    first->acceptedStamp=a->stamp;second->acceptedStamp=b->stamp;
+    first->acceptedSnapshots=std::move(receipt_a);second->acceptedSnapshots=std::move(receipt_b);
+    first->leases=std::move(leases_a);second->leases=std::move(leases_b);
+    old_a=std::move(first->pending);old_b=std::move(second->pending);
+    frame_a=std::move(first->current);frame_b=std::move(second->current);
+    first->pending=a;second->pending=b;first->error.clear();second->error.clear();
+  }
+  first->changed.notify_one();second->changed.notify_one();return true;
+}
 
 std::shared_ptr<PixelResources> CreatePixels(id<MTLDevice> device, CVMetalTextureCacheRef cache,
                                           const Job& job) {
@@ -428,6 +470,7 @@ struct CVCloseState { uint64_t textureId; std::shared_ptr<State> state; };
 struct CVCloseReceipt { uint64_t textureId, generation; __strong NSDictionary* status; };
 NSDictionary* CVLimits(bool negotiated) {
   NSMutableDictionary* limits = [CreditStatus() mutableCopy];
+  limits[@"tileGroups"] = @NO; // Legacy CV textures have no continuous group contract.
   limits[@"closeAcknowledgementSupported"] = @YES;
   limits[@"closeAcknowledgementRequired"] = @(negotiated);
   limits[@"consumerGpuCompletionVerified"] = @NO;
