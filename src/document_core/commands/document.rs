@@ -1155,7 +1155,7 @@ impl DocumentCore {
                 // 쌓으므로, 저장 좌표가 원점을 정하지 않은 문단 경계에서는 편집 경로
                 // (`recalculate_section_vpos`)와 같은 문단 간격 `앞 아래 + 뒤 위` 를 더한다.
                 let mut previous_spacing_after_hu: Option<(i32, bool)> = None;
-                // 문단 기준 위아래 배치 개체가 아직 밀지 않은 띠: (띠 위끝, 밀 양).
+                // 문단 기준 위아래 배치 개체가 아직 밀지 않은 띠: (띠 위끝, 띠 아래끝).
                 // 한컴은 개체의 세로 띠와 겹치는 줄만 띠 아래로 보낸다. 오프셋만큼
                 // 아래에 놓인 개체 위 빈 공간에 들어가는 후속 줄은 제자리에 둔다.
                 let mut pending_float_band: Option<(i32, i32)> = None;
@@ -1405,6 +1405,9 @@ impl DocumentCore {
                                 );
                         }
                     }
+                    // 문단 경계에서 더한 간격(띠 아래로 옮길 때도 유지한다).
+                    // 저장 앵커가 옮긴 양은 띠 아래로 옮길 때 다시 더하지 않는다.
+                    let boundary_spacing = running_vpos.saturating_sub(accumulated_vpos).max(0);
                     if let (Some((original_first, _)), Some((source_end, rebuilt_end))) =
                         (orig_span[pi], source_anchor_end)
                     {
@@ -1509,10 +1512,14 @@ impl DocumentCore {
                             inner_vpos = source_vpos;
                             pending_float_band = None;
                         }
-                        if let Some((band_top, shift)) = pending_float_band {
+                        if let Some((band_top, band_bottom)) = pending_float_band {
                             if inner_vpos.saturating_add(seg.line_height) > band_top {
-                                // 띠와 겹치는 첫 줄부터 개체 아래로 옮긴다.
-                                inner_vpos = inner_vpos.saturating_add(shift);
+                                // 띠와 겹치는 첫 줄부터 띠 아래끝으로 옮긴다. 문단 첫 줄이면
+                                // 이 경계에서 더한 문단 간격을 띠 아래에 그대로 둔다.
+                                let boundary_gap =
+                                    if line_index == 0 { boundary_spacing } else { 0 };
+                                inner_vpos =
+                                    inner_vpos.max(band_bottom.saturating_add(boundary_gap));
                                 pending_float_band = None;
                             }
                         }
@@ -1612,22 +1619,22 @@ impl DocumentCore {
                         if object_precedes_host_line {
                             inner_vpos += obj_total;
                         } else if obj_total > seg_lh_total {
-                            let shift = obj_total - seg_lh_total;
                             if matches!(obj_vert_rel, crate::model::shape::VertRelTo::Para)
                                 && obj_v_offset > 0
                             {
                                 // 문단 기준 개체의 띠는 host 첫 줄에서 오프셋만큼 아래에서
-                                // 시작한다. 밀기는 그 띠와 겹치는 후속 줄로 미룬다.
-                                // 겹치는 줄은 종전과 같은 양을 밀린다.
+                                // 시작해 종전 가산과 같은 아래끝(host 첫 줄 + 오프셋 + 높이 +
+                                // 바깥 여백)에서 끝난다. 밀기는 그 띠와 겹치는 후속 줄로 미룬다.
                                 let band_top = host_first_vpos.saturating_add(obj_v_offset);
+                                let band_bottom = host_first_vpos.saturating_add(obj_total);
                                 pending_float_band = Some(match pending_float_band {
-                                    Some((top, pending)) => {
-                                        (top.min(band_top), pending.saturating_add(shift))
+                                    Some((top, bottom)) => {
+                                        (top.min(band_top), bottom.max(band_bottom))
                                     }
-                                    None => (band_top, shift),
+                                    None => (band_top, band_bottom),
                                 });
                             } else {
-                                inner_vpos += shift;
+                                inner_vpos += obj_total - seg_lh_total;
                             }
                         }
                     }
