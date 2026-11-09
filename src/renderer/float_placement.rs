@@ -7693,6 +7693,16 @@ pub(crate) fn stored_block_cell_flow_with_storage<S: crate::storage::Storage>(
 
 /// 문단 기준 글 앞/뒤 표는 같은 앵커에 겹치는 개체이며 별도의 흐름 띠가 아니다.
 /// HWP5의 직인 표와 HWPX의 배경 표 모두 이 계약을 소비한다. TAC는 글줄에 참여한다.
+/// 쪽·종이 기준 글 앞으로/글 뒤로 표. 줄 흐름을 밀지 않고 칸 밖 좌표계에 놓인다.
+pub(crate) fn nested_table_is_page_anchored_non_flow(table: &Table) -> bool {
+    !table.common.treat_as_char
+        && matches!(
+            table.common.text_wrap,
+            TextWrap::BehindText | TextWrap::InFrontOfText
+        )
+        && matches!(table.common.vert_rel_to, VertRelTo::Page | VertRelTo::Paper)
+}
+
 pub(crate) fn nested_table_is_overlay(table: &Table) -> bool {
     !table.common.treat_as_char
         && matches!(
@@ -7873,6 +7883,11 @@ pub(crate) fn nested_group_occupied_height(
         let Control::Table(table) = &para.controls[ci] else {
             continue;
         };
+        if nested_table_is_page_anchored_non_flow(table) {
+            // 쪽·종이 기준 글 앞/뒤 표는 칸 흐름 밖 좌표에 놓인다. 칸의 줄도, 칸 높이도
+            // 차지하지 않는다.
+            continue;
+        }
         if nested_table_is_overlay(table) {
             let bottom = nested_overlay_outer_frame(table, -stored_line_lead, heights[ci], dpi)
                 .map_or(heights[ci], |frame| frame.end);
