@@ -1,0 +1,258 @@
+{
+  "verified_at": "2026-11-10T08:29:28.821542+09:00",
+  "base": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+  "source_head": "7bbe651832c6fd0dab9c2fe381f5a5d0752ecef7",
+  "versions": {
+    "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+    "cargo": "cargo 1.93.1 (083ac5135 2025-12-15)",
+    "nextest": "cargo-nextest 0.9.137 (75ddba7e9 2026-05-26)\nrelease: 0.9.137\ncommit-hash: 75ddba7e911b44c5c0700dac0415d824403de9bd\ncommit-date: 2026-05-26\nhost: x86_64-unknown-linux-gnu",
+    "node": "v24.15.0"
+  },
+  "build_jobs": 6,
+  "test_threads": 12,
+  "isolation": "bwrap filesystem isolation: personal home fonts and /mnt,/opt absent; system font directories masked; explicit licensed fixture fonts available",
+  "visible_fonts": [
+    "ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+    "ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+    "ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+    "ttfs/opensource/RHWPOldHangul-Regular.otf",
+    "ttfs/opensource/NotoSansKR-Regular.ttf"
+  ],
+  "records": [
+    {
+      "name": "visible-fonts",
+      "command": [
+        "fc-list",
+        "-f",
+        "%{file}\\n"
+      ],
+      "started": "2026-11-10T07:52:43.468729+09:00",
+      "ended": "2026-11-10T07:52:43.503868+09:00",
+      "exit_code": 0,
+      "base": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+      "head": "7bbe651832c6fd0dab9c2fe381f5a5d0752ecef7",
+      "minimal_font": true,
+      "log": "main-visible-fonts.log",
+      "log_sha256": "7c1fd18f854b599095a165c397f5d0ee940df834d4366a32eb3b3a0e6ecc947f"
+    },
+    {
+      "name": "suite-prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "started": "2026-11-10T07:52:43.504194+09:00",
+      "ended": "2026-11-10T07:52:45.209963+09:00",
+      "exit_code": 0,
+      "base": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+      "head": "7bbe651832c6fd0dab9c2fe381f5a5d0752ecef7",
+      "minimal_font": true,
+      "log": "main-suite-prepare.log",
+      "log_sha256": "bc24887d9d2b566c72128d88a2dd8ecb235ef08a9d3b4c661b251b3f647fae87"
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "started": "2026-11-10T07:52:45.210738+09:00",
+      "ended": "2026-11-10T07:53:11.494965+09:00",
+      "exit_code": 0,
+      "base": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+      "head": "7bbe651832c6fd0dab9c2fe381f5a5d0752ecef7",
+      "minimal_font": true,
+      "log": "main-fmt.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "root-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "<shared-target>/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started": "2026-11-10T07:53:11.495226+09:00",
+      "ended": "2026-11-10T07:55:15.014665+09:00",
+      "exit_code": 0,
+      "base": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+      "head": "7bbe651832c6fd0dab9c2fe381f5a5d0752ecef7",
+      "minimal_font": true,
+      "log": "main-root-clippy.log",
+      "log_sha256": "0d1ffdbdb4af0b678e405c664679965a9365c6a217e795e483d7006a9741feaf"
+    },
+    {
+      "name": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "<shared-target>/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started": "2026-11-10T07:55:15.014941+09:00",
+      "ended": "2026-11-10T07:57:09.915924+09:00",
+      "exit_code": 0,
+      "base": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+      "head": "7bbe651832c6fd0dab9c2fe381f5a5d0752ecef7",
+      "minimal_font": true,
+      "log": "main-wasm-clippy.log",
+      "log_sha256": "2e29027e3676d5ad91f192712125b4cd4896ea127bc6cdf14ab46631598dc7a6"
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "<shared-target>/pr-review"
+      ],
+      "started": "2026-11-10T07:57:09.916252+09:00",
+      "ended": "2026-11-10T08:00:02.601518+09:00",
+      "exit_code": 0,
+      "base": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+      "head": "7bbe651832c6fd0dab9c2fe381f5a5d0752ecef7",
+      "minimal_font": true,
+      "log": "main-workspace-build.log",
+      "log_sha256": "ca41393044037fbb5fd1b0fad2a010f7ff3c5f4f4549a8ea469c27ea400fa192"
+    },
+    {
+      "name": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "<shared-target>/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started": "2026-11-10T08:00:02.601842+09:00",
+      "ended": "2026-11-10T08:02:17.406856+09:00",
+      "exit_code": 0,
+      "base": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+      "head": "7bbe651832c6fd0dab9c2fe381f5a5d0752ecef7",
+      "minimal_font": true,
+      "log": "main-workspace-clippy.log",
+      "log_sha256": "91cfe26ee24836bfbc955619fff183310fee580c7a2424ab2009e62201e0c0bc"
+    },
+    {
+      "name": "suite-policy",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "c9095c5f67632e6721e800ccc7fb43ea49d26682"
+      ],
+      "started": "2026-11-10T08:02:17.407140+09:00",
+      "ended": "2026-11-10T08:02:18.277383+09:00",
+      "exit_code": 0,
+      "base": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+      "head": "7bbe651832c6fd0dab9c2fe381f5a5d0752ecef7",
+      "minimal_font": true,
+      "log": "main-suite-policy.log",
+      "log_sha256": "78fa3a8c034d4d579a88ac1b37ccdae836c178f342685b86a05a2eae1536a865"
+    },
+    {
+      "name": "pdf-logging",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "code_scanning_pdf_diagnostics",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "<shared-target>/pr-review"
+      ],
+      "started": "2026-11-10T08:02:18.277670+09:00",
+      "ended": "2026-11-10T08:08:50.349357+09:00",
+      "exit_code": 0,
+      "base": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+      "head": "7bbe651832c6fd0dab9c2fe381f5a5d0752ecef7",
+      "minimal_font": true,
+      "log": "main-pdf-logging.log",
+      "log_sha256": "e57564254c32c5411f7479021b31d5af7801f3b4ad28fa349f674739e506eee3"
+    },
+    {
+      "name": "password-boundary",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8745_password_boundary",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "<shared-target>/pr-review"
+      ],
+      "started": "2026-11-10T08:08:50.349668+09:00",
+      "ended": "2026-11-10T08:09:09.687745+09:00",
+      "exit_code": 0,
+      "base": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+      "head": "7bbe651832c6fd0dab9c2fe381f5a5d0752ecef7",
+      "minimal_font": true,
+      "log": "main-password-boundary.log",
+      "log_sha256": "270725eaf4ef39a7403452b6c4c16cf3f7f0d0db04561cc995ff9539219852e7"
+    },
+    {
+      "name": "full-release-test",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "<shared-target>/pr-review",
+        "--tests",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "started": "2026-11-10T08:09:09.688071+09:00",
+      "ended": "2026-11-10T08:28:12.117476+09:00",
+      "exit_code": 0,
+      "base": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+      "head": "7bbe651832c6fd0dab9c2fe381f5a5d0752ecef7",
+      "minimal_font": true,
+      "log": "main-full-release-test.log",
+      "log_sha256": "19d1a553c75f135fd4581aa7deb5553a661d15a5d366bc7c499398c5b0934dec"
+    }
+  ],
+  "summaries": {
+    "pdf-logging": "Summary [   0.010s] 2 tests run: 2 passed, 317 skipped",
+    "password-boundary": "Summary [   2.850s] 6 tests run: 6 passed, 303 skipped",
+    "full-release-test": "Summary [ 656.005s] 12999 tests run: 12999 passed (4 slow), 45 skipped"
+  },
+  "qcms_standalone_30_tests": "reused unchanged standalone source/manifest, codec-resource tree and toolchain; original actual runtime record linked in README",
+  "warnings": [
+    "nextest recommends 0.9.140; actual 0.9.137 recorded",
+    "unused ci-duration-observation report-skipped key ignored by 0.9.137; current default test execution passed"
+  ],
+  "source_tests_workflows_changed_during_validation": false
+}
