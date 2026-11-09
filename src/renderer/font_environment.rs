@@ -882,9 +882,13 @@ impl FontEnvironment {
         self.preserve_source_metrics.unwrap_or(false)
     }
 
+    pub(crate) fn explicitly_replaces_source_metrics(&self) -> bool {
+        self.preserve_source_metrics == Some(false)
+    }
+
     /// 생략된 기존 설정은 자연 프로그램 전진을 선택한 요청이 아니다.
     pub(crate) fn selects_natural_program_for(&self, source: &str) -> bool {
-        self.preserve_source_metrics == Some(false)
+        self.explicitly_replaces_source_metrics()
             || self
                 .replace_source_metrics_for
                 .iter()

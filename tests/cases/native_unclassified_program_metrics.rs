@@ -1,5 +1,5 @@
-//! 관계형: 미분류 원본의 프로그램 조회와 명시적 자연 전진 선택을 구분한다.
-//! 주석 갱신: 2026-11-09T20:15:00+09:00.
+//! 관계형: 기본·원본 유지 공급과 명시적 자연 전진 세션의 선택 범위를 구분한다.
+//! 주석 갱신: 2026-11-09T21:11:20+09:00.
 //! OFL 합성 TTF를 직접 공급하며 설치 글꼴·실문서 좌표·px 기대값에 의존하지 않는다.
 //! 실제 본문 run의 공급 전후 전진 소유를 검사하므로 PDF/Native/WASM 일치율은 비해당이다.
 #![cfg(not(target_arch = "wasm32"))]
@@ -58,9 +58,16 @@ fn supply(core: &mut DocumentCore) {
         .unwrap());
 }
 
+fn select_another_natural_program(core: &mut DocumentCore) {
+    core.set_font_environment(Some(FontEnvironment::from_json(
+        r#"{"id":"other-source-selection","substitutions":{"Other Source":"Other Program"},"trueTypeFaces":["Other Program"],"preserveSourceMetrics":false}"#,
+    ).unwrap())).unwrap();
+}
+
 #[test]
 fn unclassified_program_probe_does_not_replace_existing_advances() {
     let mut core = source();
+    select_another_natural_program(&mut core);
     let original = format!("{:?}", core.document());
     let before = advances(&core);
     supply(&mut core);
@@ -131,6 +138,7 @@ fn unclassified_slot_keeps_an_existing_legacy_program_for_the_same_family() {
     legacy.font_ids = [1; 7];
     document.doc_info.char_shapes.push(legacy);
     core.set_document(document);
+    select_another_natural_program(&mut core);
     let cff = include_bytes!("../fixtures/fonts/RHWPHftOutline.otf");
     core.prepare_native_otf_fonts_with(|request| (!request.source_ttf).then(|| (cff.to_vec(), 0)))
         .unwrap();
@@ -141,4 +149,19 @@ fn unclassified_slot_keeps_an_existing_legacy_program_for_the_same_family() {
         "미분류 원본의 새 TrueType 전진만 차단하며 기존 동일 family의 HFT 표시 프로그램은 보존한다",
     );
     assert!(!metrics.uses_original_truetype());
+}
+
+#[test]
+fn preserved_source_program_keeps_legacy_inferred_truetype_advances() {
+    let mut core = source();
+    core.set_font_environment(Some(FontEnvironment::from_json(
+        r#"{"id":"preserve-source-program","substitutions":{"Rhwp Family Contract":"Rhwp Family Contract"},"preserveSourceMetrics":true}"#,
+    ).unwrap())).unwrap();
+    let before = advances(&core);
+    supply(&mut core);
+    assert_ne!(
+        advances(&core),
+        before,
+        "원본 메트릭 유지 환경은 기존에 공급한 같은 원본 TrueType 프로그램의 전진을 계속 소비한다"
+    );
 }

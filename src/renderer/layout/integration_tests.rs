@@ -88,6 +88,7 @@ mod tests {
             script_metrics: Default::default(),
             native_pua_fonts: Default::default(),
             display_only_otf_slots: Default::default(),
+            inferred_ttf_requires_selection: false,
             char_overlap_size_bounds: None,
             source_char_shapes: Default::default(),
             resolved_dpi: None,

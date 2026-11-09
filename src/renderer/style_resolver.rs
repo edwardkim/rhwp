@@ -150,6 +150,8 @@ pub(crate) fn resolve_styles_with_environment(
     profile: crate::model::provenance::LayoutCompatibilityProfile,
 ) -> ResolvedStyleSet {
     let mut styles = resolve_styles_for_document(document, dpi);
+    styles.inferred_ttf_requires_selection =
+        environment.is_some_and(|env| env.explicitly_replaces_source_metrics());
     styles.script_metrics = super::script_metrics::ScriptMetricsContract::for_profile(profile);
     // 독립 동일 입력의 2020은 HCRDotum을 강제하고, 2024는 원 face/대체 face의
     // 자모 전진을 유지한다. 세대는 기존 명시적 출력 profile에서만 받는다.
@@ -523,6 +525,7 @@ fn try_resolve_styles_with_variant<S: storage::Storage>(
         script_metrics: Default::default(),
         native_pua_fonts: Default::default(),
         display_only_otf_slots: Default::default(),
+        inferred_ttf_requires_selection: false,
         unsubstituted_font_slots: Default::default(),
         char_overlap_size_bounds: None,
         source_char_shapes: {

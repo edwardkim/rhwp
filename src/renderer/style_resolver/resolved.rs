@@ -569,6 +569,9 @@ pub struct ResolvedStyleSet {
     /// 표시용 대체는 같은 family의 다른 원본 슬롯이 등록한 폭도 소비하지 않는다.
     /// 공급 요청과 실제 측정이 같은 스타일·언어별 소유 판정을 읽는다.
     pub(crate) display_only_otf_slots: std::sync::Arc<std::collections::HashSet<(u32, usize)>>,
+    /// 명시적 자연 전진 세션에서만 미분류 원본의 자동 TTF 조회를 선택 범위로 제한한다.
+    /// 기본 공급과 원본 메트릭 유지 환경은 기존 프로그램 전진 계약을 보존한다.
+    pub(crate) inferred_ttf_requires_selection: bool,
     /// 원본과 같은 프로그램 이름을 유지한 언어 슬롯이다. 대체 표시용 TTF가
     /// 같은 family로 등록돼 있어도 원본 TrueType 전진의 근거로 승격하지 않는다.
     pub(crate) unsubstituted_font_slots: Vec<[bool; LANG_COUNT]>,
@@ -663,11 +666,12 @@ impl ResolvedStyleSet {
             .get(char_style_id as usize)
             .is_some_and(|style| {
                 style.source_ttf_for_lang(lang)
-                    || ((style
-                        .font_families_natural_program_metrics
-                        .get(lang)
-                        .copied()
-                        .unwrap_or(false)
+                    || ((!self.inferred_ttf_requires_selection
+                        || style
+                            .font_families_natural_program_metrics
+                            .get(lang)
+                            .copied()
+                            .unwrap_or(false)
                         || style
                             .font_families_primary_program
                             .get(lang)
@@ -765,6 +769,6 @@ crate::storage::clone_fields!(ResolvedParaStyle, {alignment, vertical_alignment,
 
 crate::storage::clone_fields!(ResolvedBorderStyle, {borders, fill_color, pattern, gradient, image_fill, diagonal_attr, break_cell_separate_line, diagonal, center_line});
 
-crate::storage::clone_fields!(ResolvedStyleSet, {section_tab_width_bits, script_metrics, source_hwp3_native, source_program_projection_slots, native_pua_fonts, display_only_otf_slots, unsubstituted_font_slots, char_overlap_size_bounds, source_char_shapes, resolved_dpi, isolated_jamo_font, page_number_char_style_id, page_number_font_is_hft, supplemental_metrics, style_char_shapes, char_styles, para_styles, border_styles, numberings, bullets, hwp3_variant, hft_ascii_halfwidth, kerning_measurement_context, horizontal_shaping_context});
+crate::storage::clone_fields!(ResolvedStyleSet, {section_tab_width_bits, script_metrics, source_hwp3_native, source_program_projection_slots, native_pua_fonts, display_only_otf_slots, inferred_ttf_requires_selection, unsubstituted_font_slots, char_overlap_size_bounds, source_char_shapes, resolved_dpi, isolated_jamo_font, page_number_char_style_id, page_number_font_is_hft, supplemental_metrics, style_char_shapes, char_styles, para_styles, border_styles, numberings, bullets, hwp3_variant, hft_ascii_halfwidth, kerning_measurement_context, horizontal_shaping_context});
 
 crate::storage::clone_fields!(ResolvedImageFill, {bin_data_id, fill_mode, brightness, contrast, effect});
