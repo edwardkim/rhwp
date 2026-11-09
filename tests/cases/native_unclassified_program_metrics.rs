@@ -88,6 +88,25 @@ fn explicitly_selected_natural_program_still_supplies_its_advances() {
 }
 
 #[test]
+fn verified_original_program_identity_still_supplies_its_advances() {
+    let mut core = source();
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/native_font_family_names/family-contract.ttf");
+    let environment =
+        FontEnvironment::from_native_document_substitutions(&core.document().doc_info, &[path])
+            .unwrap()
+            .expect("실제 원본 프로그램 조회와 신원 확인");
+    core.set_font_environment(Some(environment)).unwrap();
+    let before = advances(&core);
+    supply(&mut core);
+    assert_ne!(
+        advances(&core),
+        before,
+        "확인된 원본 TTF 선택을 단순 존재 추정과 구분한다"
+    );
+}
+
+#[test]
 fn unclassified_slot_keeps_an_existing_legacy_program_for_the_same_family() {
     let mut core = source();
     let mut document = core.document().clone();
