@@ -7,12 +7,12 @@
 //!   문단 1 은 공백 한 칸 host, 문단 기준 자리차지 결재 표(오프셋 0)가 저장 첫 줄을 띠 끝
 //!   13697 = 앞 문단 끝 6392 + 바깥 위 138 + 표 7029 + 바깥 아래 138 로 민다(앞 간격 852 없음).
 //! - 독립 기준: `pdf/issue8735/whitespace_host_approval_table-2020.pdf`(한/글 2022 12.0.0.4547 Print, 1쪽).
-//! - 수정 전 rhwp(PR #8758 head `a5f2d2b28b`)는 배치는 저장 사다리대로 두지만 조판이 결재 표
+//! - 수정 전 rhwp(PR #8758 rebase 본 `0b54ab1879`, 옛 head `a5f2d2b28b` 도 같음)는 배치는 저장 사다리대로 두지만 조판이 결재 표
 //!   예약에 앞 간격·바깥 위 여백·host 줄간격을 얹고 host 줄을 따로 또 세어, 조판이 원점을 정하는
 //!   문서번호 TAC 표가 17.5px 아래에 놓였다(문서번호 표 − host 줄 52.1px, 기대 34.6px).
 //!
 //! 측정: 2026-11-09, `scripts/visual_sweep.py --silhouette-only --dpi 96`(4열
-//! `silhouette_raw_match_percent`, 색상 경계 보정 전 2px 실루엣), 소스 PR #8758 head + 이 수정.
+//! `silhouette_raw_match_percent`, 색상 경계 보정 전 2px 실루엣), 소스 PR #8758 rebase 본 `0b54ab1879` + 이 수정.
 //! 1쪽 Native 99.99 / fresh WASM 100.00(수정 전 Native 58.08). 전체 1쪽 = PDF 1쪽, 전쪽 최저
 //! Native 99.99(1쪽)·fresh WASM 100.00(1쪽).
 //! 증거: `mydocs/pr/assets/issue_8735/typeset/{native,wasm,native-base}/`(TSV·review·overlay PNG).
