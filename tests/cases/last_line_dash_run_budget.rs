@@ -1,5 +1,9 @@
-//! 검사 유형: 관계형. 마지막 줄의 각 대시는 자기 글자 모양의 자연 전진까지만 복원한다.
-//! 주석 갱신: 2026-11-09T11:27:00+09:00. 공개 빈 문서의 합성 계약이며 실물 좌표·설치 글꼴에 의존하지 않는다.
+//! 검사 유형: 관계형(합성 런별 자연 전진), 고정형(독립 Print 707쪽의 글리프 원점 ±2 CSSpx).
+//! 주석 갱신: 2026-11-09T12:46:50.257955+09:00. 합성 계약과 실물 좌표 검사를 구분하며 설치 글꼴에 의존하지 않는다.
+//! 실물 707쪽: 2026-11-09 frozen B4 Native/fresh WASM 각각 raw 100.00%, Print 96 DPI·compat2022·2px.
+//! 독립 Print: pdf/issue8371/hwp3-sample10-2020.pdf, SHA310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918.
+//! 두 경로의 같은 쪽 review·overlay를 직접 판독했다. 실물 검사는 원본의 portable 메트릭으로 실행한다.
+//! 증적: mydocs/pr/assets/planet6897_20261106/last-line-dash-run-budget-20261109/validation.json.
 //! 원 계약 #5830·PR #5858/#5889의 자연 폭 상한과 좁은 여백 한도를 유지한다.
 //! 서로 다른 크기·굵기·저자 자간을 가진 런에 첫 런의 복원량을 재사용하면 실패한다.
 #![cfg(not(target_arch = "wasm32"))]
@@ -110,5 +114,57 @@ fn left_aligned_leaders_keep_the_existing_compressed_advances() {
     assert!(
         positions[1] < single,
         "왼쪽 정렬의 짧은 리더를 확장하지 않는다"
+    );
+}
+
+#[test]
+fn source_page707_keeps_the_independent_print_regular_run_and_last_dash_origins() {
+    fn owned<'a>(node: &'a RenderNode, out: &mut Vec<(&'a RenderNode, &'a TextRunNode)>) {
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            if run.section_index == Some(0) && run.para_index == Some(24_857) {
+                out.push((node, run));
+            }
+        }
+        for child in &node.children {
+            owned(child, out);
+        }
+    }
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/hwp3-sample10.hwp");
+    let mut core = DocumentCore::from_bytes(&std::fs::read(path).unwrap()).unwrap();
+    core.set_hangul2024_compat(false);
+    let tree = core.build_page_render_tree(706).unwrap();
+    let mut rows = vec![];
+    owned(&tree.root, &mut rows);
+    assert_eq!(
+        rows.len(),
+        2,
+        "같은 원본 문단의 굵은 대시와 일반 대시를 각각 한 번만 소유한다"
+    );
+    let source = &core.document().sections[0].paragraphs[24_857];
+    assert_eq!(
+        rows.iter()
+            .map(|(_, r)| r.text.as_str())
+            .collect::<String>(),
+        source.text,
+        "원문 순서·누락·중복을 보존한다"
+    );
+    assert!(rows[0].1.style.bold && !rows[1].1.style.bold);
+    assert_eq!(rows[0].1.char_start, Some(0));
+    assert_eq!(rows[1].1.char_start, Some(rows[0].1.text.chars().count()));
+    let (regular_box, regular) = rows[1];
+    // 독립 PDF T13의 첫/마지막 '-' 원점 228.8359832763672pt / 495.33709716796875pt.
+    // 물리 pt를 CSS96으로 환산했으며 구현의 bbox에서 기대값을 만들지 않는다.
+    assert!(
+        (regular_box.bbox.x - 305.11464436848956).abs() <= 2.0,
+        "일반 대시 런 원점: {}",
+        regular_box.bbox.x
+    );
+    let positions = regular.layout_positions.clone().unwrap_or_else(|| {
+        EmbeddedTextMeasurer.compute_char_positions(&regular.text, &regular.style)
+    });
+    let last = regular_box.bbox.x + positions[positions.len() - 2];
+    assert!(
+        (last - 660.449462890625).abs() <= 2.0,
+        "마지막 대시 원점: {last}"
     );
 }
