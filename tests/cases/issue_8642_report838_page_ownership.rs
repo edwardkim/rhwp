@@ -4,8 +4,8 @@
 //! 후보 전109쪽 raw 최저 Native98.70% / fresh WASM98.69% (96DPI, Print compat2022, 2px).
 //! 근거: planet6897_20261106/pr8642/report-838-original.hwp 및
 //! pdf/planet6897-20261106/pr8642/report-838-original-2020.pdf.
-//! 출력·TSV 생산자: output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/
-//! marker-indent-final/whole94-{native,wasm}/report-838/. 제출 전 정식 증적 경로를 함께 연결한다.
+//! 정식 증적: mydocs/pr/assets/planet6897_20261106/report-838-pagination-final/validation.json
+//! 및 native-silhouette.tsv / wasm-silhouette.tsv, 마지막 쪽 review·overlay.
 //! 쪽수만 줄이거나 본문·각주를 누락해 통과하지 못하게 하며 실물 절대 px는 고정하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 

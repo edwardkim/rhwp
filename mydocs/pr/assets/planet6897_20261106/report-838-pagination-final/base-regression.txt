@@ -1,0 +1,20 @@
+
+running 1 test
+test report838_preserves_all_note_references_and_the_print_page_owners ... FAILED
+
+failures:
+
+---- report838_preserves_all_note_references_and_the_print_page_owners stdout ----
+
+thread 'report838_preserves_all_note_references_and_the_print_page_owners' (175444402) panicked at tests/cases/issue_8642_report838_page_ownership.rs:51:5:
+assertion `left == right` failed: 독립 Print와 같은 전체 쪽수
+  left: 110
+ right: 109
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    report838_preserves_all_note_references_and_the_print_page_owners
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
