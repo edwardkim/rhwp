@@ -168,12 +168,27 @@ void Shared::submit_group(const std::shared_ptr<Shared>& first, const std::share
       return lease;
     });
     fa->leases = leases; fb->leases = leases;
-    auto weak_a = first->leases_, weak_b = second->leases_;
-    for (auto* retained : {&weak_a, &weak_b}) {
-      retained->erase(std::remove_if(retained->begin(), retained->end(), [](const auto& item) { return item.expired(); }), retained->end());
-      if (retained->size() + leases.size() > 2 * kMaxPages)
+    std::vector<std::weak_ptr<SnapshotLease>> weak_a, weak_b;
+    const auto retain_unique = [](auto& retained, const std::shared_ptr<SnapshotLease>& lease) {
+      for (const auto& weak : retained) {
+        auto previous = weak.lock();
+        if (previous && previous->id == lease->id) {
+          if (previous != lease) throw Failure("ownership", "snapshot has two destructive leases");
+          return;
+        }
+      }
+      if (retained.size() >= 2 * kMaxPages)
         throw Failure("limitExceeded", "tile group snapshot leases are full");
-      for (const auto& lease : leases) retained->push_back(lease);
+      retained.push_back(lease);
+    };
+    for (size_t index = 0; index < 2; ++index) {
+      auto& retained = index ? weak_b : weak_a;
+      const auto& state = index ? second : first;
+      retained.reserve(2 * kMaxPages);
+      for (const auto& weak : state->leases_) {
+        if (auto lease = weak.lock()) retain_unique(retained, lease);
+      }
+      for (const auto& lease : leases) retain_unique(retained, lease);
     }
     fa->serial = first->status_.accepted + 1; fb->serial = second->status_.accepted + 1;
     // Every fallible allocation and check completed. Both metadata commits are

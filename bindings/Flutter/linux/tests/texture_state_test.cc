@@ -380,6 +380,36 @@ void tile_group_snapshot_bound_is_union_not_placement_count() {
   for(auto id:{921,922,923,924})CHECK(bridge->releases[uint64_t(id)]==1);
 }
 
+void tile_group_borrowed_ids_do_not_consume_additional_lease_slots() {
+  auto bridge=std::make_shared<FakeBridge>();
+  auto first=std::make_shared<Shared>(bridge), second=std::make_shared<Shared>(bridge);
+  auto a=frame(1,931),b=frame(1,931);
+  for(auto id:{932,933,934}) {
+    a.pages.push_back({uint64_t(id),1,0,0,0xffffff});
+    b.pages.push_back({uint64_t(id),1,0,0,0xffffff});
+  }
+  // The same immutable page IDs may be borrowed by a newer view transform.
+  // Placement count and repeated submits cannot consume new destructive leases.
+  for(uint64_t view=1;view<=8;++view) {
+    a.stamp.view=b.stamp.view=view;
+    Shared::submit_group(first,second,a,b);
+    CHECK(first->status().accepted==view&&second->status().accepted==view);
+    CHECK(bridge->releases.empty());
+  }
+  first->close();CHECK(bridge->releases.empty());
+  second->close();
+  for(auto id:{931,932,933,934})CHECK(bridge->releases[uint64_t(id)]==1);
+  auto single=std::make_shared<Shared>(bridge);
+  for(uint64_t view=1;view<=8;++view) {
+    a.stamp.view=view;
+    for(auto& page:a.pages)page.snapshot=940+(page.snapshot-931);
+    CHECK(single->submit(a)==view);
+    for(auto& page:a.pages)page.snapshot=931+(page.snapshot-940);
+  }
+  single->close();
+  for(auto id:{940,941,942,943})CHECK(bridge->releases[uint64_t(id)]==1);
+}
+
 void unproven_driver_orphans_permanently_consume_the_process_budget() {
   auto bridge = std::make_shared<FakeBridge>();
   auto device = std::make_shared<Device>(); device->reclaim_on_abandon = false;
@@ -417,8 +447,9 @@ int main() {
     tile_group_acceptance_and_shared_snapshot_ownership();
     tile_group_second_failure_keeps_both_caller_owned();
     tile_group_snapshot_bound_is_union_not_placement_count();
+    tile_group_borrowed_ids_do_not_consume_additional_lease_slots();
     unproven_driver_orphans_permanently_consume_the_process_budget();
-    std::cout << "texture state: 16 cases, " << checks << " checks passed\n";
+    std::cout << "texture state: 17 cases, " << checks << " checks passed\n";
     return 0;
   } catch (const std::exception& error) {
     std::cerr << error.what() << '\n'; return 1;
