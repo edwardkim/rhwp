@@ -275,8 +275,14 @@ fn positive_corpus_unicode_vector_is_caught() {
 ///   `text=#FFFFFF` 다. 셀 `border_fill_id=11` 에 배경 채우기가 없어 탐지기가 쪽
 ///   바탕까지 내려가고(`backgroundSource: "page"`), 그 쪽 SVG 의 `<image>` 는 0개, 채움
 ///   `<rect>` 는 흰색(`#ffffff`)뿐이다. 서식에서 채울 칸을 지운 흔적으로 **보이지 않는다**.
+/// - `36338125-bottom-fixed-table-margin.hwpx`(`samples/issue8864/`) 1쪽 흰 글자 8자
+///   "상수도사업본부장". 공문 서식의 끝 표 셀 이름 `각안발신명의`(`editable="0"`)에
+///   기안 시스템이 넣은 값으로, 글자모양 `charPr id=24` 가 `height="100"`(1pt)·
+///   `textColor="#FFFFFF"` 다. 셀의 `borderFillIDRef=6` 에는 채우기가 없고 구역 XML 에
+///   `<hp:pic>`·`<hp:rect>` 가 0개라 탐지기가 쪽 바탕까지 내려간다(`backgroundSource: "page"`).
+///   눈에 보이는 발신 명의는 옆 칸의 다른 글이다. 흰 종이 위 1pt 흰 글자로 **사람 눈에 보이지 않는다**.
 ///
-/// 그래서 **규칙을 느슨하게 하지 않고** 이 세 문서만 스윕에서 뺀다. 여기에 항목을
+/// 그래서 **규칙을 느슨하게 하지 않고** 이 다섯 문서만 스윕에서 뺀다. 여기에 항목을
 /// 추가할 때는 반드시 위와 같은 개별 근거를 함께 남긴다 — 근거 없이 이름만 늘리면
 /// 이 목록이 오탐을 숨기는 서랍이 된다.
 const KNOWN_GENUINE_HIDDEN_TEXT: &[&str] = &[
@@ -284,6 +290,7 @@ const KNOWN_GENUINE_HIDDEN_TEXT: &[&str] = &[
     "issue1892_hwp3_tab_roundtrip.hwp",
     "30098_float_host_split_lineseg.hwp",
     "1351000-201800239_hpv_cohort_final_report.hwp",
+    "36338125-bottom-fixed-table-margin.hwpx",
 ];
 
 /// 제로폭 축의 같은 성격 목록 — **탐지가 맞았는데 표본이 실제로 그렇다**는 선언.
