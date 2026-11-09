@@ -2,6 +2,7 @@
 //! 주석 갱신: 2026-11-01T06:03:27+09:00; 직전 파일 커밋: 2026-10-25T22:58:32+09:00 (`3e02fe2749866a8453af3eb3901b9c1a674cccaf`).
 //! 입력·기준: `assets/font-rules/` 레지스트리와 합성 빈 문서.
 //! API·데이터 계약을 검사하며 화면 시각 일치율은 측정하지 않는다.
+//! 주석 갱신: 2026-11-10T07:21:00+09:00. #8856의 기록된 한양해서 메트릭 별칭을 포함한다.
 use std::collections::{BTreeMap, BTreeSet};
 
 use rhwp::document_core::DocumentCore;
@@ -148,7 +149,7 @@ fn sealed_v1_semantics_change_only_by_recorded_replacement() {
     let v2_rules = v2["rules"].as_array().expect("current v2 rules");
 
     assert_eq!(v1_rules.len(), 830);
-    assert_eq!(v2["summary"]["activeRuleCount"], 855);
+    assert_eq!(v2["summary"]["activeRuleCount"], 856);
     assert_eq!(v2["summary"]["retiredRuleCount"], 8);
 
     let mut expected_semantics: BTreeMap<_, _> = v1_rules
@@ -279,6 +280,10 @@ fn sealed_v1_semantics_change_only_by_recorded_replacement() {
         ),
         (
             include_str!("../../assets/font-rules/changes/issue-8575-ygodic250-metric-name.json"),
+            "rust-layout-metric",
+        ),
+        (
+            include_str!("../../assets/font-rules/changes/issue-8856-hyhaeseo-metric-name.json"),
             "rust-layout-metric",
         ),
     ] {
@@ -628,7 +633,7 @@ fn canonical_layout_name_projection_reaches_public_trace() {
 fn canonical_layout_metric_projection_reaches_public_lookup() {
     let registry = registry();
     let rules = projection_rules(&registry, "rust-layout-metric");
-    assert_eq!(rules.len(), 72);
+    assert_eq!(rules.len(), 73);
 
     for rule in rules {
         let source = source_face(rule);
