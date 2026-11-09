@@ -169,8 +169,14 @@ class _TileProbeState extends State<TileProbe> {
     );
     final strips = <Map<String, Object?>>[];
     final dpr = MediaQuery.devicePixelRatioOf(context);
-    for (var left = 0; left < physical.width.toInt(); left += 1024) {
-      final width = (physical.width.toInt() - left).clamp(1, 1024);
+    // Keep the complete document and native seam inside one independently
+    // observable strip. Its 2x 4096-by-at-most-992 source stays below 16 MiB.
+    for (final bounds in [
+      (0, 1024),
+      (1024, 2048),
+      (3072, physical.width.toInt() - 3072),
+    ]) {
+      final (left, width) = bounds;
       final view = NativePageViewport.placed(
         viewport!.page,
         viewport!.viewport,

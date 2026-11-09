@@ -64,7 +64,9 @@ def validate_stage(stage, nonce, index, pid):
     for strip in stage["strips"]:
         cpu, ref = strip["cpu"], strip["reference"]
         n = strip["width"]
-        require(strip["left"] == left and type(n) is int and 0 < n <= 1024, "bounded complete CPU strips")
+        require(strip["left"] == left and type(n) is int and 0 < n <= 2048 and
+                n * 2 <= 4096 and height * 2 <= 4096 and n * height * 4 <= 4 * 1024 * 1024,
+                "bounded complete CPU strips and 2x reference")
         left += n
         for factor, proof in ((1, cpu), (2, ref)):
             require(proof["snapshot"] == stage["snapshotIds"][0] and proof["stamp"] == stamp and
