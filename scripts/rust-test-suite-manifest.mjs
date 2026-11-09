@@ -36,6 +36,7 @@ const SHARED_SUPPORT_MODULES = [
     consumers: [
       'tests/cases/issue_8153_symbol_coverage.rs',
       'tests/cases/issue_8153_symbol_fallback.rs',
+      'tests/cases/issue_8856_replacement_symbol_cell.rs',
     ],
   },
 ];
