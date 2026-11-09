@@ -2625,6 +2625,12 @@ fn char_width_decision_with_hft_tracking<'a>(
     } else {
         base_width_raw
     };
+    // 별도 암묵적 기호 프로그램의 전진은 본문 HFT 꾸밈이 소유하지 않는다.
+    // 독립 Print의 반각 이중선처럼 같은 run 안에서도 공급 프로그램이 다르면
+    // 본문용 굵기 자간을 빌리지 않는다. 준비된 원 PUA 프로그램·본문 글리프와
+    // 리터럴 Unicode 문자는 기존의 자기 프로그램 계약을 유지한다.
+    let include_hft_bold_tracking =
+        include_hft_bold_tracking && width_source != "implicitSymbolProgram";
     // 원본 HFT의 굵기는 intrinsic 글리프 폭을 바꾸지 않고 약0.05em의
     // 추가 전진을 준다. 독립 Print 22행의 굵기·크기·자간 대조를 따른다.
     // 표시용 TTF의 bold 메트릭이나 배분 자간과 구분하고 원본 자간을 함께 소비한다.

@@ -19,6 +19,11 @@ pub(crate) fn implicit_symbol_advance_em(character: char) -> Option<f64> {
         // A854/A855 프로그램을 사용한다. /W512, UPEM1024이며 표시용
         // 전각 흰 겹낫표의 폭으로 원본 반각 전진을 덮어쓰지 않는다.
         '\u{F0854}' | '\u{F0855}' => Some(0.5),
+        // #5793의 독립 Print와 sample10 474쪽은 원 HNC 이중선을
+        // 본문 face와 별개인 Haansoft Batang의 반각 프로그램으로 출력한다.
+        // 원시 HWP5 별칭과 평면15 키는 같은 프로그램이며 굵은 본문에도
+        // 기호 고유 전진을 쓴다. 리터럴 Unicode ═에는 이 계약을 옮기지 않는다.
+        '\u{A827}' | '\u{F0827}' => Some(0.5),
         // 편람의 한컴 2020·2024 Print는 원 PUA 삼각 기호를
         // Haansoft Batang CID13, /W500으로 출력한다. 실제 원 프로그램을
         // 준비한 경우의 전진은 앞선 native_pua_metrics가 소유하고,
