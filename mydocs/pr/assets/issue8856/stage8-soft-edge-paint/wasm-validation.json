@@ -1,0 +1,637 @@
+{
+  "parent_head": "17800f1496791eae81413d380c5c4b8407e78e1d",
+  "scope": "stage8 focused source validation; final whole suite/protected TSV pending",
+  "local_build": "Mac locked wrapper --target web --out-dir pkg --no-opt; not Docker optimized",
+  "source_sha256": {
+    "src/paint/builder.rs": "153317e19637e9e9dbc10b1084c0bf7051ae1052ff38d208de5bfc0d9fec0aac",
+    "src/renderer/image_resolver.rs": "fdb9670c40ec204c9a54af8623bf4d9e0c3de43229a3f175204113fb756a936e",
+    "src/renderer/image_resolver/picture_soft_edge.rs": "15fb3511932ce7156d0e97e0fc17f5de5ebbbcb5ec09c5a11736dd22bae83fd4"
+  },
+  "wasm_artifacts": {
+    "pkg/rhwp.js": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed",
+    "pkg/rhwp_bg.wasm": "dd6ed0387652d75bb4674f04e389437f192af7963be9f51524b21fbbe3c16a1c",
+    "rhwp-studio/public/rhwp.js": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed",
+    "rhwp-studio/public/rhwp_bg.wasm": "dd6ed0387652d75bb4674f04e389437f192af7963be9f51524b21fbbe3c16a1c",
+    "output/issue8856/soft-edge-paint/frozen-pkg/rhwp.js": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed",
+    "output/issue8856/soft-edge-paint/frozen-pkg/rhwp_bg.wasm": "dd6ed0387652d75bb4674f04e389437f192af7963be9f51524b21fbbe3c16a1c"
+  },
+  "http_initialization": {
+    "command": [
+      "sandbox-exec",
+      "-f",
+      "/Users/tsjang/rhwp/output/issue8856/start/minimal-font.sb",
+      "node",
+      "--require",
+      "/Users/tsjang/rhwp/output/issue8856/start/http-response-observer.cjs",
+      "scripts/export-wasm-png-for-sweep.mjs",
+      "--pkg",
+      "/Users/tsjang/rhwp/pkg",
+      "--input",
+      "samples/basic/interview.hwp",
+      "--out",
+      "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/actual-http-initialization",
+      "--fonts",
+      "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/wasm/interview/silhouette-parts/p0001-0001/font-catalog.json",
+      "--options",
+      "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/wasm/interview/silhouette-parts/p0001-0001/canvas-options.json"
+    ],
+    "actual_responses": [
+      {
+        "path": "/rhwp.js",
+        "method": "GET",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+        "status": 200,
+        "bytes": 573859,
+        "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+      },
+      {
+        "path": "/rhwp_bg.wasm",
+        "method": "GET",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+        "status": 200,
+        "bytes": 31623716,
+        "sha256": "dd6ed0387652d75bb4674f04e389437f192af7963be9f51524b21fbbe3c16a1c"
+      }
+    ],
+    "captured_pages": [
+      {
+        "page": 1,
+        "sha256": "db39403f3c0579a19021c0f9e677f5e03851ff0de4a85a83135f3ad8955cd6bd",
+        "identical_to_current_paired_wasm": true
+      }
+    ]
+  },
+  "focused_tests": {
+    "actual_before": {
+      "run": 2,
+      "pass": 0,
+      "fail": 2
+    },
+    "final_new": {
+      "run": 3,
+      "pass": 3,
+      "fail": 0
+    },
+    "existing_ownership": {
+      "run": 4,
+      "pass": 4,
+      "fail": 0
+    },
+    "existing_dimensions": {
+      "run": 2,
+      "pass": 2,
+      "fail": 0
+    },
+    "excluded": [
+      "Intermediate after.log source changed during compilation, not final source evidence",
+      "Initial HTTP probe missing per-part options, no browser initialization occurred; corrected real probe only"
+    ]
+  },
+  "logs_sha256": {
+    "links.log": "c229e3b3dd8f86ec00ae184c8deed96c8565a475f48564e7fe2eddf8c2a0f6fa",
+    "native-flat-r2000.log": "cb08a08bf83f424ce25a7ce3e8ad950bc4af8ae056419af69763e92cd8012100",
+    "wasm-alpha-hole-r1000-2024.log": "b09d728396f3c8c48678b6420f80282b7d79d25c4691681f53fcb4b1c0205229",
+    "wasm-flat-r1000.log": "1d3c1786478a97de1183b71f5dcd4541c779156bc8eb4dca0b90b23ba6d6ec6a",
+    "fresh-wasm.log": "3d27603a9aa33ef52fb3aa9fb15921cf37977eed3d65bb79be43cca51bc5cfe7",
+    "wasm-alpha-half-r1000-2020.log": "a7b271582871bf828e08a2be19ab8f18f9052af062c1a87d0319f68430285eb8",
+    "wasm-driver.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native-interview.log": "3572b0b1071e0738a8a095b3717f0b4c01ca99bc61021d12c22db5f40ce0c50e",
+    "wasm-alpha-half-r1000-2024.log": "9c15b5c268cd3195842df0e5eeb6a3b8191e4643c27b7dbe7af98bf59d1fa233",
+    "fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wasm-alpha-hole-r1000-2020.log": "a890db5953d0c7ccc34470a29ee78455f1d1e96f9ce5316d9fd82980e345991a",
+    "issue_8856_picture_soft_edge_ownership.log": "30aa29c1d088b7d24c496377f9c4b44cb60f40201e4048a85dd192d3b4625a21",
+    "native-clippy.log": "b3b951585a92f5712400af4681c7a0d4926e6b3602a8b2dbb9de749a2eef3b13",
+    "wasm-interview.log": "1cf8efda734a44875779a8b8dca8ab7984961f5dad1992b2844c6b98598d5177",
+    "unit-tiers-check.log": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0",
+    "preserve-alpha.log": "ec5763333602dbbb50ae8c1ccafe5fb4188773612e7e88970b3d1729a17682cc",
+    "issue_8593_picture_soft_edge_dim.log": "acb37f2b50c10465265c57e773851932baf6f07b971482e1e339076057e28ff9",
+    "initialization.log": "be83cb5beb970211b10bc6343652d06a6e166e0b0c78fc067fc852181d543e72",
+    "prepare-final.log": "72cd9bd1fc105e7d86abd719638b3b9662966b4958c5ae056e104ca304b23d65",
+    "title-bold-diagnostic.log": "b67bb8e7e2068df9ba5d955789f0a0112eb28bed07bf7d07994b32ceed5f2a9f",
+    "after-final.log": "0c6b91f4b894077d04d77d0b29d360549bba379df9363761a19ceb8560998f42",
+    "native-alpha-half-r1000-2020.log": "cc433299aa15e55962fffe97a2517f5c87b34e96c2cd8801628efe5455d47d0b",
+    "native-flat-r300.log": "3662178bba55c9812048ba649a84e584fa60e9ef6660882a74ef7cb68d971c3b",
+    "title-public-font-shape.log": "1f4e2e4941b9361a41d7168c68007f737a21dd39bd30ebfa0b3d5edb4c376d67",
+    "hole-kernel-comparison.log": "c6850194167cf761485e9ef269134920b66a7c5c62644ecf7fe527ad55b28ddc",
+    "native-alpha-hole-r1000-2024.log": "1a3f091417ca6fef8abbc4b2569f1c4dbdb21117221d504911204b7bf15d68c9",
+    "alpha-visual-driver.log": "1f715591e51142eaa70231cac8540ef87d589dda9a296dd1528b646454710292",
+    "initialization-missing-part-options.log": "937553f46a13ac9dd92d73d937283675b2ca33ac8aa36c0b057d4e670fc50114",
+    "wasm-flat-r2000.log": "ca7625919883974c1c9e55cc2b352afbdade2802c5b037ae93720cf926851da1",
+    "report110-diagnostic.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native-flat-r1000.log": "3f757bf1a64086507a38d0f47a561c60ac961ce62292004ee7889f23ce0c4281",
+    "native-alpha-hole-r1000-2020.log": "ecbcf4143094937f7d057433a20baafa076f64b10e2eb1ce5b8fb163cbd26738",
+    "prepare.log": "5bc95fdb760b871ac0ccb466b971f215cd2e01c46a5fa3a011af3534f5c3f735",
+    "native-alpha-half-r1000-2024.log": "5e783812cd39512feeef3ed2e7c534151192fd6af8bcc0261abb8fda848cae3e",
+    "native-alpha-hole-r0-2024.log": "9e37d210f6fed9314b9c125e8497ebfc4ba5340a37452c081e838068277a7a71",
+    "before.log": "4fb3e659d9aa40b5b2c7a75e85b69a12823eacffc3d012e91f26fa52e7eb8c97",
+    "native-alpha-half-r0-2024.log": "e23ab28f0c24ecdd3b1b08b39767f4b94249e3e3e453a4219e5b7b1072c95f54",
+    "links-stage8-complete.log": "c229e3b3dd8f86ec00ae184c8deed96c8565a475f48564e7fe2eddf8c2a0f6fa",
+    "wasm-alpha-half-r0-2020.log": "9019fb8b9d4ead0a3c64a260198afe0744cd0e6b7236156462cb76a714701efd",
+    "links-final.log": "c229e3b3dd8f86ec00ae184c8deed96c8565a475f48564e7fe2eddf8c2a0f6fa",
+    "wasm-alpha-hole-r0-2020.log": "9c24690ab1c756e46bb0e5b0b102c6b3f37aef50e766fac9c424a57038224a83",
+    "native-driver.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native-soft-edge-source-control.log": "efee0e39dcada938bfd1ebefdbfb98584c0bcb52db651ed520ab77dafb78e369",
+    "manifest-check.log": "32a2627a581cabec7cecc7dc6a7d6c1a722f203fef608000fa8f1ecf51039110",
+    "wasm-alpha-hole-r0-2024.log": "53ce99f5462058eaccf9518af5c286532d642dacbc2d97f01ed46b53c0a2343a",
+    "wasm-alpha-half-r0-2024.log": "d160e500a92cf14b931b64fd5569ff5afa0580393500ed78bbee8703498ad4df",
+    "wasm-flat-r300.log": "885346534710a5bcca158086d9c9e1b006c01c83791a2398cc81b2ff99b7499b",
+    "native-alpha-half-r0-2020.log": "ac6a221ca0cedbc51eb623f75202fddb118a56b777f7cee6ae18e6658dd6785f",
+    "wasm-soft-edge-source-control.log": "7333da9cfab3c41537559714a60a1bdbbf2e4e97158bfbebf68a1b273c43533b",
+    "direct-reviews.log": "ffd7b3fff3b576516d9acac50841b11a26a49f186c496568b22a3063b5596714",
+    "native-build.log": "d35c20cdddc2cd966ec7fc0cc4c5ae1ba6f7282ce9e076af6b99e6e4acac57ea",
+    "after.log": "440e030b79e152019c606be406318508897728774571e611396425ff04d4663b",
+    "native-alpha-hole-r0-2020.log": "5759e4c78755ef16c455be6637f4e4f6ba42012b3170dd5d711b0d519a1b18b1",
+    "wasm-direct-reviews.log": "ffd7b3fff3b576516d9acac50841b11a26a49f186c496568b22a3063b5596714"
+  },
+  "cases": [
+    {
+      "case": "interview",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.25469,
+          "silhouette_raw_unmatched_pixels": 3167,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 424923,
+          "tolerant_content_match_percent": 99.25469
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99221,
+          "silhouette_raw_unmatched_pixels": 13,
+          "silhouette_boundary_reconciled_pixels": 7,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 166917,
+          "tolerant_content_match_percent": 99.99641
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "samples/basic/interview.hwp",
+          "sha256": "fc71c2a0ebced5e913fbcbbc39a28244f5d73144f74ba1a4ebc548998d408d3c"
+        },
+        "pdf": {
+          "path": "pdf/basic/interview-hwp-2020.pdf",
+          "sha256": "3b5c947640e19e1546968efd8d4fc05e8acef14fd427dd28f2c82a6a1bb6936b"
+        },
+        "git_head": "17800f1496791eae81413d380c5c4b8407e78e1d",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "path": "output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "sha256": "f296c7f6939880067f6704a8ef5ea06cf83194963cf261edc645d31dcc975399"
+        },
+        "raster_backend": "wasm-canvas2d",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2022",
+        "font_environment": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/f5ddbc63adcee9102ff8811591e048206967491493ba7bf2e08b386c17c7396f.json",
+          "sha256": "f5ddbc63adcee9102ff8811591e048206967491493ba7bf2e08b386c17c7396f"
+        },
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp.js",
+              "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp_bg.wasm",
+              "sha256": "dd6ed0387652d75bb4674f04e389437f192af7963be9f51524b21fbbe3c16a1c"
+            }
+          ],
+          "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+          "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+          "comparison_profile": "print",
+          "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "explicit",
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+              "sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+              "sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+              "sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/native.ttf",
+              "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/native.ttf",
+              "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/native.ttf",
+              "sha256": "68e21f4ed0189ce481d4a18fdf654f410d6e94d6e5b4936f0b20874e9e5b97a6"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "case": "soft-edge-source-control",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.91775,
+          "silhouette_raw_unmatched_pixels": 38,
+          "silhouette_boundary_reconciled_pixels": 23,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 46202,
+          "tolerant_content_match_percent": 99.96753
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "samples/issue8593/picture_soft_edge.hwp",
+          "sha256": "fb71457b094a0b534fe8ea2092ecc3a642bc1e5ea0ffe99c2915e426b6c629f4"
+        },
+        "pdf": {
+          "path": "pdf/issue8593/picture_soft_edge-2020.pdf",
+          "sha256": "dd26aebb46d3bfb52e03828dc8a56a94a9047ade8322b3de8aeb1bf053782b45"
+        },
+        "git_head": "17800f1496791eae81413d380c5c4b8407e78e1d",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "path": "output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "sha256": "f296c7f6939880067f6704a8ef5ea06cf83194963cf261edc645d31dcc975399"
+        },
+        "raster_backend": "wasm-canvas2d",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2022",
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp.js",
+              "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp_bg.wasm",
+              "sha256": "dd6ed0387652d75bb4674f04e389437f192af7963be9f51524b21fbbe3c16a1c"
+            }
+          ],
+          "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+          "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+          "comparison_profile": "print",
+          "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "none",
+          "files": []
+        }
+      }
+    },
+    {
+      "case": "flat-r300",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 105856,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "pdf/issue8856/flat-soft-edge-r300.hwpx",
+          "sha256": "efd31441477b630aadaa638bd1f6c32d72283ee1968fa2c62e5c9f08d7e34c41"
+        },
+        "pdf": {
+          "path": "pdf/issue8856/flat-soft-edge-r300-2020.pdf",
+          "sha256": "bfe913f0b5bed379ffc4deac5b3db361a7c37344076cc63fde029dc72212e611"
+        },
+        "git_head": "17800f1496791eae81413d380c5c4b8407e78e1d",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "path": "output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "sha256": "f296c7f6939880067f6704a8ef5ea06cf83194963cf261edc645d31dcc975399"
+        },
+        "raster_backend": "wasm-canvas2d",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2022",
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp.js",
+              "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp_bg.wasm",
+              "sha256": "dd6ed0387652d75bb4674f04e389437f192af7963be9f51524b21fbbe3c16a1c"
+            }
+          ],
+          "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+          "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+          "comparison_profile": "print",
+          "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "none",
+          "files": []
+        }
+      }
+    },
+    {
+      "case": "flat-r1000",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99417,
+          "silhouette_raw_unmatched_pixels": 6,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 102898,
+          "tolerant_content_match_percent": 99.99417
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "pdf/issue8856/flat-soft-edge-r1000.hwpx",
+          "sha256": "143fd533a98a00864baf730e24f20ca42843d2f57b9ff4a9b1640097fd3914ba"
+        },
+        "pdf": {
+          "path": "pdf/issue8856/flat-soft-edge-r1000-2020.pdf",
+          "sha256": "573172f3ea62c72cd06b9b0c4c99ee3706e82ddc9cb68d069c99f3e3968f6278"
+        },
+        "git_head": "17800f1496791eae81413d380c5c4b8407e78e1d",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "path": "output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "sha256": "f296c7f6939880067f6704a8ef5ea06cf83194963cf261edc645d31dcc975399"
+        },
+        "raster_backend": "wasm-canvas2d",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2022",
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp.js",
+              "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp_bg.wasm",
+              "sha256": "dd6ed0387652d75bb4674f04e389437f192af7963be9f51524b21fbbe3c16a1c"
+            }
+          ],
+          "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+          "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+          "comparison_profile": "print",
+          "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "none",
+          "files": []
+        }
+      }
+    },
+    {
+      "case": "flat-r2000",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.70289,
+          "silhouette_raw_unmatched_pixels": 291,
+          "silhouette_boundary_reconciled_pixels": 119,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 97943,
+          "tolerant_content_match_percent": 99.82439
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "pdf/issue8856/flat-soft-edge-r2000.hwpx",
+          "sha256": "13d2ee9ebb101d0f4ea871d57e65a22b79e24dee8d853239d76bcf2da9c2745e"
+        },
+        "pdf": {
+          "path": "pdf/issue8856/flat-soft-edge-r2000-2020.pdf",
+          "sha256": "def6129b529e598a7be1cb3bfd50b51fec5addbe8f658daa6d8a442949d31530"
+        },
+        "git_head": "17800f1496791eae81413d380c5c4b8407e78e1d",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "path": "output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "sha256": "f296c7f6939880067f6704a8ef5ea06cf83194963cf261edc645d31dcc975399"
+        },
+        "raster_backend": "wasm-canvas2d",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2022",
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp.js",
+              "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp_bg.wasm",
+              "sha256": "dd6ed0387652d75bb4674f04e389437f192af7963be9f51524b21fbbe3c16a1c"
+            }
+          ],
+          "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+          "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+          "comparison_profile": "print",
+          "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "none",
+          "files": []
+        }
+      }
+    }
+  ]
+}

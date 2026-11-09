@@ -1,0 +1,2322 @@
+{
+  "scope": "16 actual focused visual conditions; not final whole gates",
+  "conditions": [
+    {
+      "backend": "native",
+      "case": "alpha-half-r0-2020",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 107466,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "pdf/issue8856/soft-edge-half-r0.hwpx",
+          "sha256": "4e38225e490aec6ed95a8f528a335d6d07d778eb3b63097a2e459209a5a31a9a"
+        },
+        "pdf": {
+          "path": "pdf/issue8856/alpha-half-r0-2020.pdf",
+          "sha256": "ae25cf369035fa69c155443f9c5654fe89d6b452a45dc11448292881783cb82a"
+        },
+        "git_head": "17800f1496791eae81413d380c5c4b8407e78e1d",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "path": "output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "sha256": "f296c7f6939880067f6704a8ef5ea06cf83194963cf261edc645d31dcc975399"
+        },
+        "native_webfont_fallback": {
+          "registry_sha256": "a2dfdd11b0e50ed9512dafdac9207b6d6217d048e2cab1e8569243803e77033e",
+          "mappings": {
+            "굴림": "NotoSansKRExtraLight",
+            "바탕": "NotoSerifKRExtraLight-Regular",
+            "한컴 윤고딕 250": "NotoSansKR-Regular",
+            "함초롬돋움": "HCRDotum",
+            "함초롬바탕": "HCRBatang",
+            "HY견고딕": "NotoSansKRThin-Bold",
+            "양재백두체B": "NotoSansKR-Regular"
+          },
+          "document_glyph_fallbacks": [],
+          "unmapped_sources": [
+            "양재백두체B",
+            "한컴 윤고딕 250"
+          ],
+          "local_document_substitutes": [],
+          "resources": [
+            {
+              "url": "fonts/NotoSansKR-ExtraLight.woff2",
+              "source_sha256": "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+              "native_sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8",
+              "native_face": "NotoSansKRExtraLight"
+            },
+            {
+              "url": "fonts/NotoSerifKR-Regular.woff2",
+              "source_sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+              "native_sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18",
+              "native_face": "NotoSerifKRExtraLight-Regular"
+            },
+            {
+              "url": "fonts/NotoSansKR-Regular.woff2",
+              "source_sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+              "native_sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834",
+              "native_face": "NotoSansKR-Regular"
+            },
+            {
+              "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff",
+              "source_sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/native.ttf",
+              "native_sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+              "native_face": "HCRDotum"
+            },
+            {
+              "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+              "source_sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/native.ttf",
+              "native_sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+              "native_face": "HCRBatang"
+            },
+            {
+              "url": "fonts/NotoSansKR-Bold.woff2",
+              "source_sha256": "dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/native.ttf",
+              "native_sha256": "68e21f4ed0189ce481d4a18fdf654f410d6e94d6e5b4936f0b20874e9e5b97a6",
+              "native_face": "NotoSansKRThin-Bold"
+            }
+          ],
+          "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+        },
+        "raster_backend": "native-skia",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2022",
+        "font_environment": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/f5ddbc63adcee9102ff8811591e048206967491493ba7bf2e08b386c17c7396f.json",
+          "sha256": "f5ddbc63adcee9102ff8811591e048206967491493ba7bf2e08b386c17c7396f"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "automatic_local_and_web",
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+              "sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/source.woff2",
+              "sha256": "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+              "sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+              "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+              "sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/source.woff2",
+              "sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/native.ttf",
+              "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/source.woff",
+              "sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/native.ttf",
+              "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/source.woff",
+              "sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/native.ttf",
+              "sha256": "68e21f4ed0189ce481d4a18fdf654f410d6e94d6e5b4936f0b20874e9e5b97a6"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/source.woff2",
+              "sha256": "dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "backend": "native",
+      "case": "alpha-half-r1000-2020",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.88653,
+          "silhouette_raw_unmatched_pixels": 115,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 101344,
+          "tolerant_content_match_percent": 99.88653
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "pdf/issue8856/soft-edge-half-r1000.hwpx",
+          "sha256": "6bf153df96ee210c7690ef5180f78e2ff87ad45902afabf18e49bad04430e18b"
+        },
+        "pdf": {
+          "path": "pdf/issue8856/alpha-half-r1000-2020.pdf",
+          "sha256": "645c58f9f57932c2e54cdd5bb0b92378fa1f1e2a1818429bc30ed573ffb49e80"
+        },
+        "git_head": "17800f1496791eae81413d380c5c4b8407e78e1d",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "path": "output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "sha256": "f296c7f6939880067f6704a8ef5ea06cf83194963cf261edc645d31dcc975399"
+        },
+        "native_webfont_fallback": {
+          "registry_sha256": "a2dfdd11b0e50ed9512dafdac9207b6d6217d048e2cab1e8569243803e77033e",
+          "mappings": {
+            "굴림": "NotoSansKRExtraLight",
+            "바탕": "NotoSerifKRExtraLight-Regular",
+            "한컴 윤고딕 250": "NotoSansKR-Regular",
+            "함초롬돋움": "HCRDotum",
+            "함초롬바탕": "HCRBatang",
+            "HY견고딕": "NotoSansKRThin-Bold",
+            "양재백두체B": "NotoSansKR-Regular"
+          },
+          "document_glyph_fallbacks": [],
+          "unmapped_sources": [
+            "양재백두체B",
+            "한컴 윤고딕 250"
+          ],
+          "local_document_substitutes": [],
+          "resources": [
+            {
+              "url": "fonts/NotoSansKR-ExtraLight.woff2",
+              "source_sha256": "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+              "native_sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8",
+              "native_face": "NotoSansKRExtraLight"
+            },
+            {
+              "url": "fonts/NotoSerifKR-Regular.woff2",
+              "source_sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+              "native_sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18",
+              "native_face": "NotoSerifKRExtraLight-Regular"
+            },
+            {
+              "url": "fonts/NotoSansKR-Regular.woff2",
+              "source_sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+              "native_sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834",
+              "native_face": "NotoSansKR-Regular"
+            },
+            {
+              "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff",
+              "source_sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/native.ttf",
+              "native_sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+              "native_face": "HCRDotum"
+            },
+            {
+              "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+              "source_sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/native.ttf",
+              "native_sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+              "native_face": "HCRBatang"
+            },
+            {
+              "url": "fonts/NotoSansKR-Bold.woff2",
+              "source_sha256": "dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/native.ttf",
+              "native_sha256": "68e21f4ed0189ce481d4a18fdf654f410d6e94d6e5b4936f0b20874e9e5b97a6",
+              "native_face": "NotoSansKRThin-Bold"
+            }
+          ],
+          "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+        },
+        "raster_backend": "native-skia",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2022",
+        "font_environment": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/f5ddbc63adcee9102ff8811591e048206967491493ba7bf2e08b386c17c7396f.json",
+          "sha256": "f5ddbc63adcee9102ff8811591e048206967491493ba7bf2e08b386c17c7396f"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "automatic_local_and_web",
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+              "sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/source.woff2",
+              "sha256": "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+              "sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+              "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+              "sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/source.woff2",
+              "sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/native.ttf",
+              "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/source.woff",
+              "sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/native.ttf",
+              "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/source.woff",
+              "sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/native.ttf",
+              "sha256": "68e21f4ed0189ce481d4a18fdf654f410d6e94d6e5b4936f0b20874e9e5b97a6"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/source.woff2",
+              "sha256": "dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "backend": "native",
+      "case": "alpha-hole-r0-2020",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 103359,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "pdf/issue8856/soft-edge-hole-r0.hwpx",
+          "sha256": "709f09a7e388418f232a718c96f52c3c7640122f690bf16f2b6e9ef82b91590f"
+        },
+        "pdf": {
+          "path": "pdf/issue8856/alpha-hole-r0-2020.pdf",
+          "sha256": "ea4dddf7d8ae2b21bf9834c2a97712aeeb6b29c1eb7f3e9dda11fadd92f04c37"
+        },
+        "git_head": "17800f1496791eae81413d380c5c4b8407e78e1d",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "path": "output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "sha256": "f296c7f6939880067f6704a8ef5ea06cf83194963cf261edc645d31dcc975399"
+        },
+        "native_webfont_fallback": {
+          "registry_sha256": "a2dfdd11b0e50ed9512dafdac9207b6d6217d048e2cab1e8569243803e77033e",
+          "mappings": {
+            "굴림": "NotoSansKRExtraLight",
+            "바탕": "NotoSerifKRExtraLight-Regular",
+            "한컴 윤고딕 250": "NotoSansKR-Regular",
+            "함초롬돋움": "HCRDotum",
+            "함초롬바탕": "HCRBatang",
+            "HY견고딕": "NotoSansKRThin-Bold",
+            "양재백두체B": "NotoSansKR-Regular"
+          },
+          "document_glyph_fallbacks": [],
+          "unmapped_sources": [
+            "양재백두체B",
+            "한컴 윤고딕 250"
+          ],
+          "local_document_substitutes": [],
+          "resources": [
+            {
+              "url": "fonts/NotoSansKR-ExtraLight.woff2",
+              "source_sha256": "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+              "native_sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8",
+              "native_face": "NotoSansKRExtraLight"
+            },
+            {
+              "url": "fonts/NotoSerifKR-Regular.woff2",
+              "source_sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+              "native_sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18",
+              "native_face": "NotoSerifKRExtraLight-Regular"
+            },
+            {
+              "url": "fonts/NotoSansKR-Regular.woff2",
+              "source_sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+              "native_sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834",
+              "native_face": "NotoSansKR-Regular"
+            },
+            {
+              "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff",
+              "source_sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/native.ttf",
+              "native_sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+              "native_face": "HCRDotum"
+            },
+            {
+              "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+              "source_sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/native.ttf",
+              "native_sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+              "native_face": "HCRBatang"
+            },
+            {
+              "url": "fonts/NotoSansKR-Bold.woff2",
+              "source_sha256": "dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/native.ttf",
+              "native_sha256": "68e21f4ed0189ce481d4a18fdf654f410d6e94d6e5b4936f0b20874e9e5b97a6",
+              "native_face": "NotoSansKRThin-Bold"
+            }
+          ],
+          "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+        },
+        "raster_backend": "native-skia",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2022",
+        "font_environment": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/f5ddbc63adcee9102ff8811591e048206967491493ba7bf2e08b386c17c7396f.json",
+          "sha256": "f5ddbc63adcee9102ff8811591e048206967491493ba7bf2e08b386c17c7396f"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "automatic_local_and_web",
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+              "sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/source.woff2",
+              "sha256": "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+              "sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+              "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+              "sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/source.woff2",
+              "sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/native.ttf",
+              "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/source.woff",
+              "sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/native.ttf",
+              "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/source.woff",
+              "sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/native.ttf",
+              "sha256": "68e21f4ed0189ce481d4a18fdf654f410d6e94d6e5b4936f0b20874e9e5b97a6"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/source.woff2",
+              "sha256": "dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "backend": "native",
+      "case": "alpha-hole-r1000-2020",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9898,
+          "silhouette_raw_unmatched_pixels": 10,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 98033,
+          "tolerant_content_match_percent": 99.9898
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "pdf/issue8856/soft-edge-hole-r1000.hwpx",
+          "sha256": "446a1191741d9ced61aa4102eb7aef05c825eb4fd738a6e1c3bd477133ffee0d"
+        },
+        "pdf": {
+          "path": "pdf/issue8856/alpha-hole-r1000-2020.pdf",
+          "sha256": "24eaa2b8c3883cb222e02bee916e05a2a78541a416450a3e0e1b8dc7c94ddf3c"
+        },
+        "git_head": "17800f1496791eae81413d380c5c4b8407e78e1d",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "path": "output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "sha256": "f296c7f6939880067f6704a8ef5ea06cf83194963cf261edc645d31dcc975399"
+        },
+        "native_webfont_fallback": {
+          "registry_sha256": "a2dfdd11b0e50ed9512dafdac9207b6d6217d048e2cab1e8569243803e77033e",
+          "mappings": {
+            "굴림": "NotoSansKRExtraLight",
+            "바탕": "NotoSerifKRExtraLight-Regular",
+            "한컴 윤고딕 250": "NotoSansKR-Regular",
+            "함초롬돋움": "HCRDotum",
+            "함초롬바탕": "HCRBatang",
+            "HY견고딕": "NotoSansKRThin-Bold",
+            "양재백두체B": "NotoSansKR-Regular"
+          },
+          "document_glyph_fallbacks": [],
+          "unmapped_sources": [
+            "양재백두체B",
+            "한컴 윤고딕 250"
+          ],
+          "local_document_substitutes": [],
+          "resources": [
+            {
+              "url": "fonts/NotoSansKR-ExtraLight.woff2",
+              "source_sha256": "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+              "native_sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8",
+              "native_face": "NotoSansKRExtraLight"
+            },
+            {
+              "url": "fonts/NotoSerifKR-Regular.woff2",
+              "source_sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+              "native_sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18",
+              "native_face": "NotoSerifKRExtraLight-Regular"
+            },
+            {
+              "url": "fonts/NotoSansKR-Regular.woff2",
+              "source_sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+              "native_sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834",
+              "native_face": "NotoSansKR-Regular"
+            },
+            {
+              "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff",
+              "source_sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/native.ttf",
+              "native_sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+              "native_face": "HCRDotum"
+            },
+            {
+              "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+              "source_sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/native.ttf",
+              "native_sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+              "native_face": "HCRBatang"
+            },
+            {
+              "url": "fonts/NotoSansKR-Bold.woff2",
+              "source_sha256": "dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/native.ttf",
+              "native_sha256": "68e21f4ed0189ce481d4a18fdf654f410d6e94d6e5b4936f0b20874e9e5b97a6",
+              "native_face": "NotoSansKRThin-Bold"
+            }
+          ],
+          "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+        },
+        "raster_backend": "native-skia",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2022",
+        "font_environment": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/f5ddbc63adcee9102ff8811591e048206967491493ba7bf2e08b386c17c7396f.json",
+          "sha256": "f5ddbc63adcee9102ff8811591e048206967491493ba7bf2e08b386c17c7396f"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "automatic_local_and_web",
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+              "sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/source.woff2",
+              "sha256": "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+              "sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+              "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+              "sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/source.woff2",
+              "sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/native.ttf",
+              "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/source.woff",
+              "sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/native.ttf",
+              "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/source.woff",
+              "sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/native.ttf",
+              "sha256": "68e21f4ed0189ce481d4a18fdf654f410d6e94d6e5b4936f0b20874e9e5b97a6"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/source.woff2",
+              "sha256": "dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "backend": "native",
+      "case": "alpha-half-r0-2024",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 107466,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "pdf/issue8856/soft-edge-half-r0.hwpx",
+          "sha256": "4e38225e490aec6ed95a8f528a335d6d07d778eb3b63097a2e459209a5a31a9a"
+        },
+        "pdf": {
+          "path": "pdf/issue8856/alpha-half-r0-2024.pdf",
+          "sha256": "e180b7d091882da5e448783e82d2c641bf50d6aa8d01694045b079e84bc716bb"
+        },
+        "git_head": "17800f1496791eae81413d380c5c4b8407e78e1d",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "path": "output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "sha256": "f296c7f6939880067f6704a8ef5ea06cf83194963cf261edc645d31dcc975399"
+        },
+        "native_webfont_fallback": {
+          "registry_sha256": "a2dfdd11b0e50ed9512dafdac9207b6d6217d048e2cab1e8569243803e77033e",
+          "mappings": {
+            "굴림": "NotoSansKRExtraLight",
+            "바탕": "NotoSerifKRExtraLight-Regular",
+            "한컴 윤고딕 250": "NotoSansKR-Regular",
+            "함초롬돋움": "HCRDotum",
+            "함초롬바탕": "HCRBatang",
+            "HY견고딕": "NotoSansKRThin-Bold",
+            "양재백두체B": "NotoSansKR-Regular"
+          },
+          "document_glyph_fallbacks": [],
+          "unmapped_sources": [
+            "양재백두체B",
+            "한컴 윤고딕 250"
+          ],
+          "local_document_substitutes": [],
+          "resources": [
+            {
+              "url": "fonts/NotoSansKR-ExtraLight.woff2",
+              "source_sha256": "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+              "native_sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8",
+              "native_face": "NotoSansKRExtraLight"
+            },
+            {
+              "url": "fonts/NotoSerifKR-Regular.woff2",
+              "source_sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+              "native_sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18",
+              "native_face": "NotoSerifKRExtraLight-Regular"
+            },
+            {
+              "url": "fonts/NotoSansKR-Regular.woff2",
+              "source_sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+              "native_sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834",
+              "native_face": "NotoSansKR-Regular"
+            },
+            {
+              "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff",
+              "source_sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/native.ttf",
+              "native_sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+              "native_face": "HCRDotum"
+            },
+            {
+              "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+              "source_sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/native.ttf",
+              "native_sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+              "native_face": "HCRBatang"
+            },
+            {
+              "url": "fonts/NotoSansKR-Bold.woff2",
+              "source_sha256": "dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/native.ttf",
+              "native_sha256": "68e21f4ed0189ce481d4a18fdf654f410d6e94d6e5b4936f0b20874e9e5b97a6",
+              "native_face": "NotoSansKRThin-Bold"
+            }
+          ],
+          "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+        },
+        "raster_backend": "native-skia",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2024",
+        "font_environment": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/f5ddbc63adcee9102ff8811591e048206967491493ba7bf2e08b386c17c7396f.json",
+          "sha256": "f5ddbc63adcee9102ff8811591e048206967491493ba7bf2e08b386c17c7396f"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "automatic_local_and_web",
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+              "sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/source.woff2",
+              "sha256": "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+              "sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+              "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+              "sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/source.woff2",
+              "sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/native.ttf",
+              "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/source.woff",
+              "sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/native.ttf",
+              "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/source.woff",
+              "sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/native.ttf",
+              "sha256": "68e21f4ed0189ce481d4a18fdf654f410d6e94d6e5b4936f0b20874e9e5b97a6"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/source.woff2",
+              "sha256": "dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020"
+            }
+          ]
+        }
+      },
+      "center_color_example": {
+        "xy": [
+          200,
+          200
+        ],
+        "rhwp": [
+          159,
+          191,
+          223
+        ],
+        "pdf": [
+          206,
+          222,
+          238
+        ],
+        "note": "same color difference exists already at radius0; raw100 means silhouette, not RGB identity"
+      }
+    },
+    {
+      "backend": "native",
+      "case": "alpha-half-r1000-2024",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.98599,
+          "silhouette_raw_unmatched_pixels": 2009,
+          "silhouette_boundary_reconciled_pixels": 5,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 99751,
+          "tolerant_content_match_percent": 97.991
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "pdf/issue8856/soft-edge-half-r1000.hwpx",
+          "sha256": "6bf153df96ee210c7690ef5180f78e2ff87ad45902afabf18e49bad04430e18b"
+        },
+        "pdf": {
+          "path": "pdf/issue8856/alpha-half-r1000-2024.pdf",
+          "sha256": "9e1cbab5091592dd77dc1a16df63e0bea41f6d1f601b06b8541d46e767ed8f5a"
+        },
+        "git_head": "17800f1496791eae81413d380c5c4b8407e78e1d",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "path": "output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "sha256": "f296c7f6939880067f6704a8ef5ea06cf83194963cf261edc645d31dcc975399"
+        },
+        "native_webfont_fallback": {
+          "registry_sha256": "a2dfdd11b0e50ed9512dafdac9207b6d6217d048e2cab1e8569243803e77033e",
+          "mappings": {
+            "굴림": "NotoSansKRExtraLight",
+            "바탕": "NotoSerifKRExtraLight-Regular",
+            "한컴 윤고딕 250": "NotoSansKR-Regular",
+            "함초롬돋움": "HCRDotum",
+            "함초롬바탕": "HCRBatang",
+            "HY견고딕": "NotoSansKRThin-Bold",
+            "양재백두체B": "NotoSansKR-Regular"
+          },
+          "document_glyph_fallbacks": [],
+          "unmapped_sources": [
+            "양재백두체B",
+            "한컴 윤고딕 250"
+          ],
+          "local_document_substitutes": [],
+          "resources": [
+            {
+              "url": "fonts/NotoSansKR-ExtraLight.woff2",
+              "source_sha256": "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+              "native_sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8",
+              "native_face": "NotoSansKRExtraLight"
+            },
+            {
+              "url": "fonts/NotoSerifKR-Regular.woff2",
+              "source_sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+              "native_sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18",
+              "native_face": "NotoSerifKRExtraLight-Regular"
+            },
+            {
+              "url": "fonts/NotoSansKR-Regular.woff2",
+              "source_sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+              "native_sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834",
+              "native_face": "NotoSansKR-Regular"
+            },
+            {
+              "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff",
+              "source_sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/native.ttf",
+              "native_sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+              "native_face": "HCRDotum"
+            },
+            {
+              "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+              "source_sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/native.ttf",
+              "native_sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+              "native_face": "HCRBatang"
+            },
+            {
+              "url": "fonts/NotoSansKR-Bold.woff2",
+              "source_sha256": "dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/native.ttf",
+              "native_sha256": "68e21f4ed0189ce481d4a18fdf654f410d6e94d6e5b4936f0b20874e9e5b97a6",
+              "native_face": "NotoSansKRThin-Bold"
+            }
+          ],
+          "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+        },
+        "raster_backend": "native-skia",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2024",
+        "font_environment": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/f5ddbc63adcee9102ff8811591e048206967491493ba7bf2e08b386c17c7396f.json",
+          "sha256": "f5ddbc63adcee9102ff8811591e048206967491493ba7bf2e08b386c17c7396f"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "automatic_local_and_web",
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+              "sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/source.woff2",
+              "sha256": "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+              "sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+              "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+              "sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/source.woff2",
+              "sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/native.ttf",
+              "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/source.woff",
+              "sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/native.ttf",
+              "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/source.woff",
+              "sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/native.ttf",
+              "sha256": "68e21f4ed0189ce481d4a18fdf654f410d6e94d6e5b4936f0b20874e9e5b97a6"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/source.woff2",
+              "sha256": "dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020"
+            }
+          ]
+        }
+      },
+      "center_color_example": {
+        "xy": [
+          200,
+          200
+        ],
+        "rhwp": [
+          159,
+          191,
+          223
+        ],
+        "pdf": [
+          206,
+          222,
+          238
+        ],
+        "note": "same color difference exists already at radius0; raw100 means silhouette, not RGB identity"
+      }
+    },
+    {
+      "backend": "native",
+      "case": "alpha-hole-r0-2024",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 103360,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "pdf/issue8856/soft-edge-hole-r0.hwpx",
+          "sha256": "709f09a7e388418f232a718c96f52c3c7640122f690bf16f2b6e9ef82b91590f"
+        },
+        "pdf": {
+          "path": "pdf/issue8856/alpha-hole-r0-2024.pdf",
+          "sha256": "32406f16e727feeb01ca3412e82110f3da195f2ed6813448d8bf57201e885cf4"
+        },
+        "git_head": "17800f1496791eae81413d380c5c4b8407e78e1d",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "path": "output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "sha256": "f296c7f6939880067f6704a8ef5ea06cf83194963cf261edc645d31dcc975399"
+        },
+        "native_webfont_fallback": {
+          "registry_sha256": "a2dfdd11b0e50ed9512dafdac9207b6d6217d048e2cab1e8569243803e77033e",
+          "mappings": {
+            "굴림": "NotoSansKRExtraLight",
+            "바탕": "NotoSerifKRExtraLight-Regular",
+            "한컴 윤고딕 250": "NotoSansKR-Regular",
+            "함초롬돋움": "HCRDotum",
+            "함초롬바탕": "HCRBatang",
+            "HY견고딕": "NotoSansKRThin-Bold",
+            "양재백두체B": "NotoSansKR-Regular"
+          },
+          "document_glyph_fallbacks": [],
+          "unmapped_sources": [
+            "양재백두체B",
+            "한컴 윤고딕 250"
+          ],
+          "local_document_substitutes": [],
+          "resources": [
+            {
+              "url": "fonts/NotoSansKR-ExtraLight.woff2",
+              "source_sha256": "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+              "native_sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8",
+              "native_face": "NotoSansKRExtraLight"
+            },
+            {
+              "url": "fonts/NotoSerifKR-Regular.woff2",
+              "source_sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+              "native_sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18",
+              "native_face": "NotoSerifKRExtraLight-Regular"
+            },
+            {
+              "url": "fonts/NotoSansKR-Regular.woff2",
+              "source_sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+              "native_sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834",
+              "native_face": "NotoSansKR-Regular"
+            },
+            {
+              "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff",
+              "source_sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/native.ttf",
+              "native_sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+              "native_face": "HCRDotum"
+            },
+            {
+              "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+              "source_sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/native.ttf",
+              "native_sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+              "native_face": "HCRBatang"
+            },
+            {
+              "url": "fonts/NotoSansKR-Bold.woff2",
+              "source_sha256": "dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/native.ttf",
+              "native_sha256": "68e21f4ed0189ce481d4a18fdf654f410d6e94d6e5b4936f0b20874e9e5b97a6",
+              "native_face": "NotoSansKRThin-Bold"
+            }
+          ],
+          "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+        },
+        "raster_backend": "native-skia",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2024",
+        "font_environment": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/f5ddbc63adcee9102ff8811591e048206967491493ba7bf2e08b386c17c7396f.json",
+          "sha256": "f5ddbc63adcee9102ff8811591e048206967491493ba7bf2e08b386c17c7396f"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "automatic_local_and_web",
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+              "sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/source.woff2",
+              "sha256": "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+              "sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+              "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+              "sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/source.woff2",
+              "sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/native.ttf",
+              "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/source.woff",
+              "sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/native.ttf",
+              "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/source.woff",
+              "sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/native.ttf",
+              "sha256": "68e21f4ed0189ce481d4a18fdf654f410d6e94d6e5b4936f0b20874e9e5b97a6"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/source.woff2",
+              "sha256": "dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "backend": "native",
+      "case": "alpha-hole-r1000-2024",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.07187,
+          "silhouette_raw_unmatched_pixels": 899,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 96861,
+          "tolerant_content_match_percent": 99.07187
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "pdf/issue8856/soft-edge-hole-r1000.hwpx",
+          "sha256": "446a1191741d9ced61aa4102eb7aef05c825eb4fd738a6e1c3bd477133ffee0d"
+        },
+        "pdf": {
+          "path": "pdf/issue8856/alpha-hole-r1000-2024.pdf",
+          "sha256": "7bcd4f04a3cf37c0f8039f86275c7541acd2872bd79c3792863d106dff562b25"
+        },
+        "git_head": "17800f1496791eae81413d380c5c4b8407e78e1d",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "path": "output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "sha256": "f296c7f6939880067f6704a8ef5ea06cf83194963cf261edc645d31dcc975399"
+        },
+        "native_webfont_fallback": {
+          "registry_sha256": "a2dfdd11b0e50ed9512dafdac9207b6d6217d048e2cab1e8569243803e77033e",
+          "mappings": {
+            "굴림": "NotoSansKRExtraLight",
+            "바탕": "NotoSerifKRExtraLight-Regular",
+            "한컴 윤고딕 250": "NotoSansKR-Regular",
+            "함초롬돋움": "HCRDotum",
+            "함초롬바탕": "HCRBatang",
+            "HY견고딕": "NotoSansKRThin-Bold",
+            "양재백두체B": "NotoSansKR-Regular"
+          },
+          "document_glyph_fallbacks": [],
+          "unmapped_sources": [
+            "양재백두체B",
+            "한컴 윤고딕 250"
+          ],
+          "local_document_substitutes": [],
+          "resources": [
+            {
+              "url": "fonts/NotoSansKR-ExtraLight.woff2",
+              "source_sha256": "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+              "native_sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8",
+              "native_face": "NotoSansKRExtraLight"
+            },
+            {
+              "url": "fonts/NotoSerifKR-Regular.woff2",
+              "source_sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+              "native_sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18",
+              "native_face": "NotoSerifKRExtraLight-Regular"
+            },
+            {
+              "url": "fonts/NotoSansKR-Regular.woff2",
+              "source_sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+              "native_sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834",
+              "native_face": "NotoSansKR-Regular"
+            },
+            {
+              "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff",
+              "source_sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/native.ttf",
+              "native_sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+              "native_face": "HCRDotum"
+            },
+            {
+              "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+              "source_sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/native.ttf",
+              "native_sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+              "native_face": "HCRBatang"
+            },
+            {
+              "url": "fonts/NotoSansKR-Bold.woff2",
+              "source_sha256": "dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020",
+              "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/native.ttf",
+              "native_sha256": "68e21f4ed0189ce481d4a18fdf654f410d6e94d6e5b4936f0b20874e9e5b97a6",
+              "native_face": "NotoSansKRThin-Bold"
+            }
+          ],
+          "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+        },
+        "raster_backend": "native-skia",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2024",
+        "font_environment": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/f5ddbc63adcee9102ff8811591e048206967491493ba7bf2e08b386c17c7396f.json",
+          "sha256": "f5ddbc63adcee9102ff8811591e048206967491493ba7bf2e08b386c17c7396f"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "automatic_local_and_web",
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+              "sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/source.woff2",
+              "sha256": "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+              "sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+              "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+              "sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/source.woff2",
+              "sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/native.ttf",
+              "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/source.woff",
+              "sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/native.ttf",
+              "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/source.woff",
+              "sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/native.ttf",
+              "sha256": "68e21f4ed0189ce481d4a18fdf654f410d6e94d6e5b4936f0b20874e9e5b97a6"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/source.woff2",
+              "sha256": "dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "backend": "wasm",
+      "case": "alpha-half-r0-2020",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 107466,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "pdf/issue8856/soft-edge-half-r0.hwpx",
+          "sha256": "4e38225e490aec6ed95a8f528a335d6d07d778eb3b63097a2e459209a5a31a9a"
+        },
+        "pdf": {
+          "path": "pdf/issue8856/alpha-half-r0-2020.pdf",
+          "sha256": "ae25cf369035fa69c155443f9c5654fe89d6b452a45dc11448292881783cb82a"
+        },
+        "git_head": "17800f1496791eae81413d380c5c4b8407e78e1d",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "path": "output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "sha256": "f296c7f6939880067f6704a8ef5ea06cf83194963cf261edc645d31dcc975399"
+        },
+        "raster_backend": "wasm-canvas2d",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2022",
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp.js",
+              "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp_bg.wasm",
+              "sha256": "dd6ed0387652d75bb4674f04e389437f192af7963be9f51524b21fbbe3c16a1c"
+            }
+          ],
+          "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+          "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+          "comparison_profile": "print",
+          "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "none",
+          "files": []
+        }
+      }
+    },
+    {
+      "backend": "wasm",
+      "case": "alpha-half-r1000-2020",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.88653,
+          "silhouette_raw_unmatched_pixels": 115,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 101344,
+          "tolerant_content_match_percent": 99.88653
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "pdf/issue8856/soft-edge-half-r1000.hwpx",
+          "sha256": "6bf153df96ee210c7690ef5180f78e2ff87ad45902afabf18e49bad04430e18b"
+        },
+        "pdf": {
+          "path": "pdf/issue8856/alpha-half-r1000-2020.pdf",
+          "sha256": "645c58f9f57932c2e54cdd5bb0b92378fa1f1e2a1818429bc30ed573ffb49e80"
+        },
+        "git_head": "17800f1496791eae81413d380c5c4b8407e78e1d",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "path": "output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "sha256": "f296c7f6939880067f6704a8ef5ea06cf83194963cf261edc645d31dcc975399"
+        },
+        "raster_backend": "wasm-canvas2d",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2022",
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp.js",
+              "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp_bg.wasm",
+              "sha256": "dd6ed0387652d75bb4674f04e389437f192af7963be9f51524b21fbbe3c16a1c"
+            }
+          ],
+          "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+          "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+          "comparison_profile": "print",
+          "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "none",
+          "files": []
+        }
+      }
+    },
+    {
+      "backend": "wasm",
+      "case": "alpha-hole-r0-2020",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 103359,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "pdf/issue8856/soft-edge-hole-r0.hwpx",
+          "sha256": "709f09a7e388418f232a718c96f52c3c7640122f690bf16f2b6e9ef82b91590f"
+        },
+        "pdf": {
+          "path": "pdf/issue8856/alpha-hole-r0-2020.pdf",
+          "sha256": "ea4dddf7d8ae2b21bf9834c2a97712aeeb6b29c1eb7f3e9dda11fadd92f04c37"
+        },
+        "git_head": "17800f1496791eae81413d380c5c4b8407e78e1d",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "path": "output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "sha256": "f296c7f6939880067f6704a8ef5ea06cf83194963cf261edc645d31dcc975399"
+        },
+        "raster_backend": "wasm-canvas2d",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2022",
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp.js",
+              "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp_bg.wasm",
+              "sha256": "dd6ed0387652d75bb4674f04e389437f192af7963be9f51524b21fbbe3c16a1c"
+            }
+          ],
+          "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+          "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+          "comparison_profile": "print",
+          "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "none",
+          "files": []
+        }
+      }
+    },
+    {
+      "backend": "wasm",
+      "case": "alpha-hole-r1000-2020",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9898,
+          "silhouette_raw_unmatched_pixels": 10,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 98033,
+          "tolerant_content_match_percent": 99.9898
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "pdf/issue8856/soft-edge-hole-r1000.hwpx",
+          "sha256": "446a1191741d9ced61aa4102eb7aef05c825eb4fd738a6e1c3bd477133ffee0d"
+        },
+        "pdf": {
+          "path": "pdf/issue8856/alpha-hole-r1000-2020.pdf",
+          "sha256": "24eaa2b8c3883cb222e02bee916e05a2a78541a416450a3e0e1b8dc7c94ddf3c"
+        },
+        "git_head": "17800f1496791eae81413d380c5c4b8407e78e1d",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "path": "output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "sha256": "f296c7f6939880067f6704a8ef5ea06cf83194963cf261edc645d31dcc975399"
+        },
+        "raster_backend": "wasm-canvas2d",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2022",
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp.js",
+              "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp_bg.wasm",
+              "sha256": "dd6ed0387652d75bb4674f04e389437f192af7963be9f51524b21fbbe3c16a1c"
+            }
+          ],
+          "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+          "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+          "comparison_profile": "print",
+          "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "none",
+          "files": []
+        }
+      }
+    },
+    {
+      "backend": "wasm",
+      "case": "alpha-half-r0-2024",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 107466,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "pdf/issue8856/soft-edge-half-r0.hwpx",
+          "sha256": "4e38225e490aec6ed95a8f528a335d6d07d778eb3b63097a2e459209a5a31a9a"
+        },
+        "pdf": {
+          "path": "pdf/issue8856/alpha-half-r0-2024.pdf",
+          "sha256": "e180b7d091882da5e448783e82d2c641bf50d6aa8d01694045b079e84bc716bb"
+        },
+        "git_head": "17800f1496791eae81413d380c5c4b8407e78e1d",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "path": "output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "sha256": "f296c7f6939880067f6704a8ef5ea06cf83194963cf261edc645d31dcc975399"
+        },
+        "raster_backend": "wasm-canvas2d",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2024",
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp.js",
+              "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp_bg.wasm",
+              "sha256": "dd6ed0387652d75bb4674f04e389437f192af7963be9f51524b21fbbe3c16a1c"
+            }
+          ],
+          "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+          "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+          "comparison_profile": "print",
+          "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "none",
+          "files": []
+        }
+      },
+      "center_color_example": {
+        "xy": [
+          200,
+          200
+        ],
+        "rhwp": [
+          159,
+          191,
+          223
+        ],
+        "pdf": [
+          206,
+          222,
+          238
+        ],
+        "note": "same color difference exists already at radius0; raw100 means silhouette, not RGB identity"
+      }
+    },
+    {
+      "backend": "wasm",
+      "case": "alpha-half-r1000-2024",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.98599,
+          "silhouette_raw_unmatched_pixels": 2009,
+          "silhouette_boundary_reconciled_pixels": 5,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 99751,
+          "tolerant_content_match_percent": 97.991
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "pdf/issue8856/soft-edge-half-r1000.hwpx",
+          "sha256": "6bf153df96ee210c7690ef5180f78e2ff87ad45902afabf18e49bad04430e18b"
+        },
+        "pdf": {
+          "path": "pdf/issue8856/alpha-half-r1000-2024.pdf",
+          "sha256": "9e1cbab5091592dd77dc1a16df63e0bea41f6d1f601b06b8541d46e767ed8f5a"
+        },
+        "git_head": "17800f1496791eae81413d380c5c4b8407e78e1d",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "path": "output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "sha256": "f296c7f6939880067f6704a8ef5ea06cf83194963cf261edc645d31dcc975399"
+        },
+        "raster_backend": "wasm-canvas2d",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2024",
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp.js",
+              "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp_bg.wasm",
+              "sha256": "dd6ed0387652d75bb4674f04e389437f192af7963be9f51524b21fbbe3c16a1c"
+            }
+          ],
+          "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+          "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+          "comparison_profile": "print",
+          "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "none",
+          "files": []
+        }
+      },
+      "center_color_example": {
+        "xy": [
+          200,
+          200
+        ],
+        "rhwp": [
+          159,
+          191,
+          223
+        ],
+        "pdf": [
+          206,
+          222,
+          238
+        ],
+        "note": "same color difference exists already at radius0; raw100 means silhouette, not RGB identity"
+      }
+    },
+    {
+      "backend": "wasm",
+      "case": "alpha-hole-r0-2024",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 103360,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "pdf/issue8856/soft-edge-hole-r0.hwpx",
+          "sha256": "709f09a7e388418f232a718c96f52c3c7640122f690bf16f2b6e9ef82b91590f"
+        },
+        "pdf": {
+          "path": "pdf/issue8856/alpha-hole-r0-2024.pdf",
+          "sha256": "32406f16e727feeb01ca3412e82110f3da195f2ed6813448d8bf57201e885cf4"
+        },
+        "git_head": "17800f1496791eae81413d380c5c4b8407e78e1d",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "path": "output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "sha256": "f296c7f6939880067f6704a8ef5ea06cf83194963cf261edc645d31dcc975399"
+        },
+        "raster_backend": "wasm-canvas2d",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2024",
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp.js",
+              "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp_bg.wasm",
+              "sha256": "dd6ed0387652d75bb4674f04e389437f192af7963be9f51524b21fbbe3c16a1c"
+            }
+          ],
+          "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+          "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+          "comparison_profile": "print",
+          "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "none",
+          "files": []
+        }
+      }
+    },
+    {
+      "backend": "wasm",
+      "case": "alpha-hole-r1000-2024",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.07187,
+          "silhouette_raw_unmatched_pixels": 899,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 96861,
+          "tolerant_content_match_percent": 99.07187
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "pdf/issue8856/soft-edge-hole-r1000.hwpx",
+          "sha256": "446a1191741d9ced61aa4102eb7aef05c825eb4fd738a6e1c3bd477133ffee0d"
+        },
+        "pdf": {
+          "path": "pdf/issue8856/alpha-hole-r1000-2024.pdf",
+          "sha256": "7bcd4f04a3cf37c0f8039f86275c7541acd2872bd79c3792863d106dff562b25"
+        },
+        "git_head": "17800f1496791eae81413d380c5c4b8407e78e1d",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "path": "output/issue8856/soft-edge-paint/rhwp-soft-edge-native",
+          "sha256": "f296c7f6939880067f6704a8ef5ea06cf83194963cf261edc645d31dcc975399"
+        },
+        "raster_backend": "wasm-canvas2d",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2024",
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp.js",
+              "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/soft-edge-paint/frozen-pkg/rhwp_bg.wasm",
+              "sha256": "dd6ed0387652d75bb4674f04e389437f192af7963be9f51524b21fbbe3c16a1c"
+            }
+          ],
+          "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+          "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+          "comparison_profile": "print",
+          "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "none",
+          "files": []
+        }
+      }
+    }
+  ],
+  "remaining": "2024 semitransparent color/mask transfer differs even at radius0; source alpha and effect mask ownership requires follow-up in this branch"
+}

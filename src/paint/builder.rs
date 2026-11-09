@@ -555,6 +555,12 @@ impl LayerBuilder {
                         // 투영한 paint 연산만 그 프레임 전체에 그림을 재생한다.
                         image.fill_mode = Some(crate::model::style::ImageFillMode::FitToSize);
                     }
+                    let soft_edge_prepared =
+                        crate::renderer::image_resolver::prepare_picture_soft_edge(
+                            &mut image,
+                            frame,
+                            self.layout_dpi,
+                        );
                     let group_projection = (self.shape_group_depth > 0
                         && image_fill_clip.is_none())
                     .then(|| super::group_picture::project(&image, frame, self.layout_dpi))
@@ -713,6 +719,23 @@ impl LayerBuilder {
                             {
                                 frame = surface_frame;
                                 resolved = Some(payload);
+                            }
+                        }
+                        // 효과 바이트는 원본 bin ID의 지연 재조회로 복원할 수 없다.
+                        // 동일 BinData의 무효과/다른 반경과 resource cache를 공유하지 않는다.
+                        if soft_edge_prepared {
+                            if let Some(payload) = resolved.as_mut() {
+                                if payload.kind == crate::paint::ResolvedImageKind::FormatConverted
+                                {
+                                    payload.kind = crate::paint::ResolvedImageKind::SourceWindow;
+                                }
+                            } else if let Some(data) = image.data.as_ref() {
+                                resolved = Some(crate::paint::ResolvedImagePayload {
+                                    data: data.clone(),
+                                    mime: "image/png",
+                                    kind: crate::paint::ResolvedImageKind::SourceWindow,
+                                    suppress_effects: false,
+                                });
                             }
                         }
                         vec![PaintOp::image(frame, image, resolved)]
