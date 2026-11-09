@@ -19,3 +19,7 @@
 ## Merge 후 contributor PR comment 계획
 
 최종 판정과 실제 source·CI·merge가 확정된 뒤 해당 원 PR의 입력·쪽에 맞는 review/overlay와 실제 수치·남은 범위를 기록한다. 현재는 댓글 게시 초안·원격 조치를 확정하지 않았다.
+
+## 현재 확인
+
+고정 base의 8종 decode가 모두 U+003F이고 원 후보에서는 제시한 Unicode/PUA 8종이 반환됨을 실제 source probe로 확인했다. #5860·#6380 이후에도 남은 문제이므로 이미 해결된 PR로 분류하지 않는다. 공통 PUA의 표시 계약과 실제 원문/독립 출력의 전쪽 시각 검토는 계속 진행 중이다.
