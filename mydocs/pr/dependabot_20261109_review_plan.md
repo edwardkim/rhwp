@@ -44,6 +44,14 @@
 
 ## 후속 기록과 종료
 
+실행 중 Chrome 확장 smoke의 기존 대기 순서 오류를 확인했다. #8757의 메인테이너 보정
+`b2b0b9f8ad3564fc2412a24ce9d7db3eaa63960c`가 추가한 글꼴 선택 처리보다 canvas 대기가
+앞에 남아 있다. 기준 devel과 후보의 해당 테스트 파일은 같았고 Chrome 156·Chromium 166에서
+로컬 글꼴 감지 대화창을 띄운 채 실패했다. `main.ts`의 문서 초기화는 글꼴 선택을 먼저
+기다리므로, 기존 canvas 대기 한 줄을 실제 선택 뒤로 옮겨 전 과정을 재검증한다. 제품 코드·
+선택 대화창·기존 assertion·시간 한도는 유지한다. 이 보정은 검증 하네스의 순서 수정이며,
+이미 통과한 Rust·Native·WASM·시각 검증과 별도로 실제 수정한 smoke 경로를 검증한다.
+
 전체 통합 diff에 CI workflow Action 변경이 포함되므로 실제 CI·self-review·merge 뒤 review·오늘할일·운영 증거는 post_merge 7.1.1의 **옵션 2: 별도 후속 기록 PR**로 반영한다. 문서 trailing push로 전체 CI를 반복하지 않는다. 원 PR의 코드·workflow를 바꾸는 추가 보정은 해당 범위의 승인과 검증을 따른다.
 
 기본 작업공간과 다른 #8296 worktree·설치 도구·로컬 crates.io 검증 환경을 보존한다. 승인된 원격 후속 처리가 끝나면 이번 전용 branch/worktree, primary output 전체와 미사용 target/pr-review/debug를 정리한다.
