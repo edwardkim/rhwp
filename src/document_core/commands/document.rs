@@ -1155,10 +1155,11 @@ impl DocumentCore {
                 // 쌓으므로, 저장 좌표가 원점을 정하지 않은 문단 경계에서는 편집 경로
                 // (`recalculate_section_vpos`)와 같은 문단 간격 `앞 아래 + 뒤 위` 를 더한다.
                 let mut previous_spacing_after_hu: Option<(i32, bool)> = None;
-                // 문단 기준 위아래 배치 개체가 아직 밀지 않은 띠: (띠 위끝, 띠 아래끝).
-                // 한컴은 개체의 세로 띠와 겹치는 줄만 띠 아래로 보낸다. 오프셋만큼
-                // 아래에 놓인 개체 위 빈 공간에 들어가는 후속 줄은 제자리에 둔다.
-                let mut pending_float_band: Option<(i32, i32)> = None;
+                // 문단 기준 위아래 배치 개체가 아직 밀지 않은 띠: (띠 위끝, 띠 아래끝,
+                // 저장 좌표계의 띠 아래끝). 한컴은 개체의 세로 띠와 겹치는 줄만 띠 아래로
+                // 보낸다. 오프셋만큼 아래에 놓인 개체 위 빈 공간에 들어가는 후속 줄은
+                // 제자리에 두되, 한컴이 띠 아래에 저장한 줄은 저장대로 띠 아래에 둔다.
+                let mut pending_float_band: Option<(i32, i32, Option<i32>)> = None;
 
                 // 앞 문단의 뒤 여백도 다음 개체의 저장 경계를 소유할 수 있다.
                 let orig_spacing_after_hu: Vec<i32> = section
@@ -1512,8 +1513,14 @@ impl DocumentCore {
                             inner_vpos = source_vpos;
                             pending_float_band = None;
                         }
-                        if let Some((band_top, band_bottom)) = pending_float_band {
-                            if inner_vpos.saturating_add(seg.line_height) > band_top {
+                        if let Some((band_top, band_bottom, source_band_bottom)) =
+                            pending_float_band
+                        {
+                            let stored_below_band = orig_span[pi].is_some()
+                                && source_band_bottom.is_some_and(|bottom| source_vpos >= bottom);
+                            if stored_below_band
+                                || inner_vpos.saturating_add(seg.line_height) > band_top
+                            {
                                 // 띠와 겹치는 첫 줄부터 띠 아래끝으로 옮긴다. 문단 첫 줄이면
                                 // 이 경계에서 더한 문단 간격을 띠 아래에 그대로 둔다.
                                 let boundary_gap =
@@ -1627,11 +1634,22 @@ impl DocumentCore {
                                 // 바깥 여백)에서 끝난다. 밀기는 그 띠와 겹치는 후속 줄로 미룬다.
                                 let band_top = host_first_vpos.saturating_add(obj_v_offset);
                                 let band_bottom = host_first_vpos.saturating_add(obj_total);
+                                // 저장 줄이 없는 host 는 앞 문단의 저장 끝에서 시작한다.
+                                let source_band_bottom = orig_span[pi]
+                                    .map(|(first, _)| first)
+                                    .or_else(|| {
+                                        pi.checked_sub(1)
+                                            .and_then(|prev| orig_span[prev])
+                                            .map(|(_, end)| end)
+                                    })
+                                    .map(|host_first| host_first.saturating_add(obj_total));
                                 pending_float_band = Some(match pending_float_band {
-                                    Some((top, bottom)) => {
-                                        (top.min(band_top), bottom.max(band_bottom))
-                                    }
-                                    None => (band_top, band_bottom),
+                                    Some((top, bottom, source_bottom)) => (
+                                        top.min(band_top),
+                                        bottom.max(band_bottom),
+                                        source_bottom.max(source_band_bottom),
+                                    ),
+                                    None => (band_top, band_bottom, source_band_bottom),
                                 });
                             } else {
                                 inner_vpos += obj_total - seg_lh_total;
@@ -4296,6 +4314,110 @@ mod validate_linesegs_tests {
         assert_eq!(cp.row, 0);
         assert_eq!(cp.col, 0);
         assert_eq!(cp.inner_para_idx, 0);
+    }
+
+    /// 앞 문단(저장 줄) → 저장 줄 없는 표 host → 저장 줄 후속 문단. 표는 문단 기준으로
+    /// 13666HU 아래에 놓인 자리차지 표이고 띠 아래끝은 host 첫 줄 + 29682HU 다.
+    fn float_band_successor_document(successor_vpos: i32) -> Document {
+        use crate::model::shape::{TextWrap, VertRelTo};
+        use crate::model::table::{Cell, Table};
+
+        let stored_line = |vertical_pos| LineSeg {
+            vertical_pos,
+            line_height: 1000,
+            text_height: 1000,
+            baseline_distance: 850,
+            segment_width: 40_000,
+            ..Default::default()
+        };
+        let mut table = Table {
+            row_count: 1,
+            col_count: 1,
+            cells: vec![Cell {
+                row: 0,
+                col: 0,
+                row_span: 1,
+                col_span: 1,
+                width: 40_000,
+                paragraphs: vec![Paragraph::default()],
+                ..Default::default()
+            }],
+            outer_margin_top: 140,
+            outer_margin_bottom: 140,
+            ..Default::default()
+        };
+        table.common.width = 40_000;
+        table.common.height = 15_736;
+        table.common.vertical_offset = 13_666;
+        table.common.vert_rel_to = VertRelTo::Para;
+        table.common.text_wrap = TextWrap::TopAndBottom;
+
+        let text = "host".to_string();
+        let char_count = text.encode_utf16().count() as u32 + 1;
+        let host = Paragraph {
+            char_offsets: (0..text.encode_utf16().count() as u32).collect(),
+            char_count,
+            text,
+            controls: vec![Control::Table(Box::new(table))],
+            ..Default::default()
+        };
+        let previous = Paragraph {
+            line_segs: vec![stored_line(0)],
+            ..Default::default()
+        };
+        let successor = Paragraph {
+            line_segs: vec![stored_line(successor_vpos)],
+            ..Default::default()
+        };
+        Document {
+            sections: vec![Section {
+                section_def: crate::model::document::SectionDef {
+                    page_def: crate::model::page::PageDef::a4_default(),
+                    ..Default::default()
+                },
+                paragraphs: vec![previous, host, successor],
+                ..Default::default()
+            }],
+            ..Default::default()
+        }
+    }
+
+    fn reflowed_float_band_successor_vpos(successor_vpos: i32) -> (i32, i32) {
+        let mut document = float_band_successor_document(successor_vpos);
+        let styles = resolve_styles_for_document(&document, DEFAULT_DPI);
+        DocumentCore::reflow_zero_height_paragraphs(
+            &mut document,
+            &styles,
+            DEFAULT_DPI,
+            true,
+            false,
+        );
+        let paragraphs = &document.sections[0].paragraphs;
+        (
+            paragraphs[1].line_segs[0].vertical_pos,
+            paragraphs[2].line_segs[0].vertical_pos,
+        )
+    }
+
+    /// [#8808] 한컴이 띠 아래에 저장한 후속 줄은 띠 위 틈에 들어갈 높이여도 띠 아래에 둔다.
+    /// 저장 관계의 근거: 결재문서 36383989 pi=8(저장 60767 = host 31085 + 오프셋 13666 +
+    /// 표 15736 + 바깥 여백 280, 한컴 Print 도 표 아래).
+    #[test]
+    fn float_band_successor_stored_below_band_stays_below() {
+        const BAND_FROM_HOST: i32 = 13_666 + 15_736 + 280;
+        let (host, successor) = reflowed_float_band_successor_vpos(1_000 + BAND_FROM_HOST);
+        assert_eq!(successor, host + BAND_FROM_HOST);
+    }
+
+    /// [#8808] 띠 위 틈에 저장된 후속 줄은 그 틈에 남는다.
+    #[test]
+    fn float_band_successor_stored_in_gap_stays_above_band() {
+        const BAND_TOP_FROM_HOST: i32 = 13_666;
+        let (host, successor) = reflowed_float_band_successor_vpos(3_000);
+        assert!(
+            successor + 1_000 <= host + BAND_TOP_FROM_HOST,
+            "후속 줄 {successor} 은 host {host} 아래 띠 위끝 앞에 들어가야 한다"
+        );
     }
 
     fn short_table_frame_document() -> Document {
