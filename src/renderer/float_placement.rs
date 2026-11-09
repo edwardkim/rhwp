@@ -2305,7 +2305,12 @@ pub(crate) fn textless_single_float_host(para: &Paragraph, table: &Table) -> boo
         && para
             .controls
             .iter()
-            .filter(|control| !matches!(control, Control::SectionDef(_) | Control::ColumnDef(_)))
+            .filter(|control| {
+                !matches!(
+                    control,
+                    Control::SectionDef(_) | Control::ColumnDef(_) | Control::Field(_)
+                )
+            })
             .all(|control| matches!(control, Control::Table(t) if std::ptr::eq(t.as_ref(), table)))
 }
 
@@ -4432,7 +4437,11 @@ fn stored_textless_float_box_origin(
     next: Option<&Paragraph>,
     source: i32,
 ) -> Option<i32> {
-    let [Control::Table(table)] = para.controls.as_slice() else {
+    let mut tables = para.controls.iter().filter_map(|control| match control {
+        Control::Table(table) => Some(table),
+        _ => None,
+    });
+    let (Some(table), None) = (tables.next(), tables.next()) else {
         return None;
     };
     if !textless_single_float_host(para, table)
@@ -4457,12 +4466,28 @@ fn stored_textless_float_box_origin(
         + stored_empty_host_frame::stored_bottom_caption_hu(table)?
         + i64::from(table.outer_margin_bottom);
     let origin = i64::from(next_line.vertical_pos) - frame;
-    // 저장 host 줄은 앞 간격 뒤, 표 위 바깥 여백 띠 안에서 시작한다(표 아래에 놓인 host 줄은
-    // 원점의 증거가 아니다 — issue7198 첫 쪽).
-    ((0..i64::from(source)).contains(&origin)
-        && i64::from(source) < origin + i64::from(table.outer_margin_top))
-    .then(|| i32::try_from(origin).ok())
-    .flatten()
+    // 저장 host 줄이 앞 간격 뒤, 표 위 바깥 여백 띠 안에서 시작하는 형상. 다음 줄만으로 원점을
+    // 정하므로 표 아래에 놓인 host 줄은 이 갈래의 증거가 아니다(issue7198 첫 쪽).
+    if (0..i64::from(source)).contains(&origin)
+        && i64::from(source) < origin + i64::from(table.outer_margin_top)
+    {
+        return i32::try_from(origin).ok();
+    }
+    // host 줄이 표 상자 바로 아래(`원점 + 상자`)에 있고 다음 줄이 그 한 줄 전진 뒤에 있으면
+    // 그 원점도 같은 등식의 해다(36388005: 0 + 140 + 16653 + 852 = host 17645, 다음 줄
+    // 17645 + 1200 + 240 = 19085). 위 갈래가 쓰는 "다음 줄 − 상자" 는 host 줄 전진을 빼지 않아
+    // 이 형상에서 1440 으로 어긋나므로 host 줄에서 상자를 뺀다.
+    let [host] = para.line_segs.as_slice() else {
+        return None;
+    };
+    if host.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 {
+        return None;
+    }
+    let below_origin = i64::from(source) - frame;
+    let host_advance = i64::from(host.line_height) + i64::from(host.line_spacing);
+    (below_origin >= 0 && i64::from(next_line.vertical_pos) == i64::from(source) + host_advance)
+        .then(|| i32::try_from(below_origin).ok())
+        .flatten()
 }
 
 /// A saved restart at the current paragraph's own before-margin is a page
