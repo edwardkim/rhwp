@@ -252,6 +252,18 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
             st.advance_column_or_new_page_with_storage(storage)?;
         }
     }
+    // 저장 줄 없는 글앞/글뒤 표 host 가 제목 글자를 가지면, 데코 경로가 나중에 그 글줄을
+    // fit 없이 방출한다. 한/글은 글줄이 남은 자리에 들어가지 않으면 문단을 통째로 다음 쪽
+    // 맨 위에 두고, 글앞 표는 그 문단을 따라간다. 글줄만 들어가면 표가 쪽 아래로 넘쳐도 같은
+    // 쪽에 둔다(표 높이는 묶지 않는다). 용지·쪽 기준 그림처럼 host 줄과 무관하게 놓이는
+    // 개체가 함께 있어도 같다.
+    if controls::decoration_host::unstored_overlay_title_host(para)
+        && st.table_control_page().has_items
+        && st.decoration_table_flow_height() + fmt.height_for_fit > st.available_height() + 0.5
+        && fmt.height_for_fit <= st.base_available_height()
+    {
+        st.advance_column_or_new_page_with_storage(storage)?;
+    }
     // 같은 서식 머리의 자리차지 작은 표(host 줄 바로 아래에서 시작)도 host 줄과
     // 한 블록이다. 쪽 끝에서 블록이 안 들어가면 표만 다음 쪽으로 넘어가 host 줄(제목)이
     // 어느 쪽에도 발행되지 않거나, 작은 표의 행이 쪽 경계에서 쪼개진다. 한/글은 제목과
