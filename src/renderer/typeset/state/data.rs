@@ -412,6 +412,8 @@ pub(in crate::renderer::typeset) struct StateView {
     /// 이 단에서 표 위 틈 판정으로 버린 저장 사다리 전방 이동의 합(HU). 저장 프레임에서
     /// 표 원점을 잴 때 뒤 글줄과 같은 축을 쓰도록 뺀다.
     pub(in crate::renderer::typeset) vpos_rejected_gap_hu: i32,
+    /// [#8843] 이 단에서 커서가 합성 줄 뒤 저장 앞 점프를 거절하고 옮긴 기준축 누적(HU).
+    pub(in crate::renderer::typeset) synthetic_forward_rejected_hu: i32,
     pub(in crate::renderer::typeset) vpos_prev_layout_para: Option<usize>,
     pub(in crate::renderer::typeset) vpos_prev_partial_table: bool,
     /// 컬럼 시작 시점의 current_height (page_path anchor — 렌더러 col_anchor_y 대응).

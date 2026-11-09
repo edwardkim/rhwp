@@ -147,6 +147,7 @@ impl TypesetState {
                 vpos_snapped_flow_page: None,
                 rejected_stored_forward_origin: None,
                 vpos_rejected_gap_hu: 0,
+                synthetic_forward_rejected_hu: 0,
                 vpos_prev_layout_para: None,
                 vpos_prev_partial_table: false,
                 vpos_col_anchor: 0.0,
@@ -183,6 +184,7 @@ impl TypesetState {
         self.data.vpos_compacted_stored_delta = 0.0;
         self.data.rejected_stored_forward_origin = None;
         self.data.vpos_rejected_gap_hu = 0;
+        self.data.synthetic_forward_rejected_hu = 0;
         self.data.vpos_prev_layout_para = None;
         self.data.vpos_prev_partial_table = false;
         self.data.vpos_col_anchor = self.data.current_height;

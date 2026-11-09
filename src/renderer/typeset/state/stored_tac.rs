@@ -271,7 +271,10 @@ impl TypesetState {
                     .filter(|seg| {
                         seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
                     })
-                    .map(|seg| seg.vertical_pos)
+                    // [#8843] 단 첫 표의 축도 커서가 거절한 합성 줄 뒤 앞 점프만큼 함께 옮긴다.
+                    // 그러지 않으면 뒤 저장 TAC 표가 거절한 빈자리를 되살린다(36355707 1쪽:
+                    // 가린 문단 뒤 1920HU — 한/글 Print 는 순차 흐름).
+                    .map(|seg| seg.vertical_pos + self.data.synthetic_forward_rejected_hu)
             }),
         }
     }
