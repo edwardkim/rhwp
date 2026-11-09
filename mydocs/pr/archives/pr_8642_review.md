@@ -2,99 +2,283 @@
 
 ## 최종 판정
 
-**머지 보류 — 보정 후 R28의 최종 통합 검증과 개별 최종 판독을 진행 중이다.**
+**메인터너 보정 후 수용 가능 — 원 기여와 추가 보정을 포함한 통합 code head의 주장 범위를 검증했습니다. 원 contributor head의 직접 병합을 승인하는 판정은 아닙니다.**
 
-R11에서 보고서 628의 7쪽이 미달이었으나, R25의 공통 수식·줄 프레임 보정 뒤에는
-보고서 두 개와 저장 밴드의 전 306쪽/backend가 모두 90% 이상이다. R28 Native도
-같은 원본·독립 Print에서 이 전쪽 결과를 유지한다. 제품 커밋 `b6c02c1946`의
-fresh WASM 전쪽 비교·전체 최소 글꼴 회귀·lint·보호 문서 검증을 계속한다.
-아래 R11 수치와 패널은 보정 전 이력이며 현재 후보의 미달이나 최종 판정으로 읽지 않는다.
-[R28 실제 완료 자료와 대기 범위](../assets/planet6897_20261106/final-r28/README.md)를 구분한다.
+원 PR head와 메인터너 보정을 포함한 통합 code head를 구분합니다. 원격 통합 PR의 최신 head CI·충돌 여부는 게시 뒤 별도로 확인하고, 원 PR은 통합 병합을 확인한 뒤 종료합니다.
+
+## 최종 source와 재사용 범위
+
+제출 code head `2e262d0d4b2885b130e2db917b86e894710425e4`, base `e00f9b7e26e581896fa17eaff3c8eb3f4889f9d4`입니다. 아래 전체 회귀·전쪽 수치는 원 실측 HEAD의 증거를 재사용한 기록입니다. 최신 집중 검사와 페이지별 producer, 엄격 0.1%p 잔여 한 건은 [재사용·최종 판정](../assets/planet6897_20261106/final-b768bee1-20261109/validation-reuse.md)을 따릅니다. 보호 TSV 표시값 하락은 0입니다.
 
 ## 접수 정보
 
-- [원 PR #8642](https://github.com/edwardkim/rhwp/pull/8642), 작성자 `planet6897`, reviewer `jangster77` API 배정 확인.
-- 원 head `7d40345bc014f3cb4eca4235783afcfb670899f9`, base `devel`.
-- 최초 통합 base `08963f6825956984d38b0d9392f44777db7107ab`, 현재 고정 base
-  `a7feb849e11642b1438b7e9ee460ff4c8a7c946e`.
-- 통합 브랜치 `review/integration-20261106-planet6897-open`.
-- Open·Non-Draft 및 head는 접수 시점 참고값이며 최종 원격 조치 전 재조회한다.
+- 원 PR: [#8642](https://github.com/edwardkim/rhwp/pull/8642), 작성자 `planet6897`, reviewer `jangster77`.
+- 원 head: `7d40345bc014f3cb4eca4235783afcfb670899f9`. 마지막 실시간 확인과 상태는 [조회 기록](../assets/planet6897_20261106/final-b768bee1-20261109/original-pr-heads.json)을 따릅니다.
+- 통합 base: `b768bee1c4c0023087687f79a0a95f12108743e9`, 검증 code head: `eb876d1416fb558c874f9efec65c5722a6769751`.
+- 브랜치: `review/integration-20261106-planet6897-open`. 원격 제출·CI·병합은 아직 하지 않았습니다.
 
-## 원 주장과 R11 중간 검증의 경계
+## 변경과 검토 범위
 
-원 PR은 각주 앞 조각의 비용을 실제 선택 조각으로 제한하고, 블록 표가 든 각주의 조각
-높이를 paint와 같은 측정 결과에서 가져온다고 주장한다. 대표 실물 증거는 보고서 838의
-91쪽, 보고서 628의 95·96쪽이다. 아래 이미지는 각각 같은 원본과 같은 PDF 쪽이다.
-축약 입력이나 다른 보고서의 페이지로 대신하지 않았다.
+fix(typeset): 앞 조각만 들어가는 각주는 앞 조각만 비용으로 잡고, 블록 표 각주 조각은 paint 측정으로 잰다 (#8468 후속)
 
-| 원 주장과 실제 확인 | Native raw | fresh WASM raw | 직접 판독과 남은 차이 |
-| --- | ---: | ---: | --- |
-| 보고서 838, PDF 91쪽: 본문 아래 각주 표·각주 글줄 | 99.99681% | 99.99670% | 본문 끝·구분선·표의 행과 뒤 각주가 같은 위치에 있으며 겹침·누락을 발견하지 않았다. |
-| 보고서 628, PDF 95쪽: 각주 56의 표와 표 뒤 글줄 | 99.20314% | 99.20365% | 각주 표와 뒤 글줄이 보존되고 본문과 겹치지 않는다. 본문 제목 `1. 개요`의 문자 간격 차이는 남는다. |
-| 보고서 628, PDF 96쪽: 이어받은 각주·후속 본문 | 99.26111% | 99.24426% | 앞 쪽 각주 뒤 글줄과 다음 각주가 보존된다. `1) 법적근거에 의한 보장` 제목의 폭·간격 차이는 남는다. |
+[이 PR의 구현·메인터너 보정 계획](pr_8642_review_impl.md) · [통합 범위와 적용 순서](../assets/planet6897_20261106/integration-plan.md) · [원본→실제 적용 커밋](../assets/planet6897_20261106/contributor-commit-map-final.tsv).
 
-수치가 98%를 넘었다는 이유로 제목 차이를 해소된 것으로 기록하지 않는다. 이 표는
-원 PR이 주장한 각주 소유·겹침 경계를 실제 확인한 결과이며, 제목·수식·전쪽 미달을
-면제하거나 새 px 기대값을 등록한 결과가 아니다.
+## 검증 입력과 결과
 
-## 원본·전쪽 TSV·대표 이미지
+code head `eb876d1416fb558c874f9efec65c5722a6769751`의 최소 글꼴 환경 기본 전체 회귀는 **13,105 PASS / 0 FAIL / 45 skipped**, 실행 570.421초입니다. Native 전쪽은 **94조건·2,995쪽**, 최저 **92.24%**, 90% 미만·쪽수 불일치·누락은 0입니다. 보호 TSV 1,771쪽의 공식 두 자리 표시값 하락은 0입니다. 이는 전체 범위의 요약이며 각 PR 주장은 아래 해당 입력·페이지로 대조합니다.
 
-- 보고서 838: [원본 HWP](../assets/planet6897_20261106/pr8642/report-838-original.hwp),
-  [독립 Print PDF](../../../pdf/planet6897-20261106/pr8642/report-838-original-2020.pdf),
-  [Native 109쪽 TSV](../assets/planet6897_20261106/shape-header-r11/native/report-838.tsv),
-  [fresh WASM 109쪽 TSV](../assets/planet6897_20261106/shape-header-r11/wasm/report-838.tsv).
-  전쪽 최저값은 각각 94.99379%·94.94289%, 미달 0쪽이다.
-- 보고서 628: [원본 HWP](../assets/planet6897_20261106/pr8642/report-628-original.hwp),
-  [독립 Print PDF](../../../pdf/planet6897-20261106/pr8642/report-628-original-2020.pdf),
-  [Native 195쪽 TSV](../assets/planet6897_20261106/shape-header-r11/native/report-628.tsv),
-  [fresh WASM 195쪽 TSV](../assets/planet6897_20261106/shape-header-r11/wasm/report-628.tsv).
-  전쪽 최저값은 각각 33.38902%·33.56141%, 미달 쪽은 양쪽 모두
-  16·18·120·122·123·124·125쪽이다.
-- 2026-11-07 KST 측정, 96 DPI, `print` profile, `compat 2022`.
-  실제 시스템 글꼴·원본별 웹 공급 글꼴을 사용했다. 최소 글꼴 환경은 시각 측정에 사용하지 않았다.
-  [PNG·제품 소스 일치와 직접 판독 기록](../assets/planet6897_20261106/pr8642/claim-pages-r11/provenance.json).
-  아래 패널은 완료된 R11 PNG를 재사용해 만들었으며 재렌더 결과로 표시하지 않는다.
+Native HWPX 편람 최소 글꼴/공개 웹폰트 383쪽 gate도 통과했습니다. 공식 두 자리 표시값은 130쪽 99.96%, 나머지 382쪽 100.00%입니다. 이는 보정 전 2px 내용 실루엣 값이며 엄격 RGB 동일성을 뜻하지 않습니다.
 
-보고서 838, 91쪽 — Native / fresh WASM:
+일반 base 대비 하락 허용폭은 이번 통합에 사용자가 지정한 **0.1%p**를 유지합니다. 별도 정본 보호 TSV의 공식 두 자리 표시값은 하락을 허용하지 않습니다. 최신 base `b768bee1`와 리베이스 전 후보를 같은 입력·PDF·글꼴·DPI·호환 버전으로 전쪽 대조했습니다. [Native 비교](../assets/planet6897_20261106/final-b768bee1-20261109/comparisons/latest-base-native-comparison.tsv) · [fresh WASM 비교](../assets/planet6897_20261106/final-b768bee1-20261109/comparisons/latest-base-wasm-comparison.tsv). 완료 쪽의98% 미만 후퇴·일반2%p 초과 하락은 없습니다. 엄격0.1%p 비교의 Native 뒤배경 표4쪽 잔여0.14171%p는 사용자 지시에 따라 신규 이슈로 분리하며 무회귀로 표기하지 않습니다.
 
-![보고서 838 91쪽 Native review](../assets/planet6897_20261106/pr8642/claim-pages-r11/native/report-838-review-091.png)
-![보고서 838 91쪽 Native overlay](../assets/planet6897_20261106/pr8642/claim-pages-r11/native/report-838-overlay-091.png)
-![보고서 838 91쪽 fresh WASM review](../assets/planet6897_20261106/pr8642/claim-pages-r11/wasm/report-838-review-091.png)
-![보고서 838 91쪽 fresh WASM overlay](../assets/planet6897_20261106/pr8642/claim-pages-r11/wasm/report-838-overlay-091.png)
+관련 회귀 source: [tests/cases/issue_8468_footnote_line_reserve.rs](../../../tests/cases/issue_8468_footnote_line_reserve.rs)
 
-보고서 628, 95쪽 — Native / fresh WASM:
+## 시각 증적과 남은 차이
 
-![보고서 628 95쪽 Native review](../assets/planet6897_20261106/pr8642/claim-pages-r11/native/report-628-review-095.png)
-![보고서 628 95쪽 Native overlay](../assets/planet6897_20261106/pr8642/claim-pages-r11/native/report-628-overlay-095.png)
-![보고서 628 95쪽 fresh WASM review](../assets/planet6897_20261106/pr8642/claim-pages-r11/wasm/report-628-review-095.png)
-![보고서 628 95쪽 fresh WASM overlay](../assets/planet6897_20261106/pr8642/claim-pages-r11/wasm/report-628-overlay-095.png)
+fresh WASM도 **94조건·2,995쪽**, 최저 **92.29%**, 90% 미만·누락·쪽수 불일치 0이며 보호 1,771쪽의 공식 표시값 하락은 0입니다. 추가 Native 전용 11개 모듈은 **73 PASS / 0 FAIL**입니다. 기본 전체 회귀의 45 skipped와 선택 밖 검사는 구분합니다.
 
-보고서 628, 96쪽 — Native / fresh WASM:
+### reserve-a10
 
-![보고서 628 96쪽 Native review](../assets/planet6897_20261106/pr8642/claim-pages-r11/native/report-628-review-096.png)
-![보고서 628 96쪽 Native overlay](../assets/planet6897_20261106/pr8642/claim-pages-r11/native/report-628-overlay-096.png)
-![보고서 628 96쪽 fresh WASM review](../assets/planet6897_20261106/pr8642/claim-pages-r11/wasm/report-628-review-096.png)
-![보고서 628 96쪽 fresh WASM overlay](../assets/planet6897_20261106/pr8642/claim-pages-r11/wasm/report-628-overlay-096.png)
+- 입력: [samples/issue8468/line_reserve_F20_L30_A10_R1_T20.hwp](../../../samples/issue8468/line_reserve_F20_L30_A10_R1_T20.hwp)
+- 독립 Print: [pdf/issue8468/line_reserve_F20_L30_A10_R1_T20-2020.pdf](../../../pdf/issue8468/line_reserve_F20_L30_A10_R1_T20-2020.pdf)
+- 전체 2쪽 Native 최저 100.00%. [TSV](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/native.tsv) · [입력/PDF·producer 해시](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/provenance.json).
+- 전체 2쪽 fresh WASM 최저 100.00%. [TSV](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/wasm.tsv).
 
-## 회귀·입력 확인
+1쪽 Native **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/native/raw-001.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/native/pdf-001.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/native/review-001.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/native/overlay-001.png)
 
-- [tests/cases/issue_8468_footnote_line_reserve.rs](../../../tests/cases/issue_8468_footnote_line_reserve.rs)
+1쪽 fresh WASM **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/wasm/raw-001.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/wasm/pdf-001.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/wasm/review-001.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/wasm/overlay-001.png)
 
-통합 source `46aca162bcf7fbcbc114cc42a251e6047598b371`의 기본 feature 전체 Rust 회귀는 **12,796건 통과, 실패 0건, 기존 ignored 45건**이다. 공개 글꼴 5개만 노출한 최소 글꼴 환경에서 수행했다. 이는 최초 통합 source의 결과다. 이후 메인터너 보정으로 제품·테스트 코드가 바뀌었으므로 보정 후 head의 회귀 통과로 재사용하지 않는다. 새 보정본의 검증 결과와 원본·Print 추가를 구분한다.
+본문 001~044와 각주 1의 분리를 확인했다. 본문이 하단 표의 높이를 미리 소모하지 않고 해당 쪽의 각주를 보존한다.
 
-Native Skia 공식 3종(라이브러리 4,040건 및 통합 24건)과 이번 PR의 추가 5개 모듈 14건이 모두 통과했다. 라이브러리의 기존 ignored는 12건이며, focused 실행에서 제외된 다른 테스트를 실패나 ignored로 합산하지 않는다. 전쪽 Native/fresh WASM·쪽수·확대 판독·lint는 별도 완료 조건이며, 회귀 통과로 대신하지 않는다.
+| 경로 | raw | review | overlay |
+| --- | --- | --- | --- |
+| Native | ![reserve-a10 1쪽 Native raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/native/raw-001.png) | ![reserve-a10 1쪽 Native review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/native/review-001.png) | ![reserve-a10 1쪽 Native overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/native/overlay-001.png) |
+| fresh WASM | ![reserve-a10 1쪽 fresh WASM raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/wasm/raw-001.png) | ![reserve-a10 1쪽 fresh WASM review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/wasm/review-001.png) | ![reserve-a10 1쪽 fresh WASM overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/wasm/overlay-001.png) |
 
-## 적용과 보정 계획
+채움01~20과 긴 본문이 같은 위치에서 시작하고 본문044까지 1쪽에 남는다. 하단 각주1과 구분선이 본문을 침범하지 않는다.
 
-[이 PR 구현 계획](pr_8642_review_impl.md) · [전체 순서·게이트](../assets/planet6897_20261106/integration-plan.md).
+2쪽 Native **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/native/raw-002.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/native/pdf-002.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/native/review-002.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/native/overlay-002.png)
 
-## R25 보정의 전쪽 확인
+2쪽 fresh WASM **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/wasm/raw-002.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/wasm/pdf-002.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/wasm/review-002.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/wasm/overlay-002.png)
 
-수식 셀의 현재 줄 구성과 각주 예약을 포함한 빈 꼬리의 소속을 공통 프레임으로 보정했다.
-R25에서 report-628 전195쪽 최저 Native92.99% / fresh WASM96.06%, report-838 전109쪽
-최저94.99% /94.94%, 저장 밴드 전2쪽은 양쪽100%다. 전306쪽/backend에서 독립 Print와
-쪽수 일치·90%미만0쪽·R11 표시값 하락0쪽을 확인했다.
-[원본별 전쪽 TSV·직접 판독 PNG·실행 신원](../assets/planet6897_20261106/pr8642/r25/README.md)을 보존했다.
-원래 미달이던123~125쪽은 Native99.77/99.92/99.81%, fresh WASM99.77/99.91/99.79%다.
-표4-12~4-14와 뒤 본문·각주72~74의 같은 쪽 소속을 양쪽 review/overlay에서 확인했다.
-최종 R26·보호 문서·전체 회귀·lint 판정은 진행 중이며 이 R25 기록만으로 최종 승인을 선언하지 않는다.
+본문 045~060과 TAIL이 이어지고 같은 쪽 하단에 각주 표 20행이 온전히 보존된다.
+
+| 경로 | raw | review | overlay |
+| --- | --- | --- | --- |
+| Native | ![reserve-a10 2쪽 Native raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/native/raw-002.png) | ![reserve-a10 2쪽 Native review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/native/review-002.png) | ![reserve-a10 2쪽 Native overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/native/overlay-002.png) |
+| fresh WASM | ![reserve-a10 2쪽 fresh WASM raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/wasm/raw-002.png) | ![reserve-a10 2쪽 fresh WASM review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/wasm/review-002.png) | ![reserve-a10 2쪽 fresh WASM overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/wasm/overlay-002.png) |
+
+앞쪽의 단어 뒤에서 본문045~060과 TAIL이 이어지고 하단 각주 표20행을 누락 없이 보존한다.
+
+### reserve-a30
+
+- 입력: [samples/issue8468/line_reserve_F20_L30_A30_R12.hwp](../../../samples/issue8468/line_reserve_F20_L30_A30_R12.hwp)
+- 독립 Print: [pdf/issue8468/line_reserve_F20_L30_A30_R12-2020.pdf](../../../pdf/issue8468/line_reserve_F20_L30_A30_R12-2020.pdf)
+- 전체 2쪽 Native 최저 99.99%. [TSV](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/native.tsv) · [입력/PDF·producer 해시](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/provenance.json).
+- 전체 2쪽 fresh WASM 최저 99.99%. [TSV](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/wasm.tsv).
+
+1쪽 Native **99.99%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/native/raw-001.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/native/pdf-001.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/native/review-001.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/native/overlay-001.png)
+
+1쪽 fresh WASM **99.99%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/wasm/raw-001.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/wasm/pdf-001.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/wasm/review-001.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/wasm/overlay-001.png)
+
+긴 각주의 4줄 영역을 본문과 분리하고 본문은 037에서 끝나는 독립 Print의 쪽 경계를 보존한다.
+
+| 경로 | raw | review | overlay |
+| --- | --- | --- | --- |
+| Native | ![reserve-a30 1쪽 Native raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/native/raw-001.png) | ![reserve-a30 1쪽 Native review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/native/review-001.png) | ![reserve-a30 1쪽 Native overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/native/overlay-001.png) |
+| fresh WASM | ![reserve-a30 1쪽 fresh WASM raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/wasm/raw-001.png) | ![reserve-a30 1쪽 fresh WASM review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/wasm/review-001.png) | ![reserve-a30 1쪽 fresh WASM overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/wasm/overlay-001.png) |
+
+채움01~20 뒤 긴 본문이037까지 오고, 네 줄의 긴 각주1이 예약 공간 안에 보존된다. 각주와 본문이 겹치지 않는다.
+
+2쪽 Native **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/native/raw-002.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/native/pdf-002.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/native/review-002.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/native/overlay-002.png)
+
+2쪽 fresh WASM **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/wasm/raw-002.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/wasm/pdf-002.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/wasm/review-002.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/wasm/overlay-002.png)
+
+2쪽은 038~060과 TAIL을 보존하고 긴 각주의 본문이 첫 쪽에서 중복되지 않는다.
+
+| 경로 | raw | review | overlay |
+| --- | --- | --- | --- |
+| Native | ![reserve-a30 2쪽 Native raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/native/raw-002.png) | ![reserve-a30 2쪽 Native review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/native/review-002.png) | ![reserve-a30 2쪽 Native overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/native/overlay-002.png) |
+| fresh WASM | ![reserve-a30 2쪽 fresh WASM raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/wasm/raw-002.png) | ![reserve-a30 2쪽 fresh WASM review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/wasm/review-002.png) | ![reserve-a30 2쪽 fresh WASM overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/wasm/overlay-002.png) |
+
+앞쪽037 뒤038~060 및 TAIL이 정확한 순서로 이어진다. 이 조건은 각주 표가 없는 실제 빈 하단을 보존한다.
+
+### reserve-b4
+
+- 입력: [samples/issue8468/line_reserve_F20_L30_A30_R4_B4.hwp](../../../samples/issue8468/line_reserve_F20_L30_A30_R4_B4.hwp)
+- 독립 Print: [pdf/issue8468/line_reserve_F20_L30_A30_R4_B4-2020.pdf](../../../pdf/issue8468/line_reserve_F20_L30_A30_R4_B4-2020.pdf)
+- 전체 2쪽 Native 최저 99.99%. [TSV](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/native.tsv) · [입력/PDF·producer 해시](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/provenance.json).
+- 전체 2쪽 fresh WASM 최저 99.99%. [TSV](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/wasm.tsv).
+
+1쪽 Native **99.99%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/native/raw-001.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/native/pdf-001.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/native/review-001.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/native/overlay-001.png)
+
+1쪽 fresh WASM **99.99%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/wasm/raw-001.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/wasm/pdf-001.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/wasm/review-001.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/wasm/overlay-001.png)
+
+본문 031 뒤 하단 각주 2줄·4행 표·표 뒤 문단이 서로 분리되고 독립 Print의 순서를 보존한다.
+
+| 경로 | raw | review | overlay |
+| --- | --- | --- | --- |
+| Native | ![reserve-b4 1쪽 Native raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/native/raw-001.png) | ![reserve-b4 1쪽 Native review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/native/review-001.png) | ![reserve-b4 1쪽 Native overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/native/overlay-001.png) |
+| fresh WASM | ![reserve-b4 1쪽 fresh WASM raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/wasm/raw-001.png) | ![reserve-b4 1쪽 fresh WASM review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/wasm/review-001.png) | ![reserve-b4 1쪽 fresh WASM overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/wasm/overlay-001.png) |
+
+본문031까지와 각주1 본문·4행 표·표 뒤 문장의 첫 줄을 확인했다. 각주 내부 표를 버리지 않고 본문과 분리된 예약 영역에서 소모한다.
+
+2쪽 Native **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/native/raw-002.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/native/pdf-002.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/native/review-002.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/native/overlay-002.png)
+
+2쪽 fresh WASM **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/wasm/raw-002.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/wasm/pdf-002.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/wasm/review-002.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/wasm/overlay-002.png)
+
+2쪽은 본문 032부터 TAIL까지 이어지고 각주 표 뒤 문단이 아래 영역에 분리되어 보존된다.
+
+| 경로 | raw | review | overlay |
+| --- | --- | --- | --- |
+| Native | ![reserve-b4 2쪽 Native raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/native/raw-002.png) | ![reserve-b4 2쪽 Native review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/native/review-002.png) | ![reserve-b4 2쪽 Native overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/native/overlay-002.png) |
+| fresh WASM | ![reserve-b4 2쪽 fresh WASM raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/wasm/raw-002.png) | ![reserve-b4 2쪽 fresh WASM review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/wasm/review-002.png) | ![reserve-b4 2쪽 fresh WASM overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/wasm/overlay-002.png) |
+
+본문032~060·TAIL 및 각주 표 뒤의 나머지 네 줄이 이어진다. 표가 다시 그려지거나 본문 문장이 중복되지 않는다.
+
+### reserve-a40
+
+- 입력: [samples/issue8468/line_reserve_F20_L30_A40_R12.hwp](../../../samples/issue8468/line_reserve_F20_L30_A40_R12.hwp)
+- 독립 Print: [pdf/issue8468/line_reserve_F20_L30_A40_R12-2020.pdf](../../../pdf/issue8468/line_reserve_F20_L30_A40_R12-2020.pdf)
+- 전체 2쪽 Native 최저 100.00%. [TSV](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/native.tsv) · [입력/PDF·producer 해시](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/provenance.json).
+- 전체 2쪽 fresh WASM 최저 100.00%. [TSV](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/wasm.tsv).
+
+1쪽 Native **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/native/raw-001.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/native/pdf-001.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/native/review-001.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/native/overlay-001.png)
+
+1쪽 fresh WASM **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/wasm/raw-001.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/wasm/pdf-001.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/wasm/review-001.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/wasm/overlay-001.png)
+
+첫 쪽 본문은 042까지 수용하고 짧은 각주 2줄을 하단에서 분리한다.
+
+| 경로 | raw | review | overlay |
+| --- | --- | --- | --- |
+| Native | ![reserve-a40 1쪽 Native raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/native/raw-001.png) | ![reserve-a40 1쪽 Native review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/native/review-001.png) | ![reserve-a40 1쪽 Native overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/native/overlay-001.png) |
+| fresh WASM | ![reserve-a40 1쪽 fresh WASM raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/wasm/raw-001.png) | ![reserve-a40 1쪽 fresh WASM review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/wasm/review-001.png) | ![reserve-a40 1쪽 fresh WASM overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/wasm/overlay-001.png) |
+
+1쪽은 본문042에서 끊기며 각주1의 앞 두 줄이 구분선 아래 보존된다. 본문과 각주를 덮거나 043을 앞으로 당기지 않는다.
+
+2쪽 Native **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/native/raw-002.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/native/pdf-002.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/native/review-002.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/native/overlay-002.png)
+
+2쪽 fresh WASM **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/wasm/raw-002.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/wasm/pdf-002.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/wasm/review-002.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/wasm/overlay-002.png)
+
+2쪽 본문은 043부터 이어지며 각주 연속 2줄이 동일한 하단 위치에 남는다.
+
+| 경로 | raw | review | overlay |
+| --- | --- | --- | --- |
+| Native | ![reserve-a40 2쪽 Native raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/native/raw-002.png) | ![reserve-a40 2쪽 Native review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/native/review-002.png) | ![reserve-a40 2쪽 Native overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/native/overlay-002.png) |
+| fresh WASM | ![reserve-a40 2쪽 fresh WASM raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/wasm/raw-002.png) | ![reserve-a40 2쪽 fresh WASM review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/wasm/review-002.png) | ![reserve-a40 2쪽 fresh WASM overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/wasm/overlay-002.png) |
+
+본문043~060·TAIL과 아래 각주1의 이어지는 두 줄을 확인했다. 같은 각주가 다음 쪽에서 완결되는 실제 Print 경계가 보존된다.
+
+### reserve-a46
+
+- 입력: [samples/issue8468/line_reserve_F20_L30_A46_R12.hwp](../../../samples/issue8468/line_reserve_F20_L30_A46_R12.hwp)
+- 독립 Print: [pdf/issue8468/line_reserve_F20_L30_A46_R12-2020.pdf](../../../pdf/issue8468/line_reserve_F20_L30_A46_R12-2020.pdf)
+- 전체 2쪽 Native 최저 100.00%. [TSV](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/native.tsv) · [입력/PDF·producer 해시](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/provenance.json).
+- 전체 2쪽 fresh WASM 최저 100.00%. [TSV](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/wasm.tsv).
+
+1쪽 Native **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/native/raw-001.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/native/pdf-001.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/native/review-001.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/native/overlay-001.png)
+
+1쪽 fresh WASM **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/wasm/raw-001.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/wasm/pdf-001.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/wasm/review-001.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/wasm/overlay-001.png)
+
+큰 각주 예약이 있는 첫 쪽의 본문 001~048을 보존하고 이 쪽에 각주 표를 잘못 끌어오지 않는다.
+
+| 경로 | raw | review | overlay |
+| --- | --- | --- | --- |
+| Native | ![reserve-a46 1쪽 Native raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/native/raw-001.png) | ![reserve-a46 1쪽 Native review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/native/review-001.png) | ![reserve-a46 1쪽 Native overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/native/overlay-001.png) |
+| fresh WASM | ![reserve-a46 1쪽 fresh WASM raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/wasm/raw-001.png) | ![reserve-a46 1쪽 fresh WASM review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/wasm/review-001.png) | ![reserve-a46 1쪽 fresh WASM overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/wasm/overlay-001.png) |
+
+1쪽의 긴 본문이048까지 들어가고 각주는 다음 쪽에 예약된다. 본문 마지막 줄과 하단 여백이 Print와 같은 구성을 유지한다.
+
+2쪽 Native **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/native/raw-002.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/native/pdf-002.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/native/review-002.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/native/overlay-002.png)
+
+2쪽 fresh WASM **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/wasm/raw-002.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/wasm/pdf-002.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/wasm/review-002.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/wasm/overlay-002.png)
+
+2쪽 본문 049~060과 TAIL 뒤에서 각주 본문 4줄을 하단에 보존한다.
+
+| 경로 | raw | review | overlay |
+| --- | --- | --- | --- |
+| Native | ![reserve-a46 2쪽 Native raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/native/raw-002.png) | ![reserve-a46 2쪽 Native review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/native/review-002.png) | ![reserve-a46 2쪽 Native overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/native/overlay-002.png) |
+| fresh WASM | ![reserve-a46 2쪽 fresh WASM raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/wasm/raw-002.png) | ![reserve-a46 2쪽 fresh WASM review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/wasm/review-002.png) | ![reserve-a46 2쪽 fresh WASM overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/wasm/overlay-002.png) |
+
+본문049~060·TAIL과 하단 각주1 네 줄이 같은 쪽에 보존된다. 앞쪽 각주의 중복 없이 이 조건의 전체 각주가 여기에 나온다.
+
+### p4g
+
+- 입력: [samples/issue8468/156454114-p4g-opening-remarks.hwp](../../../samples/issue8468/156454114-p4g-opening-remarks.hwp)
+- 독립 Print: [pdf/issue8468/156454114-p4g-opening-remarks-2022.pdf](../../../pdf/issue8468/156454114-p4g-opening-remarks-2022.pdf)
+- 전체 8쪽 Native 최저 100.00%. [TSV](../assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/native.tsv) · [입력/PDF·producer 해시](../assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/provenance.json).
+- 전체 8쪽 fresh WASM 최저 99.95%. [TSV](../assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/wasm.tsv).
+
+1쪽 Native **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/native/raw-001.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/native/pdf-001.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/native/review-001.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/native/overlay-001.png)
+
+1쪽 fresh WASM **99.95%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/wasm/raw-001.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/wasm/pdf-001.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/wasm/review-001.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/wasm/overlay-001.png)
+
+영문 표지의 두 청색 선 사이 제목, 첨부 상자, 날짜와 발신자 위치를 대조했다. 글자 굵기와 선의 래스터 경계 차이는 남는다.
+
+| 경로 | raw | review | overlay |
+| --- | --- | --- | --- |
+| Native | ![p4g 1쪽 Native raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/native/raw-001.png) | ![p4g 1쪽 Native review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/native/review-001.png) | ![p4g 1쪽 Native overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/native/overlay-001.png) |
+| fresh WASM | ![p4g 1쪽 fresh WASM raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/wasm/raw-001.png) | ![p4g 1쪽 fresh WASM review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/wasm/review-001.png) | ![p4g 1쪽 fresh WASM overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/wasm/overlay-001.png) |
+
+첨부1 머리와 영문 행사명, Opening Remarks 상하 파란 선·날짜·기관/이름의 중앙 배치를 확인했다. 표지 아래 빈 영역과 줄 간격을 보존한다.
+
+### report-628
+
+- 입력: [mydocs/pr/assets/planet6897_20261106/pr8642/report-628-original.hwp](../assets/planet6897_20261106/pr8642/report-628-original.hwp)
+- 독립 Print: [pdf/planet6897-20261106/pr8642/report-628-original-2020.pdf](../../../pdf/planet6897-20261106/pr8642/report-628-original-2020.pdf)
+- 전체 195쪽 Native 최저 93.24%. [TSV](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/native.tsv) · [입력/PDF·producer 해시](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/provenance.json).
+- 전체 195쪽 fresh WASM 최저 93.24%. [TSV](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/wasm.tsv).
+
+95쪽 Native **99.63%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/native/raw-095.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/native/pdf-095.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/native/review-095.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/native/overlay-095.png)
+
+95쪽 fresh WASM **99.63%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/wasm/raw-095.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/wasm/pdf-095.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/wasm/review-095.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/wasm/overlay-095.png)
+
+번호와 제목 본문이 PDF의 왼쪽 열 원점에 맞고 기존 13.333 CSS px 왼쪽 이탈이 해소됐다. 본문·각주·쪽수와 표의 내용 소속·순서를 대조했다. 본문 끝 줄 및 한자·각주 글리프의 잔여 차이는 별도 이슈 대상으로 남긴다.
+
+| 경로 | raw | review | overlay |
+| --- | --- | --- | --- |
+| Native | ![report-628 95쪽 Native raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/native/raw-095.png) | ![report-628 95쪽 Native review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/native/review-095.png) | ![report-628 95쪽 Native overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/native/overlay-095.png) |
+| fresh WASM | ![report-628 95쪽 fresh WASM raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/wasm/raw-095.png) | ![report-628 95쪽 fresh WASM review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/wasm/review-095.png) | ![report-628 95쪽 fresh WASM overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/wasm/overlay-095.png) |
+
+제4절 일본과1. 개요의 번호/본문이 독립 Print와 같은 열 시작을 사용한다. 소제목이 왼쪽으로13.333 CSSpx 나가던 문제를 확인할 수 없다. 아래 본문·각주55/56·각주 안 표와쪽63의 소속/순서를 보존한다. 본문 말미·일부 CJK/표머리 글리프는 별도 잔여로 구분한다.
+
+96쪽 Native **99.92%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/native/raw-096.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/native/pdf-096.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/native/review-096.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/native/overlay-096.png)
+
+96쪽 fresh WASM **99.90%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/wasm/raw-096.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/wasm/pdf-096.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/wasm/review-096.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/wasm/overlay-096.png)
+
+번호와 제목 본문이 PDF의 왼쪽 열 원점에 맞고 기존 13.333 CSS px 왼쪽 이탈이 해소됐다. 본문·각주·쪽수와 표의 내용 소속·순서를 대조했다. 본문 끝 줄 및 한자·각주 글리프의 잔여 차이는 별도 이슈 대상으로 남긴다.
+
+| 경로 | raw | review | overlay |
+| --- | --- | --- | --- |
+| Native | ![report-628 96쪽 Native raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/native/raw-096.png) | ![report-628 96쪽 Native review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/native/review-096.png) | ![report-628 96쪽 Native overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/native/overlay-096.png) |
+| fresh WASM | ![report-628 96쪽 fresh WASM raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/wasm/raw-096.png) | ![report-628 96쪽 fresh WASM review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/wasm/review-096.png) | ![report-628 96쪽 fresh WASM overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/wasm/overlay-096.png) |
+
+1) 법적근거에 의한 보상의 번호/본문이 Print의 같은 열 시작에 놓인다. 앞뒤 본문·이어진 각주·각주57·쪽64의 소속을 보존한다. 아래 본문 한 줄 말미의 자간·각주 일부 글리프 차이는 새 잔여 이슈에서 다룬다.
+
+### report-838
+
+- 입력: [mydocs/pr/assets/planet6897_20261106/pr8642/report-838-original.hwp](../assets/planet6897_20261106/pr8642/report-838-original.hwp)
+- 독립 Print: [pdf/planet6897-20261106/pr8642/report-838-original-2020.pdf](../../../pdf/planet6897-20261106/pr8642/report-838-original-2020.pdf)
+- 전체 109쪽 Native 최저 98.70%. [TSV](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/native.tsv) · [입력/PDF·producer 해시](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/provenance.json).
+- 전체 109쪽 fresh WASM 최저 98.69%. [TSV](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/wasm.tsv).
+
+91쪽 Native **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/native/raw-091.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/native/pdf-091.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/native/review-091.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/native/overlay-091.png)
+
+91쪽 fresh WASM **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/wasm/raw-091.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/wasm/pdf-091.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/wasm/review-091.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/wasm/overlay-091.png)
+
+영국 PA/TA 표·독일 소제목 뒤 표와 각주274~277 및 쪽번호를 대조했다. 두 표 사이 본문, 각주 separator와 아래 내용이 겹치거나 누락되지 않는다. 작은 글리프·일부 괘선 잔차를 기록한다.
+
+| 경로 | raw | review | overlay |
+| --- | --- | --- | --- |
+| Native | ![report-838 91쪽 Native raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/native/raw-091.png) | ![report-838 91쪽 Native review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/native/review-091.png) | ![report-838 91쪽 Native overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/native/overlay-091.png) |
+| fresh WASM | ![report-838 91쪽 fresh WASM raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/wasm/raw-091.png) | ![report-838 91쪽 fresh WASM review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/wasm/review-091.png) | ![report-838 91쪽 fresh WASM overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/wasm/overlay-091.png) |
+
+영국 자격 표·독일 소제목·본문·하단 두 번째 표 및 각주274~277과 쪽수90을 대조했다. 표와 각주 내부 문장·순서·페이지 소속을 보존한다.
+
+## 최종 제출과 원격 조건
+
+기존 전쪽 TSV·직접 판독을 유지하고 리베이스 후 영향 2조건 8쪽과 앞선 HWP3 3조건 10쪽과 필수 집중·lint를 추가 검증했습니다. 엄격0.1%p 비교 잔여1건은 새 이슈로 분리하며 완전 무회귀로 표기하지 않습니다. 원격 게시 직전에 원 PR head·upstream/devel·제출 diff와 병합 시뮬레이션을 재확인합니다. 통합 PR의 실제 CI 성공과 최종 head의 mergeability를 확인한 뒤 승인된 병합·후속처리를 수행합니다.
+
+## Merge 후 contributor PR comment 계획
+
+통합 병합이 완료되면 최종 merge SHA·CI URL과 이 PR이 주장한 입력/페이지의 raw 이미지를 고정 SHA 링크로 연결합니다. 원 기여와 메인터너 보정 이유·범위를 한국어 존댓말로 구분하며, 별도 검증하지 않은 문제까지 해결했다고 쓰지 않습니다. 원 PR의 종료는 통합 병합 후 실제 해결 범위를 확인하여 처리합니다.

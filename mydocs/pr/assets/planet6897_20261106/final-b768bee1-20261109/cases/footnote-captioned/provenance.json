@@ -1,0 +1,39 @@
+{
+  "input": "samples/issue8551/footnote_captioned_tac_table.hwp",
+  "input_sha256": "d73002961c3e15bc475d0696c55fe8ea2fe8fab03c13924a7df9c55883cdbee9",
+  "input_bytes": 47616,
+  "pdf": "pdf/issue8551/footnote_captioned_tac_table-2020.pdf",
+  "pdf_sha256": "a939ff298875a236d8a614aeccd0d3822027a2968c6f88e517d3aef88f8e346b",
+  "pdf_bytes": 88325,
+  "pdf_pages": 1,
+  "dpi": 96,
+  "compat": "2022",
+  "head": "eb876d1416fb558c874f9efec65c5722a6769751",
+  "base": "b768bee1c4c0023087687f79a0a95f12108743e9",
+  "native_whole": {
+    "pages": 1,
+    "minimum": 100.0,
+    "page_set_matches": true
+  },
+  "state": "native-and-fresh-wasm-complete-direct-reviewed",
+  "producer_identity": {
+    "native": {
+      "binary_sha256": "1e10729c01d1ab44a1b4bb60d71b363320348905510c0bb6cd247d64153525ea",
+      "package_sha256": null,
+      "manifest_sha256": "8f78cb83b56c7d9a2b38fd8ba4c80322c4f97a0b65819de1566cd20b3fadfdb4"
+    },
+    "wasm": {
+      "binary_sha256": "1e10729c01d1ab44a1b4bb60d71b363320348905510c0bb6cd247d64153525ea",
+      "package_sha256": {
+        "rhwp.js": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed",
+        "rhwp_bg.wasm": "edfcfbe4005bb48fd475d4ddef2403a8dbda6e3b53dd969d5afb5f391a609ef6"
+      },
+      "manifest_sha256": "8f78cb83b56c7d9a2b38fd8ba4c80322c4f97a0b65819de1566cd20b3fadfdb4"
+    }
+  },
+  "wasm_whole": {
+    "pages": 1,
+    "minimum": 100.0,
+    "page_set_matches": true
+  }
+}

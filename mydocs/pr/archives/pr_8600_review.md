@@ -2,62 +2,111 @@
 
 ## 최종 판정
 
-**머지 보류 — 누적 적용·메인터너 보정 및 필수 실제 검증 진행 중.**
+**메인터너 보정 후 수용 가능 — 원 기여와 추가 보정을 포함한 통합 code head의 주장 범위를 검증했습니다. 원 contributor head의 직접 병합을 승인하는 판정은 아닙니다.**
 
-원 PR의 보고 수치를 현재 통합 head의 측정으로 인정하지 않는다. 전쪽 Native/fresh WASM·확대 판독·필수 회귀와 lint 완료 후 최종 판정을 갱신한다.
+원 PR head와 메인터너 보정을 포함한 통합 code head를 구분합니다. 원격 통합 PR의 최신 head CI·충돌 여부는 게시 뒤 별도로 확인하고, 원 PR은 통합 병합을 확인한 뒤 종료합니다.
+
+## 최종 source와 재사용 범위
+
+제출 code head `2e262d0d4b2885b130e2db917b86e894710425e4`, base `e00f9b7e26e581896fa17eaff3c8eb3f4889f9d4`입니다. 아래 전체 회귀·전쪽 수치는 원 실측 HEAD의 증거를 재사용한 기록입니다. 최신 집중 검사와 페이지별 producer, 엄격 0.1%p 잔여 한 건은 [재사용·최종 판정](../assets/planet6897_20261106/final-b768bee1-20261109/validation-reuse.md)을 따릅니다. 보호 TSV 표시값 하락은 0입니다.
 
 ## 접수 정보
 
-- [원 PR #8600](https://github.com/edwardkim/rhwp/pull/8600), 작성자 `planet6897`, reviewer `jangster77` API 배정 확인.
-- 원 head `983933bc448e5ed4f7c8d15be97d894e129a5b9b`, base `devel`, 통합 base `08963f6825956984d38b0d9392f44777db7107ab`.
-- 통합 브랜치 `review/integration-20261106-planet6897-open`.
-- Open·Non-Draft 및 head는 접수 시점 참고값이며 최종 원격 조치 전 재조회한다.
+- 원 PR: [#8600](https://github.com/edwardkim/rhwp/pull/8600), 작성자 `planet6897`, reviewer `jangster77`.
+- 원 head: `983933bc448e5ed4f7c8d15be97d894e129a5b9b`. 마지막 실시간 확인과 상태는 [조회 기록](../assets/planet6897_20261106/final-b768bee1-20261109/original-pr-heads.json)을 따릅니다.
+- 통합 base: `b768bee1c4c0023087687f79a0a95f12108743e9`, 검증 code head: `eb876d1416fb558c874f9efec65c5722a6769751`.
+- 브랜치: `review/integration-20261106-planet6897-open`. 원격 제출·CI·병합은 아직 하지 않았습니다.
 
-## 원 주장과 현재 검증 경계
+## 변경과 검토 범위
 
 fix(renderer): 도형 그림 채우기 크기와 한컴 윤고딕 250 연결 (#8575)
 
-원본 저장/편집 계약·측정과 배치의 공통 결과·backend 실제 소비를 소스와 독립 한컴 Print로 대조할 예정이다.
-개별 주장 페이지에 대응하는 입력·PDF를 output의 PR별 폴더에 준비했다. 약칭과 코드 예시는 실제 입력으로 세지 않는다.
+[이 PR의 구현·메인터너 보정 계획](pr_8600_review_impl.md) · [통합 범위와 적용 순서](../assets/planet6897_20261106/integration-plan.md) · [원본→실제 적용 커밋](../assets/planet6897_20261106/contributor-commit-map-final.tsv).
 
-## 회귀·입력 확인
+## 검증 입력과 결과
 
-- [tests/cases/issue_4966_font_rule_projection.rs](../../../tests/cases/issue_4966_font_rule_projection.rs)
-- [tests/cases/issue_8575_shape_image_fill_size.rs](../../../tests/cases/issue_8575_shape_image_fill_size.rs)
+code head `eb876d1416fb558c874f9efec65c5722a6769751`의 최소 글꼴 환경 기본 전체 회귀는 **13,105 PASS / 0 FAIL / 45 skipped**, 실행 570.421초입니다. Native 전쪽은 **94조건·2,995쪽**, 최저 **92.24%**, 90% 미만·쪽수 불일치·누락은 0입니다. 보호 TSV 1,771쪽의 공식 두 자리 표시값 하락은 0입니다. 이는 전체 범위의 요약이며 각 PR 주장은 아래 해당 입력·페이지로 대조합니다.
 
-통합 source `46aca162bcf7fbcbc114cc42a251e6047598b371`의 기본 feature 전체 Rust 회귀는 **12,796건 통과, 실패 0건, 기존 ignored 45건**이다. 공개 글꼴 5개만 노출한 최소 글꼴 환경에서 수행했다. 이는 최초 통합 source의 결과다. 이후 메인터너 보정으로 제품·테스트 코드가 바뀌었으므로 보정 후 head의 회귀 통과로 재사용하지 않는다. 새 보정본의 검증 결과와 원본·Print 추가를 구분한다.
+Native HWPX 편람 최소 글꼴/공개 웹폰트 383쪽 gate도 통과했습니다. 공식 두 자리 표시값은 130쪽 99.96%, 나머지 382쪽 100.00%입니다. 이는 보정 전 2px 내용 실루엣 값이며 엄격 RGB 동일성을 뜻하지 않습니다.
 
-Native Skia 공식 3종(라이브러리 4,040건 및 통합 24건)과 이번 PR의 추가 5개 모듈 14건이 모두 통과했다. 라이브러리의 기존 ignored는 12건이며, focused 실행에서 제외된 다른 테스트를 실패나 ignored로 합산하지 않는다. 전쪽 Native/fresh WASM·쪽수·확대 판독·lint는 별도 완료 조건이며, 회귀 통과로 대신하지 않는다.
+일반 base 대비 하락 허용폭은 이번 통합에 사용자가 지정한 **0.1%p**를 유지합니다. 별도 정본 보호 TSV의 공식 두 자리 표시값은 하락을 허용하지 않습니다. 최신 base `b768bee1`와 리베이스 전 후보를 같은 입력·PDF·글꼴·DPI·호환 버전으로 전쪽 대조했습니다. [Native 비교](../assets/planet6897_20261106/final-b768bee1-20261109/comparisons/latest-base-native-comparison.tsv) · [fresh WASM 비교](../assets/planet6897_20261106/final-b768bee1-20261109/comparisons/latest-base-wasm-comparison.tsv). 완료 쪽의98% 미만 후퇴·일반2%p 초과 하락은 없습니다. 엄격0.1%p 비교의 Native 뒤배경 표4쪽 잔여0.14171%p는 사용자 지시에 따라 신규 이슈로 분리하며 무회귀로 표기하지 않습니다.
 
-## 적용과 보정 계획
+관련 회귀 source: [tests/cases/issue_4966_font_rule_projection.rs](../../../tests/cases/issue_4966_font_rule_projection.rs) · [tests/cases/issue_8575_shape_image_fill_size.rs](../../../tests/cases/issue_8575_shape_image_fill_size.rs)
 
-[이 PR 구현 계획](pr_8600_review_impl.md) · [전체 순서·게이트](../assets/planet6897_20261106/integration-plan.md).
+## 시각 증적과 남은 차이
 
-## 실제 주장 영역의 Native/fresh WASM 대조
+fresh WASM도 **94조건·2,995쪽**, 최저 **92.29%**, 90% 미만·누락·쪽수 불일치 0이며 보호 1,771쪽의 공식 표시값 하락은 0입니다. 추가 Native 전용 11개 모듈은 **73 PASS / 0 FAIL**입니다. 기본 전체 회귀의 45 skipped와 선택 밖 검사는 구분합니다.
 
-R11 source `048f44da99d83e186f3a9e139563d20545c8bdb4`의 완료 산출물을 재사용했다.
-같은 그림 채우기 입력 HWP와 HWPX는 각각 독립 Print와 쪽수가 같은 2쪽이며,
-전쪽 Native/fresh WASM raw는 모두 **100.00%**다. 측정은 96 DPI, 보정 전 2px
-내용 실루엣이며 실제 입력·PDF SHA, renderer 및 WASM producer SHA는 아래 provenance에 있다.
+### image-fill-hwpx
 
-1쪽은 크기와 종횡비가 다른 여섯 도형의 네 색 영역·채움 경계·바깥선이 Print와 같은지
-직접 판독했다. 전체 원본을 확대해 놓는 크기와 가로·세로를 다르게 바꾼 크기를 구분했고,
-여섯 번째 도형의 오른쪽·아래쪽 채움도 빠지지 않는다. 2쪽의 `2021. 9. . 윤고딕 250 한글`은
-숫자·한글 모양과 사이 간격을 양쪽 backend에서 같은 Print 영역으로 대조했다.
-실루엣 100%를 색상 픽셀의 완전 동일성으로 해석하지 않는다.
+- 입력: [samples/issue8575/shape_image_fill.hwpx](../../../samples/issue8575/shape_image_fill.hwpx)
+- 독립 Print: [pdf/issue8575/shape_image_fill-2020.pdf](../../../pdf/issue8575/shape_image_fill-2020.pdf)
+- 전체 2쪽 Native 최저 100.00%. [TSV](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/native.tsv) · [입력/PDF·producer 해시](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/provenance.json).
+- 전체 2쪽 fresh WASM 최저 100.00%. [TSV](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/wasm.tsv).
 
-| 같은 입력·기준 | 전쪽 Native TSV | 전쪽 fresh WASM TSV | 판독 페이지 |
+1쪽 Native **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/native/raw-001.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/native/pdf-001.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/native/review-001.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/native/overlay-001.png)
+
+1쪽 fresh WASM **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/wasm/raw-001.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/wasm/pdf-001.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/wasm/review-001.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/wasm/overlay-001.png)
+
+HWPX 그림 채우기 여섯 도형의 네 원색 사분면·크기·비율·상하 위치와 검은 윤곽을 독립 Print와 대조했다. HWP 결과의 점수를 대신 쓰지 않고 별도 쌍을 확인했다.
+
+| 경로 | raw | review | overlay |
 | --- | --- | --- | --- |
-| HWP | [2쪽](../assets/planet6897_20261106/pr8600/r11/image-fill-hwp/native.tsv) | [2쪽](../assets/planet6897_20261106/pr8600/r11/image-fill-hwp/wasm.tsv) | 1·2쪽 |
-| HWPX | [2쪽](../assets/planet6897_20261106/pr8600/r11/image-fill-hwpx/native.tsv) | [2쪽](../assets/planet6897_20261106/pr8600/r11/image-fill-hwpx/wasm.tsv) | 1·2쪽 |
+| Native | ![image-fill-hwpx 1쪽 Native raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/native/raw-001.png) | ![image-fill-hwpx 1쪽 Native review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/native/review-001.png) | ![image-fill-hwpx 1쪽 Native overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/native/overlay-001.png) |
+| fresh WASM | ![image-fill-hwpx 1쪽 fresh WASM raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/wasm/raw-001.png) | ![image-fill-hwpx 1쪽 fresh WASM review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/wasm/review-001.png) | ![image-fill-hwpx 1쪽 fresh WASM overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/wasm/overlay-001.png) |
 
-대표 HWPX 1쪽 Native [review](../assets/planet6897_20261106/pr8600/r11/image-fill-hwpx/native-review-001.png)·
-[overlay](../assets/planet6897_20261106/pr8600/r11/image-fill-hwpx/native-overlay-001.png),
-fresh WASM [review](../assets/planet6897_20261106/pr8600/r11/image-fill-hwpx/wasm-review-001.png)·
-[overlay](../assets/planet6897_20261106/pr8600/r11/image-fill-hwpx/wasm-overlay-001.png).
-HWP·HWPX 각각의 같은 위치 증거와 2쪽도 같은 디렉터리에 보존했다.
-[HWP provenance](../assets/planet6897_20261106/pr8600/r11/image-fill-hwp/provenance.json)·
-[HWPX provenance](../assets/planet6897_20261106/pr8600/r11/image-fill-hwpx/provenance.json).
+서로 다른 종횡비·크기의 여섯 도형을 독립 Print와 대조했다. 빨강·초록·파랑·노랑의 네 영역, 채움 경계·바깥선과 마지막 도형의 오른쪽·아래쪽 채움이 보존된다. 위쪽 문구가 도형 뒤에 가려진 상태도 기준 PDF와 같으며 새 내용 소실로 판정하지 않는다. raw100%는 색상 픽셀 동일성이 아니다.
 
-이 절은 R11의 실제 주장 검증 기록이다. 이후 통합 보정의 최종 head·회귀·필수 gate가
-아직 완료되지 않았으므로 통합 PR 전체의 최종 머지 승인으로 대신하지 않는다.
+2쪽 Native **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/native/raw-002.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/native/pdf-002.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/native/review-002.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/native/overlay-002.png)
+
+2쪽 fresh WASM **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/wasm/raw-002.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/wasm/pdf-002.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/wasm/review-002.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/wasm/overlay-002.png)
+
+HWPX 둘째 쪽 날짜·윤고딕250한글 한 줄과 나머지 빈 영역을 확인했다. 글자 크기·굵기와 쪽 소속을 보존한다.
+
+| 경로 | raw | review | overlay |
+| --- | --- | --- | --- |
+| Native | ![image-fill-hwpx 2쪽 Native raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/native/raw-002.png) | ![image-fill-hwpx 2쪽 Native review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/native/review-002.png) | ![image-fill-hwpx 2쪽 Native overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/native/overlay-002.png) |
+| fresh WASM | ![image-fill-hwpx 2쪽 fresh WASM raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/wasm/raw-002.png) | ![image-fill-hwpx 2쪽 fresh WASM review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/wasm/review-002.png) | ![image-fill-hwpx 2쪽 fresh WASM overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/wasm/overlay-002.png) |
+
+같은 형식 원본의 두 번째 페이지에서 2021. 9. . 윤고딕 250 한글의 숫자·한글 윤곽, 구분점과 글자 사이 간격·기준선을 독립 Print와 직접 대조했다. 줄 누락이나 다른 글꼴의 과도한 폭 치환은 보이지 않으며 안티앨리어싱 차이는 남는다.
+
+### image-fill-hwp
+
+- 입력: [samples/issue8575/shape_image_fill-2020.hwp](../../../samples/issue8575/shape_image_fill-2020.hwp)
+- 독립 Print: [pdf/issue8575/shape_image_fill-2020.pdf](../../../pdf/issue8575/shape_image_fill-2020.pdf)
+- 전체 2쪽 Native 최저 100.00%. [TSV](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/native.tsv) · [입력/PDF·producer 해시](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/provenance.json).
+- 전체 2쪽 fresh WASM 최저 100.00%. [TSV](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/wasm.tsv).
+
+1쪽 Native **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/native/raw-001.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/native/pdf-001.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/native/review-001.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/native/overlay-001.png)
+
+1쪽 fresh WASM **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/wasm/raw-001.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/wasm/pdf-001.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/wasm/review-001.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/wasm/overlay-001.png)
+
+HWP 그림 채우기 여섯 도형의 원색 사분면·윤곽·서로 다른 가로세로 비율과 위치를 확인했다. 각 채우기 모드의 도형 경계/크기를 보존하며, 얇은 선 래스터 차이만 구분한다.
+
+| 경로 | raw | review | overlay |
+| --- | --- | --- | --- |
+| Native | ![image-fill-hwp 1쪽 Native raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/native/raw-001.png) | ![image-fill-hwp 1쪽 Native review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/native/review-001.png) | ![image-fill-hwp 1쪽 Native overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/native/overlay-001.png) |
+| fresh WASM | ![image-fill-hwp 1쪽 fresh WASM raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/wasm/raw-001.png) | ![image-fill-hwp 1쪽 fresh WASM review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/wasm/review-001.png) | ![image-fill-hwp 1쪽 fresh WASM overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/wasm/overlay-001.png) |
+
+서로 다른 종횡비·크기의 여섯 도형을 독립 Print와 대조했다. 빨강·초록·파랑·노랑의 네 영역, 채움 경계·바깥선과 마지막 도형의 오른쪽·아래쪽 채움이 보존된다. 위쪽 문구가 도형 뒤에 가려진 상태도 기준 PDF와 같으며 새 내용 소실로 판정하지 않는다. raw100%는 색상 픽셀 동일성이 아니다.
+
+2쪽 Native **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/native/raw-002.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/native/pdf-002.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/native/review-002.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/native/overlay-002.png)
+
+2쪽 fresh WASM **100.00%**: [raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/wasm/raw-002.png) · [PDF raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/wasm/pdf-002.png) · [review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/wasm/review-002.png) · [overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/wasm/overlay-002.png)
+
+HWP 둘째 쪽의 날짜와 윤고딕250한글 한 줄을 대조했다. 첫 쪽의 그림이 넘어오거나 누락되지 않고 굵은 글자 윤곽·문장 소속을 유지한다.
+
+| 경로 | raw | review | overlay |
+| --- | --- | --- | --- |
+| Native | ![image-fill-hwp 2쪽 Native raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/native/raw-002.png) | ![image-fill-hwp 2쪽 Native review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/native/review-002.png) | ![image-fill-hwp 2쪽 Native overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/native/overlay-002.png) |
+| fresh WASM | ![image-fill-hwp 2쪽 fresh WASM raw](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/wasm/raw-002.png) | ![image-fill-hwp 2쪽 fresh WASM review](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/wasm/review-002.png) | ![image-fill-hwp 2쪽 fresh WASM overlay](../assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/wasm/overlay-002.png) |
+
+같은 형식 원본의 두 번째 페이지에서 2021. 9. . 윤고딕 250 한글의 숫자·한글 윤곽, 구분점과 글자 사이 간격·기준선을 독립 Print와 직접 대조했다. 줄 누락이나 다른 글꼴의 과도한 폭 치환은 보이지 않으며 안티앨리어싱 차이는 남는다.
+
+## 최종 제출과 원격 조건
+
+기존 전쪽 TSV·직접 판독을 유지하고 리베이스 후 영향 2조건 8쪽과 앞선 HWP3 3조건 10쪽과 필수 집중·lint를 추가 검증했습니다. 엄격0.1%p 비교 잔여1건은 새 이슈로 분리하며 완전 무회귀로 표기하지 않습니다. 원격 게시 직전에 원 PR head·upstream/devel·제출 diff와 병합 시뮬레이션을 재확인합니다. 통합 PR의 실제 CI 성공과 최종 head의 mergeability를 확인한 뒤 승인된 병합·후속처리를 수행합니다.
+
+## Merge 후 contributor PR comment 계획
+
+통합 병합이 완료되면 최종 merge SHA·CI URL과 이 PR이 주장한 입력/페이지의 raw 이미지를 고정 SHA 링크로 연결합니다. 원 기여와 메인터너 보정 이유·범위를 한국어 존댓말로 구분하며, 별도 검증하지 않은 문제까지 해결했다고 쓰지 않습니다. 원 PR의 종료는 통합 병합 후 실제 해결 범위를 확인하여 처리합니다.

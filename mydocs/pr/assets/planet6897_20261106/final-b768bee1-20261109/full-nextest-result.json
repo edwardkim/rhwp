@@ -1,0 +1,15 @@
+{
+  "head": "eb876d1416fb558c874f9efec65c5722a6769751",
+  "base": "b768bee1c4c0023087687f79a0a95f12108743e9",
+  "tests_run": 13105,
+  "passed": 13105,
+  "failed": 0,
+  "skipped": 45,
+  "execution_seconds": "570.421",
+  "process_exit_code": 0,
+  "wall_seconds": 1664.5565877498593,
+  "log": "output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/full-nextest.log",
+  "log_sha256": "4d58643834ccda24b3131fb10b23b199876e44780c7009f94804d25bc645317d",
+  "environment": "Mac sandbox 최소 글꼴 격리, threads8, jobs8",
+  "scope": "기본 feature 전체 nextest. Native 전용 tier와 실제 backend·시각 검증은 별도로 기록한다."
+}

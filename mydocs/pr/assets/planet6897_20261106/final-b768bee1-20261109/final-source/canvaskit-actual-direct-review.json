@@ -1,0 +1,6 @@
+{
+  "state": "complete",
+  "head": "e1fbd75cfcbefc0f633bcbd2ccef256614267ce8",
+  "finding": "set id 그룹, 안쪽 배열, item/value 텍스트, 세 방향 화살표와 색상 셀을 실제 CanvasKit 화면에서 확인했다. PDF 피델리티 검증과 구분한다.",
+  "screenshot_sha256": "fd37698f44422281fadf2c15220568b00b81059e2a270fd24acbc564c1ce8783"
+}

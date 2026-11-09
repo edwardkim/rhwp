@@ -1,4 +1,16 @@
-# PR #8611 누적 검토 구현 계획
+# PR #8611 통합 적용·메인터너 보정 기록
+
+## 최종 source와 재사용 범위
+
+제출 code head `2e262d0d4b2885b130e2db917b86e894710425e4`, base `e00f9b7e26e581896fa17eaff3c8eb3f4889f9d4`입니다. 아래 전체 회귀·전쪽 수치는 원 실측 HEAD의 증거를 재사용한 기록입니다. 최신 집중 검사와 페이지별 producer, 엄격 0.1%p 잔여 한 건은 [재사용·최종 판정](../assets/planet6897_20261106/final-b768bee1-20261109/validation-reuse.md)을 따릅니다. 보호 TSV 표시값 하락은 0입니다.
+
+## 최종 구현·검증 결과
+
+검증 code head `eb876d1416fb558c874f9efec65c5722a6769751`, base `b768bee1c4c0023087687f79a0a95f12108743e9`에서 원 기여와 메인터너 보정을 함께 검증했습니다. 최소 글꼴 전체 회귀 13,105 PASS / 0 FAIL / 45 skip, Native 전용 73 PASS이며, Native/fresh WASM 각각 94조건·2,995쪽의 미달·누락·보호 표시값 하락은 없습니다. 원 PR의 개별 입력·페이지 판독과 보정 내용은 [최종 review](pr_8611_review.md)에 연결합니다. 원격 통합 PR의 최종 CI와 병합은 별도 단계입니다.
+
+## 단계별 기록의 시점
+
+아래 R 단계와 과거 실행의 진행 중·실패·추가 검증 표현은 해당 시점의 원인 추적 기록입니다. 과거 결과를 현재 code head의 통과로 합산하지 않으며, 현재 상태는 위 최종 결과와 연결된 review를 기준으로 판단합니다.
 
 ## 대상과 단계
 
@@ -8,16 +20,17 @@
 
 | 원 commit | 적용/보존 결과 | 제목 |
 | --- | --- | --- |
-| `84aa570a64e3cc5265fab5dd08b2e7fefa5d35d5` | `5ef7a772e0ba78c3e5931d0eeb9f48d1e541f7fa` | fix(renderer): Native 경로 글꼴을 매핑으로 공유해 64MiB 넘는 파일도 싣기 (#8597) |
-| `0cbe6a9ae5ee4ef8d994d21c170682f95f4bf236` | `8684fdc5d7a4756c5cec31a3dbb986c26cdfb24c` | fix(font): 환경 이름 계약을 어기는 원본 글꼴 이름은 관측 대체 요청에서 뺀다 (#8597) |
+| `84aa570a64e3cc5265fab5dd08b2e7fefa5d35d5` | `31afd9cf1cd4a32d66d320acdf32de72bb1356fa` | fix(renderer): Native 경로 글꼴을 매핑으로 공유해 64MiB 넘는 파일도 싣기 (#8597) |
+| `0cbe6a9ae5ee4ef8d994d21c170682f95f4bf236` | `ac8493876594145d60695f5db5b15960e4c597e9` | fix(font): 환경 이름 계약을 어기는 원본 글꼴 이름은 관측 대체 요청에서 뺀다 (#8597) |
 
-## R42 리베이스 후 적용 상태
+## 최종 리베이스 후 적용 상태
 
-새 base `1e16a19aede5ccb2657d35974940eb596286cdf1`, 리베이스 직후 head
-`896708a4a02c4138064ab3d426a487bbce52fc02` 기준으로 위 실제 적용 SHA를 갱신했다.
-중복 patch 행의 원 기여 commit 참조는 유지한다. [고유 56개 적용표](../assets/planet6897_20261106/contributor-commit-map-r42.tsv)와
-[리베이스·충돌 처리 보고서](../assets/planet6897_20261106/rebase-r42-analysis.md)를 따른다.
-원 PR head와 입력은 보존됐으며, 이력 갱신을 최종 검증 통과나 승인으로 표시하지 않는다.
+검증 base `b768bee1c4c0023087687f79a0a95f12108743e9`, 검증 제품 head
+`eb876d1416fb558c874f9efec65c5722a6769751`의 실제 Git 이력을 대조해 위 적용 SHA를 갱신했다.
+[고유 56개 최종 적용표](../assets/planet6897_20261106/contributor-commit-map-final.tsv)는 원 기여 commit의
+cherry-picked footer와 현재 적용 commit을 일대일로 확인한 결과다. 중복 patch·bridge의 기존 처리는 유지한다.
+이번 b768bee1 리베이스에는 실제 파일 충돌이 없었습니다. index.lock 경합이 끝나고 lock이 없는 상태에서 계속했으며 lock을 삭제하거나 todo를 바꾸지 않았습니다. 제품 src/crates/tests/scripts와 지침의 바이트는 이전 후보와 같고 의존성 변경에 대한 새 검증을 수행합니다.
+이력 확인과 현재 제품의 기능·회귀·시각 검증 판정은 구분하며, 필수 검증 완료 전에는 승인하지 않는다.
 
 ## 완료 조건
 

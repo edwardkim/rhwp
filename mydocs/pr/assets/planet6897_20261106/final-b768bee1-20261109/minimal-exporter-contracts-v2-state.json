@@ -1,0 +1,32 @@
+{
+  "state": "complete",
+  "pid": 14664,
+  "head": "eb876d1416fb558c874f9efec65c5722a6769751",
+  "results": [
+    {
+      "name": "actual-exporter-browser",
+      "exit_code": 0,
+      "seconds": 35.440075875027105,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/minimal-v2-actual-exporter-browser.log",
+      "sha256": "6b01f90a7a4d810d153f7b78c89dbc7bc59ca80f5a933519cb306c2370b837fa"
+    },
+    {
+      "name": "font-projection-generator",
+      "exit_code": 0,
+      "seconds": 2.6365117498207837,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/minimal-v2-font-projection-generator.log",
+      "sha256": "e0549581364daf443ab5abc15d79b46a01426307a56fa3752a032c18f4d4b77c"
+    },
+    {
+      "name": "sweep-python-contracts",
+      "exit_code": 0,
+      "seconds": 3.8688516670372337,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/minimal-v2-sweep-python-contracts.log",
+      "sha256": "f2d51b70af6b42eee7dcbff25e9ba2ff4ab5bd80133c3d51e5f79c983545a3a6"
+    }
+  ],
+  "scope": "이번 통합에서 변경한 실제 Canvas font/exporter 및 Python sweep 계약만 실행. 중복 개별 browser 호출 없이 aggregator 1회.",
+  "started_at": "2026-11-09T18:45:42.549757+09:00",
+  "font_isolation_profile": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/full-minimal-font.sb",
+  "finished_at": "2026-11-09T18:46:24.500727+09:00"
+}

@@ -1,0 +1,189 @@
+{
+  "state": "complete",
+  "head": "e1fbd75cfcbefc0f633bcbd2ccef256614267ce8",
+  "backend": "wasm",
+  "conditions": 2,
+  "pages": 8,
+  "checks": [
+    {
+      "reference": "previous-candidate",
+      "case": "handbook-hwp",
+      "page": 38,
+      "before": "100.0",
+      "after": "100.0",
+      "decline_pp": "0.0",
+      "regression": false
+    },
+    {
+      "reference": "previous-candidate",
+      "case": "handbook-hwp",
+      "page": 59,
+      "before": "100.0",
+      "after": "100.0",
+      "decline_pp": "0.0",
+      "regression": false
+    },
+    {
+      "reference": "previous-candidate",
+      "case": "handbook-hwp",
+      "page": 130,
+      "before": "99.96401",
+      "after": "99.96401",
+      "decline_pp": "0.00000",
+      "regression": false
+    },
+    {
+      "reference": "previous-candidate",
+      "case": "handbook-hwp",
+      "page": 272,
+      "before": "100.0",
+      "after": "100.0",
+      "decline_pp": "0.0",
+      "regression": false
+    },
+    {
+      "reference": "fixed-base-b768bee1",
+      "case": "handbook-hwp",
+      "page": 38,
+      "before": "100.0",
+      "after": "100.0",
+      "decline_pp": "0.0",
+      "regression": false
+    },
+    {
+      "reference": "fixed-base-b768bee1",
+      "case": "handbook-hwp",
+      "page": 59,
+      "before": "99.97779",
+      "after": "100.0",
+      "decline_pp": "-0.02221",
+      "regression": false
+    },
+    {
+      "reference": "fixed-base-b768bee1",
+      "case": "handbook-hwp",
+      "page": 130,
+      "before": "99.96401",
+      "after": "99.96401",
+      "decline_pp": "0.00000",
+      "regression": false
+    },
+    {
+      "reference": "fixed-base-b768bee1",
+      "case": "handbook-hwp",
+      "page": 272,
+      "before": "100.0",
+      "after": "100.0",
+      "decline_pp": "0.0",
+      "regression": false
+    },
+    {
+      "reference": "protected-official-two-decimals",
+      "case": "handbook-hwp",
+      "page": 38,
+      "before": "100.00",
+      "after": "100.0",
+      "regression": false
+    },
+    {
+      "reference": "protected-official-two-decimals",
+      "case": "handbook-hwp",
+      "page": 59,
+      "before": "100.00",
+      "after": "100.0",
+      "regression": false
+    },
+    {
+      "reference": "protected-official-two-decimals",
+      "case": "handbook-hwp",
+      "page": 130,
+      "before": "99.96",
+      "after": "99.96401",
+      "regression": false
+    },
+    {
+      "reference": "protected-official-two-decimals",
+      "case": "handbook-hwp",
+      "page": 272,
+      "before": "100.00",
+      "after": "100.0",
+      "regression": false
+    },
+    {
+      "reference": "previous-candidate",
+      "case": "incoming8754-clip5587",
+      "page": 1,
+      "before": "99.96389",
+      "after": "99.96389",
+      "decline_pp": "0.00000",
+      "regression": false
+    },
+    {
+      "reference": "previous-candidate",
+      "case": "incoming8754-clip5587",
+      "page": 2,
+      "before": "98.33134",
+      "after": "99.72746",
+      "decline_pp": "-1.39612",
+      "regression": false
+    },
+    {
+      "reference": "previous-candidate",
+      "case": "incoming8754-clip5587",
+      "page": 3,
+      "before": "98.67172",
+      "after": "98.67172",
+      "decline_pp": "0.00000",
+      "regression": false
+    },
+    {
+      "reference": "previous-candidate",
+      "case": "incoming8754-clip5587",
+      "page": 4,
+      "before": "92.293",
+      "after": "99.81731",
+      "decline_pp": "-7.52431",
+      "regression": false
+    },
+    {
+      "reference": "fixed-base-b768bee1",
+      "case": "incoming8754-clip5587",
+      "page": 1,
+      "before": "99.96269",
+      "after": "99.96389",
+      "decline_pp": "-0.00120",
+      "regression": false
+    },
+    {
+      "reference": "fixed-base-b768bee1",
+      "case": "incoming8754-clip5587",
+      "page": 2,
+      "before": "99.73012",
+      "after": "99.72746",
+      "decline_pp": "0.00266",
+      "regression": false
+    },
+    {
+      "reference": "fixed-base-b768bee1",
+      "case": "incoming8754-clip5587",
+      "page": 3,
+      "before": "98.62409",
+      "after": "98.67172",
+      "decline_pp": "-0.04763",
+      "regression": false
+    },
+    {
+      "reference": "fixed-base-b768bee1",
+      "case": "incoming8754-clip5587",
+      "page": 4,
+      "before": "99.83503",
+      "after": "99.81731",
+      "decline_pp": "0.01772",
+      "regression": false
+    }
+  ],
+  "regressions": [],
+  "deferred_residuals": [],
+  "fatal_regressions": [],
+  "scope_instruction": "빠른 pr 이 목적임. 나머지는 새로운 이슈로 생성하고 빨리 pr 해. 0.1%p 비교 잔여는 숨기지 않고 신규 이슈와 PR 본문에 명시한다."
+}

@@ -1,0 +1,394 @@
+{
+  "state": "complete",
+  "measured_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+  "results": [
+    {
+      "backend": "native",
+      "case": "certificate",
+      "page": 9,
+      "document_page_counts": {
+        "rhwp": 8,
+        "pdf": 9
+      },
+      "base_source_run_manifests": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/certificate/certificate/run_manifest.json",
+          "sha256": "48333030c4a39ea2a0ea88fc2dfa6cdb67127942c7ce02c18507358cb8465516"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/certificate/certificate/silhouette-parts/p0002-0008/run_manifest.json",
+          "sha256": "f0f03ea0a33644673fa0308fc4c35b5554f2bc7683838aebfd90cc80d98cb4c0"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/certificate/certificate/silhouette-parts/p0001-0001/run_manifest.json",
+          "sha256": "de5a33e78547bb8162a22abb28c475fb96fa6bf42b1c9113e5c64abcdb35e053"
+        }
+      ],
+      "candidate_pages": 9,
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/certificate/certificate/silhouette_manifest.json",
+      "review_status": "direct-review-complete",
+      "raw": "100.0",
+      "assets": [
+        {
+          "kind": "raw",
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/certificate/certificate/rhwp_png/rhwp_009.png",
+          "sha256": "4c9422d06993aace54b0c0ea1ec07aa438833887de8c058f1e94354868875fad"
+        },
+        {
+          "kind": "pdf",
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/certificate/certificate/pdf_png/pdf-009.png",
+          "sha256": "df09cda71b6120a243c6cd8a02898599745468ea4974ecc45894b7ff455b3044"
+        },
+        {
+          "kind": "review",
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/reference-count-images/certificate/native/review/review_009.png",
+          "sha256": "fdd38702b6bf8a61537d0dcd318f3de258a0ab34e561096fac467229ceeecb9d"
+        },
+        {
+          "kind": "overlay",
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/reference-count-images/certificate/native/overlay/overlay_009.png",
+          "sha256": "aa6b112c96646f27e624ade08c3f7e57aa5d002671f0b55fbd8b0060b6c1fc16"
+        }
+      ],
+      "reviewed_at": "2026-11-09T20:31:08.782219+09:00",
+      "finding": "마지막 자격증 표의 5~9급 열, 환경·항공·시설·위생·운전 행, 마지막 비고1~5를 대응 PDF와 같은 쪽의 review·overlay에서 확인했다. 기준의 8쪽을 후보의 9쪽과 억지로 짝짓지 않는다."
+    },
+    {
+      "backend": "native",
+      "case": "policy-agenda",
+      "page": 14,
+      "document_page_counts": {
+        "rhwp": 13,
+        "pdf": 14
+      },
+      "base_source_run_manifests": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/policy-agenda/policy-agenda/run_manifest.json",
+          "sha256": "1a743862167c9611aa53d9c75545dd20fc5eb3646c5b193cac0996f4753eda23"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/policy-agenda/policy-agenda/silhouette-parts/p0002-0013/run_manifest.json",
+          "sha256": "bea51b56244f7dc572cb8bb943a36f28b359ef51b3681bd30c000d8927345c72"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/policy-agenda/policy-agenda/silhouette-parts/p0001-0001/run_manifest.json",
+          "sha256": "e9a00ce8b9ad0c6e2e75a6cc3cdb13f4ae059b57a5fa355953a59cdbddf08af6"
+        }
+      ],
+      "candidate_pages": 14,
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/policy-agenda/policy-agenda/silhouette_manifest.json",
+      "review_status": "direct-review-complete",
+      "raw": "100.0",
+      "assets": [
+        {
+          "kind": "raw",
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/policy-agenda/policy-agenda/rhwp_png/rhwp_014.png",
+          "sha256": "108e081d716d2107f7a6cc9d0a23ae9030877c40004e1a6f9941cf5f3a2ce649"
+        },
+        {
+          "kind": "pdf",
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/policy-agenda/policy-agenda/pdf_png/pdf-014.png",
+          "sha256": "8d17c2aec3f8d4e2490f9814302952ede8cf15f483016cf0202749965a071fc8"
+        },
+        {
+          "kind": "review",
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/reference-count-images/policy-agenda/native/review/review_014.png",
+          "sha256": "97c8441e8e3f4ca49cc1f583de88ba84db36060750f95b3ba3efcd42b0db7e02"
+        },
+        {
+          "kind": "overlay",
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/reference-count-images/policy-agenda/native/overlay/overlay_014.png",
+          "sha256": "1d1360a838f01061c8f703576b5613eede6b9672bc6755a5d51915a4bac2aa74"
+        }
+      ],
+      "reviewed_at": "2026-11-09T20:31:08.794492+09:00",
+      "finding": "마지막 서면 의결서의 제목, 의안번호 제2013-4호, 의견 내용, 가/부, 하단 날짜·위원명·서명란을 같은 PDF의14쪽 review·overlay로 확인했다. 기준에서 누락한14쪽에 가상 점수를 만들지 않는다."
+    },
+    {
+      "backend": "native",
+      "case": "summary-tail",
+      "page": 3,
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 3
+      },
+      "base_source_run_manifests": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/summary-tail/summary-tail/run_manifest.json",
+          "sha256": "f07cfad40dadfe60e0249ae068df8af80992f09b22cbc3bf4b59750e4afa6eca"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/summary-tail/summary-tail/silhouette-parts/p0002-0002/run_manifest.json",
+          "sha256": "b5913cb5869f34ffad702b9e21f5d12d36cbf22ddd379cf81f893c4d5d259e27"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/summary-tail/summary-tail/silhouette-parts/p0001-0001/run_manifest.json",
+          "sha256": "d550fd211c57f5bc31d159027bd14c729310e17fa3af5218999eb5294a610298"
+        }
+      ],
+      "candidate_pages": 3,
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/summary-tail/summary-tail/silhouette_manifest.json",
+      "review_status": "existing-current-direct-review-verified",
+      "finding": "중간결과보고서 머리 상자와 차례 제목·하단 -1-이 보존되고, 1쪽의 큰 표가 이 페이지로 넘치거나 중복되지 않는다.",
+      "assets": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/claim-images/summary-tail/native/raw_003.png",
+          "sha256": "0c644688d8493ae6a108ae1313af2c2995fcae3521c5e41683039fff7dc2948f"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/claim-images/summary-tail/native/pdf_003.png",
+          "sha256": "ae187198e4395bbbd48ea717c0641a2bc97a03788ce6bad28a42b4b0495a0b99"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/claim-images/summary-tail/native/overlay/overlay_003.png",
+          "sha256": "246346206cf03094e6be2801d8b5aa22977e09f22f42cd743a226d86a4e3cb85"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/claim-images/summary-tail/native/review/review_003.png",
+          "sha256": "8a07b6ed5f0159c0fabd918b0d2a62b2cc1c269e22c8556a1100af346e26cae4"
+        }
+      ],
+      "reviewed_at": "2026-11-09T15:06:18.960828+09:00",
+      "reuse_source": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/claim-direct-reviews.json",
+      "reuse_source_sha256": "ac14aa08e3ce4b6ff318ea0d0343d8b15baf44833a8f1b8905492715b3f712a8"
+    },
+    {
+      "backend": "native",
+      "case": "original-36474334",
+      "page": 2,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 2
+      },
+      "base_source_run_manifests": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/original-36474334/original-36474334/run_manifest.json",
+          "sha256": "f7bacccff7a989f8eed6a4e7405fba1c2b2faaf9f8af8faed60469e313c92aca"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/original-36474334/original-36474334/silhouette-parts/p0001-0001/run_manifest.json",
+          "sha256": "f66c4d385098072047b68143a131d5a1a6232c161f3673b96976da0d3a1a27c6"
+        }
+      ],
+      "candidate_pages": 2,
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/original-36474334/original-36474334/silhouette_manifest.json",
+      "review_status": "existing-current-direct-review-verified",
+      "finding": "Print와 후보 모두 빈 2쪽이다. 이 결과는 총쪽수와 앞쪽 경계 보존에만 사용하며 빈 페이지 점수로 본문 피델리티를 대신하지 않는다.",
+      "assets": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/claim-images/original-36474334/native/raw_002.png",
+          "sha256": "b0e152794b097b46e03a2db76356bb9c14ac2e3fe864380d480ff0cfa743a0b1"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/claim-images/original-36474334/native/pdf_002.png",
+          "sha256": "14082e8eebc33e088076dc20cd804c779aca71a3cadfd301275d72c5721c7f44"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/claim-images/original-36474334/native/overlay/overlay_002.png",
+          "sha256": "ccf21c52852a9030c7055ec625527bedc4c7d5e0abfdfbb3a00da256a5738286"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/claim-images/original-36474334/native/review/review_002.png",
+          "sha256": "9eba5572764a6a41b33afeab008e5028a6e8b525b2172062c1427c77f0c7c0ff"
+        }
+      ],
+      "reviewed_at": "2026-11-09T15:07:31.728868+09:00",
+      "reuse_source": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/claim-direct-reviews.json",
+      "reuse_source_sha256": "ac14aa08e3ce4b6ff318ea0d0343d8b15baf44833a8f1b8905492715b3f712a8"
+    },
+    {
+      "backend": "wasm",
+      "case": "policy-agenda",
+      "page": 14,
+      "document_page_counts": {
+        "rhwp": 13,
+        "pdf": 14
+      },
+      "base_source_run_manifests": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/policy-agenda/policy-agenda/run_manifest.json",
+          "sha256": "e7c61de9b77eacd4d1c6d2b3a2146340ae9b2edecc0720a54f99f12e97894d4b"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/policy-agenda/policy-agenda/silhouette-parts/p0002-0013/run_manifest.json",
+          "sha256": "baf8868fe218a7cb7157e551d4096992f0cebad43c3f518fa7120c1ad3e47c64"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/policy-agenda/policy-agenda/silhouette-parts/p0001-0001/run_manifest.json",
+          "sha256": "99cb092a33bd61df73627db9b6edeb3d75816e0f336876cf47448092a7005e24"
+        }
+      ],
+      "candidate_pages": 14,
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-wasm/policy-agenda/policy-agenda/silhouette_manifest.json",
+      "review_status": "direct-review-complete",
+      "raw": "100.0",
+      "assets": [
+        {
+          "kind": "raw",
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-wasm/policy-agenda/policy-agenda/rhwp_png/rhwp_014.png",
+          "sha256": "a5f66665e099c0f33ec94567de8077fc7e1cf826a60c33f230858d4b077a0b51"
+        },
+        {
+          "kind": "pdf",
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-wasm/policy-agenda/policy-agenda/pdf_png/pdf-014.png",
+          "sha256": "8d17c2aec3f8d4e2490f9814302952ede8cf15f483016cf0202749965a071fc8"
+        },
+        {
+          "kind": "review",
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/reference-count-images/policy-agenda/wasm/review/review_014.png",
+          "sha256": "8c2ec96316a0202b14a5bd1932e1213371e2050811d5c45f8ac2c05ac03e43be"
+        },
+        {
+          "kind": "overlay",
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/reference-count-images/policy-agenda/wasm/overlay/overlay_014.png",
+          "sha256": "ca306c3394c89dc4a1542b039b1ac1275c660c04127b85bd259af4d7215af0b9"
+        }
+      ],
+      "reviewed_at": "2026-11-09T20:31:08.802299+09:00",
+      "finding": "마지막 서면 의결서의 제목, 의안번호 제2013-4호, 의견 내용, 가/부, 하단 날짜·위원명·서명란을 같은 PDF의14쪽 review·overlay로 확인했다. 기준에서 누락한14쪽에 가상 점수를 만들지 않는다."
+    },
+    {
+      "backend": "wasm",
+      "case": "certificate",
+      "page": 9,
+      "document_page_counts": {
+        "rhwp": 8,
+        "pdf": 9
+      },
+      "base_source_run_manifests": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/certificate/certificate/run_manifest.json",
+          "sha256": "306bf4ce8d97c7f6415c9fb2402ce1b68ef2bcd570560f972d496dba7c3461ad"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/certificate/certificate/silhouette-parts/p0002-0008/run_manifest.json",
+          "sha256": "ba6ec73d72ad622448e5c3bbfc1b1d153c541175e4d912873c440722f87fa17c"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/certificate/certificate/silhouette-parts/p0001-0001/run_manifest.json",
+          "sha256": "aa867d293749e7cd90e2ba5dbe60543fc1aaab1f9ea7710646184ba7c366ded6"
+        }
+      ],
+      "candidate_pages": 9,
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-wasm/certificate/certificate/silhouette_manifest.json",
+      "review_status": "direct-review-complete",
+      "raw": "100.0",
+      "assets": [
+        {
+          "kind": "raw",
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-wasm/certificate/certificate/rhwp_png/rhwp_009.png",
+          "sha256": "231bb390a9ef9f077e32c60c2e31fe65b3cefd8f3d04904a50e853a51f1a2ca8"
+        },
+        {
+          "kind": "pdf",
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-wasm/certificate/certificate/pdf_png/pdf-009.png",
+          "sha256": "df09cda71b6120a243c6cd8a02898599745468ea4974ecc45894b7ff455b3044"
+        },
+        {
+          "kind": "review",
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/reference-count-images/certificate/wasm/review/review_009.png",
+          "sha256": "4ae2b6af409d7fcbad925ed00b275449fb484debf18f1653f5f9a3a016936c30"
+        },
+        {
+          "kind": "overlay",
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/reference-count-images/certificate/wasm/overlay/overlay_009.png",
+          "sha256": "6fd9d6602ba6de5c78c771e96d3511da7d74d57c9a1ce6d8844594425d402798"
+        }
+      ],
+      "reviewed_at": "2026-11-09T20:31:08.810720+09:00",
+      "finding": "마지막 자격증 표의 5~9급 열, 환경·항공·시설·위생·운전 행, 마지막 비고1~5를 대응 PDF와 같은 쪽의 review·overlay에서 확인했다. 기준의 8쪽을 후보의 9쪽과 억지로 짝짓지 않는다."
+    },
+    {
+      "backend": "wasm",
+      "case": "summary-tail",
+      "page": 3,
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 3
+      },
+      "base_source_run_manifests": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/summary-tail/summary-tail/run_manifest.json",
+          "sha256": "0034dcea68646c8a40b5969a518b48de5a54c5981ead1903968416f55a9ea526"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/summary-tail/summary-tail/silhouette-parts/p0002-0002/run_manifest.json",
+          "sha256": "c898e8d4b668cc3074cca8ae1b0f5082b6f4e5074fcebe400d4ec2d0cb619c5b"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/summary-tail/summary-tail/silhouette-parts/p0001-0001/run_manifest.json",
+          "sha256": "9df14539118ed1e69166ef11141a5732c55ef5adf2e29e8737ed1e991d4cc80e"
+        }
+      ],
+      "candidate_pages": 3,
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-wasm/summary-tail/summary-tail/silhouette_manifest.json",
+      "review_status": "existing-current-direct-review-verified",
+      "finding": "셋째 쪽은 중간결과보고서 상자와 차례 제목 및아래쪽1쪽 번호만 남는 동일 구성이다. 제목·footer 소속과 나머지 빈 영역을 확인했다.",
+      "assets": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/claim-images/summary-tail/wasm/raw_003.png",
+          "sha256": "d8b0cbfdc6d50818cc333eb8ae01798d80d3f9e4a8c3f1785b9102aac8648528"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/claim-images/summary-tail/wasm/pdf_003.png",
+          "sha256": "ae187198e4395bbbd48ea717c0641a2bc97a03788ce6bad28a42b4b0495a0b99"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/claim-images/summary-tail/wasm/overlay/overlay_003.png",
+          "sha256": "13bc3cd34e15949e11a6793c6f00cbf8e03922cd7fb08c8713d8031c76c44934"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/claim-images/summary-tail/wasm/review/review_003.png",
+          "sha256": "6719cf4f471845b4a470b498bd1a6aba384ffb1dfae2171fb97e5fcaead31530"
+        }
+      ],
+      "reviewed_at": "2026-11-09T16:52:52.816279+09:00",
+      "reuse_source": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/claim-direct-reviews.json",
+      "reuse_source_sha256": "ac14aa08e3ce4b6ff318ea0d0343d8b15baf44833a8f1b8905492715b3f712a8"
+    },
+    {
+      "backend": "wasm",
+      "case": "original-36474334",
+      "page": 2,
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 2
+      },
+      "base_source_run_manifests": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/original-36474334/original-36474334/run_manifest.json",
+          "sha256": "10d4df58c7b31a1ae48d59d3b78b5bf628eaa263e86670b3ea4ca5bed0f4c41c"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/original-36474334/original-36474334/silhouette-parts/p0001-0001/run_manifest.json",
+          "sha256": "40731d82c3cc9587dbe0c65fe748a671b8d0c62d71977b52a6bbf0831f10dc1b"
+        }
+      ],
+      "candidate_pages": 2,
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-wasm/original-36474334/original-36474334/silhouette_manifest.json",
+      "review_status": "existing-current-direct-review-verified",
+      "finding": "독립 PDF와 후보 모두 빈 2쪽이다. 빈 페이지의 보존을 확인했으며 실내용 페이지로 해석하지 않는다.",
+      "assets": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/claim-images/original-36474334/wasm/raw_002.png",
+          "sha256": "6fb2edcbc902de425f2df69d5b3f88bb5a0c58b8428abbca2caabc57521c8302"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/claim-images/original-36474334/wasm/pdf_002.png",
+          "sha256": "14082e8eebc33e088076dc20cd804c779aca71a3cadfd301275d72c5721c7f44"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/claim-images/original-36474334/wasm/overlay/overlay_002.png",
+          "sha256": "b3f1cca8f756ccaf8fdc9094d6d805ed525f39acce160906c34a6f7cfd8da796"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/claim-images/original-36474334/wasm/review/review_002.png",
+          "sha256": "b002ab2ca1c55cc58233e45273ae6529a0c117a352afc97d8b49ef23a28dbd27"
+        }
+      ],
+      "reviewed_at": "2026-11-09T17:02:01.335792+09:00",
+      "reuse_source": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/claim-direct-reviews.json",
+      "reuse_source_sha256": "ac14aa08e3ce4b6ff318ea0d0343d8b15baf44833a8f1b8905492715b3f712a8"
+    }
+  ]
+}

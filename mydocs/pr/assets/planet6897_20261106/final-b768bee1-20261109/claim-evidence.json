@@ -1,0 +1,2676 @@
+{
+  "head": "eb876d1416fb558c874f9efec65c5722a6769751",
+  "state": "actual-validated",
+  "results": [
+    {
+      "pr": 8550,
+      "case": "cover",
+      "page": 1,
+      "backend": "native",
+      "raw": "99.87",
+      "source_manifest_sha256": "0a36f0fc22341acade38bf5a0e52c3128027ec339d83f646d28caabde920ceaa",
+      "direct_review": "연구서/공개 표와 재정관리총괄과-147 상자가 원래 서로 다른 위치에 놓여 겹치지 않는다. 제목·날짜·기획재정부·KDI의 순서와 중앙 정렬 및 주변 빈 영역을 보존한다. 작은 글리프와 날짜의 래스터 차이는 남으며 픽셀 동일성은 주장하지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/cover/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/cover/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/cover/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/cover/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8550,
+      "case": "cover",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "99.87",
+      "source_manifest_sha256": "ca11588d5e6ac65e3abbefd9d292bf7becd5c53ca7efff5c04327934a838820d",
+      "direct_review": "연구서·공개 표와 오른쪽 재정관리총괄과 상자의 분리, 제목 두 줄·날짜·기획재정부·KDI의 중앙 정렬·순서를 확인했다. 작은 날짜 획·외곽 래스터 차이는 잔여로 구분한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/cover/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/cover/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/cover/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/cover/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8559,
+      "case": "family-register",
+      "page": 1,
+      "backend": "native",
+      "raw": "99.68",
+      "source_manifest_sha256": "4f722e2f2bed82f92f0b626e04734a54e353226d43cc05eb48796a105fa8b42d",
+      "direct_review": "독립 Print의 첫 폐가신고 표, 뒤의 2번 입적 설명, 다음 수반입적 표의 순서·간격·서명 위치와 한글·한자 소속을 확인했다. 첫 표 뒤 빈 host 줄의 전진을 빼서 다음 본문이 올라가는 현상은 없다. 첫 표 글리프·괘선의 미세 래스터 차이는 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/family-register/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/family-register/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/family-register/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/family-register/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8559,
+      "case": "family-register",
+      "page": 2,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "4f722e2f2bed82f92f0b626e04734a54e353226d43cc05eb48796a105fa8b42d",
+      "direct_review": "Native와 독립 Print 모두 의도된 빈 둘째 쪽이며 원본의2쪽 계약을 유지한다. 빈 쪽100%를 첫 쪽의 배치 기능 증거로 대신하지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/family-register/native/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/family-register/native/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/family-register/native/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/family-register/native/review-002.png"
+      }
+    },
+    {
+      "pr": 8559,
+      "case": "family-register",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "99.68",
+      "source_manifest_sha256": "818ef0519282a6f189166ab8baf61bb9a9c79370c70e2eb14b17bfc723052cf9",
+      "direct_review": "첫 폐가신고 표, 중간 입적 설명과 다음 수반입적 표의 간격·순서를 확인했다. 다음 본문을 앞 표 안이나 위로 당기지 않으며 한자·이름·서명 위치를 보존한다. 글리프와 괘선 미세 차이는 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/family-register/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/family-register/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/family-register/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/family-register/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8559,
+      "case": "family-register",
+      "page": 2,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "818ef0519282a6f189166ab8baf61bb9a9c79370c70e2eb14b17bfc723052cf9",
+      "direct_review": "독립 Print와 WASM 모두 빈 두 번째 페이지이다. 빈 쪽의100%를 첫 쪽 표 배치 근거로 대신하지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/family-register/wasm/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/family-register/wasm/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/family-register/wasm/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/family-register/wasm/review-002.png"
+      }
+    },
+    {
+      "pr": 8563,
+      "case": "agenda-cover",
+      "page": 1,
+      "backend": "native",
+      "raw": "99.79",
+      "source_manifest_sha256": "69f6973b193a5b436372c6dc588b929aeffe0721c3460c2664f658a93965d8ff",
+      "direct_review": "상단 의안번호 표와 심의결정·보고사항 표, 뒤 조례안·제출자·심사필 표의 분리와 상하 순서·괘선·본문 소속을 확인했다. 숫자 영의 전각 전진은 유지되며 윤곽·선 안티앨리어싱 차이는 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/agenda-cover/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/agenda-cover/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/agenda-cover/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/agenda-cover/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8563,
+      "case": "agenda-cover",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "99.79",
+      "source_manifest_sha256": "9fd854b5ad22fb63fa66ce32aaabde33f2ec912c2a6848378c5594051081ceb8",
+      "direct_review": "상단 의안번호·세로 심의 표와 중간 조례안 상자·하단 제출자/심사필 표의 분리·상하 간격 및 내용 소속을 확인했다. 후속 표가 앞 표의 host 원점으로 겹치지 않는다. 글리프와 얇은 선 래스터 차이는 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/agenda-cover/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/agenda-cover/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/agenda-cover/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/agenda-cover/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8581,
+      "case": "trailing-space-2020",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "76f529bcbcf38986688c8b2f9281add6335dd30cec5530b85d3ff54a5eee6862",
+      "direct_review": "앞 문단→표 안 글→표 뒤 첫 줄→끝의 소속·순서와 표 상하 경계·후속 두 줄의 간격을 확인했다. 표 말미 공백을 위한 추가 본문 줄이 뒤 내용을 밀지 않는다. 한컴2020 Print 대조이며 raw100%와 픽셀 동일성은 구분한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/trailing-space-2020/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/trailing-space-2020/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/trailing-space-2020/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/trailing-space-2020/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8581,
+      "case": "trailing-space-2020",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "1281555d50e7e9e00cff5329166d0dfb60e75a500c2efbd3c89700777bae5a52",
+      "direct_review": "한컴2020 Print와 앞 문단·표 안 글·표 뒤 첫 줄·끝의 순서와 표 상하 경계, 뒤 두 줄 간격을 확인했다. 말미 공백이 불필요한 추가 본문 줄을 만들지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/trailing-space-2020/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/trailing-space-2020/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/trailing-space-2020/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/trailing-space-2020/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8581,
+      "case": "trailing-space-2024",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "4c3c23ba745ef94de67cfe10f06178817598de4cddb1a8b0995307d18d8094da",
+      "direct_review": "한컴2024 Print와 같은 원본의 앞 문단·표 안 글·표 뒤 첫 줄·끝을 대조했다. 앞뒤 본문과 표의 분리, 말미 공백으로 인한 추가 줄 부재를 확인했다. raw100%를 RGB 완전 동일로 쓰지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/trailing-space-2024/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/trailing-space-2024/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/trailing-space-2024/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/trailing-space-2024/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8581,
+      "case": "trailing-space-2024",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "b9cf7ed68cdcb13d132e159b89d511471a693d60a32f358adb5f4a933f0d8153",
+      "direct_review": "한컴2024 Print와 앞 문단/표/뒤 첫 줄/끝의 소속을 확인했다. 표 말미 공백으로 뒤 본문을 밀지 않는다. 2020 출력과 별개 조건으로 판독했다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/trailing-space-2024/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/trailing-space-2024/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/trailing-space-2024/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/trailing-space-2024/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8589,
+      "case": "busan-form",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "61e650830ac2096c6a042b41ef153dc75d0a1eac2f18e6224a2f913d3c690809",
+      "direct_review": "의안번호 표 옆 제출일·제출자와 아래 재의요구 본문의 순서·간격, 이유와 두 번호의 점선 및 마지막 조례안 첨부를 독립 Print와 대조했다. 표가 흡수한 후속 문단을 소스의 인접 문단으로 오인해 아래 내용을 옮기는 증상은 없다. 점선과 글자 획의 미세 래스터 차이는 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/busan-form/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/busan-form/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/busan-form/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/busan-form/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8589,
+      "case": "busan-form",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "75e33f5cdb39905df7be83e8a29878162628bdf97488415431a75928e30b1cab",
+      "direct_review": "의안번호 표 옆 제출일·제출자, 아래 재의요구 본문·이유·두 점선·조례안 첨부까지 소속과 순서를 확인했다. 점선과 글리프 래스터의 작은 차이는 별도 잔여로 구분한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/busan-form/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/busan-form/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/busan-form/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/busan-form/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8600,
+      "case": "image-fill-hwpx",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "04a4ba9b12e8d1451187ce63142ff5c4c05243d3fd072e85d10e8b76b8c72665",
+      "direct_review": "서로 다른 종횡비·크기의 여섯 도형을 독립 Print와 대조했다. 빨강·초록·파랑·노랑의 네 영역, 채움 경계·바깥선과 마지막 도형의 오른쪽·아래쪽 채움이 보존된다. 위쪽 문구가 도형 뒤에 가려진 상태도 기준 PDF와 같으며 새 내용 소실로 판정하지 않는다. raw100%는 색상 픽셀 동일성이 아니다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8600,
+      "case": "image-fill-hwpx",
+      "page": 2,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "04a4ba9b12e8d1451187ce63142ff5c4c05243d3fd072e85d10e8b76b8c72665",
+      "direct_review": "같은 형식 원본의 두 번째 페이지에서 2021. 9. . 윤고딕 250 한글의 숫자·한글 윤곽, 구분점과 글자 사이 간격·기준선을 독립 Print와 직접 대조했다. 줄 누락이나 다른 글꼴의 과도한 폭 치환은 보이지 않으며 안티앨리어싱 차이는 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/native/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/native/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/native/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/native/review-002.png"
+      }
+    },
+    {
+      "pr": 8600,
+      "case": "image-fill-hwpx",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "7ace9b2b64ef6fcc12559f7ec467c66d3f8658ae15908f9c807a21e2d53fa1b9",
+      "direct_review": "HWPX 그림 채우기 여섯 도형의 네 원색 사분면·크기·비율·상하 위치와 검은 윤곽을 독립 Print와 대조했다. HWP 결과의 점수를 대신 쓰지 않고 별도 쌍을 확인했다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8600,
+      "case": "image-fill-hwpx",
+      "page": 2,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "7ace9b2b64ef6fcc12559f7ec467c66d3f8658ae15908f9c807a21e2d53fa1b9",
+      "direct_review": "HWPX 둘째 쪽 날짜·윤고딕250한글 한 줄과 나머지 빈 영역을 확인했다. 글자 크기·굵기와 쪽 소속을 보존한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/wasm/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/wasm/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/wasm/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwpx/wasm/review-002.png"
+      }
+    },
+    {
+      "pr": 8600,
+      "case": "image-fill-hwp",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "801e435a44168a074ec4ba54cee6149f5fcbdd4553aab9c508be002a1522fd91",
+      "direct_review": "서로 다른 종횡비·크기의 여섯 도형을 독립 Print와 대조했다. 빨강·초록·파랑·노랑의 네 영역, 채움 경계·바깥선과 마지막 도형의 오른쪽·아래쪽 채움이 보존된다. 위쪽 문구가 도형 뒤에 가려진 상태도 기준 PDF와 같으며 새 내용 소실로 판정하지 않는다. raw100%는 색상 픽셀 동일성이 아니다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8600,
+      "case": "image-fill-hwp",
+      "page": 2,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "801e435a44168a074ec4ba54cee6149f5fcbdd4553aab9c508be002a1522fd91",
+      "direct_review": "같은 형식 원본의 두 번째 페이지에서 2021. 9. . 윤고딕 250 한글의 숫자·한글 윤곽, 구분점과 글자 사이 간격·기준선을 독립 Print와 직접 대조했다. 줄 누락이나 다른 글꼴의 과도한 폭 치환은 보이지 않으며 안티앨리어싱 차이는 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/native/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/native/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/native/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/native/review-002.png"
+      }
+    },
+    {
+      "pr": 8600,
+      "case": "image-fill-hwp",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "10f2967848990715f82b4f93e0c98750fe2634a338cd7399361448f4744caacc",
+      "direct_review": "HWP 그림 채우기 여섯 도형의 원색 사분면·윤곽·서로 다른 가로세로 비율과 위치를 확인했다. 각 채우기 모드의 도형 경계/크기를 보존하며, 얇은 선 래스터 차이만 구분한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8600,
+      "case": "image-fill-hwp",
+      "page": 2,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "10f2967848990715f82b4f93e0c98750fe2634a338cd7399361448f4744caacc",
+      "direct_review": "HWP 둘째 쪽의 날짜와 윤고딕250한글 한 줄을 대조했다. 첫 쪽의 그림이 넘어오거나 누락되지 않고 굵은 글자 윤곽·문장 소속을 유지한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/wasm/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/wasm/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/wasm/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/image-fill-hwp/wasm/review-002.png"
+      }
+    },
+    {
+      "pr": 8604,
+      "case": "certificate",
+      "page": 2,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "8a0f307c18dc460d35e3ceca4af9cbdb6651a05f0e1a11870fe8a7a3607b395b",
+      "direct_review": "머리행 직렬/직류·대상 자격증부터 첫 전자 행과 마지막 생명유전 행까지 표의 열·병합·행 경계와 텍스트 소속을 독립 Print와 대조했다. 앞 TAC host의 프레임에 다음 쪽 표가 끌려 들어오지 않고 이 쪽 첫·끝 행 및 줄 수가 보존된다. 획의 래스터 차이는 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/certificate/native/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/certificate/native/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/certificate/native/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/certificate/native/review-002.png"
+      }
+    },
+    {
+      "pr": 8604,
+      "case": "certificate",
+      "page": 3,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "8a0f307c18dc460d35e3ceca4af9cbdb6651a05f0e1a11870fe8a7a3607b395b",
+      "direct_review": "녹지조경으로 시작해 해양교통시설로 끝나는 표의 머리행·좌측 분류·자격증 문단·마지막 셀과 아래 경계를 독립 Print와 대조했다. 앞2쪽과의 내용 이어받기·각 쪽 소속이 유지되고 끝 행이 잘리거나 중복되는 모습은 없다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/certificate/native/raw-003.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/certificate/native/pdf-003.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/certificate/native/overlay-003.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/certificate/native/review-003.png"
+      }
+    },
+    {
+      "pr": 8604,
+      "case": "certificate",
+      "page": 2,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "1bc34388051b149abf8555837ea6cc0e4e0f8861ded7105a1156fa71eebc658d",
+      "direct_review": "자격증 표 둘째 쪽의 전자·원자력·금속·섬유·일반화공·자원·농업·축산·생명유전 행과 각 세부 자격증의 줄 소속·병합·테두리를 확인했다. 내용 잘림과 행 중복이 없다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/certificate/wasm/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/certificate/wasm/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/certificate/wasm/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/certificate/wasm/review-002.png"
+      }
+    },
+    {
+      "pr": 8604,
+      "case": "certificate",
+      "page": 3,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "1bc34388051b149abf8555837ea6cc0e4e0f8861ded7105a1156fa71eebc658d",
+      "direct_review": "자격증 표 셋째 쪽의 녹지조경·산림·해양수산·선박·해양교통시설 행과 긴 세부 항목의 줄바꿈·최하단 행 보존을 확인했다. 열별 본문이 다른 셀로 넘어가지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/certificate/wasm/raw-003.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/certificate/wasm/pdf-003.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/certificate/wasm/overlay-003.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/certificate/wasm/review-003.png"
+      }
+    },
+    {
+      "pr": 8604,
+      "case": "policy-agenda",
+      "page": 11,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "094a55f296742d2511f84f3ecd75c9359d9f870652eb093bd20d7afdbc53dd7f",
+      "direct_review": "연구자 선정 심의결과서 제목, 위 정책연구과제/연구방식 표, 아래 연구자·선정사유·심의결과·비고 표와 마지막 유의사항을 같은 Print 쪽과 대조했다. 제목·두 표·비고·끝 줄의 순서와 분리, 체크 기호와 줄 기준선이 유지된다. 글자 윤곽·AA 차이를 raw100%와 구분한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-agenda/native/raw-011.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-agenda/native/pdf-011.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-agenda/native/overlay-011.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-agenda/native/review-011.png"
+      }
+    },
+    {
+      "pr": 8604,
+      "case": "policy-agenda",
+      "page": 11,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "f15d66a0e36d499c827ef5009bb40c84ea08086954d6d2182e768de515702bce",
+      "direct_review": "연구자 선정 심의결과서 상단 선택 항목과 수의계약 사유, 연구자·선정 사유·심의 결과·비고·하단 주석의 소속을 대조했다. 큰 셀의 빈 여백을 보존하며 일부 본문 래스터와 괘선 차이는 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-agenda/wasm/raw-011.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-agenda/wasm/pdf-011.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-agenda/wasm/overlay-011.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-agenda/wasm/review-011.png"
+      }
+    },
+    {
+      "pr": 8604,
+      "case": "idol-counterexample",
+      "page": 1,
+      "backend": "native",
+      "raw": "99.76",
+      "source_manifest_sha256": "1e1fd3bac76ddfb8a1a1162ca24383bdc91ae9b120d13d611ba17806af21f153",
+      "direct_review": "상단 응모 취소 문구·YG SELECT 이미지 두 개·가운데 관련 법리 상자가 원래 순서로 보존된다. 관련 법리 테두리 점선/실선 및 이미지 래스터 잔차는 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/idol-counterexample/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/idol-counterexample/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/idol-counterexample/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/idol-counterexample/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8604,
+      "case": "idol-counterexample",
+      "page": 2,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "1e1fd3bac76ddfb8a1a1162ca24383bdc91ae9b120d13d611ba17806af21f153",
+      "direct_review": "다음 항목인 임의적 하자 기준 제목이 독립된 다음 쪽 상단에 있으며 앞쪽 이미지를 중복하지 않는다. 실제 본문·테두리 반례 보존은 1쪽과 함께 판정한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/idol-counterexample/native/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/idol-counterexample/native/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/idol-counterexample/native/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/idol-counterexample/native/review-002.png"
+      }
+    },
+    {
+      "pr": 8604,
+      "case": "idol-counterexample",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "99.76",
+      "source_manifest_sha256": "684bf690939e069ce24e4e8fc71543336d538b536ccbf9093f117bb87def5c69",
+      "direct_review": "YG플러스 상품 설명의 앞뒤 본문, 두 이미지와 중앙 관련법리 상자를 대조했다. 내용/줄 소속은 유지되나 중앙 상자 테두리가 후보는 점선·Print는 실선으로 보이는 차이와 이미지 필터링 차이를 남긴다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/idol-counterexample/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/idol-counterexample/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/idol-counterexample/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/idol-counterexample/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8604,
+      "case": "idol-counterexample",
+      "page": 2,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "684bf690939e069ce24e4e8fc71543336d538b536ccbf9093f117bb87def5c69",
+      "direct_review": "둘째 쪽의 마. 임의적인 하자 기준을 고지하여 청약철회 방해 제목·배경과 손가락 기호를 확인했다. 앞 쪽 그림/법리 상자가 이 쪽에 중복되지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/idol-counterexample/wasm/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/idol-counterexample/wasm/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/idol-counterexample/wasm/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/idol-counterexample/wasm/review-002.png"
+      }
+    },
+    {
+      "pr": 8605,
+      "case": "childcare",
+      "page": 1,
+      "backend": "native",
+      "raw": "99.98",
+      "source_manifest_sha256": "10672c1d859103ae677c310487920f8ac8416d5c8d60a0063c87704dc2c9da92",
+      "direct_review": "국민권익위원회 의결 표지의 제목·의안번호·의안명·대상기관·의결일, 주문·이유의 순서와 여백이 보존된다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/childcare/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/childcare/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/childcare/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/childcare/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8605,
+      "case": "childcare",
+      "page": 18,
+      "backend": "native",
+      "raw": "99.99",
+      "source_manifest_sha256": "10672c1d859103ae677c310487920f8ac8416d5c8d60a0063c87704dc2c9da92",
+      "direct_review": "일자리 정보 연계 제목·설명과 도식의 개별기관/알리오/지방공기업 클린아이/워크넷·화살표가 모두 같은 프레임 안에 배치된다. 점선과 이미지 필터 잔차는 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/childcare/native/raw-018.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/childcare/native/pdf-018.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/childcare/native/overlay-018.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/childcare/native/review-018.png"
+      }
+    },
+    {
+      "pr": 8605,
+      "case": "childcare",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "99.98",
+      "source_manifest_sha256": "8c32e9ffe325d6c551f9801e57f1abcc0b10d3778e0e5fdace7089632c6d2645",
+      "direct_review": "국민권익위원회 의결 제목과 의안번호·의안명·대상기관·의결일, 주문·이유의 상하 순서를 독립 Print와 대조했다. 본문 줄 소속과 권고안 문구가 보존되며 작은 글리프 윤곽 차이는 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/childcare/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/childcare/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/childcare/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/childcare/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8605,
+      "case": "childcare",
+      "page": 18,
+      "backend": "wasm",
+      "raw": "99.99",
+      "source_manifest_sha256": "8c32e9ffe325d6c551f9801e57f1abcc0b10d3778e0e5fdace7089632c6d2645",
+      "direct_review": "일자리 정보 연계 제목·본문과 알리오/개별기관/워크넷/지방공기업 클린아이 도식·화살표 및 마지막 빈 공간을 대조했다. 도식의 색과 소속은 보존되고 외곽 점선·글리프의 미세 래스터 차이가 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/childcare/wasm/raw-018.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/childcare/wasm/pdf-018.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/childcare/wasm/overlay-018.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/childcare/wasm/review-018.png"
+      }
+    },
+    {
+      "pr": 8607,
+      "case": "delegation-trimmed",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "f88bf7a881c2dda1e48d0de113052c916e02c2da81fc55656c681a45ab79ee85",
+      "direct_review": "소속기관장에게 위임하는 사항 제목과 본표의 자기 원점, 첫1번부터 마지막7번 항목과 하단 테두리·쪽 번호를 대조했다. 위임사무명/근거법령/수임기관의 병합 소속·순서와 작은 조문번호가 보존되고 머리 표 점유를 중복 가산해 다른 쪽으로 넘어가지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/delegation-trimmed/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/delegation-trimmed/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/delegation-trimmed/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/delegation-trimmed/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8607,
+      "case": "delegation-trimmed",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "e7b6438b6609a14ed8d23b56ceb8dfb523f746950f06041eed548e58c61bf699",
+      "direct_review": "위임사무 표의 소관부서·위임사무명·근거법령·수임기관 네 열과 세로 병합, 점선 행 경계와 아래7번 행·쪽번호를 확인했다. 긴 법령·설명 줄의 소유와 앞뒤 순서가 유지된다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/delegation-trimmed/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/delegation-trimmed/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/delegation-trimmed/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/delegation-trimmed/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8611,
+      "case": "shortcut",
+      "page": 7,
+      "backend": "native",
+      "raw": "99.99",
+      "source_manifest_sha256": "cc8a7951933118397b23401ceb4fc4cf14b5481c42d6f27736b889ef3ffeed39",
+      "direct_review": "상단 기능/단축키의 두 묶음과 점선, 기타 밴드, 아래 그림 그리기 기능과 오른쪽 큰7 장식을 독립 Print와 대조했다. 각 기능에 대응하는 단축키·줄 소속을 보존하며 경로 글꼴 준비 실패로 텍스트나 마지막 쪽이 비지 않는다. 그라데이션/점선의 미세 래스터 차이는 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/shortcut/native/raw-007.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/shortcut/native/pdf-007.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/shortcut/native/overlay-007.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/shortcut/native/review-007.png"
+      }
+    },
+    {
+      "pr": 8611,
+      "case": "shortcut",
+      "page": 7,
+      "backend": "wasm",
+      "raw": "99.97",
+      "source_manifest_sha256": "814f902e28e2ed6805a8f4d9c1041114e7eeec783cf707ccd1b24cdaeb39ff56",
+      "direct_review": "단축키7쪽의 좌우 항목·키 대응, 중앙 기타 회색띠·하단 큰7과 각 열의 점선 구분자를 확인했다. 점선/윤곽 래스터 잔차를 제외하면 내용 순서·칸 소속이 유지된다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/shortcut/wasm/raw-007.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/shortcut/wasm/pdf-007.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/shortcut/wasm/overlay-007.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/shortcut/wasm/review-007.png"
+      }
+    },
+    {
+      "pr": 8611,
+      "case": "sungeo",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "78439a1c236874bb779abe0df21781d6921cb44bac8e9f01baead9c733af2531",
+      "direct_review": "漢字成語 제목과 양쪽 장식·외곽 프레임, 본문 두 문단과 차례 아래12개 그림 단추를 독립 Print와 대조했다. 한글/한자·괄호와 줄 순서, 첫가/마지막하 단추 및 아래 빈 영역이 보존된다. 그림 필터·프레임 가장자리의 AA 차이는 남으며 raw100%를 색상 픽셀 완전 동일로 쓰지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sungeo/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sungeo/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sungeo/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sungeo/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8611,
+      "case": "sungeo",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "ea93f8ef1ffb97bc695f302ca98215c5aa8eb0d2a0dacc4f55fed4ea8183fbc5",
+      "direct_review": "漢字成語 제목·장식과 설명 두 문단·차례의 가~하 그림 단추12개·외곽 프레임을 대조했다. 글꼴 공급 실패에 따른 본문 누락은 없으며 장식/그림 필터·얇은 선·글리프의 미세 래스터 차이는 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sungeo/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sungeo/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sungeo/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sungeo/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8611,
+      "case": "bookreview",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "222a162f1c1fcf02484e95771ab47d75aa64a51ba4e4bd5de84cae3e7bb63054",
+      "direct_review": "제목·지은이·국적·분류·출간일·책 정보·평점 일곱 머리항목과 각 그림 기호·상자·큰 빈 작성 영역을 독립 Print와 대조했다. 글꼴 공급 실패로 텍스트나 완결 문서가 사라지지 않는다. 원본과 기준도 비어 있는 작성 칸이며 이를 본문 누락으로 판정하지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/bookreview/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/bookreview/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/bookreview/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/bookreview/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8611,
+      "case": "bookreview",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "da7113997f58366b275de768ef51db1088b260e5cd57ef9c05acbbcf7d5a2dd5",
+      "direct_review": "초록색 책 정보표와 빈 표지 상자, 아래 여러 본문/평가 영역의 높이·색·기호를 확인했다. 제목/지은이/국적/분류/출간일/책 정보/평점의 소속과 순서가 유지된다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/bookreview/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/bookreview/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/bookreview/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/bookreview/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8611,
+      "case": "ktx",
+      "page": 1,
+      "backend": "native",
+      "raw": "99.85",
+      "source_manifest_sha256": "6e57b47d6e88b7312a8f1f103bd2d8aef359eeec9d31c4bb4e790400cdf83718",
+      "direct_review": "왼쪽 KTX 노선 지도·역 이름·범례와 오른쪽 소요시간/운임표의 열·삼각 계단 배치·최하단 경부선 칸을 독립 Print와 대조했다. 제목 WordArt·밑줄·범례 화살표와 지도 가장자리의 차이는 남지만 글자가 비거나 표 숫자가 다른 칸에 이동하지 않는다. 해당 잔차는 최종 fixed base 대조와 구분해 기록한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/ktx/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/ktx/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/ktx/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/ktx/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8611,
+      "case": "ktx",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "99.85",
+      "source_manifest_sha256": "6d1a4d7300f8914949e6655c55fef9584e4a39e285916a6e58a30b6ad80ac412",
+      "direct_review": "왼쪽 KTX 노선 지도·역·범례와 오른쪽 소요시간/운임 계단표의 숫자·소속을 대조했다. 제목 WordArt·밑줄 및 지도 가장자리와 범례 화살표의 차이는 별도 잔여로 명시한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/ktx/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/ktx/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/ktx/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/ktx/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8611,
+      "case": "interview",
+      "page": 1,
+      "backend": "native",
+      "raw": "97.52",
+      "source_manifest_sha256": "f3b15159040ef6bd317555abc403f5c81db4425febf0e47a7bee19e8c24ffeee",
+      "direct_review": "면접/취업 좌우 1~10 항목과 제목·큰 배경 그림의 소속 및 순서가 보존된다. 제목의 그림자·그림 테두리 필터링 차이는 남으며 97.52%를 픽셀 동일로 표현하지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8611,
+      "case": "interview",
+      "page": 2,
+      "backend": "native",
+      "raw": "99.99",
+      "source_manifest_sha256": "f3b15159040ef6bd317555abc403f5c81db4425febf0e47a7bee19e8c24ffeee",
+      "direct_review": "설명 삽화와 그림자·얇은 테두리·단 나누기·문단 배경·번호·2단 편집의 연결선과 표식이 보존된다. 축소 삽화 내부의 미세 윤곽 차이는 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/native/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/native/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/native/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/native/review-002.png"
+      }
+    },
+    {
+      "pr": 8611,
+      "case": "interview",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "97.63",
+      "source_manifest_sha256": "8c1d4feb967d491af8fcc2a3cbc8369268598440630692b1e6a7f70ce937d102",
+      "direct_review": "면접·취업 두 열의1~10항목·큰 그림과 제목·주황색 소제목 띠의 소속·순서를 확인했다. 큰 제목 흰 그림자의 크기/위치와 그림의 흐린 테두리가 Print와 다른 점을 확인했으며 새 잔여 이슈에 포함한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8611,
+      "case": "interview",
+      "page": 2,
+      "backend": "wasm",
+      "raw": "99.99",
+      "source_manifest_sha256": "8c1d4feb967d491af8fcc2a3cbc8369268598440630692b1e6a7f70ce937d102",
+      "direct_review": "설명용 작은 그림과 여섯 노란 라벨·빨간 연결선·문단 번호와2단편집 상자를 대조했다. 그림 축소 윤곽/그림자 차이가 남지만 설명 요소가 누락되거나 다른 쪽으로 이동하지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/wasm/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/wasm/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/wasm/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/wasm/review-002.png"
+      }
+    },
+    {
+      "pr": 8611,
+      "case": "request",
+      "page": 1,
+      "backend": "native",
+      "raw": "96.18",
+      "source_manifest_sha256": "8221cab19a076d30b09c2e5da82de6d866a38b9c284237ddbf68549e606f8c0d",
+      "direct_review": "신청서 제목·접수자·회원번호·주소·전화·참고 상자의 같은 쪽 배치와 순서를 확인했다. 라디오 항목의 일부 줄 끝과 간격 차이가 남으므로 완전 일치로 기록하지 않고 latest base 대비 보존을 별도로 판정한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/request/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/request/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/request/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/request/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8611,
+      "case": "request",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "96.12",
+      "source_manifest_sha256": "c748b536f70e70ae54ceab6c9d9f1cd4399b8b2c580dc4ff20dc42e4a42d4981",
+      "direct_review": "회원 가입 신청서의 전체 표·회원번호·주소·전화·참고 상자 배치를 대조했다. 광고접촉수단/직업 행에서 PDF의 오른쪽 홈쇼핑·기타 선택지가 후보에서 보이지 않으며 앞 선택지의 가로 간격도 다르다. 단순 래스터 차이로 처리하지 않고 별도 잔여 이슈에 명시한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/request/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/request/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/request/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/request/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8611,
+      "case": "english",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "779aec0a261cc1a98816932a5bde00541415af104813b3325c009b6dbd491777",
+      "direct_review": "상단 녹색 설명 상자와 1~15 문항의 순서·영문 혼합 줄과 둘째 줄 시작·끝을 대조했다. 전쪽 실루엣 100.00%와 글리프 RGB 동일성을 구분한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/english/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/english/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/english/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/english/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8611,
+      "case": "english",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "18b16ff738902de899d57282f7138d40f6ef7f30227ba7d39a7d48374bd1e0ba",
+      "direct_review": "초록 안내 상자와1~15영어 예문·우리말 번역 라벨의 줄 소속·앞뒤 순서·단락 사이 간격을 대조했다. 줄바꿈을 건너뛰거나 예문이 사라지지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/english/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/english/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/english/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/english/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8611,
+      "case": "newyear",
+      "page": 1,
+      "backend": "native",
+      "raw": "98.80",
+      "source_manifest_sha256": "0e5f13aba609ed835577f0189d4c530f376327950255946e80aa4b2e3be764c8",
+      "direct_review": "설 차례 상 제목과 설명·준비·음식 ①~④의 순서와 줄 소속을 확인했다. 제목 자간과 글리프 윤곽 차이는 남으며 색상 배경은 존재한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/newyear/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/newyear/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/newyear/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/newyear/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8611,
+      "case": "newyear",
+      "page": 2,
+      "backend": "native",
+      "raw": "98.87",
+      "source_manifest_sha256": "0e5f13aba609ed835577f0189d4c530f376327950255946e80aa4b2e3be764c8",
+      "direct_review": "음식 ⑤~⑩, 중앙 진설법 도식과 아래 ①~③의 소속·순서를 확인했다. 도식 테두리·글리프·기호 및 일부 글줄 간격 차이는 잔여로 보존한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/newyear/native/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/newyear/native/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/newyear/native/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/newyear/native/review-002.png"
+      }
+    },
+    {
+      "pr": 8611,
+      "case": "newyear",
+      "page": 3,
+      "backend": "native",
+      "raw": "98.45",
+      "source_manifest_sha256": "0e5f13aba609ed835577f0189d4c530f376327950255946e80aa4b2e3be764c8",
+      "direct_review": "앞쪽의 ④~⑤와 조율이시·건서습동 등 아홉 규칙의 제목·한자·본문을 대조했다. 한자 윤곽 차이는 남으며 페이지 누락은 없다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/newyear/native/raw-003.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/newyear/native/pdf-003.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/newyear/native/overlay-003.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/newyear/native/review-003.png"
+      }
+    },
+    {
+      "pr": 8611,
+      "case": "newyear",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "98.80",
+      "source_manifest_sha256": "6aff01905e443ab34c62de4db89818ad8176fa0d0887111ea60ac644648ae4a6",
+      "direct_review": "설 차례 상 제목과 설의 의미·차례 준비·음식1~4의 본문 및 배경을 대조했다. 제목의 글리프·자간 차이가 크며 일반 본문 줄 소속은 보존한다. 제목 차이를 잔여 이슈로 연결한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/newyear/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/newyear/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/newyear/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/newyear/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8611,
+      "case": "newyear",
+      "page": 2,
+      "backend": "wasm",
+      "raw": "98.87",
+      "source_manifest_sha256": "6aff01905e443ab34c62de4db89818ad8176fa0d0887111ea60ac644648ae4a6",
+      "direct_review": "음식5~10과 중앙 진설법 그림·그림 아래 설명/기호·맨 아래1~3목록을 대조했다. 그림의 경계와 일부 글리프·맨 아래 안내의 가로 간격 차이는 잔여로 기록한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/newyear/wasm/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/newyear/wasm/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/newyear/wasm/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/newyear/wasm/review-002.png"
+      }
+    },
+    {
+      "pr": 8611,
+      "case": "newyear",
+      "page": 3,
+      "backend": "wasm",
+      "raw": "98.45",
+      "source_manifest_sha256": "6aff01905e443ab34c62de4db89818ad8176fa0d0887111ea60ac644648ae4a6",
+      "direct_review": "차례 상 규칙4·5뒤 조율이시부터적전중앙까지9개 제목/한자와 여백·순서를 대조했다. 한자 윤곽·가로 전진 차이는 잔여이며 글리프 동일로 주장하지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/newyear/wasm/raw-003.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/newyear/wasm/pdf-003.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/newyear/wasm/overlay-003.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/newyear/wasm/review-003.png"
+      }
+    },
+    {
+      "pr": 8615,
+      "case": "nars-2019",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "ba16666f43313358c419c585e8a4607c3299370934377557e18b7de06fb2b658",
+      "direct_review": "보도자료 머리의 로고·QR·배포/담당 정보, 본문 테두리와 제목·일시·장소·발표자·토론자, 하단 주소·로고의 소속을 확인했다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2019/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2019/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2019/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2019/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8615,
+      "case": "nars-2019",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "1c906adcd88a78d68c401d0a2be3cb5b59f2278b16b1ac55575a3d949fef850a",
+      "direct_review": "국회입법조사처 로고·보도자료 제목·QR·일시/자료배포/담당부서 띠와 디지털전환 토론회 본문·마지막 토론자 줄·하단NARS를 확인했다. 외곽·제목·본문이 겹치거나 누락되지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2019/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2019/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2019/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2019/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8615,
+      "case": "nars-2021",
+      "page": 1,
+      "backend": "native",
+      "raw": "99.97",
+      "source_manifest_sha256": "ef23a587da1df945bc59f26c58a1574a378b10ec2b59fe7b1f69b319289dd6fc",
+      "direct_review": "상단 배포 표와 제목·본문의 네모/원형 항목 및 하단 연속 프레임 시작을 확인했다. 제목과 본문의 글리프·윤곽 잔차는 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2021/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2021/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2021/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2021/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8615,
+      "case": "nars-2021",
+      "page": 2,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "ef23a587da1df945bc59f26c58a1574a378b10ec2b59fe7b1f69b319289dd6fc",
+      "direct_review": "양옆 연속 괘선 사이 본문이 빠짐없이 이어지고, 마지막 인용문까지 같은 페이지에서 끝난다. 네모·원형 항목과 들여쓰기 및 줄 끝을 대조했다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2021/native/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2021/native/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2021/native/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2021/native/review-002.png"
+      }
+    },
+    {
+      "pr": 8615,
+      "case": "nars-2021",
+      "page": 3,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "ef23a587da1df945bc59f26c58a1574a378b10ec2b59fe7b1f69b319289dd6fc",
+      "direct_review": "마지막 인용문과 담당자 두 줄·닫힌 하단 테두리·주소·NARS 로고를 확인했다. 큰 빈 영역은 기준과 같고 앞쪽 본문이 중복되지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2021/native/raw-003.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2021/native/pdf-003.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2021/native/overlay-003.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2021/native/review-003.png"
+      }
+    },
+    {
+      "pr": 8615,
+      "case": "nars-2021",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "99.97",
+      "source_manifest_sha256": "5e44632c8fe7c6fb8b60112a1c04bd5d9321c2471c6e550959467c244f39bbc7",
+      "direct_review": "순환경제 토론회 자료의 로고·QR·헤더 정보, 제목과 사각/원형 항목·본문 마지막 문단의 줄/쪽 소속을 대조했다. 글머리 기호·제목 주변의 미세 윤곽 잔차는 구분한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2021/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2021/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2021/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2021/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8615,
+      "case": "nars-2021",
+      "page": 2,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "5e44632c8fe7c6fb8b60112a1c04bd5d9321c2471c6e550959467c244f39bbc7",
+      "direct_review": "둘째 쪽의 이전 쪽에서 이어진 원형 항목과 현재까지도/이번 토론회/행사를 공동주최한 사각 항목, 세로 외곽과 마지막 인용문을 대조했다. 내용 누락·중복과 다음 쪽 침범이 없다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2021/wasm/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2021/wasm/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2021/wasm/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2021/wasm/review-002.png"
+      }
+    },
+    {
+      "pr": 8615,
+      "case": "nars-2021",
+      "page": 3,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "5e44632c8fe7c6fb8b60112a1c04bd5d9321c2471c6e550959467c244f39bbc7",
+      "direct_review": "셋째 쪽 마지막 의원 인용문·두 담당자/이메일 줄, 외곽 아래끝과 주소/NARS footer를 확인했다. 표/float의 끝 문단이 사라지거나 footer를 덮지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2021/wasm/raw-003.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2021/wasm/pdf-003.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2021/wasm/overlay-003.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/nars-2021/wasm/review-003.png"
+      }
+    },
+    {
+      "pr": 8617,
+      "case": "interview",
+      "page": 1,
+      "backend": "native",
+      "raw": "97.52",
+      "source_manifest_sha256": "f3b15159040ef6bd317555abc403f5c81db4425febf0e47a7bee19e8c24ffeee",
+      "direct_review": "면접/취업 좌우 1~10 항목과 제목·큰 배경 그림의 소속 및 순서가 보존된다. 제목의 그림자·그림 테두리 필터링 차이는 남으며 97.52%를 픽셀 동일로 표현하지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8617,
+      "case": "interview",
+      "page": 2,
+      "backend": "native",
+      "raw": "99.99",
+      "source_manifest_sha256": "f3b15159040ef6bd317555abc403f5c81db4425febf0e47a7bee19e8c24ffeee",
+      "direct_review": "설명 삽화와 그림자·얇은 테두리·단 나누기·문단 배경·번호·2단 편집의 연결선과 표식이 보존된다. 축소 삽화 내부의 미세 윤곽 차이는 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/native/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/native/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/native/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/native/review-002.png"
+      }
+    },
+    {
+      "pr": 8617,
+      "case": "interview",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "97.63",
+      "source_manifest_sha256": "8c1d4feb967d491af8fcc2a3cbc8369268598440630692b1e6a7f70ce937d102",
+      "direct_review": "면접·취업 두 열의1~10항목·큰 그림과 제목·주황색 소제목 띠의 소속·순서를 확인했다. 큰 제목 흰 그림자의 크기/위치와 그림의 흐린 테두리가 Print와 다른 점을 확인했으며 새 잔여 이슈에 포함한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8617,
+      "case": "interview",
+      "page": 2,
+      "backend": "wasm",
+      "raw": "99.99",
+      "source_manifest_sha256": "8c1d4feb967d491af8fcc2a3cbc8369268598440630692b1e6a7f70ce937d102",
+      "direct_review": "설명용 작은 그림과 여섯 노란 라벨·빨간 연결선·문단 번호와2단편집 상자를 대조했다. 그림 축소 윤곽/그림자 차이가 남지만 설명 요소가 누락되거나 다른 쪽으로 이동하지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/wasm/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/wasm/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/wasm/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/interview/wasm/review-002.png"
+      }
+    },
+    {
+      "pr": 8621,
+      "case": "footnote-captioned",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "06a29715ba2075ea08d3dfa3c18ac511b70dac47a6bf75ec3ac399a11cc47ddf",
+      "direct_review": "상단 본문과 하단 각주 구분선·각주1·표 캡션·단위·표 본문·출처가 정해진 순서로 같은 쪽에 들어간다. 각주·캡션·표의 겹침과 누락이 없다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/footnote-captioned/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/footnote-captioned/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/footnote-captioned/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/footnote-captioned/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8621,
+      "case": "footnote-captioned",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "e08534fa45f81a25e18bf235f5af2f6370cd731e85634b0313033d6bb650463f",
+      "direct_review": "서비스 분야 교역 설명 본문, 각주1·서비스분야교역규모 캡션과 단위·두 묶음 순위 표·출처를 확인했다. 각주 안 캡션 표가 누락되지 않고 본문과 각주의 간격·소속을 유지한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/footnote-captioned/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/footnote-captioned/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/footnote-captioned/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/footnote-captioned/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8621,
+      "case": "report-838",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "5329e50967a31d3033c0a7463d4a1466789870c4359130da18318972694d1bd6",
+      "direct_review": "서론 머리의 점선·연구 목적 본문·하단 각주1/2와 쪽수1을 확인했다. 각주를 예약하고도 마지막 본문과 구분선이 겹치지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8621,
+      "case": "report-838",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "7fc449a805cf396d314a391100326fea2fc7dbdd525cbef52574cf1bbb4e5fd4",
+      "direct_review": "제1장/서론 장식·연구 목적 본문과 각주1·2, 첫 쪽 번호를 대조했다. 긴 각주의 줄과 쪽 소속을 보존하며 점선의 농도 및 작은 글리프 래스터 차이는 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8623,
+      "case": "sample16",
+      "page": 20,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "c69f1a4e094958804a02f5890bc01f34defbe2fa3f139b301e52dee95fa2c57a",
+      "direct_review": "메인 센터·DR 센터 WMF 도식과 제목, 아래 과업 내용 목록·장비 표·쪽수18을 대조했다. 도형·이미지와 텍스트가 빠지거나 중복되지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sample16/native/raw-020.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sample16/native/pdf-020.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sample16/native/overlay-020.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sample16/native/review-020.png"
+      }
+    },
+    {
+      "pr": 8623,
+      "case": "sample16",
+      "page": 41,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "c69f1a4e094958804a02f5890bc01f34defbe2fa3f139b301e52dee95fa2c57a",
+      "direct_review": "별첨자료 목차의 별첨1 네 항목·별첨2 양식1~9·별지 두 항목과 쪽수39가 보존된다. 한자/글리프 및 외곽선 미세 차이는 실루엣 100과 구분한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sample16/native/raw-041.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sample16/native/pdf-041.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sample16/native/overlay-041.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sample16/native/review-041.png"
+      }
+    },
+    {
+      "pr": 8623,
+      "case": "sample16",
+      "page": 20,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "53f890d9e3a1f04ecafdb073e837c3a2609664ab6f77fba33585541021c441ea",
+      "direct_review": "원격지 재해복구센터 목표 시스템의 두 센터 도식·제목·그림 아래 주요 과업 목록·표 및 바깥 프레임/쪽번호를 대조했다. 그림 축소의 장치·선·화살표와 색이 보존된다. 테두리·작은 글리프 래스터 차이는 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sample16/wasm/raw-020.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sample16/wasm/pdf-020.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sample16/wasm/overlay-020.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sample16/wasm/review-020.png"
+      }
+    },
+    {
+      "pr": 8623,
+      "case": "sample16",
+      "page": 41,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "53f890d9e3a1f04ecafdb073e837c3a2609664ab6f77fba33585541021c441ea",
+      "direct_review": "별첨자료 목차의 별첨1 네 항목과 별첨2 양식1~9·별지 두 항목의 소속과 순서 및 쪽 프레임을 대조했다. 문단 누락/중복은 없고 일부 글리프 굵기·프레임 경계 차이는 잔여다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sample16/wasm/raw-041.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sample16/wasm/pdf-041.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sample16/wasm/overlay-041.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sample16/wasm/review-041.png"
+      }
+    },
+    {
+      "pr": 8625,
+      "case": "summary-tail",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "070df4b8554c30e6b90d5a6bf5e62341bbbbda74cb49c986f7653fbae32fe06c",
+      "direct_review": "요약문 표의 다섯 정보 행과 최종보고서 수록 문구, 큰 빈 셀 및 닫힌 하단 테두리가 같은 쪽에 있다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/summary-tail/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/summary-tail/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/summary-tail/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/summary-tail/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8625,
+      "case": "summary-tail",
+      "page": 2,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "070df4b8554c30e6b90d5a6bf5e62341bbbbda74cb49c986f7653fbae32fe06c",
+      "direct_review": "양쪽 모두 의도된 빈 페이지다. 빈 페이지 100%를 내용 배치 개선의 근거로 쓰지 않고 1·3쪽의 연결과 총쪽수 검사에 포함한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/summary-tail/native/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/summary-tail/native/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/summary-tail/native/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/summary-tail/native/review-002.png"
+      }
+    },
+    {
+      "pr": 8625,
+      "case": "summary-tail",
+      "page": 3,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "070df4b8554c30e6b90d5a6bf5e62341bbbbda74cb49c986f7653fbae32fe06c",
+      "direct_review": "중간결과보고서 머리 상자와 차례 제목·하단 -1-이 보존되고, 1쪽의 큰 표가 이 페이지로 넘치거나 중복되지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/summary-tail/native/raw-003.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/summary-tail/native/pdf-003.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/summary-tail/native/overlay-003.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/summary-tail/native/review-003.png"
+      }
+    },
+    {
+      "pr": 8625,
+      "case": "summary-tail",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "44727157fbe9ae2c3aa830529a5feddf2f23fd36f186d19fb5fceeeb1eaf5dae",
+      "direct_review": "중간결과보고서 요약문의 상단 작은 제목 상자·큰 제목·연구과제명부터연구진구성까지 표와최종보고서에수록 문구·넓은 빈 하단 영역을 확인했다. 표 끝 영역을 잃거나 빈 여백을 중복 예약하지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/summary-tail/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/summary-tail/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/summary-tail/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/summary-tail/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8625,
+      "case": "summary-tail",
+      "page": 2,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "44727157fbe9ae2c3aa830529a5feddf2f23fd36f186d19fb5fceeeb1eaf5dae",
+      "direct_review": "독립 Print와 WASM 모두 빈 둘째 쪽이다. 빈 쪽 보존만 확인하며 내용 있는 다른 쪽의 기능을 대신 입증하지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/summary-tail/wasm/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/summary-tail/wasm/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/summary-tail/wasm/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/summary-tail/wasm/review-002.png"
+      }
+    },
+    {
+      "pr": 8625,
+      "case": "summary-tail",
+      "page": 3,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "44727157fbe9ae2c3aa830529a5feddf2f23fd36f186d19fb5fceeeb1eaf5dae",
+      "direct_review": "셋째 쪽은 중간결과보고서 상자와 차례 제목 및아래쪽1쪽 번호만 남는 동일 구성이다. 제목·footer 소속과 나머지 빈 영역을 확인했다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/summary-tail/wasm/raw-003.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/summary-tail/wasm/pdf-003.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/summary-tail/wasm/overlay-003.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/summary-tail/wasm/review-003.png"
+      }
+    },
+    {
+      "pr": 8638,
+      "case": "evaluation-original",
+      "page": 1,
+      "backend": "native",
+      "raw": "99.77",
+      "source_manifest_sha256": "2a28848ed863dfb44a142d1e95ee9382b3da396bcf4cd986b625ab070bc874ee",
+      "direct_review": "평가결과서의 과제명·기관·연구결과·평가결과 및 하단 평가자 행을 확인했다. 모든 내용과 표의 하단이 1쪽에 완결되며 괘선·글리프 미세 차이는 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/evaluation-original/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/evaluation-original/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/evaluation-original/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/evaluation-original/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8638,
+      "case": "evaluation-original",
+      "page": 2,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "2a28848ed863dfb44a142d1e95ee9382b3da396bcf4cd986b625ab070bc874ee",
+      "direct_review": "기준과 후보가 모두 빈 2쪽이다. 빈 페이지 실루엣 100%를 표 본문 정확성으로 대신하지 않고 1쪽과 총쪽수에 연결해 판정한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/evaluation-original/native/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/evaluation-original/native/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/evaluation-original/native/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/evaluation-original/native/review-002.png"
+      }
+    },
+    {
+      "pr": 8638,
+      "case": "evaluation-original",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "99.76",
+      "source_manifest_sha256": "f1d29df08d2c53e6852bec22544cf322d7dd0292f4383a480902ea6baf14a716",
+      "direct_review": "평가결과서의 연구과제명/연구기관 등 머리 표와 연구결과·평가결과의 긴 내용·아래 평가자 두 행을 확인했다. 문단별 글머리/빈 줄과 최하단 표가 보존되며 일부 글리프·글머리 가로 위치의 작은 차이는 구분한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/evaluation-original/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/evaluation-original/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/evaluation-original/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/evaluation-original/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8638,
+      "case": "evaluation-original",
+      "page": 2,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "f1d29df08d2c53e6852bec22544cf322d7dd0292f4383a480902ea6baf14a716",
+      "direct_review": "독립 Print와 WASM 모두 빈 두 번째 페이지이다. 첫 페이지의 큰 표가 이 페이지에 중복되지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/evaluation-original/wasm/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/evaluation-original/wasm/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/evaluation-original/wasm/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/evaluation-original/wasm/review-002.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "reserve-a10",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "c3c74805730bc5f1294163305717fb717e5851059ac93fcc816c10f7f52d1355",
+      "direct_review": "채움01~20과 긴 본문이 같은 위치에서 시작하고 본문044까지 1쪽에 남는다. 하단 각주1과 구분선이 본문을 침범하지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "reserve-a10",
+      "page": 2,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "c3c74805730bc5f1294163305717fb717e5851059ac93fcc816c10f7f52d1355",
+      "direct_review": "앞쪽의 단어 뒤에서 본문045~060과 TAIL이 이어지고 하단 각주 표20행을 누락 없이 보존한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/native/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/native/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/native/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/native/review-002.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "reserve-a10",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "4dc398441c15570a837be50d5e7f57bd62a19928e5f88391e14d2e8dd4e97c22",
+      "direct_review": "본문 001~044와 각주 1의 분리를 확인했다. 본문이 하단 표의 높이를 미리 소모하지 않고 해당 쪽의 각주를 보존한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "reserve-a10",
+      "page": 2,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "4dc398441c15570a837be50d5e7f57bd62a19928e5f88391e14d2e8dd4e97c22",
+      "direct_review": "본문 045~060과 TAIL이 이어지고 같은 쪽 하단에 각주 표 20행이 온전히 보존된다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/wasm/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/wasm/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/wasm/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a10/wasm/review-002.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "reserve-a30",
+      "page": 1,
+      "backend": "native",
+      "raw": "99.99",
+      "source_manifest_sha256": "a1be7b5004a0e2688073e852ae06e2980191bfdea0308ed77599998e61d39d8e",
+      "direct_review": "채움01~20 뒤 긴 본문이037까지 오고, 네 줄의 긴 각주1이 예약 공간 안에 보존된다. 각주와 본문이 겹치지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "reserve-a30",
+      "page": 2,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "a1be7b5004a0e2688073e852ae06e2980191bfdea0308ed77599998e61d39d8e",
+      "direct_review": "앞쪽037 뒤038~060 및 TAIL이 정확한 순서로 이어진다. 이 조건은 각주 표가 없는 실제 빈 하단을 보존한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/native/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/native/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/native/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/native/review-002.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "reserve-a30",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "99.99",
+      "source_manifest_sha256": "8b20040f2e556127d00e62cda7501805393fa4cf8ca4581d8c34db9e0479c865",
+      "direct_review": "긴 각주의 4줄 영역을 본문과 분리하고 본문은 037에서 끝나는 독립 Print의 쪽 경계를 보존한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "reserve-a30",
+      "page": 2,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "8b20040f2e556127d00e62cda7501805393fa4cf8ca4581d8c34db9e0479c865",
+      "direct_review": "2쪽은 038~060과 TAIL을 보존하고 긴 각주의 본문이 첫 쪽에서 중복되지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/wasm/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/wasm/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/wasm/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a30/wasm/review-002.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "reserve-b4",
+      "page": 1,
+      "backend": "native",
+      "raw": "99.99",
+      "source_manifest_sha256": "bbb56ac66823f6223552704da572791dccd4f474a6669ca47f16988959e06b87",
+      "direct_review": "본문031까지와 각주1 본문·4행 표·표 뒤 문장의 첫 줄을 확인했다. 각주 내부 표를 버리지 않고 본문과 분리된 예약 영역에서 소모한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "reserve-b4",
+      "page": 2,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "bbb56ac66823f6223552704da572791dccd4f474a6669ca47f16988959e06b87",
+      "direct_review": "본문032~060·TAIL 및 각주 표 뒤의 나머지 네 줄이 이어진다. 표가 다시 그려지거나 본문 문장이 중복되지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/native/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/native/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/native/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/native/review-002.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "reserve-b4",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "99.99",
+      "source_manifest_sha256": "60708d77675e344882defc34efc7aaa2d6e76e70e13a90eb1ff3585033dfcfc3",
+      "direct_review": "본문 031 뒤 하단 각주 2줄·4행 표·표 뒤 문단이 서로 분리되고 독립 Print의 순서를 보존한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "reserve-b4",
+      "page": 2,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "60708d77675e344882defc34efc7aaa2d6e76e70e13a90eb1ff3585033dfcfc3",
+      "direct_review": "2쪽은 본문 032부터 TAIL까지 이어지고 각주 표 뒤 문단이 아래 영역에 분리되어 보존된다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/wasm/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/wasm/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/wasm/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-b4/wasm/review-002.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "reserve-a40",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "001343a5056be5649ae906237b4f33a604db8f05b268d8b0eb9b0cba8a041911",
+      "direct_review": "1쪽은 본문042에서 끊기며 각주1의 앞 두 줄이 구분선 아래 보존된다. 본문과 각주를 덮거나 043을 앞으로 당기지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "reserve-a40",
+      "page": 2,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "001343a5056be5649ae906237b4f33a604db8f05b268d8b0eb9b0cba8a041911",
+      "direct_review": "본문043~060·TAIL과 아래 각주1의 이어지는 두 줄을 확인했다. 같은 각주가 다음 쪽에서 완결되는 실제 Print 경계가 보존된다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/native/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/native/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/native/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/native/review-002.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "reserve-a40",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "f181190b47ae221a6bf657d8cf66aab1c61ffedac7da80418fbefa9db6e3f9b0",
+      "direct_review": "첫 쪽 본문은 042까지 수용하고 짧은 각주 2줄을 하단에서 분리한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "reserve-a40",
+      "page": 2,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "f181190b47ae221a6bf657d8cf66aab1c61ffedac7da80418fbefa9db6e3f9b0",
+      "direct_review": "2쪽 본문은 043부터 이어지며 각주 연속 2줄이 동일한 하단 위치에 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/wasm/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/wasm/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/wasm/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a40/wasm/review-002.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "reserve-a46",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "10541f2a52c6c990c12207f8c12238049430fdb905f6131f764c5ed5b03b2015",
+      "direct_review": "1쪽의 긴 본문이048까지 들어가고 각주는 다음 쪽에 예약된다. 본문 마지막 줄과 하단 여백이 Print와 같은 구성을 유지한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "reserve-a46",
+      "page": 2,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "10541f2a52c6c990c12207f8c12238049430fdb905f6131f764c5ed5b03b2015",
+      "direct_review": "본문049~060·TAIL과 하단 각주1 네 줄이 같은 쪽에 보존된다. 앞쪽 각주의 중복 없이 이 조건의 전체 각주가 여기에 나온다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/native/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/native/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/native/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/native/review-002.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "reserve-a46",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "98270c41383636b60108dfe8e305cd294d35bce21ce8b13169a12eef044a47bf",
+      "direct_review": "큰 각주 예약이 있는 첫 쪽의 본문 001~048을 보존하고 이 쪽에 각주 표를 잘못 끌어오지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "reserve-a46",
+      "page": 2,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "98270c41383636b60108dfe8e305cd294d35bce21ce8b13169a12eef044a47bf",
+      "direct_review": "2쪽 본문 049~060과 TAIL 뒤에서 각주 본문 4줄을 하단에 보존한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/wasm/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/wasm/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/wasm/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/reserve-a46/wasm/review-002.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "p4g",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "147f9d0859a725e2a527c4acb564daf91efee3f80c73eb05eac0d779b8493355",
+      "direct_review": "첨부1 머리와 영문 행사명, Opening Remarks 상하 파란 선·날짜·기관/이름의 중앙 배치를 확인했다. 표지 아래 빈 영역과 줄 간격을 보존한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "p4g",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "99.95",
+      "source_manifest_sha256": "fee44560d8839ad4a4b563368f0c456be91623be1acff1d08a1db7497c63b35e",
+      "direct_review": "영문 표지의 두 청색 선 사이 제목, 첨부 상자, 날짜와 발신자 위치를 대조했다. 글자 굵기와 선의 래스터 경계 차이는 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/p4g/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "report-628",
+      "page": 95,
+      "backend": "native",
+      "raw": "99.63",
+      "source_manifest_sha256": "3451dd8e6c68f15013cdf55ff5bc9e12298c926e293e2132807aeed335ce6277",
+      "direct_review": "제4절 일본과1. 개요의 번호/본문이 독립 Print와 같은 열 시작을 사용한다. 소제목이 왼쪽으로13.333 CSSpx 나가던 문제를 확인할 수 없다. 아래 본문·각주55/56·각주 안 표와쪽63의 소속/순서를 보존한다. 본문 말미·일부 CJK/표머리 글리프는 별도 잔여로 구분한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/native/raw-095.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/native/pdf-095.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/native/overlay-095.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/native/review-095.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "report-628",
+      "page": 96,
+      "backend": "native",
+      "raw": "99.92",
+      "source_manifest_sha256": "3451dd8e6c68f15013cdf55ff5bc9e12298c926e293e2132807aeed335ce6277",
+      "direct_review": "1) 법적근거에 의한 보상의 번호/본문이 Print의 같은 열 시작에 놓인다. 앞뒤 본문·이어진 각주·각주57·쪽64의 소속을 보존한다. 아래 본문 한 줄 말미의 자간·각주 일부 글리프 차이는 새 잔여 이슈에서 다룬다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/native/raw-096.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/native/pdf-096.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/native/overlay-096.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/native/review-096.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "report-628",
+      "page": 95,
+      "backend": "wasm",
+      "raw": "99.63",
+      "source_manifest_sha256": "725c52c637576d530e0ba60ecc2edbae1ea7320fdeeb4f8d9ec9eb07cdd99ae5",
+      "direct_review": "번호와 제목 본문이 PDF의 왼쪽 열 원점에 맞고 기존 13.333 CSS px 왼쪽 이탈이 해소됐다. 본문·각주·쪽수와 표의 내용 소속·순서를 대조했다. 본문 끝 줄 및 한자·각주 글리프의 잔여 차이는 별도 이슈 대상으로 남긴다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/wasm/raw-095.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/wasm/pdf-095.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/wasm/overlay-095.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/wasm/review-095.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "report-628",
+      "page": 96,
+      "backend": "wasm",
+      "raw": "99.90",
+      "source_manifest_sha256": "725c52c637576d530e0ba60ecc2edbae1ea7320fdeeb4f8d9ec9eb07cdd99ae5",
+      "direct_review": "번호와 제목 본문이 PDF의 왼쪽 열 원점에 맞고 기존 13.333 CSS px 왼쪽 이탈이 해소됐다. 본문·각주·쪽수와 표의 내용 소속·순서를 대조했다. 본문 끝 줄 및 한자·각주 글리프의 잔여 차이는 별도 이슈 대상으로 남긴다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/wasm/raw-096.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/wasm/pdf-096.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/wasm/overlay-096.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-628/wasm/review-096.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "report-838",
+      "page": 91,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "5329e50967a31d3033c0a7463d4a1466789870c4359130da18318972694d1bd6",
+      "direct_review": "영국 자격 표·독일 소제목·본문·하단 두 번째 표 및 각주274~277과 쪽수90을 대조했다. 표와 각주 내부 문장·순서·페이지 소속을 보존한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/native/raw-091.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/native/pdf-091.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/native/overlay-091.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/native/review-091.png"
+      }
+    },
+    {
+      "pr": 8642,
+      "case": "report-838",
+      "page": 91,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "7fc449a805cf396d314a391100326fea2fc7dbdd525cbef52574cf1bbb4e5fd4",
+      "direct_review": "영국 PA/TA 표·독일 소제목 뒤 표와 각주274~277 및 쪽번호를 대조했다. 두 표 사이 본문, 각주 separator와 아래 내용이 겹치거나 누락되지 않는다. 작은 글리프·일부 괘선 잔차를 기록한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/wasm/raw-091.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/wasm/pdf-091.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/wasm/overlay-091.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/report-838/wasm/review-091.png"
+      }
+    },
+    {
+      "pr": 8644,
+      "case": "leading-shape",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "43435ae9bbef16b76380dcb7bb5da25a42e094e17fe8d8326d2e3286f015a39b",
+      "direct_review": "앞 문단만 1쪽에 남아 있고 선행 도형·표가 이 쪽으로 잘못 올라오지 않는 반례를 확인했다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/leading-shape/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/leading-shape/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/leading-shape/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/leading-shape/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8644,
+      "case": "leading-shape",
+      "page": 2,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "43435ae9bbef16b76380dcb7bb5da25a42e094e17fe8d8326d2e3286f015a39b",
+      "direct_review": "빈 선행 도형 아래 A0~A2/B0~B2의 서로 다른 표 두 개와 B 뒤 첫 줄·끝 문단이 순서대로 나온다. 첫 표의 누락·둘째 표의 중복 없이 경계가 유지된다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/leading-shape/native/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/leading-shape/native/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/leading-shape/native/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/leading-shape/native/review-002.png"
+      }
+    },
+    {
+      "pr": 8644,
+      "case": "leading-shape",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "17895b07bed419e52ed4b377e54b31f250b437c312302f637cfaf1158b8bbcec",
+      "direct_review": "앞 문단만 있는 첫 쪽과 나머지 빈 영역이 독립 Print와 같다. 다음 쪽 선행 도형이나 표를 앞 쪽에 잘못 그리지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/leading-shape/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/leading-shape/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/leading-shape/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/leading-shape/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8644,
+      "case": "leading-shape",
+      "page": 2,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "17895b07bed419e52ed4b377e54b31f250b437c312302f637cfaf1158b8bbcec",
+      "direct_review": "둘째 쪽 위 빈 도형 상자·A표와 B표의 세 행/두 열, B뒤첫줄·끝의 순서를 확인했다. 도형이 표 host 줄 비용을 잃게 하거나 표 둘이 겹치지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/leading-shape/wasm/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/leading-shape/wasm/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/leading-shape/wasm/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/leading-shape/wasm/review-002.png"
+      }
+    },
+    {
+      "pr": 8645,
+      "case": "field-page-box",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "d68e60ee83464b5012c52399e826adbc2eb082928e4e5b103d5b640dda4750e7",
+      "direct_review": "검사원지정요구서의 여러 줄 제목·문서번호·접수번호·담당자와 계약 정보, 위 결재 표, 아래 본문·날짜·발신명을 독립 Print와 대조했다. 쪽 기준 상자에 밀린 저장 줄이 빠지거나 큰 표 높이로 되감겨 본문과 겹치지 않는다. 제목/결재 표의 상대 위치와 마지막 발신명도 보존된다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/field-page-box/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/field-page-box/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/field-page-box/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/field-page-box/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8645,
+      "case": "field-page-box",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "eedd84d7d7d5245a04bcfdd7101fdbccf46c5e9433f7175a3d99ade963dbf63a",
+      "direct_review": "검사원지정요구서의 큰 제목·우상단 결재표, 담당자부터 납품년월일까지 필드와 별표 마스킹, 하단 기관명 상자를 대조했다. 하단 상자가 사라지거나 앞 본문과 겹치지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/field-page-box/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/field-page-box/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/field-page-box/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/field-page-box/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8645,
+      "case": "tall-prefix",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "46b62c82806ea5b60e1b5919bc47df67050ff26658a27bc7a6da539aa6617d70",
+      "direct_review": "중간보고서 제목과 단위, 2004~2001 머리행, 연령·근속·학력별 병합과 마지막 대졸 행을 독립 Print와 대조했다. 표 앞 줄 점유가 큰 TAC 표 높이로 되감기지 않으며 제목·단위·표 시작과 아래 경계의 순서·간격이 보존된다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/tall-prefix/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/tall-prefix/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/tall-prefix/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/tall-prefix/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8645,
+      "case": "tall-prefix",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "9901c0fe084f80eab4de88c20fb91eafbbe19ef6c222909afa0768aee919f618",
+      "direct_review": "중간보고서 제목·단위 표기 뒤 연령/근속년수/학력별 근로자 구성 표의 병합과2004~2001 숫자 열·최하단 대졸 행을 확인했다. 표 앞 긴 요소가 표를 밀거나 제목을 누락시키지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/tall-prefix/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/tall-prefix/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/tall-prefix/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/tall-prefix/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8649,
+      "case": "sender-overlay",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "c1ef071dd9a00690be416dfd25b2602dd754f7dbc48222795555229692e3018a",
+      "direct_review": "납품 정보·검사 요청 본문·날짜와 별도 하단 총무부장 발신명을 같은 독립 Print 쪽과 대조했다. 쪽 기준 글 앞으로 표를 셀 흐름에 중복 적층하거나 숨기지 않으며 본문·날짜와 발신명의 별도 위치를 유지한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sender-overlay/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sender-overlay/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sender-overlay/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sender-overlay/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8649,
+      "case": "sender-overlay",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "48b41a83e884b7c0475293331f15268d0b039c036285156d844c203ab4cdb475",
+      "direct_review": "납품요구번호부터 성명까지 필드와 별표 마스킹, 중앙 긴 안내문·굵은 끝 문장·날짜, 하단 총무부장의 원점과 소속을 확인했다. 발신자 상자가 사라지거나 중복되지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sender-overlay/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sender-overlay/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sender-overlay/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sender-overlay/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8650,
+      "case": "refund-notice",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "42afb0051b8af5336f4faa45a4f964f91410d90b830b17f80a08b74508752515",
+      "direct_review": "원부·통지서·반환명령·보고서 네 TAC 표의 좌우 경계와 간격, 각 입금 상자와 날짜·결재 칸을 독립 Print와 대조했다. 오른쪽으로 갈수록 내부 그리드 폭 오차가 누적되는 모습이 없고 네 표의 내용 소속·순서·아래 끝점이 보존된다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/refund-notice/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/refund-notice/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/refund-notice/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/refund-notice/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8650,
+      "case": "refund-notice",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "e41026335ade428dbc34b01bb5f47ea2cf583d5c7841c1c7dff49303c01dea9c",
+      "direct_review": "과오납금반환통지서의 네 세로 서식과 각 상단 제목, 입금 상자·가로선·성명/인감·하단 표의 대응·순서를 확인했다. 앞 표/그림 뒤 배치가 옆 서식에 누적되지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/refund-notice/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/refund-notice/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/refund-notice/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/refund-notice/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8654,
+      "case": "field-page-box",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "d68e60ee83464b5012c52399e826adbc2eb082928e4e5b103d5b640dda4750e7",
+      "direct_review": "검사원지정요구서의 여러 줄 제목·문서번호·접수번호·담당자와 계약 정보, 위 결재 표, 아래 본문·날짜·발신명을 독립 Print와 대조했다. 쪽 기준 상자에 밀린 저장 줄이 빠지거나 큰 표 높이로 되감겨 본문과 겹치지 않는다. 제목/결재 표의 상대 위치와 마지막 발신명도 보존된다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/field-page-box/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/field-page-box/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/field-page-box/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/field-page-box/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8654,
+      "case": "field-page-box",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "eedd84d7d7d5245a04bcfdd7101fdbccf46c5e9433f7175a3d99ade963dbf63a",
+      "direct_review": "검사원지정요구서의 큰 제목·우상단 결재표, 담당자부터 납품년월일까지 필드와 별표 마스킹, 하단 기관명 상자를 대조했다. 하단 상자가 사라지거나 앞 본문과 겹치지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/field-page-box/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/field-page-box/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/field-page-box/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/field-page-box/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8654,
+      "case": "tall-prefix",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "46b62c82806ea5b60e1b5919bc47df67050ff26658a27bc7a6da539aa6617d70",
+      "direct_review": "중간보고서 제목과 단위, 2004~2001 머리행, 연령·근속·학력별 병합과 마지막 대졸 행을 독립 Print와 대조했다. 표 앞 줄 점유가 큰 TAC 표 높이로 되감기지 않으며 제목·단위·표 시작과 아래 경계의 순서·간격이 보존된다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/tall-prefix/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/tall-prefix/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/tall-prefix/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/tall-prefix/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8654,
+      "case": "tall-prefix",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "9901c0fe084f80eab4de88c20fb91eafbbe19ef6c222909afa0768aee919f618",
+      "direct_review": "중간보고서 제목·단위 표기 뒤 연령/근속년수/학력별 근로자 구성 표의 병합과2004~2001 숫자 열·최하단 대졸 행을 확인했다. 표 앞 긴 요소가 표를 밀거나 제목을 누락시키지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/tall-prefix/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/tall-prefix/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/tall-prefix/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/tall-prefix/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8654,
+      "case": "sender-overlay",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "c1ef071dd9a00690be416dfd25b2602dd754f7dbc48222795555229692e3018a",
+      "direct_review": "납품 정보·검사 요청 본문·날짜와 별도 하단 총무부장 발신명을 같은 독립 Print 쪽과 대조했다. 쪽 기준 글 앞으로 표를 셀 흐름에 중복 적층하거나 숨기지 않으며 본문·날짜와 발신명의 별도 위치를 유지한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sender-overlay/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sender-overlay/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sender-overlay/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sender-overlay/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8654,
+      "case": "sender-overlay",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "48b41a83e884b7c0475293331f15268d0b039c036285156d844c203ab4cdb475",
+      "direct_review": "납품요구번호부터 성명까지 필드와 별표 마스킹, 중앙 긴 안내문·굵은 끝 문장·날짜, 하단 총무부장의 원점과 소속을 확인했다. 발신자 상자가 사라지거나 중복되지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sender-overlay/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sender-overlay/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sender-overlay/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sender-overlay/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8654,
+      "case": "stamp-a",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "08b6d7e35afc6f4139c0adf3ecf5984b6fa0fd341e6c20936aaf59ace399808b",
+      "direct_review": "검사원지정요구 제목과 상단 시행/결재 표·본문 계약 항목·날짜·총무부장 끝 표시를 확인했다. 본문과 결재 표가 겹치지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stamp-a/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stamp-a/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stamp-a/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stamp-a/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8654,
+      "case": "stamp-a",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "d590d158e696787d7dcfa1e86e69ff90c834e8456e5f088b17e2cb4f9b54de14",
+      "direct_review": "상단 시행/결재 표·검사원 지정 제목·계약 항목·아래 법적 안내·날짜·발신자가 독립 Print 순서와 각 영역을 보존한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stamp-a/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stamp-a/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stamp-a/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stamp-a/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8654,
+      "case": "stamp-b",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "29465afbb22630e7f01ec88267f2b666ac785fb00c99dba6bd745ef4fcdce67d",
+      "direct_review": "다른 검사원 지정 요구의 날짜·금액·수신자·결재 표 및 본문/기관 끝줄을 대조했다. 첫 예시와 다른 값·소속을 보존한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stamp-b/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stamp-b/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stamp-b/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stamp-b/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8654,
+      "case": "stamp-b",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "a5fd8587efc49c34a070022fca2b10c98b5f3f2dec987c45db59a801b08b772d",
+      "direct_review": "두 번째 검사원 지정 문서도 상단 결재·계약 항목·본문 안내와 아래 날짜·발신자가 보존된다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stamp-b/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stamp-b/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stamp-b/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stamp-b/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8654,
+      "case": "labor-report",
+      "page": 12,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "d1afeb7269a065c6929cccce5ec88773d5160da006306596fe698a933c593c45",
+      "direct_review": "네 열의 사업장 규모 표와 병합 셀·오른쪽 화살표 및 아래 본문·각주10/11이 같은 쪽에서 유지된다. 표 하단과 각주가 겹치지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/labor-report/native/raw-012.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/labor-report/native/pdf-012.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/labor-report/native/overlay-012.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/labor-report/native/review-012.png"
+      }
+    },
+    {
+      "pr": 8654,
+      "case": "labor-report",
+      "page": 13,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "d1afeb7269a065c6929cccce5ec88773d5160da006306596fe698a933c593c45",
+      "direct_review": "사회보험 적용범위 표의 세로 병합 제목·법령·적용범위·비고와 하단 설명 두 줄을 확인했다. 마지막 행과 끝 문장이 잘리거나 중복되지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/labor-report/native/raw-013.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/labor-report/native/pdf-013.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/labor-report/native/overlay-013.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/labor-report/native/review-013.png"
+      }
+    },
+    {
+      "pr": 8654,
+      "case": "labor-report",
+      "page": 12,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "626bcf2ec004d7df1b1cb75bd3c7ed91acd8a3ac02fcc576b1e1d6724a400281",
+      "direct_review": "사업장 규모 적용 표의 행·열·병합·적용/배제 화살표와 표 뒤 두 문단, 각주10·11을 대조했다. 표 아래 본문과 각주가 겹치거나 표가 잘리지 않는다. 괘선·윤곽 차이는 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/labor-report/wasm/raw-012.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/labor-report/wasm/pdf-012.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/labor-report/wasm/overlay-012.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/labor-report/wasm/review-012.png"
+      }
+    },
+    {
+      "pr": 8654,
+      "case": "labor-report",
+      "page": 13,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "626bcf2ec004d7df1b1cb75bd3c7ed91acd8a3ac02fcc576b1e1d6724a400281",
+      "direct_review": "4대 사회보험 표의 산재/고용/국민연금/의료보험 세로 병합과 오른쪽 적용 확대·배제, 표 뒤 마지막 본문까지 소속과 보존을 대조했다. 일부 글리프·얇은 선 차이가 남으며 RGB 동일로 표현하지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/labor-report/wasm/raw-013.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/labor-report/wasm/pdf-013.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/labor-report/wasm/overlay-013.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/labor-report/wasm/review-013.png"
+      }
+    },
+    {
+      "pr": 8655,
+      "case": "companion-baseline",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "5f8b343d417e71d6e4d89fef865b28e802491e2cff435ef2a1367068686b84ca",
+      "direct_review": "왼쪽 시행·수신자 표와 오른쪽 결재 표의 상대 높이·분리·행 경계 및 결재 이름/날짜 소속을 독립 Print와 대조했다. 다른 표를 같은 원점에 포개거나 뒤 표가 줄 아래로 누적되지 않는다. raw100%와 RGB 픽셀 완전 일치를 구분한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/companion-baseline/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/companion-baseline/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/companion-baseline/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/companion-baseline/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8655,
+      "case": "companion-baseline",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "0031299b8844bb42b665f9e39c45731f1fd0d7c6b51df4fc9d216ac89fb897d2",
+      "direct_review": "왼쪽 시행·시행일자·접수·수신자 표와 오른쪽 결재 표가 독립 원점·행 높이를 보존한다. 김윤정/김남현·날짜 소속과 빈 결재 칸을 확인했다. raw100%는 RGB 동일을 뜻하지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/companion-baseline/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/companion-baseline/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/companion-baseline/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/companion-baseline/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8662,
+      "case": "sign-board-2020",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "d48a31068f3c9f8b75448d52ad2f8bceeafb508b2be344828b123ba188de0c13",
+      "direct_review": "2020 저장본의 관리대장·사업개요·표지판 설치 표와 변경사항 빈 셀의 제목·머리 행·마지막 테두리를 대조했다. 두 관리 영역이 같은 쪽에 보존된다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sign-board-2020/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sign-board-2020/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sign-board-2020/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sign-board-2020/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8662,
+      "case": "sign-board-2020",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "c3318a369c500f8fc9db22829006d7755aeab40c2cf201fff9a53438ab644a18",
+      "direct_review": "관리대장과 관리카드의 3개 표를 대조했다. 머리글·빈 행과 변경사항 상자가 보존되고 표가 겹치지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sign-board-2020/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sign-board-2020/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sign-board-2020/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sign-board-2020/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8662,
+      "case": "sign-board-2022",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "b5bc0350a306abdd5540193d959efa2db42bc7d1d2a1cf438c1c9fb2e0358d89",
+      "direct_review": "2022 저장본의 다른 줄바꿈을 유지하면서 설치일자·의무설치기한 머리와 하단 설치 표·변경사항을 같은 쪽에 보존한다. 2020 저장본의 줄 모양을 강제하지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sign-board-2022/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sign-board-2022/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sign-board-2022/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sign-board-2022/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8662,
+      "case": "sign-board-2022",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "43984d67495fa821e77116042527d7257d235b87a2e9a12fa0f07abc5f7b7256",
+      "direct_review": "2022 저장본의 3줄 머리글과 그에 따른 후속 표의 아래 원점을 독립 PDF와 대조했다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sign-board-2022/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sign-board-2022/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sign-board-2022/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/sign-board-2022/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8662,
+      "case": "policy-track2020",
+      "page": 1,
+      "backend": "native",
+      "raw": "99.99",
+      "source_manifest_sha256": "d76a880ac8b045c54317c51a893fc16ff3505d3d0b4192687c4f4b89525d5dfd",
+      "direct_review": "2020 신청서 제목·연구방식·예산항목 체크·금액·연구필요성·중복검토·수렴·연구내용·활용방안 및 종이 규격 줄을 확인했다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-track2020/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-track2020/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-track2020/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-track2020/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8662,
+      "case": "policy-track2020",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "99.99",
+      "source_manifest_sha256": "ed5f41e3714d72f37bf27e7d1475e89b6e15d80cfd9c802b43206ad004b7c004",
+      "direct_review": "정책연구과제 심의 신청서의 체크 항목과 연구기간/예산/중복 검토/연구내용/활용방안을 대조했다. 표의 열·마지막 행·아래 안내문을 보존하며 본문 일부와 괘선의 작은 차이를 기록한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-track2020/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-track2020/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-track2020/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-track2020/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8662,
+      "case": "policy-track2024",
+      "page": 1,
+      "backend": "native",
+      "raw": "99.99",
+      "source_manifest_sha256": "09c0585ccaf015e16fb5f18de3a56355241edb7efb5159afed28b1ecb5460c65",
+      "direct_review": "2024 저장본의 동일 신청서 표·체크·하단 안내와 마지막 줄을 독립 Print에 대조했다. 2020/2024의 실제 소속과 줄 끝을 따로 확인했다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-track2024/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-track2024/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-track2024/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-track2024/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8662,
+      "case": "policy-track2024",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "99.99",
+      "source_manifest_sha256": "a50439b68224e4683f74c75a81f6e17e682b17e9a7c5219b38dab01d442276c8",
+      "direct_review": "신청서의 입력행·연구 필요성·본문·결과 활용 영역 및 바닥 주석을 확인했다. 일부 한글 윤곽/두께의 미세 차이가 있다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-track2024/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-track2024/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-track2024/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-track2024/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8662,
+      "case": "policy-flags0",
+      "page": 1,
+      "backend": "native",
+      "raw": "97.75",
+      "source_manifest_sha256": "6126772526b80b27433b889c987899ad38e796028bad6e30cc3c6230205657da",
+      "direct_review": "flags0 반례의 연구내용·활용방안 줄 끝과 상단 신청서 표·체크·하단 안내를 확인했다. 지문은 보존되지만 연구결과 활용방안의 가로 전진 잔차는 남으며 다른 저장본의 100%로 대체하지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-flags0/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-flags0/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-flags0/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-flags0/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8662,
+      "case": "policy-flags0",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "97.77",
+      "source_manifest_sha256": "51184bf96a09f087d8a726a42539fcd7ec07710ee24d1e43ece6a9b2e4920c04",
+      "direct_review": "하단 연구 내용과 활용 방안 2개 입력영역은 PDF 대비 전진 간격 차이가 남는다. 글리프만의 문제로 해석하지 않고 별도 잔여 이슈로 기록한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-flags0/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-flags0/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-flags0/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/policy-flags0/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8662,
+      "case": "overflow-space-2020",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "1c22fef31ad8f3179e9b201b3f74ab61af379128b8152f1bbec47e2af78064d4",
+      "direct_review": "2020본의 긴 한글/영문 꼬리 W1 및 공백 처리 네 줄·두 줄·연속 짧은 줄 구성을 대조했다. 물리 프레임 밖으로 텍스트가 새어나가지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/overflow-space-2020/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/overflow-space-2020/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/overflow-space-2020/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/overflow-space-2020/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8662,
+      "case": "overflow-space-2020",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "98b7eb0e3a627c8ddc69dd4d85c9bc8125323bdd1904e753ca73c5dbabde3d33",
+      "direct_review": "2020 저장 대조군의 긴 줄 끝·짧은 줄·명시 개행의 순서를 대조했다. 본문과 외곽선의 내용이 보존된다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/overflow-space-2020/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/overflow-space-2020/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/overflow-space-2020/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/overflow-space-2020/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8662,
+      "case": "overflow-space-2024",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "07ef419bf56a5e142bc46451df06b12531eb55735543046d1f26c6c7b99e8f7b",
+      "direct_review": "2024본의 긴 줄과 공백 후 줄바꿈을 별도로 대조했다. 프레임·시작점·짧은 꼬리의 소속을 유지한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/overflow-space-2024/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/overflow-space-2024/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/overflow-space-2024/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/overflow-space-2024/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8662,
+      "case": "overflow-space-2024",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "54dde37a5059ef81974c4c6fe8fabb1188f4d00fd8921a6b120a0cfd705a17e0",
+      "direct_review": "2024 저장 대조군의 같은 긴 줄과 짧은 줄 경계를 확인했다. 줄끝 글자가 다음 줄로 넘어가거나 중복되지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/overflow-space-2024/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/overflow-space-2024/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/overflow-space-2024/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/overflow-space-2024/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8663,
+      "case": "legislation-summary",
+      "page": 1,
+      "backend": "native",
+      "raw": "99.95",
+      "source_manifest_sha256": "11eee68cb6889e7123de7a1e89f7f458bc8bd0f1130e3bcab5c4180afb974f39",
+      "direct_review": "요약문 장식과 제목, 정부조직법/국회법/법원조직법 표 및 하단 각주 표가 같은 쪽에 보존된다. 아래 표의 별도 소유·구분선과 쪽수1을 확인했다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/legislation-summary/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/legislation-summary/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/legislation-summary/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/legislation-summary/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8663,
+      "case": "legislation-summary",
+      "page": 8,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "11eee68cb6889e7123de7a1e89f7f458bc8bd0f1130e3bcab5c4180afb974f39",
+      "direct_review": "입법과정·소요기간 표의 제목·두 열·마지막 공포 행 및 쪽수8과 머리말을 확인했다. 표가 다음 쪽으로 잘리거나 행이 사라지지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/legislation-summary/native/raw-008.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/legislation-summary/native/pdf-008.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/legislation-summary/native/overlay-008.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/legislation-summary/native/review-008.png"
+      }
+    },
+    {
+      "pr": 8663,
+      "case": "legislation-summary",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "88de1a42812a3b277fa34ecc18786baab687ccae36700a967cb7c86b9e322758",
+      "direct_review": "요약문 장식·정부청사방호 규정 설명과 정부조직법/국회법/법원조직법 표, 각주1과 연결된 아래 조항 표를 대조했다. 표 분리·내용·쪽 번호는 보존한다. 아래 조항 두 곳의 굵기와 선의 래스터 차이는 잔여로 기록한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/legislation-summary/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/legislation-summary/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/legislation-summary/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/legislation-summary/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8663,
+      "case": "legislation-summary",
+      "page": 8,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "88de1a42812a3b277fa34ecc18786baab687ccae36700a967cb7c86b9e322758",
+      "direct_review": "단계별 소요기간 표의 입법과정 12개 항목·소요기간 대응과 마지막 공포 행·쪽번호를 대조했다. 행 누락/중복·마지막 내용 이동은 없으며 얇은 괘선과 글리프 윤곽 차이가 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/legislation-summary/wasm/raw-008.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/legislation-summary/wasm/pdf-008.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/legislation-summary/wasm/overlay-008.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/legislation-summary/wasm/review-008.png"
+      }
+    },
+    {
+      "pr": 8681,
+      "case": "cell-exclusion-36478532",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "053c47d558d94059aeacb4015aee6335da22d09e079bc5e561f1ac5feef385be",
+      "direct_review": "예산집행 품의 상단 수신/결재 셀과 하단 지출결의서의 중첩 표·제목·기관행을 대조했다. 부동 객체 주위 본문이 잘리거나 다른 셀로 흘러가지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/cell-exclusion-36478532/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/cell-exclusion-36478532/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/cell-exclusion-36478532/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/cell-exclusion-36478532/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8681,
+      "case": "cell-exclusion-36478532",
+      "page": 2,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "053c47d558d94059aeacb4015aee6335da22d09e079bc5e561f1ac5feef385be",
+      "direct_review": "산출내역 표의 병합 머리·총계·별표 자료 행·오른쪽 세로 결재 셀 및 표 뒤 붙임 문장을 확인했다. 1쪽의 결의서가 중복되지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/cell-exclusion-36478532/native/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/cell-exclusion-36478532/native/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/cell-exclusion-36478532/native/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/cell-exclusion-36478532/native/review-002.png"
+      }
+    },
+    {
+      "pr": 8681,
+      "case": "cell-exclusion-36478532",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "8a7fddc740ee812cec469112df153c61915891d4bbe49dfcad5a5a31c8893abe",
+      "direct_review": "예산집행의품의 상단 결재/수신 표와 본문 안 점검사항 표, 아래 지출결의서·계약/영수/품의 표가 같은 쪽에 보존된다. 셀 내부 제외 영역 주변 줄과 긴 마스킹을 확인했다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/cell-exclusion-36478532/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/cell-exclusion-36478532/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/cell-exclusion-36478532/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/cell-exclusion-36478532/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8681,
+      "case": "cell-exclusion-36478532",
+      "page": 2,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "8a7fddc740ee812cec469112df153c61915891d4bbe49dfcad5a5a31c8893abe",
+      "direct_review": "표 2쪽의 병합 품의담당 열과 예산 항목·별표 셀, 하단 붙임 문단의 소속·순서를 대조했다. 끝 셀까지 보존된다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/cell-exclusion-36478532/wasm/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/cell-exclusion-36478532/wasm/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/cell-exclusion-36478532/wasm/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/cell-exclusion-36478532/wasm/review-002.png"
+      }
+    },
+    {
+      "pr": 8681,
+      "case": "original-36493460",
+      "page": 1,
+      "backend": "native",
+      "raw": "99.99",
+      "source_manifest_sha256": "3dfc5cd69af9228bdcd885702acf9907abf4bf048e3885a82d3f7019c6cd23a1",
+      "direct_review": "간호행정과 예산품의의 상단 결재·가운데 신청액 표·하단 지출결의서와 끝 문구를 대조했다. 본문과 접수/결재 셀의 소속을 유지한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/original-36493460/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/original-36493460/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/original-36493460/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/original-36493460/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8681,
+      "case": "original-36493460",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "99.99",
+      "source_manifest_sha256": "5af9766cddc8797569c4568237f401619297aba90175f491d5a3e0006db97bbf",
+      "direct_review": "예산 집행 문서의 제목·상단 수신 결재 표·본문 금액 표·아래 지출결의서와 끝 문단을 확인했다. 일부 작은 글리프 래스터 차이가 남는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/original-36493460/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/original-36493460/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/original-36493460/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/original-36493460/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8681,
+      "case": "original-36474334",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "9b41810ffd7a3b94d805bd4f179925a486116e5b177ff00ab56ecf2d45848181",
+      "direct_review": "일상경비 품의의 결재 영역과 본문, 하단 지출결의서의 증제674호·금액·날짜·계좌·검수 행이 같은 셀에 보존된다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/original-36474334/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/original-36474334/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/original-36474334/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/original-36474334/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8681,
+      "case": "original-36474334",
+      "page": 2,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "9b41810ffd7a3b94d805bd4f179925a486116e5b177ff00ab56ecf2d45848181",
+      "direct_review": "Print와 후보 모두 빈 2쪽이다. 이 결과는 총쪽수와 앞쪽 경계 보존에만 사용하며 빈 페이지 점수로 본문 피델리티를 대신하지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/original-36474334/native/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/original-36474334/native/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/original-36474334/native/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/original-36474334/native/review-002.png"
+      }
+    },
+    {
+      "pr": 8681,
+      "case": "original-36474334",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "4005b0325dcdf53ab9176e7e0db2b1ba598dd988cb342eaf31257a2b67eb94ba",
+      "direct_review": "지출결의 문서의 상단 결재 표·본문 내 예산과목 표·아래 지출결의 표가 구분되고 셀 내용·행 높이·아래 수령인 영역이 보존된다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/original-36474334/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/original-36474334/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/original-36474334/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/original-36474334/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8681,
+      "case": "original-36474334",
+      "page": 2,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "4005b0325dcdf53ab9176e7e0db2b1ba598dd988cb342eaf31257a2b67eb94ba",
+      "direct_review": "독립 PDF와 후보 모두 빈 2쪽이다. 빈 페이지의 보존을 확인했으며 실내용 페이지로 해석하지 않는다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/original-36474334/wasm/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/original-36474334/wasm/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/original-36474334/wasm/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/original-36474334/wasm/review-002.png"
+      }
+    },
+    {
+      "pr": 8681,
+      "case": "stored-band",
+      "page": 1,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "a4ed136b09d105eed565bc589bb05c865dba1c523c4e888ba294e719a6e15559",
+      "direct_review": "통합교부 예산품의 본문과 점검 표가 저장된 빈 영역 안에 있으며 아래 지출결의서와 뒤쪽 표식의 순서가 보존된다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stored-band/native/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stored-band/native/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stored-band/native/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stored-band/native/review-001.png"
+      }
+    },
+    {
+      "pr": 8681,
+      "case": "stored-band",
+      "page": 2,
+      "backend": "native",
+      "raw": "100.00",
+      "source_manifest_sha256": "a4ed136b09d105eed565bc589bb05c865dba1c523c4e888ba294e719a6e15559",
+      "direct_review": "두 줄 머리·총계·자료1~3행·빈 후속 행·품의담당 세로셀을 대조했다. 저장된 행 밴드와 빈 영역을 임의 축소하지 않고 마지막 테두리를 보존한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stored-band/native/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stored-band/native/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stored-band/native/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stored-band/native/review-002.png"
+      }
+    },
+    {
+      "pr": 8681,
+      "case": "stored-band",
+      "page": 1,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "57fa13fb535d349ddac3db28720260c44c41d403c1d1b0644f1631b7886895c5",
+      "direct_review": "상단 예산집행품의와 내부 점검표가 상단 외곽 안에 배치되고 하단 지출결의서가 별도 원점·서명 영역을 보존한다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stored-band/wasm/raw-001.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stored-band/wasm/pdf-001.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stored-band/wasm/overlay-001.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stored-band/wasm/review-001.png"
+      }
+    },
+    {
+      "pr": 8681,
+      "case": "stored-band",
+      "page": 2,
+      "backend": "wasm",
+      "raw": "100.00",
+      "source_manifest_sha256": "57fa13fb535d349ddac3db28720260c44c41d403c1d1b0644f1631b7886895c5",
+      "direct_review": "후속 집행 내역 표의 머리글·3개 실내용 행·빈 행 및 마지막 품의 담당 열을 PDF와 대조했다.",
+      "assets": {
+        "raw": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stored-band/wasm/raw-002.png",
+        "pdf": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stored-band/wasm/pdf-002.png",
+        "overlay": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stored-band/wasm/overlay-002.png",
+        "review": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/cases/stored-band/wasm/review-002.png"
+      }
+    }
+  ]
+}

@@ -1,0 +1,233 @@
+{
+  "state": "complete",
+  "pid": 619,
+  "head": "eb876d1416fb558c874f9efec65c5722a6769751",
+  "base": "b768bee1c4c0023087687f79a0a95f12108743e9",
+  "modules": [
+    {
+      "module": "hft_outline_font_contract",
+      "path": "tests/cases/hft_outline_font_contract.rs",
+      "sha256": "881270c8f933565c364d66e4d9cae318e4f81efdbab4a3741b38bbf0a27d637a"
+    },
+    {
+      "module": "issue_7445_native_bold_tracking",
+      "path": "tests/cases/issue_7445_native_bold_tracking.rs",
+      "sha256": "dd1f6c7eec793008005c00740194b34f2886cb36468ff85a56abbcefc0a5eb7f"
+    },
+    {
+      "module": "issue_7445_negative_spacing_glyph_shape",
+      "path": "tests/cases/issue_7445_negative_spacing_glyph_shape.rs",
+      "sha256": "dfd8dd32d22243c74f8dcd87fb287c16149424eb2ea5c4c961351e2aa241ced6"
+    },
+    {
+      "module": "issue_7688_native_equation_fonts",
+      "path": "tests/cases/issue_7688_native_equation_fonts.rs",
+      "sha256": "754b055f289ca27ce9559dd2a4449dcc12102334424efdb0690df4907deaf779"
+    },
+    {
+      "module": "issue_8153_symbol_fallback",
+      "path": "tests/cases/issue_8153_symbol_fallback.rs",
+      "sha256": "269bf11dedaf8f22012d4457a4dd4852f46950488758ae1881b796da8499b3d5"
+    },
+    {
+      "module": "issue_8597_native_font_path_budget",
+      "path": "tests/cases/issue_8597_native_font_path_budget.rs",
+      "sha256": "2d2100745d252fdce65d0cc3e66224758c539bc0518f598f7ca4a496d687dbc3"
+    },
+    {
+      "module": "native_fractional_glyph_origin",
+      "path": "tests/cases/native_fractional_glyph_origin.rs",
+      "sha256": "982a3439626e58d933bd4349281c14026b22d496d76170d6785565702a5f29a3"
+    },
+    {
+      "module": "native_metafile_mipmap_sampling",
+      "path": "tests/cases/native_metafile_mipmap_sampling.rs",
+      "sha256": "9af7889bfff0026efc413ab9541c99009d3454eb7cf729dd751c2b841eeb5073"
+    },
+    {
+      "module": "native_pua_host_font_protocol",
+      "path": "tests/cases/native_pua_host_font_protocol.rs",
+      "sha256": "bae4efdcd3275eeb8c940ff6a0bd7f698b6ff07acb5d2780d6391dc9d7f1a9f3"
+    },
+    {
+      "module": "native_skia_public_paint_contract",
+      "path": "tests/cases/native_skia_public_paint_contract.rs",
+      "sha256": "271c15ad5592acd01daefbf5c132292d256d1497b4a5c25d6e7c7b9bf2d3e4b9"
+    },
+    {
+      "module": "native_system_font_family_ownership",
+      "path": "tests/cases/native_system_font_family_ownership.rs",
+      "sha256": "cacd61c318f6f1dc4b939618726b786577ae5a846d3fdd03b534e508bd8c0577"
+    }
+  ],
+  "results": [
+    {
+      "module": "hft_outline_font_contract",
+      "exit_code": 0,
+      "seconds": 15.071979540865868,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/native-feature-hft_outline_font_contract.log",
+      "log_sha256": "a86f707f2734534ae36a903463f46f4f506c6b6f3d95768366fbec75c8ed90ec",
+      "summaries": [
+        [
+          "ok",
+          "19",
+          "0",
+          "0"
+        ]
+      ]
+    },
+    {
+      "module": "issue_7445_native_bold_tracking",
+      "exit_code": 0,
+      "seconds": 11.450598041992635,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/native-feature-issue_7445_native_bold_tracking.log",
+      "log_sha256": "2132725118049308a388825108750af49fcf94fdfcf62c19ef3676d5be23bde3",
+      "summaries": [
+        [
+          "ok",
+          "3",
+          "0",
+          "0"
+        ]
+      ]
+    },
+    {
+      "module": "issue_7445_negative_spacing_glyph_shape",
+      "exit_code": 0,
+      "seconds": 12.463880500057712,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/native-feature-issue_7445_negative_spacing_glyph_shape.log",
+      "log_sha256": "91f9a6546275cc967b3d9c4e9d2f367fcedd14b81e925969b1bb42c687629442",
+      "summaries": [
+        [
+          "ok",
+          "1",
+          "0",
+          "0"
+        ]
+      ]
+    },
+    {
+      "module": "issue_7688_native_equation_fonts",
+      "exit_code": 0,
+      "seconds": 12.594096125103533,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/native-feature-issue_7688_native_equation_fonts.log",
+      "log_sha256": "f23985821a8f65cfab2438285defcd8db113d2932b05a0c1030dd5f54c26a653",
+      "summaries": [
+        [
+          "ok",
+          "7",
+          "0",
+          "0"
+        ]
+      ]
+    },
+    {
+      "module": "issue_8153_symbol_fallback",
+      "exit_code": 0,
+      "seconds": 13.146453791996464,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/native-feature-issue_8153_symbol_fallback.log",
+      "log_sha256": "b2b8d1e61b70384ba6f706b85888b852eb90777c672cb361ae83f9e2f5df62b2",
+      "summaries": [
+        [
+          "ok",
+          "2",
+          "0",
+          "0"
+        ]
+      ]
+    },
+    {
+      "module": "issue_8597_native_font_path_budget",
+      "exit_code": 0,
+      "seconds": 13.374948249896988,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/native-feature-issue_8597_native_font_path_budget.log",
+      "log_sha256": "bcad4fca52fdc768151cf86b110ed4a72eefee4ca2bd21374b694a498c65bd9c",
+      "summaries": [
+        [
+          "ok",
+          "3",
+          "0",
+          "0"
+        ]
+      ]
+    },
+    {
+      "module": "native_fractional_glyph_origin",
+      "exit_code": 0,
+      "seconds": 24.062623749952763,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/native-feature-native_fractional_glyph_origin.log",
+      "log_sha256": "aeecb0b6dd22b763a6b6e9515f69c1d50f568d458daa79b1fedcccef476a6420",
+      "summaries": [
+        [
+          "ok",
+          "7",
+          "0",
+          "0"
+        ]
+      ]
+    },
+    {
+      "module": "native_metafile_mipmap_sampling",
+      "exit_code": 0,
+      "seconds": 13.759128540987149,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/native-feature-native_metafile_mipmap_sampling.log",
+      "log_sha256": "6320b4457f15f5b9bdbfe345a7b1bd2055a24e64de1d0b5cfee8cb95429307f1",
+      "summaries": [
+        [
+          "ok",
+          "3",
+          "0",
+          "0"
+        ]
+      ]
+    },
+    {
+      "module": "native_pua_host_font_protocol",
+      "exit_code": 0,
+      "seconds": 12.930566166061908,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/native-feature-native_pua_host_font_protocol.log",
+      "log_sha256": "c3aa39b249c3f73ec9238fff0b32997d4dad1b492ae8e2fb7985b22e05fa7915",
+      "summaries": [
+        [
+          "ok",
+          "21",
+          "0",
+          "0"
+        ]
+      ]
+    },
+    {
+      "module": "native_skia_public_paint_contract",
+      "exit_code": 0,
+      "seconds": 1.9083617499563843,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/native-feature-native_skia_public_paint_contract.log",
+      "log_sha256": "38a2779645e4cb1d196d557b6adf5d49caba799676b2edb963e39db004ceebc5",
+      "summaries": [
+        [
+          "ok",
+          "6",
+          "0",
+          "0"
+        ]
+      ]
+    },
+    {
+      "module": "native_system_font_family_ownership",
+      "exit_code": 0,
+      "seconds": 13.489673415897414,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/native-feature-native_system_font_family_ownership.log",
+      "log_sha256": "ee9f919a68d77ae5e4d200724d5db7bf97e27e321bd139158ac7545adab4a51e",
+      "summaries": [
+        [
+          "ok",
+          "1",
+          "0",
+          "0"
+        ]
+      ]
+    }
+  ],
+  "scope": "현재 branch에서 수정한 Native feature 전용 검사만 추가 실행한다. 기본 feature 전체 nextest로 실행되지 않는 범위다.",
+  "started_at": "2026-11-09T18:42:25.434041+09:00",
+  "finished_at": "2026-11-09T18:44:52.964244+09:00"
+}

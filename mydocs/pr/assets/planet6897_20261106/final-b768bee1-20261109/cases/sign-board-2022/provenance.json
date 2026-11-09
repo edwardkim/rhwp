@@ -1,0 +1,39 @@
+{
+  "input": "samples/issue8639/sign_board_register_card.hwp",
+  "input_sha256": "dd3d1f1c2c3637d0663b90adab21b997d85ef2dd3131ca30ef02ba13772f04b0",
+  "input_bytes": 12800,
+  "pdf": "pdf/issue8639/sign_board_register_card-print-2022.pdf",
+  "pdf_sha256": "066e32b476f0e6048a45335191d37b70729537cc9d95a655f80f3980e3a8e811",
+  "pdf_bytes": 32355,
+  "pdf_pages": 1,
+  "dpi": 96,
+  "compat": "2022",
+  "head": "eb876d1416fb558c874f9efec65c5722a6769751",
+  "base": "b768bee1c4c0023087687f79a0a95f12108743e9",
+  "native_whole": {
+    "pages": 1,
+    "minimum": 100.0,
+    "page_set_matches": true
+  },
+  "state": "native-and-fresh-wasm-complete-direct-reviewed",
+  "producer_identity": {
+    "native": {
+      "binary_sha256": "1e10729c01d1ab44a1b4bb60d71b363320348905510c0bb6cd247d64153525ea",
+      "package_sha256": null,
+      "manifest_sha256": "8f78cb83b56c7d9a2b38fd8ba4c80322c4f97a0b65819de1566cd20b3fadfdb4"
+    },
+    "wasm": {
+      "binary_sha256": "1e10729c01d1ab44a1b4bb60d71b363320348905510c0bb6cd247d64153525ea",
+      "package_sha256": {
+        "rhwp.js": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed",
+        "rhwp_bg.wasm": "edfcfbe4005bb48fd475d4ddef2403a8dbda6e3b53dd969d5afb5f391a609ef6"
+      },
+      "manifest_sha256": "8f78cb83b56c7d9a2b38fd8ba4c80322c4f97a0b65819de1566cd20b3fadfdb4"
+    }
+  },
+  "wasm_whole": {
+    "pages": 1,
+    "minimum": 100.0,
+    "page_set_matches": true
+  }
+}

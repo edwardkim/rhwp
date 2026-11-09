@@ -1,0 +1,39 @@
+{
+  "input": "mydocs/pr/assets/planet6897_20261106/pr8642/report-628-original.hwp",
+  "input_sha256": "bde80abc635f46e8af68ff9a962229379d17f32bf7939398617774bb40635f66",
+  "input_bytes": 808448,
+  "pdf": "pdf/planet6897-20261106/pr8642/report-628-original-2020.pdf",
+  "pdf_sha256": "34960349fb528ec433dfe0f616eaa275ea9331e15350823ba88f276cc0bd2255",
+  "pdf_bytes": 1720207,
+  "pdf_pages": 195,
+  "dpi": 96,
+  "compat": "2022",
+  "head": "eb876d1416fb558c874f9efec65c5722a6769751",
+  "base": "b768bee1c4c0023087687f79a0a95f12108743e9",
+  "native_whole": {
+    "pages": 195,
+    "minimum": 93.24,
+    "page_set_matches": true
+  },
+  "state": "native-and-fresh-wasm-complete-direct-reviewed",
+  "producer_identity": {
+    "native": {
+      "binary_sha256": "1e10729c01d1ab44a1b4bb60d71b363320348905510c0bb6cd247d64153525ea",
+      "package_sha256": null,
+      "manifest_sha256": "8f78cb83b56c7d9a2b38fd8ba4c80322c4f97a0b65819de1566cd20b3fadfdb4"
+    },
+    "wasm": {
+      "binary_sha256": "1e10729c01d1ab44a1b4bb60d71b363320348905510c0bb6cd247d64153525ea",
+      "package_sha256": {
+        "rhwp.js": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed",
+        "rhwp_bg.wasm": "edfcfbe4005bb48fd475d4ddef2403a8dbda6e3b53dd969d5afb5f391a609ef6"
+      },
+      "manifest_sha256": "8f78cb83b56c7d9a2b38fd8ba4c80322c4f97a0b65819de1566cd20b3fadfdb4"
+    }
+  },
+  "wasm_whole": {
+    "pages": 195,
+    "minimum": 93.24,
+    "page_set_matches": true
+  }
+}
