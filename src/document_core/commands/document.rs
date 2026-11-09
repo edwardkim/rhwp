@@ -1155,6 +1155,10 @@ impl DocumentCore {
                 // 쌓으므로, 저장 좌표가 원점을 정하지 않은 문단 경계에서는 편집 경로
                 // (`recalculate_section_vpos`)와 같은 문단 간격 `앞 아래 + 뒤 위` 를 더한다.
                 let mut previous_spacing_after_hu: Option<(i32, bool)> = None;
+                // 문단 기준 위아래 배치 개체가 아직 밀지 않은 띠: (띠 위끝, 밀 양).
+                // 한컴은 개체의 세로 띠와 겹치는 줄만 띠 아래로 보낸다. 오프셋만큼
+                // 아래에 놓인 개체 위 빈 공간에 들어가는 후속 줄은 제자리에 둔다.
+                let mut pending_float_band: Option<(i32, i32)> = None;
 
                 // 앞 문단의 뒤 여백도 다음 개체의 저장 경계를 소유할 수 있다.
                 let orig_spacing_after_hu: Vec<i32> = section
@@ -1372,6 +1376,10 @@ impl DocumentCore {
                     }
                     // [#7824] 저장 쪽 리셋이 원점을 정하지 않았으면 문단 간격을 더한다.
                     // 원본 앵커(아래)는 저장 간격을 그대로 옮기므로 큰 쪽을 쓴다.
+                    if running_vpos != accumulated_vpos {
+                        // 저장 쪽·단 리셋 뒤에는 앞 프레임의 개체 띠가 없다.
+                        pending_float_band = None;
+                    }
                     if running_vpos == accumulated_vpos && !para.line_segs.is_empty() {
                         if let Some((spacing_after, _)) =
                             previous_spacing_after_hu.filter(|(_, previous_has_source_span)| {
@@ -1499,6 +1507,14 @@ impl DocumentCore {
                         {
                             // 정상 저장 줄의 물리 경계를 합성 줄의 연속 축으로 지우지 않는다.
                             inner_vpos = source_vpos;
+                            pending_float_band = None;
+                        }
+                        if let Some((band_top, shift)) = pending_float_band {
+                            if inner_vpos.saturating_add(seg.line_height) > band_top {
+                                // 띠와 겹치는 첫 줄부터 개체 아래로 옮긴다.
+                                inner_vpos = inner_vpos.saturating_add(shift);
+                                pending_float_band = None;
+                            }
                         }
                         previous_source_end = Some(
                             source_vpos
@@ -1510,46 +1526,54 @@ impl DocumentCore {
                         inner_vpos = inner_vpos + advance;
                     }
                     // 비-TAC TopAndBottom Picture/Table: 개체 높이를 vpos에 반영
+                    let host_first_vpos = running_vpos;
                     for ctrl in para.controls.iter() {
                         if owns_float_bands {
                             // 저장 줄 사이의 띠와 그 뒤 줄을 이미 한 번 예약했다.
                             continue;
                         }
-                        let (obj_height, obj_v_offset, obj_margin_top, obj_margin_bottom) =
-                            match ctrl {
-                                Control::Picture(p)
-                                    if !p.common.treat_as_char
-                                        && matches!(
-                                            p.common.text_wrap,
-                                            crate::model::shape::TextWrap::TopAndBottom
-                                        )
-                                        && p.common.height > 0 =>
-                                {
-                                    (
-                                        p.common.height as i32,
-                                        p.common.vertical_offset as i32,
-                                        0,
-                                        0,
+                        let (
+                            obj_height,
+                            obj_v_offset,
+                            obj_margin_top,
+                            obj_margin_bottom,
+                            obj_vert_rel,
+                        ) = match ctrl {
+                            Control::Picture(p)
+                                if !p.common.treat_as_char
+                                    && matches!(
+                                        p.common.text_wrap,
+                                        crate::model::shape::TextWrap::TopAndBottom
                                     )
-                                }
-                                Control::Table(t)
-                                    if !t.common.treat_as_char
-                                        && matches!(
-                                            t.common.text_wrap,
-                                            crate::model::shape::TextWrap::TopAndBottom
-                                        )
-                                        && t.common.height > 0
-                                        && t.raw_ctrl_data.is_empty() =>
-                                {
-                                    (
-                                        t.common.height as i32,
-                                        t.common.vertical_offset as i32,
-                                        t.outer_margin_top as i32,
-                                        t.outer_margin_bottom as i32,
+                                    && p.common.height > 0 =>
+                            {
+                                (
+                                    p.common.height as i32,
+                                    p.common.vertical_offset as i32,
+                                    0,
+                                    0,
+                                    p.common.vert_rel_to,
+                                )
+                            }
+                            Control::Table(t)
+                                if !t.common.treat_as_char
+                                    && matches!(
+                                        t.common.text_wrap,
+                                        crate::model::shape::TextWrap::TopAndBottom
                                     )
-                                }
-                                _ => continue,
-                            };
+                                    && t.common.height > 0
+                                    && t.raw_ctrl_data.is_empty() =>
+                            {
+                                (
+                                    t.common.height as i32,
+                                    t.common.vertical_offset as i32,
+                                    t.outer_margin_top as i32,
+                                    t.outer_margin_bottom as i32,
+                                    t.common.vert_rel_to,
+                                )
+                            }
+                            _ => continue,
+                        };
                         let obj_total =
                             obj_height + obj_v_offset + obj_margin_top + obj_margin_bottom;
                         let seg_lh_total: i32 = para
@@ -1588,7 +1612,23 @@ impl DocumentCore {
                         if object_precedes_host_line {
                             inner_vpos += obj_total;
                         } else if obj_total > seg_lh_total {
-                            inner_vpos += obj_total - seg_lh_total;
+                            let shift = obj_total - seg_lh_total;
+                            if matches!(obj_vert_rel, crate::model::shape::VertRelTo::Para)
+                                && obj_v_offset > 0
+                            {
+                                // 문단 기준 개체의 띠는 host 첫 줄에서 오프셋만큼 아래에서
+                                // 시작한다. 밀기는 그 띠와 겹치는 후속 줄로 미룬다.
+                                // 겹치는 줄은 종전과 같은 양을 밀린다.
+                                let band_top = host_first_vpos.saturating_add(obj_v_offset);
+                                pending_float_band = Some(match pending_float_band {
+                                    Some((top, pending)) => {
+                                        (top.min(band_top), pending.saturating_add(shift))
+                                    }
+                                    None => (band_top, shift),
+                                });
+                            } else {
+                                inner_vpos += shift;
+                            }
                         }
                     }
                     running_vpos = inner_vpos;
