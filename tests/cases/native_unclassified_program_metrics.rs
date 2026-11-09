@@ -86,3 +86,40 @@ fn explicitly_selected_natural_program_still_supplies_its_advances() {
         "명시적 자연 전진의 실제 공급은 계속 소비한다"
     );
 }
+
+#[test]
+fn unclassified_slot_keeps_an_existing_legacy_program_for_the_same_family() {
+    let mut core = source();
+    let mut document = core.document().clone();
+    for fonts in &mut document.doc_info.font_faces {
+        *fonts = vec![
+            rhwp::model::style::Font {
+                name: "RHWP HFT Outline Fixture".into(),
+                alt_type: 1,
+                ..Default::default()
+            },
+            rhwp::model::style::Font {
+                name: "RHWP HFT Outline Fixture".into(),
+                alt_type: 2,
+                ..Default::default()
+            },
+        ];
+    }
+    for shape in &mut document.doc_info.char_shapes {
+        shape.font_ids = [0; 7];
+    }
+    let mut legacy = document.doc_info.char_shapes[0].clone();
+    legacy.font_ids = [1; 7];
+    document.doc_info.char_shapes.push(legacy);
+    core.set_document(document);
+    let cff = include_bytes!("../fixtures/fonts/RHWPHftOutline.otf");
+    core.prepare_native_otf_fonts_with(|request| (!request.source_ttf).then(|| (cff.to_vec(), 0)))
+        .unwrap();
+    let tree = core.build_page_render_tree(0).unwrap();
+    let style = style(&tree.root).unwrap();
+    assert!(!style.source_font_is_ttf && !style.source_font_is_hft);
+    let metrics = style.native_otf_metrics.expect(
+        "미분류 원본의 새 TrueType 전진만 차단하며 기존 동일 family의 HFT 표시 프로그램은 보존한다",
+    );
+    assert!(!metrics.uses_original_truetype());
+}
