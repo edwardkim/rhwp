@@ -28,14 +28,29 @@ impl MeasuredTable {
         row_h: f64,
         budget: f64,
     ) -> bool {
+        // 행 상자는 선언이 아니라 내용으로 수용한다 — 첫 행 칸들의 글줄과 안 여백이 남은
+        // 공간에 들면 그 행은 쪽 바닥에서 닫힌다(#8105·#8464 행 수용 규칙과 같은 계약).
+        let row_admitted = row_h <= budget || self.row_cells_content_fit(row, budget);
         self.allows_row_break_split()
             && row_h > 0.0
-            && row_h <= budget
+            && row_admitted
             && self
                 .cells
                 .iter()
                 .filter(|c| c.row == row && c.row_span > 1)
-                .all(|c| c.total_content_height + c.padding_top + c.padding_bottom <= row_h + 0.5)
+                .all(|c| {
+                    c.total_content_height + c.padding_top + c.padding_bottom
+                        <= row_h.min(budget) + 0.5
+                })
+    }
+
+    /// `row` 에서 시작하는 모든 칸의 글줄과 안 여백이 `budget` 보다 작은가.
+    /// 선언 높이가 넘쳐도 내용이 들면 그 행은 쪽 바닥에서 닫힐 수 있다.
+    pub(crate) fn row_cells_content_fit(&self, row: usize, budget: f64) -> bool {
+        self.cells
+            .iter()
+            .filter(|c| c.row == row)
+            .all(|c| c.total_content_height + c.padding_top + c.padding_bottom < budget)
     }
 
     pub(crate) fn rowspan_block_fits_whole_unit(

@@ -1184,7 +1184,7 @@ impl TypesetEngine {
                     table.common.text_wrap,
                     crate::model::shape::TextWrap::TopAndBottom
                 )
-                && first_block_is_single_row
+                && (first_block_is_single_row || opening_rowspan_block_cuts_after_first_row)
                 && !first_row_is_repeated_header
                 && !host_starts_new_stored_page
                 && !st.current_items.is_empty()

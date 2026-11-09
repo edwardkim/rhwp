@@ -180,6 +180,24 @@ impl TypesetEngine {
                     || (required.is_finite()
                         && avail_for_rows.is_finite()
                         && required - avail_for_rows <= roundoff);
+                // 이월 게이트가 첫 rowspan 묶음을 0행 뒤에서 자르기로 정했고 0행 칸들의
+                // 내용과 안 여백이 남은 공간에 들면, 0행은 선언이 넘쳐도 쪽 바닥에서 닫힌다
+                // (#8105 행 수용 규칙과 같은 계약). 걸친 병합 칸의 남은 선언은 다음 조각이
+                // 잇는다(한/글 2020: HPV 코호트 보고서 18쪽 9×9 표 0행 2500HU 가 2229HU 로
+                // 닫히고, 19쪽 첫 행은 병합 칸 5000HU 의 나머지 2771HU 다).
+                let opening_rest = (avail_for_rows - consumed - cs_before).max(0.0);
+                if !fits
+                    && r == 0
+                    && r == cursor_row
+                    && v.opening_block_cuts_after_first_row
+                    && mt.row_cells_content_fit(r, opening_rest)
+                {
+                    consumed += cs_before + opening_rest;
+                    r += 1;
+                    end_row = r;
+                    end_row_height_override = Some(opening_rest);
+                    return true;
+                }
                 if r == cursor_row || fits {
                     consumed += cs_before + h;
                     r += 1;
