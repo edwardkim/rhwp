@@ -6301,10 +6301,11 @@ impl ParagraphFloatPlacement {
         let position = *para.control_text_positions().get(control_index)?;
         (position == 0
             && !para.text.contains('\n')
-            && para
+            && (para
                 .text
                 .chars()
-                .any(|ch| !ch.is_whitespace() && !ch.is_control() && ch != '\u{FFFC}'))
+                .any(|ch| !ch.is_whitespace() && !ch.is_control() && ch != '\u{FFFC}')
+                || crate::renderer::is_unstored_whitespace_object_host(para)))
         .then_some(position)
     }
 
@@ -6315,10 +6316,10 @@ impl ParagraphFloatPlacement {
         }
         let position = *para.control_text_positions().get(control_index)?;
         (position == text_len
-            && para.text.rsplit('\n').next().is_some_and(|line| {
+            && (para.text.rsplit('\n').next().is_some_and(|line| {
                 line.chars()
                     .any(|ch| !ch.is_whitespace() && !ch.is_control() && ch != '\u{FFFC}')
-            }))
+            }) || crate::renderer::is_unstored_whitespace_object_host(para)))
         .then_some(position)
     }
 
@@ -8888,6 +8889,7 @@ fn para_has_non_whitespace_text(para: &Paragraph) -> bool {
     para.text
         .chars()
         .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
+        || crate::renderer::is_unstored_whitespace_object_host(para)
 }
 
 /// A saved empty line that ends before a paragraph-relative table offset

@@ -62,6 +62,7 @@ impl TypesetState {
                 visible_float_exclusions: Vec::new(),
                 page_anchored_bands: Vec::new(),
                 page_band_flow_starts: std::collections::HashMap::new(),
+                unstored_square_boxes: Vec::new(),
                 side_wrap_exclusions: std::collections::BTreeMap::new(),
                 unwitnessed_side_wraps: std::collections::BTreeSet::new(),
                 inline_placements: std::collections::HashMap::new(),

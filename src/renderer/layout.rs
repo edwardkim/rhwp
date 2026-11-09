@@ -1255,6 +1255,7 @@ fn para_has_non_whitespace_text(para: &Paragraph) -> bool {
     para.text
         .chars()
         .any(|c| c > '\u{001F}' && c != '\u{FFFC}' && !c.is_whitespace())
+        || crate::renderer::is_unstored_whitespace_object_host(para)
 }
 
 /// [#5584] 자리차지 표 호스트 문단의 **저장 줄 전부가 표 위**인가.
@@ -6774,15 +6775,23 @@ impl LayoutEngine {
 
         // 다단 레이아웃: body_area 전체에 걸치는 TopAndBottom 개체의 예약 높이
         // (한 단에만 할당되더라도 모든 단에 적용)
-        let body_wide_reserved: Vec<(usize, f64)> = if page_content.column_contents.len() > 1 {
-            self.calculate_body_wide_shape_reserved(
-                paragraphs,
-                &page_content.column_contents,
-                &layout.body_area,
-            )
-        } else {
-            Vec::new()
-        };
+        // 단 하나짜리 영역이 위아래로 쌓인 쪽(다단 나누기로 1단 영역만 바뀐 쪽)은 단이 나란히
+        // 서지 않으므로 전폭 예약 대상이 아니다. 문단 기준 표를 단 위끝에서 잰 예약이 앞
+        // 본문을 표 높이만큼 밀어낸다.
+        let has_side_by_side_columns = page_content
+            .column_contents
+            .iter()
+            .any(|column| column.column_index > 0);
+        let body_wide_reserved: Vec<(usize, f64)> =
+            if page_content.column_contents.len() > 1 && has_side_by_side_columns {
+                self.calculate_body_wide_shape_reserved(
+                    paragraphs,
+                    &page_content.column_contents,
+                    &layout.body_area,
+                )
+            } else {
+                Vec::new()
+            };
 
         for (col_content_idx, col_content) in page_content.column_contents.iter().enumerate() {
             let zone_layout = col_content.zone_layout.as_ref().unwrap_or(layout);

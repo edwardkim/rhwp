@@ -147,6 +147,10 @@ pub(in crate::renderer::typeset) struct StateView {
     pub(in crate::renderer::typeset) page_anchored_bands: Vec<VisibleFloatExclusion>,
     /// [#7696] 쪽·종이 기준 밴드가 밀어 확정한 문단 시작(단 상대 px). 배치가 같은 값을 쓴다.
     pub(in crate::renderer::typeset) page_band_flow_starts: std::collections::HashMap<usize, f64>,
+    /// 저장 줄 없는 host 의 문단·단 기준 어울림 표 바깥 상자(쪽 번호, 단, 문단, x0, x1, 위, 아래 —
+    /// 단 흐름 px). 뒤 문단의 문단 기준 자리차지 표가 이 상자와 겹치면 표만 아래로 내린다.
+    pub(in crate::renderer::typeset) unstored_square_boxes:
+        Vec<(usize, u16, usize, f64, f64, f64, f64)>,
     /// 현재 쪽에 실제 배치된 그림의 점유 영역(용지 좌표). 다음 단에도 간섭할 수 있다.
     pub(in crate::renderer::typeset) side_wrap_exclusions:
         std::collections::BTreeMap<(usize, usize), crate::renderer::layout_frame::FrameExclusion>,
