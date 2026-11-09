@@ -2074,7 +2074,20 @@ impl TypesetEngine {
                 false,
             );
         }
-        st.advance_column_or_new_page();
+        // 표의 마지막 행 내용을 모두 이 조각에 담았으면, 넘길 빈 꼬리가 있을 때만
+        // 다음 단/쪽으로 넘어간다. 꼬리가 없으면 표는 여기서 끝나고 뒤 본문이
+        // 같은 쪽에서 이어진다 — 종전에는 무조건 넘겨 내용 없는 빈 쪽이 생겼다.
+        // 아래 꼬리 계산이 새 쪽 가용 높이를 읽는 첫 조각 빈 띠 경로는 제외한다.
+        // 앞 표 뒤에 자리가 없어 이 표와 함께 밀린 host 글줄은 표 끝 뒤에 놓여야 하므로
+        // 종전대로 넘긴다(그 글줄 몫의 빈 쪽).
+        let defer_terminal_advance = end_row >= row_count
+            && complete_physical_end_cut
+            && split_block_start.is_none()
+            && !first_fragment_blank_band
+            && !input.prepared.host_line_trails_table;
+        if !defer_terminal_advance {
+            st.advance_column_or_new_page();
+        }
 
         // 커서 전진 — [작업 #993] 컷은 절대 유닛 인덱스이므로 누적 없이 대입.
         let empty_opening_next_height = input
@@ -2590,6 +2603,9 @@ impl TypesetEngine {
             (Some(ordinary), Some(spanning)) => Some(ordinary.max(spanning)),
             (ordinary, spanning) => ordinary.or(spanning),
         };
+        if defer_terminal_advance && next_start_row_height_override.is_some() {
+            st.advance_column_or_new_page();
+        }
         #[cfg(not(target_arch = "wasm32"))]
         if std::env::var_os("RHWP_DIAG_ROW_TAIL").is_some() {
             eprintln!(
