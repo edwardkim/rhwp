@@ -114,3 +114,31 @@ pub(in crate::renderer::typeset) fn defer_preceding_float(
                     if empty_offset_float_deferred_text_ladder_hu(host, table, para).is_some()))
     )
 }
+
+/// [#8859] `defer_preceding_float` 이 참일 때, 조판이 예약한 표 끝(현재 흐름)에서 실제 표
+/// 아래끝까지의 거리(px). 조판은 빈 host 의 양수 오프셋 표를 host 줄 바로 뒤에 예약하므로
+/// 그 차이는 `오프셋 − host 줄 전진` 이다.
+pub(in crate::renderer::typeset) fn deferred_float_flow_floor(
+    current_items: &[PageItem],
+    paragraphs: &[Paragraph],
+    para: &Paragraph,
+    dpi: f64,
+) -> Option<f64> {
+    let Some(PageItem::Table {
+        para_index,
+        control_index,
+    }) = current_items.last()
+    else {
+        return None;
+    };
+    let host = paragraphs.get(*para_index)?;
+    let Control::Table(table) = host.controls.get(*control_index)? else {
+        return None;
+    };
+    let (_, host_advance_hu) = empty_offset_float_deferred_text_ladder_hu(host, table, para)?;
+    let offset_hu = crate::renderer::float_placement::signed_hwpunit(table.common.vertical_offset);
+    Some(crate::renderer::hwpunit_to_px(
+        offset_hu.saturating_sub(host_advance_hu).max(0),
+        dpi,
+    ))
+}

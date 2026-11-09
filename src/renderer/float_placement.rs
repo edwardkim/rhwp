@@ -8612,8 +8612,37 @@ pub(crate) fn absolute_topbottom_table_band_bottom_px(
     Some(absolute_table_vertical_geometry(table, ref_y, ref_h, height, dpi).1)
 }
 
-/// A positive-offset empty host float whose next, generated body paragraph has
-/// no stored line-segment anchor. Hancom consumes the empty host's physical row,
+/// [#8859] 뒤 문단의 저장 첫 줄이 빈 host 의 저장 줄 끝(`vpos + 줄 높이 + 줄간격`)에서
+/// 바로 시작하는가. 저장 사다리가 뒤 글을 host 줄 바로 아래 — 양수 오프셋 표 위 틈 — 에
+/// 두었다는 증거다.
+fn stored_following_starts_at_host_row_end(host: &Paragraph, following: &Paragraph) -> bool {
+    let synthetic = crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+    let Some(host_row) = host
+        .line_segs
+        .iter()
+        .find(|segment| segment.tag & synthetic == 0)
+    else {
+        return false;
+    };
+    let Some(first) = following
+        .line_segs
+        .first()
+        .filter(|segment| segment.tag & synthetic == 0)
+    else {
+        return false;
+    };
+    let host_end = i64::from(host_row.vertical_pos)
+        + i64::from(
+            host_row
+                .line_height
+                .saturating_add(host_row.line_spacing)
+                .max(0),
+        );
+    !following.stored_text_partition_is_dirty() && i64::from(first.vertical_pos) == host_end
+}
+
+/// A positive-offset empty host float whose next body paragraph is generated, or
+/// whose stored first row starts right at the host row end. Hancom consumes the empty host's physical row,
 /// lays that body paragraph in the remaining gap above the float, then resumes
 /// ordinary flow below the float.
 ///
@@ -8638,10 +8667,13 @@ pub(crate) fn empty_offset_float_deferred_text_ladder_hu(
         && !has_non_whitespace_text(host)
         && has_non_whitespace_text(following)
         // HWPX 원본에 linesegarray가 없어도 parser가 계산 segment를 보충한다.
-        // 저장 segment가 하나라도 있으면 그 위치를 우선해야 하므로 제외한다.
-        && following.line_segs.iter().all(|segment| {
+        // 저장 segment 가 있으면 그 위치가 우선한다 — 저장 첫 줄이 host 줄 끝에서 바로
+        // 시작할 때만 이 규칙과 같은 자리(표 위 틈)를 말한다([#8859], 결재문서 36379333
+        // 2쪽: host vpos 0·줄 1400HU, 제목 저장 vpos 1400, 표 위끝 3629HU — 한/글 PDF 도
+        // 제목을 표 위 틈에 둔다). 다른 자리를 가리키는 저장 줄은 종전대로 제외한다.
+        && (following.line_segs.iter().all(|segment| {
             segment.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
-        });
+        }) || stored_following_starts_at_host_row_end(host, following));
     let first_line_height = following.line_segs.first()?.line_height;
     let table_top =
         i64::from(signed_hwpunit(table.common.vertical_offset)) + i64::from(table.outer_margin_top);
