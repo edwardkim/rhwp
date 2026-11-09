@@ -1,6 +1,6 @@
 # #8778 시각 검증 증거
 
-- 검증 head: `745deec173` (#8785 위, native-skia release sha256 `8cf17a81…`, fresh WASM `rhwp_bg.wasm` sha256 `bedd3c96…`)
+- 검증 head: `717e05257a` (devel `b5064fae1e` 위 #8785 스택, native-skia release sha256 `08c98b4b…`, fresh WASM `rhwp_bg.wasm` sha256 `6e24ef1c…`)
 - 명령: `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96` (TSV), 같은 명령에 `--pages` (review·overlay PNG). WASM 은 `--wasm-pkg pkg`.
 - 판정값: `silhouette_raw_match_percent`(TSV 4열). 글꼴: 문서 face 만 둔 디렉터리를 `RHWP_FONT_PATH` 로 공급.
 
@@ -16,9 +16,9 @@
 
 | 키 | Native | fresh WASM | 90% 미만 |
 |---|---|---|---|
-| reduced | 99.95 | 99.98 | 없음 |
-| float-prefix | 95.69 | 95.77 | 없음 |
-| original | 81.87 | 81.27 | p4·p5 |
+| reduced | 99.93 | 99.98 | 없음 |
+| float-prefix | 95.70 | 95.77 | 없음 |
+| original | 81.80 | 81.40 | p4·p5 |
 
 원본 p5 는 별표 글자(HY신명조, 이 환경에 없음) 모양만 다르고 줄 위치·길이는 같다. p4 는 같은 글꼴 차이에
 더해 "□ 행정사항"(`pi=31`)부터 약 6.5px 아래인 기존 차이가 있다 — base 와 같은 위치이며 공급 글꼴에 따라
