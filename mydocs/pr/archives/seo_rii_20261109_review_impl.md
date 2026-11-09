@@ -1,5 +1,7 @@
 # seo-rii PR 9건 검토·통합 계획
 
+> 아래 원격 미수행·대기 문구는 로컬 검토 확정 시점의 이력이다. 최종 CI·self-review·병합 결과는 이 문서 끝의 원격 통합 확정 기록을 따른다.
+
 ## 대상과 승인 범위
 
 2026-11-09 작업지시자 지시: seo-rii 기여자의 PR 처리를 시작한다. 열린 Ready PR 9건을 대상으로
@@ -49,4 +51,19 @@ post_merge를 적용한다. 원 PR별 reviewer edwardkim을 지정하고 API로 
    수용/보류를 분리한다. 구체적인 원격 처리안·댓글을 준비한 뒤 승인 요청을 한다. #536·#8701의
    전체 로드맵 완료 여부는 이번 변경과 구분하며 자동 close하지 않는다.
 
-최초 조회·reviewer·head·CI 원장은 [접수 원장](assets/seo-rii-20261109/intake.json)을 따른다.
+최초 조회·reviewer·head·CI 원장은 [접수 원장](../assets/seo-rii-20261109/intake.json)을 따른다.
+
+
+## 원격 통합 확정 기록
+
+- 통합: [PR #8809](https://github.com/edwardkim/rhwp/pull/8809).
+- 제출 head: `603a108fd2d00688136ba98cf7beac2d86bfa3bd`; 병합 commit: `bfa80398812eb732eee128cb2330d033def1fcc9`.
+- 최종 self-review: [COMMENTED](https://github.com/edwardkim/rhwp/pull/8809#pullrequestreview-5821069160).
+- 동일 head의 실제 GitHub 검사: [CI](https://github.com/edwardkim/rhwp/actions/runs/42543426863) · [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/42543426838) · [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/42543426886) · [Adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/42543426945) · [Proptest roundtrip](https://github.com/edwardkim/rhwp/actions/runs/42543426892) — 모두 성공.
+- 최종 정책 감사: [success](https://github.com/edwardkim/rhwp/actions/runs/42551649715).
+- 병합 직전 최신 devel·정확한 head·required check·merge-tree를 확인했고 원 기여 head 9개를 보존했다.
+- 병합 후 duration 갱신: [success](https://github.com/edwardkim/rhwp/actions/runs/42551975785). 병합 뒤 제품 CI를 새로 실행하지 않았다.
+- merge SHA로 고정한 공개 PNG 48개의 HTTP 200·PNG 형식·원본 SHA-256 동일성도 [검증 원장](../assets/seo-rii-20261109/public-image-verification.json)에서 확인했다.
+- 원 PR 9건의 실제 완료 상태와 부모 OPEN 상태는 [원격 확정 원장](../assets/seo-rii-20261109/remote-completion.json)에 기록했다.
+- 운영 기록은 mydocs만 devel에 직접 반영한다. 이 기록의 확정 시점은 운영 commit push 전이며, push·동기화 후 원 PR별 댓글 게시와 종료 정리를 수행한다. 실제 댓글은 각 원 PR에서 확인하며 최종 정리 결과는 로컬 `target/pr-review/cleanup-pr8809-20261109.json`에 남긴다.
+- 원 fork branch·다른 작업공간·설치 도구·로컬 crates.io 소비 환경은 삭제하지 않는다. #536·#8701은 OPEN을 유지한다.

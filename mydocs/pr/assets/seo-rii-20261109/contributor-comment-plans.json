@@ -8,7 +8,7 @@
       "visual/bitmap-channel-wasm-overlay.png",
       "optimized-preview.png"
     ],
-    "review": "mydocs/pr/pr_8749_review.md",
+    "review": "mydocs/pr/archives/pr_8749_review.md",
     "parent_issues_remain_open": [
       536,
       8701
@@ -17,7 +17,7 @@
   "8761": {
     "description": "파일 저장·recovery의 기능 검증이다. 실제 Native 입력/저장·재열기·dirty·취소·외부 변경·게시 뒤 오류 결과를 설명하고 unrelated renderer 이미지를 붙이지 않는다.",
     "images": [],
-    "review": "mydocs/pr/pr_8761_review.md",
+    "review": "mydocs/pr/archives/pr_8761_review.md",
     "parent_issues_remain_open": [
       536,
       8701
@@ -26,7 +26,7 @@
   "8764": {
     "description": "문서 lifecycle·입력 settle·비동기 checkpoint·취소/닫기의 기능 검증이다. 실제 Native·owner 실행 결과를 설명한다.",
     "images": [],
-    "review": "mydocs/pr/pr_8764_review.md",
+    "review": "mydocs/pr/archives/pr_8764_review.md",
     "parent_issues_remain_open": [
       536,
       8701
@@ -60,7 +60,7 @@
       "visual/radial-wasm-p006-review.png",
       "visual/radial-wasm-p006-overlay.png"
     ],
-    "review": "mydocs/pr/pr_8765_review.md",
+    "review": "mydocs/pr/archives/pr_8765_review.md",
     "parent_issues_remain_open": [
       536,
       8701
@@ -73,7 +73,7 @@
       "platform-visual/windows-p106-02.png",
       "platform-visual/windows-p106-03.png"
     ],
-    "review": "mydocs/pr/pr_8767_review.md",
+    "review": "mydocs/pr/archives/pr_8767_review.md",
     "parent_issues_remain_open": [
       536,
       8701
@@ -82,7 +82,7 @@
   "8769": {
     "description": "실제 Apple SDK compile/link·Metal producer probe 검증이다. 원 P107 source와 제공 Native source·해시, 실제 SDK job을 연결한다. 별도 P110 WindowServer 화면을 P107 producer의 비교 이미지로 대신하지 않는다.",
     "images": [],
-    "review": "mydocs/pr/pr_8769_review.md",
+    "review": "mydocs/pr/archives/pr_8769_review.md",
     "parent_issues_remain_open": [
       536,
       8701
@@ -100,7 +100,7 @@
       "linux-actual/cpu-32.png",
       "linux-actual/display-32.png"
     ],
-    "review": "mydocs/pr/pr_8777_review.md",
+    "review": "mydocs/pr/archives/pr_8777_review.md",
     "parent_issues_remain_open": [
       536,
       8701
@@ -114,7 +114,7 @@
       "platform-visual/windows-continuous-03.png",
       "platform-visual/windows-continuous-32.png"
     ],
-    "review": "mydocs/pr/pr_8779_review.md",
+    "review": "mydocs/pr/archives/pr_8779_review.md",
     "parent_issues_remain_open": [
       536,
       8701
@@ -128,7 +128,7 @@
       "platform-visual/macos-p110-03.png",
       "platform-visual/macos-platform-1.png"
     ],
-    "review": "mydocs/pr/pr_8781_review.md",
+    "review": "mydocs/pr/archives/pr_8781_review.md",
     "parent_issues_remain_open": [
       536,
       8701

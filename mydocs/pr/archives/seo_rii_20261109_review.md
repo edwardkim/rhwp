@@ -1,5 +1,7 @@
 # seo-rii PR 9건 최종 로컬 검토
 
+> 아래 원격 미수행·대기 문구는 로컬 검토 확정 시점의 이력이다. 최종 CI·self-review·병합 결과는 이 문서 끝의 원격 통합 확정 기록을 따른다.
+
 ## 최종 판정
 
 **승인 — 측정 근거 주석 보정을 포함한 통합 소스의 로컬 필수 검증 완료.**
@@ -30,10 +32,10 @@ merge·close는 수행하지 않았다.
   이후 추가한 변경은 `mydocs/`의 검토 기록·증거뿐이다.
 
 #8781에 P103–P110의 원 head 8개가 모두 포함된다. 독립 #8749와 함께 실제 로컬 merge해
-[원 head 9개를 모두 보존](assets/seo-rii-20261109/original-head-preservation.json)했다.
+[원 head 9개를 모두 보존](../assets/seo-rii-20261109/original-head-preservation.json)했다.
 최신 devel과 충돌이 없으며 원 PR별 reviewer edwardkim을 지정·확인했다.
-기존 #8739의 통합·보정 이력을 추적하고 [기존 해결 여부](assets/seo-rii-20261109/already-resolved-check.json)를
-대조했다. 초기·최종 source 조회와 CI 원장은 [공통 증거](assets/seo-rii-20261109/README.md)에 연결한다.
+기존 #8739의 통합·보정 이력을 추적하고 [기존 해결 여부](../assets/seo-rii-20261109/already-resolved-check.json)를
+대조했다. 초기·최종 source 조회와 CI 원장은 [공통 증거](../assets/seo-rii-20261109/README.md)에 연결한다.
 
 ## 실제 검증 결과
 
@@ -49,8 +51,8 @@ merge·close는 수행하지 않았다.
 | 실제 desktop 표시 | 메인테이너 Linux GTK 32회 실행; 실제 Windows/Apple SDK artifact 각각 32회 대조·직접 판독 |
 | 독립 Print Native/fresh WASM | 각 7쪽, 전쪽 raw 최저 100.00%, 쪽수 일치; 같은 backend의 base/후보 PNG 14쌍 동일 |
 
-[실제 명령·종료 코드·단계별 환경·전체 결과](assets/seo-rii-20261109/final-local-matrix.json)와
-[시각·플랫폼 검증 원장](assets/seo-rii-20261109/README.md)을 보존했다. 최초 Node 경로와 Native
+[실제 명령·종료 코드·단계별 환경·전체 결과](../assets/seo-rii-20261109/final-local-matrix.json)와
+[시각·플랫폼 검증 원장](../assets/seo-rii-20261109/README.md)을 보존했다. 최초 Node 경로와 Native
 다운로드 전 DNS 경로 누락은 로컬 실행 환경 보완으로 해결했으며 통과한 검사는 반복하지 않았다.
 최초 시도는 제품 검사 시작 전의 실행 환경 설정 실패로 기록했다.
 
@@ -77,7 +79,22 @@ Windows `targetReuse:false`의 명시적 계약이다. 실물 GPU 성능·완료
 
 ## 원격 처리안
 
-[원격 처리안](assets/seo-rii-20261109/remote-action-plan.md)의 승인 범위는 통합 branch push →
+[원격 처리안](../assets/seo-rii-20261109/remote-action-plan.md)의 승인 범위는 통합 branch push →
 Open PR → 해당 head CI·self-review → 원 기여를 보존하는 merge → 원 PR 9건 완료 확인·감사 댓글 →
 운영 기록·devel 동기화·종료 정리다. 원 fork branch와 다른 작업공간·설치 도구·로컬 소비 검증 환경은 보존한다.
 CI나 보호 설정·보안 분류 변경을 이 승인에 자동으로 포함하지 않는다.
+
+
+## 원격 통합 확정 기록
+
+- 통합: [PR #8809](https://github.com/edwardkim/rhwp/pull/8809).
+- 제출 head: `603a108fd2d00688136ba98cf7beac2d86bfa3bd`; 병합 commit: `bfa80398812eb732eee128cb2330d033def1fcc9`.
+- 최종 self-review: [COMMENTED](https://github.com/edwardkim/rhwp/pull/8809#pullrequestreview-5821069160).
+- 동일 head의 실제 GitHub 검사: [CI](https://github.com/edwardkim/rhwp/actions/runs/42543426863) · [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/42543426838) · [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/42543426886) · [Adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/42543426945) · [Proptest roundtrip](https://github.com/edwardkim/rhwp/actions/runs/42543426892) — 모두 성공.
+- 최종 정책 감사: [success](https://github.com/edwardkim/rhwp/actions/runs/42551649715).
+- 병합 직전 최신 devel·정확한 head·required check·merge-tree를 확인했고 원 기여 head 9개를 보존했다.
+- 병합 후 duration 갱신: [success](https://github.com/edwardkim/rhwp/actions/runs/42551975785). 병합 뒤 제품 CI를 새로 실행하지 않았다.
+- merge SHA로 고정한 공개 PNG 48개의 HTTP 200·PNG 형식·원본 SHA-256 동일성도 [검증 원장](../assets/seo-rii-20261109/public-image-verification.json)에서 확인했다.
+- 원 PR 9건의 실제 완료 상태와 부모 OPEN 상태는 [원격 확정 원장](../assets/seo-rii-20261109/remote-completion.json)에 기록했다.
+- 운영 기록은 mydocs만 devel에 직접 반영한다. 이 기록의 확정 시점은 운영 commit push 전이며, push·동기화 후 원 PR별 댓글 게시와 종료 정리를 수행한다. 실제 댓글은 각 원 PR에서 확인하며 최종 정리 결과는 로컬 `target/pr-review/cleanup-pr8809-20261109.json`에 남긴다.
+- 원 fork branch·다른 작업공간·설치 도구·로컬 crates.io 소비 환경은 삭제하지 않는다. #536·#8701은 OPEN을 유지한다.
