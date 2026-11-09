@@ -12,18 +12,21 @@
 //!
 //! # 기대값의 출처
 //!
-//! 재현물 두 개는 공개 샘플(test-image.hwpx 그림, issue3738 표)을 조합한 합성 문서다. 제목 문단
-//! 뒤 빈 줄 수만 다르다. 같은 파일을 웹한글기안기로 연 인쇄 PDF 에서:
+//! 재현물 두 개는 공개 샘플(test-image.hwpx 그림, issue3738 표)을 조합한 합성 문서다. 제목
+//! 문단 뒤 줄 수와 두 번째 결재 칸 높이가 다르다(`title_line_fits` 는 결재 칸을 5677→2600 HU 로
+//! 줄여, 제목 글줄 높이에서 시작해도 본문 아래끝 안에서 끝난다). 같은 파일을 웹한글기안기로 연
+//! 인쇄 PDF 에서:
 //!
 //! - 빈 줄 38개(`title_line_overflows`): 2쪽. 두 번째 제목은 2쪽 맨 위에 있고 1쪽에는 없다.
-//! - 빈 줄 37개(`title_line_fits`): 2쪽. 두 번째 제목 글줄은 1쪽 맨 아래에 들어가고, 결재 칸은
-//!   본문 아래로 넘쳐도 그 제목과 같은 1쪽에 있다(표 높이는 이월 판정에 들지 않는다).
+//! - 빈 줄 37개(`title_line_fits`): 2쪽. 두 번째 제목 글줄은 1쪽 맨 아래에 들어가고, 결재 칸도
+//!   그 제목과 같은 1쪽에 있다.
 //!
 //! # 검사하는 것
 //!
 //! 쪽 수, 두 번째 제목 글줄의 쪽 소속, 그 쪽 본문 영역 안에 들어가는지, 제목과 결재 칸이 같은
-//! 쪽인지, 다음 본문 줄보다 위인지. `title_line_fits` 에서 rhwp 는 넘치는 결재 칸을 본문 아래끝
-//! 안으로 당겨 그리지만(한컴은 넘친 채 둠) 이 차이는 쪽 나눔과 별개라 검사하지 않는다.
+//! 쪽인지, 다음 본문 줄보다 위인지. 쪽 아래로 넘치는 글앞 표를 rhwp 가 본문 아래끝 안으로 당겨
+//! 그리는 기전(한컴은 넘친 채 둠)은 쪽 나눔과 별개라, `title_line_fits` 의 결재 칸은 넘치지 않게
+//! 두어 그 기전이 섞이지 않게 했다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -149,20 +152,18 @@ fn title_line_that_does_not_fit_moves_to_next_page_top() {
 }
 
 #[test]
-fn title_line_that_fits_stays_even_when_overlay_table_overflows() {
+fn title_line_that_fits_stays_on_current_page() {
     let doc = load(FITS_SAMPLE);
     assert_eq!(doc.page_count(), 2, "웹한글기안기 기준 2쪽");
     let (page, title, body, tables, _) = second_title(&doc);
     assert_eq!(
         page, 0,
-        "제목 글줄이 들어가면 결재 칸이 넘쳐도 1쪽에 남는다"
+        "제목 글줄이 들어가면 1쪽에 남는다"
     );
     assert!(
         title.bottom() <= body.bottom() + 0.5,
         "제목 글줄은 본문 영역 안에 있어야 한다: {title:?} / {body:?}"
     );
-    // 쪽 아래로 넘치는 글앞 표의 세로 위치(본문 아래끝 안으로 당기는지)는 이 검사의 범위가
-    // 아니다. 두 결재 칸이 모두 1쪽에 있는지만 본다.
     assert_eq!(
         tables.len(),
         2,
