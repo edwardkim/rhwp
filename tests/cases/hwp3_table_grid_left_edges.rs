@@ -22,7 +22,7 @@ fn walk_tables(paragraphs: &[Paragraph], out: &mut Vec<Table>) {
     for p in paragraphs {
         for c in &p.controls {
             if let Control::Table(t) = c {
-                out.push(t.clone());
+                out.push(t.as_ref().clone());
                 for cell in &t.cells {
                     walk_tables(&cell.paragraphs, out);
                 }
@@ -92,7 +92,8 @@ fn hancom_cell_grid(reference: &str, key: &str) -> CellGrid {
     let mut found = Vec::new();
     for i in 0..zip.len() {
         let mut file = zip.by_index(i).expect("ZIP entry");
-        if !file.name().starts_with("Contents/section") || !file.name().ends_with(".xml") {
+        let name = file.name().expect("ZIP entry name").into_owned();
+        if !name.starts_with("Contents/section") || !name.ends_with(".xml") {
             continue;
         }
         let mut xml = String::new();

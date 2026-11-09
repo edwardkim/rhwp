@@ -46,7 +46,8 @@ fn document_punctuation_counts(bytes: &[u8]) -> std::collections::BTreeMap<char,
     let mut zip = zip::ZipArchive::new(std::io::Cursor::new(bytes)).expect("HWPX ZIP");
     for i in 0..zip.len() {
         let mut file = zip.by_index(i).expect("ZIP entry");
-        if !file.name().starts_with("Contents/section") || !file.name().ends_with(".xml") {
+        let name = file.name().expect("ZIP entry name").into_owned();
+        if !name.starts_with("Contents/section") || !name.ends_with(".xml") {
             continue;
         }
         let mut xml = String::new();
