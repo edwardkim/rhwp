@@ -291,6 +291,7 @@ class NativeTextureController extends ChangeNotifier {
   List<Rect> get physicalTiles => _tileChannel?.physicalTiles ?? const [];
   double _outputDeviceScale = 1;
   double get outputDeviceScale => _outputDeviceScale;
+
   /// Optional producer diagnostics; no compositor display or GPU fence claim.
   final NativeGpuTrace? trace;
   late final Timer _timer;
