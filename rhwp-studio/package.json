@@ -106,7 +106,7 @@
     "@types/chrome": "^0.3.7",
     "puppeteer-core": "^25.16.0",
     "typescript": "^7.0.2",
-    "vite": "^8.3.5",
+    "vite": "^8.3.6",
     "vite-plugin-pwa": "^2.0.0",
     "workbox-window": "^7.4.1",
     "ajv": "file:../vendor/npm/ajv"
