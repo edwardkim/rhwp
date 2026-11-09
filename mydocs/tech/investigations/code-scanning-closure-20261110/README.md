@@ -19,6 +19,6 @@ main 기준 `c9095c5f67632e6721e800ccc7fb43ea49d26682`에 source `913713dbfd0a91
 
 ## 보호 브랜치 분석과 원격 완료 조건
 
-devel의 exact `b5064fae1e`에서 [전체 분석](https://github.com/edwardkim/rhwp/actions/runs/42714977872)을 실행했다. 아직 진행 중이며 vendor 포함 실제 full 초기화와 동일한 26개 규칙·전체 SARIF·경고별 ref 상태를 확인한 뒤 결과를 확정한다. PR Rust 분석의 축소 경로를 protected ref 전체 분석으로 대신하지 않는다.
+devel의 exact `b5064fae1e`에서 [전체 분석](https://github.com/edwardkim/rhwp/actions/runs/42714977872)을 실행했다. 분석은 성공했고 실제 Rust full 초기화, 동일한 CodeQL 2.27.4·query pack 및 26개 규칙을 확인했다. [전체 SARIF와 ref별 상태 대조](devel-closure-verification.json)에서 결과는 144→137건, qcms 포인터는 7→0건이며 #616–#622의 devel instance는 모두 fixed다. PR Rust 분석의 축소 경로를 protected ref 전체 분석으로 대신하지 않는다.
 
-#616–#622는 full scan에서 제거와 ref별 fixed를 확인한다. #597은 main에도 본문 출력 제거가 적용되고 양쪽의 4개 flow가 수치-only임을 확인한 뒤 승인된 false positive 분류를 수행한다. main의 본문 출력이 남아 있는 동안에는 분류하지 않는다. main PR의 필수 리뷰 1건과 모든 적용 CI 성공을 확인한 뒤에만 병합하며, 사용자 승인 없는 보호 설정 변경·리뷰 요건 우회는 하지 않는다.
+기존 #597도 devel에서 fixed로 확인됐다. GitHub는 같은 함수의 수치 진단을 새 **#623**으로 등록했다. devel OPEN은 #623 한 건이며 4개 flow 모두 `page_index: usize`로 이어진다. #623은 이전의 번호별 분류 승인에 포함되지 않았으므로 추가 명시 승인 없이 분류하지 않는다. main에도 본문 출력 제거를 적용하고 전체 분석에서 같은 수치-only 범위를 확인한 뒤 이 새 번호의 분류를 확정한다. main의 본문 출력이 남아 있는 동안에는 분류하지 않는다. main PR의 필수 리뷰 1건과 모든 적용 CI 성공을 확인한 뒤에만 병합하며, 사용자 승인 없는 보호 설정 변경·리뷰 요건 우회는 하지 않는다.
