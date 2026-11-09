@@ -1,0 +1,73 @@
+{
+  "runs": [
+    {
+      "name": "baseline",
+      "command": [
+        "<codeql-2.27.4>/codeql",
+        "database",
+        "analyze",
+        "<local-analysis>/baseline-physical-db",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-918/RequestForgery.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-295/DisabledCertificateCheck.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-020/RegexInjection.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-770/UncontrolledAllocationSize.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-825/AccessInvalidPointer.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-798/HardcodedCryptographicValue.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-312/CleartextStorageDatabase.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-312/CleartextLogging.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-079/XSS.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-327/WeakSensitiveDataHashing.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-327/BrokenCryptoAlgorithm.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-078/CommandInjection.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-089/SqlInjection.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-614/InsecureCookie.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-022/TaintedPath.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-319/UseOfHttp.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-311/CleartextTransmission.ql",
+        "--format=sarif-latest",
+        "--output=<local-analysis>/baseline-security.sarif",
+        "--threads=6",
+        "--ram=16384"
+      ],
+      "started": "2026-11-09T22:42:09.685324+09:00",
+      "ended": "2026-11-09T22:59:54.105147+09:00",
+      "exit_code": 0,
+      "log_sha256": "430354c4f4c572fd0014f5f0f3acef49f03b5217e5f13833b9090b48452243e4"
+    },
+    {
+      "name": "candidate",
+      "command": [
+        "<codeql-2.27.4>/codeql",
+        "database",
+        "analyze",
+        "<local-analysis>/candidate-db",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-918/RequestForgery.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-295/DisabledCertificateCheck.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-020/RegexInjection.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-770/UncontrolledAllocationSize.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-825/AccessInvalidPointer.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-798/HardcodedCryptographicValue.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-312/CleartextStorageDatabase.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-312/CleartextLogging.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-079/XSS.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-327/WeakSensitiveDataHashing.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-327/BrokenCryptoAlgorithm.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-078/CommandInjection.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-089/SqlInjection.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-614/InsecureCookie.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-022/TaintedPath.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-319/UseOfHttp.ql",
+        "<codeql-2.27.4>/qlpacks/codeql/rust-queries/0.1.46/queries/security/CWE-311/CleartextTransmission.ql",
+        "--format=sarif-latest",
+        "--output=<local-analysis>/candidate-security.sarif",
+        "--threads=6",
+        "--ram=16384"
+      ],
+      "started": "2026-11-09T22:59:54.118647+09:00",
+      "ended": "2026-11-09T23:13:40.084063+09:00",
+      "exit_code": 0,
+      "log_sha256": "0995bc5c3441d5d4db91c95e3f025dadd4b7131aeead5e701331078accc163b2"
+    }
+  ],
+  "preliminary_attempts": "Nested workspace and mount-only snapshots were not used as evidence. Final physical snapshots reproduce all 8 targets, the full 144 rule/sink set, and the same extraction warnings. Non-alert diagnostics were decoded separately; only completed 17-rule alert runs are counted here."
+}

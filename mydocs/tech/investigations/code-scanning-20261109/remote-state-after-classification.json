@@ -1,0 +1,48 @@
+{
+  "observed_at_kst": "2026-11-09T23:15:09.044700+09:00",
+  "state_counts": {
+    "open": 8,
+    "dismissed": 183,
+    "fixed": 10
+  },
+  "open_alert_numbers": [
+    597,
+    616,
+    617,
+    618,
+    619,
+    620,
+    621,
+    622
+  ],
+  "protected_branch_open": {
+    "main": [
+      597,
+      616,
+      617,
+      618,
+      619,
+      620,
+      621,
+      622
+    ],
+    "devel": [
+      597,
+      616,
+      617,
+      618,
+      619,
+      620,
+      621,
+      622
+    ]
+  },
+  "prior_issue": {
+    "number": 8745,
+    "state": "closed",
+    "state_reason": "completed"
+  },
+  "pre_existing_states_and_dismissal_details_preserved": 79,
+  "approved_classifications_reverified": 114,
+  "mutation_audit_sha256": "8c4c1f2788e46495a2ece5f628e3e1bb73448b2df6018ad59605376e4d9af934"
+}

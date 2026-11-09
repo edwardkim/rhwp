@@ -1,0 +1,107 @@
+[
+  {
+    "path": "fuzz/samples/0220-ca351238d719fd07ef8607d326b398fe.icc",
+    "url": "https://raw.githubusercontent.com/FirefoxGraphics/qcms/5ba6ed804b59273afc37794d5b04d27fb8835e48/fuzz/samples/0220-ca351238d719fd07ef8607d326b398fe.icc",
+    "git_blob": "6dcf942ac1c6378b9b2b3b954258288fbe5be8b0",
+    "sha256": "7d908a4ab18ee1d559e0ddfb69c76329b7576d4580c04648faecc8384d9e3cef",
+    "size": 220
+  },
+  {
+    "path": "fuzz/samples/0316-eb3f97ab646cd7b66bee80bdfe6098ac.icc",
+    "url": "https://raw.githubusercontent.com/FirefoxGraphics/qcms/5ba6ed804b59273afc37794d5b04d27fb8835e48/fuzz/samples/0316-eb3f97ab646cd7b66bee80bdfe6098ac.icc",
+    "git_blob": "12b096cac0ba49f4e6916b72c5b526f8fdb40eb7",
+    "sha256": "1398b7cd4f41d541fd24762402e5d9df248626df1e971e9d1024d88ce042188a",
+    "size": 316
+  },
+  {
+    "path": "fuzz/samples/0372-973178997787ee780b4b58ee47cad683.icc",
+    "url": "https://raw.githubusercontent.com/FirefoxGraphics/qcms/5ba6ed804b59273afc37794d5b04d27fb8835e48/fuzz/samples/0372-973178997787ee780b4b58ee47cad683.icc",
+    "git_blob": "2d8efe536bcf863ae3adb6b3656c5cb33cead84e",
+    "sha256": "7ca34060284ea504b54336b5615f09cc3a57447732ebc863287aa9f837d071fa",
+    "size": 372
+  },
+  {
+    "path": "fuzz/samples/0732-80707d91aea0f8e64ef0286cc7720e99.icc",
+    "url": "https://raw.githubusercontent.com/FirefoxGraphics/qcms/5ba6ed804b59273afc37794d5b04d27fb8835e48/fuzz/samples/0732-80707d91aea0f8e64ef0286cc7720e99.icc",
+    "git_blob": "1626458464567e179901dfdb4401f9125d7a09cc",
+    "sha256": "516c5316ce1bbe1b91fb032869518460fc7dc3535a68c71c2d7c02865501257b",
+    "size": 732
+  },
+  {
+    "path": "fuzz/samples/0744-0a5faafe175e682b10c590b03d3f093b.icc",
+    "url": "https://raw.githubusercontent.com/FirefoxGraphics/qcms/5ba6ed804b59273afc37794d5b04d27fb8835e48/fuzz/samples/0744-0a5faafe175e682b10c590b03d3f093b.icc",
+    "git_blob": "2db6991c2323f9a4999c09c4d617dceffe4b5761",
+    "sha256": "41bae1b5ef6f687391777ef560fea99182fec47858b3cc4308a767546d34c828",
+    "size": 744
+  },
+  {
+    "path": "fuzz/samples/1809-2bd4b77651214ca6110fdbee2502671e.icc",
+    "url": "https://raw.githubusercontent.com/FirefoxGraphics/qcms/5ba6ed804b59273afc37794d5b04d27fb8835e48/fuzz/samples/1809-2bd4b77651214ca6110fdbee2502671e.icc",
+    "git_blob": "c13db9b200253583956b3d8b43c666c5dde23001",
+    "sha256": "b2fc4c1fe2c0720b1e5cd305a278a33f23b4ba0b21c195dde7ffad184cb5c0b5",
+    "size": 1809
+  },
+  {
+    "path": "profiles/B2A0-ident.icc",
+    "url": "https://raw.githubusercontent.com/FirefoxGraphics/qcms/5ba6ed804b59273afc37794d5b04d27fb8835e48/profiles/B2A0-ident.icc",
+    "git_blob": "672553030fbce5133e45be69ce2a0002831fb69a",
+    "sha256": "6599a3ee531a2a024cdaca14e1d6b22cd3e39158d927f477fae07ba7f311ee68",
+    "size": 704
+  },
+  {
+    "path": "profiles/displaycal-lut-stripped.icc",
+    "url": "https://raw.githubusercontent.com/FirefoxGraphics/qcms/5ba6ed804b59273afc37794d5b04d27fb8835e48/profiles/displaycal-lut-stripped.icc",
+    "git_blob": "79ddef53e98a3082a0576f5023b60080a5d0ee2b",
+    "sha256": "265ba2bd4e07e167f0b9eb3b73b6d0633dff67881b00ca550a1b73fe00f6e50c",
+    "size": 17236
+  },
+  {
+    "path": "profiles/lcms_samsung_syncmaster.icc",
+    "url": "https://raw.githubusercontent.com/FirefoxGraphics/qcms/5ba6ed804b59273afc37794d5b04d27fb8835e48/profiles/lcms_samsung_syncmaster.icc",
+    "git_blob": "3dcde88d062d84e9cbf2217b48c1cdebdb44af2e",
+    "sha256": "b3c04cb163cb7fc58ae862acaa415541379354ea2670d8b0f765ff0db8006472",
+    "size": 1944
+  },
+  {
+    "path": "profiles/lcms_thinkpad_w540.icc",
+    "url": "https://raw.githubusercontent.com/FirefoxGraphics/qcms/5ba6ed804b59273afc37794d5b04d27fb8835e48/profiles/lcms_thinkpad_w540.icc",
+    "git_blob": "c154e7e589f305da007add83d0404edcb90bd419",
+    "sha256": "6fa21333d22e31d2c2da36540dab9c89a3c314c76f992c6715f34dc754108c4d",
+    "size": 1428
+  },
+  {
+    "path": "profiles/parametric-thresh.icc",
+    "url": "https://raw.githubusercontent.com/FirefoxGraphics/qcms/5ba6ed804b59273afc37794d5b04d27fb8835e48/profiles/parametric-thresh.icc",
+    "git_blob": "1a1f6216d199184ee8dac8b40982fae179315270",
+    "sha256": "97bbb68a6c23ec6b87b801ce75185825a53619e69df8713492f5b722655cc2e0",
+    "size": 476
+  },
+  {
+    "path": "profiles/ps_cmyk_min.icc",
+    "url": "https://raw.githubusercontent.com/FirefoxGraphics/qcms/5ba6ed804b59273afc37794d5b04d27fb8835e48/profiles/ps_cmyk_min.icc",
+    "git_blob": "dd4fe0413c364394a9a34eedbbc370355fd5cf63",
+    "sha256": "3528536718a2dd3b0407f094f88e438d19996459e642df79754be734e257c773",
+    "size": 836
+  },
+  {
+    "path": "ITU-2020.icc",
+    "url": "https://raw.githubusercontent.com/FirefoxGraphics/qcms/5ba6ed804b59273afc37794d5b04d27fb8835e48/ITU-2020.icc",
+    "git_blob": "0a91cac08c95724c5be4213c243d3585519b4e55",
+    "sha256": "c7c2b77a92a84d8749550a4689c9a684a51ee2201eacb675917df20a4f6a8aa0",
+    "size": 556
+  },
+  {
+    "path": "ITU-709.icc",
+    "url": "https://raw.githubusercontent.com/FirefoxGraphics/qcms/5ba6ed804b59273afc37794d5b04d27fb8835e48/ITU-709.icc",
+    "git_blob": "3b9d46a2835dbf50a7f396abe12f26a9885c9fc3",
+    "sha256": "bd567ffe016616dbe119a2c7bfee2182b5d7f9c515c6370b23868db0665ac7f2",
+    "size": 556
+  },
+  {
+    "path": "sRGB_lcms.icc",
+    "url": "https://raw.githubusercontent.com/FirefoxGraphics/qcms/5ba6ed804b59273afc37794d5b04d27fb8835e48/sRGB_lcms.icc",
+    "git_blob": "47f42206cabfaa6eb238b5a3efe70a4666fcf4fb",
+    "sha256": "63853c644079d9f8c0b1491027b30a51e2b12a54a2e9bad890029c9fdc85a413",
+    "size": 656
+  }
+]
