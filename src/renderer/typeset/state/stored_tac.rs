@@ -261,7 +261,12 @@ impl TypesetState {
             // layout의 단 초기 base와 같은 첫 완전한 표의 저장 줄을 읽는다.
             // PartialTable에는 소비된 컷이 있고, 문단 시작의 들여쓰기·앞 간격은
             // 별도 계약이므로 이 표 원점 조회에 섞지 않는다.
-            stored_table_column_base: self.data.current_items.first().and_then(|item| {
+            // [#8845] 저장 줄 없는 문단 뒤 낡은 간격을 거절해 기준을 옮긴 단에서는 단 첫
+            // 표의 옛 기준이 현재 사다리가 아니다. 옮긴 지연 기준을 쓴다.
+            stored_table_column_base: (!self.data.vpos_rebased_after_unstored_forward)
+                .then_some(())
+                .and_then(|_| self.data.current_items.first())
+                .and_then(|item| {
                 let PageItem::Table { para_index, .. } = item else {
                     return None;
                 };

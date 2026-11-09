@@ -491,6 +491,14 @@ impl TypesetState {
     ) {
         self.data.rejected_stored_forward_origin = value;
     }
+    /// [#8845] 공통 vpos 질의가 낡은 전방 원점을 거절하고 기준을 옮겼으면 단이 끝날
+    /// 때까지 남긴다. 한 번 옮긴 기준은 뒤 문단에서도 유효하다.
+    pub(in crate::renderer::typeset) fn record_rebased_after_unstored_forward(
+        &mut self,
+        rebased: bool,
+    ) {
+        self.data.vpos_rebased_after_unstored_forward |= rebased;
+    }
     pub(in crate::renderer::typeset) fn record_stored_column_origin(
         &mut self,
         value: Option<(i32, f64)>,
