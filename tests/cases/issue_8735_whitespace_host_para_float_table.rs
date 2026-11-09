@@ -1,9 +1,9 @@
 //! 관계형(밀린 host 줄 = 표 아래끝 + 바깥 아래 여백, ±1px)·고정형(저장 사다리 표 위끝 ±2px·쪽수): 공백만 있는 문단에 앵커한 문단 기준 자리차지 표가 문단 앞 간격만큼 내려가지 않고 「문단 상단 + 바깥 위 여백」에 놓이며, 표가 민 host 줄이 앞 간격·줄간격 없이 표 틀 바로 밑에 오는지 검사한다.
-//! 주석 갱신: 2026-11-08T05:10:00+09:00 (Asia/Seoul). 새 파일이며 직전 파일 커밋은 없다.
-//! 실제 측정: 2026-11-08 KST, base = #8736 head ebb9619757, head = base + 이 PR 의 src 변경. 96 DPI·Print profile·색상 경계 보정 전 2px 내용 실루엣 raw.
+//! 주석 갱신: 2026-11-09T10:10:54+09:00 (Asia/Seoul). 직전 파일 커밋 0b54ab1879(2026-11-09 06:20:19 +0900, #8736 ee0d775f41 위 rebase).
+//! 실제 측정: 2026-11-09 KST, base = #8736 head ee0d775f41, head = base + 이 PR 의 src 변경(조판 보완 포함). 96 DPI·Print profile·색상 경계 보정 전 2px 내용 실루엣 raw.
 //! 원본 `samples/issue8732/1741000-202200045_second_interim_report.hwp`, 전체 138쪽=138쪽.
-//! 7쪽 수정 전 Native 23.70 / fresh WASM 23.34 → 수정 후 Native 100.00 / fresh WASM 99.80(양쪽 98% 이상이라 본문 기준 표 위끝을 ±2px 로 고정한다). 그 밖의 쪽은 수정 전후 같은 값.
-//! 수정 후 전쪽 최저 Native 26.65·fresh WASM 26.94. 90% 미만 Native 9쪽(15·66·67·68·73·134~137)·WASM 8쪽(66·67·68·73·134~137)은 이 변경 전부터 있던 다른 쪽의 미달이다(수정 전후 같은 값).
+//! 7쪽 수정 전 Native 25.20 / fresh WASM 23.57 → 수정 후 Native 99.98 / fresh WASM 99.82(양쪽 98% 이상이라 본문 기준 표 위끝을 ±2px 로 고정한다). 그 밖의 쪽은 수정 전후 같은 값.
+//! 수정 후 전쪽 최저 Native 28.91(137쪽)·fresh WASM 26.95(137쪽). 90% 미만 Native·WASM 각 9쪽(15·66·67·68·73·134~137)은 이 변경 전부터 있던 다른 쪽의 미달이다(수정 전후 같은 값).
 //! 정식 TSV·review·overlay: `mydocs/pr/assets/issue_8735/{base,head}/{native,wasm}/second_interim_report_silhouette.tsv`, `png/second_interim_report_p007_*`.
 //! 확대 판독: 7쪽 표 테두리와 host 다음 본문이 한/글과 같은 높이(overlay 일치). 수정 전에는 문단 앞 간격만큼 18px 아래.
 //! 같은 assertion 이 수정 전 FAIL(본문 위에서 94.40px) / 수정 후 PASS.
