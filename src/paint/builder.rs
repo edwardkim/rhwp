@@ -155,8 +155,7 @@ impl LayerBuilder {
         if self.profile == RenderProfile::Print
             && !fonts.is_empty()
             && (super::metafile::has_wmf(&tree.root)
-                || (self.hancom2024_print_bitmap
-                    && super::text_shadow::needs_font_metrics(&tree.root))
+                || super::text_shadow::needs_font_metrics(&tree.root)
                 || super::dot_leader::needs_font_program(&tree.root))
         {
             for font in fonts {
@@ -413,19 +412,30 @@ impl LayerBuilder {
                     run.display_text = Some(String::new());
                 }
                 let mut leader_paths = Vec::new();
-                if self.profile == RenderProfile::Print && self.hangul2024_print && !run.is_vertical
-                {
-                    run.style.continuous_shadow = super::text_shadow::prepare(
-                        &self.metafile_fonts,
-                        run.display_or_text(),
-                        &run.style,
-                        self.layout_dpi,
-                    );
-                    if let Some(plan) = &run.style.continuous_shadow {
-                        [run.style.shadow_offset_x, run.style.shadow_offset_y] = plan.extent();
+                // 연속 글자 그림자는 2020·2024 Print에서 같은 장치 계약이다.
+                // 글꼴 기반 공통 계획을 특정 조판 세대에 한정하지 않는다.
+                if self.profile == RenderProfile::Print && !run.is_vertical {
+                    if run.style.shadow_type == 2 {
+                        // 준비된 TextRun의 전송·재생은 원본 SFNT를 다시 요구하지 않는다.
+                        // 이미 확정한 계획을 빈 재조회 결과로 지우지 않는다.
+                        if run.style.continuous_shadow.is_none() {
+                            run.style.continuous_shadow = super::text_shadow::prepare(
+                                &self.metafile_fonts,
+                                run.display_or_text(),
+                                &run.style,
+                                self.layout_dpi,
+                            );
+                        }
+                        if let Some(plan) = &run.style.continuous_shadow {
+                            [run.style.shadow_offset_x, run.style.shadow_offset_y] = plan.extent();
+                        }
+                    } else {
+                        run.style.continuous_shadow = None;
                     }
-                    leader_paths =
-                        super::dot_leader::prepare(&self.metafile_fonts, node.bbox, &mut run);
+                    if self.hangul2024_print {
+                        leader_paths =
+                            super::dot_leader::prepare(&self.metafile_fonts, node.bbox, &mut run);
+                    }
                 }
                 let mut ops = text_run_ops(node.bbox, run, self.output_options);
                 ops.extend(
