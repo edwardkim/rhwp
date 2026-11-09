@@ -1,5 +1,5 @@
 //! 검사 유형: 관계형.
-//! 주석 갱신: 2026-11-10T03:07:54+09:00.
+//! 주석 갱신: 2026-11-10T03:18:25+09:00.
 //! 원본 효과 반경의 모델·저장 소유 검사이며 절대 화면 좌표를 고정하지 않는다.
 //! 기존 원본 시각 근거: mydocs/pr/assets/issue8856/stage4-policy-fields/nine-groups-final-comparison.tsv.
 //! interview 전 2쪽 Native 최저 97.19457%, fresh WASM 최저 97.32378%.
@@ -96,8 +96,29 @@ fn picture_without_effect_does_not_gain_a_soft_edge() {
 #[test]
 fn editing_the_known_effect_keeps_alpha_and_can_remove_the_effect() {
     use rhwp::model::control::Control;
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    type CropFrame = (Option<(u32, u32)>, Option<(i32, i32, i32, i32)>);
+    fn crop_frames(core: &DocumentCore) -> Vec<CropFrame> {
+        fn collect(node: &RenderNode, result: &mut Vec<CropFrame>) {
+            if let RenderNodeType::Image(image) = &node.node_type {
+                result.push((image.original_size_hu, image.crop));
+            }
+            for child in &node.children {
+                collect(child, result);
+            }
+        }
+        let mut result = Vec::new();
+        for page in 0..core.page_count() {
+            collect(
+                &core.build_page_render_tree(page).unwrap().root,
+                &mut result,
+            );
+        }
+        result
+    }
     for (radius, transparency) in [(Some(2000.0), 50), (Some(0.0), 100), (None, 0)] {
         let mut core = load("samples/basic/interview.hwp");
+        let source_frames = crop_frames(&core);
         let mut doc = core.document().clone();
         let picture = doc.sections[0]
             .paragraphs
@@ -113,6 +134,11 @@ fn editing_the_known_effect_keeps_alpha_and_can_remove_the_effect() {
         core.set_document(doc);
         let saved = core.export_hwp_native().unwrap();
         let reopened = DocumentCore::from_bytes(&saved).unwrap();
+        assert_eq!(
+            crop_frames(&reopened),
+            source_frames,
+            "효과·투명도 편집이 누락된 imgDim을 crop 끝값으로 추정해 자르기 기준을 바꾸지 않는다"
+        );
         assert_eq!(radii(&reopened), radius.into_iter().collect::<Vec<_>>());
         let picture = reopened.document().sections[0]
             .paragraphs

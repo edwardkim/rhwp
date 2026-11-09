@@ -1670,11 +1670,10 @@ fn write_picture_extra<W: std::io::Write>(
             // 새 꼬리를 붙이며 원본의 누락된 크기를 임의로 materialize하지 않는다.
             if pic.image_attr.clamped_transparency() > 0 {
                 if extra.len() == start {
-                    let (width, height) = pic
-                        .crop_reference_size()
-                        .unwrap_or((pic.crop.right.max(0) as u32, pic.crop.bottom.max(0) as u32));
-                    w.write_u32(width)?;
-                    w.write_u32(height)?;
+                    // crop 끝점은 전체 원본 크기가 아니다. 알려지지 않은
+                    // imgDim은 0으로 유지해 실제 bitmap의 기존 기준을 보존한다.
+                    w.write_u32(pic.img_dim.0)?;
+                    w.write_u32(pic.img_dim.1)?;
                 }
                 w.write_u8(transparency)?;
             }
