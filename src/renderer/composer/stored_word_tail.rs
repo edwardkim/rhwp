@@ -255,7 +255,21 @@ pub(crate) fn project_current_source_program_rows_with_storage<S: crate::storage
                     &run.text,
                 )
             {
-                return None;
+                let actual_style = crate::storage::optional(
+                    crate::renderer::layout::try_resolved_to_text_style(
+                        styles,
+                        run.char_style_id,
+                        run.lang_index,
+                        storage,
+                    ),
+                    failure,
+                )?;
+                if !crate::renderer::layout::verified_source_projection_text_with_fallback(
+                    &actual_style,
+                    &run.text,
+                ) {
+                    return None;
+                }
             }
             crate::storage::optional(
                 storage.push(&mut fallbacks, (run.char_style_id, fallback)),
