@@ -5374,13 +5374,14 @@ impl DocumentCore {
                         return 0;
                     }
                 } else {
+                    // positions[0]은 run 시작(0)이라 i번째 경계 앞은 i - 1번째 글자 뒤다.
                     let mid = (positions[i - 1] + px) / 2.0;
                     if local_x < mid {
-                        return i;
+                        return i - 1;
                     }
                 }
             }
-            positions.len()
+            positions.len().saturating_sub(1)
         }
 
         /// 표시 인덱스를 모델 인덱스로 옮긴다.
