@@ -742,7 +742,9 @@ impl SkiaTextReplay<'_> {
                                 font.set_embolden(false);
                                 let mut paint = text_paint.clone();
                                 paint.set_style(paint::Style::StrokeAndFill);
-                                paint.set_stroke_width(font_size * 0.02);
+                                paint.set_stroke_width(
+                                    font_size * crate::renderer::HANCOM_FAUX_BOLD_STROKE_EM as f32,
+                                );
                                 paint.set_stroke_miter(10.0);
                                 paint
                             });

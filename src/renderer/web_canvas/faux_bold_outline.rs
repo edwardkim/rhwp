@@ -50,29 +50,44 @@ impl WebCanvasRenderer {
         stroke_space: &DomMatrix,
         color: &str,
     ) -> bool {
-        if style.text_paint.is_some() || !(font_size.is_finite() && font_size > 0.0) {
+        if !style.bold || style.text_paint.is_some() || !(font_size.is_finite() && font_size > 0.0)
+        {
             return false;
         }
-        let Some(width) = crate::renderer::faux_bold_stroke_width(style, font_size) else {
-            return false;
-        };
         let mut chars = text.chars();
         let (Some(character), None) = (chars.next(), chars.next()) else {
             return false;
         };
         // 합성 굵기 run의 Canvas descriptor는 보통 굵기다(CanvasTextFont).
         // 기울임 선택은 `prepare_italic_font`와 같으며, 실제 기울임 face는 기존 경로로 둔다.
-        let Some(commands) = self
+        let Some(outline) = self
             .hft_outline_fonts
             .as_ref()
             .and_then(|fonts| fonts.faux_bold_glyph(style, character, self.hft_outline_enabled))
         else {
             return false;
         };
+        // DB에 없는 family도 실제 공급자가 보통 CFF를 선택한 Print라면 Native와
+        // 같은 합성 굵기를 쓴다. 스타일별 실제 글리프 공급자가 합성을 요구하는지도
+        // 확인하여, 남아 있는 보통 윤곽으로 실제 Bold 프로그램을 덮어쓰지 않는다.
+        // 미확인 프로그램·실제 Bold·Screen의 선택은 보존한다.
+        let width = crate::renderer::faux_bold_stroke_width(style, font_size).or_else(|| {
+            (self.render_profile == crate::paint::RenderProfile::Print
+                && style.bold
+                && outline.regular_cff
+                && style
+                    .native_otf_metrics
+                    .as_ref()
+                    .is_some_and(|font| font.needs_faux_bold(character)))
+            .then_some(font_size * crate::renderer::HANCOM_FAUX_BOLD_STROKE_EM)
+        });
+        let Some(width) = width else {
+            return false;
+        };
         self.ctx.save();
         let _ = self.ctx.scale(font_size, font_size);
         self.ctx.begin_path();
-        for command in commands.iter() {
+        for command in outline.commands.iter() {
             match *command {
                 PathCommand::MoveTo(x, y) => self.ctx.move_to(x, y),
                 PathCommand::LineTo(x, y) => self.ctx.line_to(x, y),

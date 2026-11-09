@@ -10,7 +10,7 @@ use ttf_parser::{cff, Face, GlyphId, OutlineBuilder};
 
 use super::{PathCommand, TextStyle};
 
-const MAX_SOURCE_BYTES: usize = 32 * 1024 * 1024;
+pub(crate) const MAX_SOURCE_BYTES: usize = 32 * 1024 * 1024;
 const MAX_TOTAL_BYTES: usize = 64 * 1024 * 1024;
 const MAX_FAMILIES: usize = 256;
 const MAX_COMMANDS: usize = 8192;
@@ -201,6 +201,13 @@ pub(crate) struct HftOutlineFonts {
     cache: Arc<Mutex<ContourCache<SourceGlyphKey>>>,
 }
 
+/// 실제 공급자가 선택한 보통 face의 윤곽과 프로그램 형식을 함께 보존한다.
+#[cfg(target_arch = "wasm32")]
+pub(crate) struct FauxBoldOutline {
+    pub commands: Arc<[PathCommand]>,
+    pub regular_cff: bool,
+}
+
 impl HftOutlineFonts {
     pub(crate) fn clear_family(&mut self, family: &str) {
         self.pua_coverage.clear_family(family);
@@ -373,7 +380,7 @@ impl HftOutlineFonts {
         style: &TextStyle,
         character: char,
         allow_hft_outline: bool,
-    ) -> Option<Arc<[PathCommand]>> {
+    ) -> Option<FauxBoldOutline> {
         let families = super::canvas_text_font::family_chain(style);
         let selected = self.pua_coverage.text_faces.select(
             &families,
@@ -402,7 +409,10 @@ impl HftOutlineFonts {
             // 대신 그리지 않고 실제 FontFace 사다리를 아는 Canvas에 맡긴다.
             let primary = self.glyph(&style.font_family, character);
             if allow_hft_outline || primary.is_none() {
-                return primary;
+                return primary.map(|commands| FauxBoldOutline {
+                    commands,
+                    regular_cff: true,
+                });
             }
         }
         let selected = selected?;
@@ -419,12 +429,17 @@ impl HftOutlineFonts {
         let source = self.print_faces.get(&(selected.family, selected.weight))?;
         let face = Face::parse(&source.bytes, source.face_index).ok()?;
         let glyph = face.glyph_index(character)?;
-        self.cache
+        let commands = self
+            .cache
             .lock()
             .ok()?
             .get_or_build((source.digest, source.face_index, glyph.0), || {
                 face_contour(&face, glyph)
-            })
+            })?;
+        Some(FauxBoldOutline {
+            commands,
+            regular_cff: false,
+        })
     }
 
     /// 호스트가 실제 적재한 TTF만 보조 캐시에 둔다. 한도를 넘으면 원 painter를 유지한다.

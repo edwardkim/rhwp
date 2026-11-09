@@ -1,5 +1,5 @@
 //! 검사 유형: 관계형. 합성 글꼴 프로그램의 선택·대체 계약을 검증한다.
-//! 주석 갱신: 2026-11-09T08:06:54+09:00; 직전 변경: 2026-11-09T02:00:35+09:00, afe43067b85b82fd79ad9dc1af55a722c9add829.
+//! 주석 갱신: 2026-11-09T08:48:44+09:00; 직전 변경: 2026-11-09T08:27:16+09:00, 5e291aa69e57f5bb15e0cf3e229e79793605e27c.
 //! 실제 입력 `samples/hwp3-sample10.hwp`, 한컴 2020 Print, 96 DPI, 2px 이웃 raw.
 //! 2026-10-30 측정: 1쪽 Native/fresh WASM 각 99.96%; 전 763쪽 최저 각 99.41% / 99.40%.
 //! 근거: `mydocs/pr/assets/issue_8371/sample10-native.tsv`, `sample10-wasm.tsv`, `sample10-validation.md`.
@@ -16,7 +16,7 @@ const CFF: &[u8] = include_bytes!("../fixtures/fonts/RHWPHftOutline.otf");
 #[test]
 fn source_hft_outline_follows_the_selected_environment_family_only() {
     // 관계형: 저장된 HFT 이름과 실제 공급 family가 달라도 같은 선택을 소비한다.
-    // 비 HFT 원본·선택하지 않은 family로 윤곽 정책을 확장하지 않는다.
+    // 비 HFT 원본은 실제 프로그램 신원 없이 허용하지 않으며 미선택 family도 거부한다.
     use rhwp::renderer::font_environment::FontEnvironment;
     let mut core = DocumentCore::new_empty();
     let mut document = core.document().clone();
@@ -52,6 +52,38 @@ fn source_hft_outline_follows_the_selected_environment_family_only() {
         before,
         "선택된 paint 프로그램은 저장 IR을 바꾸지 않는다"
     );
+}
+
+#[test]
+fn verified_cff_query_alias_accepts_only_the_selected_program() {
+    // 관계형: 원본 유형이 미정이어도 실제 선택된 CFF 신원·조회 이름을 함께 확인한다.
+    // 원본을 HFT로 재분류하거나 확인하지 않은 별칭·프로그램을 허용하지 않는다.
+    use rhwp::renderer::font_environment::FontEnvironment;
+    let mut core = DocumentCore::new_empty();
+    let mut document = core.document().clone();
+    document.doc_info.font_faces = vec![vec![Font {
+        name: "원본 미정 글꼴".into(),
+        alt_type: 0,
+        ..Default::default()
+    }]];
+    core.set_document(document);
+    core.set_font_environment(Some(FontEnvironment::from_json(
+        r#"{"id":"verified-cff-query","substitutions":{"원본 미정 글꼴":"RHWP HFT Outline Fixture"},"selectedPrograms":{"원본 미정 글꼴":{"query":"실제 조회 별칭","family":"RHWP HFT Outline Fixture","trueType":false,"openTypeCff":true,"programId":"sweep-c3eb4ea18997f2a79442f80e51e421bfe496edb431a9247f27dafd4fcc305dda"}}}"#,
+    ).unwrap())).unwrap();
+    assert!(!core
+        .register_hft_outline_font_native("임의 별칭", CFF, 0)
+        .unwrap());
+    assert!(!core
+        .register_hft_outline_font_native("실제 조회 별칭", &synthetic_cff_for('나'), 0)
+        .unwrap());
+    assert!(
+        core.register_hft_outline_font_native("실제 조회 별칭", CFF, 0)
+            .unwrap(),
+        "선택 프로그램의 실제 조회 별칭도 같은 윤곽을 공급한다"
+    );
+    assert!(core
+        .register_hft_outline_font_native(FAMILY, CFF, 0)
+        .unwrap());
 }
 
 #[test]

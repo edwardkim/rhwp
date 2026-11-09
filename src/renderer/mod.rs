@@ -632,6 +632,9 @@ pub const SUPERSCRIPT_RISE_EM: f64 = 0.3;
 /// 아래첨자 baseline 하향 이동량 (본문 글꼴 크기 대비 em).
 pub const SUBSCRIPT_DROP_EM: f64 = 0.15;
 
+/// 독립 한/글 Print의 합성 굵기 `w / Tf`; Native와 Canvas가 같은 값을 소비한다.
+pub(crate) const HANCOM_FAUX_BOLD_STROKE_EM: f64 = 0.02;
+
 /// 합성 볼드 획 굵기(px) — 실제 Bold 메트릭이 없는 face 의 볼드 요청에만.
 ///
 /// 한/글 2022 는 Bold face 가 없는 face 의 볼드를 PDF `2 Tr`(fill+stroke)로
@@ -645,9 +648,6 @@ pub const SUBSCRIPT_DROP_EM: f64 = 0.15;
 /// 잡았으므로 종전대로 그 face 를 요청한다. DB 에 없는 face 는 어느 쪽인지
 /// 알 근거가 없어 건드리지 않는다.
 pub(crate) fn faux_bold_stroke_width(style: &TextStyle, font_size: f64) -> Option<f64> {
-    /// 한/글 2022 PDF 실측 — `w / Tf`.
-    const HANCOM_FAUX_BOLD_STROKE_EM: f64 = 0.02;
-
     if !style.bold {
         return None;
     }
