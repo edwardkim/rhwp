@@ -6035,8 +6035,13 @@ impl TypesetEngine {
             // 남는 앞 간격만 흐름에 소비하고 같은 값을 배치에 넘긴다(배치는 이 값을
             // 확정 앞 간격으로 받아 다시 더하거나 단 맨 위 규칙으로 바꾸지 않는다).
             // 저장 원점을 소비한 host 는 그 원점이 이미 앞 간격을 포함한다.
+            // [#8836] 쪽·용지 기준 자리차지 표가 같은 문단의 첫 글줄을 민 경우도 같다 — 띠의
+            // 기준이 문단이 아닐 뿐, 밀린 줄 원점과 앞 간격의 관계는 같은 규칙이다.
             if post_table_start == 0
-                && is_visible_para_float
+                && (is_visible_para_float
+                    || crate::renderer::float_placement::is_absolute_topbottom_float_text_host(
+                        para, table,
+                    ))
                 && stored_host_origin.is_none()
                 && st.current_height > para_start_height + 0.5
             {

@@ -8258,6 +8258,19 @@ pub(crate) fn is_para_topbottom_float(common: &CommonObjAttr) -> bool {
         && matches!(common.vert_rel_to, VertRelTo::Para)
 }
 
+/// [#8836] 비공백 글이 있는 host 의 쪽·용지 기준 자리차지 표 — 띠가 같은 문단의 첫 글줄을
+/// 밀어 내리는 형상이다. 문단 기준 표와 같은 `#7330` 앞 간격 규칙을 따른다.
+///
+/// 36346146 결재문서 1쪽: 쪽 기준 머리 표(바깥 위 140 + 높이 15617 + 바깥 아래 852 = 16609)가
+/// host 첫 줄을 저장 vpos 16609 로 민다. 문단 앞 간격 400(2배 HWPUNIT → 200HU)은 그 띠 안에서
+/// 흡수되고 저장 줄은 띠 끝 그대로다. 한/글 2022 Print 도 그 자리에 그린다.
+pub(crate) fn is_absolute_topbottom_float_text_host(para: &Paragraph, table: &Table) -> bool {
+    !table.common.treat_as_char
+        && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+        && matches!(table.common.vert_rel_to, VertRelTo::Page | VertRelTo::Paper)
+        && para_has_non_whitespace_text(para)
+}
+
 /// [#7330] 같은 문단의 문단 기준 자리차지 개체가 host 첫 글줄을 `pushed_line_top` 까지
 /// 밀었을 때, 그 글줄이 그 위에 더 소비할 문단 앞 간격(0 이상).
 ///
