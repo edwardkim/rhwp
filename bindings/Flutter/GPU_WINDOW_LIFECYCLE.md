@@ -31,3 +31,8 @@ AppKit 검사는 실제 controller와 mock 플랫폼 뷰·cover 응답을 사용
 native layer의 물리적 가림이나 물리 GPU의 실행 결과로 표현하지 않는다. 이 wrapper는 앱의
 lifecycle 이벤트를 받으므로 한 창만 최소화하고 다른 창을 표시하는 OS 이벤트도 별도 확인이
 필요하다. 앞선 단일·다중 페이지와 tile-group 수명 검사는 stack 통합 뒤 다시 대조한다.
+
+참조 example은 GPU session이 있는 동안 `NativeGpuLifecycle`을 페이지 뷰의 같은
+위치에 유지한다. 복구로 controller가 바뀌면 observer는 새 controller를 보고,
+확정 종료 뒤 CPU fallback에서도 문서·editor 자식의 widget 수명을 유지한다.
+pause 오류는 호스트 진단에 전달하고 문서와 renderer 종료는 기존 owner가 맡는다.
