@@ -1,5 +1,5 @@
 //! 관계형: 합성 TextRun·공개 fixture 글꼴의 glyph coverage·replay와 typed 실패를 검사한다.
-//! 주석 갱신: 2026-11-10T01:02:00+09:00; #8856 연속 그림자의 실제 엄격 재생 검사를 추가했다.
+//! 주석 갱신: 2026-11-10T08:36:48+09:00; #8856 연속 그림자의 실제 엄격 재생 검사를 추가했다.
 //! 입력은 파일 내부 합성 문서·PageLayerTree 또는 저장소의 허가된 글꼴 fixture다.
 //! API·소유·자원/합성 paint 계약이며 실물 문서 페이지의 조판 위치를 고정하지 않는다.
 //! 이 assertion의 독립 한컴 PDF 대비 Native/fresh WASM raw 측정값은 비해당이다.
@@ -1375,4 +1375,9 @@ fn native_glyph_replay_keeps_the_prepared_continuous_shadow_samples() {
         continuous != endpoint_only,
         "엄격 glyph 대안도 공통 중간 그림자를 버리지 않는다"
     );
+}
+
+#[test]
+fn issue_8856_replacement_symbol_ink_keeps_the_intrinsic_cell_under_negative_tracking() {
+    super::replacement_symbol_cell::assert_replacement_symbol_ink_keeps_the_intrinsic_cell_under_negative_tracking();
 }

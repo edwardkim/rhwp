@@ -31,12 +31,17 @@ const RUST_MODULE_NAME = /^[a-z][a-z0-9_]*$/;
 // 소비 검사가 서로 다른 suite로 재배정돼도 각 harness가 자기 helper를 한 번 공급한다.
 const SHARED_SUPPORT_MODULES = [
   {
+    module: 'replacement_symbol_cell',
+    source: 'tests/common/issue_8856_replacement_symbol_cell.rs',
+    consumers: ['tests/cases/skia_native_glyph_replay.rs'],
+  },
+  {
     module: 'symbol_font_program',
     source: 'tests/common/symbol_font_program.rs',
     consumers: [
       'tests/cases/issue_8153_symbol_coverage.rs',
       'tests/cases/issue_8153_symbol_fallback.rs',
-      'tests/cases/issue_8856_replacement_symbol_cell.rs',
+      'tests/cases/skia_native_glyph_replay.rs',
     ],
   },
 ];

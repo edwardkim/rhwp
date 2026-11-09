@@ -1,3 +1,4 @@
+//! 정식 CI 진입점은 skia_native_glyph_replay의 단일 #[test]이며 이 파일은 공용 검사 본문이다.
 //! 관계형: 명시 대체 프로그램의 기호 잉크와 원본 전진 칸을 분리한다.
 //! 주석 갱신: 2026-11-10T04:10:11+09:00. 실물 좌표를 고정하지 않는 합성 Native paint 검사다.
 //! 실물 근거: issue1994 4쪽 독립 Print의 U+2219는 512/1024 전진 칸이며,
@@ -60,8 +61,7 @@ fn render(renderer: &SkiaLayerRenderer, spacing: f64, selected: bool, original: 
     renderer.render_png(&tree).unwrap()
 }
 
-#[test]
-fn replacement_symbol_ink_keeps_the_intrinsic_cell_under_negative_tracking() {
+pub(crate) fn assert_replacement_symbol_ink_keeps_the_intrinsic_cell_under_negative_tracking() {
     let program = symbol_font_program::mapped_program(
         include_bytes!("../fixtures/fonts/RHWPHftOutline.otf"),
         &[('∙', 1)],
