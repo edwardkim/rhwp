@@ -79,6 +79,39 @@ pub(super) fn plan(
     None
 }
 
+/// 저장 줄 없는 제목 host: 글앞/글뒤 표를 하나 이상 소유하고 보이는 글자를 가진 문단.
+///
+/// 표는 모두 글앞/글뒤여야 한다(데코 경로가 host 글줄을 소유). 그 밖의 개체는 글앞/글뒤이거나
+/// 쪽·용지 기준으로 놓여 host 줄 흐름과 무관해야 한다. 문단 기준 자리차지·어울림 개체는 자기
+/// 이월 규칙을 따르므로 제외한다.
+pub(super) fn unstored_overlay_title_host(para: &Paragraph) -> bool {
+    use crate::model::control::Control;
+    use crate::model::shape::{CommonObjAttr, TextWrap, VertRelTo};
+    let overlay = |c: &CommonObjAttr| {
+        !c.treat_as_char && matches!(c.text_wrap, TextWrap::InFrontOfText | TextWrap::BehindText)
+    };
+    let off_flow = |c: &CommonObjAttr| {
+        overlay(c)
+            || (!c.treat_as_char && matches!(c.vert_rel_to, VertRelTo::Page | VertRelTo::Paper))
+    };
+    crate::renderer::para_has_no_stored_line_segs(para)
+        && para_has_non_whitespace_text(para)
+        && para
+            .controls
+            .iter()
+            .any(|c| matches!(c, Control::Table(t) if overlay(&t.common)))
+        && para.controls.iter().all(|c| match c {
+            Control::Table(t) => overlay(&t.common),
+            Control::Picture(pic) => off_flow(&pic.common),
+            Control::Shape(s) => off_flow(s.common()),
+            Control::SectionDef(_)
+            | Control::ColumnDef(_)
+            | Control::Header(_)
+            | Control::Footer(_) => true,
+            _ => false,
+        })
+}
+
 /// [#7047] 글자 없는 데코레이션(글앞/글뒤) 표 host 문단이 저장 사다리에서 차지한
 /// 줄 전진량(HWPUNIT).
 ///
