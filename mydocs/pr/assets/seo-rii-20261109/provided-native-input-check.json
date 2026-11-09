@@ -1,0 +1,22 @@
+[
+  {
+    "platform": "windows",
+    "provided_native_source": "9452099dc796ca5626f1c4b52396a9ca07dc445e",
+    "current_base": "06181802e574dbd91e62375536751dea8c270fcd",
+    "product_changed_paths": [
+      "vendor/rhwp-jpeg-decoder/Cargo.toml"
+    ],
+    "difference": "diff --git a/vendor/rhwp-jpeg-decoder/Cargo.toml b/vendor/rhwp-jpeg-decoder/Cargo.toml\nindex c725aef897..f02f001034 100644\n--- a/vendor/rhwp-jpeg-decoder/Cargo.toml\n+++ b/vendor/rhwp-jpeg-decoder/Cargo.toml\n@@ -9,6 +9,7 @@ include = [\n ]\n name = \"rhwp-jpeg-decoder\"\n version = \"0.3.2-rhwp.1\"\n+description = \"Bounded JPEG decoder for rhwp PDF import, based on jpeg-decoder 0.3.2\"\n edition = \"2021\"\n rust-version = \"1.93.1\"\n license = \"MIT OR Apache-2.0\"\n",
+    "native_abi_header_equal": true
+  },
+  {
+    "platform": "macos",
+    "provided_native_source": "4f738e766ccbba8faf938f2421ca6b516e939019",
+    "current_base": "06181802e574dbd91e62375536751dea8c270fcd",
+    "product_changed_paths": [
+      "vendor/rhwp-jpeg-decoder/Cargo.toml"
+    ],
+    "difference": "diff --git a/vendor/rhwp-jpeg-decoder/Cargo.toml b/vendor/rhwp-jpeg-decoder/Cargo.toml\nindex c725aef897..f02f001034 100644\n--- a/vendor/rhwp-jpeg-decoder/Cargo.toml\n+++ b/vendor/rhwp-jpeg-decoder/Cargo.toml\n@@ -9,6 +9,7 @@ include = [\n ]\n name = \"rhwp-jpeg-decoder\"\n version = \"0.3.2-rhwp.1\"\n+description = \"Bounded JPEG decoder for rhwp PDF import, based on jpeg-decoder 0.3.2\"\n edition = \"2021\"\n rust-version = \"1.93.1\"\n license = \"MIT OR Apache-2.0\"\n",
+    "native_abi_header_equal": true
+  }
+]

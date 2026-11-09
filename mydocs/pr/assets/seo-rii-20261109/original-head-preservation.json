@@ -1,0 +1,47 @@
+[
+  {
+    "pr": 8749,
+    "head": "0c8de92939ada977d96e9d3608f13f4fdd707cf3",
+    "ancestor_of_candidate": true
+  },
+  {
+    "pr": 8761,
+    "head": "b8c948e7fb4d7bdf9c20e20e7551aa879151a810",
+    "ancestor_of_candidate": true
+  },
+  {
+    "pr": 8764,
+    "head": "97e532e8031b1dcc777923120a618f76c13cb2c8",
+    "ancestor_of_candidate": true
+  },
+  {
+    "pr": 8765,
+    "head": "dd62a95be83474ebbb9635f8c1bb8840c32ab3c9",
+    "ancestor_of_candidate": true
+  },
+  {
+    "pr": 8767,
+    "head": "2e6268c8187ed5eda59f19ca4cb729371c1776da",
+    "ancestor_of_candidate": true
+  },
+  {
+    "pr": 8769,
+    "head": "40e1301ddabb6290a4ed06c5791e8fd4960403f5",
+    "ancestor_of_candidate": true
+  },
+  {
+    "pr": 8777,
+    "head": "def466097d790671247e30c1ec412931ad606e6a",
+    "ancestor_of_candidate": true
+  },
+  {
+    "pr": 8779,
+    "head": "96a1b3b044cd3e979d24759526e5a0cc6ceaff40",
+    "ancestor_of_candidate": true
+  },
+  {
+    "pr": 8781,
+    "head": "99732cf8ca32f2835ddd6f486e7b8a0c12346b3e",
+    "ancestor_of_candidate": true
+  }
+]

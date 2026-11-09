@@ -1,0 +1,119 @@
+{
+  "candidate": "be778bae9b3803050146dcc47a896940587a612e",
+  "baseline": "06181802e574dbd91e62375536751dea8c270fcd",
+  "baseline_artifact_source": "v0.9.0 c9095c5f67632e6721e800ccc7fb43ea49d26682; product source identity checked separately",
+  "pages": [
+    {
+      "backend": "native",
+      "document": "bitmap-channel",
+      "page": 1,
+      "base_sha256": "2a7738c8f422849c12205331231d8728a93f1897d2fd5fef8508400c65db641f",
+      "candidate_sha256": "2a7738c8f422849c12205331231d8728a93f1897d2fd5fef8508400c65db641f",
+      "png_bytes_identical": true
+    },
+    {
+      "backend": "native",
+      "document": "radial-pages",
+      "page": 3,
+      "base_sha256": "c7f5b158c502f71d179643180b05d005388674c160dea6f3d8898bb2602a223e",
+      "candidate_sha256": "c7f5b158c502f71d179643180b05d005388674c160dea6f3d8898bb2602a223e",
+      "png_bytes_identical": true
+    },
+    {
+      "backend": "native",
+      "document": "radial-pages",
+      "page": 5,
+      "base_sha256": "f1d147affd7dce8d04d27fe41aa35c2bcc541604d9e8e7df9908a68a417c7c67",
+      "candidate_sha256": "f1d147affd7dce8d04d27fe41aa35c2bcc541604d9e8e7df9908a68a417c7c67",
+      "png_bytes_identical": true
+    },
+    {
+      "backend": "native",
+      "document": "radial-pages",
+      "page": 2,
+      "base_sha256": "fa812500bf185c8bb018282601a232b438992be8d74ba6f081b6208b08f24fd5",
+      "candidate_sha256": "fa812500bf185c8bb018282601a232b438992be8d74ba6f081b6208b08f24fd5",
+      "png_bytes_identical": true
+    },
+    {
+      "backend": "native",
+      "document": "radial-pages",
+      "page": 6,
+      "base_sha256": "a56c07715b9c8b4d0f9efb4998c9a7ea6eab0490a97ff810808f2361cbe747f6",
+      "candidate_sha256": "a56c07715b9c8b4d0f9efb4998c9a7ea6eab0490a97ff810808f2361cbe747f6",
+      "png_bytes_identical": true
+    },
+    {
+      "backend": "native",
+      "document": "radial-pages",
+      "page": 4,
+      "base_sha256": "a38394acf1171430c12e4c31c19ab5c2a5a94f6d47367d7f3ead095c6dd58845",
+      "candidate_sha256": "a38394acf1171430c12e4c31c19ab5c2a5a94f6d47367d7f3ead095c6dd58845",
+      "png_bytes_identical": true
+    },
+    {
+      "backend": "native",
+      "document": "radial-pages",
+      "page": 1,
+      "base_sha256": "ee072da07541b4e89155d483b0548256a2195e985b9fe6fc5356ff2b9fd39220",
+      "candidate_sha256": "ee072da07541b4e89155d483b0548256a2195e985b9fe6fc5356ff2b9fd39220",
+      "png_bytes_identical": true
+    },
+    {
+      "backend": "wasm-canvas",
+      "document": "bitmap-channel",
+      "page": 1,
+      "base_sha256": "0699db65750e85af23a08e7239796a9b508e4cc681ce1ef7b7c397fda8d24ee3",
+      "candidate_sha256": "0699db65750e85af23a08e7239796a9b508e4cc681ce1ef7b7c397fda8d24ee3",
+      "png_bytes_identical": true
+    },
+    {
+      "backend": "wasm-canvas",
+      "document": "radial-pages",
+      "page": 3,
+      "base_sha256": "dfcfd1b7760a44a6123c3a43b67b6cc31607cab096c0804a0d52c2086508c01b",
+      "candidate_sha256": "dfcfd1b7760a44a6123c3a43b67b6cc31607cab096c0804a0d52c2086508c01b",
+      "png_bytes_identical": true
+    },
+    {
+      "backend": "wasm-canvas",
+      "document": "radial-pages",
+      "page": 5,
+      "base_sha256": "9d7e27935bc2baf2652919a289eea182e7841fb7e8c76d4f888790988d01409e",
+      "candidate_sha256": "9d7e27935bc2baf2652919a289eea182e7841fb7e8c76d4f888790988d01409e",
+      "png_bytes_identical": true
+    },
+    {
+      "backend": "wasm-canvas",
+      "document": "radial-pages",
+      "page": 2,
+      "base_sha256": "bcdf4e52adb0cf6a5a94901e00ba220122fa993e6a2c555178eca33c47d2fc0c",
+      "candidate_sha256": "bcdf4e52adb0cf6a5a94901e00ba220122fa993e6a2c555178eca33c47d2fc0c",
+      "png_bytes_identical": true
+    },
+    {
+      "backend": "wasm-canvas",
+      "document": "radial-pages",
+      "page": 6,
+      "base_sha256": "51f810967c02c7eaedd6540741bb9cdded3e1b2ca10386a94a42ea747429a351",
+      "candidate_sha256": "51f810967c02c7eaedd6540741bb9cdded3e1b2ca10386a94a42ea747429a351",
+      "png_bytes_identical": true
+    },
+    {
+      "backend": "wasm-canvas",
+      "document": "radial-pages",
+      "page": 4,
+      "base_sha256": "91130520c859e9e3ec523e445983400a2e0c5b25479f5cce6e012689d22109c4",
+      "candidate_sha256": "91130520c859e9e3ec523e445983400a2e0c5b25479f5cce6e012689d22109c4",
+      "png_bytes_identical": true
+    },
+    {
+      "backend": "wasm-canvas",
+      "document": "radial-pages",
+      "page": 1,
+      "base_sha256": "f6841c14ecb1c3508c131f5f469ec54b9357713bfdc10d6057e4d3c139ae5d2b",
+      "candidate_sha256": "f6841c14ecb1c3508c131f5f469ec54b9357713bfdc10d6057e4d3c139ae5d2b",
+      "png_bytes_identical": true
+    }
+  ]
+}

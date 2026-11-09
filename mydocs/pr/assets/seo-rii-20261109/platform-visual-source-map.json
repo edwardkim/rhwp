@@ -1,0 +1,36 @@
+[
+  {
+    "file": "platform-visual/macos-platform-0.png",
+    "stage": 1,
+    "sha256": "eccc6d8c05ca2f43708a4cff1934415828b0f465255088cb04cc34c2d22abb07",
+    "original_zip": "macos-platform.zip",
+    "original_member": "_temp/rhwp-macos-qualification/desktop-capture/window-1-a.png",
+    "scope": "Unmodified full WindowServer PNG"
+  },
+  {
+    "file": "platform-visual/macos-platform-1.png",
+    "stage": 32,
+    "sha256": "599c8c3b27532b795f86dcafff89f126bf6ffe141d55e69a307680cb7af03352",
+    "original_zip": "macos-platform.zip",
+    "original_member": "_temp/rhwp-macos-qualification/desktop-capture/window-32-a.png",
+    "scope": "Unmodified full WindowServer PNG"
+  },
+  {
+    "file": "platform-visual/windows-continuous-01.png",
+    "stage": 1,
+    "sha256": "531d1aad825303abac0436ee0c37340449362f8833ebfc8e2a3988ff6fd85812",
+    "raw_sha256": "5205eb34fde149ea0aa1ab26e90091411d01885ac653e6b13aed76b098cd0d8b",
+    "original_zip": "windows-platform.zip",
+    "original_member": "_temp/rhwp-windows-qualification/continuous-capture/compositor-1.rgba",
+    "scope": "Lossless PNG encoding of verified original compositor RGBA"
+  },
+  {
+    "file": "platform-visual/windows-continuous-32.png",
+    "stage": 32,
+    "sha256": "6b58ed46eebaccab422161bd13a09e1013e1682a70a52a57fc86d67ede7a525c",
+    "raw_sha256": "f190adf0fc0b436efc06f7dc540dfec13f03b48346a28aec84d5c260a18ca45e",
+    "original_zip": "windows-platform.zip",
+    "original_member": "_temp/rhwp-windows-qualification/continuous-capture/compositor-32.rgba",
+    "scope": "Lossless PNG encoding of verified original compositor RGBA"
+  }
+]
