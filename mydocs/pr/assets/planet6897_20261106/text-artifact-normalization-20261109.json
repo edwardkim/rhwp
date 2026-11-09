@@ -1,0 +1,40 @@
+{
+  "scope": "과거 공개 증적 텍스트의 줄 끝만 정규화. 수치·assertion·본문·원 실행 로그와 원 로그 SHA는 변경하지 않음.",
+  "files": [
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/hft-split-program-ownership-20261109/focus-wasm-comparison.tsv",
+      "original_git_head": "8506620e426cb4aace4bbfea38c7ab3f14b77243",
+      "original_sha256": "b52249ff03f9b2a3e40f303c44d044e59b9bcbc565ad06d6bd214a7cdeee942f",
+      "normalized_sha256": "9e164fc86dfa13240daad7393ae9d0356ba44ec4c9af466477bd2717a10068bc",
+      "change": "CRLF→LF"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/native-family-ownership-r46g/before-test.txt",
+      "original_git_head": "8506620e426cb4aace4bbfea38c7ab3f14b77243",
+      "original_sha256": "d4a559a4012f5b6c8dc54066f792c6bd0aa13018651dff509338ebca138db863",
+      "normalized_sha256": "f9282ae064c23758c0d7956d475632ffb1a25ec2d2b82c2099864be7b22e870c",
+      "change": "EOF 뒤 빈 줄만 제거"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/primary-program-decoration-r52/before-minimal-fonts-test.txt",
+      "original_git_head": "8506620e426cb4aace4bbfea38c7ab3f14b77243",
+      "original_sha256": "99a15511d337c86837747590a21a6c888a95b8022919e693c12ee4a849aba24a",
+      "normalized_sha256": "1fa69ad30feac908b2d506b6cb18b1a81073c3a4a5b6b534bcefeb85d348f333",
+      "change": "EOF 뒤 빈 줄만 제거"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/primary-program-decoration-r52/before-native-identity-test.txt",
+      "original_git_head": "8506620e426cb4aace4bbfea38c7ab3f14b77243",
+      "original_sha256": "6ccf951cadf15417119575d1dc5cb0ddba878a756b6731ae6425cee801f59822",
+      "normalized_sha256": "eefe4b4b2d337570c61c692cc9d30a13b7f0e9ea30221a5ca6576c9502715621",
+      "change": "EOF 뒤 빈 줄만 제거"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/primary-program-decoration-r52/before-test.txt",
+      "original_git_head": "8506620e426cb4aace4bbfea38c7ab3f14b77243",
+      "original_sha256": "fdf6492be2e30a3cffb4a7f39705e925ab37f15ad65cf02b2e53cee72f076d0e",
+      "normalized_sha256": "5a691fd435ed51d74f293233831e13d63215c0d758ed7ae339001cc091a489ae",
+      "change": "EOF 뒤 빈 줄만 제거"
+    }
+  ]
+}

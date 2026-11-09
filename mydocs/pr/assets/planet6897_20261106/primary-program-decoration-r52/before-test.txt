@@ -16,4 +16,3 @@ failures:
     real_primary_program_does_not_inherit_inferred_hft_decoration
 
 test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
-

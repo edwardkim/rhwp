@@ -99,7 +99,7 @@
   "artifacts": {
     "sample10-wasm-p757-review.png": "4a70753e7ab3d0fce0d87101655bd552ce311fb8a18bb07689862a0e3959b1d6",
     "sample10-wasm-p757-raw.png": "cfb6454c42fb7c4f149630305e58c81d64fcf728fc1f49529f2522ffbb583a97",
-    "focus-wasm-comparison.tsv": "b52249ff03f9b2a3e40f303c44d044e59b9bcbc565ad06d6bd214a7cdeee942f",
+    "focus-wasm-comparison.tsv": "9e164fc86dfa13240daad7393ae9d0356ba44ec4c9af466477bd2717a10068bc",
     "sample10-wasm-p757-overlay.png": "4e71ffb1db56a3194d5ea35b5902f92239e13458bbce71cb121ad11ee13ba26a",
     "sample16-hwp2024-focus-wasm.tsv": "3d89ad0ed4f9e7e4012949e7efb748d0d6adb1be58de6f0c46f0482b3188b17c",
     "sample16-hwpx-focus-wasm.tsv": "3d89ad0ed4f9e7e4012949e7efb748d0d6adb1be58de6f0c46f0482b3188b17c",

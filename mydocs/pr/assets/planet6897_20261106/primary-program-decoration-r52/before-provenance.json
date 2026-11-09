@@ -7,7 +7,7 @@
   "font_supply": "기존 재배포 허가 공개 CFF fixture만 callback으로 공급하며 시스템 글꼴을 조회하지 않는다.",
   "test_program_digest": "c3eb4ea18997f2a79442f80e51e421bfe496edb431a9247f27dafd4fcc305dda",
   "files": {
-    "before-test.txt": "fdf6492be2e30a3cffb4a7f39705e925ab37f15ad65cf02b2e53cee72f076d0e",
+    "before-test.txt": "5a691fd435ed51d74f293233831e13d63215c0d758ed7ae339001cc091a489ae",
     "before-contract.rs.txt": "e45a99325e8bcb0fa6dbb1d123b8057d76f45edcfb6660dfce3561645b19c1c5"
   }
 }
