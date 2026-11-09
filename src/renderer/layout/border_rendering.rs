@@ -607,7 +607,7 @@ pub(crate) fn render_spaced_cell_borders(
                     y2,
                 ));
             } else {
-                nodes.extend(create_border_line_nodes(tree, border, x1, y1, x2, y2));
+                nodes.extend(create_table_border_line_nodes(tree, border, x1, y1, x2, y2));
             }
         }
     }
@@ -1140,7 +1140,7 @@ fn create_edge_border_line_nodes(
     x2: f64,
     y2: f64,
 ) -> Vec<RenderNode> {
-    let mut nodes = create_border_line_nodes(tree, edge, x1, y1, x2, y2);
+    let mut nodes = create_table_border_line_nodes(tree, edge, x1, y1, x2, y2);
     for node in &mut nodes {
         if let RenderNodeType::Line(line) = &mut node.node_type {
             line.underpaint_color = edge.underpaint_color;
@@ -1173,6 +1173,36 @@ pub(crate) fn create_border_line_nodes(
     y2: f64,
 ) -> Vec<RenderNode> {
     create_box_border_line_nodes(tree, border, false, x1, y1, x2, y2)
+}
+
+/// 표의 실제 셀·외곽 경계가 소비하는 pen. 문단·글자·각주 구분선과 구분한다.
+pub(crate) fn create_table_border_line_nodes(
+    tree: &mut PageLayoutContext,
+    border: &BorderLine,
+    x1: f64,
+    y1: f64,
+    x2: f64,
+    y2: f64,
+) -> Vec<RenderNode> {
+    if border.line_type == BorderLineType::Circle {
+        let (diameter, pitch) = crate::renderer::stroke_pattern::table_border_circle(border.width);
+        create_circle_dot_nodes(
+            tree,
+            border.color,
+            CircleDotPaint {
+                diameter,
+                pitch,
+                outline: PRINT_UNIT_PX,
+                passes: 2,
+            },
+            x1,
+            y1,
+            x2,
+            y2,
+        )
+    } else {
+        create_border_line_nodes(tree, border, x1, y1, x2, y2)
+    }
 }
 
 /// 상자 한 변의 테두리선. `far_side`는 아래·오른쪽 변이며 물결선의 위상을 정한다.
@@ -1273,7 +1303,21 @@ pub(crate) fn create_box_border_line_nodes(
         }
 
         BorderLineType::Circle => {
-            create_circle_dot_nodes(tree, border.color, border.width, x1, y1, x2, y2)
+            let (diameter, pitch) = crate::renderer::stroke_pattern::border_circle(border.width);
+            create_circle_dot_nodes(
+                tree,
+                border.color,
+                CircleDotPaint {
+                    diameter,
+                    pitch,
+                    outline: 0.0,
+                    passes: 1,
+                },
+                x1,
+                y1,
+                x2,
+                y2,
+            )
         }
 
         BorderLineType::Wave | BorderLineType::DoubleWave => create_wave_nodes(
@@ -1336,18 +1380,32 @@ fn create_path_node(
     )
 }
 
-/// 원형 점선(7). 선언 굵기 index의 공통 Print 지름·중심 간격을 소비한다.
-/// 이미 반올림한 실선 폭에서 원형 점의 물리 pen을 다시 추정하지 않는다.
+/// 원형 점선(7). 소유 경계에서 선택한 Print 지름·중심 간격을 그대로 소비한다.
+/// 표·문단의 패턴 선택이나 실선 폭으로부터의 재추정을 paint에서 반복하지 않는다.
+struct CircleDotPaint {
+    diameter: f64,
+    pitch: f64,
+    /// 표의 독립 Print는 600dpi 한 칸 pen으로 채움 외곽을 별도로 긋는다.
+    outline: f64,
+    /// 2020/2024 표의 각 원은 같은 위치에서 fill+stroke를 두 번 재생한다.
+    passes: usize,
+}
+
 fn create_circle_dot_nodes(
     tree: &mut PageLayoutContext,
     color: u32,
-    width: u8,
+    pattern: CircleDotPaint,
     x1: f64,
     y1: f64,
     x2: f64,
     y2: f64,
 ) -> Vec<RenderNode> {
-    let (diameter, pitch) = crate::renderer::stroke_pattern::border_circle(width);
+    let CircleDotPaint {
+        diameter,
+        pitch,
+        outline,
+        passes,
+    } = pattern;
     if pitch <= 0.0 {
         return vec![];
     }
@@ -1357,7 +1415,9 @@ fn create_circle_dot_nodes(
     } else {
         (1.0, 0.0)
     };
-    let r = diameter / 2.0;
+    // 채움과 외곽을 하나의 큰 채움 원으로 합치면 raster의 얇은 선 규칙과
+    // 덧그리기 농도가 사라진다. 독립 Print의 원 경로와 pen을 별도로 보존한다.
+    let r = (diameter - outline) / 2.0;
     // 사분 원호를 3차 베지어로 근사하는 조절점 거리
     let k = r * 0.552_284_749_830_793_6;
     let count = (len / pitch + 1e-6).floor() as usize + 1;
@@ -1377,9 +1437,21 @@ fn create_circle_dot_nodes(
     }
     let style = ShapeStyle {
         fill_color: Some(color),
+        stroke_color: (outline > 0.0).then_some(color),
+        stroke_width: outline,
         ..Default::default()
     };
-    vec![create_path_node(tree, commands, style, &centers, r)]
+    (0..passes)
+        .map(|_| {
+            create_path_node(
+                tree,
+                commands.clone(),
+                style.clone(),
+                &centers,
+                diameter / 2.0,
+            )
+        })
+        .collect()
 }
 
 /// 물결선(12)·이중 물결선(13). 한/글 Mac 12.30 인쇄 PDF(굵기 w = 24/600 inch)의 실측:
