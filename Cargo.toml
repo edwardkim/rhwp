@@ -281,7 +281,7 @@ pdf_oxide = { package = "rhwp-pdf-import-backend", path = "vendor/rhwp-pdf-impor
 # Keep the compatibility constraint for library consumers that do not use our lockfile.
 office_oxide = { version = "=0.1.9", default-features = false, optional = true }
 wasm-bindgen = "0.2"
-cfb = "0.15"
+cfb = "0.16"
 crc32fast = "1"
 des = "0.9"
 flate2 = "1.0"
