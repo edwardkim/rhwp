@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'native_document.dart';
 import 'native_ffi.dart';
 import 'native_gpu_tiles.dart';
+import 'native_gpu_trace.dart';
 import 'native_presentation.dart';
 import 'native_viewport.dart';
 
@@ -233,6 +234,7 @@ class NativeTextureController extends ChangeNotifier {
     this.operationTimeout = const Duration(seconds: 2),
     this.allowImmutableOwnershipTransfer = false,
     this.useTileGroups = false,
+    this.trace,
   }) : channel = useTileGroups
            ? NativeTileGroupChannel(
                channel ?? MethodChannel(platform.channelName),
@@ -289,6 +291,8 @@ class NativeTextureController extends ChangeNotifier {
   List<Rect> get physicalTiles => _tileChannel?.physicalTiles ?? const [];
   double _outputDeviceScale = 1;
   double get outputDeviceScale => _outputDeviceScale;
+  /// Optional producer diagnostics; no compositor display or GPU fence claim.
+  final NativeGpuTrace? trace;
   late final Timer _timer;
   late final StreamSubscription<NativeDocumentInfo> _infoChanges;
   late final StreamSubscription<int> _invalidations;
@@ -333,6 +337,52 @@ class NativeTextureController extends ChangeNotifier {
   Timer? _coverWaitDeadline;
   final _releases = <Future<void>>{};
   static int get retainedOwnedSnapshots => _OwnedSnapshot.retained.length;
+
+  void _trace(
+    NativeGpuTraceStage stage, {
+    int? generation,
+    NativeGpuTraceFailure? failure,
+    Map<String, Object?>? status,
+  }) {
+    final recorder = trace;
+    if (recorder == null) return;
+    final counters = <NativeGpuCounter, int>{
+      NativeGpuCounter.dartOwnedSnapshots: retainedOwnedSnapshots,
+      NativeGpuCounter.controllerRpc: _rpc,
+      NativeGpuCounter.isolateRpc: _globalRpc,
+      NativeGpuCounter.visiblePages: _plan?.pages.length ?? 0,
+    };
+    final limits = status?['limits'];
+    if (limits is Map) {
+      for (final entry in const {
+        'producerOwnedBytes': NativeGpuCounter.pluginProducerOwnedBytes,
+        'importPendingBytes': NativeGpuCounter.pluginImportPendingBytes,
+        'reservedTargetBytes': NativeGpuCounter.pluginReservedTargetBytes,
+        'outstandingFrames': NativeGpuCounter.pluginOutstandingFrames,
+        'descriptorTickets': NativeGpuCounter.pluginDescriptorTickets,
+        'wholeFrameReadbacks': NativeGpuCounter.pluginWholeFrameReadbacks,
+      }.entries) {
+        final value = limits[entry.key];
+        if (value is int) counters[entry.value] = value;
+      }
+    }
+    final readbacks = status?['wholeFrameReadbacks'];
+    if (readbacks is int) {
+      counters[NativeGpuCounter.pluginWholeFrameReadbacks] = readbacks;
+    }
+    recorder.record(
+      stage,
+      generation: generation ?? _generation,
+      failure: failure,
+      counters: counters,
+    );
+  }
+
+  void _traceSuperseded() {
+    if (_generation > 0 && (_working || _phase == NativeTexturePhase.pending)) {
+      _trace(NativeGpuTraceStage.superseded);
+    }
+  }
 
   bool get canDisplay =>
       _phase == NativeTexturePhase.visible &&
@@ -409,6 +459,7 @@ class NativeTextureController extends ChangeNotifier {
   /// No old geometry may be captured or exposed until a new plan is supplied.
   void suspendViewport() {
     if (_closing || _stopped || _plan == null) return;
+    _traceSuperseded();
     _plan = null;
     _configurationKey = null;
     ++_generation;
@@ -436,16 +487,21 @@ class NativeTextureController extends ChangeNotifier {
       _fail(error, fallback: true);
       return;
     }
-    invalidate();
+    _invalidate(configurationChanged: true);
   }
 
-  void invalidate() {
+  void invalidate() => _invalidate();
+
+  void _invalidate({bool configurationChanged = false}) {
     if (_closing || _stopped || _plan == null || document.isDisposed) return;
+    _traceSuperseded();
     ++_generation;
     _view = document.beginPresentation();
     _raster = document.rasterInvalidationGeneration;
     _wanted = !_paused;
     _phase = NativeTexturePhase.pending;
+    if (configurationChanged) _trace(NativeGpuTraceStage.configured);
+    _trace(NativeGpuTraceStage.invalidated);
     _frameTimeout?.cancel();
     _retryTimer?.cancel();
     _retryTimer = null;
@@ -678,6 +734,7 @@ class NativeTextureController extends ChangeNotifier {
       (value) {
         --_rpc;
         --_globalRpc;
+        _trace(NativeGpuTraceStage.resourceSampled);
         received?.call(value);
         if ((_closing || _stopped) &&
             method != 'close' &&
@@ -689,6 +746,7 @@ class NativeTextureController extends ChangeNotifier {
       onError: (Object error, StackTrace stack) {
         --_rpc;
         --_globalRpc;
+        _trace(NativeGpuTraceStage.resourceSampled);
         failed?.call(error);
         if ((_closing || _stopped) &&
             method != 'close' &&
@@ -698,6 +756,7 @@ class NativeTextureController extends ChangeNotifier {
         Error.throwWithStackTrace(error, stack);
       },
     );
+    _trace(NativeGpuTraceStage.resourceSampled);
     // timeout does not cancel or forget the original reply/ownership observer.
     return observed.timeout(operationTimeout);
   }
@@ -811,6 +870,7 @@ class NativeTextureController extends ChangeNotifier {
     }
     _working = true;
     final generation = _generation, plan = _plan!, view = _view;
+    var pollAccepted = false;
     _wanted = false;
     final snapshots = <_OwnedSnapshot>[];
     try {
@@ -909,6 +969,7 @@ class NativeTextureController extends ChangeNotifier {
         }
         snapshots.add(owned);
       }
+      _trace(NativeGpuTraceStage.captureStarted, generation: generation);
       for (var index = 0; index < snapshots.length; ++index) {
         if (!_current(generation)) return;
         final owned = snapshots[index];
@@ -952,12 +1013,14 @@ class NativeTextureController extends ChangeNotifier {
         }
       }
       if (!_current(generation)) return;
+      _trace(NativeGpuTraceStage.captureCompleted, generation: generation);
       for (final owned in snapshots) {
         owned.sending = true;
       }
       final requireIds = useTileGroups || snapshots.length > 1;
       Map<String, Object?> reply;
       try {
+        _trace(NativeGpuTraceStage.submitStarted, generation: generation);
         reply = await _invoke(
           'submit',
           plan.submission(textureId!, snapshots, tiled: useTileGroups),
@@ -977,6 +1040,11 @@ class NativeTextureController extends ChangeNotifier {
         if (_retryableBackpressure(error) &&
             snapshots.every((s) => !s.sending && !s.ambiguous) &&
             _current(generation)) {
+          _trace(
+            NativeGpuTraceStage.backpressure,
+            generation: generation,
+            failure: NativeGpuTraceFailure.backpressure,
+          );
           await Future.wait(snapshots.map((s) => s.releaseOwned()))
               .timeout(operationTimeout);
           if (_current(generation)) _retryAdmission(generation);
@@ -1001,6 +1069,11 @@ class NativeTextureController extends ChangeNotifier {
           'The viewport batch was not conclusively accepted.',
         );
       }
+      _trace(
+        NativeGpuTraceStage.accepted,
+        generation: generation,
+        status: reply,
+      );
       if (!_current(generation)) return;
       _admissionTimeout?.cancel();
       _admissionTimeout = null;
@@ -1008,6 +1081,7 @@ class NativeTextureController extends ChangeNotifier {
       _phase = NativeTexturePhase.pending;
       _publicationDeadline(generation);
       _signal();
+      pollAccepted = true;
     } catch (error) {
       if (_current(generation)) _fail(error, fallback: _canFallback(error));
     } finally {
@@ -1044,13 +1118,26 @@ class NativeTextureController extends ChangeNotifier {
           fallback: true,
         );
       }
-      if (_wanted && !_closing && !_stopped && !_paused) unawaited(_pump());
+      if (_wanted && !_closing && !_stopped && !_paused) {
+        unawaited(_pump());
+      } else if (pollAccepted &&
+          _current(generation) &&
+          identical(_frame, snapshots.first)) {
+        // Probe exactly once after acceptance, once submission is serialized.
+        // A slow producer returns to the existing periodic polling cadence.
+        unawaited(_poll());
+      }
     }
   }
 
   Future<void> _waitReady(int generation) async {
     while (_current(generation)) {
       final status = await _invoke('status', {'textureId': textureId});
+      _trace(
+        NativeGpuTraceStage.statusPolled,
+        generation: generation,
+        status: status,
+      );
       _checkStatus(status);
       if (platform == NativeTexturePlatform.linux || status['ready'] == true) {
         return;
@@ -1153,6 +1240,26 @@ class NativeTextureController extends ChangeNotifier {
 
   void _fail(Object error, {required bool fallback}) {
     if (_closing || _stopped) return;
+    final code = switch (error) {
+      NativeCallException() => error.code,
+      PlatformException() => error.code,
+      _ => '',
+    };
+    final failure = switch (error) {
+      TimeoutException() => NativeGpuTraceFailure.timeout,
+      MissingPluginException() => NativeGpuTraceFailure.unsupported,
+      _ => switch (code) {
+        'stalePresentation' || 'staleFrame' => NativeGpuTraceFailure.stale,
+        'backpressure' ||
+        'snapshotCreditLimit' ||
+        'textureRpcLimit' => NativeGpuTraceFailure.backpressure,
+        'unsupportedPresentation' ||
+        'unsupported' ||
+        'featureDisabled' => NativeGpuTraceFailure.unsupported,
+        'deviceLost' || 'contextChanged' => NativeGpuTraceFailure.device,
+        _ => NativeGpuTraceFailure.other,
+      },
+    };
     diagnostic = error;
     _stopped = true;
     _wanted = false;
@@ -1164,6 +1271,13 @@ class NativeTextureController extends ChangeNotifier {
     _retryTimer = null;
     _finishCoverWaiter(error);
     _requestNativeCover();
+    if (failure == NativeGpuTraceFailure.timeout) {
+      _trace(NativeGpuTraceStage.timeout, failure: failure);
+    } else if (failure == NativeGpuTraceFailure.stale) {
+      _trace(NativeGpuTraceStage.stale, failure: failure);
+    }
+    _trace(NativeGpuTraceStage.failed, failure: failure);
+    if (fallback) _trace(NativeGpuTraceStage.fallback, failure: failure);
     _signal();
     unawaited(_closePlatform());
   }
@@ -1205,6 +1319,11 @@ class NativeTextureController extends ChangeNotifier {
         );
       }
       final status = await _invoke('status', {'textureId': textureId});
+      _trace(
+        NativeGpuTraceStage.statusPolled,
+        generation: generation,
+        status: status,
+      );
       _checkStatus(status);
       if (!_current(generation)) return;
       final rendered = platform == NativeTexturePlatform.macos
@@ -1246,7 +1365,14 @@ class NativeTextureController extends ChangeNotifier {
         final changed = _phase != NativeTexturePhase.visible;
         _phase = NativeTexturePhase.visible;
         _frameTimeout?.cancel();
-        if (changed) _signal();
+        if (changed) {
+          _trace(
+            NativeGpuTraceStage.producerReady,
+            generation: generation,
+            status: status,
+          );
+          _signal();
+        }
       }
     } catch (error) {
       if (!_closing && !_stopped && generation == _generation) {
@@ -1437,6 +1563,9 @@ class NativeTextureController extends ChangeNotifier {
 
   Future<void> close() {
     if (_closeFuture != null) return _closeFuture!;
+    final generation = _generation;
+    final superseded =
+        _generation > 0 && (_working || _phase == NativeTexturePhase.pending);
     final done = Completer<void>();
     _closeFuture =
         done.future; // Publish idempotency before notifying listeners.
@@ -1456,6 +1585,10 @@ class NativeTextureController extends ChangeNotifier {
       const NativeCallException('closed', 'Presentation is closing.'),
     );
     _requestNativeCover();
+    if (superseded) {
+      _trace(NativeGpuTraceStage.superseded, generation: generation);
+    }
+    _trace(NativeGpuTraceStage.closeRequested, generation: generation);
     _signal();
     unawaited(_infoChanges.cancel());
     unawaited(_invalidations.cancel());
