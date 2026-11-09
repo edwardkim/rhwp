@@ -1,0 +1,285 @@
+{
+  "source": "be778bae9b3803050146dcc47a896940587a612e",
+  "focused_rust": {
+    "command": [
+      "bwrap",
+      "--ro-bind",
+      "/usr",
+      "/usr",
+      "--symlink",
+      "usr/bin",
+      "/bin",
+      "--symlink",
+      "usr/lib",
+      "/lib",
+      "--symlink",
+      "usr/lib64",
+      "/lib64",
+      "--ro-bind",
+      "/etc",
+      "/etc",
+      "--proc",
+      "/proc",
+      "--dev",
+      "/dev",
+      "--ro-bind",
+      "/sys",
+      "/sys",
+      "--bind",
+      "/tmp",
+      "/tmp",
+      "--dir",
+      "/home/edward",
+      "--bind",
+      "/home/edward/mygithub/rhwp",
+      "/home/edward/mygithub/rhwp",
+      "--bind",
+      "/home/edward/mygithub/rhwp-worktrees/review-integration-536-seo-rii-preview-flutter",
+      "/home/edward/mygithub/rhwp-worktrees/review-integration-536-seo-rii-preview-flutter",
+      "--bind",
+      "/home/edward/.cargo",
+      "/home/edward/.cargo",
+      "--ro-bind",
+      "/home/edward/.rustup",
+      "/home/edward/.rustup",
+      "--tmpfs",
+      "/usr/share/fonts",
+      "--tmpfs",
+      "/usr/local/share/fonts",
+      "--setenv",
+      "HOME",
+      "/home/edward",
+      "--setenv",
+      "FONTCONFIG_FILE",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261109/minfont/fonts.conf",
+      "--unsetenv",
+      "RHWP_FONT_PATH",
+      "--chdir",
+      "/home/edward/mygithub/rhwp-worktrees/review-integration-536-seo-rii-preview-flutter",
+      "/home/edward/.cargo/bin/cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--test",
+      "regression_suite_023",
+      "-E",
+      "test(issue_536_canvas2d_outline_selection)",
+      "--no-fail-fast"
+    ],
+    "source": "be778bae9b3803050146dcc47a896940587a612e",
+    "exit_code": 0,
+    "seconds": 417.3418238009908
+  },
+  "portable_python": [
+    {
+      "command": [
+        "python3",
+        "-I",
+        "-S",
+        "bindings/Flutter/test/desktop_qualification_contract.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.6,
+      "tail": [
+        "----------------------------------------------------------------------",
+        "Ran 46 tests in 0.453s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "command": [
+        "python3",
+        "-I",
+        "-S",
+        "bindings/Flutter/test/linux_qualification_contract.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.2,
+      "tail": [
+        "----------------------------------------------------------------------",
+        "Ran 22 tests in 0.102s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "command": [
+        "python3",
+        "-I",
+        "-S",
+        "bindings/Flutter/test/windows_continuous_qualification_contract.py"
+      ],
+      "exit_code": 1,
+      "seconds": 0.16,
+      "tail": [
+        "----------------------------------------------------------------------",
+        "Ran 27 tests in 0.072s",
+        "",
+        "FAILED (errors=6)"
+      ]
+    },
+    {
+      "command": [
+        "python3",
+        "-I",
+        "-S",
+        "bindings/Flutter/test/hosted_platform_runner_contract.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.34,
+      "tail": [
+        "----------------------------------------------------------------------",
+        "Ran 4 tests in 0.283s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "command": [
+        "python3",
+        "-I",
+        "-S",
+        "bindings/Flutter/test/native_artifact_provenance_contract.py"
+      ],
+      "exit_code": 0,
+      "seconds": 3.16,
+      "tail": [
+        "----------------------------------------------------------------------",
+        "Ran 26 tests in 3.071s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "command": [
+        "python3",
+        "-I",
+        "-S",
+        "bindings/Flutter/macos/tests/sdk_qualification_contract.py"
+      ],
+      "exit_code": 0,
+      "seconds": 1.19,
+      "tail": [
+        "----------------------------------------------------------------------",
+        "Ran 19 tests in 1.103s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "command": [
+        "python3",
+        "-I",
+        "-S",
+        "bindings/Flutter/macos/tests/native_view_qualification_test.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.25,
+      "tail": [
+        "----------------------------------------------------------------------",
+        "Ran 38 tests in 0.147s",
+        "",
+        "OK"
+      ]
+    }
+  ],
+  "windows_python_documented_rerun": {
+    "command": [
+      "python3",
+      "-B",
+      "bindings/Flutter/test/windows_continuous_qualification_contract.py"
+    ],
+    "exit_code": 0,
+    "tests": 27,
+    "initial_isolated_invocation_error": "-I disabled the sibling-module import; documented command passed without source changes."
+  },
+  "flutter": [
+    {
+      "name": "pub-get",
+      "command": [
+        "/home/edward/.local/share/rhwp-tools/flutter-c197ca5199e9/bin/flutter",
+        "pub",
+        "get"
+      ],
+      "exit_code": 0,
+      "seconds": 11.5
+    },
+    {
+      "name": "analyze",
+      "command": [
+        "/home/edward/.local/share/rhwp-tools/flutter-c197ca5199e9/bin/flutter",
+        "analyze",
+        "--no-pub"
+      ],
+      "exit_code": 0,
+      "seconds": 34.8
+    },
+    {
+      "name": "example-analyze",
+      "command": [
+        "/home/edward/.local/share/rhwp-tools/flutter-c197ca5199e9/bin/flutter",
+        "analyze",
+        "--no-pub",
+        "example/lib"
+      ],
+      "exit_code": 0,
+      "seconds": 21.01
+    },
+    {
+      "name": "widget-and-contract-tests",
+      "command": [
+        "/home/edward/.local/share/rhwp-tools/flutter-c197ca5199e9/bin/flutter",
+        "test",
+        "--no-pub",
+        "--concurrency=1",
+        "test/cpu_presenter_test.dart",
+        "test/native_document_lifecycle_test.dart",
+        "test/native_document_test.dart",
+        "test/native_document_view_test.dart",
+        "test/native_editor_fifo_test.dart",
+        "test/native_editor_view_test.dart",
+        "test/native_file_store_test.dart",
+        "test/native_ime_test.dart",
+        "test/native_metal_view_test.dart",
+        "test/native_multipage_view_test.dart",
+        "test/native_presentation_capture_test.dart",
+        "test/native_presentation_test.dart",
+        "test/native_texture_continuous_test.dart",
+        "test/native_texture_view_test.dart",
+        "test/native_viewport_test.dart"
+      ],
+      "exit_code": 0,
+      "seconds": 28.17
+    }
+  ],
+  "flutter_widget_test_count": 183,
+  "flutter_revision": "c197ca5199e9ee5661e865596c9c07294dfab51c",
+  "flutter_engine": "89c39edfdfae2949f6806e4a315c0c08522238b7",
+  "portable_cpp": [
+    {
+      "name": "linux-portable",
+      "log_sha256": "56a93297d8bc19f5cade6a019e7212f10a9168c7b426a2f2b59c93967a450f41",
+      "tail": [
+        "texture state: 13 cases, 226 checks passed"
+      ],
+      "scope": "Portable C++ contract; not target OS GPU execution"
+    },
+    {
+      "name": "windows-portable",
+      "log_sha256": "8f8a5c81f6030378fc9c8fb339d76eed4cf4dc624a19f75ef9221c7cd2ac9801",
+      "tail": [
+        "Windows bridge portable: 8 cases, 51 checks passed",
+        "Windows immutable ownership transfer: 12 cases, 4224 checks passed",
+        "Windows close registry: 6 cases, 1683 checks passed",
+        "production disabled D3D ABI: capability + 4 ignored-invalid-span calls passed",
+        "Windows SDK/backend compile and real OS GPU execution were not performed"
+      ],
+      "scope": "Portable C++ contract; not target OS GPU execution"
+    }
+  ]
+}

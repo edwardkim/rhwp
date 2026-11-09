@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show PlatformViewHitTestBehavior;
 import 'package:flutter/services.dart';
 
 import 'native_document.dart';
@@ -13,16 +14,18 @@ import 'native_viewport.dart';
 enum NativeTexturePlatform {
   linux('rhwp_native/texture_linux'),
   macos('rhwp_native/texture_macos'),
+  macosMetalView('rhwp_native/metal_view_macos'),
   windows('rhwp_native/texture_windows');
 
   const NativeTexturePlatform(this.channelName);
   final String channelName;
-  static NativeTexturePlatform? current() => switch (defaultTargetPlatform) {
-    TargetPlatform.linux => linux,
-    TargetPlatform.macOS => macos,
-    TargetPlatform.windows => windows,
-    _ => null,
-  };
+  static NativeTexturePlatform? current({bool preferContinuous = false}) =>
+      switch (defaultTargetPlatform) {
+        TargetPlatform.linux => linux,
+        TargetPlatform.macOS => preferContinuous ? macosMetalView : macos,
+        TargetPlatform.windows => windows,
+        _ => null,
+      };
 }
 
 enum NativeTexturePhase {
@@ -192,7 +195,14 @@ class NativeTextureController extends ChangeNotifier {
     MethodChannel? channel,
     this.pollInterval = const Duration(milliseconds: 100),
     this.operationTimeout = const Duration(seconds: 2),
+    this.allowImmutableOwnershipTransfer = false,
   }) : channel = channel ?? MethodChannel(platform.channelName) {
+    if (allowImmutableOwnershipTransfer &&
+        platform != NativeTexturePlatform.windows) {
+      throw ArgumentError(
+        'Immutable ownership transfer is supported only by the Windows texture backend.',
+      );
+    }
     if (pollInterval < const Duration(milliseconds: 10) ||
         pollInterval > const Duration(seconds: 1) ||
         operationTimeout <= Duration.zero ||
@@ -225,6 +235,7 @@ class NativeTextureController extends ChangeNotifier {
   final NativeTexturePlatform platform;
   final MethodChannel channel;
   final Duration pollInterval, operationTimeout;
+  final bool allowImmutableOwnershipTransfer;
   late final Timer _timer;
   late final StreamSubscription<NativeDocumentInfo> _infoChanges;
   late final StreamSubscription<int> _invalidations;
@@ -237,6 +248,7 @@ class NativeTextureController extends ChangeNotifier {
   static int _globalRpc = 0;
   bool _working = false,
       _polling = false,
+      _paused = false,
       _wanted = false,
       _stopped = false,
       _closing = false,
@@ -246,21 +258,34 @@ class NativeTextureController extends ChangeNotifier {
   Object? _configurationKey;
   Future<void>? _closeFuture;
   Future<void>? _platformCloseFuture;
+  Future<void>? _nativeRetireAckFuture;
   bool _platformCloseActive = false,
       _platformCloseSent = false,
       _createAttempted = false,
       _platformUnregistered = false,
       _nativeCloseComplete = false,
+      _negotiatedRetireAck = false,
+      _nativeRetireReady = false,
       _retirementPending = false;
   int _attachedViews = 0;
   Object? _retirementDiagnostic;
-  Timer? _frameTimeout;
+  Timer? _frameTimeout, _admissionTimeout, _retryTimer;
+  int _visibilitySerial = 0, _nativeVisibleGeneration = -1;
+  bool _coverPending = false,
+      _coverWorking = false,
+      _nativeCoverConfirmed = false;
+  Completer<void>? _coverWaiter;
+  Future<void>? _pauseFuture;
+  Timer? _coverWaitDeadline;
   final _releases = <Future<void>>{};
   static int get retainedOwnedSnapshots => _OwnedSnapshot.retained.length;
 
   bool get canDisplay =>
       _phase == NativeTexturePhase.visible && _localCurrent(_frame);
   bool get needsCpuFallback => _phase == NativeTexturePhase.fallback;
+  bool get isPaused => _paused;
+  bool get _nativeView => platform == NativeTexturePlatform.macosMetalView;
+  bool get _requiresRetireAck => _nativeView || _negotiatedRetireAck;
 
   /// Tracks owner/registration close only, not immutable consumer GPU credits.
   bool get retirementPending => _retirementPending;
@@ -287,6 +312,7 @@ class NativeTextureController extends ChangeNotifier {
     final stamp = snapshot?.stamp, info = document.info;
     return !_closing &&
         !_stopped &&
+        !_paused &&
         !document.isDisposed &&
         stamp != null &&
         info != null &&
@@ -326,11 +352,178 @@ class NativeTextureController extends ChangeNotifier {
     ++_generation;
     _view = document.beginPresentation();
     _raster = document.rasterInvalidationGeneration;
-    _wanted = true;
+    _wanted = !_paused;
     _phase = NativeTexturePhase.pending;
     _frameTimeout?.cancel();
+    _retryTimer?.cancel();
+    _retryTimer = null;
+    _admissionTimeout?.cancel();
+    if (allowImmutableOwnershipTransfer && !_paused) {
+      final generation = _generation;
+      _admissionTimeout = Timer(operationTimeout, () {
+        if (_current(generation)) {
+          _fail(
+            TimeoutException('GPU frame admission timed out.'),
+            fallback: true,
+          );
+        }
+      });
+    }
+    _requestNativeCover();
     _signal(); // Cover cached platform pixels in this same UI turn.
-    unawaited(_pump());
+    if (!_paused) unawaited(_pump());
+  }
+
+  /// Stops presentation admission and waits for the native view to be hidden.
+  /// Native registration, current frame leases and late RPC observers remain.
+  Future<void> pause() {
+    if (_closing || _stopped) {
+      return Future.error(
+        const NativeCallException('closed', 'Presentation is closing.'),
+      );
+    }
+    if (_paused) return _pauseFuture ?? Future.value();
+    _paused = true;
+    if (_plan != null) {
+      invalidate();
+    } else {
+      ++_generation;
+      _phase = NativeTexturePhase.pending;
+      _requestNativeCover();
+      _signal();
+    }
+    return _pauseFuture = _waitForNativeCover();
+  }
+
+  /// Republishes the newest source and geometry after a presentation pause.
+  void resume() {
+    if (!_paused || _closing || _stopped) return;
+    _paused = false;
+    _pauseFuture = null;
+    invalidate();
+  }
+
+  void _requestNativeCover() {
+    if (!_nativeView || _platformUnregistered) return;
+    ++_visibilitySerial;
+    _nativeVisibleGeneration = -1;
+    _nativeCoverConfirmed = false;
+    _coverPending = true;
+    unawaited(_flushNativeCover());
+  }
+
+  bool _visibilityReceipt(
+    Map<String, Object?> reply,
+    int id,
+    int serial,
+    bool covered,
+  ) =>
+      reply['textureId'] == id &&
+      reply['visibilitySerial'] == serial &&
+      reply['accepted'] == true &&
+      reply['covered'] == covered;
+
+  void _finishCoverWaiter([Object? error]) {
+    final waiter = _coverWaiter;
+    if (waiter == null) return;
+    if (error == null &&
+        (!_nativeCoverConfirmed || _coverPending || _coverWorking)) {
+      return;
+    }
+    _coverWaiter = null;
+    _coverWaitDeadline?.cancel();
+    _coverWaitDeadline = null;
+    if (error == null) {
+      waiter.complete();
+    } else {
+      waiter.completeError(error);
+    }
+  }
+
+  Future<void> _waitForNativeCover() {
+    if (!_nativeView ||
+        (_nativeCoverConfirmed && !_coverPending && !_coverWorking) ||
+        (textureId == null && !_createAttempted)) {
+      return Future.value();
+    }
+    final existing = _coverWaiter;
+    if (existing != null) return existing.future;
+    final waiter = Completer<void>();
+    _coverWaiter = waiter;
+    _coverWaitDeadline = Timer(operationTimeout, () {
+      final error = TimeoutException('Native view cover was not confirmed.');
+      _finishCoverWaiter(error);
+      if (!_closing && !_stopped) _fail(error, fallback: true);
+    });
+    unawaited(_flushNativeCover());
+    return waiter.future;
+  }
+
+  Future<void> _flushNativeCover() async {
+    if (_coverWorking ||
+        !_coverPending ||
+        textureId == null ||
+        _platformUnregistered ||
+        _rpc >= 3 ||
+        _globalRpc >= 8) {
+      return;
+    }
+    _coverWorking = true;
+    try {
+      while (_coverPending && !_platformUnregistered && textureId != null) {
+        if (_rpc >= 3 || _globalRpc >= 8) break;
+        final id = textureId!, serial = _visibilitySerial;
+        _coverPending = false;
+        final reply = await _invoke('setCovered', {
+          'textureId': id,
+          'covered': true,
+          'visibilitySerial': serial,
+        });
+        if (serial != _visibilitySerial) continue;
+        if (!_visibilityReceipt(reply, id, serial, true)) {
+          throw const NativeCallException(
+            'invalidVisibilityReply',
+            'Native view cover was not acknowledged.',
+          );
+        }
+        _nativeCoverConfirmed = true;
+      }
+    } catch (error) {
+      _finishCoverWaiter(error);
+      if (!_closing && !_stopped) _fail(error, fallback: _canFallback(error));
+    } finally {
+      _coverWorking = false;
+      _finishCoverWaiter();
+    }
+  }
+
+  Future<bool> _uncoverNative(_OwnedSnapshot frame, int generation) async {
+    if (!_current(generation) || !_localCurrent(frame)) return false;
+    if (_nativeVisibleGeneration == generation) return true;
+    if (!_nativeCoverConfirmed || _coverPending || _coverWorking) return false;
+    final id = textureId!, serial = ++_visibilitySerial;
+    final reply = await _invoke('setCovered', {
+      'textureId': id,
+      'covered': false,
+      'visibilitySerial': serial,
+      'stamp': frame.stamp!.toJson(),
+    });
+    if (!_current(generation) ||
+        !_localCurrent(frame) ||
+        serial != _visibilitySerial) {
+      _requestNativeCover();
+      return false;
+    }
+    if (!_visibilityReceipt(reply, id, serial, false) ||
+        !frame.stamp!.matches(reply['renderedStamp'])) {
+      throw const NativeCallException(
+        'stalePresentation',
+        'Native view did not confirm the current full stamp.',
+      );
+    }
+    _nativeCoverConfirmed = false;
+    _nativeVisibleGeneration = generation;
+    return true;
   }
 
   void _signal() {
@@ -340,6 +533,7 @@ class NativeTextureController extends ChangeNotifier {
   bool _current(int generation) =>
       !_closing &&
       !_stopped &&
+      !_paused &&
       generation == _generation &&
       !document.isDisposed &&
       _view == document.presentationGeneration &&
@@ -381,7 +575,13 @@ class NativeTextureController extends ChangeNotifier {
     }
     ++_rpc;
     ++_globalRpc;
-    final future = channel.invokeMethod<Object?>(method, arguments).then(_map);
+    final future = channel
+        .invokeMethod<Object?>(method, {
+          ...arguments,
+          if (_negotiatedRetireAck && arguments.containsKey('textureId'))
+            'deviceGeneration': _device,
+        })
+        .then(_map);
     final observed = future.then(
       (value) {
         --_rpc;
@@ -444,6 +644,7 @@ class NativeTextureController extends ChangeNotifier {
             'closing',
             'invalidArgument',
             'limitExceeded',
+            'targetTooLarge',
             'retireLimit',
             'featureDisabled',
             'unsupported',
@@ -471,8 +672,35 @@ class NativeTextureController extends ChangeNotifier {
     }
   }
 
+  bool _retryableBackpressure(Object error) =>
+      allowImmutableOwnershipTransfer &&
+      error is PlatformException &&
+      error.code == 'backpressure' &&
+      error.details is Map &&
+      (error.details as Map)['backpressureRetryable'] == true;
+
+  void _retryAdmission(int generation) {
+    if (!_current(generation)) return;
+    _retryTimer?.cancel();
+    _retryTimer = Timer(pollInterval, () {
+      _retryTimer = null;
+      if (!_current(generation)) return;
+      _view = document.beginPresentation();
+      _raster = document.rasterInvalidationGeneration;
+      _wanted = true;
+      unawaited(_pump());
+    });
+  }
+
   Future<void> _pump() async {
-    if (_working || !_wanted || _closing || _stopped || _plan == null) return;
+    if (_working ||
+        !_wanted ||
+        _closing ||
+        _stopped ||
+        _paused ||
+        _plan == null) {
+      return;
+    }
     _working = true;
     final generation = _generation, plan = _plan!, view = _view;
     _wanted = false;
@@ -499,14 +727,29 @@ class NativeTextureController extends ChangeNotifier {
       }
       if (textureId == null) {
         _createAttempted = true;
-        await _invoke(
+        final created = await _invoke(
           'create',
-          {'libraryPath': presentation.libraryPath},
+          {
+            'libraryPath': presentation.libraryPath,
+            if (platform == NativeTexturePlatform.windows ||
+                platform == NativeTexturePlatform.macos)
+              'closeAcknowledgementRequired': true,
+            if (allowImmutableOwnershipTransfer)
+              'publicationMode': 'immutableOwnershipTransfer',
+          },
           received: (reply) {
             final id = reply['textureId'], device = reply['deviceGeneration'];
             if (id is int && id > 0 && device is int && device > 0) {
+              _negotiatedRetireAck =
+                  (platform == NativeTexturePlatform.windows ||
+                      platform == NativeTexturePlatform.macos) &&
+                  reply['closeAcknowledgementRequired'] == true &&
+                  reply['limits'] is Map &&
+                  (reply['limits'] as Map)['closeAcknowledgementRequired'] ==
+                      true;
               textureId = id;
               _device = device;
+              if (_nativeView) unawaited(_flushNativeCover());
               if (_closing || _stopped) {
                 unawaited(_closePlatform());
               } else {
@@ -522,6 +765,25 @@ class NativeTextureController extends ChangeNotifier {
           throw const NativeCallException(
             'invalidTextureReply',
             'Missing texture identity/device generation.',
+          );
+        }
+        if (allowImmutableOwnershipTransfer &&
+            (created['publicationMode'] != 'immutableOwnershipTransfer' ||
+                created['limits'] is! Map ||
+                (created['limits'] as Map)['continuousPresentationSupported'] !=
+                    true)) {
+          throw const NativeCallException(
+            'unsupportedPresentation',
+            'The Windows plugin did not negotiate immutable ownership transfer.',
+          );
+        }
+        if (_nativeView &&
+            (created['presentationKind'] != 'nativeView' ||
+                created['viewType'] != 'rhwp_native/metal_view' ||
+                created['ready'] != false)) {
+          throw const NativeCallException(
+            'unsupportedPresentation',
+            'The macOS plugin did not negotiate a native Metal view.',
           );
         }
       }
@@ -585,7 +847,18 @@ class NativeTextureController extends ChangeNotifier {
           received: (reply) => _submitReply(owned, reply),
           failed: (error) => _submitError(owned, error),
         );
-      } catch (_) {
+      } catch (error) {
+        // P109 reserves credit before accepting IDs. Only this explicit native
+        // rejection may release the caller snapshot and retry a fresh capture.
+        // Accepted/status errors and ambiguous transport outcomes never replay.
+        if (_retryableBackpressure(error) &&
+            !snapshot.sending &&
+            !snapshot.ambiguous &&
+            _current(generation)) {
+          await snapshot.releaseOwned().timeout(operationTimeout);
+          if (_current(generation)) _retryAdmission(generation);
+          return;
+        }
         if (!snapshot.settled && (snapshot.sending || snapshot.ambiguous)) {
           snapshot.ambiguous = true;
           await _reconcile(snapshot);
@@ -600,6 +873,8 @@ class NativeTextureController extends ChangeNotifier {
         );
       }
       if (!_current(generation)) return;
+      _admissionTimeout?.cancel();
+      _admissionTimeout = null;
       _frame = snapshot;
       _phase = NativeTexturePhase.pending;
       _publicationDeadline(generation);
@@ -626,7 +901,7 @@ class NativeTextureController extends ChangeNotifier {
           fallback: true,
         );
       }
-      if (_wanted && !_closing && !_stopped) unawaited(_pump());
+      if (_wanted && !_closing && !_stopped && !_paused) unawaited(_pump());
     }
   }
 
@@ -703,6 +978,7 @@ class NativeTextureController extends ChangeNotifier {
             'unsupported',
             'featureDisabled',
             'backpressure',
+            'targetTooLarge',
             'retireLimit',
             'snapshotCreditLimit',
             'contextChanged',
@@ -718,6 +994,7 @@ class NativeTextureController extends ChangeNotifier {
             'unsupported',
             'featureDisabled',
             'backpressure',
+            'targetTooLarge',
             'retireLimit',
             'notReady',
             'closing',
@@ -734,12 +1011,25 @@ class NativeTextureController extends ChangeNotifier {
     _phase = fallback ? NativeTexturePhase.fallback : NativeTexturePhase.failed;
     _timer.cancel();
     _frameTimeout?.cancel();
+    _admissionTimeout?.cancel();
+    _retryTimer?.cancel();
+    _retryTimer = null;
+    _finishCoverWaiter(error);
+    _requestNativeCover();
     _signal();
     unawaited(_closePlatform());
   }
 
   void _tick() {
-    if (_working || _polling || _closing || _stopped) return;
+    if (_nativeView) unawaited(_flushNativeCover());
+    if (_working ||
+        _polling ||
+        _closing ||
+        _stopped ||
+        _paused ||
+        _retryTimer != null) {
+      return;
+    }
     if (_wanted) {
       unawaited(_pump());
       return;
@@ -751,6 +1041,7 @@ class NativeTextureController extends ChangeNotifier {
     if (_polling ||
         _closing ||
         _stopped ||
+        _paused ||
         _frame == null ||
         textureId == null) {
       return;
@@ -776,6 +1067,7 @@ class NativeTextureController extends ChangeNotifier {
       if (!rendered) {
         if (_phase == NativeTexturePhase.visible) {
           _phase = NativeTexturePhase.pending;
+          _requestNativeCover();
           _publicationDeadline(generation);
           _signal();
         }
@@ -789,6 +1081,8 @@ class NativeTextureController extends ChangeNotifier {
           'The full source stamp is no longer current.',
         );
       }
+      if (!_current(generation) || !_localCurrent(frame)) return;
+      if (_nativeView && (!await _uncoverNative(frame, generation))) return;
       if (_current(generation) && _localCurrent(frame)) {
         final changed = _phase != NativeTexturePhase.visible;
         _phase = NativeTexturePhase.visible;
@@ -804,18 +1098,41 @@ class NativeTextureController extends ChangeNotifier {
     }
   }
 
-  bool _observeCloseStatus(Map<String, Object?> status) {
+  bool _observeCloseStatus(
+    Map<String, Object?> status, {
+    bool fromRetireAck = false,
+  }) {
     final unregistered =
         status['registered'] == false ||
         status['unregistered'] == true ||
         status['textureUnregisteredNotification'] == true;
     final registrationChanged = unregistered && !_platformUnregistered;
     if (unregistered) _platformUnregistered = true;
+    if (_requiresRetireAck &&
+        unregistered &&
+        status['closed'] == true &&
+        status['ownerFinished'] == true &&
+        (!_nativeView || status['nativeViewLayerDetached'] == true)) {
+      _nativeRetireReady = true;
+    }
     final complete = switch (platform) {
       NativeTexturePlatform.linux =>
         status['cleanupComplete'] == true && status['registered'] == false,
-      NativeTexturePlatform.macos || NativeTexturePlatform.windows =>
-        status['ownerFinished'] == true && unregistered,
+      NativeTexturePlatform.macosMetalView ||
+      NativeTexturePlatform.macos ||
+      NativeTexturePlatform.windows =>
+        _requiresRetireAck
+            ? fromRetireAck &&
+                  _nativeRetireReady &&
+                  status['textureId'] == textureId &&
+                  status['acknowledged'] == true &&
+                  status['closed'] == true &&
+                  status['ownerFinished'] == true &&
+                  status['registered'] == false &&
+                  (_nativeView
+                      ? status['nativeViewLayerDetached'] == true
+                      : status['deviceGeneration'] == _device)
+            : status['ownerFinished'] == true && unregistered,
     };
     if (complete) {
       // Owner/registration completion is not consumer GPU completion or a
@@ -828,7 +1145,49 @@ class NativeTextureController extends ChangeNotifier {
     } else if (registrationChanged) {
       _signal();
     }
+    if (_requiresRetireAck &&
+        _nativeRetireReady &&
+        !_platformCloseActive &&
+        !_nativeCloseComplete &&
+        _nativeRetireAckFuture == null) {
+      _ackRetirementWhenAvailable();
+    }
     return complete;
+  }
+
+  void _ackRetirementWhenAvailable() {
+    if (_rpc < 3 && _globalRpc < 8 && _nativeRetireAckFuture == null) {
+      unawaited(_ackNativeRetirement().catchError((Object _) {}));
+    }
+  }
+
+  Future<void> _ackNativeRetirement() {
+    final existing = _nativeRetireAckFuture;
+    if (existing != null) return existing;
+    final done = Completer<void>();
+    _nativeRetireAckFuture =
+        done.future; // One acknowledgement, including late replies.
+    unawaited(() async {
+      try {
+        await _invoke(
+          'retireAck',
+          {'textureId': textureId},
+          received: (reply) {
+            if (!_observeCloseStatus(reply, fromRetireAck: true)) {
+              throw const NativeCallException(
+                'retirePending',
+                'Native close acknowledgement was not confirmed.',
+              );
+            }
+          },
+        );
+        done.complete();
+      } catch (error, stack) {
+        _retirementUnconfirmed(error);
+        done.completeError(error, stack);
+      }
+    }());
+    return done.future;
   }
 
   void _retirementUnconfirmed(Object error) {
@@ -857,6 +1216,11 @@ class NativeTextureController extends ChangeNotifier {
         // ownership observer may start the one native close once the ID is known.
         if (!_platformCloseSent) _platformCloseFuture = null;
       }
+      // A bounded close wait may expire just after observing owner completion.
+      // Send its one explicit ack; its original late observer remains live.
+      if (_requiresRetireAck && _nativeRetireReady && !_nativeCloseComplete) {
+        _ackRetirementWhenAvailable();
+      }
       done.complete();
     }
 
@@ -882,6 +1246,11 @@ class NativeTextureController extends ChangeNotifier {
       if (_rpc >= 3 || _globalRpc >= 8) return;
       invoking = true;
       try {
+        if (_requiresRetireAck && _nativeRetireReady) {
+          await _ackNativeRetirement();
+          if (_nativeCloseComplete) finish();
+          return;
+        }
         final method = _platformCloseSent ? 'status' : 'close';
         _platformCloseSent = true;
         await _invoke(method, {'textureId': id}, received: received);
@@ -917,9 +1286,17 @@ class NativeTextureController extends ChangeNotifier {
     ++_generation;
     _wanted = false;
     _phase = NativeTexturePhase.closing;
-    _retirementPending = textureId != null || _createAttempted;
+    _retirementPending =
+        !_nativeCloseComplete && (textureId != null || _createAttempted);
     _timer.cancel();
     _frameTimeout?.cancel();
+    _admissionTimeout?.cancel();
+    _retryTimer?.cancel();
+    _retryTimer = null;
+    _finishCoverWaiter(
+      const NativeCallException('closed', 'Presentation is closing.'),
+    );
+    _requestNativeCover();
     _signal();
     unawaited(_infoChanges.cancel());
     unawaited(_invalidations.cancel());
@@ -1027,10 +1404,18 @@ class _NativeTextureViewState extends State<NativeTextureView> {
       children: [
         if (controller.shouldPaintTexture)
           IgnorePointer(
-            child: Texture(
-              textureId: controller.textureId!,
-              filterQuality: FilterQuality.low,
-            ),
+            child: controller.platform == NativeTexturePlatform.macosMetalView
+                ? AppKitView(
+                    key: ValueKey(controller.textureId),
+                    viewType: 'rhwp_native/metal_view',
+                    creationParams: {'handle': controller.textureId!},
+                    creationParamsCodec: const StandardMessageCodec(),
+                    hitTestBehavior: PlatformViewHitTestBehavior.transparent,
+                  )
+                : Texture(
+                    textureId: controller.textureId!,
+                    filterQuality: FilterQuality.low,
+                  ),
           ),
         if (!visible)
           Positioned.fill(

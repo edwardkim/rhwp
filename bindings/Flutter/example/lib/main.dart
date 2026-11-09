@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:rhwp_native_reference/rhwp_native_flutter.dart';
@@ -14,10 +13,16 @@ class NativeReferenceApp extends StatefulWidget {
 
 class _NativeReferenceAppState extends State<NativeReferenceApp> {
   final _path = TextEditingController();
+  final _pages = NativePagedViewportController();
   NativeDocument? _document;
   NativeTextureController? _texture;
+  NativeDocumentLifecycle? _lifecycle;
+  NativeEditorController? _editor;
   String? _error;
   bool _busy = true;
+  bool get _usesGpuViewport =>
+      _texture != null &&
+      _document?.transport.capabilities['atomicImeEdits'] == true;
 
   @override
   void initState() {
@@ -26,6 +31,19 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
   }
 
   Future<void> _connect() async {
+    if (_document != null) return;
+    _lifecycle?.removeListener(_lifecycleChanged);
+    _lifecycle?.dispose();
+    _texture?.dispose();
+    _lifecycle = null;
+    _texture = null;
+    _editor = null;
+    _pages.scrollTo(0, horizontal: 0);
+    _pages.setZoom(1);
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
     NativeDocument? document;
     NativeTextureController? texture;
     try {
@@ -36,7 +54,9 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
       document = await NativeDocument.connect(transport);
       await document.newDocument();
       if (const bool.fromEnvironment('RHWP_GPU')) {
-        final platform = NativeTexturePlatform.current();
+        final platform = NativeTexturePlatform.current(
+          preferContinuous: const bool.fromEnvironment('RHWP_GPU_CONTINUOUS'),
+        );
         if (platform != null) {
           final presentation = await NativePresentation.connect(
             nativeLibrary: transport.nativeLibraryPath,
@@ -46,6 +66,9 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
               document: document,
               presentation: presentation,
               platform: platform,
+              allowImmutableOwnershipTransfer:
+                  platform == NativeTexturePlatform.windows &&
+                  const bool.fromEnvironment('RHWP_GPU_CONTINUOUS'),
             );
           }
         }
@@ -54,7 +77,35 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
         await _closeDocument(document, texture);
         return;
       }
+      final owner = document;
+      final lifecycle = NativeDocumentLifecycle(
+        document: owner,
+        files: NativeFileStore(owner),
+        settleInput: () async {
+          FocusManager.instance.primaryFocus?.unfocus();
+          final editor = _editor;
+          if (editor != null) await editor.focusLost();
+        },
+        confirmUnsaved: (_) => _unsavedDecision(),
+        chooseSavePath: () => _askPath('저장할 HWP/HWPX 경로'),
+        approveLoss: (report) => _approve(
+          '저장 시 일부 내용이 보존되지 않습니다.',
+          '${report['count']}개 항목의 손실 보고: $report',
+        ),
+        approveOverwrite: (_) =>
+            _approve('기존 파일을 교체합니다.', '선택한 파일을 현재 문서로 교체하시겠습니까?'),
+        retireViewport: () async {
+          // Keep the view mounted underneath its cover until close returns.
+          final texture = _texture;
+          if (texture == null) return true;
+          await texture.close();
+          return texture.phase == NativeTexturePhase.closed &&
+              !texture.retirementPending;
+        },
+      );
+      lifecycle.addListener(_lifecycleChanged);
       setState(() {
+        _lifecycle = lifecycle;
         _document = document;
         _texture = texture;
         _busy = false;
@@ -82,36 +133,115 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
     }
   }
 
-  Future<void> _open() async {
-    final document = _document;
-    if (document == null) return;
-    setState(() {
-      _busy = true;
-      _error = null;
-    });
+  void _lifecycleChanged() {
+    if (mounted) setState(() {});
+  }
+
+  Future<bool> _approve(String title, String message) async {
+    if (!mounted) return false;
+    return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(title),
+            content: SingleChildScrollView(child: Text(message)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('취소'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('계속'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
+  Future<NativeUnsavedDecision> _unsavedDecision() async {
+    if (!mounted) return NativeUnsavedDecision.cancel;
+    return await showDialog<NativeUnsavedDecision>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('변경 사항을 저장하시겠습니까?'),
+            actions: [
+              TextButton(
+                onPressed: () =>
+                    Navigator.pop(context, NativeUnsavedDecision.cancel),
+                child: const Text('취소'),
+              ),
+              TextButton(
+                onPressed: () =>
+                    Navigator.pop(context, NativeUnsavedDecision.discard),
+                child: const Text('폐기'),
+              ),
+              FilledButton(
+                onPressed: () =>
+                    Navigator.pop(context, NativeUnsavedDecision.save),
+                child: const Text('저장'),
+              ),
+            ],
+          ),
+        ) ??
+        NativeUnsavedDecision.cancel;
+  }
+
+  Future<String?> _askPath(String label) async {
+    if (!mounted) return null;
+    final input = TextEditingController(text: _path.text);
     try {
-      final file = File(_path.text);
-      if (await file.length() > maxReferenceBytes) {
-        throw StateError('참조 앱은 16 MiB 이하 문서를 엽니다.');
-      }
-      final source = await file.open();
-      try {
-        final bytes = await source.read(maxReferenceBytes + 1);
-        await document.openBytes(bytes);
-      } finally {
-        await source.close();
+      final result = await showDialog<String>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(label),
+          content: TextField(controller: input, autofocus: true),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('취소'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, input.text),
+              child: const Text('선택'),
+            ),
+          ],
+        ),
+      );
+      return result == null || result.trim().isEmpty ? null : result;
+    } finally {
+      // The dialog route can still paint its final frame after its result.
+      WidgetsBinding.instance.addPostFrameCallback((_) => input.dispose());
+    }
+  }
+
+  Future<void> _act(
+    Future<bool> Function(NativeDocumentLifecycle) action,
+  ) async {
+    final lifecycle = _lifecycle;
+    if (lifecycle == null || lifecycle.isBusy || lifecycle.isClosed) return;
+    setState(() => _error = null);
+    try {
+      await action(lifecycle);
+      if (mounted && lifecycle.isClosed) {
+        setState(() => _document = null);
       }
     } catch (error) {
       if (mounted) {
         setState(() {
           _error = '$error';
+          if (_document?.isDisposed == true) _document = null;
         });
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          _busy = false;
-        });
+      final texture = _texture;
+      if (mounted &&
+          texture?.phase == NativeTexturePhase.closed &&
+          !texture!.retirementPending) {
+        // A later checkpoint failure can keep the document after its old GPU
+        // viewport has already retired. Continue with the CPU reference view.
+        setState(() => _texture = null);
+        WidgetsBinding.instance.addPostFrameCallback((_) => texture.dispose());
       }
     }
   }
@@ -128,7 +258,7 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
               Expanded(
                 child: TextField(
                   controller: _path,
-                  enabled: !_busy,
+                  enabled: !_busy && _lifecycle?.isBusy != true,
                   decoration: const InputDecoration(
                     labelText: 'HWP/HWPX 파일 경로',
                   ),
@@ -136,31 +266,131 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
               ),
               const SizedBox(width: 8),
               FilledButton(
-                onPressed: _busy || _document == null ? null : _open,
+                onPressed:
+                    _busy || _document == null || _lifecycle?.isBusy == true
+                    ? null
+                    : () => _act((lifecycle) => lifecycle.openPath(_path.text)),
                 child: const Text('열기'),
               ),
             ],
           ),
         ),
-        if (_busy) const LinearProgressIndicator(),
+        if (_document != null)
+          Wrap(
+            spacing: 8,
+            children: [
+              for (final entry
+                  in <String, Future<bool> Function(NativeDocumentLifecycle)>{
+                    '새 문서': (lifecycle) => lifecycle.newDocument(),
+                    '저장': (lifecycle) => lifecycle.save(),
+                    '다른 이름으로 저장': (lifecycle) async {
+                      final path = await _askPath('저장할 HWP/HWPX 경로');
+                      return path != null &&
+                          await lifecycle.save(destination: path);
+                    },
+                    '복구 파일 열기': (lifecycle) =>
+                        lifecycle.openPath(_path.text, recovery: true),
+                    '복구 파일 만들기': (lifecycle) async {
+                      final directory = await _askPath('복구 파일을 보관할 디렉터리');
+                      return directory != null &&
+                          await lifecycle.writeRecovery(directory) != null;
+                    },
+                    '문서 닫기': (lifecycle) => lifecycle.close(),
+                  }.entries)
+                TextButton(
+                  onPressed: _busy || _lifecycle?.isBusy == true
+                      ? null
+                      : () => _act(entry.value),
+                  child: Text(entry.key),
+                ),
+            ],
+          ),
+        if (_lifecycle?.sourcePath != null) Text(_lifecycle!.sourcePath!),
+        if (_document != null && !_usesGpuViewport)
+          Wrap(
+            spacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              TextButton(
+                onPressed: _lifecycle?.isBusy == true || _pages.currentPage == 0
+                    ? null
+                    : () => _pages.jumpToPage(_pages.currentPage - 1),
+                child: const Text('이전 쪽'),
+              ),
+              Text(
+                '${_pages.currentPage + 1} / ${_document!.info?.pageCount ?? 0}쪽',
+              ),
+              TextButton(
+                onPressed:
+                    _lifecycle?.isBusy == true ||
+                        _pages.currentPage + 1 >= _pages.pageCount
+                    ? null
+                    : () => _pages.jumpToPage(_pages.currentPage + 1),
+                child: const Text('다음 쪽'),
+              ),
+              TextButton(
+                onPressed: _lifecycle?.isBusy == true || _pages.zoom <= .25
+                    ? null
+                    : () => _pages.setZoom(
+                        (_pages.zoom / 1.25).clamp(.25, 4.0).toDouble(),
+                      ),
+                child: const Text('축소'),
+              ),
+              Text('${(_pages.zoom * 100).round()}%'),
+              TextButton(
+                onPressed: _lifecycle?.isBusy == true || _pages.zoom >= 4
+                    ? null
+                    : () => _pages.setZoom(
+                        (_pages.zoom * 1.25).clamp(.25, 4.0).toDouble(),
+                      ),
+                child: const Text('확대'),
+              ),
+            ],
+          ),
+        if (_document?.info?.isDirty == true) const Text('저장하지 않은 변경 사항'),
+        if (_busy || _lifecycle?.isBusy == true)
+          const LinearProgressIndicator(),
+        if (!_busy && _document == null)
+          TextButton(onPressed: _connect, child: const Text('문서 연결')),
         if (_error != null) Text(_error!),
         Expanded(
           child: _document == null
               ? const SizedBox.shrink()
-              : _document!.transport.capabilities['atomicImeEdits'] == true
-              ? NativeEditorView(
-                  document: _document!,
-                  viewportBuilder: _texture == null
-                      ? null
-                      : (context, document, page, viewport, cpuFallback) =>
-                            NativeTextureView(
-                              controller: _texture!,
-                              viewport: viewport,
-                              page: page,
-                              cpuFallback: cpuFallback,
-                            ),
-                )
-              : NativeDocumentView(document: _document!),
+              : AbsorbPointer(
+                  absorbing: _lifecycle?.isBusy == true,
+                  child: _usesGpuViewport
+                      ? NativeEditorView(
+                          document: _document!,
+                          onControllerChanged: (editor) => _editor = editor,
+                          viewportBuilder: _texture == null
+                              ? null
+                              : (
+                                  context,
+                                  document,
+                                  page,
+                                  viewport,
+                                  cpuFallback,
+                                ) => NativeTextureView(
+                                  controller: _texture!,
+                                  viewport: viewport,
+                                  page: page,
+                                  cpuFallback: cpuFallback,
+                                ),
+                        )
+                      : NativePagedDocumentView(
+                          document: _document!,
+                          controller: _pages,
+                          editable:
+                              _document!
+                                  .transport
+                                  .capabilities['atomicImeEdits'] ==
+                              true,
+                          onControllerChanged: (editor) => _editor = editor,
+                          onViewportReady: (_) {
+                            if (mounted) setState(() {});
+                          },
+                        ),
+                ),
         ),
       ],
     ),
@@ -169,6 +399,9 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
   @override
   void dispose() {
     _path.dispose();
+    _pages.dispose();
+    _lifecycle?.removeListener(_lifecycleChanged);
+    _lifecycle?.dispose();
     final document = _document;
     unawaited(_closeDocument(document, _texture));
     super.dispose();

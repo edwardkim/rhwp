@@ -1,0 +1,5 @@
+/home/edward/mygithub/rhwp-worktrees/review-integration-536-seo-rii-preview-flutter/ttfs/opensource/RHWPOldHangul-Regular.otf
+/home/edward/mygithub/rhwp-worktrees/review-integration-536-seo-rii-preview-flutter/ttfs/opensource/RHWPPublicBatang-Regular.ttf
+/home/edward/mygithub/rhwp-worktrees/review-integration-536-seo-rii-preview-flutter/ttfs/opensource/NotoSansKR-Regular.ttf
+/home/edward/mygithub/rhwp-worktrees/review-integration-536-seo-rii-preview-flutter/ttfs/opensource/NotoSansKR-ExtraLight.ttf
+/home/edward/mygithub/rhwp-worktrees/review-integration-536-seo-rii-preview-flutter/ttfs/opensource/NotoSansSymbols2-Regular.ttf

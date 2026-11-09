@@ -47,13 +47,49 @@ Plugin class는 `RhwpMetalPlugin`, channel은 `rhwp_native/texture_macos`다. ma
 별도 runner의 generated registrant 또는 `registerWithRegistrar:`로 등록한다. 이 디렉터리를
 `flutter create .`로 덮어쓰지 않는다. macOS deployment target은 12.0이다.
 
+이 ObjC++ CocoaPods target은 `FlutterMacOS`를 명시적으로 framework link한다.
+Flutter 3.47의 SwiftPM host와 CocoaPods plugin을 함께 쓰는 경우에도 필요하다.
+`s.dependency 'FlutterMacOS'`는 Flutter의 placeholder pod와 framework 검색 경로를
+설정하지만, 순수 ObjC++ pod의 dynamic link를 Swift import의 autolink로 대신할 수
+없다. engine의 실제 framework 배치는 Flutter tooling에 맡기고, unresolved symbol을
+허용하거나 자체 Flutter runtime을 중복해서 배포하지 않는다.
+
 | Method | 인자 / 결과 |
 | --- | --- |
 | `capabilities` | 인자 없음. 프레임 크레딧과 `consumerRetirement:false`, `continuousPresentationSupported:false`, `cpuFallbackRequiredWhenSaturated:true` 반환 |
-| `create` | `{libraryPath:absolute}` → `{textureId,deviceGeneration,initializing:true,limits}`. dylib load·Metal device/context 생성은 producer thread에서 실행한다. `status.ready` 전 submit은 거절한다. |
+| `create` | `{libraryPath:absolute,closeAcknowledgementRequired?:bool}` → `{textureId,deviceGeneration,initializing:true,closeAcknowledgementRequired,limits}`. dylib load·Metal device/context 생성은 producer thread에서 실행한다. `status.ready` 전 submit은 거절한다. |
 | `submit` | `{textureId,stamp,width,height,placements,clearColor}` → `{accepted,acceptedStamp,reason,limits}`. stamp는 P89의 document/revision/font/view/device/deviceScale 전부다. deviceGeneration은 create 결과를 사용한다. placements는 `{snapshot,scale,originX,originY,backgroundColor?}` 최대 8개다. |
 | `status` | `{textureId}` → ready/closed/ownerFinished/pending/inFlight/hasFrame/staleFramesDropped/error/deviceGeneration/acceptedStamp/acceptedSnapshots/limits. 결과는 단일 bounded 상태다. |
 | `close` | `{textureId}` → 즉시 `{closed:true,ownerCompletionPending,limits}`. platform thread에서 unregister하고, producer thread는 실행 중 GPU 작업과 Native presenter 정리를 마친 후 종료한다. 최근 closed ID 하나는 status/idempotent close를 위한 bounded receipt로 남긴다. |
+
+새 클라이언트는 create에 `closeAcknowledgementRequired: true`를 요청하고 응답의
+top level과 `limits`에 같은 true가 있을 때만 종료 확인 계약을 활성화한다.
+협상한 모든 `submit`·`status`·`close`·`retireAck` 요청에는 `textureId`와
+`deviceGeneration`을 함께 보낸다. Flutter texture ID는 객체 주소여서 재사용될 수
+있으므로 이전 세대의 늦은 요청이 새 texture를 닫거나 그 상태로 응답하지 않는다.
+누락되거나 형식이 잘못된 세대는 `invalidArgument`, 서로 다른 ID·세대는
+`contextChanged`로 enqueue 전에 거절한다. 공통 Dart 클라이언트는 이 명확한
+사전 거절에서 아직 전달하지 않은 snapshot을 한 번 해제할 수 있다.
+
+협상 경로는 활성 texture와 아직 확인하지 않은 close record를 합쳐 최대 두 개
+보존한다. 두 close가 겹쳐도 handle·세대별 미완료 상태를 덮어쓰지 않는다.
+`closed: true`, `ownerFinished: true`, `registered: false`를 확인한 다음
+`retireAck {textureId,deviceGeneration}`를 보내야 record를 해제한다. 응답은 동일
+ID·세대와 `acknowledged: true`, `closed: true`, `ownerFinished: true`,
+`registered: false`다. 미완료 ack는 `retirePending`이며 상태와 한도를 보존한다.
+그 뒤에는 Native owner 참조가 없는 완료 metadata를 최근 ack 순서로 두 개만
+남겨 반복 status·close·ack에 응답한다. 협상하지 않은 기존 호출 형식은 유지한다.
+완료된 owner 정보는 고정하지만, cached status·close 응답의 `limits`는 조회 시점의
+전역 credit 값으로 갱신한다. 다른 texture의 새 예약을 이전 0 값으로 숨기지 않는다.
+
+이 확인은 plugin registration 종료와 producer thread 종료만 다룬다. 공개 macOS
+registrar의 unregister는 consumer GPU fence나 `onTextureUnregistered` 호출을
+보장하지 않으므로 `textureUnregisteredNotification`을 완료의 필수 조건으로 삼지
+않는다. 기존의 네 immutable CV frame·64 MiB credit은 ack 뒤에도 환급하지 않으며
+`consumerGpuCompletionVerified`와 `continuousPresentationSupported`는 false다.
+`tests/texture_close_routing_test.cc`는 실제 production identity router와 retirement
+registry를 사용해 동시 종료, ID 재사용, 늦은 이전 세대 요청, 기존 클라이언트,
+400회 ack와 immutable credit의 미환급을 portable 환경에서 검사한다.
 
 배치의 scale에는 deviceScale을 포함하고, origin은 target pixel 좌표다. 96-DPI 문서 좌표를
 사용하는 UI는 `pixelScale = zoom * deviceScale`, `pixelOrigin = logicalOrigin * deviceScale`로

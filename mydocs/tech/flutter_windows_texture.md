@@ -2,23 +2,25 @@
 kind: reference
 status: active
 canonical: mydocs/tech/flutter_windows_texture.md
-last_verified: 2026-11-07
+last_verified: 2026-11-08
 ---
 
-# Windows immutable D3D Flutter bridge (P101, draft WIP)
+# Windows immutable D3D Flutter bridge
 
 The opt-in backend implements a D3D12/Ganesh producer and Windows Flutter GPU
-surface adapter. **The Windows Rust feature, Windows C++ plugin, and real D3D
-interoperability have not been compiled or executed.** Portable lifetime checks,
-the production Linux-disabled ABI, and actual Flutter common-header syntax are
-separate evidence. Final Windows/device/driver qualification remains outstanding.
+surface adapter. The #8739 integration recorded actual Windows SDK/native D3D12
+producer checks at source `263b1e753c006d1631d25794588b6638fa1172ae` in
+`mydocs/pr/assets/seo-rii-20261107/platform-execution/windows-final-correction.json`.
+That earlier result does not qualify a newer plugin, Flutter consumer sampling,
+or the ownership-transfer mode described below. New target execution must use
+matching source/artifact receipts and `bindings/Flutter/GPU_QUALIFICATION.md`.
 
-This draft does not provide continuous GPU presentation. Flutter's public surface
-release callback proves neither consumer GPU completion nor safe image recycling.
-Four immutable/quarantined frame credits are retained for process lifetime, with
-explicit backpressure and CPU reference-path guidance. There is no manual reclaim,
-fake consumer fence, CPU readback presented as GPU output, or D3D12 pointer passed
-as a Flutter D3D11 resource.
+The default `legacyImmutable` mode retains four immutable/quarantined credits for
+process lifetime. Explicit `immutableOwnershipTransfer` mode continuously
+publishes fresh immutable allocations and releases creator references only after
+opening and CPU descriptor quiescence. Neither mode claims consumer GPU
+completion or rewrites/recycles a published target. No D3D12 pointer is passed as
+a Flutter D3D11 resource.
 
 ## Why the bridge has a GPU copy
 
@@ -80,12 +82,72 @@ Evidence is pinned to Flutter **3.47.9**, framework revision
 - [adapter APIs](https://github.com/flutter/flutter/blob/c197ca5199e9ee5661e865596c9c07294dfab51c/engine/src/flutter/shell/platform/windows/public/flutter_windows.h)
   provide the adapter and require releasing the returned reference.
 
-Published targets never change. Resources and their native DLL lease remain
+In the default legacy mode, published targets never change. Resources and their native DLL lease remain
 retained in a process-resident fixed pool; opening, unregistering, close, and
 plugin recreation never refund a published or uncertain frame. Descriptor
 release only increments notification counters. `consumerRetirement:false` and
 `continuousPresentationSupported:false` report this limitation explicitly.
 ARCH-018 records the remaining consumer-retirement gap.
+
+## Opt-in immutable ownership transfer (P109)
+
+Creation may explicitly include `publicationMode:"immutableOwnershipTransfer"`.
+Omitting the field, or using `"legacyImmutable"`, keeps the original lifetime
+policy. Each publication still allocates a fresh pair of D3D12 input and D3D11
+shared destination resources, checks producer completion, and never modifies
+those pixels after publication.
+
+This mode uses a separate ownership guarantee from consumer GPU completion:
+
+- The public descriptor contract requires the creator's resource reference
+  through opening and explicitly permits releasing that reference afterward.
+  [Microsoft's shared-handle contract](https://learn.microsoft.com/en-us/windows/win32/api/dxgi/nf-dxgi-idxgiresource-getsharedhandle)
+  describes the independent device resource that preserves shared video memory.
+- The pinned engine's [DEPS](https://github.com/flutter/flutter/blob/89c39edfdfae2949f6806e4a315c0c08522238b7/DEPS)
+  selects ANGLE `84027aca9b71c9ba335bd000dad1107b8810a511`.
+  [SwapChain11's import](https://flutter.googlesource.com/third_party/angle/+/84027aca9b71c9ba335bd000dad1107b8810a511/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp)
+  opens the shared handle on the consumer D3D11 device and owns a separately
+  queried texture interface. Its color-buffer reset releases that interface.
+  [TextureHelper11 and GenericData](https://flutter.googlesource.com/third_party/angle/+/84027aca9b71c9ba335bd000dad1107b8810a511/src/libANGLE/renderer/d3d/d3d11/renderer11_utils.h)
+  carry the owned COM reference through RAII. Creator-reference release does not
+  rewrite the consumer-owned allocation or wait for its GPU sampling.
+- The engine calls the descriptor's opening notification and then reads its
+  visible dimensions. `SurfaceImportTickets` therefore keeps immutable descriptor
+  storage and a strong frame pin until the next non-reentrant callback on the
+  same raster OS thread, or confirmed unregister completion. Close alone cannot
+  supply this CPU-quiescence evidence.
+- CPU descriptor retirement does not release the last exported allocation. The
+  pinned engine destroys its EGL surface on a null callback but keeps its cached
+  HANDLE value. Each owner therefore pins its last exported frame and its existing
+  credit through empty callbacks until a distinct valid replacement is offered
+  or unregister is confirmed. This prevents a fresh allocation from recycling the
+  cached HANDLE and bypassing the engine's import branch. These pins stay within
+  the same four-frame/64-MiB accounting; they add no target pool or GPU fence.
+- Opening may arrive on another thread. Never-reused opaque cookie values index
+  a process-wide registry of at most eight descriptor records; a late duplicate
+  performs a lookup and cannot dereference released userdata. Missing opening
+  notifications remain charged and pinned. A raster-thread change/reentry fails
+  closed. A contradictory unregister receipt during the callback remains pinned.
+
+Legacy retained allocations and new producer/current/import-pending references
+share the same process-wide **four-frame/64-MiB** admission bound. Existing legacy
+or failed-producer quarantine is never forgiven by enabling the new mode.
+The new mode's `producerOwnedFrames`/`producerOwnedBytes` account only plugin-owned
+references. Successful transfer eventually removes those creator references;
+**consumer-owned allocations and driver deferred memory are outside this bound**.
+It is not a total GPU-memory promise or a consumer-retirement pool. Run legacy
+and continuous qualification in separate runner processes so a legacy process's
+permanent credits cannot contaminate the continuous test.
+
+`continuousPresentationSupported:true` identifies this explicit immutable-transfer
+path. `consumerRetirement:false`, `consumerGpuCompletionVerified:false`,
+`descriptorReleaseIsGpuComplete:false`, and `targetReuse:false` remain unchanged
+in meaning. `handedOffFrames` counts released creator-reference reservations;
+it is not a count of completed GPU reads. Unexposed superseded frames are
+reported separately. A temporary admission error returns `backpressure` with
+`backpressureRetryable:true` while a non-permanent slot can be released; the host
+may coalesce/retry within its existing deadline. An oversized target is the
+permanent `targetTooLarge` error in this mode.
 
 P97 retains legacy HOST/worker/session calls on its dedicated owner thread. This
 plugin never moves those TLS handles to platform, producer, or raster callbacks.
@@ -163,14 +225,18 @@ Plugin class `RhwpD3dPlugin`, C registrar `RhwpD3dPluginRegisterWithRegistrar`,
 channel `rhwp_native/texture_windows`, standard method codec. P101 changes neither
 Dart nor pubspec. Add Windows `pluginClass: RhwpD3dPlugin` to the package's plugin
 stanza and use a separate Flutter runner/example depending on it. The generated
-registrant includes `<rhwp_native_reference/rhwp_d3d_plugin_c_api.h>` and links
+registrant includes `<rhwp_native_reference/rhwp_d3d_plugin.h>` and links
 `rhwp_native_reference_plugin`. Do not overwrite this plugin's Windows CMake
 definition by generating a runner in the same directory. CMake builds no Rust
 library and bundles none implicitly.
 
-- `create({libraryPath:canonicalAbsolute})` registers asynchronously and returns
+- `create({libraryPath:canonicalAbsolute,publicationMode?:string,closeAcknowledgementRequired?:bool})` registers asynchronously and returns
   `textureId`, `deviceGeneration`, `ready` and limits. Poll until ready; init can
-  fail without accepting any snapshot IDs.
+  fail without accepting any snapshot IDs. A true optional close-ack request is
+  negotiated only when both the top-level reply and limits echo
+  `closeAcknowledgementRequired:true`. Older clients/plugins retain their prior
+  close protocol. Negotiated calls include the returned `deviceGeneration` on
+  every subsequent texture RPC, including submit/status/close/retireAck.
 - `submit({textureId,stamp,width,height,clearColor,placements})` uses P99's six-key
   stamp and page placement schema. Scale is `zoom*DPR`; origins are physical
   NativeView page positions. View generation strictly advances. A successful
@@ -182,14 +248,30 @@ library and bundles none implicitly.
   No current frame means false/0/null. Producer initialization or acceptance is
   not a published-frame receipt. Check rendered stamp and full snapshot source
   before uncovering Texture. Even that is not a consumer-import acknowledgment.
+  `descriptorOpenedSerial` records opening for the current rendered frame; it
+  does not acknowledge sampling or completion. `publicationMode` is returned both
+  at the top level and in `limits`.
 - `close({textureId})` stops admission, clears pending/current job references,
-  wakes the producer and unregisters asynchronously. The last closed record is
-  retained as one bounded tombstone so completion can still be observed. Neither
-  close nor unregister refunds immutable/quarantine credit.
+  wakes the producer and unregisters asynchronously. Negotiated closing records
+  remain in the two-record admission bound until the client explicitly sends
+  `retireAck({textureId,deviceGeneration})`. Owner completion and unregister must
+  both be observed first. Successful ack replies echo both identity fields and
+  `acknowledged:true`, `closed:true`, `ownerFinished:true`, `registered:false`,
+  `unregistered:true`. Only then may the record become resource-free metadata in
+  the recent-two terminal cache. Unobserved closing records cannot be evicted by
+  creating more textures. Late/wrong generations cannot acknowledge a reused
+  Flutter texture ID. Legacy non-negotiated records retain create-time automatic
+  retirement. Neither
+  close nor unregister refunds legacy immutable/quarantine credit. In transfer
+  mode, confirmed unregister also retires CPU descriptor storage whose opening
+  was observed; an unacknowledged import stays charged for a possible late reply.
 
 Limits include outstanding/immutable/quarantined/pending-retire frames, reserved
 target bytes, maximums, descriptor-open notification count, and explicit false
-consumer-retirement/continuous-presentation flags. Backpressure requires the CPU
+consumer-retirement flags and the selected publication mode. New transfer-mode
+fields include producer-owned/import-pending counts and bytes, retained legacy
+frames, transferred/unexposed reservation counters, and bounded descriptor ticket
+counts. All are process-wide ownership accounting. Backpressure requires the CPU
 reference path; it is not a GPU success. Keep strict `documentError`/limit/resource
 diagnostics visible; do not label generic submission/allocation failure as actual
 device loss. `deviceFailure:true` requires a positive device-removal report.
@@ -212,17 +294,25 @@ python3 -B bindings/Flutter/windows/tests/check_windows_bridge.py \
   --output /new/path/p101-sanitized --sanitize
 ```
 
-These run the used portable generation/immutable-credit/native-metadata helpers,
+These run the used portable generation/immutable-credit/native-metadata helpers
+and immutable ownership-transfer descriptors,
 ASan/UBSan when requested, a small standalone `rustc` build of the **production**
 disabled FFI module, and real common Flutter/native header contract checks when
 headers are supplied. They install no SDK, call no Cargo, and do not simulate a
 Windows producer fence as successful GPU execution.
 
-Remaining: Windows feature/C++ compilation and DLL linkage, actual D3D12→D3D11 NT
+Portable tests include 128 consecutive fresh publications, dimensions read after
+the opening callback, consumer-independent resource references, delayed/duplicate
+opening, four-slot backpressure, shared legacy admission, producer-uncertain
+quarantine, concurrent close, bounded descriptor records, and raster-thread
+changes/reentry. They do not execute D3D or qualify a Windows consumer.
+
+Remaining for this newer source: Windows feature/C++ compilation and DLL linkage, actual D3D12→D3D11 NT
 sharing/legacy handle import on the chosen adapter, debug-layer state validation,
 producer timeout/device-removal paths, Flutter sampling/colors/origin/DPI,
 asynchronous engine shutdown, actual target accounting/driver memory, and real
-hardware/software identification. Consumer retirement is an API limitation until
-a public or verified embedder completion contract exists; four immutable images
-do not demonstrate a continuous renderer. Final OS/fixture qualification belongs
+hardware/software identification. Consumer retirement/target recycling remains
+an API limitation until a verified completion contract exists. Continuous
+immutable publication requires actual more-than-four-frame Flutter sampling with
+matching artifact receipts and the ownership bounds above. Final OS/fixture qualification belongs
 to the user's later validation.

@@ -1,0 +1,35 @@
+{
+  "base": "06181802e574dbd91e62375536751dea8c270fcd",
+  "candidate": "be778bae9b3803050146dcc47a896940587a612e",
+  "checks": [
+    {
+      "path": "bindings/Flutter/lib/src/native_file_store.dart",
+      "present_in_base": false,
+      "present_in_candidate": true
+    },
+    {
+      "path": "bindings/Flutter/lib/src/native_document_lifecycle.dart",
+      "present_in_base": false,
+      "present_in_candidate": true
+    },
+    {
+      "path": "bindings/Flutter/lib/src/native_multipage_view.dart",
+      "present_in_base": false,
+      "present_in_candidate": true
+    },
+    {
+      "path": "bindings/Flutter/macos/Classes/MetalNativeView.hpp",
+      "present_in_base": false,
+      "present_in_candidate": true
+    },
+    {
+      "symbol": "renderPageToCanvasStrictOutlineWithProfile",
+      "base_matches": []
+    },
+    {
+      "symbol": "immutableOwnershipTransfer",
+      "base_matches": []
+    }
+  ],
+  "note": "Presence is combined with focused runtime verification; commit ancestry alone is not the decision."
+}

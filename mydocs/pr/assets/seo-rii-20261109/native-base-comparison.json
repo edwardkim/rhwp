@@ -1,0 +1,63 @@
+{
+  "candidate": "be778bae9b3803050146dcc47a896940587a612e",
+  "baseline": "06181802e574dbd91e62375536751dea8c270fcd",
+  "baseline_artifact_source": "v0.9.0 c9095c5f67632e6721e800ccc7fb43ea49d26682; product source identity checked separately",
+  "pages": [
+    {
+      "backend": "native",
+      "document": "bitmap-channel",
+      "page": 1,
+      "base_sha256": "2a7738c8f422849c12205331231d8728a93f1897d2fd5fef8508400c65db641f",
+      "candidate_sha256": "2a7738c8f422849c12205331231d8728a93f1897d2fd5fef8508400c65db641f",
+      "png_bytes_identical": true
+    },
+    {
+      "backend": "native",
+      "document": "radial-pages",
+      "page": 3,
+      "base_sha256": "c7f5b158c502f71d179643180b05d005388674c160dea6f3d8898bb2602a223e",
+      "candidate_sha256": "c7f5b158c502f71d179643180b05d005388674c160dea6f3d8898bb2602a223e",
+      "png_bytes_identical": true
+    },
+    {
+      "backend": "native",
+      "document": "radial-pages",
+      "page": 5,
+      "base_sha256": "f1d147affd7dce8d04d27fe41aa35c2bcc541604d9e8e7df9908a68a417c7c67",
+      "candidate_sha256": "f1d147affd7dce8d04d27fe41aa35c2bcc541604d9e8e7df9908a68a417c7c67",
+      "png_bytes_identical": true
+    },
+    {
+      "backend": "native",
+      "document": "radial-pages",
+      "page": 2,
+      "base_sha256": "fa812500bf185c8bb018282601a232b438992be8d74ba6f081b6208b08f24fd5",
+      "candidate_sha256": "fa812500bf185c8bb018282601a232b438992be8d74ba6f081b6208b08f24fd5",
+      "png_bytes_identical": true
+    },
+    {
+      "backend": "native",
+      "document": "radial-pages",
+      "page": 6,
+      "base_sha256": "a56c07715b9c8b4d0f9efb4998c9a7ea6eab0490a97ff810808f2361cbe747f6",
+      "candidate_sha256": "a56c07715b9c8b4d0f9efb4998c9a7ea6eab0490a97ff810808f2361cbe747f6",
+      "png_bytes_identical": true
+    },
+    {
+      "backend": "native",
+      "document": "radial-pages",
+      "page": 4,
+      "base_sha256": "a38394acf1171430c12e4c31c19ab5c2a5a94f6d47367d7f3ead095c6dd58845",
+      "candidate_sha256": "a38394acf1171430c12e4c31c19ab5c2a5a94f6d47367d7f3ead095c6dd58845",
+      "png_bytes_identical": true
+    },
+    {
+      "backend": "native",
+      "document": "radial-pages",
+      "page": 1,
+      "base_sha256": "ee072da07541b4e89155d483b0548256a2195e985b9fe6fc5356ff2b9fd39220",
+      "candidate_sha256": "ee072da07541b4e89155d483b0548256a2195e985b9fe6fc5356ff2b9fd39220",
+      "png_bytes_identical": true
+    }
+  ]
+}

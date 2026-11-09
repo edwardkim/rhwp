@@ -1,6 +1,7 @@
 #ifndef RHWP_WINDOWS_D3D_PRODUCER_H_
 #define RHWP_WINDOWS_D3D_PRODUCER_H_
 #include "FrameLifetime.h"
+#include "SurfaceImportTickets.h"
 #include "NativeApi.h"
 #include <flutter_texture_registrar.h>
 #include <d3d11_1.h>
@@ -45,11 +46,14 @@ struct Pixels {
   ~Pixels() { if (nt_handle) CloseHandle(nt_handle); }
 };
 struct Published { std::shared_ptr<Job> job; std::shared_ptr<Pixels> pixels; };
+using SurfaceImports = SurfaceImportTickets<FlutterDesktopGpuSurfaceDescriptor>;
 struct State : std::enable_shared_from_this<State> {
   State(uint64_t generation, std::string path, ComPtr<IDXGIAdapter1> adapter,
-        FlutterDesktopTextureRegistrarRef registrar, std::shared_ptr<int> producer_slot)
+        FlutterDesktopTextureRegistrarRef registrar, std::shared_ptr<int> producer_slot,
+        PublicationMode publication_mode = PublicationMode::LegacyImmutable, bool close_ack_required = false)
       : generation(generation), path(std::move(path)), adapter(std::move(adapter)),
-        registrar(registrar), producer_slot(std::move(producer_slot)), gate(generation) {}
+        registrar(registrar), producer_slot(std::move(producer_slot)), gate(generation),
+        publication_mode(publication_mode), close_ack_required(close_ack_required) {}
   std::mutex mutex;
   std::condition_variable changed;
   const uint64_t generation;
@@ -58,6 +62,8 @@ struct State : std::enable_shared_from_this<State> {
   FlutterDesktopTextureRegistrarRef registrar;
   std::shared_ptr<int> producer_slot;
   GenerationGate gate;
+  const PublicationMode publication_mode;
+  const bool close_ack_required;
   bool ready = false, closed = false, finished = false, in_flight = false, unregistered = false;
   int64_t texture_id = -1;
   std::string error;
@@ -77,6 +83,8 @@ struct State : std::enable_shared_from_this<State> {
 ImmutableFrames& frames();
 std::shared_ptr<int> reserve_producer();
 uint64_t descriptor_opened_notifications();
+void register_surface_imports(const std::shared_ptr<State>& state);
+void retire_surface_imports(const std::shared_ptr<State>& state) noexcept;
 void run_producer(const std::shared_ptr<State>& state) noexcept;
 const FlutterDesktopGpuSurfaceDescriptor* surface_callback(size_t, size_t, void* user);
 struct Registration { std::shared_ptr<State> state; std::shared_ptr<int> credit; };

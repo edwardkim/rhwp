@@ -10,7 +10,9 @@ Pod::Spec.new do |s|
   s.source_files     = 'Classes/**/*'
   s.public_header_files = 'Classes/RhwpMetalPlugin.h'
   s.dependency 'FlutterMacOS'
-  s.frameworks       = 'Metal', 'CoreVideo', 'CoreGraphics', 'IOSurface'
+  # FlutterMacOS is a placeholder pod; ObjC++ needs an explicit framework link
+  # even when the host also obtains the Flutter engine through SwiftPM.
+  s.frameworks       = 'FlutterMacOS', 'Metal', 'CoreVideo', 'CoreGraphics', 'IOSurface', 'QuartzCore'
   s.platform         = :osx, '12.0'
   s.pod_target_xcconfig = {
     'DEFINES_MODULE' => 'YES',
