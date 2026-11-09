@@ -12,7 +12,7 @@
 - 공통 이웃 색인 보정: `4fabb47ae28b99d371e2aac3560e2610e327c311`. 최종 테스트 source: `581d22855f60af2de5fed3208949f7dd81258a0a`. 이후 변경은 문서뿐이다.
 - 실제 CI tested merge `98c67a8a7e017b9e403c1452f041c2e6750dfc9a`와 최종 merge의 tree는 모두 `b4cf97bbbdf398598464b027953d61fc0e2891fe`다. fresh-base merge-tree·MERGEABLE/CLEAN과 required Build & Test·CI Impact Policy를 확인한 뒤 exact head로 병합했다.
 
-원 #8789·#8791은 모두 자동 MERGED다. contributor commit과 fork branch를 보존했고 upstream 임시 통합 branch를 사용했다. closing issue는 없다. 첫 기여자 절차는 기존 기여 #8224·#8233에 의해 비해당이다.
+원 #8789·#8791은 모두 자동 MERGED다. contributor commit과 fork branch를 보존했고 upstream 임시 통합 branch를 사용했다. GitHub 자동 종결 연결은 없다. 실제 관련 이슈는 [원격 후속 점검](../assets/chrisryugj-20261109/remote-completion.md#관련-이슈-종료-여부-추가-점검)에 별도로 기록했으며 #7807·#7445는 미완료로 OPEN을 유지한다. 첫 기여자 절차는 기존 기여 #8224·#8233에 의해 비해당이다.
 
 ## 검증과 self-review
 

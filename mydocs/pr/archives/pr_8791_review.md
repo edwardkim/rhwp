@@ -8,7 +8,7 @@
 
 - [원 PR #8791](https://github.com/edwardkim/rhwp/pull/8791), chrisryugj, CONTRIBUTOR, devel 대상 Ready. 첫 외부 기여자 경로는 비해당이다.
 - reviewer edwardkim 지정·API 재확인 뒤 상세 검토·fetch를 진행했다. 원 head `383f66acca8c966da9a198fd046c3da0ed94c3b6`와 fork branch를 보존했다. 원 head CI 36개는 모두 성공이며 이번 새 보정 head의 CI 성공으로 대체하지 않는다.
-- 실제 검증 기준은 최신 devel `b768bee1c4c0023087687f79a0a95f12108743e9`다. 개별/누적 merge가 충돌하지 않았고 2026-11-09 API 재조회에서 devel과 원 head 각각의 SHA가 접수 때와 같았다. closing issue는 없다.
+- 실제 검증 기준은 최신 devel `b768bee1c4c0023087687f79a0a95f12108743e9`다. 개별/누적 merge가 충돌하지 않았고 2026-11-09 API 재조회에서 devel과 원 head 각각의 SHA가 접수 때와 같았다. GitHub 자동 종결 연결은 없다. 실제 관련 이슈는 [원격 후속 점검](../assets/chrisryugj-20261109/remote-completion.md#관련-이슈-종료-여부-추가-점검)에 별도로 기록했으며 #7807·#7445는 미완료로 OPEN을 유지한다.
 - [공통 계획](chrisryugj_20261109_review_plan.md), [승인받은 보정안과 실제 결과](chrisryugj_20261109_review_impl.md), [전쪽 TSV·producer·검증 원장](../assets/chrisryugj-20261109/README.md). 원 기여는 merge commit으로 보존했다.
 
 ## 사양·독립 근거·실제 소비 경로
