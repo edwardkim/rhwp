@@ -17,6 +17,8 @@ pub mod hyperlink;
 pub mod hyperlink_format;
 pub(crate) mod identity;
 pub mod image;
+pub mod memo_extended;
+pub mod memo_shape;
 pub(crate) mod native_font_program;
 pub(crate) mod owned_work;
 pub mod page;

@@ -1052,6 +1052,9 @@ fn section_def_ctrl_data_index(child_records: &[Record], ctrl_level: u16) -> Opt
 /// ctrl_data: CTRL_HEADER의 ctrl_id 이후 데이터
 /// child_records: 자식 레코드 (CTRL_DATA, PAGE_DEF, FOOTNOTE_SHAPE, PAGE_BORDER_FILL, raw 중첩)
 /// ctrl_level: SectionDef CTRL_HEADER의 record level
+/// 구역 정의 추가 바이트(`SectionDef::raw_ctrl_extra`) 안 메모 모양 번호의 자리.
+pub(crate) const MEMO_SHAPE_ID_AT: usize = 6;
+
 fn parse_section_def(ctrl_data: &[u8], child_records: &[Record], ctrl_level: u16) -> SectionDef {
     let mut sd = SectionDef::default();
     let mut r = ByteReader::new(ctrl_data);
@@ -1071,6 +1074,14 @@ fn parse_section_def(ctrl_data: &[u8], child_records: &[Record], ctrl_level: u16
     let consumed = 4 + 2 + 2 + 2 + 4 + 2 + 2 + 2 + 2 + 2; // = 24 bytes
     if ctrl_data.len() > consumed {
         sd.raw_ctrl_extra = ctrl_data[consumed..].to_vec();
+    }
+    // 원본 추가 바이트의 7·8번째(u16)는 메모 모양 번호다(1부터, 0은 기본). 한컴 12.30에서 메모 모양을
+    // 새 구역으로 적용한 HWP와 같은 문서의 HWPX `secPr@memoShapeIDRef`로 확인했다.
+    if let Some(id) = sd
+        .raw_ctrl_extra
+        .get(MEMO_SHAPE_ID_AT..MEMO_SHAPE_ID_AT + 2)
+    {
+        sd.memo_shape_id = u16::from_le_bytes([id[0], id[1]]);
     }
 
     // 숨기기 플래그 (flags에서 추출)

@@ -876,6 +876,7 @@ pub(crate) fn parse_hwpx_with_reservation(
         contract_streams::extract_contract_streams(&mut reader, super::MAX_THUMBNAIL_BYTES);
 
     let mut doc = Document {
+        memo_parents: Vec::new(),
         header: model_header,
         doc_properties,
         doc_info,
@@ -937,6 +938,14 @@ pub(crate) fn parse_hwpx_with_reservation(
         reader.read_file_bytes_limited(crate::model::hyperlink_format::HWPX_ENTRY, 16 * 1024 * 1024)
     {
         crate::model::hyperlink_format::decode(&mut doc, &bytes);
+    }
+    // 메모 댓글 관계.
+    if let Ok(bytes) = reader.read_file_bytes_limited(
+        crate::model::memo_extended::HWPX_ENTRY,
+        crate::model::memo_extended::MAX_BYTES,
+    ) {
+        doc.memo_parents =
+            crate::model::memo_extended::decode_hwpx(&String::from_utf8_lossy(&bytes));
     }
     // 개체 번호는 autoNum 필드의 저장 캐시나 필드 개수가 아니라 실제 소유 개체의
     // numberingType과 순번에서 결정한다. 각주·쪽 번호의 별도 저장 계약은 유지한다.

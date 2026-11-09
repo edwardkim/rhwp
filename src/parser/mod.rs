@@ -545,6 +545,7 @@ fn parse_hwp_with_cfb(
         .any(|(p, _)| p == crate::model::document::HWPX_ORIGIN_STREAM_PATH);
 
     let mut doc = Document {
+        memo_parents: Vec::new(),
         header: model_header,
         doc_properties,
         doc_info,
@@ -631,6 +632,26 @@ fn parse_hwp_with_cfb(
         let (_, bytes) = doc.extra_streams.remove(idx);
         if bytes.len() <= 16 * 1024 * 1024 {
             crate::model::hyperlink_format::decode(&mut doc, &bytes);
+        }
+    }
+    // 메모 댓글 관계. 읽지 못한 스트림은 원본으로 남긴다.
+    if let Some(idx) = doc
+        .extra_streams
+        .iter()
+        .position(|(p, _)| p == crate::model::memo_extended::HWP_STREAM)
+    {
+        let raw = &doc.extra_streams[idx].1;
+        let data = if doc.header.compressed {
+            cfb_reader::decompress_stream_limited(raw, crate::model::memo_extended::MAX_BYTES).ok()
+        } else {
+            Some(raw.clone())
+        };
+        if let Some(links) = data
+            .as_deref()
+            .and_then(crate::model::memo_extended::decode_hwp)
+        {
+            doc.extra_streams.remove(idx);
+            doc.memo_parents = links;
         }
     }
     Ok(doc)
@@ -1070,6 +1091,7 @@ fn parse_hwp_with_lenient(
     };
 
     let mut doc = Document {
+        memo_parents: Vec::new(),
         header: model_header,
         doc_properties,
         doc_info,
