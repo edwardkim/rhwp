@@ -145,39 +145,129 @@ pub(crate) fn check_record_count(count: usize) -> Result<(), io::Error> {
     Ok(())
 }
 
-// HWP3 spec (한글문서파일구조3.0.md:248) doc_info offset 122 "빈줄감춤"(0 이외=on).
-/// HWP3 표 셀마다 같은 행(열)에 걸친 다음 이웃 셀의 시작 좌표 — `horizontal` 이면 오른쪽 이웃의
-/// 왼쪽 변, 아니면 아래 이웃의 위쪽 변. 이웃이 이 셀 끝 변보다 조금 안쪽에서 시작해도(저장 반올림
-/// 40HU 안) 이웃으로 본다. 정렬한 시작 좌표에서 이분 탐색한 뒤 전진하고, 손상 파일의 계단형 셀이
-/// O(n²) 로 돌지 않게 전진 횟수를 묶는다.
+/// 같은 축 시작 좌표별로 반대 축의 열린 겹침 구간을 색인한다.
+///
+/// 좌표를 정렬한 tree의 각 node에 자식 구간의 합집합을 저장한다. 최소 시작 좌표 이후의
+/// 첫 겹침은 O(log² n)에 찾으며, 후보를 일정 개수만 확인한 뒤 "이웃 없음"으로 바꾸지 않는다.
+/// HWP3 셀 개수는 word이므로 tree 깊이는 최대 16이고 저장 구간 수는 O(n log n)이다.
+struct Hwp3CellStartIndex {
+    starts: Vec<i32>,
+    leaf_base: usize,
+    intervals: Vec<Vec<(i32, i32)>>,
+}
+
+impl Hwp3CellStartIndex {
+    fn new(geo: &[(i32, i32, i32, i32)], horizontal: bool) -> Self {
+        let start = |i: usize| if horizontal { geo[i].0 } else { geo[i].1 };
+        let mut order: Vec<usize> = (0..geo.len()).collect();
+        order.sort_unstable_by_key(|&i| start(i));
+        let mut starts = Vec::new();
+        let mut groups: Vec<Vec<(i32, i32)>> = Vec::new();
+        for i in order {
+            let coordinate = start(i);
+            if starts.last() != Some(&coordinate) {
+                starts.push(coordinate);
+                groups.push(Vec::new());
+            }
+            let interval = if horizontal {
+                (geo[i].1, geo[i].3)
+            } else {
+                (geo[i].0, geo[i].2)
+            };
+            groups.last_mut().expect("coordinate group").push(interval);
+        }
+        let leaf_base = starts.len().max(1).next_power_of_two();
+        let mut intervals = vec![Vec::new(); leaf_base * 2];
+        for (i, mut group) in groups.into_iter().enumerate() {
+            group.sort_unstable();
+            intervals[leaf_base + i] = Self::merge_intervals(&group, &[]);
+        }
+        for node in (1..leaf_base).rev() {
+            intervals[node] = Self::merge_intervals(&intervals[node * 2], &intervals[node * 2 + 1]);
+        }
+        Self {
+            starts,
+            leaf_base,
+            intervals,
+        }
+    }
+
+    fn merge_intervals(left: &[(i32, i32)], right: &[(i32, i32)]) -> Vec<(i32, i32)> {
+        let mut merged: Vec<(i32, i32)> = Vec::with_capacity(left.len() + right.len());
+        let (mut l, mut r) = (0, 0);
+        while l < left.len() || r < right.len() {
+            let next = if r == right.len() || (l < left.len() && left[l] <= right[r]) {
+                let item = left[l];
+                l += 1;
+                item
+            } else {
+                let item = right[r];
+                r += 1;
+                item
+            };
+            if let Some(last) = merged.last_mut() {
+                // 끝점만 맞닿은 구간을 합치면 그 점에 놓인 0높이/0폭 셀의 엄격 겹침
+                // 판정이 달라진다. 원래의 b0 < a1 && b1 > a0 계약을 유지한다.
+                if next.0 < last.1 || next == *last {
+                    last.1 = last.1.max(next.1);
+                    continue;
+                }
+            }
+            merged.push(next);
+        }
+        merged
+    }
+
+    fn next_start(&self, minimum: i32, low: i32, high: i32) -> Option<i32> {
+        let from = self
+            .starts
+            .partition_point(|&coordinate| coordinate < minimum);
+        self.find_first(1, 0, self.leaf_base, from, low, high)
+    }
+
+    fn find_first(
+        &self,
+        node: usize,
+        left: usize,
+        right: usize,
+        from: usize,
+        low: i32,
+        high: i32,
+    ) -> Option<i32> {
+        if right <= from || left >= self.starts.len() {
+            return None;
+        }
+        let intervals = &self.intervals[node];
+        let end = intervals.partition_point(|&(begin, _)| begin < high);
+        if end == 0 || intervals[end - 1].1 <= low {
+            return None;
+        }
+        if right - left == 1 {
+            return Some(self.starts[left]);
+        }
+        let middle = left + (right - left) / 2;
+        self.find_first(node * 2, left, middle, from, low, high)
+            .or_else(|| self.find_first(node * 2 + 1, middle, right, from, low, high))
+    }
+}
+
+/// 같은 행(열)에 걸친 다음 이웃의 시작 변. 기존 40HU 끝 변 반올림 계약은 유지한다.
 fn hwp3_next_cell_starts(geo: &[(i32, i32, i32, i32)], horizontal: bool) -> Vec<Option<i32>> {
     const SLACK: i32 = 40;
-    const MAX_SCAN: usize = 2048;
-    let start = |g: &(i32, i32, i32, i32)| if horizontal { g.0 } else { g.1 };
-    let end = |g: &(i32, i32, i32, i32)| if horizontal { g.2 } else { g.3 };
-    let overlap = |a: &(i32, i32, i32, i32), b: &(i32, i32, i32, i32)| {
-        if horizontal {
-            b.1 < a.3 && b.3 > a.1
-        } else {
-            b.0 < a.2 && b.2 > a.0
-        }
-    };
-    let mut order: Vec<usize> = (0..geo.len()).collect();
-    order.sort_by_key(|&i| start(&geo[i]));
+    let index = Hwp3CellStartIndex::new(geo, horizontal);
     geo.iter()
-        .map(|a| {
-            let from = (end(a) - SLACK).max(start(a) + 1);
-            let k = order.partition_point(|&i| start(&geo[i]) < from);
-            order[k..]
-                .iter()
-                .take(MAX_SCAN)
-                .map(|&i| &geo[i])
-                .find(|b| start(b) > start(a) && overlap(a, b))
-                .map(|b| start(b))
+        .map(|&(x0, y0, x1, y1)| {
+            let (start, end, low, high) = if horizontal {
+                (x0, x1, y0, y1)
+            } else {
+                (y0, y1, x0, x1)
+            };
+            index.next_start((end - SLACK).max(start + 1), low, high)
         })
         .collect()
 }
 
+// HWP3 spec (한글문서파일구조3.0.md:248) doc_info offset 122 "빈줄감춤"(0 이외=on).
 fn hwp3_hide_empty_line(doc_info: &Hwp3DocInfo) -> bool {
     doc_info.hide_empty_line != 0
 }
