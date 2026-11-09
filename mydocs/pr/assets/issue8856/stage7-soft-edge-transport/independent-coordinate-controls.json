@@ -1,0 +1,274 @@
+{
+  "reference_controls": "pdf/issue8856/flat-soft-edge-r1000-2020.pdf / flat-soft-edge-r1000-2024.pdf",
+  "inputs": [
+    {
+      "key": "scale2x2",
+      "input": "pdf/issue8856/soft-edge-scale2x2.hwpx",
+      "sha256": "584e18604d114f4b86e568af8c3bdab36439b710b7cd69a54a8b4f93e07a400a",
+      "radius_hu": 1000,
+      "original_frame_hu": [
+        15000,
+        10000
+      ],
+      "current_frame_hu": [
+        30000,
+        20000
+      ],
+      "scale": [
+        2,
+        2
+      ],
+      "crop_changed": false
+    },
+    {
+      "key": "scale2x1",
+      "input": "pdf/issue8856/soft-edge-scale2x1.hwpx",
+      "sha256": "9c64724a66424ae7f7a62b391c7a1fcf834bedb78ef94c1b7d2005c3a54a1d85",
+      "radius_hu": 1000,
+      "original_frame_hu": [
+        15000,
+        20000
+      ],
+      "current_frame_hu": [
+        30000,
+        20000
+      ],
+      "scale": [
+        2,
+        1
+      ],
+      "crop_changed": false
+    },
+    {
+      "key": "crop",
+      "input": "pdf/issue8856/soft-edge-crop.hwpx",
+      "sha256": "c6e130df682e6118c288560c403957c5622224fb9c3d4225c6f56c0eae43af98",
+      "radius_hu": 1000,
+      "original_frame_hu": [
+        30000,
+        20000
+      ],
+      "current_frame_hu": [
+        30000,
+        20000
+      ],
+      "scale": [
+        1,
+        1
+      ],
+      "crop_changed": true
+    }
+  ],
+  "prints": [
+    {
+      "key": "soft-edge-scale2x2-2020",
+      "input_sha256": "584e18604d114f4b86e568af8c3bdab36439b710b7cd69a54a8b4f93e07a400a",
+      "pdf": "pdf/issue8856/soft-edge-scale2x2-2020.pdf",
+      "pdf_sha256": "a9ee7b9b54ebb58b15c23103a6e94c0f6ed2c52a9ebcfa94a592865f674a2f3d",
+      "job_id": "7651e75a-71f9-4c6e-94e2-588949c1f5bd",
+      "result": {
+        "job_id": "7651e75a-71f9-4c6e-94e2-588949c1f5bd",
+        "status": "success",
+        "engine": "2020",
+        "engine_profile": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "input_format": "hwpx",
+        "format": "pdf",
+        "bytes": 88846,
+        "pdf_page_count": 1,
+        "logical_page_count": null,
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "input_preprocess": "none",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "timeout_seconds": 1800
+    },
+    {
+      "key": "soft-edge-scale2x1-2020",
+      "input_sha256": "9c64724a66424ae7f7a62b391c7a1fcf834bedb78ef94c1b7d2005c3a54a1d85",
+      "pdf": "pdf/issue8856/soft-edge-scale2x1-2020.pdf",
+      "pdf_sha256": "38a2aad930b8d1d17a96fe5b94a75c6a23e1a957e4f2d4fe2224429aa853e35f",
+      "job_id": "faa01416-a448-44ee-9f76-ac9d3ca89832",
+      "result": {
+        "job_id": "faa01416-a448-44ee-9f76-ac9d3ca89832",
+        "status": "success",
+        "engine": "2020",
+        "engine_profile": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "input_format": "hwpx",
+        "format": "pdf",
+        "bytes": 88846,
+        "pdf_page_count": 1,
+        "logical_page_count": null,
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "input_preprocess": "none",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "timeout_seconds": 1800
+    },
+    {
+      "key": "soft-edge-crop-2020",
+      "input_sha256": "c6e130df682e6118c288560c403957c5622224fb9c3d4225c6f56c0eae43af98",
+      "pdf": "pdf/issue8856/soft-edge-crop-2020.pdf",
+      "pdf_sha256": "5ed42fafc63c0994fdb1ac9893b5047975db4d54cd8f7a95a35caf7619b3e1d2",
+      "job_id": "0c17aa67-393c-4f14-bbe9-22898c2579fe",
+      "result": {
+        "job_id": "0c17aa67-393c-4f14-bbe9-22898c2579fe",
+        "status": "success",
+        "engine": "2020",
+        "engine_profile": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "input_format": "hwpx",
+        "format": "pdf",
+        "bytes": 88858,
+        "pdf_page_count": 1,
+        "logical_page_count": null,
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "input_preprocess": "none",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "timeout_seconds": 1800
+    },
+    {
+      "key": "soft-edge-scale2x2-2024",
+      "input_sha256": "584e18604d114f4b86e568af8c3bdab36439b710b7cd69a54a8b4f93e07a400a",
+      "pdf": "pdf/issue8856/soft-edge-scale2x2-2024.pdf",
+      "pdf_sha256": "13d6961781288aae6686257a12ba08d206ba7df5368f7cd3470ba639861115a0",
+      "job_id": "a495b834-4231-40a0-81bf-3c425e812347",
+      "result": {
+        "job_id": "a495b834-4231-40a0-81bf-3c425e812347",
+        "status": "success",
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "input_format": "hwpx",
+        "format": "pdf",
+        "bytes": 55878,
+        "pdf_page_count": 1,
+        "logical_page_count": null,
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "input_preprocess": "none",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up"
+      },
+      "timeout_seconds": 1800
+    },
+    {
+      "key": "soft-edge-scale2x1-2024",
+      "input_sha256": "9c64724a66424ae7f7a62b391c7a1fcf834bedb78ef94c1b7d2005c3a54a1d85",
+      "pdf": "pdf/issue8856/soft-edge-scale2x1-2024.pdf",
+      "pdf_sha256": "22be5ef872b066d602f89d4bca544de22527d27e42fb3c6bb57f9014b47bd095",
+      "job_id": "d4e7365e-2a3f-4b75-91fb-67cb9d7c7317",
+      "result": {
+        "job_id": "d4e7365e-2a3f-4b75-91fb-67cb9d7c7317",
+        "status": "success",
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "input_format": "hwpx",
+        "format": "pdf",
+        "bytes": 55877,
+        "pdf_page_count": 1,
+        "logical_page_count": null,
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "input_preprocess": "none",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up"
+      },
+      "timeout_seconds": 1800
+    },
+    {
+      "key": "soft-edge-crop-2024",
+      "input_sha256": "c6e130df682e6118c288560c403957c5622224fb9c3d4225c6f56c0eae43af98",
+      "pdf": "pdf/issue8856/soft-edge-crop-2024.pdf",
+      "pdf_sha256": "83173658fc0990d0f3277859a8dc359c7a96f380653537dbbe663d7cf482ccdc",
+      "job_id": "8a0d3de8-c32b-4a5b-9d6a-0370fd7aa729",
+      "result": {
+        "job_id": "8a0d3de8-c32b-4a5b-9d6a-0370fd7aa729",
+        "status": "success",
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "input_format": "hwpx",
+        "format": "pdf",
+        "bytes": 57126,
+        "pdf_page_count": 1,
+        "logical_page_count": null,
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "input_preprocess": "none",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up"
+      },
+      "timeout_seconds": 1800
+    }
+  ]
+}

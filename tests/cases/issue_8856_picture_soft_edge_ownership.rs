@@ -1,5 +1,5 @@
 //! 검사 유형: 관계형.
-//! 주석 갱신: 2026-11-10T03:18:25+09:00.
+//! 주석 갱신: 2026-11-10T04:30:37+09:00.
 //! 원본 효과 반경의 모델·저장 소유 검사이며 절대 화면 좌표를 고정하지 않는다.
 //! 기존 원본 시각 근거: mydocs/pr/assets/issue8856/stage4-policy-fields/nine-groups-final-comparison.tsv.
 //! interview 전 2쪽 Native 최저 97.19457%, fresh WASM 최저 97.32378%.
@@ -50,6 +50,77 @@ fn radii(core: &DocumentCore) -> Vec<f64> {
 }
 
 #[test]
+fn picture_radius_survives_render_and_layer_tree_transport() {
+    use rhwp::paint::{LayerNode, LayerNodeKind, PaintOp, RenderProfile};
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+
+    fn image_radius(image: &rhwp::renderer::render_tree::ImageNode, out: &mut Vec<f64>) {
+        let value = serde_json::to_value(image).unwrap();
+        if let Some(radius) = value["soft_edge_radius_hu"].as_f64() {
+            out.push(radius);
+        }
+    }
+    fn render_radii(node: &RenderNode, out: &mut Vec<f64>) {
+        if let RenderNodeType::Image(image) = &node.node_type {
+            image_radius(image, out);
+        }
+        for child in &node.children {
+            render_radii(child, out);
+        }
+    }
+    fn layer_radii(node: &LayerNode, out: &mut Vec<f64>) {
+        match &node.kind {
+            LayerNodeKind::Group { children, .. } => {
+                for child in children {
+                    layer_radii(child, out);
+                }
+            }
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                layer_radii(child, out);
+            }
+            LayerNodeKind::Leaf { ops } => {
+                for op in ops {
+                    if let PaintOp::Image { image, .. } = op {
+                        image_radius(image, out);
+                    }
+                }
+            }
+        }
+    }
+    for path in [
+        "samples/basic/interview.hwp",
+        "samples/issue8593/picture_soft_edge.hwp",
+    ] {
+        let mut core = load(path);
+        let expected = radii(&core);
+        assert!(!expected.is_empty(), "반경을 소유한 실제 그림 대조군");
+        let mut render = Vec::new();
+        let mut layer = Vec::new();
+        for page in 0..core.page_count() {
+            render_radii(
+                &core.build_page_render_tree(page).unwrap().root,
+                &mut render,
+            );
+            layer_radii(
+                &core
+                    .build_page_layer_tree_with_profile(page, RenderProfile::Print)
+                    .unwrap()
+                    .root,
+                &mut layer,
+            );
+        }
+        assert_eq!(
+            render, expected,
+            "{path}: 조판 트리가 원본 반경을 버리지 않는다"
+        );
+        assert_eq!(
+            layer, expected,
+            "{path}: 공통 paint가 원본 반경을 버리지 않는다"
+        );
+    }
+}
+
+#[test]
 fn source_soft_edge_radius_is_owned_by_the_picture_and_survives_hwpx() {
     for (path, expected) in [
         ("samples/basic/interview.hwp", vec![1000.0]),
@@ -87,8 +158,28 @@ fn source_soft_edge_radius_is_owned_by_the_picture_and_survives_hwpx() {
 
 #[test]
 fn picture_without_effect_does_not_gain_a_soft_edge() {
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    fn check(node: &RenderNode) -> usize {
+        let own = if let RenderNodeType::Image(image) = &node.node_type {
+            assert!(
+                serde_json::to_value(image)
+                    .unwrap()
+                    .get("soft_edge_radius_hu")
+                    .is_none(),
+                "무효과 원본의 이미지 JSON에 null 효과 필드를 추가하지 않는다"
+            );
+            1
+        } else {
+            0
+        };
+        own + node.children.iter().map(check).sum::<usize>()
+    }
     let core = load("samples/ta-pic-001-r.hwp");
     assert!(radii(&core).is_empty());
+    let images = (0..core.page_count())
+        .map(|page| check(&core.build_page_render_tree(page).unwrap().root))
+        .sum::<usize>();
+    assert!(images > 0, "무효과 실물 그림도 실제로 검사한다");
     let saved = core.export_hwpx_native().unwrap();
     assert!(radii(&DocumentCore::from_bytes(&saved).unwrap()).is_empty());
 }
