@@ -1,0 +1,46 @@
+{
+  "command": [
+    "sandbox-exec",
+    "-f",
+    "/Users/tsjang/rhwp/output/issue8856/start/minimal-font.sb",
+    "node",
+    "--require",
+    "/Users/tsjang/rhwp/output/issue8856/start/http-response-observer.cjs",
+    "scripts/export-wasm-png-for-sweep.mjs",
+    "--pkg",
+    "/Users/tsjang/rhwp/pkg",
+    "--input",
+    "mydocs/pr/assets/planet6897_20261106/pr8642/report-628-original.hwp",
+    "--out",
+    "/Users/tsjang/rhwp/output/issue8856/hft-bullet-source-advance/actual-http-initialization",
+    "--fonts",
+    "/Users/tsjang/rhwp/output/issue8856/hft-bullet-source-advance/wasm/report-628/silhouette-parts/p0001-0001/font-catalog.json",
+    "--options",
+    "/Users/tsjang/rhwp/output/issue8856/hft-bullet-source-advance/wasm/report-628/silhouette-parts/p0001-0001/canvas-options.json"
+  ],
+  "actual_responses": [
+    {
+      "path": "/rhwp.js",
+      "method": "GET",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "status": 200,
+      "bytes": 573859,
+      "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+    },
+    {
+      "path": "/rhwp_bg.wasm",
+      "method": "GET",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "status": 200,
+      "bytes": 31626140,
+      "sha256": "f13c4492f2af08f40076e3d6c4f798ca1d420b36689620584d57517204998bb4"
+    }
+  ],
+  "captured_pages": [
+    {
+      "page": 1,
+      "sha256": "ef05dde6f5bd013eed15efc26f08d831e8b786cb2bc2b74a2ec5698360a851ec",
+      "identical_to_current_paired_wasm": true
+    }
+  ]
+}
