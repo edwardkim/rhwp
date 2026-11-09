@@ -282,6 +282,9 @@ pub(crate) struct HeightCursor {
     /// [#7702] 쪽/단 첫 항목인 이어지는 부분 문단의 연속 줄이 합성 줄이라 #5820 의 기준을
     /// 그 줄에서 세우지 못했다. 다음 저장 문단이 자기 실제 흐름 위치로 기준을 세운다.
     pub seed_lazy_base_from_next_stored: bool,
+    /// [#8843] 이 커서가 합성 줄 뒤 저장 앞 점프를 거절하고 옮긴 기준축 양(HU, 누적).
+    /// 저장 TAC 의 단 첫 표 축도 같은 양만큼 옮겨야 거절한 빈자리를 되살리지 않는다.
+    pub synthetic_forward_rejected_hu: i32,
 }
 
 #[path = "height_cursor_lazy_base.rs"]
@@ -348,6 +351,7 @@ impl HeightCursor {
             endnote_note_first_paras: Default::default(),
             endnote_tail_leading_hu: Default::default(),
             seed_lazy_base_from_next_stored: false,
+            synthetic_forward_rejected_hu: 0,
         }
     }
 
@@ -2801,6 +2805,8 @@ impl HeightCursor {
             // 이 원점에서 이어져야 한다. 커서만 되돌리면 다음 저장 줄에서
             // 방금 거부한 전방 간격이 다시 적용된다.
             self.shift_vpos_base_for_rendered_backtrack(result - y_offset);
+            self.synthetic_forward_rejected_hu +=
+                ((result - y_offset) / self.dpi * 7200.0).round().max(0.0) as i32;
             if std::env::var("RHWP_VPOS_DEBUG").is_ok() {
                 eprintln!(
                     "VPOS_SYNTH_FWD_SKIP: pi={} prev_pi={} y_in={:.2} result={:.2}",

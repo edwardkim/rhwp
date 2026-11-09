@@ -61,6 +61,7 @@ impl TypesetEngine {
             endnote_note_first_paras: Default::default(),
             endnote_tail_leading_hu: Default::default(),
             seed_lazy_base_from_next_stored: false,
+            synthetic_forward_rejected_hu: 0,
         }
     }
 
@@ -365,6 +366,7 @@ impl TypesetEngine {
         // 재조판 뒤 저장 줄의 원점 연결과 지연 기준 산출을 모두 회수한다.
         st.record_vpos_page_origin(hc.vpos_page_base);
         st.record_vpos_lazy_origin(hc.vpos_lazy_base);
+        st.record_synthetic_forward_rejected(hc.synthetic_forward_rejected_hu);
         st.record_stored_column_origin(hc.stored_column_origin);
         st.record_vpos_column_anchor(hc.col_anchor_y);
         st.align_flow_to(y);
