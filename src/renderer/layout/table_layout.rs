@@ -9868,6 +9868,37 @@ impl LayoutEngine {
                                             nested_table.outer_margin_top as i32,
                                             self.dpi,
                                         )
+                                } else if let Some(owner) = line_tac_table_count
+                                    .filter(|&count| count >= 2)
+                                    .and_then(|_| {
+                                        // 글자 없는 줄의 여러 TAC 표도 글줄 경로와 같은 공유
+                                        // 기준선에 앉는다. 줄 높이가 바깥 상자와 같은 표가
+                                        // 소유자이고, 나머지는 높이의 85% 를 기준선 위에 둔다.
+                                        let lines = stored_control_lines.as_ref()?;
+                                        super::stored_tac_frame::line_table_owner(
+                                            source_controls.iter().enumerate().filter_map(
+                                                |(ci, c)| match c {
+                                                    Control::Table(t)
+                                                        if t.common.treat_as_char
+                                                            && Some(lines[ci]) == own_line =>
+                                                    {
+                                                        Some(t.as_ref())
+                                                    }
+                                                    _ => None,
+                                                },
+                                            ),
+                                            hwpunit_to_px(host_seg_lh, self.dpi),
+                                            styles,
+                                            self.dpi,
+                                        )
+                                    })
+                                {
+                                    super::stored_tac_frame::companion_table_top(
+                                        table_anchor_y,
+                                        owner.0,
+                                        owner.1,
+                                        hwpunit_to_px(inline_body_height_hu as i32, self.dpi),
+                                    )
                                 } else {
                                     table_anchor_y
                                 };
