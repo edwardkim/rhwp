@@ -15099,6 +15099,22 @@ impl LayoutEngine {
                 .saturating_sub(table.outer_margin_top as i32);
             (delta_hu > 0).then(|| hwpunit_to_px(delta_hu as i32, self.dpi))
         });
+        // 머리 표 아래에 저장된 host 줄의 글자처럼 취급한 표는 조판과 같은 저장 줄 위끝에서 시작한다.
+        // 앞 표의 pen 은 표의 바깥 아래 여백을 지나지 않는다.
+        if is_current_tac
+            && para_start_y
+                .get(&para_index)
+                .is_some_and(|start| (start - col_area.y).abs() <= 0.5)
+        {
+            if let Some(top) = paragraphs.get(para_index).and_then(|para| {
+                crate::renderer::float_placement::stored_inline_host_line_top_below_float(
+                    para,
+                    paragraphs.get(para_index + 1),
+                )
+            }) {
+                y_offset = y_offset.max(col_area.y + hwpunit_to_px(top, self.dpi));
+            }
+        }
         let y_offset_before_tac_in_front_decoration_shift = y_offset;
         if let Some(shift) = tac_in_front_decoration_line_shift {
             y_offset += shift;

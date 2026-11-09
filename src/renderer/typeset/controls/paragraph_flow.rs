@@ -346,8 +346,19 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
         return Ok(());
     }
 
-    let (height_before, page_count_before) = st.table_paragraph_flow_position();
+    let (mut height_before, page_count_before) = st.table_paragraph_flow_position();
     let para_start_height = height_before;
+    // 머리 표 아래에 저장된 host 줄의 글자처럼 취급한 표는 표 상자 뒤에서 시작한다. 줄 높이 상한도
+    // 문단 시작이 아니라 그 줄 위끝에서 잰다.
+    let mut inline_line_top_below_float = st
+        .current_items
+        .is_empty()
+        .then(|| {
+            crate::renderer::float_placement::stored_inline_host_line_top_below_float(
+                para, next_para,
+            )
+        })
+        .flatten();
     let mut para_float_lanes = FloatLaneSet::new();
 
     let controls::order::ControlPlacementOrder {
@@ -373,6 +384,16 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
         let ctrl = &para.controls[ctrl_idx];
         match ctrl {
             Control::Table(table) => {
+                if table.common.treat_as_char {
+                    if let Some(top) = inline_line_top_below_float.take() {
+                        let line_top = st.tac_height_page().vpos_col_anchor
+                            + crate::renderer::hwpunit_to_px(top, engine.dpi);
+                        if line_top > st.current_height {
+                            st.align_flow_to(line_top);
+                        }
+                        height_before = st.current_height;
+                    }
+                }
                 if controls::prepare_table_control_with_storage(
                     st,
                     para,
