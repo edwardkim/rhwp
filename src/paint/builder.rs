@@ -332,13 +332,17 @@ impl LayerBuilder {
         if !node.visible || (node.editor_only && !self.profile.shows_editor_visuals()) {
             return None;
         }
-        if matches!(
-            &node.node_type,
-            RenderNodeType::Placeholder(placeholder)
-                if placeholder.kind
-                    == crate::renderer::render_tree::PlaceholderKind::MissingPicture
-                    && !self.profile.shows_editor_visuals()
-        ) {
+        if !self.profile.shows_editor_visuals()
+            && match &node.node_type {
+                RenderNodeType::Placeholder(placeholder) => {
+                    placeholder.kind
+                        == crate::renderer::render_tree::PlaceholderKind::MissingPicture
+                }
+                // [#8858] 같은 「그림 미지정」이 이미지 노드로 온 경우도 인쇄 등가 출력에서 생략한다.
+                RenderNodeType::Image(image) => image.is_missing_picture(),
+                _ => false,
+            }
+        {
             return None;
         }
 

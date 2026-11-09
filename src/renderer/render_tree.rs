@@ -1797,6 +1797,20 @@ pub enum HeaderFooterKind {
 }
 
 impl ImageNode {
+    /// [#8858] 그림 컨트롤인데 원본 데이터가 없거나 표시할 수 없고 외부 경로도 없으면 `#2225`
+    /// 의 「그림 미지정」이다. 그림 배치 경로 일부(`picture_footnote`)만 이 형상을
+    /// `PlaceholderKind::MissingPicture` 노드로 바꾸고, 문단·칸·도형·TAC 그림 경로는 데이터
+    /// 없는 이미지 노드를 그대로 낸다. 백엔드는 같은 술어로 인쇄 등가 출력에서 생략한다.
+    /// 채우기 이미지(`fill_mode`)와 외부 경로 그림(`#741` 표시)은 해당하지 않는다.
+    pub fn is_missing_picture(&self) -> bool {
+        self.fill_mode.is_none()
+            && self.external_path.is_none()
+            && self.data.as_deref().is_none_or(|bytes| {
+                bytes.is_empty()
+                    || !crate::renderer::image_resolver::is_displayable_image_data(bytes)
+            })
+    }
+
     /// 워터마크 효과 적용 여부 (Issue #1156).
     /// 밝기·대비가 둘 다 0 이 아닌 경우 워터마크 (한쪽이라도 0 이면 아님, effect 무관).
     /// HWP/HWPX 에 워터마크 비트는 없으며 한컴은 해제 시 밝기·대비를 0/0 으로 되돌린다.
