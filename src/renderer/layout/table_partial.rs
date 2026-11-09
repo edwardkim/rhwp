@@ -2006,15 +2006,35 @@ impl LayoutEngine {
                         )
                     })
             };
+            // 병합 칸은 쪽 경계에 걸리지 않아도 칸 전체를 덮는 컷을 받는다. 그 컷은 칸을
+            // 나누지 않으므로, 저장 줄 없이 도형만 든 문단도 이 조각이 소유한다. 글앞/글뒤
+            // 도형만 든 문단은 빈 줄로 분류되는데 컷의 빈 줄 소유는 개체 문단을 세지 않아,
+            // 그 문단이 건너뛰어져 도형이 어느 조각에도 나오지 않고 가운데 정렬 내용 높이에서도
+            // 빠졌다.
+            let unstored_shape_paragraph = |para: &crate::model::paragraph::Paragraph| {
+                para.line_segs.is_empty()
+                    && para.controls.iter().any(|c| matches!(c, Control::Shape(_)))
+            };
+            let whole_cell_cut = cut_units.is_some_and(|(su, eu)| {
+                su == 0 && eu >= self.cell_units(cell, table, styles).len()
+            });
+            let whole_cell_shape_paragraph = |pi: usize| {
+                empty_paragraphs[pi]
+                    && whole_cell_cut
+                    && unstored_shape_paragraph(&cell.paragraphs[pi])
+            };
             let owns_empty_paragraph = |pi: usize| {
                 empty_paragraphs[pi]
                     && (empty_owners.as_ref().is_none_or(|owners| owners[pi])
-                        || control_owned_empty_paragraph(pi))
+                        || control_owned_empty_paragraph(pi)
+                        || whole_cell_shape_paragraph(pi))
             };
             // 개체로 소유한 빈 문단의 정렬 높이는 빈 줄과 개체 띠 중 큰 쪽이다.
             // 개체는 문단 원점에 오프셋으로 놓이고 빈 줄과 같은 띠를 차지한다.
+            // 칸 전체 컷이 소유한 도형 문단도 같다 — 빈 줄만 세면 가운데 정렬 칸에서
+            // 도형이 칸 높이의 절반쯤 아래로 밀린다.
             let control_owned_empty_paragraph_height = |pi: usize, lines_h: f64| {
-                if control_owned_empty_paragraph(pi) {
+                if control_owned_empty_paragraph(pi) || whole_cell_shape_paragraph(pi) {
                     lines_h.max(self.calc_cell_wrap_objects_bottom_height(
                         std::slice::from_ref(&cell.paragraphs[pi]),
                         styles,
@@ -2889,6 +2909,9 @@ impl LayoutEngine {
                 // 개체로 소유한 빈 문단의 그림은 조각 흐름 커서 대신 문단 원점과 제
                 // 오프셋에 놓는다 — 흐름 커서는 가로 자리가 다른 그림도 차례로 아래에 쌓는다.
                 let control_owned_empty = control_owned_empty_paragraph(cp_idx);
+                // 저장 줄 없이 도형만 든 문단(직선 화살표 등). 줄 수가 0 이라 아래 판정들이
+                // "이 쪽 소속 아님"으로 읽는다.
+                let has_unstored_shape_ctrl = unstored_shape_paragraph(para);
                 if collapse_stored_wrap_spacers
                     && stored_nested_table_empty_wrap_spacer(cell, cp_idx)
                 {
@@ -2957,16 +2980,14 @@ impl LayoutEngine {
                 // 판정이 아니라 control-only 문단의 합성 결과다. normal-table path와
                 // 같이 control을 배치해야 한다. cut fragment에서는 단위 소유권을
                 // 유지해 다음 쪽 표를 앞쪽에 중복 방출하지 않는다.
-                // 글자처럼 취급 도형(직선 화살표 등)만 든 문단도 같다. 저장 줄이
-                // 없으면 줄 수 0 으로 건너뛰어 도형 노드가 아예 생기지 않았다 —
-                // 일반 표 경로는 같은 문단을 제 줄에 그린다.
-                let has_unstored_tac_shape_ctrl = para.line_segs.is_empty()
-                    && para.controls.iter().any(|c| match c {
-                        Control::Shape(shape) => shape.common().treat_as_char,
-                        _ => false,
-                    });
-                let uncut_control_only_nested_table = cut_units.is_none()
-                    && (has_table_ctrl || has_picture_ctrl || has_unstored_tac_shape_ctrl)
+                // 도형(직선 화살표 등)만 든 문단도 같다. 저장 줄이 없으면 줄 수 0 으로
+                // 건너뛰어 도형 노드가 아예 생기지 않았다 — 일반 표 경로는 같은 문단을
+                // 제 줄에 그린다. 글자처럼 취급이 아닌 도형(문단 기준 자리차지 화살표)도
+                // 이 문단이 앵커라 같은 구제가 필요하다. 컷 조각의 행은 위
+                // `visible_non_inline_controls` 가 이미 구제한다.
+                let uncut_control_only_nested_table = (cut_units.is_none()
+                    && (has_table_ctrl || has_picture_ctrl || has_unstored_shape_ctrl)
+                    || whole_cell_cut && has_unstored_shape_ctrl)
                     && para
                         .text
                         .chars()
