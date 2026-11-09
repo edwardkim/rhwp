@@ -27,6 +27,7 @@ impl TypesetEngine {
             suppress_large_forward_jump: false,
             suppress_hwpx_stale_forward: st.profile.hwpx_stored_layout(),
             rejected_stored_forward_origin: None,
+            rebased_after_unstored_forward: false,
             stored_equation_reflow: st.profile.hwp5_container(),
             prev_reissued_equation_rows: st
                 .vpos_prev_layout_para
@@ -97,6 +98,7 @@ impl TypesetEngine {
             hc.rejected_stored_forward_origin
                 .map(|source| (para_idx, source)),
         );
+        st.record_rebased_after_unstored_forward(hc.rebased_after_unstored_forward);
     }
 
     /// 렌더러 `build_single_column` 의 inter-item VPOS_CORR(Stage C `HeightCursor::vpos_adjust`)
@@ -375,6 +377,7 @@ impl TypesetEngine {
             hc.rejected_stored_forward_origin
                 .map(|source| (para_idx, source)),
         );
+        st.record_rebased_after_unstored_forward(hc.rebased_after_unstored_forward);
 
         Ok(())
     }

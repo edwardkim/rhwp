@@ -414,6 +414,9 @@ pub(in crate::renderer::typeset) struct StateView {
     pub(in crate::renderer::typeset) vpos_rejected_gap_hu: i32,
     /// [#8843] 이 단에서 커서가 합성 줄 뒤 저장 앞 점프를 거절하고 옮긴 기준축 누적(HU).
     pub(in crate::renderer::typeset) synthetic_forward_rejected_hu: i32,
+    /// [#8845] 이 단에서 저장 줄 없는 문단 뒤의 낡은 전방 원점을 거절해 기준을 옮겼다
+    /// (`HeightCursor::rebased_after_unstored_forward`). 단을 새로 열 때 지운다.
+    pub(in crate::renderer::typeset) vpos_rebased_after_unstored_forward: bool,
     pub(in crate::renderer::typeset) vpos_prev_layout_para: Option<usize>,
     pub(in crate::renderer::typeset) vpos_prev_partial_table: bool,
     /// 컬럼 시작 시점의 current_height (page_path anchor — 렌더러 col_anchor_y 대응).
