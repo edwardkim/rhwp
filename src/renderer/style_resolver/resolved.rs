@@ -654,6 +654,25 @@ impl ResolvedStyleSet {
         !self.display_only_otf_slots.contains(&(char_style_id, lang))
     }
 
+    /// 원본 프로그램의 조회 성공과 그 전진을 소비할 권한은 다르다.
+    /// 미분류 face의 자동 조회는 기존 조판을 보존하며, 원본 유형 또는
+    /// 명시적 자연 전진 선택이 있는 슬롯만 공급 프로그램의 폭을 소비한다.
+    pub(crate) fn uses_native_otf_metrics(&self, char_style_id: u32, lang: usize) -> bool {
+        self.allows_native_otf_metrics(char_style_id, lang)
+            && self
+                .char_styles
+                .get(char_style_id as usize)
+                .is_some_and(|style| {
+                    style.source_hft_for_lang(lang)
+                        || style.source_ttf_for_lang(lang)
+                        || style
+                            .font_families_natural_program_metrics
+                            .get(lang)
+                            .copied()
+                            .unwrap_or(false)
+                })
+    }
+
     /// 파일의 글꼴 종류 비트와 실제 TrueType 프로그램 요청을 구분한다.
     /// HWP5의 미분류 face도 원본 메트릭이 없으면 같은 이름의 실제 TTF를
     /// 요청할 수 있다. 공급·프로그램 검증 전에는 기존 전진을 바꾸지 않는다.

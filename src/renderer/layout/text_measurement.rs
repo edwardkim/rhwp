@@ -971,7 +971,7 @@ fn try_char_style_to_text_style<S: crate::renderer::style_resolver::storage::Sto
                 })
                 .flatten(),
             native_otf_metrics: (!styles.has_exact_font_source(char_style_id, lang_index)
-                && styles.allows_native_otf_metrics(char_style_id, lang_index))
+                && styles.uses_native_otf_metrics(char_style_id, lang_index))
             .then(|| {
                 styles.native_pua_fonts.get_otf_for_source(
                     cs.font_family_for_lang(lang_index),
@@ -1097,7 +1097,7 @@ fn try_char_style_to_text_style<S: crate::renderer::style_resolver::storage::Sto
                     Ok(Box::new(crate::renderer::LatinSlotMetrics {
                         font_family: storage.string(cs.font_family_for_lang(1))?,
                         native_otf_metrics: (!styles.has_exact_font_source(char_style_id, 1)
-                            && styles.allows_native_otf_metrics(char_style_id, 1))
+                            && styles.uses_native_otf_metrics(char_style_id, 1))
                         .then(|| {
                             styles.native_pua_fonts.get_otf_for_source(
                                 cs.font_family_for_lang(1),
