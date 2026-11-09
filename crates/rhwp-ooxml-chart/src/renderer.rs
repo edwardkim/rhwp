@@ -561,6 +561,18 @@ fn raw_value_bounds<'a>(series: impl Iterator<Item = &'a OoxmlSeries>) -> (f64, 
     (min, max)
 }
 
+/// 시리즈 부분집합의 원 최솟값 (0 clamp 전). 값이 없으면 0.
+fn raw_data_min<'a>(series: impl Iterator<Item = &'a OoxmlSeries>) -> f64 {
+    let min = series
+        .flat_map(|s| s.values.iter().copied())
+        .fold(f64::INFINITY, f64::min);
+    if min.is_finite() {
+        min
+    } else {
+        0.0
+    }
+}
+
 /// raw 간격에 가장 가까운 "깔끔한" 눈금 간격 (1/2/5/10 × 10^n, 반올림 임계 1.5/3/7)
 fn floor_nice_step(raw: f64) -> f64 {
     let mag = 10f64.powf(raw.abs().log10().floor());
