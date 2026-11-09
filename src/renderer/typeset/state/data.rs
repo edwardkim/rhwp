@@ -220,6 +220,13 @@ pub(in crate::renderer::typeset) struct StateView {
     /// p1356 뒤 본문을 한 쪽 더 분할한다. layout 순서에는 앞에 있어야 하지만,
     /// typeset 흐름 항목으로는 보이면 안 된다.
     pub(in crate::renderer::typeset) page_start_square_pictures: Vec<DeferredSquarePictureControl>,
+    /// 겹침 허용 안 함 어울림 그림 무리에서 앵커 쪽에 들어가지 못한 그림 (문단, 개체).
+    /// 앞 그림과 겹칠 수 없으므로 새 쪽마다 하나씩 쪽 맨 위로 옮긴다. 흐름은 소비하지 않는다
+    /// — 뒤 문단은 저장 줄(그림 옆 cs/sw)대로 그 쪽을 채운다.
+    pub(in crate::renderer::typeset) cascaded_pile_pictures:
+        std::collections::VecDeque<(usize, usize)>,
+    /// 이 쪽 맨 위에 둘 무리 그림. 흐름 항목이 아니라 단 확정 때 앞에 붙인다.
+    pub(in crate::renderer::typeset) page_start_pile_pictures: Vec<(usize, usize)>,
     /// 표 조판 중 fragment별로 각주를 등록한 source 키. caller의 기존 표 완료 뒤
     /// 일괄 등록을 건너뛰어 중복을 막는다.
     pub(in crate::renderer::typeset) fragment_queued_table_footnotes:

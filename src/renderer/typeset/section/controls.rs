@@ -165,6 +165,14 @@ impl TypesetEngine {
             {
                 st.collect_endnote(en_ref.clone());
             }
+            // 앵커 쪽에 남는 겹침 불허 무리(#4770)는 첫 그림만 이 쪽에 두고 나머지는
+            // 새 쪽마다 하나씩 맨 위로 옮긴다. 앞 그림과 겹칠 수 없는데 쪽에 둘이 들어가지
+            // 않는다 — 1351000-201800239 s2/pi1007 그림 24장(150×212mm)은 한/글 2020
+            // Print 211~234쪽에 한 장씩이고, 뒤 빈 문단 저장 줄도 쪽마다 그림 옆(cs 42520)이다.
+            if stored_line_beside_pile && ctrl_idx > 0 {
+                st.queue_cascaded_pile_picture(para_idx, ctrl_idx);
+                continue;
+            }
             // [#1995] 다수 전면 이미지: 각 전면 그림을 새 페이지에 단독 배치.
             if is_multi_fullpage_img_para && fullpage_img_ctrls.contains(&ctrl_idx) {
                 st.force_new_page_with_storage(storage)?;

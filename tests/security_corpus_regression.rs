@@ -270,6 +270,11 @@ fn positive_corpus_unicode_vector_is_caught() {
 ///   `translate(592.07, 914.47)` 이고 그 점을 덮는 도형은 표 테두리 `<rect>` 둘
 ///   (둘 다 `fill` 속성 없음)과 흰 쪽 바탕 `<rect fill="#ffffff">` 뿐이며 그 쪽의
 ///   `<image>` 는 0개다. 즉 흰 종이 위 흰 글자로 **사람 눈에 보이지 않는다**.
+/// - `1351000-201800239_hpv_cohort_final_report.hwp`(#8842) 117쪽 흰 글자 5자 "(  )%".
+///   구역 2 문단 401 표 셀[28] r=7,c=0 `"부 가 가 치 세 (  )%"` 에서 빈칸 괄호와 `%` 만
+///   `text=#FFFFFF` 다. 셀 `border_fill_id=11` 에 배경 채우기가 없어 탐지기가 쪽
+///   바탕까지 내려가고(`backgroundSource: "page"`), 그 쪽 SVG 의 `<image>` 는 0개, 채움
+///   `<rect>` 는 흰색(`#ffffff`)뿐이다. 서식에서 채울 칸을 지운 흔적으로 **보이지 않는다**.
 ///
 /// 그래서 **규칙을 느슨하게 하지 않고** 이 세 문서만 스윕에서 뺀다. 여기에 항목을
 /// 추가할 때는 반드시 위와 같은 개별 근거를 함께 남긴다 — 근거 없이 이름만 늘리면
@@ -278,6 +283,7 @@ const KNOWN_GENUINE_HIDDEN_TEXT: &[&str] = &[
     "synam-001.hwp",
     "issue1892_hwp3_tab_roundtrip.hwp",
     "30098_float_host_split_lineseg.hwp",
+    "1351000-201800239_hpv_cohort_final_report.hwp",
 ];
 
 /// 제로폭 축의 같은 성격 목록 — **탐지가 맞았는데 표본이 실제로 그렇다**는 선언.
@@ -293,6 +299,9 @@ const KNOWN_GENUINE_HIDDEN_TEXT: &[&str] = &[
 /// 277·284·290 문단은 문장 끝(`… 되어 있다.<U+200B><U+200B>`, `… 이루어져야 한다.<U+200B><U+200B> 개선은`,
 /// `… 조치할 것<U+200B><U+200B>`), 285 문단은 첫머리(`<U+200B>○ 진술문`)에 U+200B 이 있다.
 /// 낱자 사이가 아니고 숨은 문구도 없다.
+/// `1351000-201800239_hpv_cohort_final_report.hwp`(#8842) 구역 0 문단 159 의 참고문헌
+/// 제목 `… Cervical Cells in Liquid-based Pap Tests<U+FEFF> ` 에 U+FEFF 1개가 있다(문자
+/// 92, 앞 `s`·뒤 공백). 영문 제목을 웹에서 옮겨 붙인 흔적이며 탐지 자체는 옳다.
 ///
 /// 규칙을 느슨하게 하지 않고 이 문서만 뺀다. 제로폭 탐지의 감도를 낮추면
 /// 낱자 사이에 끼워 넣는 진짜 회피(`비밀<U+200B>번호`)까지 함께 놓친다.
@@ -301,11 +310,14 @@ const KNOWN_GENUINE_ZERO_WIDTH: &[&str] = &[
     "정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
     "정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
     "employment_service_interim_report.hwp",
+    "1351000-201800239_hpv_cohort_final_report.hwp",
 ];
 
 /// `samples/` 바로 아래가 아닌 허용목록 문서. 자기검증이 조용히 건너뛰지 않게 경로를 둔다.
-const KNOWN_GENUINE_ZERO_WIDTH_SUBDIR: &[&str] =
-    &["samples/issue8692/employment_service_interim_report.hwp"];
+const KNOWN_GENUINE_ZERO_WIDTH_SUBDIR: &[&str] = &[
+    "samples/issue8692/employment_service_interim_report.hwp",
+    "samples/issue8842/1351000-201800239_hpv_cohort_final_report.hwp",
+];
 
 const SECURITY_SWEEP_SAMPLES_ENV: &str = "RHWP_SECURITY_SWEEP_SAMPLES_JSON";
 

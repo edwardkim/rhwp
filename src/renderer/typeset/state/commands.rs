@@ -165,6 +165,22 @@ impl TypesetState {
     ) {
         self.data.behind_pending_absorbs.push(para);
     }
+    /// 겹침 불허 그림 무리에서 다음 새 쪽 맨 위로 옮길 그림을 줄 세운다.
+    pub(in crate::renderer::typeset) fn queue_cascaded_pile_picture(
+        &mut self,
+        para_index: usize,
+        control_index: usize,
+    ) {
+        self.data
+            .cascaded_pile_pictures
+            .push_back((para_index, control_index));
+    }
+    /// 쪽이 모자라 아직 옮기지 못한 무리 그림을 현재 쪽 맨 앞에 둔다.
+    pub(in crate::renderer::typeset) fn place_remaining_pile_pictures_on_current_page(&mut self) {
+        let data = &mut *self.data;
+        data.page_start_pile_pictures
+            .extend(data.cascaded_pile_pictures.drain(..));
+    }
     pub(in crate::renderer::typeset) fn defer_square_picture(
         &mut self,
         picture: DeferredSquarePictureControl,

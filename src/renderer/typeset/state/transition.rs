@@ -82,6 +82,8 @@ impl TypesetState {
                 pending_table_terminal_gap: None,
                 deferred_next_page_square_pictures: Vec::new(),
                 page_start_square_pictures: Vec::new(),
+                cascaded_pile_pictures: std::collections::VecDeque::new(),
+                page_start_pile_pictures: Vec::new(),
                 deferred_next_page_stored_frames: Vec::new(),
                 stored_reset_note_fragments: Vec::new(),
                 deferred_next_column_stored_frames: Vec::new(),
@@ -645,6 +647,7 @@ impl TypesetState {
             || !self.data.current_column_wrap_around_paras.is_empty()
             || !self.data.page_start_square_pictures.is_empty()
             || !self.data.page_start_stored_frames.is_empty()
+            || !self.data.page_start_pile_pictures.is_empty()
     }
 
     /// 현재 항목을 ColumnContent로 만들어 마지막 페이지에 push
@@ -739,6 +742,15 @@ impl TypesetState {
         storage: &S,
     ) -> Result<Vec<PageItem>, S::Error> {
         let mut items = storage.collect(
+            std::mem::take(&mut self.data.page_start_pile_pictures)
+                .into_iter()
+                .map(|(para_index, control_index)| PageItem::Shape {
+                    para_index,
+                    control_index,
+                }),
+        )?;
+        storage.extend(
+            &mut items,
             std::mem::take(&mut self.data.page_start_square_pictures)
                 .into_iter()
                 .map(|deferred| PageItem::Shape {
@@ -1124,6 +1136,10 @@ impl TypesetState {
                 deferred.placement,
             )?;
             storage.push(&mut self.data.page_start_stored_frames, deferred)?;
+        }
+        // 겹침 불허 그림 무리의 다음 그림은 새 쪽 맨 위로 간다(쪽당 하나).
+        if let Some(picture) = self.data.cascaded_pile_pictures.pop_front() {
+            storage.push(&mut self.data.page_start_pile_pictures, picture)?;
         }
         // Task #321: 새 페이지에서는 body-wide top reserve 초기화
         self.data.pending_body_wide_top_reserve = 0.0;
