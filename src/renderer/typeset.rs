@@ -5959,6 +5959,9 @@ impl TypesetEngine {
                 let extra = step - table_total_height;
                 if extra > 0.5 {
                     st.advance_flow_by(extra);
+                } else if extra < -0.5 {
+                    // 음수 줄간격: 뒤 글줄은 표 줄 끝보다 그만큼 위에서 시작한다.
+                    st.reclaim_flow_by(-extra);
                 }
             }
             // [#2808] 소비 조건을 layout 의 same_owner_table_precedes 와 동일하게
@@ -6406,9 +6409,11 @@ impl TypesetEngine {
             return None;
         }
         let (table_line, post_line) = para.line_segs.first().zip(para.line_segs.get(1))?;
+        // 줄간격은 음수일 수도 있다. 뒤 글줄이 그 간격만큼 표 줄 끝보다 위에서 시작한다는
+        // 저장 증언도 같은 프레임의 흐름이다.
         if is_synthetic_line_seg(table_line)
             || is_synthetic_line_seg(post_line)
-            || table_line.line_spacing <= 0
+            || table_line.line_spacing == 0
         {
             return None;
         }
