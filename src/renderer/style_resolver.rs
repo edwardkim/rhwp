@@ -304,6 +304,17 @@ pub(crate) fn resolve_styles_with_environment(
                         .font_faces
                         .get(lang)
                         .and_then(|faces| faces.get(shape.font_ids[lang] as usize));
+                    // 같은 원본 프로그램의 존재 확인·family 별칭은 HFT 종이 프레임을
+                    // 버리는 요청이 아니다. 초기 미설치 fallback에서 잃은 프레임도 복원한다.
+                    // 대체 프로그램 조회·내장 face·자연 전진 선택은 이 인증에 포함하지 않는다.
+                    if preserve_source_metrics
+                        && original.alt_type == Some(2)
+                        && original.embedded != Some(true)
+                        && source_font.is_some_and(|face| face.native_program.is_none())
+                        && style.font_families_primary_program[lang].is_some()
+                    {
+                        style.font_families_hft_print_frame[lang] = true;
+                    }
                     // 실제 원본 TTF를 조회해 인증한 family 별칭은 기존 폭 신뢰를
                     // 잃지 않는다. 대체 쿼리·HFT·다른 메트릭의 선택은 포함하지 않는다.
                     let verified_source_alias = original.substitution_boundary.is_none()

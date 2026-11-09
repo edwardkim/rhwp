@@ -736,8 +736,6 @@ impl PagePaintContext {
         image: &ImageNode,
         _device_pixel: Option<f64>,
     ) -> BoundingBox {
-        let bbox = node.bbox;
-        let is_master = node.layer.as_ref().is_some_and(|layer| layer.master_page);
         let raster = image.data.as_deref().is_some_and(|bytes| {
             matches!(
                 detect_image_mime_type(bytes),
@@ -750,7 +748,19 @@ impl PagePaintContext {
                     | "image/x-pcx"
             )
         });
-        if !self.print || !raster {
+        if raster {
+            self.raster_image_frame(node, image)
+        } else {
+            node.bbox
+        }
+    }
+
+    /// 원본 PNG 또는 실제 준비가 끝난 메타파일 PNG의 같은 물리 Print 프레임이다.
+    /// 준비 전 WMF·중간 표면·이미 장치 격자에 합성된 표면의 판정은 호출자가 소유한다.
+    pub(crate) fn raster_image_frame(self, node: &RenderNode, image: &ImageNode) -> BoundingBox {
+        let bbox = node.bbox;
+        let is_master = node.layer.as_ref().is_some_and(|layer| layer.master_page);
+        if !self.print {
             return bbox;
         }
         let (width, height) = self.logical_size;
