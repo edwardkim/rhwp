@@ -1,9 +1,16 @@
+---
+kind: investigation
+status: active
+canonical: mydocs/manual/github_operations.md
+last_verified: 2026-11-10
+---
+
 # CodeQL 잔여 경고 정리 근거
 
 기준은 `e00f9b7e26e581896fa17eaff3c8eb3f4889f9d4`, 로컬 보정은
 `612b4053db0a09cd714aa85e9fefa045f7c4d193`이다. 작업지시자는 2026-11-09에
 114건의 분류와 나머지 8건의 로컬 보정·검증을 승인했다. 원격 코드 반영과 새 원격 분석은
-이번 승인에 포함되지 않는다.
+초기 승인에 포함되지 않았다. 이후 PR 제출·머지 승인은 아래 후속 단계로 구분한다.
 
 ## 선행 처리와 원격 분류
 
@@ -48,7 +55,7 @@ PDF backend의 두 진단에서 객체 전체와 복호화한 본문을 제거�
 | 정식 Rust lint·workspace build·suite 정책 | 모두 통과; WASM32 검사 포함 |
 
 전체·집중 회귀는 저장소의 공개 글꼴 5개만 보이는 격리 환경에서 실행했다. 새 회귀는
-기존 자동 수집 경로인 `regression_suite_016`에 들어가며 CI 개별 호출은 추가하지 않았다.
+초기 자동 수집 경로인 `regression_suite_016`에 들어갔으며 CI 개별 호출은 추가하지 않았다.
 조판·paint·글꼴 메트릭은 변경하지 않아 Native Skia 광범위 회귀·fresh WASM 렌더·Visual Sweep·
 편람 gate를 이 작업의 증거로 주장하지 않는다.
 
@@ -105,7 +112,7 @@ OPEN 8건, 저장소 전체 dismissed 183건·fixed 10건이다. 기존 79건의
 로컬 보정과 GitHub의 `fixed` 상태는 구분한다. 보정 소스의 원격 반영과 동일 범위 분석,
 main·devel 보호 브랜치에서의 실제 결과 확인이 필요하다. 포인터 7건의 `fixed`와
 안전한 수치 진단만 남은 #597의 별도 분류를 확인해야 원격 정리가 끝난다.
-현재 승인으로 PR·push·merge·새 workflow 실행을 수행하지 않는다.
+초기 승인 단계에서는 PR·push·merge·새 workflow 실행을 수행하지 않았다.
 이미 게시된 0.9.0 패키지와 배포물도 이번 로컬 보정으로 변경되지 않는다.
 
 ## 종료 정리와 보존 범위
@@ -120,3 +127,20 @@ snapshot 두 곳을 삭제했다. 추가 백업·압축·임시 내용 이관 �
 `task/8745-code-scanning-followup` worktree는 아직 원격에 제출하지 않은 보정 소스를 보존하므로
 유지한다. 기본 devel 작업공간과 다른 소유자의 worktree·글꼴·Studio 배포용 JS/WASM,
 공유 target의 release·release-test·WASM 등 다른 profile은 삭제하지 않았다.
+
+## PR 제출·머지 승인 이후
+
+2026-11-09 작업지시자가 “PR 로 머지 처리합니다”라고 지시해 devel 대상 PR 제출·CI·self-review·
+머지 절차를 승인했다. main 승격이나 #597의 추가 보안 분류를 이 지시로 실행하지 않는다.
+
+제출 전 최신 devel `edbd51067730098e830eb5d03aed625eac47b10f`의 #8857을 확인하고 충돌 없이
+리베이스했다. 원래 보정 `612b4053db`는 `913713dbfd`로 변경됐으며 검증한 여섯 소스의 SHA-256은
+그대로다. PDF backend·qcms·공통 codec 자원 crate·toolchain에는 새 base 변경이 없다.
+위 CodeQL 전후 정량은 초기 base의 분석으로 보존하고, 최신 후보의 GitHub CI와 구분한다.
+2026-11-10 새 base의 [필수 Rust 검증](pr-local-validation.json)을 모두 완료했다.
+전체 release-test는 13,130 PASS·0 FAIL·45 skipped다. 로그 비노출 2건, 기존 인증 경계 6건,
+새 base의 글꼴 프로그램 신원 4건과 번호 들여쓰기 2건도 통과했다.
+현재 로그 검사의 자동 수집 경로는 `regression_suite_018`이며 실제 실행 로그의 경로를 보존했다.
+최소 글꼴 목록은 동일한 공개 글꼴 5개다. qcms 선택 기능의 동일 소스·의존 경계 30건은
+기존 증거를 재사용했다. [실행 입력의 commit·바이트·해시 대조](pr-input-fixtures.json)도 완료했다.
+이 결과로 PR을 제출하고 해당 head의 실제 CI와 self-review를 진행한다.

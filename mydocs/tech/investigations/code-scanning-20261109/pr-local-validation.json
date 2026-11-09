@@ -1,0 +1,323 @@
+{
+  "base": "edbd51067730098e830eb5d03aed625eac47b10f",
+  "source_commit": "913713dbfd0a911130e7d590629a656ffc1940b3",
+  "rebase": {
+    "observed_at": "2026-11-09T23:33:19.052953+09:00",
+    "base_before": "e00f9b7e26e581896fa17eaff3c8eb3f4889f9d4",
+    "base_after": "edbd51067730098e830eb5d03aed625eac47b10f",
+    "source_before": "612b4053db0a09cd714aa85e9fefa045f7c4d193",
+    "source_after": "913713dbfd0a911130e7d590629a656ffc1940b3",
+    "head_before": "f623634d6145f3a08c51c50715ca17cf7cd32de7",
+    "head_after_rebase": "a1d3603a4a24e7127f102e9b5e8697db7aa0360a",
+    "new_base_pr": 8857,
+    "rebase_conflicts": false,
+    "original_six_source_hashes_preserved": true,
+    "incoming_vendor_or_codec_resource_changes": [],
+    "new_base_tests": [
+      "font_program_identity_contracts",
+      "list_marker_stored_indent_ownership"
+    ],
+    "verification_status": "passed",
+    "actual_summaries": {
+      "pdf-logging": "2 tests run: 2 passed, 330 skipped",
+      "password-boundary": "6 tests run: 6 passed, 301 skipped",
+      "new-base-font-identity": "4 tests run: 4 passed, 333 skipped",
+      "new-base-marker-indent": "2 tests run: 2 passed, 334 skipped",
+      "full-release-test": "13130 tests run: 13130 passed (4 slow), 45 skipped"
+    }
+  },
+  "minimal_visible_fonts": [
+    "ttfs/opensource/NotoSansKR-Regular.ttf",
+    "ttfs/opensource/RHWPOldHangul-Regular.otf",
+    "ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+    "ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+    "ttfs/opensource/NotoSansSymbols2-Regular.ttf"
+  ],
+  "records": [
+    {
+      "name": "visible-fonts",
+      "command": [
+        "fc-list",
+        "-f",
+        "%{file}\n"
+      ],
+      "started": "2026-11-09T23:35:03.851471+09:00",
+      "ended": "2026-11-09T23:35:03.889852+09:00",
+      "exit_code": 0,
+      "log": "visible-fonts.log",
+      "base": "edbd51067730098e830eb5d03aed625eac47b10f",
+      "source": "913713dbfd0a911130e7d590629a656ffc1940b3",
+      "minimal_font": true,
+      "log_sha256": "21c3ef1565e68dff6844887ac4f5ca8668e4fd15a52687d7ddf628887d3ba015"
+    },
+    {
+      "name": "suite-prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "started": "2026-11-09T23:35:03.890207+09:00",
+      "ended": "2026-11-09T23:35:05.581188+09:00",
+      "exit_code": 0,
+      "log": "suite-prepare.log",
+      "base": "edbd51067730098e830eb5d03aed625eac47b10f",
+      "source": "913713dbfd0a911130e7d590629a656ffc1940b3",
+      "minimal_font": true,
+      "log_sha256": "906ff5d166b7fe7ac8232821dcebb3d662f681953842ac6b1421bc7ffb10399d"
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "started": "2026-11-09T23:35:05.581440+09:00",
+      "ended": "2026-11-09T23:35:32.535293+09:00",
+      "exit_code": 0,
+      "log": "fmt.log",
+      "base": "edbd51067730098e830eb5d03aed625eac47b10f",
+      "source": "913713dbfd0a911130e7d590629a656ffc1940b3",
+      "minimal_font": true,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "root-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "<shared-target>/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started": "2026-11-09T23:35:32.535534+09:00",
+      "ended": "2026-11-09T23:37:54.991557+09:00",
+      "exit_code": 0,
+      "log": "root-clippy.log",
+      "base": "edbd51067730098e830eb5d03aed625eac47b10f",
+      "source": "913713dbfd0a911130e7d590629a656ffc1940b3",
+      "minimal_font": true,
+      "log_sha256": "2bda583e798647c512d692392ce9b48a842fbfd2096a36daea53d6306950f5ab"
+    },
+    {
+      "name": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "<shared-target>/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started": "2026-11-09T23:37:54.991829+09:00",
+      "ended": "2026-11-09T23:39:46.693613+09:00",
+      "exit_code": 0,
+      "log": "wasm-clippy.log",
+      "base": "edbd51067730098e830eb5d03aed625eac47b10f",
+      "source": "913713dbfd0a911130e7d590629a656ffc1940b3",
+      "minimal_font": true,
+      "log_sha256": "a003c49c8c8eb1be4be04a4d99a9bcc3bc8e6cab971b1d7a3e0bca0277ebd0d6"
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "<shared-target>/pr-review"
+      ],
+      "started": "2026-11-09T23:39:46.693875+09:00",
+      "ended": "2026-11-09T23:43:02.388937+09:00",
+      "exit_code": 0,
+      "log": "workspace-build.log",
+      "base": "edbd51067730098e830eb5d03aed625eac47b10f",
+      "source": "913713dbfd0a911130e7d590629a656ffc1940b3",
+      "minimal_font": true,
+      "log_sha256": "7b1b9ee0e70824519f82624103b6d40b0c3497abefaad799a41b448560731b5d"
+    },
+    {
+      "name": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "<shared-target>/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started": "2026-11-09T23:43:02.389299+09:00",
+      "ended": "2026-11-09T23:45:50.302833+09:00",
+      "exit_code": 0,
+      "log": "workspace-clippy.log",
+      "base": "edbd51067730098e830eb5d03aed625eac47b10f",
+      "source": "913713dbfd0a911130e7d590629a656ffc1940b3",
+      "minimal_font": true,
+      "log_sha256": "00940794b7a8283e1a63bff11f241a8dc684a39873e8d61844c338993c2dceb5"
+    },
+    {
+      "name": "suite-policy",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "edbd51067730098e830eb5d03aed625eac47b10f"
+      ],
+      "started": "2026-11-09T23:45:50.303486+09:00",
+      "ended": "2026-11-09T23:45:51.294986+09:00",
+      "exit_code": 0,
+      "log": "suite-policy.log",
+      "base": "edbd51067730098e830eb5d03aed625eac47b10f",
+      "source": "913713dbfd0a911130e7d590629a656ffc1940b3",
+      "minimal_font": true,
+      "log_sha256": "c8905526c5a41963fb278d25708f6f70d33d8f44de82f7a785fbe401d281bca1"
+    },
+    {
+      "name": "pdf-logging",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "code_scanning_pdf_diagnostics",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "<shared-target>/pr-review"
+      ],
+      "started": "2026-11-09T23:45:51.295268+09:00",
+      "ended": "2026-11-09T23:52:22.926561+09:00",
+      "exit_code": 0,
+      "log": "pdf-logging.log",
+      "base": "edbd51067730098e830eb5d03aed625eac47b10f",
+      "source": "913713dbfd0a911130e7d590629a656ffc1940b3",
+      "minimal_font": true,
+      "log_sha256": "ac61d6dd45eb6807edf8ff2324dba635976154b9dac1936553fb383bfe64b5d4"
+    },
+    {
+      "name": "password-boundary",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8745_password_boundary",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "<shared-target>/pr-review"
+      ],
+      "started": "2026-11-09T23:52:22.927013+09:00",
+      "ended": "2026-11-09T23:52:39.263259+09:00",
+      "exit_code": 0,
+      "log": "password-boundary.log",
+      "base": "edbd51067730098e830eb5d03aed625eac47b10f",
+      "source": "913713dbfd0a911130e7d590629a656ffc1940b3",
+      "minimal_font": true,
+      "log_sha256": "c2cb05357b4c54cba620186261aea7785b831e40bd1f93b38d6d46f6f78f4928"
+    },
+    {
+      "name": "new-base-font-identity",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "font_program_identity_contracts",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "<shared-target>/pr-review"
+      ],
+      "started": "2026-11-09T23:52:39.263503+09:00",
+      "ended": "2026-11-09T23:52:53.558038+09:00",
+      "exit_code": 0,
+      "log": "new-base-font-identity.log",
+      "base": "edbd51067730098e830eb5d03aed625eac47b10f",
+      "source": "913713dbfd0a911130e7d590629a656ffc1940b3",
+      "minimal_font": true,
+      "log_sha256": "e2b9596486b2061487153f7dcbcf2666ce8a95764b33b0e1f157f4587295f0e1"
+    },
+    {
+      "name": "new-base-marker-indent",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "list_marker_stored_indent_ownership",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "<shared-target>/pr-review"
+      ],
+      "started": "2026-11-09T23:52:53.558281+09:00",
+      "ended": "2026-11-09T23:53:09.683881+09:00",
+      "exit_code": 0,
+      "log": "new-base-marker-indent.log",
+      "base": "edbd51067730098e830eb5d03aed625eac47b10f",
+      "source": "913713dbfd0a911130e7d590629a656ffc1940b3",
+      "minimal_font": true,
+      "log_sha256": "85a1c029e0b95de322484d263413bdb5f64fd6cf14ca8fafa5367e9860ccab69"
+    },
+    {
+      "name": "full-release-test",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "<shared-target>/pr-review",
+        "--tests",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "started": "2026-11-09T23:53:09.684116+09:00",
+      "ended": "2026-11-10T00:10:42.210054+09:00",
+      "exit_code": 0,
+      "log": "full-release-test.log",
+      "base": "edbd51067730098e830eb5d03aed625eac47b10f",
+      "source": "913713dbfd0a911130e7d590629a656ffc1940b3",
+      "minimal_font": true,
+      "log_sha256": "6735fddf04d792ffab7583af4a322fb1e37e8459c9f83acd895827d09842e137"
+    }
+  ],
+  "summaries": {
+    "pdf-logging": "2 tests run: 2 passed, 330 skipped",
+    "password-boundary": "6 tests run: 6 passed, 301 skipped",
+    "new-base-font-identity": "4 tests run: 4 passed, 333 skipped",
+    "new-base-marker-indent": "2 tests run: 2 passed, 334 skipped",
+    "full-release-test": "13130 tests run: 13130 passed (4 slow), 45 skipped"
+  },
+  "resolved_suites": {
+    "pdf-logging": "[RustTestSuite] code_scanning_pdf_diagnostics -> regression_suite_018::code_scanning_pdf_diagnostics",
+    "password-boundary": "[RustTestSuite] issue_8745_password_boundary -> regression_suite_026::issue_8745_password_boundary",
+    "new-base-font-identity": "[RustTestSuite] font_program_identity_contracts -> regression_suite_013::font_program_identity_contracts",
+    "new-base-marker-indent": "[RustTestSuite] list_marker_stored_indent_ownership -> regression_suite_007::list_marker_stored_indent_ownership"
+  },
+  "qcms_evidence_reuse": {
+    "passed": 30,
+    "basis": "Exact standalone qcms source, codec-resource dependency, toolchain and manifest identity across rebase; no changes from the previously executed 30-test C bindings run.",
+    "reference": "runtime-validation.json"
+  },
+  "full_codeql_scope": "Earlier full-source before/after quantification belongs to the pinned original base. Same six changed source hashes and vendor dependency boundaries are preserved; PR CI follows its actual rust-pr.yml scope."
+}

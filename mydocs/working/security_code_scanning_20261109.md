@@ -49,3 +49,18 @@ GitHub의 8건은 main·devel에 OPEN이다. 원격 코드 반영·새 분석과
 유지한다. 원문 로그 대신 위 검증 원장의 정규화 증적과 source commit으로 결과를 확인한다.
 종료 정리로 저장소 루트 `output/` 전체와 `target/pr-review/debug`, 소유가 확인된 임시
 snapshot 두 곳을 삭제해 약 28.16 GiB를 확보했다. [정리 원장](../tech/investigations/code-scanning-20261109/cleanup.json)에 실제 사용 종료·삭제 후 부재·유지 범위를 기록했다.
+
+## PR 제출·머지 진행
+
+- 2026-11-09 작업지시자: “PR 로 머지 처리합니다.” devel 대상 PR 제출·해당 head CI·self-review·머지·종료 정리를 진행한다. main 승격과 #597의 추가 분류는 구분한다.
+- base route: `collaborator_self_merge`. modifiers: `intake_and_review`, `local_validation`, `review_only_fast_pass`, `post_merge`, `rework_and_exceptions`의 대형 PR 증적 범위. 선택표와 자식 문서를 읽고 본인 계정의 열린 PR 0건을 확인했다.
+- 최신 base는 #8857 merge `edbd51067730098e830eb5d03aed625eac47b10f`다. 이번 보정과 겹치는 파일이 없으며 충돌 없이 리베이스했다. 소스 commit은 `612b4053db` → `913713dbfd`, 기존 증적 head는 `f623634d61` → `a1d3603a4a`로 대응한다.
+- 보정 소스 여섯 파일과 vendor·codec 자원 crate·toolchain 동일성을 확인했다. 초기 CodeQL의 독립 전후 증거는 재사용하되 새로운 전체 소스의 결과로 표시하지 않는다. 최신 base의 필수 Rust 검증과 글꼴 프로그램 신원·번호 들여쓰기 계약을 실행한다.
+- PR 번호 기반 review·오늘할일은 code head CI 성공 뒤에만 작성한다. source 동작을 바꾸지 않는 trailing 기록으로 같은 PR에 반영하고 최신 head의 실제 fast-pass·merge tree·required check를 확인한다.
+
+2026-11-10 최신 base의 제출 전 검증을 완료했다. 전체 release-test는 **13,130 PASS·0 FAIL·45 skipped**,
+집중 회귀는 로그 비노출 2건·기존 인증 경계 6건·새 base 글꼴 신원 4건·번호 들여쓰기 2건이다.
+format·native root Clippy·WASM32 Clippy·workspace build·workspace all-target Clippy·suite 정책도
+모두 통과했다. [실제 실행과 초기 증거 재사용 경계](../tech/investigations/code-scanning-20261109/pr-local-validation.json),
+[입력 파일의 commit 동일성](../tech/investigations/code-scanning-20261109/pr-input-fixtures.json)을 보존했다.
+소스 보정은 리베이스 후에도 동일하며 정식 source/test/CI 설정은 추가로 바꾸지 않았다.
