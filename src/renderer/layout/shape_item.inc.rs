@@ -290,11 +290,40 @@ impl LayoutEngine {
                             // (베트남노동시장1125: 124쪽 중 8쪽의 차트가 본문 위/지면 밖).
                             // 바닥-정렬 목표가 단 상단을 넘으면 기각하고, 같은 문단의 선행
                             // float(표)이 이미 진행시킨 흐름(y_offset) 뒤로 배치한다.
-                            let (vpos_accounts_for_height, pic_y) = if vpos_accounts_for_height
+                            // [#8831] 다만 저장 줄과 앞 흐름 끝 사이 gap 이 **이 그림 하나의 띠**
+                            // (오프셋 + 높이 + 아래 여백)와 같으면 gap 은 이 문단 자신의 띠다
+                            // (#409: 오프셋 0 그림 아래로 밀린 줄). 문단 배치가 이미 그 줄을 띠
+                            // 아래로 옮겼으므로 그림은 문단 원점(앵커)에 두고 흐름은 되돌리지
+                            // 않는다 — 1351000-201500141 pi695 줄 63939 = 문단 시작 27278 + 그림
+                            // 36661. 같은 문단의 앞 개체(표)까지 gap 에 든 형상(1490000-200800034
+                            // pi1090 표 뒤 그림)은 종전대로 앞 개체가 진행시킨 흐름 뒤에 둔다.
+                            let own_line_below_band = vpos_accounts_for_height
+                                && paragraphs[para_index]
+                                    .line_segs
+                                    .first()
+                                    .map(|s| s.vertical_pos)
+                                    .zip(crate::renderer::stored_previous_flow_end_hu(
+                                        paragraphs, para_index,
+                                    ))
+                                    .is_some_and(|(line, prev_end)| {
+                                        let band = crate::renderer::float_placement::signed_hwpunit(
+                                            pic.common.vertical_offset,
+                                        )
+                                        .saturating_add(pic.common.height as i32)
+                                        .saturating_add(pic.common.margin.bottom as i32);
+                                        hwpunit_to_px((line - prev_end - band).abs(), self.dpi)
+                                            <= 0.5
+                                    });
+                            let rejects_gap_alignment = vpos_accounts_for_height
                                 && pic_y - hwpunit_to_px(pic.common.height as i32, self.dpi)
-                                    < col_area.y - 0.5
-                            {
-                                (false, pic_y.max(y_offset))
+                                    < col_area.y - 0.5;
+                            let own_line_below_band = rejects_gap_alignment && own_line_below_band;
+                            let (vpos_accounts_for_height, pic_y) = if rejects_gap_alignment {
+                                if own_line_below_band {
+                                    (false, pic_y)
+                                } else {
+                                    (false, pic_y.max(y_offset))
+                                }
                             } else {
                                 (vpos_accounts_for_height, pic_y)
                             };
@@ -347,6 +376,9 @@ impl LayoutEngine {
                                 vpos_accounts_for_height,
                             );
                             result_y = picture_placement.flow_end;
+                            if own_line_below_band {
+                                result_y = result_y.max(saved_y_offset);
+                            }
                             if matches!(pic.common.vert_rel_to, VertRelTo::Para)
                                 && matches!(pic.common.text_wrap, TextWrap::TopAndBottom)
                             {
