@@ -486,7 +486,14 @@ pub extern "C" fn qcms_profile_get_lut(
         //   * (eat the extra alloc)
         // 2. Convert the u16s back out to f32s in our slice.
         //   * (eat the copy and quantization error from f32->u16->f32 roundtrip)
-        transform_util::build_lut_for_linear_from_tf(trc, Some(out_slice.len()))
+        let Some(samples) =
+            transform_util::build_lut_for_linear_from_tf(trc, Some(out_slice.len()))
+        else {
+            // The scoped resource budget retains the allocation failure. Do not
+            // write partial samples or unwind through this C ABI entry point.
+            return;
+        };
+        samples
     } else {
         Vec::new()
     };

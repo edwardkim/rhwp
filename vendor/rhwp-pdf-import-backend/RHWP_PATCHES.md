@@ -542,3 +542,11 @@ owner가 작업 만료를 알리면 같은 요청을 실패로 전환한다. 기
 브라우저 전체 heap을 제한하는 기능이 아니다. 실제 요청 수명·실패 후 복구와 독립 편집은
 `tests/cases/issue_8174_pdf_session_lifetime.rs`와
 `mydocs/working/task_m100_8174_t05_completion.md`에 기록한다.
+
+## PDF 내용의 debug 로그 비노출 보강 (2026-11-09)
+
+- 공유 page-content cache의 debug 진단은 바이트 수와 쪽 번호만 기록하고, 복호화·디코드한
+  content stream의 바이트를 문자열로 출력하지 않는다. 직접 /Contents 개체도 전체 Debug 대신
+  개체 종류만 기록한다.
+- 입력·인증·오류 처리·요청 예산·추출·캐시 결과는 유지한다. 정식 회귀
+  `tests/cases/code_scanning_pdf_diagnostics.rs`가 실제 debug 로그 활성화와 내용 보존을 함께 검사한다.
