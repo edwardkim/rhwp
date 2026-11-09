@@ -826,13 +826,6 @@ fn try_tokenize_paragraph_with_regenerated_space_metric<
                     && is_line_start_forbidden(text_chars[i])
                     && text_chars[i] != '\n'
                     && text_chars[i] != '\t'
-                    // 🔴 금칙 문자 바로 뒤에 라틴/숫자 낱말이 이어지면 앞 글자에 붙이지 않는다.
-                    // 한컴은 `한다.111…` 에서 `.` 을 앞의 `다` 가 아니라 뒤의 숫자 낱말에 붙여
-                    // 통째로 다음 줄로 내린다(#2214 핀: 줄 시작 129 = `.`). 뒤가 공백·한글·끝이면
-                    // 종전대로 앞 글자에 흡수한다(`, 생산성`·`‧기업` — 정답지 284줄 줄머리 금칙 0건).
-                    && !text_chars
-                        .get(i + 1)
-                        .is_some_and(|next| next.is_ascii_alphanumeric())
                 {
                     let follow_pos = if i < char_offsets.len() {
                         char_offsets[i]
@@ -2030,13 +2023,7 @@ impl FillCursor {
 
     fn replay_from_boundary(tokens: &[BreakToken], boundary: usize, first_line: bool) -> Self {
         let mut cursor = Self::new(boundary, first_line);
-        cursor.token_index = tokens.partition_point(|token| match token {
-            BreakToken::Text { end_idx, .. } => *end_idx <= boundary,
-            BreakToken::DiscretionaryHyphen { idx, .. }
-            | BreakToken::Space { idx, .. }
-            | BreakToken::Tab { idx, .. }
-            | BreakToken::LineBreak { idx } => *idx < boundary,
-        });
+        cursor.token_index = first_token_at_or_after(tokens, boundary);
         if let Some(BreakToken::Text { start_idx, .. }) = tokens.get(cursor.token_index) {
             if boundary > *start_idx {
                 cursor.fallback_char_idx = Some(boundary);
@@ -2709,8 +2696,7 @@ fn fill_one_interval(
                 let tail_all_line_start_forbidden = text_chars[*start_idx + 1..*end_idx]
                     .iter()
                     .all(|c| is_line_start_forbidden(*c));
-                if tail_all_line_start_forbidden && *start_idx > cursor.line_start_idx && token_fits
-                {
+                if tail_all_line_start_forbidden && token_fits {
                     // 글자 모드의 후행 금칙 흡수분도 같은 "줄 끝 자리"로 본다.
                     //
                     // 한컴은 줄 끝 금칙 문자를 상자 밖에 매달지 않고 **그 줄 안에** 넣는다
@@ -2732,6 +2718,15 @@ fn fill_one_interval(
                 if !token_fits {
                     if *start_idx > cursor.line_start_idx {
                         if let Some(break_token_idx) = cursor.last_break_token_idx {
+                            let detached_tail = forbidden_tail_before_oversized_run(
+                                tokens,
+                                text_chars,
+                                break_token_idx,
+                                eff_w(false),
+                            );
+                            if let Some(tail) = detached_tail {
+                                cursor.last_break_char_idx = tail;
+                            }
                             let result = LineBreakResult {
                                 start_idx: cursor.line_start_idx,
                                 end_idx: cursor.last_break_char_idx,
@@ -2753,6 +2748,26 @@ fn fill_one_interval(
                             cursor.line_max_fs = *max_font_size;
                             cursor.is_first_line = false;
                             cursor.last_break_token_idx = None;
+
+                            // 되감은 토큰은 첫 줄 폭으로만 재 본 것이다. 내어쓰기로 다음 줄이
+                            // 더 좁아 넘치면 끊는 자리 뒤 토큰부터 그 줄 폭으로 다시 채운다.
+                            if detached_tail.is_some() || cursor.lw > eff_w(false) {
+                                cursor.token_index = first_token_at_or_after(tokens, next_start);
+                                cursor.lw = 0;
+                                cursor.line_space_savings = 0;
+                                if let Some(BreakToken::Text { start_idx, .. }) =
+                                    tokens.get(cursor.token_index)
+                                {
+                                    if next_start > *start_idx {
+                                        cursor.fallback_char_idx = Some(next_start);
+                                    }
+                                }
+                                cursor.emitted_any = true;
+                                return Some(FilledInterval {
+                                    line: result,
+                                    termination: FillTermination::IntervalFull,
+                                });
+                            }
 
                             // 현재 단일 CJK/한글 토큰 자체가 break point였던 기존 경로는
                             // 이미 위 결과에 포함됐으므로 동작을 바꾸지 않는다.
@@ -3032,7 +3047,7 @@ fn fill_lines_before_cursor(
                     .iter()
                     .all(|c| is_line_start_forbidden(*c));
                 // 위 `fill_one_interval` 과 같은 계약(흡수 묶음도 줄 끝 후보).
-                if tail_all_line_start_forbidden && *start_idx > line_start_idx && token_fits {
+                if tail_all_line_start_forbidden && token_fits {
                     let c = text_chars[*start_idx];
                     let allow_break = can_break_after_text_token(c, korean_break_unit);
                     if allow_break {
@@ -3204,6 +3219,64 @@ fn recalc_space_savings_hwp(
         }
     }
     w
+}
+
+/// 끊는 자리 토큰 끝의 줄머리 금칙 묶음이 시작하는 글자 위치.
+///
+/// 줄머리 금칙 문자는 평소 앞 글자에 붙는다. 한컴 engine 2020 Print에서 `카.a`·`카.)`·
+/// `카.)***` 는 앞 글자와 함께 다음 줄로 가지만, 뒤의 ASCII 낱말이 한 줄을 넘으면
+/// 금칙 묶음이 그 낱말 쪽으로 떨어진다(`나` / `.****…`, `한다.111…` #2214).
+/// 뒤 낱말이 한 줄 폭 안이면 `None` 이다.
+fn forbidden_tail_before_oversized_run(
+    tokens: &[BreakToken],
+    text_chars: &[char],
+    break_token_idx: usize,
+    line_width_hwp: i32,
+) -> Option<usize> {
+    let BreakToken::Text {
+        start_idx, end_idx, ..
+    } = tokens.get(break_token_idx)?
+    else {
+        return None;
+    };
+    let mut tail = *end_idx;
+    while tail > *start_idx + 1 && is_line_start_forbidden(text_chars[tail - 1]) {
+        tail -= 1;
+    }
+    if tail == *end_idx {
+        return None;
+    }
+    let mut run_width_hwp = 0;
+    for token in &tokens[break_token_idx + 1..] {
+        let BreakToken::Text {
+            start_idx,
+            end_idx,
+            base_width,
+            ..
+        } = token
+        else {
+            break;
+        };
+        if !text_chars[*start_idx..*end_idx]
+            .iter()
+            .all(char::is_ascii_graphic)
+        {
+            break;
+        }
+        run_width_hwp += to_hwp(*base_width);
+    }
+    (run_width_hwp > line_width_hwp).then_some(tail)
+}
+
+/// `boundary` 를 끝내지 않은 첫 토큰의 위치.
+fn first_token_at_or_after(tokens: &[BreakToken], boundary: usize) -> usize {
+    tokens.partition_point(|token| match token {
+        BreakToken::Text { end_idx, .. } => *end_idx <= boundary,
+        BreakToken::DiscretionaryHyphen { idx, .. }
+        | BreakToken::Space { idx, .. }
+        | BreakToken::Tab { idx, .. }
+        | BreakToken::LineBreak { idx } => *idx < boundary,
+    })
 }
 
 /// 긴 단어 폴백: 글자 단위 분할 (HWPUNIT)
