@@ -1,5 +1,5 @@
 //! 관계형·고정형 — [#8855] 머리 표 아래에 저장된 빈 host 줄의 단 원점과 전폭 어울림 그림 뒤 글.
-//! 주석 갱신: MEASURE_TS (새 파일)
+//! 주석 갱신: 2026-11-09 22:56 KST (새 파일)
 //!
 //! 입력: 공개 결재문서 36388005(한컴오피스 2020 저장) 원본. 단 첫 문단 `pi=0` 은 글 없이 문단 기준
 //! 자리차지 머리 표(바깥 여백 위 140·아래 852HU)와 빈 누름틀을 갖고, host 줄은 표 상자 바로 아래
@@ -12,7 +12,11 @@
 //!   240HU), `pi=7` 줄은 그림 아래끝 아래에서 시작한다.
 //! - 관계형 2쪽: 쪽 아래 고정 표 `pi=9` 는 1쪽에 없고 2쪽에 있다.
 //!
-//! MEASUREMENTS
+//! 측정(2026-11-09, head 1b9316ccd3, `scripts/visual_sweep.py --silhouette-only --dpi 96`,
+//! raw = `silhouette_raw_match_percent`, 문서 face 중 굴림·굴림체·한컴바탕·HY견고딕 공급 — HY신명조·HY중고딕 없음):
+//! - Native: 2쪽 / 2쪽, p1 100.00, p2 100.00, 전쪽 최저 100.00 (base e00f9b7e26 은 1쪽으로 쪽수 불일치, p1 73.70)
+//! - fresh WASM: 2쪽 / 2쪽, p1 100.00, p2 100.00, 전쪽 최저 100.00
+//! - 증거: `mydocs/pr/assets/issue_8855/`
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
@@ -41,16 +45,18 @@ fn nodes(node: &RenderNode) -> Vec<&RenderNode> {
 }
 
 fn body_line_top(page: &RenderNode, para: usize) -> Option<f64> {
-    nodes(page).into_iter().find_map(|node| match &node.node_type {
-        RenderNodeType::TextRun(run)
-            if run.section_index == Some(0)
-                && run.para_index == Some(para)
-                && run.cell_context.is_none() =>
-        {
-            Some(node.bbox.y)
-        }
-        _ => None,
-    })
+    nodes(page)
+        .into_iter()
+        .find_map(|node| match &node.node_type {
+            RenderNodeType::TextRun(run)
+                if run.section_index == Some(0)
+                    && run.para_index == Some(para)
+                    && run.cell_context.is_none() =>
+            {
+                Some(node.bbox.y)
+            }
+            _ => None,
+        })
 }
 
 fn body_table(page: &RenderNode, para: usize, control: usize) -> Option<&RenderNode> {
