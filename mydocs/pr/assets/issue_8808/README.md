@@ -1,7 +1,7 @@
 # #8808 시각 검증 증거
 
-- 검증 head: `df91ede30e` (native-skia release sha256 `a9d08e79…`, fresh WASM `rhwp_bg.wasm` sha256 `c0bb8ff8…`)
-- base: upstream/devel `024d610633`
+- 검증 head: `84b6d1b2a5` (native-skia release sha256 `691d3726…`, fresh WASM `rhwp_bg.wasm` sha256 `81e86f55…`)
+- base: upstream/devel `b5064fae1e`
 - 명령: `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96` (TSV), 같은 명령에서 `--silhouette-only` 를 뺀 실행(review·overlay PNG). WASM 은 `--wasm-pkg pkg`.
 - 판정값: `silhouette_raw_match_percent`(TSV 4열). 글꼴: 문서 face(맑은 고딕 보통·굵게·Semilight, HY견고딕, 휴먼명조, 한컴돋움)만 둔 디렉터리를 `RHWP_FONT_PATH` 로 공급.
 
@@ -20,12 +20,12 @@
 | 키 | Native | fresh WASM | 90% 미만 |
 |---|---|---|---|
 | reduced | p1 99.82 · p2 99.98 | p1 99.10 · p2 99.96 | 없음 |
-| original | 최저 63.22 | 최저 62.78 | Native p1·p6·p7, WASM p1·p7 |
+| original | 최저 62.56 | 최저 62.46 | Native p1·p6·p7, WASM p1·p7 |
 
-원본 쪽별(Native / WASM): p1 63.22/62.78 · p2 99.82/99.10 · p3 99.98/99.96 · p4 98.96/98.91 ·
-p5 99.90/99.93 · p6 89.84/90.29 · p7 83.56/83.90 · p8 93.59/93.90.
+원본 쪽별(Native / WASM): p1 62.56/62.46 · p2 99.82/99.10 · p3 99.98/99.96 · p4 99.89/98.91 ·
+p5 99.90/99.93 · p6 89.84/90.29 · p7 83.65/83.90 · p8 93.59/93.90.
 
-- p1: 표 칸 안 제목 상자가 약 50px 위에 놓이는 기존 결함. base 와 같은 점수(63.22)로 이 변경과 무관하다
+- p1: 표 칸 안 제목 상자가 약 50px 위에 놓이는 기존 결함. base 와 같은 점수(62.56)로 이 변경과 무관하다
   (별도 추적: rhwp-issue-docs#1082).
 - p6·p7: 줄 위치는 맞고, 이 환경에 없는 글꼴(신명 견고딕·HY신명조·신명 태명조) 문단의 글자 폭과 2~4px
   누적 차이다.
