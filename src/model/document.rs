@@ -118,6 +118,9 @@ pub struct Document {
     /// `is_hwp3_variant`/`is_hwpx_variant` 는 shim 으로 존치하며 파서의 같은
     /// 쓰기 지점에서 동기된다. 레이아웃 분기는 [`Self::layout_profile`] 경유.
     pub provenance: crate::model::provenance::SourceProvenance,
+    /// 메모 댓글 관계 (댓글 필드 번호, 부모 메모 필드 번호), 댓글을 단 차례.
+    /// HWP `MemoExtended` 스트림·HWPX `Contents/memoExtended.xml` (`model::memo_extended`).
+    pub memo_parents: Vec<(u32, u32)>,
 }
 
 /// 미리보기 데이터 (PrvImage, PrvText 스트림)

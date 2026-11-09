@@ -443,6 +443,28 @@ where
             )
             .map_err(storage_error)?;
     }
+    // 메모 댓글 관계는 문서에 남은 메모끼리만 쓴다. 읽지 못해 원본으로 둔 스트림은 관계가 없을 때만 남는다.
+    let memo_links = crate::model::memo_extended::live_links(doc);
+    if !memo_links.is_empty() {
+        extra_streams.retain(|(path, _)| path != crate::model::memo_extended::HWP_STREAM);
+        let record = crate::model::memo_extended::encode_hwp(&memo_links);
+        let bytes = if compressed {
+            compress_stream_with_storage(&record, storage)?
+        } else {
+            record
+        };
+        storage
+            .push(
+                &mut extra_streams,
+                (
+                    storage
+                        .string(crate::model::memo_extended::HWP_STREAM)
+                        .map_err(storage_error)?,
+                    bytes,
+                ),
+            )
+            .map_err(storage_error)?;
+    }
     let bytes = write_hwp_cfb_with_storage(
         &header_bytes,
         &doc_info_bytes,

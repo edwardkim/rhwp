@@ -446,7 +446,9 @@ impl Allocation<'_> {
             is_hwp3_variant: _,
             is_hwpx_variant: _,
             provenance: _,
+            memo_parents,
         } = value;
+        self.payload::<(u32, u32)>(memo_parents.len())?;
         self.reserve_doc_info(doc_info)?;
         self.record_work(doc_properties)?;
         self.record_work(&header.raw_data)?;

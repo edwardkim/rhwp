@@ -388,40 +388,33 @@ fn parse_track_change_config(e: &quick_xml::events::BytesStart, doc_info: &mut D
 }
 
 fn parse_memo_shape(e: &quick_xml::events::BytesStart, doc_info: &mut DocInfo) {
-    let mut width = 0u32;
-    let mut line_width = 0u8;
-    let mut line_type = 0u8;
-    let mut line_color = 0u32;
-    let mut fill_color = 0u32;
-    let mut active_color = 0u32;
-    let mut memo_type = 0u32;
+    use crate::model::memo_shape::MemoShape;
+    let mut shape = MemoShape {
+        width: 0,
+        line_type: 0,
+        line_width: 0,
+        line_color: 0,
+        fill_color: 0,
+        active_color: 0,
+        memo_type: 0,
+    };
 
     for attr in e.attributes().flatten() {
         match attr.key.as_ref().as_bytes() {
-            b"width" => width = parse_u32(&attr),
-            b"lineWidth" => line_width = parse_u8(&attr),
-            b"lineType" => line_type = parse_memo_line_type(&attr_str(&attr)),
-            b"lineColor" => line_color = parse_color(&attr),
-            b"fillColor" => fill_color = parse_color(&attr),
-            b"activeColor" => active_color = parse_color(&attr),
-            b"memoType" => memo_type = parse_memo_type(&attr_str(&attr)),
+            b"width" => shape.width = parse_u32(&attr),
+            b"lineWidth" => shape.line_width = parse_u8(&attr),
+            b"lineType" => shape.line_type = parse_memo_line_type(&attr_str(&attr)),
+            b"lineColor" => shape.line_color = parse_color(&attr),
+            b"fillColor" => shape.fill_color = parse_color(&attr),
+            b"activeColor" => shape.active_color = parse_color(&attr),
             _ => {}
         }
     }
 
-    let mut data = Vec::with_capacity(22);
-    data.extend_from_slice(&width.to_le_bytes());
-    data.push(line_type);
-    data.push(line_width);
-    data.extend_from_slice(&line_color.to_le_bytes());
-    data.extend_from_slice(&fill_color.to_le_bytes());
-    data.extend_from_slice(&active_color.to_le_bytes());
-    data.extend_from_slice(&memo_type.to_le_bytes());
-
     doc_info.extra_records.push(RawRecord {
         tag_id: tags::HWPTAG_MEMO_SHAPE,
         level: 1,
-        data,
+        data: shape.to_record(),
     });
     doc_info.memo_shape_count = doc_info
         .extra_records
@@ -430,32 +423,10 @@ fn parse_memo_shape(e: &quick_xml::events::BytesStart, doc_info: &mut DocInfo) {
         .count() as u32;
 }
 
+/// HWPX memoPr `lineType`의 HWP5 MEMO_SHAPE 값. OWPML 이름의 차례가 HWP 값이다
+/// (0 NONE, 1 SOLID, 2 DOT, 3 DASH …, 한컴 12.30 저장본으로 확인, `model::memo_shape`).
 fn parse_memo_line_type(value: &str) -> u8 {
-    match value {
-        // HWPX memoPr lineType uses the OWPML name, but HWP5 MEMO_SHAPE stores
-        // the Hancom memo line enum where 0 means "no/unknown" and SOLID is 1.
-        "SOLID" => 1,
-        "DOT" => 13,
-        "DASH_DOT" => 2,
-        "DASH" => 3,
-        "DASH_DOT_DOT" => 4,
-        "LONG_DASH" => 5,
-        "CIRCLE" => 6,
-        "DOUBLE_SLIM" => 7,
-        "SLIM_THICK" => 8,
-        "THICK_SLIM" => 9,
-        "SLIM_THICK_SLIM" => 10,
-        "WAVE" => 11,
-        "DOUBLE_WAVE" => 12,
-        _ => 0,
-    }
-}
-
-fn parse_memo_type(value: &str) -> u32 {
-    match value {
-        "NOMAL" | "NORMAL" | "" => 0,
-        _ => 0,
-    }
+    crate::model::memo_shape::line_type_from_name(value)
 }
 
 // ─── beginNum ───
