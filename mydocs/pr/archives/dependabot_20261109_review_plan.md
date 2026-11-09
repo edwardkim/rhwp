@@ -55,3 +55,7 @@
 전체 통합 diff에 CI workflow Action 변경이 포함되므로 실제 CI·self-review·merge 뒤 review·오늘할일·운영 증거는 post_merge 7.1.1의 **옵션 2: 별도 후속 기록 PR**로 반영한다. 문서 trailing push로 전체 CI를 반복하지 않는다. 원 PR의 코드·workflow를 바꾸는 추가 보정은 해당 범위의 승인과 검증을 따른다.
 
 기본 작업공간과 다른 #8296 worktree·설치 도구·로컬 crates.io 검증 환경을 보존한다. 승인된 원격 후속 처리가 끝나면 이번 전용 branch/worktree, primary output 전체와 미사용 target/pr-review/debug를 정리한다.
+
+## 실행 결과
+
+[통합 PR #8840](https://github.com/edwardkim/rhwp/pull/8840)의 최신 head CI·self-review 후 원 기여를 보존하는 merge로 수용했다. [실제 원격 결과](../assets/dependabot-20261109/remote-completion.md)를 따른다.
