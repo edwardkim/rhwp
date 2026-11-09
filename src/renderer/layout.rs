@@ -15483,6 +15483,16 @@ impl LayoutEngine {
                 } else if !is_current_empty_para_float
                     && !is_current_visible_para_float
                     && !host_before_consumed
+                    // [#8836] 쪽·용지 기준 자리차지 표도 흐름 커서로 놓이지 않는다. 여기서 더한
+                    // 앞 간격은 host 글줄만 밀고, 그 글줄의 배치가 앞 간격을 다시 소비한다 —
+                    // 위 #6267 과 같은 이중 계상이다(표가 민 첫 줄은 조판이 확정한 남은 앞 간격).
+                    && !matches!(
+                        para.controls.get(control_index),
+                        Some(Control::Table(table))
+                            if crate::renderer::float_placement::is_absolute_topbottom_float_text_host(
+                                para, table,
+                            )
+                    )
                 {
                     // [#6267] 자리차지(para-float) 표는 흐름을 소비하지 않고
                     // compute_table_y_position 이 sb 이전 앵커(para_y_for_table)로
