@@ -3420,6 +3420,59 @@ pub(crate) fn stored_empty_square_successor_strip(
     .then_some((first.column_start, first.segment_width))
 }
 
+/// 저장 LINE_SEG 가 없는 공백 host 문단을 글자 있는 host 와 같게 다룰지.
+///
+/// 한/글(웹기안기)은 저장 줄이 없는 host 를 다시 조판할 때 공백만 든 host 줄도 글자 있는
+/// host 줄과 똑같이 놓는다(공백 7칸 host 와 "X" host 의 다음 문단 위치가 같다). 글자처럼
+/// 취급하지 않는 표·그림 하나를 가진 host 에만 적용한다. 글앞·글뒤 개체는 흐름을 차지하지
+/// 않아 함께 있어도 된다. 흐름 개체가 둘 이상인 공백 host(표 두 개를 공동 앵커로 둔 제목
+/// 띠 등)는 기존 공백 host 경로에 남긴다. 세로 오프셋이 음수인 자리차지 개체도 기존 경로에
+/// 남긴다(웹기안기: 공백 host·"X" host 모두 음수 오프셋 자리차지 표를 문단 위끝에 놓는다.
+/// 글자 host 경로는 오프셋을 그대로 써 표를 쪽 위 밖으로 보낸다).
+pub(crate) fn is_unstored_whitespace_object_host(
+    para: &crate::model::paragraph::Paragraph,
+) -> bool {
+    use crate::model::control::Control;
+    use crate::model::shape::TextWrap;
+    if para
+        .line_segs
+        .iter()
+        .any(|seg| seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+        || !para
+            .text
+            .chars()
+            .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}')
+    {
+        return false;
+    }
+    let mut flow_objects = 0usize;
+    let mut table_or_picture = false;
+    for control in &para.controls {
+        let (common, is_table_or_picture) = match control {
+            Control::Table(t) => (&t.common, true),
+            Control::Picture(p) => (&p.common, true),
+            Control::Shape(s) => (s.common(), false),
+            _ => continue,
+        };
+        if common.treat_as_char
+            || matches!(
+                common.text_wrap,
+                TextWrap::InFrontOfText | TextWrap::BehindText
+            )
+        {
+            continue;
+        }
+        if matches!(common.text_wrap, TextWrap::TopAndBottom)
+            && crate::renderer::float_placement::signed_hwpunit(common.vertical_offset) < 0
+        {
+            return false;
+        }
+        flow_objects += 1;
+        table_or_picture |= is_table_or_picture;
+    }
+    flow_objects == 1 && table_or_picture
+}
+
 /// 저장 LINE_SEG 가 하나도 없고 가시 글자가 있는 문단인지. 저장 줄이 없으면 host 글자의
 /// 띠·높이 증거가 없어 표 기하로 판단해야 한다(`no_lineseg_square_table_host_band`).
 pub(crate) fn is_no_lineseg_visible_text_host(para: &crate::model::paragraph::Paragraph) -> bool {
@@ -3431,6 +3484,7 @@ pub(crate) fn is_no_lineseg_visible_text_host(para: &crate::model::paragraph::Pa
             .text
             .chars()
             .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
+        || is_unstored_whitespace_object_host(para)
 }
 
 /// 저장 LINE_SEG 가 없는 host 의 글자가 Square 표 **아래**로 흐르는지.

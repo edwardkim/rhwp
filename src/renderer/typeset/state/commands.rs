@@ -665,6 +665,19 @@ impl TypesetState {
     /// Keep the source host origin separate from the object's physical box.
     /// Following stored paragraph offsets use this origin; closing flow uses
     /// the occupied bottom supplied by the accepted object placement.
+    /// 저장 줄 없는 host 의 어울림 표 바깥 상자를 현재 쪽·단과 함께 남긴다(단 흐름 px).
+    pub(in crate::renderer::typeset) fn record_unstored_square_box(
+        &mut self,
+        para_index: usize,
+        x: std::ops::Range<f64>,
+        y: std::ops::Range<f64>,
+    ) {
+        let page = self.data.pages.len();
+        let column = self.data.current_column;
+        self.data
+            .unstored_square_boxes
+            .push((page, column, para_index, x.start, x.end, y.start, y.end));
+    }
     pub(in crate::renderer::typeset) fn register_square_band(
         &mut self,
         source_origin: f64,
@@ -965,6 +978,13 @@ impl TypesetState {
     pub(in crate::renderer::typeset) fn restart_zone_columns(&mut self) {
         self.data.current_column = 0;
         self.data.current_height = 0.0;
+        // 표 띠 교정 바닥과 저장 줄 없는 어울림 상자는 앞 존의 단 흐름 좌표다. 새 존은 흐름
+        // 높이를 0 에서 다시 세므로 물려받으면 새 존 첫 문단이 앞 존 표 높이만큼 밀린다.
+        self.data.ladder_band_floor = 0.0;
+        let page = self.data.pages.len();
+        self.data
+            .unstored_square_boxes
+            .retain(|entry| entry.0 != page);
         // 저장 첫 줄의 밴드는 첫 존이 소유한다. 뒤 존의 측정과 paint가
         // 이전 존의 시작 높이를 물려받지 않도록 소유 상태를 함께 닫는다.
         if self.data.stored_initial_column_band > 0.0 {
