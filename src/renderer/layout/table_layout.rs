@@ -16667,27 +16667,47 @@ impl LayoutEngine {
                 && cell.paragraphs.get(pi - 1).is_some_and(|previous| {
                     stored_plain_text_paragraph_frame_reset(previous, p, styles, self.dpi)
                 });
+            // [#8810] 저장 되감김(vpos 가 앞 줄보다 위로 돌아감)은 저장 당시 글로 한/글이
+            // 정한 쪽 경계다. 되감김 바로 앞의 글 문단(공백뿐인 문단은 건너뛴다)에 저장
+            // 줄이 없으면, 그 문단은 저장 뒤 글을 고치고 줄 정보를 지운 문단이다 — 그
+            // 높이가 저장 당시와 달라 경계도 현재 글의 조판이 아니다. 본문의 같은 규칙
+            // (`stored_page_boundary_invalidated_by_reflow`)을 칸의 저장 사다리에 적용한다.
+            // 정본: 공개 결재문서 `36400259` 1쪽 — 가린 글(`****`) 문단 뒤 공백 문단을 지나
+            // 붙임 앞에서 되감기지만, 한/글 PDF 는 붙임 1·2 를 1쪽에 둔다.
+            //
+            // 개체를 가진 문단은 본문 규칙과 같이 독립 소유자로 보고 거기서 멈춘다. 쪽을
+            // 넘는 TAC 표 host 는 저장 줄 없이도 정상 저장본이다 — `issue7062/
+            // tac_object_host_line_height.hwp` 의 3×3 표 host(줄 정보 없음) 뒤 vpos 0 은
+            // 한/글도 따르는 쪽 경계다.
+            let rewind_follows_unstored_text = |index: usize| {
+                cell.paragraphs[..index.min(cell.paragraphs.len())]
+                    .iter()
+                    .rev()
+                    .find(|para| !para.controls.is_empty() || !para.text.trim().is_empty())
+                    .is_some_and(crate::renderer::para_is_unstored_text)
+            };
             // 되감김 기하와 강제 컷의 인증은 다른 상태다. 원본 첫 조각의
             // 높이를 대조하는 소비자는 양수·동일 원점의 기하도 보존해야 한다.
-            let paragraph_origin_rewind = (pi > 0 && cell_has_local_vpos_origin)
-                .then(|| {
-                    cell.paragraphs[..pi]
-                        .iter()
-                        .rev()
-                        .find_map(|para| para.line_segs.last())
-                        .zip(p.line_segs.first())
-                })
-                .flatten()
-                .filter(|(previous, current)| {
-                    let end = previous.vertical_pos.saturating_add(previous.line_height);
-                    !line_seg_is_synthetic(previous)
-                        && !line_seg_is_synthetic(current)
-                        && current.vertical_pos >= 0
-                        && end > 0
-                        && current.vertical_pos < end
-                        && (!cell_uses_overlapping_line_boxes
-                            || current.vertical_pos < previous.vertical_pos)
-                });
+            let paragraph_origin_rewind =
+                (pi > 0 && cell_has_local_vpos_origin && !rewind_follows_unstored_text(pi))
+                    .then(|| {
+                        cell.paragraphs[..pi]
+                            .iter()
+                            .rev()
+                            .find_map(|para| para.line_segs.last())
+                            .zip(p.line_segs.first())
+                    })
+                    .flatten()
+                    .filter(|(previous, current)| {
+                        let end = previous.vertical_pos.saturating_add(previous.line_height);
+                        !line_seg_is_synthetic(previous)
+                            && !line_seg_is_synthetic(current)
+                            && current.vertical_pos >= 0
+                            && end > 0
+                            && current.vertical_pos < end
+                            && (!cell_uses_overlapping_line_boxes
+                                || current.vertical_pos < previous.vertical_pos)
+                    });
             // 그림 띠와 다음 원본 글줄은 셀의 다른 문단을 편집했는지와 무관한
             // 로컬 출처를 공유한다. 인증 함수는 앞뒤 원본 줄·실제 본문 예산·
             // 같은 그림 띠 높이를 대조하며, 재조판한 당사자 문단은 기각한다.
@@ -16703,33 +16723,34 @@ impl LayoutEngine {
             // 그 단일 lineseg도 다음 저장 좌표 0으로 rewind한다. 이를 프레임
             // 경계로 올리면 39쪽 정본이 38쪽으로 줄어든다. 실제 빈 문단은
             // #4069처럼 1×1 선형 부모의 저장 vpos를 보존하는 경우에만 증거로 쓴다.
-            let stored_frame_tail_before_next_para = if cell_has_local_vpos_origin {
-                match (p.line_segs.last(), cell.paragraphs.get(pi + 1)) {
-                    (Some(prev), Some(next))
-                        if !next.text.is_empty()
-                            || !next.controls.is_empty()
-                            || (preserve_linear_single_cell_vpos
-                                && next.text.is_empty()
-                                && next.controls.is_empty()
-                                && next.line_segs.len() == 1
-                                && next.line_segs.first().is_some_and(|seg| {
-                                    seg.vertical_pos >= cell_first_vpos
-                                        && !line_seg_is_synthetic(seg)
-                                })) =>
-                    {
-                        next.line_segs
-                            .first()
-                            .is_some_and(|cur| is_stored_frame_rewind(prev, cur, pi + 1, 0))
+            let stored_frame_tail_before_next_para =
+                if cell_has_local_vpos_origin && !rewind_follows_unstored_text(pi + 1) {
+                    match (p.line_segs.last(), cell.paragraphs.get(pi + 1)) {
+                        (Some(prev), Some(next))
+                            if !next.text.is_empty()
+                                || !next.controls.is_empty()
+                                || (preserve_linear_single_cell_vpos
+                                    && next.text.is_empty()
+                                    && next.controls.is_empty()
+                                    && next.line_segs.len() == 1
+                                    && next.line_segs.first().is_some_and(|seg| {
+                                        seg.vertical_pos >= cell_first_vpos
+                                            && !line_seg_is_synthetic(seg)
+                                    })) =>
+                        {
+                            next.line_segs
+                                .first()
+                                .is_some_and(|cur| is_stored_frame_rewind(prev, cur, pi + 1, 0))
+                        }
+                        _ => false,
                     }
-                    _ => false,
-                }
-            } else {
-                false
-            };
+                } else {
+                    false
+                };
             let stored_frame_break_before_para = declared_two_line_frame
                 || source_text_frame_reset
                 || deferred_picture_source_reset
-                || if pi > 0 && cell_has_local_vpos_origin {
+                || if pi > 0 && cell_has_local_vpos_origin && !rewind_follows_unstored_text(pi) {
                     let prev_para = &cell.paragraphs[pi - 1];
                     match (prev_para.line_segs.last(), p.line_segs.first()) {
                         (Some(prev), Some(cur)) => is_stored_frame_rewind(prev, cur, pi, 0),

@@ -5737,12 +5737,54 @@ impl LayoutEngine {
                                 } else {
                                     0.0
                                 };
-                                let next_vpos_y = text_y_start
-                                    + hwpunit_to_px(
-                                        (next_seg.vertical_pos - frag_vpos_origin).max(0),
-                                        self.dpi,
-                                    )
-                                    - next_spacing_before;
+                                // [#8810] 이 조각에서 host 앞에 저장 줄 없는 글 문단이
+                                // 있으면 사다리의 절대 좌표는 낡았다(저장 뒤 글을 고치고 줄
+                                // 정보를 지운 문단의 저장 당시 높이를 품는다). 그때는 저장
+                                // vpos 를 **host 줄 원점에서의 거리**로만 읽어 host 가 실제로
+                                // 놓인 자리(`stored_host_flow_entry`)에서 잰다 — 칸 유닛 측정
+                                // (`cell_units`)이 host 줄을 재는 것과 같은 값이다. 사다리가
+                                // 온전하면 종전대로 절대 좌표로 맞춘다(흐름이 저장보다 짧은
+                                // host 를 저장 자리로 되돌린다).
+                                //
+                                // host 의 저장 원점은 이 조각에서 그리기 시작한 줄이다.
+                                // 앞 쪽이 host 의 앞 유닛을 이미 소비했으면 조각 원점
+                                // (`frag_vpos_origin`, #5880 소비분 포함)이 그 자리다.
+                                let fragment_first_para = line_ranges
+                                    .as_ref()
+                                    .and_then(|ranges| {
+                                        ranges.iter().position(|&(start, end)| start < end)
+                                    })
+                                    .unwrap_or(0);
+                                let ladder_is_stale = cell
+                                    .paragraphs
+                                    .get(fragment_first_para..cp_idx)
+                                    .is_some_and(|before| {
+                                        before.iter().any(crate::renderer::para_is_unstored_text)
+                                    });
+                                let next_vpos_y = if ladder_is_stale {
+                                    let host_origin_hu = cell
+                                        .paragraphs
+                                        .get(cp_idx)
+                                        .and_then(|host| {
+                                            host.line_segs
+                                                .get(start_line)
+                                                .or_else(|| host.line_segs.first())
+                                        })
+                                        .map_or(frag_vpos_origin, |seg| {
+                                            seg.vertical_pos.max(frag_vpos_origin)
+                                        });
+                                    stored_host_flow_entry
+                                        + hwpunit_to_px(
+                                            (next_seg.vertical_pos - host_origin_hu).max(0),
+                                            self.dpi,
+                                        )
+                                } else {
+                                    text_y_start
+                                        + hwpunit_to_px(
+                                            (next_seg.vertical_pos - frag_vpos_origin).max(0),
+                                            self.dpi,
+                                        )
+                                } - next_spacing_before;
                                 let cell_content_bottom =
                                     cell_content_bottom(cell_y, cell_h, pad_bottom);
                                 para_y = para_y.max(next_vpos_y.min(cell_content_bottom));
@@ -6308,7 +6350,18 @@ impl LayoutEngine {
                 .max(pre_emitted_host_content_height.min(pre_emitted_host_height))
                 - pre_emitted_host_height
         } else {
-            0.0
+            // [#8810] 분할 예산(`budget.rs`)과 같은 조건 — 빈 쪽을 여는 첫 조각.
+            crate::renderer::float_placement::page_relative_first_fragment_offset_px(
+                table, self.dpi,
+            )
+            .filter(|_| {
+                !is_continuation
+                    && start_cut.is_empty()
+                    && col_node.children.is_empty()
+                    && pre_emitted_host_height <= 0.0
+                    && (y_start - col_area.y).abs() <= 0.5
+            })
+            .unwrap_or(0.0)
         };
         // [#2287 후속/1.hwpx p28] 같은 단의 직전 흐름 표와의 미세 겹침 방지
         // 안전망: 자리차지 표의 v_off/outer 흐름 미가산(#2097 반증 기록 축 —

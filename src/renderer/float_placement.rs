@@ -10205,6 +10205,24 @@ pub(crate) fn ranges_overlap(a_start: f64, a_end: f64, b_start: f64, b_end: f64)
     a0 < b1 && b0 < a1
 }
 
+/// [#8810] 쪽 기준(`VertRelTo::Page`) 자리차지 표의 첫 조각 세로 오프셋(px, 부호 있음).
+///
+/// 쪽 기준 오프셋의 원점은 본문 위끝이다(비분할 경로 `compute_table_y_position` 과 같은
+/// 기준). 첫 조각이 빈 쪽을 여는 자리 — 흐름 원점이 본문 위끝 — 에서는 이 오프셋이 곧
+/// 흐름 원점에서의 거리이므로, 분할 예산과 조각 배치가 같은 값을 소비한다. 음수면 표가
+/// 본문 위로 올라가고 그만큼 첫 조각이 길어진다. 정본: 공개 결재문서 `36400259` 1쪽, 오프셋
+/// −1426HU(−19.0px) 표의 첫 글줄이 한/글 PDF 에서 본문 위 113.4 보다 18.6px 위에 있다.
+///
+/// 흐름이 이미 내려간 자리에서 시작하는 조각은 쪽 기준 원점과 흐름 원점이 다르므로 호출자가
+/// 이 값을 쓰지 않는다. 정렬이 위가 아닌 표는 오프셋의 의미가 달라 제외한다.
+pub(crate) fn page_relative_first_fragment_offset_px(table: &Table, dpi: f64) -> Option<f64> {
+    (!table.common.treat_as_char
+        && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+        && matches!(table.common.vert_rel_to, VertRelTo::Page)
+        && matches!(table.common.vert_align, VertAlign::Top))
+    .then(|| hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi))
+}
+
 /// [#6143] 문단 기준 양수 오프셋이 **쪽 경계에서 이미 소진**됐는지 판정한다.
 ///
 /// 오프셋의 기준점은 앵커 문단이 놓인 자리다. 저장 사다리가 준 앵커 자리에 오프셋을

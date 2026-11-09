@@ -2121,6 +2121,16 @@ pub(crate) fn para_has_no_stored_line_segs(p: &crate::model::paragraph::Paragrap
     p.line_segs.is_empty() || p.line_segs.iter().all(|s| s.tag & 0x8000_0000 != 0)
 }
 
+/// [#8810] 저장 줄 없는 **글** 문단 — 저장 뒤 글을 고치고 줄 정보를 지운 문단이다.
+///
+/// 같은 사다리의 뒤 저장 vpos 와 되감김은 이 문단의 저장 당시 높이로 정해졌으므로, 이
+/// 문단을 지난 저장 좌표는 현재 글의 조판이 아니다. 개체를 가진 문단은 본문 규칙
+/// (`stored_page_boundary_invalidated_by_reflow`)과 같이 독립 소유자로 본다 — 쪽을 넘는
+/// TAC 표 host 는 저장 줄 없이도 정상 저장본이다.
+pub(crate) fn para_is_unstored_text(p: &crate::model::paragraph::Paragraph) -> bool {
+    p.controls.is_empty() && !p.text.trim().is_empty() && para_has_no_stored_line_segs(p)
+}
+
 /// [#8507] 글자 없는 host(텍스트 스트림이 비어 있는 문단)의 개체 줄을 rhwp 가 여러 줄로 재조판했는지.
 ///
 /// 줄 재조판은 필드 시작 뒤 줄 폭에 들지 않는 글자처럼 취급 개체를 다음 줄로 넘기고 필드
