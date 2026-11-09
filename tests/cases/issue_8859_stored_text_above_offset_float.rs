@@ -1,5 +1,5 @@
 //! 관계형·고정형 — [#8859] 빈 host 양수 오프셋 표 위 틈에 저장 줄을 가진 뒤 문단을 둔다.
-//! 주석 갱신: 2026-11-10 00:20 KST (새 파일)
+//! 주석 갱신: 2026-11-10 04:10 KST (새 파일, devel b5064fae1e 로 rebase 후 재측정)
 //!
 //! 입력: 공개 결재문서 36379333 원본. 기준: 한컴 engine 2020 Print PDF
 //! `pdf/issue8859/36379333-stored-text-above-offset-float-2020.pdf`(2쪽).
@@ -10,11 +10,11 @@
 //! - 관계형 2쪽: 제목 줄 위끝 = 본문 위끝 + host 저장 줄(1400HU), 제목 아래끝 ≤ 표 위끝.
 //! - 관계형 2쪽: 다음 표(`pi=13`)는 앞 표(`pi=11`) 아래끝보다 위에서 시작하지 않는다.
 //!
-//! 측정(2026-11-10, 이 파일과 같은 커밋의 코드, base = upstream/devel 509c4c987e,
+//! 측정(2026-11-10, 이 파일과 같은 커밋의 코드, base = upstream/devel b5064fae1e,
 //! `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`, raw =
 //! `silhouette_raw_match_percent`, 글꼴 `ttfs/opensource` — 문서 본 글꼴 없는 환경):
 //! - Native: 2쪽 / 2쪽, p1 99.84 · p2 99.91, 최저 99.84 (base: p1 99.84 · p2 79.37)
-//! - fresh WASM: 2쪽 / 2쪽, p1 99.79 · p2 99.91, 최저 99.79
+//! - fresh WASM: 2쪽 / 2쪽, p1 99.80 · p2 99.91, 최저 99.80
 //! - 증거: `mydocs/pr/assets/issue_8859/`(native·wasm·native_base TSV, review·overlay PNG)
 #![cfg(not(target_arch = "wasm32"))]
 
