@@ -605,9 +605,31 @@ impl TypesetEngine {
                                     })
                                     .flatten()
                                     .filter(|end| *end <= st.available_height());
+                                // 띠가 줄 상자 아래에서 시작하는 글 없는 host 는 줄이 띠 위에
+                                // 따로 있다 — 다음 문단은 문단 시작 + 오프셋 + 띠에서 시작한다
+                                // (배치 `layout_shape_item` 과 같은 판정).
+                                let band_end_above_line = (pic.caption.is_none()
+                                    && crate::renderer::textless_host_line_above_topbottom_float(
+                                        paragraphs,
+                                        para_idx,
+                                        &pic.common,
+                                    )
+                                    && (st.pages.len(), st.current_column)
+                                        == (picture_host_origin.0, picture_host_origin.1))
+                                    .then(|| {
+                                        picture_host_origin.2
+                                            + hwpunit_to_px(
+                                                crate::renderer::float_placement::signed_hwpunit(
+                                                    pic.common.vertical_offset,
+                                                ),
+                                                self.dpi,
+                                            )
+                                            + h
+                                            + mb
+                                    });
                                 // 호스트 글줄은 이미 current_height에 들어 있다. 문단
                                 // 앵커에서 계산한 실제 끝까지 남은 띠만 예약한다.
-                                let advance = source_end.map_or(
+                                let advance = source_end.or(band_end_above_line).map_or(
                                     (h + mb - absorbed_host_line).max(0.0) + host_line,
                                     |end| (end - st.current_height).max(0.0),
                                 );
@@ -646,10 +668,9 @@ impl TypesetEngine {
                             const PUSHDOWN_GAP_TOL_PX: f64 = 8.0;
                             let already_accounted = para_idx > 0 && {
                                 let v_cur = para.line_segs.first().map(|s| s.vertical_pos);
-                                let prev_end = paragraphs[para_idx - 1]
-                                    .line_segs
-                                    .last()
-                                    .map(|s| s.vertical_pos.saturating_add(s.line_height));
+                                let prev_end = crate::renderer::stored_previous_flow_end_hu(
+                                    paragraphs, para_idx,
+                                );
                                 match (v_cur, prev_end) {
                                     (Some(vc), Some(pe)) if vc > pe => {
                                         hwpunit_to_px((vc - pe) as i32, self.dpi)

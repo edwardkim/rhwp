@@ -272,10 +272,9 @@ impl LayoutEngine {
                                         .line_segs
                                         .first()
                                         .map(|s| s.vertical_pos);
-                                    let prev_end = paragraphs[para_index - 1]
-                                        .line_segs
-                                        .last()
-                                        .map(|s| s.vertical_pos + s.line_height);
+                                    let prev_end = crate::renderer::stored_previous_flow_end_hu(
+                                        paragraphs, para_index,
+                                    );
                                     match (v_cur, prev_end) {
                                         (Some(vc), Some(pe)) if vc > pe => {
                                             hwpunit_to_px((vc - pe) as i32, self.dpi)
@@ -531,7 +530,17 @@ impl LayoutEngine {
                                             )
                                         })
                                         .unwrap_or(0.0);
-                                    result_y += line_advance;
+                                    // 띠가 줄 상자 아래에서 시작하면 줄은 띠 위에 따로 있고,
+                                    // 다음 문단은 줄 끝과 띠 끝 중 아래에서 시작한다.
+                                    if crate::renderer::textless_host_line_above_topbottom_float(
+ paragraphs,
+ para_index,
+                                        &pic.common,
+                                    ) {
+                                        result_y = result_y.max(saved_y_offset + line_advance);
+                                    } else {
+                                        result_y += line_advance;
+                                    }
                                 }
                             }
                             // Square wrap + Para-relative: 그림 높이로 column y를 밀지 않는다.
