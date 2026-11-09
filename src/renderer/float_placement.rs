@@ -1607,6 +1607,28 @@ pub(crate) fn cell_wrap_vertical_offset_hu(common: &CommonObjAttr) -> i32 {
     }
 }
 
+/// 본문 문단 기준 자리차지(TopAndBottom) 개체의 세로 오프셋. '쪽 영역 안으로 제한'
+/// (`flow_with_text`)인 위쪽 정렬 개체의 음수 오프셋은 문단 원점 위로 올라가지 않는다
+/// — 셀의 [`cell_wrap_vertical_offset_hu`] 와 같은 규칙이다. 한/글 2020·2022 Print 의
+/// 공개 문서 그림 6건이 모두 음수 오프셋을 0 으로 본 자리에 있다(1351000-201800239 s0 pi785
+/// −27507 → 앵커 줄, 6470000-201400005 pi415 −12874, 1240000-201200005 pi536 −34600,
+/// 1130000-201300023 pi1717 −41977, 1490000-200900026 pi181 −1504, 1490000-200800034
+/// pi919 −44943). 같은 문서의 오프셋을 −12000·−9000 으로 바꾼 한/글 2020 Print 탐침도
+/// 앵커 줄에 둔다. 제한이 꺼진 개체·다른 정렬·글자처럼 취급 개체는 저장 오프셋 그대로다.
+pub(crate) fn body_para_topbottom_vertical_offset_hu(common: &CommonObjAttr) -> i32 {
+    let offset = signed_hwpunit(common.vertical_offset);
+    if !common.treat_as_char
+        && common.flow_with_text
+        && matches!(common.vert_rel_to, VertRelTo::Para)
+        && matches!(common.text_wrap, TextWrap::TopAndBottom)
+        && matches!(common.vert_align, VertAlign::Top | VertAlign::Inside)
+    {
+        offset.max(0)
+    } else {
+        offset
+    }
+}
+
 /// 위쪽 정렬 자리차지 도형의 잉크는 바깥 상자의 위 여백 안쪽에서 시작한다.
 /// 조판의 점유 높이와 실제 도형·후속 본문 배치가 같은 값을 소비한다.
 pub(crate) fn topbottom_shape_top_margin_hu(common: &CommonObjAttr) -> i32 {

@@ -339,7 +339,19 @@ impl LayoutEngine {
                                         && placement.stored_host_origin.is_some()));
                             let (vpos_accounts_for_height, pic_y) = stored_picture
                                 .map(|placement| (false, col_area.y + placement.anchor_y))
-                                .unwrap_or((vpos_accounts_for_height, pic_y));
+                                .unwrap_or((
+                                    vpos_accounts_for_height,
+                                    // [#8852] 저장 프레임이 없는 문단 기준 자리차지 그림은 '쪽 영역
+                                    // 안으로 제한'이면 음수 오프셋을 0 으로 본다. 아래 배치가 저장
+                                    // 오프셋을 더하므로 그 차이만큼 원점을 미리 옮긴다(저장 프레임은
+                                    // 이미 최종 위치를 담는다).
+                                    pic_y
+                                        + hwpunit_to_px(
+                                            crate::renderer::float_placement::body_para_topbottom_vertical_offset_hu(&pic.common)
+                                                - crate::renderer::float_placement::signed_hwpunit(pic.common.vertical_offset),
+                                            self.dpi,
+                                        ),
+                                ));
                             // typeset의 ObjectPlacementFrame과 같은 문단 좌우 여백을
                             // Para 기준 그림에도 준다. paint만 단 전체를 기준으로
                             // 두면 TIFF 그림과 캡션이 저장 1000HU만큼 왼쪽으로 간다
