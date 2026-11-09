@@ -1,5 +1,7 @@
 # PR #8818 검토
 
+## 최종 판정
+
 **메인터너 보정 후 수용 가능 — 로컬 검증 완료, 원격 통합 승인은 대기 중.** 원 head의 기존 CI 상태와 새 통합 head에 필요한 GitHub CI를 구분한다.
 
 - 원 PR: [#8818](https://github.com/edwardkim/rhwp/pull/8818), dependabot[bot], devel 대상, non-draft.
