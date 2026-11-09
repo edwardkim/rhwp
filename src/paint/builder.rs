@@ -555,12 +555,15 @@ impl LayerBuilder {
                         // 투영한 paint 연산만 그 프레임 전체에 그림을 재생한다.
                         image.fill_mode = Some(crate::model::style::ImageFillMode::FitToSize);
                     }
-                    let soft_edge_prepared =
+                    let mut soft_edge_payload =
                         crate::renderer::image_resolver::prepare_picture_soft_edge(
                             &mut image,
                             frame,
+                            node.bbox,
                             self.layout_dpi,
+                            self.shape_group_depth == 0,
                         );
+                    let soft_edge_prepared = soft_edge_payload.is_some();
                     let group_projection = (self.shape_group_depth > 0
                         && image_fill_clip.is_none())
                     .then(|| super::group_picture::project(&image, frame, self.layout_dpi))
@@ -570,15 +573,26 @@ impl LayerBuilder {
                         vec![PaintOp::image(full, image, Some(payload))]
                     } else {
                         crate::renderer::image_resolver::publish_print_jpeg_crop(&mut image);
-                        let mut resolved = (self.profile == RenderProfile::Print)
-                            .then(|| {
-                                crate::renderer::image_resolver::print_jpeg_payload(
-                                    &image,
-                                    frame,
-                                    self.layout_dpi,
-                                )
+                        let device_effect = soft_edge_payload.as_ref().is_some_and(|p| {
+                            p.kind == crate::paint::ResolvedImageKind::OutputDeviceWindow
+                        });
+                        let resolved_effect = if device_effect {
+                            soft_edge_payload.take()
+                        } else {
+                            None
+                        };
+                        let mut resolved = resolved_effect
+                            .or_else(|| {
+                                (self.profile == RenderProfile::Print)
+                                    .then(|| {
+                                        crate::renderer::image_resolver::print_jpeg_payload(
+                                            &image,
+                                            frame,
+                                            self.layout_dpi,
+                                        )
+                                    })
+                                    .flatten()
                             })
-                            .flatten()
                             .or_else(|| {
                                 if self.profile != RenderProfile::Print
                                     || self.hancom2024_print_bitmap
@@ -729,13 +743,8 @@ impl LayerBuilder {
                                 {
                                     payload.kind = crate::paint::ResolvedImageKind::SourceWindow;
                                 }
-                            } else if let Some(data) = image.data.as_ref() {
-                                resolved = Some(crate::paint::ResolvedImagePayload {
-                                    data: data.clone(),
-                                    mime: "image/png",
-                                    kind: crate::paint::ResolvedImageKind::SourceWindow,
-                                    suppress_effects: false,
-                                });
+                            } else {
+                                resolved = soft_edge_payload;
                             }
                         }
                         vec![PaintOp::image(frame, image, resolved)]
