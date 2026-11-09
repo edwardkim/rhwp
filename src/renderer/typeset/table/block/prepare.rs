@@ -1021,8 +1021,8 @@ impl TypesetEngine {
             );
         // 같은 빈 문단의 앞 자리차지 표 뒤에 남은 공간이 글줄 한 줄(줄 높이, 줄간격 제외)보다
         // 작으면 한/글은 그 글줄을 다음 쪽으로 넘기고, 거기서 이 표 아래로 다시 민다.
-        // 웹한글기안기 합성 스윕(앞 표 뒤 잔여 0.6·8.9px → 표 끝 뒤 빈 쪽, 15.1·25.0px → 없음,
-        // 줄 높이 13.3px)과 같은 형상. 이월 여부는 아래 두 이월 경로가 정하므로 여기서는
+        // 웹한글기안기 합성 스윕(표 문단이 구역 첫 문단일 때 앞 표 뒤 잔여 2.1·8.7px → 표 끝 뒤
+        // 빈 쪽, 14.5·17.8px → 없음, 줄 높이 13.3px)과 같은 형상. 이월 여부는 아래 두 이월 경로가 정하므로 여기서는
         // 이월 직전 잔여만 잰다.
         let flow_position_before_defer = (st.pages.len(), st.current_column);
         let host_line_lacks_room_after_same_para_float = !para_has_visible_text(para)
