@@ -668,7 +668,13 @@ impl TypesetEngine {
                     signed_hwpunit(table.common.vertical_offset).max(0),
                     self.dpi,
                 );
-                let prospective_excl = st.current_bottom_fixed_exclusion.max(block_height + v_off);
+                // [#8864] 배치는 표를 세로 오프셋과 아래 바깥 여백 위에 놓는다. 띠 위끝이 실제 표 위끝과
+                // 같은 좌표여야 표와 겹치는 글 끝을 가려낸다(36338125 `pi=23 ci=2`: 여백 140HU 를
+                // 빼면 여유 +0.77px 로 1쪽에 남고, 넣으면 −1.09px 로 한/글처럼 2쪽으로 넘어간다).
+                let bottom_margin_px = hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
+                let prospective_excl = st
+                    .current_bottom_fixed_exclusion
+                    .max(block_height + v_off + bottom_margin_px);
                 // available(12359)은 배타 영역 미차감 값(base - 각주 - zone)이다. 이 블록
                 // 편입 후의 배타 영역(prospective_excl)을 차감해 "본문 텍스트 끝이 배타
                 // 영역을 침범하는가"를 판정한다. [Issue #1920] 종전 `available +
