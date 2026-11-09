@@ -1,0 +1,26 @@
+{
+  "role": "실제 R28 전쪽 측정과 같은 원본·독립 Print의 주장 쪽 자료. 최종 승인 판정은 별도다.",
+  "product_commit": "b6c02c1946",
+  "source_snapshot": "source-snapshot.json",
+  "source_snapshot_sha256": "559fd740e03b926c1d65458110af8bc5073cb8e1c0b3d30c9f78767cdf7dd9a0",
+  "snapshot_parent_commit": "9d058bbf9552d8e9764a568f215389849293007d",
+  "snapshot_source_worktree_head": "0c2f57c4ad6ca45d915537cd1eafc70f49d7a8a8",
+  "snapshot_files": 6020,
+  "producers": {
+    "native": {
+      "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-batch-corrections-r28",
+      "sha256": "3addcb1c0f4f15d1702cf9d2686a1946d5931f14e69eaa7d24131500fd399190"
+    },
+    "wasm": {
+      "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/wasm-batch-corrections-r28",
+      "sha256": {
+        "rhwp.js": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138",
+        "rhwp_bg.wasm": "63b74db31592ee2b83c562155a4906694209f45eb9416aeb253d2347f67ee0bc"
+      }
+    }
+  },
+  "dpi": 96,
+  "profile": "print",
+  "comparison": "색상 경계 보정 전 2px 내용 실루엣",
+  "fonts": "전체 시스템 글꼴과 원본별로 기록한 기존 승인 대체 환경. 글꼴 파일은 배포하지 않음."
+}

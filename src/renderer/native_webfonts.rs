@@ -322,6 +322,7 @@ pub fn prepare(doc_info: &DocInfo, paths: &[PathBuf]) -> Result<NativeWebfontSup
             let _ = database.load_font_file(path);
         }
     }
+    super::font_paths::retain_fontdb_family_aliases(&mut database);
     let present = |name: &str| {
         let target = normalized(name);
         if database.faces().any(|face| {
@@ -542,76 +543,29 @@ pub fn prepare(doc_info: &DocInfo, paths: &[PathBuf]) -> Result<NativeWebfontSup
     result.paths = priority_paths;
     let mut seen = BTreeSet::new();
     result.paths.retain(|path| seen.insert(path.clone()));
-    // Skia의 기존 공급 한도와 같은 상수를 사용한다. 제한 밖 프로그램을
-    // layout에만 넘겨 실제 paint도 공급됐다고 오인하지 않는다.
-    let limit = super::font_paths::MAX_NATIVE_CUSTOM_FONT_BYTES;
-    let mut used = 0u64;
-    let mut retained_bytes = 0u64;
-    let mut file_count = 0usize;
-    let mut source_files = BTreeSet::new();
-    for source in super::font_paths::custom_font_dirs(paths) {
-        let mut files = if source.is_file() {
-            vec![source]
-        } else {
-            std::fs::read_dir(source)
-                .into_iter()
-                .flatten()
-                .flatten()
-                .map(|entry| entry.path())
-                .collect()
-        };
-        files.sort();
-        for file in files {
-            if !source_files.insert(file.clone())
-                || !file.extension().and_then(|x| x.to_str()).is_some_and(|x| {
-                    matches!(x.to_ascii_lowercase().as_str(), "ttf" | "otf" | "ttc")
-                })
-            {
-                continue;
-            }
-            if let Ok(meta) = file.metadata() {
-                if file_count < 256
-                    && meta.is_file()
-                    && meta.len() <= MAX_FONT_BYTES as u64
-                    && used.saturating_add(meta.len()) <= limit
-                {
-                    used += meta.len();
-                    file_count += 1;
-                    if let Ok(data) = std::fs::read(&file) {
-                        // 컬렉션은 Skia가 face마다 원본의 복사본을 보유한다.
-                        // 파싱 가능한 face까지 보수적으로 예약해 공급을 과장하지 않는다.
-                        let faces = ttf_parser::fonts_in_collection(&data).unwrap_or(1).min(64);
-                        for index in 0..faces {
-                            if retained_bytes.saturating_add(data.len() as u64) > limit {
-                                break;
-                            }
-                            if ttf_parser::Face::parse(&data, index).is_ok() {
-                                retained_bytes += data.len() as u64;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+    // Skia 경로 적재와 같은 파일 선택 규칙으로 판정한다. 받아들이지 않는
+    // 프로그램을 layout에만 넘겨 실제 paint도 공급됐다고 오인하지 않는다.
+    // 렌더러는 호출자 경로 뒤에 이 공급 경로를 붙여 읽는다(#8597).
+    let loader_paths: Vec<PathBuf> = paths.iter().chain(&result.paths).cloned().collect();
+    let scan = super::font_paths::scan_native_custom_font_files(
+        &super::font_paths::custom_font_dirs(&loader_paths),
+    );
+    let accepted: BTreeSet<PathBuf> = scan.files.into_iter().flatten().collect();
     result.paths.retain(|path| {
-        let length = path
-            .join("font.otf")
-            .metadata()
-            .map(|meta| meta.len())
-            .unwrap_or(u64::MAX);
-        if file_count < 256
-            && used.saturating_add(length) <= limit
-            && retained_bytes.saturating_add(length) <= limit
-        {
-            used += length;
-            retained_bytes += length;
-            file_count += 1;
+        let program = path.join("font.otf");
+        if accepted.contains(&program) {
             true
         } else {
+            let reason = scan
+                .skipped
+                .iter()
+                .find(|skipped| skipped.path == program)
+                .map_or("Native 글꼴 공급 한도 초과", |skipped| {
+                    skipped.reason.as_str()
+                });
             result
                 .unavailable
-                .push(format!("{}: Native 글꼴 공급 한도 초과", path.display()));
+                .push(format!("{}: {reason}", path.display()));
             false
         }
     });

@@ -71,21 +71,24 @@ pub(super) fn prepare(
         .then(|| {
             para.controls.iter().enumerate().find_map(|(ci, ctrl)| {
                 let Control::Table(t) = ctrl else { return None };
+                let measured = measured_tables.iter().find(|measured| {
+                    measured.para_index == para_idx && measured.control_index == ci
+                })?;
                 if !flow.is_effective_tac_table(para, t, fmt)
                     || !(flow.session_edited()
-                        || flow.single_tac_line_has_unstored_cell_text(para, t, fmt, tac_count))
+                        || flow.single_tac_line_has_current_cell_rows(
+                            para,
+                            t,
+                            fmt,
+                            tac_count,
+                            &measured.cells,
+                        ))
                 {
                     return None;
                 }
                 let declared = hwpunit_to_px(t.common.height as i32, dpi);
-                measured_tables
-                    .iter()
-                    .find(|m| m.para_index == para_idx && m.control_index == ci)
-                    .filter(|m| {
-                        let tolerance = if flow.session_edited() { 8.0 } else { 0.5 };
-                        m.total_height > declared + tolerance
-                    })
-                    .map(|m| m.total_height)
+                let tolerance = if flow.session_edited() { 8.0 } else { 0.5 };
+                (measured.total_height > declared + tolerance).then_some(measured.total_height)
             })
         })
         .flatten();

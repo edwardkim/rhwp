@@ -1,0 +1,35 @@
+{
+  "key": "busan-form",
+  "backend": "native",
+  "state": "measured-not-final-review",
+  "prs": [
+    8589
+  ],
+  "input": "samples/issue8567/20572683-busan-ordinance-reconsideration-form.hwp",
+  "input_sha256": "cdb457d4f439973ad3a8a081caa7f1c4d782423d286ef8c2ce69c9233526cf37",
+  "pdf": "pdf/issue8567/20572683-busan-ordinance-reconsideration-form-2022.pdf",
+  "pdf_sha256": "124e55c14eb0e4e3813039085e2e8ac834eca96f06de93d74a659133d2e0ae8c",
+  "pdf_pages": 1,
+  "compat": "2022",
+  "font_environment": null,
+  "linked_images": [],
+  "minimum": 99.97,
+  "below90": 0,
+  "full_tsv": "native/busan-form/full.tsv",
+  "full_tsv_sha256": "561d4d47f78b0b8ae70ad6ec8d29c3a170ad0b344a57e00d42aeefb8a4787c99",
+  "measurement_log": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/final-r28-native-primary-remaining/busan-form/run.log",
+  "producer": {
+    "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-batch-corrections-r28",
+    "sha256": "3addcb1c0f4f15d1702cf9d2686a1946d5931f14e69eaa7d24131500fd399190"
+  },
+  "panels": [
+    {
+      "page": 1,
+      "raw": "99.97",
+      "actual_png_sha256": "2302da0dfcaf857b9a6b878583308ffb56cf89a86e69440337017e34de3cb93b",
+      "pdf_png_sha256": "842e79863bc1932a826c66acefe7cb8d41b734e513a5bc5ccb1778517ba4c089",
+      "review": "native/busan-form/review-001.png",
+      "overlay": "native/busan-form/overlay-001.png"
+    }
+  ]
+}

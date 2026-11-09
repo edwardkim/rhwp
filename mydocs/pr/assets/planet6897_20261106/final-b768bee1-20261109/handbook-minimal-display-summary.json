@@ -1,0 +1,17 @@
+{
+  "head": "eb876d1416fb558c874f9efec65c5722a6769751",
+  "status": "passed",
+  "pages": 383,
+  "display100": 382,
+  "other_pages": [
+    {
+      "page": 130,
+      "display": "99.96",
+      "precise_raw": "99.96465"
+    }
+  ],
+  "regressions": [],
+  "manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/handbook-minimal-webfonts/required-handbook-8153-native/silhouette_manifest.json",
+  "manifest_sha256": "f9f2131a0a22dbd69638c80f8ef777456b21140654d00fe93cf76337d34570c9",
+  "note": "공식 두 자리 표시값 요약이며 엄격 RGB 픽셀 동일성은 아니다."
+}

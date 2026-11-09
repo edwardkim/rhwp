@@ -401,6 +401,8 @@ fn parse_border_fill(data: &[u8]) -> Result<BorderFill, DocInfoError> {
         center_line: CenterLine::from_hwp_attr(attr),
         fill,
         three_d: false,
+        // bit13의 중심선 문맥에서는 bit10이 방향 표현에 사용된다.
+        break_cell_separate_line: attr & (1 << 10) != 0 && attr & (1 << 13) == 0,
     })
 }
 

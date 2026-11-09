@@ -318,6 +318,9 @@ fn typeface_candidates_for_families_for_source(
                 // fontconfig의 합성 Bold는 매칭 결과의 스타일만 바꾼다.
                 // 실제 Regular 프로그램을 기준으로 같은 family의 분리된
                 // 글리프 공급자를 찾고, paint에서 요청한 굵기를 적용한다.
+                // 같은 형식·스타일 사이에서는 OS가 고른 프로그램을 먼저 보존한다.
+                // 추가 열거는 그 프로그램에 없는 글리프를 공급하는 사다리다.
+                push(typeface.clone(), "system", family_order);
                 let program_style =
                     super::synthetic_typeface::unemboldened_typeface(font_mgr, &typeface)
                         .map_or_else(|| typeface.font_style(), |face| face.font_style());
@@ -423,6 +426,7 @@ fn recover_installed_system_typeface(
                     database.load_fonts_dir(directory);
                 }
             }
+            crate::renderer::font_paths::retain_fontdb_family_aliases(&mut database);
             database
         });
         query_database_typeface(database, font_mgr, family, style)
@@ -556,6 +560,11 @@ fn matching_system_programs(font_mgr: &FontMgr, family: &str, style: FontStyle) 
                     return None;
                 }
                 let candidate = set.new_typeface(index)?;
+                // Fontconfig의 스타일 목록에는 pattern 대체 계열도 섞인다.
+                // 목록의 요청 이름을 실제 프로그램의 family 선언으로 간주하지 않는다.
+                if !typeface_declares_family(&candidate, family) {
+                    return None;
+                }
                 let cff = typeface_is_cff(&candidate);
                 Some((candidate, cff))
             })
@@ -617,14 +626,21 @@ pub(super) fn match_system_family_style(
             matched.map(|original| {
                 let original_style = FontStyleCacheKey::new(original.font_style());
                 let mut set = font_mgr.match_family(family);
-                let selected = (0..set.count()).find_map(|index| {
-                    let (candidate_style, _) = set.style(index);
-                    if FontStyleCacheKey::new(candidate_style) != original_style {
-                        return None;
-                    }
-                    let candidate = set.new_typeface(index)?;
-                    typeface_is_truetype(&candidate).then_some(candidate)
-                });
+                let original_order = typeface_program_order(&original);
+                let selected = (0..set.count())
+                    .filter_map(|index| {
+                        let (candidate_style, _) = set.style(index);
+                        if FontStyleCacheKey::new(candidate_style) != original_style {
+                            return None;
+                        }
+                        let candidate = set.new_typeface(index)?;
+                        // 형식 우선순위만 바꾼다. 같은 형식의 다른 버전으로
+                        // OS의 프로그램 선택을 다시 덮어쓰지 않는다.
+                        (typeface_declares_family(&candidate, family)
+                            && typeface_program_order(&candidate) < original_order)
+                            .then_some(candidate)
+                    })
+                    .min_by_key(typeface_program_order);
                 selected.unwrap_or(original)
             })
         } else {

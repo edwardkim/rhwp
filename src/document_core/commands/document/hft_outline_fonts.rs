@@ -33,19 +33,73 @@ impl DocumentCore {
         bytes: &[u8],
         face_index: u32,
     ) -> Result<bool, HwpError> {
+        self.register_hft_outline_font_candidates_native(family, &[(bytes, face_index)])
+    }
+
+    /// 원 HFT 또는 선택 신원이 검증된 CFF 조각을 실제 후보 순서로 등록한다.
+    /// 유형 미상 원본을 HFT로 재분류하지 않으며 공급된 paint 프로그램만 보관한다.
+    pub fn register_hft_outline_font_candidates_native(
+        &mut self,
+        family: &str,
+        candidates: &[(&[u8], u32)],
+    ) -> Result<bool, HwpError> {
+        use sha2::{Digest, Sha256};
         let family = family.trim();
-        let is_source_hft = self
-            .document
-            .doc_info
-            .font_faces
-            .iter()
-            .flatten()
-            .any(|face| face.alt_type == 2 && face.name.to_lowercase() == family.to_lowercase());
-        if !is_source_hft {
+        let environment = self.resolved_font_environment();
+        // 실제 선택 신원과 첫 공급 face가 같은 경우에만 유형 미상의 CFF도 허용한다.
+        // 원본 유형·조판 폭을 다시 분류하지 않으며 기존 프로그램 바이트 한도를 먼저 확인한다.
+        let supplied_identity = candidates
+            .first()
+            .filter(|(bytes, _)| {
+                !bytes.is_empty() && bytes.len() <= crate::renderer::hft_outline::MAX_SOURCE_BYTES
+            })
+            .map(|(bytes, index)| {
+                let mut hash = Sha256::new();
+                hash.update(bytes);
+                let source: [u8; 32] = hash.clone().finalize().into();
+                hash.update(index.to_be_bytes());
+                let indexed: [u8; 32] = hash.finalize().into();
+                (source, indexed, *index)
+            });
+        let owns_supplied_outline =
+            self.document
+                .doc_info
+                .font_faces
+                .iter()
+                .enumerate()
+                .any(|(language, faces)| {
+                    faces.iter().enumerate().any(|(index, face)| {
+                        // 저장된 이름을 바꾸지 않고 조판이 선택한 같은 슬롯의 표시 family를 쓴다.
+                        let Ok(font_id) = u16::try_from(index) else {
+                            return false;
+                        };
+                        let selected = environment
+                            .and_then(|env| env.replacement_for(&face.name, language, font_id));
+                        let matches_selected =
+                            selected.unwrap_or(&face.name).to_lowercase() == family.to_lowercase();
+                        if face.alt_type == 2 && matches_selected {
+                            return true;
+                        }
+                        let Some(env) = environment else {
+                            return false;
+                        };
+                        let matches_query = env
+                            .selected_program_query_for(&face.name, language, font_id)
+                            .is_some_and(|query| query.to_lowercase() == family.to_lowercase());
+                        (matches_selected || matches_query)
+                            && supplied_identity.is_some_and(|(source, indexed, index)| {
+                                env.selected_program_identity_for(&face.name, language, font_id)
+                                    .is_some_and(|identity| {
+                                        identity.matches(&source, &indexed, index)
+                                    })
+                            })
+                    })
+                });
+        if !owns_supplied_outline {
             return Ok(false);
         }
         self.hft_outline_fonts
-            .register(family, bytes, face_index)
+            .register_candidates(family, candidates)
             .map_err(|message| HwpError::RenderError(message.into()))
     }
 }

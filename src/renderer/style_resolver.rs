@@ -21,6 +21,7 @@ pub const LANG_COUNT: usize = 7;
 mod ascii_punctuation;
 mod document_font_chain;
 mod missing_fonts;
+mod original_font_slots;
 pub(crate) use missing_fonts::{missing_char_table, missing_latin_default};
 mod page_number;
 mod resolved;
@@ -72,6 +73,7 @@ pub(crate) fn try_resolve_styles_for_document<S: storage::Storage>(
         styles.char_overlap_size_bounds = Some((-8, 2));
     }
     super::legacy_font_advances::select_native_programs(document, &mut styles);
+    original_font_slots::refresh(&lookup, &mut styles, storage)?;
     // [#7051] 계보 신호가 없는 저장본의 HFT ASCII 반각 판정은 로드 시 한 번 내려 출처에 둔다.
     styles.hft_ascii_halfwidth |= document.provenance.hft_ascii_halfwidth_witnessed;
     if profile.hwpx_stored_layout() {
@@ -148,6 +150,8 @@ pub(crate) fn resolve_styles_with_environment(
     profile: crate::model::provenance::LayoutCompatibilityProfile,
 ) -> ResolvedStyleSet {
     let mut styles = resolve_styles_for_document(document, dpi);
+    styles.inferred_ttf_requires_selection =
+        environment.is_some_and(|env| env.explicitly_replaces_source_metrics());
     styles.script_metrics = super::script_metrics::ScriptMetricsContract::for_profile(profile);
     // 독립 동일 입력의 2020은 HCRDotum을 강제하고, 2024는 원 face/대체 face의
     // 자모 전진을 유지한다. 세대는 기존 명시적 출력 profile에서만 받는다.
@@ -203,6 +207,25 @@ pub(crate) fn resolve_styles_with_environment(
                     .collect()
             })
             .unwrap_or_default();
+        let selected_primary_programs: std::collections::HashMap<_, _> = environment
+            .map(|env| {
+                font_requests
+                    .iter()
+                    .filter_map(|(lang, id, request)| {
+                        let query = env.selected_program_query_for(&request.source, *lang, *id)?;
+                        request
+                            .primary
+                            .iter()
+                            .any(|name| name == query)
+                            .then_some(())?;
+                        Some((
+                            (*lang, *id),
+                            env.selected_program_identity_for(&request.source, *lang, *id)?,
+                        ))
+                    })
+                    .collect()
+            })
+            .unwrap_or_default();
         let mut display_only_slots = std::collections::HashSet::new();
         for (style_id, (style, shape)) in styles
             .char_styles
@@ -212,6 +235,9 @@ pub(crate) fn resolve_styles_with_environment(
         {
             let mut latin_program_changed = false;
             for lang in 0..LANG_COUNT {
+                style.font_families_primary_program[lang] = selected_primary_programs
+                    .get(&(lang, shape.font_ids[lang]))
+                    .copied();
                 if style.source_ttf_for_lang(lang)
                     && display_only_fonts.contains(&(lang, shape.font_ids[lang]))
                 {
@@ -280,12 +306,43 @@ pub(crate) fn resolve_styles_with_environment(
                         .font_faces
                         .get(lang)
                         .and_then(|faces| faces.get(shape.font_ids[lang] as usize));
+                    // 같은 원본 프로그램의 존재 확인·family 별칭은 HFT 종이 프레임을
+                    // 버리는 요청이 아니다. 초기 미설치 fallback에서 잃은 프레임도 복원한다.
+                    // 대체 프로그램 조회·내장 face·자연 전진 선택은 이 인증에 포함하지 않는다.
+                    if preserve_source_metrics
+                        && original.alt_type == Some(2)
+                        && original.embedded != Some(true)
+                        && source_font.is_some_and(|face| face.native_program.is_none())
+                        && style.font_families_primary_program[lang].is_some()
+                    {
+                        style.font_families_hft_print_frame[lang] = true;
+                    }
+                    // 실제 원본 TTF를 조회해 인증한 family 별칭은 기존 폭 신뢰를
+                    // 잃지 않는다. 대체 쿼리·HFT·다른 메트릭의 선택은 포함하지 않는다.
+                    let verified_source_alias = original.substitution_boundary.is_none()
+                        && original.alt_type == Some(1)
+                        && style.font_families_metric_trusted[lang]
+                        && original.requested_face.as_deref().is_some_and(|source| {
+                            environment.is_some_and(|env| {
+                                env.selected_program_query_for(source, lang, shape.font_ids[lang])
+                                    == Some(source)
+                            }) && primary_font_name(&style.font_families[lang]) == source
+                                && original_font_slots::keeps_source_metric_table(
+                                    source,
+                                    &source_metric_face,
+                                    target,
+                                    style.bold,
+                                    style.italic,
+                                )
+                        });
                     let primary_true_type_program = environment
                         .is_some_and(|env| env.selects_true_type(target))
                         && original.substitution_boundary.is_none()
-                        && original.normalized_face.as_deref() == Some(target)
+                        && (original.normalized_face.as_deref() == Some(target)
+                            || verified_source_alias)
                         && source_font.is_some_and(|face| face.native_program.is_none())
                         && (metric_widths_verified_face(target)
+                            || verified_source_alias
                             || matches!(target, "휴먼명조" | "HumanMyeongJo"));
                     // 자동 표시용 선택은 저장된 원본 HFT 메트릭의 변경이 아니다.
                     let keep_source_metrics = !primary_true_type_program
@@ -321,11 +378,12 @@ pub(crate) fn resolve_styles_with_environment(
                             .as_deref()
                             .is_some_and(|face| env.replacement(face).is_some())
                     });
-                    // 원본 메트릭을 유지하는 표시용 대체는 기존 paint 폭 맞춤도 유지한다.
-                    // 원 프로그램의 자연 윤곽은 그 메트릭까지 선택한 세션만 보존한다.
-                    style.font_families_preserve_glyph_ink[lang] = (explicit_true_type
-                        || explicit_replacement)
-                        && !preserve_source_metrics
+                    // 기존 명시 공급의 윤곽은 전진 칸에 눌러 그리지 않는다(#8188).
+                    // 생략된 설정의 기존 전진/leader와 명시 자연 전진은 별도로 선택한다.
+                    style.font_families_preserve_glyph_ink[lang] =
+                        (explicit_true_type || explicit_replacement) && !preserve_source_metrics;
+                    style.font_families_natural_program_metrics[lang] = style
+                        .font_families_preserve_glyph_ink[lang]
                         && environment.is_some_and(|env| {
                             original
                                 .requested_face
@@ -343,6 +401,7 @@ pub(crate) fn resolve_styles_with_environment(
                         latin_program_changed |= lang == 1;
                         style.font_families_metric_trusted[lang] = explicit_true_type
                             && (metric_widths_verified_face(target)
+                                || verified_source_alias
                                 || matches!(target, "휴먼명조" | "HumanMyeongJo"));
                     }
                     if explicit_true_type {
@@ -382,6 +441,10 @@ pub(crate) fn resolve_styles_with_environment(
             }
         }
         styles.display_only_otf_slots = std::sync::Arc::new(display_only_slots);
+    }
+    match original_font_slots::refresh(&document.doc_info, &mut styles, &storage::Unbounded) {
+        Ok(()) => (),
+        Err(never) => match never {},
     }
     match refresh_source_program_projection_slots_with_storage(
         &document.doc_info,
@@ -462,6 +525,8 @@ fn try_resolve_styles_with_variant<S: storage::Storage>(
         script_metrics: Default::default(),
         native_pua_fonts: Default::default(),
         display_only_otf_slots: Default::default(),
+        inferred_ttf_requires_selection: false,
+        unsubstituted_font_slots: Default::default(),
         char_overlap_size_bounds: None,
         source_char_shapes: {
             storage.bytes(
@@ -504,9 +569,13 @@ fn try_resolve_styles_with_variant<S: storage::Storage>(
         horizontal_shaping_context: None,
         supplemental_metrics: None,
     };
+    original_font_slots::refresh(doc_info, &mut styles, storage)?;
     refresh_source_program_projection_slots_with_storage(doc_info, &mut styles, storage)?;
     Ok(styles)
 }
+
+/// 한/글이 저장 줄을 그대로 쓰는 변경 추적 설정 비트 (#8639 실측).
+const TRACK_CHANGE_KEEPS_STORED_ROWS: u32 = 0x08;
 
 /// 대체 선언과 실제 선택을 구분한다. HFT의 원본 전진, 내장 프로그램,
 /// 실제 대체 face 및 폭을 추정하는 face를 원본 TTF의 캐시 갱신 근거로 쓰지 않는다.
@@ -516,6 +585,15 @@ fn refresh_source_program_projection_slots_with_storage<S: storage::Storage>(
     storage: &S,
 ) -> Result<(), S::Error> {
     styles.source_program_projection_slots = Default::default();
+    // [#8639] 한/글은 변경 추적 설정(`HWPTAG_TRACKCHANGE` · `<hh:trackchageConfig flags>`)에
+    // 0x08 이 있으면 가로 상자가 같은 저장 줄을 그대로 쓰고, 없을 때만 현재 글꼴로 다시
+    // 조판한다. 한/글 2020·2024 Print 실측: 86712(flags 0)는 표·문단만 남겨도 재조판하고
+    // flags 를 8 로 바꾸면 저장 줄을 유지한다. 반대로 정책연구과제심의신청서(flags 56)는
+    // 저장 줄을 유지하고 flags 를 0 으로 바꾸면 원본 KoPub 으로 재조판한다(16·32 는 무관).
+    // 저장 줄이 유지되는 문서에서 원본 프로그램으로 다시 짜면 한/글과 어긋난다.
+    if doc_info.track_change_flags() & TRACK_CHANGE_KEEPS_STORED_ROWS != 0 {
+        return Ok(());
+    }
     let dpi = styles.resolved_dpi.unwrap_or(96.0);
     let mut fallback_char_styles = None;
     let mut build_fallback = || -> Result<Vec<ResolvedCharStyle>, S::Error> {
@@ -762,7 +840,7 @@ pub(crate) fn try_resolve_single_char_style<A: storage::Storage>(
     let mut letter_spacings = storage.vec(LANG_COUNT)?;
     let mut ratios = storage.vec(LANG_COUNT)?;
     let mut font_sizes = storage.vec(LANG_COUNT)?;
-    let mut latin_slot_legacy = false;
+    let latin_slot_legacy = false;
     let mut latin_declared_hft = false;
     let latin_slot_explicit = false;
 
@@ -957,9 +1035,11 @@ pub(crate) fn try_resolve_single_char_style<A: storage::Storage>(
         font_families_hft_hangul,
         font_families_source_hft,
         font_families_source_ttf,
+        font_families_primary_program: vec![None; LANG_COUNT],
         font_families_verified_hft_bold_tracking,
         font_families_hft_print_frame,
         font_families_preserve_glyph_ink: vec![false; LANG_COUNT],
+        font_families_natural_program_metrics: vec![false; LANG_COUNT],
         font_families_hft_fullwidth_dot,
         ascii_punct_latin_slot,
         explicit_latin_slot,
@@ -1408,8 +1488,31 @@ pub(crate) fn lookup_font_name_in_environment(
             // 같은 주 프로그램의 신원 인증은 준비된 glyph fallback 체인을 바꾸지 않는다.
             let same_primary_family = decision.normalized_face.as_deref() == Some(target);
             if !same_primary_family {
+                // 표시용 별칭은 문서의 substFont·검증된 결측 공급자를 교체하는
+                // 요청이 아니다. 원본 전진 보존 세션에서는 주 face만 바꾸고
+                // 뒤 공급 체인을 유지한다. 자연 프로그램을 직접 선택한 세션은
+                // 기존대로 새 주 프로그램에서 시작한다.
+                let source_fallbacks = if decision
+                    .requested_face
+                    .as_deref()
+                    .is_some_and(|source| environment.preserves_source_metrics_for(source))
+                {
+                    decision
+                        .css_family_chain
+                        .iter()
+                        .skip(1)
+                        .cloned()
+                        .collect::<Vec<_>>()
+                } else {
+                    Vec::new()
+                };
                 decision.normalized_face = Some(target.to_string());
                 decision.css_family_chain = vec![target.to_string()];
+                for face in source_fallbacks {
+                    if !decision.css_family_chain.contains(&face) {
+                        decision.css_family_chain.push(face);
+                    }
+                }
             }
             // 공급자가 선택한 face 이름을 family로 합치면 같은 계열의 다른
             // 굵기·너비가 선택될 수 있다. 원본 주소의 실제 조회 이름을 보존하고,
@@ -1935,6 +2038,7 @@ fn try_resolve_single_border_style<S: storage::Storage>(
         gradient,
         image_fill,
         diagonal_attr: bf.attr,
+        break_cell_separate_line: bf.break_cell_separate_line,
         diagonal: bf.diagonal,
         center_line: if bf.center_line != CenterLine::None {
             bf.center_line

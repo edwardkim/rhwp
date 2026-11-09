@@ -7,7 +7,7 @@ last_verified: 2026-07-16
 
 # HWP 5.0 스펙 문서 정오표
 
-프로젝트가 보존한 [한글 문서 파일 형식 5.0 개정 1.3](한글문서파일형식_5.0_revision1.3.md)와 실제 바이너리 구현 간 불일치 사항을 기록한다.
+프로젝트가 보존한 [한글 문서 파일 형식 5.0 개정 1.3](%ED%95%9C%EA%B8%80%EB%AC%B8%EC%84%9C%ED%8C%8C%EC%9D%BC%ED%98%95%EC%8B%9D_5.0_revision1.3.md)와 실제 바이너리 구현 간 불일치 사항을 기록한다.
 각 항목은 역공학 검증을 통해 확인된 것이며, 본 프로젝트의 파서/렌더러는 실제 바이너리 기준으로 구현한다.
 
 > **새 기능 구현 전 반드시 본 문서를 확인할 것.** 스펙을 그대로 따르면 파일 손상이 발생할 수 있다.
@@ -825,10 +825,10 @@ HWPX 는 같은 현상을 `strikeout shape="3D"` placeholder 로 드러내며, P
 
 ### 원문과 정정
 
-[공식 HWP5 개정 1.3 PDF](../../pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf)의
+[공식 HWP5 개정 1.3 PDF](../../pdf/%ED%95%9C%EA%B8%80%EB%AC%B8%EC%84%9C%ED%8C%8C%EC%9D%BC%ED%98%95%EC%8B%9D_5.0_revision1.3-hancom-official.pdf)의
 PDF 44쪽 표 76은 TABLE 속성 bit 0~1의 값 0과 2를 모두 `나누지 않음`으로 기재한다.
 값 2의 설명을 **나눔**으로 정정한다. 원문 PDF는 변경하지 않고
-[프로젝트의 사양 설명본](한글문서파일형식_5.0_revision1.3.md)의 표 76을 수정한다.
+[프로젝트의 사양 설명본](%ED%95%9C%EA%B8%80%EB%AC%B8%EC%84%9C%ED%8C%8C%EC%9D%BC%ED%98%95%EC%8B%9D_5.0_revision1.3.md)의 표 76을 수정한다.
 
 | 원본 비트 값 | 한컴 UI 의미 | HWPX 속성 | rhwp 내부 이름 |
 | --- | --- | --- | --- |
@@ -871,14 +871,14 @@ PDF 44쪽 표 76은 TABLE 속성 bit 0~1의 값 0과 2를 모두 `나누지 않�
 ## 36. SHAPE_COMPONENT_CURVE (표 103) — 점 개수·좌표 배열·후행 필드
 
 - **발견일**: 2026-10-24, 이슈 #8153의 161쪽 곡선 조사.
-- **원문**: 보존한 [공식 revision 1.3 PDF](../../pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf)
+- **원문**: 보존한 [공식 revision 1.3 PDF](../../pdf/%ED%95%9C%EA%B8%80%EB%AC%B8%EC%84%9C%ED%8C%8C%EC%9D%BC%ED%98%95%EC%8B%9D_5.0_revision1.3-hancom-official.pdf)
   51쪽, 표 103. SHA-256은
   `1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782`다.
   점 개수를 `INT16`, 좌표를 x 배열 뒤 y 배열로 기술하며 후행 4바이트를 생략한다.
 - **확인한 구조**: 5.1.1.0 저장본에서 `INT32 cnt` → `(INT32 x, INT32 y) × cnt` →
   `BYTE × max(cnt-1, 0)` 구간 종류 → 후행 4바이트다. 음수 개수는 유효한 점 배열이 아니다.
   후행 필드의 상세 의미는 확정하지 않으며, 확인한 원본 값은 모두 0이다.
-  [사양 설명본 표 103](한글문서파일형식_5.0_revision1.3.md#표-103-곡선-개체-속성)을 함께 정정한다.
+  [사양 설명본 표 103](%ED%95%9C%EA%B8%80%EB%AC%B8%EC%84%9C%ED%8C%8C%EC%9D%BC%ED%98%95%EC%8B%9D_5.0_revision1.3.md#표-103-곡선-개체-속성)을 함께 정정한다.
 
 ### 교차 확인한 근거
 
@@ -915,14 +915,14 @@ HWPX에서 구간 종류를 버리는 동작은 별도의 구현 오류다. 보�
 ## 37. SHAPE_COMPONENT_PICTURE (표 107) — 그림 꼭짓점의 저장 순서
 
 - **발견일**: 2026-10-26, 이슈 #8153의 그림 원본 좌표 조사.
-- **원문**: [공식 revision 1.3 PDF](../../pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf)
+- **원문**: [공식 revision 1.3 PDF](../../pdf/%ED%95%9C%EA%B8%80%EB%AC%B8%EC%84%9C%ED%8C%8C%EC%9D%BC%ED%98%95%EC%8B%9D_5.0_revision1.3-hancom-official.pdf)
   52쪽, 표 107. SHA-256은
   `1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782`다.
   원문은 `INT32 x[4]` 다음 `INT32 y[4]`로 기술한다. 원문 PDF는 변경하지 않는다.
 - **확인한 구조**: 5.1.1.0 저장본에서는 `(INT32 x, INT32 y) × 4`다.
   왼쪽 위 → 오른쪽 위 → 오른쪽 아래 → 왼쪽 아래 순서다.
   총 32바이트이며 앞의 테두리 속성과 뒤의 crop 오프셋은 변하지 않는다.
-  [사양 설명본 표 107](한글문서파일형식_5.0_revision1.3.md#표-107-그림-개체-속성)을 정정한다.
+  [사양 설명본 표 107](%ED%95%9C%EA%B8%80%EB%AC%B8%EC%84%9C%ED%8C%8C%EC%9D%BC%ED%98%95%EC%8B%9D_5.0_revision1.3.md#표-107-그림-개체-속성)을 정정한다.
 
 ### 교차 확인한 근거
 
@@ -950,6 +950,35 @@ HWPX 파서·직렬화기도 같은 scalar 순서를 소비한다. 이미 보존
 분석 원본과 113개 대응표는 ignored
 `output/pr-review/issue8153-handbook-raw100-20261022/remaining-raw100-diagnostic/spec-contract-audit/`
 아래에 있으며, 제품의 실행문은 변경하지 않았다.
+
+## 38. 표 참조 BorderFill의 자동 분할 경계선 문맥
+
+표24의 bit10을 꺾인 BackSlash 설명만으로 소비하면 표의 자동 분할 경계선 속성을
+놓친다. 공식 원문 PDF는 보존한다. 표가 참조하는 BorderFill의 별도 경계선 문맥을
+다음과 같이 보완한다. 중심선·셀 대각선의 기존 해석을 모든 문맥에서 바꾸지는 않는다.
+
+- 원본 `samples/issue8610/36849-nars-press-release-20211116.hwp`의 표 참조
+  borderFill15는 attr `0x0400`이며 diagonal 선 종류0이다. 일반 셀 borderFill5의
+  네 변은 0.4mm 실선이다. renderer를 통하지 않고 압축 DocInfo 레코드를 읽었다.
+- 같은 원본의 실제 한컴2020 11.0.0.9136 HWPX 저장은 borderFill15를
+  `breakCellSeparateLine="1"`, `centerLine="NONE"`, `diagonal@type="NONE"`으로
+  발행한다. 정상 대조군 #5885의 표 참조 borderFill3는 attr0, 별도 경계선0이다.
+- [한컴 공식 자동화 설명](https://forum.developer.hancom.com/t/topic/1357)의
+  TableBorderFill 예제는 BreakCellSeparateLine을 켜고 DiagonalType·DiagonalWidth·
+  DiagonalColor로 자동 분할 경계선을 지정한다. 이 선은 셀에 그리는 대각선이 아니다.
+  HWPML BORDERFILL에도 BreakCellSeparateLine이 있으나 기존 설명표는 의미가 비어 있다.
+- 기존 독립 한컴 Print에서 NARS1쪽 하단·2쪽 상하·3쪽 상단에는 전폭 수평선이
+  없고, 실제 마지막 셀 종료선은 유지된다. 별도 선 종류NONE의 직접 관찰 근거다.
+  설정이 꺼진 #5885의 닫힌 경계를 같은 wrap 종류라는 이유로 없애지 않는다.
+
+구현은 원본 속성을 HWP/HWPX 모델과 해소된 스타일에 보존하고, 실제 부분 표의
+내부 내용 컷에서 별도 선 종류·굵기·색을 소비한다. NONE도 명시적인 덮어쓰기다.
+기본 셀/zone 테두리 수집 뒤에 적용해 옛 선을 재생성하지 않으며, 비분할 표와 실제
+최종 종료선은 해당되지 않는다. HWP5 중심선 bit13의 방향 문맥은 구분한다.
+
+[원본 바이트·한컴 저장·독립 PDF 선 증거](../pr/assets/planet6897_20261106/pr8615/break-border/hancom-save-observation.json)와
+[보정 계획](../pr/archives/pr_8615_review_impl.md#자동-분할-경계선의-메인터너-보정-계획)을 따른다.
+이 정정 자체는 최종 Native/fresh WASM 전쪽 시각 검증 통과를 뜻하지 않는다.
 
 ## 검증 원칙
 

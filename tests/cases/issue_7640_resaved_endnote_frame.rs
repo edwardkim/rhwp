@@ -1,15 +1,15 @@
-//! 검사 유형: 관계형(소유·순서·원본 프레임·비겹침), 고정형(독립 Print 21쪽 쪽수).
-//! 주석 갱신: 2026-11-06 03:10:59 KST.
-//! 직전 파일 변경: 2026-11-06 02:12:42 KST, 55756c223c (전쪽 WASM 증적).
-//! 55756c223c + 독립 글자 상자 보정: canonical raw 2px, 96DPI, compat2022, Native 직접 PNG.
-//! 재저장본 21/21쪽 Native 최저 99.03802%; 11쪽 99.66679%, 17쪽 99.14958%,
-//! 18쪽 99.03802%, 19쪽 99.47824%, 20쪽 99.73017%.
-//! 같은 새 source의 fresh WASM 재저장본 21/21쪽 최저 99.02457%(18쪽), 원본 최저 98.77736%.
-//! 원본 21/21쪽 Native 최저 98.78595%; PR7600 input-09 Print로 따로 대조했다.
-//! 최초 작성 시 재저장본 7쪽 미달·11쪽 53.60031%, 17쪽 94.69512%, 18쪽 85.61347%였다.
-//! 실물 절대 px 좌표는 고정하지 않으며 현재 저장 프레임의 정수 단위 보존을 비교한다.
-//! 근거: mydocs/plans/task_m100_7640_plan.md 및 같은 입력의 독립 한컴 2020 Print.
-//! 단계 증적: mydocs/pr/assets/issue_7640/verification-20261106/character-strut/README.md.
+//! 검사 유형: 관계형(소유·순서·점유·내어쓰기), 고정형(독립 Print 21쪽·17쪽 수식 앵커 ±2 CSSpx).
+//! 주석 갱신: 2026-11-09 03:06:59 KST.
+//! 직전 파일 변경: 2026-11-08 06:19:56 KST, 7f76cee60e (#8754 통합).
+//! 2026-11-09 canonical raw 2px, 96DPI, compat2022; 원본과 독립 한컴2020 Print를 각각 대조했다.
+//! 원본 21/21쪽 Native 최저 98.78583%, fresh WASM 최저 98.77947%.
+//! 재저장본 21/21쪽 Native 최저 99.03786%, fresh WASM 최저 99.02612%.
+//! 17쪽은 원본 Native 99.15706%/WASM 99.22150%, 재저장본 Native 99.15980%/WASM 99.22122%.
+//! 17쪽의 독립 Print 수식 시작점·본체 기준선만 ±2 CSSpx로 고정하고 나머지는 원본 프레임 관계를 검사한다.
+//! 두 경로의 실제 전쪽·누락·중복 확인 후 등록했으며, 전체 통합 PR 검증 완료를 의미하지 않는다.
+//! 근거: mydocs/pr/assets/planet6897_20261106/partial-equation-frame-repair/validation.json.
+//! 기존 보정 출처: mydocs/plans/task_m100_7640_plan.md 및
+//! mydocs/pr/assets/issue_7640/verification-20261106/character-strut/README.md.
 
 use rhwp::model::control::Control;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
@@ -407,5 +407,149 @@ fn validated_fraction_rows_keep_their_non_overlapping_print_occupancy() {
             "뒤 글줄이 앞 분수의 실제 점유 상자를 침범하지 않는다: {input}"
         );
         assert_eq!(text(rows[1]), "이다.", "뒤 본문의 소속·누락·중복 없음");
+    }
+}
+
+fn source_prefix_frames(
+    input: &str,
+) -> (
+    Vec<rhwp::renderer::render_tree::BoundingBox>,
+    Vec<rhwp::renderer::render_tree::BoundingBox>,
+    Vec<(u32, i16)>,
+) {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(input);
+    let mut document = DocumentCore::from_bytes(&std::fs::read(path).unwrap()).unwrap();
+    document.set_hangul2024_compat(false);
+    let Control::Endnote(note) = &document.document().sections[0].paragraphs[318].controls[0]
+    else {
+        panic!("독립 Print의 미주 28");
+    };
+    let source = &note.paragraphs[10];
+    assert_eq!(source.line_segs.len(), 3, "원본 수식 문단의 세 저장 줄");
+    let metrics: Vec<_> = source
+        .controls
+        .iter()
+        .map(|control| {
+            let Control::Equation(equation) = control else {
+                panic!("네 원본 수식");
+            };
+            assert!(equation.common.treat_as_char && !equation.common.affect_line_spacing);
+            (equation.common.height, equation.baseline)
+        })
+        .collect();
+    assert_eq!(metrics.len(), 4);
+    let page = document.build_page_render_tree(16).unwrap();
+    let mut nodes = Vec::new();
+    walk(&page.root, &mut nodes);
+    let mut equations: Vec<_> = nodes
+        .iter()
+        .filter_map(|node| {
+            let RenderNodeType::Equation(equation) = &node.node_type else {
+                return None;
+            };
+            equation
+                .note_ref
+                .as_ref()
+                .filter(|source| {
+                    source.kind == "endnote"
+                        && source.section_index == 0
+                        && source.para_index == 318
+                        && source.control_index == 0
+                        && source.note_para_index == 10
+                })
+                .map(|_| {
+                    (
+                        equation.control_index.unwrap(),
+                        equation.para_index.unwrap(),
+                        node.bbox,
+                    )
+                })
+        })
+        .collect();
+    equations.sort_by_key(|(control, _, _)| *control);
+    assert_eq!(
+        equations.iter().map(|(i, _, _)| *i).collect::<Vec<_>>(),
+        [0, 1, 2, 3],
+        "같은 원본 수식 네 개의 순서·쪽 소속·누락·중복"
+    );
+    let owner = equations[0].1;
+    let mut rows: Vec<_> = nodes
+        .iter()
+        .filter_map(|node| match &node.node_type {
+            RenderNodeType::TextLine(line) if line.para_index == Some(owner) => {
+                Some((line.line_index.unwrap(), node.bbox))
+            }
+            _ => None,
+        })
+        .collect();
+    rows.sort_by_key(|(line, _)| *line);
+    assert_eq!(
+        rows.iter().map(|(line, _)| *line).collect::<Vec<_>>(),
+        [0, 1, 2],
+        "부분 재조판 뒤에도 세 줄의 소속을 보존한다"
+    );
+    (
+        equations.into_iter().map(|(_, _, bbox)| bbox).collect(),
+        rows.into_iter().map(|(_, bbox)| bbox).collect(),
+        metrics,
+    )
+}
+
+// 관계형: 부분 재조판 앞줄의 수식 점유와 뒤 줄의 같은 내어쓰기 원점을 보존한다.
+// 주석 갱신: 2026-11-09 03:06:59 KST. 절대 페이지 좌표 대신 원본 소유·점유·원점 관계를 검사한다.
+#[test]
+fn partial_equation_reflow_keeps_prefix_occupancy_and_continuation_owners() {
+    for input in [
+        "samples/3-11월_실전_통합_2022.hwp",
+        "tests/fixtures/pr7600-equation-font-frame/nov-original-resaved-2020.hwp",
+    ] {
+        let (equations, rows, source) = source_prefix_frames(input);
+        for (control, row) in [(0, 0), (1, 0), (2, 1)] {
+            let equation = equations[control];
+            let host = rows[row];
+            // 저장 기준선은 정수 퍼센트다. 한 퍼센트의 직렬화 해상도 안에서
+            // 동일 수식 상자가 같은 줄에 남는지 보며 큰 기준선 이동은 허용하지 않는다.
+            let baseline_quantum = f64::from(source[control].0) / 7500.0;
+            assert!(
+                equation.y >= host.y - baseline_quantum
+                    && equation.y + equation.height <= host.y + host.height + baseline_quantum,
+                "앞줄 수식의 현재 점유를 글자 높이로 회수하지 않는다: {input} control={control}"
+            );
+        }
+        for control in [2, 3] {
+            assert!(
+                (equations[control].x - equations[1].x).abs() <= 1.0 / 75.0,
+                "이어지는 등식은 첫 줄 등호와 같은 원점을 소비한다: {input} control={control}"
+            );
+        }
+    }
+}
+
+// 고정형(px): 독립 한컴2020 Print 17쪽의 수식 시작점과 본체 기준선, ±2 CSSpx.
+// 주석 갱신: 2026-11-09 03:06:59 KST. PDF point ×4/3(96DPI), 두 원본의 동일 좌표를 직접 확인했다.
+// 비공개 글꼴 설치·글리프 윤곽에 의존하지 않으며 위치와 조판 프레임만 고정한다.
+#[test]
+fn endnote_limit_rows_keep_independent_print_anchors() {
+    for input in [
+        "samples/3-11월_실전_통합_2022.hwp",
+        "tests/fixtures/pr7600-equation-font-frame/nov-original-resaved-2020.hwp",
+    ] {
+        let (equations, _, source) = source_prefix_frames(input);
+        let starts = [403.36, 505.60, 505.60, 505.60];
+        let baselines = [719.36, 719.36, 753.28, 780.32];
+        for control in 0..4 {
+            let bbox = equations[control];
+            let baseline =
+                bbox.y + f64::from(source[control].0) * f64::from(source[control].1) / 7500.0;
+            assert!(
+                (bbox.x - starts[control]).abs() <= 2.0,
+                "독립 Print의 수식 원점: {input} control={control} x={}",
+                bbox.x
+            );
+            assert!(
+                (baseline - baselines[control]).abs() <= 2.0,
+                "독립 Print의 수식 기준선: {input} control={control} y={baseline}"
+            );
+        }
     }
 }

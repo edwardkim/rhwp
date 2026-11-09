@@ -1,0 +1,10 @@
+{
+  "head": "eb876d1416fb558c874f9efec65c5722a6769751",
+  "state": "qualified",
+  "source_inventory_sha256": "fddc6c4f8eb275ac5063514e9d6a871f037d1cb5845a4d33f2f04f7088ee463c",
+  "actual_faces": 528,
+  "outside_system_library": 0,
+  "inventory_non_os_count": 24,
+  "explanation": "진단기의 non_os는 /System/Library/PrivateFrameworks의 OS PingFang UI 24개를 포함한다. 모든 실제 URL이 /System/Library 아래임을 별도로 판독하며 개인·한컴 글꼴 0개다.",
+  "checked_at": "2026-11-09T17:10:21.737514+09:00"
+}

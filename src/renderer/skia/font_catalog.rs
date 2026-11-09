@@ -7,9 +7,11 @@ use skia_safe::{Data, FontMgr, FontStyle, Typeface};
 
 use super::font_lookup::supplied_family_names;
 
-const MAX_FONT_FILES: usize = 256;
-const MAX_FONT_FILE_BYTES: u64 = 32 * 1024 * 1024;
-use crate::renderer::font_paths::MAX_NATIVE_CUSTOM_FONT_BYTES as MAX_FONT_TOTAL_BYTES;
+use crate::renderer::font_paths::{
+    scan_native_custom_font_files, MAX_NATIVE_CUSTOM_FONT_BYTES as MAX_FONT_TOTAL_BYTES,
+    MAX_NATIVE_CUSTOM_FONT_FILES as MAX_FONT_FILES,
+    MAX_NATIVE_CUSTOM_FONT_FILE_BYTES as MAX_FONT_FILE_BYTES,
+};
 const MAX_COLLECTION_FACES: u32 = 64;
 
 /// CoreText-backed Skia may reject a valid nonzero TTC index. Repack only that
@@ -152,76 +154,54 @@ impl TypefaceCatalog {
         Ok(catalog)
     }
 
+    /// Load supplied font paths. Files are mapped, not copied: every face of a
+    /// collection shares one file-backed `Data`, so the heap copy budget only
+    /// covers standalone repacks for hosts that reject a TTC index (#8597).
+    /// Files beyond the file count or per-file size bound are reported once.
     pub fn load(font_mgr: &FontMgr, sources: &[PathBuf]) -> Self {
+        let scan = scan_native_custom_font_files(sources);
+        for skipped in &scan.skipped {
+            eprintln!(
+                "WARN: Native 글꼴 '{}' 을(를) 싣지 않습니다: {}",
+                skipped.path.display(),
+                skipped.reason
+            );
+        }
         let mut catalog = Self::default();
-        let mut total_bytes = 0u64;
-        let mut retained_bytes = 0u64;
-        let mut loaded_files = 0usize;
-        let mut seen = std::collections::HashSet::new();
-        for source in sources {
+        let mut copied_bytes = 0u64;
+        for files in &scan.files {
             let mut source_catalog = Self::default();
-            let mut paths = if source.is_file() {
-                vec![source.clone()]
-            } else {
-                std::fs::read_dir(source)
-                    .into_iter()
-                    .flatten()
-                    .flatten()
-                    .map(|entry| entry.path())
-                    .collect::<Vec<_>>()
-            };
-            paths.sort();
-            for path in paths {
-                let supported = path
-                    .extension()
-                    .and_then(|extension| extension.to_str())
-                    .is_some_and(|extension| {
-                        matches!(
-                            extension.to_ascii_lowercase().as_str(),
-                            "ttf" | "otf" | "ttc"
-                        )
-                    });
-                if !supported || !seen.insert(path.clone()) {
-                    continue;
-                }
-                if loaded_files >= MAX_FONT_FILES {
-                    break;
-                }
-                let Ok(metadata) = path.metadata() else {
+            for path in files {
+                let Some(data) = Data::from_filename(path) else {
                     continue;
                 };
-                if !metadata.is_file()
-                    || metadata.len() == 0
-                    || metadata.len() > MAX_FONT_FILE_BYTES
-                    || total_bytes.saturating_add(metadata.len()) > MAX_FONT_TOTAL_BYTES
-                {
+                // The file may have changed after the scan's metadata check.
+                if data.is_empty() || data.as_bytes().len() as u64 > MAX_FONT_FILE_BYTES {
                     continue;
                 }
-                let Ok(bytes) = std::fs::read(&path) else {
-                    continue;
-                };
-                if bytes.len() as u64 > MAX_FONT_FILE_BYTES
-                    || total_bytes.saturating_add(bytes.len() as u64) > MAX_FONT_TOTAL_BYTES
-                {
-                    continue;
-                }
-                total_bytes += bytes.len() as u64;
-                loaded_files += 1;
-                let faces = ttf_parser::fonts_in_collection(&bytes)
+                let bytes = data.as_bytes();
+                let faces = ttf_parser::fonts_in_collection(bytes)
                     .unwrap_or(1)
                     .min(MAX_COLLECTION_FACES);
                 for face_index in 0..faces {
-                    // Each face owns a fresh Data copy of the complete collection.
-                    // Account retained copies, not just input files.
-                    if retained_bytes.saturating_add(bytes.len() as u64) > MAX_FONT_TOTAL_BYTES {
-                        break;
-                    }
-                    if ttf_parser::Face::parse(&bytes, face_index).is_err() {
+                    if ttf_parser::Face::parse(bytes, face_index).is_err() {
                         continue;
                     }
-                    if let Some(face) = typeface_from_data(font_mgr, &bytes, face_index) {
-                        retained_bytes += bytes.len() as u64;
-                        source_catalog.insert_face(&bytes, face_index, face);
+                    let face = font_mgr
+                        .new_from_data(data.clone(), Some(face_index))
+                        .or_else(|| {
+                            let standalone = standalone_collection_face(bytes, face_index)?;
+                            let length = standalone.len() as u64;
+                            if copied_bytes.saturating_add(length) > MAX_FONT_TOTAL_BYTES {
+                                return None;
+                            }
+                            let face =
+                                font_mgr.new_from_data(Data::new_copy(&standalone), Some(0))?;
+                            copied_bytes += length;
+                            Some(face)
+                        });
+                    if let Some(face) = face {
+                        source_catalog.insert_face(bytes, face_index, face);
                     }
                 }
             }
@@ -234,9 +214,6 @@ impl TypefaceCatalog {
             }
             for (name, face) in source_catalog.postscript_faces {
                 catalog.postscript_faces.entry(name).or_insert(face);
-            }
-            if loaded_files >= MAX_FONT_FILES {
-                break;
             }
         }
         catalog

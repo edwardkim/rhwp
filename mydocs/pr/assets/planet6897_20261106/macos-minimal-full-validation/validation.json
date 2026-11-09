@@ -1,0 +1,142 @@
+{
+  "code_head": "def44c54c6370c0cd463bb859f6b810e2ee4f0bb",
+  "working_tree_product_unchanged": true,
+  "full_nextest": {
+    "run": 13072,
+    "passed": 13072,
+    "failed": 0,
+    "skipped": 45,
+    "test_seconds": 346.703,
+    "whole_command_seconds": 827.5390247909818,
+    "command": [
+      "sandbox-exec",
+      "-f",
+      "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/full-minimal-font.sb",
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--tests",
+      "-j",
+      "8",
+      "--no-fail-fast"
+    ]
+  },
+  "native": {
+    "root_lib_passed": 3852,
+    "root_lib_failed": 0,
+    "root_lib_ignored": 12,
+    "other_libraries_passed": 182,
+    "png_passed": 2,
+    "pdf_passed": 35,
+    "font_focused_passed": 37,
+    "font_focused_failed": 0,
+    "focused_selected_out": 1931,
+    "gate_receipt": {
+      "state": "complete",
+      "pid": 80937,
+      "expected_head": "def44c54c6370c0cd463bb859f6b810e2ee4f0bb",
+      "results": [
+        {
+          "gate": "native-lib",
+          "exit_code": 0,
+          "seconds": 201.09485608316027,
+          "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/current-native-lib.log"
+        },
+        {
+          "gate": "native-png",
+          "exit_code": 0,
+          "seconds": 181.3482453750912,
+          "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/current-native-png.log"
+        },
+        {
+          "gate": "native-pdf",
+          "exit_code": 0,
+          "seconds": 14.642962707905099,
+          "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/current-native-pdf.log"
+        }
+      ],
+      "active": null,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/full-minimal-font.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "-j",
+        "8",
+        "--no-fail-fast"
+      ],
+      "child_pid": 8885,
+      "native_library": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/librhwp-current-native.rlib",
+        "sha256": "57399b53f1dd32c5221996a600caa639d1b2cd1d96e136bf06d9194ab4fc3ec9"
+      }
+    }
+  },
+  "minimum_font_environment": {
+    "coretext_faces": 528,
+    "system_profiler_os_font_paths": 237,
+    "hashed_unique_os_programs": 208,
+    "additional_user_or_shared_fonts_seen": 0,
+    "normal_faces_before_and_after": 1875,
+    "normal_inventory_unchanged": true,
+    "normal_inventory_before_sha256": "04c174075f54f49f63878b71b047cc50f45c724497fa22c260d7f0c799af87c9",
+    "normal_inventory_after_sha256": "04c174075f54f49f63878b71b047cc50f45c724497fa22c260d7f0c799af87c9",
+    "korean_and_latin_glyph_paths": "AppleSDGothicNeo-Regular; 한글Aa01 six nonempty glyph paths; LastResort excluded"
+  },
+  "local_logs": [
+    {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/current-full-nextest.log",
+      "sha256": "9d189514aa7577c00818e640777615fff7ae893893d5a88d06af349653e2c119"
+    },
+    {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/current-native-lib.log",
+      "sha256": "542579066c549b88f7296425bd9ee15c65a4472584f22d1bb8ba1e20ab4a6922"
+    },
+    {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/current-native-png.log",
+      "sha256": "17928b58a1e9a3e15f3e388629ae50baa768a6310decddfd2bdaf285b95aca5c"
+    },
+    {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/current-native-pdf.log",
+      "sha256": "a88ab0f818c97a4c87ecaee58550177ddd83b7441e2df1710c1051b5c48ebb1d"
+    },
+    {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/current-native-font-focused.log",
+      "sha256": "eb5edd3789651139ebbd459b81c4f86ac0a961a57b31cc544408c2a5758109ee"
+    }
+  ],
+  "assets": [
+    {
+      "path": "full-minimal-font.sb",
+      "sha256": "89a8955370fe85029f0f08372f77ec17b86a7c4ae574ddc197abbe9267f47bd7"
+    },
+    {
+      "path": "full-minimal-coretext-qualified.json",
+      "sha256": "d3cf941e923ce633051cc27be12a54858292abbd4ac579e238709196cca21d61"
+    },
+    {
+      "path": "full-minimal-korean-glyphs.json",
+      "sha256": "eafda9b38bbc7fd5d6827fb4e1c8ffa427741f75d6eec42d2f75926358f81453"
+    },
+    {
+      "path": "full-minimal-os-font-files.json",
+      "sha256": "06e71495b3ed93fb0462a146976ef6edefea61621183817c4545297ccee16cb3"
+    }
+  ],
+  "scope_note": "현재 Mac의 전체 회귀·Native 필수 3종·선택 글꼴 계약. Linux/Windows 최신 head 실행 또는 전체 통합 시각 게이트 완료를 의미하지 않음.",
+  "remaining": "보호 TSV의 미세 하락 보정·필수 lint/build·전체 Native/fresh WASM 시각 비교·실제 소비 경로·개별 PR 검토·원격 PR/CI/후속처리"
+}

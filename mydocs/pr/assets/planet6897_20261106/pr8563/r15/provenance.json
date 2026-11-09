@@ -1,0 +1,64 @@
+{
+  "native": {
+    "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-common-fixes-r15",
+    "sha256": "434f52ab51385606c6fef713131e4038413835fe784ebe50e42637c85f9248ab"
+  },
+  "wasm": {
+    "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/wasm-common-fixes-r15",
+    "sha256": {
+      "rhwp.js": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138",
+      "rhwp_bg.wasm": "35fa07d278c050db007d02ae840f9a36d79d36514a8df8a5bde4ff9049553341"
+    }
+  },
+  "source": {
+    "source_head": "048f44da99d83e186f3a9e139563d20545c8bdb4",
+    "changes": [
+      {
+        "path": "src/document_core/commands/formatting.rs",
+        "sha256": "c6c51d702884d72e88ce92d07b308fc0b7aa474a359e01f79bb28574a21f51d7"
+      },
+      {
+        "path": "src/renderer/layout/text_measurement.rs",
+        "sha256": "8990b68b2c03eaa3d428a43f61cb0440935d2002cc563a97db492b9f665e2532"
+      },
+      {
+        "path": "src/document_core/commands/html_import/inline_content.rs",
+        "sha256": "f1f477f92a0d2bfd1ef8cd40072463e4875484707e3fc21619576d3fc7baf578"
+      },
+      {
+        "path": "tests/cases/pr_8552_font_name_error_atomicity.rs",
+        "sha256": "26d2399859e91b116909074ab982f899f303b5aaf9720070a1f2893cdd7087ea"
+      },
+      {
+        "path": "tests/cases/native_pua_host_font_protocol.rs",
+        "sha256": "3150525be6ef916e5c4b4a1f132a4af44edd3baa4f4c304d5b12b29f96860425"
+      }
+    ]
+  },
+  "files": [
+    {
+      "name": "native-overlay.png",
+      "sha256": "6890e5a603955dd06ff8202abbdc1ec61f5d1942f19f3561fc3f3dcb5b997911"
+    },
+    {
+      "name": "wasm-review.png",
+      "sha256": "589b2fe61100d4f2a3ec61148fd52fca670ea045c3ef37af498c6e6948f6e35b"
+    },
+    {
+      "name": "native.tsv",
+      "sha256": "40ae5eb9b736b898f0b3228acce8e5b69430c29444c82b3ae98e679e594e54e7"
+    },
+    {
+      "name": "wasm-overlay.png",
+      "sha256": "bbbcbb8fea24cdc4d67dcf151e2da43a0534b2cb44490c1d6949bc87b6cecd61"
+    },
+    {
+      "name": "native-review.png",
+      "sha256": "058281b705eda0ad4161b3d939ce8b308ac0b2bfbb41759ca1cf24786d69c422"
+    },
+    {
+      "name": "wasm.tsv",
+      "sha256": "40d8e3b0ffc8817111da299d316adfcd1dbef82f0b1a73c92ae1b91babb346ac"
+    }
+  ]
+}

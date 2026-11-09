@@ -38,7 +38,8 @@ impl DocumentCore {
                     .document
                     .find_or_create_char_shape(base, &parse_char_shape_mods(json));
                 if id == 0 {
-                    // 머리 모양의 0은 '참조 없음'으로 읽히므로 같은 모양을 0이 아닌 번호로 둔다.
+                    // 이 API의 기존 양수 ID 반환을 보존한다. 문서에서 읽은 0번은
+                    // 유효한 모양 참조이며, 참조 없음은 위의 u32::MAX로 구분한다.
                     let shapes = &mut self.document.doc_info.char_shapes;
                     match shapes[1..].iter().position(|shape| *shape == shapes[0]) {
                         Some(index) => index as u32 + 1,

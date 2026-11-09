@@ -1,0 +1,426 @@
+{
+  "source": {
+    "source_head": "048f44da99d83e186f3a9e139563d20545c8bdb4",
+    "changes": [
+      {
+        "path": "src/document_core/commands/formatting.rs",
+        "sha256": "c6c51d702884d72e88ce92d07b308fc0b7aa474a359e01f79bb28574a21f51d7"
+      },
+      {
+        "path": "src/renderer/layout/text_measurement.rs",
+        "sha256": "8990b68b2c03eaa3d428a43f61cb0440935d2002cc563a97db492b9f665e2532"
+      },
+      {
+        "path": "src/document_core/commands/html_import/inline_content.rs",
+        "sha256": "f1f477f92a0d2bfd1ef8cd40072463e4875484707e3fc21619576d3fc7baf578"
+      },
+      {
+        "path": "tests/cases/pr_8552_font_name_error_atomicity.rs",
+        "sha256": "26d2399859e91b116909074ab982f899f303b5aaf9720070a1f2893cdd7087ea"
+      },
+      {
+        "path": "tests/cases/native_pua_host_font_protocol.rs",
+        "sha256": "3150525be6ef916e5c4b4a1f132a4af44edd3baa4f4c304d5b12b29f96860425"
+      }
+    ]
+  },
+  "package": {
+    "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/wasm-common-fixes-r15",
+    "sha256": {
+      "rhwp.js": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138",
+      "rhwp_bg.wasm": "35fa07d278c050db007d02ae840f9a36d79d36514a8df8a5bde4ff9049553341"
+    }
+  },
+  "focused_rust": {
+    "tests": 36,
+    "passed": 36,
+    "failed": 0,
+    "exit_code": 0,
+    "font_environment": "공개/OFL 글꼴 5개만 노출"
+  },
+  "public_api": {
+    "product": "common-fixes-r15-wasm-producer.json의 실제 소스·package SHA",
+    "package": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/wasm-common-fixes-r15",
+    "producer_sha256": {
+      "rhwp.js": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138",
+      "rhwp_bg.wasm": "35fa07d278c050db007d02ae840f9a36d79d36514a8df8a5bde4ff9049553341"
+    },
+    "role": "합성 편집 API 계약. 설치 글꼴이나 시각 배치의 검증으로 사용하지 않는다.",
+    "face": "검토용등록글꼴",
+    "results": [
+      {
+        "key": "body",
+        "expectedError": false,
+        "error": null,
+        "hwpError": null,
+        "before_sha256": "210a97c21ecbb4e456746144fb79a9922deb7776ac8b2a24da221ea3c4393f5a",
+        "after_sha256": "81c1dc5082d9850a13f6a98cc61e6249277713ae2db28cdcda8fb6e068e2352d",
+        "bytes_unchanged": false,
+        "context": {}
+      },
+      {
+        "key": "cell",
+        "expectedError": false,
+        "error": null,
+        "hwpError": null,
+        "before_sha256": "a8b70f43a1791e017a52d5acc2d6dcedd37b9183a012bfe9ff9ea63373d0e36b",
+        "after_sha256": "5f9a64ec7cac48d52393dd047938b8e9b8a0413115bbede414efd70bd66062f5",
+        "bytes_unchanged": false,
+        "context": {
+          "ok": true,
+          "paraIdx": 0,
+          "controlIdx": 2
+        }
+      },
+      {
+        "key": "cell-by-path",
+        "expectedError": false,
+        "error": null,
+        "hwpError": null,
+        "before_sha256": "a3ed675144490f300a7736a7a690c5dabe286bbe451bc93e0844bf7f5345c79a",
+        "after_sha256": "28ae9e321f306e604fc93b425f10204700728bfbe26df9cb69e2764ed01be7f5",
+        "bytes_unchanged": false,
+        "context": {
+          "ok": true,
+          "paraIdx": 0,
+          "controlIdx": 2,
+          "path": [
+            {
+              "controlIndex": 2,
+              "cellIndex": 0,
+              "cellParaIndex": 0
+            },
+            {
+              "controlIndex": 0,
+              "cellIndex": 0,
+              "cellParaIndex": 0
+            }
+          ]
+        }
+      },
+      {
+        "key": "header",
+        "expectedError": false,
+        "error": null,
+        "hwpError": null,
+        "before_sha256": "3631a0a8cb9cea1b93aca5b5add5f347a327b11de35b35cad712d1f8cc81d54e",
+        "after_sha256": "a88742b23d314552dc39bc9d0de4523f5aa57c3705a202c025b4d7db782e7a89",
+        "bytes_unchanged": false,
+        "context": {
+          "isHeader": true
+        }
+      },
+      {
+        "key": "footer",
+        "expectedError": false,
+        "error": null,
+        "hwpError": null,
+        "before_sha256": "0d342810a0d83bb84b47d695d4aa9984d7d30fd53a378a5d8872f4533b2347ee",
+        "after_sha256": "ce116116731220ac7d6cb67a8b535963b2e415332255c68bae4f7962eb9165eb",
+        "bytes_unchanged": false,
+        "context": {
+          "isHeader": false
+        }
+      },
+      {
+        "key": "invalid-body",
+        "expectedError": true,
+        "error": "렌더링 오류: 구역 99 범위 초과",
+        "hwpError": null,
+        "before_sha256": "210a97c21ecbb4e456746144fb79a9922deb7776ac8b2a24da221ea3c4393f5a",
+        "after_sha256": "210a97c21ecbb4e456746144fb79a9922deb7776ac8b2a24da221ea3c4393f5a",
+        "bytes_unchanged": true,
+        "context": {}
+      },
+      {
+        "key": "invalid-cell",
+        "expectedError": true,
+        "error": "렌더링 오류: 셀 문단을 찾을 수 없음",
+        "hwpError": null,
+        "before_sha256": "a8b70f43a1791e017a52d5acc2d6dcedd37b9183a012bfe9ff9ea63373d0e36b",
+        "after_sha256": "a8b70f43a1791e017a52d5acc2d6dcedd37b9183a012bfe9ff9ea63373d0e36b",
+        "bytes_unchanged": true,
+        "context": {
+          "ok": true,
+          "paraIdx": 0,
+          "controlIdx": 2
+        }
+      },
+      {
+        "key": "invalid-nested-cell",
+        "expectedError": true,
+        "error": "렌더링 오류: 경로[1]: controls[999]가 표/글상자/그림 캡션이 아닙니다",
+        "hwpError": null,
+        "before_sha256": "a3ed675144490f300a7736a7a690c5dabe286bbe451bc93e0844bf7f5345c79a",
+        "after_sha256": "a3ed675144490f300a7736a7a690c5dabe286bbe451bc93e0844bf7f5345c79a",
+        "bytes_unchanged": true,
+        "context": {
+          "ok": true,
+          "paraIdx": 0,
+          "controlIdx": 2,
+          "path": [
+            {
+              "controlIndex": 2,
+              "cellIndex": 0,
+              "cellParaIndex": 0
+            },
+            {
+              "controlIndex": 0,
+              "cellIndex": 0,
+              "cellParaIndex": 0
+            }
+          ]
+        }
+      },
+      {
+        "key": "invalid-empty-path",
+        "expectedError": true,
+        "error": "렌더링 오류: 경로가 비어있습니다",
+        "hwpError": null,
+        "before_sha256": "a8b70f43a1791e017a52d5acc2d6dcedd37b9183a012bfe9ff9ea63373d0e36b",
+        "after_sha256": "a8b70f43a1791e017a52d5acc2d6dcedd37b9183a012bfe9ff9ea63373d0e36b",
+        "bytes_unchanged": true,
+        "context": {
+          "ok": true,
+          "paraIdx": 0,
+          "controlIdx": 2
+        }
+      },
+      {
+        "key": "invalid-header",
+        "expectedError": true,
+        "error": "렌더링 오류: 머리말/꼬리말 정의를 찾을 수 없음",
+        "hwpError": null,
+        "before_sha256": "210a97c21ecbb4e456746144fb79a9922deb7776ac8b2a24da221ea3c4393f5a",
+        "after_sha256": "210a97c21ecbb4e456746144fb79a9922deb7776ac8b2a24da221ea3c4393f5a",
+        "bytes_unchanged": true,
+        "context": {}
+      },
+      {
+        "key": "conflicting-font-ids",
+        "expectedError": true,
+        "error": "렌더링 오류: fontName 은 fontId·fontIds 와 함께 쓸 수 없음",
+        "hwpError": null,
+        "before_sha256": "210a97c21ecbb4e456746144fb79a9922deb7776ac8b2a24da221ea3c4393f5a",
+        "after_sha256": "210a97c21ecbb4e456746144fb79a9922deb7776ac8b2a24da221ea3c4393f5a",
+        "bytes_unchanged": true,
+        "context": {}
+      }
+    ]
+  },
+  "slot_limit": {
+    "results": [
+      {
+        "key": "missing-name",
+        "expectError": true,
+        "error": "렌더링 오류: 글꼴 이름을 등록할 수 없음: 검토용등록글꼴",
+        "bytes_unchanged": true
+      },
+      {
+        "key": "existing-name",
+        "expectError": false,
+        "error": null,
+        "bytes_unchanged": false
+      }
+    ]
+  },
+  "saved_references": {
+    "results": [
+      {
+        "key": "body",
+        "paths": {
+          "after": {
+            "sha256": "81c1dc5082d9850a13f6a98cc61e6249277713ae2db28cdcda8fb6e068e2352d",
+            "text_spans": [
+              {
+                "text": "가ABC한글",
+                "names": {
+                  "hangul": "검토용등록글꼴",
+                  "latin": "검토용등록글꼴",
+                  "hanja": "검토용등록글꼴",
+                  "japanese": "검토용등록글꼴",
+                  "other": "검토용등록글꼴",
+                  "symbol": "검토용등록글꼴",
+                  "user": "검토용등록글꼴"
+                }
+              }
+            ]
+          },
+          "hwp-reopened": {
+            "sha256": "81c1dc5082d9850a13f6a98cc61e6249277713ae2db28cdcda8fb6e068e2352d",
+            "text_spans": [
+              {
+                "text": "가ABC한글",
+                "names": {
+                  "hangul": "검토용등록글꼴",
+                  "latin": "검토용등록글꼴",
+                  "hanja": "검토용등록글꼴",
+                  "japanese": "검토용등록글꼴",
+                  "other": "검토용등록글꼴",
+                  "symbol": "검토용등록글꼴",
+                  "user": "검토용등록글꼴"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "key": "cell",
+        "paths": {
+          "after": {
+            "sha256": "5f9a64ec7cac48d52393dd047938b8e9b8a0413115bbede414efd70bd66062f5",
+            "text_spans": [
+              {
+                "text": "셀ABC한글",
+                "names": {
+                  "hangul": "검토용등록글꼴",
+                  "latin": "검토용등록글꼴",
+                  "hanja": "검토용등록글꼴",
+                  "japanese": "검토용등록글꼴",
+                  "other": "검토용등록글꼴",
+                  "symbol": "검토용등록글꼴",
+                  "user": "검토용등록글꼴"
+                }
+              }
+            ]
+          },
+          "hwp-reopened": {
+            "sha256": "5f9a64ec7cac48d52393dd047938b8e9b8a0413115bbede414efd70bd66062f5",
+            "text_spans": [
+              {
+                "text": "셀ABC한글",
+                "names": {
+                  "hangul": "검토용등록글꼴",
+                  "latin": "검토용등록글꼴",
+                  "hanja": "검토용등록글꼴",
+                  "japanese": "검토용등록글꼴",
+                  "other": "검토용등록글꼴",
+                  "symbol": "검토용등록글꼴",
+                  "user": "검토용등록글꼴"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "key": "cell-by-path",
+        "paths": {
+          "after": {
+            "sha256": "28ae9e321f306e604fc93b425f10204700728bfbe26df9cb69e2764ed01be7f5",
+            "text_spans": [
+              {
+                "text": "중첩ABC한글",
+                "names": {
+                  "hangul": "검토용등록글꼴",
+                  "latin": "검토용등록글꼴",
+                  "hanja": "검토용등록글꼴",
+                  "japanese": "검토용등록글꼴",
+                  "other": "검토용등록글꼴",
+                  "symbol": "검토용등록글꼴",
+                  "user": "검토용등록글꼴"
+                }
+              }
+            ]
+          },
+          "hwp-reopened": {
+            "sha256": "28ae9e321f306e604fc93b425f10204700728bfbe26df9cb69e2764ed01be7f5",
+            "text_spans": [
+              {
+                "text": "중첩ABC한글",
+                "names": {
+                  "hangul": "검토용등록글꼴",
+                  "latin": "검토용등록글꼴",
+                  "hanja": "검토용등록글꼴",
+                  "japanese": "검토용등록글꼴",
+                  "other": "검토용등록글꼴",
+                  "symbol": "검토용등록글꼴",
+                  "user": "검토용등록글꼴"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "key": "header",
+        "paths": {
+          "after": {
+            "sha256": "a88742b23d314552dc39bc9d0de4523f5aa57c3705a202c025b4d7db782e7a89",
+            "text_spans": [
+              {
+                "text": "머리꼬리ABC",
+                "names": {
+                  "hangul": "검토용등록글꼴",
+                  "latin": "검토용등록글꼴",
+                  "hanja": "검토용등록글꼴",
+                  "japanese": "검토용등록글꼴",
+                  "other": "검토용등록글꼴",
+                  "symbol": "검토용등록글꼴",
+                  "user": "검토용등록글꼴"
+                }
+              }
+            ]
+          },
+          "hwp-reopened": {
+            "sha256": "a88742b23d314552dc39bc9d0de4523f5aa57c3705a202c025b4d7db782e7a89",
+            "text_spans": [
+              {
+                "text": "머리꼬리ABC",
+                "names": {
+                  "hangul": "검토용등록글꼴",
+                  "latin": "검토용등록글꼴",
+                  "hanja": "검토용등록글꼴",
+                  "japanese": "검토용등록글꼴",
+                  "other": "검토용등록글꼴",
+                  "symbol": "검토용등록글꼴",
+                  "user": "검토용등록글꼴"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "key": "footer",
+        "paths": {
+          "after": {
+            "sha256": "ce116116731220ac7d6cb67a8b535963b2e415332255c68bae4f7962eb9165eb",
+            "text_spans": [
+              {
+                "text": "머리꼬리ABC",
+                "names": {
+                  "hangul": "검토용등록글꼴",
+                  "latin": "검토용등록글꼴",
+                  "hanja": "검토용등록글꼴",
+                  "japanese": "검토용등록글꼴",
+                  "other": "검토용등록글꼴",
+                  "symbol": "검토용등록글꼴",
+                  "user": "검토용등록글꼴"
+                }
+              }
+            ]
+          },
+          "hwp-reopened": {
+            "sha256": "ce116116731220ac7d6cb67a8b535963b2e415332255c68bae4f7962eb9165eb",
+            "text_spans": [
+              {
+                "text": "머리꼬리ABC",
+                "names": {
+                  "hangul": "검토용등록글꼴",
+                  "latin": "검토용등록글꼴",
+                  "hanja": "검토용등록글꼴",
+                  "japanese": "검토용등록글꼴",
+                  "other": "검토용등록글꼴",
+                  "symbol": "검토용등록글꼴",
+                  "user": "검토용등록글꼴"
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

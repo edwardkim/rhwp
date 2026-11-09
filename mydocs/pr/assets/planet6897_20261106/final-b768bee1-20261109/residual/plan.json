@@ -1,0 +1,166 @@
+{
+  "state": "current-candidate-measured-awaiting-base-classification-and-publication",
+  "measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+  "scope": "현재 자동 번호 들여쓰기 보정을 마무리하여 통합 PR을 진행하고, 별도 잔여는 새 이슈로 추적한다. 점수·PDF·검사 문턱을 바꾸거나 새 회귀를 기존 문제로 숨기지 않는다.",
+  "cases": [
+    {
+      "case": "interview",
+      "input": "samples/basic/interview.hwp",
+      "pdf": "pdf/basic/interview-hwp-2020.pdf",
+      "input_sha256": "fc71c2a0ebced5e913fbcbbc39a28244f5d73144f74ba1a4ebc548998d408d3c",
+      "pdf_sha256": "3b5c947640e19e1546968efd8d4fc05e8acef14fd427dd28f2c82a6a1bb6936b",
+      "pages": [
+        {
+          "page": 1,
+          "native": "97.52",
+          "wasm": "97.63",
+          "native_precise": "97.52428",
+          "wasm_precise": "97.63115"
+        }
+      ]
+    },
+    {
+      "case": "request",
+      "input": "samples/basic/request.hwp",
+      "pdf": "pdf/basic/request-hwp-2020.pdf",
+      "input_sha256": "99e63b90f4aa3197029299ab087bc46225b3c27c0d07d424145b20879b45f12e",
+      "pdf_sha256": "7f6d4aaaa87709609cc49376e850e0074cfd9f16ee7eb2562331603606f2e983",
+      "pages": [
+        {
+          "page": 1,
+          "native": "96.18",
+          "wasm": "96.12",
+          "native_precise": "96.17763",
+          "wasm_precise": "96.11833"
+        }
+      ],
+      "observed_difference": "광고접촉수단/직업 행의 오른쪽 홈쇼핑·기타 선택지가 실제 후보에서 보이지 않음, 앞 라디오 항목의 가로 간격도 차이. base 전쪽·동일 영역 판독으로 기존 미해결인지 먼저 구분한다."
+    },
+    {
+      "case": "newyear",
+      "input": "samples/basic/NewYear_s_Day.hwp",
+      "pdf": "pdf/basic/NewYear_s_Day-hwp-2020.pdf",
+      "input_sha256": "1be2736df6b21687f5c1627bac307cc689171928f6ceb0a235af0bc727eb6372",
+      "pdf_sha256": "44b4e5f7517c86034b800ed307fcbf09dcf7242d342fd5e14ddfca9d22537ec0",
+      "pages": [
+        {
+          "page": 1,
+          "native": "98.80",
+          "wasm": "98.80",
+          "native_precise": "98.79902",
+          "wasm_precise": "98.79897"
+        },
+        {
+          "page": 3,
+          "native": "98.45",
+          "wasm": "98.45",
+          "native_precise": "98.4516",
+          "wasm_precise": "98.45155"
+        },
+        {
+          "page": 2,
+          "native": "98.87",
+          "native_precise": "98.87432",
+          "wasm": "98.87",
+          "wasm_precise": "98.87432"
+        }
+      ]
+    },
+    {
+      "case": "ktx",
+      "input": "samples/basic/KTX.hwp",
+      "pdf": "pdf/basic/KTX-2022.pdf",
+      "input_sha256": "6c1a027d67b33c03f469b56548b4c7d6bca36b1c1190c7cc5eac88e35c403cf1",
+      "pdf_sha256": "3ab52b0ba4074919d66a3d0c6c4208754bc6da8dc6d0b3a41a457210e6fee7cb",
+      "pages": [
+        {
+          "page": 1,
+          "native": "99.85",
+          "wasm": "99.85",
+          "native_precise": "99.85412",
+          "wasm_precise": "99.85386"
+        }
+      ]
+    },
+    {
+      "case": "policy-flags0",
+      "input": "samples/issue8639/policy_research_review_request-trackchange0.hwpx",
+      "pdf": "pdf/issue8639/policy_research_review_request-trackchange0-print-2024.pdf",
+      "input_sha256": "56beb7135c6c270ec8b375d2b2d111c693242effb136bfdf3c16f4bd5e58d27f",
+      "pdf_sha256": "ad8de57af837d16c45b0bd01f3c5e26e0fdf50f223d3d433e922e930a9e60eeb",
+      "pages": [
+        {
+          "page": 1,
+          "native": "97.75",
+          "wasm": "97.77",
+          "native_precise": "97.74537",
+          "wasm_precise": "97.77004"
+        }
+      ]
+    },
+    {
+      "case": "legislation-summary",
+      "input": "samples/issue8652/1740000-201700020_legislation_interim_summary.hwp",
+      "pdf": "pdf/issue8652/1740000-201700020_legislation_interim_summary-2020.pdf",
+      "input_sha256": "b8871ad2fa2fb1f0f16586d0bf4e76033b2cabed6db92e306863db9124829cb7",
+      "pdf_sha256": "73986101977b25f267c4bf45c09bec2df6e3b3b6e8471fe7c5ab57110cf47c12",
+      "pages": [
+        {
+          "page": 1,
+          "native": "99.95",
+          "wasm": "100.00",
+          "native_precise": "99.95287",
+          "wasm_precise": "100.0"
+        }
+      ]
+    },
+    {
+      "case": "report-628",
+      "input": "mydocs/pr/assets/planet6897_20261106/pr8642/report-628-original.hwp",
+      "pdf": "pdf/planet6897-20261106/pr8642/report-628-original-2020.pdf",
+      "input_sha256": "bde80abc635f46e8af68ff9a962229379d17f32bf7939398617774bb40635f66",
+      "pdf_sha256": "34960349fb528ec433dfe0f616eaa275ea9331e15350823ba88f276cc0bd2255",
+      "pages": [
+        {
+          "page": 95,
+          "native": "99.63",
+          "wasm": "99.63",
+          "native_precise": "99.62605",
+          "wasm_precise": "99.62609"
+        },
+        {
+          "page": 96,
+          "native": "99.92",
+          "wasm": "99.90",
+          "native_precise": "99.9173",
+          "wasm_precise": "99.89777"
+        },
+        {
+          "page": 110,
+          "native": "93.24",
+          "wasm": "93.24",
+          "native_precise": "93.23582",
+          "wasm_precise": "93.23582"
+        }
+      ]
+    },
+    {
+      "case": "idol-counterexample",
+      "input": "samples/issue8596/idol_goods_trimmed.hwpx",
+      "pdf": "pdf/issue8596_idol_goods_trimmed-2020.pdf",
+      "input_sha256": "729d63c3bccf407b369ec3f63cdc703ad22c46e7eede7bacdb51b204c2344661",
+      "pdf_sha256": "145916d885426ead33bc5fc86c0e325bb294e275175aa5f42bdddeaa35717892",
+      "pages": [
+        {
+          "page": 1,
+          "native": "99.76",
+          "native_precise": "99.76176",
+          "wasm": "99.76",
+          "wasm_precise": "99.76417"
+        }
+      ],
+      "observed_difference": "중간 관련법리 제목의 외곽선이 후보는 점선이고 독립 Print는 실선으로 보임. 현재 source와 고정 base에서 같은 영역을 대조해 출처를 구분한다."
+    }
+  ],
+  "current_head_pending": "eb876d1416fb558c874f9efec65c5722a6769751"
+}

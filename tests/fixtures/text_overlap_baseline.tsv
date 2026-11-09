@@ -148,3 +148,9 @@ issue8501/child_product_safety_rule.hwp	1
 # #7700: 같은 원본의 Native/fresh WASM 전103쪽90% 이상 확인 뒤 활성 복원.
 # 최소 글꼴 Mac 전쪽 실제 진단: 본문 넘침1·글자 겹침1. 기존 이관 전 허용2/1보다 늘리지 않는다.
 issue5679/10857_delegation_rules.hwp	1
+# #8641 신규 공개 샘플(서울시 결재문서 36306589, 한/글 2020 저장): 수정 전(devel ece9c3383b)과 수정 후의
+# 값이 같다 — 맨 위 6×6 제목 표 첫 칸의 두 줄 글자 상자(높이 32px, 줄 간격 28.8px)가 3.2px 겹치는 기존
+# 형상이며 이 PR 범위 밖이다. 같은 문서 1쪽 silhouette 은 Native·fresh WASM 99.98%.
+issue8641/field_table_after_page_box.hwpx	6
+# #8641 새 fixture: #8645·#8649 합본과 이 수정의 대조에서 보고서 2 → 2(이 수정으로 늘지 않음, 표 겹침은 문서 고유).
+issue8641/labor_standards_report.hwp	2

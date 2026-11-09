@@ -232,7 +232,16 @@ pub(crate) fn paragraph_line_indent_for_source(
     dpi: f64,
 ) -> f64 {
     use crate::model::paragraph::LineSeg;
+    // 자동 내어쓰기 번호의 마커 영역은 문단 들여쓰기를 포함해 측정한다.
+    // 원문 글자 밖의 번호 영역을 본문 LineSeg의 bit20으로 다시 취소하면,
+    // 영역에서 먼저 뺀 들여쓰기만큼 번호와 본문이 함께 단 왼쪽으로 밀린다.
+    // 번호가 없는 본문·자동 내어쓰기가 꺼진 번호의 저장 플래그 계약은 유지한다.
+    let marker_owns_indent = paragraph.is_some_and(|para| {
+        matches!(&para.numbering_marker,
+            crate::model::paragraph::NumberingMarker::Text(_, head) if head.attr & (1 << 3) != 0)
+    });
     let stored_seg_denies_indent = respect_stored_ladder
+        && !marker_owns_indent
         && paragraph.is_some_and(|para| para.line_segs.len() == composed_line_count)
         && paragraph
             .and_then(|para| para.line_segs.get(visual_line_idx))

@@ -131,6 +131,10 @@ pub(crate) fn verified_program_has_glyph(metric: &FontMetric, ch: char) -> Optio
             // H2MJSM.TTF/gulim.TTC의 실제 cmap 결측. 서로 다른 기호
             // 슬롯을 교차한 Print에서 각각 HBATANG/HDOTUM 공급도 확인했다.
             ("HYSinMyeongJo-Medium" | "Gulim", 1024, false, false) => return Some(false),
+            // [#8619] gulim.ttc 05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12:
+            // Dotum regular cmap에 U+2024·U+2027이 모두 없지만 공급자는 U+2024만
+            // 독립 Print로 확인했다. U+2027의 기존 처리는 바꾸지 않는다.
+            ("Dotum", 1024, false, false) if ch == '\u{2024}' => return Some(false),
             ("Haansoft Batang", 1024, false, false) => return Some(true),
             ("Haansoft Dotum", 1024, false, false) => return Some(true),
             _ => {}

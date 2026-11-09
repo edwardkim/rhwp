@@ -1,0 +1,281 @@
+{
+  "product_base": "9470fb026a8cd3b3d9594db55298b6f6c347bfda",
+  "source_changes": [
+    {
+      "path": "src/renderer/layout/shape_layout.rs",
+      "sha256": "4751ca6feab6ed396ac3c9498a17c2651972717c0db872f455abcd6a072c28d7"
+    },
+    {
+      "path": "src/renderer/pagination.rs",
+      "sha256": "b6d192db0872c2d1d65cef5a0a759408a098ce0c79c7b19e0c5c825f5e1eda19"
+    }
+  ],
+  "native_binary_sha256": "dcc537203eba3fab75d592380c1b584310a97e1a2ec48a48e2e10898411386a4",
+  "optimized_wasm": {
+    "rhwp.js": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138",
+    "rhwp_bg.wasm": "fb98b69311bc3ceeebfaa1052ed2098092aacb22f237ea7651cf4b7b6fe5ce5d"
+  },
+  "dpi": 96,
+  "compat": "2022",
+  "profile": "print",
+  "minimum_font_regression": "OFL 5개, 19 PASS, 실행별 filtered 제외는 합산하지 않음",
+  "full_rust_and_lint_complete": false,
+  "protected_8389_8397_complete": false,
+  "metrics": {
+    "report-838": {
+      "native": {
+        "pages": 109,
+        "minimum": 94.99379,
+        "below90": [],
+        "source_manifest": "output/pr-review/planet6897-integration-20261106/common-fixes-r11-native/report-838/report-838/silhouette_manifest.json",
+        "source_manifest_sha256": "4e9262f7201f560681d8b4056e947029d698ec9508beeb7252e79c9a14641aad"
+      },
+      "wasm": {
+        "pages": 109,
+        "minimum": 94.94289,
+        "below90": [],
+        "source_manifest": "output/pr-review/planet6897-integration-20261106/common-fixes-r11-wasm/report-838/report-838/silhouette_manifest.json",
+        "source_manifest_sha256": "05665189e124d752dbf45df7124a5a8724b9ccad1058bb3157bfd34de204db92"
+      }
+    },
+    "stored-band": {
+      "native": {
+        "pages": 2,
+        "minimum": 100.0,
+        "below90": [],
+        "source_manifest": "output/pr-review/planet6897-integration-20261106/common-fixes-r11-native/stored-band/stored-band/silhouette_manifest.json",
+        "source_manifest_sha256": "8d8fa32e6ca64f16d33c9c8f3d1c38a4a7f4643e9ad6b710f084d3dccfd6d86e"
+      },
+      "wasm": {
+        "pages": 2,
+        "minimum": 100.0,
+        "below90": [],
+        "source_manifest": "output/pr-review/planet6897-integration-20261106/common-fixes-r11-wasm/stored-band/stored-band/silhouette_manifest.json",
+        "source_manifest_sha256": "099217879d2c041e184ab21e21e8514b6554326f946a3633843901ef3bd4e953"
+      }
+    },
+    "report-628": {
+      "native": {
+        "pages": 195,
+        "minimum": 33.38902,
+        "below90": [
+          {
+            "page": 16,
+            "raw": 88.48158
+          },
+          {
+            "page": 18,
+            "raw": 58.90219
+          },
+          {
+            "page": 120,
+            "raw": 85.11331
+          },
+          {
+            "page": 122,
+            "raw": 54.14019
+          },
+          {
+            "page": 123,
+            "raw": 68.02335
+          },
+          {
+            "page": 124,
+            "raw": 57.86916
+          },
+          {
+            "page": 125,
+            "raw": 33.38902
+          }
+        ],
+        "source_manifest": "output/pr-review/planet6897-integration-20261106/common-fixes-r11-native/report-628/report-628/silhouette_manifest.json",
+        "source_manifest_sha256": "92a30b8172a8b5fa8b474c29de9ac55d668bf599299bcc4cd99aceb2b5b162cc"
+      },
+      "wasm": {
+        "pages": 195,
+        "minimum": 33.56141,
+        "below90": [
+          {
+            "page": 16,
+            "raw": 88.50286
+          },
+          {
+            "page": 18,
+            "raw": 58.77039
+          },
+          {
+            "page": 120,
+            "raw": 84.94578
+          },
+          {
+            "page": 122,
+            "raw": 53.95154
+          },
+          {
+            "page": 123,
+            "raw": 67.78881
+          },
+          {
+            "page": 124,
+            "raw": 57.75834
+          },
+          {
+            "page": 125,
+            "raw": 33.56141
+          }
+        ],
+        "source_manifest": "output/pr-review/planet6897-integration-20261106/common-fixes-r11-wasm-reassembled/report-628/scores/silhouette_manifest.json",
+        "source_manifest_sha256": "24a67bbc5d91e3f21fa587ee87071bc84a1c68cfd368923431c2f8faf65619d6"
+      }
+    }
+  },
+  "files": [
+    {
+      "path": "before/wasm/report-628.tsv",
+      "sha256": "5be1b08e62d0b3fb788e3b9155e1910375d045c04859bdd320db0ab402dc793f"
+    },
+    {
+      "path": "before/wasm/report-838.tsv",
+      "sha256": "58aabc6cecc6addcb3d07b89a47b70a09af32a59e663c355138d8712423de663"
+    },
+    {
+      "path": "before/wasm/stored-band.tsv",
+      "sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "path": "both-comparison.json",
+      "sha256": "c3b89be6a7ded4459be50a1a9f96f69dfe4271840ba7bbd4984e2d4f0110582d"
+    },
+    {
+      "path": "handbook-group-stroke-source-comparison.json",
+      "sha256": "9d3c0af10bd94c37a1d0ddb31e90e5710bc2e717ad00a13325bc40b1a68b88ac"
+    },
+    {
+      "path": "handbook-solid-group-textboxes.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "native/overlay-025.png",
+      "sha256": "2daaac92d2bc6e01a57033b58b83798bbefca349470c9a3f262632fdbc72e1c3"
+    },
+    {
+      "path": "native/overlay-136.png",
+      "sha256": "6813365c63545a7dc1797f3241ac3d1087fb0d3765202b3de2b3c43e6d6bab37"
+    },
+    {
+      "path": "native/overlay-155.png",
+      "sha256": "f3d19c5961a5b0940d4b662a770af923fb7b6ff812c869d9c02c9a4c5a100d53"
+    },
+    {
+      "path": "native/overlay-193.png",
+      "sha256": "26945f2f6554110ef62ee014d62386a3f3fb4d2c2c6152a19b25cd1cfe473311"
+    },
+    {
+      "path": "native/report-628.tsv",
+      "sha256": "34c88c59a7a9836ed153c30965d0d6410d6dafed668785b4cc9a9c3839aed43d"
+    },
+    {
+      "path": "native/report-838.tsv",
+      "sha256": "7959031b86d6f1a56740cb4dcb586e842e31242abd775bc08b27c5156dfe1b56"
+    },
+    {
+      "path": "native/review-025.png",
+      "sha256": "f233bb3f9e3f6b5da07f3288773df5e2a082d09ef170e85ce63adf2a087a22ba"
+    },
+    {
+      "path": "native/review-136.png",
+      "sha256": "7e1db5431035f39c79431c7c4d5edf49ee2ac01cbf9eaa5e44b653a31aaa881b"
+    },
+    {
+      "path": "native/review-155.png",
+      "sha256": "6ce0e7371b0086385c9a387abead9018291978413a32a78d2207f3c8f778a5fc"
+    },
+    {
+      "path": "native/review-193.png",
+      "sha256": "721d777352bd64e095dac197c20e5670067374023d90035279d56b62772a1da0"
+    },
+    {
+      "path": "native/stored-band.tsv",
+      "sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "path": "native-comparison.json",
+      "sha256": "4a7d6793f746b9f1cdcb7dca923f8b62537c3c88372ba44744f869b8e2546518"
+    },
+    {
+      "path": "wasm/overlay-025.png",
+      "sha256": "fef176c76d721ba6ec423d55d9d14d2bce15438b8e4f6f8d14abdd67caf4c0d4"
+    },
+    {
+      "path": "wasm/overlay-136.png",
+      "sha256": "0c5bdd6c68a3799a66998e121b04d61968d990e4ba8e2f6c887a7edd53ccc82a"
+    },
+    {
+      "path": "wasm/overlay-155.png",
+      "sha256": "33c708f25a68637b7614c9e1942cd44c8008123a99ae6e4df199f8408ef372e4"
+    },
+    {
+      "path": "wasm/overlay-193.png",
+      "sha256": "04e415167da19f95b93d2c0b3fedee61b619eb0666a87b8ed725e840f6538634"
+    },
+    {
+      "path": "wasm/report-628.tsv",
+      "sha256": "5fe3888827adff1c5397d5c8e3e55e03ffd018974898479cffa4ea667a83b4f5"
+    },
+    {
+      "path": "wasm/report-838.tsv",
+      "sha256": "58aabc6cecc6addcb3d07b89a47b70a09af32a59e663c355138d8712423de663"
+    },
+    {
+      "path": "wasm/review-025.png",
+      "sha256": "97350a540e666ad1283a98aa6683282ff906c04e53945d0a37353b5434e7c5d2"
+    },
+    {
+      "path": "wasm/review-136.png",
+      "sha256": "8b686d35705d224e9f0e11e01551cd883b622d4212d57a1962b700e3e4a6f10a"
+    },
+    {
+      "path": "wasm/review-155.png",
+      "sha256": "0aecd446158ae2ccaa9e8c640e3262047c39e44f2b2d37bafef7619402ea7d17"
+    },
+    {
+      "path": "wasm/review-193.png",
+      "sha256": "aaea671efb0b15a9e25aeccce79bab515ae70f30731708d073e0934a3b1ec34a"
+    },
+    {
+      "path": "wasm/stored-band.tsv",
+      "sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "path": "wasm-aggregation-provenance.json",
+      "sha256": "b3bbb3dd130232aac63c8b555d8323cb98aa713e91546d47a6cc733f6f3c99e2"
+    }
+  ],
+  "completed_at": "2026-11-06T15:27:41.102563+00:00",
+  "before_wasm_producer": {
+    "source": "9470fb026a8cd3b3d9594db55298b6f6c347bfda",
+    "compiled_in": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/validation-rebase-source",
+    "target": "/home/tsjang/rhwp/target/pr-review",
+    "jobs": 8,
+    "optimized": true,
+    "package": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/wasm-after-a7feb849-candidate",
+    "hashes": {
+      "rhwp.js": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138",
+      "rhwp_bg.wasm": "d55a30bcbdb2a5627dc9226bb7e5e876461ac67c758f69d07dc4d7ad0648b5ef"
+    }
+  },
+  "both_comparison_summary": {
+    "native": {
+      "pages": 306,
+      "improved": 44,
+      "identical": 262,
+      "decreased": 0
+    },
+    "wasm": {
+      "pages": 306,
+      "improved": 44,
+      "identical": 262,
+      "decreased": 0
+    }
+  }
+}

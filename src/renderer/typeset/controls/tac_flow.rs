@@ -28,14 +28,15 @@ impl<'a> TacFlowQuery<'a> {
         self.profile.get().session_edited()
     }
 
-    /// 저장 셀 글줄이 없는 텍스트 표는 현재 줄 구성으로 높이를 정한다.
+    /// 저장 줄이 없거나 측정이 새 줄 소속을 발행한 셀은 현재 구성으로 높이를 정한다.
     /// host의 옛 저장 줄이 그 새 높이를 제한하는 근거가 될 수는 없다.
-    pub(in crate::renderer::typeset) fn single_tac_line_has_unstored_cell_text(
+    pub(in crate::renderer::typeset) fn single_tac_line_has_current_cell_rows(
         &self,
         para: &Paragraph,
         table: &crate::model::table::Table,
         fmt: &FormattedParagraph,
         tac_count: usize,
+        measured_cells: &[crate::renderer::height_measurer::MeasuredCell],
     ) -> bool {
         if tac_count != 1
             || fmt.line_heights.len() != 1
@@ -43,16 +44,36 @@ impl<'a> TacFlowQuery<'a> {
         {
             return false;
         }
-        table
-            .cells
-            .iter()
-            .flat_map(|cell| &cell.paragraphs)
-            .any(super::super::para_has_non_whitespace_text)
-            && table
+        // 측정에서 실제 발행한 줄 수와 원본 저장 줄 소속이 다르면 옛 host는
+        // 현재 점유의 상한이 아니다. 원본 개체 크기나 이름으로 재조판을 추측하지 않는다.
+        let rebuilt_stored_rows = measured_cells.iter().any(|current| {
+            table
+                .cells
+                .iter()
+                .find(|source| {
+                    usize::from(source.row) == current.row && usize::from(source.col) == current.col
+                })
+                .is_some_and(|source| {
+                    current.para_line_counts.len() == source.paragraphs.len()
+                        && current.para_line_counts.iter().zip(&source.paragraphs).any(
+                            |(count, paragraph)| {
+                                !crate::renderer::para_has_no_stored_line_segs(paragraph)
+                                    && *count != paragraph.line_segs.len()
+                            },
+                        )
+                })
+        });
+        rebuilt_stored_rows
+            || table
                 .cells
                 .iter()
                 .flat_map(|cell| &cell.paragraphs)
-                .all(crate::renderer::para_has_no_stored_line_segs)
+                .any(super::super::para_has_non_whitespace_text)
+                && table
+                    .cells
+                    .iter()
+                    .flat_map(|cell| &cell.paragraphs)
+                    .all(crate::renderer::para_has_no_stored_line_segs)
     }
 
     pub(in crate::renderer::typeset) fn tac_table_line_index(

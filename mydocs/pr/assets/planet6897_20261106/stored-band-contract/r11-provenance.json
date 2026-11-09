@@ -1,0 +1,93 @@
+{
+  "product_base": "9470fb026a8cd3b3d9594db55298b6f6c347bfda",
+  "source_changes": [
+    {
+      "path": "src/renderer/layout/shape_layout.rs",
+      "sha256": "4751ca6feab6ed396ac3c9498a17c2651972717c0db872f455abcd6a072c28d7"
+    },
+    {
+      "path": "src/renderer/pagination.rs",
+      "sha256": "b6d192db0872c2d1d65cef5a0a759408a098ce0c79c7b19e0c5c825f5e1eda19"
+    }
+  ],
+  "native": {
+    "path": "rhwp-common-fixes-r11",
+    "sha256": "dcc537203eba3fab75d592380c1b584310a97e1a2ec48a48e2e10898411386a4"
+  },
+  "wasm": {
+    "optimized": true,
+    "package": "wasm-common-fixes-r11",
+    "hashes": {
+      "rhwp.js": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138",
+      "rhwp_bg.wasm": "fb98b69311bc3ceeebfaa1052ed2098092aacb22f237ea7651cf4b7b6fe5ce5d"
+    }
+  },
+  "png_identity": [
+    {
+      "backend": "native",
+      "page": 1,
+      "before": "4b1699a682464608c513a47a82497f01f4cc72ea8be338890b7622373c1f0be7",
+      "after": "4b1699a682464608c513a47a82497f01f4cc72ea8be338890b7622373c1f0be7",
+      "identical": true
+    },
+    {
+      "backend": "native",
+      "page": 2,
+      "before": "42c97c6ce72b23af4b7da4e7c56c780dc6024325fb9da3f2fffb56deb0989627",
+      "after": "42c97c6ce72b23af4b7da4e7c56c780dc6024325fb9da3f2fffb56deb0989627",
+      "identical": true
+    },
+    {
+      "backend": "wasm",
+      "page": 1,
+      "before": "ba39728187704cc6918233246e19ee55df7dbbd20fa8f4831a85341c89bb6f9d",
+      "after": "ba39728187704cc6918233246e19ee55df7dbbd20fa8f4831a85341c89bb6f9d",
+      "identical": true
+    },
+    {
+      "backend": "wasm",
+      "page": 2,
+      "before": "6ac209fc36f7b4505e11f360b3231b06a59cdae80ec0d3b39b18c3897d6d265a",
+      "after": "6ac209fc36f7b4505e11f360b3231b06a59cdae80ec0d3b39b18c3897d6d265a",
+      "identical": true
+    }
+  ],
+  "focused_runs": [
+    {
+      "log": "common-fixes-r11-retry-focused.log",
+      "sha256": "e5482265111b5bc8e253e00f633bddd92f76b514b56788f0cdef4f7ab12675c7",
+      "summary": "Summary [   0.067s] 8 tests run: 8 passed, 1561 skipped",
+      "passed_test_names": [
+        "PASS [   0.017s] (1/8) rhwp::regression_suite_014 issue_6453_header_footer_contract::edit_query_and_preview_renderer_resolve_the_same_hf_definition",
+        "PASS [   0.019s] (2/8) rhwp::regression_suite_014 issue_6453_header_footer_contract::single_paragraph_insert_delete_and_replace_events_are_exact",
+        "PASS [   0.020s] (3/8) rhwp::regression_suite_014 issue_6453_header_footer_contract::direct_insert_and_delete_events_report_the_actual_clamped_range",
+        "PASS [   0.021s] (4/8) rhwp::regression_suite_001 header_footer_contract::unknown_flag_empty_stdout",
+        "PASS [   0.027s] (5/8) rhwp::regression_suite_014 issue_6453_header_footer_contract::multi_paragraph_insert_delete_and_replace_events_are_exact",
+        "PASS [   0.032s] (6/8) rhwp::regression_suite_001 header_footer_contract::missing_header_exists_false",
+        "PASS [   0.042s] (7/8) rhwp::regression_suite_001 header_footer_contract::mcp_declared",
+        "PASS [   0.049s] (8/8) rhwp::regression_suite_001 header_footer_contract::existing_footer_reports_text"
+      ],
+      "exit_code": 0
+    },
+    {
+      "log": "common-fixes-r11-focused-missing.log",
+      "sha256": "f80a5526261b3150638eac5a8df735bd52d5521631339137455cd8c25de2aa7b",
+      "summary": "Summary [   0.088s] 11 tests run: 11 passed, 1226 skipped",
+      "passed_test_names": [
+        "PASS [   0.015s] ( 1/11) rhwp::regression_suite_012 hwp5_empty_header_footer_save::empty_header_footer_counts_the_implicit_paragraph_end",
+        "PASS [   0.017s] ( 2/11) rhwp::regression_suite_012 hwp5_empty_header_footer_save::existing_instance_and_change_tracking_bytes_survive",
+        "PASS [   0.018s] ( 3/11) rhwp::regression_suite_012 hwp5_empty_header_footer_save::preserved_file_header_version_controls_new_paragraphs",
+        "PASS [   0.023s] ( 4/11) rhwp::regression_suite_012 hwp5_empty_header_footer_save::paragraph_header_length_changes_at_5032",
+        "PASS [   0.025s] ( 5/11) rhwp::regression_suite_012 hwp5_empty_header_footer_save::newly_created_header_and_footer_save_without_stored_lines",
+        "PASS [   0.026s] ( 6/11) rhwp::regression_suite_016 headers_footers_contract::unknown_flag_empty_stdout",
+        "PASS [   0.029s] ( 7/11) rhwp::regression_suite_016 headers_footers_contract::headers_footers_json_has_array",
+        "PASS [   0.037s] ( 8/11) rhwp::regression_suite_005 issue_7642_header_shape_ownership_relations::issue7642_paper_relative_rectangle_keeps_header_origin_and_precedes_body",
+        "PASS [   0.051s] ( 9/11) rhwp::regression_suite_016 headers_footers_contract::mcp_declared",
+        "PASS [   0.061s] (10/11) rhwp::regression_suite_016 headers_footers_contract::insert_then_list_increases_count",
+        "PASS [   0.084s] (11/11) rhwp::regression_suite_017 issue_8679_stored_band_crossing_line::valid_stored_band_and_successor_spacing_are_preserved"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "scope": "독립 Print 전2쪽 Native/fresh WASM 및 표 관계 검사. 전체 Rust·PR 최종 검증을 의미하지 않는다."
+}

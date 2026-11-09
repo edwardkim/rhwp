@@ -1,0 +1,44 @@
+{
+  "key": "report-838",
+  "backend": "native",
+  "state": "measured-not-final-review",
+  "prs": [
+    8621,
+    8642
+  ],
+  "input": "mydocs/pr/assets/planet6897_20261106/pr8642/report-838-original.hwp",
+  "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+  "pdf": "pdf/planet6897-20261106/pr8642/report-838-original-2020.pdf",
+  "pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+  "pdf_pages": 109,
+  "compat": "2022",
+  "font_environment": null,
+  "linked_images": [],
+  "minimum": 94.99,
+  "below90": 0,
+  "full_tsv": "native/report-838/full.tsv",
+  "full_tsv_sha256": "7959031b86d6f1a56740cb4dcb586e842e31242abd775bc08b27c5156dfe1b56",
+  "measurement_log": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r28-direction-native/report-838/run.log",
+  "producer": {
+    "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-batch-corrections-r28",
+    "sha256": "3addcb1c0f4f15d1702cf9d2686a1946d5931f14e69eaa7d24131500fd399190"
+  },
+  "panels": [
+    {
+      "page": 10,
+      "raw": "100.00",
+      "actual_png_sha256": "1c0bedbad5cd4ba94a1e5caf7fbd35e7acf0fe20ba19b26a9a3eaf80adea1fa5",
+      "pdf_png_sha256": "318a551ce77409775994b20863d2497536e180fa16a192e604e620d52ea00f4c",
+      "review": "native/report-838/review-010.png",
+      "overlay": "native/report-838/overlay-010.png"
+    },
+    {
+      "page": 91,
+      "raw": "100.00",
+      "actual_png_sha256": "c4ffba84b017099340a1c6226199bf5962bcc970d6aec2ec866285a679a88ebc",
+      "pdf_png_sha256": "b5dea80a3fd49b93dce3fa619266fe121a55c60e6f791b89224d1c1f941f6448",
+      "review": "native/report-838/review-091.png",
+      "overlay": "native/report-838/overlay-091.png"
+    }
+  ]
+}

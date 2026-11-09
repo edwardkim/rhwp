@@ -669,6 +669,8 @@ impl TypesetEngine {
                 st.current_height,
             );
         }
+        // [#8652] 이 호출이 호스트 글줄을 이 쪽에 먼저 낸 경우의 복원점.
+        let mut host_pre_emit_restore: Option<f64> = None;
         if host_owns_text_lines
             && fragment_host_placement.is_some()
             && !st.pre_emitted_host_paras.contains(&para_idx)
@@ -681,6 +683,7 @@ impl TypesetEngine {
                 if *para_index == para_idx)
             });
             if !already_emitted {
+                host_pre_emit_restore = Some(st.current_height);
                 st.append_item(PageItem::PartialParagraph {
                     para_index: para_idx,
                     start_line: 0,
@@ -1223,48 +1226,69 @@ impl TypesetEngine {
                 || remaining_on_page_for_first_unit < min_content
                 || multirow_clean_defer
             {
-                // 첫 내용이 실제로 이월되는 계산된 빈 호스트는 원자 셀 밴드와
-                // 마찬가지로 자기 글줄과 들어가는 후속 본문을 원래 쪽에 남긴다.
-                // 표와 함께 본문 cursor까지 넘기면 앞 쪽에 들어간 빈 줄을 뒤 쪽에
-                // 다시 예약한다. 저장 원점·음수 offset·어울림 개체는 기존 계약을 유지한다.
-                let computed_empty_float = is_para_topbottom_float(&table.common)
-                    && table.common.flow_with_text
-                    && crate::renderer::float_placement::signed_hwpunit(
-                        table.common.vertical_offset,
-                    ) >= 0
-                    && unconstrained_host_placement.is_some_and(|placement| {
-                        matches!(
-                            placement.flow,
-                            crate::renderer::float_placement::ParagraphFloatFlow::ComputedEmptyHost {
-                                ..
-                            }
-                        )
-                    });
-                if atomic_host_band_h.is_some() || computed_empty_float {
-                    self.prefill_computed_deferred_float(
+                // [#8652] 저장 vpos 가 되감긴 호스트(`host_starts_new_stored_page`)는 한/글이
+                // 다음 쪽에서 시작했다. 표 첫 조각을 이 쪽에 두지 못해 이월하는데 이 호출이
+                // 방금 낸 호스트 글줄만 이 쪽 바닥에 남기면 표 제목 줄이 표와 갈라진다
+                // (docs#889 「<단계별 소요기간>」: 앞 문단 vpos 44259 → 300). 그 글줄이
+                // 쪽의 마지막 항목일 때만 거두고, 다음 쪽에서 이 표를 처음부터 다시 준비한다.
+                let carry_host_to_next_page = host_starts_new_stored_page
+                    && host_pre_emit_restore.is_some()
+                    && matches!(
+                        st.current_items.last(),
+                        Some(PageItem::PartialParagraph { para_index, start_line: 0, .. })
+                            if *para_index == para_idx
+                    );
+                if carry_host_to_next_page {
+                    st.remove_last_item();
+                    if let Some(restore) = host_pre_emit_restore {
+                        st.align_flow_to(restore);
+                    }
+                    st.retract_pre_emitted_host(para_idx);
+                    st.advance_column_or_new_page();
+                    st.request_block_table_restart(para_idx);
+                } else {
+                    // 첫 내용이 실제로 이월되는 계산된 빈 호스트는 원자 셀 밴드와
+                    // 마찬가지로 자기 글줄과 들어가는 후속 본문을 원래 쪽에 남긴다.
+                    // 표와 함께 본문 cursor까지 넘기면 앞 쪽에 들어간 빈 줄을 뒤 쪽에
+                    // 다시 예약한다. 저장 원점·음수 offset·어울림 개체는 기존 계약을 유지한다.
+                    let computed_empty_float = is_para_topbottom_float(&table.common)
+                        && table.common.flow_with_text
+                        && crate::renderer::float_placement::signed_hwpunit(
+                            table.common.vertical_offset,
+                        ) >= 0
+                        && unconstrained_host_placement.is_some_and(|placement| {
+                            matches!(
+                                placement.flow,
+                                crate::renderer::float_placement::ParagraphFloatFlow::ComputedEmptyHost {
+                                    ..
+                                }
+                            )
+                        });
+                    if atomic_host_band_h.is_some() || computed_empty_float {
+                        self.prefill_computed_deferred_float(
+                            st,
+                            para_idx,
+                            para,
+                            paragraphs_all,
+                            composed_all,
+                            styles,
+                        );
+                    }
+                    // [Task #1753] visible-host 자리차지 RowBreak 표가 다음 쪽으로 이월되기
+                    // 직전, 후속 문단을 현재 쪽 잔여 공간에 선행 채움(한글 fill-before-
+                    // deferred-float 정합 — 2814765 pi52/53 은 9쪽 하단, 표는 10쪽부터).
+                    self.prefill_before_deferred_table(
                         st,
                         para_idx,
                         para,
+                        table,
                         paragraphs_all,
                         composed_all,
                         styles,
                     );
-                }
-                // [Task #1753] visible-host 자리차지 RowBreak 표가 다음 쪽으로 이월되기
-                // 직전, 후속 문단을 현재 쪽 잔여 공간에 선행 채움(한글 fill-before-
-                // deferred-float 정합 — 2814765 pi52/53 은 9쪽 하단, 표는 10쪽부터).
-                self.prefill_before_deferred_table(
-                    st,
-                    para_idx,
-                    para,
-                    table,
-                    paragraphs_all,
-                    composed_all,
-                    styles,
-                );
-                // 내용 유닛을 수용하지 못한 저장 흐름 표는 호스트 쪽을 떠났다.
-                // 거리 소진은 추정 임계값이 아니라 이 실제 전이에서 확정한다.
-                first_anchor_offset_consumed = st.col_count == 1
+                    // 내용 유닛을 수용하지 못한 저장 흐름 표는 호스트 쪽을 떠났다.
+                    // 거리 소진은 추정 임계값이 아니라 이 실제 전이에서 확정한다.
+                    first_anchor_offset_consumed = st.col_count == 1
                     && (st.profile.hwpx_stored_layout()
                         || st.profile.hwp5_stored_pagination_layout())
                     && !st.profile.session_edited()
@@ -1285,7 +1309,8 @@ impl TypesetEngine {
                         <= (declared_object_total - host_spacing_total).max(0.0) + 0.5
                     && !table.common.allow_overlap
                     && (table.common.vertical_offset as i32) > 0;
-                st.advance_column_or_new_page();
+                    st.advance_column_or_new_page();
+                }
             }
         }
 
@@ -1328,7 +1353,23 @@ impl TypesetEngine {
             matches!(
                 para.controls.get(ci),
                 Some(Control::Table(t)) if is_para_topbottom_float(&t.common)
-            )
+            ) && st
+                .paragraph_float_placements
+                .get(&(para_idx, ci))
+                // 자기 세로 오프셋이 앞 형제의 점유 끝 아래이면 이 표는 밀려 내려온 것이
+                // 아니라 자기 자리에 놓인다. 한/글은 그 자리에서 첫 조각을 시작한다
+                // (대전광역시 사무위임 조례 [별표 1]: 머리 표 바닥 4604HU, 본표 오프셋 6646HU).
+                .is_none_or(|previous| {
+                    previous.occupied_bottom
+                        > previous.anchor_y
+                            + hwpunit_to_px(
+                                crate::renderer::float_placement::signed_hwpunit(
+                                    table.common.vertical_offset,
+                                ),
+                                self.dpi,
+                            )
+                            + 0.5
+                })
         });
         if row_count > 1 && preceded_by_same_para_float {
             let remaining_now =

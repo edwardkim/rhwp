@@ -1,8 +1,9 @@
-"""#8389 편람 Native 전쪽 품질 하한과 검증용 웹폰트 공급."""
+"""정본 보호 TSV의 편람 전쪽 품질 하한과 검증용 웹폰트 공급."""
 from __future__ import annotations
 
 import csv
 import hashlib
+import json
 import os
 import subprocess
 import tempfile
@@ -13,10 +14,11 @@ from pathlib import Path
 
 DOC = Path('samples/2025 행정업무운영 편람(최종).hwpx')
 PDF = Path('pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf')
-BASELINE = Path('mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/handbook-hwpx-native.tsv')
+BASELINE = Path('mydocs/pr/assets/visual-protected-baseline/final.tsv')
+BASELINE_MANIFEST = BASELINE.with_name('manifest.json')
 DOC_SHA = 'c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6'
 PDF_SHA = '299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e'
-BASELINE_SHA = 'd5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308'
+BASELINE_SHA = 'ee41455cf7f05585487d92961ccb9fd8160d5d1e15c3567019ea89e2b7bf2aeb'
 PAGES = 383
 METRIC = 'silhouette_raw_match_percent'
 POLICY = 'pdfium_smooth_rgb_exact_dpi_v2'
@@ -160,7 +162,8 @@ def supply_webfonts(root, cache, has_face=None, *, font_paths=()):
         from fontTools.ttLib import TTFont
         target = face_cache / (name + '.ttf')
         # 매번 원본에서 변환해 기존 TTF 캐시 변조를 통과시키지 않는다.
-        font = TTFont(source)
+        # 원본을 재검증해 변환하되 실행 시각으로 프로그램 해시를 바꾸지 않는다.
+        font = TTFont(source, recalcTimestamp=False)
         try:
             font.flavor = None
             with tempfile.NamedTemporaryFile(dir=face_cache, suffix='.ttf', delete=False) as out:
@@ -178,8 +181,40 @@ def supply_webfonts(root, cache, has_face=None, *, font_paths=()):
     return records
 
 
+def baseline_rows(root, backend='native-skia'):
+    """정본에서 동일 입력·PDF·backend의 편람 HWPX 전쪽만 선택한다."""
+    root = Path(root)
+    backend_key = {'native-skia': 'native', 'wasm-canvas2d': 'wasm'}.get(backend)
+    if backend_key is None:
+        raise ValueError('지원하지 않는 편람 backend')
+    baseline_manifest = json.loads((root / BASELINE_MANIFEST).read_text(encoding='utf-8'))
+    if (sha(root / BASELINE) != BASELINE_SHA
+            or baseline_manifest['table'] != BASELINE.name
+            or baseline_manifest['table_sha256'] != BASELINE_SHA):
+        raise ValueError('정본 보호 TSV 해시가 다릅니다')
+    datasets = [item for item in baseline_manifest['datasets']
+                if item['input']['sha256'] == DOC_SHA
+                and item['reference_pdf']['sha256'] == PDF_SHA
+                and item['backend'] == backend_key]
+    if len(datasets) != 1:
+        raise ValueError('정본에 편람 입력·PDF·backend가 하나씩 있어야 합니다')
+    dataset = datasets[0]
+    identity = dataset['identity']
+    if (dataset['page_count'] != PAGES or str(identity['compat']) != '2024'
+            or identity['dpi'] != 96 or identity['profile'] != 'print'
+            or identity['metric'] != METRIC or identity['radius_px'] != 2):
+        raise ValueError('정본 편람의 측정 조건이 다릅니다')
+    with (root / BASELINE).open(encoding='utf-8', newline='') as stream:
+        rows = [row for row in csv.DictReader(stream, delimiter='\t')
+                if row['document_id'] == dataset['document_id'] and row['backend'] == backend_key]
+    if any(row['input_sha256'] != DOC_SHA or row['reference_pdf_sha256'] != PDF_SHA
+           or row['compat'] != '2024' or row['dpi'] != '96' for row in rows):
+        raise ValueError('정본 TSV와 편람 manifest가 다릅니다')
+    return rows
+
+
 def compare(root, manifest, *, dpi=96, backend='native-skia'):
-    """383쪽 raw 표시값이 #8389의 2자리 기준보다 내려가면 보류한다."""
+    """383쪽 raw 표시값이 정본의 2자리 기준보다 내려가면 보류한다."""
     root = Path(root)
     try:
         for path, expected in ((DOC, DOC_SHA), (PDF, PDF_SHA), (BASELINE, BASELINE_SHA)):
@@ -195,8 +230,7 @@ def compare(root, manifest, *, dpi=96, backend='native-skia'):
                 or manifest['pr_review_gate']['document_page_counts'] != {'rhwp': PAGES, 'pdf': PAGES}
                 or manifest.get('excluded_regions')):
             raise ValueError('기준과 출력 조건이 다르거나 쪽수·제외 영역이 올바르지 않습니다')
-        with (root / BASELINE).open(encoding='utf-8', newline='') as stream:
-            rows = list(csv.DictReader(stream, delimiter='\t'))
+        rows = baseline_rows(root, backend)
         def scores(items, rounded=False):
             result = {}
             for row in items:

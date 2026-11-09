@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review/intake_and_review.md
-last_verified: 2026-10-23
+last_verified: 2026-11-08
 ---
 
 # PR #N 리뷰 — 변경 요약
@@ -51,6 +51,11 @@ TSV를 같은 조건·페이지로 비교한 증거를 적는다. 원본/PDF·pr
 페이지별 기준/후보/하락폭, 2%p 초과 하락한 쪽 목록을 연결한다. 한 쪽이라도 2%p 초과 하락하면
 90% 이상·평균 개선·CI 성공과 관계없이 재검토다. 기준 TSV가 없으면 미검증으로 기록한다.
 [상세 비교 기준](../verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)을 따른다.
+
+collaborator·maintainer의 조판·렌더링 PR review에는
+[정본 보호 TSV 비교](../verification/visual_verification_governance.md#정본-보호-tsv의-공식-표시값-보존)도 기록한다.
+공식 두 자리 표시값의 페이지별 하락은 허용하지 않는다. 일반 사용자·외부 contributor에게 이 검증이나
+원본 OTF 설치를 제출 의무로 요구하지 않으며, 통합 담당자가 보호 기준·후보 TSV와 실제 결과를 연결한다.
 
 실제 사용한 HWP/HWPX·한컴 기준 PDF의 저장소 경로, 출처·SHA-256·검토 commit 포함
 여부를 적는다. 실행한 명령과 대상 head·통과/실패/미실행 범위를 구분한다. 조판 원칙,

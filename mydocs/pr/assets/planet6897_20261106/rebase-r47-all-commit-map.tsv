@@ -1,0 +1,152 @@
+before	after	author_time	author	email	subject
+0c41b9ea3729266dc42d6592a801047a59b2506c	9328129e79b475ed43be84049701778b2157c80b	2026-11-06T16:49:07+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs: planet6897 PR 27건 접수와 누적 검토 계획 기록
+25c9275e3299e0198f47053c659886cd17f75991	11a28749d454dae3ce128613496fd5b8e0e20449	2026-11-03T16:07:50+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix: 글자 없는 host 의 나란한 양수 오프셋 자리차지 표를 자기 오프셋에 배치 (#8516)
+29d6360f39e2df67db654ef11896806a87b97e1e	796a6dfbf6f30162f1a31edd0c2b96bab29eeeea	2026-11-04T00:54:00+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	feat(edit): 글자 서식 props 에 글꼴 이름 fontName 을 받는다
+d4056dec6ddf698d0f7d18468b47e67ce09c4186	b0e9c4f8a7cf11b4d25f5aecc1e98d50f8daa39b	2026-11-04T02:51:55+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(layout): 쪽·용지 기준 자리차지 표 띠에 밀린 빈 host 줄은 줄높이와 줄간격을 모두 전진 (#8554)
+560c3a34edd76a23818eac30c941b8c407731a60	936090a34702b00ac1d5e65a60b3057d7b9806bd	2026-11-04T20:50:46+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	docs: #8554 i39 Native 한자 누락 원인 문구를 #8590 확인 결과로 정정
+f0c15058942622a40c86600ffe695aedda270843	172c6d2a2e0d5e3144b51220e747749f7a230d09	2026-11-04T06:45:02+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(typeset): 빈 host 자리차지 표 뒤 다음 문단이 빈 자리차지 표 host 여도 저장 host 줄 프레임을 받는다 (#8560)
+f42133b59baa8180abd09b0857ec24e0c915b3f7	51f9182d647d3f37e037f9a950ab3f014b23fcdb	2026-11-04T09:45:26+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	test: #8560 측정 근거·검증 증거와 새 원본 IR 왕복 baseline 등록
+194b397a49454df4c7915e1c81b1316109866c6b	61f7f1c785c62f1b0652e6824981030dc28074a8	2026-11-04T15:01:05+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(renderer): 줄 머리 TAC 표 뒤 문단 끝 공백에 줄을 주지 않는다 (#8574)
+d5688f5584d6cd93f05707ad138c17f82307dada	c2f2fe229f3e231dc69665f9698209c44b8854fc	2026-11-04T11:56:35+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(layout): 어울림 표가 뒤 문단을 띠로 흡수하면 흐름상 다음 문단으로 host 뒤 사다리 일치를 판정 (#8567)
+f4bba4e8c74a2598aa2ae0b53b06a96dab517f60	3df89b247c96aa1643958ece9dfb1ecee2567340	2026-11-05T05:08:42+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	test: #8567 측정 근거와 검증 증거 등록
+5f25d88819cb99e21a99c02e4293979ed627add6	40011ee9942db90e7a861c82d6739934eed59ed0	2026-11-04T23:02:18+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(renderer): 도형 그림 채우기 크기와 한컴 윤고딕 250 연결 (#8575)
+4507f6a531bffa55167b227d2ea42c63075c7775	180a8100bbe888e5df124aad1bb3ba467f810163	2026-11-04T23:04:05+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(typeset): #8596 앞 TAC 표 host 줄 안에 저장된 자리차지 표 프레임은 다음 쪽에서 시작한다
+819cbc1765955a5f2abe70d5ecb51f5d7dede20f	67f5ae317aca041e26f35c2e24bc347e3dd09a74	2026-11-05T04:25:03+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	docs(#8596): 필수 편람 Native 383쪽 TSV — devel 7fdd5441ff 와 바이트 동일
+fc97109a38b2c928f22345a15aabe27f3929f717	6e4348dfb7e4803ee6823842d3fabb45b6ded152	2026-11-05T20:50:56+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	docs(#8596): 최신 devel rebase head 재측정 — base·head 전쪽 TSV, 대표 PNG, 편람 gate
+20a8ee978f7fdab92316e189ba072fa7450fab94	85f5c3a8a1e07279f55fc27b329b46eaf6d31a6e	2026-11-04T04:09:21+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(render): WASM Canvas 합성 굵기를 실제 face 윤곽의 fill+stroke로 그린다 (#8430)
+4f0326d3c97351d33467e7f9f15506e75dd86321	e972519dbb78d406c0e1ecb13697a5828fef5afe	2026-11-05T05:37:09+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	docs(#8430): 30396 권고문 Native/fresh WASM 전쪽 TSV·확대 판독·글꼴 예외 증적
+1866529de3815d7729db6675a9d651ae1307760a	e2db3b69deccbc1bb8f8929b6e17f730bd4a0415	2026-11-05T17:28:02+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	docs(#8430): 최신 devel rebase head 재측정과 글꼴 예외 source SHA 갱신
+f5994c7971b0f1852245b579f5f086771e9f75dc	3931b43fc03f6013609e23f318f416ed2e29bd50	2026-11-05T06:30:13+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(typeset): #8606 빈 host 의 자기 오프셋 자리차지 본표는 머리 표에 밀린 표가 아니다
+05eeda206add1a53bfaeecff1bef8584dccb07b0	c2afdaa722fe9a96a53b1b820de6231d155bface	2026-11-05T07:08:00+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	docs(#8606): 필수 편람 Native 383쪽 TSV — devel 7fdd5441ff 와 바이트 동일
+e14002a3490826e9893417100a64d6a96777c7aa	08b9917631cd6b70db115c42ea9615a907003ef8	2026-11-05T16:27:44+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	ci: Canvas visual diff 의 Chrome 시작 시간 초과 재실행 (#8607)
+2c385bdec011c19108df90273399f2f581d78cf3	c4b5ec109281efc0c643775f57cb7eb6aa34765f	2026-11-05T06:47:37+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(renderer): Native 경로 글꼴을 매핑으로 공유해 64MiB 넘는 파일도 싣기 (#8597)
+82e9e5de82b3be76536ba9c19d4389734ce6175e	46b8e0b00d95fe237e29cb3a012aca5c1ad3696d	2026-11-06T04:00:01+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(font): 환경 이름 계약을 어기는 원본 글꼴 이름은 관측 대체 요청에서 뺀다 (#8597)
+d592475931e2bc1ad5404b6b63cb00558059f306	b6f2961686746acb2f13dc3368c32e93080c9618	2026-11-05T08:50:51+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(layout): 칸 안 빈 host 의 글 위아래 표 띠가 뒤 문단 앞 간격을 흡수한다 (#8610)
+6103ba1046767e60cc6ee6306159a7a11c440b3f	bb93a0aa8f3a1de956dcc536e2580f67ab3a1de8	2026-11-05T09:08:17+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(visual-sweep): 글꼴 catalog family 이름의 앞뒤 공백을 Native 와 같이 정규화 (#8612)
+01dc86cab64e56d87bdcfefc964d9bf9348fd9b4	e4d4802f63333eaeb1181fd0cbde3442be416485	2026-11-05T10:06:17+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(renderer): 각주 안에서 줄을 통째로 차지하는 TAC 표를 소유 줄에 그린다 (#8551)
+cbaeb9c925b6de06d181e5670d2268668d385da2	ccfb0b7c8411515270139be16cda48f3625c2141	2026-11-05T10:06:17+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	docs: #8551 각주 캡션 표 paint 시각 증적
+d16c94504312c8fff030224cebff22a495bd3513	5155d8b681350ae3fbe926b74c3592d43ccd0278	2026-11-05T12:28:08+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	docs: #8551 최신 devel rebase head 재측정 기록
+bf2c653fffdf246a01706072bbd4d9db328d3eff	26411c2d6f16b2b821210b4d7508459515f6ed08	2026-11-05T13:04:12+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(native-skia): 최소 글꼴 환경의 native-skia 회귀 4건 — 완결 SVG 문서 예산·저장소 글꼴 공급 (#8613)
+0f389cfa5132a685918fb35fb5494beb10dd7b03	9c9e1f53ac9935335c77ee79d915ac45ee8aa218	2026-11-05T13:45:53+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(typeset): #8620 글자처럼 취급 표 host 의 컨트롤 전용 꼬리 줄은 쪽을 넘으면 다음 쪽에 놓는다
+37d4f82055c9965b4e4fe94d99f49f9c47b4c8cb	b626614e8e19dc70f72a4f2ba367e38b32846a01	2026-11-05T13:49:15+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	docs(#8620): 필수 편람 Native 383쪽 TSV — devel 과 바이트 동일
+5fd5f45ed0dc233ba8e9565588305e724057f78d	10508938da5c1e5d8f16de81e4c26501a889e022	2026-11-05T16:29:23+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(renderer): Dotum U+2024 은 Haansoft Dotum 이 공급 (#8619)
+91e0f91978e9bd238ebd5c68d9911da2a2bb0654	0727a01796e5cedc4b9288fd51eeb308195b5cb4	2026-11-05T19:12:13+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	docs: #8619 rebase 뒤 Native/fresh WASM sweep 증거 갱신
+1dd1553f5c89a06ff57d6ec0ca2955b9c47a44e1	1de2ce561e57c2a339fafafed54f19f0a9cabc1e	2026-11-04T00:10:43+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(typeset): 다 들어가지 않는 각주는 들어가는 앞 조각만 비용으로 잡고 넘어온 각주를 이어받는 쪽 예산에서 뺀다 (#8468)
+2bc3134297bf2ced16e2e1238ccef4bc0390af0b	d3664339fa4dd96cc47fafc87c5c1e40487c8441	2026-11-04T00:43:39+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	test: #8468 앞부분만 들어간 각주의 표 줄 — 뒤 본문 줄이 각주 글 줄 위를 채운다
+647017507a40b7323d8241f98f6db1e39bafe018	d87d05d698a73dbcbe2ebf80529a07e855a4c25d	2026-11-05T16:09:28+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	test: #8468 T20 측정 주석을 실제 값으로 채우고 fmt 적용
+4a592c90f127efd618a9a33f8af16a17643fb867	aef8a6e227860ba5df9706247e4815bdf2c93737	2026-11-05T16:56:04+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(typeset): 블록 표가 든 각주의 조각 높이를 paint 조각 측정으로 잰다 (#8468)
+574ea9a702723dba078abbbf8ad6dd0336615050	8c4e428c0e3f935c8d29a5026ca431825461636b	2026-11-05T18:43:17+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	test: #8468 후속 측정 근거와 Native·fresh WASM TSV·대표 PNG 증적
+d232c90f90dd19481a61bf1ab0745f351d33800f	ff42c376aa9766ae077e261dee038479d9074a79	2026-11-06T00:43:21+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	ci: #8642 CI 재실행 (runner 디스크 부족으로 실패한 adapter inter-diff·prop roundtrip)
+dad738607a4cb9d5a806f406e98a5a0ca44ae66c	f94ddf554ca723553ab2d14e40846bbbc321849a	2026-11-04T00:49:52+09:00	Jaeook Ryu	planet6897@gmail.com	fix(composer): 다음 문단 저장 vpos 가 간격 전량을 닫으면 TAC 표 줄 뒤 간격을 전량 남긴다 (#8544)
+ab1d23e5ea2c1fe06b0dd8c75c493e683d08f672	7e21e9c2d337efe3d7a3544cd4edef76bf3b6fc0	2026-11-05T22:35:19+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	test: #8544 측정 근거와 Native·fresh WASM TSV·코퍼스 A/B·대표 PNG 증적
+90f1a334924b0569c56e5f77a0a2b9513737eb94	3756f010bb0d240d9e05b97613ed7d320c81e062	2026-11-05T21:15:49+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(layout): TAC 표 앞 저장 줄을 흐름 표가 내보내고 그린 줄 전진으로 원점을 맞춘다 (#8641)
+e731b06ac20872f2b47218cc1d051f2e7e73122f	b8f0ec8dda4eee92f04f2fe9cab0c5b5030bc032	2026-11-05T22:50:41+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	test(#8641): 새 공개 샘플 겹침 원장과 Native·fresh WASM TSV·대표 PNG
+1b115dfe592b36c84e6919fe1a4decad6b14fc75	890fb34fbd300354c61148de45ef24a8bc92f182	2026-11-06T03:32:26+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(layout): 칸 안의 쪽 기준 글 앞으로 표를 칸 흐름에 쌓지 않는다 (#8648)
+dd60ad033e6528652c82947af479abf7f55b281f	7b00723bc94b3c2179ce3e3e9cb3d8e2b43985a5	2026-11-06T03:32:27+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	test(#8648): 축소본·코퍼스 Native·fresh WASM TSV와 대표 PNG
+a37d500286941166824ce99b3caf43b71533c574	4e50a26b632b0c1d7966a26207eebacadf025332	2026-11-06T03:40:39+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(layout): 한 줄의 TAC 표 여러 개는 선언 폭만큼 전진한다 (#8647)
+dedeefb496b3b5b0ef7782a2067255ba5c4a07c1	e08d1fd5e099863fa29f2dc3dea99c9f49f57070	2026-11-06T07:00:53+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(layout): 같은 줄 TAC 표 공유 기준선과 rowspan 초과분이 받는 행 (#8641)
+1c9b175f9320921c34bf55f825b5cc3698aa0851	c7f3047a9fb2dc5499967ad37393f1dbd6605033	2026-11-06T07:22:38+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	docs(evidence): #8641 공유 기준선·rowspan Native/fresh WASM TSV와 대표 PNG
+b17ea6820af957d726d34ca22a74ce7df9b9d22f	0fa6736dc2d14980545e9a96f73a1c174f467573	2026-11-06T08:12:44+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(layout): TAC 표만 담은 문단의 동반 표를 줄 소유자 기준선에 앉힌다 (#8653)
+fd9ea7a0958e3601fa1f8b3a96f951724fa9df8c	32f9e5e170722a42e09a4b2975be13fabc8a6271	2026-11-06T08:12:45+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	test(#8653): 축소본·코퍼스 Native·fresh WASM TSV와 대표 PNG
+db580b04cf4ad485283d0166aecb38ca3f012fe9	dede2530f11430861e177b336b5fd6a41239b2d2	2026-11-06T07:19:02+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(renderer): 저장 줄 없는 HWP5 TAC 표의 행 높이와 넘친 공백의 줄 끝 처리 (#8639)
+bc097941770c335683f6fdc86d61abe6d6e495a8	5d409d6f956880bca36e7a299abaa640b44fe679	2026-11-06T11:27:04+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(renderer): 변경 추적 0x08 문서는 원본 프로그램으로 저장 줄을 다시 짜지 않는다 (#8639)
+9e0b6f7358948e2d4f1b3ea322b2f01224a1ae4e	af8ccc3ca68872e3fa687f1aefbbc8d25768358b	2026-11-06T11:44:35+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	docs: #8639 Native/fresh WASM sweep 증거 (행 높이·끝 공백·변경 추적 0x08)
+bff586b82ef4fccdbf3b732857cbede105859d29	2d2785113b124959e74217f8dac71227142ff6eb	2026-11-06T12:13:23+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(typeset): 저장 vpos 가 되감긴 보이는 호스트 글줄을 표와 함께 다음 쪽에서 시작한다 (#8652)
+db55ca3c1aaea5a28270d1cca4894062525fe2a4	90c61dbea31d00c73f6e6ef317624408cb54971b	2026-11-06T12:13:23+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(footnote): 각주 번호와 같은 문단의 글자처럼 취급 표를 번호 뒤에 그린다 (#8657)
+b18becfb27b8c889d67385d8dae093a38f621c46	a6ae92a6469dd85c02c5ea082e8853f0f293fe97	2026-11-06T12:13:23+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	docs: #8652·#8657 Visual Sweep TSV 와 대표 review·overlay PNG
+58fb89602c803314548cefd18360f13c9c96ece1	c8645b4cd469c1019f2ff96af4ac53de2e8a8885	2026-11-06T13:57:35+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	fix(layout): 자기 자리차지 표 띠 위끝에 걸친 저장 줄을 띠 끝으로 내린다 (#8679)
+1121c6bdb2ce938a88bbc39e8cb780f2ef3314e1	62ea8b49e8b9cfc4fddeb887df74d5ea3fd6a345	2026-11-06T13:57:41+09:00	Jaeook Ryu	jaeook.ryu@gmail.com	docs(pr): #8679 Native·fresh WASM TSV와 비교 PNG 증적
+63f0f4fa191825bc72cb4caa9a3b8fb8f28fd226	a0529b3fb3efdab4fdf15cc6f109c915a920e84d	2026-11-06T16:59:29+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs: 원 커밋 56개 적용과 공통 충돌 해소 근거 기록
+841336902a36fa2c35e7683b815171f584c231c8	c7e8dfd1138807c4db629f8dbda932679a96648d	2026-11-06T17:31:59+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs: 글꼴 catalog 음성 대조와 실제 fixture 수 정정 기록
+b1c4500286c2935162703fd1f040a87c21046f1f	58ae682a0c739a52a6135ae67cada86523094e66	2026-11-06T17:44:12+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs: planet6897 통합 최초 전체 Rust 회귀 12,796건 통과 기록
+72872b5311e4027f7312f50e33d7bd5da16bca87	8667f2160deae8769f8854eda63b4ac49ddccee2	2026-11-06T17:54:40+09:00	jangster77	76559226+jangster77@users.noreply.github.com	test: PR 8681 결재문서 반례 원본과 한컴 Print 기준 확보
+c37d92dbf5e1f936910d6f4112adbf8b53f938c3	dc0ccdffca36b0665d9b2b221c064a8ce839a4ca	2026-11-06T18:13:05+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs: Native Skia 검증 통과와 결재문서 실측 결함 기록
+3b7a602cb3f15277fa595dfdd66ebc3081c8d9f1	b8bf77e762d5445b9aced3f8180b419346c75548	2026-11-06T19:42:09+09:00	jangster77	76559226+jangster77@users.noreply.github.com	fix(layout): 중첩 배제 표와 부동 앵커 줄의 점유 보존
+f0db8c1d030fbe2e9a2e9354715591c3c1bfb1cd	caba2a190d9c5972aeec386f888a20e539dd085f	2026-11-06T20:11:29+09:00	jangster77	76559226+jangster77@users.noreply.github.com	fix(font): 설치된 원본 가족 이름과 TrueType 전진 선택 보존
+2002d20c956c44be1506e8e87447bb11b32acd67	d19916f94dc5e880cf7e8c926002a114b5969e23	2026-11-06T21:02:16+09:00	jangster77	76559226+jangster77@users.noreply.github.com	test: 저장 줄·글꼴 계약 검사를 tests/cases로 이동
+ddbc626b9e79591cd54425ab746217f6e0a9d203	4b41e0bf25615112b04bfc0fe1c99981acf3b580	2026-11-06T21:54:55+09:00	jangster77	76559226+jangster77@users.noreply.github.com	fix(verify): 웹폰트 변환 시각으로 프로그램 해시가 바뀌는 문제 수정
+ed4ed3d23a19c63de0349b0d93abc39229e304d0	1caf8b5438a2603ac85e22d5772502b3f219bd67	2026-11-06T21:59:13+09:00	jangster77	76559226+jangster77@users.noreply.github.com	fix(layout): 캡션과 저장·재조판 글줄의 소유 프레임 공유
+cc8a1ff36d8d9c88ce481214df0684ed1dcaa591	83474b21d55701de5bba84c081b01a9bd6377e34	2026-11-06T22:30:28+09:00	jangster77	76559226+jangster77@users.noreply.github.com	fix(layout): 확정된 개체 줄 원점과 위 캡션 외곽 상자 소비
+90e4709d4330d0396017e016008b8ab754980e51	1d41251ac74763091d984895b5ef509ffff3af39	2026-11-06T22:48:03+09:00	jangster77	76559226+jangster77@users.noreply.github.com	fix(layout): 표 뒤 빈 호스트 줄의 닫힌 원본 프레임 공유
+f8c6e2ddfd84479f7e6dcbd18c1a46573c06597c	adaab052c34a0e53be127fd0df3730cf040da3e1	2026-11-06T23:21:14+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs(review): 리베이스 후 Native 전 341쪽과 글꼴 계약 검증 기록
+9b488842e0d18d2c0d8950e0a0910dd5af114da4	89945765133b0e87929468a4c005abcd6a1249e4	2026-11-07T00:21:19+09:00	jangster77	76559226+jangster77@users.noreply.github.com	test: 원본 저장 줄과 다른 #8679 회귀 전제를 바로잡기
+0cc74ab26665a69f19fb0d51b0ecc476b2b21628	dd7505f66eb451f506151325a433cd48d175ae68	2026-11-07T00:30:49+09:00	jangster77	76559226+jangster77@users.noreply.github.com	fix(renderer): 명시된 글상자 선과 뒤쪽 머리말 재정의 보존
+8c5210289519a7093f60b6ae243383e8a970f81e	9fced2180a537d0f994266ad92839f9c82c048ba	2026-11-07T01:16:19+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs: 원 주장 페이지 증적과 빈 꼬리 이월 반례 기록
+718ae0f9d37278c0e8069d9d868353fc36733b5b	e48478bd72f27284dc42c4d50cde2566ad782b9c	2026-11-07T03:01:03+09:00	jangster77	76559226+jangster77@users.noreply.github.com	fix(edit): 글꼴 이름 적용 실패의 문서 불변 보장
+67d6ff45842817bfdc96f26476cbbe14b83079d6	be6d162d73ad8a66101c8d079fbe55642a08cf58	2026-11-07T03:01:13+09:00	jangster77	76559226+jangster77@users.noreply.github.com	test(font): 미분류 글꼴 선언과 원본 프로그램 조회 분리
+2336e54c7247fe379ecd157c2386fc6365b52379	a3f2ffc379684587c27ffb8745c85cfaad3589d6	2026-11-07T03:07:26+09:00	jangster77	76559226+jangster77@users.noreply.github.com	fix(layout): 한자 숫자 영의 전각 전진과 뒤 본문 원점 보존
+3f17075ff9993bc23f7017019ae4aaf4e17b04f1	b3f121d87d8db761c9df5018a4283c172e726d2d	2026-11-07T03:59:16+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검증: 평가결과서 원본 Print와 표지판 글꼴 조건별 증거 보존
+b6b217e76c235e14d92a1a556acb08ec627f10bc	969bd18693c16f3d76bd11a811f914bab244ade4	2026-11-07T04:11:22+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검토: PR 8581 주장 페이지의 두 Print 세대 증거 연결
+808cee61eedd176437f2b84e7f045ca9a6a756d9	5bfeece6ab7aff337d690b9cd86ad520eaef0c4d	2026-11-07T04:12:36+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검토: PR 8559 원본 주장 페이지와 전쪽 검증 증거 기록
+76ff783ffc349c6f4e3197e3dac76b59919d6a73	42b8dce7b2c5fa76a376f65656a1f827d27bc5d9	2026-11-07T04:24:14+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검토: 글꼴 API 원자성과 안건표지의 실제 보정 결과 연결
+2f267c7a1b4e2c98478024265021738fdbfe2222	f121cfda8f48a26d7ba70450c0979f90e95e03cc	2026-11-07T04:39:35+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검토: PR 8589의 원본 주장 페이지와 전쪽 증거 보존
+41b82d0dcc573d0cd9c15e46ca7d25cb443fb521	ebaff33ba3ce7cfbeaebf71bf31a4bce13a71c3c	2026-11-07T04:54:20+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검토: PR 8600 그림 채우기와 글꼴 주장 영역 증거 보존
+daae50ccba018ec3ef82d9c10febd5c509f41f11	70a47d8b8286e62a42d9bdf850844e16d47b7e6c	2026-11-07T04:55:56+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검토: PR 8607 본표와 PR 8621 각주 표 주장 페이지 대조
+b5367d6ea0a6ba38c79998958c6d4181e6f93b31	da5999df5b758aeeb2729ff85c6072773f6f7fe5	2026-11-07T04:56:41+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검토: PR 8644 표 뒤 간격의 실제 주장 페이지 증거 보존
+cc4f28063757d094018475cbfcad579479168988	12049c2698d8a45e6fc8c26a539db1ef43717620	2026-11-07T04:58:24+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검토: PR 8655 동반 표 기준선의 실제 페이지 증거 보존
+d1b6db377ac2446840b6c0dc515ed192aaa473d4	7baeffe8efba112644c562cbb7a6b22db421fb8d	2026-11-07T04:59:55+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검토: PR 8650 네 TAC 표 전진의 실제 페이지 증거 보존
+f041d16d6cca6fe4db31e5d9b3b3f05fa05a543a	123f1b751b4b4685b89705b58660186e38aab864	2026-11-07T05:12:26+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검토: PR 8617 실제 글꼴 공급 완료와 전쪽 TSV 연결
+bed839e0b16c49eb02d03c244b03211468153da5	71838bf6a9c95280a6222fe8fa84db25b4754638	2026-11-07T05:13:07+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검토: PR 8649 발신명 쪽 기준 배치와 공유 대조군 증거 연결
+a1c92033473f15d8429db052ac0205740f8aa888	c8c1a052abd2e5b9ab74d3b75a2118c7c3d3a0c7	2026-11-07T05:14:01+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검토: PR 8645 선행 줄과 쪽 기준 상자 증거 및 공유 대조 연결
+6b28758c7d0ea523318e36a3132438f827802b35	97333f24674e824ada3d51e23b4fad5816741707	2026-11-07T05:24:50+09:00	jangster77	76559226+jangster77@users.noreply.github.com	보정: 구형 수식의 공통 줄 프레임을 측정과 배치에 연결
+54541e1920b6cda4d439ceb5ee405b70903674b6	7aac1e0ad07a22e0dfc846291edfb8a5b29d9af1	2026-11-07T05:32:47+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검토: PR 8604 주장 프레임과 정상 대조군의 같은 쪽 증거 연결
+1ff91620f6f3b9e0c8defe8b668554ae3f8f8945	6e050f56333da7f523f3f7fa4ef4020c26844762	2026-11-07T05:33:44+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검토: PR 8605 본문과 그림의 주장 페이지 및 전쪽 TSV 연결
+7ba587a3c9db3ba94346d0b70a11f61e792d28f1	3bf538c8c86e520f95738a8586bbffe971aa6c1b	2026-11-07T05:38:54+09:00	jangster77	76559226+jangster77@users.noreply.github.com	보정: CanvasKit 수식도 준비된 분할 글꼴의 문자 coverage를 소비
+41cd741c7e3e391b72c34717e328d39b8d8f34d7	7f4bb22b54a8b1d1929fd0891615b05a9dd8afa9	2026-11-07T05:53:18+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검토: PR 8611 글꼴·완결 문서의 실물 페이지와 공유 증거 연결
+4208c776ad9be3805df7666ed16a0ae06b328381	a971fcaa104de188d383ac2781ae49fa8eb4c4c6	2026-11-07T05:59:48+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검토: PR 8625 꼬리 줄의 빈 쪽과 뒤 차례를 실제 증거로 대조
+7d6f8fa0542c3d64576bbc397e72185b13a35fde	e567f58ad887cd838e7916591f54c32a11649dfd	2026-11-07T06:07:50+09:00	jangster77	76559226+jangster77@users.noreply.github.com	수정: 저장 빈 줄의 원본 소속과 현재 각주 프레임 fit 분리
+9a6f835c60d24f95c22c04311bb74f4d08cdf3fb	a31bd032aa6c25ffcd222a8fb79e5fabe8e04543	2026-11-07T06:17:00+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검토: PR 8550 표 원점과 8623 문서 예산의 실제 주장 페이지 보존
+45a89e07e43b68af528d610f395292ce63aa7ca8	36fb8224a2e8f69a61f02c68ca3e67ba8b2b9a48	2026-11-07T06:23:08+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검토: PR 8663 각주 표와 되감긴 제목의 실제 페이지 증거 연결
+937dcfaf09d149397165d1cf574f8a2be94025a6	4f60aaec6648a547cc62191edcebb06f25c709a5	2026-11-07T06:25:21+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검토: PR 8654 결재 표와 rowspan 실물 경계의 증거 보존
+d173e866de8cb75e17fdadcca27fc3d32bf57e15	bb1ce5f6a7a212f4e8c9df0fc55da6db2c0662b2	2026-11-07T06:37:18+09:00	jangster77	76559226+jangster77@users.noreply.github.com	수정: 표의 명시적 자동 분할 경계선을 원본 설정대로 적용
+522c926c6f5e12657f5b353869b2989db2397e48	d2cfab85f4135c6bcfe185c1f9e8e0263044bb24	2026-11-07T06:41:32+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검토: PR 8662 저장 줄과 공백의 실제 버전별 증거 연결
+33414dffa266738be2f13e505ab769235b83975c	f39d46640d0cebab5fdff7038bb99860a5713202	2026-11-07T06:43:45+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검사: CanvasKit 분할 글꼴의 좌표와 원자적 그리기 보호
+7f95558b67565d25a53390fd0f6468cf05f6786c	7e9f6b32e5c76d43824246bee83b7597d6c9c035	2026-11-07T07:02:26+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검사: 독립 Print의 열린 표 컷과 실제 종료선 보존
+1bbe5847cee6852a6546c2b177063ce37e67292a	c7e4b0592aca9abce131213f8c12a6223e0da11f	2026-11-07T07:22:48+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검증: 수식 보고서 전쪽 증거와 글머리표 전진 원인 기록
+50102425259d63ce4fb47dbb141e63578efb21f8	dd6adcd3e170a8fdea36957fa41831450deb52a5	2026-11-07T07:46:00+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검증: 수식 뒤 표·본문·각주의 소속 회귀와 전체 검사 결과 기록
+c0481c35c775d6ea3dad6f4da1cb3c57dfee155f	ce154ddcd816a4130eca4bfdad57137fb606af10	2026-11-07T08:10:35+09:00	jangster77	76559226+jangster77@users.noreply.github.com	보정: 캡션 재진입·머리말 우선순위와 저장 빈 꼬리의 원본 소속 복구
+e0524690d327f3e2cebc8a7c1095e5dbe3882168	7135b0c0b5d6c19cad884a900f854b82f5d7ea3a	2026-11-07T08:23:08+09:00	jangster77	76559226+jangster77@users.noreply.github.com	수정: 중첩 표의 정렬과 실제 배치가 같은 원본 선언을 소비하도록 연결
+fdb20e21744166d212c27b46c3ac247682c45ea4	db95c1769bfafdaaece85a053d4c9d7bd651b1b3	2026-11-07T09:02:07+09:00	jangster77	76559226+jangster77@users.noreply.github.com	문서: R28 완료 검증과 실제 주장 쪽 증거를 고정
+348e198db97f2f2db4de9473a5760829f5eb8576	2c70524e15eabf945303abeed5982fae5a52b3c9	2026-11-07T10:02:41+09:00	jangster77	76559226+jangster77@users.noreply.github.com	fix: 번호 예약 폭과 한자 뒤 괄호의 영문 슬롯 소유 보정
+18f18648802def666c7a6794a6c40e175814dbfa	d416c713e9ae36de877884aadc6416ee270f1969	2026-11-07T11:03:07+09:00	jangster77	76559226+jangster77@users.noreply.github.com	fix: 0번 마커 글자 모양 참조와 기본 목록의 본문 상속 구분
+8a211cfe5e1955b23c6765a5683064e1553b4ea8	7d08af95843cb76416e25f668dfd0e0e9a4806a7	2026-11-07T11:30:29+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs: 0번 글머리표 보정의 실제 원본 검증과 리베이스 결과 기록
+e57851973a33228b766122406853f28cfafc4c6f	33dd3769c6dcf60d784acbc8bd2b44fc7527572f	2026-11-07T13:03:38+09:00	jangster77	76559226+jangster77@users.noreply.github.com	fix: 암묵적 Wingdings 글머리표의 원본 전진과 윤곽 보존
+8f5cac487d13b44d3abec7c11ec17423526f8fb9	e827fc4edef996f0416c04c289a9e589d95b7a05	2026-11-07T14:03:08+09:00	jangster77	76559226+jangster77@users.noreply.github.com	test: 원 기호의 전진과 Native·Canvas 잉크 소유를 보호
+406cc8c157a38bd313907d302cfcf7c91ded8c00	fba14fc56b08fec5f542fed7943853758b636233	2026-11-07T14:22:41+09:00	jangster77	76559226+jangster77@users.noreply.github.com	fix: 인쇄 HFT 합성 굵기에 등록된 CFF 윤곽 연결
+779207e94002ab8c499e10e043678ea475d26c19	412abceda2818fb46450127c0c4e4696f2f9dce1	2026-11-07T14:26:46+09:00	jangster77	76559226+jangster77@users.noreply.github.com	test: 신규 기호 회귀 서식과 원 해결 커밋 분석 보완
+b630f2e45dc5224a22f9e626c3d547ba6e051e2d	5373b577b828606038925638c392908f88243604	2026-11-07T14:51:29+09:00	jangster77	76559226+jangster77@users.noreply.github.com	test: 원 OTF 굵기 소비와 보호 문서 전64쪽 복구 증거 기록
+f9bd95df6c6254384912acf92de7c6ac0ef72098	d43fc88599a5582c3e3b0109278bdb7f4ddb9222	2026-11-07T15:14:19+09:00	jangster77	76559226+jangster77@users.noreply.github.com	fix: TTF 선언의 CFF 공급도 실제 글꼴로 합성 굵기 처리
+d1dc9cb580c50dbde91197b1a717ea3940da3a9e	22fe9b0b157702036a1034cd4fc5c465b6941c98	2026-11-07T15:23:20+09:00	jangster77	76559226+jangster77@users.noreply.github.com	test: 독립 Print에 따라 제목 괄호의 원문 소유 검사 보정
+9b3aba27ce662e76a5babb42bdc6b66dbfccd933	9aaf90f700958a031006d091ee043dd5f2f98ee8	2026-11-07T15:31:23+09:00	jangster77	76559226+jangster77@users.noreply.github.com	fix: HWP5 미확정 유형에서도 등록된 CFF 프로그램 소비
+a1103bb6e43f68fd72dcfe4f63b93cbb616aeca5	eba342385638680d1d85d72b27928225df53fa3c	2026-11-07T15:46:27+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs: 원 해결 로직 대조와 2022 보호 문서 51쪽 복구 증거 기록
+acef80fe3d589fcb48131d99b567ba72afa6d56d	9cd6e34c19d89c1e4e9d743fb3bcd22d7f176415	2026-11-07T16:19:00+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs: 원 해결 로직의 세 보호 입력 전쪽 복구 증거 기록
+56a16ae77db0c15ec2baf3edba437dd8fd0dbfdb	e3dfaa13364c49d91ec18c314775bbc3c494392b	2026-11-07T16:36:07+09:00	jangster77	76559226+jangster77@users.noreply.github.com	fix: 표시 별칭과 무관하게 독립 Print의 HFT 기호 폭 보존
+3477796555bc611c1e95e3d9d9d35eac5fbeedf2	943d902c276cbf5fa6f912f39b50185a61ba7591	2026-11-07T16:44:15+09:00	jangster77	76559226+jangster77@users.noreply.github.com	fix: 일반 구두점 계약을 보존하며 한자 뒤 영문 슬롯 해소
+f4069d79f24cd76197cde4215ef1e057ef6e057e	80c867a65c8b4202fbcabb8cb33937f5601fc213	2026-11-07T16:50:39+09:00	jangster77	76559226+jangster77@users.noreply.github.com	test: 원 HWP3 제목 검사를 복원하고 본문과 자동 마커 소유 구분
+9b836bd53e73d200b8ffe431e2bf75fb1bcb322b	bbbcd571d1ef2b2c4aa742a049600967850ac6e0	2026-11-07T16:55:47+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs: 원문 비교 지원 코드의 회귀 유형과 기존 실물 범위 명시
+105f1db661f8dcdf42a2fe2346a6c53ee277758f	741f23d11ad2052aeaa268334d3b3f1309b07f72	2026-11-07T18:03:33+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs: Git 선행 해결과 구두점 회귀 복구 증거 기록
+6f0f14893178b218cb461d58fd6382990576e84f	0fc636ffcbc2b88c009bf53c3bea62fbc4c27177	2026-11-07T18:04:54+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs: 집중 회귀 결과 TSV를 LF 줄바꿈으로 통일
+675dadbc7a7dce2c1401861dfd97547b8e7146f4	0de0940d3b822864c7139901433e31dfde80a8b0	2026-11-07T18:13:59+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs: 과거 제목 슬롯 해석을 정정하고 증적 줄바꿈 정리
+ed8dc4de7e41ca9b01755763e9dc0180ea19e7ec	2ca3e1aa14b687c6b08d087b8ff4e570b433c9f3	2026-11-07T19:09:01+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs: Native 전쪽 결과와 원 PR 주장 70쪽의 판독 증거 보존
+c3ef367f7c690417b5c65241967685ad7e60fd6d	e417cc5cd92694a82732b25aaa47cd284be02b42	2026-11-07T19:26:17+09:00	jangster77	76559226+jangster77@users.noreply.github.com	test: 리베이스 수식 경로의 원 프로그램과 fallback 계약을 함께 보호
+8d93318e511702259765e70333b408b2aaaccf59	6efe209bb0076c9e369dda5fb3ee11dd51e3d06b	2026-11-07T20:21:39+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs: 편람 130쪽 WMF 기준과 기존 PR 보호 TSV 보존
+6eac81222dfd313af11b18c934418557b7237762	d4518e133e822c85423a3fe4feecfb021cad34cd	2026-11-07T20:38:33+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs: 리베이스 수식 경계와 새 devel Native 24쪽 검증 기록
+000a581169e1a0d5d8df138e851f00a5d7630971	93285f1a857d095e3d5ef87797d3e9acff772afe	2026-11-07T20:42:03+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs: 리베이스 전 fresh WASM 56개 전쪽 검증 원본 보존
+79ada2c72cf8091f4e3c91a26dd59b710cad6426	8901e0bf0521a4a14f13c01fb3fff3c594c09cb4	2026-11-07T21:20:41+09:00	jangster77	76559226+jangster77@users.noreply.github.com	test: Studio 그림 이동 검사의 공유 Vite 캐시 충돌 제거
+a83611dbf3b2e81ab208b6ba88ac1c49c0b6b6f8	20d438ea1f679bb38c1e7c38d0b08cb39c0b0b02	2026-11-07T21:43:57+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs: 리베이스 후 Native 662쪽과 편람 383쪽 실측 보존
+3046bab8c27e940383a5b9d21d9dd244d95c2504	7b691094ccd9e4a7b91bc3eac26967488f337553	2026-11-07T21:55:17+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs: PR 제출 전 본인 열린 PR과 병합 충돌 검사 의무화
+7edfac31a78dd12b301a1da08a8be3ba6513e8c0	e457ff75cc1ab75612fd21572a36e7218b15499b	2026-11-07T22:08:32+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs: 리뷰어 지정 PR 시뮬레이션 제외와 리베이스 보존 결과 기록
+46e9a1f51f14fdbe1c6cc44944d1d1e760273a90	1b07cd895cf4533da27f05decb6a95cb12cceee5	2026-11-07T22:17:17+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs: 원 PR 27건의 리베이스 후 적용 SHA와 검토 기록 갱신
+632a70d956734ed10e14a2606dbdad0fb9e5df0e	424618e24c8a698bf4619cdf1630016ebb0716be	2026-11-07T22:31:31+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs: 새 base의 공통 채움 속성 호출 경로와 Studio 21건 검증 기록
+cef648cabbfe53ab6e54bf2c9231f9a1302c9c1e	ad0bd8569f9bacee89b6215204237ed5549ef42c	2026-11-08T01:19:57+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs: 현재 통합 PR 리베이스 충돌 보존 기록과 TSV 줄바꿈 정리
+631ba67cee528e4bd65c23042d9071b29622dfba	55cfc44423a5877eb64a9ff5e24725132c9e9a50	2026-11-08T06:46:10+09:00	jangster77	76559226+jangster77@users.noreply.github.com	fix: 원본 글꼴 전진 소유와 분리 CFF 누락 글리프 선택 보정
+0e8e2a6059130a19e37398545e9da8433e74b670	a8579eac3716126f4104ad8fd55f3b867404230c	2026-11-08T06:49:28+09:00	jangster77	76559226+jangster77@users.noreply.github.com	fix: 독립 공백 꼬리 뒤 문단 간격의 중복 소비 제거
+5884be349194176fae39298c4084efc71ca45bf4	b1f006aab4ccf0de215d9e9cdb176e7be92d4d49	2026-11-08T07:20:55+09:00	jangster77	76559226+jangster77@users.noreply.github.com	기록: R43 완료 검증과 R45 리베이스 충돌 해소 근거 보존
+9cb885e18e898b32ba932159952aa0e9a8ee6727	854fbb8645664e889cc0e19912abfd0c5864696c	2026-11-08T08:10:57+09:00	jangster77	76559226+jangster77@users.noreply.github.com	보정: 표시용 글꼴 별칭의 대체 폭과 누락 CFF 글리프 소유 보존
+cbe1f41507cf783f433acbbf62cefb8a9b0fe669	c8ac2ab4e38c65c45059f0132736c3baf7e0f685	2026-11-08T08:25:14+09:00	jangster77	76559226+jangster77@users.noreply.github.com	보정: 미확인 선행 글꼴을 건너뛴 합성 굵기 윤곽 선택 방지
+5fba56e44ac93bf50e99647dbc5805da9b1dc468	6bc61c75f7caf89219f4a569e6d99d578c0c3269	2026-11-08T08:47:15+09:00	jangster77	76559226+jangster77@users.noreply.github.com	정리: 검증한 글꼴 체인 분기를 명시적 조건식으로 표현
+62dd9174efa7518e2a422be2d097ad9ae936fad6	e533b80ddcef14ffb152fbf049745ec2140fbde2	2026-11-08T08:53:25+09:00	jangster77	76559226+jangster77@users.noreply.github.com	보정: Canvas 대체 글자 경로에도 인쇄 합성 굵기 적용
+65195e9730f35bdbd7ea0c9a393e07e66125202e	969fb56ff3fbd79367e58820eaaaa1a090cca7db	2026-11-08T08:55:01+09:00	jangster77	76559226+jangster77@users.noreply.github.com	검증: 합성 굵기의 보통 글자 대조군과 공통 장치 폭 보호
+16eca276ef7901d27c401fe94ce13442988629af	71c0f81f9a59e90ccbce033643bc747232cc0252	2026-11-08T10:14:34+09:00	jangster77	76559226+jangster77@users.noreply.github.com	test: 문서 대체 글꼴의 선두 선택과 후순위 후보를 구분
+93dbafdf77191fbe2d4b7b8584d1931b85f8a04b	c9c018237a2ed3a71bd378e7f796c24cebc09d29	2026-11-08T11:49:03+09:00	jangster77	76559226+jangster77@users.noreply.github.com	fix: 시스템 스타일의 대체 계열이 원 글꼴의 TTF 후보가 되지 않도록 보정
+53dd51a27bd891190a39429899c79ba300d375e0	109b3e855ac9752ddf4406cd6a4fa81e106fc913	2026-11-08T11:50:05+09:00	jangster77	76559226+jangster77@users.noreply.github.com	docs: 글꼴 계열 소유 검사 수정 전 실패 증거 보존

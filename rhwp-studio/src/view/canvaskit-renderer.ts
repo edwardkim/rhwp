@@ -88,6 +88,7 @@ import { imageCropSelectionIsEmpty } from './image-crop-scale.ts';
 import { magnificationFiltering } from './image-sampling.ts';
 import { drawEquationTextWithFonts } from './canvaskit/equation-text-replay.ts';
 import { drawDeclaredEquationFontGlyph } from './canvaskit/equation-font-glyph.ts';
+import { drawPositionedEquationGlyphs } from './canvaskit/positioned-equation-glyphs.ts';
 import { drawEquationGlyphOutline } from './canvaskit/equation-glyph-outline.ts';
 import {
   boundedCanvasKitSourceImageKey,
@@ -137,7 +138,7 @@ import {
   type StaticSvgPathLayer,
   type StaticSvgTextLayer,
 } from './static-svg-path-layers';
-import { getLocalFontRecords, loadLocalFontBytesFor, localFontFaceKey, resolveLocalFont, resolveRendererLocalFont,
+import { getLocalFontRecords, loadLocalFontBytesFor, localFontFaceKey, resolveLocalFont, resolveRendererLocalFont, resolveRendererLocalFontCandidates,
   hasHostFontProvider, loadRendererLocalFont, getHostFontState, type LocalFontRecord } from '@/core/local-fonts';
 import { hostFontStyle } from '@/core/host-font-requests';
 import { canvasKitFontFaceData } from './canvaskit/sfnt-face';
@@ -4492,6 +4493,21 @@ export class CanvasKitLayerRenderer {
       paragraphTypefaces: faces.map(face => face.typeface) };
   }
 
+  /** 준비와 paint가 같은 family/style 분할 프로그램을 소비한다. */
+  private positionedEquationTypefaces(fontFamily: string): Typeface[] {
+    const selected = new Set<Typeface>();
+    for (const family of parseCssFontFamilyList(fontFamily)) {
+      for (const record of resolveRendererLocalFontCandidates(family, { weight: 400, slant: 'normal' })) {
+        const prepared = this.localTypefaces.get(localFontFaceKey(record));
+        if (prepared?.typeface) selected.add(prepared.typeface);
+      }
+      const prepared = this.findPreparedTypeface(family);
+      if (prepared?.typeface) selected.add(prepared.typeface);
+      for (const typeface of prepared?.paragraphTypefaces ?? []) if (typeface) selected.add(typeface);
+    }
+    return [...selected];
+  }
+
   private findPreparedTypeface(fontFamily: string | undefined, style?: LayerTextStyle): CanvasKitLocalTypeface | null {
     const key = JSON.stringify([fontFamily ?? '', style?.bold === true,
       style?.italic === true, getHostFontState().generation]);
@@ -4916,33 +4932,13 @@ export class CanvasKitLayerRenderer {
     );
 
     switch (layout.kind.type) {
-      case 'hancomGlyphs': {
-        const run = layout.kind;
-        const typeface = this.findPreparedTypeface(run.fontFamily ?? 'HyhwpEQ')?.typeface;
-        const glyphs = Array.from(run.glyphs);
-        const shears = run.shears ?? glyphs.map(() => 0);
-        if (!typeface || glyphs.length !== run.positions.length
-          || glyphs.length !== shears.length || !shears.every(Number.isFinite)
-          || glyphs.length > CanvasKitLayerRenderer.MAX_EQUATION_TEXT_LENGTH
-          || !run.positions.every(Number.isFinite) || !Number.isFinite(run.baselineShift)) return false;
-        const font = new this.canvasKit.Font(typeface, fontSize);
-        font.setHinting(this.canvasKit.FontHinting.None);
-        font.setSubpixel(true);
-        const paint = this.makeFillPaint(color);
-        try {
-          const ids = font.getGlyphIDs(run.glyphs, glyphs.length);
-          if (!ids || ids.some(id => id === 0)) return false;
-          glyphs.forEach((glyph, index) => {
-            canvas.save();
-            try {
-              canvas.translate(x + run.positions[index], y + layout.baseline + run.baselineShift);
-              canvas.concat([1, -shears[index], 0, 0, 1, 0, 0, 0, 1]);
-              canvas.drawText(glyph, 0, 0, paint, font);
-            } finally { canvas.restore(); }
-          });
-          return true;
-        } finally { font.delete(); paint.delete(); }
-      }
+      case 'hancomGlyphs':
+        return drawPositionedEquationGlyphs({
+          canvasKit: this.canvasKit,
+          typefaces: this.positionedEquationTypefaces(layout.kind.fontFamily ?? 'HyhwpEQ'),
+          maxTextLength: CanvasKitLayerRenderer.MAX_EQUATION_TEXT_LENGTH,
+          makeFillPaint: fillColor => this.makeFillPaint(fillColor),
+        }, canvas, layout.kind, x, y + layout.baseline, fontSize, color);
       case 'row':
         return layout.kind.children.every((box) => child(box));
       case 'text':

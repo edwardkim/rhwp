@@ -1,0 +1,41 @@
+{
+  "state": "complete",
+  "checked_at": "2026-11-09T21:58:29.568933+09:00",
+  "parent_head": "bfb7088e88ae74b3a32321a9e75b56d4218dc8fc",
+  "first_ci_run": 42618610347,
+  "failed_job": 129165074609,
+  "cause": "MIT 합성 Preferred 픽스처의 공개 글꼴 고지 목록 등록 누락",
+  "origin_commit": "b44baac4df5473ec37b8654d5969f9628f68217e",
+  "font": "tests/fixtures/fonts/RHWPHostFixture-Preferred.ttf",
+  "font_sha256": "3b94fcb46b425f2f2c3b4bbba2abdf352b3f5a4d5187a4574d7182b4f75887f6",
+  "font_bytes_unchanged": true,
+  "renderer_rust_js_unchanged": true,
+  "correction": "font-notices.json에 정확한 SHA-256·MIT·기존 고지 전문 경로 추가; strict 등록 검사는 유지",
+  "package_builds": [
+    {
+      "host": "rhwp-studio",
+      "exit_code": 0,
+      "seconds": 7.651
+    },
+    {
+      "host": "rhwp-chrome",
+      "exit_code": 0,
+      "seconds": 2.71
+    },
+    {
+      "host": "rhwp-firefox",
+      "exit_code": 0,
+      "seconds": 2.049
+    },
+    {
+      "host": "rhwp-vscode",
+      "exit_code": 0,
+      "seconds": 8.264
+    }
+  ],
+  "font_asset_tests": {
+    "passed": 8,
+    "failed": 0
+  },
+  "visual_evidence_reuse": "제품·테스트 및 글꼴 바이트가 같아 기존 TSV/PNG/consumer 증거의 producer SHA를 유지한다."
+}

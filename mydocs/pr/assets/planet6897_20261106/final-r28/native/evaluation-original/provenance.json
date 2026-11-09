@@ -1,0 +1,35 @@
+{
+  "key": "evaluation-original",
+  "backend": "native",
+  "state": "measured-not-final-review",
+  "prs": [
+    8638
+  ],
+  "input": "mydocs/pr/assets/planet6897_20261106/pr8638/evaluation-original.hwp",
+  "input_sha256": "a89b8d63ec93e34281c8dbe22f6ef89804a97130855432bda5416a2a3e1ad5ec",
+  "pdf": "pdf/planet6897-20261106/pr8638/evaluation-original-2020.pdf",
+  "pdf_sha256": "10866c14fdf960ad41407ee8c12629c2f60e73e2817e1891e1081f3da71cfc3e",
+  "pdf_pages": 2,
+  "compat": "2022",
+  "font_environment": null,
+  "linked_images": [],
+  "minimum": 99.8,
+  "below90": 0,
+  "full_tsv": "native/evaluation-original/full.tsv",
+  "full_tsv_sha256": "a9a87c484a9d411020adf6abd2573f8b619eec624e4b568799dc87aa0bda481b",
+  "measurement_log": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r28-direction-native/evaluation-original/run.log",
+  "producer": {
+    "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-batch-corrections-r28",
+    "sha256": "3addcb1c0f4f15d1702cf9d2686a1946d5931f14e69eaa7d24131500fd399190"
+  },
+  "panels": [
+    {
+      "page": 1,
+      "raw": "99.80",
+      "actual_png_sha256": "ab6701e1933519c2d7e3e797e8511da9bb1cf4f63afdf7d63a62cba561a0c5e8",
+      "pdf_png_sha256": "be1e1ae3d100df22c788368a66c7da49bea11a5d7be0b15cf61755b5b1356e3b",
+      "review": "native/evaluation-original/review-001.png",
+      "overlay": "native/evaluation-original/overlay-001.png"
+    }
+  ]
+}

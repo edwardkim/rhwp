@@ -1,0 +1,57 @@
+original_commit	applied_commit	title
+48b1c5c8fed6c8a6dcb7ff0a3a1c28648558d8eb	f381b69c469574c16bbd84744a92b7759bf51f12	fix: 글자 없는 host 의 나란한 양수 오프셋 자리차지 표를 자기 오프셋에 배치 (#8516)
+423b369e9d81cbfd6f31ec527d53cbea5d43d5e1	076f35d864ec873f1c6b29bed55cd0df337f97b5	feat(edit): 글자 서식 props 에 글꼴 이름 fontName 을 받는다
+2be042208ee670b545a4c55dc9f0b667e9dcf7fb	382853f301b221dac14a1947ec3cb743aa9de57c	fix(layout): 쪽·용지 기준 자리차지 표 띠에 밀린 빈 host 줄은 줄높이와 줄간격을 모두 전진 (#8554)
+efa20ac2eafe1137b370d270f459eac54109b5ca	a48c2fca71fdacb52d1086d471762f1677e71fb2	docs: #8554 i39 Native 한자 누락 원인 문구를 #8590 확인 결과로 정정
+f3148d52472745de33fff5ae8feb33a1e9805943	5f7105fe263d0051f2f90fc240e2c35dd4e94b56	fix(typeset): 빈 host 자리차지 표 뒤 다음 문단이 빈 자리차지 표 host 여도 저장 host 줄 프레임을 받는다 (#8560)
+bc8a04e056ccfbbe371b21239ecfd13696cea0b2	4c709cc6cc00e339b6ea5f16b59a8e100e3c1c32	test: #8560 측정 근거·검증 증거와 새 원본 IR 왕복 baseline 등록
+f25efcf2c9dba5793f78a5e5d9c845944c562dfb	041f922d2bc56d288c5d190212bb0fa62f1503e4	fix(renderer): 줄 머리 TAC 표 뒤 문단 끝 공백에 줄을 주지 않는다 (#8574)
+0a63dba9bb1d43172add7bb1905cd86ce79a6fd4	050823a4a0ab60f3e102b0e4ef9b1deecf86d662	fix(layout): 어울림 표가 뒤 문단을 띠로 흡수하면 흐름상 다음 문단으로 host 뒤 사다리 일치를 판정 (#8567)
+a68704a019cf56f4dca8db0ee5ff8ae5103febb8	b6edc70d86b6af66e98bfb6794195d8c56419b48	test: #8567 측정 근거와 검증 증거 등록
+983933bc448e5ed4f7c8d15be97d894e129a5b9b	c87e501421774ce84501aafdf41c48b57727aa18	fix(renderer): 도형 그림 채우기 크기와 한컴 윤고딕 250 연결 (#8575)
+032dcb80e3de44b3ed4a7ca09549a197b6a18067	78742d173e9ba688189c68b170ad76359c018f59	fix(typeset): #8596 앞 TAC 표 host 줄 안에 저장된 자리차지 표 프레임은 다음 쪽에서 시작한다
+e74368c345437ca63591ea064c4b972ade999ee7	d2dbe967d97931ea5ceb33efdcfa3860966ab35f	docs(#8596): 필수 편람 Native 383쪽 TSV — devel 7fdd5441ff 와 바이트 동일
+013459bff4ff5313af53ece5646e79c48647a3aa	5cc6c842c7131d6060dcf2bbe590efc84cf6750f	docs(#8596): 최신 devel rebase head 재측정 — base·head 전쪽 TSV, 대표 PNG, 편람 gate
+4f8570309e925468552036f4c20d099011d55a35	4312c83eaae6825392ebfc238edf11226d07a93e	fix(render): WASM Canvas 합성 굵기를 실제 face 윤곽의 fill+stroke로 그린다 (#8430)
+3d0b4420dbee220253189fc149c48125cc0e2dc4	16005db09b07edaf1f62957c1b7b3f446630e259	docs(#8430): 30396 권고문 Native/fresh WASM 전쪽 TSV·확대 판독·글꼴 예외 증적
+5d37286267136c9978d7ac2f804913730ab6becf	819cfa6499a88d76ef4321ae2674f55b69991472	docs(#8430): 최신 devel rebase head 재측정과 글꼴 예외 source SHA 갱신
+d8ded0cc7171d54e3b76be63ed7125b97aae9d67	d77cc6162e7f4662f56fd616872d6ed65dc790e0	fix(typeset): #8606 빈 host 의 자기 오프셋 자리차지 본표는 머리 표에 밀린 표가 아니다
+8ee296b76e33e79a8b225385e252b12f35c81a65	adc5a202cb30364167293b14f35bbe07c3a85752	docs(#8606): 필수 편람 Native 383쪽 TSV — devel 7fdd5441ff 와 바이트 동일
+b7b93df883ef0eed535d1e80b5c45ea6d60ce3a9	182661dc683827f1e2abfbde8e72a4548993ff83	ci: Canvas visual diff 의 Chrome 시작 시간 초과 재실행 (#8607)
+84aa570a64e3cc5265fab5dd08b2e7fefa5d35d5	606c2bee0dd7dd958ed0de7de52f9f084d791b63	fix(renderer): Native 경로 글꼴을 매핑으로 공유해 64MiB 넘는 파일도 싣기 (#8597)
+0cbe6a9ae5ee4ef8d994d21c170682f95f4bf236	73f91373dcc12888f675715433b4e819fc2d1ef6	fix(font): 환경 이름 계약을 어기는 원본 글꼴 이름은 관측 대체 요청에서 뺀다 (#8597)
+7d1d9b51f2f2cc9f92aef46eefe101a6d4b433a5	251bc1f3f103054f908ef2a07d5525bb5496100d	fix(layout): 칸 안 빈 host 의 글 위아래 표 띠가 뒤 문단 앞 간격을 흡수한다 (#8610)
+0fd746a87d28cd70fe7297149882cacd84074475	edca39128300a0f06f875849d7a6f75a33914517	fix(visual-sweep): 글꼴 catalog family 이름의 앞뒤 공백을 Native 와 같이 정규화 (#8612)
+afab535863b77d59b1f8686d1ca8a85852dae2ec	1d9d3e3b8794e367c14171ed5c95805ed97811a5	fix(renderer): 각주 안에서 줄을 통째로 차지하는 TAC 표를 소유 줄에 그린다 (#8551)
+da01e3a73a29a3bc03f1e8ac403f95f1d4792210	bf5892939b37a37a184d236c556e9c684754330a	docs: #8551 각주 캡션 표 paint 시각 증적
+7057aaccfaa0a5bd9bc80304d4ccdd07f220beff	d164aff355b0e5f93a38b07bd0e408912034898f	docs: #8551 최신 devel rebase head 재측정 기록
+169b5cd2d0bb7d0a25c755477e60dad9c96228e7	c7b2512df93564f99b690809288e11a9c8ebf135	fix(native-skia): 최소 글꼴 환경의 native-skia 회귀 4건 — 완결 SVG 문서 예산·저장소 글꼴 공급 (#8613)
+693de034cb8edef9bd57c5689a5090a4b161a500	19c8f7d69192e2c43717aa3e4484e9b2102cca44	fix(typeset): #8620 글자처럼 취급 표 host 의 컨트롤 전용 꼬리 줄은 쪽을 넘으면 다음 쪽에 놓는다
+39ceb92ace1a6ad2ca9578c5b72b6940bb096281	1333c13172556c3bc6a9087269a5424ac2c3896b	docs(#8620): 필수 편람 Native 383쪽 TSV — devel 과 바이트 동일
+5554a192b7a62836fc7f9a460623b5da205cf151	7169641c736ff4d569fe2ed054d485be3f0cae23	fix(renderer): Dotum U+2024 은 Haansoft Dotum 이 공급 (#8619)
+71bd8abf48dbad4afa09d66803f6011546add734	a95b078f0afddb76f49047cb6d509c02f5ac85dc	docs: #8619 rebase 뒤 Native/fresh WASM sweep 증거 갱신
+aceb89c6d3f47c8790c22929e2615b75c3ef3465	ed139f14b853cebe5e67d63a38a1c7cf1af32597	fix(typeset): 다 들어가지 않는 각주는 들어가는 앞 조각만 비용으로 잡고 넘어온 각주를 이어받는 쪽 예산에서 뺀다 (#8468)
+8ece4b20852a56cf2523faebb87ea24d7339a5ac	da7f1e4b78ac4198278fde5f58646d4468419055	test: #8468 앞부분만 들어간 각주의 표 줄 — 뒤 본문 줄이 각주 글 줄 위를 채운다
+595099ca975b231117f86bd2e9794ba05c1ce0e8	9ee07f8f2b64eb56f5f2ee8cb0d512565552bf30	test: #8468 T20 측정 주석을 실제 값으로 채우고 fmt 적용
+d9b846cafab496a3d72f9953a743be17e23a7071	89592c5a903d1d5ab91084d9fcebb66c8373fe68	fix(typeset): 블록 표가 든 각주의 조각 높이를 paint 조각 측정으로 잰다 (#8468)
+2211d9e95698007c53788aadd15e9cd3d17df6ab	8c42d7d58afd3dec15aa9149d26fb5db0bb957a8	test: #8468 후속 측정 근거와 Native·fresh WASM TSV·대표 PNG 증적
+7d40345bc014f3cb4eca4235783afcfb670899f9	a6ec08bcf9f3583bc6d6e0c0412205e971ec9e23	ci: #8642 CI 재실행 (runner 디스크 부족으로 실패한 adapter inter-diff·prop roundtrip)
+ab4cddea86fde59dbfdea3122d1eb579888951bc	8e4217aa477a223e124e1e1712be41610c71fe35	fix(composer): 다음 문단 저장 vpos 가 간격 전량을 닫으면 TAC 표 줄 뒤 간격을 전량 남긴다 (#8544)
+1ea144e29c04613c5e7170fc74e622bb03fbd9a0	3e281a78048101ed56b0a26b3fe80cfbaf132e2b	test: #8544 측정 근거와 Native·fresh WASM TSV·코퍼스 A/B·대표 PNG 증적
+3e813cb33670dffbf0a495c87b31e9b016581576	ff3a872a7ba96dcccc8261fae99cdeb95842cc63	fix(layout): TAC 표 앞 저장 줄을 흐름 표가 내보내고 그린 줄 전진으로 원점을 맞춘다 (#8641)
+2aedb2a8580da9bb1b2d97643d3a97defa4f1660	7ec94190b23b4d5418a619927e0e314476d578d9	test(#8641): 새 공개 샘플 겹침 원장과 Native·fresh WASM TSV·대표 PNG
+5fdbd2b17faef122ada2f7aecedda5e3894678f3	ffb6bcee94a89ee2002ff40d98bf495fbfd0eede	fix(layout): 칸 안의 쪽 기준 글 앞으로 표를 칸 흐름에 쌓지 않는다 (#8648)
+c546460f55cd9cf94d8106cde271750e0a131c0c	444a361d4241145b5f403b42b6c21fa153b7cbe5	test(#8648): 축소본·코퍼스 Native·fresh WASM TSV와 대표 PNG
+068250c0e8bc9b07b8a25911ab8002d5504f63eb	422cdb53adef7639b2d6df3a125fec15c0e264a2	fix(layout): 한 줄의 TAC 표 여러 개는 선언 폭만큼 전진한다 (#8647)
+7f85c9f4fa5ee95a9d58eeb569794ad89c9e1dc5	5d5b386358361765df37cb748639791a717b7ab7	fix(layout): 같은 줄 TAC 표 공유 기준선과 rowspan 초과분이 받는 행 (#8641)
+d971025c2bb85ebcd2453578800e6130445b81b8	49520043154a03a2647509c45357cd49fbe483fb	docs(evidence): #8641 공유 기준선·rowspan Native/fresh WASM TSV와 대표 PNG
+8406b522616e2d51e4e88124b5721bf25e9239dd	ae9d843dd74abfaf92bd679f7813e8ce7af7da4c	fix(layout): TAC 표만 담은 문단의 동반 표를 줄 소유자 기준선에 앉힌다 (#8653)
+cd4cc992f30fdc50478217d3b954c9fd9e1d34e7	b977e37e3e628cc0d3a319c97fc0814cdca95928	test(#8653): 축소본·코퍼스 Native·fresh WASM TSV와 대표 PNG
+cb1ab1d5af6ce0a4614365c6ca7d6a8b5fc0ba77	37f51c4e7846a986ff751246b84a2b93fda26347	fix(renderer): 저장 줄 없는 HWP5 TAC 표의 행 높이와 넘친 공백의 줄 끝 처리 (#8639)
+c1db11718bbc5319ac78507e7cabb8cc0fe3f8b3	1562db713362b64757306ca30a455abc056e7bd1	fix(renderer): 변경 추적 0x08 문서는 원본 프로그램으로 저장 줄을 다시 짜지 않는다 (#8639)
+f84e0f3ffe3b154d286bc878fc90facdb7ced153	1761b54e9cd14b971b19e3386f5d92943b73569f	docs: #8639 Native/fresh WASM sweep 증거 (행 높이·끝 공백·변경 추적 0x08)
+e3db55a6f16b57c2ef73a3aaaf22f5298ccc8bfc	81699999b69268616afb15378625739adcce1491	fix(typeset): 저장 vpos 가 되감긴 보이는 호스트 글줄을 표와 함께 다음 쪽에서 시작한다 (#8652)
+fbcdbf58e0d1b55bdfec9bb6623b3f0a773b9c20	4e35f29d7c157dd67f3071e3ef302208b0c95f36	fix(footnote): 각주 번호와 같은 문단의 글자처럼 취급 표를 번호 뒤에 그린다 (#8657)
+a0f7203d788415f378f3ea61d3679a9107983666	b9f3340e11fb69feb4afbd3d14069c5208fed75a	docs: #8652·#8657 Visual Sweep TSV 와 대표 review·overlay PNG
+e40b399facab3886646e6f6fb77a85cab6bdebb0	a06d7a6f811685263933cd3b00149cc3a2b6e6a0	fix(layout): 자기 자리차지 표 띠 위끝에 걸친 저장 줄을 띠 끝으로 내린다 (#8679)
+3cc76d84d41b40f47304b62ff2b8b5010828b86b	690566c7b0f69712c5bccfa5065242b2b2c3ae13	docs(pr): #8679 Native·fresh WASM TSV와 비교 PNG 증적

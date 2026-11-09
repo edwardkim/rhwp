@@ -1594,7 +1594,7 @@ impl TypesetEngine {
                                 .is_some_and(|previous| {
                                     previous.occupied_bottom <= placement.table_top
                                 }))
-                        && paragraphs_all
+                        && (paragraphs_all
                             .get(*para_index)
                             .and_then(|host| host.controls.get(*control_index))
                             .is_some_and(|control| {
@@ -1603,6 +1603,11 @@ impl TypesetEngine {
                                         && previous.common.flow_with_text
                                         && !previous.common.allow_overlap)
                             })
+                            || stored_frame_inside_tac_host_line(
+                                paragraphs_all.get(*para_index),
+                                *control_index,
+                                para,
+                            ))
                 })
         });
         // 전체 실측 상자가 저장 후속 줄을 새 쪽 원점에서 정확히 닫으면,
@@ -2275,9 +2280,19 @@ impl TypesetEngine {
             }) {
                 0.0
             } else {
+                // 형제 표는 세로 오프셋 순서로 놓이므로 컨트롤 순서가 뒤인 형제가 먼저
+                // 이 쪽에 놓였을 수 있다. 이 쪽에 이미 놓인 형제의 문단 원점을 공유한다.
                 st.paragraph_float_placements
                     .iter()
-                    .filter(|((owner, control), _)| *owner == para_idx && *control < ctrl_idx)
+                    .filter(|((owner, control), _)| {
+                        *owner == para_idx
+                            && *control != ctrl_idx
+                            && st.current_items.iter().any(|item| {
+                                matches!(item, PageItem::Table { para_index, control_index }
+                                    | PageItem::PartialTable { para_index, control_index, .. }
+                                    if *para_index == para_idx && control_index == control)
+                            })
+                    })
                     .min_by_key(|((_, control), _)| *control)
                     .map_or(st.current_height, |(_, placement)| placement.anchor_y)
             };
@@ -2426,6 +2441,28 @@ impl TypesetEngine {
         } else {
             available
         };
+        // 저장 호스트가 표 뒤에 있는 상자는 현재 pen에서 같은 상대 프레임을 쓴다.
+        // 앞 문단·표 외곽·호스트 줄·다음 줄이 모두 닫히고 통째 수용될 때만 발행한다.
+        let resolved_host_placement = resolved_host_placement.or_else(|| {
+            (legacy_whole_fits
+                && unconstrained_host_placement.is_none()
+                && !ft.strict_following_plain_text_fit
+                && !st.profile.session_edited()
+                && (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout()))
+            .then(|| {
+                crate::renderer::float_placement::ParagraphFloatPlacement::from_stored_tail_host(
+                    paragraphs_all.get(para_idx.checked_sub(1)?)?,
+                    para,
+                    paragraphs_all.get(para_idx + 1)?,
+                    table,
+                    placement_para_start_height,
+                    ft.effective_height,
+                    self.dpi,
+                )
+            })
+            .flatten()
+            .filter(|placement| placement.occupied_bottom <= whole_frame_budget)
+        });
         // [#7620] 쪽 경계 나눔은 분할을 허용할 뿐이다. 빈 개체 앵커 표가 기존 whole-fit 판정으로
         // 통째 들어가면 저장 원점에서 세운 상자를 조판·배치가 공유한다(바깥 여백 위·아래 포함).
         // 상자는 문단 윗변에서 시작하고 문단 아래 간격을 포함하지 않는다(글줄 경로와 같은
@@ -2820,4 +2857,37 @@ impl TypesetEngine {
             declared_table_height,
         })
     }
+}
+
+/// 앞 글자처럼 취급 표의 host 글줄은 저장 사다리에서 표 높이만큼 흐름을 차지한다.
+/// 뒤 문단의 저장 원점이 그 글줄이 끝나기 전이면 같은 쪽의 프레임이 아니다
+/// (한/글은 vpos 를 되감아 새 쪽에서 시작한다).
+fn stored_frame_inside_tac_host_line(
+    host: Option<&crate::model::paragraph::Paragraph>,
+    control_index: usize,
+    para: &crate::model::paragraph::Paragraph,
+) -> bool {
+    let Some(host) = host else {
+        return false;
+    };
+    if !matches!(host.controls.get(control_index),
+        Some(Control::Table(table)) if table.common.treat_as_char)
+        || host.line_segs.is_empty()
+        || host.line_segs.iter().any(is_synthetic_line_seg)
+    {
+        return false;
+    }
+    let Some(origin) = para
+        .line_segs
+        .first()
+        .filter(|line| !is_synthetic_line_seg(line))
+        .map(|line| line.vertical_pos)
+    else {
+        return false;
+    };
+    host.line_segs
+        .iter()
+        .map(|line| line.vertical_pos.saturating_add(line.line_height))
+        .max()
+        .is_some_and(|host_end| origin < host_end)
 }

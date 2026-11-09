@@ -1,0 +1,144 @@
+{
+  "native_12": [
+    {
+      "key": "sample16-hwp2022",
+      "page": 17,
+      "before": "100.00",
+      "after": "100.00",
+      "png_identical": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "page": 35,
+      "before": "100.00",
+      "after": "100.00",
+      "png_identical": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "page": 38,
+      "before": "100.00",
+      "after": "100.00",
+      "png_identical": true
+    },
+    {
+      "key": "sample16-hwp2024",
+      "page": 17,
+      "before": "100.00",
+      "after": "100.00",
+      "png_identical": true
+    },
+    {
+      "key": "sample16-hwp2024",
+      "page": 35,
+      "before": "99.99",
+      "after": "99.99",
+      "png_identical": true
+    },
+    {
+      "key": "sample16-hwp2024",
+      "page": 38,
+      "before": "100.00",
+      "after": "100.00",
+      "png_identical": true
+    },
+    {
+      "key": "sample16-hwpx",
+      "page": 17,
+      "before": "100.00",
+      "after": "100.00",
+      "png_identical": true
+    },
+    {
+      "key": "sample16-hwpx",
+      "page": 35,
+      "before": "99.99",
+      "after": "99.99",
+      "png_identical": true
+    },
+    {
+      "key": "sample16-hwpx",
+      "page": 38,
+      "before": "100.00",
+      "after": "100.00",
+      "png_identical": true
+    },
+    {
+      "key": "nested",
+      "page": 3,
+      "before": "99.75",
+      "after": "99.75",
+      "png_identical": true
+    },
+    {
+      "key": "nested",
+      "page": 8,
+      "before": "99.49",
+      "after": "99.49",
+      "png_identical": true
+    },
+    {
+      "key": "nested",
+      "page": 17,
+      "before": "99.98",
+      "after": "99.98",
+      "png_identical": true
+    }
+  ],
+  "wasm_sample10_9": [
+    {
+      "page": 133,
+      "before": "99.96",
+      "after": "99.96",
+      "png_identical": true
+    },
+    {
+      "page": 251,
+      "before": "99.81",
+      "after": "99.81",
+      "png_identical": true
+    },
+    {
+      "page": 509,
+      "before": "99.86",
+      "after": "99.86",
+      "png_identical": true
+    },
+    {
+      "page": 629,
+      "before": "100.00",
+      "after": "100.00",
+      "png_identical": true
+    },
+    {
+      "page": 658,
+      "before": "99.94",
+      "after": "99.94",
+      "png_identical": true
+    },
+    {
+      "page": 659,
+      "before": "99.97",
+      "after": "99.97",
+      "png_identical": true
+    },
+    {
+      "page": 660,
+      "before": "99.96",
+      "after": "99.96",
+      "png_identical": true
+    },
+    {
+      "page": 708,
+      "before": "99.81",
+      "after": "99.81",
+      "png_identical": true
+    },
+    {
+      "page": 757,
+      "before": "99.38",
+      "after": "99.38",
+      "png_identical": true
+    }
+  ]
+}

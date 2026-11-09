@@ -1,15 +1,165 @@
 //! 검사 유형: 관계형. 합성 글꼴 프로그램의 선택·대체 계약을 검증한다.
-//! 주석 갱신: 2026-10-31T07:12:47+09:00; 직전 파일 커밋: 2026-10-31T03:34:36+09:00 (`f3a88f72646d7682ae48804e78332f5dea1f34f4`).
+//! 주석 갱신: 2026-11-09T08:48:44+09:00; 직전 변경: 2026-11-09T08:27:16+09:00, 5e291aa69e57f5bb15e0cf3e229e79793605e27c.
 //! 실제 입력 `samples/hwp3-sample10.hwp`, 한컴 2020 Print, 96 DPI, 2px 이웃 raw.
 //! 2026-10-30 측정: 1쪽 Native/fresh WASM 각 99.96%; 전 763쪽 최저 각 99.41% / 99.40%.
 //! 근거: `mydocs/pr/assets/issue_8371/sample10-native.tsv`, `sample10-wasm.tsv`, `sample10-validation.md`.
 //! 합성 fixture의 계약 검사와 실제 문서의 한컴 출력 판독은 별도다.
+//! Linux Fontconfig의 합성 Bold 재현은 유지하며, Mac·Windows도 명시 공급한 분할 CFF의
+//! 글리프 소유를 실제 Native backend에서 검사한다. 이 합성 계약의 raw·독립 PDF는 비해당이다.
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::style::Font;
 
 const FAMILY: &str = "RHWP HFT Outline Fixture";
 const CFF: &[u8] = include_bytes!("../fixtures/fonts/RHWPHftOutline.otf");
+
+#[test]
+fn source_hft_outline_follows_the_selected_environment_family_only() {
+    // 관계형: 저장된 HFT 이름과 실제 공급 family가 달라도 같은 선택을 소비한다.
+    // 비 HFT 원본은 실제 프로그램 신원 없이 허용하지 않으며 미선택 family도 거부한다.
+    use rhwp::renderer::font_environment::FontEnvironment;
+    let mut core = DocumentCore::new_empty();
+    let mut document = core.document().clone();
+    document.doc_info.font_faces = vec![vec![
+        Font {
+            name: "원본 HFT".into(),
+            alt_type: 2,
+            ..Default::default()
+        },
+        Font {
+            name: "원본 TTF".into(),
+            ..Default::default()
+        },
+    ]];
+    core.set_document(document);
+    let before = rhwp::serializer::serialize_document(core.document()).unwrap();
+    core.set_font_environment(Some(FontEnvironment::from_json(
+        r#"{"id":"outline-selection","substitutions":{"원본 HFT":"Selected CFF","원본 TTF":"Other CFF"}}"#,
+    ).unwrap())).unwrap();
+    assert!(!core
+        .register_hft_outline_font_native("Other CFF", CFF, 0)
+        .unwrap());
+    assert!(!core
+        .register_hft_outline_font_native("Unselected CFF", CFF, 0)
+        .unwrap());
+    assert!(
+        core.register_hft_outline_font_native("Selected CFF", CFF, 0)
+            .unwrap(),
+        "실제 HFT 선택 family가 paint 윤곽을 공급해야 한다"
+    );
+    assert_eq!(
+        rhwp::serializer::serialize_document(core.document()).unwrap(),
+        before,
+        "선택된 paint 프로그램은 저장 IR을 바꾸지 않는다"
+    );
+}
+
+#[test]
+fn verified_cff_query_alias_accepts_only_the_selected_program() {
+    // 관계형: 원본 유형이 미정이어도 실제 선택된 CFF 신원·조회 이름을 함께 확인한다.
+    // 원본을 HFT로 재분류하거나 확인하지 않은 별칭·프로그램을 허용하지 않는다.
+    use rhwp::renderer::font_environment::FontEnvironment;
+    let mut core = DocumentCore::new_empty();
+    let mut document = core.document().clone();
+    document.doc_info.font_faces = vec![vec![Font {
+        name: "원본 미정 글꼴".into(),
+        alt_type: 0,
+        ..Default::default()
+    }]];
+    core.set_document(document);
+    core.set_font_environment(Some(FontEnvironment::from_json(
+        r#"{"id":"verified-cff-query","substitutions":{"원본 미정 글꼴":"RHWP HFT Outline Fixture"},"selectedPrograms":{"원본 미정 글꼴":{"query":"실제 조회 별칭","family":"RHWP HFT Outline Fixture","trueType":false,"openTypeCff":true,"programId":"sweep-c3eb4ea18997f2a79442f80e51e421bfe496edb431a9247f27dafd4fcc305dda"}}}"#,
+    ).unwrap())).unwrap();
+    assert!(!core
+        .register_hft_outline_font_native("임의 별칭", CFF, 0)
+        .unwrap());
+    assert!(!core
+        .register_hft_outline_font_native("실제 조회 별칭", &synthetic_cff_for('나'), 0)
+        .unwrap());
+    assert!(
+        core.register_hft_outline_font_native("실제 조회 별칭", CFF, 0)
+            .unwrap(),
+        "선택 프로그램의 실제 조회 별칭도 같은 윤곽을 공급한다"
+    );
+    assert!(core
+        .register_hft_outline_font_native(FAMILY, CFF, 0)
+        .unwrap());
+}
+
+#[test]
+fn hft_outline_registration_preserves_unicode_family_case_folding() {
+    // 관계형: 같은 family의 유니코드 대소문자 정규화는 기존 등록 계약을 보존한다.
+    use rhwp::renderer::font_environment::FontEnvironment;
+    let mut core = DocumentCore::new_empty();
+    let mut document = core.document().clone();
+    document.doc_info.font_faces = vec![vec![Font {
+        name: "원본 HFT".into(),
+        alt_type: 2,
+        ..Default::default()
+    }]];
+    core.set_document(document);
+    core.set_font_environment(Some(
+        FontEnvironment::from_json(
+            r#"{"id":"unicode-hft-family","substitutions":{"원본 HFT":"Σ Display"}}"#,
+        )
+        .unwrap(),
+    ))
+    .unwrap();
+    assert!(core
+        .register_hft_outline_font_native("σ display", CFF, 0)
+        .unwrap());
+    assert!(!core
+        .register_hft_outline_font_native("Σ Display", CFF, 0)
+        .unwrap());
+}
+
+#[test]
+fn split_hft_outline_candidates_replace_atomically_and_retain_order() {
+    // 관계형: 공개 합성 CFF 두 조각을 실제 후보 순서로 교체한다.
+    let mut core = DocumentCore::new_empty();
+    let mut document = core.document().clone();
+    document.doc_info.font_faces = vec![vec![Font {
+        name: FAMILY.into(),
+        alt_type: 2,
+        ..Default::default()
+    }]];
+    core.set_document(document);
+    let second = synthetic_cff_for('나');
+    let first_order = [(CFF, 0), (second.as_slice(), 0)];
+    assert!(core
+        .register_hft_outline_font_candidates_native(FAMILY, &first_order)
+        .unwrap());
+    assert!(!core
+        .register_hft_outline_font_candidates_native(FAMILY, &first_order)
+        .unwrap());
+    assert!(core
+        .register_hft_outline_font_candidates_native(FAMILY, &[])
+        .is_err());
+    assert!(core
+        .register_hft_outline_font_candidates_native(FAMILY, &[(CFF, 0); 65])
+        .is_err());
+    assert!(core
+        .register_hft_outline_font_candidates_native(FAMILY, &[(CFF, 0), (&[], 0)])
+        .is_err());
+    assert!(
+        !core
+            .register_hft_outline_font_candidates_native(FAMILY, &first_order)
+            .unwrap(),
+        "한도 오류로 기존 후보를 일부만 교체하지 않는다"
+    );
+    assert!(core
+        .register_hft_outline_font_candidates_native(FAMILY, &[(second.as_slice(), 0), (CFF, 0)])
+        .unwrap());
+    let ttf = include_bytes!("../fixtures/fonts/RHWPHostFixture-Regular.ttf");
+    assert!(
+        core.register_hft_outline_font_candidates_native(FAMILY, &[(CFF, 0), (ttf, 0)])
+            .unwrap(),
+        "혼합 형식은 기존 Canvas 소유 판단으로 되돌린다"
+    );
+    assert!(core
+        .register_hft_outline_font_native(FAMILY, CFF, 0)
+        .unwrap());
+}
 
 #[test]
 fn romanized_myeongjo_names_keep_serif_fallback() {
@@ -63,6 +213,52 @@ fn verified_hft_advance_survives_a_supplied_display_otf() {
         measure(&style),
         source_width,
         "명시 OTF는 해당 프로그램의 전진을 사용한다"
+    );
+}
+
+#[test]
+fn declared_hft_hyphenation_point_keeps_its_half_em_before_display_fallback() {
+    use rhwp::renderer::layout::{EmbeddedTextMeasurer, TextMeasurer};
+    use rhwp::renderer::native_pua_fonts::NativePuaFonts;
+    use rhwp::renderer::TextStyle;
+
+    // 관계형·원본 전진 계약: worklife Print의 Type3 Widths=500/1000과
+    // nested 17쪽의 구분점→뒤 글자 원점을 대조했다. 실물 좌표를 고정하지 않는다.
+    // MIT 합성 CFF는 표시 글꼴만 공급하며 비공개 HFT 설치를 요구하지 않는다.
+    let mut fonts = NativePuaFonts::default();
+    fonts
+        .register_otf("synthetic", false, false, CFF, 0)
+        .unwrap();
+    let mut style = TextStyle {
+        font_family: "HY Sinmyeongjo".into(),
+        original_glyph_metric_family: Some(std::sync::Arc::new("한양신명조".into())),
+        source_font_is_hft: true,
+        font_size: 20.0,
+        native_otf_metrics: fonts.get_otf("synthetic", false, false),
+        ..Default::default()
+    };
+    let measure = |style: &TextStyle| {
+        EmbeddedTextMeasurer.compute_char_positions("‧", style)[1] / style.font_size
+    };
+    // 실제 전진은 독립 Print로 확인한 4HU 장치 격자에서 반올림된다.
+    // 자연 전진 0.5em을 검사하되 그 반 격자인 2HU를 계산에서 구분한다.
+    let half_device_unit = |style: &TextStyle| 2.0 / 75.0 / style.font_size;
+    assert!(
+        (measure(&style) - 0.5).abs() <= half_device_unit(&style) + f64::EPSILON,
+        "표시용 결측 폭으로 원본 전진을 바꾸지 않는다: {}",
+        measure(&style)
+    );
+    style.font_size *= 2.0;
+    assert!(
+        (measure(&style) - 0.5).abs() <= half_device_unit(&style) + f64::EPSILON,
+        "원본 반각 계약은 장치 반올림 범위에서 크기에 비례한다"
+    );
+    style.source_font_is_hft = false;
+    style.original_glyph_metric_family = None;
+    assert_ne!(
+        measure(&style),
+        0.5,
+        "원본 HFT 소유가 없는 명시 OTF에는 확장하지 않는다"
     );
 }
 
@@ -257,6 +453,11 @@ fn skia_synthetic_bold_selects_both_split_family_glyphs() {
         );
         return;
     }
+    assert_split_family_glyphs(&SkiaLayerRenderer::new(), "system");
+}
+
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+fn assert_split_family_glyphs(renderer: &rhwp::renderer::skia::SkiaLayerRenderer, source: &str) {
     let mut core = DocumentCore::new_empty();
     core.create_blank_document_native().unwrap();
     core.insert_text_native(0, 0, 0, "가나").unwrap();
@@ -270,7 +471,6 @@ fn skia_synthetic_bold_selects_both_split_family_glyphs() {
         shape.bold = true;
     }
     core.set_document(document);
-    let renderer = SkiaLayerRenderer::new();
     let trace: serde_json::Value = serde_json::from_str(
         &renderer
             .get_font_decision_trace(&core, 0, r#"{"maxCharacters":16}"#)
@@ -284,12 +484,21 @@ fn skia_synthetic_bold_selects_both_split_family_glyphs() {
             .iter()
             .find(|record| record["source"]["character"] == character)
             .expect("입력 글자마다 글꼴 선택 기록");
-        assert_eq!(record["paint"]["native"]["source"], "system");
+        assert_eq!(record["paint"]["native"]["source"], source);
         assert_eq!(
             record["paint"]["native"]["resolved"], FAMILY,
             "각 글리프를 같은 분할 family에서 선택한다"
         );
     }
+}
+
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+#[test]
+fn supplied_synthetic_bold_keeps_both_split_glyphs_on_each_native_os() {
+    let renderer = rhwp::renderer::skia::SkiaLayerRenderer::new()
+        .try_with_font_data(&[CFF.to_vec(), synthetic_cff_for('나')])
+        .unwrap();
+    assert_split_family_glyphs(&renderer, "custom");
 }
 
 #[test]

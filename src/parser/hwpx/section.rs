@@ -7030,6 +7030,7 @@ fn parse_equation(
         eqedit,
         font_name,
         version_info,
+        implicit_legacy_font: false,
         raw_ctrl_data: Vec::new(),
         raw_ctrl_seal: None,
         unpositioned_host_frame_seal: None,

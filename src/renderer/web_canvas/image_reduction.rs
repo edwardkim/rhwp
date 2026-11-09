@@ -3,6 +3,53 @@
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
 
+/// 원본 장치에서 합성된 WMF 표면도 실제 출력이 더 작으면 Native와 같은 mip를 쓴다.
+/// Canvas의 quality 문자열은 실제 mip 레벨 선택을 보장하지 않으므로 그 결과에 맡기지 않는다.
+pub(super) fn draw_metafile_surface(
+    context: &CanvasRenderingContext2d,
+    bytes: &[u8],
+    (x, y, width, height): (f64, f64, f64, f64),
+) -> bool {
+    if !crate::renderer::image_resolver::png_sampling::metafile_surface(bytes) {
+        return false;
+    }
+    let draw = || {
+        let matrix = context.get_transform().ok()?;
+        if matrix.b() != 0.0 || matrix.c() != 0.0 || matrix.a() <= 0.0 || matrix.d() <= 0.0 {
+            return None;
+        }
+        let header = crate::renderer::image_header::canvaskit_encoded_image_header(bytes)
+            .filter(|header| header.is_within_decode_limits())?;
+        if u64::from(header.width) * u64::from(header.height) > 32 * 1024 * 1024 {
+            return None;
+        }
+        let source = image::load_from_memory_with_format(bytes, image::ImageFormat::Png)
+            .ok()?
+            .into_rgba8();
+        let raster = crate::renderer::mipmap_sampling::rasterize(
+            source.as_raw(),
+            source.dimensions(),
+            (
+                matrix.a() * x + matrix.e(),
+                matrix.d() * y + matrix.f(),
+                matrix.a() * width,
+                matrix.d() * height,
+            ),
+        )?;
+        super::print_image_sampling::replay_raster(
+            context,
+            &crate::renderer::print_image_sampling::DeviceRaster {
+                left: raster.left,
+                top: raster.top,
+                width: raster.width,
+                height: raster.height,
+                rgba: raster.rgba,
+            },
+        )
+    };
+    draw().is_some()
+}
+
 pub(super) struct ReductionQuality<'a> {
     context: &'a CanvasRenderingContext2d,
     previous: Option<JsValue>,

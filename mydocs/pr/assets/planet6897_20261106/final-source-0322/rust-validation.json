@@ -1,0 +1,114 @@
+{
+  "state": "complete",
+  "pid": 53302,
+  "code_head": "0322cfe65b99c24685e5a30f67ae49c7e7f11272",
+  "base": "06181802e574dbd91e62375536751dea8c270fcd",
+  "checks": [
+    {
+      "label": "native-default-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "state": "complete",
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-final-native-default-clippy.log",
+      "pid": 53316,
+      "exit_code": 0,
+      "seconds": 68.02159133390523,
+      "log_sha256": "03827cb70206f1d1f09b0749756845c344462893348091c1b11c97b9cf0c97cc"
+    },
+    {
+      "label": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "state": "complete",
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-final-workspace-build.log",
+      "pid": 57925,
+      "exit_code": 0,
+      "seconds": 54.228028167039156,
+      "log_sha256": "80df7f64d8bcc8b1a244e75854cd604d32e5848ec42112283ff2b9046514f191"
+    },
+    {
+      "label": "all-target-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "state": "complete",
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-final-all-target-clippy.log",
+      "pid": 61613,
+      "exit_code": 0,
+      "seconds": 78.25673095905222,
+      "log_sha256": "419ccdd654f55667e3a04f90c9c04d6e7aeed6ddc8c0f00d2bb59b94a861ba70"
+    },
+    {
+      "label": "doctests",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--doc",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "state": "complete",
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-final-doctests.log",
+      "pid": 67231,
+      "exit_code": 0,
+      "seconds": 167.9671431670431,
+      "log_sha256": "f11d08bc941667fedd7d50f6be19d60b14672dd9efe0726db0c3fe3f5452684a"
+    },
+    {
+      "label": "manifest-base",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "06181802e574dbd91e62375536751dea8c270fcd"
+      ],
+      "state": "complete",
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-final-manifest-base.log",
+      "pid": 78843,
+      "exit_code": 0,
+      "seconds": 3.0233867499046028,
+      "log_sha256": "1916b86a13bbcb6fbfa8ac79e6f697f4f5c5e1868517cc54359f8e234cee4a06"
+    },
+    {
+      "label": "unit-tiers-base",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "06181802e574dbd91e62375536751dea8c270fcd"
+      ],
+      "state": "complete",
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-final-unit-tiers-base.log",
+      "pid": 78981,
+      "exit_code": 0,
+      "seconds": 24.94309658301063,
+      "log_sha256": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0"
+    }
+  ]
+}

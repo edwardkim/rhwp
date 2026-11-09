@@ -1,0 +1,38 @@
+[
+  {
+    "case": "report-628",
+    "backend": "native",
+    "page": 110,
+    "review": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/residual-images/report-628/native/review/review_110.png",
+    "overlay": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/residual-images/report-628/native/overlay/overlay_110.png",
+    "raw": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/residual-images/report-628/native/raw_110.png",
+    "pdf": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/residual-images/report-628/native/pdf_110.png",
+    "precise_raw": "93.23582",
+    "head": "eb876d1416fb558c874f9efec65c5722a6769751",
+    "direct_review": "완료",
+    "reviewed_at": "2026-11-09T18:36:31.603674+09:00",
+    "finding": "표4-1의 두 열·불릿 항목·둘째 줄 소속과 아래 본문/쪽78을 대조했다. 표 안의 불릿 시작 위치와 글자 사이 전진·자형이 어긋나며 단순 안티앨리어싱 차이로 한정하지 않는다. 원인 계층은 별도 이슈에서 확정한다. 표와 본문이 통째로 사라지거나 다른 쪽으로 옮겨진 형상은 아니다.",
+    "raw_sha256": "5b815756a02c9c9789939a84037b16d789bfc649076b8950ae0a20c237bc5bce",
+    "pdf_sha256": "df39076b2553429819ca542e301721a9e7205cc5ed0d07088f8c52db5fa36ec5",
+    "review_sha256": "0e4fcc8062e9d9a19f11c1fe823159325276fed44ea18b5c994ff4b275637ce5",
+    "overlay_sha256": "f4906b5aef83c4256f6d52418464c3009bf194acfac780ba49a1bb3214e629ec"
+  },
+  {
+    "case": "report-628",
+    "backend": "wasm",
+    "page": 110,
+    "review": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/residual-images/report-628/wasm/review/review_110.png",
+    "overlay": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/residual-images/report-628/wasm/overlay/overlay_110.png",
+    "raw": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/residual-images/report-628/wasm/raw_110.png",
+    "pdf": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/residual-images/report-628/wasm/pdf_110.png",
+    "precise_raw": "93.23582",
+    "head": "eb876d1416fb558c874f9efec65c5722a6769751",
+    "direct_review": "완료",
+    "reviewed_at": "2026-11-09T18:36:31.607913+09:00",
+    "finding": "표4-1의 두 열·불릿 항목·둘째 줄 소속과 아래 본문/쪽78을 대조했다. 표 안의 불릿 시작 위치와 글자 사이 전진·자형이 어긋나며 단순 안티앨리어싱 차이로 한정하지 않는다. 원인 계층은 별도 이슈에서 확정한다. 표와 본문이 통째로 사라지거나 다른 쪽으로 옮겨진 형상은 아니다.",
+    "raw_sha256": "bffc0edfe41b747834e6622c6dac34aa079babc616e6d9d2c5aa0a2555608eaf",
+    "pdf_sha256": "df39076b2553429819ca542e301721a9e7205cc5ed0d07088f8c52db5fa36ec5",
+    "review_sha256": "3b73e7f910ff775ba85936e5ea16ca5d23ad71f760fbc169ec39741dfacce691",
+    "overlay_sha256": "fa82175881232ba37aca30c2d1f5ca909b444d8a48c40abe7dfdaa1fb8c900b1"
+  }
+]

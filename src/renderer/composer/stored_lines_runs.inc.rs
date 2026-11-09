@@ -5,7 +5,7 @@ fn try_compose_lines<S: crate::storage::Storage>(
 ) -> Result<Vec<ComposedLine>, S::Error> {
     if para.line_segs.is_empty() {
         // LineSeg가 없으면 텍스트를 ComposedLine 으로 분할
-        if para.text.is_empty() {
+        if crate::renderer::tac_table_host_text_is_line_tail(para) {
             return storage.vec(0);
         }
         let default_style_id = para

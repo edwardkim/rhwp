@@ -3224,10 +3224,11 @@ fn serialize_equation_control(eq: &Equation, level: u16, records: &mut Vec<Recor
     w.write_i16(eq.baseline).unwrap();
     // [Task #1061] unknown: u16 — HWP5 spec 표 105 누락 영역, hwplib 정합
     w.write_u16(eq.unknown).unwrap();
-    // version_info: HWP string
-    w.write_hwp_string(&eq.version_info).unwrap();
-    // font_name: HWP string
-    w.write_hwp_string(&eq.font_name).unwrap();
+    // 생략된 선택 문자열은 빈 HWPX 속성으로 바꾸지 않고 같은 HWP5 출처로 저장한다.
+    if !eq.uses_implicit_legacy_font() {
+        w.write_hwp_string(&eq.version_info).unwrap();
+        w.write_hwp_string(&eq.font_name).unwrap();
+    }
 
     records.push(Record {
         tag_id: tags::HWPTAG_EQEDIT,

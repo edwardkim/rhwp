@@ -1,0 +1,103 @@
+{
+  "state": "complete",
+  "pid": 95895,
+  "head": "e1fbd75cfcbefc0f633bcbd2ccef256614267ce8",
+  "base": "509c4c987eb6351d821c4d7739e59f5d0e9725db",
+  "steps": [
+    {
+      "name": "focus-native",
+      "exit_code": 0,
+      "seconds": 25.826328249881044,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/focus-native.log",
+      "sha256": "79d0bb00a1c9bccd3283f032186d333ed8737ddeedc70a7dec4b8dcf9f308262"
+    },
+    {
+      "name": "fresh-wasm",
+      "exit_code": 0,
+      "seconds": 293.5422360410448,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/fresh-wasm.log",
+      "sha256": "0d7f9390ef4067a4e1568080d75820844ae0627c8f6c22ce7deb62ce337dd640"
+    },
+    {
+      "name": "focus-wasm",
+      "exit_code": 0,
+      "seconds": 47.73157962504774,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/focus-wasm.log",
+      "sha256": "6bbae32941d16c1c3852f35d8bfd8eea55112523f4dbee7077ab78d17a7462f3"
+    },
+    {
+      "name": "prepare",
+      "exit_code": 0,
+      "seconds": 4.038160500116646,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/prepare.log",
+      "sha256": "995e24f0bdd6408735e9a68239fd5a8dd949d259788bbc1b95d47820dc59c4ae"
+    },
+    {
+      "name": "focused-nextest",
+      "exit_code": 0,
+      "seconds": 182.02565595903434,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/focused-nextest.log",
+      "sha256": "7704fa90c6d04ab33dd20406019ced9c45b2d77018e294565430de9f9b1290a3"
+    },
+    {
+      "name": "fmt",
+      "exit_code": 0,
+      "seconds": 13.375858042156324,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/fmt.log",
+      "sha256": "b6e19c16e0d5f97094745b63c78c4f15238111c4de91b081bba774a71abff1e8"
+    },
+    {
+      "name": "native-clippy",
+      "exit_code": 0,
+      "seconds": 28.33345470787026,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/native-clippy.log",
+      "sha256": "949ee376b4c5e5e07f97fe4bbb0ff2a902ad1256ffdc737c6d908bf1a7fef12e"
+    },
+    {
+      "name": "wasm-clippy",
+      "exit_code": 0,
+      "seconds": 26.47123545804061,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/wasm-clippy.log",
+      "sha256": "052c5c1fc2e06f21b385fdaf412369d1105f3cd8c9ba8befb05c2ed1c263bd5c"
+    },
+    {
+      "name": "workspace-build",
+      "exit_code": 0,
+      "seconds": 37.80865158396773,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/workspace-build.log",
+      "sha256": "dfc1dee17ac24cb6a2b20a2e417501fa8b48826f2fda84229013fe8a053d76ba"
+    },
+    {
+      "name": "all-target-clippy",
+      "exit_code": 0,
+      "seconds": 39.16257295804098,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/all-target-clippy.log",
+      "sha256": "881faf09bce0cfa298f81294a693327a5e866f33aa57bff68ef04ee85da4bca1"
+    },
+    {
+      "name": "manifest",
+      "exit_code": 0,
+      "seconds": 1.9658461671788245,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/manifest.log",
+      "sha256": "98b6e1b0bc35e913f4e025dcc859bcbe444bfe2b5a643c8e7ea3b93bf4e44d80"
+    },
+    {
+      "name": "unit-tiers",
+      "exit_code": 0,
+      "seconds": 17.33768124994822,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/unit-tiers.log",
+      "sha256": "a3e4901d78bae1fdb4ecd4621bdaedd18d7b083c2a49381e998ed739dadee9e1"
+    }
+  ],
+  "started_at": "2026-11-09T21:11:36.718457+09:00",
+  "wasm_files": {
+    "rhwp.js": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed",
+    "rhwp_bg.wasm": "a5ce8ff30e0b85a8a00c0620f30771809fa06eaec3a0d4eb7faa3573d00be559"
+  },
+  "reused_native_feature_validation": {
+    "source": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/pr-ready-reuse-509c4c98/scoped-validation-state.json",
+    "source_sha256": "2cd07c220074866e83444cd8264e50dcd40aed93511ce909d873b313be157ff8",
+    "reason": "기본/원본 유지 경로는 기존eb876d14와 같은 조회 key로 복원하고 명시적 자연 전진 경로는83c4c8c4와 같다. 새5개 선택 경계 계약과 report838은 현 코드에서 실행한다."
+  },
+  "finished_at": "2026-11-09T21:26:21.233501+09:00"
+}

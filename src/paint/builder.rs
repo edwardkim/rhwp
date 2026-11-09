@@ -658,6 +658,29 @@ impl LayerBuilder {
                                 resolved = Some(payload);
                             }
                         }
+                        // 일반 WMF도 실제 출력 장치 PNG로 준비된 뒤에는 PNG와 같은
+                        // 물리 프레임을 소비한다. 중간 WMFC·별도 색/마스크 전달은 각
+                        // 소유 경로를 유지하고, 준비 전 자원의 크기·원본 bbox는 바꾸지 않는다.
+                        if self.hancom2024_print_bitmap
+                            && !image.transform.has_transform()
+                            && image.content_inset.is_none()
+                            && image.source_rect.is_none()
+                            && image.fill_mode.is_none()
+                            && resolved.as_ref().is_some_and(|payload| {
+                                payload.kind == crate::paint::ResolvedImageKind::OutputDevice
+                                    && !payload.suppress_effects
+                                    && crate::renderer::image_resolver::png_sampling::metafile_surface(
+                                        &payload.data,
+                                    )
+                            })
+                        {
+                            frame = self.page_context.map_or(frame, |context| {
+                                context.raster_image_frame(node, &image)
+                            });
+                            if let Some(owned) = self.image_frames.get_mut(&node.id) {
+                                owned.paint = frame;
+                            }
+                        }
                         if self.profile == RenderProfile::Print
                             && !image.transform.has_transform()
                             && image.content_inset.is_none()

@@ -190,6 +190,7 @@ pub(super) fn measure(
                             seg,
                             profile.hwpx_stored_layout(),
                             profile.hwp5_stored_pagination_layout() && !profile.session_edited(),
+                            !profile.hangul2024_layout(),
                             dpi,
                         )
                     } else {
@@ -272,21 +273,25 @@ pub(super) fn measure(
     // 문단의 흐름을 전진시킨다. 표 줄만 세면 상한이 그 글줄을 되감아, 뒤 문단의
     // 조판 원점이 저장 사다리보다 그만큼 위로 간다(#8095, 156465345 1쪽 pi=0:
     // 표 줄 231.6px 만 세어 제목 줄 44.8px 를 잃었다).
-    // [#8507] 재조판한 개체 줄의 표 앞 줄(필드 시작만 남은 빈 줄)은 이 문단이 쌓는 줄이다.
+    // 재조판한 개체 줄의 앞뒤 앵커 줄도 이 문단이 쌓는 물리 줄이다.
     // 저장 앵커 줄의 회수 계약(#5524)과 달리 rhwp 가 정한 줄 구성이라 그대로 센다.
     if crate::renderer::para_has_composed_object_rows(para)
         && fmt.line_heights.len() == para.line_segs.len()
         && fmt.line_spacings.len() == fmt.line_heights.len()
     {
-        if let Some(&first_owned) = tac_owned_lines.iter().min() {
-            tac_seg_total += (0..first_owned)
-                .map(|index| fmt.line_heights[index] + fmt.line_spacings[index])
-                .sum::<f64>();
+        tac_seg_total += (0..para.line_segs.len())
+            .filter(|index| !tac_owned_lines.contains(index))
+            .map(|index| fmt.line_heights[index] + fmt.line_spacings[index])
+            .sum::<f64>();
+        // 마지막 앵커 줄이 소유한 문단 뒤 간격도 그 줄 뒤에서 한 번 닫는다.
+        if crate::renderer::composer::composed_object_tail(para).is_some() {
+            tac_seg_total += fmt.spacing_after;
         }
     }
     // 표 줄 **뒤** 같은 저장 프레임의 글줄만 센다. 표 앞 앵커 줄(한/글 2024 는 흐름에서
     // 회수한다, #5524)과 저장 되감김 뒤 줄(다음 쪽 몫, #5700)은 이 문단 상한에 넣지 않는다.
     if tac_seg_total > 0.0
+        && !crate::renderer::para_has_composed_object_rows(para)
         && fmt.computed_host_lines.is_none()
         && fmt.line_heights.len() == para.line_segs.len()
         && fmt.line_spacings.len() == fmt.line_heights.len()

@@ -1,0 +1,27 @@
+{
+  "role": "진단용 HWPX 대조 쌍. 원본 HWP의 최종 측정이 아님.",
+  "rows": [
+    {
+      "key": "roundtrip-control",
+      "raw": 99.96933,
+      "input": {
+        "page": 5,
+        "rhwp_png": "output/pr-review/planet6897-integration-20261106/sungeo-zero-id-diagnostic/roundtrip-control/roundtrip-control.png",
+        "rhwp_sha256": "2e817c2451eae665e74e66cc4d8ee242592463eaee10539a1b44919c9b1f99da",
+        "pdf_png": "output/pr-review/planet6897-integration-20261106/r29-direction-native/sungeo/sungeo/pdf_png/pdf-005.png",
+        "pdf_sha256": "3fa1cbe0c22d5d04339e7e833b5e90d4e62bff3233d2a812b2616c404f0ce79f"
+      }
+    },
+    {
+      "key": "equivalent-char-shape-alias",
+      "raw": 100.0,
+      "input": {
+        "page": 5,
+        "rhwp_png": "output/pr-review/planet6897-integration-20261106/sungeo-zero-id-diagnostic/equivalent-char-shape-alias/equivalent-char-shape-alias.png",
+        "rhwp_sha256": "d2dc1cef6594fb01407d4d8a1b6ed08af8b034562c282f8ddaf209a3ae82e693",
+        "pdf_png": "output/pr-review/planet6897-integration-20261106/r29-direction-native/sungeo/sungeo/pdf_png/pdf-005.png",
+        "pdf_sha256": "3fa1cbe0c22d5d04339e7e833b5e90d4e62bff3233d2a812b2616c404f0ce79f"
+      }
+    }
+  ]
+}

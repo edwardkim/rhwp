@@ -2,13 +2,23 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-10-23
+last_verified: 2026-11-08
 ---
 
 # PR 시각 검증 거버넌스 (OVL-step)
 
 > 근거: `mydocs/feedback/ovl-step.md` (2026-07-04 작업지시자 피드백).
 > 적용 대상: 일반 PR review, collaborator-mediated review, 여러 PR 체리픽 누적 검토.
+
+## 역할별 적용 범위
+
+일반 사용자·외부 contributor는 변경 범위에 따른 일반 시각 검증과 증적 제출을 수행한다.
+아래 90%·쪽수·내용 보존·devel 대비 하락 및 페이지별 98% px 회귀 조건은 각 정본의 적용 범위를 따른다.
+**조판 영향 PR의 편람 `--handbook-gate` 실행·통과는 일반 기여자도 준수한다.** 지원 웹폰트를
+사용할 수 있으므로 비공개 원본 OTF 보유를 요구하지 않는다. **정본 보호 TSV 전체의 공식 두 자리
+값 하락 금지는 통합 담당 collaborator·maintainer에게만 추가 적용한다.** 이 특별 검증 전체의
+원본 OTF 확보·설치와 환경 재현을 일반 기여자의 제출 조건으로 요구하지 않는다.
+특별 검증에 필요한 환경 확보·보정·재검증은 통합 담당자가 수행한다.
 
 ## 페이지별 TSV와 PR 재검토 필수 조건
 
@@ -82,6 +92,44 @@ fresh WASM을 각각 비교하며 어느 한 문서·페이지·출력 경로라
 review와 PR 본문에 base/head·producer SHA, 입력/PDF·글꼴·backend 조건, 기준/후보
 Native·fresh WASM TSV 원본, 비교 명령·전쪽 수·최대 하락폭 및 문서/backend/페이지/
 기준/후보/하락폭 목록을 연결한다. 목록이 비면 실제 비교 범위와 2%p 초과 하락 0쪽을 기록한다.
+
+## 정본 보호 TSV의 공식 표시값 보존
+
+**이 절은 조판·렌더링 영향 PR을 검토·통합하는 collaborator·maintainer에게만 적용한다.**
+[정본 보호 TSV](../../pr/assets/visual-protected-baseline/final.tsv)와
+[입력·기준 PDF·측정 조건 manifest](../../pr/assets/visual-protected-baseline/manifest.json)를
+품질 하한으로 적용한다. PR 번호나 파일명만으로 과거 표를 골라 비교하지 않는다.
+일반 사용자·외부 contributor에게 원본 OTF의 보유·설치나
+이 특별 보호 검증의 재현을 제출 조건으로 요구하지 않는다. 통합 담당 collaborator·maintainer가
+원본 글꼴 공급 조건을 확인한 환경에서 수행하며, 이를 위해 비공개 글꼴을 저장소에 배포하지 않는다.
+일반 시각 검증 의무와 90%·완료 페이지 98% 기준은 각 정본의 적용 범위를 유지한다.
+
+1. 정본 보호 TSV와 manifest의 commit SHA·경로·SHA-256을 고정한다. manifest의
+   `table_sha256`을 확인하고, 입력 SHA·기준 PDF SHA·compat·DPI가 일치하는 `document_id`의
+   backend·page로 대응한다. HWP와 HWPX는 별도 입력이며 파일명만 같다고 합치지 않는다.
+   같은 입력·독립 Print PDF·compat·DPI·글꼴 프로그램·계산 방법으로 후보의 전쪽 TSV를 산출한다.
+   Native는 Native, fresh WASM은 fresh WASM과 각각 비교한다. 조건 불일치·원본 글꼴 미확보·
+   기준 없음·쪽 누락·중복·측정 실패·쪽수 불일치는 검증 완료가 아니며 통합 담당자가 해소한다.
+2. 비교 열은 **`silhouette_raw_match_percent`의 공식 소수 둘째 자리 표시값**이다.
+   기준·후보 TSV에 기록된 두 자리 십진수를 `Decimal` 등으로 직접 비교한다.
+   임의 재반올림·정수화·허용 오차로 하락을 숨기지 않는다. 같은 실행의 정밀값과 PNG도 보존하되,
+   이 특별 보호 판정의 기준을 표시값 대신 다른 정밀도나 색상 경계 보정값으로 바꾸지 않는다.
+3. **각 문서·backend·페이지의 공식 두 자리 표시값은 상승 가능, 하락 불가다.**
+   `후보 >= 보호값`이어야 한다. 99.49% → 99.49%·99.50%는 이 보호 기준을 충족하고,
+   99.49% → 99.48% 또는 100.00% → 99.99%는 하락이다. 정밀값에 차이가 있어도 공식 두 자리
+   표시값이 같으면 이 특별 보호 기준의 하락은 아니다. 일반 90%·98% 판정은 정밀값을 계속 쓴다.
+4. 한 페이지·한 backend라도 하락하면 **준비 완료·PR 생성·승인·통합을 보류**한다.
+   일반 devel 대비 2%p 허용폭, 평균 상승, 다른 페이지 개선, 98% 유지 또는 CI 통과로 면제하지 않는다.
+   보호 TSV·PDF·글꼴·DPI·마스크·판정 기준을 바꿔 통과시키지 않고 원인을 보정한 후보에서 재검증한다.
+5. review에는 보호 TSV와 후보 TSV, source/producer SHA, 비교 조건·명령·전쪽 수와
+   문서/backend/페이지별 보호값·후보값·하락 목록을 기록한다. 하락 쪽은 같은 쪽의 review·overlay로
+   확인한다. 이 특별 보호 검증의 미완료를 일반 사용자에게 원본 OTF 설치 요구로 전가하지 않는다.
+
+정본의 중복 제거·갱신은 [자산 설명](../../pr/assets/visual-protected-baseline/README.md)을 따른다.
+같은 입력 SHA·PDF SHA·측정 조건·backend의 중복은 최신 수용된 최종 전쪽 검증본 하나로
+정리한다. 출처 commit·원본 TSV SHA·선택 열·이전 자료와의 대조는 manifest에 보존한다.
+페이지별 최댓값을 조합하거나 미달 후보로 기준을 낮추지 않는다. 새로운 개선 결과로 갱신할 때도
+기존 정본 대비 전쪽 하락이 없음을 확인하고 TSV와 manifest를 함께 검토·커밋한다.
 
 ## 원칙
 

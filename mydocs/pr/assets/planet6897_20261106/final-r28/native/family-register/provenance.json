@@ -1,0 +1,35 @@
+{
+  "key": "family-register",
+  "backend": "native",
+  "state": "measured-not-final-review",
+  "prs": [
+    8559
+  ],
+  "input": "samples/issue8554/2913671-appendix1-family-register.hwp",
+  "input_sha256": "7f62b9fea6135cbf87192fc152674986c6a5eb4bdc73f216f32925e853dc077b",
+  "pdf": "pdf/issue8554/2913671-appendix1-family-register-2022.pdf",
+  "pdf_sha256": "bfaf077f4e01e5397cbc34831a564fd88760c78c31aff1800ad13e52c5e69067",
+  "pdf_pages": 2,
+  "compat": "2022",
+  "font_environment": null,
+  "linked_images": [],
+  "minimum": 99.65,
+  "below90": 0,
+  "full_tsv": "native/family-register/full.tsv",
+  "full_tsv_sha256": "ede116d0ff642669e4203da68413a7f65aeeb1e0d88206103bc8611a8f4fe58c",
+  "measurement_log": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/final-r28-native-primary-remaining/family-register/run.log",
+  "producer": {
+    "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-batch-corrections-r28",
+    "sha256": "3addcb1c0f4f15d1702cf9d2686a1946d5931f14e69eaa7d24131500fd399190"
+  },
+  "panels": [
+    {
+      "page": 1,
+      "raw": "99.65",
+      "actual_png_sha256": "cf9336b95cc5c4fad32711435db5784433c418809e04670693459c2e16307f02",
+      "pdf_png_sha256": "058c40151e50e89151862e81ce925a42f427247e4db5ffb7c8f6bad639bb4647",
+      "review": "native/family-register/review-001.png",
+      "overlay": "native/family-register/overlay-001.png"
+    }
+  ]
+}

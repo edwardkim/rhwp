@@ -4568,7 +4568,7 @@ impl TypesetEngine {
             );
         let unstored_cell_band = self
             .tac_flow_query()
-            .single_tac_line_has_unstored_cell_text(para, table, fmt, tac_count)
+            .single_tac_line_has_current_cell_rows(para, table, fmt, tac_count, &ft.cells)
             && ft.total_height > table_height + 0.5;
         let owns_tac_band =
             ladder_omits_band || hwpx_rowbreak_tac_missing_owned_line || unstored_cell_band;
@@ -5227,7 +5227,9 @@ impl TypesetEngine {
             && is_first_table
             && !st.pre_emitted_host_paras.contains(&para_idx)
         {
-            let h = fmt.line_advances_sum(0..pre_table_end_line);
+            let h = fmt
+                .host_text_bounds(para, 0..pre_table_end_line, self.dpi)
+                .1;
             if !defer_host_line {
                 st.record_host_text_fragment(para_idx, 0..pre_table_end_line, para, fmt, self.dpi);
                 st.append_item(PageItem::PartialParagraph {
@@ -5310,6 +5312,17 @@ impl TypesetEngine {
         } else {
             None
         };
+        // 실제 수용한 독립 개체 줄의 pen을 paint에 전달한다. 후행 표가 이미 소비한
+        // 앞 표의 줄 오프셋을 다시 더하지 않도록 저장/현재 줄의 좌표계를 구분한다.
+        let composed_table_row_origin = crate::renderer::composer::composed_tac_row(para, ctrl_idx)
+            .filter(|&row| {
+                fmt.line_count() == para.line_segs.len()
+                    && self.is_effective_tac_table(para, table, fmt)
+                    && fmt.line_heights.get(row).is_some_and(|height| {
+                        (*height - table_total_height).abs() <= self.dpi / 7200.0
+                    })
+            })
+            .map(|_| st.current_height + pre_height);
         let mut stored_table_row_origin = None;
         // 단일 원본 개체 줄의 원점은 실제 수용 끝에서 같은 줄 전진을 제외해 얻는다.
         // 문단 위 간격을 소비하기 전의 커서나 저장 제품군으로 원점을 추정하지 않는다.
@@ -5939,7 +5952,8 @@ impl TypesetEngine {
             && !pre_text_exists
             && !no_lineseg_band_host;
         if should_add_post_text {
-            let post_height: f64 = fmt.line_advances_sum(post_table_start..total_lines);
+            let (post_content_height, post_height) =
+                fmt.host_text_bounds(para, post_table_start..total_lines, self.dpi);
             let stored_host_origin = st
                 .paragraph_float_placements
                 .get(&(para_idx, ctrl_idx))
@@ -6022,7 +6036,6 @@ impl TypesetEngine {
             // 쪽 끝의 마지막 줄은 글줄의 점유 끝으로 수용한다. 줄 뒤 간격은
             // 다음 흐름에는 보존하지만, 그 간격만 용지 밖에 남는다는 이유로
             // 본문에 들어가는 줄을 다음 쪽으로 옮기지 않는다.
-            let post_content_height = fmt.line_content_height(post_table_start..total_lines, 0.0);
             if (self.tac_table_line_index(para, table, fmt) == Some(0)
                 || session_grown_topbottom_spill)
                 && st.current_height + post_content_height > st.available_height() + 0.5
@@ -6057,14 +6070,14 @@ impl TypesetEngine {
                 && !session_grown_topbottom_spill
                 && st.current_height + post_height > st.available_height() + 0.5)
                 .then(|| {
-                    let mut used = st.current_height;
                     let mut fitted = post_table_start;
                     for line in post_table_start..total_lines {
-                        let height = fmt.line_heights.get(line).copied().unwrap_or(0.0);
-                        if used + height > st.available_height() + 0.5 {
+                        let content = fmt
+                            .host_text_bounds(para, post_table_start..line + 1, self.dpi)
+                            .0;
+                        if st.current_height + content > st.available_height() + 0.5 {
                             break;
                         }
-                        used += height + fmt.line_spacings.get(line).copied().unwrap_or(0.0);
                         fitted = line + 1;
                     }
                     fitted
@@ -6083,7 +6096,10 @@ impl TypesetEngine {
                     start_line: post_table_start,
                     end_line: split_line,
                 });
-                st.advance_flow_by(fmt.line_advances_sum(post_table_start..split_line));
+                st.advance_flow_by(
+                    fmt.host_text_bounds(para, post_table_start..split_line, self.dpi)
+                        .1,
+                );
                 st.advance_column_or_new_page();
                 st.record_host_text_fragment(
                     para_idx,
@@ -6097,7 +6113,10 @@ impl TypesetEngine {
                     start_line: split_line,
                     end_line: total_lines,
                 });
-                st.advance_flow_by(fmt.line_advances_sum(split_line..total_lines));
+                st.advance_flow_by(
+                    fmt.host_text_bounds(para, split_line..total_lines, self.dpi)
+                        .1,
+                );
             } else {
                 st.record_host_text_fragment(
                     para_idx,
@@ -6186,21 +6205,37 @@ impl TypesetEngine {
         });
         // 표 줄 뒤에 컨트롤만 남은 저장 줄(쪽 번호 감추기 등)은 post-text 로 나가지 않지만
         // 한/글은 그 줄 상자를 쌓는다. 표 줄 간격과 그 줄들을 여기서 더하고, 마지막 줄
-        // 간격은 아래 terminal 복원이 더한다.
-        let control_only_tail_px = (is_tac
+        // 간격은 아래 terminal 복원이 더한다. 표 줄 간격 뒤 그 줄이 쪽에 들어가지 않으면
+        // 한/글은 다음 쪽 맨 위에 줄을 놓는다(저장 vpos 재시작) — 그 줄을 다음 쪽 항목으로 낸다.
+        let control_only_tail = (is_tac
             && !has_post_text
             && !has_following_tac_table
             && tac_table_count == 1
             && total_lines == para.line_segs.len()
             && self.tac_table_line_index(para, table, fmt) == Some(0))
-        .then(|| crate::renderer::tac_host_control_only_tail_hu(para, 0))
-        .flatten()
-        .zip(para.line_segs.first().zip(para.line_segs.last()))
-        .map(|(tail, (first, last))| {
-            hwpunit_to_px(first.line_spacing + tail - last.line_spacing, self.dpi)
-        });
-        if let Some(advance) = control_only_tail_px {
-            st.advance_flow_by(advance);
+        .then(|| crate::renderer::tac_host_control_only_tail(para, 0))
+        .flatten();
+        if let Some(tail) = control_only_tail {
+            st.advance_flow_by(hwpunit_to_px(para.line_segs[0].line_spacing, self.dpi));
+            let first_tail_height = hwpunit_to_px(tail.lines[0].line_height, self.dpi);
+            if st.current_height + first_tail_height > st.available_height() + 0.5
+                && !st.current_items.is_empty()
+            {
+                st.advance_column_or_new_page();
+                st.record_host_text_fragment(para_idx, 1..total_lines, para, fmt, self.dpi);
+                st.append_item(PageItem::PartialParagraph {
+                    para_index: para_idx,
+                    start_line: 1,
+                    end_line: total_lines,
+                });
+            }
+            let tail_hu: i32 = tail
+                .lines
+                .iter()
+                .map(|line| line.line_height + line.line_spacing)
+                .sum::<i32>()
+                - tail.lines.last().map_or(0, |line| line.line_spacing);
+            st.advance_flow_by(hwpunit_to_px(tail_hu, self.dpi));
         }
         let stored_tail = (is_last_placed
             && table.common.treat_as_char
@@ -6246,8 +6281,12 @@ impl TypesetEngine {
             && !should_add_post_text
             && para.control_text_positions().get(ctrl_idx).copied()
                 == Some(para.text.chars().count());
-        let restore_terminal_tac_spacing =
-            is_tac && (!has_post_text || whitespace_ends_before_table) && !has_following_tac_table;
+        let composed_tail_owns_spacing = crate::renderer::composer::composed_object_tail(para)
+            .is_some_and(|tail| tail.end == fmt.line_count());
+        let restore_terminal_tac_spacing = is_tac
+            && (!has_post_text || whitespace_ends_before_table)
+            && !has_following_tac_table
+            && !composed_tail_owns_spacing;
         if restore_terminal_tac_spacing {
             let occupied_end = st.current_height;
             st.advance_flow_by(fmt.total_height - fmt.height_for_fit);
@@ -6352,7 +6391,12 @@ impl TypesetEngine {
                 Some(origin)
             },
         );
-        let stored_table_row_origin = stored_table_row_origin.or(accepted_single_row_origin);
+        let stored_table_row_origin = stored_table_row_origin
+            .or(accepted_single_row_origin)
+            .or_else(|| {
+                composed_table_row_origin
+                    .filter(|_| !st.inline_placements.contains_key(&(para_idx, ctrl_idx)))
+            });
         if let Some(origin) = stored_table_row_origin {
             // 줄 뒤 간격까지 실제로 수용한 같은 흐름 끝을 전달한다. 본체 높이로
             // 끝을 다시 추정하면 뒤 문단이 저장 줄 간격만큼 위로 이동한다.

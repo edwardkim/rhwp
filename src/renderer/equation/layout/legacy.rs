@@ -200,7 +200,12 @@ pub(super) fn row_children(layout: &EqLayout, nodes: &[EqNode], fs: f64) -> Vec<
             };
             let (left, right) = match op {
                 "+" | "-" | "−" => (
-                    if index > 0 { fs / 9.0 } else { 0.0 },
+                    if index > 0 && !layout.implicit_legacy_font {
+                        fs / 9.0
+                    } else {
+                        // 생략 필드 세대의 합 기호는 앞 첨자 자체의 꼬리 여백을 쓴다.
+                        0.0
+                    },
                     if index + 1 < nodes.len()
                         && !matches!(nodes[index + 1].ungrouped(), EqNode::Paren { .. })
                     {

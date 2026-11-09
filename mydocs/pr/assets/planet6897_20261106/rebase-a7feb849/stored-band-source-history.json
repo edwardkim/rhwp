@@ -1,0 +1,131 @@
+[
+  {
+    "source": "636ff407ac",
+    "sha256": "fc6d6f27cb3767ebf57a302c6052a035db055042879e4e5165c173a950fd81b6",
+    "paras": [
+      [
+        {
+          "textpos": "0",
+          "vertpos": "440",
+          "vertsize": "1100",
+          "textheight": "1100",
+          "baseline": "935",
+          "spacing": "660",
+          "horzpos": "0",
+          "horzsize": "51024",
+          "flags": "393216"
+        },
+        {
+          "textpos": "23",
+          "vertpos": "4723",
+          "vertsize": "300",
+          "textheight": "300",
+          "baseline": "255",
+          "spacing": "180",
+          "horzpos": "0",
+          "horzsize": "51024",
+          "flags": "393216"
+        }
+      ],
+      [
+        {
+          "textpos": "0",
+          "vertpos": "5203",
+          "vertsize": "3628",
+          "textheight": "3628",
+          "baseline": "3084",
+          "spacing": "0",
+          "horzpos": "0",
+          "horzsize": "51024",
+          "flags": "393216"
+        }
+      ]
+    ]
+  },
+  {
+    "source": "46aca162bcf7fbcbc114cc42a251e6047598b371",
+    "sha256": "fc6d6f27cb3767ebf57a302c6052a035db055042879e4e5165c173a950fd81b6",
+    "paras": [
+      [
+        {
+          "textpos": "0",
+          "vertpos": "440",
+          "vertsize": "1100",
+          "textheight": "1100",
+          "baseline": "935",
+          "spacing": "660",
+          "horzpos": "0",
+          "horzsize": "51024",
+          "flags": "393216"
+        },
+        {
+          "textpos": "23",
+          "vertpos": "4723",
+          "vertsize": "300",
+          "textheight": "300",
+          "baseline": "255",
+          "spacing": "180",
+          "horzpos": "0",
+          "horzsize": "51024",
+          "flags": "393216"
+        }
+      ],
+      [
+        {
+          "textpos": "0",
+          "vertpos": "5203",
+          "vertsize": "3628",
+          "textheight": "3628",
+          "baseline": "3084",
+          "spacing": "0",
+          "horzpos": "0",
+          "horzsize": "51024",
+          "flags": "393216"
+        }
+      ]
+    ]
+  },
+  {
+    "source": "9470fb026a8cd3b3d9594db55298b6f6c347bfda",
+    "sha256": "fc6d6f27cb3767ebf57a302c6052a035db055042879e4e5165c173a950fd81b6",
+    "paras": [
+      [
+        {
+          "textpos": "0",
+          "vertpos": "440",
+          "vertsize": "1100",
+          "textheight": "1100",
+          "baseline": "935",
+          "spacing": "660",
+          "horzpos": "0",
+          "horzsize": "51024",
+          "flags": "393216"
+        },
+        {
+          "textpos": "23",
+          "vertpos": "4723",
+          "vertsize": "300",
+          "textheight": "300",
+          "baseline": "255",
+          "spacing": "180",
+          "horzpos": "0",
+          "horzsize": "51024",
+          "flags": "393216"
+        }
+      ],
+      [
+        {
+          "textpos": "0",
+          "vertpos": "5203",
+          "vertsize": "3628",
+          "textheight": "3628",
+          "baseline": "3084",
+          "spacing": "0",
+          "horzpos": "0",
+          "horzsize": "51024",
+          "flags": "393216"
+        }
+      ]
+    ]
+  }
+]

@@ -23,6 +23,8 @@ pub mod char_overlap;
 pub mod composer;
 mod conjoining_jamo;
 pub(crate) mod footnote_frames;
+#[cfg(target_arch = "wasm32")]
+pub(crate) mod mipmap_sampling;
 pub use conjoining_jamo::IsolatedJamoFont;
 pub(crate) mod emphasis;
 pub(crate) mod enclosed_pua_geometry;
@@ -57,6 +59,7 @@ pub mod hyperlinks;
 pub(crate) mod image_geometry;
 pub(crate) mod image_header;
 pub mod image_resolver;
+mod implicit_symbol;
 pub mod inline_flow;
 pub(crate) mod kerning;
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
@@ -392,6 +395,9 @@ pub struct TextStyle {
     /// 유형 미상과 구별한 원본 언어 슬롯의 명시적 TTF 선언이다.
     #[serde(skip_serializing)]
     pub source_font_is_ttf: bool,
+    /// 실제 원본 주 프로그램 선택. 같은 글리프의 실제 공급자와 대조한다.
+    #[serde(skip)]
+    pub selected_primary_font_program: Option<font_environment::FontProgramIdentity>,
     /// 독립 출력에서 굵기 전진이 확인된 원본 글꼴 프로그램 선언이다.
     #[serde(skip_serializing)]
     pub source_verified_hft_bold_tracking: bool,
@@ -410,6 +416,9 @@ pub struct TextStyle {
     /// 명시적으로 선택한 실제 프로그램의 잉크 폭. 논리 전진과 구분한다.
     #[serde(skip_serializing)]
     pub preserve_glyph_ink: bool,
+    /// 자연 프로그램의 전진을 명시적으로 선택했는지. 윤곽 폭 보존과 별개다.
+    #[serde(skip)]
+    pub natural_program_metrics: bool,
     /// 글자 색상
     pub color: ColorRef,
     /// 진하게
@@ -590,7 +599,7 @@ pub struct TextStyle {
     #[serde(skip_serializing)]
     pub ascii_punct_latin: Option<Box<LatinSlotMetrics>>,
 }
-crate::storage::clone_fields!(TextStyle, {literal_soft_hyphen, text_paint, continuous_shadow, inherited_half_space_em, script_metrics, shadow_offset_percent, space_compression, literal_figure_space, literal_figure_space_em, native_pua_metrics, native_otf_metrics, bidi_layout, emphasis_skip_first_cluster, top_underline_font_size, top_underline_phase, supplemental_metrics, isolated_jamo_font, font_family, font_size, fixed_glyph_advances, source_font_is_hft, source_font_is_ttf, source_verified_hft_bold_tracking, source_hwp3_hft_bold, resolved_font_size, font_position, hft_print_frame, preserve_glyph_ink, color, bold, italic, underline, strikethrough, kerning, letter_spacing, ratio, default_tab_width, tab_stops, auto_tab_right, auto_left_tab_position, available_width, line_x_offset, text_start_offset, right_tab_block_width_override, tab_leaders, inline_tabs, extra_word_spacing, unjustified_leading_spaces, extra_char_spacing, extra_dash_advance, outline_type, shadow_type, shadow_color, shadow_offset_x, shadow_offset_y, emboss, engrave, superscript, subscript, emphasis_dot, underline_shape, strike_shape, underline_color, strike_color, shade_color, font_metric_trusted, glyph_fallback_advance_explicit, metric_font_family, original_glyph_metric_family, font_space_em, layout_half_space, regenerated_font_metrics, hft_hangul_face, hft_font_face, hft_fullwidth_dot, ascii_punct_latin});
+crate::storage::clone_fields!(TextStyle, {literal_soft_hyphen, text_paint, continuous_shadow, inherited_half_space_em, script_metrics, shadow_offset_percent, space_compression, literal_figure_space, literal_figure_space_em, native_pua_metrics, native_otf_metrics, bidi_layout, emphasis_skip_first_cluster, top_underline_font_size, top_underline_phase, supplemental_metrics, isolated_jamo_font, font_family, font_size, fixed_glyph_advances, source_font_is_hft, source_font_is_ttf, selected_primary_font_program, source_verified_hft_bold_tracking, source_hwp3_hft_bold, resolved_font_size, font_position, hft_print_frame, preserve_glyph_ink, natural_program_metrics, color, bold, italic, underline, strikethrough, kerning, letter_spacing, ratio, default_tab_width, tab_stops, auto_tab_right, auto_left_tab_position, available_width, line_x_offset, text_start_offset, right_tab_block_width_override, tab_leaders, inline_tabs, extra_word_spacing, unjustified_leading_spaces, extra_char_spacing, extra_dash_advance, outline_type, shadow_type, shadow_color, shadow_offset_x, shadow_offset_y, emboss, engrave, superscript, subscript, emphasis_dot, underline_shape, strike_shape, underline_color, strike_color, shade_color, font_metric_trusted, glyph_fallback_advance_explicit, metric_font_family, original_glyph_metric_family, font_space_em, layout_half_space, regenerated_font_metrics, hft_hangul_face, hft_font_face, hft_fullwidth_dot, ascii_punct_latin});
 
 /// [#7418] 영문 슬롯의 기본 메트릭 — [`TextStyle::ascii_punct_latin`] 참조.
 #[derive(Debug, Clone, PartialEq)]
@@ -607,12 +616,13 @@ pub struct LatinSlotMetrics {
     pub source_font_is_hft: bool,
     /// 영문 슬롯의 명시적 TTF 선언이다.
     pub source_font_is_ttf: bool,
+    pub selected_primary_font_program: Option<font_environment::FontProgramIdentity>,
     pub source_verified_hft_bold_tracking: bool,
     pub letter_spacing: f64,
     pub ratio: f64,
 }
 
-crate::storage::clone_fields!(LatinSlotMetrics, {font_family, native_otf_metrics, metric_font_family, original_glyph_metric_family, font_metric_trusted, source_font_is_hft, source_font_is_ttf, source_verified_hft_bold_tracking, letter_spacing, ratio});
+crate::storage::clone_fields!(LatinSlotMetrics, {font_family, native_otf_metrics, metric_font_family, original_glyph_metric_family, font_metric_trusted, source_font_is_hft, source_font_is_ttf, selected_primary_font_program, source_verified_hft_bold_tracking, letter_spacing, ratio});
 crate::storage::clone_copy!(crate::model::style::UnderlineType);
 
 /// 위첨자/아래첨자 글리프를 그릴 때 적용하는 본문 대비 글꼴 크기 배율.
@@ -621,6 +631,9 @@ pub const SCRIPT_FONT_SCALE: f64 = 0.7;
 pub const SUPERSCRIPT_RISE_EM: f64 = 0.3;
 /// 아래첨자 baseline 하향 이동량 (본문 글꼴 크기 대비 em).
 pub const SUBSCRIPT_DROP_EM: f64 = 0.15;
+
+/// 독립 한/글 Print의 합성 굵기 `w / Tf`; Native와 Canvas가 같은 값을 소비한다.
+pub(crate) const HANCOM_FAUX_BOLD_STROKE_EM: f64 = 0.02;
 
 /// 합성 볼드 획 굵기(px) — 실제 Bold 메트릭이 없는 face 의 볼드 요청에만.
 ///
@@ -635,9 +648,6 @@ pub const SUBSCRIPT_DROP_EM: f64 = 0.15;
 /// 잡았으므로 종전대로 그 face 를 요청한다. DB 에 없는 face 는 어느 쪽인지
 /// 알 근거가 없어 건드리지 않는다.
 pub(crate) fn faux_bold_stroke_width(style: &TextStyle, font_size: f64) -> Option<f64> {
-    /// 한/글 2022 PDF 실측 — `w / Tf`.
-    const HANCOM_FAUX_BOLD_STROKE_EM: f64 = 0.02;
-
     if !style.bold {
         return None;
     }
@@ -801,13 +811,19 @@ pub(crate) fn canvas_cluster_fit(
     // 원본 TTF에 없는 작은 수학 기호는 대체 face로 그리되 원본의 반각
     // 칸을 사용한다. 음수 자간은 윤곽을 누르지 않지만, 전각 대체 face의
     // 양쪽 빈 공간은 반각 칸 중앙에 맞춰야 독립 Print와 같은 원점이 된다.
-    if style.source_font_is_ttf
-        && style.letter_spacing < 0.0
+    if style.letter_spacing < 0.0
         && matches!(cluster, "\u{2218}" | "\u{2219}")
-        && style
-            .native_otf_metrics
-            .as_ref()
-            .is_some_and(|font| cluster.chars().next().is_some_and(|ch| !font.has_glyph(ch)))
+        && style.native_otf_metrics.as_ref().is_some_and(|font| {
+            cluster.chars().next().is_some_and(|ch| {
+                // HWP5의 유형 미상은 TTF 선언이 아니다. 실제 첫 TTF가 결측이면
+                // 뒤 표시 후보가 glyph를 갖더라도 같은 반각 칸의 정렬을 보존한다.
+                // CFF/HFT의 원본 전진 계약을 이 조건으로 승격하지 않는다.
+                (style.source_font_is_ttf && !font.has_glyph(ch))
+                    || (!style.source_font_is_ttf
+                        && !style.source_font_is_hft
+                        && font.primary_truetype_lacks_glyph(ch))
+            })
+        })
     {
         let advance =
             style.glyph_fit_advance(layout_cluster_advance)? * style.script_advance_scale();
@@ -891,12 +907,14 @@ impl Default for TextStyle {
             fixed_glyph_advances: false,
             source_font_is_hft: false,
             source_font_is_ttf: false,
+            selected_primary_font_program: None,
             source_verified_hft_bold_tracking: false,
             source_hwp3_hft_bold: false,
             resolved_font_size: false,
             font_position: None,
             hft_print_frame: false,
             preserve_glyph_ink: false,
+            natural_program_metrics: false,
             color: 0,
             bold: false,
             italic: false,
@@ -2092,19 +2110,51 @@ pub(crate) fn para_has_composed_object_rows(p: &crate::model::paragraph::Paragra
 ///
 /// 쪽 번호 감추기 같은 컨트롤만 남은 줄도 한/글은 줄 상자(높이+간격)를 쌓는다.
 /// 본문 줄이 없어 post-text 로 나가지 않으므로 조판과 그리기가 이 값을 함께 더한다.
-/// 한/글이 계산한 저장 줄이 끊김 없이 이어질 때만 값을 돌려준다.
+/// 한/글이 계산한 저장 줄이 같은 쪽에서 끊김 없이 이어질 때만 값을 돌려준다.
 pub(crate) fn tac_host_control_only_tail_hu(
     p: &crate::model::paragraph::Paragraph,
     table_line: usize,
 ) -> Option<i32> {
+    tac_host_control_only_tail(p, table_line)
+        .filter(|tail| tail.same_frame)
+        .map(|tail| {
+            tail.lines
+                .iter()
+                .map(|s| s.line_height + s.line_spacing)
+                .sum()
+        })
+}
+
+/// 표 줄 뒤 컨트롤 전용 저장 줄들.
+pub(crate) struct TacHostControlOnlyTail<'a> {
+    /// 표 줄 다음 줄부터 문단 끝까지의 저장 줄.
+    pub lines: &'a [crate::model::paragraph::LineSeg],
+    /// 모든 줄이 앞 줄의 `vpos + 줄 높이 + 줄간격` 에서 이어진다(같은 저장 쪽).
+    pub same_frame: bool,
+}
+
+/// 본문 글자가 없는 표 host 문단의 표 줄 뒤 컨트롤 전용 저장 줄들.
+///
+/// 한/글은 이 줄도 보통 줄처럼 `앞 줄 vpos + 줄 높이 + 줄간격` 에 놓고, 그 자리가 쪽에
+/// 들어가지 않으면 다음 쪽 맨 위에서 다시 시작한다(저장 vpos 가 앞 줄보다 작아진다).
+/// 각 줄은 앞 줄에서 끊김 없이 잇거나 저장 쪽 재시작이어야 한다.
+pub(crate) fn tac_host_control_only_tail(
+    p: &crate::model::paragraph::Paragraph,
+    table_line: usize,
+) -> Option<TacHostControlOnlyTail<'_>> {
     use crate::model::{control::Control, paragraph::LineSeg};
     let tail = p
         .line_segs
         .get(table_line + 1..)
         .filter(|t| !t.is_empty())?;
-    let contiguous = p.line_segs[table_line..]
-        .windows(2)
-        .all(|w| w[1].vertical_pos == w[0].vertical_pos + w[0].line_height + w[0].line_spacing);
+    let steps = p.line_segs[table_line..].windows(2);
+    let continues = |w: &[LineSeg]| {
+        w[1].vertical_pos == w[0].vertical_pos + w[0].line_height + w[0].line_spacing
+    };
+    let same_frame = steps.clone().all(continues);
+    let stored_flow = steps
+        .clone()
+        .all(|w| continues(w) || w[1].vertical_pos < w[0].vertical_pos);
     // 표 말고 다른 개체가 있으면 뒤 줄은 그 개체의 줄이다(개체 배치가 높이를 쌓는다).
     let only_one_object = p
         .controls
@@ -2121,13 +2171,16 @@ pub(crate) fn tac_host_control_only_tail_hu(
         })
         .count()
         == 1;
-    (contiguous
+    (stored_flow
         && only_one_object
         && p.text.is_empty()
         && p.line_segs
             .iter()
             .all(|s| s.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0))
-    .then(|| tail.iter().map(|s| s.line_height + s.line_spacing).sum())
+    .then_some(TacHostControlOnlyTail {
+        lines: tail,
+        same_frame,
+    })
 }
 
 /// These controls do not replace the empty host paragraph's own text line.
@@ -2761,6 +2814,45 @@ pub(crate) fn tac_object_stack_line_metrics_with_storage<S: crate::storage::Stor
     Ok((!lines.is_empty()).then_some(lines))
 }
 
+/// 저장 줄이 없는 문단의 텍스트가 줄을 따로 만들지 않는지 — 비었거나, 줄 머리의 글자처럼
+/// 취급 표 하나 **뒤의 공백뿐**이다.
+///
+/// 한/글은 말미 공백에 줄상자를 주지 않는다(#7500·#7160 `absorb_whitespace_only_rows`).
+/// 표가 줄 머리에서 줄을 소유하고 그 뒤 공백은 표 줄 끝에 걸리므로, 텍스트가 빈 문단과
+/// 같은 표 줄 하나만 남는다. 공백 줄을 따로 두면 표 아래에 em 줄 하나가 더 생겨 뒤 내용을
+/// 그만큼 밀어낸다(`samples/issue8574`: 한/글 저장본은 표 줄 하나만
+/// 저장하고, 줄을 지운 파일도 한/글 2020·2024 Print 가 같은 자리에 뒤 문단을 둔다).
+/// 표 앞에 공백이 있거나, 가시 글자나 다른 글자처럼 취급 개체가 있으면 줄 구성이 달라지므로
+/// 대상이 아니다 — 그 줄들은 줄 나눔이 정한다.
+pub(crate) fn tac_table_host_text_is_line_tail(para: &crate::model::paragraph::Paragraph) -> bool {
+    use crate::model::control::Control;
+    if para.text.is_empty() {
+        return true;
+    }
+    if !para
+        .text
+        .chars()
+        .all(|c| matches!(c, ' ' | '\t' | '\u{3000}'))
+    {
+        return false;
+    }
+    let mut inline_objects = para
+        .controls
+        .iter()
+        .zip(para.control_text_positions())
+        .filter(|(control, _)| match control {
+            Control::Table(t) => t.common.treat_as_char,
+            Control::Picture(p) => p.common.treat_as_char,
+            Control::Shape(s) => s.common().treat_as_char,
+            Control::Equation(_) | Control::Form(_) => true,
+            _ => false,
+        });
+    matches!(
+        (inline_objects.next(), inline_objects.next()),
+        (Some((Control::Table(_), 0)), None)
+    )
+}
+
 /// [#7418] 저장 줄 없는 문단의 글자처럼 취급 **표** 줄 — `(표 높이, 줄 뒤 leading)`.
 ///
 /// 조성기는 글자 없이 표 하나만 든 문단에 줄을 만들지 않는다. 표 높이는 표 배치
@@ -2777,7 +2869,7 @@ pub(crate) fn tac_table_host_line_metrics(
     para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
 ) -> Option<(f64, f64)> {
     use crate::model::control::Control;
-    if !para_has_no_stored_line_segs(para) || !para.text.is_empty() {
+    if !para_has_no_stored_line_segs(para) || !tac_table_host_text_is_line_tail(para) {
         return None;
     }
     let height = para
@@ -3527,6 +3619,7 @@ fn installed_font_program_aliases(name: &str) -> &'static [&'static str] {
         "휴먼명조" => &["HumanMyeongJo"],
         "한컴 고딕" => &["Hancom Gothic", "Hancom Gothic Regular"],
         "한컴 윤고딕 240" => &["Haan YGodic 240"],
+        "한컴 윤고딕 250" => &["Haan YGodic 250"],
         _ => &[],
     }
 }
@@ -3631,6 +3724,9 @@ pub(crate) fn installed_render_font_aliases(font_family: &str) -> &'static [&'st
             "함초롬돋움",
         ],
         "HY그래픽M" => &["HYGraphic", "HYGraphic-Medium", "HCR Dotum", "함초롬돋움"],
+        // [#8575] 설치본 HANYGO250.ttf 의 영문 family. Native 글꼴 목록은 이 이름만
+        // 노출해 한국어 이름으로는 같은 face 를 찾지 못하고 대체 글꼴로 그렸다.
+        "한컴 윤고딕 250" => &["Haan YGodic 250"],
         // #4739: 구형 정부상징 부처명 face가 없을 때 현재 공식 배포 face를 찾는다.
         // 동일 alias가 아니라 availability 기반 successor이므로 exact legacy 뒤에만 둔다.
         "정부상징 부처명_16040911" | "Government_16040911" => &[

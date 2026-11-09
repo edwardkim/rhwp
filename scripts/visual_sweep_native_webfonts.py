@@ -215,7 +215,9 @@ def _resource(root, cache, url):
                 os.replace(temporary, original)
             finally:
                 temporary.unlink(missing_ok=True)
-        font = TTFont(original)
+        # 동일한 원본의 Native 프로그램 신원을 변환 시각으로 바꾸지 않는다.
+        # 매번 원본을 다시 읽어 캐시 변조를 검증하는 계약은 유지한다.
+        font = TTFont(original, recalcTimestamp=False)
         native = folder / ('native.otf' if font.sfntVersion == 'OTTO' else 'native.ttf')
         font.flavor = None
         with tempfile.NamedTemporaryFile(dir=folder, suffix='.ttf', delete=False) as out:

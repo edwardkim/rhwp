@@ -99,6 +99,11 @@
       "changeSetId": "issue-1994.hankyoreh-canvaskit",
       "path": "assets/font-rules/changes/issue-1994-hankyoreh-canvaskit.json",
       "sha256": "66c893efa5293bb74850b9c8da6be63f0ba34ecb64c1ec1cad5e8cc67531c0c7"
+    },
+    {
+      "changeSetId": "issue-8575.ygodic250-metric-name",
+      "path": "assets/font-rules/changes/issue-8575-ygodic250-metric-name.json",
+      "sha256": "79ff6b903d1f494e3329e9515ffb994838b4f2ea5f2e05d0dd60a50ca066c706"
     }
   ],
   "evidenceRecords": [
@@ -223,6 +228,14 @@
       "parentEvidenceIds": [],
       "sha256": "f80c23a7c898b623fba9b8ceb92e1871ded1b2036783b3a4d85a68c6a1126f15",
       "source": "assets/font-rules/evidence/issue-1994-hankyoreh-original-webfont.json"
+    },
+    {
+      "evidenceId": "evidence.issue-8575.ygodic250-pdf",
+      "kind": "public-fixture",
+      "licenseOrProvenance": "공개 합성 입력 samples/issue8575/shape_image_fill.hwpx 2쪽(한컴 윤고딕 250, 22pt)의 한/글 2020 Print PDF는 HaanYGodic25를 내장합니다. 낱말 폭(2021. 72.12pt, 윤고딕 59.33pt, 250 49.84pt, 한글 39.54pt)이 같은 이름의 실폰트 HANYGO250.ttf(sha256 7e86818a…, upem 1000) 전진폭과 일치하고, 기존 Haan YGodic 250 메트릭 표와도 같습니다. 글꼴 파일은 배포하지 않습니다.",
+      "parentEvidenceIds": [],
+      "sha256": "c36c5b67da42641994f5fa00269e8d4f127b690ae1b4c5e51a9828f5e08a08ae",
+      "source": "pdf/issue8575/shape_image_fill-2020.pdf"
     }
   ],
   "issue": 5955,
@@ -44902,9 +44915,44 @@
         "runtimePlanStatus": "planned"
       },
       "targetFaceOrPolicy": "unavailable: no offline CanvasKit SFNT source for Hankc"
+    },
+    {
+      "conditions": {},
+      "decisionPlane": "layout-metric",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-8575.ygodic250-pdf"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-8575.ygodic250-metric-name",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [
+        "font-metric.ea8ba5aeaa3b69983623"
+      ],
+      "order": null,
+      "projectionSequence": 71,
+      "projections": [
+        {
+          "id": "rust-layout-metric",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "metric-surrogate",
+      "ruleId": "rule.rust-metric.ygodic250-name",
+      "selectionTupleSha256": "033249f3de780245dc83882957595efee34b4d353010ba8307251d3bf5a262de",
+      "sourceBoundaryId": "rust-metric.metric-alias",
+      "sourceFace": "한컴 윤고딕 250",
+      "status": "active",
+      "supply": null,
+      "targetFaceOrPolicy": "Haan YGodic 250"
     }
   ],
-  "rulesSha256": "f6e59e2c458c84cda4dbbe6feafcf1eed898f05b1811262fec10773f54b3b029",
+  "rulesSha256": "2109ad20314168d0c1c42a7b2c166bdb7a2da571fc1c950c29280662f09c963d",
   "schema": {
     "path": "assets/font-rules/font_rule_registry_v2.schema.json",
     "sha256": "e3412357b2943c00c8a5d2fbb5b0371a8c8c9721157c67e5e38d68ae40a7d7b3"
@@ -44916,15 +44964,15 @@
   },
   "sourceCommit": "a1f9872e28aea6755b656161ed1802f73308da58",
   "summary": {
-    "activeRuleCount": 854,
+    "activeRuleCount": 855,
     "countsByProjection": {
       "canvas2d-paint": 281,
       "canvas2d-webfont": 159,
       "canvaskit-sfnt": 164,
-      "rust-layout-metric": 71,
+      "rust-layout-metric": 72,
       "rust-layout-name": 179
     },
     "retiredRuleCount": 8,
-    "ruleCount": 862
+    "ruleCount": 863
   }
 }

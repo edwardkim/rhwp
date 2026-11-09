@@ -29,7 +29,7 @@ impl EqLayout {
         } else {
             self.layout_node(base, fs)
         };
-        if self.legacy_math_face {
+        if self.legacy_math_face && !self.implicit_legacy_font {
             return self.original_script_base(value, base);
         }
         value.width += self.script_base_operator_gap(base, fs);
@@ -65,6 +65,16 @@ impl EqLayout {
         sub: &LayoutBox,
         fs: f64,
     ) -> (f64, f64) {
+        if self.implicit_legacy_font {
+            // 독립 10/20pt Print의 한글·수학 본체와 첨자 사이 논리 기준선을 구분한다.
+            let shift = if super::implicit_legacy::has_cjk(base) {
+                0.27
+            } else {
+                0.25
+            };
+            let y = base.baseline + fs * shift - sub.baseline;
+            return (y, base.height.max(y + sub.height));
+        }
         if self.legacy_math_face
             && super::super::legacy_glyphs::is_line(base, fs)
             && super::super::legacy_glyphs::is_line(sub, fs * 0.64)
@@ -133,8 +143,16 @@ impl EqLayout {
                 .integral_placement(base, Some(sub), None, fs)
                 .into_script(fs);
         }
-        let b = self.layout_script_base(base, fs);
+        let mut b = self.layout_script_base(base, fs);
         let s = self.layout_node(sub, self.script_font_size(fs));
+        if self.implicit_legacy_font {
+            b.width += fs
+                * if super::implicit_legacy::has_cjk(&b) {
+                    1.0 / 3.0
+                } else {
+                    0.25
+                };
+        }
 
         let (sub_shift, total_h) = self.script_subscript_geometry(&b, &s, fs);
 
@@ -146,7 +164,13 @@ impl EqLayout {
         sub_box.x = base_box.width;
         sub_box.y = sub_shift;
 
-        let total_w = base_box.width + sub_box.width;
+        let total_w = base_box.width
+            + sub_box.width
+            + if self.implicit_legacy_font {
+                fs * 0.1
+            } else {
+                0.0
+            };
 
         LayoutBox {
             font_size: fs,

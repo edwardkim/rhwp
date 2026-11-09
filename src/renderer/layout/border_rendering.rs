@@ -506,6 +506,7 @@ pub(crate) fn render_spaced_cell_borders(
     styles: &ResolvedStyleSet,
     children: &[RenderNode],
     open_top_row: Option<u16>,
+    automatic_break_edges: super::table_break_border::AutomaticBreakEdges,
     show_transparent: bool,
 ) -> Vec<RenderNode> {
     let mut nodes = Vec::new();
@@ -572,6 +573,18 @@ pub(crate) fn render_spaced_cell_borders(
                 && usize::from(row) < usize::from(cell.row) + usize::from(cell.row_span)
         }) {
             borders[2].line_type = BorderLineType::None;
+        }
+        if let Some(line) = super::table_break_border::separate_break_line(table, styles) {
+            let covers = |row: usize| {
+                usize::from(cell.row) <= row
+                    && row < usize::from(cell.row) + usize::from(cell.row_span)
+            };
+            if automatic_break_edges.top_row.is_some_and(covers) {
+                borders[2] = line;
+            }
+            if automatic_break_edges.bottom_row.is_some_and(covers) {
+                borders[3] = line;
+            }
         }
         let box_ = node.bbox;
         let (left, top, right, bottom) =

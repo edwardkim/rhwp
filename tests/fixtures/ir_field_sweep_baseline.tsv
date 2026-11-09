@@ -258,6 +258,10 @@ hwp5rb	issue6924/148751598-briefing.hwp	sections[].paragraphs[].controls[].cells
 hwp5rb	issue6924/148751598-briefing.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].raw_picture_extra.len	1
 hwp5rb	issue7840/1150200_youth_vision2030_application.hwp	sections[].paragraphs[].controls[].section_def.raw_ctrl_extra.len	1
 hwp5rb	issue7840/1150200_youth_vision2030_application.hwp	sections[].section_def.raw_ctrl_extra.len	1
+hwp5rb	issue8560/21138757-agenda-cover-form.hwp	sections[].paragraphs[].controls[].section_def.raw_ctrl_extra.len	1
+hwp5rb	issue8560/21138757-agenda-cover-form.hwp	sections[].section_def.raw_ctrl_extra.len	1
+hwp5rb	issue8641/labor_standards_report.hwp	sections[].paragraphs[].controls[].section_def.raw_ctrl_extra.len	1
+hwp5rb	issue8641/labor_standards_report.hwp	sections[].section_def.raw_ctrl_extra.len	1
 hwp5rb	issue_1133.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	15
 hwp5rb	issues/2809/jubo_20260104.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	174
 hwp5rb	k-water-rfp-2024.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	457

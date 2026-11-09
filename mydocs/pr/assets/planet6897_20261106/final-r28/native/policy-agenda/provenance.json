@@ -1,0 +1,35 @@
+{
+  "key": "policy-agenda",
+  "backend": "native",
+  "state": "measured-not-final-review",
+  "prs": [
+    8604
+  ],
+  "input": "samples/issue8596/policy_committee_agenda.hwp",
+  "input_sha256": "b3b7c0d557a26d7080957fe5d8472153a6783b9dab029acae4e3b0c29186e4ad",
+  "pdf": "pdf/issue8596_policy_committee_agenda-2020.pdf",
+  "pdf_sha256": "b15da297882bf644e53e5b895fdb79d119dd03314e24f0fef660001904f4cd4f",
+  "pdf_pages": 14,
+  "compat": "2022",
+  "font_environment": null,
+  "linked_images": [],
+  "minimum": 96.52,
+  "below90": 0,
+  "full_tsv": "native/policy-agenda/full.tsv",
+  "full_tsv_sha256": "dff6151b27dd44d902d8942350cce37d5d914171d0f7034c049aaeb900db22b0",
+  "measurement_log": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/final-r28-native-primary-remaining/policy-agenda/run.log",
+  "producer": {
+    "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-batch-corrections-r28",
+    "sha256": "3addcb1c0f4f15d1702cf9d2686a1946d5931f14e69eaa7d24131500fd399190"
+  },
+  "panels": [
+    {
+      "page": 11,
+      "raw": "97.58",
+      "actual_png_sha256": "78cbd55fed8f98f62ce329856465f99f69b28a2e4413b17210ad1d1880972148",
+      "pdf_png_sha256": "56f41882142a8832e3fae08f93d3cfbab6105aee38f491ddedbab6c15b54ce13",
+      "review": "native/policy-agenda/review-011.png",
+      "overlay": "native/policy-agenda/overlay-011.png"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "head": "eb876d1416fb558c874f9efec65c5722a6769751",
+  "backend": "canvaskit",
+  "direct_review": "완료",
+  "reviewed_at": "2026-11-09T18:48:22.710167+09:00",
+  "png": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/canvaskit-actual-group-drawing.png",
+  "sha256": "fd37698f44422281fadf2c15220568b00b81059e2a270fd24acbc564c1ce8783",
+  "finding": "set id·item/value·중첩 item id와 parameter array/set/sub set 글자가 그림 상자·화살표와 함께 표시됨을 확인했다. 실제 CanvasKit 소비 화면의 판독이며 PDF 일치율을 주장하는 증거로 사용하지 않는다."
+}

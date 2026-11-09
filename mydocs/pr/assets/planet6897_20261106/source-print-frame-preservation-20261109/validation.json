@@ -1,0 +1,220 @@
+{
+  "parent_head": "a9221111300605cce42e33d6de074b5ed949bbae",
+  "producer": {
+    "state": "complete",
+    "pid": 20448,
+    "head": "a9221111300605cce42e33d6de074b5ed949bbae",
+    "candidate_sources": {
+      "src/paint/builder.rs": "be740df8b49939061aca2699288f984b1735d7d2cff37d57ac8a8ffae34332c0",
+      "src/paint/paper_viewport.rs": "36e30ffc563133b57925d1f0ed6ce5a5aa4546ec05e81c5739e6a87efb1d2913",
+      "tests/cases/prepared_metafile_print_frame.rs": "36962aad8b47e1acc40e4cefa588d7969b52fc90a1edd4a3a66136f85baaad8c",
+      "src/renderer/style_resolver.rs": "aa7d16db28285c144df50f67aa1ac66659666db039b32064e62697ce7abd73f5",
+      "tests/cases/source_hft_original_program_print_frame.rs": "cc269bc19bc57d826e0cd7e4cc7537bbba9097499242e750dafe736ed14a931e",
+      "tests/common/passthrough_exemptions.rs": "a9563f21b91e5132c947689b8323b03010cf5e708bc3579c3927c9c739be3f26"
+    },
+    "results": [
+      {
+        "key": "metafile-frame-suite-prepare",
+        "exit_code": 0,
+        "seconds": 3.030031834030524,
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/metafile-frame-suite-prepare.log"
+      },
+      {
+        "key": "metafile-frame-prepared_metafile_print_frame",
+        "exit_code": 0,
+        "seconds": 160.72227133298293,
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/metafile-frame-prepared_metafile_print_frame.log"
+      },
+      {
+        "key": "metafile-frame-source_hft_original_program_print_frame",
+        "exit_code": 0,
+        "seconds": 10.223781957989559,
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/metafile-frame-source_hft_original_program_print_frame.log"
+      },
+      {
+        "key": "metafile-frame-verified_png_sampling_contracts",
+        "exit_code": 0,
+        "seconds": 11.524080290924758,
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/metafile-frame-verified_png_sampling_contracts.log"
+      },
+      {
+        "key": "metafile-frame-hft_outline_font_contract",
+        "exit_code": 0,
+        "seconds": 1.8897002500016242,
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/metafile-frame-hft_outline_font_contract.log"
+      },
+      {
+        "key": "metafile-frame-native-build",
+        "exit_code": 0,
+        "seconds": 146.56910729105584,
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/metafile-frame-native-build.log"
+      },
+      {
+        "key": "metafile-frame-wasm-build",
+        "exit_code": 0,
+        "seconds": 277.1725617919583,
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/metafile-frame-wasm-build.log"
+      },
+      {
+        "key": "metafile-frame-browser",
+        "exit_code": 0,
+        "seconds": 6.661204332951456,
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/metafile-frame-browser.log"
+      },
+      {
+        "key": "metafile-frame-focus-native",
+        "exit_code": 0,
+        "seconds": 49.57215187512338,
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/metafile-frame-focus-native.log"
+      },
+      {
+        "key": "metafile-frame-focus-wasm",
+        "exit_code": 0,
+        "seconds": 81.64714174997061,
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/metafile-frame-focus-wasm.log"
+      }
+    ],
+    "checkpoint_failure_repair": {
+      "original_exit": 100,
+      "guard_after_pass": 5,
+      "guard_after_fail": 0,
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/passthrough-guard-after.log",
+      "note": "SessionState 누락만 보정했다. 이전 전체를 PASS로 재표기하지 않으며 최종 전체는 별도로 다시 실행한다."
+    },
+    "checkpoint_result": {
+      "state": "failed",
+      "pid": 13742,
+      "head": "c524d1e918d114188209baa94baa6cda12984a70",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/full-minimal-font.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "build_jobs": 8,
+      "test_threads": 8,
+      "font_inventory": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/full-minimal-coretext-qualified.json",
+      "profile_sha256": "89a8955370fe85029f0f08372f77ec17b86a7c4ae574ddc197abbe9267f47bd7",
+      "child_pid": 13811,
+      "exit_code": 100,
+      "seconds": 779.8074739580043
+    },
+    "phase": "complete",
+    "child_pid": 68090,
+    "cli_sha256": "af97120ccb514373a72f8aaa05b3337f914882a49aa5749866d4c6cbe341cc21",
+    "wasm_files": {
+      "rhwp.js": {
+        "/Users/tsjang/rhwp/pkg/rhwp.js": "dfc9f870bba0c297ac15a0a42b3440a6baeaef4d443b1763e4d9095fcc68df0d",
+        "/Users/tsjang/rhwp/rhwp-studio/public/rhwp.js": "dfc9f870bba0c297ac15a0a42b3440a6baeaef4d443b1763e4d9095fcc68df0d",
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/metafile-print-frame-wasm-pkg/rhwp.js": "dfc9f870bba0c297ac15a0a42b3440a6baeaef4d443b1763e4d9095fcc68df0d"
+      },
+      "rhwp_bg.wasm": {
+        "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm": "2557581925170fe230fc952f4f55719149838fbee1537328fc406481c16743b9",
+        "/Users/tsjang/rhwp/rhwp-studio/public/rhwp_bg.wasm": "2557581925170fe230fc952f4f55719149838fbee1537328fc406481c16743b9",
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/metafile-print-frame-wasm-pkg/rhwp_bg.wasm": "2557581925170fe230fc952f4f55719149838fbee1537328fc406481c16743b9"
+      }
+    }
+  },
+  "protected_comparison": {
+    "focused_rows": 24,
+    "decreased": 0,
+    "total_rows": 32,
+    "conditions_per_backend": 7,
+    "pages_per_backend": 16,
+    "not_whole_document_or_full_baseline": true
+  },
+  "evidence": [
+    {
+      "backend": "wasm",
+      "document": "sample10",
+      "page": 509,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.91048,
+        "silhouette_raw_unmatched_pixels": 50,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 55853,
+        "tolerant_content_match_percent": 99.91048
+      }
+    },
+    {
+      "backend": "wasm",
+      "document": "sample10",
+      "page": 757,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.55231,
+        "silhouette_raw_unmatched_pixels": 180,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 40206,
+        "tolerant_content_match_percent": 99.55231
+      }
+    },
+    {
+      "backend": "native",
+      "document": "sample16-hwp2024",
+      "page": 35,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 122352,
+        "tolerant_content_match_percent": 100.0
+      }
+    }
+  ],
+  "artifact_sha256": {
+    "sample10-wasm-p509-review.png": "e7bd6e826359b35e541ba4ac4a22ac8d5833bd148e54de850c3581101a48d129",
+    "sample10-wasm-p757-review.png": "3274d9a468ae0cbc5e793d504033f791c9c1d23a21dd528ac652c4b71f2b578f",
+    "sample10-wasm-p757-raw.png": "697f22ec7e83eddbd2a3aa0520f554251e366e970856632745555b15f9c1b3c2",
+    "sample10-wasm-p757-pdf-raw.png": "a05e699e97007c06da0537ca52973fe712f5dd2a9ac0b6ccdfe7f3dcff0a2644",
+    "sample10-wasm-p757-overlay.png": "7623a23a742f11195563cf8724cde278e65472d731fe82faf69c67213b2d02e1",
+    "sample16-hwp2024-native-p035-overlay.png": "1dbed51ea8a62db09b67d16b88d82e1024ed9bd9a6563083c1891d9aef67d880",
+    "focus-comparison.tsv": "a240b2ad220f4d2582b746b47993b215bd3871aa0c1a77efecf45503e34a987c",
+    "sample10-wasm-p509-overlay.png": "9a6f3c973ac332d65d46c8332ddf42e2f176ce2b3a3fa1a7d7cc90068a4e3b88",
+    "sample16-hwp2024-native-p035-raw.png": "53e171737400e1c94bc47cdc0d8ea91c95045ec8ca6f42fef4254a8fbaf6d4de",
+    "sample16-hwp2024-native-p035-review.png": "063216e5fa046b333eafeb5ce6c0edc68cbbdbde630f84972dbf2cb593941461",
+    "sample16-hwp2024-native-p035-pdf-raw.png": "266df1e79290ac4eab4040732c7fea42064fd878093bf5989064ff080e1cdb65",
+    "sample10-wasm-p509-raw.png": "5395093a4d9c5569f313ade6818338279f08185600773da840e25e18a5c24ca6",
+    "sample10-wasm-p509-pdf-raw.png": "f2ebe2d3893f88328699813d60f36ff8ffde3fd004826d3b3aac004a5345efd1"
+  },
+  "direct_review": {
+    "result": "대표 3쪽의 review·overlay를 직접 대조했다. ASCII 표의 연결·본문 줄 소속·문단·쪽 번호와 WMF 서버 구성도 내용은 보존된다. 미세 래스터·색상 차이는 남는다.",
+    "pairs": [
+      "sample10-wasm-p509",
+      "sample10-wasm-p757",
+      "sample16-hwp2024-native-p035"
+    ]
+  },
+  "real_fail_to_pass": [
+    {
+      "test": "prepared_metafile_print_frame",
+      "before_log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/prepared-metafile-print-frame-before.log",
+      "before_fail": 1,
+      "after_log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/metafile-frame-prepared_metafile_print_frame.log",
+      "after_pass": 1
+    },
+    {
+      "test": "source_hft_original_program_print_frame",
+      "before_log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/source-hft-print-frame-before.log",
+      "before_fail": 1,
+      "after_log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/metafile-frame-source_hft_original_program_print_frame.log",
+      "after_pass": 1
+    }
+  ]
+}

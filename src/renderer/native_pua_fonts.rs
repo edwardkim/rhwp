@@ -51,10 +51,13 @@ pub struct NativePuaMetrics {
 }
 
 /// 실제 paint 후보 순서에 따른 CFF 전진과 앞선 TTF의 선택 경계다.
+type NativeOtfAdvance = (f64, bool, bool, usize);
+
 #[derive(Debug)]
 pub struct NativeOtfMetrics {
     programs: Vec<NativeOtfProgram>,
-    advances: std::sync::Mutex<BTreeMap<char, Option<(f64, bool, bool)>>>,
+    original_truetype: bool,
+    advances: std::sync::Mutex<BTreeMap<char, Option<NativeOtfAdvance>>>,
     ttf_advances: std::sync::Mutex<BTreeMap<char, Option<f64>>>,
     coverage: std::sync::Mutex<BTreeMap<char, bool>>,
 }
@@ -64,6 +67,7 @@ struct NativeOtfProgram {
     bytes: Arc<[u8]>,
     face_index: u32,
     digest: [u8; 32],
+    selection_digest: [u8; 32],
     faux_bold: bool,
     cff: bool,
     verified_hft_bold_tracking: bool,
@@ -71,7 +75,8 @@ struct NativeOtfProgram {
 
 impl PartialEq for NativeOtfMetrics {
     fn eq(&self, other: &Self) -> bool {
-        self.programs.len() == other.programs.len()
+        self.original_truetype == other.original_truetype
+            && self.programs.len() == other.programs.len()
             && self.programs.iter().zip(&other.programs).all(|(a, b)| {
                 a.digest == b.digest && a.face_index == b.face_index && a.faux_bold == b.faux_bold
             })
@@ -79,6 +84,19 @@ impl PartialEq for NativeOtfMetrics {
 }
 
 impl NativeOtfMetrics {
+    /// 실제 공급을 마친 동일 family TrueType 요청의 전진만 허용한다.
+    pub fn uses_original_truetype(&self) -> bool {
+        self.original_truetype
+    }
+    /// 실제 첫 TrueType 프로그램의 결측 여부다. 뒤 표시 후보의 coverage와 구분한다.
+    /// 유형 미상 문서에서도 공급된 프로그램을 확인할 뿐 원본 유형을 추정하지 않는다.
+    pub(crate) fn primary_truetype_lacks_glyph(&self, character: char) -> bool {
+        self.programs.first().is_some_and(|program| {
+            !program.cff
+                && ttf_parser::Face::parse(&program.bytes, program.face_index)
+                    .is_ok_and(|face| face.glyph_index(character).is_none_or(|glyph| glyph.0 == 0))
+        })
+    }
     /// 첫 글리프 공급자가 TrueType일 때 그 프로그램의 자연 전진을 읽는다.
     /// 원본 폭이 확인되지 않은 명시적 TrueType 슬롯에서만 호출한다.
     pub fn source_ttf_advance_em(&self, character: char) -> Option<f64> {
@@ -125,23 +143,40 @@ impl NativeOtfMetrics {
 
     pub fn needs_faux_bold(&self, character: char) -> bool {
         self.glyph_metric(character)
-            .is_some_and(|(_, faux, _)| faux)
+            .is_some_and(|(_, faux, _, _)| faux)
     }
     pub fn advance_em(&self, character: char) -> Option<f64> {
-        self.glyph_metric(character).map(|(advance, _, _)| advance)
+        self.glyph_metric(character)
+            .map(|(advance, _, _, _)| advance)
     }
     /// 실제 글리프 공급 프로그램이 독립 Print로 확인된 HFT 계약을 소유하는가.
     pub fn has_verified_hft_bold_tracking(&self, character: char) -> bool {
         self.glyph_metric(character)
-            .is_some_and(|(_, _, verified)| verified)
+            .is_some_and(|(_, _, verified, _)| verified)
     }
-    fn glyph_metric(&self, character: char) -> Option<(f64, bool, bool)> {
+    /// 요청한 주 프로그램이 실제로 이 글리프의 CFF 전진을 공급했는지 확인한다.
+    pub(crate) fn glyph_program_matches(
+        &self,
+        character: char,
+        identity: &super::font_environment::FontProgramIdentity,
+    ) -> bool {
+        self.glyph_metric(character)
+            .and_then(|(_, _, _, index)| self.programs.get(index))
+            .is_some_and(|program| {
+                identity.matches(
+                    &program.digest,
+                    &program.selection_digest,
+                    program.face_index,
+                )
+            })
+    }
+    fn glyph_metric(&self, character: char) -> Option<NativeOtfAdvance> {
         let mut cache = self.advances.lock().ok()?;
         if let Some(advance) = cache.get(&character) {
             return *advance;
         }
         let mut value = None;
-        for program in &self.programs {
+        for (program_index, program) in self.programs.iter().enumerate() {
             let Ok(face) = ttf_parser::Face::parse(&program.bytes, program.face_index) else {
                 continue;
             };
@@ -156,6 +191,7 @@ impl NativeOtfMetrics {
                         f64::from(width) / f64::from(face.units_per_em()),
                         program.faux_bold,
                         program.verified_hft_bold_tracking,
+                        program_index,
                     )
                 });
             }
@@ -224,6 +260,11 @@ impl NativePuaFonts {
         let face =
             ttf_parser::Face::parse(bytes, face_index).map_err(|_| "invalid native font face")?;
         let cff = is_cff_program(bytes, face_index);
+        // FontEnvironment의 Native 신원 생성과 같은 입력·collection face를 소비한다.
+        let mut selection_digest = Sha256::new();
+        selection_digest.update(bytes);
+        selection_digest.update(face_index.to_be_bytes());
+        let selection_digest: [u8; 32] = selection_digest.finalize().into();
         let faux_bold = bold && !face.is_bold();
         let verified_hft_bold_tracking = face.names().into_iter().any(|name| {
             matches!(
@@ -285,6 +326,7 @@ impl NativePuaFonts {
             bytes: shared.unwrap_or_else(|| Arc::from(bytes)),
             face_index,
             digest,
+            selection_digest,
             faux_bold,
             cff,
             verified_hft_bold_tracking,
@@ -296,6 +338,7 @@ impl NativePuaFonts {
                 (bold, italic, source_ttf),
                 Arc::new(NativeOtfMetrics {
                     programs,
+                    original_truetype: source_ttf && !cff,
                     advances: Default::default(),
                     ttf_advances: Default::default(),
                     coverage: Default::default(),

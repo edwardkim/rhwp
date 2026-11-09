@@ -1,0 +1,11 @@
+{
+  "measured_at": "2026-11-08T02:49:01.099083+00:00",
+  "source_head": "16eca276ef7901d27c401fe94ce13442988629af",
+  "diagnostic_instrumentation": "관측 eprintln만 추가했다가 복구했으며 이 실행의 실제 font_lookup 구현은 보정 전 HEAD와 같다.",
+  "rlib_sha256": "69a0ef458524d8521b156816cd0656522a265afcab68a872d9ed8bf210e8b4c9",
+  "test_source": "tests/cases/native_system_font_family_ownership.rs",
+  "test_sha256": "03ad8bf490324e542b9dd0a5c8f30282d79f36ec581fc3d097e210d3f27219d2",
+  "compile_exit": 0,
+  "test_exit": 101,
+  "font_supply": "저장소 GUST CFF + OFL TTF, 자식 프로세스 전용 Fontconfig. 호스트의 한컴·사유 OTF를 사용하지 않음"
+}

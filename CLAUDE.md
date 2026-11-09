@@ -53,7 +53,11 @@ trailing commit을 추가해 전체 CI를 반복하지 않는다. [정본 절차
 처리 대상에서 제외**하고 임의로 갱신하지 않는다. 나머지 기존 PR의 lint를 포함한 모든
 CI 실패·오류부터 해결한다.
 충돌·base 문제는 최신 `upstream/devel`로 rebase한 뒤 보정·커밋·재검증하고, 같은 PR의 최신
-head CI와 충돌 해소를 확인한 뒤 신규 PR을 진행한다. 메인터너 보정 요청과 원격 승인 등은
+head CI와 충돌 해소를 확인한 뒤 신규 PR을 진행한다. **새 PR 생성 전에는 제출 후보와 리뷰어가
+지정되지 않은 본인 열린 PR 전체(Draft 포함)를 병합 시뮬레이션한다. 충돌·실행 실패·미확인이
+있으면 제출을 보류한다.** 이미 리뷰어가 지정된 PR은 작업 중이므로 자동 갱신과 병합
+시뮬레이션 모두에서 제외한다.
+메인터너 보정 요청과 원격 승인 등은
 [새 PR 생성 전에 확인할 항목](mydocs/manual/codex/docs_and_git_workflow.md#새-pr-생성-전에-확인할-항목)을 따른다.
 
 기여자·메인터너·콜라보레이터 모두 [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md)
@@ -63,8 +67,10 @@ PR CI나 Draft로 우회하지 않는다. Draft는 특별한 조기 논의·WIP 
 Docker는 필수 설치 조건이 아니며 [환경별 fresh WASM 경로](mydocs/manual/pr_review/local_validation.md#환경에-따른-fresh-wasm-검증)의
 Docker 또는 호스트 빌드를 선택해 동일한 필수 검증을 완료한다.
 
-조판에 영향을 주는 변경이 포함된 PR은 제출 전 최종 head에서 행정업무운영 편람 HWPX Native
-383쪽 `--handbook-gate`를 실행해 통과한다. 일반 Visual Sweep에서는 자동 실행하지 않으며,
+조판에 영향을 주는 변경이 포함된 PR은 일반 기여자를 포함하여 제출 전 최종 head에서
+행정업무운영 편람 HWPX Native 383쪽 `--handbook-gate`를 실행해 통과한다. 지원 웹폰트를
+사용할 수 있으며 비공개 원본 OTF 보유는 요구하지 않는다. 정본 보호 TSV 전체의 특별 하락 금지
+검증은 통합 담당 collaborator·maintainer에게만 추가 적용한다. 일반 Visual Sweep에서는 자동 실행하지 않으며,
 실행과 판정은 [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md)을 따른다.
 
 ## 리뷰어 지정 후 추가 커밋 제한

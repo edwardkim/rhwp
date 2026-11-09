@@ -1,7 +1,8 @@
 //! 수식 Skia의 실제 face 선택·텍스트 표시와 늘인 괄호 표시.
 use super::super::font_lookup::{
-    match_supplied_family, match_system_family_style, select_typeface_for_character,
-    text_family_candidates, typeface_candidates_for_families, TypefaceCandidate,
+    declared_family_candidates, match_supplied_family, match_system_family_style,
+    select_typeface_for_character, text_family_candidates, typeface_candidates_for_families,
+    TypefaceCandidate,
 };
 use super::{stroke_paint, EquationFonts, EQ_FONT_FAMILY};
 use skia_safe::{font, paint, Canvas, Color, Font, FontStyle, Paint, PathBuilder};
@@ -169,10 +170,30 @@ pub(super) fn draw_hancom_glyphs(
                     FontStyle::normal(),
                 )
             });
-    let primary = original
+    let mut primary = original
         .into_iter()
         .map(|typeface| TypefaceCandidate::primary(typeface, "hancomEquation"))
         .collect::<Vec<_>>();
+    // 같은 원 family의 한글·영문 분리 프로그램도 다른 family보다 먼저 쓴다.
+    // 생성된 legacy fallback을 원 프로그램으로 취급해 private code 해석을 건너뛰지 않는다.
+    let families = declared_family_candidates(run.font_family);
+    for candidate in typeface_candidates_for_families(
+        fonts.font_mgr,
+        fonts.system_families,
+        fonts.custom_typefaces,
+        fonts.bundled_typefaces,
+        &families,
+        &families,
+        FontStyle::normal(),
+    ) {
+        if candidate.source != "legacy"
+            && !primary
+                .iter()
+                .any(|existing| existing.typeface.unique_id() == candidate.typeface.unique_id())
+        {
+            primary.push(candidate);
+        }
+    }
     let mut fallbacks = [None, None];
     let mut semantic_text = None;
     let mut paint = Paint::default();

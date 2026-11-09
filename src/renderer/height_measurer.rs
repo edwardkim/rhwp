@@ -3149,7 +3149,9 @@ impl HeightMeasurer {
                 let Control::Table(nested) = ctrl else {
                     return Ok(None);
                 };
-                if crate::renderer::float_placement::nested_table_is_overlay(nested) {
+                if crate::renderer::float_placement::nested_table_is_overlay(nested)
+                    || crate::renderer::float_placement::nested_table_is_page_overlay(nested)
+                {
                     return Ok(None);
                 }
                 if !crate::renderer::para_has_no_stored_line_segs(p)
@@ -3289,6 +3291,9 @@ impl HeightMeasurer {
                             return Ok(None);
                         };
                         if crate::renderer::float_placement::nested_table_is_overlay(nested)
+                            || crate::renderer::float_placement::nested_table_is_page_overlay(
+                                nested,
+                            )
                             || para_max_lh < nested.common.height as i32
                         {
                             return Ok(None);
@@ -3467,6 +3472,7 @@ impl HeightMeasurer {
 
     fn cell_nested_controls_bottom(
         &self,
+        parent: &Table,
         cell: &crate::model::table::Cell,
         styles: &ResolvedStyleSet,
         depth: usize,
@@ -3474,6 +3480,7 @@ impl HeightMeasurer {
         _parent_cell_w: f64,
     ) -> f64 {
         match self.cell_nested_controls_bottom_with_storage(
+            parent,
             cell,
             styles,
             depth,
@@ -3487,6 +3494,7 @@ impl HeightMeasurer {
 
     pub(crate) fn cell_nested_controls_bottom_with_storage<S: crate::storage::Storage>(
         &self,
+        parent: &Table,
         cell: &crate::model::table::Cell,
         styles: &ResolvedStyleSet,
         depth: usize,
@@ -3570,7 +3578,8 @@ impl HeightMeasurer {
                     p,
                     self.hwpx_stored_layout, storage)?;
                 let mut closed_frame = None;
-                let heights: Vec<f64> = storage.try_collect(p.controls.iter().map(|ctrl| -> Result<_,S::Error> {
+                let mut stored_host_frame = None;
+                let heights: Vec<f64> = storage.try_collect(p.controls.iter().enumerate().map(|(control_index, ctrl)| -> Result<_,S::Error> {
 
     Ok(if let Control::Table(nested) = ctrl {
                         let stretch = self.render_normalization.nested_table_width_scale(nested);
@@ -3589,6 +3598,15 @@ let body_height=match nested_body_heights
                                 )?
                                 .total_height
                             }};
+                        if !self.session_edited
+                            && (self.is_native_hwp5 || self.hwpx_stored_layout)
+                            && !self.render_normalization.table_text_reflowed(parent)
+                            && !self.render_normalization.table_text_reflowed(nested)
+                        {
+                            stored_host_frame = crate::renderer::float_placement::stored_nested_host_frame(
+                                p, nested, control_index, 0.0, body_height, self.dpi,
+                            );
+                        }
                         // 기존 한 번의 재귀 측정에서 닫힌 상자도 함께 생산한다.
                         // 미수용 경로에서 자식을 다시 측정하지 않는다.
                         if (self.is_native_hwp5 || self.hwpx_stored_layout)
@@ -3631,6 +3649,13 @@ let body_height=match nested_body_heights
                         0.0
                     })
 }))?;
+                if let Some(frame) = stored_host_frame {
+                    // 배제 개체도 칸의 물리 공간은 점유한다. 흐름 전진과 구분하며
+                    // 배치가 소비하는 저장 앵커·오프셋·바깥여백을 그대로 사용한다.
+                    return Ok(crate::renderer::float_placement::stored_nested_host_content_bottom(
+                        paragraphs, pidx, frame, self.dpi,
+                    ));
+                }
                 if let Some(frame) = closed_frame {
                     return Ok(frame.occupied_bottom);
                 }
@@ -3848,7 +3873,6 @@ let body_height=match nested_body_heights
             .map(|height| hwpunit_to_px(height, self.dpi))
         };
         let mut row_heights = storage.filled(row_count, 0.0f64)?;
-        let mut has_reflowed_inline_table_frame = false;
         // 행별 **컨텐츠** 하한 — 2단계에서만 채워지며, 병합 선언이 행합보다 작을 때
         // (2-b 축소 규칙) 글자가 잘리지 않도록 축소 바닥으로 쓴다.
         let mut content_row_floor = storage.filled(row_count, 0.0f64)?;
@@ -3897,6 +3921,10 @@ let body_height=match nested_body_heights
                     )? <= declared + 0.5)
             }))?;
 
+        // 재구성한 줄은 뒤의 선언 높이 조정·상세 컷 원장도 같은 셀에서 소비한다.
+        // 원본 저장 줄로 하한을 다시 만들면 이미 수용한 새 줄이 축소·클리핑된다.
+        let mut current_cell_frames =
+            std::collections::HashMap::<usize, crate::model::table::Cell>::new();
         // 2단계: 셀 내 실제 컨텐츠 높이 계산 (layout_table과 동일)
         for (cell_index, cell) in table.cells.iter().enumerate() {
             if cell.row_span == 1 && (cell.row as usize) < row_count {
@@ -3973,10 +4001,6 @@ let body_height=match nested_body_heights
                                     let measured = self.measure_table_impl_with_storage(nested, 0, 0, styles, depth + 1, stretch, storage)?;
     Ok(measured.total_height - measured.caption_height)
 }, storage)?;
-                            has_reflowed_inline_table_frame |= p.controls.iter().enumerate().any(
-                                |(index, control)| matches!(control, Control::Table(_))
-                                    && comp.frame_owns_inline_table(index),
-                            );
                             let frame_paragraph = comp.paragraph_with_frame_geometry_with_storage(p, storage)?;
                             if let std::borrow::Cow::Owned(ref paragraph) = frame_paragraph {
                                 if frame_paragraphs.is_none(){frame_paragraphs=Some(crate::storage::try_clone(&cell.paragraphs,storage)?);}
@@ -4231,7 +4255,11 @@ let body_height=match nested_body_heights
                         Ok(projected)
                     })
                     .transpose()?;
-                let cell = frame_cell.as_ref().unwrap_or(cell);
+                if let Some(frame_cell) = frame_cell {
+                    storage.reserve_map(&mut current_cell_frames, 1)?;
+                    current_cell_frames.insert(cell_index, frame_cell);
+                }
+                let cell = current_cell_frames.get(&cell_index).unwrap_or(cell);
                 let text_height = (self.is_native_hwp5 || self.hwpx_stored_layout)
                     .then(|| self.section_column_spacing_hu.get())
                     .flatten()
@@ -4401,7 +4429,7 @@ let body_height=match nested_body_heights
                         .max()
                         .unwrap_or(0);
                     let nested_bottom = self.cell_nested_controls_bottom_with_storage(
-                        cell, styles, depth, cell_w_px, storage,
+                        table, cell, styles, depth, cell_w_px, storage,
                     )?;
                     hwpunit_to_px(last_seg_end, self.dpi)
                         .max(text_height)
@@ -5013,10 +5041,6 @@ let body_height=match nested_body_heights
                                     let measured = self.measure_table_impl_with_storage(nested, 0, 0, styles, depth + 1, stretch, storage)?;
     Ok(measured.total_height - measured.caption_height)
 }, storage)?;
-                            has_reflowed_inline_table_frame |= p.controls.iter().enumerate().any(
-                                |(index, control)| matches!(control, Control::Table(_))
-                                    && comp.frame_owns_inline_table(index),
-                            );
                             let frame_paragraph = comp.paragraph_with_frame_geometry_with_storage(p, storage)?;
                             if let std::borrow::Cow::Owned(ref paragraph) = frame_paragraph {
                                 if frame_paragraphs.is_none(){frame_paragraphs=Some(crate::storage::try_clone(&cell.paragraphs,storage)?);}
@@ -5248,7 +5272,11 @@ let body_height=match nested_body_heights
                         Ok(projected)
                     })
                     .transpose()?;
-                let cell = frame_cell.as_ref().unwrap_or(cell);
+                if let Some(frame_cell) = frame_cell {
+                    storage.reserve_map(&mut current_cell_frames, 1)?;
+                    current_cell_frames.insert(cell_index, frame_cell);
+                }
+                let cell = current_cell_frames.get(&cell_index).unwrap_or(cell);
                 // 단, 비-인라인 이미지/도형은 LINE_SEG에 미포함이므로 별도 합산
                 let non_inline_h = self.measure_non_inline_controls_height_with_storage(
                     cell,
@@ -5256,7 +5284,7 @@ let body_height=match nested_body_heights
                     storage,
                 )?;
                 let nested_bottom = self.cell_nested_controls_bottom_with_storage(
-                    cell, styles, depth, cell_w_px, storage,
+                    table, cell, styles, depth, cell_w_px, storage,
                 )?;
                 let wrap_bottom = self.cell_wrap_objects_bottom_height(&cell.paragraphs, styles);
                 // [Task #2221] 단일행과 동일 — 중첩/TAC 표의 저장 LINE_SEG 텍스트
@@ -5463,12 +5491,10 @@ let body_height=match nested_body_heights
         // 편집 세션은 실측을 신뢰한다.
         // 저장 글줄이 없는 셀은 현재 내용으로 재조판한다. 표/셀 선언의 수치 일치는
         // 내용 높이를 줄일 근거가 아니며 선언이 조금 달라도 같은 규칙을 적용한다.
-        // A current inline frame has already measured the nested table and
-        // its following text together. Its row is not a saved box that may be
-        // shrunk to common.height; doing so clips the frame's trailing line.
-        // Native HWP5 hosts without this ownership keep their existing policy.
-        let reflowed_cell_rows = (!self.is_native_hwp5 || has_reflowed_inline_table_frame)
-            && crate::renderer::composer::table_cells_have_no_stored_lines(table);
+        // 현재 프레임이 발행한 중첩 표와 뒤 글줄의 실제 높이도 이 계약에 포함한다.
+        // 저장 형식과 무관하다: 저장 줄 없는 HWP5 TAC 표도 한/글 Print 는 재조판한
+        // 내용 높이로 행을 키운다(docs#458 머리 행 61.0px, 선언 축소 시 48.1px 로 줄 유실).
+        let reflowed_cell_rows = crate::renderer::composer::table_cells_have_no_stored_lines(table);
         let table_height = if stored_rows.is_some() {
             raw_table_height
         } else if table.common.treat_as_char
@@ -5508,7 +5534,8 @@ let body_height=match nested_body_heights
                     .iter()
                     .flat_map(|c| c.paragraphs.iter())
                     .any(|p| !crate::renderer::para_has_no_stored_line_segs(p));
-            for cell in &table.cells {
+            for (cell_index, source_cell) in table.cells.iter().enumerate() {
+                let cell = current_cell_frames.get(&cell_index).unwrap_or(source_cell);
                 let r = cell.row as usize;
                 if cell.row_span != 1 || r >= row_count || cell.paragraphs.is_empty() {
                     continue;
@@ -5758,6 +5785,7 @@ let body_height=match nested_body_heights
                 .enumerate()
                 .filter(|(_, cell)| (cell.row as usize) < row_count)
                 .map(|(cell_index, cell)| -> Result<_,S::Error> {
+                    let cell = current_cell_frames.get(&cell_index).unwrap_or(cell);
 
                     // [#1809] aim 직접 분기 → 단일 출처 통일 (위 2-c단계와 동일 근거)
                     let eff_pad = cell.effective_padding(&table.padding);
@@ -6051,7 +6079,7 @@ let mut tables=p.controls.iter().filter_map(|c| match c{Control::Table(t)=>Some(
                         )?
                 } else {
                     let nested_bottom = self.cell_nested_controls_bottom_with_storage(
-                        cell, styles, depth, mc_cell_w, storage,
+                        table, cell, styles, depth, mc_cell_w, storage,
                     )?;
                     nested_bottom.max(mc.total_content_height)
                 };

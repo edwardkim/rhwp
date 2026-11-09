@@ -18,7 +18,13 @@ use crate::model::shape::{Caption, CaptionDirection, ShapeObject};
 use crate::renderer::layout_frame::LayoutFrame;
 pub use crate::renderer::layout_frame::ParagraphBox;
 
+mod caption_paragraph;
+mod object_host_tail;
+pub(crate) use object_host_tail::{composed_object_tail, composed_tac_row};
 mod frame_geometry;
+pub(crate) use caption_paragraph::{
+    compose_caption_paragraph, compose_caption_paragraph_with_storage,
+};
 mod inline_table_frame;
 mod nested_table_frames;
 mod vertical_cell_lines;

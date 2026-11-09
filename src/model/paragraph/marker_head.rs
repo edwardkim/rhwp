@@ -12,9 +12,9 @@ pub struct MarkerHead {
     pub text_distance: i16,
     /// 마커 글자 모양. `u32::MAX`는 참조 없이 문단 글자 모양을 따른다.
     pub char_shape_id: u32,
-    /// 내장 기본 개요 `^N`의 참조 형식 폭(em). 한 자리 숫자와 마침표의 예약 칸은
-    /// 수준당 1em이며 실제 번호 글리프의 전진폭과 구분한다. 파일의 명시적 정의나
-    /// 글머리표에는 이 합성 값을 부여하지 않는다. bit2가 켜지면 실제 폭을 사용한다.
-    pub reference_width_em: Option<u8>,
+    /// 번호 형식의 한 자리 참조 예약 폭(em). ASCII 반각 칸도 보존하며 실제 계수기의
+    /// 자릿수·글꼴 전진과 구분한다. 내장 `^N`은 수준당 1em이다.
+    /// 글머리표에는 부여하지 않으며 bit2가 켜지면 실제 번호 폭을 사용한다.
+    pub reference_width_em: Option<f32>,
 }
 crate::storage::clone_copy!(MarkerHead);

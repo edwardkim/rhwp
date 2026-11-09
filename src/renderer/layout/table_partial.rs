@@ -2206,6 +2206,7 @@ impl LayoutEngine {
                         styles,
                     );
                     let nested_bottom = self.calc_nested_controls_bottom_height(
+                        table,
                         composed_store.eager_slice(),
                         &cell.paragraphs,
                         styles,
@@ -5605,7 +5606,40 @@ impl LayoutEngine {
                                 // 셀에서는 layout_composed_paragraph 의 재가산 몫을
                                 // 빼고 밀어야 이중 가산이 없다(위 preserve 스냅과
                                 // 같은 규약). 그 외 형상은 기존 밀어내기 보존.
-                                let next_spacing_before = if preserve_linear_single_cell_vpos
+                                // 빈 host 의 글 위아래 블록 표가 밀어낸 흐름에서는 뒤 문단 앞 간격이
+                                // 표 띠에 흡수된다(`absorbed_block_host_successor_y`). 저장 vpos
+                                // 하한도 그 앞 간격을 빼고 적용해야 사다리를 넘어 밀지 않는다.
+                                // 쪽을 넘는 host(앞 조각에서 이어받음·다음 조각으로 이어짐)는 host
+                                // 글줄 끝과 표 하단이 이 조각에 함께 없다 — host 의 모든 유닛(글줄과
+                                // 중첩 표 모든 행)을 이 컷이 소유할 때만.
+                                let host_owned_here = self.cut_owns_whole_paragraph(
+                                    cell, table, styles, cut_units, cp_idx,
+                                );
+                                let absorbed_spacing = if wrap_successor.is_none()
+                                    && host_owned_here
+                                {
+                                    self.absorbed_block_host_successor_y(
+                                        para,
+                                        &composed_store
+                                            .get(cp_idx, cell, inner_width, styles, self)
+                                            .lines,
+                                        cp_idx,
+                                        cell.paragraphs.len(),
+                                        styles,
+                                        para_y_before_compose,
+                                        para_y,
+                                        next_para,
+                                    )
+                                    .map(|(y, spacing)| {
+                                        para_y = y;
+                                        spacing
+                                    })
+                                } else {
+                                    None
+                                };
+                                let next_spacing_before = if let Some(spacing) = absorbed_spacing {
+                                    spacing
+                                } else if preserve_linear_single_cell_vpos
                                     || wrap_successor.is_some()
                                     || (!self.profile.get().session_edited()
                                         && !self.render_normalization.borrow().cell_frame_reflowed(table, cell)
@@ -7907,6 +7941,27 @@ impl LayoutEngine {
                 }
             }
 
+            // 셀·zone 기본선과 암묵적 wrap 정책 뒤에 명시적인 표 경계선을 적용한다.
+            // 실제 끝 컷과 다음 시작 컷이 같은 선 종류를 소비한다.
+            let automatic_break_edges = super::table_break_border::AutomaticBreakEdges {
+                top_row: (is_continuation && !start_cut.is_empty() && header_rows.is_empty())
+                    .then_some(start_row),
+                bottom_row: (!is_last_part && !end_cut.is_empty())
+                    .then_some(end_row.saturating_sub(1)),
+            };
+            if let Some(line) = super::table_break_border::separate_break_line(table, styles) {
+                if automatic_break_edges.top_row.is_some() {
+                    if let Some(edge) = h_edges.first_mut() {
+                        super::table_break_border::replace_grid_edge(edge, line);
+                    }
+                }
+                if automatic_break_edges.bottom_row.is_some() {
+                    if let Some(edge) = h_edges.last_mut() {
+                        super::table_break_border::replace_grid_edge(edge, line);
+                    }
+                }
+            }
+
             // 복구한 Square 흐름의 마지막 줄은 최종 프레임 경계도 소유한다.
             // 쪽 나누기가 소비한 높이는 이 그리기 전용 확장과 구분한다.
             if self.profile.get().hwp5_stored_pagination_layout()
@@ -8001,6 +8056,7 @@ impl LayoutEngine {
                     styles,
                     &table_node.children,
                     open_top_row,
+                    automatic_break_edges,
                     self.show_transparent_borders.get(),
                 );
                 table_node.children.extend(borders);
@@ -8012,6 +8068,7 @@ impl LayoutEngine {
                         styles,
                         table_node.bbox,
                         open_top_row.is_some(),
+                        automatic_break_edges,
                     ));
             } else {
                 table_node.children.extend(render_edge_borders(
@@ -8247,7 +8304,6 @@ impl LayoutEngine {
                     table_x,
                     table_width,
                     y_start,
-                    &mut self.auto_counter.borrow_mut(),
                     bin_data_content,
                     cap_cell_ctx.clone(),
                     CaptionOwner::new(
@@ -8274,7 +8330,6 @@ impl LayoutEngine {
                     table_x,
                     table_width,
                     caption_y,
-                    &mut self.auto_counter.borrow_mut(),
                     bin_data_content,
                     cap_cell_ctx.clone(),
                     CaptionOwner::new(
@@ -8312,7 +8367,6 @@ impl LayoutEngine {
                     cap_x,
                     cap_width_px,
                     cap_y,
-                    &mut self.auto_counter.borrow_mut(),
                     bin_data_content,
                     cap_cell_ctx.clone(),
                     CaptionOwner::new(

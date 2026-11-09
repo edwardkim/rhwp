@@ -1,6 +1,15 @@
-//! 원본 프로그램의 굵은 글자 전진 간격과 자연 글리프 폭을 분리한다.
-//! 독립 issue265 Print12쪽 T2/Widths의 한글은1000/1000em, TJ는약0.05em 추가 전진.
-//! 원문 소유·내용 관계와 저장본의 완료 Print 3·8·12쪽 ±2CSSpx 좌표를 보호한다.
+//! 관계형·고정형: 원문 소유·순서·자연 글리프와 독립 Print의 완료 페이지 좌표를 보호한다.
+//! 주석 갱신: 2026-11-07T16:50:35+09:00.
+//! 직전 변경: ce9e186c04304733ee7658b1355d8c6139eeef8d (2026-11-07T15:23:20+09:00).
+//! R38은 과도한 ASCII 슬롯 변경을 보정한다. 원 HWP3의 제목 괄호 소유 검사를 복원하며
+//! 아래 R36 측정 이력과 보정 후 검증을 구분한다. 독립 좌표·자연 글리프 단언은 유지한다.
+//! 2026-11-07 측정: 원본 issue_265.hwp의 한컴 2020 Print, compat 2022, 96 DPI, 보정 전 2px raw.
+//! 원본 전 16쪽 최저 Native 99.59% / fresh WASM 99.51%; 원본 Print 대비 실제 저장 보존 대조는
+//! HWP 전 16쪽 99.58% / 99.50%, HWPX 전 16쪽 99.59% / 99.51%다. 저장본의 재인쇄는 아니다.
+//! 세 입력의 3·8·12쪽: Native 100.00% / 100.00% / 99.97%, WASM 99.95% / 99.95% / 99.93%.
+//! 원문·그림·표·후속 본문 관계와 독립 완료 Print 3·8·12쪽의 기존 ±2 CSSpx는 함께 유지한다.
+//! 근거: mydocs/pr/assets/planet6897_20261106/pr8623/source-title-r34/README.md.
+//! 잉크 비교는 시스템 글꼴 대신 저장소 OFL ttfs/opensource/NotoSansKR-Regular.ttf를 직접 공급한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::{
@@ -522,13 +531,16 @@ fn native_bold_tracking_does_not_stretch_the_actual_glyph() {
     let source = text(
         nodes
             .into_iter()
-            .find(|node| text(node).text == "작업 할당 방식(")
-            .unwrap(),
+            .find(|node| text(node).char_start == Some(3))
+            .expect("문단 121의 첫 한글 원문 소유"),
     );
     let render = |natural: bool| {
         let mut run = source.clone();
         run.text = "작".into();
         run.layout_positions = None;
+        // 굵기 간격 판정은 metric_font_family 만 본다. 그리는 프로그램은 설치 글꼴이 아니라
+        // 저장소 OFL 글꼴로 명시해 공급한다(#8613).
+        run.style.font_family = "Noto Sans KR".into();
         if natural {
             run.style.metric_font_family = None;
         }
@@ -545,6 +557,10 @@ fn native_bold_tracking_does_not_stretch_the_actual_glyph() {
             ),
         );
         SkiaLayerRenderer::new()
+            .try_with_font_data(&[
+                include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf").to_vec(),
+            ])
+            .unwrap()
             .render_pixels_with_options(
                 &layer,
                 RasterRenderOptions {

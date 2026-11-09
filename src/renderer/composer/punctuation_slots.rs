@@ -103,7 +103,12 @@ fn slot(
             .native_pua_fonts
             .get_otf(style.font_family_for_lang(1), style.bold, style.italic)
             .is_some_and(|font| font.has_glyph(ch));
-    if supplied_latin_punctuation {
+    // HWP5 한자 뒤 ASCII 괄호는 앞 한자의 프로그램을 상속하지 않는다.
+    // 독립 Print의 궁서/굴림/바탕 등 같은 크기 대조에서 영문 슬롯을 확인했다.
+    // 일반 한글 뒤 구두점의 기존 프로그램 계약과 HWP3 cmap 공급 규칙은 유지한다.
+    let hanja_latin_punctuation =
+        !styles.source_hwp3_native && inherited == 2 && ch.is_ascii_punctuation();
+    if supplied_latin_punctuation || hanja_latin_punctuation {
         1
     } else if style.explicit_latin_slot && super::is_latin_slot_punct(ch) {
         1

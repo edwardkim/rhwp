@@ -1433,6 +1433,8 @@ impl DocumentCore {
                         .iter()
                         .map(|line| line.vertical_pos)
                         .collect();
+                    let owns_float_bands = !was_reflowed
+                        && crate::renderer::float_placement::owns_embedded_float_bands(para, dpi);
                     let preserve_source_frames = !was_reflowed
                         && (text_only_controls || source_tac_frames[pi].is_some())
                         && !para.stored_text_partition_dirty
@@ -1460,6 +1462,10 @@ impl DocumentCore {
                     let mut previous_source_end = None;
                     for (line_index, seg) in para.line_segs.iter_mut().enumerate() {
                         let source_vpos = source_positions[line_index];
+                        if owns_float_bands {
+                            inner_vpos = running_vpos
+                                .saturating_add(source_vpos.saturating_sub(source_positions[0]));
+                        }
                         if preserve_source_frames
                             && line_index > 0
                             && (para.controls.is_empty()
@@ -1489,6 +1495,10 @@ impl DocumentCore {
                     }
                     // 비-TAC TopAndBottom Picture/Table: 개체 높이를 vpos에 반영
                     for ctrl in para.controls.iter() {
+                        if owns_float_bands {
+                            // 저장 줄 사이의 띠와 그 뒤 줄을 이미 한 번 예약했다.
+                            continue;
+                        }
                         let (obj_height, obj_v_offset, obj_margin_top, obj_margin_bottom) =
                             match ctrl {
                                 Control::Picture(p)

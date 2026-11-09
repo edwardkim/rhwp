@@ -668,7 +668,13 @@ pub(super) fn bullet_marker_text(
         // 그림도 기존 비 ASCII 글머리표의 1em 칸과 원본 거리를 점유한다.
         '●'
     } else {
-        map_pua_bullet_char(bullet.bullet_char)
+        // 확인된 암묵적 프로그램의 원 주소는 측정·paint까지 보존한다.
+        // 표시 투영은 각 렌더러의 기존 공통 경로가 수행한다.
+        if crate::renderer::implicit_symbol::advance_em(bullet.bullet_char).is_some() {
+            bullet.bullet_char
+        } else {
+            map_pua_bullet_char(bullet.bullet_char)
+        }
     } {
         // [#7418] 글머리표 자리의 soft hyphen(U+00AD)은 한/글이 반각 하이픈으로 그린다
         // (`footnote-01-hwp-2020.pdf` 1쪽: 마커 8673 → 본문 10079, 14pt 에서 마커+공백
@@ -722,7 +728,7 @@ pub(crate) fn numbering_head_text(
             synthesized_default = crate::renderer::layout::utils::default_outline_numbering();
             // 내장 ^N은 각 수준의 한 자리 참조 형식을 예약한다. 실제 계수기의
             // 자릿수나 선택된 글꼴의 숫자·마침표 전진폭으로 영역을 바꾸지 않는다.
-            reference_width_em = Some(level.min(6) + 1);
+            reference_width_em = Some(f32::from(level.min(6) + 1));
             &synthesized_default
         }
         None => return None,
@@ -737,6 +743,19 @@ pub(crate) fn numbering_head_text(
     // 함께 버리면 한컴 저장본의 빈 개요 수준에서 본문이 거리만큼 당겨진다.
     let text = expand_numbering_format(format_str, &counters, numbering, &start_numbers, level_idx);
     let head = numbering.heads.get(level_idx).copied().unwrap_or_default();
+    if reference_width_em.is_none() && head.attr & (1 << 2) == 0 {
+        // 표40 bit2가 꺼진 번호는 실제 계수기의 자릿수나 비례 글꼴 폭을 예약하지 않는다.
+        // 명시된 형식도 내장 개요와 같은 한 자리 참조 칸을 생산한다. 표시 문자열과
+        // 마커 정렬은 실제 글리프 폭을 계속 사용하며, 본문·이어지는 줄만 이 칸을 공유한다.
+        let one = [1; crate::model::style::NUMBERING_LEVELS];
+        let reference = expand_numbering_format(format_str, &one, numbering, &one, level_idx);
+        reference_width_em = Some(
+            reference
+                .chars()
+                .map(|character| if character.is_ascii() { 0.5_f32 } else { 1.0 })
+                .sum(),
+        );
+    }
     Some((
         text,
         MarkerHead {
@@ -872,8 +891,8 @@ pub(crate) fn list_marker_geometry(
 /// `pr-1674.hwp` 글머리표 1(Wingdings `U+F06C`, 글자 모양 26 = 10pt, 거리 30%)의 문단 본문은
 /// 14pt 다. 한/글 2024 PDF 12쪽의 마커는 9.96pt 로 그려지고 영역은 1296 HWPUNIT
 /// (= 1000 + 30% × 1000)이다 — 본문 글자 모양으로 재면 1820 이 되어 한 줄 문단이 두 줄로 넘친다.
-/// `u32::MAX` 는 참조 없음이다. 0 도 참조 없음으로 본다 — 편집기·HWP3 가 만드는 기본 머리 모양이
-/// 글자 모양 필드를 0 으로 두며, 문서의 0번 글자 모양은 본문 기본 모양이라 첫 글자 모양과 같은 자리다.
+/// `u32::MAX`는 참조 없음이다. 0번도 유효한 문서 글자 모양이므로 본문과 구분한다.
+/// 별도 모양을 참조하지 않는 편집기·HWP3의 합성 머리는 생성 단계에서 센티널을 명시한다.
 /// 참조한 글자 모양의 기준 크기가 0 이면(한/글 '본문 글자 크기 따름') 문단 끝 글자 모양 `end_id` 의
 /// 크기로 그린다([`paragraph_end_char_shape_id`]).
 fn marker_char_style(
@@ -883,7 +902,7 @@ fn marker_char_style(
     end_id: u32,
 ) -> Option<TextStyle> {
     let id = head.char_shape_id;
-    if id == u32::MAX || id == 0 || (id as usize) >= styles.char_styles.len() {
+    if id == u32::MAX || (id as usize) >= styles.char_styles.len() {
         return None;
     }
     Some(head_marker_text_style(styles, id, end_id, text))
@@ -1331,6 +1350,8 @@ struct TacPictureLineVars {
 #[derive(Clone, Copy)]
 struct EquationTacLineVars {
     line_idx: usize,
+    /// 호출자가 원시 슬롯/현재 프레임으로 이 줄의 제어문을 이미 확정했다.
+    owned_control_row: bool,
     /// 이 문단에서 배치하는 마지막 줄 인덱스 상한 (원본: end)
     line_end: usize,
     alignment: crate::model::style::Alignment,
@@ -2273,8 +2294,8 @@ fn fixed_auto_tab_prefix_by_run(line: &ComposedLine) -> Vec<usize> {
         .collect()
 }
 
-/// 낱말 공백과 대시가 함께 있는 양쪽 정렬 줄의 복원 예산.
-/// 대시는 해당 런의 자연 전진까지만 복원하고 남은 폭은 낱말 공백이 소비한다.
+/// 양쪽 정렬 및 마지막 줄의 대시 복원 예산.
+/// 대시는 해당 런의 자연 전진까지만 복원하고, 배분 대상 낱말 공백이 있으면 남은 폭을 소비한다.
 /// 방출과 같은 정규화 런·표시 문자열을 사용하여 다른 글꼴/크기의 대시에도
 /// 한 런에서 측정한 복원량을 일괄 적용하지 않는다.
 fn justified_dash_restoration(
@@ -2283,6 +2304,8 @@ fn justified_dash_restoration(
     tab_width: f64,
     slack: f64,
     word_slots: usize,
+    trailing_spaces: usize,
+    word_space_limit: Option<u8>,
 ) -> (f64, f64, Vec<f64>) {
     let mut capacities = Vec::with_capacity(plan.line.runs.len());
     let mut counts = Vec::with_capacity(plan.line.runs.len());
@@ -2325,6 +2348,26 @@ fn justified_dash_restoration(
         .zip(&counts)
         .map(|(capacity, count)| capacity * *count as f64)
         .sum();
+    let count: usize = counts.iter().sum();
+    let compression_percent = word_space_limit.unwrap_or(0);
+    if compression_percent > 0 && word_slots > 0 && count > 0 && total_capacity > slack {
+        // 클램프 전 자연 대시를 복원할 때의 부족도 일반 음수 여백과 같은
+        // 낱말 공백 한도로 수용한다. 대시만 짧게 만들면 전체 줄 끝은 같아도
+        // 내부 낱말·리더의 원점이 달라진다. 글자 압축까지 필요하면 기존
+        // 탄력 대시 배분으로 돌아가며 자연 대시 폭을 넘겨 늘리지 않는다.
+        let (word, character) = justification_spacing::compress_with_space_limit(
+            plan,
+            styles,
+            trailing_spaces,
+            tab_width,
+            slack - total_capacity,
+            0.0,
+            compression_percent,
+        );
+        if word < 0.0 && character.abs() <= f64::EPSILON * word.abs().max(1.0) {
+            return (word, total_capacity / count as f64, capacities);
+        }
+    }
     let restored = slack.min(total_capacity);
     let fraction = if total_capacity > 0.0 {
         restored / total_capacity
@@ -2335,13 +2378,17 @@ fn justified_dash_restoration(
         .into_iter()
         .map(|capacity| capacity * fraction)
         .collect();
-    let count: usize = counts.iter().sum();
     let average = if count > 0 {
         restored / count as f64
     } else {
         0.0
     };
-    ((slack - restored) / word_slots as f64, average, extras)
+    let word_extra = if word_slots > 0 {
+        (slack - restored) / word_slots as f64
+    } else {
+        0.0
+    };
+    (word_extra, average, extras)
 }
 
 fn line_fit_width(
@@ -2381,6 +2428,7 @@ fn compute_line_extra_spacing_with_dash_plan(
     total_text_width: f64,
     available_width: f64,
     tab_width: f64,
+    condense_min_space: u8,
     dash_extra_by_run: &mut Option<Vec<f64>>,
     trailing_note_slots: usize,
 ) -> (f64, f64, f64) {
@@ -2478,60 +2526,58 @@ fn compute_line_extra_spacing_with_dash_plan(
     //
     // 정렬이 여백까지 채우는 종류(Justify·Split)일 때만 연다 — 왼쪽/가운데 정렬의
     // 짧은 dash 는 저자가 의도한 길이일 수 있다.
-    let last_line_leader_fill = if !needs_justify
-        && matches!(alignment, Alignment::Justify | Alignment::Split)
-    {
-        let all_chars: Vec<char> = comp_line.runs.iter().flat_map(|r| r.text.chars()).collect();
-        let trailing_spaces = all_chars
-            .iter()
-            .rev()
-            .take_while(|c| **c == ' ')
-            .count()
-            .min(trailing_space_limit);
-        let visible_count = all_chars.len() - trailing_spaces;
-        let leader_dashes = count_dash_leaders(&all_chars[..visible_count]);
-        if leader_dashes > 0 {
-            // 클램프가 깎아낸 폭 = 자연 advance − min(자연, 0.3em). 단독 '-' 는 3+ 연속
-            // leader 가 아니므로 estimate_text_width 가 클램프 없는 자연 폭을 돌려준다.
-            let per_dash_restore = comp_line
+    let last_line_leader_fill =
+        if !needs_justify && matches!(alignment, Alignment::Justify | Alignment::Split) {
+            let all_chars: Vec<char> = leading_space_plan
+                .line
                 .runs
                 .iter()
-                .find(|r| {
-                    let chars: Vec<char> = r.text.chars().collect();
-                    (0..chars.len()).any(|i| {
-                        chars[i] == '-' && chars[i..].iter().take_while(|c| **c == '-').count() >= 3
-                    })
-                })
-                .map(|r| {
-                    let mut ts = r.text_style(styles);
-                    ts.default_tab_width = tab_width;
-                    // 복원량은 한 글자의 소수 자연 전진이다. run 전체를 위한
-                    // 정수 반올림을 한 글자마다 쓰면 대시 수만큼 오차가 누적된다.
-                    let natural = estimate_text_width_exact("-", &ts);
-                    (natural - natural.min(ts.font_size * 0.3)).max(0.0)
-                })
-                .unwrap_or(0.0);
-            let trailing_width = if trailing_spaces > 0 {
-                if let Some(last_run) = comp_line.runs.last() {
-                    let mut ts = last_run.text_style(styles);
-                    ts.default_tab_width = tab_width;
-                    estimate_text_width_exact(&" ".repeat(trailing_spaces), &ts)
+                .flat_map(|run| effective_text_for_metrics(run).chars())
+                .collect();
+            let trailing_spaces = all_chars
+                .iter()
+                .rev()
+                .take_while(|c| **c == ' ')
+                .count()
+                .min(trailing_space_limit);
+            let visible_count = all_chars.len() - trailing_spaces;
+            let leader_dashes = count_dash_leaders(&all_chars[..visible_count]);
+            if leader_dashes > 0 {
+                let trailing_width = if trailing_spaces > 0 {
+                    if let Some(last_run) = comp_line.runs.last() {
+                        let mut ts = last_run.text_style(styles);
+                        ts.default_tab_width = tab_width;
+                        estimate_text_width_exact(&" ".repeat(trailing_spaces), &ts)
+                    } else {
+                        0.0
+                    }
                 } else {
                     0.0
+                };
+                let slack = available_width - (total_text_width - trailing_width);
+                // 슬랙이 없으면(이미 꽉 찬 줄) 아래 기존 분기(오버플로우 압축 등)로 흘린다.
+                if slack > 0.0 {
+                    // 같은 측정에서 제거된 leader 폭만 각 런에 되돌린다. 단순 0.3em과
+                    // 비교하면 이미 남아 있는 저자 자간·굵기 전진까지 이중 복원한다.
+                    let (_, extra, by_run) = justified_dash_restoration(
+                        leading_space_plan,
+                        styles,
+                        tab_width,
+                        slack,
+                        0,
+                        trailing_spaces,
+                        None,
+                    );
+                    (extra > 0.0).then_some((extra, by_run))
+                } else {
+                    None
                 }
             } else {
-                0.0
-            };
-            let slack = available_width - (total_text_width - trailing_width);
-            // 슬랙이 없으면(이미 꽉 찬 줄) 아래 기존 분기(오버플로우 압축 등)로 흘린다.
-            let extra = (slack / leader_dashes as f64).min(per_dash_restore);
-            (extra > 0.0).then_some(extra)
+                None
+            }
         } else {
             None
-        }
-    } else {
-        None
-    };
+        };
 
     if needs_justify {
         // 양쪽 정렬: 후행 공백 제외한 내부 공백에 분배.
@@ -2621,6 +2667,9 @@ fn compute_line_extra_spacing_with_dash_plan(
                     tab_width,
                     slack,
                     rendered_space_slots,
+                    trailing_spaces,
+                    (alignment == Alignment::Justify && !has_tabs)
+                        .then_some(condense_min_space.max(20)),
                 );
                 *dash_extra_by_run = Some(by_run);
                 (word_extra, 0.0, dash_extra)
@@ -2756,8 +2805,9 @@ fn compute_line_extra_spacing_with_dash_plan(
         } else {
             (0.0, 0.0, 0.0)
         }
-    } else if let Some(extra_dash) = last_line_leader_fill {
+    } else if let Some((extra_dash, by_run)) = last_line_leader_fill {
         // [#5830] 마지막 줄·강제 줄바꿈 줄의 dash leader 채움.
+        *dash_extra_by_run = Some(by_run);
         (0.0, 0.0, extra_dash)
     } else if needs_distribute && total_char_count > 1 {
         // [#4657] 배분 정렬: 남는 폭을 글자 **사이**(N-1곳)에 균등 분배.
@@ -2987,6 +3037,29 @@ fn stored_full_width_line_box(para: &Paragraph) -> Option<(i32, i32)> {
 }
 
 impl LayoutEngine {
+    /// [#8653] TAC 표만 담은 문단의 한 저장 줄을 소유한 다른 표(저장 밴드 = 그 표의 바깥
+    /// 상자)의 본체 높이와 위 바깥여백(px). 소유 판정은 단일 저장 줄에서만 성립한다
+    /// (`tac_band_covers_height`).
+    fn tac_line_owner_frame(
+        &self,
+        para: &Paragraph,
+        inline_tables: &[(usize, &crate::model::table::Table)],
+        ctrl_idx: usize,
+    ) -> Option<(f64, f64)> {
+        let line = super::control_line_seg_index(para, ctrl_idx)?;
+        inline_tables.iter().find_map(|(owner_ci, owner)| {
+            (*owner_ci != ctrl_idx
+                && super::control_line_seg_index(para, *owner_ci) == Some(line)
+                && Self::tac_stored_band_is_outer_box(para, owner))
+            .then(|| {
+                (
+                    hwpunit_to_px(owner.common.height as i32, self.dpi),
+                    hwpunit_to_px(owner.outer_margin_top as i32, self.dpi),
+                )
+            })
+        })
+    }
+
     /// [#5729] 저장 줄 밴드가 정확히 `om_top + 선언높이 + om_bottom` 인 TAC 표는
     /// 한글이 표 상단을 **줄 상단 + om_top** 에 앉힌다 (156505870 4표 실측:
     /// 밴드 5195=283+4629+283 등 전부 일치). 종전 baseline-하단 정렬은 측정
@@ -3002,7 +3075,7 @@ impl LayoutEngine {
         // 편집으로 실제 셀 높이가 선언보다 커지면 재발행한 줄은 측정한 표의
         // 외곽 상자를 담는다. 선언 높이만 비교하면 공유 기준선에 불필요한
         // 아래 여백이 다시 더해져 표가 그 줄의 상단에서 내려앉는다.
-        if !Self::tac_stored_band_is_outer_box(para, tbl)
+        if !Self::tac_stored_band_is_captioned_outer_box(para, tbl)
             && !Self::tac_band_covers_height(
                 para,
                 tbl,
@@ -3023,7 +3096,7 @@ impl LayoutEngine {
         Self::tac_band_covers_height(para, tbl, i64::from(tbl.common.height.min(i32::MAX as u32)))
     }
 
-    /// [#8149] 배치가 TAC 표 상단을 «줄 상단 + om_top» 에 둘지 정할 때만 쓰는 판정 — 아래 캡션은
+    /// [#8149] 배치가 TAC 외곽 상단을 «줄 상단 + om_top» 에 둘지 정할 때만 쓰는 판정 — 위·아래 캡션은
     /// 표 본체와 바깥 아래 여백 사이에 놓여 저장 밴드에 포함된다(한글문서파일형식 62쪽 표 397:
     /// 9363 = 566 + 5011 + 캡션 1802 + 1984). 조판의 후속 원점 판정
     /// (`tac_stored_band_is_outer_box`)은 캡션이 섞인 줄을 표 원점으로 쓰지 않으므로 바꾸지 않는다.
@@ -3033,7 +3106,7 @@ impl LayoutEngine {
     ) -> bool {
         let declared = i64::from(tbl.common.height.min(i32::MAX as u32));
         Self::tac_band_covers_height(para, tbl, declared)
-            || crate::renderer::float_placement::stored_empty_host_frame::stored_bottom_caption_hu(
+            || crate::renderer::float_placement::stored_empty_host_frame::stored_vertical_caption_hu(
                 tbl,
             )
             .filter(|caption| *caption > 0)
@@ -4483,7 +4556,10 @@ impl LayoutEngine {
                 let mt = measured_tables
                     .iter()
                     .find(|mt| mt.para_index == para_index && mt.control_index == *ctrl_idx);
-                let tw = table_widths[table_idx];
+                // [#8647] 표 뒤 펜은 정렬 폭과 같은 **선언 폭**으로 전진한다(#6601·#5785 계약).
+                // `table_widths`(col_span==1 셀 최댓값 합)는 병합 셀이 많은 표에서 과소합산돼
+                // 같은 줄의 다음 표가 앞 표 위에 겹친다(docs#480 표0 149px → 약 30px).
+                let tw = table_declared_widths[table_idx];
                 let tbl_h = mt
                     .map(|m| m.total_height)
                     .unwrap_or_else(|| hwpunit_to_px(tbl.common.height as i32, self.dpi));
@@ -4523,8 +4599,26 @@ impl LayoutEngine {
                 }
                 let (om_left, om_right) = table_om_px[table_idx];
                 let om_bottom = hwpunit_to_px(tbl.outer_margin_bottom as i32, self.dpi);
+                // [#8653] 한 저장 줄에 TAC 표가 둘 이상이고 그중 하나가 줄을 소유하면(저장
+                // 밴드 = 그 표의 바깥 상자), 나머지 표는 소유자의 기준선에 85% 로 앉는다 —
+                // 글줄 흐름 경로(`#7150`)와 같은 공통 결과다. 종전 아래 식은 동반 표의 본체
+                // 하단을 `기준선 + om_bottom` 에 붙여 결재문서 오른쪽 위 결재 상자가 한컴보다
+                // 6.9px 위에 놓였다(36355589: 종전 80.8 · 한컴 87.7 · 공통 식 87.7).
+                let line_owner = (!table_wrapped)
+                    .then(|| self.tac_line_owner_frame(para, &inline_tables, *ctrl_idx))
+                    .flatten();
                 let tbl_y = self
                     .tac_table_stored_outer_band_top(para, tbl, tbl_h, current_y)
+                    .or_else(|| {
+                        line_owner.map(|(owner_h, owner_om_top)| {
+                            super::stored_tac_frame::companion_table_top(
+                                current_y,
+                                owner_h,
+                                owner_om_top,
+                                tbl_h,
+                            )
+                        })
+                    })
                     .unwrap_or_else(|| {
                         let raw = current_y + baseline_dist + om_bottom - tbl_h;
                         if raw < current_y {
@@ -4627,14 +4721,27 @@ impl LayoutEngine {
             let mt = measured_tables
                 .iter()
                 .find(|mt| mt.para_index == para_index && mt.control_index == *ctrl_idx);
-            let tw = table_widths[table_idx];
+            // [#8647] 위 중간 표와 같은 선언 폭 전진.
+            let tw = table_declared_widths[table_idx];
             let (om_left, om_right) = table_om_px[table_idx];
             let tbl_h = mt
                 .map(|m| m.total_height)
                 .unwrap_or_else(|| hwpunit_to_px(tbl.common.height as i32, self.dpi));
             let om_bottom = hwpunit_to_px(tbl.outer_margin_bottom as i32, self.dpi);
+            // [#8653] 위 중간 표와 같은 줄 소유자 기준선 규칙.
             let tbl_y = self
                 .tac_table_stored_outer_band_top(para, tbl, tbl_h, current_y)
+                .or_else(|| {
+                    self.tac_line_owner_frame(para, &inline_tables, *ctrl_idx)
+                        .map(|(owner_h, owner_om_top)| {
+                            super::stored_tac_frame::companion_table_top(
+                                current_y,
+                                owner_h,
+                                owner_om_top,
+                                tbl_h,
+                            )
+                        })
+                })
                 .unwrap_or_else(|| (current_y + baseline_dist + om_bottom - tbl_h).max(current_y));
 
             let table_bottom = self.layout_table(
@@ -5353,6 +5460,7 @@ impl LayoutEngine {
         }
         let EquationTacLineVars {
             line_idx,
+            owned_control_row,
             line_end: end,
             alignment,
             available_width,
@@ -5380,7 +5488,9 @@ impl LayoutEngine {
             .map(|l| l.char_start)
             .unwrap_or(usize::MAX);
         let tac_on_line = |k: usize, pos: usize| -> bool {
-            if let Some(ref flow) = equation_tac_line_flow {
+            if owned_control_row {
+                true
+            } else if let Some(ref flow) = equation_tac_line_flow {
                 flow.row_for_tac(k).is_some()
             } else {
                 pos >= line_start_char && pos < line_end_char
@@ -7252,7 +7362,12 @@ impl LayoutEngine {
                         - inline_offset
                         - num_offset,
                 );
-            let equation_tac_line_flow =
+            // 현재 줄로 이미 거른 제어문 목록에는 앞줄 정보가 없다. 여기서 다시
+            // 수식 전용 문단을 채우면 매 줄을 첫 줄로 보고 내어쓰기와 소속을 잃는다.
+            // 프레임/원시 슬롯 소유자는 일반 글줄이 확정한 원점과 폭을 그대로 쓴다.
+            let equation_tac_line_flow = if stored_tac_assignment.is_some() {
+                None
+            } else {
                 crate::renderer::equation_tac_flow::compute_equation_only_tac_line_flow(
                     para,
                     composed,
@@ -7268,7 +7383,8 @@ impl LayoutEngine {
                     } else {
                         equation_continuation_available_width
                     },
-                );
+                )
+            };
             let equation_tac_extra_rows = equation_tac_line_flow
                 .as_ref()
                 .map(|flow| flow.extra_rows)
@@ -7714,6 +7830,7 @@ impl LayoutEngine {
                     total_text_width,
                     available_width,
                     tab_width,
+                    condense,
                     &mut dash_extra_by_run,
                     note_line.trailing_slots,
                 )
@@ -8322,6 +8439,7 @@ impl LayoutEngine {
                 &equation_tac_line_flow,
                 EquationTacLineVars {
                     line_idx,
+                    owned_control_row: stored_tac_assignment.is_some(),
                     line_end: end,
                     alignment,
                     available_width,
@@ -10392,7 +10510,12 @@ impl LayoutEngine {
                                     // 저장 기준선을 쓰던 종전 식은 소유자의 om_top 을
                                     // 잃어 줄 전체가 `0.85×(om_top+om_bottom) − om_top`
                                     // 만큼 내려앉았다 — issue2470 1쪽 결재표 1.31px.
-                                    (y + owner_om_top + (owner_h - table_h) * 0.85).max(y)
+                                    super::stored_tac_frame::companion_table_top(
+                                        y,
+                                        owner_h,
+                                        owner_om_top,
+                                        table_h,
+                                    )
                                 } else {
                                     // [#7049] 글자처럼 취급되는 표는 글자처럼 기준선에
                                     // 앉는다 — 높이의 85% 가 기준선 위, 15% 가 아래다.
@@ -12195,6 +12318,7 @@ mod issue_2809_split_alignment_tests {
             total_text_width,
             available_width,
             tab_width,
+            0,
             &mut dash_extra_by_run,
             trailing_note_slots,
         )
@@ -12710,9 +12834,6 @@ mod trailing_tac_width_tests {
         assert!(tac_offsets_for_line_width(&comp, &offsets, 1).is_empty());
     }
 }
-
-#[cfg(test)]
-mod issue_2439_lineseg_indent_tests;
 
 #[cfg(test)]
 mod issue_1151_v3_helper_tests {

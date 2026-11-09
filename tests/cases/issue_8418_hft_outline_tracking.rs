@@ -4,6 +4,8 @@
 //! 고정 devel5077b216 Native99.99715%, 후보63c39702 Native99.89494%였다.
 //! 설치 프로그램 공급 전후와 명시적 자연 전진 선택을 구분하며 사설 글꼴에 의존하지 않는다.
 //! 주석 갱신: 2026-11-08T03:07:41+09:00. 실제 좌표는 고정하지 않고 독립 Print의 HFT 굵기 계약을 검사한다.
+//! 주석 갱신: 2026-11-08T19:43:46.094614+09:00. 직전 파일 변경: 2026-11-08T06:19:56+09:00, 7f76cee60e38fceb63feacaff706cf984b19c427.
+//! 자연 전진 선택과 윤곽 보존을 분리한 합성 계약이며 설치 글꼴·실물 좌표에 의존하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 use rhwp::renderer::{
     layout::{EmbeddedTextMeasurer, TextMeasurer},
@@ -52,6 +54,7 @@ fn hft_bold_decoration_survives_outline_supply() {
 fn explicit_natural_outline_does_not_inherit_hft_decoration() {
     let mut selected = style(24.0);
     selected.preserve_glyph_ink = true;
+    selected.natural_program_metrics = true;
     let regular = width("가", &selected);
     selected.bold = true;
     assert_eq!(

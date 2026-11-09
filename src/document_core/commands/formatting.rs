@@ -1156,6 +1156,47 @@ impl DocumentCore {
         new_id as i32
     }
 
+    /// 글자 서식의 `fontName`(글꼴 이름)을 언어 슬롯별 `font_ids` 로 풀어 `mods` 에 넣는다.
+    ///
+    /// 호출자가 글꼴 ID 를 미리 알 수 없는 경우(CLI·에이전트)를 위한 축이다. 이름이 문서에 없으면
+    /// HTML 붙여넣기와 같은 `find_or_register_font_ids` 로 슬롯마다 등록하고, 등록이 일어나면
+    /// DocInfo 패스스루(`raw_stream`)를 무효화해 저장본에 새 글꼴이 실리게 한다.
+    /// `fontId`·`fontIds` 와 함께 주면 어느 쪽이 이길지 모호하므로 오류로 돌린다.
+    pub(crate) fn resolve_font_name_mods(
+        &mut self,
+        mods: &mut crate::model::style::CharShapeMods,
+    ) -> Result<(), HwpError> {
+        let Some(name) = mods.font_name.take() else {
+            return Ok(());
+        };
+        if mods.font_id.is_some() || mods.font_ids.is_some() {
+            return Err(HwpError::RenderError(
+                "fontName 은 fontId·fontIds 와 함께 쓸 수 없음".to_string(),
+            ));
+        }
+        let before: Vec<usize> = self
+            .document
+            .doc_info
+            .font_faces
+            .iter()
+            .map(|slot| slot.len())
+            .collect();
+        let ids = self.find_or_register_font_ids(&name).ok_or_else(|| {
+            HwpError::RenderError(format!("글꼴 이름을 등록할 수 없음: {}", name.trim()))
+        })?;
+        let after = self
+            .document
+            .doc_info
+            .font_faces
+            .iter()
+            .map(|slot| slot.len());
+        if !after.eq(before.iter().copied()) {
+            self.document.doc_info.raw_stream_dirty = true;
+        }
+        mods.font_ids = Some(ids);
+        Ok(())
+    }
+
     /// 글자 서식 적용 (네이티브) — 본문 문단
     pub fn apply_char_format_native(
         &mut self,
@@ -1176,6 +1217,7 @@ impl DocumentCore {
         }
 
         let mut mods = parse_char_shape_mods(props_json);
+        self.resolve_font_name_mods(&mut mods)?;
         // border/fill JSON이 있으면 BorderFill 생성/재사용하여 border_fill_id 설정
         if json_has_border_keys(props_json) {
             let bf_id = self.create_border_fill_from_json(props_json);
@@ -1359,7 +1401,19 @@ impl DocumentCore {
         end_offset: usize,
         props_json: &str,
     ) -> Result<String, HwpError> {
+        // 실패한 주소는 글꼴·테두리를 등록하기 전에 거부한다.
+        let base_ids = self
+            .get_cell_paragraph_ref(
+                sec_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            )
+            .ok_or_else(|| HwpError::RenderError("셀 문단을 찾을 수 없음".to_string()))?
+            .char_shape_ids_in_range(start_offset, end_offset);
         let mut mods = parse_char_shape_mods(props_json);
+        self.resolve_font_name_mods(&mut mods)?;
         if json_has_border_keys(props_json) {
             let bf_id = self.create_border_fill_from_json(props_json);
             mods.border_fill_id = Some(bf_id);
@@ -1367,16 +1421,6 @@ impl DocumentCore {
 
         // 선택 안의 원본 모양 각각에 속성을 병합한다.
         {
-            let para = self
-                .get_cell_paragraph_ref(
-                    sec_idx,
-                    parent_para_idx,
-                    control_idx,
-                    cell_idx,
-                    cell_para_idx,
-                )
-                .ok_or_else(|| HwpError::RenderError("셀 문단을 찾을 수 없음".to_string()))?;
-            let base_ids = para.char_shape_ids_in_range(start_offset, end_offset);
             let ids = self.document.modified_char_shape_ids(base_ids, &mods);
 
             // 셀 문단에 범위 적용
@@ -1472,15 +1516,16 @@ impl DocumentCore {
             );
         }
 
-        let mut mods = parse_char_shape_mods(props_json);
-        if json_has_border_keys(props_json) {
-            let bf_id = self.create_border_fill_from_json(props_json);
-            mods.border_fill_id = Some(bf_id);
-        }
         let base_ids = {
             let para = self.get_cell_paragraph_mut_by_path(sec_idx, parent_para_idx, path)?;
             para.char_shape_ids_in_range(start_offset, end_offset)
         };
+        let mut mods = parse_char_shape_mods(props_json);
+        self.resolve_font_name_mods(&mut mods)?;
+        if json_has_border_keys(props_json) {
+            let bf_id = self.create_border_fill_from_json(props_json);
+            mods.border_fill_id = Some(bf_id);
+        }
         let ids = self.document.modified_char_shape_ids(base_ids, &mods);
         {
             let para = self.get_cell_paragraph_mut_by_path(sec_idx, parent_para_idx, path)?;

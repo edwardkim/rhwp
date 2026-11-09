@@ -149,6 +149,17 @@ pub(crate) fn flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u
 }
 
 fn compute_flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u32, u32, i32) {
+    if !equation.common.size_protect && equation.uses_implicit_legacy_font() {
+        let ast = document_script::parse(equation);
+        if layout::supports_implicit_legacy(&ast) {
+            let frame = layout::EqLayout::for_equation(equation, super::DEFAULT_DPI).layout(&ast);
+            return (
+                super::px_to_hwpunit(frame.width, super::DEFAULT_DPI).max(1) as u32,
+                super::px_to_hwpunit(frame.height, super::DEFAULT_DPI).max(1) as u32,
+                super::px_to_hwpunit(frame.baseline, super::DEFAULT_DPI),
+            );
+        }
+    }
     if declared_frame::retains_unpositioned_host_frame(equation)
         || equation.retains_legacy_source_frame()
     {

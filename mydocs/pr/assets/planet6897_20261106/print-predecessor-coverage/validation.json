@@ -1,0 +1,231 @@
+{
+  "parent_head": "4b55aea528ff25608fd1e58aea2ceb0d820591f5",
+  "new_base": "06181802e574dbd91e62375536751dea8c270fcd",
+  "source_hashes": {
+    "src/renderer/hft_outline.rs": "2a5d4267af6636e3bde1ceaf41bee56df25e75a3871f4388ee8d8f4e0c59f0ef",
+    "scripts/tests/print-text-geometry.browser.mjs": "9da3f17fadd77066b815be98768847716e72bfea016b5bb5f66a3abc514509e0"
+  },
+  "build": {
+    "state": "complete",
+    "pid": 59683,
+    "parent_head": "4b55aea528ff25608fd1e58aea2ceb0d820591f5",
+    "sources": {
+      "src/renderer/hft_outline.rs": "2a5d4267af6636e3bde1ceaf41bee56df25e75a3871f4388ee8d8f4e0c59f0ef",
+      "scripts/tests/print-text-geometry.browser.mjs": "9da3f17fadd77066b815be98768847716e72bfea016b5bb5f66a3abc514509e0"
+    },
+    "diff_sha256": "5bd8b9fb61cced7e9eeb07244f0c041341a7f6bc4ec70d1963bfb32ddd199ba5",
+    "exit_code": 0,
+    "seconds": 293.8454342498444,
+    "files": {
+      "rhwp.js": {
+        "/Users/tsjang/rhwp/pkg/rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+        "/Users/tsjang/rhwp/rhwp-studio/public/rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/print-predecessor-coverage-wasm-pkg/rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568"
+      },
+      "rhwp_bg.wasm": {
+        "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm": "18601fb2dfe087d02f8c8c5cd171d882a12fa82e91825d9588618536f10660e2",
+        "/Users/tsjang/rhwp/rhwp-studio/public/rhwp_bg.wasm": "18601fb2dfe087d02f8c8c5cd171d882a12fa82e91825d9588618536f10660e2",
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/print-predecessor-coverage-wasm-pkg/rhwp_bg.wasm": "18601fb2dfe087d02f8c8c5cd171d882a12fa82e91825d9588618536f10660e2"
+      }
+    },
+    "browser_exit_code": 0
+  },
+  "regression": {
+    "before": {
+      "run": 1,
+      "pass": 0,
+      "fail": 1,
+      "cause": "앞 후보 coverage 미확인을 결측으로 취급해 뒤 후보의 윤곽으로 덮어씀"
+    },
+    "after": {
+      "print_and_faux_bold": 4,
+      "all_canvas_contracts": 17,
+      "failed": 0
+    },
+    "kind": "관계형, MIT 합성 TTF, 실제 WASM/FontFace/Canvas, OS 글꼴 비의존"
+  },
+  "gates": [
+    {
+      "name": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 6.283395540900528
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 17.45248420815915
+    },
+    {
+      "name": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 29.360676708864048
+    }
+  ],
+  "focus": [
+    {
+      "key": "handbook-hwp",
+      "prs": [
+        8389,
+        8397
+      ],
+      "finished": true,
+      "exit_code": 0,
+      "pages": 3,
+      "expected_pages": 3,
+      "page_set_matches": true,
+      "minimum": 100.0,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/print-predecessor-coverage-wasm-focus/handbook-hwp/handbook-hwp/silhouette.tsv",
+      "tsv_sha256": "7c0ef994af9988b315b2880c67397047f2b45402a1442822e1c1e9a654ee6c9b",
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/print-predecessor-coverage-wasm-focus/handbook-hwp/run.log",
+      "dpi": 96,
+      "compat": "2024"
+    },
+    {
+      "key": "handbook-hwpx",
+      "prs": [
+        8389,
+        8397
+      ],
+      "finished": true,
+      "exit_code": 0,
+      "pages": 1,
+      "expected_pages": 1,
+      "page_set_matches": true,
+      "minimum": 100.0,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/print-predecessor-coverage-wasm-focus/handbook-hwpx/handbook-hwpx/silhouette.tsv",
+      "tsv_sha256": "0cc935b1d4b1fafc1d4ae9390db52cb42b243585150e501a2d853df5953f312c",
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/print-predecessor-coverage-wasm-focus/handbook-hwpx/run.log",
+      "dpi": 96,
+      "compat": "2024"
+    },
+    {
+      "key": "outline",
+      "prs": [
+        8389,
+        8397
+      ],
+      "finished": true,
+      "exit_code": 0,
+      "pages": 1,
+      "expected_pages": 1,
+      "page_set_matches": true,
+      "minimum": 99.95,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/print-predecessor-coverage-wasm-focus/outline/outline/silhouette.tsv",
+      "tsv_sha256": "cf9129d711a47da1ad1fa4b9cc6c8866c7c3486a051614870d862178b08fe3ea",
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/print-predecessor-coverage-wasm-focus/outline/run.log",
+      "dpi": 96,
+      "compat": "2022"
+    },
+    {
+      "key": "sample10",
+      "prs": [
+        8389,
+        8397
+      ],
+      "finished": true,
+      "exit_code": 0,
+      "pages": 1,
+      "expected_pages": 1,
+      "page_set_matches": true,
+      "minimum": 99.96,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/print-predecessor-coverage-wasm-focus/sample10/sample10/silhouette.tsv",
+      "tsv_sha256": "96576075d8a11fcf15873dd2bf07b04acc5677c12514cd68f72f04db900a40d7",
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/print-predecessor-coverage-wasm-focus/sample10/run.log",
+      "dpi": 96,
+      "compat": "2022"
+    }
+  ],
+  "whole_wasm": {
+    "state": "complete",
+    "conditions": 2,
+    "pages": 766,
+    "result": [
+      {
+        "key": "handbook-hwp",
+        "pages": 383,
+        "minimum": "99.96",
+        "displayed100": 382,
+        "losses": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/print-predecessor-coverage-wasm-handbook-whole/handbook-hwp/handbook-hwp/silhouette.tsv",
+        "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+        "asset_tsv": "handbook-hwp-wasm-383-silhouette.tsv"
+      },
+      {
+        "key": "handbook-hwpx",
+        "pages": 383,
+        "minimum": "99.96",
+        "displayed100": 382,
+        "losses": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/print-predecessor-coverage-wasm-handbook-whole/handbook-hwpx/handbook-hwpx/silhouette.tsv",
+        "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+        "asset_tsv": "handbook-hwpx-wasm-383-silhouette.tsv"
+      }
+    ],
+    "producer_identity": {
+      "binary_sha256": "ab24937effcc701face9a3ab8866261d867457f785c26cbf2b1929cf41a94390",
+      "package_sha256": {
+        "rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+        "rhwp_bg.wasm": "18601fb2dfe087d02f8c8c5cd171d882a12fa82e91825d9588618536f10660e2"
+      },
+      "manifest_sha256": "b788db7de1d098d93da60cc23130844636d3e589772a2122ede4c3502708493e"
+    },
+    "input_manifest_sha256": "b788db7de1d098d93da60cc23130844636d3e589772a2122ede4c3502708493e",
+    "log_sha256": "275646d1e245fb49219746e4644324a34b9e7e8ad5bea16794ff2fed4eb74a7d",
+    "metric_scope": "공식 두 자리 표시값·전쪽 2px raw 실루엣 비교. 두 문서는 같은 TSV 수치이나 다른 입력·독립 PDF이며 각각 실행했다."
+  },
+  "native_scope": "변경한 함수는 cfg wasm32 전용. 앞 단계 Native 전체 결과는 원 producer로 보존하며 새 Native 실행으로 표기하지 않음.",
+  "review_read": "수정 후 p198 review/overlay 직접 판독. 글리프 소유·본문·표·쪽 번호 보존, 2px raw100은 RGB 완전 동일을 뜻하지 않음.",
+  "logs": {
+    "print-predecessor-coverage-before.log": "8b4813172689c99e6e0a60cd49bf0c2c52a90b81cf5c570738841ce9a8f9f2f7",
+    "print-predecessor-coverage-browser-after.log": "64550c7c3a2ec14d097cb6c4450d563e83fbc8832d8da9a7d9cd81a7594b3124",
+    "print-predecessor-coverage-browser-all.log": "8de71c6ce503ffed5a49b6b93772b976a64601c3a1c4bac41c612c1033d4e816",
+    "print-predecessor-coverage-wasm-build.log": "af493c06cd89bd1cb725701649f2e39cf83b603d41d4d01fdd96684d8db0cf37"
+  },
+  "files": {
+    "before-wasm-p198-review.png": "3f868e9c5269c15f5bc9656b699b1efee474f603d95f38d6690d013e00c8ace7",
+    "after-wasm-p198-raw.png": "b575c28cff6c8f83cda34081977796d3a02c8518b1c69346085d7bb31e7fbff3",
+    "handbook-hwp-wasm-383-silhouette.tsv": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+    "after-wasm-p198-overlay.png": "1f52ea6dabdd3a00dbdecfd9f6fae091be9c6ef1fcb4d0044bdd75ef52c5679b",
+    "before-wasm-p198-raw.png": "63f9dabd25b168755ac43d71cc32adbe272c4b4f0091d192d64d3dc88962e833",
+    "after-wasm-p198-silhouette.tsv": "0cc935b1d4b1fafc1d4ae9390db52cb42b243585150e501a2d853df5953f312c",
+    "before-wasm-p198-overlay.png": "38ddbf0be6612a34693926c3359caa0dec249839a51465a634643adb9e1a6c4b",
+    "before-wasm-p198-silhouette.tsv": "82e3fcf99b34acc45a3d2a8dc3187c0378a9ed0cbc0eb644a996f8e924617b4e",
+    "after-wasm-p198-pdf.png": "2509e2e2078752485be274245fc51364abf0f6d136941fc66c3154a57a35f1c7",
+    "handbook-hwpx-wasm-383-silhouette.tsv": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+    "before-wasm-p198-pdf.png": "2509e2e2078752485be274245fc51364abf0f6d136941fc66c3154a57a35f1c7",
+    "after-wasm-p198-review.png": "68a6ab61f0b31fff294caa70c978ef9e93cad75ab4581738c369682777cd5542"
+  }
+}

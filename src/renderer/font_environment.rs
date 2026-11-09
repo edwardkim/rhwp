@@ -54,6 +54,29 @@ pub struct FontEnvironment {
     document_substitutions: Vec<DocumentFontSubstitution>,
 }
 
+/// 선택 신원은 Native의 SFNT+face index 또는 브라우저의 독립 SFNT 자원 해시다.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct FontProgramIdentity {
+    digest: [u8; 32],
+    standalone_resource: bool,
+}
+crate::storage::clone_copy!(FontProgramIdentity);
+
+impl FontProgramIdentity {
+    pub(crate) fn matches(
+        &self,
+        source_digest: &[u8; 32],
+        indexed_digest: &[u8; 32],
+        face_index: u32,
+    ) -> bool {
+        if self.standalone_resource {
+            face_index == 0 && &self.digest == source_digest
+        } else {
+            &self.digest == indexed_digest
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct DocumentGlyphFallback {
@@ -619,10 +642,13 @@ impl FontEnvironment {
         }
         let mut database = usvg::fontdb::Database::new();
         for directory in super::font_paths::search_dirs(font_paths) {
-            if directory.exists() {
+            if directory.is_dir() {
                 database.load_fonts_dir(directory);
+            } else if directory.is_file() {
+                let _ = database.load_font_file(directory);
             }
         }
+        super::font_paths::retain_fontdb_family_aliases(&mut database);
         Self::from_document_lookup(
             doc_info,
             |query| {
@@ -856,9 +882,13 @@ impl FontEnvironment {
         self.preserve_source_metrics.unwrap_or(false)
     }
 
+    pub(crate) fn explicitly_replaces_source_metrics(&self) -> bool {
+        self.preserve_source_metrics == Some(false)
+    }
+
     /// 생략된 기존 설정은 자연 프로그램 전진을 선택한 요청이 아니다.
     pub(crate) fn selects_natural_program_for(&self, source: &str) -> bool {
-        self.preserve_source_metrics == Some(false)
+        self.explicitly_replaces_source_metrics()
             || self
                 .replace_source_metrics_for
                 .iter()
@@ -923,6 +953,38 @@ impl FontEnvironment {
         let selected = self.selected_programs.get(source)?;
         (self.replacement_for(source, language_slot, font_id) == Some(selected.family.as_str()))
             .then_some(selected.query.as_str())
+    }
+
+    /// 현재 슬롯에서 유효한 선택의 실제 프로그램 해시다. 임의 표기 ID는 인증하지 않는다.
+    pub(crate) fn selected_program_identity_for(
+        &self,
+        source: &str,
+        language_slot: usize,
+        font_id: u16,
+    ) -> Option<FontProgramIdentity> {
+        self.selected_program_query_for(source, language_slot, font_id)?;
+        let id = self
+            .document_substitution(source, language_slot, font_id)
+            .map(|selection| selection.program_id.as_str())
+            .or_else(|| {
+                self.selected_programs
+                    .get(source)
+                    .map(|program| program.program_id.as_str())
+            })?;
+        let (id, standalone_resource) = id
+            .strip_prefix("sweep-")
+            .map_or((id, false), |digest| (digest, true));
+        if id.len() != 64 {
+            return None;
+        }
+        let mut digest = [0; 32];
+        for (index, byte) in digest.iter_mut().enumerate() {
+            *byte = u8::from_str_radix(id.get(index * 2..index * 2 + 2)?, 16).ok()?;
+        }
+        Some(FontProgramIdentity {
+            digest,
+            standalone_resource,
+        })
     }
 
     pub(crate) fn canonical_selection_rule_for(

@@ -1,5 +1,6 @@
 //! 관계형: 공개 웹폰트 변환과 Native 로컬 우선 공급 계약을 검사한다.
-//! 주석 갱신: 2026-11-04 05:18:38 KST; 원본 전진과 실제 HFT 프로그램 선택의 출처를 구분.
+//! 주석 갱신: 2026-11-07 07:46:43 KST; 원본 HFT 원형 기호와 표시 프로그램 hmtx의 소유를 추가 검증.
+//! 직전 파일 변경: 5551091085418c17d8321c0fee2626365911481b (2026-11-04 12:13:59 +09:00).
 //! 합성 글꼴 입력 검사이며 실물 페이지의 일치율이나 고정 px를 주장하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -358,4 +359,71 @@ fn declared_hft_substitute_keeps_its_own_punctuation_contract() {
         make("명조", false),
         "문서가 선언한 실제 HFT 대체는 임의 표시 치환과 구별해 같은 글리프 전진을 사용"
     );
+}
+
+#[test]
+fn verified_hft_round_markers_keep_source_advance_after_display_program_supply() {
+    // 기존 독립 Print: 평가결과서 U+2219와 로드맵 44쪽 U+2218은 1em.
+    // 공개 Noto Sans Symbols 2의 실제 hmtx는 각각 0.270/0.276em이다.
+    // 설치 글꼴 없이 표시 프로그램을 직접 공급해 후단 덮어쓰기를 재현한다.
+    let bytes = include_bytes!("../../ttfs/opensource/NotoSansSymbols2-Regular.ttf");
+    let public = ttf_parser::Face::parse(bytes, 0).unwrap();
+    let trace = |core: &DocumentCore, character: char| {
+        let value: serde_json::Value = serde_json::from_str(
+            &core
+                .get_font_decision_trace_native(0, r#"{"maxCharacters":32}"#)
+                .unwrap(),
+        )
+        .unwrap();
+        value["records"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|record| record["source"]["character"] == character.to_string())
+            .unwrap()["layoutMetric"]
+            .clone()
+    };
+    for character in ['\u{2218}', '\u{2219}'] {
+        let public_advance = f64::from(
+            public
+                .glyph_hor_advance(public.glyph_index(character).unwrap())
+                .unwrap(),
+        ) / f64::from(public.units_per_em());
+        assert!(public_advance < 0.5, "공개 프로그램은 전각과 다른 반례다");
+        let mut core = document_with_face("한양신명조");
+        core.insert_text_native(0, 0, 0, &format!("{character}가"))
+            .unwrap();
+        let mut document = core.document().clone();
+        document.provenance.format = rhwp::model::provenance::SourceFormat::Hwpx;
+        for face in document.doc_info.font_faces.iter_mut().flatten() {
+            face.alt_type = 2;
+        }
+        core.set_document(document);
+        let before = trace(&core, character);
+        core.prepare_native_otf_fonts_with(|_| Some((bytes.to_vec(), 0)))
+            .unwrap();
+        let after = trace(&core, character);
+        assert_eq!(after["widthSource"], "measuredOriginalGlyph");
+        assert_eq!(
+            before["finalAdvanceHwpunit"], after["finalAdvanceHwpunit"],
+            "표시 프로그램의 반각 hmtx가 독립 원본 전각을 덮어쓰면 안 된다: {character}"
+        );
+
+        // 실제 TrueType 선언은 HFT의 부분 표로 승격하지 않는다.
+        let mut explicit = document_with_face("한양신명조");
+        explicit
+            .insert_text_native(0, 0, 0, &character.to_string())
+            .unwrap();
+        let mut document = explicit.document().clone();
+        document.provenance.format = rhwp::model::provenance::SourceFormat::Hwpx;
+        for face in document.doc_info.font_faces.iter_mut().flatten() {
+            face.alt_type = 1;
+        }
+        explicit.set_document(document);
+        assert_ne!(
+            trace(&explicit, character)["widthSource"],
+            "measuredOriginalGlyph",
+            "같은 이름의 명시 TrueType은 원본 HFT 프로그램과 구분한다"
+        );
+    }
 }

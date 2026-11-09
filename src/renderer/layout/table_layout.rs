@@ -1710,6 +1710,7 @@ pub(super) fn render_spaced_table_outer_frame(
     styles: &ResolvedStyleSet,
     frame: BoundingBox,
     open_top: bool,
+    automatic_break_edges: super::table_break_border::AutomaticBreakEdges,
 ) -> Vec<RenderNode> {
     if table.cell_spacing == 0 {
         return Vec::new();
@@ -1724,6 +1725,14 @@ pub(super) fn render_spaced_table_outer_frame(
     let mut border = style.clone();
     if open_top {
         border.borders[2].line_type = crate::model::style::BorderLineType::None;
+    }
+    if let Some(line) = super::table_break_border::separate_break_line(table, styles) {
+        if automatic_break_edges.top_row.is_some() {
+            border.borders[2] = line;
+        }
+        if automatic_break_edges.bottom_row.is_some() {
+            border.borders[3] = line;
+        }
     }
     render_cell_box_borders(tree, &border, frame.x, frame.y, frame.width, frame.height)
 }
@@ -4809,6 +4818,7 @@ impl LayoutEngine {
                 styles,
                 &table_node.children,
                 None,
+                super::table_break_border::AutomaticBreakEdges::default(),
                 self.show_transparent_borders.get(),
             );
             table_node.children.extend(borders);
@@ -4818,6 +4828,7 @@ impl LayoutEngine {
                 styles,
                 table_node.bbox,
                 false,
+                super::table_break_border::AutomaticBreakEdges::default(),
             ));
         } else if independent_col_row_y.is_none() {
             if let Some((start, end)) =
@@ -4959,7 +4970,6 @@ impl LayoutEngine {
                     cap_x,
                     cap_w,
                     cap_y,
-                    &mut self.auto_counter.borrow_mut(),
                     bin_data_content,
                     cap_cell_ctx,
                     CaptionOwner::new(
@@ -5780,6 +5790,7 @@ impl LayoutEngine {
                         cell_w_px, pad_left, pad_right, self.dpi,
                     );
                     let (line_based, object_based) = self.calc_cell_paragraphs_content_parts(
+                        table,
                         &cell.paragraphs,
                         styles,
                         inner_width,
@@ -5918,8 +5929,12 @@ impl LayoutEngine {
                 // controls_height를 별도로 더하면 이중 계산됨
                 // [Task #2211] 1-b 와 동일 — 저장 LINE_SEG 줄 흐름은 pad 미가산,
                 // 개체 기반 지오메트리는 pad 가산 유지.
-                let (line_based, object_based) =
-                    self.calc_cell_paragraphs_content_parts(&cell.paragraphs, styles, inner_width);
+                let (line_based, object_based) = self.calc_cell_paragraphs_content_parts(
+                    table,
+                    &cell.paragraphs,
+                    styles,
+                    inner_width,
+                );
                 // [#3386] 1-b 와 동일 — 모순 선언(span 합) 초과 성장 시 여백 가산.
                 let stored_frame_end =
                     crate::renderer::float_placement::stored_hwpx_no_adjust_cell_content_end(
@@ -6206,12 +6221,17 @@ impl LayoutEngine {
     /// 셀 문단들의 콘텐츠 높이 합산 (spacing + line_height + line_spacing)
     pub(crate) fn calc_cell_paragraphs_content_height(
         &self,
+        parent: &crate::model::table::Table,
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
         cell_inner_width_px: f64,
     ) -> f64 {
-        let (line_based, object_based) =
-            self.calc_cell_paragraphs_content_parts(paragraphs, styles, cell_inner_width_px);
+        let (line_based, object_based) = self.calc_cell_paragraphs_content_parts(
+            parent,
+            paragraphs,
+            styles,
+            cell_inner_width_px,
+        );
         line_based.max(object_based)
     }
 
@@ -6221,6 +6241,7 @@ impl LayoutEngine {
     /// 두 축의 pad 취급이 다르다 (#1486 p19 Square 그림 캘리브레이션).
     pub(crate) fn calc_cell_paragraphs_content_parts(
         &self,
+        parent: &crate::model::table::Table,
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
         cell_inner_width_px: f64,
@@ -6249,7 +6270,7 @@ impl LayoutEngine {
         let line_based_height =
             self.calc_composed_paras_content_height(&composed_paras, paragraphs, styles);
         let object_based = self
-            .calc_nested_controls_bottom_height(&composed_paras, paragraphs, styles)
+            .calc_nested_controls_bottom_height(parent, &composed_paras, paragraphs, styles)
             .max(self.calc_non_inline_controls_flow_height(paragraphs))
             .max(self.calc_cell_wrap_objects_bottom_height(paragraphs, styles));
         (line_based_height, object_based)
@@ -10193,7 +10214,11 @@ impl LayoutEngine {
                                 })
                                 .flatten()
                             {
-                                if let Some(x) = float_x {
+                                if let Some(frame) = stored_float_frame {
+                                    // 배제 프레임의 점유 하단과 본문 커서는 다른 값이다.
+                                    // 저장 줄 위의 빈 공간은 뒤 문단이 계속 사용할 수 있다.
+                                    para_y = frame.paragraph_end(para_y, 0.0);
+                                } else if let Some(x) = float_x {
                                     // [#6787] 나란히 무리는 **가장 높은 표** 만큼만 흐름을
                                     // 전진시키고, 가로만 채워 나간다.
                                     let lane_bottom = cell_float_lane
@@ -10209,13 +10234,14 @@ impl LayoutEngine {
                                     ));
                                     para_y = lane_bottom.max(nested_y + advance);
                                 } else {
-                                    para_y = stored_float_frame
-                                        .filter(|frame| matches!(frame.flow, crate::renderer::float_placement::ParagraphFloatFlow::NextLine))
-                                        .map_or(nested_y + advance, |frame| frame.paragraph_end(para_y, 0.0));
+                                    para_y = nested_y + advance;
                                 }
                                 // [#5712] TopAndBottom 흐름 표가 커서를 전진시켰다 —
                                 // 같은 문단 뒤 TAC 표의 co-anchored 적층 판별 신호.
-                                if matches!(nested_table.common.text_wrap, TextWrap::TopAndBottom) {
+                                if matches!(nested_table.common.text_wrap, TextWrap::TopAndBottom)
+                                    && stored_float_frame
+                                        .is_none_or(|frame| frame.advances_paragraph_flow())
+                                {
                                     prior_float_table_stacked = true;
                                 }
                             }
@@ -10435,6 +10461,30 @@ impl LayoutEngine {
                                     .unwrap_or(0.0)
                                     .max(0.0)
                             };
+                            // 빈 host 의 글 위아래 블록 표가 밀어낸 흐름에서는 뒤 문단 앞 간격이
+                            // 표 띠에 흡수된다(`absorbed_block_host_successor_y`).
+                            // 조각을 넘는 host(이어받음·이어짐)는 이 조각에 흡수할 띠가 없다.
+                            let host_owned_here = self.cut_owns_whole_paragraph(
+                                cell,
+                                table,
+                                styles,
+                                fragment_cut_units,
+                                cp_idx,
+                            );
+                            if wrap_successor.is_none() && host_owned_here {
+                                if let Some((y, _)) = self.absorbed_block_host_successor_y(
+                                    para,
+                                    &composed.lines,
+                                    cp_idx,
+                                    composed_paras.len(),
+                                    styles,
+                                    para_y_before_compose,
+                                    para_y,
+                                    next_para,
+                                ) {
+                                    para_y = y;
+                                }
+                            }
                             para_y = para_y.max(next_vpos_y - next_spacing_before);
                         }
                     }
@@ -10825,6 +10875,12 @@ impl LayoutEngine {
                 }
             }
 
+            // 새 줄을 그리면서 정렬·저장 extent만 원본 줄로 되돌리지 않는다.
+            let source_cell = cell;
+            let current_frame_cell =
+                ComposedParagraph::cell_with_frame_geometry(&composed_paras, cell);
+            let cell = current_frame_cell.as_ref().unwrap_or(cell);
+
             // 인라인 이미지/도형 최대 높이
             let mut max_inline_height: f64 = 0.0;
 
@@ -10918,9 +10974,13 @@ impl LayoutEngine {
                     0.0
                 };
 
+                // 정렬과 실제 배치는 같은 원본 선언·현재 구성 줄을 소비한다.
+                // 투영한 높이를 원본 선언처럼 다시 넘기면 저장 host의 초과분을
+                // 잃고 정렬 여백만 생겨 중첩 표가 바깥 칸을 벗어난다(#7872).
                 let nested_bottom = self.calc_nested_controls_bottom_height(
+                    table,
                     &composed_paras,
-                    &cell.paragraphs,
+                    &source_cell.paragraphs,
                     styles,
                 );
                 let wrap_object_bottom =
@@ -11139,7 +11199,12 @@ impl LayoutEngine {
             // 행 높이에 넣는다 — `tbl sz height 64362` = 63356(개체) + 724(vertOffset)
             // + 282(`tc cellSz height` = cellMargin top+bottom, 곧 글 내용 높이 0).
             let non_flow_object_extent = self
-                .calc_nested_controls_bottom_height(&composed_paras, &cell.paragraphs, styles)
+                .calc_nested_controls_bottom_height(
+                    table,
+                    &composed_paras,
+                    &cell.paragraphs,
+                    styles,
+                )
                 .max(self.calc_cell_wrap_objects_bottom_height(&cell.paragraphs, styles))
                 .max(self.calc_non_inline_controls_flow_height(&cell.paragraphs));
             // [#2148 #2279] 저장 vpos 흐름이 물리적으로 줄들을 담지 못하는 퇴화
@@ -11363,7 +11428,9 @@ impl LayoutEngine {
                     tree,
                     table_node,
                     &mut cell_node,
-                    cell,
+                    // 각 문단이 현재 프레임을 한 번 투영한다. 원본 개체 주소와
+                    // 저장 host의 초과분 판정은 재투영한 임시 셀로 바꾸지 않는다.
+                    source_cell,
                     &composed_paras,
                     table,
                     styles,
@@ -11553,6 +11620,92 @@ impl LayoutEngine {
 
     fn nested_table_is_overlay(&self, table: &crate::model::table::Table) -> bool {
         crate::renderer::float_placement::nested_table_is_overlay(table)
+    }
+
+    /// 셀 유닛 컷 `cut`(없으면 셀 전체)이 문단 `para_idx` 의 모든 유닛 — host 글줄과 중첩
+    /// 표의 모든 행 — 을 소유하는지. 앞 조각에서 이어받았거나 다음 조각으로 이어지는 host 는
+    /// 이 조각에 host 글줄 끝과 표 하단이 함께 있지 않다.
+    pub(super) fn cut_owns_whole_paragraph(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+        cut: Option<(usize, usize)>,
+        para_idx: usize,
+    ) -> bool {
+        let Some((start, end)) = cut else {
+            return true;
+        };
+        let units = self.cell_units(cell, table, styles);
+        match (
+            units.iter().position(|unit| unit.para_idx == para_idx),
+            units.iter().rposition(|unit| unit.para_idx == para_idx),
+        ) {
+            (Some(first), Some(last)) => first >= start && last < end,
+            _ => false,
+        }
+    }
+
+    /// 빈 host 문단의 비-TAC 글 위아래(TopAndBottom) 블록 표가 흐름 커서를 host 글줄
+    /// 끝보다 아래(표 바깥 상자 하단)로 밀었으면, 뒤 문단의 앞 간격은 host 글줄 끝에서
+    /// 재며 표 띠 안에 겹친다. 한/글은 뒤 문단 첫 줄 top 을
+    /// `max(host 글줄 끝 + 앞 간격, 표 점유 하단)`에 둔다.
+    ///
+    /// 근거: 국회입법조사처 보도자료(docs#318) 큰 칸의 문단 0 = 빈 host(lh 600)+1×1 제목 표
+    /// (위아래 바깥여백 140, 높이 5372), 문단 1 앞 간격 900 의 저장 vpos 5652 = 표 바깥 상자
+    /// 하단이고 한/글 Print 의 문단 2 기준선도 그 사다리 위에 있다. 공무국외출장계획서
+    /// (docs#32)의 「※」 줄도 표 하단 바로 아래(앞 간격 500 미적용)에 인쇄된다.
+    ///
+    /// 반환: (compose 전 커서 — compose 가 앞 간격을 더한다, 흡수 판정에 쓴 앞 간격 px).
+    /// 저장 vpos 하한은 호출자가 이 앞 간격을 빼고 적용해 사다리를 보존한다.
+    #[allow(clippy::too_many_arguments)]
+    pub(super) fn absorbed_block_host_successor_y(
+        &self,
+        para: &Paragraph,
+        lines: &[crate::renderer::composer::ComposedLine],
+        para_index: usize,
+        para_count: usize,
+        styles: &ResolvedStyleSet,
+        para_y_before_compose: f64,
+        para_y: f64,
+        next_para: &Paragraph,
+    ) -> Option<(f64, f64)> {
+        let block_tables_only = !para.controls.is_empty()
+            && para.controls.iter().all(|control| {
+                matches!(control, Control::Table(table)
+                    if !table.common.treat_as_char
+                        && table.common.text_wrap == TextWrap::TopAndBottom
+                        && table.common.vert_rel_to == crate::model::shape::VertRelTo::Para
+                        && !self.nested_table_is_overlay(table))
+            });
+        let next_has_block_table = next_para
+            .controls
+            .iter()
+            .any(|c| matches!(c, Control::Table(t) if !t.common.treat_as_char));
+        if !block_tables_only || next_has_block_table || !para.text.trim().is_empty() {
+            return None;
+        }
+        let spacing_before = styles
+            .para_styles
+            .get(next_para.para_shape_id as usize)
+            .map_or(0.0, |style| style.spacing_before);
+        if spacing_before <= 0.0 {
+            return None;
+        }
+        let host_text_end = para_y_before_compose
+            + self.calc_para_lines_height(
+                lines,
+                para,
+                false,
+                true,
+                para_index,
+                para_count,
+                styles.para_styles.get(para.para_shape_id as usize),
+                styles,
+            );
+        // 표가 host 글줄보다 아래로 흐름을 밀지 않았으면 흡수할 띠가 없다.
+        (para_y > host_text_end + 0.5)
+            .then(|| (host_text_end.max(para_y - spacing_before), spacing_before))
     }
 
     /// 시각적 표 높이와 별개인 문단 흐름 전진량. 측정과 실제 배치가 공유한다.
@@ -11754,6 +11907,7 @@ impl LayoutEngine {
     /// 측정 높이를 더한 값을 셀 콘텐츠 끝점 후보로 사용한다.
     pub(crate) fn calc_nested_controls_bottom_height(
         &self,
+        parent: &crate::model::table::Table,
         composed_paras: &[ComposedParagraph],
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
@@ -11833,6 +11987,44 @@ impl LayoutEngine {
                 // 조건**(호스트가 칸의 마지막 문단)으로 싣는다 — 뒤 형제 문단이 있을 때
                 // 그 몫을 싣지 않는 계약(59043 `□ 편익`)은 그대로다.
                 let host_is_cell_last_para = pidx + 1 == paragraphs.len();
+                if !self.profile.get().session_edited()
+                    && (self.profile.get().hwp5_stored_pagination_layout()
+                        || self.profile.get().hwpx_stored_layout())
+                    && !self
+                        .render_normalization
+                        .borrow()
+                        .table_text_reflowed(parent)
+                {
+                    let frame =
+                        p.controls
+                            .iter()
+                            .enumerate()
+                            .find_map(|(control_index, control)| {
+                                let Control::Table(child) = control else {
+                                    return None;
+                                };
+                                if self
+                                    .render_normalization
+                                    .borrow()
+                                    .table_text_reflowed(child)
+                                {
+                                    return None;
+                                }
+                                crate::renderer::float_placement::stored_nested_host_frame(
+                                    p,
+                                    child,
+                                    control_index,
+                                    0.0,
+                                    self.nested_table_body_height(child, styles),
+                                    self.dpi,
+                                )
+                            });
+                    if let Some(frame) = frame {
+                        return crate::renderer::float_placement::stored_nested_host_content_bottom(
+                            paragraphs, pidx, frame, self.dpi,
+                        );
+                    }
+                }
                 // [#7066] 저장 줄별 그룹은 측정(`height_measurer::cell_nested_controls_bottom`)
                 // 과 **같은 함수**로 낸다. 한 줄에 나란히 놓인 표는 그 줄이 합이 아니라
                 // 최댓값만 차지하므로, 합산하면 정렬용 콘텐츠 높이가 칸보다 커져 여유가
@@ -24378,7 +24570,7 @@ impl LayoutEngine {
                 )
             }).flatten();
         }
-        crate::renderer::float_placement::ParagraphFloatPlacement::from_stored_host(
+        crate::renderer::float_placement::stored_nested_host_frame(
             para,
             child,
             control,
@@ -24386,16 +24578,6 @@ impl LayoutEngine {
             body_height,
             self.dpi,
         )
-        .or_else(|| {
-            crate::renderer::float_placement::ParagraphFloatPlacement::from_stored_head_host(
-                para, child, control, origin, body_height, self.dpi,
-            )
-        })
-        .or_else(|| {
-            crate::renderer::float_placement::ParagraphFloatPlacement::from_empty_stored_offset_host(
-                para, child, control, origin, body_height, self.dpi,
-            )
-        })
         .or_else(|| {
             // 앞의 세 경로는 현재 호스트 줄과 제어 슬롯만으로 앵커를 인증한다.
             // 다른 문단의 편집은 그 지역 근거를 무효화하지 않는다. 앞뒤 문단의

@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-11-04
+last_verified: 2026-11-08
 ---
 
 # PR 리뷰 · 통합 워크플로우 매뉴얼
@@ -21,6 +21,11 @@ PR review를 시작하는 에이전트는 이 문서와 [조건별 가이드 선
 모든 CI 실패·오류를 신규 PR보다 우선 보정한다. 충돌·base 문제는 최신 `upstream/devel`로 rebase해 커밋·필수 검증·최신
 head CI를 완료한 뒤 신규 PR을 진행한다. 메인터너 보정 요청과 원격 승인 조건도 위 정본을 따른다.
 
+**새 PR 생성 전에는 제출 후보와 리뷰어 미지정인 본인 열린 PR 전체의 병합 시뮬레이션을
+완료한다.** Draft도 검사하되 이미 리뷰어가 지정된 PR은 작업 중이므로 제외한다. 검사 대상의
+충돌·실행 실패·미확인이 있으면 제출을 보류한다. 목록·제외 근거·고정 SHA·결과 기록은 위 정본의
+[제출 전 병합 시뮬레이션](codex/docs_and_git_workflow.md#4-제출-후보와-본인-열린-pr의-병합-시뮬레이션)을 따른다.
+
 리베이스로 새 devel의 PR을 반영하면 **현재 작업의 개선과 반영 PR의 기능 유지·개선**을 함께
 검증한다. 충돌이 없었거나 CI가 통과했다는 사실만으로 기능 보존을 판정하지 않는다.
 [리베이스 후 기능 보존 절차](pr_review/local_validation.md#리베이스로-반영한-pr의-기능-보존-검증)에 따라
@@ -37,6 +42,11 @@ collaborator 매개 외부 PR 모두 같은 기준을 사용하며, CI 통과가
 후보 head와 같은 조건·페이지로 비교한다. **한 쪽·한 경로라도 2%p 초과 하락하면 90% 이상이어도
 PR을 재검토하고 승인·통합을 보류한다.** 평균 상승·CI 통과로 상쇄하지 않는다.
 계산·증거·base 갱신은 [devel 대비 실루엣 하락 재검토](verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)를 따른다.
+
+collaborator·maintainer의 조판·렌더링 PR 검토에는
+[정본 보호 TSV의 공식 두 자리 표시값 보존](verification/visual_verification_governance.md#정본-보호-tsv의-공식-표시값-보존)을
+추가 적용한다. 페이지별 상승·동일만 허용하며 하락 시 준비 완료·PR 생성·승인·통합을 보류한다.
+이 특별 보호 검증이나 원본 OTF 설치를 일반 사용자·외부 contributor의 제출 의무로 요구하지 않는다.
 
 검증에 사용한 HWP/HWPX/PDF는 [검증 입력 커밋 확인](pr_review/intake_and_review.md#28-검증-입력-커밋-확인)을
 모든 정식 PR review의 공통 항목으로 점검한다. 수용 근거로 쓴 파일은 검토 대상 commit에 포함하고,

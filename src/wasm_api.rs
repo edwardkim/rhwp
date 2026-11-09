@@ -850,6 +850,36 @@ impl HwpDocument {
             .map_err(JsValue::from)
     }
 
+    /// FontFace에 적재된 SFNT 조각들을 같은 family의 실제 조회 순서로 등록한다.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = registerHftOutlineFontCandidates)]
+    pub fn register_hft_outline_font_candidates(
+        &mut self,
+        family: &str,
+        programs: js_sys::Array,
+    ) -> Result<bool, JsValue> {
+        use wasm_bindgen::JsCast;
+        if programs.length() == 0 || programs.length() > 64 {
+            return Err(JsValue::from_str("outline font candidate limit exceeded"));
+        }
+        let mut total = 0usize;
+        let mut bytes = Vec::new();
+        for program in programs.iter() {
+            let array = program
+                .dyn_into::<js_sys::Uint8Array>()
+                .map_err(|_| JsValue::from_str("outline font candidate must be Uint8Array"))?;
+            total = total.saturating_add(array.length() as usize);
+            if array.length() == 0 || array.length() > 32 * 1024 * 1024 || total > 64 * 1024 * 1024
+            {
+                return Err(JsValue::from_str("outline font byte limit exceeded"));
+            }
+            bytes.push(array.to_vec());
+        }
+        let candidates: Vec<_> = bytes.iter().map(|bytes| (bytes.as_slice(), 0)).collect();
+        self.register_hft_outline_font_candidates_native(family, &candidates)
+            .map_err(JsValue::from)
+    }
+
     /// 호스트가 실제 FontFace에 적재한 프로그램의 호환 글리프 지원을 등록한다.
     #[wasm_bindgen(js_name = clearTextFontFamily)]
     pub fn clear_text_font_family_wasm(&mut self, family: &str) {
@@ -8577,6 +8607,11 @@ impl HwpDocument {
             attr: 1 << 3,
             ..Default::default()
         }; // a,b,c
+
+        // 합성 기본 목록은 문서의 0번 모양을 참조하지 않고 본문을 따른다.
+        for head in &mut n.heads {
+            head.char_shape_id = u32::MAX;
+        }
         self.core.document.doc_info.numberings.push(n);
         // 새 번호 정의는 DocInfo 원본 스트림에 없어 HWP 저장이 모델에서 다시 쓰게 한다.
         self.core.document.doc_info.raw_stream_dirty = true;
@@ -8641,6 +8676,9 @@ impl HwpDocument {
 
         n.start_number = json_i32(json, "startNumber").unwrap_or(1) as u16;
         n.level_start_numbers = [n.start_number as u32; crate::model::style::NUMBERING_LEVELS];
+        for head in &mut n.heads {
+            head.char_shape_id = u32::MAX;
+        }
         self.core.document.doc_info.numberings.push(n);
         // 새 번호 정의는 DocInfo 원본 스트림에 없어 HWP 저장이 모델에서 다시 쓰게 한다.
         self.core.document.doc_info.raw_stream_dirty = true;
@@ -8708,6 +8746,7 @@ impl HwpDocument {
             bullet_char: bullet_ch,
             attr: 1 << 3, // 자동 내어쓰기 (한/글 기본 머리 모양)
             text_distance: 50,
+            char_shape_id: u32::MAX,
             ..Default::default()
         };
         self.core.document.doc_info.bullets.push(b);

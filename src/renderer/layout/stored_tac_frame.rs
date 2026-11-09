@@ -41,3 +41,53 @@ pub(super) fn owned_body_height(
         .into_iter()
         .find(|height| (line_height - (height + top + bottom)).abs() <= tolerance)
 }
+
+/// 한 저장 줄을 소유한 TAC 표(줄 높이 = 위 바깥여백 + 본체 + 아래 바깥여백)와 같은 줄에 놓인
+/// 다른 TAC 표의 위끝.
+///
+/// 소유자가 `줄 위끝 + owner_om_top` 에 앉으면 그 본체 높이의 85% 지점이 공유 기준선이다
+/// (글자처럼 취급 개체는 높이의 85% 가 기준선 위). 동반 표는 같은 기준선에 자기 높이의 85% 를
+/// 올려 `줄 위끝 + owner_om_top + 0.85 × (owner_h − table_h)` 에 앉는다. 자기 바깥여백은 더하지
+/// 않는다(#7049·#7150 실측). 글줄 흐름 경로와 TAC 표만 담은 문단 경로가 이 하나를 함께 쓴다.
+pub(super) fn companion_table_top(
+    line_top: f64,
+    owner_h: f64,
+    owner_om_top: f64,
+    table_h: f64,
+) -> f64 {
+    (line_top + owner_om_top + (owner_h - table_h) * 0.85).max(line_top)
+}
+
+/// 방출된 뒤 조각이 표와 다른 실제 저장 줄을 소유하는지 확인한다.
+/// 공백·제어뿐인 줄도 높이와 문단 끝 간격을 소유하며 표 밴드의 사본과 구분한다.
+pub(super) fn independent_stored_tail(
+    para: &crate::model::paragraph::Paragraph,
+    start: usize,
+    end: usize,
+) -> bool {
+    use crate::model::{control::Control, paragraph::LineSeg};
+    let Some(lines) = para
+        .line_segs
+        .get(start..end)
+        .filter(|lines| !lines.is_empty())
+    else {
+        return false;
+    };
+    lines
+        .iter()
+        .all(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0 && line.line_height > 0)
+        && para.controls.iter().enumerate().all(|(index, control)| {
+            if !matches!(control, Control::Table(table) if table.common.treat_as_char) {
+                return true;
+            }
+            super::control_line_seg_index(para, index)
+                .filter(|line| *line < start)
+                .and_then(|line| para.line_segs.get(line))
+                .is_some_and(|host| {
+                    i64::from(lines[0].vertical_pos)
+                        >= i64::from(host.vertical_pos)
+                            + i64::from(host.line_height)
+                            + i64::from(host.line_spacing)
+                })
+        })
+}

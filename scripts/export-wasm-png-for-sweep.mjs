@@ -405,7 +405,7 @@ async function main() {
             // CSS는 나중에 등록한 face를 먼저 검색하므로 후보 순서의 역순으로 적재한다.
             for (const candidate of [...ordered].reverse()) jobs.push({family, key, record: candidate, ordered});
           }
-          const bytesCache = new Map();
+          const bytesCache = new Map(), preparedPrograms = new Map();
           for (const {family, key, record, ordered} of jobs) {
             if (supplied.has(`${key}|${record.sha256}`)) continue;
             let bytes = bytesCache.get(record.sha256);
@@ -420,6 +420,7 @@ async function main() {
               font = await installCanvasFont(family, bytes, {weight: String(record.weight), style: record.style}, doc,
                 metafileFaces.has(`${family.toLowerCase()}|${record.weight}|${record.style}`),
                 intrinsicRequested.has(family.toLowerCase()), async program => {
+                  preparedPrograms.set(`${key}|${record.sha256}`, new Uint8Array(program));
                   const digest = await crypto.subtle.digest('SHA-256', program);
                   textProgramSha256 = [...new Uint8Array(digest)]
                     .map(byte => byte.toString(16).padStart(2, '0')).join('');
@@ -429,6 +430,16 @@ async function main() {
             catch (error) { throw Error(`선택한 Canvas 글꼴을 적재할 수 없습니다: ${family}, ${record.source}, ${error}`); }
             supplied.add(`${family.toLowerCase()}|${record.weight}|${record.style}|${record.sha256}`);
             loaded.push({family, registeredFamily: font.family, sourceSha256: record.sourceSha256, sha256: record.sha256, textProgramSha256, faceIndex: record.faceIndex, weight: record.weight, style: record.style, repairs: record.repairs, sourceKind: record.sourceKind || 'external'});
+          }
+          // 성공한 FontFace와 같은 바이트·후보 순서만 분할 HFT 윤곽에 공급한다.
+          const outlinedFamilies = new Set();
+          for (const {family, key, ordered} of jobs) {
+            if (outlinedFamilies.has(key)) continue;
+            outlinedFamilies.add(key);
+            if (ordered.length < 2 || ordered[0].weight !== 400 || ordered[0].style !== 'normal'
+                || !ordered.every(record => record.openTypeCff)) continue;
+            const programs = ordered.map(record => preparedPrograms.get(`${key}|${record.sha256}`));
+            if (programs.every(Boolean)) doc.registerHftOutlineFontCandidates?.(family, programs);
           }
           const ttfRegistered = new Set();
           for (const record of fonts) for (const family of record.families) {

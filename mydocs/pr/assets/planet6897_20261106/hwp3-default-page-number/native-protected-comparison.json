@@ -1,0 +1,84 @@
+{
+  "backend": "native",
+  "pages": 763,
+  "minimum": 99.41,
+  "losses": [],
+  "gains": [
+    {
+      "page": 12,
+      "baseline": "99.98",
+      "candidate": "99.99"
+    },
+    {
+      "page": 13,
+      "baseline": "99.98",
+      "candidate": "99.99"
+    },
+    {
+      "page": 14,
+      "baseline": "99.99",
+      "candidate": "100.00"
+    },
+    {
+      "page": 15,
+      "baseline": "99.98",
+      "candidate": "100.00"
+    },
+    {
+      "page": 16,
+      "baseline": "99.98",
+      "candidate": "99.99"
+    },
+    {
+      "page": 17,
+      "baseline": "99.98",
+      "candidate": "100.00"
+    },
+    {
+      "page": 18,
+      "baseline": "99.98",
+      "candidate": "100.00"
+    },
+    {
+      "page": 20,
+      "baseline": "99.99",
+      "candidate": "100.00"
+    },
+    {
+      "page": 81,
+      "baseline": "99.99",
+      "candidate": "100.00"
+    },
+    {
+      "page": 351,
+      "baseline": "99.99",
+      "candidate": "100.00"
+    },
+    {
+      "page": 708,
+      "baseline": "99.81",
+      "candidate": "99.82"
+    }
+  ],
+  "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+  "producer": {
+    "key": "sample10",
+    "prs": [
+      8389,
+      8397
+    ],
+    "finished": true,
+    "exit_code": 0,
+    "pages": 763,
+    "expected_pages": 763,
+    "page_set_matches": true,
+    "minimum": 99.41,
+    "below90": [],
+    "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/hwp3-number-owner-native-whole/sample10/sample10/silhouette.tsv",
+    "tsv_sha256": "17306742b47985e2ce609259b8184ea4e66fa6c8ced9472acd0a965622c4500c",
+    "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/hwp3-number-owner-native-whole/sample10/run.log",
+    "dpi": 96,
+    "compat": "2022"
+  },
+  "official_decimals": 2
+}

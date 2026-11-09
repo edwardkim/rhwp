@@ -1,4 +1,9 @@
-"""직접 PNG 공급의 cmap 보존·부분 출력·이어받기 계약."""
+"""직접 PNG 공급의 cmap 보존·부분 출력·이어받기 계약.
+
+검사 유형: 관계형 API 계약. 공개 합성 글꼴·모의 출력으로 자원 보존을 확인한다.
+실물 PDF의 px 좌표 고정 검사가 아니며 해당 fixture의 독립 PDF 일치율은 비해당이다.
+주석 갱신: 2026-11-09 07:29 KST.
+"""
 import json
 import hashlib
 import shutil
@@ -166,6 +171,64 @@ class WebFontProgrammeTests(unittest.TestCase):
                 with patch('fontTools.ttLib.TTFont', side_effect=AssertionError('검증한 원본을 다시 파싱함')):
                     cached = png.font_catalog(adapter, root, [sources], root).read_text()
                 self.assertEqual(cached, first, '검증된 공급 프로그램은 캐시에서 그대로 재사용한다')
+
+
+class FontFamilyTrailingSpaceTests(unittest.TestCase):
+    """관계형: name table family 의 앞뒤 공백은 Native 카탈로그와 같이 지우고 공급한다(#8612).
+
+    `ttfs/hwp/YDOO08.TTF` 등은 family 가 `'Yj BACDOO Bold '` 처럼 공백으로 끝난다. Native 는
+    `trim()` 한 이름으로 찾지만, 예전 catalog 는 이 값을 그대로 WASM 글꼴 환경에 넘겨
+    `invalid font program identity` 로 문서 전체 렌더링을 실패시켰다.
+
+    측정(2026-11-05 KST, ai101): `samples/basic/interview.hwp` 2쪽(PDF 2쪽), `visual_sweep.py
+    --silhouette-only --compat 2022 --dpi 96`, 글꼴 `ttfs/hwp`·`ttfs/windows`, fresh WASM(Rust =
+    devel e96b500e3e). 수정 전 1쪽부터 측정 불가, 수정 후 raw 96.91%·99.99%(최저 96.91%).
+    Native(devel 바이너리) 96.52%·99.99%. 증거: `mydocs/pr/assets/issue_8612/`.
+    """
+
+    def _source(self, root):
+        from fontTools.ttLib import TTFont
+        fixture = Path(__file__).parents[2] / 'tests/fixtures/native_inline_placeholder/placeholder-contract.ttf'
+        source = root / 'trailing.ttf'
+        with TTFont(fixture) as font:
+            postscript = font['name'].getDebugName(6)
+            for entry in font['name'].names:
+                if entry.nameID in {1, 4, 16}:
+                    entry.string = '  Trailing Space Family '
+            font.save(source)
+        return source, postscript
+
+    def test_cold_and_cached_catalogue_supply_the_native_family_name(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            source, postscript = self._source(root)
+            adapter = SimpleNamespace(resolve_input_path=lambda root, path: Path(path),
+                sha256_file=sweep.sha256_file, write_json_atomic=sweep.write_json_atomic)
+            for _ in range(2):
+                face = json.loads(png.font_catalog(adapter, root, [source], root).read_text())['faces'][0]
+                self.assertEqual(face['primaryFamily'], 'Trailing Space Family',
+                                 '앞뒤 공백만 지우고 가운데 공백은 보존한다')
+                self.assertIn('Trailing Space Family', face['families'])
+                self.assertFalse([name for name in face['families'] if name != name.strip()])
+                self.assertEqual(face['postScriptNames'], [postscript], 'PostScript 이름은 바꾸지 않는다')
+
+    def test_cache_written_before_normalisation_is_rebuilt(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            source, _ = self._source(root)
+            adapter = SimpleNamespace(resolve_input_path=lambda root, path: Path(path),
+                sha256_file=sweep.sha256_file, write_json_atomic=sweep.write_json_atomic)
+            png.font_catalog(adapter, root, [source], root)
+            digest = sweep.sha256_file(source)
+            [metadata] = [path for path in root.rglob(f'{digest}.json')]
+            stale = json.loads(metadata.read_text())
+            for entry in stale['faces']:
+                entry['families'] = [name + ' ' if name == entry['primaryFamily'] else name
+                                     for name in entry['families']]
+                entry['primaryFamily'] += ' '
+            metadata.write_text(json.dumps(stale))
+            face = json.loads(png.font_catalog(adapter, root, [source], root).read_text())['faces'][0]
+            self.assertEqual(face['primaryFamily'], 'Trailing Space Family')
 
 
 class FontNameCatalogueTests(unittest.TestCase):
@@ -379,6 +442,45 @@ class RasterDispatchTests(unittest.TestCase):
 
 
 class EmbeddedFontCatalogueTests(unittest.TestCase):
+    def test_referenced_post_names_are_not_guessed_or_truncated(self):
+        header = b'\x00\x02\x00\x00' + bytes(28)
+        prefix = header + struct.pack('>HH', 1, 258)
+        complete = prefix + b'\x05hello'
+        self.assertIsNone(png.repair_post_format2_unused_strings(complete, 1))
+        self.assertEqual(png.repair_post_format2_unused_strings(complete + b'\xffbad', 1), complete)
+        self.assertIsNone(png.repair_post_format2_unused_strings(complete, 2))
+        for length in range(len(complete)):
+            self.assertIsNone(png.repair_post_format2_unused_strings(complete[:length], 1))
+
+    def test_unused_post_suffix_is_removed_without_changing_glyphs_or_metrics(self):
+        # 관계형: 참조되지 않는 이름 저장소의 손상이 실제 SFNT 공급을 막지 않아야 한다.
+        # 공개 합성 fixture만 사용하며 실물 페이지의 좌표나 점수를 고정하지 않는다.
+        from fontTools.ttLib import TTFont
+        from fontTools.ttLib.sfnt import SFNTWriter
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            original = Path(__file__).parents[2] / 'tests/fixtures/fonts/RHWPHostFixture-Regular.ttf'
+            source = root / 'unused-post-suffix.ttf'
+            with TTFont(original, lazy=True) as font, source.open('wb') as output:
+                tags = sorted(font.reader.keys())
+                writer = SFNTWriter(output, len(tags), font.sfntVersion)
+                for tag in tags:
+                    value = font.reader[tag]
+                    writer[tag] = value + b'\xffunfinished-unused-name' if tag == 'post' else value
+                writer.close()
+            adapter = SimpleNamespace(resolve_input_path=lambda base, path: Path(path),
+                sha256_file=lambda path: hashlib.sha256(Path(path).read_bytes()).hexdigest(),
+                write_json_atomic=lambda path, value: Path(path).write_text(json.dumps(value)))
+            # 같은 원본의 새 공급과 캐시 재사용이 모두 보정된 프로그램을 선택한다.
+            for _ in range(2):
+                record = json.loads(png.font_catalog(adapter, root, [source], root).read_text())['faces'][0]
+                self.assertIn('post-format2-unused-strings', record['repairs'])
+                with TTFont(original, lazy=True) as before, TTFont(record['path'], lazy=True) as after:
+                    self.assertEqual(before.getGlyphOrder(), after.getGlyphOrder())
+                    for tag in ('glyf', 'loca', 'hmtx', 'cmap', 'fpgm', 'prep'):
+                        if tag in before:
+                            self.assertEqual(before.reader[tag], after.reader[tag], tag)
+
     def test_post_glyph_count_repair_preserves_rendering_tables(self):
         from fontTools.ttLib import TTFont
         from fontTools.ttLib.sfnt import SFNTWriter

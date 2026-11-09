@@ -989,6 +989,13 @@ fn parse_equation_control(ctrl_data: &[u8], child_records: &[Record]) -> Control
         // version_info 사이 UINT16 zero 가 위치.
         equation.unknown = r.read_u16().unwrap_or(0);
 
+        // 실제 필드 부재를 명시한 빈 문자열과 구분한다. 잘린 문자열을
+        // 옛 표시 계약으로 받아들이지 않고 필수 필드를 모두 읽은 경우만 보존한다.
+        equation.implicit_legacy_font = data.get(4..6).is_some_and(|length| {
+            let script_units = usize::from(u16::from_le_bytes([length[0], length[1]]));
+            data.len() == 18 + script_units * 2 && r.remaining() == 0
+        });
+
         // version_info: WCHAR 문자열
         if let Ok(ver) = r.read_hwp_string() {
             equation.version_info = ver;

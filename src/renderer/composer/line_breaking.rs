@@ -2475,12 +2475,38 @@ fn fill_one_interval(
                 .filter(|_| {
                     !first_interword_separator(tokens, ti, text_chars, cursor.line_start_idx)
                 }) {
+                    let mut cut = cut;
+                    let mut hung_extra = 0usize;
                     let absorbed = cut > *idx;
+                    // [#8639] 넘친 공백이 낱말 바로 뒤의 첫 공백이면 다음 공백 하나도 줄 끝에
+                    // 함께 건다. 한/글 2020·2024 저장 줄(`issue8639/trailing_space_overflow_synthetic`):
+                    // 글자가 상자 안에 겨우 들고 첫 공백부터 넘치면 공백 2 → 1줄, 공백 3 → 셋째
+                    // 공백에서 새 줄, 공백 2 + 글 → 글에서 새 줄. 첫 공백이 상자 안에 들고 둘째가
+                    // 넘치는 #7418 경계(42자 + 공백 2·3)는 넘친 공백 앞이 공백이라 바뀌지 않는다.
+                    let word_attached = absorbed
+                        && *idx > cursor.line_start_idx
+                        && text_chars.get(*idx - 1).is_some_and(|c| !c.is_whitespace());
+                    if word_attached {
+                        if let Some(BreakToken::Space {
+                            idx: next_idx,
+                            max_font_size: next_fs,
+                            ..
+                        }) = tokens.get(ti + 1)
+                        {
+                            if *next_idx == *idx + 1 {
+                                if *next_fs > cursor.line_max_fs {
+                                    cursor.line_max_fs = *next_fs;
+                                }
+                                cut = *next_idx + 1;
+                                hung_extra = 1;
+                            }
+                        }
+                    }
                     // [#7418] 줄 끝에 건 공백이 문단의 마지막 글자면 문단이 여기서 끝난다 —
                     // 종전에는 글자 없는 빈 행을 하나 더 게시했다. 한/글은 넘친 공백 **하나**만
                     // 줄 끝에 걸고 그 뒤 공백은 새 줄로 넘긴다(42자+공백 2 → 1줄, 공백 3 → 2줄;
                     // `trailing_space_synthetic`). 그래서 뒤에 공백이 더 남은 경우는 종전대로 끊는다.
-                    if absorbed && ti + 1 == tokens.len() {
+                    if absorbed && ti + 1 + hung_extra == tokens.len() {
                         cursor.finished = true;
                         cursor.emitted_any = true;
                         cursor.token_index = tokens.len();
@@ -2512,7 +2538,7 @@ fn fill_one_interval(
                     cursor.is_first_line = false;
                     cursor.last_break_token_idx = None;
                     cursor.word_gap_natural_hwp = None;
-                    cursor.token_index += 1;
+                    cursor.token_index += 1 + hung_extra;
                     cursor.emitted_any = true;
                     // The terminal separator was consumed by this row. The
                     // cursor is at paragraph end, not at a new empty line.
@@ -4436,7 +4462,7 @@ pub(crate) fn layout_paragraph_in_frame_with_storage<S: Storage>(
         styles,
         dpi,
         true,
-        0,
+        FrameStart::Scalar(0),
         FramePurpose::Body,
         storage,
     )
@@ -4475,7 +4501,7 @@ fn layout_paragraph_in_frame_impl(
         styles,
         dpi,
         allow_kerning,
-        start_char,
+        FrameStart::Scalar(start_char),
         purpose,
         &Unbounded,
     ) {
@@ -4484,13 +4510,20 @@ fn layout_paragraph_in_frame_impl(
     }
 }
 
+/// 채움 시작은 원본 UTF-16 슬롯과 투영 후 scalar 인덱스를 구분한다.
+#[derive(Clone, Copy)]
+enum FrameStart {
+    Scalar(usize),
+    SourceUtf16(u32),
+}
+
 fn try_layout_paragraph_in_frame_impl<S: Storage>(
     para: &Paragraph,
     frame: &mut LayoutFrame,
     styles: &ResolvedStyleSet,
     dpi: f64,
     allow_kerning: bool,
-    start_char: usize,
+    start: FrameStart,
     purpose: FramePurpose,
     storage: &S,
 ) -> Result<Option<Vec<LineSeg>>, S::Error> {
@@ -4513,16 +4546,29 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
         return Ok(None);
     }
 
+    let source_start_utf16 = match start {
+        FrameStart::Scalar(0) => 0,
+        FrameStart::Scalar(index) => char_index_to_utf16_offset(para, index),
+        FrameStart::SourceUtf16(offset) => offset,
+    };
     let projected = if (para.line_segs.is_empty()
         && (supports_tac_table_band_frame_controls(para)
             || supports_inline_form_frame_controls(para)))
         || no_ls_inline_picture_host_fill(para)
+        || remeasured_equation_start_row(para).is_some()
     {
+        // 종단 수식도 실제 폭을 가진 토큰이다. 원문에 없는 마커는 이 입력에만 투영한다.
         inline_frame_input::project_with_storage(para, styles, dpi, storage)?
     } else {
         None
     };
     let para = projected.as_ref().map_or(para, |(input, _)| input);
+    let start_char = match (start, projected.as_ref()) {
+        (FrameStart::Scalar(index), None) => index,
+        _ => para
+            .char_offsets
+            .partition_point(|offset| *offset < source_start_utf16),
+    };
     let mut text_chars = storage.collect(para.text.chars())?;
     // 필드는 공백을 건너뛰는 줄 경계가 아닌 원자 토큰이다. 토큰화 전용
     // 필드 마커로 투영하며 원문과 모델 축은 바꾸지 않는다.
@@ -5034,7 +5080,9 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
 
                 // 반환용 LineSeg 사본만 표시하면 공통 프레임을 다시 읽는 소비자가
                 // 들여쓰기를 잃는다. 확정하는 실제 행에도 같은 기록을 보존한다.
-                let indented = if frame.row_count() == first_row {
+                // 부분 채움의 첫 행도 문단 첫 행은 아니다. 앞줄을 이미 수용했거나
+                // 원문 중간에서 시작하면 같은 후속 줄의 내어쓰기를 게시한다.
+                let indented = if start_char == 0 && frame.row_count() == first_row {
                     indentation_pattern.0
                 } else {
                     indentation_pattern.1
@@ -5084,7 +5132,14 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
         // 한 boundary라도 예산/범위 검증에 실패하면 일부 K1 row를 게시하지
         // 않고 문단 전체를 원래 scalar transaction으로 다시 실행한다.
         return try_layout_paragraph_in_frame_impl(
-            para, frame, styles, dpi, false, start_char, purpose, storage,
+            para,
+            frame,
+            styles,
+            dpi,
+            false,
+            FrameStart::Scalar(start_char),
+            purpose,
+            storage,
         );
     }
     result
@@ -5153,6 +5208,58 @@ pub(crate) fn stored_row_metrics(
         line_spacing_value,
         dpi,
     ))
+}
+
+/// 부분 재조판 앞줄도 현재 인라인 개체가 점유하는 높이와 기준선을 함께 소비한다.
+/// 저장 좌표를 복사하지 않고 새 줄 채움과 같은 개체·줄 간격 참여 규칙을 적용한다.
+fn stored_inline_row_metrics(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    row: &[LineSeg],
+    controls: &[FlowInlineControl],
+) -> Option<FrameRowMetrics> {
+    let mut metrics = stored_row_metrics(para, styles, dpi, row)?;
+    let start = row.first()?.text_start;
+    let last = row.last()?.text_start;
+    let end = para
+        .line_segs
+        .iter()
+        .map(|segment| segment.text_start)
+        .filter(|offset| *offset > last)
+        .min()
+        .unwrap_or(u32::MAX);
+    let mut inline_height = 0;
+    let mut inline_baseline = None;
+    let mut spacing_height = 0;
+    for control in controls
+        .iter()
+        .filter(|control| control.utf16_position >= start && control.utf16_position < end)
+    {
+        spacing_height = spacing_height.max(control.spacing_height_hwp.unwrap_or(0));
+        if control.height_hwp > inline_height {
+            inline_height = control.height_hwp;
+            inline_baseline = control.baseline_distance_hwp;
+        } else if control.height_hwp == inline_height {
+            inline_baseline = inline_baseline.max(control.baseline_distance_hwp);
+        }
+    }
+    if spacing_height > 0 {
+        let style = styles.para_styles.get(para.para_shape_id as usize);
+        metrics.line_spacing = compute_line_spacing_hwp(
+            style.map_or(LineSpacingType::Percent, |style| style.line_spacing_type),
+            style.map_or(160.0, |style| style.line_spacing),
+            metrics.line_height.max(spacing_height),
+            dpi,
+        );
+    }
+    if inline_height > metrics.line_height {
+        apply_inline_control_frame_height(&mut metrics, inline_height);
+        if let Some(baseline) = inline_baseline {
+            metrics.baseline_distance = baseline;
+        }
+    }
+    Some(metrics)
 }
 
 /// Resolve a paragraph's stored rows through the caller's frame.
@@ -5311,6 +5418,7 @@ pub(crate) fn resolve_stored_line_segs_in_frame_with_storage<S: crate::storage::
             // 저장 줄 출처를 통과해야 하며, 실패하면 이 부분 경로는 결과를 남기지 않는다.
             if let Some(start_row) = remeasured_equation_start_row(para) {
                 let checkpoint = frame.try_append_checkpoint(storage)?;
+                let prefix_controls = flow_inline_controls_with_storage(para, styles, storage)?;
                 if !para.stored_text_partition_is_dirty()
                     && !stored_rows_require_external_geometry(
                         para,
@@ -5321,23 +5429,19 @@ pub(crate) fn resolve_stored_line_segs_in_frame_with_storage<S: crate::storage::
                     && (start_row == 0
                         || frame.try_admit_stored_rows_with_storage(
                             &para.line_segs[..start_row],
-                            |row| stored_row_metrics(para, styles, dpi, row),
+                            |row| {
+                                stored_inline_row_metrics(para, styles, dpi, row, &prefix_controls)
+                            },
                             storage,
                         )?)
                 {
-                    let (start_char, _) = super::utf16_range_to_text_range(
-                        &para.char_offsets,
-                        para.line_seg_text_start(start_row),
-                        u32::MAX,
-                        para.text.chars().count(),
-                    );
                     if try_layout_paragraph_in_frame_impl(
                         para,
                         frame,
                         styles,
                         dpi,
                         true,
-                        start_char,
+                        FrameStart::SourceUtf16(para.line_seg_text_start(start_row)),
                         FramePurpose::Body,
                         storage,
                     )?
@@ -5964,7 +6068,7 @@ fn try_reflow_line_segs_impl<S: Storage>(
             styles,
             dpi,
             true,
-            0,
+            FrameStart::Scalar(0),
             FramePurpose::Body,
             storage,
         )? {
@@ -6040,7 +6144,11 @@ fn try_reflow_line_segs_impl<S: Storage>(
                 .filter_map(|(start, ctrl)| {
                     inline_control_occupied_size_hwp(ctrl, styles, dpi)
                         .map(|occupied| (start, Some(occupied)))
-                        .or_else(|| matches!(ctrl, Control::Field(_)).then_some((start, None)))
+                        .or_else(|| {
+                            (matches!(ctrl, Control::Field(_))
+                                || inline_frame_input::is_nonflow_anchor(ctrl))
+                            .then_some((start, None))
+                        })
                 }),
         )?;
         if inline_sizes.iter().any(|(_, occupied)| occupied.is_some()) {
@@ -6049,24 +6157,24 @@ fn try_reflow_line_segs_impl<S: Storage>(
             let mut line_start = 0u32;
             let mut line_width = 0i32;
             let mut line_height = 0i32;
-            // [#8507] 필드 시작(누름틀 등)은 폭이 없어도 줄의 내용이다. 한/글 2020 은 그 뒤
+            // 필드 시작과 종이층 개체의 앵커는 폭이 없어도 줄의 내용이다. 한/글 2020은 그 뒤
             // 글자처럼 취급 개체가 남은 폭에 들지 않으면 개체를 다음 줄로 넘기고 필드 줄을
             // 글자 높이의 빈 줄로 남긴다(합성 field_over19: 표 바깥 폭이 줄보다 19HU 넓으면
             // 표가 160%·10pt 빈 줄 1600HU 만큼 아래). 줄 맨 앞 개체는 넘쳐도 그 줄에 둔다.
-            let mut line_has_field = false;
+            let mut line_has_anchor = false;
 
             for (utf16_start, occupied) in inline_sizes.iter().copied() {
-                let Some((ctrl_width, ctrl_height)) = occupied else {
-                    line_has_field = true;
-                    continue;
-                };
-                if (line_width > 0 || line_has_field) && line_width + ctrl_width > max_line_width {
+                // 폭 없는 앵커도 이미 넘친 개체 뒤에는 새 줄에 속한다.
+                // 앞 앵커만 남기고 뒤 앵커를 건너뛰면 말미의 정상 글자 줄을 잃는다.
+                let (ctrl_width, ctrl_height) = occupied.unwrap_or((0, 0));
+                if (line_width > 0 || line_has_anchor) && line_width + ctrl_width > max_line_width {
                     storage.push(&mut line_specs, (line_start, line_width, line_height))?;
                     line_start = utf16_start;
                     line_width = 0;
                     line_height = 0;
-                    line_has_field = false;
+                    line_has_anchor = false;
                 }
+                line_has_anchor |= occupied.is_none();
                 line_width += ctrl_width;
                 line_height = line_height.max(ctrl_height);
             }
@@ -6189,7 +6297,7 @@ fn try_reflow_line_segs_impl<S: Storage>(
             styles,
             dpi,
             true,
-            0,
+            FrameStart::Scalar(0),
             FramePurpose::Body,
             storage,
         )? {

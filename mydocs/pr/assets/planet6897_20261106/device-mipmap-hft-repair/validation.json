@@ -1,0 +1,264 @@
+{
+  "scope": "중간 보정 단계; PR 제출 검증 미완료",
+  "recorded_at": "2026-11-08T15:01:55.051442+00:00",
+  "parent_head": "f1e6ac11eba00f73b4a7439243f822e9ccc8fc3a",
+  "baseline_sha256": "ee41455cf7f05585487d92961ccb9fd8160d5d1e15c3567019ea89e2b7bf2aeb",
+  "native": {
+    "parent": "f1e6ac11eba00f73b4a7439243f822e9ccc8fc3a",
+    "binary_sha256": "98808a6b3a5df980dc83535ca96818eff6e51d1e4becf2b3af236314c2437a09",
+    "sources": {
+      "src/renderer/font_metrics_overlays.rs": "d638f7d5827ffcb62b497324c459ca5b9276c42a357f7cd231ee1aa37a8156d4",
+      "src/renderer/mod.rs": "7fb5bbb30a8395195e27b112488a2da6c53a7e56c4cf73bda600c6c3f2408bb9",
+      "src/renderer/web_canvas.rs": "a2b26540c5078aefb667178c0b61837b27cde84cf2458518eb71215a5e57afd0",
+      "src/renderer/web_canvas/image_reduction.rs": "f4d0cdd8e3a2c0e090d59935a0b2efa05def89ac5e64ad8ae10e322f44691b54",
+      "src/renderer/web_canvas/print_image_sampling.rs": "f555ae4feddadb6b973c92be461fb540a25db8c133f94c71afcd4e2f09ee606a",
+      "tests/cases/hft_outline_font_contract.rs": "496784f4ff415d750b2e963149df755cd1db4a694b2114546b472c16e1ab019f",
+      "tests/suites/suite-policy.json": "1b24bd00e7f78dbbb49a300c451f257d6e791c59526819bfc63bb6b601c67889",
+      "src/renderer/mipmap_sampling.rs": "b8b11a46afe0143e619c19abe8408b3ebfdd40644216706fcc50883d0943c1fb",
+      "tests/cases/native_metafile_mipmap_sampling.rs": "0113565091a99dcbad44c83af7513a96910ad9a1ef09480b0bbd674daeeabebd"
+    },
+    "source_diff_sha256": "787d310839312a30edf6c70a5d26f93c40303472983d62b48fff9b5817162ef1",
+    "build_evidence": "../paint-consumer-trace/focused-after.log"
+  },
+  "wasm": {
+    "head": "f1e6ac11eba00f73b4a7439243f822e9ccc8fc3a",
+    "built_at": "2026-11-08T14:42:57.016466+00:00",
+    "command": "CARGO_BUILD_JOBS=8 CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg --no-opt",
+    "local_alternative_no_docker": true,
+    "files": {
+      "rhwp.js": {
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/fresh-wasm-pkg/rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+        "/Users/tsjang/rhwp/pkg/rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+        "/Users/tsjang/rhwp/rhwp-studio/public/rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568"
+      },
+      "rhwp_bg.wasm": {
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/fresh-wasm-pkg/rhwp_bg.wasm": "a5a3a89f6a3e447fc5b67fc42b7df7361a260726133a6f60b0330661505b4bcc",
+        "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm": "a5a3a89f6a3e447fc5b67fc42b7df7361a260726133a6f60b0330661505b4bcc",
+        "/Users/tsjang/rhwp/rhwp-studio/public/rhwp_bg.wasm": "a5a3a89f6a3e447fc5b67fc42b7df7361a260726133a6f60b0330661505b4bcc"
+      }
+    },
+    "source_snapshot_matches_native_receipt_before_lint_spelling_repair": true
+  },
+  "local_build_policy": "Mac locked wrapper --target web --out-dir pkg --no-opt; Docker 최적화 검증 아님",
+  "focused_test": {
+    "passed": 18,
+    "failed": 0,
+    "not_selected": 654,
+    "log": "output/pr-review/native-program-resume-20261108/paint-consumer-trace/focused-after.log",
+    "log_sha256": "394edb2241ce79cd59c32e00d438093a4f524f7876919e59c992aa5194466a84"
+  },
+  "lint_status": {
+    "native_clippy": "passed",
+    "wasm_clippy": "passed after manual_is_multiple_of repair",
+    "workspace_build": "passed",
+    "all_target_clippy": "passed",
+    "manifest": "passed after prepare regenerated current harness",
+    "unit_tiers": "passed",
+    "full_nextest": {
+      "run": 13070,
+      "passed": 13069,
+      "failed": 1,
+      "skipped": 45,
+      "seconds": 436.279,
+      "log": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/full-nextest.log",
+      "log_sha256": "feb6807420feeb970b4cd3a971d6239173e6369c9bc891743ef2185836ecadcb",
+      "failure": "issue_7518_reflow_row_physical_frame::regulatory_22_legacy_latin_dot_preserves_the_source_word_boundary",
+      "observed": "line two ends 덮; independent expected 덮개·. Test and expected value unchanged."
+    }
+  },
+  "lint_only_source_changes": {
+    "src/renderer/mipmap_sampling.rs": "size % 2 == 0 replaced with size.is_multiple_of(2); semantics unchanged; frozen visual producers predate spelling-only lint repair",
+    "tests/cases/native_metafile_mipmap_sampling.rs": "same parity expression repair"
+  },
+  "datasets": [
+    {
+      "backend": "native",
+      "key": "sample16-hwp2022",
+      "pages": 64,
+      "minimum": 100.0,
+      "below90": [],
+      "official_display_losses": [],
+      "tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+      "tsv": "sample16-hwp2022-native.tsv"
+    },
+    {
+      "backend": "native",
+      "key": "sample16-hwp2024",
+      "pages": 64,
+      "minimum": 99.99,
+      "below90": [],
+      "official_display_losses": [],
+      "tsv_sha256": "804fedcc655075b2739abaf7adfb4764c1938357fcaeaaceb62dca421ecb4f49",
+      "tsv": "sample16-hwp2024-native.tsv"
+    },
+    {
+      "backend": "native",
+      "key": "sample16-hwpx",
+      "pages": 64,
+      "minimum": 99.99,
+      "below90": [],
+      "official_display_losses": [],
+      "tsv_sha256": "804fedcc655075b2739abaf7adfb4764c1938357fcaeaaceb62dca421ecb4f49",
+      "tsv": "sample16-hwpx-native.tsv"
+    },
+    {
+      "backend": "wasm",
+      "key": "sample16-hwp2022",
+      "pages": 64,
+      "minimum": 100.0,
+      "below90": [],
+      "official_display_losses": [],
+      "tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+      "tsv": "sample16-hwp2022-wasm.tsv"
+    },
+    {
+      "backend": "wasm",
+      "key": "sample16-hwp2024",
+      "pages": 64,
+      "minimum": 99.99,
+      "below90": [],
+      "official_display_losses": [
+        {
+          "page": "35",
+          "protected": "100.00",
+          "candidate": "99.99"
+        }
+      ],
+      "tsv_sha256": "18474e1155afaef9605f4ba61e3795f23af2c601eb6fc423e4f537f2c5dc0c7c",
+      "tsv": "sample16-hwp2024-wasm.tsv"
+    },
+    {
+      "backend": "wasm",
+      "key": "sample16-hwpx",
+      "pages": 64,
+      "minimum": 99.99,
+      "below90": [],
+      "official_display_losses": [
+        {
+          "page": "35",
+          "protected": "100.00",
+          "candidate": "99.99"
+        }
+      ],
+      "tsv_sha256": "18474e1155afaef9605f4ba61e3795f23af2c601eb6fc423e4f537f2c5dc0c7c",
+      "tsv": "sample16-hwpx-wasm.tsv"
+    },
+    {
+      "backend": "native",
+      "key": "nested",
+      "pages": 17,
+      "minimum": 98.36,
+      "below90": [],
+      "official_display_losses": [
+        {
+          "page": "3",
+          "protected": "99.76",
+          "candidate": "99.75"
+        }
+      ],
+      "tsv_sha256": "ea710959f7d38f744f4df69e648dddf837fa2274b89681bc1e1a59ddecfb031b",
+      "tsv": "nested-native.tsv"
+    },
+    {
+      "backend": "wasm",
+      "key": "nested",
+      "pages": 17,
+      "minimum": 98.37,
+      "below90": [],
+      "official_display_losses": [],
+      "tsv_sha256": "2c343ce06816832e6ad5237aaf5286b07ea6943f4d8905523548f456aa7c1b9c",
+      "tsv": "nested-wasm.tsv"
+    }
+  ],
+  "images": [
+    {
+      "backend": "wasm",
+      "key": "sample16-hwp2024",
+      "page": 18,
+      "raw": 99.99075,
+      "rhwp_png": {
+        "path": "sample16-hwp2024-wasm-p018-rhwp_png.png",
+        "sha256": "3506161c21f8d49d0765698f9f769f8da74bef8a05d0f495acff7c91247fad58"
+      },
+      "pdf_png": {
+        "path": "sample16-hwp2024-wasm-p018-pdf_png.png",
+        "sha256": "0ee3e9f214f801ec506da00aef255bc5fe5f4bd544918a110028fff59bb18d99"
+      },
+      "review": {
+        "path": "sample16-hwp2024-wasm-p018-review.png",
+        "sha256": "fe0440f724167d15809580bb618e82712254561cca6052abc3ddff0c1683282f"
+      },
+      "overlay": {
+        "path": "sample16-hwp2024-wasm-p018-overlay.png",
+        "sha256": "65d8a7be8aafa335a51ee82c19b05cf645ede29474d21558403e2c456ba054d9"
+      }
+    },
+    {
+      "backend": "wasm",
+      "key": "sample16-hwp2024",
+      "page": 35,
+      "raw": 99.99456,
+      "rhwp_png": {
+        "path": "sample16-hwp2024-wasm-p035-rhwp_png.png",
+        "sha256": "8fdcb0093a55afb2b969e7e9e5c67a3c3db2d92e1f1fb34050d0b1de00cc6bdb"
+      },
+      "pdf_png": {
+        "path": "sample16-hwp2024-wasm-p035-pdf_png.png",
+        "sha256": "266df1e79290ac4eab4040732c7fea42064fd878093bf5989064ff080e1cdb65"
+      },
+      "review": {
+        "path": "sample16-hwp2024-wasm-p035-review.png",
+        "sha256": "010bb268f5a83b9de96e9145bd75bca85bc080691717b52227fccd9ca653758c"
+      },
+      "overlay": {
+        "path": "sample16-hwp2024-wasm-p035-overlay.png",
+        "sha256": "dc88b0a9aa62f6c3d843ea4eba71be392da5458dbf320040f07292b00bbb0c33"
+      }
+    },
+    {
+      "backend": "wasm",
+      "key": "nested",
+      "page": 17,
+      "raw": 99.97805,
+      "rhwp_png": {
+        "path": "nested-wasm-p017-rhwp_png.png",
+        "sha256": "eed24fada3218e2bc0a5fa52f579561080636eabdafcd3937fd6f012c37a319a"
+      },
+      "pdf_png": {
+        "path": "nested-wasm-p017-pdf_png.png",
+        "sha256": "50abbfbfac42d459a0037909aa13f14bfc54003b1faf9f45ae4db272c9342712"
+      },
+      "review": {
+        "path": "nested-wasm-p017-review.png",
+        "sha256": "a31f74e26a4715f07e75ee6992b98e307a61ace7011ac5092df6fc4e7105aa6b"
+      },
+      "overlay": {
+        "path": "nested-wasm-p017-overlay.png",
+        "sha256": "467425bd27c7f8bfd2931b1820af034a9685b80b8760d0c07a4484faf7ac7dda"
+      }
+    },
+    {
+      "backend": "native",
+      "key": "nested",
+      "page": 17,
+      "raw": 99.97771,
+      "rhwp_png": {
+        "path": "nested-native-p017-rhwp_png.png",
+        "sha256": "214b7cfdf4034b9d7e7e4e6e0cd41bfb8f61502ef160ffb2f94731b0aa35b1ad"
+      },
+      "pdf_png": {
+        "path": "nested-native-p017-pdf_png.png",
+        "sha256": "50abbfbfac42d459a0037909aa13f14bfc54003b1faf9f45ae4db272c9342712"
+      },
+      "review": {
+        "path": "nested-native-p017-review.png",
+        "sha256": "c24bb2edc84f990a1d1fdb03c4c360c2d679986cd0ec8739ad71bf2ca49e25cf"
+      },
+      "overlay": {
+        "path": "nested-native-p017-overlay.png",
+        "sha256": "c9dce0d4c38e8a6896c5afe0ad1aa37e0b0d52dbe52186dd7fac0a85665b53ab"
+      }
+    }
+  ],
+  "remaining": "Native nested p3 99.76→99.75; WASM sample16 HWP2024/HWPX p35 100.00→99.99. No baseline/PDF/threshold/mask/rounding edits or exception."
+}

@@ -91,6 +91,7 @@ impl TypesetState {
                 prefilled_paras: std::collections::HashSet::new(),
                 prefilled_line_prefixes: std::collections::HashMap::new(),
                 pre_emitted_host_paras: std::collections::HashSet::new(),
+                restart_block_table_para: None,
                 pre_emitted_host_heights: std::collections::HashMap::new(),
                 pre_emitted_host_content_heights: std::collections::HashMap::new(),
                 skip_safety_margin_once: false,

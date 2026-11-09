@@ -13,9 +13,13 @@ pub(crate) use nested_wrap_flow::stored_nested_wrap_anchor_height_hu;
 pub(crate) use visible_host_successor::shared_spacing as stored_visible_host_successor_spacing;
 pub(crate) mod restarted_tac;
 mod stored_column_spacing;
+mod stored_float_rows;
+mod stored_nested_host;
 mod stored_opening_row_frame;
 mod stored_row_grid;
 pub(crate) use column_ole::column_ole_placement;
+pub(crate) use stored_float_rows::{owns_embedded_float_bands, stored_float_row_span_hu};
+pub(crate) use stored_nested_host::{stored_nested_host_content_bottom, stored_nested_host_frame};
 pub(crate) use stored_opening_row_frame::{stored_plain_opening_row_frame, StoredOpeningRowFrame};
 mod overlay_outer_frame;
 pub(crate) use overlay_outer_frame::overlay_table_outer_margin_left_hu;
@@ -7639,6 +7643,20 @@ pub(crate) fn nested_table_is_overlay(table: &Table) -> bool {
         )
 }
 
+/// [#8648] 칸 안의 글 앞/뒤 표 가운데 쪽·종이 기준으로 놓이는 표다. 글 앞/뒤 배치는 글줄을
+/// 밀지 않으므로 칸의 흐름 높이에 쌓이지 않고, 세로 위치도 칸이 아니라 쪽에서 정해지므로
+/// 칸 내용의 시각 하단도 늘리지 않는다. 결재문서 발신명의 상자 안의 쪽 기준 빈 직인
+/// 칸(7226HU)이 같은 줄의 글자처럼 취급 표(7593HU) 아래로 쌓여 상자가 선언 9513HU 보다
+/// 커지고, 쪽 아래 정렬이 상자를 그만큼 위로 올렸다.
+pub(crate) fn nested_table_is_page_overlay(table: &Table) -> bool {
+    !table.common.treat_as_char
+        && matches!(
+            table.common.text_wrap,
+            TextWrap::BehindText | TextWrap::InFrontOfText
+        )
+        && table.common.vert_rel_to != VertRelTo::Para
+}
+
 fn stored_empty_flow_lines(para: &Paragraph) -> Option<&[crate::model::paragraph::LineSeg]> {
     use crate::model::paragraph::LineSeg;
     if para_has_non_whitespace_text(para)
@@ -7796,6 +7814,8 @@ pub(crate) fn nested_group_occupied_height(
             let bottom = nested_overlay_outer_frame(table, -stored_line_lead, heights[ci], dpi)
                 .map_or(heights[ci], |frame| frame.end);
             overlay_height = overlay_height.max(bottom);
+        } else if nested_table_is_page_overlay(table) {
+            continue;
         } else if group.side_by_side {
             flow_height = flow_height.max(heights[ci]);
         } else {
@@ -7868,7 +7888,11 @@ pub(crate) fn nested_table_groups_with_storage<S: crate::storage::Storage>(
                     .controls
                     .iter()
                     .filter_map(|&ci| match &para.controls[ci] {
-                        Control::Table(t) if !nested_table_is_overlay(t) => Some(t.as_ref()),
+                        Control::Table(t)
+                            if !nested_table_is_overlay(t) && !nested_table_is_page_overlay(t) =>
+                        {
+                            Some(t.as_ref())
+                        }
                         _ => None,
                     }),
             )?;
@@ -8228,16 +8252,64 @@ pub(crate) fn is_textless_coanchored_float_host(para: &Paragraph) -> bool {
     if para_has_non_whitespace_text(para) {
         return false;
     }
-    let mut offsets = para.controls.iter().filter_map(|control| match control {
-        Control::Table(table) if is_para_topbottom_float(&table.common) => {
-            Some(signed_hwpunit(table.common.vertical_offset))
-        }
+    let mut tables = para.controls.iter().filter_map(|control| match control {
+        Control::Table(table) if is_para_topbottom_float(&table.common) => Some(table),
         _ => None,
     });
-    let first = offsets.next();
-    let second = offsets.next();
-    let third = offsets.next();
-    matches!((first, second, third), (Some(0), Some(offset), None) if offset > 0)
+    let (Some(first), Some(second), None) = (tables.next(), tables.next(), tables.next()) else {
+        return false;
+    };
+    let lead = signed_hwpunit(first.common.vertical_offset);
+    let offset = signed_hwpunit(second.common.vertical_offset);
+    if lead == 0 {
+        return offset > 0;
+    }
+    // [#8516] 첫 표도 양수 오프셋인 표지 서식(1395·2666 HU, 왼쪽·오른쪽)은 두 표가 같은 가로 기준에서
+    // **가로로 겹치지 않을 때** 각자 자기 오프셋에 나란히 놓인다(다음 문단 저장 vpos = 아래 표 바닥).
+    // 가로로 겹치는 형상(정책연구 pi=515 등)은 표끼리 쌓는 규칙의 근거가 없어 종전 경로에 남긴다.
+    let (a, b) = (
+        float_horizontal_range_hu(first),
+        float_horizontal_range_hu(second),
+    );
+    lead > 0
+        && offset > lead
+        && first.common.horz_rel_to == second.common.horz_rel_to
+        && (a.end <= b.start || b.end <= a.start)
+}
+
+/// [#8516] 같은 host 의 앞선 문단 기준 자리차지 표 가운데 이 표와 **가로로 겹치는** 표가 있는가.
+///
+/// 같은 문단에 공동 앵커된 자리차지 표는 각자 자기 세로 오프셋에 놓인다(조판의 표 밴드도 같은
+/// 문단 소유 밴드를 서로 짚지 않는다, #1510). 앞 표 아래로 내려 쌓는 것은 두 표가 가로로 겹쳐
+/// 같은 자리를 다툴 때뿐이다 — 가로 기준이 다르면 비교할 수 없으므로 겹친다고 본다.
+pub(crate) fn coanchored_float_overlaps_preceding_horizontally(
+    para: &Paragraph,
+    control_index: usize,
+) -> bool {
+    let Some(Control::Table(current)) = para.controls.get(control_index) else {
+        return true;
+    };
+    let range = float_horizontal_range_hu(current);
+    para.controls
+        .iter()
+        .take(control_index)
+        .filter_map(|control| match control {
+            Control::Table(previous) if is_para_topbottom_float(&previous.common) => Some(previous),
+            _ => None,
+        })
+        .any(|previous| {
+            let other = float_horizontal_range_hu(previous);
+            previous.common.horz_rel_to != current.common.horz_rel_to
+                || (range.start < other.end && other.start < range.end)
+        })
+}
+
+/// 표의 가로 점유 구간(HU) — 가로 기준 원점에서 바깥 여백을 포함한 [왼쪽, 오른쪽).
+fn float_horizontal_range_hu(table: &Table) -> std::ops::Range<i64> {
+    let start = i64::from(signed_hwpunit(table.common.horizontal_offset));
+    let left = start - i64::from(table.outer_margin_left);
+    let right = start + i64::from(table.common.width) + i64::from(table.outer_margin_right);
+    left..right
 }
 
 /// 문단 기준 자리차지 표 가운데 **마지막**(컨트롤 순서) 표인가 — host 줄 상자는 그 표 뒤에서 한 번
@@ -8514,6 +8586,30 @@ pub(crate) fn absolute_table_vertical_geometry(
         VertAlign::Bottom | VertAlign::Outside => ref_y + ref_h - height - offset - bottom_margin,
     };
     (top, top + height + bottom_margin)
+}
+
+/// [#8554] 쪽·용지 기준 자리차지(비-TAC) 표의 띠 아래끝(px, 바깥 아래 여백 포함).
+/// 본문 흐름이 이 표의 host 에 이르렀을 때 띠 아래로 점프하는 기준(`calculate_shape_reserved_heights`)과
+/// 같은 높이·좌표식이다. 문단 기준 표·다른 배치는 `None`.
+pub(crate) fn absolute_topbottom_table_band_bottom_px(
+    table: &Table,
+    body_y: f64,
+    body_height: f64,
+    page_height: f64,
+    dpi: f64,
+) -> Option<f64> {
+    if table.common.treat_as_char || table.common.text_wrap != TextWrap::TopAndBottom {
+        return None;
+    }
+    let (ref_y, ref_h) = match table.common.vert_rel_to {
+        VertRelTo::Page => (body_y, body_height),
+        VertRelTo::Paper => (0.0, page_height),
+        VertRelTo::Para => return None,
+    };
+    let height_hu =
+        stored_square_top_band::table_reserved_height_hu(table).max(table.common.height);
+    let height = hwpunit_to_px(height_hu.min(i32::MAX as u32) as i32, dpi);
+    Some(absolute_table_vertical_geometry(table, ref_y, ref_h, height, dpi).1)
 }
 
 /// A positive-offset empty host float whose next, generated body paragraph has

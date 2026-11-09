@@ -1,0 +1,24 @@
+{
+  "source_sha": "4f8570309e925468552036f4c20d099011d55a35",
+  "hwp_sha256": "f46bfde221a2876cae05e25255698b84f6b34e79df8b13610cb08fa4ff8ccd74",
+  "pdf_sha256": "ef94efc5825d345f3172829cc5af4c069a375631a7cce5d84fe9d1d53b279a6e",
+  "affected_pages": [
+    1
+  ],
+  "pdf_fonts": [
+    "pdffonts -f 1 -l 1 pdf/issue8423/30396-childcare-leave-recommendation-2022.pdf: 본문·머리 글은 INPILL+휴먼명조(CID TrueType 부분 내장, obj 12), 나머지 글자는 Type 3 글리프(T2·T3·T4)로 내장"
+  ],
+  "rhwp_fonts": [
+    "export-svg p1 font-family: 휴먼명조 run은 NotoSerifKRExtraLight-Regular 체인(공급 경로에 없음 → 운영체제 serif), 돋움 계열은 NotoSansKR-Regular(ttfs/opensource)"
+  ],
+  "font_supply_attempts": [
+    "로컬 설치·ttfs/opensource·ttfs/redistributable에서 휴먼명조/HCI/한양신명조 파일 검색: 없음",
+    "한컴 2020 Print PDF(MCP, 11.0.0.9136) 내장 휴먼명조 subset(cmap 없음)을 ToUnicode로 cmap 재구성해 로컬 측정용으로만 공급: Native p1 86.63%, 개선 없음",
+    "휴먼명조→RHWP Public Batang 명시 글꼴 환경(env-batang.json): Native 99.92% / WASM 99.93%"
+  ],
+  "unresolvable_reason": "휴먼명조·HCI·한양신명조는 한컴 상용 글꼴로 저장소·이 장비에 재배포 가능한 원본이 없고, PDF 내장본은 부분집합·cmap 없음이라 정상 공급원이 아니다",
+  "geometry_review_evidence": "p1 기본 글꼴 review·overlay(mydocs/pr/assets/issue_8430/png)에서 제목·의안 표·본문 각 줄의 시작 x·기준선·문단 위치가 PDF와 같고, 차이는 대체 face의 글리프 모양·전진폭이다. 같은 쪽을 명시 글꼴 환경(휴먼명조→RHWP Public Batang)으로 바꾸면 Native·WASM 모두 99.9%대가 된다",
+  "font_issue_unresolvable": true,
+  "layout_geometry_matched": true,
+  "page_count_matched": true
+}

@@ -354,10 +354,25 @@ pub(in crate::renderer::typeset) fn for_paragraph_with_storage<S: crate::storage
     }
     // is_first_table/is_last_table 는 배열순서가 아닌 "놓이는 순서(ctrl_order)"
     // 기준으로 잡아, pre/post 텍스트와 spacing 이 실제 배치 첫/마지막 표에 붙도록 한다.
+    // 쪽·종이 기준 비-TAC 표는 host 줄 흐름 밖에 놓여 표 앞 줄을 소유하지 않는다.
+    // 같은 저장 줄에서 먼저 정렬돼도 앞 줄(누름틀 줄 등)은 흐름에 참여하는 첫 표가
+    // 내보낸다(결재문서: 쪽 기준 발신명의 상자 + 누름틀 뒤 다음 줄로 넘긴 TAC 표).
+    let is_table = |i: usize| matches!(para.controls[i], Control::Table(_));
+    let flows_with_host = |i: usize| match &para.controls[i] {
+        Control::Table(table) => {
+            table.common.treat_as_char
+                || matches!(
+                    table.common.vert_rel_to,
+                    crate::model::shape::VertRelTo::Para
+                )
+        }
+        _ => false,
+    };
     let first_placed_table = ctrl_order
         .iter()
         .copied()
-        .find(|&i| matches!(para.controls[i], Control::Table(_)));
+        .find(|&i| flows_with_host(i))
+        .or_else(|| ctrl_order.iter().copied().find(|&i| is_table(i)));
     let last_placed_table = ctrl_order
         .iter()
         .copied()

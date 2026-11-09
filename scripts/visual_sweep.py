@@ -5794,7 +5794,7 @@ def dedupe_target_keys(targets: list[Target]) -> list[Target]:
 def required_handbook_gate(root: Path, out_root: Path, rhwp_bin: str, workers: int,
                            font_paths: list[Path],
                            font_environment: Path | None = None) -> dict[str, object]:
-    """요청 시 편람을 별도로 Native 전쪽 출력해 #8389와 비교한다."""
+    """요청 시 편람을 별도로 Native 전쪽 출력해 정본 보호 TSV와 비교한다."""
     try:
         from scripts import visual_sweep_handbook as handbook
         from scripts.visual_sweep_resume import render_silhouette_resumable
@@ -5875,7 +5875,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--handbook-gate", action="store_true",
-        help="행정업무운영 편람 HWPX를 Native 383쪽 전수 검사하고 #8389 기준과 비교합니다.",
+        help="행정업무운영 편람 HWPX를 Native 383쪽 전수 검사하고 정본 보호 TSV와 비교합니다.",
     )
     parser.add_argument(
         "--png-pair", nargs=2, type=Path, metavar=("RHWP_PNG_DIR", "PDF_PNG_DIR"),

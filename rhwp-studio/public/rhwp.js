@@ -5329,6 +5329,25 @@ export class HwpDocument {
         return ret[0] >>> 0;
     }
     /**
+     * 문서의 메모를 문서 순서대로 반환한다.
+     *
+     * 반환: `[{id,index,author,date,text,place,sectionIndex,paraIndex,
+     * startCharIdx,endCharIdx,path,page,editable,readOnlyReason}]`
+     * @returns {string}
+     */
+    getMemoList() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.hwpdocument_getMemoList(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
      * @returns {string}
      */
     getMetafileFontRequests() {
@@ -8373,6 +8392,71 @@ export class HwpDocument {
         return ret[0] >>> 0;
     }
     /**
+     * 한 문단의 범위에 메모를 넣는다. `json` = `{author,text}`.
+     *
+     * 반환: `{"ok":true,"id":N,"index":N}`. 실패는 `{ok:false,code,message}`.
+     * @param {number} section_idx
+     * @param {number} para_idx
+     * @param {number} start_char_idx
+     * @param {number} end_char_idx
+     * @param {string} json
+     * @returns {string}
+     */
+    insertMemo(section_idx, para_idx, start_char_idx, end_char_idx, json) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_insertMemo(this.__wbg_ptr, section_idx, para_idx, start_char_idx, end_char_idx, ptr0, len0);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
+     * 표 칸·글상자 안의 범위에 메모를 넣는다.
+     *
+     * `path_json` = `[{"controlIndex":N,"cellIndex":N,"cellParaIndex":N}, …]`.
+     * @param {number} section_idx
+     * @param {number} para_idx
+     * @param {string} path_json
+     * @param {number} start_char_idx
+     * @param {number} end_char_idx
+     * @param {string} json
+     * @returns {string}
+     */
+    insertMemoByPath(section_idx, para_idx, path_json, start_char_idx, end_char_idx, json) {
+        let deferred4_0;
+        let deferred4_1;
+        try {
+            const ptr0 = passStringToWasm0(path_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_insertMemoByPath(this.__wbg_ptr, section_idx, para_idx, ptr0, len0, start_char_idx, end_char_idx, ptr1, len1);
+            var ptr3 = ret[0];
+            var len3 = ret[1];
+            if (ret[3]) {
+                ptr3 = 0; len3 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred4_0 = ptr3;
+            deferred4_1 = len3;
+            return getStringFromWasm0(ptr3, len3);
+        } finally {
+            wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+        }
+    }
+    /**
      * 새 번호 지정 컨트롤 삽입 (쪽 > 새 번호로 시작)
      * @param {number} section_idx
      * @param {number} para_idx
@@ -10220,6 +10304,21 @@ export class HwpDocument {
         return ret[0] !== 0;
     }
     /**
+     * FontFace에 적재된 SFNT 조각들을 같은 family의 실제 조회 순서로 등록한다.
+     * @param {string} family
+     * @param {Array<any>} programs
+     * @returns {boolean}
+     */
+    registerHftOutlineFontCandidates(family, programs) {
+        const ptr0 = passStringToWasm0(family, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_registerHftOutlineFontCandidates(this.__wbg_ptr, ptr0, len0, programs);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ret[0] !== 0;
+    }
+    /**
      * @param {string} family
      * @param {boolean} bold
      * @param {boolean} italic
@@ -10471,6 +10570,29 @@ export class HwpDocument {
         const ret = wasm.hwpdocument_removeHyperlinkEx(this.__wbg_ptr, ptr0, len0);
         if (ret[1]) {
             throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
+     * 메모를 지운다. 기준 글자는 남긴다.
+     * @param {number} id
+     * @returns {string}
+     */
+    removeMemo(id) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_removeMemo(this.__wbg_ptr, id);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
         }
     }
     /**
@@ -10789,6 +10911,34 @@ export class HwpDocument {
         const ret = wasm.hwpdocument_renderPageToCanvasLegacy(this.__wbg_ptr, page_num, canvas, scale);
         if (ret[1]) {
             throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
+     * Explicit Canvas2D outline preview with actual selection diagnostics.
+     * @param {number} page_num
+     * @param {HTMLCanvasElement} canvas
+     * @param {number} scale
+     * @param {string} profile
+     * @returns {string}
+     */
+    renderPageToCanvasStrictOutlineWithProfile(page_num, canvas, scale, profile) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(profile, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_renderPageToCanvasStrictOutlineWithProfile(this.__wbg_ptr, page_num, canvas, scale, ptr0, len0);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
         }
     }
     /**
@@ -12202,6 +12352,32 @@ export class HwpDocument {
             const ptr0 = passStringToWasm0(props_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
             const len0 = WASM_VECTOR_LEN;
             const ret = wasm.hwpdocument_setHeaderFooterPictureProperties(this.__wbg_ptr, section_idx, outer_para_idx, outer_control_idx, inner_para_idx, inner_control_idx, ptr0, len0);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
+     * 메모 본문을 바꾼다. 작성자·날짜·서식은 그대로다.
+     * @param {number} id
+     * @param {string} text
+     * @returns {string}
+     */
+    setMemoText(id, text) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_setMemoText(this.__wbg_ptr, id, ptr0, len0);
             var ptr2 = ret[0];
             var len2 = ret[1];
             if (ret[3]) {
@@ -14179,6 +14355,9 @@ function __wbg_get_imports() {
         __wbg_bezierCurveTo_2ef9bdbf3d7cab27: function(arg0, arg1, arg2, arg3, arg4, arg5, arg6) {
             arg0.bezierCurveTo(arg1, arg2, arg3, arg4, arg5, arg6);
         },
+        __wbg_bezierCurveTo_6c962e111be3f1d0: function(arg0, arg1, arg2, arg3, arg4, arg5, arg6) {
+            arg0.bezierCurveTo(arg1, arg2, arg3, arg4, arg5, arg6);
+        },
         __wbg_c_c811405a34442426: function(arg0) {
             const ret = arg0.c;
             return ret;
@@ -14191,6 +14370,10 @@ function __wbg_get_imports() {
             const ret = arg0.call(arg1, arg2);
             return ret;
         }, arguments); },
+        __wbg_call_39f824e18d9d2414: function() { return handleError(function (arg0, arg1, arg2, arg3, arg4) {
+            const ret = arg0.call(arg1, arg2, arg3, arg4);
+            return ret;
+        }, arguments); },
         __wbg_call_85c2616c93afb65b: function() { return handleError(function (arg0, arg1, arg2, arg3, arg4, arg5) {
             const ret = arg0.call(arg1, arg2, arg3, arg4, arg5);
             return ret;
@@ -14201,8 +14384,14 @@ function __wbg_get_imports() {
         __wbg_clip_11b699e637bb5b4c: function(arg0) {
             arg0.clip();
         },
+        __wbg_clip_186ecc3c70af5766: function(arg0, arg1, arg2) {
+            arg0.clip(arg1, __wbindgen_enum_CanvasWindingRule[arg2]);
+        },
         __wbg_clip_19f3482515ce11e2: function(arg0, arg1) {
             arg0.clip(__wbindgen_enum_CanvasWindingRule[arg1]);
+        },
+        __wbg_closePath_4580feb19a1218cc: function(arg0) {
+            arg0.closePath();
         },
         __wbg_closePath_c56cc36eea49716f: function(arg0) {
             arg0.closePath();
@@ -14291,6 +14480,9 @@ function __wbg_get_imports() {
         __wbg_fill_33944400e9c94f79: function(arg0) {
             arg0.fill();
         },
+        __wbg_fill_99bc71dde47c30ec: function(arg0, arg1, arg2) {
+            arg0.fill(arg1, __wbindgen_enum_CanvasWindingRule[arg2]);
+        },
         __wbg_font_3157caf33a1ae562: function(arg0, arg1) {
             const ret = arg1.font;
             const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
@@ -14321,6 +14513,14 @@ function __wbg_get_imports() {
         __wbg_getRandomValues_436a51d0629d84e1: function() { return handleError(function (arg0, arg1) {
             globalThis.crypto.getRandomValues(getArrayU8FromWasm0(arg0, arg1));
         }, arguments); },
+        __wbg_getTime_63fb0332e6c4ec17: function(arg0) {
+            const ret = arg0.getTime();
+            return ret;
+        },
+        __wbg_getTimezoneOffset_4baa793e0d3962a8: function(arg0) {
+            const ret = arg0.getTimezoneOffset();
+            return ret;
+        },
         __wbg_getTransform_704a6fdec53e7617: function() { return handleError(function (arg0) {
             const ret = arg0.getTransform();
             return ret;
@@ -14347,6 +14547,16 @@ function __wbg_get_imports() {
         },
         __wbg_imageSmoothingEnabled_8b361c6791c0e9da: function(arg0) {
             const ret = arg0.imageSmoothingEnabled;
+            return ret;
+        },
+        __wbg_instanceof_CanvasGradient_f1d990d6cef18da3: function(arg0) {
+            let result;
+            try {
+                result = arg0 instanceof CanvasGradient;
+            } catch (_) {
+                result = false;
+            }
+            const ret = result;
             return ret;
         },
         __wbg_instanceof_CanvasRenderingContext2d_d23139c3ef7651a3: function(arg0) {
@@ -14416,6 +14626,9 @@ function __wbg_get_imports() {
             getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
             getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
         },
+        __wbg_lineTo_55f2d19e97fe770d: function(arg0, arg1, arg2) {
+            arg0.lineTo(arg1, arg2);
+        },
         __wbg_lineTo_9495a068a4f48283: function(arg0, arg1, arg2) {
             arg0.lineTo(arg1, arg2);
         },
@@ -14430,12 +14643,19 @@ function __wbg_get_imports() {
         __wbg_moveTo_a5882cdf1a7d39d9: function(arg0, arg1, arg2) {
             arg0.moveTo(arg1, arg2);
         },
+        __wbg_moveTo_b163e74b8926c626: function(arg0, arg1, arg2) {
+            arg0.moveTo(arg1, arg2);
+        },
         __wbg_naturalHeight_fc4deba91f58f42f: function(arg0) {
             const ret = arg0.naturalHeight;
             return ret;
         },
         __wbg_naturalWidth_8c1fdea17f824ef1: function(arg0) {
             const ret = arg0.naturalWidth;
+            return ret;
+        },
+        __wbg_new_0_f117d868b403dc07: function() {
+            const ret = new Date();
             return ret;
         },
         __wbg_new_116be93542d39019: function() {
@@ -14450,12 +14670,20 @@ function __wbg_get_imports() {
             const ret = new Image();
             return ret;
         }, arguments); },
+        __wbg_new_6fa4b00b7fe13e4b: function() { return handleError(function () {
+            const ret = new Path2D();
+            return ret;
+        }, arguments); },
         __wbg_new_77cc4f4f472aeb81: function(arg0) {
             const ret = new Uint8Array(arg0);
             return ret;
         },
         __wbg_new_ebe3e0f6837f0879: function() {
             const ret = new Object();
+            return ret;
+        },
+        __wbg_new_f9d6489212f3b2b3: function(arg0) {
+            const ret = new Date(arg0);
             return ret;
         },
         __wbg_new_from_slice_3eea173078478cfe: function(arg0, arg1) {
@@ -14627,6 +14855,9 @@ function __wbg_get_imports() {
         }, arguments); },
         __wbg_stroke_5f311844f0db0d9a: function(arg0) {
             arg0.stroke();
+        },
+        __wbg_stroke_7355965b9ad92428: function(arg0, arg1) {
+            arg0.stroke(arg1);
         },
         __wbg_transform_62123174d9cd3977: function() { return handleError(function (arg0, arg1, arg2, arg3, arg4, arg5, arg6) {
             arg0.transform(arg1, arg2, arg3, arg4, arg5, arg6);

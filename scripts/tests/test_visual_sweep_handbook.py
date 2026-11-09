@@ -1,6 +1,7 @@
 """관계형: 편람 기준 TSV 하한·backend 신원과 웹폰트 공급 계약을 검사한다.
 
-주석 갱신: 2026-11-04 17:13 KST. 실물 절대 px 좌표를 고정하는 검사가 아니다.
+주석 갱신: 2026-11-08T22:50:22+09:00 (Asia/Seoul).
+실물 절대 px 좌표를 고정하는 검사가 아니다.
 """
 import copy
 import csv
@@ -20,8 +21,12 @@ ROOT = Path(__file__).resolve().parents[2]
 
 class HandbookGateTests(unittest.TestCase):
     def setUp(self):
+        # 제품의 선택 helper와 독립적으로 정본의 HWPX Native 행만 후보로 준비한다.
         with (ROOT / handbook.BASELINE).open(encoding='utf-8', newline='') as stream:
-            self.rows = list(csv.DictReader(stream, delimiter='\t'))
+            self.rows = [row for row in csv.DictReader(stream, delimiter='\t')
+                         if row['input_sha256'] == handbook.DOC_SHA
+                         and row['reference_pdf_sha256'] == handbook.PDF_SHA
+                         and row['backend'] == 'native']
         self.manifest = {
             'run_state': 'complete', 'radius_px': 2, 'silhouette_method': handbook.METHOD,
             'provenance': {
@@ -38,6 +43,28 @@ class HandbookGateTests(unittest.TestCase):
         self.assertEqual(result['status'], 'passed')
         self.assertEqual(result['pages'], 383)
         self.assertEqual(result['regressions'], [])
+
+    def test_consolidated_baseline_selects_only_handbook_hwpx_and_requested_backend(self):
+        for backend, label in [('native-skia', 'native'), ('wasm-canvas2d', 'wasm')]:
+            rows = handbook.baseline_rows(ROOT, backend)
+            self.assertEqual([int(row['page']) for row in rows], list(range(1, 384)))
+            self.assertEqual({row['input_path'] for row in rows}, {str(handbook.DOC)})
+            self.assertEqual({row['backend'] for row in rows}, {label})
+            self.assertEqual(rows[129][handbook.METRIC], '99.96')
+            self.assertTrue(all(row[handbook.METRIC] == '100.00'
+                                for row in rows if row['page'] != '130'))
+
+    def test_consolidated_baseline_rejects_changed_receipt_and_duplicate_dataset(self):
+        original = json.loads((ROOT / handbook.BASELINE_MANIFEST).read_text(encoding='utf-8'))
+        changed = copy.deepcopy(original)
+        changed['table_sha256'] = '0' * 64
+        duplicate = copy.deepcopy(original)
+        dataset = next(item for item in duplicate['datasets']
+                       if item['input']['sha256'] == handbook.DOC_SHA and item['backend'] == 'native')
+        duplicate['datasets'].append(copy.deepcopy(dataset))
+        for receipt in [changed, duplicate]:
+            with patch.object(handbook.json, 'loads', return_value=receipt):
+                self.assertEqual(handbook.compare(ROOT, self.manifest)['status'], 're_review_required')
 
     def test_explicit_wasm_comparison_keeps_the_same_floor_and_backend_identity(self):
         self.manifest['provenance']['raster_backend'] = 'wasm-canvas2d'
@@ -148,7 +175,7 @@ class HandbookGateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             cache = Path(temp)
             original = ROOT / 'tests/fixtures/fonts/RHWPExactKerningSmoke.ttf'
-            font = TTFont(original)
+            font = TTFont(original, recalcTimestamp=False)
             font.flavor = 'woff'
             source = cache / 'fixture.woff'
             font.save(source)
@@ -157,9 +184,18 @@ class HandbookGateTests(unittest.TestCase):
             (cache / expected).mkdir()
             source.replace(cache / expected / source.name)
             with patch.object(handbook, 'WEBFONTS', {('Missing', 'Regular'): ('fixture.woff', expected)}), \
-                    patch.object(handbook.urllib.request, 'urlopen') as fetch:
+                    patch.object(handbook.urllib.request, 'urlopen') as fetch, \
+                    patch('fontTools.ttLib.tables._h_e_a_d.timestampNow', return_value=3_900_000_000):
                 records = handbook.supply_webfonts(ROOT, cache, lambda *_: False)
+            first_bytes = Path(records[0]['native_path']).read_bytes()
+            with patch.object(handbook, 'WEBFONTS', {('Missing', 'Regular'): ('fixture.woff', expected)}), \
+                    patch.object(handbook.urllib.request, 'urlopen') as second_fetch, \
+                    patch('fontTools.ttLib.tables._h_e_a_d.timestampNow', return_value=3_900_000_060):
+                repeated = handbook.supply_webfonts(ROOT, cache, lambda *_: False)
             fetch.assert_not_called()
+            second_fetch.assert_not_called()
+            self.assertEqual(records[0]['native_sha256'], repeated[0]['native_sha256'])
+            self.assertEqual(first_bytes, Path(repeated[0]['native_path']).read_bytes())
             self.assertEqual(len(records), 1)
             self.assertEqual(records[0]['source_sha256'], expected)
             converted = TTFont(records[0]['native_path'])

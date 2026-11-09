@@ -1,0 +1,13 @@
+{
+  "source": "ada4fdffaac0b9a7491a3f2cfb09994303380c40",
+  "old_library": "/home/tsjang/rhwp/target/pr-review/release-test/deps/librhwp.rlib",
+  "old_library_sha256": "ef18e7423f0e2166142e8a18ff5da1a59fc3035e2ae85779ce1475ba58ce8a68",
+  "exit_code": 101,
+  "runtime_result": "2 passed / 1 failed",
+  "font_supply": "기존 재배포 허가 공개 CFF fixture만 callback으로 공급하며 시스템 글꼴을 조회하지 않는다.",
+  "test_program_digest": "c3eb4ea18997f2a79442f80e51e421bfe496edb431a9247f27dafd4fcc305dda",
+  "files": {
+    "before-test.txt": "5a691fd435ed51d74f293233831e13d63215c0d758ed7ae339001cc091a489ae",
+    "before-contract.rs.txt": "e45a99325e8bcb0fa6dbb1d123b8057d76f45edcfb6660dfce3561645b19c1c5"
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "role": "R11 완료 측정과 직접 판독. 통합 최종 head 판정은 별도.",
+  "inspected_at": "2026-11-06T21:23:04.300131+00:00",
+  "rows": [
+    {
+      "key": "legislation-summary",
+      "backend": "native",
+      "input": {
+        "path": "samples/issue8652/1740000-201700020_legislation_interim_summary.hwp",
+        "sha256": "b8871ad2fa2fb1f0f16586d0bf4e76033b2cabed6db92e306863db9124829cb7"
+      },
+      "pdf": {
+        "path": "pdf/issue8652/1740000-201700020_legislation_interim_summary-2020.pdf",
+        "sha256": "73986101977b25f267c4bf45c09bec2df6e3b3b6e8471fe7c5ab57110cf47c12"
+      },
+      "source_head": "048f44da99d83e186f3a9e139563d20545c8bdb4",
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-common-fixes-r11",
+        "path": "output/pr-review/planet6897-integration-20261106/rhwp-common-fixes-r11",
+        "sha256": "dcc537203eba3fab75d592380c1b584310a97e1a2ec48a48e2e10898411386a4"
+      },
+      "dpi": 96,
+      "raw_method": "unreconciled-2px-content-silhouette",
+      "layout_generation": "2022",
+      "comparison_profile": "print",
+      "files": [
+        {
+          "path": "native.tsv",
+          "sha256": "d5a2089ea3769cbfc3afb1fa02c1a3987edabceb26d189d6e89c53056566950c"
+        },
+        {
+          "path": "native-review-001.png",
+          "sha256": "c801a2f46f5bf96012e56cc6b5ad8a497a93694aa8de919a010fadd6230819dd"
+        },
+        {
+          "path": "native-overlay-001.png",
+          "sha256": "3f5f9e1161928ac7a42584eb51e18160fcf94239ed43d6bc6a60fcc53e104d20"
+        },
+        {
+          "path": "native-review-008.png",
+          "sha256": "66d46f604348603324e9dd4887d200907b69c9cfdf92a9a0e75d78008b8fc8a3"
+        },
+        {
+          "path": "native-overlay-008.png",
+          "sha256": "9392b5768cfa0253c7b666073499d2f97a1153137f632c01652cc1f42ae4ea1c"
+        }
+      ]
+    },
+    {
+      "key": "legislation-summary",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/issue8652/1740000-201700020_legislation_interim_summary.hwp",
+        "sha256": "b8871ad2fa2fb1f0f16586d0bf4e76033b2cabed6db92e306863db9124829cb7"
+      },
+      "pdf": {
+        "path": "pdf/issue8652/1740000-201700020_legislation_interim_summary-2020.pdf",
+        "sha256": "73986101977b25f267c4bf45c09bec2df6e3b3b6e8471fe7c5ab57110cf47c12"
+      },
+      "source_head": "048f44da99d83e186f3a9e139563d20545c8bdb4",
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-common-fixes-r11",
+        "path": "output/pr-review/planet6897-integration-20261106/rhwp-common-fixes-r11",
+        "sha256": "dcc537203eba3fab75d592380c1b584310a97e1a2ec48a48e2e10898411386a4"
+      },
+      "dpi": 96,
+      "raw_method": "unreconciled-2px-content-silhouette",
+      "layout_generation": "2022",
+      "comparison_profile": "print",
+      "files": [
+        {
+          "path": "wasm.tsv",
+          "sha256": "89092ff3598aeea2a6fc7ac49d5ce564d3a4fe55921aeabd3aea9bbe2559b841"
+        },
+        {
+          "path": "wasm-review-001.png",
+          "sha256": "ef641d4773de850ec08034ff9ce5e042520e8b6f9a04e939a9160d4537e35ff7"
+        },
+        {
+          "path": "wasm-overlay-001.png",
+          "sha256": "8233abc6d09b82ac43bb1c605b332562aa154d1402aeab00077abf6efd4ec7b8"
+        },
+        {
+          "path": "wasm-review-008.png",
+          "sha256": "99b50083d461b8c7610913d1043ea5e1d28fff8e2044827c6a6dcfbb35f932f7"
+        },
+        {
+          "path": "wasm-overlay-008.png",
+          "sha256": "f4368ab09d47c5fdc8a620b7555fb0b3c77c023168fbc93ecae745ee454f48f3"
+        }
+      ],
+      "wasm": {
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/wasm-common-fixes-r11/rhwp.js",
+            "sha256": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/wasm-common-fixes-r11/rhwp_bg.wasm",
+            "sha256": "fb98b69311bc3ceeebfaa1052ed2098092aacb22f237ea7651cf4b7b6fe5ce5d"
+          }
+        ],
+        "exporter_sha256": "2d4cc3fbbdf4b4f528aa683649434221a783300e821fe68aaa2ae1e1b63220ee",
+        "font_registration_sha256": "5259038f8caad1f1c1a0dd9c2106589350a7d41ef8c5916c0108a1675951f9fe",
+        "comparison_profile": "print",
+        "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+        "render_tree": "WASM getPageRenderTree"
+      }
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "state": "complete",
+  "pid": 53349,
+  "code_head": "0322cfe65b99c24685e5a30f67ae49c7e7f11272",
+  "base": "06181802e574dbd91e62375536751dea8c270fcd",
+  "checks": [
+    {
+      "label": "studio-typecheck",
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "state": "complete",
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-final-studio-typecheck.log",
+      "pid": 53360,
+      "exit_code": 0,
+      "seconds": 1.2139707498718053,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "studio-tests",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "state": "complete",
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-final-studio-tests.log",
+      "pid": 53418,
+      "exit_code": 0,
+      "seconds": 28.53140995814465,
+      "log_sha256": "09b431350b12448a4f646e9d1fb64362417e7ac2235fb5cac0acec3d6595da62"
+    }
+  ]
+}
