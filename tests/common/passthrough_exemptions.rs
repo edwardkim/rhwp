@@ -192,6 +192,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "#7902: hft_outline_fonts의 paint 전용 프로그램만 등록·교체한다. 문서 IR과 저장 HWP 바이트 보존은 hft_outline_font_contract의 public API 실행으로 검사한다.",
     ),
     (
+        "commands/document/hft_outline_fonts.rs",
+        "register_hft_outline_font_candidates_native",
+        Exempt::SessionState,
+        "실제 후보 순서의 paint 전용 CFF 세션만 원자적으로 등록·교체한다. hft_outline_font_contract가 공개 단일·분할 API의 저장 IR·HWP 바이트 보존과 오류 시 기존 후보 보존을 검사한다. raw stream을 무효화할 문서 편집은 하지 않는다.",
+    ),
+    (
         "font_environment.rs",
         "set_font_environment",
         Exempt::SessionState,

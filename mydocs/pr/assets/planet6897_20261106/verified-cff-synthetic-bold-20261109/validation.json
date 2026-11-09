@@ -70,5 +70,28 @@
   "source_equivalence": {
     "faux_bold_outline_current_sha256": "22f48390bdc25382be5cf100c3b53dbe79f52310e1f398ba5e1c227f65705b70",
     "build_after_change": "빌드 후 rustfmt가 요구한 줄바꿈·들여쓰기만 수정했다. 논리 토큰은 동일하다."
+  },
+  "checkpoint_full_nextest": {
+    "compiled_head": "c524d1e918d114188209baa94baa6cda12984a70",
+    "run": 13083,
+    "pass": 13082,
+    "fail": 1,
+    "skip": 45,
+    "execution_seconds": 307.294,
+    "log": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/verified-cff-full-nextest-v2.log",
+    "failure": "issue_2724_passthrough_invalidation_guard::classification_drift_is_blocked",
+    "note": "실행 중 WMF 후보 3개 파일을 작업 트리에 적용했다. 새 후보의 전체 통과 근거가 아니며 최종 안정 소스에서 전체를 다시 실행한다."
+  },
+  "passthrough_classification_repair": {
+    "file": "tests/common/passthrough_exemptions.rs",
+    "classification": "SessionState",
+    "reason": "register_hft_outline_font_candidates_native는 paint 세션만 교체하며 문서 IR·raw stream을 편집하지 않는다. 공개 계약 검사가 저장 보존을 확인한다.",
+    "guard_after": {
+      "pass": 5,
+      "fail": 0,
+      "command": "CARGO_MANIFEST_DIR=/Users/tsjang/rhwp rustc --edition=2021 --test tests/issue_2724_passthrough_invalidation_guard.rs; generated guard binary --test-threads 8",
+      "log": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/passthrough-guard-after.log",
+      "log_sha256": "e3fa56bc76112ff25ab8eded6b07c55886a098e4e93e32aea4a0ef923cfc890e"
+    }
   }
 }
