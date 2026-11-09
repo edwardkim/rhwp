@@ -110,23 +110,44 @@ final class _OwnedSnapshot {
 }
 
 class _Plan {
-  const _Plan(this.viewport, this.dpr, this.page, this.clear);
-  final NativePageViewport viewport;
+  _Plan(NativePageViewport viewport, this.dpr, int page, this.clear)
+    : viewport = viewport.viewport,
+      pages = [(page: page, viewport: viewport)];
+  _Plan.document(NativeDocumentViewport layout, this.clear)
+    : viewport = layout.viewport,
+      dpr = layout.deviceScale,
+      pages = [
+        for (final entry in layout.visiblePages.entries)
+          (page: entry.key, viewport: entry.value),
+      ];
+  final Size viewport;
   final double dpr;
-  final int page, clear;
+  final int clear;
+  final List<({int page, NativePageViewport viewport})> pages;
+  Object? _pageKey(int index) {
+    if (index >= pages.length) return null;
+    final entry = pages[index];
+    return (
+      entry.page,
+      entry.viewport.page.width,
+      entry.viewport.page.height,
+      entry.viewport.zoom,
+      entry.viewport.origin,
+    );
+  }
+
   Object get key => (
-    viewport.page.width,
-    viewport.page.height,
-    viewport.viewport,
-    viewport.zoom,
-    viewport.origin,
+    viewport,
     dpr,
-    page,
     clear,
+    _pageKey(0),
+    _pageKey(1),
+    _pageKey(2),
+    _pageKey(3),
   );
-  ({int width, int height, double scale, double x, double y}) geometry() {
-    final physicalWidth = viewport.viewport.width * dpr;
-    final physicalHeight = viewport.viewport.height * dpr;
+  ({int width, int height}) geometry() {
+    final physicalWidth = viewport.width * dpr;
+    final physicalHeight = viewport.height * dpr;
     if (!dpr.isFinite ||
         dpr <= 0 ||
         dpr > 16 ||
@@ -142,43 +163,53 @@ class _Plan {
       );
     }
     final width = physicalWidth.ceil(), height = physicalHeight.ceil();
-    final scale = viewport.zoom * dpr;
-    final x = viewport.origin.dx * dpr, y = viewport.origin.dy * dpr;
     if (width * height > 4 * 1024 * 1024 ||
-        !scale.isFinite ||
-        scale <= 0 ||
-        scale > 16 ||
-        !x.isFinite ||
-        !y.isFinite ||
-        x.abs() > 16777216 ||
-        y.abs() > 16777216 ||
-        page < 0 ||
+        pages.isEmpty ||
+        pages.length > 4 ||
         clear < 0 ||
         clear > 0xffffffff) {
       throw const NativeCallException(
         'viewportLimit',
-        'GPU viewport exceeds its pixel/coordinate bound.',
+        'GPU viewport exceeds its pixel/page bound.',
       );
     }
-    return (width: width, height: height, scale: scale, x: x, y: y);
+    for (final entry in pages) {
+      final scale = entry.viewport.zoom * dpr;
+      final origin = entry.viewport.origin * dpr;
+      if (entry.page < 0 ||
+          !scale.isFinite ||
+          scale <= 0 ||
+          scale > 16 ||
+          !origin.dx.isFinite ||
+          !origin.dy.isFinite ||
+          origin.dx.abs() > 16777216 ||
+          origin.dy.abs() > 16777216) {
+        throw const NativeCallException(
+          'viewportLimit',
+          'GPU placement exceeds its coordinate bound.',
+        );
+      }
+    }
+    return (width: width, height: height);
   }
 
-  Map<String, Object?> submission(int texture, _OwnedSnapshot snapshot) {
+  Map<String, Object?> submission(int texture, List<_OwnedSnapshot> snapshots) {
     final size = geometry();
     return {
       'textureId': texture,
-      'stamp': snapshot.stamp?.toJson(),
+      'stamp': snapshots.first.stamp!.toJson(),
       'width': size.width,
       'height': size.height,
       'clearColor': clear,
       'placements': [
-        {
-          'snapshot': snapshot.id,
-          'scale': size.scale,
-          'originX': size.x,
-          'originY': size.y,
-          'backgroundColor': 0xffffffff,
-        },
+        for (var index = 0; index < pages.length; ++index)
+          {
+            'snapshot': snapshots[index].id,
+            'scale': pages[index].viewport.zoom * dpr,
+            'originX': pages[index].viewport.origin.dx * dpr,
+            'originY': pages[index].viewport.origin.dy * dpr,
+            'backgroundColor': 0xffffffff,
+          },
       ],
     };
   }
@@ -254,7 +285,8 @@ class NativeTextureController extends ChangeNotifier {
       _closing = false,
       _notifierDisposed = false;
   _Plan? _plan;
-  _OwnedSnapshot? _frame;
+  List<_OwnedSnapshot> _frames = const [];
+  _OwnedSnapshot? get _frame => _frames.firstOrNull;
   Object? _configurationKey;
   Future<void>? _closeFuture;
   Future<void>? _platformCloseFuture;
@@ -281,7 +313,9 @@ class NativeTextureController extends ChangeNotifier {
   static int get retainedOwnedSnapshots => _OwnedSnapshot.retained.length;
 
   bool get canDisplay =>
-      _phase == NativeTexturePhase.visible && _localCurrent(_frame);
+      _phase == NativeTexturePhase.visible &&
+      _frames.isNotEmpty &&
+      _frames.every(_localCurrent);
   bool get needsCpuFallback => _phase == NativeTexturePhase.fallback;
   bool get isPaused => _paused;
   bool get _nativeView => platform == NativeTexturePlatform.macosMetalView;
@@ -333,6 +367,40 @@ class NativeTextureController extends ChangeNotifier {
     int invalidationGeneration = 0,
   }) {
     final plan = _Plan(viewport, deviceScale, page, clearColor);
+    _configurePlan(plan, invalidationGeneration);
+  }
+
+  /// Publishes the visible pages of one Native document layout in one target.
+  /// Every capture uses the same full stamp and retains the isolate-wide cap.
+  void configureDocument(
+    NativeDocumentViewport viewport, {
+    int clearColor = 0xffdddddd,
+    int invalidationGeneration = 0,
+  }) {
+    _configurePlan(
+      _Plan.document(viewport, clearColor),
+      invalidationGeneration,
+    );
+  }
+
+  /// Covers the mounted registration while a replacement layout is pending.
+  /// No old geometry may be captured or exposed until a new plan is supplied.
+  void suspendViewport() {
+    if (_closing || _stopped || _plan == null) return;
+    _plan = null;
+    _configurationKey = null;
+    ++_generation;
+    _wanted = false;
+    _phase = NativeTexturePhase.pending;
+    _frameTimeout?.cancel();
+    _admissionTimeout?.cancel();
+    _retryTimer?.cancel();
+    _retryTimer = null;
+    _requestNativeCover();
+    _signal();
+  }
+
+  void _configurePlan(_Plan plan, int invalidationGeneration) {
     final key = (plan.key, invalidationGeneration);
     if (key == _configurationKey) return;
     _configurationKey = key;
@@ -626,10 +694,15 @@ class NativeTextureController extends ChangeNotifier {
     );
   }
 
-  bool _receipt(_OwnedSnapshot snapshot, Map<String, Object?> result) {
+  bool _receipt(
+    _OwnedSnapshot snapshot,
+    Map<String, Object?> result, {
+    bool requireIds = false,
+  }) {
     final ids = result['acceptedSnapshots'];
     return snapshot.stamp!.matches(result['acceptedStamp']) &&
-        (ids == null || (ids is List && ids.contains(snapshot.id)));
+        ((!requireIds && ids == null) ||
+            (ids is List && ids.contains(snapshot.id)));
   }
 
   bool _definiteRejection(Object error) =>
@@ -650,9 +723,14 @@ class NativeTextureController extends ChangeNotifier {
             'unsupported',
             'closed',
           }.contains(error.code));
-  void _submitReply(_OwnedSnapshot snapshot, Map<String, Object?> result) {
+  void _submitReply(
+    _OwnedSnapshot snapshot,
+    Map<String, Object?> result, {
+    bool requireIds = false,
+  }) {
     snapshot.sending = false;
-    if (result['accepted'] == true && _receipt(snapshot, result)) {
+    if (result['accepted'] == true &&
+        _receipt(snapshot, result, requireIds: requireIds)) {
       snapshot.transferred();
     } else if (result['accepted'] == false) {
       snapshot.ambiguous = false;
@@ -704,7 +782,7 @@ class NativeTextureController extends ChangeNotifier {
     _working = true;
     final generation = _generation, plan = _plan!, view = _view;
     _wanted = false;
-    _OwnedSnapshot? snapshot;
+    final snapshots = <_OwnedSnapshot>[];
     try {
       if (!presentation.available ||
           document.transport.capabilities['ownerPresentationCleanup'] != true) {
@@ -789,105 +867,140 @@ class NativeTextureController extends ChangeNotifier {
       }
       await _waitReady(generation).timeout(operationTimeout);
       if (!_current(generation)) return;
-      snapshot = _OwnedSnapshot.reserve(presentation);
-      if (snapshot == null) {
-        throw const NativeCallException(
-          'snapshotCreditLimit',
-          'Owned or ambiguous snapshot credit is exhausted.',
-        );
+      // Reserve the entire batch before the first owner call. Partial admission
+      // cannot exceed the four-credit cap or publish only part of a viewport.
+      for (var index = 0; index < plan.pages.length; ++index) {
+        final owned = _OwnedSnapshot.reserve(presentation);
+        if (owned == null) {
+          throw const NativeCallException(
+            'snapshotCreditLimit',
+            'Owned or ambiguous snapshot credit is exhausted.',
+          );
+        }
+        snapshots.add(owned);
       }
-      final rawCapture = document.capturePresentation(
-        page: plan.page,
-        viewGeneration: view,
-        deviceGeneration: _device,
-        deviceScale: plan.dpr,
-        releaseSnapshot: presentation.releaseSnapshot,
-      );
-      snapshot.capturePending = true;
-      final capture = rawCapture.then(
-        (result) {
-          snapshot!.capturePending = false;
-          try {
-            snapshot.bind(result);
-            if (!_current(generation)) _release(snapshot);
-            return result;
-          } catch (_) {
-            _release(snapshot);
-            rethrow;
-          }
-        },
-        onError: (Object error, StackTrace stack) {
-          snapshot!.capturePending = false;
-          _release(snapshot);
-          Error.throwWithStackTrace(error, stack);
-        },
-      );
-      await capture.timeout(operationTimeout);
+      for (var index = 0; index < snapshots.length; ++index) {
+        if (!_current(generation)) return;
+        final owned = snapshots[index];
+        final rawCapture = document.capturePresentation(
+          page: plan.pages[index].page,
+          viewGeneration: view,
+          deviceGeneration: _device,
+          deviceScale: plan.dpr,
+          releaseSnapshot: presentation.releaseSnapshot,
+        );
+        owned.capturePending = true;
+        final capture = rawCapture.then(
+          (result) {
+            owned.capturePending = false;
+            try {
+              owned.bind(result);
+              if (!_current(generation)) _release(owned);
+              return result;
+            } catch (_) {
+              _release(owned);
+              rethrow;
+            }
+          },
+          onError: (Object error, StackTrace stack) {
+            owned.capturePending = false;
+            _release(owned);
+            Error.throwWithStackTrace(error, stack);
+          },
+        );
+        await capture.timeout(operationTimeout);
+        if (!_current(generation)) return;
+        if (!_localCurrent(owned) ||
+            !snapshots.first.stamp!.matches(owned.stamp!.toJson()) ||
+            !await presentation
+                .snapshotCheck(owned.id!, owned.stamp!)
+                .timeout(operationTimeout)) {
+          throw const NativeCallException(
+            'stalePresentation',
+            'The viewport snapshots do not share one current full stamp.',
+          );
+        }
+      }
       if (!_current(generation)) return;
-      if (!_localCurrent(snapshot) ||
-          !await presentation
-              .snapshotCheck(snapshot.id!, snapshot.stamp!)
-              .timeout(operationTimeout)) {
-        throw const NativeCallException(
-          'stalePresentation',
-          'Captured snapshot is no longer current.',
-        );
+      for (final owned in snapshots) {
+        owned.sending = true;
       }
-      if (!_current(generation)) {
-        _release(snapshot);
-        return;
-      }
-      snapshot.sending = true;
-      final owned = snapshot;
+      final requireIds = snapshots.length > 1;
       Map<String, Object?> reply;
       try {
         reply = await _invoke(
           'submit',
-          plan.submission(textureId!, snapshot),
-          received: (reply) => _submitReply(owned, reply),
-          failed: (error) => _submitError(owned, error),
+          plan.submission(textureId!, snapshots),
+          received: (reply) {
+            for (final owned in snapshots) {
+              _submitReply(owned, reply, requireIds: requireIds);
+            }
+          },
+          failed: (error) {
+            for (final owned in snapshots) {
+              _submitError(owned, error);
+            }
+          },
         );
       } catch (error) {
-        // P109 reserves credit before accepting IDs. Only this explicit native
-        // rejection may release the caller snapshot and retry a fresh capture.
-        // Accepted/status errors and ambiguous transport outcomes never replay.
+        // Only an explicit pre-accept rejection can release/retry a whole batch.
         if (_retryableBackpressure(error) &&
-            !snapshot.sending &&
-            !snapshot.ambiguous &&
+            snapshots.every((s) => !s.sending && !s.ambiguous) &&
             _current(generation)) {
-          await snapshot.releaseOwned().timeout(operationTimeout);
+          await Future.wait(snapshots.map((s) => s.releaseOwned()))
+              .timeout(operationTimeout);
           if (_current(generation)) _retryAdmission(generation);
           return;
         }
-        if (!snapshot.settled && (snapshot.sending || snapshot.ambiguous)) {
-          snapshot.ambiguous = true;
-          await _reconcile(snapshot);
+        for (final owned in snapshots) {
+          if (!owned.settled && (owned.sending || owned.ambiguous)) {
+            owned.ambiguous = true;
+            await _reconcile(owned, requireIds: requireIds);
+          }
         }
         rethrow;
       }
-      if (reply['accepted'] != true || !snapshot.settled) {
-        if (snapshot.ambiguous) await _reconcile(snapshot);
+      if (reply['accepted'] != true || snapshots.any((s) => !s.settled)) {
+        for (final owned in snapshots) {
+          if (owned.ambiguous) await _reconcile(owned, requireIds: requireIds);
+        }
         throw NativeCallException(
-          snapshot.ambiguous ? 'ambiguousOwnership' : 'backpressure',
-          'Texture submission was not conclusively accepted.',
+          snapshots.any((s) => s.ambiguous)
+              ? 'ambiguousOwnership'
+              : 'backpressure',
+          'The viewport batch was not conclusively accepted.',
         );
       }
       if (!_current(generation)) return;
       _admissionTimeout?.cancel();
       _admissionTimeout = null;
-      _frame = snapshot;
+      _frames = List.unmodifiable(snapshots);
       _phase = NativeTexturePhase.pending;
       _publicationDeadline(generation);
       _signal();
     } catch (error) {
-      if (snapshot != null &&
-          !snapshot.settled &&
-          !snapshot.sending &&
-          !snapshot.ambiguous) {
-        _release(snapshot);
-      }
       if (_current(generation)) _fail(error, fallback: _canFallback(error));
     } finally {
+      final callerReleases = <Future<void>>[];
+      for (final owned in snapshots) {
+        if (!owned.settled && !owned.sending && !owned.ambiguous) {
+          _release(owned);
+          final releasing = owned.releasing;
+          if (releasing != null) callerReleases.add(releasing);
+        }
+      }
+      // A replacement four-page plan needs all four credits. Do not race the
+      // confirmed caller releases of an obsolete batch; ambiguous/pending IDs
+      // are never refunded by this wait or by a new viewport generation.
+      if (_wanted && !_closing && !_stopped && callerReleases.isNotEmpty) {
+        try {
+          await Future.wait(callerReleases).timeout(operationTimeout);
+        } catch (error) {
+          if (!_closing && !_stopped) {
+            _fail(error, fallback: _canFallback(error));
+          }
+        }
+      }
       _working = false;
       if (!_closing &&
           !_stopped &&
@@ -928,11 +1041,16 @@ class NativeTextureController extends ChangeNotifier {
     });
   }
 
-  Future<void> _reconcile(_OwnedSnapshot snapshot) async {
+  Future<void> _reconcile(
+    _OwnedSnapshot snapshot, {
+    bool requireIds = false,
+  }) async {
     if (textureId == null || _rpc >= 3) return;
     try {
       final result = await _invoke('status', {'textureId': textureId});
-      if (_receipt(snapshot, result)) snapshot.transferred();
+      if (_receipt(snapshot, result, requireIds: requireIds)) {
+        snapshot.transferred();
+      }
       // An older status is not a rejection: a late submit may still execute.
     } catch (_) {
       /* Retain the bounded ambiguous handle; never guess ownership. */
@@ -1027,6 +1145,7 @@ class NativeTextureController extends ChangeNotifier {
         _closing ||
         _stopped ||
         _paused ||
+        _plan == null ||
         _retryTimer != null) {
       return;
     }
@@ -1073,13 +1192,23 @@ class NativeTextureController extends ChangeNotifier {
         }
         return;
       }
-      if (!await presentation
-          .snapshotCheck(frame.id!, frame.stamp!)
-          .timeout(operationTimeout)) {
+      // A matching stamp alone cannot prove that every page was published.
+      if (_frames.length > 1 &&
+          !_frames.every((s) => _receipt(s, status, requireIds: true))) {
         throw const NativeCallException(
           'stalePresentation',
-          'The full source stamp is no longer current.',
+          'The published viewport is missing a page receipt.',
         );
+      }
+      for (final owned in _frames) {
+        if (!await presentation
+            .snapshotCheck(owned.id!, owned.stamp!)
+            .timeout(operationTimeout)) {
+          throw const NativeCallException(
+            'stalePresentation',
+            'The full source stamp is no longer current.',
+          );
+        }
       }
       if (!_current(generation) || !_localCurrent(frame)) return;
       if (_nativeView && (!await _uncoverNative(frame, generation))) return;
@@ -1344,9 +1473,21 @@ class NativeTextureView extends StatefulWidget {
     this.page = 0,
     this.invalidationGeneration = 0,
     this.coverColor = const Color(0xff55575a),
-  });
+  }) : documentViewport = null;
+
+  const NativeTextureView.document({
+    super.key,
+    required this.controller,
+    required this.documentViewport,
+    required this.cpuFallback,
+    this.invalidationGeneration = 0,
+    this.coverColor = const Color(0xffdddddd),
+  }) : viewport = null,
+       page = 0;
+
   final NativeTextureController controller;
-  final NativePageViewport viewport;
+  final NativePageViewport? viewport;
+  final NativeDocumentViewport? documentViewport;
   final WidgetBuilder cpuFallback;
   final int page, invalidationGeneration;
   final Color coverColor;
@@ -1369,13 +1510,24 @@ class _NativeTextureViewState extends State<NativeTextureView> {
   }
 
   void _configure() {
-    widget.controller.configure(
-      widget.viewport,
-      deviceScale: MediaQuery.devicePixelRatioOf(context),
-      page: widget.page,
-      clearColor: widget.coverColor.toARGB32(),
-      invalidationGeneration: widget.invalidationGeneration,
-    );
+    final layout = widget.documentViewport;
+    if (layout != null) {
+      widget.controller.configureDocument(
+        layout,
+        clearColor: widget.coverColor.toARGB32(),
+        invalidationGeneration: widget.invalidationGeneration,
+      );
+    } else if (widget.viewport != null) {
+      widget.controller.configure(
+        widget.viewport!,
+        deviceScale: MediaQuery.devicePixelRatioOf(context),
+        page: widget.page,
+        clearColor: widget.coverColor.toARGB32(),
+        invalidationGeneration: widget.invalidationGeneration,
+      );
+    } else {
+      widget.controller.suspendViewport();
+    }
   }
 
   void _changed() {
