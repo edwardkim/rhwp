@@ -1,5 +1,5 @@
 //! 관계형·고정형 — [#8841] 글자처럼 취급 표 줄의 음수 줄간격과 쪽 아래 고정 틀.
-//! 주석 갱신: MEASURE_TS (새 파일)
+//! 주석 갱신: 2026-11-09 16:54 KST (새 파일)
 //!
 //! 입력: 공개 결재문서 36414883(한컴오피스 2020 저장). 마지막 문단(`pi=7`)은 TAC 표 줄(줄 높이
 //! 15811HU, 줄간격 −240HU)과 뒤 글줄 하나, 그리고 쪽 기준·아래 정렬 고정 틀(`ci=1`, 28991HU)로 되어
@@ -8,7 +8,11 @@
 //! - 고정형: 전체 쪽수 1.
 //! - 관계형 1쪽: TAC 표 → 뒤 글줄 → 고정 틀 순서로 겹치지 않고, 고정 틀은 본문 아래끝 안에 있다.
 //!
-//! MEASUREMENTS
+//! 측정(2026-11-09, head c36e05f1cb, `scripts/visual_sweep.py --silhouette-only --dpi 96`,
+//! raw = `silhouette_raw_match_percent`, 문서 face 중 굴림체만 공급 — 함초롬바탕 없음):
+//! - Native: 1쪽 / 1쪽, p1 99.23 (base 는 2쪽으로 쪽수 불일치)
+//! - fresh WASM: 1쪽 / 1쪽, p1 99.18
+//! - 증거: `mydocs/pr/assets/issue_8841/`
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
