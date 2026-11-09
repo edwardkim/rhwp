@@ -41,3 +41,11 @@ HWP3 공식 설명본 [27-byte 셀 구조](../tech/한글문서파일구조3.0.m
 원 네 표의 후보 dump는 원 기여 후보와 바이트 단위로 같았다. 독립 한컴 변환 XML과 셀 주소·병합 범위를 직접 대조해 37·234·69·64개 셀이 모두 같았다. 행열만 맞는 것을 내용 보존 완료로 표현하지 않는다. SO-SUEOP은 HWPX 저장의 실제 XML text/tail·각주까지 한 번씩 세어 문장부호 31/32/4/1/6/18개와 반각 PUA 각 3개가 독립 변환본과 일치함을 확인했다.
 
 Native 선행 비교에서 sample16은 64쪽 최저 98.53716→99.57001%, cell-order는 1쪽 100→100%다. SO-SUEOP 46쪽에는 기존 글꼴 굵기·흐름 차이의 90% 미달이 남아 있다. fresh WASM·전쪽 하락·직접 확대 판독·필수 회귀/lint를 아직 완료하지 않았으므로 수용 준비 완료로 판정하지 않는다. 전체 명령·최종 TSV·대표 PNG·검증 결과는 완료 후 정식 증거 경로에 보존한다.
+
+## 필수 로컬 검증 완료
+
+2026-11-09 KST, 위 선행 결과 뒤의 필수 검증을 완료했다. 최종 테스트 source `581d22855f60af2de5fed3208949f7dd81258a0a`에서 전체 회귀 13,013 PASS, Native 공식 3종 4,077 PASS, 집중 8 PASS와 적용 lint/build/suite 정책이 통과했다. 최적화 fresh WASM의 실제 Chromium에서도 큰 경계 입력 8개 전체의 내용·셀 주소·스팬 보존을 확인했다. 원래 네 표의 모든 셀은 Native/WASM 저장 XML이 독립 변환본과 같다.
+
+원 3문서 전 111쪽씩의 base/후보 Native/fresh WASM을 측정하고 변경 영역을 직접 확대 판독했다. sample16 64쪽은 Native 최저 99.57001%·WASM 99.62920%, cell-order는 양쪽 100%이며 페이지별 하락은 없다. 편람 Native 383쪽도 최저 99.96%·기준 대비 회귀 0으로 통과했다. [최종 원장·명령·producer·TSV·대표 PNG](assets/chrisryugj-20261109/README.md)에 실제 결과를 보존했다.
+
+SO-SUEOP은 Native 최저 61.69802%·WASM 61.97235%의 기존 차이가 남았다. 긴 줄표 간격은 기존 독립 한컴 HWPX를 base Native renderer로 열어도 재현해 새 매핑 회귀와 구분했다. [분리 대조와 남은 범위](assets/chrisryugj-20261109/so-sueop-visual-hold.md)를 바탕으로 기존 차이에 한정한 명시적 수용 결정이 필요하다. #8791의 셀 손실은 이 예외 대상이 아니며 실제 보정·재검증을 완료했다. 원격 조치 전 [개별 최종 판정](pr_8789_review.md)과 [원격 처리안](assets/chrisryugj-20261109/remote-action-plan.md)의 별도 승인 조건을 따른다.
