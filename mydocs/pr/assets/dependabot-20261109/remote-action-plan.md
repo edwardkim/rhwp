@@ -1,6 +1,6 @@
 # Dependabot 19건 원격 처리안
 
-현재 원격 push·새 PR·공개 댓글·merge는 수행하지 않았다. 원 PR #8811–#8829의 원 head와
+이 문서는 원격 승인 요청 시점의 계획이다. 당시 원격 push·새 PR·공개 댓글·merge는 수행하지 않았다. 원 PR #8811–#8829의 원 head와
 기여 이력을 보존한 로컬 branch `review/integration-20261109-dependabot-updates`를 대상으로 한다.
 제출할 정확한 SHA는 로컬 검토·증거 commit 확정 뒤 승인 질문과 PR 본문에 기록한다.
 
@@ -20,7 +20,7 @@
    문서 trailing push를 추가해 Full CI를 반복하지 않는다.
 6. 기본 devel을 fast-forward하고 원 PR 19건의 MERGED 상태를 확인한다. 간접 MERGED가 표시되지
    않은 경우에만 이력을 보존한 통합 수용 근거를 기록해 완료 처리한다. closing issue는 19건 모두 없다.
-7. [개별 댓글 초안](comment-drafts/)에 실제 통합 PR·merge·증거 commit·CI URL을 채우고 공개한다.
+7. [개별 댓글 초안](comment-drafts)에 실제 통합 PR·merge·증거 commit·CI URL을 채우고 공개한다.
    이미 게시된 동일 댓글은 중복하지 않으며 API로 UTF-8 본문·링크·이미지를 재확인한다.
 8. 이번에 만든 통합 branch·worktree·보존 ref와 임시 remote head를 안전 조건에 따라 정리한다.
    사용이 끝난 기본 작업공간의 `target/pr-review/debug`와 루트 `output/` 전체를 삭제하고 잔여와
@@ -32,10 +32,12 @@ CI 재실행·취소·탐지 설정·보안 경고 분류 변경은 이 안의 �
 
 ## 로컬 완료 근거
 
-- [공통 원장](README.md), [19건 개별 판정](../../dependabot_20261109_review.md).
+- [공통 원장](README.md), [19건 개별 판정](../../archives/dependabot_20261109_review.md).
 - 전체 회귀 13,005건·Native 공식 4,077건·Studio 2,778건, 모든 적용 lint·build와 실제 브라우저 통과.
 - Native/fresh WASM 각 9쪽 raw 최저 100.00%, base/후보 PNG 동일. 편람 Native 383쪽 raw 최저 99.96%.
 - 원 CI 14건 성공. 나머지 5건은 CodeQL 버전 불일치 또는 Native의 30분 제한으로 실제 로그·annotation을 확인했다.
 - 검토 코드의 실제 변경은 의존성·Action ref·CodeQL 주석, 배포 고지와 기존 smoke 대기 순서다.
   증거를 포함해 1,000줄을 넘으므로 코드 검토·simulation·전쪽 시각 검증을 완료한 뒤 작업지시자의
   원격 범위 판단과 새 head CI·self-review를 거쳐 통합한다.
+
+실제 통합·CI·self-review·원 PR 완료 상태는 [원격 결과](remote-completion.md)를 따른다.

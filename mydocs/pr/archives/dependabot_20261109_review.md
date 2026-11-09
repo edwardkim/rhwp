@@ -1,10 +1,10 @@
 # Dependabot PR 19건 로컬 최종 검토 — 2026-11-09
 
-기준 devel `024d610633ede166ebcbb915f9c90e7a9d0649d8`. 검증 source `2320351d2325a41d900e91f4e07f559d4a924a7d`의 결합 graph가 로컬 필수 검증을 통과했다. 원격 처리 승인은 대기 중이다.
+기준 devel `024d610633ede166ebcbb915f9c90e7a9d0649d8`. 검증 source `2320351d2325a41d900e91f4e07f559d4a924a7d`의 결합 graph가 로컬 필수 검증을 통과했다. 승인된 원격 처리로 통합했다.
 
-추가 하네스·고지 보정 commit은 `42f82843ec5c957e4e06c414e7f9d0ade7cf052b`다. [실제 보정과 검증 source의 동일성](assets/dependabot-20261109/source-review.md)을 별도로 확인했다.
+추가 하네스·고지 보정 commit은 `42f82843ec5c957e4e06c414e7f9d0ade7cf052b`다. [실제 보정과 검증 source의 동일성](../assets/dependabot-20261109/source-review.md)을 별도로 확인했다.
 
-전체 회귀 13,005건·Native 공식 4,077건·Studio 2,778건과 적용 lint·build·브라우저·편람 383쪽을 통과했다. Native/fresh WASM 전 9쪽씩의 raw 최저는 각각 100.00%이고 base/후보 픽셀은 모두 같다. [정식 검증·원 CI 원인·공급망 원장](assets/dependabot-20261109/README.md)을 따른다.
+전체 회귀 13,005건·Native 공식 4,077건·Studio 2,778건과 적용 lint·build·브라우저·편람 383쪽을 통과했다. Native/fresh WASM 전 9쪽씩의 raw 최저는 각각 100.00%이고 base/후보 픽셀은 모두 같다. [정식 검증·원 CI 원인·공급망 원장](../assets/dependabot-20261109/README.md)을 따른다.
 
 | PR | 변경 | 원 head | 로컬 판정 |
 | --- | --- | --- | --- |
@@ -31,3 +31,16 @@
 CodeQL 두 원 head의 버전 불일치와 Native 4건의 30분 제한은 실제 로그·annotation으로 분류했다. 제품 코드·테스트 기대값·보안 탐지·검사 범위는 유지했다. 이번 갱신 범위의 서드파티 버전·라이선스 표기도 현행화했다.
 
 원격 처리안은 단일 통합 branch·Open PR의 CI·self-review·merge, 원 PR 19건 완료 확인과 결과 댓글, 옵션 2의 별도 후속 기록 PR·devel 동기화·종료 정리다. 원격 변경은 승인 뒤 수행한다.
+
+## 원격 처리 결과
+
+[통합 PR #8840](https://github.com/edwardkim/rhwp/pull/8840)의 제출 head `91453509c9fb10d24bc8fb318b5437f2e80692fa`를 검증했고 [merge `153d5aede886077772349569e900fd770adddc93`](https://github.com/edwardkim/rhwp/commit/153d5aede886077772349569e900fd770adddc93)로 수용했다. 사용자 원격 승인 뒤 실행했으며 [self-review](https://github.com/edwardkim/rhwp/pull/8840#pullrequestreview-5822605316)를 공개했다. 원 기여 head 19개를 모두 보존했다.
+
+- [Proptest roundtrip](https://github.com/edwardkim/rhwp/actions/runs/42573393012): success, attempt 1, head `91453509c9fb10d24bc8fb318b5437f2e80692fa`.
+- [Adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/42573392969): success, attempt 1, head `91453509c9fb10d24bc8fb318b5437f2e80692fa`.
+- [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/42573392806): success, attempt 1, head `91453509c9fb10d24bc8fb318b5437f2e80692fa`.
+- [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/42573392794): success, attempt 1, head `91453509c9fb10d24bc8fb318b5437f2e80692fa`.
+- [CI](https://github.com/edwardkim/rhwp/actions/runs/42573392890): success, attempt 1, head `91453509c9fb10d24bc8fb318b5437f2e80692fa`.
+- CI Impact Policy: success.
+
+후속 기록은 CI 변경 PR의 옵션 2로 별도 review-only PR에 반영한다. 원 코드 PR에는 trailing commit·추가 CI를 만들지 않았다. 원 PR 19건 모두 MERGED임을 확인했고 결과 댓글과 종료 정리는 기록 병합 뒤 수행하며 최종 실행 결과는 해당 PR 댓글과 `target/pr-review/cleanup-pr8840-20261109.json`에서 확인한다. closing issue는 없다.
