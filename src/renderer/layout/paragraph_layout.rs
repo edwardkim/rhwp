@@ -2809,7 +2809,10 @@ fn compute_line_extra_spacing_with_dash_plan(
         // [#5830] 마지막 줄·강제 줄바꿈 줄의 dash leader 채움.
         *dash_extra_by_run = Some(by_run);
         (0.0, 0.0, extra_dash)
-    } else if needs_distribute && total_char_count > 1 {
+    } else if needs_distribute
+        && (total_char_count > 1
+            || (total_char_count == 1 && leading_space_plan.terminal_inline_object))
+    {
         // [#4657] 배분 정렬: 남는 폭을 글자 **사이**(N-1곳)에 균등 분배.
         // extra_char_spacing 은 각 글자 advance 뒤에 붙으므로 마지막 glyph 의
         // 잉크 오른쪽 끝은 `W + (N-1)·extra` — N 으로 나누면 짧은 줄일수록
@@ -2836,7 +2839,11 @@ fn compute_line_extra_spacing_with_dash_plan(
             .count()
             .min(trailing_space_limit);
         let visible_count = spacing_chars.len().saturating_sub(trailing_spaces);
-        let slots = spacing_chars[..visible_count.saturating_sub(1)]
+        // 줄 끝의 가시 소유자가 인라인 개체이면 마지막 텍스트 뒤에도 배분 간격이
+        // 있다. 그 한 칸을 빼고 계산한 몫을 모든 텍스트 전진에 적용하면 양식·그림을
+        // 셀 밖으로 밀어낸다. 공통 줄 계획의 말미 개체 소유를 그대로 소비한다.
+        let terminal_text = usize::from(!leading_space_plan.terminal_inline_object);
+        let slots = spacing_chars[..visible_count.saturating_sub(terminal_text)]
             .iter()
             .filter(|(_, field)| !field)
             .count();
