@@ -2336,6 +2336,19 @@ pub(crate) fn textless_single_float_host(para: &Paragraph, table: &Table) -> boo
             .all(|control| matches!(control, Control::Table(t) if std::ptr::eq(t.as_ref(), table)))
 }
 
+/// 글 없는 host 에 자리차지 표 하나와 글자처럼 취급한 표만 있는지 본다. 앞의 표는 host 줄 위에
+/// 상자를 차지하고 뒤의 표는 host 줄 안에 놓인다.
+fn textless_float_host_ignoring_inline_tables(para: &Paragraph, table: &Table) -> bool {
+    !table.common.treat_as_char
+        && is_para_topbottom_float(&table.common)
+        && para.text.is_empty()
+        && para.controls.iter().all(|control| match control {
+            Control::SectionDef(_) | Control::ColumnDef(_) | Control::Field(_) => true,
+            Control::Table(t) => t.common.treat_as_char || std::ptr::eq(t.as_ref(), table),
+            _ => false,
+        })
+}
+
 /// 원본 한 줄의 높이와 캡션·여백이 인라인 형제의 상자를 정확히 닫으면
 /// 그 줄의 후행 간격은 형제의 흐름에 속한다. 같은 앵커의 부동 캡션에 다시 붙이지 않는다.
 fn saved_inline_sibling_owns_caption_host_line(para: &Paragraph, table: &Table, dpi: f64) -> bool {
@@ -4448,6 +4461,22 @@ pub(crate) fn stored_table_column_origin(
     }
 }
 
+/// 단을 여는 host 에서 저장 줄이 자리차지 표 상자 바로 아래에 있고 그 줄에 글자처럼 취급한 표가
+/// 있으면, 그 줄의 단 원점 기준 위끝(HU)을 돌려준다. 줄은 표 상자의 바깥 아래 여백까지 지난 뒤에
+/// 시작하므로 표가 전진시킨 높이가 아니라 이 저장 위치가 줄 위끝이다.
+pub(crate) fn stored_inline_host_line_top_below_float(
+    para: &Paragraph,
+    next: Option<&Paragraph>,
+) -> Option<i32> {
+    para.controls
+        .iter()
+        .any(|control| matches!(control, Control::Table(t) if t.common.treat_as_char))
+        .then_some(())?;
+    let source = para.line_segs.first()?.vertical_pos;
+    let origin = stored_textless_float_box_origin(para, next, source)?;
+    Some(source - origin)
+}
+
 /// [#8149] 단 첫머리의 글 없는 host 문단 기준 자리차지 표: 저장 host 줄은 문단 앞 간격 뒤에
 /// 있지만 표 상자는 문단 위끝(단 원점)에서 바깥 위 여백만큼 내려 시작한다. 저장 사다리가 다음
 /// 줄을 `원점 + 오프셋 + 위 여백 + 높이 + 아래 캡션 + 아래 여백` 에 두면 그 원점이 단의 저장
@@ -4459,14 +4488,19 @@ fn stored_textless_float_box_origin(
     next: Option<&Paragraph>,
     source: i32,
 ) -> Option<i32> {
-    let mut tables = para.controls.iter().filter_map(|control| match control {
-        Control::Table(table) => Some(table),
+    // 글자처럼 취급한 표는 host 줄 안의 내용이다. 줄 높이에 이미 들어 있어 표 상자 등식에 끼지 않는다.
+    let mut floats = para.controls.iter().filter_map(|control| match control {
+        Control::Table(table) if !table.common.treat_as_char => Some(table),
         _ => None,
     });
-    let (Some(table), None) = (tables.next(), tables.next()) else {
+    let (Some(table), None) = (floats.next(), floats.next()) else {
         return None;
     };
-    if !textless_single_float_host(para, table)
+    let line_owns_inline_table = para
+        .controls
+        .iter()
+        .any(|control| matches!(control, Control::Table(t) if t.common.treat_as_char));
+    if !textless_float_host_ignoring_inline_tables(para, table)
         || para.stored_text_partition_is_dirty()
         || para.cell_format_vpos_dirty
         // 쪽을 넘긴 양수 오프셋 표는 오프셋을 버린다(#4068) — 저장 등식이 이 쪽의 상자가 아니다.
@@ -4490,7 +4524,8 @@ fn stored_textless_float_box_origin(
     let origin = i64::from(next_line.vertical_pos) - frame;
     // 저장 host 줄이 앞 간격 뒤, 표 위 바깥 여백 띠 안에서 시작하는 형상. 다음 줄만으로 원점을
     // 정하므로 표 아래에 놓인 host 줄은 이 갈래의 증거가 아니다(issue7198 첫 쪽).
-    if (0..i64::from(source)).contains(&origin)
+    if !line_owns_inline_table
+        && (0..i64::from(source)).contains(&origin)
         && i64::from(source) < origin + i64::from(table.outer_margin_top)
     {
         return i32::try_from(origin).ok();
