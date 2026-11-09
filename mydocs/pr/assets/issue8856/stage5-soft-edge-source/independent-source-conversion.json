@@ -1,0 +1,11 @@
+{
+  "input": "samples/basic/interview.hwp",
+  "input_sha256": "fc71c2a0ebced5e913fbcbbc39a28244f5d73144f74ba1a4ebc548998d408d3c",
+  "output": "pdf/issue8856/interview-official-2020-soft-edge.hwpx",
+  "output_sha256": "bf1f0db70a607b0ec2c1034d03b9efe8269bdc39d7fab1e0cd534ee2b140488f",
+  "job_id": "719f1046-86cd-440c-bcf9-58e330855d0c",
+  "status": "succeeded",
+  "engine": "2020",
+  "hancom_version": "11.0.0.9136",
+  "interpretation": "첫 그림의 hp:softEdge radius=1000. 저장된 원본 JPEG·crop·크기는 효과와 별개다."
+}
