@@ -59,7 +59,9 @@ final document = await NativeDocument.connect(transport);
 있는 ABI 2여야 한다. 실제 공급 코드의 로딩은 `connect`를 호출하는 명시적인 동작이다.
 
 참조 example은 `RHWP_RUNTIME_BUNDLE`가 지정되면 이 경로를 쓰고, 미지정이면 기존
-`RHWP_NATIVE_LIBRARY`·`RHWP_OWNER_LIBRARY` 연결을 유지하도록 연결할 수 있다. 이는 제품 앱 UI나
+`RHWP_NATIVE_LIBRARY`·`RHWP_OWNER_LIBRARY` 연결을 유지한다. OS 환경 변수를 먼저 읽고
+compile-time dart define은 기본값으로 사용하므로 이동한 bundle root를 다시 컴파일하지 않고
+지정할 수 있다. 이는 제품 앱 UI나
 플랫폼 plugin의 자동 설치 기능이 아니다. 실제 Flutter runner는 빌드 시 plugin 등록을 포함해야 한다.
 
 ## 재현 검사
@@ -78,3 +80,13 @@ portable 검사는 ELF/PE/Mach-O **비실행 헤더 fixture**를 다룬다. FFI 
 연결·종료한다. 미지원 capability·잘못된 owner ABI도 실제 로딩 경로로 거절한다. 실제 rhwp 렌더러,
 Flutter runner 실행, Windows/macOS loader·GPU·OS 서명 검증으로 표현하지 않는다. 실제 공급 Native와
 Flutter runner의 별도 검증 source·hash를 기록한 후 사용할 수 있는 연결 기반이다.
+
+추가 실제 Linux smoke에서는 `native-skia-gl` Native를 `devel@b5064fae1eef`에서
+빌드한 library SHA-256
+`59e1602dbf09bc0c8094ab5955c809689567d3cd0062bfdd086e480ea1d3e359`와
+현재 owner dispatcher를 사용했다. 기존 Flutter runtime `26897412c355`를 공급해
+17개 파일273,163,585bytes를 묶고 공백 경로로 이동한 뒤 초기 dependency 복사본을
+제거했다. 이동한 library를 실제 로딩해 새 문서·64×64 RGBA 두 번 일치·snapshot의
+full stamp 검사/해제·owner 종료를 실행했고 Native resource counter9개는 모두0으로
+돌아왔다. 이 실행은 C fixture가 아니며 runtime runner 실행·GPU 표시 검증은 아니다.
+각 role의 source는 독립적으로 선언하고 기존 runtime 재사용을 새 빌드로 계산하지 않는다.

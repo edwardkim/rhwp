@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:rhwp_native_reference/rhwp_native_flutter.dart';
@@ -51,10 +52,20 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
     NativeTextureController? texture;
     NativeTextureController Function()? createTexture;
     try {
-      final transport = await NativeOwnerTransport.connect(
-        dispatcherLibrary: const String.fromEnvironment('RHWP_OWNER_LIBRARY'),
-        nativeLibrary: const String.fromEnvironment('RHWP_NATIVE_LIBRARY'),
-      );
+      final bundlePath =
+          Platform.environment['RHWP_RUNTIME_BUNDLE'] ??
+          const String.fromEnvironment('RHWP_RUNTIME_BUNDLE');
+      final transport = bundlePath.isEmpty
+          ? await NativeOwnerTransport.connect(
+              dispatcherLibrary: const String.fromEnvironment(
+                'RHWP_OWNER_LIBRARY',
+              ),
+              nativeLibrary: const String.fromEnvironment(
+                'RHWP_NATIVE_LIBRARY',
+              ),
+            )
+          : await (await NativeRuntimeBundle.load(Directory(bundlePath)))
+                .connect();
       document = await NativeDocument.connect(transport);
       await document.newDocument();
       if (const bool.fromEnvironment('RHWP_GPU')) {
