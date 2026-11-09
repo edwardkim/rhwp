@@ -1,6 +1,6 @@
 # chrisryugj HWP3 PR 2건 검증 증적
 
-검증일: 2026-11-09 KST. base `b768bee1c4c0023087687f79a0a95f12108743e9`, runtime 보정 `4fabb47ae28b99d371e2aac3560e2610e327c311`. 원 기여 두 head는 merge commit으로 보존했다. 이후 문서와 테스트 보강은 runtime 입력을 바꾸지 않는다. 원격 push·공개 comment·새 PR·merge는 아직 수행하지 않았다.
+검증일: 2026-11-09 KST. base `b768bee1c4c0023087687f79a0a95f12108743e9`, runtime 보정 `4fabb47ae28b99d371e2aac3560e2610e327c311`. 원 기여 두 head는 merge commit으로 보존했다. 이후 문서와 테스트 보강은 runtime 입력을 바꾸지 않는다. 메인테이너가 기존 차이 한정 예외와 원격 처리 범위를 승인했으며 실행 결과는 후속 기록에서 확정한다.
 
 ## 원본과 독립 기준
 
@@ -38,7 +38,7 @@
 | sample16 | wasm | 98.73826% | 99.62920% | 0.00000 | 없음 | [base](base-sample16-wasm.tsv) · [후보](corrected-sample16-wasm.tsv) |
 | cell-order | wasm | 100.00000% | 100.00000% | 0.00000 | 없음 | [base](base-cell-order-wasm.tsv) · [후보](corrected-cell-order-wasm.tsv) |
 
-sample16·cell-order는 두 경로의 모든 쪽에서 90% 이상이다. SO-SUEOP의 기존 미달과 [Native 표시 문제](so-sueop-visual-hold.md)는 해소·예외 승인되지 않았다. 평균값이나 2%p 이내 하락으로 이를 면제하지 않는다.
+sample16·cell-order는 두 경로의 모든 쪽에서 90% 이상이다. SO-SUEOP의 기존 미달과 [Native 표시 문제](so-sueop-visual-hold.md)는 남아 있다. 2026-11-09 KST 메인테이너가 이 기존 차이에 한정한 수용 예외를 명시적으로 승인했다. 평균값이나 2%p 이내 하락을 자동 면제 근거로 사용하지 않는다.
 
 ## 이웃 탐색 보정과 실제 내용 보존
 
@@ -101,4 +101,4 @@ Native 편람 `--handbook-gate` 383쪽은 passed, 최저 99.96%, 기준 대비 r
 
 Native 공식 3종 합계는 4,077 PASS다. 집중 실행에서 다른 테스트가 필터로 제외된 수는 위 전체 회귀의 기존 skip과 구분한다. 개인 글꼴 유무로 새 검사를 건너뛰지 않았다. 전체 회귀는 컴파일 포함 1,141.170초, 실제 실행 679.271초이며 Native 3종은 각각 353.910·293.942·12.234초였다. 이 수치는 검증 실행 기록이며 일반 사용자 성능 보장을 뜻하지 않는다.
 
-2026-11-09 KST 최종 읽기 전용 API 점검에서 devel과 두 원 PR head는 접수 SHA 그대로였고 본인 계정의 열린 PR은 0건이었다. 새 통합 head의 GitHub CI는 아직 실행하지 않았다. #8791은 **메인터너 보정 후 수용 가능**, #8789는 **기존 시각 차이의 수용 결정 전 머지 보류**다. [원격 처리안](remote-action-plan.md)은 승인 요청용이며 완료 기록이 아니다.
+2026-11-09 KST 최종 읽기 전용 API 점검에서 devel과 두 원 PR head는 접수 SHA 그대로였고 본인 계정의 열린 PR은 0건이었다. #8791은 **메인터너 보정 후 수용 가능**, #8789는 **명시적으로 승인된 기존 차이 예외 범위에서 승인**이다. 로컬 준비 후보 `2bc760dffe58435bf3411d8e611ebf9766923e36` 뒤 변경은 이 결정의 문서 반영뿐이다. [원격 처리안](remote-action-plan.md)의 새 head CI·self-review·merge는 실제 결과로 별도 기록한다.

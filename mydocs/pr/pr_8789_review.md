@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**머지 보류 — source 개선과 필수 로컬 검증은 완료했고 기존 시각 차이의 수용 결정을 기다린다.** 미달을 새 renderer 회귀로 오판하지 않으며 source 보존과 fidelity 수용을 분리한다. 아래 기존 차이에 한정한 명시적 예외 또는 별도 출력 보정·재검증이 보류 해제 조건이다.
+**승인 — 검증한 통합 후보와 명시적으로 승인받은 기존 차이의 예외 범위에 한정한다.** source 개선과 필수 로컬 검증을 완료했다. 2026-11-09 KST 메인테이너는 SO-SUEOP의 기존 조판 차이와 Native 긴 줄표 fallback 간격에 한정한 수용 예외 및 두 PR의 원격 처리를 승인했다. 원문 문자 보존 개선을 수용하며 문서 전체의 표시 문제가 해결됐다고 판정하지 않는다. 새 통합 head CI·self-review 성공이 머지 전 조건이다.
 
 ## 접수와 검토 경로
 
@@ -40,7 +40,7 @@
 
 ## 원격 처리와 댓글 계획
 
-기존 조판·Native fallback 한계에 한정한 수용 예외 또는 추가 보정 범위는 메인테이너 결정 사항이다. 결정 전 원격 push·comment·PR 생성·merge는 하지 않는다. 수용되면 원 기여 SHA를 보존하고 source 복원 사실과 남은 표시 범위를 원 PR에 분명히 알린다. [원격 처리안](assets/chrisryugj-20261109/remote-action-plan.md)과 [개별 댓글 초안](assets/chrisryugj-20261109/merge-comment-drafts.md)을 준비했다.
+메인테이너가 2026-11-09 KST “기존 차이 한정 예외·2건 원격 처리 승인”으로 결정했다. 범위는 통합 branch push·Open PR → 새 head CI 성공·self-review·merge → 원 PR 2건 완료 반영·감사 댓글·mydocs 운영 기록 devel push·동기화·정리다. 새 회귀·누락·필수 검사 실패는 예외가 아니다. 원 기여 SHA를 보존하고 source 복원 사실과 남은 표시 범위를 원 PR에 분명히 알린다. [원격 처리안](assets/chrisryugj-20261109/remote-action-plan.md)과 [개별 댓글 초안](assets/chrisryugj-20261109/merge-comment-drafts.md)을 따른다. 실제 원격 결과는 후속 기록에서 확정한다.
 
 ## 공통 검토와 필수 로컬 검사
 
