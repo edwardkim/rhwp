@@ -9076,19 +9076,19 @@ impl LayoutEngine {
         // 다른 줄의 표가 소유자로 섞인다. caller가 복원한 저장 줄 배정과 마지막
         // run 끝 TAC를 포함한 공통 집합을 그대로 소비한다.
         let line_table_owner = para.and_then(|p| {
-            line_tac_offsets
-                .iter()
-                .find_map(|(_, _, ci)| match p.controls.get(*ci) {
-                    Some(Control::Table(table)) if table.common.treat_as_char => {
-                        let h = hwpunit_to_px(table.common.height as i32, self.dpi);
-                        let mt = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
-                        super::stored_tac_frame::owned_body_height(
-                            table, h, raw_lh, styles, self.dpi, 0.2,
-                        )
-                        .map(|owned_height| (owned_height, mt))
-                    }
-                    _ => None,
-                })
+            super::stored_tac_frame::line_table_owner(
+                line_tac_offsets
+                    .iter()
+                    .filter_map(|(_, _, ci)| match p.controls.get(*ci) {
+                        Some(Control::Table(table)) if table.common.treat_as_char => {
+                            Some(table.as_ref())
+                        }
+                        _ => None,
+                    }),
+                raw_lh,
+                styles,
+                self.dpi,
+            )
         });
         let is_last_run_of_line = |idx: usize| idx == comp_line.runs.len() - 1;
         // [#5679] 줄-말미 공백에 배정된 배분 여분(extra_word_sp) 회수분.

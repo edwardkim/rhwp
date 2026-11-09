@@ -91,3 +91,18 @@ pub(super) fn independent_stored_tail(
                 })
         })
 }
+
+/// 같은 글줄의 TAC 표 가운데 저장 줄 높이가 바깥 상자와 정확히 같은 표(줄 소유자)의
+/// 본체 높이와 위 바깥 여백(px). 글줄 경로와 칸 중첩 표 경로가 같은 소유자를 고른다.
+pub(super) fn line_table_owner<'a>(
+    tables: impl IntoIterator<Item = &'a Table>,
+    line_height: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<(f64, f64)> {
+    tables.into_iter().find_map(|table| {
+        let height = hwpunit_to_px(table.common.height as i32, dpi);
+        owned_body_height(table, height, line_height, styles, dpi, 0.2)
+            .map(|owned| (owned, hwpunit_to_px(i32::from(table.outer_margin_top), dpi)))
+    })
+}
