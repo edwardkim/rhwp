@@ -12,7 +12,7 @@
 //! 10k 코퍼스 A/B 로 확인했다(PR 본문).
 //!
 //! 대응 실물: 공개 결재문서 36387608(rhwp 2쪽 → 1쪽, 한컴 engine 2020 Print PDF 1쪽).
-//! 측정(2026-11-09, head MEASURE_HEAD, `scripts/visual_sweep.py --silhouette-only --dpi 96`,
+//! 측정(2026-11-09, head 8f531162f2, `scripts/visual_sweep.py --silhouette-only --dpi 96`,
 //! raw = `silhouette_raw_match_percent`): Native 1쪽 84.80 · fresh WASM 1쪽 85.14(base 2쪽, p1 63.98).
 //! 90% 미만은 이 환경에 없는 함초롬돋움·함초롬바탕(본문 대부분) 글꼴 차이라, 실물 대신 이 합성
 //! 계약으로 회귀를 건다. 증거: `mydocs/pr/assets/issue_8834/`.
