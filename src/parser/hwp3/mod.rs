@@ -145,6 +145,128 @@ pub(crate) fn check_record_count(count: usize) -> Result<(), io::Error> {
     Ok(())
 }
 
+/// 같은 축 시작 좌표별로 반대 축의 열린 겹침 구간을 색인한다.
+///
+/// 좌표를 정렬한 tree의 각 node에 자식 구간의 합집합을 저장한다. 최소 시작 좌표 이후의
+/// 첫 겹침은 O(log² n)에 찾으며, 후보를 일정 개수만 확인한 뒤 "이웃 없음"으로 바꾸지 않는다.
+/// HWP3 셀 개수는 word이므로 tree 깊이는 최대 16이고 저장 구간 수는 O(n log n)이다.
+struct Hwp3CellStartIndex {
+    starts: Vec<i32>,
+    leaf_base: usize,
+    intervals: Vec<Vec<(i32, i32)>>,
+}
+
+impl Hwp3CellStartIndex {
+    fn new(geo: &[(i32, i32, i32, i32)], horizontal: bool) -> Self {
+        let start = |i: usize| if horizontal { geo[i].0 } else { geo[i].1 };
+        let mut order: Vec<usize> = (0..geo.len()).collect();
+        order.sort_unstable_by_key(|&i| start(i));
+        let mut starts = Vec::new();
+        let mut groups: Vec<Vec<(i32, i32)>> = Vec::new();
+        for i in order {
+            let coordinate = start(i);
+            if starts.last() != Some(&coordinate) {
+                starts.push(coordinate);
+                groups.push(Vec::new());
+            }
+            let interval = if horizontal {
+                (geo[i].1, geo[i].3)
+            } else {
+                (geo[i].0, geo[i].2)
+            };
+            groups.last_mut().expect("coordinate group").push(interval);
+        }
+        let leaf_base = starts.len().max(1).next_power_of_two();
+        let mut intervals = vec![Vec::new(); leaf_base * 2];
+        for (i, mut group) in groups.into_iter().enumerate() {
+            group.sort_unstable();
+            intervals[leaf_base + i] = Self::merge_intervals(&group, &[]);
+        }
+        for node in (1..leaf_base).rev() {
+            intervals[node] = Self::merge_intervals(&intervals[node * 2], &intervals[node * 2 + 1]);
+        }
+        Self {
+            starts,
+            leaf_base,
+            intervals,
+        }
+    }
+
+    fn merge_intervals(left: &[(i32, i32)], right: &[(i32, i32)]) -> Vec<(i32, i32)> {
+        let mut merged: Vec<(i32, i32)> = Vec::with_capacity(left.len() + right.len());
+        let (mut l, mut r) = (0, 0);
+        while l < left.len() || r < right.len() {
+            let next = if r == right.len() || (l < left.len() && left[l] <= right[r]) {
+                let item = left[l];
+                l += 1;
+                item
+            } else {
+                let item = right[r];
+                r += 1;
+                item
+            };
+            if let Some(last) = merged.last_mut() {
+                // 끝점만 맞닿은 구간을 합치면 그 점에 놓인 0높이/0폭 셀의 엄격 겹침
+                // 판정이 달라진다. 원래의 b0 < a1 && b1 > a0 계약을 유지한다.
+                if next.0 < last.1 || next == *last {
+                    last.1 = last.1.max(next.1);
+                    continue;
+                }
+            }
+            merged.push(next);
+        }
+        merged
+    }
+
+    fn next_start(&self, minimum: i32, low: i32, high: i32) -> Option<i32> {
+        let from = self
+            .starts
+            .partition_point(|&coordinate| coordinate < minimum);
+        self.find_first(1, 0, self.leaf_base, from, low, high)
+    }
+
+    fn find_first(
+        &self,
+        node: usize,
+        left: usize,
+        right: usize,
+        from: usize,
+        low: i32,
+        high: i32,
+    ) -> Option<i32> {
+        if right <= from || left >= self.starts.len() {
+            return None;
+        }
+        let intervals = &self.intervals[node];
+        let end = intervals.partition_point(|&(begin, _)| begin < high);
+        if end == 0 || intervals[end - 1].1 <= low {
+            return None;
+        }
+        if right - left == 1 {
+            return Some(self.starts[left]);
+        }
+        let middle = left + (right - left) / 2;
+        self.find_first(node * 2, left, middle, from, low, high)
+            .or_else(|| self.find_first(node * 2 + 1, middle, right, from, low, high))
+    }
+}
+
+/// 같은 행(열)에 걸친 다음 이웃의 시작 변. 기존 40HU 끝 변 반올림 계약은 유지한다.
+fn hwp3_next_cell_starts(geo: &[(i32, i32, i32, i32)], horizontal: bool) -> Vec<Option<i32>> {
+    const SLACK: i32 = 40;
+    let index = Hwp3CellStartIndex::new(geo, horizontal);
+    geo.iter()
+        .map(|&(x0, y0, x1, y1)| {
+            let (start, end, low, high) = if horizontal {
+                (x0, x1, y0, y1)
+            } else {
+                (y0, y1, x0, x1)
+            };
+            index.next_start((end - SLACK).max(start + 1), low, high)
+        })
+        .collect()
+}
+
 // HWP3 spec (한글문서파일구조3.0.md:248) doc_info offset 122 "빈줄감춤"(0 이외=on).
 fn hwp3_hide_empty_line(doc_info: &Hwp3DocInfo) -> bool {
     doc_info.hide_empty_line != 0
@@ -1424,44 +1546,40 @@ fn parse_hwp3_object_dispatch(
             return Ok(Some(true));
         }
 
-        let mut xs_raw = Vec::new();
-        let mut ys_raw = Vec::new();
-
-        for i in 0..cell_count as usize {
-            let offset = i * 27;
-            let cell_info = &cell_buf[offset..offset + 27];
-            let x = (&cell_info[4..6]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
-            let y = (&cell_info[6..8]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
-            let w = (&cell_info[8..10]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
-            let h = (&cell_info[10..12]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
-            xs_raw.push(x);
-            xs_raw.push(x + w);
-            ys_raw.push(y);
-            ys_raw.push(y + h);
-        }
-
-        xs_raw.sort_unstable();
-        ys_raw.sort_unstable();
-
-        let mut xs = Vec::new();
-        for &x in &xs_raw {
-            if let Some(&last) = xs.last() {
-                if i32::abs(x - last) < 40 {
-                    continue;
-                }
-            }
-            xs.push(x);
-        }
-
-        let mut ys = Vec::new();
-        for &y in &ys_raw {
-            if let Some(&last) = ys.last() {
-                if i32::abs(y - last) < 40 {
-                    continue;
-                }
-            }
-            ys.push(y);
-        }
+        // 격자 경계는 셀 왼쪽 변 x 전부(허용치 없음)와 표 오른쪽 끝, 위쪽 변 y 전부와 표 아래쪽 끝이다.
+        // 오른쪽·아래쪽 변은 경계를 만들지 않는다 — 셀 높이 합이 틀보다 짧은 칸이 가짜 행을 만들고,
+        // 1단위 어긋난 변을 허용치로 묶으면 다른 열이 합쳐진다. 셀이 끝나는 자리는 같은 행에 걸친
+        // 오른쪽 이웃의 왼쪽 변(아래는 아래 이웃의 위쪽 변)이다. 한컴 HWP3→HWPX 변환본
+        // (samples/hwp3-sample16-hwp5.hwpx 의 "접 수 번 호"·"사업책임자(주계약자)"·"투입인력 개인별 경력사항
+        // 확인서", hwp3-table-cell-order 한컴 2020 재저장본)의 rowCnt·colCnt·셀 앵커와 일치한다.
+        let geo: Vec<(i32, i32, i32, i32)> = (0..cell_count as usize)
+            .map(|i| {
+                let c = &cell_buf[i * 27..i * 27 + 27];
+                let x = (&c[4..6]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
+                let y = (&c[6..8]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
+                let w = (&c[8..10]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
+                let h = (&c[10..12]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
+                (x, y, x + w, y + h)
+            })
+            .collect();
+        let right = geo.iter().map(|g| g.2).max().unwrap_or(0);
+        let bottom = geo.iter().map(|g| g.3).max().unwrap_or(0);
+        let mut xs: Vec<i32> = geo
+            .iter()
+            .map(|g| g.0)
+            .chain(std::iter::once(right))
+            .collect();
+        let mut ys: Vec<i32> = geo
+            .iter()
+            .map(|g| g.1)
+            .chain(std::iter::once(bottom))
+            .collect();
+        xs.sort_unstable();
+        xs.dedup();
+        ys.sort_unstable();
+        ys.dedup();
+        let next_x = hwp3_next_cell_starts(&geo, true);
+        let next_y = hwp3_next_cell_starts(&geo, false);
 
         table.col_count = if xs.len() > 1 {
             (xs.len() - 1) as u16
@@ -1485,22 +1603,14 @@ fn parse_hwp3_object_dispatch(
             let w = (&cell_info[8..10]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
             let h = (&cell_info[10..12]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
 
-            let c1 = xs
-                .iter()
-                .position(|&val| (val - x).abs() < 40)
-                .unwrap_or(cell_info[1] as usize);
-            let c2 = xs
-                .iter()
-                .position(|&val| (val - (x + w)).abs() < 40)
-                .unwrap_or(c1 + 1);
-            let r1 = ys
-                .iter()
-                .position(|&val| (val - y).abs() < 40)
-                .unwrap_or(cell_info[0] as usize);
-            let r2 = ys
-                .iter()
-                .position(|&val| (val - (y + h)).abs() < 40)
-                .unwrap_or(r1 + 1);
+            let c1 = xs.binary_search(&x).unwrap_or(cell_info[1] as usize);
+            let c2 = next_x[i]
+                .and_then(|v| xs.binary_search(&v).ok())
+                .unwrap_or(xs.len() - 1);
+            let r1 = ys.binary_search(&y).unwrap_or(cell_info[0] as usize);
+            let r2 = next_y[i]
+                .and_then(|v| ys.binary_search(&v).ok())
+                .unwrap_or(ys.len() - 1);
 
             cell.row = r1 as u16;
             cell.col = c1 as u16;
