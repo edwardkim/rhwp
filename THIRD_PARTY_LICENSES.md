@@ -38,21 +38,24 @@ This software is based in part on the work of the Independent JPEG Group.
 | blake3 | 1.8.6 | CC0-1.0 OR Apache-2.0 OR Apache-2.0 WITH LLVM-exception | BLAKE3-team/BLAKE3 | 해시/진단 |
 | byteorder | 1.5.0 | Unlicense OR MIT | BurntSushi/byteorder | 바이너리 endian 처리 |
 | cbc | 0.2.1 | MIT OR Apache-2.0 | RustCrypto/block-modes | HWPX 암호화 모드 |
-| cfb | 0.14.0 | MIT | mdsteele/rust-cfb | OLE Compound File |
+| cfb | 0.16.0 | MIT | mdsteele/rust-cfb | OLE Compound File |
 | cipher | 0.5.2 | MIT OR Apache-2.0 | RustCrypto/traits | 암호 trait |
 | codepage | 0.1.2 | Apache-2.0 OR MIT | hsivonen/codepage | 코드페이지 처리 |
 | console_error_panic_hook | 0.1.7 | Apache-2.0/MIT | rustwasm/console_error_panic_hook | WASM panic hook |
-| crc32fast | 1.5.0 | MIT OR Apache-2.0 | srijs/rust-crc32fast | HWP3 암호 키 검증 |
+| crc32fast | 1.5.4 | MIT OR Apache-2.0 | srijs/rust-crc32fast | HWP3 암호 키 검증 |
 | des | 0.9.0 | MIT OR Apache-2.0 | RustCrypto/block-ciphers | HWP3 암호화 |
 | ed25519-dalek | 2.2.0 | BSD-3-Clause | dalek-cryptography/curve25519-dalek | capsule 서명 |
 | embedded-io | 0.7.1 | MIT OR Apache-2.0 | rust-embedded/embedded-hal | IO trait |
-| encoding_rs | 0.8.35 | (Apache-2.0 OR MIT) AND BSD-3-Clause | hsivonen/encoding_rs | 문자 인코딩 |
+| encoding_rs | 0.8.44 | (Apache-2.0 OR MIT) AND BSD-3-Clause | hsivonen/encoding_rs | 문자 인코딩 |
 | flate2 | 1.1.9 | MIT OR Apache-2.0 | rust-lang/flate2-rs | 압축/해제 |
 | getrandom | 0.4.3 | MIT OR Apache-2.0 | rust-random/getrandom | 서명 키 난수 생성 |
 | hmac | 0.13.0 | MIT OR Apache-2.0 | RustCrypto/MACs | HWPX 무결성 |
 | image | 0.25.10 | MIT OR Apache-2.0 | image-rs/image | BMP/JPEG/PNG 디코딩 |
 | rhwp-zune-jpeg | 0.5.15-rhwp.1 | (MIT OR Apache-2.0 OR Zlib) AND IJG | etemesi254/zune-image, IJG | 요청별 할당 예산·인스턴스별 Print 변환; 기본 PDF import decoder는 원래 변환 유지 |
 | js-sys | 0.3.102 | MIT OR Apache-2.0 | rustwasm/wasm-bindgen | WASM JS interop |
+| log | 0.4.35 | MIT OR Apache-2.0 | rust-lang/log | 공통 진단 기록 |
+| ml-dsa | 0.1.2 | Apache-2.0 OR MIT | RustCrypto/signatures | ML-DSA-65·hybrid 서명 |
+| ml-kem | 0.3.4 | Apache-2.0 OR MIT | RustCrypto/KEMs | ML-KEM-768 공개키 봉인 |
 | office_oxide | 0.1.9 | MIT OR Apache-2.0 | yfedoseev/office_oxide | `pdf-import` optional 호환성 제약; PDF 전이 의존성 |
 | paste | 1.0.15 | MIT OR Apache-2.0 | dtolnay/paste | 매크로 보조 |
 | pbkdf2 | 0.13.0 | MIT OR Apache-2.0 | RustCrypto/password-hashes | HWPX 키 파생 |
@@ -73,18 +76,28 @@ This software is based in part on the work of the Independent JPEG Group.
 | subsetter | 0.2.6 | MIT OR Apache-2.0 | typst/subsetter | 폰트 subset |
 | rhwp-jpeg-encoder | 0.7.1-rhwp.1 (upstream 0.7.1) | (MIT OR Apache-2.0) AND IJG | vstroebel/jpeg-encoder, rhwp 보정 | Print JPEG의 성분 순서·채널별 sampling·정수 DCT/YCbCr 전달. 원본 및 패치 고지 유지 |
 | rhwp-svg2pdf | 0.13.0-rhwp.1 (upstream 0.13.0) | MIT OR Apache-2.0 | typst/svg2pdf, rhwp 보정 | SVG → PDF. 원저작자·패치 고지 유지 |
-| svgtypes | 0.16.1 | Apache-2.0 OR MIT | linebender/svgtypes | SVG 값 파싱 |
+| svgtypes | 0.16.2 | Apache-2.0 OR MIT | linebender/svgtypes | SVG 값 파싱 |
 | ttf-parser | 0.25.1 | MIT OR Apache-2.0 | harfbuzz/ttf-parser | 폰트 파싱 |
-| unicode-properties | 0.1.4 | MIT OR Apache-2.0 | unicode-rs/unicode-properties | 유니코드 문자 분류 |
+| unicode-properties | 0.1.5 | (MIT OR Apache-2.0) AND Unicode-3.0 | unicode-rs/unicode-properties | 유니코드 문자 분류·데이터; Unicode 고지는 `assets/licenses/Unicode-3.0.txt` |
 | unicode-bidi | 0.3.18 | MIT OR Apache-2.0 | servo/unicode-bidi | 텍스트 표시 방향과 논리 구간의 시각 원점 |
 | unicode-bidi-mirroring | 0.4.0 | MIT OR Apache-2.0 | https://github.com/RazrFalcon/unicode-bidi-mirroring |
 | unicode-segmentation | 1.13.3 | MIT OR Apache-2.0 | unicode-rs/unicode-segmentation | grapheme/word segmentation |
 | unicode-width | 0.2.2 | MIT OR Apache-2.0 | unicode-rs/unicode-width | 문자 폭 계산 |
+| ureq | 3.5.1 | MIT OR Apache-2.0 | algesten/ureq | Native 공개 웹폰트 HTTPS 다운로드 |
 | usvg | 0.45.1 / 0.47.0 | Apache-2.0 OR MIT | linebender/resvg | Native SVG 파싱 / 공통 WMF surface의 resvg 파싱 |
 | wasm-bindgen | 0.2.125 | MIT OR Apache-2.0 | rustwasm/wasm-bindgen | WASM binding |
 | wasm-bindgen-test | 0.3.75 | MIT OR Apache-2.0 | rustwasm/wasm-bindgen | WASM 테스트 |
 | web-sys | 0.3.102 | MIT OR Apache-2.0 | rustwasm/wasm-bindgen | Web API binding |
-| zip | 8.6.0 | MIT | zip-rs/zip2 | HWPX ZIP 처리 |
+| zip | 9.4.0 | MIT | zip-rs/zip2 | HWPX ZIP 처리 |
+
+2026-11-09의 Dependabot #8811–#8829 검토에서 함께 교체된 전이 의존성은 다음과 같다.
+버전·라이선스는 실제 registry archive와 `Cargo.lock`을 대조했다.
+
+| 크레이트 | 버전 | 라이선스 | 용도 |
+| --- | --- | --- | --- |
+| ctutils | 0.4.8 | Apache-2.0 OR MIT | 암호 처리의 상수 시간 연산 보조 |
+| module-lattice | 0.2.4 | Apache-2.0 OR MIT | ML-KEM·ML-DSA 격자 연산 |
+| ureq-proto | 0.7.1 | MIT OR Apache-2.0 | ureq HTTP 프로토콜 처리 |
 
 ### PDF 코덱의 내부 보정판 (#8183·#8174)
 
@@ -324,12 +337,13 @@ USE THE FONT SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.
 |--------|-----------|---------|------|
 | canvaskit-wasm | 0.42.0 | BSD-3-Clause | CanvasKit 렌더링 backend |
 | @noble/hashes | 2.4.0 | MIT | 렌더 리소스 키와 문서 digest |
+| @anthropic-ai/sdk | 1.6.0 | Apache-2.0 | 사용자 키 기반 Claude API·SSE |
 | @types/chrome | 0.2.5 | MIT | Chrome API 타입 |
 | pixelmatch | 7.2.0 | ISC | 시각 diff 픽셀 비교 |
 | pngjs | 7.0.0 | MIT | 시각 diff PNG 처리 |
 | puppeteer-core | 25.5.0 | Apache-2.0 | E2E 테스트 / CDP 연결 |
 | typescript | 7.0.2 | Apache-2.0 | TypeScript 컴파일 |
-| vite | 8.2.1 | MIT | 개발 서버 + 빌드 |
+| vite | 8.3.6 | MIT | 개발 서버 + 빌드 |
 | vite-plugin-pwa | 1.3.0 | MIT | PWA 빌드 보조 |
 | workbox-window | 7.4.1 | MIT | Service worker runtime 보조 |
 
@@ -338,7 +352,7 @@ USE THE FONT SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.
 | 패키지 | Lock 버전 | 라이선스 | 용도 |
 |--------|-----------|---------|------|
 | typescript | 7.0.2 | Apache-2.0 | TypeScript 컴파일 |
-| vite | 8.2.1 | MIT | 확장 번들 빌드 |
+| vite | 8.3.6 | MIT | 확장 번들 빌드 |
 
 ### rhwp-vscode
 
@@ -352,7 +366,7 @@ USE THE FONT SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.
 | ts-loader | 9.6.2 | MIT | Webpack TypeScript 로더 |
 | typescript | 6.0.2 | Apache-2.0 | TypeScript 컴파일 |
 | webpack | 5.109.2 | MIT | 번들러 |
-| webpack-cli | 7.2.2 | MIT | Webpack CLI |
+| webpack-cli | 7.3.1 | MIT | Webpack CLI |
 | @noble/hashes | 2.4.0 | MIT | 문서 digest |
 | canvaskit-wasm | 0.42.0 | BSD-3-Clause | 자동 선택 CanvasKit backend |
 
