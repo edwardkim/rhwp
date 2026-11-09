@@ -13176,13 +13176,21 @@ pub fn map_pua_bullet_char(ch: char) -> char {
         0x75 => '\u{25C6}',  // ◆ Black diamond
         0x76 => '\u{2756}',  // ❖ Black diamond minus white X
         0x77 => '\u{2B25}',  // ⬥ Black medium diamond
+        // 원문자 (0x80~0x95). MS 워드에서 온 ①②③ 이 이 대역으로 저장된다.
+        // 웹한글기안기 인쇄는 Haan Wings 의 같은 코드로 ⓪ ①..⑩ ⓿ ❶..❿ 를 그린다.
+        0x80 => '\u{24EA}', // ⓪ Circled digit zero
+        0x81..=0x8A => char::from_u32(0x2460 + (w as u32 - 0x81)).unwrap_or(ch), // ①..⑩
+        0x8B => '\u{24FF}', // ⓿ Negative circled digit zero
+        0x8C..=0x95 => char::from_u32(0x2776 + (w as u32 - 0x8C)).unwrap_or(ch), // ❶..❿
         // 체크/별/점 (0x9E~0xAF)
         0x9E => '\u{00B7}', // · Middle dot
         0x9F => '\u{2022}', // • Bullet
         // [Task #509] 0xA0 → · U+00B7 (Middle dot) — 한컴 PDF 정답지 시각 정합.
         // ▪ U+25AA (Black small square) 영역 아님 (synam-001 사용 영역).
         0xA0 => '\u{00B7}', // · Middle dot
-        0xA1 => '\u{26AA}', // ⚪ Medium white circle
+        // 웹한글기안기 인쇄의 Haan Wings 0xA1 은 ○ 와 같은 크기의 흰 원이다.
+        // ⚪(U+26AA)는 대체 글꼴에서 작은 점처럼 보여 점검표 표시가 달라진다.
+        0xA1 => '\u{25CB}', // ○ White circle
         0xA2 => '\u{25CB}', // ○ (Heavy large circle → 근사값)
         0xA3 => '\u{25CB}', // ○ (Very heavy white circle → 근사값)
         0xA4 => '\u{25C9}', // ◉ Fisheye
