@@ -779,6 +779,18 @@
       ]
     },
     {
+      "repositoryPath": "tests/fixtures/fonts/RHWPHostFixture-Preferred.ttf",
+      "sha256": "3b94fcb46b425f2f2c3b4bbba2abdf352b3f5a4d5187a4574d7182b4f75887f6",
+      "license": "MIT",
+      "licenseFiles": [
+        "LICENSE",
+        "tests/fixtures/fonts/RHWPHostFixture.LICENSE.md"
+      ],
+      "copyrightNotices": [
+        "Copyright (c) 2025-2026 Edward Kim"
+      ]
+    },
+    {
       "repositoryPath": "tests/fixtures/fonts/RHWPHostFixture-Regular.ttf",
       "sha256": "44479fbcc1e0cb20f97e13405a1fcb26b29fbcdf445ca52b41f6f645b3bd6aa5",
       "license": "MIT",
