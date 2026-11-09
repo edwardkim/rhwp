@@ -102,3 +102,52 @@ Native 편람 `--handbook-gate` 383쪽은 passed, 최저 99.96%, 기준 대비 r
 Native 공식 3종 합계는 4,077 PASS다. 집중 실행에서 다른 테스트가 필터로 제외된 수는 위 전체 회귀의 기존 skip과 구분한다. 개인 글꼴 유무로 새 검사를 건너뛰지 않았다. 전체 회귀는 컴파일 포함 1,141.170초, 실제 실행 679.271초이며 Native 3종은 각각 353.910·293.942·12.234초였다. 이 수치는 검증 실행 기록이며 일반 사용자 성능 보장을 뜻하지 않는다.
 
 2026-11-09 KST 최종 읽기 전용 API 점검에서 devel과 두 원 PR head는 접수 SHA 그대로였고 본인 계정의 열린 PR은 0건이었다. #8791은 **메인터너 보정 후 수용 가능**, #8789는 **명시적으로 승인된 기존 차이 예외 범위에서 승인**이다. 로컬 준비 후보 `2bc760dffe58435bf3411d8e611ebf9766923e36` 뒤 변경은 이 결정의 문서 반영뿐이다. [원격 처리안](remote-action-plan.md)의 새 head CI·self-review·merge는 실제 결과로 별도 기록한다.
+
+## 원격 확정
+
+통합 [PR #8851](https://github.com/edwardkim/rhwp/pull/8851)을 head `9fa72c6036`에서 CI·self-review 후 merge `50b6098853afdb45625e5d505dc3b2070998fc46`으로 수용했다. 원 PR 2건은 모두 자동 MERGED다. [최종 검토](../../archives/pr_8851_review.md)와 [원격 결과·후속 게이트](remote-completion.md)를 따른다. 기존 시각 차이 예외의 범위를 확대하지 않았다.
+
+## 실제 렌더 명령
+
+최종 Native producer는 source `d2137e0ccf7f28a1bcfc294cad669de923e596ac`에서 `cargo build --locked --profile release-test --features native-skia --lib --bin rhwp --target-dir /home/edward/mygithub/rhwp/target/pr-review`로 빌드했다. WASM 컨테이너의 실제 내부 명령은 `scripts/wasm-pack-locked.sh --release --target web --out-dir /review-output/build/corrected-pkg --out-name rhwp`이며, 위 Rust 1.93.1·codegen-units 16·공유 target·실제 source 절대 경로 mount를 사용했다.
+
+아래는 최종 sample16 전쪽 실행 receipt의 argv다. 다른 두 원본은 위 원본 표의 key·입력·독립 PDF로 `--file-target` 세 값을 바꿔 같은 조건에서 전쪽 실행했다. `VISUAL_SWEEP_CHROME`은 Chromium 152.0.7946.0을 명시했다. 임시 binary/package는 종료 정리 대상이며 재현할 때 위 source·profile·hash에 해당하는 producer를 먼저 준비한다.
+
+### native
+
+```bash
+VISUAL_SWEEP_CHROME=/home/edward/.cache/puppeteer/chromium/linux-1660786/chrome-linux/chrome \
+/home/edward/mygithub/rhwp/venv/bin/python /home/edward/mygithub/rhwp/scripts/visual_sweep.py \
+  --silhouette-only \
+  --file-target sample16 /home/edward/mygithub/rhwp/samples/hwp3-sample16.hwp /home/edward/mygithub/rhwp/pdf/hwp3-sample16-current-print-20261017-2020.pdf \
+  --compat 2022 \
+  --dpi 96 \
+  --page-workers 3 \
+  --rhwp-bin /home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261109/build/final-rhwp \
+  --out /home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261109/visual/corrected/native \
+  --font-path /home/edward/mygithub/ttfs/hft \
+  --font-path /home/edward/mygithub/ttfs/hwp/HBATANG.TTF \
+  --font-path /home/edward/mygithub/ttfs/hwp/HDOTUM.TTF \
+  --font-path /home/edward/mygithub/ttfs/windows/gulim.ttc
+```
+
+### wasm
+
+```bash
+VISUAL_SWEEP_CHROME=/home/edward/.cache/puppeteer/chromium/linux-1660786/chrome-linux/chrome \
+/home/edward/mygithub/rhwp/venv/bin/python /home/edward/mygithub/rhwp/scripts/visual_sweep.py \
+  --silhouette-only \
+  --file-target sample16 /home/edward/mygithub/rhwp/samples/hwp3-sample16.hwp /home/edward/mygithub/rhwp/pdf/hwp3-sample16-current-print-20261017-2020.pdf \
+  --compat 2022 \
+  --dpi 96 \
+  --page-workers 3 \
+  --rhwp-bin /home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261109/build/corrected-rhwp \
+  --out /home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261109/visual/corrected/wasm \
+  --wasm-pkg /home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261109/build/corrected-pkg \
+  --font-path /home/edward/mygithub/ttfs/hft \
+  --font-path /home/edward/mygithub/ttfs/hwp/HBATANG.TTF \
+  --font-path /home/edward/mygithub/ttfs/hwp/HDOTUM.TTF \
+  --font-path /home/edward/mygithub/ttfs/windows/gulim.ttc
+```
+
+WASM 명령의 `corrected-rhwp`는 glyph/note 메타데이터 보조 CLI다. 실제 paint는 표에 hash를 기록한 최적화 WASM을 Chromium Canvas2D에서 수행한다. Native 전쪽 측정의 producer는 다시 빌드한 `final-rhwp`다. Native·WASM의 실제 출력 경로와 보조 CLI를 구분한다.

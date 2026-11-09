@@ -18,3 +18,7 @@
 5. PR별 최종 판정·남은 범위·댓글 계획과 필요한 최소 TSV·대표 PNG·Markdown 기록을 보존한다. 생성 JSON·로그·원시 raster는 output의 진단 자료로 두고 커밋하지 않는다. 수용 가능한 후보의 실제 원격 처리안을 준비한 뒤 별도 승인을 요청한다.
 
 제출된 두 Rust 테스트의 첫머리에는 현행 규칙의 Native/fresh WASM 실제 시각 수치·증거가 없으며, 기존 테스트 통과만으로 이를 보완한 것으로 기록하지 않는다.
+
+## 원격 확정
+
+2026-11-09 KST, 통합 [PR #8851](https://github.com/edwardkim/rhwp/pull/8851)의 head `9fa72c60365f6b1f3f168223e7ac56d2fa4b6402`에서 CI·self-review를 완료하고 merge `50b6098853afdb45625e5d505dc3b2070998fc46`으로 통합했다. 원 PR #8789·#8791은 모두 자동 MERGED로 확인했다. [통합 최종 검토](pr_8851_review.md)와 [원격 확정·후속 게이트](../assets/chrisryugj-20261109/remote-completion.md)를 따른다. 원 fork branch는 삭제하지 않는다.

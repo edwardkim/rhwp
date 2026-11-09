@@ -9,7 +9,7 @@
 - [원 PR #8789](https://github.com/edwardkim/rhwp/pull/8789), chrisryugj, CONTRIBUTOR, devel 대상 Ready. 첫 외부 기여자 경로는 비해당이다.
 - reviewer edwardkim 지정·API 재확인 뒤 상세 검토·fetch를 진행했다. 원 head `3c2c5fdf1bea13912b2eefaf4008ea974a2b4fd9`와 fork branch를 보존했다. 원 head CI 36개는 모두 성공이며 이번 새 보정 head의 CI 성공으로 대체하지 않는다.
 - 실제 검증 기준은 최신 devel `b768bee1c4c0023087687f79a0a95f12108743e9`다. 개별/누적 merge가 충돌하지 않았고 2026-11-09 API 재조회에서 devel과 원 head 각각의 SHA가 접수 때와 같았다. closing issue는 없다.
-- [공통 계획](chrisryugj_20261109_review_plan.md), [승인받은 보정안과 실제 결과](chrisryugj_20261109_review_impl.md), [전쪽 TSV·producer·검증 원장](assets/chrisryugj-20261109/README.md). 원 기여는 merge commit으로 보존했다.
+- [공통 계획](chrisryugj_20261109_review_plan.md), [승인받은 보정안과 실제 결과](chrisryugj_20261109_review_impl.md), [전쪽 TSV·producer·검증 원장](../assets/chrisryugj-20261109/README.md). 원 기여는 merge commit으로 보존했다.
 
 ## 최신 base에서도 남은 원 문제와 원 해결 이력
 
@@ -36,14 +36,18 @@
 
 6·10·13·23·25·29·35·45쪽의 기호·간격을 직접 확대했다. 화살표·선·따옴표·중간점·책괄호의 누락이 복구됐다. Native 긴 줄표의 잉크가 뒤 글자와 겹치는 한계도 관측했다. **기존 독립 한컴 HWPX를 수정 전 base Native renderer로 열어도 같은 문제가 재현**된다. 이 경로는 새 HWP3 decode를 사용하지 않으므로 PR의 잘못된 Unicode 매핑으로 분류하지 않는다.
 
-[표시 차이와 독립 base 대조](assets/chrisryugj-20261109/so-sueop-visual-hold.md), [긴 줄표](assets/chrisryugj-20261109/symbols-p23.png), [독립 HWPX의 base renderer](assets/chrisryugj-20261109/base-independent-dash-control.png), [기존 열 흐름](assets/chrisryugj-20261109/legacy-p45.png). 실제 glyph cmap과 원/대체 프로그램을 공급해 본 결과를 기록했으며 자동 글꼴 예외를 선언하지 않았다.
+[표시 차이와 독립 base 대조](../assets/chrisryugj-20261109/so-sueop-visual-hold.md), [긴 줄표](../assets/chrisryugj-20261109/symbols-p23.png), [독립 HWPX의 base renderer](../assets/chrisryugj-20261109/base-independent-dash-control.png), [기존 열 흐름](../assets/chrisryugj-20261109/legacy-p45.png). 실제 glyph cmap과 원/대체 프로그램을 공급해 본 결과를 기록했으며 자동 글꼴 예외를 선언하지 않았다.
 
 ## 원격 처리와 댓글 계획
 
-메인테이너가 2026-11-09 KST “기존 차이 한정 예외·2건 원격 처리 승인”으로 결정했다. 범위는 통합 branch push·Open PR → 새 head CI 성공·self-review·merge → 원 PR 2건 완료 반영·감사 댓글·mydocs 운영 기록 devel push·동기화·정리다. 새 회귀·누락·필수 검사 실패는 예외가 아니다. 원 기여 SHA를 보존하고 source 복원 사실과 남은 표시 범위를 원 PR에 분명히 알린다. [원격 처리안](assets/chrisryugj-20261109/remote-action-plan.md)과 [개별 댓글 초안](assets/chrisryugj-20261109/merge-comment-drafts.md)을 따른다. 실제 원격 결과는 후속 기록에서 확정한다.
+메인테이너가 2026-11-09 KST “기존 차이 한정 예외·2건 원격 처리 승인”으로 결정했다. 범위는 통합 branch push·Open PR → 새 head CI 성공·self-review·merge → 원 PR 2건 완료 반영·감사 댓글·mydocs 운영 기록 devel push·동기화·정리다. 새 회귀·누락·필수 검사 실패는 예외가 아니다. 원 기여 SHA를 보존하고 source 복원 사실과 남은 표시 범위를 원 PR에 분명히 알린다. [원격 처리안](../assets/chrisryugj-20261109/remote-action-plan.md)과 [개별 댓글 초안](../assets/chrisryugj-20261109/merge-comment-drafts.md)을 따른다. 실제 원격 결과는 후속 기록에서 확정한다.
 
 ## 공통 검토와 필수 로컬 검사
 
-조판 원칙 준수 검토는 적용 대상이다. 이번 변경은 HWP3 source 문자 해석을 복원하며 새 좌표·높이·분할 예외를 도입하지 않는다. parser → IR의 실제 문자 → Native/WASM HWPX 저장 및 표시를 대조했다. 새로운 px/golden 기대값으로 기존 미달을 고정하지 않았다. 원본 HWP·독립 Print PDF·독립 변환 HWPX는 검토 commit에 이미 추적된 파일을 재사용하고 실제 SHA-256과 전쪽 증거를 [원장](assets/chrisryugj-20261109/README.md)에 기록했다.
+조판 원칙 준수 검토는 적용 대상이다. 이번 변경은 HWP3 source 문자 해석을 복원하며 새 좌표·높이·분할 예외를 도입하지 않는다. parser → IR의 실제 문자 → Native/WASM HWPX 저장 및 표시를 대조했다. 새로운 px/golden 기대값으로 기존 미달을 고정하지 않았다. 원본 HWP·독립 Print PDF·독립 변환 HWPX는 검토 commit에 이미 추적된 파일을 재사용하고 실제 SHA-256과 전쪽 증거를 [원장](../assets/chrisryugj-20261109/README.md)에 기록했다.
 
 최종 테스트 source `581d22855f60af2de5fed3208949f7dd81258a0a`에서 전체 회귀 13,013 PASS·Native 공식 4,077 PASS·집중 8 PASS와 적용 Rust lint/build/suite 정책이 통과했다. Native 편람 383쪽도 최저 99.96%·기준 대비 회귀 0으로 통과했다. 제품 source는 실제 시각 producer와 같으며 이후 변경은 테스트·문서 보강이다. 기존 원 head의 녹색 CI와 새 통합 후보의 로컬 검증을 구분하고, 원격 승인 후 새 head CI·self-review를 거쳐야 한다.
+
+## 원격 확정
+
+2026-11-09 KST, 통합 [PR #8851](https://github.com/edwardkim/rhwp/pull/8851)의 head `9fa72c60365f6b1f3f168223e7ac56d2fa4b6402`에서 CI·self-review를 완료하고 merge `50b6098853afdb45625e5d505dc3b2070998fc46`으로 통합했다. 원 PR #8789·#8791은 모두 자동 MERGED로 확인했다. [통합 최종 검토](pr_8851_review.md)와 [원격 확정·후속 게이트](../assets/chrisryugj-20261109/remote-completion.md)를 따른다. 원 fork branch는 삭제하지 않는다.

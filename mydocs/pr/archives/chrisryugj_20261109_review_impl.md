@@ -9,7 +9,7 @@
 
 ## 실행으로 재현한 새 누락
 
-HWP3 공식 설명본 [27-byte 셀 구조](../tech/한글문서파일구조3.0.md#106-표텍스트박스수식버튼하이퍼텍스트-10)에 따라 셀 위치·크기, 표 정보의 word 셀 개수, 각 셀의 고유 ASCII 문단을 넣은 합성 입력이다. 실제 한컴 생성본·Print 시각 증거와 구분한다. 각 셀은 서로 겹치지 않는 같은 2열 격자이고 모든 입력은 두 parser에서 정상 열렸다. Native binary source·hash를 고정해 같은 입력을 비교했다.
+HWP3 공식 설명본 [27-byte 셀 구조](../../tech/한글문서파일구조3.0.md#106-표텍스트박스수식버튼하이퍼텍스트-10)에 따라 셀 위치·크기, 표 정보의 word 셀 개수, 각 셀의 고유 ASCII 문단을 넣은 합성 입력이다. 실제 한컴 생성본·Print 시각 증거와 구분한다. 각 셀은 서로 겹치지 않는 같은 2열 격자이고 모든 입력은 두 parser에서 정상 열렸다. Native binary source·hash를 고정해 같은 입력을 비교했다.
 
 | 입력 | base 셀 수 | 후보 셀 수 | 후보에서 사라진 내용 |
 | --- | ---: | ---: | --- |
@@ -46,6 +46,10 @@ Native 선행 비교에서 sample16은 64쪽 최저 98.53716→99.57001%, cell-o
 
 2026-11-09 KST, 위 선행 결과 뒤의 필수 검증을 완료했다. 최종 테스트 source `581d22855f60af2de5fed3208949f7dd81258a0a`에서 전체 회귀 13,013 PASS, Native 공식 3종 4,077 PASS, 집중 8 PASS와 적용 lint/build/suite 정책이 통과했다. 최적화 fresh WASM의 실제 Chromium에서도 큰 경계 입력 8개 전체의 내용·셀 주소·스팬 보존을 확인했다. 원래 네 표의 모든 셀은 Native/WASM 저장 XML이 독립 변환본과 같다.
 
-원 3문서 전 111쪽씩의 base/후보 Native/fresh WASM을 측정하고 변경 영역을 직접 확대 판독했다. sample16 64쪽은 Native 최저 99.57001%·WASM 99.62920%, cell-order는 양쪽 100%이며 페이지별 하락은 없다. 편람 Native 383쪽도 최저 99.96%·기준 대비 회귀 0으로 통과했다. [최종 원장·명령·producer·TSV·대표 PNG](assets/chrisryugj-20261109/README.md)에 실제 결과를 보존했다.
+원 3문서 전 111쪽씩의 base/후보 Native/fresh WASM을 측정하고 변경 영역을 직접 확대 판독했다. sample16 64쪽은 Native 최저 99.57001%·WASM 99.62920%, cell-order는 양쪽 100%이며 페이지별 하락은 없다. 편람 Native 383쪽도 최저 99.96%·기준 대비 회귀 0으로 통과했다. [최종 원장·명령·producer·TSV·대표 PNG](../assets/chrisryugj-20261109/README.md)에 실제 결과를 보존했다.
 
-SO-SUEOP은 Native 최저 61.69802%·WASM 61.97235%의 기존 차이가 남았다. 긴 줄표 간격은 기존 독립 한컴 HWPX를 base Native renderer로 열어도 재현해 새 매핑 회귀와 구분했다. [분리 대조와 남은 범위](assets/chrisryugj-20261109/so-sueop-visual-hold.md)를 바탕으로 기존 차이에 한정한 명시적 수용 결정이 필요하다. #8791의 셀 손실은 이 예외 대상이 아니며 실제 보정·재검증을 완료했다. 원격 조치 전 [개별 최종 판정](pr_8789_review.md)과 [원격 처리안](assets/chrisryugj-20261109/remote-action-plan.md)의 별도 승인 조건을 따른다.
+SO-SUEOP은 Native 최저 61.69802%·WASM 61.97235%의 기존 차이가 남았다. 긴 줄표 간격은 기존 독립 한컴 HWPX를 base Native renderer로 열어도 재현해 새 매핑 회귀와 구분했다. [분리 대조와 남은 범위](../assets/chrisryugj-20261109/so-sueop-visual-hold.md)를 바탕으로 기존 차이에 한정한 명시적 수용 결정이 필요하다. #8791의 셀 손실은 이 예외 대상이 아니며 실제 보정·재검증을 완료했다. 원격 조치 전 [개별 최종 판정](pr_8789_review.md)과 [원격 처리안](../assets/chrisryugj-20261109/remote-action-plan.md)의 별도 승인 조건을 따른다.
+
+## 원격 확정
+
+2026-11-09 KST, 통합 [PR #8851](https://github.com/edwardkim/rhwp/pull/8851)의 head `9fa72c60365f6b1f3f168223e7ac56d2fa4b6402`에서 CI·self-review를 완료하고 merge `50b6098853afdb45625e5d505dc3b2070998fc46`으로 통합했다. 원 PR #8789·#8791은 모두 자동 MERGED로 확인했다. [통합 최종 검토](pr_8851_review.md)와 [원격 확정·후속 게이트](../assets/chrisryugj-20261109/remote-completion.md)를 따른다. 원 fork branch는 삭제하지 않는다.
