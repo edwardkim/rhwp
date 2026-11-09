@@ -22,7 +22,8 @@ dispose는 호출 호스트가 각각 소유한다.
 
 검증: Flutter 3.47.9의 controller/transport 대역과 실제 widget 수명에서 명시적 교체,
 미확정 retirement 거절, 문서 오류 분리, factory 실패/다른 문서 거절, 동시 close의
-7개 검사가 non-skip으로 통과했고 package analyze 0을 확인했다. 실제 OS 장치 상실·
+8개 검사가 non-skip으로 통과했고 package/example analyze 0을 확인했다.
+다중 페이지·문서 수명 suite를 함께 실행한 43개 검사도 통과했다. 실제 OS 장치 상실·
 물리 GPU 복구를 실행한 결과는 아니다. mount 중 controller 알림을 받는 session은
 ancestor rebuild 알림만 frame 뒤로 합치며 실제 texture의 즉시 cover는 유지한다.
 
@@ -30,3 +31,8 @@ ancestor rebuild 알림만 frame 뒤로 합치며 실제 texture의 즉시 cover
 retirement를 확인하면 다음 close가 현재 상태를 다시 판정해 true를 반환한다. 이때
 Native close를 재전송하거나 consumer 완료를 추정하지 않는다. 이 반례는 수정 전
 실패·수정 후 통과했으며 Native close 호출이 한 번인 것도 검사한다.
+
+참조 example의 `GPU 다시 연결` 버튼은 같은 document에 session factory로 새
+controller를 연결한다. 복구 중 입력과 문서 동작을 잠시 막고, 문서 교체 뒤
+확정 종료된 viewport는 CPU 경로를 사용하며 명시적 복구를 기다린다. 여러 페이지의
+새 capture가 서로 다른 snapshot ID와 새 view generation을 사용하는지 검사한다.

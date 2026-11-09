@@ -15,7 +15,10 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
   final _path = TextEditingController();
   final _pages = NativePagedViewportController();
   NativeDocument? _document;
-  NativeTextureController? _texture;
+  NativeGpuSession? _gpuSession;
+  bool _gpuDetached = false;
+  NativeTextureController? get _texture =>
+      _gpuDetached ? null : _gpuSession?.controller;
   NativeDocumentLifecycle? _lifecycle;
   NativeEditorController? _editor;
   String? _error;
@@ -31,9 +34,11 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
     if (_document != null) return;
     _lifecycle?.removeListener(_lifecycleChanged);
     _lifecycle?.dispose();
-    _texture?.dispose();
+    _gpuSession?.removeListener(_gpuChanged);
+    _gpuSession?.dispose();
+    _gpuSession = null;
+    _gpuDetached = false;
     _lifecycle = null;
-    _texture = null;
     _editor = null;
     _pages.scrollTo(0, horizontal: 0);
     _pages.setZoom(1);
@@ -43,6 +48,7 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
     });
     NativeDocument? document;
     NativeTextureController? texture;
+    NativeTextureController Function()? createTexture;
     try {
       final transport = await NativeOwnerTransport.connect(
         dispatcherLibrary: const String.fromEnvironment('RHWP_OWNER_LIBRARY'),
@@ -59,8 +65,9 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
             nativeLibrary: transport.nativeLibraryPath,
           );
           if (presentation.available) {
-            texture = NativeTextureController(
-              document: document,
+            final owner = document;
+            createTexture = () => NativeTextureController(
+              document: owner,
               presentation: presentation,
               platform: platform,
               useTileGroups:
@@ -73,6 +80,7 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
                   platform == NativeTexturePlatform.windows &&
                   const bool.fromEnvironment('RHWP_GPU_CONTINUOUS'),
             );
+            texture = createTexture();
           }
         }
       }
@@ -80,6 +88,13 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
         await _closeDocument(document, texture);
         return;
       }
+      final gpu = texture == null
+          ? null
+          : NativeGpuSession(
+              initialController: texture,
+              createController: createTexture!,
+            );
+      gpu?.addListener(_gpuChanged);
       final owner = document;
       final lifecycle = NativeDocumentLifecycle(
         document: owner,
@@ -110,7 +125,8 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
       setState(() {
         _lifecycle = lifecycle;
         _document = document;
-        _texture = texture;
+        _gpuSession = gpu;
+        _gpuDetached = false;
         _busy = false;
       });
     } catch (error) {
@@ -133,6 +149,34 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
     } finally {
       texture?.dispose();
       await document?.dispose();
+    }
+  }
+
+  void _gpuChanged() {
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _recoverGpu() async {
+    final gpu = _gpuSession;
+    if (gpu == null || _busy || _lifecycle?.isBusy == true) return;
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      final replaced = await gpu.recover();
+      if (mounted) {
+        setState(() {
+          if (replaced) _gpuDetached = false;
+          if (!replaced && gpu.recoveryDiagnostic != null) {
+            _error = '${gpu.recoveryDiagnostic}';
+          }
+        });
+      }
+    } catch (error) {
+      if (mounted) setState(() => _error = '$error');
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 
@@ -243,8 +287,7 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
           !texture!.retirementPending) {
         // A later checkpoint failure can keep the document after its old GPU
         // viewport has already retired. Continue with the CPU reference view.
-        setState(() => _texture = null);
-        WidgetsBinding.instance.addPostFrameCallback((_) => texture.dispose());
+        setState(() => _gpuDetached = true);
       }
     }
   }
@@ -350,6 +393,14 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
               ),
             ],
           ),
+        if (_gpuSession != null)
+          TextButton(
+            onPressed:
+                _busy || _lifecycle?.isBusy == true || !_gpuSession!.canRecover
+                ? null
+                : _recoverGpu,
+            child: const Text('GPU 다시 연결'),
+          ),
         if (_document?.info?.isDirty == true) const Text('저장하지 않은 변경 사항'),
         if (_busy || _lifecycle?.isBusy == true)
           const LinearProgressIndicator(),
@@ -360,7 +411,9 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
           child: _document == null
               ? const SizedBox.shrink()
               : AbsorbPointer(
-                  absorbing: _lifecycle?.isBusy == true,
+                  absorbing:
+                      _lifecycle?.isBusy == true ||
+                      _gpuSession?.recovering == true,
                   child: NativePagedDocumentView(
                     document: _document!,
                     controller: _pages,
@@ -386,7 +439,19 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
     _lifecycle?.removeListener(_lifecycleChanged);
     _lifecycle?.dispose();
     final document = _document;
-    unawaited(_closeDocument(document, _texture));
+    final gpu = _gpuSession;
+    gpu?.removeListener(_gpuChanged);
+    unawaited(() async {
+      if (gpu != null) {
+        final retired = await gpu.close();
+        if (!retired) {
+          // Preserve an owner with uncertain native cleanup.
+          return;
+        }
+        gpu.dispose();
+      }
+      await document?.dispose();
+    }());
     super.dispose();
   }
 }

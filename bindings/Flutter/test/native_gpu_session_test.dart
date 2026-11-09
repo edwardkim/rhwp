@@ -10,6 +10,9 @@ import 'package:rhwp_native_reference/src/native_texture_view.dart';
 import 'package:rhwp_native_reference/src/native_viewport.dart';
 
 import 'support/fake_gpu_presentation.dart';
+import 'native_texture_multipage_test.dart'
+    as multi
+    show MultiTransport, layout;
 
 Future<void> until(WidgetTester tester, bool Function() ready) async {
   for (var i = 0; i < 100 && !ready(); i++) {
@@ -54,6 +57,75 @@ Widget view(NativeGpuSession session) => MaterialApp(
 );
 
 void main() {
+  testWidgets(
+    'multi-page recovery keeps one document and retires all old IDs',
+    (tester) async {
+      final transport = multi.MultiTransport();
+      final document = await NativeDocument.connect(transport);
+      final opening = document.newDocument();
+      await until(tester, () => document.info != null);
+      await opening;
+      final metadata = FakePresentation();
+      final plugin = FakeTexturePlugin(NativeTexturePlatform.linux)..install();
+      NativeTextureController make() => NativeTextureController(
+        document: document,
+        presentation: metadata,
+        platform: NativeTexturePlatform.linux,
+        pollInterval: const Duration(milliseconds: 10),
+      );
+      final session = NativeGpuSession(
+        initialController: make(),
+        createController: () {
+          plugin.closed = false;
+          plugin.statusError = null;
+          return make();
+        },
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ListenableBuilder(
+            listenable: session,
+            builder: (context, _) => NativeTextureView.document(
+              controller: session.controller,
+              documentViewport: multi.layout(),
+              cpuFallback: (_) => const Text('CPU fallback'),
+            ),
+          ),
+        ),
+      );
+      await until(tester, () => session.controller.canDisplay);
+      final firstIds = plugin.acceptedIds.toSet();
+      expect(firstIds, hasLength(2));
+      final firstStamp = Map.from(plugin.acceptedStamp!);
+      plugin.statusError = 'deviceLost';
+      await until(
+        tester,
+        () => session.controller.phase == NativeTexturePhase.fallback,
+      );
+      final replacing = session.recover();
+      await tester.pump(const Duration(milliseconds: 40));
+      expect(await replacing, isTrue);
+      await until(tester, () => session.controller.canDisplay);
+      expect(plugin.releasedByPlugin, containsAll(firstIds));
+      expect(plugin.acceptedIds, hasLength(2));
+      expect(plugin.acceptedIds.toSet().intersection(firstIds), isEmpty);
+      expect(
+        plugin.acceptedStamp!['viewGeneration'] as int,
+        greaterThan(firstStamp['viewGeneration'] as int),
+      );
+      expect(transport.closes, 0);
+      expect(metadata.released.toSet().intersection(firstIds), isEmpty);
+      expect(NativeTextureController.retainedOwnedSnapshots, 0);
+      final closing = session.close();
+      await tester.pump(const Duration(milliseconds: 40));
+      expect(await closing, isTrue);
+      await tester.pumpWidget(const SizedBox.shrink());
+      session.dispose();
+      await document.dispose();
+      plugin.uninstall();
+    },
+  );
+
   testWidgets('late close confirmation permits a later successful close', (
     tester,
   ) async {
