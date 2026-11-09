@@ -1,0 +1,2356 @@
+{
+  "source_sha": "e00f9b7e26e581896fa17eaff3c8eb3f4889f9d4",
+  "sarif_sha256": "81aee8f88843e1460e68ecd51da1f4cad0c739ccd7d049541e4d19ba6fdc3f3a",
+  "results": [
+    {
+      "rule": "rust/access-invalid-pointer",
+      "message": "This operation dereferences a pointer that may be [invalid](1).\nThis operation dereferences a pointer that may be [invalid](2).",
+      "locations": [
+        {
+          "path": "vendor/rhwp-qcms/src/gtest.rs",
+          "region": {
+            "startLine": 588,
+            "startColumn": 19,
+            "endLine": 588,
+            "endColumn": 33
+          },
+          "message": null
+        }
+      ],
+      "flows": [
+        [
+          {
+            "path": "vendor/rhwp-qcms/src/c_bindings.rs",
+            "region": {
+              "startLine": 254,
+              "startColumn": 17,
+              "endLine": 254,
+              "endColumn": 27
+            },
+            "message": "null_mut(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/c_bindings.rs",
+            "region": {
+              "startLine": 250,
+              "startColumn": 26,
+              "endLine": 256,
+              "endColumn": 2
+            },
+            "message": "{ ... }"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 540,
+              "startColumn": 31,
+              "endLine": 546,
+              "endColumn": 14
+            },
+            "message": "qcms_transform_create(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 531,
+              "startColumn": 43,
+              "endLine": 531,
+              "endColumn": 73
+            },
+            "message": "...: ..."
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 535,
+              "startColumn": 30,
+              "endLine": 535,
+              "endColumn": 39
+            },
+            "message": "transform"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 531,
+              "startColumn": 32,
+              "endLine": 531,
+              "endColumn": 41
+            },
+            "message": "SelfParam [Return] [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 540,
+              "startColumn": 13,
+              "endLine": 540,
+              "endColumn": 17
+            },
+            "message": "[post] self [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 539,
+              "startColumn": 39,
+              "endLine": 539,
+              "endColumn": 48
+            },
+            "message": "SelfParam [Return] [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 636,
+              "startColumn": 21,
+              "endLine": 636,
+              "endColumn": 25
+            },
+            "message": "[post] self [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 637,
+              "startColumn": 13,
+              "endLine": 637,
+              "endColumn": 17
+            },
+            "message": "self [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 586,
+              "startColumn": 30,
+              "endLine": 586,
+              "endColumn": 39
+            },
+            "message": "SelfParam [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 588,
+              "startColumn": 19,
+              "endLine": 588,
+              "endColumn": 33
+            },
+            "message": "self.transform"
+          }
+        ],
+        [
+          {
+            "path": "vendor/rhwp-qcms/src/c_bindings.rs",
+            "region": {
+              "startLine": 254,
+              "startColumn": 17,
+              "endLine": 254,
+              "endColumn": 27
+            },
+            "message": "null_mut(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/c_bindings.rs",
+            "region": {
+              "startLine": 250,
+              "startColumn": 26,
+              "endLine": 256,
+              "endColumn": 2
+            },
+            "message": "{ ... }"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 540,
+              "startColumn": 31,
+              "endLine": 546,
+              "endColumn": 14
+            },
+            "message": "qcms_transform_create(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 531,
+              "startColumn": 43,
+              "endLine": 531,
+              "endColumn": 73
+            },
+            "message": "...: ..."
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 535,
+              "startColumn": 30,
+              "endLine": 535,
+              "endColumn": 39
+            },
+            "message": "transform"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 531,
+              "startColumn": 32,
+              "endLine": 531,
+              "endColumn": 41
+            },
+            "message": "SelfParam [Return] [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 540,
+              "startColumn": 13,
+              "endLine": 540,
+              "endColumn": 17
+            },
+            "message": "[post] self [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 539,
+              "startColumn": 39,
+              "endLine": 539,
+              "endColumn": 48
+            },
+            "message": "SelfParam [Return] [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 649,
+              "startColumn": 21,
+              "endLine": 649,
+              "endColumn": 25
+            },
+            "message": "[post] self [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 650,
+              "startColumn": 13,
+              "endLine": 650,
+              "endColumn": 17
+            },
+            "message": "self [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 586,
+              "startColumn": 30,
+              "endLine": 586,
+              "endColumn": 39
+            },
+            "message": "SelfParam [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 588,
+              "startColumn": 19,
+              "endLine": 588,
+              "endColumn": 33
+            },
+            "message": "self.transform"
+          }
+        ],
+        [
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 502,
+              "startColumn": 28,
+              "endLine": 502,
+              "endColumn": 38
+            },
+            "message": "null_mut(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 502,
+              "startColumn": 28,
+              "endLine": 502,
+              "endColumn": 38
+            },
+            "message": "null_mut(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 499,
+              "startColumn": 13,
+              "endLine": 510,
+              "endColumn": 14
+            },
+            "message": "QcmsProfileTest {...} [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 498,
+              "startColumn": 37,
+              "endLine": 511,
+              "endColumn": 10
+            },
+            "message": "{ ... } [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 739,
+              "startColumn": 26,
+              "endLine": 739,
+              "endColumn": 48
+            },
+            "message": "...::new(...) [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 739,
+              "startColumn": 17,
+              "endLine": 739,
+              "endColumn": 23
+            },
+            "message": "mut pt [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 741,
+              "startColumn": 13,
+              "endLine": 741,
+              "endColumn": 15
+            },
+            "message": "pt [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 742,
+              "startColumn": 13,
+              "endLine": 742,
+              "endColumn": 15
+            },
+            "message": "pt [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 743,
+              "startColumn": 13,
+              "endLine": 743,
+              "endColumn": 15
+            },
+            "message": "pt [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 633,
+              "startColumn": 37,
+              "endLine": 633,
+              "endColumn": 46
+            },
+            "message": "SelfParam [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 637,
+              "startColumn": 13,
+              "endLine": 637,
+              "endColumn": 17
+            },
+            "message": "self [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 586,
+              "startColumn": 30,
+              "endLine": 586,
+              "endColumn": 39
+            },
+            "message": "SelfParam [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 588,
+              "startColumn": 19,
+              "endLine": 588,
+              "endColumn": 33
+            },
+            "message": "self.transform"
+          }
+        ],
+        [
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 502,
+              "startColumn": 28,
+              "endLine": 502,
+              "endColumn": 38
+            },
+            "message": "null_mut(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 502,
+              "startColumn": 28,
+              "endLine": 502,
+              "endColumn": 38
+            },
+            "message": "null_mut(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 499,
+              "startColumn": 13,
+              "endLine": 510,
+              "endColumn": 14
+            },
+            "message": "QcmsProfileTest {...} [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 498,
+              "startColumn": 37,
+              "endLine": 511,
+              "endColumn": 10
+            },
+            "message": "{ ... } [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 786,
+              "startColumn": 26,
+              "endLine": 786,
+              "endColumn": 48
+            },
+            "message": "...::new(...) [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 786,
+              "startColumn": 17,
+              "endLine": 786,
+              "endColumn": 23
+            },
+            "message": "mut pt [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 788,
+              "startColumn": 13,
+              "endLine": 788,
+              "endColumn": 15
+            },
+            "message": "pt [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 789,
+              "startColumn": 13,
+              "endLine": 789,
+              "endColumn": 15
+            },
+            "message": "pt [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 790,
+              "startColumn": 13,
+              "endLine": 790,
+              "endColumn": 15
+            },
+            "message": "pt [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 644,
+              "startColumn": 48,
+              "endLine": 644,
+              "endColumn": 57
+            },
+            "message": "SelfParam [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 650,
+              "startColumn": 13,
+              "endLine": 650,
+              "endColumn": 17
+            },
+            "message": "self [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 586,
+              "startColumn": 30,
+              "endLine": 586,
+              "endColumn": 39
+            },
+            "message": "SelfParam [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 588,
+              "startColumn": 19,
+              "endLine": 588,
+              "endColumn": 33
+            },
+            "message": "self.transform"
+          }
+        ]
+      ]
+    },
+    {
+      "rule": "rust/access-invalid-pointer",
+      "message": "This operation dereferences a pointer that may be [invalid](1).\nThis operation dereferences a pointer that may be [invalid](2).",
+      "locations": [
+        {
+          "path": "vendor/rhwp-qcms/src/gtest.rs",
+          "region": {
+            "startLine": 608,
+            "startColumn": 19,
+            "endLine": 608,
+            "endColumn": 33
+          },
+          "message": null
+        }
+      ],
+      "flows": [
+        [
+          {
+            "path": "vendor/rhwp-qcms/src/c_bindings.rs",
+            "region": {
+              "startLine": 254,
+              "startColumn": 17,
+              "endLine": 254,
+              "endColumn": 27
+            },
+            "message": "null_mut(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/c_bindings.rs",
+            "region": {
+              "startLine": 250,
+              "startColumn": 26,
+              "endLine": 256,
+              "endColumn": 2
+            },
+            "message": "{ ... }"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 540,
+              "startColumn": 31,
+              "endLine": 546,
+              "endColumn": 14
+            },
+            "message": "qcms_transform_create(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 531,
+              "startColumn": 43,
+              "endLine": 531,
+              "endColumn": 73
+            },
+            "message": "...: ..."
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 535,
+              "startColumn": 30,
+              "endLine": 535,
+              "endColumn": 39
+            },
+            "message": "transform"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 531,
+              "startColumn": 32,
+              "endLine": 531,
+              "endColumn": 41
+            },
+            "message": "SelfParam [Return] [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 540,
+              "startColumn": 13,
+              "endLine": 540,
+              "endColumn": 17
+            },
+            "message": "[post] self [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 539,
+              "startColumn": 39,
+              "endLine": 539,
+              "endColumn": 48
+            },
+            "message": "SelfParam [Return] [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 636,
+              "startColumn": 21,
+              "endLine": 636,
+              "endColumn": 25
+            },
+            "message": "[post] self [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 641,
+              "startColumn": 21,
+              "endLine": 641,
+              "endColumn": 25
+            },
+            "message": "self [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 624,
+              "startColumn": 39,
+              "endLine": 624,
+              "endColumn": 48
+            },
+            "message": "SelfParam [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 625,
+              "startColumn": 13,
+              "endLine": 625,
+              "endColumn": 17
+            },
+            "message": "self [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 605,
+              "startColumn": 33,
+              "endLine": 605,
+              "endColumn": 42
+            },
+            "message": "SelfParam [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 608,
+              "startColumn": 19,
+              "endLine": 608,
+              "endColumn": 33
+            },
+            "message": "self.transform"
+          }
+        ],
+        [
+          {
+            "path": "vendor/rhwp-qcms/src/c_bindings.rs",
+            "region": {
+              "startLine": 254,
+              "startColumn": 17,
+              "endLine": 254,
+              "endColumn": 27
+            },
+            "message": "null_mut(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/c_bindings.rs",
+            "region": {
+              "startLine": 250,
+              "startColumn": 26,
+              "endLine": 256,
+              "endColumn": 2
+            },
+            "message": "{ ... }"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 540,
+              "startColumn": 31,
+              "endLine": 546,
+              "endColumn": 14
+            },
+            "message": "qcms_transform_create(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 531,
+              "startColumn": 43,
+              "endLine": 531,
+              "endColumn": 73
+            },
+            "message": "...: ..."
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 535,
+              "startColumn": 30,
+              "endLine": 535,
+              "endColumn": 39
+            },
+            "message": "transform"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 531,
+              "startColumn": 32,
+              "endLine": 531,
+              "endColumn": 41
+            },
+            "message": "SelfParam [Return] [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 540,
+              "startColumn": 13,
+              "endLine": 540,
+              "endColumn": 17
+            },
+            "message": "[post] self [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 539,
+              "startColumn": 39,
+              "endLine": 539,
+              "endColumn": 48
+            },
+            "message": "SelfParam [Return] [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 649,
+              "startColumn": 21,
+              "endLine": 649,
+              "endColumn": 25
+            },
+            "message": "[post] self [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 655,
+              "startColumn": 29,
+              "endLine": 655,
+              "endColumn": 33
+            },
+            "message": "self [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 624,
+              "startColumn": 39,
+              "endLine": 624,
+              "endColumn": 48
+            },
+            "message": "SelfParam [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 625,
+              "startColumn": 13,
+              "endLine": 625,
+              "endColumn": 17
+            },
+            "message": "self [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 605,
+              "startColumn": 33,
+              "endLine": 605,
+              "endColumn": 42
+            },
+            "message": "SelfParam [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 608,
+              "startColumn": 19,
+              "endLine": 608,
+              "endColumn": 33
+            },
+            "message": "self.transform"
+          }
+        ],
+        [
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 502,
+              "startColumn": 28,
+              "endLine": 502,
+              "endColumn": 38
+            },
+            "message": "null_mut(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 502,
+              "startColumn": 28,
+              "endLine": 502,
+              "endColumn": 38
+            },
+            "message": "null_mut(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 499,
+              "startColumn": 13,
+              "endLine": 510,
+              "endColumn": 14
+            },
+            "message": "QcmsProfileTest {...} [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 498,
+              "startColumn": 37,
+              "endLine": 511,
+              "endColumn": 10
+            },
+            "message": "{ ... } [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 739,
+              "startColumn": 26,
+              "endLine": 739,
+              "endColumn": 48
+            },
+            "message": "...::new(...) [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 739,
+              "startColumn": 17,
+              "endLine": 739,
+              "endColumn": 23
+            },
+            "message": "mut pt [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 741,
+              "startColumn": 13,
+              "endLine": 741,
+              "endColumn": 15
+            },
+            "message": "pt [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 742,
+              "startColumn": 13,
+              "endLine": 742,
+              "endColumn": 15
+            },
+            "message": "pt [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 743,
+              "startColumn": 13,
+              "endLine": 743,
+              "endColumn": 15
+            },
+            "message": "pt [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 633,
+              "startColumn": 37,
+              "endLine": 633,
+              "endColumn": 46
+            },
+            "message": "SelfParam [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 641,
+              "startColumn": 21,
+              "endLine": 641,
+              "endColumn": 25
+            },
+            "message": "self [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 624,
+              "startColumn": 39,
+              "endLine": 624,
+              "endColumn": 48
+            },
+            "message": "SelfParam [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 625,
+              "startColumn": 13,
+              "endLine": 625,
+              "endColumn": 17
+            },
+            "message": "self [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 605,
+              "startColumn": 33,
+              "endLine": 605,
+              "endColumn": 42
+            },
+            "message": "SelfParam [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 608,
+              "startColumn": 19,
+              "endLine": 608,
+              "endColumn": 33
+            },
+            "message": "self.transform"
+          }
+        ],
+        [
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 502,
+              "startColumn": 28,
+              "endLine": 502,
+              "endColumn": 38
+            },
+            "message": "null_mut(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 502,
+              "startColumn": 28,
+              "endLine": 502,
+              "endColumn": 38
+            },
+            "message": "null_mut(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 499,
+              "startColumn": 13,
+              "endLine": 510,
+              "endColumn": 14
+            },
+            "message": "QcmsProfileTest {...} [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 498,
+              "startColumn": 37,
+              "endLine": 511,
+              "endColumn": 10
+            },
+            "message": "{ ... } [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 786,
+              "startColumn": 26,
+              "endLine": 786,
+              "endColumn": 48
+            },
+            "message": "...::new(...) [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 786,
+              "startColumn": 17,
+              "endLine": 786,
+              "endColumn": 23
+            },
+            "message": "mut pt [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 788,
+              "startColumn": 13,
+              "endLine": 788,
+              "endColumn": 15
+            },
+            "message": "pt [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 789,
+              "startColumn": 13,
+              "endLine": 789,
+              "endColumn": 15
+            },
+            "message": "pt [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 790,
+              "startColumn": 13,
+              "endLine": 790,
+              "endColumn": 15
+            },
+            "message": "pt [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 644,
+              "startColumn": 48,
+              "endLine": 644,
+              "endColumn": 57
+            },
+            "message": "SelfParam [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 655,
+              "startColumn": 29,
+              "endLine": 655,
+              "endColumn": 33
+            },
+            "message": "self [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 624,
+              "startColumn": 39,
+              "endLine": 624,
+              "endColumn": 48
+            },
+            "message": "SelfParam [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 625,
+              "startColumn": 13,
+              "endLine": 625,
+              "endColumn": 17
+            },
+            "message": "self [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 605,
+              "startColumn": 33,
+              "endLine": 605,
+              "endColumn": 42
+            },
+            "message": "SelfParam [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 608,
+              "startColumn": 19,
+              "endLine": 608,
+              "endColumn": 33
+            },
+            "message": "self.transform"
+          }
+        ]
+      ]
+    },
+    {
+      "rule": "rust/access-invalid-pointer",
+      "message": "This operation dereferences a pointer that may be [invalid](1).\nThis operation dereferences a pointer that may be [invalid](2).",
+      "locations": [
+        {
+          "path": "vendor/rhwp-qcms/src/gtest.rs",
+          "region": {
+            "startLine": 759,
+            "startColumn": 19,
+            "endLine": 759,
+            "endColumn": 31
+          },
+          "message": null
+        }
+      ],
+      "flows": [
+        [
+          {
+            "path": "vendor/rhwp-qcms/src/c_bindings.rs",
+            "region": {
+              "startLine": 254,
+              "startColumn": 17,
+              "endLine": 254,
+              "endColumn": 27
+            },
+            "message": "null_mut(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/c_bindings.rs",
+            "region": {
+              "startLine": 250,
+              "startColumn": 26,
+              "endLine": 256,
+              "endColumn": 2
+            },
+            "message": "{ ... }"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 540,
+              "startColumn": 31,
+              "endLine": 546,
+              "endColumn": 14
+            },
+            "message": "qcms_transform_create(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 531,
+              "startColumn": 43,
+              "endLine": 531,
+              "endColumn": 73
+            },
+            "message": "...: ..."
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 535,
+              "startColumn": 30,
+              "endLine": 535,
+              "endColumn": 39
+            },
+            "message": "transform"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 531,
+              "startColumn": 32,
+              "endLine": 531,
+              "endColumn": 41
+            },
+            "message": "SelfParam [Return] [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 540,
+              "startColumn": 13,
+              "endLine": 540,
+              "endColumn": 17
+            },
+            "message": "[post] self [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 539,
+              "startColumn": 39,
+              "endLine": 539,
+              "endColumn": 48
+            },
+            "message": "SelfParam [Return] [&ref, QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 757,
+              "startColumn": 13,
+              "endLine": 757,
+              "endColumn": 15
+            },
+            "message": "[post] pt [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 759,
+              "startColumn": 19,
+              "endLine": 759,
+              "endColumn": 21
+            },
+            "message": "pt [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 759,
+              "startColumn": 19,
+              "endLine": 759,
+              "endColumn": 31
+            },
+            "message": "pt.transform"
+          }
+        ],
+        [
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 502,
+              "startColumn": 28,
+              "endLine": 502,
+              "endColumn": 38
+            },
+            "message": "null_mut(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 502,
+              "startColumn": 28,
+              "endLine": 502,
+              "endColumn": 38
+            },
+            "message": "null_mut(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 499,
+              "startColumn": 13,
+              "endLine": 510,
+              "endColumn": 14
+            },
+            "message": "QcmsProfileTest {...} [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 498,
+              "startColumn": 37,
+              "endLine": 511,
+              "endColumn": 10
+            },
+            "message": "{ ... } [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 751,
+              "startColumn": 26,
+              "endLine": 751,
+              "endColumn": 48
+            },
+            "message": "...::new(...) [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 751,
+              "startColumn": 17,
+              "endLine": 751,
+              "endColumn": 23
+            },
+            "message": "mut pt [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 753,
+              "startColumn": 13,
+              "endLine": 753,
+              "endColumn": 15
+            },
+            "message": "pt [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 754,
+              "startColumn": 13,
+              "endLine": 754,
+              "endColumn": 15
+            },
+            "message": "pt [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 759,
+              "startColumn": 19,
+              "endLine": 759,
+              "endColumn": 21
+            },
+            "message": "pt [QcmsProfileTest.transform]"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 759,
+              "startColumn": 19,
+              "endLine": 759,
+              "endColumn": 31
+            },
+            "message": "pt.transform"
+          }
+        ]
+      ]
+    },
+    {
+      "rule": "rust/access-invalid-pointer",
+      "message": "This operation dereferences a pointer that may be [invalid](1).",
+      "locations": [
+        {
+          "path": "vendor/rhwp-qcms/src/gtest.rs",
+          "region": {
+            "startLine": 191,
+            "startColumn": 19,
+            "endLine": 191,
+            "endColumn": 28
+          },
+          "message": null
+        }
+      ],
+      "flows": [
+        [
+          {
+            "path": "vendor/rhwp-qcms/src/c_bindings.rs",
+            "region": {
+              "startLine": 254,
+              "startColumn": 17,
+              "endLine": 254,
+              "endColumn": 27
+            },
+            "message": "null_mut(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/c_bindings.rs",
+            "region": {
+              "startLine": 250,
+              "startColumn": 26,
+              "endLine": 256,
+              "endColumn": 2
+            },
+            "message": "{ ... }"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 185,
+              "startColumn": 13,
+              "endLine": 185,
+              "endColumn": 91
+            },
+            "message": "qcms_transform_create(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 184,
+              "startColumn": 13,
+              "endLine": 184,
+              "endColumn": 22
+            },
+            "message": "transform"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 191,
+              "startColumn": 19,
+              "endLine": 191,
+              "endColumn": 28
+            },
+            "message": "transform"
+          }
+        ]
+      ]
+    },
+    {
+      "rule": "rust/access-invalid-pointer",
+      "message": "This operation dereferences a pointer that may be [invalid](1).",
+      "locations": [
+        {
+          "path": "vendor/rhwp-qcms/src/gtest.rs",
+          "region": {
+            "startLine": 220,
+            "startColumn": 19,
+            "endLine": 220,
+            "endColumn": 28
+          },
+          "message": null
+        }
+      ],
+      "flows": [
+        [
+          {
+            "path": "vendor/rhwp-qcms/src/c_bindings.rs",
+            "region": {
+              "startLine": 254,
+              "startColumn": 17,
+              "endLine": 254,
+              "endColumn": 27
+            },
+            "message": "null_mut(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/c_bindings.rs",
+            "region": {
+              "startLine": 250,
+              "startColumn": 26,
+              "endLine": 256,
+              "endColumn": 2
+            },
+            "message": "{ ... }"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 212,
+              "startColumn": 13,
+              "endLine": 212,
+              "endColumn": 94
+            },
+            "message": "qcms_transform_create(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 211,
+              "startColumn": 13,
+              "endLine": 211,
+              "endColumn": 22
+            },
+            "message": "transform"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 220,
+              "startColumn": 19,
+              "endLine": 220,
+              "endColumn": 28
+            },
+            "message": "transform"
+          }
+        ]
+      ]
+    },
+    {
+      "rule": "rust/access-invalid-pointer",
+      "message": "This operation dereferences a pointer that may be [invalid](1).",
+      "locations": [
+        {
+          "path": "vendor/rhwp-qcms/src/gtest.rs",
+          "region": {
+            "startLine": 315,
+            "startColumn": 19,
+            "endLine": 315,
+            "endColumn": 28
+          },
+          "message": null
+        }
+      ],
+      "flows": [
+        [
+          {
+            "path": "vendor/rhwp-qcms/src/c_bindings.rs",
+            "region": {
+              "startLine": 254,
+              "startColumn": 17,
+              "endLine": 254,
+              "endColumn": 27
+            },
+            "message": "null_mut(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/c_bindings.rs",
+            "region": {
+              "startLine": 250,
+              "startColumn": 26,
+              "endLine": 256,
+              "endColumn": 2
+            },
+            "message": "{ ... }"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 291,
+              "startColumn": 22,
+              "endLine": 291,
+              "endColumn": 90
+            },
+            "message": "qcms_transform_create(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 290,
+              "startColumn": 13,
+              "endLine": 290,
+              "endColumn": 22
+            },
+            "message": "transform"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 315,
+              "startColumn": 19,
+              "endLine": 315,
+              "endColumn": 28
+            },
+            "message": "transform"
+          }
+        ]
+      ]
+    },
+    {
+      "rule": "rust/access-invalid-pointer",
+      "message": "This operation dereferences a pointer that may be [invalid](1).",
+      "locations": [
+        {
+          "path": "vendor/rhwp-qcms/src/gtest.rs",
+          "region": {
+            "startLine": 820,
+            "startColumn": 19,
+            "endLine": 820,
+            "endColumn": 28
+          },
+          "message": null
+        }
+      ],
+      "flows": [
+        [
+          {
+            "path": "vendor/rhwp-qcms/src/c_bindings.rs",
+            "region": {
+              "startLine": 254,
+              "startColumn": 17,
+              "endLine": 254,
+              "endColumn": 27
+            },
+            "message": "null_mut(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/c_bindings.rs",
+            "region": {
+              "startLine": 250,
+              "startColumn": 26,
+              "endLine": 256,
+              "endColumn": 2
+            },
+            "message": "{ ... }"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 815,
+              "startColumn": 34,
+              "endLine": 815,
+              "endColumn": 98
+            },
+            "message": "qcms_transform_create(...)"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 815,
+              "startColumn": 13,
+              "endLine": 815,
+              "endColumn": 22
+            },
+            "message": "transform"
+          },
+          {
+            "path": "vendor/rhwp-qcms/src/gtest.rs",
+            "region": {
+              "startLine": 820,
+              "startColumn": 19,
+              "endLine": 820,
+              "endColumn": 28
+            },
+            "message": "transform"
+          }
+        ]
+      ]
+    },
+    {
+      "rule": "rust/cleartext-logging",
+      "message": "This operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](1) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](2) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](3) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](4) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](5) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](6) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](7) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](8) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](9) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](10) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](11) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](12) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](13) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](14) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](15) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](16) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](17) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](18) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](19) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](20) to a log file.\nThis operation writes [...::extract_pyclass_ref_trusted::<...>(...)](21) to a log file.\nThis operation writes [...::extract_pyclass_ref_trusted::<...>(...)](22) to a log file.\nThis operation writes [...::extract_pyclass_ref_trusted::<...>(...)](23) to a log file.\nThis operation writes [...::extract_pyclass_ref_trusted::<...>(...)](24) to a log file.\nThis operation writes [...::extract_pyclass_ref_trusted::<...>(...)](25) to a log file.\nThis operation writes [...::extract_pyclass_ref_trusted::<...>(...)](26) to a log file.\nThis operation writes [...::extract_pyclass_ref_trusted::<...>(...)](27) to a log file.\nThis operation writes [...::extract_pyclass_ref_trusted::<...>(...)](28) to a log file.\nThis operation writes [...::extract_pyclass_ref_trusted::<...>(...)](29) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](1) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](2) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](3) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](4) to a log file.",
+      "locations": [
+        {
+          "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+          "region": {
+            "startLine": 18659,
+            "startColumn": 13,
+            "endLine": 18662,
+            "endColumn": 51
+          },
+          "message": null
+        }
+      ],
+      "flows": [
+        [
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 58,
+              "startColumn": 6,
+              "endLine": 230,
+              "endColumn": 10
+            },
+            "message": "...::extract_pyclass_ref_mut_trusted::<...>(...)"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 58,
+              "startColumn": 6,
+              "endLine": 230,
+              "endColumn": 10
+            },
+            "message": "TryExpr"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 231,
+              "startColumn": 9,
+              "endLine": 231,
+              "endColumn": 20
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 246,
+              "startColumn": 25,
+              "endLine": 246,
+              "endColumn": 29
+            },
+            "message": "page"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16621,
+              "startColumn": 9,
+              "endLine": 16621,
+              "endColumn": 26
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16637,
+              "startColumn": 39,
+              "endLine": 16637,
+              "endColumn": 49
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 6158,
+              "startColumn": 9,
+              "endLine": 6158,
+              "endColumn": 26
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 6218,
+              "startColumn": 50,
+              "endLine": 6218,
+              "endColumn": 60
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18495,
+              "startColumn": 41,
+              "endLine": 18495,
+              "endColumn": 58
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18496,
+              "startColumn": 45,
+              "endLine": 18496,
+              "endColumn": 55
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18548,
+              "startColumn": 35,
+              "endLine": 18548,
+              "endColumn": 52
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18552,
+              "startColumn": 44,
+              "endLine": 18552,
+              "endColumn": 54
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18659,
+              "startColumn": 13,
+              "endLine": 18662,
+              "endColumn": 51
+            },
+            "message": "MacroExpr"
+          }
+        ],
+        [
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 58,
+              "startColumn": 6,
+              "endLine": 347,
+              "endColumn": 21
+            },
+            "message": "...::extract_pyclass_ref_mut_trusted::<...>(...)"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 58,
+              "startColumn": 6,
+              "endLine": 347,
+              "endColumn": 21
+            },
+            "message": "TryExpr"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 347,
+              "startColumn": 31,
+              "endLine": 347,
+              "endColumn": 42
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 348,
+              "startColumn": 27,
+              "endLine": 348,
+              "endColumn": 31
+            },
+            "message": "page"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 337,
+              "startColumn": 32,
+              "endLine": 337,
+              "endColumn": 43
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 340,
+              "startColumn": 27,
+              "endLine": 340,
+              "endColumn": 31
+            },
+            "message": "page"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 7692,
+              "startColumn": 32,
+              "endLine": 7692,
+              "endColumn": 49
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 7693,
+              "startColumn": 38,
+              "endLine": 7693,
+              "endColumn": 48
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 7725,
+              "startColumn": 39,
+              "endLine": 7725,
+              "endColumn": 56
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 7732,
+              "startColumn": 40,
+              "endLine": 7732,
+              "endColumn": 50
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 12736,
+              "startColumn": 33,
+              "endLine": 12736,
+              "endColumn": 50
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 12740,
+              "startColumn": 76,
+              "endLine": 12740,
+              "endColumn": 86
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 12743,
+              "startColumn": 44,
+              "endLine": 12743,
+              "endColumn": 54
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16436,
+              "startColumn": 33,
+              "endLine": 16436,
+              "endColumn": 50
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16438,
+              "startColumn": 13,
+              "endLine": 16438,
+              "endColumn": 23
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16450,
+              "startColumn": 9,
+              "endLine": 16450,
+              "endColumn": 26
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16453,
+              "startColumn": 33,
+              "endLine": 16453,
+              "endColumn": 43
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16473,
+              "startColumn": 9,
+              "endLine": 16473,
+              "endColumn": 26
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16480,
+              "startColumn": 13,
+              "endLine": 16480,
+              "endColumn": 23
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16491,
+              "startColumn": 9,
+              "endLine": 16491,
+              "endColumn": 26
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16514,
+              "startColumn": 59,
+              "endLine": 16514,
+              "endColumn": 69
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18548,
+              "startColumn": 35,
+              "endLine": 18548,
+              "endColumn": 52
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18552,
+              "startColumn": 44,
+              "endLine": 18552,
+              "endColumn": 54
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18659,
+              "startColumn": 13,
+              "endLine": 18662,
+              "endColumn": 51
+            },
+            "message": "MacroExpr"
+          }
+        ],
+        [
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 58,
+              "startColumn": 6,
+              "endLine": 337,
+              "endColumn": 22
+            },
+            "message": "...::extract_pyclass_ref_mut_trusted::<...>(...)"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 58,
+              "startColumn": 6,
+              "endLine": 337,
+              "endColumn": 22
+            },
+            "message": "TryExpr"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 337,
+              "startColumn": 32,
+              "endLine": 337,
+              "endColumn": 43
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 340,
+              "startColumn": 27,
+              "endLine": 340,
+              "endColumn": 31
+            },
+            "message": "page"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 7692,
+              "startColumn": 32,
+              "endLine": 7692,
+              "endColumn": 49
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 7693,
+              "startColumn": 38,
+              "endLine": 7693,
+              "endColumn": 48
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 7725,
+              "startColumn": 39,
+              "endLine": 7725,
+              "endColumn": 56
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 7732,
+              "startColumn": 40,
+              "endLine": 7732,
+              "endColumn": 50
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 12736,
+              "startColumn": 33,
+              "endLine": 12736,
+              "endColumn": 50
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 12740,
+              "startColumn": 76,
+              "endLine": 12740,
+              "endColumn": 86
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 12743,
+              "startColumn": 44,
+              "endLine": 12743,
+              "endColumn": 54
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16436,
+              "startColumn": 33,
+              "endLine": 16436,
+              "endColumn": 50
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16438,
+              "startColumn": 13,
+              "endLine": 16438,
+              "endColumn": 23
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16450,
+              "startColumn": 9,
+              "endLine": 16450,
+              "endColumn": 26
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16453,
+              "startColumn": 33,
+              "endLine": 16453,
+              "endColumn": 43
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16473,
+              "startColumn": 9,
+              "endLine": 16473,
+              "endColumn": 26
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16480,
+              "startColumn": 13,
+              "endLine": 16480,
+              "endColumn": 23
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16491,
+              "startColumn": 9,
+              "endLine": 16491,
+              "endColumn": 26
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16514,
+              "startColumn": 59,
+              "endLine": 16514,
+              "endColumn": 69
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18548,
+              "startColumn": 35,
+              "endLine": 18548,
+              "endColumn": 52
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18552,
+              "startColumn": 44,
+              "endLine": 18552,
+              "endColumn": 54
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18659,
+              "startColumn": 13,
+              "endLine": 18662,
+              "endColumn": 51
+            },
+            "message": "MacroExpr"
+          }
+        ],
+        [
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 58,
+              "startColumn": 6,
+              "endLine": 158,
+              "endColumn": 28
+            },
+            "message": "...::extract_pyclass_ref_mut_trusted::<...>(...)"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 58,
+              "startColumn": 6,
+              "endLine": 158,
+              "endColumn": 28
+            },
+            "message": "TryExpr"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 158,
+              "startColumn": 38,
+              "endLine": 158,
+              "endColumn": 49
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 160,
+              "startColumn": 33,
+              "endLine": 160,
+              "endColumn": 37
+            },
+            "message": "page"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 17335,
+              "startColumn": 38,
+              "endLine": 17335,
+              "endColumn": 55
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 17337,
+              "startColumn": 53,
+              "endLine": 17337,
+              "endColumn": 63
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18548,
+              "startColumn": 35,
+              "endLine": 18548,
+              "endColumn": 52
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18552,
+              "startColumn": 44,
+              "endLine": 18552,
+              "endColumn": 54
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18659,
+              "startColumn": 13,
+              "endLine": 18662,
+              "endColumn": 51
+            },
+            "message": "MacroExpr"
+          }
+        ]
+      ]
+    }
+  ]
+}

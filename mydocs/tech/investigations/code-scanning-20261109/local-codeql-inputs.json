@@ -1,0 +1,161 @@
+{
+  "codeql": "2.27.4",
+  "query_pack": "codeql/rust-queries@0.1.46",
+  "queries": [
+    {
+      "id": "rust/request-forgery",
+      "kind": "path-problem",
+      "path": "queries/security/CWE-918/RequestForgery.ql",
+      "sha256": "2fb2997e69ca19ef155c5828dc5a5cac4021413418af112260dd4457cd7583a8"
+    },
+    {
+      "id": "rust/disabled-certificate-check",
+      "kind": "path-problem",
+      "path": "queries/security/CWE-295/DisabledCertificateCheck.ql",
+      "sha256": "bb4ac00eb5877a60da75f3ee21e62091fa4ea2b238d4edb0536e2d58645c0f11"
+    },
+    {
+      "id": "rust/regex-injection",
+      "kind": "path-problem",
+      "path": "queries/security/CWE-020/RegexInjection.ql",
+      "sha256": "ecdf3f90049e5ede3f7306ca296970851b3fef32d109cda6b925360862c03d05"
+    },
+    {
+      "id": "rust/uncontrolled-allocation-size",
+      "kind": "path-problem",
+      "path": "queries/security/CWE-770/UncontrolledAllocationSize.ql",
+      "sha256": "7d1f9cad63f89864d4294e7f30ee193ee6409226e6f8837e4aded2c258f71573"
+    },
+    {
+      "id": "rust/access-invalid-pointer",
+      "kind": "path-problem",
+      "path": "queries/security/CWE-825/AccessInvalidPointer.ql",
+      "sha256": "db3cb765c52c1aec388b57953c149de3745b17736c77e474f5bf450c5108f293"
+    },
+    {
+      "id": "rust/hard-coded-cryptographic-value",
+      "kind": "path-problem",
+      "path": "queries/security/CWE-798/HardcodedCryptographicValue.ql",
+      "sha256": "cb4b9cddfc46ff773a3ace3ff9ed20f8470becfbfa7b025d454eb1ca4ac1abc4"
+    },
+    {
+      "id": "rust/cleartext-storage-database",
+      "kind": "path-problem",
+      "path": "queries/security/CWE-312/CleartextStorageDatabase.ql",
+      "sha256": "1fe4820c6900f0ff475b713420b251e73f3dffc2bf516b98a30c99850b08af78"
+    },
+    {
+      "id": "rust/cleartext-logging",
+      "kind": "path-problem",
+      "path": "queries/security/CWE-312/CleartextLogging.ql",
+      "sha256": "5a7e8e1d931633244a7cf5e1bfc6a4ed8457f744a5963adc7db6813682cbde26"
+    },
+    {
+      "id": "rust/xss",
+      "kind": "path-problem",
+      "path": "queries/security/CWE-079/XSS.ql",
+      "sha256": "4c597b45caf16e6b058a051d80c959d7acc2415d242c1c54f53bc4463d7b97cc"
+    },
+    {
+      "id": "rust/weak-sensitive-data-hashing",
+      "kind": "path-problem",
+      "path": "queries/security/CWE-327/WeakSensitiveDataHashing.ql",
+      "sha256": "bdc66903e0e87d1bc65013c4342eba9feedf002123be5f9d8b1ee917194609db"
+    },
+    {
+      "id": "rust/weak-cryptographic-algorithm",
+      "kind": "problem",
+      "path": "queries/security/CWE-327/BrokenCryptoAlgorithm.ql",
+      "sha256": "d72b643a2d734248068bac3406c10cea5146057088128f083c774a9487d5c6d7"
+    },
+    {
+      "id": "rust/command-line-injection",
+      "kind": "path-problem",
+      "path": "queries/security/CWE-078/CommandInjection.ql",
+      "sha256": "6e84fbfd06e0c5d7f725b98ab8d99169af5492a09f42dcb95137fbfbbee540e1"
+    },
+    {
+      "id": "rust/sql-injection",
+      "kind": "path-problem",
+      "path": "queries/security/CWE-089/SqlInjection.ql",
+      "sha256": "4f945c5acedc1aec130cc7d603157749e2b24d6e8e90b3972607f2bf7df733a0"
+    },
+    {
+      "id": "rust/insecure-cookie",
+      "kind": "path-problem",
+      "path": "queries/security/CWE-614/InsecureCookie.ql",
+      "sha256": "80226d95f67f18a166bd8feda5e66789c4fa280d44eadceca08543d3803cc740"
+    },
+    {
+      "id": "rust/path-injection",
+      "kind": "path-problem",
+      "path": "queries/security/CWE-022/TaintedPath.ql",
+      "sha256": "54a163a0ed35235ef74a8900374fe19fcac6e7e8618f034b38988c5f172b5829"
+    },
+    {
+      "id": "rust/non-https-url",
+      "kind": "path-problem",
+      "path": "queries/security/CWE-319/UseOfHttp.ql",
+      "sha256": "f5700e02ba1f8b1048f810d44af9fb2cbe7997b3c3aa10019d1a3c45c70455f1"
+    },
+    {
+      "id": "rust/cleartext-transmission",
+      "kind": "path-problem",
+      "path": "queries/security/CWE-311/CleartextTransmission.ql",
+      "sha256": "2d37915676fe130802400d0c555bcade15a346f034ac1bf705a70ebc518fdf4e"
+    }
+  ],
+  "all_remote_alert_rules_preserved": true,
+  "remote_reported_rules": 26,
+  "remote_non_alert_summary_telemetry_rules": 9,
+  "coverage": {
+    "baseline": {
+      "extracted_files": 4717,
+      "files_with_warnings": 209,
+      "extraction_errors": 0,
+      "extraction_warnings": 947,
+      "warning_messages_sha256": "5e6a36d8a800f8a2ce85f289d44828c8a4a70f6ddf6c26e74b854cc0f751389f",
+      "target_files_extracted": {
+        "vendor/rhwp-pdf-import-backend/src/document.rs": true,
+        "vendor/rhwp-qcms/src/gtest.rs": true,
+        "vendor/rhwp-qcms/src/c_bindings.rs": true
+      },
+      "unresolved_macro_calls": 49145
+    },
+    "candidate": {
+      "extracted_files": 4718,
+      "files_with_warnings": 209,
+      "extraction_errors": 0,
+      "extraction_warnings": 947,
+      "warning_messages_sha256": "5e6a36d8a800f8a2ce85f289d44828c8a4a70f6ddf6c26e74b854cc0f751389f",
+      "target_files_extracted": {
+        "vendor/rhwp-pdf-import-backend/src/document.rs": true,
+        "vendor/rhwp-qcms/src/gtest.rs": true,
+        "vendor/rhwp-qcms/src/c_bindings.rs": true
+      },
+      "unresolved_macro_calls": 49163
+    }
+  },
+  "added_extracted_files": [
+    "tests/cases/code_scanning_pdf_diagnostics.rs"
+  ],
+  "removed_extracted_files": [],
+  "analysis_source_changed_files": [
+    "Cargo.lock",
+    "Cargo.toml",
+    "tests/cases/code_scanning_pdf_diagnostics.rs",
+    "vendor/rhwp-pdf-import-backend/src/document.rs",
+    "vendor/rhwp-qcms/src/c_bindings.rs",
+    "vendor/rhwp-qcms/src/gtest.rs"
+  ],
+  "analysis_source_changed_sha256": {
+    "Cargo.lock": "448b40a5ef01b4a730e21f1bbc31f9a6a617d5ddaa89ab3b7133b5863d0dc551",
+    "Cargo.toml": "cb237f76710dd00daca0dce82211c3e0c3709a1ed663301552a598e94d53c535",
+    "tests/cases/code_scanning_pdf_diagnostics.rs": "ac6a6a534857a3a296652365a1726701da6606ef4eb039ecc0de2976291b9a9d",
+    "vendor/rhwp-pdf-import-backend/src/document.rs": "d188f55521b33fac2cd7b0d1bb23c337220ac602859c7a2aaa4279566cd7c7de",
+    "vendor/rhwp-qcms/src/c_bindings.rs": "bab2f65edaba748bcdd68c0a088aa111d2f32f64d512d98672646fa319230a9b",
+    "vendor/rhwp-qcms/src/gtest.rs": "3b8f31288cdf2d05e49cdb45392b9c6743040b9bffbac9e1296f10fc63bf5567"
+  },
+  "candidate_snapshot_mismatches": [],
+  "limitation": "Local Rust extraction uses all feature configurations, with unchanged warnings; not a protected-branch scan. Non-alert diagnostic/metric rules are not counted as security alerts. Unresolved macros are present in both snapshots; the actual target rule/location reproduction is required before claiming removal."
+}
