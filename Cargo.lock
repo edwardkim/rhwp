@@ -2209,6 +2209,7 @@ dependencies = [
  "image",
  "js-sys",
  "libc",
+ "log",
  "ml-dsa",
  "ml-kem",
  "office_oxide",
