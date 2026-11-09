@@ -95,22 +95,11 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow_with_storage<
     // host 줄(`tac_table_host_line_metrics`)은 표 높이만 싣는다. 표의 점유 상자에서 가장 큰
     // 줄 높이를 뺀 부족분만 예산에 둔다.
     let tac_outer_margin_v_px: f64 = if crate::renderer::para_has_no_stored_line_segs(para) {
-        let tallest_line = line_heights.iter().copied().fold(0.0f64, f64::max);
-        para.controls
-            .iter()
-            .filter_map(|ctrl| match ctrl {
-                Control::Table(t) if t.common.treat_as_char => {
-                    let margins = crate::renderer::hwpunit_to_px(
-                        i32::from(t.common.margin.top) + i32::from(t.common.margin.bottom),
-                        ctx.dpi(),
-                    );
-                    let occupied =
-                        crate::renderer::hwpunit_to_px(t.common.height as i32, ctx.dpi()) + margins;
-                    Some((occupied - tallest_line).clamp(0.0, margins))
-                }
-                _ => None,
-            })
-            .fold(0.0f64, f64::max)
+        crate::renderer::float_placement::tac_table_outer_margin_shortfall_px(
+            para,
+            line_heights.iter().copied().fold(0.0f64, f64::max),
+            ctx.dpi(),
+        )
     } else {
         0.0
     };

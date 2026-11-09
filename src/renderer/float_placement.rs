@@ -7624,8 +7624,6 @@ pub(crate) fn stored_block_cell_flow_with_storage<S: crate::storage::Storage>(
     Ok(Some(result))
 }
 
-/// 문단 기준 글 앞/뒤 표는 같은 앵커에 겹치는 개체이며 별도의 흐름 띠가 아니다.
-/// HWP5의 직인 표와 HWPX의 배경 표 모두 이 계약을 소비한다. TAC는 글줄에 참여한다.
 /// 쪽·종이 기준 글 앞으로/글 뒤로 표. 줄 흐름을 밀지 않고 칸 밖 좌표계에 놓인다.
 pub(crate) fn nested_table_is_page_anchored_non_flow(table: &Table) -> bool {
     !table.common.treat_as_char
@@ -7636,6 +7634,35 @@ pub(crate) fn nested_table_is_page_anchored_non_flow(table: &Table) -> bool {
         && matches!(table.common.vert_rel_to, VertRelTo::Page | VertRelTo::Paper)
 }
 
+/// 저장 줄 없는 문단의 글자처럼 취급 표 바깥 여백 중 줄 상자가 담지 못한 몫(px).
+///
+/// 글자 있는 host 의 조성 줄은 `표 높이 + 바깥 여백` 으로 발행되고, 글자 없는 host 줄
+/// (`tac_table_host_line_metrics`)은 표 높이만 싣는다. 표 점유 상자에서 가장 큰 줄 높이를
+/// 뺀 부족분(0..=여백)만 쪽 예산에 더한다.
+pub(crate) fn tac_table_outer_margin_shortfall_px(
+    para: &Paragraph,
+    tallest_line_px: f64,
+    dpi: f64,
+) -> f64 {
+    para.controls
+        .iter()
+        .filter_map(|ctrl| match ctrl {
+            Control::Table(t) if t.common.treat_as_char => {
+                let margins = crate::renderer::hwpunit_to_px(
+                    i32::from(t.common.margin.top) + i32::from(t.common.margin.bottom),
+                    dpi,
+                );
+                let occupied =
+                    crate::renderer::hwpunit_to_px(t.common.height as i32, dpi) + margins;
+                Some((occupied - tallest_line_px).clamp(0.0, margins))
+            }
+            _ => None,
+        })
+        .fold(0.0f64, f64::max)
+}
+
+/// 문단 기준 글 앞/뒤 표는 같은 앵커에 겹치는 개체이며 별도의 흐름 띠가 아니다.
+/// HWP5의 직인 표와 HWPX의 배경 표 모두 이 계약을 소비한다. TAC는 글줄에 참여한다.
 pub(crate) fn nested_table_is_overlay(table: &Table) -> bool {
     !table.common.treat_as_char
         && matches!(
