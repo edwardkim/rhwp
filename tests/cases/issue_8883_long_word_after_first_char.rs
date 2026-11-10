@@ -11,7 +11,7 @@
 //! - 관계형: 뒤 낱말이 한 줄을 넘으면 금칙 묶음은 뒤 낱말로 간다(`나` / `.)***…`).
 //! - 관계형: 뒤 낱말이 한 줄 안이면 금칙 묶음은 앞 글자와 함께 다음 줄로 간다(`카.a`·`카.)***`·`카.)`).
 //!
-//! 측정(2026-11-10, head a224b037fa, `scripts/visual_sweep.py --silhouette-only --dpi 96`,
+//! 측정(2026-11-10, 코드 head 5526bd027d, `scripts/visual_sweep.py --silhouette-only --dpi 96`,
 //! raw = `silhouette_raw_match_percent`, 문서 face 굴림 공급):
 //! - Native: 2쪽 / 2쪽, p1 100.00, p2 100.00, 전쪽 최저 100.00 (base b5064fae1e 는 p1 64.30)
 //! - fresh WASM: 2쪽 / 2쪽, p1 100.00, p2 100.00, 전쪽 최저 100.00
