@@ -529,7 +529,12 @@ FlValue* status_value(const std::shared_ptr<Notice>& notice) {
   set_bool(value, "registered", notice->registered);
   set_text(value, "code", status.code);
   set_text(value, "message", status.message);
-  if (status.accepted) fl_value_set_string_take(value, "acceptedStamp", stamp_value(status.accepted_stamp));
+  if (status.accepted) {
+    fl_value_set_string_take(value, "acceptedStamp", stamp_value(status.accepted_stamp));
+    auto* ids = fl_value_new_list();
+    fl_value_set_string_take(value, "acceptedSnapshots", ids);
+    for (const auto id : status.accepted_snapshots) fl_value_append_take(ids, fl_value_new_int(int64_t(id)));
+  }
   if (status.rendered) fl_value_set_string_take(value, "renderedStamp", stamp_value(status.rendered_stamp));
   return value;
 }

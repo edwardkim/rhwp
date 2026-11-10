@@ -98,6 +98,9 @@ struct Status {
   bool closing = false, cleanup_complete = false, raster_owner = false, owner_thread_exit = false;
   std::string code, message;
   Stamp accepted_stamp;
+  // Distinct IDs in the accepted transaction, retained through close so a
+  // delayed submit reply can be reconciled without guessing lease ownership.
+  std::vector<uint64_t> accepted_snapshots;
   Stamp rendered_stamp;
   DriverInfo driver;
 };

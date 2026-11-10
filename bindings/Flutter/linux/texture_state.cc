@@ -90,6 +90,8 @@ uint64_t Shared::submit(Description description) {
     frame->serial = status_.accepted + 1;
     std::vector<std::weak_ptr<SnapshotLease>> next;
     next.reserve(2 * kMaxPages);
+    std::vector<uint64_t> accepted_ids;
+    accepted_ids.reserve(frame->description.pages.size());
     for (const auto& weak : leases_) if (!weak.expired()) next.push_back(weak);
     for (const auto& page : frame->description.pages) {
       std::shared_ptr<SnapshotLease> lease;
@@ -107,6 +109,9 @@ uint64_t Shared::submit(Description description) {
         next.push_back(lease);
       }
       frame->leases.push_back(std::move(lease));
+      if (std::find(accepted_ids.begin(), accepted_ids.end(), page.snapshot) == accepted_ids.end()) {
+        accepted_ids.push_back(page.snapshot);
+      }
     }
     // No throwing operations remain. Failure above leaves all new IDs owned by
     // the caller; accepted frames keep exactly one lease per distinct ID.
@@ -116,6 +121,7 @@ uint64_t Shared::submit(Description description) {
     leases_ = std::move(next);
     serial = status_.accepted = latest_->serial;
     status_.accepted_stamp = latest_->description.stamp;
+    status_.accepted_snapshots = std::move(accepted_ids);
     status_.code.clear();
     status_.message.clear();
   }
@@ -137,6 +143,7 @@ void Shared::submit_group(const std::shared_ptr<Shared>& first, const std::share
   for (const auto& page : a.pages) page_ids[0].push_back(page.snapshot);
   for (const auto& page : b.pages) page_ids[1].push_back(page.snapshot);
   const auto ids = rhwp::tiles::unique_snapshots(page_ids);
+  auto first_receipt = ids, second_receipt = ids;
   for (const auto id : ids) {
     const auto info = first->bridge->inspect(id);
     if (!info.current || !info.screen || info.document != x.document ||
@@ -199,6 +206,8 @@ void Shared::submit_group(const std::shared_ptr<Shared>& first, const std::share
     first->leases_ = std::move(weak_a); second->leases_ = std::move(weak_b);
     first->status_.accepted = fa->serial; second->status_.accepted = fb->serial;
     first->status_.accepted_stamp = x; second->status_.accepted_stamp = x;
+    first->status_.accepted_snapshots = std::move(first_receipt);
+    second->status_.accepted_snapshots = std::move(second_receipt);
     first->status_.code.clear(); first->status_.message.clear();
     second->status_.code.clear(); second->status_.message.clear();
   }

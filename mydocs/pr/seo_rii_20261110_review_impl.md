@@ -112,3 +112,17 @@ Native `4f6bc33f8e3940947f3d942cdb3af26bb1d6f7cb` 빌드로 재현했다. 두 so
 현재 판정은 **선행 #8869의 실행 검출 결함 때문에 누적 후보 머지 보류**다. 원시 로그는 ignored
 output의 `multipage-capture`와 `multipage-wire-capture`에만 보관한다. 새로운 제품 보정은 아직
 적용하지 않았으며 원격 push·공개 댓글·PR·merge도 수행하지 않았다.
+
+### 메인터너 보정 승인과 집중 검사
+
+작업지시자가 위 원인·제한 보정안의 “메인터너 보정·필수 로컬 검증”을 승인했다. Linux `Shared`
+상태에 인수한 고유 snapshot ID 목록을 추가하고, 기존 ownership commit의 같은 lock에서
+stamp·serial·목록을 확정했다. 목록 할당은 소유권 이전 전에 완료한다. 공통 `status_value`가
+submit과 status 모두에서 이 결과를 직렬화하며 group의 두 member 상태도 같은 union receipt를
+갖는다. Dart의 전체 ID 확인·ambiguous 보호와 Mac 제외 범위는 바꾸지 않았다.
+
+Linux portable의 실제 `Shared::submit/status` 검사 18건·292조건과 공통 tile 4건·25조건이
+통과했다. 새 관계형 검사는 여러 페이지·중복 placement의 단일 lease·stale 거절 뒤 receipt 보존·
+다음 인수로 교체·close 뒤 지연 응답 조정과 한 번 해제를 확인한다. 격리한 임시 사본에서 단일
+target의 receipt commit만 제거하면 컴파일은 성공하고 새 receipt assertion이 실제 실패했다.
+실제 SDK·GTK 다중 페이지와 정상 타일 재검증은 이 보정 code head를 고정한 뒤 계속한다.
