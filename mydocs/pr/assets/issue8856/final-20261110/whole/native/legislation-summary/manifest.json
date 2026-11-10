@@ -1,0 +1,319 @@
+{
+  "key": "legislation-summary",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "missing_pages": [],
+  "tsv": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/native/legislation-summary/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/native/legislation-summary/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "ee10fb44bc0313fd631e5571ffb7bb6b3e205eea0f485e4b3470b80d52f2e758",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/native/legislation-summary/pdf_png/pdf-001.png",
+      "pdf_sha256": "8dde33fa2fa94d31adc356e1af1ba7efc8b2c3fd5873aa516031fc0253d34fa2"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/native/legislation-summary/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "5d9c72c2b36fb3fc76accab400ffa36f3507395869aef8c29ca5b0a8f71a7f9b",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/native/legislation-summary/pdf_png/pdf-002.png",
+      "pdf_sha256": "e55072acb19cca3f5616a822b7b3cb54db5b007ed7b21132c21c76faab75516b"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/native/legislation-summary/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "fff654c530bd6d62e80cb7a6aa145a7e9302388c7adb3df6549c910571ab0b96",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/native/legislation-summary/pdf_png/pdf-003.png",
+      "pdf_sha256": "db9accd8179819bd6aa3d485c9be8e0a1d4b24b4fb02ae76932bb36c9b963f5f"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/native/legislation-summary/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "54404e70468b61d26df7232e91d0b76d824d1c20afc403a840b32dca01c3c0bc",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/native/legislation-summary/pdf_png/pdf-004.png",
+      "pdf_sha256": "b2f0e2bffc169e48d331dde5629ae4bed9076ca30a4ccaafb55f246e3561c6b1"
+    },
+    {
+      "page": 5,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/native/legislation-summary/rhwp_png/rhwp_005.png",
+      "rhwp_sha256": "0409f4bc6418e351377a46dbdf3bd341934ec63eb154a0118b27eff62e20f712",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/native/legislation-summary/pdf_png/pdf-005.png",
+      "pdf_sha256": "795877a1a750e0ab949a23fca0fb1d0f3ee935bace97acb9dbab39003eee2e34"
+    },
+    {
+      "page": 6,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/native/legislation-summary/rhwp_png/rhwp_006.png",
+      "rhwp_sha256": "66c5cd9a5089690e4105f37a1a3bc0c00e038b9e9d6022624a6df5a5866f5a9d",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/native/legislation-summary/pdf_png/pdf-006.png",
+      "pdf_sha256": "a1bbeece853a9ae85b2e507cf19f0758f603a1d6a80fd5bb429c083807c677f8"
+    },
+    {
+      "page": 7,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/native/legislation-summary/rhwp_png/rhwp_007.png",
+      "rhwp_sha256": "e22ecda2c9716d1a4b1a8cd71e1b92a30aae1ee9f0c81e0461b32476407cca02",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/native/legislation-summary/pdf_png/pdf-007.png",
+      "pdf_sha256": "d18392e438298eb306f6571ed5d417c5f51173f5ffc583ba37831712791727a3"
+    },
+    {
+      "page": 8,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/native/legislation-summary/rhwp_png/rhwp_008.png",
+      "rhwp_sha256": "9b361e7af297c101ca52a2035484ee31734449fe78020458e9d3b14609b60ed2",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/native/legislation-summary/pdf_png/pdf-008.png",
+      "pdf_sha256": "d161c680d336d8fc93f8f8e5054e4df10dae16df1e231ddc8fa9d41acf11fcda"
+    },
+    {
+      "page": 9,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/native/legislation-summary/rhwp_png/rhwp_009.png",
+      "rhwp_sha256": "575d645bb136ff1a85869eaca9721e740bd71ec4d03d897ec21993690710aec7",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/native/legislation-summary/pdf_png/pdf-009.png",
+      "pdf_sha256": "866c4e002fea763f067c43895a8bb8eb3c0a6e6664004b44da8f78842caca8b2"
+    },
+    {
+      "page": 10,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/native/legislation-summary/rhwp_png/rhwp_010.png",
+      "rhwp_sha256": "442df4723cf6298d39a857123b95cb4c5c1cd8ef792e00db7ed57ee7a415dff0",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/native/legislation-summary/pdf_png/pdf-010.png",
+      "pdf_sha256": "60b07f02c9969356a542e8c3dba227f8bb9b692f290f66351061344a628a08cd"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.72362,
+      "silhouette_raw_unmatched_pixels": 255,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 92264,
+      "tolerant_content_match_percent": 99.72362
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.23795,
+      "silhouette_raw_unmatched_pixels": 543,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 71255,
+      "tolerant_content_match_percent": 99.23795
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.79278,
+      "silhouette_raw_unmatched_pixels": 151,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 72871,
+      "tolerant_content_match_percent": 99.79278
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.39724,
+      "silhouette_raw_unmatched_pixels": 498,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 82620,
+      "tolerant_content_match_percent": 99.39724
+    },
+    {
+      "page": 5,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.5376,
+      "silhouette_raw_unmatched_pixels": 391,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 84558,
+      "tolerant_content_match_percent": 99.5376
+    },
+    {
+      "page": 6,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.59981,
+      "silhouette_raw_unmatched_pixels": 371,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 92705,
+      "tolerant_content_match_percent": 99.59981
+    },
+    {
+      "page": 7,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.82932,
+      "silhouette_raw_unmatched_pixels": 107,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 62690,
+      "tolerant_content_match_percent": 99.82932
+    },
+    {
+      "page": 8,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.98457,
+      "silhouette_raw_unmatched_pixels": 5,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 32395,
+      "tolerant_content_match_percent": 99.98457
+    },
+    {
+      "page": 9,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.98219,
+      "silhouette_raw_unmatched_pixels": 5,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 28070,
+      "tolerant_content_match_percent": 99.98219
+    },
+    {
+      "page": 10,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.37139,
+      "silhouette_raw_unmatched_pixels": 158,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 25135,
+      "tolerant_content_match_percent": 99.37139
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 10,
+      "pdf": 10
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue8652/1740000-201700020_legislation_interim_summary.hwp",
+      "sha256": "b8871ad2fa2fb1f0f16586d0bf4e76033b2cabed6db92e306863db9124829cb7"
+    },
+    "pdf": {
+      "path": "pdf/issue8652/1740000-201700020_legislation_interim_summary-2020.pdf",
+      "sha256": "73986101977b25f267c4bf45c09bec2df6e3b3b6e8471fe7c5ab57110cf47c12"
+    },
+    "git_head": "01d2197973e282d7c96671cb1335ad83fbe68e8d",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+      "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+      "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+      "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+      "version": "152.0.7947.0",
+      "wrapper_version": "5.12.1",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/rhwp-native",
+      "path": "output/issue8856/note-reference-source-style/rhwp-native",
+      "sha256": "47203f928bac9f3c8d27293edf6a87351fa51d3342c326016190303d51328219"
+    },
+    "native_webfont_fallback": {
+      "registry_sha256": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
+      "mappings": {},
+      "document_glyph_fallbacks": [],
+      "unmapped_sources": [],
+      "local_document_substitutes": [],
+      "resources": [],
+      "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+    },
+    "raster_backend": "native-skia",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2022",
+    "font_environment": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/788df92b9a40ee2bb5969ec7e3a38c1f2a247cd71ca8b6a340a27e4b3f5a3627.json",
+      "sha256": "788df92b9a40ee2bb5969ec7e3a38c1f2a247cd71ca8b6a340a27e4b3f5a3627"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+          "sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/native.ttf",
+          "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/native.ttf",
+          "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+          "sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941/native.ttf",
+          "sha256": "d88ec0ddb32437f9df01fcd6faafed8521e1c11d27ef174d1f4c2bd39ae457d7"
+        }
+      ]
+    }
+  },
+  "checkpoint": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/native/legislation-summary/silhouette-checkpoint.json"
+}
