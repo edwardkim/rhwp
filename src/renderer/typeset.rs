@@ -2594,7 +2594,20 @@ fn paragraph_saved_vpos_reset_starts_new_page_after(
     }
 
     let next_first_vpos = next_para.line_segs.first().map(|s| s.vertical_pos);
-    let curr_last_vpos = current_para.line_segs.last().map(|s| s.vertical_pos);
+    // [#8904] 되감김은 앞 문단 끝과 다음 문단 시작 사이의 **저장** 사실이다. 저장 줄이 없어
+    // 줄을 합성한 글 문단은 저장 당시와 줄 나눔이 같다는 근거가 없으므로(익명화 등으로 글이
+    // 바뀐 문단), 합성 줄 끝을 그 사실의 앞쪽으로 쓰지 않는다. 글이 없는 문단은 글자 모양이
+    // 정하는 한 줄이라 합성 줄도 저장 당시와 같은 점유를 가진다.
+    let curr_last_vpos = if para_has_visible_text(current_para) {
+        current_para
+            .line_segs
+            .iter()
+            .rev()
+            .find(|s| !is_synthetic_line_seg(s))
+            .map(|s| s.vertical_pos)
+    } else {
+        current_para.line_segs.last().map(|s| s.vertical_pos)
+    };
     let multi_col = col_count > 1;
     let allowed_top_vpos = if is_hwp3_variant { 1500 } else { 0 };
 
