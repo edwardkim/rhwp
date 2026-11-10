@@ -34,6 +34,7 @@ Refs #
 - [ ] [변경 범위별 필수 검증](https://github.com/edwardkim/rhwp/blob/devel/CONTRIBUTING.md#pr-전-체크리스트)을 수행하고, 제출 HEAD가 검증한 commit과 같음을 확인
 - [ ] Rust source·test/baseline helper·Rust 검증 입력 변경 시: [별도 worktree 준비](https://github.com/edwardkim/rhwp/blob/devel/CONTRIBUTING.md#rust-검증-worktree-준비와-실행) 후 `cargo fmt --all -- --check`, native·WASM32·workspace all-target Clippy 통과
 - [ ] Rust 변경 시: 범위에 해당하는 focused·전체 integration·Native Skia 회귀 및 시각 검증 수행
+- [ ] 저장 결과 영향 변경 시(리베이스 여부 무관): 실제 제품 경로에서 편집 → 저장 → 다시 열기 → 재저장 → 다시 열기로 변경 내용과 기존 내용·참조 보존을 확인하고, 지원 저장 형식·변경한 교차 저장 경로·중요 경계의 회귀 검사와 결과를 기록함 ([일반 기능·반복 저장 검증](https://github.com/edwardkim/rhwp/blob/devel/CONTRIBUTING.md#편집저장열기-기능과-반복-저장-검증)). 비해당이면 실제 소비 경로의 근거를 적음
 - [ ] 조판 영향 변경 시: 실제 검증할 HWP/HWPX를 검토 대상 commit에 포함하고 본문에 SHA 고정 다운로드 링크·재현 상태·대응 페이지를 기재함. 생성 입력도 HWP/HWPX로 저장해 제공하며 입력 미첨부 시 PR을 보류함
 - [ ] 조판 영향 여부를 실제 소비 경로로 판단했고, 영향이 있으면 Native/fresh WASM Visual Sweep·페이지별 TSV·직접 review/overlay 확인 완료 (한 페이지라도 **90% 미만** 또는 측정 불가이면 본인 branch에서 수정·재실행; 정확히 90%는 통과)
 - [ ] 전체 Native/fresh WASM TSV 원문을 본문에 넣고 게시 후 API로 확인했거나, 본문 크기 제한 시 asset 원본의 SHA 고정 raw 링크를 넣고 다운로드 바이트·SHA-256이 생성 원본과 같은지 확인함 ([저장소 보존·링크 예시](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#tsv-원문-본문-삽입과-저장소-링크))
