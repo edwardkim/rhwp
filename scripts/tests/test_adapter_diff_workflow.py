@@ -89,6 +89,23 @@ class AdapterDiffWorkflowTests(unittest.TestCase):
         self.assertIn("timeout-minutes: 25", worker)
         self.assertIn("tools/adapter_diff/harness.py --ci --strict", worker)
 
+    def test_preflight_checkout_budget_leaves_time_for_fail_closed_finalization(self) -> None:
+        """전체 이력 checkout이 늦어도 판정과 본 검증을 작업 제한으로 취소하지 않는다."""
+        preflight = self.wf.split("  adapter-impact:\n", maxsplit=1)[1].split(
+            "\n  adapter-diff:\n", maxsplit=1
+        )[0]
+        header = preflight.split("    outputs:", maxsplit=1)[0]
+        checkout = preflight.split(
+            "      - name: Check out current-base merge tree inputs\n", maxsplit=1
+        )[1].split("      - name: Verify current-base merge tree\n", maxsplit=1)[0]
+        self.assertIn("    timeout-minutes: 10\n", header)
+        self.assertIn("        timeout-minutes: 8\n", checkout)
+        self.assertIn("        continue-on-error: true\n", checkout)
+        finalize = preflight.split("      - name: Finalize adapter impact\n", maxsplit=1)[1]
+        self.assertIn("if: ${{ always() }}", finalize)
+        self.assertIn("adapter_required='true'", finalize)
+        self.assertIn("current-base-merge-input-unavailable", preflight)
+
     def test_uses_debug_cargo_test_not_release_archive(self) -> None:
         self.assertIn("run-adapter-diff.mjs --cargo-test", self.wf)
         self.assertNotIn("--release", self.wf)
