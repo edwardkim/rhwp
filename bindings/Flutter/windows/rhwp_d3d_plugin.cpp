@@ -271,6 +271,18 @@ class RhwpD3dPlugin final : public flutter::Plugin {
       if (found != args.end()) {
         if (auto* item = record(integer(found->second))) return limits(item->state->publication_mode, item->state->close_ack_required);
         else if (const auto* receipt = textures_.completed(int64_t(integer(found->second)))) return limits(receipt->mode, receipt->close_ack);
+      } else if (auto group = args.find(Value("groupId")); group != args.end()) {
+        const auto generation = args.find(Value("deviceGeneration"));
+        if (group_ && group_->identity.matches(integer(group->second)) &&
+            generation != args.end() && integer(generation->second) == group_->identity.generation) {
+          // Group calls carry no textureId/publicationMode. Derive retry policy
+          // from this exact retained owner, never the caller's requested mode.
+          const auto member = group_->identity.textures[0];
+          if (auto* item = record(member); item && item->state->generation == group_->identity.generation)
+            return limits(item->state->publication_mode, item->state->close_ack_required);
+          if (const auto* receipt = textures_.completed(int64_t(member)); receipt && receipt->generation == group_->identity.generation)
+            return limits(receipt->mode, receipt->close_ack);
+        }
       } else mode = publication_mode(args);
     } catch (...) { /* Invalid request metadata cannot choose a transfer mode. */ }
     return limits(mode);
