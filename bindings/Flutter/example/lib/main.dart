@@ -20,9 +20,6 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
   NativeEditorController? _editor;
   String? _error;
   bool _busy = true;
-  bool get _usesGpuViewport =>
-      _texture != null &&
-      _document?.transport.capabilities['atomicImeEdits'] == true;
 
   @override
   void initState() {
@@ -306,7 +303,7 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
             ],
           ),
         if (_lifecycle?.sourcePath != null) Text(_lifecycle!.sourcePath!),
-        if (_document != null && !_usesGpuViewport)
+        if (_document != null)
           Wrap(
             spacing: 8,
             crossAxisAlignment: WrapCrossAlignment.center,
@@ -358,38 +355,18 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
               ? const SizedBox.shrink()
               : AbsorbPointer(
                   absorbing: _lifecycle?.isBusy == true,
-                  child: _usesGpuViewport
-                      ? NativeEditorView(
-                          document: _document!,
-                          onControllerChanged: (editor) => _editor = editor,
-                          viewportBuilder: _texture == null
-                              ? null
-                              : (
-                                  context,
-                                  document,
-                                  page,
-                                  viewport,
-                                  cpuFallback,
-                                ) => NativeTextureView(
-                                  controller: _texture!,
-                                  viewport: viewport,
-                                  page: page,
-                                  cpuFallback: cpuFallback,
-                                ),
-                        )
-                      : NativePagedDocumentView(
-                          document: _document!,
-                          controller: _pages,
-                          editable:
-                              _document!
-                                  .transport
-                                  .capabilities['atomicImeEdits'] ==
-                              true,
-                          onControllerChanged: (editor) => _editor = editor,
-                          onViewportReady: (_) {
-                            if (mounted) setState(() {});
-                          },
-                        ),
+                  child: NativePagedDocumentView(
+                    document: _document!,
+                    controller: _pages,
+                    gpuController: _texture,
+                    editable:
+                        _document!.transport.capabilities['atomicImeEdits'] ==
+                        true,
+                    onControllerChanged: (editor) => _editor = editor,
+                    onViewportReady: (_) {
+                      if (mounted) setState(() {});
+                    },
+                  ),
                 ),
         ),
       ],

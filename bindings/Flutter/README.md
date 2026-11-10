@@ -212,7 +212,7 @@ GPU 종료 Future가 반환되어도 `retirePending`이면 view와 owner를 유�
 예제의 작은 경로·결정 UI와 실제 Native 저장/복구/종료 검사는
 [문서 수명 계약](DOCUMENT_LIFECYCLE.md)을 따른다. OS 창 닫기 hook과 제품 앱은 범위에 포함하지 않는다.
 
-## 다중 페이지 CPU 참조 viewport (P105)
+## 다중 페이지 참조 viewport (P105·P111)
 
 `NativePagedDocumentView(document: document, controller: controller)`는 문서당 하나의
 view generation으로 보이는 페이지 영역만 순서대로 요청한다. `NativePagedViewportController`의
@@ -231,8 +231,11 @@ view generation으로 보이는 페이지 영역만 순서대로 요청한다. `
 페이지 배치·포인터 hit-test·선택/caret overlay·IME candidate는 같은 `NativePageViewport`
 변환을 사용한다. DPR은 raster 해상도에만 적용한다. Native caret가 화면 밖으로 이동하면
 같은 배치 결과로 스크롤하고, 새 문서 ID는 이전 문서의 탐색 위치를 초기화한다.
-이 뷰는 CPU 참조 경로다. 기존 단일 페이지 `NativeTextureView`와 별도로 사용하며,
-여러 페이지의 GPU consumer 완료·texture 재사용이 검증됐다고 표시하지 않는다.
+`gpuController`가 없는 기본값은 기존 CPU 참조 경로다. 선택적인
+`gpuController: textureController`를 주면 같은 `NativeDocumentViewport`의 보이는 최대 4쪽을
+동일한 document/revision/font/view/device stamp로 capture하고 한 GPU target의 placements로
+게시한다. 단일 페이지 `NativeTextureView` API도 유지한다. 여러 페이지의 GPU consumer 완료나
+target 재사용을 추가한 계약은 아니다. [GPU 다중 페이지 계약](GPU_MULTIPAGE_VIEWPORT.md)을 따른다.
 
 ```bash
 flutter test --no-pub test/native_multipage_view_test.dart
@@ -247,9 +250,12 @@ flutter test --no-pub test/native_multipage_integration_test.dart \
 전쪽 비교·실물 OS IME/AT 및 GPU qualification은 별도 범위다.
 
 기본 example은 CPU 다중 페이지 뷰와 최소 이전/다음·확대/축소 조작을 사용한다.
-`RHWP_GPU=true`로 GPU controller가 연결되면 기존 단일 페이지 texture 참조 경로를 유지한다.
-다중 페이지 뷰도 `onControllerChanged`로 같은 view-owned editor를 전달하므로 P104 lifecycle은
-문서 교체 전에 입력 큐를 기다릴 수 있다.
+`RHWP_GPU=true`로 GPU controller가 연결되면 같은 다중 페이지 뷰·탐색·입력 owner를 유지하며
+GPU 출력을 선택한다. 정상 GPU 경로에서는 CPU raster/decode를 실행하지 않고, 확정된 GPU
+fallback 뒤에만 기존 CPU batch를 만든다. 문서/resource 오류는 실패 진단으로 남는다.
+`RHWP_GPU_CONTINUOUS=true`는 기존 Windows immutable ownership transfer 또는 macOS AppKit
+Metal opt-in 선택을 유지한다. `onControllerChanged`로 같은 view-owned editor를 전달하므로
+P104 lifecycle은 문서 교체 전에 입력 큐를 기다릴 수 있다.
 
 다른 `NativeDocument` owner에 viewport/controller를 다시 연결하면 이전 문서의 탐색 위치와
 대기 중 page jump를 초기화한다. 같은 문서가 재조판되어 쪽수가 줄면 대기 jump를 새 쪽수에
