@@ -4295,13 +4295,12 @@ impl LayoutEngine {
                                 fn_num,
                             );
                             let base_ts = resolved_to_text_style(styles, current_cs_id, 0);
-                            let sup_font_size = FootnoteMarkerNode::font_size(base_ts.font_size);
-                            let sup_ts = TextStyle {
-                                font_size: sup_font_size,
-                                font_family: base_ts.font_family.clone(),
-                                ..Default::default()
-                            };
-                            let sup_w = estimate_text_width(&fn_text, &sup_ts);
+                            let sup_ts = FootnoteMarkerNode::reference_style(
+                                base_ts.font_size,
+                                &base_ts.font_family,
+                                base_ts.color,
+                            );
+                            let sup_w = estimate_text_width_exact(&fn_text, &sup_ts);
                             let run_bbox_h =
                                 stored_line_baseline_at(ch_idx).unwrap_or(if wrapped_below_table {
                                     text_line_baseline
@@ -11424,17 +11423,13 @@ impl LayoutEngine {
                 };
                 if !note_width_inserted[fni] && in_range {
                     note_width_inserted[fni] = true;
-                    let fn_text = note_marker_text_from_control(
+                    note_width += super::note_reference::reference(
                         para.and_then(|p| p.controls.get(ctrl_idx)),
                         fnum,
-                    );
-                    let sup_size = FootnoteMarkerNode::font_size(ts.font_size);
-                    let sup_ts = TextStyle {
-                        font_size: sup_size,
-                        font_family: ts.font_family.clone(),
-                        ..Default::default()
-                    };
-                    note_width += estimate_text_width_exact(&fn_text, &sup_ts);
+                        ts.clone(),
+                        ctrl_idx,
+                    )
+                    .4;
                 }
             }
             // 글자겹침 run: PUA 다자리 숫자는 1글자 폭, 그 외는 font_size * char_count

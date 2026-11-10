@@ -1,5 +1,5 @@
 //! 관계형: 합성 TextRun·공개 fixture 글꼴의 glyph coverage·replay와 typed 실패를 검사한다.
-//! 주석 갱신: 2026-11-10T08:36:48+09:00; #8856 연속 그림자의 실제 엄격 재생 검사를 추가했다.
+//! 주석 갱신: 2026-11-10T09:15:00+09:00; #8856 연속 그림자의 실제 엄격 재생 검사를 추가했다.
 //! 입력은 파일 내부 합성 문서·PageLayerTree 또는 저장소의 허가된 글꼴 fixture다.
 //! API·소유·자원/합성 paint 계약이며 실물 문서 페이지의 조판 위치를 고정하지 않는다.
 //! 이 assertion의 독립 한컴 PDF 대비 Native/fresh WASM raw 측정값은 비해당이다.
@@ -1380,4 +1380,30 @@ fn native_glyph_replay_keeps_the_prepared_continuous_shadow_samples() {
 #[test]
 fn issue_8856_replacement_symbol_ink_keeps_the_intrinsic_cell_under_negative_tracking() {
     super::replacement_symbol_cell::assert_replacement_symbol_ink_keeps_the_intrinsic_cell_under_negative_tracking();
+}
+
+#[test]
+fn issue_8856_legacy_native_exporter_prepares_the_actual_supplied_program() {
+    use super::legacy_shadow_fixture::{actual_run, host_request_document};
+    use rhwp::document_core::queries::{
+        png_export::NativePngExporter, rendering::PngExportOptions,
+    };
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/fonts/RHWPHostFixture-Regular.ttf");
+    for current in [false, true] {
+        let mut core = host_request_document(current, 2);
+        let exporter = NativePngExporter::new(
+            RenderProfile::Print,
+            PngExportOptions {
+                font_paths: vec![path.clone()],
+                ..Default::default()
+            },
+        );
+        exporter.prepare_document(&mut core).unwrap();
+        let run = actual_run(&core, RenderProfile::Print);
+        assert!(
+            run.style.continuous_shadow.is_some(),
+            "실제 PNG 내보내기도 선택한 프로그램으로 계획을 만든다: current={current}"
+        );
+    }
 }

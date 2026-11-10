@@ -1484,7 +1484,9 @@ impl WebCanvasRenderer {
                 self.ctx.set_text_align("start");
             }
         }
-        if let Some(ref data) = img.data {
+        // 빈 payload는 원본 그림 칸만 보존하며 decode할 이미지 자원이 아니다.
+        // 비어 있지 않은 손상 데이터는 기존 decode/오류 경로를 그대로 거친다.
+        if let Some(data) = img.data.as_ref().filter(|data| !data.is_empty()) {
             let preserve_color_watermark = img.is_real_picture_watermark_tone_preset();
             let is_watermark_image = crate::renderer::image_resolver::is_watermark_image(img);
             let mut baked_watermark = false;
@@ -1616,10 +1618,10 @@ impl WebCanvasRenderer {
     }
 
     fn render_footnote_marker(&mut self, bbox: &BoundingBox, marker: &FootnoteMarkerNode) {
-        let sup_size = FootnoteMarkerNode::font_size(marker.base_font_size);
-        let font = format!("{:.1}px {}", sup_size, marker.font_family);
+        let style = marker.paint_style();
+        let font = format!("{:.1}px {}", style.font_size, style.font_family);
         self.ctx.set_font(&font);
-        self.ctx.set_fill_style_str(&color_to_css(marker.color));
+        self.ctx.set_fill_style_str(&color_to_css(style.color));
         let y = bbox.y + marker.baseline;
         let _ = self.ctx.fill_text(&marker.text, bbox.x, y);
     }

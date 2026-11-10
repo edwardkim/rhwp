@@ -736,6 +736,21 @@ pub struct FootnoteMarkerNode {
 }
 
 impl FootnoteMarkerNode {
+    /// 참조 번호는 본문 run의 양쪽 정렬·탭·자간을 소비하지 않는 독립 paint다.
+    /// 폭 측정과 모든 backend가 같은 스타일을 사용해 뒤 본문과 겹치지 않게 한다.
+    pub(crate) fn reference_style(base: f64, family: &str, color: u32) -> TextStyle {
+        TextStyle {
+            font_family: family.to_owned(),
+            font_size: Self::font_size(base),
+            color,
+            ..Default::default()
+        }
+    }
+
+    pub(crate) fn paint_style(&self) -> TextStyle {
+        Self::reference_style(self.base_font_size, &self.font_family, self.color)
+    }
+
     /// 독립 한컴 Print에서 8/10/20pt 본문 번호는 본문 크기의 3/4이다.
     pub fn font_size(base: f64) -> f64 {
         base * 0.75

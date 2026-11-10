@@ -12,11 +12,9 @@ pub(super) fn reference(
     control_index: usize,
 ) -> Reference {
     let text = paragraph_layout::note_marker_text_from_control(control, number);
-    let marker_style = TextStyle {
-        font_size: FootnoteMarkerNode::font_size(style.font_size),
-        ..style.clone()
-    };
-    let width = estimate_text_width(&text, &marker_style);
+    let marker_style =
+        FootnoteMarkerNode::reference_style(style.font_size, &style.font_family, style.color);
+    let width = estimate_text_width_exact(&text, &marker_style);
     (number, text, style, control_index, width)
 }
 

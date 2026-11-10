@@ -987,13 +987,13 @@ impl SvgRenderer {
                 }
             }
             RenderNodeType::FootnoteMarker(marker) => {
-                let sup_size =
-                    super::render_tree::FootnoteMarkerNode::font_size(marker.base_font_size);
-                let color = color_to_svg(marker.color);
-                let font_family = if marker.font_family.is_empty() {
+                let style = marker.paint_style();
+                let sup_size = style.font_size;
+                let color = color_to_svg(style.color);
+                let font_family = if style.font_family.is_empty() {
                     "sans-serif"
                 } else {
-                    &marker.font_family
+                    &style.font_family
                 };
                 let y = node.bbox.y + marker.baseline;
                 self.output.push_str(&format!(

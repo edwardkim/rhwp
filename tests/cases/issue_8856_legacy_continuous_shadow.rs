@@ -1,90 +1,13 @@
 //! 관계형: 인쇄 세대와 무관한 연속 그림자 계획·본문 소유·저장 보존을 검사한다.
-//! 주석 갱신: 2026-11-10T01:24:40+09:00 (Asia/Seoul).
+//! 주석 갱신: 2026-11-10T09:15:00+09:00 (Asia/Seoul).
 //! MIT 합성 TTF 내장 계약으로 설치 글꼴·고정 px에 의존하지 않는다.
 //! 관련 interview 전2쪽 stage2 최소 글꼴 최저 Native 97.02270%, fresh WASM 97.15145%.
 //! 근거: mydocs/pr/assets/issue8856/stage2-table-circles/validation.json.
 //! 독립 한컴 2020/2024의 NONE/DROP/CONTINUOUS 대조와 원본 분석은 stage3 작업 기록을 따른다.
 #![cfg(not(target_arch = "wasm32"))]
 
-use rhwp::{
-    model::bin_data::{BinData, BinDataContent, BinDataType},
-    paint::{LayerNode, LayerNodeKind, PaintOp, RenderProfile},
-    renderer::render_tree::TextRunNode,
-    DocumentCore,
-};
-
-fn fixture(current: bool, kind: u8) -> DocumentCore {
-    let mut core = DocumentCore::new_empty();
-    core.create_blank_document_native().unwrap();
-    core.insert_text_native(0, 0, 0, "A").unwrap();
-    let mut doc = core.document().clone();
-    for fonts in &mut doc.doc_info.font_faces {
-        for font in fonts {
-            font.name = "RHWP Host Fixture".into();
-            font.is_embedded = true;
-            font.resolved_bin_data_id = Some(1);
-        }
-    }
-    for style in &mut doc.doc_info.char_shapes {
-        style.base_size = 900;
-        style.shadow_type = kind;
-        style.shadow_offset_x = 7;
-        style.shadow_offset_y = 3;
-    }
-    doc.doc_info.bin_data_list.push(BinData {
-        data_type: BinDataType::Embedding,
-        storage_id: 1,
-        extension: Some("ttf".into()),
-        ..Default::default()
-    });
-    doc.bin_data_content.push(BinDataContent {
-        id: 1,
-        extension: "ttf".into(),
-        data: include_bytes!("../fixtures/fonts/RHWPHostFixture-Regular.ttf")
-            .to_vec()
-            .into(),
-    });
-    core.set_document(doc);
-    core.set_hangul2024_compat(current);
-    core
-}
-
-fn collect(node: &LayerNode, runs: &mut Vec<TextRunNode>) {
-    match &node.kind {
-        LayerNodeKind::Group { children, .. } => {
-            for child in children {
-                collect(child, runs);
-            }
-        }
-        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
-            collect(child, runs)
-        }
-        LayerNodeKind::Leaf { ops } => {
-            for op in ops {
-                if let PaintOp::TextRun { run, .. } = op {
-                    if run.display_or_text() == "A" {
-                        runs.push(run.as_ref().clone());
-                    }
-                }
-            }
-        }
-    }
-}
-
-fn actual_run(core: &DocumentCore, profile: RenderProfile) -> TextRunNode {
-    let original = core.export_hwp_native().unwrap();
-    let tree = core.build_page_layer_tree_with_profile(0, profile).unwrap();
-    let mut runs = Vec::new();
-    collect(&tree.root, &mut runs);
-    assert_eq!(runs.len(), 1, "본문 A의 누락·중복이 없다");
-    assert_eq!(core.page_count(), 1);
-    assert_eq!(
-        core.export_hwp_native().unwrap(),
-        original,
-        "paint 계획이 저장 원본을 바꾸지 않는다"
-    );
-    runs.pop().unwrap()
-}
+use super::legacy_shadow_fixture::{actual_run, fixture, host_request_document};
+use rhwp::paint::RenderProfile;
 
 #[test]
 fn legacy_and_current_print_keep_the_same_continuous_samples() {
@@ -138,22 +61,6 @@ fn screen_keeps_its_own_shadow_for_both_generations() {
     }
 }
 
-fn host_request_document(current: bool, kind: u8) -> DocumentCore {
-    let mut core = fixture(current, kind);
-    let mut doc = core.document().clone();
-    for fonts in &mut doc.doc_info.font_faces {
-        for font in fonts {
-            font.is_embedded = false;
-            font.resolved_bin_data_id = None;
-        }
-    }
-    doc.doc_info.bin_data_list.clear();
-    doc.bin_data_content.clear();
-    core.set_document(doc);
-    core.set_hangul2024_compat(current);
-    core
-}
-
 #[test]
 fn legacy_host_supply_requests_include_the_actual_shadow_text() {
     for current in [false, true] {
@@ -184,32 +91,6 @@ fn legacy_tab_without_continuous_shadow_keeps_the_old_request_contract() {
         assert!(
             requests.is_empty(),
             "2024 탭 리더의 공급 규칙을 이전 세대로 확장하지 않는다"
-        );
-    }
-}
-
-#[cfg(feature = "native-skia")]
-#[test]
-fn legacy_native_exporter_prepares_the_actual_supplied_program() {
-    use rhwp::document_core::queries::{
-        png_export::NativePngExporter, rendering::PngExportOptions,
-    };
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/fonts/RHWPHostFixture-Regular.ttf");
-    for current in [false, true] {
-        let mut core = host_request_document(current, 2);
-        let exporter = NativePngExporter::new(
-            RenderProfile::Print,
-            PngExportOptions {
-                font_paths: vec![path.clone()],
-                ..Default::default()
-            },
-        );
-        exporter.prepare_document(&mut core).unwrap();
-        let run = actual_run(&core, RenderProfile::Print);
-        assert!(
-            run.style.continuous_shadow.is_some(),
-            "실제 PNG 내보내기도 선택한 프로그램으로 계획을 만든다: current={current}"
         );
     }
 }
