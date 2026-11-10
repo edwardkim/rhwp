@@ -2053,7 +2053,9 @@ impl SkiaLayerRenderer {
                                 false,
                                 false,
                                 false,
-                                None,
+                                marker.source_run.as_deref().and_then(|run| {
+                                    run.validated_layout_positions_for(&marker.text)
+                                }),
                                 0,
                                 false,
                                 false,
@@ -4209,6 +4211,7 @@ mod tests {
             display_text: None,
         };
         let marker = FootnoteMarkerNode {
+            source_run: None,
             number: 1,
             text: "1)".to_string(),
             base_font_size: 18.0,

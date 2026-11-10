@@ -2075,7 +2075,8 @@ export class CanvasKitLayerRenderer {
           bbox: op.bbox,
           text: op.text,
           baseline: op.baseline ?? op.fontSize ?? 7,
-          style: { fontFamily: op.fontFamily, fontSize: op.fontSize, color: op.color },
+          style: op.style ?? { fontFamily: op.fontFamily, fontSize: op.fontSize, color: op.color },
+          positions: op.positions,
         });
         return;
       case 'formObject':

@@ -737,9 +737,19 @@ fn paint_op_work_units(op: &PaintOp) -> usize {
             .saturating_add(form.appearance.font_family.len())
             .saturating_add(form.name.len()),
         PaintOp::RawSvg { raw, .. } => raw.svg.len(),
-        PaintOp::FootnoteMarker { marker, .. } => {
-            marker.text.len().saturating_add(marker.font_family.len())
-        }
+        PaintOp::FootnoteMarker { marker, .. } => marker
+            .text
+            .len()
+            .saturating_add(marker.font_family.len())
+            .saturating_add(
+                marker
+                    .source_run
+                    .as_ref()
+                    .and_then(|run| run.layout_positions.as_ref())
+                    .map_or(0, |positions| {
+                        positions.len().saturating_mul(std::mem::size_of::<f64>())
+                    }),
+            ),
         PaintOp::ControlLabel { label, .. } => label.len(),
         PaintOp::Line { .. }
         | PaintOp::Rectangle { .. }
@@ -3507,6 +3517,7 @@ mod tests {
         let tree = tree_with_ops(vec![PaintOp::footnote_marker(
             bbox(),
             FootnoteMarkerNode {
+                source_run: None,
                 number: 1,
                 text: "1)".to_string(),
                 base_font_size: 12.0,

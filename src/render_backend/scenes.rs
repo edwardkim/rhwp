@@ -292,6 +292,7 @@ fn text_run_node(text: &str) -> TextRunNode {
 
 fn footnote_marker_node() -> FootnoteMarkerNode {
     FootnoteMarkerNode {
+        source_run: None,
         number: 1,
         text: "1)".into(),
         base_font_size: 10.0,

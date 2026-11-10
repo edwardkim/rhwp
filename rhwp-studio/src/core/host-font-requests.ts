@@ -37,7 +37,7 @@ export function collectDocumentCanvasKitFontUsage(trees: Iterable<PageLayerTree>
       else if (node.kind === 'clipRect' || node.kind === 'clipPath') stack.push(node.child);
       else for (const op of node.ops) {
         if (op.type !== 'textRun' && op.type !== 'charOverlap' && op.type !== 'footnoteMarker') continue;
-        const style = op.type === 'footnoteMarker' ? { fontFamily: op.fontFamily } : op.style;
+        const style = op.type === 'footnoteMarker' ? (op.style ?? { fontFamily: op.fontFamily }) : op.style;
         const family = style?.fontFamily;
         if (!family) continue;
         const usage = { family, bold: style?.bold === true, italic: style?.italic === true };
@@ -151,7 +151,7 @@ export function collectHostFontRequests(tree: PageLayerTree): LocalFontRecord[] 
         continue;
       }
       if (op.type !== 'textRun' && op.type !== 'charOverlap' && op.type !== 'footnoteMarker') continue;
-      const styles = [op.type === 'footnoteMarker' ? { fontFamily: op.fontFamily } : op.style];
+      const styles = [op.type === 'footnoteMarker' ? (op.style ?? { fontFamily: op.fontFamily }) : op.style];
       if (op.type === 'charOverlap' && op.composition && Array.isArray(op.composition.interior)) {
         if (op.composition.border) styles.push(op.composition.border.style);
         styles.push(...op.composition.interior.slice(0, 9).map(glyph => glyph.style));

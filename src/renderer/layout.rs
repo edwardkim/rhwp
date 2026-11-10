@@ -13074,7 +13074,7 @@ impl LayoutEngine {
             };
             let note_advance: f64 = table_note_references
                 .iter()
-                .map(|reference| reference.4)
+                .map(|reference| reference.width)
                 .sum();
             // 저장 줄 없는 빈 host 의 전폭 어울림 표: typeset 과 같은 helper 로 표 상단과
             // 표 아래 host 줄을 정한다.

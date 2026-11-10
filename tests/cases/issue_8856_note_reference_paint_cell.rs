@@ -1,9 +1,10 @@
-//! 관계형: 원본 참조 번호의 자연 paint 칸·뒤 본문 소속과 본문 자간의 비간섭을 검사한다.
-//! 주석 갱신: 2026-11-10T09:01:00+09:00.
-//! report-628 95쪽의 최소 글꼴 Native97.30697% / fresh WASM97.33682% (96dpi/PDFium/raw2px).
-//! 원본 글꼴 대조는 Native99.96475% / fresh WASM99.96474%이며 최소 조건과 섞지 않는다.
-//! 독립 Print403.52CSSpx와 수정 전401.344CSSpx의 진단은 별도 증적이며 여기서는 절대 px를 고정하지 않는다.
-//! 설치 글꼴 없이 원본 source owner·번호와 검증된 프로그램 전진의 포함 관계를 검사한다.
+//! 관계형: 참조 번호의 공통 paint 전진 칸·뒤 본문 소속과 본문 자간의 비간섭을 검사한다.
+//! 주석 갱신: 2026-11-10T10:07:17+09:00.
+//! report-628 95쪽의 최소 글꼴 Native97.64481% / fresh WASM97.64831% (96dpi/PDFium/raw2px).
+//! 원본 글꼴 대조99.99111% 및 독립 Print Gulim 공급 대조99.99487%와 최소 조건을 섞지 않는다.
+//! 독립 Print는 표시 Gulim의 자연 전진에 TJ 보정을 적용한다. 대체 face의 비양자화 폭을
+//! 고정하지 않고, 실제 출력에서 확인한 공통 전진 배열·칸·다음 본문의 비겹침을 검사한다.
+//! 설치 글꼴을 요구하지 않으며 절대 px를 고정하지 않는다.
 
 use rhwp::{
     renderer::render_tree::{RenderNode, RenderNodeType},
@@ -58,7 +59,7 @@ fn marker_cell_does_not_inherit_body_tracking_that_paint_omits() {
     );
 }
 
-/// 검사 유형: 관계형. paint가 사용하는 face·축소 크기의 자연 전진 칸에 뒤 본문이 침범하지 않는다.
+/// 검사 유형: 관계형. 모든 paint 소비자에게 전달한 원본 전진 칸에 뒤 본문이 침범하지 않는다.
 #[test]
 fn following_text_stays_outside_the_reference_program_cell() {
     let c = core();
@@ -72,26 +73,30 @@ fn following_text_stays_outside_the_reference_program_cell() {
         unreachable!()
     };
     assert_eq!(m.text, "56)");
-    let metric = rhwp::renderer::font_metrics_data::find_metric(&m.font_family, false, false)
-        .expect("원본 paint face의 확인된 프로그램 전진")
-        .metric;
-    let natural = m
-        .text
-        .chars()
-        .map(|ch| {
-            f64::from(metric.get_width(ch).expect("각 참조 문자의 원본 전진"))
-                / f64::from(metric.em_size)
-        })
-        .sum::<f64>()
-        * m.base_font_size
-        * 0.75;
+    let run = m.source_run.as_deref().expect("공통 참조 paint 전진");
+    assert_eq!(run.text, m.text);
+    assert_eq!(run.section_index, Some(m.section_index));
+    assert_eq!(run.para_index, Some(m.para_index));
+    assert_eq!(
+        run.char_start, None,
+        "생성 세 글자를 본문 세 글자로 중복 소유하지 않는다"
+    );
+    let positions = run.layout_positions.as_ref().expect("확정된 글리프 전진");
+    assert_eq!(positions.len(), m.text.chars().count() + 1);
+    assert_eq!(positions.first(), Some(&0.0));
+    assert!(positions.windows(2).all(|pair| pair[1] >= pair[0]));
+    let paint_end = *positions.last().unwrap();
+    assert!(
+        (marker.bbox.width - paint_end).abs() < 1.0 / 75.0,
+        "측정 칸과 모든 소비자에게 전달한 paint 칸이 다르다"
+    );
     let following:Vec<_>=all.iter().filter(|n|matches!(&n.node_type,RenderNodeType::TextRun(r)if r.para_index==Some(472)&&r.text.starts_with("이 공무상 재해"))).collect();
     assert_eq!(following.len(), 1);
     assert!(
-        following[0].bbox.x - marker.bbox.x >= natural - 1.0 / 75.0,
-        "같은 원본 face의 자연 paint 칸을 뒤 본문이 침범한다: 실제 {} / 원본 프로그램 {}",
+        following[0].bbox.x - marker.bbox.x >= paint_end - 1.0 / 75.0,
+        "원본 전진 배열의 paint 칸을 뒤 본문이 침범한다: 실제 {} / paint 끝 {}",
         following[0].bbox.x - marker.bbox.x,
-        natural
+        paint_end
     );
     assert!(
         marker.bbox.y <= following[0].bbox.y + following[0].bbox.height,

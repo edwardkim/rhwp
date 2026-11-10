@@ -716,6 +716,9 @@ impl PlaceholderNode {
 /// 각주/미주 마커 렌더 노드
 #[derive(Debug, Clone, Serialize)]
 pub struct FootnoteMarkerNode {
+    /// 번호 서식·언어 슬롯에서 해소한 공통 paint. 논리 소유는 이 마커에 남긴다.
+    #[serde(skip)]
+    pub source_run: Option<Box<TextRunNode>>,
     /// 각주 번호
     pub number: u16,
     /// 위첨자 텍스트 ("1)" 등)
@@ -748,7 +751,10 @@ impl FootnoteMarkerNode {
     }
 
     pub(crate) fn paint_style(&self) -> TextStyle {
-        Self::reference_style(self.base_font_size, &self.font_family, self.color)
+        self.source_run.as_ref().map_or_else(
+            || Self::reference_style(self.base_font_size, &self.font_family, self.color),
+            |run| run.style.clone(),
+        )
     }
 
     /// 독립 한컴 Print에서 8/10/20pt 본문 번호는 본문 크기의 3/4이다.

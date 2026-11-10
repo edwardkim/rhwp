@@ -1618,6 +1618,10 @@ impl WebCanvasRenderer {
     }
 
     fn render_footnote_marker(&mut self, bbox: &BoundingBox, marker: &FootnoteMarkerNode) {
+        if let Some(run) = marker.source_run.as_deref() {
+            self.render_text_run(bbox, run);
+            return;
+        }
         let style = marker.paint_style();
         let font = format!("{:.1}px {}", style.font_size, style.font_family);
         self.ctx.set_font(&font);

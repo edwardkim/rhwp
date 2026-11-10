@@ -987,6 +987,14 @@ impl SvgRenderer {
                 }
             }
             RenderNodeType::FootnoteMarker(marker) => {
+                if let Some(run) = marker.source_run.as_deref() {
+                    self.render_node(&RenderNode::new(
+                        node.id,
+                        RenderNodeType::TextRun(run.clone()),
+                        node.bbox,
+                    ));
+                    return;
+                }
                 let style = marker.paint_style();
                 let sup_size = style.font_size;
                 let color = color_to_svg(style.color);
