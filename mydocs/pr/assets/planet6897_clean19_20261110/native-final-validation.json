@@ -10,7 +10,7 @@
   "minimum": 92.85,
   "below_90": [],
   "protected_regressions": [],
-  "direct_reading_audit": "native-direct-reading-reuse-audit.json",
+  "direct_reading_audit": "direct-reading-final-audit.json",
   "producer": {
     "complete": true,
     "phase": "complete",
