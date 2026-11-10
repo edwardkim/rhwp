@@ -1,5 +1,5 @@
 //! 관계형·고정형 — [#8882] 저장 줄 없는 칸이 섞인 글자처럼 취급 표의 행은 재조판 내용 아래로 눌리지 않는다.
-//! 주석 갱신: 2026-11-10 15:20 KST (새 파일)
+//! 주석 갱신: 2026-11-10 18:20 KST (새 파일, devel 5f4e95c187 로 rebase 후 재측정)
 //!
 //! 입력: 공개 결재문서 36404364 원본 `samples/issue8882/36404364-reflowed-cell-tac-row-floor.hwpx`.
 //! 기준: 한컴 engine 2020 Print PDF `pdf/issue8882/36404364-reflowed-cell-tac-row-floor-2020.pdf`(4쪽).
@@ -18,7 +18,7 @@
 //! - 저장 줄 없는 칸 문단의 TAC 중첩 표는 칸 높이에 한 번만 들어간다(공개 샘플
 //!   `samples/hwpx/opengov/36384689…` 1쪽의 같은 형상, 그 쪽은 수정 후에도 다른 원인으로 84.20%).
 //!
-//! 측정(2026-11-10, 이 파일과 같은 커밋의 코드, base = upstream/devel 3170fddc48,
+//! 측정(2026-11-10, 이 파일과 같은 커밋의 코드, base = upstream/devel 5f4e95c187,
 //! `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`, raw =
 //! `silhouette_raw_match_percent`, 글꼴 `ttfs/opensource` — 문서 본 글꼴 없는 환경):
 //! - Native: 4쪽 / 4쪽, p1 97.72 · p2 98.42 · p3 99.52 · p4 98.17, 최저 97.72
