@@ -41,7 +41,7 @@ GPU가 정상인 동안 page metadata만 읽고 CPU region raster/decode는 만�
 
 Native/Flutter의 page transform과 DPR은 한 번만 적용하며 hit-test·caret/selection·IME도 같은 배치를 쓴다.
 현재 target 4096 dimension·4,194,304 pixels, visible region 16 MiB·4쪽 한도는 유지한다.
-명시적인 P112 tiled controller는 [최대 두 GPU 타일](README.md#최대-두-gpu-타일-p112)의 별도 geometry 정책과
+Linux·Windows의 명시적인 P112 tiled controller는 [최대 두 GPU 타일](README.md#최대-두-gpu-타일-p112)의 별도 geometry 정책과
 낮은 DPR의 전체 CPU fallback을 사용한다. 이것이 GPU consumer fence·기존 target 재사용·물리 GPU 성능이나
 전체 driver 메모리 상한을 제공하지 않는다. Windows/macOS legacy immutable credit과 연속 opt-in 계약도 유지한다.
 

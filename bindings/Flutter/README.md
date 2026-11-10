@@ -253,9 +253,10 @@ flutter test --no-pub test/native_multipage_integration_test.dart \
 `RHWP_GPU=true`로 GPU controller가 연결되면 같은 다중 페이지 뷰·탐색·입력 owner를 유지하며
 GPU 출력을 선택한다. 정상 GPU 경로에서는 CPU raster/decode를 실행하지 않고, 확정된 GPU
 fallback 뒤에만 기존 CPU batch를 만든다. 문서/resource 오류는 실패 진단으로 남는다.
-GPU example은 지원 capability가 있는 Linux·Windows·AppKit Metal에서 기존 두 producer slot을
-사용하는 P112 tile group을 선택한다. `RHWP_GPU_TILES=false`로 기존 단일 target을 선택할 수 있다.
-CV Metal은 단일 target 계약을 유지하며 AppKit Metal 선택은 아래 continuous opt-in이 필요하다.
+GPU example은 지원 capability가 있는 Linux·Windows에서 기존 두 producer slot을 사용하는
+P112 tile group을 선택한다. `RHWP_GPU_TILES=false`로 기존 단일 target을 선택할 수 있다.
+macOS의 CV Metal·AppKit Metal은 기존 단일 target 계약을 유지한다. AppKit Metal 선택은 아래
+continuous opt-in이 필요하다.
 `RHWP_GPU_CONTINUOUS=true`는 기존 Windows immutable ownership transfer 또는 macOS AppKit
 Metal opt-in 선택을 유지한다. `onControllerChanged`로 같은 view-owned editor를 전달하므로
 P104 lifecycle은 문서 교체 전에 입력 큐를 기다릴 수 있다.
@@ -265,6 +266,11 @@ P104 lifecycle은 문서 교체 전에 입력 큐를 기다릴 수 있다.
 맞춰 처리하며, 이전 page index 때문에 viewport 오류가 고정되지 않게 한다.
 
 ## 최대 두 GPU 타일 (P112)
+
+현재 native tile group 구현은 Linux·Windows에 제공한다. macOS native plugin은 검증된 기존
+단일 target 소스를 유지한다. 새 Mac tile group은 Apple SDK compile/link·실행 증거 확보 후
+[#8701](https://github.com/edwardkim/rhwp/issues/8701)의 후속으로 검토한다. 공통 Dart client는
+capability가 없는 plugin에 그룹을 요청하지 않으며, example도 Mac의 타일 모드를 켜지 않는다.
 
 `NativeTextureController(useTileGroups: true, ...)`는 문서·입력·presentation owner 하나로
 viewport를 두 물리 직사각형으로 나눈다. 각 축 8192·합계 8 Mi pixels 이하에서 타일별 4096축·
@@ -276,7 +282,7 @@ viewport를 두 물리 직사각형으로 나눈다. 각 축 8192·합계 8 Mi p
 공유한다. Windows의 registrar import owner는 타일마다 고유하다. 최대 네 쪽의 snapshot은 각각
 한 번 capture하며 두 타일의 page job은 같은 destructive lease를 공유한다. 그룹 전체를 검증·준비한
 뒤에만 인수하고, 두 publication의 전체 stamp와 page receipt 확인 뒤 같은 opaque cover를 벗긴다.
-AppKit native cover도 두 layer의 receipt를 확인한다. 늦은 응답·불확정 release는 기존 credit을 유지한다.
+늦은 응답·불확정 release는 기존 credit을 유지한다.
 
 기본 `NativeDocumentViewport`의 CPU 계획은 여전히 16 MiB다. 큰 GPU 계획은 명시적인
 `NativeViewportRasterPolicy.gpuTiled`를 사용한다. `NativePagedDocumentView`는 tiled controller에

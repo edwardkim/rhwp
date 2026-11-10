@@ -48,7 +48,6 @@ std::atomic<uint64_t> nextMetalViewHandle{1};
 NSDictionary* MetalViewLimits() {
   return @{@"backend":@"appkitMetalLayer",@"presentationKind":@"nativeView",@"maxViews":@2,
     @"maximumDrawableCount":@3,@"maxTargetBytes":@(kMaxFrameBytes),
-    @"tileGroups":@YES,@"maxTileGroupTiles":@2,@"maxTileGroupSnapshots":@4,@"sharedSnapshotLeases":@YES,
     @"continuousPresentationSupported":@YES,@"drawableReuseManagedByCoreAnimation":@YES,
     @"consumerGpuCompletionVerified":@NO,@"wholeFrameReadbacks":@0,
     @"nativeCoverSupported":@YES,@"nativeCoverRequired":@YES,
@@ -428,14 +427,9 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
 
 @interface RhwpMetalViewPlugin : NSObject <FlutterPlugin, FlutterPlatformViewFactory>
 - (void)handleCall:(FlutterMethodCall*)call result:(FlutterResult)result;
-- (void)handleTileGroupCall:(FlutterMethodCall*)call result:(FlutterResult)result;
 @end
 @implementation RhwpMetalViewPlugin {
   rhwp::metal::RetirementRegistry<MetalViewState,MetalViewReceipt> _views;
-  rhwp::tiles::Identity _tileGroup;
-  uint64_t _creatingGroupGeneration;
-  __strong NSDictionary* _tileTerminal;
-  std::vector<uint64_t> _unexposedCreations;
 }
 + (void)registerWithRegistrar:(id<FlutterPluginRegistrar>)registrar {
   RhwpMetalViewPlugin* plugin = [[RhwpMetalViewPlugin alloc] init];
@@ -458,7 +452,6 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
 }
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
   try { [self handleCall:call result:result]; }
-  catch (const std::invalid_argument& error) {result([FlutterError errorWithCode:@"arguments" message:[NSString stringWithUTF8String:error.what()] details:nil]);}
   catch (const std::exception&) {result([FlutterError errorWithCode:@"nativeAllocation" message:@"Native Metal view allocation failed." details:nil]);}
 }
 - (void)handleCall:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -466,11 +459,6 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
   if ([call.method isEqualToString:@"capabilities"]) {result(MetalViewLimits());return;}
   if (![call.arguments isKindOfClass:[NSDictionary class]]) {result([FlutterError errorWithCode:@"arguments" message:@"Expected an argument map." details:nil]);return;}
   NSDictionary* arguments = call.arguments;
-  if ([call.method isEqualToString:@"createGroup"] || [call.method isEqualToString:@"submitGroup"] ||
-      [call.method isEqualToString:@"statusGroup"] || [call.method isEqualToString:@"closeGroup"] ||
-      [call.method isEqualToString:@"retireGroupAck"] || [call.method isEqualToString:@"setCoveredGroup"]) {
-    [self handleTileGroupCall:call result:result];return;
-  }
   if ([call.method isEqualToString:@"create"]) {
     NSString* input=arguments[@"libraryPath"];
     if (![input isKindOfClass:[NSString class]] || !input.isAbsolutePath || input.length>4096) {
@@ -481,11 +469,8 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
     while(active<2&&!activeProducers.compare_exchange_weak(active,active+1)){}
     if(active>=2){result([FlutterError errorWithCode:@"backpressure" message:@"Two native producers/layers are retained." details:nil]);return;}
     *slot=1;
-    uint64_t generation=_creatingGroupGeneration;
-    if(!generation) {
-      generation=nextDeviceGeneration.load();
-      while(generation<=INT64_MAX&&!nextDeviceGeneration.compare_exchange_weak(generation,generation+1)){}
-    }
+    uint64_t generation=nextDeviceGeneration.load();
+    while(generation<=INT64_MAX&&!nextDeviceGeneration.compare_exchange_weak(generation,generation+1)){}
     uint64_t handle=nextMetalViewHandle.load();
     while(handle<=INT64_MAX&&!nextMetalViewHandle.compare_exchange_weak(handle,handle+1)){}
     NSString* path=input.stringByResolvingSymlinksInPath;
@@ -576,133 +561,6 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
       @"accepted":@(accepted),@"renderedStamp":renderedStamp});return;
   }
   result(FlutterMethodNotImplemented);
-}
-- (void)handleTileGroupCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-  NSDictionary* args=call.arguments;
-  if([call.method isEqualToString:@"createGroup"]) {
-    // Unexposed partial creation has no Dart owner which could acknowledge it.
-    // Its normal producer/layer completion must still be proven before pruning.
-    for(auto it=_unexposedCreations.begin();it!=_unexposedCreations.end();) {
-      __block id ack=nil;
-      [self handleCall:[FlutterMethodCall methodCallWithMethodName:@"retireAck" arguments:@{@"textureId":@(*it)}]
-          result:^(id value){ack=value;}];
-      if([ack isKindOfClass:[NSDictionary class]]&&[ack[@"acknowledged"] boolValue])it=_unexposedCreations.erase(it);else ++it;
-    }
-    if(_tileGroup.valid()&&!_tileTerminal){result([FlutterError errorWithCode:@"backpressure" message:@"One tile group is still retained." details:nil]);return;}
-    uint64_t generation=nextDeviceGeneration.load();
-    while(generation<=INT64_MAX&&!nextDeviceGeneration.compare_exchange_weak(generation,generation+1)){}
-    if(!generation||generation>INT64_MAX){result([FlutterError errorWithCode:@"generation" message:@"Tile group generation exhausted." details:nil]);return;}
-    rhwp::tiles::Identity identity;identity.generation=generation;
-    NSMutableArray* members=[NSMutableArray arrayWithCapacity:2];
-    id creationError=nil;
-    _unexposedCreations.reserve(_unexposedCreations.size()+2);
-    struct ResetGeneration {uint64_t& value;~ResetGeneration(){value=0;}} reset{_creatingGroupGeneration};
-    _creatingGroupGeneration=generation;
-    auto rollback=[&] {
-      for(const auto handle:identity.textures)if(handle){auto view=_views.lookup(handle);if(view){_views.close(handle);StopMetalView(view);_unexposedCreations.push_back(handle);}}
-    };
-    try {
-      for(size_t index=0;index<2;++index) {
-        __block id created=nil;
-        [self handleCall:[FlutterMethodCall methodCallWithMethodName:@"create" arguments:args] result:^(id value){created=value;}];
-        uint64_t handle=0;
-        if(![created isKindOfClass:[NSDictionary class]]||!Unsigned(created[@"textureId"],handle)||!handle){creationError=created;break;}
-        identity.textures[index]=handle;[members addObject:created];
-      }
-    } catch (...) {rollback();throw;}
-    if(!identity.valid()) {
-      rollback();
-      result(creationError?:[FlutterError errorWithCode:@"nativeAllocation" message:@"Tile group creation failed." details:nil]);return;
-    }
-    _tileGroup=identity;_tileTerminal=nil;
-    result(@{@"groupId":@(identity.id()),@"deviceGeneration":@(generation),@"members":members});return;
-  }
-  uint64_t group=0,generation=0;
-  if(!Unsigned(args[@"groupId"],group)||!_tileGroup.matches(group)||!Unsigned(args[@"deviceGeneration"],generation)||generation!=_tileGroup.generation) {
-    result([FlutterError errorWithCode:@"contextChanged" message:@"Unknown or stale tile group." details:nil]);return;
-  }
-  if(_tileTerminal) {
-    if([call.method isEqualToString:@"submitGroup"]){result([FlutterError errorWithCode:@"closed" message:@"Tile group is closed." details:nil]);return;}
-    result(_tileTerminal);return;
-  }
-  std::array<std::shared_ptr<MetalViewState>,2> views;
-  for(size_t index=0;index<2;++index) {
-    views[index]=_views.lookup(_tileGroup.textures[index]);
-    if(!views[index]&&![call.method isEqualToString:@"retireGroupAck"]&&![call.method isEqualToString:@"statusGroup"]){
-      result([FlutterError errorWithCode:@"closed" message:@"Tile member is not active." details:nil]);return;
-    }
-  }
-  if([call.method isEqualToString:@"submitGroup"]) {
-    id tilesValue=args[@"tiles"];uint64_t clear=0;
-    if(![tilesValue isKindOfClass:[NSArray class]]||[tilesValue count]!=2||!Unsigned(args[@"clearColor"],clear,UINT32_MAX)||(clear>>24)!=0xff) {
-      result([FlutterError errorWithCode:@"arguments" message:@"Two tiles and opaque clear color are required." details:nil]);return;
-    }
-    NSArray* tiles=tilesValue;std::array<std::shared_ptr<Job>,2> jobs;
-    for(size_t index=0;index<2;++index) {
-      uint64_t handle=0;
-      if(![tiles[index] isKindOfClass:[NSDictionary class]]||!Unsigned(tiles[index][@"textureId"],handle)||handle!=_tileGroup.textures[index]) {
-        result([FlutterError errorWithCode:@"arguments" message:@"Tile order/identity differs." details:nil]);return;
-      }
-      NSMutableDictionary* tile=[tiles[index] mutableCopy];tile[@"stamp"]=args[@"stamp"];tile[@"clearColor"]=args[@"clearColor"];
-      jobs[index]=ParseJob(tile,generation,false);
-      if(!jobs[index]){result([FlutterError errorWithCode:@"arguments" message:@"Invalid tile target/stamp/placements." details:nil]);return;}
-      std::shared_ptr<NativeApi> api;
-      {std::lock_guard<std::mutex> lock(views[index]->owner->mutex);api=views[index]->owner->api;}
-      if(!api||!MetalJobCurrent(api,jobs[index])){result([FlutterError errorWithCode:@"staleFrame" message:@"Tile source/view/device stamp is stale." details:nil]);return;}
-    }
-    const auto ids=rhwp::tiles::unique_snapshots({jobs[0]->ids,jobs[1]->ids});
-    NSMutableArray* accepted=[NSMutableArray arrayWithCapacity:ids.size()];for(const auto snapshot:ids)[accepted addObject:@(snapshot)];
-    NSDictionary* reply=@{@"accepted":@YES,@"acceptedStamp":StampValue(jobs[0]->stamp),@"acceptedSnapshots":accepted,@"limits":MetalViewLimits()};
-    if(!EnqueueTileGroup(views[0]->owner,views[1]->owner,jobs[0],jobs[1])) {
-      result([FlutterError errorWithCode:@"staleFrame" message:@"Neither tile was accepted." details:nil]);return;
-    }
-    ScopedMetalViewAnimations animations;
-    for(const auto& view:views){NSView* native=nil;{std::lock_guard<std::mutex> lock(view->owner->mutex);view->visibility.invalidate();native=view->view;}native.hidden=YES;}
-    result(reply);return;
-  }
-  if([call.method isEqualToString:@"setCoveredGroup"]) {
-    id covered=args[@"covered"];uint64_t serial=0;
-    if(![covered isKindOfClass:[NSNumber class]]||CFGetTypeID((__bridge CFTypeRef)covered)!=CFBooleanGetTypeID()||!Unsigned(args[@"visibilitySerial"],serial)||!serial) {
-      result([FlutterError errorWithCode:@"arguments" message:@"Boolean cover and positive visibility serial required." details:nil]);return;
-    }
-    const bool hide=[covered boolValue];std::array<std::shared_ptr<Job>,2> displayed;
-    std::array<bool,2> current{};
-    for(size_t index=0;index<2;++index) {
-      auto owner=views[index]->owner;std::shared_ptr<NativeApi> api;
-      {std::lock_guard<std::mutex> lock(owner->mutex);displayed[index]=views[index]->displayed;api=owner->api;}
-      current[index]=displayed[index]&&api&&MetalJobCurrent(api,displayed[index]);
-    }
-    std::array<NSView*,2> native{};bool accepted=true;NSMutableArray* members=[NSMutableArray arrayWithCapacity:2];
-    {
-      std::scoped_lock lock(views[0]->owner->mutex,views[1]->owner->mutex);
-      for(size_t index=0;index<2;++index) {
-        auto view=views[index];auto owner=view->owner;
-        current[index]=current[index]&&!owner->closed&&view->displayed==displayed[index]&&owner->gate.current(displayed[index]->sequence,displayed[index]->stamp)&&
-            [args[@"stamp"] isKindOfClass:[NSDictionary class]]&&[args[@"stamp"] isEqual:StampValue(displayed[index]->stamp)];
-        accepted=accepted&&serial>view->visibility.serial()&&(!owner->closed)&&(hide||current[index]);
-      }
-      for(size_t index=0;index<2;++index) {
-        auto view=views[index];native[index]=view->view;
-        if(accepted)view->visibility.apply(serial,hide,current[index]);else view->visibility.invalidate();
-        [members addObject:@{@"textureId":@(_tileGroup.textures[index]),@"covered":@(view->visibility.covered()),
-            @"visibilitySerial":@(view->visibility.serial()),@"accepted":@(accepted),
-            @"renderedStamp":current[index]?StampValue(view->renderedStamp):@{}}];
-      }
-    }
-    ScopedMetalViewAnimations animations;for(const auto view:native)view.hidden=!accepted||hide;
-    result(@{@"groupId":@(group),@"deviceGeneration":@(generation),@"members":members});return;
-  }
-  NSString* memberMethod=[call.method isEqualToString:@"statusGroup"]?@"status":[call.method isEqualToString:@"closeGroup"]?@"close":@"retireAck";
-  NSMutableArray* members=[NSMutableArray arrayWithCapacity:2];
-  for(const auto handle:_tileGroup.textures) {
-    __block id reply=nil;
-    [self handleCall:[FlutterMethodCall methodCallWithMethodName:memberMethod arguments:@{@"textureId":@(handle)}] result:^(id value){reply=value;}];
-    if(![reply isKindOfClass:[NSDictionary class]]){result(reply);return;}
-    NSMutableDictionary* identified=[reply mutableCopy];identified[@"textureId"]=@(handle);[members addObject:identified];
-  }
-  NSDictionary* reply=@{@"groupId":@(group),@"deviceGeneration":@(generation),@"members":members};
-  if([call.method isEqualToString:@"retireGroupAck"])_tileTerminal=reply;
-  result(reply);
 }
 - (void)dealloc {for(const auto& item:_views.records())StopMetalView(item.second.value);}
 @end

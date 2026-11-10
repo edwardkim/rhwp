@@ -51,3 +51,18 @@ current base: 5f4e95c187f64116f48f710c3c048162786c1c14
 7. 원 PR별 판정·미해결 필수 증적·재사용의 exact source 범위를 기록한다. 수용 후보가 준비되면 원 기여 SHA를 보존하는 원격 처리안과 실제 검증 결과로 승인을 요청한다.
 
 Cargo는 기본 작업공간의 `/home/edward/mygithub/rhwp/target/pr-review`만 사용하며 다른 작업과 겹쳐 실행하지 않는다. 원시 API·실행 로그·진단 JSON은 ignored `output/pr-review/seo-rii-20261110`에만 두고, 필요한 최종 사실은 Markdown과 대표 직접 판독 PNG로 남긴다.
+
+## 2026-11-10 메인터너 수용 범위 결정
+
+작업지시자가 “기존 Mac 유지·새 타일 후속 처리”를 선택했다. #8870의 Mac native 타일 구현
+두 파일은 최신 devel의 기존 소스를 유지하고 새 Mac 타일 지원은 #8701 후속으로 남긴다.
+기여자의 원 commit SHA는 로컬 통합 이력에 보존하며 Linux·Windows·공통 Dart 기능은 계속 검증한다.
+README·P112 안내에서 Mac 타일 구현 완료 주장을 제거한다. 기존 Mac GPU 단일 target 경로와
+example의 Mac tileGroups 비활성 조건은 유지한다. 이 결정은 원격 push·PR·merge 승인이 아니다.
+
+초기 통합 `4f6bc33f8e3940947f3d942cdb3af26bb1d6f7cb`에서 Flutter 계약·위젯 269건과 실제
+Native 연동 6건, bundle Python 11건·실제 Dart FFI fixture 3경로, Windows portable·실제 SDK
+compile/link, Linux portable·실제 SDK/GLES·GTK 두 타일 초기/편집/resize 및 실제 Native 번들
+이동 검사를 통과했다. 원시 결과는 ignored output에서 확인하며 정식 검토에 실제 source·명령·수치와
+직접 판독한 대표 PNG만 보존한다. Native Rust input은 기준 devel과 같으며 이번 Mac 제외로
+변경되지 않는다. 이후 결과를 새 source에서 실행했다고 표시하지 않고 실제 소비 source의 동일성으로 연결한다.
