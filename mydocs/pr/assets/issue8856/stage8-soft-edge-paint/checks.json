@@ -1,0 +1,16 @@
+{
+  "stage": "Focused stage8 checks; final submission gates not complete",
+  "fmt": 0,
+  "manifest_with_base": 0,
+  "unit_tiers_with_base": 0,
+  "native_clippy_lib_bin": 0,
+  "base": "b5064fae1eefff92d60464c51844a38debec09f9",
+  "log_sha256": {
+    "fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "manifest-check.log": "32a2627a581cabec7cecc7dc6a7d6c1a722f203fef608000fa8f1ecf51039110",
+    "unit-tiers-check.log": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0",
+    "native-clippy.log": "b3b951585a92f5712400af4681c7a0d4926e6b3602a8b2dbb9de749a2eef3b13",
+    "links-stage8-complete.log": "c229e3b3dd8f86ec00ae184c8deed96c8565a475f48564e7fe2eddf8c2a0f6fa"
+  },
+  "links": 0
+}

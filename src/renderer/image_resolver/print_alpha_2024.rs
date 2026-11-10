@@ -76,6 +76,34 @@ pub(super) fn encode_planes(
     encode_planes_with_palette(rgba, quality, true, color)
 }
 
+/// PNG의 부드러운 가장자리 Print는 무손실 RGB 평면과 1bit 마스크를 따로 보낸다.
+/// 색은 효과 전 원 alpha의 전달색이며, 새 coverage로 다시 premultiply하지 않는다.
+pub(super) fn encode_effect_planes(
+    mut pixels: image::RgbaImage,
+    coverage: &image::GrayImage,
+) -> Option<Vec<u8>> {
+    if pixels.dimensions() != coverage.dimensions() {
+        return None;
+    }
+    for ((x, y, pixel), alpha) in pixels.enumerate_pixels_mut().zip(coverage.pixels()) {
+        let opaque = alpha[0] == 255 || alpha[0] > bayer_rank(x, y);
+        let source_alpha = pixel[3];
+        for channel in &mut pixel.0[..3] {
+            *channel = if opaque {
+                print_color(*channel, source_alpha)
+            } else {
+                255
+            };
+        }
+        pixel[3] = if opaque { 255 } else { 0 };
+    }
+    let mut bytes = Cursor::new(Vec::new());
+    pixels.write_to(&mut bytes, image::ImageFormat::Png).ok()?;
+    let mut bytes = bytes.into_inner();
+    super::png_sampling::mark_print_separate_alpha(&mut bytes);
+    Some(bytes)
+}
+
 pub(super) fn encode_planes_with_palette(
     mut rgba: image::RgbaImage,
     quality: u8,

@@ -155,8 +155,7 @@ impl LayerBuilder {
         if self.profile == RenderProfile::Print
             && !fonts.is_empty()
             && (super::metafile::has_wmf(&tree.root)
-                || (self.hancom2024_print_bitmap
-                    && super::text_shadow::needs_font_metrics(&tree.root))
+                || super::text_shadow::needs_font_metrics(&tree.root)
                 || super::dot_leader::needs_font_program(&tree.root))
         {
             for font in fonts {
@@ -413,19 +412,30 @@ impl LayerBuilder {
                     run.display_text = Some(String::new());
                 }
                 let mut leader_paths = Vec::new();
-                if self.profile == RenderProfile::Print && self.hangul2024_print && !run.is_vertical
-                {
-                    run.style.continuous_shadow = super::text_shadow::prepare(
-                        &self.metafile_fonts,
-                        run.display_or_text(),
-                        &run.style,
-                        self.layout_dpi,
-                    );
-                    if let Some(plan) = &run.style.continuous_shadow {
-                        [run.style.shadow_offset_x, run.style.shadow_offset_y] = plan.extent();
+                // 연속 글자 그림자는 2020·2024 Print에서 같은 장치 계약이다.
+                // 글꼴 기반 공통 계획을 특정 조판 세대에 한정하지 않는다.
+                if self.profile == RenderProfile::Print && !run.is_vertical {
+                    if run.style.shadow_type == 2 {
+                        // 준비된 TextRun의 전송·재생은 원본 SFNT를 다시 요구하지 않는다.
+                        // 이미 확정한 계획을 빈 재조회 결과로 지우지 않는다.
+                        if run.style.continuous_shadow.is_none() {
+                            run.style.continuous_shadow = super::text_shadow::prepare(
+                                &self.metafile_fonts,
+                                run.display_or_text(),
+                                &run.style,
+                                self.layout_dpi,
+                            );
+                        }
+                        if let Some(plan) = &run.style.continuous_shadow {
+                            [run.style.shadow_offset_x, run.style.shadow_offset_y] = plan.extent();
+                        }
+                    } else {
+                        run.style.continuous_shadow = None;
                     }
-                    leader_paths =
-                        super::dot_leader::prepare(&self.metafile_fonts, node.bbox, &mut run);
+                    if self.hangul2024_print {
+                        leader_paths =
+                            super::dot_leader::prepare(&self.metafile_fonts, node.bbox, &mut run);
+                    }
                 }
                 let mut ops = text_run_ops(node.bbox, run, self.output_options);
                 ops.extend(
@@ -545,6 +555,15 @@ impl LayerBuilder {
                         // 투영한 paint 연산만 그 프레임 전체에 그림을 재생한다.
                         image.fill_mode = Some(crate::model::style::ImageFillMode::FitToSize);
                     }
+                    let mut soft_edge_payload =
+                        crate::renderer::image_resolver::prepare_picture_soft_edge(
+                            &mut image,
+                            frame,
+                            node.bbox,
+                            self.layout_dpi,
+                            self.shape_group_depth == 0,
+                        );
+                    let soft_edge_prepared = soft_edge_payload.is_some();
                     let group_projection = (self.shape_group_depth > 0
                         && image_fill_clip.is_none())
                     .then(|| super::group_picture::project(&image, frame, self.layout_dpi))
@@ -554,15 +573,26 @@ impl LayerBuilder {
                         vec![PaintOp::image(full, image, Some(payload))]
                     } else {
                         crate::renderer::image_resolver::publish_print_jpeg_crop(&mut image);
-                        let mut resolved = (self.profile == RenderProfile::Print)
-                            .then(|| {
-                                crate::renderer::image_resolver::print_jpeg_payload(
-                                    &image,
-                                    frame,
-                                    self.layout_dpi,
-                                )
+                        let device_effect = soft_edge_payload.as_ref().is_some_and(|p| {
+                            p.kind == crate::paint::ResolvedImageKind::OutputDeviceWindow
+                        });
+                        let resolved_effect = if device_effect {
+                            soft_edge_payload.take()
+                        } else {
+                            None
+                        };
+                        let mut resolved = resolved_effect
+                            .or_else(|| {
+                                (self.profile == RenderProfile::Print)
+                                    .then(|| {
+                                        crate::renderer::image_resolver::print_jpeg_payload(
+                                            &image,
+                                            frame,
+                                            self.layout_dpi,
+                                        )
+                                    })
+                                    .flatten()
                             })
-                            .flatten()
                             .or_else(|| {
                                 if self.profile != RenderProfile::Print
                                     || self.hancom2024_print_bitmap
@@ -703,6 +733,18 @@ impl LayerBuilder {
                             {
                                 frame = surface_frame;
                                 resolved = Some(payload);
+                            }
+                        }
+                        // 효과 바이트는 원본 bin ID의 지연 재조회로 복원할 수 없다.
+                        // 동일 BinData의 무효과/다른 반경과 resource cache를 공유하지 않는다.
+                        if soft_edge_prepared {
+                            if let Some(payload) = resolved.as_mut() {
+                                if payload.kind == crate::paint::ResolvedImageKind::FormatConverted
+                                {
+                                    payload.kind = crate::paint::ResolvedImageKind::SourceWindow;
+                                }
+                            } else {
+                                resolved = soft_edge_payload;
                             }
                         }
                         vec![PaintOp::image(frame, image, resolved)]

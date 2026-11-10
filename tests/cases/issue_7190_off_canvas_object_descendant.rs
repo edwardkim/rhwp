@@ -1,3 +1,5 @@
+//! 관계형: 명시적으로 이탈시킨 자손 개체의 실제 기하와 진단기 신고를 대조한다.
+//! 주석 갱신: 2026-11-10T00:02:15+09:00 (Asia/Seoul).
 //! [#7190 잔여 축] off-canvas 가 컨테이너 자손의 **그리는 개체**를 안 봐서 용지 밖 그림·수식이
 //! 어느 지표에도 안 잡힌다.
 //!
@@ -24,6 +26,10 @@
 //!
 //! 개체가 **왜** 그 자리에 놓였는가는 이 변경이 다루지 않는다(진단 전용 — `src/diagnostics/`
 //! 밖을 건드리지 않는다). 그러니 새로 잡히는 것은 전부 이전부터 있었는데 안 보이던 결함이다.
+//!
+//! #8856 보정: request의 양식 이탈은 배분 정렬 구현에서 복구한다. 진단기 시험은
+//! 정상 원본의 이탈을 요구하지 않고, 트리의 양식 하나를 용지 밖으로 명시적으로 옮긴
+//! 음성 대조군을 사용한다. 아래 전수 수치는 원 진단기 도입 당시의 이력이다.
 //!
 //! ## `samples` 전수 델타 (`off_canvas_baseline.tsv` 갱신 근거)
 //!
@@ -116,17 +122,28 @@ fn off_canvas_of(rel: &str, page: u32) -> (Vec<OffCanvasAnomaly>, f64) {
     (anomalies.off_canvas, expected_over_right)
 }
 
-/// 표 칸 안의 누름틀이 쪽 우변 밖에 놓인다 — `basic/request.hwp` 1쪽.
-///
-/// 렌더 트리 실측: 칸(`Cell`, 우변 510.0)의 줄은 501.4 에서 끝나는데 `Form` 은
-/// `x=614.0 w=50.0` 에 놓인다. 쪽 우변은 566.9 이므로 **97.1px 이 종이 밖**이다.
-/// 수정 전에는 이 문서의 off-canvas 가 0건이었다.
+/// 양식 자손의 이탈을 진단한다. 원본의 잘못된 배치가 계속 남아 있어야 한다는
+/// 전제를 두지 않고, 양식의 원래 폭을 사용해 음성 대조군의 이탈을 명시한다.
 #[test]
 fn off_canvas_sees_form_outside_the_page_inside_a_table_cell() {
-    let (found, expected_over_right) = off_canvas_of("samples/basic/request.hwp", 0);
+    fn move_form_outside(node: &mut RenderNode, right: f64) -> bool {
+        if matches!(node.node_type, RenderNodeType::FormObject(_)) {
+            node.bbox.x = right + node.bbox.width;
+            return true;
+        }
+        node.children
+            .iter_mut()
+            .any(|child| move_form_outside(child, right))
+    }
+    let core = core("samples/basic/request.hwp");
+    let mut tree = core.build_page_render_tree(0).expect("양식을 포함한 트리");
+    let right = page_right(&tree.root);
+    assert!(move_form_outside(&mut tree.root, right), "양식 음성 대조군");
+    let expected_over_right = max_object_right(&tree.root) - right;
+    let found = scan_page(0, &tree.root, core.page_count(), &AnomalyOptions::default()).off_canvas;
     assert!(
-        expected_over_right > 90.0,
-        "픽스처 전제가 깨졌다 — 쪽 밖 개체가 없다 (초과 {expected_over_right:.1}px)"
+        expected_over_right > 0.0,
+        "명시적으로 옮긴 양식이 실제로 용지 밖에 있어야 한다"
     );
 
     let right: Vec<&OffCanvasAnomaly> = found.iter().filter(|a| a.over_right > 1.0).collect();

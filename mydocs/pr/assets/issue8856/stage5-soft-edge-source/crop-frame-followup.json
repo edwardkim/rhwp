@@ -1,0 +1,135 @@
+{
+  "complete": true,
+  "results": [
+    {
+      "case": "issue_8856_picture_soft_edge_ownership",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/issue8856/start/minimal-font.sb",
+        "env",
+        "-u",
+        "RHWP_FONT_PATH",
+        "CARGO_BUILD_JOBS=8",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8856_picture_soft_edge_ownership",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "started": "2026-11-10T03:22:30.672529+09:00",
+      "ended": "2026-11-10T03:22:33.126338+09:00",
+      "exit": 0,
+      "log_sha256": "98bc3d6a4cc980b51d12bcef068c68d409f39ced93243f9a34d195e4e00d9cb9"
+    },
+    {
+      "case": "issue_8593_picture_soft_edge_dim",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/issue8856/start/minimal-font.sb",
+        "env",
+        "-u",
+        "RHWP_FONT_PATH",
+        "CARGO_BUILD_JOBS=8",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8593_picture_soft_edge_dim",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "started": "2026-11-10T03:22:33.128277+09:00",
+      "ended": "2026-11-10T03:22:35.118170+09:00",
+      "exit": 0,
+      "log_sha256": "8a8365cb937f3080f28224a65e50770f303b47463d3f5666ded2b98ecf8ed08d"
+    },
+    {
+      "case": "issue_8856_legacy_continuous_shadow",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/issue8856/start/minimal-font.sb",
+        "env",
+        "-u",
+        "RHWP_FONT_PATH",
+        "CARGO_BUILD_JOBS=8",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8856_legacy_continuous_shadow",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "started": "2026-11-10T03:22:35.119784+09:00",
+      "ended": "2026-11-10T03:22:46.929756+09:00",
+      "exit": 0,
+      "log_sha256": "1979952386cd19615e109e4ebe8ec5b064766e884d350321cf980f26ce0c3337"
+    },
+    {
+      "case": "code_scanning_pdf_diagnostics",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/issue8856/start/minimal-font.sb",
+        "env",
+        "-u",
+        "RHWP_FONT_PATH",
+        "CARGO_BUILD_JOBS=8",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "code_scanning_pdf_diagnostics",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "started": "2026-11-10T03:22:46.931294+09:00",
+      "ended": "2026-11-10T03:22:56.820232+09:00",
+      "exit": 0,
+      "log_sha256": "23e7e7be32ea711d0b2e4a335382afc5cc28335a345052b31118a9993a1c3c17"
+    }
+  ],
+  "parent": "787ad43f5e",
+  "before": {
+    "passed": 2,
+    "failed": 1,
+    "log_sha256": "04b643baa057e88d9a41bd50743ce854de53c33c85b097fc91ab69657ba6c0e7",
+    "observed": "원본 자르기 기준 None이 저장 후 Some((48000,33676))으로 바뀜"
+  },
+  "after": {
+    "passed": 14,
+    "failed": 0
+  },
+  "source_sha256": {
+    "src/serializer/control.rs": "d9a797a352ac2b6a75e42b1f46a0c44682db24aca2946c52dae354bc2643ac36",
+    "tests/cases/issue_8856_picture_soft_edge_ownership.rs": "791780948a1dd1ceb669e35891b61370f752abc6815b0a2aae7ad8b06ab4fb9d"
+  },
+  "scope": "known soft-edge alpha tail; ordinary legacy no-effect fallback unchanged",
+  "whole_visual_pending": true,
+  "paint_effect_pending": true
+}

@@ -1278,6 +1278,53 @@ pub(crate) fn verified_source_projection_text(
         })
 }
 
+/// 원 프로그램의 확인된 결측을 같은 선언 체인의 실제 폭 공급자가 해소한 경우다.
+/// 부분 폭 표의 누락이나 일반 OS 폴백만으로 문단 전체를 인증하지 않는다.
+pub(crate) fn verified_source_projection_text_with_fallback(style: &TextStyle, text: &str) -> bool {
+    let primary = css_primary_face(&style.font_family);
+    if style.source_font_is_hft
+        || !verified_source_projection_face(primary, style.bold, style.italic)
+    {
+        return false;
+    }
+    text.chars().all(|ch| {
+        if (' '..='~').contains(&ch)
+            || ('가'..='힣').contains(&ch)
+            || super::kopub_symbol_metrics::advance_em(true, false, ch).is_some()
+        {
+            return true;
+        }
+        if font_metrics_data::verified_named_program_has_glyph(
+            primary,
+            style.bold,
+            style.italic,
+            ch,
+        ) != Some(false)
+        {
+            return false;
+        }
+        let decision = char_width_decision(&[ch], &[1], 0, style, false);
+        if decision.width_source != "declaredGlyphFallbackMetric"
+            || decision.character_match != "hit"
+        {
+            return false;
+        }
+        let Some(supplier) = decision.metric else {
+            return false;
+        };
+        style
+            .font_family
+            .split(',')
+            .map(str::trim)
+            .filter(|family| !family.is_empty())
+            .skip(1)
+            .any(|family| {
+                font_metrics_data::find_metric(family, style.bold, style.italic)
+                    .is_some_and(|found| found.metric.name == supplier.metric.name)
+            })
+    })
+}
+
 /// [#7390] `KoPubBatang` 기본 라틴 문자 전진폭. 위와 같은 출처·같은 규약이다.
 static KOPUB_BATANG_LATIN_0: [u16; 95] = [
     312, 312, 312, 573, 573, 745, 789, 312, 312, 312, 419, 648, 312, 503, 312, 468, 573, 573, 573,

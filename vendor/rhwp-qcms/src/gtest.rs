@@ -1,6 +1,8 @@
 //! 관계형: C bindings 테스트의 nullable transform은 역참조 전에 검사한다.
-//! 주석 갱신: 2026-11-09T21:35:30+09:00.
-//! 직전 파일 변경: 2026-10-29T15:34:34+09:00, f125c735c7d2d44eaa44b78c70465bc89af45fb1.
+//! 주석 갱신: 2026-11-10T02:54:44+09:00.
+//! ARM의 NEON 비교는 실제 모듈과 동일한 feature 조건에서만 컴파일한다.
+//! 기능 비활성 환경에서도 일반 C ABI·예산 실패·정상 LUT 검사는 실행한다.
+//! 직전 파일 변경: 2026-11-09T23:30:05+09:00, 913713dbfd0a911130e7d590629a656ffc1940b3.
 //! 시각 측정 비해당: 테스트 포인터의 실패 경계이며 색 변환·배치 기대값은 바꾸지 않는다.
 
 #[cfg(all(test, feature = "c_bindings"))]
@@ -11,13 +13,13 @@ mod gtest {
         transform_util::lut_inverse_interp16, Intent::Perceptual,
     };
     use libc::c_void;
-    #[cfg(target_arch = "aarch64")]
+    #[cfg(all(target_arch = "aarch64", feature = "neon"))]
     use std::arch::is_aarch64_feature_detected;
-    #[cfg(target_arch = "arm")]
+    #[cfg(all(target_arch = "arm", feature = "neon"))]
     use std::arch::is_arm_feature_detected;
     use std::ptr::null_mut;
 
-    #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
+    #[cfg(all(any(target_arch = "arm", target_arch = "aarch64"), feature = "neon"))]
     use crate::transform_neon::{
         qcms_transform_data_bgra_out_lut_neon, qcms_transform_data_rgb_out_lut_neon,
         qcms_transform_data_rgba_out_lut_neon,
@@ -735,14 +737,14 @@ mod gtest {
                 }
             }
 
-            #[cfg(target_arch = "arm")]
+            #[cfg(all(target_arch = "arm", feature = "neon"))]
             {
                 if is_arm_feature_detected!("neon") {
                     assert!(self.ProduceVerifyOutput(Some(qcms_transform_data_rgb_out_lut_neon)))
                 }
             }
 
-            #[cfg(target_arch = "aarch64")]
+            #[cfg(all(target_arch = "aarch64", feature = "neon"))]
             {
                 if is_aarch64_feature_detected!("neon") {
                     assert!(self.ProduceVerifyOutput(Some(qcms_transform_data_rgb_out_lut_neon)))
@@ -764,14 +766,14 @@ mod gtest {
                 }
             }
 
-            #[cfg(target_arch = "arm")]
+            #[cfg(all(target_arch = "arm", feature = "neon"))]
             {
                 if is_arm_feature_detected!("neon") {
                     assert!(self.ProduceVerifyOutput(Some(qcms_transform_data_rgba_out_lut_neon)))
                 }
             }
 
-            #[cfg(target_arch = "aarch64")]
+            #[cfg(all(target_arch = "aarch64", feature = "neon"))]
             {
                 if is_aarch64_feature_detected!("neon") {
                     assert!(self.ProduceVerifyOutput(Some(qcms_transform_data_rgba_out_lut_neon)))
@@ -793,14 +795,14 @@ mod gtest {
                 }
             }
 
-            #[cfg(target_arch = "arm")]
+            #[cfg(all(target_arch = "arm", feature = "neon"))]
             {
                 if is_arm_feature_detected!("neon") {
                     assert!(self.ProduceVerifyOutput(Some(qcms_transform_data_bgra_out_lut_neon)))
                 }
             }
 
-            #[cfg(target_arch = "aarch64")]
+            #[cfg(all(target_arch = "aarch64", feature = "neon"))]
             {
                 if is_aarch64_feature_detected!("neon") {
                     assert!(self.ProduceVerifyOutput(Some(qcms_transform_data_bgra_out_lut_neon)))

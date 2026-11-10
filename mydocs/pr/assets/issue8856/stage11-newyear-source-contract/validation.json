@@ -1,0 +1,1127 @@
+{
+  "scope": "NewYear full3 pages under unchanged minimal and separate original-font conditions, not whole PR acceptance",
+  "cases": [
+    {
+      "phase": "before",
+      "font_scope": "minimal",
+      "backend": "native",
+      "tsv": "before-minimal-native.tsv",
+      "tsv_sha256": "9017c0305db297418c65ada88a6c7f7a7a7965ffdba9238a636ba08d31d9a6a6",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.79863,
+          "silhouette_raw_unmatched_pixels": 7209,
+          "silhouette_boundary_reconciled_pixels": 7208,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 600064,
+          "tolerant_content_match_percent": 99.99983
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.87449,
+          "silhouette_raw_unmatched_pixels": 7181,
+          "silhouette_boundary_reconciled_pixels": 6976,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 638021,
+          "tolerant_content_match_percent": 99.96787
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.42814,
+          "silhouette_raw_unmatched_pixels": 8945,
+          "silhouette_boundary_reconciled_pixels": 8811,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 569072,
+          "tolerant_content_match_percent": 99.97645
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "samples/basic/NewYear_s_Day.hwp",
+          "sha256": "1be2736df6b21687f5c1627bac307cc689171928f6ceb0a235af0bc727eb6372"
+        },
+        "pdf": {
+          "path": "pdf/basic/NewYear_s_Day-hwp-2020.pdf",
+          "sha256": "44b4e5f7517c86034b800ed307fcbf09dcf7242d342fd5e14ddfca9d22537ec0"
+        },
+        "git_head": "8e7867c4423613378c6cce6adb0f9c6215901f56",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/hft-bullet-source-advance/rhwp-hft-bullet-native",
+          "path": "output/issue8856/hft-bullet-source-advance/rhwp-hft-bullet-native",
+          "sha256": "b1b4c1572f8c226d0569a3ec55d073ea974d5b89d22c124932b94f4132ab08fd"
+        },
+        "native_webfont_fallback": {
+          "registry_sha256": "a2dfdd11b0e50ed9512dafdac9207b6d6217d048e2cab1e8569243803e77033e",
+          "mappings": {},
+          "document_glyph_fallbacks": [],
+          "unmapped_sources": [],
+          "local_document_substitutes": [],
+          "resources": [],
+          "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+        },
+        "raster_backend": "native-skia",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2022",
+        "font_environment": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/f8b7150fc9781917df14b8ca9e15d0515000fa65dcf659cc23715ae021e5c2ee.json",
+          "sha256": "f8b7150fc9781917df14b8ca9e15d0515000fa65dcf659cc23715ae021e5c2ee"
+        },
+        "font_supply_ref": {
+          "file": "font-inventories.json",
+          "inventory_sha256": "14c558680f2340bf6b51e2741f5484d36f1c6dc0d0530922adcebacb556c4aa1"
+        }
+      },
+      "images": [
+        {
+          "page": 1,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/before/minimal/native/newyear/rhwp_png/rhwp_001.png",
+          "rhwp_sha256": "bb302fcfa65af48bdf815df1e2431f79c7c505ab49e44095c0a817e1a3341976",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/before/minimal/native/newyear/pdf_png/pdf-001.png",
+          "pdf_sha256": "b2777ba2a6cde33ca8e7ce3d6b24d7d121a3efb2ac6e713adedd8e78ecbb9358"
+        },
+        {
+          "page": 2,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/before/minimal/native/newyear/rhwp_png/rhwp_002.png",
+          "rhwp_sha256": "73ced9e5d4ddb12e36f8255dbd2662d5ed365b4834564f454e728c643e8d78ad",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/before/minimal/native/newyear/pdf_png/pdf-002.png",
+          "pdf_sha256": "af9852be89b90dc4c7578f02dece9a300af30826972cbfa98cca3c2cefba2c75"
+        },
+        {
+          "page": 3,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/before/minimal/native/newyear/rhwp_png/rhwp_003.png",
+          "rhwp_sha256": "36d79ee1b8d7d1008e213bc2edae2317eebeda0a6d92b855809d358b88bc02a4",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/before/minimal/native/newyear/pdf_png/pdf-003.png",
+          "pdf_sha256": "feca8cb81f14fbf54acc7b651ca6b3ef248da9a44ea05a09c5f7628238058096"
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "font_scope": "minimal",
+      "backend": "wasm",
+      "tsv": "before-minimal-wasm.tsv",
+      "tsv_sha256": "7a8265e5eda4c334e81f871d079759e0f94a94438bd21e3d39a86189e2e7755f",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.79858,
+          "silhouette_raw_unmatched_pixels": 7209,
+          "silhouette_boundary_reconciled_pixels": 7208,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 600041,
+          "tolerant_content_match_percent": 99.99983
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.87448,
+          "silhouette_raw_unmatched_pixels": 7181,
+          "silhouette_boundary_reconciled_pixels": 6976,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 638018,
+          "tolerant_content_match_percent": 99.96787
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.42806,
+          "silhouette_raw_unmatched_pixels": 8945,
+          "silhouette_boundary_reconciled_pixels": 8810,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 569043,
+          "tolerant_content_match_percent": 99.97628
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "samples/basic/NewYear_s_Day.hwp",
+          "sha256": "1be2736df6b21687f5c1627bac307cc689171928f6ceb0a235af0bc727eb6372"
+        },
+        "pdf": {
+          "path": "pdf/basic/NewYear_s_Day-hwp-2020.pdf",
+          "sha256": "44b4e5f7517c86034b800ed307fcbf09dcf7242d342fd5e14ddfca9d22537ec0"
+        },
+        "git_head": "8e7867c4423613378c6cce6adb0f9c6215901f56",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/hft-bullet-source-advance/rhwp-hft-bullet-native",
+          "path": "output/issue8856/hft-bullet-source-advance/rhwp-hft-bullet-native",
+          "sha256": "b1b4c1572f8c226d0569a3ec55d073ea974d5b89d22c124932b94f4132ab08fd"
+        },
+        "raster_backend": "wasm-canvas2d",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2022",
+        "font_environment": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/f8b7150fc9781917df14b8ca9e15d0515000fa65dcf659cc23715ae021e5c2ee.json",
+          "sha256": "f8b7150fc9781917df14b8ca9e15d0515000fa65dcf659cc23715ae021e5c2ee"
+        },
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/hft-bullet-source-advance/frozen-pkg/rhwp.js",
+              "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/hft-bullet-source-advance/frozen-pkg/rhwp_bg.wasm",
+              "sha256": "f13c4492f2af08f40076e3d6c4f798ca1d420b36689620584d57517204998bb4"
+            }
+          ],
+          "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+          "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+          "comparison_profile": "print",
+          "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply_ref": {
+          "file": "font-inventories.json",
+          "inventory_sha256": "14c558680f2340bf6b51e2741f5484d36f1c6dc0d0530922adcebacb556c4aa1"
+        }
+      },
+      "images": [
+        {
+          "page": 1,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/before/minimal/wasm/newyear/rhwp_png/rhwp_001.png",
+          "rhwp_sha256": "23b1a3ce116152de47df6707e36385e6b7288fa99c7d22b7fcc43f67db1654a8",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/before/minimal/wasm/newyear/pdf_png/pdf-001.png",
+          "pdf_sha256": "b2777ba2a6cde33ca8e7ce3d6b24d7d121a3efb2ac6e713adedd8e78ecbb9358"
+        },
+        {
+          "page": 2,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/before/minimal/wasm/newyear/rhwp_png/rhwp_002.png",
+          "rhwp_sha256": "260fe179125c355f0ea52126540987a140c1eb31839dd23e3996d20eb93de5f7",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/before/minimal/wasm/newyear/pdf_png/pdf-002.png",
+          "pdf_sha256": "af9852be89b90dc4c7578f02dece9a300af30826972cbfa98cca3c2cefba2c75"
+        },
+        {
+          "page": 3,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/before/minimal/wasm/newyear/rhwp_png/rhwp_003.png",
+          "rhwp_sha256": "7f29b967ff362dcd17802175f417c55a7ba475fd2ce91702e6f066c544536edf",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/before/minimal/wasm/newyear/pdf_png/pdf-003.png",
+          "pdf_sha256": "feca8cb81f14fbf54acc7b651ca6b3ef248da9a44ea05a09c5f7628238058096"
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "font_scope": "original",
+      "backend": "native",
+      "tsv": "before-original-native.tsv",
+      "tsv_sha256": "4238957eef4247d1c61e7fe64664307e5162ba690711ed29a391b6f433a04a35",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.79902,
+          "silhouette_raw_unmatched_pixels": 7206,
+          "silhouette_boundary_reconciled_pixels": 7206,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 600011,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.87432,
+          "silhouette_raw_unmatched_pixels": 7181,
+          "silhouette_boundary_reconciled_pixels": 6976,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 637927,
+          "tolerant_content_match_percent": 99.96786
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.4516,
+          "silhouette_raw_unmatched_pixels": 8783,
+          "silhouette_boundary_reconciled_pixels": 8783,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 567229,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "samples/basic/NewYear_s_Day.hwp",
+          "sha256": "1be2736df6b21687f5c1627bac307cc689171928f6ceb0a235af0bc727eb6372"
+        },
+        "pdf": {
+          "path": "pdf/basic/NewYear_s_Day-hwp-2020.pdf",
+          "sha256": "44b4e5f7517c86034b800ed307fcbf09dcf7242d342fd5e14ddfca9d22537ec0"
+        },
+        "git_head": "8e7867c4423613378c6cce6adb0f9c6215901f56",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/hft-bullet-source-advance/rhwp-hft-bullet-native",
+          "path": "output/issue8856/hft-bullet-source-advance/rhwp-hft-bullet-native",
+          "sha256": "b1b4c1572f8c226d0569a3ec55d073ea974d5b89d22c124932b94f4132ab08fd"
+        },
+        "native_webfont_fallback": {
+          "registry_sha256": "a2dfdd11b0e50ed9512dafdac9207b6d6217d048e2cab1e8569243803e77033e",
+          "mappings": {},
+          "document_glyph_fallbacks": [],
+          "unmapped_sources": [],
+          "local_document_substitutes": [],
+          "resources": [],
+          "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+        },
+        "raster_backend": "native-skia",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2022",
+        "font_supply_ref": {
+          "file": "font-inventories.json",
+          "inventory_sha256": "db5fcdf08473e45f150df0e6fb752f33eeab6229c357497a0c62a9a84d1a9e28"
+        }
+      },
+      "images": [
+        {
+          "page": 1,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/before/original/native/newyear/rhwp_png/rhwp_001.png",
+          "rhwp_sha256": "2ba7cdd5177418712874b56376ac215ef0b527f95084cf98bae96d1594ad8242",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/before/original/native/newyear/pdf_png/pdf-001.png",
+          "pdf_sha256": "b2777ba2a6cde33ca8e7ce3d6b24d7d121a3efb2ac6e713adedd8e78ecbb9358"
+        },
+        {
+          "page": 2,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/before/original/native/newyear/rhwp_png/rhwp_002.png",
+          "rhwp_sha256": "3af001690723472632befd40afb2ab21bac5bb4c38b7d1f826c4ba11d626d6b9",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/before/original/native/newyear/pdf_png/pdf-002.png",
+          "pdf_sha256": "af9852be89b90dc4c7578f02dece9a300af30826972cbfa98cca3c2cefba2c75"
+        },
+        {
+          "page": 3,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/before/original/native/newyear/rhwp_png/rhwp_003.png",
+          "rhwp_sha256": "10bd02a6bfb0d3ea5700a0f7dac77385570565e8ac098d7aec74f234b32a53f7",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/before/original/native/newyear/pdf_png/pdf-003.png",
+          "pdf_sha256": "feca8cb81f14fbf54acc7b651ca6b3ef248da9a44ea05a09c5f7628238058096"
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "font_scope": "original",
+      "backend": "wasm",
+      "tsv": "before-original-wasm.tsv",
+      "tsv_sha256": "4238957eef4247d1c61e7fe64664307e5162ba690711ed29a391b6f433a04a35",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.79897,
+          "silhouette_raw_unmatched_pixels": 7206,
+          "silhouette_boundary_reconciled_pixels": 7206,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 599984,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.87432,
+          "silhouette_raw_unmatched_pixels": 7181,
+          "silhouette_boundary_reconciled_pixels": 6976,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 637923,
+          "tolerant_content_match_percent": 99.96786
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.45155,
+          "silhouette_raw_unmatched_pixels": 8783,
+          "silhouette_boundary_reconciled_pixels": 8783,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 567212,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "samples/basic/NewYear_s_Day.hwp",
+          "sha256": "1be2736df6b21687f5c1627bac307cc689171928f6ceb0a235af0bc727eb6372"
+        },
+        "pdf": {
+          "path": "pdf/basic/NewYear_s_Day-hwp-2020.pdf",
+          "sha256": "44b4e5f7517c86034b800ed307fcbf09dcf7242d342fd5e14ddfca9d22537ec0"
+        },
+        "git_head": "8e7867c4423613378c6cce6adb0f9c6215901f56",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/hft-bullet-source-advance/rhwp-hft-bullet-native",
+          "path": "output/issue8856/hft-bullet-source-advance/rhwp-hft-bullet-native",
+          "sha256": "b1b4c1572f8c226d0569a3ec55d073ea974d5b89d22c124932b94f4132ab08fd"
+        },
+        "raster_backend": "wasm-canvas2d",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2022",
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/hft-bullet-source-advance/frozen-pkg/rhwp.js",
+              "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/hft-bullet-source-advance/frozen-pkg/rhwp_bg.wasm",
+              "sha256": "f13c4492f2af08f40076e3d6c4f798ca1d420b36689620584d57517204998bb4"
+            }
+          ],
+          "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+          "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+          "comparison_profile": "print",
+          "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply_ref": {
+          "file": "font-inventories.json",
+          "inventory_sha256": "db5fcdf08473e45f150df0e6fb752f33eeab6229c357497a0c62a9a84d1a9e28"
+        }
+      },
+      "images": [
+        {
+          "page": 1,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/before/original/wasm/newyear/rhwp_png/rhwp_001.png",
+          "rhwp_sha256": "f57f4bdb1f14627c24948b20a5c8be4aec1762ddec870d57267035987bef4589",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/before/original/wasm/newyear/pdf_png/pdf-001.png",
+          "pdf_sha256": "b2777ba2a6cde33ca8e7ce3d6b24d7d121a3efb2ac6e713adedd8e78ecbb9358"
+        },
+        {
+          "page": 2,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/before/original/wasm/newyear/rhwp_png/rhwp_002.png",
+          "rhwp_sha256": "d26edd5e207aed4dc1cd713b9f2d7100c90b278b7d8bec96fc27e21499ee14ac",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/before/original/wasm/newyear/pdf_png/pdf-002.png",
+          "pdf_sha256": "af9852be89b90dc4c7578f02dece9a300af30826972cbfa98cca3c2cefba2c75"
+        },
+        {
+          "page": 3,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/before/original/wasm/newyear/rhwp_png/rhwp_003.png",
+          "rhwp_sha256": "ac7dff4c8a296e6148aa5ade9bd7d716387cc00b3f37699b16230fd65a011f5d",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/before/original/wasm/newyear/pdf_png/pdf-003.png",
+          "pdf_sha256": "feca8cb81f14fbf54acc7b651ca6b3ef248da9a44ea05a09c5f7628238058096"
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "font_scope": "minimal",
+      "backend": "native",
+      "tsv": "after-minimal-native.tsv",
+      "tsv_sha256": "cf26ebd9bf88f8538a645dae95d07d121075083df44da99b4c991b6900e45fc9",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.79863,
+          "silhouette_raw_unmatched_pixels": 7209,
+          "silhouette_boundary_reconciled_pixels": 7208,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 600064,
+          "tolerant_content_match_percent": 99.99983
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.91391,
+          "silhouette_raw_unmatched_pixels": 6925,
+          "silhouette_boundary_reconciled_pixels": 6925,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 637611,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.42814,
+          "silhouette_raw_unmatched_pixels": 8945,
+          "silhouette_boundary_reconciled_pixels": 8811,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 569072,
+          "tolerant_content_match_percent": 99.97645
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "samples/basic/NewYear_s_Day.hwp",
+          "sha256": "1be2736df6b21687f5c1627bac307cc689171928f6ceb0a235af0bc727eb6372"
+        },
+        "pdf": {
+          "path": "pdf/basic/NewYear_s_Day-hwp-2020.pdf",
+          "sha256": "44b4e5f7517c86034b800ed307fcbf09dcf7242d342fd5e14ddfca9d22537ec0"
+        },
+        "git_head": "8e7867c4423613378c6cce6adb0f9c6215901f56",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/rhwp-newyear-native",
+          "path": "output/issue8856/newyear-source-contract/rhwp-newyear-native",
+          "sha256": "1b1fdfd27237435e8e66a50fe28c95ae755b58005307dbcf95bda705b2ba254d"
+        },
+        "native_webfont_fallback": {
+          "registry_sha256": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
+          "mappings": {},
+          "document_glyph_fallbacks": [],
+          "unmapped_sources": [],
+          "local_document_substitutes": [],
+          "resources": [],
+          "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+        },
+        "raster_backend": "native-skia",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2022",
+        "font_environment": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/f8b7150fc9781917df14b8ca9e15d0515000fa65dcf659cc23715ae021e5c2ee.json",
+          "sha256": "f8b7150fc9781917df14b8ca9e15d0515000fa65dcf659cc23715ae021e5c2ee"
+        },
+        "font_supply_ref": {
+          "file": "font-inventories.json",
+          "inventory_sha256": "14c558680f2340bf6b51e2741f5484d36f1c6dc0d0530922adcebacb556c4aa1"
+        }
+      },
+      "images": [
+        {
+          "page": 1,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/minimal/native/newyear/rhwp_png/rhwp_001.png",
+          "rhwp_sha256": "69102a915fc8b21b02d54d2409ecd021aec3a6847a404d30fcf601a8b4c8c1c7",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/minimal/native/newyear/pdf_png/pdf-001.png",
+          "pdf_sha256": "b2777ba2a6cde33ca8e7ce3d6b24d7d121a3efb2ac6e713adedd8e78ecbb9358"
+        },
+        {
+          "page": 2,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/minimal/native/newyear/rhwp_png/rhwp_002.png",
+          "rhwp_sha256": "e658c5bc48935f642ce089ad42b6e47faf89fc3f6f4786d0486a68d264385baa",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/minimal/native/newyear/pdf_png/pdf-002.png",
+          "pdf_sha256": "af9852be89b90dc4c7578f02dece9a300af30826972cbfa98cca3c2cefba2c75"
+        },
+        {
+          "page": 3,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/minimal/native/newyear/rhwp_png/rhwp_003.png",
+          "rhwp_sha256": "36d79ee1b8d7d1008e213bc2edae2317eebeda0a6d92b855809d358b88bc02a4",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/minimal/native/newyear/pdf_png/pdf-003.png",
+          "pdf_sha256": "feca8cb81f14fbf54acc7b651ca6b3ef248da9a44ea05a09c5f7628238058096"
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "font_scope": "minimal",
+      "backend": "wasm",
+      "tsv": "after-minimal-wasm.tsv",
+      "tsv_sha256": "bd6f353e6dbca71dc962e8f8790253591bf3277b77598babdb10a5fbdc24b260",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.79858,
+          "silhouette_raw_unmatched_pixels": 7209,
+          "silhouette_boundary_reconciled_pixels": 7208,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 600041,
+          "tolerant_content_match_percent": 99.99983
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.91391,
+          "silhouette_raw_unmatched_pixels": 6925,
+          "silhouette_boundary_reconciled_pixels": 6925,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 637608,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.42806,
+          "silhouette_raw_unmatched_pixels": 8945,
+          "silhouette_boundary_reconciled_pixels": 8810,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 569043,
+          "tolerant_content_match_percent": 99.97628
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "samples/basic/NewYear_s_Day.hwp",
+          "sha256": "1be2736df6b21687f5c1627bac307cc689171928f6ceb0a235af0bc727eb6372"
+        },
+        "pdf": {
+          "path": "pdf/basic/NewYear_s_Day-hwp-2020.pdf",
+          "sha256": "44b4e5f7517c86034b800ed307fcbf09dcf7242d342fd5e14ddfca9d22537ec0"
+        },
+        "git_head": "8e7867c4423613378c6cce6adb0f9c6215901f56",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/rhwp-newyear-native",
+          "path": "output/issue8856/newyear-source-contract/rhwp-newyear-native",
+          "sha256": "1b1fdfd27237435e8e66a50fe28c95ae755b58005307dbcf95bda705b2ba254d"
+        },
+        "raster_backend": "wasm-canvas2d",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2022",
+        "font_environment": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/f8b7150fc9781917df14b8ca9e15d0515000fa65dcf659cc23715ae021e5c2ee.json",
+          "sha256": "f8b7150fc9781917df14b8ca9e15d0515000fa65dcf659cc23715ae021e5c2ee"
+        },
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/frozen-pkg/rhwp.js",
+              "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/frozen-pkg/rhwp_bg.wasm",
+              "sha256": "53d493aef6f58d87cbdc4f61f55520a569866623a21698fcf560f32ba25b8971"
+            }
+          ],
+          "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+          "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+          "comparison_profile": "print",
+          "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply_ref": {
+          "file": "font-inventories.json",
+          "inventory_sha256": "14c558680f2340bf6b51e2741f5484d36f1c6dc0d0530922adcebacb556c4aa1"
+        }
+      },
+      "images": [
+        {
+          "page": 1,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/minimal/wasm/newyear/rhwp_png/rhwp_001.png",
+          "rhwp_sha256": "9bd9a7ca53a272fb927bb7e86831fa845518b7dbd26cb4b7ad457b7d04a45dd9",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/minimal/wasm/newyear/pdf_png/pdf-001.png",
+          "pdf_sha256": "b2777ba2a6cde33ca8e7ce3d6b24d7d121a3efb2ac6e713adedd8e78ecbb9358"
+        },
+        {
+          "page": 2,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/minimal/wasm/newyear/rhwp_png/rhwp_002.png",
+          "rhwp_sha256": "c95de70e20f08b076c63259ea210c59c5bb72a4f6e7858616f1eeaa090326690",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/minimal/wasm/newyear/pdf_png/pdf-002.png",
+          "pdf_sha256": "af9852be89b90dc4c7578f02dece9a300af30826972cbfa98cca3c2cefba2c75"
+        },
+        {
+          "page": 3,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/minimal/wasm/newyear/rhwp_png/rhwp_003.png",
+          "rhwp_sha256": "7f29b967ff362dcd17802175f417c55a7ba475fd2ce91702e6f066c544536edf",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/minimal/wasm/newyear/pdf_png/pdf-003.png",
+          "pdf_sha256": "feca8cb81f14fbf54acc7b651ca6b3ef248da9a44ea05a09c5f7628238058096"
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "font_scope": "original",
+      "backend": "native",
+      "tsv": "after-original-native.tsv",
+      "tsv_sha256": "3832a6b47899073d1664f72bf72c63bd88fd1cb6dcc40ce14b587834ef9a15f5",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.79902,
+          "silhouette_raw_unmatched_pixels": 7206,
+          "silhouette_boundary_reconciled_pixels": 7206,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 600011,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.91375,
+          "silhouette_raw_unmatched_pixels": 6925,
+          "silhouette_boundary_reconciled_pixels": 6925,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 637517,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.4516,
+          "silhouette_raw_unmatched_pixels": 8783,
+          "silhouette_boundary_reconciled_pixels": 8783,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 567229,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "samples/basic/NewYear_s_Day.hwp",
+          "sha256": "1be2736df6b21687f5c1627bac307cc689171928f6ceb0a235af0bc727eb6372"
+        },
+        "pdf": {
+          "path": "pdf/basic/NewYear_s_Day-hwp-2020.pdf",
+          "sha256": "44b4e5f7517c86034b800ed307fcbf09dcf7242d342fd5e14ddfca9d22537ec0"
+        },
+        "git_head": "8e7867c4423613378c6cce6adb0f9c6215901f56",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/rhwp-newyear-native",
+          "path": "output/issue8856/newyear-source-contract/rhwp-newyear-native",
+          "sha256": "1b1fdfd27237435e8e66a50fe28c95ae755b58005307dbcf95bda705b2ba254d"
+        },
+        "native_webfont_fallback": {
+          "registry_sha256": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
+          "mappings": {},
+          "document_glyph_fallbacks": [],
+          "unmapped_sources": [],
+          "local_document_substitutes": [],
+          "resources": [],
+          "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+        },
+        "raster_backend": "native-skia",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2022",
+        "font_supply_ref": {
+          "file": "font-inventories.json",
+          "inventory_sha256": "db5fcdf08473e45f150df0e6fb752f33eeab6229c357497a0c62a9a84d1a9e28"
+        }
+      },
+      "images": [
+        {
+          "page": 1,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/original/native/newyear/rhwp_png/rhwp_001.png",
+          "rhwp_sha256": "388091d266fb3e1e15de2880725bb717c4bf16a7fac70e03d3b8944725e30111",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/original/native/newyear/pdf_png/pdf-001.png",
+          "pdf_sha256": "b2777ba2a6cde33ca8e7ce3d6b24d7d121a3efb2ac6e713adedd8e78ecbb9358"
+        },
+        {
+          "page": 2,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/original/native/newyear/rhwp_png/rhwp_002.png",
+          "rhwp_sha256": "e398742ebe421050085a488e04d146b195f3a5350a14011a6025edc20db414db",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/original/native/newyear/pdf_png/pdf-002.png",
+          "pdf_sha256": "af9852be89b90dc4c7578f02dece9a300af30826972cbfa98cca3c2cefba2c75"
+        },
+        {
+          "page": 3,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/original/native/newyear/rhwp_png/rhwp_003.png",
+          "rhwp_sha256": "10bd02a6bfb0d3ea5700a0f7dac77385570565e8ac098d7aec74f234b32a53f7",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/original/native/newyear/pdf_png/pdf-003.png",
+          "pdf_sha256": "feca8cb81f14fbf54acc7b651ca6b3ef248da9a44ea05a09c5f7628238058096"
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "font_scope": "original",
+      "backend": "wasm",
+      "tsv": "after-original-wasm.tsv",
+      "tsv_sha256": "3832a6b47899073d1664f72bf72c63bd88fd1cb6dcc40ce14b587834ef9a15f5",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.79897,
+          "silhouette_raw_unmatched_pixels": 7206,
+          "silhouette_boundary_reconciled_pixels": 7206,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 599984,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.91375,
+          "silhouette_raw_unmatched_pixels": 6925,
+          "silhouette_boundary_reconciled_pixels": 6925,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 637513,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.45155,
+          "silhouette_raw_unmatched_pixels": 8783,
+          "silhouette_boundary_reconciled_pixels": 8783,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 567212,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "provenance": {
+        "hwp": {
+          "path": "samples/basic/NewYear_s_Day.hwp",
+          "sha256": "1be2736df6b21687f5c1627bac307cc689171928f6ceb0a235af0bc727eb6372"
+        },
+        "pdf": {
+          "path": "pdf/basic/NewYear_s_Day-hwp-2020.pdf",
+          "sha256": "44b4e5f7517c86034b800ed307fcbf09dcf7242d342fd5e14ddfca9d22537ec0"
+        },
+        "git_head": "8e7867c4423613378c6cce6adb0f9c6215901f56",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+          "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+          "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+          "version": "152.0.7947.0",
+          "wrapper_version": "5.12.1",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/rhwp-newyear-native",
+          "path": "output/issue8856/newyear-source-contract/rhwp-newyear-native",
+          "sha256": "1b1fdfd27237435e8e66a50fe28c95ae755b58005307dbcf95bda705b2ba254d"
+        },
+        "raster_backend": "wasm-canvas2d",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2022",
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/frozen-pkg/rhwp.js",
+              "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/frozen-pkg/rhwp_bg.wasm",
+              "sha256": "53d493aef6f58d87cbdc4f61f55520a569866623a21698fcf560f32ba25b8971"
+            }
+          ],
+          "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+          "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+          "comparison_profile": "print",
+          "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply_ref": {
+          "file": "font-inventories.json",
+          "inventory_sha256": "db5fcdf08473e45f150df0e6fb752f33eeab6229c357497a0c62a9a84d1a9e28"
+        }
+      },
+      "images": [
+        {
+          "page": 1,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/original/wasm/newyear/rhwp_png/rhwp_001.png",
+          "rhwp_sha256": "0491bbd7f0cde25be22caf0bb0e318b2c3491520bc25abeda32fa2f1d2f382dd",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/original/wasm/newyear/pdf_png/pdf-001.png",
+          "pdf_sha256": "b2777ba2a6cde33ca8e7ce3d6b24d7d121a3efb2ac6e713adedd8e78ecbb9358"
+        },
+        {
+          "page": 2,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/original/wasm/newyear/rhwp_png/rhwp_002.png",
+          "rhwp_sha256": "b87bf184d452c7d959db7e52a1f5bdb9eeea63131c9510029c13145b8e22e873",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/original/wasm/newyear/pdf_png/pdf-002.png",
+          "pdf_sha256": "af9852be89b90dc4c7578f02dece9a300af30826972cbfa98cca3c2cefba2c75"
+        },
+        {
+          "page": 3,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/original/wasm/newyear/rhwp_png/rhwp_003.png",
+          "rhwp_sha256": "ac7dff4c8a296e6148aa5ade9bd7d716387cc00b3f37699b16230fd65a011f5d",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/original/wasm/newyear/pdf_png/pdf-003.png",
+          "pdf_sha256": "feca8cb81f14fbf54acc7b651ca6b3ef248da9a44ea05a09c5f7628238058096"
+        }
+      ]
+    }
+  ],
+  "before_regressions": "2 tests run: 0 passed / 2 failed",
+  "after_regressions": "3 tests run: 3 passed; 2 relations + independent ±2CSSpx fixed contract",
+  "related_passed": 14,
+  "node_contracts_passed": 55,
+  "direct_review": "Native and fresh WASM original-font p1 title origins, p2 image bullet and following text restored; p3 is unchanged. Normal font programs and minimal public fallback are separate. Known page-background silhouette metric cannot replace title origin review.",
+  "logs_sha256": {
+    "after-direct-svg.log": "bf430b025e625fd594f2c5c93cbe9e32c701112ad7166964cc1c408ed7fd9cce",
+    "before-minimal-native.log": "bb752ca29ceeb566b9243b268ca4370151f4f69281d4a6f97836085174aaa0a5",
+    "fresh-wasm.log": "af493c06cd89bd1cb725701649f2e39cf83b603d41d4d01fdd96684d8db0cf37",
+    "hwpx_export_header_image_refs.log": "df878447d6bb1b5d2db5953a79f615d47944009ed23c25a091a410fd6b55e7b3",
+    "after-pixel-test.log": "8cd55a8fcccf8bfe2508546b3e109ca4e5c8a14086b0151ad8167ef89b790c4a",
+    "fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "font-rule-contracts.log": "0bd13aeed14c129e16b578a0241492ae82724758ef03414492ffb4787a6eaaac",
+    "original-control-ktx-native.log": "70a50133deb9a07976ab2210d3a828eade8a98d57b7d75ebb7990c938c677297",
+    "prepare-pixel.log": "408c6cd5b305f7af6ddfab30ea99c33e8e25eec54752e060ae39100bf5fdc37b",
+    "validation-driver-v2.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "svg-export.log": "d836add8f58bcd4422ecf57c773da17a45015c1d33b4ebbee4122828e5534605",
+    "validation-driver.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bullet_create.log": "ca885562b89f7581ac43c583a733bdf429d67fc2837400902de376c9c8ded813",
+    "caption_auto_number_caret.log": "c6715c778ff5ecfe6f9be3f24eb6b387dd3ab1a10e091a50df79b144d8e75414",
+    "before-original-wasm.log": "df8dc5a2710a8eee502ffc67521681b891de4246eda11b7dc9d656dabe3259ec",
+    "original-control-interview-wasm.log": "235ff66d7d3fefe33dbeb7fd9962cee032bf0e9298dc984a8d7f82763f2f802e",
+    "minimal-wasm.log": "c14dd9e2f7c58d4b63c9904ee0a1af5125a175a0cba0418d4ec414a7692a2470",
+    "original-control-legislation-native.log": "64217efc734d0467750a2b49ec93290059aa4b144ba9027f73d811e049e52937",
+    "original-control-ktx-wasm.log": "4b58be4d126b05235539828824d9152b402c5e62ee2a0b7d02c6dffd109d2be1",
+    "before-test.log": "d52b791d645a0406334ef734cc02dcebd9eff3074cddbd373b50446bb4ab02d8",
+    "original-native.log": "29ce35dc5c6fcbe665534f1246d42821b511140a1af4c1fdbf7f0315a2cd07b1",
+    "after-reviews.log": "26f49cad21816a9b5f3c7130aa179c0ad3d2d6022f52c1516554a4f7f8bb8a2b",
+    "review-driver.log": "5c779e497641cd80f72a3f5d0f86617843d69d9c7690419d352ef96cff12d582",
+    "original-control-legislation-wasm.log": "90773724339f535907a54997784773e0255e1ee82b7220183140aefcfc6d1ebd",
+    "before-original-native.log": "fc9d286c11559e0835bf1b217317efbf99115fe04d08390bae8a25844ac44cb5",
+    "before-driver.log": "530fa1a95d62217ed4823ed5b9f07b8aa86fa6dfbf692524273eb6aaef4d6ed3",
+    "font-rule-contracts-final.log": "a345c15ac87d711d4e7702c8d5f6bcac45768a28a6232eb8536f75c9a1967b0f",
+    "prepare.log": "59789c85aed9c999917afc8021b1c5f2642c2135ef26db5baeef43670e5a8616",
+    "caption_auto_number_position.log": "9bf1dc8cae7aff7bd7726e9119ddcf80c374e876e05fe12e6161ec37123c4f64",
+    "original-control-interview-native.log": "9977c6347392211a973e21c2d78faa94b90bfab5abe3e592830defa90401d158",
+    "after-test.log": "8ea2f0e23667c3d07c4528782ed1c466b4461ff07936d6fd45751f6c14c78da3",
+    "minimal-native.log": "60b885967c46fc0c833ccb8702bc71110674db1220e702b352d03cfda18ac1c5",
+    "original-control-report-628-native.log": "a965ee12c376a51e504c9c93fad53674bb285d9bd9e6268e41b0856ec672d24a",
+    "original-control-driver.log": "bf322bc916f54333a9776757f6bc8b7fedd7717a9a7c4610921633c297e29bd0",
+    "review-driver-after-native.log": "a2fb3cef6d90178cea1389701aeb647722637af5f0b91b1b02039c44995b6abe",
+    "before-minimal-wasm.log": "e46ab4563cb86d47219ef29999105d7b150e99a0bf11e7ed847929a7a21a9c22",
+    "before-test-driver.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "original-control-report-628-wasm.log": "bae81414b11fa02e103256d1b78624854082632b32cdd96c2da07ef898f145bd",
+    "actual-initialization.log": "9abd30e70b87f55d266c73987561f6f09990c05024b0c138cae10903fc14c0d1",
+    "after-tree.log": "97cfd737b6a76fe2c2d6b22401ae28c205202096836e4482e1960a16c6578a85",
+    "native-build.log": "478210ef1018d3c6dd0a368dcfcb5b0b4dea990fb0cc38bba7aa2ca8e4fecaf1",
+    "original-wasm.log": "23af92e5d491a6a781ec21050b36f1c727540625e756ac41038b944883dcc456",
+    "issue_4966_font_rule_projection.log": "5f0967012a56c568aaa63741350dcb29c42d9c46d080aee99430384f6abf23bb"
+  }
+}

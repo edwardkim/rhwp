@@ -1,0 +1,8 @@
+(version 1)
+(allow default)
+(deny file-read* (subpath "/Library/Fonts") (subpath "/Users/tsjang/Library/Fonts") (subpath "/Users/tsjang/rhwp/ttfs"))
+(allow file-read* (subpath "/Users/tsjang/rhwp/ttfs/opensource"))
+(deny mach-lookup (global-name "com.apple.fonts") (global-name "com.apple.fonts.atsbridge"))
+(allow file-read* (subpath "/Users/tsjang/rhwp/ttfs/redistributable"))
+
+; 이번 캐시는 종료 정리 후 새로 생성했으며 정본의 공개 웹폰트 공급 규칙만 사용한다.
