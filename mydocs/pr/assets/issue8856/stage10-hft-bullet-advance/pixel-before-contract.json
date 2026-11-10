@@ -1,0 +1,22 @@
+{
+  "scope": "Actual before Native CLI tree checked against the same independent Print x expectations; not a separate Rust test execution",
+  "producer_binary": "output/issue8856/soft-edge-print-planes/lint-final/rhwp-print-planes-native",
+  "producer_binary_sha256": "50798e520ade88380a6ee15c6afa38c5fe884a5fd6ddf4f3e304892103a022e3",
+  "before_tree_sha256": "ac2533561e561496059e302ac4a3947f1c584f5181a3a47ebfd56d51970ff75f",
+  "rows": [
+    {
+      "text": "강제적",
+      "observed_before_x": 149.4,
+      "independent_pdf_x": 156.0,
+      "tolerance_css_px": 2.0,
+      "within_tolerance": false
+    },
+    {
+      "text": "자발적",
+      "observed_before_x": 419.7,
+      "independent_pdf_x": 426.24,
+      "tolerance_css_px": 2.0,
+      "within_tolerance": false
+    }
+  ]
+}

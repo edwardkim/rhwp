@@ -16,7 +16,15 @@ impl DocumentCore {
     /// 공통 텍스트 효과의 실제 SFNT 공급이다. 기존 API 이름은 호환성을 위해 유지한다.
     /// 연속 그림자와 실제 탭의 점 리더를 포함하며 원본·조판 폭은 바꾸지 않는다.
     pub fn get_text_shadow_font_requests_native(&self) -> Result<String, HwpError> {
-        if !self.hangul2024_compat {
+        // 이전 인쇄 세대도 연속 그림자의 실제 프로그램을 요청한다.
+        // 그림자가 없는 이전 세대의 탭 리더 계약은 그대로 유지한다.
+        if !self.hangul2024_compat
+            && !self
+                .styles
+                .char_styles
+                .iter()
+                .any(|style| style.shadow_type == 2)
+        {
             return Ok("[]".into());
         }
         use crate::document_core::queries::rendering::{
@@ -28,13 +36,15 @@ impl DocumentCore {
         let mut work = 1_000_000;
         let mut shadow_work = 1_000_000;
         for section in &self.document.sections {
-            collect_exact_font_slots_from_paragraphs_selected(
-                &section.paragraphs,
-                &mut tab_slots,
-                &mut work,
-                0,
-                ExactFontSlotSelection::Tab(&self.document.doc_info),
-            );
+            if self.hangul2024_compat {
+                collect_exact_font_slots_from_paragraphs_selected(
+                    &section.paragraphs,
+                    &mut tab_slots,
+                    &mut work,
+                    0,
+                    ExactFontSlotSelection::Tab(&self.document.doc_info),
+                );
+            }
             collect_exact_font_slots_from_paragraphs_selected(
                 &section.paragraphs,
                 &mut shadow_slots,
@@ -43,13 +53,15 @@ impl DocumentCore {
                 ExactFontSlotSelection::Shadow(&self.document.doc_info, &shadow_usage),
             );
             for master in &section.section_def.master_pages {
-                collect_exact_font_slots_from_paragraphs_selected(
-                    &master.paragraphs,
-                    &mut tab_slots,
-                    &mut work,
-                    0,
-                    ExactFontSlotSelection::Tab(&self.document.doc_info),
-                );
+                if self.hangul2024_compat {
+                    collect_exact_font_slots_from_paragraphs_selected(
+                        &master.paragraphs,
+                        &mut tab_slots,
+                        &mut work,
+                        0,
+                        ExactFontSlotSelection::Tab(&self.document.doc_info),
+                    );
+                }
                 collect_exact_font_slots_from_paragraphs_selected(
                     &master.paragraphs,
                     &mut shadow_slots,

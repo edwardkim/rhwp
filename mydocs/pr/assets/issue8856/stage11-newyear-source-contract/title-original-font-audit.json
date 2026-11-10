@@ -1,0 +1,81 @@
+{
+  "pdf_font_xref": 12,
+  "pdf_font_sha256": "1755320e1c778689150adcb222ab5aa476a5534dffa1929324f2be61219f4a71",
+  "installed_original": "/Users/tsjang/Library/Fonts/UNI_HSR.TTF",
+  "installed_sha256": "6db51feddcdc42e6b6240325acd2b335eb81b871831c96e954d7aa74d235c2de",
+  "source_upem": 1024,
+  "pdf_upem": 1024,
+  "characters": [
+    {
+      "character": "설",
+      "pdf_gid": 4,
+      "source_glyph": "uniC124",
+      "outline_identical": true,
+      "pdf_hmtx": [
+        1024,
+        98
+      ],
+      "source_hmtx": [
+        1024,
+        98
+      ]
+    },
+    {
+      "character": " ",
+      "pdf_gid": 3,
+      "source_glyph": "space",
+      "outline_identical": true,
+      "pdf_hmtx": [
+        341,
+        0
+      ],
+      "source_hmtx": [
+        341,
+        0
+      ]
+    },
+    {
+      "character": "차",
+      "pdf_gid": 6,
+      "source_glyph": "uniCC28",
+      "outline_identical": true,
+      "pdf_hmtx": [
+        1024,
+        72
+      ],
+      "source_hmtx": [
+        1024,
+        72
+      ]
+    },
+    {
+      "character": "례",
+      "pdf_gid": 5,
+      "source_glyph": "uniB840",
+      "outline_identical": true,
+      "pdf_hmtx": [
+        1024,
+        101
+      ],
+      "source_hmtx": [
+        1024,
+        101
+      ]
+    },
+    {
+      "character": "상",
+      "pdf_gid": 7,
+      "source_glyph": "uniC0C1",
+      "outline_identical": true,
+      "pdf_hmtx": [
+        1024,
+        57
+      ],
+      "source_hmtx": [
+        1024,
+        57
+      ]
+    }
+  ],
+  "scope": "Read-only font program and advance comparison; no extracted binary saved"
+}

@@ -1,0 +1,150 @@
+{
+  "complete": true,
+  "results": [
+    {
+      "case": "issue_8856_picture_soft_edge_ownership",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/issue8856/start/minimal-font.sb",
+        "env",
+        "-u",
+        "RHWP_FONT_PATH",
+        "CARGO_BUILD_JOBS=8",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8856_picture_soft_edge_ownership",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "started": "2026-11-10T03:04:12.355686+09:00",
+      "ended": "2026-11-10T03:06:53.716474+09:00",
+      "exit": 0,
+      "log_sha256": "510d2ef007cdeffaa723e9ab7c7989fae3b02e1aaf0a8153fe1eaeb93ccb483c",
+      "final_header_rerun": true
+    },
+    {
+      "case": "issue_8593_picture_soft_edge_dim",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/issue8856/start/minimal-font.sb",
+        "env",
+        "-u",
+        "RHWP_FONT_PATH",
+        "CARGO_BUILD_JOBS=8",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8593_picture_soft_edge_dim",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "started": "2026-11-10T03:06:53.718562+09:00",
+      "ended": "2026-11-10T03:07:06.553278+09:00",
+      "exit": 0,
+      "log_sha256": "382fc22264498d516f8d686695d9e98b1198bf4dd855f443d18dd62b5bdce3c3"
+    },
+    {
+      "case": "issue_8856_legacy_continuous_shadow",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/issue8856/start/minimal-font.sb",
+        "env",
+        "-u",
+        "RHWP_FONT_PATH",
+        "CARGO_BUILD_JOBS=8",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8856_legacy_continuous_shadow",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "started": "2026-11-10T03:07:06.555337+09:00",
+      "ended": "2026-11-10T03:07:19.227785+09:00",
+      "exit": 0,
+      "log_sha256": "5f02c4c074009dbb834d225f3592cdea40a43b1a42de7c22e5ff9c7d9e699ecc"
+    },
+    {
+      "case": "code_scanning_pdf_diagnostics",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/issue8856/start/minimal-font.sb",
+        "env",
+        "-u",
+        "RHWP_FONT_PATH",
+        "CARGO_BUILD_JOBS=8",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "code_scanning_pdf_diagnostics",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "started": "2026-11-10T03:07:19.229390+09:00",
+      "ended": "2026-11-10T03:07:29.488505+09:00",
+      "exit": 0,
+      "log_sha256": "2d959c8d9e9a86dad6741f73e07d64fe17ade986956bb244ab2e6297510033ec"
+    }
+  ],
+  "before": {
+    "new_cases_passed": 1,
+    "new_cases_failed": 1,
+    "log_sha256": "09fca49619d820d5f8170a72ef264ae63e5fdfb4332f9a238e1ac8d20ce73e9a",
+    "source_failure": "원본 HWP의 softEdge 1000 HU 가 PictureEffects에서 소실"
+  },
+  "after": {
+    "native_skia_passed": 14,
+    "failed": 0,
+    "new_cases": 3,
+    "existing_picture_dimensions": 2,
+    "existing_shadow": 7,
+    "pdf_diagnostics": 2
+  },
+  "whole_visual_current_source_complete": false,
+  "rendered_soft_edge_complete": false,
+  "parse_save_only": true,
+  "source_files_sha256": {
+    "src/model/image.rs": "9b01ee3c62384b0c34c85fdf179aa9a853c52df3ebbd5f9e183bda5859b1d6f8",
+    "src/model/border_paint.rs": "08672a4917cd5b35ca04ae737234146854d7dfe48fe29efd92a7f56c1084b942",
+    "src/parser/control/shape.rs": "e5a29192888005a37ce31968d86fff1596ba380e6df8cdc9d1768c1be7c43b09",
+    "src/parser/hwpx/section.rs": "d1281ecf4877b3a952c8a6f0c36d742f59001193984e68b19c990bdc9855925d",
+    "src/serializer/control.rs": "f2a407ad320161ae41f19c0e156bc51cf97cd38aff03f8f47336d3ff7c68359c",
+    "src/serializer/hwpx/picture.rs": "e82fcf23627c9a3803a88cddb080916f6de26ae27d7faa935e1c9bda1f82d4a6",
+    "tests/cases/issue_8856_picture_soft_edge_ownership.rs": "b97ffac8902e118e3396a62431370a5aadda4cd44fcef3ed75fcbd97e086a66e"
+  },
+  "excluded_attempts": [
+    "model-before.log: invalid Serialize setup compile failure",
+    "model-after.log: attribute key type compile failure",
+    "model-after-v2.log: suite drift 0 tests",
+    "model-after-final.log: fmt after prepare changed suite assignment; 0 tests"
+  ]
+}

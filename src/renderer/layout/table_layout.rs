@@ -330,9 +330,9 @@ fn stored_layout_relocated_empty_rowbreak_picture_resets_offset(
 use super::super::composer::effective_text_for_metrics;
 use super::super::{hwpunit_to_px, ShapeStyle};
 use super::border_rendering::{
-    apply_table_border_overrides, build_row_col_x, collect_cell_borders, create_border_line_nodes,
-    mark_cell_span_interior_covered, render_cell_diagonal, render_edge_borders,
-    render_spaced_cell_borders, render_transparent_borders,
+    apply_table_border_overrides, build_row_col_x, collect_cell_borders,
+    create_table_border_line_nodes, mark_cell_span_interior_covered, render_cell_diagonal,
+    render_edge_borders, render_spaced_cell_borders, render_transparent_borders,
 };
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
 use super::utils::find_bin_data_bytes;
@@ -1667,7 +1667,7 @@ fn render_cell_box_borders(
     h: f64,
 ) -> Vec<RenderNode> {
     let mut nodes = Vec::new();
-    nodes.extend(create_border_line_nodes(
+    nodes.extend(create_table_border_line_nodes(
         tree,
         &bs.borders[2],
         x,
@@ -1675,7 +1675,7 @@ fn render_cell_box_borders(
         x + w,
         y,
     ));
-    nodes.extend(create_border_line_nodes(
+    nodes.extend(create_table_border_line_nodes(
         tree,
         &bs.borders[3],
         x,
@@ -1683,7 +1683,7 @@ fn render_cell_box_borders(
         x + w,
         y + h,
     ));
-    nodes.extend(create_border_line_nodes(
+    nodes.extend(create_table_border_line_nodes(
         tree,
         &bs.borders[0],
         x,
@@ -1691,7 +1691,7 @@ fn render_cell_box_borders(
         x,
         y + h,
     ));
-    nodes.extend(create_border_line_nodes(
+    nodes.extend(create_table_border_line_nodes(
         tree,
         &bs.borders[1],
         x + w,
@@ -3726,7 +3726,7 @@ impl LayoutEngine {
             (3, x, y + height, right, y + height),
         ] {
             node.children
-                .extend(super::border_rendering::create_border_line_nodes(
+                .extend(super::border_rendering::create_table_border_line_nodes(
                     tree,
                     &style.borders[index],
                     x1,
@@ -4144,9 +4144,9 @@ impl LayoutEngine {
                         if let Some(bs_borders) = outer_border_meta {
                             let outer_h_actual = wrapper_frame.border_height(child_height);
                             if outer_h_actual > 0.0 {
-                                use super::border_rendering::create_border_line_nodes;
+                                use super::border_rendering::create_table_border_line_nodes;
                                 // 좌
-                                col_node.children.extend(create_border_line_nodes(
+                                col_node.children.extend(create_table_border_line_nodes(
                                     tree,
                                     &bs_borders[0],
                                     outer_x_for_box,
@@ -4155,7 +4155,7 @@ impl LayoutEngine {
                                     outer_y + outer_h_actual,
                                 ));
                                 // 우
-                                col_node.children.extend(create_border_line_nodes(
+                                col_node.children.extend(create_table_border_line_nodes(
                                     tree,
                                     &bs_borders[1],
                                     outer_x_for_box + outer_w_for_box,
@@ -4164,7 +4164,7 @@ impl LayoutEngine {
                                     outer_y + outer_h_actual,
                                 ));
                                 // 상
-                                col_node.children.extend(create_border_line_nodes(
+                                col_node.children.extend(create_table_border_line_nodes(
                                     tree,
                                     &bs_borders[2],
                                     outer_x_for_box,
@@ -4173,7 +4173,7 @@ impl LayoutEngine {
                                     outer_y,
                                 ));
                                 // 하
-                                col_node.children.extend(create_border_line_nodes(
+                                col_node.children.extend(create_table_border_line_nodes(
                                     tree,
                                     &bs_borders[3],
                                     outer_x_for_box,

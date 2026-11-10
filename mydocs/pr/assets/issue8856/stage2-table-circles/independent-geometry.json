@@ -1,0 +1,437 @@
+{
+  "files": [
+    {
+      "path": "pdf/issue8856/table-circle-width-control-v2.hwpx",
+      "sha256": "80f45b8c3cba017c46f17f0f2f8bdb43e754b8539505c6bad388e1500f236162",
+      "bytes": 405903
+    },
+    {
+      "path": "pdf/issue8856/table-circle-width-control-v2-2020.pdf",
+      "sha256": "5c313ae7ab0366e60f78a86d6bbf67b5685362f6becbb3f5c4ac2c077030a555",
+      "bytes": 910422
+    },
+    {
+      "path": "pdf/issue8856/table-circle-width-control-v2-2024.pdf",
+      "sha256": "9599b5ca3348cc5ef42752b88f744d24c4656e32616d060441f6c9af50053c8e",
+      "bytes": 903874
+    }
+  ],
+  "measurements": [
+    {
+      "engine": "2020",
+      "index": 0,
+      "page": 2,
+      "fill_diameter_pt": 0.12,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 2.0,
+      "pitch_600": 4.0,
+      "paths": 4644,
+      "unique_centers": 2321
+    },
+    {
+      "engine": "2020",
+      "index": 1,
+      "page": 3,
+      "fill_diameter_pt": 0.36,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 4.0,
+      "pitch_600": 6.0,
+      "paths": 3096,
+      "unique_centers": 1547
+    },
+    {
+      "engine": "2020",
+      "index": 2,
+      "page": 4,
+      "fill_diameter_pt": 0.36,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 4.0,
+      "pitch_600": 7.992,
+      "paths": 2324,
+      "unique_centers": 1162
+    },
+    {
+      "engine": "2020",
+      "index": 3,
+      "page": 5,
+      "fill_diameter_pt": 0.6,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 6.0,
+      "pitch_600": 9.992,
+      "paths": 1860,
+      "unique_centers": 930
+    },
+    {
+      "engine": "2020",
+      "index": 4,
+      "page": 6,
+      "fill_diameter_pt": 0.6,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 6.0,
+      "pitch_600": 11.992,
+      "paths": 1552,
+      "unique_centers": 776
+    },
+    {
+      "engine": "2020",
+      "index": 5,
+      "page": 7,
+      "fill_diameter_pt": 0.84,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 8.0,
+      "pitch_600": 13.992,
+      "paths": 1332,
+      "unique_centers": 666
+    },
+    {
+      "engine": "2020",
+      "index": 6,
+      "page": 8,
+      "fill_diameter_pt": 1.079,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 9.992,
+      "pitch_600": 17.992,
+      "paths": 1036,
+      "unique_centers": 518
+    },
+    {
+      "engine": "2020",
+      "index": 7,
+      "page": 9,
+      "fill_diameter_pt": 1.319,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 11.992,
+      "pitch_600": 23.992,
+      "paths": 776,
+      "unique_centers": 388
+    },
+    {
+      "engine": "2020",
+      "index": 8,
+      "page": 10,
+      "fill_diameter_pt": 1.559,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 13.992,
+      "pitch_600": 27.983,
+      "paths": 668,
+      "unique_centers": 334
+    },
+    {
+      "engine": "2020",
+      "index": 9,
+      "page": 11,
+      "fill_diameter_pt": 2.039,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 17.992,
+      "pitch_600": 33.983,
+      "paths": 552,
+      "unique_centers": 276
+    },
+    {
+      "engine": "2020",
+      "index": 10,
+      "page": 12,
+      "fill_diameter_pt": 2.759,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 23.992,
+      "pitch_600": 47.975,
+      "paths": 392,
+      "unique_centers": 196
+    },
+    {
+      "engine": "2020",
+      "index": 11,
+      "page": 13,
+      "fill_diameter_pt": 4.198,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 35.983,
+      "pitch_600": 69.958,
+      "paths": 268,
+      "unique_centers": 134
+    },
+    {
+      "engine": "2020",
+      "index": 12,
+      "page": 14,
+      "fill_diameter_pt": 5.637,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 47.975,
+      "pitch_600": 93.95,
+      "paths": 200,
+      "unique_centers": 100
+    },
+    {
+      "engine": "2020",
+      "index": 13,
+      "page": 15,
+      "fill_diameter_pt": 8.515,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 71.958,
+      "pitch_600": 141.925,
+      "paths": 136,
+      "unique_centers": 68
+    },
+    {
+      "engine": "2020",
+      "index": 14,
+      "page": 16,
+      "fill_diameter_pt": 11.394,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 95.95,
+      "pitch_600": 189.9,
+      "paths": 104,
+      "unique_centers": 52
+    },
+    {
+      "engine": "2020",
+      "index": 15,
+      "page": 17,
+      "fill_diameter_pt": 14.032,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 117.933,
+      "pitch_600": 235.875,
+      "paths": 84,
+      "unique_centers": 42
+    },
+    {
+      "engine": "2024",
+      "index": 0,
+      "page": 2,
+      "fill_diameter_pt": 0.12,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 2.0,
+      "pitch_600": 4.0,
+      "paths": 4644,
+      "unique_centers": 2321
+    },
+    {
+      "engine": "2024",
+      "index": 1,
+      "page": 3,
+      "fill_diameter_pt": 0.36,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 4.0,
+      "pitch_600": 6.0,
+      "paths": 3096,
+      "unique_centers": 1547
+    },
+    {
+      "engine": "2024",
+      "index": 2,
+      "page": 4,
+      "fill_diameter_pt": 0.36,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 4.0,
+      "pitch_600": 7.992,
+      "paths": 2324,
+      "unique_centers": 1162
+    },
+    {
+      "engine": "2024",
+      "index": 3,
+      "page": 5,
+      "fill_diameter_pt": 0.6,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 6.0,
+      "pitch_600": 9.992,
+      "paths": 1860,
+      "unique_centers": 930
+    },
+    {
+      "engine": "2024",
+      "index": 4,
+      "page": 6,
+      "fill_diameter_pt": 0.6,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 6.0,
+      "pitch_600": 11.992,
+      "paths": 1552,
+      "unique_centers": 776
+    },
+    {
+      "engine": "2024",
+      "index": 5,
+      "page": 7,
+      "fill_diameter_pt": 0.84,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 8.0,
+      "pitch_600": 13.992,
+      "paths": 1332,
+      "unique_centers": 666
+    },
+    {
+      "engine": "2024",
+      "index": 6,
+      "page": 8,
+      "fill_diameter_pt": 1.079,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 9.992,
+      "pitch_600": 17.992,
+      "paths": 1036,
+      "unique_centers": 518
+    },
+    {
+      "engine": "2024",
+      "index": 7,
+      "page": 9,
+      "fill_diameter_pt": 1.319,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 11.992,
+      "pitch_600": 23.992,
+      "paths": 776,
+      "unique_centers": 388
+    },
+    {
+      "engine": "2024",
+      "index": 8,
+      "page": 10,
+      "fill_diameter_pt": 1.559,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 13.992,
+      "pitch_600": 27.983,
+      "paths": 668,
+      "unique_centers": 334
+    },
+    {
+      "engine": "2024",
+      "index": 9,
+      "page": 11,
+      "fill_diameter_pt": 2.039,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 17.992,
+      "pitch_600": 33.983,
+      "paths": 552,
+      "unique_centers": 276
+    },
+    {
+      "engine": "2024",
+      "index": 10,
+      "page": 12,
+      "fill_diameter_pt": 2.759,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 23.992,
+      "pitch_600": 47.975,
+      "paths": 392,
+      "unique_centers": 196
+    },
+    {
+      "engine": "2024",
+      "index": 11,
+      "page": 13,
+      "fill_diameter_pt": 4.198,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 35.983,
+      "pitch_600": 69.958,
+      "paths": 268,
+      "unique_centers": 134
+    },
+    {
+      "engine": "2024",
+      "index": 12,
+      "page": 14,
+      "fill_diameter_pt": 5.637,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 47.975,
+      "pitch_600": 93.95,
+      "paths": 200,
+      "unique_centers": 100
+    },
+    {
+      "engine": "2024",
+      "index": 13,
+      "page": 15,
+      "fill_diameter_pt": 8.515,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 71.958,
+      "pitch_600": 141.925,
+      "paths": 136,
+      "unique_centers": 68
+    },
+    {
+      "engine": "2024",
+      "index": 14,
+      "page": 16,
+      "fill_diameter_pt": 11.394,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 95.95,
+      "pitch_600": 189.9,
+      "paths": 104,
+      "unique_centers": 52
+    },
+    {
+      "engine": "2024",
+      "index": 15,
+      "page": 17,
+      "fill_diameter_pt": 14.032,
+      "stroke_pt": 0.12,
+      "outer_diameter_600": 117.933,
+      "pitch_600": 235.875,
+      "paths": 84,
+      "unique_centers": 42
+    }
+  ],
+  "purpose": "Diagnostic table pen vector geometry only; not a normal pagination pixel reference",
+  "excluded_initial_control": "noncontiguous IDs resulted in no borders; never used as pattern evidence",
+  "mcp": [
+    {
+      "job_id": "47a55d1d-6716-48b5-8985-6a9ef15643bc",
+      "status": "success",
+      "engine": "2020",
+      "engine_profile": "2020",
+      "hancom_version": "11.0.0.9136",
+      "backend": "hwp-managed-direct-dll-host",
+      "input_format": "hwpx",
+      "format": "pdf",
+      "bytes": 910422,
+      "pdf_page_count": 17,
+      "logical_page_count": null,
+      "elapsed_ms": 16925,
+      "worker_elapsed_ms": 15385,
+      "worker_bits": 32,
+      "font_scope": {
+        "mode": "session0",
+        "status": "verified",
+        "profile_source": "protected_config",
+        "session_id": 0,
+        "mapped_font_count": 2,
+        "registered_font_count": 2,
+        "failed_font_count": 0,
+        "parent_visibility": "verified",
+        "child_visibility": "verified"
+      },
+      "input_preprocess": "none",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "job_id": "71212534-5cda-49d4-baec-e2cc1e83cf71",
+      "status": "success",
+      "engine": "2024",
+      "engine_profile": "2024",
+      "hancom_version": "13.0.0.3901",
+      "backend": "hwp-managed-direct-dll-host",
+      "input_format": "hwpx",
+      "format": "pdf",
+      "bytes": 903874,
+      "pdf_page_count": 17,
+      "logical_page_count": null,
+      "elapsed_ms": 29275,
+      "worker_elapsed_ms": 26533,
+      "worker_bits": 32,
+      "font_scope": {
+        "mode": "session0",
+        "status": "verified",
+        "profile_source": "protected_config",
+        "session_id": 0,
+        "mapped_font_count": 2,
+        "registered_font_count": 2,
+        "failed_font_count": 0,
+        "parent_visibility": "verified",
+        "child_visibility": "verified"
+      },
+      "input_preprocess": "none",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "frame_print_to_pdf_ex_one_up"
+    }
+  ]
+}

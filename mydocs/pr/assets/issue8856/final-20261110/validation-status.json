@@ -1,0 +1,39 @@
+{
+  "head": "e0ce30729e4d87d2a75376d17c6d351a29ef4345",
+  "base": "3170fddc48cc4fcac0c18761d146b619d0f90c7b",
+  "complete": true,
+  "rust_gates": true,
+  "whole_datasets": 18,
+  "whole_pages": 438,
+  "whole_below90": 0,
+  "protected_datasets": 36,
+  "protected_pages": 3542,
+  "protected_declines": 0,
+  "capture_tail": {
+    "running": false,
+    "current": "run-consumers-observed",
+    "steps": [
+      {
+        "name": "original-program-controls-final",
+        "exit": 0
+      },
+      {
+        "name": "strict-clip-whole",
+        "exit": 0
+      },
+      {
+        "name": "paired-legislation-whole",
+        "exit": 0
+      },
+      {
+        "name": "run-consumers-observed",
+        "exit": 0
+      }
+    ],
+    "complete": true,
+    "ended": "2026-11-10T11:37:54.601952+09:00"
+  },
+  "native_sha256": "47203f928bac9f3c8d27293edf6a87351fa51d3342c326016190303d51328219",
+  "wasm_sha256": "dd77f8eceb160ebcc07c84f4374c21be10fcc0561f18357ffdd609b8d18df121",
+  "time": "2026-11-10T11:39:25.243406+09:00"
+}

@@ -1,0 +1,272 @@
+[
+  {
+    "pdf": "pdf/issue8856/alpha-half-r0-2024.pdf",
+    "pdf_sha256": "e180b7d091882da5e448783e82d2c641bf50d6aa8d01694045b079e84bc716bb",
+    "image_object": "<<\n  /BitsPerComponent 8\n  /ColorSpace /DeviceRGB\n  /Filter /FlateDecode\n  /Height 1667\n  /Length 15 0 R\n  /Mask 11 0 R\n  /Name /Im2\n  /Subtype /Image\n  /Type /XObject\n  /Width 2500\n>>",
+    "mask_object": "<<\n  /BitsPerComponent 1\n  /Filter /FlateDecode\n  /Height 1667\n  /ImageMask true\n  /Length 16 0 R\n  /Name /Im1\n  /Subtype /Image\n  /Type /XObject\n  /Width 2500\n>>",
+    "mask_dimensions": [
+      2500,
+      1667
+    ],
+    "opaque_color_samples": [
+      {
+        "column": 16,
+        "most_common": [
+          [
+            [
+              63,
+              127,
+              191
+            ],
+            32
+          ]
+        ]
+      },
+      {
+        "column": 32,
+        "most_common": [
+          [
+            [
+              63,
+              127,
+              191
+            ],
+            32
+          ]
+        ]
+      },
+      {
+        "column": 48,
+        "most_common": [
+          [
+            [
+              63,
+              127,
+              191
+            ],
+            32
+          ]
+        ]
+      },
+      {
+        "column": 64,
+        "most_common": [
+          [
+            [
+              63,
+              127,
+              191
+            ],
+            32
+          ]
+        ]
+      },
+      {
+        "column": 128,
+        "most_common": [
+          [
+            [
+              63,
+              127,
+              191
+            ],
+            32
+          ]
+        ]
+      },
+      {
+        "column": 625,
+        "most_common": [
+          [
+            [
+              63,
+              127,
+              191
+            ],
+            32
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "pdf": "pdf/issue8856/alpha-half-r1000-2024.pdf",
+    "pdf_sha256": "9e1cbab5091592dd77dc1a16df63e0bea41f6d1f601b06b8541d46e767ed8f5a",
+    "image_object": "<<\n  /BitsPerComponent 8\n  /ColorSpace /DeviceRGB\n  /Filter /FlateDecode\n  /Height 1667\n  /Length 15 0 R\n  /Mask 11 0 R\n  /Name /Im2\n  /Subtype /Image\n  /Type /XObject\n  /Width 2500\n>>",
+    "mask_object": "<<\n  /BitsPerComponent 1\n  /Filter /FlateDecode\n  /Height 1667\n  /ImageMask true\n  /Length 16 0 R\n  /Name /Im1\n  /Subtype /Image\n  /Type /XObject\n  /Width 2500\n>>",
+    "mask_dimensions": [
+      2500,
+      1667
+    ],
+    "opaque_color_samples": [
+      {
+        "column": 16,
+        "most_common": [
+          [
+            [
+              63,
+              127,
+              191
+            ],
+            8
+          ]
+        ]
+      },
+      {
+        "column": 32,
+        "most_common": [
+          [
+            [
+              63,
+              127,
+              191
+            ],
+            16
+          ]
+        ]
+      },
+      {
+        "column": 48,
+        "most_common": [
+          [
+            [
+              63,
+              127,
+              191
+            ],
+            32
+          ]
+        ]
+      },
+      {
+        "column": 64,
+        "most_common": [
+          [
+            [
+              63,
+              127,
+              191
+            ],
+            32
+          ]
+        ]
+      },
+      {
+        "column": 128,
+        "most_common": [
+          [
+            [
+              63,
+              127,
+              191
+            ],
+            32
+          ]
+        ]
+      },
+      {
+        "column": 625,
+        "most_common": [
+          [
+            [
+              63,
+              127,
+              191
+            ],
+            32
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "pdf": "pdf/issue8856/alpha-hole-r1000-2024.pdf",
+    "pdf_sha256": "7bcd4f04a3cf37c0f8039f86275c7541acd2872bd79c3792863d106dff562b25",
+    "image_object": "<<\n  /BitsPerComponent 8\n  /ColorSpace /DeviceRGB\n  /Filter /FlateDecode\n  /Height 1667\n  /Length 15 0 R\n  /Mask 11 0 R\n  /Name /Im2\n  /Subtype /Image\n  /Type /XObject\n  /Width 2500\n>>",
+    "mask_object": "<<\n  /BitsPerComponent 1\n  /Filter /FlateDecode\n  /Height 1667\n  /ImageMask true\n  /Length 16 0 R\n  /Name /Im1\n  /Subtype /Image\n  /Type /XObject\n  /Width 2500\n>>",
+    "mask_dimensions": [
+      2500,
+      1667
+    ],
+    "opaque_color_samples": [
+      {
+        "column": 16,
+        "most_common": [
+          [
+            [
+              64,
+              128,
+              192
+            ],
+            16
+          ]
+        ]
+      },
+      {
+        "column": 32,
+        "most_common": [
+          [
+            [
+              64,
+              128,
+              192
+            ],
+            32
+          ]
+        ]
+      },
+      {
+        "column": 48,
+        "most_common": [
+          [
+            [
+              64,
+              128,
+              192
+            ],
+            32
+          ]
+        ]
+      },
+      {
+        "column": 64,
+        "most_common": [
+          [
+            [
+              64,
+              128,
+              192
+            ],
+            36
+          ]
+        ]
+      },
+      {
+        "column": 128,
+        "most_common": [
+          [
+            [
+              64,
+              128,
+              192
+            ],
+            64
+          ]
+        ]
+      },
+      {
+        "column": 625,
+        "most_common": [
+          [
+            [
+              64,
+              128,
+              192
+            ],
+            64
+          ]
+        ]
+      }
+    ]
+  }
+]

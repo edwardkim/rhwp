@@ -1,0 +1,28 @@
+{
+  "source_audit": {
+    "files": 1782,
+    "changed_after_validation": 0
+  },
+  "native_clippy": {
+    "exit": 0,
+    "log_sha256": "b65fb5dc47842a6b735e522311cd432f850f9947a5a97acb49716c736735f459"
+  },
+  "fmt": {
+    "exit": 0,
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "manifest": {
+    "exit": 0,
+    "log_sha256": "9c5c8cb70b6d9e9d39690689467ef58dc93c9559b4e88dde777a4c3306b1bd93"
+  },
+  "unit_tiers": {
+    "exit": 0,
+    "log_sha256": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0"
+  },
+  "scope": "stage9 focused checks only; final full gates pending",
+  "markdown_links": {
+    "exit": 0,
+    "documents": 2,
+    "log_sha256": "c229e3b3dd8f86ec00ae184c8deed96c8565a475f48564e7fe2eddf8c2a0f6fa"
+  }
+}

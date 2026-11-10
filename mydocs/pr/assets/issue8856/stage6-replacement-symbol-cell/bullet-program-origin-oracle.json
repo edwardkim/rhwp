@@ -1,0 +1,39 @@
+{
+  "source_pdf": "pdf/semanticist21-20261008/basic-issue1994_behindtext_table_20200830-8e7a95cf5919-2020.pdf",
+  "source_pdf_sha256": "901d842b033e30be1e9b4a7da8109be9e165af96af61fc4f175809ffbecc88a8",
+  "local_font_sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+  "codepoint": "U+2219",
+  "pdf_glyph": "glyph00409",
+  "units_per_em": 1024,
+  "local_advance_lsb": [
+    1024,
+    386
+  ],
+  "pdf_advance_lsb": [
+    512,
+    130
+  ],
+  "same_point_count": false,
+  "pdf_advance_fraction": 0.5,
+  "local_advance_fraction": 1.0,
+  "scope": "독립 Print PDF와 설치 프로그램의 실제 비교; 글꼴 바이너리를 Git에 저장하지 않음",
+  "local_ink_bounds": [
+    386,
+    241,
+    638,
+    494
+  ],
+  "pdf_ink_bounds": [
+    130,
+    240,
+    382,
+    493
+  ],
+  "ink_bounds_translation": [
+    -256,
+    -1,
+    -256,
+    -1
+  ],
+  "outline_identity_claim": false
+}

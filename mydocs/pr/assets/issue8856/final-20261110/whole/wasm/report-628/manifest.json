@@ -1,0 +1,3850 @@
+{
+  "key": "report-628",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120,
+    121,
+    122,
+    123,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    136,
+    137,
+    138,
+    139,
+    140,
+    141,
+    142,
+    143,
+    144,
+    145,
+    146,
+    147,
+    148,
+    149,
+    150,
+    151,
+    152,
+    153,
+    154,
+    155,
+    156,
+    157,
+    158,
+    159,
+    160,
+    161,
+    162,
+    163,
+    164,
+    165,
+    166,
+    167,
+    168,
+    169,
+    170,
+    171,
+    172,
+    173,
+    174,
+    175,
+    176,
+    177,
+    178,
+    179,
+    180,
+    181,
+    182,
+    183,
+    184,
+    185,
+    186,
+    187,
+    188,
+    189,
+    190,
+    191,
+    192,
+    193,
+    194,
+    195
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120,
+    121,
+    122,
+    123,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    136,
+    137,
+    138,
+    139,
+    140,
+    141,
+    142,
+    143,
+    144,
+    145,
+    146,
+    147,
+    148,
+    149,
+    150,
+    151,
+    152,
+    153,
+    154,
+    155,
+    156,
+    157,
+    158,
+    159,
+    160,
+    161,
+    162,
+    163,
+    164,
+    165,
+    166,
+    167,
+    168,
+    169,
+    170,
+    171,
+    172,
+    173,
+    174,
+    175,
+    176,
+    177,
+    178,
+    179,
+    180,
+    181,
+    182,
+    183,
+    184,
+    185,
+    186,
+    187,
+    188,
+    189,
+    190,
+    191,
+    192,
+    193,
+    194,
+    195
+  ],
+  "missing_pages": [],
+  "tsv": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "ef05dde6f5bd013eed15efc26f08d831e8b786cb2bc2b74a2ec5698360a851ec",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-001.png",
+      "pdf_sha256": "28d22636f0cd5773f6be1bc811f47a9a5979eb4ccac22eba3708272c05fae8ee"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "0e52d6f5aa645f912af0bde88021017606e59ef4dd09d236242a0372926af0aa",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-002.png",
+      "pdf_sha256": "3dd936d0bfd08700d27714891748f1e1ceefc7b911ea4f376f16b5e0c55f5850"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "409deb2e07856127dc8bd8c26669444c8eec7a654fdb3af587b833a8de21db58",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-003.png",
+      "pdf_sha256": "0a04517eddb267f6cf68f9710f204a458578b35434b4bf07ac0bab6942aa69fc"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "48d98c2ebd185868df1649f8d5180d4d6c4f9bb2ea1ace0a0b582b8be17061ae",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-004.png",
+      "pdf_sha256": "a697afff0d371ccdd04254dd402d12639cc99dac14c21027e01cf3b95e088c9f"
+    },
+    {
+      "page": 5,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_005.png",
+      "rhwp_sha256": "53de9432f14e657b2f3f62ff307c77fa6601ee3bf3bba6465ccf78b1314046fc",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-005.png",
+      "pdf_sha256": "f067d72b6c8331fe3b1e3297a4fffc08b3e2423ca33a463179cd114152236f3e"
+    },
+    {
+      "page": 6,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_006.png",
+      "rhwp_sha256": "18f27e9fc5083915c11ac26a5982ae6a2fc77d4e2d4f2a02cd77f6e8cb109908",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-006.png",
+      "pdf_sha256": "0a6efd02211a57113e34921283c9c430e2e06abed0cd5a570da64f55cc5f738b"
+    },
+    {
+      "page": 7,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_007.png",
+      "rhwp_sha256": "edcd46e4e8e7de8a72d63130e3d826460ff26527bebd9c7e04498c4a6eec9615",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-007.png",
+      "pdf_sha256": "5de15e05e8d28f38cf4b078ecd2d15121af9ca65f0d5b767ef60a4e5841e6b12"
+    },
+    {
+      "page": 8,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_008.png",
+      "rhwp_sha256": "6bdead72e6b2766ea89fbb13d0ce20eac8def0f681a5cffb2d1d5c4c0dfe8333",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-008.png",
+      "pdf_sha256": "44af946e88057167fb4f9028ddd1000e4c438822b840c3aeac39122525708e94"
+    },
+    {
+      "page": 9,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_009.png",
+      "rhwp_sha256": "f02d3d5e63ebd140070bdf945b5242c8871542ed5a111110acb38427d17d1bad",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-009.png",
+      "pdf_sha256": "2042c48ee8bb84363e1d5aa4a451b5ceceaf97ac103be4d3b7797a67d111c962"
+    },
+    {
+      "page": 10,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_010.png",
+      "rhwp_sha256": "a7a9de821c93907ad0f91f9e8c7fe93c9a402868a3b0dc1225c7cd7656242c94",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-010.png",
+      "pdf_sha256": "951999733f66ac71788b7a644bac1b9c5490ccd7ca7890fe1c2dd3a6b7458116"
+    },
+    {
+      "page": 11,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_011.png",
+      "rhwp_sha256": "5d02c8261084ddd16a96db2e16bbe33ab82dfa9838074ff8b29cd6e5b87ab259",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-011.png",
+      "pdf_sha256": "fc4e8cac96ab02bce05455484c6ed8a3412c52e52a65216bf44225fe4fe53c68"
+    },
+    {
+      "page": 12,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_012.png",
+      "rhwp_sha256": "d1951cfb0e6bdaf68692e1c81c81c9294505e58ae2a6a1aa26ed1fc321a3b9e1",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-012.png",
+      "pdf_sha256": "123a8f69af9ecfff8af84f3deec2dfc1ac3cd34a9363c1da245a205f70c36d49"
+    },
+    {
+      "page": 13,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_013.png",
+      "rhwp_sha256": "10897a3efb6d542d0880b5f3fa78dcabd6eaf71991bf799d784ef6b50eef73ce",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-013.png",
+      "pdf_sha256": "38b7dfede416187572ba3822a8c85eb76af1d462f455c1cac28c122bc7ec2844"
+    },
+    {
+      "page": 14,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_014.png",
+      "rhwp_sha256": "cce388611492f3196d7e5cea04bcfbd4c52ddd29d0a4a375c236f2de0309ec74",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-014.png",
+      "pdf_sha256": "85a91b76f295d6366936f9a349b5ec776f63a7ef68db9a0a84902c4b5c52a9f0"
+    },
+    {
+      "page": 15,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_015.png",
+      "rhwp_sha256": "debecb6f91bfbc1efac169b9e08a9d40d7a23f9d57345f9c1f7d041f5aafa7c2",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-015.png",
+      "pdf_sha256": "cbd7b35b27bd217139870c7ab65081a46e2f4b6bf4b1108d4cd373904f4ec984"
+    },
+    {
+      "page": 16,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_016.png",
+      "rhwp_sha256": "c2d21d14900edbd004b68c3446fdd887ca2967f7808b9d5af67cc10a7f91f3ab",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-016.png",
+      "pdf_sha256": "6ca57f7fb36498a73541925dc529c60aecf57aae1d57745677a1d0f318e06ecd"
+    },
+    {
+      "page": 17,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_017.png",
+      "rhwp_sha256": "7035fd78be7281dc651bde5dc18416fa85a0725293d949c45ec0feb92c3392d0",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-017.png",
+      "pdf_sha256": "cbbab6064b4678d92d2e01597b35ea3eca5627a0503b51cb48b6956c6696312c"
+    },
+    {
+      "page": 18,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_018.png",
+      "rhwp_sha256": "0fd495eb84e1ac3722e423bc5bac4417f8b38415c83e3715b95e2d1c2ab0cf52",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-018.png",
+      "pdf_sha256": "9785dc7b05998cf7cfaa487377a085ffc11cab5dd01b3aace88ee253933226d6"
+    },
+    {
+      "page": 19,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_019.png",
+      "rhwp_sha256": "f3bd6531d1b4893c052b9fc086d847b323d58eee922027fbbb1ce37e51eae8e5",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-019.png",
+      "pdf_sha256": "cdcb2e6670263591072b5205fd70cc065c7c6f5fe9a364b1f1f93f7fa4874ab8"
+    },
+    {
+      "page": 20,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_020.png",
+      "rhwp_sha256": "c3ba00c15dbd1dbe28d7a4eade544c9f30d264109cd358fdce1a6bf26ae78a82",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-020.png",
+      "pdf_sha256": "810777e2e695aed84e82f7a4717c3e049fe7d73a78de765c45cb2819479add07"
+    },
+    {
+      "page": 21,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_021.png",
+      "rhwp_sha256": "835cc4c1502b803281ad1a371fb6dabc9474cbb399151b46373b65940cbc0947",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-021.png",
+      "pdf_sha256": "5a3372f48b834746d13c2d394390ee61b801a4cd4e9a982c2a7d0e931fba3bf2"
+    },
+    {
+      "page": 22,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_022.png",
+      "rhwp_sha256": "5e5a5e81db198fb1ebf5e8aa83cf19f0d244bfbeee92c5f4adac9a01e778b539",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-022.png",
+      "pdf_sha256": "b1a4204bb3f1f2f00d39939cee9a318f7488ddaefaa5ec72776cdfb2a2780cb2"
+    },
+    {
+      "page": 23,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_023.png",
+      "rhwp_sha256": "511f67dae57c4ac9f451d48c58da68465264a58da1122fa75a209ac215d2fc3d",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-023.png",
+      "pdf_sha256": "fed2b707345664e0777a3902c5f7316db5fcf59d372522da9b6e4e41f0caadc8"
+    },
+    {
+      "page": 24,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_024.png",
+      "rhwp_sha256": "41e2b54cb131884821fb5bf77d89dae7f719b59358ae7d41f52001e40b2df8a4",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-024.png",
+      "pdf_sha256": "bd83a5fe926880babc69c55e6aff3427b45b7b5908c846f204deec925a1ef400"
+    },
+    {
+      "page": 25,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_025.png",
+      "rhwp_sha256": "27c1d5d9f3144ce9baf6b89d7b882455f3843a70806cb8e5a6bceae2bc133487",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-025.png",
+      "pdf_sha256": "28cd4a49886b94821e979ff94d3d7ff64c96a8f06cec53247af581b17d20ba0d"
+    },
+    {
+      "page": 26,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_026.png",
+      "rhwp_sha256": "b651f4d2c6398a8ad520eb84e8a99d94a7f4294ed7a31c2419c1c4057d4642c1",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-026.png",
+      "pdf_sha256": "e01a7bdd31adcf0811e2f3ba5efef2c86b5e7c1b92516fd09bacfd3ad9233318"
+    },
+    {
+      "page": 27,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_027.png",
+      "rhwp_sha256": "2ac3d312146a02e3ae913de617130406c71cc297b3b74c06f9a4380bbb2b8489",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-027.png",
+      "pdf_sha256": "f620c99a0d9e0628a6e4da7adadf2c5636506485a159c183a3bcca30a3f1f954"
+    },
+    {
+      "page": 28,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_028.png",
+      "rhwp_sha256": "b4e76bd590b27a693dfa210d1d7effaf90fb55ba63e7b7be59956bef7aaa1fde",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-028.png",
+      "pdf_sha256": "20aad955efb205cc02f9ff35e41924fb0a1039150f78e4abc608dd5f04b79cd4"
+    },
+    {
+      "page": 29,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_029.png",
+      "rhwp_sha256": "df2b9ffac57f2ff4abdd3a586a4c91943663c181b1380518b976c3337e8ffa2e",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-029.png",
+      "pdf_sha256": "c1b4dd56b30c3cc3b87f47fec11371c9a21f24112367f1be40aa2ed0d422a844"
+    },
+    {
+      "page": 30,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_030.png",
+      "rhwp_sha256": "a30f46d22aa14c6d87a2601f58e62610fc72c577d1f058bf45f82b3a50bc7c97",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-030.png",
+      "pdf_sha256": "dcc3ce6e95395adfc8d6499c43d36d99aaa472164a0de50a708e390b8e850150"
+    },
+    {
+      "page": 31,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_031.png",
+      "rhwp_sha256": "30e7e5613bf35b9be63b15b2a272e1e690dba3bc66217cc2437b206a22468a94",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-031.png",
+      "pdf_sha256": "c48eeecdad9dedf858303e2f9a79640eaa5128e83bd1e0a56095b9484ab6a43e"
+    },
+    {
+      "page": 32,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_032.png",
+      "rhwp_sha256": "979f5a1c3e24e901534e216773bbad03da438c771c91c4cc4b431febc01fdc2a",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-032.png",
+      "pdf_sha256": "27f6e059989025bee75d38a278ffd3d7032251e03729ac80e7e228ec655de17a"
+    },
+    {
+      "page": 33,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_033.png",
+      "rhwp_sha256": "8143b25188ca1668c9655876e577f3dd32a206aa608c1eef3fa117906dc585a5",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-033.png",
+      "pdf_sha256": "36c4e139f02538faa2729b47eb9af2fcf661961cfc806407afb473c2e65c68f9"
+    },
+    {
+      "page": 34,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_034.png",
+      "rhwp_sha256": "727e599ca6d7ffd729983976254824f78fa474c932208b9137f8f51880dbf423",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-034.png",
+      "pdf_sha256": "336fa3122106c108534d9cc10b5fa508c84f96adfff9da36181151ebe57fbbf3"
+    },
+    {
+      "page": 35,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_035.png",
+      "rhwp_sha256": "0a5af7ec5da7638cae2da09de6c5f2b8fa4a1336880d51c20428e7638123a9b3",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-035.png",
+      "pdf_sha256": "0e36f54ca46428edd7bcefa67594cbe2a7f6a1d720526067b7ed7f649ae72dd7"
+    },
+    {
+      "page": 36,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_036.png",
+      "rhwp_sha256": "a86933bb14cd4fc382983b79fd2903c06ebb14c30d780c489a46f7b451cfc62a",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-036.png",
+      "pdf_sha256": "4d2f93270e7561077b57cac874aaa3766cbcafd2ac93f8f7d3d958cfe41d7cac"
+    },
+    {
+      "page": 37,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_037.png",
+      "rhwp_sha256": "9c5e754f7e76f880b79bec18501a21b9dd644ac9ced21603a4a87dae3541751c",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-037.png",
+      "pdf_sha256": "36e6d0f894ee88ae34c31c6e2dc8f7a844f28b8b99e8447136b90cf3ec078927"
+    },
+    {
+      "page": 38,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_038.png",
+      "rhwp_sha256": "028418df4e3aeec714df050f1e481b2dace57827f99c4e3e8d577109fb06dfca",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-038.png",
+      "pdf_sha256": "55cbb3ce2a7cfab76f790fd8db2fbf80fe99c57ba04702d9f27213f4518314d7"
+    },
+    {
+      "page": 39,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_039.png",
+      "rhwp_sha256": "bd768eb4d22b364ea342fa17c001e0a9076ee47e0fd54a75ed992d652fa6e850",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-039.png",
+      "pdf_sha256": "58fd3fff962d5df3b6965f7f118cab4bc036ddf1b36e2eb4ad4082fed2b8c33b"
+    },
+    {
+      "page": 40,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_040.png",
+      "rhwp_sha256": "329b9fa69a51f77fd88034a455702a2ae9ff29f153c7a5bcc091644fe2191f43",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-040.png",
+      "pdf_sha256": "9193564ee9dce67e4f4bfbaa0f352fb997e2982237607efbdf0efcea796b2e35"
+    },
+    {
+      "page": 41,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_041.png",
+      "rhwp_sha256": "5ffbdf648efc0dcc450f587a03c1d28f2d5dfecc0fb4bd87e4c4bfbf7b75f09a",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-041.png",
+      "pdf_sha256": "46ff47270c0c9e021045a68129d625065e857ff6b0f0e275a668163c9651f64f"
+    },
+    {
+      "page": 42,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_042.png",
+      "rhwp_sha256": "fb878d0ae8c3127f043a34adbf50a5100a97ef097d6f46dc6b5da84e3a72e57b",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-042.png",
+      "pdf_sha256": "5a81d19116ed86fceeeb024d59b17f298f0fbce8ef42cd31b5ad7a8470f0102c"
+    },
+    {
+      "page": 43,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_043.png",
+      "rhwp_sha256": "88e8161a651b8e76fd65dd165b50db94be544b4e399422d007f680f4b6684db1",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-043.png",
+      "pdf_sha256": "bbaf30bdbefa0ca591475de002f1ad5336295e64d2eacdb2ea52a7ff53c38c0b"
+    },
+    {
+      "page": 44,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_044.png",
+      "rhwp_sha256": "9243c09c7395d6f0ccd1433d2d44fe69c39b4e5c0a13c00c03fe234acea4573c",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-044.png",
+      "pdf_sha256": "a13cc9572575153df11ce1b1f60235d193d5a96e8e61770efbe0e6f31b30c7ac"
+    },
+    {
+      "page": 45,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_045.png",
+      "rhwp_sha256": "b0e9ca03c1053a501d1faf88edb7b8da91f86c6e6bf4b9156f9bcc130dab4e2e",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-045.png",
+      "pdf_sha256": "d2c461ea6259842a9656d98e581706f48d405419ee110e43a4c74a3786d03e1f"
+    },
+    {
+      "page": 46,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_046.png",
+      "rhwp_sha256": "35d6345fc78dd9032ab02c7aa1725d12e39086eff096d6530e4f3e434429c4a1",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-046.png",
+      "pdf_sha256": "d13af82fcecdf6ca03fef1d309cc545a16beb5977249213ba11ab21b527cac12"
+    },
+    {
+      "page": 47,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_047.png",
+      "rhwp_sha256": "d5a0bfa633640bb6b0c12cc4e8e35f22825fe3cbe310b1de01e0c5a2bc294d64",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-047.png",
+      "pdf_sha256": "9f2b93035959d8912f4d079f229bfdfd4a98d16c5fd926b9064fde39599ab2fe"
+    },
+    {
+      "page": 48,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_048.png",
+      "rhwp_sha256": "5bc88b4dc5e04f2dc05a9dc766568d5b5ac933b6bc278f76a8072a3e0a6e9872",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-048.png",
+      "pdf_sha256": "8a0304168359386a0a15242f83f6a1e261586337c9744d9e574f4b7bed07d0de"
+    },
+    {
+      "page": 49,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_049.png",
+      "rhwp_sha256": "68e8a3ee53a5dd709fa10fb600cdfcd43f7d444a42fe38ca08393fedbb9e961e",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-049.png",
+      "pdf_sha256": "d7970c150157082d4ed3305cdc5d57e201b0dfaf68312c2f7959c3fff9d7ed5c"
+    },
+    {
+      "page": 50,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_050.png",
+      "rhwp_sha256": "be142bd3ac94713d061b9aef136ee25f60dbf7de7a0c7c05aaa4105b35c412aa",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-050.png",
+      "pdf_sha256": "bfe79f5b8f94764d685e14de0975e71c8df6d5277652aad1ab4587b618fc69dd"
+    },
+    {
+      "page": 51,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_051.png",
+      "rhwp_sha256": "ea1b7e276b6562a7cce698ae9df49c8b6322a7fa1e64fc6107163d50dbb4b60b",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-051.png",
+      "pdf_sha256": "2134b3f320934e43925f8c76ebf3cbdf160e67c4804d590c5daaafb05a1525fa"
+    },
+    {
+      "page": 52,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_052.png",
+      "rhwp_sha256": "fb72deaa167bc06b873f5def00ec68e7a2ed128053a0f180f098dd455528f7ed",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-052.png",
+      "pdf_sha256": "a3024e00b08764a1e3ec8cc4e57228eb7fba17b3088f2058754dbb6f70c3915e"
+    },
+    {
+      "page": 53,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_053.png",
+      "rhwp_sha256": "d47cdea20d463e5ab6e0af60cb93a2b09ae06bdb1064cc6962546590dcbe5b3b",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-053.png",
+      "pdf_sha256": "91c3737e7801c00dc02b7b7e1047abdc9272230256a88ea732b3a56670acbf9a"
+    },
+    {
+      "page": 54,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_054.png",
+      "rhwp_sha256": "c45631dd8510ab9f57caf8c0f7d2fc8ee4e69856c77f92cff115db5ae1f021dd",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-054.png",
+      "pdf_sha256": "6fcf356377234e40e922a34b78b4a3be102822055277e8118621adaf1a0aa6df"
+    },
+    {
+      "page": 55,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_055.png",
+      "rhwp_sha256": "905a03eb21a32a5bfc990c1893bb779e05ec16af2cacfee1dc8b7ddbf2d47330",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-055.png",
+      "pdf_sha256": "110665192c69a1c56daf6293a29a8e085b0d5461437073bd816b8f4c03e21a4a"
+    },
+    {
+      "page": 56,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_056.png",
+      "rhwp_sha256": "1557366d83ff2290c710a05b2d1947a5eae362f81fcde683fa4e9ba6b070bdb1",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-056.png",
+      "pdf_sha256": "ee35f3678c293fbe2c2770097eb85a937e8e58567c12bcb9fe51b7581d1cf16a"
+    },
+    {
+      "page": 57,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_057.png",
+      "rhwp_sha256": "8022468e46cdb9b63aca46185c72165e8350ad8a8dfaefccb51bb4f048c08719",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-057.png",
+      "pdf_sha256": "4f18a1613a4c35dc03e824fbae67397e99d8efcff672b813669251c57e307e7b"
+    },
+    {
+      "page": 58,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_058.png",
+      "rhwp_sha256": "b7459f83c973a8437875c11fcb4169dcbfa2217a170c5283ee2a73e87a994be3",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-058.png",
+      "pdf_sha256": "e7b9fd26d2511fd94637a59713beea43dd44e7ad60e734eee0f2c25662ad0e77"
+    },
+    {
+      "page": 59,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_059.png",
+      "rhwp_sha256": "2ecd0587eea522cab8a67b2d6c015fa066a730e2c33aa1e900367dfbc487626f",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-059.png",
+      "pdf_sha256": "3218323d5e92890340788091bd0bab4910cd34defcd4be408ab1f2a190846fdc"
+    },
+    {
+      "page": 60,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_060.png",
+      "rhwp_sha256": "ce6a612efe4dfc7abadee2c09c8baf39f780a5f20d484ba54b6fce6cc9f2659b",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-060.png",
+      "pdf_sha256": "f566c9669100d8a65bde3c302354f9a35171a75a2b9fc66c7890f80c3f18b27f"
+    },
+    {
+      "page": 61,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_061.png",
+      "rhwp_sha256": "8e9b913d231487cc9d90490a104867fe2f7810dd3a57360181cf93a38b3012ed",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-061.png",
+      "pdf_sha256": "d501bb26a3c48a41d3a2d2fd6ef31e12dcda99f94a9a704c2b4d49338c3115eb"
+    },
+    {
+      "page": 62,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_062.png",
+      "rhwp_sha256": "e14cafa1909f0525d20df4c8a2e73a0320d9b7334dddd585d780801834670ed6",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-062.png",
+      "pdf_sha256": "5f212511ae59464bde4a3d1e480c0dc565904e9a3491adf6485013eb0655ccd5"
+    },
+    {
+      "page": 63,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_063.png",
+      "rhwp_sha256": "610deb1ca7f0c2ed9457979792bed29860687a0b4bd07086b9c48ac03a0aeec8",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-063.png",
+      "pdf_sha256": "44cc34dcd4fe18a7946ad3b3db06aed67daed536949d3c4f8e983d879402a2be"
+    },
+    {
+      "page": 64,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_064.png",
+      "rhwp_sha256": "c403f089019b3ceefc20d4c202c0ad6283fffb32bde73f2d17c79b2dd273e419",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-064.png",
+      "pdf_sha256": "b67d9348db7fe8911bb86b70f4fe893025716be8df84a4494ff4720e71225a44"
+    },
+    {
+      "page": 65,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_065.png",
+      "rhwp_sha256": "6f7f65ab2838baaf4aa05dc35e8431a96be9058b37890e1ae2806f12679c807f",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-065.png",
+      "pdf_sha256": "85ec53907ecec59f6a92852229a6f0a36e6c471362d9cfb6db5ebb4de38a9619"
+    },
+    {
+      "page": 66,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_066.png",
+      "rhwp_sha256": "f792bb63374e743612c077d35d1a288d36a3f88760c374dbf230b0b4a158d3c6",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-066.png",
+      "pdf_sha256": "555309cbc1bfe05c48ea3bf6384723f16c361fc27f7e8058dd73243d9f5abe2b"
+    },
+    {
+      "page": 67,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_067.png",
+      "rhwp_sha256": "4ca77c80ff747266a121ec48dd6e8ff8b9d87e58003777d050851f9e3fad36e2",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-067.png",
+      "pdf_sha256": "290f4a604c6b5a0ff453dd6d84ef3af23af4ddabcc7504ca9a75e1fa917311c0"
+    },
+    {
+      "page": 68,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_068.png",
+      "rhwp_sha256": "ef333d9379b406428bb78d1d0c273f51a4b49b416e36e2093053d4c8d9f34e79",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-068.png",
+      "pdf_sha256": "b74a8e4faea25fd3f88b22f9203878de52c0e1421d308ef24cafc4c2f8824102"
+    },
+    {
+      "page": 69,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_069.png",
+      "rhwp_sha256": "fc637da4955e81eafa09fd57aa4d6154574a5e4e82483ffb4d60b0710823884f",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-069.png",
+      "pdf_sha256": "b7a96a93bdc839597af70c5174cb7c1fe5dc4be5b8a8869638f8cb1e29a03fe3"
+    },
+    {
+      "page": 70,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_070.png",
+      "rhwp_sha256": "11a06d007cee7a35a102b9151b68b05548409de2c35c52b057bb768d5485ecb7",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-070.png",
+      "pdf_sha256": "632cee8a335720fa09a5a2a478611cd670e65f7eca8087e0cf1998a69fc9497c"
+    },
+    {
+      "page": 71,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_071.png",
+      "rhwp_sha256": "93e894fc9ab88f9949967e290138b2f5fbace17459a487d09c4e56bb2964f9b6",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-071.png",
+      "pdf_sha256": "23b8393095f73ca32c8c16111b392befcd53960fa2b39d4af09ec2eaa8e8115b"
+    },
+    {
+      "page": 72,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_072.png",
+      "rhwp_sha256": "88d4e1059590946bf9cbb806f189d3f72005ddfb0265591980967fc5cee9459c",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-072.png",
+      "pdf_sha256": "5ae7018f21bf9fe906036976b165e29b07dd68a4964ce39ade38bbdc8de10d69"
+    },
+    {
+      "page": 73,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_073.png",
+      "rhwp_sha256": "8d93957bae63c3f802290fc94d828fda1839ddcb862fd8dcbcaf1e6cf29975c3",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-073.png",
+      "pdf_sha256": "61d52a6b3b14e754053e469bd110b0deb3277ad074dd8b7f67e15671819d8a71"
+    },
+    {
+      "page": 74,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_074.png",
+      "rhwp_sha256": "10c8d8e212f2446bf2a11898914fc51d49e2f1ff4b7f1649f987ade8908ad89d",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-074.png",
+      "pdf_sha256": "00598285df9668e573e7be40c40aa0e40d4c8d0941e4bdd538ba466c89bc9b56"
+    },
+    {
+      "page": 75,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_075.png",
+      "rhwp_sha256": "1a5fa4357b468b756f48052b726ba49b88e683662a04b4ca7fdd8c246b9b2b8a",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-075.png",
+      "pdf_sha256": "feb887f2afb6cf519b8b56f6da41f4fc57d6249dc17205fef48df1de6158fd0f"
+    },
+    {
+      "page": 76,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_076.png",
+      "rhwp_sha256": "9068855f266c211b68825f78795568bee25fe85dcc7770a7e6650f72023d2a0e",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-076.png",
+      "pdf_sha256": "957e35e21106a1fec50347052985dad8cca103cdfddd853f18c17d0e22e98cce"
+    },
+    {
+      "page": 77,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_077.png",
+      "rhwp_sha256": "b45434d3a75d4c6abf7b095fb2bcaa2930ad9260f1383c7168318aa3533c8508",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-077.png",
+      "pdf_sha256": "3e6ab63debf6a1aefe0db764e9932e6416356a0a8444465e168961416872bfe9"
+    },
+    {
+      "page": 78,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_078.png",
+      "rhwp_sha256": "28918e427449c340fafce18b024a5ebfed70cc11eaff59798c0ce53c09633019",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-078.png",
+      "pdf_sha256": "6093d27ad05682adbdce3bd2ec0a3c72b67c13906e1477700077e890248fc2ec"
+    },
+    {
+      "page": 79,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_079.png",
+      "rhwp_sha256": "b7d3a87685eff117e0693c6c18489757327cbabd36aab7d1a23600f7521a8e5f",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-079.png",
+      "pdf_sha256": "048ddb440347269dbc3678e5918dcfc8f5ea42a60093581e6ab2e19e4e39615e"
+    },
+    {
+      "page": 80,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_080.png",
+      "rhwp_sha256": "00ea8695bf1407bde10875ea73d679f8996ec67c7c22b2bfd83ca2e4b6835cfa",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-080.png",
+      "pdf_sha256": "697fcf71d8a718dc8ec44e92d94b02148a7881ea7b489062611715b4437978ee"
+    },
+    {
+      "page": 81,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_081.png",
+      "rhwp_sha256": "b49fc77c18fe96e0a657509552aa1952763fcd8b38465a6db934d3ed835a0d46",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-081.png",
+      "pdf_sha256": "88dd560e4b3c05cf7cc6cd010f4287b59d0ff19802c79071b5e5cb053454a68f"
+    },
+    {
+      "page": 82,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_082.png",
+      "rhwp_sha256": "81e51018f4d0399677e6d155c37ce79e013c23f5c01bb5a6385d46f3efb5958e",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-082.png",
+      "pdf_sha256": "8a5fbefed9e31e55012309b36cf04057175f3031038f00f441daf6fb4a39152a"
+    },
+    {
+      "page": 83,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_083.png",
+      "rhwp_sha256": "b05fca1b8c3968f18c8be8e143a0c942759ef2e4d2b20b6f91431d96edaeb31f",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-083.png",
+      "pdf_sha256": "6c481c75a4b6622961fd398433e6c571bff314c01e7b18c34f4b366e6dae62a4"
+    },
+    {
+      "page": 84,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_084.png",
+      "rhwp_sha256": "ab81da9b761161c2ae57a8215d67d10dcfafca5c4a820dc328d4ed54f4ebc07b",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-084.png",
+      "pdf_sha256": "947fef07f3c8ac09c5ec5a0983a51912952af82f411e47fdad2e488759875d4a"
+    },
+    {
+      "page": 85,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_085.png",
+      "rhwp_sha256": "1e26da482bdb87569018c9f4edf17a9438a3f3da8763f6e5b63b2499dd4bac0f",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-085.png",
+      "pdf_sha256": "7faab035f8b56ed8e216193be71a2f3a1a5608b06c8b69a4c7ba45534b612af6"
+    },
+    {
+      "page": 86,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_086.png",
+      "rhwp_sha256": "d0234fd4e2d7e251d8e9adc8a44a7fdbbc6a8ee2eca4c60b39de907e67fb0534",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-086.png",
+      "pdf_sha256": "dd921bae2bc7d301733ddecb83da166cac31565b7e0a577ed1b7fc7a1d69b25e"
+    },
+    {
+      "page": 87,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_087.png",
+      "rhwp_sha256": "6fad45406cf0c36b7d0dafdd6acffe770dec449a4891ced302e633c4a0e8a186",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-087.png",
+      "pdf_sha256": "9a92bec21213f53f5e7e6de997f96bcf2b931e1e84b3cdd785b7bf6cca2b1623"
+    },
+    {
+      "page": 88,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_088.png",
+      "rhwp_sha256": "17f041d44541d8dd034f29ab7b52b7da39a283ce56068be73c6e0623faec36c4",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-088.png",
+      "pdf_sha256": "b33199a1d13e4d5e413615cffd0a51737cef6e8d2a4c3606176e7e7b2ae1c46c"
+    },
+    {
+      "page": 89,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_089.png",
+      "rhwp_sha256": "23222e01517f58cfef89e4988e4290bc7322584c15aa4252ffd59f7f8467ebd4",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-089.png",
+      "pdf_sha256": "866f1a14c25520aaa2117129639ded197d2e1cfdac5739e56c98a841ee17594b"
+    },
+    {
+      "page": 90,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_090.png",
+      "rhwp_sha256": "11812c3c064305b7857d6fbbda9781ba9e324e0f6cc4242640f4eb6d28b395f2",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-090.png",
+      "pdf_sha256": "2f32deb1c3194cc36fec01cf85201872d8dc6bd57f10fb895d104033a810b02f"
+    },
+    {
+      "page": 91,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_091.png",
+      "rhwp_sha256": "dc9a20c298887ee92a5f3a45c03800f560ef580fc5e92ed7901b4858774399ca",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-091.png",
+      "pdf_sha256": "53282132be42f1c17dd0149d91c6962b7bae466b391a2625546ece286f5ca2b3"
+    },
+    {
+      "page": 92,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_092.png",
+      "rhwp_sha256": "e3512077d9b6eb062db107083361f5c5114b133094fca8b7c93e936d2a197714",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-092.png",
+      "pdf_sha256": "ffbd3429c412f6d7b599a1e7f30f897b1c9b6ef4b1a47cbcbfbb9ee46a69a407"
+    },
+    {
+      "page": 93,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_093.png",
+      "rhwp_sha256": "ecf66e93331645a61e8377f0f4bc031a877f78366c91e950d548961415af58c9",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-093.png",
+      "pdf_sha256": "9ab1ecce10ad52cf502ce337f534ce99bcaafbe66c47ad982c16812c67030530"
+    },
+    {
+      "page": 94,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_094.png",
+      "rhwp_sha256": "008768e32846b2c52648c0a948f6bbacfc21fe2365f543aa24a14a8e9e7ff729",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-094.png",
+      "pdf_sha256": "7e5007a11484d6ca894a608960562da00e617b655ba35efb7f8c4f9faffd0dfe"
+    },
+    {
+      "page": 95,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_095.png",
+      "rhwp_sha256": "22bc716469a34bf2c09c399aa51aa89e4117db64a84a47d78ace63420fc15d09",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-095.png",
+      "pdf_sha256": "e94d0643e502fe25ad635b22926a29a4b7946a933439d46b690ac54b890fc820"
+    },
+    {
+      "page": 96,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_096.png",
+      "rhwp_sha256": "78e5a601afa2c18ba51cb03d4e42ea047c4d509795be51151cc2e53fb1845e43",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-096.png",
+      "pdf_sha256": "b791a77bf23f0bf4f50db5dd00280881d4037d33ef20adb038633782cefbdd8e"
+    },
+    {
+      "page": 97,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_097.png",
+      "rhwp_sha256": "c8d23132de7ef158d42748a0420e16819dff54d48ac864668bcc384352a5518b",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-097.png",
+      "pdf_sha256": "24055a52bdf7a7627b0534d4a6c8cb4ab9cf7af86e23c917971d5d549d2a9ea4"
+    },
+    {
+      "page": 98,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_098.png",
+      "rhwp_sha256": "a145e587fa9a8f2c981ff978b2b25de25efe1c135086a8fce6a3ef0e52d34e81",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-098.png",
+      "pdf_sha256": "3a214f8ab0f2c3969dd693e59608a0528c85cb683b0e5575adf6598829bfff69"
+    },
+    {
+      "page": 99,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_099.png",
+      "rhwp_sha256": "83d221d79e1e537faad279ae5967c7fa937d15e27a9d048ce8c1f03844ef31fa",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-099.png",
+      "pdf_sha256": "97160726f06e68e42472ccc4f8f9c8f0ce9ff377ef4f01737c9956f9ece93f2b"
+    },
+    {
+      "page": 100,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_100.png",
+      "rhwp_sha256": "97ec2d5f7e783af5bb70ca1e07bae275d57cc07eaecae9134bf5ec26c7bc8b38",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-100.png",
+      "pdf_sha256": "61c1b5af740a30c51f30c8e569511f6bf092a0f600cc6267ade9664678b811a8"
+    },
+    {
+      "page": 101,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_101.png",
+      "rhwp_sha256": "49e6b9fef1d739a4e77f050ef279769423d4116f0dcf328ea797d32beb4ffe2e",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-101.png",
+      "pdf_sha256": "246564419d73042e90ef0432088b9a17207ce896bac57ef4697549e2f1fc5bb8"
+    },
+    {
+      "page": 102,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_102.png",
+      "rhwp_sha256": "21e0af976c4a2cf251a967acecb01afe8d9926dd45faf70dd5ed34a6191a7625",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-102.png",
+      "pdf_sha256": "82f3744392cc03ccf34a5b4f414357d43f67a33e9b9a01726761d733fda6ac5f"
+    },
+    {
+      "page": 103,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_103.png",
+      "rhwp_sha256": "24eca461129c8548d4c5e8a893da669578c2f2656c526d0407357de61c8cc791",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-103.png",
+      "pdf_sha256": "07aab6c231f55e8db1fd3316a1ab0e3abd10260b7222534351041e738230df36"
+    },
+    {
+      "page": 104,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_104.png",
+      "rhwp_sha256": "e1353eaf54f18e5c4cdc747708d71510a2a210c192c2918b32ba4a5ba4823ba0",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-104.png",
+      "pdf_sha256": "6409d4016f454a4e6e8c9a7f00239f76f3f4d65e778f91e0e2fbedb1e75cb724"
+    },
+    {
+      "page": 105,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_105.png",
+      "rhwp_sha256": "b16cae9181840bd8a15ea9687a0ae785db3ba536cc2a075fd3aa5d0007f7fefd",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-105.png",
+      "pdf_sha256": "d36ce1ba6af739e5d22e91f73752642cc1c9cc3bfee180d46a935ac7573c6e50"
+    },
+    {
+      "page": 106,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_106.png",
+      "rhwp_sha256": "fcff312f896de46d8c465e2e74d8af73db3137daa6d794fc90479362bf55aa7c",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-106.png",
+      "pdf_sha256": "bab5594d37bb1929e511f1c6f42a19e1bc2577a788a990929f2fc369c3f1e313"
+    },
+    {
+      "page": 107,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_107.png",
+      "rhwp_sha256": "1c16fde6d887ec46cead02554910ea76badf2701342da4a7cc176f55bdcf5d60",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-107.png",
+      "pdf_sha256": "cee3c72822234f8e71084e89b87a202414693270cb56dabf4bee08e3b4475c25"
+    },
+    {
+      "page": 108,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_108.png",
+      "rhwp_sha256": "22cf93dce07c6e17e1d028285635e1863b2d20d03f65a673c5483cb4fb47f1b9",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-108.png",
+      "pdf_sha256": "43b5ab286241174064aca8dfb2c704880431ca6207bc9886f0c4e20589dd0d2c"
+    },
+    {
+      "page": 109,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_109.png",
+      "rhwp_sha256": "b2da9dd8e424a240eea8b1c87416676cf4c9ccc2d7e501a2e5e4d44d232a4f5a",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-109.png",
+      "pdf_sha256": "334f2797f4a742abfe3d7440f9c10a4e1bb0f747c2aa929ff65090890c1e7d7e"
+    },
+    {
+      "page": 110,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_110.png",
+      "rhwp_sha256": "330ab13ad28763c686d0a79fa437e7ab4ec9d35bb18e2b5e4d6ba97adab9a2e5",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-110.png",
+      "pdf_sha256": "3d83a2e07b98013496520c20a985bc8be885307d0d3040d373f2f30fc5ccee08"
+    },
+    {
+      "page": 111,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_111.png",
+      "rhwp_sha256": "328f92ba783e30a757b53d18234d83ccfab1bca7dce87f3b2ff8837f8a9e13dc",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-111.png",
+      "pdf_sha256": "5560e8dde03fc3afc4a33956eed86db9a75fff0682df35e778e2f528119dad7b"
+    },
+    {
+      "page": 112,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_112.png",
+      "rhwp_sha256": "028e31cf51ea9cb85e62c0e8a0a77752e66993be958d889dac6716d436f04efc",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-112.png",
+      "pdf_sha256": "c292ee96715a105175a6a88ff94c2aeede682ed83892d168ee075af32f7d1b3c"
+    },
+    {
+      "page": 113,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_113.png",
+      "rhwp_sha256": "c8f527811d2b48b2c47cc2575802ae720e8f715139b2e3548f3708d1015d1f25",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-113.png",
+      "pdf_sha256": "86041f1c08667861937ac245af5f466c334ea86ad27756e5051fd89cde1be8c0"
+    },
+    {
+      "page": 114,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_114.png",
+      "rhwp_sha256": "5a6002770fb4bce1d40a625656ea1b40defaf569488aa2450c3fa2ae91442751",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-114.png",
+      "pdf_sha256": "11199e889969d093c37566e5de8e84a9567727c5ed931b7d69402dc826e8f1f1"
+    },
+    {
+      "page": 115,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_115.png",
+      "rhwp_sha256": "dfe5644ed75fa9c4b9838d7c63ba7b15198a2b1364f92594bdd1a3b618432674",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-115.png",
+      "pdf_sha256": "99ec36a57e373de690c8f091c55129d94e6593c5e46460d59ebf722e2b68a912"
+    },
+    {
+      "page": 116,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_116.png",
+      "rhwp_sha256": "d68dd4165af144f31e983723df1174469fea0cba42ff28ac4df0c411a4a713be",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-116.png",
+      "pdf_sha256": "241151375374b681e56789b0992c9ea4b2a4d5db4ba310b9ae7169c6bb237114"
+    },
+    {
+      "page": 117,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_117.png",
+      "rhwp_sha256": "0417c7b8686092a3f189f29b01c141aa7c6fa5e52a7446fee36903bcaab90434",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-117.png",
+      "pdf_sha256": "f14646d5830e74ba3e1d731a5a06e22cf9aeac9301a85244678bc0cb7d45c91f"
+    },
+    {
+      "page": 118,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_118.png",
+      "rhwp_sha256": "0d7eec72e09140a2342611df26b01806281eac13d32063032db3ed3e5a65a0a0",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-118.png",
+      "pdf_sha256": "f89cf04ae5560fb51ae800d714c2ab2aef4b8b7b517c4f38da1857fe6575f29b"
+    },
+    {
+      "page": 119,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_119.png",
+      "rhwp_sha256": "86540b76612036d9bc7da6ce97e8a86ea223955451947fdd507a34086c3c5140",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-119.png",
+      "pdf_sha256": "b1352000f43dfb880cdcdeda9b2e09b536b0a886290b692de781ceb44b91eed6"
+    },
+    {
+      "page": 120,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_120.png",
+      "rhwp_sha256": "a9b63a48b608931d1fbc034f2d5f8265e7a874df88ffadf92b120319cc8b2009",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-120.png",
+      "pdf_sha256": "bafee60630a26aa2cc0352f3774f3afad45d8ce59ffccf18d32cea77a0ad4f04"
+    },
+    {
+      "page": 121,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_121.png",
+      "rhwp_sha256": "6ad2c4c745ebe96e2b5caa92c877c64d82659d03f0f2036c3a160dedb3251578",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-121.png",
+      "pdf_sha256": "3035cc2406eec9d054ac812085a43b8b9d6790639d55f0bc952e59cd86ebe701"
+    },
+    {
+      "page": 122,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_122.png",
+      "rhwp_sha256": "5f07d52f579cfba2a83f82e684fcc37987bb1c3f40642ed9b943f6eb0fbc6045",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-122.png",
+      "pdf_sha256": "fbecbbbe9d07d64038d37a871adc1aeb32cf70868f6aad0c6b22dfd3698a865c"
+    },
+    {
+      "page": 123,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_123.png",
+      "rhwp_sha256": "54840bdcb23d2c4f1b8fef036b5b0047e5ae43673c4769074d887a129f5a3826",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-123.png",
+      "pdf_sha256": "87b4413d53b8a97ae0a5a468f9a9347e93cbc247dc513796aab01ca829a881e7"
+    },
+    {
+      "page": 124,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_124.png",
+      "rhwp_sha256": "abb67e2c81fe30acb34d4cc0b3d49dac0d6d1ee8dcd7ad925372daff56e872fc",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-124.png",
+      "pdf_sha256": "06aafce46a8ab90f98c912b088e09d998e957f82c7d80a1983ed65c590921e16"
+    },
+    {
+      "page": 125,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_125.png",
+      "rhwp_sha256": "d3445d478d3faf86f9e069382fb26d1152754398f01bbdb65202f97492cd43b1",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-125.png",
+      "pdf_sha256": "14affdee49da7ef3b1609f746b363661787d0cacf5a95d8b03f79915cf1cf086"
+    },
+    {
+      "page": 126,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_126.png",
+      "rhwp_sha256": "3197b5060e2775d291fc939d316139deafb2e8c35e738edc52190ce65adbdd92",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-126.png",
+      "pdf_sha256": "39888c594cd0a6d643736474525a768fd6a46b5c986637f1815b8f2c76264d82"
+    },
+    {
+      "page": 127,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_127.png",
+      "rhwp_sha256": "11758dbf1133e4b161024e19274513cc5e4e1e54c9dc0c033f113e5f789fb39b",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-127.png",
+      "pdf_sha256": "f3863ab55e1fa707bfd51b819b4f000875419c779ffbc641c5fea1ab5c158185"
+    },
+    {
+      "page": 128,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_128.png",
+      "rhwp_sha256": "565af51c73a3c3c18240678ed27f37b89d28fabaeb06e550325ab6df1f826596",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-128.png",
+      "pdf_sha256": "31126f262983ce8b3013deebfcbd2f3dfaf05d341933ea3811dc1c6ec21b9298"
+    },
+    {
+      "page": 129,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_129.png",
+      "rhwp_sha256": "2ff8e628c451fa591bcec48414a73ac176660dad9c2e4aa21f1eb17e9621c54a",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-129.png",
+      "pdf_sha256": "0a8b10e6b4f8bd0ac8127509b39707632fdb6754614e46dab8e604be34d002b7"
+    },
+    {
+      "page": 130,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_130.png",
+      "rhwp_sha256": "938cf82c9bd264fdf6f7933bf2291ecad6e23f77a1edbfb6e9c1418f261e97db",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-130.png",
+      "pdf_sha256": "1e31b4268a0f47e1cb7b92447a574b0788bf06b214b05e349604909090f4815e"
+    },
+    {
+      "page": 131,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_131.png",
+      "rhwp_sha256": "581f92a854e1255e7b728cd35af43561b05fd4e5b2d865d1fff8226eec11d893",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-131.png",
+      "pdf_sha256": "5e98373c4113dae1e36bfa957ff0b9b8b695cdf408cc6afb49ca356fbae1c129"
+    },
+    {
+      "page": 132,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_132.png",
+      "rhwp_sha256": "87e1c61db27dde55bdc8790f0935e257719791c507632c96198ce973a24e81c7",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-132.png",
+      "pdf_sha256": "6d1d1ffac57d8dad6eb5bcbc453a3fdb299a727ef31a342ce6ebf8b5240b23e9"
+    },
+    {
+      "page": 133,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_133.png",
+      "rhwp_sha256": "58f279c3995753279a7e3c1306a9d787c2940956edc3857875e612e948da7791",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-133.png",
+      "pdf_sha256": "6a63e8c2dcaa849b79859c9cc477127ffbe25d4c3590aa74e1db9977b726c154"
+    },
+    {
+      "page": 134,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_134.png",
+      "rhwp_sha256": "f35d18f0862dd0418d8bbc427d5773124d2395885c76103da246c371eb6892bf",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-134.png",
+      "pdf_sha256": "3e99556abba3e1c51140b7fb352baad511a3fcdc2a78a019068df95f10bca408"
+    },
+    {
+      "page": 135,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_135.png",
+      "rhwp_sha256": "2f3470a1540b1754c4635992720c7300d9e48925c98fb322299e40951ef44f50",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-135.png",
+      "pdf_sha256": "a124a27dc9ea15c2d25c319673f1c12dcd25a7e78bf7e1998be8d765c0f4790e"
+    },
+    {
+      "page": 136,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_136.png",
+      "rhwp_sha256": "1f09cab0616d064d892dc012778d29968e8d1f5e24c4f1a0222195df1c230f90",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-136.png",
+      "pdf_sha256": "36f43c5aeedd62ef6f0ba7f3d5be0c867b71de59b2e6d3716195ec2c88f4d519"
+    },
+    {
+      "page": 137,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_137.png",
+      "rhwp_sha256": "9a25fda02c8371553988d6bb812ff7954b721f8ae8dd788cbdaf259f3ee5717e",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-137.png",
+      "pdf_sha256": "f5f20eba64d09e74efa8f02e1f7aa3e74c7c56212f685d93e778442b88802ff8"
+    },
+    {
+      "page": 138,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_138.png",
+      "rhwp_sha256": "86e64b5b6856189a790bf1767876a99a7cfe8e1074f4b594dc83368ef08bd552",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-138.png",
+      "pdf_sha256": "f26f3d17dca6c994e10b17ad1fd2e9b197ef8d350f71660ca30f849da2de11e6"
+    },
+    {
+      "page": 139,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_139.png",
+      "rhwp_sha256": "ab9e079f7c3de09e80fc8b0a4560cdff3016ee0da98c194dc3de748e6a75e1bc",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-139.png",
+      "pdf_sha256": "95086e2129e9ccd38db234a9a605fa472eb9fc4c39ea46663b3c54347ef5c46b"
+    },
+    {
+      "page": 140,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_140.png",
+      "rhwp_sha256": "aa977e70e49b913444d6b2c17076a9392b7101af3b52816764d93f55033d451b",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-140.png",
+      "pdf_sha256": "db0db160890fd4056d53a607702cb770ed3e6295bf9ff8c5c598a85ac293408c"
+    },
+    {
+      "page": 141,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_141.png",
+      "rhwp_sha256": "ddc75d6111847b42be5fb5e12677b153c220f9e5c788a13eac6cbfd9307203b1",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-141.png",
+      "pdf_sha256": "226486ff02323c298a7a4d3ddadfeb927c4ca2d4981408d030623a7f70b83592"
+    },
+    {
+      "page": 142,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_142.png",
+      "rhwp_sha256": "6d61796637af2c4a11a17f4ac2c0821b8b3f22b1c3ef7939beea50d9d9d4d5fe",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-142.png",
+      "pdf_sha256": "378c1018b9ce1446ab3de36962694a9c6a38422dfd2de9fdf80fe6dcde5e38a9"
+    },
+    {
+      "page": 143,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_143.png",
+      "rhwp_sha256": "4f0f7fe215bb1b0927c7f3dfc92fde4d290d384c805f8248a0048acdc5b6c799",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-143.png",
+      "pdf_sha256": "a7616b80dd770e1ef7599795f3888731c3cb22f51d8c9ff699767aee1aa69f1a"
+    },
+    {
+      "page": 144,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_144.png",
+      "rhwp_sha256": "e57984f22881c8fcb0b7c239b6f65432c217e60081704a320511eb88700dd4e2",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-144.png",
+      "pdf_sha256": "4e985c59895f821c29ab028b9853c6de9533d59676b290c8f7679636cd477172"
+    },
+    {
+      "page": 145,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_145.png",
+      "rhwp_sha256": "049867a23774fe9b0a2eb85e67fe8adee5e1f7f0249de9820e2dc387e3e641e9",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-145.png",
+      "pdf_sha256": "63c219e93808504bb381026166416e0aea3fe7398802f875a7e2848460891e1d"
+    },
+    {
+      "page": 146,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_146.png",
+      "rhwp_sha256": "a1f07c118ca89974b4695942f0a0f9d3d9bfb1021b2991e67f2360f55b25d183",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-146.png",
+      "pdf_sha256": "07416fe9d8a78be8e6863a4cae00e5e7b14f85352ea17390fae966e952917c63"
+    },
+    {
+      "page": 147,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_147.png",
+      "rhwp_sha256": "c79372864fb12a091b16786c1098db3aadedc7400fe04648fa4ede733de55048",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-147.png",
+      "pdf_sha256": "f74634ce14fc2a47b523b2f7ba4351bc9ce5db9e368c099cb31966e4e166d422"
+    },
+    {
+      "page": 148,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_148.png",
+      "rhwp_sha256": "e85e3fbf0d754ea2ddf0b09eb2bcb9ca0b979a7599820e04c154538d814b9dc2",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-148.png",
+      "pdf_sha256": "e3ab338f9807bc09ff75e3079f4e253ed7abd71b678917231629baa1537f6f18"
+    },
+    {
+      "page": 149,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_149.png",
+      "rhwp_sha256": "c3c4f70452af0296d546291cba02d83757b05debfed538abb85e4a7a9d43b4ac",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-149.png",
+      "pdf_sha256": "6d7b1c61a50f3753d190a871914ee538e3042f85196302ebf5d205255062a686"
+    },
+    {
+      "page": 150,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_150.png",
+      "rhwp_sha256": "5ccaa3881383ad8c4bdfa5878e9792964f6f7c127c7e5b6942dd95e2e11c808a",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-150.png",
+      "pdf_sha256": "8702c895eec078b3fca513b4d83d7fbe9efe25883ece5809179218a3a6e2011b"
+    },
+    {
+      "page": 151,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_151.png",
+      "rhwp_sha256": "c9ae0d0a52c36fd7fe2bfc598e193b4cc17c7d9d9bf59de92a1cebc627786fac",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-151.png",
+      "pdf_sha256": "ac928e9b24d74a54db42cf8259c9506801b249b2795fc870e3096aae9b4ec0f6"
+    },
+    {
+      "page": 152,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_152.png",
+      "rhwp_sha256": "ea1c911512086a8abc089ea2beee9abfbb37288885a2ab455c3f29590829f713",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-152.png",
+      "pdf_sha256": "50350451f9d3820c13a0aaf13491b9e2545494d3b927275231d1eaea4298ccb9"
+    },
+    {
+      "page": 153,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_153.png",
+      "rhwp_sha256": "d6a948f73190a08306d606cab82db48e77027c54f4ae8dca645b68c8306e5cb9",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-153.png",
+      "pdf_sha256": "bbd09909191d49a2df11e0837bfb8ee43ff7b2d1c27d6ba6e388b54398b5fe2e"
+    },
+    {
+      "page": 154,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_154.png",
+      "rhwp_sha256": "198b89112d6ee8c2dabfc9c717469e6c1e2390adbf74030603d561fbe423c56a",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-154.png",
+      "pdf_sha256": "eb677f9cd1c0ab82cbc08a9ee4b068329fd890d37623e3a1ddbb6d4a54d9c53e"
+    },
+    {
+      "page": 155,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_155.png",
+      "rhwp_sha256": "184383fd7e1cd10b2b9129d4121d3c4807df72e858e6ae48e9c981539b7f4152",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-155.png",
+      "pdf_sha256": "d254e6b34a862e754be65ca48ce3d74798576c0510340613b0372fab6c252f72"
+    },
+    {
+      "page": 156,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_156.png",
+      "rhwp_sha256": "9ffeede797fc5bf208297cacebdeeb0cc9f109e0d5a31c5d0e00ef97877c808f",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-156.png",
+      "pdf_sha256": "95f9765652d2ffd1452bb1f75c31fb4241dedbfe9bc1c2dba2ca9db152546c5f"
+    },
+    {
+      "page": 157,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_157.png",
+      "rhwp_sha256": "0d942b92ed2a903a6fcd675902275abd389907f5f717fb9591eb505c83aca16e",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-157.png",
+      "pdf_sha256": "dfe9938552483c604329364cb965e5374f63036a71f4a937e628bbc0b099d55b"
+    },
+    {
+      "page": 158,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_158.png",
+      "rhwp_sha256": "57600c4f0c6b91c6d4e8427cbe8621536a149cec33463c88fd155ee75fa61311",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-158.png",
+      "pdf_sha256": "2aee44bdbeed9dab536d979877a3ba6141953ad36cfaa4bda13094932f7dc058"
+    },
+    {
+      "page": 159,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_159.png",
+      "rhwp_sha256": "d4b209a6f03ab66c51381498389905ede0943dc269f29efd22d86d3b7dcc1f73",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-159.png",
+      "pdf_sha256": "6dac594d0f89556c9bc49da39b6ce52d68d20288fe1b5eae45c25f8e3da33504"
+    },
+    {
+      "page": 160,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_160.png",
+      "rhwp_sha256": "c9695fa45193925e8fd93255222a2b4cf1e1596880fd6bbdd765efa9239b9823",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-160.png",
+      "pdf_sha256": "b4c3829bf646c395929c459f5aa6f3af5cf6db3b7ee64555abf5be4bd05d2f15"
+    },
+    {
+      "page": 161,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_161.png",
+      "rhwp_sha256": "27754d45d898462abaf5472f5d568525dc4de4c4481cad9b343069e2872202f5",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-161.png",
+      "pdf_sha256": "8939789d87c18b3e3513499428ba0a91b8f8b5b5afbf0807dfd2981ebbe9fb3a"
+    },
+    {
+      "page": 162,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_162.png",
+      "rhwp_sha256": "cf62d96f6ebc3bed56dea3bd2ab29476e50d0e1dc71a4ab7a65051430b3b189a",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-162.png",
+      "pdf_sha256": "94ebe0f4c999e51ac49ec65418a0fa5d5bb698c8c6afc3c488810c9a6440f5e0"
+    },
+    {
+      "page": 163,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_163.png",
+      "rhwp_sha256": "5eca23ca17a12c8783273f352a8b1305bda99b53d21f02be0b43644433ca7999",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-163.png",
+      "pdf_sha256": "16f5171b201d853fcddd65fb631e354206898ec969dc9a7a3679e7578a0bb128"
+    },
+    {
+      "page": 164,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_164.png",
+      "rhwp_sha256": "a5f411ea45d2513695a8bbf9fa57b36127fcabc1b5f51f2f37dc7a5998bcb776",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-164.png",
+      "pdf_sha256": "45b92d391f8e725e9ff19c6388fd400090b1e6a1e0aa42d44702e0bbdb02777e"
+    },
+    {
+      "page": 165,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_165.png",
+      "rhwp_sha256": "c73ee8d5375a8bd3ae95955813770aabec91a3fdeb725bdd169cd9453c578504",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-165.png",
+      "pdf_sha256": "8d0862537a320987cf3ca214aea18d4124723e1c29b81ad518e84ba2c883b8ff"
+    },
+    {
+      "page": 166,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_166.png",
+      "rhwp_sha256": "585d674d81f852fbcdaa8cbb98145c80a27f05b738d3fbb2c0e0971db74b2bc9",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-166.png",
+      "pdf_sha256": "6d0a369173274121c366c19bef323bd985c2be022d4a7559625809d6d569685a"
+    },
+    {
+      "page": 167,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_167.png",
+      "rhwp_sha256": "dfeea9a8fc3cebcb896c335a4d03eff3caa7bc4be44e7ebd2f92655c2a4bc91d",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-167.png",
+      "pdf_sha256": "7fc5b056aac766767d3ef7fcae82bb00ba43c44945fd4bfcbb8cde282a072363"
+    },
+    {
+      "page": 168,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_168.png",
+      "rhwp_sha256": "bdb895d9e56b9cbe2e856b7243b9b609f75f7c89927e91f12e23c382031a4dee",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-168.png",
+      "pdf_sha256": "5f87064dc252c65dcfce96f438fe305a16f102345c5f6a936869adf4a50007b4"
+    },
+    {
+      "page": 169,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_169.png",
+      "rhwp_sha256": "886f332e386e7877b3c5d39ff7f43ea0f73b59b1cdec2a59237a55a744e6ad99",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-169.png",
+      "pdf_sha256": "24b8e1189ff7e9ed5bc6dc32505cb28ca52b7faebc60860eae4f0bef150bf814"
+    },
+    {
+      "page": 170,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_170.png",
+      "rhwp_sha256": "398a6660910c0d1ffa005889dbaa9ab0c10e23df67b41da3b9fd0895e8026110",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-170.png",
+      "pdf_sha256": "cc0c365e30868beba59ef41d76ec06c1060d12b7e8e989ecc39b2d437540597e"
+    },
+    {
+      "page": 171,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_171.png",
+      "rhwp_sha256": "1fbb75bf41160ca97a7f20ed1bcdfc17f09bcfd30ebe7a1bfee7884bf90068e2",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-171.png",
+      "pdf_sha256": "a0ae1781dc96984becb996ebd6d5190651213ea92dd62f5747332433c1692714"
+    },
+    {
+      "page": 172,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_172.png",
+      "rhwp_sha256": "0303472b731a101fcb2a79cb5f521e83322184da12ad7b4308bb9c4c7d53b89b",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-172.png",
+      "pdf_sha256": "7fbf678dd825c0074fc7697b89f410ae40b4db8fa5dcc8e61188f88c45e2614d"
+    },
+    {
+      "page": 173,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_173.png",
+      "rhwp_sha256": "313105365a544ea6b1436198197d2833e2133be209054ab8a7a3e25b5b966d5b",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-173.png",
+      "pdf_sha256": "cb8077e23456db5634ae192ccfa7e699cc2dd961fe9f8a0935da844f0b5f9e28"
+    },
+    {
+      "page": 174,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_174.png",
+      "rhwp_sha256": "6641c2aa4d423ef2bf7b470a73d3c9601f46225c94cf1a64213d9ac653cb2e04",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-174.png",
+      "pdf_sha256": "243d95bbac68ba94651a81a0d47ac4bc51c070719c934a50026d2f1b198fdb2d"
+    },
+    {
+      "page": 175,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_175.png",
+      "rhwp_sha256": "535256c2bda3936becaeb4ec48a28c4ab7029b0d6860eb4408697195a3c1dddf",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-175.png",
+      "pdf_sha256": "a6d13ca19eab672a0fe3459fa5a0ebf8c1f30fce9d96c0f31624918e106f7854"
+    },
+    {
+      "page": 176,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_176.png",
+      "rhwp_sha256": "338a0a7ce98aa52e59f4ec3e6925a7e9a1a5a95b6b962fd0af2fe8d981ba54aa",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-176.png",
+      "pdf_sha256": "ff83cd76b1a859b8416d1033d8b5bea3cfee52459afe151e18ed7051cc9efe91"
+    },
+    {
+      "page": 177,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_177.png",
+      "rhwp_sha256": "f791bf814eea14a35a0ac3990a269748024d6b118395eda9604e01ae622a5daa",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-177.png",
+      "pdf_sha256": "e343ab9c1a576fad61517b9e3b6a3f6b31b86b037cf010c8851607b1138f3cc5"
+    },
+    {
+      "page": 178,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_178.png",
+      "rhwp_sha256": "f5abc0e8b88b6d0497877b0c45c3c1adc9a8d278c0cae2237af767f46c4be45d",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-178.png",
+      "pdf_sha256": "6897970fa43e23c0aa229fc0370e1b9086b32858da371649a3832b4b5134b019"
+    },
+    {
+      "page": 179,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_179.png",
+      "rhwp_sha256": "928e0b2ec4452e0cc16f4897c79d34f35b73c4ed784dfe1a097ee4193153a81f",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-179.png",
+      "pdf_sha256": "b33a047cfbec71daed845de5afba145e87c4f18066a9f9d6c39e5f682eee338f"
+    },
+    {
+      "page": 180,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_180.png",
+      "rhwp_sha256": "e9c74af587217f66cc9ad818a25c217c6de2eab456f4ae0b88f5dff3bf84e6ec",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-180.png",
+      "pdf_sha256": "3274775a241ed3244563adf7a3d5bd91b6a3247b02a566898b07832087ebfc06"
+    },
+    {
+      "page": 181,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_181.png",
+      "rhwp_sha256": "d4baf8149efb206c17b085ad817d7b063a7649fe39e422ec793e82a9e25416bf",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-181.png",
+      "pdf_sha256": "eb89b62f4576b389790467f56bd73806e02101dd2378872eb800e5b296eec3a2"
+    },
+    {
+      "page": 182,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_182.png",
+      "rhwp_sha256": "3862e5a4aa3151f4360f376a70c5644538e805e1688b447fc2279a8bc4a8e4fa",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-182.png",
+      "pdf_sha256": "f9b418fc649e323424178e543295ce7985c6e773861ea555440601a012e71e94"
+    },
+    {
+      "page": 183,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_183.png",
+      "rhwp_sha256": "123203b6cbd1df41bc72235f7d2f142db609cf74ec261b77c51dc3a5fbe061ec",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-183.png",
+      "pdf_sha256": "8f5cd91cd17d71beb259ec6f15f92b6bb72062559acc6ea19a12c8fff907e68f"
+    },
+    {
+      "page": 184,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_184.png",
+      "rhwp_sha256": "539ef8f8aacb655f9b27afeeab16c24b671a875819d92603933819c8151bec3b",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-184.png",
+      "pdf_sha256": "febd32ebe22e64ef128a2b6174455e383914c275816017e343a0ac8e4ab2884a"
+    },
+    {
+      "page": 185,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_185.png",
+      "rhwp_sha256": "af0fbf27e89a43d5ff23bfec810062275848dab085547601e6c8256c120df641",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-185.png",
+      "pdf_sha256": "feb1cc14d383a2738eb965313cf103864edf4d268b10c952bacc4fc77e56365e"
+    },
+    {
+      "page": 186,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_186.png",
+      "rhwp_sha256": "3107c84ed5f1e7d1d0ffe5823d651a7bd8b0dd545ccb4cd443834ef260d42c7e",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-186.png",
+      "pdf_sha256": "417eb98107879596618cf4ee318f8a29202a70cd196433a746898a8202305ba2"
+    },
+    {
+      "page": 187,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_187.png",
+      "rhwp_sha256": "dcc8927c9860dd5076165164ad35fdf53d526af89eb8e6a93c16cd8622f376cf",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-187.png",
+      "pdf_sha256": "ddab58ddff4d09b2485d1edc6678b2d5983758e3d332f5e2f8702d9c6ff253ee"
+    },
+    {
+      "page": 188,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_188.png",
+      "rhwp_sha256": "3107c84ed5f1e7d1d0ffe5823d651a7bd8b0dd545ccb4cd443834ef260d42c7e",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-188.png",
+      "pdf_sha256": "417eb98107879596618cf4ee318f8a29202a70cd196433a746898a8202305ba2"
+    },
+    {
+      "page": 189,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_189.png",
+      "rhwp_sha256": "8de690e9d3f9477a080678a46c7c00c12a8055e6d7057f88e6471be4aa9ad7a3",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-189.png",
+      "pdf_sha256": "9dcda5a2510c0957b9595358c182708c7a7b578fa2ca33f87d24120f88b6c152"
+    },
+    {
+      "page": 190,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_190.png",
+      "rhwp_sha256": "3107c84ed5f1e7d1d0ffe5823d651a7bd8b0dd545ccb4cd443834ef260d42c7e",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-190.png",
+      "pdf_sha256": "417eb98107879596618cf4ee318f8a29202a70cd196433a746898a8202305ba2"
+    },
+    {
+      "page": 191,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_191.png",
+      "rhwp_sha256": "4268e84fca78a4f2a7aade32e742aaa6f73dc08fac51b9397c819c1d06732a00",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-191.png",
+      "pdf_sha256": "69e8571d5762ce034cdf4a1f2d899a6f783956b040e3910685ee75f00f1450a6"
+    },
+    {
+      "page": 192,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_192.png",
+      "rhwp_sha256": "57aee75db061513b0eabbd310102c76ef4c4797c63a4ac159df159feacc639ed",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-192.png",
+      "pdf_sha256": "90006758c0c577b9ccef71f1aec07b495de3131d83e9a5c118a8922b77fce42d"
+    },
+    {
+      "page": 193,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_193.png",
+      "rhwp_sha256": "b248f8956a1486da0d6e749f04fcd46f2a6016b41ae147406aa7af3fbf938efb",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-193.png",
+      "pdf_sha256": "c95acf5f959b5c7dd3a89bead6da98122c8a50bbf97f27eea6ab8fc5f25992c7"
+    },
+    {
+      "page": 194,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_194.png",
+      "rhwp_sha256": "3f42c7e1fa5ea963c553696f5f101bd6c5ff01353b9ea293ac62eb490ea9e442",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-194.png",
+      "pdf_sha256": "5ef834905e2c6847f0102b5b9800466e430951e33e21af5886d26f700225983f"
+    },
+    {
+      "page": 195,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/rhwp_png/rhwp_195.png",
+      "rhwp_sha256": "d9dffbec68e090c6da0a4c24b233a2c3607f0843955eab927e6731cbe40fdc4c",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/pdf_png/pdf-195.png",
+      "pdf_sha256": "e5017067bbe18babd8265bbd993082de7d5a2fde00c302a602659fef3742444d"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 94.84611,
+      "silhouette_raw_unmatched_pixels": 1482,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 28755,
+      "tolerant_content_match_percent": 94.84611
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 97.5106,
+      "silhouette_raw_unmatched_pixels": 975,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 39166,
+      "tolerant_content_match_percent": 97.5106
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.72342,
+      "silhouette_raw_unmatched_pixels": 234,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 84605,
+      "tolerant_content_match_percent": 99.72342
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 97.25606,
+      "silhouette_raw_unmatched_pixels": 2230,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 81270,
+      "tolerant_content_match_percent": 97.25606
+    },
+    {
+      "page": 5,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.76491,
+      "silhouette_raw_unmatched_pixels": 221,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 94008,
+      "tolerant_content_match_percent": 99.76491
+    },
+    {
+      "page": 6,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.41988,
+      "silhouette_raw_unmatched_pixels": 515,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 88775,
+      "tolerant_content_match_percent": 99.41988
+    },
+    {
+      "page": 7,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.41323,
+      "silhouette_raw_unmatched_pixels": 526,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 89644,
+      "tolerant_content_match_percent": 99.41323
+    },
+    {
+      "page": 8,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.16056,
+      "silhouette_raw_unmatched_pixels": 597,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 71119,
+      "tolerant_content_match_percent": 99.16056
+    },
+    {
+      "page": 9,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.89004,
+      "silhouette_raw_unmatched_pixels": 97,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 88210,
+      "tolerant_content_match_percent": 99.89004
+    },
+    {
+      "page": 10,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.90671,
+      "silhouette_raw_unmatched_pixels": 67,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 71821,
+      "tolerant_content_match_percent": 99.90671
+    },
+    {
+      "page": 11,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.02372,
+      "silhouette_raw_unmatched_pixels": 914,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 93621,
+      "tolerant_content_match_percent": 99.02372
+    },
+    {
+      "page": 12,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.88781,
+      "silhouette_raw_unmatched_pixels": 110,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 98047,
+      "tolerant_content_match_percent": 99.88781
+    },
+    {
+      "page": 13,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.05014,
+      "silhouette_raw_unmatched_pixels": 1757,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 90109,
+      "tolerant_content_match_percent": 98.05014
+    },
+    {
+      "page": 14,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.8346,
+      "silhouette_raw_unmatched_pixels": 134,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 81015,
+      "tolerant_content_match_percent": 99.8346
+    },
+    {
+      "page": 15,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.76852,
+      "silhouette_raw_unmatched_pixels": 212,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 91584,
+      "tolerant_content_match_percent": 99.76852
+    },
+    {
+      "page": 16,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 97.09283,
+      "silhouette_raw_unmatched_pixels": 2411,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 82933,
+      "tolerant_content_match_percent": 97.09283
+    },
+    {
+      "page": 17,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.86345,
+      "silhouette_raw_unmatched_pixels": 93,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 68105,
+      "tolerant_content_match_percent": 99.86345
+    },
+    {
+      "page": 18,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.54329,
+      "silhouette_raw_unmatched_pixels": 358,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 78386,
+      "tolerant_content_match_percent": 99.54329
+    },
+    {
+      "page": 19,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.86265,
+      "silhouette_raw_unmatched_pixels": 108,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 78633,
+      "tolerant_content_match_percent": 99.86265
+    },
+    {
+      "page": 20,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.95324,
+      "silhouette_raw_unmatched_pixels": 32,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 68435,
+      "tolerant_content_match_percent": 99.95324
+    },
+    {
+      "page": 21,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.51041,
+      "silhouette_raw_unmatched_pixels": 314,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 64135,
+      "tolerant_content_match_percent": 99.51041
+    },
+    {
+      "page": 22,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.94553,
+      "silhouette_raw_unmatched_pixels": 52,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 95463,
+      "tolerant_content_match_percent": 99.94553
+    },
+    {
+      "page": 23,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.79956,
+      "silhouette_raw_unmatched_pixels": 166,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 82819,
+      "tolerant_content_match_percent": 99.79956
+    },
+    {
+      "page": 24,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.84578,
+      "silhouette_raw_unmatched_pixels": 84,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 54469,
+      "tolerant_content_match_percent": 99.84578
+    },
+    {
+      "page": 25,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.31906,
+      "silhouette_raw_unmatched_pixels": 470,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 69022,
+      "tolerant_content_match_percent": 99.31906
+    },
+    {
+      "page": 26,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.9967,
+      "silhouette_raw_unmatched_pixels": 5,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 151390,
+      "tolerant_content_match_percent": 99.9967
+    },
+    {
+      "page": 27,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.0765,
+      "silhouette_raw_unmatched_pixels": 1039,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 112507,
+      "tolerant_content_match_percent": 99.0765
+    },
+    {
+      "page": 28,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.99464,
+      "silhouette_raw_unmatched_pixels": 703,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 69925,
+      "tolerant_content_match_percent": 98.99464
+    },
+    {
+      "page": 29,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.74805,
+      "silhouette_raw_unmatched_pixels": 111,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 44056,
+      "tolerant_content_match_percent": 99.74805
+    },
+    {
+      "page": 30,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.67608,
+      "silhouette_raw_unmatched_pixels": 196,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 60508,
+      "tolerant_content_match_percent": 99.67608
+    },
+    {
+      "page": 31,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.70593,
+      "silhouette_raw_unmatched_pixels": 216,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 73453,
+      "tolerant_content_match_percent": 99.70593
+    },
+    {
+      "page": 32,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.47873,
+      "silhouette_raw_unmatched_pixels": 149,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 28584,
+      "tolerant_content_match_percent": 99.47873
+    },
+    {
+      "page": 33,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.73277,
+      "silhouette_raw_unmatched_pixels": 296,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 110765,
+      "tolerant_content_match_percent": 99.73277
+    },
+    {
+      "page": 34,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.8602,
+      "silhouette_raw_unmatched_pixels": 107,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 76536,
+      "tolerant_content_match_percent": 99.8602
+    },
+    {
+      "page": 35,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.10344,
+      "silhouette_raw_unmatched_pixels": 1099,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 122580,
+      "tolerant_content_match_percent": 99.10344
+    },
+    {
+      "page": 36,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.83618,
+      "silhouette_raw_unmatched_pixels": 131,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 79966,
+      "tolerant_content_match_percent": 99.83618
+    },
+    {
+      "page": 37,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.9284,
+      "silhouette_raw_unmatched_pixels": 923,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 86133,
+      "tolerant_content_match_percent": 98.9284
+    },
+    {
+      "page": 38,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.62538,
+      "silhouette_raw_unmatched_pixels": 409,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 109177,
+      "tolerant_content_match_percent": 99.62538
+    },
+    {
+      "page": 39,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.89786,
+      "silhouette_raw_unmatched_pixels": 133,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 130218,
+      "tolerant_content_match_percent": 99.89786
+    },
+    {
+      "page": 40,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.78553,
+      "silhouette_raw_unmatched_pixels": 200,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 93253,
+      "tolerant_content_match_percent": 99.78553
+    },
+    {
+      "page": 41,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.80873,
+      "silhouette_raw_unmatched_pixels": 234,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 122337,
+      "tolerant_content_match_percent": 99.80873
+    },
+    {
+      "page": 42,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.89194,
+      "silhouette_raw_unmatched_pixels": 126,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 116607,
+      "tolerant_content_match_percent": 99.89194
+    },
+    {
+      "page": 43,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.2761,
+      "silhouette_raw_unmatched_pixels": 986,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 136206,
+      "tolerant_content_match_percent": 99.2761
+    },
+    {
+      "page": 44,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.90957,
+      "silhouette_raw_unmatched_pixels": 85,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 93996,
+      "tolerant_content_match_percent": 99.90957
+    },
+    {
+      "page": 45,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.8355,
+      "silhouette_raw_unmatched_pixels": 132,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 80243,
+      "tolerant_content_match_percent": 99.8355
+    },
+    {
+      "page": 46,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.65383,
+      "silhouette_raw_unmatched_pixels": 381,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 110061,
+      "tolerant_content_match_percent": 99.65383
+    },
+    {
+      "page": 47,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.79314,
+      "silhouette_raw_unmatched_pixels": 181,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 87500,
+      "tolerant_content_match_percent": 99.79314
+    },
+    {
+      "page": 48,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.87384,
+      "silhouette_raw_unmatched_pixels": 116,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 91949,
+      "tolerant_content_match_percent": 99.87384
+    },
+    {
+      "page": 49,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.83044,
+      "silhouette_raw_unmatched_pixels": 221,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 130336,
+      "tolerant_content_match_percent": 99.83044
+    },
+    {
+      "page": 50,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.83299,
+      "silhouette_raw_unmatched_pixels": 217,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 129933,
+      "tolerant_content_match_percent": 99.83299
+    },
+    {
+      "page": 51,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.8747,
+      "silhouette_raw_unmatched_pixels": 145,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 115718,
+      "tolerant_content_match_percent": 99.8747
+    },
+    {
+      "page": 52,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.91362,
+      "silhouette_raw_unmatched_pixels": 107,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 123877,
+      "tolerant_content_match_percent": 99.91362
+    },
+    {
+      "page": 53,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.8933,
+      "silhouette_raw_unmatched_pixels": 122,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 114339,
+      "tolerant_content_match_percent": 99.8933
+    },
+    {
+      "page": 54,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.85806,
+      "silhouette_raw_unmatched_pixels": 153,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 107792,
+      "tolerant_content_match_percent": 99.85806
+    },
+    {
+      "page": 55,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.21855,
+      "silhouette_raw_unmatched_pixels": 905,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 115810,
+      "tolerant_content_match_percent": 99.21855
+    },
+    {
+      "page": 56,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.84506,
+      "silhouette_raw_unmatched_pixels": 171,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 110367,
+      "tolerant_content_match_percent": 99.84506
+    },
+    {
+      "page": 57,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.58898,
+      "silhouette_raw_unmatched_pixels": 464,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 112891,
+      "tolerant_content_match_percent": 99.58898
+    },
+    {
+      "page": 58,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.46979,
+      "silhouette_raw_unmatched_pixels": 596,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 112409,
+      "tolerant_content_match_percent": 99.46979
+    },
+    {
+      "page": 59,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.91795,
+      "silhouette_raw_unmatched_pixels": 84,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 102373,
+      "tolerant_content_match_percent": 99.91795
+    },
+    {
+      "page": 60,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.88873,
+      "silhouette_raw_unmatched_pixels": 137,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 123128,
+      "tolerant_content_match_percent": 99.88873
+    },
+    {
+      "page": 61,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.83059,
+      "silhouette_raw_unmatched_pixels": 192,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 113336,
+      "tolerant_content_match_percent": 99.83059
+    },
+    {
+      "page": 62,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.32055,
+      "silhouette_raw_unmatched_pixels": 868,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 127750,
+      "tolerant_content_match_percent": 99.32055
+    },
+    {
+      "page": 63,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.42746,
+      "silhouette_raw_unmatched_pixels": 539,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 94142,
+      "tolerant_content_match_percent": 99.42746
+    },
+    {
+      "page": 64,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.49267,
+      "silhouette_raw_unmatched_pixels": 438,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 86335,
+      "tolerant_content_match_percent": 99.49267
+    },
+    {
+      "page": 65,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.92468,
+      "silhouette_raw_unmatched_pixels": 79,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 104890,
+      "tolerant_content_match_percent": 99.92468
+    },
+    {
+      "page": 66,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.90714,
+      "silhouette_raw_unmatched_pixels": 92,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 99070,
+      "tolerant_content_match_percent": 99.90714
+    },
+    {
+      "page": 67,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.9339,
+      "silhouette_raw_unmatched_pixels": 53,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 80179,
+      "tolerant_content_match_percent": 99.9339
+    },
+    {
+      "page": 68,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.61542,
+      "silhouette_raw_unmatched_pixels": 383,
+      "silhouette_boundary_reconciled_pixels": 7,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 99588,
+      "tolerant_content_match_percent": 99.62244
+    },
+    {
+      "page": 69,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.56094,
+      "silhouette_raw_unmatched_pixels": 496,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 112968,
+      "tolerant_content_match_percent": 99.56094
+    },
+    {
+      "page": 70,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.86915,
+      "silhouette_raw_unmatched_pixels": 108,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 82538,
+      "tolerant_content_match_percent": 99.86915
+    },
+    {
+      "page": 71,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.84917,
+      "silhouette_raw_unmatched_pixels": 139,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 92154,
+      "tolerant_content_match_percent": 99.84917
+    },
+    {
+      "page": 72,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.96445,
+      "silhouette_raw_unmatched_pixels": 31,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 87204,
+      "tolerant_content_match_percent": 99.96445
+    },
+    {
+      "page": 73,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.86574,
+      "silhouette_raw_unmatched_pixels": 102,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 75972,
+      "tolerant_content_match_percent": 99.86574
+    },
+    {
+      "page": 74,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.8719,
+      "silhouette_raw_unmatched_pixels": 93,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 72597,
+      "tolerant_content_match_percent": 99.8719
+    },
+    {
+      "page": 75,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.82994,
+      "silhouette_raw_unmatched_pixels": 181,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 106433,
+      "tolerant_content_match_percent": 99.82994
+    },
+    {
+      "page": 76,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.93541,
+      "silhouette_raw_unmatched_pixels": 36,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 55738,
+      "tolerant_content_match_percent": 99.93541
+    },
+    {
+      "page": 77,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.04449,
+      "silhouette_raw_unmatched_pixels": 978,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 102354,
+      "tolerant_content_match_percent": 99.04449
+    },
+    {
+      "page": 78,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.83798,
+      "silhouette_raw_unmatched_pixels": 160,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 98751,
+      "tolerant_content_match_percent": 99.83798
+    },
+    {
+      "page": 79,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.7859,
+      "silhouette_raw_unmatched_pixels": 171,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 79868,
+      "tolerant_content_match_percent": 99.7859
+    },
+    {
+      "page": 80,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.74302,
+      "silhouette_raw_unmatched_pixels": 237,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 92224,
+      "tolerant_content_match_percent": 99.74302
+    },
+    {
+      "page": 81,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.89087,
+      "silhouette_raw_unmatched_pixels": 95,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 87053,
+      "tolerant_content_match_percent": 99.89087
+    },
+    {
+      "page": 82,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.78399,
+      "silhouette_raw_unmatched_pixels": 203,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 93977,
+      "tolerant_content_match_percent": 99.78399
+    },
+    {
+      "page": 83,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.83638,
+      "silhouette_raw_unmatched_pixels": 173,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 105733,
+      "tolerant_content_match_percent": 99.83638
+    },
+    {
+      "page": 84,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.40099,
+      "silhouette_raw_unmatched_pixels": 591,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 98663,
+      "tolerant_content_match_percent": 99.40099
+    },
+    {
+      "page": 85,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.99784,
+      "silhouette_raw_unmatched_pixels": 1161,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 115850,
+      "tolerant_content_match_percent": 98.99784
+    },
+    {
+      "page": 86,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.80002,
+      "silhouette_raw_unmatched_pixels": 228,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 114009,
+      "tolerant_content_match_percent": 99.80002
+    },
+    {
+      "page": 87,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.89343,
+      "silhouette_raw_unmatched_pixels": 111,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 104157,
+      "tolerant_content_match_percent": 99.89343
+    },
+    {
+      "page": 88,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.79815,
+      "silhouette_raw_unmatched_pixels": 221,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 109486,
+      "tolerant_content_match_percent": 99.79815
+    },
+    {
+      "page": 89,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.85724,
+      "silhouette_raw_unmatched_pixels": 132,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 92463,
+      "tolerant_content_match_percent": 99.85724
+    },
+    {
+      "page": 90,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.6222,
+      "silhouette_raw_unmatched_pixels": 396,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 104817,
+      "tolerant_content_match_percent": 99.6222
+    },
+    {
+      "page": 91,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.77702,
+      "silhouette_raw_unmatched_pixels": 208,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 93281,
+      "tolerant_content_match_percent": 99.77702
+    },
+    {
+      "page": 92,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.86795,
+      "silhouette_raw_unmatched_pixels": 111,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 84056,
+      "tolerant_content_match_percent": 99.86795
+    },
+    {
+      "page": 93,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.89541,
+      "silhouette_raw_unmatched_pixels": 78,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 74580,
+      "tolerant_content_match_percent": 99.89541
+    },
+    {
+      "page": 94,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.83498,
+      "silhouette_raw_unmatched_pixels": 144,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 87263,
+      "tolerant_content_match_percent": 99.83498
+    },
+    {
+      "page": 95,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 97.64831,
+      "silhouette_raw_unmatched_pixels": 2380,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 101204,
+      "tolerant_content_match_percent": 97.64831
+    },
+    {
+      "page": 96,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 96.09842,
+      "silhouette_raw_unmatched_pixels": 4565,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 117004,
+      "tolerant_content_match_percent": 96.09842
+    },
+    {
+      "page": 97,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.84511,
+      "silhouette_raw_unmatched_pixels": 146,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 94263,
+      "tolerant_content_match_percent": 99.84511
+    },
+    {
+      "page": 98,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.40007,
+      "silhouette_raw_unmatched_pixels": 606,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 101011,
+      "tolerant_content_match_percent": 99.40007
+    },
+    {
+      "page": 99,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.82104,
+      "silhouette_raw_unmatched_pixels": 122,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 68170,
+      "tolerant_content_match_percent": 99.82104
+    },
+    {
+      "page": 100,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.91634,
+      "silhouette_raw_unmatched_pixels": 85,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 101605,
+      "tolerant_content_match_percent": 99.91634
+    },
+    {
+      "page": 101,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.48434,
+      "silhouette_raw_unmatched_pixels": 585,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 113447,
+      "tolerant_content_match_percent": 99.48434
+    },
+    {
+      "page": 102,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.39544,
+      "silhouette_raw_unmatched_pixels": 531,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 87832,
+      "tolerant_content_match_percent": 99.39544
+    },
+    {
+      "page": 103,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.90632,
+      "silhouette_raw_unmatched_pixels": 86,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 91803,
+      "tolerant_content_match_percent": 99.90632
+    },
+    {
+      "page": 104,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.32495,
+      "silhouette_raw_unmatched_pixels": 711,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 105325,
+      "tolerant_content_match_percent": 99.32495
+    },
+    {
+      "page": 105,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.95014,
+      "silhouette_raw_unmatched_pixels": 1350,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 128588,
+      "tolerant_content_match_percent": 98.95014
+    },
+    {
+      "page": 106,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.82137,
+      "silhouette_raw_unmatched_pixels": 177,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 99088,
+      "tolerant_content_match_percent": 99.82137
+    },
+    {
+      "page": 107,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.83526,
+      "silhouette_raw_unmatched_pixels": 213,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 129292,
+      "tolerant_content_match_percent": 99.83526
+    },
+    {
+      "page": 108,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.83661,
+      "silhouette_raw_unmatched_pixels": 200,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 122407,
+      "tolerant_content_match_percent": 99.83661
+    },
+    {
+      "page": 109,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.78444,
+      "silhouette_raw_unmatched_pixels": 270,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 125255,
+      "tolerant_content_match_percent": 99.78444
+    },
+    {
+      "page": 110,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.79424,
+      "silhouette_raw_unmatched_pixels": 203,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 98658,
+      "tolerant_content_match_percent": 99.79424
+    },
+    {
+      "page": 111,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.23112,
+      "silhouette_raw_unmatched_pixels": 1771,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 100120,
+      "tolerant_content_match_percent": 98.23112
+    },
+    {
+      "page": 112,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.89591,
+      "silhouette_raw_unmatched_pixels": 77,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 73973,
+      "tolerant_content_match_percent": 99.89591
+    },
+    {
+      "page": 113,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.8831,
+      "silhouette_raw_unmatched_pixels": 100,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 85542,
+      "tolerant_content_match_percent": 99.8831
+    },
+    {
+      "page": 114,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.51389,
+      "silhouette_raw_unmatched_pixels": 1605,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 108000,
+      "tolerant_content_match_percent": 98.51389
+    },
+    {
+      "page": 115,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.4793,
+      "silhouette_raw_unmatched_pixels": 642,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 123296,
+      "tolerant_content_match_percent": 99.4793
+    },
+    {
+      "page": 116,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.87057,
+      "silhouette_raw_unmatched_pixels": 124,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 95804,
+      "tolerant_content_match_percent": 99.87057
+    },
+    {
+      "page": 117,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.806,
+      "silhouette_raw_unmatched_pixels": 229,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 118039,
+      "tolerant_content_match_percent": 99.806
+    },
+    {
+      "page": 118,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.84505,
+      "silhouette_raw_unmatched_pixels": 182,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 117457,
+      "tolerant_content_match_percent": 99.84505
+    },
+    {
+      "page": 119,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.83926,
+      "silhouette_raw_unmatched_pixels": 143,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 88962,
+      "tolerant_content_match_percent": 99.83926
+    },
+    {
+      "page": 120,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 97.20446,
+      "silhouette_raw_unmatched_pixels": 2457,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 87890,
+      "tolerant_content_match_percent": 97.20446
+    },
+    {
+      "page": 121,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.86858,
+      "silhouette_raw_unmatched_pixels": 102,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 77612,
+      "tolerant_content_match_percent": 99.86858
+    },
+    {
+      "page": 122,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.44302,
+      "silhouette_raw_unmatched_pixels": 367,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 65891,
+      "tolerant_content_match_percent": 99.44302
+    },
+    {
+      "page": 123,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.90205,
+      "silhouette_raw_unmatched_pixels": 84,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 85756,
+      "tolerant_content_match_percent": 99.90205
+    },
+    {
+      "page": 124,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.88297,
+      "silhouette_raw_unmatched_pixels": 82,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 70067,
+      "tolerant_content_match_percent": 99.88297
+    },
+    {
+      "page": 125,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.89531,
+      "silhouette_raw_unmatched_pixels": 74,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 70687,
+      "tolerant_content_match_percent": 99.89531
+    },
+    {
+      "page": 126,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.9364,
+      "silhouette_raw_unmatched_pixels": 50,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 78616,
+      "tolerant_content_match_percent": 99.9364
+    },
+    {
+      "page": 127,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.92558,
+      "silhouette_raw_unmatched_pixels": 61,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 81964,
+      "tolerant_content_match_percent": 99.92558
+    },
+    {
+      "page": 128,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.84853,
+      "silhouette_raw_unmatched_pixels": 177,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 116856,
+      "tolerant_content_match_percent": 99.84853
+    },
+    {
+      "page": 129,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.82788,
+      "silhouette_raw_unmatched_pixels": 146,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 84825,
+      "tolerant_content_match_percent": 99.82788
+    },
+    {
+      "page": 130,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.84586,
+      "silhouette_raw_unmatched_pixels": 172,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 111589,
+      "tolerant_content_match_percent": 99.84586
+    },
+    {
+      "page": 131,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.06442,
+      "silhouette_raw_unmatched_pixels": 891,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 95235,
+      "tolerant_content_match_percent": 99.06442
+    },
+    {
+      "page": 132,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.80149,
+      "silhouette_raw_unmatched_pixels": 212,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 106793,
+      "tolerant_content_match_percent": 99.80149
+    },
+    {
+      "page": 133,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.9213,
+      "silhouette_raw_unmatched_pixels": 126,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 160098,
+      "tolerant_content_match_percent": 99.9213
+    },
+    {
+      "page": 134,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.82008,
+      "silhouette_raw_unmatched_pixels": 179,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 99489,
+      "tolerant_content_match_percent": 99.82008
+    },
+    {
+      "page": 135,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.81998,
+      "silhouette_raw_unmatched_pixels": 223,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 123872,
+      "tolerant_content_match_percent": 99.81998
+    },
+    {
+      "page": 136,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.35231,
+      "silhouette_raw_unmatched_pixels": 581,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 89703,
+      "tolerant_content_match_percent": 99.35231
+    },
+    {
+      "page": 137,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.93047,
+      "silhouette_raw_unmatched_pixels": 110,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 158210,
+      "tolerant_content_match_percent": 99.93047
+    },
+    {
+      "page": 138,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.27586,
+      "silhouette_raw_unmatched_pixels": 910,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 125666,
+      "tolerant_content_match_percent": 99.27586
+    },
+    {
+      "page": 139,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.74484,
+      "silhouette_raw_unmatched_pixels": 329,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 128940,
+      "tolerant_content_match_percent": 99.74484
+    },
+    {
+      "page": 140,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.9428,
+      "silhouette_raw_unmatched_pixels": 71,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 124118,
+      "tolerant_content_match_percent": 99.9428
+    },
+    {
+      "page": 141,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.58432,
+      "silhouette_raw_unmatched_pixels": 475,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 114271,
+      "tolerant_content_match_percent": 99.58432
+    },
+    {
+      "page": 142,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.81087,
+      "silhouette_raw_unmatched_pixels": 177,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 93587,
+      "tolerant_content_match_percent": 99.81087
+    },
+    {
+      "page": 143,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.86124,
+      "silhouette_raw_unmatched_pixels": 1161,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 101953,
+      "tolerant_content_match_percent": 98.86124
+    },
+    {
+      "page": 144,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.56555,
+      "silhouette_raw_unmatched_pixels": 440,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 101278,
+      "tolerant_content_match_percent": 99.56555
+    },
+    {
+      "page": 145,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.40447,
+      "silhouette_raw_unmatched_pixels": 1416,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 88748,
+      "tolerant_content_match_percent": 98.40447
+    },
+    {
+      "page": 146,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.8096,
+      "silhouette_raw_unmatched_pixels": 183,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 96113,
+      "tolerant_content_match_percent": 99.8096
+    },
+    {
+      "page": 147,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.21394,
+      "silhouette_raw_unmatched_pixels": 782,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 99484,
+      "tolerant_content_match_percent": 99.21394
+    },
+    {
+      "page": 148,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.80775,
+      "silhouette_raw_unmatched_pixels": 1041,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 87314,
+      "tolerant_content_match_percent": 98.80775
+    },
+    {
+      "page": 149,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.83609,
+      "silhouette_raw_unmatched_pixels": 157,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 95785,
+      "tolerant_content_match_percent": 99.83609
+    },
+    {
+      "page": 150,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.57311,
+      "silhouette_raw_unmatched_pixels": 1789,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 125378,
+      "tolerant_content_match_percent": 98.57311
+    },
+    {
+      "page": 151,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.86657,
+      "silhouette_raw_unmatched_pixels": 152,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 113917,
+      "tolerant_content_match_percent": 99.86657
+    },
+    {
+      "page": 152,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.78662,
+      "silhouette_raw_unmatched_pixels": 1386,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 114226,
+      "tolerant_content_match_percent": 98.78662
+    },
+    {
+      "page": 153,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.77159,
+      "silhouette_raw_unmatched_pixels": 228,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 99822,
+      "tolerant_content_match_percent": 99.77159
+    },
+    {
+      "page": 154,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 97.08164,
+      "silhouette_raw_unmatched_pixels": 2675,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 91661,
+      "tolerant_content_match_percent": 97.08164
+    },
+    {
+      "page": 155,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.86514,
+      "silhouette_raw_unmatched_pixels": 47,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 34851,
+      "tolerant_content_match_percent": 99.86514
+    },
+    {
+      "page": 156,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.9298,
+      "silhouette_raw_unmatched_pixels": 34,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 48432,
+      "tolerant_content_match_percent": 99.9298
+    },
+    {
+      "page": 157,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.98752,
+      "silhouette_raw_unmatched_pixels": 8,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 64124,
+      "tolerant_content_match_percent": 99.98752
+    },
+    {
+      "page": 158,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.98993,
+      "silhouette_raw_unmatched_pixels": 5,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 49650,
+      "tolerant_content_match_percent": 99.98993
+    },
+    {
+      "page": 159,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99211,
+      "silhouette_raw_unmatched_pixels": 5,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 63411,
+      "tolerant_content_match_percent": 99.99211
+    },
+    {
+      "page": 160,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.96719,
+      "silhouette_raw_unmatched_pixels": 14,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 42672,
+      "tolerant_content_match_percent": 99.96719
+    },
+    {
+      "page": 161,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.95511,
+      "silhouette_raw_unmatched_pixels": 28,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 62376,
+      "tolerant_content_match_percent": 99.95511
+    },
+    {
+      "page": 162,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.87963,
+      "silhouette_raw_unmatched_pixels": 84,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 69784,
+      "tolerant_content_match_percent": 99.87963
+    },
+    {
+      "page": 163,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.96205,
+      "silhouette_raw_unmatched_pixels": 18,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 47437,
+      "tolerant_content_match_percent": 99.96205
+    },
+    {
+      "page": 164,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.93569,
+      "silhouette_raw_unmatched_pixels": 41,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 63751,
+      "tolerant_content_match_percent": 99.93569
+    },
+    {
+      "page": 165,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.97778,
+      "silhouette_raw_unmatched_pixels": 16,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 72010,
+      "tolerant_content_match_percent": 99.97778
+    },
+    {
+      "page": 166,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99485,
+      "silhouette_raw_unmatched_pixels": 4,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 77703,
+      "tolerant_content_match_percent": 99.99485
+    },
+    {
+      "page": 167,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99204,
+      "silhouette_raw_unmatched_pixels": 5,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 62827,
+      "tolerant_content_match_percent": 99.99204
+    },
+    {
+      "page": 168,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99227,
+      "silhouette_raw_unmatched_pixels": 6,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 77621,
+      "tolerant_content_match_percent": 99.99227
+    },
+    {
+      "page": 169,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.86169,
+      "silhouette_raw_unmatched_pixels": 102,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 73750,
+      "tolerant_content_match_percent": 99.86169
+    },
+    {
+      "page": 170,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.97674,
+      "silhouette_raw_unmatched_pixels": 9,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 38699,
+      "tolerant_content_match_percent": 99.97674
+    },
+    {
+      "page": 171,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.68078,
+      "silhouette_raw_unmatched_pixels": 311,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 97424,
+      "tolerant_content_match_percent": 99.68078
+    },
+    {
+      "page": 172,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.9525,
+      "silhouette_raw_unmatched_pixels": 43,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 90526,
+      "tolerant_content_match_percent": 99.9525
+    },
+    {
+      "page": 173,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.80121,
+      "silhouette_raw_unmatched_pixels": 171,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 86021,
+      "tolerant_content_match_percent": 99.80121
+    },
+    {
+      "page": 174,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99636,
+      "silhouette_raw_unmatched_pixels": 4,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 109762,
+      "tolerant_content_match_percent": 99.99636
+    },
+    {
+      "page": 175,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.72902,
+      "silhouette_raw_unmatched_pixels": 213,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 78603,
+      "tolerant_content_match_percent": 99.72902
+    },
+    {
+      "page": 176,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.86731,
+      "silhouette_raw_unmatched_pixels": 119,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 89684,
+      "tolerant_content_match_percent": 99.86731
+    },
+    {
+      "page": 177,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.65769,
+      "silhouette_raw_unmatched_pixels": 342,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 99910,
+      "tolerant_content_match_percent": 99.65769
+    },
+    {
+      "page": 178,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99406,
+      "silhouette_raw_unmatched_pixels": 5,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 84222,
+      "tolerant_content_match_percent": 99.99406
+    },
+    {
+      "page": 179,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99794,
+      "silhouette_raw_unmatched_pixels": 2,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 97161,
+      "tolerant_content_match_percent": 99.99794
+    },
+    {
+      "page": 180,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.9882,
+      "silhouette_raw_unmatched_pixels": 11,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 93246,
+      "tolerant_content_match_percent": 99.9882
+    },
+    {
+      "page": 181,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.9967,
+      "silhouette_raw_unmatched_pixels": 2,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 60692,
+      "tolerant_content_match_percent": 99.9967
+    },
+    {
+      "page": 182,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.79855,
+      "silhouette_raw_unmatched_pixels": 114,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 56590,
+      "tolerant_content_match_percent": 99.79855
+    },
+    {
+      "page": 183,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.56412,
+      "silhouette_raw_unmatched_pixels": 291,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 66761,
+      "tolerant_content_match_percent": 99.56412
+    },
+    {
+      "page": 184,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.7172,
+      "silhouette_raw_unmatched_pixels": 188,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 66477,
+      "tolerant_content_match_percent": 99.7172
+    },
+    {
+      "page": 185,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.44009,
+      "silhouette_raw_unmatched_pixels": 497,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 88765,
+      "tolerant_content_match_percent": 99.44009
+    },
+    {
+      "page": 186,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.89175,
+      "silhouette_raw_unmatched_pixels": 46,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 42496,
+      "tolerant_content_match_percent": 99.89175
+    },
+    {
+      "page": 187,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.43883,
+      "silhouette_raw_unmatched_pixels": 499,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 88921,
+      "tolerant_content_match_percent": 99.43883
+    },
+    {
+      "page": 188,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.89175,
+      "silhouette_raw_unmatched_pixels": 46,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 42496,
+      "tolerant_content_match_percent": 99.89175
+    },
+    {
+      "page": 189,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.43888,
+      "silhouette_raw_unmatched_pixels": 499,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 88929,
+      "tolerant_content_match_percent": 99.43888
+    },
+    {
+      "page": 190,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.89175,
+      "silhouette_raw_unmatched_pixels": 46,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 42496,
+      "tolerant_content_match_percent": 99.89175
+    },
+    {
+      "page": 191,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.40041,
+      "silhouette_raw_unmatched_pixels": 507,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 84558,
+      "tolerant_content_match_percent": 99.40041
+    },
+    {
+      "page": 192,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.90576,
+      "silhouette_raw_unmatched_pixels": 45,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 47752,
+      "tolerant_content_match_percent": 99.90576
+    },
+    {
+      "page": 193,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.25034,
+      "silhouette_raw_unmatched_pixels": 767,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 43837,
+      "tolerant_content_match_percent": 98.25034
+    },
+    {
+      "page": 194,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.48455,
+      "silhouette_raw_unmatched_pixels": 294,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 57037,
+      "tolerant_content_match_percent": 99.48455
+    },
+    {
+      "page": 195,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.61408,
+      "silhouette_raw_unmatched_pixels": 180,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 46642,
+      "tolerant_content_match_percent": 99.61408
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 195,
+      "pdf": 195
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "mydocs/pr/assets/planet6897_20261106/pr8642/report-628-original.hwp",
+      "sha256": "bde80abc635f46e8af68ff9a962229379d17f32bf7939398617774bb40635f66"
+    },
+    "pdf": {
+      "path": "pdf/planet6897-20261106/pr8642/report-628-original-2020.pdf",
+      "sha256": "34960349fb528ec433dfe0f616eaa275ea9331e15350823ba88f276cc0bd2255"
+    },
+    "git_head": "01d2197973e282d7c96671cb1335ad83fbe68e8d",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+      "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+      "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+      "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+      "version": "152.0.7947.0",
+      "wrapper_version": "5.12.1",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/rhwp-native",
+      "path": "output/issue8856/note-reference-source-style/rhwp-native",
+      "sha256": "47203f928bac9f3c8d27293edf6a87351fa51d3342c326016190303d51328219"
+    },
+    "raster_backend": "wasm-canvas2d",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2022",
+    "font_environment": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/fe6651098e593d9d4f82f0df74db86a4a65e400e3d3ae994f33f98c08a968692.json",
+      "sha256": "fe6651098e593d9d4f82f0df74db86a4a65e400e3d3ae994f33f98c08a968692"
+    },
+    "wasm": {
+      "files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/frozen-pkg/rhwp.js",
+          "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/frozen-pkg/rhwp_bg.wasm",
+          "sha256": "dd77f8eceb160ebcc07c84f4374c21be10fcc0561f18357ffdd609b8d18df121"
+        }
+      ],
+      "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+      "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+          "sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/4d3fa8ed66fedcb1787f200bd75637b816b09057fc06da0aa783e3b305a726d8/native.ttf",
+          "sha256": "16691c74f7152efc5a7c00a0331217bb4088ccd8b74be86b9ba99b26231ccc02"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+          "sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/native.ttf",
+          "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/native.ttf",
+          "sha256": "68e21f4ed0189ce481d4a18fdf654f410d6e94d6e5b4936f0b20874e9e5b97a6"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941/native.ttf",
+          "sha256": "d88ec0ddb32437f9df01fcd6faafed8521e1c11d27ef174d1f4c2bd39ae457d7"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+          "sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834"
+        }
+      ]
+    }
+  },
+  "checkpoint": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/report-628/silhouette-checkpoint.json"
+}
