@@ -1,5 +1,5 @@
 //! 관계형.
-//! 주석 갱신: 2026-11-10T16:20:00+09:00 (신규 파일).
+//! 주석 갱신: 2026-11-10T19:30:00+09:00 (신규 파일).
 //! 2026-11-10 측정 raw(`silhouette_raw_match_percent`, 96dpi, 기준 PDF pypdfium2 래스터,
 //! `scripts/visual_sweep.py --silhouette-only --compat 2022`), 원본별 전2쪽:
 //!   b-rowbreak-bottom-margin-overflow: 1·2쪽 Native·fresh WASM 각 100.00%
@@ -255,7 +255,16 @@ fn issue_7620_rowbreak_splits_when_rows_fit_with_bottom_margin() {
         first_page + 1,
         "{REL}: 두 조각은 연속한 쪽에 있어야 한다"
     );
-    let (_, host_top) = first_line_of(&pages, HOST as u64);
+    // 표만 든 빈 문단은 본문 글줄을 그리지 않는다. 그 윗변은 앞 두 문단 글줄의 간격(한 줄 진행)을
+    // 바로 앞 문단 윗변에 더한 위치다. 세 문단 모두 같은 문단 모양의 한 줄 문단이다.
+    let (prev_page, prev_top) = first_line_of(&pages, HOST as u64 - 1);
+    let (prev2_page, prev2_top) = first_line_of(&pages, HOST as u64 - 2);
+    assert_eq!(
+        (prev_page, prev2_page),
+        (first_page, first_page),
+        "{REL}: 앞 두 문단은 첫 조각과 같은 쪽에 있어야 한다"
+    );
+    let host_top = prev_top + (prev_top - prev2_top);
     assert_near(
         "첫 조각 윗변 = 표 문단 윗변 + 바깥 여백 위",
         first_top,
@@ -274,7 +283,7 @@ fn issue_7620_rowbreak_splits_when_rows_fit_with_bottom_margin() {
         collect_first_column_rows(&tree, HOST as u64, false, &mut seen);
     }
     seen.sort_unstable();
-    let rows = u32::try_from(t.row_count).expect("행 수");
+    let rows = u32::from(t.row_count);
     assert_eq!(
         seen,
         (1..=rows).collect::<Vec<_>>(),
