@@ -10270,6 +10270,41 @@ pub(crate) fn stored_cell_content_extent_hu(paragraphs: &[Paragraph]) -> Option<
     last.vertical_pos.checked_add(last.line_height)
 }
 
+/// [#8756] 칸 문단의 자리차지 표가 자기 앵커 줄을 아래로 민 저장 형상(`stored_cell_picture_pushed_line_origin_hu`)
+/// 이면 칸 내용의 저장 끝(HWPUNIT)을 돌려준다.
+///
+/// 한/글은 이 표를 문단 시작에 두고 밀린 줄을 그 아래에 둔 채 저장하므로, 칸이 차지하는 내용은
+/// 저장 끝까지다. 재조판 스택은 밀린 줄 뒤에 표를 다시 쌓아 내용을 표 높이만큼 부풀린다(10k
+/// 00039 r15: 저장 끝 8067HU, 선언 10072HU 인데 스택은 192px = 14400HU). 측정·배치의 칸 요구
+/// 높이와 칸 세로 정렬이 이 값을 함께 쓴다.
+pub(crate) fn stored_cell_pushed_line_block_extent_hu(paragraphs: &[Paragraph]) -> Option<i32> {
+    let pushed = paragraphs.iter().enumerate().any(|(index, para)| {
+        para.controls.iter().any(|control| match control {
+            Control::Table(table) => {
+                stored_cell_picture_pushed_line_origin_hu(paragraphs, index, &table.common)
+                    .is_some()
+            }
+            _ => false,
+        })
+    });
+    // 저장 끝은 칸 내용이 한 프레임에 이어 저장됐을 때만 내용 높이다. 쪽을 넘는 칸은 조각마다
+    // vpos 를 0 부터 다시 저장하므로(#1949 115쪽 거대 칸) 마지막 줄 끝이 내용 높이가 아니다.
+    let mut previous = i32::MIN;
+    let continuous = paragraphs
+        .iter()
+        .flat_map(|para| para.line_segs.iter())
+        .all(|line| {
+            let ordered = line.vertical_pos >= previous;
+            previous = line.vertical_pos;
+            ordered
+        });
+    if pushed && continuous {
+        stored_cell_content_extent_hu(paragraphs)
+    } else {
+        None
+    }
+}
+
 /// [#8737] 셀 세로 정렬이 저장 내용 묶음을 옮기는 양(px).
 pub(crate) fn stored_cell_block_align_shift(
     align: crate::model::table::VerticalAlign,

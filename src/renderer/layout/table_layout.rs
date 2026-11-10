@@ -6029,7 +6029,6 @@ impl LayoutEngine {
             row_heights = heights;
         }
 
-        // 3단계: 측정과 같은 저장 그리드의 미결 행 기본값을 소비한다.
         let profile = self.profile.get();
         let stored = !profile.session_edited()
             && (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
@@ -6037,10 +6036,10 @@ impl LayoutEngine {
                 .render_normalization
                 .borrow()
                 .table_text_reflowed(table);
+        // 3단계: 어떤 칸도 높이를 정하지 않은 행에만 기본값을 쓴다(측정과 같은 helper).
         for r in 0..row_count {
             if row_heights[r] <= 0.0 {
-                row_heights[r] =
-                    hwpunit_to_px(Self::unresolved_row_default_hu(table, r, stored), self.dpi);
+                row_heights[r] = hwpunit_to_px(Self::unresolved_row_default_hu(table, r), self.dpi);
             }
         }
         // [#6442] 쓰이지 않는 안 여백 필드(`apply_inner_margin=false`)의 쓰레기값이
@@ -9623,7 +9622,27 @@ impl LayoutEngine {
                                     self.dpi,
                                 )
                             });
-                        let nested_origin = if let Some(frame) = stored_float_frame {
+                        // [#8756] 자기 앵커 줄을 아래로 민 자리차지 표는 그림(#8737)과 같이 밀린
+                        // 줄이 아니라 문단 시작이 원점이다. `text_y_start` 는 이미 저장 내용 묶음
+                        // 전체에 세로 정렬을 적용한 값이므로(아래 칸 정렬과 같은 판정), 저장 줄
+                        // 위치에서 표를 다시 찾는 다른 원점보다 먼저 쓴다.
+                        let pushed_line_origin = (fragment_cut_units.is_none()
+                            && !self.profile.get().session_edited()
+                            && (self.profile.get().hwp5_stored_pagination_layout()
+                                || self.profile.get().hwpx_stored_layout()))
+                        .then(|| {
+                            crate::renderer::float_placement::stored_cell_picture_pushed_line_origin_hu(
+                                &cell.paragraphs,
+                                cp_idx,
+                                &nested_table.common,
+                            )
+                        })
+                        .flatten();
+                        let nested_origin = if let Some(origin) = pushed_line_origin {
+                            NestedTableOrigin::Paragraph(
+                                text_y_start + hwpunit_to_px(origin, self.dpi),
+                            )
+                        } else if let Some(frame) = stored_float_frame {
                             NestedTableOrigin::Table(
                                 frame.table_top
                                     - hwpunit_to_px(nested_table.outer_margin_top as i32, self.dpi),
@@ -11512,6 +11531,31 @@ impl LayoutEngine {
                             + (inner_height - total_content_height - align_lead).max(0.0)
                     }
                 }
+            };
+            // [#8756] 칸 문단의 자리차지 개체가 자기 앵커 줄을 민 저장 형상이면, 한/글은 셀 세로
+            // 정렬을 그 개체와 밀린 줄을 담은 저장 내용 묶음(마지막 줄 끝)에 적용한다. 재조판
+            // 스택은 밀린 줄 뒤에 개체를 다시 쌓아 내용이 칸을 넘친 것으로 보고 정렬을 접는다
+            // (46551 도로교통법 13쪽 r17 c3: 저장 끝 21269HU, 스택은 칸 안높이 초과).
+            let pushed_line_float_block = row_filter.is_none()
+                && !single_row_fragment
+                && !self.profile.get().session_edited()
+                && (self.profile.get().hwp5_stored_pagination_layout()
+                    || self.profile.get().hwpx_stored_layout())
+                && crate::renderer::float_placement::stored_cell_pushed_line_block_extent_hu(
+                    &cell.paragraphs,
+                )
+                .is_some();
+            let text_y_start = if pushed_line_float_block {
+                content_cell_y
+                    + pad_top
+                    + crate::renderer::float_placement::stored_cell_block_align_shift(
+                        effective_valign,
+                        inner_height,
+                        &cell.paragraphs,
+                        self.dpi,
+                    )
+            } else {
+                text_y_start
             };
             let text_y_start = stored_empty_picture_frame
                 .map(|frame| {
@@ -23356,7 +23400,11 @@ impl LayoutEngine {
         {
             return None;
         }
-        crate::renderer::float_placement::stored_plain_closed_cell_ink_height(cell, table)
+        // [#8756] 자기 앵커 줄을 민 칸 자리차지 표의 내용은 저장 끝까지다(측정과 같은 순서).
+        crate::renderer::float_placement::stored_cell_pushed_line_block_extent_hu(&cell.paragraphs)
+            .or_else(|| {
+                crate::renderer::float_placement::stored_plain_closed_cell_ink_height(cell, table)
+            })
             .or_else(|| {
                 self.stored_editor_tail_frame(cell, table, styles)
                     .map(|frame| frame.content_end_hu)

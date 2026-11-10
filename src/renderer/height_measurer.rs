@@ -4878,9 +4878,15 @@ let body_height=match nested_body_heights
                     && !self.is_hwp3_variant
                     && !self.render_normalization.cell_frame_reflowed(table, cell))
                 .then(|| {
-                    crate::renderer::float_placement::stored_plain_closed_cell_ink_height(
-                        cell, table,
+                    // [#8756] 자기 앵커 줄을 민 칸 자리차지 표의 내용은 저장 끝까지다.
+                    crate::renderer::float_placement::stored_cell_pushed_line_block_extent_hu(
+                        &cell.paragraphs,
                     )
+                    .or_else(|| {
+                        crate::renderer::float_placement::stored_plain_closed_cell_ink_height(
+                            cell, table,
+                        )
+                    })
                     .or_else(|| {
                         crate::renderer::float_placement::stored_editor_tail_frame(
                             cell, table, styles,
@@ -5395,9 +5401,15 @@ let body_height=match nested_body_heights
                     && !self.is_hwp3_variant
                     && !self.render_normalization.cell_frame_reflowed(table, cell))
                 .then(|| {
-                    crate::renderer::float_placement::stored_plain_closed_cell_ink_height(
-                        cell, table,
+                    // [#8756] 자기 앵커 줄을 민 칸 자리차지 표의 내용은 저장 끝까지다.
+                    crate::renderer::float_placement::stored_cell_pushed_line_block_extent_hu(
+                        &cell.paragraphs,
                     )
+                    .or_else(|| {
+                        crate::renderer::float_placement::stored_plain_closed_cell_ink_height(
+                            cell, table,
+                        )
+                    })
                     .or_else(|| {
                         crate::renderer::float_placement::stored_editor_tail_frame(
                             cell, table, styles,
@@ -5452,16 +5464,14 @@ let body_height=match nested_body_heights
             row_heights = heights;
         }
 
-        // 3단계: 실제 배치와 같은 저장 그리드의 미결 행 기본값을 소비한다.
         let stored = !self.session_edited
             && (self.is_native_hwp5 || self.hwpx_stored_layout)
             && !self.render_normalization.table_text_reflowed(table);
+        // 3단계: 어떤 칸도 높이를 정하지 않은 행에만 기본값을 쓴다(배치와 같은 helper).
         for (row, h) in row_heights.iter_mut().enumerate() {
             if *h <= 0.0 {
                 *h = hwpunit_to_px(
-                    crate::renderer::layout::LayoutEngine::unresolved_row_default_hu(
-                        table, row, stored,
-                    ),
+                    crate::renderer::layout::LayoutEngine::unresolved_row_default_hu(table, row),
                     self.dpi,
                 );
             }
@@ -6774,99 +6784,43 @@ pub const BLOCK_UNIT_MAX_ROWS: usize = 3;
 /// 병합 칸 선언 높이로 행 높이를 푼다 — 측정기(`HeightMeasurer`)와 조판(`resolve_row_heights`)의
 /// 단일 출처.
 ///
-/// `constraints` 는 `(시작 행, 걸침 수, 선언 높이 px)` 이고 걸침 수 오름차순이다. `row_heights` 의
-/// 0.0 은 rs=1 칸이 없어 아직 모르는 행이다.
+/// `constraints` 는 `(시작 행, 걸침 수, 선언 높이 px)` 이다. `row_heights` 의 0.0 은 rs=1 칸이
+/// 없어 아직 모르는 행이다.
 ///
-/// 회차마다 먼저 **걸친 행이 모두 정해진** 제약의 선언 초과분을 마지막 걸침 행에 더하고(#2291),
-/// 그 높이로 미지 행이 하나인 제약을 푼다. 순서를 거꾸로 하면 같은 부족분이 두 번 들어간다 —
-/// `1342000_edu_curriculum_map.hwp` 구역 10 표: 「초 3~4」(행 182~191, 347.51px)로 미지 행 191 을
-/// 12.07px 로 푼 뒤, 「미술」(행 184~187, 151.36px > 행 합 139.30px)의 부족분 12.06px 가 행 187 에
-/// 다시 더해졌다. 행 191~192 칸(37.09px)의 제약이 49.15px 로 깨졌고, 한/글 정본은 행 191+192 를
-/// 37.1px 로 그린다(글줄 위치 실측, #7685).
-/// 반복 풀이만으로 모든 제약 행을 정했으면 `true` 를 돌려준다. `false` 면 남은 행을
-/// 제약 잔여로 고르게 나눴다.
+/// 한/글은 행 경계를 위에서부터 **가장 이른 위치**로 정한다. 경계 `k` 는 앞 경계와, `k` 에서
+/// 끝나는 모든 칸의 `시작 경계 + 높이` 중 큰 값이다. 그래서 병합 칸 선언이 걸친 행 합보다 크면
+/// 부족분은 마지막 걸침 행이 받고(#2291), rs=1 칸이 없는 행은 걸친 칸이 요구하는 만큼만, 요구가
+/// 없으면 0 이 된다. 끝 행 순서로 풀어야 같은 부족분이 두 번 들어가지 않는다(#7685,
+/// `1342000_edu_curriculum_map.hwp` 구역 10 표의 행 191~192 는 한/글에서 37.1px).
+///
+/// 실측 — `46551_도로교통법 시행규칙 일부개정령안(입법예고안).hwp` 28쪽 32×17 표: rs=1 칸이 없는
+/// 행 16·17·19·24·26 을 한/글 2022 Print 는 모두 0.0~0.3px 로 그린다(두 열의 괘선이 같은 높이에
+/// 놓인다). 미지 행에 다른 제약의 잔여를 먼저 배정하면 이 행들이 10~20px 가 되어 오른쪽 열 칸이
+/// 20px 밀리고 표가 길어졌다.
+///
+/// 걸친 행 중 미지 행이 남지 않았으면(모든 제약 행이 0 이 아니면) `true` 를 돌려준다.
 pub(crate) fn solve_rowspan_row_heights(
     constraints: &[(usize, usize, f64)],
     row_heights: &mut [f64],
 ) -> bool {
-    let add_declared_overflow = |row_heights: &mut [f64], only_known: bool| -> bool {
-        let mut changed = false;
-        for &(r, span, total_h) in constraints {
-            if only_known && (r..r + span).any(|i| row_heights[i] == 0.0) {
-                continue;
-            }
-            let known_sum: f64 = (r..r + span).map(|i| row_heights[i]).sum();
-            if total_h > known_sum + 0.5 {
-                row_heights[r + span - 1] += total_h - known_sum;
-                changed = true;
-            }
-        }
-        changed
-    };
-    // 먼저 끝나는 미해결 제약을 기다리되, 같은 회차의 해 중에서는
-    // 새 devel의 앞 행 우선 계약을 유지한다. 순환 대기는 진전이 없을 때만 푼다.
-    let ends_before_unresolved = |row_heights: &[f64], row: usize, end: usize| {
-        constraints.iter().any(|&(r, span, _)| {
-            r <= row
-                && row < r + span
-                && r + span < end
-                && (r..r + span).any(|i| row_heights[i] == 0.0)
-        })
-    };
-    let solve_single = |row_heights: &mut [f64], prefer_earliest_end: bool| {
-        let mut next_assignment: Option<(usize, f64)> = None;
-        for &(r, span, total_h) in constraints {
-            let known_sum: f64 = (r..r + span).map(|i| row_heights[i]).sum();
-            let unknown_rows: Vec<usize> =
-                (r..r + span).filter(|&i| row_heights[i] == 0.0).collect();
-            if unknown_rows.len() == 1
-                && !(prefer_earliest_end
-                    && ends_before_unresolved(row_heights, unknown_rows[0], r + span))
-            {
-                let remaining = (total_h - known_sum).max(0.0);
-                let row = unknown_rows[0];
-                if remaining > 0.0 && next_assignment.is_none_or(|(prior, _)| row < prior) {
-                    next_assignment = Some((row, remaining));
-                }
-            }
-        }
-        if let Some((row, height)) = next_assignment {
-            row_heights[row] = height;
-            true
-        } else {
-            false
-        }
-    };
-    let max_iter = row_heights.len() + constraints.len();
-    for _ in 0..max_iter {
-        let mut progress = add_declared_overflow(row_heights, true);
-        progress |= solve_single(row_heights, true);
-        if !progress {
-            progress = solve_single(row_heights, false);
-        }
-        if !progress {
-            break;
-        }
-    }
-    let resolved = constraints
+    let mut ordered: Vec<(usize, usize, f64)> = constraints
         .iter()
-        .all(|&(r, span, _)| (r..r + span).all(|i| row_heights[i] != 0.0));
-    for &(r, span, total_h) in constraints {
-        let known_sum: f64 = (r..r + span).map(|i| row_heights[i]).sum();
-        let unknown_rows: Vec<usize> = (r..r + span).filter(|&i| row_heights[i] == 0.0).collect();
-        if !unknown_rows.is_empty() {
-            let remaining = (total_h - known_sum).max(0.0);
-            let per_row = remaining / unknown_rows.len() as f64;
-            for i in unknown_rows {
-                row_heights[i] = per_row;
-            }
+        .copied()
+        .filter(|&(r, span, _)| span > 0 && r + span <= row_heights.len())
+        .collect();
+    // 끝 경계 순서 — 같은 끝이면 짧은 칸부터(결과는 같다).
+    ordered.sort_by_key(|&(r, span, _)| (r + span, span));
+    // 경계는 정확한 최장 경로다 — 허용 오차를 두면 잘게 나뉜 격자에서 작은 부족분(28HU 등)이
+    // 행마다 버려져 아래로 누적된다(10k 06331 112행 표).
+    for (r, span, total_h) in ordered {
+        let known_sum: f64 = row_heights[r..r + span].iter().sum();
+        if total_h > known_sum + 1e-6 {
+            row_heights[r + span - 1] += total_h - known_sum;
         }
     }
-    // [#2291/#2237] 병합 셀 **선언** 높이가 걸친 행합을 초과하면 잔여를 마지막 걸침 행에
-    // 가산한다 — 한글 관례 실측(연결맵 244×10 r183: c3 rs=4 선언 217.8px vs 행합 201.3px, 한글 행
-    // 괘선 실측 r183 = 39.8+16.5 = 56.3px 정확 일치). 콘텐츠 기반 확장과 별개의 선언 기반 규칙이다.
-    add_declared_overflow(row_heights, false);
-    resolved
+    constraints
+        .iter()
+        .all(|&(r, span, _)| (r..r + span).all(|i| i >= row_heights.len() || row_heights[i] != 0.0))
 }
 
 /// 표의 모든 셀을 검사하여 rowspan 묶음 블록 경계를 산출한다 (Task #398).
