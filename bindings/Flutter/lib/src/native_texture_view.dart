@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 
 import 'native_document.dart';
 import 'native_ffi.dart';
+import 'native_gpu_tiles.dart';
 import 'native_presentation.dart';
 import 'native_viewport.dart';
 
@@ -145,7 +146,7 @@ class _Plan {
     _pageKey(2),
     _pageKey(3),
   );
-  ({int width, int height}) geometry() {
+  ({int width, int height}) geometry({bool tiled = false}) {
     final physicalWidth = viewport.width * dpr;
     final physicalHeight = viewport.height * dpr;
     if (!dpr.isFinite ||
@@ -155,15 +156,15 @@ class _Plan {
         !physicalHeight.isFinite ||
         physicalWidth <= 0 ||
         physicalHeight <= 0 ||
-        physicalWidth > 4096 ||
-        physicalHeight > 4096) {
+        physicalWidth > (tiled ? 8192 : 4096) ||
+        physicalHeight > (tiled ? 8192 : 4096)) {
       throw const NativeCallException(
         'viewportLimit',
         'GPU viewport exceeds its dimension bound.',
       );
     }
     final width = physicalWidth.ceil(), height = physicalHeight.ceil();
-    if (width * height > 4 * 1024 * 1024 ||
+    if (width * height > (tiled ? 8 : 4) * 1024 * 1024 ||
         pages.isEmpty ||
         pages.length > 4 ||
         clear < 0 ||
@@ -193,8 +194,12 @@ class _Plan {
     return (width: width, height: height);
   }
 
-  Map<String, Object?> submission(int texture, List<_OwnedSnapshot> snapshots) {
-    final size = geometry();
+  Map<String, Object?> submission(
+    int texture,
+    List<_OwnedSnapshot> snapshots, {
+    bool tiled = false,
+  }) {
+    final size = geometry(tiled: tiled);
     return {
       'textureId': texture,
       'stamp': snapshots.first.stamp!.toJson(),
@@ -227,7 +232,13 @@ class NativeTextureController extends ChangeNotifier {
     this.pollInterval = const Duration(milliseconds: 100),
     this.operationTimeout = const Duration(seconds: 2),
     this.allowImmutableOwnershipTransfer = false,
-  }) : channel = channel ?? MethodChannel(platform.channelName) {
+    this.useTileGroups = false,
+  }) : channel = useTileGroups
+           ? NativeTileGroupChannel(
+               channel ?? MethodChannel(platform.channelName),
+               windows: platform == NativeTexturePlatform.windows,
+             )
+           : channel ?? MethodChannel(platform.channelName) {
     if (allowImmutableOwnershipTransfer &&
         platform != NativeTexturePlatform.windows) {
       throw ArgumentError(
@@ -267,6 +278,17 @@ class NativeTextureController extends ChangeNotifier {
   final MethodChannel channel;
   final Duration pollInterval, operationTimeout;
   final bool allowImmutableOwnershipTransfer;
+
+  /// Uses two existing native producer slots with one presentation owner.
+  /// Requires an explicit tile-group capability from the selected plugin.
+  final bool useTileGroups;
+  NativeTileGroupChannel? get _tileChannel => channel is NativeTileGroupChannel
+      ? channel as NativeTileGroupChannel
+      : null;
+  List<int> get tileTextureIds => _tileChannel?.textures ?? const [];
+  List<Rect> get physicalTiles => _tileChannel?.physicalTiles ?? const [];
+  double _outputDeviceScale = 1;
+  double get outputDeviceScale => _outputDeviceScale;
   late final Timer _timer;
   late final StreamSubscription<NativeDocumentInfo> _infoChanges;
   late final StreamSubscription<int> _invalidations;
@@ -407,7 +429,9 @@ class NativeTextureController extends ChangeNotifier {
     _plan = plan;
     // Geometry admission runs before a native snapshot is allocated.
     try {
-      plan.geometry();
+      final size = plan.geometry(tiled: useTileGroups);
+      _tileChannel?.plan(size.width, size.height);
+      _outputDeviceScale = plan.dpr;
     } catch (error) {
       _fail(error, fallback: true);
       return;
@@ -707,7 +731,12 @@ class NativeTextureController extends ChangeNotifier {
 
   bool _definiteRejection(Object error) =>
       error is MissingPluginException ||
-      (error is NativeCallException && error.code == 'textureRpcLimit') ||
+      (error is NativeCallException &&
+          const {
+            'textureRpcLimit',
+            'unsupportedPresentation',
+            'viewportLimit',
+          }.contains(error.code)) ||
       (error is PlatformException &&
           const {
             'backpressure',
@@ -716,6 +745,7 @@ class NativeTextureController extends ChangeNotifier {
             'notReady',
             'closing',
             'invalidArgument',
+            'arguments',
             'limitExceeded',
             'targetTooLarge',
             'retireLimit',
@@ -925,12 +955,12 @@ class NativeTextureController extends ChangeNotifier {
       for (final owned in snapshots) {
         owned.sending = true;
       }
-      final requireIds = snapshots.length > 1;
+      final requireIds = useTileGroups || snapshots.length > 1;
       Map<String, Object?> reply;
       try {
         reply = await _invoke(
           'submit',
-          plan.submission(textureId!, snapshots),
+          plan.submission(textureId!, snapshots, tiled: useTileGroups),
           received: (reply) {
             for (final owned in snapshots) {
               _submitReply(owned, reply, requireIds: requireIds);
@@ -1193,7 +1223,7 @@ class NativeTextureController extends ChangeNotifier {
         return;
       }
       // A matching stamp alone cannot prove that every page was published.
-      if (_frames.length > 1 &&
+      if ((useTileGroups || _frames.length > 1) &&
           !_frames.every((s) => _receipt(s, status, requireIds: true))) {
         throw const NativeCallException(
           'stalePresentation',
@@ -1551,35 +1581,60 @@ class _NativeTextureViewState extends State<NativeTextureView> {
   Widget build(BuildContext context) {
     final controller = widget.controller;
     final visible = controller.canDisplay;
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        if (controller.shouldPaintTexture)
-          IgnorePointer(
-            child: controller.platform == NativeTexturePlatform.macosMetalView
-                ? AppKitView(
-                    key: ValueKey(controller.textureId),
-                    viewType: 'rhwp_native/metal_view',
-                    creationParams: {'handle': controller.textureId!},
-                    creationParamsCodec: const StandardMessageCodec(),
-                    hitTestBehavior: PlatformViewHitTestBehavior.transparent,
-                  )
-                : Texture(
-                    textureId: controller.textureId!,
-                    filterQuality: FilterQuality.low,
+    Widget output(int id) => IgnorePointer(
+      child: controller.platform == NativeTexturePlatform.macosMetalView
+          ? AppKitView(
+              key: ValueKey(id),
+              viewType: 'rhwp_native/metal_view',
+              creationParams: {'handle': id},
+              creationParamsCodec: const StandardMessageCodec(),
+              hitTestBehavior: PlatformViewHitTestBehavior.transparent,
+            )
+          : Texture(textureId: id, filterQuality: FilterQuality.low),
+    );
+    return ClipRect(
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (controller.shouldPaintTexture && controller.useTileGroups)
+            for (
+              var index = 0;
+              index < controller.tileTextureIds.length;
+              ++index
+            )
+              if (index < controller.physicalTiles.length)
+                Positioned(
+                  key: ValueKey(
+                    'rhwp-native-tile-${controller.tileTextureIds[index]}',
                   ),
-          ),
-        if (!visible)
-          Positioned.fill(
-            key: const ValueKey('rhwp-native-texture-cover'),
-            child: ColoredBox(
-              color: widget.coverColor.withAlpha(255),
-              child: controller.phase == NativeTexturePhase.failed
-                  ? Center(child: Text('문서 표시 실패: ${controller.diagnostic}'))
-                  : widget.cpuFallback(context),
+                  left:
+                      controller.physicalTiles[index].left /
+                      controller.outputDeviceScale,
+                  top:
+                      controller.physicalTiles[index].top /
+                      controller.outputDeviceScale,
+                  width:
+                      controller.physicalTiles[index].width /
+                      controller.outputDeviceScale,
+                  height:
+                      controller.physicalTiles[index].height /
+                      controller.outputDeviceScale,
+                  child: output(controller.tileTextureIds[index]),
+                ),
+          if (controller.shouldPaintTexture && !controller.useTileGroups)
+            output(controller.textureId!),
+          if (!visible)
+            Positioned.fill(
+              key: const ValueKey('rhwp-native-texture-cover'),
+              child: ColoredBox(
+                color: widget.coverColor.withAlpha(255),
+                child: controller.phase == NativeTexturePhase.failed
+                    ? Center(child: Text('문서 표시 실패: ${controller.diagnostic}'))
+                    : widget.cpuFallback(context),
+              ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 

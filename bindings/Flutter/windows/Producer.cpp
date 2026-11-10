@@ -1,5 +1,6 @@
 #include "Producer.h"
 #include "NativeReply.h"
+#include "../common/bounded_tile_group.h"
 #include <algorithm>
 #include <chrono>
 #include <stdexcept>
@@ -135,12 +136,12 @@ ImmutableFrames& frames() { static auto* value = new ImmutableFrames; return *va
 uint64_t descriptor_opened_notifications() { return opened_count.load(std::memory_order_relaxed); }
 void register_surface_imports(const std::shared_ptr<State>& state) {
   if (state->publication_mode == PublicationMode::ImmutableOwnershipTransfer)
-    SurfaceImports::register_owner(state->generation);
+    SurfaceImports::register_owner(state->import_owner);
 }
 void retire_surface_imports(const std::shared_ptr<State>& state) noexcept {
   try {
     if (state->publication_mode == PublicationMode::ImmutableOwnershipTransfer)
-      SurfaceImports::unregistered(state->generation);
+      SurfaceImports::unregistered(state->import_owner);
   } catch (...) { /* Failed CPU retirement remains bounded and pinned. */ }
 }
 std::shared_ptr<int> reserve_producer() {
@@ -175,6 +176,53 @@ bool State::accept(const std::shared_ptr<Job>& job) {
   }
   changed.notify_one(); return true;
 }
+bool State::accept_group(const std::shared_ptr<State>& first, const std::shared_ptr<State>& second,
+                         const std::shared_ptr<Job>& a, const std::shared_ptr<Job>& b) {
+  if (!first || !second || first == second || !(a->stamp == b->stamp)) return false;
+  const auto ids = rhwp::tiles::unique_snapshots({a->ids, b->ids});
+  std::shared_ptr<Job> pending_a, pending_b;
+  std::shared_ptr<Published> frame_a, frame_b;
+  {
+    std::scoped_lock lock(first->mutex, second->mutex);
+    if (first->closed || second->closed || !first->ready || !second->ready ||
+        !first->api || first->api != second->api || first->generation != second->generation) return false;
+    auto gate_a = first->gate, gate_b = second->gate;
+    const auto serial_a = gate_a.accept(a->stamp), serial_b = gate_b.accept(b->stamp);
+    if (!serial_a || !serial_b) return false;
+    auto leases_a = first->leases, leases_b = second->leases;
+    for (auto* leases : {&leases_a, &leases_b})
+      for (auto it = leases->begin(); it != leases->end();) if (it->second.expired()) it = leases->erase(it); else ++it;
+    auto leases = rhwp::tiles::prepare_leases<SnapshotLease>(ids, [&](uint64_t id) {
+      auto left = leases_a.find(id), right = leases_b.find(id);
+      auto l = left == leases_a.end() ? nullptr : left->second.lock();
+      auto r = right == leases_b.end() ? nullptr : right->second.lock();
+      if (l && r && l != r) throw std::invalid_argument("two destructive leases for tile snapshot");
+      auto lease = l ? l : r;
+      if (!lease) { lease = std::make_shared<SnapshotLease>(); lease->id = id; lease->api = first->api; }
+      leases_a[id] = lease; leases_b[id] = lease;
+      return lease;
+    });
+    if (leases_a.size() > 32 || leases_b.size() > 32) return false;
+    a->snapshots = leases; b->snapshots = leases;
+    auto receipt_a = a->ids, receipt_b = b->ids;
+    // The request's two immutable frame credits and all receipt/lease storage
+    // were reserved before either producer can observe accepted ownership.
+    a->serial = serial_a; b->serial = serial_b;
+    for (const auto& lease : leases) lease->transferred = true;
+    first->gate = gate_a; second->gate = gate_b;
+    first->accepted_stamp = a->stamp; second->accepted_stamp = b->stamp;
+    first->accepted_serial = serial_a; second->accepted_serial = serial_b;
+    first->accepted_ids = std::move(receipt_a); second->accepted_ids = std::move(receipt_b);
+    first->leases = std::move(leases_a); second->leases = std::move(leases_b);
+    pending_a = std::move(first->pending); pending_b = std::move(second->pending);
+    frame_a = std::move(first->current); frame_b = std::move(second->current);
+    first->pending = a; second->pending = b;
+    first->error.clear(); first->error_code.clear(); first->device_failure = false;
+    second->error.clear(); second->error_code.clear(); second->device_failure = false;
+  }
+  first->changed.notify_one(); second->changed.notify_one(); return true;
+}
+
 void State::close() {
   std::shared_ptr<Job> previous; std::shared_ptr<Published> old_frame;
   {
@@ -284,7 +332,7 @@ const FlutterDesktopGpuSurfaceDescriptor* surface_callback(size_t, size_t, void*
     const bool transfer = state->publication_mode == PublicationMode::ImmutableOwnershipTransfer;
     // The next callback on this same raster OS thread proves prior descriptor
     // CPU reads ended. Closing alone does not retire that descriptor storage.
-    auto callback = transfer ? SurfaceImports::begin_callback(state->generation) : SurfaceImports::Callback{};
+    auto callback = transfer ? SurfaceImports::begin_callback(state->import_owner) : SurfaceImports::Callback{};
     if (transfer && !callback) return nullptr;
     std::shared_ptr<Published> frame;
     {
@@ -298,7 +346,7 @@ const FlutterDesktopGpuSurfaceDescriptor* surface_callback(size_t, size_t, void*
     std::lock_guard<std::mutex> lock(state->mutex);
     if (!state->gate.current(frame->job->serial, frame->job->stamp)) return nullptr;
     if (!transfer) return &frame->pixels->descriptor;
-    const auto* descriptor = SurfaceImports::offer(state->generation, frame->pixels->descriptor,
+    const auto* descriptor = SurfaceImports::offer(state->import_owner, frame->pixels->descriptor,
         frame, frame->job->credit, &descriptor_opened, frame->pixels.get());
     if (!descriptor) throw std::runtime_error("bounded surface import ticket capacity exceeded");
     return descriptor;

@@ -1,6 +1,8 @@
 #include "rhwp_native_reference/rhwp_d3d_plugin.h"
 #include "Producer.h"
 #include "CloseRecordRegistry.h"
+#include "../common/bounded_tile_group.h"
+#include <optional>
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar_windows.h>
 #include <flutter/standard_method_codec.h>
@@ -190,6 +192,7 @@ class RhwpD3dPlugin final : public flutter::Plugin {
     channel_->SetMethodCallHandler([this](const auto& call, auto result) {
       try { result->Success(invoke(call.method_name(), map(call.arguments()))); }
       catch (const MethodError& error) { result->Error(error.code, error.what(), error_limits(call.arguments())); }
+      catch (const std::invalid_argument& error) { result->Error("invalidArgument", error.what(), error_limits(call.arguments())); }
       catch (const std::exception& error) { result->Error("nativeError", error.what(), error_limits(call.arguments())); }
     });
   }
@@ -204,6 +207,9 @@ class RhwpD3dPlugin final : public flutter::Plugin {
   FlutterDesktopTextureRegistrarRef texture_registrar_;
   std::unique_ptr<flutter::MethodChannel<Value>> channel_;
   CloseRecordRegistry<Record, ClosedReceipt> textures_;
+  struct TileGroup { rhwp::tiles::Identity identity; Value terminal; };
+  std::optional<TileGroup> group_;
+  std::set<int64_t> unexposed_creations_;
   void close(Record& record) {
     record.state->close();
     if (!record.registration) return;
@@ -227,7 +233,9 @@ class RhwpD3dPlugin final : public flutter::Plugin {
     for (auto it = textures_.records().begin(); it != textures_.records().end();) {
       const auto id = (it++)->first;
       auto* item = record(uint64_t(id));
-      if (item && !item->state->close_ack_required) retire(id, false);
+      if (item && (!item->state->close_ack_required || unexposed_creations_.count(id))) {
+        if (retire(id, false)) unexposed_creations_.erase(id);
+      }
     }
   }
   Record* record(uint64_t id) {
@@ -263,11 +271,95 @@ class RhwpD3dPlugin final : public flutter::Plugin {
       if (found != args.end()) {
         if (auto* item = record(integer(found->second))) return limits(item->state->publication_mode, item->state->close_ack_required);
         else if (const auto* receipt = textures_.completed(int64_t(integer(found->second)))) return limits(receipt->mode, receipt->close_ack);
+      } else if (auto group = args.find(Value("groupId")); group != args.end()) {
+        const auto generation = args.find(Value("deviceGeneration"));
+        if (group_ && group_->identity.matches(integer(group->second)) &&
+            generation != args.end() && integer(generation->second) == group_->identity.generation) {
+          // Group calls carry no textureId/publicationMode. Derive retry policy
+          // from this exact retained owner, never the caller's requested mode.
+          const auto member = group_->identity.textures[0];
+          if (auto* item = record(member); item && item->state->generation == group_->identity.generation)
+            return limits(item->state->publication_mode, item->state->close_ack_required);
+          if (const auto* receipt = textures_.completed(int64_t(member)); receipt && receipt->generation == group_->identity.generation)
+            return limits(receipt->mode, receipt->close_ack);
+        }
       } else mode = publication_mode(args);
     } catch (...) { /* Invalid request metadata cannot choose a transfer mode. */ }
     return limits(mode);
   }
-  Value invoke(const std::string& method, const Map& args) {
+  Value invoke(const std::string& method, const Map& args, uint64_t group_generation = 0) {
+    if (method == "capabilities") return Value(Map{{Value("tileGroups"), Value(true)},
+        {Value("maxTileGroupTiles"),Value(2)},{Value("maxTileGroupSnapshots"),Value(4)},
+        {Value("sharedSnapshotLeases"),Value(true)},{Value("consumerGpuCompletionVerified"),Value(false)}});
+    if (method == "createGroup") {
+      prune();
+      if (group_ && std::holds_alternative<std::monostate>(group_->terminal))
+        throw MethodError("backpressure", "one two-tile group is already retained");
+      const auto generation = next_generation.fetch_add(1);
+      if (!generation) throw MethodError("backpressure", "tile group generation exhausted");
+      rhwp::tiles::Identity identity; identity.generation = generation;
+      List members; members.reserve(2);
+      try {
+        for (size_t index=0; index<2; ++index) {
+          auto created = invoke("create",args,generation);
+          identity.textures[index] = integer(std::get<Map>(created),"textureId");
+          members.push_back(std::move(created));
+        }
+      } catch (...) {
+        for (const auto id : identity.textures) if (id) {
+          auto* item=record(id); if (item) {unexposed_creations_.insert(int64_t(id));close(*item);}
+        }
+        throw;
+      }
+      group_=TileGroup{identity,Value()};
+      return Value(Map{{Value("groupId"),unsigned_value(identity.id())},{Value("deviceGeneration"),unsigned_value(generation)},
+          {Value("members"),Value(std::move(members))}});
+    }
+    if (method == "submitGroup" || method == "statusGroup" || method == "closeGroup" || method == "retireGroupAck") {
+      const auto id=integer(args,"groupId");
+      if (!group_ || !group_->identity.matches(id) || integer(args,"deviceGeneration")!=group_->identity.generation)
+        throw MethodError("contextChanged","unknown or stale tile group");
+      const auto identity=group_->identity;
+      if (!std::holds_alternative<std::monostate>(group_->terminal)) {
+        if (method=="submitGroup") throw MethodError("closed","tile group is closed");
+        return group_->terminal;
+      }
+      if (method=="submitGroup") {
+        const auto* tiles=std::get_if<List>(&field(args,"tiles"));
+        if (!tiles || tiles->size()!=2) throw MethodError("invalidArgument","two tile descriptions required");
+        std::array<std::shared_ptr<Job>,2> jobs;
+        std::array<std::shared_ptr<State>,2> states;
+        for(size_t index=0;index<2;++index) {
+          auto* item=record(identity.textures[index]);
+          if(!item) throw MethodError("closed","tile member no longer exists");
+          auto tile=map(&(*tiles)[index]);
+          if(integer(tile,"textureId")!=identity.textures[index]) throw MethodError("invalidArgument","tile member order/identity differs");
+          tile[Value("stamp")]=field(args,"stamp");tile[Value("clearColor")]=field(args,"clearColor");
+          states[index]=item->state;jobs[index]=parse_job(tile,item->state->publication_mode);
+          if(jobs[index]->stamp.device!=identity.generation) throw MethodError("contextChanged","tile stamp device differs");
+          std::shared_ptr<NativeApi> api;
+          {std::lock_guard<std::mutex> lock(item->state->mutex);api=item->state->api;}
+          if(!api || !api->current(jobs[index]->check_json)) throw MethodError("staleFrame","tile full stamp is not current");
+        }
+        const auto ids=rhwp::tiles::unique_snapshots({jobs[0]->ids,jobs[1]->ids});
+        List accepted;for(const auto snapshot:ids)accepted.emplace_back(unsigned_value(snapshot));
+        Map reply{{Value("accepted"),Value(true)},{Value("acceptedStamp"),Value(stamp_value(jobs[0]->stamp))},
+            {Value("acceptedSnapshots"),Value(std::move(accepted))},
+            {Value("limits"),limits(states[0]->publication_mode,true)}};
+        if(!State::accept_group(states[0],states[1],jobs[0],jobs[1]))
+          throw MethodError("staleFrame","tile group did not accept either member");
+        return Value(std::move(reply));
+      }
+      List members;members.reserve(2);
+      for(const auto member:identity.textures) {
+        Map child{{Value("textureId"),unsigned_value(member)},{Value("deviceGeneration"),unsigned_value(identity.generation)}};
+        members.push_back(invoke(method=="statusGroup"?"status":method=="closeGroup"?"close":"retireAck",child));
+      }
+      auto reply=Value(Map{{Value("groupId"),unsigned_value(identity.id())},{Value("deviceGeneration"),unsigned_value(identity.generation)},
+          {Value("members"),Value(std::move(members))}});
+      if(method=="retireGroupAck")group_->terminal=reply;
+      return reply;
+    }
     if (method == "create") {
       prune();
       if (!textures_.can_create()) throw MethodError("backpressure", "two GPU textures are active or awaiting close acknowledgement");
@@ -287,9 +379,10 @@ class RhwpD3dPlugin final : public flutter::Plugin {
       ComPtr<IDXGIAdapter> adapter; ComPtr<IDXGIAdapter1> adapter1;
       if (!registrar_->GetGraphicsAdapter(&adapter) || !adapter || FAILED(adapter.As(&adapter1)))
         throw MethodError("notReady", "Flutter graphics adapter is unavailable; select CPU");
-      const auto generation = next_generation.fetch_add(1);
-      if (!generation) throw MethodError("backpressure", "device generation exhausted");
-      auto state = std::make_shared<State>(generation, *path, adapter1, texture_registrar_, producer_credit, mode, close_ack);
+      const auto import_owner = next_generation.fetch_add(1);
+      const auto generation = group_generation ? group_generation : import_owner;
+      if (!generation || !import_owner) throw MethodError("backpressure", "device generation exhausted");
+      auto state = std::make_shared<State>(generation, *path, adapter1, texture_registrar_, producer_credit, mode, close_ack, import_owner);
       auto cookie = std::make_unique<Registration>(Registration{state, registration_credit});
       FlutterDesktopTextureInfo info{}; info.type = kFlutterDesktopGpuSurfaceTexture;
       info.gpu_surface_config.struct_size = sizeof(FlutterDesktopGpuSurfaceTextureConfig);

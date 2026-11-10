@@ -63,6 +63,12 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
               document: document,
               presentation: presentation,
               platform: platform,
+              useTileGroups:
+                  platform != NativeTexturePlatform.macos &&
+                  const bool.fromEnvironment(
+                    'RHWP_GPU_TILES',
+                    defaultValue: true,
+                  ),
               allowImmutableOwnershipTransfer:
                   platform == NativeTexturePlatform.windows &&
                   const bool.fromEnvironment('RHWP_GPU_CONTINUOUS'),

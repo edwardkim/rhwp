@@ -8,3 +8,4 @@ export 'src/native_presentation.dart';
 export 'src/native_texture_view.dart';
 export 'src/native_viewport.dart';
 export 'src/native_multipage_view.dart';
+export 'src/native_gpu_tiles.dart' show NativeGpuTilePlan;
