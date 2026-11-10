@@ -810,7 +810,8 @@ pub(crate) fn composed_tac_line_assignment_with_storage<S: crate::storage::Stora
     if super::equation_tac_flow::uses_equation_only_flow(para, comp)
         || (para.char_offsets.is_empty() && !empty_control_stream)
         || comp.lines.len() != para.line_segs.len()
-        || comp.lines.len() < 2
+        || comp.lines.is_empty()
+        || (comp.lines.len() == 1 && !computed_rows)
         || comp
             .lines
             .iter()
@@ -844,7 +845,13 @@ pub(crate) fn composed_tac_line_assignment_with_storage<S: crate::storage::Stora
                     .get(owner + 1)
                     .is_some_and(|next| *pos >= next.char_start)
             });
-    Ok((collapsed_boundary || empty_control_stream).then_some(assignments))
+    // 현재 재조판이 발행한 단일 글줄도 제어 슬롯의 소속이 확정돼 있다.
+    // 이를 별도 인라인 painter로 보내면 같은 줄의 들여쓰기와 개체 바깥
+    // 상자 기준선을 다시 추정한다. 여러 줄·실제 프레임과 같은 공통 줄
+    // 배치가 확정된 소속과 메트릭을 그대로 소비하게 한다.
+    let computed_single_row =
+        computed_rows && comp.lines.len() == 1 && !comp.tac_controls.is_empty();
+    Ok((collapsed_boundary || empty_control_stream || computed_single_row).then_some(assignments))
 }
 
 /// 보이는 다음 글자와 확장 제어 슬롯이 같은 논리 위치여도 원시 줄 소속은 다를 수 있다.

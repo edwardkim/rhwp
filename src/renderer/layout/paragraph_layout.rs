@@ -4048,12 +4048,27 @@ impl LayoutEngine {
             + table_declared_widths.iter().sum::<f64>()
             + table_om_px.iter().map(|(l, r)| l + r).sum::<f64>();
         let available_width = col_area.width - margin_left - margin_right;
+        // 인라인 표와 앞 텍스트도 같은 첫 글줄의 들여쓰기를 소비한다.
+        // 일반 본문·표 단독 경로와 동일하게 원본 줄의 들여쓰기 플래그와
+        // 실제 줄 여유를 확인하며, 뒤 글줄의 시작 여백에는 다시 더하지 않는다.
+        let first_line_indent =
+            crate::renderer::equation_tac_flow::paragraph_line_indent_for_source(
+                para_style.map_or(0.0, |style| style.indent),
+                0,
+                Some(para),
+                composed.map_or(para.line_segs.len(), |comp| comp.lines.len()),
+                !self.profile.get().legacy_hwp3_stored_geometry(),
+                available_width,
+                self.dpi,
+            );
+        let first_line_left = col_area.x + margin_left + first_line_indent;
+        let first_line_width = available_width - first_line_indent;
         let start_x = match alignment {
             Alignment::Center | Alignment::Distribute => {
-                col_area.x + margin_left + (available_width - total_width).max(0.0) / 2.0
+                first_line_left + (first_line_width - total_width).max(0.0) / 2.0
             }
-            Alignment::Right => col_area.x + margin_left + (available_width - total_width).max(0.0),
-            _ => col_area.x + margin_left,
+            Alignment::Right => first_line_left + (first_line_width - total_width).max(0.0),
+            _ => first_line_left,
         };
 
         // 6. 줄 높이 계산 (line_seg 기반)
