@@ -1,9 +1,15 @@
 // 검사 유형: 관계형 소스 가드의 위임 분류. PDF 일치율·실물 px 기대값은 비해당이다.
-// 주석 갱신: 2026-11-05 20:31 KST.
+// 주석 갱신: 2026-11-10 15:57 KST.
 /// 무효화하지 않는 `pub fn (&mut self)` 전수 목록 — (파일, 함수, 분류, 근거).
 ///
 /// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. 병합 `devel` 기준 46건(2026-08-30 동결).
 const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
+    (
+        "queries/memo_query.rs",
+        "remove_memo",
+        Exempt::DelegatesTo("remove_memo_only"),
+        "댓글 자손의 순환을 먼저 검사한 뒤 개별 삭제 helper에 위임한다. helper가 편집 구역의 raw_stream을 비운다.",
+    ),
     (
         "commands/compose_controls.rs",
         "insert_ruby_at",
