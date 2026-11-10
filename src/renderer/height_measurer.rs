@@ -3163,9 +3163,17 @@ impl HeightMeasurer {
                     // cell_nested_controls_bottom과 합치며 줄 뒤에 다시 쌓지 않는다.
                     return Ok(None);
                 }
-                if para_max_lh >= nested.common.height as i32 {
-                    // [#7419] 합성 줄은 중첩 표 선언만 담으므로 실제 성장분을 더한다.
-                    // 유효한 저장 줄의 기존 흡수 계약은 유지한다.
+                // [#7419] 글자처럼 취급(TAC) 표는 글줄 안의 글자라 재조판 프레임이 발행한 합성 줄이
+                // 이미 그 줄 높이만큼 표를 담았다. 그 높이가 표 선언보다 작아도 같다 — 재조판 줄은
+                // 선언이 아니라 실측 표 높이로 서므로(docs#926 36384689: 합성 줄 27613HU = 실측,
+                // 선언 27878HU) 선언과 비교해 전량을 다시 더하면 칸 내용이 표 하나만큼 두 번 쌓인다.
+                // 실측이 줄을 넘는 성장분만 더한다. 글줄 밖 블록 표(비-TAC)는 합성 줄이 글자 높이만
+                // 담으므로(87520: 줄 1200HU, 표 선언 10014HU) 종전대로 표 전량을 더한다. 유효한 저장
+                // 줄은 종전처럼 선언 이상일 때만 흡수로 본다.
+                let synthetic_line_holds_table = nested.common.treat_as_char
+                    && para_max_lh > 0
+                    && crate::renderer::para_has_no_stored_line_segs(p);
+                if synthetic_line_holds_table || para_max_lh >= nested.common.height as i32 {
                     if !crate::renderer::para_has_no_stored_line_segs(p) {
                         return Ok(None);
                     }
@@ -5568,26 +5576,7 @@ let body_height=match nested_body_heights
             // 마지막 글줄을 clip 한다 (exam_eng 선택지 ① 1.3px, 심사서식
             // 반 줄 미만 초과). 한글은 그 행을 내용에 맞춰 키운다.
             let mut floors = storage.filled(row_count, 0.0f64)?;
-            // 🔴 저장 LINE_SEG 로 하한을 만들 수 없는 표는 하한이 0 이 되어
-            // "이 행은 얼마든지 눌러도 된다"가 된다 — 바로 위 #6030 이 막으려던 클립이
-            // 클립보드 재구성·생성계 문서에서 그대로 재발한다(실측: 행 52.91×3 이
-            // 47.86/62.99/47.86 으로 눌려 셋째 줄 baseline 438.18 이 클립 바닥 436.03 아래로
-            // 나가 "확보" 가 괘선에 잘렸다). 저장분이 **하나라도** 있는 표는 종전 그대로 둔다.
-            // (`any(!no_ls)` 로 판정한다. `all(no_ls)` 는 문단이 없는 셀에서 공허참이 되어
-            //  정상 저장 문서까지 이 경로로 새어 든다.)
-            // 🔴 한글이 직접 쓴 문서(HWP5 네이티브 조판)는 저장 lineseg 가 없는 표라도
-            // 종전 배분을 유지한다 — 하한을 새로 세우면 그 표가 덜 눌려 아래 흐름이
-            // 밀리고, 실측(20544835 진안 서식)에서 글자끼리 겹치는 결함이 새로 생겼다.
-            // 이 손질의 대상은 저장 조판이 아예 없는 재구성·생성계 문서다.
-            // 🔴 이 갈래는 출처 대리지표다 — lineseg 유무로는 두 부류를 못 가른다.
-            // 20544835 는 저장 seg 가 0 인데도 HWP5 네이티브로 열린다(생성기가 쓴
-            // .hwp). 대가로 .hwp 문서에 붙여넣는 경우에는 이 하한이 꺼진다.
-            let table_has_stored_segs = self.is_native_hwp5
-                || table
-                    .cells
-                    .iter()
-                    .flat_map(|c| c.paragraphs.iter())
-                    .any(|p| !crate::renderer::para_has_no_stored_line_segs(p));
+            let mut reflowed_floor = false;
             for (cell_index, source_cell) in table.cells.iter().enumerate() {
                 let cell = current_cell_frames.get(&cell_index).unwrap_or(source_cell);
                 let r = cell.row as usize;
@@ -5599,14 +5588,19 @@ let body_height=match nested_body_heights
                     .iter()
                     .any(crate::renderer::para_has_no_stored_line_segs)
                 {
-                    if !table_has_stored_segs {
-                        // 2단계에서 이미 잰 이 행의 콘텐츠 필요 높이(상하 여백 포함)를
-                        // 하한으로 쓴다. 새 계산·새 필드 없이 기존 값을 그대로 쓴다.
-                        let floor = content_row_floor[r].min(row_heights[r]);
-                        if floor > floors[r] {
-                            floors[r] = floor;
-                        }
+                    // [docs#926] 저장 줄 없는 칸은 현재 내용으로 재조판한다(위 `reflowed_cell_rows`
+                    // 와 같은 규칙을 칸 단위로 적용). 표 전체가 그런 칸이면 위에서 이 축소 갈래를
+                    // 타지 않으므로, 이 갈래에 오는 재조판 칸은 저장 칸과 섞인 표의 칸뿐이다.
+                    // 그 칸의 재조판 내용 높이(2단계 실측, 상하 여백 포함)를 하한으로 둬서 선언
+                    // 높이로 누르지 않는다. 종전에는 "저장분이 하나라도 있는 표" 조건 아래에서만
+                    // 하한을 세웠는데, 그런 표는 이 갈래에 오는 표 전부라 하한이 한 번도 서지
+                    // 않았다(36404364 3쪽: 가린 칸 3개가 두 줄로 재조판되는데 머리 행까지
+                    // 35.1 → 29.5px 로 눌려 표가 선언 140.1px 에 갇혔다. 한/글은 약 174px).
+                    let floor = content_row_floor[r].min(row_heights[r]);
+                    if floor > floors[r] {
+                        floors[r] = floor;
                     }
+                    reflowed_floor = true;
                     continue;
                 }
                 let content_hu = cell
@@ -5664,7 +5658,10 @@ let body_height=match nested_body_heights
                     storage,
                 )?;
                 row_heights.iter().sum::<f64>() + cell_spacing * row_count.saturating_sub(1) as f64
-            } else if deficit <= TAC_FLOOR_OVERFLOW_NOSHRINK_CAP_PX {
+            } else if deficit <= TAC_FLOOR_OVERFLOW_NOSHRINK_CAP_PX || reflowed_floor {
+                // [docs#926] 재조판 칸이 하한을 세운 표도 균일 축소하지 않는다. 균일 축소는
+                // 저장 줄의 낡은 내용이 선언을 크게 넘는 표의 종전 처리이고, 재조판 내용은
+                // 한/글이 행을 키워 담는다(위 `reflowed_cell_rows`, docs#458 과 같은 규칙).
                 // [#6030] 선택지·심사서식처럼 하한 합이 선언을 반 줄 미만으로
                 // 넘는 표는 균일 축소하지 않는다. 거대 overfill 표는 종전
                 // 비례 축소를 유지한다 (overflow_cell_baseline).
