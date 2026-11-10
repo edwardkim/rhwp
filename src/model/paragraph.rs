@@ -1945,6 +1945,23 @@ impl Paragraph {
         }
         self.char_offsets = updated_offsets;
 
+        // [#8863] 원본부터 같은 위치인 ref는 char_shape_id_at과 같이 마지막
+        // ID가 유효하다. 삭제로 서로 다른 경계가 모이기 전에 이 의미를 보존한다.
+        // 첫 ref가 늦게 시작하면 그 앞에도 첫 ID가 유효하므로(#6788), 첫 중복
+        // 묶음을 합치기 전에 이 암묵적 앞 구간을 명시한다.
+        if let [first, second, ..] = self.char_shapes.as_mut_slice() {
+            if first.start_pos > 0 && first.start_pos == second.start_pos {
+                first.start_pos = 0;
+            }
+        }
+        self.char_shapes.dedup_by(|later, kept| {
+            let same = later.start_pos == kept.start_pos;
+            if same {
+                kept.char_shape_id = later.char_shape_id;
+            }
+            same
+        });
+
         // 3. char_shapes: 삭제 범위 이후 → utf16_delta만큼 감소
         for cs in &mut self.char_shapes {
             if cs.start_pos >= utf16_end {
