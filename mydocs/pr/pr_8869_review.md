@@ -2,7 +2,10 @@
 
 ## 최종 판정
 
-**머지 보류.** 접수·코드 및 검증 진행 중이며 아직 수용 판정 전이다. 현재 head의 CI·플랫폼 소비 경로·필수 증적을 확인한 뒤 갱신한다.
+**머지 보류.** 실제 Linux 다중 페이지 GPU 실행에서 `ambiguousOwnership` 실패를 재현했다.
+plugin이 snapshot 3개를 인수한 뒤에도 submit/status에 `acceptedSnapshots`를 제공하지 않아
+새 Dart controller가 소유권 이전을 확인할 수 없다. [원인·제한 보정안](seo_rii_20261110_review_impl.md#실제-다중-페이지-gpu-경로에서-발견한-인수-확인-누락)에
+기록한 공통 응답 보정과 실제 GPU 표시·navigation·CPU 대조·종료 검증을 완료한 뒤 재판정한다.
 
 ## 접수와 검토 기준
 

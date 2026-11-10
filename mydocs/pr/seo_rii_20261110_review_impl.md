@@ -66,3 +66,49 @@ compile/link, Linux portable·실제 SDK/GLES·GTK 두 타일 초기/편집/resi
 이동 검사를 통과했다. 원시 결과는 ignored output에서 확인하며 정식 검토에 실제 source·명령·수치와
 직접 판독한 대표 PNG만 보존한다. Native Rust input은 기준 devel과 같으며 이번 Mac 제외로
 변경되지 않는다. 이후 결과를 새 source에서 실행했다고 표시하지 않고 실제 소비 source의 동일성으로 연결한다.
+
+## 실제 다중 페이지 GPU 경로에서 발견한 인수 확인 누락
+
+후보 `1bfa7b298272249ef533310ea4f07ade944e2e09`의 실제 GTK plugin·Dart controller와 fresh
+Native `4f6bc33f8e3940947f3d942cdb3af26bb1d6f7cb` 빌드로 재현했다. 두 source의 Rust/Native 입력은
+동일하며 Native 라이브러리 SHA-256은 `397223df7aa3ff9a2a622651d4c01210b3c02aa9f906897f66c30568e6868424`다.
+추적을 추가한 진단 runner는 제품 코드를 변경하거나 channel을 대역으로 바꾸지 않았다.
+
+- 입력: 기존 공개 6쪽 `tests/fixtures/gradient/radial-corner-print-contract.hwpx`, SHA-256
+  `01884d8ea148e21fdb68194dd23c353c635903e4fc19d8b242e1efbe1d0aaf0d`.
+- 실제 `NativePagedDocumentView` 600×800, zoom 0.4, DPR 1에서 첫 visible batch의 snapshot ID는
+  `[2, 3, 4]`였다. Native `submit`은 `accepted: true`와 일치하는 full `acceptedStamp`를 반환했다.
+- Linux `submit`과 이어진 실제 `status` 3회 모두 `acceptedSnapshots`가 없었다.
+  Dart는 모든 ID를 확인할 수 없어 `NativeCallException(ambiguousOwnership)`로 실패했다.
+  첫 실패 후 wire 추적을 추가한 독립 실행에서도 같은 실패를 재현했다.
+- `linux/rhwp_texture_plugin.cc:506`의 공통 `status_value`는 stamp만 직렬화하며,
+  `texture_state.h`의 `Status`에도 accepted ID 목록이 없다. 기존 Linux 구현은
+  `3de0f2eacc066726401cf153b6d9ba8be72ff9f7`에서 시작한 경로다.
+- #8869 원 기능 commit `f03568a52eff4ac74c90ccdaa079c8fbaa10b122`는 여러 페이지에서
+  `acceptedSnapshots`를 요구하도록 Dart를 바꾸지만 Linux 응답을 바꾸지 않았다. 최신 devel에서도
+  응답 목록은 없으며 이미 해결된 문제가 아니다. Windows는 submit/status 모두 목록이 있고,
+  기존 Mac 경로는 status에서 목록을 제공하므로 같은 누락이라고 추정하지 않는다.
+- P112 group submit/status는 별도 accepted ID 목록을 제공한다. 앞선 실제 두 타일 검사는
+  한 페이지가 두 타일에 걸친 경우로, 이번 단일 target의 여러 페이지 검증을 대신하지 않는다.
+- 275개 Flutter 검사 중 다중 페이지 계약은 fake plugin이 목록을 제공하는 경로다.
+  기존 통과 결과는 유지하되 실제 Linux 다중 페이지 GPU 표시의 성공 증거로 쓰지 않는다.
+
+### 제한 보정 제안과 해제 조건
+
+메인터너 보정 승인을 받으면 Linux의 공통 인수 상태와 MethodChannel 응답을 연결한다.
+모든 fallible 검사·목록 할당이 끝난 뒤 같은 lock 아래에서 stamp·serial·인수 ID 목록을 함께
+확정하고 submit/status가 그 동일한 결과를 소비하도록 한다. 목록은 기존 최대 8개와 중복 lease
+계약을 보존한다. group 경로도 공통 상태의 일관성을 확인한다. Dart의 전체 ID 확인·ambiguous
+소유권 보호를 완화하거나 이미 인수한 snapshot을 caller가 다시 해제하도록 바꾸지 않는다.
+
+필수 검증은 다음 범위를 한 단위로 완료한다.
+
+1. 실제 submit/status의 전체 receipt, 여러 페이지 최초 표시와 navigation, 같은 editor owner의
+   CPU 출력 대조, close 후 Native 9개 계수 0을 확인한다.
+2. 단일 페이지·타일 group 정상 대조군, 중복 ID·stale 거절·교체·종료와 lease 1회 해제를 검사한다.
+3. Linux portable·실제 Flutter SDK compile/link·GLES 상태·GTK 표시를 재실행하고 관련 Dart
+   계약·analyze를 재검증한다. 변경된 실제 화면을 직접 판독해 정식 Markdown·대표 PNG로 보존한다.
+
+현재 판정은 **선행 #8869의 실행 검출 결함 때문에 누적 후보 머지 보류**다. 원시 로그는 ignored
+output의 `multipage-capture`와 `multipage-wire-capture`에만 보관한다. 새로운 제품 보정은 아직
+적용하지 않았으며 원격 push·공개 댓글·PR·merge도 수행하지 않았다.
