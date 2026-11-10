@@ -4,7 +4,7 @@
 
 **메인터너 보정 후 수용 가능 — #8017의 메모 모양·댓글 API 범위의 로컬 검증 완료.**
 
-메인터너 보정을 포함한 통합 후보를 검토했다. 원격 push·통합 PR의 CI·병합은 아직 수행하지 않았다.
+메인터너 보정을 포함한 [통합 PR #8906](https://github.com/edwardkim/rhwp/pull/8906)의 최신 head `8beab3f5677d985f07866ffbc61fde2fca6b7cfe` CI를 확인한 뒤 병합했다. merge `d7873c65bd5b5f3c55b842ee462afe8fcce51861`. 아래 완료 기록에서 기존 로컬 실측과 새 CI를 구분한다.
 
 ## 접수와 통합
 
@@ -129,4 +129,16 @@ Mac 연결 그림 공급 지침은 사용자명 없는 `$PWD` 예시로 기록�
 Adapter inter-diff 사전 검증은 실제 3분 job 취소를 근거로 10분, 전체 이력 checkout은 8분으로 조정했다.
 worker 25분·권한·실패 시 본 검증 실행 계약은 유지했다. actionlint·관련 Python 79건·Node 334건 통과.
 [CI 변경 검증](../assets/semanticist21_20261110/ci-timeout-validation.json).
-통합 PR의 최신 required check·병합 승인은 별도 확인하고, CI 변경의 병합 후 기록은 옵션 2로 처리한다.
+통합 PR의 최신 required check 성공과 승인된 병합을 확인했다. CI 변경의 병합 후 기록은 아래 옵션 2 절로 정리한다.
+
+## 통합 PR #8906 CI·병합 완료 및 옵션 2 기록
+
+- 통합 PR: [#8906](https://github.com/edwardkim/rhwp/pull/8906).
+- 최종 검증·병합 head: `8beab3f5677d985f07866ffbc61fde2fca6b7cfe`.
+- squash merge: `d7873c65bd5b5f3c55b842ee462afe8fcce51861`, 2026-11-10 18:56:59 KST. `CLEAN / MERGEABLE`과 최신 head의 전체 check 성공을 다시 확인한 뒤 일반 병합했다. admin 우회는 사용하지 않았다.
+- [CI](https://github.com/edwardkim/rhwp/actions/runs/42790512773), [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/42790512527), [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/42790512513), [Adapter](https://github.com/edwardkim/rhwp/actions/runs/42790512548), [Proptest](https://github.com/edwardkim/rhwp/actions/runs/42790512536)와 exact head의 `CI Impact Policy`가 성공했다. CI 아카이브 A~E의 실제 합계는 12,998 PASS / 0 FAIL / 45 skip이다. Native Skia·프런트엔드 게이트도 성공했다.
+- 이전 head `5dd73f65`의 아카이브 C 실패는 새 통합 검사의 시간대 가정 오류였다. 선행 #8269의 FILETIME→현지 시각 계약과 한컴 HWPX의 리터럴 Z를 보존하면서, 같은 형식의 무편집 저장 대조군과 날짜를 포함한 메모 목록 전체를 비교하도록 테스트 1개 파일만 보정했다. 제품·직렬화·시간대 정책은 변경하지 않았다.
+- 최소 글꼴 환경 `TZ=UTC` 27 PASS와 `TZ=Asia/Seoul` 27 PASS, fmt·suite manifest·unit tier 검사를 통과했다. 새 Linux CI에서도 실패했던 검사와 아카이브 C 2,600건 모두 PASS를 확인했다. 실패한 이전 CI를 최종 통과 근거로 재사용하지 않았다.
+- 기존 로컬 전체 회귀·전쪽 시각 검증의 실제 producer와 리베이스 후 재사용 근거는 위 기록을 유지한다. 테스트 보정 뒤 제품 파일은 바뀌지 않았으며, 이전 실측을 새 head의 재출력으로 표시하지 않는다.
+- [duration 갱신](https://github.com/edwardkim/rhwp/actions/runs/42794973755)이 성공했고 44 target을 게시했다. [최종 CI·병합·duration 원장](../assets/semanticist21_20261110/ci-8906-complete.json)과 [시간대 보정 근거](../assets/semanticist21_20261110/memo-timezone-validation.json)를 보존한다.
+- CI workflow 변경이 포함되어 이 완료 기록·오늘할일·최종 CI 증적은 원 PR의 trailing commit 대신 옵션 2 별도 기록 PR로 반영한다. 기록 PR의 실제 fast-pass와 병합을 확인한 뒤 원 PR별 결과 댓글·종료와 #8020 API 완료 처리를 진행한다. #8017의 기존 CLOSED 상태는 유지하며 새로운 Studio 댓글 풍선 UI 완료를 주장하지 않는다.
