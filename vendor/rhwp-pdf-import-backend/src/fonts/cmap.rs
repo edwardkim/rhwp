@@ -653,10 +653,10 @@ fn parse_tounicode_cmap_impl(data: &[u8], budget: Option<&ImportBudget>) -> Resu
             BfSectionKind::Range => {
                 // Format: <srcCodeLo> <srcCodeHi> [<dstString0> <dstString1> ... <dstStringN>]
                 //     or: <srcCodeLo> <srcCodeHi> <dstString>
-                for line in section.lines() {
+                for entry in range_entries(section, budget)? {
                     let mappings = match budget {
-                        Some(budget) => parse_bfrange_line_with_budget(line, Some(budget)),
-                        None => parse_bfrange_line(line),
+                        Some(budget) => parse_bfrange_line_with_budget(entry, Some(budget)),
+                        None => parse_bfrange_line(entry),
                     };
                     if let Some(budget) = budget {
                         budget.check()?;
@@ -680,10 +680,11 @@ fn parse_tounicode_cmap_impl(data: &[u8], budget: Option<&ImportBudget>) -> Resu
     // Format: <srcCodeLo> <srcCodeHi> <dstString>
     // Maps a range of codes to a single Unicode character (fallback for unmapped codes)
     for section in extract_sections(&content, "beginnotdefrange", "endnotdefrange") {
-        for line in section.lines() {
+        // A notdefrange has no array form, so a bracketed entry is not one.
+        for entry in range_entries(section, budget)?.filter(|entry| !entry.ends_with(']')) {
             let mappings = match budget {
-                Some(budget) => parse_notdefrange_line_with_budget(line, Some(budget)),
-                None => parse_notdefrange_line(line),
+                Some(budget) => parse_notdefrange_line_with_budget(entry, Some(budget)),
+                None => parse_notdefrange_line(entry),
             };
             if let Some(budget) = budget {
                 budget.check()?;
@@ -745,6 +746,87 @@ fn bf_sections_in_document_order<'a>(
             remaining = after;
         }
     })
+}
+
+/// The entries of a `bfrange` or `notdefrange` section, one
+/// `<lo> <hi> <dst>` or `<lo> <hi> [<dst0> <dst1> ...]` at a time.
+///
+/// A CMap is PostScript, so a line break is white space like any other (ISO
+/// 32000-1:2008 §9.10.3, Adobe Technical Note #5014). Writers wrap long
+/// destination arrays over many lines, and reading such a section line by
+/// line takes a continuation line `<2135> <D835DC9C> <212C>` for a range of
+/// 3.6 billion codes. Entries are therefore cut by token, the way pdf.js,
+/// MuPDF, and Poppler read them, and each item holds exactly one entry
+/// whatever lines it sits on.
+struct RangeEntries<'a> {
+    section: &'a str,
+    pos: usize,
+}
+
+fn range_entries<'a>(section: &'a str, budget: Option<&ImportBudget>) -> Result<RangeEntries<'a>> {
+    if let Some(budget) = budget {
+        // One more pass over the section, on top of what `cmap_source` charged.
+        budget.charge_cmap_scan(section.len())?;
+    }
+    Ok(RangeEntries { section, pos: 0 })
+}
+
+impl<'a> Iterator for RangeEntries<'a> {
+    type Item = &'a str;
+
+    fn next(&mut self) -> Option<&'a str> {
+        let bytes = self.section.as_bytes();
+        let mut start = 0;
+        // Hex strings read so far for this entry: `<lo>`, `<hi>`, then `<dst>`.
+        let mut operands = 0;
+        // Inside the destination array of this entry.
+        let mut in_array = false;
+        // Inside a bracket that follows no `<lo> <hi>`; its strings belong to no entry.
+        let mut stray_array = false;
+
+        while self.pos < bytes.len() {
+            let at = self.pos;
+            match bytes[at] {
+                b'<' => {
+                    // An unterminated string ends the section.
+                    let len = self.section[at..].find('>')?;
+                    self.pos = at + len + 1;
+                    if in_array || stray_array {
+                        continue;
+                    }
+                    if operands == 0 {
+                        start = at;
+                    }
+                    operands += 1;
+                    if operands == 3 {
+                        return Some(&self.section[start..self.pos]);
+                    }
+                },
+                b'[' => {
+                    self.pos = at + 1;
+                    if in_array {
+                        continue;
+                    }
+                    if operands == 2 {
+                        in_array = true;
+                    } else {
+                        stray_array = true;
+                        operands = 0;
+                    }
+                },
+                b']' => {
+                    self.pos = at + 1;
+                    if in_array {
+                        return Some(&self.section[start..self.pos]);
+                    }
+                    stray_array = false;
+                    operands = 0;
+                },
+                _ => self.pos = at + 1,
+            }
+        }
+        None
+    }
 }
 
 /// Extract sections between begin and end markers.
@@ -1064,6 +1146,12 @@ fn parse_bfrange_line_with_budget(
             result.push((src, dst));
         }
         return Some(result);
+    }
+
+    // An array entry that did not read as one is not a sequential range
+    // either: three strings of its body are destinations, not `<lo> <hi> <dst>`.
+    if line.contains('[') {
+        return None;
     }
 
     // Try format 1 (sequential format)

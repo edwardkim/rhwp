@@ -550,3 +550,17 @@ owner가 작업 만료를 알리면 같은 요청을 실패로 전환한다. 기
   개체 종류만 기록한다.
 - 입력·인증·오류 처리·요청 예산·추출·캐시 결과는 유지한다. 정식 회귀
   `tests/cases/code_scanning_pdf_diagnostics.rs`가 실제 debug 로그 활성화와 내용 보존을 함께 검사한다.
+
+## ToUnicode 범위 항목의 토큰 단위 읽기 (2026-11-10)
+
+- `fonts/cmap.rs`가 `bfrange`·`notdefrange` 구역을 줄 단위가 아니라 토큰 단위로 잘라
+  `<lo> <hi> <dst>` 또는 `<lo> <hi> [<dst> ...]` 항목 하나씩 해석한다(`RangeEntries`).
+  CMap은 PostScript라 줄바꿈이 공백이고, Acrobat Distiller는 긴 대상 배열을 여러 줄에 나눠 쓴다.
+  줄 단위 해석은 배열의 이어지는 줄 `<2135><D835DC9C><212C>`를 36억 항목 범위로 읽어 정상 PDF를
+  `CMap entries`로 거부했고, 한도에 걸리지 않는 줄은 틀린 코드에 글자를 이었다.
+- 배열 꼴로 읽히지 않은 배열 항목은 순차 범위로 다시 읽지 않고 버린다. `notdefrange`의 대괄호
+  항목은 건너뛴다. 항목 해석 함수와 한도 값은 그대로다.
+- 구역을 한 번 더 훑는 만큼 CMap scan 예산을 계상한다. 배열 원소 하나가 항목 하나로 계상되는
+  것과 실제로 큰 범위의 거부는 유지한다. 정식 회귀는
+  `tests/cases/issue_8919_pdf_cmap_range_entries.rs`이고, 기존 `issue_7911_pdf_resource_limits.rs`의 CMap 경계
+  검사는 바뀌지 않는다.
