@@ -10234,6 +10234,22 @@ impl LayoutEngine {
                                 if let Some(frame) = stored_float_frame {
                                     // 배제 프레임의 점유 하단과 본문 커서는 다른 값이다.
                                     // 저장 줄 위의 빈 공간은 뒤 문단이 계속 사용할 수 있다.
+                                    // [#8686] 인증된 자리차지 표는 본문 흐름에서 빠진 배제 띠다.
+                                    // 흐름은 호스트 문단의 글줄로만 전진하고, 띠는 뒤 글줄이
+                                    // 겹칠 때만 그 줄을 띠 끝으로 보낸다.
+                                    if frame.flow
+                                        == crate::renderer::float_placement::ParagraphFloatFlow::Exclusion
+                                        && matches!(nested_table.common.text_wrap, TextWrap::TopAndBottom)
+                                    {
+                                        cell_float_bands.push(
+                                            frame.table_top
+                                                - hwpunit_to_px(
+                                                    nested_table.outer_margin_top as i32,
+                                                    self.dpi,
+                                                )
+                                                ..frame.occupied_bottom,
+                                        );
+                                    }
                                     para_y = frame.paragraph_end(para_y, 0.0);
                                 } else if let Some(x) = float_x {
                                     // [#6787] 나란히 무리는 **가장 높은 표** 만큼만 흐름을
@@ -10250,19 +10266,6 @@ impl LayoutEngine {
                                         ),
                                     ));
                                     para_y = lane_bottom.max(nested_y + advance);
-                                } else if let Some(frame) = stored_float_frame.filter(|frame| {
-                                    frame.flow == crate::renderer::float_placement::ParagraphFloatFlow::Exclusion
-                                        && matches!(nested_table.common.text_wrap, TextWrap::TopAndBottom)
-                                }) {
-                                    // [#8686] 인증된 자리차지 표는 본문 흐름에서 빠진 배제 띠다.
-                                    // 흐름은 호스트 문단의 글줄로만 전진하고, 띠는 뒤 글줄이
-                                    // 겹칠 때만 그 줄을 띠 끝으로 보낸다.
-                                    cell_float_bands.push(
-                                        frame.table_top
-                                            - hwpunit_to_px(nested_table.outer_margin_top as i32, self.dpi)
-                                            ..frame.occupied_bottom,
-                                    );
-                                    para_y = frame.paragraph_end(para_y, 0.0);
                                 } else {
                                     para_y = nested_y + advance;
                                 }
