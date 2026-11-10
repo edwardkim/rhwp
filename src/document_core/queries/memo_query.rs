@@ -1054,12 +1054,14 @@ impl DocumentCore {
     /// `getMemoList`: JSON array in document order.
     pub fn get_memo_list_json(&self) -> String {
         let protected = self.document_protected();
-        let entries: Vec<String> = self
-            .memo_hits()
+        let hits = self.memo_hits();
+        let parents = self.memo_parent_map(&hits);
+        let entries: Vec<String> = hits
             .iter()
             .map(|hit| {
+                let parent = parents.get(&hit.id).copied();
                 let Some(location) = &hit.location else {
-                    return memo_json(hit, protected, "unsupported_place", 0);
+                    return memo_json(hit, protected, "unsupported_place", 0, parent);
                 };
                 let page = self
                     .find_pages_for_paragraph(location.section_index, location.para_index)
@@ -1068,7 +1070,7 @@ impl DocumentCore {
                     .map(|page| page + 1)
                     .unwrap_or(0);
                 let reason = memo_readonly_reason(&hit.field.memo_paragraphs).unwrap_or("");
-                memo_json(hit, protected, reason, page)
+                memo_json(hit, protected, reason, page, parent)
             })
             .collect();
         format!("[{}]", entries.join(","))
@@ -1251,6 +1253,29 @@ impl DocumentCore {
         author: &str,
         text: &str,
     ) -> Result<String, MemoError> {
+        self.insert_memo_at_checked(
+            section_idx,
+            para_idx,
+            start_char_idx,
+            end_char_idx,
+            author,
+            text,
+            true,
+        )
+    }
+
+    /// 겹치는 메모를 막을지(`check_overlap`) 정해 본문에 메모를 단다. 댓글은 부모와 같은 기준 글에 단다.
+    #[allow(clippy::too_many_arguments)]
+    fn insert_memo_at_checked(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        start_char_idx: usize,
+        end_char_idx: usize,
+        author: &str,
+        text: &str,
+        check_overlap: bool,
+    ) -> Result<String, MemoError> {
         if self.document_protected() {
             return Err(MemoError::read_only("protected"));
         }
@@ -1297,7 +1322,7 @@ impl DocumentCore {
                 .paragraphs
                 .get_mut(para_idx)
                 .ok_or_else(|| MemoError::invalid_range("문단 위치를 찾을 수 없음"))?;
-            insert_memo_field_in_para(para, start_char_idx, end_char_idx, field)?;
+            insert_memo_field_in_para(para, start_char_idx, end_char_idx, field, check_overlap)?;
         }
 
         self.reflow_paragraph(section_idx, para_idx);
@@ -1322,6 +1347,7 @@ impl DocumentCore {
     }
 
     /// Insert a memo in a table cell or text box addressed by a cell path.
+    #[allow(clippy::too_many_arguments)]
     pub fn insert_memo_by_path(
         &mut self,
         section_idx: usize,
@@ -1331,6 +1357,31 @@ impl DocumentCore {
         end_char_idx: usize,
         author: &str,
         text: &str,
+    ) -> Result<String, MemoError> {
+        self.insert_memo_by_path_checked(
+            section_idx,
+            para_idx,
+            path,
+            start_char_idx,
+            end_char_idx,
+            author,
+            text,
+            true,
+        )
+    }
+
+    /// [`Self::insert_memo_by_path`]에서 겹치는 메모를 막을지 정한다.
+    #[allow(clippy::too_many_arguments)]
+    fn insert_memo_by_path_checked(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        path: &[(usize, usize, usize)],
+        start_char_idx: usize,
+        end_char_idx: usize,
+        author: &str,
+        text: &str,
+        check_overlap: bool,
     ) -> Result<String, MemoError> {
         if path.is_empty() {
             return Err(MemoError::invalid_range("cellPath가 비어 있음"));
@@ -1364,7 +1415,7 @@ impl DocumentCore {
             let para = self
                 .get_cell_paragraph_mut_by_path(section_idx, para_idx, path)
                 .map_err(|_| MemoError::invalid_range("문단 위치를 찾을 수 없음"))?;
-            insert_memo_field_in_para(para, start_char_idx, end_char_idx, field)?;
+            insert_memo_field_in_para(para, start_char_idx, end_char_idx, field, check_overlap)?;
         }
         let inner_para = path.last().map(|entry| entry.2).unwrap_or(0);
         self.reflow_cell_paragraph_by_path(section_idx, para_idx, path, inner_para);
@@ -1474,10 +1525,43 @@ impl DocumentCore {
 
     /// Remove a memo's field and body, keeping the anchor text.
     pub fn remove_memo(&mut self, id: u32) -> Result<String, MemoError> {
-        let hit = self.memo_hit(id)?;
+        self.memo_hit(id)?;
         if self.document_protected() {
             return Err(MemoError::read_only("protected"));
         }
+        // 삭제 전에 전체 자손을 확인한다. 손상된 부모 순환은 문서를 바꾸지 않고
+        // 거절하며, 깊은 댓글도 호출 스택을 늘리지 않고 자식부터 지운다.
+        let hits = self.memo_hits();
+        let parents = self.memo_parent_map(&hits);
+        let mut children: HashMap<u32, Vec<u32>> = HashMap::new();
+        for hit in &hits {
+            if let Some(&parent) = parents.get(&hit.id) {
+                children.entry(parent).or_default().push(hit.id);
+            }
+        }
+        let mut pending = vec![id];
+        let mut visited = HashSet::new();
+        let mut order = Vec::new();
+        while let Some(current) = pending.pop() {
+            if !visited.insert(current) {
+                return Err(MemoError::invalid_range("메모 댓글 부모 관계가 순환함"));
+            }
+            order.push(current);
+            if let Some(replies) = children.get(&current) {
+                pending.extend(replies.iter().copied());
+            }
+        }
+        for current in order.into_iter().rev() {
+            self.remove_memo_only(current)?;
+        }
+        Ok(r#"{"ok":true}"#.to_string())
+    }
+
+    fn remove_memo_only(&mut self, id: u32) -> Result<String, MemoError> {
+        self.document
+            .memo_parents
+            .retain(|(reply, parent)| *reply != id && *parent != id);
+        let hit = self.memo_hit(id)?;
         let location = hit
             .location
             .clone()
@@ -1539,13 +1623,97 @@ impl DocumentCore {
         Ok(r#"{"ok":true}"#.to_string())
     }
 
+    /// 댓글 번호 → 부모 메모 번호. 부모와 댓글이 모두 목록에 있는 관계만 쓴다.
+    fn memo_parent_map(&self, hits: &[MemoHit]) -> HashMap<u32, u32> {
+        if self.document.memo_parents.is_empty() {
+            return HashMap::new();
+        }
+        let ids: HashSet<u32> = hits.iter().map(|hit| hit.id).collect();
+        self.document
+            .memo_parents
+            .iter()
+            .filter(|(id, parent)| ids.contains(id) && ids.contains(parent) && id != parent)
+            .copied()
+            .collect()
+    }
+
+    /// `insertMemoReply`: 한컴 12.30 메모 풍선의 댓글. 부모 메모와 같은 기준 글에 메모를 달고
+    /// 부모 관계를 적는다. 댓글의 댓글은 한컴처럼 맨 위 메모의 댓글이 된다. `json` = insertMemo와 같다.
+    pub fn insert_memo_reply_json_native(
+        &mut self,
+        parent_id: u32,
+        json: &str,
+    ) -> Result<String, MemoError> {
+        let (author, text) = parse_memo_input(json)?;
+        let hits = self.memo_hits();
+        let parents = self.memo_parent_map(&hits);
+        let mut root = parent_id;
+        let mut visited = HashSet::new();
+        while let Some(&parent) = parents.get(&root) {
+            if !visited.insert(root) {
+                return Err(MemoError::invalid_range("메모 댓글 부모 관계가 순환함"));
+            }
+            root = parent;
+        }
+        let parent = hits
+            .into_iter()
+            .find(|hit| hit.id == root)
+            .ok_or_else(|| MemoError::not_found(parent_id))?;
+        let location = parent
+            .location
+            .clone()
+            .ok_or_else(|| MemoError::unsupported_place(parent.place))?;
+        let (start, end) = parent
+            .range
+            .ok_or_else(|| MemoError::unsupported_place("여러 문단에 걸친 메모"))?;
+        if parent.field.field_id == 0 {
+            return Err(MemoError::unsupported_place("번호가 없는 메모"));
+        }
+        let result = if location.nested_path.is_empty() {
+            self.insert_memo_at_checked(
+                location.section_index,
+                location.para_index,
+                start,
+                end,
+                &author,
+                &text,
+                false,
+            )?
+        } else {
+            let path = Self::flat_path(&location);
+            self.insert_memo_by_path_checked(
+                location.section_index,
+                location.para_index,
+                &path,
+                start,
+                end,
+                &author,
+                &text,
+                false,
+            )?
+        };
+        let id = serde_json::from_str::<serde_json::Value>(&result)
+            .ok()
+            .and_then(|value| value.get("id")?.as_u64())
+            .ok_or_else(|| MemoError::insert_failed("댓글 번호를 읽을 수 없음"))?
+            as u32;
+        self.document.memo_parents.push((id, root));
+        Ok(result)
+    }
+
     fn next_memo_identity(&self) -> Result<(u32, u32), MemoError> {
         let number = max_memo_number(&self.document).saturating_add(1).max(1);
         Ok((number, self.next_click_here_field_id()))
     }
 }
 
-fn memo_json(hit: &MemoHit, protected: bool, reason: &str, page: u32) -> String {
+fn memo_json(
+    hit: &MemoHit,
+    protected: bool,
+    reason: &str,
+    page: u32,
+    parent: Option<u32>,
+) -> String {
     let (editable, readonly_reason) = if protected {
         (false, "protected")
     } else if !reason.is_empty() {
@@ -1601,9 +1769,10 @@ fn memo_json(hit: &MemoHit, protected: bool, reason: &str, page: u32) -> String 
         None => ("null".to_string(), "null".to_string(), "null".to_string()),
     };
     format!(
-        "{{\"id\":{},\"index\":{},\"author\":\"{}\",\"date\":{},\"text\":\"{}\",\"place\":\"{}\",\"sectionIndex\":{},\"paraIndex\":{},\"startCharIdx\":{},\"endCharIdx\":{},\"path\":{},\"page\":{},\"editable\":{},\"readOnlyReason\":{}}}",
+        "{{\"id\":{},\"index\":{},\"parentId\":{},\"author\":\"{}\",\"date\":{},\"text\":\"{}\",\"place\":\"{}\",\"sectionIndex\":{},\"paraIndex\":{},\"startCharIdx\":{},\"endCharIdx\":{},\"path\":{},\"page\":{},\"editable\":{},\"readOnlyReason\":{}}}",
         hit.id,
         memo_number(field),
+        parent.map_or_else(|| "null".to_string(), |id| id.to_string()),
         json_escape(&memo_author(field)),
         date,
         json_escape(&memo_text(field)),
@@ -1758,6 +1927,7 @@ fn insert_memo_field_in_para(
     start: usize,
     end: usize,
     field: Field,
+    check_overlap: bool,
 ) -> Result<(), MemoError> {
     let text_len = para.text.chars().count();
     if start > end {
@@ -1766,7 +1936,7 @@ fn insert_memo_field_in_para(
     if end > text_len {
         return Err(MemoError::invalid_range("메모 범위가 문단 끝을 넘음"));
     }
-    if memo_overlaps(para, start, end) {
+    if check_overlap && memo_overlaps(para, start, end) {
         return Err(MemoError::overlap());
     }
     let gaps = raw_gaps(para)?;

@@ -6140,8 +6140,16 @@ impl LayoutEngine {
                                 );
                             }
                         }
-                    } else if !para.text.is_empty() {
-                        // 컨트롤 없는 텍스트 문단: vpos 기반 y 위치 사용
+                    }
+                    // 글이 있는 문단과 빈 문단은 글 영역에 vpos 기준으로 놓는다. 개체만 든 문단은
+                    // 글을 그리지 않고, 글자처럼 취급한 개체가 든 문단은 위 개체 배치가 맡는다.
+                    let lays_text = if has_controls {
+                        !para.text.is_empty()
+                            && !para.controls.iter().any(Control::is_treat_as_char_object)
+                    } else {
+                        true
+                    };
+                    if lays_text {
                         let mut comp =
                             crate::renderer::composer::compose_paragraph_in_context(para, styles);
                         self.substitute_hf_field_markers(&mut comp, page_number);
@@ -6169,20 +6177,21 @@ impl LayoutEngine {
                             None,
                             None, // 바탕쪽 컨텍스트 — wrap zone 무관
                         );
-                    } else {
-                        // 빈 문단: LINE_SEG vpos로 y 위치 갱신
-                        if let Some(first_ls) = para.line_segs.first() {
-                            let vpos_y =
-                                text_area.y + hwpunit_to_px(first_ls.vertical_pos, self.dpi);
-                            let lh = hwpunit_to_px(first_ls.line_height, self.dpi);
-                            let ls = hwpunit_to_px(first_ls.line_spacing, self.dpi);
-                            mp_y_offset = (vpos_y + lh + ls).max(mp_y_offset);
-                        }
                     }
                 }
                 // Hancom prepares master-page furniture through object order, not raw XML
                 // order: text-wrap plane, zOrder, then stable source index.
                 Self::sort_paper_render_nodes(&mut mp_node.children);
+                if mp.page_front {
+                    // 맨 위로 보내기 바탕쪽의 모든 노드를 본문 위 plane으로 보낸다.
+                    fn mark_front(node: &mut RenderNode) {
+                        if let Some(layer) = node.layer.as_mut().filter(|layer| layer.master_page) {
+                            layer.master_front = true;
+                        }
+                        node.children.iter_mut().for_each(mark_front);
+                    }
+                    mark_front(&mut mp_node);
+                }
                 tree.root.children.push(mp_node);
                 self.current_page_number.set(previous_page_number);
             }

@@ -1,0 +1,64 @@
+{
+  "passed": true,
+  "responseHashes": {
+    "js": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+    "wasm": "590a4d95848cd27ddfcfbb370521e43a6dc8a2cc8fd0409c262b11182168c5a1"
+  },
+  "checks": [
+    "screen-dim",
+    "print-dim-isolation",
+    "screen-restore",
+    "master-edit-preview",
+    "both-format-roundtrip",
+    "repeat-save",
+    "master-delete-preserves-memos",
+    "root-reply-and-cascade-delete"
+  ],
+  "editTarget": {
+    "ok": true,
+    "found": true,
+    "sectionIndex": 0,
+    "applyTo": 18
+  },
+  "images": {
+    "normal": {
+      "path": "actual-browser/normal.png",
+      "sha256": "042a05787d15bd60d332b1f266fc3bdff3ac67f460ed5a09dfc3b396aa7ac59f"
+    },
+    "dim": {
+      "path": "actual-browser/dim.png",
+      "sha256": "bfb677d41085429bc9368ae304ccbfb8b241089564224bca6e6670bbd625ed21"
+    },
+    "edit": {
+      "path": "actual-browser/edit.png",
+      "sha256": "cad9c88750e361d6a617728e24dc5c61d6d8a9345be3a2e6a5afc5196dbce730"
+    }
+  },
+  "fontPrograms": [
+    {
+      "sha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+      "families": [
+        "HCR Batang",
+        "함초롬바탕",
+        "HCRBatang"
+      ],
+      "weight": 400
+    },
+    {
+      "sha256": "0d355f9766ffd1c7ec7648260611ddea9e12ea3c610423e552d52b921fc0f29f",
+      "families": [
+        "HCR Batang",
+        "HCR Batang Bold",
+        "함초롬바탕",
+        "함초롬바탕 Bold",
+        "HCRBatang-Bold"
+      ],
+      "weight": 700
+    }
+  ],
+  "browser": "Chrome/157.0.8103.39",
+  "expected": {
+    "js": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+    "wasm": "590a4d95848cd27ddfcfbb370521e43a6dc8a2cc8fd0409c262b11182168c5a1"
+  }
+}

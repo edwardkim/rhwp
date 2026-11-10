@@ -117,7 +117,16 @@ where
     // parse_memo_shape가 만드는 extra_records(HWPTAG_MEMO_SHAPE, hwpx→hwp5
     // 변환 전용)는 여기서 쓰이지 않는다. 원본 verbatim splice로 hwpx→hwpx
     // 라운드트립 시 memoPr 소실을 막는다(#3xxx).
-    if let Some(memo_properties) = &doc.doc_info.memo_properties_xml {
+    // 원문이 없으면(HWP 출처, 메모 모양을 고친 문서) 메모 모양 레코드로 쓴다.
+    let memo_shapes = crate::model::memo_shape::memo_shapes(&doc.doc_info);
+    let memo_properties = match &doc.doc_info.memo_properties_xml {
+        Some(original) => Some(std::borrow::Cow::Borrowed(original.as_str())),
+        None if !memo_shapes.is_empty() => Some(std::borrow::Cow::Owned(
+            crate::model::memo_shape::memo_properties_xml(&memo_shapes),
+        )),
+        None => None,
+    };
+    if let Some(memo_properties) = memo_properties {
         w.get_mut()
             .write_all(memo_properties.as_bytes())
             .map_err(|e| SerializeError::XmlError(format!("memoProperties splice: {e}")))?;

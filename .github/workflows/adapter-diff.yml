@@ -39,7 +39,8 @@ jobs:
     name: adapter inter-diff preflight
     runs-on: ubuntu-latest
     needs: [trusted_postmerge_reuse]
-    timeout-minutes: 3
+    # 전체 이력 checkout도 포함한 상한이다. 느린 fetch가 본 검증까지 취소하지 않게 한다.
+    timeout-minutes: 10
     outputs:
       adapter_required: ${{ needs.trusted_postmerge_reuse.outputs.reuse == 'true' && 'false' || steps.finalize.outputs.adapter_required || 'true' }}
       reason: ${{ needs.trusted_postmerge_reuse.outputs.reuse == 'true' && needs.trusted_postmerge_reuse.outputs.reason || steps.finalize.outputs.reason || 'preflight-unavailable' }}
@@ -281,6 +282,8 @@ jobs:
       - name: Check out current-base merge tree inputs
         id: checkout-base-merge-tree
         if: ${{ steps.classify.outputs.adapter_required == 'pending-base-merge-tree' }}
+        # 전체 10분 중 판정·실패 시 full fallback·정리용 시간을 2분 남긴다.
+        timeout-minutes: 8
         continue-on-error: true
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

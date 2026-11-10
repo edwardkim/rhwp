@@ -1,0 +1,16 @@
+{
+  "rhwp.js": {
+    "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+    "paths": [
+      "pkg/rhwp.js",
+      "rhwp-studio/public/rhwp.js"
+    ]
+  },
+  "rhwp_bg.wasm": {
+    "sha256": "590a4d95848cd27ddfcfbb370521e43a6dc8a2cc8fd0409c262b11182168c5a1",
+    "paths": [
+      "pkg/rhwp_bg.wasm",
+      "rhwp-studio/public/rhwp_bg.wasm"
+    ]
+  }
+}

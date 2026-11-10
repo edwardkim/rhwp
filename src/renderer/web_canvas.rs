@@ -429,6 +429,8 @@ pub struct WebCanvasRenderer {
     pub show_paragraph_marks: bool,
     /// 조판부호 표시 여부
     pub show_control_codes: bool,
+    /// 바탕쪽을 흐리게 그릴지(편집 화면)
+    pub dim_master_pages: bool,
     /// 줌 스케일 (1.0 = 100%)
     scale: f64,
     /// 다층 레이어 필터 (Task #516, 기본 All 은 기존 동작 보존)
@@ -484,6 +486,7 @@ impl WebCanvasRenderer {
             height: canvas.height() as f64,
             show_paragraph_marks: false,
             show_control_codes: false,
+            dim_master_pages: false,
             scale: 1.0,
             layer_filter: LayerFilter::All,
             transparent_page_background: false,
@@ -1754,14 +1757,21 @@ impl WebCanvasRenderer {
                 } else {
                     None
                 };
-                if let Some([a, b, c, d, e, f]) = transform {
+                // 한컴 12.30 편집 화면의 바탕쪽 글은 검정이 회색 148로 보인다(불투명도 0.42).
+                let dim = self.dim_master_pages && matches!(group_kind, GroupKind::MasterPage);
+                if transform.is_some() || dim {
                     self.ctx.save();
+                }
+                if let Some([a, b, c, d, e, f]) = transform {
                     let _ = self.ctx.transform(a, b, c, d, e, f);
+                }
+                if dim {
+                    self.ctx.set_global_alpha(self.ctx.global_alpha() * 0.42);
                 }
                 for child in children {
                     self.render_layer_node(child, active_layer);
                 }
-                if transform.is_some() {
+                if transform.is_some() || dim {
                     self.ctx.restore();
                 }
             }

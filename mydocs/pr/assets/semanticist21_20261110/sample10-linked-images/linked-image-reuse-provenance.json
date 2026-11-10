@@ -1,0 +1,9 @@
+{
+  "audit_sha256": "51bb66e86452462c2cb6534fad503c0240b52bcbbcfbe228ceb6633e42821f7e",
+  "fresh_page1_png_sha256": "71997bcdd286be23fed8371943d2f4ccebbc0f9d6ab2e6247c089295e9c9c276",
+  "original_page_count": 763,
+  "corrected_page_count": 763,
+  "original_manifest_sha256": "fca18c2ae8f0d0e2cbd05dcbd76633b6ea4ed8c119097328ca34affcaf692595",
+  "fresh_page1_manifest_sha256": "1fd90e9ada4e77a067d69868bb4a90f5abe2e81005fdd5f6ca1bf769c909f21c",
+  "note": "외부 그림 3개가 쓰이는1쪽만 새로 캡처하고, 해당 참조가 없는2~763쪽 PNG를 보존하여 전763쪽을 정본으로 다시 계산했다."
+}

@@ -1,9 +1,15 @@
 // 검사 유형: 관계형 소스 가드의 위임 분류. PDF 일치율·실물 px 기대값은 비해당이다.
-// 주석 갱신: 2026-11-05 20:31 KST.
+// 주석 갱신: 2026-11-10 15:57 KST.
 /// 무효화하지 않는 `pub fn (&mut self)` 전수 목록 — (파일, 함수, 분류, 근거).
 ///
 /// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. 병합 `devel` 기준 46건(2026-08-30 동결).
 const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
+    (
+        "queries/memo_query.rs",
+        "remove_memo",
+        Exempt::DelegatesTo("remove_memo_only"),
+        "댓글 자손의 순환을 먼저 검사한 뒤 개별 삭제 helper에 위임한다. helper가 편집 구역의 raw_stream을 비운다.",
+    ),
     (
         "commands/compose_controls.rs",
         "insert_ruby_at",
@@ -380,6 +386,24 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         Exempt::SessionState,
         "dirty 구역을 다시 쪽으로 나눌 뿐(pagination·측정 캐시). 문서 IR 무변경 — \
          선행 편집 뮤테이터가 이미 무효화했다.",
+    ),
+    (
+        "queries/memo_query.rs",
+        "insert_memo_at",
+        Exempt::DelegatesTo("insert_memo_at_checked"),
+        "겹치는 메모를 막는 insertMemo 경로로 insert_memo_at_checked에 넘긴다. 구역 raw_stream 무효화는 그 함수가 한다.",
+    ),
+    (
+        "queries/memo_query.rs",
+        "insert_memo_by_path",
+        Exempt::DelegatesTo("insert_memo_by_path_checked"),
+        "겹치는 메모를 막는 insertMemoByPath 경로로 insert_memo_by_path_checked에 넘긴다. 구역 raw_stream 무효화는 그 함수가 한다.",
+    ),
+    (
+        "queries/memo_query.rs",
+        "insert_memo_reply_json_native",
+        Exempt::DelegatesTo("insert_memo_at_checked"),
+        "댓글을 부모와 같은 자리에 insert_memo_at_checked(표 칸이면 insert_memo_by_path_checked)로 단다. 두 함수 모두 구역 raw_stream을 무효화한다.",
     ),
     (
         "queries/memo_query.rs",

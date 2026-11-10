@@ -1151,6 +1151,19 @@ impl HwpDocument {
         self.invalidate_page_tree_cache();
     }
 
+    /// 편집 화면의 바탕쪽을 흐리게 그릴지 반환한다.
+    #[wasm_bindgen(js_name = getDimMasterPages)]
+    pub fn get_dim_master_pages(&self) -> bool {
+        self.dim_master_pages
+    }
+
+    /// 편집 화면(`renderPageToCanvas`)에서 바탕쪽을 흐리게 그릴지 설정한다. 한컴은 편집 화면의
+    /// 바탕쪽을 본문보다 흐리게 보이고 미리 보기·인쇄에서는 본래 모양으로 그린다.
+    #[wasm_bindgen(js_name = setDimMasterPages)]
+    pub fn set_dim_master_pages(&mut self, enabled: bool) {
+        self.dim_master_pages = enabled;
+    }
+
     #[wasm_bindgen(js_name = setClipEnabled)]
     pub fn set_clip_enabled(&mut self, enabled: bool) {
         self.clip_enabled = enabled;
@@ -1254,6 +1267,7 @@ impl HwpDocument {
             renderer.set_hft_outline_fonts(&self.hft_outline_fonts);
             renderer.show_paragraph_marks = self.show_paragraph_marks;
             renderer.show_control_codes = self.show_control_codes;
+            renderer.dim_master_pages = self.dim_master_pages;
             renderer.set_scale(scale);
             renderer.render_page(&tree).map_err(JsValue::from)?;
             Ok(())
@@ -2322,6 +2336,45 @@ impl HwpDocument {
         apply_to: u8,
     ) -> Result<String, JsValue> {
         self.create_header_footer_native(section_idx as usize, is_header, apply_to)
+            .map_err(|e| e.into())
+    }
+
+    /// 바탕쪽(양 쪽·짝수 쪽·홀수 쪽) 생성 — 빈 문단 1개 포함.
+    ///
+    /// options: `{"applyTo":0|1|2}`. 반환: `{"ok":true,"applyTo":16+n}`.
+    /// 바탕쪽 문단은 머리말·꼬리말 편집 API에 그 `applyTo`(16 + 바탕쪽 번호)를 주어 편집한다.
+    #[wasm_bindgen(js_name = createMasterPage)]
+    pub fn create_master_page(
+        &mut self,
+        section_idx: u32,
+        options_json: &str,
+    ) -> Result<String, JsValue> {
+        self.create_master_page_native(section_idx as usize, options_json)
+            .map_err(|e| e.into())
+    }
+
+    /// 바탕쪽 삭제. `apply_to`는 16 + 바탕쪽 번호.
+    #[wasm_bindgen(js_name = deleteMasterPage)]
+    pub fn delete_master_page(
+        &mut self,
+        section_idx: u32,
+        apply_to: u8,
+    ) -> Result<String, JsValue> {
+        self.delete_master_page_native(section_idx as usize, apply_to)
+            .map_err(|e| e.into())
+    }
+
+    /// 구역의 바탕쪽 목록. 반환: `{"ok":true,"masterPages":[{index,applyTo,isExtension,overlap,replaceBase,pageNumber,paraCount}]}`
+    #[wasm_bindgen(js_name = getMasterPages)]
+    pub fn get_master_pages(&self, section_idx: u32) -> Result<String, JsValue> {
+        self.get_master_pages_native(section_idx as usize)
+            .map_err(|e| e.into())
+    }
+
+    /// 쪽에서 고칠 바탕쪽. 반환: `{"ok":true,"found":true,"sectionIndex":N,"applyTo":16+n}` 또는 `{"ok":true,"found":false}`
+    #[wasm_bindgen(js_name = getMasterPageEditTarget)]
+    pub fn get_master_page_edit_target(&self, page_num: u32) -> Result<String, JsValue> {
+        self.get_master_page_edit_target_native(page_num)
             .map_err(|e| e.into())
     }
 
@@ -6069,8 +6122,8 @@ impl HwpDocument {
 
     /// 문서의 메모를 문서 순서대로 반환한다.
     ///
-    /// 반환: `[{id,index,author,date,text,place,sectionIndex,paraIndex,
-    /// startCharIdx,endCharIdx,path,page,editable,readOnlyReason}]`
+    /// 반환: `[{id,index,parentId,author,date,text,place,sectionIndex,paraIndex,
+    /// startCharIdx,endCharIdx,path,page,editable,readOnlyReason}]`. parentId는 댓글의 부모 메모 번호다.
     #[wasm_bindgen(js_name = getMemoList)]
     pub fn get_memo_list(&self) -> String {
         self.get_memo_list_json()
@@ -6137,6 +6190,36 @@ impl HwpDocument {
     pub fn remove_memo(&mut self, id: u32) -> Result<String, JsValue> {
         self.core
             .remove_memo(id)
+            .map_err(|e| JsValue::from_str(&e.to_json()))
+    }
+
+    /// 메모에 댓글을 단다(한컴 12.30 메모 풍선의 댓글). 부모와 같은 기준 글에 메모를 달고 관계를 적는다.
+    /// 댓글의 댓글은 맨 위 메모의 댓글이 된다. `json` = insertMemo와 같다. 지운 부모의 댓글은 함께 지운다.
+    ///
+    /// 반환: `{"ok":true,"id":N,"index":N}`. getMemoList의 `parentId`가 부모 메모 번호다.
+    #[wasm_bindgen(js_name = insertMemoReply)]
+    pub fn insert_memo_reply(&mut self, parent_id: u32, json: &str) -> Result<String, JsValue> {
+        self.core
+            .insert_memo_reply_json_native(parent_id, json)
+            .map_err(|e| JsValue::from_str(&e.to_json()))
+    }
+
+    /// 구역이 쓰는 메모 모양(한컴 입력 > 메모 > 메모 모양).
+    ///
+    /// 반환: `{width,lineType,lineWidth,lineColor,fillColor,activeColor}`. 너비는 HWPUNIT,
+    /// 선 종류는 0(선 없음)~11(삼중선), 선 굵기는 한컴 굵기 목록(0.1~5.0mm, 0.5mm 없음) 순번이다.
+    #[wasm_bindgen(js_name = getMemoShape)]
+    pub fn get_memo_shape(&self, section_idx: u32) -> Result<String, JsValue> {
+        self.core
+            .get_memo_shape_json(section_idx as usize)
+            .map_err(|e| JsValue::from_str(&e.to_json()))
+    }
+
+    /// 메모 모양을 한 구역(`section_idx`) 또는 모든 구역(`-1`)에 준다. `json`은 getMemoShape 형식이다.
+    #[wasm_bindgen(js_name = setMemoShape)]
+    pub fn set_memo_shape(&mut self, section_idx: i32, json: &str) -> Result<String, JsValue> {
+        self.core
+            .set_memo_shape_json(usize::try_from(section_idx).ok(), json)
             .map_err(|e| JsValue::from_str(&e.to_json()))
     }
 

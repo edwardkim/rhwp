@@ -1,0 +1,101 @@
+{
+  "complete": true,
+  "base": "411d4a91fd692f88fdeebd6b323eca0b295318b1",
+  "head": "6eccab18f3458090bb8c037c8040f49c28b102f7",
+  "started_at": "2026-11-10T08:12:57.897348+00:00",
+  "steps": [
+    {
+      "name": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "complete": true,
+      "pid": 97726,
+      "exit_code": 0
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "complete": true,
+      "pid": 97899,
+      "exit_code": 0
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "411d4a91fd692f88fdeebd6b323eca0b295318b1"
+      ],
+      "complete": true,
+      "pid": 2383,
+      "exit_code": 0
+    },
+    {
+      "name": "unit-tiers",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "411d4a91fd692f88fdeebd6b323eca0b295318b1"
+      ],
+      "complete": true,
+      "pid": 2514,
+      "exit_code": 0
+    },
+    {
+      "name": "focused",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/semanticist21-integration-20261110/minimal-font.sb",
+        "env",
+        "-u",
+        "RHWP_FONT_PATH",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--build-jobs",
+        "8",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "--test",
+        "regression_suite_004",
+        "--test",
+        "regression_suite_010",
+        "--test",
+        "regression_suite_014",
+        "--test",
+        "regression_suite_018",
+        "--test",
+        "regression_suite_026",
+        "--test",
+        "regression_suite_027",
+        "-E",
+        "test(/(^|::)issue_8020_master_page_edit::/) | test(/(^|::)memo_shape_and_replies::/) | test(/(^|::)master_page_memo_section_slots::/) | test(/(^|::)memo_reply_graph_safety::/) | test(/(^|::)issue_8863_delete_preserves_existing_shapes::/) | test(/(^|::)issue_2724_passthrough_invalidation_guard::/)"
+      ],
+      "complete": true,
+      "pid": 9131,
+      "exit_code": 0
+    }
+  ],
+  "success": true,
+  "finished_at": "2026-11-10T08:24:40.203312+00:00"
+}

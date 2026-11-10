@@ -1,0 +1,314 @@
+{
+  "head": "265a268ca3e37153ade6c1debf479b81b9903721",
+  "files": [
+    {
+      "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+      "bytes": 10328,
+      "sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "bytes": 6848,
+      "sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx",
+      "bytes": 140149,
+      "sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law_hancom2018_print.pdf",
+      "bytes": 287952,
+      "sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+      "bytes": 4692840,
+      "sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+      "bytes": 4692840,
+      "sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+      "bytes": 1830277,
+      "sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
+      "bytes": 2234015,
+      "sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+      "bytes": 2234018,
+      "sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "pdf/issue7642-failed-inputs-followup-20261011/20099369_yeongwol_forms-2020.pdf",
+      "bytes": 91696,
+      "sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "pdf/issue8020/master_even_only-hancom-12.30-mac.pdf",
+      "bytes": 8687,
+      "sha256": "635fc0d34d09efdd5972dc37f51462628f8c283bd111bfe2d7c968006e7aa771",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "pdf/issue8020/master_last_optional_overlap-hancom-12.30-mac.pdf",
+      "bytes": 9632,
+      "sha256": "974d40c17f65372f49c2b6822325716444ad7f3f95d363722ae3e307dc9dfa97",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "pdf/issue8109/print/body-list-typed-hwp-2020.pdf",
+      "bytes": 19110,
+      "sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "pdf/issue8109/print/control-styles-hwp-2020.pdf",
+      "bytes": 43664,
+      "sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "pdf/issue8371/hwp3-sample10-2020.pdf",
+      "bytes": 96185197,
+      "sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "pdf/pic-crop-01-2022.pdf",
+      "bytes": 19211,
+      "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "pdf/pr8040/exam-social-insert-2020.pdf",
+      "bytes": 641866,
+      "sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "pdf/pr8040/exam-social-insert-delete-2020.pdf",
+      "bytes": 641867,
+      "sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+      "bytes": 11752,
+      "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+      "bytes": 625577,
+      "sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "pdf/shape-group-02-hwp-2020.pdf",
+      "bytes": 89651,
+      "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "bytes": 237518,
+      "sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "samples/2025 행정업무운영 편람(최종).hwp",
+      "bytes": 10687488,
+      "sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+      "bytes": 13639865,
+      "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "bytes": 51712,
+      "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "samples/hwp3-sample10.hwp",
+      "bytes": 945360,
+      "sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5-2022.hwp",
+      "bytes": 3048448,
+      "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5-2024.hwp",
+      "bytes": 3044864,
+      "sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5.hwpx",
+      "bytes": 3061900,
+      "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "samples/issue5699/20099369_yeongwol_forms.hwp",
+      "bytes": 20800,
+      "sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "samples/issue8020/master_even_only.hwp",
+      "bytes": 13312,
+      "sha256": "7b9b3e6352b2983b90ed23ece3eced0edb3eccd280c2febd3c6f458d64a9a344",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "samples/issue8020/master_last_optional_overlap.hwp",
+      "bytes": 13312,
+      "sha256": "2b7b948e67eef305e67eb65cafa089885a9669433c869cc841352aadfc7ed201",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "samples/pic-crop-01.hwp",
+      "bytes": 131072,
+      "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "samples/pr8040/exam-social-insert-delete.hwp",
+      "bytes": 514560,
+      "sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "samples/pr8040/exam-social-insert.hwp",
+      "bytes": 514560,
+      "sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "samples/re-03-latin-only-hancom.hwp",
+      "bytes": 9216,
+      "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "samples/shape-group-02.hwp",
+      "bytes": 16384,
+      "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "samples/task3307/issue3307_outline_number.hwpx",
+      "bytes": 57890,
+      "sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp",
+      "bytes": 4096,
+      "sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp",
+      "bytes": 4096,
+      "sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "tests/fixtures/memo_hancom/reply.hwp",
+      "bytes": 32256,
+      "sha256": "19433624d08cb65d9788341a960b2754afef00ad8666ad80ddc516f601912f04",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "tests/fixtures/memo_hancom/reply.hwpx",
+      "bytes": 34269,
+      "sha256": "c2d2736b5f27830b552b27bfb8e46ee5c6c9991e11e8771a2479cb0e0c70e198",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "tests/fixtures/memo_hancom/shape-new-section.hwp",
+      "bytes": 22528,
+      "sha256": "8de512b70fce5017fd3f0b1ec29f800c9f3aae8ee7a0e78218e0c92c34265bf9",
+      "committed": true,
+      "matches_commit": true
+    },
+    {
+      "path": "tests/fixtures/memo_hancom/shape-new-section.hwpx",
+      "bytes": 25955,
+      "sha256": "1db5148fd3e7a008ca3899c40b9a9347f36212a2aec07dd57d48e1a4efc71d58",
+      "committed": true,
+      "matches_commit": true
+    }
+  ],
+  "all_match": true
+}

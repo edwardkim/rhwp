@@ -322,6 +322,14 @@ where
     {
         z.write_deflated(crate::model::hyperlink_format::HWPX_ENTRY, &bytes)?;
     }
+    // 메모 댓글 관계(한컴 Contents/memoExtended.xml). 문서에 남은 메모끼리만 쓴다.
+    let memo_links = crate::model::memo_extended::live_links(doc);
+    if !memo_links.is_empty() {
+        z.write_deflated(
+            crate::model::memo_extended::HWPX_ENTRY,
+            crate::model::memo_extended::encode_hwpx(&memo_links).as_bytes(),
+        )?;
+    }
 
     // 7. META-INF/container.rdf — header + every section part.
     // Hancom uses this RDF graph alongside content.hpf; a stale one-section
@@ -480,12 +488,13 @@ where
             is_embedded: entry.is_embedded,
         });
     }
-    let content_hpf = content::write_content_hpf_with_scripts(
+    let content_hpf = content::write_content_hpf_with_parts(
         &section_hrefs,
         &content_bin_entries,
         &master_items,
         doc.hwpx_aux_entry("Contents/content.hpf"),
         &converted_script_items,
+        !memo_links.is_empty(),
     )?;
     z.write_deflated("Contents/content.hpf", &content_hpf)?;
 
