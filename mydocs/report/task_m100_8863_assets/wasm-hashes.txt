@@ -1,0 +1,4 @@
+cf5a2467b1fb8e357dc7d72c541a766bee1d2f9b16aa4482933502e0bfd0c819  pkg/rhwp_bg.wasm
+cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed  pkg/rhwp.js
+cf5a2467b1fb8e357dc7d72c541a766bee1d2f9b16aa4482933502e0bfd0c819  rhwp-studio/public/rhwp_bg.wasm
+cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed  rhwp-studio/public/rhwp.js
