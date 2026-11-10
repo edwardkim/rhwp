@@ -1,5 +1,10 @@
 # seo-rii P111–P116 누적 PR 검토 계획
 
+**현재 상태: 승인한 메인터너 보정과 필수 로컬 검증 완료.** 원 head 6개는 그대로 보존했고,
+최신 base `411d4a91fd`를 통합한 제품 source `857594293f`에서 실제 Native·최적화 fresh WASM·
+GTK 검증을 완료했다. 아래 진단 시점의 보류 기록은 수정 전 근거이며 현재 미해결 결함을 뜻하지 않는다.
+개별 판정은 `메인터너 보정 후 수용 가능`이고, 원격 처리 승인은 아직 별도다.
+
 ## 범위와 승인
 
 2026-11-10 작업지시자의 “seo-rii 기여자의 PR 처리를 시작합니다.”에 따른 접수·로컬 검토다.
@@ -109,9 +114,8 @@ Native `4f6bc33f8e3940947f3d942cdb3af26bb1d6f7cb` 빌드로 재현했다. 두 so
 3. Linux portable·실제 Flutter SDK compile/link·GLES 상태·GTK 표시를 재실행하고 관련 Dart
    계약·analyze를 재검증한다. 변경된 실제 화면을 직접 판독해 정식 Markdown·대표 PNG로 보존한다.
 
-현재 판정은 **선행 #8869의 실행 검출 결함 때문에 누적 후보 머지 보류**다. 원시 로그는 ignored
-output의 `multipage-capture`와 `multipage-wire-capture`에만 보관한다. 새로운 제품 보정은 아직
-적용하지 않았으며 원격 push·공개 댓글·PR·merge도 수행하지 않았다.
+진단 시점의 판정은 **선행 #8869의 실행 검출 결함 때문에 누적 후보 머지 보류**였다. 원시 로그는 ignored
+output의 `multipage-capture`와 `multipage-wire-capture`에만 보관한다. 당시는 제품 보정 승인 전이었으며 원격 push·공개 댓글·PR·merge는 수행하지 않았다.
 
 ### 메인터너 보정 승인과 집중 검사
 
@@ -125,7 +129,7 @@ Linux portable의 실제 `Shared::submit/status` 검사 18건·292조건과 공�
 통과했다. 새 관계형 검사는 여러 페이지·중복 placement의 단일 lease·stale 거절 뒤 receipt 보존·
 다음 인수로 교체·close 뒤 지연 응답 조정과 한 번 해제를 확인한다. 격리한 임시 사본에서 단일
 target의 receipt commit만 제거하면 컴파일은 성공하고 새 receipt assertion이 실제 실패했다.
-실제 SDK·GTK 다중 페이지와 정상 타일 재검증은 이 보정 code head를 고정한 뒤 계속한다.
+이 보정 code head를 고정해 실제 SDK·GTK 다중 페이지와 정상 타일 재검증을 계속했고 아래 결과를 확인했다.
 
 ### 실제 경로 재검증과 새 devel
 
@@ -138,5 +142,21 @@ trace ring·producerReady·개인정보 제외, 종료 후 Native 9개 계수 0�
 제출 전 조회에서 원격 devel이 `411d4a91fd`(#8899, 원 #8863)로 전진했다. 제품 차이는
 `Paragraph` 삭제 전에 원래 중복 글자 모양의 유효 ID를 보존하는 17줄이며 Flutter/Native ABI에는
 차이가 없다. 병합 시뮬레이션은 exit 0이다. 이미 실행한 소비 source·Native 입력을 새 Rust source에서
-빌드했다고 바꾸지 않는다. 현재 진행 중인 WASM 최적화를 마친 뒤 이 devel을 통합하고, 새 삭제
-계약과 해당 입력·출력을 보존하는 최종 검증을 수행한다. 본인 계정의 열린 PR은 조회 결과 0건이다.
+빌드했다고 바꾸지 않았다. 당시 진행 중인 WASM 최적화를 마친 뒤 이 devel을 통합하고, 새 삭제
+계약과 해당 입력·출력을 보존하는 최종 검증을 수행했다. 본인 계정의 열린 PR은 조회 결과 0건이다.
+
+### 최종 로컬 완료
+
+최신 devel 통합 뒤 Native·CLI를 실제 `release-test` profile로 재빌드했고, 새로운 Native로
+다중 페이지·CPU 대조·명시적 복구·실제 창 resize·두 타일·이동 bundle 및 최소 글꼴의 연동
+6개 검사를 완료했다. 새 base의 #8863 정식 집중 회귀 8개와 실제 WASM 모델·저장 API의
+잔여 10,456문자 굵기·색상 보존도 통과했다. 최적화 fresh WASM source는 동일한 `857594293f`다.
+
+독립 한컴 Print와 Native/fresh WASM 각각 7쪽의 전쪽 raw 최저는 100.00%다. 같은 배율의
+6쪽 gradient와 1쪽 bitmap·회색 계조를 직접 판독했고, 수정 전후 실제 화면과 기본 생산자 입력의
+동일성도 확인했다. 전체 TSV 원본·최종 대표 PNG·명령·해시·수치·플랫폼 한계는
+[최종 검증 원장](assets/seo-rii-20261110/README.md)에 보존했다.
+
+새 diff는 Flutter 소비자이며 Rust·조판·WASM 생산자 수정은 없다. 이번에 실행하지 않은 Rust
+전체 회귀·광범위 lint를 완료로 보고하거나 원 PR의 CI를 새 제출 head CI로 바꾸지 않는다.
+원격 처리 범위는 [구체적인 실행안](assets/seo-rii-20261110/remote-action-plan.md)의 별도 승인 뒤다.
