@@ -1529,16 +1529,35 @@ impl DocumentCore {
         if self.document_protected() {
             return Err(MemoError::read_only("protected"));
         }
-        // 한컴처럼 부모 메모를 지우면 댓글도 지운다.
-        let replies: Vec<u32> = self
-            .memo_parent_map(&self.memo_hits())
-            .into_iter()
-            .filter(|(_, parent)| *parent == id)
-            .map(|(reply, _)| reply)
-            .collect();
-        for reply in replies {
-            self.remove_memo(reply)?;
+        // 삭제 전에 전체 자손을 확인한다. 손상된 부모 순환은 문서를 바꾸지 않고
+        // 거절하며, 깊은 댓글도 호출 스택을 늘리지 않고 자식부터 지운다.
+        let hits = self.memo_hits();
+        let parents = self.memo_parent_map(&hits);
+        let mut children: HashMap<u32, Vec<u32>> = HashMap::new();
+        for hit in &hits {
+            if let Some(&parent) = parents.get(&hit.id) {
+                children.entry(parent).or_default().push(hit.id);
+            }
         }
+        let mut pending = vec![id];
+        let mut visited = HashSet::new();
+        let mut order = Vec::new();
+        while let Some(current) = pending.pop() {
+            if !visited.insert(current) {
+                return Err(MemoError::invalid_range("메모 댓글 부모 관계가 순환함"));
+            }
+            order.push(current);
+            if let Some(replies) = children.get(&current) {
+                pending.extend(replies.iter().copied());
+            }
+        }
+        for current in order.into_iter().rev() {
+            self.remove_memo_only(current)?;
+        }
+        Ok(r#"{"ok":true}"#.to_string())
+    }
+
+    fn remove_memo_only(&mut self, id: u32) -> Result<String, MemoError> {
         self.document
             .memo_parents
             .retain(|(reply, parent)| *reply != id && *parent != id);
@@ -1628,7 +1647,14 @@ impl DocumentCore {
         let (author, text) = parse_memo_input(json)?;
         let hits = self.memo_hits();
         let parents = self.memo_parent_map(&hits);
-        let root = parents.get(&parent_id).copied().unwrap_or(parent_id);
+        let mut root = parent_id;
+        let mut visited = HashSet::new();
+        while let Some(&parent) = parents.get(&root) {
+            if !visited.insert(root) {
+                return Err(MemoError::invalid_range("메모 댓글 부모 관계가 순환함"));
+            }
+            root = parent;
+        }
         let parent = hits
             .into_iter()
             .find(|hit| hit.id == root)
