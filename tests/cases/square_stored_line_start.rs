@@ -6,7 +6,7 @@
 //! 추가 관계형 검사: HWPX 16쪽의 균일·혼합 후속 줄은 원본 cs/sw와 같은 lane을 소비한다.
 //! 2026-11-10 보정 후 같은 16쪽 Native/fresh WASM 2px raw: 100.00/100.00%. 같은 쪽 review·overlay 판독 후 소속 검사 추가.
 //! 관계형 회귀 — 어울림(Square) 그림 문단의 글 줄은 저장 `cs`·`sw`를 그대로 쓴다.
-//! 주석 갱신: 2026-11-11 00:05 KST
+//! 주석 갱신: 2026-11-11 01:06 KST
 //! 측정일: 2026-11-07. raw = `silhouette_raw_match_percent`, 96 DPI, 독립 한컴 Print PDF.
 //! 측정 값은 아래 표에 원본별로 적고, 정식 증거는 `mydocs/pr/assets/issue_8730/`에 둔다.
 //!
@@ -327,7 +327,9 @@ fn uniform_and_mixed_successor_rows_keep_their_source_picture_lane() {
 
 // 2026-11-11 00:44 KST 추가 관계형 검사. 고용서비스 보고서 79쪽의 독립 Print와
 // Native 94.23%에서 본문이 그림 위로 흐르는 실제 차이를 확인했다. 줄 수·원본 차선·
-// 그림과의 비겹침을 검사하며 절대 PDF px를 고정하지 않는다. 보정 후 수치는 증적에 갱신한다.
+// 그림과의 비겹침을 검사하며 절대 PDF px를 고정하지 않는다. 보정 후 같은 79쪽의
+// Native/fresh WASM 2px raw는 각각 100.00/100.00%. 인접78·80쪽도 양쪽100.00%.
+// 증거: mydocs/pr/assets/planet6897_clean19_20261110/pr8734/maintainer/paragraph-picture-successor/.
 const EMPLOYMENT: &str = "tests/fixtures/pr8734/employment_service_interim_report.hwp";
 
 fn employment_source_frame(

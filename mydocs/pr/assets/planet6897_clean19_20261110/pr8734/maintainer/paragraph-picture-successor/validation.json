@@ -10,7 +10,7 @@
   "native_after": "100.00",
   "direct_reading": "본문 9줄과 뒤 문단 2줄이 원본 좁은 차선에 남고 그림·캡션과 겹치지 않는다. 인접78/80쪽도100.00%. 100.00%는 2px 실루엣이며 RGB 동일을 뜻하지 않는다.",
   "direct_reading_at": "2026-11-11T00:54:34.378242+09:00",
-  "wasm_status": "pending fresh build and capture",
+  "wasm_status": "fresh WASM focus complete and directly read",
   "before_tests": {
     "passed": 8,
     "failed": 1,
@@ -24,10 +24,14 @@
   "files": {
     "before-native-pdf-079.png": "19ae760afee5a642536ac688077a7daf66ea0001aabda5c9af42532ab8b3915d",
     "after-native-pdf-079.png": "19ae760afee5a642536ac688077a7daf66ea0001aabda5c9af42532ab8b3915d",
+    "after-wasm-raw-079.png": "db0084c2aafca7e4f98686d5b8dbb4f3a5e6b0d75bffb623ae464fafa4d690ad",
     "after-native-review-079.png": "a5b6e9e61f1a9c73a84c29aa29d76ca301d1fe37b001528a310817fe8d935cec",
+    "after-wasm-review-079.png": "46266fb63623d6de4acd66c8603bd3fd8695c4bbfa86c8f3d130fb87b9cb7877",
     "after-native-overlay-079.png": "66c4768b111c2c5fed377f4493cea90117be85c3db4cb9f7b18742b12479ecae",
     "before-native-raw-079.png": "6655488b8351c506aec210b7b10009ee1e865ea0c94049daf4072dafe01c39d0",
     "after-native-raw-079.png": "46c57ef136bcb19850d4ef9e266735f32f85a39842159c9d15a99af882504132",
+    "after-wasm-overlay-079.png": "a1ead8057c4a525dbb0d6cabeaca0211bcb3629a5c4068f23cb395fe3b26876c",
+    "after-wasm-pdf-079.png": "19ae760afee5a642536ac688077a7daf66ea0001aabda5c9af42532ab8b3915d",
     "before-native-overlay-079.png": "e5eed3e0ce9db8c27cf66de7c8a714796011e3aafa1991393f60aa16f6fc9ed6",
     "before-native-review-079.png": "ab07045ccc96b15a988f490cb6bb17d9b0f2ee53968ba093f6e726779eb8e63d"
   },
@@ -77,5 +81,54 @@
     },
     "source_diff_sha256": "2c6584f12fcbcdda2f23c275ad91fb10a24066a4dc8d790579f90752a4c9f67e",
     "binary_sha256": "6ad28f665d9da971b5cdf0e691977268c5156bf7f5a66ee7f81a8c4f90ec441d"
-  }
+  },
+  "code_commit": "21d62361fa670858e63fdfc475c236f112e20a3d",
+  "wasm_after": "100.00",
+  "wasm_files": {
+    "rhwp.js": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+    "rhwp_bg.wasm": "bf23f3629528d45cdc6a223d148e1aa37e1887a6fb4d25b40b41560369b9a851"
+  },
+  "studio_public_matches": {
+    "rhwp.js": true,
+    "rhwp_bg.wasm": true
+  },
+  "whole_document_validation": "pending new Native and fresh WASM 90-page results; focus is 78/79/80 only",
+  "direct_readings": [
+    {
+      "backend": "native",
+      "page": 79,
+      "code_commit": "21d62361fa670858e63fdfc475c236f112e20a3d",
+      "raw_percent": "100.00",
+      "directly_read": [
+        "review",
+        "overlay"
+      ],
+      "note": "본문9줄·후속2줄이 그림 왼쪽 차선에 남고 그림 및 캡션과 겹치지 않음. 표·각주·머리말·꼬리말·내용 소속 보존. 2px 실루엣100.00%이며 RGB 동일을 주장하지 않음.",
+      "read_at": "2026-11-11T00:59:53.085850+09:00",
+      "sha256": {
+        "raw": "46c57ef136bcb19850d4ef9e266735f32f85a39842159c9d15a99af882504132",
+        "pdf": "19ae760afee5a642536ac688077a7daf66ea0001aabda5c9af42532ab8b3915d",
+        "review": "a5b6e9e61f1a9c73a84c29aa29d76ca301d1fe37b001528a310817fe8d935cec",
+        "overlay": "66c4768b111c2c5fed377f4493cea90117be85c3db4cb9f7b18742b12479ecae"
+      }
+    },
+    {
+      "backend": "wasm",
+      "page": 79,
+      "code_commit": "21d62361fa670858e63fdfc475c236f112e20a3d",
+      "raw_percent": "100.00",
+      "directly_read": [
+        "review",
+        "overlay"
+      ],
+      "note": "본문9줄·후속2줄이 그림 왼쪽 차선에 남고 그림 및 캡션과 겹치지 않음. 표·각주·머리말·꼬리말·내용 소속 보존. 2px 실루엣100.00%이며 RGB 동일을 주장하지 않음.",
+      "read_at": "2026-11-11T00:59:53.096854+09:00",
+      "sha256": {
+        "raw": "db0084c2aafca7e4f98686d5b8dbb4f3a5e6b0d75bffb623ae464fafa4d690ad",
+        "pdf": "19ae760afee5a642536ac688077a7daf66ea0001aabda5c9af42532ab8b3915d",
+        "review": "46266fb63623d6de4acd66c8603bd3fd8695c4bbfa86c8f3d130fb87b9cb7877",
+        "overlay": "a1ead8057c4a525dbb0d6cabeaca0211bcb3629a5c4068f23cb395fe3b26876c"
+      }
+    }
+  ]
 }
