@@ -11,21 +11,21 @@
     2
   ],
   "missing_pages": [],
-  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8892-36384898-unstored-next-float-bottom-margin/silhouette.tsv",
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8892-36384898-unstored-next-float-bottom-margin/silhouette.tsv",
   "radius_px": 2,
   "inputs": [
     {
       "page": 1,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8892-36384898-unstored-next-float-bottom-margin/rhwp_png/rhwp_001.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8892-36384898-unstored-next-float-bottom-margin/rhwp_png/rhwp_001.png",
       "rhwp_sha256": "1639633d00fe6b166d3ba95c8957a8cab7a6fda07e878d9ae80ad40d6a9d9b75",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8892-36384898-unstored-next-float-bottom-margin/pdf_png/pdf-001.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8892-36384898-unstored-next-float-bottom-margin/pdf_png/pdf-001.png",
       "pdf_sha256": "bb7d1fe93374dd26cebca7a727e44c68de4e88e8273f4eef3b438fe5a1347161"
     },
     {
       "page": 2,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8892-36384898-unstored-next-float-bottom-margin/rhwp_png/rhwp_002.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8892-36384898-unstored-next-float-bottom-margin/rhwp_png/rhwp_002.png",
       "rhwp_sha256": "2533f11784c5b56defe870119b706ef3f61f60643d340913a6fc1c7f5d8cb092",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8892-36384898-unstored-next-float-bottom-margin/pdf_png/pdf-002.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8892-36384898-unstored-next-float-bottom-margin/pdf_png/pdf-002.png",
       "pdf_sha256": "98d464047cd6e01829ca4d9da6ecf44467dec42ba118fe21e7c9f8cc6b7efb52"
     }
   ],
@@ -80,7 +80,7 @@
       "path": "pdf/issue8888/36384898-unstored-next-float-bottom-margin-2020.pdf",
       "sha256": "10b43e69fb22145c63c432f4ad518115140ceea2629e215d288cc1a41b5ff180"
     },
-    "git_head": "410f33c8cf5f6a504f62cc3e8c8c71e3603f734b",
+    "git_head": "21d62361fa670858e63fdfc475c236f112e20a3d",
     "sweep_script": {
       "path": "scripts/visual_sweep.py",
       "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
@@ -116,9 +116,9 @@
     },
     "comparison_profile": "print",
     "rhwp_binary": {
-      "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-native",
-      "path": "output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-native",
-      "sha256": "42abdf7eed3565b4142313e3a931eed8866fdbdabc71a2f3621e90935bc1e519"
+      "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/employment79-v5-native",
+      "path": "output/pr-review/planet6897-clean20-integration-20261110/employment79-v5-native",
+      "sha256": "6ad28f665d9da971b5cdf0e691977268c5156bf7f5a66ee7f81a8c4f90ec441d"
     },
     "native_webfont_fallback": {
       "registry_sha256": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
@@ -4971,5 +4971,5 @@
       ]
     }
   },
-  "checkpoint": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8892-36384898-unstored-next-float-bottom-margin/silhouette-checkpoint.json"
+  "checkpoint": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8892-36384898-unstored-next-float-bottom-margin/silhouette-checkpoint.json"
 }

@@ -135,455 +135,455 @@
     64
   ],
   "missing_pages": [],
-  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/silhouette.tsv",
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/silhouette.tsv",
   "radius_px": 2,
   "inputs": [
     {
       "page": 1,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_001.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_001.png",
       "rhwp_sha256": "f3334c8b5a68a570e6c876fbfc5aa12d80f54518b873adb19c970c63b0593fd3",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-001.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-001.png",
       "pdf_sha256": "73e84b29acd2088e7624619d5c80321b71a9e9d698ab4ec2a3fbbd94bde4c1de"
     },
     {
       "page": 2,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_002.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_002.png",
       "rhwp_sha256": "a300ae84762f57759b7efd7f8c9620f887438e8a4e544f47513a811f24643851",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-002.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-002.png",
       "pdf_sha256": "ef4480bf2c0de2b2e41e91f7a9539454429331f82f816840a93f4bcae23225fa"
     },
     {
       "page": 3,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_003.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_003.png",
       "rhwp_sha256": "b4b721656b4c292930503063b41b6e0c9b77fa711888e2917d2f296b030e06cd",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-003.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-003.png",
       "pdf_sha256": "14dc1cb47963d41797708adf8b569dc8ba6320f38f54d5758b19b5698695bc52"
     },
     {
       "page": 4,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_004.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_004.png",
       "rhwp_sha256": "a2ebd5df4805e4418859958e0f4bd0933eebb70a67dbff8c7b579359ebaa2a32",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-004.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-004.png",
       "pdf_sha256": "83f0e0caf6a1f80cb875c4aba9998daf9371160816fea3f89b3054dd97ae5c3e"
     },
     {
       "page": 5,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_005.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_005.png",
       "rhwp_sha256": "61adf210dbf5c470e4a49730a052a52673ae417ef9ae82a9924b46ad157c96c5",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-005.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-005.png",
       "pdf_sha256": "6bd68eb2e54227475a0775b9603f2368619e35265f28cf47064bd5c7c4be726b"
     },
     {
       "page": 6,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_006.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_006.png",
       "rhwp_sha256": "5e3d2c2e6e8d0d7be2b3b17fceed9428f5e73a9c45f0cd00b6452a93e81160a6",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-006.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-006.png",
       "pdf_sha256": "f88a6e00907ee047e11efa60d4591e3ffb36f7c55cc58b32a882e4c03055caf6"
     },
     {
       "page": 7,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_007.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_007.png",
       "rhwp_sha256": "89d895cc2674143f20b1ce9190c95afe92ebe5359ba5cd528d43e75afab57149",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-007.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-007.png",
       "pdf_sha256": "175126953e5c8b38de56e791b44566a02772c3e3f6a4955bf80d75e4042da5e8"
     },
     {
       "page": 8,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_008.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_008.png",
       "rhwp_sha256": "ee04df2a690f2ea5983b38b2fa7ad0eeacdf9c303b5b3e16ce636a40dd99470d",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-008.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-008.png",
       "pdf_sha256": "3f3fc7486e28d0e85bb673e3bb5ac25f570f208598a62b9d3b23015c509a70c3"
     },
     {
       "page": 9,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_009.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_009.png",
       "rhwp_sha256": "5d71dc7c5eee9d484e8aa254d672474b3cc19c40eeea1dd2be0ab3e43e941e7b",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-009.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-009.png",
       "pdf_sha256": "0930ad6388925abc7b5f4cffdc95ef51873989107eaa2c238982bd5d26ded03e"
     },
     {
       "page": 10,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_010.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_010.png",
       "rhwp_sha256": "aa15f18a909662a05a62782f68c937403757c77b59899bb7b904271238728b1a",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-010.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-010.png",
       "pdf_sha256": "664f4b96df1e95989b05684d3e1b4a635096a30f2b6508cc9bdcbd79c5b4c85c"
     },
     {
       "page": 11,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_011.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_011.png",
       "rhwp_sha256": "22cd6a86cdf6963e057eb63614b4f799afc1b1b8fbac53282f042e495a90451a",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-011.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-011.png",
       "pdf_sha256": "8ddea4d7a7bfe9a729274f74e0d324f753a1d105dfb2e23afa1a6cb11f470cec"
     },
     {
       "page": 12,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_012.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_012.png",
       "rhwp_sha256": "7a26f1b0c4b118d5fcf885efdc9a2202f055577509a1c33194af9edb66551857",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-012.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-012.png",
       "pdf_sha256": "5e1c8afef6a3adba8a3dabd1457b214080c58957ba7d196d417af0f86f1f27be"
     },
     {
       "page": 13,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_013.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_013.png",
       "rhwp_sha256": "f208d85e22f3feffd9da4639a6c30d0974e29b72d7f90fc94822c18df5f9bace",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-013.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-013.png",
       "pdf_sha256": "3b6384274479aa8d7f4d0329c81461fb0a8546e467a0b406b662341bdde2ad27"
     },
     {
       "page": 14,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_014.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_014.png",
       "rhwp_sha256": "b944ceef4f2577d1e884bee4997d1c3f61c46916ce61aef0aa3dee5384ee9ab3",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-014.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-014.png",
       "pdf_sha256": "9706443fc3b30cffc0bfe7d37df9e7e28a484171b353332443575d7621d627eb"
     },
     {
       "page": 15,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_015.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_015.png",
       "rhwp_sha256": "15053b7e537c84c2e39ffbca6f9ad1c009c34e4b7999d60d60d8030e24228b0b",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-015.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-015.png",
       "pdf_sha256": "d6298a06e9f1886d87993ca0ac6bc23cb710609a637c4ab0304f83a3845d1736"
     },
     {
       "page": 16,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_016.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_016.png",
       "rhwp_sha256": "b6b9c8f9451c81ffdbf069456443415121f8ec695fecd81707f6e1ac4aa87ebd",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-016.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-016.png",
       "pdf_sha256": "2f8e57bdd18ccc991f7b7e14369abd8758dbd555089604d4d4934c62171f2ece"
     },
     {
       "page": 17,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_017.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_017.png",
       "rhwp_sha256": "d7414dcf57e21d2d419f627fce0da0263e379946cb74079bea0d38098cc595ae",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-017.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-017.png",
       "pdf_sha256": "b62a42d8077672fc8f49fac7b9ae17e23f45d01753a6cdb8b33d7fa64512573e"
     },
     {
       "page": 18,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_018.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_018.png",
       "rhwp_sha256": "d909d103085e3846fc62dac7f99a9ebdb6a5df79a4d1a8bc8600ce4ea65d29b0",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-018.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-018.png",
       "pdf_sha256": "d66dcbb8913e89914d2132e8965d715188f29114e5a3db0fd538f06aaceb0f90"
     },
     {
       "page": 19,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_019.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_019.png",
       "rhwp_sha256": "46d65e873444d5a1c645324cbbb3b84256c42e916fded7affe9ea2009fa13357",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-019.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-019.png",
       "pdf_sha256": "c6d87c0222ba1dc5632e64f28b386ef4b082505cdf6c46748c208fe8454e9790"
     },
     {
       "page": 20,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_020.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_020.png",
       "rhwp_sha256": "73d622efb388fba91fb138e9b63076a19d0422522d295a02dea82075e7776ff7",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-020.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-020.png",
       "pdf_sha256": "69b747440161d03baf6f9adbb65beb0634f12b687a6d0f6b9303a4f1ae92dd6f"
     },
     {
       "page": 21,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_021.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_021.png",
       "rhwp_sha256": "9fc1a0081704b072c5993cfdb2c0e5ffb9e7850f4e3ecf89db6fe48dec79a4b1",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-021.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-021.png",
       "pdf_sha256": "a2ed415f2644f31ebe3c59e13373381c08b0dee19ed02980b343c4d7042acae9"
     },
     {
       "page": 22,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_022.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_022.png",
       "rhwp_sha256": "7926d00d228509ea14329b00ae6a11cf299770f829218c2be672be0c85d7ce68",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-022.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-022.png",
       "pdf_sha256": "2661163f74c2d3556cf68178788c73f074017c531a54ad654d2d167bdaf0e964"
     },
     {
       "page": 23,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_023.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_023.png",
       "rhwp_sha256": "4bb5ff9de9d825aa1ddc56c6b3e5e9c45b55c9979ce48b5525b7311c8a45ca88",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-023.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-023.png",
       "pdf_sha256": "35a7abcf56e54819e9e2b33b26ed82adce6e398b310d4fb9a691ea53a99d95eb"
     },
     {
       "page": 24,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_024.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_024.png",
       "rhwp_sha256": "2aa7bc9c6a77a5f77f105215053994ea34c4fd7287dcc9b4312f629f3290033b",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-024.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-024.png",
       "pdf_sha256": "cbbdadabd1d464dd088f15a6509ca80cd607bbe5c0a300e70fd3a1706cf77917"
     },
     {
       "page": 25,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_025.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_025.png",
       "rhwp_sha256": "a71845f3e1d52bbad27b8a822ce74cd9affb28ea10e207cacadeb43b5ce83e00",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-025.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-025.png",
       "pdf_sha256": "79fb95490c2e1a92839bc0a02ffecd0bb698c8d0cf0c1384178be9dac2d0193e"
     },
     {
       "page": 26,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_026.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_026.png",
       "rhwp_sha256": "66fc706bb18272ab6e7e2422c049947c9aa46dfce0618e2b0c944921de3da010",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-026.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-026.png",
       "pdf_sha256": "d3662e5715c2ec9ae751c3baab23489d94d57c2383933fc6943494e29fdc7bd0"
     },
     {
       "page": 27,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_027.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_027.png",
       "rhwp_sha256": "6bd536f9e87a411c860e592440915e3535c7c7409c3f0bc55c249f61e82fe7cd",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-027.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-027.png",
       "pdf_sha256": "e80dfd85d1b89ac4e0607e5990c21c5a457a7539f28c9d9a0654c44d8b4a61cc"
     },
     {
       "page": 28,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_028.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_028.png",
       "rhwp_sha256": "081179f719cc02b95b2755ae02f9157c90bf5029606468070543df3a6d597e52",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-028.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-028.png",
       "pdf_sha256": "6fdd30e8fbd688898b72aeddff8c9ec4c56ea1d5cb7cfe2bea3a535634932315"
     },
     {
       "page": 29,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_029.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_029.png",
       "rhwp_sha256": "74c979110a28ae536ac72b9215c722bd7ad44f504741196d6133aa896373cea7",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-029.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-029.png",
       "pdf_sha256": "7afd4420c5bd8f7caeaf27c69be05a3e3fb7204e7a6b08d3f4cf29bb80448c59"
     },
     {
       "page": 30,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_030.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_030.png",
       "rhwp_sha256": "e76223533857ec492a029bc1c886831a487771478e2842597447a62fa7ba28ee",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-030.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-030.png",
       "pdf_sha256": "3fa5c69eaaa190f7558fcff10c4b47dfb5f5b73f2ff2bfcb6796652c8c188212"
     },
     {
       "page": 31,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_031.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_031.png",
       "rhwp_sha256": "688fc20e309849bd8b83865e7cd1de41fc7a47d6d943827760619a74dadf3c11",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-031.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-031.png",
       "pdf_sha256": "3b2e58d770be55baddce4c7725d2764e2e398618c9b858e1ab01b68db7c61fe1"
     },
     {
       "page": 32,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_032.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_032.png",
       "rhwp_sha256": "fa0d8c422315b9764408e497f9b99020a78d18a2246060b5cabd547b9007a7c2",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-032.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-032.png",
       "pdf_sha256": "dcdee8a0182945d93eb213898f29e4e2a532c6f2616b58e97b6ac020f322b9c2"
     },
     {
       "page": 33,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_033.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_033.png",
       "rhwp_sha256": "2b351aa7dbff3792c85f58d0bbf6b8e96cde08f03868c6dc1cc4e9264b3f2056",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-033.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-033.png",
       "pdf_sha256": "5f8fb0b1910242bca6d7f479d11302fdf656a960630f10b37a8edd2e6a47d49d"
     },
     {
       "page": 34,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_034.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_034.png",
       "rhwp_sha256": "6d17ff20c702ab545747e2eeb11c2bd91beca2cffce5541257029fd5a7b99290",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-034.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-034.png",
       "pdf_sha256": "738531a616127832b56fd71904ddab22adbaecfdc0536b13250ff8e9db95c4ea"
     },
     {
       "page": 35,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_035.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_035.png",
       "rhwp_sha256": "e9f755c9d7b05d2791bce0421a7c7206c2e5717418c55bb637afec48226361cf",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-035.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-035.png",
       "pdf_sha256": "a49575162b624fa1c26e569ce6f3148c0f532b05b7bbe2c2153ae68f5be6f1a5"
     },
     {
       "page": 36,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_036.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_036.png",
       "rhwp_sha256": "b5be979f61e868463c91d5ae804b4fe1441123c20665acde9d8641e36c362617",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-036.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-036.png",
       "pdf_sha256": "9ba2ba84eefb736fb41f06da01939862c1d2e57dabdc083d02263d992c9dc44a"
     },
     {
       "page": 37,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_037.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_037.png",
       "rhwp_sha256": "85234a4b027dffeff25812648947b7e34c10e15e904f9de260c03985f8ebe3a6",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-037.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-037.png",
       "pdf_sha256": "72ec6c601f469c8690ecf8de0fe11c5432d379b7e5e16f288b93cd2877db1a87"
     },
     {
       "page": 38,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_038.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_038.png",
       "rhwp_sha256": "a926cf8f2780b6bc99dd615da47d8808af3313dc3799f394f78962f82177f515",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-038.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-038.png",
       "pdf_sha256": "7a8d891f988f5069076bafcaace8bb4a8a3d598621b1734e1973be9eca5a669b"
     },
     {
       "page": 39,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_039.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_039.png",
       "rhwp_sha256": "4321a8ffb27143a08010d3716810761ef4777ed67808e2b3142fb9b9b8f5a57e",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-039.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-039.png",
       "pdf_sha256": "e9f76f153b57ada3871a31e4fbce8102545218e291e91306fdb3d9378eedabae"
     },
     {
       "page": 40,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_040.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_040.png",
       "rhwp_sha256": "ed48a8d11adf95eb3b90a86e8f48be9dcdbe209829c4b66b0548ea93524d2aba",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-040.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-040.png",
       "pdf_sha256": "8df29ca1f6cb0fd2f8cc072eeae86bebc1fade93e343d4e52769ba724835336d"
     },
     {
       "page": 41,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_041.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_041.png",
       "rhwp_sha256": "99981c9c52c02fe40d594a91e8e787913d0911c3d9d71141cc209959015eed5e",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-041.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-041.png",
       "pdf_sha256": "b0d681d6f3f8e6b7f7ff0879b4247039b9e28c746c39d86a3680830726590e52"
     },
     {
       "page": 42,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_042.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_042.png",
       "rhwp_sha256": "fef84e70882f9485d5fde7ae195da9f5c742653f9f443d2c19dc3ea0e73bab6e",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-042.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-042.png",
       "pdf_sha256": "25feabbc72462627b44a9115a971e210a000f80a28b3c068c7f7303b231bd4ff"
     },
     {
       "page": 43,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_043.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_043.png",
       "rhwp_sha256": "f471512e235cf83234a0cf64491758426b70d33af6e40a254193efd05de7a86a",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-043.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-043.png",
       "pdf_sha256": "76c2ca74b29a7fc6c0fe55fea15024f89f6ba2a326aebe117943d1bcd7b01a00"
     },
     {
       "page": 44,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_044.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_044.png",
       "rhwp_sha256": "e1593c78fb1f87249dc735a9cdc3a64fe466b27bd9ef5dedee488fcb9b46cbbf",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-044.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-044.png",
       "pdf_sha256": "47fa46d2934647dbbab37d9fc869c754321ccd6086a3e6438950824089dceb72"
     },
     {
       "page": 45,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_045.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_045.png",
       "rhwp_sha256": "a694a306a06d47f550fdca015e33c12598baa8f512971651271bdc9229f16209",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-045.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-045.png",
       "pdf_sha256": "9f5c33439e7801e56ae69f9ab8842c633178b0cdca9807a3eed8044c10f9f2e5"
     },
     {
       "page": 46,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_046.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_046.png",
       "rhwp_sha256": "30557e14c8a2478b33d01f5a212d1d13f3ab2ff88939bb2fd7928ee6aa7efc9a",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-046.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-046.png",
       "pdf_sha256": "5ff5de60525a49ec50092e9ad38623b910f39ee10d0c7c8b9dcce0675cdd19b8"
     },
     {
       "page": 47,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_047.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_047.png",
       "rhwp_sha256": "8a95745d5781912c1c4a763f9f2e0cb9406f71319540d2360b9330c5022715f0",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-047.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-047.png",
       "pdf_sha256": "9b9e0016c18dbb78e578c53e27703e195ae54e1ce4c4be6b6256ae0e523f4b4d"
     },
     {
       "page": 48,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_048.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_048.png",
       "rhwp_sha256": "96e71ed292b855494fb6b50cf104bf9ce74d8abe5ddb1bae32a85f66bd982f6c",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-048.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-048.png",
       "pdf_sha256": "0e5606e39a8de630b9e317a41cf50ad9b1f701ab247e8de409292d5cadddb777"
     },
     {
       "page": 49,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_049.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_049.png",
       "rhwp_sha256": "c01ab4ee7915345e3203221dbdc442ccfc2b2795b78887bdc4069ce9f854c1ab",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-049.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-049.png",
       "pdf_sha256": "461b7b418be66dd7d21b6e27fc125cce7cd49ad543bbfbdf9bc8fb47c0c9be62"
     },
     {
       "page": 50,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_050.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_050.png",
       "rhwp_sha256": "9e96686e593e5c0b56d6c7f86ed5e7997b04a337739ce1d944d808d15d0c607e",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-050.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-050.png",
       "pdf_sha256": "9ce64e898604f3ccce25ff58c459176e539cb903002cb27ae53cd0ba234c6db5"
     },
     {
       "page": 51,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_051.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_051.png",
       "rhwp_sha256": "2a7ffcf0d133976328faa731b6a1d04af6f3a01b4b150c2a1535ec7a38dec87d",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-051.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-051.png",
       "pdf_sha256": "b7cd2ae1e705fdac32e8f44385fcf657af6bdc4d7ad256358d25bfd729e175be"
     },
     {
       "page": 52,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_052.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_052.png",
       "rhwp_sha256": "6a88965a6e1e284ad094e1ad2b52a852fa11fcce0cdfc82e2e5bcd32d5f2e97c",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-052.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-052.png",
       "pdf_sha256": "a727b260939b5f267e4b3937cca40fb29fc7a25720a4671790df7d5f8f798ce9"
     },
     {
       "page": 53,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_053.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_053.png",
       "rhwp_sha256": "e25eadcf802ed9a4f87befe7927032e7dab356a2c273ac7c573df18012f980a7",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-053.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-053.png",
       "pdf_sha256": "61310c010e23d6423c922dcff227fb12d255209bc40a17553b1b8f576f7f9abe"
     },
     {
       "page": 54,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_054.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_054.png",
       "rhwp_sha256": "9cce59dbb7753e3e74e233c1834a7611a776790106b35c99d509458c19b3b9f6",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-054.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-054.png",
       "pdf_sha256": "a6e09651070bd4c957ba3f2cca88177b5c46c5a50bd9c905cee31faa3b6cf623"
     },
     {
       "page": 55,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_055.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_055.png",
       "rhwp_sha256": "0f274b198204032cb1886987d60153e7f79d3c2d1f7b2fd96ce1ae385496914a",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-055.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-055.png",
       "pdf_sha256": "fbb773dd244c222060e498cc54e07214db688ef056662ba2a8454c38a27194ff"
     },
     {
       "page": 56,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_056.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_056.png",
       "rhwp_sha256": "342728d54a0a9ec7f77ebd66d26091ee2fa636d4c37d569e488491f94530b681",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-056.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-056.png",
       "pdf_sha256": "5dbfb96b804066d19f69edace5b4f25eb2a90fe64936f9d5dc8eebacde76e343"
     },
     {
       "page": 57,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_057.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_057.png",
       "rhwp_sha256": "278eea05f2a6a1c2772fcb6972831b54884f781b84bfbdc10bcba30af335b67d",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-057.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-057.png",
       "pdf_sha256": "f43e55fb13c8753d197b5ce2fe38f1b6f9baeeba43c295009b440f58a04f4298"
     },
     {
       "page": 58,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_058.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_058.png",
       "rhwp_sha256": "5dea7721258bc2d237baf00c5360513074481721ef1b87a4e80d569565453bb7",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-058.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-058.png",
       "pdf_sha256": "3ddbb92762f3be6b3f6f825a208d5be7ea322471a9ec5730196a64e463043360"
     },
     {
       "page": 59,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_059.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_059.png",
       "rhwp_sha256": "1c1b994d2e7a033f25c6e699a01f81136c13b09e443636bb85b05420d90af891",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-059.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-059.png",
       "pdf_sha256": "ba780b2da0e9b0a67afdd1f5f98d8d6952423a78d96e1b7e87fd80dacd8432a2"
     },
     {
       "page": 60,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_060.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_060.png",
       "rhwp_sha256": "baaef10d553aa33d95d6a23b78704b14b67b08412afaff108961a7f23c74131f",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-060.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-060.png",
       "pdf_sha256": "4e492f23b23e0a64173867c93d41828f911924a0d23665ad0c45e8bc4407feea"
     },
     {
       "page": 61,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_061.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_061.png",
       "rhwp_sha256": "72095cb8a985dd65047ef51eca2d99c87666df6b0e4a686b279af7222e57b9cb",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-061.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-061.png",
       "pdf_sha256": "226e661918847fcf277d7b760cc27ee97d92d546308cd2e4648553ac35b37e68"
     },
     {
       "page": 62,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_062.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_062.png",
       "rhwp_sha256": "e7ac037becee17520b80e26b36ff23337675c9d57beb9124b885c053a4bd2d48",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-062.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-062.png",
       "pdf_sha256": "23f944d1dc3696c9764992237acd1a36014339b52e0994e91d00a04cb0ae9ccc"
     },
     {
       "page": 63,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_063.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_063.png",
       "rhwp_sha256": "cd03081c5ff1bf8d968cd21d6f680f42f103af1ba9edebb6acacf84dd9fb0198",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-063.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-063.png",
       "pdf_sha256": "c508cc6f2dfc27199feb1ae4857eb00934922e232bbe929d08cbefd54988f11e"
     },
     {
       "page": 64,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/rhwp_png/rhwp_064.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/rhwp_png/rhwp_064.png",
       "rhwp_sha256": "481c527f4df7207f6c97c3c8faa5fe353a1864202c77427cd7933b242fa3c020",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/pdf_png/pdf-064.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/pdf_png/pdf-064.png",
       "pdf_sha256": "5cfa7af88b5bba1f7fbed2a94d286261fca129d4f19fa9c2dad40209e9cc6c5f"
     }
   ],
@@ -1258,7 +1258,7 @@
       "path": "pdf/hwp3-sample5-2020.pdf",
       "sha256": "6c4f037b054fc677d17e1972d38c0b8b5466f4fb2557f3c3caa32f6ccb710c4e"
     },
-    "git_head": "410f33c8cf5f6a504f62cc3e8c8c71e3603f734b",
+    "git_head": "21d62361fa670858e63fdfc475c236f112e20a3d",
     "sweep_script": {
       "path": "scripts/visual_sweep.py",
       "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
@@ -1294,9 +1294,9 @@
     },
     "comparison_profile": "print",
     "rhwp_binary": {
-      "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-native",
-      "path": "output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-native",
-      "sha256": "42abdf7eed3565b4142313e3a931eed8866fdbdabc71a2f3621e90935bc1e519"
+      "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/employment79-v5-native",
+      "path": "output/pr-review/planet6897-clean20-integration-20261110/employment79-v5-native",
+      "sha256": "6ad28f665d9da971b5cdf0e691977268c5156bf7f5a66ee7f81a8c4f90ec441d"
     },
     "native_webfont_fallback": {
       "registry_sha256": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
@@ -6149,5 +6149,5 @@
       ]
     }
   },
-  "checkpoint": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-sample5/silhouette-checkpoint.json"
+  "checkpoint": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8734-sample5/silhouette-checkpoint.json"
 }

@@ -2,37 +2,103 @@
   "pr": 8691,
   "backend": "native",
   "key": "pr8691-artifact_loan_form",
-  "code_commit": "009b3cf42bf1d4105ff3279c1211613baf088359",
+  "code_commit": "21d62361fa670858e63fdfc475c236f112e20a3d",
   "producer": {
-    "head": "410f33c8cf5f6a504f62cc3e8c8c71e3603f734b",
-    "source_sha256": {
-      "src/renderer/layout/paragraph_layout.rs": "71f68b106e1ad8cc4501a01e4f9eb1549cefde49a65699dd19cbb24643e8838f",
-      "src/renderer/composer/stored_lines_runs.inc.rs": "93208f587fca993cc3665dc3103edda2825e55224fc9876a54e7ab9347567799",
-      "src/renderer/float_placement.rs": "e70632abdc618890e8b421e16f7d26d24d868e7f2134970d347f644c20f7353f",
-      "src/renderer/composer/line_breaking/stored_external_geometry.rs": "99bc6dd61e245b3cd8cafbfaec97aedbb11396384ae36a13f4793f7dd3aab8f8"
-    },
-    "started_at": "2026-11-10T22:16:30.427054+09:00",
     "complete": true,
-    "command": [
-      "cargo",
-      "build",
-      "--locked",
-      "--profile",
-      "release-test",
-      "--target-dir",
-      "target/pr-review",
-      "--features",
-      "native-skia",
-      "--bin",
-      "rhwp",
-      "-j",
-      "8"
+    "phase": "complete",
+    "runs": [
+      {
+        "name": "native",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--features",
+          "native-skia",
+          "--bin",
+          "rhwp",
+          "-j",
+          "8"
+        ],
+        "pid": 83180,
+        "exit_code": 0
+      },
+      {
+        "name": "fresh-wasm",
+        "command": [
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--out-dir",
+          "pkg",
+          "--no-opt"
+        ],
+        "pid": 93423,
+        "exit_code": 0
+      }
     ],
-    "pid": 76073,
-    "exit_code": 0,
-    "binary": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-native",
-    "binary_sha256": "42abdf7eed3565b4142313e3a931eed8866fdbdabc71a2f3621e90935bc1e519",
-    "finished_at": "2026-11-10T22:19:16.133587+09:00"
+    "parent_head": "0f2ebe265e6ef4f2572925fca66ed2f5bd18a0c3",
+    "source_hashes": {
+      "src/document_core/queries/rendering.rs": "c1b43a62d9a6aa730c9dfddd17145b798018b46a34fb4cdf28e19b004a74fe42",
+      "src/paint/builder.rs": "966701b7a6fb94b546aa33c9cf49d5057c215d56d24b76da775f20b468fc95ac",
+      "src/parser/hwp3/mod.rs": "eecb17a72eaba544d2afbaa7b1aa21c736fbefb5c54fe52bf4d4ac1a920eea84",
+      "src/renderer/composer/line_breaking.rs": "6e6f2c7ba5f795e83f8643d4bf7c282f1c020b0556eac77664480a3b1fb701cf",
+      "src/renderer/composer/line_breaking/stored_external_geometry.rs": "99bc6dd61e245b3cd8cafbfaec97aedbb11396384ae36a13f4793f7dd3aab8f8",
+      "src/renderer/composer/stored_lines_runs.inc.rs": "93208f587fca993cc3665dc3103edda2825e55224fc9876a54e7ab9347567799",
+      "src/renderer/float_placement.rs": "836ab234a5035f093d218cdfc296f7e6d7bcf047f15e23557687dd8009cbeee8",
+      "src/renderer/float_placement/square_lane.rs": "2d29eb142a8adf351bc00d7bef132b56b8dd3560b56d595f94fb481f0cd0834b",
+      "src/renderer/float_placement/stored_square_top_band.rs": "55f1353be64100d0edaf9894d4e85a8c08b01dd11da619bd0af2e4a2b6d5db5c",
+      "src/renderer/height_measurer.rs": "8ad30b462ac0e7ec4e81e7a1cf46cd950edd25a301aaa17b147749bc363580db",
+      "src/renderer/layout.rs": "7723e9e3508d13e2cfbf645679c4e99d6902e2aed28b94058ac2fb459342f202",
+      "src/renderer/layout/paragraph_layout.rs": "b9a757e5bd258c134075202598a9eb3408e61df7313560c52c9809854082124f",
+      "src/renderer/layout/shape_layout.rs": "afc8da8da519faa674b2b6b36d530edd21b0d6648be0f10b2687f4754f93018d",
+      "src/renderer/layout/stored_tac_frame.rs": "325f0a1ed57eda8e61f3b3fbefac9ceb99c40be013f54909b7c1dc28d9ded5ea",
+      "src/renderer/layout/table_layout.rs": "60e94b774ff8ae5738d68d298aefd7f968e13a78ffe720c07c65e2c7615e626d",
+      "src/renderer/mod.rs": "259a54bef6781c60476ba7e6b46492a2e9ed508615107cd63fc609f9b55eb603",
+      "src/renderer/pagination.rs": "c3cb2acda1f75ad9a9538c8d3686394593de08df7e3dd279a5f00191204c03ea",
+      "src/renderer/render_tree.rs": "f5adc25d468bec605aa7f3d917d46d307b2a6ac1abf62ca2f7917b7e215bef1e",
+      "src/renderer/svg.rs": "4de706badd8164210757f5bb5f5077edbb47cb50e2174197403c1903563052bc",
+      "src/renderer/typeset.rs": "e3d513b8acfead7e5fd2d4e36eab65de6159b54f96b92a8df510d584803d137c",
+      "src/renderer/typeset/controls/deferred_picture.rs": "44f6fbbd5d54f8e5be275c881a9ada93b4fb1e0d82592b3571176448f05ce710",
+      "src/renderer/typeset/controls/host_wrap.rs": "fb80c43d2b01717e53b2c44cf9ccebd62afcfd98c86be50cf96396b11a5bd677",
+      "src/renderer/typeset/controls/stored_tac.rs": "b08e2c2501abc268d7647f299129f4b93d110dcf597855e7e16f2e5a17f806f6",
+      "src/renderer/typeset/controls/tac_fit.rs": "efec0181ba25c2f2ccc9a8629d1bfe268dac9251d2105824042840e721d1fed6",
+      "src/renderer/typeset/controls/wrap_absorption.rs": "1aa0fdd8a8366b8387c9a7d90eda9a75a7704f46a241524f00e55ea55c227ee3",
+      "src/renderer/typeset/controls/wrap_flow.rs": "175fd74ff3491c7dfe6a0ffd6e85195c11079c6b51c418d1445fe70cf85bed78",
+      "src/renderer/typeset/controls/wrap_match.rs": "6d0a6f49c0f26f53fbb321a6ba69c124a9f1ad051b5b416d8a608ec6f80819a7",
+      "src/renderer/typeset/paragraph.rs": "cbc38ba38a69b2ede303ca1ce9df7a65b44b37b5f71d7d6442d48ba668c0e385",
+      "src/renderer/typeset/paragraph/content.rs": "894dd06bb33acd4151e1c44e187b6f12103870c24eac14d9e38e36999523c5fc",
+      "src/renderer/typeset/paragraph/format.rs": "c95b71c449b9a08f028fbc9890cbba15c2d94d4a63a07f4a766a6230597a698a",
+      "src/renderer/typeset/paragraph/placement.rs": "564d2459e485735a05b871d5695a33a4cb10eba81eefc29122168447e4aa6670",
+      "src/renderer/typeset/section.rs": "25caa0b783ce499d1887e1ad8c45ffd11906dd3db3b86ac1134900b543c5f450",
+      "src/renderer/typeset/section/controls.rs": "a896e9f643f8db70cf5d1c3b7d014cb491e16265f35c4cc0cbb4273d5287ac4c",
+      "src/renderer/typeset/section/flow.rs": "ae3ede44081d412e9d7fa10da9c03cca1d3b3d16222cf3a2272301cb0b78e852",
+      "src/renderer/typeset/section/post_flow.rs": "579b189656d839f11795c6643f3a35692a266412d37e7af5ee076d8a70e86b78",
+      "src/renderer/typeset/state.rs": "3ac568f6d7e4b724ac0febe8d4c4136c92832513a23dc7cea0a9c94b5762dfc7",
+      "src/renderer/typeset/state/commands.rs": "55ed99145004bca61817457f58f45f8cb1a8f257950ff6559f9de8e7af46468b",
+      "src/renderer/typeset/state/data.rs": "5e5dc6c299f2aed57b64adda922c1961938e0a0b1d490ae358fb67f75c150e89",
+      "src/renderer/typeset/state/transition.rs": "5ed3a9f1d0e0a68fc6db91d8df563ca987d1a4687e4a8dc70defb9bbb37113f7",
+      "src/renderer/typeset/table/block/entry.rs": "873230a1e73286cef074fb2eaf4331697250af22835cb913324989f086aa4617"
+    },
+    "source_diff_sha256": "2c6584f12fcbcdda2f23c275ad91fb10a24066a4dc8d790579f90752a4c9f67e",
+    "started_at": "2026-11-11T00:50:48.049257+09:00",
+    "binary": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/employment79-v5-native",
+    "binary_sha256": "6ad28f665d9da971b5cdf0e691977268c5156bf7f5a66ee7f81a8c4f90ec441d",
+    "wasm_files": {
+      "rhwp.js": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+      "rhwp_bg.wasm": "bf23f3629528d45cdc6a223d148e1aa37e1887a6fb4d25b40b41560369b9a851"
+    },
+    "studio_public_matches": {
+      "rhwp.js": true,
+      "rhwp_bg.wasm": true
+    },
+    "wasm_method": "Mac locked wrapper local no-opt alternative; not Docker optimization",
+    "success": true,
+    "finished_at": "2026-11-11T00:58:42.135978+09:00"
   },
   "case": {
     "pr": 8691,
@@ -44,7 +110,7 @@
     "pdf_sha256": "72ae7ff498e2371c0f316739f72a09e12cd8fc28e921f446e8f8c8a034f13b9b",
     "protected_ids": []
   },
-  "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8691-artifact_loan_form",
+  "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8691-artifact_loan_form",
   "pages": 1,
   "minimum": 100.0,
   "claim_pages": [
@@ -56,13 +122,13 @@
   "actual_same_page_assets": [
     {
       "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-artifact_loan_form/native/silhouette.tsv",
-      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8691-artifact_loan_form/silhouette.tsv",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8691-artifact_loan_form/silhouette.tsv",
       "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
     },
     {
       "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-artifact_loan_form/native/manifest.json",
-      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8691-artifact_loan_form/silhouette_manifest.json",
-      "sha256": "75973a1cfaca84b19fce168c7494f5026c1d07f1d815f2d91de4b27d985d6272"
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8691-artifact_loan_form/silhouette_manifest.json",
+      "sha256": "c776230aeb353ff3c525dd35a32e41a89f01d369f12314a9c31e41d38b0a867a"
     },
     {
       "page": 1,
@@ -72,7 +138,7 @@
       ],
       "kind": "raw",
       "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-artifact_loan_form/native/raw-001.png",
-      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8691-artifact_loan_form/rhwp_png/rhwp_001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8691-artifact_loan_form/rhwp_png/rhwp_001.png",
       "sha256": "b66d33f79b183eef5057694de40a1e8bbabbe7c654106736b7073fc485f1436f"
     },
     {
@@ -83,7 +149,7 @@
       ],
       "kind": "pdf",
       "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-artifact_loan_form/native/pdf-001.png",
-      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8691-artifact_loan_form/pdf_png/pdf-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8691-artifact_loan_form/pdf_png/pdf-001.png",
       "sha256": "ac163737efd70ad1a91ed3baeb1f70ce83d59c83d0d3a83588a4c94e1733d6b1"
     },
     {
@@ -94,7 +160,7 @@
       ],
       "kind": "review",
       "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-artifact_loan_form/native/review-001.png",
-      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8691-artifact_loan_form/review/review_001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-panels-native/pr8691-artifact_loan_form/review/review_001.png",
       "sha256": "4225d66ea77d61f2d984cc1178b37a40752269142408e27f897113a0640f49c8"
     },
     {
@@ -105,7 +171,7 @@
       ],
       "kind": "overlay",
       "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-artifact_loan_form/native/overlay-001.png",
-      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8691-artifact_loan_form/overlay/overlay_001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-panels-native/pr8691-artifact_loan_form/overlay/overlay_001.png",
       "sha256": "5b12ec566a1a95d1f6edb865ef0b1fe4848951c8f0cf1bec1962e4a2c957bfc6"
     }
   ],

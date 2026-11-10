@@ -11,21 +11,21 @@
     2
   ],
   "missing_pages": [],
-  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8868-36379333-stored-text-above-offset-float/silhouette.tsv",
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8868-36379333-stored-text-above-offset-float/silhouette.tsv",
   "radius_px": 2,
   "inputs": [
     {
       "page": 1,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8868-36379333-stored-text-above-offset-float/rhwp_png/rhwp_001.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8868-36379333-stored-text-above-offset-float/rhwp_png/rhwp_001.png",
       "rhwp_sha256": "c08c9ac3d9c85ea7852cdb13dcd7ae0630d821a36558c986be6cc0c2721ea821",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8868-36379333-stored-text-above-offset-float/pdf_png/pdf-001.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8868-36379333-stored-text-above-offset-float/pdf_png/pdf-001.png",
       "pdf_sha256": "deb8b20dd485fc4c8c665703e304be887130d677a59dacf212700184cf03eb2c"
     },
     {
       "page": 2,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8868-36379333-stored-text-above-offset-float/rhwp_png/rhwp_002.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8868-36379333-stored-text-above-offset-float/rhwp_png/rhwp_002.png",
       "rhwp_sha256": "7e45d8603dd1cc704ace3d903dc44dd63abc3da2774c70fd1632ed7be1a19021",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8868-36379333-stored-text-above-offset-float/pdf_png/pdf-002.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8868-36379333-stored-text-above-offset-float/pdf_png/pdf-002.png",
       "pdf_sha256": "33cfb2345e17f680dda2c2824fa44840f816b63ebd726e2cb2710e4551a0804b"
     }
   ],
@@ -80,7 +80,7 @@
       "path": "pdf/issue8859/36379333-stored-text-above-offset-float-2020.pdf",
       "sha256": "e1b28a56b286f64b842fed90c5f815afd7d90677114e636792e986993cf6e8f8"
     },
-    "git_head": "410f33c8cf5f6a504f62cc3e8c8c71e3603f734b",
+    "git_head": "21d62361fa670858e63fdfc475c236f112e20a3d",
     "sweep_script": {
       "path": "scripts/visual_sweep.py",
       "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
@@ -116,9 +116,9 @@
     },
     "comparison_profile": "print",
     "rhwp_binary": {
-      "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-native",
-      "path": "output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-native",
-      "sha256": "42abdf7eed3565b4142313e3a931eed8866fdbdabc71a2f3621e90935bc1e519"
+      "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/employment79-v5-native",
+      "path": "output/pr-review/planet6897-clean20-integration-20261110/employment79-v5-native",
+      "sha256": "6ad28f665d9da971b5cdf0e691977268c5156bf7f5a66ee7f81a8c4f90ec441d"
     },
     "native_webfont_fallback": {
       "registry_sha256": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
@@ -4971,5 +4971,5 @@
       ]
     }
   },
-  "checkpoint": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8868-36379333-stored-text-above-offset-float/silhouette-checkpoint.json"
+  "checkpoint": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8868-36379333-stored-text-above-offset-float/silhouette-checkpoint.json"
 }

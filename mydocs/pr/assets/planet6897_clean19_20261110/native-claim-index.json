@@ -1,5 +1,5 @@
 {
-  "source_commit": "009b3cf42bf1d4105ff3279c1211613baf088359",
+  "source_commit": "21d62361fa670858e63fdfc475c236f112e20a3d",
   "backend": "native",
   "records": [
     {
@@ -309,13 +309,15 @@
         1,
         4,
         16,
-        22
+        22,
+        27
       ],
       "review_pages": [
         1,
         4,
         16,
-        22
+        22,
+        27
       ],
       "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/cases/pr8734-sample5/native"
     },
@@ -324,12 +326,13 @@
       "key": "pr8734-sample5-hwp5",
       "backend": "native",
       "pages": 64,
-      "minimum": 99.5,
+      "minimum": 100.0,
       "claim_pages": [
         1,
         4,
         16,
-        22
+        22,
+        27
       ],
       "review_pages": [
         1,
@@ -345,12 +348,13 @@
       "key": "pr8734-sample5-hwpx",
       "backend": "native",
       "pages": 64,
-      "minimum": 97.69,
+      "minimum": 100.0,
       "claim_pages": [
         1,
         4,
         16,
-        22
+        22,
+        27
       ],
       "review_pages": [
         1,
@@ -380,14 +384,16 @@
       "key": "pr8734-employment",
       "backend": "native",
       "pages": 90,
-      "minimum": 94.23,
+      "minimum": 96.72,
       "claim_pages": [
         1,
-        14
+        14,
+        79
       ],
       "review_pages": [
         1,
         14,
+        51,
         79
       ],
       "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/cases/pr8734-employment/native"

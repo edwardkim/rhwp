@@ -19,49 +19,49 @@
     6
   ],
   "missing_pages": [],
-  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8762-36458608-square-tac-same-paragraph/silhouette.tsv",
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8762-36458608-square-tac-same-paragraph/silhouette.tsv",
   "radius_px": 2,
   "inputs": [
     {
       "page": 1,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8762-36458608-square-tac-same-paragraph/rhwp_png/rhwp_001.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8762-36458608-square-tac-same-paragraph/rhwp_png/rhwp_001.png",
       "rhwp_sha256": "4c18cac2c46ff5a68136433ad0f014a64f722a25b1fdae4ef24b3f0d9f7f9c73",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8762-36458608-square-tac-same-paragraph/pdf_png/pdf-001.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8762-36458608-square-tac-same-paragraph/pdf_png/pdf-001.png",
       "pdf_sha256": "60bc2ce3806e732012d4a83d345d74cdf02fdbee5d3952d5106ea5e684adc898"
     },
     {
       "page": 2,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8762-36458608-square-tac-same-paragraph/rhwp_png/rhwp_002.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8762-36458608-square-tac-same-paragraph/rhwp_png/rhwp_002.png",
       "rhwp_sha256": "a6d31be584a63fa808791358d6e38b66876f1cbc4e09b2be50cd425f3b9c0108",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8762-36458608-square-tac-same-paragraph/pdf_png/pdf-002.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8762-36458608-square-tac-same-paragraph/pdf_png/pdf-002.png",
       "pdf_sha256": "878f7e748683a10de34c02b0f9f2ad1d14399b9b1a21de471e07dd1b2f626121"
     },
     {
       "page": 3,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8762-36458608-square-tac-same-paragraph/rhwp_png/rhwp_003.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8762-36458608-square-tac-same-paragraph/rhwp_png/rhwp_003.png",
       "rhwp_sha256": "57110044a1ebf450affe5d4ea222887b8ff0528441e82103030d596f37a2f67a",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8762-36458608-square-tac-same-paragraph/pdf_png/pdf-003.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8762-36458608-square-tac-same-paragraph/pdf_png/pdf-003.png",
       "pdf_sha256": "8a534b0ebc5117b590e08258f7019773c128fa637dd7bd4a07cc6923183d9cf0"
     },
     {
       "page": 4,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8762-36458608-square-tac-same-paragraph/rhwp_png/rhwp_004.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8762-36458608-square-tac-same-paragraph/rhwp_png/rhwp_004.png",
       "rhwp_sha256": "abc2f6907bf0d0c9c907a626208e0f62a734c37e3c37cadaee7133bb758b09ad",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8762-36458608-square-tac-same-paragraph/pdf_png/pdf-004.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8762-36458608-square-tac-same-paragraph/pdf_png/pdf-004.png",
       "pdf_sha256": "2e132c405d3289cd556cbf362467cfa6de90af04d34155d2c7f8f9921dda7e81"
     },
     {
       "page": 5,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8762-36458608-square-tac-same-paragraph/rhwp_png/rhwp_005.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8762-36458608-square-tac-same-paragraph/rhwp_png/rhwp_005.png",
       "rhwp_sha256": "e2e79a7125fb2339d160e70cf372de792c3e60e26433f0696073585faf0067b1",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8762-36458608-square-tac-same-paragraph/pdf_png/pdf-005.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8762-36458608-square-tac-same-paragraph/pdf_png/pdf-005.png",
       "pdf_sha256": "acb3d0206b3c67fe7253187803528ffcd68e92d616210a4c51f6d85fd0533dfa"
     },
     {
       "page": 6,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8762-36458608-square-tac-same-paragraph/rhwp_png/rhwp_006.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8762-36458608-square-tac-same-paragraph/rhwp_png/rhwp_006.png",
       "rhwp_sha256": "e33cdc2c9d3208439b04d92e5d4b8630345191e4529726adeabd50f811920e6a",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8762-36458608-square-tac-same-paragraph/pdf_png/pdf-006.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8762-36458608-square-tac-same-paragraph/pdf_png/pdf-006.png",
       "pdf_sha256": "92e19a40271eddc40cd32355ca604d586c374f9e9779d62a5c5f4188808273ce"
     }
   ],
@@ -156,7 +156,7 @@
       "path": "pdf/issue8753/36458608-square-tac-same-paragraph-2020.pdf",
       "sha256": "3b2edde31c89509b6de0c0382e72d4f6578c1681d9beeafef0e3caa4bd6bf9a9"
     },
-    "git_head": "410f33c8cf5f6a504f62cc3e8c8c71e3603f734b",
+    "git_head": "21d62361fa670858e63fdfc475c236f112e20a3d",
     "sweep_script": {
       "path": "scripts/visual_sweep.py",
       "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
@@ -192,9 +192,9 @@
     },
     "comparison_profile": "print",
     "rhwp_binary": {
-      "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-native",
-      "path": "output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-native",
-      "sha256": "42abdf7eed3565b4142313e3a931eed8866fdbdabc71a2f3621e90935bc1e519"
+      "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/employment79-v5-native",
+      "path": "output/pr-review/planet6897-clean20-integration-20261110/employment79-v5-native",
+      "sha256": "6ad28f665d9da971b5cdf0e691977268c5156bf7f5a66ee7f81a8c4f90ec441d"
     },
     "native_webfont_fallback": {
       "registry_sha256": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
@@ -5047,5 +5047,5 @@
       ]
     }
   },
-  "checkpoint": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8762-36458608-square-tac-same-paragraph/silhouette-checkpoint.json"
+  "checkpoint": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/pr8762-36458608-square-tac-same-paragraph/silhouette-checkpoint.json"
 }
