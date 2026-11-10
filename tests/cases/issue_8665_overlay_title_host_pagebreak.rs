@@ -156,10 +156,7 @@ fn title_line_that_fits_stays_on_current_page() {
     let doc = load(FITS_SAMPLE);
     assert_eq!(doc.page_count(), 2, "웹한글기안기 기준 2쪽");
     let (page, title, body, tables, _) = second_title(&doc);
-    assert_eq!(
-        page, 0,
-        "제목 글줄이 들어가면 1쪽에 남는다"
-    );
+    assert_eq!(page, 0, "제목 글줄이 들어가면 1쪽에 남는다");
     assert!(
         title.bottom() <= body.bottom() + 0.5,
         "제목 글줄은 본문 영역 안에 있어야 한다: {title:?} / {body:?}"
