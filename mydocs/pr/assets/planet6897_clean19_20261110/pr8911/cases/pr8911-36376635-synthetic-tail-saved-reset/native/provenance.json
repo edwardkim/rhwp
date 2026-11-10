@@ -1,0 +1,192 @@
+{
+  "pr": 8911,
+  "backend": "native",
+  "key": "pr8911-36376635-synthetic-tail-saved-reset",
+  "code_commit": "009b3cf42bf1d4105ff3279c1211613baf088359",
+  "producer": {
+    "head": "410f33c8cf5f6a504f62cc3e8c8c71e3603f734b",
+    "source_sha256": {
+      "src/renderer/layout/paragraph_layout.rs": "71f68b106e1ad8cc4501a01e4f9eb1549cefde49a65699dd19cbb24643e8838f",
+      "src/renderer/composer/stored_lines_runs.inc.rs": "93208f587fca993cc3665dc3103edda2825e55224fc9876a54e7ab9347567799",
+      "src/renderer/float_placement.rs": "e70632abdc618890e8b421e16f7d26d24d868e7f2134970d347f644c20f7353f",
+      "src/renderer/composer/line_breaking/stored_external_geometry.rs": "99bc6dd61e245b3cd8cafbfaec97aedbb11396384ae36a13f4793f7dd3aab8f8"
+    },
+    "started_at": "2026-11-10T22:16:30.427054+09:00",
+    "complete": true,
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp",
+      "-j",
+      "8"
+    ],
+    "pid": 76073,
+    "exit_code": 0,
+    "binary": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-native",
+    "binary_sha256": "42abdf7eed3565b4142313e3a931eed8866fdbdabc71a2f3621e90935bc1e519",
+    "finished_at": "2026-11-10T22:19:16.133587+09:00"
+  },
+  "case": {
+    "pr": 8911,
+    "key": "pr8911-36376635-synthetic-tail-saved-reset",
+    "doc": "samples/issue8904/36376635-synthetic-tail-saved-reset.hwpx",
+    "pdf": "pdf/issue8904/36376635-synthetic-tail-saved-reset-2020.pdf",
+    "compat": "2022",
+    "input_sha256": "27bc644e73eb8cf64d35227775dc7e9d5e27b74f540c610e1da12ad224d7dca5",
+    "pdf_sha256": "20257a2be00588346f8536e1ebf1452fcfab7781b06961b817e2190abb33ff35",
+    "protected_ids": []
+  },
+  "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8911-36376635-synthetic-tail-saved-reset",
+  "pages": 3,
+  "minimum": 100.0,
+  "claim_pages": [
+    2,
+    3
+  ],
+  "review_pages": [
+    1,
+    2,
+    3
+  ],
+  "actual_same_page_assets": [
+    {
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/native/silhouette.tsv",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8911-36376635-synthetic-tail-saved-reset/silhouette.tsv",
+      "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af"
+    },
+    {
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/native/manifest.json",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8911-36376635-synthetic-tail-saved-reset/silhouette_manifest.json",
+      "sha256": "8e72734abf1ba7cbd758ac3fbe7236b8ce0ff6157a2858b7cfa394c173b83ab8"
+    },
+    {
+      "page": 1,
+      "role": [
+        "whole_document_minimum"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/native/raw-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8911-36376635-synthetic-tail-saved-reset/rhwp_png/rhwp_001.png",
+      "sha256": "e34f56344e8f9f9a1ee0d9dbdd6c4277208882fc89d2f69c226e8c0f9e0b8fb2"
+    },
+    {
+      "page": 1,
+      "role": [
+        "whole_document_minimum"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/native/pdf-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8911-36376635-synthetic-tail-saved-reset/pdf_png/pdf-001.png",
+      "sha256": "8a938a6bc3be9664eb52c58c2bb3e18ffb8968820bc2ffd72dce1a8d9531c6bb"
+    },
+    {
+      "page": 1,
+      "role": [
+        "whole_document_minimum"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/native/review-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8911-36376635-synthetic-tail-saved-reset/review/review_001.png",
+      "sha256": "ca55cd2b84da2a09ef533699c349bb35f7f945d720e7a684c53b485c44732bdf"
+    },
+    {
+      "page": 1,
+      "role": [
+        "whole_document_minimum"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/native/overlay-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8911-36376635-synthetic-tail-saved-reset/overlay/overlay_001.png",
+      "sha256": "0619b7570894bc27754939a716db36f5a8ecec32ccd30cc48b11639707c6e432"
+    },
+    {
+      "page": 2,
+      "role": [
+        "claim"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/native/raw-002.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8911-36376635-synthetic-tail-saved-reset/rhwp_png/rhwp_002.png",
+      "sha256": "7f5bccd912122d11fe4143e30313254334b507db0dac1670c5ad1443fd930a79"
+    },
+    {
+      "page": 2,
+      "role": [
+        "claim"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/native/pdf-002.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8911-36376635-synthetic-tail-saved-reset/pdf_png/pdf-002.png",
+      "sha256": "5d6aab6943dc4e1e548220b84631f943ff7b4b6013eb87030d0c4c8df997e5ef"
+    },
+    {
+      "page": 2,
+      "role": [
+        "claim"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/native/review-002.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8911-36376635-synthetic-tail-saved-reset/review/review_002.png",
+      "sha256": "9e2f3b57fe93728fcd33367f004cac8936b7c0cf2a19ca7bb6c413d2ba0ae091"
+    },
+    {
+      "page": 2,
+      "role": [
+        "claim"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/native/overlay-002.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8911-36376635-synthetic-tail-saved-reset/overlay/overlay_002.png",
+      "sha256": "ff210e8712d0000354ddb5201ab0b9d023cbde63f2e5eb6819ae95ec87166399"
+    },
+    {
+      "page": 3,
+      "role": [
+        "claim"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/native/raw-003.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8911-36376635-synthetic-tail-saved-reset/rhwp_png/rhwp_003.png",
+      "sha256": "c9b1ce76dbd10640c5ac43494c5032b07a6e2cd6b291ce82b026b10bed425789"
+    },
+    {
+      "page": 3,
+      "role": [
+        "claim"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/native/pdf-003.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8911-36376635-synthetic-tail-saved-reset/pdf_png/pdf-003.png",
+      "sha256": "a610a21adfcba6e01c4f1c107b942d29ff452d78f8a51419565ff7590eeab59b"
+    },
+    {
+      "page": 3,
+      "role": [
+        "claim"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/native/review-003.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8911-36376635-synthetic-tail-saved-reset/review/review_003.png",
+      "sha256": "686e4633be64f53b2044737146215f7a4aacb99405dbc5b6c47ba59795889cde"
+    },
+    {
+      "page": 3,
+      "role": [
+        "claim"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/native/overlay-003.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8911-36376635-synthetic-tail-saved-reset/overlay/overlay_003.png",
+      "sha256": "c4179023ce24e8e1e3408e6f30f8af59dbb7e501cad2d716bb1e00421911148d"
+    }
+  ],
+  "final_direct_reading": "pending comparison with previous directly read images or new direct reading"
+}

@@ -1,0 +1,238 @@
+{
+  "pr": 8787,
+  "backend": "native",
+  "key": "pr8787-handbook",
+  "code_commit": "009b3cf42bf1d4105ff3279c1211613baf088359",
+  "producer": {
+    "head": "410f33c8cf5f6a504f62cc3e8c8c71e3603f734b",
+    "source_sha256": {
+      "src/renderer/layout/paragraph_layout.rs": "71f68b106e1ad8cc4501a01e4f9eb1549cefde49a65699dd19cbb24643e8838f",
+      "src/renderer/composer/stored_lines_runs.inc.rs": "93208f587fca993cc3665dc3103edda2825e55224fc9876a54e7ab9347567799",
+      "src/renderer/float_placement.rs": "e70632abdc618890e8b421e16f7d26d24d868e7f2134970d347f644c20f7353f",
+      "src/renderer/composer/line_breaking/stored_external_geometry.rs": "99bc6dd61e245b3cd8cafbfaec97aedbb11396384ae36a13f4793f7dd3aab8f8"
+    },
+    "started_at": "2026-11-10T22:16:30.427054+09:00",
+    "complete": true,
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp",
+      "-j",
+      "8"
+    ],
+    "pid": 76073,
+    "exit_code": 0,
+    "binary": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-native",
+    "binary_sha256": "42abdf7eed3565b4142313e3a931eed8866fdbdabc71a2f3621e90935bc1e519",
+    "finished_at": "2026-11-10T22:19:16.133587+09:00"
+  },
+  "case": {
+    "pr": 8787,
+    "key": "pr8787-handbook",
+    "doc": "samples/2025 행정업무운영 편람(최종).hwpx",
+    "pdf": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+    "compat": "2024",
+    "input_sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+    "pdf_sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+    "protected_ids": [
+      "941fe0c3549c0017"
+    ],
+    "font_environment": "mydocs/pr/assets/planet6897_integration_final/pr8389_8397/handbook-font-environment.json",
+    "font_environment_sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25"
+  },
+  "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-native-handbook/required-handbook-8153-native",
+  "pages": 383,
+  "minimum": 99.96,
+  "claim_pages": [
+    47,
+    48,
+    49
+  ],
+  "review_pages": [
+    47,
+    48,
+    49,
+    130
+  ],
+  "actual_same_page_assets": [
+    {
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8787/cases/pr8787-handbook/native/silhouette.tsv",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-native-handbook/required-handbook-8153-native/silhouette.tsv",
+      "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308"
+    },
+    {
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8787/cases/pr8787-handbook/native/manifest.json",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-native-handbook/required-handbook-8153-native/silhouette_manifest.json",
+      "sha256": "30671cb4f06591ab4313dae51f25073c7fe06eddfeabf42c3bf71ffb2bf915ea"
+    },
+    {
+      "page": 47,
+      "role": [
+        "claim"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8787/cases/pr8787-handbook/native/raw-047.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-native-handbook/required-handbook-8153-native/rhwp_png/rhwp_047.png",
+      "sha256": "8292effda44a0726a444f0a6012996880179543d9832fd49555c0ea9e5b74d88"
+    },
+    {
+      "page": 47,
+      "role": [
+        "claim"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8787/cases/pr8787-handbook/native/pdf-047.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-native-handbook/required-handbook-8153-native/pdf_png/pdf-047.png",
+      "sha256": "a6908279b02cbd0a0f798b9011ab68d799fd0ab7ab5cc507049e63ccc6af80ff"
+    },
+    {
+      "page": 47,
+      "role": [
+        "claim"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8787/cases/pr8787-handbook/native/review-047.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8787-handbook/review/review_047.png",
+      "sha256": "8afb948a9657d199c2a4bb98d4f03114f47ebc962619cef9132e32d683304c4c"
+    },
+    {
+      "page": 47,
+      "role": [
+        "claim"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8787/cases/pr8787-handbook/native/overlay-047.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8787-handbook/overlay/overlay_047.png",
+      "sha256": "ff2a2c0b6a14a24fb17629ca96a38ff4539dc7735d8f02b5a05f9e6bebc902b5"
+    },
+    {
+      "page": 48,
+      "role": [
+        "claim"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8787/cases/pr8787-handbook/native/raw-048.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-native-handbook/required-handbook-8153-native/rhwp_png/rhwp_048.png",
+      "sha256": "2f03eb2b593250b733e17566f0251a9109e520653cb46901c7e8a2ce39bb0e09"
+    },
+    {
+      "page": 48,
+      "role": [
+        "claim"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8787/cases/pr8787-handbook/native/pdf-048.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-native-handbook/required-handbook-8153-native/pdf_png/pdf-048.png",
+      "sha256": "b6c3ec1221d9db333580d5a75e0608a89ce18312e537dc663b16c914ec98a623"
+    },
+    {
+      "page": 48,
+      "role": [
+        "claim"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8787/cases/pr8787-handbook/native/review-048.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8787-handbook/review/review_048.png",
+      "sha256": "35c275e8d800c2efe5d267f52a52c5200d3e47de1a3bfd150edf3e8d3bb1dc0d"
+    },
+    {
+      "page": 48,
+      "role": [
+        "claim"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8787/cases/pr8787-handbook/native/overlay-048.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8787-handbook/overlay/overlay_048.png",
+      "sha256": "52ee67c13150303d6afbd2cf5853323d8b199725d0a4c327608b8b074f5458e8"
+    },
+    {
+      "page": 49,
+      "role": [
+        "claim"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8787/cases/pr8787-handbook/native/raw-049.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-native-handbook/required-handbook-8153-native/rhwp_png/rhwp_049.png",
+      "sha256": "912f95e0cfcabf9aeb41e1438f0ee78d32c49cabfbc9855dc3fd913bb7699071"
+    },
+    {
+      "page": 49,
+      "role": [
+        "claim"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8787/cases/pr8787-handbook/native/pdf-049.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-native-handbook/required-handbook-8153-native/pdf_png/pdf-049.png",
+      "sha256": "cf0aa286b3cbb2b635c0b5409069d200bdda6eb973d5c7a75dbfef92c654b5b6"
+    },
+    {
+      "page": 49,
+      "role": [
+        "claim"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8787/cases/pr8787-handbook/native/review-049.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8787-handbook/review/review_049.png",
+      "sha256": "02b982b1c86c7823f824725e344f288406b7c44fa99b7ea7047ec6d5486e5fa0"
+    },
+    {
+      "page": 49,
+      "role": [
+        "claim"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8787/cases/pr8787-handbook/native/overlay-049.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8787-handbook/overlay/overlay_049.png",
+      "sha256": "b5ad924ebd86b50cc88492d6b6734b6f3bdbb9ce7a8d1db3527582b887bb4e42"
+    },
+    {
+      "page": 130,
+      "role": [
+        "whole_document_minimum"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8787/cases/pr8787-handbook/native/raw-130.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-native-handbook/required-handbook-8153-native/rhwp_png/rhwp_130.png",
+      "sha256": "94b221553d15e52923cd5fbdf0a6ce4e44d646ff4a1fababd91128e93eddbd77"
+    },
+    {
+      "page": 130,
+      "role": [
+        "whole_document_minimum"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8787/cases/pr8787-handbook/native/pdf-130.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-native-handbook/required-handbook-8153-native/pdf_png/pdf-130.png",
+      "sha256": "5c6d2c1d0cf4a01f78cb6c4c320a29569e42cb50514622dcea2bba9afb9574c4"
+    },
+    {
+      "page": 130,
+      "role": [
+        "whole_document_minimum"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8787/cases/pr8787-handbook/native/review-130.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8787-handbook/review/review_130.png",
+      "sha256": "ce01aac52df3b9efde52d74eef06fdb474074259f992fa7c663c2aefa1bad994"
+    },
+    {
+      "page": 130,
+      "role": [
+        "whole_document_minimum"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8787/cases/pr8787-handbook/native/overlay-130.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8787-handbook/overlay/overlay_130.png",
+      "sha256": "f0bdfc6878a4871f0f561b09164e1344f39fc3c4e0b8032daa9e2fa59352a0fa"
+    }
+  ],
+  "final_direct_reading": "pending comparison with previous directly read images or new direct reading"
+}

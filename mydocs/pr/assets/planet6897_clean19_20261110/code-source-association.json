@@ -1,0 +1,74 @@
+{
+  "code_commit": "009b3cf42bf1d4105ff3279c1211613baf088359",
+  "native": {
+    "head": "410f33c8cf5f6a504f62cc3e8c8c71e3603f734b",
+    "source_sha256": {
+      "src/renderer/layout/paragraph_layout.rs": "71f68b106e1ad8cc4501a01e4f9eb1549cefde49a65699dd19cbb24643e8838f",
+      "src/renderer/composer/stored_lines_runs.inc.rs": "93208f587fca993cc3665dc3103edda2825e55224fc9876a54e7ab9347567799",
+      "src/renderer/float_placement.rs": "e70632abdc618890e8b421e16f7d26d24d868e7f2134970d347f644c20f7353f",
+      "src/renderer/composer/line_breaking/stored_external_geometry.rs": "99bc6dd61e245b3cd8cafbfaec97aedbb11396384ae36a13f4793f7dd3aab8f8"
+    },
+    "started_at": "2026-11-10T22:16:30.427054+09:00",
+    "complete": true,
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp",
+      "-j",
+      "8"
+    ],
+    "pid": 76073,
+    "exit_code": 0,
+    "binary": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-native",
+    "binary_sha256": "42abdf7eed3565b4142313e3a931eed8866fdbdabc71a2f3621e90935bc1e519",
+    "finished_at": "2026-11-10T22:19:16.133587+09:00"
+  },
+  "fresh_wasm": {
+    "source_head": "410f33c8cf5f6a504f62cc3e8c8c71e3603f734b",
+    "started_at": "2026-11-10T22:19:23.239252+09:00",
+    "complete": true,
+    "method": "Mac locked wrapper local no-opt alternative; not Docker optimization",
+    "source_hashes": {
+      "src/renderer/layout/paragraph_layout.rs": "71f68b106e1ad8cc4501a01e4f9eb1549cefde49a65699dd19cbb24643e8838f",
+      "src/renderer/composer/stored_lines_runs.inc.rs": "93208f587fca993cc3665dc3103edda2825e55224fc9876a54e7ab9347567799",
+      "src/renderer/float_placement.rs": "e70632abdc618890e8b421e16f7d26d24d868e7f2134970d347f644c20f7353f",
+      "src/renderer/composer/line_breaking/stored_external_geometry.rs": "99bc6dd61e245b3cd8cafbfaec97aedbb11396384ae36a13f4793f7dd3aab8f8"
+    },
+    "source_diff_sha256": "16823b0f29e0693a6a1427456a022d1ba08943e2b7f6f04332e08742a68392ba",
+    "command": [
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg",
+      "--no-opt"
+    ],
+    "pid": 86878,
+    "exit_code": 0,
+    "files": {
+      "rhwp.js": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+      "rhwp_bg.wasm": "2a1f2faa408d9a162c226b0611fe3f655b1db4647cd88a1aea117393c91f4dfe"
+    },
+    "studio_public_matches": {
+      "rhwp.js": true,
+      "rhwp_bg.wasm": true
+    },
+    "finished_at": "2026-11-10T22:26:36.251386+09:00"
+  },
+  "native_committed_sources_match": true,
+  "fresh_wasm_runtime_patch_sha256_matches": true,
+  "runtime_paths_changed_since_parent": [
+    "src/renderer/composer/line_breaking/stored_external_geometry.rs",
+    "src/renderer/float_placement.rs",
+    "src/renderer/layout/paragraph_layout.rs"
+  ],
+  "meaning": "Frozen binaries were built from the exact runtime sources now committed. The commit adds tests, input/PDF and evidence without changing the captured runtime sources."
+}

@@ -1,0 +1,113 @@
+{
+  "pr": 8847,
+  "backend": "native",
+  "key": "pr8847-36414883-negative-tac-line-spacing",
+  "code_commit": "009b3cf42bf1d4105ff3279c1211613baf088359",
+  "producer": {
+    "head": "410f33c8cf5f6a504f62cc3e8c8c71e3603f734b",
+    "source_sha256": {
+      "src/renderer/layout/paragraph_layout.rs": "71f68b106e1ad8cc4501a01e4f9eb1549cefde49a65699dd19cbb24643e8838f",
+      "src/renderer/composer/stored_lines_runs.inc.rs": "93208f587fca993cc3665dc3103edda2825e55224fc9876a54e7ab9347567799",
+      "src/renderer/float_placement.rs": "e70632abdc618890e8b421e16f7d26d24d868e7f2134970d347f644c20f7353f",
+      "src/renderer/composer/line_breaking/stored_external_geometry.rs": "99bc6dd61e245b3cd8cafbfaec97aedbb11396384ae36a13f4793f7dd3aab8f8"
+    },
+    "started_at": "2026-11-10T22:16:30.427054+09:00",
+    "complete": true,
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp",
+      "-j",
+      "8"
+    ],
+    "pid": 76073,
+    "exit_code": 0,
+    "binary": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-native",
+    "binary_sha256": "42abdf7eed3565b4142313e3a931eed8866fdbdabc71a2f3621e90935bc1e519",
+    "finished_at": "2026-11-10T22:19:16.133587+09:00"
+  },
+  "case": {
+    "pr": 8847,
+    "key": "pr8847-36414883-negative-tac-line-spacing",
+    "doc": "samples/issue8841/36414883-negative-tac-line-spacing.hwpx",
+    "pdf": "pdf/issue8841/36414883-negative-tac-line-spacing-2020.pdf",
+    "compat": "2022",
+    "input_sha256": "11e15b49cc0b0fcecf6fe28a768d29b6a1d41631de6e0f880e2272817495a5ea",
+    "pdf_sha256": "fea8d4d0bc58b2ddf046db485c6811aa4ebb8aaf2c41f3d98e25cc332c04e95f",
+    "protected_ids": []
+  },
+  "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8847-36414883-negative-tac-line-spacing",
+  "pages": 1,
+  "minimum": 100.0,
+  "claim_pages": [
+    1
+  ],
+  "review_pages": [
+    1
+  ],
+  "actual_same_page_assets": [
+    {
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8847/cases/pr8847-36414883-negative-tac-line-spacing/native/silhouette.tsv",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8847-36414883-negative-tac-line-spacing/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8847/cases/pr8847-36414883-negative-tac-line-spacing/native/manifest.json",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8847-36414883-negative-tac-line-spacing/silhouette_manifest.json",
+      "sha256": "e50a9e82d1a318be5b4241a25ab8fd757caf2ab88e2de79c701999a1101e83db"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim",
+        "whole_document_minimum"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8847/cases/pr8847-36414883-negative-tac-line-spacing/native/raw-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8847-36414883-negative-tac-line-spacing/rhwp_png/rhwp_001.png",
+      "sha256": "efc6149af2f5e671e2523a30f04aef9c0f8604e88ddb492e1d39a8c0ddcf616a"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim",
+        "whole_document_minimum"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8847/cases/pr8847-36414883-negative-tac-line-spacing/native/pdf-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8847-36414883-negative-tac-line-spacing/pdf_png/pdf-001.png",
+      "sha256": "bf8f90f5acb94451f7ba234f06b74a75d7bde5f5d849778773aed147556fcbe4"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim",
+        "whole_document_minimum"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8847/cases/pr8847-36414883-negative-tac-line-spacing/native/review-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8847-36414883-negative-tac-line-spacing/review/review_001.png",
+      "sha256": "541d1f10825b3fcd370a8e0cf60836e80b6414f4779d33a8e4882316e1ca842d"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim",
+        "whole_document_minimum"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8847/cases/pr8847-36414883-negative-tac-line-spacing/native/overlay-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8847-36414883-negative-tac-line-spacing/overlay/overlay_001.png",
+      "sha256": "e26c1fd033a640b78ff78024f792ad5eec6b9e4e0c1ea15ad1709f5c29e7aa28"
+    }
+  ],
+  "final_direct_reading": "pending comparison with previous directly read images or new direct reading"
+}

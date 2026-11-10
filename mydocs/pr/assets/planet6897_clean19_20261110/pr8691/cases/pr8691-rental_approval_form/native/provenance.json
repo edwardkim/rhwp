@@ -1,0 +1,113 @@
+{
+  "pr": 8691,
+  "backend": "native",
+  "key": "pr8691-rental_approval_form",
+  "code_commit": "009b3cf42bf1d4105ff3279c1211613baf088359",
+  "producer": {
+    "head": "410f33c8cf5f6a504f62cc3e8c8c71e3603f734b",
+    "source_sha256": {
+      "src/renderer/layout/paragraph_layout.rs": "71f68b106e1ad8cc4501a01e4f9eb1549cefde49a65699dd19cbb24643e8838f",
+      "src/renderer/composer/stored_lines_runs.inc.rs": "93208f587fca993cc3665dc3103edda2825e55224fc9876a54e7ab9347567799",
+      "src/renderer/float_placement.rs": "e70632abdc618890e8b421e16f7d26d24d868e7f2134970d347f644c20f7353f",
+      "src/renderer/composer/line_breaking/stored_external_geometry.rs": "99bc6dd61e245b3cd8cafbfaec97aedbb11396384ae36a13f4793f7dd3aab8f8"
+    },
+    "started_at": "2026-11-10T22:16:30.427054+09:00",
+    "complete": true,
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp",
+      "-j",
+      "8"
+    ],
+    "pid": 76073,
+    "exit_code": 0,
+    "binary": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-native",
+    "binary_sha256": "42abdf7eed3565b4142313e3a931eed8866fdbdabc71a2f3621e90935bc1e519",
+    "finished_at": "2026-11-10T22:19:16.133587+09:00"
+  },
+  "case": {
+    "pr": 8691,
+    "key": "pr8691-rental_approval_form",
+    "doc": "samples/issue8682/rental_approval_form.hwp",
+    "pdf": "pdf/issue8682/rental_approval_form-2020.pdf",
+    "compat": "2022",
+    "input_sha256": "301d6f7e7df4129ee5090d174100b1e0dfcf1b2abfb8afdcf289a0bed2beef46",
+    "pdf_sha256": "4fb0322894a091b29b429344486bdb874feb1afa85edc18837618264cf5dad82",
+    "protected_ids": []
+  },
+  "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8691-rental_approval_form",
+  "pages": 1,
+  "minimum": 100.0,
+  "claim_pages": [
+    1
+  ],
+  "review_pages": [
+    1
+  ],
+  "actual_same_page_assets": [
+    {
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-rental_approval_form/native/silhouette.tsv",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8691-rental_approval_form/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-rental_approval_form/native/manifest.json",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8691-rental_approval_form/silhouette_manifest.json",
+      "sha256": "4948ff0a48129b96dd1709f47dab1de769a5f2a4ed27bf9eba0235129bf0ffb1"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim",
+        "whole_document_minimum"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-rental_approval_form/native/raw-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8691-rental_approval_form/rhwp_png/rhwp_001.png",
+      "sha256": "acc4e13c85c7cba1528c846a3c7e9dd30cf36ac05443b1cc54910995cfc9fd1a"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim",
+        "whole_document_minimum"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-rental_approval_form/native/pdf-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8691-rental_approval_form/pdf_png/pdf-001.png",
+      "sha256": "f21eb4cdca4de3a6ee31415a1a857f0cceea0f38f0ace3c00869078eed3343e0"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim",
+        "whole_document_minimum"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-rental_approval_form/native/review-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8691-rental_approval_form/review/review_001.png",
+      "sha256": "97a24791995789685d885e2e8af1f858b3f6938f04a6253f9ab1b273d5e09a15"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim",
+        "whole_document_minimum"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-rental_approval_form/native/overlay-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8691-rental_approval_form/overlay/overlay_001.png",
+      "sha256": "c78e4add654d955772d482d1cb3f8e019c6a888108848b324444bf0fca7e485c"
+    }
+  ],
+  "final_direct_reading": "pending comparison with previous directly read images or new direct reading"
+}

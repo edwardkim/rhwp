@@ -1,0 +1,462 @@
+{
+  "current_code_commit": "009b3cf42bf1d4105ff3279c1211613baf088359",
+  "previous_reading_producer": "f8eded34f970e0d13e15f8406f6a2d61475ae7a2",
+  "pages": [
+    {
+      "pr": 8691,
+      "key": "pr8691-ai_procurement_appendix",
+      "page": 1,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8691,
+      "key": "pr8691-ai_procurement_appendix",
+      "page": 2,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8691,
+      "key": "pr8691-ai_procurement_appendix",
+      "page": 3,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8691,
+      "key": "pr8691-ai_procurement_appendix",
+      "page": 4,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8691,
+      "key": "pr8691-artifact_loan_form",
+      "page": 1,
+      "previous_direct_reading_recorded": true,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": true
+    },
+    {
+      "pr": 8691,
+      "key": "pr8691-rental_approval_form",
+      "page": 1,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8747,
+      "key": "pr8747-156641865_press_release_band",
+      "page": 1,
+      "previous_direct_reading_recorded": true,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": true
+    },
+    {
+      "pr": 8747,
+      "key": "pr8747-156713639_press_release_band",
+      "page": 1,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8752,
+      "key": "pr8752-wide_paper_table_two_columns",
+      "page": 1,
+      "previous_direct_reading_recorded": true,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": true
+    },
+    {
+      "pr": 8752,
+      "key": "pr8752-wide_paper_table_two_columns",
+      "page": 2,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8762,
+      "key": "pr8762-36458608-square-tac-same-paragraph",
+      "page": 1,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8762,
+      "key": "pr8762-36458608-square-tac-same-paragraph",
+      "page": 3,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8762,
+      "key": "pr8762-36458608-square-tac-same-paragraph",
+      "page": 4,
+      "previous_direct_reading_recorded": true,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": true
+    },
+    {
+      "pr": 8762,
+      "key": "pr8762-36458608-square-tac-same-paragraph",
+      "page": 5,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8774,
+      "key": "pr8774-4680000-202100038_research_review_request",
+      "page": 1,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8774,
+      "key": "pr8774-4680000-202100038_research_review_request",
+      "page": 2,
+      "previous_direct_reading_recorded": true,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": true
+    },
+    {
+      "pr": 8796,
+      "key": "pr8796-successor_flow_axis",
+      "page": 1,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8796,
+      "key": "pr8796-successor_flow_axis",
+      "page": 2,
+      "previous_direct_reading_recorded": true,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": true
+    },
+    {
+      "pr": 8802,
+      "key": "pr8802-first_margin_page_origin",
+      "page": 1,
+      "previous_direct_reading_recorded": true,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": true
+    },
+    {
+      "pr": 8837,
+      "key": "pr8837-page_float_host_spacing",
+      "page": 1,
+      "previous_direct_reading_recorded": true,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": true
+    },
+    {
+      "pr": 8847,
+      "key": "pr8847-36414883-negative-tac-line-spacing",
+      "page": 1,
+      "previous_direct_reading_recorded": true,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": true
+    },
+    {
+      "pr": 8865,
+      "key": "pr8865-missing_picture_print",
+      "page": 1,
+      "previous_direct_reading_recorded": true,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": true
+    },
+    {
+      "pr": 8865,
+      "key": "pr8865-missing_picture_print",
+      "page": 2,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8868,
+      "key": "pr8868-36379333-stored-text-above-offset-float",
+      "page": 1,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8868,
+      "key": "pr8868-36379333-stored-text-above-offset-float",
+      "page": 2,
+      "previous_direct_reading_recorded": true,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": true
+    },
+    {
+      "pr": 8886,
+      "key": "pr8886-36317264_approval",
+      "page": 1,
+      "previous_direct_reading_recorded": true,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": true
+    },
+    {
+      "pr": 8887,
+      "key": "pr8887-36421178-long-word-first-char",
+      "page": 1,
+      "previous_direct_reading_recorded": true,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": true
+    },
+    {
+      "pr": 8887,
+      "key": "pr8887-36421178-long-word-first-char",
+      "page": 2,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8892,
+      "key": "pr8892-36384898-unstored-next-float-bottom-margin",
+      "page": 1,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8892,
+      "key": "pr8892-36384898-unstored-next-float-bottom-margin",
+      "page": 2,
+      "previous_direct_reading_recorded": true,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": true
+    },
+    {
+      "pr": 8898,
+      "key": "pr8898-36400288_approval",
+      "page": 1,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8898,
+      "key": "pr8898-36400288_approval",
+      "page": 2,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8911,
+      "key": "pr8911-36376635-synthetic-tail-saved-reset",
+      "page": 2,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8911,
+      "key": "pr8911-36376635-synthetic-tail-saved-reset",
+      "page": 3,
+      "previous_direct_reading_recorded": true,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": true
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5",
+      "page": 1,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5",
+      "page": 4,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5",
+      "page": 16,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5",
+      "page": 22,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5-hwp5",
+      "page": 1,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5-hwp5",
+      "page": 4,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5-hwp5",
+      "page": 16,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5-hwp5",
+      "page": 22,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5-hwpx",
+      "page": 1,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5-hwpx",
+      "page": 4,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5-hwpx",
+      "page": 16,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": false,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5-hwpx",
+      "page": 22,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-square-right",
+      "page": 1,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-employment",
+      "page": 1,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-employment",
+      "page": 14,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8787,
+      "key": "pr8787-handbook",
+      "page": 47,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8787,
+      "key": "pr8787-handbook",
+      "page": 48,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8787,
+      "key": "pr8787-handbook",
+      "page": 49,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": true,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8839,
+      "key": "pr8839-original",
+      "page": 1,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": false,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8839,
+      "key": "pr8839-3190263",
+      "page": 3,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": false,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8839,
+      "key": "pr8839-3190263",
+      "page": 4,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": false,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8839,
+      "key": "pr8839-3190263",
+      "page": 7,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": false,
+      "reuse_direct_reading": false
+    },
+    {
+      "pr": 8839,
+      "key": "pr8839-3190263",
+      "page": 8,
+      "previous_direct_reading_recorded": false,
+      "raw_and_pdf_identical": false,
+      "reuse_direct_reading": false
+    }
+  ]
+}

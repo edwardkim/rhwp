@@ -1,0 +1,239 @@
+{
+  "pr": 8691,
+  "backend": "native",
+  "key": "pr8691-ai_procurement_appendix",
+  "code_commit": "009b3cf42bf1d4105ff3279c1211613baf088359",
+  "producer": {
+    "head": "410f33c8cf5f6a504f62cc3e8c8c71e3603f734b",
+    "source_sha256": {
+      "src/renderer/layout/paragraph_layout.rs": "71f68b106e1ad8cc4501a01e4f9eb1549cefde49a65699dd19cbb24643e8838f",
+      "src/renderer/composer/stored_lines_runs.inc.rs": "93208f587fca993cc3665dc3103edda2825e55224fc9876a54e7ab9347567799",
+      "src/renderer/float_placement.rs": "e70632abdc618890e8b421e16f7d26d24d868e7f2134970d347f644c20f7353f",
+      "src/renderer/composer/line_breaking/stored_external_geometry.rs": "99bc6dd61e245b3cd8cafbfaec97aedbb11396384ae36a13f4793f7dd3aab8f8"
+    },
+    "started_at": "2026-11-10T22:16:30.427054+09:00",
+    "complete": true,
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp",
+      "-j",
+      "8"
+    ],
+    "pid": 76073,
+    "exit_code": 0,
+    "binary": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-native",
+    "binary_sha256": "42abdf7eed3565b4142313e3a931eed8866fdbdabc71a2f3621e90935bc1e519",
+    "finished_at": "2026-11-10T22:19:16.133587+09:00"
+  },
+  "case": {
+    "pr": 8691,
+    "key": "pr8691-ai_procurement_appendix",
+    "doc": "samples/issue8682/ai_procurement_appendix.hwp",
+    "pdf": "pdf/issue8682/ai_procurement_appendix-2020.pdf",
+    "compat": "2022",
+    "input_sha256": "8f18a357c73ff2aae4b0e2a2df3f1fecf9679aab65d137e684c7791685c09b5a",
+    "pdf_sha256": "a6fe15e195cda7b85c520b69bfa53bc8a0727821ac90c1822e956e227269c68b",
+    "protected_ids": []
+  },
+  "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8691-ai_procurement_appendix",
+  "pages": 4,
+  "minimum": 97.47,
+  "claim_pages": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "review_pages": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "actual_same_page_assets": [
+    {
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/native/silhouette.tsv",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8691-ai_procurement_appendix/silhouette.tsv",
+      "sha256": "2b4896a2a59383496d01b142763fc640921d73c6dfce154a1bf8c6e9025ec432"
+    },
+    {
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/native/manifest.json",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8691-ai_procurement_appendix/silhouette_manifest.json",
+      "sha256": "1f1d8e8830494aae740b43080fe0986da125dd959853afcee5be15eccca7421a"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/native/raw-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8691-ai_procurement_appendix/rhwp_png/rhwp_001.png",
+      "sha256": "f7274965db1792b189129f0d02892dab54450727f5c18e91ece55788401f8f69"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/native/pdf-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8691-ai_procurement_appendix/pdf_png/pdf-001.png",
+      "sha256": "c3405d85ac43502699ca7eb1abe245002040b96149e1f5126e705e6a1e5bba4f"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/native/review-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8691-ai_procurement_appendix/review/review_001.png",
+      "sha256": "99cdaf20b55da7d6214d14abc72fd27aae6bd99d670b05d2b401cae2a20a0029"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/native/overlay-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8691-ai_procurement_appendix/overlay/overlay_001.png",
+      "sha256": "67fbe1c2e8f3a87c032ee787e29388b865b28a5837a313272b82af60f0a4f3c9"
+    },
+    {
+      "page": 2,
+      "role": [
+        "claim"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/native/raw-002.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8691-ai_procurement_appendix/rhwp_png/rhwp_002.png",
+      "sha256": "60fb33a9fca88167a53a3da62bafca2052045141b5798244bca8897d31a62809"
+    },
+    {
+      "page": 2,
+      "role": [
+        "claim"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/native/pdf-002.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8691-ai_procurement_appendix/pdf_png/pdf-002.png",
+      "sha256": "7b6b2295ba38199cbfd6f65dac2ba7288543d6fc440cb9434dbdd76cfbeb975b"
+    },
+    {
+      "page": 2,
+      "role": [
+        "claim"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/native/review-002.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8691-ai_procurement_appendix/review/review_002.png",
+      "sha256": "b8fdae0a7212c4501aecb8013a11302a902c01075622b46330ce5b99084c46a2"
+    },
+    {
+      "page": 2,
+      "role": [
+        "claim"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/native/overlay-002.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8691-ai_procurement_appendix/overlay/overlay_002.png",
+      "sha256": "f4ed1a337601214a98c8b74c3c5d183dce3862f8801341160b63c6a011be33ec"
+    },
+    {
+      "page": 3,
+      "role": [
+        "claim",
+        "whole_document_minimum"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/native/raw-003.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8691-ai_procurement_appendix/rhwp_png/rhwp_003.png",
+      "sha256": "1bea1d88cd51c4e2a0434eadf6f97a1014e5416fd389bf6ed9a9ddc574124700"
+    },
+    {
+      "page": 3,
+      "role": [
+        "claim",
+        "whole_document_minimum"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/native/pdf-003.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8691-ai_procurement_appendix/pdf_png/pdf-003.png",
+      "sha256": "b04a119b84b02df90922166e801f702d2264bab88e8e5be1d1695bbf5f28cbb3"
+    },
+    {
+      "page": 3,
+      "role": [
+        "claim",
+        "whole_document_minimum"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/native/review-003.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8691-ai_procurement_appendix/review/review_003.png",
+      "sha256": "1afcc770cea1e5b9c5491485181fe086888e35f34348ed9b516bb845d77dc957"
+    },
+    {
+      "page": 3,
+      "role": [
+        "claim",
+        "whole_document_minimum"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/native/overlay-003.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8691-ai_procurement_appendix/overlay/overlay_003.png",
+      "sha256": "463da807d2352a7208920a8fc5f1e3751bbd985840e6e522582f2894b914885e"
+    },
+    {
+      "page": 4,
+      "role": [
+        "claim"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/native/raw-004.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8691-ai_procurement_appendix/rhwp_png/rhwp_004.png",
+      "sha256": "ca48bd4cdc1000c7693b25579bcf24760b2dc1ce5d59e5457a44c3eca5058405"
+    },
+    {
+      "page": 4,
+      "role": [
+        "claim"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/native/pdf-004.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8691-ai_procurement_appendix/pdf_png/pdf-004.png",
+      "sha256": "0dbb2b6a73661e64acbceb73443ba0dc6d0cb96e3d20ba438eff16f2e5c3cec7"
+    },
+    {
+      "page": 4,
+      "role": [
+        "claim"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/native/review-004.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8691-ai_procurement_appendix/review/review_004.png",
+      "sha256": "e9be5d99a934ddd66ee010d9ad840188a5434193335edc59c2999132d6b047ab"
+    },
+    {
+      "page": 4,
+      "role": [
+        "claim"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/native/overlay-004.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8691-ai_procurement_appendix/overlay/overlay_004.png",
+      "sha256": "b3775dd63d17c79e30b6bf353cbd4c3e7902fdc5f2b29c95f576b2c27a6fe236"
+    }
+  ],
+  "final_direct_reading": "pending comparison with previous directly read images or new direct reading"
+}

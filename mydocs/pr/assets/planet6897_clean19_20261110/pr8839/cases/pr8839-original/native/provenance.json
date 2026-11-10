@@ -1,0 +1,113 @@
+{
+  "pr": 8839,
+  "backend": "native",
+  "key": "pr8839-original",
+  "code_commit": "009b3cf42bf1d4105ff3279c1211613baf088359",
+  "producer": {
+    "head": "410f33c8cf5f6a504f62cc3e8c8c71e3603f734b",
+    "source_sha256": {
+      "src/renderer/layout/paragraph_layout.rs": "71f68b106e1ad8cc4501a01e4f9eb1549cefde49a65699dd19cbb24643e8838f",
+      "src/renderer/composer/stored_lines_runs.inc.rs": "93208f587fca993cc3665dc3103edda2825e55224fc9876a54e7ab9347567799",
+      "src/renderer/float_placement.rs": "e70632abdc618890e8b421e16f7d26d24d868e7f2134970d347f644c20f7353f",
+      "src/renderer/composer/line_breaking/stored_external_geometry.rs": "99bc6dd61e245b3cd8cafbfaec97aedbb11396384ae36a13f4793f7dd3aab8f8"
+    },
+    "started_at": "2026-11-10T22:16:30.427054+09:00",
+    "complete": true,
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp",
+      "-j",
+      "8"
+    ],
+    "pid": 76073,
+    "exit_code": 0,
+    "binary": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-native",
+    "binary_sha256": "42abdf7eed3565b4142313e3a931eed8866fdbdabc71a2f3621e90935bc1e519",
+    "finished_at": "2026-11-10T22:19:16.133587+09:00"
+  },
+  "case": {
+    "pr": 8839,
+    "key": "pr8839-original",
+    "doc": "/Users/tsjang/Downloads/korea_downloads/samples/서울아리수본부 본부 요금관리부 전산정보과/36387608_결재문서본문_고객지원시스템 운영 성과측정 관련 성과지표 달성도 측정결과 보고.hwpx",
+    "pdf": "pdf/issue8834/issue8834-36387608-2020.pdf",
+    "compat": "2022",
+    "input_sha256": "e2a0f181a74eff21dbc13b122923730355cc75282a1566e0d417ea0d89374458",
+    "pdf_sha256": "2559496e2e361db8a59e36222615b4996e0098189701ab1a27149612bd64db36",
+    "protected_ids": []
+  },
+  "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8839-original",
+  "pages": 1,
+  "minimum": 100.0,
+  "claim_pages": [
+    1
+  ],
+  "review_pages": [
+    1
+  ],
+  "actual_same_page_assets": [
+    {
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8839/cases/pr8839-original/native/silhouette.tsv",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8839-original/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8839/cases/pr8839-original/native/manifest.json",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8839-original/silhouette_manifest.json",
+      "sha256": "cae0ad3599e8d6423ff652dd4b72bedc85eb84ba7f6eed3a759ed762ec8bf1d8"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim",
+        "whole_document_minimum"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8839/cases/pr8839-original/native/raw-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8839-original/rhwp_png/rhwp_001.png",
+      "sha256": "47d918feaa3f9de2c7f63746de590f6147225511a3edb3cb89f42736d27e94dd"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim",
+        "whole_document_minimum"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8839/cases/pr8839-original/native/pdf-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8839-original/pdf_png/pdf-001.png",
+      "sha256": "10732cc3d5007e27662ce77ffaab3f019c8fad5be29a4e5f0f9084f9867a4e67"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim",
+        "whole_document_minimum"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8839/cases/pr8839-original/native/review-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8839-original/review/review_001.png",
+      "sha256": "22a05f43bfc43193ab10fc2dbd779b542f8c01da0d58055507e67633e9134375"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim",
+        "whole_document_minimum"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8839/cases/pr8839-original/native/overlay-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8839-original/overlay/overlay_001.png",
+      "sha256": "4f22189701a3d80bda8310bc286dab2806a0d41872cdd20091130b7319a65e02"
+    }
+  ],
+  "final_direct_reading": "pending comparison with previous directly read images or new direct reading"
+}

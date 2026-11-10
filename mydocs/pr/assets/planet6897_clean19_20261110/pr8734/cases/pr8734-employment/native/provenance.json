@@ -1,0 +1,192 @@
+{
+  "pr": 8734,
+  "backend": "native",
+  "key": "pr8734-employment",
+  "code_commit": "009b3cf42bf1d4105ff3279c1211613baf088359",
+  "producer": {
+    "head": "410f33c8cf5f6a504f62cc3e8c8c71e3603f734b",
+    "source_sha256": {
+      "src/renderer/layout/paragraph_layout.rs": "71f68b106e1ad8cc4501a01e4f9eb1549cefde49a65699dd19cbb24643e8838f",
+      "src/renderer/composer/stored_lines_runs.inc.rs": "93208f587fca993cc3665dc3103edda2825e55224fc9876a54e7ab9347567799",
+      "src/renderer/float_placement.rs": "e70632abdc618890e8b421e16f7d26d24d868e7f2134970d347f644c20f7353f",
+      "src/renderer/composer/line_breaking/stored_external_geometry.rs": "99bc6dd61e245b3cd8cafbfaec97aedbb11396384ae36a13f4793f7dd3aab8f8"
+    },
+    "started_at": "2026-11-10T22:16:30.427054+09:00",
+    "complete": true,
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp",
+      "-j",
+      "8"
+    ],
+    "pid": 76073,
+    "exit_code": 0,
+    "binary": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-native",
+    "binary_sha256": "42abdf7eed3565b4142313e3a931eed8866fdbdabc71a2f3621e90935bc1e519",
+    "finished_at": "2026-11-10T22:19:16.133587+09:00"
+  },
+  "case": {
+    "pr": 8734,
+    "key": "pr8734-employment",
+    "doc": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/source-controls/issue8692/employment_service_interim_report.hwp",
+    "pdf": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/source-controls/issue8692/employment_service_interim_report-2020.pdf",
+    "compat": "2022",
+    "input_sha256": "f2af4c2b4e7721cec84488833eaf68b48ee4c852fc2990411188b33bf223606a",
+    "pdf_sha256": "f11dbf1389dd43f37911c730d1bf63ee7de0d5821e95fa1d206165819732fc11",
+    "protected_ids": []
+  },
+  "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-employment",
+  "pages": 90,
+  "minimum": 94.23,
+  "claim_pages": [
+    1,
+    14
+  ],
+  "review_pages": [
+    1,
+    14,
+    79
+  ],
+  "actual_same_page_assets": [
+    {
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/cases/pr8734-employment/native/silhouette.tsv",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-employment/silhouette.tsv",
+      "sha256": "932b7404ebbc6f158914c42b03c9a0f4e4db5ba44126cd772dd6586d74d8328b"
+    },
+    {
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/cases/pr8734-employment/native/manifest.json",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-employment/silhouette_manifest.json",
+      "sha256": "160ce3425abd0c3f0c4a2a7cf857cb2a81a7019a6083b223373a3a75d6527daf"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/cases/pr8734-employment/native/raw-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-employment/rhwp_png/rhwp_001.png",
+      "sha256": "24534fcbc287954f702f395ecf6d3f17d34bf681b1ab1a200689df9bb7b3827f"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/cases/pr8734-employment/native/pdf-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-employment/pdf_png/pdf-001.png",
+      "sha256": "61bd8c3233d918db17f15ab661ee286e12b88bff5411d50987f7a0e9ea7fc46b"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/cases/pr8734-employment/native/review-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8734-employment/review/review_001.png",
+      "sha256": "c4bc91670e985802690c1684ec3efe874968b18c954ab450a72de4503d656ea7"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/cases/pr8734-employment/native/overlay-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8734-employment/overlay/overlay_001.png",
+      "sha256": "60aae6742f5cb5cdb2f2a8c528dfe77b8bcbbebd00da189a11edb147883d5d9d"
+    },
+    {
+      "page": 14,
+      "role": [
+        "claim"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/cases/pr8734-employment/native/raw-014.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-employment/rhwp_png/rhwp_014.png",
+      "sha256": "a99bec7bb870fd7271af958e26574111dc37c6815a01fa743cad658629d01fa2"
+    },
+    {
+      "page": 14,
+      "role": [
+        "claim"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/cases/pr8734-employment/native/pdf-014.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-employment/pdf_png/pdf-014.png",
+      "sha256": "397bd517686221b7d7b7214d46e0a3a4b632ba1b1b82a26b1de868b604697eb4"
+    },
+    {
+      "page": 14,
+      "role": [
+        "claim"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/cases/pr8734-employment/native/review-014.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8734-employment/review/review_014.png",
+      "sha256": "e3a6b54415d9cc3db71a443c538cd2138c3f5d2240f2887e6111d9a31db12826"
+    },
+    {
+      "page": 14,
+      "role": [
+        "claim"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/cases/pr8734-employment/native/overlay-014.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8734-employment/overlay/overlay_014.png",
+      "sha256": "a98a1a08d85172f55a0f51641fbf296989b272f4dd2faad94378a2af8e8d2ccd"
+    },
+    {
+      "page": 79,
+      "role": [
+        "whole_document_minimum"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/cases/pr8734-employment/native/raw-079.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-employment/rhwp_png/rhwp_079.png",
+      "sha256": "6655488b8351c506aec210b7b10009ee1e865ea0c94049daf4072dafe01c39d0"
+    },
+    {
+      "page": 79,
+      "role": [
+        "whole_document_minimum"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/cases/pr8734-employment/native/pdf-079.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8734-employment/pdf_png/pdf-079.png",
+      "sha256": "19ae760afee5a642536ac688077a7daf66ea0001aabda5c9af42532ab8b3915d"
+    },
+    {
+      "page": 79,
+      "role": [
+        "whole_document_minimum"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/cases/pr8734-employment/native/review-079.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8734-employment/review/review_079.png",
+      "sha256": "ab07045ccc96b15a988f490cb6bb17d9b0f2ee53968ba093f6e726779eb8e63d"
+    },
+    {
+      "page": 79,
+      "role": [
+        "whole_document_minimum"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/cases/pr8734-employment/native/overlay-079.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8734-employment/overlay/overlay_079.png",
+      "sha256": "e5eed3e0ce9db8c27cf66de7c8a714796011e3aafa1991393f60aa16f6fc9ed6"
+    }
+  ],
+  "final_direct_reading": "pending comparison with previous directly read images or new direct reading"
+}

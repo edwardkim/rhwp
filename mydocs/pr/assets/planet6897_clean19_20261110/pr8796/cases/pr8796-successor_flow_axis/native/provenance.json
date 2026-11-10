@@ -1,0 +1,155 @@
+{
+  "pr": 8796,
+  "backend": "native",
+  "key": "pr8796-successor_flow_axis",
+  "code_commit": "009b3cf42bf1d4105ff3279c1211613baf088359",
+  "producer": {
+    "head": "410f33c8cf5f6a504f62cc3e8c8c71e3603f734b",
+    "source_sha256": {
+      "src/renderer/layout/paragraph_layout.rs": "71f68b106e1ad8cc4501a01e4f9eb1549cefde49a65699dd19cbb24643e8838f",
+      "src/renderer/composer/stored_lines_runs.inc.rs": "93208f587fca993cc3665dc3103edda2825e55224fc9876a54e7ab9347567799",
+      "src/renderer/float_placement.rs": "e70632abdc618890e8b421e16f7d26d24d868e7f2134970d347f644c20f7353f",
+      "src/renderer/composer/line_breaking/stored_external_geometry.rs": "99bc6dd61e245b3cd8cafbfaec97aedbb11396384ae36a13f4793f7dd3aab8f8"
+    },
+    "started_at": "2026-11-10T22:16:30.427054+09:00",
+    "complete": true,
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp",
+      "-j",
+      "8"
+    ],
+    "pid": 76073,
+    "exit_code": 0,
+    "binary": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-native",
+    "binary_sha256": "42abdf7eed3565b4142313e3a931eed8866fdbdabc71a2f3621e90935bc1e519",
+    "finished_at": "2026-11-10T22:19:16.133587+09:00"
+  },
+  "case": {
+    "pr": 8796,
+    "key": "pr8796-successor_flow_axis",
+    "doc": "samples/issue8790/successor_flow_axis.hwpx",
+    "pdf": "pdf/issue8790/successor_flow_axis-2020.pdf",
+    "compat": "2022",
+    "input_sha256": "f89d947f9870c7ad24084c522464def9b04b4d4ce553f00e0e977c468ca7698a",
+    "pdf_sha256": "1b29d977485a17e627a2fcb4fb81f19eb91bad13ca771ad0a05ea7361170df20",
+    "protected_ids": []
+  },
+  "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8796-successor_flow_axis",
+  "pages": 2,
+  "minimum": 100.0,
+  "claim_pages": [
+    1,
+    2
+  ],
+  "review_pages": [
+    1,
+    2
+  ],
+  "actual_same_page_assets": [
+    {
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8796/cases/pr8796-successor_flow_axis/native/silhouette.tsv",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8796-successor_flow_axis/silhouette.tsv",
+      "sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8796/cases/pr8796-successor_flow_axis/native/manifest.json",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8796-successor_flow_axis/silhouette_manifest.json",
+      "sha256": "1c864e4eadc3fceb37fc52900cde7aec868ec54db2c95d3c415fd88260658a51"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim",
+        "whole_document_minimum"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8796/cases/pr8796-successor_flow_axis/native/raw-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8796-successor_flow_axis/rhwp_png/rhwp_001.png",
+      "sha256": "8bc7d58a53944ce94dc9b008f344268b905887be118b1935d21ada354bc78529"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim",
+        "whole_document_minimum"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8796/cases/pr8796-successor_flow_axis/native/pdf-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8796-successor_flow_axis/pdf_png/pdf-001.png",
+      "sha256": "3baf6203231459ad719e94e73aa5c55f1f90f134c80e713dda28cf0daa7c1db4"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim",
+        "whole_document_minimum"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8796/cases/pr8796-successor_flow_axis/native/review-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8796-successor_flow_axis/review/review_001.png",
+      "sha256": "7bcb5e4554bce15452450b055cdddd5fb250fc22896e7c5225ba1f2f4c064d93"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim",
+        "whole_document_minimum"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8796/cases/pr8796-successor_flow_axis/native/overlay-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8796-successor_flow_axis/overlay/overlay_001.png",
+      "sha256": "0a5891c62674b06b54efde1b0fd03ee106b928df54ae99b0d44911ac7e2f7539"
+    },
+    {
+      "page": 2,
+      "role": [
+        "claim"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8796/cases/pr8796-successor_flow_axis/native/raw-002.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8796-successor_flow_axis/rhwp_png/rhwp_002.png",
+      "sha256": "fa2b93ff27db999cd4260789547511d561430332dff6430dbea274438fc9493c"
+    },
+    {
+      "page": 2,
+      "role": [
+        "claim"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8796/cases/pr8796-successor_flow_axis/native/pdf-002.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v3-visual-native/pr8796-successor_flow_axis/pdf_png/pdf-002.png",
+      "sha256": "3d70744d8c0253b6dae80d6388f7d3942d5820e0e1c4545003ae7928404d3d1b"
+    },
+    {
+      "page": 2,
+      "role": [
+        "claim"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8796/cases/pr8796-successor_flow_axis/native/review-002.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8796-successor_flow_axis/review/review_002.png",
+      "sha256": "656d0380e0c99f4b622dc7dc9ac6589ed88d8c832513ddf9f2c6802afef3cdd9"
+    },
+    {
+      "page": 2,
+      "role": [
+        "claim"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8796/cases/pr8796-successor_flow_axis/native/overlay-002.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-panels-native/pr8796-successor_flow_axis/overlay/overlay_002.png",
+      "sha256": "b050fa2fdb5351832f8a1296700b662c6d1b98ed0b7f7435efa5a244cb2633b7"
+    }
+  ],
+  "final_direct_reading": "pending comparison with previous directly read images or new direct reading"
+}
