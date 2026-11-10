@@ -761,6 +761,16 @@ pub(crate) fn parse_hwpx_with_reservation(
                         }
                     }
                 }
+                // 바탕쪽 파트는 section XML 뒤에 붙는다. 저장기가 읽는 첫 문단의
+                // 구역 정의 사본에도 확정된 목록을 반영해야 HWPX → HWP 재저장에서
+                // 기본 바탕쪽이 빠지지 않는다. 확장 바탕쪽은 같은 목록의 소유 정보를 쓴다.
+                if let Some(paragraph) = section.paragraphs.first_mut() {
+                    for control in &mut paragraph.controls {
+                        if let crate::model::control::Control::SectionDef(definition) = control {
+                            definition.master_pages = section.section_def.master_pages.clone();
+                        }
+                    }
+                }
                 sections.push(section);
             }
             Err(e @ HwpxError::DrawingTextStructure(_)) => return Err(e),
