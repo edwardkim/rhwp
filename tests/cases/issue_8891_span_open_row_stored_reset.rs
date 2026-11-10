@@ -50,17 +50,27 @@ fn ordinary_rows(cells: &[(u16, u16)]) -> Vec<u16> {
 
 #[test]
 fn span_cell_with_stored_page_reset_keeps_its_opening_row_on_the_page() {
-    let core = DocumentCore::from_bytes(&std::fs::read(HPV).expect("HPV 입력"))
-        .expect("HPV 문서 열기");
+    let core =
+        DocumentCore::from_bytes(&std::fs::read(HPV).expect("HPV 입력")).expect("HPV 문서 열기");
     // 77쪽(0 기준 76) 조각은 20행까지, 78쪽 조각은 21행부터 일반 칸을 담는다.
     let first = ordinary_rows(&fragment_cells(&core, 76, 2, 23));
-    assert_eq!(first.last(), Some(&20), "77쪽 조각의 마지막 일반 행은 20행: {first:?}");
+    assert_eq!(
+        first.last(),
+        Some(&20),
+        "77쪽 조각의 마지막 일반 행은 20행: {first:?}"
+    );
     let next_cells = fragment_cells(&core, 77, 2, 23);
     let next = ordinary_rows(&next_cells);
     let body_rows: Vec<u16> = next.iter().copied().filter(|row| *row >= 2).collect();
-    assert_eq!(body_rows.first(), Some(&21), "78쪽 조각은 21행부터 잇는다: {next:?}");
+    assert_eq!(
+        body_rows.first(),
+        Some(&21),
+        "78쪽 조각은 21행부터 잇는다: {next:?}"
+    );
     assert!(
-        next_cells.iter().any(|(row, span)| *row == 20 && *span == 4),
+        next_cells
+            .iter()
+            .any(|(row, span)| *row == 20 && *span == 4),
         "20행에서 시작한 병합 칸은 78쪽에서도 이어진다: {next_cells:?}"
     );
 }
@@ -72,5 +82,9 @@ fn span_cell_without_stored_reset_moves_its_opening_row_whole() {
     // 113쪽(0 기준 112) 조각은 27행으로 시작한다 — 27행이 앞 쪽에 남으면 28행으로 시작한다.
     // 112쪽은 이 수정과 무관한 차이로 90% 미만이라 검사 범위에 넣지 않는다.
     let next = ordinary_rows(&fragment_cells(&core, 112, 0, 920));
-    assert_eq!(next.first(), Some(&27), "113쪽 조각은 27행으로 시작한다: {next:?}");
+    assert_eq!(
+        next.first(),
+        Some(&27),
+        "113쪽 조각은 27행으로 시작한다: {next:?}"
+    );
 }
