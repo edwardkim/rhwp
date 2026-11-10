@@ -4987,7 +4987,7 @@ impl PdfDocument {
                 if let Some(dict) = page.as_dict() {
                     log::debug!("Collected page {}, keys: {:?}", page_index, dict.keys());
                     if let Some(contents) = dict.get("Contents") {
-                        log::debug!("  -> /Contents: {:?}", contents);
+                        log::debug!("  -> /Contents type: {}", contents.type_name());
                     }
                     if let Some(rotate) = dict.get("Rotate") {
                         log::debug!("  -> /Rotate: {:?}", rotate);
@@ -18656,10 +18656,9 @@ impl PdfDocument {
         };
 
         log::debug!(
-            "Retrieved {} bytes of content data for page {}: {:?}",
+            "Retrieved {} bytes of content data for page {}",
             content_data.len(),
-            page_index,
-            String::from_utf8_lossy(&content_data)
+            page_index
         );
 
         self.check_import_budget()?;
