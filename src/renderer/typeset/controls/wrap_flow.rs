@@ -140,10 +140,7 @@ pub(in crate::renderer::typeset) fn place(
             // 문단 pi=14 의 vpos 가 차선 높이를 그대로 누적한다). 앞 흡수 문단의 끝에서
             // 시작해 자기 높이를 소비하고, 밴드는 닫지 않는다.
             st.start_paragraph_at_band_pen(para_idx, pen);
-            st.register_following_wrap_anchor(
-                para_idx,
-                wrap_match::picture_anchor(paragraphs, band),
-            );
+            st.register_following_wrap_anchor(para_idx, wrap_match::picture_anchor(band));
         } else {
             // 매칭 실패 → wrap zone 종료, 정상 처리 진행
             st.end_following_wrap_before(para_idx);
