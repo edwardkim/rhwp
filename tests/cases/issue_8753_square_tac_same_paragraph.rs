@@ -1,10 +1,12 @@
 //! 관계형·고정형 — [#8753] 같은 문단의 어울림 표와 TAC 표, 표 옆 차선의 합성 줄 문단.
-//! 주석 갱신: 2026-11-08 07:40 KST (새 파일)
+//! 주석 갱신: 2026-11-11 07:40 KST (직전 파일 변경 커밋 8c7ef59ae8, 2026-11-08 09:02 +09:00)
 //!
 //! 고정형: 전체 쪽수 6 (한컴 engine 2020 Print PDF `pdf/issue8753/36458608-square-tac-same-paragraph-2020.pdf`).
 //! 관계형: 3쪽 `pi=8` 의 어울림 표(`ci=0`)와 TAC 제목 표(`ci=1`)는 세로로 겹치고 가로로 비켜 있다.
 //! 뒤 문단 `pi=9`(저장 차선 줄)·`pi=10`(저장 줄 없는 합성 줄)은 표 왼쪽 차선에서 순서대로 놓이고,
 //! 밴드 뒤 `pi=15` 는 표 아래에서 시작한다. 4쪽 끝의 합성 줄 문단 `pi=29` 는 5쪽에 속한다.
+//! `pi=29` 는 저장 줄이 없어 vpos 가 로드 때 합성되므로, 줄은 문단·줄 번호로만 고른다(합성 vpos 는
+//! 한컴 기준값이 아니며 #8894 의 합성 사다리 간격 보정으로 75195 → 73695 HU 로 바뀐다. 배치는 같다).
 //!
 //! 측정(2026-11-08, `scripts/visual_sweep.py --silhouette-only --dpi 96`, raw =
 //! `silhouette_raw_match_percent`, 문서 face 만 공급한 글꼴 디렉터리):
@@ -168,10 +170,7 @@ fn square_and_tac_tables_of_one_paragraph_share_the_side_lane() {
 fn synthetic_paragraph_after_synthetic_tac_row_keeps_hancom_page() {
     let (_, items) = extents();
     // 한컴 Print PDF 5쪽은 이 문단으로 시작한다(4쪽 표 뒤 줄간격 전량).
-    assert_eq!(
-        pages_of(&items, "TextLine", "pi=29 line=0 vpos=75195"),
-        vec![5]
-    );
+    assert_eq!(pages_of(&items, "TextLine", "pi=29 line=0 vpos="), vec![5]);
     let first_body_line = items
         .iter()
         .filter(|e| e.page == 5 && e.kind == "TextLine" && e.rest.contains(" pi="))
