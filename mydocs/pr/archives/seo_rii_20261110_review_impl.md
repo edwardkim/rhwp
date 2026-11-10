@@ -1,14 +1,14 @@
 # seo-rii P111–P116 누적 PR 검토 계획
 
-**현재 상태: 승인한 메인터너 보정과 필수 로컬 검증 완료.** 원 head 6개는 그대로 보존했고,
+**현재 상태: 승인한 보정·검증·통합 PR 머지 완료, 후속 기록과 종료 처리 중.** 원 head 6개는 그대로 보존했고,
 최신 base `411d4a91fd`를 통합한 제품 source `857594293f`에서 실제 Native·최적화 fresh WASM·
 GTK 검증을 완료했다. 아래 진단 시점의 보류 기록은 수정 전 근거이며 현재 미해결 결함을 뜻하지 않는다.
-개별 판정은 `메인터너 보정 후 수용 가능`이고, 원격 처리 승인은 아직 별도다.
+개별 판정은 `메인터너 보정 후 수용 가능`이며, 이후 원격 처리 승인을 받아 [통합 PR #8907](https://github.com/edwardkim/rhwp/pull/8907)을 `0f91d29ca81f00be3d5adb91857875b40ec5e355`로 머지했다. 원 PR 6건도 모두 MERGED다.
 
 ## 범위와 승인
 
 2026-11-10 작업지시자의 “seo-rii 기여자의 PR 처리를 시작합니다.”에 따른 접수·로컬 검토다.
-원격 comment·push·통합 PR 생성·merge와 CI 취소·재실행은 별도 승인 범위로 구분한다.
+접수 당시 원격 comment·push·통합 PR 생성·merge와 CI 취소·재실행은 별도 승인 범위로 구분했다. 이후 작업지시자는 통합 PR·CI·self-review·merge·후속 처리를 승인했다. CI 취소·재실행은 수행하지 않았다.
 확인된 결함의 제품 보정 또는 충돌 해결이 필요하면 실제 근거와 제한 보정안을 먼저 기록한다.
 
 ```text
@@ -22,8 +22,8 @@ current base: 5f4e95c187f64116f48f710c3c048162786c1c14
 - 작업공간: `/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-desktop`.
 - Draft 제외, 열린 대상 6건 모두 reviewer `edwardkim`을 원 PR별 지정한 뒤 API로 확인했다.
 - 대형 누적 PR이므로 단계별 고유 변경·의존성과 실제 소비 경로를 분리한다.
-- 이전 [P103–P110 수용 기록](archives/seo_rii_20261109_review.md)·#8809와 부모 #536/#8701을 선행 근거로 확인한다.
-- 기준 devel에는 [#8889 보정](archives/pr_8889_review.md)과 #8893 후속 기록이 추가됐다. 과거 기여자 검증의 base `3170fddc48`와 구분하며 현재 renderer·자원·소유 계약을 보존한다.
+- 이전 [P103–P110 수용 기록](seo_rii_20261109_review.md)·#8809와 부모 #536/#8701을 선행 근거로 확인한다.
+- 기준 devel에는 [#8889 보정](pr_8889_review.md)과 #8893 후속 기록이 추가됐다. 과거 기여자 검증의 base `3170fddc48`와 구분하며 현재 renderer·자원·소유 계약을 보존한다.
 
 ## 고정 원 head와 순서
 
@@ -136,7 +136,7 @@ target의 receipt commit만 제거하면 컴파일은 성공하고 새 receipt a
 보정 `9e02baf1a17fbd8c8b57eb44e3890e5c2325c32d`에서 실제 GTK의 다중 페이지 최초 표시·이동과
 CPU 대조, mount를 유지한 종료·명시적 session 복구, 주입한 숨김·재개 신호와 실제 X11 창 resize,
 trace ring·producerReady·개인정보 제외, 종료 후 Native 9개 계수 0을 확인했다. 두 타일도 3회
-재검증했으며 보정 전후 compositor RGBA 3쌍이 모두 같다. [실제 결과 원장](assets/seo-rii-20261110/README.md)에
+재검증했으며 보정 전후 compositor RGBA 3쌍이 모두 같다. [실제 결과 원장](../assets/seo-rii-20261110/README.md)에
 단계·수치·직접 판독 PNG와 플랫폼 한계를 보존한다.
 
 제출 전 조회에서 원격 devel이 `411d4a91fd`(#8899, 원 #8863)로 전진했다. 제품 차이는
@@ -155,8 +155,8 @@ trace ring·producerReady·개인정보 제외, 종료 후 Native 9개 계수 0�
 독립 한컴 Print와 Native/fresh WASM 각각 7쪽의 전쪽 raw 최저는 100.00%다. 같은 배율의
 6쪽 gradient와 1쪽 bitmap·회색 계조를 직접 판독했고, 수정 전후 실제 화면과 기본 생산자 입력의
 동일성도 확인했다. 전체 TSV 원본·최종 대표 PNG·명령·해시·수치·플랫폼 한계는
-[최종 검증 원장](assets/seo-rii-20261110/README.md)에 보존했다.
+[최종 검증 원장](../assets/seo-rii-20261110/README.md)에 보존했다.
 
 새 diff는 Flutter 소비자이며 Rust·조판·WASM 생산자 수정은 없다. 이번에 실행하지 않은 Rust
 전체 회귀·광범위 lint를 완료로 보고하거나 원 PR의 CI를 새 제출 head CI로 바꾸지 않는다.
-원격 처리 범위는 [구체적인 실행안](assets/seo-rii-20261110/remote-action-plan.md)의 별도 승인 뒤다.
+원격 처리 범위는 [구체적인 실행안](../assets/seo-rii-20261110/remote-action-plan.md)의 별도 승인 뒤다.

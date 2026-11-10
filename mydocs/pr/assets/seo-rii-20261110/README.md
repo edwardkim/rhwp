@@ -4,7 +4,7 @@
 
 - 접수 기준 devel: `5f4e95c187f64116f48f710c3c048162786c1c14`.
 - 최종 검증 기준 devel: `411d4a91fd692f88fdeebd6b323eca0b295318b1`.
-- 원 head 6개·순서와 담당: [누적 검토 계획](../../seo_rii_20261110_review_impl.md).
+- 원 head 6개·순서와 담당: [누적 검토 계획](../../archives/seo_rii_20261110_review_impl.md).
 - 원 head를 모두 보존한 초기 제품 소스: `4f6bc33f8e3940947f3d942cdb3af26bb1d6f7cb`.
 - 승인한 Mac 제외: `1bfa7b298272249ef533310ea4f07ade944e2e09`.
   Mac native plugin 전체는 기준 devel과 같다. 새 Mac 타일 구현은 #8701 후속으로 남긴다.
@@ -20,7 +20,7 @@
 
 이 문서는 실행한 최종 사실을 보존한다. 원시 API JSON·빌드 영수증·로그·raw RGBA는
 ignored `output/pr-review/seo-rii-20261110`에만 두며 최종 댓글에 사용할 대표 PNG만 포함한다.
-아직 원격 push·PR 생성·공개 댓글·merge를 승인받거나 수행하지 않았다.
+로컬 검증 뒤 작업지시자의 원격 처리 승인을 받아 [통합 PR #8907](https://github.com/edwardkim/rhwp/pull/8907)을 `0f91d29ca81f00be3d5adb91857875b40ec5e355`로 머지했다. 원 PR 6건은 모두 MERGED다. 아래 증적은 제출한 정확한 code head `6e2a37ea860aba30ecc80b14758f25ebb534683a`와 같은 제품 입력의 결과다.
 
 ## 환경과 Native 입력
 
@@ -225,5 +225,12 @@ bitmap에는 실제 Canvas 요청·로드 글꼴이 없다. 두 backend의 공�
 않으며 공급 환경은 회귀의 최소 글꼴 격리와 구분한다. 글꼴 프로그램은 새로 커밋하지 않는다.
 
 `silhouette-only`의 자동 review 상태 `not_evaluated`와 사람의 직접 판독·최종 수용 판단을
-구분한다. 전체 페이지 수치·출처·직접 판독을 확인한 로컬 결론은 [개별 review](../../pr_8869_review.md)부터
+구분한다. 전체 페이지 수치·출처·직접 판독을 확인한 로컬 결론은 [개별 review](../../archives/pr_8869_review.md)부터
 원 PR별로 기록한다. 원격 CI·self-review·merge는 이후 별도 승인 범위다.
+
+## 원격 CI와 병합 결과
+
+- [CI](https://github.com/edwardkim/rhwp/actions/runs/42786011478)·[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/42786011727)·[Adapter](https://github.com/edwardkim/rhwp/actions/runs/42786011685)·[Proptest](https://github.com/edwardkim/rhwp/actions/runs/42786011397)·[최종 정책 감사](https://github.com/edwardkim/rhwp/actions/runs/42789964690)가 제출 head에서 성공했다. 31개 check 성공·정상 skip 5개, PR ref CodeQL OPEN 0건이다.
+- [공개 self-review](https://github.com/edwardkim/rhwp/pull/8907#pullrequestreview-5839510481), tested merge `74de0c72e6a86195ac9692ea4d0516a42e4b12bb`, 실제 merge `0f91d29ca81f00be3d5adb91857875b40ec5e355`. source tree 일치와 원 head 6개의 보존을 확인했고 일반 merge commit을 사용했다.
+- 기존 원 PR의 Adapter 취소를 성공으로 재분류하지 않았다. 이번 통합 CI는 1회 실행으로 성공했고 workflow·보호 설정·탐지 정책을 바꾸지 않았다.
+- 병합 후 duration 갱신 결과: [duration 갱신](https://github.com/edwardkim/rhwp/actions/runs/42790354529) success. 동일 head의 B/C/D/E 실제 attempt 1 자료를 확인해 `ci-metrics/nextest-target-durations`의 `a24a89464c33dba74366876c3d625fb95b365bb1`로 게시했다. 제품 검증 CI는 새로 시작하지 않는다.

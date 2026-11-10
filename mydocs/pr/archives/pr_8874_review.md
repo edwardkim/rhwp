@@ -1,26 +1,26 @@
-# PR #8872 검토 — feat(flutter): cover and pause desktop GPU lifecycle changes (P114)
+# PR #8874 검토 — feat(flutter): verify and connect relocatable desktop bundles (P116)
 
 ## 최종 판정
 
-**메인터너 보정 후 수용 가능.** 원 기여 head를 그대로 승인하는 판정이 아니다. 원 head 6개를 보존한 통합 후보에서 Linux 인수 확인 누락을 보정하고, 승인한 Mac 제외 범위를 적용했다. 최종 제품 검증 source는 `857594293fc7d8e8aec83fcc13a0b40a32a8f037`이다. 원격 처리는 아직 별도 승인 전이며 제출 head의 GitHub CI·self-review가 다음 조건이다.
+**메인터너 보정 후 수용 가능.** 원 기여 head를 그대로 승인하는 판정이 아니다. 원 head 6개를 보존한 통합 후보에서 Linux 인수 확인 누락을 보정하고, 승인한 Mac 제외 범위를 적용했다. 최종 제품 검증 source는 `857594293fc7d8e8aec83fcc13a0b40a32a8f037`이다. 승인된 원격 처리로 [통합 PR #8907](https://github.com/edwardkim/rhwp/pull/8907)의 제출 head `6e2a37ea860aba30ecc80b14758f25ebb534683a`에서 CI·self-review를 완료하고 `0f91d29ca81f00be3d5adb91857875b40ec5e355`로 머지했다. 이 원 PR도 GitHub에서 MERGED로 자동 반영됐다.
 
 ## 접수와 검토 기준
 
-- 작성자 seo-rii, base devel, non-draft. reviewer edwardkim을 지정하고 `2026-11-10T14:48:08.752645+09:00`에 API로 확인했다.
-- 원 head `8fbd30694ce2e265ec23b8fedeb4e8765f94d455`, fork `seo-rii/rhwp`, branch `task/8701-p114-viewport-lifecycle`.
-- 접수 기준 devel `5f4e95c187f64116f48f710c3c048162786c1c14`. 원 PR 규모 +5450/−257, 35개 파일은 선행 기능을 포함하는 누적 diff다.
+- 작성자 seo-rii, base devel, non-draft. reviewer edwardkim을 지정하고 `2026-11-10T14:48:14.102841+09:00`에 API로 확인했다.
+- 원 head `84c88a661a0d21c6d7b3ddf59f331dbcaffb1df8`, fork `seo-rii/rhwp`, branch `task/8701-p116-runtime-bundle`.
+- 접수 기준 devel `5f4e95c187f64116f48f710c3c048162786c1c14`. 원 PR 규모 +7961/−265, 47개 파일은 선행 기능을 포함하는 누적 diff다.
 - 개별 병합 시뮬레이션 exit 0, 원 head는 기준 devel에 포함되지 않았다. 이 사실만으로 기능·시각 검증 통과를 선언하지 않는다.
 - [누적 검토·검증 계획](seo_rii_20261110_review_impl.md)에 따라 원 기능·독립 실행·미실행을 구분한다.
 
 ## 고유 변경·보정과 실제 소비 경로
 
-범위: **GPU 뷰와 창 수명·metric 처리**.
+범위: **이동 가능한 Native runtime bundle**.
 
-관측한 FlutterView의 size/DPR와 lifecycle 상태 → 즉시 cover·pause → 다음 layout 뒤 resume 경로를 확인했다. inactive와 hidden을 구분하고 다른 창 metric·교체 전 controller의 늦은 오류를 현재 owner에 적용하지 않는다.
+Python 포장 → Dart load의 파일·OS/architecture·경로·해시·예산 검사 → connect 직전 재검증과 실제 ABI 연결을 확인했다. load 자체는 바이너리를 실행하지 않으며 잘못된 ABI·capability를 성공으로 바꾸지 않는다.
 
-실제 Native/GTK에서 숨김·재개 신호 주입 시 submit 정지·재개, X11 창 800×1000→840×1040 resize 뒤 GPU/CPU 표시와 같은 editor를 확인했다. 별도 실제 GDK scale 2 시작에서도 1200×1600 물리 출력의 여러 페이지·CPU 대조·자원 해제를 통과했다. 실제 OS 최소화·모니터 이동·DPR 변경은 이 실행의 주장에 포함하지 않는다.
+최종 source의 실제 GTK runtime·새 Native/owner를 공백 경로로 이동하고 원 staging 삭제 후 실제 연결·RGBA 반복·snapshot 해제·close와 Native 9개 계수 0을 확인했다. 이동된 GTK runner 자체의 실행 완료를 뜻하지 않는다.
 
-[누적 검증 원장](assets/seo-rii-20261110/README.md)에 실제 source·명령·종료 코드·수치와 직접
+[누적 검증 원장](../assets/seo-rii-20261110/README.md)에 실제 source·명령·종료 코드·수치와 직접
 판독한 PNG를 보존했다. 초기 단일 페이지 두 타일 검사를 여러 페이지 표시의 증거로 바꾸지
 않았고, 실제 실행과 mock/portable·SDK compile/link를 구분했다.
 
@@ -32,7 +32,7 @@
 - 새 base의 #8863 정식 집중 회귀 8개와 실제 WASM의 411문단·잔여 10,456문자 서식 및 HWP/HWPX 저장 재열기가 통과했다.
 - 최종 Native/fresh WASM은 각각 원본 전체 7쪽, 독립 Print PDF와 쪽수가 같고 전쪽 raw 최저 100.00%다. 전체 TSV 원본과 같은 배율 직접 판독을 원장에 연결했다.
 - 기본 생산자 입력은 최신 base와 같다. 새 배치·줄 구성·LineSeg/높이 추정이나 문서별 보정, baseline 완화·회귀 제거는 없다. 편람 조판 gate는 공통 조판 생산자 변경이 없어 비해당이다.
-- 이번 새 diff는 Flutter/Dart/C++/Python 소비자다. Rust source/test를 새로 수정한 PR의 전체 lint/회귀를 이번 로컬 실행으로 보고하지 않는다. 새로운 통합 head의 GitHub 필수 CI는 원격 승인 뒤 확인한다.
+- 이번 새 diff는 Flutter/Dart/C++/Python 소비자다. Rust source/test를 새로 수정한 PR의 전체 lint/회귀를 이번 로컬 실행으로 보고하지 않는다. 새 통합 head의 [GitHub 필수 CI](https://github.com/edwardkim/rhwp/actions/runs/42786011478)와 [self-review](https://github.com/edwardkim/rhwp/pull/8907#pullrequestreview-5839510481)가 성공했다.
 
 ## 원 PR CI와 운영 범위
 
@@ -57,11 +57,19 @@ OPEN을 유지한다. 기존 fork branch와 다른 작업공간은 정리 대상
 
 원격 승인과 정확한 head CI·self-review·merge를 완료한 뒤 이 PR의 고유 변경과 보정·한계를
 명시한 감사 댓글을 게시한다. 실제 원본 7쪽의 Native/fresh WASM 최저 100.00%, 아래 고유 PNG와
-[원장](assets/seo-rii-20261110/README.md)의 Print 비교·전체 TSV를 연결한다.
+[원장](../assets/seo-rii-20261110/README.md)의 Print 비교·전체 TSV를 연결한다.
 
-- 고유 직접 확인 이미지: `mydocs/pr/assets/seo-rii-20261110/dpr2-multipage.png`.
+- 고유 직접 확인 이미지: `mydocs/pr/assets/seo-rii-20261110/relocated-native-frame.png`.
 - Print 직접 표시: `radial-pages-1-3.png`, `bitmap-native-review.png`, `bitmap-wasm-review.png`.
-- 확정 merge SHA의 raw URL: `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/seo-rii-20261110/dpr2-multipage.png`.
+- 확정 merge SHA의 raw URL: `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/seo-rii-20261110/relocated-native-frame.png`.
 - 게시 전 asset의 merge 반영·PNG 형식·SHA-256, 게시 뒤 API의 본문·한국어·정확한 원 PR URL과
   이미지 표시를 확인한다. `--body-file`을 사용하고 아직 발생하지 않은 merge·댓글을 완료로 기록하지 않는다.
-- 독립 비교 방법: [Visual Sweep 정본](../manual/verification/visual_sweep_guide.md#github-merge-comment).
+- 독립 비교 방법: [Visual Sweep 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment).
+
+## 병합 후 확인
+
+- 통합 merge `0f91d29ca81f00be3d5adb91857875b40ec5e355`, 2026-11-10 18:23:46 KST. 원 기여 head와 fork branch를 보존했다.
+- [최종 CI](https://github.com/edwardkim/rhwp/actions/runs/42786011478)·[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/42786011727)·Adapter·Proptest·[최종 정책 감사](https://github.com/edwardkim/rhwp/actions/runs/42789964690) 성공. 31개 check 성공·정상 skip 5개이며 재실행·보호 설정 우회는 없다.
+- [공개 self-review](https://github.com/edwardkim/rhwp/pull/8907#pullrequestreview-5839510481)와 병합 직전 exact head/base·MERGEABLE/CLEAN·실제 병합 tree 일치를 확인했다. 원 PR의 간접 MERGED 상태를 API로 확인했다.
+- 부모 [#536](https://github.com/edwardkim/rhwp/issues/536)·[#8701](https://github.com/edwardkim/rhwp/issues/8701)은 OPEN을 유지한다. 새 Mac native 타일 구현은 후속이다.
+- 운영 기록 반영·devel 동기화 뒤 위 계획의 감사 댓글과 종료 정리를 수행한다. 최종 댓글 URL·정리 결과는 `target/pr-review/cleanup-seo-rii-20261110.json`에 기록한다.

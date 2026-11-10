@@ -36,6 +36,5 @@ Mac plugin 전체는 최신 devel과 같으며 #8701에서 새 타일 구현을 
    이관을 만들지 않는다. 다른 작업공간·원 fork·설치 SDK 도구·로컬 crates.io 환경·다른 target
    profile과 정식 입력·PDF·커밋된 최종 증적은 보존한다.
 
-이 문서는 제안이며 원격 처리 완료 기록이 아니다. 원격 push·PR·댓글·merge에 대한 작업지시자
-승인 전에는 로컬 자료만 유지한다. CI workflow를 수정하지 않았으므로 workflow 변경 PR의 옵션 2
+이 계획은 작업지시자의 승인 뒤 실행했다. [통합 PR #8907](https://github.com/edwardkim/rhwp/pull/8907)은 `0f91d29ca81f00be3d5adb91857875b40ec5e355`로 머지됐고 원 PR 6건의 MERGED 반영을 확인했다. 운영 기록·devel 동기화 뒤 댓글과 종료 정리를 완료하며 실제 결과는 정리 로그에 남긴다. CI workflow를 수정하지 않았으므로 workflow 변경 PR의 옵션 2
 후속 기록을 이 묶음에 기계적으로 적용하지 않는다.
