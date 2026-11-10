@@ -1381,6 +1381,7 @@ impl DocumentCore {
                         // 저장 쪽·단 리셋 뒤에는 앞 프레임의 개체 띠가 없다.
                         pending_float_band = None;
                     }
+                    let mut boundary_spacing_in_ladder = false;
                     if running_vpos == accumulated_vpos && !para.line_segs.is_empty() {
                         if let Some((spacing_after, _)) =
                             previous_spacing_after_hu.filter(|(_, previous_has_source_span)| {
@@ -1404,6 +1405,7 @@ impl DocumentCore {
                                 running_vpos.saturating_add(spacing_after).saturating_add(
                                     crate::renderer::px_to_hwpunit(spacing_before, dpi),
                                 );
+                            boundary_spacing_in_ladder = true;
                         }
                     }
                     // 문단 경계에서 더한 간격(띠 아래로 옮길 때도 유지한다).
@@ -1455,7 +1457,8 @@ impl DocumentCore {
                             line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
                                 == 0
                         });
-                    if reflowed_text_advances[pi].is_some() {
+                    // [#8894] 위 경계 간격이 이 문단의 앞 간격을 이미 담았으면 다시 더하지 않는다.
+                    if reflowed_text_advances[pi].is_some() && !boundary_spacing_in_ladder {
                         running_vpos = running_vpos.saturating_add(
                             styles
                                 .para_styles
@@ -1679,10 +1682,12 @@ impl DocumentCore {
                         prev_stored_last_vpos = v;
                     }
                     if !para.line_segs.is_empty() {
+                        // [#8894] 합성 글 문단은 위에서 자기 아래 간격을 이미 사다리에 넣었다.
                         previous_spacing_after_hu = Some((
                             styles
                                 .para_styles
                                 .get(para.para_shape_id as usize)
+                                .filter(|_| reflowed_text_advances[pi].is_none())
                                 .map(|style| {
                                     crate::renderer::px_to_hwpunit(style.spacing_after, dpi)
                                 })
