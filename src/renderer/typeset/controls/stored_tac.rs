@@ -506,15 +506,30 @@ pub(super) fn prepare_computed(
     // 같은 닫힘 계약의 `composer::stored_tac_successor_delta_hu` 와 같게 등식에 넣는다.
     let paragraph_spacing_hu =
         crate::renderer::px_to_hwpunit(fmt.spacing_after + next_spacing_before, dpi);
+    // 명시적 쪽(구역)나눔 문단은 새 쪽 본문 위끝에서 시작하므로 그 표 줄의 프레임 원점은 0이다.
+    // 저장 줄이 없어 합성한 표 줄의 vpos 는 앞 쪽 누적값일 수 있어 원점 근거가 아니다. 다음 원본
+    // 줄이 그 영점에서 `lh + ls + 문단 간격` 뒤에 있으면 같은 닫힘 증거로 간격 전량을 남긴다
+    // ([#8925] 36415413 2쪽: 쪽나눔 제목 표 문단 lh 8574·ls 1360, 다음 상자 표 문단 vpos 9934).
+    let opens_page_frame = origin <= hwpunit_to_px(1, dpi)
+        && matches!(
+            para.column_type,
+            crate::model::paragraph::ColumnBreakType::Page
+                | crate::model::paragraph::ColumnBreakType::Section
+        );
     let full_trailing_spacing = next_para.is_some_and(|next| {
         next.line_segs.first().is_some_and(|next_seg| {
-            next_seg.vertical_pos > seg.vertical_pos
-                && seg
-                    .vertical_pos
-                    .saturating_add(seg.line_height)
-                    .saturating_add(seg.line_spacing)
-                    .saturating_add(paragraph_spacing_hu)
-                    == next_seg.vertical_pos
+            let closing_advance = seg
+                .line_height
+                .saturating_add(seg.line_spacing)
+                .saturating_add(paragraph_spacing_hu);
+            (next_seg.vertical_pos > seg.vertical_pos
+                && seg.vertical_pos.saturating_add(closing_advance) == next_seg.vertical_pos)
+                || (opens_page_frame
+                    && closing_advance > 0
+                    && !next.stored_text_partition_is_dirty()
+                    && next_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                        == 0
+                    && next_seg.vertical_pos == closing_advance)
         })
     });
     // 원본 저장 줄은 다음 줄 원점까지 후행 간격을 전량 소유한다.
