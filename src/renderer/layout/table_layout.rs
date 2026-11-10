@@ -25748,6 +25748,20 @@ impl LayoutEngine {
             .min()
     }
 
+    /// 칸의 저장 글줄이 칸 안에서 쪽 프레임을 다시 시작(vpos 되감김)했는가.
+    /// 저장본이 그 칸을 쪽 경계에서 나눴다는 기록이다.
+    pub(crate) fn cell_records_internal_page_reset(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        self.cell_units(cell, table, styles)
+            .iter()
+            .enumerate()
+            .any(|(i, unit)| i > 0 && (unit.hard_break_before || unit.stored_frame_break_before))
+    }
+
     /// RowBreak 표의 rowspan 블록 중 셀 내부 HWP page reset 이 있는 블록만
     /// 블록 컷 대상으로 삼기 위한 가드.
     pub(crate) fn row_block_has_internal_hard_break(
