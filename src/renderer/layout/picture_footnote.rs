@@ -599,6 +599,7 @@ impl LayoutEngine {
                 control_index,
                 crop,
                 original_size_hu,
+                soft_edge_radius_hu: picture.effects.soft_edge_radius,
                 effect: picture.image_attr.effect,
                 brightness: picture.image_attr.brightness,
                 contrast: picture.image_attr.contrast,
@@ -895,6 +896,7 @@ impl LayoutEngine {
                 control_index: Some(control_index),
                 crop,
                 original_size_hu,
+                soft_edge_radius_hu: picture.effects.soft_edge_radius,
                 effect: picture.image_attr.effect,
                 brightness: picture.image_attr.brightness,
                 contrast: picture.image_attr.contrast,
@@ -1058,6 +1060,13 @@ impl LayoutEngine {
 
             // 자동 번호는 자리표 글자의 표시 문자열로만 바꿔 글자 위치 대응을 지킨다.
             crate::renderer::composer::project_caption_auto_numbers(&mut composed, para);
+
+            // 캡션의 문단 머리도 본문과 같은 마커 기하를 소비한다. 그림 글머리표를
+            // 생략하면 그림뿐 아니라 그 점유 칸·본문과의 간격도 함께 사라진다.
+            if let Some(numbered) = self.apply_paragraph_numbering(Some(&composed), para, styles, 0)
+            {
+                composed = numbered;
+            }
 
             // cell_ctx에 cell_para_index 갱신
             let ctx = cell_ctx.as_ref().map(|c| {

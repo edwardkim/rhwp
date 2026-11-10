@@ -837,6 +837,31 @@ pub(crate) fn canvas_cluster_fit(
             return Some((1.0, (advance - visual_width) / 2.0));
         }
     }
+    // 명시 대체의 실제 잉크가 원본 메트릭의 좁은 칸을 차지하는 경우도 있다.
+    // 기호의 음수 자간은 다음 원점만 이동시킨다. 그 간격을 glyph 칸 폭으로
+    // 쓰거나, 잉크 보존을 이유로 전각 표시 프로그램의 여백까지 보존하지 않는다.
+    // 독립 Print의 U+2219는 반각 advance에 원래 원형 잉크를 그대로 놓는다.
+    // 실제 원본 TTF/HFT와 결측·추정 폭은 이 대체 프로그램 계약에 포함하지 않는다.
+    if style.letter_spacing < 0.0
+        && style.preserve_glyph_ink
+        && !style.fixed_glyph_advances
+        && !style.source_font_is_ttf
+        && !style.source_font_is_hft
+        && matches!(cluster, "\u{2218}" | "\u{2219}")
+    {
+        let ch = cluster.chars().next()?;
+        let decision = layout::char_width_decision(&[ch], &[1], 0, style, true);
+        if decision.width_source == "embeddedMetric" && decision.character_match == "hit" {
+            let advance = decision.base_width_px * style.ratio_draw_params(1.0).1;
+            if advance > 0.0
+                && visual_width > advance + 0.25
+                && ink_width
+                    .is_some_and(|ink| ink.is_finite() && ink > 0.0 && ink <= advance * 1.1 + 0.25)
+            {
+                return Some((1.0, (advance - visual_width) / 2.0));
+            }
+        }
+    }
     // 호출자가 선택한 프로그램은 전진과 잉크 폭을 구분한다. 원본 HFT 선언이나
     // 폭 표의 신뢰만으로 일반 대체 face의 기존 맞춤까지 차단하지 않는다.
     if !style.fixed_glyph_advances && style.preserve_glyph_ink {

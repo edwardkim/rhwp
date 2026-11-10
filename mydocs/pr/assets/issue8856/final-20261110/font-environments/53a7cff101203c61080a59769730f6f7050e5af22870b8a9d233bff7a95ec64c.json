@@ -1,0 +1,16 @@
+{
+  "id": "hancom2024-independent-hft-glyphs-human-ttf-original-pua",
+  "substitutions": {
+    "한양신명조": "한양신명조",
+    "휴먼명조": "휴먼명조",
+    "HCI Poppy": "HCI Poppy"
+  },
+  "trueTypeFaces": [
+    "휴먼명조"
+  ],
+  "glyphFallbacks": {
+    "휴먼명조": [
+      "Haansoft Batang"
+    ]
+  }
+}

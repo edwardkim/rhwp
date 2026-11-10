@@ -1,0 +1,11 @@
+{
+  "success": true,
+  "source_sha": "e0ce30729e4d87d2a75376d17c6d351a29ef4345",
+  "profile": "Mac locked wrapper web no-opt local build; runtime-equivalence audit accompanies pre-commit build",
+  "artifacts": {
+    "rhwp_bg.wasm": {
+      "sha256": "dd77f8eceb160ebcc07c84f4374c21be10fcc0561f18357ffdd609b8d18df121",
+      "bytes": 31630392
+    }
+  }
+}

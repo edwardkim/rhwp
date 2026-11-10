@@ -3953,7 +3953,8 @@ pub(crate) use text_measurement::{
     is_halfwidth_cjk_quote, kopub_declared_space_em, kopub_space_advance_em,
     resolved_letter_spacing, resolved_to_text_style, split_into_clusters,
     trace_char_width_decisions, try_resolved_to_text_style, verified_source_projection_face,
-    verified_source_projection_text, CharWidthDecision,
+    verified_source_projection_text, verified_source_projection_text_with_fallback,
+    CharWidthDecision,
 };
 // [#6060] forces_halfwidth_cjk_quote 는 통합 테스트
 // (tests/cases/issue_6060_cjk_quote_paint_measure_parity.rs) 에서 측정-페인트 정합을
@@ -13073,7 +13074,7 @@ impl LayoutEngine {
             };
             let note_advance: f64 = table_note_references
                 .iter()
-                .map(|reference| reference.4)
+                .map(|reference| reference.width)
                 .sum();
             // 저장 줄 없는 빈 host 의 전폭 어울림 표: typeset 과 같은 helper 로 표 상단과
             // 표 아래 host 줄을 정한다.

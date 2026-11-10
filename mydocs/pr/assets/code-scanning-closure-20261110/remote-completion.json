@@ -1,0 +1,48 @@
+{
+  "at": "2026-11-10T10:13:52.672439+09:00",
+  "pr": 8884,
+  "code_head": "9558a0b0213f56181f2a98646d472d41f1fca52f",
+  "head": "e44630a7b1b08e2433a96e95b8d5068aedd64da9",
+  "merge": "7213ed1f96266b95e22cd5645a07851c9c18298e",
+  "merged_at": "2026-11-10T00:27:50Z",
+  "merged_by": "edwardkim",
+  "review_count_exception": {
+    "explicit_user_approval": true,
+    "scope": "PR 8884 required review count only",
+    "branch_protection_changed": false,
+    "ci_requirements_changed": false
+  },
+  "full_scan_independent_verification": {
+    "explicit_user_approval": true,
+    "run": 42728536362,
+    "event": "workflow_dispatch",
+    "source": "7213ed1f96266b95e22cd5645a07851c9c18298e"
+  },
+  "source_identities": {
+    "vendor/rhwp-qcms": {
+      "7213ed1f96266b95e22cd5645a07851c9c18298e": "4cd3ce62d8ded6814dbebc9bd0fbaf5e367be2fd",
+      "HEAD": "4cd3ce62d8ded6814dbebc9bd0fbaf5e367be2fd"
+    },
+    "vendor/rhwp-pdf-import-backend": {
+      "7213ed1f96266b95e22cd5645a07851c9c18298e": "c6cfa6d7c48deb9a6635a6de361a69fcc889cdd1",
+      "HEAD": "c6cfa6d7c48deb9a6635a6de361a69fcc889cdd1"
+    }
+  },
+  "issue8745": {
+    "state": "closed",
+    "closed_at": "2026-11-08T13:41:50Z"
+  },
+  "pages": {
+    "id": 42728493675,
+    "event": "push",
+    "head_sha": "7213ed1f96266b95e22cd5645a07851c9c18298e",
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42728493675"
+  },
+  "duration_update": "not applicable: workflow permits devel only",
+  "cleanup": {
+    "log": "target/pr-review/cleanup-security-closure-20261110.json",
+    "rule": "Remove owned branch/worktree and root output; remove shared debug after actual build/test use ends. Preserve active task 8863 and PR 8296."
+  }
+}

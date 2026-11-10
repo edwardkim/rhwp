@@ -184,6 +184,22 @@ pub struct ImageAttr {
 #[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct PictureEffects {
     pub shadow: Option<PictureShadow>,
+    /// HWP5 표 111 / HWPX hp:softEdge의 반경(HWPUNIT).
+    /// 이미지 크기·crop과 별개인 그림 효과이며 원본 좌표에 더하지 않는다.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub soft_edge_radius: Option<f64>,
+}
+
+/// 단독 부드러운 가장자리 꼬리는 반경 뒤 원본 크기·alpha가 생략될 수도 있다.
+/// 가변 길이인 다른 효과의 내부 오프셋을 추측하지 않는다.
+pub(crate) fn picture_soft_edge_radius(extra: &[u8]) -> Option<f64> {
+    if !matches!(extra.len(), 13 | 21 | 22)
+        || u32::from_le_bytes(extra.get(5..9)?.try_into().ok()?) != PICTURE_EFFECT_SOFT_EDGE
+    {
+        return None;
+    }
+    let radius = f32::from_le_bytes(extra.get(9..13)?.try_into().ok()?) as f64;
+    (radius.is_finite() && radius >= 0.0).then_some(radius)
 }
 
 /// HWPX 그림 그림자 효과 (`hp:shadow`).

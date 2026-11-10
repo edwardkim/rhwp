@@ -1,3 +1,4 @@
+import './empty-picture-payload.browser.mjs';
 import './issue_8160_print_jpeg_frame.browser.mjs';
 import './picture-tones.browser.mjs';
 import './hft-outline-font-selection.browser.mjs';

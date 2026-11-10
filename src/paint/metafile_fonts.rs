@@ -72,9 +72,11 @@ pub(crate) fn page_requests(
                     metafile.extend(items);
                 }
             }
-            RenderNodeType::TextRun(run) if hangul2024 => {
+            RenderNodeType::TextRun(run) => {
                 let shadow = run.style.shadow_type == 2 && !run.is_vertical;
-                let leader = super::dot_leader::needs_font_program(node);
+                // 연속 그림자는 이전 Print 세대에도 실제 프로그램이 필요하다.
+                // 탭 점 리더의 세대별 계약은 별도로 유지한다.
+                let leader = hangul2024 && super::dot_leader::needs_font_program(node);
                 if shadow || leader {
                     let families =
                         crate::renderer::internal_font_family_members(&run.style.font_family)

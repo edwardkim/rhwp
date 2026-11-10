@@ -1,0 +1,198 @@
+{
+  "scope": "원본 반경의 조판·공통 PaintOp 전달; 실제 soft-edge alpha 도색 완료 아님",
+  "parent_head": "193f03a6bd31e37d14b6e6c0b27c38a05c9d7220",
+  "base": "b5064fae1eefff92d60464c51844a38debec09f9",
+  "source_sha256": {
+    "src/renderer/render_tree.rs": "7342263790736155cf44946dac383bf7ec5cc3c3be7cd7b0ba1b515359e6aca4",
+    "src/renderer/layout/shape_layout.rs": "3446b86250371f8ccd76ad1bd87fc5087c5dd6c27fec0b6f9196114cff335593",
+    "src/renderer/layout/picture_footnote.rs": "ac748aa5f42f72477887db4f8d5a2f9d188643eca0a907c69618e0d215e91ebf",
+    "src/renderer/layout/table_cell_content.rs": "4b83347592ab50cb5877241f0262e6643fec078c6b574d5178dbd528033a7a81",
+    "src/renderer/layout/paragraph_layout.rs": "6ce225c5276321518dbfa4b2613368efb3fa8488bd203c81f5d135222c0bdeca",
+    "src/renderer/layout/tac_picture_item.inc.rs": "9db426f69c0a95ad2c5986a8154a4d1ddd52db4f2da96ddd34f90e05b7084338",
+    "tests/cases/issue_8856_picture_soft_edge_ownership.rs": "cc60f65d33d93118583e20d58647deb21578108e069549e884130266ad7ab22e"
+  },
+  "before": {
+    "passed": 3,
+    "failed": 1,
+    "log": "output/issue8856/soft-edge-transport/before.log",
+    "log_sha256": "b396f12a0c7ec14ef99d78cdf53fc13ba740d364223e76cbb48271b8cdd81894"
+  },
+  "after": {
+    "passed": 7,
+    "failed": 0,
+    "focused": {
+      "parent_head": "193f03a6bd31e37d14b6e6c0b27c38a05c9d7220",
+      "started": "2026-11-10T04:30:39.790913+09:00",
+      "complete": true,
+      "runs": [
+        {
+          "case": "issue_8856_picture_soft_edge_ownership",
+          "command": [
+            "sandbox-exec",
+            "-f",
+            "/Users/tsjang/rhwp/output/issue8856/start/minimal-font.sb",
+            "env",
+            "-u",
+            "RHWP_FONT_PATH",
+            "CARGO_BUILD_JOBS=8",
+            "node",
+            "scripts/run-rust-test.mjs",
+            "issue_8856_picture_soft_edge_ownership",
+            "--",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "/Users/tsjang/rhwp/target/pr-review",
+            "--features",
+            "native-skia",
+            "--test-threads",
+            "8"
+          ],
+          "exit": 0,
+          "log": "/Users/tsjang/rhwp/output/issue8856/soft-edge-transport/issue_8856_picture_soft_edge_ownership-final.log",
+          "log_sha256": "567bdc611651e80b84e1f22c225c11e0f5c73a196b91563ae75ee0fbd0e2ed0a"
+        },
+        {
+          "case": "issue_8593_picture_soft_edge_dim",
+          "command": [
+            "sandbox-exec",
+            "-f",
+            "/Users/tsjang/rhwp/output/issue8856/start/minimal-font.sb",
+            "env",
+            "-u",
+            "RHWP_FONT_PATH",
+            "CARGO_BUILD_JOBS=8",
+            "node",
+            "scripts/run-rust-test.mjs",
+            "issue_8593_picture_soft_edge_dim",
+            "--",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "/Users/tsjang/rhwp/target/pr-review",
+            "--features",
+            "native-skia",
+            "--test-threads",
+            "8"
+          ],
+          "exit": 0,
+          "log": "/Users/tsjang/rhwp/output/issue8856/soft-edge-transport/issue_8593_picture_soft_edge_dim-final.log",
+          "log_sha256": "48c35be026d2bd94a0673b855ab1bf2ddbaad77f42be7d1cb6745fc6284764a4"
+        },
+        {
+          "case": "issue_8856_replacement_symbol_cell",
+          "command": [
+            "sandbox-exec",
+            "-f",
+            "/Users/tsjang/rhwp/output/issue8856/start/minimal-font.sb",
+            "env",
+            "-u",
+            "RHWP_FONT_PATH",
+            "CARGO_BUILD_JOBS=8",
+            "node",
+            "scripts/run-rust-test.mjs",
+            "issue_8856_replacement_symbol_cell",
+            "--",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "/Users/tsjang/rhwp/target/pr-review",
+            "--features",
+            "native-skia",
+            "--test-threads",
+            "8"
+          ],
+          "exit": 0,
+          "log": "/Users/tsjang/rhwp/output/issue8856/soft-edge-transport/issue_8856_replacement_symbol_cell-final.log",
+          "log_sha256": "cee096124894966be5655c616a12eff0c489ed4e24f239e88b10679b7cd90ba8"
+        }
+      ],
+      "ended": "2026-11-10T04:31:17.524149+09:00"
+    }
+  },
+  "coordinate_controls": {
+    "prints": 6,
+    "pages_each": 1,
+    "scaled_masks_unchanged_engines": [
+      2020,
+      2024
+    ],
+    "cropped_mask_changed_samples": {
+      "2020": 156,
+      "2024": 2
+    },
+    "conclusion": "두 개체 확대 행렬은 같은 출력 프레임의 mask를 유지한다. 잘림 뒤 새 경계에도 감쇠가 있다. 이 관측은 내부 blur kernel 공식을 입증하지 않는다."
+  },
+  "remaining": [
+    "실제 가장자리 alpha 생성과 원본 자르기·불투명도 조합",
+    "새 source/head의 Native/fresh WASM 전쪽 및 최종 필수 gate"
+  ],
+  "checks": [
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--check"
+      ],
+      "exit": 0,
+      "log": "/Users/tsjang/rhwp/output/issue8856/soft-edge-transport/fmt-final-check.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "b5064fae1eefff92d60464c51844a38debec09f9"
+      ],
+      "exit": 0,
+      "log": "/Users/tsjang/rhwp/output/issue8856/soft-edge-transport/manifest-final-check.log",
+      "log_sha256": "e37f07fadafdd7f11de93e7ed4b426dacc9e34c55742f85172b84718b9bd604c"
+    },
+    {
+      "name": "unit-tiers",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "b5064fae1eefff92d60464c51844a38debec09f9"
+      ],
+      "exit": 0,
+      "log": "/Users/tsjang/rhwp/output/issue8856/soft-edge-transport/unit-tiers-final-check.log",
+      "log_sha256": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0"
+    },
+    {
+      "name": "diff",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "log": "/Users/tsjang/rhwp/output/issue8856/soft-edge-transport/diff-final-check.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "markdown-links",
+      "command": [
+        "python3",
+        "scripts/check_markdown_links.py",
+        "mydocs/working/task_m100_8856_stage7.md",
+        "mydocs/pr/assets/issue8856/stage7-soft-edge-transport/README.md"
+      ],
+      "exit": 0,
+      "log": "/Users/tsjang/rhwp/output/issue8856/soft-edge-transport/markdown-links-final-check.log",
+      "log_sha256": "c229e3b3dd8f86ec00ae184c8deed96c8565a475f48564e7fe2eddf8c2a0f6fa"
+    }
+  ],
+  "artifacts": {
+    "coordinate-mask-comparison.json": "d089b52e07bc6343763b8f7470b0b9ed92e40adf0838ae574f68c08c4800f32f",
+    "README.md": "f79572752c10bcab2813c42777108374be69ba3fd3c9b32ac5381e47b05c0d81",
+    "independent-coordinate-controls.json": "35fe5b1393773a0705a4f298431ac6c15297a43bfb4b99476b3a3da8dedf2cf0"
+  }
+}

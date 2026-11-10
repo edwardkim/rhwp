@@ -26,9 +26,9 @@ pub(crate) struct GeneratedFontRuleProjection {
 pub(crate) const FONT_RULE_LAYOUT_METRIC_SCHEMA_VERSION: &str =
     crate::schema_registry::FONT_RULE_PROJECTION_SCHEMA_VERSION;
 pub(crate) const FONT_RULE_LAYOUT_METRIC_INPUT_SHA256: &str =
-    "d6593c51af59cdfc17196396b21f8be8c8f36df8975d269b8fe79281736acb19";
+    "5bba9c3bd699ed1c48db8bd07c23fe0cddf374df443f4d7fbd1d5f83501c5498";
 pub(crate) const FONT_RULE_LAYOUT_METRIC_PROJECTION_SHA256: &str =
-    "ccd5fcfb855a659a7b9ff373c884352b900233067e7f3aaa736a8d17a478cea3";
+    "d94dc47e887607a298bbc729605a9b5aaad7687ec431dd7a5772f74e44dd6d7e";
 
 pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] = &[
     GeneratedFontRuleProjection {
@@ -1353,6 +1353,23 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
         mode: "direct",
         metric_entry_ids: &["font-metric.ea8ba5aeaa3b69983623"],
     },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-metric.hyhaeseo-korean-name",
+        source_boundary_id: "rust-metric.metric-alias",
+        relation_type: "metric-surrogate",
+        decision_plane: "layout-metric",
+        source_face: Some("한양해서"),
+        target_face_or_policy: "HYhaeseo",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: None,
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &["font-metric.b1a0dbd28c348a3b31e6"],
+    },
 ];
 
 #[rustfmt::skip]
@@ -1575,6 +1592,9 @@ pub(crate) fn find_font_rule_layout_metric(
         }
         "한컴 윤고딕 250" => {
             Some(&FONT_RULE_LAYOUT_METRIC_RULES[71])
+        }
+        "한양해서" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[72])
         }
         _ => None,
     }

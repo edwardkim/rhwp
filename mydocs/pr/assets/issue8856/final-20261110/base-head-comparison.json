@@ -1,0 +1,4521 @@
+{
+  "base": "b5064fae1eefff92d60464c51844a38debec09f9",
+  "head": "c88877ee5a9795f050cf8066f572bcb3feed9b5f",
+  "base_producer": "fixed-base-source-provenance.json and fixed-base-build-state.json in previous final directory",
+  "pages": 438,
+  "below90": [],
+  "declines_over2pp": [],
+  "maximum_drop_pp": "0.04934",
+  "comparison": "Decimal of original JSON raw precision; no two-decimal rounding for general devel comparison",
+  "same_pdf_png_hashes": true,
+  "conditions": [
+    {
+      "case": "interview",
+      "backend": "native",
+      "base_manifest_sha256": "4c52c8a5a98350edd4604cf4f6dff7e18f12059d6c68bfe17b2e9f41dec0d4b8",
+      "candidate_manifest_sha256": "077649310d656b066123861181e6004de00f440542a26b52159096d8426d4229",
+      "conditions_equal": true
+    },
+    {
+      "case": "request",
+      "backend": "native",
+      "base_manifest_sha256": "5f836a4514b3d7362b00966df02e5d31b38088f3f5c8d3b1b356d65a9da534da",
+      "candidate_manifest_sha256": "bad5f4fc71aaf450603a827d95e094b42ab48a7a67c8bf18ca1144d84e591935",
+      "conditions_equal": true
+    },
+    {
+      "case": "newyear",
+      "backend": "native",
+      "base_manifest_sha256": "4008cc2c09997b0bb5d6232e514a97f8c5e4b7b240a0155343e925048b5316c7",
+      "candidate_manifest_sha256": "13103d4d5b7e9f8049aee54d7fb644a5608fb8220af8da71564c1fdb77063e49",
+      "conditions_equal": true
+    },
+    {
+      "case": "ktx",
+      "backend": "native",
+      "base_manifest_sha256": "24fe21ababa62c90310791334bc9d9d17d0d3c33523b897dca04c4ff5e7f49f2",
+      "candidate_manifest_sha256": "03b30d9a80a6564fe1ee0b0793f6053a0bb59341f4be9909962b645c9df453ea",
+      "conditions_equal": true
+    },
+    {
+      "case": "policy-flags0",
+      "backend": "native",
+      "base_manifest_sha256": "bd4bd05df50924a4b66a1713a7e39f58b03e3474c3b6eb3516b0e58cfdf75f52",
+      "candidate_manifest_sha256": "2852a8c25fca7767dc7afcb11d9aaabb270356e3ff2357ecb49a5acb216c301a",
+      "conditions_equal": true
+    },
+    {
+      "case": "legislation-summary",
+      "backend": "native",
+      "base_manifest_sha256": "9814751a6eb2cc838b40d114cd38efcb38801d9aa169ad39e00422b99bdbdc65",
+      "candidate_manifest_sha256": "5e7b522b80c0d57f26bbdf13da6d05f24ff96af80809101ed370b02a4f3f7ebd",
+      "conditions_equal": true
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "base_manifest_sha256": "8fe6cca0fb01ffef61f63b4a0ff949947922bd5fdb22150e2ad3ca454301e832",
+      "candidate_manifest_sha256": "cdd08eb08ce02fe921891395b7053025e7f7ea57786b504afffb1c4718fc49d4",
+      "conditions_equal": true
+    },
+    {
+      "case": "idol-counterexample",
+      "backend": "native",
+      "base_manifest_sha256": "4a912d82b9428649dd50df409ceae6811517c3fb5a4d2bc0e23ef89356d91ae2",
+      "candidate_manifest_sha256": "b3e60c88e635f1f67ab9e426f0f4c1a3839f2bdd22eaeaebe11a2298c7417d59",
+      "conditions_equal": true
+    },
+    {
+      "case": "clip5587",
+      "backend": "native",
+      "base_manifest_sha256": "6aba0a45b58a8b93acc10c0b6516ba7199d998642c5ff5f26efa6603e4eb7216",
+      "candidate_manifest_sha256": "4dd6d47b519fee231a6429744ce8be6434cbea374f99c269033269290a7407e8",
+      "conditions_equal": true
+    },
+    {
+      "case": "interview",
+      "backend": "wasm",
+      "base_manifest_sha256": "580a76061d88cfcb5f11832477bd1f6c53d2019a79d2071f9b42eb06515b08dc",
+      "candidate_manifest_sha256": "28bd039c8b276b573b8f40c73bb873c3f826a912136c2443591babc35dff68e8",
+      "conditions_equal": true
+    },
+    {
+      "case": "request",
+      "backend": "wasm",
+      "base_manifest_sha256": "3c345e3180d30b25bcce69d54358ca1ad7b6cc75abcd0438fb3d166f3229c005",
+      "candidate_manifest_sha256": "9891c8ba4c8b60d1e2405d7813a244675fc5fd57470bb7d2d40efa37280ea4a1",
+      "conditions_equal": true
+    },
+    {
+      "case": "newyear",
+      "backend": "wasm",
+      "base_manifest_sha256": "d88444e98c1fb3899a9fee3f50220da2fd4b1deb67726793c358c2d1d9eeb737",
+      "candidate_manifest_sha256": "ea4bc34022eb0561303dbc45ce137b3807d58f8aa6589a564310019559c07b70",
+      "conditions_equal": true
+    },
+    {
+      "case": "ktx",
+      "backend": "wasm",
+      "base_manifest_sha256": "335b1efcae1488e7f261beb771713bda0b8f41995c86000a62ec2421d51db870",
+      "candidate_manifest_sha256": "b64d5d0ad2530aa3cf027cd3b7e89bd34588dc40cdb142cf686af352f206e18c",
+      "conditions_equal": true
+    },
+    {
+      "case": "policy-flags0",
+      "backend": "wasm",
+      "base_manifest_sha256": "4a2a10b2cb007065dc7dd84f9dbe23d2b41bd4eb5d3235b74105d2db775fb484",
+      "candidate_manifest_sha256": "2dc6ebeaecc9604591083b60246a1ef72ba90dda6be44b04c0f9af704f85c2af",
+      "conditions_equal": true
+    },
+    {
+      "case": "legislation-summary",
+      "backend": "wasm",
+      "base_manifest_sha256": "24347f4e93c47372726a49504de1f029c7c2f810986140572c03ce8915fc6523",
+      "candidate_manifest_sha256": "7f0ffdd3fb8b48105ad97d7030597c13b4f0823a4bcbffe7ad3c169d89441774",
+      "conditions_equal": true
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "base_manifest_sha256": "33619b2d957aa0bd9460747b4d351d4620bd7775aeb9860cdbcd8932fdebff75",
+      "candidate_manifest_sha256": "8399c724e0ce33bc46c90b1db0bcd48f36bbd441f59a286a46adb1eb5d69aa98",
+      "conditions_equal": true
+    },
+    {
+      "case": "idol-counterexample",
+      "backend": "wasm",
+      "base_manifest_sha256": "4fdcc51dd90fb3511c7ecf0cec24107b3b45ebe1e07b162c54c1ff8d1a90235e",
+      "candidate_manifest_sha256": "bf818ac51559670814f8e134ee3b154ca45271a85749fbf6fc8ec10ef630d416",
+      "conditions_equal": true
+    },
+    {
+      "case": "clip5587",
+      "backend": "wasm",
+      "base_manifest_sha256": "38ab3e10bfa0659864dd55221a8350366874309e8b9b929a47a58a3d364e098c",
+      "candidate_manifest_sha256": "51adeed28ca1b330ec6c81c0f5e9037698a4926d92602a818270511283348a1d",
+      "conditions_equal": true
+    }
+  ],
+  "rows": [
+    {
+      "case": "interview",
+      "backend": "native",
+      "page": 1,
+      "base_raw_percent": "97.0227",
+      "candidate_raw_percent": "99.23307",
+      "drop_pp": "-2.21037",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "interview",
+      "backend": "native",
+      "page": 2,
+      "base_raw_percent": "99.99221",
+      "candidate_raw_percent": "99.99221",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "request",
+      "backend": "native",
+      "page": 1,
+      "base_raw_percent": "96.20377",
+      "candidate_raw_percent": "99.22562",
+      "drop_pp": "-3.02185",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "newyear",
+      "backend": "native",
+      "page": 1,
+      "base_raw_percent": "98.79863",
+      "candidate_raw_percent": "98.79863",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "newyear",
+      "backend": "native",
+      "page": 2,
+      "base_raw_percent": "98.87449",
+      "candidate_raw_percent": "98.91391",
+      "drop_pp": "-0.03942",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "newyear",
+      "backend": "native",
+      "page": 3,
+      "base_raw_percent": "98.42814",
+      "candidate_raw_percent": "98.42814",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "ktx",
+      "backend": "native",
+      "page": 1,
+      "base_raw_percent": "99.38897",
+      "candidate_raw_percent": "99.66127",
+      "drop_pp": "-0.27230",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "policy-flags0",
+      "backend": "native",
+      "page": 1,
+      "base_raw_percent": "97.75797",
+      "candidate_raw_percent": "99.99813",
+      "drop_pp": "-2.24016",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "legislation-summary",
+      "backend": "native",
+      "page": 1,
+      "base_raw_percent": "99.72362",
+      "candidate_raw_percent": "99.72362",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "legislation-summary",
+      "backend": "native",
+      "page": 2,
+      "base_raw_percent": "99.23795",
+      "candidate_raw_percent": "99.23795",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "legislation-summary",
+      "backend": "native",
+      "page": 3,
+      "base_raw_percent": "99.79278",
+      "candidate_raw_percent": "99.79278",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "legislation-summary",
+      "backend": "native",
+      "page": 4,
+      "base_raw_percent": "99.39724",
+      "candidate_raw_percent": "99.39724",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "legislation-summary",
+      "backend": "native",
+      "page": 5,
+      "base_raw_percent": "99.5376",
+      "candidate_raw_percent": "99.5376",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "legislation-summary",
+      "backend": "native",
+      "page": 6,
+      "base_raw_percent": "99.59981",
+      "candidate_raw_percent": "99.59981",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "legislation-summary",
+      "backend": "native",
+      "page": 7,
+      "base_raw_percent": "99.82932",
+      "candidate_raw_percent": "99.82932",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "legislation-summary",
+      "backend": "native",
+      "page": 8,
+      "base_raw_percent": "99.98457",
+      "candidate_raw_percent": "99.98457",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "legislation-summary",
+      "backend": "native",
+      "page": 9,
+      "base_raw_percent": "99.98219",
+      "candidate_raw_percent": "99.98219",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "legislation-summary",
+      "backend": "native",
+      "page": 10,
+      "base_raw_percent": "99.37139",
+      "candidate_raw_percent": "99.37139",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 1,
+      "base_raw_percent": "94.83952",
+      "candidate_raw_percent": "94.83952",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 2,
+      "base_raw_percent": "97.67204",
+      "candidate_raw_percent": "97.67204",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 3,
+      "base_raw_percent": "99.72363",
+      "candidate_raw_percent": "99.72363",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 4,
+      "base_raw_percent": "97.24256",
+      "candidate_raw_percent": "97.24256",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 5,
+      "base_raw_percent": "99.76501",
+      "candidate_raw_percent": "99.76501",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 6,
+      "base_raw_percent": "99.37133",
+      "candidate_raw_percent": "99.37133",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 7,
+      "base_raw_percent": "99.41387",
+      "candidate_raw_percent": "99.41387",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 8,
+      "base_raw_percent": "99.13278",
+      "candidate_raw_percent": "99.13278",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 9,
+      "base_raw_percent": "99.87556",
+      "candidate_raw_percent": "99.87556",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 10,
+      "base_raw_percent": "99.90677",
+      "candidate_raw_percent": "99.90677",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 11,
+      "base_raw_percent": "98.9947",
+      "candidate_raw_percent": "98.9947",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 12,
+      "base_raw_percent": "99.88488",
+      "candidate_raw_percent": "99.88488",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 13,
+      "base_raw_percent": "98.02351",
+      "candidate_raw_percent": "98.02351",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 14,
+      "base_raw_percent": "99.83473",
+      "candidate_raw_percent": "99.83473",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 15,
+      "base_raw_percent": "99.76896",
+      "candidate_raw_percent": "99.76896",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 16,
+      "base_raw_percent": "97.09784",
+      "candidate_raw_percent": "97.09784",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 17,
+      "base_raw_percent": "99.86497",
+      "candidate_raw_percent": "99.86497",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 18,
+      "base_raw_percent": "99.573",
+      "candidate_raw_percent": "99.573",
+      "drop_pp": "0.000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 19,
+      "base_raw_percent": "99.85247",
+      "candidate_raw_percent": "99.85247",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 20,
+      "base_raw_percent": "99.93725",
+      "candidate_raw_percent": "99.93725",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 21,
+      "base_raw_percent": "99.50281",
+      "candidate_raw_percent": "99.50281",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 22,
+      "base_raw_percent": "99.94854",
+      "candidate_raw_percent": "99.94854",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 23,
+      "base_raw_percent": "99.78405",
+      "candidate_raw_percent": "99.78405",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 24,
+      "base_raw_percent": "99.84404",
+      "candidate_raw_percent": "99.84404",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 25,
+      "base_raw_percent": "99.31986",
+      "candidate_raw_percent": "99.31986",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 26,
+      "base_raw_percent": "99.99868",
+      "candidate_raw_percent": "99.99868",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 27,
+      "base_raw_percent": "99.02101",
+      "candidate_raw_percent": "99.02101",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 28,
+      "base_raw_percent": "98.98189",
+      "candidate_raw_percent": "98.98189",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 29,
+      "base_raw_percent": "99.72262",
+      "candidate_raw_percent": "99.72262",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 30,
+      "base_raw_percent": "99.64585",
+      "candidate_raw_percent": "99.64585",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 31,
+      "base_raw_percent": "99.70635",
+      "candidate_raw_percent": "99.70635",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 32,
+      "base_raw_percent": "99.38291",
+      "candidate_raw_percent": "99.38291",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 33,
+      "base_raw_percent": "99.65094",
+      "candidate_raw_percent": "99.73077",
+      "drop_pp": "-0.07983",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 34,
+      "base_raw_percent": "99.547",
+      "candidate_raw_percent": "99.86014",
+      "drop_pp": "-0.31314",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 35,
+      "base_raw_percent": "98.38898",
+      "candidate_raw_percent": "99.09716",
+      "drop_pp": "-0.70818",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 36,
+      "base_raw_percent": "99.8361",
+      "candidate_raw_percent": "99.8361",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 37,
+      "base_raw_percent": "98.92632",
+      "candidate_raw_percent": "98.92632",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 38,
+      "base_raw_percent": "99.62436",
+      "candidate_raw_percent": "99.62436",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 39,
+      "base_raw_percent": "99.89781",
+      "candidate_raw_percent": "99.89781",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 40,
+      "base_raw_percent": "99.78868",
+      "candidate_raw_percent": "99.78868",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 41,
+      "base_raw_percent": "99.80779",
+      "candidate_raw_percent": "99.80779",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 42,
+      "base_raw_percent": "99.47901",
+      "candidate_raw_percent": "99.89102",
+      "drop_pp": "-0.41201",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 43,
+      "base_raw_percent": "98.89875",
+      "candidate_raw_percent": "99.27422",
+      "drop_pp": "-0.37547",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 44,
+      "base_raw_percent": "99.75542",
+      "candidate_raw_percent": "99.91062",
+      "drop_pp": "-0.15520",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 45,
+      "base_raw_percent": "99.83524",
+      "candidate_raw_percent": "99.83524",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 46,
+      "base_raw_percent": "99.65095",
+      "candidate_raw_percent": "99.65095",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 47,
+      "base_raw_percent": "99.79535",
+      "candidate_raw_percent": "99.79535",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 48,
+      "base_raw_percent": "99.38305",
+      "candidate_raw_percent": "99.87493",
+      "drop_pp": "-0.49188",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 49,
+      "base_raw_percent": "98.96401",
+      "candidate_raw_percent": "99.82882",
+      "drop_pp": "-0.86481",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 50,
+      "base_raw_percent": "99.56194",
+      "candidate_raw_percent": "99.83137",
+      "drop_pp": "-0.26943",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 51,
+      "base_raw_percent": "99.77027",
+      "candidate_raw_percent": "99.87637",
+      "drop_pp": "-0.10610",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 52,
+      "base_raw_percent": "99.91197",
+      "candidate_raw_percent": "99.91197",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 53,
+      "base_raw_percent": "99.59108",
+      "candidate_raw_percent": "99.89413",
+      "drop_pp": "-0.30305",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 54,
+      "base_raw_percent": "99.85708",
+      "candidate_raw_percent": "99.858",
+      "drop_pp": "-0.00092",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 55,
+      "base_raw_percent": "99.17488",
+      "candidate_raw_percent": "99.21387",
+      "drop_pp": "-0.03899",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 56,
+      "base_raw_percent": "99.84492",
+      "candidate_raw_percent": "99.84492",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 57,
+      "base_raw_percent": "99.59127",
+      "candidate_raw_percent": "99.59127",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 58,
+      "base_raw_percent": "99.46735",
+      "candidate_raw_percent": "99.46735",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 59,
+      "base_raw_percent": "99.73292",
+      "candidate_raw_percent": "99.91893",
+      "drop_pp": "-0.18601",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 60,
+      "base_raw_percent": "99.75261",
+      "candidate_raw_percent": "99.88867",
+      "drop_pp": "-0.13606",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 61,
+      "base_raw_percent": "99.83053",
+      "candidate_raw_percent": "99.83053",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 62,
+      "base_raw_percent": "99.31871",
+      "candidate_raw_percent": "99.31945",
+      "drop_pp": "-0.00074",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 63,
+      "base_raw_percent": "99.4285",
+      "candidate_raw_percent": "99.4285",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 64,
+      "base_raw_percent": "99.48923",
+      "candidate_raw_percent": "99.48923",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 65,
+      "base_raw_percent": "99.64887",
+      "candidate_raw_percent": "99.92466",
+      "drop_pp": "-0.27579",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 66,
+      "base_raw_percent": "99.27955",
+      "candidate_raw_percent": "99.90707",
+      "drop_pp": "-0.62752",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 67,
+      "base_raw_percent": "99.93391",
+      "candidate_raw_percent": "99.93391",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 68,
+      "base_raw_percent": "99.60749",
+      "candidate_raw_percent": "99.60749",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 69,
+      "base_raw_percent": "99.2766",
+      "candidate_raw_percent": "99.5607",
+      "drop_pp": "-0.2841",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 70,
+      "base_raw_percent": "99.31217",
+      "candidate_raw_percent": "99.86913",
+      "drop_pp": "-0.55696",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 71,
+      "base_raw_percent": "99.84812",
+      "candidate_raw_percent": "99.84812",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 72,
+      "base_raw_percent": "99.96444",
+      "candidate_raw_percent": "99.96444",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 73,
+      "base_raw_percent": "99.86572",
+      "candidate_raw_percent": "99.86572",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 74,
+      "base_raw_percent": "99.8717",
+      "candidate_raw_percent": "99.8717",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 75,
+      "base_raw_percent": "99.82984",
+      "candidate_raw_percent": "99.82983",
+      "drop_pp": "0.00001",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 76,
+      "base_raw_percent": "99.93505",
+      "candidate_raw_percent": "99.93505",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 77,
+      "base_raw_percent": "99.05857",
+      "candidate_raw_percent": "99.05857",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 78,
+      "base_raw_percent": "99.83689",
+      "candidate_raw_percent": "99.83689",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 79,
+      "base_raw_percent": "99.26366",
+      "candidate_raw_percent": "99.78954",
+      "drop_pp": "-0.52588",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 80,
+      "base_raw_percent": "99.74406",
+      "candidate_raw_percent": "99.74406",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 81,
+      "base_raw_percent": "99.89041",
+      "candidate_raw_percent": "99.89041",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 82,
+      "base_raw_percent": "99.77967",
+      "candidate_raw_percent": "99.78072",
+      "drop_pp": "-0.00105",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 83,
+      "base_raw_percent": "98.98698",
+      "candidate_raw_percent": "99.83534",
+      "drop_pp": "-0.84836",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 84,
+      "base_raw_percent": "99.39663",
+      "candidate_raw_percent": "99.39663",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 85,
+      "base_raw_percent": "98.99264",
+      "candidate_raw_percent": "98.99264",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 86,
+      "base_raw_percent": "99.24092",
+      "candidate_raw_percent": "99.79989",
+      "drop_pp": "-0.55897",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 87,
+      "base_raw_percent": "99.89237",
+      "candidate_raw_percent": "99.89237",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 88,
+      "base_raw_percent": "99.73891",
+      "candidate_raw_percent": "99.79802",
+      "drop_pp": "-0.05911",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 89,
+      "base_raw_percent": "99.29794",
+      "candidate_raw_percent": "99.8571",
+      "drop_pp": "-0.55916",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 90,
+      "base_raw_percent": "99.6221",
+      "candidate_raw_percent": "99.6221",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 91,
+      "base_raw_percent": "99.748",
+      "candidate_raw_percent": "99.77256",
+      "drop_pp": "-0.02456",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 92,
+      "base_raw_percent": "99.84418",
+      "candidate_raw_percent": "99.8679",
+      "drop_pp": "-0.02372",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 93,
+      "base_raw_percent": "99.89528",
+      "candidate_raw_percent": "99.89528",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 94,
+      "base_raw_percent": "99.83484",
+      "candidate_raw_percent": "99.83484",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 95,
+      "base_raw_percent": "97.30697",
+      "candidate_raw_percent": "97.64481",
+      "drop_pp": "-0.33784",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 96,
+      "base_raw_percent": "95.99584",
+      "candidate_raw_percent": "96.08366",
+      "drop_pp": "-0.08782",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 97,
+      "base_raw_percent": "99.65586",
+      "candidate_raw_percent": "99.8557",
+      "drop_pp": "-0.19984",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 98,
+      "base_raw_percent": "99.40496",
+      "candidate_raw_percent": "99.40496",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 99,
+      "base_raw_percent": "99.82088",
+      "candidate_raw_percent": "99.82088",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 100,
+      "base_raw_percent": "99.4455",
+      "candidate_raw_percent": "99.91622",
+      "drop_pp": "-0.47072",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 101,
+      "base_raw_percent": "99.48153",
+      "candidate_raw_percent": "99.48151",
+      "drop_pp": "0.00002",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 102,
+      "base_raw_percent": "99.39509",
+      "candidate_raw_percent": "99.39509",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 103,
+      "base_raw_percent": "99.90625",
+      "candidate_raw_percent": "99.90625",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 104,
+      "base_raw_percent": "99.32984",
+      "candidate_raw_percent": "99.32984",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 105,
+      "base_raw_percent": "98.94324",
+      "candidate_raw_percent": "98.94324",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 106,
+      "base_raw_percent": "99.8213",
+      "candidate_raw_percent": "99.8213",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 107,
+      "base_raw_percent": "99.83434",
+      "candidate_raw_percent": "99.83434",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 108,
+      "base_raw_percent": "99.83653",
+      "candidate_raw_percent": "99.83653",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 109,
+      "base_raw_percent": "99.78354",
+      "candidate_raw_percent": "99.78354",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 110,
+      "base_raw_percent": "93.35921",
+      "candidate_raw_percent": "99.79423",
+      "drop_pp": "-6.43502",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 111,
+      "base_raw_percent": "98.22175",
+      "candidate_raw_percent": "98.22175",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 112,
+      "base_raw_percent": "99.8957",
+      "candidate_raw_percent": "99.8957",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 113,
+      "base_raw_percent": "99.88283",
+      "candidate_raw_percent": "99.88283",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 114,
+      "base_raw_percent": "97.96343",
+      "candidate_raw_percent": "98.50612",
+      "drop_pp": "-0.54269",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 115,
+      "base_raw_percent": "99.00235",
+      "candidate_raw_percent": "99.47964",
+      "drop_pp": "-0.47729",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 116,
+      "base_raw_percent": "99.87043",
+      "candidate_raw_percent": "99.87043",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 117,
+      "base_raw_percent": "99.80585",
+      "candidate_raw_percent": "99.80585",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 118,
+      "base_raw_percent": "99.84503",
+      "candidate_raw_percent": "99.84503",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 119,
+      "base_raw_percent": "99.86153",
+      "candidate_raw_percent": "99.86153",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 120,
+      "base_raw_percent": "96.9525",
+      "candidate_raw_percent": "97.22592",
+      "drop_pp": "-0.27342",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 121,
+      "base_raw_percent": "99.87203",
+      "candidate_raw_percent": "99.87204",
+      "drop_pp": "-0.00001",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 122,
+      "base_raw_percent": "99.46233",
+      "candidate_raw_percent": "99.46233",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 123,
+      "base_raw_percent": "99.74241",
+      "candidate_raw_percent": "99.90629",
+      "drop_pp": "-0.16388",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 124,
+      "base_raw_percent": "99.89099",
+      "candidate_raw_percent": "99.89099",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 125,
+      "base_raw_percent": "99.81029",
+      "candidate_raw_percent": "99.91078",
+      "drop_pp": "-0.10049",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 126,
+      "base_raw_percent": "99.94735",
+      "candidate_raw_percent": "99.94735",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 127,
+      "base_raw_percent": "99.93726",
+      "candidate_raw_percent": "99.93726",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 128,
+      "base_raw_percent": "99.84843",
+      "candidate_raw_percent": "99.84843",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 129,
+      "base_raw_percent": "99.82772",
+      "candidate_raw_percent": "99.82772",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 130,
+      "base_raw_percent": "99.84568",
+      "candidate_raw_percent": "99.84568",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 131,
+      "base_raw_percent": "98.40194",
+      "candidate_raw_percent": "99.05677",
+      "drop_pp": "-0.65483",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 132,
+      "base_raw_percent": "99.51218",
+      "candidate_raw_percent": "99.80142",
+      "drop_pp": "-0.28924",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 133,
+      "base_raw_percent": "99.66403",
+      "candidate_raw_percent": "99.92128",
+      "drop_pp": "-0.25725",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 134,
+      "base_raw_percent": "99.82013",
+      "candidate_raw_percent": "99.82013",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 135,
+      "base_raw_percent": "99.81911",
+      "candidate_raw_percent": "99.81911",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 136,
+      "base_raw_percent": "99.35275",
+      "candidate_raw_percent": "99.35275",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 137,
+      "base_raw_percent": "99.93869",
+      "candidate_raw_percent": "99.93869",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 138,
+      "base_raw_percent": "99.27658",
+      "candidate_raw_percent": "99.27658",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 139,
+      "base_raw_percent": "99.74475",
+      "candidate_raw_percent": "99.74475",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 140,
+      "base_raw_percent": "99.94281",
+      "candidate_raw_percent": "99.94281",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 141,
+      "base_raw_percent": "99.12388",
+      "candidate_raw_percent": "99.58136",
+      "drop_pp": "-0.45748",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 142,
+      "base_raw_percent": "99.81079",
+      "candidate_raw_percent": "99.81079",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 143,
+      "base_raw_percent": "98.84487",
+      "candidate_raw_percent": "98.85966",
+      "drop_pp": "-0.01479",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 144,
+      "base_raw_percent": "99.56426",
+      "candidate_raw_percent": "99.56422",
+      "drop_pp": "0.00004",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 145,
+      "base_raw_percent": "98.39895",
+      "candidate_raw_percent": "98.39895",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 146,
+      "base_raw_percent": "99.80955",
+      "candidate_raw_percent": "99.80955",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 147,
+      "base_raw_percent": "99.21356",
+      "candidate_raw_percent": "99.21356",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 148,
+      "base_raw_percent": "98.60643",
+      "candidate_raw_percent": "98.8097",
+      "drop_pp": "-0.20327",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 149,
+      "base_raw_percent": "99.83599",
+      "candidate_raw_percent": "99.83599",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 150,
+      "base_raw_percent": "98.62038",
+      "candidate_raw_percent": "98.57201",
+      "drop_pp": "0.04837",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 151,
+      "base_raw_percent": "99.86645",
+      "candidate_raw_percent": "99.86645",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 152,
+      "base_raw_percent": "98.74451",
+      "candidate_raw_percent": "98.74451",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 153,
+      "base_raw_percent": "99.77138",
+      "candidate_raw_percent": "99.77138",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 154,
+      "base_raw_percent": "97.07627",
+      "candidate_raw_percent": "97.07627",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 155,
+      "base_raw_percent": "99.86495",
+      "candidate_raw_percent": "99.86495",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 156,
+      "base_raw_percent": "99.93401",
+      "candidate_raw_percent": "99.93401",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 157,
+      "base_raw_percent": "99.98754",
+      "candidate_raw_percent": "99.98754",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 158,
+      "base_raw_percent": "99.98994",
+      "candidate_raw_percent": "99.98994",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 159,
+      "base_raw_percent": "99.99211",
+      "candidate_raw_percent": "99.99211",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 160,
+      "base_raw_percent": "99.97893",
+      "candidate_raw_percent": "99.97893",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 161,
+      "base_raw_percent": "99.95518",
+      "candidate_raw_percent": "99.95518",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 162,
+      "base_raw_percent": "99.87967",
+      "candidate_raw_percent": "99.87967",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 163,
+      "base_raw_percent": "99.96209",
+      "candidate_raw_percent": "99.96209",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 164,
+      "base_raw_percent": "99.94199",
+      "candidate_raw_percent": "99.94199",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 165,
+      "base_raw_percent": "99.9778",
+      "candidate_raw_percent": "99.9778",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 166,
+      "base_raw_percent": "99.99485",
+      "candidate_raw_percent": "99.99485",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 167,
+      "base_raw_percent": "99.99205",
+      "candidate_raw_percent": "99.99205",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 168,
+      "base_raw_percent": "99.99227",
+      "candidate_raw_percent": "99.99227",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 169,
+      "base_raw_percent": "99.86169",
+      "candidate_raw_percent": "99.86169",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 170,
+      "base_raw_percent": "99.98968",
+      "candidate_raw_percent": "99.98968",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 171,
+      "base_raw_percent": "99.6809",
+      "candidate_raw_percent": "99.6809",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 172,
+      "base_raw_percent": "99.95249",
+      "candidate_raw_percent": "99.95249",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 173,
+      "base_raw_percent": "99.80123",
+      "candidate_raw_percent": "99.80123",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 174,
+      "base_raw_percent": "99.99636",
+      "candidate_raw_percent": "99.99636",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 175,
+      "base_raw_percent": "99.72917",
+      "candidate_raw_percent": "99.72917",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 176,
+      "base_raw_percent": "99.86737",
+      "candidate_raw_percent": "99.86737",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 177,
+      "base_raw_percent": "99.65785",
+      "candidate_raw_percent": "99.65785",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 178,
+      "base_raw_percent": "99.99406",
+      "candidate_raw_percent": "99.99406",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 179,
+      "base_raw_percent": "99.99794",
+      "candidate_raw_percent": "99.99794",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 180,
+      "base_raw_percent": "99.99142",
+      "candidate_raw_percent": "99.99142",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 181,
+      "base_raw_percent": "99.99671",
+      "candidate_raw_percent": "99.99671",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 182,
+      "base_raw_percent": "99.79862",
+      "candidate_raw_percent": "99.79862",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 183,
+      "base_raw_percent": "99.56436",
+      "candidate_raw_percent": "99.56436",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 184,
+      "base_raw_percent": "99.71734",
+      "candidate_raw_percent": "99.71734",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 185,
+      "base_raw_percent": "99.44371",
+      "candidate_raw_percent": "99.44371",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 186,
+      "base_raw_percent": "99.89178",
+      "candidate_raw_percent": "99.89178",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 187,
+      "base_raw_percent": "99.44246",
+      "candidate_raw_percent": "99.44246",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 188,
+      "base_raw_percent": "99.89178",
+      "candidate_raw_percent": "99.89178",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 189,
+      "base_raw_percent": "99.44252",
+      "candidate_raw_percent": "99.44252",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 190,
+      "base_raw_percent": "99.89178",
+      "candidate_raw_percent": "99.89178",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 191,
+      "base_raw_percent": "99.40407",
+      "candidate_raw_percent": "99.40407",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 192,
+      "base_raw_percent": "99.9058",
+      "candidate_raw_percent": "99.9058",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 193,
+      "base_raw_percent": "98.25361",
+      "candidate_raw_percent": "98.25361",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 194,
+      "base_raw_percent": "99.48475",
+      "candidate_raw_percent": "99.48475",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "native",
+      "page": 195,
+      "base_raw_percent": "99.61425",
+      "candidate_raw_percent": "99.61425",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "idol-counterexample",
+      "backend": "native",
+      "page": 1,
+      "base_raw_percent": "99.50595",
+      "candidate_raw_percent": "99.50829",
+      "drop_pp": "-0.00234",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "idol-counterexample",
+      "backend": "native",
+      "page": 2,
+      "base_raw_percent": "99.98101",
+      "candidate_raw_percent": "99.98101",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "clip5587",
+      "backend": "native",
+      "page": 1,
+      "base_raw_percent": "95.67745",
+      "candidate_raw_percent": "95.67745",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "clip5587",
+      "backend": "native",
+      "page": 2,
+      "base_raw_percent": "98.18464",
+      "candidate_raw_percent": "98.18464",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "clip5587",
+      "backend": "native",
+      "page": 3,
+      "base_raw_percent": "92.32561",
+      "candidate_raw_percent": "92.32561",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "clip5587",
+      "backend": "native",
+      "page": 4,
+      "base_raw_percent": "96.96194",
+      "candidate_raw_percent": "96.96194",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "interview",
+      "backend": "wasm",
+      "page": 1,
+      "base_raw_percent": "97.15145",
+      "candidate_raw_percent": "99.25469",
+      "drop_pp": "-2.10324",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "interview",
+      "backend": "wasm",
+      "page": 2,
+      "base_raw_percent": "99.99221",
+      "candidate_raw_percent": "99.99221",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "request",
+      "backend": "wasm",
+      "page": 1,
+      "base_raw_percent": "96.13416",
+      "candidate_raw_percent": "99.20457",
+      "drop_pp": "-3.07041",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "newyear",
+      "backend": "wasm",
+      "page": 1,
+      "base_raw_percent": "98.79858",
+      "candidate_raw_percent": "98.79858",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "newyear",
+      "backend": "wasm",
+      "page": 2,
+      "base_raw_percent": "98.87448",
+      "candidate_raw_percent": "98.91391",
+      "drop_pp": "-0.03943",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "newyear",
+      "backend": "wasm",
+      "page": 3,
+      "base_raw_percent": "98.42806",
+      "candidate_raw_percent": "98.42806",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "ktx",
+      "backend": "wasm",
+      "page": 1,
+      "base_raw_percent": "99.42441",
+      "candidate_raw_percent": "99.697",
+      "drop_pp": "-0.27259",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "policy-flags0",
+      "backend": "wasm",
+      "page": 1,
+      "base_raw_percent": "97.78365",
+      "candidate_raw_percent": "99.99259",
+      "drop_pp": "-2.20894",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "legislation-summary",
+      "backend": "wasm",
+      "page": 1,
+      "base_raw_percent": "99.72368",
+      "candidate_raw_percent": "99.72368",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "legislation-summary",
+      "backend": "wasm",
+      "page": 2,
+      "base_raw_percent": "99.2209",
+      "candidate_raw_percent": "99.2209",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "legislation-summary",
+      "backend": "wasm",
+      "page": 3,
+      "base_raw_percent": "99.76344",
+      "candidate_raw_percent": "99.76344",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "legislation-summary",
+      "backend": "wasm",
+      "page": 4,
+      "base_raw_percent": "99.3947",
+      "candidate_raw_percent": "99.3947",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "legislation-summary",
+      "backend": "wasm",
+      "page": 5,
+      "base_raw_percent": "99.53655",
+      "candidate_raw_percent": "99.53655",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "legislation-summary",
+      "backend": "wasm",
+      "page": 6,
+      "base_raw_percent": "99.59518",
+      "candidate_raw_percent": "99.59518",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "legislation-summary",
+      "backend": "wasm",
+      "page": 7,
+      "base_raw_percent": "99.83878",
+      "candidate_raw_percent": "99.83878",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "legislation-summary",
+      "backend": "wasm",
+      "page": 8,
+      "base_raw_percent": "99.98453",
+      "candidate_raw_percent": "99.98453",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "legislation-summary",
+      "backend": "wasm",
+      "page": 9,
+      "base_raw_percent": "99.98219",
+      "candidate_raw_percent": "99.98219",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "legislation-summary",
+      "backend": "wasm",
+      "page": 10,
+      "base_raw_percent": "99.39433",
+      "candidate_raw_percent": "99.39433",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 1,
+      "base_raw_percent": "94.84611",
+      "candidate_raw_percent": "94.84611",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 2,
+      "base_raw_percent": "97.5106",
+      "candidate_raw_percent": "97.5106",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 3,
+      "base_raw_percent": "99.72342",
+      "candidate_raw_percent": "99.72342",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 4,
+      "base_raw_percent": "97.25606",
+      "candidate_raw_percent": "97.25606",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 5,
+      "base_raw_percent": "99.76491",
+      "candidate_raw_percent": "99.76491",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 6,
+      "base_raw_percent": "99.41988",
+      "candidate_raw_percent": "99.41988",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 7,
+      "base_raw_percent": "99.41323",
+      "candidate_raw_percent": "99.41323",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 8,
+      "base_raw_percent": "99.16056",
+      "candidate_raw_percent": "99.16056",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 9,
+      "base_raw_percent": "99.89004",
+      "candidate_raw_percent": "99.89004",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 10,
+      "base_raw_percent": "99.90671",
+      "candidate_raw_percent": "99.90671",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 11,
+      "base_raw_percent": "99.02372",
+      "candidate_raw_percent": "99.02372",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 12,
+      "base_raw_percent": "99.88781",
+      "candidate_raw_percent": "99.88781",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 13,
+      "base_raw_percent": "98.05014",
+      "candidate_raw_percent": "98.05014",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 14,
+      "base_raw_percent": "99.8346",
+      "candidate_raw_percent": "99.8346",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 15,
+      "base_raw_percent": "99.76852",
+      "candidate_raw_percent": "99.76852",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 16,
+      "base_raw_percent": "97.09283",
+      "candidate_raw_percent": "97.09283",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 17,
+      "base_raw_percent": "99.86345",
+      "candidate_raw_percent": "99.86345",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 18,
+      "base_raw_percent": "99.54329",
+      "candidate_raw_percent": "99.54329",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 19,
+      "base_raw_percent": "99.86265",
+      "candidate_raw_percent": "99.86265",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 20,
+      "base_raw_percent": "99.95324",
+      "candidate_raw_percent": "99.95324",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 21,
+      "base_raw_percent": "99.51041",
+      "candidate_raw_percent": "99.51041",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 22,
+      "base_raw_percent": "99.94553",
+      "candidate_raw_percent": "99.94553",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 23,
+      "base_raw_percent": "99.79956",
+      "candidate_raw_percent": "99.79956",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 24,
+      "base_raw_percent": "99.84578",
+      "candidate_raw_percent": "99.84578",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 25,
+      "base_raw_percent": "99.31906",
+      "candidate_raw_percent": "99.31906",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 26,
+      "base_raw_percent": "99.9967",
+      "candidate_raw_percent": "99.9967",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 27,
+      "base_raw_percent": "99.0765",
+      "candidate_raw_percent": "99.0765",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 28,
+      "base_raw_percent": "98.99464",
+      "candidate_raw_percent": "98.99464",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 29,
+      "base_raw_percent": "99.74805",
+      "candidate_raw_percent": "99.74805",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 30,
+      "base_raw_percent": "99.67608",
+      "candidate_raw_percent": "99.67608",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 31,
+      "base_raw_percent": "99.70593",
+      "candidate_raw_percent": "99.70593",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 32,
+      "base_raw_percent": "99.47873",
+      "candidate_raw_percent": "99.47873",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 33,
+      "base_raw_percent": "99.65298",
+      "candidate_raw_percent": "99.73277",
+      "drop_pp": "-0.07979",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 34,
+      "base_raw_percent": "99.54588",
+      "candidate_raw_percent": "99.8602",
+      "drop_pp": "-0.31432",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 35,
+      "base_raw_percent": "98.40248",
+      "candidate_raw_percent": "99.10344",
+      "drop_pp": "-0.70096",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 36,
+      "base_raw_percent": "99.83618",
+      "candidate_raw_percent": "99.83618",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 37,
+      "base_raw_percent": "98.9284",
+      "candidate_raw_percent": "98.9284",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 38,
+      "base_raw_percent": "99.62538",
+      "candidate_raw_percent": "99.62538",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 39,
+      "base_raw_percent": "99.89786",
+      "candidate_raw_percent": "99.89786",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 40,
+      "base_raw_percent": "99.78553",
+      "candidate_raw_percent": "99.78553",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 41,
+      "base_raw_percent": "99.80873",
+      "candidate_raw_percent": "99.80873",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 42,
+      "base_raw_percent": "99.48183",
+      "candidate_raw_percent": "99.89194",
+      "drop_pp": "-0.41011",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 43,
+      "base_raw_percent": "98.91669",
+      "candidate_raw_percent": "99.2761",
+      "drop_pp": "-0.35941",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 44,
+      "base_raw_percent": "99.75445",
+      "candidate_raw_percent": "99.90957",
+      "drop_pp": "-0.15512",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 45,
+      "base_raw_percent": "99.8355",
+      "candidate_raw_percent": "99.8355",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 46,
+      "base_raw_percent": "99.65383",
+      "candidate_raw_percent": "99.65383",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 47,
+      "base_raw_percent": "99.79314",
+      "candidate_raw_percent": "99.79314",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 48,
+      "base_raw_percent": "99.38308",
+      "candidate_raw_percent": "99.87384",
+      "drop_pp": "-0.49076",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 49,
+      "base_raw_percent": "98.97654",
+      "candidate_raw_percent": "99.83044",
+      "drop_pp": "-0.85390",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 50,
+      "base_raw_percent": "99.56291",
+      "candidate_raw_percent": "99.83299",
+      "drop_pp": "-0.27008",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 51,
+      "base_raw_percent": "99.76862",
+      "candidate_raw_percent": "99.8747",
+      "drop_pp": "-0.10608",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 52,
+      "base_raw_percent": "99.91364",
+      "candidate_raw_percent": "99.91362",
+      "drop_pp": "0.00002",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 53,
+      "base_raw_percent": "99.59042",
+      "candidate_raw_percent": "99.8933",
+      "drop_pp": "-0.30288",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 54,
+      "base_raw_percent": "99.85716",
+      "candidate_raw_percent": "99.85806",
+      "drop_pp": "-0.00090",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 55,
+      "base_raw_percent": "99.17943",
+      "candidate_raw_percent": "99.21855",
+      "drop_pp": "-0.03912",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 56,
+      "base_raw_percent": "99.84506",
+      "candidate_raw_percent": "99.84506",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 57,
+      "base_raw_percent": "99.58898",
+      "candidate_raw_percent": "99.58898",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 58,
+      "base_raw_percent": "99.46979",
+      "candidate_raw_percent": "99.46979",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 59,
+      "base_raw_percent": "99.74162",
+      "candidate_raw_percent": "99.91795",
+      "drop_pp": "-0.17633",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 60,
+      "base_raw_percent": "99.75193",
+      "candidate_raw_percent": "99.88873",
+      "drop_pp": "-0.13680",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 61,
+      "base_raw_percent": "99.83059",
+      "candidate_raw_percent": "99.83059",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 62,
+      "base_raw_percent": "99.32064",
+      "candidate_raw_percent": "99.32055",
+      "drop_pp": "0.00009",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 63,
+      "base_raw_percent": "99.42746",
+      "candidate_raw_percent": "99.42746",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 64,
+      "base_raw_percent": "99.49267",
+      "candidate_raw_percent": "99.49267",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 65,
+      "base_raw_percent": "99.64895",
+      "candidate_raw_percent": "99.92468",
+      "drop_pp": "-0.27573",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 66,
+      "base_raw_percent": "99.28091",
+      "candidate_raw_percent": "99.90714",
+      "drop_pp": "-0.62623",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 67,
+      "base_raw_percent": "99.9339",
+      "candidate_raw_percent": "99.9339",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 68,
+      "base_raw_percent": "99.61542",
+      "candidate_raw_percent": "99.61542",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 69,
+      "base_raw_percent": "99.2787",
+      "candidate_raw_percent": "99.56094",
+      "drop_pp": "-0.28224",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 70,
+      "base_raw_percent": "99.31364",
+      "candidate_raw_percent": "99.86915",
+      "drop_pp": "-0.55551",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 71,
+      "base_raw_percent": "99.84917",
+      "candidate_raw_percent": "99.84917",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 72,
+      "base_raw_percent": "99.96445",
+      "candidate_raw_percent": "99.96445",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 73,
+      "base_raw_percent": "99.86574",
+      "candidate_raw_percent": "99.86574",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 74,
+      "base_raw_percent": "99.8719",
+      "candidate_raw_percent": "99.8719",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 75,
+      "base_raw_percent": "99.82996",
+      "candidate_raw_percent": "99.82994",
+      "drop_pp": "0.00002",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 76,
+      "base_raw_percent": "99.93541",
+      "candidate_raw_percent": "99.93541",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 77,
+      "base_raw_percent": "99.04449",
+      "candidate_raw_percent": "99.04449",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 78,
+      "base_raw_percent": "99.83798",
+      "candidate_raw_percent": "99.83798",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 79,
+      "base_raw_percent": "99.27889",
+      "candidate_raw_percent": "99.7859",
+      "drop_pp": "-0.50701",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 80,
+      "base_raw_percent": "99.74302",
+      "candidate_raw_percent": "99.74302",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 81,
+      "base_raw_percent": "99.89087",
+      "candidate_raw_percent": "99.89087",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 82,
+      "base_raw_percent": "99.78299",
+      "candidate_raw_percent": "99.78399",
+      "drop_pp": "-0.00100",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 83,
+      "base_raw_percent": "99.01685",
+      "candidate_raw_percent": "99.83638",
+      "drop_pp": "-0.81953",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 84,
+      "base_raw_percent": "99.40099",
+      "candidate_raw_percent": "99.40099",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 85,
+      "base_raw_percent": "98.99784",
+      "candidate_raw_percent": "98.99784",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 86,
+      "base_raw_percent": "99.24216",
+      "candidate_raw_percent": "99.80002",
+      "drop_pp": "-0.55786",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 87,
+      "base_raw_percent": "99.89343",
+      "candidate_raw_percent": "99.89343",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 88,
+      "base_raw_percent": "99.73903",
+      "candidate_raw_percent": "99.79815",
+      "drop_pp": "-0.05912",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 89,
+      "base_raw_percent": "99.29983",
+      "candidate_raw_percent": "99.85724",
+      "drop_pp": "-0.55741",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 90,
+      "base_raw_percent": "99.6222",
+      "candidate_raw_percent": "99.6222",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 91,
+      "base_raw_percent": "99.77818",
+      "candidate_raw_percent": "99.77702",
+      "drop_pp": "0.00116",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 92,
+      "base_raw_percent": "99.86087",
+      "candidate_raw_percent": "99.86795",
+      "drop_pp": "-0.00708",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 93,
+      "base_raw_percent": "99.89541",
+      "candidate_raw_percent": "99.89541",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 94,
+      "base_raw_percent": "99.835",
+      "candidate_raw_percent": "99.83498",
+      "drop_pp": "0.00002",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 95,
+      "base_raw_percent": "97.33682",
+      "candidate_raw_percent": "97.64831",
+      "drop_pp": "-0.31149",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 96,
+      "base_raw_percent": "96.0228",
+      "candidate_raw_percent": "96.09842",
+      "drop_pp": "-0.07562",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 97,
+      "base_raw_percent": "99.6453",
+      "candidate_raw_percent": "99.84511",
+      "drop_pp": "-0.19981",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 98,
+      "base_raw_percent": "99.40007",
+      "candidate_raw_percent": "99.40007",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 99,
+      "base_raw_percent": "99.82104",
+      "candidate_raw_percent": "99.82104",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 100,
+      "base_raw_percent": "99.44732",
+      "candidate_raw_percent": "99.91634",
+      "drop_pp": "-0.46902",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 101,
+      "base_raw_percent": "99.48445",
+      "candidate_raw_percent": "99.48434",
+      "drop_pp": "0.00011",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 102,
+      "base_raw_percent": "99.39544",
+      "candidate_raw_percent": "99.39544",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 103,
+      "base_raw_percent": "99.90632",
+      "candidate_raw_percent": "99.90632",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 104,
+      "base_raw_percent": "99.32495",
+      "candidate_raw_percent": "99.32495",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 105,
+      "base_raw_percent": "98.95014",
+      "candidate_raw_percent": "98.95014",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 106,
+      "base_raw_percent": "99.82137",
+      "candidate_raw_percent": "99.82137",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 107,
+      "base_raw_percent": "99.83526",
+      "candidate_raw_percent": "99.83526",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 108,
+      "base_raw_percent": "99.83661",
+      "candidate_raw_percent": "99.83661",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 109,
+      "base_raw_percent": "99.78444",
+      "candidate_raw_percent": "99.78444",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 110,
+      "base_raw_percent": "93.37018",
+      "candidate_raw_percent": "99.79424",
+      "drop_pp": "-6.42406",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 111,
+      "base_raw_percent": "98.23112",
+      "candidate_raw_percent": "98.23112",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 112,
+      "base_raw_percent": "99.89591",
+      "candidate_raw_percent": "99.89591",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 113,
+      "base_raw_percent": "99.8831",
+      "candidate_raw_percent": "99.8831",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 114,
+      "base_raw_percent": "97.98662",
+      "candidate_raw_percent": "98.51389",
+      "drop_pp": "-0.52727",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 115,
+      "base_raw_percent": "99.00661",
+      "candidate_raw_percent": "99.4793",
+      "drop_pp": "-0.47269",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 116,
+      "base_raw_percent": "99.87057",
+      "candidate_raw_percent": "99.87057",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 117,
+      "base_raw_percent": "99.806",
+      "candidate_raw_percent": "99.806",
+      "drop_pp": "0.000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 118,
+      "base_raw_percent": "99.84505",
+      "candidate_raw_percent": "99.84505",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 119,
+      "base_raw_percent": "99.83926",
+      "candidate_raw_percent": "99.83926",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 120,
+      "base_raw_percent": "96.93322",
+      "candidate_raw_percent": "97.20446",
+      "drop_pp": "-0.27124",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 121,
+      "base_raw_percent": "99.86861",
+      "candidate_raw_percent": "99.86858",
+      "drop_pp": "0.00003",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 122,
+      "base_raw_percent": "99.44302",
+      "candidate_raw_percent": "99.44302",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 123,
+      "base_raw_percent": "99.7389",
+      "candidate_raw_percent": "99.90205",
+      "drop_pp": "-0.16315",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 124,
+      "base_raw_percent": "99.88299",
+      "candidate_raw_percent": "99.88297",
+      "drop_pp": "0.00002",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 125,
+      "base_raw_percent": "99.79499",
+      "candidate_raw_percent": "99.89531",
+      "drop_pp": "-0.10032",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 126,
+      "base_raw_percent": "99.9364",
+      "candidate_raw_percent": "99.9364",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 127,
+      "base_raw_percent": "99.92558",
+      "candidate_raw_percent": "99.92558",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 128,
+      "base_raw_percent": "99.84853",
+      "candidate_raw_percent": "99.84853",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 129,
+      "base_raw_percent": "99.82788",
+      "candidate_raw_percent": "99.82788",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 130,
+      "base_raw_percent": "99.84586",
+      "candidate_raw_percent": "99.84586",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 131,
+      "base_raw_percent": "98.41059",
+      "candidate_raw_percent": "99.06442",
+      "drop_pp": "-0.65383",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 132,
+      "base_raw_percent": "99.51235",
+      "candidate_raw_percent": "99.80149",
+      "drop_pp": "-0.28914",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 133,
+      "base_raw_percent": "99.66411",
+      "candidate_raw_percent": "99.9213",
+      "drop_pp": "-0.25719",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 134,
+      "base_raw_percent": "99.82008",
+      "candidate_raw_percent": "99.82008",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 135,
+      "base_raw_percent": "99.81998",
+      "candidate_raw_percent": "99.81998",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 136,
+      "base_raw_percent": "99.35231",
+      "candidate_raw_percent": "99.35231",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 137,
+      "base_raw_percent": "99.93047",
+      "candidate_raw_percent": "99.93047",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 138,
+      "base_raw_percent": "99.27586",
+      "candidate_raw_percent": "99.27586",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 139,
+      "base_raw_percent": "99.74484",
+      "candidate_raw_percent": "99.74484",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 140,
+      "base_raw_percent": "99.9428",
+      "candidate_raw_percent": "99.9428",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 141,
+      "base_raw_percent": "99.12447",
+      "candidate_raw_percent": "99.58432",
+      "drop_pp": "-0.45985",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 142,
+      "base_raw_percent": "99.81087",
+      "candidate_raw_percent": "99.81087",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 143,
+      "base_raw_percent": "98.84647",
+      "candidate_raw_percent": "98.86124",
+      "drop_pp": "-0.01477",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 144,
+      "base_raw_percent": "99.56563",
+      "candidate_raw_percent": "99.56555",
+      "drop_pp": "0.00008",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 145,
+      "base_raw_percent": "98.40447",
+      "candidate_raw_percent": "98.40447",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 146,
+      "base_raw_percent": "99.8096",
+      "candidate_raw_percent": "99.8096",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 147,
+      "base_raw_percent": "99.21394",
+      "candidate_raw_percent": "99.21394",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 148,
+      "base_raw_percent": "98.6206",
+      "candidate_raw_percent": "98.80775",
+      "drop_pp": "-0.18715",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 149,
+      "base_raw_percent": "99.83609",
+      "candidate_raw_percent": "99.83609",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 150,
+      "base_raw_percent": "98.62245",
+      "candidate_raw_percent": "98.57311",
+      "drop_pp": "0.04934",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 151,
+      "base_raw_percent": "99.86657",
+      "candidate_raw_percent": "99.86657",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 152,
+      "base_raw_percent": "98.78662",
+      "candidate_raw_percent": "98.78662",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 153,
+      "base_raw_percent": "99.77159",
+      "candidate_raw_percent": "99.77159",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 154,
+      "base_raw_percent": "97.08164",
+      "candidate_raw_percent": "97.08164",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 155,
+      "base_raw_percent": "99.86514",
+      "candidate_raw_percent": "99.86514",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 156,
+      "base_raw_percent": "99.9298",
+      "candidate_raw_percent": "99.9298",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 157,
+      "base_raw_percent": "99.98752",
+      "candidate_raw_percent": "99.98752",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 158,
+      "base_raw_percent": "99.98993",
+      "candidate_raw_percent": "99.98993",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 159,
+      "base_raw_percent": "99.99211",
+      "candidate_raw_percent": "99.99211",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 160,
+      "base_raw_percent": "99.96719",
+      "candidate_raw_percent": "99.96719",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 161,
+      "base_raw_percent": "99.95511",
+      "candidate_raw_percent": "99.95511",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 162,
+      "base_raw_percent": "99.87963",
+      "candidate_raw_percent": "99.87963",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 163,
+      "base_raw_percent": "99.96205",
+      "candidate_raw_percent": "99.96205",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 164,
+      "base_raw_percent": "99.93569",
+      "candidate_raw_percent": "99.93569",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 165,
+      "base_raw_percent": "99.97778",
+      "candidate_raw_percent": "99.97778",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 166,
+      "base_raw_percent": "99.99485",
+      "candidate_raw_percent": "99.99485",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 167,
+      "base_raw_percent": "99.99204",
+      "candidate_raw_percent": "99.99204",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 168,
+      "base_raw_percent": "99.99227",
+      "candidate_raw_percent": "99.99227",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 169,
+      "base_raw_percent": "99.86169",
+      "candidate_raw_percent": "99.86169",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 170,
+      "base_raw_percent": "99.97674",
+      "candidate_raw_percent": "99.97674",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 171,
+      "base_raw_percent": "99.68078",
+      "candidate_raw_percent": "99.68078",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 172,
+      "base_raw_percent": "99.9525",
+      "candidate_raw_percent": "99.9525",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 173,
+      "base_raw_percent": "99.80121",
+      "candidate_raw_percent": "99.80121",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 174,
+      "base_raw_percent": "99.99636",
+      "candidate_raw_percent": "99.99636",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 175,
+      "base_raw_percent": "99.72902",
+      "candidate_raw_percent": "99.72902",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 176,
+      "base_raw_percent": "99.86731",
+      "candidate_raw_percent": "99.86731",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 177,
+      "base_raw_percent": "99.65769",
+      "candidate_raw_percent": "99.65769",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 178,
+      "base_raw_percent": "99.99406",
+      "candidate_raw_percent": "99.99406",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 179,
+      "base_raw_percent": "99.99794",
+      "candidate_raw_percent": "99.99794",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 180,
+      "base_raw_percent": "99.9882",
+      "candidate_raw_percent": "99.9882",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 181,
+      "base_raw_percent": "99.9967",
+      "candidate_raw_percent": "99.9967",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 182,
+      "base_raw_percent": "99.79855",
+      "candidate_raw_percent": "99.79855",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 183,
+      "base_raw_percent": "99.56412",
+      "candidate_raw_percent": "99.56412",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 184,
+      "base_raw_percent": "99.7172",
+      "candidate_raw_percent": "99.7172",
+      "drop_pp": "0.0000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 185,
+      "base_raw_percent": "99.44009",
+      "candidate_raw_percent": "99.44009",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 186,
+      "base_raw_percent": "99.89175",
+      "candidate_raw_percent": "99.89175",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 187,
+      "base_raw_percent": "99.43883",
+      "candidate_raw_percent": "99.43883",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 188,
+      "base_raw_percent": "99.89175",
+      "candidate_raw_percent": "99.89175",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 189,
+      "base_raw_percent": "99.43888",
+      "candidate_raw_percent": "99.43888",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 190,
+      "base_raw_percent": "99.89175",
+      "candidate_raw_percent": "99.89175",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 191,
+      "base_raw_percent": "99.40041",
+      "candidate_raw_percent": "99.40041",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 192,
+      "base_raw_percent": "99.90576",
+      "candidate_raw_percent": "99.90576",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 193,
+      "base_raw_percent": "98.25034",
+      "candidate_raw_percent": "98.25034",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 194,
+      "base_raw_percent": "99.48455",
+      "candidate_raw_percent": "99.48455",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "report-628",
+      "backend": "wasm",
+      "page": 195,
+      "base_raw_percent": "99.61408",
+      "candidate_raw_percent": "99.61408",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "idol-counterexample",
+      "backend": "wasm",
+      "page": 1,
+      "base_raw_percent": "99.50727",
+      "candidate_raw_percent": "99.50802",
+      "drop_pp": "-0.00075",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "idol-counterexample",
+      "backend": "wasm",
+      "page": 2,
+      "base_raw_percent": "99.98093",
+      "candidate_raw_percent": "99.98093",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "clip5587",
+      "backend": "wasm",
+      "page": 1,
+      "base_raw_percent": "95.63432",
+      "candidate_raw_percent": "95.63432",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "clip5587",
+      "backend": "wasm",
+      "page": 2,
+      "base_raw_percent": "98.19758",
+      "candidate_raw_percent": "98.19758",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "clip5587",
+      "backend": "wasm",
+      "page": 3,
+      "base_raw_percent": "92.15037",
+      "candidate_raw_percent": "92.15037",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    },
+    {
+      "case": "clip5587",
+      "backend": "wasm",
+      "page": 4,
+      "base_raw_percent": "96.99573",
+      "candidate_raw_percent": "96.99573",
+      "drop_pp": "0.00000",
+      "below90": false,
+      "decline_over2pp": false
+    }
+  ]
+}

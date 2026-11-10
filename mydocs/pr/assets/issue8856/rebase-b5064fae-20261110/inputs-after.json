@@ -1,0 +1,128 @@
+[
+  {
+    "key": "interview",
+    "kind": "hwp",
+    "path": "samples/basic/interview.hwp",
+    "sha256": "fc71c2a0ebced5e913fbcbbc39a28244f5d73144f74ba1a4ebc548998d408d3c",
+    "unchanged": true
+  },
+  {
+    "key": "interview",
+    "kind": "pdf",
+    "path": "pdf/basic/interview-hwp-2020.pdf",
+    "sha256": "3b5c947640e19e1546968efd8d4fc05e8acef14fd427dd28f2c82a6a1bb6936b",
+    "unchanged": true
+  },
+  {
+    "key": "request",
+    "kind": "hwp",
+    "path": "samples/basic/request.hwp",
+    "sha256": "99e63b90f4aa3197029299ab087bc46225b3c27c0d07d424145b20879b45f12e",
+    "unchanged": true
+  },
+  {
+    "key": "request",
+    "kind": "pdf",
+    "path": "pdf/basic/request-hwp-2020.pdf",
+    "sha256": "7f6d4aaaa87709609cc49376e850e0074cfd9f16ee7eb2562331603606f2e983",
+    "unchanged": true
+  },
+  {
+    "key": "newyear",
+    "kind": "hwp",
+    "path": "samples/basic/NewYear_s_Day.hwp",
+    "sha256": "1be2736df6b21687f5c1627bac307cc689171928f6ceb0a235af0bc727eb6372",
+    "unchanged": true
+  },
+  {
+    "key": "newyear",
+    "kind": "pdf",
+    "path": "pdf/basic/NewYear_s_Day-hwp-2020.pdf",
+    "sha256": "44b4e5f7517c86034b800ed307fcbf09dcf7242d342fd5e14ddfca9d22537ec0",
+    "unchanged": true
+  },
+  {
+    "key": "ktx",
+    "kind": "hwp",
+    "path": "samples/basic/KTX.hwp",
+    "sha256": "6c1a027d67b33c03f469b56548b4c7d6bca36b1c1190c7cc5eac88e35c403cf1",
+    "unchanged": true
+  },
+  {
+    "key": "ktx",
+    "kind": "pdf",
+    "path": "pdf/basic/KTX-2022.pdf",
+    "sha256": "3ab52b0ba4074919d66a3d0c6c4208754bc6da8dc6d0b3a41a457210e6fee7cb",
+    "unchanged": true
+  },
+  {
+    "key": "policy-flags0",
+    "kind": "hwp",
+    "path": "samples/issue8639/policy_research_review_request-trackchange0.hwpx",
+    "sha256": "56beb7135c6c270ec8b375d2b2d111c693242effb136bfdf3c16f4bd5e58d27f",
+    "unchanged": true
+  },
+  {
+    "key": "policy-flags0",
+    "kind": "pdf",
+    "path": "pdf/issue8639/policy_research_review_request-trackchange0-print-2024.pdf",
+    "sha256": "ad8de57af837d16c45b0bd01f3c5e26e0fdf50f223d3d433e922e930a9e60eeb",
+    "unchanged": true
+  },
+  {
+    "key": "legislation-summary",
+    "kind": "hwp",
+    "path": "samples/issue8652/1740000-201700020_legislation_interim_summary.hwp",
+    "sha256": "b8871ad2fa2fb1f0f16586d0bf4e76033b2cabed6db92e306863db9124829cb7",
+    "unchanged": true
+  },
+  {
+    "key": "legislation-summary",
+    "kind": "pdf",
+    "path": "pdf/issue8652/1740000-201700020_legislation_interim_summary-2020.pdf",
+    "sha256": "73986101977b25f267c4bf45c09bec2df6e3b3b6e8471fe7c5ab57110cf47c12",
+    "unchanged": true
+  },
+  {
+    "key": "report-628",
+    "kind": "hwp",
+    "path": "mydocs/pr/assets/planet6897_20261106/pr8642/report-628-original.hwp",
+    "sha256": "bde80abc635f46e8af68ff9a962229379d17f32bf7939398617774bb40635f66",
+    "unchanged": true
+  },
+  {
+    "key": "report-628",
+    "kind": "pdf",
+    "path": "pdf/planet6897-20261106/pr8642/report-628-original-2020.pdf",
+    "sha256": "34960349fb528ec433dfe0f616eaa275ea9331e15350823ba88f276cc0bd2255",
+    "unchanged": true
+  },
+  {
+    "key": "idol-counterexample",
+    "kind": "hwp",
+    "path": "samples/issue8596/idol_goods_trimmed.hwpx",
+    "sha256": "729d63c3bccf407b369ec3f63cdc703ad22c46e7eede7bacdb51b204c2344661",
+    "unchanged": true
+  },
+  {
+    "key": "idol-counterexample",
+    "kind": "pdf",
+    "path": "pdf/issue8596_idol_goods_trimmed-2020.pdf",
+    "sha256": "145916d885426ead33bc5fc86c0e325bb294e275175aa5f42bdddeaa35717892",
+    "unchanged": true
+  },
+  {
+    "key": "clip5587",
+    "kind": "hwp",
+    "path": "samples/basic/issue1994_behindtext_table_20200830.hwp",
+    "sha256": "8e7a95cf591944bff56050879fa90251921ec57e28eac66d40c6fb8ad103016f",
+    "unchanged": true
+  },
+  {
+    "key": "clip5587",
+    "kind": "pdf",
+    "path": "pdf/semanticist21-20261008/basic-issue1994_behindtext_table_20200830-8e7a95cf5919-2020.pdf",
+    "sha256": "901d842b033e30be1e9b4a7da8109be9e165af96af61fc4f175809ffbecc88a8",
+    "unchanged": true
+  }
+]

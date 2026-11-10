@@ -1,0 +1,354 @@
+{
+  "parent_head": "01d2197973e282d7c96671cb1335ad83fbe68e8d",
+  "runtime_diff_sha256": "32e3e6411e9c97b6925d5103eed269906f977426f380a26237a3df451f27618a",
+  "changed_runtime_files": {
+    "rhwp-studio/src/core/host-font-requests.ts": "7e553aa675b35122e49e49b1fc0808678f9a72fd583d3c4bdd15fd5f462d5073",
+    "rhwp-studio/src/core/types.ts": "a56f2ef7b7de201e7443eea34e6304db6cc06a3ad660e9e1579eebe53e25f4a6",
+    "rhwp-studio/src/view/canvaskit-renderer.ts": "a2d9b3d4a14918d70ce0699a5248146617383ce2a9ce9caa4010e4cd96c89d90",
+    "src/paint/builder/tests.rs": "fa1620a2dcbcb1a071811dd3dbdbc2001390947d68cb81bd93c79178af26a18d",
+    "src/paint/json.rs": "68f1fe81ee88891a0704c7d4406e009e48893462d2f6c328ebdd761fcfed2c5e",
+    "src/render_backend/scenes.rs": "85f1ad42aaffa5b4b014b2ac658f21764fffd3c7679d0e6eb117dcb238631a88",
+    "src/renderer/canvaskit_m07_pack_contract.rs": "b32183684501122ddb173deb1a8f58dd0c237dadfec5330ccc1538e348691820",
+    "src/renderer/canvaskit_policy.rs": "02bd9c8f2c43054e1a76c69a9ea1687ae784b71f4c8828fedc329aa027208d6c",
+    "src/renderer/layout.rs": "82ea7d1289911407ba7b36b530e017bf7c79b59e38083100beca80ed0023e876",
+    "src/renderer/layout/note_reference.rs": "5db8912a16650f62c5e4e5d95f0787369f349119223fdfe708bd9752370fd747",
+    "src/renderer/layout/paragraph_layout.rs": "e62d9aa326436803853a47d6cb81c011fb9d52ecdd5641902f6b90912f25ae3e",
+    "src/renderer/note_marker.rs": "1603ce480b97c729ba5d526510dd88fd53b9755840eb24a5e2984eadd8a2bed7",
+    "src/renderer/pdf.rs": "efe82e9af5e5d7897218c97fb57913ac15e7b7a7f8edae03adf3be20b1fd00b1",
+    "src/renderer/render_tree.rs": "96c1758d7058753db42ec7a08ad9e4eb3b281d0623245b65d7eda3c43727043d",
+    "src/renderer/skia/renderer.rs": "55000e124f03257c566a634c395b347a977369f732bbfe372c7f45e795376e49",
+    "src/renderer/svg.rs": "e370638fb48bafc223b33fc1e5b372c17f8dadd734830fa751d362bc56b3ba70",
+    "src/renderer/web_canvas.rs": "24117eb4f9cdb5f4580bf196ca55f0a8d3ffdb66fdf37a845fb1dd89ffe4925f"
+  },
+  "native_sha256": "47203f928bac9f3c8d27293edf6a87351fa51d3342c326016190303d51328219",
+  "wasm_sha256": "dd77f8eceb160ebcc07c84f4374c21be10fcc0561f18357ffdd609b8d18df121",
+  "js_sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed",
+  "wasm_profile": "Mac locked wrapper --target web --out-dir pkg --no-opt; Docker optimization not claimed",
+  "input": "mydocs/pr/assets/planet6897_20261106/pr8642/report-628-original.hwp",
+  "input_sha256": "bde80abc635f46e8af68ff9a962229379d17f32bf7939398617774bb40635f66",
+  "pdf": "pdf/planet6897-20261106/pr8642/report-628-original-2020.pdf",
+  "pdf_sha256": "34960349fb528ec433dfe0f616eaa275ea9331e15350823ba88f276cc0bd2255",
+  "results": [
+    {
+      "condition": "minimal",
+      "backend": "native",
+      "metrics": [
+        {
+          "page": 95,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.64481,
+          "silhouette_raw_unmatched_pixels": 2381,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 101096,
+          "tolerant_content_match_percent": 97.64481
+        },
+        {
+          "page": 96,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 96.08366,
+          "silhouette_raw_unmatched_pixels": 4580,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 116946,
+          "tolerant_content_match_percent": 96.08366
+        }
+      ],
+      "tsv": "minimal-native-silhouette.tsv",
+      "tsv_sha256": "4ee7f465af8eaf3b68c67c3fb6c45e591a60ce03a36319f69be46f5e8e4502ae",
+      "font_environment": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/fe6651098e593d9d4f82f0df74db86a4a65e400e3d3ae994f33f98c08a968692.json",
+        "sha256": "fe6651098e593d9d4f82f0df74db86a4a65e400e3d3ae994f33f98c08a968692"
+      },
+      "input_pngs": [
+        {
+          "page": 95,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/focus-minimal/native/report-628/rhwp_png/rhwp_095.png",
+          "rhwp_sha256": "b76d327d24ce99bbeacd294dbc0b3bc6d159cb6b3d6274940eb3212dd2f972d3",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/focus-minimal/native/report-628/pdf_png/pdf-095.png",
+          "pdf_sha256": "e94d0643e502fe25ad635b22926a29a4b7946a933439d46b690ac54b890fc820"
+        },
+        {
+          "page": 96,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/focus-minimal/native/report-628/rhwp_png/rhwp_096.png",
+          "rhwp_sha256": "7ae66bb8648a5ca7fc9afb6fbe0da7b323a0b57723d5e60225c2bf6ec2cd4397",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/focus-minimal/native/report-628/pdf_png/pdf-096.png",
+          "pdf_sha256": "b791a77bf23f0bf4f50db5dd00280881d4037d33ef20adb038633782cefbdd8e"
+        }
+      ]
+    },
+    {
+      "condition": "minimal",
+      "backend": "wasm",
+      "metrics": [
+        {
+          "page": 95,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.64831,
+          "silhouette_raw_unmatched_pixels": 2380,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 101204,
+          "tolerant_content_match_percent": 97.64831
+        },
+        {
+          "page": 96,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 96.09842,
+          "silhouette_raw_unmatched_pixels": 4565,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 117004,
+          "tolerant_content_match_percent": 96.09842
+        }
+      ],
+      "tsv": "minimal-wasm-silhouette.tsv",
+      "tsv_sha256": "97c63c94f5376de721584cf20c1d27a45f364ba42cceb5ae6f424e6c646365d4",
+      "font_environment": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/fe6651098e593d9d4f82f0df74db86a4a65e400e3d3ae994f33f98c08a968692.json",
+        "sha256": "fe6651098e593d9d4f82f0df74db86a4a65e400e3d3ae994f33f98c08a968692"
+      },
+      "input_pngs": [
+        {
+          "page": 95,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/focus-minimal/wasm/report-628/rhwp_png/rhwp_095.png",
+          "rhwp_sha256": "22bc716469a34bf2c09c399aa51aa89e4117db64a84a47d78ace63420fc15d09",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/focus-minimal/wasm/report-628/pdf_png/pdf-095.png",
+          "pdf_sha256": "e94d0643e502fe25ad635b22926a29a4b7946a933439d46b690ac54b890fc820"
+        },
+        {
+          "page": 96,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/focus-minimal/wasm/report-628/rhwp_png/rhwp_096.png",
+          "rhwp_sha256": "78e5a601afa2c18ba51cb03d4e42ea047c4d509795be51151cc2e53fb1845e43",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/focus-minimal/wasm/report-628/pdf_png/pdf-096.png",
+          "pdf_sha256": "b791a77bf23f0bf4f50db5dd00280881d4037d33ef20adb038633782cefbdd8e"
+        }
+      ]
+    },
+    {
+      "condition": "original",
+      "backend": "native",
+      "metrics": [
+        {
+          "page": 95,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99111,
+          "silhouette_raw_unmatched_pixels": 7,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 78727,
+          "tolerant_content_match_percent": 99.99111
+        },
+        {
+          "page": 96,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.98261,
+          "silhouette_raw_unmatched_pixels": 15,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 86273,
+          "tolerant_content_match_percent": 99.98261
+        }
+      ],
+      "tsv": "original-native-silhouette.tsv",
+      "tsv_sha256": "04fc0a90a02d6cd2c63e0b9f57230b1445b4546cff1fad06ff2de7098bf09fca",
+      "font_environment": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/ef39ab657127280fa15fa82050c009f845bcc2805c0e528fb2af8780331cd4a8.json",
+        "sha256": "ef39ab657127280fa15fa82050c009f845bcc2805c0e528fb2af8780331cd4a8"
+      },
+      "input_pngs": [
+        {
+          "page": 95,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/focus-original/native/report-628/rhwp_png/rhwp_095.png",
+          "rhwp_sha256": "eb03dda97d704d382bae381a5376ad09e64a77df90e0a2d4066e087ad4a20ea4",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/focus-original/native/report-628/pdf_png/pdf-095.png",
+          "pdf_sha256": "e94d0643e502fe25ad635b22926a29a4b7946a933439d46b690ac54b890fc820"
+        },
+        {
+          "page": 96,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/focus-original/native/report-628/rhwp_png/rhwp_096.png",
+          "rhwp_sha256": "2b2272dab3b850070f1770981e30a12f9f86ad0875a67bd3e148fa06b4c253a4",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/focus-original/native/report-628/pdf_png/pdf-096.png",
+          "pdf_sha256": "b791a77bf23f0bf4f50db5dd00280881d4037d33ef20adb038633782cefbdd8e"
+        }
+      ]
+    },
+    {
+      "condition": "original",
+      "backend": "wasm",
+      "metrics": [
+        {
+          "page": 95,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99111,
+          "silhouette_raw_unmatched_pixels": 7,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 78697,
+          "tolerant_content_match_percent": 99.99111
+        },
+        {
+          "page": 96,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.98261,
+          "silhouette_raw_unmatched_pixels": 15,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 86238,
+          "tolerant_content_match_percent": 99.98261
+        }
+      ],
+      "tsv": "original-wasm-silhouette.tsv",
+      "tsv_sha256": "04fc0a90a02d6cd2c63e0b9f57230b1445b4546cff1fad06ff2de7098bf09fca",
+      "font_environment": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/ef39ab657127280fa15fa82050c009f845bcc2805c0e528fb2af8780331cd4a8.json",
+        "sha256": "ef39ab657127280fa15fa82050c009f845bcc2805c0e528fb2af8780331cd4a8"
+      },
+      "input_pngs": [
+        {
+          "page": 95,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/focus-original/wasm/report-628/rhwp_png/rhwp_095.png",
+          "rhwp_sha256": "909ceb0ab1d35a0d84d9dc6a13f903c1ba9b2cbc2af3021962c6ccf8b7e39746",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/focus-original/wasm/report-628/pdf_png/pdf-095.png",
+          "pdf_sha256": "e94d0643e502fe25ad635b22926a29a4b7946a933439d46b690ac54b890fc820"
+        },
+        {
+          "page": 96,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/focus-original/wasm/report-628/rhwp_png/rhwp_096.png",
+          "rhwp_sha256": "22191ba8881dc7b2c38b30ba7b7eda296c2585de57ac576e99dba6a9fbdf1a4c",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/focus-original/wasm/report-628/pdf_png/pdf-096.png",
+          "pdf_sha256": "b791a77bf23f0bf4f50db5dd00280881d4037d33ef20adb038633782cefbdd8e"
+        }
+      ]
+    },
+    {
+      "condition": "print-gulim",
+      "backend": "native",
+      "metrics": [
+        {
+          "page": 95,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99487,
+          "silhouette_raw_unmatched_pixels": 4,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 78033,
+          "tolerant_content_match_percent": 99.99487
+        },
+        {
+          "page": 96,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9895,
+          "silhouette_raw_unmatched_pixels": 9,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 85711,
+          "tolerant_content_match_percent": 99.9895
+        }
+      ],
+      "tsv": "print-gulim-native-silhouette.tsv",
+      "tsv_sha256": "3d3dcd8b543050e12aacdc09c45221c66a7e5b6e5ef9fad1ec40ff65a483be52",
+      "font_environment": {
+        "path": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/print-gulim-reference-environment.json",
+        "sha256": "791489ebc04270806795c9059a04220880e228e8604eaa31f5cd148f7bad35b4"
+      },
+      "input_pngs": [
+        {
+          "page": 95,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/focus-print-gulim/native/report-628/rhwp_png/rhwp_095.png",
+          "rhwp_sha256": "ce62d83b976895fa36f715b51f43ae3b168e56c8894a96682c26fc13ec274933",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/focus-print-gulim/native/report-628/pdf_png/pdf-095.png",
+          "pdf_sha256": "e94d0643e502fe25ad635b22926a29a4b7946a933439d46b690ac54b890fc820"
+        },
+        {
+          "page": 96,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/focus-print-gulim/native/report-628/rhwp_png/rhwp_096.png",
+          "rhwp_sha256": "bd25ce1226e81f2049a212a65bce5e170c32bc89edf657f35bf303830fe2818d",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/focus-print-gulim/native/report-628/pdf_png/pdf-096.png",
+          "pdf_sha256": "b791a77bf23f0bf4f50db5dd00280881d4037d33ef20adb038633782cefbdd8e"
+        }
+      ]
+    },
+    {
+      "condition": "print-gulim",
+      "backend": "wasm",
+      "metrics": [
+        {
+          "page": 95,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99487,
+          "silhouette_raw_unmatched_pixels": 4,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 78003,
+          "tolerant_content_match_percent": 99.99487
+        },
+        {
+          "page": 96,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9895,
+          "silhouette_raw_unmatched_pixels": 9,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 85675,
+          "tolerant_content_match_percent": 99.9895
+        }
+      ],
+      "tsv": "print-gulim-wasm-silhouette.tsv",
+      "tsv_sha256": "3d3dcd8b543050e12aacdc09c45221c66a7e5b6e5ef9fad1ec40ff65a483be52",
+      "font_environment": {
+        "path": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/print-gulim-reference-environment.json",
+        "sha256": "791489ebc04270806795c9059a04220880e228e8604eaa31f5cd148f7bad35b4"
+      },
+      "input_pngs": [
+        {
+          "page": 95,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/focus-print-gulim/wasm/report-628/rhwp_png/rhwp_095.png",
+          "rhwp_sha256": "e525e2df066d24a9b5aecb9a4e26f09c7757edf8f481d47d927ee3347e3db0b1",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/focus-print-gulim/wasm/report-628/pdf_png/pdf-095.png",
+          "pdf_sha256": "e94d0643e502fe25ad635b22926a29a4b7946a933439d46b690ac54b890fc820"
+        },
+        {
+          "page": 96,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/focus-print-gulim/wasm/report-628/rhwp_png/rhwp_096.png",
+          "rhwp_sha256": "253dc0272d5ce0b03340bd3bc93fe87ee92812162fbfedb83517591da72bcab2",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/focus-print-gulim/wasm/report-628/pdf_png/pdf-096.png",
+          "pdf_sha256": "b791a77bf23f0bf4f50db5dd00280881d4037d33ef20adb038633782cefbdd8e"
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "source_style_before": "1 passed / 2 failed",
+    "source_style_after": "3 passed / 0 failed",
+    "paint_old_unquantized_assumption": "1 passed / 1 failed",
+    "paint_verified_cell_after": "2 passed / 0 failed",
+    "studio": "2784 passed / 0 failed / 2 skipped",
+    "studio_typecheck": "PASS"
+  },
+  "pdf_program_evidence": {
+    "raw_font_name": "HCI Poppy (malformed PDF name with unescaped space; text extraction unreliable)",
+    "descriptor_font": "INPILL+Gulim",
+    "glyphs": [
+      "5",
+      "6",
+      ")"
+    ],
+    "outline_and_hmtx_match_installed_gulim": true,
+    "font_size_css": 11.52,
+    "digit_display_width_1000": 574,
+    "digit_TJ_adjustment_1000": 74,
+    "diagnostic_reference_span_css": 15.2,
+    "assertion_type": "relation; no absolute px pin on minimum-font page below98"
+  },
+  "direct_review": {
+    "pages": [
+      95,
+      96
+    ],
+    "reference_owner": "Section3 para472 control0; same marker and following body line preserved",
+    "minimal_font_difference": "Public replacement glyphs differ; not pixel identity or an original-font result",
+    "svg_diagnostic": "Same reference program/cell consumed; original-condition full-page SVG differs from Native. No cross-backend pixel-identity claim."
+  },
+  "remaining_gates": "Whole nine-case, mandatory handbook, maintainer protected whole TSV, final full nextest and scope gates/actual consumers still pending."
+}
