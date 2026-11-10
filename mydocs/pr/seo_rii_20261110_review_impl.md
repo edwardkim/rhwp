@@ -126,3 +126,17 @@ Linux portable의 실제 `Shared::submit/status` 검사 18건·292조건과 공�
 다음 인수로 교체·close 뒤 지연 응답 조정과 한 번 해제를 확인한다. 격리한 임시 사본에서 단일
 target의 receipt commit만 제거하면 컴파일은 성공하고 새 receipt assertion이 실제 실패했다.
 실제 SDK·GTK 다중 페이지와 정상 타일 재검증은 이 보정 code head를 고정한 뒤 계속한다.
+
+### 실제 경로 재검증과 새 devel
+
+보정 `9e02baf1a17fbd8c8b57eb44e3890e5c2325c32d`에서 실제 GTK의 다중 페이지 최초 표시·이동과
+CPU 대조, mount를 유지한 종료·명시적 session 복구, 주입한 숨김·재개 신호와 실제 X11 창 resize,
+trace ring·producerReady·개인정보 제외, 종료 후 Native 9개 계수 0을 확인했다. 두 타일도 3회
+재검증했으며 보정 전후 compositor RGBA 3쌍이 모두 같다. [실제 결과 원장](assets/seo-rii-20261110/README.md)에
+단계·수치·직접 판독 PNG와 플랫폼 한계를 보존한다.
+
+제출 전 조회에서 원격 devel이 `411d4a91fd`(#8899, 원 #8863)로 전진했다. 제품 차이는
+`Paragraph` 삭제 전에 원래 중복 글자 모양의 유효 ID를 보존하는 17줄이며 Flutter/Native ABI에는
+차이가 없다. 병합 시뮬레이션은 exit 0이다. 이미 실행한 소비 source·Native 입력을 새 Rust source에서
+빌드했다고 바꾸지 않는다. 현재 진행 중인 WASM 최적화를 마친 뒤 이 devel을 통합하고, 새 삭제
+계약과 해당 입력·출력을 보존하는 최종 검증을 수행한다. 본인 계정의 열린 PR은 조회 결과 0건이다.
