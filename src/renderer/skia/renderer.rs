@@ -2041,15 +2041,7 @@ impl SkiaLayerRenderer {
                             }
                         }
                         PaintOp::FootnoteMarker { bbox, marker } => {
-                            let style = crate::renderer::TextStyle {
-                                font_family: marker.font_family.clone(),
-                                font_size:
-                                    crate::renderer::render_tree::FootnoteMarkerNode::font_size(
-                                        marker.base_font_size,
-                                    ),
-                                color: marker.color,
-                                ..Default::default()
-                            };
+                            let style = marker.paint_style();
                             text_replay.draw_text(
                                 &marker.text,
                                 *bbox,
@@ -2061,7 +2053,9 @@ impl SkiaLayerRenderer {
                                 false,
                                 false,
                                 false,
-                                None,
+                                marker.source_run.as_deref().and_then(|run| {
+                                    run.validated_layout_positions_for(&marker.text)
+                                }),
                                 0,
                                 false,
                                 false,
@@ -4217,6 +4211,7 @@ mod tests {
             display_text: None,
         };
         let marker = FootnoteMarkerNode {
+            source_run: None,
             number: 1,
             text: "1)".to_string(),
             base_font_size: 18.0,

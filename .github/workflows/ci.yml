@@ -1303,7 +1303,8 @@ jobs:
     name: Native Skia tests
     runs-on: ubuntu-latest
     # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
-    timeout-minutes: 30
+    # 차가운 캐시의 빌드와 정식 Native 검사 묶음을 끝까지 실행한다 (#8889 run 42744623533).
+    timeout-minutes: 45
     # [#5164 Stage 3] Native Skia는 독립 runner에서 실행되므로 lint·frontend를 기다리지 않는다.
     # 각 lane의 성공·skip 계약은 최종 Build & Test 집계 job이 함께 검증한다.
     needs: [preflight]

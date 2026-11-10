@@ -1659,12 +1659,12 @@ fn repeated_empty_tac_line_offset(
     }
 }
 
-pub(super) fn note_marker_text_from_control(
+pub(super) fn note_marker_from_control(
     ctrl: Option<&Control>,
     fallback_number: u16,
-) -> String {
+) -> crate::renderer::note_marker::FormattedMarker {
     match ctrl {
-        Some(Control::Footnote(footnote)) => crate::renderer::note_marker::text(
+        Some(Control::Footnote(footnote)) => crate::renderer::note_marker::formatted(
             &footnote.paragraphs,
             crate::model::control::AutoNumberType::Footnote,
             fallback_number,
@@ -1672,7 +1672,7 @@ pub(super) fn note_marker_text_from_control(
             footnote.before_decoration_letter,
             footnote.after_decoration_letter,
         ),
-        Some(Control::Endnote(endnote)) => crate::renderer::note_marker::text(
+        Some(Control::Endnote(endnote)) => crate::renderer::note_marker::formatted(
             &endnote.paragraphs,
             crate::model::control::AutoNumberType::Endnote,
             fallback_number,
@@ -1680,8 +1680,18 @@ pub(super) fn note_marker_text_from_control(
             endnote.before_decoration_letter,
             endnote.after_decoration_letter,
         ),
-        _ => format!("{})", fallback_number),
+        _ => crate::renderer::note_marker::FormattedMarker {
+            text: format!("{})", fallback_number),
+            language_index: 1,
+        },
     }
+}
+
+pub(super) fn note_marker_text_from_control(
+    ctrl: Option<&Control>,
+    fallback_number: u16,
+) -> String {
+    note_marker_from_control(ctrl, fallback_number).text
 }
 
 fn is_leading_note_marker_rendered_as_prefix(
@@ -2809,7 +2819,10 @@ fn compute_line_extra_spacing_with_dash_plan(
         // [#5830] 마지막 줄·강제 줄바꿈 줄의 dash leader 채움.
         *dash_extra_by_run = Some(by_run);
         (0.0, 0.0, extra_dash)
-    } else if needs_distribute && total_char_count > 1 {
+    } else if needs_distribute
+        && (total_char_count > 1
+            || (total_char_count == 1 && leading_space_plan.terminal_inline_object))
+    {
         // [#4657] 배분 정렬: 남는 폭을 글자 **사이**(N-1곳)에 균등 분배.
         // extra_char_spacing 은 각 글자 advance 뒤에 붙으므로 마지막 glyph 의
         // 잉크 오른쪽 끝은 `W + (N-1)·extra` — N 으로 나누면 짧은 줄일수록
@@ -2836,7 +2849,11 @@ fn compute_line_extra_spacing_with_dash_plan(
             .count()
             .min(trailing_space_limit);
         let visible_count = spacing_chars.len().saturating_sub(trailing_spaces);
-        let slots = spacing_chars[..visible_count.saturating_sub(1)]
+        // 줄 끝의 가시 소유자가 인라인 개체이면 마지막 텍스트 뒤에도 배분 간격이
+        // 있다. 그 한 칸을 빼고 계산한 몫을 모든 텍스트 전진에 적용하면 양식·그림을
+        // 셀 밖으로 밀어낸다. 공통 줄 계획의 말미 개체 소유를 그대로 소비한다.
+        let terminal_text = usize::from(!leading_space_plan.terminal_inline_object);
+        let slots = spacing_chars[..visible_count.saturating_sub(terminal_text)]
             .iter()
             .filter(|(_, field)| !field)
             .count();
@@ -4282,45 +4299,28 @@ impl LayoutEngine {
                                 line_run_start = ch_idx;
                                 run_lang = None;
                             }
-                            // FootnoteMarker 노드 삽입 (위첨자로 렌더링됨)
-                            let fn_text = note_marker_text_from_control(
+                            let reference = super::note_reference::reference(
                                 para.controls.get(fn_ctrl_idx),
                                 fn_num,
+                                styles,
+                                current_cs_id,
+                                fn_ctrl_idx,
                             );
-                            let base_ts = resolved_to_text_style(styles, current_cs_id, 0);
-                            let sup_font_size = FootnoteMarkerNode::font_size(base_ts.font_size);
-                            let sup_ts = TextStyle {
-                                font_size: sup_font_size,
-                                font_family: base_ts.font_family.clone(),
-                                ..Default::default()
-                            };
-                            let sup_w = estimate_text_width(&fn_text, &sup_ts);
+                            let sup_w = reference.width;
                             let run_bbox_h =
                                 stored_line_baseline_at(ch_idx).unwrap_or(if wrapped_below_table {
                                     text_line_baseline
                                 } else {
                                     baseline_dist
                                 });
-                            let marker_id = tree.next_id();
-                            let marker_node = RenderNode::new(
-                                marker_id,
-                                RenderNodeType::FootnoteMarker(FootnoteMarkerNode {
-                                    number: fn_num,
-                                    text: fn_text,
-                                    base_font_size: base_ts.font_size,
-                                    baseline: FootnoteMarkerNode::reference_baseline(
-                                        base_ts.font_size,
-                                        run_bbox_h,
-                                    ),
-                                    font_family: base_ts.font_family.clone(),
-                                    color: base_ts.color,
-                                    section_index,
-                                    para_index,
-                                    control_index: fn_ctrl_idx,
-                                }),
-                                BoundingBox::new(inline_x, current_y, sup_w, run_bbox_h),
+                            super::note_reference::append(
+                                tree,
+                                col_node,
+                                &[reference],
+                                (inline_x, current_y),
+                                (run_bbox_h, run_bbox_h),
+                                (section_index, para_index),
                             );
-                            col_node.children.push(marker_node);
                             inline_x += sup_w;
                             line_run_x = inline_x;
                         }
@@ -6181,7 +6181,7 @@ impl LayoutEngine {
         };
         endnote_marker_x_advance += leading_note_markers
             .iter()
-            .map(|reference| reference.4)
+            .map(|reference| reference.width)
             .sum::<f64>();
 
         let endnote_line_vpos_base: Option<(i32, f64)> = {
@@ -8143,29 +8143,14 @@ impl LayoutEngine {
 
             // 참조 번호의 baseline과 원점도 본문이 실제 소비한 최종 줄 상자를 쓴다.
             if line_idx == 0 && start_line == 0 {
-                let mut marker_x = x - endnote_marker_x_advance;
-                for (number, text, style, control_index, width) in &leading_note_markers {
-                    let id = tree.next_id();
-                    line_node.children.push(RenderNode::new(
-                        id,
-                        RenderNodeType::FootnoteMarker(FootnoteMarkerNode {
-                            number: *number,
-                            text: text.clone(),
-                            base_font_size: style.font_size,
-                            baseline: FootnoteMarkerNode::reference_baseline(
-                                style.font_size,
-                                baseline,
-                            ),
-                            font_family: style.font_family.clone(),
-                            color: style.color,
-                            section_index,
-                            para_index,
-                            control_index: *control_index,
-                        }),
-                        BoundingBox::new(marker_x, text_y, *width, line_height),
-                    ));
-                    marker_x += width;
-                }
+                super::note_reference::append(
+                    tree,
+                    &mut line_node,
+                    &leading_note_markers,
+                    (x - endnote_marker_x_advance, text_y),
+                    (line_height, baseline),
+                    (section_index, para_index),
+                );
             }
 
             // char_offset→x 매핑 (필드 마커 위치 계산용)
@@ -9880,10 +9865,11 @@ impl LayoutEngine {
                             let reference = super::note_reference::reference(
                                 para.and_then(|p| p.controls.get(ctrl_idx)),
                                 fnum,
-                                text_style.clone(),
+                                styles,
+                                run.char_style_id,
                                 ctrl_idx,
                             );
-                            let sup_w = reference.4;
+                            let sup_w = reference.width;
                             super::note_reference::append(
                                 tree,
                                 line_node,
@@ -10159,10 +10145,11 @@ impl LayoutEngine {
                         let reference = super::note_reference::reference(
                             para.and_then(|p| p.controls.get(tac_ci)),
                             number,
-                            text_style.clone(),
+                            styles,
+                            run.char_style_id,
                             tac_ci,
                         );
-                        let width = reference.4;
+                        let width = reference.width;
                         super::note_reference::append(
                             tree,
                             line_node,
@@ -11417,17 +11404,14 @@ impl LayoutEngine {
                 };
                 if !note_width_inserted[fni] && in_range {
                     note_width_inserted[fni] = true;
-                    let fn_text = note_marker_text_from_control(
+                    note_width += super::note_reference::reference(
                         para.and_then(|p| p.controls.get(ctrl_idx)),
                         fnum,
-                    );
-                    let sup_size = FootnoteMarkerNode::font_size(ts.font_size);
-                    let sup_ts = TextStyle {
-                        font_size: sup_size,
-                        font_family: ts.font_family.clone(),
-                        ..Default::default()
-                    };
-                    note_width += estimate_text_width_exact(&fn_text, &sup_ts);
+                        styles,
+                        run.char_style_id,
+                        ctrl_idx,
+                    )
+                    .width;
                 }
             }
             // 글자겹침 run: PUA 다자리 숫자는 1글자 폭, 그 외는 font_size * char_count
@@ -12156,6 +12140,7 @@ fn make_picture_image_node(
             cell_context: cell_ctx.cloned(),
             crop,
             original_size_hu,
+            soft_edge_radius_hu: pic.effects.soft_edge_radius,
             effect: pic.image_attr.effect,
             brightness: pic.image_attr.brightness,
             contrast: pic.image_attr.contrast,

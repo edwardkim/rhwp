@@ -3539,6 +3539,18 @@ fn parse_picture_effects(reader: &mut Reader<&[u8]>) -> Result<PictureEffects, H
             Ok(Event::Empty(ref e)) if local_name(e.name().as_ref()) == b"shadow" => {
                 effects.shadow = Some(parse_picture_shadow_attrs(e));
             }
+            Ok(Event::Empty(ref e) | Event::Start(ref e))
+                if local_name(e.name().as_ref()) == b"softEdge" =>
+            {
+                for attr in e.attributes().flatten() {
+                    if attr.key.as_ref() == "radius" {
+                        effects.soft_edge_radius = attr_str(&attr)
+                            .parse::<f64>()
+                            .ok()
+                            .filter(|radius| radius.is_finite() && *radius >= 0.0);
+                    }
+                }
+            }
             Ok(Event::End(ref e)) if local_name(e.name().as_ref()) == b"effects" => break,
             Ok(Event::Eof) => break,
             Err(e) => return Err(HwpxError::XmlError(format!("effects: {}", e))),

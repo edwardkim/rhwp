@@ -1,0 +1,39 @@
+{
+  "reference_environment": "mydocs/pr/assets/issue1994/print-frame-20261107/reference-font-environment.json",
+  "environment": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/81705de8fef321b10e64247a4023e7a3c88a97ce2762654f907e180c3e6e43c9.json",
+  "sha256": "81705de8fef321b10e64247a4023e7a3c88a97ce2762654f907e180c3e6e43c9",
+  "historical_identity_recovered": true,
+  "font_paths": [
+    "/Users/tsjang/Library/Fonts",
+    "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a"
+  ],
+  "evidence": {
+    "registry_sha256": "a2dfdd11b0e50ed9512dafdac9207b6d6217d048e2cab1e8569243803e77033e",
+    "mappings": {
+      "산돌광수B": "NotoSansKR-Regular",
+      "산돌목필B": "NotoSansKR-Regular",
+      "산돌향기B": "NotoSansKR-Regular",
+      "송성훈 고구려": "NotoSansKR-Regular",
+      "한양목판체": "NotoSansKR-Regular"
+    },
+    "document_glyph_fallbacks": [],
+    "unmapped_sources": [
+      "산돌광수B",
+      "산돌목필B",
+      "산돌향기B",
+      "송성훈 고구려",
+      "한양목판체"
+    ],
+    "local_document_substitutes": [],
+    "resources": [
+      {
+        "url": "fonts/NotoSansKR-Regular.woff2",
+        "source_sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a",
+        "native_path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+        "native_sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834",
+        "native_face": "NotoSansKR-Regular"
+      }
+    ],
+    "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+  }
+}

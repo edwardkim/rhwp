@@ -1,0 +1,811 @@
+{
+  "recorded_at": "2026-11-10T02:33:56.131020+09:00",
+  "parent": "33836ac0c0f5a04393ab2071bacc3c6c0505447d",
+  "runtime_source_sha256": {
+    "src/renderer/composer/stored_word_tail.rs": "2f8c27199334800331598760217e9395276067d4f84633892b17e76bc0f353d4",
+    "src/renderer/layout.rs": "4bc793710c423f05c4846e877d11940f01ab39bc1e3fa38b7cef3e379915042f",
+    "src/renderer/layout/text_measurement.rs": "a056655d7cab6325928779e9012cbb7587b2d8e652a2dd942d12373fc05639d4"
+  },
+  "build": {
+    "state": "complete",
+    "parent": "33836ac0c0f5a04393ab2071bacc3c6c0505447d",
+    "runtime_source_sha256": {
+      "src/renderer/composer/stored_word_tail.rs": "2f8c27199334800331598760217e9395276067d4f84633892b17e76bc0f353d4",
+      "src/renderer/layout.rs": "4bc793710c423f05c4846e877d11940f01ab39bc1e3fa38b7cef3e379915042f",
+      "src/renderer/layout/text_measurement.rs": "a056655d7cab6325928779e9012cbb7587b2d8e652a2dd942d12373fc05639d4"
+    },
+    "test_source_sha256": "c6e0ce902b23f351375927d6a9fc438773430701a80da87783c02ad41a6e3f16",
+    "native_build_exit_code": 0,
+    "native_sha256": "f52e41add5b87213284808beb4d693e1938870b363c0bead82f3f51770986686",
+    "metrics": [
+      {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.99813,
+        "silhouette_raw_unmatched_pixels": 1,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 53361,
+        "tolerant_content_match_percent": 99.99813
+      }
+    ],
+    "finished_at": "2026-11-10T02:20:43.590192+09:00",
+    "wasm_build_exit_code": 0,
+    "wasm_sha256": {
+      "pkg/rhwp.js": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed",
+      "pkg/rhwp_bg.wasm": "0d24b28eb2f6e59ff9ff2ce7bc937c909ca2623efd5ec2d4b6126bb35605cada",
+      "rhwp-studio/public/rhwp.js": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed",
+      "rhwp-studio/public/rhwp_bg.wasm": "0d24b28eb2f6e59ff9ff2ce7bc937c909ca2623efd5ec2d4b6126bb35605cada"
+    }
+  },
+  "focused_tests": [
+    {
+      "case": "issue_8856_policy_field_line_ownership",
+      "exit_code": 0,
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "case": "issue_8639_trackchange_stored_rows",
+      "exit_code": 0,
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "case": "issue_7765_current_source_frames",
+      "exit_code": 0,
+      "passed": 5,
+      "failed": 0
+    },
+    {
+      "case": "issue_8419_display_substitution_supplier_advance",
+      "exit_code": 0,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "case": "issue_4962_font_metric_coverage",
+      "exit_code": 0,
+      "passed": 8,
+      "failed": 0
+    }
+  ],
+  "px_before_after": {
+    "state": "complete",
+    "current_composer_sha256": "2f8c27199334800331598760217e9395276067d4f84633892b17e76bc0f353d4",
+    "before_scope": "Original 33836ac0c0 composer callsite; added unused validation helper stays compiled",
+    "test_source_sha256": "eb4d5f5ad2f2aaffba37687c40398a0bfec7ee4442bd886ddbe721c0d9c72fdd",
+    "before_composer_sha256": "fc9ff4bd9a64326866a3bf661323e2057a790bf21f39258ad004ebf502bb56dc",
+    "before_exit_code": 101,
+    "composer_restored": true,
+    "after_exit_code": 0
+  },
+  "test_source_sha256": {
+    "tests/cases/issue_8856_policy_field_line_ownership.rs": "c6e0ce902b23f351375927d6a9fc438773430701a80da87783c02ad41a6e3f16",
+    "tests/cases/issue_8856_policy_field_print_positions.rs": "eb4d5f5ad2f2aaffba37687c40398a0bfec7ee4442bd886ddbe721c0d9c72fdd"
+  },
+  "logs_sha256": {
+    "before-test.log": "e68d0cb92b6bf089f126e414a507b6c584b3e39119a579309edc25a278fbad3e",
+    "final-new-case.log": "aab3f5c06e652b9ade5496b777b94e6b80bfce8a1e2d93805f86cb9755d773d9",
+    "pin-before.log": "423b7c044f4d848dfb31e4116ca89266860f89f2c0449beea5d1a51667c9fa45",
+    "pin-after.log": "1a59c659148ee0286cfc7e2d8e02f55afd2019844a83c4100072c09b1125f881",
+    "focused-issue_8856_policy_field_line_ownership.log": "852bcdcfddeced21a684b8b8e7dc7919f15c6d20932b20777db14fb04035d71e",
+    "focused-issue_8639_trackchange_stored_rows.log": "e7612951837752f57e637c8b49902ab6a765222e444dec7332382405c83c0c7c",
+    "focused-issue_7765_current_source_frames.log": "606c9f28b6792234a5714990d970abc375db924a71d1d00f5dad815075b81cbe",
+    "focused-issue_8419_display_substitution_supplier_advance.log": "cd0b2e2f984d90258809b7c3adf7c8f0ba81e8cd23398de7c20b7d8686a58421",
+    "focused-issue_4962_font_metric_coverage.log": "a44bd8c2502d599918212fc004abdada2e47d287f52a56bd7727cea954b1d44a"
+  },
+  "previous_full_provenance": {
+    "path": "mydocs/pr/assets/issue8856/stage3-legacy-shadow/validation.json",
+    "sha256": "c3be9d74a9cb8e99fdca06758ff5aa1dae8e925a82b3e472513fbd9d0c011a20"
+  },
+  "font_and_pdf_conditions_identical_to_previous_per_case": true,
+  "minimum_font_profile_sha256": "1b8ba67f5e14b1adbdbd748ad6a35c9dd548e85ca0cfed5b119c17a9b9e8cf85",
+  "coretext": {
+    "faces": 528,
+    "outside_System_Library": 0
+  },
+  "matrix": [
+    {
+      "case": "interview",
+      "pages": 2,
+      "input_sha256": "fc71c2a0ebced5e913fbcbbc39a28244f5d73144f74ba1a4ebc548998d408d3c",
+      "pdf_sha256": "3b5c947640e19e1546968efd8d4fc05e8acef14fd427dd28f2c82a6a1bb6936b",
+      "minimum": {
+        "before_native": 97.19457,
+        "before_wasm": 97.32378,
+        "native": 97.19457,
+        "wasm": 97.32378
+      },
+      "current": {
+        "native": {
+          "manifest_sha256": "d3e7f22e8535489dc925400444dfbe9733942f472b3b870dec0f8aff621f543c",
+          "producer": {
+            "configured": "/Users/tsjang/rhwp/output/issue8856/start/rhwp-policy-final",
+            "path": "output/issue8856/start/rhwp-policy-final",
+            "sha256": "f52e41add5b87213284808beb4d693e1938870b363c0bead82f3f51770986686"
+          },
+          "provenance_sha256": "4f530862813afe8c52096202ef93d1df3a72111c696cb6b10f589e895073a18e"
+        },
+        "wasm": {
+          "manifest_sha256": "fbc21469b1950a96051b4a2dacaeb547fd991c3b7bddc43e33e1c1495aa86d05",
+          "producer": {
+            "files": [
+              {
+                "path": "/Users/tsjang/rhwp/output/issue8856/stage4-policy-final/frozen-pkg/rhwp.js",
+                "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+              },
+              {
+                "path": "/Users/tsjang/rhwp/output/issue8856/stage4-policy-final/frozen-pkg/rhwp_bg.wasm",
+                "sha256": "0d24b28eb2f6e59ff9ff2ce7bc937c909ca2623efd5ec2d4b6126bb35605cada"
+              }
+            ],
+            "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+            "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+            "comparison_profile": "print",
+            "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+            "render_tree": "WASM getPageRenderTree"
+          },
+          "provenance_sha256": "933a6633599774edc02da2aa905beee0be9fa02a7c3cc75c2016fa94a2fd4e32"
+        }
+      }
+    },
+    {
+      "case": "request",
+      "pages": 1,
+      "input_sha256": "99e63b90f4aa3197029299ab087bc46225b3c27c0d07d424145b20879b45f12e",
+      "pdf_sha256": "7f6d4aaaa87709609cc49376e850e0074cfd9f16ee7eb2562331603606f2e983",
+      "minimum": {
+        "before_native": 99.22562,
+        "before_wasm": 99.20457,
+        "native": 99.22562,
+        "wasm": 99.20457
+      },
+      "current": {
+        "native": {
+          "manifest_sha256": "b170cfb78c004b476f6897bca8e8c384bb7cc19fda7ceb03863071fa1fb78491",
+          "producer": {
+            "configured": "/Users/tsjang/rhwp/output/issue8856/start/rhwp-policy-final",
+            "path": "output/issue8856/start/rhwp-policy-final",
+            "sha256": "f52e41add5b87213284808beb4d693e1938870b363c0bead82f3f51770986686"
+          },
+          "provenance_sha256": "c71c9256989151ed031c23dd44c119a914f004b8c884bbb333fe3b90aeb1667f"
+        },
+        "wasm": {
+          "manifest_sha256": "55230e065641eef5e7cc42f5bf6d113250285f9409ba84360bd0186cbdc034f0",
+          "producer": {
+            "files": [
+              {
+                "path": "/Users/tsjang/rhwp/output/issue8856/stage4-policy-final/frozen-pkg/rhwp.js",
+                "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+              },
+              {
+                "path": "/Users/tsjang/rhwp/output/issue8856/stage4-policy-final/frozen-pkg/rhwp_bg.wasm",
+                "sha256": "0d24b28eb2f6e59ff9ff2ce7bc937c909ca2623efd5ec2d4b6126bb35605cada"
+              }
+            ],
+            "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+            "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+            "comparison_profile": "print",
+            "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+            "render_tree": "WASM getPageRenderTree"
+          },
+          "provenance_sha256": "7f1dc744ce6b26a4fb8dfc11d95e6126b2695a9df6fc4e424d26c7404360b9ca"
+        }
+      }
+    },
+    {
+      "case": "newyear",
+      "pages": 3,
+      "input_sha256": "1be2736df6b21687f5c1627bac307cc689171928f6ceb0a235af0bc727eb6372",
+      "pdf_sha256": "44b4e5f7517c86034b800ed307fcbf09dcf7242d342fd5e14ddfca9d22537ec0",
+      "minimum": {
+        "before_native": 98.42814,
+        "before_wasm": 98.42806,
+        "native": 98.42814,
+        "wasm": 98.42806
+      },
+      "current": {
+        "native": {
+          "manifest_sha256": "83e1e78f2fb5680afe60663dd9e084473466f806d068abe18f58f204fab95107",
+          "producer": {
+            "configured": "/Users/tsjang/rhwp/output/issue8856/start/rhwp-policy-final",
+            "path": "output/issue8856/start/rhwp-policy-final",
+            "sha256": "f52e41add5b87213284808beb4d693e1938870b363c0bead82f3f51770986686"
+          },
+          "provenance_sha256": "0bf248b1f0f954f5863088a33b8b7a7d624f40c4cab5607314d800ce60caf2b9"
+        },
+        "wasm": {
+          "manifest_sha256": "de09e1154104bf502af709be02560276e9cafd8fb8a4e1bd36bac1d0a306fb12",
+          "producer": {
+            "files": [
+              {
+                "path": "/Users/tsjang/rhwp/output/issue8856/stage4-policy-final/frozen-pkg/rhwp.js",
+                "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+              },
+              {
+                "path": "/Users/tsjang/rhwp/output/issue8856/stage4-policy-final/frozen-pkg/rhwp_bg.wasm",
+                "sha256": "0d24b28eb2f6e59ff9ff2ce7bc937c909ca2623efd5ec2d4b6126bb35605cada"
+              }
+            ],
+            "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+            "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+            "comparison_profile": "print",
+            "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+            "render_tree": "WASM getPageRenderTree"
+          },
+          "provenance_sha256": "e6fd7255c8907659b7f944c876fa3579656c182f9ad32dcaa814312614b83a80"
+        }
+      }
+    },
+    {
+      "case": "ktx",
+      "pages": 1,
+      "input_sha256": "6c1a027d67b33c03f469b56548b4c7d6bca36b1c1190c7cc5eac88e35c403cf1",
+      "pdf_sha256": "3ab52b0ba4074919d66a3d0c6c4208754bc6da8dc6d0b3a41a457210e6fee7cb",
+      "minimum": {
+        "before_native": 99.66127,
+        "before_wasm": 99.697,
+        "native": 99.66127,
+        "wasm": 99.697
+      },
+      "current": {
+        "native": {
+          "manifest_sha256": "ff9cf913f910186a783c0ed423289eae13bb091b994e2237d211cdd8d904ef51",
+          "producer": {
+            "configured": "/Users/tsjang/rhwp/output/issue8856/start/rhwp-policy-final",
+            "path": "output/issue8856/start/rhwp-policy-final",
+            "sha256": "f52e41add5b87213284808beb4d693e1938870b363c0bead82f3f51770986686"
+          },
+          "provenance_sha256": "b72d64c0427abd394477067534f166cb058ad8c3e63fe76d5de5c646d9feae3d"
+        },
+        "wasm": {
+          "manifest_sha256": "3f6652e853390636fa643e1351f39be04f5baedb3507abdd9f92b66e28c56083",
+          "producer": {
+            "files": [
+              {
+                "path": "/Users/tsjang/rhwp/output/issue8856/stage4-policy-final/frozen-pkg/rhwp.js",
+                "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+              },
+              {
+                "path": "/Users/tsjang/rhwp/output/issue8856/stage4-policy-final/frozen-pkg/rhwp_bg.wasm",
+                "sha256": "0d24b28eb2f6e59ff9ff2ce7bc937c909ca2623efd5ec2d4b6126bb35605cada"
+              }
+            ],
+            "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+            "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+            "comparison_profile": "print",
+            "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+            "render_tree": "WASM getPageRenderTree"
+          },
+          "provenance_sha256": "2d5838f4f40b42f1a06c57728873adc116cd7be6697def3bbf94d11926e617fb"
+        }
+      }
+    },
+    {
+      "case": "policy-flags0",
+      "pages": 1,
+      "input_sha256": "56beb7135c6c270ec8b375d2b2d111c693242effb136bfdf3c16f4bd5e58d27f",
+      "pdf_sha256": "ad8de57af837d16c45b0bd01f3c5e26e0fdf50f223d3d433e922e930a9e60eeb",
+      "minimum": {
+        "before_native": 97.75797,
+        "before_wasm": 97.78365,
+        "native": 99.99813,
+        "wasm": 99.99259
+      },
+      "current": {
+        "native": {
+          "manifest_sha256": "8c7c0118566b394ce762be31d4b7930fa848791c126beec89be2641bcaaf6e22",
+          "producer": {
+            "configured": "/Users/tsjang/rhwp/output/issue8856/start/rhwp-policy-final",
+            "path": "output/issue8856/start/rhwp-policy-final",
+            "sha256": "f52e41add5b87213284808beb4d693e1938870b363c0bead82f3f51770986686"
+          },
+          "provenance_sha256": "a6e350c787522b2c7ba3c6e67657d710f062bdfcd49c1a9b4dd6d08954469d8f"
+        },
+        "wasm": {
+          "manifest_sha256": "26bc5f46480827a4a2e6efc933efe053dd4be2b6d4940fd4bbd2310853e19bdc",
+          "producer": {
+            "files": [
+              {
+                "path": "/Users/tsjang/rhwp/output/issue8856/stage4-policy-final/frozen-pkg/rhwp.js",
+                "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+              },
+              {
+                "path": "/Users/tsjang/rhwp/output/issue8856/stage4-policy-final/frozen-pkg/rhwp_bg.wasm",
+                "sha256": "0d24b28eb2f6e59ff9ff2ce7bc937c909ca2623efd5ec2d4b6126bb35605cada"
+              }
+            ],
+            "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+            "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+            "comparison_profile": "print",
+            "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+            "render_tree": "WASM getPageRenderTree"
+          },
+          "provenance_sha256": "647ee860ffaa8467819c01d93960b4ec769e1dd9f7052f1b457599dbd2ea7dfd"
+        }
+      }
+    },
+    {
+      "case": "legislation-summary",
+      "pages": 10,
+      "input_sha256": "b8871ad2fa2fb1f0f16586d0bf4e76033b2cabed6db92e306863db9124829cb7",
+      "pdf_sha256": "73986101977b25f267c4bf45c09bec2df6e3b3b6e8471fe7c5ab57110cf47c12",
+      "minimum": {
+        "before_native": 99.23795,
+        "before_wasm": 99.2209,
+        "native": 99.23795,
+        "wasm": 99.2209
+      },
+      "current": {
+        "native": {
+          "manifest_sha256": "3a29d1a70582699b2f5e6a359fb46fbbd8fa6f856027d972614b918316833a07",
+          "producer": {
+            "configured": "/Users/tsjang/rhwp/output/issue8856/start/rhwp-policy-final",
+            "path": "output/issue8856/start/rhwp-policy-final",
+            "sha256": "f52e41add5b87213284808beb4d693e1938870b363c0bead82f3f51770986686"
+          },
+          "provenance_sha256": "64b00e3615663ea0f6bfa4e15f2100bfbb2f4f6467ea1a83f377655546b33f53"
+        },
+        "wasm": {
+          "manifest_sha256": "ed9b4ce1658c3024ca2b6391b7bef26c586a028d217964c910380b98e8756547",
+          "producer": {
+            "files": [
+              {
+                "path": "/Users/tsjang/rhwp/output/issue8856/stage4-policy-final/frozen-pkg/rhwp.js",
+                "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+              },
+              {
+                "path": "/Users/tsjang/rhwp/output/issue8856/stage4-policy-final/frozen-pkg/rhwp_bg.wasm",
+                "sha256": "0d24b28eb2f6e59ff9ff2ce7bc937c909ca2623efd5ec2d4b6126bb35605cada"
+              }
+            ],
+            "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+            "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+            "comparison_profile": "print",
+            "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+            "render_tree": "WASM getPageRenderTree"
+          },
+          "provenance_sha256": "540fa1c9b89ef66f0e3b77143ed7994140c38792ce11726e1457e077871a88d6"
+        }
+      }
+    },
+    {
+      "case": "report-628",
+      "pages": 195,
+      "input_sha256": "bde80abc635f46e8af68ff9a962229379d17f32bf7939398617774bb40635f66",
+      "pdf_sha256": "34960349fb528ec433dfe0f616eaa275ea9331e15350823ba88f276cc0bd2255",
+      "minimum": {
+        "before_native": 93.35921,
+        "before_wasm": 93.37018,
+        "native": 93.35921,
+        "wasm": 93.37018
+      },
+      "current": {
+        "native": {
+          "manifest_sha256": "e7ad279abcd0931ce036801a7a67bafeeb4c7b00ed34d9965b70f92d000b2409",
+          "producer": {
+            "configured": "/Users/tsjang/rhwp/output/issue8856/start/rhwp-policy-final",
+            "path": "output/issue8856/start/rhwp-policy-final",
+            "sha256": "f52e41add5b87213284808beb4d693e1938870b363c0bead82f3f51770986686"
+          },
+          "provenance_sha256": "a742c11d430ac4fe87b357399499f6c725e6f7c81c557e3e4393406ce8374a07"
+        },
+        "wasm": {
+          "manifest_sha256": "fef349e8c61b04949c3757208568ae7663d63ebe0bbef0f2ab29b7c01b296cc2",
+          "producer": {
+            "files": [
+              {
+                "path": "/Users/tsjang/rhwp/output/issue8856/stage4-policy-final/frozen-pkg/rhwp.js",
+                "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+              },
+              {
+                "path": "/Users/tsjang/rhwp/output/issue8856/stage4-policy-final/frozen-pkg/rhwp_bg.wasm",
+                "sha256": "0d24b28eb2f6e59ff9ff2ce7bc937c909ca2623efd5ec2d4b6126bb35605cada"
+              }
+            ],
+            "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+            "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+            "comparison_profile": "print",
+            "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+            "render_tree": "WASM getPageRenderTree"
+          },
+          "provenance_sha256": "ac37fc2c8b5506c274b0ca4d24be13a81bc8d005768a1117010615e8457214da"
+        }
+      }
+    },
+    {
+      "case": "idol-counterexample",
+      "pages": 2,
+      "input_sha256": "729d63c3bccf407b369ec3f63cdc703ad22c46e7eede7bacdb51b204c2344661",
+      "pdf_sha256": "145916d885426ead33bc5fc86c0e325bb294e275175aa5f42bdddeaa35717892",
+      "minimum": {
+        "before_native": 99.50829,
+        "before_wasm": 99.50802,
+        "native": 99.50829,
+        "wasm": 99.50802
+      },
+      "current": {
+        "native": {
+          "manifest_sha256": "da815054fce89d7b31255a9a590c756ef0ff27e6b6746245e72bbd8c381bb375",
+          "producer": {
+            "configured": "/Users/tsjang/rhwp/output/issue8856/start/rhwp-policy-final",
+            "path": "output/issue8856/start/rhwp-policy-final",
+            "sha256": "f52e41add5b87213284808beb4d693e1938870b363c0bead82f3f51770986686"
+          },
+          "provenance_sha256": "11a9bad3385d6e00814e386afc97d70a058b35fde4b8282e2d4981ab7055a00d"
+        },
+        "wasm": {
+          "manifest_sha256": "8c8fddabc7ac983e18019dab7ece8ea8fadeea4b9ef48681db3162358927157b",
+          "producer": {
+            "files": [
+              {
+                "path": "/Users/tsjang/rhwp/output/issue8856/stage4-policy-final/frozen-pkg/rhwp.js",
+                "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+              },
+              {
+                "path": "/Users/tsjang/rhwp/output/issue8856/stage4-policy-final/frozen-pkg/rhwp_bg.wasm",
+                "sha256": "0d24b28eb2f6e59ff9ff2ce7bc937c909ca2623efd5ec2d4b6126bb35605cada"
+              }
+            ],
+            "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+            "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+            "comparison_profile": "print",
+            "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+            "render_tree": "WASM getPageRenderTree"
+          },
+          "provenance_sha256": "de9a43f8cc5f4ecd9979b707e2717017a422e7a190e14aa5ea1548cb9fc33c5b"
+        }
+      }
+    },
+    {
+      "case": "clip5587",
+      "pages": 4,
+      "input_sha256": "8e7a95cf591944bff56050879fa90251921ec57e28eac66d40c6fb8ad103016f",
+      "pdf_sha256": "901d842b033e30be1e9b4a7da8109be9e165af96af61fc4f175809ffbecc88a8",
+      "minimum": {
+        "before_native": 92.32561,
+        "before_wasm": 92.15037,
+        "native": 92.32561,
+        "wasm": 92.15037
+      },
+      "current": {
+        "native": {
+          "manifest_sha256": "9d3963c7457383bf35e259102f7922886bed5c88710499788e39abc2d838c13c",
+          "producer": {
+            "configured": "/Users/tsjang/rhwp/output/issue8856/start/rhwp-policy-final",
+            "path": "output/issue8856/start/rhwp-policy-final",
+            "sha256": "f52e41add5b87213284808beb4d693e1938870b363c0bead82f3f51770986686"
+          },
+          "provenance_sha256": "e06d6b777039c5f087b0a2f3d44cffb2bdc5fe549ccad35abd3be34b0d1d96d7"
+        },
+        "wasm": {
+          "manifest_sha256": "9703919146ea003e8c9fcd1ef3c8e209840a83aa8bdcd2bfcf4376324ea1b289",
+          "producer": {
+            "files": [
+              {
+                "path": "/Users/tsjang/rhwp/output/issue8856/stage4-policy-final/frozen-pkg/rhwp.js",
+                "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+              },
+              {
+                "path": "/Users/tsjang/rhwp/output/issue8856/stage4-policy-final/frozen-pkg/rhwp_bg.wasm",
+                "sha256": "0d24b28eb2f6e59ff9ff2ce7bc937c909ca2623efd5ec2d4b6126bb35605cada"
+              }
+            ],
+            "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+            "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+            "comparison_profile": "print",
+            "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+            "render_tree": "WASM getPageRenderTree"
+          },
+          "provenance_sha256": "c0dcd1148fd08b4e18fb97fd6b6dbc81fde34db7a684ed49b4797c8dfb3ce2be"
+        }
+      }
+    }
+  ],
+  "comparison": {
+    "pages_per_backend": 219,
+    "below90": 0,
+    "new_declines": {
+      "native": 0,
+      "wasm": 0
+    },
+    "changed_pages_each_backend": 1
+  },
+  "actual_initial_http_responses": [
+    {
+      "path": "/rhwp.js",
+      "method": "GET",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "status": 200,
+      "bytes": 573859,
+      "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+    },
+    {
+      "path": "/rhwp.js",
+      "method": "GET",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "status": 200,
+      "bytes": 573859,
+      "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+    },
+    {
+      "path": "/rhwp_bg.wasm",
+      "method": "GET",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "status": 200,
+      "bytes": 31577102,
+      "sha256": "0d24b28eb2f6e59ff9ff2ce7bc937c909ca2623efd5ec2d4b6126bb35605cada"
+    },
+    {
+      "path": "/rhwp_bg.wasm",
+      "method": "GET",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "status": 200,
+      "bytes": 31577102,
+      "sha256": "0d24b28eb2f6e59ff9ff2ce7bc937c909ca2623efd5ec2d4b6126bb35605cada"
+    },
+    {
+      "path": "/rhwp.js",
+      "method": "GET",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "status": 200,
+      "bytes": 573859,
+      "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+    },
+    {
+      "path": "/rhwp.js",
+      "method": "GET",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "status": 200,
+      "bytes": 573859,
+      "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+    },
+    {
+      "path": "/rhwp.js",
+      "method": "GET",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "status": 200,
+      "bytes": 573859,
+      "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+    },
+    {
+      "path": "/rhwp_bg.wasm",
+      "method": "GET",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "status": 200,
+      "bytes": 31577102,
+      "sha256": "0d24b28eb2f6e59ff9ff2ce7bc937c909ca2623efd5ec2d4b6126bb35605cada"
+    },
+    {
+      "path": "/rhwp_bg.wasm",
+      "method": "GET",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "status": 200,
+      "bytes": 31577102,
+      "sha256": "0d24b28eb2f6e59ff9ff2ce7bc937c909ca2623efd5ec2d4b6126bb35605cada"
+    },
+    {
+      "path": "/rhwp_bg.wasm",
+      "method": "GET",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "status": 200,
+      "bytes": 31577102,
+      "sha256": "0d24b28eb2f6e59ff9ff2ce7bc937c909ca2623efd5ec2d4b6126bb35605cada"
+    },
+    {
+      "path": "/rhwp.js",
+      "method": "GET",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "status": 200,
+      "bytes": 573859,
+      "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+    },
+    {
+      "path": "/rhwp_bg.wasm",
+      "method": "GET",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "status": 200,
+      "bytes": 31577102,
+      "sha256": "0d24b28eb2f6e59ff9ff2ce7bc937c909ca2623efd5ec2d4b6126bb35605cada"
+    },
+    {
+      "path": "/rhwp.js",
+      "method": "GET",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "status": 200,
+      "bytes": 573859,
+      "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+    },
+    {
+      "path": "/rhwp_bg.wasm",
+      "method": "GET",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "status": 200,
+      "bytes": 31577102,
+      "sha256": "0d24b28eb2f6e59ff9ff2ce7bc937c909ca2623efd5ec2d4b6126bb35605cada"
+    },
+    {
+      "path": "/rhwp.js",
+      "method": "GET",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "status": 200,
+      "bytes": 573859,
+      "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+    },
+    {
+      "path": "/rhwp_bg.wasm",
+      "method": "GET",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "status": 200,
+      "bytes": 31577102,
+      "sha256": "0d24b28eb2f6e59ff9ff2ce7bc937c909ca2623efd5ec2d4b6126bb35605cada"
+    }
+  ],
+  "observer_png_identical_to_paired_capture": true,
+  "controls": [
+    {
+      "path": "pdf/issue8856/policy-cut40-flags0.hwpx",
+      "bytes": 10686,
+      "sha256": "fcfefb0b427a86d84968bd335d09d6b9d7f58ceaa27051cacd22601bbb505f0a"
+    },
+    {
+      "path": "pdf/issue8856/policy-cut40-flags8.hwpx",
+      "bytes": 10688,
+      "sha256": "e8275276ef8a355b1e30f9d18b654f3f2067b1eb6f5a6035c9d4a32f6c17a2fd"
+    },
+    {
+      "path": "pdf/issue8856/policy-cut40-flags0-2024.pdf",
+      "bytes": 41785,
+      "sha256": "c8a52ce6d8a64852752eb2d2d6e1a5a665a6dcd578c4c14dced8c344d3fd280d"
+    },
+    {
+      "path": "pdf/issue8856/policy-cut40-flags8-2024.pdf",
+      "bytes": 41790,
+      "sha256": "66a1c8533e6cd07889a2cdb876dc7080c6d6b4c01a684ee80de3c094e77f9042"
+    },
+    {
+      "path": "pdf/issue8856/policy-trackchange0-repeat-2024.pdf",
+      "bytes": 41786,
+      "sha256": "5db18f4de114825262047f7674771e02a9cf3f2493d598215d00984941812112"
+    }
+  ],
+  "files": [
+    {
+      "path": "mydocs/pr/assets/issue8856/stage4-policy-fields/before-native-p001-raw.png",
+      "sha256": "f74f20e15535466bfde79799217603cbd17987448406a475bfc41bc6c0884a0c"
+    },
+    {
+      "path": "mydocs/pr/assets/issue8856/stage4-policy-fields/before-native-p001-review.png",
+      "sha256": "be23681413803dbd7208f7baf8161c765b1dd1e9e57a0a7db8c8e8c1e5abf550"
+    },
+    {
+      "path": "mydocs/pr/assets/issue8856/stage4-policy-fields/before-native-p001-overlay.png",
+      "sha256": "108118fa70aaed1907452c79f659b6d29f42e384d0ba013adbf82f60cc94c4c9"
+    },
+    {
+      "path": "mydocs/pr/assets/issue8856/stage4-policy-fields/after-native-p001-raw.png",
+      "sha256": "9767768509dd1cd16ea9405b889edca558764a632b95c1bc087641ac7a81bad0"
+    },
+    {
+      "path": "mydocs/pr/assets/issue8856/stage4-policy-fields/after-native-p001-review.png",
+      "sha256": "8082711b50639af32c1a928ea6a89cdb0bb7ec0e7cd0958f416a723e6eaf3142"
+    },
+    {
+      "path": "mydocs/pr/assets/issue8856/stage4-policy-fields/after-native-p001-overlay.png",
+      "sha256": "338a6bc43fd200e9744e0e15591e8745cb3cf6ff782beee01ec4f26c7dca7c6b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue8856/stage4-policy-fields/before-wasm-p001-raw.png",
+      "sha256": "74f4253cb582736221d46d7257aed77583ea6ecc4ba661b3aa02958002465614"
+    },
+    {
+      "path": "mydocs/pr/assets/issue8856/stage4-policy-fields/before-wasm-p001-review.png",
+      "sha256": "7f3cc970e948336e22029f9d1d962d0e4e0cf9ae338433dbb947c9bad4566133"
+    },
+    {
+      "path": "mydocs/pr/assets/issue8856/stage4-policy-fields/before-wasm-p001-overlay.png",
+      "sha256": "420bcdbb8936689ba738b0805076c970a3c9e3f882cda6abc770f867d3af0bb3"
+    },
+    {
+      "path": "mydocs/pr/assets/issue8856/stage4-policy-fields/after-wasm-p001-raw.png",
+      "sha256": "01a0902ec6a809089da306ac7e6115323b4fe76fe2e9eb704eb029f6abd441f1"
+    },
+    {
+      "path": "mydocs/pr/assets/issue8856/stage4-policy-fields/after-wasm-p001-review.png",
+      "sha256": "b44d34b05f67ca2f453ea3546bd52af3789d19b46bc1f4931d8e13b0055eeb73"
+    },
+    {
+      "path": "mydocs/pr/assets/issue8856/stage4-policy-fields/after-wasm-p001-overlay.png",
+      "sha256": "1ade1f2deefe9590ae530c7facb05d03a40d9e48dca20afca661ff6b230cf3ae"
+    },
+    {
+      "path": "mydocs/pr/assets/issue8856/stage4-policy-fields/independent-print-p001.png",
+      "sha256": "f9e156fd7e2dd5ae42d7bcae5c0cf150c6f15d9b8ecb7ecbf51e69dadaf06e79"
+    },
+    {
+      "path": "mydocs/pr/assets/issue8856/stage4-policy-fields/independent-px-anchors.json",
+      "sha256": "3eeb5c0f0a53d1cceca1fc822d23eb8a59ac10e9b148d896eee48545796006de"
+    },
+    {
+      "path": "mydocs/pr/assets/issue8856/stage4-policy-fields/independent-bottom-rows.json",
+      "sha256": "85d17d4beec19c8b7d13a66d4ca4a8338733e6dfdbc14b44ed1e44d071b4ae0d"
+    },
+    {
+      "path": "mydocs/pr/assets/issue8856/stage4-policy-fields/repeat-and-preservation-audit.json",
+      "sha256": "3858224f535d0f37378c7fd2966309d8b62b1c5b65d4b7dc8bc67f47737ecc94"
+    }
+  ],
+  "limitations": [
+    "Only policy-field source-row qualification repaired in this stage; remaining #8856 defects are pending",
+    "Parent receipt retains the exact earlier font/PDF provenance instead of duplicating it",
+    "The temporary caller rollback for the px-before run is restored and verified by hash",
+    "No glyph width, original document, reference PDF or gate threshold was changed",
+    "Historical clip5587 strict 0.1pp debt remains pending",
+    "Mac fresh WASM is locked-wrapper no-opt, not Docker optimized",
+    "Full nextest and final submission gates are pending"
+  ],
+  "independent_control_jobs": [
+    {
+      "job_id": "cb4e83c9-640a-4224-918a-279cdfe3538e",
+      "status": "succeeded",
+      "result": {
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0
+      },
+      "input": {
+        "path": "samples/issue8639/policy_research_review_request-trackchange0.hwpx",
+        "sha256": "56beb7135c6c270ec8b375d2b2d111c693242effb136bfdf3c16f4bd5e58d27f"
+      },
+      "output": {
+        "path": "pdf/issue8856/policy-trackchange0-repeat-2024.pdf",
+        "sha256": "5db18f4de114825262047f7674771e02a9cf3f2493d598215d00984941812112"
+      }
+    },
+    {
+      "job_id": "d3917333-b3c6-41b9-ab13-035c4b81fcfb",
+      "status": "succeeded",
+      "result": {
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0
+      },
+      "input": {
+        "path": "pdf/issue8856/policy-cut40-flags0.hwpx",
+        "sha256": "fcfefb0b427a86d84968bd335d09d6b9d7f58ceaa27051cacd22601bbb505f0a"
+      },
+      "output": {
+        "path": "pdf/issue8856/policy-cut40-flags0-2024.pdf",
+        "sha256": "c8a52ce6d8a64852752eb2d2d6e1a5a665a6dcd578c4c14dced8c344d3fd280d"
+      }
+    },
+    {
+      "job_id": "ffcd4778-2294-4b0e-a03f-0fedcde22b6f",
+      "status": "succeeded",
+      "result": {
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0
+      },
+      "input": {
+        "path": "pdf/issue8856/policy-cut40-flags8.hwpx",
+        "sha256": "e8275276ef8a355b1e30f9d18b654f3f2067b1eb6f5a6035c9d4a32f6c17a2fd"
+      },
+      "output": {
+        "path": "pdf/issue8856/policy-cut40-flags8-2024.pdf",
+        "sha256": "66a1c8533e6cd07889a2cdb876dc7080c6d6b4c01a684ee80de3c094e77f9042"
+      }
+    }
+  ],
+  "build_logs_sha256": {
+    "output/issue8856/stage4-policy-final/native-build.log": "8432766d2b2e08dd57ee19bbb2a362e27f7c0e93b4e8ef69866452905fdb8698",
+    "output/issue8856/stage4-policy-final/fresh-wasm.log": "0fdc5e007919f4a41b8aa150201861a1e1d04c02a466e2beda34d0e0dc76a702"
+  }
+}

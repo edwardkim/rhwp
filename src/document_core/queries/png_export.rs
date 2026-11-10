@@ -23,7 +23,6 @@ impl NativePngExporter {
         let pua_changed = self.renderer.prepare_native_pua_fonts(document)?;
         let otf_changed = self.renderer.prepare_native_otf_fonts(document)?;
         let shadow_changed = self.profile == RenderProfile::Print
-            && document.hangul2024_compat
             && self.renderer.prepare_text_shadow_fonts(document)?;
         Ok(fallback_changed || pua_changed || otf_changed || shadow_changed)
     }

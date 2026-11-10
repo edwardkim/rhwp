@@ -1296,6 +1296,8 @@ export interface LayerTextRunOp {
 }
 
 export interface LayerFootnoteMarkerOp {
+  style?: LayerTextStyle;
+  positions?: number[];
   type: 'footnoteMarker';
   baseline?: number;
   bbox: LayerBounds;

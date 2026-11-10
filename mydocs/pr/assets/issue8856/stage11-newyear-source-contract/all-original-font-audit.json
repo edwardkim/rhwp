@@ -1,0 +1,2347 @@
+{
+  "scope": "Font identity audit of PDF subsets against installed original programs; not actual backend selection observer; no font binaries saved",
+  "rows": [
+    {
+      "pdf_font_xref": 12,
+      "pdf_font_name": "INPILL+HYhaeseo",
+      "pdf_sha256": "1755320e1c778689150adcb222ab5aa476a5534dffa1929324f2be61219f4a71",
+      "original_path": "/Users/tsjang/Library/Fonts/UNI_HSR.TTF",
+      "original_sha256": "6db51feddcdc42e6b6240325acd2b335eb81b871831c96e954d7aa74d235c2de",
+      "upem_equal": true,
+      "characters": [
+        {
+          "character": " ",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "설",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "례",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "차",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "상",
+          "outline_identical": true,
+          "advance_identical": true
+        }
+      ],
+      "tested": 5,
+      "outline_identical": 5,
+      "advance_identical": 5
+    },
+    {
+      "pdf_font_xref": 14,
+      "pdf_font_name": "INPILL+HaanSomangB",
+      "pdf_sha256": "95e60f5bd3fbbe83b81f4c0f1ad38f4443cc34f0858c91d26c6add184e9e454a",
+      "original_path": "/Users/tsjang/Library/Fonts/issue8160/system-fonts/hancom-office-2020/All/HANSomaB.ttf",
+      "original_sha256": "25cca9e486a5f700f1827fe8eb46fc2008723069518c7ca148d60c9ec59574bb",
+      "upem_equal": true,
+      "characters": [
+        {
+          "character": " ",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "설",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "의",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "미",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "날",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "례",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "차",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "상",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "비",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "준",
+          "outline_identical": true,
+          "advance_identical": true
+        }
+      ],
+      "tested": 10,
+      "outline_identical": 10,
+      "advance_identical": 10
+    },
+    {
+      "pdf_font_xref": 16,
+      "pdf_font_name": "INPILL+HCRBatang",
+      "pdf_sha256": "6de0ad362fdb18129626ad0c0b92f874a840f7c10b81be4571061b351007b8e5",
+      "original_path": "/Users/tsjang/Library/Fonts/HANBatang.ttf",
+      "original_sha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+      "upem_equal": true,
+      "characters": [
+        {
+          "character": " ",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "설",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "은",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "력",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "음",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "월",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "정",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "날",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "로",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "룻",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "초",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "하",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "단",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "원",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "(",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "元",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "鍛",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": ")",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": ",",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "세",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "수",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "歲",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "首",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "일",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "日",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "신",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "新",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "고",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "도",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "라",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "니",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "다",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "릅",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "부",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": ".",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "가",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "한",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "해",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "는",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "되",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "시",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "작",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "뜻",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "서",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "에",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "든",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "모",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "게",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "럽",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "스",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "심",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "조",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "첫",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "발",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "을",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "내",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "딛",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "매",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "우",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "깊",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "명",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "절",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "까",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "재",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "현",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "지",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "어",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "이",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "져",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "습",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "왔",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "그",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "래",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "<",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "삼",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": ">",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "깥",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "바",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "입",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "출",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "집",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "안",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "면",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "년",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "동",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "무",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "아",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "탈",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "없",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "낼",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "있",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "기",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "를",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "주",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "빌",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "침",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "찍",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "나",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "새",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "옷",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "인",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "'",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "빔",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "돌",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "께",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "들",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "상",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "드",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "리",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "례",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "차",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "런",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "많",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "른",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "터",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "사",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "배",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "합",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "할",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "때",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "맞",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "의",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "복",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "행",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "축",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "담",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "덕",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "받",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "듯",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "렇",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "루",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "종",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "좋",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "말",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "간",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "소",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "식",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "약",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "제",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "과",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "름",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "보",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "생",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "며",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "통",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "낮",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "냅",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "관",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "으",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "적",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "민",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "속",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "올",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "예",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "4",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "대",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "봉",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "증",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "등",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "덟",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "여",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "분",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "됩",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "각",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "방",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "또",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "진",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "론",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "물",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "손",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "장",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "것",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "만",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "칙",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "문",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "전",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "따",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "석",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "추",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "산",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "①",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "밥",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "반",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "飯",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "삿",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "위",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "북",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "껑",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "뚜",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "덮",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "외",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "국",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "렸",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "략",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "②",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "갱",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "羹",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "접",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "료",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "쇠",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "와",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "네",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "납",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "썰",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "함",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "끓",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "춧",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "늘",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "마",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "파",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "쓰",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "않",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "③",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "떡",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "란",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "깔",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "색",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "므",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "피",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "팥",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "쓸",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "껍",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "질",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "겨",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "빗",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "급",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "흰",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "빛",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "④",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "탕",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "湯",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "오",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "찌",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "선",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "닭",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "중",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "택",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "번",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "러",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "넣",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "누",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "념",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "양",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "1",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "3",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "5",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "홀",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "건",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "더",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "려",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "⑤",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "煎",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "거",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "튀",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "친",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "육",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "두",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "류",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "비",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "준",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "옛",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "계",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "릇",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "짝",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "었",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "야",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "천",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "天",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "産",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "춘",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "잘",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "글",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "둥",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "묻",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "혀",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "칩",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "저",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "치",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "⑥",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "炙",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "구",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "별",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "특",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "술",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "잔",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "릴",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "꾸",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "워",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "2",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "~",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "길",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "금",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "익",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "히",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "힙",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "머",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "쪽",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "⑦",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "숙",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "채",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "熟",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "菜",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "힌",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "곁",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "씩",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "⑧",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "김",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "沈",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "희",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "근",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "백",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "박",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "씁",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "⑨",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "밤",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "감",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "홍",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "곶",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "였",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "꼭",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "밖",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "참",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "귤",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "地",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "⑩",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "포",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "脯",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "용",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "왼",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "순",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "송",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "편",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "앙",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "립",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "·",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "데",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "엔",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "요",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "즘",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "끝",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "징",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "혜",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "옆",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "놓",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "자",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "혹",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "린",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "넝",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "쿨",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "줄",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "맨",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "棗",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "栗",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "梨",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "枾",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "乾",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "西",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "濕",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "東",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "生",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "紅",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "白",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "左",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "右",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "醯",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "魚",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "肉",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "頭",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "尾",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "奠",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "中",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "央",
+          "outline_identical": true,
+          "advance_identical": true
+        }
+      ],
+      "tested": 372,
+      "outline_identical": 372,
+      "advance_identical": 372
+    },
+    {
+      "pdf_font_xref": 18,
+      "pdf_font_name": "INPILL+HaanSomangM",
+      "pdf_sha256": "dee1078f92034c3c06c97007bee63b50a4b8e2f99508adc03d21226be3462efb",
+      "original_path": "/Users/tsjang/Library/Fonts/issue8160/system-fonts/hancom-office-2020/All/HANSomaM.ttf",
+      "original_sha256": "2649474ff0014b8192bfc195b11a25319ca431716bbc2a67e2fb76acd138942b",
+      "upem_equal": true,
+      "characters": [
+        {
+          "character": " ",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "례",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "차",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "상",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "에",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "릴",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "올",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "식",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "음",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "림",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "방",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "법",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "(",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "설",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "진",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": ")",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "대",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "추",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": ",",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "밤",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "배",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "감",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": ":",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "시",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "율",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "이",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "조",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "과",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "른",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "마",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "은",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "젖",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "건",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "동",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "서",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "습",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "익",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "힌",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "지",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "히",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "않",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "생",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "숙",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "의",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "일",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "위",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "치",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "백",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "홍",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "밥",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "국",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "갱",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "반",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "포",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "우",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "좌",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "혜",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "선",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "고",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "기",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "어",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "육",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "리",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "머",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "꼬",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "두",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "미",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "적",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "앙",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "전",
+          "outline_identical": true,
+          "advance_identical": true
+        },
+        {
+          "character": "중",
+          "outline_identical": true,
+          "advance_identical": true
+        }
+      ],
+      "tested": 71,
+      "outline_identical": 71,
+      "advance_identical": 71
+    }
+  ]
+}

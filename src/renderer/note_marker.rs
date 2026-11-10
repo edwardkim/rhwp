@@ -47,14 +47,19 @@ pub(crate) fn leading(
     })
 }
 
-pub(crate) fn text(
+pub(crate) struct FormattedMarker {
+    pub text: String,
+    pub language_index: usize,
+}
+
+pub(crate) fn formatted(
     paragraphs: &[Paragraph],
     kind: AutoNumberType,
     number: u16,
     number_shape: u32,
     before: u16,
     after: u16,
-) -> String {
+) -> FormattedMarker {
     let (number_text, prefix, suffix) = if let Some((_, auto)) = leading(paragraphs, kind) {
         (
             number_text(number, auto.format, auto.user_symbol),
@@ -70,6 +75,12 @@ pub(crate) fn text(
                 .unwrap_or(')'),
         )
     };
+    // 장식 문자가 아니라 번호 서식이 생성한 문자군이 이 필드의 글꼴 슬롯을 소유한다.
+    let language_index = number_text
+        .chars()
+        .next()
+        .map(super::style_resolver::detect_lang_category)
+        .unwrap_or(0);
     let mut text = String::new();
     if prefix != '\0' {
         text.push(prefix);
@@ -78,5 +89,19 @@ pub(crate) fn text(
     if suffix != '\0' {
         text.push(suffix);
     }
-    text
+    FormattedMarker {
+        text,
+        language_index,
+    }
+}
+
+pub(crate) fn text(
+    paragraphs: &[Paragraph],
+    kind: AutoNumberType,
+    number: u16,
+    number_shape: u32,
+    before: u16,
+    after: u16,
+) -> String {
+    formatted(paragraphs, kind, number, number_shape, before, after).text
 }

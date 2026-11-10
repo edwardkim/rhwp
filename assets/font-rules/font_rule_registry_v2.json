@@ -104,6 +104,11 @@
       "changeSetId": "issue-8575.ygodic250-metric-name",
       "path": "assets/font-rules/changes/issue-8575-ygodic250-metric-name.json",
       "sha256": "79ff6b903d1f494e3329e9515ffb994838b4f2ea5f2e05d0dd60a50ca066c706"
+    },
+    {
+      "changeSetId": "issue-8856.hyhaeseo-metric-name",
+      "path": "assets/font-rules/changes/issue-8856-hyhaeseo-metric-name.json",
+      "sha256": "caf68407570c7fb330f16248cc172983db049ccdd5375a30c1e7f27b65403c5b"
     }
   ],
   "evidenceRecords": [
@@ -236,6 +241,14 @@
       "parentEvidenceIds": [],
       "sha256": "c36c5b67da42641994f5fa00269e8d4f127b690ae1b4c5e51a9828f5e08a08ae",
       "source": "pdf/issue8575/shape_image_fill-2020.pdf"
+    },
+    {
+      "evidenceId": "evidence.issue-8856.hyhaeseo-original-space",
+      "kind": "public-fixture",
+      "licenseOrProvenance": "samples/basic/NewYear_s_Day.hwp 제목은 TTF 한양해서, useFontSpace=1, 장평90%입니다. 독립 한컴2020 Print PDF의 HYhaeseo 서브셋과 설치 UNI_HSR.TTF는 설·차·례·상·공백의 윤곽 및 hmtx가 모두 일치합니다. 공백341/1024em은 기존 HYhaeseo 메트릭 표와 같습니다. 원본 PDF 원점은 설85.08pt, 차127.08pt, 례158.52pt, 상200.52pt입니다. 원본 글꼴은 배포하지 않습니다. 감사: mydocs/pr/assets/issue8856/stage11-newyear-source-contract/title-original-font-audit.json",
+      "parentEvidenceIds": [],
+      "sha256": "44b4e5f7517c86034b800ed307fcbf09dcf7242d342fd5e14ddfca9d22537ec0",
+      "source": "pdf/basic/NewYear_s_Day-hwp-2020.pdf"
     }
   ],
   "issue": 5955,
@@ -44950,9 +44963,44 @@
       "status": "active",
       "supply": null,
       "targetFaceOrPolicy": "Haan YGodic 250"
+    },
+    {
+      "conditions": {},
+      "decisionPlane": "layout-metric",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-8856.hyhaeseo-original-space"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-8856.hyhaeseo-metric-name",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [
+        "font-metric.b1a0dbd28c348a3b31e6"
+      ],
+      "order": null,
+      "projectionSequence": 72,
+      "projections": [
+        {
+          "id": "rust-layout-metric",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "metric-surrogate",
+      "ruleId": "rule.rust-metric.hyhaeseo-korean-name",
+      "selectionTupleSha256": "926da44013e0cab3236cac5dd9015e30d3ee69b30c0355c5a364ed6a45943725",
+      "sourceBoundaryId": "rust-metric.metric-alias",
+      "sourceFace": "한양해서",
+      "status": "active",
+      "supply": null,
+      "targetFaceOrPolicy": "HYhaeseo"
     }
   ],
-  "rulesSha256": "2109ad20314168d0c1c42a7b2c166bdb7a2da571fc1c950c29280662f09c963d",
+  "rulesSha256": "a4de4dbc6553859b4d00cec8d380b115d3989e3bccb098bc2f3e4dc39c260502",
   "schema": {
     "path": "assets/font-rules/font_rule_registry_v2.schema.json",
     "sha256": "e3412357b2943c00c8a5d2fbb5b0371a8c8c9721157c67e5e38d68ae40a7d7b3"
@@ -44964,15 +45012,15 @@
   },
   "sourceCommit": "a1f9872e28aea6755b656161ed1802f73308da58",
   "summary": {
-    "activeRuleCount": 855,
+    "activeRuleCount": 856,
     "countsByProjection": {
       "canvas2d-paint": 281,
       "canvas2d-webfont": 159,
       "canvaskit-sfnt": 164,
-      "rust-layout-metric": 72,
+      "rust-layout-metric": 73,
       "rust-layout-name": 179
     },
     "retiredRuleCount": 8,
-    "ruleCount": 863
+    "ruleCount": 864
   }
 }

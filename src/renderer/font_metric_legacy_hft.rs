@@ -54,11 +54,20 @@ static ASCII_2: [u16; 95] = [
 // ToUnicode 04 → U+221A, CharProc HFT285의 d1 전진은 1000/1000 em이다.
 // 표시 family의 별칭과 무관하게 원 HFT의 확인된 폭을 사용한다.
 static SQUARE_ROOT_2: [u16; 1] = [1000];
-static RANGES_2: [LatinRange; 2] = [
+// report-628 독립 Print 110쪽: 원본 HFT의 U+2022 뒤 본문은 1em 전진한다.
+// 대체 paint의 Gulim 기호는 자연 폭0.375em이지만 그 폭으로 원본 전진을
+// 재지 않는다. 별도 HFT 프로그램 표를 선택해도 확인된 전각 계약을 보존한다.
+static BULLET_2: [u16; 1] = [1000];
+static RANGES_2: [LatinRange; 3] = [
     LatinRange {
         start: 0x0020,
         end: 0x007e,
         widths: &ASCII_2,
+    },
+    LatinRange {
+        start: 0x2022,
+        end: 0x2022,
+        widths: &BULLET_2,
     },
     LatinRange {
         start: 0x221a,

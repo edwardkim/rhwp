@@ -1,0 +1,46 @@
+{
+  "command": [
+    "sandbox-exec",
+    "-f",
+    "/Users/tsjang/rhwp/output/issue8856/start/minimal-font.sb",
+    "node",
+    "--require",
+    "/Users/tsjang/rhwp/output/issue8856/start/http-response-observer.cjs",
+    "scripts/export-wasm-png-for-sweep.mjs",
+    "--pkg",
+    "/Users/tsjang/rhwp/pkg",
+    "--input",
+    "samples/basic/NewYear_s_Day.hwp",
+    "--out",
+    "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/actual-http-initialization",
+    "--fonts",
+    "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/minimal/wasm/newyear/silhouette-parts/p0001-0001/font-catalog.json",
+    "--options",
+    "/Users/tsjang/rhwp/output/issue8856/newyear-source-contract/after/minimal/wasm/newyear/silhouette-parts/p0001-0001/canvas-options.json"
+  ],
+  "actual_responses": [
+    {
+      "path": "/rhwp.js",
+      "method": "GET",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "status": 200,
+      "bytes": 573859,
+      "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+    },
+    {
+      "path": "/rhwp_bg.wasm",
+      "method": "GET",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "status": 200,
+      "bytes": 31626578,
+      "sha256": "53d493aef6f58d87cbdc4f61f55520a569866623a21698fcf560f32ba25b8971"
+    }
+  ],
+  "captured_pages": [
+    {
+      "page": 1,
+      "sha256": "9bd9a7ca53a272fb927bb7e86831fa845518b7dbd26cb4b7ad457b7d04a45dd9",
+      "identical_to_current_paired_wasm": true
+    }
+  ]
+}

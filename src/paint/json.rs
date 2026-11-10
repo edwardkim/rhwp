@@ -1024,6 +1024,12 @@ impl PaintOp {
                     json_escape(&color_ref_to_css(marker.color)),
                     marker.baseline,
                 );
+                if let Some(run) = marker.source_run.as_deref() {
+                    buf.push_str(",\"style\":");
+                    write_text_style(buf, &run.style);
+                    buf.push_str(",\"positions\":");
+                    write_text_positions(buf, run);
+                }
                 buf.push('}');
             }
             PaintOp::Line { bbox, line } => {

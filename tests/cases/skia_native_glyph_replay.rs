@@ -1,5 +1,5 @@
 //! 관계형: 합성 TextRun·공개 fixture 글꼴의 glyph coverage·replay와 typed 실패를 검사한다.
-//! 주석 갱신: 2026-11-07T19:17:16+09:00; e4ffabea 리베이스에서 양쪽 회귀 범위를 함께 보존했다.
+//! 주석 갱신: 2026-11-10T09:15:00+09:00; #8856 연속 그림자의 실제 엄격 재생 검사를 추가했다.
 //! 입력은 파일 내부 합성 문서·PageLayerTree 또는 저장소의 허가된 글꼴 fixture다.
 //! API·소유·자원/합성 paint 계약이며 실물 문서 페이지의 조판 위치를 고정하지 않는다.
 //! 이 assertion의 독립 한컴 PDF 대비 Native/fresh WASM raw 측정값은 비해당이다.
@@ -1299,5 +1299,111 @@ mod issue_7640_system_program {
         assert_ne!(pixels(&regular, &normal_page), pixels(&bold, &bold_page));
         assert_eq!(pixels(&regular, &normal_page), pixels(&mixed, &normal_page));
         assert_eq!(pixels(&bold, &bold_page), pixels(&mixed, &bold_page));
+    }
+}
+
+#[test]
+fn native_glyph_replay_keeps_the_prepared_continuous_shadow_samples() {
+    use rhwp::model::bin_data::{BinData, BinDataContent, BinDataType};
+    use rhwp::DocumentCore;
+
+    // 같은 MIT 글꼴로 실제 공통 계획과 엄격 glyph 자원을 만든다.
+    let bytes = include_bytes!("../fixtures/fonts/RHWPHostFixture-Regular.ttf");
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.insert_text_native(0, 0, 0, "A").unwrap();
+    let mut doc = core.document().clone();
+    for fonts in &mut doc.doc_info.font_faces {
+        for font in fonts {
+            font.name = "RHWP Host Fixture".into();
+            font.is_embedded = true;
+            font.resolved_bin_data_id = Some(1);
+        }
+    }
+    for style in &mut doc.doc_info.char_shapes {
+        style.base_size = 2400;
+        style.shadow_type = 2;
+        style.shadow_offset_x = 50;
+        style.shadow_offset_y = 30;
+    }
+    doc.doc_info.bin_data_list.push(BinData {
+        data_type: BinDataType::Embedding,
+        storage_id: 1,
+        extension: Some("ttf".into()),
+        ..Default::default()
+    });
+    doc.bin_data_content.push(BinDataContent {
+        id: 1,
+        extension: "ttf".into(),
+        data: bytes.to_vec().into(),
+    });
+    core.set_document(doc);
+    core.set_hangul2024_compat(true);
+    let layer = core
+        .build_page_layer_tree_with_profile(0, RenderProfile::Print)
+        .unwrap();
+    fn find_run(node: &LayerNode) -> Option<&TextRunNode> {
+        match &node.kind {
+            LayerNodeKind::Group { children, .. } => children.iter().find_map(find_run),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                find_run(child)
+            }
+            LayerNodeKind::Leaf { ops } => ops.iter().find_map(|op| match op {
+                PaintOp::TextRun { run, .. } if run.display_or_text() == "A" => Some(run.as_ref()),
+                _ => None,
+            }),
+        }
+    }
+    let plan = find_run(&layer.root)
+        .unwrap()
+        .style
+        .continuous_shadow
+        .clone()
+        .unwrap();
+    assert_eq!(plan.source_hash, *blake3::hash(bytes).as_bytes());
+    assert!(plan.offsets().count() > 1);
+    let mut tree = glyph_tree(bytes, 0, 'A');
+    let style = &mut glyph_mut(&mut tree).paint_style;
+    style.shadow_type = 2;
+    style.shadow_color = 0xff0000;
+    [style.shadow_offset_x, style.shadow_offset_y] = plan.extent();
+    style.continuous_shadow = Some(plan);
+    let continuous = assert_selected(&tree);
+    glyph_mut(&mut tree).paint_style.continuous_shadow = None;
+    let endpoint_only = assert_selected(&tree);
+    assert!(
+        continuous != endpoint_only,
+        "엄격 glyph 대안도 공통 중간 그림자를 버리지 않는다"
+    );
+}
+
+#[test]
+fn issue_8856_replacement_symbol_ink_keeps_the_intrinsic_cell_under_negative_tracking() {
+    super::replacement_symbol_cell::assert_replacement_symbol_ink_keeps_the_intrinsic_cell_under_negative_tracking();
+}
+
+#[test]
+fn issue_8856_legacy_native_exporter_prepares_the_actual_supplied_program() {
+    use super::legacy_shadow_fixture::{actual_run, host_request_document};
+    use rhwp::document_core::queries::{
+        png_export::NativePngExporter, rendering::PngExportOptions,
+    };
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/fonts/RHWPHostFixture-Regular.ttf");
+    for current in [false, true] {
+        let mut core = host_request_document(current, 2);
+        let exporter = NativePngExporter::new(
+            RenderProfile::Print,
+            PngExportOptions {
+                font_paths: vec![path.clone()],
+                ..Default::default()
+            },
+        );
+        exporter.prepare_document(&mut core).unwrap();
+        let run = actual_run(&core, RenderProfile::Print);
+        assert!(
+            run.style.continuous_shadow.is_some(),
+            "실제 PNG 내보내기도 선택한 프로그램으로 계획을 만든다: current={current}"
+        );
     }
 }

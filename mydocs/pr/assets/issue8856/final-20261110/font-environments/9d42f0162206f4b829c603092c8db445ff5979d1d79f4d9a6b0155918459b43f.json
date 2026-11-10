@@ -1,0 +1,16 @@
+{
+  "id": "hancom2020-independent-hft-glyphs-gulim-fallback-original-pua",
+  "substitutions": {
+    "한양신명조": "한양신명조",
+    "휴먼명조": "Gulim",
+    "HCI Poppy": "HCI Poppy"
+  },
+  "trueTypeFaces": [
+    "Gulim"
+  ],
+  "glyphFallbacks": {
+    "Gulim": [
+      "Haansoft Batang"
+    ]
+  }
+}
