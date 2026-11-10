@@ -266,24 +266,9 @@ fn composed_empty_host_tac_line_offset(
         return None;
     }
     let line = control_line_seg_index(para, control_index).filter(|line| *line > 0)?;
-    let owner = para.line_segs.get(line)?;
-    // 같은 문단의 앞 글자처럼 취급 개체가 앞 줄에 놓였으면 흐름은 이미 그 줄 끝에 와 있다.
-    // 그 줄 끝에서 이 줄까지만 내린다. 앞 개체가 없을 때만 첫 줄에서 잰다.
-    let origin = (0..control_index)
-        .rev()
-        .filter(|&index| {
-            matches!(para.controls.get(index), Some(Control::Table(t)) if t.common.treat_as_char)
-        })
-        .find_map(|index| control_line_seg_index(para, index).filter(|&prior| prior < line))
-        .and_then(|prior| para.line_segs.get(prior))
-        .map(|prior| {
-            prior
-                .vertical_pos
-                .saturating_add(prior.line_height)
-                .saturating_add(prior.line_spacing)
-        })
-        .unwrap_or(para.line_segs.first()?.vertical_pos);
-    (owner.vertical_pos > origin).then(|| hwpunit_to_px(owner.vertical_pos - origin, dpi))
+    let (first, owner) = (para.line_segs.first()?, para.line_segs.get(line)?);
+    (owner.vertical_pos > first.vertical_pos)
+        .then(|| hwpunit_to_px(owner.vertical_pos - first.vertical_pos, dpi))
 }
 
 /// 빈 host의 full-band TAC 표가 표 paint frame과 다음 문단의 시작을 같은 저장
