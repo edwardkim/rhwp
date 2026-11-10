@@ -1,0 +1,38 @@
+{
+  "status": "complete",
+  "parent_driver_pid": 54010,
+  "parent_driver_paused": false,
+  "invalid_candidate_binary_sha256": "24f116933ba8f75ff1fb74c0783b94b377b13d9e27bcc3ae603dd7b52c1edd69",
+  "reason": "고정 base와 후보 공용 target 재사용이 같은 바이너리를 반환함; 후보 출력 INVALID",
+  "started_at": "2026-11-10T06:31:26.275671+00:00",
+  "command": [
+    "cargo",
+    "rustc",
+    "--locked",
+    "--target-dir",
+    "/Users/tsjang/rhwp/target/pr-review",
+    "--profile",
+    "release-test",
+    "--features",
+    "native-skia",
+    "--bin",
+    "rhwp",
+    "-j",
+    "8",
+    "--message-format",
+    "json",
+    "--",
+    "-C",
+    "metadata=semanticist21-integration-32c6023f"
+  ],
+  "pid": 80487,
+  "exit_code": 0,
+  "artifact": {
+    "package_id": "path+file:///Users/tsjang/rhwp#0.9.0",
+    "path": "/Users/tsjang/rhwp/output/pr-review/semanticist21-integration-20261110/rhwp-candidate-native",
+    "sha256": "a44b2438c5290aa483454e55cda212352165454b40d914f87a8a75866992d442",
+    "fresh": false
+  },
+  "success": true,
+  "finished_at": "2026-11-10T06:34:18.698475+00:00"
+}

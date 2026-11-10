@@ -1,0 +1,12 @@
+order	before_integrated_commit	after_integrated_commit	subject
+1	541c545066	1af56eb1ec	fix(header-footer): 머리말·꼬리말·바탕쪽 글을 누른 자리의 글자 앞에 캐럿을 둔다
+2	6c682d2a96	46c48e2393	fix(master-page): 한컴처럼 홀짝이 맞는 바탕쪽만 그리고, 편집 화면 바탕쪽을 흐리게 그린다
+3	6d4f8ee231	0f91d117de	feat(master-page): 바탕쪽을 만들고 지우고 고친다 (#8020)
+4	a2fdc92f15	e5784e1a93	docs(#8020): 바탕쪽 편집의 한컴 12.30 인쇄 대조 근거
+5	5f3a058fad	87d1114f91	feat(memo): read and set the memo shape and memo replies like Hancom 12.30
+6	f94a074958	8f27983315	fix: HWPX 바탕쪽 목록을 저장용 구역 정의와 동기화
+7	32c6023fb5	5fba1ea98b	fix: 메모 댓글 순환을 편집 전에 검출하고 반복 순회로 삭제
+8	149240908e	5038eb992a	docs: 기여자 제출 절차에 실제 기능과 반복 저장 검증 명시
+9	265a268ca3	525aa2b960	fix: 바탕쪽·메모 신규 WASM API의 Studio 바인딩 동기화
+10	8b4e09c054	64241753b2	test: 메모 삭제 helper의 패스스루 무효화 위임 분류
+11	3163dfa8a5	6eccab18f3	ci: Adapter 사전 검증을 10분으로 늘리고 checkout에 8분 배정
