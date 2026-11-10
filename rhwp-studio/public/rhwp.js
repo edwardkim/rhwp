@@ -1453,6 +1453,35 @@ export class HwpDocument {
         }
     }
     /**
+     * 바탕쪽(양 쪽·짝수 쪽·홀수 쪽) 생성 — 빈 문단 1개 포함.
+     *
+     * options: `{"applyTo":0|1|2}`. 반환: `{"ok":true,"applyTo":16+n}`.
+     * 바탕쪽 문단은 머리말·꼬리말 편집 API에 그 `applyTo`(16 + 바탕쪽 번호)를 주어 편집한다.
+     * @param {number} section_idx
+     * @param {string} options_json
+     * @returns {string}
+     */
+    createMasterPage(section_idx, options_json) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(options_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_createMasterPage(this.__wbg_ptr, section_idx, ptr0, len0);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
      * JSON으로 지정된 번호 형식으로 Numbering 정의를 생성한다.
      *
      * json: {"levelFormats":["^1.","^2)",...],"numberFormats":[0,8,...],"startNumber":1}
@@ -1923,6 +1952,30 @@ export class HwpDocument {
         let deferred2_1;
         try {
             const ret = wasm.hwpdocument_deleteHeaderFooter(this.__wbg_ptr, section_idx, is_header, apply_to);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * 바탕쪽 삭제. `apply_to`는 16 + 바탕쪽 번호.
+     * @param {number} section_idx
+     * @param {number} apply_to
+     * @returns {string}
+     */
+    deleteMasterPage(section_idx, apply_to) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_deleteMasterPage(this.__wbg_ptr, section_idx, apply_to);
             var ptr1 = ret[0];
             var len1 = ret[1];
             if (ret[3]) {
@@ -4472,6 +4525,14 @@ export class HwpDocument {
         }
     }
     /**
+     * 편집 화면의 바탕쪽을 흐리게 그릴지 반환한다.
+     * @returns {boolean}
+     */
+    getDimMasterPages() {
+        const ret = wasm.hwpdocument_getDimMasterPages(this.__wbg_ptr);
+        return ret !== 0;
+    }
+    /**
      * 문서가 선언한 실제 프로그램 후보와 현재 환경을 호스트에 전달한다.
      * @returns {string}
      */
@@ -5329,10 +5390,56 @@ export class HwpDocument {
         return ret[0] >>> 0;
     }
     /**
+     * 쪽에서 고칠 바탕쪽. 반환: `{"ok":true,"found":true,"sectionIndex":N,"applyTo":16+n}` 또는 `{"ok":true,"found":false}`
+     * @param {number} page_num
+     * @returns {string}
+     */
+    getMasterPageEditTarget(page_num) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_getMasterPageEditTarget(this.__wbg_ptr, page_num);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * 구역의 바탕쪽 목록. 반환: `{"ok":true,"masterPages":[{index,applyTo,isExtension,overlap,replaceBase,pageNumber,paraCount}]}`
+     * @param {number} section_idx
+     * @returns {string}
+     */
+    getMasterPages(section_idx) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_getMasterPages(this.__wbg_ptr, section_idx);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
      * 문서의 메모를 문서 순서대로 반환한다.
      *
-     * 반환: `[{id,index,author,date,text,place,sectionIndex,paraIndex,
-     * startCharIdx,endCharIdx,path,page,editable,readOnlyReason}]`
+     * 반환: `[{id,index,parentId,author,date,text,place,sectionIndex,paraIndex,
+     * startCharIdx,endCharIdx,path,page,editable,readOnlyReason}]`. parentId는 댓글의 부모 메모 번호다.
      * @returns {string}
      */
     getMemoList() {
@@ -5345,6 +5452,32 @@ export class HwpDocument {
             return getStringFromWasm0(ret[0], ret[1]);
         } finally {
             wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * 구역이 쓰는 메모 모양(한컴 입력 > 메모 > 메모 모양).
+     *
+     * 반환: `{width,lineType,lineWidth,lineColor,fillColor,activeColor}`. 너비는 HWPUNIT,
+     * 선 종류는 0(선 없음)~11(삼중선), 선 굵기는 한컴 굵기 목록(0.1~5.0mm, 0.5mm 없음) 순번이다.
+     * @param {number} section_idx
+     * @returns {string}
+     */
+    getMemoShape(section_idx) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_getMemoShape(this.__wbg_ptr, section_idx);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
         }
     }
     /**
@@ -8454,6 +8587,35 @@ export class HwpDocument {
             return getStringFromWasm0(ptr3, len3);
         } finally {
             wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+        }
+    }
+    /**
+     * 메모에 댓글을 단다(한컴 12.30 메모 풍선의 댓글). 부모와 같은 기준 글에 메모를 달고 관계를 적는다.
+     * 댓글의 댓글은 맨 위 메모의 댓글이 된다. `json` = insertMemo와 같다. 지운 부모의 댓글은 함께 지운다.
+     *
+     * 반환: `{"ok":true,"id":N,"index":N}`. getMemoList의 `parentId`가 부모 메모 번호다.
+     * @param {number} parent_id
+     * @param {string} json
+     * @returns {string}
+     */
+    insertMemoReply(parent_id, json) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_insertMemoReply(this.__wbg_ptr, parent_id, ptr0, len0);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
         }
     }
     /**
@@ -12075,6 +12237,14 @@ export class HwpDocument {
         }
     }
     /**
+     * 편집 화면(`renderPageToCanvas`)에서 바탕쪽을 흐리게 그릴지 설정한다. 한컴은 편집 화면의
+     * 바탕쪽을 본문보다 흐리게 보이고 미리 보기·인쇄에서는 본래 모양으로 그린다.
+     * @param {boolean} enabled
+     */
+    setDimMasterPages(enabled) {
+        wasm.hwpdocument_setDimMasterPages(this.__wbg_ptr, enabled);
+    }
+    /**
      * DPI를 설정한다.
      * @param {number} dpi
      */
@@ -12352,6 +12522,32 @@ export class HwpDocument {
             const ptr0 = passStringToWasm0(props_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
             const len0 = WASM_VECTOR_LEN;
             const ret = wasm.hwpdocument_setHeaderFooterPictureProperties(this.__wbg_ptr, section_idx, outer_para_idx, outer_control_idx, inner_para_idx, inner_control_idx, ptr0, len0);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
+     * 메모 모양을 한 구역(`section_idx`) 또는 모든 구역(`-1`)에 준다. `json`은 getMemoShape 형식이다.
+     * @param {number} section_idx
+     * @param {string} json
+     * @returns {string}
+     */
+    setMemoShape(section_idx, json) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_setMemoShape(this.__wbg_ptr, section_idx, ptr0, len0);
             var ptr2 = ret[0];
             var len2 = ret[1];
             if (ret[3]) {
