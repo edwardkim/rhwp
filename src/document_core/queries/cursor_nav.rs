@@ -10,6 +10,10 @@ use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
 use crate::renderer::render_tree::TextRunNode;
 
+/// 선택 영역이 문단 끝을 넘을 때 글자 끝에 더 칠하는 문단 부호 폭(px, 2.5pt).
+/// 한컴 12.30 Mac에서 10pt·20pt 글자 모두 2.5pt로 같아 글자 크기와 무관한 상수로 둔다.
+const PARAGRAPH_MARK_SELECTION_WIDTH: f64 = 2.5 * 96.0 / 72.0;
+
 /// 셀 경로의 머리말·꼬리말 마디. 글상자처럼 셀 0 하나이고 `cell_para_idx`가 머리말·꼬리말 문단이다.
 pub(crate) fn header_footer_step(
     control: &Control,
@@ -2493,7 +2497,9 @@ impl DocumentCore {
             } else {
                 char_count
             };
-            if sel_start >= sel_end {
+            // 문단 끝을 넘어가는 선택은 글자가 없어도(빈 문단, 문단 끝에서 시작) 문단 부호를 칠한다.
+            let paragraph_mark_selected = para_idx < end_para_idx;
+            if sel_start > sel_end || (sel_start == sel_end && !paragraph_mark_selected) {
                 continue;
             }
 
@@ -2549,7 +2555,10 @@ impl DocumentCore {
                 };
                 let range_start = sel_start.max(line_char_start);
                 let range_end = sel_end.min(line_char_end);
-                if range_start >= range_end {
+                // 문단 부호가 선 마지막 줄: 한컴처럼 글자 끝에 부호 폭만 더 칠한다.
+                let ends_at_paragraph_mark = paragraph_mark_selected && line_idx + 1 == line_count;
+                if range_start > range_end || (range_start == range_end && !ends_at_paragraph_mark)
+                {
                     continue;
                 }
                 expected_segments += 1;
@@ -2612,10 +2621,16 @@ impl DocumentCore {
                     let partial_start = range_start > line_char_start;
 
                     let selection_continues = cell_target.is_none()
+                        && !ends_at_paragraph_mark
                         && ((range_end < sel_end) ||
                         (para_idx < end_para_idx && range_end == sel_end) ||
                         // 같은 문단 내 강제 줄바꿈: 줄 끝까지 선택되고 다음 줄 시작이 sel_end이면 확장
                         (range_end == sel_end && range_end >= line_char_end && line_idx + 1 < line_count));
+                    let mark_width = if ends_at_paragraph_mark {
+                        PARAGRAPH_MARK_SELECTION_WIDTH
+                    } else {
+                        0.0
+                    };
 
                     let (area_left, area_right) = if cell_target.is_none() {
                         find_column_area(rh.page, rh.x)
@@ -2634,9 +2649,9 @@ impl DocumentCore {
                     let width = if selection_continues {
                         (area_right - rect_x).max(0.0)
                     } else if !partial_start && cell_target.is_none() {
-                        (rh.x - rect_x).max(0.0)
+                        (rh.x + mark_width - rect_x).max(0.0)
                     } else {
-                        (rh.x - lh.x).abs()
+                        (rh.x - lh.x).abs() + mark_width
                     };
 
                     if width > 0.01 {
