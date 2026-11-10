@@ -292,6 +292,31 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
     }
   }
 
+  Widget _documentView() {
+    final view = NativePagedDocumentView(
+      document: _document!,
+      controller: _pages,
+      gpuController: _texture,
+      editable: _document!.transport.capabilities['atomicImeEdits'] == true,
+      onControllerChanged: (editor) => _editor = editor,
+      onViewportReady: (_) {
+        if (mounted) setState(() {});
+      },
+    );
+    final gpu = _gpuSession;
+    // Keep this wrapper mounted across recovery and a retired CPU fallback.
+    // Its observer owns neither the document nor renderer retirement.
+    return gpu == null
+        ? view
+        : NativeGpuLifecycle(
+            controller: gpu.controller,
+            onPauseError: (error) {
+              if (mounted) setState(() => _error = '$error');
+            },
+            child: view,
+          );
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('rhwp Flutter Native Reference')),
@@ -414,18 +439,7 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
                   absorbing:
                       _lifecycle?.isBusy == true ||
                       _gpuSession?.recovering == true,
-                  child: NativePagedDocumentView(
-                    document: _document!,
-                    controller: _pages,
-                    gpuController: _texture,
-                    editable:
-                        _document!.transport.capabilities['atomicImeEdits'] ==
-                        true,
-                    onControllerChanged: (editor) => _editor = editor,
-                    onViewportReady: (_) {
-                      if (mounted) setState(() {});
-                    },
-                  ),
+                  child: _documentView(),
                 ),
         ),
       ],
