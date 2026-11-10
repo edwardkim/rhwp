@@ -6943,20 +6943,19 @@ impl LayoutEngine {
             // 컴포저의 `stored_rows_require_external_geometry` 가 같은 증거로 저장
             // 행을 지켜 두므로, 두 층이 같은 판정을 공유한다.
             let body_square_wrap_stored_line = cell_ctx.is_none()
-                && !para_has_mixed_segment_widths
-                && comp_line.column_start == 0
-                && comp_line.segment_width > 0
-                && {
-                    let evidence = self.body_float_carve_evidence.borrow();
-                    let missing = col_area_w_hu.saturating_sub(line_avail_hu);
-                    !evidence.is_empty()
-                        && missing > 1200
-                        && para.is_some_and(|paragraph| {
-                            evidence.iter().any(|candidate| {
-                                candidate.matches_stored_rows(missing, &paragraph.line_segs, 1200)
-                            })
-                        })
-                };
+                && para.is_some_and(|paragraph| {
+                    paragraph.line_segs.get(line_idx).is_some_and(|row| {
+                        // 문단 전체가 개체 옆에 있든 아래로 이어지든 확정된 lane을 보존한다.
+                        // 줄 구성과 같은 문단·어울림 개체의 폭 및 세로 구간 근거를 소비한다.
+                        crate::renderer::float_placement::stored_row_lane_matches_float_carve(
+                            row,
+                            &paragraph.line_segs,
+                            0..col_area_w_hu,
+                            &self.body_float_carve_evidence.borrow(),
+                            1200,
+                        )
+                    })
+                });
             // 셀 안 TAC 줄의 저장 폭이 문단 오른쪽 여백만큼 좁으면 어울림 영역이
             // 아니라 이미 여백을 뺀 폭이다. 이를 다시 열 폭으로 쓰면 아래에서
             // 여백을 두 번 뺀다(issue_1285: 4px + 4px). 실제로 더 좁은 줄은 유지한다.

@@ -7298,6 +7298,46 @@ impl FloatCarveEvidence {
     }
 }
 
+/// 균일한 저장 줄 상자의 좁음이 같은 세로 구간의 실제 어울림 개체에서 왔는지 확인한다.
+/// 줄 구성과 배치가 함께 소비하며, 개체의 왼쪽·오른쪽 어느 lane도 같은 규칙을 쓴다.
+/// 양쪽 inset이나 폭만 같은 다른 세로 구간의 개체는 소유 근거가 아니다.
+pub(crate) fn uniform_stored_rows_match_float_carve(
+    rows: &[crate::model::paragraph::LineSeg],
+    horizontal: Range<i32>,
+    evidence: &[FloatCarveEvidence],
+    tolerance: i32,
+) -> bool {
+    let Some(first) = rows.first() else {
+        return false;
+    };
+    rows.iter().all(|segment| {
+        segment.column_start == first.column_start && segment.segment_width == first.segment_width
+    }) && stored_row_lane_matches_float_carve(first, rows, horizontal, evidence, tolerance)
+}
+
+/// 폭이 바뀌는 문단의 한 저장 lane도 같은 문단·개체의 세로 구간 근거를 소비한다.
+/// 문단 전체가 같은 lane을 쓰는지는 프레임 재조판의 별도 조건이며 paint의 조건이 아니다.
+pub(crate) fn stored_row_lane_matches_float_carve(
+    row: &crate::model::paragraph::LineSeg,
+    paragraph_rows: &[crate::model::paragraph::LineSeg],
+    horizontal: Range<i32>,
+    evidence: &[FloatCarveEvidence],
+    tolerance: i32,
+) -> bool {
+    let lane_end = row.column_start.checked_add(row.segment_width);
+    let edge_lane = row.segment_width > 0
+        && row.column_start >= horizontal.start
+        && lane_end.is_some_and(|end| {
+            end <= horizontal.end && (row.column_start == horizontal.start || end == horizontal.end)
+        });
+    let missing = (horizontal.end - horizontal.start).saturating_sub(row.segment_width);
+    edge_lane
+        && missing > tolerance
+        && evidence
+            .iter()
+            .any(|candidate| candidate.matches_stored_rows(missing, paragraph_rows, tolerance))
+}
+
 /// Interpret an HWPUNIT value that may have been stored through a signed field.
 pub(crate) fn signed_hwpunit(value: HwpUnit) -> i32 {
     value as i32

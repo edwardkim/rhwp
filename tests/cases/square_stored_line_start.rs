@@ -1,5 +1,7 @@
+//! 추가 관계형 검사: HWPX 16쪽의 균일·혼합 후속 줄은 원본 cs/sw와 같은 lane을 소비한다.
+//! 2026-11-10 보정 후 같은 16쪽 Native/fresh WASM 2px raw: 100.00/100.00%. 같은 쪽 review·overlay 판독 후 소속 검사 추가.
 //! 관계형 회귀 — 어울림(Square) 그림 문단의 글 줄은 저장 `cs`·`sw`를 그대로 쓴다.
-//! 주석 갱신: 2026-11-07 14:05 KST(+09:00).
+//! 주석 갱신: 2026-11-10 22:27 KST
 //! 측정일: 2026-11-07. raw = `silhouette_raw_match_percent`, 96 DPI, 독립 한컴 Print PDF.
 //! 측정 값은 아래 표에 원본별로 적고, 정식 증거는 `mydocs/pr/assets/issue_8730/`에 둔다.
 //!
@@ -195,4 +197,65 @@ fn right_picture_keeps_the_left_edge_and_stored_line_end() {
         "줄 끝 {right} 은 단 왼쪽 + sw {} 이어야 한다",
         seg.segment_width
     );
+}
+
+#[test]
+fn uniform_and_mixed_successor_rows_keep_their_source_picture_lane() {
+    const HWPX: &str = "samples/hwp3-sample5-hwpx.hwpx";
+    let source = document(HWPX);
+    let mut rendered =
+        rhwp::wasm_api::HwpDocument::from_bytes(&bytes(HWPX)).expect("한컴 HWPX 저장본");
+    rendered.set_hangul2024_compat(false);
+    let tree: Value = serde_json::from_str(
+        &rendered
+            .get_page_render_tree(15)
+            .expect("그림과 후속 문단이 있는 16쪽"),
+    )
+    .expect("배치 JSON");
+    let left = column_left(&tree);
+    let mut runs = Vec::new();
+    collect(&tree, "TextRun", &mut runs);
+    let mut texts = std::collections::BTreeMap::<u64, String>::new();
+    for run in runs {
+        if let (Some(index), Some(text)) = (run["pi"].as_u64(), run["text"].as_str()) {
+            texts
+                .entry(index)
+                .or_default()
+                .extend(text.chars().filter(|ch| !ch.is_whitespace()));
+        }
+    }
+    let mut lines = Vec::new();
+    collect(&tree, "TextLine", &mut lines);
+    for prefix in ["하드디스크는 하나 이상의", "CPU와 디스크는 디스크제어기"]
+    {
+        let original = source.sections[0]
+            .paragraphs
+            .iter()
+            .find(|paragraph| paragraph.text.starts_with(prefix))
+            .expect("원본 문단");
+        let expected_prefix: String = prefix.chars().filter(|ch| !ch.is_whitespace()).collect();
+        let (&owner, _) = texts
+            .iter()
+            .find(|(_, text)| text.starts_with(&expected_prefix))
+            .expect("내용으로 찾은 실제 배치 문단");
+        let owned: Vec<_> = lines
+            .iter()
+            .filter(|line| line["pi"].as_u64() == Some(owner))
+            .collect();
+        assert_eq!(
+            owned.len(),
+            original.line_segs.len(),
+            "{prefix}: 저장 줄의 누락·중복"
+        );
+        for (line, stored) in owned.into_iter().zip(&original.line_segs) {
+            assert!(
+                (bbox(line, "x") - left - hu_to_px(stored.column_start)).abs() < TOLERANCE_PX,
+                "{prefix}: 개체 옆 줄은 원본 lane의 시작을 지켜야 한다: {line}"
+            );
+            assert!(
+                (bbox(line, "w") - hu_to_px(stored.segment_width)).abs() < TOLERANCE_PX,
+                "{prefix}: 개체 아래 전폭 줄까지 원본 lane의 폭을 지켜야 한다: {line}"
+            );
+        }
+    }
 }
