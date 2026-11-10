@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:rhwp_native_reference/rhwp_native_flutter.dart';
@@ -70,6 +71,9 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
               document: owner,
               presentation: presentation,
               platform: platform,
+              trace: const bool.fromEnvironment('RHWP_GPU_TRACE')
+                  ? NativeGpuTrace()
+                  : null,
               useTileGroups:
                   platform != NativeTexturePlatform.macos &&
                   const bool.fromEnvironment(
@@ -152,6 +156,11 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
     }
   }
 
+  void _reportGpuTrace(NativeTextureController? texture) {
+    final trace = texture?.trace;
+    if (trace != null) debugPrint(jsonEncode(trace.toJson()));
+  }
+
   void _gpuChanged() {
     if (mounted) setState(() {});
   }
@@ -164,7 +173,9 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
       _error = null;
     });
     try {
+      final previous = gpu.controller;
       final replaced = await gpu.recover();
+      _reportGpuTrace(previous);
       if (mounted) {
         setState(() {
           if (replaced) _gpuDetached = false;
@@ -458,6 +469,7 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
     unawaited(() async {
       if (gpu != null) {
         final retired = await gpu.close();
+        _reportGpuTrace(gpu.controller);
         if (!retired) {
           // Preserve an owner with uncertain native cleanup.
           return;
