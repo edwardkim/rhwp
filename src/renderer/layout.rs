@@ -1193,36 +1193,6 @@ fn para_has_visible_text(para: &Paragraph) -> bool {
     para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
 }
 
-/// 저장 LINE_SEG가 없는 공백 전용 ViewText 문단에서 첫 RowBreak TAC 표는 한/글이
-/// 좌우 대칭 기본 padding을 표 시작 inset으로 보존한다. PageItem TAC fallback의
-/// 좌표에만 적용해, 저장 줄·후행 표·비대칭 padding의 기존 배치를 유지한다.
-fn viewtext_first_rowbreak_table_left_inset(
-    para: &Paragraph,
-    control_index: usize,
-    table: &crate::model::table::Table,
-    dpi: f64,
-) -> f64 {
-    if crate::renderer::para_has_no_stored_line_segs(para)
-        && !para.text.is_empty()
-        && para.text.chars().all(char::is_whitespace)
-        && control_index == 0
-        && table.common.treat_as_char
-        && matches!(
-            table.layout_page_break(),
-            crate::model::table::TablePageBreak::RowBreak
-        )
-        && table.padding.left > 0
-        && table.padding.left == table.padding.right
-    {
-        hwpunit_to_px(
-            i32::from(table.padding.left) + i32::from(table.outer_margin_left),
-            dpi,
-        )
-    } else {
-        0.0
-    }
-}
-
 /// [#7203] 쪽(단) 맨 위에 앉은 어울림(TAC) 표 호스트의 저장 첫 줄 `vertical_pos`(px).
 ///
 /// `LINE_SEG.vertical_pos` 는 문단 기준이 아니라 쪽(단) 상단 기준 절대값이다. 호스트
@@ -13282,15 +13252,7 @@ impl LayoutEngine {
                 // 바깥 여백이 이미 들어 있다고 간주하지 않고 개체 여백을 별도로 더한다.
                 let om_l = hwpunit_to_px(t.outer_margin_left as i32, self.dpi);
                 let om_r = hwpunit_to_px(t.outer_margin_right as i32, self.dpi);
-                let base_x = col_area.x
-                    + effective_margin
-                    + leading
-                    + om_l
-                    + if computed_own_line {
-                        0.0
-                    } else {
-                        viewtext_first_rowbreak_table_left_inset(para, control_index, t, self.dpi)
-                    };
+                let base_x = col_area.x + effective_margin + leading + om_l;
                 // [Issue #291] ParaShape align 반영:
                 // TAC 표가 inline_shape_position 미설정 상태에서 단/문단 좌측에
                 // 붙어버리는 회귀를 막는다. ParaShape align=Right 인 경우 표를
