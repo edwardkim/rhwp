@@ -255,3 +255,8 @@ issue8795/1351000-201500141_arrhythmia_research_plan.hwp	0
 # #8842 신규 공개 샘플(HPV 코호트 최종결과보고서 1351000-201800239, 한/글 2020 Print 235쪽): 수정 전(devel 024d610633)과
 # 수정 후의 값이 같다 — 본문 넘침은 76~172쪽 표 쪽 나눔 어긋남 축이며 이 수정(211~234쪽 그림 무리) 범위 밖이다.
 issue8842/1351000-201800239_hpv_cohort_final_report.hwp	1
+# #8882 새 fixture 1행 — 이 PR 이 만든 결손이 아니다(수정 전 devel 3170fddc48 과 값·위치가 같다).
+# 공개 결재문서 36404364 1쪽 표지는 쪽 전체를 차지하는 테두리 없는 TAC 표이고, 그 상자가 본문 바닥
+# 1026.5px 아래 1035.3px 까지 내려간다(+8.8px). 보이는 글자(남부도로사업소·기전과)의 위치는 한컴 Print
+# PDF 1쪽과 겹친다(pdf/issue8882/36404364-reflowed-cell-tac-row-floor-2020.pdf, 1쪽 raw Native 97.72).
+issue8882/36404364-reflowed-cell-tac-row-floor.hwpx	1
