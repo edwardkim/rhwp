@@ -79,3 +79,8 @@ exit 0으로 끝났다. 해당 수명주기와 완료 결과를 `consumers/brows
 | [#8892](https://github.com/edwardkim/rhwp/pull/8892) | [fix(typeset): 저장 줄 없는 다음 문단 앞에는 빈 앵커 자리차지 표의 아래 바깥 여백을 흐름에 넘긴다 (#8888)](../../archives/pr_8892_review.md) |
 | [#8898](https://github.com/edwardkim/rhwp/pull/8898) | [fix(layout): #8890 저장 줄 없는 공백 문단의 RowBreak TAC 표에 안 여백 inset 을 더하지 않는다](../../archives/pr_8898_review.md) |
 | [#8911](https://github.com/edwardkim/rhwp/pull/8911) | [fix: 저장 줄 없는 글 문단의 합성 vpos 를 저장 되감김 쪽 경계 판정에 쓰지 않는다 (#8904)](../../archives/pr_8911_review.md) |
+
+
+## 원격 제출·CI
+
+[통합 PR #8923](https://github.com/edwardkim/rhwp/pull/8923)의 code 제출 head `38ce926603d14ff662e29fe6a92acde67c73c0ec`에서 최신 CI를 통과했다. [CI 원본](ci-8923-code-complete.json)과 [원격 다운로드 byte/hash 확인](submission-download-validation.json)을 보존한다. 제출 head의 제품 source는 검증 code `21d62361fa`와 동일하다. 브라우저에서 본문 review/overlay 4개 표시도 확인했다. 문서 trailing head checks와 실제 병합은 별도 확인한다. #7282의 KGS, #8748 원 보고서의 전쪽 검증은 전체 해결로 표시하지 않는다.

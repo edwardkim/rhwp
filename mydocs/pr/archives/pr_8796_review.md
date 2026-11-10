@@ -4,7 +4,7 @@
 
 **승인 — 해당 원본·변경 범위의 로컬 검증 완료.**
 
-원격 통합 PR의 CI·병합은 아직 별도 확인 대상이다. 이 판정은 contributor 원 head와 아래 메인터너 보정을 포함한 검증 code `21d62361fa670858e63fdfc475c236f112e20a3d`에 대한 결과다.
+[통합 PR #8923](https://github.com/edwardkim/rhwp/pull/8923)의 code 제출 head `38ce926603d14ff662e29fe6a92acde67c73c0ec`에서 최신 CI를 통과했다. 문서 trailing head의 checks와 실제 병합은 이후 별도로 확인한다. 이 판정은 contributor 원 head와 아래 메인터너 보정을 포함한 검증 code `21d62361fa670858e63fdfc475c236f112e20a3d`에 대한 결과다.
 
 ## 접수 정보
 
@@ -74,6 +74,14 @@ successor_flow_axis.hwpx 2쪽 fresh WASM
 ![review](../assets/planet6897_clean19_20261110/pr8796/cases/pr8796-successor_flow_axis/wasm/review-002.png)
 ![overlay](../assets/planet6897_clean19_20261110/pr8796/cases/pr8796-successor_flow_axis/wasm/overlay-002.png)
 
-## 통합 후 contributor 안내
+## Merge 후 contributor PR comment 계획
 
 최종 merge SHA·CI·이 검토 문서와 주장 페이지의 raw/PDF/review/overlay를 이미지로 포함해 한국어 존댓말로 안내한다. 메인터너 보정은 기여자가 해결한 부분과 추가로 발견한 결함·보정·검증 이유를 구분한다. 원 fork branch는 삭제하지 않는다.
+
+
+- 검증 code `21d62361fa670858e63fdfc475c236f112e20a3d`, CI 제출 head `38ce926603d14ff662e29fe6a92acde67c73c0ec`, 통합 PR #8923. 실제 merge SHA는 병합 후 확인해 이미지 URL과 안내 본문에 사용한다.
+- 위의 원 기여·메인터너 보정 이유·수치를 유지하고, 같은 입력·쪽·backend의 raw/PDF/review/overlay를 실제 Markdown 이미지로 표시한다. 전쪽 최저를 대표 쪽 점수로 바꾸지 않는다.
+
+| 원본 조건 | comment에 표시할 검토 쪽 | 증적 디렉터리 |
+| --- | --- | --- |
+| `pr8796-successor_flow_axis` | 1, 2 | [Native/fresh WASM](../assets/planet6897_clean19_20261110/pr8796/cases/pr8796-successor_flow_axis) |
