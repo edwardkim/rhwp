@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-11-08
+last_verified: 2026-11-10
 ---
 
 # PDF/PNG visual sweep 가이드
@@ -177,7 +177,8 @@ python3 scripts/visual_sweep.py --silhouette-only \
 fresh WASM도 같은 입력·기준 PDF·DPI·글꼴 환경으로 실행한다.
 원본이 연결 그림을 사용하면 WASM 명령에 `--linked-image <그림 경로>`를 그림마다
 반복해 실제 파일을 공급한다. 파일명과 SHA-256은 실행 기록에 남으며 그림 영역을
-가리거나 비교에서 제외하지 않는다.
+가리거나 비교에서 제외하지 않는다. macOS에서 다른 호스트의 검증을 이어갈 때는
+[macOS 외부 연결 그림 공급](#macos-외부-연결-그림-공급)의 경로 확인 절차를 따른다.
 
 ```bash
 python3 scripts/visual_sweep.py --silhouette-only \
@@ -257,6 +258,41 @@ PR을 재검토한다.** Native/WASM 교차 비교나 다른 backend 점수의 �
 원 소수값·십진수 연산·누락 판정·직접 판독·review 기록은
 [devel 대비 실루엣 하락 재검토](visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)를 따른다.
 현재 자동90% gate 또는 `not_evaluated`만으로 이 비교를 완료했다고 쓰지 않는다.
+
+### macOS 외부 연결 그림 공급
+
+Linux·Windows에서 사용한 검증 명령이나 manifest를 Mac으로 옮길 때는 연결 그림의
+파일명·실제 바이트를 확인한 뒤 **Mac에서 읽을 수 있는 경로**로 지정한다. 다른 호스트의
+`/home/<사용자>/...`·드라이브 경로를 그대로 사용하지 않는다. 문서의 원본 참조 문자열을
+고치거나 임의 그림으로 대체하지 않으며, 같은 basename의 원본 파일과 SHA-256을 대조한다.
+원본 파일을 확보하지 못하면 그림 누락 상태를 통과로 처리하지 않는다.
+
+아래는 저장소 루트에서 `hwp3-sample10.hwp`의 연결 그림 3개를 공급하는 예다.
+`$PWD`를 사용하므로 특정 사용자명이나 설치 위치에 의존하지 않는다. 다른 문서는 실제로
+요청한 연결 그림 목록으로 바꾸며, 기존 검증을 재현할 때는 manifest의 `linked_images`도
+글꼴 환경·입력·PDF와 함께 이관한다. 글꼴 설정만 복사하고 그림 공급을 빠뜨리지 않는다.
+
+```bash
+shasum -a 256 samples/oracle.gif samples/rdb02.gif samples/s1.jpg
+
+venv/bin/python scripts/visual_sweep.py --silhouette-only \
+  --file-target sample10 samples/hwp3-sample10.hwp pdf/issue8371/hwp3-sample10-2020.pdf \
+  --rhwp-bin "$PWD/target/pr-review/release-test/rhwp" --wasm-pkg "$PWD/pkg" \
+  --linked-image "$PWD/samples/oracle.gif" \
+  --linked-image "$PWD/samples/rdb02.gif" \
+  --linked-image "$PWD/samples/s1.jpg" \
+  --compat 2022 --dpi 96 --page-workers 8 \
+  --out output/pr-review/sample10-macos-wasm
+```
+
+`--linked-image`는 WASM 직접 PNG 출력에 사용하는 실제 그림 공급 옵션이다. Native 출력도
+같은 원본 그림에 접근할 수 있는지 확인하고, 양쪽의 원본 파일 해시를 일치시킨다. 생성한
+manifest의 `linked_images`에서 공급 파일을 확인하고 `wasm-export-complete.json`의 해당 쪽
+PNG 기록으로 출력 완료를 확인한다. 그림이 있는 페이지의 raw PNG·review·overlay도 실제로 판독한다.
+파일 공급은 그림 영역을
+제외하는 `--linked-image-exclusions`와 구분하며, 경로 문제를 제외 영역으로 숨기지 않는다.
+진단에 `--pages 1`을 추가할 수 있지만 그 결과를 전쪽 검증으로 기록하지 않는다.
+공급 조건이 달라졌으면 새 output 경로에서 측정하고 기존 조건의 `--resume` 결과를 섞지 않는다.
 
 ## PR review 실루엣 gate
 
