@@ -2636,13 +2636,21 @@ impl TypesetEngine {
             // RowBreak 표를 통째 수용해도 빈 호스트의 흐름 전용 하단여백은
             // 사라지지 않는다. fit에서는 면제하되, 별도 프레임이 소유하지 않는
             // 순차 배치에서는 마지막 조각과 같이 후속 흐름에 한 번 전달한다.
+            // [#8888] 다음 문단에 저장 줄이 없으면 저장 사다리가 이 여백을 복원할
+            // 수 없다. 쪽나눔 종류와 관계없이 같은 여백을 후속 흐름에 전달한다
+            // (36384898: 다음 문단 위끝 = 위 여백 + 표 + 아래 여백 17645HU).
+            let next_cannot_restore_flow_tail = paragraphs_all
+                .get(para_idx + 1)
+                .is_some_and(crate::renderer::para_has_no_stored_line_segs);
             let unreserved_flow_tail = if resolved_host_placement.is_none()
                 && !coanchored_visible_float
                 && saved_table_source_frame.is_none()
-                && matches!(
-                    table.layout_page_break(),
-                    crate::model::table::TablePageBreak::RowBreak
-                ) {
+                && (next_cannot_restore_flow_tail
+                    || matches!(
+                        table.layout_page_break(),
+                        crate::model::table::TablePageBreak::RowBreak
+                    ))
+            {
                 ft.host_spacing.after - ft.host_spacing.after_for_fit
             } else {
                 0.0
