@@ -1,0 +1,457 @@
+{
+  "source_commit": "21d62361fa670858e63fdfc475c236f112e20a3d",
+  "backend": "native",
+  "records": [
+    {
+      "pr": 8691,
+      "key": "pr8691-ai_procurement_appendix",
+      "backend": "native",
+      "pages": 4,
+      "minimum": 97.47,
+      "claim_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "review_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/native"
+    },
+    {
+      "pr": 8691,
+      "key": "pr8691-artifact_loan_form",
+      "backend": "native",
+      "pages": 1,
+      "minimum": 100.0,
+      "claim_pages": [
+        1
+      ],
+      "review_pages": [
+        1
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-artifact_loan_form/native"
+    },
+    {
+      "pr": 8691,
+      "key": "pr8691-rental_approval_form",
+      "backend": "native",
+      "pages": 1,
+      "minimum": 100.0,
+      "claim_pages": [
+        1
+      ],
+      "review_pages": [
+        1
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-rental_approval_form/native"
+    },
+    {
+      "pr": 8747,
+      "key": "pr8747-156641865_press_release_band",
+      "backend": "native",
+      "pages": 2,
+      "minimum": 99.99,
+      "claim_pages": [
+        1
+      ],
+      "review_pages": [
+        1
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8747/cases/pr8747-156641865_press_release_band/native"
+    },
+    {
+      "pr": 8747,
+      "key": "pr8747-156713639_press_release_band",
+      "backend": "native",
+      "pages": 2,
+      "minimum": 100.0,
+      "claim_pages": [
+        1
+      ],
+      "review_pages": [
+        1
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8747/cases/pr8747-156713639_press_release_band/native"
+    },
+    {
+      "pr": 8752,
+      "key": "pr8752-wide_paper_table_two_columns",
+      "backend": "native",
+      "pages": 2,
+      "minimum": 93.08,
+      "claim_pages": [
+        1,
+        2
+      ],
+      "review_pages": [
+        1,
+        2
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8752/cases/pr8752-wide_paper_table_two_columns/native"
+    },
+    {
+      "pr": 8762,
+      "key": "pr8762-36458608-square-tac-same-paragraph",
+      "backend": "native",
+      "pages": 6,
+      "minimum": 98.86,
+      "claim_pages": [
+        1,
+        3,
+        4,
+        5
+      ],
+      "review_pages": [
+        1,
+        3,
+        4,
+        5
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8762/cases/pr8762-36458608-square-tac-same-paragraph/native"
+    },
+    {
+      "pr": 8774,
+      "key": "pr8774-4680000-202100038_research_review_request",
+      "backend": "native",
+      "pages": 6,
+      "minimum": 99.0,
+      "claim_pages": [
+        1,
+        2
+      ],
+      "review_pages": [
+        1,
+        2
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8774/cases/pr8774-4680000-202100038_research_review_request/native"
+    },
+    {
+      "pr": 8796,
+      "key": "pr8796-successor_flow_axis",
+      "backend": "native",
+      "pages": 2,
+      "minimum": 100.0,
+      "claim_pages": [
+        1,
+        2
+      ],
+      "review_pages": [
+        1,
+        2
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8796/cases/pr8796-successor_flow_axis/native"
+    },
+    {
+      "pr": 8802,
+      "key": "pr8802-first_margin_page_origin",
+      "backend": "native",
+      "pages": 1,
+      "minimum": 100.0,
+      "claim_pages": [
+        1
+      ],
+      "review_pages": [
+        1
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8802/cases/pr8802-first_margin_page_origin/native"
+    },
+    {
+      "pr": 8837,
+      "key": "pr8837-page_float_host_spacing",
+      "backend": "native",
+      "pages": 1,
+      "minimum": 99.95,
+      "claim_pages": [
+        1
+      ],
+      "review_pages": [
+        1
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8837/cases/pr8837-page_float_host_spacing/native"
+    },
+    {
+      "pr": 8847,
+      "key": "pr8847-36414883-negative-tac-line-spacing",
+      "backend": "native",
+      "pages": 1,
+      "minimum": 100.0,
+      "claim_pages": [
+        1
+      ],
+      "review_pages": [
+        1
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8847/cases/pr8847-36414883-negative-tac-line-spacing/native"
+    },
+    {
+      "pr": 8865,
+      "key": "pr8865-missing_picture_print",
+      "backend": "native",
+      "pages": 2,
+      "minimum": 99.84,
+      "claim_pages": [
+        1,
+        2
+      ],
+      "review_pages": [
+        1,
+        2
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8865/cases/pr8865-missing_picture_print/native"
+    },
+    {
+      "pr": 8868,
+      "key": "pr8868-36379333-stored-text-above-offset-float",
+      "backend": "native",
+      "pages": 2,
+      "minimum": 99.92,
+      "claim_pages": [
+        1,
+        2
+      ],
+      "review_pages": [
+        1,
+        2
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8868/cases/pr8868-36379333-stored-text-above-offset-float/native"
+    },
+    {
+      "pr": 8886,
+      "key": "pr8886-36317264_approval",
+      "backend": "native",
+      "pages": 4,
+      "minimum": 100.0,
+      "claim_pages": [
+        1
+      ],
+      "review_pages": [
+        1
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8886/cases/pr8886-36317264_approval/native"
+    },
+    {
+      "pr": 8887,
+      "key": "pr8887-36421178-long-word-first-char",
+      "backend": "native",
+      "pages": 2,
+      "minimum": 100.0,
+      "claim_pages": [
+        1,
+        2
+      ],
+      "review_pages": [
+        1,
+        2
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8887/cases/pr8887-36421178-long-word-first-char/native"
+    },
+    {
+      "pr": 8892,
+      "key": "pr8892-36384898-unstored-next-float-bottom-margin",
+      "backend": "native",
+      "pages": 2,
+      "minimum": 99.98,
+      "claim_pages": [
+        1,
+        2
+      ],
+      "review_pages": [
+        1,
+        2
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8892/cases/pr8892-36384898-unstored-next-float-bottom-margin/native"
+    },
+    {
+      "pr": 8898,
+      "key": "pr8898-36400288_approval",
+      "backend": "native",
+      "pages": 2,
+      "minimum": 92.85,
+      "claim_pages": [
+        1,
+        2
+      ],
+      "review_pages": [
+        1,
+        2
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8898/cases/pr8898-36400288_approval/native"
+    },
+    {
+      "pr": 8911,
+      "key": "pr8911-36376635-synthetic-tail-saved-reset",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "claim_pages": [
+        2,
+        3
+      ],
+      "review_pages": [
+        1,
+        2,
+        3
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/native"
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5",
+      "backend": "native",
+      "pages": 64,
+      "minimum": 95.48,
+      "claim_pages": [
+        1,
+        4,
+        16,
+        22,
+        27
+      ],
+      "review_pages": [
+        1,
+        4,
+        16,
+        22,
+        27
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/cases/pr8734-sample5/native"
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5-hwp5",
+      "backend": "native",
+      "pages": 64,
+      "minimum": 100.0,
+      "claim_pages": [
+        1,
+        4,
+        16,
+        22,
+        27
+      ],
+      "review_pages": [
+        1,
+        4,
+        16,
+        22,
+        27
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/cases/pr8734-sample5-hwp5/native"
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5-hwpx",
+      "backend": "native",
+      "pages": 64,
+      "minimum": 100.0,
+      "claim_pages": [
+        1,
+        4,
+        16,
+        22,
+        27
+      ],
+      "review_pages": [
+        1,
+        4,
+        16,
+        22,
+        27
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/cases/pr8734-sample5-hwpx/native"
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-square-right",
+      "backend": "native",
+      "pages": 1,
+      "minimum": 92.96,
+      "claim_pages": [
+        1
+      ],
+      "review_pages": [
+        1
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/cases/pr8734-square-right/native"
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-employment",
+      "backend": "native",
+      "pages": 90,
+      "minimum": 96.72,
+      "claim_pages": [
+        1,
+        14,
+        79
+      ],
+      "review_pages": [
+        1,
+        14,
+        51,
+        79
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/cases/pr8734-employment/native"
+    },
+    {
+      "pr": 8787,
+      "key": "pr8787-handbook",
+      "backend": "native",
+      "pages": 383,
+      "minimum": 99.96,
+      "claim_pages": [
+        47,
+        48,
+        49
+      ],
+      "review_pages": [
+        47,
+        48,
+        49,
+        130
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8787/cases/pr8787-handbook/native"
+    },
+    {
+      "pr": 8839,
+      "key": "pr8839-original",
+      "backend": "native",
+      "pages": 1,
+      "minimum": 100.0,
+      "claim_pages": [
+        1
+      ],
+      "review_pages": [
+        1
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8839/cases/pr8839-original/native"
+    },
+    {
+      "pr": 8839,
+      "key": "pr8839-3190263",
+      "backend": "native",
+      "pages": 8,
+      "minimum": 98.88,
+      "claim_pages": [
+        3,
+        4,
+        7,
+        8
+      ],
+      "review_pages": [
+        3,
+        4,
+        5,
+        7,
+        8
+      ],
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/pr8839/cases/pr8839-3190263/native"
+    }
+  ],
+  "complete": true
+}

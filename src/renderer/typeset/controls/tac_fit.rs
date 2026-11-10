@@ -199,7 +199,8 @@ pub(super) fn prepare(
                         _ => false,
                     })
             })
-            .map(|ti| (0..ti).map(|li| fmt.line_advance(li)).sum::<f64>())
+            // 쪽 끝 줄은 줄 높이까지만 들어가면 된다. 리셋 앞 마지막 줄의 줄간격은 세지 않는다.
+            .map(|ti| fmt.line_content_height(0..ti, 0.0))
     } else {
         None
     };

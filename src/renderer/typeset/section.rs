@@ -59,7 +59,9 @@ impl TypesetEngine {
         // [#6175] 용지/쪽 기준 어울림 개체의 폭과 세로 band - 구역당 한 번.
         *self.float_carve_evidence.borrow_mut() =
             crate::renderer::float_placement::paper_or_page_float_carve_evidence_with_storage(
-                paragraphs, storage,
+                paragraphs,
+                crate::renderer::px_to_hwpunit(layout.body_area.y, self.dpi),
+                storage,
             )?;
         let col_count = column_def.column_count.max(1);
         let default_footnote_shape = FootnoteShape::default();
@@ -355,7 +357,13 @@ impl TypesetEngine {
                 &mut st, para_idx, para, paragraphs, storage,
             )?;
 
-            let picture_host_origin = (st.pages.len(), st.current_column, st.current_height);
+            let picture_host_origin = (
+                st.pages.len(),
+                st.current_column,
+                st.current_height,
+                !st.profile.session_edited()
+                    && st.stored_wrap_rows_start_at_flow_pen(para, self.dpi),
+            );
             let native_hwp5_footnote_break = self.place_paragraph_flow_with_storage(
                 &mut st,
                 para_idx,

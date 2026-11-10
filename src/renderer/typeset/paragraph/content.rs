@@ -490,11 +490,9 @@ pub(in crate::renderer::typeset) fn initialize_first_paragraph_origin(
                             0
                         } else {
                             seg.vertical_pos
-                                - paragraphs.get(para_idx).map_or(0, |first| {
-                                    crate::renderer::layout::synthesized_first_margin_hu(
-                                        first, styles, dpi,
-                                    )
-                                })
+                                - crate::renderer::layout::unstored_first_margin_hu(
+                                    paragraphs, para_idx, styles, dpi,
+                                )
                         }
                     }),
             );

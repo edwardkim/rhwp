@@ -143,6 +143,16 @@ impl TypesetState {
         self.close_square_band();
     }
 
+    /// 밴드를 닫고, 그 바닥이 다음 문단의 시작을 내렸으면 배치도 같은 시작을 쓴다.
+    pub(super) fn end_following_wrap_before(&mut self, para_idx: usize) {
+        let before = self.data.current_height;
+        self.end_following_wrap();
+        let after = self.data.current_height;
+        if after > before + 0.5 {
+            self.data.page_band_flow_starts.insert(para_idx, after);
+        }
+    }
+
     /// 꼬리 항목 → 높이 전진 → 사다리 dirty 순서를 보존한다. 쪽 전환은 호출자 책임이다.
     pub(super) fn commit_wrap_tail(
         &mut self,
@@ -188,6 +198,12 @@ impl TypesetState {
         }
         if let Some(top) = self.data.square_band_top {
             self.data.square_band_bottom = self.data.square_band_bottom.max(top + source_offset_px);
+            let pen = top + source_offset_px;
+            self.data.square_band_source_pen = Some(
+                self.data
+                    .square_band_source_pen
+                    .map_or(pen, |current| current.max(pen)),
+            );
         }
     }
 
@@ -219,6 +235,25 @@ impl TypesetState {
             }
         }
         self.data.current_column_wrap_around_paras.push(wrap_para);
+    }
+
+    /// 열린 Square 배제 밴드 안에서 다음 본문이 시작할 흐름 펜.
+    /// 흡수한 옆 문단의 끝과 현재 흐름 중 아래쪽이며, 표 바닥에 닿으면 밴드 밖이다.
+    pub(super) fn square_band_lane_pen(&self) -> Option<f64> {
+        self.data.square_band_top?;
+        let pen = self
+            .data
+            .square_band_source_pen
+            .map_or(self.data.current_height, |pen| {
+                pen.max(self.data.current_height)
+            });
+        (pen + 0.5 < self.data.square_band_bottom).then_some(pen)
+    }
+
+    /// 밴드 안 차선의 펜에서 문단을 시작한다. 배치도 같은 시작을 소비한다.
+    pub(super) fn start_paragraph_at_band_pen(&mut self, para_idx: usize, pen: f64) {
+        self.data.current_height = pen;
+        self.data.page_band_flow_starts.insert(para_idx, pen);
     }
 
     /// 활성 여부를 확인한 후, 상태 변경 없는 매칭 구간에서만 사용하는 관측값.

@@ -1,0 +1,45 @@
+{
+  "side": "base-wasm",
+  "key": "pr8839-original",
+  "counts": {
+    "rhwp": 2,
+    "pdf": 1
+  },
+  "source_manifests": [
+    {
+      "path": "output/pr-review/planet6897-clean20-integration-20261110/individual-visual/base-wasm/pr8839-original/silhouette-parts/p0002-0002/run_manifest.json",
+      "sha256": "7ecacbdc1c9a9ca3e84e0f5f42eb16cff59eea806cd4ffdea902e670660378d3"
+    },
+    {
+      "path": "output/pr-review/planet6897-clean20-integration-20261110/individual-visual/base-wasm/pr8839-original/silhouette-parts/p0001-0001/run_manifest.json",
+      "sha256": "d857e8cef338e747dd3fd5c5a3e4e4f3c010022a42766a9f9e875455d37de604"
+    }
+  ],
+  "unpaired_rhwp_pages": [
+    {
+      "page": 2,
+      "path": "output/pr-review/planet6897-clean20-integration-20261110/individual-visual/base-wasm/pr8839-original/silhouette-parts/p0002-0002/rhwp_png/rhwp_002.png",
+      "sha256": "ef43ead3113616cc4607ad020ff73077580ec22ac44f4501c74414e6a99b6d61"
+    }
+  ],
+  "output": "output/pr-review/planet6897-clean20-integration-20261110/base-pagination-quantified/base-wasm/pr8839-original",
+  "pr_review_gate": {
+    "status": "re_review_required",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 1,
+        "silhouette_raw_match_percent": 61.45808
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 2,
+      "pdf": 1
+    },
+    "page_count_mismatch": true
+  },
+  "note": "고정 base의 쪽수 불일치·90% 미달을 그대로 유지한 비교 자료다. 통과한 후보 증거가 아니다."
+}

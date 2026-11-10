@@ -1,0 +1,49 @@
+{
+  "contexts": [
+    {
+      "key": "pr8787-handbook",
+      "font_environment": "mydocs/pr/assets/planet6897_integration_final/pr8389_8397/handbook-font-environment.json",
+      "sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25",
+      "basis": "accepted protected inventory or original producer validation with matching sha256"
+    },
+    {
+      "key": "protected-yeongwol",
+      "font_environment": "mydocs/pr/assets/planet6897_20261103/yeongwol-font-environment.json",
+      "sha256": "d8bffde39aac561051991fe06b83e453439376acff84814439934864589b40e4",
+      "basis": "accepted protected inventory or original producer validation with matching sha256"
+    },
+    {
+      "key": "protected-handbook-hwp",
+      "font_environment": "mydocs/pr/assets/planet6897_integration_final/pr8389_8397/handbook-font-environment.json",
+      "sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25",
+      "basis": "accepted protected inventory or original producer validation with matching sha256"
+    },
+    {
+      "key": "protected-sample16-hwpx",
+      "font_environment": "mydocs/pr/assets/planet6897_integration_final/pr8389_8397/hwp3-2024-font-environment.json",
+      "sha256": "53a7cff101203c61080a59769730f6f7050e5af22870b8a9d233bff7a95ec64c",
+      "basis": "accepted protected inventory or original producer validation with matching sha256"
+    },
+    {
+      "key": "protected-sample16-hwp2022",
+      "font_environment": "mydocs/pr/assets/planet6897_integration_final/pr8389_8397/hwp3-2020-font-environment.json",
+      "sha256": "9d42f0162206f4b829c603092c8db445ff5979d1d79f4d9a6b0155918459b43f",
+      "basis": "accepted protected inventory or original producer validation with matching sha256"
+    },
+    {
+      "key": "protected-nested",
+      "font_environment": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/nested-original-approved-font-environment.json",
+      "sha256": "69d9e65b9ee3d8f6b7fa891e5b66791a62cc5a50771b9630feb7360e543a6722",
+      "basis": "accepted protected inventory or original producer validation with matching sha256"
+    },
+    {
+      "key": "protected-sample16-hwp2024",
+      "font_environment": "mydocs/pr/assets/planet6897_integration_final/pr8389_8397/hwp3-2024-font-environment.json",
+      "sha256": "53a7cff101203c61080a59769730f6f7050e5af22870b8a9d233bff7a95ec64c",
+      "basis": "accepted protected inventory or original producer validation with matching sha256"
+    }
+  ],
+  "nested_environment_original_sha256": "69d9e65b9ee3d8f6b7fa891e5b66791a62cc5a50771b9630feb7360e543a6722",
+  "nested_native_ttf_sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18",
+  "native_linked_image_contract": "CLI automatically loads external pictures from the source parent directory; --linked-image is for WASM only"
+}

@@ -35,6 +35,14 @@ use super::utils::{
 use super::LayoutEngine;
 use super::{CellContext, CellPathEntry};
 
+/// 여러 단 걸침 개체의 원본 자리차지 높이와 실제 Square 배제 상자(HU).
+/// Square는 폭/높이만 재추정하지 않고 조판이 사용하는 ObjectPlacementFrame 결과를 소비한다.
+#[derive(Default)]
+pub(crate) struct PageSpanningFloatFrames {
+    pub(crate) topbottom_heights: Vec<i32>,
+    pub(crate) square_exclusions: Vec<crate::renderer::layout_frame::FrameExclusion>,
+}
+
 /// 묶음의 자식별 글상자 번호를 모든 편집 소비 지점에 같은 원문 순서로 전달한다.
 /// 좌표·clip·paint는 변경하지 않는다. 중첩 묶음에서 이미 구분한 자식 번호에는 바깥 오프셋만 더한다.
 fn offset_group_textbox_sources(node: &mut RenderNode, depth: usize, offset: usize) {
@@ -5240,6 +5248,135 @@ impl LayoutEngine {
 
     /// 다단 레이아웃에서 body_area 전체에 걸치는 TopAndBottom 개체의 예약 높이 계산
     /// 모든 단의 items를 순회하여 body_area 너비와 동일하거나 큰 개체만 반환
+    /// [#7282] 쪽의 모든 단 항목에서, 가로 범위가 둘 이상의 단에 걸치는 비-TAC
+    /// 자리차지(TopAndBottom) 개체의 틀 높이(높이 + 바깥 위·아래 여백, HU)를 모은다.
+    /// 앵커 단을 가리지 않는다 — 한/글은 이 틀이 지나는 모든 단의 줄을 틀 아래로 밀어
+    /// LINE_SEG.vertical_pos 에 저장한다. 문단 배치는 줄 사이 저장 점프가 이 높이와
+    /// 같을 때만 그 저장 위치를 쓴다.
+    pub(crate) fn collect_page_spanning_float_frames(
+        &self,
+        paragraphs: &[Paragraph],
+        page_content: &super::super::pagination::PageContent,
+        layout: &super::super::page_layout::PageLayoutInfo,
+        styles: &ResolvedStyleSet,
+    ) -> PageSpanningFloatFrames {
+        let mut frames = PageSpanningFloatFrames::default();
+        for col_content in &page_content.column_contents {
+            let zone_layout = col_content.zone_layout.as_ref().unwrap_or(layout);
+            if zone_layout.column_areas.len() < 2 {
+                continue;
+            }
+            let col_idx = col_content.column_index as usize;
+            let Some(col_area) = zone_layout.column_areas.get(col_idx) else {
+                continue;
+            };
+            for item in &col_content.items {
+                let (para_index, control_index) = match item {
+                    PageItem::Shape {
+                        para_index,
+                        control_index,
+                    }
+                    | PageItem::Table {
+                        para_index,
+                        control_index,
+                    } => (*para_index, *control_index),
+                    _ => continue,
+                };
+                let Some(ctrl) = paragraphs
+                    .get(para_index)
+                    .and_then(|p| p.controls.get(control_index))
+                else {
+                    continue;
+                };
+                let (common, margin_top, margin_bottom) = match ctrl {
+                    Control::Table(t) => (
+                        &t.common,
+                        i32::from(t.outer_margin_top),
+                        i32::from(t.outer_margin_bottom),
+                    ),
+                    Control::Picture(p) => (
+                        &p.common,
+                        i32::from(p.common.margin.top),
+                        i32::from(p.common.margin.bottom),
+                    ),
+                    Control::Shape(s) => (
+                        s.common(),
+                        i32::from(s.common().margin.top),
+                        i32::from(s.common().margin.bottom),
+                    ),
+                    _ => continue,
+                };
+                if common.treat_as_char {
+                    continue;
+                }
+                if let Control::Picture(picture) = ctrl {
+                    if matches!(common.vert_rel_to, VertRelTo::Paper | VertRelTo::Page) {
+                        let paper = LayoutRect {
+                            x: 0.0,
+                            y: 0.0,
+                            width: layout.page_width,
+                            height: layout.page_height,
+                        };
+                        let placement = crate::renderer::float_placement::ObjectPlacementFrame {
+                            container: col_area,
+                            column: col_area,
+                            body: &zone_layout.body_area,
+                            paper: &paper,
+                            paragraph_y: col_area.y,
+                            alignment: Alignment::Left,
+                            dpi: self.dpi,
+                        };
+                        if let Some(exclusion) = placement.picture_exclusion(
+                            picture,
+                            &paragraphs[para_index],
+                            control_index,
+                            styles,
+                        ) {
+                            let spanned = zone_layout
+                                .column_areas
+                                .iter()
+                                .filter(|area| {
+                                    let left = px_to_hwpunit(area.x, self.dpi);
+                                    let right = px_to_hwpunit(area.x + area.width, self.dpi);
+                                    exclusion.horizontal.start < right
+                                        && left < exclusion.horizontal.end
+                                })
+                                .count();
+                            if spanned > 1 && !frames.square_exclusions.contains(&exclusion) {
+                                frames.square_exclusions.push(exclusion);
+                            }
+                        }
+                    }
+                }
+                if common.text_wrap != TextWrap::TopAndBottom {
+                    continue;
+                }
+                let width_px = hwpunit_to_px(common.width as i32, self.dpi);
+                let ctx = crate::renderer::float_placement::FloatPlacementContext::new(*col_area)
+                    .with_body_area(zone_layout.body_area)
+                    .with_paper_width(layout.page_width);
+                let (left, right) = crate::renderer::float_placement::horizontal_range(
+                    common, width_px, ctx, self.dpi,
+                );
+                let spanned = zone_layout
+                    .column_areas
+                    .iter()
+                    .filter(|area| right > area.x + 0.5 && left < area.x + area.width - 0.5)
+                    .count();
+                if spanned < 2 {
+                    continue;
+                }
+                let frame = (common.height as i32)
+                    .saturating_add(margin_top)
+                    .saturating_add(margin_bottom);
+                if frame > 0 && !frames.topbottom_heights.contains(&frame) {
+                    frames.topbottom_heights.push(frame);
+                }
+            }
+        }
+        frames
+    }
+
     pub(crate) fn calculate_body_wide_shape_reserved(
         &self,
         paragraphs: &[Paragraph],

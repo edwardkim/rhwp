@@ -7178,6 +7178,11 @@ impl DocumentCore {
             self.section_render_paragraphs(sec_idx),
             &self.styles,
             self.effective_layout_profile(),
+            self.document.sections.get(sec_idx).map_or(0, |section| {
+                crate::model::page::PageAreas::from_page_def(&section.section_def.page_def)
+                    .body_area
+                    .top
+            }),
         );
         typesetter
     }

@@ -2120,6 +2120,10 @@ impl SvgRenderer {
         if img.crop.is_some_and(|(l, t, r, b)| r <= l || b <= t) {
             return;
         }
+        // [#8858] 외부 경로 없는 그림 미지정은 `#2225` 대체 노드와 같은 계약 — 인쇄 등가 출력은 생략.
+        if img.is_missing_picture() && !self.show_missing_picture_placeholder {
+            return;
+        }
         // [Task #741] 빈 binary 데이터 (외부 file path 그림 등) 도 placeholder 처리.
         // 한컴 한글 2024 viewer 정합 — 외부 file 못 찾는 경우 점선 사각형 + 깨진 image 아이콘.
         let data = match img.data {

@@ -89,19 +89,17 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow_with_storage<
     // `lineseg` 를 그대로 쓰므로 여기서 또 더하면 이중 가산이 되어, 분할 표 꼬리가 페이지를
     // 단독 점유하고 뒤 본문이 밀린다(#2373 핀: 한글 2022 정답지 4쪽 ↔ 가산 시 5쪽).
     // 다시 조판해야 하는 문단(붙여넣기·생성계)에서만 이 몫이 실제로 빠져 있다.
+    //
+    // 줄 상자가 이미 그 여백을 담았으면 더하지 않는다. 글자 있는 host 의 조성 줄은
+    // `inline_control_occupied_size_hwp` 가 `표 높이 + 바깥 여백` 으로 발행하고, 글자 없는
+    // host 줄(`tac_table_host_line_metrics`)은 표 높이만 싣는다. 표의 점유 상자에서 가장 큰
+    // 줄 높이를 뺀 부족분만 예산에 둔다.
     let tac_outer_margin_v_px: f64 = if crate::renderer::para_has_no_stored_line_segs(para) {
-        para.controls
-            .iter()
-            .filter_map(|ctrl| match ctrl {
-                Control::Table(t) if t.common.treat_as_char => {
-                    Some(crate::renderer::hwpunit_to_px(
-                        i32::from(t.common.margin.top) + i32::from(t.common.margin.bottom),
-                        ctx.dpi(),
-                    ))
-                }
-                _ => None,
-            })
-            .fold(0.0f64, f64::max)
+        crate::renderer::float_placement::tac_table_outer_margin_shortfall_px(
+            para,
+            line_heights.iter().copied().fold(0.0f64, f64::max),
+            ctx.dpi(),
+        )
     } else {
         0.0
     };

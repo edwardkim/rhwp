@@ -607,6 +607,13 @@ pub(super) fn place_fitted_paragraph_with_storage<S: crate::storage::Storage>(
     let fmt = confirmed.as_ref().unwrap_or(fmt);
     let defer_preceding_float =
         placement::defer_preceding_float(&st.current_items, paragraphs, para_idx, para);
+    // [#8859] 표 위 틈을 채운 본문 뒤의 흐름은 표 아래에서 이어진다. 조판은 이 표를 host 줄
+    // 바로 뒤에 예약했으므로(양수 오프셋 미가산), 실제 표 아래끝은 그 예약 끝보다
+    // `오프셋 − host 줄 전진` 만큼 아래다. 틈의 본문이 그보다 짧으면 표 아래끝이 하한이다.
+    let deferred_float_floor = defer_preceding_float
+        .then(|| placement::deferred_float_flow_floor(&st.current_items, paragraphs, para, dpi))
+        .flatten()
+        .map(|extra| st.current_height + extra);
     let split_float_spacing_before = match st.current_items.last() {
         _ if confirmed.is_some() => None,
         Some(PageItem::PartialTable {
@@ -786,6 +793,9 @@ pub(super) fn place_fitted_paragraph_with_storage<S: crate::storage::Storage>(
         let compacted_lines_height = fmt.line_advances_sum(0..fmt.line_heights.len());
         st.record_compacted_stored_rows(stored_lines_height - compacted_lines_height);
     };
+    if let Some(floor) = deferred_float_floor.filter(|floor| *floor > st.current_height) {
+        st.align_flow_to(floor);
+    }
     Ok(())
 }
 

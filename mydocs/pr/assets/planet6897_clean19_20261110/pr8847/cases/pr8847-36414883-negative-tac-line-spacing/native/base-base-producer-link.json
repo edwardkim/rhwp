@@ -1,0 +1,36 @@
+{
+  "side": "base",
+  "key": "pr8847-36414883-negative-tac-line-spacing",
+  "counts": {
+    "rhwp": 2,
+    "pdf": 1
+  },
+  "source_manifests": [
+    {
+      "path": "output/pr-review/planet6897-clean20-integration-20261110/individual-visual/base/pr8847-36414883-negative-tac-line-spacing/run_manifest.json",
+      "sha256": "58e276ea1f31c4bab748e5d07009df1ecda1d2b10c2dbe2599d03b51bb56b949"
+    }
+  ],
+  "unpaired_rhwp_pages": [
+    {
+      "page": 2,
+      "path": "output/pr-review/planet6897-clean20-integration-20261110/individual-visual/base/pr8847-36414883-negative-tac-line-spacing/rhwp_png/rhwp_002.png",
+      "sha256": "efbc3fe816935f9b17f0780dea9ccc6f4abdbb0ebb4ef582dc8c9c7316af6e92"
+    }
+  ],
+  "output": "output/pr-review/planet6897-clean20-integration-20261110/base-pagination-quantified/base/pr8847-36414883-negative-tac-line-spacing",
+  "pr_review_gate": {
+    "status": "re_review_required",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 2,
+      "pdf": 1
+    },
+    "page_count_mismatch": true
+  },
+  "note": "고정 base의 쪽수 불일치·90% 미달을 그대로 유지한 비교 자료다. 통과한 후보 증거가 아니다."
+}

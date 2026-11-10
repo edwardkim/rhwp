@@ -16,7 +16,7 @@ impl TypesetEngine {
         styles: &ResolvedStyleSet,
         section_index: usize,
         has_table: bool,
-        picture_host_origin: (usize, u16, f64),
+        picture_host_origin: (usize, u16, f64, bool),
         native_hwp5_footnote_break: Option<notes::footnotes::boundary::NativeHwp5FootnoteBreak>,
     ) {
         match self.place_paragraph_controls_with_storage(
@@ -45,7 +45,7 @@ impl TypesetEngine {
         styles: &ResolvedStyleSet,
         section_index: usize,
         has_table: bool,
-        picture_host_origin: (usize, u16, f64),
+        picture_host_origin: (usize, u16, f64, bool),
         native_hwp5_footnote_break: Option<notes::footnotes::boundary::NativeHwp5FootnoteBreak>,
         storage: &S,
     ) -> Result<(), S::Error> {
@@ -295,9 +295,10 @@ impl TypesetEngine {
                             }
                         }
                         // [Task #1052] 글상자 내 각주 수집 (engine.rs:1376-1398 동등)
-                        // NO_LS 호스트의 측정 원점만 전달한다. 저장 vpos 소유자는
-                        // 기존 저장 배치 경로에 남긴다.
-                        let host_top = (para.line_segs.is_empty()
+                        // 저장 첫 줄과 배치 전 펜이 같은 원점을 증명하고 같은 쪽/단에
+                        // 수용된 host도 확정 원점을 전달한다. 소유 줄이 다른 쪽으로
+                        // 옮겨진 그림의 위치를 원시 vpos만으로 추정하지 않는다.
+                        let host_top = ((para.line_segs.is_empty() || picture_host_origin.3)
                             && (st.pages.len(), st.current_column)
                                 == (picture_host_origin.0, picture_host_origin.1))
                             .then_some(picture_host_origin.2);

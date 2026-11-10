@@ -4048,12 +4048,27 @@ impl LayoutEngine {
             + table_declared_widths.iter().sum::<f64>()
             + table_om_px.iter().map(|(l, r)| l + r).sum::<f64>();
         let available_width = col_area.width - margin_left - margin_right;
+        // 인라인 표와 앞 텍스트도 같은 첫 글줄의 들여쓰기를 소비한다.
+        // 일반 본문·표 단독 경로와 동일하게 원본 줄의 들여쓰기 플래그와
+        // 실제 줄 여유를 확인하며, 뒤 글줄의 시작 여백에는 다시 더하지 않는다.
+        let first_line_indent =
+            crate::renderer::equation_tac_flow::paragraph_line_indent_for_source(
+                para_style.map_or(0.0, |style| style.indent),
+                0,
+                Some(para),
+                composed.map_or(para.line_segs.len(), |comp| comp.lines.len()),
+                !self.profile.get().legacy_hwp3_stored_geometry(),
+                available_width,
+                self.dpi,
+            );
+        let first_line_left = col_area.x + margin_left + first_line_indent;
+        let first_line_width = available_width - first_line_indent;
         let start_x = match alignment {
             Alignment::Center | Alignment::Distribute => {
-                col_area.x + margin_left + (available_width - total_width).max(0.0) / 2.0
+                first_line_left + (first_line_width - total_width).max(0.0) / 2.0
             }
-            Alignment::Right => col_area.x + margin_left + (available_width - total_width).max(0.0),
-            _ => col_area.x + margin_left,
+            Alignment::Right => first_line_left + (first_line_width - total_width).max(0.0),
+            _ => first_line_left,
         };
 
         // 6. 줄 높이 계산 (line_seg 기반)
@@ -6249,8 +6264,46 @@ impl LayoutEngine {
             }
         };
         let mut endnote_line_vpos_base = endnote_line_vpos_base;
+        // [#7282] 다른 단에 앵커한 여러 단 걸침 자리차지 틀이 이 문단의 줄을 틀 아래로
+        // 밀었는지는 저장 사다리가 말해 준다: 줄 사이 점프(다음 vpos − (vpos + 줄 높이 +
+        // 줄 간격))가 이 쪽 걸침 틀의 높이(바깥 여백 포함)와 정확히 같다. 이때만 자기
+        // 앵커 개체가 있는 문단과 같은 저장 vpos 배치를 쓴다.
+        let has_spanning_float_frame_jump = cell_ctx.is_none()
+            && !has_para_topbottom_float
+            && para.is_some_and(|p| {
+                let frames = self.page_spanning_float_frames.borrow();
+                p.line_segs.get(start_line..end).is_some_and(|range| {
+                    range.windows(2).any(|w| {
+                        let height_jump = w[0]
+                            .vertical_pos
+                            .checked_add(w[0].line_height)
+                            .and_then(|v| v.checked_add(w[0].line_spacing))
+                            .and_then(|flow_end| w[1].vertical_pos.checked_sub(flow_end))
+                            .is_some_and(|jump| frames.topbottom_heights.contains(&jump));
+                        // 실제 Square 바깥 프레임 앞에서 끝난 줄의 다음 줄이 그 프레임
+                        // 끝에서 시작한다면 저장된 세로 점프를 지킨다. 폭·높이가 같은
+                        // 다른 단/다른 위치의 그림은 이 글줄을 소유하지 않는다.
+                        let hu = |px| crate::renderer::px_to_hwpunit(px, self.dpi);
+                        let origin = hu(col_area.y);
+                        let authored =
+                            crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+                        let square_jump = w.iter().all(|line| line.tag & authored == 0)
+                            && frames.square_exclusions.iter().any(|frame| {
+                                frame.horizontal.start < hu(col_area.x + col_area.width)
+                                    && hu(col_area.x) < frame.horizontal.end
+                                    && origin
+                                        .saturating_add(w[0].vertical_pos)
+                                        .saturating_add(w[0].line_height)
+                                        <= frame.vertical.start
+                                    && origin.saturating_add(w[1].vertical_pos)
+                                        == frame.vertical.end
+                            });
+                        height_jump || square_jump
+                    })
+                })
+            });
         let para_topbottom_line_vpos_base: Option<(i32, f64)> = {
-            if cell_ctx.is_none() && has_para_topbottom_float {
+            if cell_ctx.is_none() && (has_para_topbottom_float || has_spanning_float_frame_jump) {
                 para.and_then(|p| {
                     if p.stored_text_partition_dirty {
                         return None;
@@ -6909,20 +6962,19 @@ impl LayoutEngine {
             // 컴포저의 `stored_rows_require_external_geometry` 가 같은 증거로 저장
             // 행을 지켜 두므로, 두 층이 같은 판정을 공유한다.
             let body_square_wrap_stored_line = cell_ctx.is_none()
-                && !para_has_mixed_segment_widths
-                && comp_line.column_start == 0
-                && comp_line.segment_width > 0
-                && {
-                    let evidence = self.body_float_carve_evidence.borrow();
-                    let missing = col_area_w_hu.saturating_sub(line_avail_hu);
-                    !evidence.is_empty()
-                        && missing > 1200
-                        && para.is_some_and(|paragraph| {
-                            evidence.iter().any(|candidate| {
-                                candidate.matches_stored_rows(missing, &paragraph.line_segs, 1200)
-                            })
-                        })
-                };
+                && para.is_some_and(|paragraph| {
+                    paragraph.line_segs.get(line_idx).is_some_and(|row| {
+                        // 문단 전체가 개체 옆에 있든 아래로 이어지든 확정된 lane을 보존한다.
+                        // 줄 구성과 같은 문단·어울림 개체의 폭 및 세로 구간 근거를 소비한다.
+                        crate::renderer::float_placement::stored_row_lane_matches_float_carve(
+                            row,
+                            &paragraph.line_segs,
+                            0..col_area_w_hu,
+                            &self.body_float_carve_evidence.borrow(),
+                            1200,
+                        )
+                    })
+                });
             // 셀 안 TAC 줄의 저장 폭이 문단 오른쪽 여백만큼 좁으면 어울림 영역이
             // 아니라 이미 여백을 뺀 폭이다. 이를 다시 열 폭으로 쓰면 아래에서
             // 여백을 두 번 뺀다(issue_1285: 4px + 4px). 실제로 더 좁은 줄은 유지한다.
@@ -7178,9 +7230,9 @@ impl LayoutEngine {
             // typeset 의 wrap_around state machine 매칭 결과 (ColumnContent.wrap_anchors)
             // 가 layout 에 전달되어 본 분기가 동작.
             //
-            // [Task #722] inter-image-text gap 보정 — 한컴 viewer 는 anchor image 의
-            // outer margin_right (HU) 만큼 cs 에 더해 text 시작 x 결정. sw 에서 동일량
-            // 차감하여 가용 폭 정합. WrapAnchorRef.anchor_image_margin_right 활용.
+            // 저장 cs 는 그림 왼쪽 바깥 여백 + 폭 + 오른쪽 바깥 여백까지 포함한 글 시작이고
+            // cs + sw 는 줄 끝이다(HWP5·HWPX 전수 실측, 한컴의 HWP3 변환본도 같다).
+            // 그림 바깥 여백은 저장 줄에 이미 들어 있으므로 여기서 더하지 않는다.
             //
             // `LineSeg.sw`는 문단의 left/right margin을 포함한 source line box 폭이다.
             // 따라서 일반 stored-segment 경로와 마찬가지로 TextLine bbox의 usable width에서는
@@ -7208,8 +7260,7 @@ impl LayoutEngine {
                         }
                     }
                 };
-                let mr = anchor.anchor_image_margin_right;
-                let cs_px = crate::renderer::hwpunit_to_px(cs + mr, self.dpi);
+                let cs_px = crate::renderer::hwpunit_to_px(cs, self.dpi);
                 if synthetic_zone {
                     // 합성 배제 존: 한글의 문단 왼 여백은 **열 기준** 들여쓰기라,
                     // 개체 회피 지점이 이미 여백보다 오른쪽이면 여백은 소진된다.
@@ -7223,7 +7274,7 @@ impl LayoutEngine {
                     // 양(max(0, margin_l - cs))과 오른 여백만 뺀다.
                     let sw_px = if sw > 0 {
                         Some(
-                            (crate::renderer::hwpunit_to_px((sw - mr).max(0), self.dpi)
+                            (crate::renderer::hwpunit_to_px(sw.max(0), self.dpi)
                                 - (effective_margin_left - cs_px).max(0.0)
                                 - effective_margin_right)
                                 .max(0.0),
@@ -7246,15 +7297,14 @@ impl LayoutEngine {
                     // effective_margin_left 에 둔다. 좁힌 줄은 같은 상대 위치를 cs 만큼 옮긴
                     // 자리에서 시작해 저장 줄 상자 끝(cs + sw)에서 끝난다.
                     let _ = base_end;
-                    let shift = crate::renderer::hwpunit_to_px(cs + mr - base_cs, self.dpi);
-                    let avail =
-                        crate::renderer::hwpunit_to_px((sw - mr + base_cs).max(0), self.dpi)
-                            - effective_margin_left;
+                    let shift = crate::renderer::hwpunit_to_px(cs - base_cs, self.dpi);
+                    let avail = crate::renderer::hwpunit_to_px((sw + base_cs).max(0), self.dpi)
+                        - effective_margin_left;
                     (shift, Some(avail.max(0.0)))
                 } else {
                     let sw_px = if sw > 0 {
                         Some(
-                            (crate::renderer::hwpunit_to_px((sw - mr).max(0), self.dpi)
+                            (crate::renderer::hwpunit_to_px(sw.max(0), self.dpi)
                                 - effective_margin_left
                                 - effective_margin_right)
                                 .max(0.0),
@@ -9061,19 +9111,19 @@ impl LayoutEngine {
         // 다른 줄의 표가 소유자로 섞인다. caller가 복원한 저장 줄 배정과 마지막
         // run 끝 TAC를 포함한 공통 집합을 그대로 소비한다.
         let line_table_owner = para.and_then(|p| {
-            line_tac_offsets
-                .iter()
-                .find_map(|(_, _, ci)| match p.controls.get(*ci) {
-                    Some(Control::Table(table)) if table.common.treat_as_char => {
-                        let h = hwpunit_to_px(table.common.height as i32, self.dpi);
-                        let mt = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
-                        super::stored_tac_frame::owned_body_height(
-                            table, h, raw_lh, styles, self.dpi, 0.2,
-                        )
-                        .map(|owned_height| (owned_height, mt))
-                    }
-                    _ => None,
-                })
+            super::stored_tac_frame::line_table_owner(
+                line_tac_offsets
+                    .iter()
+                    .filter_map(|(_, _, ci)| match p.controls.get(*ci) {
+                        Some(Control::Table(table)) if table.common.treat_as_char => {
+                            Some(table.as_ref())
+                        }
+                        _ => None,
+                    }),
+                raw_lh,
+                styles,
+                self.dpi,
+            )
         });
         let is_last_run_of_line = |idx: usize| idx == comp_line.runs.len() - 1;
         // [#5679] 줄-말미 공백에 배정된 배분 여분(extra_word_sp) 회수분.

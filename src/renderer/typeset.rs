@@ -1404,14 +1404,14 @@ fn square_picture_wrap_anchor_for_para(
         return None;
     }
 
-    let anchor_image_margin_right = anchor_para.controls.iter().find_map(|ctrl| {
-        non_tac_square_picture_common(ctrl).map(|common| common.margin.right as i32)
-    })?;
+    anchor_para
+        .controls
+        .iter()
+        .find_map(non_tac_square_picture_common)?;
     Some(crate::renderer::pagination::WrapAnchorRef {
         anchor_para_index: st.wrap_around_table_para,
         anchor_cs: st.wrap_around_cs,
         anchor_sw: st.wrap_around_sw,
-        anchor_image_margin_right,
         band_y_range: None,
     })
 }
@@ -2594,7 +2594,20 @@ fn paragraph_saved_vpos_reset_starts_new_page_after(
     }
 
     let next_first_vpos = next_para.line_segs.first().map(|s| s.vertical_pos);
-    let curr_last_vpos = current_para.line_segs.last().map(|s| s.vertical_pos);
+    // [#8904] 되감김은 앞 문단 끝과 다음 문단 시작 사이의 **저장** 사실이다. 저장 줄이 없어
+    // 줄을 합성한 글 문단은 저장 당시와 줄 나눔이 같다는 근거가 없으므로(익명화 등으로 글이
+    // 바뀐 문단), 합성 줄 끝을 그 사실의 앞쪽으로 쓰지 않는다. 글이 없는 문단은 글자 모양이
+    // 정하는 한 줄이라 합성 줄도 저장 당시와 같은 점유를 가진다.
+    let curr_last_vpos = if para_has_visible_text(current_para) {
+        current_para
+            .line_segs
+            .iter()
+            .rev()
+            .find(|s| !is_synthetic_line_seg(s))
+            .map(|s| s.vertical_pos)
+    } else {
+        current_para.line_segs.last().map(|s| s.vertical_pos)
+    };
     let multi_col = col_count > 1;
     let allowed_top_vpos = if is_hwp3_variant { 1500 } else { 0 };
 
@@ -3502,6 +3515,7 @@ impl TypesetEngine {
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
         profile: crate::model::provenance::LayoutCompatibilityProfile,
+        body_top_hu: i32,
     ) {
         self.profile.set(profile);
         self.uniform_filler_ladder
@@ -3509,7 +3523,10 @@ impl TypesetEngine {
                 paragraphs, styles,
             ));
         *self.float_carve_evidence.borrow_mut() =
-            crate::renderer::float_placement::paper_or_page_float_carve_evidence(paragraphs);
+            crate::renderer::float_placement::paper_or_page_float_carve_evidence(
+                paragraphs,
+                body_top_hu,
+            );
     }
 
     /// 프로덕션 문단 높이 분해. pagination이 `format_paragraph` 로 쓰는 값과 같다.
@@ -5973,6 +5990,9 @@ impl TypesetEngine {
                 let extra = step - table_total_height;
                 if extra > 0.5 {
                     st.advance_flow_by(extra);
+                } else if extra < -0.5 {
+                    // 음수 줄간격: 뒤 글줄은 표 줄 끝보다 그만큼 위에서 시작한다.
+                    st.reclaim_flow_by(-extra);
                 }
             }
             // [#2808] 소비 조건을 layout 의 same_owner_table_precedes 와 동일하게
@@ -6048,8 +6068,13 @@ impl TypesetEngine {
             // 남는 앞 간격만 흐름에 소비하고 같은 값을 배치에 넘긴다(배치는 이 값을
             // 확정 앞 간격으로 받아 다시 더하거나 단 맨 위 규칙으로 바꾸지 않는다).
             // 저장 원점을 소비한 host 는 그 원점이 이미 앞 간격을 포함한다.
+            // [#8836] 쪽·용지 기준 자리차지 표가 같은 문단의 첫 글줄을 민 경우도 같다 — 띠의
+            // 기준이 문단이 아닐 뿐, 밀린 줄 원점과 앞 간격의 관계는 같은 규칙이다.
             if post_table_start == 0
-                && is_visible_para_float
+                && (is_visible_para_float
+                    || crate::renderer::float_placement::is_absolute_topbottom_float_text_host(
+                        para, table,
+                    ))
                 && stored_host_origin.is_none()
                 && st.current_height > para_start_height + 0.5
             {
@@ -6450,9 +6475,11 @@ impl TypesetEngine {
             return None;
         }
         let (table_line, post_line) = para.line_segs.first().zip(para.line_segs.get(1))?;
+        // 줄간격은 음수일 수도 있다. 뒤 글줄이 그 간격만큼 표 줄 끝보다 위에서 시작한다는
+        // 저장 증언도 같은 프레임의 흐름이다.
         if is_synthetic_line_seg(table_line)
             || is_synthetic_line_seg(post_line)
-            || table_line.line_spacing <= 0
+            || table_line.line_spacing == 0
         {
             return None;
         }
