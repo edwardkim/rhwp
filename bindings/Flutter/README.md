@@ -212,7 +212,7 @@ GPU 종료 Future가 반환되어도 `retirePending`이면 view와 owner를 유�
 예제의 작은 경로·결정 UI와 실제 Native 저장/복구/종료 검사는
 [문서 수명 계약](DOCUMENT_LIFECYCLE.md)을 따른다. OS 창 닫기 hook과 제품 앱은 범위에 포함하지 않는다.
 
-## 다중 페이지 CPU 참조 viewport (P105)
+## 다중 페이지 참조 viewport (P105·P111)
 
 `NativePagedDocumentView(document: document, controller: controller)`는 문서당 하나의
 view generation으로 보이는 페이지 영역만 순서대로 요청한다. `NativePagedViewportController`의
@@ -231,8 +231,11 @@ view generation으로 보이는 페이지 영역만 순서대로 요청한다. `
 페이지 배치·포인터 hit-test·선택/caret overlay·IME candidate는 같은 `NativePageViewport`
 변환을 사용한다. DPR은 raster 해상도에만 적용한다. Native caret가 화면 밖으로 이동하면
 같은 배치 결과로 스크롤하고, 새 문서 ID는 이전 문서의 탐색 위치를 초기화한다.
-이 뷰는 CPU 참조 경로다. 기존 단일 페이지 `NativeTextureView`와 별도로 사용하며,
-여러 페이지의 GPU consumer 완료·texture 재사용이 검증됐다고 표시하지 않는다.
+`gpuController`가 없는 기본값은 기존 CPU 참조 경로다. 선택적인
+`gpuController: textureController`를 주면 같은 `NativeDocumentViewport`의 보이는 최대 4쪽을
+동일한 document/revision/font/view/device stamp로 capture하고 한 GPU target의 placements로
+게시한다. 단일 페이지 `NativeTextureView` API도 유지한다. 여러 페이지의 GPU consumer 완료나
+target 재사용을 추가한 계약은 아니다. [GPU 다중 페이지 계약](GPU_MULTIPAGE_VIEWPORT.md)을 따른다.
 
 ```bash
 flutter test --no-pub test/native_multipage_view_test.dart
@@ -247,10 +250,60 @@ flutter test --no-pub test/native_multipage_integration_test.dart \
 전쪽 비교·실물 OS IME/AT 및 GPU qualification은 별도 범위다.
 
 기본 example은 CPU 다중 페이지 뷰와 최소 이전/다음·확대/축소 조작을 사용한다.
-`RHWP_GPU=true`로 GPU controller가 연결되면 기존 단일 페이지 texture 참조 경로를 유지한다.
-다중 페이지 뷰도 `onControllerChanged`로 같은 view-owned editor를 전달하므로 P104 lifecycle은
-문서 교체 전에 입력 큐를 기다릴 수 있다.
+`RHWP_GPU=true`로 GPU controller가 연결되면 같은 다중 페이지 뷰·탐색·입력 owner를 유지하며
+GPU 출력을 선택한다. 정상 GPU 경로에서는 CPU raster/decode를 실행하지 않고, 확정된 GPU
+fallback 뒤에만 기존 CPU batch를 만든다. 문서/resource 오류는 실패 진단으로 남는다.
+GPU example은 지원 capability가 있는 Linux·Windows에서 기존 두 producer slot을 사용하는
+P112 tile group을 선택한다. `RHWP_GPU_TILES=false`로 기존 단일 target을 선택할 수 있다.
+macOS의 CV Metal·AppKit Metal은 기존 단일 target 계약을 유지한다. AppKit Metal 선택은 아래
+continuous opt-in이 필요하다.
+`RHWP_GPU_CONTINUOUS=true`는 기존 Windows immutable ownership transfer 또는 macOS AppKit
+Metal opt-in 선택을 유지한다. `onControllerChanged`로 같은 view-owned editor를 전달하므로
+P104 lifecycle은 문서 교체 전에 입력 큐를 기다릴 수 있다.
 
 다른 `NativeDocument` owner에 viewport/controller를 다시 연결하면 이전 문서의 탐색 위치와
 대기 중 page jump를 초기화한다. 같은 문서가 재조판되어 쪽수가 줄면 대기 jump를 새 쪽수에
 맞춰 처리하며, 이전 page index 때문에 viewport 오류가 고정되지 않게 한다.
+
+## 최대 두 GPU 타일 (P112)
+
+현재 native tile group 구현은 Linux·Windows에 제공한다. macOS native plugin은 검증된 기존
+단일 target 소스를 유지한다. 새 Mac tile group은 Apple SDK compile/link·실행 증거 확보 후
+[#8701](https://github.com/edwardkim/rhwp/issues/8701)의 후속으로 검토한다. 공통 Dart client는
+capability가 없는 plugin에 그룹을 요청하지 않으며, example도 Mac의 타일 모드를 켜지 않는다.
+
+`NativeTextureController(useTileGroups: true, ...)`는 문서·입력·presentation owner 하나로
+viewport를 두 물리 직사각형으로 나눈다. 각 축 8192·합계 8 Mi pixels 이하에서 타일별 4096축·
+4 Mi pixels·16 MiB 한도를 만족해야 한다. Windows는 256-byte row pitch와 power-of-two surface
+두 장의 실제 charge도 검사한다. 기존 두 producer/close record, 네 frame·64 MiB 예산은 늘리지 않는다.
+다른 GPU view나 불확정 종료가 slot을 보유하면 그룹을 거부하거나 bounded CPU로 전환한다.
+
+`createGroup/submitGroup/statusGroup/closeGroup/retireGroupAck`는 하나의 device generation을
+공유한다. Windows의 registrar import owner는 타일마다 고유하다. 최대 네 쪽의 snapshot은 각각
+한 번 capture하며 두 타일의 page job은 같은 destructive lease를 공유한다. 그룹 전체를 검증·준비한
+뒤에만 인수하고, 두 publication의 전체 stamp와 page receipt 확인 뒤 같은 opaque cover를 벗긴다.
+늦은 응답·불확정 release는 기존 credit을 유지한다.
+
+기본 `NativeDocumentViewport`의 CPU 계획은 여전히 16 MiB다. 큰 GPU 계획은 명시적인
+`NativeViewportRasterPolicy.gpuTiled`를 사용한다. `NativePagedDocumentView`는 tiled controller에
+이 정책을 적용하며 GPU 실패 시 모든 page placement를 유지한 채 DPR을 내려 전체 CPU batch를
+16 MiB에 맞춘다. 화면에 낮은 해상도 표시를 알리고 이전 batch를 paint 후 해제한 다음 교체한다.
+본문 일부만 누락하여 한도를 맞추지 않는다. GPU 한도를 넘으면 전체 viewport 진단을 표시한다.
+
+실제 Linux 두 target 실행은 clean source에서 다음과 같이 준비한다. X11 화면은 4200×700 이상이어야 한다.
+
+```sh
+python3 tool/build_linux_probe.py --tile-group --flutter-sdk /absolute/flutter \
+  --native /absolute/librhwp_native_ffi.so --native-source-head NATIVE_SHA \
+  --output /absolute/tile-build
+python3 tool/qualify_linux_tile_group.py \
+  --runner /absolute/tile-build/runner/build/linux/x64/debug/bundle/rhwp_texture_qualification \
+  --native /absolute/librhwp_native_ffi.so --dispatcher /absolute/tile-build/librhwp_flutter_owner.so \
+  --fixture /absolute/tile-build/source/bindings/Flutter/test/fixtures/desktop-consumer.hwpx \
+  --build-receipt /absolute/tile-build/build-receipt.json --output /absolute/tile-capture
+```
+
+4098px viewport의 초기·편집·4097px resize를 실제 compositor에서 capture하고, 같은 immutable
+snapshot의 별도 CPU strip·2배 source replay로 양쪽과 seam을 검사한다. 각 CPU 요청은 기존 한도
+안에 남는다. 실제 두 registration 종료와 Native 아홉 자원 counter의 0을 확인한다. Xvfb/Mesa 결과는
+소프트웨어 실행 증거이며 Windows/macOS SDK·실물 GPU·한컴 독립 출력 qualification을 대신하지 않는다.

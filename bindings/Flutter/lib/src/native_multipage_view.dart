@@ -11,6 +11,7 @@ import 'native_document_view.dart';
 import 'native_editor_controller.dart';
 import 'native_editor_view.dart';
 import 'native_ffi.dart';
+import 'native_texture_view.dart';
 import 'native_viewport.dart';
 
 /// Navigation state for one bounded Native document viewport.
@@ -107,14 +108,14 @@ class _PageImage {
   final Size size;
 }
 
-/// CPU multi-page reference viewport. One owner coordinates every visible page;
-/// it never creates competing per-page [NativeDocumentView] generations.
-/// Existing single-page external-texture views remain a separate opt-in path.
+/// One multi-page viewport owner for input, CPU regions and optional GPU output.
+/// GPU batches reuse the same authoritative layout without per-page view owners.
 class NativePagedDocumentView extends StatefulWidget {
   const NativePagedDocumentView({
     super.key,
     required this.document,
     this.controller,
+    this.gpuController,
     this.editable = true,
     this.maxPages = 256,
     this.onViewportReady,
@@ -122,12 +123,16 @@ class NativePagedDocumentView extends StatefulWidget {
   });
   final NativeDocument document;
   final NativePagedViewportController? controller;
+
+  /// Optional presentation owner for this exact [document]. The creator owns
+  /// disposal and must await retirement before closing the Native document.
+  final NativeTextureController? gpuController;
   final bool editable;
   final int maxPages;
   final ValueChanged<NativeEditorController?>? onControllerChanged;
 
-  /// A decoded batch has been published for the next Flutter paint. This does
-  /// not claim consumer GPU completion or hardware presentation.
+  /// The shared layout and (for CPU) decoded batch are ready for Flutter paint.
+  /// GPU publication has its own controller state; this is not consumer completion.
   final ValueChanged<NativeDocumentViewport>? onViewportReady;
   @override
   State<NativePagedDocumentView> createState() =>
@@ -141,9 +146,10 @@ class _NativePagedDocumentViewState extends State<NativePagedDocumentView> {
   List<NativePageSize>? _pages;
   List<_PageImage> _images = [];
   NativeDocumentViewport? _layout;
+  double? _cpuDeviceScale;
   Object? _identity, _key, _error;
   int _serial = 0;
-  bool _running = false;
+  bool _running = false, _cpuFallbackRequested = false;
   _ViewportRequest? _latest;
   Future<void> _retiring = Future.value();
 
@@ -159,6 +165,30 @@ class _NativePagedDocumentViewState extends State<NativePagedDocumentView> {
     super.initState();
     _bindController();
     _bindDocument();
+    _bindGpu();
+  }
+
+  void _bindGpu() {
+    final gpu = widget.gpuController;
+    if (gpu != null && !identical(gpu.document, widget.document)) {
+      throw ArgumentError('GPU and paged view must share one Native document.');
+    }
+    _cpuFallbackRequested = gpu?.needsCpuFallback ?? false;
+    gpu?.addListener(_gpuChanged);
+  }
+
+  void _gpuChanged() {
+    if (!mounted ||
+        _cpuFallbackRequested ||
+        widget.gpuController?.needsCpuFallback != true) {
+      return;
+    }
+    _cpuFallbackRequested = true;
+    // A synchronous admission failure may notify during a child update. Keep
+    // the existing CPU owner, but enqueue its work outside the active build.
+    scheduleMicrotask(() {
+      if (mounted) _invalidate();
+    });
   }
 
   void _bindController() {
@@ -203,6 +233,7 @@ class _NativePagedDocumentViewState extends State<NativePagedDocumentView> {
 
   void _navigate() => _invalidate();
   void _clearImages() {
+    _cpuDeviceScale = null;
     if (_images.isEmpty) return;
     final previous = _images;
     _images = [];
@@ -224,6 +255,7 @@ class _NativePagedDocumentViewState extends State<NativePagedDocumentView> {
     _latest = null;
     _key = null;
     if (!widget.document.isDisposed) widget.document.beginView();
+    widget.gpuController?.suspendViewport();
     _clearImages();
     _layout = null;
     if (metadata) _pages = null;
@@ -319,6 +351,9 @@ class _NativePagedDocumentViewState extends State<NativePagedDocumentView> {
         horizontalOffset: _controller.horizontalOffset,
         zoom: _controller.zoom,
         deviceScale: request.dpr,
+        rasterPolicy: widget.gpuController?.useTileGroups == true
+            ? NativeViewportRasterPolicy.gpuTiled
+            : NativeViewportRasterPolicy.cpuBounded,
       );
       final targetPage = _controller._requestedPage;
       if (targetPage != null) {
@@ -332,10 +367,25 @@ class _NativePagedDocumentViewState extends State<NativePagedDocumentView> {
           horizontalOffset: _controller.horizontalOffset,
           zoom: _controller.zoom,
           deviceScale: request.dpr,
+          rasterPolicy: widget.gpuController?.useTileGroups == true
+              ? NativeViewportRasterPolicy.gpuTiled
+              : NativeViewportRasterPolicy.cpuBounded,
         );
         _controller._requestedPage = null;
       }
       _controller._accept(layout);
+      final gpu = widget.gpuController;
+      if (gpu != null && !gpu.needsCpuFallback) {
+        if (!_current(request)) return;
+        setState(() {
+          _layout = layout;
+          _error = null;
+        });
+        widget.onViewportReady?.call(layout);
+        return;
+      }
+      final cpuLayout = layout.boundedCpuFallback();
+      final rasterDpr = cpuLayout.deviceScale;
       int decodedBytes = 0;
       for (final entry in layout.visiblePages.entries) {
         final region = layout.regionFor(entry.key);
@@ -345,7 +395,7 @@ class _NativePagedDocumentViewState extends State<NativePagedDocumentView> {
           y: region.top,
           width: region.width,
           height: region.height,
-          scale: layout.scale * request.dpr,
+          scale: layout.scale * rasterDpr,
           viewGeneration: request.generation,
         );
         if (!_current(request) || frame == null) return;
@@ -366,11 +416,8 @@ class _NativePagedDocumentViewState extends State<NativePagedDocumentView> {
             image,
             entry.key,
             entry.value.origin +
-                Offset(
-                  frame.originX / request.dpr,
-                  frame.originY / request.dpr,
-                ),
-            Size(frame.width / request.dpr, frame.height / request.dpr),
+                Offset(frame.originX / rasterDpr, frame.originY / rasterDpr),
+            Size(frame.width / rasterDpr, frame.height / rasterDpr),
           ),
         );
       }
@@ -387,6 +434,7 @@ class _NativePagedDocumentViewState extends State<NativePagedDocumentView> {
       setState(() {
         _layout = layout;
         _images = List.of(images);
+        _cpuDeviceScale = rasterDpr;
         _error = null;
       });
       images.clear();
@@ -410,11 +458,18 @@ class _NativePagedDocumentViewState extends State<NativePagedDocumentView> {
     builder: (context, constraints) {
       final size = Size(constraints.maxWidth, constraints.maxHeight);
       _configure(size, MediaQuery.devicePixelRatioOf(context));
-      Widget background(BuildContext context) => ColoredBox(
+      Widget cpuBackground(BuildContext context) => ColoredBox(
         color: const Color(0xffdddddd),
         child: CustomPaint(painter: _PagesPainter(_images)),
       );
       final layout = _layout;
+      Widget background(BuildContext context) => widget.gpuController == null
+          ? cpuBackground(context)
+          : NativeTextureView.document(
+              controller: widget.gpuController!,
+              documentViewport: layout,
+              cpuFallback: cpuBackground,
+            );
       return Listener(
         onPointerSignal: (event) {
           if (event is PointerScrollEvent) {
@@ -445,6 +500,16 @@ class _NativePagedDocumentViewState extends State<NativePagedDocumentView> {
               )
             else
               background(context),
+            if (_cpuDeviceScale != null &&
+                layout != null &&
+                _cpuDeviceScale! < layout.deviceScale)
+              const Align(
+                alignment: Alignment.bottomCenter,
+                child: ColoredBox(
+                  color: Color(0xeeffffff),
+                  child: Text('큰 화면을 낮은 해상도로 표시합니다.'),
+                ),
+              ),
             if (_error != null)
               Align(
                 alignment: Alignment.bottomCenter,
@@ -461,6 +526,12 @@ class _NativePagedDocumentViewState extends State<NativePagedDocumentView> {
   @override
   void didUpdateWidget(NativePagedDocumentView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.gpuController != oldWidget.gpuController ||
+        widget.document != oldWidget.document) {
+      oldWidget.gpuController?.removeListener(_gpuChanged);
+      _bindGpu();
+      _invalidate();
+    }
     if (widget.controller != oldWidget.controller) {
       _controller.removeListener(_navigate);
       if (oldWidget.controller == null) _controller.dispose();
@@ -486,6 +557,7 @@ class _NativePagedDocumentViewState extends State<NativePagedDocumentView> {
     _latest = null;
     unawaited(_changes?.cancel());
     unawaited(_invalidations?.cancel());
+    widget.gpuController?.removeListener(_gpuChanged);
     if (!widget.document.isDisposed) widget.document.beginView();
     _clearImages();
     _controller.removeListener(_navigate);

@@ -98,16 +98,21 @@ struct Status {
   bool closing = false, cleanup_complete = false, raster_owner = false, owner_thread_exit = false;
   std::string code, message;
   Stamp accepted_stamp;
+  // Distinct IDs in the accepted transaction, retained through close so a
+  // delayed submit reply can be reconciled without guessing lease ownership.
+  std::vector<uint64_t> accepted_snapshots;
   Stamp rendered_stamp;
   DriverInfo driver;
 };
 
 class Shared : public std::enable_shared_from_this<Shared> {
  public:
-  explicit Shared(std::shared_ptr<Bridge> bridge) : bridge(std::move(bridge)) {}
+  explicit Shared(std::shared_ptr<Bridge> bridge, uint64_t device = 1) : bridge(std::move(bridge)) { status_.device = device; }
   // New IDs transfer only after a successful return. IDs already retained by
   // this texture are borrowed from its existing leases, never released twice.
   uint64_t submit(Description description);
+  static void submit_group(const std::shared_ptr<Shared>& first, const std::shared_ptr<Shared>& second,
+                           Description first_frame, Description second_frame);
   void close();  // Only metadata/registry release: never waits for GPU work.
   Status status() const;
   void error(const std::string& code, const std::string& message);

@@ -29,6 +29,7 @@ def main():
                         help="declared source SHA of the supplied library; this does not rebuild Native")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--step-timeout", type=float, default=600)
+    parser.add_argument("--tile-group", action="store_true", help="build the two-target, >4096px compositor probe")
     args = parser.parse_args()
     require_linux()
     if not 30 <= args.step_timeout <= 1800:
@@ -64,6 +65,7 @@ def main():
     env = dict(os.environ, CI="true", FLUTTER_SUPPRESS_ANALYTICS="true",
                DART_SUPPRESS_ANALYTICS="true", FLUTTER_ROOT=str(sdk))
     receipt = {"platform": "linux", "sourceHead": source_head,
+               "probeKind": "twoTileGroup" if args.tile_group else "singleTexture",
                "nativeSourceHead": native_head, "nativeBuildVerified": False,
                "nativeProvenance": "supplied-library hash and caller-declared source; no Native rebuild",
                "sourceFiles": original, "steps": [], "buildExitCode": None,
@@ -102,14 +104,20 @@ def main():
             "  rhwp_native_reference:\n    path: ../source/bindings/Flutter\n", encoding="utf-8")
         shutil.copyfile(copied / "bindings/Flutter/test/support/desktop_consumer_probe.dart",
                         runner / "lib/main.dart")
+        if args.tile_group:
+            shutil.copyfile(copied / "bindings/Flutter/test/support/desktop_consumer_probe.dart",
+                            runner / "lib/desktop_consumer_probe.dart")
+            shutil.copyfile(copied / "bindings/Flutter/test/support/linux_tile_group_probe.dart",
+                            runner / "lib/main.dart")
         # A disposable undecorated GTK client gives the external X11 collector
         # the same physical origin as Flutter's view. Product example is intact.
         application = runner / "linux/runner/my_application.cc"
         source = application.read_text()
         source, count = re.subn(r"gtk_window_set_default_size\(window, [0-9]+, [0-9]+\);",
                                "gtk_window_set_titlebar(window, nullptr);\n"
-                               "  gtk_window_set_decorated(window, FALSE);\n"
-                               "  gtk_window_set_default_size(window, 640, 480);", source)
+                               "  gtk_window_set_decorated(window, FALSE);\n" +
+                               ("  gtk_window_set_default_size(window, 4200, 700);" if args.tile_group else
+                                "  gtk_window_set_default_size(window, 640, 480);"), source)
         if count != 1:
             raise ValueError("unexpected pinned GTK runner template")
         application.write_text(source)

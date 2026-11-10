@@ -1,3 +1,9 @@
+// 관계형: 인수 receipt·snapshot 소유·stale 거절·종료의 합성 계약 검사.
+// 주석 갱신: 2026-11-10T16:03:27+09:00. 직전 변경: 2026-11-10T03:05:43+09:00,
+// commit 2e8e2f7a24dfeaf813aa2e32289f4fe08db16395. 측정 시각과 구분한다.
+// 조판 px·쪽수·golden 검사가 아니므로 Print/Native/WASM raw 수치는 비해당이다.
+// 실제 GTK 다중 페이지 receipt 실패와 재검증은
+// mydocs/pr/seo_rii_20261110_review_impl.md의 인수 확인 누락 절에 연결한다.
 #include "texture_state.h"
 #include <algorithm>
 #include <chrono>
@@ -116,6 +122,32 @@ void ownership_and_validation() {
   CHECK(state->status().cleanup_complete);
   rejected("closing", [&] { state->submit(frame(3, 20)); });
   CHECK(bridge->releases[20] == 0);
+}
+
+void multipage_receipt_tracks_only_the_accepted_transaction() {
+  auto bridge = std::make_shared<FakeBridge>();
+  auto state = std::make_shared<Shared>(bridge);
+  CHECK(state->status().accepted_snapshots.empty());
+  auto description = frame(1, 501);
+  description.pages.push_back({502, 1, 0, 0, 0xffffff});
+  description.pages.push_back(description.pages.front());  // Repeated placement, one lease.
+  CHECK(state->submit(description) == 1);
+  const std::vector<uint64_t> first_ids{501, 502};
+  const auto receipt = state->status();
+  CHECK(receipt.accepted_snapshots == first_ids);
+  CHECK(receipt.accepted == 1 && receipt.accepted_stamp.view == 1);
+  description.pages.front().snapshot = 503;
+  rejected("staleFrame", [&] { state->submit(description); });
+  CHECK(state->status().accepted_snapshots == first_ids);
+  CHECK(bridge->releases[503] == 0);
+  CHECK(state->submit(frame(2, 504)) == 2);
+  CHECK(state->status().accepted_snapshots == std::vector<uint64_t>{504});
+  CHECK(state->status().accepted_stamp.view == 2);
+  CHECK(receipt.accepted_snapshots == first_ids);  // Status is a coherent copy.
+  CHECK(bridge->releases[501] == 1 && bridge->releases[502] == 1);
+  state->close(); state->close();
+  CHECK(state->status().accepted_snapshots == std::vector<uint64_t>{504});
+  CHECK(bridge->releases[504] == 1 && bridge->releases[503] == 0);
 }
 
 void strict_failure_preserves_front_and_releases_on_own_populate() {
@@ -339,6 +371,79 @@ void in_flight_snapshot_credit_rejection_preserves_caller_ownership() {
   }
 }
 
+void tile_group_acceptance_and_shared_snapshot_ownership() {
+  auto bridge=std::make_shared<FakeBridge>();
+  auto first=std::make_shared<Shared>(bridge,7), second=std::make_shared<Shared>(bridge,7);
+  auto a=frame(1,901),b=frame(1,901);a.stamp.device=7;b.stamp.device=7;
+  a.pages.push_back({902,1,0,0,0xffffff});b.pages.push_back({903,1,0,0,0xffffff});
+  b.pages[0].x=-400;a.width=b.width=400;
+  Shared::submit_group(first,second,a,b);
+  CHECK(first->status().accepted==1&&second->status().accepted==1);
+  CHECK(first->status().device==second->status().device);
+  const std::vector<uint64_t> receipt{901,902,903};
+  CHECK(first->status().accepted_snapshots==receipt&&second->status().accepted_snapshots==receipt);
+  first->close();CHECK(bridge->releases[901]==0&&bridge->releases[902]==0&&bridge->releases[903]==0);
+  second->close();CHECK(bridge->releases[901]==1&&bridge->releases[902]==1&&bridge->releases[903]==1);
+}
+void tile_group_second_failure_keeps_both_caller_owned() {
+  auto bridge=std::make_shared<FakeBridge>();
+  auto first=std::make_shared<Shared>(bridge), second=std::make_shared<Shared>(bridge);
+  auto a=frame(1,911),b=frame(1,912);b.width=4097;
+  rejected("invalidArgument",[&]{Shared::submit_group(first,second,a,b);});
+  CHECK(first->status().accepted==0&&second->status().accepted==0);
+  CHECK(bridge->releases.empty());
+  b=frame(1,912);b.stamp.device=2;
+  rejected("staleFrame",[&]{Shared::submit_group(first,second,a,b);});
+  CHECK(first->status().accepted==0&&second->status().accepted==0);
+  second->close();b=frame(1,912);
+  rejected("closing",[&]{Shared::submit_group(first,second,a,b);});
+  CHECK(first->status().accepted==0&&bridge->releases.empty());
+  first->close();CHECK(bridge->releases.empty());
+}
+void tile_group_snapshot_bound_is_union_not_placement_count() {
+  auto bridge=std::make_shared<FakeBridge>();
+  auto first=std::make_shared<Shared>(bridge), second=std::make_shared<Shared>(bridge);
+  auto a=frame(1,921),b=frame(1,921);
+  for(auto id:{922,923,924}){a.pages.push_back({uint64_t(id),1,0,0,0xffffff});b.pages.push_back({uint64_t(id),1,0,0,0xffffff});}
+  Shared::submit_group(first,second,a,b);
+  auto c=a,d=b;c.stamp.view=d.stamp.view=2;d.pages.push_back({925,1,0,0,0xffffff});
+  bool limited=false;try{Shared::submit_group(first,second,c,d);}catch(const std::invalid_argument&){limited=true;}
+  CHECK(limited&&first->status().accepted==1&&second->status().accepted==1);
+  CHECK(bridge->releases[925]==0);
+  first->close();second->close();
+  for(auto id:{921,922,923,924})CHECK(bridge->releases[uint64_t(id)]==1);
+}
+
+void tile_group_borrowed_ids_do_not_consume_additional_lease_slots() {
+  auto bridge=std::make_shared<FakeBridge>();
+  auto first=std::make_shared<Shared>(bridge), second=std::make_shared<Shared>(bridge);
+  auto a=frame(1,931),b=frame(1,931);
+  for(auto id:{932,933,934}) {
+    a.pages.push_back({uint64_t(id),1,0,0,0xffffff});
+    b.pages.push_back({uint64_t(id),1,0,0,0xffffff});
+  }
+  // The same immutable page IDs may be borrowed by a newer view transform.
+  // Placement count and repeated submits cannot consume new destructive leases.
+  for(uint64_t view=1;view<=8;++view) {
+    a.stamp.view=b.stamp.view=view;
+    Shared::submit_group(first,second,a,b);
+    CHECK(first->status().accepted==view&&second->status().accepted==view);
+    CHECK(bridge->releases.empty());
+  }
+  first->close();CHECK(bridge->releases.empty());
+  second->close();
+  for(auto id:{931,932,933,934})CHECK(bridge->releases[uint64_t(id)]==1);
+  auto single=std::make_shared<Shared>(bridge);
+  for(uint64_t view=1;view<=8;++view) {
+    a.stamp.view=view;
+    for(auto& page:a.pages)page.snapshot=940+(page.snapshot-931);
+    CHECK(single->submit(a)==view);
+    for(auto& page:a.pages)page.snapshot=931+(page.snapshot-940);
+  }
+  single->close();
+  for(auto id:{940,941,942,943})CHECK(bridge->releases[uint64_t(id)]==1);
+}
+
 void unproven_driver_orphans_permanently_consume_the_process_budget() {
   auto bridge = std::make_shared<FakeBridge>();
   auto device = std::make_shared<Device>(); device->reclaim_on_abandon = false;
@@ -362,6 +467,7 @@ void unproven_driver_orphans_permanently_consume_the_process_budget() {
 int main() {
   try {
     ownership_and_validation();
+    multipage_receipt_tracks_only_the_accepted_transaction();
     strict_failure_preserves_front_and_releases_on_own_populate();
     changed_inflight_frame_is_never_committed();
     readback_contract_failure_is_not_a_gpu_success();
@@ -373,8 +479,12 @@ int main() {
     a_live_texture_cannot_gain_a_second_raster_thread_owner();
     owner_slot_pins_bridge_and_callback_userdata_after_ui_drops_references();
     in_flight_snapshot_credit_rejection_preserves_caller_ownership();
+    tile_group_acceptance_and_shared_snapshot_ownership();
+    tile_group_second_failure_keeps_both_caller_owned();
+    tile_group_snapshot_bound_is_union_not_placement_count();
+    tile_group_borrowed_ids_do_not_consume_additional_lease_slots();
     unproven_driver_orphans_permanently_consume_the_process_budget();
-    std::cout << "texture state: 13 cases, " << checks << " checks passed\n";
+    std::cout << "texture state: 18 cases, " << checks << " checks passed\n";
     return 0;
   } catch (const std::exception& error) {
     std::cerr << error.what() << '\n'; return 1;

@@ -23,6 +23,9 @@ def main():
     core = output / "texture-state-test"
     run(common + [str(source / "texture_state.cc"), str(source / "tests/texture_state_test.cc"), "-o", str(core)])
     run([str(core)])
+    tiles = output / "bounded-tile-group-test"
+    run(common + [str(source.parent / "common/bounded_tile_group_test.cc"), "-o", str(tiles)])
+    run([str(tiles)])
     if not args.flutter_engine:
         return
     includes = ["-I" + str(args.flutter_engine.resolve())]
