@@ -3902,7 +3902,7 @@ pub struct LayoutEngine {
     /// 높이 + 바깥 위·아래 여백). 한/글은 이 틀이 지나가는 모든 단의 줄을 틀 아래로 밀어
     /// 저장한다. 앵커가 다른 단에 있어도 문단 안 줄 사이의 저장 vpos 점프가 이 높이와
     /// 같으면 그 문단의 줄을 저장 vpos 로 놓는다.
-    page_spanning_float_frames_hu: std::cell::RefCell<Vec<i32>>,
+    page_spanning_float_frames: std::cell::RefCell<shape_layout::PageSpanningFloatFrames>,
     /// [#5601] 셀 저장-앵커 스냅이 `para_y = anchored − spacing_before` 로 준비한
     /// 문단에서만 set. 스냅 계약은 composed 가 spacing_before 를 재가산하는 것인데,
     /// Center/Bottom 셀의 column-top 문단은 suppress 플래그가 그 재가산까지 막아
@@ -4131,7 +4131,7 @@ impl LayoutEngine {
                 crate::renderer::render_normalization::RenderNormalizationOverlay::default(),
             )),
             keep_continuation_column_top_spacing_before: std::cell::Cell::new(false),
-            page_spanning_float_frames_hu: std::cell::RefCell::new(Vec::new()),
+            page_spanning_float_frames: std::cell::RefCell::new(Default::default()),
             reapply_snap_anchored_spacing_before: std::cell::Cell::new(false),
             page_top_float_caption_spacing_para: std::cell::Cell::new(None),
             page_top_axis_restart_spacing: std::cell::Cell::new(None),
@@ -4958,7 +4958,10 @@ impl LayoutEngine {
         // [#6175] 본문 저장 행 admission의 외부-기하 증거 - 조판이 구역당 한 번
         // 계산하는 것과 **같은 함수·같은 입력**이라 두 경로가 갈리지 않는다.
         *self.body_float_carve_evidence.borrow_mut() =
-            super::float_placement::paper_or_page_float_carve_evidence(paragraphs);
+            super::float_placement::paper_or_page_float_carve_evidence(
+                paragraphs,
+                super::px_to_hwpunit(layout.body_area.y, self.dpi),
+            );
         let mut tree = PageRenderTree::new(
             page_content.page_index,
             layout.page_width,
@@ -6891,8 +6894,8 @@ impl LayoutEngine {
             Vec::new()
         };
 
-        *self.page_spanning_float_frames_hu.borrow_mut() =
-            self.collect_page_spanning_float_frames_hu(paragraphs, page_content, layout);
+        *self.page_spanning_float_frames.borrow_mut() =
+            self.collect_page_spanning_float_frames(paragraphs, page_content, layout, styles);
 
         for (col_content_idx, col_content) in page_content.column_contents.iter().enumerate() {
             let zone_layout = col_content.zone_layout.as_ref().unwrap_or(layout);

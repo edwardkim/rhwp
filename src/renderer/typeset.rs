@@ -3515,6 +3515,7 @@ impl TypesetEngine {
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
         profile: crate::model::provenance::LayoutCompatibilityProfile,
+        body_top_hu: i32,
     ) {
         self.profile.set(profile);
         self.uniform_filler_ladder
@@ -3522,7 +3523,10 @@ impl TypesetEngine {
                 paragraphs, styles,
             ));
         *self.float_carve_evidence.borrow_mut() =
-            crate::renderer::float_placement::paper_or_page_float_carve_evidence(paragraphs);
+            crate::renderer::float_placement::paper_or_page_float_carve_evidence(
+                paragraphs,
+                body_top_hu,
+            );
     }
 
     /// 프로덕션 문단 높이 분해. pagination이 `format_paragraph` 로 쓰는 값과 같다.

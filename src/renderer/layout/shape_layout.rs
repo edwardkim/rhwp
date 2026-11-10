@@ -35,6 +35,14 @@ use super::utils::{
 use super::LayoutEngine;
 use super::{CellContext, CellPathEntry};
 
+/// 여러 단 걸침 개체의 원본 자리차지 높이와 실제 Square 배제 상자(HU).
+/// Square는 폭/높이만 재추정하지 않고 조판이 사용하는 ObjectPlacementFrame 결과를 소비한다.
+#[derive(Default)]
+pub(crate) struct PageSpanningFloatFrames {
+    pub(crate) topbottom_heights: Vec<i32>,
+    pub(crate) square_exclusions: Vec<crate::renderer::layout_frame::FrameExclusion>,
+}
+
 /// 묶음의 자식별 글상자 번호를 모든 편집 소비 지점에 같은 원문 순서로 전달한다.
 /// 좌표·clip·paint는 변경하지 않는다. 중첩 묶음에서 이미 구분한 자식 번호에는 바깥 오프셋만 더한다.
 fn offset_group_textbox_sources(node: &mut RenderNode, depth: usize, offset: usize) {
@@ -5245,13 +5253,14 @@ impl LayoutEngine {
     /// 앵커 단을 가리지 않는다 — 한/글은 이 틀이 지나는 모든 단의 줄을 틀 아래로 밀어
     /// LINE_SEG.vertical_pos 에 저장한다. 문단 배치는 줄 사이 저장 점프가 이 높이와
     /// 같을 때만 그 저장 위치를 쓴다.
-    pub(crate) fn collect_page_spanning_float_frames_hu(
+    pub(crate) fn collect_page_spanning_float_frames(
         &self,
         paragraphs: &[Paragraph],
         page_content: &super::super::pagination::PageContent,
         layout: &super::super::page_layout::PageLayoutInfo,
-    ) -> Vec<i32> {
-        let mut frames = Vec::new();
+        styles: &ResolvedStyleSet,
+    ) -> PageSpanningFloatFrames {
+        let mut frames = PageSpanningFloatFrames::default();
         for col_content in &page_content.column_contents {
             let zone_layout = col_content.zone_layout.as_ref().unwrap_or(layout);
             if zone_layout.column_areas.len() < 2 {
@@ -5297,7 +5306,49 @@ impl LayoutEngine {
                     ),
                     _ => continue,
                 };
-                if common.treat_as_char || common.text_wrap != TextWrap::TopAndBottom {
+                if common.treat_as_char {
+                    continue;
+                }
+                if let Control::Picture(picture) = ctrl {
+                    if matches!(common.vert_rel_to, VertRelTo::Paper | VertRelTo::Page) {
+                        let paper = LayoutRect {
+                            x: 0.0,
+                            y: 0.0,
+                            width: layout.page_width,
+                            height: layout.page_height,
+                        };
+                        let placement = crate::renderer::float_placement::ObjectPlacementFrame {
+                            container: col_area,
+                            column: col_area,
+                            body: &zone_layout.body_area,
+                            paper: &paper,
+                            paragraph_y: col_area.y,
+                            alignment: Alignment::Left,
+                            dpi: self.dpi,
+                        };
+                        if let Some(exclusion) = placement.picture_exclusion(
+                            picture,
+                            &paragraphs[para_index],
+                            control_index,
+                            styles,
+                        ) {
+                            let spanned = zone_layout
+                                .column_areas
+                                .iter()
+                                .filter(|area| {
+                                    let left = px_to_hwpunit(area.x, self.dpi);
+                                    let right = px_to_hwpunit(area.x + area.width, self.dpi);
+                                    exclusion.horizontal.start < right
+                                        && left < exclusion.horizontal.end
+                                })
+                                .count();
+                            if spanned > 1 && !frames.square_exclusions.contains(&exclusion) {
+                                frames.square_exclusions.push(exclusion);
+                            }
+                        }
+                    }
+                }
+                if common.text_wrap != TextWrap::TopAndBottom {
                     continue;
                 }
                 let width_px = hwpunit_to_px(common.width as i32, self.dpi);
@@ -5318,8 +5369,8 @@ impl LayoutEngine {
                 let frame = (common.height as i32)
                     .saturating_add(margin_top)
                     .saturating_add(margin_bottom);
-                if frame > 0 && !frames.contains(&frame) {
-                    frames.push(frame);
+                if frame > 0 && !frames.topbottom_heights.contains(&frame) {
+                    frames.topbottom_heights.push(frame);
                 }
             }
         }

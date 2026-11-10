@@ -59,7 +59,9 @@ impl TypesetEngine {
         // [#6175] 용지/쪽 기준 어울림 개체의 폭과 세로 band - 구역당 한 번.
         *self.float_carve_evidence.borrow_mut() =
             crate::renderer::float_placement::paper_or_page_float_carve_evidence_with_storage(
-                paragraphs, storage,
+                paragraphs,
+                crate::renderer::px_to_hwpunit(layout.body_area.y, self.dpi),
+                storage,
             )?;
         let col_count = column_def.column_count.max(1);
         let default_footnote_shape = FootnoteShape::default();

@@ -6271,17 +6271,36 @@ impl LayoutEngine {
         let has_spanning_float_frame_jump = cell_ctx.is_none()
             && !has_para_topbottom_float
             && para.is_some_and(|p| {
-                let frames = self.page_spanning_float_frames_hu.borrow();
-                !frames.is_empty()
-                    && p.line_segs.get(start_line..end).is_some_and(|range| {
-                        range.windows(2).any(|w| {
-                            w[0].vertical_pos
-                                .checked_add(w[0].line_height)
-                                .and_then(|v| v.checked_add(w[0].line_spacing))
-                                .and_then(|flow_end| w[1].vertical_pos.checked_sub(flow_end))
-                                .is_some_and(|jump| frames.contains(&jump))
-                        })
+                let frames = self.page_spanning_float_frames.borrow();
+                p.line_segs.get(start_line..end).is_some_and(|range| {
+                    range.windows(2).any(|w| {
+                        let height_jump = w[0]
+                            .vertical_pos
+                            .checked_add(w[0].line_height)
+                            .and_then(|v| v.checked_add(w[0].line_spacing))
+                            .and_then(|flow_end| w[1].vertical_pos.checked_sub(flow_end))
+                            .is_some_and(|jump| frames.topbottom_heights.contains(&jump));
+                        // 실제 Square 바깥 프레임 앞에서 끝난 줄의 다음 줄이 그 프레임
+                        // 끝에서 시작한다면 저장된 세로 점프를 지킨다. 폭·높이가 같은
+                        // 다른 단/다른 위치의 그림은 이 글줄을 소유하지 않는다.
+                        let hu = |px| crate::renderer::px_to_hwpunit(px, self.dpi);
+                        let origin = hu(col_area.y);
+                        let authored =
+                            crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+                        let square_jump = w.iter().all(|line| line.tag & authored == 0)
+                            && frames.square_exclusions.iter().any(|frame| {
+                                frame.horizontal.start < hu(col_area.x + col_area.width)
+                                    && hu(col_area.x) < frame.horizontal.end
+                                    && origin
+                                        .saturating_add(w[0].vertical_pos)
+                                        .saturating_add(w[0].line_height)
+                                        <= frame.vertical.start
+                                    && origin.saturating_add(w[1].vertical_pos)
+                                        == frame.vertical.end
+                            });
+                        height_jump || square_jump
                     })
+                })
             });
         let para_topbottom_line_vpos_base: Option<(i32, f64)> = {
             if cell_ctx.is_none() && (has_para_topbottom_float || has_spanning_float_frame_jump) {

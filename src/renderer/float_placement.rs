@@ -8147,8 +8147,13 @@ pub(crate) fn para_float_group_member_is_eligible(table: &Table) -> bool {
 /// 여기서는 그 frame이 지원하지 않는 용지/쪽 기준 개체만 수집한다.
 pub(crate) fn paper_or_page_float_carve_evidence(
     paragraphs: &[crate::model::paragraph::Paragraph],
+    body_top_hu: i32,
 ) -> Vec<FloatCarveEvidence> {
-    match paper_or_page_float_carve_evidence_with_storage(paragraphs, &crate::storage::Unbounded) {
+    match paper_or_page_float_carve_evidence_with_storage(
+        paragraphs,
+        body_top_hu,
+        &crate::storage::Unbounded,
+    ) {
         Ok(value) => value,
         Err(never) => match never {},
     }
@@ -8156,6 +8161,7 @@ pub(crate) fn paper_or_page_float_carve_evidence(
 
 pub(crate) fn paper_or_page_float_carve_evidence_with_storage<S: crate::storage::Storage>(
     paragraphs: &[crate::model::paragraph::Paragraph],
+    body_top_hu: i32,
     storage: &S,
 ) -> Result<Vec<FloatCarveEvidence>, S::Error> {
     use crate::model::control::Control;
@@ -8187,7 +8193,16 @@ pub(crate) fn paper_or_page_float_carve_evidence_with_storage<S: crate::storage:
             let height = (common.height as i32)
                 .saturating_add(i32::from(common.margin.top))
                 .saturating_add(i32::from(common.margin.bottom));
-            let top = signed_hwpunit(common.vertical_offset);
+            // 저장 LINE_SEG.vpos는 본문 상대다. Paper 오프셋을 그대로 비교하면
+            // 실제로 그림 옆에 놓인 짧은 문단을 다른 세로 밴드로 오인한다.
+            // Page 오프셋은 이미 본문 상대이므로 원점을 다시 빼지 않는다.
+            let top = signed_hwpunit(common.vertical_offset).saturating_sub(
+                if common.vert_rel_to == VertRelTo::Paper {
+                    body_top_hu
+                } else {
+                    0
+                },
+            );
             let vertical = top..top.saturating_add(height);
             let candidate = FloatCarveEvidence { width, vertical };
             if width > 0 && height > 0 && !evidence.contains(&candidate) {

@@ -1,7 +1,12 @@
+//! 2026-11-11 추가 관계형 검사: 종이 기준 그림의 세로 원점을 본문 좌표로 맞춰 후속 문단의 저장 줄 수와 cs를 보존한다.
+//! 27쪽 보정 전 Native/fresh WASM: HWP5 99.50/99.50%, HWPX 97.69/97.69% → 각각 100.00/100.00%.
+//! 같은 쪽 review·overlay에서 /home의 다음 줄 소속과 그림 오른쪽 배치를 판독했다.
+//! 관계형은 원본 cs와 실제 단 원점의 차이를 비교하며 PDF 절대 px 좌표를 고정하지 않는다.
+//! 정식 전후 증거: mydocs/pr/assets/planet6897_clean19_20261110/pr8734/maintainer/mount-{hwp5,hwpx}/.
 //! 추가 관계형 검사: HWPX 16쪽의 균일·혼합 후속 줄은 원본 cs/sw와 같은 lane을 소비한다.
 //! 2026-11-10 보정 후 같은 16쪽 Native/fresh WASM 2px raw: 100.00/100.00%. 같은 쪽 review·overlay 판독 후 소속 검사 추가.
 //! 관계형 회귀 — 어울림(Square) 그림 문단의 글 줄은 저장 `cs`·`sw`를 그대로 쓴다.
-//! 주석 갱신: 2026-11-10 22:27 KST
+//! 주석 갱신: 2026-11-11 00:05 KST
 //! 측정일: 2026-11-07. raw = `silhouette_raw_match_percent`, 96 DPI, 독립 한컴 Print PDF.
 //! 측정 값은 아래 표에 원본별로 적고, 정식 증거는 `mydocs/pr/assets/issue_8730/`에 둔다.
 //!
@@ -89,6 +94,66 @@ fn line_starts(tree: &Value, para_index: u64) -> Vec<f64> {
 
 fn hu_to_px(hu: i32) -> f64 {
     f64::from(hu) * 96.0 / 7200.0
+}
+
+/// 관계형: Paper 좌표의 그림 세로 밴드를 본문 상대 저장 줄과 같은 축으로 대조한다.
+/// 009b3cf42b의 HWPX 27쪽은 Native/fresh WASM 모두 97.69%지만 명령문이 그림 뒤에
+/// 가려졌다. 독립 Print의 명령문 두 줄과 다음 명령 한 줄을 원본 소유 줄/차선으로 검사한다.
+/// 전역 픽셀 좌표를 고정하지 않으며 글꼴 파일의 설치 유무에 의존하지 않는다.
+fn assert_short_successor_source_rows(sample: &str) {
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    fn descendants<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+        out.push(node);
+        for child in &node.children {
+            descendants(child, out);
+        }
+    }
+    // 공개 JSON은 좌표를 소수 한 자리로 표시한다. 원본 HU 관계의 산술 검사는
+    // 같은 프로덕션 트리의 정밀 좌표를 사용해 표시 반올림을 배치 결함으로 오인하지 않는다.
+    let core = rhwp::document_core::DocumentCore::from_bytes(&bytes(sample)).unwrap();
+    let tree = core.build_page_render_tree(26).unwrap();
+    let mut nodes = Vec::new();
+    descendants(&tree.root, &mut nodes);
+    let left = nodes
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::Column(_)))
+        .expect("원본의 본문 단")
+        .bbox
+        .x;
+    for prefix in ["마운트는 다음과 같이", "$ mount /dev/hda3"] {
+        let (pi, paragraph) = core.document().sections[0]
+            .paragraphs
+            .iter()
+            .enumerate()
+            .find(|(_, p)| p.text.starts_with(prefix))
+            .expect("독립 Print 27쪽의 원본 명령 문단");
+        let owned: Vec<_> = nodes
+            .iter()
+            .filter(|node| matches!(&node.node_type, RenderNodeType::TextLine(line) if line.para_index == Some(pi)))
+            .collect();
+        assert_eq!(
+            owned.len(),
+            paragraph.line_segs.len(),
+            "명령문 저장 줄을 합치거나 누락하지 않는다"
+        );
+        for (line, segment) in owned.iter().zip(&paragraph.line_segs) {
+            assert!(
+                (line.bbox.x - left - hu_to_px(segment.column_start)).abs() < 0.01,
+                "원본 저장 차선을 잃어 그림 뒤에 글자가 놓였다: {prefix}, actual={}, column_left={left}, source_start_hu={}",
+                line.bbox.x, segment.column_start
+            );
+        }
+    }
+}
+
+#[test]
+fn paper_picture_lane_preserves_short_successor_paragraphs_and_every_source_row() {
+    assert_short_successor_source_rows("samples/hwp3-sample5-hwpx.hwpx");
+}
+
+#[test]
+fn paper_picture_lane_preserves_hwp5_mount_command_line_partition() {
+    assert_short_successor_source_rows(HANCOM_HWP5);
 }
 
 fn square_picture_paragraphs(paragraphs: &[Paragraph]) -> Vec<usize> {
