@@ -456,10 +456,15 @@ pub(super) fn prepare_computed(
     {
         return None;
     }
+    // 한/글은 문단 위 간격을 쪽 맨 위에서도 적용한다(#8474). 저장 줄이 없는 합성
+    // 줄은 그 간격을 증언할 저장 vpos 가 없으므로 문단 모양의 위 간격을 그대로 쓴다
+    // — 저장 줄 없는 글 문단의 단 첫머리와 같은 계약이다.
     let flow_origin = page.current_height
         + if page.current_height < 1.0 {
             if saved_column_top {
                 saved_top
+            } else if computed {
+                fmt.spacing_before
             } else {
                 0.0
             }
