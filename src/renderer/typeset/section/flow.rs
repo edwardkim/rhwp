@@ -118,6 +118,9 @@ impl TypesetEngine {
                     }
                 }
             }
+            // 현재 쪽에 방출한 그림이 저장 줄의 좁은 차선을 증명하면 구성과 paint가
+            // 동일한 원본 줄을 소비한다. 다른 쪽/단의 그림이나 NO_LS host는 증거가 아니다.
+            st.register_stored_side_wrap_anchor_with_storage(para_idx, para, storage)?;
             // [#6175] devel 의 known-square-band 인자를 그대로 전달한다 —
             // 위에서 좁힌 col_w(합성 어울림 감폭)와 함께 쓴다.
             self.format_next_stored_vpos.set(

@@ -357,7 +357,13 @@ impl TypesetEngine {
                 &mut st, para_idx, para, paragraphs, storage,
             )?;
 
-            let picture_host_origin = (st.pages.len(), st.current_column, st.current_height);
+            let picture_host_origin = (
+                st.pages.len(),
+                st.current_column,
+                st.current_height,
+                !st.profile.session_edited()
+                    && st.stored_wrap_rows_start_at_flow_pen(para, self.dpi),
+            );
             let native_hwp5_footnote_break = self.place_paragraph_flow_with_storage(
                 &mut st,
                 para_idx,

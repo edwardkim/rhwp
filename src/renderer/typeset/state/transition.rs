@@ -368,6 +368,90 @@ impl TypesetState {
         }
     }
 
+    /// 같은 쪽/단에 실제로 배치한 그림 프레임이 후속 문단의 저장 차선을 소유하는가.
+    /// 원본 줄 전체가 같은 차선을 쓰고 실제 배제 상자의 세로 밴드와 교차할 때만
+    /// 기존 wrap-anchor 경로로 전달한다. 폭만 같은 다른 그림·다른 쪽의 그림은 제외한다.
+    pub(in crate::renderer::typeset) fn register_stored_side_wrap_anchor_with_storage<
+        S: crate::storage::Storage,
+    >(
+        &mut self,
+        para_index: usize,
+        para: &Paragraph,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        use crate::model::paragraph::LineSeg;
+        let rows = &para.line_segs;
+        let Some(first) = rows.first() else {
+            return Ok(());
+        };
+        if self
+            .data
+            .current_column_wrap_anchors
+            .contains_key(&para_index)
+            || rows.iter().any(|row| {
+                row.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                    || !row.is_first_segment()
+                    || !row.is_last_segment()
+                    || row.column_start != first.column_start
+                    || row.segment_width != first.segment_width
+            })
+            || rows
+                .windows(2)
+                .any(|pair| pair[0].vertical_pos >= pair[1].vertical_pos)
+        {
+            return Ok(());
+        }
+        let Some(base) = self.data.vpos_page_base.or(self.data.vpos_lazy_base) else {
+            return Ok(());
+        };
+        let column = self.inline_flow_column();
+        let hu = |px| crate::renderer::px_to_hwpunit(px, self.data.layout.dpi);
+        let column_left = hu(column.x);
+        let column_width = hu(column.width);
+        let origin = hu(column.y) + hu(self.data.vpos_col_anchor);
+        let Some(end) = first.column_start.checked_add(first.segment_width) else {
+            return Ok(());
+        };
+        if first.column_start < 0 || first.segment_width <= 0 || end > column_width {
+            return Ok(());
+        }
+        let anchor = self
+            .data
+            .side_wrap_exclusions
+            .iter()
+            .find_map(|(&(host, control), frame)| {
+                if self.data.unwitnessed_side_wraps.contains(&(host, control)) {
+                    return None;
+                }
+                // 같은 물리 경계의 HU 변환에서 생기는 1HU 정수 반올림만 허용한다.
+                let left_lane = first.column_start == 0
+                    && (column_left + end).abs_diff(frame.horizontal.start) <= 1;
+                let right_lane = end == column_width
+                    && (column_left + first.column_start).abs_diff(frame.horizontal.end) <= 1;
+                let shares_band = rows.iter().all(|row| {
+                    let top = origin.saturating_add(row.vertical_pos.saturating_sub(base));
+                    top < frame.vertical.end
+                        && frame.vertical.start < top.saturating_add(row.line_height.max(1))
+                });
+                ((left_lane || right_lane) && shares_band).then_some(
+                    crate::renderer::pagination::WrapAnchorRef {
+                        anchor_para_index: host,
+                        anchor_cs: first.column_start,
+                        anchor_sw: first.segment_width,
+                        band_y_range: None,
+                    },
+                )
+            });
+        if let Some(anchor) = anchor {
+            storage.insert_map(
+                &mut self.data.current_column_wrap_anchors,
+                para_index,
+                anchor,
+            )?;
+        }
+        Ok(())
+    }
+
     /// [#7696] 쪽·종이 기준 자리차지(TopAndBottom) 그림·도형의 바깥 여백 포함 세로 밴드를
     /// 현재 단의 흐름 배제 구간으로 등록한다.
     ///

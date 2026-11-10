@@ -324,3 +324,146 @@ fn uniform_and_mixed_successor_rows_keep_their_source_picture_lane() {
         }
     }
 }
+
+// 2026-11-11 00:44 KST 추가 관계형 검사. 고용서비스 보고서 79쪽의 독립 Print와
+// Native 94.23%에서 본문이 그림 위로 흐르는 실제 차이를 확인했다. 줄 수·원본 차선·
+// 그림과의 비겹침을 검사하며 절대 PDF px를 고정하지 않는다. 보정 후 수치는 증적에 갱신한다.
+const EMPLOYMENT: &str = "tests/fixtures/pr8734/employment_service_interim_report.hwp";
+
+fn employment_source_frame(
+    change: impl FnOnce(&mut rhwp::model::image::Picture),
+) -> (rhwp::document_core::DocumentCore, [usize; 2], usize) {
+    let mut core = rhwp::document_core::DocumentCore::from_bytes(&bytes(EMPLOYMENT)).unwrap();
+    let mut source = core.document().clone();
+    let paragraphs = &source.sections[0].paragraphs;
+    let host = paragraphs.iter().position(|paragraph| {
+        paragraph.controls.iter().any(|control| matches!(control, Control::Picture(picture)
+            if picture.common.text_wrap == TextWrap::Square
+                && picture.caption.as_ref().is_some_and(|caption|
+                    caption.paragraphs.iter().any(|paragraph| paragraph.text.contains("7대 기본원칙 모형")))))
+    }).expect("독립 Print의 7대 기본원칙 그림");
+    let owners = [
+        "민간위탁기관은 고용서비스의 품질을 향상하기 위하여",
+        "민간위탁기관의 고용서비스품질경영 7대 기본원칙은",
+    ]
+    .map(|prefix| {
+        paragraphs
+            .iter()
+            .enumerate()
+            .skip(host + 1)
+            .find(|(_, p)| p.text.starts_with(prefix))
+            .map(|(index, _)| index)
+            .expect("해당 그림 뒤의 원본 문단")
+    });
+    let picture = source.sections[0].paragraphs[host]
+        .controls
+        .iter_mut()
+        .find_map(|control| {
+            if let Control::Picture(picture) = control {
+                Some(picture)
+            } else {
+                None
+            }
+        })
+        .unwrap();
+    change(picture);
+    core.set_document(source);
+    (core, owners, host)
+}
+
+fn employment_nodes<'a>(
+    node: &'a rhwp::renderer::render_tree::RenderNode,
+    out: &mut Vec<&'a rhwp::renderer::render_tree::RenderNode>,
+) {
+    out.push(node);
+    for child in &node.children {
+        employment_nodes(child, out);
+    }
+}
+
+#[test]
+fn paragraph_picture_preserves_successor_source_rows_and_avoids_its_caption_band() {
+    use rhwp::renderer::render_tree::RenderNodeType;
+    let (core, owners, host) = employment_source_frame(|_| {});
+    let tree = core.build_page_render_tree(78).expect("독립 Print 79쪽");
+    let mut nodes = Vec::new();
+    employment_nodes(&tree.root, &mut nodes);
+    let image = nodes.iter().find(|node| matches!(&node.node_type, RenderNodeType::Image(image) if image.para_index == Some(host))).expect("같은 쪽의 원본 그림").bbox;
+    let left = nodes
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::Column(_)))
+        .unwrap()
+        .bbox
+        .x;
+    for owner in owners {
+        let source = &core.document().sections[0].paragraphs[owner];
+        let actual: Vec<_> = nodes.iter().filter(|node| matches!(&node.node_type, RenderNodeType::TextLine(line) if line.para_index == Some(owner))).collect();
+        assert_eq!(
+            actual.len(),
+            source.line_segs.len(),
+            "그림 옆 저장 줄을 전폭으로 합치지 않는다: {}",
+            source.text
+        );
+        for (line, stored) in actual.iter().zip(&source.line_segs) {
+            assert!(
+                (line.bbox.x - left - hu_to_px(stored.column_start)).abs() < 0.01,
+                "저장 줄의 왼쪽 소속"
+            );
+            assert!(
+                (line.bbox.width - hu_to_px(stored.segment_width)).abs() < 0.01,
+                "실제 그림 옆 차선 폭"
+            );
+            assert!(
+                line.bbox.x + line.bbox.width <= image.x,
+                "그림 뒤에 본문이 가려지지 않는다"
+            );
+        }
+        let rendered: String = nodes
+            .iter()
+            .filter_map(|node| match &node.node_type {
+                RenderNodeType::TextRun(run) if run.para_index == Some(owner) => {
+                    Some(run.text.as_str())
+                }
+                _ => None,
+            })
+            .flat_map(str::chars)
+            .filter(|c| !c.is_whitespace())
+            .collect();
+        let expected: String = source.text.chars().filter(|c| !c.is_whitespace()).collect();
+        assert_eq!(rendered, expected, "차선 보존 중 본문 누락·중복이 없다");
+    }
+}
+
+fn paragraph_picture_without_current_frame_reflows(
+    change: impl FnOnce(&mut rhwp::model::image::Picture),
+) {
+    use rhwp::renderer::render_tree::RenderNodeType;
+    let (core, owners, _) = employment_source_frame(change);
+    let tree = core.build_page_render_tree(78).unwrap();
+    let mut nodes = Vec::new();
+    employment_nodes(&tree.root, &mut nodes);
+    for owner in owners {
+        let lines:Vec<_>=nodes.iter().filter(|node| matches!(&node.node_type, RenderNodeType::TextLine(line) if line.para_index==Some(owner))).collect();
+        assert!(
+            lines.len()
+                < core.document().sections[0].paragraphs[owner]
+                    .line_segs
+                    .len(),
+            "실제 그림 배제가 없는 곳의 낡은 좁은 줄은 일반 흐름으로 재구성한다"
+        );
+    }
+}
+
+#[test]
+fn paragraph_picture_on_another_vertical_band_does_not_own_successor_rows() {
+    paragraph_picture_without_current_frame_reflows(|picture| {
+        picture.common.vertical_offset += 35000
+    });
+}
+
+#[test]
+fn paragraph_picture_outside_the_column_does_not_own_successor_rows() {
+    paragraph_picture_without_current_frame_reflows(|picture| {
+        picture.common.horizontal_offset += 42520
+    });
+}
