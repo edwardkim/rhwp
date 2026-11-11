@@ -1,0 +1,135 @@
+{
+  "verified_at": "2026-11-12T00:49:43.081089+09:00",
+  "product_commit": "eec02db951c24f06949cc76d64928c7d67a0e7b0",
+  "record_base": "b7b3442635",
+  "status": "visual_pass_with_identical_image_supply",
+  "issue_complete": false,
+  "product_code_changed": false,
+  "source": {
+    "path": "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwpx.hwpx",
+    "sha256": "3395e19bebea8b6689f383df1f4ea1ddb253dee91c4320392cc40e90e2e4f191"
+  },
+  "hancom_input": {
+    "path": "mydocs/pr/assets/issue8946/stage4-20261112/hwp3-sample10-hwpx-images-embedded.hwpx",
+    "sha256": "77f6a3f38cf79b681cf61483b08ed3bb2ea7310331676c548a1af9aefcc58158",
+    "is_original_zip": false,
+    "same_original_layout_entries": true,
+    "same_image_bytes": true
+  },
+  "independent_pdf": {
+    "path": "pdf/issue8946/hwp3-sample10-hwpx-images-embedded-2024.pdf",
+    "bytes": 90804612,
+    "sha256": "45bb4d29b0afea67fb4818a9b605a84201cbdf2998b6c31310d36fb85294cad8",
+    "pages": 763,
+    "storage": "local-only: >= 50 MiB",
+    "job_id": "2f6bae57-2c8f-4dba-835e-4e57766a9f23",
+    "execution": {
+      "engine": "2024",
+      "engine_profile": "2024",
+      "hancom_version": "13.0.0.3901",
+      "backend": "hwp-managed-direct-dll-host",
+      "worker_bits": 32,
+      "pdf_print_method": 0,
+      "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+      "pdf_page_count": 763,
+      "elapsed_ms": 1522321,
+      "worker_elapsed_ms": 1475787,
+      "input_preprocess": "none",
+      "font_scope": {
+        "mode": "session0",
+        "status": "verified",
+        "profile_source": "protected_config",
+        "session_id": 0,
+        "mapped_font_count": 2,
+        "registered_font_count": 2,
+        "failed_font_count": 0,
+        "parent_visibility": "verified",
+        "child_visibility": "verified"
+      }
+    }
+  },
+  "comparisons": {
+    "native": {
+      "pages": 763,
+      "cover_raw": 100.0,
+      "cover_unmatched": 0,
+      "minimum_raw": 96.34886,
+      "below_90_pages": [],
+      "tsv": "native-full.tsv",
+      "tsv_sha256": "17fba16103dea0bdaac18be0afebbb2a568bd56bd6ad5144312f2424d1d3dc48",
+      "input": "original HWPX + same linked assets"
+    },
+    "wasm": {
+      "pages": 763,
+      "cover_raw": 100.0,
+      "cover_unmatched": 0,
+      "minimum_raw": 99.56218,
+      "below_90_pages": [],
+      "tsv": "wasm-full.tsv",
+      "tsv_sha256": "425e7142b726cdea46d85764066edc7b0c372df161eed324f4f8aa508482b974",
+      "input": "original HWPX + same linked assets"
+    },
+    "host-screen": {
+      "pages": 763,
+      "cover_raw": 99.94899,
+      "cover_unmatched": 15,
+      "minimum_raw": 99.3573,
+      "below_90_pages": [],
+      "tsv": "host-screen-full.tsv",
+      "tsv_sha256": "dd6ff132e69b82b654b29fba8793f26137a97dbece34aa6ec0e18e0a51c31f7f",
+      "input": "transport copy with same embedded assets"
+    }
+  },
+  "dpi": 96,
+  "masked_regions": [],
+  "raw_metric": "silhouette_raw_match_percent, pre-boundary-reconciliation, 2px",
+  "direct_review": {
+    "dpi": 300,
+    "areas": [
+      "oracle logo and small caption",
+      "Technical Bulletins title",
+      "middle illustration edges and internal captions",
+      "bottom illustration and Korean label spacing"
+    ],
+    "result": "No missing or overlapping content, wrong glyphs, or visible layout defect observed. Raster resampling/antialiasing differs; raw 100 is not pixel equality."
+  },
+  "host": {
+    "catalog_count": 521,
+    "loaded": 67,
+    "pending": 0,
+    "failed": 0,
+    "changed_pages_vs_source_without_image_supply": [
+      1
+    ],
+    "body_tree_and_png_equal": true,
+    "original_all_pages_sha256": "724f20209f2a24dc66c6e5c1b6035e233332c3daa27ac3984179923de9710afa",
+    "transport_all_pages_sha256": "d151490daf54b18b2fcaa0a629eadabf384b639759df172a7ae5365765330261"
+  },
+  "limits": [
+    "Does not test Hancom resolution of the original Windows external paths; it supplies identical bytes as package resources.",
+    "No new product code, regression baseline, or test expectations changed.",
+    "Does not establish all remaining issue acceptance/PR submission gates.",
+    "The prepared one-page fallback was never sent to Hancom and is not acceptance evidence."
+  ],
+  "formal_assets_sha256": {
+    "source-transport-output-parity.json": "0886bfcc00f5a7ede766d1d40a277234878e20495b07cbbcbb2ca593b9a66de9",
+    "transport-provenance.json": "7474aafd7603d08fc2c7b3b33358e6283623928e4789ee964c68e0950669376f",
+    "wasm-cover-96.png": "a9ab850188513d3b32cf78f5ca8d89111b345dfe1d8cbed5d7f69e4a833b3b29",
+    "native-cover-96.png": "a2280dd18bc7f501c642bb7a5ea3d6ba0257f69635ef379322515b8a8c764032",
+    "host-screen-full.tsv": "dd6ff132e69b82b654b29fba8793f26137a97dbece34aa6ec0e18e0a51c31f7f",
+    "native-full.tsv": "17fba16103dea0bdaac18be0afebbb2a568bd56bd6ad5144312f2424d1d3dc48",
+    "wasm-full.tsv": "425e7142b726cdea46d85764066edc7b0c372df161eed324f4f8aa508482b974",
+    "host-screen-cover-96.png": "b45b890a3c7f4044800bafa28908689b8000f0230ffb40dd621dfe93cf74efe9",
+    "exact-page-metrics.tsv": "bca6a7ad75f179e46d6d15254f080fc6750e9cc9c10ba9dd994d2ce588e05cb1",
+    "cover-illustration-300.png": "b63a9f1db850bd0f485074069fc540bd47d7814c9af3e3fcce3383d508200005",
+    "independent-print-cover-96.png": "86b36a80dad8386eedfac5b721e9681cf762334cebbe643d56c3588cddd11736",
+    "cover-logo-300.png": "d88df1ca995f80670f9b1b687bfe518fa70063da4817ada14f0925b6e15c54f2",
+    "independent-print-parity.json": "1f24568b46f0324e8441db86658b4b4a7c6bedb6696dcb0f4e74b0a36d8a8404",
+    "cover-footer-300.png": "e2cbebf51b43404d41c534ae39a226f5bce7bf22103663f6d6d4f96547104a6f",
+    "hwp3-sample10-hwpx-images-embedded.hwpx": "77f6a3f38cf79b681cf61483b08ed3bb2ea7310331676c548a1af9aefcc58158",
+    "cover-title-300.png": "b1026a158611033eddc584246039c9c7ada5f9440674c672d5a0ea29df481ee0"
+  },
+  "native_binary_sha256": "65ae2c23b1c250e426433919cf9ea18a23f50acfba7bdf0a8d07d33fe36042e7",
+  "fresh_wasm_sha256": "d2d91c09d00811610b2f5a1d19a5ba840b07d7a7be3c2fe453169af40f2cd114",
+  "pdf_raster_policy": "pdfium_smooth_rgb_exact_dpi_v2"
+}
