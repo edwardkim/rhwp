@@ -1,0 +1,33 @@
+[
+  {
+    "number": 8913,
+    "url": "https://github.com/edwardkim/rhwp/pull/8913#issuecomment-6789431384",
+    "http": 200,
+    "comment_present": true,
+    "images": [
+      {
+        "alt": "본문 선택",
+        "src": "https://raw.githubusercontent.com/edwardkim/rhwp/f04b738ab86b865fd378a74af985663a02e89b1a/mydocs/pr/assets/semanticist21-20261111/studio/body-zoom1.png",
+        "canonical": null,
+        "complete": true,
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "alt": "셀 선택",
+        "src": "https://raw.githubusercontent.com/edwardkim/rhwp/f04b738ab86b865fd378a74af985663a02e89b1a/mydocs/pr/assets/semanticist21-20261111/studio/cell.png",
+        "canonical": null,
+        "complete": true,
+        "width": 1280,
+        "height": 900
+      }
+    ]
+  },
+  {
+    "number": 8915,
+    "url": "https://github.com/edwardkim/rhwp/pull/8915#issuecomment-6789431806",
+    "http": 200,
+    "comment_present": true,
+    "images": []
+  }
+]

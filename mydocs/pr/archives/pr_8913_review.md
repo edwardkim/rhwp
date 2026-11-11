@@ -4,7 +4,7 @@
 
 **승인 — 원 기여의 선택 사각형 수정과 정상 대조군 검증을 완료했다.** 메인터너의 제품 코드·테스트 보정은 없다.
 작업지시자의 두 PR 머지·후속 처리 승인 뒤 원 head의 CI와 최신 devel 병합을 재확인하고
-`243e6417278564228570cc1ccb879d5cc52f43f9`로 원 PR을 merge했다. 후속 기록 반영 뒤 연결 이슈·감사 댓글을 처리한다.
+`243e6417278564228570cc1ccb879d5cc52f43f9`로 원 PR을 merge했다. 후속 기록 반영·devel 동기화 뒤 연결 이슈·감사 댓글을 완료했다.
 
 ## 접수 정보
 
@@ -90,6 +90,7 @@ mydocs 운영 기록 반영 → devel 동기화 → #8908 상태 재조회·필�
 
 - 원 head `66141a6c485844e37cdd133f7ac92890e9d8a2c3`, merge `243e6417278564228570cc1ccb879d5cc52f43f9`, 병합 시각 `2026-11-11T06:57:23Z`.
 - 후속 문서는 maintainer 직접 반영 경로다. 코드·테스트·workflow를 포함하지 않는다.
-- 원 기여 head와 fork branch를 보존했다. 문서 운영 기록·devel 동기화 뒤 연결 이슈와 감사 댓글을 처리한다.
+- 원 기여 head와 fork branch를 보존했다. 문서 운영 기록·devel 동기화 뒤 연결 이슈와 감사 댓글을 완료했다.
 
-- 연결 이슈 #8908는 자동 CLOSED 상태를 API로 확인했다. 운영 기록 반영 뒤 maintainer 완료 댓글을 게시한다.
+- 연결 이슈 #8908는 자동 CLOSED 상태를 API로 확인했고 [완료 댓글](https://github.com/edwardkim/rhwp/issues/8908#issuecomment-6789430534)을 게시했다.
+- [원 PR 감사 댓글](https://github.com/edwardkim/rhwp/pull/8913#issuecomment-6789431384)의 정확한 본문을 API로 재조회했다. 공개 페이지의 댓글 표시와 해당 이미지 로딩도 실제 Chromium에서 확인했다.

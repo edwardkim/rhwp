@@ -1,0 +1,21 @@
+{
+  "documentation_commit": "f04b738ab86b865fd378a74af985663a02e89b1a",
+  "assets": [
+    {
+      "path": "mydocs/pr/assets/semanticist21-20261111/studio/body-zoom1.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/f04b738ab86b865fd378a74af985663a02e89b1a/mydocs/pr/assets/semanticist21-20261111/studio/body-zoom1.png",
+      "bytes": 59753,
+      "sha256": "11ad4ad575e02b5e139c9efbc160bdc156614bc5462e1e4521de1a59edd63846",
+      "content_type": "image/png",
+      "matches_committed_evidence": true
+    },
+    {
+      "path": "mydocs/pr/assets/semanticist21-20261111/studio/cell.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/f04b738ab86b865fd378a74af985663a02e89b1a/mydocs/pr/assets/semanticist21-20261111/studio/cell.png",
+      "bytes": 53871,
+      "sha256": "0ea93b684f143406be9780d54ffc96a40f11d01127ebecd8f9ae2a78a0774433",
+      "content_type": "image/png",
+      "matches_committed_evidence": true
+    }
+  ]
+}

@@ -75,3 +75,10 @@ InputHandler·WasmBridge·SelectionRenderer로 투영했다. 본문 zoom 1·0.66
 [실제 갱신 결과](receipts/duration-refresh-results.json)를 확인했다. 두 workflow는 성공했으며
 #8915는 Rust worker가 없어 `no-verified-pr-duration-measurements`로 갱신을 보류했다.
 #8913은 검증된 PR 실측을 읽고 duration policy를 갱신했다. 병합 후 제품 CI를 새로 실행하지 않았다.
+
+## 공개 후속 확인
+
+[완료 상태·댓글 permalink](receipts/followup-results.json),
+[원격 PNG 해시/형식](receipts/remote-evidence-verification.json),
+[실제 댓글 렌더링](receipts/posted-comment-browser.json)을 확인했다.
+공개 페이지 캡처는 [#8913](published/pr8913-comment.png)·[#8915](published/pr8915-comment.png)에 보존했다.

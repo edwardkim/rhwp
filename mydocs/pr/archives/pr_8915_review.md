@@ -4,7 +4,7 @@
 
 **승인 — 일반 페이지 비간섭과 명시적 통합·HWP 링크 기능의 공존을 실제 확장에서 확인했다.**
 메인터너 제품 코드·테스트 보정은 없다. 작업지시자의 승인 뒤 원 head의 CI와 최신 base를
-재확인하고 `95d1631bd81431b7c1639f0cc5f1e16fb9cfce76`로 원 PR을 merge했다. 후속 기록 반영 뒤 연결 이슈·감사 댓글을 처리한다.
+재확인하고 `95d1631bd81431b7c1639f0cc5f1e16fb9cfce76`로 원 PR을 merge했다. 후속 기록 반영·devel 동기화 뒤 연결 이슈·감사 댓글을 완료했다.
 
 ## 접수 정보
 
@@ -78,6 +78,7 @@ mydocs 운영 기록으로 반영하고 devel 동기화 뒤 #8914 상태·완료
 
 - 원 head `61198fcf3f4d185c8f78eac5b3259d99303b8845`, merge `95d1631bd81431b7c1639f0cc5f1e16fb9cfce76`, 병합 시각 `2026-11-11T06:56:03Z`.
 - 후속 문서는 maintainer 직접 반영 경로다. 코드·테스트·workflow를 포함하지 않는다.
-- 원 기여 head와 fork branch를 보존했다. 문서 운영 기록·devel 동기화 뒤 연결 이슈와 감사 댓글을 처리한다.
+- 원 기여 head와 fork branch를 보존했다. 문서 운영 기록·devel 동기화 뒤 연결 이슈와 감사 댓글을 완료했다.
 
-- 연결 이슈 #8914는 자동 CLOSED 상태를 API로 확인했다. 운영 기록 반영 뒤 maintainer 완료 댓글을 게시한다.
+- 연결 이슈 #8914는 자동 CLOSED 상태를 API로 확인했고 [완료 댓글](https://github.com/edwardkim/rhwp/issues/8914#issuecomment-6789430961)을 게시했다.
+- [원 PR 감사 댓글](https://github.com/edwardkim/rhwp/pull/8915#issuecomment-6789431806)의 정확한 본문을 API로 재조회했다. 공개 페이지의 댓글 표시와 해당 이미지 로딩도 실제 Chromium에서 확인했다.

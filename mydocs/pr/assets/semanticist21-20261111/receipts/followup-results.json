@@ -1,0 +1,80 @@
+{
+  "issues": [
+    {
+      "number": 8908,
+      "state": "closed",
+      "closed_at": "2026-11-11T06:57:35Z"
+    },
+    {
+      "number": 8914,
+      "state": "closed",
+      "closed_at": "2026-11-11T06:56:16Z"
+    }
+  ],
+  "documentation_commit": "f04b738ab86b865fd378a74af985663a02e89b1a",
+  "documentation_push_runs": [
+    {
+      "id": 42976721900,
+      "name": "Close Issues on devel Push",
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "merge_commits_in_devel": true,
+  "comments": [
+    {
+      "number": 8908,
+      "id": 6789430534,
+      "url": "https://github.com/edwardkim/rhwp/issues/8908#issuecomment-6789430534",
+      "body_sha256": "fe97232183b863f85e25e41aa3c520589aa05d5747d2dc7a552a9005c57b30ea",
+      "api_exact_body_matches": true,
+      "utf8_without_bom": true
+    },
+    {
+      "number": 8914,
+      "id": 6789430961,
+      "url": "https://github.com/edwardkim/rhwp/issues/8914#issuecomment-6789430961",
+      "body_sha256": "49222afeec98a93b479dd3f52de11c97189ab64527c4f067e5a7541c360df37e",
+      "api_exact_body_matches": true,
+      "utf8_without_bom": true
+    },
+    {
+      "number": 8913,
+      "id": 6789431384,
+      "url": "https://github.com/edwardkim/rhwp/pull/8913#issuecomment-6789431384",
+      "body_sha256": "37605575e207743fe30b7748f5367cd841966f3eefc6ad80339a243d25910f15",
+      "api_exact_body_matches": true,
+      "utf8_without_bom": true
+    },
+    {
+      "number": 8915,
+      "id": 6789431806,
+      "url": "https://github.com/edwardkim/rhwp/pull/8915#issuecomment-6789431806",
+      "body_sha256": "15921e973e3a8c51f81a016c8c95e69bfe3c99b8a3b1ca8a30fbfb3e6276309e",
+      "api_exact_body_matches": true,
+      "utf8_without_bom": true
+    }
+  ],
+  "asset_verification": {
+    "documentation_commit": "f04b738ab86b865fd378a74af985663a02e89b1a",
+    "assets": [
+      {
+        "path": "mydocs/pr/assets/semanticist21-20261111/studio/body-zoom1.png",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/f04b738ab86b865fd378a74af985663a02e89b1a/mydocs/pr/assets/semanticist21-20261111/studio/body-zoom1.png",
+        "bytes": 59753,
+        "sha256": "11ad4ad575e02b5e139c9efbc160bdc156614bc5462e1e4521de1a59edd63846",
+        "content_type": "image/png",
+        "matches_committed_evidence": true
+      },
+      {
+        "path": "mydocs/pr/assets/semanticist21-20261111/studio/cell.png",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/f04b738ab86b865fd378a74af985663a02e89b1a/mydocs/pr/assets/semanticist21-20261111/studio/cell.png",
+        "bytes": 53871,
+        "sha256": "0ea93b684f143406be9780d54ffc96a40f11d01127ebecd8f9ae2a78a0774433",
+        "content_type": "image/png",
+        "matches_committed_evidence": true
+      }
+    ]
+  }
+}

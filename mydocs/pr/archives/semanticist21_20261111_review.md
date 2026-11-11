@@ -1,7 +1,8 @@
 # semanticist21 PR 2건 최종 검토
 
 2026-11-11 KST. 로컬 검토와 작업지시자 승인 뒤 두 원 PR의 승인 리뷰·merge를 완료했다.
-후속 운영 기록을 devel에 반영한 뒤 연결 이슈·감사 댓글·종료 정리를 진행한다.
+후속 운영 기록을 devel에 반영하고 연결 이슈 CLOSED·완료 댓글·PR 감사 댓글을 확인했다.
+종료 정리 결과는 기본 작업공간 밖의 정리 로그와 최종 기록으로 확인한다.
 
 | 원 PR | 관련 이슈 | 최종 판정 | 핵심 검증 |
 | --- | --- | --- | --- |
@@ -21,3 +22,14 @@
 
 승인 뒤 최신 exact head·required check·merge-tree를 재확인하고 원 PR을 각각 병합했다. 병합 뒤
 운영 기록 반영·devel sync → 연결 이슈 완료 확인/댓글 → PR 감사 댓글 → 해당 작업 정리 순서를 따른다.
+
+## 원격 후속 결과
+
+- #8908·#8914 모두 CLOSED.
+- [#8908 완료 댓글](https://github.com/edwardkim/rhwp/issues/8908#issuecomment-6789430534), API 본문 일치 확인.
+- [#8914 완료 댓글](https://github.com/edwardkim/rhwp/issues/8914#issuecomment-6789430961), API 본문 일치 확인.
+- [#8913 감사 댓글](https://github.com/edwardkim/rhwp/pull/8913#issuecomment-6789431384), API 본문 일치 확인.
+- [#8915 감사 댓글](https://github.com/edwardkim/rhwp/pull/8915#issuecomment-6789431806), API 본문 일치 확인.
+- 댓글의 본문·셀 이미지 두 개가 실제 공개 페이지에서 로딩됐다.
+- 운영 기록 `f04b738ab86b865fd378a74af985663a02e89b1a`는 mydocs만 포함한다. 병합 후 제품 CI는 실행하지 않았다.
+- 종료 정리 실행 결과의 로컬 운영 로그: `~/.local/state/rhwp/cleanup/semanticist21-20261111.json`. 기본 작업공간과 다른 WIP worktree는 보존한다.
