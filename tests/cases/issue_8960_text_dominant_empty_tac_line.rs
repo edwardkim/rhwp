@@ -55,7 +55,11 @@ fn separator_tac_table_sits_on_baseline_and_keeps_stored_line_height() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
     let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("fixture 누락 {SAMPLE}: {e}"));
     let core = DocumentCore::from_bytes(&bytes).expect("문서 열기");
-    assert_eq!(core.page_count(), PDF_PAGES, "전체 쪽수가 한컴 PDF 와 다르다");
+    assert_eq!(
+        core.page_count(),
+        PDF_PAGES,
+        "전체 쪽수가 한컴 PDF 와 다르다"
+    );
 
     for page in 0..PDF_PAGES {
         let tree = core.build_page_render_tree(page).expect("render tree");
