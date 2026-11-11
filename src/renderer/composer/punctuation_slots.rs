@@ -85,11 +85,11 @@ fn slot(
         != style.font_size_for_lang(1)
         || style.letter_spacing_for_lang(inherited) != style.letter_spacing_for_lang(1)
         || style.ratio_for_lang(inherited) != style.ratio_for_lang(1);
-    // 한글 3.0에서 상속된 한글 프로그램에 구두점이 없고 원문의 영문
+    // 상속된 한글 프로그램에 구두점이 없고 원문의 영문
     // 프로그램에 있으면, 그 글리프를 공급하는 슬롯이 측정과 paint를 함께 소유한다.
-    // 양쪽 프로그램이 확인되지 않으면 기존 원본 폭 계약을 유지한다.
-    let supplied_latin_punctuation = styles.source_hwp3_native
-        && inherited != 1
+    // HWP3의 기존 계약과, 원본 HFT 슬롯에 실제 CFF가 공급된 계약을 함께 소비한다.
+    // 이름만 있거나 TTF 대체 공급인 경우에는 기존 원본 폭 계약을 유지한다.
+    let supplied_latin_punctuation = inherited != 1
         && ch.is_ascii_punctuation()
         && styles
             .native_pua_fonts
@@ -98,11 +98,19 @@ fn slot(
                 style.bold,
                 style.italic,
             )
-            .is_some_and(|font| !font.has_glyph(ch))
+            .is_some_and(|font| {
+                !font.has_glyph(ch)
+                    && (styles.source_hwp3_native
+                        || (style.source_hft_for_lang(inherited)
+                            && style.source_hft_for_lang(1)
+                            && font.has_only_cff_programs()))
+            })
         && styles
             .native_pua_fonts
             .get_otf(style.font_family_for_lang(1), style.bold, style.italic)
-            .is_some_and(|font| font.has_glyph(ch));
+            .is_some_and(|font| {
+                font.has_glyph(ch) && (styles.source_hwp3_native || font.has_only_cff_programs())
+            });
     // HWP5 한자 뒤 ASCII 괄호는 앞 한자의 프로그램을 상속하지 않는다.
     // 독립 Print의 궁서/굴림/바탕 등 같은 크기 대조에서 영문 슬롯을 확인했다.
     // 일반 한글 뒤 구두점의 기존 프로그램 계약과 HWP3 cmap 공급 규칙은 유지한다.

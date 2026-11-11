@@ -90,6 +90,11 @@ impl PartialEq for NativeOtfMetrics {
 }
 
 impl NativeOtfMetrics {
+    /// HFT의 분리 프로그램 소유를 확인할 때 TTF 대체 공급과 구분한다.
+    pub(crate) fn has_only_cff_programs(&self) -> bool {
+        !self.programs.is_empty() && self.programs.iter().all(|program| program.cff)
+    }
+
     /// 실제 공급을 마친 동일 family TrueType 요청의 전진만 허용한다.
     pub fn uses_original_truetype(&self) -> bool {
         self.original_truetype
