@@ -137,6 +137,14 @@ jobs:
               pull_number: pr.number,
               per_page: 100,
             });
+            // REST 목록은 최대 3,000개이므로 전체 변경 수와 맞을 때만 좁게 판정한다.
+            const expectedPrFileCount = pr.changed_files;
+            if (!Number.isSafeInteger(expectedPrFileCount)
+              || expectedPrFileCount < 0
+              || files.length !== expectedPrFileCount) {
+              setResult(true, 'pull-file-list-incomplete');
+              return;
+            }
             if (files.length > 0 && files.every((file) => isAllowedReviewPath(file))) {
               setResult(false, 'skip-review-only-pr');
               return;

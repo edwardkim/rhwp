@@ -1,0 +1,40 @@
+{
+  "page": 113,
+  "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/candidate-native-visual/pr8901-1480000-201900510_facility_pollution_study/rhwp_png/rhwp_113.png",
+  "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/candidate-native-visual/pr8901-1480000-201900510_facility_pollution_study/pdf_png/pdf-113.png",
+  "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/claim-evidence/candidate-native/pr8901-1480000-201900510_facility_pollution_study/overlay_113.png",
+  "width": 794,
+  "height": 1122,
+  "pixel_diff_threshold": 32,
+  "overlay_color_legend": {
+    "rhwp_only": "blue",
+    "pdf_only": "red",
+    "both_different": "orange",
+    "matching": "gray"
+  },
+  "total_pixels": 890868,
+  "diff_pixels": 93915,
+  "diff_ratio": 0.10541966,
+  "pixel_match_percent": 89.45803,
+  "ink_union_pixels": 122418,
+  "ink_diff_pixels": 93915,
+  "ink_diff_ratio": 0.76716659,
+  "ink_match_percent": 23.28334,
+  "visual_accuracy_proxy_percent": 23.28334,
+  "tolerant_content_match_radius_px": 2,
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "silhouette_raw_match_percent": 99.91913,
+  "silhouette_raw_unmatched_pixels": 99,
+  "silhouette_boundary_reconciled_pixels": 0,
+  "silhouette_color_tolerance": 32,
+  "silhouette_content_union_pixels": 122418,
+  "tolerant_content_match_percent": 99.91913,
+  "mean_abs_channel_delta": 11.08,
+  "max_channel_delta": 255,
+  "diff_bbox": [
+    106,
+    109,
+    708,
+    1059
+  ]
+}

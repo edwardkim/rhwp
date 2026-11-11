@@ -764,8 +764,9 @@ impl WebCanvasRenderer {
             }
         }
 
-        // 자식 노드 재귀 렌더링
-        for child in &node.children {
+        // 레이어·SVG·Native와 같은 단의 앵커 paint 순서를 소비한다.
+        // 문서 순서대로만 그리면 겹친 채우기의 경계가 OS별 AA에서 달라진다.
+        for child in super::paint_order::children(node) {
             self.render_node(child);
         }
 

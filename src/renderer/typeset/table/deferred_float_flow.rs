@@ -2,9 +2,9 @@
 
 use crate::model::paragraph::ColumnBreakType;
 use crate::renderer::typeset::{
-    next_boundary_reverts_spacing_trim, para_has_visible_text, para_near_rowbreak_table,
-    spacing_trim_restorable, ComposedParagraph, PageItem, Paragraph, ResolvedStyleSet,
-    TypesetEngine, TypesetState,
+    is_para_topbottom_float, is_synthetic_line_seg, next_boundary_reverts_spacing_trim,
+    para_has_visible_text, para_near_rowbreak_table, spacing_trim_restorable, ComposedParagraph,
+    PageItem, Paragraph, ResolvedStyleSet, TypesetEngine, TypesetState,
 };
 
 pub(in crate::renderer::typeset) const MAX_PREFILL: usize = 8;
@@ -137,6 +137,95 @@ impl TypesetEngine {
             }
         }
         true
+    }
+
+    /// 문단 기준 위아래 배치 표의 첫 조각 위 빈 공간에 들어가는 후속 문단을 먼저 채운다.
+    ///
+    /// 위아래 배치 개체는 자기 세로 띠와 겹치는 줄만 띠 아래로 보낸다. 표가 host 줄에서
+    /// 양수 오프셋만큼 아래에서 시작하면, 저장 줄이 그 띠 위끝 전에 끝나는 후속 문단은
+    /// host 와 표 사이에 놓인다. 순차 조판은 표 조각을 먼저 내보내므로, 표가 나뉘는
+    /// 경우 그 문단들이 다음 쪽 이어진 조각 뒤로 밀린다. 여기서 같은 쪽에 먼저 내보내고,
+    /// 채운 높이를 host 선방출 높이에 더해 표 예산·배치의 오프셋 감액이 같은 원점을 쓴다.
+    #[allow(clippy::too_many_arguments)]
+    pub(in crate::renderer::typeset) fn fill_float_band_gap_successors(
+        &self,
+        st: &mut TypesetState,
+        para_idx: usize,
+        para: &Paragraph,
+        table: &crate::model::table::Table,
+        table_top: f64,
+        paragraphs_all: &[Paragraph],
+        composed_all: &[ComposedParagraph],
+        styles: &ResolvedStyleSet,
+    ) {
+        let v_off = crate::renderer::float_placement::signed_hwpunit(table.common.vertical_offset);
+        if st.col_count != 1
+            || st.profile.session_edited()
+            || !(st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
+            || table.common.treat_as_char
+            || !is_para_topbottom_float(&table.common)
+            || v_off <= 0
+            || !table_top.is_finite()
+        {
+            return;
+        }
+        let Some(host_seg) = para.line_segs.iter().find(|ls| !is_synthetic_line_seg(ls)) else {
+            return;
+        };
+        let host_vpos = host_seg.vertical_pos;
+        let band_top = host_vpos.saturating_add(v_off);
+        let col_w = st
+            .layout
+            .column_areas
+            .get(st.current_column as usize)
+            .map(|a| a.width)
+            .unwrap_or(st.layout.body_area.width);
+        let start = st.current_height;
+        let mut last_trailing_spacing = 0.0;
+        let end = paragraphs_all.len().min(para_idx + 1 + MAX_PREFILL);
+        for next_idx in (para_idx + 1)..end {
+            let next = &paragraphs_all[next_idx];
+            if !next.controls.is_empty()
+                || next.column_type != ColumnBreakType::None
+                || next.stored_text_partition_is_dirty()
+                || next.line_segs.is_empty()
+                || next.line_segs.iter().any(is_synthetic_line_seg)
+            {
+                break;
+            }
+            let first = next.line_segs[0].vertical_pos;
+            let last = next.line_segs.last().expect("저장 줄");
+            // 저장 사다리가 이 문단을 host 뒤, 개체 띠 위에 두었을 때만 채운다.
+            if first <= host_vpos || last.vertical_pos.saturating_add(last.line_height) > band_top {
+                break;
+            }
+            let fmt_n =
+                self.format_paragraph(next, composed_all.get(next_idx), styles, Some(col_w));
+            if st.current_height + fmt_n.height_for_fit > table_top {
+                break;
+            }
+            if !self.try_append_prefilled_paragraph(
+                st,
+                next_idx,
+                paragraphs_all,
+                composed_all,
+                styles,
+            ) {
+                break;
+            }
+            last_trailing_spacing = fmt_n.line_spacings.last().copied().unwrap_or(0.0).max(0.0);
+        }
+        let filled = st.current_height - start;
+        if filled > 0.0 {
+            let host_h = st
+                .pre_emitted_host_heights
+                .get(&para_idx)
+                .copied()
+                .unwrap_or(0.0);
+            // 마지막 채운 줄의 말미 간격은 표 위 여백을 점유하지 않는다.
+            let content_h = host_h + filled - last_trailing_spacing;
+            st.record_pre_emitted_host_height(para_idx, host_h + filled, content_h);
+        }
     }
 
     /// 저장/재조판 경로가 같은 포맷·말미 간격·실제 본문 전진을 소비한다.

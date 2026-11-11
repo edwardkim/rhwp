@@ -354,7 +354,8 @@ for (const workflow of ['ci.yml', 'codeql.yml', 'render-diff.yml', 'adapter-diff
         const outputs = {}, errors = [];
         const listFiles = Symbol('files'), listCommits = Symbol('commits');
         const context = { eventName: 'pull_request', repo: { owner: 'edwardkim', repo: 'rhwp' },
-          payload: { pull_request: { ...pull(), base: { ...pull().base, repo: { id: 10 } },
+          payload: { pull_request: { ...pull(), changed_files: files.length,
+            base: { ...pull().base, repo: { id: 10 } },
             head: { ...pull().head, repo: { id: 20, full_name: 'contributor/rhwp' } } } } };
         await vm.runInNewContext('(async () => {\n' + script.join('\n') + '\n})()', {
           context, process: { env: {} },

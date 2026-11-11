@@ -423,7 +423,6 @@ class SelectedRasterTests(unittest.TestCase):
         self.assertEqual(commands[0][2:], ["--pdf", "reference.pdf", "--dpi", "144",
                                          "--prefix", str(Path("out") / "pdf")])
 
-@unittest.skipUnless(shutil.which("pdftoppm"), "Poppler is required for the actual reference raster contract")
 class PdfRasterFillStateTests(unittest.TestCase):
     @staticmethod
     def pdf(content: str) -> bytes:

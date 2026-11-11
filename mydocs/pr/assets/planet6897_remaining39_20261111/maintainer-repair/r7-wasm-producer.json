@@ -1,0 +1,11 @@
+{
+  "parent": "016caef695f7530b7e3740a00d1daf40ca779720",
+  "source_diff_sha256": "374978cd0a2d82ee0c2ff8417d75a751204df0876fe780b4a7ff743afaaa2657",
+  "hashes": {
+    "rhwp.js": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+    "rhwp_bg.wasm": "367f1a120fa179cbf346927f6b36d3d9c2c229841a846ccb97053637a230de56"
+  },
+  "build_log_sha256": "2774e3b9932f4b726fc7aff9ad9de321834449949adea908978b85f1ab80a76e",
+  "kind": "mac-local-locked-no-opt-alternative",
+  "built_at": "2026-11-11T15:29:04.451013+09:00"
+}

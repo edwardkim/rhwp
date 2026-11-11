@@ -1,0 +1,991 @@
+{
+  "runtime_head": "ab9116f48ff0c641fab4cc33c9f8c1bd5b6a5082",
+  "records": [
+    {
+      "backend": "native",
+      "key": "pr8689-1411000-201000007_final_report",
+      "page": 89,
+      "prs": [
+        8689
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "974ce2d7f3d3bb42e0d0debac2c9336f047c305a7d388e5a356051eb68f06a05",
+      "pdf_sha256": "796ce958c355f3ab618da9db5103cdc84901fc835a566ffc39668df6d5531571"
+    },
+    {
+      "backend": "native",
+      "key": "pr8708-cell_float_offset_space",
+      "page": 1,
+      "prs": [
+        8708
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "de08aeefa49cec163f1a4ccd7e5349cae337b94bc8778f8891d50f1f4d6f0b94",
+      "pdf_sha256": "c678f9b3250217bde1172af426840d709e11ce0a5343d44087de8e872c2fbff1"
+    },
+    {
+      "backend": "native",
+      "key": "pr8710-1311000-201100125_saemaul_oda_pilot_report",
+      "page": 16,
+      "prs": [
+        8710
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "baeec1b7d6173428ac4b5e7c0af6ae84731fb2a864e936455edf5ad3f9192cce",
+      "pdf_sha256": "788ed167915f655b3642a529d696144e87e2d9b3a24dfcc25f4c733aaa0b623e"
+    },
+    {
+      "backend": "native",
+      "key": "pr8717-tax_source_ledger_form",
+      "page": 1,
+      "prs": [
+        8717
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "a4720c049a545b4be44ca008fffc90b2489aefac69ebee640d7ddfe2b6c5b689",
+      "pdf_sha256": "d0a29c433cbd5fe66a39bc0faafac1722a00280f6b7e8703e15a4b558ace4188"
+    },
+    {
+      "backend": "native",
+      "key": "pr8719-cell_float_inner_anchor",
+      "page": 1,
+      "prs": [
+        8719
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "eee6b317595bdaa01cbcc203c45dd35ad054762b4abd4a10b45a489a24eed291",
+      "pdf_sha256": "e6a41498769b04e43b10c545350c265dd7b855bc49766c8384d290a8bb441937"
+    },
+    {
+      "backend": "native",
+      "key": "pr8729-hft-hanyang_junggothic-probe",
+      "page": 3,
+      "prs": [
+        8729
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "0cb1aa9d1a4beb51c95c4703233f17d362c536e5a91ed8a54c1579a63bfa0fe1",
+      "pdf_sha256": "d575e62e2ec567d4858389ad2f1e594e05f705db5470c9993789d6bcb64928c1"
+    },
+    {
+      "backend": "native",
+      "key": "pr8736-1741000-202200045_second_interim_report",
+      "page": 17,
+      "prs": [
+        8736
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "3db8fd5ddafd5eef439965014640ac98625426dce6133a8ca6b314e6a1fca386",
+      "pdf_sha256": "db59acd23ec2f2c1f37873e4c568111d75ee4f149a6c55c0a5e0ad180cbd18ec"
+    },
+    {
+      "backend": "native",
+      "key": "pr8740-156667654_saemangeum_press_release",
+      "page": 1,
+      "prs": [
+        8740
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "6d9fe188e32ebc51c0719c3a64c9d478bcbf35fd4433f40bb81449bc0576cc6a",
+      "pdf_sha256": "6b7aadcbcdcd8c6a0b8b9e92460b5014bf47caadff8709a914ce4e92ad66a747"
+    },
+    {
+      "backend": "native",
+      "key": "pr8744-nested_row_cell_cuts",
+      "page": 2,
+      "prs": [
+        8744
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "d24c68e9b81d9547f965bcb86ced17e9606d3cff9e99ad9dc375b0c75143b645",
+      "pdf_sha256": "c01cceff22e74cc69c688088ed4c5d5313fa8f822fd83c0b9e9c2fc0a6cb548f"
+    },
+    {
+      "backend": "native",
+      "key": "pr8751-75544_pii_bunseok",
+      "page": 59,
+      "prs": [
+        8751
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "77ba3a2e717c93176b26aad0c097a3b58df75305b0ef315d3616ac47f4c95ba2",
+      "pdf_sha256": "20cf9b5645146e1304e68ab1bc307ae1bd9f62a3d430d13f2dbd3523adbba95f"
+    },
+    {
+      "backend": "native",
+      "key": "pr8758-whitespace_host_approval_table",
+      "page": 1,
+      "prs": [
+        8758
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "4a9cf4f196256c98eec5d47234895060ac58e3b00f688a56d05dcb263139b20c",
+      "pdf_sha256": "4e6ea89f72dfc746668c8c0b9badcfb0ca8b75e210caa34e6fd9a23343e42a49"
+    },
+    {
+      "backend": "native",
+      "key": "pr8772-46551_road_traffic_rule_amendment",
+      "page": 13,
+      "prs": [
+        8772
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "40614261872c0b850f4e47ad9b487124712b4240e4540c6aa9ed86275956da08",
+      "pdf_sha256": "7de9af465861ddf2406206d5ef9aa649daa945df1dffa5e953d55524df6cd5e5"
+    },
+    {
+      "backend": "native",
+      "key": "pr8775-field_led_wide_table",
+      "page": 1,
+      "prs": [
+        8775
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "7af92a354115e48fad8f7ee31219326275e9bdf920418be652524318c3dcaff8",
+      "pdf_sha256": "ad68bd866d6cfe1be7697add7914643ef8f44c926b39c933f515ad9e56ce844e"
+    },
+    {
+      "backend": "native",
+      "key": "pr8785-stored_field_line_page_split",
+      "page": 2,
+      "prs": [
+        8785
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "c4c7e4ad3eaa7608d00ffa61fa14e1fa039d6df48efac158899463554696ad2b",
+      "pdf_sha256": "fb84465ca488c416f6a08e6dd593f4926b02b281169176c5e6d867fb65ae8715"
+    },
+    {
+      "backend": "native",
+      "key": "pr8788-reflowed_gap_stored_rewind",
+      "page": 2,
+      "prs": [
+        8788
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "fb67ee89829c72a30f06975b92a892c616ac2d2f994c9a5fe5b74bd4a70303bd",
+      "pdf_sha256": "323c7ea1384b4a9aa67280ed328a7f1f0600a48d95a1063d9c53e8fc8dcb824e"
+    },
+    {
+      "backend": "native",
+      "key": "pr8792-6500000-201700118_jeju_tourism_education_plan",
+      "page": 55,
+      "prs": [
+        8792
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "c63cff173d1e05f62e5bbdc1afa5db5961411cc82b51bf2d4e575e91968f0eb3",
+      "pdf_sha256": "fa4706892dc282427a83a219e97a9d8cf2d764015b0a74181768af0e32b6934b"
+    },
+    {
+      "backend": "native",
+      "key": "pr8794-36495398-split-row-segments-reduced",
+      "page": 3,
+      "prs": [
+        8794
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "ed1fb932ae49ff2f7082b860f68e912a0bd7a89af06d71b5e0271e5dd8a77a80",
+      "pdf_sha256": "a8c82b05cfeb8c87053fbe0b56b92457eb92d683c76df4ee9575545687e50c5b"
+    },
+    {
+      "backend": "native",
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "page": 35,
+      "prs": [
+        8806
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "e31b7e4f016b81b00f1e9a4a887aac29b090242e044aa06f8818ac82ac25923e",
+      "pdf_sha256": "c769b1c15761d4f4244fb8fe32cfdc00476b8aa314d6e1779ca8f436f2bda8e9"
+    },
+    {
+      "backend": "native",
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "page": 54,
+      "prs": [
+        8830
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "ca3e855d161500d18d34c03b5e20fdb0518dea87cd62445911c09ca19fc587d9",
+      "pdf_sha256": "6d22dd5ae8f7ed037d05399d489882d7df41dc7909da5d882085da4bdf3397b9"
+    },
+    {
+      "backend": "native",
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "page": 58,
+      "prs": [
+        8838
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "1bf459864f6490ecebf617a756d3e306ef02231fa9b8c91858694cadaab41975",
+      "pdf_sha256": "80d7c2c9543a320b86bf82f182c586536ff73aef9810407fcdc8f8083d9847be"
+    },
+    {
+      "backend": "native",
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "page": 80,
+      "prs": [
+        8803
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "c60195e74ab5b98acf039c8a38ca8613be19b4530b827916609ff7864b41d4de",
+      "pdf_sha256": "1b05794cc5d81c7de321e5bb74d752e8ff5ebec2a400c822977984de721be36d"
+    },
+    {
+      "backend": "native",
+      "key": "pr8833-36341965-float-band-gap-reduced",
+      "page": 2,
+      "prs": [
+        8833
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "a819058380de71bd5c35aaf1664c3491c4f28d0cc41498dac0dc2ba5e8b2884f",
+      "pdf_sha256": "0f0062da0cad473c22aec37a8384f42dfde4503edf178b1bc9603ececa82a930"
+    },
+    {
+      "backend": "native",
+      "key": "pr8835-36400259-stale-cell-ladder",
+      "page": 2,
+      "prs": [
+        8835
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "5e0a2576ccd8da216e73f23f33ce7687d141241f28567a4ebaeea716ebfbc74a",
+      "pdf_sha256": "b936f88c3b953076639d7dee57890ac75e88284588259c71c0e698ddcb92285b"
+    },
+    {
+      "backend": "native",
+      "key": "pr8846-synthetic_forward_tac_axis",
+      "page": 2,
+      "prs": [
+        8846
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "6dbf9a8c7bb41c4191a28c6621bf48ba79045a494a9d3c3bffeb92c0c0400f9e",
+      "pdf_sha256": "a95b1cc6c9c596804f72e1bab7a25c17378bcadd53e5eecab9f6a3413aab16da"
+    },
+    {
+      "backend": "native",
+      "key": "pr8848-36355707-unstored-rebase-tac",
+      "page": 2,
+      "prs": [
+        8848
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "6dbf9a8c7bb41c4191a28c6621bf48ba79045a494a9d3c3bffeb92c0c0400f9e",
+      "pdf_sha256": "a95b1cc6c9c596804f72e1bab7a25c17378bcadd53e5eecab9f6a3413aab16da"
+    },
+    {
+      "backend": "native",
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "page": 18,
+      "prs": [
+        8879
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "56d6cbf5ec296d3763f649c5baa01f3f44e054c9fd7dc30a7ecfad4fcf8bf58f",
+      "pdf_sha256": "202623e3db0c2a497e4ad2f7ddf4048b09a4db8eb388bc8a6896c381b0ab123d"
+    },
+    {
+      "backend": "native",
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "page": 56,
+      "prs": [
+        8862
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "de46008844a7fd13a4519e996607cc159fd8e5e79abaa86526d2dd172d679abb",
+      "pdf_sha256": "c4707d1d8a2118fbbd1449feafba0eeb1a79411d0cf3a084ced0814d0925e4a7"
+    },
+    {
+      "backend": "native",
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "page": 77,
+      "prs": [
+        8901
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "57ecd3ee794608786f75fc076e9240a7fbf96b6ef5a214372fdf9874519ebc8a",
+      "pdf_sha256": "7f50d700fbd5759cf62e982b4694ad7967f2fa170e04367da563cd764b7d517a"
+    },
+    {
+      "backend": "native",
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "page": 212,
+      "prs": [
+        8849
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "c54526a9b5dc2b4e1a236e2a514007ebc13f033d45775d096cc6c2ea8235e744",
+      "pdf_sha256": "69640cae6cf671c1cea9eccb805b6faf2dc563705a6350f29e7f82fd3eb16d06"
+    },
+    {
+      "backend": "native",
+      "key": "pr8861-36388005-host-below-header-table",
+      "page": 1,
+      "prs": [
+        8861
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "6b02b72b8fd851b6bb563509cfd678fb1f4685a020d4f28f9eb186c5dede946b",
+      "pdf_sha256": "be6e33c018cc18348f58b76db8d2dcc9fab7ff2658c0e1afdb3cbf219f828971"
+    },
+    {
+      "backend": "native",
+      "key": "pr8876-36338125-bottom-fixed-table-margin",
+      "page": 2,
+      "prs": [
+        8876
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "ebfc23a5cfcbb50c571473c943f7baf58965cfb6f22108ba0d1ef4b9271ffc26",
+      "pdf_sha256": "5d51b5443f2f0fed59cacfd9702687cef5dcd454baabd664922522bfe69a49bb"
+    },
+    {
+      "backend": "native",
+      "key": "pr8881-36441289-tac-host-below-float",
+      "page": 2,
+      "prs": [
+        8881
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "a8461ec430ca21134b1a885108c71b7521d2fdda5007bb8fa8b5470b31e0db21",
+      "pdf_sha256": "1be9f099296e6eca565d52dd6cd3a7d7f7047ed47a9a314b6bdf8f1d1cb9ce45"
+    },
+    {
+      "backend": "native",
+      "key": "pr8903-36340478-unstored-tac-column-top-spacing",
+      "page": 6,
+      "prs": [
+        8903
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "49a00bbda51e848a3b49ed8a53338dd5e51220865ad243a558a2ebf7d5134f87",
+      "pdf_sha256": "f516909927fb929d313f4426b9b6b1ba8c9922a9ad0dcdd0cc596555297e78a6"
+    },
+    {
+      "backend": "native",
+      "key": "pr8909-36404364-reflowed-cell-tac-row-floor",
+      "page": 3,
+      "prs": [
+        8909
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "f2ab8094478876932df9966a2b1b5837df82a8585a8af55154aabef2583f31d7",
+      "pdf_sha256": "db3c00a96464465d8ed370d0039a7cab6ca79cffa321c9403fc1c1d291bb3882"
+    },
+    {
+      "backend": "native",
+      "key": "pr8921-44907-group-bullet-column-top",
+      "page": 2,
+      "prs": [
+        8921
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "3120e07e1cf9133fb3e525891a014f6cb2793e4e88bd0cb16c3c8756cff58efc",
+      "pdf_sha256": "2b3d569f328aac48a2921d027d2e385a2fb4b29a65bc242b43c9d28b4733a426"
+    },
+    {
+      "backend": "native",
+      "key": "pr8928-36415413-page-break-tac-full-gap",
+      "page": 2,
+      "prs": [
+        8928
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "62b6715390cb17a4fd0abe0b49b110f59a4ef12bb56be25d3f24a3873aef1ec0",
+      "pdf_sha256": "2404ef669283713106fc5db9c7f1a6addc6b2e83015da6da3bc36dc76a7dfff7"
+    },
+    {
+      "backend": "native",
+      "key": "pr8929-wide_tac_trailing_tail",
+      "page": 1,
+      "prs": [
+        8929
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "e620a5201704fddc068a32c8859c8872c3b14d27ee42a9b5a773a7eca4900cb9",
+      "pdf_sha256": "bd0f892662af4ee44171d9ed96da11fffb3fef749ed7815011527c55fb89b1bb"
+    },
+    {
+      "backend": "native",
+      "key": "pr8930-6540000-202500049-post-table-line-stored-page-reset",
+      "page": 1,
+      "prs": [
+        8930
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "f79128642ff6b727d746eaf3d260dee2616aba7f88b94d17ef533f3cb56c9fce",
+      "pdf_sha256": "b2ce2c06c4895c5d44a279b60dd92e411461cef56141d1f891492fc74431bbde"
+    },
+    {
+      "backend": "native",
+      "key": "pr8930-6540000-202500049-post-table-line-stored-page-reset",
+      "page": 2,
+      "prs": [
+        8930
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "b55faa23717d216032fea7d7786cbd706228c294742e41f319c0ae6e99ea9e6c",
+      "pdf_sha256": "1f5bc4542fa589aa1ce316104c82798cdaf94d2210c87927e2987b3cabc823db"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "page": 80,
+      "prs": [
+        8803
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "1454112ff5553f54d6aedc3c390a975171a649848ca130f1713c79332a554fd2",
+      "pdf_sha256": "1b05794cc5d81c7de321e5bb74d752e8ff5ebec2a400c822977984de721be36d"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "page": 212,
+      "prs": [
+        8849
+      ],
+      "source": "기존 직접 판독의 raw/PDF SHA-256 동일 확인",
+      "conclusion": "기존 직접 판독과 최신 raw/PDF PNG의 SHA-256이 모두 같습니다. 같은 쪽의 본문·표·개체 배치 판독을 재사용합니다.",
+      "raw_sha256": "e7b92b383290d73020e2c724ea6657012228046e7ed595b95bc906e9de8c42d1",
+      "pdf_sha256": "69640cae6cf671c1cea9eccb805b6faf2dc563705a6350f29e7f82fd3eb16d06"
+    },
+    {
+      "backend": "native",
+      "key": "pr8746-36483048_approval_body",
+      "page": 5,
+      "prs": [
+        8746
+      ],
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:45:10.244953+09:00",
+      "conclusion": "기록물 대피 우선순위 본문·제출양식 표·추진 일정이 독립 Print와 같은 쪽의 대응 위치에 보존됩니다. 표 뒤 안내 줄의 불필요한 세로 밀림은 보이지 않습니다. 글자 굵기와 일정 리더 길이 차이는 이 PR의 빈 TAC 안내 줄 보정과 구분합니다.",
+      "raw_sha256": "7216a9074034c085a78b651b069720615502e4afaccdf53ddd08e61e587540bb",
+      "pdf_sha256": "c0538e26e3a752a85808d3c1bb1ea8d2af42eb62b0d8e35dc0e84ec408a8ba7d"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8689-1411000-201000007_final_report",
+      "page": 89,
+      "prs": [
+        8689
+      ],
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:45:10.244975+09:00",
+      "conclusion": "월별 전기·열 수급 실적의 중첩 표가 셀 내용 위부터 충분한 높이로 배치됩니다. 1~5·합계 행, 회색 열, 판매 실적·작성자 끝까지 같은 쪽에 보존되며 겹침·잘림이 보이지 않습니다.",
+      "raw_sha256": "0e00d8f14fa72af90e09b674a54bb2565d9750262d780e8efeb9b866c8f94c8f",
+      "pdf_sha256": "796ce958c355f3ab618da9db5103cdc84901fc835a566ffc39668df6d5531571"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8708-cell_float_offset_space",
+      "page": 1,
+      "prs": [
+        8708
+      ],
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:45:40.442349+09:00",
+      "conclusion": "신청서의 사용자·신청인·사용기간 표와 개인정보 안내, 동의 확인 표, 날짜·성명 끝이 같은 쪽에 보존됩니다. 안내 글줄과 뒤 동의 표가 서로 겹치지 않으며 바깥 상자 안의 배치가 Print와 대응합니다.",
+      "raw_sha256": "2bc3aef0a4011046b03e1de19392af0f7f48b222097dd9956b3036542c10e5d3",
+      "pdf_sha256": "c678f9b3250217bde1172af426840d709e11ce0a5343d44087de8e872c2fbff1"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8710-1311000-201100125_saemaul_oda_pilot_report",
+      "page": 16,
+      "prs": [
+        8710
+      ],
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:45:40.442375+09:00",
+      "conclusion": "새마을 ODA 본문 줄과 쪽 아래 각주·각주 구분선이 Print의 대응 위치에 보존됩니다. 본문 끝과 각주가 겹치거나 각주가 다른 쪽으로 빠진 형상이 보이지 않습니다.",
+      "raw_sha256": "8f95f31b4d0440bca194fe22d0c6908d07b4c4465e760a235958d4445728cbc2",
+      "pdf_sha256": "788ed167915f655b3642a529d696144e87e2d9b3a24dfcc25f4c733aaa0b623e"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8717-tax_source_ledger_form",
+      "page": 1,
+      "prs": [
+        8717
+      ],
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:45:40.442392+09:00",
+      "conclusion": "징수포상금 지급대장의 제목·납기/주소/성명 머리글과 전체 빈 행 격자가 보존됩니다. 아래 주석은 표 밖의 같은 위치에 있으며, 글자 굵기 차이를 표 누락이나 변환 실패로 해석하지 않습니다.",
+      "raw_sha256": "91bfe18e6819bbaabdee905218816eff3c52f53bc4183f528a4ce9d5cf91945b",
+      "pdf_sha256": "d0a29c433cbd5fe66a39bc0faafac1722a00280f6b7e8703e15a4b558ace4188"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8719-cell_float_inner_anchor",
+      "page": 1,
+      "prs": [
+        8719
+      ],
+      "raw_sha256": "374550128195b25dff9b7ac12be32f5607156d98e014bcc25f6bb945b4142458",
+      "pdf_sha256": "e6a41498769b04e43b10c545350c265dd7b855bc49766c8384d290a8bb441937",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:55:50.269783+09:00",
+      "conclusion": "교복구입비 지원 신청서의 학생·보호자 정보와 신청·첨부·개인정보 동의 영역이 같은 셀과 페이지 안에 보존됩니다. 내부 부유 개체 때문에 표나 다음 내용이 밀리거나 잘리는 현상은 보이지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8729-hft-hanyang_junggothic-probe",
+      "page": 3,
+      "prs": [
+        8729
+      ],
+      "raw_sha256": "b254e5cdab6328cb0d73c2f86f081ff9f1789d33f558fd5da0f0a2576f1a263c",
+      "pdf_sha256": "d575e62e2ec567d4858389ad2f1e594e05f705db5470c9993789d6bcb64928c1",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:55:50.269810+09:00",
+      "conclusion": "문장부호 표본의 각 코드와 한글 조합이 같은 줄 순서로 유지됩니다. 글리프 굵기와 일부 폭 차이는 남지만, 공백·전각 문장부호의 누락이나 다음 줄 소속 변화는 보이지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8736-1741000-202200045_second_interim_report",
+      "page": 17,
+      "prs": [
+        8736
+      ],
+      "raw_sha256": "52d41e33c85f0351f2c029ba9b53e0227f3eeaa43154eabe745990bf46bbef3a",
+      "pdf_sha256": "db59acd23ec2f2c1f37873e4c568111d75ee4f149a6c55c0a5e0ad180cbd18ec",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:55:59.236636+09:00",
+      "conclusion": "상단 의회 중심형 그림과 캡션, 중간 제목 및 아래 테두리 상자의 항목 순서와 줄 소속이 유지됩니다. 그림·본문·상자 사이에 겹침이나 뒤 내용의 이탈은 보이지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8740-156667654_saemangeum_press_release",
+      "page": 1,
+      "prs": [
+        8740
+      ],
+      "raw_sha256": "d0564587b1636b0db4e16df2a0ffde332e73f9e29add9cfa3a2568c3cb1323ac",
+      "pdf_sha256": "6b7aadcbcdcd8c6a0b8b9e92460b5014bf47caadff8709a914ce4e92ad66a747",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:55:59.236668+09:00",
+      "conclusion": "보도자료 머리말과 제목 상자, 네 본문 항목과 작은 주석이 같은 페이지 안에 보존됩니다. 글자 굵기 차이는 있으나 제목 상자와 본문 시작 간격 및 줄바꿈의 주요 구조는 대응합니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8744-nested_row_cell_cuts",
+      "page": 2,
+      "prs": [
+        8744
+      ],
+      "raw_sha256": "c4df082d3d2691e0f56c3ce7038291bc33d46499033b057e950eebcd4bdb6a82",
+      "pdf_sha256": "c01cceff22e74cc69c688088ed4c5d5313fa8f822fd83c0b9e9c2fc0a6cb548f",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:56:09.674270+09:00",
+      "conclusion": "중첩 표의 경·하·예·수출 말소 등록·소 행 경계와 본문 줄 소속이 기준과 대응합니다. 페이지 아래 이어받기 경계까지 내용이 유지되며 행 내부 중복이나 빈 조각 삽입은 보이지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8746-36483048_approval_body",
+      "page": 5,
+      "prs": [
+        8746
+      ],
+      "raw_sha256": "01ca880b59783f08a82974bf2603ba73d120eb24f886657d40d956a312d71806",
+      "pdf_sha256": "c0538e26e3a752a85808d3c1bb1ea8d2af42eb62b0d8e35dc0e84ec408a8ba7d",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:56:09.674301+09:00",
+      "conclusion": "기록물 대피 우선순위 본문과 제출 양식, 추진 일정이 한 페이지에 보존됩니다. 글꼴 굵기·리더 길이 차이는 있으나, 원 PR의 빈 안내문 높이 때문에 제출 표나 일정이 밀리는 문제는 재현되지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8751-75544_pii_bunseok",
+      "page": 59,
+      "prs": [
+        8751
+      ],
+      "raw_sha256": "9d971d03f2bf9ca81677be5933745cfe6f4f0e7eb484f8d4341bdd0ecd39a628",
+      "pdf_sha256": "20cf9b5645146e1304e68ab1bc307ae1bd9f62a3d430d13f2dbd3523adbba95f",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:56:19.464739+09:00",
+      "conclusion": "자동평가 결과 안내의 바깥 상자와 식별·거래·신용도 표가 같은 경계 안에 남습니다. 상단 고시와 아래 안내문 사이의 간격 및 표의 줄 소속이 대응하며 셀 넘침은 보이지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8758-whitespace_host_approval_table",
+      "page": 1,
+      "prs": [
+        8758
+      ],
+      "raw_sha256": "f4c04f8503419a4fa50549b1ab6264607cd2b41edcc6d5a86f161d8111475113",
+      "pdf_sha256": "4e6ea89f72dfc746668c8c0b9badcfb0ca8b75e210caa34e6fd9a23343e42a49",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:56:19.464770+09:00",
+      "conclusion": "산출기초조사서의 상단 결재표와 비용표·합계·작성자·수신처가 모두 같은 페이지에 유지됩니다. 공백 호스트의 높이 때문에 결재표가 본문과 겹치거나 소계 행이 사라지는 문제는 보이지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8772-46551_road_traffic_rule_amendment",
+      "page": 13,
+      "prs": [
+        8772
+      ],
+      "raw_sha256": "342f73694183724ced69d2d24f9bcce0bf7886649219f49d177c737b26bcc6ee",
+      "pdf_sha256": "7de9af465861ddf2406206d5ef9aa649daa945df1dffa5e953d55524df6cd5e5",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:56:30.685087+09:00",
+      "conclusion": "봉함엽서·사전통지서·납부자용/수납은행용 영수증이 같은 페이지 구획에 유지됩니다. 접는 선과 표의 주요 행·열이 대응하고, 하단 주석과 페이지 번호의 누락은 보이지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8775-field_led_wide_table",
+      "page": 1,
+      "prs": [
+        8775
+      ],
+      "raw_sha256": "e34a2864cc2d6e87e1a913c86b7b8a32bca83c29ce377b41c3781d4d54c99969",
+      "pdf_sha256": "ad68bd866d6cfe1be7697add7914643ef8f44c926b39c933f515ad9e56ce844e",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:56:30.685123+09:00",
+      "conclusion": "물품 검사조서의 결재표와 넓은 본표가 각각 원래 폭과 순서로 유지됩니다. 검수 의견·출납원·서명 영역 및 표 아래 안내가 보존되며 필드 시작 때문에 표 전체가 밀리는 현상은 보이지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8785-stored_field_line_page_split",
+      "page": 2,
+      "prs": [
+        8785
+      ],
+      "raw_sha256": "25c38075bcb6725bf95e9c6aed0b8a8b4ee9beec9bb93958c895793dda14fac0",
+      "pdf_sha256": "fb84465ca488c416f6a08e6dd593f4926b02b281169176c5e6d867fb65ae8715",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:56:40.465125+09:00",
+      "conclusion": "최종하자검사 결과보고의 제목·추진근거·하자검사·검사결과·보고자 의견이 같은 페이지 순서로 유지됩니다. 별표 줄의 높이와 굵기 차이는 남지만 저장 필드 뒤 내용이 잘못 다음 쪽으로 이동하거나 누락되지는 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8788-reflowed_gap_stored_rewind",
+      "page": 2,
+      "prs": [
+        8788
+      ],
+      "raw_sha256": "bad8682ff60cdd529d9886001014a12d16f577e566484cdfb40d8908f2ebc679",
+      "pdf_sha256": "323c7ea1384b4a9aa67280ed328a7f1f0600a48d95a1063d9c53e8fc8dcb824e",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:56:40.465162+09:00",
+      "conclusion": "규격 변경 검토 보고의 제목 상자와 관련 근거·공사개요·검토내용이 보존됩니다. 강조된 규격 변경 문장과 뒤 별표 줄도 순서대로 남으며 재조판 간격 때문에 이전 줄 위로 되감기는 현상은 보이지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8792-6500000-201700118_jeju_tourism_education_plan",
+      "page": 55,
+      "prs": [
+        8792
+      ],
+      "raw_sha256": "28a5e28f6e0d3565156ca28ddc35c2a53cf8baffd2051d4e3a5cc820f73ec920",
+      "pdf_sha256": "fa4706892dc282427a83a219e97a9d8cf2d764015b0a74181768af0e32b6934b",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:56:49.518134+09:00",
+      "conclusion": "관광교육 목적 그래프의 네 막대와 값, 캡션·응답 표·아래 설명이 같은 순서와 위치 관계를 유지합니다. 그림 또는 아래 표의 추가 이동·잘림은 보이지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8794-36495398-split-row-segments-reduced",
+      "page": 3,
+      "prs": [
+        8794
+      ],
+      "raw_sha256": "c1af2370af82b11376df4c9d235dbf407e2386620450fc3469f04c5c63cbb5dc",
+      "pdf_sha256": "a8c82b05cfeb8c87053fbe0b56b92457eb92d683c76df4ee9575545687e50c5b",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:56:49.518170+09:00",
+      "conclusion": "서류전형 계획의 제목·요약 상자·심사 결과·분할 행 표와 다음 면접개요 제목이 한 페이지에 보존됩니다. 병합 채용분야와 네 응시 행의 소속이 유지되고, 중복 세그먼트나 표 뒤 제목 누락은 보이지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "page": 35,
+      "prs": [
+        8806
+      ],
+      "raw_sha256": "3f85175c00211a4ba7882f38f503ff62c154dc1c91fab8ae253c88e92fd0d1fb",
+      "pdf_sha256": "c769b1c15761d4f4244fb8fe32cfdc00476b8aa314d6e1779ca8f436f2bda8e9",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:57:02.335237+09:00",
+      "conclusion": "Medication history 약물 체크 표와 비약물 치료 표가 같은 폭·순서로 보존되고 아래 두 주석도 남습니다. 입력 상자의 안내 줄이 본문을 밀거나 체크 셀을 가리는 문제는 보이지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "page": 54,
+      "prs": [
+        8830
+      ],
+      "raw_sha256": "ad1c05af65c2caf96e25ccdfa540325d261a2d577e4826a5308135702c2f41fa",
+      "pdf_sha256": "6d22dd5ae8f7ed037d05399d489882d7df41dc7909da5d882085da4bdf3397b9",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:57:02.335273+09:00",
+      "conclusion": "세 제세동기 삽입률 원형 그래프의 비율·범례·그림 크기 및 세로 순서가 기준과 대응합니다. 위 설명 문단과 세 번째 그래프까지 같은 페이지에 남고 그림 잘림이나 중복은 보이지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "page": 58,
+      "prs": [
+        8838
+      ],
+      "raw_sha256": "07eff4136f57d8ca63cf40efb0a8e0292acb961587f95b593d183e6d14d7ed0c",
+      "pdf_sha256": "80d7c2c9543a320b86bf82f182c586536ff73aef9810407fcdc8f8083d9847be",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:57:11.885873+09:00",
+      "conclusion": "SCN5A 논문 그림과 아래 연구논문 그림이 기준의 크기·순서로 배치됩니다. 마지막 캡션이 그림 아래에 남고 이미지 압축/축소로 인한 작은 차이 외에 객체 소속 오류는 보이지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8833-36341965-float-band-gap-reduced",
+      "page": 2,
+      "prs": [
+        8833
+      ],
+      "raw_sha256": "42d2b7582337916476e001b5ae250f0882da003e4e2d57196b72b1057cde6a4d",
+      "pdf_sha256": "0f0062da0cad473c22aec37a8384f42dfde4503edf178b1bc9603ececa82a930",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:57:11.885906+09:00",
+      "conclusion": "상단 분할 표의 행과 아래 경과사항·일정 도식이 기준과 대응합니다. 표 끝과 다음 제목 사이의 간격 및 날짜 도식의 순서가 유지되고 부유 밴드 때문에 본문이 겹치는 현상은 보이지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8835-36400259-stale-cell-ladder",
+      "page": 2,
+      "prs": [
+        8835
+      ],
+      "raw_sha256": "137aaf6d4954cc1c58ca66c5da74dc7db471a2b4f2d91365bb7e412a8160e84d",
+      "pdf_sha256": "b936f88c3b953076639d7dee57890ac75e88284588259c71c0e698ddcb92285b",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:57:22.576855+09:00",
+      "conclusion": "문서 끝의 첨부 3~5 항목과 결재선·시행·우편주소·전화·쪽번호가 기준 순서로 유지됩니다. 낡은 셀 줄 사다리 때문에 결재 정보가 위 본문과 겹치거나 사라지는 현상은 보이지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8846-synthetic_forward_tac_axis",
+      "page": 2,
+      "prs": [
+        8846
+      ],
+      "raw_sha256": "a796456be1f9e7023f8ad54f4f2ae6f686755e9c28d1165803ac2df712aa482e",
+      "pdf_sha256": "a95b1cc6c9c596804f72e1bab7a25c17378bcadd53e5eecab9f6a3413aab16da",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:57:22.576894+09:00",
+      "conclusion": "2쪽의 서울특별시장·수신자·결재선·시행 주소가 기준의 하단 영역에 유지됩니다. 앞쪽 TAC 흐름의 전진으로 서명 블록이 다른 페이지나 잘못된 세로축으로 이동하지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8848-36355707-unstored-rebase-tac",
+      "page": 2,
+      "prs": [
+        8848
+      ],
+      "raw_sha256": "a796456be1f9e7023f8ad54f4f2ae6f686755e9c28d1165803ac2df712aa482e",
+      "pdf_sha256": "a95b1cc6c9c596804f72e1bab7a25c17378bcadd53e5eecab9f6a3413aab16da",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:57:33.928439+09:00",
+      "conclusion": "未保存 줄/TAC 재배치 입력에서도 2쪽의 서명·수신자·결재선·시행 주소가 같은 하단 구획에 유지됩니다. 문단 재기준 설정 후 결재 블록의 잘못된 이동이나 누락은 보이지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "page": 18,
+      "prs": [
+        8879
+      ],
+      "raw_sha256": "0b921ab8712e735582f5c8d833d249c6969fc4dd19f9177cde0e16d5a19139f0",
+      "pdf_sha256": "202623e3db0c2a497e4ad2f7ddf4048b09a4db8eb388bc8a6896c381b0ab123d",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:57:33.928479+09:00",
+      "conclusion": "HPV 보고서 18쪽의 생물자원 설명과 2016·2017 표 및 2018 머리행이 같은 순서로 보존됩니다. 두 표의 행·합계·다음 연도 머리행까지 같은 페이지에 유지되며 중복이나 잘림은 보이지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "page": 56,
+      "prs": [
+        8862
+      ],
+      "raw_sha256": "a72ae6b3ebe5997f992890fb9de6bc2d7b9a6201ff03584d709bb6a6d5d71564",
+      "pdf_sha256": "c4707d1d8a2118fbbd1449feafba0eeb1a79411d0cf3a084ced0814d0925e4a7",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:57:44.327856+09:00",
+      "conclusion": "혈액 시료 제작 업무 흐름도의 두 병원 경로·화살표·질병관리본부 상자가 기준과 대응합니다. 그림 전체가 같은 페이지에 유지되고 제목·쪽번호도 남으며, 그림 경계를 벗어난 추가 잘림은 보이지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "page": 77,
+      "prs": [
+        8901
+      ],
+      "raw_sha256": "451bb4d2a42021e60f7ff830c2e2510bd8c8d5008f5bb1e51fc8a31f145b3ab8",
+      "pdf_sha256": "7f50d700fbd5759cf62e982b4694ad7967f2fa170e04367da563cd764b7d517a",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:57:44.327897+09:00",
+      "conclusion": "HPV DNA 결과 설명과 표 9의 머리글·인구특성 행·수치가 같은 순서로 유지됩니다. 표 하단까지 같은 페이지에 보존되고 잘림이나 행 중복은 보이지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8861-36388005-host-below-header-table",
+      "page": 1,
+      "prs": [
+        8861
+      ],
+      "raw_sha256": "775aec099d8f98f5fd3f2ec0a07f5afed3bf9bd8dc494bbc885f99fdae907da6",
+      "pdf_sha256": "be6e33c018cc18348f58b76db8d2dcc9fab7ff2658c0e1afdb3cbf219f828971",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:57:55.717563+09:00",
+      "conclusion": "수도자재관리센터 머리말·본문·계량기 처리내역 표와 붙임 문장이 같은 순서로 유지됩니다. 머리말 표 아래 본문 시작 및 표 내부 수치가 대응하며 표와 호스트 문단의 겹침은 보이지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8876-36338125-bottom-fixed-table-margin",
+      "page": 2,
+      "prs": [
+        8876
+      ],
+      "raw_sha256": "409c8a58f9af1a32e5852fc47ca80741ec78468670fccd6ecd98e28e1321f398",
+      "pdf_sha256": "5d51b5443f2f0fed59cacfd9702687cef5dcd454baabd664922522bfe69a49bb",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:57:55.717602+09:00",
+      "conclusion": "2쪽의 수신자: 내부결재 한 줄이 기준과 같은 하단 위치에 남고 불필요한 표·본문은 추가되지 않습니다. 표 바깥여백에 의한 페이지 배치 보존은 앞쪽 주장 페이지 및 회귀 결과와 함께 판정합니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8881-36441289-tac-host-below-float",
+      "page": 2,
+      "prs": [
+        8881
+      ],
+      "raw_sha256": "57a178ce88c327b26316aa3f2c0904b960633975ee44d223594cdb576877aca5",
+      "pdf_sha256": "1be9f099296e6eca565d52dd6cd3a7d7f7047ed47a9a314b6bdf8f1d1cb9ce45",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:58:06.027075+09:00",
+      "conclusion": "2쪽의 원무과장 서명·결재선·시행 주소가 같은 하단 위치 관계로 보존됩니다. 부유 개체 아래 TAC 호스트가 서명 블록을 덮거나 별도 쪽으로 밀지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8903-36340478-unstored-tac-column-top-spacing",
+      "page": 6,
+      "prs": [
+        8903
+      ],
+      "raw_sha256": "be1f1a2272b54e23ea134532345b0135e808ff8a70b3f3d1426bb0b5d94a1483",
+      "pdf_sha256": "f516909927fb929d313f4426b9b6b1ba8c9922a9ad0dcdd0cc596555297e78a6",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:58:06.027115+09:00",
+      "conclusion": "소요예산 제목·본문·세부내역 표·아래 주석의 순서가 유지됩니다. 일부 글자 폭·굵기 차이는 있으나 표 시작·종료와 행/병합 셀 경계는 대응하며, 단 상단 간격 때문에 표가 다른 쪽으로 이동하지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8909-36404364-reflowed-cell-tac-row-floor",
+      "page": 3,
+      "prs": [
+        8909
+      ],
+      "raw_sha256": "da37d0af8699b142d2efb465b444ac3b99cfc47b7a55bfe885df708c0aa4e06c",
+      "pdf_sha256": "db3c00a96464465d8ed370d0039a7cab6ca79cffa321c9403fc1c1d291bb3882",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:58:15.670227+09:00",
+      "conclusion": "주요 작업내용·설계변경 표·검토결과·향후계획·붙임이 한 페이지에 보존됩니다. 표 행의 최소 높이와 표 뒤 예산과목 문장 간 관계가 유지되고 셀 안 TAC가 행을 찌그러뜨리거나 본문을 덮지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8921-44907-group-bullet-column-top",
+      "page": 2,
+      "prs": [
+        8921
+      ],
+      "raw_sha256": "10b614af9102625f262f1372c91113cf7a458abd6fe21389171582a3a2f0cd9c",
+      "pdf_sha256": "2b3d569f328aac48a2921d027d2e385a2fb4b29a65bc242b43c9d28b4733a426",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:58:15.670266+09:00",
+      "conclusion": "개정내용 본문과 현행/개정안 표, 세 소방시설 그림·캡션, 기대효과가 기준 순서로 유지됩니다. 그룹 그림의 각 열과 뒤 문단이 보존되며 단 상단 bullet 간격 때문에 내용이 밀리거나 잘리지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8928-36415413-page-break-tac-full-gap",
+      "page": 2,
+      "prs": [
+        8928
+      ],
+      "raw_sha256": "dfdc4266221bca6374ed479de90083bd4744b3a530f6d5e1a727b61c647f0b0e",
+      "pdf_sha256": "2404ef669283713106fc5db9c7f1a6addc6b2e83015da6da3bc36dc76a7dfff7",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:58:25.630000+09:00",
+      "conclusion": "생일파티 결과보고의 제목·요약·진행순서 표·세부추진내용이 기준과 같은 페이지에 유지됩니다. 명시적 쪽 나눔 뒤 TAC 간격이 과하게 빠지거나 표와 뒤 문단이 겹치는 현상은 보이지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8929-wide_tac_trailing_tail",
+      "page": 1,
+      "prs": [
+        8929
+      ],
+      "raw_sha256": "0ee08cee841aeebc3751c85471ea2f0e1f55cb3ea8e30d720dd85a7ae0aca849",
+      "pdf_sha256": "bd0f892662af4ee44171d9ed96da11fffb3fef749ed7815011527c55fb89b1bb",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:58:25.630040+09:00",
+      "conclusion": "예산타당성 심사요청서의 네 표와 사업명·추진계획·기타 참고사항 순서가 보존됩니다. 넓은 TAC 뒤의 주석과 붙임 두 줄이 같은 페이지에 남고 꼬리 내용이 누락되거나 겹치지 않습니다."
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8930-6540000-202500049-post-table-line-stored-page-reset",
+      "page": 2,
+      "prs": [
+        8930
+      ],
+      "raw_sha256": "1b7aa3f90afeff0f302bbf9d50805b4065520da33867505bf8e0ca8fde20eb9a",
+      "pdf_sha256": "1f5bc4542fa589aa1ce316104c82798cdaf94d2210c87927e2987b3cabc823db",
+      "source": "최신 review·overlay 두 파일 직접 판독",
+      "reviewed_at": "2026-11-11T21:58:48.903611+09:00",
+      "conclusion": "표 뒤 저장 쪽 나눔 입력의 2쪽에는 기준과 같이 꺾쇠 기호만 남습니다. 앞 페이지 표나 본문이 중복되어 들어오지 않으며 쪽 나눔 소속은 해당 회귀 검사와 함께 확인합니다."
+    }
+  ]
+}

@@ -123,7 +123,17 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
     // 소비한다 — 종전에는 텍스트 경로(typeset_paragraph)만 소비해, 후속 표
     // 문단의 블록 표 fit 이 존 위에 겹쳐 배치됐다 (19439117: 870px 서식 표
     // 존 [31..902] 위에 866px 표가 y≈36 에 통배치 → 1쪽, 한글 2쪽).
-    let host_col_w = st.prepare_table_paragraph_column();
+    // 글자처럼 취급한 표 줄도 글줄이다. 앞 표 위 틈에 다 들어가지 않으면 그 표 아래로 간다.
+    let tac_line_probe = para
+        .controls
+        .iter()
+        .any(|control| matches!(control, Control::Table(table) if table.common.treat_as_char))
+        .then(|| para.line_segs.first())
+        .flatten()
+        .map_or(0.0, |line| {
+            crate::renderer::hwpunit_to_px(line.line_height.max(0), engine.dpi)
+        });
+    let host_col_w = st.prepare_table_paragraph_column(tac_line_probe, para_idx);
     if st.place_mixed_host_line(para_idx, para, styles, measured_tables, engine.dpi) {
         return Ok(());
     }
@@ -336,8 +346,19 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
         return Ok(());
     }
 
-    let (height_before, page_count_before) = st.table_paragraph_flow_position();
+    let (mut height_before, page_count_before) = st.table_paragraph_flow_position();
     let para_start_height = height_before;
+    // 머리 표 아래에 저장된 host 줄의 글자처럼 취급한 표는 표 상자 뒤에서 시작한다. 줄 높이 상한도
+    // 문단 시작이 아니라 그 줄 위끝에서 잰다.
+    let mut inline_line_top_below_float = st
+        .current_items
+        .is_empty()
+        .then(|| {
+            crate::renderer::float_placement::stored_inline_host_line_top_below_float(
+                para, next_para,
+            )
+        })
+        .flatten();
     let mut para_float_lanes = FloatLaneSet::new();
 
     let controls::order::ControlPlacementOrder {
@@ -363,6 +384,16 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
         let ctrl = &para.controls[ctrl_idx];
         match ctrl {
             Control::Table(table) => {
+                if table.common.treat_as_char {
+                    if let Some(top) = inline_line_top_below_float.take() {
+                        let line_top = st.tac_height_page().vpos_col_anchor
+                            + crate::renderer::hwpunit_to_px(top, engine.dpi);
+                        if line_top > st.current_height {
+                            st.align_flow_to(line_top);
+                        }
+                        height_before = st.current_height;
+                    }
+                }
                 if controls::prepare_table_control_with_storage(
                     st,
                     para,

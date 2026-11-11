@@ -410,6 +410,14 @@ jobs:
                 pull_number: pr.number,
                 per_page: 100,
               });
+              // REST 목록은 최대 3,000개이므로 전체 변경 수와 맞을 때만 좁게 판정한다.
+              const expectedPrFileCount = pr.changed_files;
+              if (!Number.isSafeInteger(expectedPrFileCount)
+                || expectedPrFileCount < 0
+                || prFiles.length !== expectedPrFileCount) {
+                setResult(false, 'pull-file-list-incomplete');
+                return;
+              }
               const hasCiExecutionSurfaceChange = prFiles.some((file) => (
                 isCiExecutionPath(file.filename)
                 || isCiExecutionPath(file.previous_filename || '')
@@ -734,6 +742,13 @@ jobs:
                   pull_number: context.payload.pull_request.number,
                   per_page: 100,
                 });
+                // REST 목록은 최대 3,000개이므로 전체 변경 수와 맞을 때만 좁게 판정한다.
+                const expectedPrFileCount = context.payload.pull_request.changed_files;
+                if (!Number.isSafeInteger(expectedPrFileCount)
+                  || expectedPrFileCount < 0
+                  || files.length !== expectedPrFileCount) {
+                  throw new Error('Pull request file inventory incomplete');
+                }
                 writeInput({
                   eventName: context.eventName,
                   files: normalizedFiles(files),
@@ -1064,8 +1079,6 @@ jobs:
         run: |
           df -h || true
           trap 'df -h || true' EXIT
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y poppler-utils
           rhwp_visual_contract_env="${RUNNER_TEMP}/rhwp-visual-sweep-contracts"
           python3 -m venv "$rhwp_visual_contract_env"
           "$rhwp_visual_contract_env/bin/python" -m pip install Pillow==12.3.0 fonttools==4.64.0 Brotli==1.1.0 pypdfium2==5.13.0
@@ -1365,9 +1378,24 @@ jobs:
       - name: Install native Skia runtime packages
         id: native-skia-runtime
         run: |
-          # hosted runner의 APT mirror 지연·dpkg lock이 Native Skia lane 전체를
-          # 장시간 pending으로 남기지 않게 한다. 재시도 후에도 회복하지 못하면
-          # 3분 안에 APT 단계 실패로 원인을 드러낸다.
+          set -euo pipefail
+          # 실제 개발 라이브러리와 지정 글꼴이 있으면 APT만 생략한다.
+          # 필수 Native Skia 테스트는 생략하지 않는다.
+          native_skia_runtime_ready() {
+            command -v pkg-config >/dev/null && command -v fc-match >/dev/null || return 1
+            pkg-config --exists fontconfig freetype2 || return 1
+            local family font_file
+            family="$(fc-match --format='%{family[0]}' 'DejaVu Sans')" || return 1
+            font_file="$(fc-match --format='%{file}' 'DejaVu Sans')" || return 1
+            [[ "$family" == 'DejaVu Sans' && -r "$font_file" ]]
+          }
+          if native_skia_runtime_ready; then
+            echo "Native Skia dependencies are already available; APT is unnecessary."
+            pkg-config --modversion fontconfig freetype2
+            exit 0
+          fi
+
+          # 각 APT 명령은 180초로 제한하며 실패·초과를 job 실패로 전달한다.
           apt_options=(
             -o Acquire::Retries=3
             -o Acquire::http::Timeout=30
@@ -1382,28 +1410,30 @@ jobs:
             set -e
 
             if [[ "${status}" -eq 124 ]]; then
-              echo "::warning::Native Skia tests skipped: APT command exceeded 180 seconds."
-              echo "available=false" >> "$GITHUB_OUTPUT"
-              exit 0
+              echo "::error::Native Skia dependencies unavailable: APT command exceeded 180 seconds."
+              exit "${status}"
             fi
             return "${status}"
           }
 
           install_apt update
           install_apt install -y --no-install-recommends \
+            pkg-config \
+            fontconfig \
             fonts-dejavu-core \
             libfontconfig1-dev \
             libfreetype6-dev
-          echo "available=true" >> "$GITHUB_OUTPUT"
+          if ! native_skia_runtime_ready; then
+            echo "::error::Native Skia dependencies are still unavailable after installation."
+            exit 1
+          fi
 
       # Native Skia starts from a clean checkout but compiles generated
       # integration-test targets through Cargo, so prepare them locally first.
       - name: Prepare derived Rust test suites
-        if: steps.native-skia-runtime.outputs.available != 'false'
         run: node scripts/rust-test-suite-manifest.mjs --prepare
 
       - name: Native Skia tests
-        if: steps.native-skia-runtime.outputs.available != 'false'
         env:
           TEST_PROFILE: ${{ needs.preflight.outputs.test_profile || 'release' }}
         run: |

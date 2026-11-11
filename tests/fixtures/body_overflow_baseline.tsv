@@ -136,6 +136,7 @@ issue6882/synth_cell_enter_table_growth.hwp	0
 issue6888/156730935-marine-mobility-expo.hwpx	1
 issue6896/156564340-ip-dispute-mediation.hwpx	1
 issue6946/44529-logistics-policy-rule-amendment.hwp	1
+issue8755/46551_road_traffic_rule_amendment.hwp	11
 issues/2809/jubo_20260104.hwp	3
 kps-ai.hwp	2
 loading-fail-01.hwp	0
@@ -232,3 +233,30 @@ issue5679/10857_delegation_rules.hwp	1
 # 차지한다(+4.4px). 한컴 2022 Print PDF 10쪽도 같은 글줄 잉크가 y=1009 까지 내려가 rhwp 와 같다
 # (pdf/issue8596_policy_committee_agenda-2020.pdf, 10쪽 raw Native 97.85 / WASM 99.95).
 issue8596/policy_committee_agenda.hwp	1
+
+# #8677 신규 공개 샘플(연구용역 최종보고서 1411000-201000007, 111쪽): 수정 전(devel 5716a226b5)과 수정 후의
+# 값이 같다 — 85쪽 표(Table0)가 본문 바닥 아래로 9.3px 넘치는 기존 형상이며 이 PR(89쪽 셀 유일 문단 표) 범위 밖이다.
+issue8677/1411000-201000007_final_report.hwp	1
+
+# #8732 신규 공개 샘플(2차 중간보고서 1741000-202200045, 한/글 2022 Print 138쪽): 수정 전(devel b8dd67c500)과
+# 수정 후의 값이 같다 — 68쪽 본문 줄이 바닥 아래로 18.6px 넘치는 기존 형상이며 표 분할 축(#8735) 범위다.
+issue8732/1741000-202200045_second_interim_report.hwp	1
+issue8786/reflowed_gap_stored_rewind.hwpx	1
+# #8778 신규 공개 샘플(결재문서 36495398 축소본, 한/글 2020 저장): 1쪽 결재 표(첫 구역, 이 PR 이 바꾸지 않는 쪽)가 본문 바닥 아래로 47.6px 넘는다 — 수정 전후 값이 같고, 같은 쪽 한컴 engine 2020 Print 대조 silhouette 100.00%(한/글도 아래 여백까지 그린다).
+issue8778/36495398-split-row-segments-reduced.hwpx	1
+# #8732 신규 공개 샘플(2차 중간보고서 1741000-202200045, 한/글 2022 Print 138쪽): 수정 전(devel b8dd67c500)과
+# 수정 후의 값이 같다 — 68쪽 본문 줄이 바닥 아래로 18.6px 넘치는 기존 형상이며 표 분할 축(#8735) 범위다.
+issue8732/1741000-202200045_second_interim_report.hwp	1
+
+# #8795 신규 공개 샘플(부정맥 연차실적계획서 1351000-201500141, 한/글 2020 Print 101쪽). #8805 가 34·45쪽
+# 저장 쪽 시작(vpos 0) 문단의 글자처럼 취급한 그림을 다음 쪽 첫머리로 넘겨 넘침 2 → 0. 값 0 은 행 삭제와
+# 같은 판정이라 행을 남겨 이후 증가를 막는다.
+issue8795/1351000-201500141_arrhythmia_research_plan.hwp	0
+# #8842 신규 공개 샘플(HPV 코호트 최종결과보고서 1351000-201800239, 한/글 2020 Print 235쪽): 수정 전(devel 024d610633)과
+# 수정 후의 값이 같다 — 본문 넘침은 76~172쪽 표 쪽 나눔 어긋남 축이며 이 수정(211~234쪽 그림 무리) 범위 밖이다.
+issue8842/1351000-201800239_hpv_cohort_final_report.hwp	1
+# #8882 새 fixture 1행 — 이 PR 이 만든 결손이 아니다(수정 전 devel 3170fddc48 과 값·위치가 같다).
+# 공개 결재문서 36404364 1쪽 표지는 쪽 전체를 차지하는 테두리 없는 TAC 표이고, 그 상자가 본문 바닥
+# 1026.5px 아래 1035.3px 까지 내려간다(+8.8px). 보이는 글자(남부도로사업소·기전과)의 위치는 한컴 Print
+# PDF 1쪽과 겹친다(pdf/issue8882/36404364-reflowed-cell-tac-row-floor-2020.pdf, 1쪽 raw Native 97.72).
+issue8882/36404364-reflowed-cell-tac-row-floor.hwpx	1

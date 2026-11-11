@@ -1,0 +1,44 @@
+[
+  {
+    "pr": 8803,
+    "backend": "fresh WASM Canvas2D",
+    "page": 159,
+    "review": "mydocs/pr/assets/planet6897_remaining39_20261111/diagnostics/wasm/pr8849-1351000-201800239_hpv_cohort_final_report/review_159.png",
+    "overlay": "mydocs/pr/assets/planet6897_remaining39_20261111/diagnostics/wasm/pr8849-1351000-201800239_hpv_cohort_final_report/overlay_159.png",
+    "conclusion": "후보는 발표예정논문 1~25줄 그림을 두지만 독립 Print는 26~48줄 ABSTRACT를 같은159쪽에 둡니다. 내용 소속이 다릅니다. Native와 같이 WASM에서도9.79218%p 하락하며 단순한 글리프 차이가 아닙니다.",
+    "reviewed_at": "2026-11-11T13:23:16.438371+09:00",
+    "review_sha256": "b1112b4a600df62116031a6b0721c03f63fd22fcc4dd024fea19b283175c3ece",
+    "overlay_sha256": "78e84e3815359ccad094c0d835fc180499c263e42ec40a79ac2d78b6a9c9a9ce"
+  },
+  {
+    "pr": 8788,
+    "backend": "fresh WASM Canvas2D",
+    "page": 3,
+    "review": "mydocs/pr/assets/planet6897_remaining39_20261111/diagnostics/wasm/pr8788-reflowed_gap_stored_rewind/review_003.png",
+    "overlay": "mydocs/pr/assets/planet6897_remaining39_20261111/diagnostics/wasm/pr8788-reflowed_gap_stored_rewind/overlay_003.png",
+    "conclusion": "본문·별표·건설사업감리단 검토의견·조치계획·붙임의 줄 수와 순서는 유지되지만 별표의 세로 위치/획과 일부 문장부호가 PDF와 다르다. 77.73117% 미달을 임의 면제하지 않는다.",
+    "reviewed_at": "2026-11-11T13:23:16.438426+09:00",
+    "review_sha256": "ece0223b15dad4ca24cc83733d524d9a74de3115f861d18887bcad9a80a58dc8",
+    "overlay_sha256": "fb8997d4c646265388315a06b2b26e837be26d164274870b03f7e610800e097a"
+  },
+  {
+    "pr": 8928,
+    "backend": "fresh WASM Canvas2D",
+    "page": 3,
+    "review": "mydocs/pr/assets/planet6897_remaining39_20261111/diagnostics/wasm/pr8928-36415413-page-break-tac-full-gap/review_003.png",
+    "overlay": "mydocs/pr/assets/planet6897_remaining39_20261111/diagnostics/wasm/pr8928-36415413-page-break-tac-full-gap/overlay_003.png",
+    "conclusion": "미니게임·회원소감·소요예산·예산과목의 순서가 보존된다. 굵은 별표 줄의 세로 위치/윤곽과 목록 기호 차이가 남아89.31429%다. 주장2쪽 개선으로 미달3쪽을 상쇄하지 않는다.",
+    "reviewed_at": "2026-11-11T13:23:16.438455+09:00",
+    "review_sha256": "87d3ac43a711a4657fbb9575ddf78467b5c8b7faaa407db9b38a1781d5aaf107",
+    "overlay_sha256": "43d64acbd21d950483f4dffe20dd708e3f04ec8858a7de49bf353f5bdf8a8aee"
+  },
+  {
+    "pr": 8903,
+    "backend": "fresh WASM",
+    "page": 6,
+    "read_at": "2026-11-11T13:38:04.214086+09:00",
+    "review": "mydocs/pr/assets/planet6897_remaining39_20261111/diagnostics/wasm/pr8903-36458608-square-tac-same-paragraph/review_006.png",
+    "overlay": "mydocs/pr/assets/planet6897_remaining39_20261111/diagnostics/wasm/pr8903-36458608-square-tac-same-paragraph/overlay_006.png",
+    "conclusion": "상단 절차 상자·IV 검토의견·V 향후계획·붙임 4행의 순서와 내용은 보존됩니다. 그러나 별표가 독립 PDF의 별 모양보다 작고 둥글며 줄마다 세로 위치가 어긋납니다. 제목·붙임 글자에서도 수평/세로 래스터 차이가 보입니다. raw 88.56802%를 수용하지 않습니다. 이 판독만으로 글꼴 부재나 특정 코드 원인을 단정하지 않습니다."
+  }
+]

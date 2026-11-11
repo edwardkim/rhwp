@@ -1,0 +1,10 @@
+{
+  "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+  "mode": "silhouette_only",
+  "run_state": "incomplete",
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "reason": "실루엣 쪽 묶음 처리 중"
+  },
+  "canonical_manifest_sha256": "15a96ca66ccd4038565769a085c61afda3edf50921e46cc37c5e801714ae278d"
+}

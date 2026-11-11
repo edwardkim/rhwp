@@ -1,0 +1,10 @@
+{
+  "key": "pr8746-36345427_approval_body",
+  "mode": "silhouette_only",
+  "run_state": "incomplete",
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "reason": "실루엣 쪽 묶음 처리 중"
+  },
+  "canonical_manifest_sha256": "a82801b86dacd26ad03222e4da7a2ab910741bab177f5599d149e5ac2c4ea3e7"
+}

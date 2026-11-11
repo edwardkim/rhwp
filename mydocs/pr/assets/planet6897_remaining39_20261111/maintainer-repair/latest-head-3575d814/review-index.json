@@ -1,0 +1,275 @@
+[
+  {
+    "pr": 8689,
+    "review": "mydocs/pr/archives/pr_8689_review.md",
+    "claim_pages": 2,
+    "regression_passed": 1,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8708,
+    "review": "mydocs/pr/archives/pr_8708_review.md",
+    "claim_pages": 1,
+    "regression_passed": 1,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8710,
+    "review": "mydocs/pr/archives/pr_8710_review.md",
+    "claim_pages": 4,
+    "regression_passed": 2,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8717,
+    "review": "mydocs/pr/archives/pr_8717_review.md",
+    "claim_pages": 3,
+    "regression_passed": 9,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8719,
+    "review": "mydocs/pr/archives/pr_8719_review.md",
+    "claim_pages": 1,
+    "regression_passed": 1,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8729,
+    "review": "mydocs/pr/archives/pr_8729_review.md",
+    "claim_pages": 3,
+    "regression_passed": 4,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8736,
+    "review": "mydocs/pr/archives/pr_8736_review.md",
+    "claim_pages": 2,
+    "regression_passed": 1,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8740,
+    "review": "mydocs/pr/archives/pr_8740_review.md",
+    "claim_pages": 1,
+    "regression_passed": 1,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8744,
+    "review": "mydocs/pr/archives/pr_8744_review.md",
+    "claim_pages": 2,
+    "regression_passed": 1,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8746,
+    "review": "mydocs/pr/archives/pr_8746_review.md",
+    "claim_pages": 6,
+    "regression_passed": 2,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8751,
+    "review": "mydocs/pr/archives/pr_8751_review.md",
+    "claim_pages": 3,
+    "regression_passed": 3,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8758,
+    "review": "mydocs/pr/archives/pr_8758_review.md",
+    "claim_pages": 1,
+    "regression_passed": 2,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8772,
+    "review": "mydocs/pr/archives/pr_8772_review.md",
+    "claim_pages": 2,
+    "regression_passed": 2,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8775,
+    "review": "mydocs/pr/archives/pr_8775_review.md",
+    "claim_pages": 3,
+    "regression_passed": 2,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8785,
+    "review": "mydocs/pr/archives/pr_8785_review.md",
+    "claim_pages": 3,
+    "regression_passed": 2,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8788,
+    "review": "mydocs/pr/archives/pr_8788_review.md",
+    "claim_pages": 2,
+    "regression_passed": 1,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8792,
+    "review": "mydocs/pr/archives/pr_8792_review.md",
+    "claim_pages": 3,
+    "regression_passed": 1,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8794,
+    "review": "mydocs/pr/archives/pr_8794_review.md",
+    "claim_pages": 3,
+    "regression_passed": 4,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8803,
+    "review": "mydocs/pr/archives/pr_8803_review.md",
+    "claim_pages": 3,
+    "regression_passed": 1,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8806,
+    "review": "mydocs/pr/archives/pr_8806_review.md",
+    "claim_pages": 4,
+    "regression_passed": 1,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8830,
+    "review": "mydocs/pr/archives/pr_8830_review.md",
+    "claim_pages": 1,
+    "regression_passed": 1,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8833,
+    "review": "mydocs/pr/archives/pr_8833_review.md",
+    "claim_pages": 2,
+    "regression_passed": 4,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8835,
+    "review": "mydocs/pr/archives/pr_8835_review.md",
+    "claim_pages": 2,
+    "regression_passed": 3,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8838,
+    "review": "mydocs/pr/archives/pr_8838_review.md",
+    "claim_pages": 1,
+    "regression_passed": 1,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8846,
+    "review": "mydocs/pr/archives/pr_8846_review.md",
+    "claim_pages": 2,
+    "regression_passed": 1,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8848,
+    "review": "mydocs/pr/archives/pr_8848_review.md",
+    "claim_pages": 2,
+    "regression_passed": 1,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8849,
+    "review": "mydocs/pr/archives/pr_8849_review.md",
+    "claim_pages": 3,
+    "regression_passed": 1,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8861,
+    "review": "mydocs/pr/archives/pr_8861_review.md",
+    "claim_pages": 2,
+    "regression_passed": 3,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8862,
+    "review": "mydocs/pr/archives/pr_8862_review.md",
+    "claim_pages": 1,
+    "regression_passed": 1,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8876,
+    "review": "mydocs/pr/archives/pr_8876_review.md",
+    "claim_pages": 2,
+    "regression_passed": 1,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8879,
+    "review": "mydocs/pr/archives/pr_8879_review.md",
+    "claim_pages": 2,
+    "regression_passed": 1,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8881,
+    "review": "mydocs/pr/archives/pr_8881_review.md",
+    "claim_pages": 2,
+    "regression_passed": 3,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8901,
+    "review": "mydocs/pr/archives/pr_8901_review.md",
+    "claim_pages": 3,
+    "regression_passed": 2,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8903,
+    "review": "mydocs/pr/archives/pr_8903_review.md",
+    "claim_pages": 3,
+    "regression_passed": 4,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8909,
+    "review": "mydocs/pr/archives/pr_8909_review.md",
+    "claim_pages": 1,
+    "regression_passed": 3,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8921,
+    "review": "mydocs/pr/archives/pr_8921_review.md",
+    "claim_pages": 3,
+    "regression_passed": 2,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8928,
+    "review": "mydocs/pr/archives/pr_8928_review.md",
+    "claim_pages": 1,
+    "regression_passed": 1,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8929,
+    "review": "mydocs/pr/archives/pr_8929_review.md",
+    "claim_pages": 1,
+    "regression_passed": 1,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  },
+  {
+    "pr": 8930,
+    "review": "mydocs/pr/archives/pr_8930_review.md",
+    "claim_pages": 2,
+    "regression_passed": 1,
+    "decision": "원 PR 주장·보호 문서 로컬 검토 통과"
+  }
+]

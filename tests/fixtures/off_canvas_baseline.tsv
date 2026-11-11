@@ -40,6 +40,7 @@ issue7235/156086935_none_image_fill.hwp	2
 issue7333/aaaaaa.hwp	6
 issue7702/curly_quote_latin_slot.hwpx	1
 issue8060/71352_lpg_regulatory_impact.hwp	1
+issue8755/46551_road_traffic_rule_amendment.hwp	2
 mel-001.hwp	1
 p122.hwp	1
 rowbreak-problem-pages.hwp	1
@@ -64,3 +65,6 @@ issue8462/156633674-offpage-logo.hwpx	1
 # #8501 신규 공개 샘플(법령안 67477, 한/글 2020 저장): 수정 전(#8493 위)과 수정 후의 값이 같다 — 8·9쪽
 # 표(pi=38·39)가 본문 아래로 넘치는 기존 형상이며 이 PR 범위 밖이다. 같은 문서 전쪽 silhouette 은 98.8% 이상.
 issue8501/child_product_safety_rule.hwp	1
+# #8842 신규 공개 샘플(HPV 코호트 최종결과보고서 1351000-201800239, 한/글 2020 Print 235쪽): 수정 전(devel 024d610633)과
+# 수정 후의 값이 같다 — 56·198·209쪽 쪽 밖 개체는 이 수정(211~234쪽 그림 무리) 범위 밖이다.
+issue8842/1351000-201800239_hpv_cohort_final_report.hwp	12

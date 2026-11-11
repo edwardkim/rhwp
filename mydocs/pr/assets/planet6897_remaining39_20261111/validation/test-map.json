@@ -1,0 +1,415 @@
+[
+  {
+    "pr": 8689,
+    "source": "tests/cases/issue_8677_sole_cell_para_nested_table.rs",
+    "module": "issue_8677_sole_cell_para_nested_table",
+    "tests": [
+      "sole_cell_paragraph_table_fills_its_cell_from_the_top"
+    ],
+    "header": "//! 관계형·고정형(쪽수): 셀의 유일한 문단에 담긴 표가 그 셀 안에서 셀 내용 위부터 선언 높이로 배치되고 다음 행과 겹치지 않는지, 전체 쪽수가 독립 PDF 와 같은지 검사한다.\n//! 주석 갱신: 2026-11-06T14:27:56+09:00 (Asia/Seoul). 새 파일이며 직전 파일 커밋은 없다.\n//! 실제 측정: 2026-11-06 KST, source = upstream/devel 5716a226b5 + #8677 수정(이 PR 의 src 변경과 동일).\n//! 96 DPI·Print profile·색상 경계 보정 전 2px 내용 실루엣 raw, 독립 한컴 2020 Print\n//! `pdf/issue8677/1411000-201000007_final_report-2020.pdf`(Hwp 2022 생성, 111쪽).\n//! 입력 `samples/issue8677/1411000-201000007_final_report.hwp`(10k 공개 연구용역 최종보고서), 전체 111쪽=111쪽.\n//! 수정 전 Native: 88쪽 37.72·89쪽 32.91(전쪽 최저 32.91) / fresh WASM: 88쪽 38.28·89쪽 32.77.\n//! 수정 후 Native: 88쪽 99.84·89쪽 99.90, 전쪽 최저 86.07(28쪽, 수정 전과 동일)\n//! / fresh WASM: 88쪽 99.83·89쪽 99.87, 전쪽 최저 86.99(28쪽, 27쪽 89.41 — 둘 다 수정 전과 동일, 표 셀 각주 #8685).\n//! 정식 TSV·review·overlay: `mydocs/pr/assets/issue_8677/{base,head}/{native,wasm}/`, `png/`.\n//! 확대 판독: 89쪽 16×16 표가 5행(PDF 356~715px) 윗변에서 시작해 행을 채우고, 6·7행 9×10 표와 행 경계가 PDF 와 맞는다.\n//! 같은 assertion 이 수정 전 FAIL(1행 3열 1×8 표 drawn 19.5 / declared 27.1) / 수정 후 PASS.\n//! 독립 절대 px 좌표를 고정하지 않는다. 설치 글꼴을 가정하지 않는다."
+  },
+  {
+    "pr": 8708,
+    "source": "tests/cases/issue_8686_cell_float_offset_space.rs",
+    "module": "issue_8686_cell_float_offset_space",
+    "tests": [
+      "cell_float_table_leaves_offset_space_to_following_paragraph"
+    ],
+    "header": "//! [#8686] 관계형·고정형 회귀 — 칸 안 문단 기준 자리차지(글 위아래) 표는 흐름을 전진시키지\n//! 않는다. 세로 오프셋 위 공간에 저장된 뒤 문단은 그 자리에 놓이고, 칸 첫 문단의 저장 앞\n//! 여백도 중첩 표가 있는 칸에서 흐름에 들어간다.\n//!\n//! 주석 갱신: 2026-11-07 05:40 (KST) — 측정값은 아래 표\n//!\n//! - 입력: `samples/issue8686/cell_float_offset_space.hwp` — 속초시 장사시설 사용신청서\n//!   (공개 조례 서식, 한/글 2018 저장 HWP, 1쪽) 그대로. 큰 표 마지막 칸(r=12, 12문단, 세로\n//!   가운데 정렬)의 문단 6 「※ 개인정보는 …」 에 1×2 표(글자처럼 취급 아님, 글 위아래, 문단\n//!   기준, 위 정렬, 세로 오프셋 3902)가 있다. 문단 7 「이용ㆍ제공되지 않습니다.」 는 문단 6\n//!   바로 뒤(12744 = 11052 + 1300 + 392)에 저장돼 있어 표 띠(11052 + 3902 = 14954 부터) 위\n//!   오프셋 공간에 든다. 칸 첫 문단의 저장 첫 줄은 vpos 600(앞 여백)이다.\n//! - 독립 기준: 같은 입력의 한/글 2022 Print PDF `pdf/issue8686_cell_float_offset_space-2020.pdf`\n//!   (1쪽). 96dpi 래스터에서 「이용ㆍ제공되지 않습니다.」 줄이 첫 동의 표 위에 있고, 「※」 줄과의\n//!   간격이 저장 줄 간격(1692HU = 22.56px)이다.\n//! - 수정 전 rhwp(devel a7feb849e1): 표가 흐름을 표 아래까지 전진시켜 문단 7 을 첫 동의 표\n//!   아래에 그렸다. 중첩 표가 있는 칸이라 첫 문단 앞 여백(8px)을 흐름에서 빼, 칸 글 전체가\n//!   8px 위였다.\n//!\n//! 측정(2026-11-07, 코드 c75d2f07de, `scripts/visual_sweep.py --silhouette-only --dpi 96`, 판정값\n//! `silhouette_raw_match_percent` = 색상 경계 보정 전 2px 이웃 내용 실루엣):\n//!\n//! | 입력 | 전체 쪽수(한컴=rhwp) | 쪽 | Native | fresh WASM | 수정 전 Native |\n//! |---|---|---|---|---|---|\n//! | cell_float_offset_space | 1 | 1 | 99.95 | 99.97 | 78.32 |\n//!\n//! 두 경로 전쪽 최저: Native 99.95, fresh WASM 99.97.\n//!\n//! 증거: `mydocs/pr/assets/issue_8686/{native,native_base,wasm}/*_silhouette.tsv`,\n//! `review/*.png`. 검사는 저장 사다리가 뒤 문단을 표 띠 위 공간에 둔다는\n//! 원본 관계(전제), 그린 뒤 문단 줄이 표 위끝보다 위이고 앞 줄과의 간격이 저장 줄 간격인 관계\n//! (관계형), 독립 PDF 전체 쪽수(고정형)다. 절대 px 좌표는 고정하지 않는다.\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8710,
+    "source": "tests/cases/issue_8685_tac_table_cell_footnote_continuation.rs",
+    "module": "issue_8685_tac_table_cell_footnote_continuation",
+    "tests": [
+      "tac_table_cell_footnote_moves_whole_note_to_next_page",
+      "tac_table_cell_footnote_splits_at_stored_reset"
+    ],
+    "header": "//! 관계형·고정형(쪽수): 글자처럼 취급한 표의 셀 각주가 표를 덮지 않게 다음 쪽 각주 영역으로 이어지는지(통째 이월·저장 재시작 분할), 내용이 누락·중복 없이 보존되는지, 전체 쪽수가 독립 PDF 와 같은지 검사한다.\n//! 주석 갱신: 2026-11-06T22:11:15+09:00 (Asia/Seoul). 새 파일이며 직전 파일 커밋은 없다.\n//! 실제 측정: 2026-11-06 KST, base = #8677 head d9174a0d09(upstream/devel 08963f6825 + #8677), head = base + #8685 수정(이 PR 의 src 변경과 동일).\n//! 96 DPI·Print profile·색상 경계 보정 전 2px 내용 실루엣 raw, 독립 한컴 Print(Hwp 2022 12.0.0.4547 생성).\n//! (1) 최종보고서 `samples/issue8677/1411000-201000007_final_report.hwp` / `pdf/issue8677/1411000-201000007_final_report-2020.pdf`, 전체 111쪽=111쪽.\n//!     수정 전 Native 27쪽 90.10·28쪽 86.07 / fresh WASM 89.41·86.99 → 수정 후 Native 99.65·99.83 / fresh WASM 99.74·99.93.\n//!     수정 후 전쪽 최저 Native 91.34·fresh WASM 91.46(90% 미만 0쪽).\n//! (2) 새마을운동 ODA 보고서 `samples/issue8685/1311000-201100125_saemaul_oda_pilot_report.hwp` / `pdf/issue8685/1311000-201100125_saemaul_oda_pilot_report-2020.pdf`, 전체 209쪽=209쪽.\n//!     수정 전 Native 15쪽 93.39·16쪽 91.09 / fresh WASM 92.56·91.43 → 수정 후 Native 99.52·99.90 / fresh WASM 99.63·99.90.\n//!     수정 후 전쪽 최저 Native 83.42(5~8쪽 목차, 수정 전과 동일, #8697)·fresh WASM 94.00.\n//! 정식 TSV·review·overlay: `mydocs/pr/assets/issue_8685/{base,head}/{native,wasm}/`, `png/`.\n//! 확대 판독: (1) 27쪽 표 3-3 아래 각주 2)·3) 만, 4) 는 28쪽 각주 영역 맨 위. (2) 15쪽 표 2-2 아래 각주 1) 앞 세 줄(「…이중 문제가」), 나머지는 16쪽.\n//! 같은 assertion 이 수정 전 FAIL(두 원본 모두 「각주 영역이 표를 덮는다」: 837.9 < 914.5, 883.4 < 938.5) / 수정 후 PASS.\n//! 독립 절대 px 좌표를 고정하지 않는다. 설치 글꼴을 가정하지 않는다."
+  },
+  {
+    "pr": 8717,
+    "source": "tests/cases/issue_8692_font_supply_merge.rs",
+    "module": "issue_8692_font_supply_merge",
+    "tests": [
+      "glyph_fallback_to_its_own_source_is_not_a_fallback",
+      "distinct_glyph_fallback_survives_beside_a_self_reference",
+      "supply_mapping_removes_the_selection_rule_it_replaced",
+      "selection_rule_of_an_unmapped_source_is_kept",
+      "empty_supply_returns_the_document_environment_unchanged",
+      "document_with_more_than_256_supplied_names_is_accepted_up_to_the_bound",
+      "form_with_selection_rule_exports_through_the_cli",
+      "form_declaring_more_than_256_font_names_merges",
+      "report_whose_supply_names_its_own_face_merges"
+    ],
+    "header": "//! 관계형: 공급 결과와 문서 환경을 합친 뒤의 글꼴 선택 계약을 검사한다.\n//! 주석 갱신: 2026-11-06T21:20:00+09:00.\n//! 공급 합치기 계약은 합성 입력으로, 실패 원인별 문서는 실물 공개 문서로 검사한다.\n//! 어느 검사도 페이지 일치율이나 고정 px를 단언하지 않는다.\n//!\n//! 측정일 2026-11-06, `silhouette_raw_match_percent` 96 DPI, 기준 PDF는 한컴 2020 Print.\n//! Native / fresh WASM 전쪽 최저값과 PDF 쪽수:\n//! - `scholarship_recommendation_form.hwp`: 1쪽, 99.89 / 99.98\n//! - `tax_source_ledger_form.hwp`: 1쪽, 96.64 / 100.00\n//! - `employment_service_interim_report.hwp`: 90쪽, 91.29 / 91.09\n//!\n//! 수정 전 Native는 세 문서 모두 글꼴 환경 오류로 측정 불가다. WASM은 이 경로를 쓰지 않아\n//! 수정 전후가 같다. 증거: `mydocs/pr/assets/issue_8692/`.\n//!\n//! 공급 합치기가 만든 환경이 `FontEnvironment::validate` 에 걸리면 내보내기 전체가 실패한다.\n//! 보조 공급이 원본과 같은 글꼴이면 자기 참조 문자 대체가 생겼고, 공급 매핑이 덮어쓴 원본에는\n//! 선택 규칙이 남아 치환 대상과 어긋났다. 문서가 선언한 글꼴 이름은 256개를 넘을 수 있는데\n//! 치환 상한이 그보다 작아 공급을 합친 환경이 거부됐다.\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8719,
+    "source": "tests/cases/issue_8686_cell_float_inner_anchor.rs",
+    "module": "issue_8686_cell_float_inner_anchor",
+    "tests": [
+      "inner_control_float_table_sits_below_its_host_lines"
+    ],
+    "header": "//! [#8686] 관계형·고정형 회귀 — 칸 안 문단 기준 자리차지(글 위아래) 표의 제어문자가 글\n//! 중간에 있어도 세로 오프셋은 제어문자가 속한 저장 줄에서 잰다. 저장 호스트 줄이 모두 표\n//! 띠 위에서 끝나면 표는 그 줄들 아래에 놓이고 호스트 글줄과 겹치지 않는다.\n//!\n//! 주석 갱신: 2026-11-07 09:30 (KST) — 측정값은 아래 표\n//!\n//! - 입력: `samples/issue8686/cell_float_inner_anchor.hwp` — 합천군 교복구입비 지원 신청서\n//!   (공개 조례 서식, HWP, 1쪽) 그대로. 동의서 칸(r=14)의 문단 5 는 저장 줄 둘(「… 교복구입비」,\n//!   「수집·이용하는 데 동의하십니까?」)과, 글 중간 제어문자로 묶인 1×5 「동의/미동의」 표\n//!   (글자처럼 취급 아님, 글 위아래, 문단 기준, 위 정렬)를 담는다.\n//! - 독립 기준: 같은 입력의 한/글 2022 Print PDF `pdf/issue8686_cell_float_inner_anchor-2020.pdf`\n//!   (1쪽). 「동의/미동의」 표가 「동의하십니까?」 줄 아래에 놓인다.\n//! - 수정 전 rhwp(task/8686 1단계, 칸 안 저장 프레임 인증이 글 앞·뒤 제어문자만 받음): 표를 호스트\n//!   첫 줄 아래에 두어 「동의하십니까?」 줄 위에 겹쳐 그렸다.\n//!\n//! 측정(2026-11-07, 코드 6641965c69, `scripts/visual_sweep.py --silhouette-only --dpi 96`, 판정값\n//! `silhouette_raw_match_percent` = 색상 경계 보정 전 2px 이웃 내용 실루엣):\n//!\n//! | 입력 | 전체 쪽수(한컴=rhwp) | 쪽 | Native | fresh WASM | 수정 전 Native |\n//! |---|---|---|---|---|---|\n//! | cell_float_inner_anchor | 1 | 1 | 99.95 | 99.97 | 99.00 |\n//!\n//! 두 경로 전쪽 최저: Native 99.95, fresh WASM 99.97.\n//!\n//! 증거: `mydocs/pr/assets/issue_8686/{native,native_base,wasm}/cell_float_inner_anchor_silhouette.tsv`,\n//! `review/cell_float_inner_anchor_p1_*.png`. 검사는 제어문자가 글 중간에 있고 저장 호스트 줄이\n//! 표 띠 위에서 끝난다는 원본 관계(전제), 그린 표가 「동의하십니까?」 줄 아래에 있고 겹치지\n//! 않는 관계(관계형), 독립 PDF 전체 쪽수(고정형)다. 절대 px 좌표는 고정하지 않는다.\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8729,
+    "source": "tests/cases/issue_8697_footer_page_number_format.rs",
+    "module": "issue_8697_footer_page_number_format",
+    "tests": [
+      "footer_page_number_follows_stored_number_format",
+      "toc_angle_bracket_takes_full_hft_advance"
+    ],
+    "header": "//! 고정형(쪽 번호 문자열·쪽수)·관계형(`〈` 전진/글자 크기): 꼬리말 쪽 번호 자동 번호가 저장된 번호 모양(표 134)을 따라 앞부분은 소문자 로마 숫자, 본문은 아라비아 숫자로 찍히는지, 전체 쪽수가 독립 PDF 와 같은지, 표 목차의 `〈`(기호 슬롯 HFT 한양중고딕)가 독립 Print 와 같은 전진으로 그려지는지 검사한다.\n//! 주석 갱신: 2026-11-07T10:13:21+09:00 (Asia/Seoul). 새 파일이며 직전 파일 커밋은 없다.\n//! 실제 측정: 2026-11-07 KST, base = #8685 head 34368de8cf(upstream/devel 45684640be + #8677 + #8685), head = base + 이 PR 의 src 변경.\n//! 96 DPI·Print profile·색상 경계 보정 전 2px 내용 실루엣 raw, 독립 한컴 Print(Hwp 2022 12.0.0.4547 생성).\n//! 원본 `samples/issue8685/1311000-201100125_saemaul_oda_pilot_report.hwp` / `pdf/issue8685/1311000-201100125_saemaul_oda_pilot_report-2020.pdf`, 전체 209쪽=209쪽.\n//! 5~8쪽(목차) 수정 전 Native 83.55·83.42·84.04·85.10 / fresh WASM 95.77·94.94·96.88·95.13\n//! → 수정 후 Native 99.91·99.85·99.91·99.84 / fresh WASM 97.85·97.67·97.94·98.22.\n//! 수정 후 전쪽 최저 Native 93.94·fresh WASM 95.05(90% 미만 0쪽, 수정 전 Native 4쪽).\n//! 정식 TSV·review·overlay: `mydocs/pr/assets/issue_8697/{base,head}/{native,wasm}/saemaul_oda_pilot_report_silhouette.tsv`, `png/`.\n//! 독립 기대값: 같은 PDF 의 꼬리말 글자(2~8쪽 「i」~「vii」, 10쪽 「2」, 11쪽 「3」, 20쪽 「12」)와 6쪽 「〈표」의 `〈` 다음 글자 원점(83 단위 글자 중 79 단위 = 0.952em).\n//! 확대 판독: 6쪽 꼬리말 「v」가 한/글과 같은 자리, 목차 `〈`·`〉`·`‧` 와 「4-13」 하이픈이 한/글과 같은 간격(수정 전 `〈` 잉크가 「표」에 겹치고 하이픈 뒤 빈칸).\n//! 같은 assertion 이 수정 전 FAIL(꼬리말 「1」≠「i」, `〈` 0.476em) / 수정 후 PASS.\n//! 독립 절대 px 좌표를 고정하지 않는다. 설치 글꼴을 가정하지 않는다.\nuse rhwp::document_core::DocumentCore;\nuse rhwp::renderer::render_tree::{RenderNode, RenderNodeType};"
+  },
+  {
+    "pr": 8729,
+    "source": "tests/cases/issue_8697_hft_program_widths.rs",
+    "module": "issue_8697_hft_program_widths",
+    "tests": [
+      "hanyang_junggothic_hft_draws_cjk_brackets_full_width",
+      "sinmyeong_junggothic_hft_uses_its_own_latin_widths"
+    ],
+    "header": "//! 관계형: HFT 프로그램(한양중고딕·신명 중고딕)이 직접 그리는 글자의 전진폭이 독립 한컴 Print 의 Type3 `/Widths` 와 같은 em 비율인지, 곧 같은 줄 앞뒤 글자 사이 간격이 글자 크기 × 폭/1000 인지 검사한다.\n//! 주석 갱신: 2026-11-07T10:13:21+09:00 (Asia/Seoul). 새 파일이며 직전 파일 커밋은 없다.\n//! 실제 측정: 2026-11-07 KST, base = #8685 head 34368de8cf, head = base + 이 PR 의 src 변경. 96 DPI·Print profile·색상 경계 보정 전 2px 내용 실루엣 raw.\n//! (1) 한양중고딕 탐침 4쪽=4쪽: 수정 전 Native 99.95·100.00·90.26·93.16 / fresh WASM 99.95·99.98·93.50·94.92 → 수정 후 Native 99.95·100.00·94.21·93.32 / fresh WASM 99.95·99.98·94.47·94.60(전쪽 최저 Native 93.32·WASM 94.47).\n//! (2) 신명 중고딕 탐침 4쪽=4쪽: 수정 전 Native 86.93·87.02·79.32·83.71 / fresh WASM 89.24·89.30·84.22·86.52 → 수정 후 Native 99.84·99.95·90.67·93.21 / fresh WASM 99.85·99.94·93.32·94.80(전쪽 최저 Native 90.67·WASM 93.32).\n//! 정식 TSV·PNG: `mydocs/pr/assets/issue_8697/{base,head}/{native,wasm}/hft_*_junggothic_probe_silhouette.tsv`, `png/probe-*`.\n//! 같은 assertion 이 수정 전 FAIL(신명 중고딕 `-` 11.09px ≠ 6.67px, 한양중고딕 `‧` 4.00px ≠ 6.67px) / 수정 후 PASS.\n//! 독립 기대값: `pdf/issue8697/hft-{hanyang,sinmyeong}_junggothic-probe-2020.pdf`(한컴 2020 11.0.0.9136, Print method 0)의 Type3 `/Widths`·ToUnicode. 입력은 `samples/lang_slot/gen_lang_slot_probe.py`(FTYPE=HFT, 일곱 슬롯 같은 글꼴)로 만든 `samples/issue8697/hft-*-probe.hwpx`.\n//! 한/글이 이 프로그램 대신 TrueType 으로 대체해 그리는 글자는 검사하지 않는다(별도 축). `·` 는 layer SVG 가 원으로 합성해 전진을 읽을 수 없어 #7092 검사에 맡긴다.\n//! 독립 절대 px 좌표를 고정하지 않는다. 설치 글꼴을 가정하지 않는다.\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8736,
+    "source": "tests/cases/issue_8732_caption_picture_stored_deferral.rs",
+    "module": "issue_8732_caption_picture_stored_deferral",
+    "tests": [
+      "bottom_caption_picture_moves_to_next_page_top_with_its_stored_successor"
+    ],
+    "header": "//! 관계형·고정형(쪽수): 쪽 끝 문단에 앵커한 아래 캡션 자리차지 그림을 한/글처럼 다음 쪽 맨 위로 미루는지(그림·캡션·뒤 본문의 쪽 소속과 앞뒤 순서), 전체 쪽수가 독립 PDF 와 같은지 검사한다.\n//! 주석 갱신: 2026-11-07T15:10:27+09:00 (Asia/Seoul). 새 파일이며 직전 파일 커밋은 없다.\n//! 실제 측정: 2026-11-07 KST, base = upstream/devel b8dd67c500, head = base + 이 PR 의 src 변경. 96 DPI·Print profile·색상 경계 보정 전 2px 내용 실루엣 raw.\n//! 원본 `samples/issue8732/1741000-202200045_second_interim_report.hwp`, 전체 138쪽=138쪽.\n//! 16·17쪽 수정 전 Native 71.09·51.88 / fresh WASM 72.88·53.72 → 수정 후 Native 100.00·100.00 / fresh WASM 99.98·99.83. 다른 쪽 값은 바뀌지 않았다.\n//! 수정 후 전쪽 최저 Native 23.70·fresh WASM 23.34 — 90% 미만 Native 10쪽(7·15·66~68·73·134~137)·WASM 9쪽은 수정 전과 같은 값이며 #8735 에서 다룬다.\n//! 정식 TSV·review·overlay: `mydocs/pr/assets/issue_8732/{base,head}/{native,wasm}/second_interim_report_silhouette.tsv`, `png/`.\n//! 확대 판독: 17쪽 그림·캡션 「[그림 2-3] 의회 중심형」·「3. 문재인 정부 자치분권위원회(안)」·본문 첫 줄이 한/글과 같은 자리(수정 전 16쪽에서 그림이 본문을 덮음).\n//! 같은 assertion 이 수정 전 FAIL(그림이 16쪽, 0 기준 15) / 수정 후 PASS. 되감긴 첫 문단 0.265 는 빈 문단이라 빈 문단의 다음 쪽 소유 경로도 함께 검사한다.\n//! 독립 기대값: 한/글 2022 Print `pdf/issue8732/1741000-202200045_second_interim_report-2020.pdf`(138쪽). 17쪽(쪽 번호 13) 맨 위에 「그림 2-3」 과 캡션, 그 아래 본문.\n//! 저장 근거: 앵커 문단 0.262 다음의 저장 줄이 그림 틀 + 캡션 간격 + 캡션 줄 끝에서 되감긴다.\n//! 독립 절대 px 좌표를 고정하지 않는다. 설치 글꼴을 가정하지 않는다."
+  },
+  {
+    "pr": 8740,
+    "source": "tests/cases/issue_8737_cell_picture_pushed_own_line.rs",
+    "module": "issue_8737_cell_picture_pushed_own_line",
+    "tests": [
+      "cell_picture_that_pushed_its_own_line_starts_at_paragraph_origin"
+    ],
+    "header": "//! 고정형(셀 기준 ±2px)·고정형(쪽수): 셀 문단의 자리차지 그림이 자기 앵커 줄을 그림 아래로 민 저장 형상에서, 그림을 밀린 줄이 아니라 문단 시작(셀 세로 정렬이 옮긴 저장 내용 묶음의 위)에 그리는지, 전체 쪽수가 독립 PDF 와 같은지 검사한다.\n//! 주석 갱신: 2026-11-07T17:27:12+09:00 (Asia/Seoul). 새 파일이며 직전 파일 커밋은 없다.\n//! 실제 측정: 2026-11-07 KST, base = upstream/devel b8dd67c500, head = base + 이 PR 의 src 변경. 96 DPI·Print profile·색상 경계 보정 전 2px 내용 실루엣 raw.\n//! 원본 `samples/issue8737/156667654_saemangeum_press_release.hwpx`(한/글 2024 저장), 전체 2쪽=2쪽.\n//! 1쪽 수정 전 Native 96.86 / fresh WASM 97.15 → 수정 후 Native 99.90 / fresh WASM 99.94(양쪽 98% 이상이라 칸 기준 ±2px 를 고정한다). 2쪽 99.95 그대로.\n//! 수정 후 전쪽 최저 Native 99.90·fresh WASM 99.94(90% 미만 0쪽).\n//! 정식 TSV·review·overlay: `mydocs/pr/assets/issue_8737/{base,head}/{native,wasm}/saemangeum_press_release_silhouette.tsv`, `png/`.\n//! 확대 판독: 1쪽 머리 표 로고가 한/글과 같은 자리(overlay 일치). 수정 전에는 로고가 24.7px 아래, 셀 정렬 없이 원점만 옮기면 9.4px 위.\n//! 같은 assertion 이 수정 전 FAIL(칸 위끝에서 44.11px) / 수정 후 PASS.\n//! 독립 기대값: 한/글 2024 Print `pdf/issue8737/156667654_saemangeum_press_release-2024.pdf`(2쪽). 1쪽 머리 표 첫 칸의 로고 그림 위끝 98.8px, 칸 위끝 79.4px(96 DPI) — 칸 위끝에서 19.4px.\n//! 저장 근거: 칸 문단의 첫 줄 vpos 3474 = 그림 높이 2863 + 세로 오프셋 611(줄이 그림에 밀림). 칸은 세로 가운데 정렬이고 저장 내용 끝은 4474 라 묶음이 (6171 − 282 − 4474)/2 = 707 HU 내려간다.\n//! 독립 절대 px 좌표 대신 칸 위끝 기준 거리를 고정한다. 설치 글꼴을 가정하지 않는다."
+  },
+  {
+    "pr": 8744,
+    "source": "tests/cases/issue_8715_nested_row_cell_cuts.rs",
+    "module": "issue_8715_nested_row_cell_cuts",
+    "tests": [
+      "text_hosted_nested_row_splits_per_cell_line_and_keeps_every_line"
+    ],
+    "header": "//! [#8715] 관계형·고정형 회귀 — 글 문단이 품은 `CELL` 분할 중첩 표가 쪽 경계에서 행 안을\n//! 나눌 때, 칸마다 자기 글줄 경계에서 끊고 이어받는 쪽은 앞 쪽이 그리지 않은 줄부터 그린다.\n//!\n//! 주석 갱신: 2026-11-07 17:30 (KST, UTC+9)\n//!\n//! - 입력: `samples/issue8715/nested_row_cell_cuts.hwp` — 공개 규제영향분석서(농업기계화\n//!   촉진법 시행규칙 일부개정령안, HWPX)에서 비교표 1×1 표가 든 문단만 남기고, 일본어 원문\n//!   글자를 한글 음절로 바꾼 뒤 한/글 2022 로 다시 저장한 파생 입력(3쪽). 바깥 1×1 칸의\n//!   문단 0 은 글(「- 도로운송차량법 시행규칙 …」)과 13×2 중첩 표(`CELL` 분할, 자리차지)를\n//!   함께 담는다. 한/글은 재저장 때 행 10 의 두 칸 모두 셋째 줄에서 저장 vpos 를 0 으로\n//!   되감아(쪽 나눔 자리) 저장했다.\n//! - 독립 기준: 같은 입력의 한/글 2022 Print PDF `pdf/issue8715_nested_row_cell_cuts-2020.pdf`\n//!   (3쪽). 2쪽 바닥에 행 10 의 두 줄, 3쪽 머리에 나머지 다섯 줄.\n//! - 수정 전 rhwp(#8686 2단계 head 80cc647e56): 글 문단 호스트의 중첩 표를 16px scalar 조각으로\n//!   예약해, 2쪽은 반쯤 보인 행 10 을 버리고(#5846) 3쪽은 그 띠를 이미 보인 것으로 건너뛰어(#3658)\n//!   행 10 의 앞 두 줄이 어느 쪽에도 없었다. 3쪽 뒤 행의 칸 내용도 시작 행 오프셋만큼 위로\n//!   올라가 칸 상자 위에 그려졌다.\n//!\n//! 측정: 2026-11-07 17:16(Native)·17:19(fresh WASM) KST, 코드 head 4c4f9e5150,\n//! `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`, 판정값\n//! `silhouette_raw_match_percent` = 색상 경계 보정 전 2px 이웃 내용 실루엣. 전쪽 최저값은\n//! Native 94.76(1쪽), fresh WASM 91.09(1쪽).\n//!\n//! | 입력 | 전체 쪽수(한컴=rhwp) | 쪽 | Native | fresh WASM | 수정 전 Native |\n//! |---|---|---|---|---|---|\n//! | nested_row_cell_cuts | 3 | 1 | 94.76 | 91.09 | 94.31 |\n//! | | | 2 | 99.35 | 99.46 | 93.78 |\n//! | | | 3 | 98.36 | 98.37 | 39.58 |\n//!\n//! 증거: `mydocs/pr/assets/issue_8715/{native,native_base,wasm}/nested_row_cell_cuts_silhouette.tsv`.\n//! 검사는 행 10 칸의 저장 되감김 위치(전제), 칸별 줄의 쪽 소속·순서·누락·중복(관계형),\n//! 이어받는 쪽 뒤 행 글줄이 제 칸 상자 안에 있다는 포함 관계(관계형), 독립 PDF 전체\n//! 쪽수(고정형)다. 절대 px 좌표는 고정하지 않는다.\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8746,
+    "source": "tests/cases/issue_8742_stale_gap_measure.rs",
+    "module": "issue_8742_stale_gap_measure",
+    "tests": [
+      "page_bottom_sign_off_fits_once_gap_lines_stay_above_the_table",
+      "stale_ladder_does_not_change_pages_of_a_saved_gap_flow"
+    ],
+    "header": "//! 관계형·고정형 회귀 — 자리차지 표 위 틈의 줄은 측정과 배치가 같은 판정으로 틈에 둔다(#8742).\n//! 주석 갱신: 2026-11-07 18:23 KST(+09:00).\n//! 측정일: 2026-11-07. raw = `silhouette_raw_match_percent`, 96 DPI, 한/글 2022(12.0.0.4547) Print PDF,\n//! `--compat 2022`. Native 는 문서 글꼴(굴림·HY 계열)만 공급했다(큰 글꼴 경로는 Native 64MiB 예산을 넘긴다).\n//! 고정형은 PDF 와 맞춘 쪽 수와 쪽 경계 문단이고, 나머지는 사다리 변형 전후의 관계다.\n//!\n//! ```text\n//! 원본 (전체 쪽수)                          대상 쪽  수정 전 N/W           수정 후 N/W      전쪽 최저 N/W\n//! samples/issue8742/36345427 (1쪽)          1        2쪽으로 측정 불가     100.00/100.00    100.00/100.00\n//! samples/issue8742/36453591 (5쪽)          4·5      95.69·23.18/95.68·23.17  99.47·83.91/99.46·83.31  83.91/83.31\n//! samples/issue8742/36483048 (6쪽)          4·5·6    52.85·26.68·5.04/53.42·26.51·5.11  73.02·78.02·99.86/72.68·77.45·99.85  73.02/72.68\n//! samples/task1789/exclusion_probe_line_spacing (2쪽, 한/글 2022 PDF)  1·2  99.87·95.70/99.94·95.73  같음(정상 사다리)  95.70/95.73\n//! ```\n//!\n//! 새 회귀 검사는 전쪽 최저 90% 이상인 36345427 만 쓴다. 36453591(5쪽 83.91)·36483048(4쪽 73.02)은\n//! 쪽 소속이 PDF 와 같아졌지만 이 수정과 다른 원인으로 90% 미만이 남아 회귀 입력으로 등록하지 않는다.\n//! 두 문서는 검증 입력으로만 둔다. 정식 증거는 `mydocs/pr/assets/issue_8742/` 에 있다.\n//!\n//! 36345427 은 구세대 한/글이 표 위 틈의 줄을 표 아래 자리로 저장했다. 한/글 Print 는 그 줄을 틈에\n//! 두고 쪽 아래 결재란(pi=11)까지 1쪽에 담는다. 배치는 이미 그 저장 위치를 버렸는데 측정은 따라가서,\n//! 그리지 않는 높이로 결재란을 2쪽에 넘겼다. 기대값은 같은 원본의 한/글 Print PDF 쪽 수다.\n//!\n//! 끝으로 `samples/task1789/exclusion_probe_line_spacing.hwpx` 의 정상 사다리를 메모리에서 낡은\n//! 사다리로 바꿔도 쪽 구성이 같은지 본다. 합성 입력의 계약 검사다."
+  },
+  {
+    "pr": 8751,
+    "source": "tests/cases/issue_8715_split_table_first_fragment_frame.rs",
+    "module": "issue_8715_split_table_first_fragment_frame",
+    "tests": [
+      "first_fragment_boxes_take_stored_object_height",
+      "continuation_fragment_keeps_content_height",
+      "flow_child_first_fragment_keeps_content_height"
+    ],
+    "header": "//! [#8715] 관계형 회귀 — 저장 조판에서 행 안을 나눈 중첩 표의 첫 조각 상자는, 그 표가 글 앞/뒤\n//! (`InFrontOfText`/`BehindText`)로 놓여 흐름 밖에 있을 때만 저장 개체 높이(`sz.height`)를 차지한다.\n//! 글 흐름(위아래 등) 자식 표의 첫 조각과 모든 이어받는 조각은 내용 높이에서 닫힌다.\n//!\n//! 주석 갱신: 2026-11-09 00:50 KST (직전 파일 변경 e52235e4e3, 2026-11-08 09:52:58 +0900)\n//!\n//! - 입력 1: `samples/task2097/75544_pii_bunseok.hwpx`(66쪽). 59쪽에서 시작하는 1×1 바깥 표\n//!   (저장 높이 56321 HU = 750.9px) 칸 안에 글 앞으로 놓인 2×1 중첩 표(저장 높이\n//!   51122 HU = 681.6px)가 있고, 두 표 모두 59쪽에서 행 안이 나뉘어 60쪽으로 이어진다.\n//!   독립 기준 `pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf` 59쪽 중첩 표 괘선\n//!   358.5→1039.3px(680.8px), 바깥 표 291.4→1041.3px(750px) — 두 상자가 저장 높이와 같다.\n//!   60쪽 이어받는 조각은 내용 끝에서 닫힌다.\n//! - 입력 2: `samples/issue8715/nested_row_cell_cuts.hwp`(3쪽). 13×2 중첩 표 저장 높이\n//!   56010 HU = 746.8px, 바깥 1×1 표 58888 HU = 785.2px. 독립 기준\n//!   `pdf/issue8715_nested_row_cell_cuts-2020.pdf` 1쪽 중첩 280.3→1026.4px(746.1px),\n//!   바깥 247.7→1032.0px(784.3px). 저장 높이와 내용 높이가 같아 이 규칙에는 중립이고,\n//!   2쪽 이어받는 조각이 저장 높이로 늘지 않는지를 검사한다.\n//! - 입력 3(반례): `samples/rowbreak-problem-pages.hwpx`(18쪽). 7쪽 5×2 표의 제26조 행 오른쪽 칸에\n//!   위아래로 놓인 1×1 자식 표(저장 높이 12482 HU = 166.4px)가 행 안에서 나뉜다. 독립 기준\n//!   `pdf/rowbreak-problem-pages-2024.pdf` 7쪽은 그 행을 1005.6px 에서 닫고(rhwp 1007.5px)\n//!   왼쪽 칸 `제26조`를 그 행의 가운데에 둔다. 저장 높이를 모든 자식 표에 적용한 이전 head\n//!   e52235e4e3 는 행을 1023.1px 까지 늘려 7쪽 Native 가 96.31 → 82.71 로 떨어졌다.\n//!\n//! 측정: 2026-11-09, `scripts/visual_sweep.py --silhouette-only --dpi 96`(75544·nested\n//! `--compat 2022`, rowbreak `--compat 2024`)의 `silhouette_raw_match_percent`(색상 경계 보정 전\n//! 2px 실루엣), code head `7d940aca08`, 비교 base #8744 head `34384199de`.\n//! - 75544(66쪽 = PDF 66쪽): 59쪽 Native 99.96 / fresh WASM 99.97(base Native 95.28),\n//!   60쪽 100.00 / 100.00. 전쪽 최저 Native 98.13, fresh WASM 99.45. base 와 다른 쪽은 59쪽뿐이다.\n//! - nested_row_cell_cuts(3쪽 = PDF 3쪽): 1쪽 93.59 / 93.06, 2쪽 99.14 / 99.38, 3쪽 98.41 / 98.42\n//!   (base 와 같음). 전쪽 최저 Native 93.59, fresh WASM 93.06.\n//! - rowbreak-problem-pages.hwpx(18쪽 = PDF 18쪽): 7쪽 Native 96.31 / fresh WASM 99.60(base 와 같음).\n//!   전쪽 최저 Native 92.15, fresh WASM 93.00. 같은 원본의 HWP(`--compat 2024`, 18쪽)는 전쪽\n//!   최저 Native 95.81, fresh WASM 97.62 로 base 와 같다.\n//! - 증거: `mydocs/pr/assets/issue_8715/split_table_first_fragment/`(native·wasm·native_base TSV,\n//!   75544 59·60쪽과 rowbreak HWPX 7쪽 review·overlay PNG).\n//!\n//! 검사는 글 앞 중첩 표 첫 조각 상자 높이와 저장 개체 높이의 일치(원본 속성에서 계산한 크기 관계,\n//! 중첩 ±1px·바깥 ±2px), 중첩 표의 바깥 칸 포함(관계형), 이어받는 조각과 글 흐름 자식 표 첫 조각이\n//! 저장 높이로 늘지 않음(원본 속성에서 계산한 크기 관계, 10px 이상 짧음)이다.\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8758,
+    "source": "tests/cases/issue_8735_whitespace_host_para_float_table.rs",
+    "module": "issue_8735_whitespace_host_para_float_table",
+    "tests": [
+      "whitespace_host_para_float_table_sits_at_paragraph_top"
+    ],
+    "header": "//! 관계형(밀린 host 줄 = 표 아래끝 + 바깥 아래 여백, ±1px)·고정형(저장 사다리 표 위끝 ±2px·쪽수): 공백만 있는 문단에 앵커한 문단 기준 자리차지 표가 문단 앞 간격만큼 내려가지 않고 「문단 상단 + 바깥 위 여백」에 놓이며, 표가 민 host 줄이 앞 간격·줄간격 없이 표 틀 바로 밑에 오는지 검사한다.\n//! 주석 갱신: 2026-11-09T10:10:54+09:00 (Asia/Seoul). 직전 파일 커밋 0b54ab1879(2026-11-09 06:20:19 +0900, #8736 ee0d775f41 위 rebase).\n//! 실제 측정: 2026-11-09 KST, base = #8736 head ee0d775f41, head = base + 이 PR 의 src 변경(조판 보완 포함). 96 DPI·Print profile·색상 경계 보정 전 2px 내용 실루엣 raw.\n//! 원본 `samples/issue8732/1741000-202200045_second_interim_report.hwp`, 전체 138쪽=138쪽.\n//! 7쪽 수정 전 Native 25.20 / fresh WASM 23.57 → 수정 후 Native 99.98 / fresh WASM 99.82(양쪽 98% 이상이라 본문 기준 표 위끝을 ±2px 로 고정한다). 그 밖의 쪽은 수정 전후 같은 값.\n//! 수정 후 전쪽 최저 Native 28.91(137쪽)·fresh WASM 26.95(137쪽). 90% 미만 Native·WASM 각 9쪽(15·66·67·68·73·134~137)은 이 변경 전부터 있던 다른 쪽의 미달이다(수정 전후 같은 값).\n//! 정식 TSV·review·overlay: `mydocs/pr/assets/issue_8735/{base,head}/{native,wasm}/second_interim_report_silhouette.tsv`, `png/second_interim_report_p007_*`.\n//! 확대 판독: 7쪽 표 테두리와 host 다음 본문이 한/글과 같은 높이(overlay 일치). 수정 전에는 문단 앞 간격만큼 18px 아래.\n//! 같은 assertion 이 수정 전 FAIL(본문 위에서 94.40px) / 수정 후 PASS.\n//! 독립 기대값: 한/글 Print `pdf/issue8732/1741000-202200045_second_interim_report-2020.pdf`(138쪽) 7쪽 표 위끝 208.4px(96 DPI).\n//! 저장 근거: 문단 0.130(글 「  」)의 첫 줄 vpos 54151 = 문단 상단 5580 + 표 바깥 위 141 + 높이 48289 + 바깥 아래 141. 표 위끝 = 본문 위 + (54151 − 48289 − 141) HU. 같은 등식이 다른 문서(공백 host 표 쌓임·나란한 표 포함)에서도 성립함을 확인했다.\n//! 독립 절대 px 좌표 대신 저장값 등식을 쓴다. 설치 글꼴을 가정하지 않는다."
+  },
+  {
+    "pr": 8758,
+    "source": "tests/cases/issue_8735_whitespace_host_typeset_flow.rs",
+    "module": "issue_8735_whitespace_host_typeset_flow",
+    "tests": [
+      "whitespace_host_float_reserves_only_the_band_and_its_pushed_line"
+    ],
+    "header": "//! [#8735] 관계형·고정형 회귀 — 공백 host 문단의 문단 기준 자리차지 표가 저장 첫 줄을 띠 아래로\n//! 밀면, 조판 흐름은 표 상자와 그 줄만 예약한다(문단 앞 간격·host 줄간격을 표 예약에 얹지 않는다).\n//!\n//! 주석 갱신: 2026-11-09 07:41 KST(+09:00), 새 파일.\n//!\n//! - 입력: `samples/issue8735/whitespace_host_approval_table.hwpx` — 공개 결재문서 36325626(HWPX, 1쪽).\n//!   문단 1 은 공백 한 칸 host, 문단 기준 자리차지 결재 표(오프셋 0)가 저장 첫 줄을 띠 끝\n//!   13697 = 앞 문단 끝 6392 + 바깥 위 138 + 표 7029 + 바깥 아래 138 로 민다(앞 간격 852 없음).\n//! - 독립 기준: `pdf/issue8735/whitespace_host_approval_table-2020.pdf`(한/글 2022 12.0.0.4547 Print, 1쪽).\n//! - 수정 전 rhwp(PR #8758 rebase 본 `0b54ab1879`, 옛 head `a5f2d2b28b` 도 같음)는 배치는 저장 사다리대로 두지만 조판이 결재 표\n//!   예약에 앞 간격·바깥 위 여백·host 줄간격을 얹고 host 줄을 따로 또 세어, 조판이 원점을 정하는\n//!   문서번호 TAC 표가 17.5px 아래에 놓였다(문서번호 표 − host 줄 52.1px, 기대 34.6px).\n//!\n//! 측정: 2026-11-09, `scripts/visual_sweep.py --silhouette-only --dpi 96`(4열\n//! `silhouette_raw_match_percent`, 색상 경계 보정 전 2px 실루엣), 소스 PR #8758 rebase 본 `0b54ab1879` + 이 수정.\n//! 1쪽 Native 99.99 / fresh WASM 100.00(수정 전 Native 58.08). 전체 1쪽 = PDF 1쪽, 전쪽 최저\n//! Native 99.99(1쪽)·fresh WASM 100.00(1쪽).\n//! 증거: `mydocs/pr/assets/issue_8735/typeset/{native,wasm,native-base}/`(TSV·review·overlay PNG).\n//!\n//! 검사: 원본 계약(공백 host·저장 줄 = 띠 끝·줄이 표를 품지 않음·앞 간격 양수), 쪽수 1 = 한/글\n//! (고정형), host 줄 − 결재 표 아래끝 = 바깥 아래 여백, 문서번호 표 − host 줄 = 저장 vpos 차이 +\n//! 바깥 위 여백(관계형, ±1px — 양쪽 raw 99.99% 이상 쪽).\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8772,
+    "source": "tests/cases/issue_8755_rowspan_earliest_boundary.rs",
+    "module": "issue_8755_rowspan_earliest_boundary",
+    "tests": [
+      "rows_covered_only_by_span_cells_take_no_extra_height",
+      "cell_table_pushing_its_own_anchor_line_sits_at_paragraph_start"
+    ],
+    "header": "//! [#8755 #8756] 관계형 회귀 — 병합 칸만 덮는 행은 걸친 칸이 요구하는 만큼만 차지하고(요구가\n//! 없으면 0), 칸 문단의 자리차지 표가 자기 앵커 줄을 민 저장 형상이면 표는 문단 시작에 놓이고\n//! 칸 세로 정렬은 저장 내용 묶음 전체에 적용된다.\n//!\n//! 주석 갱신: 2026-11-10 23:10 KST(+09:00). 직전 파일 변경 커밋 `f736da3d46`(2026-11-08 12:38 +09:00)을\n//! devel `5ea1227505` 위 번호순 사슬(#8758 head `6159174e75` 다음)로 옮기고 다시 측정했다.\n//!\n//! - 입력: `samples/issue8755/46551_road_traffic_rule_amendment.hwp`(경찰청 입법예고안, HWP5, 30쪽).\n//! - 독립 기준: `pdf/issue8755/46551_road_traffic_rule_amendment-2020.pdf`(한/글 2022 Print, 30쪽).\n//! - 28쪽 32×17 표(구역 2 문단 13): rs=1 칸이 없는 행 16·17·19·24·26 을 한/글은 0.0~0.3px 로 그린다\n//!   — 오른쪽 열 행 18·20·25·27 괘선 376.7/398.9/463.5/505.0px 이 왼쪽 열 행 16·19·24·26 괘선\n//!   376.7/398.6/463.3/504.9px 과 같은 높이다. 수정 전 rhwp(devel `5077b216cb`)는 이 행들에\n//!   10~20px 를 넣어 오른쪽 열이 최대 20.6px 아래(행 27 525.1px), 표 끝이 842.5px(한/글 821.9px).\n//! - 13쪽 20×8 표 r17 c3 칸: 3×8 자리차지 표(문단 기준, 오프셋 0, 높이 5749HU, 바깥 여백 141HU)가\n//!   둘째 문단의 첫 줄을 밀어 저장했다(첫 줄 vpos 20269 = 문단 시작 14238 + 표 틀 6031). 한/글은 표를\n//!   문단 시작에 두고(「위 금액을 수납 의뢰합니다」 글자 위끝 787.9px), 칸 세로 가운데 정렬을 저장 끝\n//!   21269HU 에 적용한다(10×10 표 위끝 593.9px). 수정 전 rhwp 는 3×8 표를 밀린 줄(849.6px)에 놓아\n//!   칸 끝에서 잘렸고(높이 40.1px, 「은행(우체국)」 행 소실) 10×10 표는 칸 내용 위끝(581.2px)에 붙었다.\n//!\n//! 측정: 2026-11-10, `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`(4열\n//! `silhouette_raw_match_percent`, 색상 경계 보정 전 2px 실루엣), 문서 face 만 모은 글꼴 폴더 공급.\n//! 소스는 devel `5ea1227505` + 앞 번호 PR 사슬 + 이 수정(코드 커밋 기준). 13쪽 Native 99.79 / fresh\n//! WASM 99.78, 28쪽 Native 99.77 / fresh WASM 99.75(수정 전 devel `5ea1227505` Native 87.77 / 70.20).\n//! 전체 30쪽 = PDF 30쪽, 전쪽 최저 Native 96.88(1쪽)·fresh WASM 99.74(7·29쪽).\n//! 증거: `mydocs/pr/assets/issue_8755/{native,wasm,native-base}/`(TSV·review·overlay PNG).\n//!\n//! 검사는 행 경계의 열 사이 일치·걸친 칸 높이와 rs=1 선언 합의 관계(관계형), 3×8 표와 10×10 표의\n//! 간격이 저장 문단 시작의 차와 같음·3×8 표가 잘리지 않음·칸 위아래 여백이 같음(관계형)이다.\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8775,
+    "source": "tests/cases/issue_8773_field_led_wide_tac_row.rs",
+    "module": "issue_8773_field_led_wide_tac_row",
+    "tests": [
+      "wide_table_after_a_field_start_begins_on_the_next_row",
+      "wide_table_without_a_leading_field_stays_on_the_first_row"
+    ],
+    "header": "//! [#8773] 관계형·고정형 회귀 — 누름틀 시작 뒤에 남은 줄 폭보다 넓은 글자처럼 취급 표가 오면\n//! 한/글은 누름틀 시작만 담은 첫 줄을 두고 표를 다음 줄에서 시작한다.\n//!\n//! 주석 갱신: 2026-11-08 15:24 KST(+09:00), 새 파일.\n//!\n//! - 입력 A: `samples/issue8773/field_led_wide_table.hwpx` — 공개 결재문서 36479199(HWPX, 2쪽).\n//!   문단 5 원시 순서 = 누름틀 시작 → 글자처럼 취급 16×16 표(바깥 여백 포함 50346HU) → 누름틀\n//!   끝 → 공백 1자. 저장 줄 1개(높이 1100HU)가 표를 담지 않아 rhwp 가 줄을 재조판한다.\n//! - 입력 B(반례): `samples/issue8773/field_led_wide_table_nofield.hwpx` — A 의 `section0.xml` 에서\n//!   이 문단의 `fieldBegin`·`fieldEnd` 제어만 지우고 다시 압축한 합성본. 다른 저장값은 그대로다.\n//! - 독립 기준: `pdf/issue8773/field_led_wide_table-2020.pdf`, `..._nofield-2020.pdf`(로컬 한/글\n//!   2022 12.0.0.4547 Print → Hancom PDF, 각 2쪽). 표 위 괘선 A 255.7px, B 238.1px — 차 17.6px =\n//!   글자 1100HU × 줄 간격 120% = 1320HU. 표 폭만 줄인 변형도 255.7px 이다(한/글은 칸 폭으로 표\n//!   폭을 다시 정한다). 한/글이 저장한 공개 결재문서 사다리 26건도 누름틀 시작 뒤 넓은 표를 둘째\n//!   줄(textpos 8)에 둔다.\n//!\n//! 측정: 2026-11-08, `scripts/visual_sweep.py --silhouette-only --dpi 96`(4열\n//! `silhouette_raw_match_percent`, 색상 경계 보정 전 2px 실루엣), 소스 devel `80fc0c6b44` + 이 수정.\n//! - A: 1쪽 Native 100.00 / fresh WASM 99.99(수정 전 Native 50.58), 2쪽 94.25 / 94.28. 전체 2쪽 =\n//!   PDF 2쪽, 전쪽 최저 Native 94.25(2쪽)·fresh WASM 94.28(2쪽).\n//! - B: 1쪽 Native 94.71 / fresh WASM 94.04, 2쪽 94.25 / 94.28(수정 전과 같음). 전체 2쪽 = PDF 2쪽,\n//!   전쪽 최저 Native 94.25(2쪽)·fresh WASM 94.04(1쪽). B 1쪽의 남은 차이는 표 뒤 주석 줄이다 — 합성\n//!   과정에서 뒤 문단 저장 vpos 를 고치지 않아 rhwp 는 저장 위치(PDF 보다 19px 아래)를 따른다.\n//! - 증거: `mydocs/pr/assets/issue_8773/{native,wasm,native-base}/`(TSV·review·overlay PNG).\n//!\n//! 검사: A 의 줄 소속(첫 줄에 글자 없음, 공백은 표 줄)과 표 위끝 − 문단 첫 줄 = 글자 모양 크기 ×\n//! 줄 간격 + 바깥 위 여백(관계형), 앞 결재 표와 겹치지 않음(관계형), A 1쪽 표 위끝 255.7px ±2(고정형,\n//! 양쪽 raw 99.99% 이상·확대 판독). B 는 A 보다 정확히 한 줄 위(관계형).\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8785,
+    "source": "tests/cases/issue_8782_stored_field_line_tac_prefix.rs",
+    "module": "issue_8782_stored_field_line_tac_prefix",
+    "tests": [
+      "table_starts_on_the_row_after_the_stored_field_line",
+      "stored_field_line_stays_on_the_page_where_it_fits"
+    ],
+    "header": "//! [#8782] 관계형 회귀 — 글자 없는 host 에서 한/글이 저장한 필드 시작 줄(누름틀 시작만 담은 빈\n//! 줄)은 표 앞 줄이다. 표는 그 줄 다음 저장 줄에서 시작하고, 쪽을 넘길 때 그 줄은 앞 쪽에 남는다.\n//!\n//! 주석 갱신: 2026-11-10 05:10 KST(+09:00), 최신 devel 재측정.\n//!\n//! - 입력 A: `samples/issue8782/stored_field_line_table.hwpx` — 공개 결재문서 36368775(HWPX, 2쪽).\n//!   2쪽 문단 9: 글자 없음, 원시 순서 누름틀 시작 → 글자처럼 취급 8×8 표 → 누름틀 끝. 한/글 저장\n//!   줄 2개 = 필드 줄(ts 0, vpos 1652, 높이 1100 + 간격 552) + 표 줄(ts 8, vpos 3304).\n//! - 입력 B: `samples/issue8782/stored_field_line_page_split.hwpx` — 공개 결재문서 36454509(HWPX,\n//!   3쪽). 1쪽 끝 문단 2: 같은 구성, 필드 줄(vpos 64942)은 1쪽 본문(69790HU)에 들고 표 줄(vpos\n//!   67102 + 6408)은 넘친다.\n//! - 독립 기준: `pdf/issue8782/*-2020.pdf`(한/글 2022 12.0.0.4547 Print, A 2쪽·B 3쪽). A 2쪽 표 위\n//!   괘선 102.4px = 본문 위 + (3304 + 바깥 위 여백 140)/75. B 는 필드 줄을 1쪽에 두고 2쪽 제목 표를\n//!   본문 맨 위에서 시작한다.\n//!\n//! 측정: 2026-11-10, `scripts/visual_sweep.py --silhouette-only --dpi 96`(4열\n//! `silhouette_raw_match_percent`, 색상 경계 보정 전 2px 실루엣), head `cb6ed9b4b5`(devel `b5064fae1e`\n//! 위 이 수정), 글꼴은 합계 64MiB 이내의 굴림·한컴바탕·HY견고딕·맑은고딕 폴더.\n//! - A: 2쪽 Native 95.31 / fresh WASM 95.79(수정 전 Native 36.60), 1쪽 100.00 / 99.31. 전체 2쪽 = PDF\n//!   2쪽, 전쪽 최저 Native 95.31(2쪽)·fresh WASM 95.79(2쪽).\n//! - B: 1쪽 90.91 / 99.26, 2쪽 91.93 / 94.18(수정 전 Native 43.16), 3쪽 99.08 / 100.00(수정 전\n//!   0.00). 전체 3쪽 = PDF 3쪽, 전쪽 최저 Native 90.91(1쪽)·fresh WASM 94.18(2쪽).\n//! - 증거: `mydocs/pr/assets/issue_8782/{native,wasm,native-base}/`(TSV·review·overlay PNG).\n//!\n//! 검사(관계형): 두 입력 모두 원본 계약(글자 없음, 필드 시작이 표보다 앞, 한/글 저장 줄 2개)을\n//! 확인한다. A 는 표 위끝 − 필드 줄 위끝 = 저장 필드 줄 전진 + 바깥 위 여백. B 는 필드 줄이 1쪽에\n//! 한 번, 표가 2쪽에 한 번(중복·누락 없음), 2쪽 표 위끝 = 본문 위 + 바깥 위 여백.\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8788,
+    "source": "tests/cases/issue_8786_reflowed_gap_stored_rewind.rs",
+    "module": "issue_8786_reflowed_gap_stored_rewind",
+    "tests": [
+      "stale_rewind_after_reflowed_paragraphs_does_not_break_the_page"
+    ],
+    "header": "//! [#8786] 관계형·고정형 회귀 — 저장 끝을 준 문단과 현재 문단 사이에 재조판 줄로 소비한 문단이\n//! 있으면, 그 저장 끝으로 낡은 vpos 되감김을 쪽 경계로 인정하지 않는다.\n//!\n//! 주석 갱신: 2026-11-08 22:22 KST(+09:00), 새 파일.\n//!\n//! - 입력: `samples/issue8786/reflowed_gap_stored_rewind.hwpx` — 공개 결재문서 36431892(HWPX, 3쪽).\n//!   문단 16·17 은 결재 시스템이 가림표로 다시 쓴 합성 줄(tag 최상위 비트), 문단 15 가 마지막 유효\n//!   저장 줄, 문단 18 의 저장 vpos 3152 는 옛 조판의 「다음 쪽 시작」 되감김이다.\n//! - 독립 기준: `pdf/issue8786/reflowed_gap_stored_rewind-2020.pdf`(한/글 2022 12.0.0.4547 Print,\n//!   3쪽). 문단 18~20(「※ 규격 변경 내용」과 별표 두 줄)을 2쪽에 두고 3쪽은 문단 21 부터다.\n//! - 수정 전 rhwp(devel `80fc0c6b44`)는 문단 15 의 저장 끝 817.9px 를 재조판 문단 16·17 소비 뒤\n//!   흐름 838.6px 와 견줘 「일치」로 보고, 낡은 되감김으로 문단 18 부터 3쪽에 넘겼다.\n//!\n//! 측정: 2026-11-08, `scripts/visual_sweep.py --silhouette-only --dpi 96`(4열\n//! `silhouette_raw_match_percent`, 색상 경계 보정 전 2px 실루엣), 소스 devel `80fc0c6b44` + 이 수정.\n//! 1쪽 Native 99.99 / fresh WASM 99.99, 2쪽 99.61 / 99.61(수정 전 Native 89.32), 3쪽 99.70 / 99.71\n//! (수정 전 13.01). 전체 3쪽 = PDF 3쪽, 전쪽 최저 Native 99.61(2쪽)·fresh WASM 99.61(2쪽).\n//! 증거: `mydocs/pr/assets/issue_8786/{native,wasm,native-base}/`(TSV·review·overlay PNG).\n//!\n//! 검사: 원본 계약(합성 줄 문단 16·17, 문단 18 되감김), 쪽수 3 = 한/글(고정형, 양쪽 raw 99.61%\n//! 이상), 문단 16~20 은 2쪽·문단 21 은 3쪽·중복 없음·2쪽 안 순서 17→18→19→20(관계형).\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8792,
+    "source": "tests/cases/issue_8759_page_band_own_anchor_line.rs",
+    "module": "issue_8759_page_band_own_anchor_line",
+    "tests": [
+      "page_band_pushes_table_paragraph_and_own_anchor_line"
+    ],
+    "header": "//! 관계형·고정형(쪽수): 쪽·종이 기준 자리차지 그림의 밴드가 표 문단의 시작과 자기 앵커 문단의 첫 줄을 밀어, 표와 뒤 본문이 그림 아래에 오고 부록의 쪽을 거의 채우는 그림이 연속한 쪽에 하나씩 놓이며 전체 쪽수가 독립 PDF 와 같은지 검사한다.\n//! 주석 갱신: 2026-11-08 23:47 KST (Asia/Seoul). 새 파일이며 직전 파일 커밋은 없다.\n//! 실제 측정: 2026-11-08, `scripts/visual_sweep.py --silhouette-only` 4열 `silhouette_raw_match_percent`(색상 경계 보정 전 2px 실루엣), 96 DPI, 기준 한/글 2020 Print.\n//! 원본 `samples/issue8759/6500000-201700118_jeju_tourism_education_plan.hwp`(한/글 2010 저장), 전체 313쪽 = 한/글 2020 Print 313쪽.\n//! 55쪽(그림 아래 표): Native 99.98 / fresh WASM 99.99. 271쪽(부록 회전 표): 99.98 / 99.98. 272쪽: 99.99 / 99.99. 전쪽 최저: Native 45.19(49쪽) / fresh WASM 45.57(49쪽). 90% 미만 Native 10쪽·WASM 12쪽은 모두 수정 전에도 미달이다(29·47~51쪽은 수정 전과 같거나 0.2 이내, 56·63·67·103·110·138쪽은 수정 전 31~60 → 80~91). 수정 전 55쪽 29.59 / 29.13, 271쪽 48.04 / 48.26, 쪽수 311, 90% 미만 264쪽.\n//! 정식 TSV·review·overlay: `mydocs/pr/assets/issue_8759/{base,head}/{native,wasm}/jeju_tourism_education_plan_silhouette.tsv`, `png/`.\n//! 확대 판독: 55쪽 표가 「그래프 3-8」 그림 아래, 뒤 본문이 한/글과 같은 높이(overlay 일치). 수정 전에는 표·본문이 그림 위에 겹쳤다.\n//! 같은 assertion 이 수정 전 FAIL(쪽수 311) / 수정 후 PASS.\n//! 독립 기대값: 한/글 2020 Print `pdf/issue8759/6500000-201700118_jeju_tourism_education_plan-2020.pdf`(313쪽).\n//! 저장 근거: 55쪽 표 host pi720 첫 줄 vpos 31482 = 그림 pi719 밴드 아래끝(종이 오프셋 14808 + 높이 26594 − 본문 위 9920). 부록 앵커 pi3244 첫 줄 vpos 57964 = 10684 + 57200 − 9920, pi3247 58100 = 10620 + 57400 − 9920(각자 쪽 맨 위에서 vpos 가 되감긴다).\n//! 독립 절대 px 좌표 대신 그림·표·앵커 줄의 위아래 관계와 쪽 소속을 검사한다. 설치 글꼴을 가정하지 않는다."
+  },
+  {
+    "pr": 8794,
+    "source": "tests/cases/issue_8778_split_row_segments.rs",
+    "module": "issue_8778_split_row_segments",
+    "tests": [
+      "split_row_segments_keep_the_review_table_on_the_header_page",
+      "field_only_stored_row_stays_above_the_title_table",
+      "full_width_paragraph_does_not_join_the_column_start_wrap_band",
+      "tac_table_after_a_float_prefix_row_does_not_pass_its_stored_row"
+    ],
+    "header": "//! 관계형·고정형 — [#8778] 나뉜 한 줄의 세그먼트, 단 시작 어울림 띠의 매칭, TAC 표 앞 저장 줄.\n//! 주석 갱신: 2026-11-10 05:15 KST (최신 devel 재측정)\n//!\n//! 입력 1: 공개 결재문서 36495398 의 축소본(둘째 구역 16번 이후 문단 삭제, 이 환경에 없는\n//! HY중고딕·HY신명조 문단 제외). 기준: 같은 축소본의 한컴 engine 2020 Print PDF\n//! `pdf/issue8778/36495398-split-row-segments-reduced-2020.pdf`(3쪽).\n//! - 고정형: 전체 쪽수 3.\n//! - 관계형 2쪽: 첫 두 문단의 두 세그먼트(같은 저장 vpos, tag bit 17·18)는 같은 줄 높이에 놓이고,\n//!   사전 검토항목 표(`pi=2`)는 둘째 문단 아래·본문 안에 놓인다.\n//! - 관계형 3쪽: 쪽 첫 문단 `pi=4` 의 제목 표는 누름틀 시작만 든 저장 줄 아래(저장 줄 차이 +\n//!   바깥 위 여백 범위)에 놓인다. 저장 줄 없는 문단 `pi=12` 는 2쪽 그림의 어울림 띠에 매칭되지\n//!   않아 전폭 한 줄이다.\n//!\n//! 입력 2(반례): 공개 보도자료 156739836 의 축소본(첫째·둘째 구역은 첫 문단만, 셋째 구역은 첫\n//! 문단과 138~145번 문단, 그림 축소). 기준: `pdf/issue8778/156739836-float-prefix-row-reduced-2020.pdf`(4쪽).\n//! - 관계형 4쪽: 앞 저장 줄을 자리차지 표(`pi=8 ci=0`)가 차지하는 TAC 표(`ci=1`)는 떠 있는 표\n//!   아래에 놓이되 저장 표 줄 위치(저장 vpos + 바깥 위 여백)를 넘지 않는다.\n//!\n//! 측정(2026-11-10, head 717e05257a, devel b5064fae1e 위, `scripts/visual_sweep.py --silhouette-only\n//! --dpi 96`, raw = `silhouette_raw_match_percent`, 문서 face 만 공급한 글꼴 디렉터리):\n//! - 입력 1 Native: 3쪽 / 3쪽, p1 100.00 · p2 99.93 · p3 99.98, 최저 99.93 (base 는 4쪽으로 쪽수 불일치)\n//! - 입력 1 fresh WASM: 3쪽 / 3쪽, p1 100.00 · p2 100.00 · p3 99.98, 최저 99.98\n//! - 입력 2 Native: 4쪽 / 4쪽, p1 100.00 · p2 99.77 · p3 95.70 · p4 96.66, 최저 95.70\n//! - 입력 2 fresh WASM: 4쪽 / 4쪽, p1 100.00 · p2 99.77 · p3 95.77 · p4 96.83, 최저 95.77\n//! - 증거: `mydocs/pr/assets/issue_8778/`\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8803,
+    "source": "tests/cases/issue_8795_picture_deferral_rewind_own_picture.rs",
+    "module": "issue_8795_picture_deferral_rewind_own_picture",
+    "tests": [
+      "deferred_picture_opens_next_page_above_rewinding_paragraph_picture"
+    ],
+    "header": "//! 관계형: 쪽 끝 빈 문단에 앵커한 자리차지 그림이 들어가지 않으면 앵커 줄과 뒤 빈 문단은 앞 쪽에 남고 그림만 다음 쪽 맨 위로 가는지, 다음 쪽을 여는 문단이 자기 그림을 가져도 그 아래에 놓이는지, 정확히 본문 끝에 닿는 그림이 제 쪽에 남는지를 그림의 쪽 소속·순서로 검사한다.\n//! 주석 갱신: 2026-11-09 05:30 (Asia/Seoul). 새 파일이며 직전 파일 커밋은 없다.\n//! 실제 측정: 2026-11-09, `scripts/visual_sweep.py --silhouette-only --dpi 96` silhouette_raw_match_percent(색상 경계 보정 전 2px 내용 실루엣), Native(native-skia)·fresh WASM 각 101쪽 전쪽, 수정 전 = #8736 head ee0d775f41.\n//! 원본 `samples/issue8795/1351000-201500141_arrhythmia_research_plan.hwp`(저장 제품 정보 없음), 전체 101쪽 = 한/글 2020 Print 101쪽.\n//! 77쪽: Native 100.00 / fresh WASM 100.00. 78쪽: 99.89 / 99.69. 80쪽: 99.91 / 99.80. 78~88쪽 전부 99.0 이상(수정 전 20~59). 전쪽 최저: Native 1.54(35쪽) / fresh WASM 1.67(35쪽). 90% 미만 Native·WASM 각 6쪽(34·35·45·46·54·58)은 수정 전과 같은 값이며 이 그림 이월 범위 밖이다(34·45쪽은 저장 쪽 시작 문단의 글자처럼 취급한 그림이 앞 쪽 바닥 아래로 넘치는 기존 형상). 수정 전 102쪽, 90% 미만 30쪽.\n//! 정식 TSV·review·overlay: `mydocs/pr/assets/issue_8795/{base,head}/{native,wasm}/arrhythmia_research_plan_silhouette.tsv`, `png/`.\n//! 확대 판독: 77·78·80쪽 review·overlay 를 한/글 2020 Print 와 같은 배율로 대조 — 77쪽은 앵커 빈 줄만 남고 본문 줄 위치가 같다, 78쪽은 pi969 그림이 맨 위·pi972 그림이 그 아래로 PDF 와 위아래 경계가 겹친다, 80쪽 pi976 그림 아래끝이 본문 끝과 같다.\n//! 같은 assertion 이 수정 전 FAIL(77쪽에 pi969 그림이 남음, 쪽수 102) / 수정 후 PASS. 전체 쪽 최저가 90 미만(아래)이라 쪽수는 고정하지 않는다.\n//! 독립 기대값: 한/글 2020 Print `pdf/issue8795/1351000-201500141_arrhythmia_research_plan-2020.pdf`(101쪽). 77쪽에 그림 없음, 78~86쪽 그림 둘, 87쪽 그림 하나.\n//! 저장 근거: 앵커 pi969 첫 줄 vpos 59600 + 그림 31878 > 본문 65763. pi970·971(61740·63880)은 앞 쪽에 이어지고, pi972 가 vpos 31878 = 그림 높이에서 되감긴다(pi972 는 자기 그림을 가진 빈 문단). pi976 그림 아래끝 32185 + 1700 + 31878 = 65763 = 본문 높이. pi975 다음 줄 32185 = 오프셋 307 + 그림 31878(빈 앵커의 아래 간격 1000 은 띠 안에 든다).\n//! 독립 절대 px 좌표 대신 그림의 쪽 소속·쪽마다 그림 수·그림끼리의 위아래 관계를 검사한다. 설치 글꼴을 가정하지 않는다."
+  },
+  {
+    "pr": 8806,
+    "source": "tests/cases/issue_8805_tac_picture_overflow_stored_new_page.rs",
+    "module": "issue_8805_tac_picture_overflow_stored_new_page",
+    "tests": [
+      "stored_new_page_tac_picture_moves_instead_of_spilling_below_body"
+    ],
+    "header": "//! 관계형: 쪽 위에서 시작해 아래로 길게 내려오는 글자처럼 취급한 그림 뒤에 저장 vpos 0 으로 시작하는 그림 문단이 통째로 들어가지 않으면, 하단 여백으로 흘리지 않고 다음 쪽 첫머리로 넘기는지를 그림의 쪽 소속으로 검사한다.\n//! 주석 갱신: 2026-11-09 08:03 (Asia/Seoul). 새 파일이며 직전 파일 커밋은 없다.\n//! 실제 측정: 2026-11-09, `scripts/visual_sweep.py --silhouette-only --dpi 96` silhouette_raw_match_percent(색상 경계 보정 전 2px 내용 실루엣), Native(native-skia)·fresh WASM 각 101쪽 전쪽, 수정 전 = #8803 head f5d4a22ef2.\n//! 원본 `samples/issue8795/1351000-201500141_arrhythmia_research_plan.hwp`(저장 제품 정보 없음), 전체 101쪽 = 한/글 2020 Print 101쪽.\n//! 34쪽: Native 99.91 / fresh WASM 99.92. 35쪽: 99.57 / 99.60. 45쪽: 99.91 / 99.92. 46쪽: 99.57 / 99.60(수정 전 37.62/38.90, 1.54/1.67). 전쪽 최저: Native 27.88(54쪽) / fresh WASM 29.09(54쪽). 90% 미만 Native·WASM 각 2쪽(54·58)은 수정 전과 같은 값이며 이 범위 밖이다(54쪽 자리차지 그림 셋 겹침, 58쪽 그림 아래 줄 누락).\n//! 정식 TSV·review·overlay: `mydocs/pr/assets/issue_8805/{base,head}/{native,wasm}/arrhythmia_research_plan_silhouette.tsv`, `png/`.\n//! 확대 판독: 34·35쪽 review·overlay 를 한/글 2020 Print 와 같은 배율로 대조 — 34쪽은 pi454 서식 그림 하나만 PDF 와 같은 자리에 남고, 35쪽은 pi455 그림이 맨 위·본문 두 줄이 그 아래로 PDF 와 위아래 경계가 겹친다(overlay 주황은 색상 차이).\n//! 같은 assertion 이 수정 전 FAIL(34쪽에 pi454·pi455 그림 둘, 본문 아래로 53.6px) / 수정 후 PASS.\n//! 독립 기대값: 한/글 2020 Print `pdf/issue8795/1351000-201500141_arrhythmia_research_plan-2020.pdf` — 34·45쪽은 그림 하나, 35·46쪽은 다음 그림이 맨 위.\n//! 저장 근거: pi454 시작 1700·아래끝 34496(줄 간격 포함 35196), pi455 vpos 0·높이 34589. 본문 65760HU 에 35196 + 34589 = 69785 로 들어가지 않는다. 45쪽 pi539·pi540 도 같은 형상.\n//! 반례: 통째로 들어가는 vpos 0 문단은 같은 쪽에 남는다(`tests/fixtures/pr8036_stored_tall_line/zero.hwpx`, `verified_stored_tall_line_print_flow`).\n//! 독립 절대 px 좌표 대신 그림의 쪽 소속과 쪽마다 그림 수를 검사한다. 설치 글꼴을 가정하지 않는다."
+  },
+  {
+    "pr": 8830,
+    "source": "tests/cases/issue_8807_topbottom_pictures_prev_band_gap.rs",
+    "module": "issue_8807_topbottom_pictures_prev_band_gap",
+    "tests": [
+      "stacked_paragraph_topbottom_pictures_do_not_overlap"
+    ],
+    "header": "//! 관계형: 문단마다 하나씩 앵커한 문단 기준 자리차지(TopAndBottom) 그림 셋이 겹치지 않고 앵커 문단 순서대로 위에서 아래로 쌓이는지 검사한다.\n//! 주석 갱신: 2026-11-09 12:20 (Asia/Seoul). 새 파일이며 직전 파일 커밋은 없다.\n//! 실제 측정: 2026-11-09, `scripts/visual_sweep.py --silhouette-only --dpi 96` silhouette_raw_match_percent(색상 경계 보정 전 2px 내용 실루엣), Native(native-skia)·fresh WASM 각 101쪽 전쪽, 수정 전 = #8806 head 2bbc3b1773.\n//! 원본 `samples/issue8795/1351000-201500141_arrhythmia_research_plan.hwp`(저장 제품 정보 없음), 전체 101쪽 = 한/글 2020 Print 101쪽.\n//! 54쪽: Native 99.99 / fresh WASM 99.50(수정 전 27.88 / 29.09). 전쪽 최저: Native 69.61(58쪽) / fresh WASM 70.07(58쪽). 90% 미만 Native·WASM 각 1쪽(58쪽)은 수정 전과 같은 값이며 이 범위 밖이다(58쪽 그림이 아래 캡션 글을 가림, 별도 이슈).\n//! 정식 TSV·review·overlay: `mydocs/pr/assets/issue_8807/{base,head}/{native,wasm}/arrhythmia_research_plan_silhouette.tsv`, `png/`.\n//! 확대 판독: 54쪽 review·overlay 를 한/글 2020 Print 와 같은 배율로 대조 — 본문 세 줄 아래 원그래프 셋(브루가다·특발성 심실세동·긴 QT)이 PDF 와 같은 자리에 차례로 쌓이고 테두리·범례가 겹치지 않는다.\n//! 같은 assertion 이 수정 전 FAIL(54쪽 pi613 그림이 pi612 그림과 겹침) / 수정 후 PASS.\n//! 독립 기대값: 한/글 2020 Print `pdf/issue8795/1351000-201500141_arrhythmia_research_plan-2020.pdf` 54쪽 — 원그래프 셋이 차례로 쌓인다.\n//! 저장 근거: pi612 줄 4800·오프셋 713·그림 17711 → pi613 줄 23224, pi613 오프셋 1105(줄 높이 1000 이상) → pi614 줄 42040 = 23224 + 1105 + 17711, pi614 오프셋 1360 → pi615 줄 61111.\n//! 반례(정식 검사 아님 — 해당 쪽이 수정 전부터 90% 미만): 저장 줄이 띠 아래끝에 놓인 글 없는 host(3780000-202000005 pi1042 줄 30849 = 앞 줄 끝 + 오프셋 3409 + 그림 23700)는 줄이 띠 위에 있다고 보지 않는다 — 공개 문서 corpus A/B 에서 수정 전과 SVG 동일.\n//! 독립 절대 px 좌표 대신 그림의 쪽 소속·순서·서로 겹치지 않음을 검사한다. 설치 글꼴을 가정하지 않는다."
+  },
+  {
+    "pr": 8833,
+    "source": "tests/cases/issue_8808_float_band_gap_successors.rs",
+    "module": "issue_8808_float_band_gap_successors",
+    "tests": [
+      "successors_fill_the_gap_above_the_paragraph_float_table",
+      "continuation_page_keeps_the_schedule_table",
+      "float_band_successor_stored_below_band_stays_below",
+      "float_band_successor_stored_in_gap_stays_above_band"
+    ],
+    "header": "//! 관계형·고정형 — [#8808] 문단 기준 자리차지 표 위 빈 공간의 후속 문단.\n//! 주석 갱신: 2026-11-10 07:30 KST (최신 devel 재측정, 저장 띠 아래끝 계약 검사 추가)\n//!\n//! 입력: 공개 공문서 36341965 의 축소본(1쪽 결재 표 문단과 일정 표 뒤 문단 삭제, 구역 정의는\n//! 둘째 문단으로 옮김). 보안 마스킹 문단에 저장 줄이 없어 로드 시 구역 vpos 재계산이 돈다.\n//! 기준: 같은 축소본의 한컴 engine 2020 Print PDF\n//! `pdf/issue8808/36341965-float-band-gap-reduced-2020.pdf`(2쪽).\n//! - 고정형: 전체 쪽수 2.\n//! - 관계형 1쪽: 표 host `pi=14`(입찰방법) 뒤 `pi=15`·`pi=16` 은 같은 쪽에서 host 아래·표\n//!   (`pi=14 ci=0`, 문단 기준 세로 오프셋 7665HU) 위끝 위에 순서대로 놓인다.\n//! - 관계형 2쪽: 표 이어진 조각 뒤 `pi=17`·`pi=18` 과 일정 표(`pi=19`)가 같은 쪽 본문 안에 놓인다.\n//!\n//! 측정(2026-11-10, head 84b6d1b2a5, `scripts/visual_sweep.py --silhouette-only --dpi 96`,\n//! raw = `silhouette_raw_match_percent`, 문서 face 만 공급한 글꼴 디렉터리):\n//! - Native: 2쪽 / 2쪽, p1 99.82 · p2 99.98, 최저 99.82 (base 는 3쪽으로 쪽수 불일치)\n//! - fresh WASM: 2쪽 / 2쪽, p1 99.10 · p2 99.96, 최저 99.10\n//! - 증거: `mydocs/pr/assets/issue_8808/`\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8835,
+    "source": "tests/cases/issue_8810_stale_cell_ladder.rs",
+    "module": "issue_8810_stale_cell_ladder",
+    "tests": [
+      "page_relative_first_fragment_starts_at_its_stored_offset",
+      "successor_of_nested_table_host_follows_the_host_line_not_the_stale_ladder",
+      "stale_rewind_does_not_push_attachment_lines_to_the_next_page"
+    ],
+    "header": "//! 관계형·고정형 — [#8810] 쪽 기준 자리차지 표의 첫 조각 오프셋과 칸의 낡은 저장 사다리.\n//! 주석 갱신: 2026-11-09 11:50 KST (새 파일)\n//!\n//! 입력: 공개 결재문서 36400259 원본. 기준: 한컴 engine 2020 Print PDF\n//! `pdf/issue8810/36400259-stale-cell-ladder-2020.pdf`(2쪽).\n//! 본문 전체가 쪽 기준(`vertRelTo=PAGE`, 세로 오프셋 −1426HU) 자리차지 9×11 표 하나이고, 그 마지막\n//! 칸(`r=8`)에서 가린 글(`****`) 문단에는 `linesegarray` 가 없다. 나머지 문단의 저장 vpos 는 가리기\n//! 전 글로 조판한 값이라 흐름보다 1565HU 앞서 있고, 붙임 문단에서 0 으로 되감긴다.\n//! - 고정형: 전체 쪽수 2.\n//! - 관계형 1쪽: 표 위끝은 본문 위끝 + 저장 세로 오프셋이다(한/글 PDF 첫 글줄 97.0px, 본문 위 113.4).\n//! - 관계형 1쪽: 중첩 표 host(`pi=11`) 다음 문단 `pi=12` 는 host 줄 위끝에서 저장 줄 높이 + 줄간격\n//!   (15867 + 720 HU) 아래다 — 낡은 절대 vpos(38987)가 아니다.\n//! - 관계형 쪽 소유: 붙임 1·2(`pi=23`·`pi=24`)는 1쪽 본문 안, 2쪽은 `pi=25`(붙임 3)부터 시작한다.\n//!\n//! 측정(2026-11-09, 이 파일과 같은 커밋의 코드, base = PR #8794 head 85abd69fbb,\n//! `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`, raw =\n//! `silhouette_raw_match_percent`, 글꼴 `ttfs/opensource`):\n//! - Native: 2쪽 / 2쪽, p1 99.80 · p2 99.98, 최저 99.80 (base: p1 31.60 · p2 17.32)\n//! - fresh WASM: 2쪽 / 2쪽, p1 99.74 · p2 99.99, 최저 99.74\n//! - 증거: `mydocs/pr/assets/issue_8810/`(native·wasm·native_base TSV, review·overlay PNG)\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8838,
+    "source": "tests/cases/issue_8831_pushed_line_picture_anchor.rs",
+    "module": "issue_8831_pushed_line_picture_anchor",
+    "tests": [
+      "picture_above_its_pushed_line_stays_at_paragraph_anchor"
+    ],
+    "header": "//! 관계형: 오프셋 0 문단 기준 자리차지(TopAndBottom) 그림 아래로 밀린 줄을 가진 문단에서 그림이 앞 그림 아래·자기 줄 위에 놓이는지 검사한다.\n//! 주석 갱신: 2026-11-09 15:13 (Asia/Seoul). 새 파일이며 직전 파일 커밋은 없다.\n//! 실제 측정: 2026-11-09, `scripts/visual_sweep.py --silhouette-only --dpi 96` silhouette_raw_match_percent(색상 경계 보정 전 2px 내용 실루엣), Native(native-skia)·fresh WASM 각 101쪽 전쪽, 수정 전 = #8807 head b94ffbe3a1.\n//! 원본 `samples/issue8795/1351000-201500141_arrhythmia_research_plan.hwp`(저장 제품 정보 없음), 전체 101쪽 = 한/글 2020 Print 101쪽.\n//! 58쪽: Native 100.00 / fresh WASM 99.75(수정 전 69.61 / 70.07). 전쪽 최저: Native 97.76(99쪽) / fresh WASM 95.38(55쪽). 90% 미만 0쪽.\n//! 정식 TSV·review·overlay: `mydocs/pr/assets/issue_8831/{base,head}/{native,wasm}/arrhythmia_research_plan_silhouette.tsv`, `png/`.\n//! 확대 판독: 58쪽 review·overlay 를 한/글 2020 Print 와 같은 배율로 대조 — pi695 논문 표지 그림이 pi694 그림 바로 아래에서 시작하고, 캡션 「미국 브라운 대학교 Dr. Dudley 와 연구논문」이 그 아래 PDF 와 같은 자리에 있다.\n//! 반례: 같은 문단의 앞 표까지 gap 에 든 그림(1490000-200800034 pi1090 표 뒤 원그래프)과 #5715 가드가 걸리지 않는 그림(`samples/issue6879/156767332-broadcast-revenue-attachment.hwp` pi46, `text_overlap_baseline`)은 종전 경로 — 공개 문서 corpus A/B 에서 바뀐 문서는 이 원본 58쪽 하나.\n//! 같은 assertion 이 수정 전 FAIL(58쪽 pi695 그림이 자기 캡션 줄을 덮음) / 수정 후 PASS.\n//! 독립 기대값: 한/글 2020 Print `pdf/issue8795/1351000-201500141_arrhythmia_research_plan-2020.pdf` 58쪽 — 두 그림이 차례로 쌓이고 캡션 줄이 아래 그림 밑에 있다.\n//! 저장 근거: pi694 그림 띠 끝 27278 = pi695 문단 시작, pi695 그림 오프셋 0·높이 36661 → pi695 줄 63939 = 27278 + 36661.\n//! 독립 절대 px 좌표 대신 그림·줄의 쪽 소속과 위아래 순서를 검사한다. 설치 글꼴을 가정하지 않는다."
+  },
+  {
+    "pr": 8846,
+    "source": "tests/cases/issue_8843_synthetic_forward_tac_axis.rs",
+    "module": "issue_8843_synthetic_forward_tac_axis",
+    "tests": [
+      "tac_table_after_rejected_synthetic_gap_follows_the_flow"
+    ],
+    "header": "//! [#8843] 관계형·고정형 회귀 — 가린 문단(합성 줄) 뒤 저장 앞 점프를 커서가 거절하면, 뒤 저장 TAC\n//! 표도 같은 축에서 순차 흐름에 놓인다(거절한 빈자리를 단 첫 표 축으로 되살리지 않는다).\n//!\n//! 주석 갱신: 2026-11-09 17:36 KST(+09:00), 새 파일.\n//!\n//! - 입력: `samples/issue8843/synthetic_forward_tac_axis.hwpx` — 공개 결재문서 36355707(HWPX, 2쪽).\n//!   문단 8 은 가린(합성, bit31) 줄이고 그 끝과 문단 9 저장 vpos 사이에 옛 줄 수로 잰 1920HU\n//!   빈자리가 있다. 문단 10 은 TAC 표(2×8) 하나만 든 문단이다.\n//! - 독립 기준: `pdf/issue8843/synthetic_forward_tac_axis-2020.pdf`(한/글 2022 12.0.0.4547 Print, 2쪽).\n//!   한/글은 빈자리를 두지 않고 순차 흐름으로 그린다(표 위끝 621px, 「라.」 733.6px).\n//! - 수정 전 rhwp(devel `024d610633`)는 커서가 문단 9 에서 이 앞 점프를 거절하고도(`#1811`), 문단 10\n//!   의 합성 TAC 줄 경로가 단 첫 표 축으로 빈자리를 되살려 표·뒤 본문이 25.6px 아래였다\n//!   (TAC 표 − 문단 9 48.8px, 기대 23.2px).\n//!\n//! 측정: 2026-11-09, `scripts/visual_sweep.py --silhouette-only --dpi 96`(4열\n//! `silhouette_raw_match_percent`, 색상 경계 보정 전 2px 실루엣), 소스 devel `024d610633` + 이 수정.\n//! 1쪽 Native 99.90 / fresh WASM 99.90(수정 전 Native 61.03), 2쪽 99.99 / 100.00. 전체 2쪽 =\n//! PDF 2쪽, 전쪽 최저 Native 99.90(1쪽)·fresh WASM 99.90(1쪽).\n//! 증거: `mydocs/pr/assets/issue_8843/{native,wasm,native-base}/`(TSV·review·overlay PNG).\n//!\n//! 검사: 원본 계약(문단 8 합성 줄, 문단 8·9 사이 저장 빈자리, 문단 10 TAC 표), 쪽수 2 = 한/글\n//! (고정형), TAC 표 − 문단 9 = 저장 vpos 차이 + 바깥 위 여백, 문단 11 − 문단 9 = 저장 vpos 차이\n//! (관계형, ±1px — 양쪽 raw 99.90% 쪽).\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8848,
+    "source": "tests/cases/issue_8845_unstored_rebase_tac.rs",
+    "module": "issue_8845_unstored_rebase_tac",
+    "tests": [
+      "tac_table_after_unstored_paragraph_follows_the_rebased_flow"
+    ],
+    "header": "//! 관계형·고정형 — [#8845] 저장 줄 없는 문단 뒤 다시 세운 흐름 기준으로 TAC 표를 놓는다.\n//! 주석 갱신: 2026-11-09 17:40 KST (새 파일)\n//!\n//! 입력: 공개 결재문서 36355707 원본. 기준: 한컴 engine 2020 Print PDF\n//! `pdf/issue8845/36355707-unstored-rebase-tac-2020.pdf`(2쪽).\n//! 가린 글 문단과 2×8 TAC 표 host(`pi=10`)에는 `linesegarray` 가 없고, 앞뒤 문단의 저장 vpos 는\n//! 가리기 전 글로 조판한 값이다. 흐름 커서는 계산 줄 뒤에서 지연 기준을 다시 세우는데, 종전에는\n//! TAC 표의 저장 줄 원점이 단 첫 표의 옛 기준을 먼저 골라 표만 25.6px 아래에 그렸다.\n//! - 고정형: 전체 쪽수 2.\n//! - 관계형 1쪽: 표(`pi=10 ci=0`) 위끝 = `(단위 : 천원)` 줄(`pi=9`) 위끝 + 저장 줄 높이·줄간격\n//!   (1000 + 600 HU) + 표 바깥 위 여백(141 HU).\n//! - 관계형 1쪽: 다음 문단 `pi=11` 위끝 = 표 아래끝 + 바깥 아래 여백(141 HU) + host 줄간격(720 HU).\n//!\n//! 측정(2026-11-09, 이 파일과 같은 커밋의 코드, base = upstream/devel 024d610633,\n//! `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`, raw =\n//! `silhouette_raw_match_percent`, 글꼴 `ttfs/opensource`):\n//! - Native: 2쪽 / 2쪽, p1 99.95 · p2 99.81, 최저 99.81 (base: p1 61.41 · p2 99.81)\n//! - fresh WASM: 2쪽 / 2쪽, p1 99.93 · p2 99.97, 최저 99.93\n//! - 증거: `mydocs/pr/assets/issue_8845/`(native·wasm·native_base TSV, review·overlay PNG)\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8849,
+    "source": "tests/cases/issue_8842_overlap_disallowed_pile_next_pages.rs",
+    "module": "issue_8842_overlap_disallowed_pile_next_pages",
+    "tests": [
+      "overlap_disallowed_pile_places_one_picture_per_following_page"
+    ],
+    "header": "//! 관계형: 겹침 허용 안 함 어울림 그림 무리(한 문단 그림 24장)가 앵커 쪽부터 쪽마다 한 장씩 차례로 놓이고 각 그림이 자기 쪽 안에 있는지 검사한다.\n//! 주석 갱신: 2026-11-09 18:36 (Asia/Seoul). 새 파일이며 직전 파일 커밋은 없다.\n//! 실제 측정: 2026-11-09, `scripts/visual_sweep.py --silhouette-only --dpi 96` silhouette_raw_match_percent(색상 경계 보정 전 2px 내용 실루엣), Native(native-skia)·fresh WASM 각 235쪽 전쪽, 수정 전 = upstream/devel 024d610633.\n//! 원본 `samples/issue8842/1351000-201800239_hpv_cohort_final_report.hwp`(저장 제품 한/글 2010), 전체 235쪽 = 한/글 2020 Print 235쪽.\n//! 211~234쪽: Native 최저 95.16(234쪽) / fresh WASM 최저 95.12(234쪽), 그 밖 23쪽은 Native·WASM 모두 98.19 이상(수정 전 0.17~5.69 / 0.24~5.96). 211쪽 99.19/99.31, 212쪽 99.91/99.90. 전쪽 최저: Native 0.35(123쪽) / fresh WASM 0.41(123쪽). 90% 미만 Native 102쪽·WASM 100쪽은 모두 수정 전과 같은 값이며 이 범위 밖이다(76~172쪽 표 쪽 나눔 어긋남 등, 수정 전 126·124쪽).\n//! 정식 TSV·review·overlay: `mydocs/pr/assets/issue_8842/{base,head}/{native,wasm}/hpv_cohort_final_report_silhouette.tsv`, `png/`.\n//! 확대 판독: 211·212·234쪽 review·overlay 를 한/글 2020 Print 와 같은 배율로 대조 — 211쪽은 표지·목차 슬라이드, 212쪽은 연구 참여·탈락 기준 슬라이드, 234쪽은 「감사합니다」 슬라이드가 PDF 와 같은 자리에 한 장씩 있고 테두리·글자 위치가 겹친다(overlay 주황은 글리프 경계).\n//! 같은 assertion 이 수정 전 FAIL(211쪽에 24장이 겹치고 212~234쪽에 그림 없음) / 수정 후 PASS.\n//! 독립 기대값: 한/글 2020 Print `pdf/issue8842/1351000-201800239_hpv_cohort_final_report-2020.pdf`(engine 2020, 11.0.0.9136) 211~234쪽 — 슬라이드 스캔 그림이 쪽마다 한 장.\n//! 저장 근거: 구역 2 pi1007 은 글 없는 한 줄 문단(vpos 5040, cs 42520 · sw 3480)에 어울림·겹침 불허·문단 기준 오프셋 0 그림 24장(42520×60110HU). 뒤 빈 문단 저장 줄도 212~234쪽마다 vpos 0 에서 다시 시작하며 그림 옆(cs 42520)에 있다.\n//! 반례: 뒤 흐름이 쪽을 만들지 않는 무리(`renderer::typeset` 단위 시험 #4770, 그림 3장 문단 하나)는 종전대로 앵커 쪽 1쪽에 남는다.\n//! 독립 절대 px 좌표 대신 그림의 쪽 소속·순서와 쪽 안 포함을 검사한다. 설치 글꼴을 가정하지 않는다."
+  },
+  {
+    "pr": 8861,
+    "source": "tests/cases/issue_8855_host_below_header_table_origin.rs",
+    "module": "issue_8855_host_below_header_table_origin",
+    "tests": [
+      "first_body_line_follows_header_table_bottom_margin_and_host_line",
+      "text_after_full_width_square_picture_starts_below_it",
+      "page_bottom_footer_table_moves_to_second_page_like_hancom"
+    ],
+    "header": "//! 관계형·고정형 — [#8855] 머리 표 아래에 저장된 빈 host 줄의 단 원점과 전폭 어울림 그림 뒤 글.\n//! 주석 갱신: 2026-11-09 22:56 KST (새 파일)\n//!\n//! 입력: 공개 결재문서 36388005(한컴오피스 2020 저장) 원본. 단 첫 문단 `pi=0` 은 글 없이 문단 기준\n//! 자리차지 머리 표(바깥 여백 위 140·아래 852HU)와 빈 누름틀을 갖고, host 줄은 표 상자 바로 아래\n//! (vpos 17645 = 0 + 140 + 16653 + 852), 다음 줄은 그 한 줄 뒤(19085 = 17645 + 1200 + 240)에 있다.\n//! `pi=6` 은 sw=0 줄의 전폭 어울림 그림(문단 기준·위, 15170HU), `pi=7` 은 그림 끝(42055)에 저장돼 있고,\n//! 마지막 `pi=9` 는 쪽 아래 고정 표(365px)이며 저장 vpos 0 이다.\n//! 기준: 한컴 engine 2020 Print PDF `pdf/issue8855/36388005-host-below-header-table-2020.pdf`(2쪽).\n//! - 고정형: 전체 쪽수 2.\n//! - 관계형 1쪽: 첫 본문 `pi=1` 줄 위끝 − 머리 표 아래끝 = 표 아래 바깥 여백 + host 줄 전진(852 + 1200 +\n//!   240HU), `pi=7` 줄은 그림 아래끝 아래에서 시작한다.\n//! - 관계형 2쪽: 쪽 아래 고정 표 `pi=9` 는 1쪽에 없고 2쪽에 있다.\n//!\n//! 측정(2026-11-09, head 1b9316ccd3, `scripts/visual_sweep.py --silhouette-only --dpi 96`,\n//! raw = `silhouette_raw_match_percent`, 문서 face 중 굴림·굴림체·한컴바탕·HY견고딕 공급 — HY신명조·HY중고딕 없음):\n//! - Native: 2쪽 / 2쪽, p1 100.00, p2 100.00, 전쪽 최저 100.00 (base e00f9b7e26 은 1쪽으로 쪽수 불일치, p1 73.70)\n//! - fresh WASM: 2쪽 / 2쪽, p1 100.00, p2 100.00, 전쪽 최저 100.00\n//! - 증거: `mydocs/pr/assets/issue_8855/`\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8862,
+    "source": "tests/cases/issue_8852_para_topbottom_negative_offset.rs",
+    "module": "issue_8852_para_topbottom_negative_offset",
+    "tests": [
+      "restricted_para_topbottom_picture_ignores_negative_offset"
+    ],
+    "header": "//! 관계형: 쪽 영역 안으로 제한인 문단 기준 자리차지 그림의 음수 세로 오프셋이 그림을 앞 본문·쪽 위로 올리지 않고, 그림이 앞 문단 글 아래·쪽 안에 놓이는지 검사한다.\n//! 주석 갱신: 2026-11-09 22:53 (Asia/Seoul). 새 파일이며 직전 파일 커밋은 없다.\n//! 실제 측정: 2026-11-09, `scripts/visual_sweep.py --silhouette-only --dpi 96` silhouette_raw_match_percent(색상 경계 보정 전 2px 내용 실루엣), Native(native-skia)·fresh WASM 각 235쪽 전쪽, 수정 전 = upstream/devel b768bee1c4(그래서 211~234쪽은 #8842 수정 전 값), 수정 후 = #8842 위 이 수정.\n//! 원본 `samples/issue8842/1351000-201800239_hpv_cohort_final_report.hwp`(저장 제품 한/글 2010), 전체 235쪽 = 한/글 2020 Print 235쪽.\n//! 56쪽: Native 99.99 / fresh WASM 100.00(수정 전 5.50 / 5.57). 전쪽 최저: Native 0.35(123쪽) / fresh WASM 0.41(123쪽). 90% 미만 Native 101쪽·WASM 99쪽은 56쪽과 211~234쪽(#8842) 밖이며 수정 전과 같은 값이다(76~172쪽 표 쪽 나눔 어긋남 등).\n//! 정식 TSV·review·overlay: `mydocs/pr/assets/issue_8852/{base,head}/{native,wasm}/hpv_cohort_final_report_silhouette.tsv`, `png/`.\n//! 확대 판독: 56쪽 review·overlay 를 한/글 2020 Print 와 같은 배율로 대조 — 「● 혈액의 시료제작 과정」 아래 「시료 제작의 업무 흐름도 – Blood」 그림이 PDF 와 같은 자리에서 시작하고 상자·화살표·글자가 겹친다(overlay 회색 일치).\n//! 같은 assertion 이 수정 전 FAIL(56쪽 pi785 그림이 쪽 위 밖에서 시작해 앞 글 「● 혈액의 시료제작 과정」을 덮음) / 수정 후 PASS.\n//! 독립 기대값: 한/글 2020 Print `pdf/issue8842/1351000-201800239_hpv_cohort_final_report-2020.pdf` 56쪽 — 그림 위끝 226.5px = 앵커 줄(vpos 9500), 앞 글은 그 위.\n//! 저장 근거: 구역 0 pi785 그림 오프셋 −27507(쪽 영역 안으로 제한·자리차지·문단 기준·위쪽 정렬), 앵커 줄 9500, 다음 문단 줄 45769 = 9500 + 그림 36269. 오프셋을 −12000·−9000 으로 바꾼 한/글 2020 Print 탐침도 같은 앵커 줄에 둔다.\n//! 독립 절대 px 좌표 대신 그림·앞 글의 쪽 소속과 위아래 순서를 검사한다. 설치 글꼴을 가정하지 않는다."
+  },
+  {
+    "pr": 8876,
+    "source": "tests/cases/issue_8864_bottom_fixed_table_outer_margin.rs",
+    "module": "issue_8864_bottom_fixed_table_outer_margin",
+    "tests": [
+      "table_overlapping_body_end_through_its_bottom_margin_moves_to_next_page"
+    ],
+    "header": "//! 관계형·고정형 — [#8864] 쪽 아래 고정 표의 배타 영역은 아래 바깥 여백까지 포함한다.\n//! 주석 갱신: 2026-11-10 06:31 KST (새 파일)\n//!\n//! 입력: 공개 결재문서 36338125(한컴오피스 2020 저장) 원본. 마지막 문단 `pi=23` 은 쪽 기준·아래 정렬\n//! 자리차지 표 둘을 갖는다. `ci=0` 은 쪽 맨 아래(오프셋 0·여백 0), `ci=2` 는 세로 오프셋 9591HU·\n//! 아래 바깥 여백 140HU 위에 놓이는 수신자 표다. 본문 끝은 `ci=2` 위끝을 1.09px 넘는다.\n//! 기준: 한컴 engine 2020 Print PDF `pdf/issue8864/36338125-bottom-fixed-table-margin-2020.pdf`(2쪽).\n//! - 고정형: 전체 쪽수 2.\n//! - 관계형: `ci=0` 은 1쪽에 남고 `ci=2` 만 2쪽으로 간다. 2쪽의 `ci=2` 아래끝은 본문 아래끝에서\n//!   세로 오프셋과 아래 바깥 여백을 뺀 자리다.\n//!\n//! 측정(2026-11-10, 코드 head 7875b6e673, `scripts/visual_sweep.py --silhouette-only --dpi 96`,\n//! raw = `silhouette_raw_match_percent`, 글꼴은 문서 face 만 모은 폴더로 공급):\n//! - Native: 2쪽 / 2쪽, p1 98.93, p2 100.00, 전쪽 최저 98.93\n//! - fresh WASM: 2쪽 / 2쪽, p1 99.34, p2 100.00, 전쪽 최저 99.34\n//! - 증거: `mydocs/pr/assets/issue_8864/`\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8879,
+    "source": "tests/cases/issue_8875_rowspan_opening_row_content_fit.rs",
+    "module": "issue_8875_rowspan_opening_row_content_fit",
+    "tests": [
+      "opening_row_closes_at_page_bottom_and_span_remainder_continues"
+    ],
+    "header": "//! 관계형: 쪽 끝에서 선언 높이는 넘치지만 내용은 드는 0행이 병합 칸 묶음을 연 RowBreak 표에서, 0행이 앞 쪽 바닥에서 닫히고 걸친 병합 칸의 남은 선언 높이가 다음 조각 첫 행으로 이어지는지를 행 소속과 원본 저장 높이 관계로 검사한다.\n//! 주석 갱신: 2026-11-10 08:05 (Asia/Seoul). 새 파일이며 직전 파일 커밋은 없다.\n//! 실제 측정: 2026-11-10, `scripts/visual_sweep.py --silhouette-only --dpi 96` silhouette_raw_match_percent(색상 경계 보정 전 2px 내용 실루엣), Native(native-skia)·fresh WASM 각 235쪽 전쪽, 수정 전 = #8849 head d195bce988, 수정 후 = 0f24da33cc.\n//! 원본 `samples/issue8842/1351000-201800239_hpv_cohort_final_report.hwp`(저장 제품 한/글 2010), 전체 235쪽 = 한/글 2020 Print 235쪽.\n//! 18쪽: Native 99.93 / fresh WASM 99.90(수정 전 94.47 / 94.73). 19쪽: Native 99.95 / fresh WASM 99.95(수정 전 37.39 / 38.10). 전쪽 최저: Native 0.35 / fresh WASM 0.41 — 수정 전과 같은 값이며 이 범위 밖이다(76~172쪽 표 쪽 나눔 등 별도 축). 90% 미만 Native 102→101쪽, WASM 100→99쪽, 18·19쪽 밖 쪽 점수 변화 없음.\n//! 정식 TSV·review·overlay: `mydocs/pr/assets/issue_8875/{base,head}/{native,wasm}/hpv_cohort_final_report_silhouette.tsv`, `png/`.\n//! 확대 판독: 18·19쪽 review·overlay 를 한/글 2020 Print 와 같은 배율로 대조 — 18쪽 바닥 「2018 | 혈청(Serum) | …」 0행 조각의 위아래 괘선과 19쪽 첫 행 「명 | vial」·이후 7행 괘선이 PDF 와 겹친다.\n//! 같은 assertion 이 수정 전 FAIL(18쪽에 pi273 조각 없음, 표 전체가 19쪽) / 수정 후 PASS.\n//! 독립 기대값: 한/글 2020 Print `pdf/issue8842/1351000-201800239_hpv_cohort_final_report-2020.pdf` 18쪽 — 표 0행(「2018 | 혈청(Serum) | …」)만 쪽 바닥에 2232HU(저장 표 높이 2229HU)로 닫히고, 19쪽 첫 행(「명 | vial | …」)은 2784HU = 병합 칸 「2018」 5000HU − 2229HU 다(300DPI 괘선 측정).\n//! 저장 근거: 구역 0 pi273 9×9 RowBreak 표, 저장 높이 2229HU, 0행 선언 2500HU, 「2018」 칸 r=0 rs=2 h=5000HU, 남은 공간 32.9px < 0행 33.3px, 0행 내용 한 줄 1331HU + 안 여백 282HU.\n//! 반례: #1145 표본(잔여 15.2px 에 rowspan 제목 18.7px 이 안 듦)과 task1753 pi=51(rowspan 내용이 0행을 넘음)은 묶음을 통째로 넘긴다 — `tests/cases/rowbreak_rowspan_opening_row_cut.rs` 가 그대로 통과한다.\n//! 독립 절대 px 좌표 대신 행의 쪽 소속과 원본 저장 높이(HU)에서 계산한 조각·행 높이 관계를 검사한다. 설치 글꼴을 가정하지 않는다."
+  },
+  {
+    "pr": 8881,
+    "source": "tests/cases/issue_8878_tac_host_below_float.rs",
+    "module": "issue_8878_tac_host_below_float",
+    "tests": [
+      "inline_table_line_starts_after_header_table_box",
+      "page_bottom_table_moves_to_second_page_like_hancom",
+      "host_line_without_following_stored_advance_is_not_read_as_below_the_box"
+    ],
+    "header": "//! 관계형·고정형 — [#8878] 머리 표 아래에 저장된 host 줄의 글자처럼 취급한 표.\n//! 주석 갱신: 2026-11-10 08:10 KST (새 파일)\n//!\n//! 입력: 공개 결재문서 36441289(한컴오피스 2020 저장) 원본. `pi=0` 은 글 없는 host 에 문단 기준\n//! 자리차지 머리 표 `ci=2`(바깥 위 140·아래 852HU, 높이 16653HU)와 글자처럼 취급한 표 `ci=4`(바깥\n//! 위 141HU) 를 갖는다. host 줄은 표 상자 바로 아래(vpos 17645 = 0 + 140 + 16653 + 852), 다음 문단은\n//! 그 줄 전진 뒤(46470 = 17645 + 30025 − 1200)다. 마지막 `pi=5` 는 쪽 아래 고정 표(386.5px)다.\n//! 기준: 한컴 engine 2020 Print PDF `pdf/issue8878/36441289-tac-host-below-float-2020.pdf`(2쪽).\n//! - 고정형: 전체 쪽수 2.\n//! - 관계형 1쪽: `ci=4` 위끝 − `ci=2` 아래끝 = 머리 표 아래 바깥 여백 + 글자처럼 취급한 표 위 바깥 여백.\n//! - 관계형 2쪽: 쪽 아래 고정 표 `pi=5` 는 1쪽에 없고 2쪽에 있다.\n//!\n//! 측정(2026-11-10, 코드 head 52da22a0af, `scripts/visual_sweep.py --silhouette-only --dpi 96`,\n//! raw = `silhouette_raw_match_percent`, 글꼴 파일 gulim.ttc·malgun.ttf·HYGTRE·HYSNRL·HYGSRB 공급):\n//! - Native: 2쪽 / 2쪽, p1 99.97, p2 100.00, 전쪽 최저 99.97 (수정 전 1fd8576c91 은 1쪽으로 쪽수 불일치, p1 29.33)\n//! - fresh WASM: 2쪽 / 2쪽, p1 100.00, p2 100.00, 전쪽 최저 100.00\n//! - 증거: `mydocs/pr/assets/issue_8878/`\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8901,
+    "source": "tests/cases/issue_8891_span_open_row_stored_reset.rs",
+    "module": "issue_8891_span_open_row_stored_reset",
+    "tests": [
+      "span_cell_with_stored_page_reset_keeps_its_opening_row_on_the_page",
+      "span_cell_without_stored_reset_moves_its_opening_row_whole"
+    ],
+    "header": "//! 관계형: RowBreak 표 중간에서 병합 칸이 시작하는 행이 쪽 끝에 걸릴 때, 그 칸의 저장 글줄이 칸 안에서 쪽 프레임을 다시 시작하면 행을 앞 쪽 바닥에 두고, 그런 기록이 없으면 행을 통째로 다음 쪽으로 넘기는지를 행의 쪽 소속으로 검사한다.\n//! 주석 갱신: 2026-11-10 16:40 (Asia/Seoul). 새 파일이며 직전 파일 커밋은 없다.\n//! 실제 측정: 2026-11-10, `scripts/visual_sweep.py --silhouette-only --dpi 96` silhouette_raw_match_percent(색상 경계 보정 전 2px 내용 실루엣), Native(native-skia)·fresh WASM 각 전쪽, 수정 전 = #8879 head 93dd166c25, 수정 후 = f2dd021484.\n//! HPV `samples/issue8842/1351000-201800239_hpv_cohort_final_report.hwp`(저장 제품 한/글 2010), 전체 235쪽 = 한/글 2020 Print 235쪽. 77쪽: Native 99.86 / fresh WASM 99.80(수정 전 95.83 / 95.74). 78쪽: Native 99.40 / fresh WASM 99.05(수정 전 61.16 / 59.86). 전쪽 최저: Native 0.35 / fresh WASM 0.41 — 수정 전과 같은 값이며 이 범위 밖이다(76·79~172쪽 표 쪽 나눔 등 별도 축). 77·78쪽 밖 쪽 점수 변화 없음.\n//! 반례 `samples/issue8891/1480000-201900510_facility_pollution_study.hwp`(저장 제품 한/글 2010), 전체 241쪽 = 한/글 2020 Print 241쪽. 113쪽: Native 99.79 / fresh WASM 99.85(수정 전과 같음). 전쪽 최저: Native 38.44 / fresh WASM 38.64, 241쪽 모두 수정 전과 같은 값이다. 112쪽(67.15 / 68.33)은 이 수정과 무관한 기존 차이라 검사 범위에 넣지 않는다.\n//! 정식 TSV·review·overlay: `mydocs/pr/assets/issue_8891/{base,head}/{native,wasm}/*_silhouette.tsv`, `png/`.\n//! 확대 판독: HPV 77쪽 바닥 20행(「지난 1년간 | 없음 | 127 (24.8) …」)의 위아래 괘선과 78쪽 첫 행 「3회 미만」 이후 괘선·뒤 표 10 이 PDF 와 겹친다. 반례 113쪽 첫 행 27행 괘선이 PDF 와 겹친다.\n//! 같은 assertion 이 수정 전 FAIL(77쪽 마지막 일반 행 19) / 수정 후 PASS. 반례 assertion 은 저장 재시작 조건을 뺀 판에서 FAIL(113쪽이 28행으로 시작) / 수정 후 PASS.\n//! 독립 기대값: 한/글 2020 Print — HPV `pdf/issue8842/1351000-201800239_hpv_cohort_final_report-2020.pdf` 77쪽 바닥에 구역 2 표 20행(「지난 1년간 | 없음 | 127 (24.8) …」)이 있고 78쪽은 「구강성교 횟수 (한 달 평균)」·21행(「3회 미만」)부터다. 반례 `pdf/issue8891/1480000-201900510_facility_pollution_study-2020.pdf` 113쪽은 27행(「유틸리티 시설 | 스팀생산 | … 보일러 운영 방안」)으로 시작한다.\n//! 저장 근거: HPV 구역 2 pi23 34×5 표 20행 선언 1650HU, 남은 공간 20.9px. 20행에서 시작하는 병합 칸(r=20, rs=4) p[0] 의 ls[1] 이 vpos=0 으로 되감긴다. 반례 구역 0 pi920 38×4 표 27행 선언 20.9px, 남은 공간 14.5px, 일반 칸 내용은 들지만 27행에서 시작하는 병합 칸(rs=7·4·3)은 모두 한 줄이고 되감김이 없다.\n//! 독립 절대 px 좌표 대신 행의 쪽 소속(어느 쪽 표 조각에 어느 행 칸이 있는가)을 검사한다. 설치 글꼴을 가정하지 않는다."
+  },
+  {
+    "pr": 8903,
+    "source": "tests/cases/issue_8753_square_tac_same_paragraph.rs",
+    "module": "issue_8753_square_tac_same_paragraph",
+    "tests": [
+      "square_and_tac_tables_of_one_paragraph_share_the_side_lane",
+      "synthetic_paragraph_after_synthetic_tac_row_keeps_hancom_page"
+    ],
+    "header": "//! 관계형·고정형 — [#8753] 같은 문단의 어울림 표와 TAC 표, 표 옆 차선의 합성 줄 문단.\n//! 주석 갱신: 2026-11-11 07:40 KST (직전 파일 변경 커밋 8c7ef59ae8, 2026-11-08 09:02 +09:00)\n//!\n//! 고정형: 전체 쪽수 6 (한컴 engine 2020 Print PDF `pdf/issue8753/36458608-square-tac-same-paragraph-2020.pdf`).\n//! 관계형: 3쪽 `pi=8` 의 어울림 표(`ci=0`)와 TAC 제목 표(`ci=1`)는 세로로 겹치고 가로로 비켜 있다.\n//! 뒤 문단 `pi=9`(저장 차선 줄)·`pi=10`(저장 줄 없는 합성 줄)은 표 왼쪽 차선에서 순서대로 놓이고,\n//! 밴드 뒤 `pi=15` 는 표 아래에서 시작한다. 4쪽 끝의 합성 줄 문단 `pi=29` 는 5쪽에 속한다.\n//! `pi=29` 는 저장 줄이 없어 vpos 가 로드 때 합성되므로, 줄은 문단·줄 번호로만 고른다(합성 vpos 는\n//! 한컴 기준값이 아니며 #8894 의 합성 사다리 간격 보정으로 75195 → 73695 HU 로 바뀐다. 배치는 같다).\n//!\n//! 측정(2026-11-08, `scripts/visual_sweep.py --silhouette-only --dpi 96`, raw =\n//! `silhouette_raw_match_percent`, 문서 face 만 공급한 글꼴 디렉터리):\n//! - Native(devel 7f76cee60e 위 head, native-skia release): 6쪽 / 6쪽, p1 100.00 · p2 99.97 ·\n//!   p3 97.67 · p4 95.96 · p5 98.42 · p6 100.00, 최저 95.96 (base 는 7쪽으로 쪽수 불일치)\n//! - fresh WASM(같은 head, wasm sha256 321283b1…): 6쪽 / 6쪽, p1 100.00 · p2 100.00 · p3 98.53 ·\n//!   p4 98.40 · p5 98.37 · p6 100.00, 최저 98.37\n//! - 증거: `mydocs/pr/assets/issue_8753/`\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8903,
+    "source": "tests/cases/issue_8894_unstored_tac_column_top_spacing.rs",
+    "module": "issue_8894_unstored_tac_column_top_spacing",
+    "tests": [
+      "unstored_tac_title_keeps_spacing_before_at_page_top",
+      "unstored_text_after_tac_title_takes_its_spacing_before_once"
+    ],
+    "header": "//! 관계형·고정형 — [#8894] 저장 줄 없는 글자처럼 취급 표 문단의 쪽 맨 위 문단 위 간격과 합성 사다리.\n//! 주석 갱신: 2026-11-10 17:05 KST (새 파일)\n//!\n//! 입력: 공개 결재문서 36340478(한컴오피스 2020 저장) 원본. 셋째 구역의 1×3 제목 표 문단은\n//! 모두 글자처럼 취급(TAC) 표 하나만 가진 문단이며, `pi=48` 뒤부터는 저장 줄(`linesegarray`)이 없다.\n//! - 4쪽 맨 위 `pi=17`(위 간격 0, 저장 줄 있음) — 같은 모양의 기준 제목 표.\n//! - 6쪽 맨 위 `pi=49`(위 간격 500HU, 쪽 나누기) · 7쪽 맨 위 `pi=56`(위 간격 1000HU, 자연 쪽 넘김).\n//! - 7쪽 중간 `pi=60`(위 간격 1000HU) 뒤 `pi=61`(위 간격 500HU) 글 문단.\n//!\n//! 기준: 한컴 engine 2020 Print PDF `pdf/issue8894/36340478-unstored-tac-column-top-spacing-2020.pdf`(7쪽).\n//! - 고정형: 전체 쪽수 7.\n//! - 관계형: 제목 표 위끝 − 4쪽 제목 표 위끝 = 문단 위 간격. PDF 의 제목 글자 위끝은 4쪽 104.4px,\n//!   6쪽 111.0px(+6.6), 7쪽 117.7px(+13.3)이다 — 한/글은 쪽 맨 위에서도 위 간격을 둔다(#8474).\n//! - 관계형: 7쪽 (`pi=61` 줄 위끝 − `pi=60` 표 위끝) − (`pi=57` 줄 위끝 − `pi=56` 표 위끝)\n//!   = `pi=61` 위 간격 500HU − 두 표 줄의 줄간격 차 32HU(1052 − 1020) = 468HU. PDF 의 「□」 글자 위끝\n//!   간격 차는 55.60 − 49.36 = 6.24px(=468HU)다. 합성 사다리가 글 문단의 위 간격을 두 번 넣으면\n//!   앞 TAC 줄의 닫힘 검사가 실패해 줄간격 절반만 남는다.\n//!\n//! 측정(2026-11-10, 코드 head d0dc3bd2e0(base devel 5f4e95c187), `scripts/visual_sweep.py --silhouette-only --dpi 96`,\n//! raw = `silhouette_raw_match_percent`, 문서 face 굴림·HY헤드라인M·HY견고딕·HY견명조·맑은 고딕 공급,\n//! 6쪽은 한양바탕을 더한 쪽 전용 글꼴 묶음으로도 같은 값):\n//! - Native: 7/7쪽, 6쪽 97.01 · 7쪽 99.78, 전쪽 최저 97.01.\n//! - fresh WASM: 7/7쪽, 6쪽 97.03 · 7쪽 99.99, 전쪽 최저 97.03.\n//! - 수정 전 Native(devel 5f4e95c187 — b5064fae1e 와 SVG 동일): 6쪽 50.83 · 7쪽 27.18.\n//! - 6쪽 남은 차이는 「예산과목」 칸 글줄의 줄 나눔(글자 폭)이다.\n//! - 증거: `mydocs/pr/assets/issue_8894/`(TSV 원본·review·overlay PNG).\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8909,
+    "source": "tests/cases/issue_8882_reflowed_cell_tac_row_floor.rs",
+    "module": "issue_8882_reflowed_cell_tac_row_floor",
+    "tests": [
+      "reflowed_cells_keep_their_rows_in_a_mixed_tac_table",
+      "tac_nested_table_in_unstored_cell_counts_once",
+      "reflowed_overflow_beyond_cap_is_not_uniformly_shrunk"
+    ],
+    "header": "//! 관계형·고정형 — [#8882] 저장 줄 없는 칸이 섞인 글자처럼 취급 표의 행은 재조판 내용 아래로 눌리지 않는다.\n//! 주석 갱신: 2026-11-10 18:20 KST (새 파일, devel 5f4e95c187 로 rebase 후 재측정)\n//!\n//! 입력: 공개 결재문서 36404364 원본 `samples/issue8882/36404364-reflowed-cell-tac-row-floor.hwpx`.\n//! 기준: 한컴 engine 2020 Print PDF `pdf/issue8882/36404364-reflowed-cell-tac-row-floor-2020.pdf`(4쪽).\n//! 3쪽 4×5 TAC 표(`pi=35`): 가린 칸 3개(첫 열 1~3행)는 `linesegarray` 가 없어 재조판되고 두 줄로\n//! 줄바꿈된다(한/글과 같은 줄바꿈). 표 선언 10505HU, 행 선언 2630HU. 한/글은 행을 내용에 맞춰\n//! 키워 표가 약 174px 이고, 수정 전 rhwp 는 선언 140.1px 에 가둬 머리 행을 29.5px 로 눌렀다.\n//! - 고정형: 전체 쪽수 4.\n//! - 관계형 3쪽: 표의 모든 칸 글줄은 제 칸 안에 있다(위끝 ≥ 칸 위끝, 아래끝 ≤ 칸 아래끝).\n//! - 관계형 3쪽: 머리 행은 원본 행 선언(2630HU) 아래로 줄지 않는다.\n//! - 관계형 3쪽: 표 뒤 첫 문단(`pi=36`)은 표 아래끝보다 위에서 시작하지 않는다.\n//!\n//! 합성 IR 계약(한컴 출력 증거 아님, 시각 측정 비해당 — 기대값은 같은 측정기의 내용 높이와의 관계):\n//! - 재조판 칸 내용이 선언을 48px 넘게(1.5배 안으로) 넘는 혼합 TAC 표는 균일 축소하지 않고 내용\n//!   높이를 지킨다(공개 결재문서 36479973·36303317 의 같은 형상. 두 문서는 fresh WASM 에서 가린\n//!   글자 그림 위치 차이로 일부 쪽이 90% 미만이라 fixture 로 쓰지 않았다).\n//! - 저장 줄 없는 칸 문단의 TAC 중첩 표는 칸 높이에 한 번만 들어간다(공개 샘플\n//!   `samples/hwpx/opengov/36384689…` 1쪽의 같은 형상, 그 쪽은 수정 후에도 다른 원인으로 84.20%).\n//!\n//! 측정(2026-11-10, 이 파일과 같은 커밋의 코드, base = upstream/devel 5f4e95c187,\n//! `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`, raw =\n//! `silhouette_raw_match_percent`, 글꼴 `ttfs/opensource` — 문서 본 글꼴 없는 환경):\n//! - Native: 4쪽 / 4쪽, p1 97.72 · p2 98.42 · p3 99.52 · p4 98.17, 최저 97.72\n//!   (base: p3 62.09, 나머지 같음)\n//! - fresh WASM: 4쪽 / 4쪽, p1 94.04 · p2 96.37 · p3 90.04 · p4 99.88, 최저 90.04\n//! - 증거: `mydocs/pr/assets/issue_8882/`(native·wasm·native_base TSV, review·overlay PNG)\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8921,
+    "source": "tests/cases/issue_8917_group_bullet_column_top_spacing.rs",
+    "module": "issue_8917_group_bullet_column_top_spacing",
+    "tests": [
+      "hwp_group_bullet_keeps_stored_spacing_at_page_top",
+      "hwpx_group_bullet_keeps_stored_spacing_at_page_top"
+    ],
+    "header": "//! 관계형·고정형 — [#8917] 저장 글줄 안 작은 글자처럼 묶음 도형 문단이 쪽 맨 위에서 저장 위 간격을 유지한다.\n//! 주석 갱신: 2026-11-11 02:15 KST (새 파일)\n//!\n//! 입력: 공공기관이 공개한 문서 두 건.\n//! - `44907-group-bullet-column-top.hwp`(경찰청 도로교통법 시행령 개정 내용, 한컴오피스 2020 저장, 4쪽).\n//!   2쪽 맨 위 `pi=8`, 4쪽 맨 위 `pi=20` 은 글머리 묶음 도형(글자처럼, 앞으로) 하나와 글을 가진 한 줄\n//!   문단이며 저장 첫 줄 vpos 는 문단 위 간격 1000HU 다.\n//! - `1471000-group-bullet-column-top.hwpx`(식약처 과업내용서, 3쪽). 3쪽 맨 위 `pi=30` 은 같은 모양의\n//!   묶음 글머리 문단이며 저장 첫 줄 vpos 는 위 간격 1500HU 다.\n//!\n//! 한/글은 쪽 첫 문단의 첫 줄 vpos 에 문단 위 간격을 저장하고(쪽 첫 원점 = vpos − 위 간격),\n//! 뒤 문단들은 같은 저장 축에서 놓인다. 묶음 도형이 저장 글줄의 기준선 상자 안에 들어가면 단일\n//! 그리기 개체와 같은 글줄이므로 이 쪽 원점을 써야 한다. 수정 전에는 묶음이 `drawing()` 이 없다는\n//! 이유로 거부되어 쪽 원점이 0 으로 잡히고, 뒤 문단들이 쪽 첫 위 간격만큼 위로 올라왔다.\n//!\n//! 기준: 한컴 engine 2020 Print PDF `pdf/issue8917/44907-group-bullet-column-top-2020.pdf`(4쪽),\n//! `pdf/issue8917/1471000-group-bullet-column-top-2020.pdf`(3쪽).\n//! - 고정형: 전체 쪽수 4 · 3.\n//! - 관계형: 대상 문단 첫 글줄 위끝 − 본문 영역 위끝 = 저장 첫 줄 vpos(HU→px), 묶음 도형은 그 글줄 상자 안.\n//! - 관계형: 그 쪽의 모든 본문 글줄 위끝 − 대상 문단 첫 글줄 위끝 = 저장 vpos 차(HU→px). 수정 전에는\n//!   44907 2쪽 `pi=9` 이후 9줄이 −13.33px, 1471000 3쪽 `pi=32` 이후 17줄이 −20.00px 어긋났다.\n//!\n//! 측정(2026-11-11, base upstream/devel 5ea1227505 + 이 변경의 src, `scripts/visual_sweep.py --silhouette-only\n//! --compat 2022 --dpi 96`, raw = `silhouette_raw_match_percent`, 글꼴은 사용자 글꼴·`ttfs/hwp`·`ttfs/windows` 공급):\n//! - 44907(4쪽): Native 99.35 · 99.76 · 99.99 · 99.99, fresh WASM 99.35 · 99.99 · 99.99 · 99.99.\n//!   두 경로 전쪽 최저 99.35(1쪽). 대상 2쪽 Native 99.76 / WASM 99.99, 4쪽 99.99 / 99.99.\n//! - 1471000(3쪽): Native 95.47 · 96.86 · 96.69, fresh WASM 100.00 · 100.00 · 100.00.\n//!   두 경로 전쪽 최저 95.47(Native 1쪽). 대상 3쪽 Native 96.69 / WASM 100.00.\n//! - 수정 전 Native(devel 5ea1227505): 44907 2쪽 58.61 · 4쪽 63.52, 1471000 3쪽 19.31.\n//! - 1471000 3쪽 남은 차이는 「정당한 이유 없이」 줄의 글자 폭(가로)이며 줄 위치는 PDF 와 같다.\n//! - 증거: `mydocs/pr/assets/issue_8917/`(Native·WASM·수정 전 TSV 원본, review·overlay PNG).\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8928,
+    "source": "tests/cases/issue_8925_page_break_tac_full_gap.rs",
+    "module": "issue_8925_page_break_tac_full_gap",
+    "tests": [
+      "table_line_opening_page_by_break_keeps_full_trailing_spacing"
+    ],
+    "header": "//! 관계형·고정형 — [#8925] 쪽나누기로 새 쪽을 여는 저장 줄 없는 TAC 표 문단 뒤 간격 전량.\n//! 주석 갱신: 2026-11-11 09:30 KST (새 파일)\n//!\n//! 입력: 공개 결재문서 36415413(한컴오피스 2020 저장) 원본. 2쪽 첫 문단 `pi=3` 은 쪽나누기가 있는\n//! 빈 문단으로 글자처럼 취급 제목 표(lh 8574 = 표 8008 + 바깥 위아래 여백 283·283, ls 1360) 하나를\n//! 가진다. 원본에 저장 줄이 없어 로드 때 줄을 합성하며 그 vpos 는 앞 쪽 누적값(66142)이다.\n//! 다음 원본 문단 `pi=4`(상자 표)의 저장 vpos 9934 = 새 쪽 영점 0 + lh 8574 + ls 1360 이므로\n//! 한/글은 제목 표 줄 뒤 간격을 전량 남겼다.\n//!\n//! 기준: 한컴 engine 2020 Print PDF `pdf/issue8925/36415413-page-break-tac-full-gap-2020.pdf`(3쪽).\n//! - 고정형: 전체 쪽수 3.\n//! - 관계형: 2쪽 상자 표 위끝 − 제목 표 위끝 = `pi=4` 저장 vpos(두 표의 바깥 위 여백은 같다).\n//!   두 표와 `pi=5` 는 2쪽에 이 순서로 있고 겹치지 않는다.\n//!\n//! 측정(2026-11-11, 코드 head 사슬 #8921 위(base devel e118de8aba),\n//! `scripts/visual_sweep.py --silhouette-only --dpi 96`, raw = `silhouette_raw_match_percent`,\n//! 문서 face 만 모은 글꼴 폴더를 `RHWP_FONT_PATH`·`--font-path` 로 공급, H2mjsM 은 미보유):\n//! - Native: 3/3쪽, 1쪽 100.00 · 2쪽 99.52 · 3쪽 95.62, 전쪽 최저 95.62.\n//! - fresh WASM(같은 head, wasm sha256 6df776c1…): 3/3쪽, 1쪽 100.00 · 2쪽 99.49 · 3쪽 95.45,\n//!   전쪽 최저 95.45.\n//! - 수정 전 Native(같은 사슬 끝 ba94215e1b): 2쪽 65.30(상자 표 위끝 223.2px, 한컴 232.2px).\n//!   수정 전 fresh WASM(wasm sha256 dfc9ecb6…): 1쪽 100.00 · 2쪽 65.43 · 3쪽 95.45.\n//! - 증거: `mydocs/pr/assets/issue_8925/`(TSV 원본·review·overlay PNG).\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8929,
+    "source": "tests/cases/issue_8924_wide_tac_trailing_tail.rs",
+    "module": "issue_8924_wide_tac_trailing_tail",
+    "tests": [
+      "zero_width_tail_after_overflowing_tac_table_stays_on_the_table_line"
+    ],
+    "header": "//! [#8924] 관계형·고정형 회귀 — 저장 줄 정보가 없는 문단에서 글자처럼 취급 표가 문단 가용 폭보다\n//! 넓어 줄이 이미 넘쳤어도, 표 뒤 전진폭 없는 꼬리(줄 끝 공백·문단 끝)는 표 줄에 남는다.\n//!\n//! 주석 갱신: 2026-11-11 07:20 KST(+09:00), 새 파일.\n//!\n//! - 입력: `samples/issue8924/wide_tac_trailing_tail.hwp` — 공개 조례 시행규칙 서식 13620707\n//!   (HWP 5.0.2.5, 1쪽). 본문 문단에 저장 줄 정보가 없다. 문단 5·7·9·16 은 왼쪽 2000·오른쪽\n//!   1200 HU 여백 문단에 가용 폭보다 넓은 글자처럼 취급 표 하나와 공백 꼬리를 담는다.\n//! - 독립 기준: `pdf/issue8924/wide_tac_trailing_tail-2020.pdf`(한/글 2022 12.0.0.4547 Print, 1쪽).\n//! - 수정 전 rhwp(devel `e118de8aba`)는 넘친 표 줄 뒤 폭 0 꼬리로 줄을 넘겨, 표마다 아래에 빈\n//!   글줄(14.4px)을 하나씩 더 만들고 문단 18~21 을 2쪽으로 밀었다(전체 2쪽).\n//!\n//! 측정: 2026-11-11, `scripts/visual_sweep.py --silhouette-only --dpi 96`(4열\n//! `silhouette_raw_match_percent`, 색상 경계 보정 전 2px 실루엣), 소스 devel `e118de8aba` + 이 수정.\n//! 1쪽 Native 100.00 / fresh WASM 100.00(수정 전 Native 은 2쪽이라 쪽 대응 불가). 전체 1쪽 = PDF 1쪽,\n//! 전쪽 최저 Native 100.00(1쪽)·fresh WASM 100.00(1쪽).\n//! 증거: `mydocs/pr/assets/issue_8924/{native,wasm}/`(TSV·review·overlay PNG).\n//!\n//! 검사: 원본 계약(문단 5·7·9·16 저장 줄 없음, 글자처럼 취급 표 폭 > 문단 가용 폭), 쪽수 1 =\n//! 한/글(고정형), 표 문단은 글줄 하나뿐이고 그 줄이 표를 담으며 다음 문단 첫 줄은 표 아래 끝과\n//! 겹치지 않고 꼬리 글줄 높이 안에서 이어진다(관계형).\n#![cfg(not(target_arch = \"wasm32\"))]"
+  },
+  {
+    "pr": 8930,
+    "source": "tests/cases/issue_8926_post_table_line_stored_page_reset.rs",
+    "module": "issue_8926_post_table_line_stored_page_reset",
+    "tests": [
+      "post_table_line_after_stored_page_reset_starts_the_next_page"
+    ],
+    "header": "//! 관계형·고정형 — [#8926] TAC 표 줄 뒤 글줄의 저장 쪽 리셋은 그 줄을 다음 쪽 맨 위로 보낸다.\n//! 주석 갱신: 2026-11-11 08:40 KST (새 파일)\n//!\n//! 입력: 공개 정책연구 활용결과 보고서 서식 `samples/issue8926/6540000-202500049-post-table-line-stored-page-reset.hwp`.\n//! 기준: 한컴 engine 2020 Print PDF `pdf/issue8926/6540000-202500049-post-table-line-stored-page-reset-2020.pdf`(2쪽).\n//! 문단 0 하나: 줄 0 「<서식8>」(vpos 0) → 줄 1 TAC 표(9×4, vpos 988, lh 68438) → 줄 2 표 뒤\n//! 글줄(vpos **0**). 줄 2 의 저장 vpos 가 쪽 리셋이라 한/글은 그 줄을 2쪽에 둔다. 수정 전 rhwp\n//! 는 표가 문단 첫 줄이 아니라는 이유로 표 뒤 글줄의 쪽 넘김을 보지 않아, 그 줄을 1쪽 본문\n//! 하단(933.6px) 밖 938.9px 에 남기고 1쪽으로 끝냈다.\n//! - 고정형: 전체 쪽수 2(= PDF).\n//! - 관계형: 「<서식8>」 줄과 표는 1쪽, 표 뒤 글줄은 그 다음 쪽에 한 번만 있다(순서·누락·중복).\n//!\n//! 측정(2026-11-11, 이 파일과 같은 커밋의 코드, base = upstream/devel e118de8aba,\n//! `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`, raw =\n//! `silhouette_raw_match_percent`, 글꼴 `ttfs/opensource` — 문서 본 글꼴 없는 환경):\n//! - Native: 2쪽 / 2쪽, p1 100.00 · p2 100.00, 최저 100.00 (base: 1쪽, 쪽수 불일치로 측정 불가)\n//! - fresh WASM(`scripts/wasm-pack-locked.sh --target web`): 2쪽 / 2쪽, p1 99.92 · p2 100.00, 최저 99.92\n//! - 증거: `mydocs/pr/assets/issue_8926/`(native·wasm TSV, review·overlay PNG)\n#![cfg(not(target_arch = \"wasm32\"))]"
+  }
+]

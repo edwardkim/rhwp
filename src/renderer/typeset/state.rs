@@ -365,8 +365,16 @@ impl TypesetState {
     }
 
     /// 기존 배타 영역을 소비한 뒤 그 시점의 가용 단 너비를 반환한다.
-    pub(super) fn prepare_table_paragraph_column(&mut self) -> f64 {
-        self.apply_visible_float_exclusions(0.0, None);
+    /// `line_probe_height` 는 글자처럼 취급한 표 줄의 높이다. 일반 글줄과 같이 줄 상자가
+    /// 띠에 걸리면 띠 아래로 간다. 그 밖의 표 문단은 0 으로 띠 안 시작만 짚는다.
+    /// 표 문단도 글 문단처럼 시작이 쪽·종이 기준 자리차지 밴드 안이면 밴드 아래에서
+    /// 시작한다(배치는 같은 확정 원점을 `page_band_flow_starts` 로 받는다).
+    pub(super) fn prepare_table_paragraph_column(
+        &mut self,
+        line_probe_height: f64,
+        para_idx: usize,
+    ) -> f64 {
+        self.apply_visible_float_exclusions(line_probe_height, Some(para_idx));
         self.data
             .layout
             .column_areas
