@@ -122,6 +122,49 @@ class ReferenceAppContracts(unittest.TestCase):
             directory, executable = reference_app.built_runtime(runner, target, architecture, mode)
             self.assertEqual(directory / executable, path)
 
+    def test_macos_debug_entry_comes_from_plist_and_preserves_side_libraries(self):
+        f = self.fixture
+        f.configure('macos')
+        runner = f.root / 'runner'
+        products = runner / 'build/macos/Build/Products/Debug'
+        app = products / 'Reference.app'
+        binaries = app / 'Contents/MacOS'
+        binaries.mkdir(parents=True)
+        entry = 'Actual Entry'
+        (app / 'Contents/Info.plist').write_bytes(plistlib.dumps({'CFBundleExecutable': entry}))
+        (binaries / entry).write_bytes(fixtures.header('macos'))
+        (binaries / entry).chmod(0o755)
+        # Xcode's default unoptimized Swift layout has two dylibs beside the
+        # executable stub. They are runtime inputs, not alternative entrypoints.
+        for name in (entry + '.debug.dylib', '__preview.dylib'):
+            (binaries / name).write_bytes(fixtures.header('macos', shared=True))
+        (products / 'Reference.app.dSYM').mkdir()
+
+        directory, executable = reference_app.built_runtime(runner, 'macos', 'x86_64', 'debug')
+        self.assertEqual(executable, 'Reference.app/Contents/MacOS/' + entry)
+        self.assertEqual(list(directory.iterdir()), [directory / 'Reference.app'])
+        manifest = f.package(runtime=directory, executable=executable)
+        self.assertEqual(manifest['runtime'], 'app/' + executable)
+        for name in (entry + '.debug.dylib', '__preview.dylib'):
+            relative = 'app/Reference.app/Contents/MacOS/' + name
+            self.assertEqual(manifest['files'][relative]['kind'], 'file')
+            self.assertEqual((f.output / relative).read_bytes(), (binaries / name).read_bytes())
+
+    def test_macos_requires_plist_entrypoint_instead_of_guessing(self):
+        f = self.fixture
+        for index, info in enumerate(({}, {'CFBundleExecutable': 'missing'},
+                                      {'CFBundleExecutable': '../MacOS/runner'},
+                                      {'CFBundleExecutable': ['runner']})):
+            with self.subTest(info=info):
+                runner = f.root / str(index) / 'runner'
+                app = runner / 'build/macos/Build/Products/Release/Reference.app'
+                binaries = app / 'Contents/MacOS'
+                binaries.mkdir(parents=True)
+                (binaries / 'runner').write_bytes(fixtures.header('macos'))
+                (app / 'Contents/Info.plist').write_bytes(plistlib.dumps(info))
+                with self.assertRaises(ValueError):
+                    reference_app.built_runtime(runner, 'macos', 'x86_64', 'release')
+
     def test_generated_macos_reference_can_access_sibling_bundle_and_document_paths(self):
         f = self.fixture
         runner, example = f.root / 'runner', f.root / 'example'
