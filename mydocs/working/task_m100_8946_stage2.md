@@ -149,3 +149,57 @@ Native 최초 보정 실험은 신명 디나루 확인 분기도 포함했으나
 PNG가 보정 전후 동일함을 확인하고 불필요한 분기는 제외했다. 최종 후보는 누락된
 세나루·강낭콩·딸기만 추가하며 Native 최종 빌드·전쪽 검증은 별도로 수행한다.
 제외 없는 표지는 독립 Print의 그림 부재와 공급 조건이 달라 계속 미달로 기록한다.
+
+## c6c3723 전쪽 재검증과 남은 원인
+
+제품 head `c6c372395853cd67c45339958e2b683f7f93353e`의
+[원본 TSV·쪽별 raw·검증 요약](../pr/assets/issue8946/stage2-20261111/verification-c6c3723.json)을
+보존했다. HWPX Native/fresh WASM은 2024, HWP3는 독립 2020 Print에 맞춘
+2022 호환 모드이며 각각 763쪽이다. HWP3의 중간 2024 모드 실행과 연결 그림을
+빠뜨린 WASM 실행은 최종 근거로 사용하지 않았다.
+
+| 대상 | Native 최저 | fresh WASM 최저 | 판정 |
+| --- | ---: | ---: | --- |
+| HWPX, 제외 없음 | 29.77% | 29.73% | 표지 1쪽만 90% 미만 |
+| HWPX, 승인된 그림 3개 제외 보조 비교 | 96.35% | 98.63% | 제외 밖 전쪽 90% 이상, 최종 통과 아님 |
+| HWP3, 제외 없음 | 98.77% | 99.55% | 전쪽 90% 이상 |
+
+HWPX 표지의 그림 밖 raw는 Native/fresh WASM 모두 100.00%, 미대응 픽셀 0이다.
+실제 호스트 Screen 전쪽은 표지 75.96%, 나머지 762쪽 최저 96.93%다.
+호스트 보조 제외 비교는 원본 Canvas 794×1123과 Print 794×1122의 크기가 달라
+정본 도구가 거부했다. PNG를 잘라내거나 크기를 바꾸어 우회하지 않았다.
+
+검증 중 임시 작업 사본 경로가 사라져 내장 저장소의 지속 경로로 작업 사본을 복구했고,
+T7 산출물은 보존했다. 소실된 비추적 대용량 PDF의 이전 서버 작업은 만료되어 같은
+원본·2024 엔진으로 다시 Print했다. 새 파일은
+`pdf/issue8946/hwp3-sample10-hwpx-2024-reprint.pdf`, 90,781,155바이트,
+SHA-256 `4442f06e7acbe6c25404dbba9dcfa4749d2e61952569e35de1f8262aadb3b0a7`다.
+50 MiB 이상 기준 PDF로 로컬 정식 경로에 보관한다. 이전 PDF와 파일 해시는 다르지만
+[전 763쪽의 PDFium 96dpi 픽셀은 동일](../pr/assets/issue8946/stage2-20261111/reprint-raster-parity.json)하다.
+기존 PDF의 해시·연산 증거는 역사 기록으로 유지하고 새 비교에 새 PDF 해시를 사용했다.
+
+기본 공급자 없음·옵션 생략·명시적 false 각각의 전 763쪽 트리/PNG 해시는 고정 base와
+같다. 실제 삽입·삭제 후 전체 내용 순서와 복원 SHA를 유지했다. 최적화 fresh WASM의
+Canvas2D/CanvasKit E2E가 통과했고 Native 계약 44개가 통과했다. 이 중 nextest의
+leaky 표시 1개는 단독 재실행에서 PASS/누수 표시 없음이었다. 편람 383쪽 필수 gate도
+같은 제품에서 passed이며 원 기대값을 변경하지 않았다.
+
+300dpi의 [608쪽](../pr/assets/issue8946/stage2-20261111/zoom-print-title-608-c6c3723.png),
+[610쪽](../pr/assets/issue8946/stage2-20261111/zoom-print-title-610-c6c3723.png),
+[686쪽](../pr/assets/issue8946/stage2-20261111/zoom-print-title-686-c6c3723.png)을
+독립 Print·Native·fresh WASM에서 직접 대조했다. 제목의 폭·줄바꿈·기준선과 번호·
+뒤 본문 간격을 확인했다. 그러나 [350쪽](../pr/assets/issue8946/stage2-20261111/zoom-print-title-350-c6c3723.png)의
+`/`, `?`는 다른 프로그램의 윤곽으로 남는다. 원본 문단 12662/charPr 29는 한글
+강낭콩·영문 세나루를 선언한다. 강낭콩 CFF의 cmap에 두 문자가 없고 세나루 영문
+CFF에는 있다. 독립 PDF는 두 문자 모두 T8(세나루)로 출력하지만 현재
+[호스트 trace](../pr/assets/issue8946/stage2-20261111/punctuation-before-c6c3723.json)는
+한글 슬롯 0/강낭콩/supplementalBackendMeasured다. 높은 raw로 이 결함을 면제하지 않는다.
+
+사용자 Microsoft Print 표지는 `/Font`가 없고 8개의 Image XObject로 구성된다.
+확대 시 보이는 차이를 해당 PDF의 글꼴 프로그램 신원 증거로 승격하지 않는다.
+호스트 Bridge의 Print는 기존 `withPortableMetrics` 계약에 따라 개인 공급 글꼴을
+제외한다. 이 경로와 명시 공급한 표준 WASM Print를 같은 환경으로 혼동하지 않으며,
+이번 이슈를 전체 출력 경로 통합으로 확장하지 않는다.
+
+현재 판정은 계속 **re_review_required**다. 전쪽 무제외 표지 기준과 문장부호 소유의
+보정·재검증이 남아 있으며, 새 렌더링 회귀 추가나 PR 제출을 진행하지 않았다.
