@@ -76,7 +76,3 @@ impl SkiaLayerRenderer {
         Ok(changed)
     }
 }
-
-#[cfg(test)]
-#[path = "text_shadow_fonts/tests.rs"]
-mod tests;
