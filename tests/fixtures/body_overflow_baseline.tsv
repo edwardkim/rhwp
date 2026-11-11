@@ -260,3 +260,7 @@ issue8842/1351000-201800239_hpv_cohort_final_report.hwp	1
 # 1026.5px 아래 1035.3px 까지 내려간다(+8.8px). 보이는 글자(남부도로사업소·기전과)의 위치는 한컴 Print
 # PDF 1쪽과 겹친다(pdf/issue8882/36404364-reflowed-cell-tac-row-floor-2020.pdf, 1쪽 raw Native 97.72).
 issue8882/36404364-reflowed-cell-tac-row-floor.hwpx	1
+# #8933 신규 공개 샘플(결재문서 36495398 글꼴 대체본, 한/글 2020 저장): 1쪽 결재 표(첫 구역, 이 PR 이 바꾸지 않는 쪽)가
+# 본문 바닥 아래로 47.6px 넘는다 — #8778 축소본과 같은 형상, 수정 전후 값이 같고 1쪽 한컴 engine 2020 Print 대조 raw
+# Native·WASM 100.00%. 수정 전에 있던 4쪽 마지막 본문 글줄 넘침(4.3px, 7.2px 밀림 때문)은 이 수정으로 사라졌다(2 → 1).
+issue8933/36495398-synthetic-prev-new-axis.hwpx	1
