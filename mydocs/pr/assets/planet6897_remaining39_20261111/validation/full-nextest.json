@@ -1,0 +1,11 @@
+{
+  "head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+  "base": "e118de8abadd2dffb2798036b9ffd381b96ed7d5",
+  "passed": 13302,
+  "failed": 0,
+  "skip": 45,
+  "summary": "     Summary [ 395.627s] 13302 tests run: 13302 passed (1 slow), 45 skipped",
+  "exit_code": 0,
+  "log_sha256": "926bef6aafc4cd73b4257b7d92bd76fedbbe652f80e74cbe97c6d48cc9b96e2e",
+  "environment": "macOS process sandbox, OS fonts + licensed repository fixtures; jobs8/threads8"
+}

@@ -1,0 +1,10 @@
+{
+  "key": "pr8717-employment_service_interim_report",
+  "mode": "silhouette_only",
+  "run_state": "incomplete",
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "reason": "실루엣 쪽 묶음 처리 중"
+  },
+  "canonical_manifest_sha256": "506abafdbbe0e9ebee281f6d3ee464371a57043605003a40456b0236a713a912"
+}

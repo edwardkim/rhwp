@@ -1,0 +1,18 @@
+[
+  {
+    "name": "base",
+    "exit_code": 0,
+    "source_script_sha256": "2ef87ae1ad608448c9f3cd845ee78729a8719f00f16a4baa7e5eafe1301d982d",
+    "relocated_script_sha256": "a8c87348bac9c756fac381899eeb263205f74794d05da2923dadd0e65e77d6f4",
+    "path_changes_only": true,
+    "artifact_dir": "output/pr-review/planet6897-remaining39-integration-20261111/canvas-ci-controls/base"
+  },
+  {
+    "name": "candidate",
+    "exit_code": 0,
+    "source_script_sha256": "2ef87ae1ad608448c9f3cd845ee78729a8719f00f16a4baa7e5eafe1301d982d",
+    "relocated_script_sha256": "db99f1fe9aa5248c82a67b62101af1ef6d70e671380725a662578f074ab9cd4b",
+    "path_changes_only": true,
+    "artifact_dir": "output/pr-review/planet6897-remaining39-integration-20261111/canvas-ci-controls/candidate"
+  }
+]

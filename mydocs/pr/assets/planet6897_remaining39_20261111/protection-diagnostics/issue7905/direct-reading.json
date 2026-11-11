@@ -1,0 +1,17 @@
+{
+  "read_at": "2026-11-11T13:47:29.363294+09:00",
+  "document": "issue7905",
+  "page": 2,
+  "backend": "Native",
+  "base_raw": "93.76839",
+  "candidate_raw": "93.72049",
+  "conclusion": "base/후보 모두 제3조 삭제부터 제4조5까지 본문 순서와 쪽 머리/꼬리 구성을 보존하지만 독립 Print와 글줄 간격·글리프 차이가 있습니다. base/후보 PNG의 실제 변경 픽셀은 마지막 본문 문단 영역 x57..735/y935..965에 한정됩니다. 이 판독만으로 특정 원 PR이나 글꼴 원인을 확정하지 않습니다. 공식 표시값의 추가 하락 93.77→93.72%는 보호 정책상 보류합니다.",
+  "review_images": [
+    "base/review_002.png",
+    "candidate/review_002.png"
+  ],
+  "overlay_images": [
+    "base/overlay_002.png",
+    "candidate/overlay_002.png"
+  ]
+}

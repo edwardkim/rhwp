@@ -1,0 +1,15 @@
+{
+  "base_commit": "e118de8abadd2dffb2798036b9ffd381b96ed7d5",
+  "original_code_commit": "21d62361fa670858e63fdfc475c236f112e20a3d",
+  "source_tree_unchanged": true,
+  "native_matches": [
+    "target/pr-review/release-test/deps/rhwp-226c4aabfcf7f422"
+  ],
+  "binary_sha256": "6ad28f665d9da971b5cdf0e691977268c5156bf7f5a66ee7f81a8c4f90ec441d",
+  "wasm_files": {
+    "rhwp.js": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+    "rhwp_bg.wasm": "bf23f3629528d45cdc6a223d148e1aa37e1887a6fb4d25b40b41560369b9a851"
+  },
+  "producer": "mydocs/pr/assets/planet6897_clean19_20261110/code-source-association.json",
+  "scope": "verified binary and JS/WASM reuse only; new39 visual results have not been measured"
+}

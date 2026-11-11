@@ -1,0 +1,1806 @@
+{
+  "key": "pr8792-6500000-201700118_jeju_tourism_education_plan",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120,
+    121,
+    122,
+    123,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    136,
+    137,
+    138,
+    139,
+    140,
+    141,
+    142,
+    143,
+    144,
+    145,
+    146,
+    147,
+    148,
+    149,
+    150,
+    151,
+    152,
+    153,
+    154,
+    155,
+    156,
+    157,
+    158,
+    159,
+    160,
+    161,
+    162,
+    163,
+    164,
+    165,
+    166,
+    167,
+    168,
+    169,
+    170,
+    171,
+    172,
+    173,
+    174,
+    175,
+    176,
+    177,
+    178,
+    179,
+    180,
+    181,
+    182,
+    183,
+    184,
+    185,
+    186,
+    187,
+    188,
+    189,
+    190,
+    191,
+    192,
+    193,
+    194,
+    195,
+    196,
+    197,
+    198,
+    199,
+    200,
+    201,
+    202,
+    203,
+    204,
+    205,
+    206,
+    207,
+    208,
+    209,
+    210,
+    211,
+    212,
+    213,
+    214,
+    215,
+    216,
+    217,
+    218,
+    219,
+    220,
+    221,
+    222,
+    223,
+    224,
+    225,
+    226,
+    227,
+    228,
+    229,
+    230,
+    231,
+    232,
+    233,
+    234,
+    235,
+    236,
+    237,
+    238,
+    239,
+    240,
+    241,
+    242,
+    243,
+    244,
+    245,
+    246,
+    247,
+    248,
+    249,
+    250,
+    251,
+    252,
+    253,
+    254,
+    255,
+    256,
+    257,
+    258,
+    259,
+    260,
+    261,
+    262,
+    263,
+    264,
+    265,
+    266,
+    267,
+    268,
+    269,
+    270,
+    271,
+    272,
+    273,
+    274,
+    275,
+    276,
+    277,
+    278,
+    279,
+    280,
+    281,
+    282,
+    283,
+    284,
+    285,
+    286,
+    287,
+    288,
+    289,
+    290,
+    291,
+    292,
+    293,
+    294,
+    295,
+    296,
+    297,
+    298,
+    299,
+    300,
+    301,
+    302,
+    303,
+    304,
+    305,
+    306,
+    307,
+    308,
+    309,
+    310,
+    311
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120,
+    121,
+    122,
+    123,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    136,
+    137,
+    138,
+    139,
+    140,
+    141,
+    142,
+    143,
+    144,
+    145,
+    146,
+    147,
+    148,
+    149,
+    150,
+    151,
+    152,
+    153,
+    154,
+    155,
+    156,
+    157,
+    158,
+    159,
+    160,
+    161,
+    162,
+    163,
+    164,
+    165,
+    166,
+    167,
+    168,
+    169,
+    170,
+    171,
+    172,
+    173,
+    174,
+    175,
+    176,
+    177,
+    178,
+    179,
+    180,
+    181,
+    182,
+    183,
+    184,
+    185,
+    186,
+    187,
+    188,
+    189,
+    190,
+    191,
+    192,
+    193,
+    194,
+    195,
+    196,
+    197,
+    198,
+    199,
+    200,
+    201,
+    202,
+    203,
+    204,
+    205,
+    206,
+    207,
+    208,
+    209,
+    210,
+    211,
+    212,
+    213,
+    214,
+    215,
+    216,
+    217,
+    218,
+    219,
+    220,
+    221,
+    222,
+    223,
+    224,
+    225,
+    226,
+    227,
+    228,
+    229,
+    230,
+    231,
+    232,
+    233,
+    234,
+    235,
+    236,
+    237,
+    238,
+    239,
+    240,
+    241,
+    242,
+    243,
+    244,
+    245,
+    246,
+    247,
+    248,
+    249,
+    250,
+    251,
+    252,
+    253,
+    254,
+    255,
+    256,
+    257,
+    258,
+    259,
+    260,
+    261,
+    262,
+    263,
+    264,
+    265,
+    266,
+    267,
+    268,
+    269,
+    270,
+    271,
+    272,
+    273,
+    274,
+    275,
+    276,
+    277,
+    278,
+    279,
+    280,
+    281,
+    282,
+    283,
+    284,
+    285,
+    286,
+    287,
+    288,
+    289,
+    290,
+    291,
+    292,
+    293,
+    294,
+    295,
+    296,
+    297,
+    298,
+    299,
+    300,
+    301,
+    302,
+    303,
+    304,
+    305,
+    306,
+    307,
+    308,
+    309,
+    310,
+    311
+  ],
+  "missing_pages": [],
+  "radius_px": 2,
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "re_review_required",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 29,
+        "silhouette_raw_match_percent": 87.57264
+      },
+      {
+        "page": 47,
+        "silhouette_raw_match_percent": 53.2188
+      },
+      {
+        "page": 48,
+        "silhouette_raw_match_percent": 50.42525
+      },
+      {
+        "page": 49,
+        "silhouette_raw_match_percent": 45.95208
+      },
+      {
+        "page": 50,
+        "silhouette_raw_match_percent": 48.61432
+      },
+      {
+        "page": 51,
+        "silhouette_raw_match_percent": 57.08392
+      },
+      {
+        "page": 53,
+        "silhouette_raw_match_percent": 88.33463
+      },
+      {
+        "page": 54,
+        "silhouette_raw_match_percent": 88.7454
+      },
+      {
+        "page": 55,
+        "silhouette_raw_match_percent": 29.30363
+      },
+      {
+        "page": 56,
+        "silhouette_raw_match_percent": 30.81196
+      },
+      {
+        "page": 57,
+        "silhouette_raw_match_percent": 31.1493
+      },
+      {
+        "page": 58,
+        "silhouette_raw_match_percent": 24.46465
+      },
+      {
+        "page": 59,
+        "silhouette_raw_match_percent": 58.3665
+      },
+      {
+        "page": 60,
+        "silhouette_raw_match_percent": 19.80015
+      },
+      {
+        "page": 61,
+        "silhouette_raw_match_percent": 28.31675
+      },
+      {
+        "page": 62,
+        "silhouette_raw_match_percent": 0.15931
+      },
+      {
+        "page": 63,
+        "silhouette_raw_match_percent": 55.84739
+      },
+      {
+        "page": 64,
+        "silhouette_raw_match_percent": 52.08227
+      },
+      {
+        "page": 65,
+        "silhouette_raw_match_percent": 0.13853
+      },
+      {
+        "page": 66,
+        "silhouette_raw_match_percent": 62.83333
+      },
+      {
+        "page": 67,
+        "silhouette_raw_match_percent": 59.22311
+      },
+      {
+        "page": 68,
+        "silhouette_raw_match_percent": 51.35189
+      },
+      {
+        "page": 69,
+        "silhouette_raw_match_percent": 10.69988
+      },
+      {
+        "page": 70,
+        "silhouette_raw_match_percent": 34.83712
+      },
+      {
+        "page": 71,
+        "silhouette_raw_match_percent": 21.5239
+      },
+      {
+        "page": 72,
+        "silhouette_raw_match_percent": 20.74755
+      },
+      {
+        "page": 73,
+        "silhouette_raw_match_percent": 23.0586
+      },
+      {
+        "page": 74,
+        "silhouette_raw_match_percent": 12.25375
+      },
+      {
+        "page": 75,
+        "silhouette_raw_match_percent": 12.49633
+      },
+      {
+        "page": 76,
+        "silhouette_raw_match_percent": 36.22155
+      },
+      {
+        "page": 77,
+        "silhouette_raw_match_percent": 37.23022
+      },
+      {
+        "page": 78,
+        "silhouette_raw_match_percent": 36.82628
+      },
+      {
+        "page": 79,
+        "silhouette_raw_match_percent": 33.88484
+      },
+      {
+        "page": 80,
+        "silhouette_raw_match_percent": 33.99199
+      },
+      {
+        "page": 81,
+        "silhouette_raw_match_percent": 74.52039
+      },
+      {
+        "page": 82,
+        "silhouette_raw_match_percent": 59.17561
+      },
+      {
+        "page": 83,
+        "silhouette_raw_match_percent": 33.16652
+      },
+      {
+        "page": 84,
+        "silhouette_raw_match_percent": 35.86536
+      },
+      {
+        "page": 85,
+        "silhouette_raw_match_percent": 35.61008
+      },
+      {
+        "page": 86,
+        "silhouette_raw_match_percent": 36.07132
+      },
+      {
+        "page": 87,
+        "silhouette_raw_match_percent": 33.83895
+      },
+      {
+        "page": 88,
+        "silhouette_raw_match_percent": 29.54785
+      },
+      {
+        "page": 89,
+        "silhouette_raw_match_percent": 36.47978
+      },
+      {
+        "page": 90,
+        "silhouette_raw_match_percent": 24.6565
+      },
+      {
+        "page": 91,
+        "silhouette_raw_match_percent": 16.74364
+      },
+      {
+        "page": 92,
+        "silhouette_raw_match_percent": 16.99224
+      },
+      {
+        "page": 93,
+        "silhouette_raw_match_percent": 0.0
+      },
+      {
+        "page": 94,
+        "silhouette_raw_match_percent": 0.0
+      },
+      {
+        "page": 95,
+        "silhouette_raw_match_percent": 0.0
+      },
+      {
+        "page": 96,
+        "silhouette_raw_match_percent": 0.0
+      },
+      {
+        "page": 97,
+        "silhouette_raw_match_percent": 21.34541
+      },
+      {
+        "page": 98,
+        "silhouette_raw_match_percent": 23.6952
+      },
+      {
+        "page": 99,
+        "silhouette_raw_match_percent": 26.34937
+      },
+      {
+        "page": 100,
+        "silhouette_raw_match_percent": 53.36823
+      },
+      {
+        "page": 101,
+        "silhouette_raw_match_percent": 27.38095
+      },
+      {
+        "page": 102,
+        "silhouette_raw_match_percent": 30.39743
+      },
+      {
+        "page": 103,
+        "silhouette_raw_match_percent": 37.74199
+      },
+      {
+        "page": 104,
+        "silhouette_raw_match_percent": 38.77854
+      },
+      {
+        "page": 105,
+        "silhouette_raw_match_percent": 40.97
+      },
+      {
+        "page": 106,
+        "silhouette_raw_match_percent": 25.93719
+      },
+      {
+        "page": 107,
+        "silhouette_raw_match_percent": 36.44729
+      },
+      {
+        "page": 108,
+        "silhouette_raw_match_percent": 49.31595
+      },
+      {
+        "page": 109,
+        "silhouette_raw_match_percent": 47.20548
+      },
+      {
+        "page": 110,
+        "silhouette_raw_match_percent": 46.33156
+      },
+      {
+        "page": 111,
+        "silhouette_raw_match_percent": 32.5353
+      },
+      {
+        "page": 112,
+        "silhouette_raw_match_percent": 31.5132
+      },
+      {
+        "page": 113,
+        "silhouette_raw_match_percent": 26.89388
+      },
+      {
+        "page": 114,
+        "silhouette_raw_match_percent": 25.98243
+      },
+      {
+        "page": 115,
+        "silhouette_raw_match_percent": 62.22808
+      },
+      {
+        "page": 116,
+        "silhouette_raw_match_percent": 16.00465
+      },
+      {
+        "page": 117,
+        "silhouette_raw_match_percent": 47.4457
+      },
+      {
+        "page": 118,
+        "silhouette_raw_match_percent": 29.31281
+      },
+      {
+        "page": 119,
+        "silhouette_raw_match_percent": 47.04846
+      },
+      {
+        "page": 120,
+        "silhouette_raw_match_percent": 44.8054
+      },
+      {
+        "page": 121,
+        "silhouette_raw_match_percent": 20.03038
+      },
+      {
+        "page": 122,
+        "silhouette_raw_match_percent": 22.99392
+      },
+      {
+        "page": 123,
+        "silhouette_raw_match_percent": 11.29365
+      },
+      {
+        "page": 124,
+        "silhouette_raw_match_percent": 20.75083
+      },
+      {
+        "page": 125,
+        "silhouette_raw_match_percent": 27.33085
+      },
+      {
+        "page": 126,
+        "silhouette_raw_match_percent": 9.53733
+      },
+      {
+        "page": 127,
+        "silhouette_raw_match_percent": 0.0
+      },
+      {
+        "page": 128,
+        "silhouette_raw_match_percent": 0.0
+      },
+      {
+        "page": 129,
+        "silhouette_raw_match_percent": 39.82587
+      },
+      {
+        "page": 130,
+        "silhouette_raw_match_percent": 25.87939
+      },
+      {
+        "page": 131,
+        "silhouette_raw_match_percent": 34.4406
+      },
+      {
+        "page": 132,
+        "silhouette_raw_match_percent": 19.36559
+      },
+      {
+        "page": 133,
+        "silhouette_raw_match_percent": 18.62013
+      },
+      {
+        "page": 134,
+        "silhouette_raw_match_percent": 12.83228
+      },
+      {
+        "page": 135,
+        "silhouette_raw_match_percent": 0.0
+      },
+      {
+        "page": 136,
+        "silhouette_raw_match_percent": 0.0
+      },
+      {
+        "page": 137,
+        "silhouette_raw_match_percent": 28.37557
+      },
+      {
+        "page": 138,
+        "silhouette_raw_match_percent": 31.59892
+      },
+      {
+        "page": 139,
+        "silhouette_raw_match_percent": 20.19754
+      },
+      {
+        "page": 140,
+        "silhouette_raw_match_percent": 29.76532
+      },
+      {
+        "page": 141,
+        "silhouette_raw_match_percent": 29.456
+      },
+      {
+        "page": 142,
+        "silhouette_raw_match_percent": 59.11785
+      },
+      {
+        "page": 143,
+        "silhouette_raw_match_percent": 21.89971
+      },
+      {
+        "page": 144,
+        "silhouette_raw_match_percent": 14.47843
+      },
+      {
+        "page": 145,
+        "silhouette_raw_match_percent": 16.6637
+      },
+      {
+        "page": 146,
+        "silhouette_raw_match_percent": 28.1418
+      },
+      {
+        "page": 147,
+        "silhouette_raw_match_percent": 22.25569
+      },
+      {
+        "page": 148,
+        "silhouette_raw_match_percent": 27.10186
+      },
+      {
+        "page": 149,
+        "silhouette_raw_match_percent": 28.51434
+      },
+      {
+        "page": 150,
+        "silhouette_raw_match_percent": 28.13891
+      },
+      {
+        "page": 151,
+        "silhouette_raw_match_percent": 22.20417
+      },
+      {
+        "page": 152,
+        "silhouette_raw_match_percent": 37.31573
+      },
+      {
+        "page": 153,
+        "silhouette_raw_match_percent": 30.67414
+      },
+      {
+        "page": 154,
+        "silhouette_raw_match_percent": 36.17986
+      },
+      {
+        "page": 155,
+        "silhouette_raw_match_percent": 18.07379
+      },
+      {
+        "page": 156,
+        "silhouette_raw_match_percent": 34.12872
+      },
+      {
+        "page": 157,
+        "silhouette_raw_match_percent": 69.95734
+      },
+      {
+        "page": 158,
+        "silhouette_raw_match_percent": 25.39044
+      },
+      {
+        "page": 159,
+        "silhouette_raw_match_percent": 26.64142
+      },
+      {
+        "page": 160,
+        "silhouette_raw_match_percent": 29.50993
+      },
+      {
+        "page": 161,
+        "silhouette_raw_match_percent": 37.55296
+      },
+      {
+        "page": 162,
+        "silhouette_raw_match_percent": 24.25903
+      },
+      {
+        "page": 163,
+        "silhouette_raw_match_percent": 21.49726
+      },
+      {
+        "page": 164,
+        "silhouette_raw_match_percent": 28.01463
+      },
+      {
+        "page": 165,
+        "silhouette_raw_match_percent": 17.36061
+      },
+      {
+        "page": 166,
+        "silhouette_raw_match_percent": 19.95616
+      },
+      {
+        "page": 167,
+        "silhouette_raw_match_percent": 14.84225
+      },
+      {
+        "page": 168,
+        "silhouette_raw_match_percent": 57.93611
+      },
+      {
+        "page": 169,
+        "silhouette_raw_match_percent": 57.33918
+      },
+      {
+        "page": 170,
+        "silhouette_raw_match_percent": 5.65207
+      },
+      {
+        "page": 171,
+        "silhouette_raw_match_percent": 5.38447
+      },
+      {
+        "page": 172,
+        "silhouette_raw_match_percent": 29.79513
+      },
+      {
+        "page": 173,
+        "silhouette_raw_match_percent": 26.13754
+      },
+      {
+        "page": 174,
+        "silhouette_raw_match_percent": 55.52117
+      },
+      {
+        "page": 175,
+        "silhouette_raw_match_percent": 27.58124
+      },
+      {
+        "page": 176,
+        "silhouette_raw_match_percent": 13.56171
+      },
+      {
+        "page": 177,
+        "silhouette_raw_match_percent": 12.92487
+      },
+      {
+        "page": 178,
+        "silhouette_raw_match_percent": 6.56855
+      },
+      {
+        "page": 179,
+        "silhouette_raw_match_percent": 6.79816
+      },
+      {
+        "page": 180,
+        "silhouette_raw_match_percent": 51.90594
+      },
+      {
+        "page": 181,
+        "silhouette_raw_match_percent": 69.35795
+      },
+      {
+        "page": 182,
+        "silhouette_raw_match_percent": 60.58972
+      },
+      {
+        "page": 183,
+        "silhouette_raw_match_percent": 57.69259
+      },
+      {
+        "page": 184,
+        "silhouette_raw_match_percent": 49.76954
+      },
+      {
+        "page": 185,
+        "silhouette_raw_match_percent": 49.46296
+      },
+      {
+        "page": 186,
+        "silhouette_raw_match_percent": 34.36403
+      },
+      {
+        "page": 187,
+        "silhouette_raw_match_percent": 17.22682
+      },
+      {
+        "page": 188,
+        "silhouette_raw_match_percent": 10.59252
+      },
+      {
+        "page": 189,
+        "silhouette_raw_match_percent": 28.17115
+      },
+      {
+        "page": 190,
+        "silhouette_raw_match_percent": 30.41784
+      },
+      {
+        "page": 191,
+        "silhouette_raw_match_percent": 24.95577
+      },
+      {
+        "page": 192,
+        "silhouette_raw_match_percent": 20.13509
+      },
+      {
+        "page": 193,
+        "silhouette_raw_match_percent": 24.88594
+      },
+      {
+        "page": 194,
+        "silhouette_raw_match_percent": 16.85966
+      },
+      {
+        "page": 195,
+        "silhouette_raw_match_percent": 24.87526
+      },
+      {
+        "page": 196,
+        "silhouette_raw_match_percent": 62.19901
+      },
+      {
+        "page": 197,
+        "silhouette_raw_match_percent": 30.14539
+      },
+      {
+        "page": 198,
+        "silhouette_raw_match_percent": 33.51829
+      },
+      {
+        "page": 199,
+        "silhouette_raw_match_percent": 22.23462
+      },
+      {
+        "page": 200,
+        "silhouette_raw_match_percent": 16.73304
+      },
+      {
+        "page": 201,
+        "silhouette_raw_match_percent": 41.20195
+      },
+      {
+        "page": 202,
+        "silhouette_raw_match_percent": 51.28664
+      },
+      {
+        "page": 203,
+        "silhouette_raw_match_percent": 26.9762
+      },
+      {
+        "page": 204,
+        "silhouette_raw_match_percent": 17.69302
+      },
+      {
+        "page": 205,
+        "silhouette_raw_match_percent": 23.54931
+      },
+      {
+        "page": 206,
+        "silhouette_raw_match_percent": 13.42427
+      },
+      {
+        "page": 207,
+        "silhouette_raw_match_percent": 10.89233
+      },
+      {
+        "page": 208,
+        "silhouette_raw_match_percent": 18.28275
+      },
+      {
+        "page": 209,
+        "silhouette_raw_match_percent": 18.77707
+      },
+      {
+        "page": 210,
+        "silhouette_raw_match_percent": 36.19946
+      },
+      {
+        "page": 211,
+        "silhouette_raw_match_percent": 23.25513
+      },
+      {
+        "page": 212,
+        "silhouette_raw_match_percent": 16.07541
+      },
+      {
+        "page": 213,
+        "silhouette_raw_match_percent": 24.72487
+      },
+      {
+        "page": 214,
+        "silhouette_raw_match_percent": 65.00404
+      },
+      {
+        "page": 216,
+        "silhouette_raw_match_percent": 27.3933
+      },
+      {
+        "page": 217,
+        "silhouette_raw_match_percent": 12.83043
+      },
+      {
+        "page": 218,
+        "silhouette_raw_match_percent": 26.12284
+      },
+      {
+        "page": 219,
+        "silhouette_raw_match_percent": 0.0
+      },
+      {
+        "page": 220,
+        "silhouette_raw_match_percent": 0.0
+      },
+      {
+        "page": 221,
+        "silhouette_raw_match_percent": 0.0
+      },
+      {
+        "page": 222,
+        "silhouette_raw_match_percent": 0.0
+      },
+      {
+        "page": 223,
+        "silhouette_raw_match_percent": 12.15741
+      },
+      {
+        "page": 224,
+        "silhouette_raw_match_percent": 20.07335
+      },
+      {
+        "page": 225,
+        "silhouette_raw_match_percent": 16.37225
+      },
+      {
+        "page": 226,
+        "silhouette_raw_match_percent": 22.27114
+      },
+      {
+        "page": 227,
+        "silhouette_raw_match_percent": 29.55595
+      },
+      {
+        "page": 228,
+        "silhouette_raw_match_percent": 26.86607
+      },
+      {
+        "page": 229,
+        "silhouette_raw_match_percent": 32.99496
+      },
+      {
+        "page": 230,
+        "silhouette_raw_match_percent": 29.13591
+      },
+      {
+        "page": 231,
+        "silhouette_raw_match_percent": 32.62466
+      },
+      {
+        "page": 232,
+        "silhouette_raw_match_percent": 63.38776
+      },
+      {
+        "page": 233,
+        "silhouette_raw_match_percent": 47.0562
+      },
+      {
+        "page": 234,
+        "silhouette_raw_match_percent": 45.04927
+      },
+      {
+        "page": 235,
+        "silhouette_raw_match_percent": 20.57028
+      },
+      {
+        "page": 236,
+        "silhouette_raw_match_percent": 17.43762
+      },
+      {
+        "page": 237,
+        "silhouette_raw_match_percent": 61.14907
+      },
+      {
+        "page": 238,
+        "silhouette_raw_match_percent": 47.22891
+      },
+      {
+        "page": 239,
+        "silhouette_raw_match_percent": 31.41352
+      },
+      {
+        "page": 240,
+        "silhouette_raw_match_percent": 46.49879
+      },
+      {
+        "page": 241,
+        "silhouette_raw_match_percent": 22.02673
+      },
+      {
+        "page": 242,
+        "silhouette_raw_match_percent": 16.58801
+      },
+      {
+        "page": 243,
+        "silhouette_raw_match_percent": 18.87092
+      },
+      {
+        "page": 244,
+        "silhouette_raw_match_percent": 19.04415
+      },
+      {
+        "page": 245,
+        "silhouette_raw_match_percent": 0.0
+      },
+      {
+        "page": 246,
+        "silhouette_raw_match_percent": 0.0
+      },
+      {
+        "page": 247,
+        "silhouette_raw_match_percent": 0.0
+      },
+      {
+        "page": 248,
+        "silhouette_raw_match_percent": 0.0
+      },
+      {
+        "page": 249,
+        "silhouette_raw_match_percent": 34.8088
+      },
+      {
+        "page": 250,
+        "silhouette_raw_match_percent": 34.65721
+      },
+      {
+        "page": 251,
+        "silhouette_raw_match_percent": 39.46489
+      },
+      {
+        "page": 252,
+        "silhouette_raw_match_percent": 21.38442
+      },
+      {
+        "page": 253,
+        "silhouette_raw_match_percent": 0.0
+      },
+      {
+        "page": 254,
+        "silhouette_raw_match_percent": 0.0
+      },
+      {
+        "page": 255,
+        "silhouette_raw_match_percent": 0.0
+      },
+      {
+        "page": 256,
+        "silhouette_raw_match_percent": 0.0
+      },
+      {
+        "page": 257,
+        "silhouette_raw_match_percent": 36.02293
+      },
+      {
+        "page": 258,
+        "silhouette_raw_match_percent": 27.69749
+      },
+      {
+        "page": 259,
+        "silhouette_raw_match_percent": 33.18829
+      },
+      {
+        "page": 260,
+        "silhouette_raw_match_percent": 27.73637
+      },
+      {
+        "page": 261,
+        "silhouette_raw_match_percent": 49.83835
+      },
+      {
+        "page": 262,
+        "silhouette_raw_match_percent": 41.51025
+      },
+      {
+        "page": 263,
+        "silhouette_raw_match_percent": 28.76032
+      },
+      {
+        "page": 264,
+        "silhouette_raw_match_percent": 28.10373
+      },
+      {
+        "page": 265,
+        "silhouette_raw_match_percent": 33.20148
+      },
+      {
+        "page": 266,
+        "silhouette_raw_match_percent": 44.1829
+      },
+      {
+        "page": 267,
+        "silhouette_raw_match_percent": 25.22302
+      },
+      {
+        "page": 268,
+        "silhouette_raw_match_percent": 13.26158
+      },
+      {
+        "page": 269,
+        "silhouette_raw_match_percent": 0.1675
+      },
+      {
+        "page": 270,
+        "silhouette_raw_match_percent": 43.3185
+      },
+      {
+        "page": 271,
+        "silhouette_raw_match_percent": 48.04599
+      },
+      {
+        "page": 272,
+        "silhouette_raw_match_percent": 48.84111
+      },
+      {
+        "page": 273,
+        "silhouette_raw_match_percent": 39.77785
+      },
+      {
+        "page": 274,
+        "silhouette_raw_match_percent": 43.60503
+      },
+      {
+        "page": 275,
+        "silhouette_raw_match_percent": 39.29268
+      },
+      {
+        "page": 276,
+        "silhouette_raw_match_percent": 38.33843
+      },
+      {
+        "page": 277,
+        "silhouette_raw_match_percent": 42.70319
+      },
+      {
+        "page": 278,
+        "silhouette_raw_match_percent": 43.44239
+      },
+      {
+        "page": 279,
+        "silhouette_raw_match_percent": 0.21591
+      },
+      {
+        "page": 280,
+        "silhouette_raw_match_percent": 27.74925
+      },
+      {
+        "page": 281,
+        "silhouette_raw_match_percent": 35.16836
+      },
+      {
+        "page": 282,
+        "silhouette_raw_match_percent": 26.7566
+      },
+      {
+        "page": 283,
+        "silhouette_raw_match_percent": 30.24983
+      },
+      {
+        "page": 284,
+        "silhouette_raw_match_percent": 17.22084
+      },
+      {
+        "page": 285,
+        "silhouette_raw_match_percent": 26.42861
+      },
+      {
+        "page": 286,
+        "silhouette_raw_match_percent": 15.76389
+      },
+      {
+        "page": 287,
+        "silhouette_raw_match_percent": 32.5731
+      },
+      {
+        "page": 288,
+        "silhouette_raw_match_percent": 15.90375
+      },
+      {
+        "page": 289,
+        "silhouette_raw_match_percent": 35.57819
+      },
+      {
+        "page": 290,
+        "silhouette_raw_match_percent": 18.5729
+      },
+      {
+        "page": 291,
+        "silhouette_raw_match_percent": 30.43582
+      },
+      {
+        "page": 292,
+        "silhouette_raw_match_percent": 23.13319
+      },
+      {
+        "page": 293,
+        "silhouette_raw_match_percent": 23.34783
+      },
+      {
+        "page": 294,
+        "silhouette_raw_match_percent": 37.28188
+      },
+      {
+        "page": 295,
+        "silhouette_raw_match_percent": 27.17804
+      },
+      {
+        "page": 296,
+        "silhouette_raw_match_percent": 27.3568
+      },
+      {
+        "page": 297,
+        "silhouette_raw_match_percent": 30.43198
+      },
+      {
+        "page": 298,
+        "silhouette_raw_match_percent": 24.20803
+      },
+      {
+        "page": 299,
+        "silhouette_raw_match_percent": 17.63002
+      },
+      {
+        "page": 300,
+        "silhouette_raw_match_percent": 21.02514
+      },
+      {
+        "page": 301,
+        "silhouette_raw_match_percent": 22.85449
+      },
+      {
+        "page": 302,
+        "silhouette_raw_match_percent": 7.70764
+      },
+      {
+        "page": 303,
+        "silhouette_raw_match_percent": 34.51802
+      },
+      {
+        "page": 304,
+        "silhouette_raw_match_percent": 10.01219
+      },
+      {
+        "page": 305,
+        "silhouette_raw_match_percent": 28.36293
+      },
+      {
+        "page": 306,
+        "silhouette_raw_match_percent": 12.33999
+      },
+      {
+        "page": 307,
+        "silhouette_raw_match_percent": 39.54154
+      },
+      {
+        "page": 308,
+        "silhouette_raw_match_percent": 9.31661
+      },
+      {
+        "page": 309,
+        "silhouette_raw_match_percent": 20.8001
+      },
+      {
+        "page": 310,
+        "silhouette_raw_match_percent": 19.66727
+      },
+      {
+        "page": 311,
+        "silhouette_raw_match_percent": 9.05147
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 311,
+      "pdf": 313
+    },
+    "page_count_mismatch": true
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue8759/6500000-201700118_jeju_tourism_education_plan.hwp",
+      "sha256": "fa87e135c3d609324457adb37230e220be9406ba99a94d26a813ba7132244ac9"
+    },
+    "pdf": {
+      "path": "pdf/issue8759/6500000-201700118_jeju_tourism_education_plan-2020.pdf",
+      "sha256": "56f1bf8b3d92065e2e51ae27f1abbf4a97ccbd83474f29f3c00b4e2bca26659e"
+    },
+    "git_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+      "executable_sha256": "87d4df53fd91304be5bac391fb204643c36b7df2023c04a0953bcbc7d4fdf634",
+      "library": "output/pr-review/planet6897-remaining39-integration-20261111/venv/lib/python3.14/site-packages/pypdfium2_raw/libpdfium.dylib",
+      "library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "output/pr-review/planet6897-remaining39-integration-20261111/base-native",
+      "path": "output/pr-review/planet6897-remaining39-integration-20261111/base-native",
+      "sha256": "6ad28f665d9da971b5cdf0e691977268c5156bf7f5a66ee7f81a8c4f90ec441d"
+    },
+    "raster_backend": "wasm-canvas2d",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2022",
+    "wasm": {
+      "files": [
+        {
+          "path": "output/pr-review/planet6897-remaining39-integration-20261111/base-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "output/pr-review/planet6897-remaining39-integration-20261111/base-pkg/rhwp_bg.wasm",
+          "sha256": "bf23f3629528d45cdc6a223d148e1aa37e1887a6fb4d25b40b41560369b9a851"
+        }
+      ],
+      "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+      "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+          "sha256": "67b4003e2be99ea44a7c957e4b35acde1b5e6e82a54fe195c5598c3c617bc2e3"
+        },
+        {
+          "path": "ttfs/opensource/NotoSansKR-Regular.ttf",
+          "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74"
+        },
+        {
+          "path": "ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+          "sha256": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688"
+        },
+        {
+          "path": "ttfs/opensource/RHWPOldHangul-Regular.otf",
+          "sha256": "0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4"
+        },
+        {
+          "path": "ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+          "sha256": "7e3aee5ee1d8f44cc37d35dbd07e5f66414fee5ce552ebda6b4347643d9d0b78"
+        }
+      ]
+    }
+  },
+  "canonical_manifest_sha256": "c9fc1d1739d4b13589d1d6c0da9d11c7c84dd983618f3fd92cfc0cb7c91deac9"
+}
