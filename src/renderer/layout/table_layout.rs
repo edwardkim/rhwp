@@ -7594,6 +7594,8 @@ impl LayoutEngine {
         let mut has_preceding_text = false;
         // [#8686] 흐름을 전진시키지 않은 칸 안 자리차지 표의 바깥 상자 띠.
         let mut cell_float_bands: Vec<std::ops::Range<f64>> = Vec::new();
+        // 이 칸에서 이미 배치한 어울림(Square) 그림 상자. 뒤 문단의 TAC 표 줄 회피에 쓴다.
+        let mut cell_square_float_boxes: Vec<LayoutRect> = Vec::new();
         let sequential_nested_layout =
             self.sequential_nested_cell_layout(composed_paras, &cell.paragraphs, styles);
         let stored_block_flow = sequential_nested_layout
@@ -7863,6 +7865,30 @@ impl LayoutEngine {
                 0.0
             };
             let allow_first_para_lead = first_para_lead_px > 0.0;
+            // 어울림(Square) 그림 옆에는 남은 폭에 들어가는 줄만 놓인다. 쪼갤 수 없는 TAC 표
+            // 줄이 앞 문단 그림의 세로 범위에서 시작하는데 그림 왼쪽·오른쪽 어느 틈에도 표
+            // (바깥 여백 포함)가 들어가지 않으면 그 줄은 그림 아래끝에서 시작한다. 이 회피가
+            // 없으면 표는 그림 옆 앞 줄 바로 뒤에 그려지고, 다음 문단만 표 host 뒤 저장 vpos
+            // 하한으로 제자리에 돌아가 표 아래에 빈 띠가 남는다(36341965 1쪽 제목 상자 49.6px 위).
+            if start_line == 0 && !cell_square_float_boxes.is_empty() {
+                let first_tac_table_width = source_controls.iter().find_map(|ctrl| match ctrl {
+                    Control::Table(t) if t.common.treat_as_char => Some(
+                        hwpunit_to_px(t.common.width as i32, self.dpi)
+                            + hwpunit_to_px(t.outer_margin_left as i32, self.dpi)
+                            + hwpunit_to_px(t.outer_margin_right as i32, self.dpi),
+                    ),
+                    _ => None,
+                });
+                if let Some(required_width) = first_tac_table_width {
+                    para_y =
+                        crate::renderer::float_placement::clear_square_floats_for_unbreakable_line(
+                            &cell_square_float_boxes,
+                            &inner_area,
+                            para_y,
+                            required_width,
+                        );
+                }
+            }
             let para_y_before_compose = para_y;
             let paragraph_picture_band =
                 crate::renderer::float_placement::paragraph_picture_band(para, self.dpi)
@@ -9143,6 +9169,12 @@ impl LayoutEngine {
                                 cell_context.as_ref(),
                                 styles,
                             );
+                            if matches!(pic.common.text_wrap, TextWrap::Square)
+                                && !detached_from_inline_table_flow
+                                && !unrestricted_take_place_cell_float
+                            {
+                                cell_square_float_boxes.push(pic_area);
+                            }
                             // 그림 공통 경로가 캡션의 좌표와 소유를 처리해 한 번 출력한다.
                             // 셀 호출자가 아래 캡션을 다시 출력하면 같은 글줄이 겹친다.
                             if matches!(pic.common.text_wrap, TextWrap::TopAndBottom) {
