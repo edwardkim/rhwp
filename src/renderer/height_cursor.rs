@@ -1124,6 +1124,34 @@ impl HeightCursor {
             self.vpos_page_base = None;
             self.vpos_lazy_base = None;
             self.stored_column_origin = None;
+            // 앞 문단이 저장 줄 없는 합성 문단이면 버린 축은 원본 축이 아니라 앞 쪽에서 이어진
+            // 누적 좌표다. 그러면 이 문단이 원본 축의 첫 증거이므로, 순차 흐름이 실제로 수용한
+            // 첫 줄 원점에서 단 원점을 다시 세운다. 비워 두면 뒤 원본 문단이 이미 소비한 끝
+            // 줄간격을 확인할 원점이 없어 그 간격을 기준에서 한 번 더 뺀다([#8933] 36495398
+            // 4쪽: 합성 pi=21 의 누적 vpos 139716, 표 pi=22 저장 vpos 3720, pi=23 ls 540HU 이중 차감).
+            // 분할 표 조각은 첫 줄 원점이 조각 경계라 이 증거가 아니다.
+            if synthetic_prev_seg
+                && !self.curr_item_is_table_fragment
+                && !self.prev_item_was_partial_table
+            {
+                if let Some(first) = paragraphs
+                    .get(item_para)
+                    .and_then(|para| para.line_segs.first())
+                {
+                    let spacing_before = paragraphs
+                        .get(item_para)
+                        .and_then(|p| styles.para_styles.get(p.para_shape_id as usize))
+                        .map_or(0.0, |ps| ps.spacing_before);
+                    // 아래 lazy 역산(`y_delta_hu`)과 같은 반올림으로 HU 원점을 정한다.
+                    // 절삭 변환은 경로별 부동소수 오차로 1HU 어긋나 같은 소비 증거를 놓친다.
+                    let origin_hu = ((y_offset + spacing_before - self.col_area_y) / self.dpi
+                        * 7200.0)
+                        .round() as i32;
+                    let base = first.vertical_pos - origin_hu;
+                    self.vpos_lazy_base = Some(base);
+                    self.stored_column_origin = Some((base, self.col_area_y));
+                }
+            }
             return y_offset;
         }
         // 합성 줄 뒤의 수용 위치가 원본 첫 줄과 이미 일치하면, 재구성 vpos를
