@@ -357,6 +357,7 @@ impl CellComposedStore {
                 engine.compose_cell_unit_paragraph(
                     &cell.paragraphs[cpi],
                     cell.text_direction,
+                    cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                     inner_width,
                     styles,
                 )
@@ -1914,6 +1915,7 @@ impl LayoutEngine {
                         *comp = self.compose_cell_unit_paragraph(
                             para,
                             cell.text_direction,
+                            cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                             inner_width_for_recompose,
                             styles,
                         );
