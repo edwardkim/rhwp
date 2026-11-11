@@ -61,5 +61,16 @@
     "remove",
     "restore",
     "disable"
-  ]
+  ],
+  "realDocumentEditing": {
+    "inputs": [
+      "HWPX",
+      "HWP3"
+    ],
+    "paragraph": 23,
+    "insertDelete": "검증",
+    "wholeDocumentOrderedContentPreserved": true,
+    "restoredContentIdentical": true,
+    "limitation": "This one-paragraph probe does not establish every layout ownership, containment or overlap acceptance condition."
+  }
 }

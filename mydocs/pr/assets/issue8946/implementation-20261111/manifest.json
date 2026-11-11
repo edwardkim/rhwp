@@ -35,6 +35,10 @@
     "bytes": 126550,
     "sha256": "94f73504acfd5d17daac9079f9da6105570105858bc2a34687825c3863a2551b"
   },
+  "hwpx-editing.json": {
+    "bytes": 1689,
+    "sha256": "ca3a3773df0105262023d19d7878349cff2ef7a39265850a8d47337ec9e989a8"
+  },
   "hwp3-host-first.png": {
     "bytes": 35706,
     "sha256": "ba929f8bf6e6a3b150bb175daf061f1b3c304c5992172a103794239b180c6789"
@@ -80,8 +84,8 @@
     "sha256": "adb779963183b95332ff3924fa4bed0f44e3e889cfb8abd4b57c980d7a6aa13c"
   },
   "validation.json": {
-    "bytes": 1682,
-    "sha256": "6ca13b57cff02238633cbea42e6ec94ac7c09bdb522362f663499c352e5fdec2"
+    "bytes": 2036,
+    "sha256": "b7f6cc2b7edbc9072a021c9a334c6af40cd287d541cf4033b7f2eeeaca9d7ce6"
   },
   "hwpx-wasm.tsv": {
     "bytes": 16172,
@@ -106,6 +110,10 @@
   "final-hwpx-enabled-result.json": {
     "bytes": 1047,
     "sha256": "91f3f10c186738dda830477cd18f2ef37faaff1b4dc22129ebc29fee5853ca78"
+  },
+  "hwp3-editing.json": {
+    "bytes": 1689,
+    "sha256": "8e58a8805fd6633750943bfda245fccd5eba2fbfc4e8890e3874d1da5ce6188f"
   },
   "default-host-head.json": {
     "bytes": 126550,
