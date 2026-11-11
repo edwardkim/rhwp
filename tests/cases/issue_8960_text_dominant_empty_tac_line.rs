@@ -18,7 +18,8 @@
 //! `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`, raw =
 //! `silhouette_raw_match_percent`, 글꼴 `ttfs/opensource` — 문서 본 글꼴 없는 환경):
 //! - Native: 2쪽 / 2쪽, p1 91.12 · p2 91.50, 최저 91.12 (base: p1 75.52 · p2 71.72)
-//! - fresh WASM: 측정 후 PR 본문과 `mydocs/pr/assets/issue_8960/` 에 기록
+//! - fresh WASM(`scripts/wasm-pack-locked.sh --target web`): 2쪽 / 2쪽, p1 91.35 · p2 91.62, 최저 91.35
+//! - 증거: `mydocs/pr/assets/issue_8960/`(native·wasm TSV, review·overlay PNG)
 //! - 남은 차이는 가로 글자 폭(공개 글꼴)이다. 구분선·「접수」 줄의 세로 위치는 PDF 와 겹친다.
 #![cfg(not(target_arch = "wasm32"))]
 
