@@ -7,8 +7,9 @@
 //! 검증 경로와 범위: bindings/Flutter/macos/README.md의 내부 GPU 타일 캐시 절.
 
 #![cfg(not(target_arch = "wasm32"))]
-#[path = "../../src/native_host/gpu_tiles/frame_resources.rs"]
-mod frame_resources;
+mod frame_resources {
+    include!("../support/gpu_frame_resources.rs");
+}
 
 use frame_resources::FrameResources;
 use std::cell::Cell;

@@ -19,8 +19,9 @@ use std::{cell::RefCell, rc::Rc};
 // Include the real private policy without widening the library API. The adapter
 // only supplies the same existing snapshot/stamp/error types as the production parent.
 #[allow(dead_code)]
-#[path = "../support/native_gpu_tiles.rs"]
-mod native_host;
+mod native_host {
+    include!("../support/native_gpu_tiles.rs");
+}
 use native_host::gpu_tiles::*;
 
 fn config() -> TileConfig {
