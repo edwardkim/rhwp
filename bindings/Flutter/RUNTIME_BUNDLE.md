@@ -36,9 +36,9 @@ SDK는 실행 시 필요하지 않다. 앱의 종료 코드를 그대로 반환�
 번들에 필요한 데이터·engine·plugin·Native·owner는 보존된다. 시스템 GTK/그래픽 드라이버와
 플랫폼 loader 의존성은 해당 OS에서 제공해야 하며, OS 서명·installer·자동 업데이트는 별도 작업이다.
 
-실행 후 참조앱에서 파일 열기·쪽 이동·확대·축소를 확인한다. 파일 교체로 기존 GPU가 종료되어
-CPU 경로를 표시하면 `GPU 다시 연결`로 같은 문서의 새 controller를 만든다. `문서 닫기`로
-retirement를 확인한 뒤 창을 닫는다. 실제 화면·DPR·복구·종료 결과는 빌드 receipt와 구분해 기록한다.
+실행 후 참조앱에서 파일 열기·쪽 이동·확대·축소를 확인한다. GPU 오류·한도 초과 등으로
+CPU fallback 또는 퇴역 상태가 되면 `GPU 다시 연결`로 같은 문서의 새 controller를 만든다.
+정상 GPU에는 복구 버튼을 활성화하지 않는다. `문서 닫기`로 retirement를 확인한 뒤 창을 닫는다. 실제 화면·DPR·복구·종료 결과는 빌드 receipt와 구분해 기록한다.
 
 launcher의 portable 음성 대조는 다음 명령으로 실행한다. 작은 실제 ELF child 검사는 이동한 root와
 종료 코드 전달만 확인하며, rhwp/Flutter/GPU 실행 증거로 세지 않는다.
@@ -139,3 +139,19 @@ Flutter runner의 별도 검증 source·hash를 기록한 후 사용할 수 있�
 full stamp 검사/해제·owner 종료를 실행했고 Native resource counter9개는 모두0으로
 돌아왔다. 이 실행은 C fixture가 아니며 runtime runner 실행·GPU 표시 검증은 아니다.
 각 role의 source는 독립적으로 선언하고 기존 runtime 재사용을 새 빌드로 계산하지 않는다.
+
+P118에서는 runtime source `0ebb5b1dfa7290d275c493d8be647dd72891b75a`의 기존 참조앱을
+Flutter 3.47.9 release로 새로 빌드했다. 위 `b5064fae1eef` Native와 현재 dispatcher를 사용한
+32개 member·207,053,122 bytes 번들을 공백이 있는 경로로 이동하고 원래 runner/source 경로를
+치운 뒤, bundle 환경 변수 없이 `/tmp`에서 실행 파일을 직접 열었다. 실제 GTK 창과
+runner·engine·plugin·Native·owner의 `/proc` 매핑이 모두 이동한 번들의 파일임을 확인했다.
+기존 `desktop-consumer.hwpx`와 radial 6쪽 fixture를 열어 표시한 뒤 `문서 닫기`의 완료 화면을
+확인했고, 정상 `WM_DELETE_WINDOW`로 프로세스 종료 코드 0을 받았다. Native를 현재 devel에서
+다시 빌드한 결과나 물리 GPU 검증으로 계산하지 않는다. 환경은 Mesa 22.3.6/llvmpipe이며 Flutter
+engine 로그는 Impeller OpenGLES, 문서 producer는 공급한 Native Skia GL 경로다.
+
+Dart 278개 검사(전체 실행 277개 통과 후 sparse checkout에 없던 fixture 1개를 정확한 Git 입력으로
+보충해 재실행), analyzer·format, launcher 8개와 기존 bundle 11개 계약 검사를 통과했다.
+복구는 기존 controller/session 회귀로 검증했고 이 앱 실행에서 강제 GPU 복구 성공을 관측한 것으로
+표시하지 않는다. 매우 큰 GTK 창 resize에서는 frame 크기 전환 timeout도 관측했다. 실제 macOS·Windows
+앱 실행과 복구·DPR·GPU 종료 계수 수집은 각 플랫폼의 후속 실행 증거로 남긴다.
