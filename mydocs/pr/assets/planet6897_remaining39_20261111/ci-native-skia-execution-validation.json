@@ -1,0 +1,44 @@
+{
+  "parent_head": "1d1fb0439afea54ea17312662dcf358efe4752a9",
+  "verified_at": "2026-11-11T16:43:07.610782+00:00",
+  "actual_ci_job": {
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/43055138502/job/130643263801",
+    "job_conclusion": "success",
+    "apt_timeout_seconds": 180,
+    "prepare_suites": "skipped",
+    "native_skia_tests": "skipped",
+    "accepted_as_test_pass": false
+  },
+  "origin": {
+    "pr": 5536,
+    "commit": "3751cb41b5d95eabcfb028997d2f26bba45f9096",
+    "behavior": "APT timeout에서 available=false를 기록하고 exit0한 뒤 필수 테스트를 생략하는 기존 경로"
+  },
+  "correction": [
+    "pkg-config로 fontconfig/freetype2 개발 라이브러리와 fc-match의 실제 DejaVu Sans 글꼴 프로그램을 확인한다. 이미 준비됐다면 APT만 생략하며 테스트는 실행한다.",
+    "의존성 누락 시 기존 재시도·각 명령 180초 상한으로 설치한다. timeout124와 일반 APT 오류를 job 실패로 전달하고 설치 후 의존성을 다시 확인한다.",
+    "suite 준비와 Native Skia 테스트의 available 조건을 제거했다. 준비 실패를 녹색 job으로 표시하지 않는다."
+  ],
+  "local_tests": {
+    "before": {
+      "tests": 7,
+      "failures": 5,
+      "log_sha256": "d0bbcf639eb44e4f126b595441f40073c356649165695347a406cf9b9f27fb5a"
+    },
+    "after": {
+      "related_tests": 78,
+      "workflow_python": 273,
+      "workflow_node": 354,
+      "actionlint_exit": 0,
+      "log_sha256": "a0b6c7aa593994ce5fe6ea35ee8b35fc9a89da60f5657a6db3ae79456b38975c"
+    },
+    "execution": "실제 workflow 셸을 실행하며 명령 경계만 모의 처리했다. 로컬 시스템 패키지나 글꼴은 설치·삭제하지 않았다."
+  },
+  "merge_gate": "새 head의 Native Skia job 성공뿐 아니라 Prepare derived Rust test suites와 Native Skia tests 단계의 실제 success를 모두 확인한 뒤 병합한다.",
+  "runtime_evidence_reuse": "제품 Rust·Cargo·Studio·Visual Sweep·입력·기준 PDF·시각 문턱은 변경하지 않았다. 기존 runtime3575의 로컬 빌드·회귀·시각 증거와 새 CI head 검증을 구분한다.",
+  "new_issue": "사용자 지시에 따라 별도 CI 이슈를 등록하지 않고 검증 기록만 보존한다.",
+  "source_hashes": {
+    ".github/workflows/ci.yml": "866316455e7135eb6b623af7fc62117acf71d19fee6f56289262d180ee5cb89b",
+    "scripts/tests/test_ci_impact_workflow.py": "a7647aecb1a5edacc5366da3a57343336cde0895e05e779c6c9b94c85eb2953e"
+  }
+}

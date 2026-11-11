@@ -92,3 +92,8 @@ PR #8958의 파일 4,142개가 REST API에서 3,000개로 잘려 CI preflight가
 
 
 완전한 목록을 돌려주는 기존 CI 재사용 표본 중 누락된 `changed_files` 3곳도 실제 목록 길이로 보완했다. 기존 보안·재사용 기대값은 바꾸지 않았다. CI의 `Validate workflow contracts` 단계와 동일한 23개 명령을 전부 실행해 Python **273 PASS**, Node **354 PASS**를 확인했다. [기존 표본 보정과 실패→통과 영수증](ci-complete-list-fixtures-validation.json)을 보존하며, 사용자 지시에 따라 별도 CI 이슈는 등록하지 않는다.
+
+
+## Native Skia 실제 실행과 성공 표시의 구분
+
+이전 head `1d1fb0439a`의 Native Skia job은 녹색이었지만 APT 180초 초과 후 suite 준비와 실제 테스트가 모두 skipped였다. 이를 실제 테스트 통과로 수용하지 않는다. 기존 PR #5536의 timeout 생략 경로를 보정하여 의존성이 이미 있으면 APT만 생략하고, 준비 실패는 job 실패로 전달한다. 테스트를 생략하던 두 조건은 제거했다. [원인·실패→통과·실행 검증](ci-native-skia-execution-validation.json)에 관련78개와 동일 CI 단계 Python273개·Node354개, actionlint 결과를 보존한다. 새 head의 필수 테스트 단계가 실제 success인 것을 확인하기 전에는 병합하지 않는다. 로컬 Native Skia 4,034 PASS와 GitHub job의 녹색 표시는 구분한다.

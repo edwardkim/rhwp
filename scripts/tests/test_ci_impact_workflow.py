@@ -5,6 +5,7 @@ import os
 import re
 import subprocess
 import textwrap
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -783,32 +784,81 @@ class CiImpactWorkflowTests(unittest.TestCase):
         self.assertLess(cleanup.index(threshold), cleanup.index(removal))
         self.assertIn("Skip cleanup: ${available_gb}GB available", cleanup)
 
-    def test_native_skia_apt_timeout_skips_only_the_unavailable_runtime_lane(self) -> None:
-        native_skia = self._job("native-skia-tests")
-        install = self._step("Install native Skia runtime packages", native_skia)
+    def test_native_skia_apt_timeout_fails_instead_of_skipping_tests(self) -> None:
+        native = self._job("native-skia-tests")
+        install = self._step("Install native Skia runtime packages", native)
+        self.assertIn("timeout 180 apt-get", install)
+        self.assertIn("native_skia_runtime_ready", install)
+        self.assertIn('exit "${status}"', install)
+        self.assertNotIn("available=false", install)
+        self.assertNotIn("Native Skia tests skipped", install)
+        for name in ("Prepare derived Rust test suites", "Native Skia tests"):
+            self.assertNotIn("        if:", self._step(name, native))
+        for option in ("Acquire::Retries=3", "Acquire::http::Timeout=30",
+                       "Acquire::https::Timeout=30", "DPkg::Lock::Timeout=60"):
+            self.assertIn(option, install)
 
-        self.assertIn("DEBIAN_FRONTEND=noninteractive", install)
-        self.assertEqual(1, install.count("timeout 180 apt-get"))
-        self.assertIn("id: native-skia-runtime", native_skia)
-        self.assertIn('if [[ "${status}" -eq 124 ]]', install)
-        self.assertIn("available=false", install)
-        self.assertIn("Native Skia tests skipped", install)
-        self.assertIn("available=true", install)
-        for option in [
-            "Acquire::Retries=3",
-            "Acquire::http::Timeout=30",
-            "Acquire::https::Timeout=30",
-            "DPkg::Lock::Timeout=60",
-        ]:
-            with self.subTest(option=option):
-                self.assertIn(option, install)
-        self.assertIn('install_apt update', install)
-        self.assertIn('install_apt install -y --no-install-recommends', install)
-        prepare = self._step("Prepare derived Rust test suites", native_skia)
-        test = self._step("Native Skia tests", native_skia)
-        condition = "steps.native-skia-runtime.outputs.available != 'false'"
-        self.assertIn(condition, prepare)
-        self.assertIn(condition, test)
+    def _run_native_skia_bootstrap(self, *, ready=False, timeout=False,
+                                   apt_failure=False, missing_after_install=False,
+                                   wrong_family=False):
+        # 실제 workflow 셸을 실행하되 시스템 패키지·글꼴은 수정하지 않는다.
+        step = self._step("Install native Skia runtime packages", self._job("native-skia-tests"))
+        script = textwrap.dedent(step.split("        run: |\n", 1)[1])
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            binaries = root / "bin"
+            binaries.mkdir()
+            font = root / "font.ttf"
+            font.write_text("bootstrap readability fixture", encoding="utf-8")
+            commands = {
+                "sudo": 'exec "$@"',
+                "pkg-config": '[ "$RHWP_TEST_READY" = 1 ] || [ -f "$RHWP_TEST_MARKER" ]',
+                "fc-match": 'case "$*" in *family*) if [ "$RHWP_TEST_WRONG_FAMILY" = 1 ]; then echo Other; else echo "DejaVu Sans"; fi;; *) echo "$RHWP_TEST_FONT";; esac',
+                "timeout": 'shift; if [ "$RHWP_TEST_TIMEOUT" = 1 ]; then exit 124; fi; exec "$@"',
+                "apt-get": 'printf "%s\\n" "$*" >> "$RHWP_TEST_APT_LOG"; if [ "$RHWP_TEST_APT_FAILURE" = 1 ]; then exit 100; fi; for arg in "$@"; do if [ "$arg" = install ] && [ "$RHWP_TEST_NO_MARKER" != 1 ]; then touch "$RHWP_TEST_MARKER"; fi; done',
+            }
+            for name, command in commands.items():
+                path = binaries / name
+                path.write_text("#!/bin/sh\n" + command + "\n", encoding="utf-8")
+                path.chmod(0o755)
+            log = root / "apt.log"
+            env = {**os.environ, "PATH": str(binaries) + os.pathsep + os.environ["PATH"],
+                   "GITHUB_OUTPUT": str(root / "outputs"), "RHWP_TEST_MARKER": str(root / "ready"),
+                   "RHWP_TEST_FONT": str(font), "RHWP_TEST_APT_LOG": str(log),
+                   "RHWP_TEST_READY": str(int(ready)), "RHWP_TEST_TIMEOUT": str(int(timeout)),
+                   "RHWP_TEST_APT_FAILURE": str(int(apt_failure)),
+                   "RHWP_TEST_NO_MARKER": str(int(missing_after_install)),
+                   "RHWP_TEST_WRONG_FAMILY": str(int(wrong_family))}
+            result = subprocess.run(["bash", "-e", "-c", script], env=env,
+                                    text=True, capture_output=True, timeout=10)
+            return result, log.read_text() if log.exists() else ""
+
+    def test_native_skia_ready_dependencies_do_not_call_apt(self):
+        result, calls = self._run_native_skia_bootstrap(ready=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(calls, "")
+
+    def test_native_skia_missing_dependencies_timeout_is_failure(self):
+        result, _ = self._run_native_skia_bootstrap(timeout=True)
+        self.assertEqual(result.returncode, 124, result.stdout + result.stderr)
+
+    def test_native_skia_apt_error_is_failure(self):
+        result, _ = self._run_native_skia_bootstrap(apt_failure=True)
+        self.assertEqual(result.returncode, 100, result.stdout + result.stderr)
+
+    def test_native_skia_install_must_restore_actual_dependencies(self):
+        result, calls = self._run_native_skia_bootstrap()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("update", calls)
+        self.assertIn("install", calls)
+
+    def test_native_skia_successful_apt_without_dependencies_is_failure(self):
+        result, _ = self._run_native_skia_bootstrap(missing_after_install=True)
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_native_skia_wrong_fallback_family_is_not_ready(self):
+        result, _ = self._run_native_skia_bootstrap(ready=True, wrong_family=True)
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_native_skia_starts_after_preflight_without_lane_serialization(self) -> None:
         native = self._job("native-skia-tests")
