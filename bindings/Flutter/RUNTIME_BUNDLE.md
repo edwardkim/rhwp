@@ -5,6 +5,45 @@ dispatcher를 한 디렉터리에 묶는다. SDK·컴파일러·글꼴을 새로
 프로젝트의 기존 `native_artifact_provenance.py`에서 사용하는 안정된 파일 descriptor·reparse 판정을
 재사용한다. 기존 Qt 전용 `scripts/package-native-host.py`의 실행 번들과 별도 계약이다.
 
+## 기존 참조앱 빌드와 실행
+
+`reference_app.py`는 `example/lib/`의 앱을 복사해 현재 OS의 Flutter runner를 생성하고,
+plugin을 등록한 실제 데스크톱 앱과 owner dispatcher를 빌드한 뒤 위 번들 형식으로 묶는다.
+준비된 Flutter SDK·OS 개발 도구·pub cache와 명시적으로 공급한 Native 라이브러리가 필요하다.
+소스 checkout은 수정하지 않으며, 새로 만든 외부 출력 폴더에 source 사본·runner·로그·번들을 둔다.
+Native 라이브러리를 다시 빌드하지 않으므로 해당 파일의 source SHA는 별도로 선언한다.
+
+```bash
+python3 -B bindings/Flutter/tool/reference_app.py build \
+  --flutter-sdk /SDK/flutter --native /built/librhwp_native_ffi.so \
+  --native-source FULL_NATIVE_GIT_SHA --output /build/reference-app
+mv /build/reference-app/bundle '/packages/rhwp reference'
+python3 -B bindings/Flutter/tool/reference_app.py run --bundle '/packages/rhwp reference'
+```
+
+동일한 명령을 해당 Windows/macOS 호스트에서 실행하며 Native 인수는 그 OS의 DLL/dylib를
+지정한다. 기본은 release와 GPU 사용이다. `--mode debug`, `--cpu`, `--continuous`, `--trace`로
+기존 참조앱의 옵션을 선택한다. 연속 Windows/Metal 표시는 명시적인 `--continuous` opt-in이다.
+`build-receipt.json`에는 source 파일 해시·Flutter/engine revision·각 명령의 종료 상태·산출물 해시를
+기록한다. 성공한 빌드는 앱 실행이나 GPU 표시를 검증했다는 뜻이 아니다.
+
+`run`은 현재 OS/아키텍처와 **전체** manifest를 재검증한 뒤 지정된 실행 파일을 shell 없이 실행한다.
+현재 bundle root를 `RHWP_RUNTIME_BUNDLE`로 전달하므로 이전 빌드 경로나 cwd에 의존하지 않는다.
+SDK는 실행 시 필요하지 않다. 앱의 종료 코드를 그대로 반환한다. 소스/SDK/빌드 폴더를 지워도
+번들에 필요한 데이터·engine·plugin·Native·owner는 보존된다. 시스템 GTK/그래픽 드라이버와
+플랫폼 loader 의존성은 해당 OS에서 제공해야 하며, OS 서명·installer·자동 업데이트는 별도 작업이다.
+
+실행 후 참조앱에서 파일 열기·쪽 이동·확대·축소를 확인한다. 파일 교체로 기존 GPU가 종료되어
+CPU 경로를 표시하면 `GPU 다시 연결`로 같은 문서의 새 controller를 만든다. `문서 닫기`로
+retirement를 확인한 뒤 창을 닫는다. 실제 화면·DPR·복구·종료 결과는 빌드 receipt와 구분해 기록한다.
+
+launcher의 portable 음성 대조는 다음 명령으로 실행한다. 작은 실제 ELF child 검사는 이동한 root와
+종료 코드 전달만 확인하며, rhwp/Flutter/GPU 실행 증거로 세지 않는다.
+
+```bash
+python3 -B bindings/Flutter/test/reference_app_contract.py
+```
+
 ## 생성과 검증
 
 ```bash
