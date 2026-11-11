@@ -5557,6 +5557,24 @@ let body_height=match nested_body_heights
         // 저장 형식과 무관하다: 저장 줄 없는 HWP5 TAC 표도 한/글 Print 는 재조판한
         // 내용 높이로 행을 키운다(docs#458 머리 행 61.0px, 선언 축소 시 48.1px 로 줄 유실).
         let reflowed_cell_rows = crate::renderer::composer::table_cells_have_no_stored_lines(table);
+        // 저장 줄 없는 칸이 재조판으로 선언 행 높이보다 자란 양. 선언 표 높이는 저장 당시
+        // 내용으로 확정된 값이라 이 성장분을 담지 않는다. 한/글은 그 행만 키우고 저장 줄이
+        // 있는 다른 행을 줄여 흡수하지 않는다(36454139 1쪽: 두 줄로 재조판되는 칸 2개만큼
+        // 표가 선언 483.5px 보다 약 20px 커지고 나머지 행은 선언 28.4px 그대로).
+        // 그래서 이 성장분을 뺀 높이가 선언 안에 들면 비례 축소 대상이 아니다.
+        let reflowed_row_growth: f64 = (0..row_count)
+            .filter(|&r| {
+                table.cells.iter().any(|cell| {
+                    cell.row as usize == r
+                        && cell.row_span == 1
+                        && cell
+                            .paragraphs
+                            .iter()
+                            .any(crate::renderer::para_has_no_stored_line_segs)
+                })
+            })
+            .map(|r| (row_heights[r] - declared_row_height_px(table, r, self.dpi)).max(0.0))
+            .sum();
         let table_height = if stored_rows.is_some() {
             raw_table_height
         } else if table.common.treat_as_char
@@ -5564,6 +5582,7 @@ let body_height=match nested_body_heights
             && !reflowed_cell_rows
             && common_h > 0.0
             && raw_table_height > common_h + shrink_threshold
+            && raw_table_height - reflowed_row_growth > common_h + shrink_threshold
             && raw_table_height <= common_h * TAC_SHRINK_MAX_OVERFLOW_RATIO
         {
             // [#5748] 비례 축소가 '내용이 딱 맞는 행'까지 누르면 그 행의 글자가
