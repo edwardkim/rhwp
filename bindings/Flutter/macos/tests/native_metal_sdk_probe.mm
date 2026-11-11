@@ -3,6 +3,7 @@
 #import <Metal/Metal.h>
 
 #include "rhwp_native_ffi.h"
+#include <algorithm>
 #include <cstring>
 #include <cstdlib>
 #include <dlfcn.h>
@@ -78,13 +79,29 @@ extern "C" char* rhwp_probe_metal_sdk(const char* path, const uint8_t* request, 
       NSData* input = [NSData dataWithBytes:request length:length];
       NSDictionary* value = [NSJSONSerialization JSONObjectWithData:input options:0 error:nil];
       if (![value isKindOfClass:[NSDictionary class]]) throw std::runtime_error("render request is not an object");
-      NSDictionary* target = value[@"target"];
+      const bool batch = value[@"frames"] != nil;
+      NSArray* frames = batch ? value[@"frames"] : @[value];
+      if (![frames isKindOfClass:[NSArray class]] || frames.count < 1 || frames.count > 8) {
+        throw std::runtime_error("probe requires one to eight bounded frames");
+      }
+      NSDictionary* target = [frames.firstObject isKindOfClass:[NSDictionary class]] ? frames.firstObject[@"target"] : nil;
       if (![target isKindOfClass:[NSDictionary class]]) throw std::runtime_error("missing target description");
       const auto width = [target[@"width"] unsignedLongLongValue];
       const auto height = [target[@"height"] unsignedLongLongValue];
       const auto generation = [target[@"deviceGeneration"] unsignedLongLongValue];
       if (!width || !height || width > 256 || height > 256 || !generation) {
         throw std::runtime_error("invalid probe target dimensions/generation");
+      }
+      for (id frame in frames) {
+        if (![frame isKindOfClass:[NSDictionary class]] || ![frame[@"target"] isEqual:target]) {
+          throw std::runtime_error("probe frames must share one bounded target contract");
+        }
+      }
+      NSData* config = nil;
+      if (batch && value[@"config"]) {
+        if (![value[@"config"] isKindOfClass:[NSDictionary class]]) throw std::runtime_error("invalid presenter config");
+        config = [NSJSONSerialization dataWithJSONObject:value[@"config"] options:0 error:nil];
+        if (!config) throw std::runtime_error("invalid presenter config JSON");
       }
       Api api(path);
       NSDictionary* capabilities = api.read(api.caps());
@@ -103,50 +120,69 @@ extern "C" char* rhwp_probe_metal_sdk(const char* path, const uint8_t* request, 
       if (!texture) throw std::runtime_error("Metal target allocation failed");
       const size_t bytes = size_t(width * height * 4);
       std::vector<uint8_t> pixels(bytes, 0x5a);
-      [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0
-                   withBytes:pixels.data() bytesPerRow:width * 4];
       NSDictionary* created = api.read(api.create((__bridge const void*)device,
-          (__bridge const void*)queue, generation, nullptr, 0));
+          (__bridge const void*)queue, generation, static_cast<const uint8_t*>(config.bytes), config.length));
       if (![created[@"ok"] boolValue]) throw std::runtime_error("Native Metal context creation failed");
       const uint64_t presenter = [created[@"presenter"] unsignedLongLongValue];
-      NSDictionary* rendered = nil;
-      try {
-        rendered = api.read(api.render(presenter, (__bridge const void*)texture, request, length));
-      } catch (...) {
-        [quarantine() addObject:@{@"device":device, @"queue":queue, @"texture":texture}];
-        throw;  // An unreadable reply is not proof that the GPU target is idle.
-      }
-      const bool success = [rendered[@"ok"] boolValue];
-      const bool safe_stale = [rendered[@"code"] isEqualToString:@"staleFrame"] &&
-          [rendered[@"unpublishedTargetSafeToDiscard"] boolValue];
-      if (!success && !safe_stale) {
-        [quarantine() addObject:@{@"device":device, @"queue":queue, @"texture":texture}];
-        return json(@{@"ok":@NO,@"native":rendered,@"unsafeFailureQuarantined":@YES});
-      }
-      if (success && ![rendered[@"frame"][@"producerGpuComplete"] boolValue]) {
-        [quarantine() addObject:@{@"device":device, @"queue":queue, @"texture":texture}];
-        return json(@{@"ok":@NO,@"error":@"Native did not prove producer completion",@"unsafeFailureQuarantined":@YES});
-      }
-      if (descriptor.storageMode == MTLStorageModeManaged) {
-        id<MTLCommandBuffer> command = [queue commandBuffer];
-        id<MTLBlitCommandEncoder> blit = [command blitCommandEncoder];
-        [blit synchronizeResource:texture]; [blit endEncoding];
-        [command commit]; [command waitUntilCompleted];
-        if (command.status != MTLCommandBufferStatusCompleted) {
+      NSMutableArray* results = [NSMutableArray arrayWithCapacity:frames.count];
+      // This disposable producer-only probe has no Flutter/AppKit consumer.
+      // Reuse only after each successful producer wait and host readback.
+      for (NSDictionary* frame in frames) {
+        std::fill(pixels.begin(), pixels.end(), 0x5a);
+        [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0
+                     withBytes:pixels.data() bytesPerRow:width * 4];
+        NSData* encoded = [NSJSONSerialization dataWithJSONObject:frame options:0 error:nil];
+        if (!encoded) throw std::runtime_error("invalid frame JSON");
+        NSDictionary* rendered = nil;
+        try {
+          rendered = api.read(api.render(presenter, (__bridge const void*)texture,
+              static_cast<const uint8_t*>(encoded.bytes), encoded.length));
+        } catch (...) {
           [quarantine() addObject:@{@"device":device, @"queue":queue, @"texture":texture}];
-          return json(@{@"ok":@NO,@"error":@"probe readback synchronization failed",@"unsafeFailureQuarantined":@YES});
+          throw;  // An unreadable reply is not proof that the GPU target is idle.
         }
+        const bool success = [rendered[@"ok"] boolValue];
+        const bool safe_stale = [rendered[@"code"] isEqualToString:@"staleFrame"] &&
+            [rendered[@"unpublishedTargetSafeToDiscard"] boolValue];
+        if (!success && !safe_stale) {
+          [quarantine() addObject:@{@"device":device, @"queue":queue, @"texture":texture}];
+          return json(@{@"ok":@NO,@"native":rendered,@"unsafeFailureQuarantined":@YES});
+        }
+        if (success && ![rendered[@"frame"][@"producerGpuComplete"] boolValue]) {
+          [quarantine() addObject:@{@"device":device, @"queue":queue, @"texture":texture}];
+          return json(@{@"ok":@NO,@"error":@"Native did not prove producer completion",@"unsafeFailureQuarantined":@YES});
+        }
+        if (descriptor.storageMode == MTLStorageModeManaged) {
+          id<MTLCommandBuffer> command = [queue commandBuffer];
+          id<MTLBlitCommandEncoder> blit = [command blitCommandEncoder];
+          [blit synchronizeResource:texture]; [blit endEncoding];
+          [command commit]; [command waitUntilCompleted];
+          if (command.status != MTLCommandBufferStatusCompleted) {
+            [quarantine() addObject:@{@"device":device, @"queue":queue, @"texture":texture}];
+            return json(@{@"ok":@NO,@"error":@"probe readback synchronization failed",@"unsafeFailureQuarantined":@YES});
+          }
+        }
+        [texture getBytes:pixels.data() bytesPerRow:width * 4
+                fromRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0];
+        static const uint8_t info[] = "{\"op\":\"info\"}";
+        NSDictionary* observed = api.read(api.request(presenter, info, sizeof(info) - 1));
+        if (![observed[@"ok"] boolValue]) throw std::runtime_error("Native presenter info failed");
+        NSData* data = [NSData dataWithBytes:pixels.data() length:pixels.size()];
+        [results addObject:@{@"ok":@YES,@"native":rendered,@"info":observed[@"info"],
+          @"deviceName":device.name ?: @"",@"lowPower":@(device.lowPower),
+          @"width":@(width),@"height":@(height),@"hostVerificationReadbacks":@1,
+          @"consumerGpuCompletionVerified":@NO,@"bgraBase64":[data base64EncodedStringWithOptions:0]}];
       }
-      [texture getBytes:pixels.data() bytesPerRow:width * 4
-              fromRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0];
       static const uint8_t release[] = "{\"op\":\"release\"}";
       NSDictionary* released = api.read(api.request(presenter, release, sizeof(release) - 1));
       if (![released[@"ok"] boolValue]) throw std::runtime_error("Native presenter release failed");
-      NSData* data = [NSData dataWithBytes:pixels.data() length:pixels.size()];
-      return json(@{@"ok":@YES,@"native":rendered,@"deviceName":device.name ?: @"",
-        @"lowPower":@(device.lowPower),@"width":@(width),@"height":@(height),
-        @"hostVerificationReadbacks":@1,@"consumerGpuCompletionVerified":@NO,
-        @"bgraBase64":[data base64EncodedStringWithOptions:0]});
+      if (!batch) return json(results.firstObject);
+      // A released owner must reject further use; completion is not inferred
+      // from a texture callback or from a successful status lookup.
+      NSDictionary* retired = api.read(api.request(presenter, release, sizeof(release) - 1));
+      if ([retired[@"ok"] boolValue]) throw std::runtime_error("released owner was still usable");
+      return json(@{@"ok":@YES,@"results":results,@"ownerReleased":@YES,
+          @"afterRelease":retired,@"consumerGpuCompletionVerified":@NO});
     } catch (const std::exception& error) {
       return json(@{@"ok":@NO,@"error":[NSString stringWithUTF8String:error.what()] ?: @"probe error"});
     }

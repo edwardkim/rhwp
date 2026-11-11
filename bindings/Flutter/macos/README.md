@@ -44,6 +44,49 @@ source가 GPU wait 도중 바뀌면 성공 프레임을 전달하지 않는다. 
 폐기하고 크레딧을 환급한다. GPU 완료가 불명확한 실패 target도
 같은 bounded 보관 한도에 격리하고 CPU 경로로 돌아가야 한다.
 
+## 내부 GPU 타일 캐시
+
+Metal presenter는 GL과 같은 `native_host::gpu_tiles`의 키·LRU·할당량 정책을 사용한다.
+처음에는 제한된 전체 페이지를 canonical GPU surface에 strict replay하고, 화면에 필요한
+영역만 GPU tile surface로 복사한다. 같은 문서·리비전·글꼴·페이지·출력 프로필·장치·DPR·배율·
+정확한 f32 픽셀 위상이면 정수 단위 스크롤에서 타일을 재사용한다. view generation은 키에서
+제외하지만, 타일 사용과 외부 target 복사 전후에 원래 full stamp를 다시 검사한다.
+Flutter/AppKit의 두 외부 타일과 이 내부 renderer 캐시는 별개다.
+
+| Native presenter config | 기본값 | 허용 범위 |
+| --- | --- | --- |
+| `tileSize` | 512 px | 128 / 256 / 512 / 1024 |
+| `maxCachedTiles` | 64 | 0–64; 0이면 기존 strict viewport replay |
+| `maxTileBytes` | 16 MiB | 0–64 MiB |
+| `maxManagedTargets` | 66 | 1–66 |
+| `maxManagedTargetBytes` | 48 MiB | 1 byte–96 MiB |
+
+managed 예산에는 scratch·canonical staging·보관 타일과 진행 중 frame pin을 함께 계산한다.
+캐시만의 count/byte 한도도 별도로 적용하고, pin이 없는 LRU 항목만 퇴출한다. 전체 페이지가
+기존 4096 px / 4 MP / 16 MiB 상한을 넘거나, 투명 배경·할당량 부족으로 캐시를 사용할 수
+없으면 기존 strict viewport replay를 수행한다. 큰 페이지를 무제한 canonical surface로
+만들거나 고배율 전체 페이지를 조각별로 새로 replay하는 기능은 포함하지 않는다.
+
+`info.tiles`에 hit/miss·canonical replay·퇴출·fallback 횟수,
+`info.managedTargets`에 현재/최대 target count·추정 byte를 노출한다. 완료 확인 전에는
+surface와 snapshot을 presenter에 보존한다. submit 실패나 panic으로 완료가 불명확하면
+캐시·할당 크레딧·외부 복사 표면도 보존하고 재사용을 거부한다. 정상 release에서는 모두
+해제한다. 이 변경은 외부 texture 재활용이나 consumer 완료 권한을 추가하지 않는다.
+
+공통 정책 검사는 `tests/cases/issue_8701_native_gpu_tiles.rs`의 정식 integration suite에
+포함되며 `native-skia` 또는 `native-skia-gl` 피처로 Linux에서도 실행할 수 있다. 타일 수명
+검사는 raster surface로 실제 캐시의 할당량을 검사하며 GPU 실행 증거가 아니다.
+`rustc --test tests/cases/issue_8701_gpu_frame_resources.rs`는 실제 production holder를
+직접 포함하여 정상 반환·pin·격리·panic 수명을 확인한다.
+
+기존 `tool/check_macos_metal_sdk.py` 경로는 같은 Native Metal presenter에서 8회 연속 replay한
+결과를 cache 비활성 strict replay와 비교한다. 정수 스크롤 hit, 위상·배율·배경 변경 miss,
+LRU 퇴출, managed target 한도로 인한 fallback, producer release를 검사한다.
+`tests/sdk_qualification_contract.py`는 이 결과의 잘못된 pixel·stamp·count/byte·완료 증거를
+거부하는 portable 검사다. 실제 Apple SDK 컴파일과 Metal readback은 macOS에서 별도로
+실행해야 하며, Linux의 portable 통과로 이를 대신하지 않는다. 한컴 기준 출력과 실제 앱의
+consumer 검증도 이 작은 producer probe의 범위에 포함되지 않는다.
+
 ## Flutter channel
 
 Plugin class는 `RhwpMetalPlugin`, channel은 `rhwp_native/texture_macos`다. macOS podspec과 source만
