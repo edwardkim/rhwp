@@ -1,0 +1,70 @@
+{
+  "recorded_at": "2026-11-11T18:09:06.341341+09:00",
+  "product_head": "499a50db7b9d433f535c50222ca49f5c14b0a4df",
+  "test_source": "tests/cases/stored_first_fragment_body_owner.rs",
+  "test_sha256": "2f887096d629bd073a8020b2a86bfec52e4ca005896ec5f74e0dd3054a82f581",
+  "minimum_profile_sha256": "89a8955370fe85029f0f08372f77ec17b86a7c4ae574ddc197abbe9267f47bd7",
+  "runs": [
+    {
+      "phase": "before",
+      "binary": "/Users/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_013-101652ab6a306346",
+      "cli": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/r7-native",
+      "exit": 101,
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/logs/r9-regression-direct-before.log",
+      "cli_sha256": "6fd6ca742dd7f20d8f5d5a299329552be84380fcd07ce151f5b93a80703f356b",
+      "harness_sha256": "0b5eafb42f21adba6cbb24cc3272d7c74cb0d3b70a641518201ed274ea7a39c0",
+      "log_sha256": "014f6ef40cc05344b15f7cc5200d18496fc308847c1943ae2a9154ce0c4bb982",
+      "command_contract": "sandbox-exec minimal-font/profile.sb <same compiled suite> --exact stored_first_fragment_body_owner::first_fragment_height_does_not_compress_the_whole_body_or_lose_its_tail --nocapture --test-threads 8; runtime CARGO_BIN_EXE_rhwp=frozen CLI"
+    },
+    {
+      "phase": "after",
+      "binary": "/Users/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_013-101652ab6a306346",
+      "cli": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/r9-native",
+      "exit": 0,
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/logs/r9-regression-direct-after.log",
+      "cli_sha256": "69e94e086a21cc35379f2f755d8574284c970bc1f58950c623960ac1fd2ec0a5",
+      "harness_sha256": "0b5eafb42f21adba6cbb24cc3272d7c74cb0d3b70a641518201ed274ea7a39c0",
+      "log_sha256": "6dc1ff0cb3047c4711fb1f5b6721383c8ce38bca387a3685eb520c355fb70f22",
+      "command_contract": "sandbox-exec minimal-font/profile.sb <same compiled suite> --exact stored_first_fragment_body_owner::first_fragment_height_does_not_compress_the_whole_body_or_lose_its_tail --nocapture --test-threads 8; runtime CARGO_BIN_EXE_rhwp=frozen CLI"
+    }
+  ],
+  "ordinary_nextest": {
+    "passed": 1,
+    "failed": 0,
+    "skipped_outside_selection": 348,
+    "log_sha256": "6cc2ef774ef558af6bed0fa4b4bffef67b06788841bc5b1d9bfed666abdb4c41",
+    "note": "nextest sets CARGO_BIN_EXE_rhwp to the current build; this invocation is current-code PASS, not pre-fix reproduction"
+  },
+  "invalid_attempt": {
+    "log_sha256": "4a8bb80eab424e3bf92af1e7182331124d7261336d0b3233f9a788715e50c0cd",
+    "reason": "undeclared tempfile crate compilation error; not a product regression result"
+  },
+  "wasm_producer": {
+    "head": "499a50db7b9d433f535c50222ca49f5c14b0a4df",
+    "base": "e118de8abadd2dffb2798036b9ffd381b96ed7d5",
+    "build": "Mac locked wrapper --target web --out-dir pkg --no-opt; local alternative, not Docker optimized",
+    "build_log_sha256": "aa08534f05af01278113d93a523d354262e38a8d273866a32779de97ace6f0cb",
+    "files": {
+      "rhwp.js": {
+        "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+        "bytes": 581315
+      },
+      "rhwp_bg.wasm": {
+        "sha256": "400095d2a6548fed1c166c9a60eddd6bff9ea2c8012ac515d889236830c51037",
+        "bytes": 31793930
+      }
+    }
+  },
+  "direct_reading": {
+    "pages": [
+      80,
+      81
+    ],
+    "backends": [
+      "Native",
+      "fresh WASM"
+    ],
+    "review_and_overlay": true,
+    "scope": "Table 12 row ownership and top boundaries only; 94/95/96 are not accepted"
+  }
+}
