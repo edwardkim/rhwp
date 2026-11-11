@@ -1,0 +1,65 @@
+{
+  "status": "re_review_required",
+  "base": "99b9d7ec5ca36884ea8fd981ac815c1edc34c653",
+  "head": "d3f5e549c71ab91eece9af8610395585cd905947",
+  "recordedAt": "2026-11-11T11:04:56.715072+00:00",
+  "defaultComparisons": [
+    {
+      "mode": "no provider",
+      "pages": 763,
+      "allTreeAndPngHashesEqual": true
+    },
+    {
+      "mode": "option omitted",
+      "pages": 763,
+      "allTreeAndPngHashesEqual": true
+    },
+    {
+      "mode": "layout false",
+      "pages": 763,
+      "allTreeAndPngHashesEqual": true
+    }
+  ],
+  "visual": {
+    "hwp3-native.tsv": {
+      "pages": 763,
+      "minimum": 98.21,
+      "below90": 0
+    },
+    "handbook-native.tsv": {
+      "pages": 383,
+      "minimum": 99.96,
+      "below90": 0
+    },
+    "hwp3-wasm.tsv": {
+      "pages": 763,
+      "minimum": 99.55,
+      "below90": 0
+    },
+    "hwpx-native.tsv": {
+      "pages": 763,
+      "minimum": 9.55,
+      "below90": 19
+    },
+    "hwpx-wasm.tsv": {
+      "pages": 763,
+      "minimum": 30.05,
+      "below90": 43
+    }
+  },
+  "rustChanged": false,
+  "limitations": [
+    "Standard visual-sweep WASM export does not call Studio host API. Public API lifecycle and selected pages are separate evidence.",
+    "HWPX Print contains no external linked images. No masks or exclusions applied.",
+    "HWPX whole-page visual gate failed. Handbook p368 falls from baseline 100.00 to 99.97.",
+    "Real HWPX/HWP3 saved-layout and edited-reflow ownership checks, and complete real-document lifecycle-to-fresh comparisons remain incomplete."
+  ],
+  "freshDocumentTransitionChecks": [
+    "enable",
+    "replace-bytes",
+    "replace-ttc-face",
+    "remove",
+    "restore",
+    "disable"
+  ]
+}

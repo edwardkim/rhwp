@@ -1,0 +1,287 @@
+{
+  "trace-hwpx-enabled": {
+    "firstRecord": {
+      "recordId": "page:607:run:0:char:0",
+      "source": {
+        "status": "complete",
+        "sectionIndex": 0,
+        "paragraphIndex": 21473,
+        "nestedPath": [],
+        "runIndex": 0,
+        "charOffset": 0,
+        "character": "S",
+        "codePoint": 83,
+        "charShapeId": 29
+      },
+      "document": {
+        "languageSlot": 1,
+        "inheritedLanguageSlot": null,
+        "face": "#세나루",
+        "altType": 2,
+        "embedded": false,
+        "substFont": null
+      },
+      "layoutName": {
+        "requestedFace": "#세나루",
+        "normalizedFace": "세나루",
+        "cssFamilyChain": [
+          "세나루"
+        ],
+        "steps": [
+          {
+            "kind": "fontEnvironment",
+            "input": "#세나루",
+            "output": "세나루",
+            "reason": "declared-program-e071646500a4b4e5a96ec07959731522462410df92cbd78698b81d74d32f53a9"
+          }
+        ]
+      },
+      "layoutMetric": {
+        "requestedFace": "세나루",
+        "aliasResolvedFace": "세나루",
+        "matchKind": "none",
+        "metricEntry": null,
+        "characterMatch": "notApplicable",
+        "widthSource": "heuristicHalfwidth",
+        "baseAdvanceHwpunit": 1000,
+        "transforms": [],
+        "finalAdvanceHwpunit": 1000
+      },
+      "paint": {
+        "native": {
+          "status": "unsupported",
+          "certainty": "unsupported",
+          "requested": "세나루",
+          "candidates": [],
+          "resolved": null,
+          "source": null,
+          "capabilities": [],
+          "failures": [
+            "nativeSkiaFeatureUnavailable"
+          ]
+        },
+        "canvas2d": {
+          "status": "unsupported",
+          "certainty": "unsupported",
+          "requested": "세나루",
+          "candidates": [],
+          "resolved": null,
+          "source": null,
+          "capabilities": [],
+          "failures": [
+            "studioSnapshotRequired"
+          ]
+        },
+        "canvaskit": {
+          "status": "unsupported",
+          "certainty": "unsupported",
+          "requested": "세나루",
+          "candidates": [],
+          "resolved": null,
+          "source": null,
+          "capabilities": [],
+          "failures": [
+            "studioSnapshotRequired"
+          ]
+        }
+      },
+      "provenance": [
+        {
+          "candidateId": "candidate.28970f1984ed0e4ce06d",
+          "ruleId": "rule.rust-measurement.28970f1984ed0e4ce06d",
+          "evidenceAnchor": "mydocs/tech/investigations/issue-4939/font_rule_candidates.json#candidate.28970f1984ed0e4ce06d",
+          "sourceOwner": "rust-measurement",
+          "relationType": "unknown",
+          "evidenceStatus": "inferred",
+          "knownLimitations": [
+            "The predicate selects advances; it does not prove glyph identity.",
+            "W1 source digest predates the Stage 2 trace-only refactor; rerun the collector before promoting evidence status."
+          ],
+          "reason": "ledgerSourceDrift"
+        }
+      ],
+      "oracle": {
+        "status": "declared",
+        "profileId": "declared-program-e071646500a4b4e5a96ec07959731522462410df92cbd78698b81d74d32f53a9",
+        "knownLimitations": [
+          "Caller-declared environment; backend font availability and PDF equivalence are not verified."
+        ]
+      }
+    },
+    "scope": {
+      "pageIndex": 607,
+      "requestedLimits": {
+        "maxCharacters": 4096
+      },
+      "appliedLimits": {
+        "maxCharacters": 4096
+      }
+    },
+    "limitation": "Raw core font decision trace is not a complete Studio paint snapshot."
+  },
+  "single-trace-hwpx-enabled": {
+    "firstRecord": {
+      "recordId": "page:607:run:0:char:0",
+      "source": {
+        "status": "complete",
+        "sectionIndex": 0,
+        "paragraphIndex": 21473,
+        "nestedPath": [],
+        "runIndex": 0,
+        "charOffset": 0,
+        "character": "S",
+        "codePoint": 83,
+        "charShapeId": 29
+      },
+      "document": {
+        "languageSlot": 1,
+        "inheritedLanguageSlot": null,
+        "face": "#세나루",
+        "altType": 2,
+        "embedded": false,
+        "substFont": null
+      },
+      "layoutName": {
+        "requestedFace": "#세나루",
+        "normalizedFace": "돋움",
+        "cssFamilyChain": [
+          "돋움",
+          "Haansoft Dotum"
+        ],
+        "steps": [
+          {
+            "kind": "styleSubstitution",
+            "input": "#세나루",
+            "output": "돋움",
+            "reason": "rust-style-resolution.hft"
+          }
+        ]
+      },
+      "layoutMetric": {
+        "requestedFace": "돋움",
+        "aliasResolvedFace": "Dotum",
+        "matchKind": "nameFirst",
+        "metricEntry": 584,
+        "characterMatch": "hit",
+        "widthSource": "embeddedMetric",
+        "baseAdvanceHwpunit": 1277,
+        "transforms": [
+          {
+            "kind": "boldFallback",
+            "input": "bold",
+            "output": "regularMetricAdvance",
+            "reason": "fauxBoldDoesNotChangeLayoutAdvance"
+          }
+        ],
+        "finalAdvanceHwpunit": 1276
+      },
+      "paint": {
+        "native": {
+          "status": "unsupported",
+          "certainty": "unsupported",
+          "requested": "돋움",
+          "candidates": [],
+          "resolved": null,
+          "source": null,
+          "capabilities": [],
+          "failures": [
+            "nativeSkiaFeatureUnavailable"
+          ]
+        },
+        "canvas2d": {
+          "status": "unsupported",
+          "certainty": "unsupported",
+          "requested": "돋움",
+          "candidates": [],
+          "resolved": null,
+          "source": null,
+          "capabilities": [],
+          "failures": [
+            "studioSnapshotRequired"
+          ]
+        },
+        "canvaskit": {
+          "status": "unsupported",
+          "certainty": "unsupported",
+          "requested": "돋움",
+          "candidates": [],
+          "resolved": null,
+          "source": null,
+          "capabilities": [],
+          "failures": [
+            "studioSnapshotRequired"
+          ]
+        }
+      },
+      "provenance": [
+        {
+          "candidateId": "candidate.28970f1984ed0e4ce06d",
+          "ruleId": "rule.rust-measurement.28970f1984ed0e4ce06d",
+          "evidenceAnchor": "mydocs/tech/investigations/issue-4939/font_rule_candidates.json#candidate.28970f1984ed0e4ce06d",
+          "sourceOwner": "rust-measurement",
+          "relationType": "unknown",
+          "evidenceStatus": "inferred",
+          "knownLimitations": [
+            "The predicate selects advances; it does not prove glyph identity.",
+            "W1 source digest predates the Stage 2 trace-only refactor; rerun the collector before promoting evidence status."
+          ],
+          "reason": "ledgerSourceDrift"
+        },
+        {
+          "candidateId": "candidate.499ce08aa8442d11bb6c",
+          "ruleId": "rule.rust-style-resolution.499ce08aa8442d11bb6c",
+          "evidenceAnchor": "mydocs/tech/investigations/issue-4939/font_rule_candidates.json#candidate.499ce08aa8442d11bb6c",
+          "sourceOwner": "rust-style-resolution",
+          "relationType": "style-fallback",
+          "evidenceStatus": "verified-by-test",
+          "knownLimitations": [
+            "Name compatibility does not establish SFNT identity or metric equivalence.",
+            "W1 source digest predates the Stage 2 trace-only refactor; rerun the collector before promoting evidence status."
+          ],
+          "reason": "ledgerSourceDrift"
+        },
+        {
+          "candidateId": "candidate.1378b1b9d9506f86a014",
+          "ruleId": "rule.rust-metric.1378b1b9d9506f86a014",
+          "evidenceAnchor": "mydocs/tech/investigations/issue-4939/font_rule_candidates.json#candidate.1378b1b9d9506f86a014",
+          "sourceOwner": "rust-metric",
+          "relationType": "unknown",
+          "evidenceStatus": "unknown",
+          "knownLimitations": [
+            "W1 source digest predates the Stage 2 trace-only refactor; rerun the collector before promoting evidence status."
+          ],
+          "reason": "ledgerSourceDrift"
+        },
+        {
+          "candidateId": "candidate.79aeaf8970e5453c1169",
+          "ruleId": "rule.rust-metric.79aeaf8970e5453c1169",
+          "evidenceAnchor": "mydocs/tech/investigations/issue-4939/font_rule_candidates.json#candidate.79aeaf8970e5453c1169",
+          "sourceOwner": "rust-metric",
+          "relationType": "metric-entry",
+          "evidenceStatus": "verified-by-test",
+          "knownLimitations": [
+            "W1 source digest predates the Stage 2 trace-only refactor; rerun the collector before promoting evidence status."
+          ],
+          "reason": "ledgerSourceDrift"
+        }
+      ],
+      "oracle": {
+        "status": "declared",
+        "profileId": "declared-program-599e06ca52a6d5efabe3bddf20a1dc5d8d055af7c189699158fab05e7d32dfde",
+        "knownLimitations": [
+          "Caller-declared environment; backend font availability and PDF equivalence are not verified."
+        ]
+      }
+    },
+    "scope": {
+      "pageIndex": 607,
+      "requestedLimits": {
+        "maxCharacters": 4096
+      },
+      "appliedLimits": {
+        "maxCharacters": 4096
+      }
+    },
+    "limitation": "Raw core font decision trace is not a complete Studio paint snapshot."
+  }
+}

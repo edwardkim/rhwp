@@ -1,0 +1,44 @@
+[
+  {
+    "phase": "open",
+    "docGen": 2,
+    "docDigest": "blake3:234f9c3cf387c47c6b924803228780166909e809f30dc0a5f024c3966b47cf0a",
+    "pages": 763,
+    "state": {
+      "active": true,
+      "generation": 1,
+      "count": 521,
+      "lastError": null
+    },
+    "loaded": {
+      "loaded": 67,
+      "pending": 0,
+      "failed": 0
+    },
+    "document": {
+      "languageSlot": 0,
+      "inheritedLanguageSlot": null,
+      "face": "딸기",
+      "altType": 2,
+      "embedded": false,
+      "substFont": null
+    },
+    "layoutName": {
+      "requestedFace": "딸기",
+      "normalizedFace": "딸기",
+      "cssFamilyChain": [
+        "딸기"
+      ],
+      "steps": [
+        {
+          "kind": "fontEnvironment",
+          "input": "딸기",
+          "output": "딸기",
+          "reason": "declared-program-e071646500a4b4e5a96ec07959731522462410df92cbd78698b81d74d32f53a9"
+        }
+      ]
+    },
+    "widthSource": "heuristicFullwidth",
+    "pngSHA256": "ff547b52bdfe9868e85051b5258a4fb568ea1dfc93cbefcb0baccf2a615c9ef0"
+  }
+]
