@@ -44,6 +44,10 @@ def counter(value, key, maximum=MAX_COUNTER):
     return number
 
 
+def cumulative_counters(limits):
+    return MONOTONIC_COUNTERS + (("privateTargetReuses",) if limits.get("privateTargetReuse") is True else ())
+
+
 def validate_limits(value, *, closed=False):
     if not isinstance(value, dict) or value.get("publicationMode") != MODE:
         raise ValueError("immutable ownership transfer mode was not observed")
@@ -62,6 +66,25 @@ def validate_limits(value, *, closed=False):
             raise ValueError("native ownership budget changed: " + key)
     owned = counter(value, "producerOwnedFrames", MAX_FRAMES)
     owned_bytes = counter(value, "producerOwnedBytes", MAX_BYTES)
+    private_bytes = private_count = idle_count = 0
+    if "privateTargetReuse" not in value and any(key in value for key in
+            ("maxPrivateTargets", "maxIdlePrivateTargets", "frameReservedBytes", "privateTargets",
+             "privateTargetBytes", "idlePrivateTargets", "idlePrivateTargetBytes", "privateTargetReuses")):
+        raise ValueError("private target accounting lacks its capability")
+    if "privateTargetReuse" in value:
+        if value["privateTargetReuse"] is not True:
+            raise ValueError("invalid private target reuse capability")
+        if counter(value, "maxPrivateTargets") != 4 or counter(value, "maxIdlePrivateTargets") != 2:
+            raise ValueError("private target count budget changed")
+        private_count = counter(value, "privateTargets", 4)
+        private_bytes = counter(value, "privateTargetBytes", MAX_BYTES)
+        if counter(value, "frameReservedBytes", MAX_BYTES) != owned_bytes:
+            raise ValueError("private/public frame reservation accounting is contradictory")
+        idle_count = counter(value, "idlePrivateTargets", min(private_count, 2))
+        idle_bytes = counter(value, "idlePrivateTargetBytes", private_bytes)
+        for count, size in ((private_count, private_bytes), (idle_count, idle_bytes)):
+            if (count == 0) != (size == 0) or size > count * (MAX_FRAME_BYTES // 2):
+                raise ValueError("private target count and retained bytes disagree")
     pending = counter(value, "importPendingFrames", owned)
     pending_bytes = counter(value, "importPendingBytes", owned_bytes)
     tickets = counter(value, "descriptorTickets", MAX_TICKETS)
@@ -75,14 +98,14 @@ def validate_limits(value, *, closed=False):
             raise ValueError("legacy retention/quarantine/readback was observed: " + key)
     if (counter(value, "outstandingFrames", MAX_FRAMES) != owned or
             counter(value, "pendingRetireFrames", MAX_FRAMES) != owned or
-            counter(value, "reservedTargetBytes", MAX_BYTES) != owned_bytes):
+            counter(value, "reservedTargetBytes", MAX_BYTES) != owned_bytes + private_bytes):
         raise ValueError("process-wide frame accounting is contradictory")
-    for key in MONOTONIC_COUNTERS:
+    for key in cumulative_counters(value):
         counter(value, key)
     if value["handedOffFrames"] > value["descriptorOpenedNotifications"]:
         raise ValueError("creator references were handed off without a descriptor opening")
     if closed:
-        if owned or pending or owned_bytes or pending_bytes or tickets:
+        if owned or pending or owned_bytes or pending_bytes or tickets or private_count or private_bytes or idle_count:
             raise ValueError("confirmed unregister did not drain creator references/descriptor tickets")
     elif not owned:
         raise ValueError("held publication has no producer-owned immutable target")
@@ -148,9 +171,15 @@ def validate_transition(previous, current):
         raise ValueError("continuous publication replaced its registration")
     if new_status["acceptedSerial"] <= old_status["acceptedSerial"]:
         raise ValueError("native publication serial did not advance")
-    for key in MONOTONIC_COUNTERS:
+    if new_status["limits"].get("privateTargetReuse") != old_status["limits"].get("privateTargetReuse"):
+        raise ValueError("private target accounting changed during publication")
+    for key in cumulative_counters(new_status["limits"]):
         if new_status["limits"][key] < old_status["limits"][key]:
             raise ValueError("native cumulative ownership counter went backwards: " + key)
+    if (new_status["limits"].get("privateTargetReuse") is True and
+            (current["width"], current["height"]) == (previous["width"], previous["height"]) and
+            new_status["limits"]["privateTargetReuses"] == old_status["limits"]["privateTargetReuses"]):
+        raise ValueError("same-geometry publication did not observe private target reuse")
 
 
 def validate_result(value, *, nonce, frames, last_stage):
@@ -177,7 +206,9 @@ def validate_result(value, *, nonce, frames, last_stage):
         if closed.get(key) != last[key]:
             raise ValueError("close receipt belongs to a different publication/owner: " + key)
     limits = validate_limits(closed.get("limits"), closed=True)
-    for key in MONOTONIC_COUNTERS:
+    if limits.get("privateTargetReuse") != last["limits"].get("privateTargetReuse"):
+        raise ValueError("close lost private target accounting")
+    for key in cumulative_counters(limits):
         if limits[key] < last["limits"][key]:
             raise ValueError("close lost cumulative native lifetime evidence: " + key)
     # Opening is observed for every captured frame. The latest creator pin can
