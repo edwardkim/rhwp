@@ -7,7 +7,7 @@ import { ordinaryTextFontFaceData, type OrdinaryTextFontSource } from './ordinar
 import { NativePuaFontSession, type NativePuaFontDocument } from './native-pua-font-session';
 import { CanvasFontResolutionScope } from './canvas-font-resolution-scope';
 import { MetafileFontSession, type MetafileFontDocument } from './metafile-font-session';
-import { hasHostFontProvider, prepareHostFontCatalog, getHostFontState, getLocalFontState, localFontFaceKey, type LocalFontRecord } from './local-fonts';
+import { releaseHostLayoutPrograms, hostFontLayoutEnabled, hasHostFontProvider, prepareHostFontCatalog, getHostFontState, getLocalFontState, localFontFaceKey, resolveRendererLocalFontCandidates, type LocalFontRecord } from './local-fonts';
 import { collectHostFontRequests } from './host-font-requests';
 import type { CanvasMetricDocument } from './canvas-metric-session';
 import { requireCharShapeRunsDocument, parseCharShapeRuns, validateCharShapeRuns } from './char-shape-runs';
@@ -328,6 +328,7 @@ function installCanvasFontSubstitution(): void {
 }
 
 import { declaredOpenTypeProgram, prepareDeclaredFontPrograms, type DocumentFontSelectionPlan } from './declared-font-environment';
+import { prepareDeclaredHostFontPrograms } from './declared-host-font-programs';
 import { documentFontPreferences, applyDocumentFontPreferences } from './document-font-preferences.ts';
 
 interface DocumentFontEnvironmentApi {
@@ -351,6 +352,10 @@ export class WasmBridge {
   }
 
   invalidateCanvasMetricFonts(): void {
+    for (const family of this.hostLayoutFamilies) {
+      this.doc?.clearTextFontFamily?.(family);
+    }
+    this.hostLayoutFamilies.clear();
     this.nativePuaFonts.clear(this.doc as unknown as NativePuaFontDocument | null);
     this.canvasFontGeneration += 1;
     this.invalidateCanvasMetrics();
@@ -368,6 +373,10 @@ export class WasmBridge {
     const doc = this.doc;
     const documentGeneration = this._documentGeneration;
     const current = () => this.doc === doc && this._documentGeneration === documentGeneration && isCurrent();
+    if (this.hasHostFontLayoutEnvironment && backend !== 'canvas2d') {
+      await this.prepareDeclaredFontEnvironment(backend);
+      if (!current()) return false;
+    }
     const metafileFontGeneration = this.canvasFontGeneration;
     if (!await this.metafileFonts.prepare(doc as unknown as MetafileFontDocument | null,
       metafileFontGeneration, () => current() && this.canvasFontGeneration === metafileFontGeneration)) return false;
@@ -415,6 +424,8 @@ export class WasmBridge {
   }
 
   releaseCanvasFontResources(): void {
+    releaseHostLayoutPrograms();
+    if (!this.hasHostFontLayoutEnvironment) this.hostLayoutFamilies.clear();
     this.hostCanvasFonts.reset();
     this.invalidateCanvasMetrics();
   }
@@ -445,6 +456,12 @@ export class WasmBridge {
   private automaticFontEnvironment: { generation: number; id: string } | null = null;
   private automaticFontPrograms: { generation: number; fingerprint: string } | null = null;
   private automaticFontRequest = 0;
+  private hostLayoutDocumentGeneration: number | null = null;
+  private readonly hostLayoutFamilies = new Set<string>();
+
+  get hasHostFontLayoutEnvironment(): boolean {
+    return this.hostLayoutDocumentGeneration === this._documentGeneration;
+  }
   private readonly layerResourceStore = new LayerResourceStore();
   /** 개발 진단에서만 읽는 wasm 선형 메모리. 일반 wasm-glue에는 없을 수 있다. */
   private wasmLinearMemory: WebAssembly.Memory | null = null;
@@ -1047,31 +1064,40 @@ export class WasmBridge {
     }
   }
 
-  /** 기본 브라우저의 실제 local 프로그램을 측정·paint의 같은 환경으로 선택한다. */
+  /** 승인된 공급원의 실제 프로그램을 측정·paint의 공통 문서 환경으로 선택한다. */
   async prepareDeclaredFontEnvironment(backend = 'canvas2d'): Promise<boolean> {
     const doc = this.doc;
-    // CanvasKit/host는 CSS local() 프로그램을 소비하지 않으므로 이 증명으로 선택하지 않는다.
-    if (!doc || backend !== 'canvas2d' || hasHostFontProvider()) return false;
+    // 새 조판 참여는 Canvas2D 연결에 한정하고 이전 자동 환경의 해제도 처리한다.
+    if (!doc) return false;
+    const useHost = backend === 'canvas2d' && hostFontLayoutEnabled();
+    const restoreHost = this.hasHostFontLayoutEnvironment && !useHost;
+    if (!restoreHost && (backend !== 'canvas2d' || (hasHostFontProvider() && !useHost))) return false;
     const api = doc as unknown as Partial<DocumentFontEnvironmentApi>;
     if (typeof api.getDocumentFontSelectionPlan !== 'function'
       || typeof api.buildFontEnvironmentFromAvailablePrograms !== 'function'
       || typeof api.setFontEnvironment !== 'function') return false;
     const generation = this._documentGeneration;
     const request = ++this.automaticFontRequest;
+    const hostGeneration = getHostFontState().generation;
     const current = () => this.doc === doc && this._documentGeneration === generation
-      && this.automaticFontRequest === request;
+      && this.automaticFontRequest === request && getHostFontState().generation === hostGeneration;
     const plan = JSON.parse(api.getDocumentFontSelectionPlan()) as DocumentFontSelectionPlan;
     // 사용자 명시 환경을 자동 선택으로 덮어쓰지 않는다.
     const owned = this.automaticFontEnvironment?.generation === generation
       ? this.automaticFontEnvironment.id : null;
     if (plan.environmentId !== null && plan.environmentId !== owned) return false;
-    const programs = await prepareDeclaredFontPrograms(plan, current, inspectFontSymbols);
+    const preparePrograms = useHost ? prepareDeclaredHostFontPrograms
+      : (nextPlan: DocumentFontSelectionPlan, guard: () => boolean) =>
+        prepareDeclaredFontPrograms(nextPlan, guard, inspectFontSymbols);
+    const useLocal = !hasHostFontProvider() && backend === 'canvas2d';
+    const programs = useHost || useLocal
+      ? await preparePrograms(plan, current) : { programs: [], publicFallbackBlockedSources: [] };
     if (!current()) return false;
     const preferences = documentFontPreferences(this._documentDigest);
-    const preferredPrograms = Object.keys(preferences).length
-      ? await prepareDeclaredFontPrograms({ environmentId: null,
+    const preferredPrograms = (useHost || useLocal) && Object.keys(preferences).length
+      ? await preparePrograms({ environmentId: null,
         requests: [...new Set(Object.values(preferences))].map(target => ({ source: target, primary: [target], substitute: [] })),
-      }, current, inspectFontSymbols) : { programs: [] };
+      }, current) : { programs: [] };
     if (!current()) return false;
     try {
       const latest = JSON.parse(api.getDocumentFontSelectionPlan()) as DocumentFontSelectionPlan;
@@ -1092,7 +1118,16 @@ export class WasmBridge {
       this.automaticFontEnvironment = parsed ? { generation, id: parsed.id } : null;
       this.automaticFontPrograms = { generation, fingerprint };
       if (!changed && programsChanged) this.refreshLayout();
-      if (changed || programsChanged) this.invalidateCanvasMetricFonts();
+      if (changed || programsChanged || restoreHost) this.invalidateCanvasMetricFonts();
+      this.hostLayoutDocumentGeneration = useHost ? generation : null;
+      if (useHost) {
+        for (const program of [...programs.programs, ...preferredPrograms.programs]) {
+          this.hostLayoutFamilies.add(program.family);
+          for (const record of resolveRendererLocalFontCandidates(program.query, { weight: 400, slant: 'normal' })) {
+            for (const family of [record.family, ...record.aliases]) this.hostLayoutFamilies.add(family);
+          }
+        }
+      }
       return changed || programsChanged;
     } catch (error) {
       // 유효하지 않은 공급 snapshot으로 문서 로드를 중단하거나 기존 환경을 바꾸지 않는다.

@@ -336,3 +336,82 @@ test('일반 글리프 대체 face를 준비해도 문서의 주 글꼴 가용�
       ['Host Only', 'Missing Source'], '글리프 대체 face로 미등록 주 글꼴을 등록된 것처럼 처리하지 않는다');
   } finally { await setHostFontProvider(null); }
 });
+
+test('layout participation is explicit and scoped to the provider connection', async () => {
+  const f = fixture();
+  const source = new HostFontSource();
+  await source.setProvider(f.provider);
+  assert.equal(source.layoutEnabled, false);
+  await source.setProvider(f.provider, { layout: true });
+  assert.equal(source.layoutEnabled, true);
+  f.replace({ ...f.snapshot(), revision: 'next' });
+  await source.ready();
+  assert.equal(source.layoutEnabled, true);
+  await source.setProvider(f.provider);
+  assert.equal(source.layoutEnabled, false);
+  await source.setProvider(f.provider, { layout: true });
+  await source.setProvider(null, { layout: true });
+  assert.equal(source.layoutEnabled, false);
+});
+
+test('layout consumers reuse the same selected bytes until the provider generation changes', async () => {
+  const f = fixture();
+  const source = new HostFontSource();
+  await source.setProvider(f.provider, { layout: true });
+  const reference = source.references()[0];
+  await source.read(reference);
+  await source.read(reference);
+  assert.equal(f.reads(), 1);
+  f.replace({ ...f.snapshot(), revision: 'next' });
+  await source.ready();
+  assert.equal(await source.read(reference), null);
+  await source.read(source.references()[0]);
+  assert.equal(f.reads(), 2);
+  await source.setProvider(f.provider, { layout: false });
+  const legacy = source.references()[0];
+  await source.read(legacy);
+  await source.read(legacy);
+  assert.equal(f.reads(), 4);
+});
+
+test('declared host programs keep file identity and reject results from a replaced connection', async () => {
+  const { readFileSync } = await import('node:fs');
+  const { createHash } = await import('node:crypto');
+  const { prepareDeclaredHostFontPrograms } = await import('../src/core/declared-host-font-programs.ts');
+  const original = Object.getOwnPropertyDescriptor(globalThis, 'FontFace');
+  const fixtureBytes = readFileSync(new URL('../../tests/fixtures/fonts/RHWPBitmapSvgGlyphSmoke.ttf', import.meta.url));
+  const bytes = Uint8Array.from(fixtureBytes).buffer;
+  const sha = createHash('sha256').update(fixtureBytes).digest('hex');
+  Object.defineProperty(globalThis, 'FontFace', {
+    configurable: true, value: class { async load() { return this; } },
+  });
+  const f = fixture();
+  f.provider.readFace = async () => ({ bytes, faceIndex: 0 });
+  const plan = { environmentId: null, requests: [
+    { source: '호스트전용', primary: ['호스트전용'], substitute: [] },
+  ] };
+  try {
+    await setHostFontProvider(f.provider, { layout: true });
+    const result = await prepareDeclaredHostFontPrograms(plan, () => true);
+    assert.equal(result.programs.length, 1);
+    assert.equal(result.programs[0].programId, `host-${sha}-face-0`);
+    assert.equal(result.programs[0].family, '호스트전용');
+    assert.equal(result.programs[0].trueType, true);
+    assert.equal(result.programs[0].openTypeCff, false);
+    assert.deepEqual((await prepareDeclaredHostFontPrograms({
+      ...plan, embeddedFamilies: ['호스트전용'],
+    }, () => true)).programs, []);
+    const slow = deferred<{ bytes: ArrayBuffer }>();
+    f.provider.readFace = () => slow.promise;
+    await setHostFontProvider(f.provider, { layout: true });
+    const preparing = prepareDeclaredHostFontPrograms(plan, () => true);
+    await new Promise(resolve => setImmediate(resolve));
+    await setHostFontProvider(null);
+    slow.resolve({ bytes });
+    assert.deepEqual((await preparing).programs, []);
+  } finally {
+    await setHostFontProvider(null);
+    if (original) Object.defineProperty(globalThis, 'FontFace', original);
+    else Reflect.deleteProperty(globalThis, 'FontFace');
+  }
+});

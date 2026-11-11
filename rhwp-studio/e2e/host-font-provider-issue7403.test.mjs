@@ -208,6 +208,114 @@ async function verifyCanvas2DCharOverlap(page) {
   console.log('Canvas2D real charOverlap:', JSON.stringify(result));
 }
 
+
+// API/environment contract: fixture byte identity and policy, without layout goldens.
+async function verifyLayoutEnvironment(page) {
+  const fixtures = Object.fromEntries(['ttc', 'Regular', 'Italic'].map(name => [name,
+    readFileSync(new URL(`../../tests/fixtures/fonts/RHWPHostFixture${name === 'ttc' ? '.ttc' : `-${name}.ttf`}`, import.meta.url)).toString('base64')]));
+  const result = await page.evaluate(async fixtures => {
+    const { WasmBridge } = await import('/src/core/wasm-bridge.ts');
+    const { getLocalFontState } = await import('/src/core/local-fonts.ts');
+    const w = new WasmBridge();
+    const decode = key => Uint8Array.from(atob(fixtures[key]), c => c.charCodeAt(0)).buffer;
+    const digest = async bytes => [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))]
+      .map(b => b.toString(16).padStart(2, '0')).join('');
+    const family = 'Host Layout Contract';
+    let source = 'Regular', index = 0, revision = 0, enabled = true, fail = false;
+    let notify = () => {};
+    const reads = [];
+    const provider = {
+      async getSnapshot() { return { revision: String(revision), faces: enabled ? [{ id: 'face',
+        family, fullName: family, postscriptName: 'HostLayout-Selected', style: 'Regular', weight: 400, slant: 'normal' }] : [] }; },
+      async readFace(id, rev) { reads.push({ id, rev, source, index }); if (fail) throw new Error('denied');
+        return { bytes: decode(source), faceIndex: index }; },
+      subscribe(callback) { notify = callback; return () => {}; },
+    };
+    const originalLocal = JSON.stringify(getLocalFontState());
+    const storage = localStorage.getItem('rhwp-local-fonts');
+    const checks = [];
+    function setup() {
+      w.createNewDocument(); w.insertText(0, 0, 0, 'A가');
+      const fontId = w.findOrCreateFontId(family);
+      w.applyCharFormat(0, 0, 0, 2, JSON.stringify({ fontId }));
+    }
+    setup();
+    const doc = w.borrowDocumentHandle();
+    const environments = [];
+    const originalSet = doc.setFontEnvironment.bind(doc);
+    doc.setFontEnvironment = value => { environments.push(value ? JSON.parse(value) : null); return originalSet(value); };
+    const originalBytes = [...w.exportHwp()];
+    const plan = () => JSON.parse(doc.getDocumentFontSelectionPlan());
+    async function prepare() { await w.prepareDeclaredFontEnvironment('canvas2d'); return environments.at(-1); }
+    try {
+      await rhwpStudio.fonts.setProvider(provider);
+      await prepare(); checks.push(['omitted', environments.length === 0]);
+      await rhwpStudio.fonts.setProvider(provider, { layout: false });
+      await prepare(); checks.push(['false', environments.length === 0]);
+      await rhwpStudio.fonts.setProvider(provider, { layout: true });
+      const a = await prepare();
+      const selected = env => JSON.stringify(env?.selectedPrograms ?? {});
+      checks.push(['program-A', selected(a).includes(await digest(decode('Regular')))]);
+      checks.push(['source-metrics', a.preserveSourceMetrics === true && !(a.replaceSourceMetricsFor?.length)]);
+      source = 'Italic'; revision++; notify(); const b = await prepare();
+      checks.push(['same-id-new-bytes', selected(b).includes(await digest(decode('Italic'))) && selected(a) !== selected(b)]);
+      source = 'ttc'; index = 0; revision++; notify(); const t0 = await prepare();
+      index = 1; revision++; notify(); const t1 = await prepare();
+      checks.push(['ttc-face', selected(t0).includes('-face-0') && selected(t1).includes('-face-1') && selected(t0) !== selected(t1)]);
+      checks.push(['ttc-sha', selected(t1).includes(await digest(decode('ttc')))]);
+      enabled = false; revision++; notify(); await prepare();
+      checks.push(['remove', !JSON.stringify(environments.at(-1)).includes('host-')]);
+      enabled = true; revision++; notify(); await prepare();
+      checks.push(['restore', selected(environments.at(-1)) === selected(t1)]);
+      await rhwpStudio.fonts.setProvider(provider, { layout: false }); await prepare();
+      checks.push(['disable', !JSON.stringify(environments.at(-1)).includes('host-')]);
+      await rhwpStudio.fonts.setProvider(provider, { layout: true }); await prepare();
+      fail = true; revision++; notify(); await prepare();
+      checks.push(['read-failure', !JSON.stringify(environments.at(-1)).includes('host-')]);
+      fail = false; revision++; notify(); await prepare();
+      await w.prepareDeclaredFontEnvironment('canvaskit');
+      checks.push(['backend', !w.hasHostFontLayoutEnvironment && !JSON.stringify(environments.at(-1)).includes('host-')]);
+      await prepare();
+      const preferenceKey = 'rhwp-document-font-preferences';
+      const oldPreference = localStorage.getItem(preferenceKey);
+      try {
+        localStorage.setItem(preferenceKey, JSON.stringify({ [w.documentDigest]: {
+          documentDigest: w.documentDigest, substitutions: { [family]: family } } }));
+        const chosen = await prepare();
+        checks.push(['explicit-metric-override', chosen.preserveSourceMetrics === true
+          && JSON.stringify(chosen.replaceSourceMetricsFor) === JSON.stringify([family])]);
+      } finally {
+        if (oldPreference === null) localStorage.removeItem(preferenceKey); else localStorage.setItem(preferenceKey, oldPreference);
+      }
+      checks.push(['saved-bytes', JSON.stringify([...w.exportHwp()]) === JSON.stringify(originalBytes)]);
+      checks.push(['portable-names', !w.renderPageSvg(0).includes('__rhwp_host_face_')]);
+      originalSet(JSON.stringify({ id: 'explicit-owner', substitutions: { [family]: family }, preserveSourceMetrics: true }));
+      await rhwpStudio.fonts.setProvider(null); await prepare();
+      checks.push(['explicit-owner', plan().environmentId === 'explicit-owner']);
+      originalSet(undefined);
+      setup();
+      const pending = [];
+      const slow = { ...provider, readFace: (_id, _rev, signal) => new Promise(resolve => pending.push({ resolve, signal })) };
+      await rhwpStudio.fonts.setProvider(slow, { layout: true });
+      const oldPreparation = w.prepareDeclaredFontEnvironment('canvas2d');
+      const deadline = Date.now() + 5000;
+      while (!pending.length && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 0));
+      if (!pending.length) throw new Error("layout read did not start");
+      setup();
+      await rhwpStudio.fonts.setProvider(provider, { layout: false });
+      pending.forEach(item => item.resolve({ bytes: decode('Regular'), faceIndex: 0 }));
+      const staleResult = await oldPreparation;
+      checks.push(['late-document-and-provider', staleResult === false
+        && JSON.parse(w.borrowDocumentHandle().getDocumentFontSelectionPlan()).environmentId === null]);
+      checks.push(['local-state', originalLocal === JSON.stringify(getLocalFontState())
+        && storage === localStorage.getItem('rhwp-local-fonts')]);
+      return { checks, reads };
+    } finally { w.releaseDocument(); await rhwpStudio.fonts.setProvider(null); }
+  }, fixtures);
+  console.log('#8946 layout environment:', JSON.stringify(result));
+  for (const [name, passed] of result.checks) assert.equal(passed, true, name);
+}
+
 const backend = process.argv.find(arg => arg.startsWith('--renderer='))?.split('=')[1] || process.env.RHWP_TEST_RENDERER || 'canvaskit';
 assert(['canvaskit', 'canvas2d'].includes(backend));
 runTest(`Issue #7403 ${backend}: host font identity, replacement and document preservation`, async ({ page }) => {
@@ -222,6 +330,7 @@ runTest(`Issue #7403 ${backend}: host font identity, replacement and document pr
   if (backend === 'canvas2d') {
     await verifyCanvas2DFaces(page);
     await verifyCanvas2DCharOverlap(page);
+    await verifyLayoutEnvironment(page);
     await createNewDocument(page);
   }
   else await verifyFacePaint(page);
