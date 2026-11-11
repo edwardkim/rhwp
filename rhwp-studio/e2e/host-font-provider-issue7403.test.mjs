@@ -221,14 +221,16 @@ async function verifyLayoutEnvironment(page) {
     const digest = async bytes => [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))]
       .map(b => b.toString(16).padStart(2, '0')).join('');
     const family = 'Host Layout Contract';
-    let source = 'Regular', index = 0, revision = 0, enabled = true, fail = false;
+    let source = 'Regular', index = 0, revision = 0, enabled = true, fail = false, split = false;
     let notify = () => {};
     const reads = [];
     const provider = {
       async getSnapshot() { return { revision: String(revision), faces: enabled ? [{ id: 'face',
-        family, fullName: family, postscriptName: 'HostLayout-Selected', style: 'Regular', weight: 400, slant: 'normal' }] : [] }; },
+        family, fullName: family, postscriptName: 'HostLayout-Selected', style: 'Regular', weight: 400, slant: 'normal' }, ...(split ? [{
+          id: 'second', family, fullName: 'HostLayout-Second', postscriptName: 'HostLayout-Second',
+          style: 'Regular', weight: 400, slant: 'normal' }] : [])] : [] }; },
       async readFace(id, rev) { reads.push({ id, rev, source, index }); if (fail) throw new Error('denied');
-        return { bytes: decode(source), faceIndex: index }; },
+        return { bytes: decode(id === 'second' ? 'Italic' : source), faceIndex: index }; },
       subscribe(callback) { notify = callback; return () => {}; },
     };
     const originalLocal = JSON.stringify(getLocalFontState());
@@ -257,6 +259,10 @@ async function verifyLayoutEnvironment(page) {
       const selected = env => JSON.stringify(env?.selectedPrograms ?? {});
       checks.push(['program-A', selected(a).includes(await digest(decode('Regular')))]);
       checks.push(['source-metrics', a.preserveSourceMetrics === true && !(a.replaceSourceMetricsFor?.length)]);
+      split = true; revision++; notify(); const beforeSplit = environments.length; await prepare();
+      checks.push(['split-query-identity', environments.length === beforeSplit + 1
+        && selected(environments.at(-1)).includes(await digest(decode('Regular')))]);
+      split = false;
       source = 'Italic'; revision++; notify(); const b = await prepare();
       checks.push(['same-id-new-bytes', selected(b).includes(await digest(decode('Italic'))) && selected(a) !== selected(b)]);
       source = 'ttc'; index = 0; revision++; notify(); const t0 = await prepare();
@@ -293,20 +299,25 @@ async function verifyLayoutEnvironment(page) {
       await rhwpStudio.fonts.setProvider(null); await prepare();
       checks.push(['explicit-owner', plan().environmentId === 'explicit-owner']);
       originalSet(undefined);
-      setup();
-      const pending = [];
-      const slow = { ...provider, readFace: (_id, _rev, signal) => new Promise(resolve => pending.push({ resolve, signal })) };
-      await rhwpStudio.fonts.setProvider(slow, { layout: true });
-      const oldPreparation = w.prepareDeclaredFontEnvironment('canvas2d');
-      const deadline = Date.now() + 5000;
-      while (!pending.length && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 0));
-      if (!pending.length) throw new Error("layout read did not start");
-      setup();
-      await rhwpStudio.fonts.setProvider(provider, { layout: false });
-      pending.forEach(item => item.resolve({ bytes: decode('Regular'), faceIndex: 0 }));
-      const staleResult = await oldPreparation;
-      checks.push(['late-document-and-provider', staleResult === false
-        && JSON.parse(w.borrowDocumentHandle().getDocumentFontSelectionPlan()).environmentId === null]);
+      for (const transition of ['disable', 'replace', 'document']) {
+        setup();
+        const pending = [];
+        const slow = { ...provider, readFace: (_id, _rev, signal) => new Promise(resolve => pending.push({ resolve, signal })) };
+        await rhwpStudio.fonts.setProvider(slow, { layout: true });
+        const oldPreparation = w.prepareDeclaredFontEnvironment('canvas2d');
+        const deadline = Date.now() + 5000;
+        while (!pending.length && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 0));
+        if (!pending.length) throw new Error('layout read did not start');
+        if (transition === 'document') setup();
+        else await rhwpStudio.fonts.setProvider(provider, { layout: transition === 'replace' });
+        if (transition === 'replace') await w.prepareDeclaredFontEnvironment('canvas2d');
+        const expected = JSON.parse(w.borrowDocumentHandle().getDocumentFontSelectionPlan()).environmentId;
+        pending.forEach(item => item.resolve({ bytes: decode('Regular'), faceIndex: 0 }));
+        const staleResult = await oldPreparation;
+        checks.push(['late-' + transition, staleResult === false
+          && JSON.parse(w.borrowDocumentHandle().getDocumentFontSelectionPlan()).environmentId === expected]);
+        w.borrowDocumentHandle().setFontEnvironment(undefined);
+      }
       checks.push(['local-state', originalLocal === JSON.stringify(getLocalFontState())
         && storage === localStorage.getItem('rhwp-local-fonts')]);
       return { checks, reads };

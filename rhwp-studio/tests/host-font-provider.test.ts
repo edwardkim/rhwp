@@ -401,6 +401,13 @@ test('declared host programs keep file identity and reject results from a replac
     assert.deepEqual((await prepareDeclaredHostFontPrograms({
       ...plan, embeddedFamilies: ['호스트전용'],
     }, () => true)).programs, []);
+    const regular = f.snapshot().faces[0];
+    f.replace({ revision: 'split-programs', faces: [regular, {
+      ...regular, id: 'split-second', postscriptName: 'HostOnly-Second', fullName: 'Host Only Second',
+    }] });
+    const split = await prepareDeclaredHostFontPrograms(plan, () => true);
+    assert.equal(split.programs.length, 1, 'one query has one declared identity even with split face coverage');
+    assert.equal(split.programs[0].programId, `host-${sha}-face-0`);
     const slow = deferred<{ bytes: ArrayBuffer }>();
     f.provider.readFace = () => slow.promise;
     await setHostFontProvider(f.provider, { layout: true });
