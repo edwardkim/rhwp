@@ -102,3 +102,8 @@ PR #8958의 파일 4,142개가 REST API에서 3,000개로 잘려 CI preflight가
 ## Canonical DNS 복구 후 전체 CI 재시작
 
 `3797aa3b48`에서는 Native Skia 준비 중 APT 180초 초과가 exit 124로 실패했다. 이전의 녹색 생략과 달리 이를 성공으로 수용하지 않았다. Canonical 공식 RSS의 DNS 상태가 2026-11-12 01:58 KST에 Operational로 전환된 것을 확인했다. 실행 중인 workflow 때문에 단일 job 재실행 요청이 403으로 거절되어, 사용자의 명시 지시에 따라 이 검증 기록을 trailing commit으로 반영하고 새 head의 Full CI를 재시작한다. [장애·복구·재실행 근거](ci-canonical-dns-recovery-validation.json)를 보존한다. 실제 Skia 테스트 성공 전에는 병합하지 않으며, 병합 후 확정 기록·오늘할일은 옵션 2의 별도 PR로 처리한다.
+
+
+## 통합 PR #8958의 확정 CI·병합
+
+[PR #8958](https://github.com/edwardkim/rhwp/pull/8958)의 최종 code head `67715b56b7149e552f983244e63e5770035f51fc`에서 CI·CodeQL·Render Diff·Adapter·Proptest와 CI Impact Policy를 확인하고 `6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a`로 병합했다. [실제 run·job·정책·merge 기록](pr8958-ci-merge.json)에 정확한 head와 결과를 보존한다. 제품 빌드·시각 검증은 위 runtime `3575d814`와 동일한 제품 소스이며, 이후 증적·리뷰 및 CI bootstrap 보정과 구분한다. CI 변경이 포함되어 옵션 2의 별도 문서 PR에서 후속 기록만 반영한다. 원 PR 댓글·종료와 이슈 처리는 이 기록의 devel 반영 후 수행한다.
