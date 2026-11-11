@@ -1,7 +1,7 @@
 //! [#8939] 관계형·고정형 회귀 — 한/글이 저장한 LineSeg tag bit 31 은 저장 줄이고, 중첩 표를 품은
 //! 글자처럼 취급 표의 칸은 저장 사다리가 칸 선언 높이에 담기면 그 높이로 잰다.
 //!
-//! 주석 갱신: 2026-11-11 17:30 KST(+09:00), 새 파일.
+//! 주석 갱신: 2026-11-11 23:10 KST(+09:00), 새 파일.
 //!
 //! - 입력: `samples/issue8939/attach_form_reset.hwp` — 서울시교육청 공개 문서
 //!   「2018학년도 후기고등학교 입학전 전학 시행 계획(안)」 12·13쪽(붙임 3·4 신청서)만 남기고
@@ -11,15 +11,19 @@
 //! - 수정 전 rhwp(devel `e118de8aba`)는 bit 31 을 자기 합성 줄 표지로 읽어 문단 6~8 을 1쪽에
 //!   겹쳐 그리고, 1쪽 신청서 표의 문단 16개 칸(행 11)을 재조판 줄 합(336.9px)으로 키워 다른 행을
 //!   선언보다 1~2px 줄였다(한/글은 선언 321.1px).
+//! - rhwp 가 저장한 HWP 는 `/RhwpLineSegTags` 표지 스트림(구역 레코드 SHA-256)이 있을 때만
+//!   bit 31 을 합성 줄 표지로 되읽는다. 세 번째 검사가 이 왕복을 지킨다.
 //!
 //! 측정: 2026-11-11, `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`(4열
-//! `silhouette_raw_match_percent`, 색상 경계 보정 전 2px 실루엣), 소스 devel `e118de8aba` + 이 수정.
-//! 1쪽 Native 98.34 / fresh WASM 미측정→게이트 기록, 2쪽 Native 98.36(수정 전 Native 63.89·28.81).
-//! 전체 2쪽 = PDF 2쪽. 증거: `mydocs/pr/assets/issue_8939/{native,wasm,base-native}/`.
+//! `silhouette_raw_match_percent`, 색상 경계 보정 전 2px 실루엣), 소스 `b28f2edc9a`(base
+//! `e118de8aba` + 이 수정). 1쪽 Native 98.34 / fresh WASM 98.38, 2쪽 Native 98.36 / fresh WASM
+//! 98.40. 전쪽 최저 Native 98.34·fresh WASM 98.38(수정 전 Native 63.89·28.81). 전체 2쪽 = PDF 2쪽.
+//! 증거: `mydocs/pr/assets/issue_8939/{native,wasm,base-native}/`.
 //!
 //! 검사: 원본 계약(문단 6 첫 저장 줄 vpos 0·원본 파일 tag bit 31, 표 칸 저장 사다리가 칸 선언 높이에 맞음),
 //! IR 줄 tag 에 합성 표지 없음, 쪽수 2 = 한/글(고정형), 문단 6~8 이 2쪽 소속이고 2쪽 첫 줄은
-//! 문단 6, HWP5 재저장본의 본문 줄 tag = 원본, 1쪽 표 칸의 그린 높이 = 칸 선언 높이(관계형).
+//! 문단 6, HWP5 재저장본의 본문 줄 tag = 원본이고 되읽은 tag 에 합성 표지 없음, 1쪽 표 칸의 그린
+//! 높이 = 칸 선언 높이, rhwp 편집 저장본은 표지와 함께 합성 줄 tag 를 그대로 되읽음(관계형).
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
