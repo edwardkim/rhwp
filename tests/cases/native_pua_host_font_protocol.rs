@@ -1,9 +1,15 @@
 //! 관계형: 글꼴 소유자 등록과 해제의 세션 프로토콜 계약.
-//! 주석 갱신: 2026-11-08T06:46:04+09:00; 직전 파일 커밋: 2026-11-08T01:15:32+09:00 (a860abe23679257f7d4c8d9b84f0f2d95df89e99).
+//! 주석 갱신: 2026-11-12T00:52:45+09:00; 직전 파일 커밋: 2026-11-09T21:28:10+09:00 (54b3f8b8bb00c8e51cd96494ce9dbf4a8f355c59).
 //! 근거: tests/fixtures/fonts/RHWPHostFixture.LICENSE.md, tests/fixtures/fonts/RHWPEquationFonts.LICENSE.md.
 //! 글꼴 등록·해제 전후의 세션 소유 관계 검사이며 페이지별 raw 측정은 대상이 아니다.
 //! 실제 글꼴 요청 이름과 명시 exact 소유자의 세션 프로토콜 계약.
 //! 실제 페이지 좌표나 한컴 피델리티의 기대값을 고정하지 않는다.
+//! 작은 삼각형의 실제 입력은 중첩 표 17쪽, 독립 한컴 Print PDFium 96 DPI·색상 보정 전 2px raw다.
+//! 원본: samples/basic/issue2007_nested_cell_pagination_42065.hwp; 기준 PDF와 입력 SHA는 보호 manifest에 있다.
+//! 2026-11-12 Native 전쪽 최저 97.99083%, fresh WASM 전쪽 최저 98.05646%.
+//! 8쪽 Native/fresh WASM 99.52149%/99.52472%, 9쪽 99.98562%/99.98759%.
+//! 원 글리프·전진·해제 대체의 합성 관계 검사이며 실물 좌표는 고정하지 않는다.
+//! 근거: mydocs/pr/assets/pr8896/protection/ 및 font-supply/README.md.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
@@ -373,6 +379,8 @@ fn host_font_request_names_are_not_css_quoted() {
 #[test]
 fn source_pointer_requests_its_program_without_reclassifying_unicode_pointer() {
     for (text, requires_source_program) in [
+        ("\u{f02fb}", true),
+        ("▸", false),
         ("\u{f02fc}", true),
         ("►", false),
         ("\u{f031c}", true),
@@ -583,6 +591,11 @@ fn assert_prepared_source_symbol(symbol: char, fallback: &str) {
 #[test]
 fn prepared_source_glyph_replaces_an_earlier_unicode_display_and_clear_restores_it() {
     assert_prepared_source_symbol('\u{f02fc}', "►");
+}
+
+#[test]
+fn small_source_triangle_keeps_its_program_and_clear_restores_unicode_fallback() {
+    assert_prepared_source_symbol('\u{f02fb}', "▸");
 }
 
 #[test]
