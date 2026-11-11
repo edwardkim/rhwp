@@ -1,7 +1,7 @@
 //! [#8968] 관계형·고정형 회귀 — 칸 하나가 저장 줄 없이 재조판돼도 측정 행이 칸 선언과 같으면
 //! 표를 개체 크기(`hp:sz`)로 늘리지 않는다.
 //!
-//! 주석 갱신: 2026-11-12 04:10 KST(+09:00), 새 파일.
+//! 주석 갱신: 2026-11-12 09:40 KST(+09:00), 새 파일.
 //!
 //! - 입력: `samples/issue8968/stored_rows_reflowed_cell.hwpx` — 서울특별시 영등포소방서 공개 결재문서
 //!   「신길 구급차(영등포 6-7호) 동태변경 승인요청」(한컴오피스 2020 저장, 1쪽). 문단 4 의
@@ -9,11 +9,13 @@
 //!   2414 + 4030 = 6444HU 이고, 1행 한 칸은 HWPX `linesegarray` 가 없어 rhwp 가 줄을 계산한다.
 //! - 독립 기준: `pdf/issue8968/stored_rows_reflowed_cell-2020.pdf`(한/글 2022 12.0.0.4547 Print, 1쪽).
 //!   한/글은 행을 칸 선언대로(32.2px + 53.7px) 그리고, 「끝.」을 그 표 바로 아래에 둔다.
-//! - 수정 전 rhwp(devel `4c876654d8`)는 저장 줄 없는 칸 때문에 `stored_rows_own_body` 가 거짓이 되어
+//! - 수정 전 rhwp(devel `4c876654d8`, `eb84afc036` 도 같은 81.32%)는 저장 줄 없는 칸 때문에 `stored_rows_own_body` 가 거짓이 되어
 //!   표를 개체 높이 101.8px 로 늘렸다(둘째 행 69.6px).
 //!
 //! 측정: 2026-11-12, `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`(4열
-//! `silhouette_raw_match_percent`, 색상 경계 보정 전 2px 실루엣). 1쪽 Native 측정→게이트 기록.
+//! `silhouette_raw_match_percent`, 색상 경계 보정 전 2px 실루엣). 전체 1쪽 = 한/글 1쪽.
+//! 수정 후(devel `eb84afc036` 기준) 1쪽 Native 99.97%, fresh WASM 100.00%(두 경로 전쪽 최저값도 같음).
+//! 수정 전 Native 81.32%. 증거: `mydocs/pr/assets/issue_8968/{native,wasm,base-native}/`.
 //!
 //! 검사: 원본 계약(개체 높이 > 칸 선언 행 합, 저장 줄 없는 칸 존재), 쪽수 1 = 한/글(고정형),
 //! 칸마다 그린 높이 = 칸 선언 높이, 표 상자 높이 = 칸 선언 행 합, 「끝.」 줄이 표 아래끝 뒤
