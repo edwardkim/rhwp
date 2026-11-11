@@ -1,0 +1,1504 @@
+{
+  "head": "3575d814f44053483bb51f54b01dcf8044d0b575",
+  "conditions": 88,
+  "records": [
+    {
+      "backend": "native",
+      "key": "pr8708-cell_float_offset_space",
+      "source_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "selected_pages": [
+        1
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8717-scholarship_recommendation_form",
+      "source_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "selected_pages": [
+        1
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8717-tax_source_ledger_form",
+      "source_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "selected_pages": [
+        1
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8719-cell_float_inner_anchor",
+      "source_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "selected_pages": [
+        1
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8746-36345427_approval_body",
+      "source_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "selected_pages": [
+        1
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8758-whitespace_host_approval_table",
+      "source_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "selected_pages": [
+        1
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8929-wide_tac_trailing_tail",
+      "source_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "selected_pages": [
+        1
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8740-156667654_saemangeum_press_release",
+      "source_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "selected_pages": [
+        1
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8775-field_led_wide_table",
+      "source_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "selected_pages": [
+        1,
+        2
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1,
+        2
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8775-field_led_wide_table_nofield",
+      "source_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "selected_pages": [
+        1
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8785-stored_field_line_table",
+      "source_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "selected_pages": [
+        2
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        2
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8833-36341965-float-band-gap-reduced",
+      "source_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "selected_pages": [
+        1,
+        2
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1,
+        2
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8835-36400259-stale-cell-ladder",
+      "source_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "selected_pages": [
+        1,
+        2
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1,
+        2
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8846-synthetic_forward_tac_axis",
+      "source_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "selected_pages": [
+        1,
+        2
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1,
+        2
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8848-36355707-unstored-rebase-tac",
+      "source_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "selected_pages": [
+        1,
+        2
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1,
+        2
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8861-36388005-host-below-header-table",
+      "source_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "selected_pages": [
+        1,
+        2
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1,
+        2
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8876-36338125-bottom-fixed-table-margin",
+      "source_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "selected_pages": [
+        1,
+        2
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1,
+        2
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8881-36441289-tac-host-below-float",
+      "source_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "selected_pages": [
+        1,
+        2
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1,
+        2
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8930-6540000-202500049-post-table-line-stored-page-reset",
+      "source_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "selected_pages": [
+        1,
+        2
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1,
+        2
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8744-nested_row_cell_cuts",
+      "source_pages": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "selected_pages": [
+        2,
+        3
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        2,
+        3
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8785-stored_field_line_page_split",
+      "source_pages": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "selected_pages": [
+        2,
+        3
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        2,
+        3
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8788-reflowed_gap_stored_rewind",
+      "source_pages": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "selected_pages": [
+        2,
+        3
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        2,
+        3
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8794-36495398-split-row-segments-reduced",
+      "source_pages": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "selected_pages": [
+        2,
+        3
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        2,
+        3
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8921-1471000-group-bullet-column-top",
+      "source_pages": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "selected_pages": [
+        3
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        3
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8928-36415413-page-break-tac-full-gap",
+      "source_pages": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "selected_pages": [
+        2
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        2
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8729-hft-hanyang_junggothic-probe",
+      "source_pages": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "selected_pages": [
+        3
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        3
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8729-hft-sinmyeong_junggothic-probe",
+      "source_pages": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "selected_pages": [
+        3
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        3
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8794-156739836-float-prefix-row-reduced",
+      "source_pages": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "selected_pages": [
+        3
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        3
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8909-36404364-reflowed-cell-tac-row-floor",
+      "source_pages": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "selected_pages": [
+        3
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        3
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8921-44907-group-bullet-column-top",
+      "source_pages": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "selected_pages": [
+        2,
+        4
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        2,
+        4
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8746-36453591_approval_body",
+      "source_pages": {
+        "rhwp": 5,
+        "pdf": 5
+      },
+      "selected_pages": [
+        4,
+        5
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        4,
+        5
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8746-36483048_approval_body",
+      "source_pages": {
+        "rhwp": 6,
+        "pdf": 6
+      },
+      "selected_pages": [
+        4,
+        5,
+        6
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8903-36340478-unstored-tac-column-top-spacing",
+      "source_pages": {
+        "rhwp": 7,
+        "pdf": 7
+      },
+      "selected_pages": [
+        4,
+        6,
+        7
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        4,
+        6,
+        7
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8751-rowbreak-problem-pages",
+      "source_pages": {
+        "rhwp": 18,
+        "pdf": 18
+      },
+      "selected_pages": [
+        7
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        7
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8772-46551_road_traffic_rule_amendment",
+      "source_pages": {
+        "rhwp": 30,
+        "pdf": 30
+      },
+      "selected_pages": [
+        13,
+        28
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        13,
+        28
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8751-75544_pii_bunseok",
+      "source_pages": {
+        "rhwp": 66,
+        "pdf": 66
+      },
+      "selected_pages": [
+        59,
+        60
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        59,
+        60
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8717-employment_service_interim_report",
+      "source_pages": {
+        "rhwp": 90,
+        "pdf": 90
+      },
+      "selected_pages": [
+        1
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "source_pages": {
+        "rhwp": 101,
+        "pdf": 101
+      },
+      "selected_pages": [
+        34,
+        35,
+        45,
+        46,
+        54,
+        58,
+        77,
+        78,
+        80
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        34,
+        35,
+        45,
+        46,
+        54,
+        58,
+        77,
+        78,
+        80
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8689-1411000-201000007_final_report",
+      "source_pages": {
+        "rhwp": 111,
+        "pdf": 111
+      },
+      "selected_pages": [
+        27,
+        28,
+        88,
+        89
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        27,
+        28,
+        88,
+        89
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8736-1741000-202200045_second_interim_report",
+      "source_pages": {
+        "rhwp": 138,
+        "pdf": 138
+      },
+      "selected_pages": [
+        16,
+        17
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        16,
+        17
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8710-1311000-201100125_saemaul_oda_pilot_report",
+      "source_pages": {
+        "rhwp": 209,
+        "pdf": 209
+      },
+      "selected_pages": [
+        6,
+        15,
+        16
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        6,
+        15,
+        16
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "source_pages": {
+        "rhwp": 235,
+        "pdf": 235
+      },
+      "selected_pages": [
+        18,
+        19,
+        56,
+        77,
+        78,
+        211,
+        212,
+        234
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        18,
+        19,
+        56,
+        77,
+        78,
+        211,
+        212,
+        234
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8901-1480000-201900510_facility_pollution_study",
+      "source_pages": {
+        "rhwp": 241,
+        "pdf": 241
+      },
+      "selected_pages": [
+        113
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        113
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "pr8792-6500000-201700118_jeju_tourism_education_plan",
+      "source_pages": {
+        "rhwp": 313,
+        "pdf": 313
+      },
+      "selected_pages": [
+        55,
+        271,
+        272
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        55,
+        271,
+        272
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8708-cell_float_offset_space",
+      "source_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "selected_pages": [
+        1
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8717-scholarship_recommendation_form",
+      "source_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "selected_pages": [
+        1
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8717-tax_source_ledger_form",
+      "source_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "selected_pages": [
+        1
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8719-cell_float_inner_anchor",
+      "source_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "selected_pages": [
+        1
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8746-36345427_approval_body",
+      "source_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "selected_pages": [
+        1
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8758-whitespace_host_approval_table",
+      "source_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "selected_pages": [
+        1
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8929-wide_tac_trailing_tail",
+      "source_pages": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "selected_pages": [
+        1
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8740-156667654_saemangeum_press_release",
+      "source_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "selected_pages": [
+        1
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8775-field_led_wide_table",
+      "source_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "selected_pages": [
+        1,
+        2
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1,
+        2
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8775-field_led_wide_table_nofield",
+      "source_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "selected_pages": [
+        1
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8785-stored_field_line_table",
+      "source_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "selected_pages": [
+        2
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        2
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8833-36341965-float-band-gap-reduced",
+      "source_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "selected_pages": [
+        1,
+        2
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1,
+        2
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8835-36400259-stale-cell-ladder",
+      "source_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "selected_pages": [
+        1,
+        2
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1,
+        2
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8846-synthetic_forward_tac_axis",
+      "source_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "selected_pages": [
+        1,
+        2
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1,
+        2
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8848-36355707-unstored-rebase-tac",
+      "source_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "selected_pages": [
+        1,
+        2
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1,
+        2
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8861-36388005-host-below-header-table",
+      "source_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "selected_pages": [
+        1,
+        2
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1,
+        2
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8876-36338125-bottom-fixed-table-margin",
+      "source_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "selected_pages": [
+        1,
+        2
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1,
+        2
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8881-36441289-tac-host-below-float",
+      "source_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "selected_pages": [
+        1,
+        2
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1,
+        2
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8930-6540000-202500049-post-table-line-stored-page-reset",
+      "source_pages": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "selected_pages": [
+        1,
+        2
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1,
+        2
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8744-nested_row_cell_cuts",
+      "source_pages": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "selected_pages": [
+        2,
+        3
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        2,
+        3
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8785-stored_field_line_page_split",
+      "source_pages": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "selected_pages": [
+        2,
+        3
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        2,
+        3
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8788-reflowed_gap_stored_rewind",
+      "source_pages": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "selected_pages": [
+        2,
+        3
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        2,
+        3
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8794-36495398-split-row-segments-reduced",
+      "source_pages": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "selected_pages": [
+        2,
+        3
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        2,
+        3
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8921-1471000-group-bullet-column-top",
+      "source_pages": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "selected_pages": [
+        3
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        3
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8928-36415413-page-break-tac-full-gap",
+      "source_pages": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "selected_pages": [
+        2
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        2
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8729-hft-hanyang_junggothic-probe",
+      "source_pages": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "selected_pages": [
+        3
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        3
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8729-hft-sinmyeong_junggothic-probe",
+      "source_pages": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "selected_pages": [
+        3
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        3
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8794-156739836-float-prefix-row-reduced",
+      "source_pages": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "selected_pages": [
+        3
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        3
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8909-36404364-reflowed-cell-tac-row-floor",
+      "source_pages": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "selected_pages": [
+        3
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        3
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8921-44907-group-bullet-column-top",
+      "source_pages": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "selected_pages": [
+        2,
+        4
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        2,
+        4
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8746-36453591_approval_body",
+      "source_pages": {
+        "rhwp": 5,
+        "pdf": 5
+      },
+      "selected_pages": [
+        4,
+        5
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        4,
+        5
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8746-36483048_approval_body",
+      "source_pages": {
+        "rhwp": 6,
+        "pdf": 6
+      },
+      "selected_pages": [
+        4,
+        5,
+        6
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8903-36340478-unstored-tac-column-top-spacing",
+      "source_pages": {
+        "rhwp": 7,
+        "pdf": 7
+      },
+      "selected_pages": [
+        4,
+        6,
+        7
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        4,
+        6,
+        7
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8751-rowbreak-problem-pages",
+      "source_pages": {
+        "rhwp": 18,
+        "pdf": 18
+      },
+      "selected_pages": [
+        7
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        7
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8772-46551_road_traffic_rule_amendment",
+      "source_pages": {
+        "rhwp": 30,
+        "pdf": 30
+      },
+      "selected_pages": [
+        13,
+        28
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        13,
+        28
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8751-75544_pii_bunseok",
+      "source_pages": {
+        "rhwp": 66,
+        "pdf": 66
+      },
+      "selected_pages": [
+        59,
+        60
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        59,
+        60
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8717-employment_service_interim_report",
+      "source_pages": {
+        "rhwp": 90,
+        "pdf": 90
+      },
+      "selected_pages": [
+        1
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        1
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "source_pages": {
+        "rhwp": 101,
+        "pdf": 101
+      },
+      "selected_pages": [
+        34,
+        35,
+        45,
+        46,
+        54,
+        58,
+        77,
+        78,
+        80
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        34,
+        35,
+        45,
+        46,
+        54,
+        58,
+        77,
+        78,
+        80
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8689-1411000-201000007_final_report",
+      "source_pages": {
+        "rhwp": 111,
+        "pdf": 111
+      },
+      "selected_pages": [
+        27,
+        28,
+        88,
+        89
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        27,
+        28,
+        88,
+        89
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8736-1741000-202200045_second_interim_report",
+      "source_pages": {
+        "rhwp": 138,
+        "pdf": 138
+      },
+      "selected_pages": [
+        16,
+        17
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        16,
+        17
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8710-1311000-201100125_saemaul_oda_pilot_report",
+      "source_pages": {
+        "rhwp": 209,
+        "pdf": 209
+      },
+      "selected_pages": [
+        6,
+        15,
+        16
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        6,
+        15,
+        16
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "source_pages": {
+        "rhwp": 235,
+        "pdf": 235
+      },
+      "selected_pages": [
+        18,
+        19,
+        56,
+        77,
+        78,
+        211,
+        212,
+        234
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        18,
+        19,
+        56,
+        77,
+        78,
+        211,
+        212,
+        234
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8901-1480000-201900510_facility_pollution_study",
+      "source_pages": {
+        "rhwp": 241,
+        "pdf": 241
+      },
+      "selected_pages": [
+        113
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        113
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8792-6500000-201700118_jeju_tourism_education_plan",
+      "source_pages": {
+        "rhwp": 313,
+        "pdf": 313
+      },
+      "selected_pages": [
+        55,
+        271,
+        272
+      ],
+      "duplicates": 0,
+      "expected_selected_pages": [
+        55,
+        271,
+        272
+      ]
+    }
+  ],
+  "missing_or_duplicate_selected_pages": 0,
+  "document_page_count_mismatches": 0
+}

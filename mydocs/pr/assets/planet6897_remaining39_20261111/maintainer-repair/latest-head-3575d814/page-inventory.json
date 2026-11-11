@@ -1,0 +1,2488 @@
+{
+  "runtime_head": "3575d814f44053483bb51f54b01dcf8044d0b575",
+  "conditions": 124,
+  "records": [
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8708-cell_float_offset_space",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8686/cell_float_offset_space.hwp",
+        "sha256": "8575be129f222bc9177b14bad5b78f6fd9357df99aa2e5a50a832c22f5de8cb4"
+      },
+      "pdf": {
+        "path": "pdf/issue8686_cell_float_offset_space-2020.pdf",
+        "sha256": "bc1ec50fc13b79d301506dfeac32fbb0ff8c39b4b738387b6b1b341db8607add"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8717-scholarship_recommendation_form",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8692/scholarship_recommendation_form.hwp",
+        "sha256": "043c355c598d07ac3761c551e8c988e61873792a83cc69d83e76549818ff2b56"
+      },
+      "pdf": {
+        "path": "pdf/issue8692/scholarship_recommendation_form-2020.pdf",
+        "sha256": "71ff83b518d311ce9574dfe013954278a308bd2fe11b351221ece6ba134f335a"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8717-tax_source_ledger_form",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8692/tax_source_ledger_form.hwp",
+        "sha256": "cd77e555af065b532c4407d55302d91a98b2f8c5bad377580a8645fd785f2455"
+      },
+      "pdf": {
+        "path": "pdf/issue8692/tax_source_ledger_form-2020.pdf",
+        "sha256": "07ace1ed7a647dc5125d14bf658efd67ec7adc6826448f695cde69ee08fea10e"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8719-cell_float_inner_anchor",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8686/cell_float_inner_anchor.hwp",
+        "sha256": "05b1d5f1ff65aa423e7ae2800bb1c56114e765e2fdd89cc9583fcb9ebbb0bfe9"
+      },
+      "pdf": {
+        "path": "pdf/issue8686_cell_float_inner_anchor-2020.pdf",
+        "sha256": "e333c02b54fb74240b55cb0bec0d353081a8e8a38bdb4427a13d14ddaef8df2e"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8746-36345427_approval_body",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8742/36345427_approval_body.hwpx",
+        "sha256": "e21577b887e19acd88cd582b45083d0ec6d1efa92a14b17de525f7c8a7da4964"
+      },
+      "pdf": {
+        "path": "pdf/issue8742/36345427_approval_body-2022.pdf",
+        "sha256": "4f2bf6e85f5c2f55278fac2c578ed2eb258b9d677333600502b26f5e54f3e3ab"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8758-whitespace_host_approval_table",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8735/whitespace_host_approval_table.hwpx",
+        "sha256": "58829782ebef6b7fe003db634cff90c3c2de6b2f369597d264965f21568db7a4"
+      },
+      "pdf": {
+        "path": "pdf/issue8735/whitespace_host_approval_table-2020.pdf",
+        "sha256": "e8df724587bc39bd8a5fcc1bb39017ed44b3fc4f1be3056cea3236a59c6965af"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8929-wide_tac_trailing_tail",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8924/wide_tac_trailing_tail.hwp",
+        "sha256": "39e51188c0aa1668196188bb99ef4d87d2dfef44d2c74b25a4b647769fda7dbd"
+      },
+      "pdf": {
+        "path": "pdf/issue8924/wide_tac_trailing_tail-2020.pdf",
+        "sha256": "4119269d413dfcc7f3fa6500149fc19875fad8cdb0e6a185e459033fd37b1916"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8740-156667654_saemangeum_press_release",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8737/156667654_saemangeum_press_release.hwpx",
+        "sha256": "57d115d6681d3f527942a58612050a3eecbde793ef07edf577a30e1ffc743a26"
+      },
+      "pdf": {
+        "path": "pdf/issue8737/156667654_saemangeum_press_release-2024.pdf",
+        "sha256": "8df0668656443e3ddef086a5044e31e23ccf5ab1fd48a65b45fc7d1ab2c214e4"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8775-field_led_wide_table",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8773/field_led_wide_table.hwpx",
+        "sha256": "3f77945502ecf43100ade325d49a21e069b449fcc83c9c2888e79395e405a6ff"
+      },
+      "pdf": {
+        "path": "pdf/issue8773/field_led_wide_table-2020.pdf",
+        "sha256": "289b4846ebb2d9bed5316b58b34a68142ba9a5bc262f954c6391bcad3b226c7f"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8775-field_led_wide_table_nofield",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8773/field_led_wide_table_nofield.hwpx",
+        "sha256": "f083bc8490e24845d8802622703bf51d36ea1b114b63ba95451c9f5804f3c2a2"
+      },
+      "pdf": {
+        "path": "pdf/issue8773/field_led_wide_table_nofield-2020.pdf",
+        "sha256": "1651e5019c00f7f5721f3451495a61c81236aeff4066810e83f6a29ae744d279"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8785-stored_field_line_table",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8782/stored_field_line_table.hwpx",
+        "sha256": "16454b9308211eeb4536dcda565933672ec14ecf67518c21c567226f0e4c5e01"
+      },
+      "pdf": {
+        "path": "pdf/issue8782/stored_field_line_table-2020.pdf",
+        "sha256": "3761e24b8471dc6b20d08d83177f57de54c909a20a0ee19b5a2e2760395e7183"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8833-36341965-float-band-gap-reduced",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8808/36341965-float-band-gap-reduced.hwpx",
+        "sha256": "18ea6268e9022072aa79f16eb6f94afc4fbd6f65ba73103feaa51dca9df96e1e"
+      },
+      "pdf": {
+        "path": "pdf/issue8808/36341965-float-band-gap-reduced-2020.pdf",
+        "sha256": "681ba666bfd3c0a8714f0ab7a7eb7f84fe741cc0f3f07ea6e3615726109d4370"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8835-36400259-stale-cell-ladder",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8810/36400259-stale-cell-ladder.hwpx",
+        "sha256": "b66803ca78781cdb6029c98cd5cd0fb25868ed8cc6758698a5786d9b3d98465c"
+      },
+      "pdf": {
+        "path": "pdf/issue8810/36400259-stale-cell-ladder-2020.pdf",
+        "sha256": "ce089cef6811ebea5e01949a8e79050ef3b2d48ce0d3145218af83299b98856a"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8846-synthetic_forward_tac_axis",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8843/synthetic_forward_tac_axis.hwpx",
+        "sha256": "311a6dcb9a9fb65f4c7fd0abad0b05aee27c4855afdc48a25864bea8b4a65e7f"
+      },
+      "pdf": {
+        "path": "pdf/issue8843/synthetic_forward_tac_axis-2020.pdf",
+        "sha256": "af8ed5627a8cc6281fba5ff438d97ae94bbaa47ef0672d639546eb14cdf0a300"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8848-36355707-unstored-rebase-tac",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8845/36355707-unstored-rebase-tac.hwpx",
+        "sha256": "311a6dcb9a9fb65f4c7fd0abad0b05aee27c4855afdc48a25864bea8b4a65e7f"
+      },
+      "pdf": {
+        "path": "pdf/issue8845/36355707-unstored-rebase-tac-2020.pdf",
+        "sha256": "af8ed5627a8cc6281fba5ff438d97ae94bbaa47ef0672d639546eb14cdf0a300"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8861-36388005-host-below-header-table",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8855/36388005-host-below-header-table.hwpx",
+        "sha256": "225eba45838a970079d6f8b89909699fc878b1cbb46f6fd5e59f472758c9f265"
+      },
+      "pdf": {
+        "path": "pdf/issue8855/36388005-host-below-header-table-2020.pdf",
+        "sha256": "dd5abd9f18b2af7470488aba9d56a55239957597cd2cf9f140c416bb11e8c7ab"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8876-36338125-bottom-fixed-table-margin",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8864/36338125-bottom-fixed-table-margin.hwpx",
+        "sha256": "f9c80c5ba2b425fe0aa81936e04a2cf364e7701874ad9a7fa446279550527cb1"
+      },
+      "pdf": {
+        "path": "pdf/issue8864/36338125-bottom-fixed-table-margin-2020.pdf",
+        "sha256": "13c21f5b94305cce580cf2614a7798d4c0bf10f0134c5be8aa48b5a823921152"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8881-36441289-tac-host-below-float",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8878/36441289-tac-host-below-float.hwpx",
+        "sha256": "58c946b17020c07c0a06e7f95dee68aa3ec246363e4073df844be5674afaed80"
+      },
+      "pdf": {
+        "path": "pdf/issue8878/36441289-tac-host-below-float-2020.pdf",
+        "sha256": "353324fc860149861c84e8e1b449941b4036ba1b2b5e94899498c81b9c35995a"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8930-6540000-202500049-post-table-line-stored-page-reset",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8926/6540000-202500049-post-table-line-stored-page-reset.hwp",
+        "sha256": "78719aa7c6a8743f9b08f1ab0a45fd1c134a6e87068075dd7e6448b199220b84"
+      },
+      "pdf": {
+        "path": "pdf/issue8926/6540000-202500049-post-table-line-stored-page-reset-2020.pdf",
+        "sha256": "d0917ecf26c5253658cb02d61429916b903223f795fa5f16f2e77ac8ac8a9982"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8744-nested_row_cell_cuts",
+      "document_page_counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8715/nested_row_cell_cuts.hwp",
+        "sha256": "9c8aca53eb0ebfc92fc3d4bd8f5c2d404f34549063d5ef33fc9c017fcd12c504"
+      },
+      "pdf": {
+        "path": "pdf/issue8715_nested_row_cell_cuts-2020.pdf",
+        "sha256": "b038ee8ac17403eb22e3984733b7783576fdc4dc414548a2560397c6182b1ad4"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8785-stored_field_line_page_split",
+      "document_page_counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8782/stored_field_line_page_split.hwpx",
+        "sha256": "c7438df8e96c46172dc7885362b241614b72c5d104244136ee572ec2e2702d19"
+      },
+      "pdf": {
+        "path": "pdf/issue8782/stored_field_line_page_split-2020.pdf",
+        "sha256": "725af86abb61b9d80796a83d8859794636bec450c288020173c5d6b8c2d9b0a3"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8788-reflowed_gap_stored_rewind",
+      "document_page_counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8786/reflowed_gap_stored_rewind.hwpx",
+        "sha256": "99e29bf8ff37f0972bbc2d1d054b3359ad486a055ea91e29ce1d1698eb311010"
+      },
+      "pdf": {
+        "path": "pdf/issue8786/reflowed_gap_stored_rewind-2020.pdf",
+        "sha256": "eecbd61700b3a4cbc00ab85a8c1f00b74fd32d35297dd327d7318e5752e8fb7e"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8794-36495398-split-row-segments-reduced",
+      "document_page_counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8778/36495398-split-row-segments-reduced.hwpx",
+        "sha256": "ed64160c378693c843bdcfe782e71cbdb0b4be26bf4c8a3a9fcd3cafe4733af0"
+      },
+      "pdf": {
+        "path": "pdf/issue8778/36495398-split-row-segments-reduced-2020.pdf",
+        "sha256": "c8ea97be21d350def41787c22dd3acbf2a5054cd6be02ca78c0f9973ce3458cf"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8921-1471000-group-bullet-column-top",
+      "document_page_counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8917/1471000-group-bullet-column-top.hwpx",
+        "sha256": "3fb265a8464f467b497edef5cdc70eb09af93d926ad2eece3efbfbb68df49d59"
+      },
+      "pdf": {
+        "path": "pdf/issue8917/1471000-group-bullet-column-top-2020.pdf",
+        "sha256": "33aa76823643a57852838d48019038ac4dcc44fd82ade2d6b2832abab064e544"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8928-36415413-page-break-tac-full-gap",
+      "document_page_counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8925/36415413-page-break-tac-full-gap.hwpx",
+        "sha256": "36041759aae66273c3e25b68a5d03626ccbd38f340bcc5e7b35fd54e715fc506"
+      },
+      "pdf": {
+        "path": "pdf/issue8925/36415413-page-break-tac-full-gap-2020.pdf",
+        "sha256": "f155ead01f28ad36e0a62edad5a555767fda7d995927b086a68ad29670251024"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8729-hft-hanyang_junggothic-probe",
+      "document_page_counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8697/hft-hanyang_junggothic-probe.hwpx",
+        "sha256": "e05e1580ed8310d82c2bc0a48d4666111788e849fabf247f2de2d73c083508d2"
+      },
+      "pdf": {
+        "path": "pdf/issue8697/hft-hanyang_junggothic-probe-2020.pdf",
+        "sha256": "5682714db337de62ef0b0d2a4b67ea7a896e2b48ac65868e68290e9a0b0faa7b"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8729-hft-sinmyeong_junggothic-probe",
+      "document_page_counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8697/hft-sinmyeong_junggothic-probe.hwpx",
+        "sha256": "2efe204f233ceeb19416f5af6abb3fe629bfaf6805038d13352fd6f34c7f3f13"
+      },
+      "pdf": {
+        "path": "pdf/issue8697/hft-sinmyeong_junggothic-probe-2020.pdf",
+        "sha256": "221c16c03b6ca3e91ee6e68e4d224dc6c19188d55ef72df3cebbb7789dd82d85"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8794-156739836-float-prefix-row-reduced",
+      "document_page_counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8778/156739836-float-prefix-row-reduced.hwpx",
+        "sha256": "180f2440b20d5199447b8f716557e07b08aa35f36eb1976cd231a76791b8ee24"
+      },
+      "pdf": {
+        "path": "pdf/issue8778/156739836-float-prefix-row-reduced-2020.pdf",
+        "sha256": "e08b2e5ff16f1de38970f97315f3a1dfe14340d9b59d53a1c8278c75d3fcaee1"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8909-36404364-reflowed-cell-tac-row-floor",
+      "document_page_counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8882/36404364-reflowed-cell-tac-row-floor.hwpx",
+        "sha256": "a102fccb7747c947c7aa0b3df17f6cfe680e9fa566797bafd6b14b4be7a9f218"
+      },
+      "pdf": {
+        "path": "pdf/issue8882/36404364-reflowed-cell-tac-row-floor-2020.pdf",
+        "sha256": "d64c57ff2b4aa19c4797c4d8fb90916534dceb6300e4615150d99bbcb82d7775"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8921-44907-group-bullet-column-top",
+      "document_page_counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8917/44907-group-bullet-column-top.hwp",
+        "sha256": "f6a2331b08e005934d9b8c9d6ce39163b943128446abba35759d628ce57fd8f1"
+      },
+      "pdf": {
+        "path": "pdf/issue8917/44907-group-bullet-column-top-2020.pdf",
+        "sha256": "e92a5a1a5ab231fb6411173dbd09abc58da41e4a8ded517892670200a42b5fb2"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8746-36453591_approval_body",
+      "document_page_counts": {
+        "rhwp": 5,
+        "pdf": 5
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8742/36453591_approval_body.hwpx",
+        "sha256": "f5c89640dd8e9ba32fa4dd5a987ffb78b6d6304831c1a7e93f93d62b140e69af"
+      },
+      "pdf": {
+        "path": "pdf/issue8742/36453591_approval_body-2022.pdf",
+        "sha256": "608d8d29b8daa703d75719acce480569922b8ff88dd046bc1c62e7836d13805f"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8746-36483048_approval_body",
+      "document_page_counts": {
+        "rhwp": 6,
+        "pdf": 6
+      },
+      "verified_rows": 3,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8742/36483048_approval_body.hwpx",
+        "sha256": "221a86e963332d46573de08390bdd70b4c6473904b0671d5c04fc2e3d257e5ca"
+      },
+      "pdf": {
+        "path": "pdf/issue8742/36483048_approval_body-2022.pdf",
+        "sha256": "228d611db65b0215b3768fb4073c18d421571b3e2bc744199dc92eb053b9692b"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8903-36340478-unstored-tac-column-top-spacing",
+      "document_page_counts": {
+        "rhwp": 7,
+        "pdf": 7
+      },
+      "verified_rows": 3,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8894/36340478-unstored-tac-column-top-spacing.hwpx",
+        "sha256": "62d1b9c736c05c94dd81ed4b930f9a6dcbc2d3b4d53e40867c7ed5e729301a5b"
+      },
+      "pdf": {
+        "path": "pdf/issue8894/36340478-unstored-tac-column-top-spacing-2020.pdf",
+        "sha256": "5270504c40f859d4d9b3f549d65246d3c1dffd5649c56aeab829d2100d21dd93"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8751-rowbreak-problem-pages",
+      "document_page_counts": {
+        "rhwp": 18,
+        "pdf": 18
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/rowbreak-problem-pages.hwpx",
+        "sha256": "4ccc321e7eb146f28b768654502a128ba1ae408238fd1ed37d51e963732eb5b0"
+      },
+      "pdf": {
+        "path": "pdf/rowbreak-problem-pages-2024.pdf",
+        "sha256": "9bfe742e084152eb5e204ba66873bffb0af742adc9d4ca89012dc3ce8434b7a2"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8772-46551_road_traffic_rule_amendment",
+      "document_page_counts": {
+        "rhwp": 30,
+        "pdf": 30
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8755/46551_road_traffic_rule_amendment.hwp",
+        "sha256": "6ebb1831ce7e183611bdd0a9b1e2778b73e6f475391b16c967f968cd29376912"
+      },
+      "pdf": {
+        "path": "pdf/issue8755/46551_road_traffic_rule_amendment-2020.pdf",
+        "sha256": "25c74260354310cb993089888c057ff848090560fa58e75041f5d5228eb69d8d"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8751-75544_pii_bunseok",
+      "document_page_counts": {
+        "rhwp": 66,
+        "pdf": 66
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/task2097/75544_pii_bunseok.hwpx",
+        "sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1"
+      },
+      "pdf": {
+        "path": "pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf",
+        "sha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8717-employment_service_interim_report",
+      "document_page_counts": {
+        "rhwp": 90,
+        "pdf": 90
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8692/employment_service_interim_report.hwp",
+        "sha256": "f2af4c2b4e7721cec84488833eaf68b48ee4c852fc2990411188b33bf223606a"
+      },
+      "pdf": {
+        "path": "pdf/issue8692/employment_service_interim_report-2020.pdf",
+        "sha256": "f11dbf1389dd43f37911c730d1bf63ee7de0d5821e95fa1d206165819732fc11"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "document_page_counts": {
+        "rhwp": 101,
+        "pdf": 101
+      },
+      "verified_rows": 9,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8795/1351000-201500141_arrhythmia_research_plan.hwp",
+        "sha256": "3f76136a2300da44efc04692f50c63ab2bf311a2e04abe2d55839e0c94b3f145"
+      },
+      "pdf": {
+        "path": "pdf/issue8795/1351000-201500141_arrhythmia_research_plan-2020.pdf",
+        "sha256": "f3055ffc1c57202bac4ab4e04ea823d07699d9f76db12eb878eccbf9021c984f"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8689-1411000-201000007_final_report",
+      "document_page_counts": {
+        "rhwp": 111,
+        "pdf": 111
+      },
+      "verified_rows": 4,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8677/1411000-201000007_final_report.hwp",
+        "sha256": "b4f0c87e841834c4b73e2b0377b8ec38e1d598a360300906ce6052c780e323a0"
+      },
+      "pdf": {
+        "path": "pdf/issue8677/1411000-201000007_final_report-2020.pdf",
+        "sha256": "3e39ad38cba5c0e2fb8381388d7186937c0928c143875f117d3492222787062e"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8736-1741000-202200045_second_interim_report",
+      "document_page_counts": {
+        "rhwp": 138,
+        "pdf": 138
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8732/1741000-202200045_second_interim_report.hwp",
+        "sha256": "a8342140eafc10194f9beef693f5da8658f3fc1d170111799aae4b23d8351cae"
+      },
+      "pdf": {
+        "path": "pdf/issue8732/1741000-202200045_second_interim_report-2020.pdf",
+        "sha256": "fa63664ede361a7d588151d009ff1fffff768f04a967e024c9f95e1310b9072b"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8710-1311000-201100125_saemaul_oda_pilot_report",
+      "document_page_counts": {
+        "rhwp": 209,
+        "pdf": 209
+      },
+      "verified_rows": 3,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8685/1311000-201100125_saemaul_oda_pilot_report.hwp",
+        "sha256": "87511e1ee2da992acf2bf409456a6318e5179acdae02f2f8e43f0119e34fcb2f"
+      },
+      "pdf": {
+        "path": "pdf/issue8685/1311000-201100125_saemaul_oda_pilot_report-2020.pdf",
+        "sha256": "ac5603e1548de3cd1178ae11b4de9bba8c1cfa1328d145eb1743fe7bfcf03d20"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "document_page_counts": {
+        "rhwp": 235,
+        "pdf": 235
+      },
+      "verified_rows": 8,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8842/1351000-201800239_hpv_cohort_final_report.hwp",
+        "sha256": "49adaad5b74a6019b15ea18876c72f915924666bee993a5c1cbd213414f33f8f"
+      },
+      "pdf": {
+        "path": "pdf/issue8842/1351000-201800239_hpv_cohort_final_report-2020.pdf",
+        "sha256": "b104b18e02e562e1396c8bceaba9b6786957e4b8535d76f2b307cbe05fb81167"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8901-1480000-201900510_facility_pollution_study",
+      "document_page_counts": {
+        "rhwp": 241,
+        "pdf": 241
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8891/1480000-201900510_facility_pollution_study.hwp",
+        "sha256": "f7abda24a89981aea3c84db305fca7938f36ff6b1476e65dedd4328f9410a1b4"
+      },
+      "pdf": {
+        "path": "pdf/issue8891/1480000-201900510_facility_pollution_study-2020.pdf",
+        "sha256": "dd3c1f8fd8dabbd87bc59fd622d561696a37c590bbcf48ee7f9a4c2a69c1d0f7"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "native",
+      "key": "pr8792-6500000-201700118_jeju_tourism_education_plan",
+      "document_page_counts": {
+        "rhwp": 313,
+        "pdf": 313
+      },
+      "verified_rows": 3,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8759/6500000-201700118_jeju_tourism_education_plan.hwp",
+        "sha256": "fa87e135c3d609324457adb37230e220be9406ba99a94d26a813ba7132244ac9"
+      },
+      "pdf": {
+        "path": "pdf/issue8759/6500000-201700118_jeju_tourism_education_plan-2020.pdf",
+        "sha256": "56f1bf8b3d92065e2e51ae27f1abbf4a97ccbd83474f29f3c00b4e2bca26659e"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8708-cell_float_offset_space",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8686/cell_float_offset_space.hwp",
+        "sha256": "8575be129f222bc9177b14bad5b78f6fd9357df99aa2e5a50a832c22f5de8cb4"
+      },
+      "pdf": {
+        "path": "pdf/issue8686_cell_float_offset_space-2020.pdf",
+        "sha256": "bc1ec50fc13b79d301506dfeac32fbb0ff8c39b4b738387b6b1b341db8607add"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8717-scholarship_recommendation_form",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8692/scholarship_recommendation_form.hwp",
+        "sha256": "043c355c598d07ac3761c551e8c988e61873792a83cc69d83e76549818ff2b56"
+      },
+      "pdf": {
+        "path": "pdf/issue8692/scholarship_recommendation_form-2020.pdf",
+        "sha256": "71ff83b518d311ce9574dfe013954278a308bd2fe11b351221ece6ba134f335a"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8717-tax_source_ledger_form",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8692/tax_source_ledger_form.hwp",
+        "sha256": "cd77e555af065b532c4407d55302d91a98b2f8c5bad377580a8645fd785f2455"
+      },
+      "pdf": {
+        "path": "pdf/issue8692/tax_source_ledger_form-2020.pdf",
+        "sha256": "07ace1ed7a647dc5125d14bf658efd67ec7adc6826448f695cde69ee08fea10e"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8719-cell_float_inner_anchor",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8686/cell_float_inner_anchor.hwp",
+        "sha256": "05b1d5f1ff65aa423e7ae2800bb1c56114e765e2fdd89cc9583fcb9ebbb0bfe9"
+      },
+      "pdf": {
+        "path": "pdf/issue8686_cell_float_inner_anchor-2020.pdf",
+        "sha256": "e333c02b54fb74240b55cb0bec0d353081a8e8a38bdb4427a13d14ddaef8df2e"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8746-36345427_approval_body",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8742/36345427_approval_body.hwpx",
+        "sha256": "e21577b887e19acd88cd582b45083d0ec6d1efa92a14b17de525f7c8a7da4964"
+      },
+      "pdf": {
+        "path": "pdf/issue8742/36345427_approval_body-2022.pdf",
+        "sha256": "4f2bf6e85f5c2f55278fac2c578ed2eb258b9d677333600502b26f5e54f3e3ab"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8758-whitespace_host_approval_table",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8735/whitespace_host_approval_table.hwpx",
+        "sha256": "58829782ebef6b7fe003db634cff90c3c2de6b2f369597d264965f21568db7a4"
+      },
+      "pdf": {
+        "path": "pdf/issue8735/whitespace_host_approval_table-2020.pdf",
+        "sha256": "e8df724587bc39bd8a5fcc1bb39017ed44b3fc4f1be3056cea3236a59c6965af"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8929-wide_tac_trailing_tail",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8924/wide_tac_trailing_tail.hwp",
+        "sha256": "39e51188c0aa1668196188bb99ef4d87d2dfef44d2c74b25a4b647769fda7dbd"
+      },
+      "pdf": {
+        "path": "pdf/issue8924/wide_tac_trailing_tail-2020.pdf",
+        "sha256": "4119269d413dfcc7f3fa6500149fc19875fad8cdb0e6a185e459033fd37b1916"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8740-156667654_saemangeum_press_release",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8737/156667654_saemangeum_press_release.hwpx",
+        "sha256": "57d115d6681d3f527942a58612050a3eecbde793ef07edf577a30e1ffc743a26"
+      },
+      "pdf": {
+        "path": "pdf/issue8737/156667654_saemangeum_press_release-2024.pdf",
+        "sha256": "8df0668656443e3ddef086a5044e31e23ccf5ab1fd48a65b45fc7d1ab2c214e4"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8775-field_led_wide_table",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8773/field_led_wide_table.hwpx",
+        "sha256": "3f77945502ecf43100ade325d49a21e069b449fcc83c9c2888e79395e405a6ff"
+      },
+      "pdf": {
+        "path": "pdf/issue8773/field_led_wide_table-2020.pdf",
+        "sha256": "289b4846ebb2d9bed5316b58b34a68142ba9a5bc262f954c6391bcad3b226c7f"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8775-field_led_wide_table_nofield",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8773/field_led_wide_table_nofield.hwpx",
+        "sha256": "f083bc8490e24845d8802622703bf51d36ea1b114b63ba95451c9f5804f3c2a2"
+      },
+      "pdf": {
+        "path": "pdf/issue8773/field_led_wide_table_nofield-2020.pdf",
+        "sha256": "1651e5019c00f7f5721f3451495a61c81236aeff4066810e83f6a29ae744d279"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8785-stored_field_line_table",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8782/stored_field_line_table.hwpx",
+        "sha256": "16454b9308211eeb4536dcda565933672ec14ecf67518c21c567226f0e4c5e01"
+      },
+      "pdf": {
+        "path": "pdf/issue8782/stored_field_line_table-2020.pdf",
+        "sha256": "3761e24b8471dc6b20d08d83177f57de54c909a20a0ee19b5a2e2760395e7183"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8833-36341965-float-band-gap-reduced",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8808/36341965-float-band-gap-reduced.hwpx",
+        "sha256": "18ea6268e9022072aa79f16eb6f94afc4fbd6f65ba73103feaa51dca9df96e1e"
+      },
+      "pdf": {
+        "path": "pdf/issue8808/36341965-float-band-gap-reduced-2020.pdf",
+        "sha256": "681ba666bfd3c0a8714f0ab7a7eb7f84fe741cc0f3f07ea6e3615726109d4370"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8835-36400259-stale-cell-ladder",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8810/36400259-stale-cell-ladder.hwpx",
+        "sha256": "b66803ca78781cdb6029c98cd5cd0fb25868ed8cc6758698a5786d9b3d98465c"
+      },
+      "pdf": {
+        "path": "pdf/issue8810/36400259-stale-cell-ladder-2020.pdf",
+        "sha256": "ce089cef6811ebea5e01949a8e79050ef3b2d48ce0d3145218af83299b98856a"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8846-synthetic_forward_tac_axis",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8843/synthetic_forward_tac_axis.hwpx",
+        "sha256": "311a6dcb9a9fb65f4c7fd0abad0b05aee27c4855afdc48a25864bea8b4a65e7f"
+      },
+      "pdf": {
+        "path": "pdf/issue8843/synthetic_forward_tac_axis-2020.pdf",
+        "sha256": "af8ed5627a8cc6281fba5ff438d97ae94bbaa47ef0672d639546eb14cdf0a300"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8848-36355707-unstored-rebase-tac",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8845/36355707-unstored-rebase-tac.hwpx",
+        "sha256": "311a6dcb9a9fb65f4c7fd0abad0b05aee27c4855afdc48a25864bea8b4a65e7f"
+      },
+      "pdf": {
+        "path": "pdf/issue8845/36355707-unstored-rebase-tac-2020.pdf",
+        "sha256": "af8ed5627a8cc6281fba5ff438d97ae94bbaa47ef0672d639546eb14cdf0a300"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8861-36388005-host-below-header-table",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8855/36388005-host-below-header-table.hwpx",
+        "sha256": "225eba45838a970079d6f8b89909699fc878b1cbb46f6fd5e59f472758c9f265"
+      },
+      "pdf": {
+        "path": "pdf/issue8855/36388005-host-below-header-table-2020.pdf",
+        "sha256": "dd5abd9f18b2af7470488aba9d56a55239957597cd2cf9f140c416bb11e8c7ab"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8876-36338125-bottom-fixed-table-margin",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8864/36338125-bottom-fixed-table-margin.hwpx",
+        "sha256": "f9c80c5ba2b425fe0aa81936e04a2cf364e7701874ad9a7fa446279550527cb1"
+      },
+      "pdf": {
+        "path": "pdf/issue8864/36338125-bottom-fixed-table-margin-2020.pdf",
+        "sha256": "13c21f5b94305cce580cf2614a7798d4c0bf10f0134c5be8aa48b5a823921152"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8881-36441289-tac-host-below-float",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8878/36441289-tac-host-below-float.hwpx",
+        "sha256": "58c946b17020c07c0a06e7f95dee68aa3ec246363e4073df844be5674afaed80"
+      },
+      "pdf": {
+        "path": "pdf/issue8878/36441289-tac-host-below-float-2020.pdf",
+        "sha256": "353324fc860149861c84e8e1b449941b4036ba1b2b5e94899498c81b9c35995a"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8930-6540000-202500049-post-table-line-stored-page-reset",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8926/6540000-202500049-post-table-line-stored-page-reset.hwp",
+        "sha256": "78719aa7c6a8743f9b08f1ab0a45fd1c134a6e87068075dd7e6448b199220b84"
+      },
+      "pdf": {
+        "path": "pdf/issue8926/6540000-202500049-post-table-line-stored-page-reset-2020.pdf",
+        "sha256": "d0917ecf26c5253658cb02d61429916b903223f795fa5f16f2e77ac8ac8a9982"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8744-nested_row_cell_cuts",
+      "document_page_counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8715/nested_row_cell_cuts.hwp",
+        "sha256": "9c8aca53eb0ebfc92fc3d4bd8f5c2d404f34549063d5ef33fc9c017fcd12c504"
+      },
+      "pdf": {
+        "path": "pdf/issue8715_nested_row_cell_cuts-2020.pdf",
+        "sha256": "b038ee8ac17403eb22e3984733b7783576fdc4dc414548a2560397c6182b1ad4"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8785-stored_field_line_page_split",
+      "document_page_counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8782/stored_field_line_page_split.hwpx",
+        "sha256": "c7438df8e96c46172dc7885362b241614b72c5d104244136ee572ec2e2702d19"
+      },
+      "pdf": {
+        "path": "pdf/issue8782/stored_field_line_page_split-2020.pdf",
+        "sha256": "725af86abb61b9d80796a83d8859794636bec450c288020173c5d6b8c2d9b0a3"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8788-reflowed_gap_stored_rewind",
+      "document_page_counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8786/reflowed_gap_stored_rewind.hwpx",
+        "sha256": "99e29bf8ff37f0972bbc2d1d054b3359ad486a055ea91e29ce1d1698eb311010"
+      },
+      "pdf": {
+        "path": "pdf/issue8786/reflowed_gap_stored_rewind-2020.pdf",
+        "sha256": "eecbd61700b3a4cbc00ab85a8c1f00b74fd32d35297dd327d7318e5752e8fb7e"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8794-36495398-split-row-segments-reduced",
+      "document_page_counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8778/36495398-split-row-segments-reduced.hwpx",
+        "sha256": "ed64160c378693c843bdcfe782e71cbdb0b4be26bf4c8a3a9fcd3cafe4733af0"
+      },
+      "pdf": {
+        "path": "pdf/issue8778/36495398-split-row-segments-reduced-2020.pdf",
+        "sha256": "c8ea97be21d350def41787c22dd3acbf2a5054cd6be02ca78c0f9973ce3458cf"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8921-1471000-group-bullet-column-top",
+      "document_page_counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8917/1471000-group-bullet-column-top.hwpx",
+        "sha256": "3fb265a8464f467b497edef5cdc70eb09af93d926ad2eece3efbfbb68df49d59"
+      },
+      "pdf": {
+        "path": "pdf/issue8917/1471000-group-bullet-column-top-2020.pdf",
+        "sha256": "33aa76823643a57852838d48019038ac4dcc44fd82ade2d6b2832abab064e544"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8928-36415413-page-break-tac-full-gap",
+      "document_page_counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8925/36415413-page-break-tac-full-gap.hwpx",
+        "sha256": "36041759aae66273c3e25b68a5d03626ccbd38f340bcc5e7b35fd54e715fc506"
+      },
+      "pdf": {
+        "path": "pdf/issue8925/36415413-page-break-tac-full-gap-2020.pdf",
+        "sha256": "f155ead01f28ad36e0a62edad5a555767fda7d995927b086a68ad29670251024"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8729-hft-hanyang_junggothic-probe",
+      "document_page_counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8697/hft-hanyang_junggothic-probe.hwpx",
+        "sha256": "e05e1580ed8310d82c2bc0a48d4666111788e849fabf247f2de2d73c083508d2"
+      },
+      "pdf": {
+        "path": "pdf/issue8697/hft-hanyang_junggothic-probe-2020.pdf",
+        "sha256": "5682714db337de62ef0b0d2a4b67ea7a896e2b48ac65868e68290e9a0b0faa7b"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8729-hft-sinmyeong_junggothic-probe",
+      "document_page_counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8697/hft-sinmyeong_junggothic-probe.hwpx",
+        "sha256": "2efe204f233ceeb19416f5af6abb3fe629bfaf6805038d13352fd6f34c7f3f13"
+      },
+      "pdf": {
+        "path": "pdf/issue8697/hft-sinmyeong_junggothic-probe-2020.pdf",
+        "sha256": "221c16c03b6ca3e91ee6e68e4d224dc6c19188d55ef72df3cebbb7789dd82d85"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8794-156739836-float-prefix-row-reduced",
+      "document_page_counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8778/156739836-float-prefix-row-reduced.hwpx",
+        "sha256": "180f2440b20d5199447b8f716557e07b08aa35f36eb1976cd231a76791b8ee24"
+      },
+      "pdf": {
+        "path": "pdf/issue8778/156739836-float-prefix-row-reduced-2020.pdf",
+        "sha256": "e08b2e5ff16f1de38970f97315f3a1dfe14340d9b59d53a1c8278c75d3fcaee1"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8909-36404364-reflowed-cell-tac-row-floor",
+      "document_page_counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8882/36404364-reflowed-cell-tac-row-floor.hwpx",
+        "sha256": "a102fccb7747c947c7aa0b3df17f6cfe680e9fa566797bafd6b14b4be7a9f218"
+      },
+      "pdf": {
+        "path": "pdf/issue8882/36404364-reflowed-cell-tac-row-floor-2020.pdf",
+        "sha256": "d64c57ff2b4aa19c4797c4d8fb90916534dceb6300e4615150d99bbcb82d7775"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8921-44907-group-bullet-column-top",
+      "document_page_counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8917/44907-group-bullet-column-top.hwp",
+        "sha256": "f6a2331b08e005934d9b8c9d6ce39163b943128446abba35759d628ce57fd8f1"
+      },
+      "pdf": {
+        "path": "pdf/issue8917/44907-group-bullet-column-top-2020.pdf",
+        "sha256": "e92a5a1a5ab231fb6411173dbd09abc58da41e4a8ded517892670200a42b5fb2"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8746-36453591_approval_body",
+      "document_page_counts": {
+        "rhwp": 5,
+        "pdf": 5
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8742/36453591_approval_body.hwpx",
+        "sha256": "f5c89640dd8e9ba32fa4dd5a987ffb78b6d6304831c1a7e93f93d62b140e69af"
+      },
+      "pdf": {
+        "path": "pdf/issue8742/36453591_approval_body-2022.pdf",
+        "sha256": "608d8d29b8daa703d75719acce480569922b8ff88dd046bc1c62e7836d13805f"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8746-36483048_approval_body",
+      "document_page_counts": {
+        "rhwp": 6,
+        "pdf": 6
+      },
+      "verified_rows": 3,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8742/36483048_approval_body.hwpx",
+        "sha256": "221a86e963332d46573de08390bdd70b4c6473904b0671d5c04fc2e3d257e5ca"
+      },
+      "pdf": {
+        "path": "pdf/issue8742/36483048_approval_body-2022.pdf",
+        "sha256": "228d611db65b0215b3768fb4073c18d421571b3e2bc744199dc92eb053b9692b"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8903-36340478-unstored-tac-column-top-spacing",
+      "document_page_counts": {
+        "rhwp": 7,
+        "pdf": 7
+      },
+      "verified_rows": 3,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8894/36340478-unstored-tac-column-top-spacing.hwpx",
+        "sha256": "62d1b9c736c05c94dd81ed4b930f9a6dcbc2d3b4d53e40867c7ed5e729301a5b"
+      },
+      "pdf": {
+        "path": "pdf/issue8894/36340478-unstored-tac-column-top-spacing-2020.pdf",
+        "sha256": "5270504c40f859d4d9b3f549d65246d3c1dffd5649c56aeab829d2100d21dd93"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8751-rowbreak-problem-pages",
+      "document_page_counts": {
+        "rhwp": 18,
+        "pdf": 18
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/rowbreak-problem-pages.hwpx",
+        "sha256": "4ccc321e7eb146f28b768654502a128ba1ae408238fd1ed37d51e963732eb5b0"
+      },
+      "pdf": {
+        "path": "pdf/rowbreak-problem-pages-2024.pdf",
+        "sha256": "9bfe742e084152eb5e204ba66873bffb0af742adc9d4ca89012dc3ce8434b7a2"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8772-46551_road_traffic_rule_amendment",
+      "document_page_counts": {
+        "rhwp": 30,
+        "pdf": 30
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8755/46551_road_traffic_rule_amendment.hwp",
+        "sha256": "6ebb1831ce7e183611bdd0a9b1e2778b73e6f475391b16c967f968cd29376912"
+      },
+      "pdf": {
+        "path": "pdf/issue8755/46551_road_traffic_rule_amendment-2020.pdf",
+        "sha256": "25c74260354310cb993089888c057ff848090560fa58e75041f5d5228eb69d8d"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8751-75544_pii_bunseok",
+      "document_page_counts": {
+        "rhwp": 66,
+        "pdf": 66
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/task2097/75544_pii_bunseok.hwpx",
+        "sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1"
+      },
+      "pdf": {
+        "path": "pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf",
+        "sha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8717-employment_service_interim_report",
+      "document_page_counts": {
+        "rhwp": 90,
+        "pdf": 90
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8692/employment_service_interim_report.hwp",
+        "sha256": "f2af4c2b4e7721cec84488833eaf68b48ee4c852fc2990411188b33bf223606a"
+      },
+      "pdf": {
+        "path": "pdf/issue8692/employment_service_interim_report-2020.pdf",
+        "sha256": "f11dbf1389dd43f37911c730d1bf63ee7de0d5821e95fa1d206165819732fc11"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "document_page_counts": {
+        "rhwp": 101,
+        "pdf": 101
+      },
+      "verified_rows": 9,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8795/1351000-201500141_arrhythmia_research_plan.hwp",
+        "sha256": "3f76136a2300da44efc04692f50c63ab2bf311a2e04abe2d55839e0c94b3f145"
+      },
+      "pdf": {
+        "path": "pdf/issue8795/1351000-201500141_arrhythmia_research_plan-2020.pdf",
+        "sha256": "f3055ffc1c57202bac4ab4e04ea823d07699d9f76db12eb878eccbf9021c984f"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8689-1411000-201000007_final_report",
+      "document_page_counts": {
+        "rhwp": 111,
+        "pdf": 111
+      },
+      "verified_rows": 4,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8677/1411000-201000007_final_report.hwp",
+        "sha256": "b4f0c87e841834c4b73e2b0377b8ec38e1d598a360300906ce6052c780e323a0"
+      },
+      "pdf": {
+        "path": "pdf/issue8677/1411000-201000007_final_report-2020.pdf",
+        "sha256": "3e39ad38cba5c0e2fb8381388d7186937c0928c143875f117d3492222787062e"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8736-1741000-202200045_second_interim_report",
+      "document_page_counts": {
+        "rhwp": 138,
+        "pdf": 138
+      },
+      "verified_rows": 2,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8732/1741000-202200045_second_interim_report.hwp",
+        "sha256": "a8342140eafc10194f9beef693f5da8658f3fc1d170111799aae4b23d8351cae"
+      },
+      "pdf": {
+        "path": "pdf/issue8732/1741000-202200045_second_interim_report-2020.pdf",
+        "sha256": "fa63664ede361a7d588151d009ff1fffff768f04a967e024c9f95e1310b9072b"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8710-1311000-201100125_saemaul_oda_pilot_report",
+      "document_page_counts": {
+        "rhwp": 209,
+        "pdf": 209
+      },
+      "verified_rows": 3,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8685/1311000-201100125_saemaul_oda_pilot_report.hwp",
+        "sha256": "87511e1ee2da992acf2bf409456a6318e5179acdae02f2f8e43f0119e34fcb2f"
+      },
+      "pdf": {
+        "path": "pdf/issue8685/1311000-201100125_saemaul_oda_pilot_report-2020.pdf",
+        "sha256": "ac5603e1548de3cd1178ae11b4de9bba8c1cfa1328d145eb1743fe7bfcf03d20"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "document_page_counts": {
+        "rhwp": 235,
+        "pdf": 235
+      },
+      "verified_rows": 8,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8842/1351000-201800239_hpv_cohort_final_report.hwp",
+        "sha256": "49adaad5b74a6019b15ea18876c72f915924666bee993a5c1cbd213414f33f8f"
+      },
+      "pdf": {
+        "path": "pdf/issue8842/1351000-201800239_hpv_cohort_final_report-2020.pdf",
+        "sha256": "b104b18e02e562e1396c8bceaba9b6786957e4b8535d76f2b307cbe05fb81167"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8901-1480000-201900510_facility_pollution_study",
+      "document_page_counts": {
+        "rhwp": 241,
+        "pdf": 241
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8891/1480000-201900510_facility_pollution_study.hwp",
+        "sha256": "f7abda24a89981aea3c84db305fca7938f36ff6b1476e65dedd4328f9410a1b4"
+      },
+      "pdf": {
+        "path": "pdf/issue8891/1480000-201900510_facility_pollution_study-2020.pdf",
+        "sha256": "dd3c1f8fd8dabbd87bc59fd622d561696a37c590bbcf48ee7f9a4c2a69c1d0f7"
+      }
+    },
+    {
+      "scope": "claims",
+      "backend": "wasm",
+      "key": "pr8792-6500000-201700118_jeju_tourism_education_plan",
+      "document_page_counts": {
+        "rhwp": 313,
+        "pdf": 313
+      },
+      "verified_rows": 3,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue8759/6500000-201700118_jeju_tourism_education_plan.hwp",
+        "sha256": "fa87e135c3d609324457adb37230e220be9406ba99a94d26a813ba7132244ac9"
+      },
+      "pdf": {
+        "path": "pdf/issue8759/6500000-201700118_jeju_tourism_education_plan-2020.pdf",
+        "sha256": "56f1bf8b3d92065e2e51ae27f1abbf4a97ccbd83474f29f3c00b4e2bca26659e"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "native",
+      "key": "seo-body-list-typed",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp",
+        "sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687"
+      },
+      "pdf": {
+        "path": "pdf/issue8109/print/body-list-typed-hwp-2020.pdf",
+        "sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "native",
+      "key": "seo-helvetica-styles",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp",
+        "sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da"
+      },
+      "pdf": {
+        "path": "pdf/issue8109/print/control-styles-hwp-2020.pdf",
+        "sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "native",
+      "key": "seo-re-03-latin",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/re-03-latin-only-hancom.hwp",
+        "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f"
+      },
+      "pdf": {
+        "path": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+        "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "native",
+      "key": "angle-narrow",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+        "sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5"
+      },
+      "pdf": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+        "sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "native",
+      "key": "seo-pic-crop-01",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/pic-crop-01.hwp",
+        "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c"
+      },
+      "pdf": {
+        "path": "pdf/pic-crop-01-2022.pdf",
+        "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "native",
+      "key": "seo-shape-group-02",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/shape-group-02.hwp",
+        "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f"
+      },
+      "pdf": {
+        "path": "pdf/shape-group-02-hwp-2020.pdf",
+        "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "native",
+      "key": "yeongwol",
+      "document_page_counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "verified_rows": 4,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue5699/20099369_yeongwol_forms.hwp",
+        "sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09"
+      },
+      "pdf": {
+        "path": "pdf/issue7642-failed-inputs-followup-20261011/20099369_yeongwol_forms-2020.pdf",
+        "sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "native",
+      "key": "issue8040-insert",
+      "document_page_counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "verified_rows": 4,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/pr8040/exam-social-insert.hwp",
+        "sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82"
+      },
+      "pdf": {
+        "path": "pdf/pr8040/exam-social-insert-2020.pdf",
+        "sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "native",
+      "key": "issue8040-insert-delete",
+      "document_page_counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "verified_rows": 4,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/pr8040/exam-social-insert-delete.hwp",
+        "sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee"
+      },
+      "pdf": {
+        "path": "pdf/pr8040/exam-social-insert-delete-2020.pdf",
+        "sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "native",
+      "key": "issue7905",
+      "document_page_counts": {
+        "rhwp": 6,
+        "pdf": 6
+      },
+      "verified_rows": 6,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx",
+        "sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1"
+      },
+      "pdf": {
+        "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law_hancom2018_print.pdf",
+        "sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "native",
+      "key": "outline",
+      "document_page_counts": {
+        "rhwp": 9,
+        "pdf": 9
+      },
+      "verified_rows": 9,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/task3307/issue3307_outline_number.hwpx",
+        "sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d"
+      },
+      "pdf": {
+        "path": "pdf/task3307/issue3307_outline_number-2020.pdf",
+        "sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "native",
+      "key": "nested",
+      "document_page_counts": {
+        "rhwp": 17,
+        "pdf": 17
+      },
+      "verified_rows": 17,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+        "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626"
+      },
+      "pdf": {
+        "path": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+        "sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "native",
+      "key": "sample16-hwpx",
+      "document_page_counts": {
+        "rhwp": 64,
+        "pdf": 64
+      },
+      "verified_rows": 64,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5.hwpx",
+        "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c"
+      },
+      "pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+        "sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "native",
+      "key": "sample16-hwp2022",
+      "document_page_counts": {
+        "rhwp": 64,
+        "pdf": 64
+      },
+      "verified_rows": 64,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5-2022.hwp",
+        "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe"
+      },
+      "pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+        "sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "native",
+      "key": "sample16-hwp2024",
+      "document_page_counts": {
+        "rhwp": 64,
+        "pdf": 64
+      },
+      "verified_rows": 64,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5-2024.hwp",
+        "sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d"
+      },
+      "pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
+        "sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "native",
+      "key": "handbook-hwp",
+      "document_page_counts": {
+        "rhwp": 383,
+        "pdf": 383
+      },
+      "verified_rows": 383,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/2025 행정업무운영 편람(최종).hwp",
+        "sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f"
+      },
+      "pdf": {
+        "path": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+        "sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "native",
+      "key": "handbook-hwpx",
+      "document_page_counts": {
+        "rhwp": 383,
+        "pdf": 383
+      },
+      "verified_rows": 383,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+        "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6"
+      },
+      "pdf": {
+        "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+        "sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "native",
+      "key": "sample10",
+      "document_page_counts": {
+        "rhwp": 763,
+        "pdf": 763
+      },
+      "verified_rows": 763,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/hwp3-sample10.hwp",
+        "sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48"
+      },
+      "pdf": {
+        "path": "pdf/issue8371/hwp3-sample10-2020.pdf",
+        "sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "wasm",
+      "key": "seo-body-list-typed",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp",
+        "sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687"
+      },
+      "pdf": {
+        "path": "pdf/issue8109/print/body-list-typed-hwp-2020.pdf",
+        "sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "wasm",
+      "key": "seo-helvetica-styles",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp",
+        "sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da"
+      },
+      "pdf": {
+        "path": "pdf/issue8109/print/control-styles-hwp-2020.pdf",
+        "sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "wasm",
+      "key": "seo-re-03-latin",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/re-03-latin-only-hancom.hwp",
+        "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f"
+      },
+      "pdf": {
+        "path": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+        "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "wasm",
+      "key": "angle-narrow",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+        "sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5"
+      },
+      "pdf": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+        "sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "wasm",
+      "key": "seo-pic-crop-01",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/pic-crop-01.hwp",
+        "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c"
+      },
+      "pdf": {
+        "path": "pdf/pic-crop-01-2022.pdf",
+        "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "wasm",
+      "key": "seo-shape-group-02",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "verified_rows": 1,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/shape-group-02.hwp",
+        "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f"
+      },
+      "pdf": {
+        "path": "pdf/shape-group-02-hwp-2020.pdf",
+        "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "wasm",
+      "key": "yeongwol",
+      "document_page_counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "verified_rows": 4,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/issue5699/20099369_yeongwol_forms.hwp",
+        "sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09"
+      },
+      "pdf": {
+        "path": "pdf/issue7642-failed-inputs-followup-20261011/20099369_yeongwol_forms-2020.pdf",
+        "sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "wasm",
+      "key": "issue8040-insert",
+      "document_page_counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "verified_rows": 4,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/pr8040/exam-social-insert.hwp",
+        "sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82"
+      },
+      "pdf": {
+        "path": "pdf/pr8040/exam-social-insert-2020.pdf",
+        "sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "wasm",
+      "key": "issue8040-insert-delete",
+      "document_page_counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "verified_rows": 4,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/pr8040/exam-social-insert-delete.hwp",
+        "sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee"
+      },
+      "pdf": {
+        "path": "pdf/pr8040/exam-social-insert-delete-2020.pdf",
+        "sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "wasm",
+      "key": "issue7905",
+      "document_page_counts": {
+        "rhwp": 6,
+        "pdf": 6
+      },
+      "verified_rows": 6,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx",
+        "sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1"
+      },
+      "pdf": {
+        "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law_hancom2018_print.pdf",
+        "sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "wasm",
+      "key": "outline",
+      "document_page_counts": {
+        "rhwp": 9,
+        "pdf": 9
+      },
+      "verified_rows": 9,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/task3307/issue3307_outline_number.hwpx",
+        "sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d"
+      },
+      "pdf": {
+        "path": "pdf/task3307/issue3307_outline_number-2020.pdf",
+        "sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "wasm",
+      "key": "nested",
+      "document_page_counts": {
+        "rhwp": 17,
+        "pdf": 17
+      },
+      "verified_rows": 17,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+        "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626"
+      },
+      "pdf": {
+        "path": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+        "sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "wasm",
+      "key": "sample16-hwpx",
+      "document_page_counts": {
+        "rhwp": 64,
+        "pdf": 64
+      },
+      "verified_rows": 64,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5.hwpx",
+        "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c"
+      },
+      "pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+        "sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "wasm",
+      "key": "sample16-hwp2022",
+      "document_page_counts": {
+        "rhwp": 64,
+        "pdf": 64
+      },
+      "verified_rows": 64,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5-2022.hwp",
+        "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe"
+      },
+      "pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+        "sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "wasm",
+      "key": "sample16-hwp2024",
+      "document_page_counts": {
+        "rhwp": 64,
+        "pdf": 64
+      },
+      "verified_rows": 64,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5-2024.hwp",
+        "sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d"
+      },
+      "pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
+        "sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "wasm",
+      "key": "handbook-hwp",
+      "document_page_counts": {
+        "rhwp": 383,
+        "pdf": 383
+      },
+      "verified_rows": 383,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/2025 행정업무운영 편람(최종).hwp",
+        "sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f"
+      },
+      "pdf": {
+        "path": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+        "sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "wasm",
+      "key": "handbook-hwpx",
+      "document_page_counts": {
+        "rhwp": 383,
+        "pdf": 383
+      },
+      "verified_rows": 383,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+        "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6"
+      },
+      "pdf": {
+        "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+        "sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e"
+      }
+    },
+    {
+      "scope": "protected",
+      "backend": "wasm",
+      "key": "sample10",
+      "document_page_counts": {
+        "rhwp": 763,
+        "pdf": 763
+      },
+      "verified_rows": 763,
+      "missing_pages": [],
+      "duplicate_pages": [],
+      "input": {
+        "path": "samples/hwp3-sample10.hwp",
+        "sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48"
+      },
+      "pdf": {
+        "path": "pdf/issue8371/hwp3-sample10-2020.pdf",
+        "sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918"
+      }
+    }
+  ],
+  "document_page_count_mismatches": 0,
+  "missing_or_duplicate_pages": 0
+}
