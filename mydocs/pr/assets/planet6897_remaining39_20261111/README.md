@@ -97,3 +97,8 @@ PR #8958의 파일 4,142개가 REST API에서 3,000개로 잘려 CI preflight가
 ## Native Skia 실제 실행과 성공 표시의 구분
 
 이전 head `1d1fb0439a`의 Native Skia job은 녹색이었지만 APT 180초 초과 후 suite 준비와 실제 테스트가 모두 skipped였다. 이를 실제 테스트 통과로 수용하지 않는다. 기존 PR #5536의 timeout 생략 경로를 보정하여 의존성이 이미 있으면 APT만 생략하고, 준비 실패는 job 실패로 전달한다. 테스트를 생략하던 두 조건은 제거했다. [원인·실패→통과·실행 검증](ci-native-skia-execution-validation.json)에 관련78개와 동일 CI 단계 Python273개·Node354개, actionlint 결과를 보존한다. 새 head의 필수 테스트 단계가 실제 success인 것을 확인하기 전에는 병합하지 않는다. 로컬 Native Skia 4,034 PASS와 GitHub job의 녹색 표시는 구분한다.
+
+
+## Canonical DNS 복구 후 전체 CI 재시작
+
+`3797aa3b48`에서는 Native Skia 준비 중 APT 180초 초과가 exit 124로 실패했다. 이전의 녹색 생략과 달리 이를 성공으로 수용하지 않았다. Canonical 공식 RSS의 DNS 상태가 2026-11-12 01:58 KST에 Operational로 전환된 것을 확인했다. 실행 중인 workflow 때문에 단일 job 재실행 요청이 403으로 거절되어, 사용자의 명시 지시에 따라 이 검증 기록을 trailing commit으로 반영하고 새 head의 Full CI를 재시작한다. [장애·복구·재실행 근거](ci-canonical-dns-recovery-validation.json)를 보존한다. 실제 Skia 테스트 성공 전에는 병합하지 않으며, 병합 후 확정 기록·오늘할일은 옵션 2의 별도 PR로 처리한다.
