@@ -89,7 +89,7 @@ class NativeGpuTilePlan {
 /// It never creates a second document/view owner or transfers an ID twice.
 class NativeTileGroupChannel extends MethodChannel {
   NativeTileGroupChannel(this.delegate, {required this.windows})
-    : super(delegate.name);
+    : super(delegate.name, delegate.codec, delegate.binaryMessenger);
   final MethodChannel delegate;
   final bool windows;
   NativeGpuTilePlan? _plan;
@@ -300,6 +300,7 @@ class NativeTileGroupChannel extends MethodChannel {
       'covered',
       'accepted',
       'closeAcknowledgementRequired',
+      'producerReadyEvents',
     ]) {
       result[key] = all(key);
     }

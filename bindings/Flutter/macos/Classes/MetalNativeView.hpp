@@ -224,6 +224,7 @@ void RunMetalView(const std::shared_ptr<MetalViewState>& view) {
           QuarantineMetalView(view, job, drawable, queue, layer, @"Core Animation presentation command did not complete; owner quarantined.");
         }
         std::shared_ptr<Job> oldDisplayed;
+        bool published = false;
         {
           std::lock_guard<std::mutex> lock(state->mutex);
           if (!state->closed && state->gate.current(job->sequence, job->stamp)) {
@@ -232,12 +233,14 @@ void RunMetalView(const std::shared_ptr<MetalViewState>& view) {
             view->displayed = job;
             view->renderedSequence = job->sequence;
             view->renderedStamp = job->stamp;
+            published = true;
             state->error.clear();
           } else {
             view->flow.discard_completed(job->sequence);
           }
           state->inFlight = false;
         }
+        if (published && state->producerReady) state->producerReady(job->sequence, job->stamp);
         } catch (const std::exception&) {
           if (nativeSubmitted) QuarantineMetalView(view, job, drawable, queue, layer,
               @"Native Metal view allocation/decoding failed after submission; owner quarantined.");
@@ -480,6 +483,7 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
 - (void)handleTileGroupCall:(FlutterMethodCall*)call result:(FlutterResult)result;
 @end
 @implementation RhwpMetalViewPlugin {
+  RhwpProducerReadyEvents* _readyEvents;
   rhwp::metal::RetirementRegistry<MetalViewState,MetalViewReceipt> _views;
   rhwp::tiles::Identity _tileGroup;
   __strong NSDictionary* _tileTerminal;
@@ -487,6 +491,8 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
 }
 + (void)registerWithRegistrar:(id<FlutterPluginRegistrar>)registrar {
   RhwpMetalViewPlugin* plugin = [[RhwpMetalViewPlugin alloc] init];
+  plugin->_readyEvents = [[RhwpProducerReadyEvents alloc] initWithMessenger:registrar.messenger
+      name:@"rhwp_native/metal_view_macos/events"];
   FlutterMethodChannel* channel = [FlutterMethodChannel methodChannelWithName:@"rhwp_native/metal_view_macos"
       binaryMessenger:registrar.messenger];
   [registrar addMethodCallDelegate:plugin channel:channel];
@@ -536,6 +542,7 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
     NSString* path=input.stringByResolvingSymlinksInPath;
     if(!generation||generation>INT64_MAX||!handle||handle>INT64_MAX||!path.UTF8String){result([FlutterError errorWithCode:@"generation" message:@"Native view identity is exhausted or path invalid." details:nil]);return;}
     auto owner=std::make_shared<State>(generation,path.UTF8String,std::move(slot));
+    owner->producerReady = ProducerReadyCallback(_readyEvents, handle);
     auto view=std::make_shared<MetalViewState>(owner);
     if(!_views.insert(handle,view)){result([FlutterError errorWithCode:@"backpressure" message:@"Native view registry capacity is exhausted." details:nil]);return;}
     try {std::thread([view] {
@@ -544,6 +551,7 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
     }).detach();}
     catch(const std::exception&){_views.erase_unstarted(handle);owner->close();throw;}
     result(@{@"textureId":@(handle),@"deviceGeneration":@(generation),@"initializing":@YES,@"ready":@NO,
+      @"producerReadyEvents":@YES,
       @"presentationKind":@"nativeView",@"viewType":@"rhwp_native/metal_view",@"limits":MetalViewLimits()});return;
   }
   uint64_t handle = 0;
@@ -624,5 +632,5 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
   result(FlutterMethodNotImplemented);
 }
 #include "MetalTileGroupMethods.inc"
-- (void)dealloc {for(const auto& item:_views.records())StopMetalView(item.second.value);}
+- (void)dealloc {[_readyEvents shutdown];for(const auto& item:_views.records())StopMetalView(item.second.value);}
 @end

@@ -50,9 +50,11 @@
     NSMutableArray* members = [NSMutableArray arrayWithCapacity:2];
     for (size_t i = 0; i < 2; ++i) {
       auto owner = std::make_shared<State>(generation, path.UTF8String, std::move(slots[i]));
+      owner->producerReady = ProducerReadyCallback(_readyEvents, identity.textures[i]);
       views[i] = std::make_shared<MetalViewState>(owner);
       if (!records.insert(identity.textures[i], views[i])) throw std::runtime_error("tile view registry is full");
       [members addObject:@{@"textureId":@(identity.textures[i]),@"deviceGeneration":@(generation),
+          @"producerReadyEvents":@YES,
           @"initializing":@YES,@"ready":@NO,@"presentationKind":@"nativeView",
           @"closeAcknowledgementRequired":@YES,
           @"viewType":@"rhwp_native/metal_view",@"limits":MetalViewLimits()}];
