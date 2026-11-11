@@ -2,7 +2,7 @@
 
 2026-11-10 KST. [이슈 #7620](https://github.com/edwardkim/rhwp/issues/7620)의 남은 항목 중
 첫째(본문 바닥 경계의 예산 판정)를 처리한다. base는 `upstream/devel`
-`b5064fae1eefff92d60464c51844a38debec09f9`, 브랜치는 `task/7620-rowbreak-margin-budget`이다.
+`e118de8abadd2dffb2798036b9ffd381b96ed7d5`(2026-11-11 `b5064fae1`에서 리베이스), 브랜치는 `task/7620-rowbreak-margin-budget`이다.
 선행 작업은 #7644(#7681로 통합)와 planet6897의 #8149(빈 host 첫 조각 바닥 예약)다.
 
 ## 확정 범위

@@ -1,9 +1,9 @@
 //! 관계형.
-//! 주석 갱신: 2026-11-10T19:30:00+09:00 (신규 파일).
-//! 2026-11-10 측정 raw(`silhouette_raw_match_percent`, 96dpi, 기준 PDF pypdfium2 래스터,
+//! 주석 갱신: 2026-11-11T13:20:00+09:00 (직전 변경 40415774d, 2026-11-10T19:30:17+09:00).
+//! 2026-11-11 측정 raw(`silhouette_raw_match_percent`, 96dpi, 기준 PDF pypdfium2 5.13.0 래스터,
 //! `scripts/visual_sweep.py --silhouette-only --compat 2022`), 원본별 전2쪽:
 //!   b-rowbreak-bottom-margin-overflow: 1·2쪽 Native·fresh WASM 각 100.00%
-//!     (수정 전 devel b5064fae1: Native 89.88% / 59.65%, fresh WASM 90.21% / 60.49%);
+//!     (수정 전 devel e118de8ab: Native 89.88% / 59.65%, fresh WASM 90.21% / 60.49%);
 //!     전2쪽 최저 Native 100.00% / fresh WASM 100.00%.
 //!   c-rowbreak-table-moves-next-page: 1·2쪽 Native·fresh WASM 각 100.00%; 최저 100.00% / 100.00%.
 //!   d-rowbreak-splits-at-row-boundary: 1·2쪽 Native·fresh WASM 각 100.00%; 최저 100.00% / 100.00%.

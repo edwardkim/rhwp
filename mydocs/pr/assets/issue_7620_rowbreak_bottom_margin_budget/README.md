@@ -14,15 +14,16 @@
 
 ## 측정 조건
 
-- 2026-11-10, `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`.
+- 2026-11-11(리베이스 후 재측정), `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`.
 - 지표: `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣). 기준 PDF는
-  pypdfium2(`pdfium_smooth_rgb_exact_dpi_v2`)로 래스터화했다. 색상 경계 대조 픽셀은 모든 쪽 0이다.
-- 수정 전(base): `upstream/devel` `b5064fae1eefff92d60464c51844a38debec09f9`.
-  Native `rhwp.exe`(native-skia) SHA-256 `deed3274586b5790c4a50c2269e7ac29f989793b7c895334ee9d445cd1f80246`,
-  fresh WASM `rhwp_bg.wasm` `8b24d99db3db38845869dc09d480a234c5447b7f338fa300ccafc0ee4fc4e1d4`.
-- 수정 후(fix): 같은 base에 이 브랜치의 `prepare.rs`·`deferred_float.rs` 변경을 적용한 빌드.
-  Native `cf58e868b9be838a8f3298c683d7a23626b9baa482f7c2bc01387eb3d91b3d38`,
-  fresh WASM `02350da86bd17af1b7e9e2a0acbc4ba523ae4928bbc56e74129372d39dfff028`.
+  pypdfium2 5.13.0(`pdfium_smooth_rgb_exact_dpi_v2`)으로 래스터화했다. 색상 경계 대조 픽셀은 모든 쪽 0이다.
+- 수정 전(base): `upstream/devel` `e118de8abadd2dffb2798036b9ffd381b96ed7d5`.
+  Native `rhwp.exe`(native-skia, release-test) SHA-256 `9c45265d5d8dfc7fc8f56183ef7e9a7d9baa76167d3177aeac611f6353ad3aa6`,
+  fresh WASM `rhwp_bg.wasm` `2fe1e933018469ee85db62b81e2df8f7332faca03f40949f9b6006d7ede9300d`.
+- 수정 후(fix): 같은 base 위의 이 브랜치(`a24bf8dd6`, `src/` 기준 최종 head와 같음).
+  Native `e1d32820a5e32c25a511a9ac7c074c2a171d191cb7c3963b36c4ada489e28621`,
+  fresh WASM `812b1e94ccf40f087f9016f3aaca4a86a069502396a41d5ef975b568ed98e9a8`.
+- 리베이스 전 base `b5064fae1`에서 잰 값과 TSV·대표 PNG가 바이트 단위로 같았다.
 - 글꼴: visual sweep 기본 웹폰트 캐시 환경(`output/pr-review/native-webfont-cache`).
 
 ## 결과(전 쪽)
