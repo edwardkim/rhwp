@@ -1,0 +1,204 @@
+{
+  "recorded_at": "2026-11-11T18:55:45.629713+09:00",
+  "parent": "e2604d5a147daa9e898724a109e7b36bb90b5ffe",
+  "native_producer": {
+    "pid": 42149,
+    "phase": "completed",
+    "parent": "e2604d5a147daa9e898724a109e7b36bb90b5ffe",
+    "source_files": {
+      "src/renderer/layout/table_layout.rs": "45ac359b9b1a4ccd03d1e1b42d8568ce96806173975c1bbb024ba246875785a5",
+      "src/renderer/table_row_frame.rs": "7caf5eb572b89905c38eff99741a945083d33ce16ecaf91781195f0cecc77768",
+      "src/renderer/typeset/table/source_frame_fit.rs": "0becbd5327305f8d8c465a8d2fd1f2cc4e69c2d060afdefe2a8805b8999b7efd"
+    },
+    "source_diff_sha256": "2e780e76e07e0f3fe09d15896956e1337f195f1b27ae97bcd080c0a3a9cb0b34",
+    "child_pid": 42162,
+    "exit": 0,
+    "sha256": "3b31933e5485c6d90d12cace719df1703d2f3ea24d74b9622fe8e99cef9537c8",
+    "build_log_sha256": "4dc7df76c4182a9530ac77a285835f697931ec0916ee32e72f112a4d7bea1457",
+    "built_at": "2026-11-11T18:13:41.069177+09:00"
+  },
+  "wasm_producer": {
+    "pid": 49806,
+    "phase": "building",
+    "parent": "e2604d5a147daa9e898724a109e7b36bb90b5ffe",
+    "source_files": {
+      "src/renderer/layout/table_layout.rs": "45ac359b9b1a4ccd03d1e1b42d8568ce96806173975c1bbb024ba246875785a5",
+      "src/renderer/table_row_frame.rs": "7caf5eb572b89905c38eff99741a945083d33ce16ecaf91781195f0cecc77768",
+      "src/renderer/typeset/table/source_frame_fit.rs": "0becbd5327305f8d8c465a8d2fd1f2cc4e69c2d060afdefe2a8805b8999b7efd"
+    },
+    "source_diff_sha256": "2e780e76e07e0f3fe09d15896956e1337f195f1b27ae97bcd080c0a3a9cb0b34",
+    "child_pid": 61587,
+    "exit": 0,
+    "build": "Mac locked wrapper --target web --out-dir pkg --no-opt; local alternative, not Docker optimized",
+    "build_log_sha256": "9ac896e4bb1d0b592e283abc26d2f52d677478e204d0cc2e6299d0e93e2a3917",
+    "files": {
+      "rhwp.js": {
+        "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+        "bytes": 581315
+      },
+      "rhwp_bg.wasm": {
+        "sha256": "bf46419e7d6e69f00906cb6d06ba142af53eaf4135d5287389f2f3df32e78231",
+        "bytes": 31794466
+      }
+    }
+  },
+  "whole_measurements": [
+    {
+      "backend": "native",
+      "pages": 235,
+      "minimum_raw_5decimal": 1.30075,
+      "below90": [
+        54,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        103,
+        106,
+        107,
+        108,
+        169,
+        170,
+        171,
+        172,
+        182,
+        184,
+        185,
+        187
+      ],
+      "page83_raw": 92.23484,
+      "tsv_sha256": "2e98aac58b9c28b654f9698a4ccfbb3eab8ba74bb78efbde39d2f523e0ac810f",
+      "manifest_sha256": "60beaabde39a59ef8ce640c022699f4b05fe34f17979804e1cc6c78e476e1664",
+      "summary_sha256": "f4800540e387b8057b7d95059e67ad99f3e8d81e523bd80ec7680ce745d88f15",
+      "score_source": "canonical silhouette-metrics original values; TSV displayed precision is preserved"
+    },
+    {
+      "backend": "wasm",
+      "pages": 235,
+      "minimum_raw_5decimal": 1.30478,
+      "below90": [
+        54,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        103,
+        106,
+        107,
+        108,
+        169,
+        170,
+        171,
+        172,
+        184,
+        185
+      ],
+      "page83_raw": 92.25131,
+      "tsv_sha256": "0faa66cb1bc43b94d959cb100ad30d1b333fa8bcf054a2b721a4d2c8fb6ee6c5",
+      "manifest_sha256": "4b728f828a123575c7ce05c07f444cc3266d54188082d068f953cf39041f471e",
+      "summary_sha256": "e0730ee7582e6621a778c37199cf7724043de1e1bdb6f88dfdb624fd2bf8bbe7",
+      "score_source": "canonical silhouette-metrics original values; TSV displayed precision is preserved"
+    }
+  ],
+  "new_relation_test": {
+    "source": "tests/cases/stored_first_fragment_body_owner.rs",
+    "sha256": "e8ec5ea3a025d8ce6f1d4ffabbe4f56037cdfd102cb3f725f6b1aa86ef60a019",
+    "runs": [
+      {
+        "phase": "before",
+        "cli": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/r9-native",
+        "cli_sha256": "69e94e086a21cc35379f2f755d8574284c970bc1f58950c623960ac1fd2ec0a5",
+        "harness": "/Users/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_017-684d77897f1bf470",
+        "harness_sha256": "da9e929e17e933d5cc26c7c8d0c40e0bfbd148b5fb4db0eff686e35cc1a98df9",
+        "exit": 101,
+        "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/logs/r10-regression-direct-before.log",
+        "log_sha256": "cb044b33f8833a9123b6df50bb3112fc9235617a73420dee9540e5b77da5d5a3",
+        "command": [
+          "sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+          "/Users/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_017-684d77897f1bf470",
+          "--exact",
+          "stored_first_fragment_body_owner::completed_row_body_does_not_reappear_as_a_gap_before_the_successor",
+          "--nocapture",
+          "--test-threads",
+          "8"
+        ]
+      },
+      {
+        "phase": "after",
+        "cli": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/r10-native",
+        "cli_sha256": "3b31933e5485c6d90d12cace719df1703d2f3ea24d74b9622fe8e99cef9537c8",
+        "harness": "/Users/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_017-684d77897f1bf470",
+        "harness_sha256": "da9e929e17e933d5cc26c7c8d0c40e0bfbd148b5fb4db0eff686e35cc1a98df9",
+        "exit": 0,
+        "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/logs/r10-regression-direct-after.log",
+        "log_sha256": "f409215879eed5e424a39cbbceb87be595cd4b3f68710247367754f4f677f6a2",
+        "command": [
+          "sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+          "/Users/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_017-684d77897f1bf470",
+          "--exact",
+          "stored_first_fragment_body_owner::completed_row_body_does_not_reappear_as_a_gap_before_the_successor",
+          "--nocapture",
+          "--test-threads",
+          "8"
+        ]
+      }
+    ],
+    "ordinary_nextest": {
+      "run": 2,
+      "pass": 2,
+      "fail": 0,
+      "outside_selection": 331,
+      "log_sha256": "ae07ed907871cbd07043ddb4e6468c6636e527b563d2745930dc96797efda081"
+    }
+  },
+  "existing_positive_controls": {
+    "run": 41,
+    "pass": 41,
+    "fail": 0,
+    "outside_selection": 1965,
+    "elapsed_seconds": 4.223,
+    "log_sha256": "a04fc69386f571096a700a0e4879889110eb614535cd8a2cb1d4f8f41e5c3ac2",
+    "note": "New relation is separate. The first-fragment regression is included in both 41 and 2; do not sum duplicate executions."
+  },
+  "direct_reading": {
+    "page": 83,
+    "backends": [
+      "native",
+      "fresh WASM"
+    ],
+    "review_and_overlay": true,
+    "verified": "표15 마지막 합계 행과 그 아래 빈 문단·본문 경계",
+    "remaining": "표17 첫 partial header line is still missing; 84~100 and other old lows remain. Not whole-document or integration acceptance."
+  },
+  "rejected_prototype": "R13 removed first-frame constraints, failed 5 positive controls, and was fully reverted before this stage. No test expectations changed."
+}

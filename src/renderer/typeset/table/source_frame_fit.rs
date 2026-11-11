@@ -76,12 +76,12 @@ pub(super) fn stored_following_tail_owns_rows<S: crate::storage::Storage>(
         return Ok(false);
     }
     let rows = table.get_raw_row_heights_with_storage(storage)?;
-    if rows.iter().any(|&h| h == 0 || h > i32::MAX as u32) {
-        return Ok(false);
-    }
-    let total = rows.iter().map(|&h| i64::from(h)).sum::<i64>()
-        + i64::from(table.cell_spacing) * (rows.len() - 1) as i64;
-    if total != i64::from(table.common.height) + i64::from(tail.vertical_pos) {
+    if !crate::renderer::table_row_frame::stored_rows_close_at_successor(
+        &rows,
+        table.cell_spacing,
+        table.common.height,
+        tail.vertical_pos,
+    ) {
         return Ok(false);
     }
     let unit = dpi / 7200.0;

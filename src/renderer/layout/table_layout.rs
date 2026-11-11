@@ -3105,7 +3105,6 @@ impl LayoutEngine {
         if host_line.tag & synthetic != 0
             || next_line.tag & synthetic != 0
             || next_line.vertical_pos <= 0
-            || next_line.vertical_pos >= host_line.vertical_pos
         {
             return None;
         }
@@ -3122,7 +3121,35 @@ impl LayoutEngine {
         let occupied_hu = ((fragment_bottom - column.y + next_before) / hwpunit_to_px(1, self.dpi))
             .round() as i32;
         let gap_hu = next_line.vertical_pos.checked_sub(occupied_hu)?;
-        (gap_hu >= 0 && fragment_bottom <= column.y + column.height)
+        // 원본 전체 행 합이 첫 조각과 종료 쪽 원점을 정확히 나누면, 저장된
+        // 다음 원점은 남은 표 본체의 끝이다. 컷에서 실제 행 본체를 이미 소비한
+        // 뒤 남은 저장 높이를 또 빈 띠로 넣지 않는다. format과 paint가 같은
+        // 종료 Query를 사용하며, 여백·캡션·후속 개체의 독립 공간은 이 인증에 넣지 않는다.
+        if original_plain_frame
+            && self.profile.get().hwp5_stored_pagination_layout()
+            && table.caption.is_none()
+            && !table.common.size_protect
+            && table.cell_spacing == 0
+            && table.outer_margin_top == 0
+            && table.outer_margin_bottom == 0
+            && !(table.repeat_header && table.cells.iter().any(|cell| cell.is_header))
+            && next.controls.is_empty()
+            && next_before == 0.0
+            && occupied_hu > 0
+            && gap_hu >= 0
+            && fragment_bottom <= column.y + column.height
+            && crate::renderer::table_row_frame::stored_rows_close_at_successor(
+                &self.indexed_raw_row_heights(table),
+                table.cell_spacing,
+                table.common.height,
+                next_line.vertical_pos,
+            )
+        {
+            return Some(0.0);
+        }
+        (next_line.vertical_pos < host_line.vertical_pos
+            && gap_hu >= 0
+            && fragment_bottom <= column.y + column.height)
             .then(|| hwpunit_to_px(gap_hu, self.dpi))
     }
 
