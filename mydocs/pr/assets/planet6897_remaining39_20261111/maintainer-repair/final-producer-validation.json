@@ -1,0 +1,29 @@
+{
+  "checked_at": "2026-11-11T20:15:15.316858+09:00",
+  "head": "ab9116f48ff0c641fab4cc33c9f8c1bd5b6a5082",
+  "runtime_source_tree": "1014d50002b30910074627e71b48486b9ff17eaa",
+  "native_producer": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/r10-native-producer.json",
+  "wasm_producer": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/r10-wasm-producer.json",
+  "source_parent": "e2604d5a147daa9e898724a109e7b36bb90b5ffe",
+  "changed_runtime_sources": [
+    "src/renderer/layout/table_layout.rs",
+    "src/renderer/table_row_frame.rs",
+    "src/renderer/typeset/table/source_frame_fit.rs"
+  ],
+  "source_files_match": true,
+  "native_sha256": "3b31933e5485c6d90d12cace719df1703d2f3ea24d74b9622fe8e99cef9537c8",
+  "wasm_files": {
+    "rhwp.js": {
+      "frozen": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+      "root_pkg": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+      "studio_public": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+    },
+    "rhwp_bg.wasm": {
+      "frozen": "bf46419e7d6e69f00906cb6d06ba142af53eaf4135d5287389f2f3df32e78231",
+      "root_pkg": "bf46419e7d6e69f00906cb6d06ba142af53eaf4135d5287389f2f3df32e78231",
+      "studio_public": "bf46419e7d6e69f00906cb6d06ba142af53eaf4135d5287389f2f3df32e78231"
+    }
+  },
+  "build": "Mac locked wrapper --target web --out-dir pkg --no-opt; local alternative; not Docker optimized",
+  "note": "R18/R19 미커밋 실험을 제거한 후보의 제품 바이트는 R10 빌드 출처와 일치한다. 새로 빌드했다고 주장하지 않는다."
+}

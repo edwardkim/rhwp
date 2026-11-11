@@ -1,5 +1,12 @@
 # planet6897 원 PR 39개 실제 체리픽 검토
 
+> 최신 검토 범위와 결과(2026-11-11): [원 PR 주장·보호 문서로 제한한 범위](maintainer-repair/final-scope.md)를 따른다.
+> 제품 코드 `ab9116f48f`의 [Rust 필수 게이트 12개](maintainer-repair/final-rust-gates.json)는 모두 통과했으며,
+> [전체 회귀 13,307 PASS / 0 FAIL](maintainer-repair/final-full-nextest.json),
+> [Native 보호 문서 18조건·1,771쪽 하락 0쪽](maintainer-repair/final-native-protected.json)을 확인했다.
+> WASM 보호 문서와 원 PR 주장 페이지의 최종 검사는 진행 중이다. 아래 본문은 `e6261fd4ec` 초기 검토 기록이며 최신 판정과 구분한다.
+
+
 **검토 결과: 통합 후보 머지 보류.** 실제 적용·전체 회귀·전쪽 비교와 개별 PR 증적을 남겼으며, 아래 실패를 통과로 보고하지 않습니다. GitHub 댓글·승인·close·새 통합 PR 제출은 하지 않았습니다.
 
 - 브랜치: `review/integration-20261111-planet6897-open39`.

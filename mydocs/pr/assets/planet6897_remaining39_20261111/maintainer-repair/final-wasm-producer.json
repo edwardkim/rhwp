@@ -1,0 +1,25 @@
+{
+  "pid": 49806,
+  "phase": "building",
+  "parent": "e2604d5a147daa9e898724a109e7b36bb90b5ffe",
+  "source_files": {
+    "src/renderer/layout/table_layout.rs": "45ac359b9b1a4ccd03d1e1b42d8568ce96806173975c1bbb024ba246875785a5",
+    "src/renderer/table_row_frame.rs": "7caf5eb572b89905c38eff99741a945083d33ce16ecaf91781195f0cecc77768",
+    "src/renderer/typeset/table/source_frame_fit.rs": "0becbd5327305f8d8c465a8d2fd1f2cc4e69c2d060afdefe2a8805b8999b7efd"
+  },
+  "source_diff_sha256": "2e780e76e07e0f3fe09d15896956e1337f195f1b27ae97bcd080c0a3a9cb0b34",
+  "child_pid": 61587,
+  "exit": 0,
+  "build": "Mac locked wrapper --target web --out-dir pkg --no-opt; local alternative, not Docker optimized",
+  "build_log_sha256": "9ac896e4bb1d0b592e283abc26d2f52d677478e204d0cc2e6299d0e93e2a3917",
+  "files": {
+    "rhwp.js": {
+      "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+      "bytes": 581315
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "bf46419e7d6e69f00906cb6d06ba142af53eaf4135d5287389f2f3df32e78231",
+      "bytes": 31794466
+    }
+  }
+}
