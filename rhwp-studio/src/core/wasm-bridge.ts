@@ -396,7 +396,7 @@ export class WasmBridge {
         }
         return [...selected.values()];
       });
-      await this.hostCanvasFonts.prepare(records, doc, current);
+      await this.hostCanvasFonts.prepare(records, doc, current, hostFontLayoutEnabled());
       if (!current() || generation !== getHostFontState().generation) return false;
       const puaFontGeneration = this.canvasFontGeneration;
       if (!await this.nativePuaFonts.prepare(doc as unknown as NativePuaFontDocument | null,
@@ -1200,9 +1200,16 @@ export class WasmBridge {
     return JSON.parse((this.doc as any).setPageBorderFill(sectionIdx, JSON.stringify(settings)));
   }
 
+  private withHostPageFonts<T>(pageNum: number, operation: () => T, previewTree?: PageLayerTree): T {
+    const paint = () => withCanvasFontResolution(this.hostCanvasFonts, operation);
+    if (!this.doc || !hostFontLayoutEnabled()) return paint();
+    return this.hostCanvasFonts.withPageOutlines(
+      collectHostFontRequests(previewTree ?? this.getPageLayerTreeObject(pageNum)), this.doc, paint);
+  }
+
   renderPageToCanvas(pageNum: number, canvas: HTMLCanvasElement, scale = 1.0): void {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    withCanvasFontResolution(this.hostCanvasFonts, () => this.doc!.renderPageToCanvas(pageNum, canvas, scale));
+    this.withHostPageFonts(pageNum, () => this.doc!.renderPageToCanvas(pageNum, canvas, scale));
   }
 
   /**
@@ -1237,18 +1244,18 @@ export class WasmBridge {
         this.withPortableMetrics(() => d.renderPageToCanvasFilteredWithProfile!(pageNum, canvas, scale, layerKind, profile));
         return;
       }
-      withCanvasFontResolution(this.hostCanvasFonts, () => d.renderPageToCanvasFilteredWithProfile!(pageNum, canvas, scale, layerKind, profile));
+      this.withHostPageFonts(pageNum, () => d.renderPageToCanvasFilteredWithProfile!(pageNum, canvas, scale, layerKind, profile));
       return;
     }
     if (profile !== 'screen') {
       throw new Error('[WasmBridge] 현재 WASM은 profile별 Canvas2D 렌더링을 지원하지 않습니다');
     }
     if (typeof d.renderPageToCanvasFiltered === 'function') {
-      withCanvasFontResolution(this.hostCanvasFonts, () => d.renderPageToCanvasFiltered!(pageNum, canvas, scale, layerKind));
+      this.withHostPageFonts(pageNum, () => d.renderPageToCanvasFiltered!(pageNum, canvas, scale, layerKind));
       return;
     }
     // 구버전 WASM(public/rhwp.js 등): 레이어 필터 API 없음 → 전체 캔버스 렌더로 폴백
-    withCanvasFontResolution(this.hostCanvasFonts, () => this.doc!.renderPageToCanvas(pageNum, canvas, scale));
+    this.withHostPageFonts(pageNum, () => this.doc!.renderPageToCanvas(pageNum, canvas, scale));
   }
 
   /** 기존 Canvas를 유지한 채 page-space 일부만 filtered replay한다 (#3137 Stage 4). */
@@ -1277,7 +1284,7 @@ export class WasmBridge {
     if (typeof d.renderPagePatchToCanvasFilteredWithProfile !== 'function') {
       throw new Error('[WasmBridge] 현재 WASM은 focused page patch 렌더링을 지원하지 않습니다');
     }
-    withCanvasFontResolution(this.hostCanvasFonts, () => d.renderPagePatchToCanvasFilteredWithProfile!(
+    this.withHostPageFonts(pageNum, () => d.renderPagePatchToCanvasFilteredWithProfile!(
       pageNum,
       canvas,
       scale,
@@ -3836,6 +3843,7 @@ export class WasmBridge {
   ): void {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const doc = this.doc as unknown as {
+      getHeaderFooterEditPreviewLayerTree?: (page: number, section: number, header: boolean, apply: number) => string;
       renderHeaderFooterEditPreviewToCanvas?: (
         pageNum: number,
         sectionIdx: number,
@@ -3848,14 +3856,17 @@ export class WasmBridge {
     if (typeof doc.renderHeaderFooterEditPreviewToCanvas !== 'function') {
       throw new Error('현재 WASM은 HF 대표 편집 preview 렌더링을 지원하지 않습니다');
     }
-    withCanvasFontResolution(this.hostCanvasFonts, () => doc.renderHeaderFooterEditPreviewToCanvas!(
+    const previewTree = hostFontLayoutEnabled() && doc.getHeaderFooterEditPreviewLayerTree
+      ? JSON.parse(doc.getHeaderFooterEditPreviewLayerTree(pageNum, sectionIdx, isHeader, applyTo)) as PageLayerTree
+      : undefined;
+    this.withHostPageFonts(pageNum, () => doc.renderHeaderFooterEditPreviewToCanvas!(
       pageNum,
       sectionIdx,
       isHeader,
       applyTo,
       canvas,
       scale,
-    ));
+    ), previewTree);
   }
 
   deleteHeaderFooter(sectionIdx: number, isHeader: boolean, applyTo: number): void {

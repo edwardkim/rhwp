@@ -295,6 +295,37 @@ async function verifyLayoutEnvironment(page) {
       checks.push(['opaque-identity-not-certified', doc.registerHftOutlineFont(family, new Uint8Array(decode('CFF')), 0) === false]);
       originalSet(JSON.stringify(cff));
       checks.push(['indexed-identity-consumed', doc.registerHftOutlineFont(family, new Uint8Array(decode('CFF')), 0) === true]);
+      await compareFresh('replace-cff');
+      const preview = new WasmBridge();
+      try {
+        setup(preview); preview.createHeaderFooter(0, true, 0);
+        await preview.prepareDeclaredFontEnvironment('canvas2d');
+        await preview.prepareCanvasMetrics('canvas2d');
+        const beforePreview = JSON.stringify(preview.getPageLayerTreeObject(0));
+        preview.renderHeaderFooterEditPreviewToCanvas(0, 0, true, 0, document.createElement('canvas'), 1);
+        checks.push(['preview-page-tree-preserved', beforePreview === JSON.stringify(preview.getPageLayerTreeObject(0))]);
+      } finally { preview.releaseDocument(); }
+      const outlineCalls = [], outstanding = new Set();
+      const registerFaces = doc.registerHftOutlineFontFaces.bind(doc);
+      const clearOutline = doc.clearTextFontOutline.bind(doc);
+      doc.registerHftOutlineFontFaces = (name, programs) => {
+        const accepted = registerFaces(name, programs);
+        outlineCalls.push({ name, accepted }); outstanding.add(name); return accepted;
+      };
+      doc.clearTextFontOutline = name => { clearOutline(name); outstanding.delete(name); };
+      try {
+        const canvas = document.createElement('canvas');
+        w.renderPageToCanvas(0, canvas, 1);
+        checks.push(['page-outline-released', outstanding.size === 0]);
+        w.renderPageToCanvasFiltered(0, canvas, 1, 'all', 'screen');
+        checks.push(['filtered-outline-released', outstanding.size === 0]);
+        w.renderPagePatchToCanvasFiltered(0, canvas, 1, 'flow',
+          { x: 0, y: 0, width: canvas.width, height: canvas.height }, 'screen');
+        checks.push(['patch-outline-released', outstanding.size === 0]);
+        checks.push(['page-outline-program-consumed', outlineCalls.filter(call => call.accepted).length >= 3]);
+      } finally {
+        doc.registerHftOutlineFontFaces = registerFaces; doc.clearTextFontOutline = clearOutline;
+      }
       source = 'ttc'; index = 0; revision++; notify(); const t0 = await prepare();
       index = 1; revision++; notify(); const t1 = await prepare();
       checks.push(['ttc-face', selected(t0).includes(await digest(decode('ttc'), 0)) && selected(t1).includes(await digest(decode('ttc'), 1)) && selected(t0) !== selected(t1)]);

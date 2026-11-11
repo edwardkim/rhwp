@@ -886,6 +886,50 @@ impl HwpDocument {
         self.clear_text_font_family_native(family);
     }
 
+    /// 쪽별 host paint 자원만 해제한다. 측정·coverage·문서 상태는 유지한다.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = clearTextFontOutline)]
+    pub fn clear_text_font_outline_wasm(&mut self, family: &str) {
+        self.hft_outline_fonts.clear_outline_family(family);
+    }
+
+    /// TTC 원본 신원을 보존한 paint 후보. FontFace용 정규화 사본과 구분한다.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = registerHftOutlineFontFaces)]
+    pub fn register_hft_outline_font_faces(
+        &mut self,
+        family: &str,
+        programs: js_sys::Array,
+    ) -> Result<bool, JsValue> {
+        use wasm_bindgen::JsCast;
+        if programs.length() == 0 || programs.length() > 64 {
+            return Err(JsValue::from_str("outline font candidate limit exceeded"));
+        }
+        let mut total = 0usize;
+        let mut faces = Vec::new();
+        for program in programs.iter() {
+            let array = js_sys::Reflect::get(&program, &JsValue::from_str("bytes"))?
+                .dyn_into::<js_sys::Uint8Array>()
+                .map_err(|_| JsValue::from_str("outline font bytes must be Uint8Array"))?;
+            let index = js_sys::Reflect::get(&program, &JsValue::from_str("faceIndex"))?
+                .as_f64()
+                .filter(|v| v.is_finite() && *v >= 0.0 && *v <= u32::MAX as f64 && v.fract() == 0.0)
+                .ok_or_else(|| JsValue::from_str("invalid outline face index"))?;
+            total = total.saturating_add(array.length() as usize);
+            if array.length() == 0 || array.length() > 32 * 1024 * 1024 || total > 64 * 1024 * 1024
+            {
+                return Err(JsValue::from_str("outline font byte limit exceeded"));
+            }
+            faces.push((array.to_vec(), index as u32));
+        }
+        let candidates: Vec<_> = faces
+            .iter()
+            .map(|(bytes, index)| (bytes.as_slice(), *index))
+            .collect();
+        self.register_hft_outline_font_candidates_native(family, &candidates)
+            .map_err(JsValue::from)
+    }
+
     #[wasm_bindgen(js_name = registerTextFontGlyphCoverage)]
     pub fn register_text_font_glyph_coverage(
         &mut self,
@@ -1297,6 +1341,28 @@ impl HwpDocument {
             renderer.render_page(&tree).map_err(JsValue::from)?;
             Ok(())
         })
+    }
+
+    /// 같은 preview의 paint 자원 준비에 필요한 트리. 일반 쪽 캐시는 변경하지 않는다.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = getHeaderFooterEditPreviewLayerTree)]
+    pub fn get_header_footer_edit_preview_layer_tree(
+        &self,
+        page_num: u32,
+        section_idx: u32,
+        is_header: bool,
+        apply_to: u8,
+    ) -> Result<String, JsValue> {
+        let tree = self
+            .build_header_footer_edit_preview_tree(
+                page_num,
+                section_idx as usize,
+                is_header,
+                apply_to,
+            )
+            .map_err(JsValue::from)?;
+        let mut builder = crate::paint::LayerBuilder::new(crate::paint::RenderProfile::Screen);
+        Ok(builder.build(&tree).to_json())
     }
 
     /// 구역 첫 페이지에 요청한 머리말/꼬리말 정의를 가상 투영해 Canvas 2D로 렌더링한다.

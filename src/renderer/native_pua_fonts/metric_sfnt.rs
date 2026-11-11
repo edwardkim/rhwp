@@ -1,10 +1,10 @@
-//! TrueType 글꼴의 문자 매핑·전진폭에 필요한 표만 세션 메모리에 보관한다.
+//! 정적 OpenType 글꼴의 문자 매핑·전진폭에 필요한 표만 세션 메모리에 보관한다.
 
 /// 윤곽을 복사하지 않는 독립 SFNT를 만든다. 원본 프로그램과 파일은 변경하지 않는다.
 /// 가변 글꼴은 변형 관련 표의 전체 계약을 보존하도록 원본 경로를 사용한다.
-pub(super) fn compact_truetype_metrics(bytes: &[u8], index: u32) -> Option<Vec<u8>> {
+pub(super) fn compact_metrics(bytes: &[u8], index: u32) -> Option<Vec<u8>> {
     let face = ttf_parser::Face::parse(bytes, index).ok()?;
-    if face.is_variable() || face.tables().cff.is_some() || face.tables().cff2.is_some() {
+    if face.is_variable() {
         return None;
     }
     let raw = face.raw_face();
@@ -50,4 +50,34 @@ pub(super) fn compact_truetype_metrics(bytes: &[u8], index: u32) -> Option<Vec<u
     }
     ttf_parser::Face::parse(&out, 0).ok()?;
     Some(out)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::compact_metrics;
+
+    #[test]
+    fn static_cff_metrics_preserve_source_tables_without_outlines() {
+        let source = include_bytes!("../../../tests/fixtures/fonts/RHWPHftOutline.otf");
+        let compact = compact_metrics(source, 0).unwrap();
+        let original = ttf_parser::Face::parse(source, 0).unwrap();
+        let measured = ttf_parser::Face::parse(&compact, 0).unwrap();
+        assert!(original.tables().cff.is_some());
+        assert!(measured.tables().cff.is_none());
+        assert!(compact.len() < source.len());
+        assert_eq!(original.units_per_em(), measured.units_per_em());
+        for character in ['가', 'A', ' '] {
+            assert_eq!(
+                original.glyph_index(character),
+                measured.glyph_index(character)
+            );
+        }
+        for id in 0..original.number_of_glyphs() {
+            let glyph = ttf_parser::GlyphId(id);
+            assert_eq!(
+                original.glyph_hor_advance(glyph),
+                measured.glyph_hor_advance(glyph)
+            );
+        }
+    }
 }
