@@ -1,4 +1,5 @@
-//! 쪽 제한을 켠 나누지 않는 표와 앞쪽에 남는 호스트 글줄을 분리한다.
+//! 쪽 제한을 켠 나누지 않는 표, 첫 조각에 실을 내용이 없는 쪽 경계 나눔 표와 앞쪽에 남는
+//! 호스트 글줄을 분리한다.
 
 use super::BlockTableInput;
 use crate::model::table::TablePageBreak;
@@ -37,9 +38,26 @@ pub(super) fn try_defer(st: &mut TypesetState, input: BlockTableInput<'_>, dpi: 
             )
             .is_some()
         });
+    // [#7620] 쪽 경계 나눔(RowBreak) 표도 첫 조각에 실을 내용이 하나도 없으면 나누지 않는다.
+    // 바깥 위 여백 + 첫 행의 첫 줄과 안 여백 + 바깥 아래 여백이 현재 쪽에 들어가지 않고 표 상자
+    // 전체는 새 쪽에 들어가면, 한/글은 표만 다음 쪽 위로 옮기고 표 문단과 뒤 글줄은 현재 쪽에
+    // 계속 흘린다. 이때는 쪽 영역 제한 여부와 무관하다(한컴독스 Print, 생성 대조군
+    // `samples/issue7620/b-rowbreak-bottom-margin-overflow.hwp` 1쪽 뒤 문단 · 2쪽 표).
+    // 한 행이라도 들어가면 기존 분할 경로가 행 경계에서 나눈다(같은 대조 40행 표).
+    let rowbreak_without_first_unit = table.layout_page_break() == TablePageBreak::RowBreak
+        && input.mt.is_some_and(|mt| {
+            let outer_top = hwpunit_to_px(i32::from(table.outer_margin_top), dpi);
+            let outer_bottom = hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi);
+            let first_unit = mt.min_first_line_height_for_row(0, 0.0) + mt.max_padding_for_row(0);
+            let whole = outer_top + ft.effective_height + outer_bottom;
+            first_unit > 0.0
+                && st.current_height + fmt.spacing_before + outer_top + first_unit + outer_bottom
+                    > st.available_height()
+                && whole <= st.base_available_height()
+        });
     if st.col_count != 1
-        || table.layout_page_break() != TablePageBreak::None
-        || !table.common.flow_with_text
+        || !(table.layout_page_break() == TablePageBreak::None && table.common.flow_with_text
+            || rowbreak_without_first_unit)
         || !is_para_topbottom_float(&table.common)
         || table.common.vert_align != crate::model::shape::VertAlign::Top
         || !(computed_empty_table_host(para, table)

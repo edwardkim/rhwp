@@ -750,7 +750,7 @@ impl TypesetEngine {
             caption_base_overhead
         };
 
-        let (first_frag_overhead, first_fragment_outer_bottom) = {
+        let (first_frag_overhead, first_fragment_bottom_reserve) = {
             let (host_before, fragment_outer_bottom) = partial_rowbreak_fragment_spacing_px(
                 table,
                 ft.host_spacing.before,
@@ -807,7 +807,7 @@ impl TypesetEngine {
             };
             (
                 host_before + vert_off + fragment_outer_bottom + empty_host_reserve,
-                fragment_outer_bottom,
+                fragment_outer_bottom + empty_host_reserve,
             )
         };
         let first_frag_origin = super::super::first_fragment_flow_origin(
@@ -827,7 +827,13 @@ impl TypesetEngine {
                         - p.table_top
                         // 첫 조각은 실제 분할 예산이 소유하는 아래 여백만 예약한다.
                         // 통째 표의 종료 여백을 별도로 빼면 수용 가능한 첫 줄도 이월한다.
-                        - first_fragment_outer_bottom
+                        // [#7620] 저장 원점에서 세운 상자(`p`)로 판정해도 행 스캐너의 첫 조각
+                        // 예산과 같은 빈 host 바닥 예약(#8149)을 뺀다. 빼지 않으면 이 판정은 첫
+                        // 행이 들어간다고 보고, 스캐너는 바깥 아래 여백을 뺀 0행 예산에서 첫 행을
+                        // 억지로 실어 표를 나눈다. 한/글은 아래 여백까지 들어가는 행이 없으면
+                        // 표를 나누지 않고 다음 쪽에서 통째로 시작한다(한컴독스 Print
+                        // `pdf/issue7620/b-rowbreak-bottom-margin-overflow-hancomdocs.pdf`).
+                        - first_fragment_bottom_reserve
                         - table
                             .caption
                             .as_ref()
