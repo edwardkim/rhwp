@@ -325,6 +325,49 @@ async function verifyLayoutEnvironment(page) {
   }, fixtures);
   console.log('#8946 layout environment:', JSON.stringify(result));
   for (const [name, passed] of result.checks) assert.equal(passed, true, name);
+  await createNewDocument(page);
+  await clickEditArea(page);
+  await typeText(page, 'A');
+  await page.evaluate(async () => {
+    const w = window.__wasm;
+    w.applyCharFormat(0, 0, 0, 1, JSON.stringify({ fontId: w.findOrCreateFontId('Host Layout Contract') }));
+    await window.__canvasView.loadDocument();
+  });
+  await typeText(page, 'A');
+  await page.evaluate(() => {
+    window.__inputHandler.performUndo();
+    window.__documentState.markClean('layout-contract');
+    const h = window.__inputHandler.history;
+    window.__layout8946 = { bytes: window.__wasm.exportHwp(), undo: [...h.undoStack], redo: [...h.redoStack],
+      length: window.__wasm.getParagraphLength(0, 0) };
+  });
+  await page.evaluate(async bytes => {
+    const data = Uint8Array.from(atob(bytes), c => c.charCodeAt(0)).buffer;
+    const face = { id: 'face', family: 'Host Layout Contract', fullName: 'Host Layout Contract',
+      postscriptName: 'HostLayout-Selected', style: 'Regular', weight: 400, slant: 'normal' };
+    window.__layout8946.provider = { async getSnapshot() { return { revision: 'stable', faces: [face] }; },
+      async readFace() { return { bytes: data.slice(0), faceIndex: 0 }; }, subscribe() { return () => {}; } };
+    await rhwpStudio.fonts.setProvider(window.__layout8946.provider, { layout: true });
+  }, fixtures.Regular);
+  await page.waitForFunction(() => window.__wasm.hasHostFontLayoutEnvironment
+    && window.__wasm.getHostCanvasFontDiagnostics().loaded === 1);
+  const history = await page.evaluate(async () => {
+    const w = window.__wasm, saved = window.__layout8946, h = window.__inputHandler.history;
+    const same = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
+    const result = { clean: !window.__documentState.isDirty(), bytes: same(saved.bytes, w.exportHwp()),
+      undo: same(saved.undo, h.undoStack), redo: same(saved.redo, h.redoStack), redoCount: h.redoStack.length,
+      environment: JSON.parse(w.borrowDocumentHandle().getDocumentFontSelectionPlan()).environmentId };
+    window.__inputHandler.performRedo(); result.redone = w.getParagraphLength(0, 0) === saved.length + 1;
+    window.__inputHandler.performUndo(); result.undone = w.getParagraphLength(0, 0) === saved.length;
+    await rhwpStudio.fonts.setProvider(saved.provider, { layout: false });
+    return result;
+  });
+  for (const key of ['clean', 'bytes', 'undo', 'redo', 'redone', 'undone']) assert.equal(history[key], true, key);
+  assert(history.redoCount > 0);
+  assert.match(history.environment, /^declared-program-/);
+  await page.waitForFunction(() => !window.__wasm.hasHostFontLayoutEnvironment);
+  console.log('#8946 enabled UI history:', JSON.stringify(history));
+  await page.evaluate(async () => { await rhwpStudio.fonts.setProvider(null); delete window.__layout8946; });
 }
 
 const backend = process.argv.find(arg => arg.startsWith('--renderer='))?.split('=')[1] || process.env.RHWP_TEST_RENDERER || 'canvaskit';
