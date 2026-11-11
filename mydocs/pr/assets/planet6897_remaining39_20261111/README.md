@@ -89,3 +89,6 @@ PR #8958의 파일 4,142개가 REST API에서 3,000개로 잘려 CI preflight가
 
 
 같은 lint가 Ubuntu 패키지 DNS 오류로 두 번 중단된 뒤 실제 의존성을 확인했다. PNG 계약은 PDFium을 사용하므로 이 단계의 불필요한 Poppler 설치와 오래된 Poppler 존재 조건을 제거했다. Poppler 네 도구 호출을 차단한 환경에서도 **254 PASS / 0 FAIL / 0 skip**, 실제 차단 도구 호출 0회를 확인했다. [의존성 감사와 실행 증거](ci-pdfium-bootstrap-validation.json)를 따르며, 일반 Visual Sweep의 메타데이터 도구 요구나 기준 래스터·검사 자체는 바꾸지 않았다.
+
+
+완전한 목록을 돌려주는 기존 CI 재사용 표본 중 누락된 `changed_files` 3곳도 실제 목록 길이로 보완했다. 기존 보안·재사용 기대값은 바꾸지 않았다. CI의 `Validate workflow contracts` 단계와 동일한 23개 명령을 전부 실행해 Python **273 PASS**, Node **354 PASS**를 확인했다. [기존 표본 보정과 실패→통과 영수증](ci-complete-list-fixtures-validation.json)을 보존하며, 사용자 지시에 따라 별도 CI 이슈는 등록하지 않는다.
