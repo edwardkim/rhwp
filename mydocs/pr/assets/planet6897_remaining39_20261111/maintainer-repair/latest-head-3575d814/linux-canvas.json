@@ -237,5 +237,36 @@
   ],
   "wasm_sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7",
   "source_script_sha256": "9f0d2f7a2083574d5f7b755182f49d4a8353d57a4545d2e707ffc132a3a214fe",
-  "same_default_budget": true
+  "same_default_budget": true,
+  "actual_initialization_response_observations": [
+    {
+      "source_sha": "3575d814f44053483bb51f54b01dcf8044d0b575",
+      "profile": "release-no-opt-local-alternative",
+      "expected_sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7",
+      "page": "http://127.0.0.1:17764/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:17764/@fs/home/tsjang/rhwp/output/latest-head-3575d814-20261111-215925-canvas-control/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ]
+    },
+    {
+      "source_sha": "3575d814f44053483bb51f54b01dcf8044d0b575",
+      "profile": "release-no-opt-local-alternative",
+      "expected_sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7",
+      "page": "http://127.0.0.1:17764/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:17764/@fs/home/tsjang/rhwp/output/latest-head-3575d814-20261111-215925-canvas-control/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ]
+    }
+  ],
+  "consumer_log_sha256": "eac21be36affb90a793516a24a52970055b08f3e3e8721c3eaf8134ee9fdbdb1"
 }

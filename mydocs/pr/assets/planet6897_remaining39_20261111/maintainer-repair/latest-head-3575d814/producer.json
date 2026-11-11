@@ -53,5 +53,6 @@
       "log_sha256": "010fb09f6b685c3120be4c034bf32d60a55f4db03bd0bd924a4bd8b39ac99d5d"
     }
   ],
-  "build": "Mac locked wrapper web/no-opt local alternative, not Docker optimized"
+  "build": "Mac locked wrapper web/no-opt local alternative, not Docker optimized",
+  "actual_initialization_evidence": "mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/app-initialization.json"
 }
