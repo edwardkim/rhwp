@@ -14634,11 +14634,20 @@ impl LayoutEngine {
                 // 줄 seg 를 찾는다. 해석 불가 시 기존 값 유지.
                 // HWPX 계산-lineseg 는 저장 사다리가 아니라 이 사영이 성립하지 않는다
                 // — hwp5 네이티브 프로파일에서만 교정한다(56734607.hwpx 신규 회귀 실측).
-                let seg_idx = if self.profile.get().hwp5_stored_pagination_layout() {
-                    control_line_seg_index(para, control_index).unwrap_or(control_index)
-                } else {
-                    control_index
-                };
+                // 원본 HWPX 의 저장 줄도 같은 사다리다. 합성 줄이 섞이지 않은 문단만
+                // 사영한다(#8969: 앞 글줄 + 표 두 줄 문단에서 첫 표가 둘째 표 줄을 보고
+                // 줄간격을 잃었다).
+                let stored_hwpx_ladder = self.profile.get().hwpx_stored_layout()
+                    && !para.line_segs.is_empty()
+                    && para.line_segs.iter().all(|seg| {
+                        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    });
+                let seg_idx =
+                    if self.profile.get().hwp5_stored_pagination_layout() || stored_hwpx_ladder {
+                        control_line_seg_index(para, control_index).unwrap_or(control_index)
+                    } else {
+                        control_index
+                    };
                 let tac_count_total = para
                     .controls
                     .iter()
@@ -14667,7 +14676,36 @@ impl LayoutEngine {
                         let gap = next_seg
                             .vertical_pos
                             .saturating_sub(seg.vertical_pos.saturating_add(seg.line_height));
-                        y_offset += hwpunit_to_px(gap, self.dpi);
+                        // 두 표가 각자의 저장 줄을 정확히 소유하면 그 줄 높이는 위·아래
+                        // 바깥 여백을 담는다. 같은 문단의 다음 TAC 표는 넘겨받은 y 를 그대로
+                        // 원점으로 쓰므로, 이 표의 아래 여백과 다음 표의 위 여백까지 넘긴다
+                        // (#8969, 36400485 2쪽: 둘째 표가 저장 줄보다 5.6px 위).
+                        let next_owned_margin_top =
+                            crate::renderer::composer::stored_owned_tac_line(para, control_index)
+                                .filter(|&(owner, _)| owner == seg_idx)
+                                .and_then(|_| {
+                                    para.controls
+                                .iter()
+                                .enumerate()
+                                .skip(control_index + 1)
+                                .find(|(_, c)| {
+                                    matches!(c, Control::Table(next) if next.common.treat_as_char)
+                                })
+                                })
+                                .and_then(|(next_index, next)| {
+                                    let Control::Table(next) = next else {
+                                        return None;
+                                    };
+                                    crate::renderer::composer::stored_owned_tac_line(
+                                        para, next_index,
+                                    )
+                                    .filter(|&(owner, _)| owner == seg_idx + 1)
+                                    .map(|_| next.outer_margin_top)
+                                });
+                        let owned_margins = next_owned_margin_top.map_or(0, |next_top| {
+                            i32::from(t.outer_margin_bottom) + i32::from(next_top)
+                        });
+                        y_offset += hwpunit_to_px(gap + owned_margins, self.dpi);
                     }
                     return TableControlOut {
                         y_offset,

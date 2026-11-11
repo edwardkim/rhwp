@@ -111,6 +111,8 @@ issue7688/arrow-controls/control-3.hwpx	5
 issue7688/arrow-controls/control-compound.hwpx	5
 issue7688/arrow-controls/control-short.hwpx	5
 issue8755/46551_road_traffic_rule_amendment.hwp	7
+# #8969: 6쪽 마스킹 별표 줄의 글자 런 겹침 7건은 수정 전 devel eb84afc036 에서도 같다(변경 무관). 해당 쪽 Native/fresh WASM 95.66%.
+issue8969/36400485-owned-tac-lines.hwpx	7
 kps-ai.hwp	2
 mel-001.hwp	1
 multi-table-001.hwp	1

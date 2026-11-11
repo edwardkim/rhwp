@@ -42,6 +42,52 @@ pub(crate) fn stored_first_tac_line(para: &Paragraph) -> Option<&LineSeg> {
         .then_some(first)
 }
 
+/// 가시 텍스트 없는 문단에서 TAC 표 하나가 혼자 차지한 저장 줄과 그 번호다.
+/// [`stored_first_tac_line`]과 같은 원본 조건을 쓰되, 여러 표가 각자의 저장 줄을
+/// 소유한 문단의 둘째 이후 줄(쪽을 넘겨 vpos 를 되감은 줄 포함)도 수용한다.
+/// 같은 줄의 다른 글자 취급 개체가 있으면 그 줄은 이 표 혼자의 상자가 아니다.
+pub(crate) fn stored_owned_tac_line(
+    para: &Paragraph,
+    control_index: usize,
+) -> Option<(usize, &LineSeg)> {
+    if para.stored_text_partition_dirty
+        || para
+            .line_segs
+            .iter()
+            .any(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+        || para
+            .text
+            .chars()
+            .any(|c| !c.is_whitespace() && c > '\u{001f}' && c != '\u{fffc}')
+    {
+        return None;
+    }
+    let Control::Table(table) = para.controls.get(control_index)? else {
+        return None;
+    };
+    if !table.common.treat_as_char || table.caption.is_some() {
+        return None;
+    }
+    let owner = control_line_seg_index(para, control_index)?;
+    let line = para.line_segs.get(owner)?;
+    let shares_line = para.controls.iter().enumerate().any(|(index, control)| {
+        index != control_index
+            && match control {
+                Control::Table(other) => other.common.treat_as_char,
+                Control::Picture(picture) => picture.common.treat_as_char,
+                Control::Shape(shape) => shape.common().treat_as_char,
+                _ => false,
+            }
+            && control_line_seg_index(para, index) == Some(owner)
+    });
+    (!shares_line
+        && i64::from(line.line_height)
+            == i64::from(table.common.height)
+                + i64::from(table.outer_margin_top)
+                + i64::from(table.outer_margin_bottom))
+    .then_some((owner, line))
+}
+
 /// Ordinary whitespace rows before an object in the same stored fragment.
 /// A vpos reset has a different continuation owner; its prefix cannot be
 /// emitted again beside the object after that owner advances the page.
