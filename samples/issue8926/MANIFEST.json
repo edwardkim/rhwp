@@ -1,0 +1,25 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 8926,
+  "title": "TAC 표 줄 뒤 글줄의 저장 쪽 리셋을 무시해 다음 쪽 줄이 본문 하단 밖에 남음",
+  "entries": [
+    {
+      "path": "samples/issue8926/6540000-202500049-post-table-line-stored-page-reset.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/8926",
+      "originalFilename": "6540000-202500049_D0150018-1-000_정책연구_활용결과_보고서-제3차 김제시 평생교육중장기발전계획수립 연구용역.hwp",
+      "bytes": 121344,
+      "sha256": "78719aa7c6a8743f9b08f1ab0a45fd1c134a6e87068075dd7e6448b199220b84",
+      "lastSavedWith": {
+        "product": "hancom-office-2020",
+        "version": "11.0.0.8808"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/issue8926/6540000-202500049-post-table-line-stored-page-reset-2020.pdf",
+      "referencePdfSha256": "d0917ecf26c5253658cb02d61429916b903223f795fa5f16f2e77ac8ac8a9982",
+      "referencePdfPageCount": 2,
+      "contract": "문단 0 의 TAC 표 줄(줄 1) 뒤 글줄(줄 2)은 저장 vpos 가 쪽 리셋(0)이므로 다음 쪽 맨 위에 한 번 놓인다. 「<서식8>」 줄과 표는 1쪽. 전체 2쪽으로 한/글 engine 2020 Print 와 같다."
+    }
+  ]
+}
