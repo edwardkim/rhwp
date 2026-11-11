@@ -1,0 +1,97 @@
+[
+  {
+    "name": "native-skia-lib",
+    "source": "3fdde2a216e19cedb51a00be17e01a2d20950c88",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--lib",
+      "--",
+      "--test-threads",
+      "8"
+    ],
+    "returncode": 0,
+    "seconds": 475.91,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/logs/final-gate-native-skia-lib.log",
+    "minimal_fonts": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/minimal-font/exposed.txt"
+  },
+  {
+    "name": "native-skia-placeholder",
+    "source": "3fdde2a216e19cedb51a00be17e01a2d20950c88",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_2225_missing_picture_placeholder",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--features",
+      "native-skia"
+    ],
+    "returncode": 0,
+    "seconds": 349.97,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/logs/final-gate-native-skia-placeholder.log",
+    "minimal_fonts": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/minimal-font/exposed.txt"
+  },
+  {
+    "name": "native-skia-pdf",
+    "source": "3fdde2a216e19cedb51a00be17e01a2d20950c88",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "render_p37_direct_pdf_export",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--features",
+      "native-skia"
+    ],
+    "returncode": 0,
+    "seconds": 18.81,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/logs/final-gate-native-skia-pdf.log",
+    "minimal_fonts": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/minimal-font/exposed.txt"
+  },
+  {
+    "name": "native-font-protocol",
+    "source": "3fdde2a216e19cedb51a00be17e01a2d20950c88",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "native_pua_host_font_protocol",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--features",
+      "native-skia"
+    ],
+    "returncode": 0,
+    "seconds": 14.04,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/logs/final-gate-native-font-protocol.log",
+    "minimal_fonts": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/minimal-font/exposed.txt"
+  },
+  {
+    "name": "native-font-protocol-lint",
+    "source": "3fdde2a216e19cedb51a00be17e01a2d20950c88",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--features",
+      "native-skia",
+      "--test",
+      "regression_suite_028",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "returncode": 0,
+    "seconds": 118.81,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/logs/final-gate-native-font-protocol-lint.log",
+    "minimal_fonts": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/minimal-font/exposed.txt"
+  }
+]

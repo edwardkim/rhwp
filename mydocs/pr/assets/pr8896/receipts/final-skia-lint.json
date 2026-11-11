@@ -1,0 +1,23 @@
+[
+  {
+    "name": "clippy-skia",
+    "source": "3fdde2a216e19cedb51a00be17e01a2d20950c88",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--features",
+      "native-skia",
+      "--lib",
+      "--bin",
+      "rhwp",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "returncode": 0,
+    "seconds": 191.51,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/logs/final-gate-clippy-skia.log",
+    "minimal_fonts": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/minimal-font/exposed.txt"
+  }
+]

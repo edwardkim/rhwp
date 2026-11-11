@@ -1,0 +1,37 @@
+[
+  {
+    "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/handbook-fonts/KoPubBatang-Light.ttf",
+    "sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f",
+    "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubBatang@7ef37ed4015cf0f638952e3d9937e4192f7cea97/KoPubBatang-Light.ttf"
+  },
+  {
+    "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/handbook-fonts/KoPubBatang-Medium.ttf",
+    "sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4",
+    "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubBatang@7ef37ed4015cf0f638952e3d9937e4192f7cea97/KoPubBatang-Medium.ttf"
+  },
+  {
+    "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/handbook-fonts/KoPubBatang-Bold.ttf",
+    "sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b",
+    "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubBatang@7ef37ed4015cf0f638952e3d9937e4192f7cea97/KoPubBatang-Bold.ttf"
+  },
+  {
+    "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/handbook-fonts/KoPubDotum-Light.ttf",
+    "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d",
+    "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubDotum@295e0fc83931fda749f129b6690c0fa93f798007/KoPubDotum-Light.ttf"
+  },
+  {
+    "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/handbook-fonts/KoPubDotum-Medium.ttf",
+    "sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7",
+    "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubDotum@295e0fc83931fda749f129b6690c0fa93f798007/KoPubDotum-Medium.ttf"
+  },
+  {
+    "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/handbook-fonts/KoPubDotum-Bold.ttf",
+    "sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275",
+    "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubDotum@295e0fc83931fda749f129b6690c0fa93f798007/KoPubDotum-Bold.ttf"
+  },
+  {
+    "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/handbook-fonts/HANBatang.woff",
+    "sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+    "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff"
+  }
+]

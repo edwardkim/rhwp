@@ -1,0 +1,10 @@
+{
+  "compiled_source": "ae5c72c710ac116132d2b9dcf62078bbc884beff",
+  "checkout_source": "3fdde2a216e19cedb51a00be17e01a2d20950c88",
+  "command": "git diff --name-only ae5c72c710ac116132d2b9dcf62078bbc884beff HEAD -- src crates Cargo.toml Cargo.lock",
+  "changed_production_paths": [],
+  "producer_hashes": {
+    "native": "9252e95adf8a8b0670610a12d1069732cb14fe9c224471977abe9da9f507d04b",
+    "wasm": "fa470ee68c748af38a6adbbefcfcbde0cab128c90fa7581214b03fd0a4d62fee"
+  }
+}

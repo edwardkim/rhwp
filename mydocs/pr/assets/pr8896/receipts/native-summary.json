@@ -1,0 +1,24 @@
+{
+  "source": "3fdde2a216e19cedb51a00be17e01a2d20950c88",
+  "official_three_passed": 4072,
+  "additional_protocol_passed": 23,
+  "gates": [
+    {
+      "name": "native-skia-lib",
+      "passed": 4035
+    },
+    {
+      "name": "native-skia-placeholder",
+      "passed": 2
+    },
+    {
+      "name": "native-skia-pdf",
+      "passed": 35
+    },
+    {
+      "name": "native-font-protocol",
+      "passed": 23
+    }
+  ],
+  "conditional_protocol_clippy": "passed"
+}
