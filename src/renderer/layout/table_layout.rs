@@ -5842,6 +5842,7 @@ impl LayoutEngine {
                         &cell.paragraphs,
                         styles,
                         inner_width,
+                        cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                     );
                     // [#3386] 저장 cellSz 가 저장 줄 흐름보다 작은 모순 셀은 한글이
                     // 줄 흐름 + 상하 여백으로 재성장한다 (156678235 p5 내부 표 r0:
@@ -5982,6 +5983,7 @@ impl LayoutEngine {
                     &cell.paragraphs,
                     styles,
                     inner_width,
+                    cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                 );
                 // [#3386] 1-b 와 동일 — 모순 선언(span 합) 초과 성장 시 여백 가산.
                 let stored_frame_end =
@@ -6272,12 +6274,15 @@ impl LayoutEngine {
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
         cell_inner_width_px: f64,
+        // 칸의 "한 줄로 입력"(SQUEEZE). 배치와 같은 저장 줄 판정을 쓴다.
+        line_wrap_squeeze: bool,
     ) -> f64 {
         let (line_based, object_based) = self.calc_cell_paragraphs_content_parts(
             parent,
             paragraphs,
             styles,
             cell_inner_width_px,
+            line_wrap_squeeze,
         );
         line_based.max(object_based)
     }
@@ -6292,6 +6297,8 @@ impl LayoutEngine {
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
         cell_inner_width_px: f64,
+        // 칸의 "한 줄로 입력"(SQUEEZE). 배치와 같은 저장 줄 판정을 쓴다.
+        line_wrap_squeeze: bool,
     ) -> (f64, f64) {
         let composed_paras: Vec<_> = paragraphs
             .iter()
@@ -6309,6 +6316,7 @@ impl LayoutEngine {
                     self.profile.get().stored_geometry_policy(),
                     self.profile.get().native_hwp5_layout(),
                     &self.single_line_overflow_cache,
+                    line_wrap_squeeze,
                     |nested| self.nested_table_body_height(nested, styles),
                 );
                 comp
@@ -11019,6 +11027,7 @@ impl LayoutEngine {
                             self.profile.get().stored_geometry_policy(),
                             self.profile.get().native_hwp5_layout(),
                             &self.single_line_overflow_cache,
+                            cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                             |nested| self.nested_table_body_height(nested, styles),
                         );
                     } else {
@@ -13692,6 +13701,7 @@ impl LayoutEngine {
                         self.profile.get().stored_geometry_policy(),
                         self.profile.get().native_hwp5_layout(),
                         &self.single_line_overflow_cache,
+                        cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                         |nested| self.nested_table_body_height(nested, styles),
                     );
                 } else {
@@ -13874,6 +13884,7 @@ impl LayoutEngine {
                                 self.profile.get().stored_geometry_policy(),
                                 self.profile.get().native_hwp5_layout(),
                                 &self.single_line_overflow_cache,
+                                cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                                 |nested| self.nested_table_body_height(nested, styles),
                             );
                         } else {
@@ -14850,6 +14861,7 @@ impl LayoutEngine {
         &self,
         p: &Paragraph,
         text_direction: u8,
+        line_wrap_squeeze: bool,
         inner_width: f64,
         styles: &ResolvedStyleSet,
     ) -> ComposedParagraph {
@@ -14864,6 +14876,7 @@ impl LayoutEngine {
                 self.profile.get().stored_geometry_policy(),
                 self.profile.get().native_hwp5_layout(),
                 &self.single_line_overflow_cache,
+                line_wrap_squeeze,
                 |nested| self.nested_table_body_height(nested, styles),
             );
         } else {
@@ -14987,7 +15000,13 @@ impl LayoutEngine {
         };
         let inner =
             crate::renderer::composer::cell_inner_text_width(width, pad_left, pad_right, self.dpi);
-        let composed = self.compose_cell_unit_paragraph(para, cell.text_direction, inner, styles);
+        let composed = self.compose_cell_unit_paragraph(
+            para,
+            cell.text_direction,
+            cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
+            inner,
+            styles,
+        );
         let Some(position) = para
             .control_text_positions()
             .get(entry.control_index)
@@ -15040,8 +15059,13 @@ impl LayoutEngine {
         let inner_width = crate::renderer::composer::cell_inner_text_width(
             cell_width, pad_left, pad_right, self.dpi,
         );
-        let composed =
-            self.compose_cell_unit_paragraph(para, cell.text_direction, inner_width, styles);
+        let composed = self.compose_cell_unit_paragraph(
+            para,
+            cell.text_direction,
+            cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
+            inner_width,
+            styles,
+        );
         let Some(&(marker_pos, _, _)) = composed
             .footnote_positions
             .iter()
@@ -16423,8 +16447,13 @@ impl LayoutEngine {
                 .filter(|(control_idx, _)| !stored_square_picture_controls.contains(control_idx))
                 .collect();
             let para_non_inline_h = para_top_and_bottom_h + para_other_non_inline_h;
-            let comp =
-                self.compose_cell_unit_paragraph(p, cell.text_direction, inner_width, styles);
+            let comp = self.compose_cell_unit_paragraph(
+                p,
+                cell.text_direction,
+                cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
+                inner_width,
+                styles,
+            );
             // 재조판 좌표 뷰의 임시 복사본을 원본 주소 기반 캐시에 넘기지 않는다.
             let source_controls = &p.controls;
             let frame_paragraph = comp.paragraph_with_frame_geometry(p);
@@ -20941,7 +20970,13 @@ impl LayoutEngine {
             hwpunit_to_px(cell.width as i32, self.dpi) * self.render_table_width_scale(table);
         let inner_width =
             crate::renderer::composer::cell_inner_text_width(width, left, right, self.dpi);
-        let comp = self.compose_cell_unit_paragraph(para, cell.text_direction, inner_width, styles);
+        let comp = self.compose_cell_unit_paragraph(
+            para,
+            cell.text_direction,
+            cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
+            inner_width,
+            styles,
+        );
         // 본문을 전진시키는 행 밴드만 문단 내부의 줄 뒤 간격을 쪽 밖으로 이월한다.
         // 어울림/배경 개체는 고유 프레임 안에서 같은 문단의 전진량을 보존한다.
         if closing.vis_end != comp.lines.len()

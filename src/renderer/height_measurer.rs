@@ -4047,6 +4047,7 @@ let body_height=match nested_body_heights
                                 self.stored_geometry_policy,
                                 self.is_native_hwp5,
                                 &self.single_line_overflow_cache,
+                                cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                                 |nested| -> Result<_,S::Error> {
 
                                     let stretch = self.render_normalization.nested_table_width_scale(nested);
@@ -5093,6 +5094,7 @@ let body_height=match nested_body_heights
                                 self.stored_geometry_policy,
                                 self.is_native_hwp5,
                                 &self.single_line_overflow_cache,
+                                cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                                 |nested| -> Result<_,S::Error> {
 
                                     let stretch = self.render_normalization.nested_table_width_scale(nested);
@@ -5910,6 +5912,7 @@ let body_height=match nested_body_heights
                                 &mut comp, p, inner_width, styles, self.dpi,
                                 self.stored_geometry_policy, self.is_native_hwp5,
                                 &self.single_line_overflow_cache,
+                                cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                                 |nested| -> Result<_,S::Error> {
 
                                     let stretch = self.render_normalization.nested_table_width_scale(nested);

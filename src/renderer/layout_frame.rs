@@ -82,8 +82,11 @@ fn snap_base_left(edge: i32, pitch: i32) -> i32 {
 pub struct ParagraphBox {
     horizontal: Range<i32>,
     origin_is_derivable: bool,
+    /// 표 칸의 "한 줄로 입력"(`lineWrap=SQUEEZE`). 한/글은 저장 줄 하나에 글을 자간으로
+    /// 밀어 넣고 넘치면 겹쳐 찍는다 — 저장 줄이 상자보다 크게 넘쳐도 줄을 다시 나누지 않는다.
+    line_wrap_squeeze: bool,
 }
-crate::storage::clone_fields!(ParagraphBox, {horizontal, origin_is_derivable});
+crate::storage::clone_fields!(ParagraphBox, {horizontal, origin_is_derivable, line_wrap_squeeze});
 
 impl ParagraphBox {
     /// A column-relative box: `[margin_left, column_width - margin_right]`, the
@@ -92,6 +95,7 @@ impl ParagraphBox {
         Self {
             horizontal,
             origin_is_derivable: true,
+            line_wrap_squeeze: false,
         }
     }
 
@@ -178,6 +182,19 @@ impl ParagraphBox {
     /// `segment_width` still comes from the column box and still takes the
     /// geometry pitch, which is the exposure Task 3 measured. Fixing the
     /// empty-list marker placement is the prerequisite for removing this.
+    /// 칸의 줄바꿈 방식을 싣는다. `true` 는 "한 줄로 입력"(SQUEEZE) 칸이다.
+    pub(crate) fn with_line_wrap_squeeze(self, line_wrap_squeeze: bool) -> Self {
+        Self {
+            line_wrap_squeeze,
+            ..self
+        }
+    }
+
+    /// 저장 줄이 상자보다 넘쳐도 그 줄 나눔을 유지하는 "한 줄로 입력" 칸 상자인가.
+    pub(crate) fn line_wrap_squeeze(&self) -> bool {
+        self.line_wrap_squeeze
+    }
+
     pub(crate) fn with_derivable_origin(self, origin_is_derivable: bool) -> Self {
         Self {
             origin_is_derivable: self.origin_is_derivable && origin_is_derivable,
@@ -216,6 +233,7 @@ impl ParagraphBox {
         Self {
             horizontal,
             origin_is_derivable: true,
+            line_wrap_squeeze: false,
         }
     }
 
