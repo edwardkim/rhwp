@@ -58,11 +58,66 @@ b에서 이 판정은 49.7px가 남는다고 보고 첫 행(약 17.1px)이 들�
 | d(여러 행 가능) | 행 경계 | 행 누적 + 바깥 아래 | 남은 행 이월 | 1쪽 1–N행, 2쪽 나머지, 행 1–40 각 1회 |
 | None 표 | 기존과 같음 | — | — | 변경 없음 |
 
-## 검증(작업 트리, 커밋 전)
+## 검증
+
+### 시각 증적
 
 - Visual Sweep: `mydocs/pr/assets/issue_7620_rowbreak_bottom_margin_budget/README.md`.
   b는 수정 전 Native 89.88/59.65%, fresh WASM 90.21/60.49%에서 수정 후 양쪽 100.00/100.00%다.
   c·d는 수정 전후 100.00%다. 1쪽 바닥과 2쪽 표 위치를 review PNG로 직접 판독했다.
+  측정 뒤 커밋은 테스트(`732d53626`)와 TSV 개행(`2c825f08a`)만 바꿨고 `src/`는 그대로다.
 - `layout-anomaly`: b·c·d 모두 0건. 래칫 baseline 추가가 필요 없다.
-- 회귀: `tests/cases/issue_7620_rowbreak_float_bottom_margin_budget.rs`(관계형 3건).
-  수정 전 실패·수정 후 통과와 전체 게이트는 커밋 뒤 review worktree에서 기록한다.
+
+### 게이트(review worktree, head `2c825f08a7a0247be25493543545e1a6798fc1a2`)
+
+2026-11-10~11, base `b5064fae1eefff92d60464c51844a38debec09f9`, `--target-dir target/pr-review`.
+
+| 단계 | 명령 | 결과 |
+|---|---|---|
+| 준비 | `node scripts/rust-test-suite-manifest.mjs --prepare` | 성공 |
+| fmt | `cargo fmt --all -- --check` | 통과 |
+| Clippy native | `cargo clippy --locked -- -D warnings` | 통과 |
+| Clippy WASM | `cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown -- -D warnings` | 통과 |
+| workspace | `cargo build --locked --workspace`, `cargo clippy --locked --workspace --all-targets -- -D warnings` | 통과 |
+| manifest | `node scripts/rust-test-suite-manifest.mjs --check --base-ref b5064fae1` | 통과 |
+| 수정 후 | `node scripts/run-rust-test.mjs issue_7620_rowbreak_float_bottom_margin_budget` | 3건 통과 |
+| 수정 전 | 같은 명령, `prepare.rs`·`deferred_float.rs`만 base로 되돌림 | b 실패(아래), c·d 통과 |
+| 전체 | `cargo nextest run --locked --cargo-profile release-test --tests` | 13116건 통과 |
+| Skia lib | `cargo test --locked --profile release-test --features native-skia --lib` | 3851 통과, 1 실패(아래) |
+| Skia 대상 | `issue_2225_missing_picture_placeholder`, `render_p37_direct_pdf_export`(`--features native-skia`) | 2건, 35건 통과 |
+| 공백 | `git diff --check b5064fae1 HEAD` | 통과 |
+
+- 수정 전 실패의 원인: `issue_7620_rowbreak_without_first_row_moves_table_and_keeps_text`가
+  `표가 나뉘지 않고 한 쪽에만 있어야 한다`에서 실패한다. 표 조각이 1쪽 959.4px와 2쪽 170.1px
+  두 곳에 있었다(빌드·환경 실패 아님). c·d는 수정 전에도 같은 배치를 내는 대조군이다.
+- Skia lib 1건 `renderer::skia::renderer::tests::custom_font_paths_select_style_within_the_first_family_owner`
+  (`renderer.rs:3851`, 합성 Bold 굵기 400 ≠ 700)은 base src로 같은 테스트만 돌려도 같은 위치에서
+  실패한다. 이 변경과 무관한 기존 실패다.
+
+### 코퍼스 래칫과 보안 검사
+
+- `samples/`를 훑는 다섯 래칫(IR sweep, overflow cell, off canvas, text overlap, body overflow)은
+  위 전체 nextest에 포함되어 통과했다. 새 sample b·c·d는 `layout-anomaly` 0건이라 행이 없다.
+- `oracle_page_count_baseline`: 비해당. 원장은 `<원본>-<hwp|hwpx>-<2020|2024>.pdf` 형식의
+  한/글 데스크톱 엔진 PDF만 고른다(`tools/oracle_pdf_selection.py`). 새 기준 PDF는 한컴독스 웹
+  인쇄본(`-hancomdocs.pdf`)이므로 엔진을 꾸며 이름을 바꾸지 않았다. 재생성 결과에는 이 작업과
+  무관한 로컬 `pdf/` 체크아웃 차이가 섞여 커밋하지 않았다.
+- 새 sample 보안 검사: `RHWP_SECURITY_SWEEP_SAMPLES_JSON`에 b·c·d 세 경로를 넣고
+  `-E 'test(/security_corpus_regression/)'` 실행, 6건 통과
+  (`new_sample_documents_are_clean_across_all_three_detectors` 포함).
+
+### 편람 `--handbook-gate`
+
+2026-11-11, head `2c825f08a`, `scripts/visual_sweep.py --handbook-gate`(Native, 383쪽, 지원 웹폰트).
+
+| 환경 | 실행 파일(SHA-256) | 결과 |
+|---|---|---|
+| WSL Ubuntu 22.04, `cargo build --release --features native-skia`, pypdfium2 5.13.0 | `4d5aa4934e0d3045b5ace67bd021e8d172538e42d7313eb2825eb4e220dd0b1d` | **passed**, 하락 0쪽. raw 100.00%가 아닌 쪽은 130쪽(99.96%, 알려진 WMF 차이) 하나 |
+| Windows 11, release-test native-skia, pypdfium2 5.14.0과 5.13.0 | head `5d9ec9b3…`, base `deed3274…` | 둘 다 `re_review_required`(9쪽 100.00 → 99.99%, 25픽셀) |
+
+Windows의 9쪽 하락은 이 변경과 무관한 실행 환경 차이다.
+
+- base(`b5064fae1`) 실행 파일로 같은 환경에서 돌려도 383쪽 raw 값이 head와 전부 같았다.
+- head와 base의 편람 383쪽 `export-svg` 출력은 바이트 단위로 같았다.
+- 9쪽을 확대해 보면 배치는 PDF와 같고, 큰 제목 글자의 안티앨리어싱만 다르다.
+- 같은 head를 Linux에서 빌드해 돌리면 통과한다. 그래서 Windows Skia의 글자 래스터 차이로 본다.
