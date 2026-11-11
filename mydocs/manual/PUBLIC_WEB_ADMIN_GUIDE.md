@@ -221,7 +221,7 @@ add_filter('wp_get_attachment_link', function($link, $id) {
 
 ## 디버깅 도구
 
-rhwp 확장이 설치된 브라우저에서 **F12 → 콘솔**을 열면 디버깅 명령어를 사용할 수 있습니다.
+rhwp 확장이 설치된 브라우저에서 **F12 → 콘솔**을 열면 디버깅 명령어를 사용할 수 있습니다. Chrome/Edge에서는 페이지의 `<head>`에 `<meta name="hwp:integration" content="enabled">`를 추가해야 합니다.
 
 ### 페이지 전체 검사
 
@@ -269,7 +269,7 @@ rhwpDev.help()
 
 ## 확장 프로그램 감지
 
-웹사이트에서 rhwp 확장 설치 여부를 감지하여 조건부 UI를 제공할 수 있습니다.
+웹사이트에서 rhwp 확장 설치 여부를 감지하여 조건부 UI를 제공할 수 있습니다. Chrome/Edge에서는 `hwp:integration` 메타 태그로 통합을 활성화한 페이지에만 아래 속성과 이벤트가 제공됩니다.
 
 ### 방법 1: data 속성 확인
 

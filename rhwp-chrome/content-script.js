@@ -121,19 +121,21 @@
     }
   });
 
-  // 확장 존재 알림
-  const EXT_VERSION = chrome.runtime.getManifest().version;
-  document.documentElement.setAttribute('data-hwp-extension', 'rhwp');
-  document.documentElement.setAttribute('data-hwp-extension-version', EXT_VERSION);
-  window.dispatchEvent(new CustomEvent('hwp-extension-ready', {
-    detail: { name: 'rhwp', version: EXT_VERSION, capabilities: ['preview', 'edit', 'print'] }
-  }));
+  // 일반 페이지의 hydration을 방해하지 않도록 설치 알림과 개발자 도구는 통합 페이지에만 제공한다.
+  if (document.head?.querySelector('meta[name="hwp:integration"][content="enabled"]')) {
+    const EXT_VERSION = chrome.runtime.getManifest().version;
+    document.documentElement.setAttribute('data-hwp-extension', 'rhwp');
+    document.documentElement.setAttribute('data-hwp-extension-version', EXT_VERSION);
+    window.dispatchEvent(new CustomEvent('hwp-extension-ready', {
+      detail: { name: 'rhwp', version: EXT_VERSION, capabilities: ['preview', 'edit', 'print'] }
+    }));
 
-  // 개발자 도구 주입 (페이지 컨텍스트에 rhwpDev 노출)
-  const devScript = document.createElement('script');
-  devScript.src = chrome.runtime.getURL('dev-tools-inject.js');
-  (document.head || document.documentElement).appendChild(devScript);
-  devScript.onload = () => devScript.remove();
+    // 페이지 콘솔에 rhwpDev를 노출한다.
+    const devScript = document.createElement('script');
+    devScript.src = chrome.runtime.getURL('dev-tools-inject.js');
+    devScript.onload = devScript.onerror = () => devScript.remove();
+    document.head.appendChild(devScript);
+  }
 
   // ─── 유틸리티 ───
 
