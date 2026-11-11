@@ -19,9 +19,6 @@ pub fn is_book_bracket(character: char) -> bool {
 pub const SUPPORTED_SYMBOLS: [char; 11] = [
     '\u{F0854}',
     '\u{F0855}',
-    // 독립 한컴 Print의 작은 삼각형은 공급된 Haansoft Batang의 원 PUA다.
-    // 원 프로그램이 없으면 기존 U+25B8 표시 대체를 그대로 사용한다.
-    '\u{F02FB}',
     '\u{F02FC}',
     '\u{F02EF}',
     '\u{F031C}',
@@ -30,6 +27,10 @@ pub const SUPPORTED_SYMBOLS: [char; 11] = [
     '\u{F03A8}',
     '\u{F0848}',
     '\u{F080F}',
+    // 기존 기호의 공급자 탐색 순서를 보존하고 새 기호를 마지막에 조회한다.
+    // 독립 한컴 Print의 작은 삼각형은 공급된 Haansoft Batang의 원 PUA다.
+    // 원 프로그램이 없으면 기존 U+25B8 표시 대체를 그대로 사용한다.
+    '\u{F02FB}',
 ];
 
 pub fn is_supported_symbol(character: char) -> bool {

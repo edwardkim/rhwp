@@ -42,6 +42,21 @@ tofu를 표시 대체로 해결했다. 이후 `774d414cd9`·`17225375ff`가 실�
 원 프로그램 부재·결측에서는 기존 #4228 대체를 유지한다. 문서별 좌표나 glyph 크기를 맞추지 않는다.
 보정 후 중첩 표 전 17쪽과 정상 대조군의 Native/fresh WASM을 먼저 확인한 뒤 관계형 회귀를 보강한다.
 
+정본과 동일한 `<232` RGB 최소 채널 마스크로 sample16 잔여를 재진단했다. 앞선 진단용
+`<160` 회색조 마스크는 다른 픽셀을 지목했으므로 원인 판정에서 제외한다. 본문 `×`·`÷`는
+HCI Poppy에 없어 Noto로 대체되고 있었다. 대상 PDF가 아닌 독립 문자 표본을 한컴 2020
+11.0.0.9136의 Print(method 0, one-up)로 출력해 두 Type3 프로그램이 기준 PDF와 바이트까지
+같음을 확인했다. 이 로컬 원 프로그램을 명시적인 결측 글리프 대체로 공급한다. 구형 분수는
+준비 도구가 공급하는 `RHWP Hancom Legacy Equation` 가족을 공통 layout이 요청하지 않아
+기존 구형 가족 이름만 찾았다. 준비 도구의 가족을 먼저 요청하고 기존 이름·현대 대체는 보존한다.
+
+sample16 Native 35쪽의 나머지는 WMF 내부 `GulimChe`였다. PNG exporter는 사용자 font
+snapshot을 본문·그림자에 전달하지만 WMF paint 자원에는 전달하지 않았다. 같은 원 TTC의
+face 1을 기존 공통 `register_metafile_font_native`에 공급한 진단은 raw 100%다. 기존 공통
+WMF 요청·등록·예산과 실제 renderer snapshot을 연결하며 원본·줄 구성·메트릭은 바꾸지 않는다.
+그림자와 WMF의 실제 face 선택·등록 루프를 공유하고 같은 프로그램의 중복 등록은 기존 API가
+억제하게 한다. 문서별 그림 위치·획·배율·마스크·보호값을 보정하지 않는다.
+
 - 원 PR: https://github.com/edwardkim/rhwp/pull/8896
 - 기존 보류 설명: https://github.com/edwardkim/rhwp/pull/8896#issuecomment-6784903830
 - 원 문제: https://github.com/edwardkim/rhwp/issues/8693
