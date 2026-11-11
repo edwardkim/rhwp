@@ -4,7 +4,7 @@
 
 **메인터너 보정 후 수용 가능 — 검증한 통합 후보에서 원 PR의 주장 범위와 기존 보호 문서 기준을 충족합니다.**
 
-검증 제품 코드 `3575d814f44053483bb51f54b01dcf8044d0b575`의 검토입니다. 리베이스된 최신 HEAD를 Native/fresh WASM으로 새로 빌드해 주장 페이지와 보호 문서를 재출력했습니다. 이전 직접 판독은 새 출력 raw/PDF 해시가 동일한 경우에만 재사용했습니다. [재사용 기록](../assets/planet6897_remaining39_20261111/maintainer-repair/rebase-reuse.json). 원격 PR의 승인·댓글·close·새 통합 PR 제출·병합을 완료했다는 뜻이 아닙니다. 원 PR 범위 밖의 기존 미달을 추가 수용 조건으로 확대하지 않았습니다.
+검증 제품 코드 `3575d814f44053483bb51f54b01dcf8044d0b575`의 검토입니다. 리베이스된 최신 HEAD를 Native/fresh WASM으로 새로 빌드해 주장 페이지와 보호 문서를 재출력했습니다. 이전 직접 판독은 새 출력 raw/PDF 해시가 동일한 경우에만 재사용했습니다. [재사용 기록](../assets/planet6897_remaining39_20261111/maintainer-repair/rebase-reuse.json). [통합 PR #8958](https://github.com/edwardkim/rhwp/pull/8958)의 최종 code head `67715b56b7149e552f983244e63e5770035f51fc`에서 Full CI를 확인하고 `6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a`로 병합했습니다. [확정 CI·병합 기록](../assets/planet6897_remaining39_20261111/pr8958-ci-merge.json)을 따릅니다. 원 PR의 댓글·supersede close와 관련 이슈 처리는 이 후속 기록 PR 병합 뒤 실제 상태를 확인하여 진행합니다. 원 PR 범위 밖의 기존 미달을 추가 수용 조건으로 확대하지 않았습니다.
 
 ## 접수와 실제 적용
 
@@ -79,79 +79,79 @@ Medication history 약물 체크 표와 비약물 치료 표가 같은 폭·순�
 
 ## Merge 후 contributor PR comment 계획
 
-[Visual Sweep merge comment 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)을 따릅니다. 위 표의 입력·주장 페이지·raw 실루엣 수치와 실제 판독의 차이를 설명하고, 대표 raw/PDF/review/overlay를 게시합니다. `pixel_match`나 `visual_accuracy_proxy_percent`를 raw 실루엣과 같은 값으로 쓰지 않으며 별도 산출되지 않은 값은 미산출로 기록합니다. 통합 PR 병합과 asset의 devel 존재를 확인한 뒤 `<merge-commit-sha>` 고정 raw URL을 사용하고, 게시 뒤 API로 본문·이미지 응답을 확인합니다.
+[Visual Sweep merge comment 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)을 따릅니다. 위 표의 입력·주장 페이지·raw 실루엣 수치와 실제 판독의 차이를 설명하고, 대표 raw/PDF/review/overlay를 게시합니다. `pixel_match`나 `visual_accuracy_proxy_percent`를 raw 실루엣과 같은 값으로 쓰지 않으며 별도 산출되지 않은 값은 미산출로 기록합니다. 통합 PR 병합과 asset의 devel 존재를 확인한 뒤 `6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a` 고정 raw URL을 사용하고, 게시 뒤 API로 본문·이미지 응답을 확인합니다.
 
 - `1351000-201500141_arrhythmia_research_plan.hwp` 34쪽: Native/fresh WASM의 같은 입력·쪽 raw/PDF/review/overlay를 게시하며 위 TSV의 실제 값을 사용합니다.
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/raw-034.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/raw-034.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/pdf-034.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/pdf-034.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/review_034.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/review_034.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/overlay_034.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/overlay_034.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/raw-034.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/raw-034.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/pdf-034.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/pdf-034.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/review_034.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/review_034.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/overlay_034.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/overlay_034.png`
 
 - `1351000-201500141_arrhythmia_research_plan.hwp` 35쪽: Native/fresh WASM의 같은 입력·쪽 raw/PDF/review/overlay를 게시하며 위 TSV의 실제 값을 사용합니다.
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/raw-035.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/raw-035.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/pdf-035.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/pdf-035.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/review_035.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/review_035.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/overlay_035.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/overlay_035.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/raw-035.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/raw-035.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/pdf-035.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/pdf-035.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/review_035.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/review_035.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/overlay_035.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/overlay_035.png`
 
 - `1351000-201500141_arrhythmia_research_plan.hwp` 45쪽: Native/fresh WASM의 같은 입력·쪽 raw/PDF/review/overlay를 게시하며 위 TSV의 실제 값을 사용합니다.
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/raw-045.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/raw-045.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/pdf-045.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/pdf-045.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/review_045.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/review_045.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/overlay_045.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/overlay_045.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/raw-045.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/raw-045.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/pdf-045.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/pdf-045.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/review_045.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/review_045.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/overlay_045.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/overlay_045.png`
 
 - `1351000-201500141_arrhythmia_research_plan.hwp` 46쪽: Native/fresh WASM의 같은 입력·쪽 raw/PDF/review/overlay를 게시하며 위 TSV의 실제 값을 사용합니다.
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/raw-046.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/raw-046.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/pdf-046.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/pdf-046.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/review_046.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/review_046.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/overlay_046.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/native/overlay_046.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/raw-046.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/raw-046.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/pdf-046.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/pdf-046.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/review_046.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/review_046.png`
 
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/overlay_046.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/6f9c6ecae7732ccab590ad3c1cb8b4169b5ca19a/mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8803-1351000-201500141_arrhythmia_research_plan/wasm/overlay_046.png`
 
 ## 공통 보호 검사와 검토 범위
 
