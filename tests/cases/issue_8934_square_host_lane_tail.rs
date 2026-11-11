@@ -13,8 +13,8 @@
 //!
 //! 측정: 2026-11-11, `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`(4열
 //! `silhouette_raw_match_percent`, 색상 경계 보정 전 2px 실루엣), 소스 devel `e118de8aba` + 이 수정.
-//! 1쪽 Native 98.43 / fresh WASM 98.43(수정 전 Native 60.32). 전체 1쪽 = PDF 1쪽,
-//! 전쪽 최저 Native 98.43(1쪽)·fresh WASM 98.43(1쪽).
+//! 1쪽 Native 98.43 / fresh WASM 98.50(수정 전 Native 60.32). 전체 1쪽 = PDF 1쪽,
+//! 전쪽 최저 Native 98.43(1쪽)·fresh WASM 98.50(1쪽).
 //! 증거: `mydocs/pr/assets/issue_8934/{native,wasm}/`(TSV)·review·overlay PNG.
 //!
 //! 검사: 원본 계약(host 글자 있음·문단 기준 어울림 표, 차선 문단 저장 줄이 두 세그먼트이고 마지막
