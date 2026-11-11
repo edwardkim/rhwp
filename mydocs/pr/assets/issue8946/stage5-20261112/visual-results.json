@@ -1,0 +1,160 @@
+{
+  "base": "4c876654d8",
+  "code_head": "6b7ceb9cd5f11e8c4c073aeadc032d84c0767b2e",
+  "dpi": 96,
+  "radius_px": 2,
+  "datasets": [
+    {
+      "name": "hwpx-native",
+      "pages": 763,
+      "minimum": {
+        "page": 18,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 96.34886,
+        "silhouette_raw_unmatched_pixels": 1312,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 35934,
+        "tolerant_content_match_percent": 96.34886
+      },
+      "cover": {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 27037,
+        "tolerant_content_match_percent": 100.0
+      },
+      "tsv_sha256": "17fba16103dea0bdaac18be0afebbb2a568bd56bd6ad5144312f2424d1d3dc48",
+      "input": {
+        "hwp": {
+          "sha256": "3395e19bebea8b6689f383df1f4ea1ddb253dee91c4320392cc40e90e2e4f191"
+        },
+        "pdf": {
+          "sha256": "45bb4d29b0afea67fb4818a9b605a84201cbdf2998b6c31310d36fb85294cad8"
+        }
+      },
+      "page_counts": {
+        "rhwp": 763,
+        "pdf": 763
+      }
+    },
+    {
+      "name": "hwpx-wasm",
+      "pages": 763,
+      "minimum": {
+        "page": 757,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.56218,
+        "silhouette_raw_unmatched_pixels": 176,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 40199,
+        "tolerant_content_match_percent": 99.56218
+      },
+      "cover": {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 27023,
+        "tolerant_content_match_percent": 100.0
+      },
+      "tsv_sha256": "425e7142b726cdea46d85764066edc7b0c372df161eed324f4f8aa508482b974",
+      "input": {
+        "hwp": {
+          "sha256": "3395e19bebea8b6689f383df1f4ea1ddb253dee91c4320392cc40e90e2e4f191"
+        },
+        "pdf": {
+          "sha256": "45bb4d29b0afea67fb4818a9b605a84201cbdf2998b6c31310d36fb85294cad8"
+        }
+      },
+      "page_counts": {
+        "rhwp": 763,
+        "pdf": 763
+      }
+    },
+    {
+      "name": "hwp3-native",
+      "pages": 763,
+      "minimum": {
+        "page": 761,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 98.77175,
+        "silhouette_raw_unmatched_pixels": 542,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 44128,
+        "tolerant_content_match_percent": 98.77175
+      },
+      "cover": {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.96383,
+        "silhouette_raw_unmatched_pixels": 10,
+        "silhouette_boundary_reconciled_pixels": 1,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 27650,
+        "tolerant_content_match_percent": 99.96745
+      },
+      "tsv_sha256": "e59d4246ad74f0b0b7872b72361b40b0189ffa981c646a0c97a3c0c3b0b42fec",
+      "input": {
+        "hwp": {
+          "sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48"
+        },
+        "pdf": {
+          "sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918"
+        }
+      },
+      "page_counts": {
+        "rhwp": 763,
+        "pdf": 763
+      }
+    },
+    {
+      "name": "hwp3-wasm",
+      "pages": 763,
+      "minimum": {
+        "page": 757,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.5484,
+        "silhouette_raw_unmatched_pixels": 181,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 40080,
+        "tolerant_content_match_percent": 99.5484
+      },
+      "cover": {
+        "page": 1,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.96385,
+        "silhouette_raw_unmatched_pixels": 10,
+        "silhouette_boundary_reconciled_pixels": 1,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 27661,
+        "tolerant_content_match_percent": 99.96746
+      },
+      "tsv_sha256": "0b87f8935c12054190b95ad2d71bb049a052b2eb710041da99facbc97f02f8eb",
+      "input": {
+        "hwp": {
+          "sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48"
+        },
+        "pdf": {
+          "sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918"
+        }
+      },
+      "page_counts": {
+        "rhwp": 763,
+        "pdf": 763
+      }
+    }
+  ],
+  "native_producers": {
+    "base": "6f5fcfe977af707fd2c07490df8e840380835a8844aa4992d40d098be255c4b9",
+    "head": "e0304575e75fd9c16e2bff96b29794a64a11a3b29c3d037fe133724cdef8c677"
+  }
+}

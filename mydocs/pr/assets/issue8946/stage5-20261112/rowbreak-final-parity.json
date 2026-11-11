@@ -1,0 +1,122 @@
+[
+  {
+    "backend": "native",
+    "document": "a-rowbreak-float",
+    "rhwp_png": {
+      "count": 1,
+      "identical": true
+    },
+    "render_tree": {
+      "count": 1,
+      "identical": true
+    }
+  },
+  {
+    "backend": "native",
+    "document": "b-rowbreak-bottom-margin-overflow",
+    "rhwp_png": {
+      "count": 2,
+      "identical": true
+    },
+    "render_tree": {
+      "count": 2,
+      "identical": true
+    }
+  },
+  {
+    "backend": "native",
+    "document": "c-rowbreak-table-moves-next-page",
+    "rhwp_png": {
+      "count": 2,
+      "identical": true
+    },
+    "render_tree": {
+      "count": 2,
+      "identical": true
+    }
+  },
+  {
+    "backend": "native",
+    "document": "d-rowbreak-splits-at-row-boundary",
+    "rhwp_png": {
+      "count": 2,
+      "identical": true
+    },
+    "render_tree": {
+      "count": 2,
+      "identical": true
+    }
+  },
+  {
+    "backend": "native",
+    "document": "control-float",
+    "rhwp_png": {
+      "count": 1,
+      "identical": true
+    },
+    "render_tree": {
+      "count": 1,
+      "identical": true
+    }
+  },
+  {
+    "backend": "wasm",
+    "document": "a-rowbreak-float",
+    "rhwp_png": {
+      "count": 1,
+      "identical": true
+    },
+    "render_tree": {
+      "count": 1,
+      "identical": true
+    }
+  },
+  {
+    "backend": "wasm",
+    "document": "b-rowbreak-bottom-margin-overflow",
+    "rhwp_png": {
+      "count": 2,
+      "identical": true
+    },
+    "render_tree": {
+      "count": 2,
+      "identical": true
+    }
+  },
+  {
+    "backend": "wasm",
+    "document": "c-rowbreak-table-moves-next-page",
+    "rhwp_png": {
+      "count": 2,
+      "identical": true
+    },
+    "render_tree": {
+      "count": 2,
+      "identical": true
+    }
+  },
+  {
+    "backend": "wasm",
+    "document": "d-rowbreak-splits-at-row-boundary",
+    "rhwp_png": {
+      "count": 2,
+      "identical": true
+    },
+    "render_tree": {
+      "count": 2,
+      "identical": true
+    }
+  },
+  {
+    "backend": "wasm",
+    "document": "control-float",
+    "rhwp_png": {
+      "count": 1,
+      "identical": true
+    },
+    "render_tree": {
+      "count": 1,
+      "identical": true
+    }
+  }
+]
