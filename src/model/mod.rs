@@ -17,6 +17,7 @@ pub mod hyperlink;
 pub mod hyperlink_format;
 pub(crate) mod identity;
 pub mod image;
+pub(crate) mod line_seg_tags;
 pub mod memo_extended;
 pub mod memo_shape;
 pub(crate) mod native_font_program;
