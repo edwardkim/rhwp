@@ -65,12 +65,14 @@ b에서 이 판정은 49.7px가 남는다고 보고 첫 행(약 17.1px)이 들�
 - Visual Sweep: `mydocs/pr/assets/issue_7620_rowbreak_bottom_margin_budget/README.md`.
   b는 수정 전 Native 89.88/59.65%, fresh WASM 90.21/60.49%에서 수정 후 양쪽 100.00/100.00%다.
   c·d는 수정 전후 100.00%다. 1쪽 바닥과 2쪽 표 위치를 review PNG로 직접 판독했다.
-  측정 뒤 커밋은 테스트(`732d53626`)와 TSV 개행(`2c825f08a`)만 바꿨고 `src/`는 그대로다.
+  2026-11-11 최신 devel `e118de8ab`로 리베이스한 뒤 base·head를 다시 빌드해 재측정했고,
+  TSV·대표 PNG가 리베이스 전과 바이트 단위로 같았다. 리베이스로 들어온 #8888(같은
+  `table/block/entry.rs`의 빈 앵커 RowBreak 표 아래 바깥 여백)의 회귀 2건도 head에서 통과한다.
 - `layout-anomaly`: b·c·d 모두 0건. 래칫 baseline 추가가 필요 없다.
 
-### 게이트(review worktree, head `2c825f08a7a0247be25493543545e1a6798fc1a2`)
+### 게이트(review worktree, head `3510f73c15830ee76208faa0b063fd07f653a21e`)
 
-2026-11-10~11, base `b5064fae1eefff92d60464c51844a38debec09f9`, `--target-dir target/pr-review`.
+2026-11-11, base `e118de8abadd2dffb2798036b9ffd381b96ed7d5`, `--target-dir target/pr-review`.
 
 | 단계 | 명령 | 결과 |
 |---|---|---|
@@ -79,20 +81,23 @@ b에서 이 판정은 49.7px가 남는다고 보고 첫 행(약 17.1px)이 들�
 | Clippy native | `cargo clippy --locked -- -D warnings` | 통과 |
 | Clippy WASM | `cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown -- -D warnings` | 통과 |
 | workspace | `cargo build --locked --workspace`, `cargo clippy --locked --workspace --all-targets -- -D warnings` | 통과 |
-| manifest | `node scripts/rust-test-suite-manifest.mjs --check --base-ref b5064fae1` | 통과 |
+| manifest | `node scripts/rust-test-suite-manifest.mjs --check --base-ref e118de8ab` | 통과 |
 | 수정 후 | `node scripts/run-rust-test.mjs issue_7620_rowbreak_float_bottom_margin_budget` | 3건 통과 |
 | 수정 전 | 같은 명령, `prepare.rs`·`deferred_float.rs`만 base로 되돌림 | b 실패(아래), c·d 통과 |
-| 전체 | `cargo nextest run --locked --cargo-profile release-test --tests` | 13116건 통과 |
+| 전체 | `cargo nextest run --locked --cargo-profile release-test --tests` | 13222건 중 13217 통과, 5 실패(아래) → 실패 5건 포함 `mcp_server_contract` 26건 재실행 통과 |
 | Skia lib | `cargo test --locked --profile release-test --features native-skia --lib` | 3851 통과, 1 실패(아래) |
 | Skia 대상 | `issue_2225_missing_picture_placeholder`, `render_p37_direct_pdf_export`(`--features native-skia`) | 2건, 35건 통과 |
-| 공백 | `git diff --check b5064fae1 HEAD` | 통과 |
+| 공백 | `git diff --check e118de8ab HEAD` | 통과 |
 
 - 수정 전 실패의 원인: `issue_7620_rowbreak_without_first_row_moves_table_and_keeps_text`가
   `표가 나뉘지 않고 한 쪽에만 있어야 한다`에서 실패한다. 표 조각이 1쪽 959.4px와 2쪽 170.1px
   두 곳에 있었다(빌드·환경 실패 아님). c·d는 수정 전에도 같은 배치를 내는 대조군이다.
+- 전체 nextest의 5건 실패는 모두 `mcp_server_contract`(`rhwp mcp-serve` 응답을 5초 기다림)에서
+  응답이 비어(`[]`) 시간 초과된 것이다. 다른 세션과 CPU를 나눠 쓰던 중이었고, 같은 head에서
+  `-E 'test(/mcp_server_contract::/)'`로 26건을 다시 돌리자 모두 통과했다. 이 변경은 MCP 경로를 바꾸지 않는다.
 - Skia lib 1건 `renderer::skia::renderer::tests::custom_font_paths_select_style_within_the_first_family_owner`
   (`renderer.rs:3851`, 합성 Bold 굵기 400 ≠ 700)은 base src로 같은 테스트만 돌려도 같은 위치에서
-  실패한다. 이 변경과 무관한 기존 실패다.
+  실패한다(리베이스 전 base `b5064fae1`과 새 base `e118de8ab` 모두). 이 변경과 무관한 기존 실패다.
 
 ### 코퍼스 래칫과 보안 검사
 
@@ -103,17 +108,18 @@ b에서 이 판정은 49.7px가 남는다고 보고 첫 행(약 17.1px)이 들�
   인쇄본(`-hancomdocs.pdf`)이므로 엔진을 꾸며 이름을 바꾸지 않았다. 재생성 결과에는 이 작업과
   무관한 로컬 `pdf/` 체크아웃 차이가 섞여 커밋하지 않았다.
 - 새 sample 보안 검사: `RHWP_SECURITY_SWEEP_SAMPLES_JSON`에 b·c·d 세 경로를 넣고
-  `-E 'test(/security_corpus_regression/)'` 실행, 6건 통과
+  `-E 'test(/security_corpus_regression/)'` 실행, 6건 통과(head `3510f73c1`)
   (`new_sample_documents_are_clean_across_all_three_detectors` 포함).
 
 ### 편람 `--handbook-gate`
 
-2026-11-11, head `2c825f08a`, `scripts/visual_sweep.py --handbook-gate`(Native, 383쪽, 지원 웹폰트).
+2026-11-11, `scripts/visual_sweep.py --handbook-gate`(Native, 383쪽, 지원 웹폰트).
 
 | 환경 | 실행 파일(SHA-256) | 결과 |
 |---|---|---|
-| WSL Ubuntu 22.04, `cargo build --release --features native-skia`, pypdfium2 5.13.0 | `4d5aa4934e0d3045b5ace67bd021e8d172538e42d7313eb2825eb4e220dd0b1d` | **passed**, 하락 0쪽. raw 100.00%가 아닌 쪽은 130쪽(99.96%, 알려진 WMF 차이) 하나 |
-| Windows 11, release-test native-skia, pypdfium2 5.14.0과 5.13.0 | head `5d9ec9b3…`, base `deed3274…` | 둘 다 `re_review_required`(9쪽 100.00 → 99.99%, 25픽셀) |
+| WSL Ubuntu 22.04, `cargo build --release --features native-skia`, pypdfium2 5.13.0, head `3510f73c1`(리베이스 후) | `b39f366f5f200cf7fcb410610dd4443404b6ff7bb212c561732b7d9c02ff2aa6` | **passed**, 하락 0쪽. raw 100.00%가 아닌 쪽은 130쪽(99.96%, 알려진 WMF 차이) 하나 |
+| 같은 WSL 환경, head `2c825f08a`(리베이스 전) | `4d5aa4934e0d3045b5ace67bd021e8d172538e42d7313eb2825eb4e220dd0b1d` | passed, 같은 결과 |
+| Windows 11, release-test native-skia, pypdfium2 5.14.0과 5.13.0, 리베이스 전 | head `5d9ec9b3…`, base `deed3274…` | 둘 다 `re_review_required`(9쪽 100.00 → 99.99%, 25픽셀) |
 
 Windows의 9쪽 하락은 이 변경과 무관한 실행 환경 차이다.
 
