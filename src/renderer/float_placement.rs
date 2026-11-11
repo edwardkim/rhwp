@@ -5549,7 +5549,8 @@ pub(crate) fn stored_picture_empty_host_placement(
 pub(crate) fn stored_picture_next_page_placement(
     para: &Paragraph,
     following: &[Paragraph],
-    frame_vpos: i32,
+    frame: StoredColumnFrame,
+    preceding_reset: Option<usize>,
     actual_host_flow_y: f64,
     available_height: f64,
     dpi: f64,
@@ -5574,10 +5575,14 @@ pub(crate) fn stored_picture_next_page_placement(
         || dpi <= 0.0
         || !available_height.is_finite()
         || !actual_host_flow_y.is_finite()
+        || !frame.column_anchor_y.is_finite()
     {
         return None;
     }
-    let host_y = hwpunit_to_px(host.vertical_pos.checked_sub(frame_vpos)?, dpi);
+    // 저장 vpos의 기준을 그림 아래로 옮겼을 때도 물리 단 원점은 남는다.
+    // 수용과 배치가 사용하는 같은 좌표축으로 호스트의 초과를 판정한다.
+    let host_y = frame.column_anchor_y
+        + hwpunit_to_px(host.vertical_pos.checked_sub(frame.source_origin_hu)?, dpi);
     let offset = hwpunit_to_px(signed_hwpunit(common.vertical_offset), dpi);
     let (_, height) = picture_flow_frame_size_hu(picture);
     // [#8732] 아래 캡션은 그림과 함께 다음 쪽으로 간다. 다음 쪽 본문의 저장 재시작은
@@ -5618,6 +5623,16 @@ pub(crate) fn stored_picture_next_page_placement(
             return None;
         }
         if first.vertical_pos < previous_end {
+            // 앞 그림의 재시작 줄은 그 그림의 쪽을 연다. 현재 그림은 그 다음
+            // 자기 높이의 재시작 줄을 소유하므로, 인증된 앞 경계만 건너뛴다.
+            if preceding_reset == Some(reset_index)
+                && next.controls.is_empty()
+                && next.text.trim().is_empty()
+                && next.column_type == crate::model::paragraph::ColumnBreakType::None
+            {
+                previous_end = next.line_segs.last()?.vertical_pos;
+                continue;
+            }
             // 다음 쪽 첫 저장 줄이 그림(·캡션) 아래끝과 정확히 같다는 것이 이월의 근거다.
             // 그 줄이 빈 문단이어도 저장 사다리의 같은 등식이 쪽 소유를 증명한다.
             // [#8795] 그 문단의 자기 개체는 다음 쪽에서 자기 줄을 기준으로 놓이며 줄의
@@ -5643,9 +5658,42 @@ pub(crate) fn stored_picture_next_page_placement(
                 reset_index,
             ));
         }
-        // 앞 쪽에 남는 문단의 개체는 그림이 비운 자리와 겹칠 수 있어 근거로 쓰지 않는다.
+        // 뒤 그림의 호스트도 현재 쪽에 남을 수 있다. 그 그림의 물리 상자까지
+        // 현재 쪽을 넘는 경우에만 호스트를 지나 현재 그림의 재시작 줄을 찾는다.
+        // 본문·표·같은 쪽에 드는 다른 개체를 빈 공간으로 취급하지 않는다.
         if !next.controls.is_empty() {
-            return None;
+            let [Control::Picture(later)] = next.controls.as_slice() else {
+                return None;
+            };
+            let c = &later.common;
+            let (_, later_height) = picture_flow_frame_size_hu(later);
+            let later_top = frame.column_anchor_y
+                + hwpunit_to_px(first.vertical_pos.checked_sub(frame.source_origin_hu)?, dpi)
+                + hwpunit_to_px(signed_hwpunit(c.vertical_offset).max(0), dpi);
+            let later_bottom = later_top
+                + hwpunit_to_px(
+                    later_height
+                        .checked_add(i32::from(c.margin.top))?
+                        .checked_add(i32::from(c.margin.bottom))?,
+                    dpi,
+                );
+            if next
+                .text
+                .chars()
+                .any(|ch| ch > '\u{001f}' && ch != '\u{fffc}')
+                || next.column_type != crate::model::paragraph::ColumnBreakType::None
+                || c.treat_as_char
+                || c.allow_overlap
+                || !c.flow_with_text
+                || c.text_wrap != TextWrap::TopAndBottom
+                || c.vert_rel_to != VertRelTo::Para
+                || c.vert_align != VertAlign::Top
+                || later.caption.is_some()
+                || later_height <= 0
+                || later_bottom <= available_height
+            {
+                return None;
+            }
         }
         previous_end = next.line_segs.last()?.vertical_pos;
     }

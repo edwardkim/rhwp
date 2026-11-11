@@ -222,6 +222,7 @@ impl TypesetEngine {
                             ) {
                                 let placement = placements[ctrl_idx];
                                 st.defer_stored_frame(crate::renderer::typeset::DeferredStoredFrameControl {
+                                    target_page: None,
                                     following_body_para_index: None,
                                     kind: crate::renderer::typeset::DeferredStoredFrameKind::Picture,
                                     para_index: para_idx,
@@ -232,11 +233,28 @@ impl TypesetEngine {
                             }
                             // [#8732] 다음 쪽 저장 재시작 문단은 그림과 같은 쪽에서 시작한다.
                             // 빈 문단의 되감김도 이 등식이 쪽 소유를 증명하므로 명시한다.
+                            let preceding_frame =
+                                st.deferred_next_page_stored_frames.iter().rev().find_map(
+                                    |frame| {
+                                        if !matches!(
+                                        frame.kind,
+                                        crate::renderer::typeset::DeferredStoredFrameKind::Picture
+                                    ) {
+                                            return None;
+                                        }
+                                        let reset = frame.following_body_para_index?;
+                                        (reset > para_idx).then_some((reset, frame.target_page?))
+                                    },
+                                );
                             if let Some((placement, following_body_para_index)) =
                                 crate::renderer::float_placement::stored_picture_next_page_placement(
                                     para,
                                     &paragraphs[para_idx + 1..],
-                                    st.vpos_page_base.unwrap_or(0),
+                                    crate::renderer::float_placement::StoredColumnFrame {
+                                        source_origin_hu: st.vpos_page_base.unwrap_or(0),
+                                        column_anchor_y: st.vpos_col_anchor,
+                                    },
+                                    preceding_frame.map(|(reset, _)| reset - para_idx - 1),
                                     deferral_host_y,
                                     st.available_height(),
                                     self.dpi,
@@ -247,12 +265,14 @@ impl TypesetEngine {
                                     st.vpos_page_base.unwrap_or(0), deferral_host_y,
                                     st.available_height(), self.dpi).map(|placement| (placement, None)))
                             {
-                                if let Some(index) = following_body_para_index {
-                                    st.own_body_on_next_page(index);
-                                }
+                                let target_page = following_body_para_index.map(|index| {
+                                    preceding_frame.filter(|(reset, _)| *reset < index)
+                                        .map_or(st.pages.len() + 1, |(_, page)| page + 1)
+                                });
                                 st.defer_stored_frame(
                                     crate::renderer::typeset::DeferredStoredFrameControl {
-                                        following_body_para_index: None,
+                                        target_page,
+                                        following_body_para_index,
                                         kind: crate::renderer::typeset::DeferredStoredFrameKind::Picture,
                                         para_index: para_idx,
                                         control_index: ctrl_idx,

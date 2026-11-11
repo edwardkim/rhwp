@@ -424,6 +424,9 @@ impl TypesetEngine {
         {
             st.force_new_page();
         }
+        while !st.deferred_next_page_stored_frames.is_empty() {
+            st.force_new_page();
+        }
         // 뒤 흐름이 만든 쪽이 모자라 남은 무리 그림은 현재 쪽에 둔다. 그림만을 위해
         // 새 쪽을 여는지는 독립 출력으로 확인하지 않았으므로 종전 배치를 유지한다.
         st.place_remaining_pile_pictures_on_current_page();

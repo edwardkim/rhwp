@@ -913,6 +913,15 @@ pub(super) fn prepare(
                 // 앞 저장 글줄의 후행 간격은 표의 진입 밴드다. 수용 커서가
                 // 그 글줄의 내용 끝에 있으면 같은 좌표축에서 표 원점까지 연결한다.
                 let inherited_origin = previous_para.and_then(|previous| {
+                    // 빈 안내 줄에는 보호할 잉크 하단이 없다. 현재 물리 커서와
+                    // 저장 개체 원점이 이미 일치하면 안내 줄의 측정 간격으로
+                    // 같은 원점을 다시 밀지 않는다. 글이 있는 앞 줄의 점유는 유지한다.
+                    if previous.text.trim().is_empty()
+                        && previous.controls.is_empty()
+                        && (saved_origin - page.current_height).abs() <= dpi / 7200.0
+                    {
+                        return None;
+                    }
                     if previous.stored_text_partition_is_dirty() || previous.cell_format_vpos_dirty
                     {
                         return None;

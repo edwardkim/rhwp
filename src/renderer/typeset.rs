@@ -348,6 +348,8 @@ impl crate::storage::CloneWithStorage for DeferredStoredFrameKind {
 
 #[derive(Debug, Clone)]
 struct DeferredStoredFrameControl {
+    /// 명시한 저장 쪽 소유. None이면 기존의 바로 다음 쪽 이월이다.
+    target_page: Option<usize>,
     kind: DeferredStoredFrameKind,
     para_index: usize,
     control_index: usize,
@@ -355,7 +357,7 @@ struct DeferredStoredFrameControl {
     /// This original zero-origin body starts after the deferred object's page.
     following_body_para_index: Option<usize>,
 }
-crate::storage::clone_fields!(DeferredStoredFrameControl, {kind, para_index, control_index, placement, following_body_para_index});
+crate::storage::clone_fields!(DeferredStoredFrameControl, {target_page, kind, para_index, control_index, placement, following_body_para_index});
 
 /// 호스트 문단의 spacing (표 전/후)
 #[derive(Debug, Clone, Copy)]

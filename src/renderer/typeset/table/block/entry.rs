@@ -151,6 +151,7 @@ impl TypesetEngine {
                     || self.pre_emit_deferred_host_lines(st, para_idx, para, composed_all, styles)
                 {
                     st.defer_stored_frame(crate::renderer::typeset::DeferredStoredFrameControl {
+                        target_page: None,
                         kind: crate::renderer::typeset::DeferredStoredFrameKind::Table,
                         para_index: para_idx,
                         control_index: ctrl_idx,

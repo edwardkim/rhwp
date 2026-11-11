@@ -1116,6 +1116,15 @@ impl TypesetState {
         }
         // 저장 그림과 첫 본문이 같은 상단 프레임을 소비한다. 실제 출력도 이 계획을 쓴다.
         for deferred in std::mem::take(&mut self.data.deferred_next_page_stored_frames) {
+            // 호스트가 같은 앞 쪽에 남아도 그림마다 자기 저장 재시작 쪽을 가진다.
+            // 뒤 그림까지 첫 전환에 모두 꺼내 같은 상단에 겹치지 않는다.
+            if deferred
+                .target_page
+                .is_some_and(|page| page > self.data.pages.len())
+            {
+                storage.push(&mut self.data.deferred_next_page_stored_frames, deferred)?;
+                continue;
+            }
             let next_flow_y = match deferred.placement.flow {
                 crate::renderer::float_placement::ParagraphFloatFlow::StoredPicture {
                     next_flow_y,

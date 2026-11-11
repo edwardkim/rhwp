@@ -195,7 +195,7 @@ impl TypesetState {
         let data = &mut *self.data;
         if let Some(index) = picture.following_body_para_index {
             data.deferred_source_frame_body_pages
-                .insert(index, data.pages.len() + 2);
+                .insert(index, picture.target_page.unwrap_or(data.pages.len() + 2));
         }
         if matches!(
             picture.kind,
@@ -206,14 +206,6 @@ impl TypesetState {
                 .insert((picture.para_index, picture.control_index));
         }
         data.deferred_next_page_stored_frames.push(picture);
-    }
-    /// [#8732] 다음 쪽 맨 위로 미룬 저장 그림 바로 아래에서 시작하는 본문 문단을 그 쪽에 둔다.
-    /// 빈 문단의 저장 되감김은 일반 흐름이 쪽 시작으로 보지 않으므로 소유 쪽을 명시한다.
-    pub(in crate::renderer::typeset) fn own_body_on_next_page(&mut self, index: usize) {
-        let next_page = self.data.pages.len() + 1;
-        self.data
-            .deferred_source_frame_body_pages
-            .insert(index, next_page);
     }
     /// 첫 쪽의 인증된 시작 밴드를 측정 커서에 설정한다.
     pub(in crate::renderer::typeset) fn initialize_stored_column_band(&mut self, band: f64) {
@@ -262,6 +254,7 @@ impl TypesetState {
         }
         self.data.deferred_next_column_stored_frames.push(
             crate::renderer::typeset::DeferredStoredFrameControl {
+                target_page: None,
                 kind: crate::renderer::typeset::DeferredStoredFrameKind::Picture,
                 para_index: para_idx,
                 control_index: ctrl_idx,

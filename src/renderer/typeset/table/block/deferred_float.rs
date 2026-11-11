@@ -93,6 +93,7 @@ pub(super) fn try_defer(st: &mut TypesetState, input: BlockTableInput<'_>, dpi: 
     st.advance_flow_by(fmt.total_height);
     st.mark_pre_emitted_host(para_idx);
     st.defer_stored_frame(DeferredStoredFrameControl {
+        target_page: None,
         kind: DeferredStoredFrameKind::Table,
         para_index: para_idx,
         control_index: ctrl_idx,
