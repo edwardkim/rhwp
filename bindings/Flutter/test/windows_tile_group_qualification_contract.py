@@ -85,10 +85,12 @@ def capture_evidence(index, dpr):
     value = stage(index, dpr)
     total = value["width"] * value["height"]
     return {"stage": value, "window": value["flutterView"], "compositorSha256": "c" * 64,
-        "comparison": {"seam": value["tileRects"][1]["left"], "cpuSha256": "a" * 64, "referenceSha256": "b" * 64,
+        "comparison": {"seam": value["tileRects"][1]["left"], "cpuSha256": str(min(index, 3)) * 64, "referenceSha256": "b" * 64,
             "comparison": {"comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
                 "sourceReferenceScale": 2, "sourceReferenceBytes": total * 16,
-                "uniformInteriorPixels": total // 2, "aaEdgeDifferentPixels": 0, "maxChannelDifference": 0}}}
+                "uniformInteriorPixels": total // 2, "aaEdgeDifferentPixels": 0, "maxChannelDifference": 0,
+                "integerAlignmentErrors": {f"{dx},{dy}": int(dx != 0 or dy != 0)
+                    for dy in (-1, 0, 1) for dx in (-1, 0, 1)}}}}
 
 
 def receipt(dpr=1.25):
@@ -239,6 +241,33 @@ class WindowsTileContracts(unittest.TestCase):
             lambda v: v["result"]["stats"].update(snapshotHandles=1)):
             value = receipt(1.25); mutate(value)
             with self.assertRaises(ValueError): qualification.validate_dpr_pair(receipt(1), value)
+
+    def test_dpr_pair_rejects_missing_invalid_shifted_or_ambiguous_alignment(self):
+        for run in (0, 1):
+            for mutate in (lambda c: c.pop("integerAlignmentErrors"),
+                lambda c: c.update(integerAlignmentErrors=None),
+                lambda c: c["integerAlignmentErrors"].pop("-1,-1"),
+                lambda c: c["integerAlignmentErrors"].update({"2,0": 1}),
+                lambda c: c["integerAlignmentErrors"].update({"0,0": False}),
+                lambda c: c["integerAlignmentErrors"].update({"1,0": -1}),
+                lambda c: c["integerAlignmentErrors"].update({"1,0": 40 * 30 * 3 * 255 + 1}),
+                lambda c: c["integerAlignmentErrors"].update({"0,0": 2}),
+                lambda c: c["integerAlignmentErrors"].update({"1,0": 0})):
+                pair = [receipt(1), receipt(1.25)]
+                comparison = pair[run]["stages"][0]["comparison"]["comparison"]
+                mutate(comparison)
+                with self.subTest(run=run, comparison=comparison), self.assertRaises(ValueError):
+                    qualification.validate_dpr_pair(*pair)
+
+    def test_dpr_pair_rechecks_changed_edit_resize_and_unchanged_recovery_pixels(self):
+        for run in (0, 1):
+            for index in (2, 3, 4):
+                pair = [receipt(1), receipt(1.25)]
+                stages = pair[run]["stages"]
+                stages[index - 1]["comparison"]["cpuSha256"] = (
+                    "0" * 64 if index == 4 else stages[index - 2]["comparison"]["cpuSha256"])
+                with self.subTest(run=run, index=index), self.assertRaises(ValueError):
+                    qualification.validate_dpr_pair(*pair)
 
     def test_linux_cannot_invoke_actual_windows_entry_point(self):
         if sys.platform == "win32":
