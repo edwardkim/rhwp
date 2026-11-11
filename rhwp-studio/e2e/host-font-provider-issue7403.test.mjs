@@ -267,6 +267,20 @@ async function verifyLayoutEnvironment(page) {
         const actual = await output(w), expected = await output(fresh);
         checks.push([label + '-fresh-tree', actual.tree === expected.tree]);
         checks.push([label + '-fresh-paint', actual.pixels === expected.pixels]);
+        for (const format of ['hwp', 'hwpx']) {
+          const reopened = new WasmBridge();
+          let bytes = format === 'hwp' ? w.exportHwp() : w.exportHwpx();
+          try {
+            // 저장 → 재열기 → 재저장 → 재열기에서도 선언과 내용에 내부 별칭이 유출되지 않는다.
+            for (let pass = 0; pass < 2; pass++) {
+              const info = reopened.loadDocument(bytes, `layout-contract.${format}`);
+              checks.push([`${label}-${format}-roundtrip-${pass}`, info.fontsUsed.includes(family)
+                && !info.fontsUsed.some(name => name.includes('__rhwp_host_face_'))
+                && reopened.getTextRange(0, 0, 0, 2) === 'A가']);
+              bytes = format === 'hwp' ? reopened.exportHwp() : reopened.exportHwpx();
+            }
+          } finally { reopened.releaseDocument(); }
+        }
       } finally { fresh.releaseDocument(); }
     }
     try {
@@ -343,7 +357,13 @@ async function verifyLayoutEnvironment(page) {
       await rhwpStudio.fonts.setProvider(provider, { layout: true }); await prepare();
       fail = true; revision++; notify(); await prepare();
       checks.push(['read-failure', !Object.values(environments.at(-1)?.selectedPrograms ?? {}).some(program => program.query === family)]);
+      await compareFresh('read-failure');
       fail = false; revision++; notify(); await prepare();
+      await compareFresh('read-recovery');
+      await rhwpStudio.fonts.setProvider(null); await prepare();
+      await compareFresh('detach');
+      await rhwpStudio.fonts.setProvider(provider, { layout: true }); await prepare();
+      await compareFresh('reattach');
       await w.prepareDeclaredFontEnvironment('canvaskit');
       checks.push(['backend', !w.hasHostFontLayoutEnvironment && !Object.values(environments.at(-1)?.selectedPrograms ?? {}).some(program => program.query === family)]);
       await prepare();

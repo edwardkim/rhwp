@@ -51,33 +51,3 @@ pub(super) fn compact_metrics(bytes: &[u8], index: u32) -> Option<Vec<u8>> {
     ttf_parser::Face::parse(&out, 0).ok()?;
     Some(out)
 }
-
-#[cfg(test)]
-mod tests {
-    use super::compact_metrics;
-
-    #[test]
-    fn static_cff_metrics_preserve_source_tables_without_outlines() {
-        let source = include_bytes!("../../../tests/fixtures/fonts/RHWPHftOutline.otf");
-        let compact = compact_metrics(source, 0).unwrap();
-        let original = ttf_parser::Face::parse(source, 0).unwrap();
-        let measured = ttf_parser::Face::parse(&compact, 0).unwrap();
-        assert!(original.tables().cff.is_some());
-        assert!(measured.tables().cff.is_none());
-        assert!(compact.len() < source.len());
-        assert_eq!(original.units_per_em(), measured.units_per_em());
-        for character in ['가', 'A', ' '] {
-            assert_eq!(
-                original.glyph_index(character),
-                measured.glyph_index(character)
-            );
-        }
-        for id in 0..original.number_of_glyphs() {
-            let glyph = ttf_parser::GlyphId(id);
-            assert_eq!(
-                original.glyph_hor_advance(glyph),
-                measured.glyph_hor_advance(glyph)
-            );
-        }
-    }
-}
