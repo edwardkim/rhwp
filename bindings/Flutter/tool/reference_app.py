@@ -71,13 +71,18 @@ def built_runtime(runner, target, architecture, mode):
             raise ValueError('expected exactly one built reference app')
         # Package only the app, not dSYM/link/intermediate siblings.
         app = applications[0]
+        with (app / 'Contents/Info.plist').open('rb') as source:
+            info = plistlib.load(source)
+        name = info.get('CFBundleExecutable') if isinstance(info, dict) else None
+        if not isinstance(name, str) or '/' in name:
+            raise ValueError('expected a macOS CFBundleExecutable filename')
+        runtime_bundle.relative(name)
         directory = runner.parent / 'macos-runtime'
         directory.mkdir()
         shutil.copytree(app, directory / app.name, symlinks=True)
-        binaries = list((directory / app.name / 'Contents/MacOS').iterdir())
-        if len(binaries) != 1:
-            raise ValueError('expected one macOS reference entry point')
-        executable = binaries[0].relative_to(directory).as_posix()
+        # Debug builds can include .debug.dylib and __preview.dylib beside the
+        # main executable. Preserve them and use the bundle's declared entry.
+        executable = (Path(app.name) / 'Contents/MacOS' / name).as_posix()
     if not (directory / executable).is_file():
         raise ValueError('Flutter did not produce the reference runtime')
     return directory, executable
