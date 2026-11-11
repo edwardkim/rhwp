@@ -25,6 +25,7 @@ pub(super) mod deferred_float_flow;
 pub(super) mod footnotes;
 mod host_spacing;
 pub(super) mod scan;
+mod source_frame_fit;
 
 /// 포맷 경계의 기존 IR 참조와 관측값. 페이지/단의 가변 상태를 전달하지 않는다.
 pub(super) struct TableFormatInput<'a> {
@@ -82,8 +83,9 @@ pub(super) fn format_with_storage<S: crate::storage::Storage>(
     let mt = measured_tables
         .iter()
         .find(|mt| mt.para_index == para_idx && mt.control_index == ctrl_idx);
-    let fitted_visible_mt =
-        fit_measured_for_host_with_storage(para, table, mt, dpi, styles, &profile, storage)?;
+    let fitted_visible_mt = fit_measured_for_host_with_storage(
+        para, next_para, table, mt, dpi, styles, &profile, storage,
+    )?;
     let mt = fitted_visible_mt.as_ref().or(mt);
 
     let is_tac = uses_tac_flow();
@@ -231,6 +233,7 @@ pub(super) fn first_fragment_flow_origin(
 /// profile 관측은 기존 guard의 단락 평가 위치를 보존한다.
 pub(crate) fn fit_measured_for_host(
     para: &Paragraph,
+    next_para: Option<&Paragraph>,
     table: &Table,
     mt: Option<&MeasuredTable>,
     dpi: f64,
@@ -239,6 +242,7 @@ pub(crate) fn fit_measured_for_host(
 ) -> Option<MeasuredTable> {
     match fit_measured_for_host_with_storage(
         para,
+        next_para,
         table,
         mt,
         dpi,
@@ -253,6 +257,7 @@ pub(crate) fn fit_measured_for_host(
 
 pub(crate) fn fit_measured_for_host_with_storage<S: crate::storage::Storage>(
     para: &Paragraph,
+    next_para: Option<&Paragraph>,
     table: &Table,
     mt: Option<&MeasuredTable>,
     dpi: f64,
@@ -312,6 +317,16 @@ pub(crate) fn fit_measured_for_host_with_storage<S: crate::storage::Storage>(
         // 가 과대 압축/팽창을 차단한다.
         if is_para_topbottom_float(&table.common) {
             mt.and_then(|measured| {
+            // 개체 높이가 첫 조각만 기록한 경우 전체 행을 그 높이로 누르지 않는다.
+            // 뒤 원본 줄의 쪽 원점이 잔여를 정확히 증명할 때 format과 paint가 같은 행을 쓴다.
+            if crate::storage::optional(
+                source_frame_fit::stored_following_tail_owns_rows(
+                    para, next_para, table, measured, profile(), dpi, storage,
+                ),
+                failure,
+            )? {
+                return crate::storage::optional(crate::storage::try_clone(measured, storage), failure);
+            }
             let body_height = measured.row_heights.iter().sum::<f64>()
                 + measured.cell_spacing * measured.row_heights.len().saturating_sub(1) as f64;
             if !profile().session_edited()

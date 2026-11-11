@@ -437,6 +437,7 @@ pub(super) fn prepare_computed(
     // 보정 전 측정값으로 줄 소유를 거절하면 표 뒤 흐름만 legacy 상한으로 되돌아간다.
     let fitted = super::super::table::fit_measured_for_host(
         para,
+        next_para,
         table,
         Some(measured),
         dpi,

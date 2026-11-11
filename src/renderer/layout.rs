@@ -13009,6 +13009,7 @@ impl LayoutEngine {
                         // as pagination, including hosts with caption text.
                         super::typeset::fit_measured_for_host(
                             para,
+                            paragraphs.get(para_index + 1),
                             t,
                             Some(measured),
                             self.dpi,
