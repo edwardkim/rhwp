@@ -1,0 +1,53 @@
+{
+  "backend": "native",
+  "key": "control-float",
+  "pages": 1,
+  "metrics": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-native/control-float/rhwp_png/rhwp_001.png",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-native/control-float/pdf_png/pdf-001.png",
+      "overlay_png": "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/mydocs/pr/assets/pr8945/focus/complete-visual/native/control-float/overlay/overlay_001.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "overlay_color_legend": {
+        "rhwp_only": "blue",
+        "pdf_only": "red",
+        "both_different": "orange",
+        "matching": "gray"
+      },
+      "total_pixels": 891662,
+      "diff_pixels": 2850,
+      "diff_ratio": 0.00319628,
+      "pixel_match_percent": 99.68037,
+      "ink_union_pixels": 4973,
+      "ink_diff_pixels": 2850,
+      "ink_diff_ratio": 0.57309471,
+      "ink_match_percent": 42.69053,
+      "visual_accuracy_proxy_percent": 42.69053,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 4973,
+      "tolerant_content_match_percent": 100.0,
+      "mean_abs_channel_delta": 0.34,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        113,
+        132,
+        676,
+        229
+      ]
+    }
+  ],
+  "reviews": [
+    "mydocs/pr/assets/pr8945/focus/complete-visual/native/control-float/review/review_001.png"
+  ],
+  "overlays": [
+    "mydocs/pr/assets/pr8945/focus/complete-visual/native/control-float/overlay/overlay_001.png"
+  ]
+}

@@ -1,0 +1,162 @@
+{
+  "schema_version": 2,
+  "key": "sample16-hwpx",
+  "provenance": {
+    "hwp": {
+      "path": "samples/hwp3-sample16-hwp5.hwpx",
+      "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c"
+    },
+    "pdf": {
+      "path": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+      "sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee"
+    },
+    "git_head": "e98d884fc35295c8b612ceb0ac86437fb8108fee",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/producers/head/rhwp",
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/producers/head/rhwp",
+      "sha256": "29224ba9a454123d5d435b987da46c226732ad76203cb301729d45434b3bde1d"
+    },
+    "raster_backend": "wasm-canvas2d",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2024",
+    "font_environment": {
+      "path": "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/mydocs/pr/assets/planet6897_integration_final/pr8389_8397/hwp3-2024-font-environment.json",
+      "sha256": "53a7cff101203c61080a59769730f6f7050e5af22870b8a9d233bff7a95ec64c"
+    },
+    "wasm": {
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/producers/head/wasm/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/producers/head/wasm/rhwp_bg.wasm",
+          "sha256": "cb36784306e8ca84367a64939b9ec5be36d6aea2732ab4343bc55f63c2309747"
+        }
+      ],
+      "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+      "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files_receipt": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64
+  ],
+  "requested_page_shards": [],
+  "run_state": "complete",
+  "document_page_counts": {
+    "rhwp": 64,
+    "pdf": 64
+  }
+}

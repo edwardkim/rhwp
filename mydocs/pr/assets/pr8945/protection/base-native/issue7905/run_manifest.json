@@ -1,0 +1,96 @@
+{
+  "schema_version": 2,
+  "key": "issue7905",
+  "provenance": {
+    "hwp": {
+      "path": "/home/edward/mygithub/rhwp/mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx",
+      "sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1"
+    },
+    "pdf": {
+      "path": "/home/edward/mygithub/rhwp/mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law_hancom2018_print.pdf",
+      "sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511"
+    },
+    "git_head": "e98d884fc35295c8b612ceb0ac86437fb8108fee",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/producers/base/rhwp",
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/producers/base/rhwp",
+      "sha256": "faeb10ad2a321d805bf02d97b5749a768d1641d23672d42a1f52f9ebd797f9eb"
+    },
+    "native_webfont_fallback": {
+      "registry_sha256": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
+      "mappings": {},
+      "document_glyph_fallbacks": [],
+      "unmapped_sources": [],
+      "local_document_substitutes": [],
+      "resources": [],
+      "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+    },
+    "raster_backend": "native-skia",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2024",
+    "font_environment": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/font-context-diagnosis/issue7905-reference-fonts.json",
+      "sha256": "39ff35aa0b68035775bc989d177bc50424c5f22a34c0b17a424512f04b587cc5"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files_receipt": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "requested_page_shards": [],
+  "run_state": "complete",
+  "document_page_counts": {
+    "rhwp": 6,
+    "pdf": 6
+  }
+}

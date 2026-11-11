@@ -1,0 +1,141 @@
+{
+  "key": "seo-body-list-typed",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1
+  ],
+  "completed_pages": [
+    1
+  ],
+  "missing_pages": [],
+  "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/head-native/seo-body-list-typed/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/head-native/seo-body-list-typed/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "0dd7a467fe8eb3c2bca4fc59355a487e6e619e542fcc9792fb748b55100c9fd8",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/head-native/seo-body-list-typed/pdf_png/pdf-001.png",
+      "pdf_sha256": "4590d742bcf391176c303e516c9f697e18996dc24568f9890b4bf27f3d87be35"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 1611,
+      "tolerant_content_match_percent": 100.0
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp",
+      "sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687"
+    },
+    "pdf": {
+      "path": "pdf/issue8109/print/body-list-typed-hwp-2020.pdf",
+      "sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3"
+    },
+    "git_head": "e98d884fc35295c8b612ceb0ac86437fb8108fee",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/producers/head/rhwp",
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/producers/head/rhwp",
+      "sha256": "29224ba9a454123d5d435b987da46c226732ad76203cb301729d45434b3bde1d"
+    },
+    "native_webfont_fallback": {
+      "registry_sha256": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
+      "mappings": {
+        "Helvetica": "HelveticaNeueW02-97BlackCn"
+      },
+      "document_glyph_fallbacks": [],
+      "unmapped_sources": [],
+      "local_document_substitutes": [],
+      "resources": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/helvetica-original@1.0.0/Black/Helvetica-Black.ttf",
+          "source_sha256": "b89fbfc64a0600798c93e303fc4b40611f570233ad9008a633e2dcfe7a79564f",
+          "native_path": "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/output/pr-review/native-webfont-cache/programs/b89fbfc64a0600798c93e303fc4b40611f570233ad9008a633e2dcfe7a79564f/source.ttf",
+          "native_sha256": "b89fbfc64a0600798c93e303fc4b40611f570233ad9008a633e2dcfe7a79564f",
+          "native_face": "HelveticaNeueW02-97BlackCn"
+        }
+      ],
+      "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+    },
+    "raster_backend": "native-skia",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2022",
+    "font_environment": {
+      "path": "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/output/pr-review/native-webfont-cache/environments/3e9f5eb601b655fd45c11be882a373b2f302e29c41a71b93fec3508d39afb2a2.json",
+      "sha256": "3e9f5eb601b655fd45c11be882a373b2f302e29c41a71b93fec3508d39afb2a2"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files_receipt": {
+        "path": "../../font-inventories/87e77abf24f518cf5adce0174bcb32546168b9229ece6bfa6d6fe1870f9553a5.json",
+        "sha256": "5981bf1e35d1ad0d2d2e145503f12b3547c78274de8eadc0a08b6b5ef8b0f9a5",
+        "count": 1056
+      }
+    }
+  },
+  "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/head-native/seo-body-list-typed/silhouette-checkpoint.json"
+}

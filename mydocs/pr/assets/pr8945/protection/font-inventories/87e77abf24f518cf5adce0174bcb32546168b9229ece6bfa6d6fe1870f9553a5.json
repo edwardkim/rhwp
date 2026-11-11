@@ -1,0 +1,4226 @@
+[
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENBASKVL.otf",
+    "sha256": "7854c45e096367ba814656d8393ebb5654560cc5f82373779356b4d777332266"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENBERNF.otf",
+    "sha256": "de00ee390df8343e09e4cd81f7a29277416b2db528ffc993d7bd6ee6744fe98f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENBLBK.otf",
+    "sha256": "36436263353ca6ccd1fc34f87a588e80d400c0098635578dc34ae7cd035d0f2d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENBODB.otf",
+    "sha256": "7c256e2f5699c85aee855984d5a2d7b0b9350dcc869d86284aa6c321a1b487d7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENBODBI.otf",
+    "sha256": "fee201f262f7a9cb7162d47417bd499ca5e288bd9ccffcdf31fd5f7f7eb935fd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENBODBK.otf",
+    "sha256": "3f34bbf6210d2b961a0bf436bd7a0b9b923849962335e505e48a0c5707d85357"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENBODBKI.otf",
+    "sha256": "381209d2ea31bcd6322edf822eb2050aead495a69d9f3d3c8d4f7700924333db"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENBRODWY.otf",
+    "sha256": "561dddbab5237622f87b5377edde61635dcba45b8447733d3c049b08fe5e2c34"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENBRUSH.otf",
+    "sha256": "5313a65caa95bde59302b1c181d17591d4d10eed24db3a6c505758580a6b735e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENCOBK.otf",
+    "sha256": "6ba0df7b69e1a350ac4a053c38571dbc329d7f962c27e7e28f60f3e4d9374cf4"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENCOBKI.otf",
+    "sha256": "4f33868fd4af7f7286999167b06fd7900b3da63bed01621e27c9845c2acafd22"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENCORN.otf",
+    "sha256": "c380338aa87f488419c607aae0595c08a373cf756e6ef58dfc82f1e4d05f040f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENCOSCPT.otf",
+    "sha256": "67ae5db3a673435583a7393e30d0c4f517a7ccf78226dc2c8dd9e1e00d1d279a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENCR10B.otf",
+    "sha256": "7100e1fc4ba3c6401309c0656138c39014e06f7d5b131c4fc54f566b5890b717"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENCR10BI.otf",
+    "sha256": "332423949214edc338b496ad7316098f7cc2b312cfcdbbde2f10ad30c75cfc34"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENCSCH.otf",
+    "sha256": "2321073a31d3597ad09fef0966f26c058414e80dad9d855c7d4dfe5b23789673"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENCSCHB.otf",
+    "sha256": "fb7cf41c69d704b12c6cedbe46bb1c7ef1dba8044f2ba268afd4b06279e564fd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENCSCHBI.otf",
+    "sha256": "0ef2e790b6180e73951032f4c75a31d67a3a5087eef2959acd2e43d5c4964dbf"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENCSCHI.otf",
+    "sha256": "b5aec6725328f30dd201699a3fbafb0ac590e989f181cc148fb0bcafe3f3195e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENCUCMBR.otf",
+    "sha256": "64b0415c50c1a61d43f0c3c85406ee38986f154f01a3b6b87d20364dd93ab48f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENDOMCA.otf",
+    "sha256": "9cddbe21a45d23434296c2ac7e80d7e7fbe782b995a58aacfe70a0e5b93803cd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENFREEHD.otf",
+    "sha256": "10e97fbbe2dfcab5a929e6550b886d98dcf373b2807cc5b8f5098ca3b07456b3"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENFUTUBK.otf",
+    "sha256": "7fd39fbb355bac953f375712e7891459ab610b590fe6a7ac8e50c777ce08b027"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGARM.otf",
+    "sha256": "fff7ffadb89adb9d4aa4366301208db2761209c969e6b9445d330272d974f743"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGARMB.otf",
+    "sha256": "b75339b4bb4ac8eed121485c0841f0396544c00f0abde8288f242c8ef09c65f0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGARMBI.otf",
+    "sha256": "88ff74631c78469bf03216a724c31bb08d1052b0682cbb7a07b24770bb795511"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGARMI.otf",
+    "sha256": "4c3b1ab6a31c011d7e359e8af9b2c8cfbdbf094352b40fa57bfdf3af8ca5cb49"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGDOS.otf",
+    "sha256": "0b8292682858ab18125bb3107c9d006c27853c704680ec915e6c5562ce1a6510"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGDOSB.otf",
+    "sha256": "064c4973382c3c47b661db0315d7e75413f6f6262313acbb84e235b88311b1ce"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGDOSBI.otf",
+    "sha256": "4c4bb958b435cb26a6e48c836ee412db0a2a4a55eece5e70939b6122dafa574c"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGDOSI.otf",
+    "sha256": "5ce3243debb389cf0e3adab5ecd6e8f6489cccddffb39edb7bda0b7ca04bf2c5"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGGT.otf",
+    "sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGGTI.otf",
+    "sha256": "b187dd8a36b2c983bf10745d554d104739838fbaa38606baedaa328148bf4704"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGMJ.otf",
+    "sha256": "92f7b9f4aab6a183da9adedc051eeadb329db563bfb5a3187e4cc861365e633c"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGMJI.otf",
+    "sha256": "92fc2d39088424b7140bdc9f3212d3115e75949d5ad98999f0b627927afa1f71"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGRP.otf",
+    "sha256": "472830cfd4f5edc2d9dc9d0a8e3078839977c4bb0e317b198549ce278075bd26"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGRPI.otf",
+    "sha256": "2c00f09a41f9a538e11357c881531e3165b412ebf747d256fcbec22619ec3e95"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGS.otf",
+    "sha256": "ed503552219ae16332e595c4b2999a3462d55509a4032dfce29c5ee4d0407346"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGSI.otf",
+    "sha256": "de15b26dcdb9bdb59803178bb1ec219910397cd1c6e6395a12e21cf2aebd7dea"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGT.otf",
+    "sha256": "66361d81d242e860d279e051149d08996ac4a5eaa2ffd319ca0f2ef99ceffd1b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENHOBO.otf",
+    "sha256": "05b3ed3907d4aba2f7418554a5629f0417dbca2186a7601f3f4e4b6f31e40539"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENITCNBK.otf",
+    "sha256": "93ac609d39c42bcdf7af651d6ce75afaab1db5843b7aa7e0123cd46eec36bbfd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENJGT.otf",
+    "sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENJGTI.otf",
+    "sha256": "0362ff4594bdbb892f29d18aaab77ec497d40556dcc12dd32521596f1b996859"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENLIBRTY.otf",
+    "sha256": "b4cc0b0e79dd2214df6935d3414458f7dbd010e851cb8206bbcb30c3ba0f4d32"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENMJ.otf",
+    "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENMUHB.otf",
+    "sha256": "75326ad01d44000d6177a40f386eacb6465ba2b56e8a1d01c6e852be45d6b8f8"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENOCRA.otf",
+    "sha256": "3f8b53a314e6abe6ce8ebb10b216d5718b4436a65496741fcd4b02edcfe6b7c6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENOCRB10.otf",
+    "sha256": "b587d43291b4c64d05ac1a70c6e3b617a5f052d293bab3077c4886df489495a9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENORAT10.otf",
+    "sha256": "783dbecf9093142766a153bb3b6832bd8cc3a57f89e412276d89c54fe2aeed18"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENORBITB.otf",
+    "sha256": "a642b31051d3447f4b0987752bae63386b7078eecdf736b8ee84d9c829338358"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENPENHL.otf",
+    "sha256": "958493898b28d508d1024ae7ba76580946bdd4f0a0566c3f7440285639efa5b0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENPG.otf",
+    "sha256": "2e44da8d1dc566bbd52790860b7caf7270520b5893241b5bf19c3d5eab92c22c"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENPKAV.otf",
+    "sha256": "00b62a082417acb468bcf0a86515134158db732c7ea9dd60460e7c96ac3e17cf"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENS721LI.otf",
+    "sha256": "6e4c73876d86a87e223370bd179852fd3237b9259505d2637224b9fab5d8e822"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENSMJ.otf",
+    "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENSMJI.otf",
+    "sha256": "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENSS.otf",
+    "sha256": "dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENSTEN.otf",
+    "sha256": "718db49c06c87f97f1305e425e6628d4747f07b90aa4832b8825231d926d6d62"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENSW721L.otf",
+    "sha256": "c1a1be0d8d1b0373bc8315d07f13b3601ab87dfa9c164c41d90be0636cf98f23"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENSYS.otf",
+    "sha256": "f11137ccccd429956b6e386edd8b197f1ff17c9f9385c40752cb8ed2c8b30546"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENTYPE.otf",
+    "sha256": "c61d514f0077859d3a49f7dfdca9c2600be276baabaf50e0396b79135a0de1bd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/FLMJ.otf",
+    "sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/FLSMJ.otf",
+    "sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HANB.otf",
+    "sha256": "3e829a3ac0562c5f230e1197e86c35c6eee3ef707c9c1c72201bf2caf2725f09"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HANENGB.otf",
+    "sha256": "0252d4d0e76dbc476ad67ac7c8d1ee95a23db10b1b93016022273e799982b096"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HANENGL.otf",
+    "sha256": "a1766f31f4be82ff1ffe0f1666a4c0a1cdddce573d4b3264405d5bd016bd4871"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HANENGM.otf",
+    "sha256": "699663a0f97c40a11895cb281cdc6eb215646fde8f7574b0b4726168541482b6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HANL.otf",
+    "sha256": "92fca136138dbdd3c0b826aa55022ec57659653e402535e7f9dd0818e9f86b28"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HANM.otf",
+    "sha256": "0a2d94f2af9a8b0cf605cfd4577db08493f769efec974a3ffc6f760a4dfb2ce8"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENBIG.otf",
+    "sha256": "3a9b58aaca7981cf7e937bc377d31d4e48240beee832452e4c4197893a7156fa"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENDNR.otf",
+    "sha256": "df37d0aad063fcc67a13f00eda6e184b306b61fa57eaf4714eb4fd64c877c54b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENGGT.otf",
+    "sha256": "6ccd1e440f8718efdc8ea13a3bb96437116cf0afff21a144e916e2e2bda0a60d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENGJ.otf",
+    "sha256": "8b06002174e71ed6fa895322911e00e6750ad0321a3618f41e5a52a20e9e26e4"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENGMJ.otf",
+    "sha256": "88282c1f47f5b0c409c70ab1465a173698e689fd7b81aec02285185d27fa58c2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENGRP.otf",
+    "sha256": "a953806c6ec22f68e9c636efe875b4d83e9306ac29391f0f105214a00e5a57d6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENGS.otf",
+    "sha256": "a9c2638e8cbff793b19b116b743f2ab198219c421d369b7861ac6dc5a3915edf"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENHEDA.otf",
+    "sha256": "31907eb86ad6f500e2af18ec4505c7621b968a0cf570630d547b5e6fd4ebf5f9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENHEDB.otf",
+    "sha256": "c575ad28ca9c04baee98b91a8dcfc5c94d775f2231c6c69ee251b9c0cff64379"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENHMJA.otf",
+    "sha256": "fd24c392983aeea867be6be49549b4f4ab34ee890f65af711047ca8e66295692"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENHMJB.otf",
+    "sha256": "4170b25e25f252ea41ba099478c00994d3cb4faa79599ac08ac61089d4a7fe38"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENJGT.otf",
+    "sha256": "a5682f13446b5e4c336f8222cd24d4b4a9afd516885e261ba96feafd5b76dce3"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENJMJ.otf",
+    "sha256": "91cee43f3d5b4e9a622297219a4163c8207ea453711834b0dd3613081a3cf795"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENPG.otf",
+    "sha256": "3bc946396f666b31c3a45e883f4a2a9885d96d68fc5b8609a154f41fa9f1e907"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSDNR.otf",
+    "sha256": "f814256e1a58ae8d898222c9105ab70535291e100fa9d84c780d3c24a30c219b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSEGT.otf",
+    "sha256": "cd4ae735436f1e9c26bd6a62a1184748bd806fc79a972e3501c30b2b9ee79015"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSEMJ.otf",
+    "sha256": "46e038e161bda880b02a0a40afd8884eccba7346a65fddfbb74390730af27e8a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSGRP.otf",
+    "sha256": "3f6f0cb23755c77d0eecb0f0d737649bad0b7503f0bc6023c1d2ea43ab084f31"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSJMJ.otf",
+    "sha256": "a938d04189579110c876fe42b370abc312c0b0b356bd7c673b4cc0e9b60d6458"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSMA.otf",
+    "sha256": "54b29ad9659f27ba9ddf137c9e626d6635de5244c89f10b7ffada3d0bf878743"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSMB.otf",
+    "sha256": "ffc02a02f4f99346ed7ab97dde1fc0f71641de6723dab32ebb8f40409b6b63e9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSMGG.otf",
+    "sha256": "cbd6504a73ec326d1611861b8de67638c31d54a9570071b214314364e009f8d2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSMGM.otf",
+    "sha256": "f540d504d2b444854a315b9475990cb0cbf6c25825c6ea0588893b886c744d06"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSMGT.otf",
+    "sha256": "a5fbdb2f53190b4a002cfcfce2323d813d220c0297f086ee2b3bef299627a8f2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSMJ.otf",
+    "sha256": "2df2d46d95d853e3d6d611d92e9e27998f62b7022a7e8c64a52826c9e739c09b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSMMJ.otf",
+    "sha256": "2d52c5cc4157cc2da6cfad2c2fad598ae1c5d53f816659428ebbce172c6f7cd9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSMTG.otf",
+    "sha256": "91025def649544fb399e02d8bd7467ded22f0031616ac707128ad77609f84761"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSMTM.otf",
+    "sha256": "eda021b1efc56aed728b00391d6f3ade24d72154cea61f9c1a51daa1e027b7e2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSNR.otf",
+    "sha256": "4aee191decc2ab86c333257d291b5d46fac1717bed5dbd1f8705e6b720e95f70"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSSGT.otf",
+    "sha256": "f0c460694c8fe5cc2e8ae300dcc2777ece2b0a95aca11460e00f6ea5a2e53f1f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSSNR.otf",
+    "sha256": "7e735396377e6e6a303f2c69d2e13c72add42d6ec79ab9807c905d1beeaf95e1"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSTMJ.otf",
+    "sha256": "84eca49d11cd1e725589cdea1fe01f816ed72ee7fa127536f9edf4d53bec7a96"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENTGRP.otf",
+    "sha256": "8bd27917fe3b4bc5cfe6faf85c60916a607421c2e2e14985fc4f0033ec73ee74"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENTGT.otf",
+    "sha256": "da4f226e7df89a487af199b836be7d8ea90704330d44b7dbd14dc85d960c4859"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENTMJ.otf",
+    "sha256": "3980b56b8e29f5782c64e2876e8bf4c50823ac7f05286a54182296aa2e1e71b1"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENTSMJ.otf",
+    "sha256": "d5d9bbe7b1c72fbd18f041b828f27dde7913f6b34002e84089b12458445fb749"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGBIG.otf",
+    "sha256": "07a7c2334b057b69845f08ddd738c682d79bfca5eb3c3e3e9c0b55aed96405ef"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGDNR.otf",
+    "sha256": "39bb7a9355bcd39d9d4ca5eab44a13641196d0d2aa4e890c5fec991586f9f9bc"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGGGT.otf",
+    "sha256": "f469da96d2c2eec13c498cb1ef57b663f863b81b8c4f22c1e8b7644d431b2a0c"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGGJ.otf",
+    "sha256": "e601120251e5e8db9ed669f2014a0b2f9f7f1754980914e0b288d28de3cc6e2a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGGMJ.otf",
+    "sha256": "7f6b0facb6a9a0d0e637feae7f8fbfdc79c2450869c9a0073b4981a57aea6f5b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGGRP.otf",
+    "sha256": "d33ce840dd69a599a9e2cd4e1b06129b817b2bb3679375adde95ea131c9ce679"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGGS.otf",
+    "sha256": "9749ecdd1159f5319f812f93c06a1ba092da1f433d6b6f35c5ad517b5d527a1a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGHMJA.otf",
+    "sha256": "24cf239af979d9dcce9ca54c887dfda645556ff2986d216b88ea8223d45bd852"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGHMJB.otf",
+    "sha256": "23254b07efd60847879e9370c88d8dcffd94334f97b1226ae8fa6d38bd3b8827"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGJGT.otf",
+    "sha256": "2c6e8f5b65eff460abaebecabc2a1073c3eebc148076a6b3830aa38a80e7cc6a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGJMJ.otf",
+    "sha256": "5fc5d451e76ec1e9c6287446cfc4d66fd90ab990821c5f2fdec1cba95190f987"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSDNR.otf",
+    "sha256": "31073f9a23497758581591c000da627e4a19c124dfc1b41767a6added37d9e94"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSEGT.otf",
+    "sha256": "412ed3b9a81ee63015ef0d60935aa5cdc6f0d28a562f94f2445c9f08957ea3b8"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSEMJ.otf",
+    "sha256": "4e214d5809f85e82bee9ae6b0f2ee0d03032b4e0f0727e7c731b7087807781f2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSGRP.otf",
+    "sha256": "5f71e081b68a21f8868b1e05748576eb82ffc8b6dab980e4d7132afbdf98c495"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSJMJ.otf",
+    "sha256": "7e9f0b73a8d14a743c693f05b4ecbfa3b0f42a8c557d989c7d16b6d41f88fa1f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSMA.otf",
+    "sha256": "bf6290d5e62db7aa651e4d774a3403321a0475e99d7dccb2602b261b33bd8f06"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSMB.otf",
+    "sha256": "61f787f0dd5383fbda9fad1b6b164b0ae8b87c5bf31fb52355a05935915adef4"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSMGG.otf",
+    "sha256": "c3824ff53e170b2aefdf54adfa83f4cc47d5f6dafdd46bf5d5810677771cfdd0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSMGM.otf",
+    "sha256": "7da04b4b98faa496d5b51a0354c3c0e72f2ce3dbb3de2e20d2f74132cc9ef775"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSMGT.otf",
+    "sha256": "cb58e4a0f73479756afd33b9f00035eb69c2e527df7011d1685db4be35367ef6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSMJ.otf",
+    "sha256": "8d52682a56cd0b4de05ebc3a2bb1a4a0e68a1698ba753d98a5093eff502434a0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSMMJ.otf",
+    "sha256": "1917b0e97ef40467c1e3e40e64556cd1f6ac082817cf1a64d19be11d9118dc10"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSMTG.otf",
+    "sha256": "41764cc43fdf4f3dbedaf7ac66b1e7f78c30fc3cc46a0f1dd9d8308d18d2dce9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSMTM.otf",
+    "sha256": "18d908a756fa12bde957af964c5f06f963cb0441753537b3244a56f65eb168a8"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSNR.otf",
+    "sha256": "c9909c5ed32ed8f03f476171e7fc3aa0941f841292cc07820e006af3ce30c691"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSSGT.otf",
+    "sha256": "62a032cca19d12ece3ed273101b6704e6c14cd76377c4b2bd15e10a4e1aa4d72"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSSNR.otf",
+    "sha256": "59aec4439a0cece498a3393287c442f0cd76f2d2384087a9f9d1d03db09623e7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSTMJ.otf",
+    "sha256": "0c61c57d4c612f6f5b74777e86a69bad74f2337b5922ec5957db075173436fee"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGTGRP.otf",
+    "sha256": "badb18cdef3ec5b7c090a8995544e3062515a185a8ab06e041c7ecbd1e4c76e0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGTGT.otf",
+    "sha256": "fc0a42f9de898629e3c0e18ba59b7f243deba0ab2595425a760e2344195034cf"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGTMJ.otf",
+    "sha256": "94f7fe321802df0e4081a3e05851588ddfc266714c48b730124fc511875df63a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGTSMJ.otf",
+    "sha256": "b01b606520cccf9f00ccb8dd95a36157b8685fbf528fd78d20321e9eb91e92ae"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJGGT.otf",
+    "sha256": "cb13a2e8ac040b063f9e5a7bb7307fed857dbea4fdfd75b5ebb16546cfb92955"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJGMJ.otf",
+    "sha256": "860f47a1b0ecaa0a6c9c1fb31261f9b77d69e6e71f56e52d1637720f0ae283d1"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJGS.otf",
+    "sha256": "fbda1e014fb9e2ccc507be4d655b774deb4044a69b5059b05a577d5875568e9a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJJGT.otf",
+    "sha256": "e594b8a41cc8d64438518b3d2e8eaeb0344db3abdfd44aefea06d1c1b093659d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJJMJ.otf",
+    "sha256": "bca69e97884082d09ed08d4ffb43c15b0b301237ec1e7e74601f489ecfc5a8df"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJSDNR.otf",
+    "sha256": "dd3127d9c9780f296ed801e2099e25910a7fe1174df96175d039f782078b8107"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJSMGG.otf",
+    "sha256": "2bc4698054800aaa43254bf5973888d75a027d130f959b0da04c2c8cfc79295d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJSMGM.otf",
+    "sha256": "32629657c48cc104bbdd86b06fa5589ab698a0b99e10aac60c958399c89a8937"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJSMGT.otf",
+    "sha256": "fa4ad810e237594e6bf2f3b2296717ad62709a2f7be8f5de703ae23188731286"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJSMJ.otf",
+    "sha256": "f2d12a333948237473fc2b58e7f05ec5334d7ab8aacdb243adb23840e88bf367"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJSMMJ.otf",
+    "sha256": "a05323c3b23096c606cbf1c4424443ff3ae48256355dff7a20013fbeddb24e85"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJSSGT.otf",
+    "sha256": "28fb19bb01691911339f3185ad20133e5fd57abf23d6e563ce0dc591fff0b7ee"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJSSNR.otf",
+    "sha256": "0d465f4c6bb448b36e712caed92339bd98d9384b20eaf81eac15f79cb60b0bac"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJTGT.otf",
+    "sha256": "8db67a2414128fff3b26353393d8f49fb1851cf846947293eed79bde926cc426"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJTMJ.otf",
+    "sha256": "a59be25bde0832cbfb4500d38715ed799804f6f43bd2636f9ee9b83c6e01c472"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCJPJGT.otf",
+    "sha256": "659149ae636a2c3f99efa1429b3644f14d8f1c2cb97b8174932ce60d239a30d8"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCJPJGTV.otf",
+    "sha256": "85e2722cfdc31ccfb377193a981af0d8aa9eccffd07bea63e2c2268877b641e7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCJPSEGT.otf",
+    "sha256": "b8f2d83ffb73e67e0231db06e35ccc837ddb67bac39fe5b2b6783c9fdc64fa61"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCJPSEGV.otf",
+    "sha256": "fa871a823534acea0da6833af79df9e1fa98f2e47b913561d3bb9b74720135d1"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCJPSEMJ.otf",
+    "sha256": "1f3b5bf9fe7af3f603ed0c5afe1126410920b8a0cb0959bfe5e6f06561140627"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCJPSEMV.otf",
+    "sha256": "b192eab341defba39e7355aaaea7b263959590476c8ceed3725918f717e2fce6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCJPTGT.otf",
+    "sha256": "2b97862b3496d11adce1c77ef1eca63b4bd15cb188d9a408b29c189bab024882"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCJPTGTV.otf",
+    "sha256": "0655f9ee389fed7960a648d6f0e34792585e07c47d9794e57cc09daccbbc0620"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCJPTMJ.otf",
+    "sha256": "a2c4ff0953d67c99128dbddbea9b39ed67d8fa831951580ce1ff20a761f7b10f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCJPTMJV.otf",
+    "sha256": "e38325b531227c0cbe70d7f1042292415dabe873ca127e19a8eb5d7a5291bb33"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPBIG.otf",
+    "sha256": "11fd66cfea164e4aa484bf1851e609e1f149f765734659f89def92623519fb7b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPDNR.otf",
+    "sha256": "f5517036d1d3fa4a56dfe4311d884c8b997818c77b7d057cb84feeca863babef"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPGGT.otf",
+    "sha256": "078067ae74578d534c4b54e22c6706e8450af917f66b5a1902509685310f0c20"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPGJ.otf",
+    "sha256": "a11b1a5e9f4a86865c396dff6092e2e8f8862117861cb8f2e3c02213e4cfe1f3"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPGMJ.otf",
+    "sha256": "8fab3f0d74164b70a2fd82de19185b23d782fb017028ff06a24c608a8934d43d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPGRP.otf",
+    "sha256": "9332b9367ca26fd755c4a8c49097768b3caffb9336de499e0fb44056426aa68c"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPGS.otf",
+    "sha256": "a7fce3bbac3965f765c2545172afc3daf72963a6d311d807f075e1ed864ab2ee"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPJGT.otf",
+    "sha256": "0d4c5ef68b8e4d55b761db725ea54e0f472e96d9ad3c44435def92daf8d226a5"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPJMJ.otf",
+    "sha256": "cbbb5ff8de4b9a8e39b8a260acaecbf6ca695eeea438406aede7265ac996747c"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPPG.otf",
+    "sha256": "d91ae05f1af5e8ec1ccdfc5327d7c767d04b9403f47ad5a82495e168e0ddc288"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPSDNR.otf",
+    "sha256": "f2d86ab8a4fbb27d94a5805f0e7603bb65cae2e7a46033237e9173d6282c2e36"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPSEGT.otf",
+    "sha256": "dada5bf0c8381aaa7f9bd6461fd5251f1860db0304c865cebab68084df3ff215"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPSEMJ.otf",
+    "sha256": "bde284fc8bea0000be24942f8f9c02e7067d25c43244830acfa8e784524b8e97"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPSGRP.otf",
+    "sha256": "06a1fe1a92b864263a566a40154f4bf13c5f9edf447a5b822b9078b1d7d322dc"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPSMA.otf",
+    "sha256": "d6381d04bdb81fd29abe8f6657712737d2c1db7fc3b674be5ef83de18a5c4205"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPSMGT.otf",
+    "sha256": "f39fa5c0fe33d8bc8079c77aeae0fb1a902e2ef145803f7e39b60d868b73db3c"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPSMJ.otf",
+    "sha256": "d9833f7d758b85551d52251fb048bc06fc1f93f6e8b159faead1b1c30f72256e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPSMMJ.otf",
+    "sha256": "27c485a7c46f4891a36e4e846a392048ead36f6af611000dee3b315e82d70d81"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPSNR.otf",
+    "sha256": "5a77a862312ff284e578da5774ea412e8795284d515b5dc9bff5788e9f96241f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPSSGT.otf",
+    "sha256": "d7356890a837fbc7cd430ed4338e68e4ce234897a3fcf307def60d66d59460e4"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPSSNR.otf",
+    "sha256": "d74f7b855fa55c424bcb2ed6269afc849ee38db4cb557b79bb1bfb8687c05136"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPSTMJ.otf",
+    "sha256": "e8cea2286e2dc014662448fdfcbb27388b83ff59697cdbcfb8e4e4470abc8337"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPTGRP.otf",
+    "sha256": "5ec4a32702f7967fdf7d35270e4d8c8571d0677dfd8a2d33e6afc0ac3f88ec69"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPTGT.otf",
+    "sha256": "869158e2be56c343baf14e40c32d8497b8de3f691747d3ae38b555b606788d07"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPTMJ.otf",
+    "sha256": "153c0e3c4655f2a90ad9c7f44c3a8d060d45d6988c4c342258af52f4a5bb607e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPTSMJ.otf",
+    "sha256": "34ab9f6c93bd51d42201a1f0ae52bae07cbd7887ea62585501f525896041f439"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGBT.otf",
+    "sha256": "8c2bfc160b79f31814ce26057dd506ae9dec5944a12d9d8bd8d403c7416dce7a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGBTJM.otf",
+    "sha256": "831d8e6a848b4590109767cc26cda11640d9e359001782ac7afd20659040a093"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGCORN.otf",
+    "sha256": "c067bcdb413c573bde52aa0705583d0329d14a9a0e69eece2ac81e834f7393b0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGCUCMBR.otf",
+    "sha256": "da4445d0ebd83dc03631b12a0423a9baf6084aea269008d71d3450fba8d0e0a3"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGDU.otf",
+    "sha256": "f8268c6dce51a539d696810d9d83b4d5f0314dfcb63c86a6a73a0eaeeb197ddd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGDUJM.otf",
+    "sha256": "598232b6c8b99f6c806985c4c85f1baf01599b7ae8dd8a5cb1b55d979161ec95"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGEGPLNT.otf",
+    "sha256": "5a75da50547d1700f457df56b5bea3d0d508dd87593c93590a278fd2f349eb37"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGGGT.otf",
+    "sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGGMJ.otf",
+    "sha256": "34e58d7685669addf992dd969f14bfea6eb3f7b7aa2b3ff17bba1275d353768b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGGRP.otf",
+    "sha256": "85a60f7efbc9926e8a634e702442edc0245e86874af3efe640f6402ae56e36f7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGGS.otf",
+    "sha256": "b654b6944b6c45a5581d218b8aa0e2e4125a7f348b9f8f91803831f29ce37040"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGGT.otf",
+    "sha256": "562b04b412f52a1f09895fd06a1946496af9c282b3708f254d5a37c741bd3b7d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGJGT.otf",
+    "sha256": "ef7def56521a7087f67a623245a7c9c9899dfdc07e4839ed1f0a89f56e847013"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGKDNYBN.otf",
+    "sha256": "a93c32d8a696a0c069bd74f3f42cee8f0f2a6410b6cbd4b77395c44d1603f1e9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGMJ.otf",
+    "sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGOLD.otf",
+    "sha256": "a4de9b02438cdfc309ef5c2e6a062bf30154884182624c1357f36c2f48bb91a6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGPEACH.otf",
+    "sha256": "1ea92a217d1d5d0ce36073b7b3d1661a3253bfb1a6d2a4dc95535433a2c0ea63"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGPENHL.otf",
+    "sha256": "5b578acac163505c6c384a64e1ff32c03f4c6c59ed948bfdfff55d269a4a97b5"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGPG.otf",
+    "sha256": "75c76493267ec17b9610484c1c8856f919108d93a2a90c1e58716d7187b50204"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGSM.otf",
+    "sha256": "44ca1cab6c0431382842a4767468364b07a2c4c2352ec80acecfa84bffbac164"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGSMJ.otf",
+    "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGSTRBRY.otf",
+    "sha256": "6844aed54084783e28e7be0da351d08f4c0fe9e16e0844cbad4e4164c47488ca"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGSYS.otf",
+    "sha256": "b541cec7bb43f6ef98d5efb033a1dc191922ca7f9893cd2652ce0dfaa13a630e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGTYPE.otf",
+    "sha256": "53ccbef1ac6cc2a1aad101ca152c447663bd794dc7b57edd932bb6396e52e0d2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HJGHS.otf",
+    "sha256": "7746d16602f68ad0eb653ad1ccae177f8b538581028568dc3f404eacb97a2c23"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HJGJGT.otf",
+    "sha256": "7a55744c9baa3a0acdab640e13ce2b85f6a02f63f01c5663cfd55c30e0637bf8"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HJGSMJ.otf",
+    "sha256": "6f3bfe33cb1a19b509dc11285df95a45180f997ad597ea240afce65782a80e88"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HJGSYS.otf",
+    "sha256": "38425542eb58d69822cf35717de61ca2567dc8b127e6b3e53c16a072edf48d57"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HJJGT.otf",
+    "sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HJMJ.otf",
+    "sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HJSMJ.otf",
+    "sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HJSYS.otf",
+    "sha256": "332201f62c6833e9ffba1861fc6c22726a517d1f75a34eaa2f1885216d08a130"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HJYHS.otf",
+    "sha256": "a82801f3447e7d8ca55282d00097f797e4f5e49ad316aab639bcdeb1621a9ec0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HJYJGT.otf",
+    "sha256": "566d3f71a15cd5c2fcdb70f85deac807e0f97705b892c3d2dabb3081499c3b64"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HJYSMJ.otf",
+    "sha256": "d275c494ea495ea84dbd3b7093de85c978d60ce384d148e42a838802da885054"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HJYSYS.otf",
+    "sha256": "4e124bd15321686c8e513b24826941b0d2b2c143bef85fab9e374e7492e994c1"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEAC.otf",
+    "sha256": "2ac3ad7a79158e0102136b50ada2997a4e19d0a86fba324cf97089be7ab8cbcb"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEACB.otf",
+    "sha256": "ec3459f8b8e66085ffed16f2bc33ed87642160098d2d6f66bc7d086ab84addba"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEACBI.otf",
+    "sha256": "b80f1f7db8e1938bd77b4c4e4b556ddefb5bda853e81ddadac09c5d9efa93fda"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEACI.otf",
+    "sha256": "2b8501af15222a1c4b2268ec95cc4db8931bc723341e938768be304debf9ec8d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEAHNB.otf",
+    "sha256": "96db65bfa17d40a36b6769b2f49509746a574f0b082ad743f5a1f4e7a54603b9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEAHNL.otf",
+    "sha256": "503e903ef31031037387523f16705c56b036c45efdfd19e45c7b755fea64234f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEAHNM.otf",
+    "sha256": "a09f0213601e1edf7196675da796e7554892b5f19cfe525865fcf30d67222ab8"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEBF.otf",
+    "sha256": "e6d0456de671e3c2896bda732d8b405055f2e7df221e33b3905fcd0dfb758889"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEBFB.otf",
+    "sha256": "9ae308a3708f7cab27d3905b18cf87f0dfc23fbf6884b841e28c828399e046cc"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEBFBI.otf",
+    "sha256": "7ba08a0fae96d6315a4548e14b73f44333197bed404e0d3e847883512f5a6843"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEBFI.otf",
+    "sha256": "8e2fbb5d023211544bd65089e5b94380a7272d8f5af79f0d7f32d2d3237aa0ff"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMECENT.otf",
+    "sha256": "710e18bcc1e19e7076fd9750e3723b921236f940042f74ffa54ad61d460f496e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMECR.otf",
+    "sha256": "5c99ed74e1a2f3d1e48c6a4d7d6901a1728671b337266a5883ac0e77c19d00d9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMECRB.otf",
+    "sha256": "e16064aede5e01eeed2a4111102e55234dc82a7605bc5b14014349a0f1367da2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMECRBI.otf",
+    "sha256": "ee8aeb8fbf0afe9485b02edbf11c2b84e1363f32b4b7b545dddca3206c7e6f52"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMECRI.otf",
+    "sha256": "cd209c02325b09c09a21b0af137f5f2a27b962f866c162f171d5fbc90c2a36d6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEHL.otf",
+    "sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEHLB.otf",
+    "sha256": "3da3ae21fe55e693ded0747d988d93e0815124de279ef8c2fb0c0d71dcd8df2d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEHLBI.otf",
+    "sha256": "5c14ca835e7d30e43bd702de1c1ac8df599a368cc9591860653fcb3b09ab8f1d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEHLI.otf",
+    "sha256": "35007e5166e00f2cd502392f8a725ba2d3e9ab5c38b43bb8c87e766c4f524c87"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEHLN.otf",
+    "sha256": "667108098b7c034efce69eaee58211e6a8d2d4fd2a7060fba0084ad38fd6cbab"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEHLNB.otf",
+    "sha256": "0fd788bba58f0b877e72dd9c494c6006c7d87f0bae97e04918c9054ba00f4cfd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEHLNBI.otf",
+    "sha256": "026521c51580dcbb831dcdbef48da4b58debf02841846f0494998d2667325345"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEHLNI.otf",
+    "sha256": "7d8ed4e7ee4e4f147ab7f568a0e3efe1f3200bf551c86831a452146f53a6a640"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEMO.otf",
+    "sha256": "4df601c0a47dc2b38b41d3542855192e381191462d202c87c3e5aef0fb07f003"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEMOB.otf",
+    "sha256": "a09e2f8ad72cd8ef3f1d0be7449c8afc599efe4d6c1ec3f7feeeaa234f7e7619"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEMOBI.otf",
+    "sha256": "927d704e6c28d3100bc88efb34088023df87fc355097f644707fcc54b48ec92a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEMOI.otf",
+    "sha256": "091d78c0ebc0b88e14f43f53e1150623ba02279a55ff49f1fa336399d8f10ef6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEPO.otf",
+    "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEPOB.otf",
+    "sha256": "ea591f59f26fee5af74bad27ea3fca60618f5fc86e0ee49742a4f00b0165789a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEPOBI.otf",
+    "sha256": "6b82172d4ae3ef083d3d2130596a0a5e74f118ba46aad17b27cc32c7e64722a5"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEPOI.otf",
+    "sha256": "21c7ef387289bae749547ce1c17347bfbea31d40ba1d340b46d8e2596839ff15"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMETR.otf",
+    "sha256": "b3f089f23de7bb9d4b4d753f09aa3459e36b59e2f061a9c605bb5774470690ba"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMETRB.otf",
+    "sha256": "e92f2f264e13272f20abfe9e27ae64891f945bc356361b85fe9f5464fe8115aa"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMETRBI.otf",
+    "sha256": "f872cc7bb3bc9b9058e781d08703f8e7f34dd2539d6591a700c671c907811552"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMETRI.otf",
+    "sha256": "41038296aab55d3901c1bcca0d3206cb92a2dcf8caec0a02c02013c2327e1b8a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMKBA.otf",
+    "sha256": "984e0cee58ca90ff31090f9679719d3d9a5f0c5258458a3a4ef4da89a2ebe352"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMKBP.otf",
+    "sha256": "8821e21176dae703139321ab3da964cdc12a312cfb3475861bb62c54a28a6d38"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMKBS.otf",
+    "sha256": "d74f53661d802ff85c66f01508411b63013fcf986e5fa0f3977d4c6543e0275f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMKLA.otf",
+    "sha256": "fd5db3a8dfc48ec04766e1bd836d73d7b03e2f9114dad7159c321fafd324c3e4"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMKLP.otf",
+    "sha256": "303e766b28263361aaa1b715ddd30707458c38130167e32dbb5fea8e543318ad"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMKLS.otf",
+    "sha256": "a8fda6541f6201acc757a7b92c768a36e8e2c803da8c1d38b240a0463bceb361"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMKMA.otf",
+    "sha256": "2891720908a601322cf568993146a978aa60cf00a77613ffe41e9780d2592d59"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMKMG.otf",
+    "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMKMP.otf",
+    "sha256": "06107130f56a186772bf38d17ec92c5836340ac63cae9779a827a64622ab5308"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMKMS.otf",
+    "sha256": "486455d5230e2103761a21abc37dbc92038d97007c6f9af4bdd698562403a997"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMKOLD.otf",
+    "sha256": "f2122c5200148d46a3f13b703e27536748fc5abf912a9b44d8ccd0f2b7f4ce97"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMKSM.otf",
+    "sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HSUSFL.otf",
+    "sha256": "0539698e1093fa4277954e9b7a660770ed2423a19c1db848012fa5ce53ce6929"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HSUSR.otf",
+    "sha256": "bf0c0844f5e021ceea3524430049c74ef90809327f228b3a8ae40e7aeb6d612b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HSUSRI.otf",
+    "sha256": "67a247373a286fabaec4608c3fd7809728c78a1204b7fc71be0ac4d1df4ca18a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HSUSSP.otf",
+    "sha256": "05d3aeff0769a3f1853573ff76922ce2b7c2c10506dc009b90abd06386e49fcd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HYENGL.otf",
+    "sha256": "d86aebf2c16e61bd6f85abd2a513932ce410013f50b787361963acf76f901100"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HYHGGL.otf",
+    "sha256": "c578b200e2f17b7db484ea754c149fd73c9bc07bc28785b4d8e2a151b05ed29c"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HYJPGL.otf",
+    "sha256": "3188b00bccfd3c9982f66a782058a701a1fd3ca27bc9b0fc1d991049070ddf5d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HYSPGL.otf",
+    "sha256": "ba2d223db87ac83eee63c6ddeb1e57a58d6d53c4aae691b6335fb1204e6766eb"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/JPGT.otf",
+    "sha256": "8c0ff53726428d115dfee5df77691532da1fc902ae0691cd1f4bdc111cbcfd66"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/JPJGT.otf",
+    "sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/JPJGTV.otf",
+    "sha256": "d3643247c358ad0001b86f3b31d8aec11c7a4958e9815e2936dea6a5f5fec5e2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/JPMJ.otf",
+    "sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/JPSMJ.otf",
+    "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/JPSMJV.otf",
+    "sha256": "cba88344a750fc55c7af9c80ca7ef076066dc7a74927062dde4aa74914d01631"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/JPSYS.otf",
+    "sha256": "d3c70c4f3af26676105cf9bd44e08417fa28ca03187ffb45dc8d1e7cae6c6579"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/KHANB.otf",
+    "sha256": "aedf5b7eb818afa7ec273f772517fc935be0c817b121edbe5428d6dc62f113ec"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/KHANENGB.otf",
+    "sha256": "8b0b3ce9e965c145df8ebfc17099ac3abf519611bd44a63a9c1184497a4aa4cd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/KHANENGL.otf",
+    "sha256": "b41a67571cb5124d38b84d589ed6a4f4e6eefc5d0d7ff7c877c2108c66ad4af3"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/KHANENGM.otf",
+    "sha256": "fb01f484d8b00af51589a3fa757dce0eb6824081fca5c1cc770aa5ee44c7c146"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/KHANL.otf",
+    "sha256": "498d46408a5455ba9730aeef4f9e004d575d92c9570ee6f68485ebf7738926d7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/KHANM.otf",
+    "sha256": "8015b74a91596d8a4cb6adc6dd62b4a0d73204fc89364c6a2a6f1c22a2b47cb5"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/MHHGSSG.otf",
+    "sha256": "2fe8ef2806254a9cec101188dd0926b71cf67b578fffe4f01325acf45b7f680a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/MHHGSSP.otf",
+    "sha256": "459114529c5c7ed86e5fe94e673260f43a7ccb70e784134541394945ddf5668b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/SPJGT.otf",
+    "sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/SPMJ.otf",
+    "sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/SPSMJ.otf",
+    "sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/SPSYS.otf",
+    "sha256": "a94aaa295c4cd1033926bb0ec97ed5f6b2cd0d3ca06608c18347a87cd005ed07"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TAENMREN.otf",
+    "sha256": "aef1b4e32ba55e42764385e1042b0bc5fbb51998571a380ce7b5e63a0a82c4b2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TAENMRKR.otf",
+    "sha256": "691205fe589ff8e46e7c840304316ea6d0459e54259b16eef6e49dfa66018e2a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEDNREN.otf",
+    "sha256": "d292d1972ff9de8641c52e3bff41fa0d5ba012c3fd0a1b6514f49e4a5f29fced"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEDNRHG.otf",
+    "sha256": "00eae1decfbbee1f2344ff95ec396eacd7581a70d65849a3305d3e2df5137b13"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGGTEN.otf",
+    "sha256": "79c4d98873b264b2ccac9a888548c5086ed9561b52443c6c765259b633675f80"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGGTHG.otf",
+    "sha256": "5e868bd75c1d3d6b40d8705645346ef9ed3fa26a77e31b543679a7e8848d04f2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGGTHJ.otf",
+    "sha256": "c3aec0cf56bcade14bed1a48aad78211aab9ef0a781f83d2b908493512e0a067"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGGTSP.otf",
+    "sha256": "76e5d39139516c389cdfdb06b33f49d1a71ed3bb8db2b57d863412505c3fba38"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGMJEN.otf",
+    "sha256": "fc341efba989722650bbba15690cbf91db2eb34fdc0eaaad6c8f04ea4a26154f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGMJHG.otf",
+    "sha256": "131637753baf43730900998e21694da10d6b12ca08d08634bc1c00d39f30fd92"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGMJHJ.otf",
+    "sha256": "2d7451e56c62084fa3debd781825890e18c12fef78409f656057d687a3abd684"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGMJJP.otf",
+    "sha256": "aad05d3cb2ebc9c2e5bc7fb731745179ec51d75fb9b54fb61b2950bf19a305c4"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGMJJPV.otf",
+    "sha256": "f1eb1015caed8874f0aae7021c59e25b14a64d84a3b9c9a2f75e8113c82b1080"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGMJSP.otf",
+    "sha256": "a73255db51e05eb4a170321f1f6b0288a9dcf7d0e5b86a1e553c16a5635c263b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGNSEN.otf",
+    "sha256": "1ec57144b35f74ec5da16caf972357e8921ff09111f355afa29e6f402f119b43"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGNSHG.otf",
+    "sha256": "7e85cb01754b53f01295826b78b77db4c6a6c48b53c214af6313ea058e881cbb"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGNSHJ.otf",
+    "sha256": "9abe3a47b0694a9ed15d2fefe8e40b47887abcfe41d24886f5aac96c35133245"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEHDDHG.otf",
+    "sha256": "e92ab7d486ee6746db62e72c44320b4a7cf1a0c53d36ae78ef07f3751c230a02"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEHDDRHG.otf",
+    "sha256": "aa7d7bb757d85dc301c8a73046002e202b57efb13f79b502256aa79027b1753f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEHDTHG.otf",
+    "sha256": "b4c43298ec697f6f0e704379fc3da490be4ad7de6cbb629fde1e2756c98a9d2e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEHDTRHG.otf",
+    "sha256": "d4ed4bc8b5270539fcb97bfd69011107f1d9091aafbc79ab36526d243a53fc36"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEJGTEN.otf",
+    "sha256": "e5a90d4446f551d3ae2f412990fe8011395a2d75e5af3ea7f2ed51dde5be366e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEJGTHG.otf",
+    "sha256": "a2b6e400e1e8beaea1661e55bf5977ee823e2a4ae67033e758574f9238611860"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEJGTHJ.otf",
+    "sha256": "5c9e1ea0fc307c155ae7910a9d4acdf618d72ae78489aeac28902c680e426cce"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEJGTJP.otf",
+    "sha256": "96ee02cb33abb83c7985bed4ff49e7b8c3757299865e06f13c61c750a1f98d1c"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEJGTJPV.otf",
+    "sha256": "74b95fc5466c55db92771982b74a556d612967c002411909dcc5e9766b21902a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEJMJEN.otf",
+    "sha256": "becde524c507ba1e555360eae97f99e1770ac4403a55eda2b8b64ff313d602c9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEJMJHG.otf",
+    "sha256": "674bc8b40889eefecddc7833cfd6de1367bc7ed15656814b3cbf6a26fea211cf"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEJMJHJ.otf",
+    "sha256": "ae4361b1549046dfc09b9415a9a8cdb52a076e96c8415b9eefd046d82465e1be"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESEGEN.otf",
+    "sha256": "2b8b1284cd6271cb013763a59ddc6c9127b61a55878e5cd05d4e092d0a821d42"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESEGHG.otf",
+    "sha256": "67a648a06f88d520a70db48caddea883ad4c6240c57717abd6e50e668c457c08"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESEGHJ.otf",
+    "sha256": "9ca91fe56f8a7799041c6b8de3a34e88597f895343d397dfb1b2c9407e5fede1"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESEMEN.otf",
+    "sha256": "464e83498110c175392228b406fef6c3c86a54464700fb03cc993f7aae7b8a06"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESEMHG.otf",
+    "sha256": "d475b282463329667b2f7018812556c143e1b07bad31f07287600ef78997af27"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESEMHJ.otf",
+    "sha256": "4287579604bb420cf62906b885228b070f2a093b3fb09dfa617822862a0c7d3d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESENEN.otf",
+    "sha256": "6ff8b1be47fb3711be3a2b77d7f4675e22bd552502283bc04af70119fe4c4051"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESENHG.otf",
+    "sha256": "b9cfce90b4b5434a6597ac0b712a86f24f2f0e2cba7fb0369a8ce6af17b91605"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESGREN.otf",
+    "sha256": "653e3453afb3a8a44144b7b9dc5e149f2ae7924c9f908ee04f171749935768cc"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESGRHG.otf",
+    "sha256": "2845c370f3eb07eaea5e76ffef82fd104108c406d9dd2c1803aa5c1036612cf7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESMGEN.otf",
+    "sha256": "0900ae9a0e8e326378283994648899b9deb80d70a2c2f99d05df060c6ecab8b7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESMJEN.otf",
+    "sha256": "1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESMJHG.otf",
+    "sha256": "3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESMJJP.otf",
+    "sha256": "91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESMJJPV.otf",
+    "sha256": "b126ad74634fc308def04002e0deb11e041a0e26ce658f0e7bb5d0aa7ccd972d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESMMEN.otf",
+    "sha256": "5db73a4e7333d43721a0db7b99b03e0f0bd0c487567a249b56b4bbefbcb42626"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESMMHG.otf",
+    "sha256": "8aa093022b3568cdfa246d030dd9e6bc24b9e6ac82ca281583f8f87a46286878"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESMMHJ.otf",
+    "sha256": "6b1498f058ac607e56c51bee2e2ea0a7df11010ebbe34c687525c9804fcd4390"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESSMEN.otf",
+    "sha256": "7c073a836d6837771668cc5be0f1816f502e54d5397f8e05e7b2f0281647219a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESSMHG.otf",
+    "sha256": "49bfc7e5f23e6dc28a687bcd671e2eba5fa15bbae8b46aff5a64fca97931b269"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESUNEN.otf",
+    "sha256": "0bb413e1c8c544e89f17b8c7ce13a3da5f9f4cde2f0298abe102eee8432be98d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESUNHG.otf",
+    "sha256": "6afcc87a678ebc8f38ee915152d50a7655c5439e7038dfaa9212eed80863743a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETGREN.otf",
+    "sha256": "48158aad4e733ed85968c3bb93576134a11f2041568efb09ff45a076d6349ea1"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETGRHG.otf",
+    "sha256": "51346f5f5cf82c7de4b8f0bd2ba6ff488cada811d98f110bc47f535ddbee2867"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETGRSP.otf",
+    "sha256": "4d1cee6065faf8306d01715349b6878982e7e4ecc809956be79a30d95185e8dd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETGTEN.otf",
+    "sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETGTHG.otf",
+    "sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETGTHJ.otf",
+    "sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETGTJP.otf",
+    "sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETGTJPV.otf",
+    "sha256": "7853ab58b7a8dfab3159e28b1ad8ab157fe534c2c5bcfdd2246a8a547bdac75c"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETMJEN.otf",
+    "sha256": "f80f710a6079a9783e5a23405903fab70e7f10914aa9d0c824e1631567f169f5"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETMJHG.otf",
+    "sha256": "1fae2dba2d988b24a80efbe4cb7a0930a43bafb841e2ef45ef5e4132c17868f3"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETMJHJ.otf",
+    "sha256": "f2463a2a758e07b8b7cdada7d77597829e682ff3446e7eb7ad6d047324085f29"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETMJJP.otf",
+    "sha256": "1bc458bf7bc27359ed860b695aa2603ef4364bee3b18789e32139dd1e31ca8da"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETMJJPV.otf",
+    "sha256": "1a3e5140fae7ceb4d0164e99ea85dd07da1b1b9d9a85d2fac7d932d1b17342d6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/USER.otf",
+    "sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/USHGPL.otf",
+    "sha256": "be7582a44864837840ece42b037afa075060a6227924c18ebfe4ea1dae133109"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJENBMGM.otf",
+    "sha256": "b605bb645d865907b6f07f3b9eb7d94af64b3d630b0c2a4abfd9a5756e1ade13"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJENCHM.otf",
+    "sha256": "69d11a95e6fa11e4c23a04306f6e5f772288d1a3ba2a96aff2cbc4f68fd1368f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJENDNMJ.otf",
+    "sha256": "6ecf9ae84cf8af8faf125e7000aeb2af282a6a993729dcb35cc20a9b62aef822"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJENDUG.otf",
+    "sha256": "75b753b9438e3d5355c326ae7e853d609663ff42cecd1cf8c2acdb0cd23a6270"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJENINI.otf",
+    "sha256": "d2513b33ee7393bdf02703aafc0264dc91feef7213b0e0e14ef746974fa593fd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJENMAE.otf",
+    "sha256": "baecd92f40be280f03d709d9d46d32ab3d3c37a9291948e516fdabcc6683792a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJENSHN.otf",
+    "sha256": "2415f7198644d598fe05b038ed189a0164896afc653a063a976f38b7720d1bb6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJENSOSL.otf",
+    "sha256": "e854060b717a8a25ce77d4831d44de25fdf84231913d76476c24554a45da0832"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJENTTB.otf",
+    "sha256": "a69add28f146c1c59ad504bf7ebb7342c540ec3a0c2f88f8575b894a0289cf73"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJENWDA.otf",
+    "sha256": "49757233e781e9df7ed190f9965c235e55e123ff58922a5198c123a30b7bd3b4"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJHGBMGM.otf",
+    "sha256": "33d7603949542d9fbe16be6520c985a178562f22012d5a0db68855690d572337"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJHGCHM.otf",
+    "sha256": "77c44e04f63ddd1f77b446572609ba895f9c1e8debd83d4a71fa755e03988c91"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJHGDNMJ.otf",
+    "sha256": "80c66475b28c3c993bbad99fd84219a9208a990abe08bf3befb9cb82abf835f6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJHGDUG.otf",
+    "sha256": "407ba687812ff0c95cc4c8d6a6c13765a95b95f5ae53d2e026f0e25b51c3f2f0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJHGINI.otf",
+    "sha256": "f5982b36a124f5ea49e1904ceffb84645bf7574c00665a83d39b37a12887af9c"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJHGMAE.otf",
+    "sha256": "38bae5096df0c429caceff68f76922dc6c88dd02ba0e68206154c440d812dc2f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJHGSHN.otf",
+    "sha256": "8e0b417e48a580c9997baf0899295efd02a1824f5340cd78aa7a38a0640f9493"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJHGSOSL.otf",
+    "sha256": "e857e705237d7e7e9e3e3842f8006c61396fe4c52414183ece257d59481e10a7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJHGTTB.otf",
+    "sha256": "e7f3a88ad0d1fe099637f7423570899165777675e927d448d787845dc0fbda36"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJHGWDA.otf",
+    "sha256": "2cb8623cecc13f2cc17e428dac3fe4ca675f9f047751b2be8a2af7502d7197e0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/Baloo-Regular.ttf",
+    "sha256": "718843345772c5dac9e57dd51803f818455b427366906f637b3cb4df1b365da6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/Diplomata-Regular.ttf",
+    "sha256": "a02adc3d8790dfac28e3ff841a63529024c93233fd6acdede0b044ce1a425477"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/FZSong_Super.TTF",
+    "sha256": "cbf26cf7c72522e4de508373fec17d3499bb4a7c47b0a501fd175b0222c57fc7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/H2HDRM.TTF",
+    "sha256": "a3f57b4cb4292977479c1511b52997daadaf04c37f180ff05ab152c4d12ccaf5"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANBaekB.ttf",
+    "sha256": "b9eeeff695317cfcca238b932fbc8a66b5555cb140116e321d811bda58f58f1d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANBaekM.ttf",
+    "sha256": "5fe7f3ff8c1f7f619f034c2cef5bd3cf1f546a29719e0cf4adb18e93d7f17726"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANCooljazzB.ttf",
+    "sha256": "3546f1afc91cbf53f4726bb1a2124533e0f183e77ada0a829b9fc563562d2f1d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANCooljazzL.ttf",
+    "sha256": "71d7d8b186b5435a03006e9536d52e6e14cceb3bd19a795164bc9feb62920f43"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANCooljazzM.ttf",
+    "sha256": "40ec74881ded71b93b1a2cbf99a1cfb39d6c55df64839f3a28e508e010eb6ea2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANSaleB.ttf",
+    "sha256": "16011d8cad602ee77bf8966ce2bef337b47edaf017d20e39a6943dad20d5630f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANSaleM.ttf",
+    "sha256": "bba583683c6afd14c5cf1df8ae38254aa4c5016a733258b4431be7c7b6dedb80"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANSolB.ttf",
+    "sha256": "1e8de8463d9b8d3537d9f648d289258d8c54eeae6c16e43d812480b81bde84df"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANSolM.ttf",
+    "sha256": "710650873dd6802d383868df494a022d624cefa11bfd0304d8f5a77093a3b002"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANSomaB.ttf",
+    "sha256": "25cca9e486a5f700f1827fe8eb46fc2008723069518c7ca148d60c9ec59574bb"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANSomaM.ttf",
+    "sha256": "2649474ff0014b8192bfc195b11a25319ca431716bbc2a67e2fb76acd138942b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANYGO230.ttf",
+    "sha256": "cdf746176aba807cbf9b168c2d749be6270f44f4b80568b9e18b05d1ba53a200"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANYGO240.ttf",
+    "sha256": "ed3fbb8f3af1866a7fe31478e4f62ef409f74f65d0db1bf60538f4649e564e4d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANYGO250.ttf",
+    "sha256": "7e86818a4310bc4f29fddf34e4490a074aaa366984676fbdb881dc21e19ae75b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANYheadB.ttf",
+    "sha256": "1984e8c30aecd04af2bc204ff5fe5bcf1f8fe98451d2d8944122d3235bc1d2f4"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANYheadL.ttf",
+    "sha256": "c6fc079008e92419dc46f86a3a77b5e131cd717da9cd132d6f628453f7d33ce8"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANYheadM.ttf",
+    "sha256": "211ea74d327fcb0190833791bf79328cb895c44fa43ae31c90ad53c37e757584"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANYoonGothic720.ttf",
+    "sha256": "68d56b9946b077d69f150a0889dd508972445e17c3a5917fba9b8b06628f288d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANYoonGothic740.ttf",
+    "sha256": "ff227ca64858b4cd6f657da587515c95931841dcba19a579aef06daec97f7057"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANYoonGothic760.ttf",
+    "sha256": "ae10465357537a2aa73d123df949a169791e295bb97a84393bb8e0ccae79bb0e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HBATANG.TTF",
+    "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HDOTUM.TTF",
+    "sha256": "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HMKMM.TTF",
+    "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYBDAL.TTF",
+    "sha256": "e418f439658680da75e5c9ed2a665123925ba801315f259ff0684a9e60bb0c84"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYBDAM.TTF",
+    "sha256": "555367f75d9ad77ade99efacac6d0efcc26cab1f2ee6366f4180f78ebfbd56fd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYDNKB.TTF",
+    "sha256": "da24992e369b46fee38c02520b6901f49af16107c6a35ee3d34cd89154f60e31"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYDNKM.TTF",
+    "sha256": "7ce310f7d24b95844a0188943cdb4dac95bc496e96c876d3ca731e72c578dd48"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYKANB.TTF",
+    "sha256": "cfd21db0edd632dcff6e6d9179f0266e2febb63586947fffa9dcffa34833e85e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYKANM.TTF",
+    "sha256": "896a7b5e562f5d5ee0694ec547b3d1a10587b882a94850fb39e62d5fc5eb8c6d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYNAMB.TTF",
+    "sha256": "728450078ea1263e88b5f815777ba526d081be603975c21171aafeb323a39b5b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYNAML.TTF",
+    "sha256": "426444500b76ef980f0a933bde22769b50c6b6371f4118995b704c6430a9428a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYNAMM.TTF",
+    "sha256": "6448359d4a640184a0224b4a403ae11fd25e7f770c70f5ff5ef9ceca36d494f5"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYSANB.TTF",
+    "sha256": "5c4ded4685db7f24523391253656f128a42b437aaf6660a3737e54e7aa30a288"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYSUPB.TTF",
+    "sha256": "3ac03d75b2e752546044990917fab57b415780ca119751e8bfa0136765772071"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYSUPM.TTF",
+    "sha256": "e36a1f1b97db4c2f71d1d177d573702f2e8cb19a52aa929fc5501a7f79fa70b7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYTBRB.TTF",
+    "sha256": "4f7650a93ef862a2ee69d6fdc5a0e9ce94a47ab683cd810961e18cab27ce61a2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYWULB.TTF",
+    "sha256": "c48939f1dac8d1946d64d2063adf6e47c6dcecfb978548d52d9e47d1f70ff61a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYWULM.TTF",
+    "sha256": "b6e5c595d3b8986aa31830c228cdf30abefcb182bcfe1c016f464fd8395679b0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/Limelight-Regular.ttf",
+    "sha256": "f5bf8a9159adfc5b9c756c85d812a4fd1299b8916fefdf39ad4b24ade6d8d0cf"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/MT.TTF",
+    "sha256": "d10509215d923fef07c1f2dffe8ebf55cbca706476559a861dff6f7cf969ff44"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/NanumBrush.ttf",
+    "sha256": "5fe0e02f74c58aa25ba49908fb6775bcb7d00d19ddd68b480b51a926f5ca12ec"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/OleoScriptSwashCaps-Regular.ttf",
+    "sha256": "b8811c803202bbc80e6124200666080a62b63df3b52e1833456189ec1f798c31"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/Rochester-Regular.ttf",
+    "sha256": "268abe034fc69f090b6cd241a429e26f7fac1e4648c7bbcca39e883aa3b19abb"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/Schoolbell.ttf",
+    "sha256": "1a3ae62329871c20600217f19f3472ba8f253c11a7df6cb9a9e6e88ced95ee0a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/VastShadow-Regular.ttf",
+    "sha256": "98bdf7f93c2330697078ece27e48dea7d97b253a547d699bf7afc4bdfa641a93"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/ahn_b.ttf",
+    "sha256": "2b09bfc55a665e4b0431f79f08c518db434d50c0d8d29c7042729f95a1f2d033"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/ahn_l.ttf",
+    "sha256": "40cb56d66504efb5b8a082d6fccfca415cc38d9d030d04b5b417d16e593cefa4"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/ahn_m.ttf",
+    "sha256": "8ac417c371a64d49189b18ff60dd7d717313a5a47652027869be325d9c21f746"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/ARIALN.TTF",
+    "sha256": "cad552553cf2a75afca01955751aaa115e2a64fd6c6eea42e1fbd236630b7e0a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/ARIALNB.TTF",
+    "sha256": "6c4a4b643461def5411e0217b74a625dcf2fb681252ef5da1db0af4eae80aa7e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/ARIALNBI.TTF",
+    "sha256": "161b859efd20c69ddebb23012a49f4f2030d56a0c1b9bcfd4df753217ce3e358"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/ARIALNI.TTF",
+    "sha256": "faf73aa7ce40b77ad19c09507a2263fe3f3ce9fa5642e8a1cd54fb3c9f52d599"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/ARIALUNI.TTF",
+    "sha256": "fe50313c37c2eca0bbf8cc3565b5ef32314753889afbe44cb275d65c3b58f0df"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSans-Bold.ttf",
+    "sha256": "e6476c1b80502924294eed40894c5b18e06c181444ca953e5334262df9c27724"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSans-BoldOblique.ttf",
+    "sha256": "eb436dca0c2594b73d8b603b892e374fdfd8d885d25ffb4f18df4c4c0b49e50f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSans-ExtraLight.ttf",
+    "sha256": "6cb0746a1f68d176bebe83752cee35ebdf726cb1a1e88a01fc038ddf76de9ea8"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSans-Oblique.ttf",
+    "sha256": "4af75fa16ee6d3ad43e1ecec41862c24954af26a55c6bb1ebb27bd486a50f5f4"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSans.ttf",
+    "sha256": "7da195a74c55bef988d0d48f9508bd5d849425c1770dba5d7bfc6ce9ed848954"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansCondensed-Bold.ttf",
+    "sha256": "38098d0b8edd8430a0f53fb2831b5d36037563a998a620d3c87a4d7591766d20"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansCondensed-BoldOblique.ttf",
+    "sha256": "43f9fd6b77edf174553cf94857c77c63de7ddb0c6751fd1390e73223518e128f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansCondensed-Oblique.ttf",
+    "sha256": "dc3526fa25fae4278c4e34b47d4c049b6923421c70921032a0db11bfe9c1b0cf"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansCondensed.ttf",
+    "sha256": "8550cd5ca1acb65a8fc7877c46939cd0b4d909f8e7bc1e24716873d918c5e549"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansMono-Bold.ttf",
+    "sha256": "bce60f1b4421acd9ea51ba6623d7024ecbe6817a953e3654df62a5e6bdf8f769"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansMono-BoldOblique.ttf",
+    "sha256": "91713a71d550bba22c2a6b2bb2a9ad8f9a159e12e4e9f0a5b2677998ba21213e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansMono-Oblique.ttf",
+    "sha256": "742097840c541870e8d6dc5c9b37bb1ceeea6c0dedd1d475faf903ef9df734b0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansMono.ttf",
+    "sha256": "b4a6c3e4faab8773f4ff761d56451646409f29abedd68f05d38c2df667d3c582"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerif-Bold.ttf",
+    "sha256": "c47b5527bcdc8dcf9ea8c77054454c5a884beaca2f44851a2a823ee639cbf07f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerif-BoldItalic.ttf",
+    "sha256": "8d3dd3d31350309042ed226af82b34539bd773518e6107cb352712853ba80308"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerif-Italic.ttf",
+    "sha256": "2e39b1d50f90b933b00c7bb54a96afd3f86419b3d717c7cf202e36f2d4973e47"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerif.ttf",
+    "sha256": "42d1edeb7952f31b1f96d767ed7030b08a39e0c372b0071641518864e2bffb51"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerifCondensed-Bold.ttf",
+    "sha256": "e09aa87c60c3e8de7f4e6c7bfeec8fd9489b6cd975e3033259bca3d6009aed18"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerifCondensed-BoldItalic.ttf",
+    "sha256": "4cfc5a3700c72413f51c4bb54f09617401a0a63eccb9ff577713e20afa047fa5"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerifCondensed-Italic.ttf",
+    "sha256": "dfe5bf5336d62ca71de419cccf7fd18ab19a57245dc392891ee76347129807e1"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerifCondensed.ttf",
+    "sha256": "685dcdfb8daf32a453d3426a4eb8d881c72146ddd999229354fb757511357995"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/ENBASKVL.TTF",
+    "sha256": "177de2eea49950c9b7ed74843c032be1a80c7a5a3dd4f07ca953e561ea5df1f1"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYBDAL.TTF",
+    "sha256": "e418f439658680da75e5c9ed2a665123925ba801315f259ff0684a9e60bb0c84"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYBDAM.TTF",
+    "sha256": "555367f75d9ad77ade99efacac6d0efcc26cab1f2ee6366f4180f78ebfbd56fd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYBSRB.TTF",
+    "sha256": "74f2ae9ab8e0ad36175344a759721cd616a7623613853973a0adfe99ebe79862"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYCYSM.TTF",
+    "sha256": "769537a52d27d648e90a30029deab686f604dfc767382cc8c74ae42cb44df5aa"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYDNKB.TTF",
+    "sha256": "da24992e369b46fee38c02520b6901f49af16107c6a35ee3d34cd89154f60e31"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYDNKM.TTF",
+    "sha256": "7ce310f7d24b95844a0188943cdb4dac95bc496e96c876d3ca731e72c578dd48"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYGPRM.TTF",
+    "sha256": "cf8614cb09e038ff24c0edb2ba2cfa6b8911c7c913cfe590e7e56014e7e63e5a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYGSRB.TTF",
+    "sha256": "b41cef3386d034040704b1a143ef13a63c5b9f1ec4222a7579c1796ea05517f6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYGTRE.TTF",
+    "sha256": "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYHWPEQ.TTF",
+    "sha256": "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYKANB.TTF",
+    "sha256": "cfd21db0edd632dcff6e6d9179f0266e2febb63586947fffa9dcffa34833e85e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYKANM.TTF",
+    "sha256": "896a7b5e562f5d5ee0694ec547b3d1a10587b882a94850fb39e62d5fc5eb8c6d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYMJRE.TTF",
+    "sha256": "a101a7a219ffd57273374a423e734adfba1529e5eaf2e9a7476f7150708ea506"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYMPRL.TTF",
+    "sha256": "6bd4066d8dd5ad7296a5d5e826032872bdf4b5343dbbf20073dec67d6b7d4f28"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYNAMB.TTF",
+    "sha256": "728450078ea1263e88b5f815777ba526d081be603975c21171aafeb323a39b5b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYNAML.TTF",
+    "sha256": "426444500b76ef980f0a933bde22769b50c6b6371f4118995b704c6430a9428a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYNAMM.TTF",
+    "sha256": "6448359d4a640184a0224b4a403ae11fd25e7f770c70f5ff5ef9ceca36d494f5"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYPORM.TTF",
+    "sha256": "c59429a54a1aa0bcb71c2b35e3a1a8990752d3993dbf905018a5b0b91cf7cd2f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYSANB.TTF",
+    "sha256": "5c4ded4685db7f24523391253656f128a42b437aaf6660a3737e54e7aa30a288"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYSNRL.TTF",
+    "sha256": "c676038d3cf13121dd974c2e7ee99c0c81eea04a4a493bc3dc60c9f32b791dc6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYSUPB.TTF",
+    "sha256": "3ac03d75b2e752546044990917fab57b415780ca119751e8bfa0136765772071"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYSUPM.TTF",
+    "sha256": "e36a1f1b97db4c2f71d1d177d573702f2e8cb19a52aa929fc5501a7f79fa70b7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYTBRB.TTF",
+    "sha256": "4f7650a93ef862a2ee69d6fdc5a0e9ce94a47ab683cd810961e18cab27ce61a2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYWULB.TTF",
+    "sha256": "c48939f1dac8d1946d64d2063adf6e47c6dcecfb978548d52d9e47d1f70ff61a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYWULM.TTF",
+    "sha256": "b6e5c595d3b8986aa31830c228cdf30abefcb182bcfe1c016f464fd8395679b0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/arial.ttf",
+    "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/arialbd.ttf",
+    "sha256": "3680a1bbffab914f36b27d5fd97b193de5bccfab882c41b41b5f8f99457b4820"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/arialbi.ttf",
+    "sha256": "77a0b63c5f73eb85923f10359e68b8fc768487ae88ad902a1ea21276954e205b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/ariali.ttf",
+    "sha256": "c30c71d614e143c0d4e42aaf04d9a1f50f90b365a2654eb3f2c6598e5655af08"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/batang.ttc",
+    "sha256": "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/cour.ttf",
+    "sha256": "6aab1f79264ccda1e7129dba62dbe3750b10eaa27408a327dadb808724e62c84"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/courbd.ttf",
+    "sha256": "e376f24c9f27eb7370b25aa366d78da731834a1aea651858801c9a14e8906943"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/courbi.ttf",
+    "sha256": "ac3b362cf998eb33475655e12ab7cb2f6a35d1f2eff6f76af00ebb6f81c53ee7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/couri.ttf",
+    "sha256": "546406ddbb3e3f6b876a5e8a5dee62ac090d1448662e98d8844b22393813dd13"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/gulim.ttc",
+    "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/malgun.ttf",
+    "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/malgunbd.ttf",
+    "sha256": "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/malgunsl.ttf",
+    "sha256": "c0ca810a242c4482594182db40f0f9d35a3d51bb2eeac750e6e867b2110eb00e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/segoeui.ttf",
+    "sha256": "8134dbcd09e7b123c9a7f229d49cffbcb01352cc72ea5e1076b65d0dca9f73cd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/segoeuib.ttf",
+    "sha256": "aeb9e4a6ec5cc59f4d72df8189032d7dbb28f45161cf1552174818b5465dac4e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/segoeuii.ttf",
+    "sha256": "be525b9a6d307d73c23908cd269be9be754210a9d93c0c1eaaa126d2a174290a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/segoeuil.ttf",
+    "sha256": "866557576dfc772395301b581eccef4c0daf1dbb75f9667f26784b260bce7da1"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/segoeuisl.ttf",
+    "sha256": "3432de66f335c7e3058154f7cbb13ef051195653a544b49b1992267e558b33ef"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/segoeuiz.ttf",
+    "sha256": "c886161fa6d102090ff992519b6fdc73057a0e838e9d40b27e187e9e61300a92"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/seguisym.ttf",
+    "sha256": "a4a35dcc62cd30e1a6c97b695ecef83e59d2b149e3af834f6a49f11851d56b37"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/symbol.ttf",
+    "sha256": "bbf1192965e5266fbf23370416337d2861fc1e8bd349def93f2994ba67382fc3"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/times.ttf",
+    "sha256": "fbb57cdb0079137adc0e478913ca134dfee02aa2ef443738ec5e839bf97a1f7f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/timesbd.ttf",
+    "sha256": "e94ff9111656f17bd81e9f822f1e234edcd370bcbacfdebf998b8938f525ac77"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/timesbi.ttf",
+    "sha256": "8d2c8d8d25d9fc529d08558c42effa771617914a455603881e212a26e2f2ddcd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/timesi.ttf",
+    "sha256": "c2c134968be4259aaa78845d3aca5e91c4a0bd10d98e4d2e48ac3c12f3c63b89"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/kopub/KoPub Batang Bold.ttf",
+    "sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/kopub/KoPub Batang Light.ttf",
+    "sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/kopub/KoPub Batang Medium.ttf",
+    "sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/kopub/KoPub Dotum Bold.ttf",
+    "sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/kopub/KoPub Dotum Light.ttf",
+    "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/kopub/KoPub Dotum Medium.ttf",
+    "sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/ext/08SeoulHangangL.ttf",
+    "sha256": "6793b31ca528322aa4d369eb49360204fb985f9a2ab7953fb9134e44d27eef56"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/ext/08SeoulHangangM.ttf",
+    "sha256": "4bd80365078c98852ba91a6bfe2e36762aa9e3f238a025c4a2887be5b2a6f66a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/gov/ROKG_R.ttf",
+    "sha256": "849c61ec05c9b468266a6ee3e7020ddc7c1696c9b3b29469b4986cab5e243a50"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/gov/정부상징 부처명_16040911.ttf",
+    "sha256": "9ff914274d89c97abe3c22934c1f5f049d5c82de3cf0a3bc6053ac139b8a111a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hamchob-r.ttf",
+    "sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hamchod-r.ttf",
+    "sha256": "ddbf97ce7e4c19accd208354369d77d89947bf48446a61ed1cbb28a23c1c0f43"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENBASKVL.otf",
+    "sha256": "7854c45e096367ba814656d8393ebb5654560cc5f82373779356b4d777332266"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENBERNF.otf",
+    "sha256": "de00ee390df8343e09e4cd81f7a29277416b2db528ffc993d7bd6ee6744fe98f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENBLBK.otf",
+    "sha256": "36436263353ca6ccd1fc34f87a588e80d400c0098635578dc34ae7cd035d0f2d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENBODB.otf",
+    "sha256": "7c256e2f5699c85aee855984d5a2d7b0b9350dcc869d86284aa6c321a1b487d7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENBODBI.otf",
+    "sha256": "fee201f262f7a9cb7162d47417bd499ca5e288bd9ccffcdf31fd5f7f7eb935fd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENBODBK.otf",
+    "sha256": "3f34bbf6210d2b961a0bf436bd7a0b9b923849962335e505e48a0c5707d85357"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENBODBKI.otf",
+    "sha256": "381209d2ea31bcd6322edf822eb2050aead495a69d9f3d3c8d4f7700924333db"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENBRODWY.otf",
+    "sha256": "561dddbab5237622f87b5377edde61635dcba45b8447733d3c049b08fe5e2c34"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENBRUSH.otf",
+    "sha256": "5313a65caa95bde59302b1c181d17591d4d10eed24db3a6c505758580a6b735e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENCOBK.otf",
+    "sha256": "6ba0df7b69e1a350ac4a053c38571dbc329d7f962c27e7e28f60f3e4d9374cf4"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENCOBKI.otf",
+    "sha256": "4f33868fd4af7f7286999167b06fd7900b3da63bed01621e27c9845c2acafd22"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENCORN.otf",
+    "sha256": "c380338aa87f488419c607aae0595c08a373cf756e6ef58dfc82f1e4d05f040f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENCOSCPT.otf",
+    "sha256": "67ae5db3a673435583a7393e30d0c4f517a7ccf78226dc2c8dd9e1e00d1d279a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENCR10B.otf",
+    "sha256": "7100e1fc4ba3c6401309c0656138c39014e06f7d5b131c4fc54f566b5890b717"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENCR10BI.otf",
+    "sha256": "332423949214edc338b496ad7316098f7cc2b312cfcdbbde2f10ad30c75cfc34"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENCSCH.otf",
+    "sha256": "2321073a31d3597ad09fef0966f26c058414e80dad9d855c7d4dfe5b23789673"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENCSCHB.otf",
+    "sha256": "fb7cf41c69d704b12c6cedbe46bb1c7ef1dba8044f2ba268afd4b06279e564fd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENCSCHBI.otf",
+    "sha256": "0ef2e790b6180e73951032f4c75a31d67a3a5087eef2959acd2e43d5c4964dbf"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENCSCHI.otf",
+    "sha256": "b5aec6725328f30dd201699a3fbafb0ac590e989f181cc148fb0bcafe3f3195e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENCUCMBR.otf",
+    "sha256": "64b0415c50c1a61d43f0c3c85406ee38986f154f01a3b6b87d20364dd93ab48f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENDOMCA.otf",
+    "sha256": "9cddbe21a45d23434296c2ac7e80d7e7fbe782b995a58aacfe70a0e5b93803cd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENFREEHD.otf",
+    "sha256": "10e97fbbe2dfcab5a929e6550b886d98dcf373b2807cc5b8f5098ca3b07456b3"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENFUTUBK.otf",
+    "sha256": "7fd39fbb355bac953f375712e7891459ab610b590fe6a7ac8e50c777ce08b027"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGARM.otf",
+    "sha256": "fff7ffadb89adb9d4aa4366301208db2761209c969e6b9445d330272d974f743"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGARMB.otf",
+    "sha256": "b75339b4bb4ac8eed121485c0841f0396544c00f0abde8288f242c8ef09c65f0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGARMBI.otf",
+    "sha256": "88ff74631c78469bf03216a724c31bb08d1052b0682cbb7a07b24770bb795511"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGARMI.otf",
+    "sha256": "4c3b1ab6a31c011d7e359e8af9b2c8cfbdbf094352b40fa57bfdf3af8ca5cb49"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGDOS.otf",
+    "sha256": "0b8292682858ab18125bb3107c9d006c27853c704680ec915e6c5562ce1a6510"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGDOSB.otf",
+    "sha256": "064c4973382c3c47b661db0315d7e75413f6f6262313acbb84e235b88311b1ce"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGDOSBI.otf",
+    "sha256": "4c4bb958b435cb26a6e48c836ee412db0a2a4a55eece5e70939b6122dafa574c"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGDOSI.otf",
+    "sha256": "5ce3243debb389cf0e3adab5ecd6e8f6489cccddffb39edb7bda0b7ca04bf2c5"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGGT.otf",
+    "sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGGTI.otf",
+    "sha256": "b187dd8a36b2c983bf10745d554d104739838fbaa38606baedaa328148bf4704"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGMJ.otf",
+    "sha256": "92f7b9f4aab6a183da9adedc051eeadb329db563bfb5a3187e4cc861365e633c"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGMJI.otf",
+    "sha256": "92fc2d39088424b7140bdc9f3212d3115e75949d5ad98999f0b627927afa1f71"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGRP.otf",
+    "sha256": "472830cfd4f5edc2d9dc9d0a8e3078839977c4bb0e317b198549ce278075bd26"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGRPI.otf",
+    "sha256": "2c00f09a41f9a538e11357c881531e3165b412ebf747d256fcbec22619ec3e95"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGS.otf",
+    "sha256": "ed503552219ae16332e595c4b2999a3462d55509a4032dfce29c5ee4d0407346"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGSI.otf",
+    "sha256": "de15b26dcdb9bdb59803178bb1ec219910397cd1c6e6395a12e21cf2aebd7dea"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENGT.otf",
+    "sha256": "66361d81d242e860d279e051149d08996ac4a5eaa2ffd319ca0f2ef99ceffd1b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENHOBO.otf",
+    "sha256": "05b3ed3907d4aba2f7418554a5629f0417dbca2186a7601f3f4e4b6f31e40539"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENITCNBK.otf",
+    "sha256": "93ac609d39c42bcdf7af651d6ce75afaab1db5843b7aa7e0123cd46eec36bbfd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENJGT.otf",
+    "sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENJGTI.otf",
+    "sha256": "0362ff4594bdbb892f29d18aaab77ec497d40556dcc12dd32521596f1b996859"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENLIBRTY.otf",
+    "sha256": "b4cc0b0e79dd2214df6935d3414458f7dbd010e851cb8206bbcb30c3ba0f4d32"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENMJ.otf",
+    "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENMUHB.otf",
+    "sha256": "75326ad01d44000d6177a40f386eacb6465ba2b56e8a1d01c6e852be45d6b8f8"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENOCRA.otf",
+    "sha256": "3f8b53a314e6abe6ce8ebb10b216d5718b4436a65496741fcd4b02edcfe6b7c6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENOCRB10.otf",
+    "sha256": "b587d43291b4c64d05ac1a70c6e3b617a5f052d293bab3077c4886df489495a9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENORAT10.otf",
+    "sha256": "783dbecf9093142766a153bb3b6832bd8cc3a57f89e412276d89c54fe2aeed18"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENORBITB.otf",
+    "sha256": "a642b31051d3447f4b0987752bae63386b7078eecdf736b8ee84d9c829338358"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENPENHL.otf",
+    "sha256": "958493898b28d508d1024ae7ba76580946bdd4f0a0566c3f7440285639efa5b0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENPG.otf",
+    "sha256": "2e44da8d1dc566bbd52790860b7caf7270520b5893241b5bf19c3d5eab92c22c"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENPKAV.otf",
+    "sha256": "00b62a082417acb468bcf0a86515134158db732c7ea9dd60460e7c96ac3e17cf"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENS721LI.otf",
+    "sha256": "6e4c73876d86a87e223370bd179852fd3237b9259505d2637224b9fab5d8e822"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENSMJ.otf",
+    "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENSMJI.otf",
+    "sha256": "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENSS.otf",
+    "sha256": "dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENSTEN.otf",
+    "sha256": "718db49c06c87f97f1305e425e6628d4747f07b90aa4832b8825231d926d6d62"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENSW721L.otf",
+    "sha256": "c1a1be0d8d1b0373bc8315d07f13b3601ab87dfa9c164c41d90be0636cf98f23"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENSYS.otf",
+    "sha256": "f11137ccccd429956b6e386edd8b197f1ff17c9f9385c40752cb8ed2c8b30546"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/ENTYPE.otf",
+    "sha256": "c61d514f0077859d3a49f7dfdca9c2600be276baabaf50e0396b79135a0de1bd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/FLMJ.otf",
+    "sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/FLSMJ.otf",
+    "sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HANB.otf",
+    "sha256": "3e829a3ac0562c5f230e1197e86c35c6eee3ef707c9c1c72201bf2caf2725f09"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HANENGB.otf",
+    "sha256": "0252d4d0e76dbc476ad67ac7c8d1ee95a23db10b1b93016022273e799982b096"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HANENGL.otf",
+    "sha256": "a1766f31f4be82ff1ffe0f1666a4c0a1cdddce573d4b3264405d5bd016bd4871"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HANENGM.otf",
+    "sha256": "699663a0f97c40a11895cb281cdc6eb215646fde8f7574b0b4726168541482b6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HANL.otf",
+    "sha256": "92fca136138dbdd3c0b826aa55022ec57659653e402535e7f9dd0818e9f86b28"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HANM.otf",
+    "sha256": "0a2d94f2af9a8b0cf605cfd4577db08493f769efec974a3ffc6f760a4dfb2ce8"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENBIG.otf",
+    "sha256": "3a9b58aaca7981cf7e937bc377d31d4e48240beee832452e4c4197893a7156fa"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENDNR.otf",
+    "sha256": "df37d0aad063fcc67a13f00eda6e184b306b61fa57eaf4714eb4fd64c877c54b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENGGT.otf",
+    "sha256": "6ccd1e440f8718efdc8ea13a3bb96437116cf0afff21a144e916e2e2bda0a60d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENGJ.otf",
+    "sha256": "8b06002174e71ed6fa895322911e00e6750ad0321a3618f41e5a52a20e9e26e4"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENGMJ.otf",
+    "sha256": "88282c1f47f5b0c409c70ab1465a173698e689fd7b81aec02285185d27fa58c2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENGRP.otf",
+    "sha256": "a953806c6ec22f68e9c636efe875b4d83e9306ac29391f0f105214a00e5a57d6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENGS.otf",
+    "sha256": "a9c2638e8cbff793b19b116b743f2ab198219c421d369b7861ac6dc5a3915edf"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENHEDA.otf",
+    "sha256": "31907eb86ad6f500e2af18ec4505c7621b968a0cf570630d547b5e6fd4ebf5f9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENHEDB.otf",
+    "sha256": "c575ad28ca9c04baee98b91a8dcfc5c94d775f2231c6c69ee251b9c0cff64379"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENHMJA.otf",
+    "sha256": "fd24c392983aeea867be6be49549b4f4ab34ee890f65af711047ca8e66295692"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENHMJB.otf",
+    "sha256": "4170b25e25f252ea41ba099478c00994d3cb4faa79599ac08ac61089d4a7fe38"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENJGT.otf",
+    "sha256": "a5682f13446b5e4c336f8222cd24d4b4a9afd516885e261ba96feafd5b76dce3"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENJMJ.otf",
+    "sha256": "91cee43f3d5b4e9a622297219a4163c8207ea453711834b0dd3613081a3cf795"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENPG.otf",
+    "sha256": "3bc946396f666b31c3a45e883f4a2a9885d96d68fc5b8609a154f41fa9f1e907"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSDNR.otf",
+    "sha256": "f814256e1a58ae8d898222c9105ab70535291e100fa9d84c780d3c24a30c219b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSEGT.otf",
+    "sha256": "cd4ae735436f1e9c26bd6a62a1184748bd806fc79a972e3501c30b2b9ee79015"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSEMJ.otf",
+    "sha256": "46e038e161bda880b02a0a40afd8884eccba7346a65fddfbb74390730af27e8a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSGRP.otf",
+    "sha256": "3f6f0cb23755c77d0eecb0f0d737649bad0b7503f0bc6023c1d2ea43ab084f31"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSJMJ.otf",
+    "sha256": "a938d04189579110c876fe42b370abc312c0b0b356bd7c673b4cc0e9b60d6458"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSMA.otf",
+    "sha256": "54b29ad9659f27ba9ddf137c9e626d6635de5244c89f10b7ffada3d0bf878743"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSMB.otf",
+    "sha256": "ffc02a02f4f99346ed7ab97dde1fc0f71641de6723dab32ebb8f40409b6b63e9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSMGG.otf",
+    "sha256": "cbd6504a73ec326d1611861b8de67638c31d54a9570071b214314364e009f8d2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSMGM.otf",
+    "sha256": "f540d504d2b444854a315b9475990cb0cbf6c25825c6ea0588893b886c744d06"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSMGT.otf",
+    "sha256": "a5fbdb2f53190b4a002cfcfce2323d813d220c0297f086ee2b3bef299627a8f2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSMJ.otf",
+    "sha256": "2df2d46d95d853e3d6d611d92e9e27998f62b7022a7e8c64a52826c9e739c09b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSMMJ.otf",
+    "sha256": "2d52c5cc4157cc2da6cfad2c2fad598ae1c5d53f816659428ebbce172c6f7cd9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSMTG.otf",
+    "sha256": "91025def649544fb399e02d8bd7467ded22f0031616ac707128ad77609f84761"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSMTM.otf",
+    "sha256": "eda021b1efc56aed728b00391d6f3ade24d72154cea61f9c1a51daa1e027b7e2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSNR.otf",
+    "sha256": "4aee191decc2ab86c333257d291b5d46fac1717bed5dbd1f8705e6b720e95f70"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSSGT.otf",
+    "sha256": "f0c460694c8fe5cc2e8ae300dcc2777ece2b0a95aca11460e00f6ea5a2e53f1f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSSNR.otf",
+    "sha256": "7e735396377e6e6a303f2c69d2e13c72add42d6ec79ab9807c905d1beeaf95e1"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENSTMJ.otf",
+    "sha256": "84eca49d11cd1e725589cdea1fe01f816ed72ee7fa127536f9edf4d53bec7a96"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENTGRP.otf",
+    "sha256": "8bd27917fe3b4bc5cfe6faf85c60916a607421c2e2e14985fc4f0033ec73ee74"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENTGT.otf",
+    "sha256": "da4f226e7df89a487af199b836be7d8ea90704330d44b7dbd14dc85d960c4859"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENTMJ.otf",
+    "sha256": "3980b56b8e29f5782c64e2876e8bf4c50823ac7f05286a54182296aa2e1e71b1"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCENTSMJ.otf",
+    "sha256": "d5d9bbe7b1c72fbd18f041b828f27dde7913f6b34002e84089b12458445fb749"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGBIG.otf",
+    "sha256": "07a7c2334b057b69845f08ddd738c682d79bfca5eb3c3e3e9c0b55aed96405ef"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGDNR.otf",
+    "sha256": "39bb7a9355bcd39d9d4ca5eab44a13641196d0d2aa4e890c5fec991586f9f9bc"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGGGT.otf",
+    "sha256": "f469da96d2c2eec13c498cb1ef57b663f863b81b8c4f22c1e8b7644d431b2a0c"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGGJ.otf",
+    "sha256": "e601120251e5e8db9ed669f2014a0b2f9f7f1754980914e0b288d28de3cc6e2a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGGMJ.otf",
+    "sha256": "7f6b0facb6a9a0d0e637feae7f8fbfdc79c2450869c9a0073b4981a57aea6f5b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGGRP.otf",
+    "sha256": "d33ce840dd69a599a9e2cd4e1b06129b817b2bb3679375adde95ea131c9ce679"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGGS.otf",
+    "sha256": "9749ecdd1159f5319f812f93c06a1ba092da1f433d6b6f35c5ad517b5d527a1a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGHMJA.otf",
+    "sha256": "24cf239af979d9dcce9ca54c887dfda645556ff2986d216b88ea8223d45bd852"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGHMJB.otf",
+    "sha256": "23254b07efd60847879e9370c88d8dcffd94334f97b1226ae8fa6d38bd3b8827"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGJGT.otf",
+    "sha256": "2c6e8f5b65eff460abaebecabc2a1073c3eebc148076a6b3830aa38a80e7cc6a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGJMJ.otf",
+    "sha256": "5fc5d451e76ec1e9c6287446cfc4d66fd90ab990821c5f2fdec1cba95190f987"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSDNR.otf",
+    "sha256": "31073f9a23497758581591c000da627e4a19c124dfc1b41767a6added37d9e94"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSEGT.otf",
+    "sha256": "412ed3b9a81ee63015ef0d60935aa5cdc6f0d28a562f94f2445c9f08957ea3b8"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSEMJ.otf",
+    "sha256": "4e214d5809f85e82bee9ae6b0f2ee0d03032b4e0f0727e7c731b7087807781f2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSGRP.otf",
+    "sha256": "5f71e081b68a21f8868b1e05748576eb82ffc8b6dab980e4d7132afbdf98c495"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSJMJ.otf",
+    "sha256": "7e9f0b73a8d14a743c693f05b4ecbfa3b0f42a8c557d989c7d16b6d41f88fa1f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSMA.otf",
+    "sha256": "bf6290d5e62db7aa651e4d774a3403321a0475e99d7dccb2602b261b33bd8f06"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSMB.otf",
+    "sha256": "61f787f0dd5383fbda9fad1b6b164b0ae8b87c5bf31fb52355a05935915adef4"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSMGG.otf",
+    "sha256": "c3824ff53e170b2aefdf54adfa83f4cc47d5f6dafdd46bf5d5810677771cfdd0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSMGM.otf",
+    "sha256": "7da04b4b98faa496d5b51a0354c3c0e72f2ce3dbb3de2e20d2f74132cc9ef775"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSMGT.otf",
+    "sha256": "cb58e4a0f73479756afd33b9f00035eb69c2e527df7011d1685db4be35367ef6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSMJ.otf",
+    "sha256": "8d52682a56cd0b4de05ebc3a2bb1a4a0e68a1698ba753d98a5093eff502434a0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSMMJ.otf",
+    "sha256": "1917b0e97ef40467c1e3e40e64556cd1f6ac082817cf1a64d19be11d9118dc10"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSMTG.otf",
+    "sha256": "41764cc43fdf4f3dbedaf7ac66b1e7f78c30fc3cc46a0f1dd9d8308d18d2dce9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSMTM.otf",
+    "sha256": "18d908a756fa12bde957af964c5f06f963cb0441753537b3244a56f65eb168a8"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSNR.otf",
+    "sha256": "c9909c5ed32ed8f03f476171e7fc3aa0941f841292cc07820e006af3ce30c691"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSSGT.otf",
+    "sha256": "62a032cca19d12ece3ed273101b6704e6c14cd76377c4b2bd15e10a4e1aa4d72"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSSNR.otf",
+    "sha256": "59aec4439a0cece498a3393287c442f0cd76f2d2384087a9f9d1d03db09623e7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGSTMJ.otf",
+    "sha256": "0c61c57d4c612f6f5b74777e86a69bad74f2337b5922ec5957db075173436fee"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGTGRP.otf",
+    "sha256": "badb18cdef3ec5b7c090a8995544e3062515a185a8ab06e041c7ecbd1e4c76e0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGTGT.otf",
+    "sha256": "fc0a42f9de898629e3c0e18ba59b7f243deba0ab2595425a760e2344195034cf"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGTMJ.otf",
+    "sha256": "94f7fe321802df0e4081a3e05851588ddfc266714c48b730124fc511875df63a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHGTSMJ.otf",
+    "sha256": "b01b606520cccf9f00ccb8dd95a36157b8685fbf528fd78d20321e9eb91e92ae"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJGGT.otf",
+    "sha256": "cb13a2e8ac040b063f9e5a7bb7307fed857dbea4fdfd75b5ebb16546cfb92955"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJGMJ.otf",
+    "sha256": "860f47a1b0ecaa0a6c9c1fb31261f9b77d69e6e71f56e52d1637720f0ae283d1"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJGS.otf",
+    "sha256": "fbda1e014fb9e2ccc507be4d655b774deb4044a69b5059b05a577d5875568e9a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJJGT.otf",
+    "sha256": "e594b8a41cc8d64438518b3d2e8eaeb0344db3abdfd44aefea06d1c1b093659d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJJMJ.otf",
+    "sha256": "bca69e97884082d09ed08d4ffb43c15b0b301237ec1e7e74601f489ecfc5a8df"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJSDNR.otf",
+    "sha256": "dd3127d9c9780f296ed801e2099e25910a7fe1174df96175d039f782078b8107"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJSMGG.otf",
+    "sha256": "2bc4698054800aaa43254bf5973888d75a027d130f959b0da04c2c8cfc79295d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJSMGM.otf",
+    "sha256": "32629657c48cc104bbdd86b06fa5589ab698a0b99e10aac60c958399c89a8937"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJSMGT.otf",
+    "sha256": "fa4ad810e237594e6bf2f3b2296717ad62709a2f7be8f5de703ae23188731286"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJSMJ.otf",
+    "sha256": "f2d12a333948237473fc2b58e7f05ec5334d7ab8aacdb243adb23840e88bf367"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJSMMJ.otf",
+    "sha256": "a05323c3b23096c606cbf1c4424443ff3ae48256355dff7a20013fbeddb24e85"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJSSGT.otf",
+    "sha256": "28fb19bb01691911339f3185ad20133e5fd57abf23d6e563ce0dc591fff0b7ee"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJSSNR.otf",
+    "sha256": "0d465f4c6bb448b36e712caed92339bd98d9384b20eaf81eac15f79cb60b0bac"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJTGT.otf",
+    "sha256": "8db67a2414128fff3b26353393d8f49fb1851cf846947293eed79bde926cc426"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCHJTMJ.otf",
+    "sha256": "a59be25bde0832cbfb4500d38715ed799804f6f43bd2636f9ee9b83c6e01c472"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCJPJGT.otf",
+    "sha256": "659149ae636a2c3f99efa1429b3644f14d8f1c2cb97b8174932ce60d239a30d8"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCJPJGTV.otf",
+    "sha256": "85e2722cfdc31ccfb377193a981af0d8aa9eccffd07bea63e2c2268877b641e7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCJPSEGT.otf",
+    "sha256": "b8f2d83ffb73e67e0231db06e35ccc837ddb67bac39fe5b2b6783c9fdc64fa61"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCJPSEGV.otf",
+    "sha256": "fa871a823534acea0da6833af79df9e1fa98f2e47b913561d3bb9b74720135d1"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCJPSEMJ.otf",
+    "sha256": "1f3b5bf9fe7af3f603ed0c5afe1126410920b8a0cb0959bfe5e6f06561140627"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCJPSEMV.otf",
+    "sha256": "b192eab341defba39e7355aaaea7b263959590476c8ceed3725918f717e2fce6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCJPTGT.otf",
+    "sha256": "2b97862b3496d11adce1c77ef1eca63b4bd15cb188d9a408b29c189bab024882"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCJPTGTV.otf",
+    "sha256": "0655f9ee389fed7960a648d6f0e34792585e07c47d9794e57cc09daccbbc0620"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCJPTMJ.otf",
+    "sha256": "a2c4ff0953d67c99128dbddbea9b39ed67d8fa831951580ce1ff20a761f7b10f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCJPTMJV.otf",
+    "sha256": "e38325b531227c0cbe70d7f1042292415dabe873ca127e19a8eb5d7a5291bb33"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPBIG.otf",
+    "sha256": "11fd66cfea164e4aa484bf1851e609e1f149f765734659f89def92623519fb7b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPDNR.otf",
+    "sha256": "f5517036d1d3fa4a56dfe4311d884c8b997818c77b7d057cb84feeca863babef"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPGGT.otf",
+    "sha256": "078067ae74578d534c4b54e22c6706e8450af917f66b5a1902509685310f0c20"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPGJ.otf",
+    "sha256": "a11b1a5e9f4a86865c396dff6092e2e8f8862117861cb8f2e3c02213e4cfe1f3"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPGMJ.otf",
+    "sha256": "8fab3f0d74164b70a2fd82de19185b23d782fb017028ff06a24c608a8934d43d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPGRP.otf",
+    "sha256": "9332b9367ca26fd755c4a8c49097768b3caffb9336de499e0fb44056426aa68c"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPGS.otf",
+    "sha256": "a7fce3bbac3965f765c2545172afc3daf72963a6d311d807f075e1ed864ab2ee"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPJGT.otf",
+    "sha256": "0d4c5ef68b8e4d55b761db725ea54e0f472e96d9ad3c44435def92daf8d226a5"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPJMJ.otf",
+    "sha256": "cbbb5ff8de4b9a8e39b8a260acaecbf6ca695eeea438406aede7265ac996747c"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPPG.otf",
+    "sha256": "d91ae05f1af5e8ec1ccdfc5327d7c767d04b9403f47ad5a82495e168e0ddc288"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPSDNR.otf",
+    "sha256": "f2d86ab8a4fbb27d94a5805f0e7603bb65cae2e7a46033237e9173d6282c2e36"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPSEGT.otf",
+    "sha256": "dada5bf0c8381aaa7f9bd6461fd5251f1860db0304c865cebab68084df3ff215"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPSEMJ.otf",
+    "sha256": "bde284fc8bea0000be24942f8f9c02e7067d25c43244830acfa8e784524b8e97"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPSGRP.otf",
+    "sha256": "06a1fe1a92b864263a566a40154f4bf13c5f9edf447a5b822b9078b1d7d322dc"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPSMA.otf",
+    "sha256": "d6381d04bdb81fd29abe8f6657712737d2c1db7fc3b674be5ef83de18a5c4205"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPSMGT.otf",
+    "sha256": "f39fa5c0fe33d8bc8079c77aeae0fb1a902e2ef145803f7e39b60d868b73db3c"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPSMJ.otf",
+    "sha256": "d9833f7d758b85551d52251fb048bc06fc1f93f6e8b159faead1b1c30f72256e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPSMMJ.otf",
+    "sha256": "27c485a7c46f4891a36e4e846a392048ead36f6af611000dee3b315e82d70d81"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPSNR.otf",
+    "sha256": "5a77a862312ff284e578da5774ea412e8795284d515b5dc9bff5788e9f96241f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPSSGT.otf",
+    "sha256": "d7356890a837fbc7cd430ed4338e68e4ce234897a3fcf307def60d66d59460e4"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPSSNR.otf",
+    "sha256": "d74f7b855fa55c424bcb2ed6269afc849ee38db4cb557b79bb1bfb8687c05136"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPSTMJ.otf",
+    "sha256": "e8cea2286e2dc014662448fdfcbb27388b83ff59697cdbcfb8e4e4470abc8337"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPTGRP.otf",
+    "sha256": "5ec4a32702f7967fdf7d35270e4d8c8571d0677dfd8a2d33e6afc0ac3f88ec69"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPTGT.otf",
+    "sha256": "869158e2be56c343baf14e40c32d8497b8de3f691747d3ae38b555b606788d07"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPTMJ.otf",
+    "sha256": "153c0e3c4655f2a90ad9c7f44c3a8d060d45d6988c4c342258af52f4a5bb607e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HCSPTSMJ.otf",
+    "sha256": "34ab9f6c93bd51d42201a1f0ae52bae07cbd7887ea62585501f525896041f439"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGBT.otf",
+    "sha256": "8c2bfc160b79f31814ce26057dd506ae9dec5944a12d9d8bd8d403c7416dce7a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGBTJM.otf",
+    "sha256": "831d8e6a848b4590109767cc26cda11640d9e359001782ac7afd20659040a093"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGCORN.otf",
+    "sha256": "c067bcdb413c573bde52aa0705583d0329d14a9a0e69eece2ac81e834f7393b0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGCUCMBR.otf",
+    "sha256": "da4445d0ebd83dc03631b12a0423a9baf6084aea269008d71d3450fba8d0e0a3"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGDU.otf",
+    "sha256": "f8268c6dce51a539d696810d9d83b4d5f0314dfcb63c86a6a73a0eaeeb197ddd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGDUJM.otf",
+    "sha256": "598232b6c8b99f6c806985c4c85f1baf01599b7ae8dd8a5cb1b55d979161ec95"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGEGPLNT.otf",
+    "sha256": "5a75da50547d1700f457df56b5bea3d0d508dd87593c93590a278fd2f349eb37"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGGGT.otf",
+    "sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGGMJ.otf",
+    "sha256": "34e58d7685669addf992dd969f14bfea6eb3f7b7aa2b3ff17bba1275d353768b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGGRP.otf",
+    "sha256": "85a60f7efbc9926e8a634e702442edc0245e86874af3efe640f6402ae56e36f7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGGS.otf",
+    "sha256": "b654b6944b6c45a5581d218b8aa0e2e4125a7f348b9f8f91803831f29ce37040"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGGT.otf",
+    "sha256": "562b04b412f52a1f09895fd06a1946496af9c282b3708f254d5a37c741bd3b7d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGJGT.otf",
+    "sha256": "ef7def56521a7087f67a623245a7c9c9899dfdc07e4839ed1f0a89f56e847013"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGKDNYBN.otf",
+    "sha256": "a93c32d8a696a0c069bd74f3f42cee8f0f2a6410b6cbd4b77395c44d1603f1e9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGMJ.otf",
+    "sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGOLD.otf",
+    "sha256": "a4de9b02438cdfc309ef5c2e6a062bf30154884182624c1357f36c2f48bb91a6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGPEACH.otf",
+    "sha256": "1ea92a217d1d5d0ce36073b7b3d1661a3253bfb1a6d2a4dc95535433a2c0ea63"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGPENHL.otf",
+    "sha256": "5b578acac163505c6c384a64e1ff32c03f4c6c59ed948bfdfff55d269a4a97b5"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGPG.otf",
+    "sha256": "75c76493267ec17b9610484c1c8856f919108d93a2a90c1e58716d7187b50204"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGSM.otf",
+    "sha256": "44ca1cab6c0431382842a4767468364b07a2c4c2352ec80acecfa84bffbac164"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGSMJ.otf",
+    "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGSTRBRY.otf",
+    "sha256": "6844aed54084783e28e7be0da351d08f4c0fe9e16e0844cbad4e4164c47488ca"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGSYS.otf",
+    "sha256": "b541cec7bb43f6ef98d5efb033a1dc191922ca7f9893cd2652ce0dfaa13a630e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HGTYPE.otf",
+    "sha256": "53ccbef1ac6cc2a1aad101ca152c447663bd794dc7b57edd932bb6396e52e0d2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HJGHS.otf",
+    "sha256": "7746d16602f68ad0eb653ad1ccae177f8b538581028568dc3f404eacb97a2c23"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HJGJGT.otf",
+    "sha256": "7a55744c9baa3a0acdab640e13ce2b85f6a02f63f01c5663cfd55c30e0637bf8"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HJGSMJ.otf",
+    "sha256": "6f3bfe33cb1a19b509dc11285df95a45180f997ad597ea240afce65782a80e88"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HJGSYS.otf",
+    "sha256": "38425542eb58d69822cf35717de61ca2567dc8b127e6b3e53c16a072edf48d57"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HJJGT.otf",
+    "sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HJMJ.otf",
+    "sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HJSMJ.otf",
+    "sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HJSYS.otf",
+    "sha256": "332201f62c6833e9ffba1861fc6c22726a517d1f75a34eaa2f1885216d08a130"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HJYHS.otf",
+    "sha256": "a82801f3447e7d8ca55282d00097f797e4f5e49ad316aab639bcdeb1621a9ec0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HJYJGT.otf",
+    "sha256": "566d3f71a15cd5c2fcdb70f85deac807e0f97705b892c3d2dabb3081499c3b64"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HJYSMJ.otf",
+    "sha256": "d275c494ea495ea84dbd3b7093de85c978d60ce384d148e42a838802da885054"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HJYSYS.otf",
+    "sha256": "4e124bd15321686c8e513b24826941b0d2b2c143bef85fab9e374e7492e994c1"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEAC.otf",
+    "sha256": "2ac3ad7a79158e0102136b50ada2997a4e19d0a86fba324cf97089be7ab8cbcb"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEACB.otf",
+    "sha256": "ec3459f8b8e66085ffed16f2bc33ed87642160098d2d6f66bc7d086ab84addba"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEACBI.otf",
+    "sha256": "b80f1f7db8e1938bd77b4c4e4b556ddefb5bda853e81ddadac09c5d9efa93fda"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEACI.otf",
+    "sha256": "2b8501af15222a1c4b2268ec95cc4db8931bc723341e938768be304debf9ec8d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEAHNB.otf",
+    "sha256": "96db65bfa17d40a36b6769b2f49509746a574f0b082ad743f5a1f4e7a54603b9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEAHNL.otf",
+    "sha256": "503e903ef31031037387523f16705c56b036c45efdfd19e45c7b755fea64234f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEAHNM.otf",
+    "sha256": "a09f0213601e1edf7196675da796e7554892b5f19cfe525865fcf30d67222ab8"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEBF.otf",
+    "sha256": "e6d0456de671e3c2896bda732d8b405055f2e7df221e33b3905fcd0dfb758889"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEBFB.otf",
+    "sha256": "9ae308a3708f7cab27d3905b18cf87f0dfc23fbf6884b841e28c828399e046cc"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEBFBI.otf",
+    "sha256": "7ba08a0fae96d6315a4548e14b73f44333197bed404e0d3e847883512f5a6843"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEBFI.otf",
+    "sha256": "8e2fbb5d023211544bd65089e5b94380a7272d8f5af79f0d7f32d2d3237aa0ff"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMECENT.otf",
+    "sha256": "710e18bcc1e19e7076fd9750e3723b921236f940042f74ffa54ad61d460f496e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMECR.otf",
+    "sha256": "5c99ed74e1a2f3d1e48c6a4d7d6901a1728671b337266a5883ac0e77c19d00d9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMECRB.otf",
+    "sha256": "e16064aede5e01eeed2a4111102e55234dc82a7605bc5b14014349a0f1367da2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMECRBI.otf",
+    "sha256": "ee8aeb8fbf0afe9485b02edbf11c2b84e1363f32b4b7b545dddca3206c7e6f52"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMECRI.otf",
+    "sha256": "cd209c02325b09c09a21b0af137f5f2a27b962f866c162f171d5fbc90c2a36d6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEHL.otf",
+    "sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEHLB.otf",
+    "sha256": "3da3ae21fe55e693ded0747d988d93e0815124de279ef8c2fb0c0d71dcd8df2d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEHLBI.otf",
+    "sha256": "5c14ca835e7d30e43bd702de1c1ac8df599a368cc9591860653fcb3b09ab8f1d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEHLI.otf",
+    "sha256": "35007e5166e00f2cd502392f8a725ba2d3e9ab5c38b43bb8c87e766c4f524c87"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEHLN.otf",
+    "sha256": "667108098b7c034efce69eaee58211e6a8d2d4fd2a7060fba0084ad38fd6cbab"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEHLNB.otf",
+    "sha256": "0fd788bba58f0b877e72dd9c494c6006c7d87f0bae97e04918c9054ba00f4cfd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEHLNBI.otf",
+    "sha256": "026521c51580dcbb831dcdbef48da4b58debf02841846f0494998d2667325345"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEHLNI.otf",
+    "sha256": "7d8ed4e7ee4e4f147ab7f568a0e3efe1f3200bf551c86831a452146f53a6a640"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEMO.otf",
+    "sha256": "4df601c0a47dc2b38b41d3542855192e381191462d202c87c3e5aef0fb07f003"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEMOB.otf",
+    "sha256": "a09e2f8ad72cd8ef3f1d0be7449c8afc599efe4d6c1ec3f7feeeaa234f7e7619"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEMOBI.otf",
+    "sha256": "927d704e6c28d3100bc88efb34088023df87fc355097f644707fcc54b48ec92a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEMOI.otf",
+    "sha256": "091d78c0ebc0b88e14f43f53e1150623ba02279a55ff49f1fa336399d8f10ef6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEPO.otf",
+    "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEPOB.otf",
+    "sha256": "ea591f59f26fee5af74bad27ea3fca60618f5fc86e0ee49742a4f00b0165789a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEPOBI.otf",
+    "sha256": "6b82172d4ae3ef083d3d2130596a0a5e74f118ba46aad17b27cc32c7e64722a5"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMEPOI.otf",
+    "sha256": "21c7ef387289bae749547ce1c17347bfbea31d40ba1d340b46d8e2596839ff15"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMETR.otf",
+    "sha256": "b3f089f23de7bb9d4b4d753f09aa3459e36b59e2f061a9c605bb5774470690ba"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMETRB.otf",
+    "sha256": "e92f2f264e13272f20abfe9e27ae64891f945bc356361b85fe9f5464fe8115aa"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMETRBI.otf",
+    "sha256": "f872cc7bb3bc9b9058e781d08703f8e7f34dd2539d6591a700c671c907811552"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMETRI.otf",
+    "sha256": "41038296aab55d3901c1bcca0d3206cb92a2dcf8caec0a02c02013c2327e1b8a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMKBA.otf",
+    "sha256": "984e0cee58ca90ff31090f9679719d3d9a5f0c5258458a3a4ef4da89a2ebe352"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMKBP.otf",
+    "sha256": "8821e21176dae703139321ab3da964cdc12a312cfb3475861bb62c54a28a6d38"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMKBS.otf",
+    "sha256": "d74f53661d802ff85c66f01508411b63013fcf986e5fa0f3977d4c6543e0275f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMKLA.otf",
+    "sha256": "fd5db3a8dfc48ec04766e1bd836d73d7b03e2f9114dad7159c321fafd324c3e4"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMKLP.otf",
+    "sha256": "303e766b28263361aaa1b715ddd30707458c38130167e32dbb5fea8e543318ad"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMKLS.otf",
+    "sha256": "a8fda6541f6201acc757a7b92c768a36e8e2c803da8c1d38b240a0463bceb361"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMKMA.otf",
+    "sha256": "2891720908a601322cf568993146a978aa60cf00a77613ffe41e9780d2592d59"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMKMG.otf",
+    "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMKMP.otf",
+    "sha256": "06107130f56a186772bf38d17ec92c5836340ac63cae9779a827a64622ab5308"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMKMS.otf",
+    "sha256": "486455d5230e2103761a21abc37dbc92038d97007c6f9af4bdd698562403a997"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMKOLD.otf",
+    "sha256": "f2122c5200148d46a3f13b703e27536748fc5abf912a9b44d8ccd0f2b7f4ce97"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HMKSM.otf",
+    "sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HSUSFL.otf",
+    "sha256": "0539698e1093fa4277954e9b7a660770ed2423a19c1db848012fa5ce53ce6929"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HSUSR.otf",
+    "sha256": "bf0c0844f5e021ceea3524430049c74ef90809327f228b3a8ae40e7aeb6d612b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HSUSRI.otf",
+    "sha256": "67a247373a286fabaec4608c3fd7809728c78a1204b7fc71be0ac4d1df4ca18a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HSUSSP.otf",
+    "sha256": "05d3aeff0769a3f1853573ff76922ce2b7c2c10506dc009b90abd06386e49fcd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HYENGL.otf",
+    "sha256": "d86aebf2c16e61bd6f85abd2a513932ce410013f50b787361963acf76f901100"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HYHGGL.otf",
+    "sha256": "c578b200e2f17b7db484ea754c149fd73c9bc07bc28785b4d8e2a151b05ed29c"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HYJPGL.otf",
+    "sha256": "3188b00bccfd3c9982f66a782058a701a1fd3ca27bc9b0fc1d991049070ddf5d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/HYSPGL.otf",
+    "sha256": "ba2d223db87ac83eee63c6ddeb1e57a58d6d53c4aae691b6335fb1204e6766eb"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/JPGT.otf",
+    "sha256": "8c0ff53726428d115dfee5df77691532da1fc902ae0691cd1f4bdc111cbcfd66"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/JPJGT.otf",
+    "sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/JPJGTV.otf",
+    "sha256": "d3643247c358ad0001b86f3b31d8aec11c7a4958e9815e2936dea6a5f5fec5e2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/JPMJ.otf",
+    "sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/JPSMJ.otf",
+    "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/JPSMJV.otf",
+    "sha256": "cba88344a750fc55c7af9c80ca7ef076066dc7a74927062dde4aa74914d01631"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/JPSYS.otf",
+    "sha256": "d3c70c4f3af26676105cf9bd44e08417fa28ca03187ffb45dc8d1e7cae6c6579"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/KHANB.otf",
+    "sha256": "aedf5b7eb818afa7ec273f772517fc935be0c817b121edbe5428d6dc62f113ec"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/KHANENGB.otf",
+    "sha256": "8b0b3ce9e965c145df8ebfc17099ac3abf519611bd44a63a9c1184497a4aa4cd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/KHANENGL.otf",
+    "sha256": "b41a67571cb5124d38b84d589ed6a4f4e6eefc5d0d7ff7c877c2108c66ad4af3"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/KHANENGM.otf",
+    "sha256": "fb01f484d8b00af51589a3fa757dce0eb6824081fca5c1cc770aa5ee44c7c146"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/KHANL.otf",
+    "sha256": "498d46408a5455ba9730aeef4f9e004d575d92c9570ee6f68485ebf7738926d7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/KHANM.otf",
+    "sha256": "8015b74a91596d8a4cb6adc6dd62b4a0d73204fc89364c6a2a6f1c22a2b47cb5"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/MHHGSSG.otf",
+    "sha256": "2fe8ef2806254a9cec101188dd0926b71cf67b578fffe4f01325acf45b7f680a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/MHHGSSP.otf",
+    "sha256": "459114529c5c7ed86e5fe94e673260f43a7ccb70e784134541394945ddf5668b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/SPJGT.otf",
+    "sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/SPMJ.otf",
+    "sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/SPSMJ.otf",
+    "sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/SPSYS.otf",
+    "sha256": "a94aaa295c4cd1033926bb0ec97ed5f6b2cd0d3ca06608c18347a87cd005ed07"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TAENMREN.otf",
+    "sha256": "aef1b4e32ba55e42764385e1042b0bc5fbb51998571a380ce7b5e63a0a82c4b2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TAENMRKR.otf",
+    "sha256": "691205fe589ff8e46e7c840304316ea6d0459e54259b16eef6e49dfa66018e2a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEDNREN.otf",
+    "sha256": "d292d1972ff9de8641c52e3bff41fa0d5ba012c3fd0a1b6514f49e4a5f29fced"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEDNRHG.otf",
+    "sha256": "00eae1decfbbee1f2344ff95ec396eacd7581a70d65849a3305d3e2df5137b13"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGGTEN.otf",
+    "sha256": "79c4d98873b264b2ccac9a888548c5086ed9561b52443c6c765259b633675f80"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGGTHG.otf",
+    "sha256": "5e868bd75c1d3d6b40d8705645346ef9ed3fa26a77e31b543679a7e8848d04f2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGGTHJ.otf",
+    "sha256": "c3aec0cf56bcade14bed1a48aad78211aab9ef0a781f83d2b908493512e0a067"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGGTSP.otf",
+    "sha256": "76e5d39139516c389cdfdb06b33f49d1a71ed3bb8db2b57d863412505c3fba38"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGMJEN.otf",
+    "sha256": "fc341efba989722650bbba15690cbf91db2eb34fdc0eaaad6c8f04ea4a26154f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGMJHG.otf",
+    "sha256": "131637753baf43730900998e21694da10d6b12ca08d08634bc1c00d39f30fd92"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGMJHJ.otf",
+    "sha256": "2d7451e56c62084fa3debd781825890e18c12fef78409f656057d687a3abd684"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGMJJP.otf",
+    "sha256": "aad05d3cb2ebc9c2e5bc7fb731745179ec51d75fb9b54fb61b2950bf19a305c4"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGMJJPV.otf",
+    "sha256": "f1eb1015caed8874f0aae7021c59e25b14a64d84a3b9c9a2f75e8113c82b1080"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGMJSP.otf",
+    "sha256": "a73255db51e05eb4a170321f1f6b0288a9dcf7d0e5b86a1e553c16a5635c263b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGNSEN.otf",
+    "sha256": "1ec57144b35f74ec5da16caf972357e8921ff09111f355afa29e6f402f119b43"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGNSHG.otf",
+    "sha256": "7e85cb01754b53f01295826b78b77db4c6a6c48b53c214af6313ea058e881cbb"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEGNSHJ.otf",
+    "sha256": "9abe3a47b0694a9ed15d2fefe8e40b47887abcfe41d24886f5aac96c35133245"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEHDDHG.otf",
+    "sha256": "e92ab7d486ee6746db62e72c44320b4a7cf1a0c53d36ae78ef07f3751c230a02"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEHDDRHG.otf",
+    "sha256": "aa7d7bb757d85dc301c8a73046002e202b57efb13f79b502256aa79027b1753f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEHDTHG.otf",
+    "sha256": "b4c43298ec697f6f0e704379fc3da490be4ad7de6cbb629fde1e2756c98a9d2e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEHDTRHG.otf",
+    "sha256": "d4ed4bc8b5270539fcb97bfd69011107f1d9091aafbc79ab36526d243a53fc36"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEJGTEN.otf",
+    "sha256": "e5a90d4446f551d3ae2f412990fe8011395a2d75e5af3ea7f2ed51dde5be366e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEJGTHG.otf",
+    "sha256": "a2b6e400e1e8beaea1661e55bf5977ee823e2a4ae67033e758574f9238611860"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEJGTHJ.otf",
+    "sha256": "5c9e1ea0fc307c155ae7910a9d4acdf618d72ae78489aeac28902c680e426cce"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEJGTJP.otf",
+    "sha256": "96ee02cb33abb83c7985bed4ff49e7b8c3757299865e06f13c61c750a1f98d1c"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEJGTJPV.otf",
+    "sha256": "74b95fc5466c55db92771982b74a556d612967c002411909dcc5e9766b21902a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEJMJEN.otf",
+    "sha256": "becde524c507ba1e555360eae97f99e1770ac4403a55eda2b8b64ff313d602c9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEJMJHG.otf",
+    "sha256": "674bc8b40889eefecddc7833cfd6de1367bc7ed15656814b3cbf6a26fea211cf"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TEJMJHJ.otf",
+    "sha256": "ae4361b1549046dfc09b9415a9a8cdb52a076e96c8415b9eefd046d82465e1be"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESEGEN.otf",
+    "sha256": "2b8b1284cd6271cb013763a59ddc6c9127b61a55878e5cd05d4e092d0a821d42"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESEGHG.otf",
+    "sha256": "67a648a06f88d520a70db48caddea883ad4c6240c57717abd6e50e668c457c08"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESEGHJ.otf",
+    "sha256": "9ca91fe56f8a7799041c6b8de3a34e88597f895343d397dfb1b2c9407e5fede1"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESEMEN.otf",
+    "sha256": "464e83498110c175392228b406fef6c3c86a54464700fb03cc993f7aae7b8a06"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESEMHG.otf",
+    "sha256": "d475b282463329667b2f7018812556c143e1b07bad31f07287600ef78997af27"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESEMHJ.otf",
+    "sha256": "4287579604bb420cf62906b885228b070f2a093b3fb09dfa617822862a0c7d3d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESENEN.otf",
+    "sha256": "6ff8b1be47fb3711be3a2b77d7f4675e22bd552502283bc04af70119fe4c4051"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESENHG.otf",
+    "sha256": "b9cfce90b4b5434a6597ac0b712a86f24f2f0e2cba7fb0369a8ce6af17b91605"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESGREN.otf",
+    "sha256": "653e3453afb3a8a44144b7b9dc5e149f2ae7924c9f908ee04f171749935768cc"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESGRHG.otf",
+    "sha256": "2845c370f3eb07eaea5e76ffef82fd104108c406d9dd2c1803aa5c1036612cf7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESMGEN.otf",
+    "sha256": "0900ae9a0e8e326378283994648899b9deb80d70a2c2f99d05df060c6ecab8b7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESMJEN.otf",
+    "sha256": "1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESMJHG.otf",
+    "sha256": "3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESMJJP.otf",
+    "sha256": "91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESMJJPV.otf",
+    "sha256": "b126ad74634fc308def04002e0deb11e041a0e26ce658f0e7bb5d0aa7ccd972d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESMMEN.otf",
+    "sha256": "5db73a4e7333d43721a0db7b99b03e0f0bd0c487567a249b56b4bbefbcb42626"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESMMHG.otf",
+    "sha256": "8aa093022b3568cdfa246d030dd9e6bc24b9e6ac82ca281583f8f87a46286878"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESMMHJ.otf",
+    "sha256": "6b1498f058ac607e56c51bee2e2ea0a7df11010ebbe34c687525c9804fcd4390"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESSMEN.otf",
+    "sha256": "7c073a836d6837771668cc5be0f1816f502e54d5397f8e05e7b2f0281647219a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESSMHG.otf",
+    "sha256": "49bfc7e5f23e6dc28a687bcd671e2eba5fa15bbae8b46aff5a64fca97931b269"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESUNEN.otf",
+    "sha256": "0bb413e1c8c544e89f17b8c7ce13a3da5f9f4cde2f0298abe102eee8432be98d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TESUNHG.otf",
+    "sha256": "6afcc87a678ebc8f38ee915152d50a7655c5439e7038dfaa9212eed80863743a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETGREN.otf",
+    "sha256": "48158aad4e733ed85968c3bb93576134a11f2041568efb09ff45a076d6349ea1"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETGRHG.otf",
+    "sha256": "51346f5f5cf82c7de4b8f0bd2ba6ff488cada811d98f110bc47f535ddbee2867"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETGRSP.otf",
+    "sha256": "4d1cee6065faf8306d01715349b6878982e7e4ecc809956be79a30d95185e8dd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETGTEN.otf",
+    "sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETGTHG.otf",
+    "sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETGTHJ.otf",
+    "sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETGTJP.otf",
+    "sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETGTJPV.otf",
+    "sha256": "7853ab58b7a8dfab3159e28b1ad8ab157fe534c2c5bcfdd2246a8a547bdac75c"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETMJEN.otf",
+    "sha256": "f80f710a6079a9783e5a23405903fab70e7f10914aa9d0c824e1631567f169f5"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETMJHG.otf",
+    "sha256": "1fae2dba2d988b24a80efbe4cb7a0930a43bafb841e2ef45ef5e4132c17868f3"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETMJHJ.otf",
+    "sha256": "f2463a2a758e07b8b7cdada7d77597829e682ff3446e7eb7ad6d047324085f29"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETMJJP.otf",
+    "sha256": "1bc458bf7bc27359ed860b695aa2603ef4364bee3b18789e32139dd1e31ca8da"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/TETMJJPV.otf",
+    "sha256": "1a3e5140fae7ceb4d0164e99ea85dd07da1b1b9d9a85d2fac7d932d1b17342d6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/USER.otf",
+    "sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/USHGPL.otf",
+    "sha256": "be7582a44864837840ece42b037afa075060a6227924c18ebfe4ea1dae133109"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJENBMGM.otf",
+    "sha256": "b605bb645d865907b6f07f3b9eb7d94af64b3d630b0c2a4abfd9a5756e1ade13"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJENCHM.otf",
+    "sha256": "69d11a95e6fa11e4c23a04306f6e5f772288d1a3ba2a96aff2cbc4f68fd1368f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJENDNMJ.otf",
+    "sha256": "6ecf9ae84cf8af8faf125e7000aeb2af282a6a993729dcb35cc20a9b62aef822"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJENDUG.otf",
+    "sha256": "75b753b9438e3d5355c326ae7e853d609663ff42cecd1cf8c2acdb0cd23a6270"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJENINI.otf",
+    "sha256": "d2513b33ee7393bdf02703aafc0264dc91feef7213b0e0e14ef746974fa593fd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJENMAE.otf",
+    "sha256": "baecd92f40be280f03d709d9d46d32ab3d3c37a9291948e516fdabcc6683792a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJENSHN.otf",
+    "sha256": "2415f7198644d598fe05b038ed189a0164896afc653a063a976f38b7720d1bb6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJENSOSL.otf",
+    "sha256": "e854060b717a8a25ce77d4831d44de25fdf84231913d76476c24554a45da0832"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJENTTB.otf",
+    "sha256": "a69add28f146c1c59ad504bf7ebb7342c540ec3a0c2f88f8575b894a0289cf73"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJENWDA.otf",
+    "sha256": "49757233e781e9df7ed190f9965c235e55e123ff58922a5198c123a30b7bd3b4"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJHGBMGM.otf",
+    "sha256": "33d7603949542d9fbe16be6520c985a178562f22012d5a0db68855690d572337"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJHGCHM.otf",
+    "sha256": "77c44e04f63ddd1f77b446572609ba895f9c1e8debd83d4a71fa755e03988c91"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJHGDNMJ.otf",
+    "sha256": "80c66475b28c3c993bbad99fd84219a9208a990abe08bf3befb9cb82abf835f6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJHGDUG.otf",
+    "sha256": "407ba687812ff0c95cc4c8d6a6c13765a95b95f5ae53d2e026f0e25b51c3f2f0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJHGINI.otf",
+    "sha256": "f5982b36a124f5ea49e1904ceffb84645bf7574c00665a83d39b37a12887af9c"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJHGMAE.otf",
+    "sha256": "38bae5096df0c429caceff68f76922dc6c88dd02ba0e68206154c440d812dc2f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJHGSHN.otf",
+    "sha256": "8e0b417e48a580c9997baf0899295efd02a1824f5340cd78aa7a38a0640f9493"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJHGSOSL.otf",
+    "sha256": "e857e705237d7e7e9e3e3842f8006c61396fe4c52414183ece257d59481e10a7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJHGTTB.otf",
+    "sha256": "e7f3a88ad0d1fe099637f7423570899165777675e927d448d787845dc0fbda36"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hft/YJHGWDA.otf",
+    "sha256": "2cb8623cecc13f2cc17e428dac3fe4ca675f9f047751b2be8a2af7502d7197e0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/Baloo-Regular.ttf",
+    "sha256": "718843345772c5dac9e57dd51803f818455b427366906f637b3cb4df1b365da6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/Diplomata-Regular.ttf",
+    "sha256": "a02adc3d8790dfac28e3ff841a63529024c93233fd6acdede0b044ce1a425477"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/FZSong_Super.TTF",
+    "sha256": "cbf26cf7c72522e4de508373fec17d3499bb4a7c47b0a501fd175b0222c57fc7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/H2HDRM.TTF",
+    "sha256": "a3f57b4cb4292977479c1511b52997daadaf04c37f180ff05ab152c4d12ccaf5"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANBaekB.ttf",
+    "sha256": "b9eeeff695317cfcca238b932fbc8a66b5555cb140116e321d811bda58f58f1d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANBaekM.ttf",
+    "sha256": "5fe7f3ff8c1f7f619f034c2cef5bd3cf1f546a29719e0cf4adb18e93d7f17726"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANCooljazzB.ttf",
+    "sha256": "3546f1afc91cbf53f4726bb1a2124533e0f183e77ada0a829b9fc563562d2f1d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANCooljazzL.ttf",
+    "sha256": "71d7d8b186b5435a03006e9536d52e6e14cceb3bd19a795164bc9feb62920f43"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANCooljazzM.ttf",
+    "sha256": "40ec74881ded71b93b1a2cbf99a1cfb39d6c55df64839f3a28e508e010eb6ea2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANSaleB.ttf",
+    "sha256": "16011d8cad602ee77bf8966ce2bef337b47edaf017d20e39a6943dad20d5630f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANSaleM.ttf",
+    "sha256": "bba583683c6afd14c5cf1df8ae38254aa4c5016a733258b4431be7c7b6dedb80"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANSolB.ttf",
+    "sha256": "1e8de8463d9b8d3537d9f648d289258d8c54eeae6c16e43d812480b81bde84df"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANSolM.ttf",
+    "sha256": "710650873dd6802d383868df494a022d624cefa11bfd0304d8f5a77093a3b002"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANSomaB.ttf",
+    "sha256": "25cca9e486a5f700f1827fe8eb46fc2008723069518c7ca148d60c9ec59574bb"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANSomaM.ttf",
+    "sha256": "2649474ff0014b8192bfc195b11a25319ca431716bbc2a67e2fb76acd138942b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANYGO230.ttf",
+    "sha256": "cdf746176aba807cbf9b168c2d749be6270f44f4b80568b9e18b05d1ba53a200"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANYGO240.ttf",
+    "sha256": "ed3fbb8f3af1866a7fe31478e4f62ef409f74f65d0db1bf60538f4649e564e4d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANYGO250.ttf",
+    "sha256": "7e86818a4310bc4f29fddf34e4490a074aaa366984676fbdb881dc21e19ae75b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANYheadB.ttf",
+    "sha256": "1984e8c30aecd04af2bc204ff5fe5bcf1f8fe98451d2d8944122d3235bc1d2f4"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANYheadL.ttf",
+    "sha256": "c6fc079008e92419dc46f86a3a77b5e131cd717da9cd132d6f628453f7d33ce8"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANYheadM.ttf",
+    "sha256": "211ea74d327fcb0190833791bf79328cb895c44fa43ae31c90ad53c37e757584"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANYoonGothic720.ttf",
+    "sha256": "68d56b9946b077d69f150a0889dd508972445e17c3a5917fba9b8b06628f288d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANYoonGothic740.ttf",
+    "sha256": "ff227ca64858b4cd6f657da587515c95931841dcba19a579aef06daec97f7057"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HANYoonGothic760.ttf",
+    "sha256": "ae10465357537a2aa73d123df949a169791e295bb97a84393bb8e0ccae79bb0e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HBATANG.TTF",
+    "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HDOTUM.TTF",
+    "sha256": "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HMKMM.TTF",
+    "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYBDAL.TTF",
+    "sha256": "e418f439658680da75e5c9ed2a665123925ba801315f259ff0684a9e60bb0c84"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYBDAM.TTF",
+    "sha256": "555367f75d9ad77ade99efacac6d0efcc26cab1f2ee6366f4180f78ebfbd56fd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYDNKB.TTF",
+    "sha256": "da24992e369b46fee38c02520b6901f49af16107c6a35ee3d34cd89154f60e31"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYDNKM.TTF",
+    "sha256": "7ce310f7d24b95844a0188943cdb4dac95bc496e96c876d3ca731e72c578dd48"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYKANB.TTF",
+    "sha256": "cfd21db0edd632dcff6e6d9179f0266e2febb63586947fffa9dcffa34833e85e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYKANM.TTF",
+    "sha256": "896a7b5e562f5d5ee0694ec547b3d1a10587b882a94850fb39e62d5fc5eb8c6d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYNAMB.TTF",
+    "sha256": "728450078ea1263e88b5f815777ba526d081be603975c21171aafeb323a39b5b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYNAML.TTF",
+    "sha256": "426444500b76ef980f0a933bde22769b50c6b6371f4118995b704c6430a9428a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYNAMM.TTF",
+    "sha256": "6448359d4a640184a0224b4a403ae11fd25e7f770c70f5ff5ef9ceca36d494f5"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYSANB.TTF",
+    "sha256": "5c4ded4685db7f24523391253656f128a42b437aaf6660a3737e54e7aa30a288"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYSUPB.TTF",
+    "sha256": "3ac03d75b2e752546044990917fab57b415780ca119751e8bfa0136765772071"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYSUPM.TTF",
+    "sha256": "e36a1f1b97db4c2f71d1d177d573702f2e8cb19a52aa929fc5501a7f79fa70b7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYTBRB.TTF",
+    "sha256": "4f7650a93ef862a2ee69d6fdc5a0e9ce94a47ab683cd810961e18cab27ce61a2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYWULB.TTF",
+    "sha256": "c48939f1dac8d1946d64d2063adf6e47c6dcecfb978548d52d9e47d1f70ff61a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/HYWULM.TTF",
+    "sha256": "b6e5c595d3b8986aa31830c228cdf30abefcb182bcfe1c016f464fd8395679b0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/Limelight-Regular.ttf",
+    "sha256": "f5bf8a9159adfc5b9c756c85d812a4fd1299b8916fefdf39ad4b24ade6d8d0cf"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/MT.TTF",
+    "sha256": "d10509215d923fef07c1f2dffe8ebf55cbca706476559a861dff6f7cf969ff44"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/NanumBrush.ttf",
+    "sha256": "5fe0e02f74c58aa25ba49908fb6775bcb7d00d19ddd68b480b51a926f5ca12ec"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/OleoScriptSwashCaps-Regular.ttf",
+    "sha256": "b8811c803202bbc80e6124200666080a62b63df3b52e1833456189ec1f798c31"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/Rochester-Regular.ttf",
+    "sha256": "268abe034fc69f090b6cd241a429e26f7fac1e4648c7bbcca39e883aa3b19abb"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/Schoolbell.ttf",
+    "sha256": "1a3ae62329871c20600217f19f3472ba8f253c11a7df6cb9a9e6e88ced95ee0a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/VastShadow-Regular.ttf",
+    "sha256": "98bdf7f93c2330697078ece27e48dea7d97b253a547d699bf7afc4bdfa641a93"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/ahn_b.ttf",
+    "sha256": "2b09bfc55a665e4b0431f79f08c518db434d50c0d8d29c7042729f95a1f2d033"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/ahn_l.ttf",
+    "sha256": "40cb56d66504efb5b8a082d6fccfca415cc38d9d030d04b5b417d16e593cefa4"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/hwp/ahn_m.ttf",
+    "sha256": "8ac417c371a64d49189b18ff60dd7d717313a5a47652027869be325d9c21f746"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/kopub/KoPub Batang Bold.ttf",
+    "sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/kopub/KoPub Batang Light.ttf",
+    "sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/kopub/KoPub Batang Medium.ttf",
+    "sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/kopub/KoPub Dotum Bold.ttf",
+    "sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/kopub/KoPub Dotum Light.ttf",
+    "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/kopub/KoPub Dotum Medium.ttf",
+    "sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/kopubworld/KoPubWorld Batang Light.ttf",
+    "sha256": "e3ee21a86b6a6728c567a95aaebd8883480f27ce4f230207b0d7266b5cb3fb18"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/kopubworld/KoPubWorld Dotum Light.ttf",
+    "sha256": "069494cce21a4222c88e537f256b6f46fee209375aba769f82431b2d382bc84f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/kopubworld/font-kopubworld-1.0.3/KoPubWorld-Batang-Light.otf",
+    "sha256": "895fdc6de0ff0fe24b1a63ae16601c174c810b24daa23ade78115b7e134c4c0a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/kopubworld/font-kopubworld-1.0.3/KoPubWorld-Batang-Light.woff2",
+    "sha256": "679e263af731c5a23bbe666d67cc1cc5ebed2a16c3985ed7879fce5b0d447ed9"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/latinmodern-math.otf",
+    "sha256": "6075562b771f8b82f0c179e363389684f2dd09de30038269e2628e504bd7be0f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/ARIALN.TTF",
+    "sha256": "cad552553cf2a75afca01955751aaa115e2a64fd6c6eea42e1fbd236630b7e0a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/ARIALNB.TTF",
+    "sha256": "6c4a4b643461def5411e0217b74a625dcf2fb681252ef5da1db0af4eae80aa7e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/ARIALNBI.TTF",
+    "sha256": "161b859efd20c69ddebb23012a49f4f2030d56a0c1b9bcfd4df753217ce3e358"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/ARIALNI.TTF",
+    "sha256": "faf73aa7ce40b77ad19c09507a2263fe3f3ce9fa5642e8a1cd54fb3c9f52d599"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/ARIALUNI.TTF",
+    "sha256": "fe50313c37c2eca0bbf8cc3565b5ef32314753889afbe44cb275d65c3b58f0df"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSans-Bold.ttf",
+    "sha256": "e6476c1b80502924294eed40894c5b18e06c181444ca953e5334262df9c27724"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSans-BoldOblique.ttf",
+    "sha256": "eb436dca0c2594b73d8b603b892e374fdfd8d885d25ffb4f18df4c4c0b49e50f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSans-ExtraLight.ttf",
+    "sha256": "6cb0746a1f68d176bebe83752cee35ebdf726cb1a1e88a01fc038ddf76de9ea8"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSans-Oblique.ttf",
+    "sha256": "4af75fa16ee6d3ad43e1ecec41862c24954af26a55c6bb1ebb27bd486a50f5f4"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSans.ttf",
+    "sha256": "7da195a74c55bef988d0d48f9508bd5d849425c1770dba5d7bfc6ce9ed848954"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansCondensed-Bold.ttf",
+    "sha256": "38098d0b8edd8430a0f53fb2831b5d36037563a998a620d3c87a4d7591766d20"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansCondensed-BoldOblique.ttf",
+    "sha256": "43f9fd6b77edf174553cf94857c77c63de7ddb0c6751fd1390e73223518e128f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansCondensed-Oblique.ttf",
+    "sha256": "dc3526fa25fae4278c4e34b47d4c049b6923421c70921032a0db11bfe9c1b0cf"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansCondensed.ttf",
+    "sha256": "8550cd5ca1acb65a8fc7877c46939cd0b4d909f8e7bc1e24716873d918c5e549"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansMono-Bold.ttf",
+    "sha256": "bce60f1b4421acd9ea51ba6623d7024ecbe6817a953e3654df62a5e6bdf8f769"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansMono-BoldOblique.ttf",
+    "sha256": "91713a71d550bba22c2a6b2bb2a9ad8f9a159e12e4e9f0a5b2677998ba21213e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansMono-Oblique.ttf",
+    "sha256": "742097840c541870e8d6dc5c9b37bb1ceeea6c0dedd1d475faf903ef9df734b0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansMono.ttf",
+    "sha256": "b4a6c3e4faab8773f4ff761d56451646409f29abedd68f05d38c2df667d3c582"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerif-Bold.ttf",
+    "sha256": "c47b5527bcdc8dcf9ea8c77054454c5a884beaca2f44851a2a823ee639cbf07f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerif-BoldItalic.ttf",
+    "sha256": "8d3dd3d31350309042ed226af82b34539bd773518e6107cb352712853ba80308"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerif-Italic.ttf",
+    "sha256": "2e39b1d50f90b933b00c7bb54a96afd3f86419b3d717c7cf202e36f2d4973e47"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerif.ttf",
+    "sha256": "42d1edeb7952f31b1f96d767ed7030b08a39e0c372b0071641518864e2bffb51"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerifCondensed-Bold.ttf",
+    "sha256": "e09aa87c60c3e8de7f4e6c7bfeec8fd9489b6cd975e3033259bca3d6009aed18"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerifCondensed-BoldItalic.ttf",
+    "sha256": "4cfc5a3700c72413f51c4bb54f09617401a0a63eccb9ff577713e20afa047fa5"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerifCondensed-Italic.ttf",
+    "sha256": "dfe5bf5336d62ca71de419cccf7fd18ab19a57245dc392891ee76347129807e1"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerifCondensed.ttf",
+    "sha256": "685dcdfb8daf32a453d3426a4eb8d881c72146ddd999229354fb757511357995"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/ENBASKVL.TTF",
+    "sha256": "177de2eea49950c9b7ed74843c032be1a80c7a5a3dd4f07ca953e561ea5df1f1"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYBDAL.TTF",
+    "sha256": "e418f439658680da75e5c9ed2a665123925ba801315f259ff0684a9e60bb0c84"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYBDAM.TTF",
+    "sha256": "555367f75d9ad77ade99efacac6d0efcc26cab1f2ee6366f4180f78ebfbd56fd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYBSRB.TTF",
+    "sha256": "74f2ae9ab8e0ad36175344a759721cd616a7623613853973a0adfe99ebe79862"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYCYSM.TTF",
+    "sha256": "769537a52d27d648e90a30029deab686f604dfc767382cc8c74ae42cb44df5aa"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYDNKB.TTF",
+    "sha256": "da24992e369b46fee38c02520b6901f49af16107c6a35ee3d34cd89154f60e31"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYDNKM.TTF",
+    "sha256": "7ce310f7d24b95844a0188943cdb4dac95bc496e96c876d3ca731e72c578dd48"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYGPRM.TTF",
+    "sha256": "cf8614cb09e038ff24c0edb2ba2cfa6b8911c7c913cfe590e7e56014e7e63e5a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYGSRB.TTF",
+    "sha256": "b41cef3386d034040704b1a143ef13a63c5b9f1ec4222a7579c1796ea05517f6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYGTRE.TTF",
+    "sha256": "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYHWPEQ.TTF",
+    "sha256": "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYKANB.TTF",
+    "sha256": "cfd21db0edd632dcff6e6d9179f0266e2febb63586947fffa9dcffa34833e85e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYKANM.TTF",
+    "sha256": "896a7b5e562f5d5ee0694ec547b3d1a10587b882a94850fb39e62d5fc5eb8c6d"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYMJRE.TTF",
+    "sha256": "a101a7a219ffd57273374a423e734adfba1529e5eaf2e9a7476f7150708ea506"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYMPRL.TTF",
+    "sha256": "6bd4066d8dd5ad7296a5d5e826032872bdf4b5343dbbf20073dec67d6b7d4f28"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYNAMB.TTF",
+    "sha256": "728450078ea1263e88b5f815777ba526d081be603975c21171aafeb323a39b5b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYNAML.TTF",
+    "sha256": "426444500b76ef980f0a933bde22769b50c6b6371f4118995b704c6430a9428a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYNAMM.TTF",
+    "sha256": "6448359d4a640184a0224b4a403ae11fd25e7f770c70f5ff5ef9ceca36d494f5"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYPORM.TTF",
+    "sha256": "c59429a54a1aa0bcb71c2b35e3a1a8990752d3993dbf905018a5b0b91cf7cd2f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYSANB.TTF",
+    "sha256": "5c4ded4685db7f24523391253656f128a42b437aaf6660a3737e54e7aa30a288"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYSNRL.TTF",
+    "sha256": "c676038d3cf13121dd974c2e7ee99c0c81eea04a4a493bc3dc60c9f32b791dc6"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYSUPB.TTF",
+    "sha256": "3ac03d75b2e752546044990917fab57b415780ca119751e8bfa0136765772071"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYSUPM.TTF",
+    "sha256": "e36a1f1b97db4c2f71d1d177d573702f2e8cb19a52aa929fc5501a7f79fa70b7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYTBRB.TTF",
+    "sha256": "4f7650a93ef862a2ee69d6fdc5a0e9ce94a47ab683cd810961e18cab27ce61a2"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYWULB.TTF",
+    "sha256": "c48939f1dac8d1946d64d2063adf6e47c6dcecfb978548d52d9e47d1f70ff61a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/HYWULM.TTF",
+    "sha256": "b6e5c595d3b8986aa31830c228cdf30abefcb182bcfe1c016f464fd8395679b0"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/arial.ttf",
+    "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/arialbd.ttf",
+    "sha256": "3680a1bbffab914f36b27d5fd97b193de5bccfab882c41b41b5f8f99457b4820"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/arialbi.ttf",
+    "sha256": "77a0b63c5f73eb85923f10359e68b8fc768487ae88ad902a1ea21276954e205b"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/ariali.ttf",
+    "sha256": "c30c71d614e143c0d4e42aaf04d9a1f50f90b365a2654eb3f2c6598e5655af08"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/batang.ttc",
+    "sha256": "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/cour.ttf",
+    "sha256": "6aab1f79264ccda1e7129dba62dbe3750b10eaa27408a327dadb808724e62c84"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/courbd.ttf",
+    "sha256": "e376f24c9f27eb7370b25aa366d78da731834a1aea651858801c9a14e8906943"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/courbi.ttf",
+    "sha256": "ac3b362cf998eb33475655e12ab7cb2f6a35d1f2eff6f76af00ebb6f81c53ee7"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/couri.ttf",
+    "sha256": "546406ddbb3e3f6b876a5e8a5dee62ac090d1448662e98d8844b22393813dd13"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/gulim.ttc",
+    "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/malgun.ttf",
+    "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/malgunbd.ttf",
+    "sha256": "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/malgunsl.ttf",
+    "sha256": "c0ca810a242c4482594182db40f0f9d35a3d51bb2eeac750e6e867b2110eb00e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/segoeui.ttf",
+    "sha256": "8134dbcd09e7b123c9a7f229d49cffbcb01352cc72ea5e1076b65d0dca9f73cd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/segoeuib.ttf",
+    "sha256": "aeb9e4a6ec5cc59f4d72df8189032d7dbb28f45161cf1552174818b5465dac4e"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/segoeuii.ttf",
+    "sha256": "be525b9a6d307d73c23908cd269be9be754210a9d93c0c1eaaa126d2a174290a"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/segoeuil.ttf",
+    "sha256": "866557576dfc772395301b581eccef4c0daf1dbb75f9667f26784b260bce7da1"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/segoeuisl.ttf",
+    "sha256": "3432de66f335c7e3058154f7cbb13ef051195653a544b49b1992267e558b33ef"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/segoeuiz.ttf",
+    "sha256": "c886161fa6d102090ff992519b6fdc73057a0e838e9d40b27e187e9e61300a92"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/seguisym.ttf",
+    "sha256": "a4a35dcc62cd30e1a6c97b695ecef83e59d2b149e3af834f6a49f11851d56b37"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/symbol.ttf",
+    "sha256": "bbf1192965e5266fbf23370416337d2861fc1e8bd349def93f2994ba67382fc3"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/times.ttf",
+    "sha256": "fbb57cdb0079137adc0e478913ca134dfee02aa2ef443738ec5e839bf97a1f7f"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/timesbd.ttf",
+    "sha256": "e94ff9111656f17bd81e9f822f1e234edcd370bcbacfdebf998b8938f525ac77"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/timesbi.ttf",
+    "sha256": "8d2c8d8d25d9fc529d08558c42effa771617914a455603881e212a26e2f2ddcd"
+  },
+  {
+    "path": "/home/edward/mygithub/ttfs/windows/timesi.ttf",
+    "sha256": "c2c134968be4259aaa78845d3aca5e91c4a0bd10d98e4d2e48ac3c12f3c63b89"
+  },
+  {
+    "path": "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/output/pr-review/native-webfont-cache/programs/b89fbfc64a0600798c93e303fc4b40611f570233ad9008a633e2dcfe7a79564f/source.ttf",
+    "sha256": "b89fbfc64a0600798c93e303fc4b40611f570233ad9008a633e2dcfe7a79564f"
+  }
+]

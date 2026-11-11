@@ -1,0 +1,26 @@
+[
+  {
+    "path": "samples/oracle.gif",
+    "sha256": "464e863dd2c1650fc6997b03a5d96c9413e61bbabaf7337c783db27203cc2761",
+    "bytes": 1813,
+    "git_blob": "9938259e42ba5437c6ce69f3cbb7461c6863d161",
+    "native": "Document path resolution in both copied CLI producers",
+    "wasm": "Explicit --linked-image supply in full 763-page verification"
+  },
+  {
+    "path": "samples/rdb02.gif",
+    "sha256": "bfadf4cdbbeeb5f3d8632cb54c8c3696977f405204b651f99a7a24c8f39532cf",
+    "bytes": 6098,
+    "git_blob": "adc2926246790c13ea3e57e10d5c954b6ae7f388",
+    "native": "Document path resolution in both copied CLI producers",
+    "wasm": "Explicit --linked-image supply in full 763-page verification"
+  },
+  {
+    "path": "samples/s1.jpg",
+    "sha256": "77dea18ce7f8f93b0931e133dec222aec642eef0ed87b8f2031b94dcbea5c514",
+    "bytes": 16744,
+    "git_blob": "d5e8beceb520538809572bcbe342443065496da2",
+    "native": "Document path resolution in both copied CLI producers",
+    "wasm": "Explicit --linked-image supply in full 763-page verification"
+  }
+]

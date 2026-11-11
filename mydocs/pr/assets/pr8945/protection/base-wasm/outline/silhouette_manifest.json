@@ -1,0 +1,291 @@
+{
+  "key": "outline",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "missing_pages": [],
+  "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/outline-restored/base-wasm/outline/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/outline-restored/base-wasm/outline/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "b006e83ad515a84f81908cf26991ff48d2c17fbeb7dabd662380ae0568b8f077",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/outline-restored/base-wasm/outline/pdf_png/pdf-001.png",
+      "pdf_sha256": "a87d818724ee24f2acc3572f9a6f5898b0b39e98289be8ae1b241c94839df146"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/outline-restored/base-wasm/outline/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "cd57af677fadaa62ebeba5a9b90117a1a71832528846c2a2cd43f0971a2aac1c",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/outline-restored/base-wasm/outline/pdf_png/pdf-002.png",
+      "pdf_sha256": "16a2ace33251038faf5d49aa1df829c955278c0ca755f83821fab8d5122671ae"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/outline-restored/base-wasm/outline/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "9e8c164c92d35ff13f14035a225324ef736b0ce2536edc0d26aadaeef7caaf80",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/outline-restored/base-wasm/outline/pdf_png/pdf-003.png",
+      "pdf_sha256": "1147fcd60a6d1e087796d03db1c8fbe167c030c7b17eb05ccfa3b355f2228600"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/outline-restored/base-wasm/outline/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "f971cb3dd17f76d1d01d58b719ad0d3c55ba29d5f82e7879fa0c8b3cc5154a15",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/outline-restored/base-wasm/outline/pdf_png/pdf-004.png",
+      "pdf_sha256": "5ff19442aa446d003aab0b4b74d38a6931b716125c5a1dae1d58a4ef5223ce08"
+    },
+    {
+      "page": 5,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/outline-restored/base-wasm/outline/rhwp_png/rhwp_005.png",
+      "rhwp_sha256": "6757fced7167fc48a7acfa143b9ed075316a520b03402f86e0c433237ddaeb80",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/outline-restored/base-wasm/outline/pdf_png/pdf-005.png",
+      "pdf_sha256": "070844cbe1be7fbf6be5776ff91c3ea07d6b91b22a90144269a8feb96f3dd273"
+    },
+    {
+      "page": 6,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/outline-restored/base-wasm/outline/rhwp_png/rhwp_006.png",
+      "rhwp_sha256": "0d208929e4eda54e8c9f14aa77be39ee86233b1620b6a299334518fac2516262",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/outline-restored/base-wasm/outline/pdf_png/pdf-006.png",
+      "pdf_sha256": "effc597af48b42d93911626ee22c0b7b44639c205bff0bc34486ee2399587cbf"
+    },
+    {
+      "page": 7,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/outline-restored/base-wasm/outline/rhwp_png/rhwp_007.png",
+      "rhwp_sha256": "c8364427612fbbcde941df8d51853c41630a281b10786069da4516d23787d21e",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/outline-restored/base-wasm/outline/pdf_png/pdf-007.png",
+      "pdf_sha256": "928b93cef9dd2e430f709eb87c4d22d889564e71c044790fba6e97ba6148da9a"
+    },
+    {
+      "page": 8,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/outline-restored/base-wasm/outline/rhwp_png/rhwp_008.png",
+      "rhwp_sha256": "0a0bff2cd005519c8705cc9d4b147b7a4a5d8f9653b88b28b2a3637ec8435985",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/outline-restored/base-wasm/outline/pdf_png/pdf-008.png",
+      "pdf_sha256": "e5048324a0f975eb9dbff464061729d212373ffc0a5175b9ae67b96dc5ffb773"
+    },
+    {
+      "page": 9,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/outline-restored/base-wasm/outline/rhwp_png/rhwp_009.png",
+      "rhwp_sha256": "20abd635f6f201f1d5ed49145058380c47aab5d42953192a5dca0c42b962fed9",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/outline-restored/base-wasm/outline/pdf_png/pdf-009.png",
+      "pdf_sha256": "8863b2dd430a6dbaa46dd3366b0b25a4a7b61df2500f3995e64dc2bf07e67399"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 38120,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 4830,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 36906,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 33888,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 5,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 43289,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 6,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 7282,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 7,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 128335,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 8,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99242,
+      "silhouette_raw_unmatched_pixels": 3,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 39591,
+      "tolerant_content_match_percent": 99.99242
+    },
+    {
+      "page": 9,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 25510,
+      "tolerant_content_match_percent": 100.0
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 9,
+      "pdf": 9
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/task3307/issue3307_outline_number.hwpx",
+      "sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d"
+    },
+    "pdf": {
+      "path": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb"
+    },
+    "git_head": "99b9d7ec5ca36884ea8fd981ac815c1edc34c653",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/producers/base/rhwp",
+      "path": "output/pr-review/pr8945/producers/base/rhwp",
+      "sha256": "faeb10ad2a321d805bf02d97b5749a768d1641d23672d42a1f52f9ebd797f9eb"
+    },
+    "raster_backend": "wasm-canvas2d",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2022",
+    "font_environment": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/font-context-diagnosis/outline-reference-fonts.json",
+      "sha256": "e70c2fec57066a2860808b7485e10fafb02e3a75c564d24aad530f8b468d757f"
+    },
+    "wasm": {
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/producers/base/wasm/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/producers/base/wasm/rhwp_bg.wasm",
+          "sha256": "60ebe8dc7175bab113a69c3e8fdae8ad78c55c8c19ff36033a49ed18c2d583d3"
+        }
+      ],
+      "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+      "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files_receipt": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    }
+  },
+  "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/outline-restored/base-wasm/outline/silhouette-checkpoint.json"
+}

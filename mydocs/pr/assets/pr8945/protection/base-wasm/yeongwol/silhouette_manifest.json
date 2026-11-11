@@ -1,0 +1,196 @@
+{
+  "key": "yeongwol",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "missing_pages": [],
+  "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/yeongwol/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/yeongwol/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "a492f8e208340deda5e5b3d9a729e13e35a8ccabdab27b7ff05dd32038889afa",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/yeongwol/pdf_png/pdf-001.png",
+      "pdf_sha256": "63ed5a39affc82a83a224ed2bd40215a7fa191b5f9a78658d1434ea95040e96c"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/yeongwol/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "b37296d1a5850c737578ea13f65793c09399cc4141bb64cf526e7032ae73abc4",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/yeongwol/pdf_png/pdf-002.png",
+      "pdf_sha256": "37649f27c4e0789da12a7122b224c4a78a4eb9afb5deb5d1ad706cea51c4bf99"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/yeongwol/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "30e7c1d50accb4c29168b35c9b2580fc6ad7c86f9a77f52177c4063bc3345d84",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/yeongwol/pdf_png/pdf-003.png",
+      "pdf_sha256": "4b81fcc56aac08b10beaeab46738e797d0220dee32d7053bc726163502865d92"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/yeongwol/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "70f5da9760f6403e235e98ae77ea67d91c32748778ed4eba6ec298c0bdce3121",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/yeongwol/pdf_png/pdf-004.png",
+      "pdf_sha256": "7524d9f2fabb1683e457930ed57b6a63118f0f174cdb3a1c2ffd0109f4385f00"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.9932,
+      "silhouette_raw_unmatched_pixels": 5,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 73547,
+      "tolerant_content_match_percent": 99.9932
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 43244,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99211,
+      "silhouette_raw_unmatched_pixels": 6,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 76022,
+      "tolerant_content_match_percent": 99.99211
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 40643,
+      "tolerant_content_match_percent": 100.0
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue5699/20099369_yeongwol_forms.hwp",
+      "sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09"
+    },
+    "pdf": {
+      "path": "pdf/issue7642-failed-inputs-followup-20261011/20099369_yeongwol_forms-2020.pdf",
+      "sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123"
+    },
+    "git_head": "99b9d7ec5ca36884ea8fd981ac815c1edc34c653",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/producers/base/rhwp",
+      "path": "output/pr-review/pr8945/producers/base/rhwp",
+      "sha256": "faeb10ad2a321d805bf02d97b5749a768d1641d23672d42a1f52f9ebd797f9eb"
+    },
+    "raster_backend": "wasm-canvas2d",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2022",
+    "font_environment": {
+      "path": "/home/edward/mygithub/rhwp/mydocs/pr/assets/planet6897_20261103/yeongwol-font-environment.json",
+      "sha256": "d8bffde39aac561051991fe06b83e453439376acff84814439934864589b40e4"
+    },
+    "wasm": {
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/producers/base/wasm/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/producers/base/wasm/rhwp_bg.wasm",
+          "sha256": "60ebe8dc7175bab113a69c3e8fdae8ad78c55c8c19ff36033a49ed18c2d583d3"
+        }
+      ],
+      "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+      "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files_receipt": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    }
+  },
+  "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/yeongwol/silhouette-checkpoint.json"
+}

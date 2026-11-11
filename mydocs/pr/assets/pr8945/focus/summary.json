@@ -1,0 +1,326 @@
+{
+  "rows": [
+    {
+      "producer": "base",
+      "backend": "native",
+      "key": "control-float",
+      "page": "1",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "base",
+      "backend": "native",
+      "key": "d-rowbreak-splits-at-row-boundary",
+      "page": "1",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "base",
+      "backend": "native",
+      "key": "d-rowbreak-splits-at-row-boundary",
+      "page": "2",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "base",
+      "backend": "native",
+      "key": "c-rowbreak-table-moves-next-page",
+      "page": "1",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "base",
+      "backend": "native",
+      "key": "c-rowbreak-table-moves-next-page",
+      "page": "2",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "base",
+      "backend": "native",
+      "key": "b-rowbreak-bottom-margin-overflow",
+      "page": "1",
+      "tolerant_content_match_percent": "90.05",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "90.05",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "base",
+      "backend": "native",
+      "key": "b-rowbreak-bottom-margin-overflow",
+      "page": "2",
+      "tolerant_content_match_percent": "59.20",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "59.20",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "base",
+      "backend": "native",
+      "key": "a-rowbreak-float",
+      "page": "1",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "base",
+      "backend": "wasm",
+      "key": "control-float",
+      "page": "1",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "base",
+      "backend": "wasm",
+      "key": "d-rowbreak-splits-at-row-boundary",
+      "page": "1",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "base",
+      "backend": "wasm",
+      "key": "d-rowbreak-splits-at-row-boundary",
+      "page": "2",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "base",
+      "backend": "wasm",
+      "key": "c-rowbreak-table-moves-next-page",
+      "page": "1",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "base",
+      "backend": "wasm",
+      "key": "c-rowbreak-table-moves-next-page",
+      "page": "2",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "base",
+      "backend": "wasm",
+      "key": "b-rowbreak-bottom-margin-overflow",
+      "page": "1",
+      "tolerant_content_match_percent": "90.10",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "90.10",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "base",
+      "backend": "wasm",
+      "key": "b-rowbreak-bottom-margin-overflow",
+      "page": "2",
+      "tolerant_content_match_percent": "58.31",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "58.31",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "base",
+      "backend": "wasm",
+      "key": "a-rowbreak-float",
+      "page": "1",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "head",
+      "backend": "native",
+      "key": "control-float",
+      "page": "1",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "head",
+      "backend": "native",
+      "key": "d-rowbreak-splits-at-row-boundary",
+      "page": "1",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "head",
+      "backend": "native",
+      "key": "d-rowbreak-splits-at-row-boundary",
+      "page": "2",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "head",
+      "backend": "native",
+      "key": "c-rowbreak-table-moves-next-page",
+      "page": "1",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "head",
+      "backend": "native",
+      "key": "c-rowbreak-table-moves-next-page",
+      "page": "2",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "head",
+      "backend": "native",
+      "key": "b-rowbreak-bottom-margin-overflow",
+      "page": "1",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "head",
+      "backend": "native",
+      "key": "b-rowbreak-bottom-margin-overflow",
+      "page": "2",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "head",
+      "backend": "native",
+      "key": "a-rowbreak-float",
+      "page": "1",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "head",
+      "backend": "wasm",
+      "key": "control-float",
+      "page": "1",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "head",
+      "backend": "wasm",
+      "key": "d-rowbreak-splits-at-row-boundary",
+      "page": "1",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "head",
+      "backend": "wasm",
+      "key": "d-rowbreak-splits-at-row-boundary",
+      "page": "2",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "head",
+      "backend": "wasm",
+      "key": "c-rowbreak-table-moves-next-page",
+      "page": "1",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "head",
+      "backend": "wasm",
+      "key": "c-rowbreak-table-moves-next-page",
+      "page": "2",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "head",
+      "backend": "wasm",
+      "key": "b-rowbreak-bottom-margin-overflow",
+      "page": "1",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "head",
+      "backend": "wasm",
+      "key": "b-rowbreak-bottom-margin-overflow",
+      "page": "2",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "producer": "head",
+      "backend": "wasm",
+      "key": "a-rowbreak-float",
+      "page": "1",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    }
+  ],
+  "head_pages": 16,
+  "head_all100": true
+}

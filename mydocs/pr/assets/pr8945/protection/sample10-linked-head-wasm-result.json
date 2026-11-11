@@ -1,0 +1,59 @@
+{
+  "producer": "head",
+  "backend": "wasm",
+  "key": "sample10",
+  "command": [
+    "/home/edward/mygithub/rhwp/venv/bin/python",
+    "scripts/visual_sweep.py",
+    "--silhouette-only",
+    "--file-target",
+    "sample10",
+    "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/samples/hwp3-sample10.hwp",
+    "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/pdf/issue8371/hwp3-sample10-2020.pdf",
+    "--rhwp-bin",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8945/producers/head/rhwp",
+    "--wasm-pkg",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8945/producers/head/wasm",
+    "--compat",
+    "2022",
+    "--dpi",
+    "96",
+    "--page-workers",
+    "4",
+    "--out",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8945/sample10-linked/head-wasm",
+    "--font-path",
+    "/home/edward/mygithub/ttfs/hft",
+    "--font-path",
+    "/home/edward/mygithub/ttfs/hwp",
+    "--font-path",
+    "/home/edward/mygithub/ttfs/windows",
+    "--font-path",
+    "/home/edward/mygithub/ttfs/kopub",
+    "--font-path",
+    "/home/edward/mygithub/ttfs",
+    "--linked-image",
+    "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/samples/oracle.gif",
+    "--linked-image",
+    "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/samples/rdb02.gif",
+    "--linked-image",
+    "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/samples/s1.jpg"
+  ],
+  "returncode": 0,
+  "seconds": 966.52,
+  "linked_images": [
+    {
+      "path": "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/samples/oracle.gif",
+      "sha256": "464e863dd2c1650fc6997b03a5d96c9413e61bbabaf7337c783db27203cc2761"
+    },
+    {
+      "path": "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/samples/rdb02.gif",
+      "sha256": "bfadf4cdbbeeb5f3d8632cb54c8c3696977f405204b651f99a7a24c8f39532cf"
+    },
+    {
+      "path": "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/samples/s1.jpg",
+      "sha256": "77dea18ce7f8f93b0931e133dec222aec642eef0ed87b8f2031b94dcbea5c514"
+    }
+  ],
+  "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/sample10-linked/head-wasm/sample10/silhouette.tsv"
+}

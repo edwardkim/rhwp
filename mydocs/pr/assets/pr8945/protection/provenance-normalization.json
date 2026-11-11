@@ -1,0 +1,1415 @@
+{
+  "records": [
+    {
+      "path": "base-native/angle-narrow/run_manifest.json",
+      "original_sha256": "6d2109e2b30f65f9c8dd475905f488f503cc3dccb34cb75939f3504dc08b217d",
+      "normalized_sha256": "8fc65a9afdbf3f183872af4d42c4c18fa735a3723dc35be8cc9ce7c9a06f981e",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-native/angle-narrow/silhouette_manifest.json",
+      "original_sha256": "45f645317559541c73bf07bf74210b727a06201e14caeac5409f33886051f51d",
+      "normalized_sha256": "e43e6302bef43d1d37966095f4f9a9cc0da9d0286749232101619292279a6382",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-native/issue7905/run_manifest.json",
+      "original_sha256": "2e3dfcf64589ab7b3e199b808e641b70ffadf54c960440288b611f9c71eee66b",
+      "normalized_sha256": "86ac218f108721821a60888f8b63d7b11f3526f9083a259415a4b273119f7744",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-native/issue7905/silhouette_manifest.json",
+      "original_sha256": "c94575be0ad844e5e0659ba1298799ccee7ea4bd08ce9582e44b3baee266b85c",
+      "normalized_sha256": "a7ebc06596c8639383ac3e8bd3e23006606a1cff1e190a633c469785ac92d783",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-native/issue8040-insert/run_manifest.json",
+      "original_sha256": "42713c4d3f9c3b190cfcb8f392037c8cbedbb2627f9a445834f5627ea143a179",
+      "normalized_sha256": "4bc05714ea433cf1fdc28ff9ceedccc86da02a6b8e4a8e580d44623f0af998d2",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-native/issue8040-insert/silhouette_manifest.json",
+      "original_sha256": "7cb22aa5297f87b87d96860c345df2fbd82e3d3678bb825e453d37477df95764",
+      "normalized_sha256": "7c948375265b230dae9b0a77195041fa5aa5b467ffb7431bcb79bdf473553c3a",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-native/issue8040-insert-delete/run_manifest.json",
+      "original_sha256": "e8b02acc705c4b32e49080e24aeec6225d66e85e9e33b6fe0f5c8933d1259519",
+      "normalized_sha256": "141c5892f32a9b3c0a8d6495e7e0ce1c7ba543e528bc1fecae97fcd37c4b8cfb",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-native/issue8040-insert-delete/silhouette_manifest.json",
+      "original_sha256": "6357ca399ce2e4953a3a1042236eb6a475421b6702f051dcfb1b3f205a848b72",
+      "normalized_sha256": "517afc698b15a741506770044f660105a766edb85f42d9fc7c30f5e13c5ee719",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-native/nested/run_manifest.json",
+      "original_sha256": "1c6ddfeb08916f3c4d600cf8e6413d606f7d61cf633caf46bb3498dcf5ab07a2",
+      "normalized_sha256": "3289cc72d03eb39c18e7b656c4da92fdf93f253c8ea81334af2f17b728b9a450",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-native/nested/silhouette_manifest.json",
+      "original_sha256": "126ed5acbf581578899ca9eec60e18f2592cf2a73d328e8a1d62a8b93f628aaa",
+      "normalized_sha256": "3658df9f09150a09e69d6170b798b6a61c904ebbc62886f379929d7807767395",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-native/outline/run_manifest.json",
+      "original_sha256": "d21453a95158054229332776d6593b616547dc6e67897e38136ef3f938d4a56c",
+      "normalized_sha256": "cf357ed9a653c2dfe67d7c8cd6c03da4761d7aca11f33d9943a75ccb6a07ecd1",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/1cb6a5ecf8d76fe414a3788d999bfad9e1c50572bcf53176def990d73c93b516.json",
+        "sha256": "2b5b38128111fa0f9454e5bd9951c6a4825207f954b6c1d1242a251f24876fb0",
+        "count": 1059
+      }
+    },
+    {
+      "path": "base-native/outline/silhouette_manifest.json",
+      "original_sha256": "a2f2dd5e48a2d8a157c23ed808e8fd09b5921ae7a3161785b0009eafae14b398",
+      "normalized_sha256": "d48754134898c571def0cacf4d655a4a7b9a290f5e1b40ea68992f80dcade0f4",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/1cb6a5ecf8d76fe414a3788d999bfad9e1c50572bcf53176def990d73c93b516.json",
+        "sha256": "2b5b38128111fa0f9454e5bd9951c6a4825207f954b6c1d1242a251f24876fb0",
+        "count": 1059
+      }
+    },
+    {
+      "path": "base-native/sample10/run_manifest.json",
+      "original_sha256": "c86c44ea1694068724f088094d9547a07e2e41e276bd62f21354ab6590449f00",
+      "normalized_sha256": "5089820ca6a72563b83f1b0eee5511389390c2f2ef47c807444c3524490a58b9",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-native/sample10/silhouette_manifest.json",
+      "original_sha256": "f8a710f4d1f1d5d72cf17c2976cdd0fbf33f142f6f64dcb0a61f120c51c59ae1",
+      "normalized_sha256": "49b96e5610cf2aacf6deeb40c1bdb63f2261cef8e845dea0d71d2b840980fe1c",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-native/sample16-hwp2022/run_manifest.json",
+      "original_sha256": "1d871252e3eea4e6c94c525f37ddf42d44b8f6c08d32542bf6424d2ed8fce1f7",
+      "normalized_sha256": "a9e7d8157d62b47156f18d7f1b8d53632d1acc0d5fbf701d6e0e3a24932c8268",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-native/sample16-hwp2022/silhouette_manifest.json",
+      "original_sha256": "7ec3086f895eabc795abde33ea7d9f0d7f16faf7324cb743b4af436986cd51fa",
+      "normalized_sha256": "3a0a7ec716c753af0833400016f2cae548e160651550bcd69dc1aed902512e9c",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-native/sample16-hwp2024/run_manifest.json",
+      "original_sha256": "4cdbd4a3820e8ec45daab7d86d2902c5cfc5bfaddeb76700cba9aadca651fd7a",
+      "normalized_sha256": "03be9e02d67417726a4e52e72dfa3b46341c77eaff31541664af77e47e0b4a58",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-native/sample16-hwp2024/silhouette_manifest.json",
+      "original_sha256": "58dc1805584736ee2ee1d8b5c14136abf3b4327aed6f562cba6c48e1d465c521",
+      "normalized_sha256": "6ff884c04f88b73f43a6794d82b0e764b94739bd1e08546500b7c9fede2a4a7e",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-native/sample16-hwpx/run_manifest.json",
+      "original_sha256": "4ae128ccde7c9125e289039a431340cc2aa36bd5394cb64892a35f6f4f957c44",
+      "normalized_sha256": "28ff612d7111f3580e5c8573adc1eea0e6166b9566b13e5f220f84c731e3afa8",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-native/sample16-hwpx/silhouette_manifest.json",
+      "original_sha256": "fd2653e600f17e5030932b36cf026f23b9879f3b9d4ad59513ad4ac774509d38",
+      "normalized_sha256": "1760953942b3dc30fa5c33a63ade09d245595da652e83d428444554cce551180",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-native/seo-body-list-typed/run_manifest.json",
+      "original_sha256": "e1ddce5178cbd52d8a10cfa215bdb49a7ba6ac37b8cc2e2f9934d6711718b4b1",
+      "normalized_sha256": "abb7fed7e65b2789f0ee7170f90f1e4212d4bb92949e5174f35e92485135b3da",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/87e77abf24f518cf5adce0174bcb32546168b9229ece6bfa6d6fe1870f9553a5.json",
+        "sha256": "5981bf1e35d1ad0d2d2e145503f12b3547c78274de8eadc0a08b6b5ef8b0f9a5",
+        "count": 1056
+      }
+    },
+    {
+      "path": "base-native/seo-body-list-typed/silhouette_manifest.json",
+      "original_sha256": "8f2be39cf550c43b7b381c8abb9d510e360d98158de8f4cab942a62d977d4954",
+      "normalized_sha256": "de836128d5f416e8586ca7efa7a55af936d3e75f8f11785df94f5309adef7902",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/87e77abf24f518cf5adce0174bcb32546168b9229ece6bfa6d6fe1870f9553a5.json",
+        "sha256": "5981bf1e35d1ad0d2d2e145503f12b3547c78274de8eadc0a08b6b5ef8b0f9a5",
+        "count": 1056
+      }
+    },
+    {
+      "path": "base-native/seo-helvetica-styles/run_manifest.json",
+      "original_sha256": "10f3317ccae470bcc5de3cd09a224ac01e364b61b924c22f2aa24fbc4f9dc20b",
+      "normalized_sha256": "fa008c93172e4c1445d07dd6ffc728a77497d3afd3bcf4738e9f80082bdd07ea",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/87e77abf24f518cf5adce0174bcb32546168b9229ece6bfa6d6fe1870f9553a5.json",
+        "sha256": "5981bf1e35d1ad0d2d2e145503f12b3547c78274de8eadc0a08b6b5ef8b0f9a5",
+        "count": 1056
+      }
+    },
+    {
+      "path": "base-native/seo-helvetica-styles/silhouette_manifest.json",
+      "original_sha256": "3244c46abe005ac5dc25145503de070048dc404da4c3082adc8d133f920272af",
+      "normalized_sha256": "b81a956dff9deb67ce1c8aafaee88be976eba95ac39566491fed2dcb7376f288",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/87e77abf24f518cf5adce0174bcb32546168b9229ece6bfa6d6fe1870f9553a5.json",
+        "sha256": "5981bf1e35d1ad0d2d2e145503f12b3547c78274de8eadc0a08b6b5ef8b0f9a5",
+        "count": 1056
+      }
+    },
+    {
+      "path": "base-native/seo-pic-crop-01/run_manifest.json",
+      "original_sha256": "e88c4b203e59f5efff166ed7485d846fcfc3a83579daec8101b09abe477d7568",
+      "normalized_sha256": "61f863125601fc620c104d55df21bfa761eddc84e857e82ab19e415dc6ca4902",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-native/seo-pic-crop-01/silhouette_manifest.json",
+      "original_sha256": "39efbfc5b0f76da88c5def8c975e8df4eaff170127753c0040b8a7c2b4518b6d",
+      "normalized_sha256": "a8976d93a548523f37e4e9547733181ca7a2038d17ef7fa06b4ba6951b6b3a43",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-native/seo-re-03-latin/run_manifest.json",
+      "original_sha256": "b8ad5ae24950c9122e90ae0206f6d55a5c173e31ed90e33d8a4f967a4989d7eb",
+      "normalized_sha256": "08f0f6bea148ef53040a6261912542c29c5bdbe657d43cc06bb3708a2311f545",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-native/seo-re-03-latin/silhouette_manifest.json",
+      "original_sha256": "8f170d85a0be00fe142f6fa702bc37935d1b69e65d5b18affec87832ed67cfb6",
+      "normalized_sha256": "577a1c6da528980249f915abd23b87dd9525a46a000dc3998a1129889fdcde40",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-native/seo-shape-group-02/run_manifest.json",
+      "original_sha256": "88a8987e949c4ce00749dab9a1d6540845294389bf99693fd3fbf94a04d337c4",
+      "normalized_sha256": "bade55ec84a4fd14768d6c2fa47e5fd245b8c85caa1c8f13edba17459302831f",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-native/seo-shape-group-02/silhouette_manifest.json",
+      "original_sha256": "e3d45c1559262091aac926a776d20b1debbeaa5ecd9f26b47ba5125a51943aa5",
+      "normalized_sha256": "f77416686c5c048ebee18bd4541149bdd842eaab8813a27a250ef2eaf62cd534",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-native/yeongwol/run_manifest.json",
+      "original_sha256": "4049a8a556e2fcd88be6bf73a8e55ed3b8fc74a875f8e11fce0b4a90ad9590f9",
+      "normalized_sha256": "e762366b2a48b5ea31fc34661647e00736ce017d702a9150328678fc89bec01a",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/dc85047a4a1f7879998d51edc8b92605cd3e71270e58b81d56d314f372ba7c06.json",
+        "sha256": "ddab7b117345da0a6127b8f99a74e25f0335cdd1ba4d19185014b0a52c11a75f",
+        "count": 1066
+      }
+    },
+    {
+      "path": "base-native/yeongwol/silhouette_manifest.json",
+      "original_sha256": "304ce7ae3f10444fc8b06e72ad5c050b82b0be3c8ce16ef58ed2b0e3dcb7070d",
+      "normalized_sha256": "ecc18c2826473f20a37141a22eea355680addf50a81b0c04a32c33738a42e255",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/dc85047a4a1f7879998d51edc8b92605cd3e71270e58b81d56d314f372ba7c06.json",
+        "sha256": "ddab7b117345da0a6127b8f99a74e25f0335cdd1ba4d19185014b0a52c11a75f",
+        "count": 1066
+      }
+    },
+    {
+      "path": "base-wasm/angle-narrow/run_manifest.json",
+      "original_sha256": "6dcc43de34d1a7c3ca88f595540f4e0ac8d72632185da4a2b46a04b893171739",
+      "normalized_sha256": "35674787e45264aeaa7fa2f54cd564aca096b0738f89ee0c7b2bff2ada827c66",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/angle-narrow/silhouette_manifest.json",
+      "original_sha256": "88c06633ca881854a3e8d103aa400cea07b30ddbdf669aeba2d937bd4203bf03",
+      "normalized_sha256": "f829d90d2850597593cbd229980a1b2f4e36cfa0a0b4dc6ad718a3d203e18339",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/issue7905/run_manifest.json",
+      "original_sha256": "a8f26c7bb5d01be931bf21f0c77b7095199c34f31d7f895bdd7e427884bfe750",
+      "normalized_sha256": "dd6f74334f63ebd63334311194b3c4f6f6955d5fd2a3d2cb86b02c01d60c7cc0",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/issue7905/silhouette_manifest.json",
+      "original_sha256": "c7126f1e16b4aeeb2011582b1508ab04679d7110c8ca7c95bd2926854b5be193",
+      "normalized_sha256": "e6029d0a307f5236fabd1e766b009f1ddda41afbf63b789ae41093d64f21a98b",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/issue8040-insert/run_manifest.json",
+      "original_sha256": "87599116793a006b5e774feef7851569a052f02ece5817df9ea148de25dd262f",
+      "normalized_sha256": "820fd1d3a3deb896e7da90c3d876e875b0ef2d24876a87c5d49cab718b6f31bb",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/issue8040-insert/silhouette_manifest.json",
+      "original_sha256": "ca0df9feb5a32a5ad164a850b108cce2e14e9f9c1e416b8c7de50d5f4c841332",
+      "normalized_sha256": "e904d667091fb3d5163bc202653627838e38000d23dd910da1b06d0c8d53ef62",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/issue8040-insert-delete/run_manifest.json",
+      "original_sha256": "9866f2da00546a859a321dcd34f963d65f611452ff28859621ef41a4e2d07a74",
+      "normalized_sha256": "66dcf300e87bf68c962ff77742da203d8f3e5c8debd17129e7292c781b78cd8c",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/issue8040-insert-delete/silhouette_manifest.json",
+      "original_sha256": "45f50fad7590eb866803cba6a3b53b4818c44a7e1772123f06133a2f7e5b7862",
+      "normalized_sha256": "188a8ee4ac67888f27cdb8c4fdc48742a8965ec98c64bb23a4a58793f3ff5b34",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/nested/run_manifest.json",
+      "original_sha256": "de6930bff0e18ecce98314b3cb51b577ff9d38a37d6ec16e6ac8fd35557377a3",
+      "normalized_sha256": "636d2a134006bf9ad049c713e77040273b55482251882a0193b462f1b173018a",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/nested/silhouette_manifest.json",
+      "original_sha256": "cf8de229aa3faf058b3da3377693fe9d0b98cde4221d4f92116d2259f5393885",
+      "normalized_sha256": "509e66ece1d7a7057a80b7fb639d9b3d238ed756e8d06784ca2eb1edaf88c851",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/outline/run_manifest.json",
+      "original_sha256": "db0c52b250de51e04b11c61cddef15766793106def78ecb21b2f66b417b994d4",
+      "normalized_sha256": "2b886334c5abc6a39f2e78189bf72dcefcb10c3d9466d5625776a1f8a2d8c5eb",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/outline/silhouette_manifest.json",
+      "original_sha256": "c7231737110dab6a821c158e5eca29199b45df3e0c869bf60f9a513caf912da7",
+      "normalized_sha256": "c20dbb383f95c095dfaccbf03086611dcb1be818356323b3b4265738ac4ffbc3",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/sample10/run_manifest.json",
+      "original_sha256": "c1fe457465e841eeeac5b573bbf54e43ca344cd4b5721767be5d1fc7a5e70667",
+      "normalized_sha256": "c1d7a89222c66b367ecf4150c80b4b64937ec92bcd8cc4373c8b9e522ea8cfa0",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/sample10/silhouette_manifest.json",
+      "original_sha256": "107311bc028848c5ac466e79c864339ebdcc6ef5e2980cf1cf8b225d7bad0111",
+      "normalized_sha256": "ee324267e2120b609208b0a79e19b2f3d336248f3dcf17128daf858e34c3b894",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/sample16-hwp2022/run_manifest.json",
+      "original_sha256": "723a637ced5aa0589d82974f159add88a97be74a0e95a325bdf4ffa5bb0bbbff",
+      "normalized_sha256": "41e4406d3e60060f4656dbe7fd93e18f39f7ab42d142b8952becbc3ca648b692",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/sample16-hwp2022/silhouette_manifest.json",
+      "original_sha256": "c8ef81ed12ddbe8e15fade2f83dff42850b0abcfcc3655dc01a42041ab08a4e7",
+      "normalized_sha256": "0cec391f70b98e5cfdb4868d82c2059f13777dfaf7f4a634f700346c6816a169",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/sample16-hwp2024/run_manifest.json",
+      "original_sha256": "c3448a05f2caf293aa8e9ffab1d8d47314d1d828cdb646863fa538f526dd06fe",
+      "normalized_sha256": "ffe836e2ab6146eff2a4c21d3fa47ea7d16e1043c9ad351ecdef049c91fb89e7",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/sample16-hwp2024/silhouette_manifest.json",
+      "original_sha256": "fd9375436eaca3530a50ff0518acbff742b4b799d962922c7f1f1b1c30d6bc90",
+      "normalized_sha256": "cb8e35671d14e02698f03f388836d27c23fd802a0454a7cd4e7934452704128b",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/sample16-hwpx/run_manifest.json",
+      "original_sha256": "b8d6eb30dc9b8968eb489242e7d385c472fcee3c9d975d408862a2ef7ceddf93",
+      "normalized_sha256": "5bfef82c8220805cb4099f4d36d000dcd7c834998af1f7023addc9ac0fb9cce5",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/sample16-hwpx/silhouette_manifest.json",
+      "original_sha256": "71cb8ff5b00de38a66b175b8b65c20676a990fa7d7f1b886b1981408dbebbebd",
+      "normalized_sha256": "51a123d81d71e6b8dd3d607f39454c78bd61223617364248f64495153d581279",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/seo-body-list-typed/run_manifest.json",
+      "original_sha256": "15532a0dfe0339e5a808547e28626ae9c4f8d330cc23f9e97a74513e883fbf7d",
+      "normalized_sha256": "16fc0f82c1e176dfc31fa46524dbb17edbd68e6bdc2652a03e6b2f4493c4384c",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/seo-body-list-typed/silhouette_manifest.json",
+      "original_sha256": "49c44d45b9afd1eb8705433c797ea12b84c0bdbc5210488b72e0d30f30c5f781",
+      "normalized_sha256": "386d12f5d4f6d4de7b1c8664b46dd1b6e1f953184eee4c0e3487dba7a26840eb",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/seo-helvetica-styles/run_manifest.json",
+      "original_sha256": "584f4bd67f24874adda23076e1066920e0ff32afaf83c4bcedb41e5f924980a7",
+      "normalized_sha256": "920a7f0016b7322414dde79b758e79bd50f9afabf3c4b8e182978984a4a37afd",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/seo-helvetica-styles/silhouette_manifest.json",
+      "original_sha256": "e96634b0de7610af3422699d6d768de78d132fc393e038da0ffe78c936e9a475",
+      "normalized_sha256": "41f779e1fd152b2ba8d11dbe7f7d211806c054f5af61e34b65a7bb862da903d3",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/seo-pic-crop-01/run_manifest.json",
+      "original_sha256": "b87b9878ad6f2e83623ea91fcca4c7d881d8322e497db174cb0f5dcd8021816e",
+      "normalized_sha256": "137e00911f2edab1d915cc0a1cda8d3a2c627eda066b73420b0262fbffa71e3a",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/seo-pic-crop-01/silhouette_manifest.json",
+      "original_sha256": "11a46784e9ba7e48cfff18d9bf53a3e47a2980b5ecca3e8e177f52c44c6928d2",
+      "normalized_sha256": "002abfa5dd2a073c00652ff8e36c5dd8305cca8623a527595ef4e8fe906b3280",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/seo-re-03-latin/run_manifest.json",
+      "original_sha256": "33144ed8139b6afb3d0361bdb99c3adcb92cb8f75fc5feb32e84379dfce58e46",
+      "normalized_sha256": "b9e8a8c1662b7ce882df5d77937895321ea817511f6b7e98386769ce2aa29452",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/seo-re-03-latin/silhouette_manifest.json",
+      "original_sha256": "4126cd8f7d4a1f4a5489903e5776916e1ccc5c66d016adbe6256c84c2d38ce99",
+      "normalized_sha256": "d090f130ed5e88ee987b28e56e1db14120a6d36d438dd1e75edb75767e4de7e3",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/seo-shape-group-02/run_manifest.json",
+      "original_sha256": "607147023f1d74c4520a00ffa48935d4eaa80647040d28944dc136407185bde5",
+      "normalized_sha256": "ab1e85cb6ee05f544421ce117bf66989eb7f2e241038cd3787f0651211630537",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/seo-shape-group-02/silhouette_manifest.json",
+      "original_sha256": "f9972f3d207bdc67c0701b00f3600207d4b49db86eb92c7d6ef0f15add24c2df",
+      "normalized_sha256": "872fdb517e4e66368ff2ae660dcf74e8b2b56c2f3482ebd0e7fc1dd5492cb815",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/yeongwol/run_manifest.json",
+      "original_sha256": "1aca8b68db33298b004db41c650cc0147900540a7199ccd08dac5bba9011cf77",
+      "normalized_sha256": "d8eba804d8e9a952d8cc858e88fa1b6cabc6672ad1f58b2d6647a2e4064cb624",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "base-wasm/yeongwol/silhouette_manifest.json",
+      "original_sha256": "59bd93f5b426a0673d9e9f6dd9f29b79f0740194a0d40ecfcdda5640ee861e7f",
+      "normalized_sha256": "add1a42131e7c87e9d49884b23e6e74b2b93df04f9554f0b4c11f179477e9c91",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/angle-narrow/run_manifest.json",
+      "original_sha256": "354129c3fc4109c704fd5c77bc28cdc1e220d65087a79b2b30984c6783c89d38",
+      "normalized_sha256": "1d284bf251237d9c6a01972eb860da9e9292c40e5018a2c040268ed0ab86d0c5",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/angle-narrow/silhouette_manifest.json",
+      "original_sha256": "b9f307fe4e484a109921f61e7410dbb3b398bd72686460f48c2add7508c12624",
+      "normalized_sha256": "37fca5ba5e8dbfbce19959bc6a3ab1616eef71bdad2bf73fc9c62eab7a6de6b9",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/issue7905/run_manifest.json",
+      "original_sha256": "ae71774bdba6cd69723279542885edaf9ecddc500aaa63a4160a0acb4a29477e",
+      "normalized_sha256": "e85b67c75a5c9405b8bf0555ab474b416356b0245df8b99b340c23fd5e9efcc2",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/issue7905/silhouette_manifest.json",
+      "original_sha256": "33b2c0ecd02f0194baab12dc35930b2fd51cdec5bc66c33a084524d2e004f864",
+      "normalized_sha256": "4b65dd4df67d1614479b1ed50c4e5bbe037f0f1b37a8df053c6c91698fef90d1",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/issue8040-insert/run_manifest.json",
+      "original_sha256": "66fe8675ee7a7d20b177832aa934105c0543d15fc65f00d826b848b94f031187",
+      "normalized_sha256": "002697d4c2ade8b1e52cf1e3ee13ed4b8dee7a74dedcd2035e939810bdf979c7",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/issue8040-insert/silhouette_manifest.json",
+      "original_sha256": "97bd02ed6a7a3df4369868aafd7e7a481b9d3934176cbdd19b87215415ef6261",
+      "normalized_sha256": "1ceea4f22a499dd65b09bf4e524afbf9ca62f9cddecaa844dbbbe8d49337a315",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/issue8040-insert-delete/run_manifest.json",
+      "original_sha256": "6a2707cab6ca1ba4269dda8a68bbadecde7ed199200143269db1d6314528b868",
+      "normalized_sha256": "a02c1bb3ced92b3a4921dad045b60eb398466698013efaf1d332a8891035c9aa",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/issue8040-insert-delete/silhouette_manifest.json",
+      "original_sha256": "6723fc1de5a5bdb9c78ab92986134358950b45b72304ef1fe20b9f44e1a685ef",
+      "normalized_sha256": "d37a9d8afcac9ee436fc2b04083f8876a5b24b4abe81b37966ccac906d2095b6",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/nested/run_manifest.json",
+      "original_sha256": "2cd4d3867235146855b7e531d49167fce93eff91809cb2e5ba3419cda9633313",
+      "normalized_sha256": "3f07563d3049b6cba911c712bac7ec8b89c83e48a5307e38fd46ce7bec8a3316",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/nested/silhouette_manifest.json",
+      "original_sha256": "3a2e01cb07deff0688f1cf44982ef9e6ca079fd837a5fa43af36af6161b91bb5",
+      "normalized_sha256": "0d1c7c52d5f432d4203412f19bd6009e5718305fd722a1866dbfe903ff2434d3",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/outline/run_manifest.json",
+      "original_sha256": "27ec6f5db60cd28b07d6c6b425bfe4de92b929327d985965b7f3f7a354bb51d4",
+      "normalized_sha256": "d1a029a29661706ea7368ebf0a2101deb4c0f21e7d8d861ee52f2a3106a6a6e5",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/19e35436016d50599480d24ce73a244e4eaf6b3a2e012148a3b46289dbc8e1fd.json",
+        "sha256": "5405622874d01fc5082f7e1c931725b0eb2375995732741d9509a08663541744",
+        "count": 1060
+      }
+    },
+    {
+      "path": "head-native/outline/silhouette_manifest.json",
+      "original_sha256": "d07ddca16f3502e0594f21ed7f07b42f9173556acfed925dead670617e4c7ced",
+      "normalized_sha256": "0bad63635e63a60ad410baf4eee640127ddc4f8a702cdbe3901837a682648f80",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/19e35436016d50599480d24ce73a244e4eaf6b3a2e012148a3b46289dbc8e1fd.json",
+        "sha256": "5405622874d01fc5082f7e1c931725b0eb2375995732741d9509a08663541744",
+        "count": 1060
+      }
+    },
+    {
+      "path": "head-native/sample10/run_manifest.json",
+      "original_sha256": "09e1e25beb60d15d422151502a8f04aab7e0864c0d389646ef7c32fea9a2a2b6",
+      "normalized_sha256": "c8d02cbc6bdd834950d6aa3bbbf5a4faa8c67853e7b99624b99b5e2d8a93a944",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/sample10/silhouette_manifest.json",
+      "original_sha256": "15067632489ff0bb1c8c63f91c486405102f048652112f13fed48b83ddd7bce4",
+      "normalized_sha256": "6a3ffd265766406c0392a3ed4d3f6e389446ed2eea37e541121ed2f9feae195f",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/sample16-hwp2022/run_manifest.json",
+      "original_sha256": "441e173f0365701f32d24236c263be1e2448985244a3a19bc9ad2dbb773cba28",
+      "normalized_sha256": "bf165ae44ed3e380b958ccc9cb2bf1705a190ef200ff0ad386aaa158e51739f6",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/sample16-hwp2022/silhouette_manifest.json",
+      "original_sha256": "7d1f78516296df36d45001c3900d52817fe3358ef5b0abb66ab4a1622ec92e54",
+      "normalized_sha256": "0b12738ad7b549e88b0d3b3c2d237c01aadb6b0213f92e0ae5e355f96c9b7150",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/sample16-hwp2024/run_manifest.json",
+      "original_sha256": "d7c92c81c73704dd79a8e6812f53e101acfc1bf919e6a3dde71cae42809391de",
+      "normalized_sha256": "f9b8cf66b3fc8d5128e6cb70468c92ea72ae12d71a31e581bb280c6f3fd8c07e",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/sample16-hwp2024/silhouette_manifest.json",
+      "original_sha256": "7abf5057dfc7e114462b291edac4d02084328e93bfd1520dc308333e84a2169a",
+      "normalized_sha256": "d04ac817bbce162bc011e8b8bd5430a0365ef985018a9f34b8665333839fdba8",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/sample16-hwpx/run_manifest.json",
+      "original_sha256": "fe369a3c5cd6b5fefe16e8268a1921a82ea6d7bb8fc0562f7760c71e0fcb3ac1",
+      "normalized_sha256": "34230a449a139cdea0913a7fb97d049bd1d2a4cb58232829bcaaa37795491ae7",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/sample16-hwpx/silhouette_manifest.json",
+      "original_sha256": "c0156085cc550a8bc0d47d2f7faeb3f035f26244cc7b38130c7c553bb014a11b",
+      "normalized_sha256": "a5ae353de62ffade4b55472f119f7bf6a9c7ab6e01f0595e8ffdd74c10142fa3",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/seo-body-list-typed/run_manifest.json",
+      "original_sha256": "85a742d91b8cfeb57dc6b5930f25f15d205b50eaacd6c0fe348b31ae01395280",
+      "normalized_sha256": "5670a01d752c8a01b24bd1070c07a718082e6d037badaf3c35988e3ff20bf1b2",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/87e77abf24f518cf5adce0174bcb32546168b9229ece6bfa6d6fe1870f9553a5.json",
+        "sha256": "5981bf1e35d1ad0d2d2e145503f12b3547c78274de8eadc0a08b6b5ef8b0f9a5",
+        "count": 1056
+      }
+    },
+    {
+      "path": "head-native/seo-body-list-typed/silhouette_manifest.json",
+      "original_sha256": "24bbdf1cdf8bc0ed994889bd203f4f35a617ae0e61f4b912b4361c4804f805af",
+      "normalized_sha256": "6945fe82cf64d52ad32c597027515bf1768eaf556f9e23e095202b6867ebf967",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/87e77abf24f518cf5adce0174bcb32546168b9229ece6bfa6d6fe1870f9553a5.json",
+        "sha256": "5981bf1e35d1ad0d2d2e145503f12b3547c78274de8eadc0a08b6b5ef8b0f9a5",
+        "count": 1056
+      }
+    },
+    {
+      "path": "head-native/seo-helvetica-styles/run_manifest.json",
+      "original_sha256": "6bffa4c5300bc8e5f4317229d9fe6edf91f3ffd8e33727df6e595040f62eacaf",
+      "normalized_sha256": "c8baef82e59ef1c136d2094b1ec3f273e79965b17733c57194169d1bd513b553",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/87e77abf24f518cf5adce0174bcb32546168b9229ece6bfa6d6fe1870f9553a5.json",
+        "sha256": "5981bf1e35d1ad0d2d2e145503f12b3547c78274de8eadc0a08b6b5ef8b0f9a5",
+        "count": 1056
+      }
+    },
+    {
+      "path": "head-native/seo-helvetica-styles/silhouette_manifest.json",
+      "original_sha256": "540fac1eaeacf6028a8f9dd846a8df646afe89b1b62f622deb14fb2e2161f7b8",
+      "normalized_sha256": "3e7b9aa28fea915d97a8efd14bf98ffe24d9d28ec0a4beab5eec59b49ffea2a3",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/87e77abf24f518cf5adce0174bcb32546168b9229ece6bfa6d6fe1870f9553a5.json",
+        "sha256": "5981bf1e35d1ad0d2d2e145503f12b3547c78274de8eadc0a08b6b5ef8b0f9a5",
+        "count": 1056
+      }
+    },
+    {
+      "path": "head-native/seo-pic-crop-01/run_manifest.json",
+      "original_sha256": "5b90f76765c0c37928759e04b9c3c3fad492e2bb7361320d8a418c38d8b80f06",
+      "normalized_sha256": "67787a111d727909835b484dee6918177782d0fa118492785aca4c2bb29fc033",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/seo-pic-crop-01/silhouette_manifest.json",
+      "original_sha256": "cd94c9aa61bae5c779eb8af0c4043ff0e2cf4b5b2d928c6ec0b2d38f30c07156",
+      "normalized_sha256": "5407a3616f712234d78dff949c6d3f9edbde5dbc7de45db5740b460459083951",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/seo-re-03-latin/run_manifest.json",
+      "original_sha256": "6c6e10eac4b4006d86c27665cdaaff971f35b2c4bd2d0f2a4a4dd430e714ae2b",
+      "normalized_sha256": "8926188ba2c7b9ab2a1a42c1a4fc70eaadf05807b02bf24e96c0a8a70086bd15",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/seo-re-03-latin/silhouette_manifest.json",
+      "original_sha256": "526a3e7507272237c4d1b0942cb362b4234af68168afd462da5050d3926a7a9b",
+      "normalized_sha256": "a19f78b6b7c5e75309a12acc5817fd009a6635346f5b5381fed3f8d8deeb0f29",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/seo-shape-group-02/run_manifest.json",
+      "original_sha256": "e132b671257720934687d5a31a8da6271c10274e1a1d786cf7b9c11c687f1546",
+      "normalized_sha256": "74ee3cda354c598b130ea0edbfb456138c872ecb7499b9178fcdd57766fd53a6",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/seo-shape-group-02/silhouette_manifest.json",
+      "original_sha256": "29a98a64b4d63cb9d95d75953efe5fcdfc9bd14e9a49695e914f9737cab53982",
+      "normalized_sha256": "ca76d47b8fa8fb05bf8fdf39712fb0514a71ef1ca539699e751bb08911b67e6a",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-native/yeongwol/run_manifest.json",
+      "original_sha256": "de388527c0bf9d56877c21afba8c2392e45fffb3567b460a0826cefaeee743a3",
+      "normalized_sha256": "a1b9d03a19fda5b968cbbe05256560e3a9a8e4a5c1445a4752e2655859464dda",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/dc85047a4a1f7879998d51edc8b92605cd3e71270e58b81d56d314f372ba7c06.json",
+        "sha256": "ddab7b117345da0a6127b8f99a74e25f0335cdd1ba4d19185014b0a52c11a75f",
+        "count": 1066
+      }
+    },
+    {
+      "path": "head-native/yeongwol/silhouette_manifest.json",
+      "original_sha256": "70f2f22cfc9d36370a6458e167936f42a19f2ffd6e4dfd13a281665f4f2959ba",
+      "normalized_sha256": "f89b97ff78f5c8e295575719b607bd212b77a8133e3af6d02b118d8db1ee20d5",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/dc85047a4a1f7879998d51edc8b92605cd3e71270e58b81d56d314f372ba7c06.json",
+        "sha256": "ddab7b117345da0a6127b8f99a74e25f0335cdd1ba4d19185014b0a52c11a75f",
+        "count": 1066
+      }
+    },
+    {
+      "path": "head-wasm/angle-narrow/run_manifest.json",
+      "original_sha256": "ffdd784d7c269bef8097c6f70453218904272b5518da6495185d3a3d493e0ba1",
+      "normalized_sha256": "a38d35ee86e968fb738559a73c82c9f81f77a04fecef94946c3aed16475d2118",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/angle-narrow/silhouette_manifest.json",
+      "original_sha256": "09aa9ee9c915b2a4a819cbbd8ae924449d122c1e24313205aa4fc5a26c088448",
+      "normalized_sha256": "5eb45128df1cc8002c0155ec69a26ebc01367676b35ad444493ee86c9cf0abdd",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/issue7905/run_manifest.json",
+      "original_sha256": "9e57feeb4d6fc962259b304fdbaf0db3522a23e4b6e66fcae6477bb362067d2d",
+      "normalized_sha256": "e037a35c3954403bdfe7f54c6c3c6ec275e292f1263f7e57dfb11c048358f199",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/issue7905/silhouette_manifest.json",
+      "original_sha256": "231d5c2fff89c418f2c417b2a372c802a822599da8cf4c869ac12454dcc5bcfd",
+      "normalized_sha256": "becd56e2719cb70d70c87ce11ac89567d0abed3deae96ea78d07a93500cf5914",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/issue8040-insert/run_manifest.json",
+      "original_sha256": "78d272ba965d72389683a3fba1c99bf9fbc50fb8166af13b8bb14bbe3fb897cf",
+      "normalized_sha256": "cf3b34eb1848b1bc311722f2f00ec130980debe68e305ce0d15060fc38d21262",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/issue8040-insert/silhouette_manifest.json",
+      "original_sha256": "897208842ef176bf38c134cf2d4b92507e843d5c9133188d43afcfa629c60694",
+      "normalized_sha256": "7f90be2f8bc91ee60e88a35e1f53101b652b135547fcd20a63fe9bf110e06284",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/issue8040-insert-delete/run_manifest.json",
+      "original_sha256": "9aebe69bc213652eb25805b9cfb6735cb1e6c601a1c7849aaa8512c6041ca7e3",
+      "normalized_sha256": "8d563db0e62468983f42830c632a3370dd134825ad8bc6bf943c43ca7961af25",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/issue8040-insert-delete/silhouette_manifest.json",
+      "original_sha256": "2431f4a682ef955ca1bd087fe306163c48f0e840c54f077e618aefacb563b77e",
+      "normalized_sha256": "904a42341ba4c86e61dc086cf7fdcb33905d5be4b80dda274282fdb05054f7ef",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/nested/run_manifest.json",
+      "original_sha256": "be109ca34f4d36cd9476add1a528619714479c53a9158659e9b56ec6a26763e9",
+      "normalized_sha256": "7781758fe659c05b46cc699d06323a3a0de52444227a15e6a5ae84ba04be71ae",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/nested/silhouette_manifest.json",
+      "original_sha256": "49dcd3b9662c71a37e5670614e69ec1a7ab2cac368a88883edd3343df2de9085",
+      "normalized_sha256": "41daed468aa09c5f3a30719f5e9c01da123255b54cca019cd5997bbebdb26a96",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/outline/run_manifest.json",
+      "original_sha256": "8304af0014bae8b4c53bdab3234245065f3f75003c3130561abe011e22961ebf",
+      "normalized_sha256": "3aada2a8a7d28e7b4329e86f7a63ae4dfc581bcd4c3321381ee8caf4e0d52224",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/outline/silhouette_manifest.json",
+      "original_sha256": "7fae5d550c134f9ab1ec60efcc3fc145391114cefcbbf720885a11b4741c6d99",
+      "normalized_sha256": "4bb4ae9361274acab2c1f2c92ea9ef8a724d69b1983dba676b5f9a9693784b9a",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/sample10/run_manifest.json",
+      "original_sha256": "544685bcd8284f89230b7227836f86eb2827c1d94162204b12d35e20c3caa12e",
+      "normalized_sha256": "c125b582e12ee64e4b2a198e8b73c8247f3d7e424d482b2af3ef374c6483dee1",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/sample10/silhouette_manifest.json",
+      "original_sha256": "265105f267401b870a0abcd7324921e3af7551e2c9e7cc46cf5d7114306a6656",
+      "normalized_sha256": "c89c5575dad1f8067a09cc2ef16209b5589fcbfdb7c55e28ffd30578ed405130",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/sample16-hwp2022/run_manifest.json",
+      "original_sha256": "e80662373d446a71a5513535e5896d187b59934ebb02fa2f92071cf185974ae3",
+      "normalized_sha256": "23d96ea1a365d1d7cdb43b60fb12ed268757f8e74dd66f6233b732b03423a9bf",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/sample16-hwp2022/silhouette_manifest.json",
+      "original_sha256": "82e1b662642c3e1fe44bafecbb12a67def98d9d3ca7f495814ce4544f3dd6fb1",
+      "normalized_sha256": "af935b6640da8e6d09b2e4faf8ba88fa85be85d2d55aceb7e4521423a040a505",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/sample16-hwp2024/run_manifest.json",
+      "original_sha256": "05fad75827a6e311c6c079275be9f4e85e99ab4b8b764b58d64e419891d87f84",
+      "normalized_sha256": "a9bf83af8875b9d29cb570a0f69187a45b8876d8a73197314aaf3df638c214d5",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/sample16-hwp2024/silhouette_manifest.json",
+      "original_sha256": "21b951b93e43302d26035ad7cf72181cb4bab45a70ab4d9c3bec7a30c14a1213",
+      "normalized_sha256": "5c50948316e6e06cc31e200d71e8106d083a7803269fbe6e3611d40db0be387a",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/sample16-hwpx/run_manifest.json",
+      "original_sha256": "9c68d3bbe2f81696f1e968940a1fa091b553d016407014e53b0915e49f5febf4",
+      "normalized_sha256": "1a3f31f5b8b7dec7cf459f4aec9a53cf337945ab896d9ca8009aeb6c1628cb57",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/sample16-hwpx/silhouette_manifest.json",
+      "original_sha256": "54370f6d60a91ec399548a0acf51c82e41881ba0c6d57930ae4f590f7ba14338",
+      "normalized_sha256": "ce460a55d33483ddf195316dc0e60918f83690a47685f95754a869750451e3c9",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/seo-body-list-typed/run_manifest.json",
+      "original_sha256": "8cbfead287e7cf61947329c265d1eec8d20aa30c7bcdb1577c7c6c8608dfcf7c",
+      "normalized_sha256": "77943028a7cd8b8c504c13414f1ebe2624fd84887816f09572fc68218722e0b7",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/seo-body-list-typed/silhouette_manifest.json",
+      "original_sha256": "7bc309d07a7dbb5a5949f855510f3e66449837fa89cf645f1a0c38421f5788ce",
+      "normalized_sha256": "1914c818b6920272181d10829449094eca0bbbdd015e199afa63362cd1cd4214",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/seo-helvetica-styles/run_manifest.json",
+      "original_sha256": "31b02351b1ed45d859ce28dfae89aef4f2edc00db1dbafe5968b6a2c6ce30298",
+      "normalized_sha256": "f44df7a0a3841141e9c2874c278a4e03a200584e82469f1b32ccf88b87da1567",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/seo-helvetica-styles/silhouette_manifest.json",
+      "original_sha256": "7336a32f7f729f0b0a8dff55f924e050e32902c386a48b3d1e42209c00f691cd",
+      "normalized_sha256": "04fb6eafbc07b0cefa986c79f33693fdb62744261220c7e80f02d74cb21a0fcd",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/seo-pic-crop-01/run_manifest.json",
+      "original_sha256": "a3d2e3c52d5bf1dc804bffec19a96f3475e3e2536f60081a4e2be90824dee449",
+      "normalized_sha256": "907f8566e40b477ad1cb1a13e76cfb4b3b313b79ab7a5abcce65dd46468d224e",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/seo-pic-crop-01/silhouette_manifest.json",
+      "original_sha256": "bfc434b900306984ac2c5cb3ba2d4e08355c0a7d8464ae0f5e7e363ca9341c99",
+      "normalized_sha256": "fa35e13395339a3f24b20d1be571d58191d7590945c3b77d1d1663df5c0dc1f9",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/seo-re-03-latin/run_manifest.json",
+      "original_sha256": "ddad1b3c9dab136b2570f2f68ae69c8e497e1b4f99cd897f9010594ede3224d6",
+      "normalized_sha256": "2290146fcd4bcc888907462d1dcf9947fa750abe5a872995820b1d79f2823422",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/seo-re-03-latin/silhouette_manifest.json",
+      "original_sha256": "448a9456ea0cc4e247b051801142dc069df844c906a07d3cfd5cac8ed7dfe67c",
+      "normalized_sha256": "6cf1875e281ac47557340823e461177813c2b8a27fd885a1c95576b7f78cf088",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/seo-shape-group-02/run_manifest.json",
+      "original_sha256": "811bd229d74fbdf77607d93105e9e6c33b02e1edbf1fb86dc94a52767f496f24",
+      "normalized_sha256": "f2dd9e2fbb04b691f9d859ac6f4b378f82cd18a5d91a13aa507f24d2db252f7c",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/seo-shape-group-02/silhouette_manifest.json",
+      "original_sha256": "9a8d4e96e0feed0ba3ec8bce83095373c984db087ea764d388f24fb967222c72",
+      "normalized_sha256": "09386ff80297e7dbee15fb2403b1b7e8f15e4d5164d8736a2d63b7c93410a023",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/yeongwol/run_manifest.json",
+      "original_sha256": "2830e6b80a6b709b31c5faafe95d7de49c54964b27a18d11fd30f39f4b6d10dc",
+      "normalized_sha256": "455870020c986ee150d3b16710c9f6058f06686532a8fa5a6935c41efb7b1aff",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    },
+    {
+      "path": "head-wasm/yeongwol/silhouette_manifest.json",
+      "original_sha256": "4f7856b6cc9db4aeb91a5e2ae8a4aa801f55469eddebff42f24996edb5e4c363",
+      "normalized_sha256": "d54b229ec00ee3f3e0706614bcd3ba1054163add750a2c5861d44f1411f2cc2e",
+      "change": "font_supply.files moved to shared inventory; expansion verified semantically identical",
+      "inventory": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    }
+  ],
+  "changed_records": 128,
+  "font_inventories": 5,
+  "tsv_unchanged": true
+}
