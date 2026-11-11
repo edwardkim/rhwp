@@ -61,3 +61,20 @@ WMF 요청·등록·예산과 실제 renderer snapshot을 연결하며 원본·�
 - 기존 보류 설명: https://github.com/edwardkim/rhwp/pull/8896#issuecomment-6784903830
 - 원 문제: https://github.com/edwardkim/rhwp/issues/8693
 - 이전 로컬 기록: 다른 작업의 `review-integration-20261110-hyunmyungjanelee/mydocs/pr/pr_8896_review.md`를 읽기 전용으로 확인했다.
+
+
+## 2026-11-12 최신 devel 통합 검증
+
+고정 기준 `4c876654d8…`의 보정·모든 필수 검증을 `64df815227…`에 보존했다.
+재개 시 추가된 #8958·#8961의 기준은 `eb84afc0364c51031bb07cbbb013476293367990`이며,
+충돌 없는 병합은 `eec8843260807fdc7430e945c29968a24872c082`다.
+원 #8896 head와 네 글꼴 보정 source 파일은 바뀌지 않았지만 표·각주·공급 환경의
+공통 소비 경로가 바뀌었으므로 실제 병합 결과를 검증한다.
+
+1. 최신 base와 병합 후보의 실제 Native 출력으로 원 3개 입력·6쪽과 host 글줄 대조를 먼저 확인한다.
+2. 최신 39건의 공개 주장 입력·회귀와 기존 보호 18문서의 소비 경로를 대조한다.
+3. 최종 source의 Native/fresh 최적화 WASM·필수 Rust 게이트와 편람 gate를 완료한다.
+   기존 source의 PASS를 새 source의 실행 결과로 바꿔 쓰지 않는다. source·환경·출력 불변이
+   증명되는 기존 독립 PDF·폰트 hash·확대 판독은 정본 절차에 따라 재사용한다.
+4. 변경 범위는 원 #8693 개선·앞서 승인한 보호 차이 해결·새 base 기능 보존에 한정한다.
+   정본 보호값·판정 허용치·테스트 기대값으로 실제 회귀를 숨기지 않는다.
