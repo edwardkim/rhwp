@@ -82,3 +82,7 @@
 초기 HFT 표본의 Studio CanvasKit glyphMapping 계약 실패는 당시 같은 base에도 재현된 별도 조건입니다. 이번 Linux 6개 대조군을 그 HFT 표본의 재통과로 표기하지 않습니다. 이번 검토는 동결한 원 PR 주장 페이지의 Native/fresh WASM과 보호 문서 범위이며, [초기 base/후보 소비 경로 대조](validation/actual-browser-base-comparison.json)는 이력으로 남깁니다.
 
 로컬 완료와 GitHub CI·승인·병합은 별개입니다. 원격 처리는 실제 실행한 PR·CI·merge SHA와 댓글·close 결과를 확인해 기록합니다. 원 PR이 참조하는 이슈는 해결 범위를 확인한 뒤 완전히 해결된 경우에만 닫습니다.
+
+## 제출 후 발견한 CI 파일 목록 보정
+
+PR #8958의 파일 4,142개가 REST API에서 3,000개로 잘려 CI preflight가 코드 변경을 문서 전용으로 오판했다. 수동 Full 실행은 필수 정책의 PR 이벤트 근거가 아니므로, CI·CodeQL·Render Diff·Adapter·Proptest 5개 workflow의 8개 수집 지점에서 전체 변경 수와 목록 완전성을 검사한다. [보정·실패→통과·기존 계약 결과](ci-file-inventory-validation.json)에 새 행동 검사 37개, 관련 Python 243개와 Node 166개, actionlint 5개를 연결했다. 제품 렌더러·입력·보호 기준은 바꾸지 않았다. CI 변경에 따른 최종 CI 기록·오늘할일은 code head의 PR CI와 병합 완료 후 옵션 2로 반영한다.

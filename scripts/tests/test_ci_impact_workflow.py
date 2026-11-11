@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import re
 import subprocess
@@ -1212,6 +1213,91 @@ mod support;
         ):
             with self.subTest(step=step_name):
                 self.assertIn("continue-on-error: true", self._step(step_name, self.preflight))
+
+
+class ReviewOnlyFileInventoryTests(unittest.TestCase):
+    """실제 workflow JS를 실행해 불완전한 파일 목록의 fast-pass를 차단한다."""
+
+    workflows = {
+        "ci": ("ci.yml", False, True),
+        "codeql": ("codeql.yml", False, True),
+        "render": ("render-diff.yml", False, True),
+        "adapter": ("adapter-diff.yml", True, False),
+        "proptest": ("proptest-roundtrip.yml", False, True),
+    }
+
+    def execute_inventory(self, workflow, files, count, *, collector=False):
+        filename, _, _ = self.workflows[workflow]
+        source = (WORKFLOW_PATH.parent / filename).read_text(encoding="utf-8")
+        variable = "files" if collector or workflow in ("adapter", "proptest") else "prFiles"
+        start = source.index(
+            f"const {variable} = await github.paginate(github.rest.pulls.listFiles"
+        )
+        end = source.index("writeInput(" if collector else "const commits =", start)
+        fragment = textwrap.dedent(source[start:end])
+        data = json.dumps({"files": files, "count": count})
+        script = f"""
+          const input = {data};
+          const owner = 'owner', repo = 'repo';
+          const pr = {{number: 1, changed_files: input.count, base: {{sha: 'base'}}}};
+          const context = {{repo: {{owner, repo}}, eventName: 'pull_request',
+            payload: {{pull_request: pr}}}};
+          const github = {{rest: {{pulls: {{listFiles: 'files'}}}},
+            paginate: async () => input.files}};
+          const core = {{info() {{}}}};
+          const isAllowedReviewPath = file => file.filename.startsWith('mydocs/');
+          const isCiExecutionPath = () => false;
+          const isAdapterExecutionPath = () => false;
+          const isProptestExecutionPath = () => false;
+          const hasTrustedReviewReuse = async () => false;
+          let decision = null;
+          const setResult = (value, reason) => {{decision = {{value, reason}};}};
+          async function productionInventory() {{
+            {fragment}
+          }}
+          try {{ await productionInventory();
+            console.log(JSON.stringify({{decision, threw: false}}));
+          }} catch (error) {{
+            console.log(JSON.stringify({{decision, threw: true, message: error.message}}));
+          }}
+        """
+        completed = subprocess.run(
+            ["node", "--input-type=module"], input=script,
+            capture_output=True, text=True, check=True,
+        )
+        return json.loads(completed.stdout)
+
+
+def _add_inventory_case(workflow, case, collector=False):
+    def test(self):
+        incomplete = case in ("truncated", "unknown", "fractional")
+        count = 4142 if case == "truncated" else None if case == "unknown" else 1.5 if case == "fractional" else 2
+        files = [{"filename": f"mydocs/pr/assets/evidence-{i}.png"}
+                 for i in range(3000 if case == "truncated" else 2)]
+        if case == "mixed":
+            files[-1] = {"filename": "src/renderer/layout.rs"}
+        result = self.execute_inventory(workflow, files, count, collector=collector)
+        if collector:
+            self.assertEqual(result["threw"], incomplete)
+        elif incomplete:
+            self.assertEqual(result["decision"], {
+                "value": self.workflows[workflow][1],
+                "reason": "pull-file-list-incomplete",
+            })
+        elif case == "mixed":
+            self.assertIsNone(result["decision"])
+        else:
+            self.assertEqual(result["decision"]["value"], self.workflows[workflow][2])
+    suffix = "collector" if collector else "preflight"
+    setattr(ReviewOnlyFileInventoryTests, f"test_{workflow}_{suffix}_{case}", test)
+
+
+for _workflow in ReviewOnlyFileInventoryTests.workflows:
+    for _case in ("truncated", "unknown", "fractional", "documents", "mixed"):
+        _add_inventory_case(_workflow, _case)
+for _workflow in ("ci", "codeql", "render"):
+    for _case in ("truncated", "unknown", "fractional", "documents"):
+        _add_inventory_case(_workflow, _case, collector=True)
 
 
 if __name__ == "__main__":
