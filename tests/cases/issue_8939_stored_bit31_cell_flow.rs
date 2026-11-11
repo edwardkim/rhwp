@@ -1,7 +1,7 @@
 //! [#8939] 관계형·고정형 회귀 — 한/글이 저장한 LineSeg tag bit 31 은 저장 줄이고, 중첩 표를 품은
 //! 글자처럼 취급 표의 칸은 저장 사다리가 칸 선언 높이에 담기면 그 높이로 잰다.
 //!
-//! 주석 갱신: 2026-11-11 23:10 KST(+09:00), 새 파일.
+//! 주석 갱신: 2026-11-12 00:40 KST(+09:00), 새 파일.
 //!
 //! - 입력: `samples/issue8939/attach_form_reset.hwp` — 서울시교육청 공개 문서
 //!   「2018학년도 후기고등학교 입학전 전학 시행 계획(안)」 12·13쪽(붙임 3·4 신청서)만 남기고
@@ -14,9 +14,9 @@
 //! - rhwp 가 저장한 HWP 는 `/RhwpLineSegTags` 표지 스트림(구역 레코드 SHA-256)이 있을 때만
 //!   bit 31 을 합성 줄 표지로 되읽는다. 세 번째 검사가 이 왕복을 지킨다.
 //!
-//! 측정: 2026-11-11, `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`(4열
-//! `silhouette_raw_match_percent`, 색상 경계 보정 전 2px 실루엣), 소스 `b28f2edc9a`(base
-//! `e118de8aba` + 이 수정). 1쪽 Native 98.34 / fresh WASM 98.38, 2쪽 Native 98.36 / fresh WASM
+//! 측정: 2026-11-11~12, `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`(4열
+//! `silhouette_raw_match_percent`, 색상 경계 보정 전 2px 실루엣), 소스 `56b79e743c`(base
+//! `4c876654d8` + 이 수정). 1쪽 Native 98.34 / fresh WASM 98.38, 2쪽 Native 98.36 / fresh WASM
 //! 98.40. 전쪽 최저 Native 98.34·fresh WASM 98.38(수정 전 Native 63.89·28.81). 전체 2쪽 = PDF 2쪽.
 //! 증거: `mydocs/pr/assets/issue_8939/{native,wasm,base-native}/`.
 //!
