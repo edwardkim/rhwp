@@ -1,7 +1,7 @@
 //! [#8939] 관계형·고정형 회귀 — 한/글이 저장한 LineSeg tag bit 31 은 저장 줄이고, 중첩 표를 품은
 //! 글자처럼 취급 표의 칸은 저장 사다리가 칸 선언 높이에 담기면 그 높이로 잰다.
 //!
-//! 주석 갱신: 2026-11-12 00:40 KST(+09:00), 새 파일.
+//! 주석 갱신: 2026-11-12 11:30 KST(+09:00), 새 파일.
 //!
 //! - 입력: `samples/issue8939/attach_form_reset.hwp` — 서울시교육청 공개 문서
 //!   「2018학년도 후기고등학교 입학전 전학 시행 계획(안)」 12·13쪽(붙임 3·4 신청서)만 남기고
@@ -15,9 +15,9 @@
 //!   bit 31 을 합성 줄 표지로 되읽는다. 세 번째 검사가 이 왕복을 지킨다.
 //!
 //! 측정: 2026-11-11~12, `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`(4열
-//! `silhouette_raw_match_percent`, 색상 경계 보정 전 2px 실루엣), 소스 `56b79e743c`(base
-//! `4c876654d8` + 이 수정). 1쪽 Native 98.34 / fresh WASM 98.38, 2쪽 Native 98.36 / fresh WASM
-//! 98.40. 전쪽 최저 Native 98.34·fresh WASM 98.38(수정 전 Native 63.89·28.81). 전체 2쪽 = PDF 2쪽.
+//! `silhouette_raw_match_percent`, 색상 경계 보정 전 2px 실루엣), 소스 `37ed46b2fb`(base
+//! `eb84afc036` + 이 수정). 1쪽 Native 98.34 / fresh WASM 98.38, 2쪽 Native 98.36 / fresh WASM
+//! 98.40. 전쪽 최저 Native 98.34·fresh WASM 98.38(수정 전 devel `eb84afc036` Native 63.89·32.06). 전체 2쪽 = PDF 2쪽.
 //! 증거: `mydocs/pr/assets/issue_8939/{native,wasm,base-native}/`.
 //!
 //! 검사: 원본 계약(문단 6 첫 저장 줄 vpos 0·원본 파일 tag bit 31, 표 칸 저장 사다리가 칸 선언 높이에 맞음),
