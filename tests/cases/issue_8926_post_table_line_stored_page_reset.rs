@@ -14,7 +14,7 @@
 //! `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`, raw =
 //! `silhouette_raw_match_percent`, 글꼴 `ttfs/opensource` — 문서 본 글꼴 없는 환경):
 //! - Native: 2쪽 / 2쪽, p1 100.00 · p2 100.00, 최저 100.00 (base: 1쪽, 쪽수 불일치로 측정 불가)
-//! - fresh WASM: 2쪽 / 2쪽, p1 100.00 · p2 100.00, 최저 100.00
+//! - fresh WASM(`scripts/wasm-pack-locked.sh --target web`): 2쪽 / 2쪽, p1 99.92 · p2 100.00, 최저 99.92
 //! - 증거: `mydocs/pr/assets/issue_8926/`(native·wasm TSV, review·overlay PNG)
 #![cfg(not(target_arch = "wasm32"))]
 
