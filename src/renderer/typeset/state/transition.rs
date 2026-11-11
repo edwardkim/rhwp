@@ -32,6 +32,7 @@ impl TypesetState {
                 stored_ladder_spacing_omitted: false,
                 omit_fresh_recalc_doc: false,
                 ladder_band_floor: 0.0,
+                block_table_growth_page: None,
                 current_ladder_band_tables: Vec::new(),
                 current_column: 0,
                 col_count,
