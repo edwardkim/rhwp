@@ -238,6 +238,13 @@ def compare_stage(stage, output, captured, index):
             "referenceSha256": hashlib.sha256(reference).hexdigest()}
 
 
+def validate_pixel_transition(previous, current, index):
+    if index in (2, 3):
+        require(current["cpuSha256"] != previous["cpuSha256"], "edit/resize did not change independent CPU output")
+    if index == 4:
+        require(current["cpuSha256"] == previous["cpuSha256"], "same-owner recovery changed independent source pixels")
+
+
 class TileCompositor(WindowsCompositor):
     def __init__(self, pid):
         super().__init__(pid)
@@ -285,6 +292,12 @@ def validate_capture_evidence(item):
             integer(comparison.get("uniformInteriorPixels"), pixels // 4, pixels) and
             integer(comparison.get("aaEdgeDifferentPixels"), 0, pixels) and
             integer(comparison.get("maxChannelDifference"), 0, 255), "DPR evidence lacks a complete independent-source comparison")
+    errors = comparison.get("integerAlignmentErrors")
+    require(isinstance(errors, dict) and set(errors) == {f"{dx},{dy}" for dy in (-1, 0, 1) for dx in (-1, 0, 1)} and
+            all(integer(error, 0, pixels * 3 * 255) for error in errors.values()),
+            "DPR evidence lacks the complete bounded integer-alignment controls")
+    require(all(error > errors["0,0"] for shift, error in errors.items() if shift != "0,0"),
+            "DPR CPU source/compositor integer alignment is shifted or ambiguous")
     require(all(re.fullmatch(r"[0-9a-f]{64}", str(value)) for value in
                 (evidence.get("cpuSha256"), evidence.get("referenceSha256"), item.get("compositorSha256"))),
             "DPR evidence lacks CPU/source/actual capture identities")
@@ -316,6 +329,7 @@ def validate_dpr_pair(previous, current):
             validate_stage(stage, nonce=value["nonce"], index=index, pid=value["pid"])
             if index > 1:
                 validate_transition(stages[index - 2], stage)
+                validate_pixel_transition(value["stages"][index - 2]["comparison"], value["stages"][index - 1]["comparison"], index)
         validate_result(value["result"], nonce=value["nonce"], stages=stages)
     require(previous["stages"][0]["stage"]["deviceScale"] != current["stages"][0]["stage"]["deviceScale"],
             "DPR comparison requires two different actual OS scales")
@@ -406,10 +420,8 @@ def main():
                 time.sleep(.1)
                 require(compositor.capture(width, height, offset) == captured, "held two-tile desktop pixels changed")
                 check_deadline()
-                if index in (2, 3):
-                    require(comparison["cpuSha256"] != state["stages"][-1]["comparison"]["cpuSha256"], "edit/resize did not change independent CPU output")
-                if index == 4:
-                    require(comparison["cpuSha256"] == state["stages"][-1]["comparison"]["cpuSha256"], "same-owner recovery changed independent source pixels")
+                if index > 1:
+                    validate_pixel_transition(state["stages"][-1]["comparison"], comparison, index)
                 state["stages"].append({"stage": stage, "window": metrics, "comparison": comparison,
                     "compositorSha256": hashlib.sha256(captured).hexdigest()})
                 if index == 2:
