@@ -1,0 +1,115 @@
+=== rhwp-chrome 빌드 시작 ===
+
+[1/4] Vite 빌드...
+> npx vite build --config /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/vite.config.ts
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (../rhwp-chrome/vite.config.ts:11:24). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+vite v8.3.5 building client environment for production...
+transforming...
+<script src="/theme-init.js"> in "/index.html" can't be bundled without type="module" attribute
+<script src="/locale-init.js"> in "/index.html" can't be bundled without type="module" attribute
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by "/home/edward/mygithub/rhwp/rhwp-studio/node_modules/canvaskit-wasm/bin/canvaskit.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported by "/home/edward/mygithub/rhwp/rhwp-studio/node_modules/canvaskit-wasm/bin/canvaskit.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+
+/images/icon_small_ko.svg referenced in /images/icon_small_ko.svg didn't resolve at build time, it will remain unchanged to be resolved at runtime
+
+/images/icon_small_ko_dark.svg referenced in /images/icon_small_ko_dark.svg didn't resolve at build time, it will remain unchanged to be resolved at runtime
+✓ 349 modules transformed.
+
+(!) outDir /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist is not inside project root and will not be emptied.
+Use --emptyOutDir to override.
+
+rendering chunks...
+computing gzip size...
+../rhwp-chrome/dist/assets/form-action-worker-BEckcfC_.js         10.79 kB
+../rhwp-chrome/dist/index.html                                    86.96 kB │ gzip:     11.48 kB
+../rhwp-chrome/dist/assets/import-worker-gv-iBaLK.js             151.01 kB
+../rhwp-chrome/dist/assets/canvaskit-SCAxUyCS.wasm             7,317.34 kB │ gzip:  2,989.78 kB
+../rhwp-chrome/dist/assets/rhwp_bg-dFPsB7QR.wasm              29,173.63 kB │ gzip: 11,112.68 kB
+../rhwp-chrome/dist/assets/viewer-Bi3mWWBZ.css                   118.74 kB │ gzip:     20.48 kB
+../rhwp-chrome/dist/assets/rhwp-hwpctrl-plugin.d-BvRk9kiK.js       0.00 kB │ gzip:      0.02 kB
+../rhwp-chrome/dist/assets/canvaskit-renderer-CyxZ0vS-.js        339.08 kB │ gzip:    101.94 kB
+../rhwp-chrome/dist/assets/viewer-IPzDWjRv.js                  2,329.08 kB │ gzip:    496.43 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 1.48s
+  RENAME: index.html → viewer.html
+  INJECT: dev-tools-inject.js → viewer.html
+
+[2/4] 확장 파일 복사...
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/manifest.json → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/manifest.json
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/background.js → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/background.js
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/content-script.js → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/content-script.js
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/content-script.css → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/content-script.css
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dev-tools-inject.js → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/dev-tools-inject.js
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/sw → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/sw
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/options.html → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/options.html
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/options.js → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/options.js
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/icons → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/icons
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-studio/public/icons/icon-256.png → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/icons/icon-256.png
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/_locales → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/_locales
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-studio/public/theme-init.js → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/theme-init.js
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-studio/public/locale-init.js → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/locale-init.js
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-studio/public/print.html → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/print.html
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-studio/public/images/icon_small_ko.svg → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/images/icon_small_ko.svg
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-studio/public/images/icon_small_ko_dark.svg → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/images/icon_small_ko_dark.svg
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-studio/public/favicon.ico → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/favicon.ico
+
+[3/4] WASM 복사...
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/pkg/rhwp.js → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/wasm/rhwp.js
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/pkg/rhwp.d.ts → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/wasm/rhwp.d.ts
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/pkg/rhwp_bg.wasm → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/wasm/rhwp_bg.wasm
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/pkg/rhwp_bg.wasm.d.ts → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/wasm/rhwp_bg.wasm.d.ts
+
+[4/4] 폰트 복사...
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/Cafe24Ssurround-v2.0.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/Cafe24Ssurround-v2.0.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/Cafe24Supermagic-Regular-v1.0.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/Cafe24Supermagic-Regular-v1.0.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/D2Coding-Bold.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/D2Coding-Bold.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/D2Coding-Regular.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/D2Coding-Regular.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/GowunBatang-Bold.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/GowunBatang-Bold.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/GowunBatang-Regular.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/GowunBatang-Regular.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/GowunDodum-Regular.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/GowunDodum-Regular.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/Happiness-Sans-Bold.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/Happiness-Sans-Bold.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/Happiness-Sans-Regular.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/Happiness-Sans-Regular.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/Happiness-Sans-Title.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/Happiness-Sans-Title.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/HappinessSansVF.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/HappinessSansVF.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/LatinModernMath-Regular.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/LatinModernMath-Regular.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/NanumGothic-Bold.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/NanumGothic-Bold.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/NanumGothic-ExtraBold.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/NanumGothic-ExtraBold.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/NanumGothic-Regular.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/NanumGothic-Regular.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/NanumGothicCoding-Bold.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/NanumGothicCoding-Bold.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/NanumGothicCoding-Regular.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/NanumGothicCoding-Regular.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/NanumMyeongjo-Bold.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/NanumMyeongjo-Bold.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/NanumMyeongjo-ExtraBold.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/NanumMyeongjo-ExtraBold.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/NanumMyeongjo-Regular.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/NanumMyeongjo-Regular.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/NotoSansKR-Bold.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/NotoSansKR-Bold.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/NotoSansKR-ExtraLight.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/NotoSansKR-ExtraLight.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/NotoSansKR-Regular.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/NotoSansKR-Regular.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/NotoSansMath-Regular.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/NotoSansMath-Regular.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/NotoSerifKR-Bold.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/NotoSerifKR-Bold.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/NotoSerifKR-Regular.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/NotoSerifKR-Regular.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/Pretendard-Black.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/Pretendard-Black.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/Pretendard-Bold.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/Pretendard-Bold.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/Pretendard-ExtraBold.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/Pretendard-ExtraBold.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/Pretendard-ExtraLight.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/Pretendard-ExtraLight.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/Pretendard-Light.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/Pretendard-Light.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/Pretendard-Medium.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/Pretendard-Medium.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/Pretendard-Regular.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/Pretendard-Regular.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/Pretendard-SemiBold.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/Pretendard-SemiBold.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/Pretendard-Thin.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/Pretendard-Thin.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/RHWPOldHangul-Regular.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/RHWPOldHangul-Regular.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/RHWPPublicBatang-Regular.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/RHWPPublicBatang-Regular.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/SpoqaHanSans-Regular.woff2 → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/SpoqaHanSans-Regular.woff2
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/NotoSansMath-OFL.txt → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/NotoSansMath-OFL.txt
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/NotoSansSymbols2-OFL.txt → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/NotoSansSymbols2-OFL.txt
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/assets/fonts/SourceHanSerifK-OFL.txt → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/fonts/SourceHanSerifK-OFL.txt
+  COPY: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/THIRD_PARTY_LICENSES.md → /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist/THIRD_PARTY_LICENSES.md
+  woff2 38개 복사
+
+=== 빌드 완료 ===
+출력: /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/dist

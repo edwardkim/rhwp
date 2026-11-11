@@ -1,0 +1,18 @@
+{
+  "source": "18623a34e8a6bea48d2908ee85c34ae786f4feab",
+  "profile": "dev, unoptimized, debug info; API/UI behavior verification only, no performance/fidelity claim",
+  "artifacts": [
+    {
+      "file": "rhwp.js",
+      "bytes": 711872,
+      "sha256": "db3496fa74200811a9470c65195410f0614ad1bbd7edf21289674e5932c309a8",
+      "studio_public_matches": true
+    },
+    {
+      "file": "rhwp_bg.wasm",
+      "bytes": 89392996,
+      "sha256": "4b4af2ac2a6a40c3878b528e0ee176de0740a8af695c7a12c36d3cd07a79b7d0",
+      "studio_public_matches": true
+    }
+  ]
+}

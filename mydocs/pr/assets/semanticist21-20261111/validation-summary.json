@@ -1,0 +1,57 @@
+{
+  "validation_source": "18623a34e8a6bea48d2908ee85c34ae786f4feab",
+  "base": "e118de8abadd2dffb2798036b9ffd381b96ed7d5",
+  "maintainer_product_corrections": [],
+  "original_heads_preserved": true,
+  "code_head_ci_reuse": "Original PRs reviewed and intended for separate merge; exact original CI green, no source/test/fixture/workflow correction, current-base simulation clean. Broad local Rust nextest and Native Skia suites not repeated. Current-base cumulative runtime checked separately.",
+  "scope": "Selection overlay geometry and Chrome content script only. No document page/layout/paint/export consumer of changed rect result. No document Visual Sweep/handbook/protected gate applies.",
+  "selection_focused": {
+    "passed": 4,
+    "filtered_skipped": 304,
+    "minimal_public_fonts": 5
+  },
+  "wasm_browser": {
+    "base_pass": 5,
+    "base_checks": 11,
+    "candidate_pass": 11,
+    "candidate_checks": 11,
+    "simple_body_cell_svg_hashes_identical_between_producers": true
+  },
+  "studio": {
+    "assertions": 8,
+    "body_zoom": [
+      1,
+      0.66
+    ],
+    "cell": true
+  },
+  "existing_selection_layout": {
+    "pass_assertions": 156,
+    "paragraphs": 400,
+    "pages": 10,
+    "highlights": 400,
+    "pageerrors": 0,
+    "render_errors": 0
+  },
+  "extension": {
+    "node_pass": 100,
+    "node_fail": 0,
+    "packaged_base_expected_dom_failure": true,
+    "packaged_candidate_pass": true
+  },
+  "unchanged_issue_code_on_current_devel": [
+    {
+      "path": "src/document_core/queries/cursor_nav.rs",
+      "earlier_base_blob": "4f1b71bce7a62a187c288bb9371fcac5f4ee7c5e",
+      "current_devel_blob": "4f1b71bce7a62a187c288bb9371fcac5f4ee7c5e",
+      "unchanged": true
+    },
+    {
+      "path": "rhwp-chrome/content-script.js",
+      "earlier_base_blob": "aedb976f40464fb6b8dbe38419853346aaa651d9",
+      "current_devel_blob": "aedb976f40464fb6b8dbe38419853346aaa651d9",
+      "unchanged": true
+    }
+  ],
+  "no_new_remote_comment_push_pr_merge": true
+}

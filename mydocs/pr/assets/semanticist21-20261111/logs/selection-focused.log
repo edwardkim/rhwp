@@ -1,0 +1,30 @@
+[RustTestSuite] body_selection_tree_reuse -> regression_suite_021::body_selection_tree_reuse
+[RustTestSuite] cargo nextest run --locked --test regression_suite_021 -E test(/(^|::)body_selection_tree_reuse::/) --cargo-profile release-test --target-dir /home/edward/mygithub/rhwp/target/pr-review --test-threads 6
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped
+   Compiling rhwp-codec-resource v0.1.0 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/vendor/rhwp-codec-resource)
+   Compiling rhwp-jpeg-decoder v0.3.2-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/vendor/rhwp-jpeg-decoder)
+   Compiling rhwp-zune-jpeg v0.5.15-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/vendor/rhwp-zune-jpeg)
+   Compiling rhwp v0.9.0 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui)
+   Compiling rhwp-password-crypto v0.1.0 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/crates/rhwp-password-crypto)
+   Compiling rhwp-svg2pdf v0.13.0-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/vendor/svg2pdf)
+   Compiling rhwp-hayro-ccitt v0.3.0-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/vendor/rhwp-hayro-ccitt)
+   Compiling rhwp-qcms v0.3.0-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/vendor/rhwp-qcms)
+   Compiling rhwp-hayro-jbig2 v0.3.0-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/vendor/rhwp-hayro-jbig2)
+   Compiling rhwp-hayro-jpeg2000 v0.4.0-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/vendor/rhwp-hayro-jpeg2000)
+   Compiling rhwp-ooxml-chart v0.1.0 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/crates/rhwp-ooxml-chart)
+   Compiling rhwp-pdf-import-backend v0.3.78-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/vendor/rhwp-pdf-import-backend)
+   Compiling rhwp-contracts v0.1.0 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/crates/rhwp-contracts)
+   Compiling rhwp-jpeg-encoder v0.7.1-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/vendor/rhwp-jpeg-encoder)
+    Finished `release-test` profile [optimized] target(s) in 6m 29s
+────────────
+ Nextest run ID 374c518c-c3d5-4406-840c-56cf77628d71 with nextest profile: default
+    Starting 4 tests across 1 binary (304 tests skipped)
+        PASS [   0.008s] (1/4) rhwp::regression_suite_021 body_selection_tree_reuse::body_selection_observes_edits_that_invalidate_a_warm_tree
+        PASS [   0.009s] (2/4) rhwp::regression_suite_021 body_selection_tree_reuse::body_selection_ends_lines_at_the_paragraph_mark
+        PASS [   0.010s] (3/4) rhwp::regression_suite_021 body_selection_tree_reuse::cell_selection_ends_lines_at_the_paragraph_mark
+        PASS [   0.238s] (4/4) rhwp::regression_suite_021 body_selection_tree_reuse::body_selection_keeps_uncached_pages_local
+────────────
+     Summary [   0.239s] 4 tests run: 4 passed, 304 skipped
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+info: update nextest with cargo nextest self update, or bypass check with --override-version-check

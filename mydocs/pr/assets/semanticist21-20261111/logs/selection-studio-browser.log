@@ -1,0 +1,15 @@
+1:57:43 PM [vite] (client) Re-optimizing dependencies because vite config has changed
+  ➜  Local:   http://127.0.0.1:7771/
+=== E2E: PR8913 actual Studio selection overlay ===
+
+  [browser] headless Chrome 실행
+  PASS: 본문의 빈 문단 2개를 포함한 선택 상자 5개
+  PASS: 문단 끝에서 문단 부호 폭만 추가
+  PASS: 실제 DOM 너비가 WASM 사각형과 zoom을 소비
+  PASS: 본문의 빈 문단 2개를 포함한 선택 상자 5개
+  PASS: 문단 끝에서 문단 부호 폭만 추가
+  PASS: 실제 DOM 너비가 WASM 사각형과 zoom을 소비
+  PASS: 셀의 빈 문단을 포함한 실제 선택 상자 3개
+  PASS: 셀 선택도 같은 WASM 결과를 실제 DOM으로 소비
+
+📋 HTML 보고서: ../output/e2e/selection-studio-browser.mjs-report.html

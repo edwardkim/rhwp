@@ -1,0 +1,20 @@
+[
+  {
+    "name": "base-negative",
+    "returncode": 1,
+    "seconds": 2.899,
+    "source": "18623a34e8a6bea48d2908ee85c34ae786f4feab",
+    "content_script_sha256": "36c10dd229effe5c8b0b69a458ead742c5688f89b953bc2f03bc13f6579ee8b0",
+    "engine_wasm_sha256": "d04aa82f7a395e6576d8d9af6f9ebbdb752ef742cd9c9c7ffc58e1a4918a5f02",
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261111/logs/extension-smoke-base-negative.log"
+  },
+  {
+    "name": "candidate",
+    "returncode": 0,
+    "seconds": 2.192,
+    "source": "18623a34e8a6bea48d2908ee85c34ae786f4feab",
+    "content_script_sha256": "0b0742583dfb7909ea2b092095d55b5b57d749be30b818b905c48104ae1bb1d6",
+    "engine_wasm_sha256": "d04aa82f7a395e6576d8d9af6f9ebbdb752ef742cd9c9c7ffc58e1a4918a5f02",
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261111/logs/extension-smoke-candidate.log"
+  }
+]

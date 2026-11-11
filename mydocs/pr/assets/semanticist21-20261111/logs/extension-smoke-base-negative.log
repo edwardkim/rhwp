@@ -1,0 +1,109 @@
+Chrome extension packaged smoke 시작
+file:///home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/e2e/extension-smoke.test.mjs:321
+    failure = new Error(`${error.message ?? error}\n${formatDiagnostics(diagnostics)}`, { cause: error });
+              ^
+
+Error: Expected values to be strictly deep-equal:
++ actual - expected
+
+  {
+    badgeCount: 1,
+    htmlAttributes: [
+      'lang',
++     'data-hwp-extension',
++     'data-hwp-extension-version'
+    ],
++   ready: true,
++   scriptInjected: true
+-   ready: false,
+-   scriptInjected: false
+  }
+
+--- extension smoke diagnostics ---
+surface=content-script
+extensionId=iffpkhbobflkehbkaeaffomelpbepcoa
+worker=chrome-extension://iffpkhbobflkehbkaeaffomelpbepcoa/background.js
+errors=[]
+unexpectedPages=[]
+blockedProxyRequests=[
+  "GET http://clients2.google.com/time/1/current?cup2key=10:fLeoTjuWjxiTw-uJ2aJZe5zbLYSojV-mxbdpD_rHEJg&cup2hreq=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "CONNECT update.googleapis.com:443",
+  "CONNECT accounts.google.com:443",
+  "CONNECT www.google.com:443",
+  "CONNECT accounts.google.com:443"
+]
+proxyClientAborts=[]
+workerConsole=[]
+pageConsole=[
+  "[viewer-dark] log: %c[rhwp]%c DevTools 사용 가능 — rhwpDev.help() 로 시작하세요 color:#2563eb;font-weight:bold color:inherit",
+  "[viewer-dark] info: [main] 외부 웹폰트 사용 안 함 옵션이 켜져 있습니다.",
+  "[viewer-dark] log: [FontLoader] OS 폰트 감지: Noto Sans KR, Noto Serif KR",
+  "[viewer-dark] debug: [FontLoader][debug] CDN 후보: RHWP Old Hangul",
+  "[viewer-dark] log: [FontLoader] 웹폰트 로드 시작: 1개 파일 (이미 요청함: 0개)",
+  "[viewer-dark] debug: [FontLoader][debug] CDN 로드 시작: RHWP Old Hangul <- fonts/RHWPOldHangul-Regular.woff2",
+  "[viewer-dark] debug: [FontLoader][debug] CDN 로드 성공: RHWP Old Hangul <- fonts/RHWPOldHangul-Regular.woff2",
+  "[viewer-dark] log: [FontLoader] 폰트 로드 완료: 1개 성공, 0개 실패 (총 1개 파일 요청)",
+  "[viewer-dark] log: [WasmBridge] WASM 초기화 완료 (rhwp 0.9.0)",
+  "[viewer-dark] log: [loadFromUrlParam] http://127.0.0.1:37891/smoke.hwp",
+  "[viewer-dark] log: [initDoc] 1. 폰트 로딩 시작",
+  "[viewer-dark] log: [FontLoader] OS 폰트 감지: Noto Sans KR, Noto Serif KR",
+  "[viewer-dark] debug: [FontLoader][debug] CDN 후보: HY견명조, 한양중고딕, RHWP Old Hangul",
+  "[viewer-dark] log: [FontLoader] 웹폰트 로드 시작: 2개 파일 (이미 요청함: 1개)",
+  "[viewer-dark] debug: [FontLoader][debug] CDN 로드 시작: HY견명조 <- fonts/NotoSerifKR-Bold.woff2",
+  "[viewer-dark] debug: [FontLoader][debug] CDN 로드 시작: 한양중고딕 <- fonts/NotoSansKR-Regular.woff2",
+  "[viewer-dark] debug: [FontLoader][debug] CDN 로드 성공: HY견명조 <- fonts/NotoSerifKR-Bold.woff2",
+  "[viewer-dark] debug: [FontLoader][debug] CDN 로드 성공: 한양중고딕 <- fonts/NotoSansKR-Regular.woff2",
+  "[viewer-dark] log: [FontLoader] 폰트 로드 완료: 2개 성공, 0개 실패 (총 3개 파일 요청)",
+  "[viewer-dark] log: [initDoc] 2. 폰트 로딩 완료",
+  "[viewer-dark] log: [initDoc] 3. inputHandler deactivate",
+  "[viewer-dark] log: [initDoc] 4. canvasView loadDocument",
+  "[viewer-dark] log: [CanvasView] 1/1페이지 로드, 총 높이: 1093.990172609298px",
+  "[viewer-dark] log: [initDoc] 5. toolbar setEnabled",
+  "[viewer-dark] log: [initDoc] 6. toolbar initFontDropdown + initStyleDropdown",
+  "[viewer-dark] log: [initDoc] 7. 사전 검증 및 로컬 글꼴 확인",
+  "[viewer-dark] log: [initDoc] 8. inputHandler activateWithCaretPosition",
+  "[viewer-dark] log: [initDoc] 9. 완료",
+  "[content-script] log: %c[rhwp]%c DevTools 사용 가능 — rhwpDev.help() 로 시작하세요 color:#2563eb;font-weight:bold color:inherit"
+]
+    at runOnce (file:///home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/e2e/extension-smoke.test.mjs:321:15)
+    at async main (file:///home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/e2e/extension-smoke.test.mjs:48:5)
+    at async file:///home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/e2e/extension-smoke.test.mjs:38:3 {
+  [cause]: AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+
+    {
+      badgeCount: 1,
+      htmlAttributes: [
+        'lang',
+  +     'data-hwp-extension',
+  +     'data-hwp-extension-version'
+      ],
+  +   ready: true,
+  +   scriptInjected: true
+  -   ready: false,
+  -   scriptInjected: false
+    }
+
+      at runOnce (file:///home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/e2e/extension-smoke.test.mjs:285:12)
+      at async main (file:///home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/e2e/extension-smoke.test.mjs:48:5)
+      at async file:///home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/rhwp-chrome/e2e/extension-smoke.test.mjs:38:3 {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: {
+      htmlAttributes: [ 'lang', 'data-hwp-extension', 'data-hwp-extension-version' ],
+      ready: true,
+      scriptInjected: true,
+      badgeCount: 1
+    },
+    expected: {
+      htmlAttributes: [ 'lang' ],
+      ready: false,
+      scriptInjected: false,
+      badgeCount: 1
+    },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+}
+
+Node.js v24.15.0

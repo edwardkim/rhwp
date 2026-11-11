@@ -1,0 +1,38 @@
+[
+  {
+    "number": 8913,
+    "state": "open",
+    "draft": false,
+    "title": "fix(selection): 문단 끝 줄은 문단 부호까지만 칠한다 (#8908)",
+    "created_at": "2026-11-10T10:54:51Z",
+    "author": "semanticist21",
+    "reviewers": [],
+    "head": {
+      "sha": "66141a6c485844e37cdd133f7ac92890e9d8a2c3",
+      "ref": "task/8908-selection-paragraph-mark",
+      "repo": "semanticist21/rhwp"
+    },
+    "base": {
+      "sha": "5ea1227505978156082121f1601cb03044a0583f",
+      "ref": "devel"
+    }
+  },
+  {
+    "number": 8915,
+    "state": "open",
+    "draft": false,
+    "title": "fix(chrome): 일반 SSR 페이지에서 설치 감지용 DOM 주입 방지 (#8914)",
+    "created_at": "2026-11-10T11:48:50Z",
+    "author": "semanticist21",
+    "reviewers": [],
+    "head": {
+      "sha": "61198fcf3f4d185c8f78eac5b3259d99303b8845",
+      "ref": "task/8914-chrome-hydration",
+      "repo": "semanticist21/rhwp"
+    },
+    "base": {
+      "sha": "5ea1227505978156082121f1601cb03044a0583f",
+      "ref": "devel"
+    }
+  }
+]

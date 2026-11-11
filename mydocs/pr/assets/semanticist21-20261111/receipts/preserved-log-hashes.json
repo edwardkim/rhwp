@@ -1,0 +1,62 @@
+[
+  {
+    "file": "logs/chrome-build.log",
+    "original_sha256": "1817ba6c020dd2fbd738a0d4ee0332a934c693c313f8c3d11a5f4692a5988233",
+    "preserved_sha256": "5c49bc56f5b2a0e89a07afb45f711cfbd7503fdc0872f51ffebbb2cc9916e8c1",
+    "normalization": "line-ending whitespace only; content unchanged"
+  },
+  {
+    "file": "logs/chrome-node.log",
+    "original_sha256": "d4ecccd045208757dc0d80c9a3b8c1e39282e26409c2758d5c44905b8c38cd11",
+    "preserved_sha256": "d4ecccd045208757dc0d80c9a3b8c1e39282e26409c2758d5c44905b8c38cd11",
+    "normalization": "line-ending whitespace only; content unchanged"
+  },
+  {
+    "file": "logs/existing-selection-layout.log",
+    "original_sha256": "77646d2f6a14ff9163dcb70f3a2bc984e53524fe045e27ec807cb7b1f2f11ffe",
+    "preserved_sha256": "77646d2f6a14ff9163dcb70f3a2bc984e53524fe045e27ec807cb7b1f2f11ffe",
+    "normalization": "line-ending whitespace only; content unchanged"
+  },
+  {
+    "file": "logs/extension-smoke-base-negative.log",
+    "original_sha256": "5f5b2652db8808f2bdd9cc19072a21b26400e4bcbdb1f9d6cd17a401588f569d",
+    "preserved_sha256": "5bd980fbd4606add0881f0f47b567ed0ce8fc16d99624422e180dc99bb914ee4",
+    "normalization": "line-ending whitespace only; content unchanged"
+  },
+  {
+    "file": "logs/extension-smoke-candidate.log",
+    "original_sha256": "5039960d21aa2c701c24c5b5d2d4bbc87b43d0020519ec40d4028907a319f3f5",
+    "preserved_sha256": "5039960d21aa2c701c24c5b5d2d4bbc87b43d0020519ec40d4028907a319f3f5",
+    "normalization": "line-ending whitespace only; content unchanged"
+  },
+  {
+    "file": "logs/selection-focused.log",
+    "original_sha256": "62c526c973a3764d4d34c488d48b53ae187f6813e14aea3c5093622ebcbe9046",
+    "preserved_sha256": "62c526c973a3764d4d34c488d48b53ae187f6813e14aea3c5093622ebcbe9046",
+    "normalization": "line-ending whitespace only; content unchanged"
+  },
+  {
+    "file": "logs/selection-studio-browser.log",
+    "original_sha256": "ac4a25b15e2d16b7cd90b5adfd36cfbe38348fda122a979c4f0f13b5fab4af5e",
+    "preserved_sha256": "ac4a25b15e2d16b7cd90b5adfd36cfbe38348fda122a979c4f0f13b5fab4af5e",
+    "normalization": "line-ending whitespace only; content unchanged"
+  },
+  {
+    "file": "logs/selection-wasm-probe.log",
+    "original_sha256": "89446d1ac57c28424b41d27a459f963fccd08fdb0bfec37b5070e0da0f4fa1bb",
+    "preserved_sha256": "89446d1ac57c28424b41d27a459f963fccd08fdb0bfec37b5070e0da0f4fa1bb",
+    "normalization": "line-ending whitespace only; content unchanged"
+  },
+  {
+    "file": "logs/visible-fonts.log",
+    "original_sha256": "3f0ef6913e84b03f66b1d1c18f2e25cc2bcdeca5e13c9f2a9bf42d25893d5ead",
+    "preserved_sha256": "1cc90c8e7a26ff06e3056a56bcee93e59d23e861a535934791571b76ed752a92",
+    "normalization": "line-ending whitespace only; content unchanged"
+  },
+  {
+    "file": "logs/wasm-dev.log",
+    "original_sha256": "10b53950d05817564b5b953b260a02a677daaae9ea2735befb016392f2b94076",
+    "preserved_sha256": "10b53950d05817564b5b953b260a02a677daaae9ea2735befb016392f2b94076",
+    "normalization": "line-ending whitespace only; content unchanged"
+  }
+]

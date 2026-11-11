@@ -1,0 +1,19 @@
+{
+  "pr": 8913,
+  "head": "66141a6c485844e37cdd133f7ac92890e9d8a2c3",
+  "base": "95d1631bd81431b7c1639f0cc5f1e16fb9cfce76",
+  "check_runs": 36,
+  "commit_statuses": [
+    {
+      "context": "CI Impact Policy",
+      "state": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42807127243"
+    }
+  ],
+  "merge_tree": "33bbe3385d31ee835a9be02e90bc2360220ef5c1",
+  "mergeable_state": "clean",
+  "differences_from_validated_cumulative_source": [
+    "mydocs/pr/semanticist21_20261111_review_plan.md"
+  ],
+  "checked_at": "2026-11-11T15:57:03+09:00"
+}
