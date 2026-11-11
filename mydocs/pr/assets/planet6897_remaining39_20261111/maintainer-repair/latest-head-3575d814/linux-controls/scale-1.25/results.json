@@ -1,0 +1,106 @@
+{
+  "config": {
+    "fixtures": [
+      "basic/KTX.hwp",
+      "biz_plan.hwp",
+      "tac-case-001.hwp"
+    ],
+    "scale": 1.25,
+    "maxPages": "1",
+    "channelTolerance": 1,
+    "maxDiffRatio": 0.0005,
+    "writeImages": true
+  },
+  "results": [
+    {
+      "pageIndex": 0,
+      "paintOrderRequired": true,
+      "paintOrderMatched": true,
+      "paintOrderFirstMismatch": -1,
+      "fillCounts": [
+        226,
+        226
+      ],
+      "paintOrderMismatch": null,
+      "legacyWidth": 1404,
+      "legacyHeight": 993,
+      "layerWidth": 1404,
+      "layerHeight": 993,
+      "width": 1404,
+      "height": 993,
+      "sameSize": true,
+      "diffPixels": 133,
+      "totalPixels": 1394172,
+      "diffRatio": 0.00009539712460155562,
+      "maxChannelDelta": 102,
+      "averageChannelDelta": 0.001872616865063995,
+      "pass": true,
+      "artifactFiles": {
+        "legacy": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-legacy.png",
+        "layer": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-layer.png",
+        "diff": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-diff.png"
+      },
+      "fixture": "basic/KTX.hwp"
+    },
+    {
+      "pageIndex": 0,
+      "paintOrderRequired": false,
+      "paintOrderMatched": true,
+      "paintOrderFirstMismatch": -1,
+      "fillCounts": [
+        2,
+        2
+      ],
+      "paintOrderMismatch": null,
+      "legacyWidth": 993,
+      "legacyHeight": 1404,
+      "layerWidth": 993,
+      "layerHeight": 1404,
+      "width": 993,
+      "height": 1404,
+      "sameSize": true,
+      "diffPixels": 0,
+      "totalPixels": 1394172,
+      "diffRatio": 0,
+      "maxChannelDelta": 0,
+      "averageChannelDelta": 0,
+      "pass": true,
+      "artifactFiles": {
+        "legacy": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-legacy.png",
+        "layer": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-layer.png",
+        "diff": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-diff.png"
+      },
+      "fixture": "biz_plan.hwp"
+    },
+    {
+      "pageIndex": 0,
+      "paintOrderRequired": false,
+      "paintOrderMatched": true,
+      "paintOrderFirstMismatch": -1,
+      "fillCounts": [
+        2,
+        2
+      ],
+      "paintOrderMismatch": null,
+      "legacyWidth": 993,
+      "legacyHeight": 1404,
+      "layerWidth": 993,
+      "layerHeight": 1404,
+      "width": 993,
+      "height": 1404,
+      "sameSize": true,
+      "diffPixels": 0,
+      "totalPixels": 1394172,
+      "diffRatio": 0,
+      "maxChannelDelta": 0,
+      "averageChannelDelta": 0,
+      "pass": true,
+      "artifactFiles": {
+        "legacy": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-legacy.png",
+        "layer": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-layer.png",
+        "diff": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-diff.png"
+      },
+      "fixture": "tac-case-001.hwp"
+    }
+  ]
+}

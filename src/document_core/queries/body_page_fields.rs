@@ -9,10 +9,8 @@ use crate::{
     error::HwpError,
     model::control::{AutoNumber, AutoNumberType, Control},
     renderer::{
-        format_number,
         layout::LayoutEngine,
         render_tree::{RenderNode, RenderNodeType},
-        NumberFormat,
     },
 };
 
@@ -35,11 +33,12 @@ fn fields(core: &DocumentCore) -> BTreeMap<FieldKey, BodyField> {
             }
             for kind in [AutoNumberType::Page, AutoNumberType::TotalPage] {
                 let positions = LayoutEngine::resolve_auto_number_placeholder_addresses(para, kind);
-                let controls = para.controls.iter().filter_map(|control| match control {
-                    Control::AutoNumber(number) if number.number_type == kind => Some(number),
-                    _ => None,
-                });
-                for (position, number) in positions.into_iter().zip(controls) {
+                for position in positions {
+                    let Some(Control::AutoNumber(number)) =
+                        para.controls.get(position.control_index)
+                    else {
+                        continue;
+                    };
                     out.insert(
                         (section_index, para_index, position.source),
                         BodyField {
@@ -55,30 +54,8 @@ fn fields(core: &DocumentCore) -> BTreeMap<FieldKey, BodyField> {
 }
 
 fn display(number: &AutoNumber, value: u32) -> Result<String, HwpError> {
-    let digits = if number.format == 0 {
-        value.to_string()
-    } else {
-        format_number(
-            u16::try_from(value).map_err(|_| {
-                HwpError::RenderError("본문 쪽번호 형식의 16비트 범위를 넘었습니다".into())
-            })?,
-            NumberFormat::from_hwp_format(number.format),
-        )
-    };
-    Ok(format!(
-        "{}{}{}",
-        if number.prefix_char == '\0' {
-            String::new()
-        } else {
-            number.prefix_char.to_string()
-        },
-        digits,
-        if number.suffix_char == '\0' {
-            String::new()
-        } else {
-            number.suffix_char.to_string()
-        }
-    ))
+    crate::renderer::note_marker::page_number_display(number, value)
+        .ok_or_else(|| HwpError::RenderError("본문 쪽번호 형식의 16비트 범위를 넘었습니다".into()))
 }
 
 fn collect_owners(

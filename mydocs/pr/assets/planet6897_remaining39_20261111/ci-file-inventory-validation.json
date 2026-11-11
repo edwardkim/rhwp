@@ -1,0 +1,41 @@
+{
+  "tested_at": "2026-11-12T00:22:07.804438+09:00",
+  "parent_head": "7a677a2285f9630259fba661b0192f9fada67528",
+  "ci_guard_sites": 8,
+  "workflow_count": 5,
+  "source_hashes": {
+    ".github/workflows/adapter-diff.yml": "815ee2b38012afa3aa6ee5ca0efbe22fcdfd8fb5b705d3f0b7c5ea51a1b31e5d",
+    ".github/workflows/ci.yml": "be433aa09a46f401a4e9d566ff47e3ebb7330ad36d2370225a66aafacb7069f9",
+    ".github/workflows/codeql.yml": "07877b67e8027a0e56ece3666d2965e6c6c8b28a23e4bcebacae7010bdb6e4e9",
+    ".github/workflows/proptest-roundtrip.yml": "890ff73c5ad88b1c1594caa5b8e3a6cb99dac038fb3e2ca0754c65128957a443",
+    ".github/workflows/render-diff.yml": "dddff3ee60ec208e2488337c4672a36152d569ecba2a10c89c9705c4198d98c2",
+    "scripts/tests/ci-impact-controller-contract.test.cjs": "8d187c98159ab312fdd099aef2603fc329d6030fa0438c4d9df0b2d6a2dca2f1",
+    "scripts/tests/test_ci_impact_workflow.py": "3e36152bbf0cb94243cd99aad4d76b0c65bb2c2d9930f49b8a2a663cb81b7d3a",
+    "scripts/tests/test_codeql_workflow.py": "8567db25fc812ec30b6f98f142c8c1f358554f94208af88613f25bf291d22c13"
+  },
+  "diff_sha256": "cb795e0691297d2fd96ec353e66cb5f7422ff769aeace9a5f2a48dbf38397a49",
+  "before_packets": [
+    {
+      "tests": 28,
+      "failed": 18,
+      "log_sha256": "87fba7fb7c05879966f32c41aa679fa6ceaf7444cce80e18a1bdf024c5bd8b44"
+    },
+    {
+      "tests": 9,
+      "failed": 6,
+      "log_sha256": "1f92ca13cbc0a58014c2bf19ec1edd4f77e24f0c13b29a9e242109729e55cda5"
+    }
+  ],
+  "after": {
+    "new_behavior_tests": 37,
+    "workflow_contract_tests": 72,
+    "all_related_workflow_tests": 243,
+    "node_policy_tests": 166,
+    "failed": 0,
+    "actionlint_workflows": 5,
+    "actionlint_exit": 0
+  },
+  "fixture_corrections": "기존 complete-list mock에 실제 API의 changed_files를 제공했다. 보안 검사·코드·rename 반례의 기존 기대값은 유지했고 미확인·잘린 목록은 새 행동 검사에서 Full로 거부한다.",
+  "runtime_evidence_reuse": "Rust·Cargo·실물 회귀·Studio·Visual Sweep·WASM wrapper의 제품 입력은 7a677a2285 대비 변경 없음. 기존 최신 Native/fresh WASM·전체 13312 회귀·3542쪽 보호 증적을 유지한다.",
+  "post_merge_route": "CI 실행 판정 변경이므로 옵션 2. 이 code head의 PR Full CI·병합 후 별도 기록 PR로 CI 결과와 오늘할일을 반영한다."
+}

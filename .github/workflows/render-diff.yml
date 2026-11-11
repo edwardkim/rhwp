@@ -377,6 +377,14 @@ jobs:
                 pull_number: pr.number,
                 per_page: 100,
               });
+              // REST 목록은 최대 3,000개이므로 전체 변경 수와 맞을 때만 좁게 판정한다.
+              const expectedPrFileCount = pr.changed_files;
+              if (!Number.isSafeInteger(expectedPrFileCount)
+                || expectedPrFileCount < 0
+                || prFiles.length !== expectedPrFileCount) {
+                setResult(false, 'pull-file-list-incomplete');
+                return;
+              }
               const hasCiExecutionSurfaceChange = prFiles.some((file) => (
                 isCiExecutionPath(file.filename)
                 || isCiExecutionPath(file.previous_filename || '')
@@ -670,6 +678,13 @@ jobs:
                 pull_number: context.payload.pull_request.number,
                 per_page: 100,
               });
+              // REST 목록은 최대 3,000개이므로 전체 변경 수와 맞을 때만 좁게 판정한다.
+              const expectedPrFileCount = context.payload.pull_request.changed_files;
+              if (!Number.isSafeInteger(expectedPrFileCount)
+                || expectedPrFileCount < 0
+                || files.length !== expectedPrFileCount) {
+                throw new Error('Pull request file inventory incomplete');
+              }
               writeInput({
                 eventName: context.eventName,
                 files: files.map((file) => ({

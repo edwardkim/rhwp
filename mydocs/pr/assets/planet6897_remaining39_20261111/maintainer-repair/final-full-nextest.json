@@ -1,0 +1,11 @@
+{
+  "head": "ab9116f48ff0c641fab4cc33c9f8c1bd5b6a5082",
+  "duration_seconds": 606.556,
+  "run": 13307,
+  "passed": 13307,
+  "failed": 0,
+  "skipped": 45,
+  "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/logs/scope-final-full-nextest.log",
+  "log_sha256": "fa7717a939955f7a1c5b93fed5a0a00cd8ff56efe871559e1ee453b8c49cb50f",
+  "minimum_font_profile": "output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb"
+}

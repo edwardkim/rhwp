@@ -1,0 +1,10 @@
+{
+  "key": "pr8833-36341965-float-band-gap-reduced",
+  "mode": "silhouette_only",
+  "run_state": "incomplete",
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "reason": "실루엣 쪽 묶음 처리 중"
+  },
+  "canonical_manifest_sha256": "46cb241e40db8b3833d4a1b8ba3d6f08c8933386c291645826e3ed0d94124021"
+}

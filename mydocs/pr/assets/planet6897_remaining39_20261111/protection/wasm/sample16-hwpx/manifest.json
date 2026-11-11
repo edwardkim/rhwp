@@ -1,0 +1,1406 @@
+{
+  "canonical_manifest_sha256": "365bb813be43f12d2470445fd4300e980ace87218183b74d0b65eb642de3751a",
+  "key": "sample16-hwpx",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64
+  ],
+  "missing_pages": [],
+  "tsv": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "0e51c53ac929c1dd1dc046cfe41ee87fa5001617ba3b9930b15a884f112862f6",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-001.png",
+      "pdf_sha256": "95a3f45819abbc33b4ca64d400c96f685a754dd34fcb583ca0afc25d78dcb50e"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "7ad84fd33df77fe2b1408a9c3767f50abfabfa0933b824dccb5a11a9465d37da",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-002.png",
+      "pdf_sha256": "b68a3e61d131c1a2a9199d3436850b365d906eae2c492bce706521bed195759f"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "f08825be21cd2b54fc02d500cb47999f285a10dd5e8330866693d349b235fcdb",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-003.png",
+      "pdf_sha256": "3664e245bde4197bf96a5a3f3d744e4d3ba2b4667cc5331607fdfcbe6bdcbc11"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "1d4c002a9a6c920cc8d5f5f1f027a700e49ed604bedfed9be0494df5c7e22095",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-004.png",
+      "pdf_sha256": "f26ba83f7d950d6c5211aa9d06293e96a7332a6576301ff783d0b7f0949fe68e"
+    },
+    {
+      "page": 5,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_005.png",
+      "rhwp_sha256": "fdd0012cf7106e251cd08be27258ef4254f39d84b996291c862cbfcc26ba600d",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-005.png",
+      "pdf_sha256": "26819c9c50219aff1fdb478046c588d39ad9da11f5a2404d7fc205285f77eab0"
+    },
+    {
+      "page": 6,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_006.png",
+      "rhwp_sha256": "be88e859b621a3e13110c20f93fc9b4d6091794973ac64889b747bedf490d092",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-006.png",
+      "pdf_sha256": "9a7d95f9cd534e7f31e3dfe36627fe8ffb626c7956659212975e180442ae38de"
+    },
+    {
+      "page": 7,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_007.png",
+      "rhwp_sha256": "227ba7167ff96f4908c423f60e65bb181b13052ad2f12cabbf6369f9d39ae11a",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-007.png",
+      "pdf_sha256": "0e8cbd6f60880085768ea5a5753cd9ddf052d1cb4c7a4ea7aae3813ea8b9b23f"
+    },
+    {
+      "page": 8,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_008.png",
+      "rhwp_sha256": "cbd6401dcf033202989806650476e95ef0eb98db8d3ae1ea8aeb00fc6dc59ea8",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-008.png",
+      "pdf_sha256": "1d7745e253af54f41fefce8f31fe9415dcab5b1333609b570bfa9a4757fd9146"
+    },
+    {
+      "page": 9,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_009.png",
+      "rhwp_sha256": "46918b7290a7137606dba7376a5bab226f3e48a53d81efb60f2117f227013156",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-009.png",
+      "pdf_sha256": "f4dc94b14ab070bc3f1937032eae2ab07ce51ecfb01ee388891d83efa60c2b8b"
+    },
+    {
+      "page": 10,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_010.png",
+      "rhwp_sha256": "3b046e62e1242a0650453ffa6f4c3212049812f005a400c4113c507511d4243a",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-010.png",
+      "pdf_sha256": "290c242156cc1e58ae27b430d6829424561e14d91a6c8fc3f8dacc01d0924eef"
+    },
+    {
+      "page": 11,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_011.png",
+      "rhwp_sha256": "c2567ea7b445fe6644f1333b2d5f3a194660417239f09d4670621eca7f7b4980",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-011.png",
+      "pdf_sha256": "ba86c1cf406e46a881669f104fda879b276e4860e5ed949a8fe2f19a755f7075"
+    },
+    {
+      "page": 12,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_012.png",
+      "rhwp_sha256": "49b7a37891e94ef5c79a2eee27902514a7ee53551b71edbea2e65ece07f43ed8",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-012.png",
+      "pdf_sha256": "c5a3376b785539dfa392fdeaa2797f299a6c6db266e5865b92dab07f471e7635"
+    },
+    {
+      "page": 13,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_013.png",
+      "rhwp_sha256": "154d440d274313b155c9ef0118945611d8eeea80d39960d21cee62fa216db9aa",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-013.png",
+      "pdf_sha256": "0145a321f2bbf879a7a6d2b255d85dde467eb98fcbb714a97a49da17013a826d"
+    },
+    {
+      "page": 14,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_014.png",
+      "rhwp_sha256": "48fac8fd8ace495c5e3046025740804906c22e0062c5bc247571dd7a98910925",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-014.png",
+      "pdf_sha256": "23975fe57977bd1af8ba31010fb519fe4bd1cfbde66b5b4cc4a9816ef58ea7a3"
+    },
+    {
+      "page": 15,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_015.png",
+      "rhwp_sha256": "1895e73651b123bcd6df3ef9a43a7ee9ce7d4e05ff9d1c22616054ea7c0ea47b",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-015.png",
+      "pdf_sha256": "d578aab97699aebe68a8d3b3a5b075aba9e75357215f4d8938207d4d7ae8c9a6"
+    },
+    {
+      "page": 16,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_016.png",
+      "rhwp_sha256": "28976f8df87a93f2b11a23578c144afcb6a495004e0f377107c4f78971ffa6be",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-016.png",
+      "pdf_sha256": "70109fa509138eaf1785d3419c4f66409343fbe3c820d9369a9972356139ab18"
+    },
+    {
+      "page": 17,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_017.png",
+      "rhwp_sha256": "3b29dd986bf9edb8eeca4ea0a953adeee0bf9f9e8ffa4341804639fbba2f4627",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-017.png",
+      "pdf_sha256": "31327412ec133ffcaa8c114f2c70dbf69a0bce23aa7e11d74526aa963f2c79b8"
+    },
+    {
+      "page": 18,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_018.png",
+      "rhwp_sha256": "f0470d1f7593294354ee16999c5ea9f16a5133830533da6ea2a24a0a046fb80e",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-018.png",
+      "pdf_sha256": "0ee3e9f214f801ec506da00aef255bc5fe5f4bd544918a110028fff59bb18d99"
+    },
+    {
+      "page": 19,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_019.png",
+      "rhwp_sha256": "43c2c37345b2b5e84873cc10bd3c9413dea56854dcc0862524c97504a2128553",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-019.png",
+      "pdf_sha256": "af2b47b31279840c2cc71861f65cedd20f84935f4ab528e31a71029f0cb22d44"
+    },
+    {
+      "page": 20,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_020.png",
+      "rhwp_sha256": "492ca3552dbea435463dae4186f25c1d1a238657338c9d918d6aa325a7a6d1b3",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-020.png",
+      "pdf_sha256": "d7a5d2f83f211ddc7073471bebae88d91471ee27893c3c456aebadf009489f91"
+    },
+    {
+      "page": 21,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_021.png",
+      "rhwp_sha256": "597fdf501a153a1429dd0756fd1cdf3807c6101ea4558ccab515953457002d5f",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-021.png",
+      "pdf_sha256": "cb5fa2bf787d312b2b8daf6bebd5610dbbbc96e335030e823da23a57cc031b9e"
+    },
+    {
+      "page": 22,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_022.png",
+      "rhwp_sha256": "796869e0b506ee6f34e6d8f6d407a9e844fd1e0d1bfc5e93b1bc3ac8a0342831",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-022.png",
+      "pdf_sha256": "fe8655b1fb132e460e3554efeae7fcd7674816b2f6739c58c6d180363512c53f"
+    },
+    {
+      "page": 23,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_023.png",
+      "rhwp_sha256": "175fe54c659247650f66ede52e6ceedf159e5b79ab578c43e3a27a5152470b22",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-023.png",
+      "pdf_sha256": "ce9576a95a6c3863fa991fabb51ff7aab3dba92c883bd5a9248b894f174782b0"
+    },
+    {
+      "page": 24,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_024.png",
+      "rhwp_sha256": "975790b5ca2017ae95e49822ef24635bfb0234f6b376beb26023794f4c7aae71",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-024.png",
+      "pdf_sha256": "864512a4b0b2966aa4f644a6d40c7c68ba52eb0b28715115a31a5e1bc2b031b4"
+    },
+    {
+      "page": 25,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_025.png",
+      "rhwp_sha256": "981e9022eff737ca13a778439c2b476c728a8a0f084e74cb204132e87eec752d",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-025.png",
+      "pdf_sha256": "725d081967d18662f5f16043fa11a6f226eb542295f0bcea90940cfc9c87c856"
+    },
+    {
+      "page": 26,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_026.png",
+      "rhwp_sha256": "b40b5eaf672cdf6a0df31e1be60ebbd4f2de321e6ef1514aa6307200ce218755",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-026.png",
+      "pdf_sha256": "c999a2ff622acfe736f149bfd992e9dd1acdb690edab921e42c0c5b13b91b268"
+    },
+    {
+      "page": 27,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_027.png",
+      "rhwp_sha256": "5b952993aa870bb1ff88619b7dd175f74b59c2976bbb2357e2108295ea320e46",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-027.png",
+      "pdf_sha256": "283791bae3c41dc9645e547032755e8b12ea7972cd5fcd0dc4301f9055212c35"
+    },
+    {
+      "page": 28,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_028.png",
+      "rhwp_sha256": "6325aa297a449725a70f28bf7c374847f0ff2fd238c0e10431e163eca90fc48e",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-028.png",
+      "pdf_sha256": "58ea8698989ac0d35922d2cf9b68e3f195b7caff21aa344d17267f985a0166a1"
+    },
+    {
+      "page": 29,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_029.png",
+      "rhwp_sha256": "b94c4c65676d29572772556514a3f5443191fe00e896aaac343debde82e9301c",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-029.png",
+      "pdf_sha256": "8bce7c7a2612d2699f5df4f0cd2486cde0cfb6b1279d7931e3d283113f8c16d4"
+    },
+    {
+      "page": 30,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_030.png",
+      "rhwp_sha256": "2a5d3ba92d73458fed857febd518779b02ef0ab4a0b3ae14a1369d9e95fb8d21",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-030.png",
+      "pdf_sha256": "40da3e15039e23175d362a5a11191f3913a6d372c8861462adcaf2faa7dd4286"
+    },
+    {
+      "page": 31,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_031.png",
+      "rhwp_sha256": "49b63bdf28b2749f650e4abbf965eb73f9a8e226b965de9eb5895c4b5522dbc7",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-031.png",
+      "pdf_sha256": "e8d7e53f25f7f48503be02fc279830b8bb81bacada42906d1f4a940d9b1f5df7"
+    },
+    {
+      "page": 32,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_032.png",
+      "rhwp_sha256": "87127cca6dbe9be7df0002614a18391791b031cd4a61cdf03b5f9007a43545f6",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-032.png",
+      "pdf_sha256": "8dc1349281cf1bbd657f58671a9dfa1a1fedc31d0f549b51f0c036074bde63c3"
+    },
+    {
+      "page": 33,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_033.png",
+      "rhwp_sha256": "12ab18ca4a8832e20f9453a3a2571534cdbaccf3084dd23f7bad0115da5d7276",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-033.png",
+      "pdf_sha256": "d10c358e735bb641b23dd8e3b824d5e091fd44af231fc34a60f6090ba0bfe089"
+    },
+    {
+      "page": 34,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_034.png",
+      "rhwp_sha256": "6f860092f695b25d483ad27d4d5a10e148eb4e89b785f989c07e4c1ea97ebd73",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-034.png",
+      "pdf_sha256": "98135d80959d461953613a4ee70c2e2837563dda2bf8b3fddf98f41b025dfd47"
+    },
+    {
+      "page": 35,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_035.png",
+      "rhwp_sha256": "d7275b2c1540e209aa2fc5e295ce2d5250dd3dc477bdbf8429eb9891c6a20a68",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-035.png",
+      "pdf_sha256": "266df1e79290ac4eab4040732c7fea42064fd878093bf5989064ff080e1cdb65"
+    },
+    {
+      "page": 36,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_036.png",
+      "rhwp_sha256": "e674ae70f0b718c8c60c13ab06bb3cf785c5890274555ef859ee94a1d4230147",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-036.png",
+      "pdf_sha256": "8eeaaa1e663d0b31ae24205c9b7a9e44dc6060569c8ffbe7b776fe1ca8fa4f33"
+    },
+    {
+      "page": 37,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_037.png",
+      "rhwp_sha256": "b3b71a157abecdd6905dd1bfcf53e44a038db40703d8c2d44c04c92def64bdc5",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-037.png",
+      "pdf_sha256": "39e17d2f2422e6b251f268a94618609207e0a2b3053108f88dc3e3ec53d9d647"
+    },
+    {
+      "page": 38,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_038.png",
+      "rhwp_sha256": "df7ff11938f9e6cabab83a28ef614583eb0266faae10f0bfbb1954d48d032f06",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-038.png",
+      "pdf_sha256": "9a53285dc7918fda9e979cdc5ff7c935b6fceb6463e47a2ab008cec84663e898"
+    },
+    {
+      "page": 39,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_039.png",
+      "rhwp_sha256": "d302bdc4b827b04589697be57d3fd004485c4c593f8da87e5584bb6612040606",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-039.png",
+      "pdf_sha256": "1eb6812f0f2932ace166f0d1c91a9bc4ed5bc0f0eca956a19f0cf38d5135f216"
+    },
+    {
+      "page": 40,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_040.png",
+      "rhwp_sha256": "e4b2713a66a3f7b4b91b3ac496b29752564b87d9ebffc9640ec45e2b88be9239",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-040.png",
+      "pdf_sha256": "31f701bd8195bb1f78ec5a6343e9e2d3aa90a8b4fe7148f63cbad60439532fcd"
+    },
+    {
+      "page": 41,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_041.png",
+      "rhwp_sha256": "cbc76c8d2e127ed43af382f4f87bf7ddea780b8786b89a3ebc3b54fd578817f7",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-041.png",
+      "pdf_sha256": "4ddb2e3882debeaa364ddd7dc5844ad61c2f9b62dd332f334e131dfe14ed3525"
+    },
+    {
+      "page": 42,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_042.png",
+      "rhwp_sha256": "26a27e06e62817f8cc8ef0f387037b0760d1a7aa3bf5037078752ad27d506c1b",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-042.png",
+      "pdf_sha256": "a29d3ec7402e316b8ca5a161a2ffc3a5044bd4e21fda24e3aa5b77d217fa17ca"
+    },
+    {
+      "page": 43,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_043.png",
+      "rhwp_sha256": "90949b4549e4ef67ccf190a7bf07db1b42264353862e2cd9cf0ab82bfc6a5c59",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-043.png",
+      "pdf_sha256": "e6ddc1245f093f3e2c2986c5d536c92b6e6a1b71f3e4cad74a256aa09abbf34c"
+    },
+    {
+      "page": 44,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_044.png",
+      "rhwp_sha256": "b8f2ced1c268cc35309a9a5e37438312914775c19aeb311e4939c10325d56ad2",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-044.png",
+      "pdf_sha256": "4ee230f98dff994ab0389cac52e5892c9744bbfbbd501b8a4509a7cd4695f714"
+    },
+    {
+      "page": 45,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_045.png",
+      "rhwp_sha256": "9b5fe752fc7087b7ef564c149fbbb808199c0947f0fc4c47cb848ce4c4667790",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-045.png",
+      "pdf_sha256": "e5f3a0bef77d80291529374b13c668624eed2c6eb4c03e382d035ef2e38399da"
+    },
+    {
+      "page": 46,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_046.png",
+      "rhwp_sha256": "b66dca69782aae97ef6b50aceaab466c7946e8d37c1fb4498bd352b8552df521",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-046.png",
+      "pdf_sha256": "b12aa94dd43aad77a5816995543eb5d47980e7b2ac2ed4bb84e664b7dbc07958"
+    },
+    {
+      "page": 47,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_047.png",
+      "rhwp_sha256": "0f4b1c0904b9a32e80010d233e3a52e65bbd64983490c5c60e8b9bb9af48e62d",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-047.png",
+      "pdf_sha256": "72a7333bde98ad9cba58ffc10e742b3b36dfc8543512daddcbc790cd2530b912"
+    },
+    {
+      "page": 48,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_048.png",
+      "rhwp_sha256": "2e49250476b3bb8273e52af47c2d3329493f8c5d50b9268c4a8679bc774a7100",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-048.png",
+      "pdf_sha256": "1d31e3264704f03e63931cd98d0b3445ac4553a308e88686866a18387b1fda66"
+    },
+    {
+      "page": 49,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_049.png",
+      "rhwp_sha256": "e6108c367c396eaedab53d7083b81100cd5863e1d682c2510ce16aa891e9a7ae",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-049.png",
+      "pdf_sha256": "33b56dcd4fb456e1128301aec0e283c981e07588f53a93ffa60763ba1400f1ac"
+    },
+    {
+      "page": 50,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_050.png",
+      "rhwp_sha256": "1143b70c8b1d9f4009f08c4286cbfedc3007efe5795338ab47cd78964965b3cd",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-050.png",
+      "pdf_sha256": "5c285bbe928ef919d60c7a374d32c219f25ebf484f900d28f123a7435e263670"
+    },
+    {
+      "page": 51,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_051.png",
+      "rhwp_sha256": "e2da0fe8e7b662e06b5a70fd9a4036b3b615b723198dce0f0d03639f8f7fa994",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-051.png",
+      "pdf_sha256": "06518225062f0f72b1b6c27dfed0e36ca01cab8ffb44672c32029774e7cb05c8"
+    },
+    {
+      "page": 52,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_052.png",
+      "rhwp_sha256": "047b7af5893f6d5aa2d1b3ea6ce6197f1d3b444c4ecee771ca2e50dd709b0177",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-052.png",
+      "pdf_sha256": "b8ad8cdf40a0902d3e86db13d564ab8f26cd1e242bc00c279abf967079ebe7f3"
+    },
+    {
+      "page": 53,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_053.png",
+      "rhwp_sha256": "e55a10ff216ca5a7f3c1de2d37159369c7f74008aeee6e79a4607afc65db031d",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-053.png",
+      "pdf_sha256": "c3432cfc8e3b9f942bc4e7df9e28faa94dc84efcb34a8cd9f4c400a2fdf3b574"
+    },
+    {
+      "page": 54,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_054.png",
+      "rhwp_sha256": "a227080e2dbc8f6b5981321e73faa7d96283483e1a26f3cced4c24d467bc2228",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-054.png",
+      "pdf_sha256": "08308589d62bd5faac91fb89f606fc7eed72b088a7a664d6383fdb112291c7dc"
+    },
+    {
+      "page": 55,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_055.png",
+      "rhwp_sha256": "0f727833be9a12ca58e4f81d24b9d74b66f812d5c85d5f6407a19eb933bd97d1",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-055.png",
+      "pdf_sha256": "ad325a6fb1e9259ec30ebcd33283cb6ddaa87fc3b341b75181d4eb1aeee9edf8"
+    },
+    {
+      "page": 56,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_056.png",
+      "rhwp_sha256": "028f773b81213613797ebfc33e413b67c116ffdaf709ae0ffb3c9cc8b2544fa7",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-056.png",
+      "pdf_sha256": "7eee29fdf092cff91797c0770b77ddbfb034e081fa31fddf7e87b51790620fee"
+    },
+    {
+      "page": 57,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_057.png",
+      "rhwp_sha256": "baa5b63d60512f96025660a66ea0226283476e622d4380df86ef7cbcd238bd20",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-057.png",
+      "pdf_sha256": "916d0faf2eae95512333f965b0e12489da0239fd1428ac29aacdbdb387076bf5"
+    },
+    {
+      "page": 58,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_058.png",
+      "rhwp_sha256": "887c6d1790dc061e73255cf7f98b34139149b10e816f8a37225156d9c53ca2ce",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-058.png",
+      "pdf_sha256": "a52138464c682d5171b811d350165b6c8e7a38cb90a6e76b5074df00edfddae8"
+    },
+    {
+      "page": 59,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_059.png",
+      "rhwp_sha256": "a71cb96f409c49736bcfe62bbf9a480e3842396b24ba72f1f54f5162bb0478a5",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-059.png",
+      "pdf_sha256": "513d94cde85251e59c45366244da5e653696c3b9c792d99e7b3f7a9962c64655"
+    },
+    {
+      "page": 60,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_060.png",
+      "rhwp_sha256": "14b43549e1fb6a6b187e2c5ce5ee125c0ce1994ad817baf2d5d5c6ce9c179be5",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-060.png",
+      "pdf_sha256": "b32e9077981aa03e8dea3b951679b0a5658c1d2d6b8d1721359fd878e59eabe3"
+    },
+    {
+      "page": 61,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_061.png",
+      "rhwp_sha256": "211e41539493bd7e9ee60073dd695617ea6986da7f37d697e5a29b6e60a299d1",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-061.png",
+      "pdf_sha256": "1173c6698f55ffd6b878efbef45f772c1b9ca5abe1a99e011f92c3124207d411"
+    },
+    {
+      "page": 62,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_062.png",
+      "rhwp_sha256": "4b3ef7e8a9a34bfb78302942809cb52f41b0ef02cdd5797978b8d4a024504e21",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-062.png",
+      "pdf_sha256": "2cd18058e3385c9cb23515ed4f775bcfb438ef6f55fa1ad7150c47330d85993d"
+    },
+    {
+      "page": 63,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_063.png",
+      "rhwp_sha256": "0e4231ada4c1b8f4495691ce76cf92415c91a9fe3f7877a4199323c1638a1ca1",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-063.png",
+      "pdf_sha256": "71d8cd80643c6c0e1231914e8f4424552e54bbd47ff2c5772ea92980908aec21"
+    },
+    {
+      "page": 64,
+      "rhwp_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/rhwp_png/rhwp_064.png",
+      "rhwp_sha256": "0090ed2e43aedc65c950926349c54d9a05d4fa02c2388e3ead920f2432032f3f",
+      "pdf_png": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/pdf_png/pdf-064.png",
+      "pdf_sha256": "d44460c190302cbff435fde7b5deeb002b0ef61c6048dac34b4dc2f24cbf7bd9"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99841,
+      "silhouette_raw_unmatched_pixels": 1,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 63015,
+      "tolerant_content_match_percent": 99.99841
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 63238,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 122209,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 93115,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 5,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.98099,
+      "silhouette_raw_unmatched_pixels": 19,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 99942,
+      "tolerant_content_match_percent": 99.98099
+    },
+    {
+      "page": 6,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.92823,
+      "silhouette_raw_unmatched_pixels": 75,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 104504,
+      "tolerant_content_match_percent": 99.92823
+    },
+    {
+      "page": 7,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 73919,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 8,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 116140,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 9,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 56385,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 10,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99871,
+      "silhouette_raw_unmatched_pixels": 1,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 77655,
+      "tolerant_content_match_percent": 99.99871
+    },
+    {
+      "page": 11,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 79558,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 12,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 95771,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 13,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 123329,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 14,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 92318,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 15,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 90508,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 16,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 71566,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 17,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 86310,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 18,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 77.55341,
+      "silhouette_raw_unmatched_pixels": 61982,
+      "silhouette_boundary_reconciled_pixels": 61825,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 276131,
+      "tolerant_content_match_percent": 99.94314
+    },
+    {
+      "page": 19,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 214687,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 20,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 285893,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 21,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 122092,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 22,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.96889,
+      "silhouette_raw_unmatched_pixels": 35,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 112519,
+      "tolerant_content_match_percent": 99.96889
+    },
+    {
+      "page": 23,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 104791,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 24,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.98662,
+      "silhouette_raw_unmatched_pixels": 14,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 104629,
+      "tolerant_content_match_percent": 99.98662
+    },
+    {
+      "page": 25,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.96984,
+      "silhouette_raw_unmatched_pixels": 28,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 92846,
+      "tolerant_content_match_percent": 99.96984
+    },
+    {
+      "page": 26,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 127319,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 27,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 155928,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 28,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 150355,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 29,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 105565,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 30,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 117527,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 31,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 130148,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 32,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 165148,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 33,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 134376,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 34,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 56044,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 35,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 82.39605,
+      "silhouette_raw_unmatched_pixels": 28442,
+      "silhouette_boundary_reconciled_pixels": 28230,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 161566,
+      "tolerant_content_match_percent": 99.86878
+    },
+    {
+      "page": 36,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 147716,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 37,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 131274,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 38,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 74264,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 39,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 94270,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 40,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 103964,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 41,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 45043,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 42,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 136201,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 43,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 117569,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 44,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 90706,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 45,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 149805,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 46,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 163968,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 47,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 184659,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 48,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 176564,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 49,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 149059,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 50,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 200311,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 51,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.8458,
+      "silhouette_raw_unmatched_pixels": 76,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 49288,
+      "tolerant_content_match_percent": 99.8458
+    },
+    {
+      "page": 52,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 112374,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 53,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 118580,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 54,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 48517,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 55,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 90733,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 56,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 90710,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 57,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 127808,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 58,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 50274,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 59,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99512,
+      "silhouette_raw_unmatched_pixels": 7,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 143545,
+      "tolerant_content_match_percent": 99.99512
+    },
+    {
+      "page": 60,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99843,
+      "silhouette_raw_unmatched_pixels": 1,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 63511,
+      "tolerant_content_match_percent": 99.99843
+    },
+    {
+      "page": 61,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 53276,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 62,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99744,
+      "silhouette_raw_unmatched_pixels": 2,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 78040,
+      "tolerant_content_match_percent": 99.99744
+    },
+    {
+      "page": 63,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 23510,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 64,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 34007,
+      "tolerant_content_match_percent": 100.0
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "re_review_required",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 18,
+        "silhouette_raw_match_percent": 77.55341
+      },
+      {
+        "page": 35,
+        "silhouette_raw_match_percent": 82.39605
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 64,
+      "pdf": 64
+    },
+    "page_count_mismatch": false
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/hwp3-sample16-hwp5.hwpx",
+      "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c"
+    },
+    "pdf": {
+      "path": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+      "sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee"
+    },
+    "git_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+      "executable_sha256": "87d4df53fd91304be5bac391fb204643c36b7df2023c04a0953bcbc7d4fdf634",
+      "library": "output/pr-review/planet6897-remaining39-integration-20261111/venv/lib/python3.14/site-packages/pypdfium2_raw/libpdfium.dylib",
+      "library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "output/pr-review/planet6897-remaining39-integration-20261111/candidate-native",
+      "path": "output/pr-review/planet6897-remaining39-integration-20261111/candidate-native",
+      "sha256": "bfaf0c9f4104ceea10106be1b813bf94e1824755855ba6043dc00ea6af06c1f7"
+    },
+    "raster_backend": "wasm-canvas2d",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2024",
+    "font_environment": {
+      "path": "mydocs/pr/assets/planet6897_integration_final/pr8389_8397/hwp3-2024-font-environment.json",
+      "sha256": "53a7cff101203c61080a59769730f6f7050e5af22870b8a9d233bff7a95ec64c"
+    },
+    "wasm": {
+      "files": [
+        {
+          "path": "output/pr-review/planet6897-remaining39-integration-20261111/candidate-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "output/pr-review/planet6897-remaining39-integration-20261111/candidate-pkg/rhwp_bg.wasm",
+          "sha256": "775f167badb99a1e54e34143719f90cfea383a943485dc0936bdf23e6c67c9c4"
+        }
+      ],
+      "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+      "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+          "sha256": "67b4003e2be99ea44a7c957e4b35acde1b5e6e82a54fe195c5598c3c617bc2e3"
+        },
+        {
+          "path": "ttfs/opensource/NotoSansKR-Regular.ttf",
+          "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74"
+        },
+        {
+          "path": "ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+          "sha256": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688"
+        },
+        {
+          "path": "ttfs/opensource/RHWPOldHangul-Regular.otf",
+          "sha256": "0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4"
+        },
+        {
+          "path": "ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+          "sha256": "7e3aee5ee1d8f44cc37d35dbd07e5f66414fee5ce552ebda6b4347643d9d0b78"
+        },
+        {
+          "path": "output/pr-review/planet6897-remaining39-integration-20261111/protected-font-programs/3fb64d42c25d-HMEPO.otf",
+          "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385"
+        },
+        {
+          "path": "output/pr-review/planet6897-remaining39-integration-20261111/protected-font-programs/4aa75dc35958-HMEHL.otf",
+          "sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52"
+        },
+        {
+          "path": "output/pr-review/planet6897-remaining39-integration-20261111/protected-font-programs/4d1cee6065fa-TETGRSP.otf",
+          "sha256": "4d1cee6065faf8306d01715349b6878982e7e4ecc809956be79a30d95185e8dd"
+        },
+        {
+          "path": "output/pr-review/planet6897-remaining39-integration-20261111/protected-font-programs/62514ec65a65-HMKMG.otf",
+          "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9"
+        },
+        {
+          "path": "output/pr-review/planet6897-remaining39-integration-20261111/protected-font-programs/683987bbc5ac-JPSMJ.otf",
+          "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
+        },
+        {
+          "path": "output/pr-review/planet6897-remaining39-integration-20261111/protected-font-programs/7853ab58b7a8-TETGTJPV.otf",
+          "sha256": "7853ab58b7a8dfab3159e28b1ad8ab157fe534c2c5bcfdd2246a8a547bdac75c"
+        },
+        {
+          "path": "output/pr-review/planet6897-remaining39-integration-20261111/protected-font-programs/approved-gulim-native.ttf",
+          "sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18"
+        },
+        {
+          "path": "output/pr-review/planet6897-remaining39-integration-20261111/protected-font-programs/bef6371830a1-HBATANG.TTF",
+          "sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068"
+        },
+        {
+          "path": "output/pr-review/planet6897-remaining39-integration-20261111/protected-font-programs/d033df71fa41-HMKMM.TTF",
+          "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+        },
+        {
+          "path": "output/pr-review/planet6897-remaining39-integration-20261111/protected-font-programs/dbe024359d0d-JPJGT.otf",
+          "sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63"
+        },
+        {
+          "path": "output/pr-review/planet6897-remaining39-integration-20261111/protected-font-programs/ec4de33ea3ed-ENMJ.otf",
+          "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f"
+        }
+      ]
+    }
+  },
+  "checkpoint": "output/pr-review/planet6897-remaining39-integration-20261111/protected/wasm/sample16-hwpx/silhouette-checkpoint.json"
+}

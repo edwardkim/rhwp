@@ -1,0 +1,10 @@
+{
+  "checked_at": "2026-11-11T13:42:14.078266+09:00",
+  "changes": [],
+  "count": 39,
+  "reviewer_missing": [],
+  "upstream_devel": "e118de8abadd2dffb2798036b9ffd381b96ed7d5",
+  "new_author_prs_outside_frozen_scope": [
+    8932
+  ]
+}

@@ -20,6 +20,31 @@ pub(crate) fn number_text(number: u16, format: u8, user_symbol: char) -> String 
     }
 }
 
+/// 쪽 번호·총 쪽수 `AutoNumber`(표 144 종류 0·6)의 표시 문자열.
+///
+/// 번호 모양은 컨트롤 속성 bit 4~11(표 134)이고 앞·뒤 장식 문자를 붙인다. 본문 필드와
+/// 머리말·꼬리말이 같은 규칙을 쓴다. 숫자 외 모양은 16비트 번호 범위를 넘으면 `None` 이다.
+pub(crate) fn page_number_display(number: &AutoNumber, value: u32) -> Option<String> {
+    let digits = if number.format == 0 {
+        value.to_string()
+    } else {
+        number_text(
+            u16::try_from(value).ok()?,
+            number.format,
+            number.user_symbol,
+        )
+    };
+    let mut text = String::new();
+    if number.prefix_char != '\0' {
+        text.push(number.prefix_char);
+    }
+    text.push_str(&digits);
+    if number.suffix_char != '\0' {
+        text.push(number.suffix_char);
+    }
+    Some(text)
+}
+
 pub(crate) fn supported_format(format: u8) -> bool {
     format <= 16 || matches!(format, 0x80 | 0x81)
 }

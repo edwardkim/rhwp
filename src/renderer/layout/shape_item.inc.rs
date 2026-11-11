@@ -272,10 +272,9 @@ impl LayoutEngine {
                                         .line_segs
                                         .first()
                                         .map(|s| s.vertical_pos);
-                                    let prev_end = paragraphs[para_index - 1]
-                                        .line_segs
-                                        .last()
-                                        .map(|s| s.vertical_pos + s.line_height);
+                                    let prev_end = crate::renderer::stored_previous_flow_end_hu(
+                                        paragraphs, para_index,
+                                    );
                                     match (v_cur, prev_end) {
                                         (Some(vc), Some(pe)) if vc > pe => {
                                             hwpunit_to_px((vc - pe) as i32, self.dpi)
@@ -291,11 +290,40 @@ impl LayoutEngine {
                             // (베트남노동시장1125: 124쪽 중 8쪽의 차트가 본문 위/지면 밖).
                             // 바닥-정렬 목표가 단 상단을 넘으면 기각하고, 같은 문단의 선행
                             // float(표)이 이미 진행시킨 흐름(y_offset) 뒤로 배치한다.
-                            let (vpos_accounts_for_height, pic_y) = if vpos_accounts_for_height
+                            // [#8831] 다만 저장 줄과 앞 흐름 끝 사이 gap 이 **이 그림 하나의 띠**
+                            // (오프셋 + 높이 + 아래 여백)와 같으면 gap 은 이 문단 자신의 띠다
+                            // (#409: 오프셋 0 그림 아래로 밀린 줄). 문단 배치가 이미 그 줄을 띠
+                            // 아래로 옮겼으므로 그림은 문단 원점(앵커)에 두고 흐름은 되돌리지
+                            // 않는다 — 1351000-201500141 pi695 줄 63939 = 문단 시작 27278 + 그림
+                            // 36661. 같은 문단의 앞 개체(표)까지 gap 에 든 형상(1490000-200800034
+                            // pi1090 표 뒤 그림)은 종전대로 앞 개체가 진행시킨 흐름 뒤에 둔다.
+                            let own_line_below_band = vpos_accounts_for_height
+                                && paragraphs[para_index]
+                                    .line_segs
+                                    .first()
+                                    .map(|s| s.vertical_pos)
+                                    .zip(crate::renderer::stored_previous_flow_end_hu(
+                                        paragraphs, para_index,
+                                    ))
+                                    .is_some_and(|(line, prev_end)| {
+                                        let band = crate::renderer::float_placement::signed_hwpunit(
+                                            pic.common.vertical_offset,
+                                        )
+                                        .saturating_add(pic.common.height as i32)
+                                        .saturating_add(pic.common.margin.bottom as i32);
+                                        hwpunit_to_px((line - prev_end - band).abs(), self.dpi)
+                                            <= 0.5
+                                    });
+                            let rejects_gap_alignment = vpos_accounts_for_height
                                 && pic_y - hwpunit_to_px(pic.common.height as i32, self.dpi)
-                                    < col_area.y - 0.5
-                            {
-                                (false, pic_y.max(y_offset))
+                                    < col_area.y - 0.5;
+                            let own_line_below_band = rejects_gap_alignment && own_line_below_band;
+                            let (vpos_accounts_for_height, pic_y) = if rejects_gap_alignment {
+                                if own_line_below_band {
+                                    (false, pic_y)
+                                } else {
+                                    (false, pic_y.max(y_offset))
+                                }
                             } else {
                                 (vpos_accounts_for_height, pic_y)
                             };
@@ -311,7 +339,19 @@ impl LayoutEngine {
                                         && placement.stored_host_origin.is_some()));
                             let (vpos_accounts_for_height, pic_y) = stored_picture
                                 .map(|placement| (false, col_area.y + placement.anchor_y))
-                                .unwrap_or((vpos_accounts_for_height, pic_y));
+                                .unwrap_or((
+                                    vpos_accounts_for_height,
+                                    // [#8852] 저장 프레임이 없는 문단 기준 자리차지 그림은 '쪽 영역
+                                    // 안으로 제한'이면 음수 오프셋을 0 으로 본다. 아래 배치가 저장
+                                    // 오프셋을 더하므로 그 차이만큼 원점을 미리 옮긴다(저장 프레임은
+                                    // 이미 최종 위치를 담는다).
+                                    pic_y
+                                        + hwpunit_to_px(
+                                            crate::renderer::float_placement::body_para_topbottom_vertical_offset_hu(&pic.common)
+                                                - crate::renderer::float_placement::signed_hwpunit(pic.common.vertical_offset),
+                                            self.dpi,
+                                        ),
+                                ));
                             // typeset의 ObjectPlacementFrame과 같은 문단 좌우 여백을
                             // Para 기준 그림에도 준다. paint만 단 전체를 기준으로
                             // 두면 TIFF 그림과 캡션이 저장 1000HU만큼 왼쪽으로 간다
@@ -348,6 +388,9 @@ impl LayoutEngine {
                                 vpos_accounts_for_height,
                             );
                             result_y = picture_placement.flow_end;
+                            if own_line_below_band {
+                                result_y = result_y.max(saved_y_offset);
+                            }
                             if matches!(pic.common.vert_rel_to, VertRelTo::Para)
                                 && matches!(pic.common.text_wrap, TextWrap::TopAndBottom)
                             {
@@ -531,7 +574,17 @@ impl LayoutEngine {
                                             )
                                         })
                                         .unwrap_or(0.0);
-                                    result_y += line_advance;
+                                    // 띠가 줄 상자 아래에서 시작하면 줄은 띠 위에 따로 있고,
+                                    // 다음 문단은 줄 끝과 띠 끝 중 아래에서 시작한다.
+                                    if crate::renderer::textless_host_line_above_topbottom_float(
+ paragraphs,
+ para_index,
+                                        &pic.common,
+                                    ) {
+                                        result_y = result_y.max(saved_y_offset + line_advance);
+                                    } else {
+                                        result_y += line_advance;
+                                    }
                                 }
                             }
                             // Square wrap + Para-relative: 그림 높이로 column y를 밀지 않는다.

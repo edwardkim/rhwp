@@ -3163,9 +3163,17 @@ impl HeightMeasurer {
                     // cell_nested_controls_bottom과 합치며 줄 뒤에 다시 쌓지 않는다.
                     return Ok(None);
                 }
-                if para_max_lh >= nested.common.height as i32 {
-                    // [#7419] 합성 줄은 중첩 표 선언만 담으므로 실제 성장분을 더한다.
-                    // 유효한 저장 줄의 기존 흡수 계약은 유지한다.
+                // [#7419] 글자처럼 취급(TAC) 표는 글줄 안의 글자라 재조판 프레임이 발행한 합성 줄이
+                // 이미 그 줄 높이만큼 표를 담았다. 그 높이가 표 선언보다 작아도 같다 — 재조판 줄은
+                // 선언이 아니라 실측 표 높이로 서므로(docs#926 36384689: 합성 줄 27613HU = 실측,
+                // 선언 27878HU) 선언과 비교해 전량을 다시 더하면 칸 내용이 표 하나만큼 두 번 쌓인다.
+                // 실측이 줄을 넘는 성장분만 더한다. 글줄 밖 블록 표(비-TAC)는 합성 줄이 글자 높이만
+                // 담으므로(87520: 줄 1200HU, 표 선언 10014HU) 종전대로 표 전량을 더한다. 유효한 저장
+                // 줄은 종전처럼 선언 이상일 때만 흡수로 본다.
+                let synthetic_line_holds_table = nested.common.treat_as_char
+                    && para_max_lh > 0
+                    && crate::renderer::para_has_no_stored_line_segs(p);
+                if synthetic_line_holds_table || para_max_lh >= nested.common.height as i32 {
                     if !crate::renderer::para_has_no_stored_line_segs(p) {
                         return Ok(None);
                     }
@@ -3751,6 +3759,51 @@ let body_height=match nested_body_heights
                         candidate.min(ladder_end)
                     } else {
                         candidate
+                    };
+                    // [#8686] 흐름을 전진시키지 않는 저장 호스트 배제 띠는 뒤 문단이
+                    // 오프셋 위 공간에 있어도 칸 내용의 끝이다. 배치와 같은 프레임을 쓴다.
+                    let bottom = if self.is_native_hwp5 || self.hwpx_stored_layout {
+                        let spacing_before = styles
+                            .para_styles
+                            .get(p.para_shape_id as usize)
+                            .map_or(0.0, |s| s.spacing_before);
+                        let last = pidx + 1 == paragraphs.len();
+                        p.controls
+                            .iter()
+                            .enumerate()
+                            .filter_map(|(ci, ctrl)| {
+                                let Control::Table(nested) = ctrl else {
+                                    return None;
+                                };
+                                if self.render_normalization.table_text_reflowed(nested) {
+                                    return None;
+                                }
+                                let margins = hwpunit_to_px(
+                                    i32::from(nested.outer_margin_top)
+                                        + i32::from(nested.outer_margin_bottom),
+                                    self.dpi,
+                                );
+                                let lead = if last {
+                                    crate::renderer::layout::table_layout::para_relative_float_table_lead(
+                                        nested, self.dpi,
+                                    )
+                                } else {
+                                    0.0
+                                };
+                                crate::renderer::float_placement::stored_host_exclusion_bottom(
+                                    p,
+                                    &paragraphs[pidx + 1..],
+                                    nested,
+                                    ci,
+                                    para_top - spacing_before,
+                                    para_top,
+                                    heights[ci] - margins - lead,
+                                    self.dpi,
+                                )
+                            })
+                            .fold(bottom, f64::max)
+                    } else {
+                        bottom
                     };
                     prior_nested_end.set(prior_nested_end.get().max(bottom));
                     bottom
@@ -4833,9 +4886,15 @@ let body_height=match nested_body_heights
                     && !self.is_hwp3_variant
                     && !self.render_normalization.cell_frame_reflowed(table, cell))
                 .then(|| {
-                    crate::renderer::float_placement::stored_plain_closed_cell_ink_height(
-                        cell, table,
+                    // [#8756] 자기 앵커 줄을 민 칸 자리차지 표의 내용은 저장 끝까지다.
+                    crate::renderer::float_placement::stored_cell_pushed_line_block_extent_hu(
+                        &cell.paragraphs,
                     )
+                    .or_else(|| {
+                        crate::renderer::float_placement::stored_plain_closed_cell_ink_height(
+                            cell, table,
+                        )
+                    })
                     .or_else(|| {
                         crate::renderer::float_placement::stored_editor_tail_frame(
                             cell, table, styles,
@@ -5350,9 +5409,15 @@ let body_height=match nested_body_heights
                     && !self.is_hwp3_variant
                     && !self.render_normalization.cell_frame_reflowed(table, cell))
                 .then(|| {
-                    crate::renderer::float_placement::stored_plain_closed_cell_ink_height(
-                        cell, table,
+                    // [#8756] 자기 앵커 줄을 민 칸 자리차지 표의 내용은 저장 끝까지다.
+                    crate::renderer::float_placement::stored_cell_pushed_line_block_extent_hu(
+                        &cell.paragraphs,
                     )
+                    .or_else(|| {
+                        crate::renderer::float_placement::stored_plain_closed_cell_ink_height(
+                            cell, table,
+                        )
+                    })
                     .or_else(|| {
                         crate::renderer::float_placement::stored_editor_tail_frame(
                             cell, table, styles,
@@ -5407,16 +5472,14 @@ let body_height=match nested_body_heights
             row_heights = heights;
         }
 
-        // 3단계: 실제 배치와 같은 저장 그리드의 미결 행 기본값을 소비한다.
         let stored = !self.session_edited
             && (self.is_native_hwp5 || self.hwpx_stored_layout)
             && !self.render_normalization.table_text_reflowed(table);
+        // 3단계: 어떤 칸도 높이를 정하지 않은 행에만 기본값을 쓴다(배치와 같은 helper).
         for (row, h) in row_heights.iter_mut().enumerate() {
             if *h <= 0.0 {
                 *h = hwpunit_to_px(
-                    crate::renderer::layout::LayoutEngine::unresolved_row_default_hu(
-                        table, row, stored,
-                    ),
+                    crate::renderer::layout::LayoutEngine::unresolved_row_default_hu(table, row),
                     self.dpi,
                 );
             }
@@ -5513,26 +5576,7 @@ let body_height=match nested_body_heights
             // 마지막 글줄을 clip 한다 (exam_eng 선택지 ① 1.3px, 심사서식
             // 반 줄 미만 초과). 한글은 그 행을 내용에 맞춰 키운다.
             let mut floors = storage.filled(row_count, 0.0f64)?;
-            // 🔴 저장 LINE_SEG 로 하한을 만들 수 없는 표는 하한이 0 이 되어
-            // "이 행은 얼마든지 눌러도 된다"가 된다 — 바로 위 #6030 이 막으려던 클립이
-            // 클립보드 재구성·생성계 문서에서 그대로 재발한다(실측: 행 52.91×3 이
-            // 47.86/62.99/47.86 으로 눌려 셋째 줄 baseline 438.18 이 클립 바닥 436.03 아래로
-            // 나가 "확보" 가 괘선에 잘렸다). 저장분이 **하나라도** 있는 표는 종전 그대로 둔다.
-            // (`any(!no_ls)` 로 판정한다. `all(no_ls)` 는 문단이 없는 셀에서 공허참이 되어
-            //  정상 저장 문서까지 이 경로로 새어 든다.)
-            // 🔴 한글이 직접 쓴 문서(HWP5 네이티브 조판)는 저장 lineseg 가 없는 표라도
-            // 종전 배분을 유지한다 — 하한을 새로 세우면 그 표가 덜 눌려 아래 흐름이
-            // 밀리고, 실측(20544835 진안 서식)에서 글자끼리 겹치는 결함이 새로 생겼다.
-            // 이 손질의 대상은 저장 조판이 아예 없는 재구성·생성계 문서다.
-            // 🔴 이 갈래는 출처 대리지표다 — lineseg 유무로는 두 부류를 못 가른다.
-            // 20544835 는 저장 seg 가 0 인데도 HWP5 네이티브로 열린다(생성기가 쓴
-            // .hwp). 대가로 .hwp 문서에 붙여넣는 경우에는 이 하한이 꺼진다.
-            let table_has_stored_segs = self.is_native_hwp5
-                || table
-                    .cells
-                    .iter()
-                    .flat_map(|c| c.paragraphs.iter())
-                    .any(|p| !crate::renderer::para_has_no_stored_line_segs(p));
+            let mut reflowed_floor = false;
             for (cell_index, source_cell) in table.cells.iter().enumerate() {
                 let cell = current_cell_frames.get(&cell_index).unwrap_or(source_cell);
                 let r = cell.row as usize;
@@ -5544,14 +5588,19 @@ let body_height=match nested_body_heights
                     .iter()
                     .any(crate::renderer::para_has_no_stored_line_segs)
                 {
-                    if !table_has_stored_segs {
-                        // 2단계에서 이미 잰 이 행의 콘텐츠 필요 높이(상하 여백 포함)를
-                        // 하한으로 쓴다. 새 계산·새 필드 없이 기존 값을 그대로 쓴다.
-                        let floor = content_row_floor[r].min(row_heights[r]);
-                        if floor > floors[r] {
-                            floors[r] = floor;
-                        }
+                    // [docs#926] 저장 줄 없는 칸은 현재 내용으로 재조판한다(위 `reflowed_cell_rows`
+                    // 와 같은 규칙을 칸 단위로 적용). 표 전체가 그런 칸이면 위에서 이 축소 갈래를
+                    // 타지 않으므로, 이 갈래에 오는 재조판 칸은 저장 칸과 섞인 표의 칸뿐이다.
+                    // 그 칸의 재조판 내용 높이(2단계 실측, 상하 여백 포함)를 하한으로 둬서 선언
+                    // 높이로 누르지 않는다. 종전에는 "저장분이 하나라도 있는 표" 조건 아래에서만
+                    // 하한을 세웠는데, 그런 표는 이 갈래에 오는 표 전부라 하한이 한 번도 서지
+                    // 않았다(36404364 3쪽: 가린 칸 3개가 두 줄로 재조판되는데 머리 행까지
+                    // 35.1 → 29.5px 로 눌려 표가 선언 140.1px 에 갇혔다. 한/글은 약 174px).
+                    let floor = content_row_floor[r].min(row_heights[r]);
+                    if floor > floors[r] {
+                        floors[r] = floor;
                     }
+                    reflowed_floor = true;
                     continue;
                 }
                 let content_hu = cell
@@ -5609,7 +5658,10 @@ let body_height=match nested_body_heights
                     storage,
                 )?;
                 row_heights.iter().sum::<f64>() + cell_spacing * row_count.saturating_sub(1) as f64
-            } else if deficit <= TAC_FLOOR_OVERFLOW_NOSHRINK_CAP_PX {
+            } else if deficit <= TAC_FLOOR_OVERFLOW_NOSHRINK_CAP_PX || reflowed_floor {
+                // [docs#926] 재조판 칸이 하한을 세운 표도 균일 축소하지 않는다. 균일 축소는
+                // 저장 줄의 낡은 내용이 선언을 크게 넘는 표의 종전 처리이고, 재조판 내용은
+                // 한/글이 행을 키워 담는다(위 `reflowed_cell_rows`, docs#458 과 같은 규칙).
                 // [#6030] 선택지·심사서식처럼 하한 합이 선언을 반 줄 미만으로
                 // 넘는 표는 균일 축소하지 않는다. 거대 overfill 표는 종전
                 // 비례 축소를 유지한다 (overflow_cell_baseline).
@@ -6729,99 +6781,43 @@ pub const BLOCK_UNIT_MAX_ROWS: usize = 3;
 /// 병합 칸 선언 높이로 행 높이를 푼다 — 측정기(`HeightMeasurer`)와 조판(`resolve_row_heights`)의
 /// 단일 출처.
 ///
-/// `constraints` 는 `(시작 행, 걸침 수, 선언 높이 px)` 이고 걸침 수 오름차순이다. `row_heights` 의
-/// 0.0 은 rs=1 칸이 없어 아직 모르는 행이다.
+/// `constraints` 는 `(시작 행, 걸침 수, 선언 높이 px)` 이다. `row_heights` 의 0.0 은 rs=1 칸이
+/// 없어 아직 모르는 행이다.
 ///
-/// 회차마다 먼저 **걸친 행이 모두 정해진** 제약의 선언 초과분을 마지막 걸침 행에 더하고(#2291),
-/// 그 높이로 미지 행이 하나인 제약을 푼다. 순서를 거꾸로 하면 같은 부족분이 두 번 들어간다 —
-/// `1342000_edu_curriculum_map.hwp` 구역 10 표: 「초 3~4」(행 182~191, 347.51px)로 미지 행 191 을
-/// 12.07px 로 푼 뒤, 「미술」(행 184~187, 151.36px > 행 합 139.30px)의 부족분 12.06px 가 행 187 에
-/// 다시 더해졌다. 행 191~192 칸(37.09px)의 제약이 49.15px 로 깨졌고, 한/글 정본은 행 191+192 를
-/// 37.1px 로 그린다(글줄 위치 실측, #7685).
-/// 반복 풀이만으로 모든 제약 행을 정했으면 `true` 를 돌려준다. `false` 면 남은 행을
-/// 제약 잔여로 고르게 나눴다.
+/// 한/글은 행 경계를 위에서부터 **가장 이른 위치**로 정한다. 경계 `k` 는 앞 경계와, `k` 에서
+/// 끝나는 모든 칸의 `시작 경계 + 높이` 중 큰 값이다. 그래서 병합 칸 선언이 걸친 행 합보다 크면
+/// 부족분은 마지막 걸침 행이 받고(#2291), rs=1 칸이 없는 행은 걸친 칸이 요구하는 만큼만, 요구가
+/// 없으면 0 이 된다. 끝 행 순서로 풀어야 같은 부족분이 두 번 들어가지 않는다(#7685,
+/// `1342000_edu_curriculum_map.hwp` 구역 10 표의 행 191~192 는 한/글에서 37.1px).
+///
+/// 실측 — `46551_도로교통법 시행규칙 일부개정령안(입법예고안).hwp` 28쪽 32×17 표: rs=1 칸이 없는
+/// 행 16·17·19·24·26 을 한/글 2022 Print 는 모두 0.0~0.3px 로 그린다(두 열의 괘선이 같은 높이에
+/// 놓인다). 미지 행에 다른 제약의 잔여를 먼저 배정하면 이 행들이 10~20px 가 되어 오른쪽 열 칸이
+/// 20px 밀리고 표가 길어졌다.
+///
+/// 걸친 행 중 미지 행이 남지 않았으면(모든 제약 행이 0 이 아니면) `true` 를 돌려준다.
 pub(crate) fn solve_rowspan_row_heights(
     constraints: &[(usize, usize, f64)],
     row_heights: &mut [f64],
 ) -> bool {
-    let add_declared_overflow = |row_heights: &mut [f64], only_known: bool| -> bool {
-        let mut changed = false;
-        for &(r, span, total_h) in constraints {
-            if only_known && (r..r + span).any(|i| row_heights[i] == 0.0) {
-                continue;
-            }
-            let known_sum: f64 = (r..r + span).map(|i| row_heights[i]).sum();
-            if total_h > known_sum + 0.5 {
-                row_heights[r + span - 1] += total_h - known_sum;
-                changed = true;
-            }
-        }
-        changed
-    };
-    // 먼저 끝나는 미해결 제약을 기다리되, 같은 회차의 해 중에서는
-    // 새 devel의 앞 행 우선 계약을 유지한다. 순환 대기는 진전이 없을 때만 푼다.
-    let ends_before_unresolved = |row_heights: &[f64], row: usize, end: usize| {
-        constraints.iter().any(|&(r, span, _)| {
-            r <= row
-                && row < r + span
-                && r + span < end
-                && (r..r + span).any(|i| row_heights[i] == 0.0)
-        })
-    };
-    let solve_single = |row_heights: &mut [f64], prefer_earliest_end: bool| {
-        let mut next_assignment: Option<(usize, f64)> = None;
-        for &(r, span, total_h) in constraints {
-            let known_sum: f64 = (r..r + span).map(|i| row_heights[i]).sum();
-            let unknown_rows: Vec<usize> =
-                (r..r + span).filter(|&i| row_heights[i] == 0.0).collect();
-            if unknown_rows.len() == 1
-                && !(prefer_earliest_end
-                    && ends_before_unresolved(row_heights, unknown_rows[0], r + span))
-            {
-                let remaining = (total_h - known_sum).max(0.0);
-                let row = unknown_rows[0];
-                if remaining > 0.0 && next_assignment.is_none_or(|(prior, _)| row < prior) {
-                    next_assignment = Some((row, remaining));
-                }
-            }
-        }
-        if let Some((row, height)) = next_assignment {
-            row_heights[row] = height;
-            true
-        } else {
-            false
-        }
-    };
-    let max_iter = row_heights.len() + constraints.len();
-    for _ in 0..max_iter {
-        let mut progress = add_declared_overflow(row_heights, true);
-        progress |= solve_single(row_heights, true);
-        if !progress {
-            progress = solve_single(row_heights, false);
-        }
-        if !progress {
-            break;
-        }
-    }
-    let resolved = constraints
+    let mut ordered: Vec<(usize, usize, f64)> = constraints
         .iter()
-        .all(|&(r, span, _)| (r..r + span).all(|i| row_heights[i] != 0.0));
-    for &(r, span, total_h) in constraints {
-        let known_sum: f64 = (r..r + span).map(|i| row_heights[i]).sum();
-        let unknown_rows: Vec<usize> = (r..r + span).filter(|&i| row_heights[i] == 0.0).collect();
-        if !unknown_rows.is_empty() {
-            let remaining = (total_h - known_sum).max(0.0);
-            let per_row = remaining / unknown_rows.len() as f64;
-            for i in unknown_rows {
-                row_heights[i] = per_row;
-            }
+        .copied()
+        .filter(|&(r, span, _)| span > 0 && r + span <= row_heights.len())
+        .collect();
+    // 끝 경계 순서 — 같은 끝이면 짧은 칸부터(결과는 같다).
+    ordered.sort_by_key(|&(r, span, _)| (r + span, span));
+    // 경계는 정확한 최장 경로다 — 허용 오차를 두면 잘게 나뉜 격자에서 작은 부족분(28HU 등)이
+    // 행마다 버려져 아래로 누적된다(10k 06331 112행 표).
+    for (r, span, total_h) in ordered {
+        let known_sum: f64 = row_heights[r..r + span].iter().sum();
+        if total_h > known_sum + 1e-6 {
+            row_heights[r + span - 1] += total_h - known_sum;
         }
     }
-    // [#2291/#2237] 병합 셀 **선언** 높이가 걸친 행합을 초과하면 잔여를 마지막 걸침 행에
-    // 가산한다 — 한글 관례 실측(연결맵 244×10 r183: c3 rs=4 선언 217.8px vs 행합 201.3px, 한글 행
-    // 괘선 실측 r183 = 39.8+16.5 = 56.3px 정확 일치). 콘텐츠 기반 확장과 별개의 선언 기반 규칙이다.
-    add_declared_overflow(row_heights, false);
-    resolved
+    constraints
+        .iter()
+        .all(|&(r, span, _)| (r..r + span).all(|i| i >= row_heights.len() || row_heights[i] != 0.0))
 }
 
 /// 표의 모든 셀을 검사하여 rowspan 묶음 블록 경계를 산출한다 (Task #398).

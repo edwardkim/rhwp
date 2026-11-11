@@ -1,0 +1,10 @@
+{
+  "key": "pr8794-36495398-split-row-segments-reduced",
+  "mode": "silhouette_only",
+  "run_state": "incomplete",
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "reason": "실루엣 쪽 묶음 처리 중"
+  },
+  "canonical_manifest_sha256": "d3ebf2dc81fded904ef30ec357beea744bb136dbe39ff3b6d20959d24c99d78b"
+}

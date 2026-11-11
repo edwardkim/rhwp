@@ -75,6 +75,19 @@ const ENDNOTE_PAGE_OFFCANVAS_GUARD_PX: f64 = 56.0;
 ///
 /// 정확히 절반인 문단까지 낱장 정책을 적용하면 기존 pile 문서의 다수 그림 흐름을
 /// 불필요하게 페이지 단위로 분리한다. 두 장 이상이라는 #1995의 하한은 유지한다.
+/// 저장 줄 `next` 가 앞 저장 줄 `prev` 뒤에서 쪽 리셋(vpos <= 0, 앞 줄이 쪽에서 5000HU 넘게
+/// 내려간 뒤 — #1920 임계)되었는가. 한/글이 그 줄을 다음 쪽 맨 위에 두었다는 저장 증거다.
+/// 앞 줄이 내려간 깊이는 그 줄의 끝(vpos + lh)이다 — 쪽 첫머리의 큰 표 줄은 시작 vpos 가
+/// 작아도 쪽을 채운다. 합성 줄은 증거가 아니다.
+pub(crate) fn stored_line_restarts_page(
+    prev: &crate::model::paragraph::LineSeg,
+    next: &crate::model::paragraph::LineSeg,
+) -> bool {
+    (prev.tag | next.tag) & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && next.vertical_pos <= 0
+        && prev.vertical_pos.saturating_add(prev.line_height) > 5000
+}
+
 fn has_majority_fullpage_images(fullpage_count: usize, noninline_picture_count: usize) -> bool {
     fullpage_count >= 2 && fullpage_count.saturating_mul(2) > noninline_picture_count
 }
@@ -335,6 +348,8 @@ impl crate::storage::CloneWithStorage for DeferredStoredFrameKind {
 
 #[derive(Debug, Clone)]
 struct DeferredStoredFrameControl {
+    /// 명시한 저장 쪽 소유. None이면 기존의 바로 다음 쪽 이월이다.
+    target_page: Option<usize>,
     kind: DeferredStoredFrameKind,
     para_index: usize,
     control_index: usize,
@@ -342,7 +357,7 @@ struct DeferredStoredFrameControl {
     /// This original zero-origin body starts after the deferred object's page.
     following_body_para_index: Option<usize>,
 }
-crate::storage::clone_fields!(DeferredStoredFrameControl, {kind, para_index, control_index, placement, following_body_para_index});
+crate::storage::clone_fields!(DeferredStoredFrameControl, {target_page, kind, para_index, control_index, placement, following_body_para_index});
 
 /// 호스트 문단의 spacing (표 전/후)
 #[derive(Debug, Clone, Copy)]
@@ -2668,6 +2683,13 @@ pub(in crate::renderer::typeset) fn stored_vpos_overflow_defers_paragraph(
 /// 판별력 실측(r29 `PI_MISMATCH` n=1 코호트 66건): 어긋난 항목의 36% 가 되돌아감인데,
 /// 같은 문서 **다른 쪽**의 마지막 항목은 1,134개 중 2개(0.2%)뿐이다 — 180배 농축.
 fn stored_vpos_rewinds(prev_vpos: Option<i32>, para: &Paragraph) -> bool {
+    stored_vpos_rewinds_after(prev_vpos.map(|vpos| (vpos, vpos)), para)
+}
+
+/// [`stored_vpos_rewinds`] 의 앞 줄 `(시작, 아래끝)` 판 — 하한 `5000` 을 앞 줄이 차지한
+/// 아래끝까지로 잰다. 되돌아감 자체는 새 줄이 앞 줄의 **시작**보다 위인 것 그대로다.
+/// 쓰는 곳은 통째로 안 들어가는 문단의 쪽 경계뿐이다(#8805, `whole_fit`).
+fn stored_vpos_rewinds_after(prev_line: Option<(i32, i32)>, para: &Paragraph) -> bool {
     let Some(nv) = para
         .line_segs
         .iter()
@@ -2678,7 +2700,7 @@ fn stored_vpos_rewinds(prev_vpos: Option<i32>, para: &Paragraph) -> bool {
     };
     // `cl > 5000` 은 기존 vpos-reset 가드와 같은 하한 — 쪽 상단 근처에서 시작한 항목을
     // 기준으로 삼으면 되돌아감이 아니라 정상 흐름을 끊는다.
-    prev_vpos.is_some_and(|cl| nv < cl && cl > 5000)
+    prev_line.is_some_and(|(start, bottom)| nv < start && start.max(bottom) > 5000)
 }
 
 /// 저장 사다리가 **쪽 위쪽 띠에서 다시 시작**하는가 — 쪽 경계 되감김의 표지.
@@ -2729,6 +2751,18 @@ fn stored_rewind_boundary_matches_current_flow(
     else {
         return false;
     };
+    // [#8786] 저장 끝과 현재 문단 사이에 재조판 줄(합성 줄)로 소비한 문단이 있으면 지금
+    // 흐름 위치는 그 문단들의 재조판 높이를 담는다. 저장 끝은 그 앞 지점이라 같은 경계를
+    // 가리키지 않는다(36431892 2쪽: 저장 끝 문단 15 = 817.9px, 재조판 문단 16·17 소비 뒤
+    // 흐름 838.6px 이 한 줄 반 허용치 안에서 우연히 맞아 낡은 되감김이 쪽을 끊었다).
+    if paragraphs[owner + 1..para_idx.min(paragraphs.len())]
+        .iter()
+        .any(|between| {
+            !between.line_segs.is_empty() && crate::renderer::para_has_no_stored_line_segs(between)
+        })
+    {
+        return false;
+    }
     // 이전 물리 쪽의 저장 끝과 현재 쪽의 재조판 끝은 숫자가 같아도 같은 경계가 아니다.
     // 저장 끝을 제공한 실제 소유자가 현재 frame에서 소비됐는지 먼저 확인한다.
     if !current_items
@@ -2743,6 +2777,25 @@ fn stored_rewind_boundary_matches_current_flow(
     // 되감김과 새 쪽 상단이라는 소유 조건은 호출부에서 그대로 확인한다.
     let tolerance_px = hwpunit_to_px(advance_hu.max(0), dpi) * 1.5;
     (current_height_px - stored_end_px).abs() <= tolerance_px
+}
+
+/// 값이 있는 가장 가까운 앞 문단의 마지막 저장 줄 `(vpos, vpos + line_height)`.
+fn preceding_stored_line_span(paragraphs: &[Paragraph], para_idx: usize) -> Option<(i32, i32)> {
+    paragraphs[..para_idx.min(paragraphs.len())]
+        .iter()
+        .rev()
+        .find_map(|p| {
+            p.line_segs
+                .iter()
+                .rev()
+                .find(|s| !is_synthetic_line_seg(s))
+                .map(|s| {
+                    (
+                        s.vertical_pos,
+                        s.vertical_pos.saturating_add(s.line_height.max(0)),
+                    )
+                })
+        })
 }
 
 /// 값이 있는 가장 가까운 앞 문단의 마지막 저장 `vpos` — 직전 문단이 비어 line_segs 가
@@ -4835,9 +4888,9 @@ impl TypesetEngine {
             || stored_vpos_rewind_break
         {
             let mut prefix_carried_separately = false;
-            if tac_table_line_idx.is_some_and(|owner| {
-                crate::renderer::composer::ordinary_tac_prefix_rows(para, owner)
-            }) && before_text > 0.0
+            if tac_table_line_idx
+                .is_some_and(|owner| crate::renderer::composer::owned_tac_prefix_rows(para, owner))
+                && before_text > 0.0
                 && st.current_height + fmt.line_content_height(0..tac_table_line_idx.unwrap(), 0.0)
                     <= available
                 && !st.pre_emitted_host_paras.contains(&para_idx)
@@ -5109,7 +5162,9 @@ impl TypesetEngine {
         // 첫 띠 아래)로 조판한다 — 술어·근거는 `is_textless_coanchored_float_host`.
         let is_textless_coanchored_host = is_textless_coanchored_float_host(para);
         let is_visible_para_float = is_para_topbottom_float(&table.common)
-            && (para_has_non_whitespace_text(para) || is_textless_coanchored_host);
+            && (para_has_non_whitespace_text(para)
+                || is_textless_coanchored_host
+                || crate::renderer::float_placement::whitespace_host_line_below_float(para));
         // 단 오른쪽 밖으로 통째로 벗어난 자리차지 개체는 본문 세로 공간을 차지하지
         // 않는다(재현 문서 D: horz=단 227.6mm, A4 폭 210mm — 화면 밖). 이 계약은
         let signed_vertical_offset = vertical_offset as i32;
@@ -5166,11 +5221,10 @@ impl TypesetEngine {
         // stream position. Whitespace-only hosts can own real prefix rows;
         // PUA carriers retain their specialized filler placement owner.
         let tac_table_line_idx = self.tac_table_line_index(para, table, fmt);
-        let has_owned_tac_prefix = !para.text.is_empty()
-            && para.text.chars().all(char::is_whitespace)
-            && para.char_offsets.len() == para.text.chars().count()
+        // [#8782] 글자 없는 host 의 저장 필드 시작 줄도 표 앞 줄이다.
+        let has_owned_tac_prefix = para.char_offsets.len() == para.text.chars().count()
             && tac_table_line_idx.is_some_and(|line| {
-                crate::renderer::composer::ordinary_tac_prefix_rows(para, line)
+                crate::renderer::composer::owned_tac_prefix_rows(para, line)
                     && crate::renderer::layout::control_line_seg_index(para, ctrl_idx) == Some(line)
             });
         let split_host_prefix = st
@@ -6056,9 +6110,19 @@ impl TypesetEngine {
             // 쪽 끝의 마지막 줄은 글줄의 점유 끝으로 수용한다. 줄 뒤 간격은
             // 다음 흐름에는 보존하지만, 그 간격만 용지 밖에 남는다는 이유로
             // 본문에 들어가는 줄을 다음 쪽으로 옮기지 않는다.
-            if (self.tac_table_line_index(para, table, fmt) == Some(0)
+            // 표 뒤 첫 글줄이 저장 쪽 리셋이면 한/글은 그 줄부터 다음 쪽에 둔다. 표 줄이
+            // 문단 몇 번째 줄이든 같다(표 줄 자체의 리셋은 `needs_stored_line_advance`).
+            let post_text_restarts_page = !self.profile.get().session_edited()
+                && self
+                    .tac_table_line_index(para, table, fmt)
+                    .filter(|&table_line| post_table_start > table_line)
+                    .and_then(|table_line| para.line_segs.get(table_line))
+                    .zip(para.line_segs.get(post_table_start))
+                    .is_some_and(|(prev, next)| stored_line_restarts_page(prev, next));
+            if ((self.tac_table_line_index(para, table, fmt) == Some(0)
                 || session_grown_topbottom_spill)
                 && st.current_height + post_content_height > st.available_height() + 0.5
+                || post_text_restarts_page)
                 && !st.current_items.is_empty()
             {
                 st.advance_column_or_new_page();

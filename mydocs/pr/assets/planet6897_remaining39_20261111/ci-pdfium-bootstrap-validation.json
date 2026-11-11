@@ -1,0 +1,41 @@
+{
+  "tested_at": "2026-11-11T15:50:02.472375+00:00",
+  "parent_head": "a560921c96d123af60ed01ee4aec1b6e4780a92c",
+  "failure": {
+    "runs": [
+      43042807838,
+      43048350632
+    ],
+    "step": "Validate Visual Sweep PNG contracts",
+    "apt_exit_code": 100,
+    "reason": "Ubuntu apt mirrors DNS resolution failure before code lint",
+    "not_disk_exhaustion": true
+  },
+  "dependency_audit": {
+    "production_raster": "scripts/visual_sweep_pdf.py via pypdfium2",
+    "changes": "PNG 계약 단계의 불필요한 Poppler apt 설치와 pdftoppm 존재 여부에 따른 오래된 skip 조건만 제거했다. 실제 검사와 PDFium·Pillow 의존성·판정은 유지했다. 일반 Visual Sweep의 pdfinfo/pdftotext 도구 요구는 변경하지 않았다.",
+    "denied_tools": [
+      "pdftoppm",
+      "pdftocairo",
+      "pdftotext",
+      "pdfinfo"
+    ],
+    "deny_shims_first_on_path": true,
+    "actual_calls": 0
+  },
+  "tests": {
+    "visual_sweep_python": 254,
+    "failed": 0,
+    "skipped": 0,
+    "log_sha256": "9f4d819add1245adf9b46bf58d3d09d93d48256f28c1299f6118456b8ce6010d",
+    "actionlint_exit": 0,
+    "related_workflow_python": 94,
+    "workflow_log_sha256": "1d9d89cc9e050e1658354e984da70c2d1a03e04391736434aafacf9cd7e7eb78"
+  },
+  "source_hashes": {
+    ".github/workflows/ci.yml": "723ff3ecb2ea29925230946d53cf9cb2962a7bcc1fbcb8deb54a595b4a542b51",
+    "scripts/tests/test_visual_sweep.py": "02507bcd18031809a4f3ca56c99d8a86e4d35e31861cd3b0cdc6aa7ed9477b39"
+  },
+  "runtime_reuse": "제품 Rust·Cargo·Studio·Visual Sweep 구현·래스터 정책·입력·문턱은 그대로다. 최신 runtime3575 빌드와 시각 증적은 동일하다. 변경한 테스트와 CI bootstrap은 새 PR head Full CI로 다시 확인한다.",
+  "post_merge_route": "CI 변경이므로 옵션 2"
+}

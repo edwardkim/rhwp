@@ -87,7 +87,16 @@ pub(in crate::renderer::typeset) fn classify(
     // — cs 같지만 sw 다름 (다른 wrap region). 기존 매칭 실패 → wrap_anchors 미등록
     // → paragraph 좌측 그려짐. anchor_any_seg 가 활성이면 cs 정확 일치 만으로
     // wrap zone 내부 paragraph 로 인정.
-    let cs_only_match = band.any_seg && para_cs == band.cs && para_sw > 0;
+    //
+    // [#8778] cs 일치는 그 줄이 실제로 띠의 차선 안에 있을 때만 증거다. 차선이 단 시작에서
+    // 시작하는 띠(cs=0, 그림 왼쪽의 좁은 차선)는 전폭 본문 줄도 cs=0 이라, 저장 줄이
+    // 단 전폭인 문단까지 띠에 매칭되어 띠가 닫히지 않고 다음 쪽 문단까지 좁은 차선 폭을
+    // 받았다. 첫 줄이 차선 줄(cs>0 이거나 폭이 본문보다 좁음)이어야 한다.
+    let para_in_wrap_zone = para
+        .line_segs
+        .first()
+        .is_some_and(|seg| seg.is_in_wrap_zone(body_w));
+    let cs_only_match = band.any_seg && para_cs == band.cs && para_sw > 0 && para_in_wrap_zone;
     let matched = (para_cs == band.cs && para_sw == band.sw)
         || (any_seg_matches && (is_empty_para || band.any_seg))
         || sw0_match

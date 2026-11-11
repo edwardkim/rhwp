@@ -2706,6 +2706,8 @@ impl LayoutEngine {
             });
             let mut para_y = text_y_start;
             let mut has_preceding_text = false;
+            // [#8686] 흐름을 전진시키지 않은 칸 안 자리차지 표의 바깥 상자 띠.
+            let mut cell_float_bands: Vec<std::ops::Range<f64>> = Vec::new();
             // [#3637] 이 조각에서 **실제로 그려지는 첫 문단**의 vpos. 아래 중첩 표
             // 문단 스냅이 쓰는 조각 원점이다. `line_segs.first()` 를 그대로 쓰면 셀
             // 전체 좌표라 연속 조각에서 원점만큼 통째로 밀린다.
@@ -3163,6 +3165,21 @@ impl LayoutEngine {
                             para_y =
                                 text_y_start + frame.line_y(cp_idx, line.vertical_pos, self.dpi);
                         }
+                    }
+                }
+                // [#8686] 앞 문단의 자리차지 표 띠는 흐름을 전진시키지 않는다. 이 조각에서
+                // 시작하는 문단의 첫 줄이 띠와 겹칠 때만 띠 끝으로 넘어간다.
+                if start_line == 0 && start_line < end_line {
+                    if let Some(line) = para.line_segs.first() {
+                        para_y = crate::renderer::float_placement::clear_topbottom_bands(
+                            &cell_float_bands,
+                            para_y,
+                            styles
+                                .para_styles
+                                .get(para.para_shape_id as usize)
+                                .map_or(0.0, |style| style.spacing_before),
+                            hwpunit_to_px(line.line_height, self.dpi),
+                        );
                     }
                 }
                 let para_y_before_compose = para_y;
@@ -3881,6 +3898,25 @@ impl LayoutEngine {
                                             // 원본 line_seg vertical_pos 는 전체 셀 내부 좌표다. 그대로
                                             // 쓰면 다음 쪽 상단에 와야 할 그림이 조각 하단으로 밀린다.
                                             para_y_before_compose
+                                        } else if let Some(origin) =
+                                            crate::renderer::float_placement::stored_cell_picture_pushed_line_origin_hu(
+                                                &cell.paragraphs, cp_idx, &pic.common,
+                                            )
+                                        {
+                                            // [#8737] 그림이 자기 앵커 줄을 민 저장 형상: 그림은
+                                            // 밀린 줄이 아니라 문단 시작에 있다. 잘리지 않은
+                                            // 셀은 세로 정렬이 저장 내용 묶음 전체를 옮긴다.
+                                            let shift = if cut_units.is_none() {
+                                                crate::renderer::float_placement::stored_cell_block_align_shift(
+                                                    effective_align,
+                                                    inner_height,
+                                                    &cell.paragraphs,
+                                                    self.dpi,
+                                                )
+                                            } else {
+                                                0.0
+                                            };
+                                            cell_y + pad_top + shift + hwpunit_to_px(origin, self.dpi)
                                         } else {
                                             para.line_segs
                                                 .first()
@@ -4050,7 +4086,29 @@ impl LayoutEngine {
                                             .then(|| para.line_segs.first())
                                             .flatten()
                                             .filter(|seg| seg.vertical_pos > 0)
-                                            .map(|seg| hwpunit_to_px(seg.vertical_pos, self.dpi));
+                                            .map(|seg| {
+                                                // [#8737] 자기 앵커 줄을 민 그림은 밀린 줄이
+                                                // 아니라 문단 시작이 원점이다.
+                                                crate::renderer::float_placement::stored_cell_picture_pushed_line_origin_hu(
+                                                    &cell.paragraphs, cp_idx, &pic.common,
+                                                )
+                                                .map_or(
+                                                    hwpunit_to_px(seg.vertical_pos, self.dpi),
+                                                    |origin| {
+                                                        let shift = if cut_units.is_none() {
+                                                            crate::renderer::float_placement::stored_cell_block_align_shift(
+                                                                effective_align,
+                                                                inner_height,
+                                                                &cell.paragraphs,
+                                                                self.dpi,
+                                                            )
+                                                        } else {
+                                                            0.0
+                                                        };
+                                                        shift + hwpunit_to_px(origin, self.dpi)
+                                                    },
+                                                )
+                                            });
                                         if let Some(vpos_px) = stored_flow_vpos {
                                             content_top + vpos_px + v_off
                                         } else {
@@ -5102,6 +5160,7 @@ impl LayoutEngine {
                                                     &recursive_cut.end_cut,
                                                     styles,
                                                 );
+                                                // 자식 표의 아래 바깥여백도 칸 내용 영역 안에 남는다.
                                                 let spare = (cell_y + cell_h
                                                     - pad_bottom
                                                     - resolved_nested_table_top
@@ -5381,7 +5440,7 @@ impl LayoutEngine {
                                     // 컷 없는 저장 떠 있는 개체는 물리 본문과 여백을
                                     // 이미 확정했다. 배치가 반환한 전체 띠의 여백을
                                     // table_top에서 다시 더하지 않는다.
-                                    para_y = stored_float_frame
+                                    let flow_end = stored_float_frame
                                         .filter(|_| {
                                             split_info.as_ref().is_none_or(|split| {
                                                 split.start_row == 0
@@ -5427,6 +5486,25 @@ impl LayoutEngine {
                                                 frame.occupied_bottom - successor_before
                                             }
                                         });
+                                    let exclusion_band = stored_float_frame.filter(|frame| {
+                                        frame.flow == crate::renderer::float_placement::ParagraphFloatFlow::Exclusion
+                                            && matches!(nested_table.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
+                                    });
+                                    if let Some(frame) = exclusion_band {
+                                        // [#8686] 인증된 자리차지 표는 본문 흐름에서 빠진 배제 띠다.
+                                        // 흐름은 호스트 문단의 글줄로만 전진하고, 이 조각이 그린
+                                        // 표 끝까지를 띠로 남긴다.
+                                        cell_float_bands.push(
+                                            frame.table_top
+                                                - hwpunit_to_px(
+                                                    nested_table.outer_margin_top as i32,
+                                                    self.dpi,
+                                                )
+                                                ..flow_end,
+                                        );
+                                    } else {
+                                        para_y = flow_end;
+                                    }
                                     has_preceding_text = true;
                                 }
                             }
@@ -5659,12 +5737,54 @@ impl LayoutEngine {
                                 } else {
                                     0.0
                                 };
-                                let next_vpos_y = text_y_start
-                                    + hwpunit_to_px(
-                                        (next_seg.vertical_pos - frag_vpos_origin).max(0),
-                                        self.dpi,
-                                    )
-                                    - next_spacing_before;
+                                // [#8810] 이 조각에서 host 앞에 저장 줄 없는 글 문단이
+                                // 있으면 사다리의 절대 좌표는 낡았다(저장 뒤 글을 고치고 줄
+                                // 정보를 지운 문단의 저장 당시 높이를 품는다). 그때는 저장
+                                // vpos 를 **host 줄 원점에서의 거리**로만 읽어 host 가 실제로
+                                // 놓인 자리(`stored_host_flow_entry`)에서 잰다 — 칸 유닛 측정
+                                // (`cell_units`)이 host 줄을 재는 것과 같은 값이다. 사다리가
+                                // 온전하면 종전대로 절대 좌표로 맞춘다(흐름이 저장보다 짧은
+                                // host 를 저장 자리로 되돌린다).
+                                //
+                                // host 의 저장 원점은 이 조각에서 그리기 시작한 줄이다.
+                                // 앞 쪽이 host 의 앞 유닛을 이미 소비했으면 조각 원점
+                                // (`frag_vpos_origin`, #5880 소비분 포함)이 그 자리다.
+                                let fragment_first_para = line_ranges
+                                    .as_ref()
+                                    .and_then(|ranges| {
+                                        ranges.iter().position(|&(start, end)| start < end)
+                                    })
+                                    .unwrap_or(0);
+                                let ladder_is_stale = cell
+                                    .paragraphs
+                                    .get(fragment_first_para..cp_idx)
+                                    .is_some_and(|before| {
+                                        before.iter().any(crate::renderer::para_is_unstored_text)
+                                    });
+                                let next_vpos_y = if ladder_is_stale {
+                                    let host_origin_hu = cell
+                                        .paragraphs
+                                        .get(cp_idx)
+                                        .and_then(|host| {
+                                            host.line_segs
+                                                .get(start_line)
+                                                .or_else(|| host.line_segs.first())
+                                        })
+                                        .map_or(frag_vpos_origin, |seg| {
+                                            seg.vertical_pos.max(frag_vpos_origin)
+                                        });
+                                    stored_host_flow_entry
+                                        + hwpunit_to_px(
+                                            (next_seg.vertical_pos - host_origin_hu).max(0),
+                                            self.dpi,
+                                        )
+                                } else {
+                                    text_y_start
+                                        + hwpunit_to_px(
+                                            (next_seg.vertical_pos - frag_vpos_origin).max(0),
+                                            self.dpi,
+                                        )
+                                } - next_spacing_before;
                                 let cell_content_bottom =
                                     cell_content_bottom(cell_y, cell_h, pad_bottom);
                                 para_y = para_y.max(next_vpos_y.min(cell_content_bottom));
@@ -5681,6 +5801,11 @@ impl LayoutEngine {
                     }
                 }
             }
+            // [#8686] 조각 내용은 흐름을 전진시키지 않은 자리차지 표의 띠 끝까지다.
+            para_y = cell_float_bands
+                .iter()
+                .map(|band| band.end)
+                .fold(para_y, f64::max);
 
             // [#7095] 쪽이 정한 비끝 조각 상자 안에서 칸 `valign=Center` 를 적용한다.
             //
@@ -6225,7 +6350,18 @@ impl LayoutEngine {
                 .max(pre_emitted_host_content_height.min(pre_emitted_host_height))
                 - pre_emitted_host_height
         } else {
-            0.0
+            // [#8810] 분할 예산(`budget.rs`)과 같은 조건 — 빈 쪽을 여는 첫 조각.
+            crate::renderer::float_placement::page_relative_first_fragment_offset_px(
+                table, self.dpi,
+            )
+            .filter(|_| {
+                !is_continuation
+                    && start_cut.is_empty()
+                    && col_node.children.is_empty()
+                    && pre_emitted_host_height <= 0.0
+                    && (y_start - col_area.y).abs() <= 0.5
+            })
+            .unwrap_or(0.0)
         };
         // [#2287 후속/1.hwpx p28] 같은 단의 직전 흐름 표와의 미세 겹침 방지
         // 안전망: 자리차지 표의 v_off/outer 흐름 미가산(#2097 반증 기록 축 —

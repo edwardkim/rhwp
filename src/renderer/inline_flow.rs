@@ -749,8 +749,12 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
                     };
                     next.1 > old.1 + 0.01
                 };
+                // 전진폭이 없는 상자(문단 끝 표시 등)는 줄 폭을 늘리지 않으므로 줄을
+                // 넘기는 원인이 될 수 없다. 줄보다 넓은 첫 개체로 이미 넘친 줄에서도
+                // 그 줄에 남는다 — 한/글은 넓은 글자처럼 그림 뒤 문단 끝을 그림 줄에 둔다.
                 if !row.is_empty()
-                    && ((row_metrics.width + lookahead.width > row_width + 0.01
+                    && ((lookahead.width > 0.0
+                        && row_metrics.width + lookahead.width > row_width + 0.01
                         && !first_overhang_space
                         && !keep_oversized_space)
                         || (moves_existing_row && !keep_oversized_space))

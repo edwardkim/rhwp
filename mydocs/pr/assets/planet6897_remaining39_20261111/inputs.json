@@ -1,0 +1,479 @@
+[
+  {
+    "pr": 8689,
+    "pdfs": [
+      {
+        "path": "pdf/issue8677/1411000-201000007_final_report-2020.pdf",
+        "bytes": 1302155,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 1
+  },
+  {
+    "pr": 8708,
+    "pdfs": [
+      {
+        "path": "pdf/issue8686_cell_float_offset_space-2020.pdf",
+        "bytes": 81414,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 5
+  },
+  {
+    "pr": 8710,
+    "pdfs": [
+      {
+        "path": "pdf/issue8685/1311000-201100125_saemaul_oda_pilot_report-2020.pdf",
+        "bytes": 3479958,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 1
+  },
+  {
+    "pr": 8717,
+    "pdfs": [
+      {
+        "path": "pdf/issue8692/employment_service_interim_report-2020.pdf",
+        "bytes": 1454452,
+        "over50MiB": false
+      },
+      {
+        "path": "pdf/issue8692/scholarship_recommendation_form-2020.pdf",
+        "bytes": 47986,
+        "over50MiB": false
+      },
+      {
+        "path": "pdf/issue8692/tax_source_ledger_form-2020.pdf",
+        "bytes": 61068,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 4
+  },
+  {
+    "pr": 8719,
+    "pdfs": [
+      {
+        "path": "pdf/issue8686_cell_float_inner_anchor-2020.pdf",
+        "bytes": 133479,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 3
+  },
+  {
+    "pr": 8729,
+    "pdfs": [
+      {
+        "path": "pdf/issue8697/hft-hanyang_junggothic-probe-2020.pdf",
+        "bytes": 73229,
+        "over50MiB": false
+      },
+      {
+        "path": "pdf/issue8697/hft-sinmyeong_junggothic-probe-2020.pdf",
+        "bytes": 63487,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 1
+  },
+  {
+    "pr": 8736,
+    "pdfs": [
+      {
+        "path": "pdf/issue8732/1741000-202200045_second_interim_report-2020.pdf",
+        "bytes": 1130725,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 1
+  },
+  {
+    "pr": 8740,
+    "pdfs": [
+      {
+        "path": "pdf/issue8737/156667654_saemangeum_press_release-2024.pdf",
+        "bytes": 158124,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 1
+  },
+  {
+    "pr": 8744,
+    "pdfs": [
+      {
+        "path": "pdf/issue8715_nested_row_cell_cuts-2020.pdf",
+        "bytes": 68889,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 4
+  },
+  {
+    "pr": 8746,
+    "pdfs": [
+      {
+        "path": "pdf/issue8742/36345427_approval_body-2022.pdf",
+        "bytes": 35035,
+        "over50MiB": false
+      },
+      {
+        "path": "pdf/issue8742/36453591_approval_body-2022.pdf",
+        "bytes": 279196,
+        "over50MiB": false
+      },
+      {
+        "path": "pdf/issue8742/36483048_approval_body-2022.pdf",
+        "bytes": 198110,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 2
+  },
+  {
+    "pr": 8751,
+    "pdfs": [],
+    "has_formal_review": false,
+    "incremental_commits": 4
+  },
+  {
+    "pr": 8758,
+    "pdfs": [
+      {
+        "path": "pdf/issue8735/whitespace_host_approval_table-2020.pdf",
+        "bytes": 37089,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 6
+  },
+  {
+    "pr": 8772,
+    "pdfs": [
+      {
+        "path": "pdf/issue8755/46551_road_traffic_rule_amendment-2020.pdf",
+        "bytes": 680845,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 2
+  },
+  {
+    "pr": 8775,
+    "pdfs": [
+      {
+        "path": "pdf/issue8773/field_led_wide_table-2020.pdf",
+        "bytes": 73709,
+        "over50MiB": false
+      },
+      {
+        "path": "pdf/issue8773/field_led_wide_table_nofield-2020.pdf",
+        "bytes": 73706,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 2
+  },
+  {
+    "pr": 8785,
+    "pdfs": [
+      {
+        "path": "pdf/issue8782/stored_field_line_page_split-2020.pdf",
+        "bytes": 100599,
+        "over50MiB": false
+      },
+      {
+        "path": "pdf/issue8782/stored_field_line_table-2020.pdf",
+        "bytes": 80697,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 3
+  },
+  {
+    "pr": 8788,
+    "pdfs": [
+      {
+        "path": "pdf/issue8786/reflowed_gap_stored_rewind-2020.pdf",
+        "bytes": 80501,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 2
+  },
+  {
+    "pr": 8792,
+    "pdfs": [
+      {
+        "path": "pdf/issue8759/6500000-201700118_jeju_tourism_education_plan-2020.pdf",
+        "bytes": 23313820,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 1
+  },
+  {
+    "pr": 8794,
+    "pdfs": [
+      {
+        "path": "pdf/issue8778/156739836-float-prefix-row-reduced-2020.pdf",
+        "bytes": 220286,
+        "over50MiB": false
+      },
+      {
+        "path": "pdf/issue8778/36495398-split-row-segments-reduced-2020.pdf",
+        "bytes": 236731,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 6
+  },
+  {
+    "pr": 8803,
+    "pdfs": [
+      {
+        "path": "pdf/issue8795/1351000-201500141_arrhythmia_research_plan-2020.pdf",
+        "bytes": 3813687,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 2
+  },
+  {
+    "pr": 8806,
+    "pdfs": [],
+    "has_formal_review": false,
+    "incremental_commits": 1
+  },
+  {
+    "pr": 8830,
+    "pdfs": [],
+    "has_formal_review": false,
+    "incremental_commits": 1
+  },
+  {
+    "pr": 8833,
+    "pdfs": [
+      {
+        "path": "pdf/issue8808/36341965-float-band-gap-reduced-2020.pdf",
+        "bytes": 85530,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 7
+  },
+  {
+    "pr": 8835,
+    "pdfs": [
+      {
+        "path": "pdf/issue8810/36400259-stale-cell-ladder-2020.pdf",
+        "bytes": 86143,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 2
+  },
+  {
+    "pr": 8838,
+    "pdfs": [],
+    "has_formal_review": false,
+    "incremental_commits": 1
+  },
+  {
+    "pr": 8846,
+    "pdfs": [
+      {
+        "path": "pdf/issue8843/synthetic_forward_tac_axis-2020.pdf",
+        "bytes": 95423,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 2
+  },
+  {
+    "pr": 8848,
+    "pdfs": [
+      {
+        "path": "pdf/issue8845/36355707-unstored-rebase-tac-2020.pdf",
+        "bytes": 95423,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 2
+  },
+  {
+    "pr": 8849,
+    "pdfs": [
+      {
+        "path": "pdf/issue8842/1351000-201800239_hpv_cohort_final_report-2020.pdf",
+        "bytes": 9966941,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 1
+  },
+  {
+    "pr": 8861,
+    "pdfs": [
+      {
+        "path": "pdf/issue8855/36388005-host-below-header-table-2020.pdf",
+        "bytes": 75979,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 3
+  },
+  {
+    "pr": 8862,
+    "pdfs": [],
+    "has_formal_review": false,
+    "incremental_commits": 1
+  },
+  {
+    "pr": 8876,
+    "pdfs": [
+      {
+        "path": "pdf/issue8864/36338125-bottom-fixed-table-margin-2020.pdf",
+        "bytes": 49184,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 3
+  },
+  {
+    "pr": 8879,
+    "pdfs": [],
+    "has_formal_review": false,
+    "incremental_commits": 2
+  },
+  {
+    "pr": 8881,
+    "pdfs": [
+      {
+        "path": "pdf/issue8878/36441289-tac-host-below-float-2020.pdf",
+        "bytes": 53176,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 3
+  },
+  {
+    "pr": 8901,
+    "pdfs": [
+      {
+        "path": "pdf/issue8891/1480000-201900510_facility_pollution_study-2020.pdf",
+        "bytes": 1910682,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 4
+  },
+  {
+    "pr": 8903,
+    "pdfs": [
+      {
+        "path": "pdf/issue8894/36340478-unstored-tac-column-top-spacing-2020.pdf",
+        "bytes": 234400,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 5
+  },
+  {
+    "pr": 8909,
+    "pdfs": [
+      {
+        "path": "pdf/issue8882/36404364-reflowed-cell-tac-row-floor-2020.pdf",
+        "bytes": 102425,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 5
+  },
+  {
+    "pr": 8921,
+    "pdfs": [
+      {
+        "path": "pdf/issue8917/1471000-group-bullet-column-top-2020.pdf",
+        "bytes": 159363,
+        "over50MiB": false
+      },
+      {
+        "path": "pdf/issue8917/44907-group-bullet-column-top-2020.pdf",
+        "bytes": 721922,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 1
+  },
+  {
+    "pr": 8928,
+    "pdfs": [
+      {
+        "path": "pdf/issue8925/36415413-page-break-tac-full-gap-2020.pdf",
+        "bytes": 101525,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 2
+  },
+  {
+    "pr": 8929,
+    "pdfs": [
+      {
+        "path": "pdf/issue8924/wide_tac_trailing_tail-2020.pdf",
+        "bytes": 60280,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 2
+  },
+  {
+    "pr": 8930,
+    "pdfs": [
+      {
+        "path": "pdf/issue8926/6540000-202500049-post-table-line-stored-page-reset-2020.pdf",
+        "bytes": 87181,
+        "over50MiB": false
+      }
+    ],
+    "has_formal_review": false,
+    "incremental_commits": 3
+  }
+]

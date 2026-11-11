@@ -1,0 +1,44 @@
+[
+  {
+    "producer": "base-native",
+    "exit": 0,
+    "command": [
+      "output/pr-review/planet6897-remaining39-integration-20261111/base-native",
+      "export-render-tree",
+      "samples/basic/KTX.hwp",
+      "--page",
+      "0",
+      "--compat",
+      "2022",
+      "--output",
+      "output/pr-review/planet6897-remaining39-integration-20261111/ktx-layout-control/base-native"
+    ],
+    "files": [
+      {
+        "path": "output/pr-review/planet6897-remaining39-integration-20261111/ktx-layout-control/base-native/render_tree_001.json",
+        "sha256": "979730d3ab7b316f74cef062d1a08b05bcdc66f22fe5968bcd35767c82367423"
+      }
+    ]
+  },
+  {
+    "producer": "candidate-native",
+    "exit": 0,
+    "command": [
+      "output/pr-review/planet6897-remaining39-integration-20261111/candidate-native",
+      "export-render-tree",
+      "samples/basic/KTX.hwp",
+      "--page",
+      "0",
+      "--compat",
+      "2022",
+      "--output",
+      "output/pr-review/planet6897-remaining39-integration-20261111/ktx-layout-control/candidate-native"
+    ],
+    "files": [
+      {
+        "path": "output/pr-review/planet6897-remaining39-integration-20261111/ktx-layout-control/candidate-native/render_tree_001.json",
+        "sha256": "979730d3ab7b316f74cef062d1a08b05bcdc66f22fe5968bcd35767c82367423"
+      }
+    ]
+  }
+]

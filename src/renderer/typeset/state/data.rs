@@ -220,6 +220,13 @@ pub(in crate::renderer::typeset) struct StateView {
     /// p1356 뒤 본문을 한 쪽 더 분할한다. layout 순서에는 앞에 있어야 하지만,
     /// typeset 흐름 항목으로는 보이면 안 된다.
     pub(in crate::renderer::typeset) page_start_square_pictures: Vec<DeferredSquarePictureControl>,
+    /// 겹침 허용 안 함 어울림 그림 무리에서 앵커 쪽에 들어가지 못한 그림 (문단, 개체).
+    /// 앞 그림과 겹칠 수 없으므로 새 쪽마다 하나씩 쪽 맨 위로 옮긴다. 흐름은 소비하지 않는다
+    /// — 뒤 문단은 저장 줄(그림 옆 cs/sw)대로 그 쪽을 채운다.
+    pub(in crate::renderer::typeset) cascaded_pile_pictures:
+        std::collections::VecDeque<(usize, usize)>,
+    /// 이 쪽 맨 위에 둘 무리 그림. 흐름 항목이 아니라 단 확정 때 앞에 붙인다.
+    pub(in crate::renderer::typeset) page_start_pile_pictures: Vec<(usize, usize)>,
     /// 표 조판 중 fragment별로 각주를 등록한 source 키. caller의 기존 표 완료 뒤
     /// 일괄 등록을 건너뛰어 중복을 막는다.
     pub(in crate::renderer::typeset) fragment_queued_table_footnotes:
@@ -404,8 +411,19 @@ pub(in crate::renderer::typeset) struct StateView {
     /// 저장 vpos 스냅(VPOS_CORR)을 마친 문단 시작 커서 `(문단, y)`.
     /// 측정 누적의 sb·trailing_ls drift 가 걷힌 실제 앞 커서다.
     pub(in crate::renderer::typeset) vpos_snapped_flow_start: Option<(usize, f64)>,
+    /// [#8795] 위 스냅을 마친 쪽·단 `(pages.len(), 단)`. 문단이 스냅 뒤 다른 쪽으로
+    /// 넘어간 경우 앞 쪽 앵커 원점으로 쓰지 않는다.
+    pub(in crate::renderer::typeset) vpos_snapped_flow_page: Option<(usize, u16)>,
     /// 공통 vpos 질의가 현재 문단에서 거절한 저장 원점 `(문단, source HU)`.
     pub(in crate::renderer::typeset) rejected_stored_forward_origin: Option<(usize, i32)>,
+    /// 이 단에서 표 위 틈 판정으로 버린 저장 사다리 전방 이동의 합(HU). 저장 프레임에서
+    /// 표 원점을 잴 때 뒤 글줄과 같은 축을 쓰도록 뺀다.
+    pub(in crate::renderer::typeset) vpos_rejected_gap_hu: i32,
+    /// [#8843] 이 단에서 커서가 합성 줄 뒤 저장 앞 점프를 거절하고 옮긴 기준축 누적(HU).
+    pub(in crate::renderer::typeset) synthetic_forward_rejected_hu: i32,
+    /// [#8845] 이 단에서 저장 줄 없는 문단 뒤의 낡은 전방 원점을 거절해 기준을 옮겼다
+    /// (`HeightCursor::rebased_after_unstored_forward`). 단을 새로 열 때 지운다.
+    pub(in crate::renderer::typeset) vpos_rebased_after_unstored_forward: bool,
     pub(in crate::renderer::typeset) vpos_prev_layout_para: Option<usize>,
     pub(in crate::renderer::typeset) vpos_prev_partial_table: bool,
     /// 컬럼 시작 시점의 current_height (page_path anchor — 렌더러 col_anchor_y 대응).

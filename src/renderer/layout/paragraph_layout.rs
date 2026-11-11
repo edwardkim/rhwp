@@ -5987,7 +5987,16 @@ impl LayoutEngine {
         // [#5601] 셀 저장-앵커 스냅 문단 — 호출자가 para_y 에서 spacing_before 를
         // 미리 뺐으므로 column-top 트림과 무관하게 전량 재가산해야 vpos 와 맞는다.
         let reapply_snap_spacing_before = self.reapply_snap_anchored_spacing_before.replace(false);
-        if let Some(spacing) = vertical_spacing {
+        // [#8735] 공백 host 표가 민 자기 줄은 앞 간격 없이 표 바깥 아래 여백 바로 밑에 놓인다.
+        let whitespace_float_host_line = cell_ctx.is_none()
+            && start_line == 0
+            && self
+                .whitespace_float_host_line_owner
+                .take()
+                .is_some_and(|owner| owner == para_index);
+        if whitespace_float_host_line {
+            // 앞 간격을 더하지 않는다.
+        } else if let Some(spacing) = vertical_spacing {
             // 같은 선택 문단에서 확정한 앞 간격을 한 번만 소비한다.
             y += spacing.before;
         } else if start_line == 0 && spacing_before > 0.0 {

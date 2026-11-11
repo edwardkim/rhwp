@@ -65,8 +65,18 @@ pub(crate) fn stored_column_top_spacing_before(
     dpi: f64,
 ) -> Option<StoredColumnTopSpacing> {
     let current = paragraphs.get(index)?;
+    // 작은 글자처럼 도형이 저장 글줄 상자 안에 들어가면 그 줄의 원점과 간격은 글줄과 같다.
+    // 적재 경로의 저장 사다리 연결과 같은 판정을 쓴다.
     let valid = |para: &Paragraph| {
-        (para.controls.is_empty() || closed_inline_object_line(para))
+        (para.controls.is_empty()
+            || closed_inline_object_line(para)
+            || crate::renderer::stored_frame_boundary::inline_graphics_fit_saved_text_line(
+                para,
+                styles
+                    .para_styles
+                    .get(para.para_shape_id as usize)
+                    .map_or(0, |style| style.vertical_alignment),
+            ))
             && !para.stored_text_partition_is_dirty()
             && !para.cell_format_vpos_dirty
             && !para.line_segs.is_empty()

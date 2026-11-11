@@ -1,0 +1,359 @@
+{
+  "runtime_head": "ab9116f48ff0c641fab4cc33c9f8c1bd5b6a5082",
+  "platform": "ubuntu-ted / Linux; Node v24.15.0; Chromium 156.0.8078.79 snap",
+  "purpose": "원 PR #8930 CI의 legacy/layer 호환 대조군. 원 PR 원문 증적과 별도다.",
+  "source_script_sha256": "9f0d2f7a2083574d5f7b755182f49d4a8353d57a4545d2e707ffc132a3a214fe",
+  "same_default_budget": {
+    "maxDiffRatio": 0.0005,
+    "channelTolerance": 1
+  },
+  "wasm_response_sha256": "bf46419e7d6e69f00906cb6d06ba142af53eaf4135d5287389f2f3df32e78231",
+  "log_sha256": "19d4c3517c9e747557782e3da379fce6fce6efbdba60f8e01ec08e9fb5610216",
+  "passed": 6,
+  "failed": 0,
+  "records": [
+    {
+      "scale": 1,
+      "exit": 0,
+      "head": "ab9116f48ff0c641fab4cc33c9f8c1bd5b6a5082",
+      "source_script_sha256": "9f0d2f7a2083574d5f7b755182f49d4a8353d57a4545d2e707ffc132a3a214fe",
+      "relocated_script_sha256": "f210137fa7db17437659d5e16e86e96137040d673b2388e1c564341f27999176",
+      "path_changes_only": true,
+      "artifact_dir": "/home/tsjang/rhwp/output/planet6897-r18-canvas-linux-20261111/scope-final-controls/scale-1",
+      "report": {
+        "config": {
+          "fixtures": [
+            "basic/KTX.hwp",
+            "biz_plan.hwp",
+            "tac-case-001.hwp"
+          ],
+          "scale": 1,
+          "maxPages": "1",
+          "channelTolerance": 1,
+          "maxDiffRatio": 0.0005,
+          "writeImages": true
+        },
+        "results": [
+          {
+            "pageIndex": 0,
+            "paintOrderRequired": true,
+            "paintOrderMatched": true,
+            "paintOrderFirstMismatch": -1,
+            "fillCounts": [
+              226,
+              226
+            ],
+            "paintOrderMismatch": null,
+            "legacyWidth": 1123,
+            "legacyHeight": 794,
+            "layerWidth": 1123,
+            "layerHeight": 794,
+            "width": 1123,
+            "height": 794,
+            "sameSize": true,
+            "diffPixels": 83,
+            "totalPixels": 891662,
+            "diffRatio": 9.308459932126748e-05,
+            "maxChannelDelta": 84,
+            "averageChannelDelta": 0.0016525320132516582,
+            "pass": true,
+            "artifactFiles": {
+              "legacy": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-legacy.png",
+              "layer": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-layer.png",
+              "diff": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-diff.png"
+            },
+            "fixture": "basic/KTX.hwp"
+          },
+          {
+            "pageIndex": 0,
+            "paintOrderRequired": false,
+            "paintOrderMatched": true,
+            "paintOrderFirstMismatch": -1,
+            "fillCounts": [
+              2,
+              2
+            ],
+            "paintOrderMismatch": null,
+            "legacyWidth": 794,
+            "legacyHeight": 1123,
+            "layerWidth": 794,
+            "layerHeight": 1123,
+            "width": 794,
+            "height": 1123,
+            "sameSize": true,
+            "diffPixels": 0,
+            "totalPixels": 891662,
+            "diffRatio": 0,
+            "maxChannelDelta": 0,
+            "averageChannelDelta": 0,
+            "pass": true,
+            "artifactFiles": {
+              "legacy": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-legacy.png",
+              "layer": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-layer.png",
+              "diff": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-diff.png"
+            },
+            "fixture": "biz_plan.hwp"
+          },
+          {
+            "pageIndex": 0,
+            "paintOrderRequired": false,
+            "paintOrderMatched": true,
+            "paintOrderFirstMismatch": -1,
+            "fillCounts": [
+              2,
+              2
+            ],
+            "paintOrderMismatch": null,
+            "legacyWidth": 794,
+            "legacyHeight": 1123,
+            "layerWidth": 794,
+            "layerHeight": 1123,
+            "width": 794,
+            "height": 1123,
+            "sameSize": true,
+            "diffPixels": 0,
+            "totalPixels": 891662,
+            "diffRatio": 0,
+            "maxChannelDelta": 0,
+            "averageChannelDelta": 0,
+            "pass": true,
+            "artifactFiles": {
+              "legacy": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-legacy.png",
+              "layer": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-layer.png",
+              "diff": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-diff.png"
+            },
+            "fixture": "tac-case-001.hwp"
+          }
+        ]
+      },
+      "copied_artifacts": [
+        {
+          "fixture": "basic/KTX.hwp",
+          "role": "legacy",
+          "path": "mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/linux-canvas-controls/scale-1/basic_KTX.hwp-ce76d1d6-p01-legacy.png",
+          "sha256": "08fe410a20732e643acb714188a8f11f2d069c3c60d70b4748de667602a7b084"
+        },
+        {
+          "fixture": "basic/KTX.hwp",
+          "role": "layer",
+          "path": "mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/linux-canvas-controls/scale-1/basic_KTX.hwp-ce76d1d6-p01-layer.png",
+          "sha256": "574ff49defe7fa6e9d9381fbb83279e10234ccba0fd07bf069854cba5f2e36d2"
+        },
+        {
+          "fixture": "basic/KTX.hwp",
+          "role": "diff",
+          "path": "mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/linux-canvas-controls/scale-1/basic_KTX.hwp-ce76d1d6-p01-diff.png",
+          "sha256": "52c19ede8a767a586026aa7f999bf1aad9671cee6d9e330ffafb8d586309ca15"
+        },
+        {
+          "fixture": "biz_plan.hwp",
+          "role": "legacy",
+          "path": "mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/linux-canvas-controls/scale-1/biz_plan.hwp-618f6a38-p01-legacy.png",
+          "sha256": "a05c186bb81d4775e3b93aa9f26eea196dd5d83f04a58ee4ff26005e541044b7"
+        },
+        {
+          "fixture": "biz_plan.hwp",
+          "role": "layer",
+          "path": "mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/linux-canvas-controls/scale-1/biz_plan.hwp-618f6a38-p01-layer.png",
+          "sha256": "a05c186bb81d4775e3b93aa9f26eea196dd5d83f04a58ee4ff26005e541044b7"
+        },
+        {
+          "fixture": "biz_plan.hwp",
+          "role": "diff",
+          "path": "mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/linux-canvas-controls/scale-1/biz_plan.hwp-618f6a38-p01-diff.png",
+          "sha256": "a939b08a7657a2f8dbd1faca7dc1e65a65ca2f347b1c3b80d0996c2d111aad29"
+        },
+        {
+          "fixture": "tac-case-001.hwp",
+          "role": "legacy",
+          "path": "mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/linux-canvas-controls/scale-1/tac-case-001.hwp-097ee39c-p01-legacy.png",
+          "sha256": "31f8a7efec60905ea1b5c339de52210a30a65f6c0c88a8773d1d8913540794df"
+        },
+        {
+          "fixture": "tac-case-001.hwp",
+          "role": "layer",
+          "path": "mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/linux-canvas-controls/scale-1/tac-case-001.hwp-097ee39c-p01-layer.png",
+          "sha256": "31f8a7efec60905ea1b5c339de52210a30a65f6c0c88a8773d1d8913540794df"
+        },
+        {
+          "fixture": "tac-case-001.hwp",
+          "role": "diff",
+          "path": "mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/linux-canvas-controls/scale-1/tac-case-001.hwp-097ee39c-p01-diff.png",
+          "sha256": "a939b08a7657a2f8dbd1faca7dc1e65a65ca2f347b1c3b80d0996c2d111aad29"
+        }
+      ]
+    },
+    {
+      "scale": 1.25,
+      "exit": 0,
+      "head": "ab9116f48ff0c641fab4cc33c9f8c1bd5b6a5082",
+      "source_script_sha256": "9f0d2f7a2083574d5f7b755182f49d4a8353d57a4545d2e707ffc132a3a214fe",
+      "relocated_script_sha256": "b5c5c158c6af874609fecfd3c92a9b52be666992deffa15742e811c33ea7fdac",
+      "path_changes_only": true,
+      "artifact_dir": "/home/tsjang/rhwp/output/planet6897-r18-canvas-linux-20261111/scope-final-controls/scale-1.25",
+      "report": {
+        "config": {
+          "fixtures": [
+            "basic/KTX.hwp",
+            "biz_plan.hwp",
+            "tac-case-001.hwp"
+          ],
+          "scale": 1.25,
+          "maxPages": "1",
+          "channelTolerance": 1,
+          "maxDiffRatio": 0.0005,
+          "writeImages": true
+        },
+        "results": [
+          {
+            "pageIndex": 0,
+            "paintOrderRequired": true,
+            "paintOrderMatched": true,
+            "paintOrderFirstMismatch": -1,
+            "fillCounts": [
+              226,
+              226
+            ],
+            "paintOrderMismatch": null,
+            "legacyWidth": 1404,
+            "legacyHeight": 993,
+            "layerWidth": 1404,
+            "layerHeight": 993,
+            "width": 1404,
+            "height": 993,
+            "sameSize": true,
+            "diffPixels": 133,
+            "totalPixels": 1394172,
+            "diffRatio": 9.539712460155562e-05,
+            "maxChannelDelta": 102,
+            "averageChannelDelta": 0.001872616865063995,
+            "pass": true,
+            "artifactFiles": {
+              "legacy": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-legacy.png",
+              "layer": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-layer.png",
+              "diff": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-diff.png"
+            },
+            "fixture": "basic/KTX.hwp"
+          },
+          {
+            "pageIndex": 0,
+            "paintOrderRequired": false,
+            "paintOrderMatched": true,
+            "paintOrderFirstMismatch": -1,
+            "fillCounts": [
+              2,
+              2
+            ],
+            "paintOrderMismatch": null,
+            "legacyWidth": 993,
+            "legacyHeight": 1404,
+            "layerWidth": 993,
+            "layerHeight": 1404,
+            "width": 993,
+            "height": 1404,
+            "sameSize": true,
+            "diffPixels": 0,
+            "totalPixels": 1394172,
+            "diffRatio": 0,
+            "maxChannelDelta": 0,
+            "averageChannelDelta": 0,
+            "pass": true,
+            "artifactFiles": {
+              "legacy": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-legacy.png",
+              "layer": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-layer.png",
+              "diff": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-diff.png"
+            },
+            "fixture": "biz_plan.hwp"
+          },
+          {
+            "pageIndex": 0,
+            "paintOrderRequired": false,
+            "paintOrderMatched": true,
+            "paintOrderFirstMismatch": -1,
+            "fillCounts": [
+              2,
+              2
+            ],
+            "paintOrderMismatch": null,
+            "legacyWidth": 993,
+            "legacyHeight": 1404,
+            "layerWidth": 993,
+            "layerHeight": 1404,
+            "width": 993,
+            "height": 1404,
+            "sameSize": true,
+            "diffPixels": 0,
+            "totalPixels": 1394172,
+            "diffRatio": 0,
+            "maxChannelDelta": 0,
+            "averageChannelDelta": 0,
+            "pass": true,
+            "artifactFiles": {
+              "legacy": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-legacy.png",
+              "layer": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-layer.png",
+              "diff": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-diff.png"
+            },
+            "fixture": "tac-case-001.hwp"
+          }
+        ]
+      },
+      "copied_artifacts": [
+        {
+          "fixture": "basic/KTX.hwp",
+          "role": "legacy",
+          "path": "mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/linux-canvas-controls/scale-1.25/basic_KTX.hwp-ce76d1d6-p01-legacy.png",
+          "sha256": "cebfe81f673c1a9eea3c14051ab5961af6b5545af9548ca079c6594536b0a9bf"
+        },
+        {
+          "fixture": "basic/KTX.hwp",
+          "role": "layer",
+          "path": "mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/linux-canvas-controls/scale-1.25/basic_KTX.hwp-ce76d1d6-p01-layer.png",
+          "sha256": "7370981d8004c8bf56ce6f2ab2e5cd3ce29d2ebdbaf6507ed8179eb1bac56cd0"
+        },
+        {
+          "fixture": "basic/KTX.hwp",
+          "role": "diff",
+          "path": "mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/linux-canvas-controls/scale-1.25/basic_KTX.hwp-ce76d1d6-p01-diff.png",
+          "sha256": "66d8361d3b0a66efc2fd22e56e3801460508afeb69a0a8468d17ac2b77ed92c3"
+        },
+        {
+          "fixture": "biz_plan.hwp",
+          "role": "legacy",
+          "path": "mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/linux-canvas-controls/scale-1.25/biz_plan.hwp-618f6a38-p01-legacy.png",
+          "sha256": "d1f4004cf7e7943b7cce5a0260a0183ad66fb285b713404a4375bed12dc27a1c"
+        },
+        {
+          "fixture": "biz_plan.hwp",
+          "role": "layer",
+          "path": "mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/linux-canvas-controls/scale-1.25/biz_plan.hwp-618f6a38-p01-layer.png",
+          "sha256": "d1f4004cf7e7943b7cce5a0260a0183ad66fb285b713404a4375bed12dc27a1c"
+        },
+        {
+          "fixture": "biz_plan.hwp",
+          "role": "diff",
+          "path": "mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/linux-canvas-controls/scale-1.25/biz_plan.hwp-618f6a38-p01-diff.png",
+          "sha256": "1a97b75b2eea8a9dd383780cc0e37ce3f9802f48d8938b4b920415fbda04974f"
+        },
+        {
+          "fixture": "tac-case-001.hwp",
+          "role": "legacy",
+          "path": "mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/linux-canvas-controls/scale-1.25/tac-case-001.hwp-097ee39c-p01-legacy.png",
+          "sha256": "854fee945238e3a0504254ba2a33a768dae8748b0d30ea54f58b71bfa1306396"
+        },
+        {
+          "fixture": "tac-case-001.hwp",
+          "role": "layer",
+          "path": "mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/linux-canvas-controls/scale-1.25/tac-case-001.hwp-097ee39c-p01-layer.png",
+          "sha256": "854fee945238e3a0504254ba2a33a768dae8748b0d30ea54f58b71bfa1306396"
+        },
+        {
+          "fixture": "tac-case-001.hwp",
+          "role": "diff",
+          "path": "mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/linux-canvas-controls/scale-1.25/tac-case-001.hwp-097ee39c-p01-diff.png",
+          "sha256": "1a97b75b2eea8a9dd383780cc0e37ce3f9802f48d8938b4b920415fbda04974f"
+        }
+      ]
+    }
+  ],
+  "excluded_invalid_attempt": "Linux 검증 폴더의 필수 fixture 목록 누락으로 검사 시작 전 ENOENT; 보완 후 본 결과를 산출했다."
+}

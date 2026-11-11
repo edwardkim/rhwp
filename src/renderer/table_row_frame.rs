@@ -9,6 +9,27 @@ use crate::model::{
 use crate::renderer::float_placement::ParagraphFloatPlacement;
 use crate::renderer::hwpunit_to_px;
 
+/// 첫 조각과 종료 쪽의 저장 원점이 전체 원본 행 본체를 정확히 나눈다.
+/// 다음 원점에 남은 본체를 독립 빈 간격으로 다시 더하지 않기 위한 정수 단위 근거다.
+/// 문단 지역 원점·편집 여부와 실제 조각 종료 여부는 각 호출자가 확인한다.
+pub(crate) fn stored_rows_close_at_successor(
+    rows: &[crate::model::HwpUnit],
+    cell_spacing: i16,
+    first_fragment: u32,
+    successor_top: i32,
+) -> bool {
+    rows.len() >= 2
+        && first_fragment > 0
+        && first_fragment <= i32::MAX as u32
+        && successor_top > 0
+        && rows
+            .iter()
+            .all(|&height| height > 0 && height <= i32::MAX as u32)
+        && rows.iter().map(|&height| i64::from(height)).sum::<i64>()
+            + i64::from(cell_spacing) * (rows.len() - 1) as i64
+            == i64::from(first_fragment) + i64::from(successor_top)
+}
+
 /// 저장 rowspan의 쪽 되감김으로 입증한 첫 물리 프레임을 행 원장에 투영한다.
 ///
 /// 표의 선언 높이는 이 경우 전체 행 합이 아니라 첫 조각의 끝이다. 끝 행의
