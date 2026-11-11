@@ -11,7 +11,7 @@
 //!   vpos 차와 위 여백 차만큼 아래에 놓인다. 수정 전에는 첫 표 아래 여백·줄간격과 둘째 표 위 여백을
 //!   잃어 15.7px 위였다. 뒤 pi=5 표도 같은 저장 사다리에 남는다.
 //!
-//! 측정(2026-11-12, 측정 head 는 이 PR 의 코드 head, `scripts/visual_sweep.py --silhouette-only --dpi 96`,
+//! 측정(2026-11-12, 코드 head e1647446f5, base eb84afc036, `scripts/visual_sweep.py --silhouette-only --dpi 96`,
 //! raw = `silhouette_raw_match_percent`, `RHWP_FONT_PATH` 글꼴 공급, WASM 은 같은 폴더를 `--font-path` 로):
 //! - 36400485 Native 11쪽 / 11쪽: p2 99.80 (base eb84afc036 86.72), p4 99.49 (base 65.58). 그 밖의 쪽은 base 와 같다.
 //! - 36400485 fresh WASM 11쪽 / 11쪽: p2 99.80, p4 99.47.
