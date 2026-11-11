@@ -22,7 +22,10 @@ python3 -B bindings/Flutter/tool/reference_app.py run --bundle '/packages/rhwp r
 ```
 
 동일한 명령을 해당 Windows/macOS 호스트에서 실행하며 Native 인수는 그 OS의 DLL/dylib를
-지정한다. 기본은 release와 GPU 사용이다. `--mode debug`, `--cpu`, `--continuous`, `--trace`로
+지정한다. Windows는 해당 아키텍처의 MSVC Native Tools 환경에서 `cl`을 제공해야 한다.
+생성한 macOS 개발용 runner는 App Sandbox를 끈다. 이 참조앱은 `.app` 밖의 Native·manifest와
+입력한 문서 경로를 사용하며, App Store sandbox/bookmark 접근을 구현하지 않는다.
+기본은 release와 GPU 사용이다. `--mode debug`, `--cpu`, `--continuous`, `--trace`로
 기존 참조앱의 옵션을 선택한다. 연속 Windows/Metal 표시는 명시적인 `--continuous` opt-in이다.
 `build-receipt.json`에는 source 파일 해시·Flutter/engine revision·각 명령의 종료 상태·산출물 해시를
 기록한다. 성공한 빌드는 앱 실행이나 GPU 표시를 검증했다는 뜻이 아니다.
@@ -102,6 +105,13 @@ final document = await NativeDocument.connect(transport);
 compile-time dart define은 기본값으로 사용하므로 이동한 bundle root를 다시 컴파일하지 않고
 지정할 수 있다. 이는 제품 앱 UI나
 플랫폼 plugin의 자동 설치 기능이 아니다. 실제 Flutter runner는 빌드 시 plugin 등록을 포함해야 한다.
+
+환경 변수·dart define이 없으면 `NativeRuntimeBundle.forExecutable()`이 실행 파일의
+`app/` 상위 bundle을 찾는다. 따라서 이동한 `app/rhwp_reference_app`, Windows exe 또는
+macOS `.app`를 직접 실행할 수도 있다. 확인 범위는 Linux/Windows 두 단계, macOS 앱 구조를
+포함해 최대 다섯 단계이며, manifest가 지정한 runtime과 실제 실행 파일의 동일성을 확인한다.
+manifest가 없을 때만 기존 개발용 Native/owner 경로를 사용한다. manifest가 존재하지만
+잘못됐거나 다른 실행 파일을 가리키면 오류를 표시하며 다른 라이브러리로 자동 대체하지 않는다.
 
 ## 재현 검사
 

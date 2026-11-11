@@ -3,6 +3,7 @@
 
 import os
 from pathlib import Path
+import plistlib
 import shutil
 import subprocess
 import sys
@@ -32,6 +33,8 @@ class ReferenceAppContracts(unittest.TestCase):
 
     def test_relocated_plan_has_no_build_source_or_shell_dependency(self):
         f = self.fixture
+        if os.name == 'nt':
+            f.configure('windows')
         f.package()
         moved = f.root / "moved app ' ; $(echo untouched)"
         f.output.rename(moved)
@@ -39,7 +42,7 @@ class ReferenceAppContracts(unittest.TestCase):
         f.native.unlink()
         f.dispatcher.unlink()
         command, cwd, env = reference_app.launch_plan(
-            moved, system='linux', machine='x86_64',
+            moved, system='win32' if os.name == 'nt' else 'linux', machine='x86_64',
             environment={'RHWP_RUNTIME_BUNDLE': '/old/path', 'DISPLAY': ':123'})
         self.assertEqual(command, [str(moved / 'app/app')])
         self.assertEqual(cwd, moved / 'app')
@@ -58,8 +61,9 @@ class ReferenceAppContracts(unittest.TestCase):
         asset = f.output / 'app/data/asset.bin'
         old = asset.read_bytes()
         asset.write_bytes(b'x' * len(old))
-        with patch.object(reference_app.subprocess, 'call') as execute:
-            with self.assertRaises(ValueError):
+        with patch.object(reference_app.subprocess, 'call') as execute, patch.object(
+                reference_app, 'host_target', return_value=('linux', 'x86_64')):
+            with self.assertRaisesRegex(ValueError, 'digest, size, or mode mismatch'):
                 reference_app.launch(f.output)
             execute.assert_not_called()
         asset.write_bytes(old)
@@ -67,6 +71,7 @@ class ReferenceAppContracts(unittest.TestCase):
         with self.assertRaises(ValueError):
             reference_app.launch_plan(f.output, system='linux', machine='x86_64')
 
+    @unittest.skipIf(os.name == 'nt', 'POSIX executable permission and symlink contract')
     def test_nonexecutable_entry_point_and_link_root_reject(self):
         f = self.fixture
         manifest = f.package()
@@ -116,6 +121,27 @@ class ReferenceAppContracts(unittest.TestCase):
             path.write_bytes(b'location only; never executed')
             directory, executable = reference_app.built_runtime(runner, target, architecture, mode)
             self.assertEqual(directory / executable, path)
+
+    def test_generated_macos_reference_can_access_sibling_bundle_and_document_paths(self):
+        f = self.fixture
+        runner, example = f.root / 'runner', f.root / 'example'
+        (runner / 'lib').mkdir(parents=True)
+        (runner / 'lib/main.dart').write_text('discarded template')
+        (example / 'lib').mkdir(parents=True)
+        (example / 'lib/main.dart').write_text('unchanged reference app')
+        (example / 'pubspec.yaml').write_text('    path: ../\n')
+        macos = runner / 'macos/Runner'
+        macos.mkdir(parents=True)
+        for name in ('DebugProfile.entitlements', 'Release.entitlements'):
+            (macos / name).write_bytes(plistlib.dumps({
+                'com.apple.security.app-sandbox': True,
+                'com.apple.security.network.client': True}))
+        reference_app.configure_reference_runner(runner, example, 'macos')
+        self.assertEqual((runner / 'lib/main.dart').read_text(), 'unchanged reference app')
+        for path in macos.glob('*.entitlements'):
+            self.assertEqual(plistlib.loads(path.read_bytes()), {
+                'com.apple.security.app-sandbox': False,
+                'com.apple.security.network.client': True})
 
 
 if __name__ == '__main__':

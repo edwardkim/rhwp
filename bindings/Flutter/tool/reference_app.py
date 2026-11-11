@@ -7,6 +7,7 @@ import math
 import os
 from pathlib import Path
 import platform as host_platform
+import plistlib
 import shutil
 import subprocess
 import sys
@@ -82,6 +83,29 @@ def built_runtime(runner, target, architecture, mode):
     return directory, executable
 
 
+def configure_reference_runner(runner, example, target):
+    """Use the existing app with generated OS scaffolding, not a second UI."""
+    spec = (example / 'pubspec.yaml').read_text(encoding='utf-8')
+    if spec.count('    path: ../\n') != 1:
+        raise ValueError('unexpected reference example dependency')
+    spec = spec.replace('    path: ../\n', '    path: ../source/bindings/Flutter\n')
+    (runner / 'pubspec.yaml').write_text(spec, encoding='utf-8')
+    shutil.rmtree(runner / 'lib')
+    shutil.copytree(example / 'lib', runner / 'lib')
+    if target == 'macos':
+        # This developer reference uses explicit file paths and sibling Native
+        # libraries. It does not implement App Store sandbox/bookmark access.
+        for name in ('DebugProfile.entitlements', 'Release.entitlements'):
+            path = runner / 'macos/Runner' / name
+            with path.open('rb') as source:
+                entitlements = plistlib.load(source)
+            if not isinstance(entitlements, dict) or entitlements.get('com.apple.security.app-sandbox') is not True:
+                raise ValueError('unexpected generated macOS sandbox entitlements')
+            entitlements['com.apple.security.app-sandbox'] = False
+            with path.open('wb') as output:
+                plistlib.dump(entitlements, output)
+
+
 def build(args):
     target, architecture = host_target()
     if not math.isfinite(args.step_timeout) or not 30 <= args.step_timeout <= 7200:
@@ -96,6 +120,7 @@ def build(args):
         raise ValueError('commit the reference app inputs before building')
     native_head = checked_sha(args.native_source, 'declared Native source head')
     native = args.native.absolute()
+    native_metadata, _ = runtime_bundle._read(native)
     native_platform, native_architectures = runtime_bundle.binary_identity(native, shared=True)
     if native_platform != target or architecture not in native_architectures:
         raise ValueError('supplied Native library does not match the build host')
@@ -105,6 +130,8 @@ def build(args):
     snapshot = sdk / 'bin/cache/flutter_tools.snapshot'
     if not dart.is_file() or not snapshot.is_file():
         raise ValueError('prepare the Flutter SDK and tool snapshot first')
+    if target == 'windows' and not shutil.which('cl'):
+        raise ValueError('run from the matching MSVC Native Tools environment (cl is required)')
     flutter = [str(dart), '--disable-dart-dev', str(snapshot)]
     output = args.output.resolve()
     if output == repository or repository in output.parents:
@@ -124,7 +151,7 @@ def build(args):
         destination = copied / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(repository / relative, destination)
-    native_hash = digest(native)
+    native_hash = native_metadata['sha256']
     env = dict(os.environ, CI='true', FLUTTER_ROOT=str(sdk),
                FLUTTER_SUPPRESS_ANALYTICS='true', DART_SUPPRESS_ANALYTICS='true',
                PYTHONDONTWRITEBYTECODE='1')
@@ -171,13 +198,11 @@ def build(args):
              '--project-name=rhwp_reference_app', 'runner'], output)
         runner = output / 'runner'
         example = copied / 'bindings/Flutter/example'
-        spec = (example / 'pubspec.yaml').read_text(encoding='utf-8')
-        if spec.count('    path: ../\n') != 1:
-            raise ValueError('unexpected reference example dependency')
-        spec = spec.replace('    path: ../\n', '    path: ../source/bindings/Flutter\n')
-        (runner / 'pubspec.yaml').write_text(spec, encoding='utf-8')
-        shutil.rmtree(runner / 'lib')
-        shutil.copytree(example / 'lib', runner / 'lib')
+        configure_reference_runner(runner, example, target)
+        receipt['generatedRunner'] = {
+            path.relative_to(runner).as_posix(): digest(path)
+            for path in sorted(runner.rglob('*')) if path.is_file()}
+        receipt['macosSandbox'] = False if target == 'macos' else None
         run([*flutter, 'pub', 'get', '--offline'], runner)
         run([*flutter, 'build', target, '--' + args.mode,
              '--dart-define=RHWP_GPU=' + str(not args.cpu).lower(),
@@ -199,6 +224,11 @@ def build(args):
             raise ValueError('source changed during build')
         if digest(native) != native_hash:
             raise ValueError('supplied Native changed during build')
+        if (subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=repository,
+                                    text=True).strip() != source_head or
+                subprocess.check_output(['git', 'status', '--porcelain', '--', *inputs],
+                                        cwd=repository, text=True)):
+            raise ValueError('pinned checkout changed during build')
         receipt.update(buildExitCode=0, runtimeLaunched=False)
     except BaseException as error:
         receipt.update(buildExitCode=1, error=f'{type(error).__name__}: {error}')
