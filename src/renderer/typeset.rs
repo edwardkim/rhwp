@@ -5813,7 +5813,31 @@ impl TypesetEngine {
         } else if let Some(end) = computed_table_row_end {
             st.align_flow_to(end);
         } else if tac_wrap_split {
-            st.advance_flow_by(table_total_height);
+            // 단일 TAC 의 높이는 문단 height_for_fit 이라 앞 글줄을 이미 담는다. 여러 TAC
+            // 표는 각자의 저장 줄만 계상하므로(typeset_tac_table) 첫 표 앞 글줄을 따로 더한다.
+            // 표 줄이 vpos 를 되감아 새 쪽에서 시작하면 앞 글줄은 앞 쪽의 사다리라 더하지 않는다
+            // (1490000-200900057 pi=420: 더하면 같은 쪽 뒤 표가 넘쳐 쪽이 하나 는다).
+            let prefix_continues_into_table = pre_table_end_line > 0
+                && para
+                    .line_segs
+                    .get(pre_table_end_line)
+                    .zip(para.line_segs.get(pre_table_end_line - 1))
+                    .is_some_and(|(table_line, prefix_line)| {
+                        table_line.vertical_pos > prefix_line.vertical_pos
+                    });
+            let per_line_tac_height = prefix_continues_into_table
+                && para
+                    .controls
+                    .iter()
+                    .filter(|control| {
+                        matches!(control, Control::Table(other)
+                        if self.is_effective_tac_table(para, other, fmt))
+                    })
+                    .count()
+                    > 1;
+            st.advance_flow_by(
+                table_total_height + if per_line_tac_height { pre_height } else { 0.0 },
+            );
         } else if let Some(host_spacing_px) = if st.profile.hwpx_stored_layout()
             && is_last_placed
             && total_lines <= pre_table_end_line + 1
