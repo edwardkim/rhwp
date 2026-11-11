@@ -21,12 +21,32 @@ import uuid
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tool"))
 from qualify_desktop_texture import compare_pixels, digest, positive_integer, read_json, write_json
 import qualify_desktop_texture as pixel_contract
+import build_desktop_probe as build_contract
 from build_desktop_probe import artifact, checked_sha, sources, verify_copied_sources
 
 MAX_ENTRIES = 4096
 MAX_FILES = 2048
 MAX_BYTES = 2 * 1024**3
 MAX_RECEIPT = 1024 * 1024
+
+
+def verify_capture_sources(receipt):
+    """Tie the executing collector and imported validators to the built inputs."""
+    expected = receipt.get("sourceFiles")
+    if not isinstance(expected, dict):
+        raise ValueError("Mac build receipt lacks pinned capture sources")
+    paths = {
+        "bindings/Flutter/macos/tests/qualify_native_view.py": __file__,
+        "bindings/Flutter/tool/qualify_desktop_texture.py": pixel_contract.__file__,
+        "bindings/Flutter/tool/build_desktop_probe.py": build_contract.__file__,
+    }
+    actual = {}
+    for relative, path in paths.items():
+        fingerprint = digest(Path(path).resolve(strict=True))
+        if expected.get(relative) != fingerprint:
+            raise ValueError("capture source differs from the actual Mac build: " + relative)
+        actual[relative] = fingerprint
+    return actual
 
 
 def tile_members(value, expected_ids=None):
@@ -514,6 +534,7 @@ def capture(args):
         raise ValueError("successful actual Mac build receipt is required")
     for key in ("sourceHead", "nativeSourceHead", "flutterRevision", "engineRevision"):
         checked_sha(receipt.get(key), key)
+    collector_sources = verify_capture_sources(receipt)
     if not isinstance(receipt.get("artifacts"), dict) or set(receipt["artifacts"]) != {"runner", "native", "dispatcher", "fixture", "capture"}:
         raise ValueError("Mac build receipt must contain exactly the owned runtime artifacts")
     files = {key: Path(value["path"]).resolve(strict=True) for key, value in receipt["artifacts"].items()}
@@ -543,6 +564,7 @@ def capture(args):
     state = {"platform": "macos", "qualification": "pending", "started": time.time(), "stages": [],
              "consumerGpuCompletionVerified": False, "hardwareAccelerationVerified": False,
              "continuousPresentationSupported": True, "build": receipt, "heldCoverVerified": False,
+             "collectorSourceFiles": collector_sources,
              "nativeCoverStrategy": "nativeHideAndOpaqueFlutterCover",
              "tileGroupRequested": args.tile_group, "tileGroupSamplingVerified": False,
              "flutterOverlayOccludesVisibleNativeViewVerified": False}
@@ -619,6 +641,7 @@ def capture(args):
             for key, path in files.items():
                 if digest(path) != receipt["artifacts"][key]["sha256"]:
                     raise ValueError("runtime artifact changed during capture: " + key)
+            verify_capture_sources(receipt)
             state.update(qualification="macos-appkit-metal-tile-group-passed" if args.tile_group else "macos-appkit-metal-view-passed",
                          exitCode=code, result=result, flutterNativeViewSamplingVerified=True,
                          tileGroupSamplingVerified=args.tile_group)

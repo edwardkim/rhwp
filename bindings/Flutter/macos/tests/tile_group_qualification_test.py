@@ -2,7 +2,12 @@
 """Portable rejection checks for actual two-AppKit-view capture evidence."""
 
 import copy
+from contextlib import contextmanager
+from pathlib import Path
+import tempfile
+from types import SimpleNamespace
 import unittest
+from unittest import mock
 
 from native_view_qualification_test import qualifier, result, stage
 
@@ -104,6 +109,80 @@ class TileGroupCaptureContracts(unittest.TestCase):
             value = copy.deepcopy(completed); value["nativeTileMembers"][1][key] = changed
             with self.assertRaises(ValueError):
                 qualifier.validate_result(value, nonce="owned", frames=32, tile_group=True, previous=previous)
+
+
+class CaptureSourceIdentityTests(unittest.TestCase):
+    """Fake process launch only; these controls never claim target execution."""
+
+    @contextmanager
+    def capture_inputs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repository = Path(qualifier.__file__).resolve().parents[4]
+            source_files = {
+                relative: qualifier.digest(repository / relative)
+                for relative in (
+                    "bindings/Flutter/macos/tests/qualify_native_view.py",
+                    "bindings/Flutter/tool/qualify_desktop_texture.py",
+                    "bindings/Flutter/tool/build_desktop_probe.py",
+                )
+            }
+            bundle = root / "probe.app"
+            runner = bundle / "Contents/MacOS/probe"
+            kernel = bundle / "Contents/Resources/flutter_assets/kernel_blob.bin"
+            runner.parent.mkdir(parents=True)
+            kernel.parent.mkdir(parents=True)
+            kernel.write_bytes(b"portable Dart artifact identity; never executed")
+            files = {"runner": runner, **{name: root / name for name in ("native", "dispatcher", "fixture", "capture")}}
+            for path in files.values():
+                path.write_bytes(b"portable artifact identity; never executed")
+            receipt = {
+                "platform": "macos", "buildExitCode": 0,
+                **{name: "a" * 40 for name in ("sourceHead", "nativeSourceHead", "flutterRevision", "engineRevision")},
+                "sourceFiles": source_files, "bundleRoot": str(bundle),
+                "runtimeBundle": qualifier.bundle_manifest(bundle),
+                "artifacts": {name: qualifier.artifact(path) for name, path in files.items()},
+            }
+            args = SimpleNamespace(build_receipt=root / "build.json", output=root / "output", frames=8, timeout=30, tile_group=True)
+            yield args, receipt
+
+    def test_matching_collector_and_direct_helpers_reach_only_the_mock_launch(self):
+        with self.capture_inputs() as (args, receipt):
+            qualifier.write_json(args.build_receipt, receipt)
+            with mock.patch.object(qualifier, "require_macos"), \
+                    mock.patch.object(qualifier.subprocess, "Popen", side_effect=RuntimeError("mock launch boundary")) as spawn:
+                with self.assertRaisesRegex(RuntimeError, "mock launch boundary"):
+                    qualifier.capture(args)
+            spawn.assert_called_once()
+
+    def test_missing_or_changed_collector_and_direct_helpers_stop_before_launch(self):
+        for relative in (
+            None,
+            "bindings/Flutter/macos/tests/qualify_native_view.py",
+            "bindings/Flutter/tool/qualify_desktop_texture.py",
+            "bindings/Flutter/tool/build_desktop_probe.py",
+        ):
+            with self.subTest(source=relative), self.capture_inputs() as (args, receipt):
+                if relative is None:
+                    receipt.pop("sourceFiles")
+                else:
+                    receipt["sourceFiles"][relative] = "0" * 64
+                qualifier.write_json(args.build_receipt, receipt)
+                with mock.patch.object(qualifier, "require_macos"), \
+                        mock.patch.object(qualifier.subprocess, "Popen", side_effect=RuntimeError("unexpected launch")) as spawn:
+                    with self.assertRaisesRegex(ValueError, "capture source"):
+                        qualifier.capture(args)
+                spawn.assert_not_called()
+
+    def test_loaded_helper_source_drift_after_initial_check_is_rejected(self):
+        with self.capture_inputs() as (args, receipt):
+            helper = args.output.parent / "loaded_pixel_helper.py"
+            helper.write_bytes(Path(qualifier.pixel_contract.__file__).read_bytes())
+            with mock.patch.object(qualifier.pixel_contract, "__file__", str(helper)):
+                self.assertEqual(qualifier.verify_capture_sources(receipt), receipt["sourceFiles"])
+                helper.write_bytes(helper.read_bytes() + b"\n# Changed after initial verification.\n")
+                with self.assertRaisesRegex(ValueError, "capture source.*qualify_desktop_texture"):
+                    qualifier.verify_capture_sources(receipt)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-# P117 macOS 두 타일 — Draft 검증 경계
+# P117 macOS 두 타일 — 검증 경계
 
 `rhwp_native/metal_view_macos`의 AppKit/CAMetalLayer 경로가 하나의 문서를 최대 두 타일로
 표시합니다. 기존 CVPixelBuffer 채널은 그대로 단일 target이며, 네 개 불변 프레임·64 MiB
@@ -84,8 +84,11 @@ ScreenCaptureKit의 전체 viewport를 비교하므로 두 타일의 경계도 �
 mount한 채 유지하는 가림, 두 owner의 완료 ack와 Native 자원 계수 아홉 개 0을 요구합니다.
 각 member의 실제 drawable 크기·stamp·snapshot ID·가림 serial·frame 수를 보존합니다.
 다른 DPR은 해당 Mac 화면의 실제 backing scale에서 별도로 실행하고 영수증을 구분합니다.
+캡처 시작과 종료에 collector 및 직접 가져온 픽셀 비교·빌드 helper의 해시를 빌드 영수증의
+`sourceFiles`와 대조하고 `collectorSourceFiles`로 보존합니다. 빌드 이후 도구가 바뀌었거나
+해당 소스 항목이 없는 영수증은 거절하므로 같은 소스로 다시 빌드한 뒤 캡처해야 합니다.
 
-빌드·capture 도구와 SDK 경로는 준비되어 있지만, 이 Draft의 Linux 개발 환경에서는 실제
+빌드·capture 도구와 SDK 경로는 준비되어 있지만, 구현·리뷰를 수행한 Linux 환경에서는 실제
 Apple SDK 컴파일·두 타일 Metal 출력·ScreenCaptureKit 수집을 실행하지 않았습니다. 이
 명령을 실제 target에서 완료하기 전에는 `tileGroupSamplingVerified` 성공으로 표시하지 않습니다.
 물리 GPU 성능·장치 상실·장시간 IME/AT·최종 한컴 코퍼스 검증도 별도 범위입니다.
