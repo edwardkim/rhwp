@@ -2722,6 +2722,7 @@ fn fill_one_interval(
                                 tokens,
                                 text_chars,
                                 break_token_idx,
+                                cursor.line_start_idx,
                                 eff_w(false),
                             );
                             if let Some(tail) = detached_tail {
@@ -3221,16 +3222,21 @@ fn recalc_space_savings_hwp(
     w
 }
 
-/// 끊는 자리 토큰 끝의 줄머리 금칙 묶음이 시작하는 글자 위치.
+/// 뒤 ASCII 낱말이 한 줄을 넘을 때 끊는 자리 토큰 끝의 줄머리 금칙 묶음 앞에서 줄을 끝낼
+/// 글자 위치.
 ///
 /// 줄머리 금칙 문자는 평소 앞 글자에 붙는다. 한컴 engine 2020 Print에서 `카.a`·`카.)`·
 /// `카.)***` 는 앞 글자와 함께 다음 줄로 가지만, 뒤의 ASCII 낱말이 한 줄을 넘으면
 /// 금칙 묶음이 그 낱말 쪽으로 떨어진다(`나` / `.****…`, `한다.111…` #2214).
-/// 뒤 낱말이 한 줄 폭 안이면 `None` 이다.
+/// 앞 글자가 줄 첫 글자가 아니면 그 앞 글자도 금칙 묶음과 함께 다음 줄로 가고, 다음 줄에서
+/// 홀로 남는다 — 낱말 단위 `가나다만,***…` 는 `가나다` / `만` / `,***…`, 글자 단위
+/// `가나다라나.***…` 는 `가나다라` / `나` / `.***…` 다(#8950). 앞 글자가 줄 첫 글자이면
+/// 금칙 묶음 앞에서 끝낸다. 뒤 낱말이 한 줄 폭 안이면 `None` 이다.
 fn forbidden_tail_before_oversized_run(
     tokens: &[BreakToken],
     text_chars: &[char],
     break_token_idx: usize,
+    line_start_idx: usize,
     line_width_hwp: i32,
 ) -> Option<usize> {
     let BreakToken::Text {
@@ -3265,7 +3271,11 @@ fn forbidden_tail_before_oversized_run(
         }
         run_width_hwp += to_hwp(*base_width);
     }
-    (run_width_hwp > line_width_hwp).then_some(tail)
+    if run_width_hwp <= line_width_hwp {
+        return None;
+    }
+    let head = tail - 1;
+    Some(if head > line_start_idx { head } else { tail })
 }
 
 /// `boundary` 를 끝내지 않은 첫 토큰의 위치.
