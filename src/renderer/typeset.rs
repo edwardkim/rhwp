@@ -75,6 +75,19 @@ const ENDNOTE_PAGE_OFFCANVAS_GUARD_PX: f64 = 56.0;
 ///
 /// 정확히 절반인 문단까지 낱장 정책을 적용하면 기존 pile 문서의 다수 그림 흐름을
 /// 불필요하게 페이지 단위로 분리한다. 두 장 이상이라는 #1995의 하한은 유지한다.
+/// 저장 줄 `next` 가 앞 저장 줄 `prev` 뒤에서 쪽 리셋(vpos <= 0, 앞 줄이 쪽에서 5000HU 넘게
+/// 내려간 뒤 — #1920 임계)되었는가. 한/글이 그 줄을 다음 쪽 맨 위에 두었다는 저장 증거다.
+/// 앞 줄이 내려간 깊이는 그 줄의 끝(vpos + lh)이다 — 쪽 첫머리의 큰 표 줄은 시작 vpos 가
+/// 작아도 쪽을 채운다. 합성 줄은 증거가 아니다.
+pub(crate) fn stored_line_restarts_page(
+    prev: &crate::model::paragraph::LineSeg,
+    next: &crate::model::paragraph::LineSeg,
+) -> bool {
+    (prev.tag | next.tag) & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && next.vertical_pos <= 0
+        && prev.vertical_pos.saturating_add(prev.line_height) > 5000
+}
+
 fn has_majority_fullpage_images(fullpage_count: usize, noninline_picture_count: usize) -> bool {
     fullpage_count >= 2 && fullpage_count.saturating_mul(2) > noninline_picture_count
 }
@@ -6056,9 +6069,19 @@ impl TypesetEngine {
             // 쪽 끝의 마지막 줄은 글줄의 점유 끝으로 수용한다. 줄 뒤 간격은
             // 다음 흐름에는 보존하지만, 그 간격만 용지 밖에 남는다는 이유로
             // 본문에 들어가는 줄을 다음 쪽으로 옮기지 않는다.
-            if (self.tac_table_line_index(para, table, fmt) == Some(0)
+            // 표 뒤 첫 글줄이 저장 쪽 리셋이면 한/글은 그 줄부터 다음 쪽에 둔다. 표 줄이
+            // 문단 몇 번째 줄이든 같다(표 줄 자체의 리셋은 `needs_stored_line_advance`).
+            let post_text_restarts_page = !self.profile.get().session_edited()
+                && self
+                    .tac_table_line_index(para, table, fmt)
+                    .filter(|&table_line| post_table_start > table_line)
+                    .and_then(|table_line| para.line_segs.get(table_line))
+                    .zip(para.line_segs.get(post_table_start))
+                    .is_some_and(|(prev, next)| stored_line_restarts_page(prev, next));
+            if ((self.tac_table_line_index(para, table, fmt) == Some(0)
                 || session_grown_topbottom_spill)
                 && st.current_height + post_content_height > st.available_height() + 0.5
+                || post_text_restarts_page)
                 && !st.current_items.is_empty()
             {
                 st.advance_column_or_new_page();
