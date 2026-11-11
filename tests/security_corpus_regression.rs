@@ -38,6 +38,25 @@ fn repo(rel: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(rel)
 }
 
+/// `samples/` 아래(하위 폴더 포함)에서 파일 이름이 `name` 인 첫 표본.
+fn find_sample(name: &str) -> Option<PathBuf> {
+    let mut stack = vec![repo("samples")];
+    while let Some(dir) = stack.pop() {
+        let Ok(entries) = std::fs::read_dir(&dir) else {
+            continue;
+        };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                stack.push(path);
+            } else if path.file_name().is_some_and(|file| file == name) {
+                return Some(path);
+            }
+        }
+    }
+    None
+}
+
 fn rhwp_bin() -> String {
     env!("CARGO_BIN_EXE_rhwp").to_string()
 }
@@ -281,13 +300,20 @@ fn positive_corpus_unicode_vector_is_caught() {
 ///   `textColor="#FFFFFF"` 다. 셀의 `borderFillIDRef=6` 에는 채우기가 없고 구역 XML 에
 ///   `<hp:pic>`·`<hp:rect>` 가 0개라 탐지기가 쪽 바탕까지 내려간다(`backgroundSource: "page"`).
 ///   눈에 보이는 발신 명의는 옆 칸의 다른 글이다. 흰 종이 위 1pt 흰 글자로 **사람 눈에 보이지 않는다**.
+/// - `36439173-empty-tac-line-baseline.hwpx`(#8960) 1·2쪽 흰 글자 12자씩
+///   「5. 주        」. 후보자 등록 신청서·사퇴서 서식에서 「4. 후보자성명」 아래
+///   독립 문단(0.10·0.38, 글자 모양 id=20 `text=#FFFFFF`)으로 남은 옛 항목이다.
+///   표·글상자 밖 본문 문단이라 탐지기가 쪽 바탕까지 내려간다(`backgroundSource:
+///   "page"`). 한/글 engine 2020 Print PDF 1쪽은 「6. 주 소」(y 369~384px) 와
+///   「상기 본인은」(y 434px) 사이 이 줄 자리(약 y 405~422px)가 비어 있다 — 흰 종이
+///   위 흰 글자로 **사람 눈에 보이지 않는다**.
 ///
 /// - `issue8664/zero_size_para_before_table.hwp` 1쪽 문단 1 의 크기 0 글자 137자
 ///   (`kind: zero_size`, `effectivePt: 0.0`). #8664 재현물로, 보이지 않는 글을 크기 0
 ///   글자로 숨겨 둔 서식 문서의 형상을 일부러 만든 것이다. 이 문단이 줄 높이를
 ///   만들지 않는지가 회귀 가드의 대상이므로 **보이지 않는 글자가 있다**는 탐지는 옳다.
 ///
-/// 그래서 **규칙을 느슨하게 하지 않고** 이 여섯 문서만 스윕에서 뺀다. 여기에 항목을
+/// 그래서 **규칙을 느슨하게 하지 않고** 이 일곱 문서만 스윕에서 뺀다. 여기에 항목을
 /// 추가할 때는 반드시 위와 같은 개별 근거를 함께 남긴다 — 근거 없이 이름만 늘리면
 /// 이 목록이 오탐을 숨기는 서랍이 된다.
 const KNOWN_GENUINE_HIDDEN_TEXT: &[&str] = &[
@@ -297,6 +323,7 @@ const KNOWN_GENUINE_HIDDEN_TEXT: &[&str] = &[
     "1351000-201800239_hpv_cohort_final_report.hwp",
     "36338125-bottom-fixed-table-margin.hwpx",
     "zero_size_para_before_table.hwp",
+    "36439173-empty-tac-line-baseline.hwpx",
 ];
 
 /// 제로폭 축의 같은 성격 목록 — **탐지가 맞았는데 표본이 실제로 그렇다**는 선언.
@@ -583,10 +610,11 @@ fn all_three_envelopes_share_a_consistent_clean_and_array_contract() {
 #[test]
 fn allowlisted_documents_still_actually_trigger_detection() {
     for name in KNOWN_GENUINE_HIDDEN_TEXT {
-        let path = repo("samples").join(name);
-        if !path.exists() {
+        // 이슈별 fixture 는 `samples/issueNNNN/` 아래에 있다 — 바로 아래만 보면
+        // 그 항목의 자기검증이 조용히 빠진다.
+        let Some(path) = find_sample(name) else {
             continue; // 표본이 사라졌다면 이 시험의 관심사가 아니다.
-        }
+        };
         let v = inspect_hidden_text(&path);
         assert_eq!(
             v["clean"], false,
