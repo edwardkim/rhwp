@@ -694,6 +694,18 @@ impl TypesetEngine {
                 let host_trailing_spacing =
                     fmt.line_spacings.last().copied().unwrap_or(0.0).max(0.0);
                 st.record_pre_emitted_host_height(para_idx, host_h, host_h - host_trailing_spacing);
+                if let Some(table_top) = fragment_host_placement.as_ref().map(|p| p.table_top) {
+                    self.fill_float_band_gap_successors(
+                        st,
+                        para_idx,
+                        para,
+                        table,
+                        table_top,
+                        paragraphs_all,
+                        composed_all,
+                        styles,
+                    );
+                }
             }
             st.mark_pre_emitted_host(para_idx);
         }
@@ -771,7 +783,12 @@ impl TypesetEngine {
                 if is_para_relative_table && v > 0 {
                     hwpunit_to_px(v, self.dpi)
                 } else {
-                    0.0
+                    // [#8810] 분할 예산(`budget.rs`)과 같은 쪽 기준 첫 조각 원점.
+                    crate::renderer::float_placement::page_relative_first_fragment_offset_px(
+                        table, self.dpi,
+                    )
+                    .filter(|_| st.current_items.is_empty() && st.current_height < 0.5)
+                    .unwrap_or(0.0)
                 }
             };
             // [#8149] 첫 조각 행 예산과 같은 빈 host 바닥 예약으로 첫 행 수용을 판정한다.
@@ -1167,7 +1184,7 @@ impl TypesetEngine {
                     table.common.text_wrap,
                     crate::model::shape::TextWrap::TopAndBottom
                 )
-                && first_block_is_single_row
+                && (first_block_is_single_row || opening_rowspan_block_cuts_after_first_row)
                 && !first_row_is_repeated_header
                 && !host_starts_new_stored_page
                 && !st.current_items.is_empty()

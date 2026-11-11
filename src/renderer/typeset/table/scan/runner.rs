@@ -98,8 +98,12 @@ impl TypesetEngine {
         };
         while progress.r < v.row_count {
             let r = progress.r;
-            if v.source_terminal_suffix_start
-                .is_some_and(|start| v.cursor_row < start && r >= start)
+            // 용량으로 저장 프레임 중간을 자른 이어받기는 원본 마지막 조각의
+            // 원점이 아니다. 원본 suffix 경계를 다시 강제하면 짧은 중간 쪽을
+            // 만들고 뒤의 표·본문을 한 쪽씩 민다. 인증된 원점에서만 적용한다.
+            if !v.source_frame_origin_unverified
+                && v.source_terminal_suffix_start
+                    .is_some_and(|start| v.cursor_row < start && r >= start)
             {
                 break;
             }

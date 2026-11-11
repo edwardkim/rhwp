@@ -27,51 +27,8 @@ pub(super) fn owns_saved_object_line(para: &Paragraph) -> bool {
 }
 
 /// 가시 본문과 작은 TAC 도형이 유효한 저장 글줄의 기준선 상자 안에 함께 들어간다.
-/// 합성 줄·캡션·변환 후 커진 개체를 원래 텍스트 줄 높이로 수용하지 않는다.
 pub(super) fn inline_graphics_fit_saved_text_line(para: &Paragraph, alignment: u8) -> bool {
-    let [line] = para.line_segs.as_slice() else {
-        return false;
-    };
-    if alignment != 0
-        || para.stored_text_partition_dirty
-        || para.cell_format_vpos_dirty
-        || line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
-        || line.text_start != 0
-        || line.line_height != line.text_height
-        || line.baseline_distance <= 0
-        || line.baseline_distance > line.line_height
-        || !para
-            .text
-            .chars()
-            .any(|c| !c.is_whitespace() && c > '\u{001f}' && c != '\u{fffc}')
-    {
-        return false;
-    }
-    let mut has_graphic = false;
-    let ascent_ratio = crate::renderer::composer::inline_picture_ascent_ratio(alignment);
-    para.controls.iter().all(|control| {
-        if crate::renderer::control_is_body_flow_neutral_marker(control) {
-            return true;
-        }
-        let (common, height) = match control {
-            Control::Shape(shape)
-                if shape.drawing().is_some_and(|drawing| {
-                    drawing.caption.is_none() && drawing.text_box.is_none()
-                }) =>
-            {
-                (shape.common(), shape.flow_height_hu())
-            }
-            _ => return false,
-        };
-        has_graphic = true;
-        common.treat_as_char
-            && common.vertical_offset == 0
-            && height > 0
-            && f64::from(height) * ascent_ratio + f64::from(common.margin.top)
-                <= f64::from(line.baseline_distance)
-            && f64::from(height) * (1.0 - ascent_ratio) + f64::from(common.margin.bottom)
-                <= f64::from(line.line_height - line.baseline_distance)
-    }) && has_graphic
+    crate::renderer::stored_frame_boundary::inline_graphics_fit_saved_text_line(para, alignment)
 }
 
 /// 이전 저장 줄 상자가 본문을 채우고 다음 저장 원점이 위로 돌아간 경계다.

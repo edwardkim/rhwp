@@ -36,6 +36,16 @@ pub(crate) fn stored_nested_host_frame(
             )
         })
         .or_else(|| {
+            ParagraphFloatPlacement::from_stored_inner_host(
+                paragraph,
+                table,
+                control,
+                origin,
+                body_height,
+                dpi,
+            )
+        })
+        .or_else(|| {
             ParagraphFloatPlacement::from_empty_stored_offset_host(
                 paragraph,
                 table,

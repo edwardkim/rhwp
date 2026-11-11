@@ -493,6 +493,7 @@ const context = {
   payload: {
     pull_request: {
       number: 4310,
+      changed_files: 2,
       created_at: '2026-08-09T00:00:00Z',
       base: { sha: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' },
       head: { sha: 'dddddddddddddddddddddddddddddddddddddddd', ref: 'feature-3790', repo: { id: 7 } },

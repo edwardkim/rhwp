@@ -165,6 +165,22 @@ impl TypesetState {
     ) {
         self.data.behind_pending_absorbs.push(para);
     }
+    /// 겹침 불허 그림 무리에서 다음 새 쪽 맨 위로 옮길 그림을 줄 세운다.
+    pub(in crate::renderer::typeset) fn queue_cascaded_pile_picture(
+        &mut self,
+        para_index: usize,
+        control_index: usize,
+    ) {
+        self.data
+            .cascaded_pile_pictures
+            .push_back((para_index, control_index));
+    }
+    /// 쪽이 모자라 아직 옮기지 못한 무리 그림을 현재 쪽 맨 앞에 둔다.
+    pub(in crate::renderer::typeset) fn place_remaining_pile_pictures_on_current_page(&mut self) {
+        let data = &mut *self.data;
+        data.page_start_pile_pictures
+            .extend(data.cascaded_pile_pictures.drain(..));
+    }
     pub(in crate::renderer::typeset) fn defer_square_picture(
         &mut self,
         picture: DeferredSquarePictureControl,
@@ -179,7 +195,7 @@ impl TypesetState {
         let data = &mut *self.data;
         if let Some(index) = picture.following_body_para_index {
             data.deferred_source_frame_body_pages
-                .insert(index, data.pages.len() + 2);
+                .insert(index, picture.target_page.unwrap_or(data.pages.len() + 2));
         }
         if matches!(
             picture.kind,
@@ -238,6 +254,7 @@ impl TypesetState {
         }
         self.data.deferred_next_column_stored_frames.push(
             crate::renderer::typeset::DeferredStoredFrameControl {
+                target_page: None,
                 kind: crate::renderer::typeset::DeferredStoredFrameKind::Picture,
                 para_index: para_idx,
                 control_index: ctrl_idx,
@@ -466,15 +483,30 @@ impl TypesetState {
         y: f64,
     ) {
         self.data.vpos_snapped_flow_start = Some((para_idx, y));
+        self.data.vpos_snapped_flow_page = Some((self.data.pages.len(), self.data.current_column));
     }
     pub(in crate::renderer::typeset) fn record_vpos_lazy_origin(&mut self, value: Option<i32>) {
         self.data.vpos_lazy_base = value;
+    }
+    pub(in crate::renderer::typeset) fn record_rejected_gap_snap(&mut self, value: i32) {
+        self.data.vpos_rejected_gap_hu = self.data.vpos_rejected_gap_hu.saturating_add(value);
+    }
+    pub(in crate::renderer::typeset) fn record_synthetic_forward_rejected(&mut self, hu: i32) {
+        self.data.synthetic_forward_rejected_hu += hu;
     }
     pub(in crate::renderer::typeset) fn record_rejected_stored_forward_origin(
         &mut self,
         value: Option<(usize, i32)>,
     ) {
         self.data.rejected_stored_forward_origin = value;
+    }
+    /// [#8845] 공통 vpos 질의가 낡은 전방 원점을 거절하고 기준을 옮겼으면 단이 끝날
+    /// 때까지 남긴다. 한 번 옮긴 기준은 뒤 문단에서도 유효하다.
+    pub(in crate::renderer::typeset) fn record_rebased_after_unstored_forward(
+        &mut self,
+        rebased: bool,
+    ) {
+        self.data.vpos_rebased_after_unstored_forward |= rebased;
     }
     pub(in crate::renderer::typeset) fn record_stored_column_origin(
         &mut self,

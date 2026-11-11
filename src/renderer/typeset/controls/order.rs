@@ -175,11 +175,10 @@ pub(in crate::renderer::typeset) fn for_paragraph_with_storage<S: crate::storage
     // (1.hwpx pi=322: TAC(v_off 0)가 자리차지(v_off 1768) 앞으로) 리셋
     // 경계 배치가 무너져 두 표가 같은 쪽에 겹친다. #1639 음수-혼재와
     // 동일하게 정렬을 끄고 배열(저장) 순서를 보존한다.
-    let has_mid_para_vpos_reset = para.line_segs.windows(2).any(|w| {
-        (w[0].tag | w[1].tag) & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-            && w[1].vertical_pos <= 0
-            && w[0].vertical_pos > 5000
-    });
+    let has_mid_para_vpos_reset = para
+        .line_segs
+        .windows(2)
+        .any(|w| crate::renderer::typeset::stored_line_restarts_page(&w[0], &w[1]));
     // [#5807] 자리차지(양수 v_off) 표와 TAC 표가 한 host 에 co-anchored 되면
     // 아래 정렬 키가 TAC 에 0 을 주어 TAC 가 float **앞**으로 온다. 한글의 실제
     // 배치는 선언 위치의 겹침 여부로 갈린다:

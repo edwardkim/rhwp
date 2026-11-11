@@ -215,7 +215,7 @@ pub(super) fn prepare(
             return false;
         };
         flow.tac_table_line_index(para, table, fmt)
-            .filter(|&owner| crate::renderer::composer::ordinary_tac_prefix_rows(para, owner))
+            .filter(|&owner| crate::renderer::composer::owned_tac_prefix_rows(para, owner))
             .is_some_and(|owner| {
                 page.current_height + fmt.line_content_height(0..owner, 0.0) <= available_height()
             })

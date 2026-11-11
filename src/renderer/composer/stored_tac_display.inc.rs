@@ -48,7 +48,33 @@ pub(crate) fn stored_first_tac_line(para: &Paragraph) -> Option<&LineSeg> {
 pub(crate) fn ordinary_tac_prefix_rows(para: &Paragraph, owner: usize) -> bool {
     !para.text.is_empty()
         && para.text.chars().all(char::is_whitespace)
-        && owner > 0
+        && stored_prefix_rows_are_text_rows(para, owner)
+}
+
+/// 개체 줄 앞의 저장 줄이 이 문단이 실제로 쌓는 줄인가 — 공백 줄
+/// ([`ordinary_tac_prefix_rows`]) 또는 글자 없는 host 의 필드 시작 줄.
+///
+/// [#8782] 필드 시작(누름틀 등)은 폭이 없어도 줄의 내용이라, 그 뒤 남은 폭에 들지 않는
+/// 개체는 다음 줄에서 시작하고 필드 시작은 글자 높이의 빈 줄로 남는다(#8507, #8684).
+/// 글자가 없어도 그 줄은 이 문단이 쌓는 줄이다(36368775 2쪽: ts 0 vpos 1652 필드 줄,
+/// ts 8 vpos 3304 표 줄). 쪽을 넘길 때도 그 줄은 이 쪽에 남고 개체 줄만 넘어간다
+/// (36454509 1→2쪽). 저장 줄 없는 재조판 줄은
+/// [`crate::renderer::para_has_composed_object_rows`] 계약이 맡으므로 한/글 저장 줄만 받는다.
+pub(crate) fn owned_tac_prefix_rows(para: &Paragraph, owner: usize) -> bool {
+    ordinary_tac_prefix_rows(para, owner)
+        || (para.text.is_empty()
+            && !crate::renderer::para_has_no_stored_line_segs(para)
+            && para
+                .controls
+                .iter()
+                .take_while(|control| !control.is_treat_as_char_object())
+                .any(|control| matches!(control, Control::Field(_)))
+            && stored_prefix_rows_are_text_rows(para, owner))
+}
+
+/// 개체 줄 앞 저장 줄들이 같은 조각 안에서 앞으로만 진행하는 글자 높이 줄인지.
+fn stored_prefix_rows_are_text_rows(para: &Paragraph, owner: usize) -> bool {
+    owner > 0
         && para.line_segs.get(owner).is_some_and(|row| {
             row.vertical_pos >= para.line_segs[0].vertical_pos
                 && para.line_segs[..=owner]

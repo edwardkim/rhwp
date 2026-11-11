@@ -27,6 +27,7 @@ impl TypesetEngine {
             suppress_large_forward_jump: false,
             suppress_hwpx_stale_forward: st.profile.hwpx_stored_layout(),
             rejected_stored_forward_origin: None,
+            rebased_after_unstored_forward: false,
             stored_equation_reflow: st.profile.hwp5_container(),
             prev_reissued_equation_rows: st
                 .vpos_prev_layout_para
@@ -61,6 +62,7 @@ impl TypesetEngine {
             endnote_note_first_paras: Default::default(),
             endnote_tail_leading_hu: Default::default(),
             seed_lazy_base_from_next_stored: false,
+            synthetic_forward_rejected_hu: 0,
         }
     }
 
@@ -96,6 +98,7 @@ impl TypesetEngine {
             hc.rejected_stored_forward_origin
                 .map(|source| (para_idx, source)),
         );
+        st.record_rebased_after_unstored_forward(hc.rebased_after_unstored_forward);
     }
 
     /// 렌더러 `build_single_column` 의 inter-item VPOS_CORR(Stage C `HeightCursor::vpos_adjust`)
@@ -302,6 +305,38 @@ impl TypesetEngine {
         {
             y = st.current_height;
         }
+        // 배치가 버릴 스냅을 측정이 따르면 그리지 않는 높이로 쪽을 넘긴다. 같은 판정을 쓰고
+        // 뒤 문단의 상대 간격을 위해 사다리 원점도 함께 옮긴다.
+        if st.profile.hwpx_stored_layout() {
+            let previous_line_owner = st.current_items.last().and_then(|item| match item {
+                crate::renderer::typeset::PageItem::FullParagraph { para_index }
+                | crate::renderer::typeset::PageItem::PartialParagraph { para_index, .. } => {
+                    Some(*para_index)
+                }
+                _ => None,
+            });
+            let keeps_gap = paragraphs.get(para_idx).is_some_and(|para| {
+                crate::renderer::height_cursor::stale_snap_stays_above_band(
+                    para,
+                    para_idx,
+                    st.current_height,
+                    y,
+                    st.visible_float_exclusions
+                        .iter()
+                        .map(|zone| (zone.para_index, zone.top)),
+                    previous_line_owner,
+                    self.dpi,
+                )
+            });
+            if keeps_gap {
+                hc.shift_vpos_base_for_rendered_backtrack(y - st.current_height);
+                st.record_rejected_gap_snap(crate::renderer::px_to_hwpunit(
+                    y - st.current_height,
+                    self.dpi,
+                ));
+                y = st.current_height;
+            }
+        }
         // 페이지 배분이 확정한 단 상대 흐름 경계는 배치도 그대로 소비한다.
         // 앞 문단을 완전히 수용한 같은 단에서 다음 시작으로 이동했으면 그
         // 위치가 앞 문단의 흐름 끝이다. 글자 유무·TAC·개체 조합으로 저장 줄을
@@ -333,6 +368,7 @@ impl TypesetEngine {
         // 재조판 뒤 저장 줄의 원점 연결과 지연 기준 산출을 모두 회수한다.
         st.record_vpos_page_origin(hc.vpos_page_base);
         st.record_vpos_lazy_origin(hc.vpos_lazy_base);
+        st.record_synthetic_forward_rejected(hc.synthetic_forward_rejected_hu);
         st.record_stored_column_origin(hc.stored_column_origin);
         st.record_vpos_column_anchor(hc.col_anchor_y);
         st.align_flow_to(y);
@@ -341,6 +377,7 @@ impl TypesetEngine {
             hc.rejected_stored_forward_origin
                 .map(|source| (para_idx, source)),
         );
+        st.record_rebased_after_unstored_forward(hc.rebased_after_unstored_forward);
 
         Ok(())
     }

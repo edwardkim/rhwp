@@ -1,0 +1,51 @@
+{
+  "recorded_at": "2026-11-11T17:02:24.769000+09:00",
+  "parent": "f95c27dce93636e031e261e4db60ec6dabd2a2de",
+  "original_contracts": [
+    {
+      "issue": 1510,
+      "actual_commit": "1c17defd852989411fbc239644d6f1ca491cae47",
+      "contract": "비공백 호스트 자리차지 표의 선언 높이에 측정 행을 맞춤. 전체 표 선언을 전제로 함."
+    },
+    {
+      "issue": 2195,
+      "actual_commit": "bde419f3e927f629bb9c863cc55a448bc4175ca1",
+      "contract": "빈 호스트는 확대만 하고 축소하지 않음. 기존 정상 흐름 보존."
+    }
+  ],
+  "input": "samples/issue8842/1351000-201800239_hpv_cohort_final_report.hwp",
+  "pdf": "pdf/issue8842/1351000-201800239_hpv_cohort_final_report-2020.pdf",
+  "source": {
+    "section": 2,
+    "host_paragraph": 47,
+    "host_vpos_hu": 38282,
+    "first_fragment_height_hu": 27212,
+    "raw_row_heights_hu": [
+      3609,
+      2736,
+      1923,
+      1923,
+      1923,
+      1923,
+      1923,
+      1923,
+      1923,
+      1923,
+      1923,
+      1923,
+      1923,
+      1923,
+      3248
+    ],
+    "total_row_height_hu": 32669,
+    "following_paragraph": 48,
+    "following_vpos_hu": 5457,
+    "certificate": "32669 = 27212 + 5457; following stored vpos rewinds to the closing page"
+  },
+  "independent_pdf": "80쪽 제목 아래 첫 행은 47.948px, 81쪽에 마지막 두 행이 이어진 뒤 본문 재개",
+  "observed_error": "R7은 표 전체를 27212/32669배로 축소해 80쪽에 모두 넣고 81쪽 잔여를 누락한다.",
+  "proposed_correction": "다음 원본 줄의 종료 원점과 행 합이 정확히 닫히는 경우에만 전체 행 본체를 보존하고 첫 조각 선언으로 비례 축소하지 않음. format/paint 공통 Query, 편집·합성·HWPX 지역 원점·일반 선언 축소는 제외.",
+  "status": "공통 Query 보정 적용, Native 집중 검증 및 직접 판독 완료. fresh WASM 및 최종 전쪽 검증은 미완료.",
+  "input_sha256": "49adaad5b74a6019b15ea18876c72f915924666bee993a5c1cbd213414f33f8f",
+  "pdf_sha256": "b104b18e02e562e1396c8bceaba9b6786957e4b8535d76f2b307cbe05fb81167"
+}

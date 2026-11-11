@@ -437,6 +437,7 @@ pub(super) fn prepare_computed(
     // 보정 전 측정값으로 줄 소유를 거절하면 표 뒤 흐름만 legacy 상한으로 되돌아간다.
     let fitted = super::super::table::fit_measured_for_host(
         para,
+        next_para,
         table,
         Some(measured),
         dpi,
@@ -456,10 +457,15 @@ pub(super) fn prepare_computed(
     {
         return None;
     }
+    // 한/글은 문단 위 간격을 쪽 맨 위에서도 적용한다(#8474). 저장 줄이 없는 합성
+    // 줄은 그 간격을 증언할 저장 vpos 가 없으므로 문단 모양의 위 간격을 그대로 쓴다
+    // — 저장 줄 없는 글 문단의 단 첫머리와 같은 계약이다.
     let flow_origin = page.current_height
         + if page.current_height < 1.0 {
             if saved_column_top {
                 saved_top
+            } else if computed {
+                fmt.spacing_before
             } else {
                 0.0
             }
@@ -501,15 +507,30 @@ pub(super) fn prepare_computed(
     // 같은 닫힘 계약의 `composer::stored_tac_successor_delta_hu` 와 같게 등식에 넣는다.
     let paragraph_spacing_hu =
         crate::renderer::px_to_hwpunit(fmt.spacing_after + next_spacing_before, dpi);
+    // 명시적 쪽(구역)나눔 문단은 새 쪽 본문 위끝에서 시작하므로 그 표 줄의 프레임 원점은 0이다.
+    // 저장 줄이 없어 합성한 표 줄의 vpos 는 앞 쪽 누적값일 수 있어 원점 근거가 아니다. 다음 원본
+    // 줄이 그 영점에서 `lh + ls + 문단 간격` 뒤에 있으면 같은 닫힘 증거로 간격 전량을 남긴다
+    // ([#8925] 36415413 2쪽: 쪽나눔 제목 표 문단 lh 8574·ls 1360, 다음 상자 표 문단 vpos 9934).
+    let opens_page_frame = origin <= hwpunit_to_px(1, dpi)
+        && matches!(
+            para.column_type,
+            crate::model::paragraph::ColumnBreakType::Page
+                | crate::model::paragraph::ColumnBreakType::Section
+        );
     let full_trailing_spacing = next_para.is_some_and(|next| {
         next.line_segs.first().is_some_and(|next_seg| {
-            next_seg.vertical_pos > seg.vertical_pos
-                && seg
-                    .vertical_pos
-                    .saturating_add(seg.line_height)
-                    .saturating_add(seg.line_spacing)
-                    .saturating_add(paragraph_spacing_hu)
-                    == next_seg.vertical_pos
+            let closing_advance = seg
+                .line_height
+                .saturating_add(seg.line_spacing)
+                .saturating_add(paragraph_spacing_hu);
+            (next_seg.vertical_pos > seg.vertical_pos
+                && seg.vertical_pos.saturating_add(closing_advance) == next_seg.vertical_pos)
+                || (opens_page_frame
+                    && closing_advance > 0
+                    && !next.stored_text_partition_is_dirty()
+                    && next_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                        == 0
+                    && next_seg.vertical_pos == closing_advance)
         })
     });
     // 원본 저장 줄은 다음 줄 원점까지 후행 간격을 전량 소유한다.
@@ -893,6 +914,15 @@ pub(super) fn prepare(
                 // 앞 저장 글줄의 후행 간격은 표의 진입 밴드다. 수용 커서가
                 // 그 글줄의 내용 끝에 있으면 같은 좌표축에서 표 원점까지 연결한다.
                 let inherited_origin = previous_para.and_then(|previous| {
+                    // 빈 안내 줄에는 보호할 잉크 하단이 없다. 현재 물리 커서와
+                    // 저장 개체 원점이 이미 일치하면 안내 줄의 측정 간격으로
+                    // 같은 원점을 다시 밀지 않는다. 글이 있는 앞 줄의 점유는 유지한다.
+                    if previous.text.trim().is_empty()
+                        && previous.controls.is_empty()
+                        && (saved_origin - page.current_height).abs() <= dpi / 7200.0
+                    {
+                        return None;
+                    }
                     if previous.stored_text_partition_is_dirty() || previous.cell_format_vpos_dirty
                     {
                         return None;

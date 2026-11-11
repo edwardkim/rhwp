@@ -2121,6 +2121,16 @@ pub(crate) fn para_has_no_stored_line_segs(p: &crate::model::paragraph::Paragrap
     p.line_segs.is_empty() || p.line_segs.iter().all(|s| s.tag & 0x8000_0000 != 0)
 }
 
+/// [#8810] 저장 줄 없는 **글** 문단 — 저장 뒤 글을 고치고 줄 정보를 지운 문단이다.
+///
+/// 같은 사다리의 뒤 저장 vpos 와 되감김은 이 문단의 저장 당시 높이로 정해졌으므로, 이
+/// 문단을 지난 저장 좌표는 현재 글의 조판이 아니다. 개체를 가진 문단은 본문 규칙
+/// (`stored_page_boundary_invalidated_by_reflow`)과 같이 독립 소유자로 본다 — 쪽을 넘는
+/// TAC 표 host 는 저장 줄 없이도 정상 저장본이다.
+pub(crate) fn para_is_unstored_text(p: &crate::model::paragraph::Paragraph) -> bool {
+    p.controls.is_empty() && !p.text.trim().is_empty() && para_has_no_stored_line_segs(p)
+}
+
 /// [#8507] 글자 없는 host(텍스트 스트림이 비어 있는 문단)의 개체 줄을 rhwp 가 여러 줄로 재조판했는지.
 ///
 /// 줄 재조판은 필드 시작 뒤 줄 폭에 들지 않는 글자처럼 취급 개체를 다음 줄로 넘기고 필드
@@ -4406,13 +4416,56 @@ pub(crate) fn empty_host_line_absorbed_by_topbottom_float(
         && (0..seg.line_height.max(1)).contains(&offset)
 }
 
+/// 글 없는 host 의 줄 상자가 자기 문단 기준 위아래 개체의 띠 **위에** 따로 놓이는가 — 세로
+/// 오프셋이 저장 줄 높이 이상이라 띠가 줄 상자 아래에서 시작한다(#6133 의 표 판정과 같은 경계).
+/// 그때 다음 문단은 `max(host 줄 끝, 띠 아래끝)` 에서 시작한다: 1351000-201500141 pi613 줄
+/// 23224·lh 1000·오프셋 1105 → 다음 저장 vpos 42040 = 23224 + 1105 + 17711(그림 띠 끝). 줄이
+/// 띠 안에서 시작하면(오프셋 < 줄 높이) 종전대로 줄은 띠 아래로 밀리거나(#409) 띠에
+/// 흡수된다([`empty_host_line_absorbed_by_topbottom_float`]).
+/// 저장 줄이 띠 아래끝에 놓였으면(3780000-202000005 pi1042: 앞 줄 끝 2900 근처 + 오프셋 3409
+/// + 그림 23700 → 줄 vpos 30849) 줄은 띠 아래에 있으므로 이 판정에서 뺀다.
+pub(crate) fn textless_host_line_above_topbottom_float(
+    paragraphs: &[crate::model::paragraph::Paragraph],
+    para_index: usize,
+    common: &crate::model::shape::CommonObjAttr,
+) -> bool {
+    use crate::model::shape::{TextWrap, VertRelTo};
+
+    let Some(para) = paragraphs.get(para_index) else {
+        return false;
+    };
+    if common.treat_as_char
+        || !matches!(common.text_wrap, TextWrap::TopAndBottom)
+        || !matches!(common.vert_rel_to, VertRelTo::Para)
+        || para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
+    {
+        return false;
+    }
+    let [seg] = para.line_segs.as_slice() else {
+        return false;
+    };
+    let offset = crate::renderer::float_placement::signed_hwpunit(common.vertical_offset);
+    // 저장 줄이 띠보다 앞(문단 시작)에 있을 때만 줄이 띠 위에 따로 있다. 한/글이 줄을
+    // 띠 아래로 내려 저장했으면(앞 흐름 끝 + 오프셋 + 띠 = 줄 vpos) 종전 경로가 맞다.
+    let line_before_band = stored_previous_flow_end_hu(paragraphs, para_index)
+        .is_none_or(|prev_end| seg.vertical_pos < prev_end.saturating_add(offset));
+    seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && seg.line_height > 0
+        && offset >= seg.line_height
+        && line_before_band
+}
+
 /// 띠에 흡수된 빈 host 줄([`empty_host_line_absorbed_by_topbottom_float`])이 흐름에서 돌려받는
-/// 높이(px). 문단 측정은 `위 간격 + 줄 높이 + 줄간격` 을 이미 더했고, 띠는 문단 시작에서
-/// `max(위 간격, 세로 오프셋)` 아래에 놓이므로 위 간격을 넘는 오프셋만큼은 돌려주지 않는다.
+/// 높이(px). 문단 측정은 `위 간격 + 줄 높이 + 줄간격 + 아래 간격` 을 이미 더했고, 띠는 문단
+/// 시작에서 `max(위 간격, 세로 오프셋)` 아래에 놓이므로 위 간격을 넘는 오프셋만큼은 돌려주지
+/// 않는다. 다음 문단은 띠 아래끝에서 시작하므로 host 의 아래 간격도 띠 안에 든다([#8795]
+/// 1351000-201500141 pi975: 아래 간격 1000HU, 다음 저장 vpos 32185 = 오프셋 307 + 그림 31878.
+/// 배치 `layout_shape_item` 도 그림 아래끝에서 다음 문단을 잇는다).
 pub(crate) fn absorbed_host_line_return_px(
     para: &crate::model::paragraph::Paragraph,
     common: &crate::model::shape::CommonObjAttr,
     spacing_before_px: f64,
+    spacing_after_px: f64,
     dpi: f64,
 ) -> f64 {
     if !empty_host_line_absorbed_by_topbottom_float(para, common) {
@@ -4425,9 +4478,56 @@ pub(crate) fn absorbed_host_line_return_px(
         crate::renderer::float_placement::signed_hwpunit(common.vertical_offset),
         dpi,
     );
-    (hwpunit_to_px(seg.line_height + seg.line_spacing, dpi)
+    (hwpunit_to_px(seg.line_height + seg.line_spacing, dpi) + spacing_after_px.max(0.0)
         - (offset - spacing_before_px.max(0.0)).max(0.0))
     .max(0.0)
+}
+
+/// 앞 문단이 저장 사다리에서 차지한 끝 — 마지막 줄 아래끝과, 앞 문단 자신의 문단 기준
+/// 위아래(TopAndBottom) 개체가 저장 좌표에서 차지한 띠 아래끝 중 큰 값.
+///
+/// [#1079] 의 «그림 para 줄 앞 gap ≥ 그림 높이 → 파일 vpos 가 이 문단의 그림 공간을 이미
+/// 반영» 판정은 그 gap 이 **이 문단의** 개체 자리일 때만 맞다. 앞 문단의 자리차지 그림이
+/// 줄 아래로 내려와 만든 gap 을 이 문단 그림의 자리로 읽으면, 조판은 이 그림 높이를 더하지
+/// 않고 배치는 그림을 줄 위 gap 안에 그려 앞 그림과 겹친다(1351000-201500141 pi613 그림
+/// 띠 23224 + 1105 + 17711 = 42040 = pi614 줄). 조판(`typeset`)과 배치(`layout`)가 같은 끝을
+/// 쓰도록 한 곳에 둔다.
+pub(crate) fn stored_previous_flow_end_hu(
+    paragraphs: &[crate::model::paragraph::Paragraph],
+    para_index: usize,
+) -> Option<i32> {
+    use crate::model::control::Control;
+    use crate::model::shape::{TextWrap, VertRelTo};
+
+    let prev = paragraphs.get(para_index.checked_sub(1)?)?;
+    let line_end = prev
+        .line_segs
+        .last()
+        .map(|seg| seg.vertical_pos.saturating_add(seg.line_height))?;
+    let anchor = prev.line_segs.first()?.vertical_pos;
+    let band_end = prev
+        .controls
+        .iter()
+        .filter_map(|control| match control {
+            Control::Picture(pic) => Some(&pic.common),
+            Control::Shape(shape) => Some(shape.common()),
+            _ => None,
+        })
+        .filter(|common| {
+            !common.treat_as_char
+                && matches!(common.text_wrap, TextWrap::TopAndBottom)
+                && matches!(common.vert_rel_to, VertRelTo::Para)
+        })
+        .map(|common| {
+            anchor
+                .saturating_add(crate::renderer::float_placement::signed_hwpunit(
+                    common.vertical_offset,
+                ))
+                .saturating_add(common.height as i32)
+                .saturating_add(common.margin.bottom as i32)
+        })
+        .max();
+    Some(band_end.map_or(line_end, |end| end.max(line_end)))
 }
 
 /// [#6888] **자기 앵커보다 아래로 떨어진 자리차지(TopAndBottom) 개체**인가.

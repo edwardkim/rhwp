@@ -442,7 +442,14 @@ impl TypesetEngine {
                     .min(host_h);
                 raw.max(host_content_h) - host_h
             } else {
-                0.0
+                // [#8810] 빈 쪽을 여는 쪽 기준 표의 첫 조각은 본문 위끝 + 오프셋에서 시작한다.
+                crate::renderer::float_placement::page_relative_first_fragment_offset_px(
+                    table, self.dpi,
+                )
+                .filter(|_| {
+                    start_cut.is_empty() && st.current_items.is_empty() && st.current_height < 0.5
+                })
+                .unwrap_or(0.0)
             }
         };
         // [Task #1860] 빈 host out-of-flow para float(비-TAC, TopAndBottom,

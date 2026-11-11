@@ -1,0 +1,22 @@
+{
+  "parent": "f95c27dce93636e031e261e4db60ec6dabd2a2de",
+  "source_diff_sha256": "46ae955b31a06e1f46b80e82821a326955cd39c77fcfe76c0e83dc39c610e339",
+  "source_files": {
+    "src/renderer/typeset/table.rs": "2a6428b48294ab37e07f314adc3c053408f34fcc11d0fb7ae22444f77d6065e0",
+    "src/renderer/typeset/table/source_frame_fit.rs": "628d0f6cd84f9f432e64913b7b21f9f3360310e74ae5a7e6661d1aaf7713413a",
+    "src/renderer/layout.rs": "c0d86eb3250a4f3072d912591988d18247922d0d5eddca61019b7b8b7d585481",
+    "src/renderer/typeset/controls/stored_tac.rs": "16b039dd3c09bb3402ce6f3cf4d5a0472cf5007408b5b2c58f11f6f5c8854ed9"
+  },
+  "sha256": "69e94e086a21cc35379f2f755d8574284c970bc1f58950c623960ac1fd2ec0a5",
+  "build_log_sha256": "f55a0b317f2c42510598eac88023555568792cab707da99e278b42c9d206a8f4",
+  "built_at": "2026-11-11T17:26:54.593184+09:00",
+  "note": "diff excludes untracked new helper; source_files explicitly includes it",
+  "existing_focused_tests": {
+    "passed": 7,
+    "failed": 0,
+    "skipped_outside_selected_modules": 960,
+    "environment": "Mac 최소 글꼴 profile, native-skia",
+    "log_sha256": "83aa5c1aaf54f12a8978be88678b363e7d102bf96768d2ef67f330499410b66c"
+  },
+  "new_regression": "Native/fresh WASM 선행 조건을 모두 확인한 뒤 추가할 예정. 기존 검사 제거·완화 없음."
+}

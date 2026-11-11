@@ -196,6 +196,7 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
                 dpi,
             ) {
                 st.defer_stored_frame(crate::renderer::typeset::DeferredStoredFrameControl {
+                    target_page: None,
                     following_body_para_index: None,
                     kind: crate::renderer::typeset::DeferredStoredFrameKind::AbsoluteShape,
                     para_index: owner,

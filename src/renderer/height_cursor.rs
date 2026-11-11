@@ -220,6 +220,10 @@ pub(crate) struct HeightCursor {
     /// 현재 문단의 저장 forward 원점을 거절했다. 뒤 개체의 저장 줄 단축도
     /// 이 결정을 소비하며 첫 원점의 인증만으로 같은 좌표를 되살리지 않는다.
     pub rejected_stored_forward_origin: Option<i32>,
+    /// [#8845] 저장 줄 없는 문단 뒤의 낡은 전방 저장 원점을 거절하고 기준을 옮겼다.
+    /// 그 뒤 단의 저장 사다리는 옮긴 기준으로만 읽는다 — 단 첫 표가 세운 옛 기준
+    /// (`stored_table_column_base`)으로 다시 재면 거절한 간격이 개체 줄에서 되살아난다.
+    pub rebased_after_unstored_forward: bool,
     /// HWP5 컨테이너의 변환 계보도 유효 저장 줄을 가질 수 있다. 재측정된
     /// 수식 줄의 실제 전진은 다음 저장 원점에서 낡은 높이로 되돌리지 않는다.
     pub stored_equation_reflow: bool,
@@ -282,6 +286,9 @@ pub(crate) struct HeightCursor {
     /// [#7702] 쪽/단 첫 항목인 이어지는 부분 문단의 연속 줄이 합성 줄이라 #5820 의 기준을
     /// 그 줄에서 세우지 못했다. 다음 저장 문단이 자기 실제 흐름 위치로 기준을 세운다.
     pub seed_lazy_base_from_next_stored: bool,
+    /// [#8843] 이 커서가 합성 줄 뒤 저장 앞 점프를 거절하고 옮긴 기준축 양(HU, 누적).
+    /// 저장 TAC 의 단 첫 표 축도 같은 양만큼 옮겨야 거절한 빈자리를 되살리지 않는다.
+    pub synthetic_forward_rejected_hu: i32,
 }
 
 #[path = "height_cursor_lazy_base.rs"]
@@ -332,6 +339,7 @@ impl HeightCursor {
             suppress_large_forward_jump,
             suppress_hwpx_stale_forward: false,
             rejected_stored_forward_origin: None,
+            rebased_after_unstored_forward: false,
             stored_equation_reflow: false,
             prev_reissued_equation_rows: false,
             uniform_filler_ladder: false,
@@ -348,6 +356,7 @@ impl HeightCursor {
             endnote_note_first_paras: Default::default(),
             endnote_tail_leading_hu: Default::default(),
             seed_lazy_base_from_next_stored: false,
+            synthetic_forward_rejected_hu: 0,
         }
     }
 
@@ -495,6 +504,34 @@ impl HeightCursor {
     ///
     /// 호출자는 `!shape_jumped && !prev_tac_seg_applied` 가드 안에서 호출한다.
     pub(crate) fn vpos_adjust(
+        &mut self,
+        y_offset: f64,
+        item_para: usize,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        // [#8845] 앞 문단의 줄이 저장되지 않은(파서가 계산한) 줄이면, 이 문단에서 다시 세운
+        // 기준은 저장 당시 글이 아닌 현재 흐름에 맞춘 것이다. 기준이 바뀌었다면 그 사이의
+        // 저장 간격은 옛 글의 몫이고, 단 첫 표가 세운 옛 기준(`stored_table_column_base`)도
+        // 더는 이 사다리를 대표하지 않는다. 어느 갈래가 기준을 다시 세웠는지와 무관하게
+        // 한 곳에서 기록한다.
+        let unstored_prev = self
+            .prev_layout_para
+            .filter(|prev| *prev != item_para)
+            .and_then(|prev| paragraphs.get(prev))
+            .and_then(|prev| prev.line_segs.last())
+            .is_some_and(|seg| {
+                seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            });
+        let base_before = self.vpos_page_base.or(self.vpos_lazy_base);
+        let result = self.vpos_adjust_inner(y_offset, item_para, paragraphs, styles);
+        if unstored_prev && self.vpos_page_base.or(self.vpos_lazy_base) != base_before {
+            self.rebased_after_unstored_forward = true;
+        }
+        result
+    }
+
+    fn vpos_adjust_inner(
         &mut self,
         y_offset: f64,
         item_para: usize,
@@ -2801,6 +2838,8 @@ impl HeightCursor {
             // 이 원점에서 이어져야 한다. 커서만 되돌리면 다음 저장 줄에서
             // 방금 거부한 전방 간격이 다시 적용된다.
             self.shift_vpos_base_for_rendered_backtrack(result - y_offset);
+            self.synthetic_forward_rejected_hu +=
+                ((result - y_offset) / self.dpi * 7200.0).round().max(0.0) as i32;
             if std::env::var("RHWP_VPOS_DEBUG").is_ok() {
                 eprintln!(
                     "VPOS_SYNTH_FWD_SKIP: pi={} prev_pi={} y_in={:.2} result={:.2}",
@@ -2913,6 +2952,52 @@ impl HeightCursor {
             self.vpos_lazy_base = Some(base + delta_hu);
         }
     }
+}
+
+/// [#4613 · #4599 밴드-플로우] 낡은 사다리의 전방 스냅을 기각하고 줄을 자리차지 표 위 틈에
+/// 남기는가. 측정과 배치가 이 판정 하나를 소비한다.
+///
+/// 한글 2022 는 자리차지 표 위 틈에 들어가는 줄을 틈에 두는데, 구세대 한글이 저장한 사다리는
+/// 그 줄을 표 아래에 둔 채다(36477266 p2: pi5 저장 Δv=259px = 표 아래, PDF y=369 = 표 위 틈).
+/// 순차 흐름에서 줄 전체가 표 위에 들어가는 단일 줄 문단을 사다리가 밴드 안/아래로 보내면 스냅을
+/// 버린다. 빈 줄도 틈에 남는다 — 36483048 5쪽은 표 앞 빈 줄과 「□ 제출양식」 줄을 모두 표 위
+/// 틈에 둔다. 빈 줄을 빼면 그 줄이 표 아래로 점프하고 뒤 줄까지 끌려간다.
+///
+/// 틈이 비어 있다는 증거로 직전 항목이 밴드 소유 문단의 줄이어야 한다. 쪽 위처럼 틈을 이미 다른
+/// 항목이 차지한 형상에서 기각하면 줄이 그 위에 겹친다(36425171 p4 pi17).
+///
+/// `bands` 는 본문을 막는 밴드의 `(소유 문단, 위끝)` 이고 `previous_line_owner` 는 직전 글줄
+/// 항목의 문단이다. 좌표는 `flow_y`·`snapped_y`·`bands` 가 같은 축이면 된다.
+pub(crate) fn stale_snap_stays_above_band(
+    para: &Paragraph,
+    item_para: usize,
+    flow_y: f64,
+    snapped_y: f64,
+    bands: impl Iterator<Item = (usize, f64)>,
+    previous_line_owner: Option<usize>,
+    dpi: f64,
+) -> bool {
+    /// 이 값 이하의 스냅은 사다리 재동기화이지 밴드 건너뛰기가 아니다.
+    const MIN_FORWARD_SNAP_PX: f64 = 8.0;
+    if snapped_y <= flow_y + MIN_FORWARD_SNAP_PX {
+        return false;
+    }
+    let [line] = para.line_segs.as_slice() else {
+        return false;
+    };
+    if line.line_height <= 0 {
+        return false;
+    }
+    let line_height = hwpunit_to_px(line.line_height, dpi);
+    let Some(previous_line_owner) = previous_line_owner else {
+        return false;
+    };
+    bands.into_iter().any(|(owner, top)| {
+        owner < item_para
+            && owner == previous_line_owner
+            && flow_y + line_height <= top + 0.5
+            && snapped_y + 0.5 >= top
+    })
 }
 
 #[cfg(test)]

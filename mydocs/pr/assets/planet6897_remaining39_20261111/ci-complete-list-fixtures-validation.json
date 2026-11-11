@@ -1,0 +1,28 @@
+{
+  "parent_head": "04c58ae3482f4cac39a2df6df6b85f43dc5f7266",
+  "tested_at": "2026-11-11T16:06:53.689256+00:00",
+  "cause": "PR 파일 목록 완전성 guard가 기존 재사용 계약 검사의 complete-list 모의 응답에서 누락된 changed_files를 거부했다. 앞선 로컬 검증에서 해당 모의 응답 일부를 놓쳤다.",
+  "correction": "실제 파일 목록 길이를 기존 complete-list 표본 3개 지점에 제공했다. 함수·검사 수·기존 보안 및 재사용 기대값·제품 workflow guard는 변경하지 않았다.",
+  "before": {
+    "trusted_postmerge_main_tests": 235,
+    "failed": 11,
+    "log_sha256": "9003c5159185827cb0b86f5b97d8f0bb4523f36b2acf048bb22f9eff10fd8d55",
+    "review_only_python_tests": 25,
+    "subtest_failures": 23,
+    "intermediate_log_sha256": "e06e7f751853bef152bdba812352d1fb5e56fe07f10a987935a98cfa1270ae1c"
+  },
+  "after": {
+    "exact_ci_step": "Validate workflow contracts",
+    "commands": 23,
+    "python_tests": 273,
+    "node_tests": 354,
+    "exit_code": 0,
+    "log_sha256": "b021c05d18a27ce1fe47a9d02e0bcec242266f1a378c40c43a19ca88b4c46a28"
+  },
+  "source_hashes": {
+    "scripts/tests/verify-trusted-postmerge-green-merge.test.mjs": "172206722c6af9936a5d21292bd556e1d4c7eb66d1bd87dc2bb719cd321a90af",
+    "scripts/tests/test_review_only_fast_pass_workflows.py": "908a19908a5683f344172128c7aa1b22a8a5a182a537764215fe868a819bcea1"
+  },
+  "runtime_reuse": "제품 Rust·Cargo·Studio·Visual Sweep 구현·래스터 정책·입력·문턱·새 guard는 동일하다. 새 head에서는 CI만 다시 검증한다.",
+  "remote_issue": "사용자 지시대로 별도 이슈를 등록하지 않고 검증 기록만 보존한다."
+}

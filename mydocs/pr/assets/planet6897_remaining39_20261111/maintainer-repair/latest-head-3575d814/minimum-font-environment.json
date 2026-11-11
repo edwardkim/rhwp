@@ -1,0 +1,2158 @@
+{
+  "runtime_head": "3575d814f44053483bb51f54b01dcf8044d0b575",
+  "coretext_audit": {
+    "fonts": [
+      {
+        "name": "AcademyEngravedLetPlain",
+        "url": "/System/Library/Fonts/Supplemental/Academy Engraved LET Fonts.ttf"
+      },
+      {
+        "name": "AlBayan",
+        "url": "/System/Library/Fonts/Supplemental/AlBayan.ttc"
+      },
+      {
+        "name": "AlBayan-Bold",
+        "url": "/System/Library/Fonts/Supplemental/AlBayan.ttc"
+      },
+      {
+        "name": "AlNile",
+        "url": "/System/Library/Fonts/Supplemental/Al Nile.ttc"
+      },
+      {
+        "name": "AlNile-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Al Nile.ttc"
+      },
+      {
+        "name": "AlTarikh",
+        "url": "/System/Library/Fonts/Supplemental/Al Tarikh.ttc"
+      },
+      {
+        "name": "AmericanTypewriter",
+        "url": "/System/Library/Fonts/Supplemental/AmericanTypewriter.ttc"
+      },
+      {
+        "name": "AmericanTypewriter-Bold",
+        "url": "/System/Library/Fonts/Supplemental/AmericanTypewriter.ttc"
+      },
+      {
+        "name": "AmericanTypewriter-Condensed",
+        "url": "/System/Library/Fonts/Supplemental/AmericanTypewriter.ttc"
+      },
+      {
+        "name": "AmericanTypewriter-CondensedBold",
+        "url": "/System/Library/Fonts/Supplemental/AmericanTypewriter.ttc"
+      },
+      {
+        "name": "AmericanTypewriter-CondensedLight",
+        "url": "/System/Library/Fonts/Supplemental/AmericanTypewriter.ttc"
+      },
+      {
+        "name": "AmericanTypewriter-Light",
+        "url": "/System/Library/Fonts/Supplemental/AmericanTypewriter.ttc"
+      },
+      {
+        "name": "AmericanTypewriter-Semibold",
+        "url": "/System/Library/Fonts/Supplemental/AmericanTypewriter.ttc"
+      },
+      {
+        "name": "AndaleMono",
+        "url": "/System/Library/Fonts/Supplemental/Andale Mono.ttf"
+      },
+      {
+        "name": "Apple-Chancery",
+        "url": "/System/Library/Fonts/Supplemental/Apple Chancery.ttf"
+      },
+      {
+        "name": "AppleBraille",
+        "url": "/System/Library/Fonts/Apple Braille.ttf"
+      },
+      {
+        "name": "AppleBraille-Outline6Dot",
+        "url": "/System/Library/Fonts/Apple Braille Outline 6 Dot.ttf"
+      },
+      {
+        "name": "AppleBraille-Outline8Dot",
+        "url": "/System/Library/Fonts/Apple Braille Outline 8 Dot.ttf"
+      },
+      {
+        "name": "AppleBraille-Pinpoint6Dot",
+        "url": "/System/Library/Fonts/Apple Braille Pinpoint 6 Dot.ttf"
+      },
+      {
+        "name": "AppleBraille-Pinpoint8Dot",
+        "url": "/System/Library/Fonts/Apple Braille Pinpoint 8 Dot.ttf"
+      },
+      {
+        "name": "AppleColorEmoji",
+        "url": "/System/Library/Fonts/Apple Color Emoji.ttc"
+      },
+      {
+        "name": "AppleGothic",
+        "url": "/System/Library/Fonts/Supplemental/AppleGothic.ttf"
+      },
+      {
+        "name": "AppleMyungjo",
+        "url": "/System/Library/Fonts/Supplemental/AppleMyungjo.ttf"
+      },
+      {
+        "name": "AppleSDGothicNeo-Bold",
+        "url": "/System/Library/Fonts/AppleSDGothicNeo.ttc"
+      },
+      {
+        "name": "AppleSDGothicNeo-ExtraBold",
+        "url": "/System/Library/Fonts/AppleSDGothicNeo.ttc"
+      },
+      {
+        "name": "AppleSDGothicNeo-Heavy",
+        "url": "/System/Library/Fonts/AppleSDGothicNeo.ttc"
+      },
+      {
+        "name": "AppleSDGothicNeo-Light",
+        "url": "/System/Library/Fonts/AppleSDGothicNeo.ttc"
+      },
+      {
+        "name": "AppleSDGothicNeo-Medium",
+        "url": "/System/Library/Fonts/AppleSDGothicNeo.ttc"
+      },
+      {
+        "name": "AppleSDGothicNeo-Regular",
+        "url": "/System/Library/Fonts/AppleSDGothicNeo.ttc"
+      },
+      {
+        "name": "AppleSDGothicNeo-SemiBold",
+        "url": "/System/Library/Fonts/AppleSDGothicNeo.ttc"
+      },
+      {
+        "name": "AppleSDGothicNeo-Thin",
+        "url": "/System/Library/Fonts/AppleSDGothicNeo.ttc"
+      },
+      {
+        "name": "AppleSDGothicNeo-UltraLight",
+        "url": "/System/Library/Fonts/AppleSDGothicNeo.ttc"
+      },
+      {
+        "name": "AppleSymbols",
+        "url": "/System/Library/Fonts/Apple Symbols.ttf"
+      },
+      {
+        "name": "Arial-Black",
+        "url": "/System/Library/Fonts/Supplemental/Arial Black.ttf"
+      },
+      {
+        "name": "Arial-BoldItalicMT",
+        "url": "/System/Library/Fonts/Supplemental/Arial Bold Italic.ttf"
+      },
+      {
+        "name": "Arial-BoldMT",
+        "url": "/System/Library/Fonts/Supplemental/Arial Bold.ttf"
+      },
+      {
+        "name": "Arial-ItalicMT",
+        "url": "/System/Library/Fonts/Supplemental/Arial Italic.ttf"
+      },
+      {
+        "name": "ArialHebrew",
+        "url": "/System/Library/Fonts/ArialHB.ttc"
+      },
+      {
+        "name": "ArialHebrew-Bold",
+        "url": "/System/Library/Fonts/ArialHB.ttc"
+      },
+      {
+        "name": "ArialHebrew-Light",
+        "url": "/System/Library/Fonts/ArialHB.ttc"
+      },
+      {
+        "name": "ArialHebrewScholar",
+        "url": "/System/Library/Fonts/ArialHB.ttc"
+      },
+      {
+        "name": "ArialHebrewScholar-Bold",
+        "url": "/System/Library/Fonts/ArialHB.ttc"
+      },
+      {
+        "name": "ArialHebrewScholar-Light",
+        "url": "/System/Library/Fonts/ArialHB.ttc"
+      },
+      {
+        "name": "ArialMT",
+        "url": "/System/Library/Fonts/Supplemental/Arial.ttf"
+      },
+      {
+        "name": "ArialNarrow",
+        "url": "/System/Library/Fonts/Supplemental/Arial Narrow.ttf"
+      },
+      {
+        "name": "ArialNarrow-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Arial Narrow Bold.ttf"
+      },
+      {
+        "name": "ArialNarrow-BoldItalic",
+        "url": "/System/Library/Fonts/Supplemental/Arial Narrow Bold Italic.ttf"
+      },
+      {
+        "name": "ArialNarrow-Italic",
+        "url": "/System/Library/Fonts/Supplemental/Arial Narrow Italic.ttf"
+      },
+      {
+        "name": "ArialRoundedMTBold",
+        "url": "/System/Library/Fonts/Supplemental/Arial Rounded Bold.ttf"
+      },
+      {
+        "name": "ArialUnicodeMS",
+        "url": "/System/Library/Fonts/Supplemental/Arial Unicode.ttf"
+      },
+      {
+        "name": "Avenir-Black",
+        "url": "/System/Library/Fonts/Avenir.ttc"
+      },
+      {
+        "name": "Avenir-BlackOblique",
+        "url": "/System/Library/Fonts/Avenir.ttc"
+      },
+      {
+        "name": "Avenir-Book",
+        "url": "/System/Library/Fonts/Avenir.ttc"
+      },
+      {
+        "name": "Avenir-BookOblique",
+        "url": "/System/Library/Fonts/Avenir.ttc"
+      },
+      {
+        "name": "Avenir-Heavy",
+        "url": "/System/Library/Fonts/Avenir.ttc"
+      },
+      {
+        "name": "Avenir-HeavyOblique",
+        "url": "/System/Library/Fonts/Avenir.ttc"
+      },
+      {
+        "name": "Avenir-Light",
+        "url": "/System/Library/Fonts/Avenir.ttc"
+      },
+      {
+        "name": "Avenir-LightOblique",
+        "url": "/System/Library/Fonts/Avenir.ttc"
+      },
+      {
+        "name": "Avenir-Medium",
+        "url": "/System/Library/Fonts/Avenir.ttc"
+      },
+      {
+        "name": "Avenir-MediumOblique",
+        "url": "/System/Library/Fonts/Avenir.ttc"
+      },
+      {
+        "name": "Avenir-Oblique",
+        "url": "/System/Library/Fonts/Avenir.ttc"
+      },
+      {
+        "name": "Avenir-Roman",
+        "url": "/System/Library/Fonts/Avenir.ttc"
+      },
+      {
+        "name": "AvenirNext-Bold",
+        "url": "/System/Library/Fonts/Avenir Next.ttc"
+      },
+      {
+        "name": "AvenirNext-BoldItalic",
+        "url": "/System/Library/Fonts/Avenir Next.ttc"
+      },
+      {
+        "name": "AvenirNext-DemiBold",
+        "url": "/System/Library/Fonts/Avenir Next.ttc"
+      },
+      {
+        "name": "AvenirNext-DemiBoldItalic",
+        "url": "/System/Library/Fonts/Avenir Next.ttc"
+      },
+      {
+        "name": "AvenirNext-Heavy",
+        "url": "/System/Library/Fonts/Avenir Next.ttc"
+      },
+      {
+        "name": "AvenirNext-HeavyItalic",
+        "url": "/System/Library/Fonts/Avenir Next.ttc"
+      },
+      {
+        "name": "AvenirNext-Italic",
+        "url": "/System/Library/Fonts/Avenir Next.ttc"
+      },
+      {
+        "name": "AvenirNext-Medium",
+        "url": "/System/Library/Fonts/Avenir Next.ttc"
+      },
+      {
+        "name": "AvenirNext-MediumItalic",
+        "url": "/System/Library/Fonts/Avenir Next.ttc"
+      },
+      {
+        "name": "AvenirNext-Regular",
+        "url": "/System/Library/Fonts/Avenir Next.ttc"
+      },
+      {
+        "name": "AvenirNext-UltraLight",
+        "url": "/System/Library/Fonts/Avenir Next.ttc"
+      },
+      {
+        "name": "AvenirNext-UltraLightItalic",
+        "url": "/System/Library/Fonts/Avenir Next.ttc"
+      },
+      {
+        "name": "AvenirNextCondensed-Bold",
+        "url": "/System/Library/Fonts/Avenir Next Condensed.ttc"
+      },
+      {
+        "name": "AvenirNextCondensed-BoldItalic",
+        "url": "/System/Library/Fonts/Avenir Next Condensed.ttc"
+      },
+      {
+        "name": "AvenirNextCondensed-DemiBold",
+        "url": "/System/Library/Fonts/Avenir Next Condensed.ttc"
+      },
+      {
+        "name": "AvenirNextCondensed-DemiBoldItalic",
+        "url": "/System/Library/Fonts/Avenir Next Condensed.ttc"
+      },
+      {
+        "name": "AvenirNextCondensed-Heavy",
+        "url": "/System/Library/Fonts/Avenir Next Condensed.ttc"
+      },
+      {
+        "name": "AvenirNextCondensed-HeavyItalic",
+        "url": "/System/Library/Fonts/Avenir Next Condensed.ttc"
+      },
+      {
+        "name": "AvenirNextCondensed-Italic",
+        "url": "/System/Library/Fonts/Avenir Next Condensed.ttc"
+      },
+      {
+        "name": "AvenirNextCondensed-Medium",
+        "url": "/System/Library/Fonts/Avenir Next Condensed.ttc"
+      },
+      {
+        "name": "AvenirNextCondensed-MediumItalic",
+        "url": "/System/Library/Fonts/Avenir Next Condensed.ttc"
+      },
+      {
+        "name": "AvenirNextCondensed-Regular",
+        "url": "/System/Library/Fonts/Avenir Next Condensed.ttc"
+      },
+      {
+        "name": "AvenirNextCondensed-UltraLight",
+        "url": "/System/Library/Fonts/Avenir Next Condensed.ttc"
+      },
+      {
+        "name": "AvenirNextCondensed-UltraLightItalic",
+        "url": "/System/Library/Fonts/Avenir Next Condensed.ttc"
+      },
+      {
+        "name": "Ayuthaya",
+        "url": "/System/Library/Fonts/Supplemental/Ayuthaya.ttf"
+      },
+      {
+        "name": "Baghdad",
+        "url": "/System/Library/Fonts/Supplemental/Baghdad.ttc"
+      },
+      {
+        "name": "BanglaMN",
+        "url": "/System/Library/Fonts/Supplemental/Bangla MN.ttc"
+      },
+      {
+        "name": "BanglaMN-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Bangla MN.ttc"
+      },
+      {
+        "name": "BanglaSangamMN",
+        "url": "/System/Library/Fonts/Supplemental/Bangla Sangam MN.ttc"
+      },
+      {
+        "name": "BanglaSangamMN-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Bangla Sangam MN.ttc"
+      },
+      {
+        "name": "Baskerville",
+        "url": "/System/Library/Fonts/Supplemental/Baskerville.ttc"
+      },
+      {
+        "name": "Baskerville-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Baskerville.ttc"
+      },
+      {
+        "name": "Baskerville-BoldItalic",
+        "url": "/System/Library/Fonts/Supplemental/Baskerville.ttc"
+      },
+      {
+        "name": "Baskerville-Italic",
+        "url": "/System/Library/Fonts/Supplemental/Baskerville.ttc"
+      },
+      {
+        "name": "Baskerville-SemiBold",
+        "url": "/System/Library/Fonts/Supplemental/Baskerville.ttc"
+      },
+      {
+        "name": "Baskerville-SemiBoldItalic",
+        "url": "/System/Library/Fonts/Supplemental/Baskerville.ttc"
+      },
+      {
+        "name": "Beirut",
+        "url": "/System/Library/Fonts/Supplemental/Beirut.ttc"
+      },
+      {
+        "name": "BigCaslon-Medium",
+        "url": "/System/Library/Fonts/Supplemental/BigCaslon.ttf"
+      },
+      {
+        "name": "BodoniOrnamentsITCTT",
+        "url": "/System/Library/Fonts/Supplemental/Bodoni Ornaments.ttf"
+      },
+      {
+        "name": "BodoniSvtyTwoITCTT-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Bodoni 72.ttc"
+      },
+      {
+        "name": "BodoniSvtyTwoITCTT-Book",
+        "url": "/System/Library/Fonts/Supplemental/Bodoni 72.ttc"
+      },
+      {
+        "name": "BodoniSvtyTwoITCTT-BookIta",
+        "url": "/System/Library/Fonts/Supplemental/Bodoni 72.ttc"
+      },
+      {
+        "name": "BodoniSvtyTwoOSITCTT-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Bodoni 72 OS.ttc"
+      },
+      {
+        "name": "BodoniSvtyTwoOSITCTT-Book",
+        "url": "/System/Library/Fonts/Supplemental/Bodoni 72 OS.ttc"
+      },
+      {
+        "name": "BodoniSvtyTwoOSITCTT-BookIt",
+        "url": "/System/Library/Fonts/Supplemental/Bodoni 72 OS.ttc"
+      },
+      {
+        "name": "BodoniSvtyTwoSCITCTT-Book",
+        "url": "/System/Library/Fonts/Supplemental/Bodoni 72 Smallcaps Book.ttf"
+      },
+      {
+        "name": "BradleyHandITCTT-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Bradley Hand Bold.ttf"
+      },
+      {
+        "name": "BrushScriptMT",
+        "url": "/System/Library/Fonts/Supplemental/Brush Script.ttf"
+      },
+      {
+        "name": "Chalkboard",
+        "url": "/System/Library/Fonts/Supplemental/Chalkboard.ttc"
+      },
+      {
+        "name": "Chalkboard-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Chalkboard.ttc"
+      },
+      {
+        "name": "ChalkboardSE-Bold",
+        "url": "/System/Library/Fonts/Supplemental/ChalkboardSE.ttc"
+      },
+      {
+        "name": "ChalkboardSE-Light",
+        "url": "/System/Library/Fonts/Supplemental/ChalkboardSE.ttc"
+      },
+      {
+        "name": "ChalkboardSE-Regular",
+        "url": "/System/Library/Fonts/Supplemental/ChalkboardSE.ttc"
+      },
+      {
+        "name": "Chalkduster",
+        "url": "/System/Library/Fonts/Supplemental/Chalkduster.ttf"
+      },
+      {
+        "name": "Charter-Black",
+        "url": "/System/Library/Fonts/Supplemental/Charter.ttc"
+      },
+      {
+        "name": "Charter-BlackItalic",
+        "url": "/System/Library/Fonts/Supplemental/Charter.ttc"
+      },
+      {
+        "name": "Charter-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Charter.ttc"
+      },
+      {
+        "name": "Charter-BoldItalic",
+        "url": "/System/Library/Fonts/Supplemental/Charter.ttc"
+      },
+      {
+        "name": "Charter-Italic",
+        "url": "/System/Library/Fonts/Supplemental/Charter.ttc"
+      },
+      {
+        "name": "Charter-Roman",
+        "url": "/System/Library/Fonts/Supplemental/Charter.ttc"
+      },
+      {
+        "name": "Cochin",
+        "url": "/System/Library/Fonts/Supplemental/Cochin.ttc"
+      },
+      {
+        "name": "Cochin-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Cochin.ttc"
+      },
+      {
+        "name": "Cochin-BoldItalic",
+        "url": "/System/Library/Fonts/Supplemental/Cochin.ttc"
+      },
+      {
+        "name": "Cochin-Italic",
+        "url": "/System/Library/Fonts/Supplemental/Cochin.ttc"
+      },
+      {
+        "name": "ComicSansMS",
+        "url": "/System/Library/Fonts/Supplemental/Comic Sans MS.ttf"
+      },
+      {
+        "name": "ComicSansMS-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Comic Sans MS Bold.ttf"
+      },
+      {
+        "name": "Copperplate",
+        "url": "/System/Library/Fonts/Supplemental/Copperplate.ttc"
+      },
+      {
+        "name": "Copperplate-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Copperplate.ttc"
+      },
+      {
+        "name": "Copperplate-Light",
+        "url": "/System/Library/Fonts/Supplemental/Copperplate.ttc"
+      },
+      {
+        "name": "CorsivaHebrew",
+        "url": "/System/Library/Fonts/Supplemental/Corsiva.ttc"
+      },
+      {
+        "name": "CorsivaHebrew-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Corsiva.ttc"
+      },
+      {
+        "name": "CourierNewPS-BoldItalicMT",
+        "url": "/System/Library/Fonts/Supplemental/Courier New Bold Italic.ttf"
+      },
+      {
+        "name": "CourierNewPS-BoldMT",
+        "url": "/System/Library/Fonts/Supplemental/Courier New Bold.ttf"
+      },
+      {
+        "name": "CourierNewPS-ItalicMT",
+        "url": "/System/Library/Fonts/Supplemental/Courier New Italic.ttf"
+      },
+      {
+        "name": "CourierNewPSMT",
+        "url": "/System/Library/Fonts/Supplemental/Courier New.ttf"
+      },
+      {
+        "name": "DINAlternate-Bold",
+        "url": "/System/Library/Fonts/Supplemental/DIN Alternate Bold.ttf"
+      },
+      {
+        "name": "DINCondensed-Bold",
+        "url": "/System/Library/Fonts/Supplemental/DIN Condensed Bold.ttf"
+      },
+      {
+        "name": "Damascus",
+        "url": "/System/Library/Fonts/Supplemental/Damascus.ttc"
+      },
+      {
+        "name": "DamascusBold",
+        "url": "/System/Library/Fonts/Supplemental/Damascus.ttc"
+      },
+      {
+        "name": "DamascusLight",
+        "url": "/System/Library/Fonts/Supplemental/Damascus.ttc"
+      },
+      {
+        "name": "DamascusMedium",
+        "url": "/System/Library/Fonts/Supplemental/Damascus.ttc"
+      },
+      {
+        "name": "DamascusSemiBold",
+        "url": "/System/Library/Fonts/Supplemental/Damascus.ttc"
+      },
+      {
+        "name": "DecoTypeNaskh",
+        "url": "/System/Library/Fonts/Supplemental/DecoTypeNaskh.ttc"
+      },
+      {
+        "name": "DevanagariMT",
+        "url": "/System/Library/Fonts/Supplemental/DevanagariMT.ttc"
+      },
+      {
+        "name": "DevanagariMT-Bold",
+        "url": "/System/Library/Fonts/Supplemental/DevanagariMT.ttc"
+      },
+      {
+        "name": "DevanagariSangamMN",
+        "url": "/System/Library/Fonts/Supplemental/Devanagari Sangam MN.ttc"
+      },
+      {
+        "name": "DevanagariSangamMN-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Devanagari Sangam MN.ttc"
+      },
+      {
+        "name": "Didot",
+        "url": "/System/Library/Fonts/Supplemental/Didot.ttc"
+      },
+      {
+        "name": "Didot-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Didot.ttc"
+      },
+      {
+        "name": "Didot-Italic",
+        "url": "/System/Library/Fonts/Supplemental/Didot.ttc"
+      },
+      {
+        "name": "DiwanKufi",
+        "url": "/System/Library/Fonts/Supplemental/Diwan Kufi.ttc"
+      },
+      {
+        "name": "DiwanMishafi",
+        "url": "/System/Library/Fonts/Supplemental/Mishafi.ttf"
+      },
+      {
+        "name": "DiwanMishafiGold",
+        "url": "/System/Library/Fonts/Supplemental/Mishafi Gold.ttf"
+      },
+      {
+        "name": "DiwanThuluth",
+        "url": "/System/Library/Fonts/Supplemental/Diwan Thuluth.ttf"
+      },
+      {
+        "name": "EuphemiaUCAS",
+        "url": "/System/Library/Fonts/Supplemental/EuphemiaCAS.ttc"
+      },
+      {
+        "name": "EuphemiaUCAS-Bold",
+        "url": "/System/Library/Fonts/Supplemental/EuphemiaCAS.ttc"
+      },
+      {
+        "name": "EuphemiaUCAS-Italic",
+        "url": "/System/Library/Fonts/Supplemental/EuphemiaCAS.ttc"
+      },
+      {
+        "name": "Farah",
+        "url": "/System/Library/Fonts/Supplemental/Farah.ttc"
+      },
+      {
+        "name": "Farisi",
+        "url": "/System/Library/Fonts/Supplemental/Farisi.ttf"
+      },
+      {
+        "name": "Futura-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Futura.ttc"
+      },
+      {
+        "name": "Futura-CondensedExtraBold",
+        "url": "/System/Library/Fonts/Supplemental/Futura.ttc"
+      },
+      {
+        "name": "Futura-CondensedMedium",
+        "url": "/System/Library/Fonts/Supplemental/Futura.ttc"
+      },
+      {
+        "name": "Futura-Medium",
+        "url": "/System/Library/Fonts/Supplemental/Futura.ttc"
+      },
+      {
+        "name": "Futura-MediumItalic",
+        "url": "/System/Library/Fonts/Supplemental/Futura.ttc"
+      },
+      {
+        "name": "GB18030Bitmap",
+        "url": "/System/Library/Fonts/Supplemental/NISC18030.ttf"
+      },
+      {
+        "name": "Galvji",
+        "url": "/System/Library/Fonts/Supplemental/Galvji.ttc"
+      },
+      {
+        "name": "Galvji-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Galvji.ttc"
+      },
+      {
+        "name": "Galvji-BoldOblique",
+        "url": "/System/Library/Fonts/Supplemental/Galvji.ttc"
+      },
+      {
+        "name": "Galvji-Oblique",
+        "url": "/System/Library/Fonts/Supplemental/Galvji.ttc"
+      },
+      {
+        "name": "GeezaPro",
+        "url": "/System/Library/Fonts/GeezaPro.ttc"
+      },
+      {
+        "name": "GeezaPro-Bold",
+        "url": "/System/Library/Fonts/GeezaPro.ttc"
+      },
+      {
+        "name": "Geneva",
+        "url": "/System/Library/Fonts/Geneva.ttf"
+      },
+      {
+        "name": "Georgia",
+        "url": "/System/Library/Fonts/Supplemental/Georgia.ttf"
+      },
+      {
+        "name": "Georgia-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Georgia Bold.ttf"
+      },
+      {
+        "name": "Georgia-BoldItalic",
+        "url": "/System/Library/Fonts/Supplemental/Georgia Bold Italic.ttf"
+      },
+      {
+        "name": "Georgia-Italic",
+        "url": "/System/Library/Fonts/Supplemental/Georgia Italic.ttf"
+      },
+      {
+        "name": "GillSans",
+        "url": "/System/Library/Fonts/Supplemental/GillSans.ttc"
+      },
+      {
+        "name": "GillSans-Bold",
+        "url": "/System/Library/Fonts/Supplemental/GillSans.ttc"
+      },
+      {
+        "name": "GillSans-BoldItalic",
+        "url": "/System/Library/Fonts/Supplemental/GillSans.ttc"
+      },
+      {
+        "name": "GillSans-Italic",
+        "url": "/System/Library/Fonts/Supplemental/GillSans.ttc"
+      },
+      {
+        "name": "GillSans-Light",
+        "url": "/System/Library/Fonts/Supplemental/GillSans.ttc"
+      },
+      {
+        "name": "GillSans-LightItalic",
+        "url": "/System/Library/Fonts/Supplemental/GillSans.ttc"
+      },
+      {
+        "name": "GillSans-SemiBold",
+        "url": "/System/Library/Fonts/Supplemental/GillSans.ttc"
+      },
+      {
+        "name": "GillSans-SemiBoldItalic",
+        "url": "/System/Library/Fonts/Supplemental/GillSans.ttc"
+      },
+      {
+        "name": "GillSans-UltraBold",
+        "url": "/System/Library/Fonts/Supplemental/GillSans.ttc"
+      },
+      {
+        "name": "GranthaSangamMN-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Tamil Sangam MN.ttc"
+      },
+      {
+        "name": "GranthaSangamMN-Regular",
+        "url": "/System/Library/Fonts/Supplemental/Tamil Sangam MN.ttc"
+      },
+      {
+        "name": "GujaratiMT",
+        "url": "/System/Library/Fonts/Supplemental/GujaratiMT.ttc"
+      },
+      {
+        "name": "GujaratiMT-Bold",
+        "url": "/System/Library/Fonts/Supplemental/GujaratiMT.ttc"
+      },
+      {
+        "name": "GujaratiSangamMN",
+        "url": "/System/Library/Fonts/Supplemental/Gujarati Sangam MN.ttc"
+      },
+      {
+        "name": "GujaratiSangamMN-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Gujarati Sangam MN.ttc"
+      },
+      {
+        "name": "GurmukhiMN",
+        "url": "/System/Library/Fonts/Supplemental/Gurmukhi MN.ttc"
+      },
+      {
+        "name": "GurmukhiMN-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Gurmukhi MN.ttc"
+      },
+      {
+        "name": "GurmukhiSangamMN",
+        "url": "/System/Library/Fonts/Supplemental/Gurmukhi Sangam MN.ttc"
+      },
+      {
+        "name": "GurmukhiSangamMN-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Gurmukhi Sangam MN.ttc"
+      },
+      {
+        "name": "Helvetica",
+        "url": "/System/Library/Fonts/Helvetica.ttc"
+      },
+      {
+        "name": "Helvetica-Bold",
+        "url": "/System/Library/Fonts/Helvetica.ttc"
+      },
+      {
+        "name": "Helvetica-BoldOblique",
+        "url": "/System/Library/Fonts/Helvetica.ttc"
+      },
+      {
+        "name": "Helvetica-Light",
+        "url": "/System/Library/Fonts/Helvetica.ttc"
+      },
+      {
+        "name": "Helvetica-LightOblique",
+        "url": "/System/Library/Fonts/Helvetica.ttc"
+      },
+      {
+        "name": "Helvetica-Oblique",
+        "url": "/System/Library/Fonts/Helvetica.ttc"
+      },
+      {
+        "name": "HelveticaNeue",
+        "url": "/System/Library/Fonts/HelveticaNeue.ttc"
+      },
+      {
+        "name": "HelveticaNeue-Bold",
+        "url": "/System/Library/Fonts/HelveticaNeue.ttc"
+      },
+      {
+        "name": "HelveticaNeue-BoldItalic",
+        "url": "/System/Library/Fonts/HelveticaNeue.ttc"
+      },
+      {
+        "name": "HelveticaNeue-CondensedBlack",
+        "url": "/System/Library/Fonts/HelveticaNeue.ttc"
+      },
+      {
+        "name": "HelveticaNeue-CondensedBold",
+        "url": "/System/Library/Fonts/HelveticaNeue.ttc"
+      },
+      {
+        "name": "HelveticaNeue-Italic",
+        "url": "/System/Library/Fonts/HelveticaNeue.ttc"
+      },
+      {
+        "name": "HelveticaNeue-Light",
+        "url": "/System/Library/Fonts/HelveticaNeue.ttc"
+      },
+      {
+        "name": "HelveticaNeue-LightItalic",
+        "url": "/System/Library/Fonts/HelveticaNeue.ttc"
+      },
+      {
+        "name": "HelveticaNeue-Medium",
+        "url": "/System/Library/Fonts/HelveticaNeue.ttc"
+      },
+      {
+        "name": "HelveticaNeue-MediumItalic",
+        "url": "/System/Library/Fonts/HelveticaNeue.ttc"
+      },
+      {
+        "name": "HelveticaNeue-Thin",
+        "url": "/System/Library/Fonts/HelveticaNeue.ttc"
+      },
+      {
+        "name": "HelveticaNeue-ThinItalic",
+        "url": "/System/Library/Fonts/HelveticaNeue.ttc"
+      },
+      {
+        "name": "HelveticaNeue-UltraLight",
+        "url": "/System/Library/Fonts/HelveticaNeue.ttc"
+      },
+      {
+        "name": "HelveticaNeue-UltraLightItalic",
+        "url": "/System/Library/Fonts/HelveticaNeue.ttc"
+      },
+      {
+        "name": "Herculanum",
+        "url": "/System/Library/Fonts/Supplemental/Herculanum.ttf"
+      },
+      {
+        "name": "HiraMaruProN-W4",
+        "url": "/System/Library/Fonts/ヒラギノ丸ゴ ProN W4.ttc"
+      },
+      {
+        "name": "HiraMinProN-W3",
+        "url": "/System/Library/Fonts/ヒラギノ明朝 ProN.ttc"
+      },
+      {
+        "name": "HiraMinProN-W6",
+        "url": "/System/Library/Fonts/ヒラギノ明朝 ProN.ttc"
+      },
+      {
+        "name": "HiraginoSans-W0",
+        "url": "/System/Library/Fonts/ヒラギノ角ゴシック W0.ttc"
+      },
+      {
+        "name": "HiraginoSans-W1",
+        "url": "/System/Library/Fonts/ヒラギノ角ゴシック W1.ttc"
+      },
+      {
+        "name": "HiraginoSans-W2",
+        "url": "/System/Library/Fonts/ヒラギノ角ゴシック W2.ttc"
+      },
+      {
+        "name": "HiraginoSans-W3",
+        "url": "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc"
+      },
+      {
+        "name": "HiraginoSans-W4",
+        "url": "/System/Library/Fonts/ヒラギノ角ゴシック W4.ttc"
+      },
+      {
+        "name": "HiraginoSans-W5",
+        "url": "/System/Library/Fonts/ヒラギノ角ゴシック W5.ttc"
+      },
+      {
+        "name": "HiraginoSans-W6",
+        "url": "/System/Library/Fonts/ヒラギノ角ゴシック W6.ttc"
+      },
+      {
+        "name": "HiraginoSans-W7",
+        "url": "/System/Library/Fonts/ヒラギノ角ゴシック W7.ttc"
+      },
+      {
+        "name": "HiraginoSans-W8",
+        "url": "/System/Library/Fonts/ヒラギノ角ゴシック W8.ttc"
+      },
+      {
+        "name": "HiraginoSans-W9",
+        "url": "/System/Library/Fonts/ヒラギノ角ゴシック W9.ttc"
+      },
+      {
+        "name": "HiraginoSansGB-W3",
+        "url": "/System/Library/Fonts/Hiragino Sans GB.ttc"
+      },
+      {
+        "name": "HiraginoSansGB-W6",
+        "url": "/System/Library/Fonts/Hiragino Sans GB.ttc"
+      },
+      {
+        "name": "HoeflerText-Black",
+        "url": "/System/Library/Fonts/Supplemental/Hoefler Text.ttc"
+      },
+      {
+        "name": "HoeflerText-BlackItalic",
+        "url": "/System/Library/Fonts/Supplemental/Hoefler Text.ttc"
+      },
+      {
+        "name": "HoeflerText-Italic",
+        "url": "/System/Library/Fonts/Supplemental/Hoefler Text.ttc"
+      },
+      {
+        "name": "HoeflerText-Ornaments",
+        "url": "/System/Library/Fonts/Supplemental/Hoefler Text Ornaments.ttf"
+      },
+      {
+        "name": "HoeflerText-Regular",
+        "url": "/System/Library/Fonts/Supplemental/Hoefler Text.ttc"
+      },
+      {
+        "name": "ITFDevanagari-Bold",
+        "url": "/System/Library/Fonts/Supplemental/ITFDevanagari.ttc"
+      },
+      {
+        "name": "ITFDevanagari-Book",
+        "url": "/System/Library/Fonts/Supplemental/ITFDevanagari.ttc"
+      },
+      {
+        "name": "ITFDevanagari-Demi",
+        "url": "/System/Library/Fonts/Supplemental/ITFDevanagari.ttc"
+      },
+      {
+        "name": "ITFDevanagari-Light",
+        "url": "/System/Library/Fonts/Supplemental/ITFDevanagari.ttc"
+      },
+      {
+        "name": "ITFDevanagari-Medium",
+        "url": "/System/Library/Fonts/Supplemental/ITFDevanagari.ttc"
+      },
+      {
+        "name": "ITFDevanagariMarathi-Bold",
+        "url": "/System/Library/Fonts/Supplemental/ITFDevanagari.ttc"
+      },
+      {
+        "name": "ITFDevanagariMarathi-Book",
+        "url": "/System/Library/Fonts/Supplemental/ITFDevanagari.ttc"
+      },
+      {
+        "name": "ITFDevanagariMarathi-Demi",
+        "url": "/System/Library/Fonts/Supplemental/ITFDevanagari.ttc"
+      },
+      {
+        "name": "ITFDevanagariMarathi-Light",
+        "url": "/System/Library/Fonts/Supplemental/ITFDevanagari.ttc"
+      },
+      {
+        "name": "ITFDevanagariMarathi-Medium",
+        "url": "/System/Library/Fonts/Supplemental/ITFDevanagari.ttc"
+      },
+      {
+        "name": "Impact",
+        "url": "/System/Library/Fonts/Supplemental/Impact.ttf"
+      },
+      {
+        "name": "InaiMathi",
+        "url": "/System/Library/Fonts/Supplemental/InaiMathi-MN.ttc"
+      },
+      {
+        "name": "InaiMathi-Bold",
+        "url": "/System/Library/Fonts/Supplemental/InaiMathi-MN.ttc"
+      },
+      {
+        "name": "Kailasa",
+        "url": "/System/Library/Fonts/Supplemental/Kailasa.ttc"
+      },
+      {
+        "name": "Kailasa-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Kailasa.ttc"
+      },
+      {
+        "name": "KannadaMN",
+        "url": "/System/Library/Fonts/Supplemental/Kannada MN.ttc"
+      },
+      {
+        "name": "KannadaMN-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Kannada MN.ttc"
+      },
+      {
+        "name": "KannadaSangamMN",
+        "url": "/System/Library/Fonts/Supplemental/Kannada Sangam MN.ttc"
+      },
+      {
+        "name": "KannadaSangamMN-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Kannada Sangam MN.ttc"
+      },
+      {
+        "name": "KefaIII-Bold",
+        "url": "/System/Library/Fonts/Supplemental/KefaIII.ttf"
+      },
+      {
+        "name": "KefaIII-ExtraBold",
+        "url": "/System/Library/Fonts/Supplemental/KefaIII.ttf"
+      },
+      {
+        "name": "KefaIII-Light",
+        "url": "/System/Library/Fonts/Supplemental/KefaIII.ttf"
+      },
+      {
+        "name": "KefaIII-Regular",
+        "url": "/System/Library/Fonts/Supplemental/KefaIII.ttf"
+      },
+      {
+        "name": "KhmerMN",
+        "url": "/System/Library/Fonts/Supplemental/Khmer MN.ttc"
+      },
+      {
+        "name": "KhmerMN-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Khmer MN.ttc"
+      },
+      {
+        "name": "KhmerSangamMN",
+        "url": "/System/Library/Fonts/Supplemental/Khmer Sangam MN.ttf"
+      },
+      {
+        "name": "KohinoorBangla-Bold",
+        "url": "/System/Library/Fonts/KohinoorBangla.ttc"
+      },
+      {
+        "name": "KohinoorBangla-Light",
+        "url": "/System/Library/Fonts/KohinoorBangla.ttc"
+      },
+      {
+        "name": "KohinoorBangla-Medium",
+        "url": "/System/Library/Fonts/KohinoorBangla.ttc"
+      },
+      {
+        "name": "KohinoorBangla-Regular",
+        "url": "/System/Library/Fonts/KohinoorBangla.ttc"
+      },
+      {
+        "name": "KohinoorBangla-Semibold",
+        "url": "/System/Library/Fonts/KohinoorBangla.ttc"
+      },
+      {
+        "name": "KohinoorDevanagari-Bold",
+        "url": "/System/Library/Fonts/Kohinoor.ttc"
+      },
+      {
+        "name": "KohinoorDevanagari-Light",
+        "url": "/System/Library/Fonts/Kohinoor.ttc"
+      },
+      {
+        "name": "KohinoorDevanagari-Medium",
+        "url": "/System/Library/Fonts/Kohinoor.ttc"
+      },
+      {
+        "name": "KohinoorDevanagari-Regular",
+        "url": "/System/Library/Fonts/Kohinoor.ttc"
+      },
+      {
+        "name": "KohinoorDevanagari-Semibold",
+        "url": "/System/Library/Fonts/Kohinoor.ttc"
+      },
+      {
+        "name": "KohinoorGujarati-Bold",
+        "url": "/System/Library/Fonts/KohinoorGujarati.ttc"
+      },
+      {
+        "name": "KohinoorGujarati-Light",
+        "url": "/System/Library/Fonts/KohinoorGujarati.ttc"
+      },
+      {
+        "name": "KohinoorGujarati-Medium",
+        "url": "/System/Library/Fonts/KohinoorGujarati.ttc"
+      },
+      {
+        "name": "KohinoorGujarati-Regular",
+        "url": "/System/Library/Fonts/KohinoorGujarati.ttc"
+      },
+      {
+        "name": "KohinoorGujarati-Semibold",
+        "url": "/System/Library/Fonts/KohinoorGujarati.ttc"
+      },
+      {
+        "name": "KohinoorTelugu-Bold",
+        "url": "/System/Library/Fonts/KohinoorTelugu.ttc"
+      },
+      {
+        "name": "KohinoorTelugu-Light",
+        "url": "/System/Library/Fonts/KohinoorTelugu.ttc"
+      },
+      {
+        "name": "KohinoorTelugu-Medium",
+        "url": "/System/Library/Fonts/KohinoorTelugu.ttc"
+      },
+      {
+        "name": "KohinoorTelugu-Regular",
+        "url": "/System/Library/Fonts/KohinoorTelugu.ttc"
+      },
+      {
+        "name": "KohinoorTelugu-Semibold",
+        "url": "/System/Library/Fonts/KohinoorTelugu.ttc"
+      },
+      {
+        "name": "Kokonor",
+        "url": "/System/Library/Fonts/Supplemental/Kokonor.ttf"
+      },
+      {
+        "name": "Krungthep",
+        "url": "/System/Library/Fonts/Supplemental/Krungthep.ttf"
+      },
+      {
+        "name": "KufiStandardGK",
+        "url": "/System/Library/Fonts/Supplemental/KufiStandardGK.ttc"
+      },
+      {
+        "name": "LaoMN",
+        "url": "/System/Library/Fonts/Supplemental/Lao MN.ttc"
+      },
+      {
+        "name": "LaoMN-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Lao MN.ttc"
+      },
+      {
+        "name": "LaoSangamMN",
+        "url": "/System/Library/Fonts/Supplemental/Lao Sangam MN.ttf"
+      },
+      {
+        "name": "LucidaGrande",
+        "url": "/System/Library/Fonts/LucidaGrande.ttc"
+      },
+      {
+        "name": "LucidaGrande-Bold",
+        "url": "/System/Library/Fonts/LucidaGrande.ttc"
+      },
+      {
+        "name": "Luminari-Regular",
+        "url": "/System/Library/Fonts/Supplemental/Luminari.ttf"
+      },
+      {
+        "name": "MalayalamMN",
+        "url": "/System/Library/Fonts/Supplemental/Malayalam MN.ttc"
+      },
+      {
+        "name": "MalayalamMN-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Malayalam MN.ttc"
+      },
+      {
+        "name": "MalayalamSangamMN",
+        "url": "/System/Library/Fonts/Supplemental/Malayalam Sangam MN.ttc"
+      },
+      {
+        "name": "MalayalamSangamMN-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Malayalam Sangam MN.ttc"
+      },
+      {
+        "name": "MarkerFelt-Thin",
+        "url": "/System/Library/Fonts/MarkerFelt.ttc"
+      },
+      {
+        "name": "MarkerFelt-Wide",
+        "url": "/System/Library/Fonts/MarkerFelt.ttc"
+      },
+      {
+        "name": "Menlo-Bold",
+        "url": "/System/Library/Fonts/Menlo.ttc"
+      },
+      {
+        "name": "Menlo-BoldItalic",
+        "url": "/System/Library/Fonts/Menlo.ttc"
+      },
+      {
+        "name": "Menlo-Italic",
+        "url": "/System/Library/Fonts/Menlo.ttc"
+      },
+      {
+        "name": "Menlo-Regular",
+        "url": "/System/Library/Fonts/Menlo.ttc"
+      },
+      {
+        "name": "MicrosoftSansSerif",
+        "url": "/System/Library/Fonts/Supplemental/Microsoft Sans Serif.ttf"
+      },
+      {
+        "name": "Monaco",
+        "url": "/System/Library/Fonts/Monaco.ttf"
+      },
+      {
+        "name": "MonotypeGurmukhi",
+        "url": "/System/Library/Fonts/Supplemental/Gurmukhi.ttf"
+      },
+      {
+        "name": "Mshtakan",
+        "url": "/System/Library/Fonts/Supplemental/Mshtakan.ttc"
+      },
+      {
+        "name": "MshtakanBold",
+        "url": "/System/Library/Fonts/Supplemental/Mshtakan.ttc"
+      },
+      {
+        "name": "MshtakanBoldOblique",
+        "url": "/System/Library/Fonts/Supplemental/Mshtakan.ttc"
+      },
+      {
+        "name": "MshtakanOblique",
+        "url": "/System/Library/Fonts/Supplemental/Mshtakan.ttc"
+      },
+      {
+        "name": "MuktaMahee-Bold",
+        "url": "/System/Library/Fonts/MuktaMahee.ttc"
+      },
+      {
+        "name": "MuktaMahee-ExtraBold",
+        "url": "/System/Library/Fonts/MuktaMahee.ttc"
+      },
+      {
+        "name": "MuktaMahee-ExtraLight",
+        "url": "/System/Library/Fonts/MuktaMahee.ttc"
+      },
+      {
+        "name": "MuktaMahee-Light",
+        "url": "/System/Library/Fonts/MuktaMahee.ttc"
+      },
+      {
+        "name": "MuktaMahee-Medium",
+        "url": "/System/Library/Fonts/MuktaMahee.ttc"
+      },
+      {
+        "name": "MuktaMahee-Regular",
+        "url": "/System/Library/Fonts/MuktaMahee.ttc"
+      },
+      {
+        "name": "MuktaMahee-SemiBold",
+        "url": "/System/Library/Fonts/MuktaMahee.ttc"
+      },
+      {
+        "name": "Muna",
+        "url": "/System/Library/Fonts/Supplemental/Muna.ttc"
+      },
+      {
+        "name": "MunaBlack",
+        "url": "/System/Library/Fonts/Supplemental/Muna.ttc"
+      },
+      {
+        "name": "MunaBold",
+        "url": "/System/Library/Fonts/Supplemental/Muna.ttc"
+      },
+      {
+        "name": "MyanmarMN",
+        "url": "/System/Library/Fonts/Supplemental/Myanmar MN.ttc"
+      },
+      {
+        "name": "MyanmarMN-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Myanmar MN.ttc"
+      },
+      {
+        "name": "MyanmarSangamMN",
+        "url": "/System/Library/Fonts/Supplemental/Myanmar Sangam MN.ttc"
+      },
+      {
+        "name": "MyanmarSangamMN-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Myanmar Sangam MN.ttc"
+      },
+      {
+        "name": "Nadeem",
+        "url": "/System/Library/Fonts/Supplemental/Nadeem.ttc"
+      },
+      {
+        "name": "NewPeninimMT",
+        "url": "/System/Library/Fonts/Supplemental/NewPeninimMT.ttc"
+      },
+      {
+        "name": "NewPeninimMT-Bold",
+        "url": "/System/Library/Fonts/Supplemental/NewPeninimMT.ttc"
+      },
+      {
+        "name": "NewPeninimMT-BoldInclined",
+        "url": "/System/Library/Fonts/Supplemental/NewPeninimMT.ttc"
+      },
+      {
+        "name": "NewPeninimMT-Inclined",
+        "url": "/System/Library/Fonts/Supplemental/NewPeninimMT.ttc"
+      },
+      {
+        "name": "Noteworthy-Bold",
+        "url": "/System/Library/Fonts/Noteworthy.ttc"
+      },
+      {
+        "name": "Noteworthy-Light",
+        "url": "/System/Library/Fonts/Noteworthy.ttc"
+      },
+      {
+        "name": "NotoNastaliqUrdu",
+        "url": "/System/Library/Fonts/NotoNastaliq.ttc"
+      },
+      {
+        "name": "NotoNastaliqUrdu-Bold",
+        "url": "/System/Library/Fonts/NotoNastaliq.ttc"
+      },
+      {
+        "name": "NotoSansBatak-Regular",
+        "url": "/System/Library/Fonts/Supplemental/NotoSansBatak-Regular.ttf"
+      },
+      {
+        "name": "NotoSansKannada-Black",
+        "url": "/System/Library/Fonts/NotoSansKannada.ttc"
+      },
+      {
+        "name": "NotoSansKannada-Bold",
+        "url": "/System/Library/Fonts/NotoSansKannada.ttc"
+      },
+      {
+        "name": "NotoSansKannada-ExtraBold",
+        "url": "/System/Library/Fonts/NotoSansKannada.ttc"
+      },
+      {
+        "name": "NotoSansKannada-ExtraLight",
+        "url": "/System/Library/Fonts/NotoSansKannada.ttc"
+      },
+      {
+        "name": "NotoSansKannada-Light",
+        "url": "/System/Library/Fonts/NotoSansKannada.ttc"
+      },
+      {
+        "name": "NotoSansKannada-Medium",
+        "url": "/System/Library/Fonts/NotoSansKannada.ttc"
+      },
+      {
+        "name": "NotoSansKannada-Regular",
+        "url": "/System/Library/Fonts/NotoSansKannada.ttc"
+      },
+      {
+        "name": "NotoSansKannada-SemiBold",
+        "url": "/System/Library/Fonts/NotoSansKannada.ttc"
+      },
+      {
+        "name": "NotoSansKannada-Thin",
+        "url": "/System/Library/Fonts/NotoSansKannada.ttc"
+      },
+      {
+        "name": "NotoSansMyanmar-Black",
+        "url": "/System/Library/Fonts/NotoSansMyanmar.ttc"
+      },
+      {
+        "name": "NotoSansMyanmar-Bold",
+        "url": "/System/Library/Fonts/NotoSansMyanmar.ttc"
+      },
+      {
+        "name": "NotoSansMyanmar-ExtraBold",
+        "url": "/System/Library/Fonts/NotoSansMyanmar.ttc"
+      },
+      {
+        "name": "NotoSansMyanmar-ExtraLight",
+        "url": "/System/Library/Fonts/NotoSansMyanmar.ttc"
+      },
+      {
+        "name": "NotoSansMyanmar-Light",
+        "url": "/System/Library/Fonts/NotoSansMyanmar.ttc"
+      },
+      {
+        "name": "NotoSansMyanmar-Medium",
+        "url": "/System/Library/Fonts/NotoSansMyanmar.ttc"
+      },
+      {
+        "name": "NotoSansMyanmar-Regular",
+        "url": "/System/Library/Fonts/NotoSansMyanmar.ttc"
+      },
+      {
+        "name": "NotoSansMyanmar-SemiBold",
+        "url": "/System/Library/Fonts/NotoSansMyanmar.ttc"
+      },
+      {
+        "name": "NotoSansMyanmar-Thin",
+        "url": "/System/Library/Fonts/NotoSansMyanmar.ttc"
+      },
+      {
+        "name": "NotoSansNKo-Regular",
+        "url": "/System/Library/Fonts/Supplemental/NotoSansNKo-Regular.ttf"
+      },
+      {
+        "name": "NotoSansOriya",
+        "url": "/System/Library/Fonts/NotoSansOriya.ttc"
+      },
+      {
+        "name": "NotoSansOriya-Bold",
+        "url": "/System/Library/Fonts/NotoSansOriya.ttc"
+      },
+      {
+        "name": "NotoSansSyriac-Regular",
+        "url": "/System/Library/Fonts/Supplemental/NotoSansSyriac-Regular.ttf"
+      },
+      {
+        "name": "NotoSansSyriac-Regular_Black",
+        "url": "/System/Library/Fonts/Supplemental/NotoSansSyriac-Regular.ttf"
+      },
+      {
+        "name": "NotoSansSyriac-Regular_Bold",
+        "url": "/System/Library/Fonts/Supplemental/NotoSansSyriac-Regular.ttf"
+      },
+      {
+        "name": "NotoSansSyriac-Regular_ExtraBold",
+        "url": "/System/Library/Fonts/Supplemental/NotoSansSyriac-Regular.ttf"
+      },
+      {
+        "name": "NotoSansSyriac-Regular_ExtraLight",
+        "url": "/System/Library/Fonts/Supplemental/NotoSansSyriac-Regular.ttf"
+      },
+      {
+        "name": "NotoSansSyriac-Regular_Light",
+        "url": "/System/Library/Fonts/Supplemental/NotoSansSyriac-Regular.ttf"
+      },
+      {
+        "name": "NotoSansSyriac-Regular_Medium",
+        "url": "/System/Library/Fonts/Supplemental/NotoSansSyriac-Regular.ttf"
+      },
+      {
+        "name": "NotoSansSyriac-Regular_SemiBold",
+        "url": "/System/Library/Fonts/Supplemental/NotoSansSyriac-Regular.ttf"
+      },
+      {
+        "name": "NotoSansSyriac-Regular_Thin",
+        "url": "/System/Library/Fonts/Supplemental/NotoSansSyriac-Regular.ttf"
+      },
+      {
+        "name": "NotoSansTagalog-Regular",
+        "url": "/System/Library/Fonts/Supplemental/NotoSansTagalog-Regular.ttf"
+      },
+      {
+        "name": "NotoSerifMyanmar-Black",
+        "url": "/System/Library/Fonts/NotoSerifMyanmar.ttc"
+      },
+      {
+        "name": "NotoSerifMyanmar-Bold",
+        "url": "/System/Library/Fonts/NotoSerifMyanmar.ttc"
+      },
+      {
+        "name": "NotoSerifMyanmar-ExtraBold",
+        "url": "/System/Library/Fonts/NotoSerifMyanmar.ttc"
+      },
+      {
+        "name": "NotoSerifMyanmar-ExtraLight",
+        "url": "/System/Library/Fonts/NotoSerifMyanmar.ttc"
+      },
+      {
+        "name": "NotoSerifMyanmar-Light",
+        "url": "/System/Library/Fonts/NotoSerifMyanmar.ttc"
+      },
+      {
+        "name": "NotoSerifMyanmar-Medium",
+        "url": "/System/Library/Fonts/NotoSerifMyanmar.ttc"
+      },
+      {
+        "name": "NotoSerifMyanmar-Regular",
+        "url": "/System/Library/Fonts/NotoSerifMyanmar.ttc"
+      },
+      {
+        "name": "NotoSerifMyanmar-SemiBold",
+        "url": "/System/Library/Fonts/NotoSerifMyanmar.ttc"
+      },
+      {
+        "name": "NotoSerifMyanmar-Thin",
+        "url": "/System/Library/Fonts/NotoSerifMyanmar.ttc"
+      },
+      {
+        "name": "Optima-Bold",
+        "url": "/System/Library/Fonts/Optima.ttc"
+      },
+      {
+        "name": "Optima-BoldItalic",
+        "url": "/System/Library/Fonts/Optima.ttc"
+      },
+      {
+        "name": "Optima-ExtraBlack",
+        "url": "/System/Library/Fonts/Optima.ttc"
+      },
+      {
+        "name": "Optima-Italic",
+        "url": "/System/Library/Fonts/Optima.ttc"
+      },
+      {
+        "name": "Optima-Regular",
+        "url": "/System/Library/Fonts/Optima.ttc"
+      },
+      {
+        "name": "OriyaMN",
+        "url": "/System/Library/Fonts/Supplemental/Oriya MN.ttc"
+      },
+      {
+        "name": "OriyaMN-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Oriya MN.ttc"
+      },
+      {
+        "name": "OriyaSangamMN",
+        "url": "/System/Library/Fonts/Supplemental/Oriya Sangam MN.ttc"
+      },
+      {
+        "name": "OriyaSangamMN-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Oriya Sangam MN.ttc"
+      },
+      {
+        "name": "PTMono-Bold",
+        "url": "/System/Library/Fonts/Supplemental/PTMono.ttc"
+      },
+      {
+        "name": "PTMono-Regular",
+        "url": "/System/Library/Fonts/Supplemental/PTMono.ttc"
+      },
+      {
+        "name": "PTSans-Bold",
+        "url": "/System/Library/Fonts/Supplemental/PTSans.ttc"
+      },
+      {
+        "name": "PTSans-BoldItalic",
+        "url": "/System/Library/Fonts/Supplemental/PTSans.ttc"
+      },
+      {
+        "name": "PTSans-Caption",
+        "url": "/System/Library/Fonts/Supplemental/PTSans.ttc"
+      },
+      {
+        "name": "PTSans-CaptionBold",
+        "url": "/System/Library/Fonts/Supplemental/PTSans.ttc"
+      },
+      {
+        "name": "PTSans-Italic",
+        "url": "/System/Library/Fonts/Supplemental/PTSans.ttc"
+      },
+      {
+        "name": "PTSans-Narrow",
+        "url": "/System/Library/Fonts/Supplemental/PTSans.ttc"
+      },
+      {
+        "name": "PTSans-NarrowBold",
+        "url": "/System/Library/Fonts/Supplemental/PTSans.ttc"
+      },
+      {
+        "name": "PTSans-Regular",
+        "url": "/System/Library/Fonts/Supplemental/PTSans.ttc"
+      },
+      {
+        "name": "PTSerif-Bold",
+        "url": "/System/Library/Fonts/Supplemental/PTSerif.ttc"
+      },
+      {
+        "name": "PTSerif-BoldItalic",
+        "url": "/System/Library/Fonts/Supplemental/PTSerif.ttc"
+      },
+      {
+        "name": "PTSerif-Caption",
+        "url": "/System/Library/Fonts/Supplemental/PTSerifCaption.ttc"
+      },
+      {
+        "name": "PTSerif-CaptionItalic",
+        "url": "/System/Library/Fonts/Supplemental/PTSerifCaption.ttc"
+      },
+      {
+        "name": "PTSerif-Italic",
+        "url": "/System/Library/Fonts/Supplemental/PTSerif.ttc"
+      },
+      {
+        "name": "PTSerif-Regular",
+        "url": "/System/Library/Fonts/Supplemental/PTSerif.ttc"
+      },
+      {
+        "name": "Palatino-Bold",
+        "url": "/System/Library/Fonts/Palatino.ttc"
+      },
+      {
+        "name": "Palatino-BoldItalic",
+        "url": "/System/Library/Fonts/Palatino.ttc"
+      },
+      {
+        "name": "Palatino-Italic",
+        "url": "/System/Library/Fonts/Palatino.ttc"
+      },
+      {
+        "name": "Palatino-Roman",
+        "url": "/System/Library/Fonts/Palatino.ttc"
+      },
+      {
+        "name": "Papyrus",
+        "url": "/System/Library/Fonts/Supplemental/Papyrus.ttc"
+      },
+      {
+        "name": "Papyrus-Condensed",
+        "url": "/System/Library/Fonts/Supplemental/Papyrus.ttc"
+      },
+      {
+        "name": "PartyLetPlain",
+        "url": "/System/Library/Fonts/Supplemental/PartyLET-plain.ttf"
+      },
+      {
+        "name": "Phosphate-Inline",
+        "url": "/System/Library/Fonts/Supplemental/Phosphate.ttc"
+      },
+      {
+        "name": "Phosphate-Solid",
+        "url": "/System/Library/Fonts/Supplemental/Phosphate.ttc"
+      },
+      {
+        "name": "PingFangHK-Light",
+        "url": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc"
+      },
+      {
+        "name": "PingFangHK-Medium",
+        "url": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc"
+      },
+      {
+        "name": "PingFangHK-Regular",
+        "url": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc"
+      },
+      {
+        "name": "PingFangHK-Semibold",
+        "url": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc"
+      },
+      {
+        "name": "PingFangHK-Thin",
+        "url": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc"
+      },
+      {
+        "name": "PingFangHK-Ultralight",
+        "url": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc"
+      },
+      {
+        "name": "PingFangMO-Light",
+        "url": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc"
+      },
+      {
+        "name": "PingFangMO-Medium",
+        "url": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc"
+      },
+      {
+        "name": "PingFangMO-Regular",
+        "url": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc"
+      },
+      {
+        "name": "PingFangMO-Semibold",
+        "url": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc"
+      },
+      {
+        "name": "PingFangMO-Thin",
+        "url": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc"
+      },
+      {
+        "name": "PingFangMO-Ultralight",
+        "url": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc"
+      },
+      {
+        "name": "PingFangSC-Light",
+        "url": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc"
+      },
+      {
+        "name": "PingFangSC-Medium",
+        "url": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc"
+      },
+      {
+        "name": "PingFangSC-Regular",
+        "url": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc"
+      },
+      {
+        "name": "PingFangSC-Semibold",
+        "url": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc"
+      },
+      {
+        "name": "PingFangSC-Thin",
+        "url": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc"
+      },
+      {
+        "name": "PingFangSC-Ultralight",
+        "url": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc"
+      },
+      {
+        "name": "PingFangTC-Light",
+        "url": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc"
+      },
+      {
+        "name": "PingFangTC-Medium",
+        "url": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc"
+      },
+      {
+        "name": "PingFangTC-Regular",
+        "url": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc"
+      },
+      {
+        "name": "PingFangTC-Semibold",
+        "url": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc"
+      },
+      {
+        "name": "PingFangTC-Thin",
+        "url": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc"
+      },
+      {
+        "name": "PingFangTC-Ultralight",
+        "url": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc"
+      },
+      {
+        "name": "PlantagenetCherokee",
+        "url": "/System/Library/Fonts/Supplemental/PlantagenetCherokee.ttf"
+      },
+      {
+        "name": "Raanana",
+        "url": "/System/Library/Fonts/Supplemental/Raanana.ttc"
+      },
+      {
+        "name": "RaananaBold",
+        "url": "/System/Library/Fonts/Supplemental/Raanana.ttc"
+      },
+      {
+        "name": "Rockwell-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Rockwell.ttc"
+      },
+      {
+        "name": "Rockwell-BoldItalic",
+        "url": "/System/Library/Fonts/Supplemental/Rockwell.ttc"
+      },
+      {
+        "name": "Rockwell-Italic",
+        "url": "/System/Library/Fonts/Supplemental/Rockwell.ttc"
+      },
+      {
+        "name": "Rockwell-Regular",
+        "url": "/System/Library/Fonts/Supplemental/Rockwell.ttc"
+      },
+      {
+        "name": "STHeitiSC-Light",
+        "url": "/System/Library/Fonts/STHeiti Light.ttc"
+      },
+      {
+        "name": "STHeitiSC-Medium",
+        "url": "/System/Library/Fonts/STHeiti Medium.ttc"
+      },
+      {
+        "name": "STHeitiTC-Light",
+        "url": "/System/Library/Fonts/STHeiti Light.ttc"
+      },
+      {
+        "name": "STHeitiTC-Medium",
+        "url": "/System/Library/Fonts/STHeiti Medium.ttc"
+      },
+      {
+        "name": "STIXTwoMath-Regular",
+        "url": "/System/Library/Fonts/Supplemental/STIXTwoMath.otf"
+      },
+      {
+        "name": "STIXTwoText",
+        "url": "/System/Library/Fonts/Supplemental/STIXTwoText.ttf"
+      },
+      {
+        "name": "STIXTwoText-Italic",
+        "url": "/System/Library/Fonts/Supplemental/STIXTwoText-Italic.ttf"
+      },
+      {
+        "name": "STIXTwoText-Italic_Bold-Italic",
+        "url": "/System/Library/Fonts/Supplemental/STIXTwoText-Italic.ttf"
+      },
+      {
+        "name": "STIXTwoText-Italic_Medium-Italic",
+        "url": "/System/Library/Fonts/Supplemental/STIXTwoText-Italic.ttf"
+      },
+      {
+        "name": "STIXTwoText-Italic_SemiBold-Italic",
+        "url": "/System/Library/Fonts/Supplemental/STIXTwoText-Italic.ttf"
+      },
+      {
+        "name": "STIXTwoText_Bold",
+        "url": "/System/Library/Fonts/Supplemental/STIXTwoText.ttf"
+      },
+      {
+        "name": "STIXTwoText_Medium",
+        "url": "/System/Library/Fonts/Supplemental/STIXTwoText.ttf"
+      },
+      {
+        "name": "STIXTwoText_SemiBold",
+        "url": "/System/Library/Fonts/Supplemental/STIXTwoText.ttf"
+      },
+      {
+        "name": "STSong",
+        "url": "/System/Library/Fonts/Supplemental/Songti.ttc"
+      },
+      {
+        "name": "STSongti-SC-Black",
+        "url": "/System/Library/Fonts/Supplemental/Songti.ttc"
+      },
+      {
+        "name": "STSongti-SC-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Songti.ttc"
+      },
+      {
+        "name": "STSongti-SC-Light",
+        "url": "/System/Library/Fonts/Supplemental/Songti.ttc"
+      },
+      {
+        "name": "STSongti-SC-Regular",
+        "url": "/System/Library/Fonts/Supplemental/Songti.ttc"
+      },
+      {
+        "name": "STSongti-TC-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Songti.ttc"
+      },
+      {
+        "name": "STSongti-TC-Light",
+        "url": "/System/Library/Fonts/Supplemental/Songti.ttc"
+      },
+      {
+        "name": "STSongti-TC-Regular",
+        "url": "/System/Library/Fonts/Supplemental/Songti.ttc"
+      },
+      {
+        "name": "Sana",
+        "url": "/System/Library/Fonts/Supplemental/Sana.ttc"
+      },
+      {
+        "name": "Sathu",
+        "url": "/System/Library/Fonts/Supplemental/Sathu.ttf"
+      },
+      {
+        "name": "SavoyeLetPlain",
+        "url": "/System/Library/Fonts/Supplemental/Savoye LET.ttc"
+      },
+      {
+        "name": "ShreeDev0714",
+        "url": "/System/Library/Fonts/Supplemental/Shree714.ttc"
+      },
+      {
+        "name": "ShreeDev0714-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Shree714.ttc"
+      },
+      {
+        "name": "ShreeDev0714-BoldItalic",
+        "url": "/System/Library/Fonts/Supplemental/Shree714.ttc"
+      },
+      {
+        "name": "ShreeDev0714-Italic",
+        "url": "/System/Library/Fonts/Supplemental/Shree714.ttc"
+      },
+      {
+        "name": "SignPainter-HouseScript",
+        "url": "/System/Library/Fonts/Supplemental/SignPainter.ttc"
+      },
+      {
+        "name": "SignPainter-HouseScriptSemibold",
+        "url": "/System/Library/Fonts/Supplemental/SignPainter.ttc"
+      },
+      {
+        "name": "Silom",
+        "url": "/System/Library/Fonts/Supplemental/Silom.ttf"
+      },
+      {
+        "name": "SinhalaMN",
+        "url": "/System/Library/Fonts/Supplemental/Sinhala MN.ttc"
+      },
+      {
+        "name": "SinhalaMN-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Sinhala MN.ttc"
+      },
+      {
+        "name": "SinhalaSangamMN",
+        "url": "/System/Library/Fonts/Supplemental/Sinhala Sangam MN.ttc"
+      },
+      {
+        "name": "SinhalaSangamMN-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Sinhala Sangam MN.ttc"
+      },
+      {
+        "name": "Skia-Regular",
+        "url": "/System/Library/Fonts/Supplemental/Skia.ttf"
+      },
+      {
+        "name": "Skia-Regular_Black",
+        "url": "/System/Library/Fonts/Supplemental/Skia.ttf"
+      },
+      {
+        "name": "Skia-Regular_Black-Condensed",
+        "url": "/System/Library/Fonts/Supplemental/Skia.ttf"
+      },
+      {
+        "name": "Skia-Regular_Black-Extended",
+        "url": "/System/Library/Fonts/Supplemental/Skia.ttf"
+      },
+      {
+        "name": "Skia-Regular_Bold",
+        "url": "/System/Library/Fonts/Supplemental/Skia.ttf"
+      },
+      {
+        "name": "Skia-Regular_Condensed",
+        "url": "/System/Library/Fonts/Supplemental/Skia.ttf"
+      },
+      {
+        "name": "Skia-Regular_Extended",
+        "url": "/System/Library/Fonts/Supplemental/Skia.ttf"
+      },
+      {
+        "name": "Skia-Regular_Light",
+        "url": "/System/Library/Fonts/Supplemental/Skia.ttf"
+      },
+      {
+        "name": "Skia-Regular_Light-Condensed",
+        "url": "/System/Library/Fonts/Supplemental/Skia.ttf"
+      },
+      {
+        "name": "Skia-Regular_Light-Extended",
+        "url": "/System/Library/Fonts/Supplemental/Skia.ttf"
+      },
+      {
+        "name": "SnellRoundhand",
+        "url": "/System/Library/Fonts/Supplemental/SnellRoundhand.ttc"
+      },
+      {
+        "name": "SnellRoundhand-Black",
+        "url": "/System/Library/Fonts/Supplemental/SnellRoundhand.ttc"
+      },
+      {
+        "name": "SnellRoundhand-Bold",
+        "url": "/System/Library/Fonts/Supplemental/SnellRoundhand.ttc"
+      },
+      {
+        "name": "SukhumvitSet-Bold",
+        "url": "/System/Library/Fonts/Supplemental/SukhumvitSet.ttc"
+      },
+      {
+        "name": "SukhumvitSet-Light",
+        "url": "/System/Library/Fonts/Supplemental/SukhumvitSet.ttc"
+      },
+      {
+        "name": "SukhumvitSet-Medium",
+        "url": "/System/Library/Fonts/Supplemental/SukhumvitSet.ttc"
+      },
+      {
+        "name": "SukhumvitSet-SemiBold",
+        "url": "/System/Library/Fonts/Supplemental/SukhumvitSet.ttc"
+      },
+      {
+        "name": "SukhumvitSet-Text",
+        "url": "/System/Library/Fonts/Supplemental/SukhumvitSet.ttc"
+      },
+      {
+        "name": "SukhumvitSet-Thin",
+        "url": "/System/Library/Fonts/Supplemental/SukhumvitSet.ttc"
+      },
+      {
+        "name": "Symbol",
+        "url": "/System/Library/Fonts/Symbol.ttf"
+      },
+      {
+        "name": "Tahoma",
+        "url": "/System/Library/Fonts/Supplemental/Tahoma.ttf"
+      },
+      {
+        "name": "Tahoma-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Tahoma Bold.ttf"
+      },
+      {
+        "name": "TamilMN",
+        "url": "/System/Library/Fonts/Supplemental/Tamil MN.ttc"
+      },
+      {
+        "name": "TamilMN-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Tamil MN.ttc"
+      },
+      {
+        "name": "TamilSangamMN",
+        "url": "/System/Library/Fonts/Supplemental/Tamil Sangam MN.ttc"
+      },
+      {
+        "name": "TamilSangamMN-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Tamil Sangam MN.ttc"
+      },
+      {
+        "name": "TeluguMN",
+        "url": "/System/Library/Fonts/Supplemental/Telugu MN.ttc"
+      },
+      {
+        "name": "TeluguMN-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Telugu MN.ttc"
+      },
+      {
+        "name": "TeluguSangamMN",
+        "url": "/System/Library/Fonts/Supplemental/Telugu Sangam MN.ttc"
+      },
+      {
+        "name": "TeluguSangamMN-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Telugu Sangam MN.ttc"
+      },
+      {
+        "name": "Thonburi",
+        "url": "/System/Library/Fonts/Supplemental/Thonburi.ttc"
+      },
+      {
+        "name": "Thonburi-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Thonburi.ttc"
+      },
+      {
+        "name": "Thonburi-Light",
+        "url": "/System/Library/Fonts/Supplemental/Thonburi.ttc"
+      },
+      {
+        "name": "TimesNewRomanPS-BoldItalicMT",
+        "url": "/System/Library/Fonts/Supplemental/Times New Roman Bold Italic.ttf"
+      },
+      {
+        "name": "TimesNewRomanPS-BoldMT",
+        "url": "/System/Library/Fonts/Supplemental/Times New Roman Bold.ttf"
+      },
+      {
+        "name": "TimesNewRomanPS-ItalicMT",
+        "url": "/System/Library/Fonts/Supplemental/Times New Roman Italic.ttf"
+      },
+      {
+        "name": "TimesNewRomanPSMT",
+        "url": "/System/Library/Fonts/Supplemental/Times New Roman.ttf"
+      },
+      {
+        "name": "Trattatello",
+        "url": "/System/Library/Fonts/Supplemental/Trattatello.ttf"
+      },
+      {
+        "name": "Trebuchet-BoldItalic",
+        "url": "/System/Library/Fonts/Supplemental/Trebuchet MS Bold Italic.ttf"
+      },
+      {
+        "name": "TrebuchetMS",
+        "url": "/System/Library/Fonts/Supplemental/Trebuchet MS.ttf"
+      },
+      {
+        "name": "TrebuchetMS-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Trebuchet MS Bold.ttf"
+      },
+      {
+        "name": "TrebuchetMS-Italic",
+        "url": "/System/Library/Fonts/Supplemental/Trebuchet MS Italic.ttf"
+      },
+      {
+        "name": "Verdana",
+        "url": "/System/Library/Fonts/Supplemental/Verdana.ttf"
+      },
+      {
+        "name": "Verdana-Bold",
+        "url": "/System/Library/Fonts/Supplemental/Verdana Bold.ttf"
+      },
+      {
+        "name": "Verdana-BoldItalic",
+        "url": "/System/Library/Fonts/Supplemental/Verdana Bold Italic.ttf"
+      },
+      {
+        "name": "Verdana-Italic",
+        "url": "/System/Library/Fonts/Supplemental/Verdana Italic.ttf"
+      },
+      {
+        "name": "Waseem",
+        "url": "/System/Library/Fonts/Supplemental/Waseem.ttc"
+      },
+      {
+        "name": "WaseemLight",
+        "url": "/System/Library/Fonts/Supplemental/Waseem.ttc"
+      },
+      {
+        "name": "Webdings",
+        "url": "/System/Library/Fonts/Supplemental/Webdings.ttf"
+      },
+      {
+        "name": "Wingdings-Regular",
+        "url": "/System/Library/Fonts/Supplemental/Wingdings.ttf"
+      },
+      {
+        "name": "Wingdings2",
+        "url": "/System/Library/Fonts/Supplemental/Wingdings 2.ttf"
+      },
+      {
+        "name": "Wingdings3",
+        "url": "/System/Library/Fonts/Supplemental/Wingdings 3.ttf"
+      },
+      {
+        "name": "ZapfDingbatsITC",
+        "url": "/System/Library/Fonts/ZapfDingbats.ttf"
+      },
+      {
+        "name": "Zapfino",
+        "url": "/System/Library/Fonts/Supplemental/Zapfino.ttf"
+      }
+    ],
+    "glyphs": [
+      {
+        "glyph": 3296,
+        "has_path": true
+      },
+      {
+        "glyph": 1238,
+        "has_path": true
+      },
+      {
+        "glyph": 1086,
+        "has_path": true
+      },
+      {
+        "glyph": 34,
+        "has_path": true
+      },
+      {
+        "glyph": 17,
+        "has_path": true
+      },
+      {
+        "glyph": 26,
+        "has_path": true
+      }
+    ],
+    "korean_covered": true
+  },
+  "profiles": {
+    "profile.sb": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+      "sha256": "89a8955370fe85029f0f08372f77ec17b86a7c4ae574ddc197abbe9267f47bd7"
+    },
+    "visual-profile.sb": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/visual-profile.sb",
+      "sha256": "8f853b4bea5225ea538e25be56d8a7eff86f55611b722e34a07272467902f709"
+    }
+  },
+  "scope": "Mac 프로세스 격리의 OS 글꼴 가시성. 개인·시스템 글꼴을 삭제하거나 비활성화하지 않았다. 기승인 원본 글꼴을 공급한 보호 문서 실행은 이 최소 글꼴 회귀 조건과 별도로 기록한다.",
+  "coretext_audit_sha256": "193679ee15b460109c071e49d0ce843e75cc0f82715b50bfec0f8ad9b0627e21"
+}

@@ -1,0 +1,16 @@
+{
+  "pid": 42149,
+  "phase": "completed",
+  "parent": "e2604d5a147daa9e898724a109e7b36bb90b5ffe",
+  "source_files": {
+    "src/renderer/layout/table_layout.rs": "45ac359b9b1a4ccd03d1e1b42d8568ce96806173975c1bbb024ba246875785a5",
+    "src/renderer/table_row_frame.rs": "7caf5eb572b89905c38eff99741a945083d33ce16ecaf91781195f0cecc77768",
+    "src/renderer/typeset/table/source_frame_fit.rs": "0becbd5327305f8d8c465a8d2fd1f2cc4e69c2d060afdefe2a8805b8999b7efd"
+  },
+  "source_diff_sha256": "2e780e76e07e0f3fe09d15896956e1337f195f1b27ae97bcd080c0a3a9cb0b34",
+  "child_pid": 42162,
+  "exit": 0,
+  "sha256": "3b31933e5485c6d90d12cace719df1703d2f3ea24d74b9622fe8e99cef9537c8",
+  "build_log_sha256": "4dc7df76c4182a9530ac77a285835f697931ec0916ee32e72f112a4d7bea1457",
+  "built_at": "2026-11-11T18:13:41.069177+09:00"
+}

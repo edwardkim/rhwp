@@ -1,0 +1,61 @@
+{
+  "input": {
+    "hwp": "samples/task2097/75544_pii_bunseok.hwpx",
+    "pdf": "pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf",
+    "prs": [
+      8751
+    ],
+    "compat": "2022",
+    "dpi": 96,
+    "font_paths": [
+      "ttfs/opensource"
+    ],
+    "pdf_pages": 66,
+    "key": "pr8751-75544_pii_bunseok",
+    "hwp_sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+    "pdf_sha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770"
+  },
+  "old_reference": {
+    "hwp": "samples/task2097/75544_pii_bunseok.hwpx",
+    "pdf": "pdf/task2097/75544_pii_bunseok-2020.pdf",
+    "prs": [
+      8751
+    ],
+    "compat": "2022",
+    "dpi": 96,
+    "font_paths": [
+      "ttfs/opensource"
+    ],
+    "pdf_pages": 66,
+    "key": "pr8751-75544_pii_bunseok",
+    "hwp_sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+    "pdf_sha256": "3a8d42f2e55a64b9a35fee89dfaeab27f52603fe112d4241d0cf03bae2b4dc4e"
+  },
+  "results": [
+    {
+      "backend": "base-native",
+      "pages": 66,
+      "minimum": 98.12,
+      "below90": 0,
+      "tsv": "output/pr-review/planet6897-remaining39-integration-20261111/base-native-visual/pr8751-75544_pii_bunseok/silhouette.tsv",
+      "tsv_sha256": "f42c58fee5f1f9b4ab637f94754d7c72f9d6407f7d63da2c8cf5f1cf3758ac66"
+    },
+    {
+      "backend": "candidate-native",
+      "pages": 66,
+      "minimum": 98.12,
+      "below90": 0,
+      "tsv": "output/pr-review/planet6897-remaining39-integration-20261111/candidate-native-visual/pr8751-75544_pii_bunseok/silhouette.tsv",
+      "tsv_sha256": "58458b3359d5374702a985008c83930b5acea8aabb080b6550b8ffefc36cf6c2"
+    },
+    {
+      "backend": "base-wasm",
+      "pages": 66,
+      "minimum": 98.27,
+      "below90": 0,
+      "tsv": "output/pr-review/planet6897-remaining39-integration-20261111/base-wasm-visual/pr8751-75544_pii_bunseok/silhouette.tsv",
+      "tsv_sha256": "fe1a10f50ee725e10730abe9d473f0d56458fd40ebd287b4bb330e7e49b2161d"
+    }
+  ],
+  "invalid_reference_archived": "output/pr-review/planet6897-remaining39-integration-20261111/tool-preflight-failure/pii-hwp-pdf-mismatched-reference"
+}

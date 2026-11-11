@@ -1,0 +1,14 @@
+{
+  "size": [
+    794,
+    1122
+  ],
+  "different_pixels": 5250,
+  "difference_bbox": [
+    57,
+    935,
+    736,
+    966
+  ],
+  "note": "Pixel location only; not a rendered regression tolerance or exemption."
+}

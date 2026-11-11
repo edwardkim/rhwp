@@ -1,0 +1,22 @@
+{
+  "reason": "Outer macOS seatbelt profile blocks nested Chrome sandbox initialization; default fails before navigation, explicit --no-sandbox succeeds under unchanged external font isolation.",
+  "diagnostics": [
+    "logs/browser-init-diagnostic.log",
+    "logs/browser-init-no-sandbox.log"
+  ],
+  "rendering_options_changed": false,
+  "gpu_disabled": false,
+  "source_exporter_changed": false,
+  "launch_preload_sha256": "3f758df6caa3430e7b2ebb14984861ffbaf81b8648592480a819f13d12046344",
+  "external_profile_sha256": "8f853b4bea5225ea538e25be56d8a7eff86f55611b722e34a07272467902f709",
+  "invalid_attempt_archive": "output/pr-review/planet6897-remaining39-integration-20261111/tool-preflight-failure/wasm-nested-browser-sandbox",
+  "smoke": {
+    "key": "pr8708-cell_float_offset_space",
+    "backend": "base-wasm",
+    "png_generated": true,
+    "minimum": 78.31,
+    "gate_pass": false,
+    "reason": "Valid base rendering below90; initialization successful"
+  },
+  "ineffective_preload": "tool-preflight-failure/wasm-ineffective-preload"
+}

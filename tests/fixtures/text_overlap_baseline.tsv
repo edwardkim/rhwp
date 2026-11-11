@@ -110,6 +110,7 @@ issue7688/arrow-controls/control-2.hwpx	5
 issue7688/arrow-controls/control-3.hwpx	5
 issue7688/arrow-controls/control-compound.hwpx	5
 issue7688/arrow-controls/control-short.hwpx	5
+issue8755/46551_road_traffic_rule_amendment.hwp	7
 kps-ai.hwp	2
 mel-001.hwp	1
 multi-table-001.hwp	1
@@ -158,3 +159,18 @@ issue5679/10857_delegation_rules.hwp	1
 issue8641/field_table_after_page_box.hwpx	6
 # #8641 새 fixture: #8645·#8649 합본과 이 수정의 대조에서 보고서 2 → 2(이 수정으로 늘지 않음, 표 겹침은 문서 고유).
 issue8641/labor_standards_report.hwp	2
+
+# #8685 신규 공개 샘플(새마을운동 ODA 시범사업 보고서 1311000-201100125, 209쪽): 홀수 쪽 꼬리말 글줄의
+# 글자 조각끼리 겹치는 기존 형상 90건(11~53쪽 등)이다. 수정 전(devel 08963f6825) 104건 중 15쪽 표 셀 각주
+# 14건이 이 PR 로 사라지고 나머지 90건은 수정 전과 같다. #8677 최종보고서의 27쪽 14건은 이 PR 로 0건이라 행을 뺀다.
+issue8685/1311000-201100125_saemaul_oda_pilot_report.hwp	90
+issue8773/field_led_wide_table.hwpx	1
+issue8773/field_led_wide_table_nofield.hwpx	1
+issue8782/stored_field_line_table.hwpx	1
+issue8786/reflowed_gap_stored_rewind.hwpx	1
+# #8842 신규 공개 샘플(HPV 코호트 최종결과보고서 1351000-201800239, 한/글 2020 Print 235쪽): 수정 전(devel 024d610633)과
+# 수정 후의 값이 같다 — 1·118쪽 표 칸 글자 겹침(118쪽 39건)은 76~172쪽 표 쪽 나눔 어긋남 축이며 이 수정(211~234쪽 그림 무리) 범위 밖이다.
+issue8842/1351000-201800239_hpv_cohort_final_report.hwp	41
+# #8891 신규 공개 샘플(1480000-201900510 업종 시설설치관리 연구 최종보고서, 한/글 2020 Print 241쪽): 수정 전(#8879 head
+# 93dd166c25)과 수정 후의 값이 같다 — 187쪽 표 칸 글자 상자 2.5px 겹침 1건이며 이 수정(113쪽 행 소속) 범위 밖이다.
+issue8891/1480000-201900510_facility_pollution_study.hwp	1
