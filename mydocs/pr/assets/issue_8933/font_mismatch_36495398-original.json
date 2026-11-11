@@ -1,0 +1,24 @@
+{
+  "source_sha": "53c7e9dde87c36e7df5d70a12965e13f4568ef0c",
+  "hwp_sha256": "81e6abe2a833292525d8e8325f5aa3357abed3f76adc60feb42a8e4ad8370819",
+  "pdf_sha256": "d293b4892109a5c5f8c911d148acf55090011cc1b473583aa5f6844dd6382c16",
+  "affected_pages": [
+    4,
+    5
+  ],
+  "pdf_fonts": [
+    "pdffonts 로 확인한 한컴 engine 2020 PDF 내장 face 에 H2mjsM(HY신명조)·H2gtrM(HY중고딕)이 있다. 원본 header.xml 에서 4쪽 pi=25~28·5쪽 별표 줄의 글자모양이 이 두 face 를 쓴다. 그 밖의 내장 face: GulimChe·H2gtrE·H2mjrE·H2hdrM·MalgunGothic(Bold)·휴먼명조·Haansoft Dotum/Batang·HCRDotum"
+  ],
+  "rhwp_fonts": [
+    "RHWP_FONT_PATH·--font-path 의 문서 face 폴더(gulim.ttc·H2HDRM·HMKMM·HYGTRE·HYMJRE·malgun·malgunbd)로 공급. HY신명조·HY중고딕 은 폴더에 프로그램이 없어 대체 글꼴로 그린다(WASM wasm-export-complete.json 의 fontEnvironment.loaded 목록에 두 face 없음)"
+  ],
+  "font_supply_attempts": [
+    "로컬 ttfs/hwp·ttfs/windows·공유 글꼴 폴더와 fc-list 를 fc-scan 으로 전수 조회했으나 HY신명조(H2mjsM)·HY중고딕(H2gtrM) 프로그램 파일이 없다",
+    "휴먼명조(HMKMM.TTF)를 추가 공급해 다시 측정 — 4·5쪽 수치 변화 없음"
+  ],
+  "unresolvable_reason": "두 face 의 글꼴 프로그램이 검증 환경 어디에도 없고 재배포 허가가 확인된 사본도 없다. 대체 글꼴의 별표 글리프가 한컴보다 약 5px 위에 놓여 같은 기준선에서도 잉크가 어긋난다.",
+  "geometry_review_evidence": "pdfium 글자 기준선 원점 대조: 4쪽 한컴 495.8·741.9·773.9·870.6·911.2px = rhwp head 495.9·741.9·773.9·870.6·911.2px. 같은 문서의 두 face 만 HY견명조·HY견고딕 으로 바꾼 대체본과 그 engine 2020 PDF 에서 Native 4쪽 100.00·WASM 95.68, 전쪽 Native 최저 99.68·WASM 최저 95.68 (mydocs/pr/assets/issue_8933/).",
+  "font_issue_unresolvable": true,
+  "layout_geometry_matched": true,
+  "page_count_matched": true
+}
