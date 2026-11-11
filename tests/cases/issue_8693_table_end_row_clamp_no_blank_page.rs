@@ -58,7 +58,9 @@ fn assert_each_row_once(words: &[String], prefix: &str, row_count: usize) {
 }
 
 fn assert_page_rows_once(core: &DocumentCore, page: u32, prefix: &str, row_count: usize) {
-    let tree = core.build_page_render_tree(page).expect("행 소속 렌더 트리");
+    let tree = core
+        .build_page_render_tree(page)
+        .expect("행 소속 렌더 트리");
     let mut words = Vec::new();
     texts(&tree.root, &mut words);
     assert_each_row_once(&words, prefix, row_count);
