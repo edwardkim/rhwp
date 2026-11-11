@@ -29,6 +29,70 @@ MAX_BYTES = 2 * 1024**3
 MAX_RECEIPT = 1024 * 1024
 
 
+def tile_members(value, expected_ids=None):
+    if value.get("tileGroup") is not True:
+        raise ValueError("actual two-tile group evidence is required")
+    members = value.get("nativeTileMembers")
+    if not isinstance(members, list) or len(members) != 2 or any(not isinstance(v, dict) for v in members):
+        raise ValueError("both native tile member receipts are required")
+    ids = [positive_integer(v.get("textureId"), 2**63-1) for v in members]
+    generations = [positive_integer(v.get("deviceGeneration"), 2**63-1) for v in members]
+    if expected_ids is not None:
+        if not isinstance(expected_ids, list) or len(expected_ids) != 2:
+            raise ValueError("two expected native tile IDs are required")
+        for identity in expected_ids:
+            positive_integer(identity, 2**63-1)
+    if ids[0] == ids[1] or generations[0] != generations[1] or (expected_ids is not None and ids != expected_ids):
+        raise ValueError("native tile identity changed or is duplicated")
+    return members
+
+
+def validate_tile_stage(stage):
+    width, height = stage["width"], stage["height"]
+    members = tile_members(stage, stage.get("tileTextureIds"))
+    ids = [member["textureId"] for member in members]
+    if stage.get("tileTextureIds") != ids or positive_integer(stage.get("groupId"), 2**63-1) != ids[0]:
+        raise ValueError("native tile group/member identity mismatch")
+    rectangles = stage.get("physicalTiles")
+    if not isinstance(rectangles, list) or len(rectangles) != 2:
+        raise ValueError("two physical tile rectangles are required")
+    for rect in rectangles:
+        if not isinstance(rect, list) or len(rect) != 4 or any(type(v) is not int for v in rect):
+            raise ValueError("physical tile coordinates must be integers")
+        x, y, w, h = rect
+        if x < 0 or y < 0 or w <= 0 or h <= 0 or w > 4096 or h > 4096 or x+w > width or y+h > height:
+            raise ValueError("native tile geometry exceeds its viewport")
+        if ((w * 4 + 255) // 256 * 256) * h > 16 * 1024**2:
+            raise ValueError("native tile exceeds its aligned target budget")
+    a, b = rectangles
+    horizontal = a == [0, 0, a[2], height] and b == [a[2], 0, width-a[2], height]
+    vertical = a == [0, 0, width, a[3]] and b == [0, a[3], width, height-a[3]]
+    if not (horizontal or vertical):
+        raise ValueError("native tiles overlap or leave a seam gap")
+    limits = stage.get("limits", {})
+    if limits.get("tileGroups") is not True or limits.get("sharedSnapshotLeases") is not True or \
+            limits.get("maxTileGroupTiles") != 2 or limits.get("maxTileGroupSnapshots") != 4:
+        raise ValueError("missing bounded shared-snapshot tile capability")
+    snapshot = stage.get("geometryProof", {}).get("cpu", {}).get("snapshot")
+    positive_integer(snapshot, 2**63-1)
+    for member, rect in zip(members, rectangles):
+        if member.get("deviceGeneration") != stage["stamp"]["deviceGeneration"] or \
+                member.get("acceptedStamp") != stage["stamp"] or member.get("renderedStamp") != stage["stamp"]:
+            raise ValueError("native tiles did not publish the same full stamp")
+        accepted = member.get("acceptedSnapshots")
+        if not isinstance(accepted, list) or any(type(v) is not int for v in accepted) or accepted != [snapshot]:
+            raise ValueError("native tiles did not share the independent CPU snapshot")
+        if any(member.get(key) is not True for key in ("ready", "viewBound", "layerReady", "hasFrame")) or member.get("covered") is not False:
+            raise ValueError("both native tiles must be ready, bound and uncovered")
+        if positive_integer(member.get("drawableWidth"), 4096) != rect[2] or \
+                positive_integer(member.get("drawableHeight"), 4096) != rect[3] or \
+                type(member.get("drawableDeviceScale")) not in (int, float) or \
+                member.get("drawableDeviceScale") != stage["deviceScale"]:
+            raise ValueError("actual native tile drawable geometry differs")
+        if type(member.get("frames")) is not int or member["frames"] < stage["index"]:
+            raise ValueError("one native tile missed a requested publication")
+
+
 def app_executable(bundle):
     """Use the bundle entry point even when Xcode emits adjacent debug dylibs."""
     bundle = Path(bundle).resolve(strict=True)
@@ -109,7 +173,7 @@ def verify_bundle(directory, expected):
         raise ValueError("Mac runtime bundle changed or contains missing/extra entries")
 
 
-def validate_stage(stage, *, nonce, index, pid, previous=None):
+def validate_stage(stage, *, nonce, index, pid, previous=None, tile_group=False):
     if type(stage.get("protocol")) is not int or stage["protocol"] != 1 or stage.get("nonce") != nonce or type(stage.get("index")) is not int or stage["index"] != index:
         raise ValueError("foreign or out-of-order Mac probe stage")
     if stage.get("platform") != "macos" or stage.get("pid") != pid:
@@ -144,6 +208,10 @@ def validate_stage(stage, *, nonce, index, pid, previous=None):
         raise ValueError("missing bounded Core Animation presentation contract")
     if limits.get("consumerGpuCompletionVerified") is not False or limits.get("maxViews") != 2:
         raise ValueError("unqualified consumer fence or unbounded owner budget")
+    if tile_group:
+        validate_tile_stage(stage)
+        if previous is not None and stage["tileTextureIds"] != previous["tileTextureIds"]:
+            raise ValueError("tile owners changed during edit/resize qualification")
     if previous:
         old = previous["stamp"]
         if any(stamp[k] != old[k] for k in ("documentId", "fontGeneration", "deviceGeneration", "deviceScale")):
@@ -157,7 +225,7 @@ def validate_stage(stage, *, nonce, index, pid, previous=None):
     return width, height, tuple(offset), dpr
 
 
-def validate_result(value, *, nonce, frames):
+def validate_result(value, *, nonce, frames, tile_group=False, previous=None):
     if value.get("protocol") != 1 or value.get("nonce") != nonce or value.get("ok") is not True:
         raise ValueError("foreign or failed actual Mac completion")
     if value.get("consumerGpuCompletionVerified") is not False:
@@ -171,13 +239,23 @@ def validate_result(value, *, nonce, frames):
         raise ValueError("qualification left an unknown-completion owner")
     if type(closed.get("frames")) is not int or closed["frames"] < frames:
         raise ValueError("did not present all requested continuous publications")
+    if tile_group:
+        if previous is None:
+            raise ValueError("tile completion requires its last published identity")
+        for member in tile_members(value, previous["tileTextureIds"]):
+            if member.get("deviceGeneration") != previous["stamp"]["deviceGeneration"] or \
+                    any(member.get(key) is not True for key in ("closed", "ownerFinished", "nativeViewLayerDetached", "acknowledged")) or \
+                    member.get("registered") is not False or member.get("quarantined") is not False:
+                raise ValueError("both native tile owners must finish and acknowledge retirement")
+            if type(member.get("frames")) is not int or member["frames"] < frames:
+                raise ValueError("one native tile missed continuous publications")
     for key in ("sources", "snapshotHandles", "retainedSnapshots", "snapshotEstimatedBytes", "frameHandles",
                 "retainedFrames", "frameBytes", "leases", "inFlightReplays"):
         if type(value.get("stats", {}).get(key)) is not int or value["stats"][key] != 0:
             raise ValueError("Native teardown did not return to zero: " + key)
 
 
-def validate_cover(value, *, nonce, pid, previous):
+def validate_cover(value, *, nonce, pid, previous, tile_group=False):
     if value.get("protocol") != 1 or value.get("nonce") != nonce or value.get("pid") != pid or value.get("platform") != "macos":
         raise ValueError("foreign actual Mac held-cover request")
     for key in ("width", "height", "deviceScale", "physicalOffset"):
@@ -189,6 +267,14 @@ def validate_cover(value, *, nonce, pid, previous):
     if value.get("presentationKind") != "nativeView":
         raise ValueError("held cover did not use AppKitView")
     positive_integer(value.get("visibilitySerial"), 2**63-1)
+    if tile_group:
+        if type(value.get("nativeViewCount")) is not int or value["nativeViewCount"] != 2:
+            raise ValueError("both actual AppKit views must remain mounted under the cover")
+        for member in tile_members(value, previous["tileTextureIds"]):
+            if member.get("deviceGeneration") != previous["stamp"]["deviceGeneration"] or \
+                    any(member.get(key) is not True for key in ("covered", "viewBound", "layerReady")) or \
+                    member.get("visibilitySerial") != value["visibilitySerial"]:
+                raise ValueError("both native tiles must acknowledge the same held cover")
     color = value.get("clearColor")
     if type(color) is not int or not 0 <= color <= 0xffffffff or color >> 24 != 0xff:
         raise ValueError("held-cover color must be opaque ARGB")
@@ -451,12 +537,14 @@ def capture(args):
     nonce = uuid.uuid4().hex
     config = {"protocol": 1, "nonce": nonce, "output": str(output), "frameCount": args.frames, "cpuReference": True, "nativeCoverProbe": True,
               "backend": "macosMetalView", "presentationKind": "nativeView",
+              "tileGroups": args.tile_group,
               **{key: str(value) for key, value in files.items()}}
     write_json(output / "config.json", config)
     state = {"platform": "macos", "qualification": "pending", "started": time.time(), "stages": [],
              "consumerGpuCompletionVerified": False, "hardwareAccelerationVerified": False,
              "continuousPresentationSupported": True, "build": receipt, "heldCoverVerified": False,
              "nativeCoverStrategy": "nativeHideAndOpaqueFlutterCover",
+             "tileGroupRequested": args.tile_group, "tileGroupSamplingVerified": False,
              "flutterOverlayOccludesVisibleNativeViewVerified": False}
     process = None
     log_path = output / "runner.log"
@@ -476,7 +564,7 @@ def capture(args):
                     cover_file = output / "cover-1.json"
                     if index == 2 and not state["heldCoverVerified"] and cover_file.exists():
                         cover = read_json(cover_file)
-                        color = validate_cover(cover, nonce=nonce, pid=process.pid, previous=previous)
+                        color = validate_cover(cover, nonce=nonce, pid=process.pid, previous=previous, tile_group=args.tile_group)
                         actual, metadata = capture_pair(files, output=output, label="cover-1", pid=process.pid,
                             width=cover["width"], height=cover["height"], offset=cover["physicalOffset"],
                             dpr=cover["deviceScale"], deadline=deadline)
@@ -492,7 +580,7 @@ def capture(args):
                         raise TimeoutError("actual Mac probe exited or timed out before stage " + str(index))
                     time.sleep(.025)
                 stage = read_json(stage_file)
-                width, height, offset, dpr = validate_stage(stage, nonce=nonce, index=index, pid=process.pid, previous=previous)
+                width, height, offset, dpr = validate_stage(stage, nonce=nonce, index=index, pid=process.pid, previous=previous, tile_group=args.tile_group)
                 reference_scale = pixel_contract.validate_source_reference(stage, width, height)
                 oracle = output / f"cpu-{index}.rgba"
                 if oracle.stat().st_size != width * height * 4:
@@ -524,15 +612,16 @@ def capture(args):
             result = read_json(output / "result.json")
             if code:
                 raise ValueError("actual Mac Native close failed")
-            validate_result(result, nonce=nonce, frames=args.frames)
+            validate_result(result, nonce=nonce, frames=args.frames, tile_group=args.tile_group, previous=previous)
             if not state["heldCoverVerified"]:
                 raise ValueError("actual held-cover/native-view composition was never observed")
             verify_bundle(bundle, receipt["runtimeBundle"])
             for key, path in files.items():
                 if digest(path) != receipt["artifacts"][key]["sha256"]:
                     raise ValueError("runtime artifact changed during capture: " + key)
-            state.update(qualification="macos-appkit-metal-view-passed", exitCode=code, result=result,
-                         flutterNativeViewSamplingVerified=True)
+            state.update(qualification="macos-appkit-metal-tile-group-passed" if args.tile_group else "macos-appkit-metal-view-passed",
+                         exitCode=code, result=result, flutterNativeViewSamplingVerified=True,
+                         tileGroupSamplingVerified=args.tile_group)
     except BaseException as error:
         state.update(qualification="failed", error=f"{type(error).__name__}: {error}")
         if process is not None:
@@ -556,6 +645,7 @@ def main():
     driver.add_argument("--build-receipt", type=Path, required=True)
     driver.add_argument("--output", type=Path, required=True)
     driver.add_argument("--frames", type=int, default=32)
+    driver.add_argument("--tile-group", action="store_true", help="qualify two real AppKit tiles with one shared snapshot")
     driver.add_argument("--timeout", type=float, default=240)
     args = parser.parse_args()
     if args.mode == "capture" and (not 8 <= args.frames <= 64 or not math.isfinite(args.timeout) or not 30 <= args.timeout <= 600):
