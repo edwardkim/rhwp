@@ -279,7 +279,7 @@ impl NativePuaFonts {
                 name.name_id,
                 ttf_parser::name_id::FAMILY | ttf_parser::name_id::TYPOGRAPHIC_FAMILY
             ) && name.to_string().is_some_and(|family| {
-                matches!(family.trim(), "신명 중고딕" | "Sinmyeong Junggothic")
+                super::legacy_font_advances::has_verified_hft_bold_tracking_family(&family)
             })
         });
         // CFF도 cmap/hmtx만 측정에 사용한다. 원본 신원·형식은 위에서 보존하고

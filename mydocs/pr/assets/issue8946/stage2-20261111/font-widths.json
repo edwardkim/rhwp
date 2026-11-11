@@ -1,0 +1,1136 @@
+[
+  {
+    "pdf_font": "/T1",
+    "programs": [
+      {
+        "file": "TEDNREN.otf",
+        "sha256": "d292d1972ff9de8641c52e3bff41fa0d5ba012c3fd0a1b6514f49e4a5f29fced"
+      },
+      {
+        "file": "TEDNRHG.otf",
+        "sha256": "00eae1decfbbee1f2344ff95ec396eacd7581a70d65849a3305d3e2df5137b13"
+      }
+    ],
+    "comparisons": [
+      {
+        "character": "B",
+        "pdf_1000em": 713.0,
+        "program": "TEDNREN.otf",
+        "program_1000em": 713.0,
+        "difference": 0.0
+      },
+      {
+        "character": "T",
+        "pdf_1000em": 746.0,
+        "program": "TEDNREN.otf",
+        "program_1000em": 746.0,
+        "difference": 0.0
+      },
+      {
+        "character": "a",
+        "pdf_1000em": 662.0,
+        "program": "TEDNREN.otf",
+        "program_1000em": 662.0,
+        "difference": 0.0
+      },
+      {
+        "character": "c",
+        "pdf_1000em": 565.0,
+        "program": "TEDNREN.otf",
+        "program_1000em": 565.0,
+        "difference": 0.0
+      },
+      {
+        "character": "e",
+        "pdf_1000em": 618.0,
+        "program": "TEDNREN.otf",
+        "program_1000em": 618.0,
+        "difference": 0.0
+      },
+      {
+        "character": "h",
+        "pdf_1000em": 628.0,
+        "program": "TEDNREN.otf",
+        "program_1000em": 628.0,
+        "difference": 0.0
+      },
+      {
+        "character": "i",
+        "pdf_1000em": 294.0,
+        "program": "TEDNREN.otf",
+        "program_1000em": 294.0,
+        "difference": 0.0
+      },
+      {
+        "character": "l",
+        "pdf_1000em": 294.0,
+        "program": "TEDNREN.otf",
+        "program_1000em": 294.0,
+        "difference": 0.0
+      },
+      {
+        "character": "n",
+        "pdf_1000em": 627.0,
+        "program": "TEDNREN.otf",
+        "program_1000em": 627.0,
+        "difference": 0.0
+      },
+      {
+        "character": "s",
+        "pdf_1000em": 574.0,
+        "program": "TEDNREN.otf",
+        "program_1000em": 574.0,
+        "difference": 0.0
+      },
+      {
+        "character": "t",
+        "pdf_1000em": 456.0,
+        "program": "TEDNREN.otf",
+        "program_1000em": 456.0,
+        "difference": 0.0
+      },
+      {
+        "character": "u",
+        "pdf_1000em": 627.0,
+        "program": "TEDNREN.otf",
+        "program_1000em": 627.0,
+        "difference": 0.0
+      }
+    ]
+  },
+  {
+    "pdf_font": "/T2",
+    "programs": [
+      {
+        "file": "HGSTRBRY.otf",
+        "sha256": "6844aed54084783e28e7be0da351d08f4c0fe9e16e0844cbad4e4164c47488ca"
+      }
+    ],
+    "comparisons": [
+      {
+        "character": "교",
+        "pdf_1000em": 1000.0,
+        "program": "HGSTRBRY.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "구",
+        "pdf_1000em": 1000.0,
+        "program": "HGSTRBRY.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "대",
+        "pdf_1000em": 1000.0,
+        "program": "HGSTRBRY.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "데",
+        "pdf_1000em": 1000.0,
+        "program": "HGSTRBRY.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "베",
+        "pdf_1000em": 1000.0,
+        "program": "HGSTRBRY.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "스",
+        "pdf_1000em": 1000.0,
+        "program": "HGSTRBRY.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "실",
+        "pdf_1000em": 1000.0,
+        "program": "HGSTRBRY.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "연",
+        "pdf_1000em": 1000.0,
+        "program": "HGSTRBRY.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "원",
+        "pdf_1000em": 1000.0,
+        "program": "HGSTRBRY.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "이",
+        "pdf_1000em": 1000.0,
+        "program": "HGSTRBRY.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "창",
+        "pdf_1000em": 1000.0,
+        "program": "HGSTRBRY.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "타",
+        "pdf_1000em": 1000.0,
+        "program": "HGSTRBRY.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "학",
+        "pdf_1000em": 1000.0,
+        "program": "HGSTRBRY.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      }
+    ]
+  },
+  {
+    "pdf_font": "/T8",
+    "programs": [
+      {
+        "file": "HCENSNR.otf",
+        "sha256": "4aee191decc2ab86c333257d291b5d46fac1717bed5dbd1f8705e6b720e95f70"
+      },
+      {
+        "file": "HCHGSNR.otf",
+        "sha256": "c9909c5ed32ed8f03f476171e7fc3aa0941f841292cc07820e006af3ce30c691"
+      },
+      {
+        "file": "HCSPSNR.otf",
+        "sha256": "5a77a862312ff284e578da5774ea412e8795284d515b5dc9bff5788e9f96241f"
+      }
+    ],
+    "comparisons": [
+      {
+        "character": "(",
+        "pdf_1000em": 333.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 333.0,
+        "difference": 0.0
+      },
+      {
+        "character": ")",
+        "pdf_1000em": 333.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 333.0,
+        "difference": 0.0
+      },
+      {
+        "character": "*",
+        "pdf_1000em": 333.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 333.0,
+        "difference": 0.0
+      },
+      {
+        "character": ",",
+        "pdf_1000em": 208.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 208.0,
+        "difference": 0.0
+      },
+      {
+        "character": "-",
+        "pdf_1000em": 333.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 333.0,
+        "difference": 0.0
+      },
+      {
+        "character": ".",
+        "pdf_1000em": 208.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 208.0,
+        "difference": 0.0
+      },
+      {
+        "character": "/",
+        "pdf_1000em": 500.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 500.0,
+        "difference": 0.0
+      },
+      {
+        "character": "0",
+        "pdf_1000em": 479.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 479.0,
+        "difference": 0.0
+      },
+      {
+        "character": "1",
+        "pdf_1000em": 479.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 479.0,
+        "difference": 0.0
+      },
+      {
+        "character": "2",
+        "pdf_1000em": 479.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 479.0,
+        "difference": 0.0
+      },
+      {
+        "character": "3",
+        "pdf_1000em": 479.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 479.0,
+        "difference": 0.0
+      },
+      {
+        "character": "4",
+        "pdf_1000em": 479.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 479.0,
+        "difference": 0.0
+      },
+      {
+        "character": "5",
+        "pdf_1000em": 479.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 479.0,
+        "difference": 0.0
+      },
+      {
+        "character": "6",
+        "pdf_1000em": 479.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 479.0,
+        "difference": 0.0
+      },
+      {
+        "character": "7",
+        "pdf_1000em": 479.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 479.0,
+        "difference": 0.0
+      },
+      {
+        "character": "8",
+        "pdf_1000em": 479.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 479.0,
+        "difference": 0.0
+      },
+      {
+        "character": ":",
+        "pdf_1000em": 208.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 208.0,
+        "difference": 0.0
+      },
+      {
+        "character": "?",
+        "pdf_1000em": 479.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 479.0,
+        "difference": 0.0
+      },
+      {
+        "character": "A",
+        "pdf_1000em": 594.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 594.0,
+        "difference": 0.0
+      },
+      {
+        "character": "B",
+        "pdf_1000em": 594.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 594.0,
+        "difference": 0.0
+      },
+      {
+        "character": "C",
+        "pdf_1000em": 656.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 656.0,
+        "difference": 0.0
+      },
+      {
+        "character": "D",
+        "pdf_1000em": 656.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 656.0,
+        "difference": 0.0
+      },
+      {
+        "character": "E",
+        "pdf_1000em": 542.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 542.0,
+        "difference": 0.0
+      },
+      {
+        "character": "F",
+        "pdf_1000em": 542.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 542.0,
+        "difference": 0.0
+      },
+      {
+        "character": "G",
+        "pdf_1000em": 687.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 687.0,
+        "difference": 0.0
+      },
+      {
+        "character": "H",
+        "pdf_1000em": 656.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 656.0,
+        "difference": 0.0
+      },
+      {
+        "character": "I",
+        "pdf_1000em": 208.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 208.0,
+        "difference": 0.0
+      },
+      {
+        "character": "J",
+        "pdf_1000em": 438.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 438.0,
+        "difference": 0.0
+      },
+      {
+        "character": "K",
+        "pdf_1000em": 615.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 615.0,
+        "difference": 0.0
+      },
+      {
+        "character": "L",
+        "pdf_1000em": 563.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 563.0,
+        "difference": 0.0
+      },
+      {
+        "character": "M",
+        "pdf_1000em": 750.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 750.0,
+        "difference": 0.0
+      },
+      {
+        "character": "N",
+        "pdf_1000em": 656.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 656.0,
+        "difference": 0.0
+      },
+      {
+        "character": "O",
+        "pdf_1000em": 708.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 708.0,
+        "difference": 0.0
+      },
+      {
+        "character": "P",
+        "pdf_1000em": 594.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 594.0,
+        "difference": 0.0
+      },
+      {
+        "character": "Q",
+        "pdf_1000em": 708.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 708.0,
+        "difference": 0.0
+      },
+      {
+        "character": "R",
+        "pdf_1000em": 594.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 594.0,
+        "difference": 0.0
+      },
+      {
+        "character": "S",
+        "pdf_1000em": 542.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 542.0,
+        "difference": 0.0
+      },
+      {
+        "character": "T",
+        "pdf_1000em": 542.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 542.0,
+        "difference": 0.0
+      },
+      {
+        "character": "U",
+        "pdf_1000em": 656.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 656.0,
+        "difference": 0.0
+      },
+      {
+        "character": "V",
+        "pdf_1000em": 594.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 594.0,
+        "difference": 0.0
+      },
+      {
+        "character": "W",
+        "pdf_1000em": 865.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 865.0,
+        "difference": 0.0
+      },
+      {
+        "character": "X",
+        "pdf_1000em": 583.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 583.0,
+        "difference": 0.0
+      },
+      {
+        "character": "Y",
+        "pdf_1000em": 635.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 635.0,
+        "difference": 0.0
+      },
+      {
+        "character": "_",
+        "pdf_1000em": 1000.0,
+        "program": "HCENSNR.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      }
+    ]
+  },
+  {
+    "pdf_font": "/T12",
+    "programs": [
+      {
+        "file": "HGKDNYBN.otf",
+        "sha256": "a93c32d8a696a0c069bd74f3f42cee8f0f2a6410b6cbd4b77395c44d1603f1e9"
+      }
+    ],
+    "comparisons": [
+      {
+        "character": "가",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "간",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "값",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "갖",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "걸",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "경",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "계",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "고",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "과",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "관",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "그",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "글",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "기",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "나",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "는",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "당",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "데",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "동",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "된",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "때",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "램",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "려",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "례",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "로",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "를",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "면",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "명",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "무",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "문",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "및",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "받",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "방",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "법",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "변",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "별",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "복",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "부",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "사",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "삭",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "서",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "성",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "송",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "시",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "실",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "아",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "없",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "에",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "여",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "영",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "옮",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "외",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "용",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "월",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "위",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "으",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "은",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "을",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "의",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "이",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "인",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "일",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "있",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "자",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "작",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "전",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "정",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "제",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "중",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "지",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "진",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "집",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "찾",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "치",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "키",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "타",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "프",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "하",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "한",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "할",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "합",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "해",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "행",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "화",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "확",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      },
+      {
+        "character": "활",
+        "pdf_1000em": 1000.0,
+        "program": "HGKDNYBN.otf",
+        "program_1000em": 1000.0,
+        "difference": 0.0
+      }
+    ]
+  }
+]
