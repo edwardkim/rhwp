@@ -1,5 +1,5 @@
 //! 관계형·고정형 — [#8950] 긴 ASCII 낱말 앞 줄머리 금칙 묶음의 앞 글자는 다음 줄에 홀로 남는다.
-//! 주석 갱신: MEASURE_TIME (새 파일)
+//! 주석 갱신: 2026-11-11 23:25 KST (새 파일)
 //!
 //! 입력: 공개 결재문서 36446447(한컴오피스 2020 저장) 원본 `pi=11` 은 낱말 단위 문단의 `다만,` + `*`
 //! 127개이며 저장 줄(`linesegarray`)이 없어 다시 조판한다. 변형은 같은 문단 글만 바꾼다
@@ -13,7 +13,13 @@
 //!   긴 낱말 첫머리다(`가나다` / `만` / `,***…`, 글자 단위 `가나다라` / `나` / `.***…`).
 //! - 관계형: 금칙 문자가 없거나 뒤 낱말이 한 줄 안이면 앞 글자는 앞 줄에 남는다.
 //!
-//! MEASUREMENT
+//! 측정(2026-11-11, 코드 head d899d34157, `scripts/visual_sweep.py --silhouette-only --dpi 96`,
+//! raw = `silhouette_raw_match_percent`, `RHWP_FONT_PATH` 글꼴 공급, WASM 은 같은 폴더를 `--font-path` 로):
+//! - 36446447 원본: Native 2쪽 / 2쪽, p1 100.00, p2 100.00 (base 4ab860651b p1 75.95) · fresh WASM p1 100.00,
+//!   p2 100.00 · 두 경로 전쪽 최저 100.00
+//! - 36446447 변형: Native 3쪽 / 3쪽 전쪽 100.00 (base 최저 37.83) · fresh WASM 최저 99.99
+//! - 36421178 변형: Native 2쪽 / 2쪽 전쪽 100.00 (base 최저 48.69) · fresh WASM 전쪽 100.00
+//! - 증거: `mydocs/pr/assets/issue_8950/`
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::collections::BTreeMap;
