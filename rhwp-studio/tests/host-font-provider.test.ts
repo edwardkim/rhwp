@@ -381,7 +381,7 @@ test('declared host programs keep file identity and reject results from a replac
   const original = Object.getOwnPropertyDescriptor(globalThis, 'FontFace');
   const fixtureBytes = readFileSync(new URL('../../tests/fixtures/fonts/RHWPBitmapSvgGlyphSmoke.ttf', import.meta.url));
   const bytes = Uint8Array.from(fixtureBytes).buffer;
-  const sha = createHash('sha256').update(fixtureBytes).digest('hex');
+  const sha = createHash('sha256').update(fixtureBytes).update(new Uint8Array(4)).digest('hex');
   Object.defineProperty(globalThis, 'FontFace', {
     configurable: true, value: class { async load() { return this; } },
   });
@@ -394,7 +394,7 @@ test('declared host programs keep file identity and reject results from a replac
     await setHostFontProvider(f.provider, { layout: true });
     const result = await prepareDeclaredHostFontPrograms(plan, () => true);
     assert.equal(result.programs.length, 1);
-    assert.equal(result.programs[0].programId, `host-${sha}-face-0`);
+    assert.equal(result.programs[0].programId, sha);
     assert.equal(result.programs[0].family, '호스트전용');
     assert.equal(result.programs[0].trueType, true);
     assert.equal(result.programs[0].openTypeCff, false);
@@ -407,7 +407,7 @@ test('declared host programs keep file identity and reject results from a replac
     }] });
     const split = await prepareDeclaredHostFontPrograms(plan, () => true);
     assert.equal(split.programs.length, 1, 'one query has one declared identity even with split face coverage');
-    assert.equal(split.programs[0].programId, `host-${sha}-face-0`);
+    assert.equal(split.programs[0].programId, sha);
     const slow = deferred<{ bytes: ArrayBuffer }>();
     f.provider.readFace = () => slow.promise;
     await setHostFontProvider(f.provider, { layout: true });

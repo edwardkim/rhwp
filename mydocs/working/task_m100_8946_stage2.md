@@ -29,3 +29,16 @@ TTC를 Rust에 공급할 때 원본 컨테이너와 선택 index를 함께 보�
 편람 368쪽의 공개 HANBatang U+2024는 1000em에서 y=-16..73의 실제 윤곽이다.
 독립 Print의 점 위치와 다르므로 선택한 glyph 공급자의 선행 해결 근거를 추적한다.
 이 관찰만으로 글꼴 파일이나 문서 좌표를 수정하지 않는다.
+
+## 원본 프로그램 신원 보정 검증
+
+Native와 같은 SHA-256(원본 바이트 + big-endian faceIndex)을 채택했다.
+새 WASM `prepareNativeOtfFontFaces`는 TTC 원본과 index를 함께 전달하며 기존
+Uint8Array 공급 API도 유지한다. 합성 TTC의 두 face는 실제 Native TrueType
+측정 경로에서 각각 선택되고, 저장된 900/1080 전진 단위에 따른 1.2 비율을 확인했다.
+CFF는 불명확한 ID에서 등록되지 않고 정규 신원에서 등록되는 실제 소비도 확인했다.
+
+2026-11-11 로컬 검증: 집중 Node 30개, TypeScript 검사, 최적화 fresh WASM 빌드,
+Canvas2D/CanvasKit #7403 E2E 모두 통과했다. E2E는 기존 기본 동작·교체·제거·
+문서 전환·저장·undo/redo 검사도 포함한다. 이는 프로토콜 검증이며 실물 문서의
+시각 통과를 대신하지 않는다. 용량 경계와 전쪽 시각 검증은 계속 진행 중이다.

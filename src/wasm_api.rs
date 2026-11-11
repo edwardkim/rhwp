@@ -980,18 +980,33 @@ impl HwpDocument {
             let mut programs = Vec::with_capacity(values.len());
             let mut total_bytes = 0usize;
             for value in values {
-                if !value.is_instance_of::<js_sys::Uint8Array>() {
+                let (source, face_index) = if value.is_instance_of::<js_sys::Uint8Array>() {
+                    (value, 0)
+                } else {
+                    let source = js_sys::Reflect::get(&value, &JsValue::from_str("bytes"))?;
+                    let index = js_sys::Reflect::get(&value, &JsValue::from_str("faceIndex"))?
+                        .as_f64()
+                        .filter(|index| {
+                            index.is_finite()
+                                && *index >= 0.0
+                                && *index <= f64::from(u32::MAX)
+                                && index.fract() == 0.0
+                        })
+                        .ok_or_else(|| JsValue::from_str("OTF provider faceIndex must be a u32"))?;
+                    (source, index as u32)
+                };
+                if !source.is_instance_of::<js_sys::Uint8Array>() {
                     return Err(JsValue::from_str(
                         "OTF provider must return Uint8Array, an array of Uint8Array, or null",
                     ));
                 }
-                let array = js_sys::Uint8Array::new(&value);
+                let array = js_sys::Uint8Array::new(&source);
                 let length = array.length() as usize;
                 total_bytes = total_bytes.saturating_add(length);
                 if length > 32 * 1024 * 1024 || total_bytes > 64 * 1024 * 1024 {
                     return Err(JsValue::from_str("OTF provider program exceeds limit"));
                 }
-                programs.push((array.to_vec(), 0));
+                programs.push((array.to_vec(), face_index));
             }
             prepared.insert(
                 (
@@ -1014,6 +1029,16 @@ impl HwpDocument {
                 .unwrap_or_default()
         })
         .map_err(JsValue::from)
+    }
+
+    /// 원본 SFNT/TTC 바이트와 선택 face를 함께 받는 공급 계약의 기능 탐지 경계.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = prepareNativeOtfFontFaces)]
+    pub fn prepare_native_otf_font_faces_wasm(
+        &mut self,
+        provider: &js_sys::Function,
+    ) -> Result<bool, JsValue> {
+        self.prepare_native_otf_fonts_wasm(provider)
     }
 
     #[wasm_bindgen(js_name = registerNativePuaFont)]

@@ -38,12 +38,16 @@ export async function prepareDeclaredHostFontPrograms(
         // No global CSS alias or browser detection snapshot is installed.
         await new FontFace(query, bytes).load();
       } catch { continue; }
-      const hash = await crypto.subtle.digest('SHA-256', data.bytes);
+      // Rust consumes the same indexed source identity as Native providers.
+      const identity = new Uint8Array(data.bytes.byteLength + 4);
+      identity.set(new Uint8Array(data.bytes));
+      new DataView(identity.buffer).setUint32(data.bytes.byteLength, faceIndex, false);
+      const hash = await crypto.subtle.digest('SHA-256', identity);
       if (!current()) return empty();
       const sha256 = [...new Uint8Array(hash)].map(byte => byte.toString(16).padStart(2, '0')).join('');
       prepared.push({ order: trueType ? Number(collectionFace) : 2, program: {
         query, family: query, trueType, openTypeCff,
-        programId: `host-${sha256}-face-${faceIndex}`,
+        programId: sha256,
         ...(collectionFace ? { collectionFace: true } : {}),
       } });
     }

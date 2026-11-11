@@ -211,15 +211,19 @@ async function verifyCanvas2DCharOverlap(page) {
 
 // API/environment contract: fixture byte identity and policy, without layout goldens.
 async function verifyLayoutEnvironment(page) {
-  const fixtures = Object.fromEntries(['ttc', 'Regular', 'Italic'].map(name => [name,
-    readFileSync(new URL(`../../tests/fixtures/fonts/RHWPHostFixture${name === 'ttc' ? '.ttc' : `-${name}.ttf`}`, import.meta.url)).toString('base64')]));
+  const fixtures = Object.fromEntries(['ttc', 'Regular', 'Italic', 'CFF'].map(name => [name,
+    readFileSync(new URL(`../../tests/fixtures/fonts/${name === 'CFF' ? 'RHWPHftOutline.otf' : `RHWPHostFixture${name === 'ttc' ? '.ttc' : `-${name}.ttf`}`}`, import.meta.url)).toString('base64')]));
   const result = await page.evaluate(async fixtures => {
     const { WasmBridge } = await import('/src/core/wasm-bridge.ts');
     const { getLocalFontState } = await import('/src/core/local-fonts.ts');
     const w = new WasmBridge();
     const decode = key => Uint8Array.from(atob(fixtures[key]), c => c.charCodeAt(0)).buffer;
-    const digest = async bytes => [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))]
-      .map(b => b.toString(16).padStart(2, '0')).join('');
+    const digest = async (bytes, faceIndex = 0) => {
+      const indexed = new Uint8Array(bytes.byteLength + 4); indexed.set(new Uint8Array(bytes));
+      new DataView(indexed.buffer).setUint32(bytes.byteLength, faceIndex, false);
+      return [...new Uint8Array(await crypto.subtle.digest('SHA-256', indexed))]
+        .map(b => b.toString(16).padStart(2, '0')).join('');
+    };
     const family = 'Host Layout Contract';
     let source = 'Regular', index = 0, revision = 0, enabled = true, fail = false, split = false;
     let notify = () => {};
@@ -283,26 +287,34 @@ async function verifyLayoutEnvironment(page) {
       source = 'Italic'; revision++; notify(); const b = await prepare();
       checks.push(['same-id-new-bytes', selected(b).includes(await digest(decode('Italic'))) && selected(a) !== selected(b)]);
       await compareFresh('replace-bytes');
+      source = 'CFF'; revision++; notify(); const cff = await prepare();
+      const opaque = JSON.parse(JSON.stringify(cff));
+      for (const program of Object.values(opaque.selectedPrograms ?? {})) program.programId = 'opaque-host-id';
+      originalSet(JSON.stringify(opaque));
+      doc.clearTextFontFamily(family);
+      checks.push(['opaque-identity-not-certified', doc.registerHftOutlineFont(family, new Uint8Array(decode('CFF')), 0) === false]);
+      originalSet(JSON.stringify(cff));
+      checks.push(['indexed-identity-consumed', doc.registerHftOutlineFont(family, new Uint8Array(decode('CFF')), 0) === true]);
       source = 'ttc'; index = 0; revision++; notify(); const t0 = await prepare();
       index = 1; revision++; notify(); const t1 = await prepare();
-      checks.push(['ttc-face', selected(t0).includes('-face-0') && selected(t1).includes('-face-1') && selected(t0) !== selected(t1)]);
-      checks.push(['ttc-sha', selected(t1).includes(await digest(decode('ttc')))]);
+      checks.push(['ttc-face', selected(t0).includes(await digest(decode('ttc'), 0)) && selected(t1).includes(await digest(decode('ttc'), 1)) && selected(t0) !== selected(t1)]);
+      checks.push(['ttc-sha', selected(t1).includes(await digest(decode('ttc'), 1))]);
       await compareFresh('replace-ttc-face');
       enabled = false; revision++; notify(); await prepare();
-      checks.push(['remove', !JSON.stringify(environments.at(-1)).includes('host-')]);
+      checks.push(['remove', !Object.values(environments.at(-1)?.selectedPrograms ?? {}).some(program => program.query === family)]);
       await compareFresh('remove');
       enabled = true; revision++; notify(); await prepare();
       checks.push(['restore', selected(environments.at(-1)) === selected(t1)]);
       await compareFresh('restore');
       await rhwpStudio.fonts.setProvider(provider, { layout: false }); await prepare();
-      checks.push(['disable', !JSON.stringify(environments.at(-1)).includes('host-')]);
+      checks.push(['disable', !Object.values(environments.at(-1)?.selectedPrograms ?? {}).some(program => program.query === family)]);
       await compareFresh('disable');
       await rhwpStudio.fonts.setProvider(provider, { layout: true }); await prepare();
       fail = true; revision++; notify(); await prepare();
-      checks.push(['read-failure', !JSON.stringify(environments.at(-1)).includes('host-')]);
+      checks.push(['read-failure', !Object.values(environments.at(-1)?.selectedPrograms ?? {}).some(program => program.query === family)]);
       fail = false; revision++; notify(); await prepare();
       await w.prepareDeclaredFontEnvironment('canvaskit');
-      checks.push(['backend', !w.hasHostFontLayoutEnvironment && !JSON.stringify(environments.at(-1)).includes('host-')]);
+      checks.push(['backend', !w.hasHostFontLayoutEnvironment && !Object.values(environments.at(-1)?.selectedPrograms ?? {}).some(program => program.query === family)]);
       await prepare();
       const preferenceKey = 'rhwp-document-font-preferences';
       const oldPreference = localStorage.getItem(preferenceKey);
@@ -342,6 +354,27 @@ async function verifyLayoutEnvironment(page) {
       }
       checks.push(['local-state', originalLocal === JSON.stringify(getLocalFontState())
         && storage === localStorage.getItem('rhwp-local-fonts')]);
+      const exact = new WasmBridge();
+      try {
+        exact.createNewDocument(); exact.insertText(0, 0, 0, '😀');
+        exact.applyCharFormat(0, 0, 0, 2, JSON.stringify({ fontId: exact.findOrCreateFontId('RHWP Host Fixture') }));
+        const advances = [];
+        for (const faceIndex of [0, 1]) {
+          await rhwpStudio.fonts.setProvider({
+            async getSnapshot() { return { revision: String(faceIndex), faces: [{ id: 'ttc',
+              family: 'RHWP Host Fixture', fullName: 'RHWP Host Fixture', postscriptName: 'RHWPHostFixture',
+              style: 'Regular', weight: 400, slant: 'normal' }] }; },
+            async readFace() { return { bytes: decode('ttc'), faceIndex }; }, subscribe() { return () => {}; },
+          }, { layout: true });
+          await exact.prepareDeclaredFontEnvironment('canvas2d');
+          await exact.prepareCanvasMetrics('canvas2d');
+          const trace = JSON.parse(exact.getFontDecisionTrace(0, 8)).records.find(record => record.source.character === '😀');
+          checks.push(['ttc-native-measure-' + faceIndex, trace?.layoutMetric.widthSource === 'nativeTrueType']);
+          advances.push(trace?.layoutMetric.finalAdvanceHwpunit);
+        }
+        // Fixture source defines 900 / 1080 units in the two independently generated faces.
+        checks.push(['ttc-native-advance-ratio', Math.abs(advances[1] / advances[0] - 1.2) < 0.002]);
+      } finally { exact.releaseDocument(); }
       return { checks, reads };
     } finally { w.releaseDocument(); await rhwpStudio.fonts.setProvider(null); }
   }, fixtures);
