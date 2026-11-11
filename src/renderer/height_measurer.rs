@@ -4527,10 +4527,34 @@ let body_height=match nested_body_heights
                     let nested_bottom = self.cell_nested_controls_bottom_with_storage(
                         table, cell, styles, depth, cell_w_px, storage,
                     )?;
-                    hwpunit_to_px(last_seg_end, self.dpi)
-                        .max(text_height)
-                        .max(nested_bottom)
-                        .max(self.cell_wrap_objects_bottom_height(&cell.paragraphs, styles))
+                    let stored_end = hwpunit_to_px(last_seg_end, self.dpi);
+                    let wrap_bottom =
+                        self.cell_wrap_objects_bottom_height(&cell.paragraphs, styles);
+                    // 글자처럼 취급 표의 칸에서 저장 사다리가 칸 선언 높이 안에 담기면 배치는
+                    // 문단을 저장 vpos 에 놓는다(table_layout `nested_stored_overflow_rescue` →
+                    // `trust_stored_cell_flow`). 재조판 줄 합으로 칸을 키우면 배치가 쓰지 않는
+                    // 높이가 행에 들어가고, 표 전체 높이는 그대로라 다른 행이 그만큼 줄어든다.
+                    let stored_flow_fits_declared_cell = table.common.treat_as_char
+                        && self.is_native_hwp5
+                        && !self.session_edited
+                        && !self.render_normalization.cell_frame_reflowed(table, cell)
+                        && ladder_intact
+                        && last_seg_end > 0
+                        && cell.height < 0x8000_0000
+                        && i64::from(last_seg_end)
+                            + i64::from(eff_pad.top)
+                            + i64::from(eff_pad.bottom)
+                            <= i64::from(cell.height)
+                        && nested_bottom <= stored_end + 0.5
+                        && wrap_bottom <= stored_end + 0.5;
+                    if stored_flow_fits_declared_cell {
+                        stored_end
+                    } else {
+                        stored_end
+                            .max(text_height)
+                            .max(nested_bottom)
+                            .max(wrap_bottom)
+                    }
                 } else {
                     // 단, 비-인라인 이미지/도형은 LINE_SEG에 미포함이므로 별도 합산
                     let ordinary_non_inline_h = self
