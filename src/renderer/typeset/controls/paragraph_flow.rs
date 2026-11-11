@@ -359,6 +359,9 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
     }
 
     let (mut height_before, page_count_before) = st.table_paragraph_flow_position();
+    // 같은 문단의 글 위아래(비-TAC) 표가 실제로 전진시킨 흐름 끝. TAC 줄 높이 상한은
+    // TAC 줄의 과전진만 되돌린다 — 측정 높이로 자란 블록 표가 이미 차지한 공간은 회수하지 않는다.
+    let mut block_table_flow_bottom: Option<f64> = None;
     let para_start_height = height_before;
     // 머리 표 아래에 저장된 host 줄의 글자처럼 취급한 표는 표 상자 뒤에서 시작한다. 줄 높이 상한도
     // 문단 시작이 아니라 그 줄 위끝에서 잰다.
@@ -470,6 +473,7 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
                 // 일반/TAC 경로는 지연 방출과 배치 폴백까지 호스트 글줄을 소유한다.
                 // 혼합 컨트롤에 전체 PartialParagraph를 다시 추가하지 않는다.
                 flow_table_owns_host_text = true;
+                let flow_before_table = st.current_height;
                 let break_after_current_table = controls::flow_table::place(
                     engine,
                     st,
@@ -494,6 +498,16 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
                     },
                     &mut para_float_lanes,
                 );
+                if !table.common.treat_as_char
+                    && st.flow_table_page_count() == page_count_before
+                    && st.current_height > flow_before_table
+                    && !stored_ladder_routes_around_block_table(paragraphs_all, para_idx, table)
+                {
+                    block_table_flow_bottom = Some(
+                        block_table_flow_bottom
+                            .map_or(st.current_height, |b| b.max(st.current_height)),
+                    );
+                }
 
                 notes::register_unqueued_table_cells(
                     st,
@@ -580,7 +594,66 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
             measured_tac_floor,
             engine.tac_flow_query(),
         );
+        if let Some(bottom) = block_table_flow_bottom {
+            st.restore_block_table_flow_bottom(bottom);
+        }
     }
 
     Ok(())
+}
+
+/// 저장 사다리가 이 블록 표(글 위아래, 문단 기준)를 돌아 흐르는가 — 뒤 문단의 저장 줄이
+/// 표의 저장 띠 안쪽에 있다가 같은 저장 쪽 안에서 띠 아래로 건너뛰면, 그 사다리는 표를
+/// 비켜 가는 줄 위치를 담고 있으므로 그대로 따른다(36374873: 뒤 문단 첫 줄 vpos 13575 가
+/// 표 띠 안, 둘째 줄 67877 이 표 아래). 뒤 문단이 띠 아래에서 시작하거나(36481164: 선언 높이로
+/// 계상한 사다리) 띠 안에만 머무르는(표를 계상하지 않은 사다리) 경우는 측정 높이로 자란 표의
+/// 흐름 끝이 뒤 흐름의 하한이다.
+fn stored_ladder_routes_around_block_table(
+    paragraphs: &[Paragraph],
+    host_index: usize,
+    table: &crate::model::table::Table,
+) -> bool {
+    use crate::renderer::float_placement::signed_hwpunit;
+    if !matches!(
+        table.common.vert_rel_to,
+        crate::model::shape::VertRelTo::Para
+    ) || !matches!(
+        table.common.text_wrap,
+        crate::model::shape::TextWrap::TopAndBottom
+    ) {
+        return true;
+    }
+    let Some(host_top) = paragraphs
+        .get(host_index)
+        .and_then(|host| host.line_segs.first())
+        .filter(|line| !crate::renderer::typeset::is_synthetic_line_seg(line))
+        .map(|line| i64::from(line.vertical_pos))
+    else {
+        return true;
+    };
+    let band_top = host_top + i64::from(signed_hwpunit(table.common.vertical_offset));
+    let band_bottom = band_top
+        + i64::from(table.outer_margin_top)
+        + i64::from(table.common.height)
+        + i64::from(table.outer_margin_bottom);
+    let mut inside_band = false;
+    let mut previous = host_top;
+    for paragraph in &paragraphs[host_index + 1..] {
+        for line in &paragraph.line_segs {
+            if crate::renderer::typeset::is_synthetic_line_seg(line) {
+                return true;
+            }
+            let top = i64::from(line.vertical_pos);
+            if top < previous {
+                // 다음 저장 쪽으로 넘어갔다 — 이 쪽 안에서 띠 아래로 건너뛴 줄이 없었다.
+                return false;
+            }
+            previous = top;
+            if top >= band_bottom {
+                return inside_band;
+            }
+            inside_band = true;
+        }
+    }
+    false
 }
