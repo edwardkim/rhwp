@@ -1079,8 +1079,6 @@ jobs:
         run: |
           df -h || true
           trap 'df -h || true' EXIT
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y poppler-utils
           rhwp_visual_contract_env="${RUNNER_TEMP}/rhwp-visual-sweep-contracts"
           python3 -m venv "$rhwp_visual_contract_env"
           "$rhwp_visual_contract_env/bin/python" -m pip install Pillow==12.3.0 fonttools==4.64.0 Brotli==1.1.0 pypdfium2==5.13.0

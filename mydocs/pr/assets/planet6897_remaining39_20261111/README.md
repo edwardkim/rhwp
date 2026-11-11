@@ -86,3 +86,6 @@
 ## 제출 후 발견한 CI 파일 목록 보정
 
 PR #8958의 파일 4,142개가 REST API에서 3,000개로 잘려 CI preflight가 코드 변경을 문서 전용으로 오판했다. 수동 Full 실행은 필수 정책의 PR 이벤트 근거가 아니므로, CI·CodeQL·Render Diff·Adapter·Proptest 5개 workflow의 8개 수집 지점에서 전체 변경 수와 목록 완전성을 검사한다. [보정·실패→통과·기존 계약 결과](ci-file-inventory-validation.json)에 새 행동 검사 37개, 관련 Python 243개와 Node 166개, actionlint 5개를 연결했다. 제품 렌더러·입력·보호 기준은 바꾸지 않았다. CI 변경에 따른 최종 CI 기록·오늘할일은 code head의 PR CI와 병합 완료 후 옵션 2로 반영한다.
+
+
+같은 lint가 Ubuntu 패키지 DNS 오류로 두 번 중단된 뒤 실제 의존성을 확인했다. PNG 계약은 PDFium을 사용하므로 이 단계의 불필요한 Poppler 설치와 오래된 Poppler 존재 조건을 제거했다. Poppler 네 도구 호출을 차단한 환경에서도 **254 PASS / 0 FAIL / 0 skip**, 실제 차단 도구 호출 0회를 확인했다. [의존성 감사와 실행 증거](ci-pdfium-bootstrap-validation.json)를 따르며, 일반 Visual Sweep의 메타데이터 도구 요구나 기준 래스터·검사 자체는 바꾸지 않았다.
