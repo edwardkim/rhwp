@@ -236,10 +236,10 @@ async function verifyLayoutEnvironment(page) {
     const originalLocal = JSON.stringify(getLocalFontState());
     const storage = localStorage.getItem('rhwp-local-fonts');
     const checks = [];
-    function setup() {
-      w.createNewDocument(); w.insertText(0, 0, 0, 'A가');
-      const fontId = w.findOrCreateFontId(family);
-      w.applyCharFormat(0, 0, 0, 2, JSON.stringify({ fontId }));
+    function setup(bridge = w) {
+      bridge.createNewDocument(); bridge.insertText(0, 0, 0, 'A가');
+      const fontId = bridge.findOrCreateFontId(family);
+      bridge.applyCharFormat(0, 0, 0, 2, JSON.stringify({ fontId }));
     }
     setup();
     const doc = w.borrowDocumentHandle();
@@ -249,6 +249,22 @@ async function verifyLayoutEnvironment(page) {
     const originalBytes = [...w.exportHwp()];
     const plan = () => JSON.parse(doc.getDocumentFontSelectionPlan());
     async function prepare() { await w.prepareDeclaredFontEnvironment('canvas2d'); return environments.at(-1); }
+    async function compareFresh(label) {
+      const fresh = new WasmBridge();
+      try {
+        setup(fresh);
+        await fresh.prepareDeclaredFontEnvironment('canvas2d');
+        async function output(bridge) {
+          await bridge.prepareCanvasMetrics('canvas2d');
+          const canvas = document.createElement('canvas');
+          bridge.renderPageToCanvas(0, canvas, 1);
+          return { tree: JSON.stringify(bridge.getPageLayerTreeObject(0)), pixels: canvas.toDataURL() };
+        }
+        const actual = await output(w), expected = await output(fresh);
+        checks.push([label + '-fresh-tree', actual.tree === expected.tree]);
+        checks.push([label + '-fresh-paint', actual.pixels === expected.pixels]);
+      } finally { fresh.releaseDocument(); }
+    }
     try {
       await rhwpStudio.fonts.setProvider(provider);
       await prepare(); checks.push(['omitted', environments.length === 0]);
@@ -259,22 +275,28 @@ async function verifyLayoutEnvironment(page) {
       const selected = env => JSON.stringify(env?.selectedPrograms ?? {});
       checks.push(['program-A', selected(a).includes(await digest(decode('Regular')))]);
       checks.push(['source-metrics', a.preserveSourceMetrics === true && !(a.replaceSourceMetricsFor?.length)]);
+      await compareFresh('enable');
       split = true; revision++; notify(); const beforeSplit = environments.length; await prepare();
       checks.push(['split-query-identity', environments.length === beforeSplit + 1
         && selected(environments.at(-1)).includes(await digest(decode('Regular')))]);
       split = false;
       source = 'Italic'; revision++; notify(); const b = await prepare();
       checks.push(['same-id-new-bytes', selected(b).includes(await digest(decode('Italic'))) && selected(a) !== selected(b)]);
+      await compareFresh('replace-bytes');
       source = 'ttc'; index = 0; revision++; notify(); const t0 = await prepare();
       index = 1; revision++; notify(); const t1 = await prepare();
       checks.push(['ttc-face', selected(t0).includes('-face-0') && selected(t1).includes('-face-1') && selected(t0) !== selected(t1)]);
       checks.push(['ttc-sha', selected(t1).includes(await digest(decode('ttc')))]);
+      await compareFresh('replace-ttc-face');
       enabled = false; revision++; notify(); await prepare();
       checks.push(['remove', !JSON.stringify(environments.at(-1)).includes('host-')]);
+      await compareFresh('remove');
       enabled = true; revision++; notify(); await prepare();
       checks.push(['restore', selected(environments.at(-1)) === selected(t1)]);
+      await compareFresh('restore');
       await rhwpStudio.fonts.setProvider(provider, { layout: false }); await prepare();
       checks.push(['disable', !JSON.stringify(environments.at(-1)).includes('host-')]);
+      await compareFresh('disable');
       await rhwpStudio.fonts.setProvider(provider, { layout: true }); await prepare();
       fail = true; revision++; notify(); await prepare();
       checks.push(['read-failure', !JSON.stringify(environments.at(-1)).includes('host-')]);
