@@ -5549,6 +5549,11 @@ impl TypesetEngine {
         } else if is_wrap_around_table && pre_height > 0.0 {
             let v_off_px = crate::renderer::hwpunit_to_px(vertical_offset as i32, self.dpi);
             let table_bottom = v_off_px + table_total_height;
+            // 표 옆 차선에 흡수되는 뒤 문단의 저장 줄은 host 줄 원점에서 잰다. 그 줄이
+            // 표 바닥보다 아래까지 이어지면 띠도 그 끝까지 늘어나야 하므로, 앞 글자가
+            // 있는 host 도 같은 원점으로 띠를 등록한다(흐름 전진은 그대로).
+            let host_origin = st.current_height;
+            st.register_square_band(host_origin, host_origin + pre_height.max(table_bottom));
             st.advance_flow_by(pre_height.max(table_bottom));
         } else if is_visible_para_float {
             // 통째 배치의 fit 판정에서 확정한 결과를 그대로 소비한다.
