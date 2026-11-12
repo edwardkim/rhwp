@@ -206,9 +206,9 @@ fn project_lists(nodes: &mut Vec<Node>, visibility: &Visibility) -> Result<(), H
             attribute(node.element().unwrap(), b"merged")?.as_deref(),
             Some("1" | "true")
         );
-        let mut active = HashSet::new();
-        let (changed, end) = project_content(&mut node.children, visibility, &mut active)?;
-        if !active.is_empty() {
+        let mut ranges = Ranges::default();
+        let (changed, end) = project_content(&mut node.children, visibility, &mut ranges)?;
+        if !ranges.active.is_empty() {
             return Err(structure("unclosed hidden change range in paragraph"));
         }
         if changed {
@@ -232,10 +232,17 @@ fn project_lists(nodes: &mut Vec<Node>, visibility: &Visibility) -> Result<(), H
     *nodes = output;
     Ok(())
 }
+/// Hidden ranges of one paragraph. Hancom can repeat a range end at a later
+/// run split; a repeated end of a closed range adds no content boundary.
+#[derive(Default)]
+struct Ranges {
+    active: HashSet<(String, String)>,
+    closed: HashSet<(String, String)>,
+}
 fn project_content(
     nodes: &mut Vec<Node>,
     visibility: &Visibility,
-    active: &mut HashSet<(String, String)>,
+    ranges: &mut Ranges,
 ) -> Result<(bool, bool), HwpxError> {
     let mut output = Vec::new();
     let mut changed = false;
@@ -260,13 +267,17 @@ fn project_content(
                         attribute(element, b"Id")?.ok_or_else(|| structure("missing range ID"))?;
                     let key = (kind.to_owned(), id);
                     if local.ends_with(b"Begin") {
-                        if !active.insert(key) {
+                        if !ranges.active.insert(key) {
                             return Err(structure("duplicate active change range"));
                         }
                     } else {
-                        if !active.remove(&key) {
+                        if !ranges.active.remove(&key) {
+                            if ranges.closed.contains(&key) {
+                                continue;
+                            }
                             return Err(structure("hidden range end without begin"));
                         }
+                        ranges.closed.insert(key);
                         hidden_end |= matches!(
                             attribute(element, b"paraend")?.as_deref(),
                             Some("1" | "true")
@@ -280,16 +291,16 @@ fn project_content(
                 output.push(node);
                 continue;
             }
-            if !active.is_empty() && !matches!(local, b"run" | b"t") {
+            if !ranges.active.is_empty() && !matches!(local, b"run" | b"t") {
                 changed = true;
                 continue;
             }
             let (child_changed, child_end) =
-                project_content(&mut node.children, visibility, active)?;
+                project_content(&mut node.children, visibility, ranges)?;
             changed |= child_changed;
             hidden_end |= child_end;
             output.push(node);
-        } else if !active.is_empty()
+        } else if !ranges.active.is_empty()
             && matches!(
                 node.event,
                 Some(Event::Text(_) | Event::CData(_) | Event::GeneralRef(_))
