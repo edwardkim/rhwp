@@ -9910,8 +9910,10 @@ impl LayoutEngine {
                                 // 문단 `prev=1200`, 한/글 2024 PDF 에서 칸 상단 + 안 여백 + 16px).
                                 // 개체의 줄 소속을 알아도 저장 원점이 생기지는 않는다.
                                 // 재조판한 첫 줄은 위 간격을 이미 소비한 실제 배치를 쓴다.
-                                let reflowed_first_unit = cp_idx == 0
-                                    && start_line == 0
+                                // [#8995] 칸의 둘째 이후 문단도 같다 — 위 간격은 측정과 배치가
+                                // 이미 소비했으므로 앞 간격 전 커서가 아니라 배치된 줄 위끝을 쓴다
+                                // (공개 결재 문서 본문 칸 문단 3: 커서가 줄 위끝보다 4.8px 위).
+                                let reflowed_first_unit = start_line == 0
                                     && crate::renderer::para_has_no_stored_line_segs(para);
                                 let table_anchor_y =
                                     if crate::renderer::composer::stored_first_tac_line(para)
