@@ -218,7 +218,10 @@ fn stored_empty_full_band_tac_table_top(
         || !table.common.treat_as_char
         || !matches!(table.common.text_wrap, TextWrap::TopAndBottom)
         || para.stored_text_partition_dirty
-        || !tac_has_only_in_front_decoration_shapes_before(para, control_index)
+        || !(tac_has_only_in_front_decoration_shapes_before(para, control_index)
+            // [#9016] 앞 제어 없이 제목 차례 표시만 앞 슬롯을 차지하는 문단도 표가 둘째
+            // 저장 줄을 온전히 소유한다(제목 표시 줄은 글자 높이 줄, 표 줄 th = 표 + 여백).
+            || (control_index == 0 && para.title_marks.iter().any(|mark| mark.char_idx == 0)))
     {
         return None;
     }
