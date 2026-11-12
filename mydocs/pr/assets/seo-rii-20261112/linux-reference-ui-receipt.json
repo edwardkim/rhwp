@@ -1,0 +1,211 @@
+[
+  {
+    "initial": {
+      "window": 4194307,
+      "width": 1280,
+      "height": 720
+    },
+    "pid": 474128,
+    "executable": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261112/moved reference app/runtime bundle/app/rhwp_reference_app",
+    "cwd": "/tmp",
+    "no_rhwp_environment": true
+  },
+  {
+    "id": 1,
+    "kind": "capture",
+    "wait": 1,
+    "capture": {
+      "window": 4194307,
+      "width": 1280,
+      "height": 720
+    },
+    "exit": null
+  },
+  {
+    "id": 2,
+    "kind": "click",
+    "x": 300,
+    "y": 90,
+    "wait": 0.3,
+    "capture": {
+      "window": 4194307,
+      "width": 1280,
+      "height": 720
+    },
+    "exit": null
+  },
+  {
+    "id": 3,
+    "kind": "type",
+    "text": "/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-reference-qualification/bindings/Flutter/test/fixtures/desktop-consumer.hwpx",
+    "wait": 0.5,
+    "capture": {
+      "window": 4194307,
+      "width": 1280,
+      "height": 720
+    },
+    "exit": null
+  },
+  {
+    "id": 4,
+    "kind": "click",
+    "x": 1234,
+    "y": 88,
+    "wait": 1,
+    "capture": {
+      "window": 4194307,
+      "width": 1280,
+      "height": 720
+    },
+    "exit": null
+  },
+  {
+    "id": 5,
+    "kind": "capture",
+    "wait": 1,
+    "capture": {
+      "window": 4194307,
+      "width": 1280,
+      "height": 720
+    },
+    "exit": null
+  },
+  {
+    "id": 6,
+    "kind": "click",
+    "x": 686,
+    "y": 388,
+    "wait": 3,
+    "capture": {
+      "window": 4194307,
+      "width": 1280,
+      "height": 720
+    },
+    "exit": null
+  },
+  {
+    "id": 7,
+    "kind": "click",
+    "x": 300,
+    "y": 90,
+    "wait": 0.2,
+    "capture": {
+      "window": 4194307,
+      "width": 1280,
+      "height": 720
+    },
+    "exit": null
+  },
+  {
+    "id": 8,
+    "kind": "type",
+    "text": "/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-reference-qualification/tests/fixtures/gradient/radial-corner-print-contract.hwpx",
+    "wait": 0.3,
+    "capture": {
+      "window": 4194307,
+      "width": 1280,
+      "height": 720
+    },
+    "exit": null
+  },
+  {
+    "id": 9,
+    "kind": "click",
+    "x": 1234,
+    "y": 88,
+    "wait": 3,
+    "capture": {
+      "window": 4194307,
+      "width": 1280,
+      "height": 720
+    },
+    "exit": null
+  },
+  {
+    "id": 10,
+    "kind": "click",
+    "x": 613,
+    "y": 188,
+    "wait": 2,
+    "capture": {
+      "window": 4194307,
+      "width": 1280,
+      "height": 720
+    },
+    "exit": null
+  },
+  {
+    "id": 11,
+    "kind": "click",
+    "x": 613,
+    "y": 188,
+    "wait": 2,
+    "capture": {
+      "window": 4194307,
+      "width": 1280,
+      "height": 720
+    },
+    "exit": null
+  },
+  {
+    "id": 12,
+    "kind": "click",
+    "x": 613,
+    "y": 188,
+    "wait": 2,
+    "capture": {
+      "window": 4194307,
+      "width": 1280,
+      "height": 720
+    },
+    "exit": null
+  },
+  {
+    "id": 13,
+    "kind": "click",
+    "x": 613,
+    "y": 188,
+    "wait": 2,
+    "capture": {
+      "window": 4194307,
+      "width": 1280,
+      "height": 720
+    },
+    "exit": null
+  },
+  {
+    "id": 14,
+    "kind": "click",
+    "x": 613,
+    "y": 188,
+    "wait": 2,
+    "capture": {
+      "window": 4194307,
+      "width": 1280,
+      "height": 720
+    },
+    "exit": null
+  },
+  {
+    "id": 15,
+    "kind": "click",
+    "x": 905,
+    "y": 135,
+    "wait": 2,
+    "capture": {
+      "window": 4194307,
+      "width": 1280,
+      "height": 720
+    },
+    "exit": null
+  },
+  {
+    "id": 16,
+    "kind": "close-window",
+    "wait": 1,
+    "exit": 0
+  },
+  {
+    "exitCode": 0
+  }
+]

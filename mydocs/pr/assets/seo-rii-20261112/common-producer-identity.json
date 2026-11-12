@@ -1,0 +1,13 @@
+{
+  "base": "a85d3265dd10b316d1a0ae029ca3f67245b38b77",
+  "code_head": "1e819721fe789b6b3b5c6db600635245039c9f98",
+  "excluded_prefixes": [
+    "bindings/Flutter/",
+    "mydocs/pr/"
+  ],
+  "mode_object_path_rows": 38829,
+  "same": true,
+  "sha256": "0ceb2f56432c96c039e317af338e2f2c9c4aca0ec40a899ad95c5efec1364e6c",
+  "base_and_candidate_use_same_producer_output": true,
+  "separate_baseline_build_claimed": false
+}

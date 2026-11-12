@@ -6,7 +6,7 @@
 
 실제 생성 `.vcxproj`는 `.plugin_symlinks/rhwp_native_reference/windows/../../swift/...`를 include 경로로 사용했다. CMake의 기존 `get_filename_component(... REALPATH)`와 `file(REAL_PATH)` 모두 Windows junction 별칭을 유지했다. `IS_SYMLINK`·`READ_SYMLINK`로 확인한 실제 target은 NT namespace `\??\C:\...\source\bindings\Flutter\`다. 이 target을 정상 Windows 경로로 변환하면 실제 공통 헤더의 존재가 확인된다. 헤더를 빌드 전에 누락한 문제나 Native C ABI 컴파일 오류가 아니다.
 
-이 설정의 기존 수정 `91dea56707`까지 선행 분석했다. 최신 devel과 세 원 PR이 공유하는 Windows CMake 설정이며 #8953의 참조앱과 #8954의 타일 collector 실행에 함께 영향을 준다. macOS 실기 부재의 이번 수용 결정과 별개인 실제 Windows 실패다.
+해당 `REALPATH` 도입은 `a92974dca48daad1d639d3d5f46267a5093ff2af`다. #8727의 Windows bridge → 통합 #8739 merge `f5f0fbee95b5fb0e32e99f8f639d228ae55389dd` → 후속 `91dea56707`의 close registry 검사 추가까지 추적했다. 이전 독립 검증은 실제 Windows Native D3D12·SDK 단위 검사였으며 최종 Flutter 소비자 sampling·지속 표시의 완료를 주장하지 않았다. 이번에는 그 실제 runner의 junction 경계를 처음 실행해 실패를 확인했다. 최신 devel과 세 원 PR이 공유하는 Windows CMake 설정이며 #8953의 참조앱과 #8954의 타일 collector 실행에 함께 영향을 준다. macOS 실기 부재의 이번 수용 결정과 별개인 실제 Windows 실패다.
 
 ## 제한 보정·검증 제안
 

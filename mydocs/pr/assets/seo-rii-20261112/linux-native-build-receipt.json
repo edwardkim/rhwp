@@ -1,0 +1,32 @@
+{
+  "source": "1e819721fe789b6b3b5c6db600635245039c9f98",
+  "base": "a85d3265dd10b316d1a0ae029ca3f67245b38b77",
+  "production_inputs_equal_to_base": true,
+  "command": [
+    "cargo",
+    "build",
+    "--locked",
+    "--profile",
+    "release-test",
+    "-p",
+    "rhwp",
+    "-p",
+    "rhwp-native-ffi",
+    "--features",
+    "native-skia-gl"
+  ],
+  "exit": 0,
+  "seconds": 334.643,
+  "artifacts": [
+    {
+      "path": "/home/edward/mygithub/rhwp/target/pr-review/release-test/librhwp_native_ffi.so",
+      "bytes": 80391336,
+      "sha256": "cc104128e335023ad065687f01f9911d697defea238162db740dbe66f0ff3c6c"
+    },
+    {
+      "path": "/home/edward/mygithub/rhwp/target/pr-review/release-test/rhwp",
+      "bytes": 87726168,
+      "sha256": "835a6a344c47476d489c879480681bbe0f5149e122ed156d347c6400d91b6beb"
+    }
+  ]
+}

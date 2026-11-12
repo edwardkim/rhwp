@@ -1,0 +1,17 @@
+{
+  "source": "1e819721fe789b6b3b5c6db600635245039c9f98",
+  "command": [
+    "/home/edward/.local/share/rhwp-tools/flutter-c197ca5199e9/bin/flutter",
+    "test",
+    "--no-pub",
+    "--reporter",
+    "expanded",
+    "--dart-define=RHWP_NATIVE_LIBRARY=/home/edward/mygithub/rhwp/target/pr-review/release-test/librhwp_native_ffi.so",
+    "--dart-define=RHWP_OWNER_LIBRARY=/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261112/native/librhwp_flutter_owner.so"
+  ],
+  "exit": 0,
+  "seconds": 14.381,
+  "passed": 280,
+  "skipped": 0,
+  "log_sha256": "e7cc6166f2a07eee2aa7a6c459a8ae78246ef7b7bc3a4a44b006e0856148e4c7"
+}
