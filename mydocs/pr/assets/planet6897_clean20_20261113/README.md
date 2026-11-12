@@ -12,6 +12,8 @@
 
 - 첫 CI의 옛 실제 Canvas clip 기대값을 보정한 [원인·FAIL→PASS](final-d0cc4657/canvas-print-clip-contract-repair.json): 제품 source 변경 없이 동일 브라우저 entry19 PASS. #8999는 이 검사 보정까지 포함해 수용하며 새 head CI를 재확인한다.
 
+- [통합 PR #9033의 정확한 code head CI](final-d0cc4657/pr9033-code-ci.json): `257b6fabee` Full CI·CodeQL·Render Diff·Adapter·Proptest·최종 정책 감사 성공. CI Archive A–E 합계13,236 PASS/0 FAIL/45 skip, Canvas browser19 PASS. 최신 문서-only trailing 검사와 실제 병합은 별도로 확인한다.
+
 ## 최종 검증과 개별 리뷰
 
 - [고유 원 PR·source SHA](source-plan.json) · [최종 live head20개](final-d0cc4657/source-head-final-prepush.json)

@@ -95,6 +95,12 @@ Native 정본 보호18조건1,771쪽은 공식 두 자리 표시값 하락0이�
 
 **충족.** HWP/HWPX/HML·PDF85개를 실제 실행 파일과 검토 commit의 Git blob SHA-256으로 대조했다. 대용량 sample10 PDF(96,185,197바이트)는 기존 파일을 로컬 재사용했으며 이 PR에 새 PDF·사본을 추가하지 않았다. [입력 감사](../assets/planet6897_clean20_20261113/final-d0cc4657/committed-input-audit.json)를 따른다. 비공개 글꼴 바이너리는 Git에 넣지 않았다.
 
+## 통합 PR 최신 code CI
+
+[통합 PR #9033](https://github.com/edwardkim/rhwp/pull/9033)의 정확한 code head `257b6fabeefabbe7588b428d84b1078ea5be7299`에서 [Full CI](https://github.com/edwardkim/rhwp/actions/runs/43307698017), CodeQL·Render Diff·Adapter·Proptest와 최종 CI 정책 검사가 모두 성공했다. Archive A–E 실제 합계는 **13,236 PASS / 0 FAIL / 45 skip**이며 macOS 로컬 전체 수와 합산하지 않는다. 실제 Canvas font binding도 CI 19 PASS/0 FAIL로 확인했다.
+
+[정확한 head·실제 CI 실행과 archive 요약](../assets/planet6897_clean20_20261113/final-d0cc4657/pr9033-code-ci.json)에 실행 신원과 결과를 보존한다. 이 문서-only trailing head의 required checks·mergeability와 실제 병합은 후속 조건으로 구분한다. 통합 PR 번호만을 위한 추가 review 문서는 만들지 않는다.
+
 ## Merge 후 contributor PR comment 계획
 
 통합 PR의 최신 head CI 성공과 실제 병합 뒤에만 원 PR에 한국어 존댓말로 결과·통합 PR·merge SHA를 안내하고 close한다. 이 문서의 판정과 원격 조치를 구분한다. 원 PR 주장 범위와 검증한 실제 동작을 설명한다.
