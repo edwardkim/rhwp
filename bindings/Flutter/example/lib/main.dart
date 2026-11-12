@@ -55,7 +55,10 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
       final bundlePath =
           Platform.environment['RHWP_RUNTIME_BUNDLE'] ??
           const String.fromEnvironment('RHWP_RUNTIME_BUNDLE');
-      final transport = bundlePath.isEmpty
+      final bundle = bundlePath.isEmpty
+          ? await NativeRuntimeBundle.forExecutable()
+          : await NativeRuntimeBundle.load(Directory(bundlePath));
+      final transport = bundle == null
           ? await NativeOwnerTransport.connect(
               dispatcherLibrary: const String.fromEnvironment(
                 'RHWP_OWNER_LIBRARY',
@@ -64,8 +67,7 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
                 'RHWP_NATIVE_LIBRARY',
               ),
             )
-          : await (await NativeRuntimeBundle.load(Directory(bundlePath)))
-                .connect();
+          : await bundle.connect();
       document = await NativeDocument.connect(transport);
       await document.newDocument();
       if (const bool.fromEnvironment('RHWP_GPU')) {

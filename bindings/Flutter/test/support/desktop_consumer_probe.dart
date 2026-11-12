@@ -203,6 +203,8 @@ class _ProbeState extends State<_Probe> {
   var _sourceReferenceEnabled = false;
   var _continuousBackend = false;
   var _nativeCoverProbe = false;
+  var _tileGroups = false;
+  List<Map<String, Object?>> _tileMembers = const [];
   @override
   void initState() {
     super.initState();
@@ -219,18 +221,37 @@ class _ProbeState extends State<_Probe> {
     await temporary.rename('${_output.path}/$name');
   }
 
-  Future<Map<String, Object?>> _status() async => Map<String, Object?>.from(
-    await _channel
-            .invokeMethod<Map<Object?, Object?>>('status', {
-              'textureId': _controller!.textureId,
-              if (_metadata?.stamp != null &&
-                  (Platform.isWindows ||
-                      _controller!.platform == NativeTexturePlatform.macos))
-                'deviceGeneration': _metadata!.stamp!.deviceGeneration,
-            })
-            .timeout(const Duration(seconds: 5)) ??
-        {},
-  );
+  Future<Map<String, Object?>> _status() async {
+    final status = Map<String, Object?>.from(
+      await _controller!.channel
+              .invokeMethod<Map<Object?, Object?>>('status', {
+                'textureId': _controller!.textureId,
+                if (_metadata?.stamp != null &&
+                    (Platform.isWindows ||
+                        _controller!.platform == NativeTexturePlatform.macos))
+                  'deviceGeneration': _metadata!.stamp!.deviceGeneration,
+              })
+              .timeout(const Duration(seconds: 5)) ??
+          {},
+    );
+    if (_tileGroups) {
+      final group = await _channel
+          .invokeMapMethod<String, Object?>('statusGroup', {
+            'groupId': _controller!.textureId,
+            'deviceGeneration': _metadata!.stamp!.deviceGeneration,
+          })
+          .timeout(const Duration(seconds: 5));
+      final members = group?['members'];
+      _require(
+        members is List && members.length == 2,
+        'missing native tile pair',
+      );
+      _tileMembers = (members! as List)
+          .map((value) => Map<String, Object?>.from(value as Map))
+          .toList();
+    }
+    return status;
+  }
 
   Future<void> _until(FutureOr<bool> Function() check, String message) async {
     final deadline = Stopwatch()..start();
@@ -357,6 +378,21 @@ class _ProbeState extends State<_Probe> {
         'geometryProof': {'cpu': cpuGeometry, 'reference': referenceGeometry},
       },
       'nativeStatus': status,
+      if (_tileGroups) ...{
+        'tileGroup': true,
+        'groupId': controller.textureId,
+        'tileTextureIds': controller.tileTextureIds,
+        'physicalTiles': [
+          for (final rect in controller.physicalTiles)
+            [
+              rect.left.toInt(),
+              rect.top.toInt(),
+              rect.width.toInt(),
+              rect.height.toInt(),
+            ],
+        ],
+        'nativeTileMembers': _tileMembers,
+      },
     });
     final ack = File('${_output.path}/ack-$index.json');
     await _until(
@@ -391,15 +427,23 @@ class _ProbeState extends State<_Probe> {
       'mounted native view did not acknowledge its held cover',
     );
     var nativeViewMounted = false;
+    var nativeViewCount = 0;
     var elements = 0;
     void visit(Element element) {
       _require(++elements <= 256, 'native view subtree bound');
-      if (element.widget is AppKitView) nativeViewMounted = true;
+      if (element.widget is AppKitView) {
+        nativeViewMounted = true;
+        nativeViewCount++;
+      }
       element.visitChildElements(visit);
     }
 
     (_textureKey.currentContext! as Element).visitChildElements(visit);
     _require(nativeViewMounted, 'held cover unmounted the native view');
+    _require(
+      !_tileGroups || nativeViewCount == 2,
+      'held cover must retain both native tiles',
+    );
     final dpr = MediaQuery.devicePixelRatioOf(context);
     final box = _textureKey.currentContext!.findRenderObject()! as RenderBox;
     final origin = box.localToGlobal(Offset.zero) * dpr;
@@ -424,6 +468,11 @@ class _ProbeState extends State<_Probe> {
       'viewBound': status['viewBound'],
       'layerReady': status['layerReady'],
       'visibilitySerial': status['visibilitySerial'],
+      if (_tileGroups) ...{
+        'tileGroup': true,
+        'nativeViewCount': nativeViewCount,
+        'nativeTileMembers': _tileMembers,
+      },
     });
     final ack = File('${_output.path}/cover-ack-1.json');
     await _until(() => ack.exists(), 'held cover was not externally sampled');
@@ -461,6 +510,12 @@ class _ProbeState extends State<_Probe> {
         _ => throw StateError('probe backend does not match the actual OS'),
       };
       _continuousBackend = Platform.isLinux || backend != null;
+      _tileGroups = (config['tileGroups'] as bool?) ?? false;
+      _require(
+        !_tileGroups || platform == NativeTexturePlatform.macosMetalView,
+        'this tile-pair qualification requires the actual macOS AppKit backend',
+      );
+      if (_tileGroups) _physicalSize = const Size(321, 240);
       _nativeCoverProbe = (config['nativeCoverProbe'] as bool?) ?? false;
       _require(
         !_nativeCoverProbe || platform == NativeTexturePlatform.macosMetalView,
@@ -540,6 +595,7 @@ class _ProbeState extends State<_Probe> {
         document: document,
         presentation: metadata,
         platform: platform,
+        useTileGroups: _tileGroups,
         allowImmutableOwnershipTransfer: backend == 'windowsImmutableTransfer',
         operationTimeout: const Duration(seconds: 8),
       );
@@ -557,7 +613,7 @@ class _ProbeState extends State<_Probe> {
         'text': '\n\n\n\n\n\n',
       });
       await _publication(2, 'revision');
-      _physicalSize = const Size(352, 256);
+      _physicalSize = _tileGroups ? const Size(353, 256) : const Size(352, 256);
       _viewport = NativePageViewport.fit(
         await document.pageSize(0),
         _physicalSize / MediaQuery.devicePixelRatioOf(context),
@@ -652,6 +708,10 @@ class _ProbeState extends State<_Probe> {
                     true),
         'presentationKind': presentationKind,
         'publications': _frameCount,
+        if (_tileGroups) ...{
+          'tileGroup': true,
+          'nativeTileMembers': _tileMembers,
+        },
       });
       succeeded = true;
     } catch (error, stack) {

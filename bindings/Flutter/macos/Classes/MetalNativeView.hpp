@@ -4,6 +4,7 @@
 #import <QuartzCore/CATransaction.h>
 #import <AppKit/NSAnimationContext.h>
 #include "MetalViewLifecycle.hpp"
+#include "MetalTileGroup.hpp"
 #include <chrono>
 
 namespace {
@@ -30,6 +31,8 @@ class ScopedMetalViewAnimations {
 struct MetalViewState {
   explicit MetalViewState(std::shared_ptr<State> owner) : owner(std::move(owner)) {}
   std::shared_ptr<State> owner;
+  // Set once before either group owner starts; no owning cycle.
+  std::weak_ptr<MetalViewState> tilePeer;
   // All fields below are serialized by owner->mutex. AppKit mutations stay on main.
   __strong CAMetalLayer* layer = nil;
   __weak NSView* view = nil;
@@ -42,6 +45,7 @@ struct MetalViewState {
   uint64_t renderedSequence = 0;
   Stamp renderedStamp;
   uint32_t drawableWidth = 0, drawableHeight = 0;
+  double drawableDeviceScale = 0;
 };
 struct MetalViewReceipt { __strong NSDictionary* status = nil; };
 std::atomic<uint64_t> nextMetalViewHandle{1};
@@ -52,6 +56,8 @@ NSDictionary* MetalViewLimits() {
     @"consumerGpuCompletionVerified":@NO,@"wholeFrameReadbacks":@0,
     @"nativeCoverSupported":@YES,@"nativeCoverRequired":@YES,
     @"closeAcknowledgementRequired":@YES,@"maxRetainedCloseRecords":@2,@"maxClosedReceipts":@2,
+    @"tileGroups":@YES,@"sharedSnapshotLeases":@YES,@"maxTileGroupTiles":@2,@"maxTileGroupSnapshots":@4,
+    @"maxTileGroups":@1,@"maxRetainedSnapshotIdsPerOwner":@32,
     @"experimental":@YES,@"requiresTargetQualification":@YES};
 }
 bool MetalJobCurrent(const std::shared_ptr<NativeApi>& api, const std::shared_ptr<Job>& job) {
@@ -100,6 +106,7 @@ void RetryMetalViewJob(const std::shared_ptr<MetalViewState>& view, const std::s
 }
 void StopMetalView(const std::shared_ptr<MetalViewState>& view);
 void UpdateMetalViewGeometry(const std::shared_ptr<MetalViewState>& view);
+void CoverMetalViews(const std::shared_ptr<MetalViewState>& view);
 void RunMetalView(const std::shared_ptr<MetalViewState>& view) {
   @autoreleasepool {
     auto state = view->owner;
@@ -217,6 +224,7 @@ void RunMetalView(const std::shared_ptr<MetalViewState>& view) {
           QuarantineMetalView(view, job, drawable, queue, layer, @"Core Animation presentation command did not complete; owner quarantined.");
         }
         std::shared_ptr<Job> oldDisplayed;
+        bool published = false;
         {
           std::lock_guard<std::mutex> lock(state->mutex);
           if (!state->closed && state->gate.current(job->sequence, job->stamp)) {
@@ -225,12 +233,14 @@ void RunMetalView(const std::shared_ptr<MetalViewState>& view) {
             view->displayed = job;
             view->renderedSequence = job->sequence;
             view->renderedStamp = job->stamp;
+            published = true;
             state->error.clear();
           } else {
             view->flow.discard_completed(job->sequence);
           }
           state->inFlight = false;
         }
+        if (published && state->producerReady) state->producerReady(job->sequence, job->stamp);
         } catch (const std::exception&) {
           if (nativeSubmitted) QuarantineMetalView(view, job, drawable, queue, layer,
               @"Native Metal view allocation/decoding failed after submission; owner quarantined.");
@@ -348,18 +358,26 @@ void RunMetalView(const std::shared_ptr<MetalViewState>& view) {
   {std::lock_guard<std::mutex> lock(owner->mutex);if(owner->closed)return;layer=_metalState->layer;device=_metalState->device;}
   const NSRect backing = [self convertRectToBacking:self.bounds];
   const auto checkedSize = rhwp::metal::DrawableSize::FromBacking(backing.size.width, backing.size.height);
-  const bool geometry = self.window && checkedSize.has_value();
-  const auto width = checkedSize ? checkedSize->width : 0;
-  const auto height = checkedSize ? checkedSize->height : 0;
+  const double deviceScale = self.window ? self.window.backingScaleFactor : 0;
+  const bool geometry = self.window && checkedSize.has_value() &&
+      std::isfinite(deviceScale) && deviceScale > 0 && deviceScale <= 16;
+  const auto width = geometry ? checkedSize->width : 0;
+  const auto height = geometry ? checkedSize->height : 0;
+  bool changed;
+  {std::lock_guard<std::mutex> lock(owner->mutex);
+    changed = _metalState->drawableWidth != width || _metalState->drawableHeight != height ||
+        _metalState->drawableDeviceScale != (geometry ? deviceScale : 0);}
+  if (changed) CoverMetalViews(_metalState);
   if (layer && device && geometry) {
     layer.device = device;
-    layer.contentsScale = self.window.backingScaleFactor;
+    layer.contentsScale = deviceScale;
     layer.drawableSize = CGSizeMake(width, height);
   }
   {std::lock_guard<std::mutex> lock(owner->mutex);
     _metalState->layerReady = !owner->closed && layer && device && geometry;
     _metalState->drawableWidth = geometry ? static_cast<uint32_t>(width) : 0;
-    _metalState->drawableHeight = geometry ? static_cast<uint32_t>(height) : 0;}
+    _metalState->drawableHeight = geometry ? static_cast<uint32_t>(height) : 0;
+    _metalState->drawableDeviceScale = geometry ? deviceScale : 0;}
   owner->changed.notify_one();
 }
 - (void)detachMetalLayer {
@@ -372,37 +390,71 @@ void RunMetalView(const std::shared_ptr<MetalViewState>& view) {
 @end
 
 namespace {
+void CoverMetalViews(const std::shared_ptr<MetalViewState>& view) {
+  NSView* first = nil;
+  NSView* second = nil;
+  auto peer = view->tilePeer.lock();
+  if (peer) {
+    std::scoped_lock lock(view->owner->mutex, peer->owner->mutex);
+    view->visibility.invalidate();
+    peer->visibility.invalidate();
+    first = view->view;
+    second = peer->view;
+  } else {
+    std::lock_guard<std::mutex> lock(view->owner->mutex);
+    view->visibility.invalidate();
+    first = view->view;
+  }
+  ScopedMetalViewAnimations immediate;
+  first.hidden = YES;
+  second.hidden = YES;
+}
 void UpdateMetalViewGeometry(const std::shared_ptr<MetalViewState>& view) {
   NSView* nativeView = nil;
   {std::lock_guard<std::mutex> lock(view->owner->mutex);nativeView=view->view;}
   if ([nativeView isKindOfClass:[RhwpNativeMetalView class]]) [(RhwpNativeMetalView*)nativeView updateMetalGeometry];
 }
-NSDictionary* MetalViewStatus(const std::shared_ptr<MetalViewState>& view, bool registered) {
+// Caller holds the owner lock; group callers hold both owners and supply the
+// same complete-batch readiness decision to both member receipts.
+NSDictionary* MetalViewStatusLocked(const std::shared_ptr<MetalViewState>& view,
+                                    bool registered, bool hasFrame) {
   auto owner=view->owner;
-  std::shared_ptr<Job> displayed;std::shared_ptr<NativeApi> api;
-  {std::lock_guard<std::mutex> lock(owner->mutex);displayed=view->displayed;api=owner->api;}
-  const bool current=displayed&&api&&MetalJobCurrent(api,displayed);
-  std::unique_lock<std::mutex> lock(owner->mutex);
-  const bool hasFrame=current&&!owner->closed&&owner->gate.current(displayed->sequence,displayed->stamp)&&view->displayed==displayed;
-  if(!hasFrame)view->visibility.invalidate();
   NSMutableArray* ids=[NSMutableArray arrayWithCapacity:owner->acceptedSnapshots.size()];
   for(const auto id:owner->acceptedSnapshots)[ids addObject:@(id)];
   NSString* error=[[NSString alloc] initWithBytes:owner->error.data() length:owner->error.size() encoding:NSUTF8StringEncoding];
-  NSDictionary* status=@{@"ready":@(owner->ready&&view->layerReady),@"apiReady":@(owner->ready),@"closed":@(owner->closed),@"ownerFinished":@(owner->finished),
+  return @{@"ready":@(owner->ready&&view->layerReady),@"apiReady":@(owner->ready),@"closed":@(owner->closed),@"ownerFinished":@(owner->finished),
     @"registered":@(registered),@"pending":@(owner->pending!=nullptr),@"inFlight":@(owner->inFlight),
     @"hasFrame":@(hasFrame),@"renderedStamp":hasFrame?StampValue(view->renderedStamp):@{},
     @"acceptedStamp":StampValue(owner->acceptedStamp),@"acceptedSnapshots":ids,@"deviceGeneration":@(owner->generation),
+    @"closeAcknowledgementRequired":@YES,
     @"presentationKind":@"nativeView",@"viewBound":@(view->bound),@"layerReady":@(view->layerReady),
     @"nativeViewLayerDetached":@(view->layerDetached),@"covered":@(view->visibility.covered()),
     @"visibilitySerial":@(view->visibility.serial()),
     @"drawableWidth":@(view->drawableWidth),@"drawableHeight":@(view->drawableHeight),
+    @"drawableDeviceScale":@(view->drawableDeviceScale),
     @"frames":@(view->flow.scheduled()),@"discardedFrames":@(view->flow.discarded()),
     @"quarantined":@(view->flow.quarantined()),@"drawableTimeouts":@(view->drawableTimeouts),
     @"sizeMismatches":@(view->sizeMismatches),@"staleFramesDropped":@(owner->staleDrops),
     @"wholeFrameReadbacks":@0,@"error":error?:@"",@"limits":MetalViewLimits()};
-  NSView* staleView=hasFrame?nil:view->view;
+}
+bool MetalViewCurrentLocked(const std::shared_ptr<MetalViewState>& view) {
+  auto owner = view->owner;
+  auto displayed = view->displayed;
+  return displayed && owner->api && !owner->closed && view->layerReady &&
+      view->drawableWidth == static_cast<uint32_t>(displayed->width) &&
+      view->drawableHeight == static_cast<uint32_t>(displayed->height) &&
+      view->drawableDeviceScale == displayed->stamp.device_scale &&
+      owner->gate.current(displayed->sequence, displayed->stamp) &&
+      view->renderedStamp == displayed->stamp && MetalJobCurrent(owner->api, displayed);
+}
+NSDictionary* MetalViewStatus(const std::shared_ptr<MetalViewState>& view, bool registered) {
+  std::unique_lock<std::mutex> lock(view->owner->mutex);
+  const bool hasFrame = MetalViewCurrentLocked(view);
+  if (!hasFrame) view->visibility.invalidate();
+  NSDictionary* status = MetalViewStatusLocked(view, registered, hasFrame);
+  NSView* staleView = hasFrame ? nil : view->view;
   lock.unlock();
-  staleView.hidden=YES;
+  staleView.hidden = YES;
   return status;
 }
 NSDictionary* MetalRetireAck(uint64_t handle) {
@@ -413,6 +465,7 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
   auto owner = view->owner;
   owner->close();
   auto detach = ^{
+    CoverMetalViews(view);
     std::shared_ptr<Job> oldDisplayed;
     NSView* nativeView = nil;
     {std::lock_guard<std::mutex> lock(owner->mutex);
@@ -427,12 +480,19 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
 
 @interface RhwpMetalViewPlugin : NSObject <FlutterPlugin, FlutterPlatformViewFactory>
 - (void)handleCall:(FlutterMethodCall*)call result:(FlutterResult)result;
+- (void)handleTileGroupCall:(FlutterMethodCall*)call result:(FlutterResult)result;
 @end
 @implementation RhwpMetalViewPlugin {
+  RhwpProducerReadyEvents* _readyEvents;
   rhwp::metal::RetirementRegistry<MetalViewState,MetalViewReceipt> _views;
+  rhwp::tiles::Identity _tileGroup;
+  __strong NSDictionary* _tileTerminal;
+  std::array<uint64_t, 2> _unexposedCreations;
 }
 + (void)registerWithRegistrar:(id<FlutterPluginRegistrar>)registrar {
   RhwpMetalViewPlugin* plugin = [[RhwpMetalViewPlugin alloc] init];
+  plugin->_readyEvents = [[RhwpProducerReadyEvents alloc] initWithMessenger:registrar.messenger
+      name:@"rhwp_native/metal_view_macos/events"];
   FlutterMethodChannel* channel = [FlutterMethodChannel methodChannelWithName:@"rhwp_native/metal_view_macos"
       binaryMessenger:registrar.messenger];
   [registrar addMethodCallDelegate:plugin channel:channel];
@@ -452,6 +512,7 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
 }
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
   try { [self handleCall:call result:result]; }
+  catch (const std::invalid_argument& error) {result([FlutterError errorWithCode:@"arguments" message:[NSString stringWithUTF8String:error.what()] details:nil]);}
   catch (const std::exception&) {result([FlutterError errorWithCode:@"nativeAllocation" message:@"Native Metal view allocation failed." details:nil]);}
 }
 - (void)handleCall:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -459,6 +520,11 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
   if ([call.method isEqualToString:@"capabilities"]) {result(MetalViewLimits());return;}
   if (![call.arguments isKindOfClass:[NSDictionary class]]) {result([FlutterError errorWithCode:@"arguments" message:@"Expected an argument map." details:nil]);return;}
   NSDictionary* arguments = call.arguments;
+  if ([call.method isEqualToString:@"createGroup"] || [call.method isEqualToString:@"submitGroup"] ||
+      [call.method isEqualToString:@"statusGroup"] || [call.method isEqualToString:@"closeGroup"] ||
+      [call.method isEqualToString:@"retireGroupAck"] || [call.method isEqualToString:@"setCoveredGroup"]) {
+    [self handleTileGroupCall:call result:result];return;
+  }
   if ([call.method isEqualToString:@"create"]) {
     NSString* input=arguments[@"libraryPath"];
     if (![input isKindOfClass:[NSString class]] || !input.isAbsolutePath || input.length>4096) {
@@ -476,6 +542,7 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
     NSString* path=input.stringByResolvingSymlinksInPath;
     if(!generation||generation>INT64_MAX||!handle||handle>INT64_MAX||!path.UTF8String){result([FlutterError errorWithCode:@"generation" message:@"Native view identity is exhausted or path invalid." details:nil]);return;}
     auto owner=std::make_shared<State>(generation,path.UTF8String,std::move(slot));
+    owner->producerReady = ProducerReadyCallback(_readyEvents, handle);
     auto view=std::make_shared<MetalViewState>(owner);
     if(!_views.insert(handle,view)){result([FlutterError errorWithCode:@"backpressure" message:@"Native view registry capacity is exhausted." details:nil]);return;}
     try {std::thread([view] {
@@ -484,10 +551,14 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
     }).detach();}
     catch(const std::exception&){_views.erase_unstarted(handle);owner->close();throw;}
     result(@{@"textureId":@(handle),@"deviceGeneration":@(generation),@"initializing":@YES,@"ready":@NO,
+      @"producerReadyEvents":@YES,
       @"presentationKind":@"nativeView",@"viewType":@"rhwp_native/metal_view",@"limits":MetalViewLimits()});return;
   }
   uint64_t handle = 0;
   if(!Unsigned(arguments[@"textureId"],handle)||!handle){result([FlutterError errorWithCode:@"arguments" message:@"Invalid native view handle." details:nil]);return;}
+  if (_tileGroup.valid() && (handle == _tileGroup.textures[0] || handle == _tileGroup.textures[1])) {
+    result([FlutterError errorWithCode:@"contextChanged" message:@"Tile members must be submitted, covered and retired through their group." details:nil]);return;
+  }
   auto view=_views.lookup(handle);
   if(!view){
     const auto* receipt=_views.receipt(handle);
@@ -535,11 +606,9 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
     result(@{@"closed":@YES,@"ownerCompletionPending":@(!finished),@"limits":MetalViewLimits()});return;
   }
   if([call.method isEqualToString:@"setCovered"]){
-    std::shared_ptr<Job> displayed;std::shared_ptr<NativeApi> api;
-    {std::lock_guard<std::mutex> lock(owner->mutex);displayed=view->displayed;api=owner->api;}
-    const bool current=displayed&&api&&MetalJobCurrent(api,displayed);
     std::unique_lock<std::mutex> lock(owner->mutex);
-    const bool hasFrame=current&&!owner->closed&&owner->gate.current(displayed->sequence,displayed->stamp)&&view->displayed==displayed;
+    const auto displayed=view->displayed;
+    const bool hasFrame=MetalViewCurrentLocked(view);
     if(!hasFrame)view->visibility.invalidate();
     id covered=arguments[@"covered"];
     if(![covered isKindOfClass:[NSNumber class]]||CFGetTypeID((__bridge CFTypeRef)covered)!=CFBooleanGetTypeID()){
@@ -562,5 +631,6 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
   }
   result(FlutterMethodNotImplemented);
 }
-- (void)dealloc {for(const auto& item:_views.records())StopMetalView(item.second.value);}
+#include "MetalTileGroupMethods.inc"
+- (void)dealloc {[_readyEvents shutdown];for(const auto& item:_views.records())StopMetalView(item.second.value);}
 @end
