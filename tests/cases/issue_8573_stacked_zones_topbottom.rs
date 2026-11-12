@@ -1,5 +1,9 @@
 //! [#8573] 1단 영역이 위아래로 쌓인 쪽에서 공백 host 자리차지 표가 앞 본문을 밀지 않는다.
 //!
+//! 검사 유형: 관계형. 문단·표·단 영역의 소속과 순서, 원본 단 사이 간격의 단일 소비를 검사한다.
+//! 수정 전 Native/fresh WASM 1쪽 raw 실루엣은 각각 99.06%이며, 새 보정의 전쪽 재검증은 별도 기록한다.
+//! 원 PR의 웹한글기안기 PDF는 수용 근거에서 제외하고 독립 데스크톱 Print를 사용한다.
+//!
 //! 재현물(공개 샘플 변형, 저장 LINE_SEG 없음):
 //!
 //! ```text
@@ -10,7 +14,7 @@
 //! 문단 4: "Y"
 //! ```
 //!
-//! 웹한글기안기 인쇄본(`pdf/issue8573/whitespace-host-topbottom-stacked-zones-webhwp-print.pdf`)
+//! 독립 한컴 2020 Print(`pdf/issue8573/whitespace-host-topbottom-stacked-zones-hwp-2020.pdf`)
 //! 에서 "Q" 는 본문 맨 위, 표는 "Q" 아래, "A"·"Z"·"Y" 는 표 뒤에 차례로 놓인다. 단이 나란히
 //! 서지 않는 쪽에서 문단 기준 표를 단 위끝에서 잰 전폭 예약이 "Q" 를 표 높이만큼 밀면 안 되고,
 //! 둘째 영역 첫 문단이 앞 영역 표 높이만큼 다시 밀려도 안 된다.
@@ -149,4 +153,41 @@ fn second_zone_first_paragraph_follows_previous_zone_without_table_height() {
         z.top,
         a.bottom
     );
+}
+
+#[test]
+fn next_zone_starts_after_the_source_column_gap_without_old_line_tail() {
+    let page = first_page();
+    let a = line(&page, 2);
+    let z = line(&page, 3);
+    let y = line(&page, 4);
+    let bytes = std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).unwrap();
+    let core = DocumentCore::from_bytes(&bytes).unwrap();
+    let section = core.document().sections[0].paragraphs[0]
+        .controls
+        .iter()
+        .find_map(|c| {
+            if let rhwp::model::control::Control::SectionDef(sd) = c {
+                Some(sd)
+            } else {
+                None
+            }
+        })
+        .expect("원본 구역 정의");
+    let gap = f64::from(section.column_spacing) * 96.0 / 7200.0;
+    let expected = a.bottom + gap;
+    assert!(
+        (z.top - expected).abs() <= TOL_PX,
+        "앞 구역의 글자 상자와 원본 구역 간격을 한 번씩만 소비해야 한다: 실제 {}, 관계 {}",
+        z.top,
+        expected
+    );
+    assert!(y.top > z.bottom);
+    for pi in [2, 3, 4] {
+        assert_eq!(
+            page.lines.iter().filter(|(p, _)| *p == pi).count(),
+            1,
+            "문단 {pi}의 단일 소속"
+        );
+    }
 }

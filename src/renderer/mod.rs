@@ -3126,6 +3126,37 @@ pub(crate) fn solo_title_exit_pad_px(
     )
 }
 
+/// 일반 텍스트 영역 끝의 줄 수와 후행 간격을 같은 확정 구성에서 읽는다.
+/// 저장 줄이 없으면 수용과 배치가 공유하는 재조판 결과만 근거로 사용한다.
+/// 개체·편집 중인 줄·배치용 채움 줄은 영역 간격을 줄일 근거가 아니다.
+pub(crate) fn closing_text_zone_line_metrics(
+    paragraph: &crate::model::paragraph::Paragraph,
+    computed: Option<&composer::ComposedParagraph>,
+    dpi: f64,
+) -> Option<(usize, f64)> {
+    if !paragraph.controls.is_empty() {
+        return None;
+    }
+    if para_has_no_stored_line_segs(paragraph) {
+        if paragraph.stored_text_partition_is_dirty()
+            || paragraph.cell_format_vpos_dirty
+            || paragraph.layout_only_fill_lines > 0
+        {
+            return None;
+        }
+        let computed = computed?;
+        let last = computed.lines.last()?;
+        (last.line_height > 0 && last.line_spacing >= 0)
+            .then_some((computed.lines.len(), hwpunit_to_px(last.line_spacing, dpi)))
+    } else {
+        let last = paragraph.line_segs.last()?;
+        Some((
+            paragraph.line_segs.len(),
+            hwpunit_to_px(last.line_spacing, dpi),
+        ))
+    }
+}
+
 /// 단일 단 구간의 확정 텍스트 끝에서 다음 구간 간격과 중복되는 후행 줄간격.
 /// 구조 제어만 가진 빈 줄도 줄 상자는 보존하며, 개체·부분 문단·재조판 줄은 제외한다.
 pub(crate) fn solo_zone_trailing_spacing_px(

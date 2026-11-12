@@ -515,14 +515,15 @@ impl TypesetState {
         self.data.vpos_stored_column_origin = value;
     }
     /// 수용한 줄의 구성 결과를 같은 단의 실제 배치에 전달한다.
-    pub(in crate::renderer::typeset) fn record_computed_paragraph(
+    pub(in crate::renderer::typeset) fn record_computed_paragraph<S: crate::storage::Storage>(
         &mut self,
         index: usize,
         composed: &crate::renderer::composer::ComposedParagraph,
-    ) {
-        self.data
-            .computed_paragraphs
-            .insert(index, composed.clone());
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        let composed = crate::storage::try_clone(composed, storage)?;
+        storage.insert_map(&mut self.data.computed_paragraphs, index, composed)?;
+        Ok(())
     }
 
     pub(in crate::renderer::typeset) fn discard_pending_paragraph_origins(&mut self) {

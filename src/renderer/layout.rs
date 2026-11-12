@@ -7168,7 +7168,7 @@ impl LayoutEngine {
                     zone_layout.column_areas.len(),
                     self.dpi,
                 ));
-            // 수용 판정과 같은 저장 내용 하단일 때만 새 텍스트 영역과 겹치는 뒤 여백을 제외한다.
+            // 수용 판정과 같은 줄 구성의 내용 하단일 때만 새 텍스트 영역과 겹치는 뒤 여백을 제외한다.
             body_flow_bottoms.record(col_content.column_index, body_content_bottom);
             let closing_content_bottom = (blank_band_tail.is_none() && apply_trailing_ls_subtract)
                 .then(|| {
@@ -7176,9 +7176,11 @@ impl LayoutEngine {
                         return None;
                     };
                     let paragraph = paragraphs.get(*para_index)?;
-                    if !paragraph.controls.is_empty() || paragraph.line_segs.is_empty() {
-                        return None;
-                    }
+                    let (_, closing_line_spacing) = super::closing_text_zone_line_metrics(
+                        paragraph,
+                        col_content.computed_paragraphs.get(para_index),
+                        self.dpi,
+                    )?;
                     let next = page_content.column_contents.get(col_content_idx + 1)?;
                     if next.zone_y_offset <= col_content.zone_y_offset {
                         return None;
@@ -7201,7 +7203,7 @@ impl LayoutEngine {
                         .get(paragraph.para_shape_id as usize)?
                         .spacing_after;
                     let tail = y_offset - body_content_bottom - after;
-                    (tail.abs() < 1e-6 || (tail - last_para_trailing_ls).abs() < 1e-6)
+                    (tail.abs() < 1e-6 || (tail - closing_line_spacing).abs() < 1e-6)
                         .then_some(body_content_bottom)
                 })
                 .flatten();
