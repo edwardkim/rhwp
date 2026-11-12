@@ -11,12 +11,23 @@ null이며 recorder·clock·event queue를 만들지 않는다. 참조 example�
 nearest-rank p50/p95/p99를 구분한다. 문서 경로·본문·raw 오류나 snapshot ID는
 기록하지 않는다. plugin이 제공한 알려진 numeric 자원 counter만 포함하고
 없으면 생략한다. 전체 driver memory를 추정하지 않는다.
+`wholeFrameReadbacks`/`pluginWholeFrameReadbacks`도 Native plugin의 계수다.
+Flutter engine의 X11 compositor가 수행하는 전체 프레임 CPU 복사·재업로드는 포함하지 않으므로
+0을 engine 전체의 zero-copy 또는 GPU-only 표시 근거로 사용하지 않는다.
 
 요청 경계는 controller invalidate이며 OS 입력 수신 시각이 아니다.
 `captureStarted`/`captureCompleted`, `submitStarted`/`accepted`, `producerReady`는
 같은 controller의 단조 증가 clock과 generation을 쓴다. producerReady는 현재
 batch 전체 receipt·full stamp·필요한 uncover 확인 뒤이며 Flutter compositor의
 화면 표시, 물리 GPU 가속 또는 consumer GPU 완료 fence를 뜻하지 않는다.
+
+`captureStarted`부터 `captureCompleted`까지는 문서 FIFO 대기, presentation configure,
+worker snapshot export, owner/worker 응답의 Dart timer polling과 full-stamp 검사까지 포함한다.
+따라서 이 구간의 timeout만으로 Native snapshot 생성 자체가 느리다고 판정하지 않는다.
+Linux 참조앱 builder는 공개 runner API로 Dart UI를 GTK platform thread에서 분리한다.
+또한 현재 Native GL bridge와의 호환성을 위해 Flutter compositor의 Skia 경로를 선택한다.
+GTK draw/resize 대기와 Dart polling의 스레드 경계 및 compositor 선택을 명시하는 설정이며,
+renderer 성능 개선이나 GPU consumer 완료의 측정 결과를 대신하지 않는다.
 
 현재 batch 수락이 끝나 `_working`이 false가 된 뒤 한 번만 status를 확인해
 불필요한 다음100ms poll 대기를 줄인다. 아직 준비되지 않았으면 기존 periodic

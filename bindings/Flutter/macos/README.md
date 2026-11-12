@@ -1,5 +1,9 @@
 # P100 macOS Metal 참조 브리지 — Draft/WIP
 
+AppKit/CAMetalLayer의 선택적 연속 경로와 두 타일 확장은 각각
+[native view](NATIVE_VIEW_PRESENTATION.md), [P117 두 타일](TILE_GROUPS.md)을 참고합니다.
+아래의 네 개 불변 프레임 제한과 consumer 완료 미확인은 기존 CVPixelBuffer 경로의 계약입니다.
+
 선택 피처 `native-skia-metal`의 Ganesh renderer와 공식 `FlutterTexture` 기반 macOS plugin이다.
 문서의 immutable P89 snapshot을 GPU scratch에 strict replay한 뒤 새 BGRA `CVPixelBuffer`의
 `CVMetalTexture`로 그린다. 프로듀서 GPU 완료를 기다리는 전용 native thread를 사용하며,
