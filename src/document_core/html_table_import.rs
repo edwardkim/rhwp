@@ -38,6 +38,14 @@ impl DocumentCore {
 
         let mut parsed_rows: Vec<Vec<ParsedCell>> = Vec::new();
 
+        // `<table border="1">` 은 CSS 없이도 칸마다 1px 실선을 그린다 (HTML 표 속성).
+        // 칸의 `border` CSS 가 있으면 그 값이 이긴다.
+        let table_tag = &table_html[..table_html.find('>').map_or(0, |gt| gt + 1)];
+        let attr_border_pt = match parse_html_attr_f64(table_tag, "border") {
+            Some(width) if width > 0.0 => 0.75,
+            _ => 0.0,
+        };
+
         let mut pos = 0;
         while let Some(tr_start) = table_lower[pos..].find("<tr") {
             let tr_abs = pos + tr_start;
@@ -89,7 +97,7 @@ impl DocumentCore {
                     let padding_pt = parse_css_padding_pt(&css_lower);
 
                     // 테두리 파싱 (left, right, top, bottom)
-                    let mut border_widths_pt = [0.0f64; 4];
+                    let mut border_widths_pt = [attr_border_pt; 4];
                     let mut border_colors = [0u32; 4]; // black
                     let mut border_styles = [1u8; 4]; // solid default
 
