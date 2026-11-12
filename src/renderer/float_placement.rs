@@ -5888,8 +5888,9 @@ pub(crate) fn stored_background_picture_next_page_placement(
     None
 }
 
-/// 나누지 않는 표의 캡션 포함 바깥 상자와 뒤 본문의 저장 재시작 원점이 일치하면
+/// 표의 캡션 포함 바깥 상자와 뒤 본문의 저장 재시작 원점이 일치하면
 /// 표만 다음 쪽을 소유한다. 재시작 전 본문/빈 줄은 원래 쪽에 보존한다.
+/// 두 번째 값은 `following` 안의 재시작 문단 위치이며, 그 문단은 표와 같은 다음 쪽에서 시작한다.
 pub(crate) fn stored_table_next_page_placement(
     para: &Paragraph,
     following: &[Paragraph],
@@ -5900,7 +5901,7 @@ pub(crate) fn stored_table_next_page_placement(
     actual_host_flow_y: f64,
     available_height: f64,
     dpi: f64,
-) -> Option<ParagraphFloatPlacement> {
+) -> Option<(ParagraphFloatPlacement, usize)> {
     use crate::model::paragraph::LineSeg;
     let host = para.line_segs.first()?;
     let visible_host = para_has_non_whitespace_text(para);
@@ -6083,15 +6084,18 @@ pub(crate) fn stored_table_next_page_placement(
                 {
                     return None;
                 }
-                return Some(ParagraphFloatPlacement {
-                    flow: ParagraphFloatFlow::NextLine,
-                    anchor_y: 0.0,
-                    stored_host_origin: None,
-                    stored_successor_line_origin: None,
-                    table_left: None,
-                    table_top: top,
-                    occupied_bottom: bottom,
-                });
+                return Some((
+                    ParagraphFloatPlacement {
+                        flow: ParagraphFloatFlow::NextLine,
+                        anchor_y: 0.0,
+                        stored_host_origin: None,
+                        stored_successor_line_origin: None,
+                        table_left: None,
+                        table_top: top,
+                        occupied_bottom: bottom,
+                    },
+                    next_index,
+                ));
             }
             // 문단 경계의 저장 사다리는 줄간격 외에 앞뒤 문단 간격도 소비한다.
             // 조판과 같은 해석된 스타일을 사용하며 문단 안쪽 줄에는 더하지 않는다.
