@@ -762,6 +762,13 @@ try {
   ));
   ({ glyphOutlinePayloadResourceKey: glyphOutlinePayloadResourceKeyRuntime }
     = await vite.ssrLoadModule('/src/view/glyph-outline-payload-status.ts'));
+  const { textRequiresComplexShaping } = await vite.ssrLoadModule('/src/view/canvaskit/nominal-text-replay.ts');
+  assert.equal(textRequiresComplexShaping('\u{1F8AD}'), false,
+    'Wingdings의 bdash2에 대응하는 단독 기호는 공급된 명목 글리프로 재생한다');
+  for (const sequence of ['\u{1F8AD}\u{FE0F}', '\u{1F8AD}\u{200D}\u{1F8AD}', '\u{1F8AD}\u{0301}']) {
+    assert.equal(textRequiresComplexShaping(sequence), true,
+      '변형 선택자·연결자·결합 문자의 shaping 가드를 완화하지 않는다');
+  }
   const wasm = await vite.ssrLoadModule('@wasm/rhwp.js');
   svgGlyphRasterAvailable = typeof wasm.prepareStaticSvgRaster === 'function';
   if (svgGlyphRasterAvailable) {

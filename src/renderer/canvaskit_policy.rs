@@ -2309,6 +2309,8 @@ fn text_requires_complex_shaping(text: &str) -> bool {
                 | 0x1d400..=0x1d7ff
                 // 독립 SFNT 글리프로 재생하는 두 그림자 원형 기호. M/Cf는 아래에서 보류한다.
                 | 0x1f53e..=0x1f53f
+                // Wingdings bdash2의 일대일 표시 투영. 결합 문자 가드는 그대로 적용한다.
+                | 0x1f8ad
                 | 0x20000..=0x323af
         );
         let category_requires_shaping = matches!(

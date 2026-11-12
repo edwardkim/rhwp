@@ -13207,6 +13207,8 @@ pub fn map_pua_bullet_char(ch: char) -> char {
         0x46 => '\u{261E}', // ☞ White right pointing index
         0x47 => '\u{261D}', // ☝ White up pointing index
         0x48 => '\u{261F}', // ☟ White down pointing index
+        // 독립 한컴 Print의 Wingdings bdash2. 일반 전각 빈 상자와 구별한다.
+        0xFA => '\u{1F8AD}', // 폭 2/3의 흰 화살표 몸통
         // 체크마크 (0xFB~0xFE)
         0xFB => '\u{2717}', // ✗ Ballot X (근사값)
         0xFC => '\u{2714}', // ✔ Heavy check mark

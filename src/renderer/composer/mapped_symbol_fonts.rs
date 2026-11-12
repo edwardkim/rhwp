@@ -3,11 +3,19 @@
 use super::{ComposedParagraph, ComposedTextRun};
 use unicode_segmentation::UnicodeSegmentation;
 
-pub(super) const SHADOWED_CIRCLE_FONT: &str = "Noto Sans Symbols2";
+pub(super) const MAPPED_SYMBOL_FONT: &str = "Noto Sans Symbols2";
 
-pub(super) fn owns_shadowed_circle_font(run: &ComposedTextRun) -> bool {
-    run.text == "\u{F06D}"
-        && run.display_text.as_deref() == Some("\u{1F53E}")
+fn mapped_symbol(source: &str, display: &str) -> bool {
+    matches!(
+        (source, display),
+        ("\u{F06D}", "\u{1F53E}") | ("\u{F0FA}", "\u{1F8AD}")
+    )
+}
+
+pub(super) fn owns_mapped_symbol_font(run: &ComposedTextRun) -> bool {
+    run.display_text
+        .as_deref()
+        .is_some_and(|display| mapped_symbol(&run.text, display))
         && run.char_overlap.is_none()
         && run.footnote_marker.is_none()
 }
@@ -21,7 +29,7 @@ pub(super) fn try_split_mapped_symbol_font_runs<S: crate::storage::Storage>(
     for line in &mut composed.lines {
         let mut next = storage.vec(line.runs.len())?;
         for run in std::mem::take(&mut line.runs) {
-            if !run.text.contains('\u{F06D}')
+            if !run.text.contains(['\u{F06D}', '\u{F0FA}'])
                 || run.char_overlap.is_some()
                 || run.footnote_marker.is_some()
                 || run.inserted_control_text
@@ -43,7 +51,13 @@ pub(super) fn try_split_mapped_symbol_font_runs<S: crate::storage::Storage>(
             let mut start = 0;
             for grapheme in run.text.graphemes(true) {
                 let end = position + grapheme.chars().count();
-                if grapheme == "\u{F06D}" && display_chars[position] == '\u{1F53E}' {
+                let mut display_bytes = [0; 4];
+                if end == position + 1
+                    && mapped_symbol(
+                        grapheme,
+                        display_chars[position].encode_utf8(&mut display_bytes),
+                    )
+                {
                     if start < position {
                         storage.push(&mut ranges, (start, position))?;
                     }

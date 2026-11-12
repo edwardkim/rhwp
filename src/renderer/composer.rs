@@ -145,9 +145,9 @@ impl ComposedTextRun {
         if let Some(origin) = self.neutral_space_origin {
             punctuation_slots::apply_space_origin(&mut style, styles, self.char_style_id, origin);
         }
-        if mapped_symbol_fonts::owns_shadowed_circle_font(self) {
+        if mapped_symbol_fonts::owns_mapped_symbol_font(self) {
             // 표시 기호 한 글자만 실제 프로그램을 선택한다. 본문과 IR의 글꼴은 보존한다.
-            let mut family = storage.string(mapped_symbol_fonts::SHADOWED_CIRCLE_FONT)?;
+            let mut family = storage.string(mapped_symbol_fonts::MAPPED_SYMBOL_FONT)?;
             storage.push_char(&mut family, ',')?;
             storage.push_str(&mut family, &style.font_family)?;
             style.font_family = family;

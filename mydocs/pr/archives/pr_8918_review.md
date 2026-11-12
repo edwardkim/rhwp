@@ -21,7 +21,7 @@ F080–F095 원문자와 F0A1 흰 원의 표시 매핑 및 원본 advance를 보
 
 ## 메인터너 보정과 수용 경계
 
-F080–F095 원문자와 F0A1 흰 원·F0FE 체크 상자의 표시·전진을 확인한다. F0FA의 미지원 범위를 확대해 해결했다고 쓰지 않는다. 새 devel의 원 PUA 프로그램·legacy 수식 프로그램과 별개인 표시 매핑을 구분한다.
+F080–F095 원문자와 F0A1 흰 원·F0FE 체크 상자의 표시·전진을 확인한다. 이후 사용자 요청으로 F0FA도 메인터너 보정 범위에 포함했다. 독립 Print의 Wingdings `bdash2`와 385/1000 전진을 확인했으며, [U+1F8AD 표시 투영과 공개 글꼴 공급](../assets/hyunmyungjanelee_20261112/wingdings-arrow-shaft-repair/cause.md)을 보정·재검증한다. 새 devel의 원 PUA 프로그램·legacy 수식 프로그램과 별개인 표시 매핑을 구분한다.
 
 ## 공식 Print와 Native/fresh WASM 전쪽 대조
 
@@ -52,7 +52,7 @@ F080–F095 원문자와 F0A1 흰 원·F0FE 체크 상자의 표시·전진을 �
 - `issue_8680_pua_wingdings_circled_digits::wingdings_pua_circled_digits_are_painted_with_visible_symbols`: PASS.
 - `issue_8680_pua_wingdings_circled_digits::wingdings_pua_symbols_advance_like_haan_wings`: PASS.
 
-- `pr8918-wingdings_pua_symbols` 1쪽: 원문자·흰 원·체크 상자가 표시되고 뒤 본문 전진을 보존한다. 범위 밖 F0FA 차이를 전체 해결로 표시하지 않는다.
+- `pr8918-wingdings_pua_symbols` 1쪽: 8fe7d1fb의 보정 전 결과는 원문자·흰 원·체크 상자의 표시와 뒤 본문 전진을 보존한다. F0FA 보정의 새 소스 결과는 별도 검증 기록으로 갱신한다.
 
 아래 이미지는 이 PR의 같은 입력·같은 쪽이다. Native와 fresh WASM의 review·overlay를 각각 직접 열어 확인했으며 raw·PDF PNG도 함께 연결한다.
 
