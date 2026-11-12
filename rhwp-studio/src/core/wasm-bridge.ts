@@ -15,6 +15,7 @@ import { requireCharShapeRunsDocument, parseCharShapeRuns, validateCharShapeRuns
 import type { CharShapeRun } from './types';
 import type { HyperlinkTarget, HyperlinkContext } from './hyperlink';
 import type { MemoAnchor } from './memo';
+import { requireMemoSuccess, memoTargetPath, type MemoInfo } from './memo-editor';
 import * as wasmExports from '@wasm/rhwp.js';
 import { inspectFontSymbols } from './wasm-font-symbol-coverage';
 import { hasPdfImportCapability } from './pdf-import-capability';
@@ -4003,6 +4004,29 @@ export class WasmBridge {
   getMemoAnchors(): MemoAnchor[] {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.getMemoList());
+  }
+
+  getMemos(): MemoInfo[] {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse(this.doc.getMemoList());
+  }
+
+  insertMemo(target: HyperlinkTarget, start: number, end: number, author: string, text: string): void {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const payload = JSON.stringify({ author, text });
+    requireMemoSuccess(target.cellPath.length
+      ? this.doc.insertMemoByPath(target.section, target.para, memoTargetPath(target), start, end, payload)
+      : this.doc.insertMemo(target.section, target.para, start, end, payload));
+  }
+
+  updateMemo(id: number, text: string): void {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    requireMemoSuccess(this.doc.setMemoText(id, text));
+  }
+
+  removeMemo(id: number): void {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    requireMemoSuccess(this.doc.removeMemo(id));
   }
 
   insertHyperlink(target: HyperlinkTarget, start: number, end: number, uri: string): number {
