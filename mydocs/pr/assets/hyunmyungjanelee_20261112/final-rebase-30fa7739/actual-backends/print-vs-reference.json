@@ -1,0 +1,588 @@
+{
+  "head": "30fa7739f0340f2a248b22542c7dd36d9354f056",
+  "rows": [
+    {
+      "key": "pr8895-title_line_overflows",
+      "page": 2,
+      "backend": "canvas2d",
+      "raw": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8895-title_line_overflows/canvas2d-print.png",
+      "pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8895-title_line_overflows/pdf_png/pdf-002.png",
+      "raw_match": 100.0,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 6862,
+        "tolerant_content_match_percent": 100.0
+      },
+      "pair_hashes": {
+        "page": 2,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8895-title_line_overflows/canvas2d-print.png",
+        "rhwp_sha256": "af50ba8fca7d30084b27097abae61bcfa87e2c1a9fa358299077fcb7c7770a2c",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8895-title_line_overflows/pdf_png/pdf-002.png",
+        "pdf_sha256": "1caf7fb75885d611bddcf8a04fd76ce1c6f943dbb262eeb65ba3c655bbb5353c"
+      }
+    },
+    {
+      "key": "pr8895-title_line_overflows",
+      "page": 2,
+      "backend": "canvaskit-compat",
+      "raw": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8895-title_line_overflows/canvaskit-compat-print-software.png",
+      "pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8895-title_line_overflows/pdf_png/pdf-002.png",
+      "raw_match": 100.0,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 6331,
+        "tolerant_content_match_percent": 100.0
+      },
+      "pair_hashes": {
+        "page": 2,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8895-title_line_overflows/canvaskit-compat-print-software.png",
+        "rhwp_sha256": "6f137eb5704df2633e6440f868b8266e5ff764ebdf8ccd19413f805e5d6125d0",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8895-title_line_overflows/pdf_png/pdf-002.png",
+        "pdf_sha256": "1caf7fb75885d611bddcf8a04fd76ce1c6f943dbb262eeb65ba3c655bbb5353c"
+      }
+    },
+    {
+      "key": "pr8895-title_line_overflows",
+      "page": 2,
+      "backend": "canvaskit-default",
+      "raw": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8895-title_line_overflows/canvaskit-default-print-software.png",
+      "pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8895-title_line_overflows/pdf_png/pdf-002.png",
+      "raw_match": 100.0,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 6331,
+        "tolerant_content_match_percent": 100.0
+      },
+      "pair_hashes": {
+        "page": 2,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8895-title_line_overflows/canvaskit-default-print-software.png",
+        "rhwp_sha256": "6f137eb5704df2633e6440f868b8266e5ff764ebdf8ccd19413f805e5d6125d0",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8895-title_line_overflows/pdf_png/pdf-002.png",
+        "pdf_sha256": "1caf7fb75885d611bddcf8a04fd76ce1c6f943dbb262eeb65ba3c655bbb5353c"
+      }
+    },
+    {
+      "key": "pr8897-whitespace-host-square-then-topbottom-push",
+      "page": 1,
+      "backend": "canvas2d",
+      "raw": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8897-whitespace-host-square-then-topbottom-push/canvas2d-print.png",
+      "pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8897-whitespace-host-square-then-topbottom-push/pdf_png/pdf-001.png",
+      "raw_match": 100.0,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 4441,
+        "tolerant_content_match_percent": 100.0
+      },
+      "pair_hashes": {
+        "page": 1,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8897-whitespace-host-square-then-topbottom-push/canvas2d-print.png",
+        "rhwp_sha256": "943b29620783bd8afa4254e6767181659e4d63ffbbe5523a92f3e8046e18a9cf",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8897-whitespace-host-square-then-topbottom-push/pdf_png/pdf-001.png",
+        "pdf_sha256": "a73373e487429a2980fb83987dbd09bc776f3c13bc0f359f99f228a2db1ca276"
+      }
+    },
+    {
+      "key": "pr8897-whitespace-host-square-then-topbottom-push",
+      "page": 1,
+      "backend": "canvaskit-compat",
+      "raw": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8897-whitespace-host-square-then-topbottom-push/canvaskit-compat-print-software.png",
+      "pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8897-whitespace-host-square-then-topbottom-push/pdf_png/pdf-001.png",
+      "raw_match": 100.0,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 4478,
+        "tolerant_content_match_percent": 100.0
+      },
+      "pair_hashes": {
+        "page": 1,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8897-whitespace-host-square-then-topbottom-push/canvaskit-compat-print-software.png",
+        "rhwp_sha256": "5811576aec5cb74f2f9129a52226723b0c2dbdcc47a55cd73a8694d31735b221",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8897-whitespace-host-square-then-topbottom-push/pdf_png/pdf-001.png",
+        "pdf_sha256": "a73373e487429a2980fb83987dbd09bc776f3c13bc0f359f99f228a2db1ca276"
+      }
+    },
+    {
+      "key": "pr8897-whitespace-host-square-then-topbottom-push",
+      "page": 1,
+      "backend": "canvaskit-default",
+      "raw": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8897-whitespace-host-square-then-topbottom-push/canvaskit-default-print-software.png",
+      "pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8897-whitespace-host-square-then-topbottom-push/pdf_png/pdf-001.png",
+      "raw_match": 100.0,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 4478,
+        "tolerant_content_match_percent": 100.0
+      },
+      "pair_hashes": {
+        "page": 1,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8897-whitespace-host-square-then-topbottom-push/canvaskit-default-print-software.png",
+        "rhwp_sha256": "5811576aec5cb74f2f9129a52226723b0c2dbdcc47a55cd73a8694d31735b221",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8897-whitespace-host-square-then-topbottom-push/pdf_png/pdf-001.png",
+        "pdf_sha256": "a73373e487429a2980fb83987dbd09bc776f3c13bc0f359f99f228a2db1ca276"
+      }
+    },
+    {
+      "key": "pr8900-bar_axis_floor",
+      "page": 1,
+      "backend": "canvas2d",
+      "raw": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8900-bar_axis_floor/canvas2d-print.png",
+      "pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8900-bar_axis_floor/pdf_png/pdf-001.png",
+      "raw_match": 95.07819,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 95.07819,
+        "silhouette_raw_unmatched_pixels": 1454,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 29542,
+        "tolerant_content_match_percent": 95.07819
+      },
+      "pair_hashes": {
+        "page": 1,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8900-bar_axis_floor/canvas2d-print.png",
+        "rhwp_sha256": "04c3c7f6ecea7656e2e86ac0955b82de669172b3dccb482d40b67dd8d89e1f97",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8900-bar_axis_floor/pdf_png/pdf-001.png",
+        "pdf_sha256": "8be51bb61bc95d89510a09ee91595cd8340804642261eacca52c57302756c38a"
+      }
+    },
+    {
+      "key": "pr8900-bar_axis_floor",
+      "page": 1,
+      "backend": "canvaskit-compat",
+      "raw": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8900-bar_axis_floor/canvaskit-compat-print-software.png",
+      "pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8900-bar_axis_floor/pdf_png/pdf-001.png",
+      "raw_match": 0.0,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 0.0,
+        "silhouette_raw_unmatched_pixels": 24103,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 24103,
+        "tolerant_content_match_percent": 0.0
+      },
+      "pair_hashes": {
+        "page": 1,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8900-bar_axis_floor/canvaskit-compat-print-software.png",
+        "rhwp_sha256": "0a2783828a444947d5da0af1c06dee45a1ec273ec80f84b1b1aeae2bda0fcb60",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8900-bar_axis_floor/pdf_png/pdf-001.png",
+        "pdf_sha256": "8be51bb61bc95d89510a09ee91595cd8340804642261eacca52c57302756c38a"
+      }
+    },
+    {
+      "key": "pr8900-bar_axis_floor",
+      "page": 1,
+      "backend": "canvaskit-default",
+      "raw": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8900-bar_axis_floor/canvaskit-default-print-software.png",
+      "pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8900-bar_axis_floor/pdf_png/pdf-001.png",
+      "raw_match": 0.0,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 0.0,
+        "silhouette_raw_unmatched_pixels": 24103,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 24103,
+        "tolerant_content_match_percent": 0.0
+      },
+      "pair_hashes": {
+        "page": 1,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8900-bar_axis_floor/canvaskit-default-print-software.png",
+        "rhwp_sha256": "0a2783828a444947d5da0af1c06dee45a1ec273ec80f84b1b1aeae2bda0fcb60",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8900-bar_axis_floor/pdf_png/pdf-001.png",
+        "pdf_sha256": "8be51bb61bc95d89510a09ee91595cd8340804642261eacca52c57302756c38a"
+      },
+      "review": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-print-direct/pr8900-bar_axis_floor/review/review_001.png",
+      "overlay": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-print-direct/pr8900-bar_axis_floor/overlay/overlay_001.png"
+    },
+    {
+      "key": "pr8916-zero_size_para_before_table",
+      "page": 1,
+      "backend": "canvas2d",
+      "raw": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8916-zero_size_para_before_table/canvas2d-print.png",
+      "pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8916-zero_size_para_before_table/pdf_png/pdf-001.png",
+      "raw_match": 99.78064,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.78064,
+        "silhouette_raw_unmatched_pixels": 8,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 3647,
+        "tolerant_content_match_percent": 99.78064
+      },
+      "pair_hashes": {
+        "page": 1,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8916-zero_size_para_before_table/canvas2d-print.png",
+        "rhwp_sha256": "1a12531db594c7cb08df5301aec6845ea85055790b07994f99b63f633ee5829d",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8916-zero_size_para_before_table/pdf_png/pdf-001.png",
+        "pdf_sha256": "cd0e97acafa58de74d86729c9086e5e95a08ae9f744cd46e90845fe3a5076668"
+      }
+    },
+    {
+      "key": "pr8916-zero_size_para_before_table",
+      "page": 1,
+      "backend": "canvaskit-compat",
+      "raw": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8916-zero_size_para_before_table/canvaskit-compat-print-software.png",
+      "pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8916-zero_size_para_before_table/pdf_png/pdf-001.png",
+      "raw_match": 99.69896,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.69896,
+        "silhouette_raw_unmatched_pixels": 11,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 3654,
+        "tolerant_content_match_percent": 99.69896
+      },
+      "pair_hashes": {
+        "page": 1,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8916-zero_size_para_before_table/canvaskit-compat-print-software.png",
+        "rhwp_sha256": "dd3b4a25971376f623bc4e806b3bae8f7f606f61e8a290422b8de16e19899281",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8916-zero_size_para_before_table/pdf_png/pdf-001.png",
+        "pdf_sha256": "cd0e97acafa58de74d86729c9086e5e95a08ae9f744cd46e90845fe3a5076668"
+      }
+    },
+    {
+      "key": "pr8916-zero_size_para_before_table",
+      "page": 1,
+      "backend": "canvaskit-default",
+      "raw": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8916-zero_size_para_before_table/canvaskit-default-print-software.png",
+      "pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8916-zero_size_para_before_table/pdf_png/pdf-001.png",
+      "raw_match": 99.69896,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.69896,
+        "silhouette_raw_unmatched_pixels": 11,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 3654,
+        "tolerant_content_match_percent": 99.69896
+      },
+      "pair_hashes": {
+        "page": 1,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8916-zero_size_para_before_table/canvaskit-default-print-software.png",
+        "rhwp_sha256": "dd3b4a25971376f623bc4e806b3bae8f7f606f61e8a290422b8de16e19899281",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8916-zero_size_para_before_table/pdf_png/pdf-001.png",
+        "pdf_sha256": "cd0e97acafa58de74d86729c9086e5e95a08ae9f744cd46e90845fe3a5076668"
+      },
+      "review": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-print-direct/pr8916-zero_size_para_before_table/review/review_001.png",
+      "overlay": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-print-direct/pr8916-zero_size_para_before_table/overlay/overlay_001.png"
+    },
+    {
+      "key": "pr8918-wingdings_pua_symbols",
+      "page": 1,
+      "backend": "canvas2d",
+      "raw": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8918-wingdings_pua_symbols/canvas2d-print.png",
+      "pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8918-wingdings_pua_symbols/pdf_png/pdf-001.png",
+      "raw_match": 99.71423,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.71423,
+        "silhouette_raw_unmatched_pixels": 27,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 9448,
+        "tolerant_content_match_percent": 99.71423
+      },
+      "pair_hashes": {
+        "page": 1,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8918-wingdings_pua_symbols/canvas2d-print.png",
+        "rhwp_sha256": "bf1ecb9b425350b7d028fb950619fc56a113ae35c82b6a5a9adbebf250f7a675",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8918-wingdings_pua_symbols/pdf_png/pdf-001.png",
+        "pdf_sha256": "e5892cbb5bd8da09ed68c13c3ed77702b862399ddf87ded68b36b99fcb829135"
+      }
+    },
+    {
+      "key": "pr8918-wingdings_pua_symbols",
+      "page": 1,
+      "backend": "canvaskit-compat",
+      "raw": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8918-wingdings_pua_symbols/canvaskit-compat-print-software.png",
+      "pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8918-wingdings_pua_symbols/pdf_png/pdf-001.png",
+      "raw_match": 99.65866,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.65866,
+        "silhouette_raw_unmatched_pixels": 30,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 8789,
+        "tolerant_content_match_percent": 99.65866
+      },
+      "pair_hashes": {
+        "page": 1,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8918-wingdings_pua_symbols/canvaskit-compat-print-software.png",
+        "rhwp_sha256": "688ed6285c060ba06a7a8927036ecd6fb81de5e84caf1af241d690df497bc6c2",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8918-wingdings_pua_symbols/pdf_png/pdf-001.png",
+        "pdf_sha256": "e5892cbb5bd8da09ed68c13c3ed77702b862399ddf87ded68b36b99fcb829135"
+      }
+    },
+    {
+      "key": "pr8918-wingdings_pua_symbols",
+      "page": 1,
+      "backend": "canvaskit-default",
+      "raw": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8918-wingdings_pua_symbols/canvaskit-default-print-software.png",
+      "pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8918-wingdings_pua_symbols/pdf_png/pdf-001.png",
+      "raw_match": 99.65866,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.65866,
+        "silhouette_raw_unmatched_pixels": 30,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 8789,
+        "tolerant_content_match_percent": 99.65866
+      },
+      "pair_hashes": {
+        "page": 1,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8918-wingdings_pua_symbols/canvaskit-default-print-software.png",
+        "rhwp_sha256": "688ed6285c060ba06a7a8927036ecd6fb81de5e84caf1af241d690df497bc6c2",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8918-wingdings_pua_symbols/pdf_png/pdf-001.png",
+        "pdf_sha256": "e5892cbb5bd8da09ed68c13c3ed77702b862399ddf87ded68b36b99fcb829135"
+      },
+      "review": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-print-direct/pr8918-wingdings_pua_symbols/review/review_001.png",
+      "overlay": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-print-direct/pr8918-wingdings_pua_symbols/overlay/overlay_001.png"
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_center",
+      "page": 1,
+      "backend": "canvas2d",
+      "raw": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8920-float_line_rowspan_infront_center/canvas2d-print.png",
+      "pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8920-float_line_rowspan_infront_center/pdf_png/pdf-001.png",
+      "raw_match": 100.0,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 22830,
+        "tolerant_content_match_percent": 100.0
+      },
+      "pair_hashes": {
+        "page": 1,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8920-float_line_rowspan_infront_center/canvas2d-print.png",
+        "rhwp_sha256": "ed273ea2f8dedb55c92b7e71edc4ed8e5e07888fa3336f285608937000c4063b",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8920-float_line_rowspan_infront_center/pdf_png/pdf-001.png",
+        "pdf_sha256": "30bdcc0ea47e7295d9e1a640d096f2761468093fb7fc4629c0dbaa1ce90f9267"
+      }
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_center",
+      "page": 1,
+      "backend": "canvaskit-compat",
+      "raw": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8920-float_line_rowspan_infront_center/canvaskit-compat-print-software.png",
+      "pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8920-float_line_rowspan_infront_center/pdf_png/pdf-001.png",
+      "raw_match": 100.0,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 23195,
+        "tolerant_content_match_percent": 100.0
+      },
+      "pair_hashes": {
+        "page": 1,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8920-float_line_rowspan_infront_center/canvaskit-compat-print-software.png",
+        "rhwp_sha256": "e5a52cc3d6ae5acaec7958e01756a485edb758d961cc81e35502d601f9b6717f",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8920-float_line_rowspan_infront_center/pdf_png/pdf-001.png",
+        "pdf_sha256": "30bdcc0ea47e7295d9e1a640d096f2761468093fb7fc4629c0dbaa1ce90f9267"
+      }
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_center",
+      "page": 1,
+      "backend": "canvaskit-default",
+      "raw": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8920-float_line_rowspan_infront_center/canvaskit-default-print-software.png",
+      "pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8920-float_line_rowspan_infront_center/pdf_png/pdf-001.png",
+      "raw_match": 100.0,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 23195,
+        "tolerant_content_match_percent": 100.0
+      },
+      "pair_hashes": {
+        "page": 1,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8920-float_line_rowspan_infront_center/canvaskit-default-print-software.png",
+        "rhwp_sha256": "e5a52cc3d6ae5acaec7958e01756a485edb758d961cc81e35502d601f9b6717f",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8920-float_line_rowspan_infront_center/pdf_png/pdf-001.png",
+        "pdf_sha256": "30bdcc0ea47e7295d9e1a640d096f2761468093fb7fc4629c0dbaa1ce90f9267"
+      }
+    },
+    {
+      "key": "page-boundary-text",
+      "page": 2,
+      "backend": "canvas2d",
+      "raw": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/page-boundary-text/canvas2d-print.png",
+      "pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/page-boundary-text/pdf_png/pdf-002.png",
+      "raw_match": 100.0,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 4628,
+        "tolerant_content_match_percent": 100.0
+      },
+      "pair_hashes": {
+        "page": 2,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/page-boundary-text/canvas2d-print.png",
+        "rhwp_sha256": "36e013f039e6d03443355753346f75d190aa87c74655bfe50dabf2eee99bdb01",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/page-boundary-text/pdf_png/pdf-002.png",
+        "pdf_sha256": "4dabe457a26aabc8ebb652425a9fb7ebd03dbef10223b5fa7a8d1201bdc9068a"
+      }
+    },
+    {
+      "key": "page-boundary-text",
+      "page": 2,
+      "backend": "canvaskit-compat",
+      "raw": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/page-boundary-text/canvaskit-compat-print-software.png",
+      "pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/page-boundary-text/pdf_png/pdf-002.png",
+      "raw_match": 100.0,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 4654,
+        "tolerant_content_match_percent": 100.0
+      },
+      "pair_hashes": {
+        "page": 2,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/page-boundary-text/canvaskit-compat-print-software.png",
+        "rhwp_sha256": "da3772f75ac41d5cf828c568b6894a01dd158a5e96c57b9090ac54549a3a92b6",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/page-boundary-text/pdf_png/pdf-002.png",
+        "pdf_sha256": "4dabe457a26aabc8ebb652425a9fb7ebd03dbef10223b5fa7a8d1201bdc9068a"
+      }
+    },
+    {
+      "key": "page-boundary-text",
+      "page": 2,
+      "backend": "canvaskit-default",
+      "raw": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/page-boundary-text/canvaskit-default-print-software.png",
+      "pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/page-boundary-text/pdf_png/pdf-002.png",
+      "raw_match": 100.0,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 4654,
+        "tolerant_content_match_percent": 100.0
+      },
+      "pair_hashes": {
+        "page": 2,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/page-boundary-text/canvaskit-default-print-software.png",
+        "rhwp_sha256": "da3772f75ac41d5cf828c568b6894a01dd158a5e96c57b9090ac54549a3a92b6",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/page-boundary-text/pdf_png/pdf-002.png",
+        "pdf_sha256": "4dabe457a26aabc8ebb652425a9fb7ebd03dbef10223b5fa7a8d1201bdc9068a"
+      }
+    },
+    {
+      "key": "pr8897-whitespace-host-topbottom-stacked-zones",
+      "page": 1,
+      "backend": "canvas2d",
+      "raw": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8897-whitespace-host-topbottom-stacked-zones/canvas2d-print.png",
+      "pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8897-whitespace-host-topbottom-stacked-zones/pdf_png/pdf-001.png",
+      "raw_match": 100.0,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 9438,
+        "tolerant_content_match_percent": 100.0
+      },
+      "pair_hashes": {
+        "page": 1,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8897-whitespace-host-topbottom-stacked-zones/canvas2d-print.png",
+        "rhwp_sha256": "c3f9350677026b20dd7b129edc854f78b2ab05df1b9e271b890be24a2d1958c3",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8897-whitespace-host-topbottom-stacked-zones/pdf_png/pdf-001.png",
+        "pdf_sha256": "1321b28b98fc7ea6b2afc5d2114c9af7fbdcd21cbdd17aa7f03564ba1deef0e0"
+      }
+    },
+    {
+      "key": "pr8897-whitespace-host-topbottom-stacked-zones",
+      "page": 1,
+      "backend": "canvaskit-compat",
+      "raw": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8897-whitespace-host-topbottom-stacked-zones/canvaskit-compat-print-software.png",
+      "pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8897-whitespace-host-topbottom-stacked-zones/pdf_png/pdf-001.png",
+      "raw_match": 100.0,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 9423,
+        "tolerant_content_match_percent": 100.0
+      },
+      "pair_hashes": {
+        "page": 1,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8897-whitespace-host-topbottom-stacked-zones/canvaskit-compat-print-software.png",
+        "rhwp_sha256": "f5aadd4e5ef86c0697d1690cb2ef8f00475b8112443022d1c033c5618d279938",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8897-whitespace-host-topbottom-stacked-zones/pdf_png/pdf-001.png",
+        "pdf_sha256": "1321b28b98fc7ea6b2afc5d2114c9af7fbdcd21cbdd17aa7f03564ba1deef0e0"
+      }
+    },
+    {
+      "key": "pr8897-whitespace-host-topbottom-stacked-zones",
+      "page": 1,
+      "backend": "canvaskit-default",
+      "raw": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8897-whitespace-host-topbottom-stacked-zones/canvaskit-default-print-software.png",
+      "pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8897-whitespace-host-topbottom-stacked-zones/pdf_png/pdf-001.png",
+      "raw_match": 100.0,
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 9423,
+        "tolerant_content_match_percent": 100.0
+      },
+      "pair_hashes": {
+        "page": 1,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/actual-backends/browser/pr8897-whitespace-host-topbottom-stacked-zones/canvaskit-default-print-software.png",
+        "rhwp_sha256": "f5aadd4e5ef86c0697d1690cb2ef8f00475b8112443022d1c033c5618d279938",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8897-whitespace-host-topbottom-stacked-zones/pdf_png/pdf-001.png",
+        "pdf_sha256": "1321b28b98fc7ea6b2afc5d2114c9af7fbdcd21cbdd17aa7f03564ba1deef0e0"
+      }
+    }
+  ],
+  "purpose": "Actual Studio print consumer vs same committed desktop Print reference. Existing report-only backend parity threshold unchanged."
+}
