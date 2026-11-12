@@ -1,8 +1,8 @@
 {
-  "status": "re_review_required",
+  "status": "rebase_validation_required",
   "measured_pages": 3542,
-  "protected_fall_rows": 30,
-  "remaining": "30 document/backend/page rows remain below unchanged official protection values in sample16 variants and sample10. Windows backup restored headline and modern equation programs; nested full protection passed. Independent synthetic character Print upload awaits user authorization.",
+  "protected_fall_rows": 0,
+  "remaining": "All 3542 protected pages passed on product head b485561637. New devel 1a3ed4a7 includes #8956; rebase and final-head validation remain",
   "product_code_changed": false,
   "fonts_local_only": true,
   "font_binaries_published": false

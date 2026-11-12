@@ -1,0 +1,22 @@
+[
+  {
+    "key": "nested",
+    "page": 8,
+    "original_unicode": "U+F02FB",
+    "pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+    "independent_contour_equal": true,
+    "advance_equal": true,
+    "units_per_em": 1024,
+    "advance": 1024
+  },
+  {
+    "key": "sample16-hwp2022",
+    "page": 52,
+    "original_unicode": "U+F03C5",
+    "pdf_sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+    "independent_contour_equal": true,
+    "advance_equal": true,
+    "units_per_em": 1024,
+    "advance": 1024
+  }
+]

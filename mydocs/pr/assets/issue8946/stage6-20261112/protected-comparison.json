@@ -5,8 +5,8 @@
   "required_pages": 3542,
   "measured_pages": 3542,
   "pending_datasets": 0,
-  "fall_pages": 30,
-  "status": "re_review_required",
+  "fall_pages": 0,
+  "status": "passed",
   "records": [
     {
       "key": "yeongwol",
@@ -869,36 +869,11 @@
     {
       "key": "sample16-hwpx",
       "backend": "native",
-      "status": "re_review_required",
+      "status": "passed",
       "pages": 64,
-      "falls": [
-        {
-          "key": "sample16-hwpx",
-          "backend": "native",
-          "page": 22,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.97",
-          "fall": true
-        },
-        {
-          "key": "sample16-hwpx",
-          "backend": "native",
-          "page": 24,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.98",
-          "fall": true
-        },
-        {
-          "key": "sample16-hwpx",
-          "backend": "native",
-          "page": 25,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.98",
-          "fall": true
-        }
-      ],
-      "tsv": "output/issue8946/stage6/protected-backup-full-native/sample16-hwpx/silhouette.tsv",
-      "tsv_sha256": "56c92c34365a35461a42ea497a1a102bfe4b0c7af77e04ffcf7ec3a481c29af6",
+      "falls": [],
+      "tsv": "output/issue8946/stage6/protected-independent-source-v2-full-native/sample16-hwpx/silhouette.tsv",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
       "font_supply": {
         "mode": "direct-font-programs",
         "source": "explicit",
@@ -1164,6 +1139,10 @@
             "sha256": "3a1c2bc8528bfa432e0414d4ec69bf5813563c474e16a9ad0f57ca262f8d24a2"
           },
           {
+            "path": "output/issue8946/stage6/hbatang-probe/batang-corrected/RHWP-Hancom-Independent-PUA.ttf",
+            "sha256": "b367f638f5673cd10368438b1b77fcd8c118f21d86bc5e0e0742e8decfc78d49"
+          },
+          {
             "path": "output/issue8946/stage6/user-fonts/HBATANG.TTF",
             "sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068"
           },
@@ -1178,43 +1157,18 @@
         ]
       },
       "font_environment": {
-        "path": "mydocs/pr/assets/pr8896/font-supply/sample16-hwpx-font-environment.json",
-        "sha256": "300d7233a5527172ad4df993214d791fe214a69cf6e36017a637ca7cb928d183"
+        "path": "output/issue8946/stage6/independent-pua-environments/sample16-hwpx-focused.json",
+        "sha256": "d0d2978a2b261b0664bdc8e61f480dc74f3fb76f7e43035055eed4ae161c4da4"
       }
     },
     {
       "key": "sample16-hwpx",
       "backend": "wasm",
-      "status": "re_review_required",
+      "status": "passed",
       "pages": 64,
-      "falls": [
-        {
-          "key": "sample16-hwpx",
-          "backend": "wasm",
-          "page": 22,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.97",
-          "fall": true
-        },
-        {
-          "key": "sample16-hwpx",
-          "backend": "wasm",
-          "page": 24,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.99",
-          "fall": true
-        },
-        {
-          "key": "sample16-hwpx",
-          "backend": "wasm",
-          "page": 25,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.97",
-          "fall": true
-        }
-      ],
-      "tsv": "output/issue8946/stage6/protected-backup-full-wasm/sample16-hwpx/silhouette.tsv",
-      "tsv_sha256": "c5a32516c2c20a71ceaee95600fe16a5749ba8ba66620f15ba0dfa7c2281273c",
+      "falls": [],
+      "tsv": "output/issue8946/stage6/protected-independent-source-v2-full-wasm/sample16-hwpx/silhouette.tsv",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
       "font_supply": {
         "mode": "direct-font-programs",
         "source": "explicit",
@@ -1480,6 +1434,10 @@
             "sha256": "3a1c2bc8528bfa432e0414d4ec69bf5813563c474e16a9ad0f57ca262f8d24a2"
           },
           {
+            "path": "output/issue8946/stage6/hbatang-probe/batang-corrected/RHWP-Hancom-Independent-PUA.ttf",
+            "sha256": "b367f638f5673cd10368438b1b77fcd8c118f21d86bc5e0e0742e8decfc78d49"
+          },
+          {
             "path": "output/issue8946/stage6/user-fonts/HBATANG.TTF",
             "sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068"
           },
@@ -1494,75 +1452,18 @@
         ]
       },
       "font_environment": {
-        "path": "mydocs/pr/assets/pr8896/font-supply/sample16-hwpx-font-environment.json",
-        "sha256": "300d7233a5527172ad4df993214d791fe214a69cf6e36017a637ca7cb928d183"
+        "path": "output/issue8946/stage6/independent-pua-environments/sample16-hwpx-focused.json",
+        "sha256": "d0d2978a2b261b0664bdc8e61f480dc74f3fb76f7e43035055eed4ae161c4da4"
       }
     },
     {
       "key": "sample16-hwp2022",
       "backend": "native",
-      "status": "re_review_required",
+      "status": "passed",
       "pages": 64,
-      "falls": [
-        {
-          "key": "sample16-hwp2022",
-          "backend": "native",
-          "page": 22,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.98",
-          "fall": true
-        },
-        {
-          "key": "sample16-hwp2022",
-          "backend": "native",
-          "page": 25,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.98",
-          "fall": true
-        },
-        {
-          "key": "sample16-hwp2022",
-          "backend": "native",
-          "page": 52,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.97",
-          "fall": true
-        },
-        {
-          "key": "sample16-hwp2022",
-          "backend": "native",
-          "page": 53,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.97",
-          "fall": true
-        },
-        {
-          "key": "sample16-hwp2022",
-          "backend": "native",
-          "page": 55,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.97",
-          "fall": true
-        },
-        {
-          "key": "sample16-hwp2022",
-          "backend": "native",
-          "page": 56,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.96",
-          "fall": true
-        },
-        {
-          "key": "sample16-hwp2022",
-          "backend": "native",
-          "page": 57,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.98",
-          "fall": true
-        }
-      ],
-      "tsv": "output/issue8946/stage6/protected-backup-full-native/sample16-hwp2022/silhouette.tsv",
-      "tsv_sha256": "b88166ca91688d458d99af442c1e1f56fe22fa012ced397bc4120657fad6d939",
+      "falls": [],
+      "tsv": "output/issue8946/stage6/protected-independent-source-v2-full-native/sample16-hwp2022/silhouette.tsv",
+      "tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
       "font_supply": {
         "mode": "direct-font-programs",
         "source": "explicit",
@@ -1828,6 +1729,10 @@
             "sha256": "3a1c2bc8528bfa432e0414d4ec69bf5813563c474e16a9ad0f57ca262f8d24a2"
           },
           {
+            "path": "output/issue8946/stage6/hbatang-probe/batang-corrected/RHWP-Hancom-Independent-PUA.ttf",
+            "sha256": "b367f638f5673cd10368438b1b77fcd8c118f21d86bc5e0e0742e8decfc78d49"
+          },
+          {
             "path": "output/issue8946/stage6/user-fonts/HBATANG.TTF",
             "sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068"
           },
@@ -1842,75 +1747,18 @@
         ]
       },
       "font_environment": {
-        "path": "mydocs/pr/assets/pr8896/font-supply/sample16-hwp2022-font-environment.json",
-        "sha256": "e64dc04a55787efcbd55dcddd9f7a9fc8454a1df06a20c4cd9e99c9dd88de36b"
+        "path": "output/issue8946/stage6/independent-pua-environments/sample16-hwp2022-focused.json",
+        "sha256": "a2fe8d574581bbb1c3a5298f272b907aa3171eeab3af3a30a85c386c72db0a14"
       }
     },
     {
       "key": "sample16-hwp2022",
       "backend": "wasm",
-      "status": "re_review_required",
+      "status": "passed",
       "pages": 64,
-      "falls": [
-        {
-          "key": "sample16-hwp2022",
-          "backend": "wasm",
-          "page": 22,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.98",
-          "fall": true
-        },
-        {
-          "key": "sample16-hwp2022",
-          "backend": "wasm",
-          "page": 25,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.98",
-          "fall": true
-        },
-        {
-          "key": "sample16-hwp2022",
-          "backend": "wasm",
-          "page": 52,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.97",
-          "fall": true
-        },
-        {
-          "key": "sample16-hwp2022",
-          "backend": "wasm",
-          "page": 53,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.97",
-          "fall": true
-        },
-        {
-          "key": "sample16-hwp2022",
-          "backend": "wasm",
-          "page": 55,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.97",
-          "fall": true
-        },
-        {
-          "key": "sample16-hwp2022",
-          "backend": "wasm",
-          "page": 56,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.96",
-          "fall": true
-        },
-        {
-          "key": "sample16-hwp2022",
-          "backend": "wasm",
-          "page": 57,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.98",
-          "fall": true
-        }
-      ],
-      "tsv": "output/issue8946/stage6/protected-backup-full-wasm/sample16-hwp2022/silhouette.tsv",
-      "tsv_sha256": "b88166ca91688d458d99af442c1e1f56fe22fa012ced397bc4120657fad6d939",
+      "falls": [],
+      "tsv": "output/issue8946/stage6/protected-independent-source-v2-full-wasm/sample16-hwp2022/silhouette.tsv",
+      "tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
       "font_supply": {
         "mode": "direct-font-programs",
         "source": "explicit",
@@ -2176,6 +2024,10 @@
             "sha256": "3a1c2bc8528bfa432e0414d4ec69bf5813563c474e16a9ad0f57ca262f8d24a2"
           },
           {
+            "path": "output/issue8946/stage6/hbatang-probe/batang-corrected/RHWP-Hancom-Independent-PUA.ttf",
+            "sha256": "b367f638f5673cd10368438b1b77fcd8c118f21d86bc5e0e0742e8decfc78d49"
+          },
+          {
             "path": "output/issue8946/stage6/user-fonts/HBATANG.TTF",
             "sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068"
           },
@@ -2190,8 +2042,8 @@
         ]
       },
       "font_environment": {
-        "path": "mydocs/pr/assets/pr8896/font-supply/sample16-hwp2022-font-environment.json",
-        "sha256": "e64dc04a55787efcbd55dcddd9f7a9fc8454a1df06a20c4cd9e99c9dd88de36b"
+        "path": "output/issue8946/stage6/independent-pua-environments/sample16-hwp2022-focused.json",
+        "sha256": "a2fe8d574581bbb1c3a5298f272b907aa3171eeab3af3a30a85c386c72db0a14"
       }
     },
     {
@@ -3807,36 +3659,11 @@
     {
       "key": "sample16-hwp2024",
       "backend": "native",
-      "status": "re_review_required",
+      "status": "passed",
       "pages": 64,
-      "falls": [
-        {
-          "key": "sample16-hwp2024",
-          "backend": "native",
-          "page": 22,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.97",
-          "fall": true
-        },
-        {
-          "key": "sample16-hwp2024",
-          "backend": "native",
-          "page": 24,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.98",
-          "fall": true
-        },
-        {
-          "key": "sample16-hwp2024",
-          "backend": "native",
-          "page": 25,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.98",
-          "fall": true
-        }
-      ],
-      "tsv": "output/issue8946/stage6/protected-backup-full-native/sample16-hwp2024/silhouette.tsv",
-      "tsv_sha256": "56c92c34365a35461a42ea497a1a102bfe4b0c7af77e04ffcf7ec3a481c29af6",
+      "falls": [],
+      "tsv": "output/issue8946/stage6/protected-independent-source-v2-full-native/sample16-hwp2024/silhouette.tsv",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
       "font_supply": {
         "mode": "direct-font-programs",
         "source": "explicit",
@@ -4102,6 +3929,10 @@
             "sha256": "3a1c2bc8528bfa432e0414d4ec69bf5813563c474e16a9ad0f57ca262f8d24a2"
           },
           {
+            "path": "output/issue8946/stage6/hbatang-probe/batang-corrected/RHWP-Hancom-Independent-PUA.ttf",
+            "sha256": "b367f638f5673cd10368438b1b77fcd8c118f21d86bc5e0e0742e8decfc78d49"
+          },
+          {
             "path": "output/issue8946/stage6/user-fonts/HBATANG.TTF",
             "sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068"
           },
@@ -4116,43 +3947,18 @@
         ]
       },
       "font_environment": {
-        "path": "mydocs/pr/assets/pr8896/font-supply/sample16-hwp2024-font-environment.json",
-        "sha256": "4fb70119f4959fb6461ed304d4b166c499b58caab0cc428f9fbab5fb2ef79b8b"
+        "path": "output/issue8946/stage6/independent-pua-environments/sample16-hwp2024-focused.json",
+        "sha256": "03f2fab8170a5d5bfa6b3e27ede3753d921083211e22ea1a1afda2051ac23523"
       }
     },
     {
       "key": "sample16-hwp2024",
       "backend": "wasm",
-      "status": "re_review_required",
+      "status": "passed",
       "pages": 64,
-      "falls": [
-        {
-          "key": "sample16-hwp2024",
-          "backend": "wasm",
-          "page": 22,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.97",
-          "fall": true
-        },
-        {
-          "key": "sample16-hwp2024",
-          "backend": "wasm",
-          "page": 24,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.99",
-          "fall": true
-        },
-        {
-          "key": "sample16-hwp2024",
-          "backend": "wasm",
-          "page": 25,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.97",
-          "fall": true
-        }
-      ],
-      "tsv": "output/issue8946/stage6/protected-backup-full-wasm/sample16-hwp2024/silhouette.tsv",
-      "tsv_sha256": "c5a32516c2c20a71ceaee95600fe16a5749ba8ba66620f15ba0dfa7c2281273c",
+      "falls": [],
+      "tsv": "output/issue8946/stage6/protected-independent-source-v2-full-wasm/sample16-hwp2024/silhouette.tsv",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
       "font_supply": {
         "mode": "direct-font-programs",
         "source": "explicit",
@@ -4418,6 +4224,10 @@
             "sha256": "3a1c2bc8528bfa432e0414d4ec69bf5813563c474e16a9ad0f57ca262f8d24a2"
           },
           {
+            "path": "output/issue8946/stage6/hbatang-probe/batang-corrected/RHWP-Hancom-Independent-PUA.ttf",
+            "sha256": "b367f638f5673cd10368438b1b77fcd8c118f21d86bc5e0e0742e8decfc78d49"
+          },
+          {
             "path": "output/issue8946/stage6/user-fonts/HBATANG.TTF",
             "sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068"
           },
@@ -4432,8 +4242,8 @@
         ]
       },
       "font_environment": {
-        "path": "mydocs/pr/assets/pr8896/font-supply/sample16-hwp2024-font-environment.json",
-        "sha256": "4fb70119f4959fb6461ed304d4b166c499b58caab0cc428f9fbab5fb2ef79b8b"
+        "path": "output/issue8946/stage6/independent-pua-environments/sample16-hwp2024-focused.json",
+        "sha256": "03f2fab8170a5d5bfa6b3e27ede3753d921083211e22ea1a1afda2051ac23523"
       }
     },
     {
@@ -4904,28 +4714,11 @@
     {
       "key": "sample10",
       "backend": "native",
-      "status": "re_review_required",
+      "status": "passed",
       "pages": 763,
-      "falls": [
-        {
-          "key": "sample10",
-          "backend": "native",
-          "page": 81,
-          "baseline_raw": "99.99",
-          "candidate_raw": "99.98",
-          "fall": true
-        },
-        {
-          "key": "sample10",
-          "backend": "native",
-          "page": 351,
-          "baseline_raw": "99.99",
-          "candidate_raw": "99.98",
-          "fall": true
-        }
-      ],
-      "tsv": "output/issue8946/stage6/protected-backup-full-native/sample10/silhouette.tsv",
-      "tsv_sha256": "726541e62b990a01e7c2edde2fb3edc24b5f5090e5811b081bcc8ef4e8cf85c0",
+      "falls": [],
+      "tsv": "output/issue8946/stage6/protected-independent-triangle-v3-full-native/sample10/silhouette.tsv",
+      "tsv_sha256": "712a287536ded13276b98665341c1ca0e5420a81a82310f5d9cdf7de30f94363",
       "font_supply": {
         "mode": "direct-font-programs",
         "source": "explicit",
@@ -5235,6 +5028,10 @@
             "sha256": "3a1c2bc8528bfa432e0414d4ec69bf5813563c474e16a9ad0f57ca262f8d24a2"
           },
           {
+            "path": "output/issue8946/stage6/hbatang-probe/junggothic-triangle/RHWP-Hancom-Junggothic-Symbols.otf",
+            "sha256": "ce826cd173e60ddcea2004ebd01d0eb678177f0e8a1e7e5951557b30f8be3b94"
+          },
+          {
             "path": "output/issue8946/stage6/user-fonts/HBATANG.TTF",
             "sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068"
           },
@@ -5244,33 +5041,19 @@
           }
         ]
       },
-      "font_environment": null
+      "font_environment": {
+        "path": "output/issue8946/stage6/independent-triangle-environment.json",
+        "sha256": "edf125c861b7330cbd521658e10b420ff3700c1c177eabf108d5ee029494aea8"
+      }
     },
     {
       "key": "sample10",
       "backend": "wasm",
-      "status": "re_review_required",
+      "status": "passed",
       "pages": 763,
-      "falls": [
-        {
-          "key": "sample10",
-          "backend": "wasm",
-          "page": 81,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.98",
-          "fall": true
-        },
-        {
-          "key": "sample10",
-          "backend": "wasm",
-          "page": 351,
-          "baseline_raw": "100.00",
-          "candidate_raw": "99.98",
-          "fall": true
-        }
-      ],
-      "tsv": "output/issue8946/stage6/protected-backup-full-wasm/sample10/silhouette.tsv",
-      "tsv_sha256": "4cfb96443ce461f980362fecef028455daaa47cd83bce3b63f1dd5b1353fe049",
+      "falls": [],
+      "tsv": "output/issue8946/stage6/protected-independent-triangle-v3-full-wasm/sample10/silhouette.tsv",
+      "tsv_sha256": "e5623efdcc4d4dcb4e1d0504ea383c867c5e40973a3bfcb0b93335f5bd38d912",
       "font_supply": {
         "mode": "direct-font-programs",
         "source": "explicit",
@@ -5580,6 +5363,10 @@
             "sha256": "3a1c2bc8528bfa432e0414d4ec69bf5813563c474e16a9ad0f57ca262f8d24a2"
           },
           {
+            "path": "output/issue8946/stage6/hbatang-probe/junggothic-triangle/RHWP-Hancom-Junggothic-Symbols.otf",
+            "sha256": "ce826cd173e60ddcea2004ebd01d0eb678177f0e8a1e7e5951557b30f8be3b94"
+          },
+          {
             "path": "output/issue8946/stage6/user-fonts/HBATANG.TTF",
             "sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068"
           },
@@ -5589,7 +5376,10 @@
           }
         ]
       },
-      "font_environment": null
+      "font_environment": {
+        "path": "output/issue8946/stage6/independent-triangle-environment.json",
+        "sha256": "edf125c861b7330cbd521658e10b420ff3700c1c177eabf108d5ee029494aea8"
+      }
     },
     {
       "key": "issue8040-insert-delete",
