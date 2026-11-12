@@ -247,3 +247,83 @@ fn set_picture_rejects_props_the_setter_would_skip() {
     }
     let _ = std::fs::remove_file(&inserted);
 }
+
+#[test]
+fn check_picture_props_accepts_setter_values_and_rejects_the_rest() {
+    use rhwp::document_core::check_picture_props;
+    for json in [
+        r#"{"textWrap":"TopAndBottom","vertRelTo":"Para","horzAlign":"Center"}"#,
+        r#"{"treatAsChar":true,"width":20000,"brightness":-20}"#,
+        r#"{"hasCaption":true,"captionDirection":"Top","captionSpacing":850}"#,
+        r#"{"effect":"RealPic","description":"그림 1"}"#,
+    ] {
+        assert!(check_picture_props(json).is_ok(), "받아야 함: {json}");
+    }
+    for json in [
+        "abc",
+        "[1,2]",
+        "{}",
+        r#"{"wrap":"TopAndBottom"}"#,
+        r#"{"textWrap":"topAndBottom"}"#,
+        r#"{"textWrap":"TopAndBottom","vertRelto":"Para"}"#,
+        r#"{"horzAlign":"Inside"}"#,
+        r#"{"treatAsChar":"true"}"#,
+        r#"{"width":-1}"#,
+        r#"{"paddingLeft":40000}"#,
+        r#"{"vertOffset":1.5}"#,
+        r#"{"captionDirection":"Top"}"#,
+        r#"{"hasCaption":false,"captionDirection":"Top"}"#,
+    ] {
+        assert!(check_picture_props(json).is_err(), "거부해야 함: {json}");
+    }
+}
+
+/// `src` 에서 `fn name(` 으로 시작하는 함수 본문(다음 함수 정의 앞까지)을 잘라 낸다.
+fn fn_body<'a>(src: &'a str, name: &str) -> &'a str {
+    let start = src
+        .find(&format!("fn {name}("))
+        .unwrap_or_else(|| panic!("함수 {name} 이 없다"));
+    let rest = &src[start + 3..];
+    let end = ["\n    pub fn ", "\n    pub(crate) fn ", "\n    fn "]
+        .iter()
+        .filter_map(|marker| rest.find(marker))
+        .min()
+        .unwrap_or(rest.len());
+    &src[start..start + 3 + end]
+}
+
+/// setter 본문에서 `props_json, "키"` 로 읽는 키 전부.
+fn keys_read_by(bodies: &[&str]) -> std::collections::BTreeSet<String> {
+    let mut keys = std::collections::BTreeSet::new();
+    for body in bodies {
+        for (i, _) in body.match_indices("props_json, \"") {
+            let rest = &body[i + "props_json, \"".len()..];
+            keys.insert(rest[..rest.find('"').unwrap()].to_string());
+        }
+    }
+    keys
+}
+
+/// 검사 오류가 알려 주는 받는 키 목록.
+fn keys_listed_by(check: fn(&str) -> Result<(), String>) -> std::collections::BTreeSet<String> {
+    let err = check(r#"{"__unknown__":1}"#).unwrap_err();
+    let list = &err[err.find("받는 키: ").expect("받는 키 목록") + "받는 키: ".len()..];
+    list[..list.rfind(')').unwrap()]
+        .split(", ")
+        .map(str::to_string)
+        .collect()
+}
+
+/// 검사가 받는 키와 setter 가 읽는 키가 같아야 한다. 검사에만 있으면 통과한 키가 다시 조용히
+/// 건너뛰어지고, setter 에만 있으면 쓸 수 있는 속성을 거부한다.
+#[test]
+fn picture_prop_list_matches_the_setter() {
+    let picture = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/src/document_core/commands/object_ops/picture.rs"
+    ));
+    assert_eq!(
+        keys_listed_by(rhwp::document_core::check_picture_props),
+        keys_read_by(&[fn_body(picture, "apply_picture_props_inner")])
+    );
+}

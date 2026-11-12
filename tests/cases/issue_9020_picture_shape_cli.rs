@@ -410,3 +410,66 @@ fn set_shape_changes_shape_and_rejects_bad_props() {
     let _ = std::fs::remove_file(&with_shape);
     let _ = std::fs::remove_file(&changed);
 }
+
+#[test]
+fn check_shape_props_accepts_setter_values_and_rejects_the_rest() {
+    use rhwp::document_core::check_shape_props;
+    assert!(check_shape_props(
+        r#"{"textWrap":"TopAndBottom","horzOffset":1000,"fillType":"solid"}"#
+    )
+    .is_ok());
+    for json in [
+        r#"{"horzOffset":-1}"#,
+        r#"{"fillType":"Solid"}"#,
+        r#"{"lineType":64}"#,
+        r#"{"brightness":10}"#,
+        r#"{"tbVerticalAlign":"Middle"}"#,
+    ] {
+        assert!(check_shape_props(json).is_err(), "거부해야 함: {json}");
+    }
+}
+
+/// `src` 에서 `fn name(` 으로 시작하는 함수 본문(다음 함수 정의 앞까지)을 잘라 낸다.
+fn fn_body<'a>(src: &'a str, name: &str) -> &'a str {
+    let start = src
+        .find(&format!("fn {name}("))
+        .unwrap_or_else(|| panic!("함수 {name} 이 없다"));
+    let rest = &src[start + 3..];
+    let end = ["\n    pub fn ", "\n    pub(crate) fn ", "\n    fn "]
+        .iter()
+        .filter_map(|marker| rest.find(marker))
+        .min()
+        .unwrap_or(rest.len());
+    &src[start..start + 3 + end]
+}
+
+/// 검사가 받는 키와 도형 setter 가 읽는 키가 같아야 한다 (#9019 의 그림 검사와 같은 이유).
+#[test]
+fn shape_prop_list_matches_the_setter() {
+    let shape = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/src/document_core/commands/object_ops/shape.rs"
+    ));
+    let common = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/src/document_core/commands/object_ops/common.rs"
+    ));
+    let mut read = std::collections::BTreeSet::new();
+    for body in [
+        fn_body(shape, "set_shape_properties_native"),
+        fn_body(shape, "apply_shape_caption_props"),
+        fn_body(common, "apply_common_obj_attr_from_json"),
+    ] {
+        for (i, _) in body.match_indices("props_json, \"") {
+            let rest = &body[i + "props_json, \"".len()..];
+            read.insert(rest[..rest.find('"').unwrap()].to_string());
+        }
+    }
+    let err = rhwp::document_core::check_shape_props(r#"{"__unknown__":1}"#).unwrap_err();
+    let list = &err[err.find("받는 키: ").expect("받는 키 목록") + "받는 키: ".len()..];
+    let listed: std::collections::BTreeSet<String> = list[..list.rfind(')').unwrap()]
+        .split(", ")
+        .map(str::to_string)
+        .collect();
+    assert_eq!(listed, read);
+}
