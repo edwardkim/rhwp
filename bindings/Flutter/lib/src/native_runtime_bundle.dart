@@ -38,6 +38,40 @@ class NativeRuntimeBundle {
     'macos': ['librhwp_native_ffi.dylib', 'librhwp_flutter_owner.dylib'],
   };
 
+  /// Find this executable's enclosing packaged app without an SDK or launcher.
+  /// An absent manifest means a development runner; an invalid manifest is an
+  /// error, never permission to fall back to unrelated native libraries.
+  static Future<NativeRuntimeBundle?> forExecutable({File? executable}) async {
+    final entry = (executable ?? File(Platform.resolvedExecutable)).absolute;
+    var directory = entry.parent;
+    // Linux/Windows: app/runner. macOS: app/Name.app/Contents/MacOS/runner.
+    for (var depth = 0; depth < 4; depth++) {
+      final parts = directory.uri.pathSegments
+          .where((part) => part.isNotEmpty)
+          .toList();
+      if (parts.isNotEmpty && parts.last == 'app') {
+        final root = directory.parent;
+        final manifest = File(_join(root, manifestName));
+        if (await FileSystemEntity.type(manifest.path, followLinks: false) ==
+            FileSystemEntityType.notFound) {
+          return null;
+        }
+        final bundle = await load(root);
+        if (!await FileSystemEntity.identical(
+          entry.path,
+          bundle.executable.path,
+        )) {
+          _invalid('Runtime manifest does not name the running executable.');
+        }
+        return bundle;
+      }
+      final parent = directory.parent;
+      if (parent.path == directory.path) break;
+      directory = parent;
+    }
+    return null;
+  }
+
   /// Verify every file, internal relative link, target header and source label.
   /// Only the current desktop OS/ABI is admitted; this is not a cross-OS probe.
   static Future<NativeRuntimeBundle> load(Directory supplied) async {
