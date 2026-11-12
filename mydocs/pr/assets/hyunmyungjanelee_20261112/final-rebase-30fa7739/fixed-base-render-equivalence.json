@@ -1,0 +1,47 @@
+{
+  "before_base": "80b1c354c29b7a02fb2b3c14a274da7f5b653ada",
+  "current_base": "1a3ed4a7cd76701085a24ac81d30bc5fb31942c1",
+  "identical_trees": {
+    "src/renderer": {
+      "80b1c354c29b7a02fb2b3c14a274da7f5b653ada": "a6221d1a42e612e4894031e490498aea5bb0e4c1",
+      "1a3ed4a7cd76701085a24ac81d30bc5fb31942c1": "a6221d1a42e612e4894031e490498aea5bb0e4c1"
+    },
+    "src/parser": {
+      "80b1c354c29b7a02fb2b3c14a274da7f5b653ada": "14b4f6ecc539df8187ad5f3b42275897340136bb",
+      "1a3ed4a7cd76701085a24ac81d30bc5fb31942c1": "14b4f6ecc539df8187ad5f3b42275897340136bb"
+    },
+    "src/serializer": {
+      "80b1c354c29b7a02fb2b3c14a274da7f5b653ada": "65bccaf99e6c9494457f11519e347a30e9bceaac",
+      "1a3ed4a7cd76701085a24ac81d30bc5fb31942c1": "65bccaf99e6c9494457f11519e347a30e9bceaac"
+    },
+    "crates": {
+      "80b1c354c29b7a02fb2b3c14a274da7f5b653ada": "d9c7fcf02fe3d791fa1d33396385a1e372ddefab",
+      "1a3ed4a7cd76701085a24ac81d30bc5fb31942c1": "d9c7fcf02fe3d791fa1d33396385a1e372ddefab"
+    },
+    "scripts": {
+      "80b1c354c29b7a02fb2b3c14a274da7f5b653ada": "fa0a728014c9114687aa5ba58607b3e272be0fc1",
+      "1a3ed4a7cd76701085a24ac81d30bc5fb31942c1": "fa0a728014c9114687aa5ba58607b3e272be0fc1"
+    },
+    "assets": {
+      "80b1c354c29b7a02fb2b3c14a274da7f5b653ada": "73414adcf00534f04ccc94e83eb743483c15cb21",
+      "1a3ed4a7cd76701085a24ac81d30bc5fb31942c1": "73414adcf00534f04ccc94e83eb743483c15cb21"
+    },
+    "ttfs": {
+      "80b1c354c29b7a02fb2b3c14a274da7f5b653ada": "790e77203ea8f9950c4a24c04c870c3c0234880b",
+      "1a3ed4a7cd76701085a24ac81d30bc5fb31942c1": "790e77203ea8f9950c4a24c04c870c3c0234880b"
+    },
+    "samples": {
+      "80b1c354c29b7a02fb2b3c14a274da7f5b653ada": "8dafab4630c2cd62d4d109a418302e1b4f41743d",
+      "1a3ed4a7cd76701085a24ac81d30bc5fb31942c1": "8dafab4630c2cd62d4d109a418302e1b4f41743d"
+    },
+    "pdf": {
+      "80b1c354c29b7a02fb2b3c14a274da7f5b653ada": "61f66ca2fb3713b8ef09a3cc846b5af9e2abdd77",
+      "1a3ed4a7cd76701085a24ac81d30bc5fb31942c1": "61f66ca2fb3713b8ef09a3cc846b5af9e2abdd77"
+    },
+    "rhwp-studio/src": {
+      "80b1c354c29b7a02fb2b3c14a274da7f5b653ada": "71d6d87a433808d04e2a4f3815cdc8db00c230a5",
+      "1a3ed4a7cd76701085a24ac81d30bc5fb31942c1": "71d6d87a433808d04e2a4f3815cdc8db00c230a5"
+    }
+  },
+  "reason": "#8956 query path parsing and API documentation only; paired actual Native API and current browser contracts separate."
+}

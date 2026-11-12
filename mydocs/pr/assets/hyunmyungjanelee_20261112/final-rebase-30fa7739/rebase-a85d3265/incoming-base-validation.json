@@ -1,0 +1,456 @@
+{
+  "base": "a85d3265dd10b316d1a0ae029ca3f67245b38b77",
+  "candidate": "73d06ed0b18df7c222a850bb5d9340c9b7de2bcc",
+  "base_native": {
+    "execution_seconds": 0.363,
+    "run": 23,
+    "passed": 23,
+    "failed": 0,
+    "skipped_or_outside_filter": 1005,
+    "log_sha256": "042c0b32c1688c78ab47c1987e660a0d09cacf6a14988dfb4c11c044c8cc138f",
+    "test_names": [
+      "issue_7516_html_paste_loose_inline_format::google_docs_normal_weight_wrapper_stays_normal",
+      "issue_7516_html_paste_loose_inline_format::text_after_a_format_does_not_inherit_it",
+      "issue_7516_html_paste_loose_inline_format::span_inside_a_paragraph_keeps_inner_formats_and_images",
+      "issue_7516_html_paste_loose_inline_format::line_break_inside_a_format_keeps_lines_and_format",
+      "issue_7516_html_paste_loose_inline_format::numeric_bold_weights_stay_bold",
+      "issue_7516_html_paste_loose_inline_format::loose_inline_formats_stay_in_one_paragraph",
+      "issue_8942_paste_html_table_border_attr::shared_attribute_parser_preserves_real_merged_cell_spans",
+      "issue_8942_paste_html_table_border_attr::cell_css_overrides_the_border_attribute",
+      "issue_8942_paste_html_table_border_attr::border_attribute_draws_solid_cell_borders",
+      "issue_8942_paste_html_table_border_attr::shared_attribute_parser_preserves_image_units_and_quoted_boundaries",
+      "issue_8942_paste_html_table_border_attr::border_attribute_survives_hwpx_save_and_reopen",
+      "issue_8942_paste_html_table_border_attr::attribute_names_and_quoted_values_do_not_alias_a_real_border",
+      "issue_8942_paste_html_table_border_attr::zero_or_missing_border_attribute_keeps_cells_borderless",
+      "issue_8942_paste_html_table_border_attr::standalone_picture_style_uses_the_real_attribute",
+      "issue_8942_paste_html_table_border_attr::table_border_and_contents_survive_both_formats_twice",
+      "issue_8943_paste_html_leading_plain_run::html_plain_run_keeps_surrounding_styled_caret_text",
+      "issue_8943_paste_html_leading_plain_run::first_paragraph_keeps_the_same_result",
+      "issue_8943_paste_html_leading_plain_run::cell_html_plain_run_and_surrounding_styles_survive_both_formats_twice",
+      "issue_8943_paste_html_leading_plain_run::leading_plain_run_survives_hwpx_save_and_reopen",
+      "issue_8943_paste_html_leading_plain_run::plain_text_before_a_format_stays_plain_in_later_paragraphs",
+      "issue_8943_paste_html_leading_plain_run::mixed_body_and_table_styles_survive_both_formats_twice",
+      "issue_7516_html_paste_loose_inline_format::long_loose_inline_keeps_images_on_the_correct_side_of_the_cut",
+      "issue_7516_html_paste_loose_inline_format::long_loose_inline_preserves_content_and_styles_at_the_existing_limit"
+    ]
+  },
+  "candidate_native": {
+    "passed": 23,
+    "test_names": [
+      "issue_7516_html_paste_loose_inline_format::google_docs_normal_weight_wrapper_stays_normal",
+      "issue_7516_html_paste_loose_inline_format::text_after_a_format_does_not_inherit_it",
+      "issue_7516_html_paste_loose_inline_format::span_inside_a_paragraph_keeps_inner_formats_and_images",
+      "issue_7516_html_paste_loose_inline_format::line_break_inside_a_format_keeps_lines_and_format",
+      "issue_7516_html_paste_loose_inline_format::numeric_bold_weights_stay_bold",
+      "issue_7516_html_paste_loose_inline_format::loose_inline_formats_stay_in_one_paragraph",
+      "issue_8942_paste_html_table_border_attr::shared_attribute_parser_preserves_real_merged_cell_spans",
+      "issue_8942_paste_html_table_border_attr::cell_css_overrides_the_border_attribute",
+      "issue_8942_paste_html_table_border_attr::border_attribute_draws_solid_cell_borders",
+      "issue_8942_paste_html_table_border_attr::shared_attribute_parser_preserves_image_units_and_quoted_boundaries",
+      "issue_8942_paste_html_table_border_attr::border_attribute_survives_hwpx_save_and_reopen",
+      "issue_8942_paste_html_table_border_attr::attribute_names_and_quoted_values_do_not_alias_a_real_border",
+      "issue_8942_paste_html_table_border_attr::zero_or_missing_border_attribute_keeps_cells_borderless",
+      "issue_8942_paste_html_table_border_attr::standalone_picture_style_uses_the_real_attribute",
+      "issue_8942_paste_html_table_border_attr::table_border_and_contents_survive_both_formats_twice",
+      "issue_8943_paste_html_leading_plain_run::html_plain_run_keeps_surrounding_styled_caret_text",
+      "issue_8943_paste_html_leading_plain_run::first_paragraph_keeps_the_same_result",
+      "issue_8943_paste_html_leading_plain_run::cell_html_plain_run_and_surrounding_styles_survive_both_formats_twice",
+      "issue_8943_paste_html_leading_plain_run::leading_plain_run_survives_hwpx_save_and_reopen",
+      "issue_8943_paste_html_leading_plain_run::plain_text_before_a_format_stays_plain_in_later_paragraphs",
+      "issue_8943_paste_html_leading_plain_run::mixed_body_and_table_styles_survive_both_formats_twice",
+      "issue_7516_html_paste_loose_inline_format::long_loose_inline_keeps_images_on_the_correct_side_of_the_cut",
+      "issue_7516_html_paste_loose_inline_format::long_loose_inline_preserves_content_and_styles_at_the_existing_limit"
+    ],
+    "part_of_focused_164": true,
+    "log_sha256": "98f75f0cbd7dbde6b41c5585968abaa64c7dfae639575e94d52f6b8eaec9ca82"
+  },
+  "candidate_browser": {
+    "cases": [
+      {
+        "name": "leading",
+        "after_paste": {
+          "body": [
+            {
+              "text": "첫 문단",
+              "marks": "...."
+            },
+            {
+              "text": "앞 굵게 뒤",
+              "marks": "..BB.."
+            }
+          ],
+          "tables": []
+        },
+        "roundtrips": [
+          {
+            "format": "hwp",
+            "cycle": 1,
+            "preserved": true,
+            "bytes": 12800
+          },
+          {
+            "format": "hwp",
+            "cycle": 2,
+            "preserved": true,
+            "bytes": 12800
+          },
+          {
+            "format": "hwpx",
+            "cycle": 1,
+            "preserved": true,
+            "bytes": 7470
+          },
+          {
+            "format": "hwpx",
+            "cycle": 2,
+            "preserved": true,
+            "bytes": 7470
+          }
+        ]
+      },
+      {
+        "name": "border",
+        "after_paste": {
+          "body": [
+            {
+              "text": "BEFORE",
+              "marks": "......"
+            },
+            {
+              "text": "AFTER",
+              "marks": "....."
+            }
+          ],
+          "tables": [
+            {
+              "paragraph": 1,
+              "cell": [
+                {
+                  "text": "가",
+                  "marks": "."
+                }
+              ],
+              "borders": [
+                {
+                  "type": 1,
+                  "width": 4,
+                  "color": "#000000"
+                },
+                {
+                  "type": 1,
+                  "width": 4,
+                  "color": "#000000"
+                },
+                {
+                  "type": 1,
+                  "width": 4,
+                  "color": "#000000"
+                },
+                {
+                  "type": 1,
+                  "width": 4,
+                  "color": "#000000"
+                }
+              ]
+            }
+          ]
+        },
+        "roundtrips": [
+          {
+            "format": "hwp",
+            "cycle": 1,
+            "preserved": true,
+            "bytes": 13312
+          },
+          {
+            "format": "hwp",
+            "cycle": 2,
+            "preserved": true,
+            "bytes": 13312
+          },
+          {
+            "format": "hwpx",
+            "cycle": 1,
+            "preserved": true,
+            "bytes": 7958
+          },
+          {
+            "format": "hwpx",
+            "cycle": 2,
+            "preserved": true,
+            "bytes": 7958
+          }
+        ]
+      },
+      {
+        "name": "combined",
+        "after_paste": {
+          "body": [
+            {
+              "text": "첫 문단",
+              "marks": "...."
+            },
+            {
+              "text": "앞 굵게 뒤",
+              "marks": "..BB.."
+            },
+            {
+              "text": "AFTER",
+              "marks": "....."
+            }
+          ],
+          "tables": [
+            {
+              "paragraph": 2,
+              "cell": [
+                {
+                  "text": "셀 앞 굵게 뒤",
+                  "marks": "....BB.."
+                }
+              ],
+              "borders": [
+                {
+                  "type": 1,
+                  "width": 4,
+                  "color": "#000000"
+                },
+                {
+                  "type": 1,
+                  "width": 4,
+                  "color": "#000000"
+                },
+                {
+                  "type": 1,
+                  "width": 4,
+                  "color": "#000000"
+                },
+                {
+                  "type": 1,
+                  "width": 4,
+                  "color": "#000000"
+                }
+              ]
+            }
+          ]
+        },
+        "roundtrips": [
+          {
+            "format": "hwp",
+            "cycle": 1,
+            "preserved": true,
+            "bytes": 13312
+          },
+          {
+            "format": "hwp",
+            "cycle": 2,
+            "preserved": true,
+            "bytes": 13312
+          },
+          {
+            "format": "hwpx",
+            "cycle": 1,
+            "preserved": true,
+            "bytes": 8044
+          },
+          {
+            "format": "hwpx",
+            "cycle": 2,
+            "preserved": true,
+            "bytes": 8044
+          }
+        ]
+      },
+      {
+        "name": "body-styled-caret",
+        "after_paste": {
+          "body": [
+            {
+              "text": "L앞 굵게 뒤R",
+              "marks": "I..BB..I"
+            }
+          ],
+          "tables": []
+        },
+        "roundtrips": [
+          {
+            "format": "hwp",
+            "cycle": 1,
+            "preserved": true,
+            "bytes": 12800
+          },
+          {
+            "format": "hwp",
+            "cycle": 2,
+            "preserved": true,
+            "bytes": 12800
+          },
+          {
+            "format": "hwpx",
+            "cycle": 1,
+            "preserved": true,
+            "bytes": 7473
+          },
+          {
+            "format": "hwpx",
+            "cycle": 2,
+            "preserved": true,
+            "bytes": 7473
+          }
+        ]
+      },
+      {
+        "name": "cell-styled-caret",
+        "after_paste": {
+          "body": [],
+          "tables": [
+            {
+              "paragraph": 0,
+              "cell": [
+                {
+                  "text": "L앞 굵게 뒤R",
+                  "marks": "I..BB..I"
+                }
+              ],
+              "borders": [
+                {
+                  "type": 1,
+                  "width": 1,
+                  "color": "#000000"
+                },
+                {
+                  "type": 1,
+                  "width": 1,
+                  "color": "#000000"
+                },
+                {
+                  "type": 1,
+                  "width": 1,
+                  "color": "#000000"
+                },
+                {
+                  "type": 1,
+                  "width": 1,
+                  "color": "#000000"
+                }
+              ]
+            }
+          ]
+        },
+        "roundtrips": [
+          {
+            "format": "hwp",
+            "cycle": 1,
+            "preserved": true,
+            "bytes": 13312
+          },
+          {
+            "format": "hwp",
+            "cycle": 2,
+            "preserved": true,
+            "bytes": 13312
+          },
+          {
+            "format": "hwpx",
+            "cycle": 1,
+            "preserved": true,
+            "bytes": 7880
+          },
+          {
+            "format": "hwpx",
+            "cycle": 2,
+            "preserved": true,
+            "bytes": 7880
+          }
+        ]
+      },
+      {
+        "name": "attribute-alias",
+        "after_paste": {
+          "body": [],
+          "tables": [
+            {
+              "paragraph": 0,
+              "cell": [
+                {
+                  "text": "A",
+                  "marks": "."
+                }
+              ],
+              "borders": [
+                {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                }
+              ]
+            }
+          ]
+        },
+        "roundtrips": [
+          {
+            "format": "hwp",
+            "cycle": 1,
+            "preserved": true,
+            "bytes": 13312
+          },
+          {
+            "format": "hwp",
+            "cycle": 2,
+            "preserved": true,
+            "bytes": 13312
+          },
+          {
+            "format": "hwpx",
+            "cycle": 1,
+            "preserved": true,
+            "bytes": 7871
+          },
+          {
+            "format": "hwpx",
+            "cycle": 2,
+            "preserved": true,
+            "bytes": 7871
+          }
+        ]
+      }
+    ],
+    "passed": 6,
+    "failed": 0,
+    "repeated_save_checks": 24,
+    "consumer": "실제 브라우저의 HwpDocument API; Studio 이벤트 경로는 변경되지 않았으며 기존 검증 출처를 유지한다."
+  },
+  "read_only_api_browser": {
+    "checks": [
+      "outer dimensions [{\"controlIndex\":2}]",
+      "outer dimensions [{\"controlIndex\":2,\"cellIndex\":0}]",
+      "outer dimensions [{\"controlIndex\":2,\"cellIndex\":0,\"cellParaIndex\":0}]",
+      "outer dimensions [{\"controlIndex\":2,\"cellIndex\":99,\"cellParaIndex\":99}]",
+      "six bboxes short/full equal",
+      "missing control rejected",
+      "malformed optional rejected",
+      "cell API still needs cell index",
+      "nested 3x4 short/full equal",
+      "nested missing outer para rejected",
+      "nested missing outer cell rejected"
+    ],
+    "passed": 11,
+    "failed": 0,
+    "consumer": "actual browser WASM HwpDocument"
+  },
+  "preserved": "HTML border·속성 경계·첫 서식 앞 평문·본문/셀의 앞뒤 내용과 서식·HWP/HWPX 두 차례 저장 보존. 기존 문서 출력과 새 HTML 입력의 검증 범위를 분리했다."
+}

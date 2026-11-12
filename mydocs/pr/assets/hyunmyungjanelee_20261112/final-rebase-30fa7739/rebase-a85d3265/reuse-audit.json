@@ -1,0 +1,115 @@
+{
+  "recorded_at": "2026-11-12T14:08:45.775601+00:00",
+  "old_head": "30fa7739f0340f2a248b22542c7dd36d9354f056",
+  "new_head": "73d06ed0b18df7c222a850bb5d9340c9b7de2bcc",
+  "old_base": "1a3ed4a7cd76701085a24ac81d30bc5fb31942c1",
+  "new_base": "a85d3265dd10b316d1a0ae029ca3f67245b38b77",
+  "conflicts": [],
+  "replay_commit_count": 44,
+  "patch_ids_all_equal": true,
+  "identical_paths": {
+    "src/renderer": {
+      "before": "93e0e5b4aaf78dfdda2ad137889564e36f9b2ba1",
+      "after": "93e0e5b4aaf78dfdda2ad137889564e36f9b2ba1"
+    },
+    "src/parser": {
+      "before": "14b4f6ecc539df8187ad5f3b42275897340136bb",
+      "after": "14b4f6ecc539df8187ad5f3b42275897340136bb"
+    },
+    "src/serializer": {
+      "before": "65bccaf99e6c9494457f11519e347a30e9bceaac",
+      "after": "65bccaf99e6c9494457f11519e347a30e9bceaac"
+    },
+    "src/wasm_api": {
+      "before": "d120aa77b228ebb14688da34036bb60027ead10e",
+      "after": "d120aa77b228ebb14688da34036bb60027ead10e"
+    },
+    "src/wasm_api.rs": {
+      "before": "65f7f7084dd9605d8a2a6c4a573fad7bcc1d604f",
+      "after": "65f7f7084dd9605d8a2a6c4a573fad7bcc1d604f"
+    },
+    "crates": {
+      "before": "419c7064dfa4e626ad47734fd105ebc1dfa736a3",
+      "after": "419c7064dfa4e626ad47734fd105ebc1dfa736a3"
+    },
+    "scripts": {
+      "before": "fa0a728014c9114687aa5ba58607b3e272be0fc1",
+      "after": "fa0a728014c9114687aa5ba58607b3e272be0fc1"
+    },
+    "assets": {
+      "before": "73414adcf00534f04ccc94e83eb743483c15cb21",
+      "after": "73414adcf00534f04ccc94e83eb743483c15cb21"
+    },
+    "ttfs": {
+      "before": "790e77203ea8f9950c4a24c04c870c3c0234880b",
+      "after": "790e77203ea8f9950c4a24c04c870c3c0234880b"
+    },
+    "rhwp-studio/src": {
+      "before": "e532beb6e5644e60169288ee626f0b7ee7c31df7",
+      "after": "e532beb6e5644e60169288ee626f0b7ee7c31df7"
+    },
+    "Cargo.toml": {
+      "before": "67ffbf80f174ba3465e4454d140f758395833b2e",
+      "after": "67ffbf80f174ba3465e4454d140f758395833b2e"
+    },
+    "Cargo.lock": {
+      "before": "34d08aa8d5150817968568e1ab6f68af228eeeac",
+      "after": "34d08aa8d5150817968568e1ab6f68af228eeeac"
+    },
+    "build.rs": {
+      "before": "a3103a33faf38a899edb68f64fd0739dd4950787",
+      "after": "a3103a33faf38a899edb68f64fd0739dd4950787"
+    }
+  },
+  "changed_product_paths": [
+    "src/document_core/commands/html_import/inline_content.rs",
+    "src/document_core/helpers.rs",
+    "src/document_core/html_table_import.rs"
+  ],
+  "existing_samples_pdf_all_identical": true,
+  "preserved_working_files": 283,
+  "completed_previous_records": {
+    "serial-gates-state.json": {
+      "sha256": "483bd66447e046a1a3b1db2e26dfd502e0ab4daa7242e5cab75fa939ce7224db",
+      "phase": "complete"
+    },
+    "candidate-native-claims-state.json": {
+      "sha256": "15205c86ead6bac2c1c374d957c7a75d30c7bf7926f46bc5f0a07d82c952d0bc",
+      "phase": "complete"
+    },
+    "candidate-wasm-claims-state.json": {
+      "sha256": "347f3e485179daa35f017782f730e2f02da3a9154e664c6ca3bd83204257661a",
+      "phase": "complete"
+    },
+    "protected-recompute-state.json": {
+      "sha256": "b6808e1d4729b0727610afc1b22ab61e189f12c1238cebdbe5fbc3c01bd5b5b5",
+      "phase": "complete"
+    },
+    "studio-state.json": {
+      "sha256": "4bb1545c86475ac5fff42bf837cbac2df9e0223a65d56f8000251216fda1e510",
+      "phase": "complete"
+    },
+    "incoming-base-state.json": {
+      "sha256": "93dcefe756db533eb7b8d5749ed527c415ffa09c1604af1871de8052c70cbfc9",
+      "phase": "complete"
+    }
+  },
+  "reuse": {
+    "independent_print_pdfs": "입력 SHA와 Print 영수증을 유지하여 그대로 사용한다.",
+    "public_native_wasm_pages": "저장된 입력의 파싱·조판·폰트·페인트·캡처 경로가 동일하므로 34종·46쪽씩의 기존 TSV와 PNG를 원 생산 SHA를 유지해 사용한다.",
+    "protected_pages": "18종·1771쪽씩의 기존 TSV·이미지 및 판독을 재사용하며 새 캡처로 표시하지 않는다.",
+    "studio_tests": "Studio 소스·스크립트·의존성 및 기존 결과가 동일해 이전 2784 PASS 결과의 출처를 유지한다."
+  },
+  "additional_required": [
+    "새 base와 후보의 HTML 붙여넣기·속성 경계·반복 저장 계약 집중 실행",
+    "새 Rust 소스에 필요한 최소 글꼴 회귀·lint/build/Skia 검사",
+    "최신 WASM 빌드와 실제 브라우저에서 새 붙여넣기 계약·초기화 응답 해시 확인"
+  ],
+  "not_repeated": [
+    "기존 3542쪽 전쪽 캡처",
+    "공개 92쪽 캡처",
+    "동일 PDF 재출력",
+    "동일 Studio 전체 npm 테스트"
+  ],
+  "boundary": "새 코드 실행·빌드 결과를 이전 결과로 대체하지 않는다. 렌더링 재사용은 저장된 문서 출력에 한정하고, HTML 생성/붙여넣기는 새 base와 후보에서 별도 실행한다."
+}
