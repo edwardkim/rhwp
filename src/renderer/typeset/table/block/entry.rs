@@ -1570,8 +1570,16 @@ impl TypesetEngine {
                 // 저장 프레임이 그 쪽 본문을 넘으면 원본도 그 자리에서 행을 나눈 것이라 통째
                 // 이월의 근거가 아니다. 한/글은 RowBreak 표를 남은 칸에 첫 행이 들어가는 한 그
                 // 자리에서 나누고, 첫 행도 못 들어갈 때만 통째 넘긴다(#8149 headerrow H04).
+                // 원본 프레임의 본문 경계에는 이미 놓인 각주만 예약한다. 아직 어떤
+                // 조각에 속할지 결정하지 않은 표 각주 전체를 빼면, 다음 쪽에 이어지는
+                // 각주 때문에 원래 들어가는 첫 프레임을 본문 밖으로 오판한다.
+                // 새 각주의 실제 수용은 뒤 조각 스캔·각주 예약이 그대로 판정한다.
                 && (saved_span.is_some_and(|(_, _, bottom_px)| {
-                    bottom_px <= available + DECLARED_FLOAT_FIT_TOLERANCE_PX
+                    bottom_px <= (st.base_available_height()
+                        - st.current_footnote_height
+                        - st.current_zone_y_offset
+                        - st.current_bottom_fixed_exclusion).max(0.0)
+                        + DECLARED_FLOAT_FIT_TOLERANCE_PX
                         || !first_row_fits_current
                         || matches!(
                             table.layout_page_break(),

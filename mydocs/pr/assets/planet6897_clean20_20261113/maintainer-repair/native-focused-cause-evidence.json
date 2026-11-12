@@ -1,0 +1,223 @@
+{
+  "status": "Native focused verified; fresh WASM and final full gates pending",
+  "head": "2b5f332d364d07431a66fe085715fa4c25509bbb",
+  "native_producer": {
+    "phase": "complete",
+    "pid": 27966,
+    "parent": "2b5f332d364d07431a66fe085715fa4c25509bbb",
+    "diff_sha256": "aafae2f41fa86609655ac452c0761d65369804ee5eed50c820599e1fdff99dc6",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--jobs",
+      "8",
+      "--verbose"
+    ],
+    "exit": 0,
+    "binary": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/bin/footnote-frame-scope-trial-native",
+    "sha256": "fa6ea5d9412181f4fbcd3362952fc8bf0ea07c3e136d2db003aaca69bbc3c381",
+    "counterexamples": [
+      {
+        "key": "health3930000",
+        "exit": 0,
+        "pageCount": 7,
+        "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/food-flow-diagnosis/footnote-frame-scope-health3930000-info.json"
+      },
+      {
+        "key": "food1543000",
+        "exit": 0,
+        "pageCount": 143,
+        "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/food-flow-diagnosis/footnote-frame-scope-food1543000-info.json"
+      }
+    ],
+    "completed_at": "2026-11-12T19:00:39.256371+00:00"
+  },
+  "results": [
+    {
+      "key": "food1543000",
+      "exit": 1,
+      "manifest": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/footnote-frame-scope-native/food1543000/silhouette_manifest.json",
+      "run_state": "complete",
+      "metrics": [
+        {
+          "page": 92,
+          "raw": 34.23197
+        },
+        {
+          "page": 93,
+          "raw": 15.35483
+        },
+        {
+          "page": 94,
+          "raw": 19.39922
+        },
+        {
+          "page": 95,
+          "raw": 24.73274
+        }
+      ],
+      "gate": {
+        "status": "re_review_required",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 92,
+            "silhouette_raw_match_percent": 34.23197
+          },
+          {
+            "page": 93,
+            "silhouette_raw_match_percent": 15.35483
+          },
+          {
+            "page": 94,
+            "silhouette_raw_match_percent": 19.39922
+          },
+          {
+            "page": 95,
+            "silhouette_raw_match_percent": 24.73274
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 143,
+          "pdf": 141
+        },
+        "page_count_mismatch": true
+      }
+    },
+    {
+      "key": "health3930000",
+      "exit": 1,
+      "manifest": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/footnote-frame-scope-native/health3930000/silhouette_manifest.json",
+      "run_state": "complete",
+      "metrics": [
+        {
+          "page": 1,
+          "raw": 80.50731
+        },
+        {
+          "page": 2,
+          "raw": 99.9991
+        },
+        {
+          "page": 3,
+          "raw": 99.99515
+        },
+        {
+          "page": 4,
+          "raw": 99.6777
+        },
+        {
+          "page": 5,
+          "raw": 99.91223
+        },
+        {
+          "page": 6,
+          "raw": 99.98623
+        },
+        {
+          "page": 7,
+          "raw": 99.97289
+        }
+      ],
+      "gate": {
+        "status": "re_review_required",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 1,
+            "silhouette_raw_match_percent": 80.50731
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 7,
+          "pdf": 7
+        },
+        "page_count_mismatch": false
+      }
+    }
+  ],
+  "health_base": {
+    "exit": 1,
+    "manifest": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/health-base-whole/health3930000/silhouette_manifest.json",
+    "run_state": "complete",
+    "metrics": [
+      {
+        "page": 1,
+        "raw": 75.88644
+      },
+      {
+        "page": 2,
+        "raw": 99.9991
+      },
+      {
+        "page": 3,
+        "raw": 99.99515
+      },
+      {
+        "page": 4,
+        "raw": 96.64357
+      },
+      {
+        "page": 5,
+        "raw": 48.77016
+      },
+      {
+        "page": 6,
+        "raw": 31.31734
+      },
+      {
+        "page": 7,
+        "raw": 98.64345
+      }
+    ],
+    "gate": {
+      "status": "re_review_required",
+      "metric": "silhouette_raw_match_percent",
+      "minimum_silhouette_raw_match_percent": 90.0,
+      "below_threshold_pages": [
+        {
+          "page": 1,
+          "silhouette_raw_match_percent": 75.88644
+        },
+        {
+          "page": 5,
+          "silhouette_raw_match_percent": 48.77016
+        },
+        {
+          "page": 6,
+          "silhouette_raw_match_percent": 31.31734
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null,
+      "document_page_counts": {
+        "rhwp": 7,
+        "pdf": 7
+      },
+      "page_count_mismatch": false
+    }
+  },
+  "health_p6_direct_reading": {
+    "review": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/health-early-plan-native/review/review/review_006.png",
+    "overlay": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/health-early-plan-native/review/overlay/overlay_006.png",
+    "observation": "연구 용역 개요 상자·그간 추진사항 제목·목록·오른쪽 날짜열이 독립 Print와 겹친다. 누락·중복이나 앞당겨진 블록을 관찰하지 않았다. 2px 이웃 허용 raw이며 엄격 RGB 완전 일치가 아니다.",
+    "same_as_latest_frozen_native": true,
+    "review_sha256": "966249c4bc42afb801a5467edaeced465575a639b022ba3ef79eee607dfca09e",
+    "overlay_sha256": "0fa6e3c8b5f1a6386decc9cffc0167f8d6bdea83f0d3d8d4050dd64d0a04435e"
+  }
+}
