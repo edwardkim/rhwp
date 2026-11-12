@@ -14,7 +14,7 @@
 //! - 관계형: 안내문은 필드 값이 아니라 안내문으로 남고, Print 글자 조각에 없다. 본문 「끝.」·「발신명의」와
 //!   dirty 누름틀 「성명」은 남는다.
 //!
-//! 측정(2026-11-12, 코드 base eb84afc036 → head 작업 트리, `scripts/visual_sweep.py --silhouette-only --dpi 96`,
+//! 측정(2026-11-12, 코드 head d3bf344843, base eb84afc036, `scripts/visual_sweep.py --silhouette-only --dpi 96`,
 //! raw = `silhouette_raw_match_percent`, `RHWP_FONT_PATH` 글꼴 공급, `--compat 2022`):
 //! - 36385713 Native 2쪽 / 2쪽: p1 99.91 (base 99.91), p2 94.95 (base 53.27).
 //! - 3066825 Native 1쪽 / 1쪽: p1 99.96 (base 98.18).
