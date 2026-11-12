@@ -54,6 +54,8 @@ def main():
     parser.add_argument("--native", type=Path, required=True)
     parser.add_argument("--native-receipt", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--tile-group", action="store_true",
+                        help="build the two-tile edit/resize/recovery consumer probe")
     args = parser.parse_args()
     try:
         require_actual_windows()
@@ -93,7 +95,8 @@ def main():
         shutil.copyfile(repository / relative, destination)
     env = dict(os.environ, CI="true", FLUTTER_SUPPRESS_ANALYTICS="true",
                DART_SUPPRESS_ANALYTICS="true", FLUTTER_ROOT=str(sdk))
-    receipt = {"platform": "windows", "sourceHead": source_head, "nativeSourceHead": native_head,
+    receipt = {"platform": "windows", "probeKind": "twoTileGroup" if args.tile_group else "singleTexture",
+               "sourceHead": source_head, "nativeSourceHead": native_head,
                "sourceFiles": original_sources, "steps": [], "buildExitCode": None,
                "started": time.time(), "pid": os.getpid()}
     receipt_path = output / "build-receipt.json"
@@ -132,7 +135,15 @@ def main():
             "dependencies:\n  flutter:\n    sdk: flutter\n"
             "  rhwp_native_reference:\n    path: ../source/bindings/Flutter\n",
             encoding="utf-8")
-        shutil.copyfile(copied / "bindings/Flutter/test/support/desktop_consumer_probe.dart", runner / "lib/main.dart")
+        support = copied / "bindings/Flutter/test/support"
+        probe_sources = ({"main.dart": "windows_tile_group_probe.dart",
+                          "desktop_consumer_probe.dart": "desktop_consumer_probe.dart",
+                          "linux_tile_group_probe.dart": "linux_tile_group_probe.dart"}
+                         if args.tile_group else {"main.dart": "desktop_consumer_probe.dart"})
+        receipt["runnerInputs"] = {}
+        for destination, source in probe_sources.items():
+            shutil.copyfile(support / source, runner / "lib" / destination)
+            receipt["runnerInputs"]["lib/" + destination] = digest(support / source)
         run([*flutter, "pub", "get"], runner)
         run([*flutter, "build", "windows", "--debug"], runner)
         executable = runner / "build/windows/x64/runner/Debug/rhwp_texture_qualification.exe"
@@ -149,6 +160,7 @@ def main():
         if sources(repository) != original_sources:
             raise ValueError("source checkout changed while building")
         receipt["copiedRuntimeSources"] = verify_copied_sources(copied, original_sources)
+        verify_copied_sources(runner, receipt["runnerInputs"])
         if len((json.dumps(receipt, indent=2) + "\n").encode("utf-8")) > MAX_BUILD_RECEIPT_BYTES - 1024:
             raise ValueError("build receipt exceeds its bounded runtime manifest size")
         receipt["buildExitCode"] = 0

@@ -4,6 +4,7 @@
 //! target is touched. Successful return waits for this producer queue's work;
 //! it says nothing about Flutter's later consumer queue or texture recycling.
 
+use std::cell::RefCell;
 use std::ffi::c_void;
 use std::marker::PhantomData;
 use std::rc::Rc;
@@ -14,6 +15,11 @@ use skia_safe::{
     gpu, AlphaType, BlendMode, Color, ColorSpace, ColorType, ImageInfo, Paint, Surface,
 };
 
+use super::gpu_tiles::frame_resources::FrameResources;
+use super::gpu_tiles::{
+    CachedTile, ManagedTarget, TargetAllocation, TargetBudget, TileCache, TileConfig,
+    TilePlacement, TilePlan, TileTarget,
+};
 use super::presentation::{
     NativePresentationId, NativePresentationRegistry, NativePresentationSnapshotBorrow,
     NativePresentationStamp,
@@ -46,6 +52,11 @@ pub struct NativeMetalPresenterConfig {
     pub max_renderer_font_bytes: usize,
     pub renderer_cache_bytes: usize,
     pub resource_cache_bytes: usize,
+    pub tile_size: usize,
+    pub max_cached_tiles: usize,
+    pub max_tile_bytes: usize,
+    pub max_managed_targets: usize,
+    pub max_managed_target_bytes: usize,
 }
 
 impl Default for NativeMetalPresenterConfig {
@@ -58,6 +69,11 @@ impl Default for NativeMetalPresenterConfig {
             max_renderer_font_bytes: 64 * MIB,
             renderer_cache_bytes: 8 * MIB,
             resource_cache_bytes: 32 * MIB,
+            tile_size: 512,
+            max_cached_tiles: 64,
+            max_tile_bytes: 16 * MIB,
+            max_managed_targets: 66,
+            max_managed_target_bytes: 48 * MIB,
         }
     }
 }
@@ -71,6 +87,11 @@ impl NativeMetalPresenterConfig {
             || !(1..=64 * MIB).contains(&self.max_renderer_font_bytes)
             || self.renderer_cache_bytes > 8 * MIB
             || self.resource_cache_bytes > 32 * MIB
+            || ![128, 256, 512, 1024].contains(&self.tile_size)
+            || self.max_cached_tiles > 64
+            || self.max_tile_bytes > 64 * MIB
+            || !(1..=66).contains(&self.max_managed_targets)
+            || !(1..=96 * MIB).contains(&self.max_managed_target_bytes)
         {
             return Err(invalid("invalid Metal presenter limits"));
         }
@@ -91,7 +112,9 @@ impl NativeMetalPresenterConfig {
             .checked_mul(target.height as usize)
             .filter(|pixels| *pixels <= self.max_pixels)
             .and_then(|pixels| pixels.checked_mul(4))
-            .filter(|bytes| *bytes <= self.max_target_bytes)
+            .filter(|bytes| {
+                *bytes <= self.max_target_bytes && *bytes <= self.max_managed_target_bytes
+            })
             .ok_or_else(|| limit("Metal target pixel/byte quota exceeded"))
     }
 }
@@ -162,12 +185,7 @@ pub struct NativeMetalFrame {
     pub whole_frame_readbacks: u64,
 }
 
-struct Scratch {
-    surface: Surface,
-    width: i32,
-    height: i32,
-    bytes: usize,
-}
+type Scratch = ManagedTarget;
 struct Renderer {
     renderer: SkiaLayerRenderer,
     fingerprint: String,
@@ -179,7 +197,14 @@ pub struct NativeMetalPresenter {
     owner: ThreadId,
     generation: u64,
     config: NativeMetalPresenterConfig,
-    scratch: Option<Scratch>,
+    frames: FrameResources<RefCell<ManagedTarget>, CachedTile>,
+    tiles: TileCache,
+    target_budget: TargetBudget,
+    pending_gpu: bool,
+    frame_active: bool,
+    suspended: bool,
+    quarantine_surface: Option<Rc<RefCell<Surface>>>,
+    frame_inputs: Option<Rc<Vec<NativePresentationSnapshotBorrow>>>,
     renderer: Option<Renderer>,
     context: Option<gpu::DirectContext>,
     submissions: u64,
@@ -211,7 +236,17 @@ impl NativeMetalPresenter {
             owner: thread::current().id(),
             generation,
             config,
-            scratch: None,
+            frames: FrameResources::default(),
+            tiles: TileCache::default(),
+            target_budget: TargetBudget::new(
+                config.max_managed_targets,
+                config.max_managed_target_bytes,
+            ),
+            pending_gpu: false,
+            frame_active: false,
+            suspended: false,
+            quarantine_surface: None,
+            frame_inputs: None,
             renderer: None,
             context: Some(context),
             submissions: 0,
@@ -223,7 +258,12 @@ impl NativeMetalPresenter {
         if thread::current().id() != self.owner {
             return Err(invalid("Metal presenter belongs to another thread"));
         }
-        if generation != self.generation || self.context.is_none() {
+        if generation != self.generation
+            || self.context.is_none()
+            || self.suspended
+            || self.frame_active
+            || self.pending_gpu
+        {
             return Err(invalid(
                 "Metal presenter/device generation is no longer live",
             ));
@@ -232,11 +272,22 @@ impl NativeMetalPresenter {
     }
 
     pub fn info(&self) -> Result<serde_json::Value, NativeHostError> {
-        self.live(self.generation)?;
+        if thread::current().id() != self.owner {
+            return Err(invalid("Metal presenter belongs to another thread"));
+        }
+        if self.context.is_none() && !self.suspended {
+            return Err(invalid(
+                "Metal presenter/device generation is no longer live",
+            ));
+        }
         Ok(serde_json::json!({
             "backend":"metalGanesh", "deviceGeneration":self.generation,
-            "config":self.config, "scratchTargets":usize::from(self.scratch.is_some()),
-            "scratchEstimatedBytes":self.scratch.as_ref().map_or(0, |v|v.bytes),
+            "config":self.config, "scratchTargets":usize::from(self.frames.scratch.is_some()),
+            "scratchEstimatedBytes":self.frames.scratch.as_ref().map_or(0, |v|v.borrow().bytes()),
+            "managedTargets":self.target_budget.stats(), "tiles":self.tiles.stats(),
+            "state":if self.suspended {"quarantined"} else {"active"},
+            "quarantinedSnapshots":self.frame_inputs.as_ref().map_or(0, |v| v.len()),
+            "workingTargets":self.frames.working_count(), "frameTilePins":self.frames.tile_count(),
             "rendererFontEstimatedBytes":self.renderer.as_ref().map_or(0, |v|v.font_bytes),
             "framesSubmitted":self.submissions, "wholeFrameReadbacks":0,
             "consumerRetirement":false, "hardwareAccelerationVerified":false,
@@ -287,15 +338,42 @@ impl NativeMetalPresenter {
         &mut self,
         target: NativeMetalTarget,
         bytes: usize,
-    ) -> Result<Scratch, NativeHostError> {
-        if let Some(scratch) = self.scratch.take() {
-            if scratch.width == target.width && scratch.height == target.height {
-                return Ok(scratch);
+    ) -> Result<Rc<RefCell<Scratch>>, NativeHostError> {
+        if let Some(scratch) = &self.frames.scratch {
+            if scratch.borrow().width == target.width && scratch.borrow().height == target.height {
+                return Ok(Rc::clone(scratch));
             }
-            // Drop old allocation before creating its replacement.
         }
+        // Prior completed scratch is dropped before replacement admission.
+        self.frames.scratch.take();
+        self.ensure_target_room(1, bytes);
+        let allocation = self.target_budget.reserve(bytes)?;
+        let target = Rc::new(RefCell::new(self.allocate_target(
+            target.width,
+            target.height,
+            allocation,
+        )?));
+        self.frames.scratch = Some(Rc::clone(&target));
+        Ok(target)
+    }
+
+    fn ensure_target_room(&mut self, count: usize, bytes: usize) -> bool {
+        while !self.target_budget.can_reserve(count, bytes) {
+            if !self.tiles.evict_idle() {
+                return false;
+            }
+        }
+        true
+    }
+
+    fn allocate_target(
+        &mut self,
+        width: i32,
+        height: i32,
+        allocation: TargetAllocation,
+    ) -> Result<ManagedTarget, NativeHostError> {
         let info = ImageInfo::new(
-            (target.width, target.height),
+            (width, height),
             ColorType::BGRA8888,
             AlphaType::Premul,
             ColorSpace::new_srgb(),
@@ -310,26 +388,24 @@ impl NativeMetalPresenter {
             false,
             None,
         )
-        .ok_or_else(|| unsupported("Skia could not allocate a Metal scratch target"))?;
-        Ok(Scratch {
-            surface,
-            width: target.width,
-            height: target.height,
-            bytes,
-        })
+        .ok_or_else(|| unsupported("Skia could not allocate a Metal managed target"))?;
+        Ok(ManagedTarget::new(surface, width, height, allocation))
     }
 
     fn finish_gpu(&mut self, surface: &mut Surface) -> Result<(), NativeHostError> {
+        self.pending_gpu = true;
         let context = self.context.as_mut().expect("checked live");
         // Both outcomes matter: a successful flush does not imply submission.
         let flushed = context.flush_surface(surface).is_ok();
         let submitted = context.submit(gpu::SyncCpu::Yes);
         if !flushed || !submitted || context.is_device_lost() {
-            self.abandon();
+            self.suspended = true;
+            self.frames.quarantine();
             return Err(unsupported(
-                "Metal flush/submit failed; presenter abandoned",
+                "Metal flush/submit completion unknown; presenter quarantined",
             ));
         }
+        self.pending_gpu = false;
         Ok(())
     }
 
@@ -375,9 +451,12 @@ impl NativeMetalPresenter {
         if self.submissions == u64::MAX {
             return Err(limit("Metal submission sequence exhausted"));
         }
-        let mut scratch = self.scratch(target, bytes)?;
-        let result = self.replay_and_publish(
-            &mut scratch,
+        let scratch = self.scratch(target, bytes)?;
+        let inputs = Rc::new(inputs);
+        self.frame_inputs = Some(Rc::clone(&inputs));
+        self.frame_active = true;
+        let mut result = self.replay_and_publish(
+            &mut scratch.borrow_mut(),
             stamp,
             texture,
             target,
@@ -385,8 +464,17 @@ impl NativeMetalPresenter {
             &inputs,
             clear_color,
         );
-        if self.context.is_some() {
-            self.scratch = Some(scratch);
+        if result.is_err() && !self.suspended {
+            // A failed replay can leave references in scratch's unsubmitted
+            // graph even when a different canonical surface completed earlier.
+            if let Err(error) = self.finish_gpu(&mut scratch.borrow_mut().surface) {
+                result = Err(error);
+            }
+        }
+        if !self.suspended {
+            self.frames.complete_frame();
+            self.frame_inputs.take();
+            self.frame_active = false;
         }
         result
     }
@@ -402,18 +490,31 @@ impl NativeMetalPresenter {
         inputs: &[NativePresentationSnapshotBorrow],
         clear_color: u32,
     ) -> Result<NativeMetalFrame, NativeHostError> {
+        self.pending_gpu = true;
         scratch.surface.canvas().clear(Color::from(clear_color));
         for (placement, input) in placements.iter().zip(inputs) {
-            self.renderer(input.snapshot())?.render_to_surface_strict(
+            if !self.replay_tiles(
                 &mut scratch.surface,
-                input.snapshot().tree(),
-                SkiaSurfaceRenderOptions {
-                    scale: placement.scale,
-                    origin_x: placement.origin_x,
-                    origin_y: placement.origin_y,
-                    background_color: placement.background_color,
-                },
-            )?;
+                stamp,
+                target,
+                *placement,
+                input,
+                clear_color,
+            )? {
+                self.tiles.observations.viewport_fallbacks =
+                    self.tiles.observations.viewport_fallbacks.saturating_add(1);
+                self.pending_gpu = true;
+                self.renderer(input.snapshot())?.render_to_surface_strict(
+                    &mut scratch.surface,
+                    input.snapshot().tree(),
+                    SkiaSurfaceRenderOptions {
+                        scale: placement.scale,
+                        origin_x: placement.origin_x,
+                        origin_y: placement.origin_y,
+                        background_color: placement.background_color,
+                    },
+                )?;
+            }
         }
         self.finish_gpu(&mut scratch.surface)?;
         let image = scratch.surface.image_snapshot();
@@ -424,7 +525,7 @@ impl NativeMetalPresenter {
         let texture_info = unsafe { gpu::mtl::TextureInfo::new(texture) };
         let backend =
             gpu::backend_render_targets::make_mtl((target.width, target.height), &texture_info);
-        let mut visible = gpu::surfaces::wrap_backend_render_target(
+        let visible = gpu::surfaces::wrap_backend_render_target(
             self.context.as_mut().expect("checked live"),
             &backend,
             gpu::SurfaceOrigin::TopLeft,
@@ -436,10 +537,19 @@ impl NativeMetalPresenter {
         for input in inputs {
             input.validate_current(stamp)?;
         }
+        // Retain the borrowed target before recording any copy, including when
+        // a panic unwinds local handles before the FFI owner abandons us.
+        let visible = Rc::new(RefCell::new(visible));
+        self.quarantine_surface = Some(Rc::clone(&visible));
         let mut copy = Paint::default();
         copy.set_blend_mode(BlendMode::Src);
-        visible.canvas().draw_image(&image, (0.0, 0.0), Some(&copy));
-        self.finish_gpu(&mut visible)?;
+        self.pending_gpu = true;
+        visible
+            .borrow_mut()
+            .canvas()
+            .draw_image(&image, (0.0, 0.0), Some(&copy));
+        self.finish_gpu(&mut visible.borrow_mut())?;
+        self.quarantine_surface.take();
         // A source invalidated during the GPU wait is never handed to Flutter.
         for input in inputs {
             input.validate_current(stamp)?;
@@ -461,9 +571,210 @@ impl NativeMetalPresenter {
         })
     }
 
+    #[allow(clippy::too_many_arguments)]
+    fn replay_tiles(
+        &mut self,
+        scratch: &mut Surface,
+        stamp: NativePresentationStamp,
+        target: NativeMetalTarget,
+        placement: NativeMetalPlacement,
+        input: &NativePresentationSnapshotBorrow,
+        clear_color: u32,
+    ) -> Result<bool, NativeHostError> {
+        let Some(plan) = TilePlan::new(
+            TileConfig {
+                max_dimension: self.config.max_dimension,
+                max_pixels: self.config.max_pixels,
+                max_target_bytes: self
+                    .config
+                    .max_target_bytes
+                    .min(self.config.max_managed_target_bytes),
+                tile_size: self.config.tile_size,
+                max_cached_tiles: self.config.max_cached_tiles,
+                max_tile_bytes: self.config.max_tile_bytes,
+            },
+            stamp,
+            TileTarget {
+                context_id: self.generation,
+                width: target.width,
+                height: target.height,
+            },
+            TilePlacement {
+                scale: placement.scale,
+                origin_x: placement.origin_x,
+                origin_y: placement.origin_y,
+                background_color: placement.background_color,
+            },
+            input.snapshot(),
+            clear_color,
+        ) else {
+            return Ok(false);
+        };
+        let mut found: Vec<_> = plan.keys.iter().map(|key| self.tiles.get(key)).collect();
+        let missing_count = found.iter().filter(|tile| tile.is_none()).count();
+        if missing_count != 0 {
+            let missing_bytes: usize = plan
+                .keys
+                .iter()
+                .zip(&found)
+                .filter(|(_, tile)| tile.is_none())
+                .map(|(key, _)| key.region.bytes())
+                .sum();
+            while !self.tiles.has_room(
+                self.config.max_cached_tiles,
+                self.config.max_tile_bytes,
+                missing_count,
+                missing_bytes,
+            ) {
+                if !self.tiles.evict_idle() {
+                    self.tiles.observations.pinned_admission_fallbacks = self
+                        .tiles
+                        .observations
+                        .pinned_admission_fallbacks
+                        .saturating_add(1);
+                    return Ok(false);
+                }
+            }
+            let working_bytes = plan
+                .canonical_bytes
+                .checked_add(missing_bytes)
+                .ok_or_else(|| limit("Metal tile working target byte overflow"))?;
+            if !self.ensure_target_room(missing_count + 1, working_bytes) {
+                self.tiles.observations.target_admission_fallbacks = self
+                    .tiles
+                    .observations
+                    .target_admission_fallbacks
+                    .saturating_add(1);
+                return Ok(false);
+            }
+            let allocation = self.target_budget.reserve(plan.canonical_bytes)?;
+            let allocations: Vec<_> = plan
+                .keys
+                .iter()
+                .zip(&found)
+                .filter(|(_, tile)| tile.is_none())
+                .map(|(key, _)| self.target_budget.reserve(key.region.bytes()))
+                .collect::<Result<_, _>>()?;
+            let canonical = Rc::new(RefCell::new(self.allocate_target(
+                plan.width,
+                plan.height,
+                allocation,
+            )?));
+            self.frames.pin_working(&canonical);
+            self.pending_gpu = true;
+            canonical
+                .borrow_mut()
+                .surface
+                .canvas()
+                .clear(Color::TRANSPARENT);
+            self.tiles.observations.canonical_replays =
+                self.tiles.observations.canonical_replays.saturating_add(1);
+            let replay = self.renderer(input.snapshot()).and_then(|renderer| {
+                renderer
+                    .render_to_surface_strict(
+                        &mut canonical.borrow_mut().surface,
+                        input.snapshot().tree(),
+                        SkiaSurfaceRenderOptions {
+                            scale: placement.scale,
+                            origin_x: plan.phase_x,
+                            origin_y: plan.phase_y,
+                            background_color: placement.background_color,
+                        },
+                    )
+                    .map_err(NativeHostError::from)
+            });
+            if let Err(error) = replay {
+                // Only a confirmed drain permits dropping partially rendered
+                // canonical work and returning to strict visible-region replay.
+                self.finish_gpu(&mut canonical.borrow_mut().surface)?;
+                self.frames.complete_working();
+                if matches!(
+                    error,
+                    NativeHostError::Core(_)
+                        | NativeHostError::InvalidArgument(_)
+                        | NativeHostError::LimitExceeded(_)
+                ) {
+                    self.tiles.observations.canonical_failures =
+                        self.tiles.observations.canonical_failures.saturating_add(1);
+                    return Ok(false);
+                }
+                return Err(error);
+            }
+            self.finish_gpu(&mut canonical.borrow_mut().surface)?;
+            let image = canonical.borrow_mut().surface.image_snapshot();
+            if !image.is_texture_backed() {
+                return Err(unsupported("Metal canonical tile is not GPU backed"));
+            }
+            let mut copy = Paint::default();
+            copy.set_blend_mode(BlendMode::Src);
+            let mut prepared = Vec::with_capacity(missing_count);
+            let mut allocations = allocations.into_iter();
+            for (index, key) in plan.keys.iter().enumerate() {
+                if found[index].is_some() {
+                    continue;
+                }
+                let region = key.region;
+                let tile = Rc::new(RefCell::new(
+                    self.allocate_target(
+                        region.width,
+                        region.height,
+                        allocations
+                            .next()
+                            .expect("one reservation per missing tile"),
+                    )?,
+                ));
+                self.frames.pin_working(&tile);
+                self.pending_gpu = true;
+                tile.borrow_mut().surface.canvas().draw_image(
+                    &image,
+                    (-region.x as f32, -region.y as f32),
+                    Some(&copy),
+                );
+                self.finish_gpu(&mut tile.borrow_mut().surface)?;
+                prepared.push((
+                    index,
+                    Rc::new(CachedTile {
+                        key: key.clone(),
+                        target: tile,
+                    }),
+                ));
+            }
+            input.validate_current(stamp)?;
+            // Cache publication is atomic for this placement: every canonical
+            // replay/copy and current-source check completed before admission.
+            for (index, tile) in prepared {
+                found[index] = Some(Rc::clone(&tile));
+                self.tiles.insert(tile);
+            }
+            self.frames.complete_working();
+        }
+        input.validate_current(stamp)?;
+        for tile in found.into_iter().flatten() {
+            self.frames.pin_tile(&tile);
+            let image = tile.target.borrow_mut().surface.image_snapshot();
+            if !image.is_texture_backed() {
+                return Err(unsupported("cached Metal tile is not GPU backed"));
+            }
+            self.pending_gpu = true;
+            scratch.canvas().draw_image(
+                &image,
+                (
+                    (plan.integer_x + tile.key.region.x) as f32,
+                    (plan.integer_y + tile.key.region.y) as f32,
+                ),
+                None,
+            );
+        }
+        Ok(true)
+    }
+
     pub fn release(&mut self) -> Result<(), NativeHostError> {
         self.live(self.generation)?;
-        self.scratch.take();
+        if self.pending_gpu || self.frame_active {
+            return Err(unsupported("Metal GPU completion remains unknown"));
+        }
+        self.frames.clear_completed();
+        self.tiles.clear();
         self.renderer.take();
         if let Some(context) = &mut self.context {
             context.release_resources_and_abandon();
@@ -473,10 +784,24 @@ impl NativeMetalPresenter {
     }
 
     pub fn abandon(&mut self) {
+        if self.pending_gpu || self.suspended || self.frame_active {
+            self.suspended = true;
+            self.frames.quarantine();
+            // Every resource remains charged and retained when producer work
+            // could still reference it. The Flutter producer slot is retained
+            // by the caller's existing quarantine path too.
+            std::mem::forget(std::mem::take(&mut self.tiles));
+            std::mem::forget(self.renderer.take());
+            std::mem::forget(self.quarantine_surface.take());
+            std::mem::forget(self.frame_inputs.take());
+            std::mem::forget(self.context.take());
+            return;
+        }
         if let Some(context) = &mut self.context {
             context.abandon();
         }
-        self.scratch.take();
+        self.frames.clear_completed();
+        self.tiles.clear();
         self.renderer.take();
         self.context.take();
     }

@@ -11,6 +11,7 @@ import 'native_ffi.dart';
 import 'native_gpu_tiles.dart';
 import 'native_gpu_trace.dart';
 import 'native_presentation.dart';
+import 'native_producer_ready.dart';
 import 'native_viewport.dart';
 
 enum NativeTexturePlatform {
@@ -334,6 +335,9 @@ class NativeTextureController extends ChangeNotifier {
       _coverWorking = false,
       _nativeCoverConfirmed = false;
   Completer<void>? _coverWaiter;
+  VoidCallback? _detachReadyEvents;
+  final _readySerials = <int, int>{};
+  bool _readyEventPending = false;
   Future<void>? _pauseFuture;
   Timer? _coverWaitDeadline;
   final _releases = <Future<void>>{};
@@ -496,6 +500,7 @@ class NativeTextureController extends ChangeNotifier {
   void _invalidate({bool configurationChanged = false}) {
     if (_closing || _stopped || _plan == null || document.isDisposed) return;
     _traceSuperseded();
+    _readyEventPending = false;
     ++_generation;
     _view = document.beginPresentation();
     _raster = document.rasterInvalidationGeneration;
@@ -955,6 +960,12 @@ class NativeTextureController extends ChangeNotifier {
             'The macOS plugin did not negotiate a native Metal view.',
           );
         }
+        if (created['producerReadyEvents'] == true && !_closing && !_stopped) {
+          _detachReadyEvents ??= NativeProducerReadyEvents.attach(
+            channel,
+            _producerReady,
+          );
+        }
       }
       await _waitReady(generation).timeout(operationTimeout);
       if (!_current(generation)) return;
@@ -1128,6 +1139,7 @@ class NativeTextureController extends ChangeNotifier {
         // A slow producer returns to the existing periodic polling cadence.
         unawaited(_poll());
       }
+      _drainReadyEvent();
     }
   }
 
@@ -1263,6 +1275,7 @@ class NativeTextureController extends ChangeNotifier {
     };
     diagnostic = error;
     _stopped = true;
+    _stopReadyEvents();
     _wanted = false;
     _phase = fallback ? NativeTexturePhase.fallback : NativeTexturePhase.failed;
     _timer.cancel();
@@ -1301,6 +1314,68 @@ class NativeTextureController extends ChangeNotifier {
     if (_frame != null) unawaited(_poll());
   }
 
+  void _stopReadyEvents() {
+    _detachReadyEvents?.call();
+    _detachReadyEvents = null;
+    _readyEventPending = false;
+    _readySerials.clear();
+  }
+
+  void _producerReady(Object? event) {
+    if (_closing ||
+        _stopped ||
+        _paused ||
+        _plan == null ||
+        event is! Map ||
+        event['event'] != 'producerReady') {
+      return;
+    }
+    final id = event['textureId'], serial = event['serial'];
+    if (id is! int ||
+        serial is! int ||
+        serial <= 0 ||
+        serial > 0x7fffffffffffffff ||
+        !(useTileGroups ? tileTextureIds.contains(id) : textureId == id) ||
+        event['deviceGeneration'] != _device) {
+      return;
+    }
+    final info = document.info;
+    if (info == null ||
+        document.isDisposed ||
+        _raster != document.rasterInvalidationGeneration ||
+        !NativePresentationStamp(
+          documentId: info.documentId,
+          revision: info.revision,
+          fontGeneration: info.fontGeneration,
+          viewGeneration: _view,
+          deviceGeneration: _device,
+          deviceScale: _plan!.dpr,
+        ).matches(event['stamp']) ||
+        serial <= (_readySerials[id] ?? 0)) {
+      return;
+    }
+    _readySerials[id] = serial; // At most the current one/two registrations.
+    _readyEventPending = true;
+    _drainReadyEvent();
+  }
+
+  void _drainReadyEvent() {
+    if (!_readyEventPending ||
+        _working ||
+        _polling ||
+        _wanted ||
+        _closing ||
+        _stopped ||
+        _paused ||
+        _frame == null) {
+      return;
+    }
+    // A hint cannot clear the cover. The ordinary status/full-stamp/snapshot
+    // checks below must confirm the entire publication (including both tiles).
+    _readyEventPending = false;
+    unawaited(_poll());
+  }
+
   Future<void> _poll() async {
     if (_polling ||
         _closing ||
@@ -1311,6 +1386,7 @@ class NativeTextureController extends ChangeNotifier {
       return;
     }
     _polling = true;
+    _readyEventPending = false;
     final frame = _frame!, generation = _generation;
     try {
       if (!_localCurrent(frame)) {
@@ -1381,6 +1457,7 @@ class NativeTextureController extends ChangeNotifier {
       }
     } finally {
       _polling = false;
+      _drainReadyEvent();
     }
   }
 
@@ -1572,6 +1649,7 @@ class NativeTextureController extends ChangeNotifier {
         done.future; // Publish idempotency before notifying listeners.
     _closing = true;
     _stopped = true;
+    _stopReadyEvents();
     ++_generation;
     _wanted = false;
     _phase = NativeTexturePhase.closing;
