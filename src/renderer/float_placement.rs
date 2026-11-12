@@ -6090,7 +6090,9 @@ pub(crate) fn stored_table_next_page_placement(
                         flow: ParagraphFloatFlow::NextLine,
                         anchor_y: 0.0,
                         stored_host_origin: None,
-                        stored_successor_line_origin: None,
+                        // 재시작 줄 = 바깥 상자 아래끝이 저장 사다리로 입증됐다. host 의 뒤
+                        // 간격은 앞 쪽 host 줄에 남고 새 쪽의 재시작 줄 앞에 다시 붙지 않는다.
+                        stored_successor_line_origin: Some(bottom),
                         table_left: None,
                         table_top: top,
                         occupied_bottom: bottom,
