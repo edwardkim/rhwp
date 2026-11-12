@@ -1,0 +1,242 @@
+[
+  {
+    "pr": 8895,
+    "source_sha": "a43256a7ba332e14a83a4be1507b2bd64d6848cb",
+    "subject": "fix(renderer): 저장 줄 없는 제목 host 의 글줄이 쪽 끝에 들지 않으면 다음 쪽으로 넘김 (#8665)",
+    "status": "applied",
+    "before": "80b1c354c29b7a02fb2b3c14a274da7f5b653ada",
+    "after": "9a276031f4d2a19f5c2ebe43034848e99d9f8ef9"
+  },
+  {
+    "pr": 8895,
+    "source_sha": "8627be9ecd1658b007c9d2ce63a83c218412e64d",
+    "subject": "test(renderer): 제목 host 쪽 나눔 회귀 가드와 재현물 (#8665)",
+    "status": "applied",
+    "before": "9a276031f4d2a19f5c2ebe43034848e99d9f8ef9",
+    "after": "8b826f96c7b393313bb6c685fb85bf821137d15a"
+  },
+  {
+    "pr": 8895,
+    "source_sha": "a29189e7e0261b8843c83a16d77cb3ae4e3b86ac",
+    "subject": "test(renderer): #8665 재현물의 한컴 웹한글기안기 기준 PDF",
+    "status": "applied",
+    "before": "8b826f96c7b393313bb6c685fb85bf821137d15a",
+    "after": "a9599f6e0c75ac4f05a2709c3c69fba6de265876"
+  },
+  {
+    "pr": 8895,
+    "source_sha": "2fe2763f9e1d93af7852c0a68ca4abe749ba995d",
+    "subject": "test(renderer): #8665 대조군 재현물의 결재 칸 높이를 줄여 범위 밖 기전을 뺌",
+    "status": "applied",
+    "before": "a9599f6e0c75ac4f05a2709c3c69fba6de265876",
+    "after": "d95508852c1b525af0a70e6e90fe210df75e1b9e"
+  },
+  {
+    "pr": 8895,
+    "source_sha": "77d9e09067968a19228a46a15ebc5ee7b3ced71d",
+    "subject": "style: #8665 회귀 테스트 형식 정리",
+    "status": "applied",
+    "before": "d95508852c1b525af0a70e6e90fe210df75e1b9e",
+    "after": "452d80fcc692ce78be292cb19b4104ac67328934"
+  },
+  {
+    "pr": 8895,
+    "source_sha": "c60c1a140dacd635a7bf257d6a4839baea72bebf",
+    "subject": "docs(pr): #8665 Native·fresh WASM Visual Sweep 증적",
+    "status": "applied",
+    "before": "452d80fcc692ce78be292cb19b4104ac67328934",
+    "after": "ea628ccb70a7f1ea0f26e63993e78cc32fe2188b"
+  },
+  {
+    "pr": 8897,
+    "source_sha": "db3cdf0df4e8bb0415afb65bb0578a5509ff7368",
+    "subject": "fix(renderer): 저장 줄 없는 공백·빈 host 문단의 어울림 표 아래 자리차지 표를 한컴처럼 배치 (#8573)",
+    "status": "applied",
+    "before": "ea628ccb70a7f1ea0f26e63993e78cc32fe2188b",
+    "after": "eb87a3b017a63bda9698fdffbc7f7ab767fc281d"
+  },
+  {
+    "pr": 8897,
+    "source_sha": "2fd359c18c60e7445cf708474f92e3c6d8805d18",
+    "subject": "test(renderer): 공백·빈 host 어울림 표와 자리차지 표 배치 회귀 가드와 재현물 (#8573)",
+    "status": "applied",
+    "before": "eb87a3b017a63bda9698fdffbc7f7ab767fc281d",
+    "after": "fbf9141861bb3bd26084a14e234415cd7b70c5ee"
+  },
+  {
+    "pr": 8897,
+    "source_sha": "4356a3f85073a307eb683363980b6b509a7d2cab",
+    "subject": "test(renderer): #8573 재현물의 한컴 웹한글기안기 기준 PDF",
+    "status": "applied",
+    "before": "fbf9141861bb3bd26084a14e234415cd7b70c5ee",
+    "after": "0b14b80db05a904bdc0c3e55a52c12047918c9ee"
+  },
+  {
+    "pr": 8897,
+    "source_sha": "aa7caf493d76cbdbc00c090014102b7dac3c0ac4",
+    "subject": "test(renderer): #8573 재현물 2종의 용지 밖 표를 off-canvas 기준표에 싣는다",
+    "status": "applied_with_conflict_resolution",
+    "exit": 1,
+    "before": "0b14b80db05a904bdc0c3e55a52c12047918c9ee",
+    "unmerged_paths": [
+      "tests/fixtures/off_canvas_baseline.tsv"
+    ],
+    "after": "fe4994ac85ff834f4b99970a75f5157e297a3ffa"
+  },
+  {
+    "pr": 8897,
+    "source_sha": "e263b59c25ae949065dec6726978c9fe2751e4d4",
+    "subject": "docs(pr): #8573 Native·fresh WASM Visual Sweep 증적",
+    "status": "applied",
+    "before": "fe4994ac85ff834f4b99970a75f5157e297a3ffa",
+    "after": "98e8f2a8f579627a98b301da5dfc6c306291527f"
+  },
+  {
+    "pr": 8900,
+    "source_sha": "c52dc62f8b316fa514a97fe52c72598b394eab10",
+    "subject": "fix(renderer): 값이 몰린 양수 차트 값축의 시작값과 눈금 간격을 한컴 규칙으로 정함 (#8678)",
+    "status": "applied",
+    "before": "98e8f2a8f579627a98b301da5dfc6c306291527f",
+    "after": "e62e5bbd645025029f70f4162b7d885bb07659a0"
+  },
+  {
+    "pr": 8900,
+    "source_sha": "81fc4ccc5ed7fc5880b19307933080d10b3ac91c",
+    "subject": "test(renderer): 차트 값축 시작값·눈금 간격 회귀 가드와 재현물 (#8678)",
+    "status": "applied",
+    "before": "e62e5bbd645025029f70f4162b7d885bb07659a0",
+    "after": "613efc8fd33fd6aa7c569c5f26bf662a001880da"
+  },
+  {
+    "pr": 8900,
+    "source_sha": "06be0b603d38215eb37696eee2517bbf382ec8d0",
+    "subject": "test(renderer): #8678 재현물의 한컴 웹한글기안기 기준 PDF",
+    "status": "applied",
+    "before": "613efc8fd33fd6aa7c569c5f26bf662a001880da",
+    "after": "63190968d5d3d2911acf0dcf1317cec8a9fde5bc"
+  },
+  {
+    "pr": 8900,
+    "source_sha": "f2f8ceb28983cf0347f4e1ecc1d9b8efcffaf3fe",
+    "subject": "test(renderer): #8678 재현물에서 차트 제목을 지워 값축만 비교되게 함",
+    "status": "applied",
+    "before": "63190968d5d3d2911acf0dcf1317cec8a9fde5bc",
+    "after": "fb3c8b8f0b0443613c41debd1ea6e111da229324"
+  },
+  {
+    "pr": 8900,
+    "source_sha": "b215fce8179da1b5ed1a3c3c889388611a87c093",
+    "subject": "docs(pr): #8678 Native·fresh WASM Visual Sweep 증적",
+    "status": "applied",
+    "before": "fb3c8b8f0b0443613c41debd1ea6e111da229324",
+    "after": "64a9e06d566499d4e121fcbb48644b93d72f92d3"
+  },
+  {
+    "pr": 8916,
+    "source_sha": "656643c9712d82e83135cf2c7144d5b4768932c4",
+    "subject": "fix(renderer): 글자 크기 0 문단이 12px 기본 줄을 만들지 않게 함 (#8664)",
+    "status": "applied",
+    "before": "64a9e06d566499d4e121fcbb48644b93d72f92d3",
+    "after": "c878551e4b07762ea62cce111853e3ccd734162e"
+  },
+  {
+    "pr": 8916,
+    "source_sha": "9db470f93018285ce2e1502a6d76e57e113e18b9",
+    "subject": "test(renderer): 글자 크기 0 문단 줄 높이 회귀 가드와 재현물 (#8664)",
+    "status": "applied",
+    "before": "c878551e4b07762ea62cce111853e3ccd734162e",
+    "after": "5e2f05b9acb23e41a643599ab1f8d87ff0127981"
+  },
+  {
+    "pr": 8916,
+    "source_sha": "eb578df1047f63c208bb2c0fd8abf73566f29b96",
+    "subject": "test(renderer): #8664 재현물의 한컴 웹한글기안기 기준 PDF",
+    "status": "applied",
+    "before": "5e2f05b9acb23e41a643599ab1f8d87ff0127981",
+    "after": "944840c8fb44750f5fda80a0e98fa22b0c19b9dc"
+  },
+  {
+    "pr": 8916,
+    "source_sha": "28449a5a1a116d23173d7ede50b4295e9399a7a1",
+    "subject": "docs(pr): #8664 Native·fresh WASM Visual Sweep 증적",
+    "status": "applied",
+    "before": "944840c8fb44750f5fda80a0e98fa22b0c19b9dc",
+    "after": "f483eba38483d917acfcb925629754ec0456547b"
+  },
+  {
+    "pr": 8916,
+    "source_sha": "6ad97a9ae8bd230b1e2fd2d7a61764423e0c2b3b",
+    "subject": "test(security): #8664 재현물의 크기 0 글자를 의도된 숨은 글자로 허용 목록에 추가",
+    "status": "applied_with_conflict_resolution",
+    "exit": 1,
+    "before": "f483eba38483d917acfcb925629754ec0456547b",
+    "unmerged_paths": [
+      "tests/security_corpus_regression.rs"
+    ],
+    "after": "95c29dc38eb5518077d61d4b9412c1d5996cb125"
+  },
+  {
+    "pr": 8918,
+    "source_sha": "6d84855595ac51b065d166797e49288dd4eb0977",
+    "subject": "fix(renderer): Wingdings PUA 원문자와 ○ 를 한컴과 같은 글자·폭으로 그림 (#8680)",
+    "status": "applied",
+    "before": "95c29dc38eb5518077d61d4b9412c1d5996cb125",
+    "after": "464d92786ddc0773f40afdef44b37bbb5287f571"
+  },
+  {
+    "pr": 8918,
+    "source_sha": "4a95940e12b6dc8f492225de458569bf2b207b52",
+    "subject": "test(renderer): Wingdings PUA 원문자 회귀 가드와 재현물 (#8680)",
+    "status": "applied",
+    "before": "464d92786ddc0773f40afdef44b37bbb5287f571",
+    "after": "9aad5dd158de6a57f960cebb280a705f22a2abdc"
+  },
+  {
+    "pr": 8918,
+    "source_sha": "d31b287884aab05817f2da8e9508cae6c24947a7",
+    "subject": "test(renderer): #8680 재현물의 한컴 웹한글기안기 기준 PDF",
+    "status": "applied",
+    "before": "9aad5dd158de6a57f960cebb280a705f22a2abdc",
+    "after": "96e971b5b219225bf11d4a0a049e3f1a31b65c54"
+  },
+  {
+    "pr": 8918,
+    "source_sha": "9400d7748457089509d7e5a55477dc0016d96c28",
+    "subject": "docs(pr): #8680 Native·fresh WASM Visual Sweep 증적",
+    "status": "applied",
+    "before": "96e971b5b219225bf11d4a0a049e3f1a31b65c54",
+    "after": "08ad361e05c2b255e61cb2748bc3cb01d159d64f"
+  },
+  {
+    "pr": 8920,
+    "source_sha": "01d09b21b1c23aa918838fbfc6eedc409b3da82f",
+    "subject": "fix(renderer): 쪽에 걸친 표의 저장 줄 없는 칸 직선을 그림 (#8690)",
+    "status": "applied",
+    "before": "08ad361e05c2b255e61cb2748bc3cb01d159d64f",
+    "after": "77c42dec4d9f2d775778d329051e96330c51adac"
+  },
+  {
+    "pr": 8920,
+    "source_sha": "5cda649159a305be63bb66a9619a8d290e143042",
+    "subject": "test(renderer): 칸 안 직선 회귀 가드와 재현물 (#8690)",
+    "status": "applied",
+    "before": "77c42dec4d9f2d775778d329051e96330c51adac",
+    "after": "6a6c199b6341d148fd0220660f7289ec3ce52853"
+  },
+  {
+    "pr": 8920,
+    "source_sha": "a5cc6c532c42512ab00560591572aa13ad191f49",
+    "subject": "test(renderer): #8690 재현물의 한컴 웹한글기안기 기준 PDF",
+    "status": "applied",
+    "before": "6a6c199b6341d148fd0220660f7289ec3ce52853",
+    "after": "0b4c8c883b7b00179cdccc254aab7cc67b1447ef"
+  },
+  {
+    "pr": 8920,
+    "source_sha": "5037330c850e041591cbee1745120e98cf95e12c",
+    "subject": "docs(pr): #8690 Native·fresh WASM Visual Sweep 증적",
+    "status": "applied",
+    "before": "0b4c8c883b7b00179cdccc254aab7cc67b1447ef",
+    "after": "0c9819d698bcbe3e3d83f563a0154ccb00eb6f07"
+  }
+]

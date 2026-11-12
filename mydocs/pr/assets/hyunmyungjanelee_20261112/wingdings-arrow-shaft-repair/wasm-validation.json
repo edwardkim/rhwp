@@ -1,0 +1,74 @@
+{
+  "source_head": "d66568ef247859a9c184546cad3ba42b06e806e1",
+  "backend": "wasm",
+  "page": 1,
+  "before_raw": 99.5,
+  "after_raw": 99.73,
+  "input": "samples/issue8680/wingdings_pua_symbols.hwpx",
+  "input_sha256": "6173d83f23aed79f162e9c07f5efe19a0590bae650c800a4fcebd49abc73ad8b",
+  "reference_pdf": "pdf/issue8680/wingdings_pua_symbols-hwpx-2020.pdf",
+  "pdf_sha256": "99d96e65b8ad607e662e4408b256fd9f64920e0ccd9caa6a20c24e1e41a3a876",
+  "fresh_build": {
+    "head": "d66568ef247859a9c184546cad3ba42b06e806e1",
+    "build": "macOS locked wrapper --no-opt local substitute",
+    "optimized": false,
+    "root_pkg_equals_studio_public": true,
+    "frozen_package": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v9/candidate-pkg",
+    "artifacts": [
+      {
+        "file": "rhwp.js",
+        "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+        "bytes": 581315
+      },
+      {
+        "file": "rhwp_bg.wasm",
+        "sha256": "5ea37f821e80a4b08033bc36fbb111d1a485222f36be02d069687ce3e34162ad",
+        "bytes": 31817226
+      },
+      {
+        "file": "rhwp.d.ts",
+        "sha256": "d5a3572f326fc6353cff5eecfa222af3a27b612813049a601be316b693b78732",
+        "bytes": 232723
+      },
+      {
+        "file": "rhwp_bg.wasm.d.ts",
+        "sha256": "9d21217c454fa8f1757e7f08e26b27d00c564bcc0be2a228b75bb0dae08aa738",
+        "bytes": 80530
+      }
+    ]
+  },
+  "browser_runtime": {
+    "local_font_access_permission": "denied",
+    "os_css_font_visibility_isolation_claimed": false,
+    "code_head": "d66568ef247859a9c184546cad3ba42b06e806e1",
+    "browser": "Chrome/157.0.8103.51",
+    "actual": {
+      "pageCount": 1,
+      "printCanvasApi": true
+    },
+    "initialization_responses": [
+      {
+        "file": "rhwp.js",
+        "status": 200,
+        "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+        "bytes": 581315
+      },
+      {
+        "file": "rhwp_bg.wasm",
+        "status": 200,
+        "sha256": "5ea37f821e80a4b08033bc36fbb111d1a485222f36be02d069687ce3e34162ad",
+        "bytes": 31817226
+      }
+    ],
+    "root_pkg_studio_frozen_and_actual_responses_identical": true,
+    "scope": "runtime JS/WASM; TypeScript declarations are not browser initialization responses"
+  },
+  "direct_reading": "같은 쪽 review·overlay에서 작은 빈 상자와 뒤 본문의 전진을 직접 확인했다. 원문자·흰 원·체크 상자의 기존 표시를 보존한다.",
+  "files_sha256": {
+    "raw-001.png": "3a9dad5df41f7a57a278b7261eafd5d2536bb967fac59a45b8648fb6ba23cf6c",
+    "pdf-001.png": "e5892cbb5bd8da09ed68c13c3ed77702b862399ddf87ded68b36b99fcb829135",
+    "review-001.png": "c6e8a58020c763b85439f26fdc9c6051cd088e8e37b8e7c12c7452815de3a58f",
+    "overlay-001.png": "e4aa5d33ba5044a347d4d4419d05adca8db73d6ac625d41b9ae1b72beda62f28",
+    "silhouette.tsv": "c81b7ae66f2d708fc52f1266dbe1706ffc909e13fea9f762c84bf5cba7b271d5"
+  }
+}

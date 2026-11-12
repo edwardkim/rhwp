@@ -604,3 +604,39 @@ pdf/issue8687/font_list_name_fallback.hwpx	1	1
 pdf/issue8687/font_list_name_used_fallback.hwpx	1	1
 pdf/issue7375/paper-textbox-vpos-local.hwpx	1	1
 pdf/issue7375/paper-textbox-vpos-page.hwpx	1	1
+
+# 검토 6개 PR의 새 MCP Print: 저장 제품에 맞는 엔진·동일 원본·전체 내용 확인.
+# #8916 수동 2024 Print는 저장 제품 기본 2020과 달라 이 자동 원장에 혼입하지 않는다.
+samples/issue8573/empty-host-split-table.hwp	2	2
+samples/issue8573/empty-host-square-band-1430-below.hwp	1	1
+samples/issue8573/empty-host-square-band-1450-beside.hwp	1	1
+samples/issue8573/empty-host-square-band-600-no-extra-line.hwp	1	1
+samples/issue8573/empty-host-square-beside-line.hwp	1	1
+samples/issue8573/empty-host-square-then-topbottom-push.hwp	1	1
+samples/issue8573/text-host-split-table.hwp	2	2
+samples/issue8573/text-host-square-paper-companion-beside-line.hwp	1	1
+samples/issue8573/text-host-square-then-topbottom-push.hwp	1	1
+samples/issue8573/text-host-topbottom-line-below.hwp	1	1
+samples/issue8573/whitespace-host-negative-offset-table.hwp	1	1
+samples/issue8573/whitespace-host-split-table.hwp	2	2
+samples/issue8573/whitespace-host-square-then-topbottom-push.hwp	1	1
+samples/issue8573/whitespace-host-topbottom-line-below.hwp	1	1
+samples/issue8573/whitespace-host-topbottom-stacked-zones.hwp	1	1
+samples/issue8573/whitespace-host-two-tables-negative-offset.hwp	1	1
+samples/issue8665/title_line_fits.hwpx	2	2
+samples/issue8665/title_line_overflows.hwpx	2	2
+samples/issue8678/bar_axis_floor.hwpx	1	1
+samples/issue8678/column_axis_floor.hwpx	1	1
+samples/issue8678/column_axis_floor_large.hwpx	1	1
+samples/issue8678/column_axis_step_tall.hwpx	1	1
+samples/issue8680/wingdings_pua_symbols.hwpx	1	1
+samples/issue8690/float_line_rowspan_infront_center.hwp	2	2
+samples/issue8690/float_line_rowspan_infront_top.hwp	2	2
+samples/issue8690/float_line_valign_center.hwp	2	2
+samples/issue8690/float_line_valign_top.hwp	2	2
+samples/issue8573/picture-cell-short-empty.hwpx	1	1
+samples/issue8573/picture-cell-short-spaces.hwpx	1	1
+samples/issue8573/picture-cell-short-text.hwpx	1	1
+samples/issue8573/picture-cell-page-boundary-empty.hwpx	2	2
+samples/issue8573/picture-cell-page-boundary-spaces.hwpx	2	2
+samples/issue8573/picture-cell-page-boundary-text.hwpx	2	2

@@ -3126,6 +3126,37 @@ pub(crate) fn solo_title_exit_pad_px(
     )
 }
 
+/// 일반 텍스트 영역 끝의 줄 수와 후행 간격을 같은 확정 구성에서 읽는다.
+/// 저장 줄이 없으면 수용과 배치가 공유하는 재조판 결과만 근거로 사용한다.
+/// 개체·편집 중인 줄·배치용 채움 줄은 영역 간격을 줄일 근거가 아니다.
+pub(crate) fn closing_text_zone_line_metrics(
+    paragraph: &crate::model::paragraph::Paragraph,
+    computed: Option<&composer::ComposedParagraph>,
+    dpi: f64,
+) -> Option<(usize, f64)> {
+    if !paragraph.controls.is_empty() {
+        return None;
+    }
+    if para_has_no_stored_line_segs(paragraph) {
+        if paragraph.stored_text_partition_is_dirty()
+            || paragraph.cell_format_vpos_dirty
+            || paragraph.layout_only_fill_lines > 0
+        {
+            return None;
+        }
+        let computed = computed?;
+        let last = computed.lines.last()?;
+        (last.line_height > 0 && last.line_spacing >= 0)
+            .then_some((computed.lines.len(), hwpunit_to_px(last.line_spacing, dpi)))
+    } else {
+        let last = paragraph.line_segs.last()?;
+        Some((
+            paragraph.line_segs.len(),
+            hwpunit_to_px(last.line_spacing, dpi),
+        ))
+    }
+}
+
 /// 단일 단 구간의 확정 텍스트 끝에서 다음 구간 간격과 중복되는 후행 줄간격.
 /// 구조 제어만 가진 빈 줄도 줄 상자는 보존하며, 개체·부분 문단·재조판 줄은 제외한다.
 pub(crate) fn solo_zone_trailing_spacing_px(
@@ -3420,6 +3451,59 @@ pub(crate) fn stored_empty_square_successor_strip(
     .then_some((first.column_start, first.segment_width))
 }
 
+/// 저장 LINE_SEG 가 없는 공백 host 문단을 글자 있는 host 와 같게 다룰지.
+///
+/// 한/글(웹기안기)은 저장 줄이 없는 host 를 다시 조판할 때 공백만 든 host 줄도 글자 있는
+/// host 줄과 똑같이 놓는다(공백 7칸 host 와 "X" host 의 다음 문단 위치가 같다). 글자처럼
+/// 취급하지 않는 표·그림 하나를 가진 host 에만 적용한다. 글앞·글뒤 개체는 흐름을 차지하지
+/// 않아 함께 있어도 된다. 흐름 개체가 둘 이상인 공백 host(표 두 개를 공동 앵커로 둔 제목
+/// 띠 등)는 기존 공백 host 경로에 남긴다. 세로 오프셋이 음수인 자리차지 개체도 기존 경로에
+/// 남긴다(웹기안기: 공백 host·"X" host 모두 음수 오프셋 자리차지 표를 문단 위끝에 놓는다.
+/// 글자 host 경로는 오프셋을 그대로 써 표를 쪽 위 밖으로 보낸다).
+pub(crate) fn is_unstored_whitespace_object_host(
+    para: &crate::model::paragraph::Paragraph,
+) -> bool {
+    use crate::model::control::Control;
+    use crate::model::shape::TextWrap;
+    if para
+        .line_segs
+        .iter()
+        .any(|seg| seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+        || !para
+            .text
+            .chars()
+            .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}')
+    {
+        return false;
+    }
+    let mut flow_objects = 0usize;
+    let mut table_or_picture = false;
+    for control in &para.controls {
+        let (common, is_table_or_picture) = match control {
+            Control::Table(t) => (&t.common, true),
+            Control::Picture(p) => (&p.common, true),
+            Control::Shape(s) => (s.common(), false),
+            _ => continue,
+        };
+        if common.treat_as_char
+            || matches!(
+                common.text_wrap,
+                TextWrap::InFrontOfText | TextWrap::BehindText
+            )
+        {
+            continue;
+        }
+        if matches!(common.text_wrap, TextWrap::TopAndBottom)
+            && crate::renderer::float_placement::signed_hwpunit(common.vertical_offset) < 0
+        {
+            return false;
+        }
+        flow_objects += 1;
+        table_or_picture |= is_table_or_picture;
+    }
+    flow_objects == 1 && table_or_picture
+}
+
 /// 저장 LINE_SEG 가 하나도 없고 가시 글자가 있는 문단인지. 저장 줄이 없으면 host 글자의
 /// 띠·높이 증거가 없어 표 기하로 판단해야 한다(`no_lineseg_square_table_host_band`).
 pub(crate) fn is_no_lineseg_visible_text_host(para: &crate::model::paragraph::Paragraph) -> bool {
@@ -3431,6 +3515,7 @@ pub(crate) fn is_no_lineseg_visible_text_host(para: &crate::model::paragraph::Pa
             .text
             .chars()
             .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
+        || is_unstored_whitespace_object_host(para)
 }
 
 /// 저장 LINE_SEG 가 없는 host 의 글자가 Square 표 **아래**로 흐르는지.
@@ -3907,6 +3992,15 @@ pub(crate) fn render_font_family_names_for_weight(font_family: &str, bold: bool)
 /// 바로 뒤에 base family를 넣어 generic 폴백보다 먼저 선택되게 한다.
 /// 정적 DB 조회의 family key와는 다르다. Canvas 실측은 paint와 이 체인을 공유한다.
 pub fn canvas_font_family_chain(font_family: &str) -> String {
+    canvas_font_family_chain_for_selection(font_family, false)
+}
+
+/// 명시된 글리프 공급자는 주 face 뒤에서 미선택 OS 별칭보다 먼저 소비한다.
+/// 일반 설치 글꼴의 별칭 조회 순서는 바꾸지 않는다.
+pub(crate) fn canvas_font_family_chain_for_selection(
+    font_family: &str,
+    explicit_glyph_fallbacks: bool,
+) -> String {
     let requested = internal_font_family_members(font_family);
     let Some(primary) = requested.first().copied() else {
         return "sans-serif".to_string();
@@ -3915,6 +4009,11 @@ pub fn canvas_font_family_chain(font_family: &str) -> String {
     let fallback = generic_fallback(primary);
     let mut family_names = Vec::new();
     push_unique_family(&mut family_names, primary);
+    if explicit_glyph_fallbacks {
+        for declared_fallback in requested.iter().skip(1) {
+            push_unique_family(&mut family_names, *declared_fallback);
+        }
+    }
     for alias in installed_render_font_aliases(primary) {
         push_unique_family(&mut family_names, *alias);
     }

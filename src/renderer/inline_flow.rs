@@ -1182,7 +1182,15 @@ pub(crate) fn plan_square_table_host(
     use super::float_placement::{signed_hwpunit, ParagraphFloatFlow, ParagraphFloatPlacement};
     use super::layout_frame::FrameExclusionPolicy;
     use crate::model::shape::{HorzAlign, HorzRelTo, TextFlow, VertAlign, VertRelTo};
-    let uncached = super::is_no_lineseg_visible_text_host(para);
+    // 저장 줄 없는 host 중 그릴 글자가 없는(빈·공백) host. 한/글은 빈 host 도 글자 host 와
+    // 같이 어울림 표 옆 띠에 줄 하나를 두고 그 줄만큼만 흐름을 전진한다. 어울림 상자는 뒤
+    // 문단이 피하는 배제 영역으로 남는다.
+    let invisible_unstored = super::para_has_no_stored_line_segs(para)
+        && !para
+            .text
+            .chars()
+            .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace());
+    let uncached = super::is_no_lineseg_visible_text_host(para) || invisible_unstored;
     if !uncached
         && (!para
             .text
@@ -1198,6 +1206,25 @@ pub(crate) fn plan_square_table_host(
         matches!(c, Control::Table(t)
         if !t.common.treat_as_char && t.common.text_wrap == crate::model::shape::TextWrap::Square)
     })?;
+    // 저장 줄 없는 host 의 글앞·글뒤 그리기 개체와 쪽·종이 기준 어울림 개체는 제 위치를 따로
+    // 갖는 소유자라, 함께 있어도 같은 어울림 표 host 로 본다(웹기안기: 결재 표 칸 위에 놓인 종이
+    // 기준 어울림 도장 그림이 있어도 host 글줄은 표 옆에 남는다). 쪽·종이 기준 개체의 배제
+    // 영역은 이 문단 글줄 계산에 넣지 않는다.
+    let unstored_host_companion = |c: &Control| {
+        use crate::model::shape::{TextWrap, VertRelTo};
+        let common = match c {
+            Control::Picture(p) => &p.common,
+            Control::Shape(s) => s.common(),
+            _ => return false,
+        };
+        uncached
+            && !common.treat_as_char
+            && (matches!(
+                common.text_wrap,
+                TextWrap::InFrontOfText | TextWrap::BehindText
+            ) || (matches!(common.text_wrap, TextWrap::Square)
+                && matches!(common.vert_rel_to, VertRelTo::Page | VertRelTo::Paper)))
+    };
     if para.controls.iter().enumerate().any(|(i, c)| {
         i != control
             && !super::composer::control_is_width_neutral_marker(c)
@@ -1205,6 +1232,7 @@ pub(crate) fn plan_square_table_host(
                     && matches!(p.common.text_wrap,
                         crate::model::shape::TextWrap::InFrontOfText
                             | crate::model::shape::TextWrap::BehindText))
+            && !unstored_host_companion(c)
     }) {
         return None;
     }
@@ -1220,6 +1248,21 @@ pub(crate) fn plan_square_table_host(
     let Control::Table(table) = &para.controls[control] else {
         return None;
     };
+    // 옆 글자 띠가 없는(단 폭을 채운) 빈 host 표는 줄이 표 아래로 가는 기존 소유자에 남긴다.
+    if invisible_unstored
+        && !super::is_no_lineseg_visible_text_host(para)
+        && super::unstored_empty_square_table_host_geometry_px(
+            para,
+            table,
+            column_width,
+            styles,
+            Some(style),
+            dpi,
+        )
+        .is_some()
+    {
+        return None;
+    }
     let measured = tables
         .iter()
         .find(|m| m.para_index == para_index && m.control_index == control)?;
@@ -1256,6 +1299,17 @@ pub(crate) fn plan_square_table_host(
         HorzAlign::Center => ref_left + (ref_width - object_width) / 2.0 + offset,
         HorzAlign::Right | HorzAlign::Outside => ref_left + ref_width - object_width - offset,
     };
+    // 빈·공백 host 는 표 옆 띠가 한/글 최소 줄 폭(1440HU = 0.2인치) 이상일 때만 옆 줄로 둔다
+    // (웹기안기: 띠 1430HU 는 뒤 문단이 표 아래, 1450HU 는 표 옆). 띠가 없는 단 폭 표는 구역·단
+    // 정의 같은 조판 부호가 함께 있어도 줄이 표 아래로 가는 기존 소유자에 남긴다.
+    if invisible_unstored && !super::is_no_lineseg_visible_text_host(para) {
+        let min_band = hwpunit_to_px(1440, dpi);
+        let left_band = outer_left.max(0.0);
+        let right_band = column_width - (outer_left + object_width);
+        if left_band < min_band && right_band < min_band {
+            return None;
+        }
+    }
     let box_ = super::composer::ParagraphBox::body_for_style(column_width, Some(style), dpi);
     let stored_rows = stored_square_rows::source(para, control, table, measured, &box_, dpi);
     let spacing_before =
@@ -1328,9 +1382,30 @@ pub(crate) fn plan_square_table_host(
         // 같은 물리 구간의 저장 줄은 기존 소유자에게 남긴다.
         return None;
     }
+    // 글자 없는 host 의 줄 하나는 개체 조판 부호의 글자 모양까지 든 가장 큰 글자로 높이를
+    // 정한다(웹기안기: 어울림 표 run 16pt + 문단 끝 10pt 인 빈 host 뒤 문단이 16pt 줄 뒤에서
+    // 시작한다). 그려지는 글자가 없으므로 줄 높이·간격만 바꾼다.
+    let mut rows = rows;
+    let mut flow_top_hu = frame.top;
+    if invisible_unstored && rows.len() == 1 {
+        if let Some((height, spacing, _)) =
+            super::unstored_overlay_table_host_line_metrics(para, styles, Some(style))
+        {
+            let row = &mut rows[0];
+            let height_hu = px_to_hwpunit(height, dpi);
+            if height_hu > row.line_height {
+                row.baseline_distance += height_hu - row.line_height;
+                row.text_height = row.text_height.max(height_hu);
+                row.line_height = height_hu;
+                row.line_spacing = px_to_hwpunit(spacing, dpi);
+                flow_top_hu =
+                    flow_top_hu.max(row.vertical_pos + row.line_height + row.line_spacing);
+            }
+        }
+    }
     // Following paragraphs can use the free side of the same object. The
     // object remains an exclusion and fit budget; it is not a text advance.
-    let end = spacing_before + hwpunit_to_px(frame.top, dpi) + style.spacing_after;
+    let end = spacing_before + hwpunit_to_px(flow_top_hu, dpi) + style.spacing_after;
     Some(InlineFlowPlan {
         stored_empty_host: false,
         stored_float_host: false,

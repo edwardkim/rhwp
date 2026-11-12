@@ -1,0 +1,22 @@
+[
+  {
+    "file": "/Users/tsjang/rhwp/target/pr-review/release-test/deps/librhwp.dylib",
+    "bytes": 31265968,
+    "mtime": "2026-11-12T14:14:06.377191+00:00",
+    "compiled_path_strings": {
+      "post-rebase-73d06ed0-20261112/base-source": true,
+      "/Users/tsjang/rhwp/src/renderer": false
+    },
+    "sha256": "860d5ad2611368090af05c56a9eb5eb54fa6e83ba11e9fbf096fc68b3bdd9c68"
+  },
+  {
+    "file": "/Users/tsjang/rhwp/target/pr-review/release-test/deps/librhwp.rlib",
+    "bytes": 137330440,
+    "mtime": "2026-11-12T14:14:05.904296+00:00",
+    "compiled_path_strings": {
+      "post-rebase-73d06ed0-20261112/base-source": true,
+      "/Users/tsjang/rhwp/src/renderer": false
+    },
+    "sha256": "3de4cabb3c6b157895eed4ecc87d7da92b6ae4b3a020d9aac1f3a7961691db3b"
+  }
+]

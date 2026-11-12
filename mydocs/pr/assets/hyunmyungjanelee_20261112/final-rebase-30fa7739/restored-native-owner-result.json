@@ -1,0 +1,9 @@
+{
+  "code_head": "30fa7739f0340f2a248b22542c7dd36d9354f056",
+  "shared_binary_sha256": "16b2cf0827ef38d16859a0087a6a325633f304696792262d599cc680292ee49c",
+  "prior_frozen_binary_sha256": "809665ed67c9cac90f2af4e5d87fcc4de3787f859cf0d5202f3162a0565443b4",
+  "restore_compile_log_sha256": "9653e0da7bdc03c2a605b43dc0e552b93e751d2fa18d8805a47d403c100e087c",
+  "known_f0fa_behavior_raw": 99.76341,
+  "known_current_behavior_verified": true,
+  "purpose": "After fixed-base API test, rebuild requested candidate lib and bin from main workspace; inspect actual F0FA output rather than infer from Cargo exit alone."
+}

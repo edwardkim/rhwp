@@ -1,0 +1,61 @@
+{
+  "summary": {
+    "compared_pages": 1,
+    "average_silhouette_raw_match_percent": 100.0,
+    "worst_silhouette_raw_match_percent": 100.0,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 96.79627,
+    "worst_pixel_match_percent": 96.79627,
+    "average_ink_match_percent": 42.0452,
+    "worst_ink_match_percent": 42.0452,
+    "average_visual_accuracy_proxy_percent": 42.0452,
+    "worst_visual_accuracy_proxy_percent": 42.0452,
+    "average_tolerant_content_match_percent": 100.0,
+    "worst_tolerant_content_match_percent": 100.0,
+    "worst_pages": [
+      51
+    ]
+  },
+  "pages": [
+    {
+      "page": 51,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v8/protected-wasm/sample16-hwp2024/rhwp_png/rhwp_051.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v8/protected-wasm/sample16-hwp2024/pdf_png/pdf-051.png",
+      "overlay_png": "/Users/tsjang/rhwp/mydocs/pr/assets/hyunmyungjanelee_20261112/final-print-8fe7d1fb/protected-focus/sample16-hwp2024/wasm/overlay_051.png",
+      "width": 794,
+      "height": 1122,
+      "pixel_diff_threshold": 32,
+      "overlay_color_legend": {
+        "rhwp_only": "blue",
+        "pdf_only": "red",
+        "both_different": "orange",
+        "matching": "gray"
+      },
+      "total_pixels": 890868,
+      "diff_pixels": 28541,
+      "diff_ratio": 0.03203729,
+      "pixel_match_percent": 96.79627,
+      "ink_union_pixels": 49247,
+      "ink_diff_pixels": 28541,
+      "ink_diff_ratio": 0.57954799,
+      "ink_match_percent": 42.0452,
+      "visual_accuracy_proxy_percent": 42.0452,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 49247,
+      "tolerant_content_match_percent": 100.0,
+      "mean_abs_channel_delta": 3.307,
+      "max_channel_delta": 247,
+      "diff_bbox": [
+        36,
+        55,
+        757,
+        1082
+      ]
+    }
+  ]
+}

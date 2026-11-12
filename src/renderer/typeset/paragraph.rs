@@ -750,6 +750,27 @@ pub(super) fn place_fitted_paragraph_with_storage<S: crate::storage::Storage>(
             fmt.line_tail_spacing(fmt.line_count()),
             storage,
         )?;
+        // 단일 텍스트 영역을 닫는 재조판 줄은 같은 확정 구성을 다음 배치에 전달한다.
+        // 일반 본문의 재조판 선택을 바꾸지 않고, 실제 영역 전환에서만 꼬리 간격을 인증한다.
+        let next_index = para_idx + 1;
+        if st.col_count == 1
+            && paragraphs.get(next_index).is_some_and(|next| {
+                next.column_type == crate::model::paragraph::ColumnBreakType::MultiColumn
+                    || next.controls.iter().any(|control| {
+                        matches!(control, crate::model::control::Control::ColumnDef(_))
+                    })
+            })
+            && crate::renderer::plain_text_column_zone(
+                paragraphs,
+                next_index,
+                crate::renderer::declared_column_type_at(paragraphs, para_idx),
+                styles,
+            )
+        {
+            if let Some(composed) = fmt.computed_paragraph.as_ref() {
+                st.record_computed_paragraph(para_idx, composed, storage)?;
+            }
+        }
     }
     st.apply_full_paragraph_flow(
         advance,

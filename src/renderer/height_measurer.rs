@@ -1342,6 +1342,25 @@ pub(crate) fn fit_measured_table_to_declared_height_with_outcome(
     }
 }
 
+/// 저장 프레임 없이 재조판하는 그림 전용 칸의 안 여백은 실제 그림 상자를 소유한다.
+/// 선언 높이 fit과 통째 표 수용이 같은 물리 하한을 판정할 때 함께 사용한다.
+pub(crate) fn unstored_square_picture_cell_owns_padding(cell: &crate::model::table::Cell) -> bool {
+    cell.paragraphs.iter().all(|para| {
+        super::para_has_no_stored_line_segs(para)
+            && para
+                .text
+                .chars()
+                .all(|ch| ch.is_whitespace() || ch.is_control() || ch == '\u{FFFC}')
+    }) && cell.paragraphs.iter().any(|para| {
+        para.controls.iter().any(|control| {
+            matches!(control, Control::Picture(picture)
+                if !picture.common.treat_as_char
+                    && picture.common.flow_with_text
+                    && picture.common.text_wrap == TextWrap::Square)
+        })
+    })
+}
+
 pub(crate) fn fit_measured_table_to_declared_height_with_outcome_with_storage<
     S: crate::storage::Storage,
 >(
@@ -1429,7 +1448,23 @@ pub(crate) fn fit_measured_table_to_declared_height_with_outcome_with_storage<
                     .cells
                     .iter()
                     .filter(|cell| cell.row == row && cell.row_span == 1)
-                    .map(|cell| cell.total_content_height)
+                    .map(|cell| {
+                        // 저장 줄 없는 그림 전용 칸은 개체 선언이 닫힌 행 프레임을
+                        // 증명하지 않는다. 그림이 차지한 높이에 안 여백을 더한 물리
+                        // 상자까지 보존해야 예약과 paint가 같은 행 경계를 소비한다.
+                        // 저장 표의 패딩 회수(#1510)는 기존 내용 하한을 유지한다.
+                        let owns_picture_padding = table.cells.iter().any(|source| {
+                            usize::from(source.row) == cell.row
+                                && usize::from(source.col) == cell.col
+                                && unstored_square_picture_cell_owns_padding(source)
+                        });
+                        cell.total_content_height
+                            + if owns_picture_padding {
+                                cell.padding_top.max(0.0) + cell.padding_bottom.max(0.0)
+                            } else {
+                                0.0
+                            }
+                    })
                     .fold(0.0f64, f64::max);
                 floor > 0.0 && fitted.row_heights[row] * scale < floor - 0.5
             });
@@ -2185,8 +2220,16 @@ impl HeightMeasurer {
                         paragraphs, pi, self.dpi,
                     )
                     .map_or(object_bottom, |stack| object_bottom.max(stack.bottom));
-                if object_bottom > 0.0 {
-                    para_top + object_bottom
+                // 저장 줄 없는 도형 전용 문단의 글자 줄도 정렬 띠를 소유한다.
+                // TopAndBottom 도형은 위 시각 bottom 질의에서 제외되므로,
+                // 개체 bottom이 0이어도 이 줄 상자는 측정·배치에 함께 남긴다.
+                let anchor =
+                    crate::renderer::cell_paragraph_spacing::unstored_shape_anchor_line_height(
+                        p, styles,
+                    )
+                    .unwrap_or(0.0);
+                if object_bottom > 0.0 || anchor > 0.0 {
+                    para_top + object_bottom.max(anchor)
                 } else {
                     0.0
                 }

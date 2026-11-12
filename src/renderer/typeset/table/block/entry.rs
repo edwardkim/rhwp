@@ -12,6 +12,120 @@ use crate::renderer::typeset::{
 use super::{BlockTableInput, HostPlacementConstraint, SplitTableEntry};
 
 impl TypesetEngine {
+    /// 앞 문단 어울림 개체(`side_wrap_exclusions`)와 겹치는 문단 기준 자리차지 표의 배치.
+    ///
+    /// 표 바깥 상자의 위끝을 겹치는 어울림 상자 아래끝으로 내리고, host 글줄이 모두 그 위에
+    /// 들면 글줄은 문단 원점에 둔다(`Exclusion` 흐름 — 표 띠는 뒤 줄의 배제 영역이 된다).
+    /// 글줄이 내려간 표 위에 들지 못하면 기존 경로에 맡긴다.
+    #[allow(clippy::too_many_arguments)]
+    pub(in crate::renderer::typeset) fn square_side_pushed_placement(
+        &self,
+        st: &TypesetState,
+        para: &crate::model::paragraph::Paragraph,
+        para_idx: usize,
+        table: &crate::model::table::Table,
+        fmt: &crate::renderer::typeset::paragraph::metrics::FormattedParagraph,
+        para_start_height: f64,
+        table_height: f64,
+    ) -> Option<crate::renderer::float_placement::ParagraphFloatPlacement> {
+        use crate::model::shape::{HorzAlign, HorzRelTo, TextWrap, VertRelTo};
+        if table.common.treat_as_char
+            || !matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+            || !matches!(table.common.vert_rel_to, VertRelTo::Para)
+            || (st.side_wrap_exclusions.is_empty() && st.unstored_square_boxes.is_empty())
+            || !crate::renderer::para_has_no_stored_line_segs(para)
+        {
+            return None;
+        }
+        let dpi = self.dpi;
+        let column = st.inline_flow_column();
+        let text_origin = para_start_height
+            + if para_start_height > 0.0 {
+                fmt.spacing_before
+            } else {
+                0.0
+            };
+        let offset = hwpunit_to_px(
+            crate::renderer::float_placement::signed_hwpunit(table.common.vertical_offset),
+            dpi,
+        );
+        let outer_top = hwpunit_to_px(i32::from(table.outer_margin_top), dpi);
+        let outer_bottom = hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi);
+        let natural_outer_top = text_origin + offset;
+        let natural_outer_bottom = natural_outer_top + outer_top + table_height + outer_bottom;
+        // 가로 범위: 단·문단 기준 왼쪽 정렬만 오프셋으로 잡고, 그 밖은 단 전체로 본다.
+        let width = hwpunit_to_px(table.common.width as i32, dpi)
+            + hwpunit_to_px(i32::from(table.outer_margin_left), dpi)
+            + hwpunit_to_px(i32::from(table.outer_margin_right), dpi);
+        let (x0, x1) = if matches!(
+            table.common.horz_rel_to,
+            HorzRelTo::Column | HorzRelTo::Para
+        ) && matches!(table.common.horz_align, HorzAlign::Left)
+        {
+            let left = column.x
+                + hwpunit_to_px(
+                    crate::renderer::float_placement::signed_hwpunit(
+                        table.common.horizontal_offset,
+                    ),
+                    dpi,
+                );
+            (left, left + width)
+        } else {
+            (column.x, column.x + column.width)
+        };
+        let mut pushed_outer_top = natural_outer_top;
+        for (&(owner, _), exclusion) in st.side_wrap_exclusions.iter() {
+            if owner >= para_idx {
+                continue;
+            }
+            let ex_x0 = hwpunit_to_px(exclusion.horizontal.start, dpi);
+            let ex_x1 = hwpunit_to_px(exclusion.horizontal.end, dpi);
+            let ex_top = hwpunit_to_px(exclusion.vertical.start, dpi) - column.y;
+            let ex_bottom = hwpunit_to_px(exclusion.vertical.end, dpi) - column.y;
+            let overlaps_x = ex_x0 < x1 - 0.5 && x0 < ex_x1 - 0.5;
+            let overlaps_y =
+                ex_top < natural_outer_bottom - 0.5 && pushed_outer_top < ex_bottom - 0.5;
+            if overlaps_x && overlaps_y {
+                pushed_outer_top = pushed_outer_top.max(ex_bottom);
+            }
+        }
+        for &(page, col, owner, bx0, bx1, btop, bbottom) in st.unstored_square_boxes.iter() {
+            if page != st.pages.len() || col != st.current_column || owner >= para_idx {
+                continue;
+            }
+            let overlaps_x = bx0 < x1 - 0.5 && x0 < bx1 - 0.5;
+            let overlaps_y = btop < natural_outer_bottom - 0.5 && pushed_outer_top < bbottom - 0.5;
+            if overlaps_x && overlaps_y {
+                pushed_outer_top = pushed_outer_top.max(bbottom);
+            }
+        }
+        if pushed_outer_top <= natural_outer_top + 0.5 {
+            return None;
+        }
+        let lines = fmt.computed_host_lines.as_ref();
+        let host_end = lines
+            .and_then(|lines| {
+                lines
+                    .iter()
+                    .map(|line| line.top + line.height)
+                    .reduce(f64::max)
+            })
+            .unwrap_or_else(|| fmt.line_heights.first().copied().unwrap_or(0.0));
+        if text_origin + host_end > pushed_outer_top + 0.5 {
+            return None;
+        }
+        let table_top = pushed_outer_top + outer_top;
+        Some(crate::renderer::float_placement::ParagraphFloatPlacement {
+            flow: crate::renderer::float_placement::ParagraphFloatFlow::Exclusion,
+            anchor_y: text_origin,
+            stored_host_origin: Some(text_origin),
+            stored_successor_line_origin: None,
+            table_left: None,
+            table_top,
+            occupied_bottom: table_top + table_height + outer_bottom,
+        })
+    }
+
     pub(super) fn prepare_block_table_entry<'a>(
         &self,
         st: &mut TypesetState,
@@ -2321,6 +2435,25 @@ impl TypesetEngine {
             )
         })();
         let unconstrained_host_placement = empty_sibling_placement.or(unconstrained_host_placement);
+        // 앞 문단의 어울림 개체 상자와 겹치는 문단 기준 자리차지 표는 표만 그 상자 아래로
+        // 내려가고, host 글줄은 어울림 개체 옆 제자리에 남는다(웹기안기 실측: 앞 문단 어울림 표
+        // 아래 바깥 여백 + 자기 위 바깥 여백 뒤에서 시작, 뒤 문단도 표 띠 위 빈 자리를 쓴다).
+        let square_side_push = self.square_side_pushed_placement(
+            st,
+            para,
+            para_idx,
+            table,
+            fmt,
+            placement_para_start_height,
+            ft.effective_height,
+        );
+        let unconstrained_host_placement = match (square_side_push, unconstrained_host_placement) {
+            (Some(pushed), Some(existing)) if existing.table_top >= pushed.table_top => {
+                Some(existing)
+            }
+            (Some(pushed), _) => Some(pushed),
+            (None, existing) => existing,
+        };
         let constrain_host_placement = HostPlacementConstraint {
             table,
             has_preceding_coanchored_float,

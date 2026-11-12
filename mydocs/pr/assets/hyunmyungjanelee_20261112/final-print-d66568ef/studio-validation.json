@@ -1,0 +1,32 @@
+{
+  "code_head": "d66568ef247859a9c184546cad3ba42b06e806e1",
+  "studio_tests": {
+    "command": "npm test (rhwp-studio)",
+    "passed": 2784,
+    "failed": 0,
+    "skipped": 2,
+    "log_sha256": "413022bedefc14e6a6957bac1c52c464d13f6914560f63717b04b701aee9960a"
+  },
+  "studio_build": {
+    "command": "npm run build (tsc && vite build), after current fresh WASM supply",
+    "exit": 0,
+    "log_sha256": "7f4ed6757905790dc1cc255063504891355462cf36c67faa4df329d5236dd9a3",
+    "production_wasm_artifacts": [
+      {
+        "file": "rhwp-studio/dist/rhwp_bg.wasm",
+        "sha256": "5ea37f821e80a4b08033bc36fbb111d1a485222f36be02d069687ce3e34162ad"
+      },
+      {
+        "file": "rhwp-studio/dist/assets/rhwp_bg-D2QfhVR2.wasm",
+        "sha256": "5ea37f821e80a4b08033bc36fbb111d1a485222f36be02d069687ce3e34162ad"
+      }
+    ],
+    "production_matches_root_pkg": true
+  },
+  "renderer_contract": {
+    "command": "node e2e/renderer-contract.test.mjs",
+    "exit": 0,
+    "log_sha256": "d22ea6be4cd4694fa6356c547d15ad1b2e102a7e3c7aadaebefa33f56e77c2c0"
+  },
+  "actual_consumers": "separate actual-backends validation; npm success does not imply browser parity"
+}
