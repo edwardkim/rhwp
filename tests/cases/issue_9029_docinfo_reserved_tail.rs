@@ -10,6 +10,10 @@
 //!   (Hwp 2022 12.0.0.4547 Print, Hancom PDF 1.3.0.547) 1쪽 — 쪽 전체가 스캔 그림 한 장.
 //! - 수정 전 rhwp(devel `31a4225757`)는 `레코드 데이터 부족: tag=0, 필요=480, 가용=31` 로
 //!   문서 전체를 거부했다.
+//! - 측정: 2026-11-13, code `c20dded2dd`, `scripts/visual_sweep.py --silhouette-only --compat 2022
+//!   --dpi 96` 의 `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣). 1쪽 Native
+//!   99.85% / fresh WASM 99.85%, 전체 1쪽 = 한컴 1쪽, 전쪽 최저 같은 값. 글꼴 HCR Dotum·
+//!   HCR Batang. 증거 `mydocs/pr/assets/issue_9029/{native,wasm}/`.
 //!
 //! - 같은 문서의 DocInfo 그림 확장자는 `JPG`, 저장 스트림은 `BIN0001.jpg` 다. CFB 이름은
 //!   대소문자를 가리지 않는데 재생성 대상 판정이 대소문자를 가려, 저장하면 원본 스트림을
