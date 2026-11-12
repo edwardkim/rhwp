@@ -6291,7 +6291,7 @@ impl LayoutEngine {
             return hwpunit_to_px(flow.content_end_hu, self.dpi);
         }
         let cell_para_count = paragraphs.len();
-        composed_paras
+        let heights: Vec<f64> = composed_paras
             .iter()
             .zip(paragraphs.iter())
             .enumerate()
@@ -6311,7 +6311,97 @@ impl LayoutEngine {
                     styles,
                 )
             })
-            .sum()
+            .collect();
+        self.square_floor_flow_height(composed_paras, paragraphs, &heights, styles)
+    }
+
+    /// 문단 높이 `heights` 를 차례로 쌓되 어울림 그림 호스트 뒤 글줄을 그림 아래에서
+    /// 시작하게 한 흐름 높이.
+    fn square_floor_flow_height(
+        &self,
+        composed_paras: &[ComposedParagraph],
+        paragraphs: &[Paragraph],
+        heights: &[f64],
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        let mut floor = CellSquareStackTextFloor::default();
+        let mut y = 0.0f64;
+        for (pidx, ((comp, para), h)) in composed_paras
+            .iter()
+            .zip(paragraphs.iter())
+            .zip(heights.iter())
+            .enumerate()
+        {
+            y = floor.paragraph_top(self.dpi, paragraphs, styles, pidx, comp, para, y);
+            y += h;
+        }
+        y
+    }
+
+    /// 칸의 어울림 그림 바닥 규칙이 실제로 글줄을 그림 아래로 내려 내용 높이를 바꾸는가
+    /// (바닥 규칙을 쓴 흐름 높이가 문단 높이의 단순 합보다 큰가). 쪽 나눔이 칸 유닛 대신
+    /// 측정 높이를 쓸지 가르는 데 쓴다. 바닥 규칙이 아무것도 옮기지 않는 칸은 종전 유닛
+    /// 계산을 그대로 써서 쪽 나눔을 바꾸지 않는다.
+    pub(crate) fn cell_square_floor_moves_text(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        let paragraphs = &cell.paragraphs;
+        if !crate::renderer::float_placement::cell_has_square_text_obstacle_host(
+            paragraphs, self.dpi,
+        ) {
+            return false;
+        }
+        let (pad_left, pad_right, _, _) = self.resolve_cell_padding(cell, table);
+        let cell_w_px =
+            hwpunit_to_px(cell.width as i32, self.dpi) * self.render_table_width_scale(table);
+        let inner_width = crate::renderer::composer::cell_inner_text_width(
+            cell_w_px, pad_left, pad_right, self.dpi,
+        );
+        let composed_paras: Vec<_> = paragraphs
+            .iter()
+            .map(|p| {
+                let mut comp = crate::renderer::composer::compose_paragraph_in_context(p, styles);
+                crate::renderer::composer::recompose_cell_lines_with_nested_tables(
+                    &mut comp,
+                    p,
+                    inner_width,
+                    styles,
+                    self.dpi,
+                    self.profile.get().stored_geometry_policy(),
+                    self.profile.get().native_hwp5_layout(),
+                    &self.single_line_overflow_cache,
+                    |nested| self.nested_table_body_height(nested, styles),
+                );
+                comp
+            })
+            .collect();
+        let cell_para_count = paragraphs.len();
+        let heights: Vec<f64> = composed_paras
+            .iter()
+            .zip(paragraphs.iter())
+            .enumerate()
+            .map(|(pidx, (comp, para))| {
+                let frame_paragraph = comp.paragraph_with_frame_geometry(para);
+                let para = frame_paragraph.as_ref();
+                self.calc_para_lines_height(
+                    &comp.lines,
+                    para,
+                    self.profile.get().hwp3_layout()
+                        && para.line_segs.is_empty()
+                        && !para.text.is_empty(),
+                    !para.line_segs.is_empty(),
+                    pidx,
+                    cell_para_count,
+                    styles.para_styles.get(para.para_shape_id as usize),
+                    styles,
+                )
+            })
+            .collect();
+        let plain: f64 = heights.iter().sum();
+        self.square_floor_flow_height(&composed_paras, paragraphs, &heights, styles) > plain + 0.5
     }
 
     pub(super) fn stored_single_column_cell_flow(
@@ -7520,6 +7610,8 @@ impl LayoutEngine {
             });
         // 셀 내 문단 + 컨트롤 통합 레이아웃
         let mut para_y = text_y_start;
+        // [#8576 후속] 쌓인 그림 아래로 같은 칸 뒤 글줄을 내린다(높이 측정과 같은 규칙).
+        let mut square_stack_floor = CellSquareStackTextFloor::default();
         let mut has_preceding_text = false;
         let sequential_nested_layout =
             self.sequential_nested_cell_layout(composed_paras, &cell.paragraphs, styles);
@@ -7594,6 +7686,22 @@ impl LayoutEngine {
                 })
             };
 
+            // 쪽 나눔 표의 첫 조각(칸 맨 앞부터 그리는 조각)도 칸 원점이 같다.
+            let square_stack_text_top = (fragment_cut_units.is_none_or(|(start, _)| start == 0)
+                && !stored_block_flow)
+                .then(|| {
+                    let sequential_y = para_y;
+                    let top = square_stack_floor.paragraph_top(
+                        self.dpi,
+                        &cell.paragraphs,
+                        styles,
+                        cp_idx,
+                        composed,
+                        para,
+                        para_y,
+                    );
+                    (sequential_y, top)
+                });
             let has_table_ctrl = source_controls
                 .iter()
                 .any(|c| matches!(c, Control::Table(_)));
@@ -7775,6 +7883,13 @@ impl LayoutEngine {
                 0.0
             };
             let allow_first_para_lead = first_para_lead_px > 0.0;
+            // 저장 앵커가 정한 자리도 쌓인 그림 아래 글줄 위치보다 위일 수는 없다.
+            // 쌓인 그림 때문에 실제로 내려간 문단만 고친다(다른 문단의 앵커는 그대로).
+            if let Some((sequential_y, top)) = square_stack_text_top {
+                if top > sequential_y {
+                    para_y = para_y.max(top);
+                }
+            }
             let para_y_before_compose = para_y;
             let paragraph_picture_band =
                 crate::renderer::float_placement::paragraph_picture_band(para, self.dpi)
@@ -8638,6 +8753,34 @@ impl LayoutEngine {
                                 super::table_inline_picture_origin::rendered_overlay_picture_origin(
                                     cell_node, para, ctrl_idx, section_index, cp_idx, anchor_y,
                                 ).unwrap_or(anchor_y);
+                            // 저장 줄 없는 칸에서 뒤 글줄을 그림 아래로 내리는 호스트의 그림은
+                            // 음수 세로 오프셋만큼 칸 내용 위까지 올린다(높이 측정과 같은 값).
+                            let anchor_y = if square_stack_text_top.is_some()
+                                && non_inline_para
+                                && !top_and_bottom_para
+                                && !overlay_para
+                                && !side_by_side_float_group
+                                && matches!(pic.common.text_wrap, TextWrap::Square)
+                                && crate::renderer::para_has_no_stored_line_segs(para)
+                                && crate::renderer::float_placement::cell_paragraph_square_text_obstacles(
+                                    &cell.paragraphs,
+                                    cp_idx,
+                                    self.dpi,
+                                )
+                                .is_some()
+                            {
+                                let room_above = square_stack_floor
+                                    .content_top()
+                                    .map_or(0.0, |top| para_y_before_compose - top);
+                                anchor_y
+                                    + crate::renderer::float_placement::cell_square_host_picture_lift(
+                                        &pic.common,
+                                        room_above,
+                                        self.dpi,
+                                    )
+                            } else {
+                                anchor_y
+                            };
                             let unrestricted_take_place_cell_float =
                                 crate::renderer::float_placement::unrestricted_cell_float(
                                     &pic.common,
@@ -31350,5 +31493,257 @@ mod row_cut_tests {
             fp(&spacer),
             "공백 스페이서 클래스 전이는 지문이 변해야 한다"
         );
+    }
+}
+
+/// [#8576 후속] 칸 어울림 그림(쌓였든 나란하든 겹침 허용이든) 뒤 문단의 첫 줄.
+/// 저장 줄 정보가 없는 문단(재조판)에만 쓰며, 높이 측정과 그리기가 같은 값을 쓴다.
+struct CellSquareFirstLine {
+    /// 줄 높이(px)
+    height: f64,
+    /// 글자 크기(px). 빈 줄이 그림 사이 빈 폭에 놓이는 데 필요한 폭이다.
+    em: f64,
+    /// 글이 있는 줄이면 그 글의 가로 자리(칸 안쪽 왼쪽 기준 시작 px, 폭 px, 정렬).
+    text: Option<(f64, f64, f64, Alignment)>,
+    /// 줄에서 가장 넓은 낱말 폭(px). 한컴은 낱말 단위로 그림 사이 빈 자리에 흘려 쓴다.
+    widest_word: f64,
+}
+
+impl CellSquareFirstLine {
+    fn of(
+        composed: &ComposedParagraph,
+        para: &Paragraph,
+        styles: &ResolvedStyleSet,
+        dpi: f64,
+    ) -> Self {
+        let em = para
+            .char_shapes
+            .first()
+            .and_then(|cs| styles.char_styles.get(cs.char_shape_id as usize))
+            .map(|cs| cs.font_size)
+            .unwrap_or(0.0)
+            .max(1.0);
+        let Some(line) = composed.lines.first() else {
+            return Self {
+                height: em,
+                em,
+                text: None,
+                widest_word: 0.0,
+            };
+        };
+        let height = hwpunit_to_px(line.line_height, dpi).max(em);
+        if !line.runs.iter().any(|run| !run.text.trim().is_empty()) {
+            return Self {
+                height,
+                em,
+                text: None,
+                widest_word: 0.0,
+            };
+        }
+        let width: f64 = line
+            .runs
+            .iter()
+            .map(|run| {
+                estimate_text_width(
+                    &run.text,
+                    &resolved_to_text_style(styles, run.char_style_id, run.lang_index),
+                )
+            })
+            .sum();
+        let trailing: f64 = line
+            .runs
+            .last()
+            .map(|run| {
+                let trimmed = run.text.trim_end();
+                if trimmed.len() == run.text.len() {
+                    0.0
+                } else {
+                    let style = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                    estimate_text_width(&run.text, &style) - estimate_text_width(trimmed, &style)
+                }
+            })
+            .unwrap_or(0.0);
+        let para_style = styles.para_styles.get(para.para_shape_id as usize);
+        let left = para_style
+            .map_or(0.0, |s| s.margin_left + s.indent)
+            .max(0.0);
+        let right = para_style.map_or(0.0, |s| s.margin_right).max(0.0);
+        let align = para_style.map_or(Alignment::Justify, |s| s.alignment);
+        let widest_word = line
+            .runs
+            .iter()
+            .flat_map(|run| {
+                let style = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                run.text
+                    .split_whitespace()
+                    .map(move |word| estimate_text_width(word, &style))
+                    .collect::<Vec<_>>()
+            })
+            .fold(0.0f64, f64::max);
+        Self {
+            height,
+            em,
+            text: Some((left, right, (width - trailing).max(0.0), align)),
+            widest_word,
+        }
+    }
+
+    /// 칸 안쪽 폭 `inner_w` 에서 이 줄이 놓일 문단 원점 기준 y.
+    /// `text_follows` 는 같은 칸 뒤 문단에 글이 있는가다.
+    fn top(
+        &self,
+        obstacles: &crate::renderer::float_placement::CellSquareTextObstacles,
+        y: f64,
+        inner_w: f64,
+        text_follows: bool,
+    ) -> f64 {
+        let Some((left, right, width, align)) = self.text else {
+            // 빈 줄은 그림 사이 빈 폭(글자 하나 이상)에 놓일 수 있다. 뒤에 글이 없는
+            // 빈 줄은 그림 띠에 겹쳐 둔다 — 한컴은 그림만 든 칸 뒤의 빈 문단들로 행을
+            // 키우지 않는다(나란한 사진 3장 + 빈 문단 8개 칸이 사진 높이 그대로다).
+            if !text_follows {
+                return y;
+            }
+            return obstacles.text_line_top(y, self.height, self.em, inner_w);
+        };
+        // 글이 그려질 자리가 그림과 가로로 겹치지 않으면 그림 옆에 그대로 둔다.
+        let avail = (inner_w - left - right).max(0.0);
+        let (x0, x1) = match align {
+            Alignment::Center => {
+                let x0 = left + ((avail - width) / 2.0).max(0.0);
+                (x0, x0 + width)
+            }
+            Alignment::Right => ((inner_w - right - width).max(left), inner_w - right),
+            Alignment::Distribute | Alignment::Split => (left, inner_w - right),
+            Alignment::Justify | Alignment::Left => (left, left + width),
+        };
+        if obstacles.text_span_top(y, self.height, x0, x1.min(inner_w)) <= y {
+            return y;
+        }
+        // 겹치더라도 그림 옆·사이 빈 자리가 낱말 하나를 담으면 한컴은 글을 그 자리로
+        // 낱말 단위로 흘려 쓴다(사진 사이 화살표, 사진 오른쪽 설명 글). 여기서는 글을
+        // 다시 끊거나 옮기지 않으므로 세로 자리만 그대로 둔다. 가장 넓은 낱말도 들어갈
+        // 빈 자리가 없을 때만 그림 아래로 보낸다(칸 폭을 덮는 사진 아래 이름표).
+        obstacles.text_line_top(y, self.height, self.widest_word.max(self.em), inner_w)
+    }
+}
+
+/// 칸 문단을 차례로 놓으며 어울림 그림 아래로 글줄을 내리는 상태.
+#[derive(Default)]
+pub(crate) struct CellSquareStackTextFloor {
+    host: Option<StackHost>,
+    /// 칸 첫 문단의 시작 y(칸 내용 위)
+    content_top: Option<f64>,
+}
+
+struct StackHost {
+    pidx: usize,
+    /// 호스트 문단 시작 y
+    origin: f64,
+    stack: crate::renderer::float_placement::CellSquareTextObstacles,
+    /// 칸 안쪽 폭(px, 호스트 줄의 폭)
+    width: Option<f64>,
+    /// 호스트 빈 줄의 (높이, 필요한 폭, 전진량)
+    line: (f64, f64, f64),
+}
+
+impl CellSquareStackTextFloor {
+    /// 칸 첫 문단의 시작 y. 아직 문단을 놓지 않았으면 `None`.
+    pub(crate) fn content_top(&self) -> Option<f64> {
+        self.content_top
+    }
+
+    /// `pidx` 문단의 시작 y 를 돌려준다(입력 `y` 이상). 그림 호스트 문단은 원점을
+    /// 기록하고, 호스트 자신의 빈 줄이 그림 아래로 내려간 만큼 다음 문단을 민다.
+    /// 칸 문단마다 차례로 한 번씩 부른다.
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn paragraph_top(
+        &mut self,
+        dpi: f64,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+        pidx: usize,
+        composed: &ComposedParagraph,
+        para: &Paragraph,
+        y: f64,
+    ) -> f64 {
+        if self.content_top.is_none() {
+            self.content_top = Some(y);
+        }
+        let inner_w = |c: &ComposedParagraph| {
+            c.lines
+                .first()
+                .map(|l| hwpunit_to_px(l.segment_width, dpi))
+                .filter(|w| *w > 0.0)
+        };
+        if let Some(stack) = crate::renderer::float_placement::cell_paragraph_square_text_obstacles(
+            paragraphs, pidx, dpi,
+        ) {
+            if crate::renderer::para_has_no_stored_line_segs(para) {
+                let line = CellSquareFirstLine::of(composed, para, styles, dpi);
+                let h = line.height;
+                let advance = composed.lines.first().map_or(h, |l| {
+                    hwpunit_to_px(l.line_height + l.line_spacing, dpi).max(h)
+                });
+                // 음수 세로 오프셋 그림은 칸 내용 위까지만 올라간다. 나란한 여러 장은
+                // 배치가 음수 오프셋을 버리므로(문단 원점에 함께 걸림) 여기서도 버린다.
+                let room_above = if stack.boxes.len() == 1 {
+                    y - self.content_top.unwrap_or(y)
+                } else {
+                    0.0
+                };
+                let mut stack = stack;
+                for b in &mut stack.boxes {
+                    if b.2 < -room_above {
+                        let h = b.3 - b.2;
+                        b.2 = -room_above.max(0.0);
+                        b.3 = b.2 + h;
+                    }
+                }
+                self.host = Some(StackHost {
+                    pidx,
+                    origin: y,
+                    stack,
+                    width: inner_w(composed),
+                    line: (h, line.em, advance),
+                });
+            }
+            return y;
+        }
+        let Some(host) = self.host.as_ref() else {
+            return y;
+        };
+        if !crate::renderer::para_has_no_stored_line_segs(para) {
+            return y;
+        }
+        let Some(width) = inner_w(composed).or(host.width) else {
+            return y;
+        };
+        let mut start = y;
+        // 그림이 한 장뿐이면 호스트 빈 줄은 그림 옆(폭 0 자리)에 남고 뒤 문단만 그림
+        // 아래로 간다. 한컴 저장 줄도 호스트 줄을 문단 원점(폭 0)에 두고 다음 문단을
+        // 그림 바닥에 둔다. 여러 장일 때는 호스트 빈 줄도 그림 아래로 내려간다.
+        let text_follows = |from: usize| {
+            paragraphs
+                .iter()
+                .skip(from)
+                .any(|p| !p.text.trim().is_empty())
+        };
+        if pidx == host.pidx + 1 && host.stack.boxes.len() > 1 && text_follows(host.pidx + 1) {
+            let (host_h, host_need, host_advance) = host.line;
+            let host_top = host.stack.text_line_top(0.0, host_h, host_need, width);
+            if host_top > 0.0 {
+                // 그림 아래로 내려간 호스트 빈 줄은 줄 높이와 줄 간격을 차지한다
+                // (그림만 든 호스트 줄을 높이 없이 접는 경우에도).
+                start = (start + host_top).max(host.origin + host_top + host_advance);
+            }
+        }
+        host.origin
+            + CellSquareFirstLine::of(composed, para, styles, dpi).top(
+                &host.stack,
+                start - host.origin,
+                width,
+                text_follows(pidx + 1),
+            )
     }
 }

@@ -2705,6 +2705,8 @@ impl LayoutEngine {
                     .unwrap_or(0)
             });
             let mut para_y = text_y_start;
+            // [#8576 후속] 쌓인 그림 아래로 같은 칸 뒤 글줄을 내린다(높이 측정과 같은 규칙).
+            let mut square_stack_floor = super::table_layout::CellSquareStackTextFloor::default();
             let mut has_preceding_text = false;
             // [#3637] 이 조각에서 **실제로 그려지는 첫 문단**의 vpos. 아래 중첩 표
             // 문단 스냅이 쓰는 조각 원점이다. `line_segs.first()` 를 그대로 쓰면 셀
@@ -2992,6 +2994,21 @@ impl LayoutEngine {
                 let source_controls = &para.controls;
                 let frame_paragraph = composed.paragraph_with_frame_geometry(para);
                 let para = frame_paragraph.as_ref();
+                // 칸 맨 앞부터 그리는 조각만 칸 원점이 이어지는 흐름과 같다.
+                let square_stack_text_top =
+                    cut_units.is_none_or(|(start, _)| start == 0).then(|| {
+                        let sequential_y = para_y;
+                        let top = square_stack_floor.paragraph_top(
+                            self.dpi,
+                            &cell.paragraphs,
+                            styles,
+                            cp_idx,
+                            composed,
+                            para,
+                            para_y,
+                        );
+                        (sequential_y, top)
+                    });
 
                 let stored_host_flow =
                     self.stored_nested_host_physical_flow(cell, table, styles, cp_idx, cut_units);
@@ -3371,6 +3388,12 @@ impl LayoutEngine {
                         )
                         .stored_lead
                             > 0.0;
+                    // 쌓인 그림 때문에 실제로 내려간 문단만 고친다(다른 문단의 앵커는 그대로).
+                    if let Some((sequential_y, top)) = square_stack_text_top {
+                        if top > sequential_y {
+                            para_y = para_y.max(top);
+                        }
+                    }
                     let picture_closing_line = self
                         .stored_partitioned_picture_closing_line(cell, table, styles, cut_units);
                     let lines_before = cell_node.children.len();
@@ -3863,6 +3886,18 @@ impl LayoutEngine {
                                         && crate::renderer::float_placement::parallel_cell_picture_band_height(
                                             para, self.dpi,
                                         ).is_some();
+                                    // 저장 줄 없는 칸에서 뒤 글줄을 그림 아래로 내리는 호스트의 그림.
+                                    let square_floor_host_picture = square_stack_text_top.is_some()
+                                        && !pic.common.treat_as_char
+                                        && matches!(
+                                            pic.common.text_wrap,
+                                            crate::model::shape::TextWrap::Square
+                                        )
+                                        && crate::renderer::para_has_no_stored_line_segs(para)
+                                        && crate::renderer::float_placement::cell_paragraph_square_text_obstacles(
+                                            &cell.paragraphs, cp_idx, self.dpi,
+                                        )
+                                        .is_some();
                                     let anchor_y = if parallel_picture_owner
                                         || empty_top_anchored_square_with_inline_sibling
                                     {
@@ -3908,6 +3943,11 @@ impl LayoutEngine {
                                         // 그림을 줄 높이만큼 끌어내렸다 — 한/글 2024 PDF
                                         // 36308670 2쪽 빈 문단 1100HU=14.67px.
                                         top
+                                    } else if square_floor_host_picture {
+                                        // 저장 줄 없는 칸에서 뒤 글줄을 그림 아래로 내리는 호스트의
+                                        // 그림은 문단 위가 원점이다(뒤 글은 위 바닥 규칙이 민다).
+                                        // 구성 뒤 `para_y` 는 호스트 빈 줄 하나를 지난 자리다.
+                                        para_y_before_compose
                                     } else if start_line == 0
                                         && end_line == 0
                                         && uncut_control_only_nested_table
@@ -3937,6 +3977,27 @@ impl LayoutEngine {
                                         super::table_inline_picture_origin::rendered_overlay_picture_origin(
                                             &cell_node, para, ctrl_idx, section_index, cp_idx, anchor_y,
                                         ).unwrap_or(anchor_y);
+                                    // 음수 세로 오프셋은 칸 내용 위까지 그림을 올린다(높이 측정과 같은 값).
+                                    let single_square_picture = source_controls
+                                        .iter()
+                                        .filter(|c| matches!(c, Control::Picture(p) if !p.common.treat_as_char))
+                                        .count()
+                                        == 1;
+                                    let anchor_y = if square_floor_host_picture
+                                        && single_square_picture
+                                    {
+                                        let room_above = square_stack_floor
+                                            .content_top()
+                                            .map_or(0.0, |top| para_y_before_compose - top);
+                                        anchor_y
+                                            + crate::renderer::float_placement::cell_square_host_picture_lift(
+                                                &pic.common,
+                                                room_above,
+                                                self.dpi,
+                                            )
+                                    } else {
+                                        anchor_y
+                                    };
                                     // 칸 문단 기준 어울림 개체의 음수 오프셋은 측정 프레임 위
                                     // 공간을 만들지 않는다 — 일반 표 경로와 같은 계약
                                     // (`cell_wrap_vertical_offset_hu`).

@@ -3939,6 +3939,7 @@ pub(crate) use shape_layout::{
     normalized_single_line_inline_textbox_host_with_storage,
 };
 pub(crate) use table_layout::border_style_has_diagonal;
+pub(crate) use table_layout::CellSquareStackTextFloor;
 pub(crate) use table_layout::SavedZeroOriginWitness;
 pub(crate) use table_partial::cell_crosses_fragment_end;
 pub(crate) use utils::extract_picture_transform;

@@ -162,8 +162,24 @@ impl TypesetEngine {
                 let has_single_row_cells = layout_engine
                     .cells_starting_on_row(row_geometry_table, r)
                     .any(|c| c.row_span == 1);
+                // 저장 줄 없는 칸의 어울림 그림 바닥 규칙이 실제로 글줄을 그림 아래로 내린 칸이
+                // 든 행은 측정 높이를 쓴다(배치·높이 측정이 같은 바닥 규칙을 쓴다). 칸 유닛은
+                // 줄 단위로 더해 그 이동을 모른다. 바닥 규칙이 아무것도 옮기지 않는 행은 종전
+                // 유닛 높이를 그대로 써서 쪽 나눔을 바꾸지 않는다.
+                let row_has_square_floor_moved_text = has_single_row_cells
+                    && layout_engine
+                        .cells_starting_on_row(row_geometry_table, r)
+                        .any(|cell| {
+                            cell.row_span == 1
+                                && layout_engine.cell_square_floor_moves_text(
+                                    cell,
+                                    row_geometry_table,
+                                    styles,
+                                )
+                        });
                 let row_cut_h = if row_has_stored_square_picture_flow(r)
                     || row_has_unstored_square_object_anchor(r)
+                    || row_has_square_floor_moved_text
                 {
                     // native HWP5 RowBreak stores the adjacent text LINE_SEG ladder as
                     // the authoritative row height. Recomputing this whole row from

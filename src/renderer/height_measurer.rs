@@ -3759,6 +3759,32 @@ let body_height=match nested_body_heights
 }) .try_fold(0.0_f64, |sum,value| -> Result<f64,S::Error>{Ok(sum.max(value?))})
     }
 
+    /// 칸 문단 높이를 차례로 쌓되, 저장 줄 없는 어울림 그림 호스트 뒤의 글줄은
+    /// 그림 아래에서 시작한다(배치 `CellSquareStackTextFloor` 와 같은 규칙).
+    fn square_floor_text_height(
+        &self,
+        paragraphs: &[Paragraph],
+        composed: &[ComposedParagraph],
+        heights: &[f64],
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        if composed.len() != paragraphs.len() || heights.len() != paragraphs.len() {
+            return heights.iter().sum();
+        }
+        let mut floor = crate::renderer::layout::CellSquareStackTextFloor::default();
+        let mut y = 0.0f64;
+        for (pidx, ((comp, para), h)) in composed
+            .iter()
+            .zip(paragraphs.iter())
+            .zip(heights.iter())
+            .enumerate()
+        {
+            y = floor.paragraph_top(self.dpi, paragraphs, styles, pidx, comp, para, y);
+            y += h;
+        }
+        y
+    }
+
     /// 표의 높이를 측정한다 (depth 기반 재귀).
     fn measure_table_impl(
         &self,
@@ -3957,6 +3983,12 @@ let body_height=match nested_body_heights
                 // 셀 내 문단들의 실제 높이 합산
                 let mut frame_paragraphs = None;
                 let mut stored_ladder_discarded = false;
+                let square_floor_cell =
+                    crate::renderer::float_placement::cell_has_square_text_obstacle_host(
+                        &cell.paragraphs,
+                        self.dpi,
+                    );
+                let mut square_floor_comps = Vec::new();
                 let text_height: f64 = if cell.text_direction != 0 {
                     // 세로쓰기: line_seg.segment_width가 열의 세로 길이
                     // 셀 높이 = 최대 segment_width
@@ -4001,6 +4033,9 @@ let body_height=match nested_body_heights
                                     let measured = self.measure_table_impl_with_storage(nested, 0, 0, styles, depth + 1, stretch, storage)?;
     Ok(measured.total_height - measured.caption_height)
 }, storage)?;
+                            if square_floor_cell {
+                                square_floor_comps.push(comp.clone());
+                            }
                             let frame_paragraph = comp.paragraph_with_frame_geometry_with_storage(p, storage)?;
                             if let std::borrow::Cow::Owned(ref paragraph) = frame_paragraph {
                                 if frame_paragraphs.is_none(){frame_paragraphs=Some(crate::storage::try_clone(&cell.paragraphs,storage)?);}
@@ -4245,7 +4280,8 @@ let body_height=match nested_body_heights
                                     ).unwrap_or(lines_total) - reflow_nested_height
                                 } else { lines_total } + spacing_after
                             })
-}) .try_fold(0.0_f64, |sum,value| -> Result<f64,S::Error>{Ok(sum + value?)})?
+}).collect::<Result<Vec<f64>, S::Error>>()
+.map(|heights| self.square_floor_text_height(&cell.paragraphs, &square_floor_comps, &heights, styles))?
                 };
                 // 뒤의 저장 extent·프레임 판정도 실제 구성한 줄 좌표를 소비한다.
                 let frame_cell = frame_paragraphs
@@ -5000,6 +5036,12 @@ let body_height=match nested_body_heights
                     cell_w_px, pad_left, pad_right, self.dpi,
                 );
                 let mut frame_paragraphs = None;
+                let square_floor_cell =
+                    crate::renderer::float_placement::cell_has_square_text_obstacle_host(
+                        &cell.paragraphs,
+                        self.dpi,
+                    );
+                let mut square_floor_comps = Vec::new();
                 let text_height: f64 = if cell.text_direction != 0 {
                     // 세로쓰기: max(segment_width)
                     let mut max_h: f64 = 0.0;
@@ -5041,6 +5083,9 @@ let body_height=match nested_body_heights
                                     let measured = self.measure_table_impl_with_storage(nested, 0, 0, styles, depth + 1, stretch, storage)?;
     Ok(measured.total_height - measured.caption_height)
 }, storage)?;
+                            if square_floor_cell {
+                                square_floor_comps.push(comp.clone());
+                            }
                             let frame_paragraph = comp.paragraph_with_frame_geometry_with_storage(p, storage)?;
                             if let std::borrow::Cow::Owned(ref paragraph) = frame_paragraph {
                                 if frame_paragraphs.is_none(){frame_paragraphs=Some(crate::storage::try_clone(&cell.paragraphs,storage)?);}
@@ -5261,7 +5306,8 @@ let body_height=match nested_body_heights
                                     ).unwrap_or(lines_total) - reflow_nested_height
                                 } else { lines_total } + spacing_after
                             })
-}) .try_fold(0.0_f64, |sum,value| -> Result<f64,S::Error>{Ok(sum + value?)})?
+}).collect::<Result<Vec<f64>, S::Error>>()
+.map(|heights| self.square_floor_text_height(&cell.paragraphs, &square_floor_comps, &heights, styles))?
                 };
                 // LINE_SEG의 line_height에 이미 셀 내 중첩 표 높이가 반영되어 있으므로
                 // controls_height를 별도로 더하면 이중 계산됨
