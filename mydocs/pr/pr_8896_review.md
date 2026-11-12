@@ -1,11 +1,16 @@
 # PR #8896 리뷰 — 표 끝 조각의 불필요한 빈 쪽 제거
 
-## 판정과 현재 단계
+## 최종 판정
 
 **메인터너 보정 후 수용 가능 — 필수 로컬 검증 완료.**
 작업지시자의 “예외 없이 기존 차이도 먼저 해결” 결정에 따라 과거 보호값 미재현도 보정했다.
 최신 기준 Native/fresh 최적화 WASM 전 3,542쪽의 공식 보호값 하락은 0이다.
 전체 회귀 13,326건·Native 공식 3종 4,073건·추가 공급 protocol 22건과 모든 lint를 통과했다. 원격 push·승인 리뷰·PR 생성·병합은 아직 수행하지 않았다.
+
+적용 경로는 외부 PR의 `maintainer_general.md`이며, `intake_and_review.md`·
+`local_validation.md`·`visual_fixture_evidence.md`·`post_merge.md`를 함께 읽고 적용했다.
+작업지시자가 제출 후보 `f6acac4df1`의 원격 처리 전체를 승인했다. 첫 push 전에 이 문서의
+판정 제목과 절차 연결만 정리하며, 최종 검사 source 이후 제품 코드·검사는 변경하지 않는다.
 
 | 항목 | 실제 값 |
 | --- | --- |
@@ -115,3 +120,16 @@ fmt·manifest·unit-tier policy·host/WASM/workspace all-target·Native Skia Cli
 #8693 완료를 확인하고 #7620은 OPEN을 유지한다. 현재 base 대비 CI workflow 변경은 없어 후속 기록은 옵션 M이다.
 병합 뒤 duration → 운영 기록·archive·devel push → 동기화 → 이슈·감사 댓글 → 전용 branch/worktree와
 루트 output·사용 종료 debug 정리 순서를 따른다. 다른 작업과 fork branch는 보존한다.
+
+## Merge 후 contributor PR comment 계획
+
+원 PR의 세 입력과 독립 웹한글기안기 Print 전 6쪽을 기준으로, 표의 불필요한 종료 이월 제거와
+실제로 이월된 빈 host 글줄 보존을 먼저 설명한다. 최종 merge SHA와 해당 head CI 주소,
+로컬 13,326건·Native 공식 4,073건 및 Native/fresh WASM 전 6쪽 raw 100%를 함께 적는다.
+메인터너의 원 글꼴 공급 보정은 원 기여의 종료 수정과 구분한다.
+`assets/pr8896`에 보존한 각 원본의 review·overlay를 최종 merge SHA의 raw URL로 연결하고,
+게시 전에 실제 이미지 형식·SHA-256과 입력·쪽 대응을 확인한다. #8693 완료를 확인하고
+#7620의 별도 잔여 범위는 유지한다. 운영 기록·devel 동기화 뒤 중복 댓글을 확인해 게시한다.
+
+이 PR의 큰 diff는 전쪽 TSV·manifest·이미지 등 재현 증거를 포함한다. 대형 PR 보조 절차에 따라
+코드 검토·병합 시뮬레이션·독립 시각 검증과 작업지시자의 수용 결정을 각각 완료했다.
