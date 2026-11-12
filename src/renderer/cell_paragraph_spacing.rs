@@ -2,6 +2,37 @@
 
 use crate::model::paragraph::Paragraph;
 
+/// 저장 줄 없는 도형 전용 문단도 정렬할 원본 글자 줄 상자를 소유한다.
+/// 도형의 오프셋·높이와 더하지 않고 같은 원점의 큰 띠를 선택할 때만 쓴다.
+/// 실제 글자·다른 흐름 개체·저장 줄은 기존 측정에 맡긴다.
+pub(crate) fn unstored_shape_anchor_line_height(
+    para: &Paragraph,
+    styles: &super::style_resolver::ResolvedStyleSet,
+) -> Option<f64> {
+    use crate::model::control::Control;
+    if !super::para_has_no_stored_line_segs(para)
+        || !para
+            .text
+            .chars()
+            .all(|ch| ch.is_whitespace() || ch.is_control() || ch == '\u{fffc}')
+        || !para.controls.iter().any(|control| {
+            matches!(control,
+            Control::Shape(shape) if !shape.common().treat_as_char)
+        })
+        || !para.controls.iter().all(|control| {
+            matches!(control, Control::Shape(shape) if !shape.common().treat_as_char)
+                || super::composer::control_is_width_neutral_marker(control)
+        })
+    {
+        return None;
+    }
+    para.char_shapes
+        .first()
+        .and_then(|shape| styles.char_styles.get(shape.char_shape_id as usize))
+        .map(|style| style.font_size)
+        .filter(|height| height.is_finite() && *height > 0.0)
+}
+
 /// 저장 첫 줄은 앞 간격을 이미 원점에 품는다. 흐름에서 다시 더하지 않아도
 /// 그 띠가 차지하는 공간은 셀 높이와 첫 분할 유닛에 포함해야 한다.
 pub(crate) struct CellParagraphBefore {

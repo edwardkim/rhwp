@@ -2220,8 +2220,16 @@ impl HeightMeasurer {
                         paragraphs, pi, self.dpi,
                     )
                     .map_or(object_bottom, |stack| object_bottom.max(stack.bottom));
-                if object_bottom > 0.0 {
-                    para_top + object_bottom
+                // 저장 줄 없는 도형 전용 문단의 글자 줄도 정렬 띠를 소유한다.
+                // TopAndBottom 도형은 위 시각 bottom 질의에서 제외되므로,
+                // 개체 bottom이 0이어도 이 줄 상자는 측정·배치에 함께 남긴다.
+                let anchor =
+                    crate::renderer::cell_paragraph_spacing::unstored_shape_anchor_line_height(
+                        p, styles,
+                    )
+                    .unwrap_or(0.0);
+                if object_bottom > 0.0 || anchor > 0.0 {
+                    para_top + object_bottom.max(anchor)
                 } else {
                     0.0
                 }

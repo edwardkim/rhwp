@@ -8,14 +8,14 @@
 //! 재현물은 #8579 생성기를 변형해 공개 샘플(test-image.hwpx, issue3738, issue5789)을 조합하고
 //! 저장 줄을 걷어 낸 HWP5 다. 행 14개, 4열. 짝수 행: c0 글자 | c1 직선 | c2 그림 | c3 직선,
 //! 홀수 행: c0 글자 | c1 그림 | c2 직선 | c3 직선. 칸 세로 정렬은 위(`valign_top`)와
-//! 가운데(`valign_center`) 두 벌이다. 웹한글기안기 인쇄본
-//! (`pdf/issue8690/*-webhwp-print.pdf`)에서 직선은 두 쪽의 모든 칸에 그려진다.
+//! 가운데(`valign_center`) 두 벌이다. Windows 한컴 2020 MCP Print
+//! (`pdf/issue8690/*-hwp-2020.pdf`)에서 직선은 두 쪽의 모든 칸에 그려진다.
 //!
 //! 셋째·넷째 재현물(`rowspan_infront_top`, `rowspan_infront_center`)은 직선을 글앞으로 두고,
 //! 두 행 묶음마다 c1·c3 를 2행 병합 칸으로 둔다(짝수 행: c0 글자 | c1 직선(병합) | c2 직선 |
 //! c3 직선(병합), 홀수 행: c0 글자 | c2 직선). 칸 세로 정렬은 위와 가운데다. 병합 칸은 쪽 경계에 걸리지 않아도 칸 전체를 덮는 컷을
 //! 받고, 글앞 도형만 든 문단은 빈 줄로 분류되어 그 컷의 빈 줄 소유에서 빠져 건너뛰어졌다.
-//! 웹한글기안기 인쇄본에서 병합 칸 직선도 모두 그려진다.
+//! 같은 Windows 한컴 Print에서 병합 칸 직선도 모두 그려진다.
 //!
 //! 검사: 쪽 경계 조각이 아닌 행의 직선 칸마다 직선이 하나 이상 있고, 그 직선이 자기 칸 안에
 //! 있다. 위 정렬에서는 칸 위쪽 절반, 가운데 정렬에서는 칸 세로 가운데 띠 안에 있다.
@@ -174,5 +174,63 @@ fn infront_line_in_rowspan_cell_is_emitted_center_aligned() {
             (0.25..=0.75).contains(&r),
             "가운데 정렬 칸의 직선은 칸 세로 가운데 띠에 있어야 한다: {r:.2}"
         );
+    }
+}
+
+#[test]
+fn centered_shape_anchor_keeps_the_source_font_line_box() {
+    // 관계형: 독립 Windows 한컴 Print에서 확인한 원본 글자 줄과 도형 띠의 소유다.
+    // 고정한 PDF 좌표가 아니라 소스 em·안 여백·오프셋과 실제 셀 상자를 대조한다.
+    for name in [
+        "float_line_valign_center.hwp",
+        "float_line_rowspan_infront_center.hwp",
+    ] {
+        let core = core(name);
+        let document = core.document();
+        let table = document
+            .sections
+            .iter()
+            .flat_map(|section| &section.paragraphs)
+            .flat_map(|para| &para.controls)
+            .find_map(|control| match control {
+                rhwp::model::control::Control::Table(table) => Some(table),
+                _ => None,
+            })
+            .expect("원본 표");
+        let mut checked = 0;
+        for probe in whole_row_cells(&core) {
+            let Some(line) = probe.lines.first() else {
+                continue;
+            };
+            let cell = table
+                .cells
+                .iter()
+                .find(|cell| cell.row == probe.row && cell.col == probe.col)
+                .expect("실제 칸의 원본 소속");
+            let para = &cell.paragraphs[0];
+            let shape = para
+                .controls
+                .iter()
+                .find_map(|control| match control {
+                    rhwp::model::control::Control::Shape(shape) => Some(shape.common()),
+                    _ => None,
+                })
+                .expect("직선 앵커");
+            let font = &document.doc_info.char_shapes[para.char_shapes[0].char_shape_id as usize];
+            let em = f64::from(font.base_size) * 96.0 / 7200.0;
+            let offset = f64::from(shape.vertical_offset) * 96.0 / 7200.0;
+            let extent = offset + f64::from(shape.height) * 96.0 / 7200.0;
+            let padding = cell.effective_padding(&table.padding);
+            let top = f64::from(padding.top) * 96.0 / 7200.0;
+            let bottom = f64::from(padding.bottom) * 96.0 / 7200.0;
+            let inner = probe.cell.height - top - bottom;
+            let content = em.max(extent);
+            let expected = probe.cell.y + top + (inner - content).max(0.0) / 2.0 + offset;
+            assert!((line.y - expected).abs() <= 0.5,
+                "{name} p{} r{}c{}: 원본 글자 줄과 개체의 큰 띠로 정렬해야 한다; 실제 {}, 원본 관계 {}",
+                probe.page + 1, probe.row, probe.col, line.y, expected);
+            checked += 1;
+        }
+        assert!(checked >= 16, "{name}: 전체 행과 병합 칸의 앵커를 검사한다");
     }
 }
