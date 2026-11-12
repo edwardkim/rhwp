@@ -1,0 +1,22 @@
+{
+  "head-hwp3-default-stable-omitted": {
+    "pages": 763,
+    "equal": true,
+    "changed_pages": []
+  },
+  "base-hwp3-default-stable-host": {
+    "pages": 763,
+    "equal": true,
+    "changed_pages": []
+  },
+  "head-hwp3-default-stable-host": {
+    "pages": 763,
+    "equal": true,
+    "changed_pages": []
+  },
+  "base-hwp3-default-stable-omitted": {
+    "pages": 763,
+    "equal": true,
+    "changed_pages": []
+  }
+}

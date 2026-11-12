@@ -1,0 +1,52 @@
+{
+  "verified_at": "2026-11-12T22:03:34.706362+09:00",
+  "base": "1a3ed4a7cd76701085a24ac81d30bc5fb31942c1",
+  "code_head": "cec288ae2fd84b75b884a05ee1ada6ae3a8d2ac7",
+  "source_git_objects": {
+    "src": "73606076884d0bd1c66de1671f4232df3b7f8bc7",
+    "rhwp-studio/src": "f92d35146756abaa83990d891692abd3ed22eadd",
+    "rhwp-studio/e2e": "6c0c50e9b7208489a3a7c7853998882a7aedc9ad",
+    "Cargo.toml": "67ffbf80f174ba3465e4454d140f758395833b2e",
+    "Cargo.lock": "34d08aa8d5150817968568e1ab6f68af228eeeac"
+  },
+  "files": {
+    "base-rhwp": {
+      "sha256": "8139b5e31ee46907803fb51d2a8e0a92d5b98bd7743f2f030c106616848f04c5",
+      "bytes": 73302048
+    },
+    "head-rhwp": {
+      "sha256": "b710d6867efac39c1bfb0aab73d7eac0c319f6b5c58be64396f0659c6703ec25",
+      "bytes": 73311728
+    },
+    "pkg/rhwp_bg.wasm": {
+      "sha256": "3e68c4f112705fe03ddab642a658db8ecb943a837971203fea0813e7d66c08df",
+      "bytes": 29288871
+    },
+    "pkg/rhwp.js": {
+      "sha256": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a",
+      "bytes": 586144
+    },
+    "base-pkg/rhwp_bg.wasm": {
+      "sha256": "6f293474fbfea0e7913997d333f78f0091080f911684254d877ffb020de8e1e5",
+      "bytes": 29191842
+    },
+    "head-site/rhwp_bg.wasm": {
+      "sha256": "3e68c4f112705fe03ddab642a658db8ecb943a837971203fea0813e7d66c08df",
+      "bytes": 29288871
+    },
+    "base-site/rhwp_bg.wasm": {
+      "sha256": "6f293474fbfea0e7913997d333f78f0091080f911684254d877ffb020de8e1e5",
+      "bytes": 29191842
+    }
+  },
+  "build_log_sha256": {
+    "native-build.log": "96a34d7e37f99261db82ff74fb6dbfea76caef8ef4d094c3f9b9ab376ba554e4",
+    "wasm-build.log": "a2add254983d378d4931bcc71caea53d896b4d75fcc3dfdc8300eacfb69c59eb",
+    "site-build.log": "65aacabea8e48c30cf7bd65be4e09e8c1b3984282adedf2e130a35c89a3fac3c",
+    "base-site-build.log": "747f9fb60ecc16d4dbbcfa5599052f9c239056dd5d0c8e952541a16bf9422d4f",
+    "base8956-native-build.log": "04b58be3056a00e23c8f8603e3f9829288f075c0bc7f37584f0a31cbb8bbd635",
+    "base8956-wasm-build.log": "bcf305ef426173a88603930621d7a702be8c8b136d74ad4dce0c9c4b935c3824"
+  },
+  "wasm_build": "scripts/wasm-pack-locked.sh --target web --out-dir pkg (wasm-opt enabled)",
+  "native_build": "cargo build --locked --profile release-test --features native-skia --bin rhwp"
+}
