@@ -22,3 +22,11 @@
 ## 2026-11-13 승인
 
 작업지시자가 “메인테이너 보정·필수 재검증 승인 (권장)”으로 위 보정과 실제 재검증을 승인했다. Windows CMake의 공통 경로 보정을 적용하고 실제 runner·두 타일·이동 참조앱을 검증한다. 기존 macOS 수용 결정은 유지하며 원격 source push·PR·merge는 이번 범위에 포함하지 않는다. [승인 범위](assets/seo-rii-20261112/windows-correction-approval.json)를 보존했다.
+
+## 실제 Windows 참조앱에서 추가 확인한 파일 metadata 경계
+
+CMake 보정 후 실제 Windows 두 타일·편집·resize·복구·종료는 변경 없는 collector에서 성공했다. 이어서 #8953 참조앱의 release 빌드도 성공했지만, 패키지의 정규 파일 읽기에서 `bundle input changed before read`로 중단됐다. 동일 `.exe`의 `lstat.st_mode=0o100777`, 열린 fd의 `fstat.st_mode=0o100666`을 실제 Windows Python 3.12.3에서 대조했다. inode·device·size·mtime·nlink는 같았다. ctime의 다른 권위는 기존 `54d987cfb5962e7cf6e49d8460a96bef7143f0e8`의 birthtime 정규화로 이미 처리한다.
+
+[CPython 3.12.3 원문](https://github.com/python/cpython/blob/v3.12.3/Modules/posixmodule.c#L1843-L1856)도 경로의 `.exe`·`.bat`·`.cmd`·`.com` 확장자로 실행 비트를 합성하며 실제 ACL 실행 권한을 측정하는 값으로 사용하지 않는다고 설명한다. Native DLL만 읽을 때 드러나지 않던 경계가 새 runtime `.exe` 패키징에서 실행됐다.
+
+승인한 Windows 참조앱 검증을 마무리하기 위해 공통 `_file_identity`에서 Windows의 이 합성 실행 비트만 정규화한다. 파일 종류·읽기/쓰기 비트·device·inode·size·mtime·birthtime·nlink·reparse 및 hash 거부 계약은 유지한다. 원시 path/fd metadata는 각각의 권위에서 전후 변경을 계속 거부하도록 확인한다. POSIX 실행 권한은 정규화하지 않는다. 이 보정은 Windows 실행 허용 정책이나 보안 문턱의 예외가 아니며 기존 정상/변조 반례와 실제 `.exe`를 함께 재검증한다.
