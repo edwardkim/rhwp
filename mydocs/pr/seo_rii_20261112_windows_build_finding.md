@@ -30,3 +30,11 @@ CMake 보정 후 실제 Windows 두 타일·편집·resize·복구·종료는 �
 [CPython 3.12.3 원문](https://github.com/python/cpython/blob/v3.12.3/Modules/posixmodule.c#L1843-L1856)도 경로의 `.exe`·`.bat`·`.cmd`·`.com` 확장자로 실행 비트를 합성하며 실제 ACL 실행 권한을 측정하는 값으로 사용하지 않는다고 설명한다. Native DLL만 읽을 때 드러나지 않던 경계가 새 runtime `.exe` 패키징에서 실행됐다.
 
 승인한 Windows 참조앱 검증을 마무리하기 위해 공통 `_file_identity`에서 Windows의 이 합성 실행 비트만 정규화한다. 파일 종류·읽기/쓰기 비트·device·inode·size·mtime·birthtime·nlink·reparse 및 hash 거부 계약은 유지한다. 원시 path/fd metadata는 각각의 권위에서 전후 변경을 계속 거부하도록 확인한다. POSIX 실행 권한은 정규화하지 않는다. 이 보정은 Windows 실행 허용 정책이나 보안 문턱의 예외가 아니며 기존 정상/변조 반례와 실제 `.exe`를 함께 재검증한다.
+
+## 실제 이동 번들의 Windows 창 종료
+
+소스 `7e576a18ca`의 실제 release 번들은 이동 후 두 문서 열기·1→6쪽 이동·문서 닫기를 통과했다. 그러나 WM_CLOSE 후 창이 먼저 없어지고 프로세스가 아직 종료 중인 구간에 캡처를 요청한 검증 하네스의 race가 있었다. 종료 대기를 별도로 고쳐 실제 프로세스를 확인하자 `0xc000041d`가 재현됐다. 이전 종료를 성공으로 판정하지 않는다.
+
+Windows Application Error는 `flutter_windows.dll`의 access violation `0xc0000005`, RVA `0x1551f`를 기록했다. 실제 DLL export에서 `FlutterDesktopMessengerSetCallback`은 RVA `0x154f9`이며, plugin 소멸자의 무조건적인 `SetMethodCallHandler(nullptr)` 호출과 연결된다. 고정 Flutter SDK의 `PluginRegistrar::~PluginRegistrar`는 plugin부터 제거하지만 `BinaryMessengerImpl`은 C messenger의 비소유 참조다. 엔진 종료 뒤 unregister는 이미 무효화한 engine을 호출한다. 원 소스 `a92974dca48d` 이후의 plugin lifetime 경로를 함께 대조했다.
+
+C SDK의 AddRef/Release·Lock/Unlock·IsAvailable 계약을 사용해 messenger 수명을 소유하고, 소멸자에서는 살아 있는 engine일 때만 handler를 제거한다. texture owner의 기존 close·retirement 처리는 유지한다. 승인된 실제 Windows 종료 검증을 완성하기 위한 공통 plugin 보정이며, raw pointer를 잡아 두거나 오류 종료를 정상 종료로 허용하지 않는다. 실제 runner를 다시 만들어 최초·편집·resize·복구·자원 종료와 이동 참조앱의 WM_CLOSE exit 0을 재검증한다.
