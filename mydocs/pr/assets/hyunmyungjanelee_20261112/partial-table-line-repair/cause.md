@@ -6,4 +6,4 @@
 
 공통 문단 질의가 해당 형상의 원본 글자 줄을 반환하고, 높이 측정·배치 양쪽은 개체 범위와 그 줄 상자 중 큰 범위를 한 번만 소비한다. 저장 줄·실제 글자·그림·중첩 표·TAC 도형을 가진 문단은 기존 경로를 유지한다. 좌표 상수나 특정 문서 ID, PDF 수치로 위치를 보정하지 않는다.
 
-새 관계 검사는 원본 글자 크기·안 여백·도형 오프셋 및 실제 칸 상자에서 기대 앵커를 계산하고, 일반 칸과 두 행 병합 칸의 모든 온전한 행을 대조한다. 보정 전 실제 4 PASS / 1 FAIL, 보정 후 관련 집중 125 PASS / 0 FAIL이다. `TopAndBottom`·글앞, 위·가운데 4종의 Native 전 8쪽은 같은 새 MCP PDF로 100%다. TSV·같은 쪽 review/overlay와 생산 SHA는 `native-validation.json`에 연결했다. fresh WASM·최종 전체 회귀는 이 기록 작성 시 대기 중이며 Native 결과로 대신하지 않는다.
+새 관계 검사는 원본 글자 크기·안 여백·도형 오프셋 및 실제 칸 상자에서 기대 앵커를 계산하고, 일반 칸과 두 행 병합 칸의 모든 온전한 행을 대조한다. 보정 전 실제 4 PASS / 1 FAIL, 보정 후 관련 집중 125 PASS / 0 FAIL이다. `TopAndBottom`·글앞, 위·가운데 4종의 Native 전 8쪽은 같은 새 MCP PDF로 100%다. TSV·같은 쪽 review/overlay와 생산 SHA는 `native-validation.json`에 연결했다. 최신 `8fe7d1fb8b`의 Native 집중 검사는 126 PASS / 0 FAIL이다. 같은 소스의 fresh WASM도 같은 Print 기준 4종 전 8쪽이 100%이며 [직접 판독](../final-print-8fe7d1fb/wasm-direct-reading.json)에서 병합 칸 화살표의 가운데 정렬을 확인했다. 최종 전체 회귀·게이트는 별도 기록으로 연결한다.

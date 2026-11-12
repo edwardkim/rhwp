@@ -28,5 +28,4 @@ Windows 한컴 2020 11.0.0.9136 MCP Print와 대조했다. 원 PR이 제시한 �
 확정 구성 전달까지 보완한 후보는 최소 글꼴 집중 검사 4 PASS / 0 FAIL이며, Native 재출력은
 같은 독립 Print와 100.00%다. [수정 후 review](after-native/review-001.png)와
 [overlay](after-native/overlay-001.png)를 열어 Q·표·A의 위치 보존과 Z·Y의 간격 복원을 직접 확인했다.
-[생산 SHA·파일 해시·실행 결과](after-native-validation.json)를 보존한다. fresh WASM 및 전체 회귀는
-이 단계에서 완료를 주장하지 않으며 최종 검증으로 연결한다.
+[생산 SHA·파일 해시·실행 결과](after-native-validation.json)를 보존한다. 같은 소스의 fresh WASM도 같은 Print 기준 100.00%이며 [직접 판독 기록](../final-print-8fe7d1fb/wasm-direct-reading.json)에 Q·표·A 보존과 Z·Y 간격을 확인했다. 전체 회귀·최종 게이트는 별도 결과로 연결한다.
