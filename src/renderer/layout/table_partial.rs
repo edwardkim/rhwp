@@ -2522,13 +2522,53 @@ impl LayoutEngine {
             let first_source_band_owns_position = first_source_lead > 0.0
                 && matches!(effective_align, VerticalAlign::Top)
                 && !matches!(cell.vertical_align, VerticalAlign::Top);
+            // 온전한 칸의 흐름 자리 개체(도장 등)는 정렬로 내려가도 칸 아래를 넘지 않는다
+            // (일반 표 경로와 같은 계약). 잘린 조각은 문단 원점이 이 조각에 없으므로 제외한다.
+            // 글자 없는 문단의 글자처럼 취급한 그림은 줄로 그려지는 흐름 내용이라 정렬 높이에 든다.
+            let (flow_offset_limit, inline_flow_bottom) = if cell_was_split || is_rowbreak_straddle
+            {
+                (f64::INFINITY, 0.0)
+            } else {
+                let flow_heights = self.no_ls_cell_paragraph_flow_heights(
+                    composed_store.eager_slice(),
+                    &cell.paragraphs,
+                    styles,
+                );
+                let bottom = self.calc_cell_flow_objects_bottom_height(
+                    &cell.paragraphs,
+                    styles,
+                    flow_heights.as_deref(),
+                    super::table_layout::FlowObjectScope::PaintedWithText,
+                );
+                let inline_bottom = self.calc_cell_flow_objects_bottom_height(
+                    &cell.paragraphs,
+                    styles,
+                    flow_heights.as_deref(),
+                    super::table_layout::FlowObjectScope::InlineOnly,
+                );
+                let limit = if bottom > 0.0 {
+                    (align_inner_height - bottom).max(0.0)
+                } else {
+                    f64::INFINITY
+                };
+                (limit, inline_bottom)
+            };
             let text_y_start = match effective_align {
                 VerticalAlign::Top => cell_y + pad_top,
                 VerticalAlign::Center => {
-                    cell_y + pad_top + (align_inner_height - centered_content_height).max(0.0) / 2.0
+                    cell_y
+                        + pad_top
+                        + ((align_inner_height - centered_content_height.max(inline_flow_bottom))
+                            .max(0.0)
+                            / 2.0)
+                            .min(flow_offset_limit)
                 }
                 VerticalAlign::Bottom => {
-                    cell_y + pad_top + (align_inner_height - total_content_height).max(0.0)
+                    cell_y
+                        + pad_top
+                        + (align_inner_height - total_content_height.max(inline_flow_bottom))
+                            .max(0.0)
+                            .min(flow_offset_limit)
                 }
             };
             let text_y_start = stored_empty_picture_frame
@@ -4040,13 +4080,24 @@ impl LayoutEngine {
                                     let picture_box = paragraph_picture_band
                                         .as_ref()
                                         .and_then(|band| band.boxes.get(ctrl_idx));
-                                    let paragraph_owned_picture = picture_box.is_some()
+                                    // 저장 줄이 없는 글자 없는 문단도 앞 내용 뒤에 놓이면 그 문단 원점이
+                                    // 곧 자리차지 그림의 자리다(일반 표 경로와 같은 계약).
+                                    let no_ls_paragraph_owned_picture = top_and_bottom_para
+                                        && pic.common.flow_with_text
+                                        && pic.common.vert_align
+                                            == crate::model::shape::VertAlign::Top
+                                        && crate::renderer::para_has_no_stored_line_segs(para)
+                                        && para.text.trim().is_empty()
+                                        && owns_paragraph_entry
+                                        && start_line == 0;
+                                    let paragraph_owned_picture = ((picture_box.is_some()
                                         && owns_paragraph_entry
                                         && start_line == 0
                                         && end_line > start_line
                                         && crate::renderer::float_placement::signed_hwpunit(
                                             pic.common.vertical_offset,
-                                        ) >= 0
+                                        ) >= 0)
+                                        || no_ls_paragraph_owned_picture)
                                         && crate::renderer::float_placement::picture_host_follows_cell_content(
                                             &cell.paragraphs, cp_idx,
                                         );
@@ -4080,7 +4131,7 @@ impl LayoutEngine {
                                         // 저장 전체 셀 vpos나 셀 상단으로 덮어쓰지 않는다.
                                         para_first_line_top.unwrap_or(para_y_before_compose)
                                             + hwpunit_to_px(
-                                                pic.common.vertical_offset as i32,
+                                                crate::renderer::float_placement::topbottom_flow_vertical_offset_hu(&pic.common),
                                                 self.dpi,
                                             )
                                     } else if top_and_bottom_para

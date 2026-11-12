@@ -2081,10 +2081,17 @@ impl HeightMeasurer {
         top_offset + object_height
     }
 
+    /// `flow_heights` 는 같은 칸을 측정한 문단별 흐름 높이(앞 간격·줄·뒤 간격)다.
+    ///
+    /// 저장 줄이 없는 칸은 문단 원점을 저장 vpos 로 알 수 없어 종전 회계는 원점을 0 으로
+    /// 둔다. 실제 배치는 문단 기준 개체를 그 문단의 흐름 위치에 그리므로, 행은 흐름 원점 +
+    /// 개체 바닥까지 담아야 한다(`cell_flow_objects_bottom_height`). 종전 회계와 흐름 회계 중
+    /// 큰 값을 쓴다.
     fn cell_wrap_objects_bottom_height(
         &self,
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
+        flow_heights: Option<&[f64]>,
     ) -> f64 {
         let saved_picture_extent =
             crate::renderer::float_placement::stored_cell_flow_picture_extent_hu(
@@ -2193,6 +2200,82 @@ impl HeightMeasurer {
                 }
             })
             .fold(saved_picture_extent, f64::max)
+            .max(self.cell_flow_objects_bottom_height(paragraphs, styles, flow_heights))
+    }
+
+    /// 저장 줄 없는 칸에서 문단 기준 개체의 바닥(칸 내용 상단 기준, px).
+    ///
+    /// 문단 원점은 `flow_heights`(문단별 흐름 높이)를 쌓은 자리 + 그 문단의 앞 간격이다.
+    /// 대상은 `cell_wrap_object_visual_bottom` 이 세는 비-흐름 개체(어울림·글 앞·글 뒤)와
+    /// 글자 없는 문단의 글자처럼 취급한 그림·도형이다. 웹한글기안기는 결재 칸의 셋째·넷째
+    /// 문단 도장(어울림·글 앞·글자처럼 취급)을 담도록 행을 이 바닥 + 안 여백까지 키운다.
+    /// 전 문단이 저장 줄 없는 칸에서만 계산한다(저장 vpos 와 흐름 높이를 섞지 않는다).
+    /// 해당이 없으면 0.
+    fn cell_flow_objects_bottom_height(
+        &self,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+        flow_heights: Option<&[f64]>,
+    ) -> f64 {
+        let Some(heights) = flow_heights.filter(|heights| {
+            heights.len() == paragraphs.len()
+                && paragraphs
+                    .iter()
+                    .all(crate::renderer::para_has_no_stored_line_segs)
+        }) else {
+            return 0.0;
+        };
+        let mut flow_start = 0.0f64;
+        let mut bottom = 0.0f64;
+        for (pi, p) in paragraphs.iter().enumerate() {
+            let before = crate::renderer::cell_paragraph_spacing::paragraph_before(
+                p,
+                pi,
+                styles
+                    .para_styles
+                    .get(p.para_shape_id as usize)
+                    .map_or(0.0, |s| s.spacing_before),
+                self.dpi,
+            );
+            let para_top = flow_start + before.occupied_before();
+            flow_start += heights[pi];
+            // 글자처럼 취급한 개체 하나만 든 글자 없는 문단은 그 개체가 곧 줄이다.
+            // 공백·여러 개체가 섞인 줄은 줄 구성이 따로 정하므로 세지 않는다.
+            let empty = p.text.is_empty()
+                && p.controls
+                    .iter()
+                    .filter(|ctrl| match ctrl {
+                        Control::Picture(pic) => pic.common.treat_as_char,
+                        Control::Shape(shape) => shape.common().treat_as_char,
+                        _ => false,
+                    })
+                    .count()
+                    == 1;
+            let object_bottom = p
+                .controls
+                .iter()
+                .filter_map(|ctrl| match ctrl {
+                    Control::Picture(pic) => Some(&pic.common),
+                    Control::Shape(shape) => Some(shape.common()),
+                    _ => None,
+                })
+                .map(|common| {
+                    if common.treat_as_char {
+                        if empty {
+                            hwpunit_to_px(common.height as i32, self.dpi)
+                        } else {
+                            0.0
+                        }
+                    } else {
+                        self.cell_wrap_object_visual_bottom(common)
+                    }
+                })
+                .fold(0.0f64, f64::max);
+            if object_bottom > 0.0 {
+                bottom = bottom.max(para_top + object_bottom);
+            }
+        }
+        bottom
     }
 
     /// 구역의 모든 콘텐츠 높이를 측정한다.
@@ -3772,6 +3855,8 @@ let body_height=match nested_body_heights
             return heights.iter().sum();
         }
         let mut floor = crate::renderer::layout::CellSquareStackTextFloor::default();
+        let text_width =
+            crate::renderer::layout::CellSquareStackTextFloor::text_band_width(composed, self.dpi);
         let mut y = 0.0f64;
         for (pidx, ((comp, para), h)) in composed
             .iter()
@@ -3780,7 +3865,18 @@ let body_height=match nested_body_heights
             .enumerate()
         {
             y = floor.paragraph_top(self.dpi, paragraphs, styles, pidx, comp, para, y);
-            y += h;
+            // 그리기와 같은 빈 문단 전진(자리 줄 대신 em 줄박스)으로 쌓아 바닥을 맞춘다.
+            y += crate::renderer::layout::CellSquareStackTextFloor::paragraph_advance(
+                self.dpi,
+                paragraphs,
+                styles,
+                pidx,
+                comp,
+                para,
+                *h,
+                self.is_hwp3_variant,
+                text_width,
+            );
         }
         y
     }
@@ -3983,6 +4079,7 @@ let body_height=match nested_body_heights
                 // 셀 내 문단들의 실제 높이 합산
                 let mut frame_paragraphs = None;
                 let mut stored_ladder_discarded = false;
+                let mut para_flow_heights = Vec::new();
                 let square_floor_cell =
                     crate::renderer::float_placement::cell_has_square_text_obstacle_host(
                         &cell.paragraphs,
@@ -4280,8 +4377,14 @@ let body_height=match nested_body_heights
                                     ).unwrap_or(lines_total) - reflow_nested_height
                                 } else { lines_total } + spacing_after
                             })
-}).collect::<Result<Vec<f64>, S::Error>>()
-.map(|heights| self.square_floor_text_height(&cell.paragraphs, &square_floor_comps, &heights, styles))?
+}) .try_fold(0.0_f64, |sum,value| -> Result<f64,S::Error>{
+                        let value = value?;
+                        storage.push(&mut para_flow_heights, value)?;
+                        Ok(sum + value)
+                    })
+.map(|plain| if square_floor_cell {
+                        self.square_floor_text_height(&cell.paragraphs, &square_floor_comps, &para_flow_heights, styles)
+                    } else { plain })?
                 };
                 // 뒤의 저장 extent·프레임 판정도 실제 구성한 줄 좌표를 소비한다.
                 let frame_cell = frame_paragraphs
@@ -4470,7 +4573,11 @@ let body_height=match nested_body_heights
                     hwpunit_to_px(last_seg_end, self.dpi)
                         .max(text_height)
                         .max(nested_bottom)
-                        .max(self.cell_wrap_objects_bottom_height(&cell.paragraphs, styles))
+                        .max(self.cell_wrap_objects_bottom_height(
+                            &cell.paragraphs,
+                            styles,
+                            Some(&para_flow_heights),
+                        ))
                 } else {
                     // 단, 비-인라인 이미지/도형은 LINE_SEG에 미포함이므로 별도 합산
                     let ordinary_non_inline_h = self
@@ -4519,8 +4626,11 @@ let body_height=match nested_body_heights
                         0.0
                     };
                     let non_inline_h = ordinary_non_inline_h.max(stacked_stored_picture_h);
-                    let wrap_bottom =
-                        self.cell_wrap_objects_bottom_height(&cell.paragraphs, styles);
+                    let wrap_bottom = self.cell_wrap_objects_bottom_height(
+                        &cell.paragraphs,
+                        styles,
+                        Some(&para_flow_heights),
+                    );
                     // [Task #2226] 저장 LINE_SEG 흐름 extent 가 additive 합보다 작으면
                     // 저장 지오메트리 신뢰 — TopAndBottom flow 그림의 배치는 저장 vpos
                     // 사다리(줄이 그림 아래로 밀림)에 이미 반영되어 있어, 별도 합산은
@@ -4563,8 +4673,10 @@ let body_height=match nested_body_heights
                     // #6312의 오른쪽 글자처럼 그림이 행을 키우는 사실은 왼쪽 로고의
                     // 빈 앵커 줄을 별도 내용으로 더할 근거가 아니다.
                     //
-                    // 문단이 하나뿐인 셀에만 적용한다. 뒤에 문단이 더 있으면 그 줄은
-                    // 뒤 내용을 개체 아래로 밀어 내리는 몫을 한다.
+                    // 칸의 마지막 문단에만 적용한다. 뒤에 문단이 더 있으면 그 줄은
+                    // 뒤 내용을 개체 아래로 밀어 내리는 몫을 한다. 앞에 제목 문단이
+                    // 있어도 마지막 빈 문단의 줄은 개체 자리다 — 한/글은 제목 줄 +
+                    // 자리차지 그림 칸을 제목 줄 + 그림 높이로 저장·렌더한다(빈 줄 없음).
                     let declared_cell_h = if cell.height < 0x8000_0000 {
                         hwpunit_to_px(cell.height as i32, self.dpi)
                     } else {
@@ -4577,12 +4689,14 @@ let body_height=match nested_body_heights
                     let empty_para_line_height: f64 = cell
                         .paragraphs
                         .iter()
-                        .filter(|_| {
-                            cell.paragraphs.len() == 1
+                        .enumerate()
+                        .filter(|(pi, _)| {
+                            pi + 1 == cell.paragraphs.len()
                                 && (non_inline_h > declared_cell_h
                                     || (declared_cell_h.is_finite()
                                         && cell_declared_row_covers_stored_content[cell_index]))
                         })
+                        .map(|(_, pp)| pp)
                         .filter(|pp| {
                             pp.text.trim().is_empty() && pp.controls.iter().any(|c| {
                                 matches!(c, Control::Picture(pic) if !pic.common.treat_as_char)
@@ -4899,8 +5013,11 @@ let body_height=match nested_body_heights
                         &table.padding,
                         storage,
                     )?;
-                    let object_based = non_inline_h
-                        .max(self.cell_wrap_objects_bottom_height(&cell.paragraphs, styles));
+                    let object_based = non_inline_h.max(self.cell_wrap_objects_bottom_height(
+                        &cell.paragraphs,
+                        styles,
+                        Some(&para_flow_heights),
+                    ));
                     let object_req = if object_based > 0.0 {
                         object_based + total_pad
                     } else {
@@ -5036,6 +5153,7 @@ let body_height=match nested_body_heights
                     cell_w_px, pad_left, pad_right, self.dpi,
                 );
                 let mut frame_paragraphs = None;
+                let mut para_flow_heights = Vec::new();
                 let square_floor_cell =
                     crate::renderer::float_placement::cell_has_square_text_obstacle_host(
                         &cell.paragraphs,
@@ -5306,8 +5424,14 @@ let body_height=match nested_body_heights
                                     ).unwrap_or(lines_total) - reflow_nested_height
                                 } else { lines_total } + spacing_after
                             })
-}).collect::<Result<Vec<f64>, S::Error>>()
-.map(|heights| self.square_floor_text_height(&cell.paragraphs, &square_floor_comps, &heights, styles))?
+}) .try_fold(0.0_f64, |sum,value| -> Result<f64,S::Error>{
+                        let value = value?;
+                        storage.push(&mut para_flow_heights, value)?;
+                        Ok(sum + value)
+                    })
+.map(|plain| if square_floor_cell {
+                        self.square_floor_text_height(&cell.paragraphs, &square_floor_comps, &para_flow_heights, styles)
+                    } else { plain })?
                 };
                 // LINE_SEG의 line_height에 이미 셀 내 중첩 표 높이가 반영되어 있으므로
                 // controls_height를 별도로 더하면 이중 계산됨
@@ -5332,7 +5456,11 @@ let body_height=match nested_body_heights
                 let nested_bottom = self.cell_nested_controls_bottom_with_storage(
                     table, cell, styles, depth, cell_w_px, storage,
                 )?;
-                let wrap_bottom = self.cell_wrap_objects_bottom_height(&cell.paragraphs, styles);
+                let wrap_bottom = self.cell_wrap_objects_bottom_height(
+                    &cell.paragraphs,
+                    styles,
+                    Some(&para_flow_heights),
+                );
                 // [Task #2221] 단일행과 동일 — 중첩/TAC 표의 저장 LINE_SEG 텍스트
                 // 셀은 pad 미가산 (layout 2-b relaxed_pad 미러).
                 let relaxed_pad_mirror = depth > 0
@@ -6143,7 +6271,22 @@ let mut tables=p.controls.iter().filter_map(|c| match c{Control::Table(t)=>Some(
             let Some(&cell) = cell_at.get(&(mc.row, mc.col)) else {
                 continue;
             };
-            let wrap_bottom = self.cell_wrap_objects_bottom_height(&cell.paragraphs, styles);
+            // 문단별 흐름 높이는 이 칸의 줄 원장(문단별 줄 수로 묶은 줄 높이)이다.
+            let mut para_flow_heights = Vec::new();
+            let mut line_start = 0usize;
+            for &count in &mc.para_line_counts {
+                let end = (line_start + count).min(mc.line_heights.len());
+                storage.push(
+                    &mut para_flow_heights,
+                    mc.line_heights[line_start..end].iter().sum::<f64>(),
+                )?;
+                line_start = end;
+            }
+            let wrap_bottom = self.cell_wrap_objects_bottom_height(
+                &cell.paragraphs,
+                styles,
+                Some(&para_flow_heights),
+            );
             mc.total_content_height = mc.total_content_height.max(wrap_bottom);
             if let Some(flow) = (self.is_native_hwp5 || self.hwpx_stored_layout)
                 .then(|| self.section_column_spacing_hu.get())
