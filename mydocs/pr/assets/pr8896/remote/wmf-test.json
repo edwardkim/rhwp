@@ -1,0 +1,9 @@
+{
+  "head": "1343907a8340fc032423ce5adb6d248aa80534dd",
+  "job_id": 130908421902,
+  "test": "png_exporter_supplies_wmf_only_font_from_its_snapshot_and_preserves_source",
+  "passed": true,
+  "actual_log_lines": [
+    "2026-11-12T01:54:34.6539514Z test render_p37_direct_pdf_export::metafile_font_snapshot::png_exporter_supplies_wmf_only_font_from_its_snapshot_and_preserves_source ... ok"
+  ]
+}

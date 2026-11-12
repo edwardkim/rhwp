@@ -2,10 +2,10 @@
 
 ## 최종 판정
 
-**메인터너 보정 후 수용 가능 — 필수 로컬 검증 완료.**
+**메인터너 보정 후 수용 가능 — 수용 PR #8984에서 보정 통합 완료.**
 작업지시자의 “예외 없이 기존 차이도 먼저 해결” 결정에 따라 과거 보호값 미재현도 보정했다.
 최신 기준 Native/fresh 최적화 WASM 전 3,542쪽의 공식 보호값 하락은 0이다.
-전체 회귀 13,326건·Native 공식 3종 4,073건·추가 공급 protocol 22건과 모든 lint를 통과했다. 원격 push·승인 리뷰·PR 생성·병합은 아직 수행하지 않았다.
+전체 회귀 13,326건·Native 공식 3종 4,073건·추가 공급 protocol 22건과 모든 lint를 통과했다. 보정 head의 제품 CI·최종 정책 감사와 self-review 후 원 기여를 보존해 통합했다. 원 head의 무보정 승인과 구분한다.
 
 적용 경로는 외부 PR의 `maintainer_general.md`이며, `intake_and_review.md`·
 `local_validation.md`·`visual_fixture_evidence.md`·`post_merge.md`를 함께 읽고 적용했다.
@@ -59,7 +59,7 @@
 제공된 `/home/edward/mygithub/ttfs/windows/HYHWPEQ.TTF`는 Native/WASM의 실제 공급에서 확인했다.
 제공된 프로그램의 ×·÷ 전진 831/1024와 독립 구형 Print의 616/1000·623/1000을 구분한다.
 제공 파일의 제작 시기를 추정하지 않는다. 글꼴 프로그램은 저장소·배포물에 넣지 않았으며
-[공급 원인·독립 프로그램 근거](assets/pr8896/font-supply/README.md)에 hash와 경로를 기록했다.
+[공급 원인·독립 프로그램 근거](../assets/pr8896/font-supply/README.md)에 hash와 경로를 기록했다.
 
 ## 최종 시각·기능 보존 결과
 
@@ -84,7 +84,7 @@ WMF와 주변 본문도 확대 판독했다. 이전 생산자와 달라진 보�
 88쪽의 기능 보존과 전체 문서 쪽수 동등성을 확인했으며 해당 문서의 미선정 쪽까지 새로 개선했다고 주장하지 않는다.
 
 현재 원본·PDF 154개 파일은 Git blob과 실제 SHA-256을 대조했다. 임시 출력이나 글꼴 bytes를 재현 원본으로 바꾸지 않았다.
-전쪽 TSV·실제 생산자·확대 판독·비교 원장은 [최신 통합 증적](assets/pr8896/latest-eb84/README.md)을 따른다.
+전쪽 TSV·실제 생산자·확대 판독·비교 원장은 [최신 통합 증적](../assets/pr8896/latest-eb84/README.md)을 따른다.
 이전 base `4c876654d8…`의 완료 자료는 같은 폴더 상위에서 **선행 검증**으로 구분한다.
 
 ## 회귀 검사와 실행 연결
@@ -95,7 +95,7 @@ WMF와 주변 본문도 확대 판독했다. 이전 생산자와 달라진 보�
 - 기존 focused-case 22개와 source/root contract 참조도 재점검했다. 유효한 완료 쪽 ±1/2px와 원본 단위 계약은 유지했다.
   공용 중첩 표 두 검사에서 고정 영역 선택을 원본 9×2 표의 소유·폭·하단·조상 clip 관계로 교체했다.
   비종료 2쪽의 종료선 부재, 종료 3쪽의 단일 괘선과 SVG 소비 검증은 유지·보완했다.
-- 새로운 원본·golden·baseline 변경은 없다. 실제 변경과 유지 범위는 [회귀 점검](assets/pr8896/regression-audit.md)에 있다.
+- 새로운 원본·golden·baseline 변경은 없다. 실제 변경과 유지 범위는 [회귀 점검](../assets/pr8896/regression-audit.md)에 있다.
 
 최소 환경의 실제 노출은 공개 글꼴 5개다. 시스템·개인 글꼴 디렉터리는 숨기고 저장소 소유 MIT fixture를 명시적으로 공급한다.
 Native snapshot의 합성 검사가 설치된 글꼴에 따라 건너뛰지 않게 고유한 가족 이름을 사용했다.
@@ -133,3 +133,11 @@ fmt·manifest·unit-tier policy·host/WASM/workspace all-target·Native Skia Cli
 
 이 PR의 큰 diff는 전쪽 TSV·manifest·이미지 등 재현 증거를 포함한다. 대형 PR 보조 절차에 따라
 코드 검토·병합 시뮬레이션·독립 시각 검증과 작업지시자의 수용 결정을 각각 완료했다.
+
+## 원격 수용 결과와 후속 처리
+
+[수용 PR #8984](https://github.com/edwardkim/rhwp/pull/8984)의 제출 head는 `1343907a8340fc032423ce5adb6d248aa80534dd`, merge는 `f0a2e5379a42d2ff4d18f192634397dbce805833`이다. 승인 후보 이후 판정 제목·절차 연결만 정리했으며 제품 코드·테스트는 검사 source와 같다. [최종 self-review](https://github.com/edwardkim/rhwp/pull/8984#pullrequestreview-5867893783)·[CI·병합 및 후속 메타데이터 원장](../assets/pr8896/remote/README.md)을 보존했다.
+
+원 [#8896](https://github.com/edwardkim/rhwp/pull/8896)은 원 기여 SHA를 보존한 간접 MERGED이며, [#8693](https://github.com/edwardkim/rhwp/issues/8693)은 `2026-11-12T02:06:26Z`에 자동 CLOSED됐다. [#7620](https://github.com/edwardkim/rhwp/issues/7620)은 OPEN을 유지한다. duration workflow의 게시 후 확인 오류는 숨기지 않았고 실제 게시 자료가 네 원 artifact의 재계산과 같은 것을 독립 대조했다.
+
+후속 기록은 CI 실행 정의 변경이 없는 옵션 M이다. 이 archive·증적·오늘할일을 devel에 반영하고 동기화한 뒤 이슈 증적 댓글과 원 PR 감사 댓글을 게시한다. 이후 이번 전용 branch·두 worktree·루트 output 전체·사용 종료 debug를 정리한다. 다른 worktree·사용자 글꼴·fork branch는 보존한다.
