@@ -79,7 +79,9 @@ Native·dispatcher·`LICENSE`·`THIRD_PARTY.md`·`THIRD_PARTY_LICENSES.md` 및 �
 - Native ABI 1, dispatcher ABI 2 요구. 이 숫자는 실제 로딩 시 기존 Native owner 경로에서 다시 검사한다.
 
 최대 8,192개 member, 파일당 512 MiB, 전체 2 GiB, JSON 1 MiB, 깊이 32를 제한한다. empty asset과
-empty directory는 보존한다. ELF/PE/Mach-O의 실제 machine/type metadata로 target을 대조하고
+empty directory는 보존한다. Windows `.exe`의 경로/열린 fd가 합성 실행 비트를 다르게 보고하는
+경우는 공통 identity 정규화로 처리하며, 두 권위의 원시 metadata 전후·단일 link·reparse·hash
+검사는 유지한다. ELF/PE/Mach-O의 실제 machine/type metadata로 target을 대조하고
 fat Mach-O slice도 확인한다. 헤더 검사는 동적 의존성의 설치나 실행 가능성을 입증하지 않는다.
 
 `create`와 `verify`는 코드를 실행하거나 라이브러리를 열지 않는다. manifest와 해시를 함께

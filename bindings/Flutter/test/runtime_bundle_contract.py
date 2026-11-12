@@ -7,11 +7,14 @@ import json
 import os
 from pathlib import Path
 import shutil
+import stat
 import struct
 import subprocess
 import sys
 import tempfile
 import unittest
+from types import SimpleNamespace
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tool'))
 import runtime_bundle as bundle
@@ -140,6 +143,60 @@ class RuntimeBundleContracts(unittest.TestCase):
         (self.output / 'rhwp-runtime.json').write_text(body.replace('"kind":', '"kind":"wrong", "kind":', 1))
         with self.assertRaisesRegex(ValueError, 'duplicate'): bundle.verify(self.output)
 
+    def read_windows_exe_model(self, *, fd_changes=None, after_fd_changes=None,
+                               after_path_changes=None):
+        path = self.runtime / 'fixture.exe'
+        path.write_bytes(header('windows'))
+        actual = path.lstat()
+        fields = {name: getattr(actual, name) for name in
+                  ('st_dev', 'st_ino', 'st_size', 'st_mtime_ns', 'st_nlink')}
+        fields.update(st_file_attributes=0, st_birthtime_ns=1700000000000000000)
+        path_fields = dict(fields, st_mode=stat.S_IFREG | 0o777,
+                           st_ctime_ns=fields['st_birthtime_ns'])
+        fd_fields = {**fields, 'st_mode': stat.S_IFREG | 0o666,
+                     'st_ctime_ns': fields['st_birthtime_ns'] + 5000000000,
+                     **(fd_changes or {})}
+        real_lstat, real_fstat = Path.lstat, os.fstat
+        path_calls, fd_calls = 0, 0
+        def path_stat(candidate, *args, **kwargs):
+            nonlocal path_calls
+            if candidate != path:
+                return real_lstat(candidate, *args, **kwargs)
+            path_calls += 1
+            updates = (after_path_changes or {}) if path_calls > 1 else {}
+            return SimpleNamespace(**{**path_fields, **updates})
+        def fd_stat(fd):
+            nonlocal fd_calls
+            result = real_fstat(fd)
+            if (result.st_dev, result.st_ino) != (actual.st_dev, actual.st_ino):
+                return result
+            fd_calls += 1
+            updates = (after_fd_changes or {}) if fd_calls > 1 else {}
+            return SimpleNamespace(**{**fd_fields, **updates})
+        with mock.patch.object(Path, 'lstat', path_stat), mock.patch.object(os, 'fstat', fd_stat):
+            return bundle._read(path)
+
+    def test_windows_executable_path_and_fd_metadata_identify_same_bytes(self):
+        metadata, data = self.read_windows_exe_model()
+        self.assertEqual(metadata['sha256'], hashlib.sha256(header('windows')).hexdigest())
+        self.assertTrue(metadata['executable'])
+        self.assertEqual(data, header('windows'))
+
+    def test_windows_normalization_retains_identity_and_mutation_rejections(self):
+        for field, value in [('st_ino', -1), ('st_nlink', 2),
+                             ('st_mode', stat.S_IFDIR | 0o777),
+                             ('st_mode', stat.S_IFREG | 0o444),
+                             ('st_file_attributes', 0x400), ('st_size', 129),
+                             ('st_birthtime_ns', 1700000000000000001)]:
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                self.read_windows_exe_model(fd_changes={field: value})
+        for changes in [{'st_ctime_ns': 1700000005000000001},
+                        {'st_mode': stat.S_IFREG | 0o777}]:
+            with self.subTest(changes=changes), self.assertRaisesRegex(ValueError, 'during read'):
+                self.read_windows_exe_model(after_fd_changes=changes)
+        with self.assertRaisesRegex(ValueError, 'after read'):
+            self.read_windows_exe_model(after_path_changes={'st_ctime_ns': 1700000000000000001})
+
     def test_manifest_bound_rejects_before_json_decode(self):
         self.package()
         (self.output / 'rhwp-runtime.json').write_bytes(b' ' * (bundle.MAX_MANIFEST_BYTES + 1))
@@ -192,8 +249,17 @@ class RuntimeBundleContracts(unittest.TestCase):
         with self.assertRaises(OSError): self.package()
         self.assertFalse(self.output.exists())
         (self.notices / 'THIRD_PARTY.md').write_text('restored')
-        (self.runtime / 'APP').write_bytes(b'case-collision')
-        with self.assertRaisesRegex(ValueError, 'case-colliding'): self.package()
+        # Model two directory observations without overwriting "app" on a
+        # case-insensitive host. Its metadata remains a regular input file.
+        real_iterdir, real_lstat = Path.iterdir, Path.lstat
+        alias = self.runtime / 'APP'
+        def entries(path):
+            values = list(real_iterdir(path))
+            return iter(values + [alias] if path == self.runtime else values)
+        def entry_stat(path, *args, **kwargs):
+            return real_lstat(self.runtime / 'app' if path == alias else path, *args, **kwargs)
+        with mock.patch.object(Path, 'iterdir', entries), mock.patch.object(Path, 'lstat', entry_stat):
+            with self.assertRaisesRegex(ValueError, 'case-colliding'): self.package()
 
     def test_fat_macho_accepts_real_slices_and_rejects_overlaps(self):
         self.configure('macos', 'arm64')
