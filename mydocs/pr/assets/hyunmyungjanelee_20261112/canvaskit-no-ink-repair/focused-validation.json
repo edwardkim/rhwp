@@ -1,0 +1,28 @@
+{
+  "stage": "focused validation only, final consumer recapture pending",
+  "parent_head": "9af2ca11e4c70a6ad69b231ab9d170df56ee3a6a",
+  "recorded_at": "2026-11-12T20:12:56+09:00",
+  "rust_before": {
+    "run": 3,
+    "pass": 2,
+    "fail": 1
+  },
+  "rust_after": {
+    "run": 3,
+    "pass": 3,
+    "fail": 0
+  },
+  "studio_before": "actual no-ink assertion FAIL",
+  "studio_after": "executable renderer contract PASS including negative/nonfinite rejection",
+  "log_hashes": {
+    "rust_before": "7b44460df9039d8ae92df8eb02a30cce83d69d367fc7c0b9e5326066cd4062d8",
+    "rust_after": "47ab9319aee9db15b904a50c6c10a2f1a0764881a2a51a41f2b751e2790fc0b0",
+    "studio_before": "0805b57ecc587dbccf3dd91e91ec9bbcb08270e717da9dab02b9e3466921d241",
+    "studio_after": "d22ea6be4cd4694fa6356c547d15ad1b2e102a7e3c7aadaebefa33f56e77c2c0"
+  },
+  "logs": "ignored output only",
+  "source_files": {
+    "src/renderer/canvaskit_policy.rs": "0f9ac544ac9ba40d55f3668d23e310dc4d69f9b4d30b60c91fd0935437f37034",
+    "rhwp-studio/src/view/canvaskit-renderer.ts": "12577cf216793e2d97837130121e381f30cff5fcceb4560f276a2b285b306dc1"
+  }
+}

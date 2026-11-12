@@ -1,4 +1,8 @@
-//! 글자 크기 0 으로 저장된 문단은 줄 높이를 만들지 않는다.
+//! 검사 유형: 관계형 — 명시적 크기 0 문단의 흐름과 잉크 없는 replay를 구분한다.
+//! 주석 갱신: 2026-11-12T20:12:56+09:00; 직전 파일 커밋: 5e2f05b9ac, 2026-11-12T12:23:33+09:00.
+//! 시각 근거: source 8fe7d1fb8b, 96 DPI·2px raw, Native 99.75% / fresh WASM 99.72%.
+//! 현재 기준은 사용자 확인 한컴 2024 13.0.0.3901 Print
+//! `pdf/issue8664/zero_size_para_before_table-hwp-2024.pdf`다. 아래 웹 출력 설명은 원 결함의 이력이다.
 //!
 //! 한컴 웹한글기안기 인쇄 PDF(`pdf/issue8664/zero_size_para_before_table-webhwp-print.pdf`)에서
 //! 저장 줄이 없는 문단 `TOP` 과 글자처럼 취급한 표 사이에 글자 크기 0(장평 0) 글자 137 개만 든
@@ -12,7 +16,7 @@
 use std::path::Path;
 
 use rhwp::{
-    renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType},
+    renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType, TextRunNode},
     DocumentCore,
 };
 
@@ -27,6 +31,67 @@ fn text_line_of<'a>(node: &'a RenderNode, para: usize) -> Option<&'a RenderNode>
     node.children
         .iter()
         .find_map(|child| text_line_of(child, para))
+}
+
+fn zero_run_mut(node: &mut rhwp::paint::LayerNode) -> Option<&mut TextRunNode> {
+    use rhwp::paint::{LayerNodeKind, PaintOp};
+    match &mut node.kind {
+        LayerNodeKind::Group { children, .. } => children.iter_mut().find_map(zero_run_mut),
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            zero_run_mut(child)
+        }
+        LayerNodeKind::Leaf { ops } => ops.iter_mut().find_map(|op| match op {
+            PaintOp::TextRun { run, .. } if run.text.starts_with('Z') => Some(run.as_mut()),
+            _ => None,
+        }),
+    }
+}
+
+#[test]
+fn explicit_zero_size_text_is_a_direct_non_painting_canvaskit_operation() {
+    use rhwp::renderer::canvaskit_policy::{analyze_canvaskit_replay_plan, CanvasKitReplayMode};
+    let bytes = std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).unwrap();
+    let core = DocumentCore::from_bytes(&bytes).unwrap();
+    let mut tree = core.build_page_layer_tree(0).unwrap();
+    let zero = zero_run_mut(&mut tree.root).expect("크기 0 원문 run");
+    assert_eq!(zero.style.font_size, 0.0);
+    assert_eq!(zero.style.ratio, 0.0);
+    assert_eq!(zero.text.chars().count(), 137, "숨은 원문을 지우지 않는다");
+    for mode in [CanvasKitReplayMode::Compat, CanvasKitReplayMode::Default] {
+        let plan = analyze_canvaskit_replay_plan(&tree, mode);
+        assert!(
+            plan.items
+                .iter()
+                .all(|item| item.detail.as_deref() != Some("invalidGeometry")),
+            "잉크 없는 크기 0 원문을 잘못된 기하로 분류했다: {mode:?}"
+        );
+    }
+}
+
+#[test]
+fn zero_size_replay_does_not_accept_negative_or_non_finite_geometry() {
+    use rhwp::renderer::canvaskit_policy::{analyze_canvaskit_replay_plan, CanvasKitReplayMode};
+    let bytes = std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).unwrap();
+    let core = DocumentCore::from_bytes(&bytes).unwrap();
+    for (font_size, ratio) in [
+        (12.0, 0.0),
+        (-1.0, 0.0),
+        (0.0, -1.0),
+        (f64::NAN, 0.0),
+        (0.0, f64::INFINITY),
+    ] {
+        let mut tree = core.build_page_layer_tree(0).unwrap();
+        let zero = zero_run_mut(&mut tree.root).unwrap();
+        zero.style.font_size = font_size;
+        zero.style.ratio = ratio;
+        let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
+        assert!(
+            plan.items
+                .iter()
+                .any(|item| item.detail.as_deref() == Some("invalidGeometry")),
+            "음수·비유한 값 또는 크기 있는 장평 0 run을 허용했다: {font_size:?}, {ratio:?}"
+        );
+    }
 }
 
 fn table_bbox(node: &RenderNode) -> Option<BoundingBox> {

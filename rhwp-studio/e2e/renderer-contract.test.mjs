@@ -1,5 +1,5 @@
 // 검사 유형: 관계형·고정형(합성 replay 계약값); 실물 페이지의 절대 px 핀은 추가하지 않는다.
-// 주석 갱신: 2026-11-05T19:53:05+09:00. 직전 파일 변경: 3ddf77af61b10a9ace10224588ad68841e79b2f1, 2026-11-01T14:26:00+09:00.
+// 주석 갱신: 2026-11-12T20:12:56+09:00; 직전 파일 커밋: 31f3cd4aa4, 2026-11-08T15:07:49+09:00.
 // 시각 측정: 2026-11-05, 96 DPI·2px raw. outline.hwp 전1쪽 Native/fresh WASM 각각 100.00%.
 // PDF 명시 TextPaint 대조군 전7쪽도 양쪽 최저 100.00%; 누락·쪽수 차이 없음. producer d53115fabc92bd392044d9b906c599baddb4368d.
 // 근거: mydocs/pr/assets/semanticist21-20261105-next10/validation/post8622/{summary.json,direct-reading.md}.
@@ -3902,4 +3902,23 @@ for (const mutate of [
   const evidence = structuredClone(fontFallbackEvidence);
   mutate(evidence);
   assert.equal(inspectCanvasKitFontFallback({}, 'canvaskit-default', evidence), null);
+}
+
+
+// #8664: 원문·소유는 남기되 명시적 크기 0/전진 0인 run에는 잉크가 없다.
+const zeroSizeTextOp = {
+  type: 'textRun', bbox: { x: 75, y: 115, width: 0, height: 12 },
+  text: 'Z'.repeat(137), baseline: 9.6, rotation: 0,
+  positions: new Array(138).fill(0), style: { fontSize: 0, ratio: 0 },
+};
+const zeroSizeReplay = runExecutableTextReplay(zeroSizeTextOp);
+assert.equal(zeroSizeReplay.error, null);
+assert.equal(zeroSizeReplay.unsupportedOps.size, 0, '명시적 크기 0은 유효한 잉크 없는 replay다');
+assert.equal(zeroSizeReplay.events.some(event => event.type.startsWith('canvas.draw') || event.type === 'font.getGlyphIDs'), false,
+  '숨은 원문을 대체 글리프로 그리지 않는다');
+for (const style of [{ fontSize: 12, ratio: 0 }, { fontSize: -1, ratio: 0 },
+  { fontSize: 0, ratio: -1 }, { fontSize: NaN, ratio: 0 }, { fontSize: 0, ratio: Infinity }]) {
+  const replay = runExecutableTextReplay({ ...zeroSizeTextOp, style });
+  assert.equal(replay.unsupportedOps.has('textRun:invalidGeometry'), true,
+    '음수·비유한 값과 크기 있는 장평 0은 거절한다');
 }

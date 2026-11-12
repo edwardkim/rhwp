@@ -807,7 +807,7 @@ fn text_visual_geometry_is_valid(
     run: &TextRunNode,
     replay_text: &str,
 ) -> bool {
-    [
+    if ![
         bbox.x,
         bbox.y,
         bbox.width,
@@ -821,19 +821,29 @@ fn text_visual_geometry_is_valid(
     ]
     .iter()
     .all(|value| value.is_finite())
-        && bbox.width >= 0.0
-        && bbox.height >= 0.0
-        && run.style.font_size > 0.0
-        && run.style.ratio > 0.0
-        && run
-            .replay_positions_for(
-                &replay_text
-                    .chars()
-                    .take(crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN)
-                    .collect::<String>(),
-            )
-            .iter()
-            .all(|position| position.is_finite())
+        || bbox.width < 0.0
+        || bbox.height < 0.0
+        || run.style.font_size < 0.0
+        || run.style.ratio < 0.0
+    {
+        return false;
+    }
+    let positive_scale = run.style.font_size > 0.0 && run.style.ratio > 0.0;
+    // 크기가 있는 장평 0 또는 손상된 기하를 글꼴 질의 전에 계속 거절한다.
+    if !positive_scale && !(run.style.font_size == 0.0 && bbox.width == 0.0) {
+        return false;
+    }
+    let positions = run.replay_positions_for(
+        &replay_text
+            .chars()
+            .take(crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN)
+            .collect::<String>(),
+    );
+    // 논리 원문·caret 상자는 보존하되 크기와 모든 전진이 0인 run에는 잉크가 없다.
+    let zero_size_no_ink = run.style.font_size == 0.0
+        && positions.len() == replay_text.chars().count() + 1
+        && positions.iter().all(|position| *position == 0.0);
+    (positive_scale || zero_size_no_ink) && positions.iter().all(|position| position.is_finite())
 }
 
 // Validate the same producer-owned drawing serialized to the browser. Raw form
@@ -2246,6 +2256,10 @@ fn text_run_transition_detail(
     }
     if !text_visual_geometry_is_valid(bbox, run, &display_text) {
         return Some("invalidGeometry");
+    }
+    // 위 질의가 증명한 잉크 없는 원문에는 glyph·shaping 자원이 필요하지 않다.
+    if run.style.font_size == 0.0 {
+        return None;
     }
     let has_paint_effects = run.style.text_paint.is_some()
         || run.style.outline_type != 0
