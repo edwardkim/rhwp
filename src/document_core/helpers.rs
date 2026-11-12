@@ -948,6 +948,15 @@ pub(crate) fn json_usize(json: &str, key: &str) -> Result<usize, HwpError> {
         .map_err(|_| HwpError::RenderError(format!("JSON 필드 '{}' 값 파싱 실패", key)))
 }
 
+/// JSON 선택 필드 usize 파싱 (없으면 `None`, 있는데 값이 잘못되면 에러)
+pub(crate) fn json_usize_opt(json: &str, key: &str) -> Result<Option<usize>, HwpError> {
+    let pattern = format!("\"{}\":", key);
+    if !compact_json(json).contains(&pattern) {
+        return Ok(None);
+    }
+    json_usize(json, key).map(Some)
+}
+
 /// JSON 문자열 이스케이프
 /// JSON 문자열 본문으로 이스케이프한다 (바깥 따옴표는 호출부 몫).
 ///
