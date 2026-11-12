@@ -1,3 +1,13 @@
+//! 관계형·고정형: 중첩 표의 내용·쪽 소속, 연속 조각과 괘선의 조상 clip 포함 관계.
+//! 주석 갱신: 2026-11-12T09:11:23+09:00; 직전 파일 커밋: 2026-10-01T17:10:00+09:00 (dc3e31be542bcdaea0aa28187d46a60f4792da02).
+//! 측정일 2026-11-12, PDFium 96 DPI·print·색상 경계 보정 전 2px raw.
+//! 원본: samples/basic/issue2007_nested_cell_pagination_42065.hwp, 독립 한컴 Print 전 17쪽.
+//! Native 전쪽 최저 97.99083%, fresh 최적화 WASM 전쪽 최저 98.05646%.
+//! 2쪽 Native/WASM 99.99305%/99.96735%, 3쪽은 양쪽 모두 100.00000%이며 종료 경계를 확대 판독했다.
+//! Native 생산자 1749b66d704b, WASM 68e8190d334f(제품 source 동일). 고정 px 영역·절대 좌표는 사용하지 않는다.
+//! 원본 9×2 표와 독립 Print의 비종료 2쪽/종료 3쪽을 소유·포함 관계로 보호한다.
+//! 근거: mydocs/pr/assets/pr8896/latest-eb84/ 및 원본/PDF SHA가 있는 input-inventory.json.
+//!
 //! Issue #2007: 1×1 단일 셀 중첩 표의 셀 콘텐츠 페이지 분할(intra-cell pagination).
 //!
 //! `samples/basic/issue2007_nested_cell_pagination_42065.hwp` (규제영향분석서)는
@@ -55,30 +65,62 @@ fn normalized_page_text(core: &DocumentCore, page: u32) -> String {
         .collect()
 }
 
-fn terminal_bottom_lines_with_cell_clips(
-    node: &RenderNode,
-    clip_ancestors: &mut Vec<BoundingBox>,
-    found: &mut Vec<(BoundingBox, Vec<BoundingBox>)>,
+fn terminal_bottom_lines_with_cell_clips<'a>(
+    root: &'a RenderNode,
+    clip_ancestors: &mut Vec<&'a RenderNode>,
+    found: &mut Vec<(&'a RenderNode, Vec<&'a RenderNode>)>,
 ) {
-    let pushes_clip = matches!(&node.node_type, RenderNodeType::TableCell(cell) if cell.clip);
-    if pushes_clip {
-        clip_ancestors.push(node.bbox);
-    }
+    // 원본의 바깥 표(pi=2/ci=1), 그 안 9×2 표(pi=3/ci=0)의 소유 관계다.
+    // 쪽의 특정 y 영역이나 고정 폭으로 종료 괘선을 추측하지 않는다.
+    let outer = find_table_fragment(root, 2, 1).expect("원본 바깥 표의 현재 조각");
+    let target = find_table_fragment(outer, 3, 0).expect("원본 9×2 중첩 표의 현재 조각");
+    let RenderNodeType::Table(table) = &target.node_type else {
+        unreachable!("표 조각 선택기는 Table만 반환한다");
+    };
+    assert_eq!((table.row_count, table.col_count), (9, 2), "원본 표의 행열");
 
-    if matches!(node.node_type, RenderNodeType::Line(_))
-        && node.bbox.y > 820.0
-        && node.bbox.width > 500.0
-        && node.bbox.height <= 2.0
-    {
-        found.push((node.bbox, clip_ancestors.clone()));
+    fn visit<'a>(
+        node: &'a RenderNode,
+        target: &'a RenderNode,
+        clips: &mut Vec<&'a RenderNode>,
+        found: &mut Vec<(&'a RenderNode, Vec<&'a RenderNode>)>,
+    ) {
+        if !node.visible || node.editor_only {
+            return;
+        }
+        let pushes_clip = matches!(&node.node_type, RenderNodeType::TableCell(cell) if cell.clip);
+        if pushes_clip {
+            clips.push(node);
+        }
+        if std::ptr::eq(node, target) {
+            let left = node.bbox.x;
+            let right = left + node.bbox.width;
+            let bottom = node.bbox.y + node.bbox.height;
+            for child in &node.children {
+                let RenderNodeType::Line(line) = &child.node_type else {
+                    continue;
+                };
+                // 중심선과 잉크 끝의 차이는 그 선 자신의 획 폭으로만 판정한다.
+                let stroke_tolerance = line.style.width.abs() + 0.01;
+                if child.visible
+                    && !child.editor_only
+                    && (line.y1 - line.y2).abs() <= 0.01
+                    && (line.x1.min(line.x2) - left).abs() <= stroke_tolerance
+                    && (line.x1.max(line.x2) - right).abs() <= stroke_tolerance
+                    && (line.y1 - bottom).abs() <= stroke_tolerance
+                {
+                    found.push((child, clips.clone()));
+                }
+            }
+        }
+        for child in &node.children {
+            visit(child, target, clips, found);
+        }
+        if pushes_clip {
+            clips.pop();
+        }
     }
-    for child in &node.children {
-        terminal_bottom_lines_with_cell_clips(child, clip_ancestors, found);
-    }
-
-    if pushes_clip {
-        clip_ancestors.pop();
-    }
+    visit(root, target, clip_ancestors, found);
 }
 
 fn svg_number_attr(tag: &str, name: &str) -> f64 {
@@ -804,7 +846,7 @@ fn issue_4159_terminal_nested_bottom_border_is_inside_all_cell_clips() {
     assert_eq!(
         found.len(),
         1,
-        "물리 3쪽의 폭 500px 이상 종료 bottom 선을 하나만 찾아야 한다: {found:?}"
+        "물리 3쪽의 원본 중첩 표가 소유한 종료 bottom 선은 하나다: {found:?}"
     );
 
     let (line, clips) = &found[0];
@@ -812,8 +854,10 @@ fn issue_4159_terminal_nested_bottom_border_is_inside_all_cell_clips() {
         !clips.is_empty(),
         "종료 nested bottom 선에 clip=true TableCell 조상이 없다"
     );
+    let line = &line.bbox;
     let line_bottom = line.y + line.height;
     for clip in clips {
+        let clip = &clip.bbox;
         let clip_bottom = clip.y + clip.height;
         assert!(
             clip_bottom + 0.01 >= line_bottom,
@@ -833,35 +877,53 @@ fn issue_4159_svg_terminal_bottom_border_is_visible_inside_outer_cell_clip() {
         .render_page_svg_native(2)
         .expect("render physical page 3 SVG");
 
-    let outer_clip = svg
-        .lines()
-        .filter(|line| line.contains("<clipPath id=\"cell-clip"))
-        .find(|line| {
-            let x = svg_number_attr(line, "x");
-            let width = svg_number_attr(line, "width");
-            x < 80.0 && width > 650.0
-        })
-        .expect("physical page 3 outer split cell clip");
+    let tree = doc
+        .build_page_render_tree(2)
+        .expect("물리 3쪽의 같은 source tree");
+    let mut borders = Vec::new();
+    terminal_bottom_lines_with_cell_clips(&tree.root, &mut Vec::new(), &mut borders);
+    assert_eq!(borders.len(), 1, "같은 원본 중첩 표의 종료 괘선");
+    let (border, clips) = &borders[0];
+    let RenderNodeType::Line(expected) = &border.node_type else {
+        unreachable!("종료 괘선 선택기는 Line만 반환한다");
+    };
     let bottom_line = svg
         .lines()
         .filter(|line| line.starts_with("<line "))
         .find(|line| {
-            let x1 = svg_number_attr(line, "x1");
-            let x2 = svg_number_attr(line, "x2");
-            let y1 = svg_number_attr(line, "y1");
-            let y2 = svg_number_attr(line, "y2");
-            y1 > 820.0 && (y1 - y2).abs() < 0.01 && x2 - x1 > 500.0
+            [
+                ("x1", expected.x1),
+                ("y1", expected.y1),
+                ("x2", expected.x2),
+                ("y2", expected.y2),
+            ]
+            .iter()
+            .all(|(attribute, value)| (svg_number_attr(line, attribute) - value).abs() <= 0.01)
         })
-        .expect("physical page 3 terminal nested bottom SVG line");
-
-    let clip_bottom = svg_number_attr(outer_clip, "y") + svg_number_attr(outer_clip, "height");
-    // [#6269] 획은 경로에 **중심 정렬**로 칠해지므로 잉크 하단은 `y1 + 획/2` 다.
-    // 종전에는 전체 획을 더해 잉크를 반 획 아래로 잡았고, clip 도 같은 만큼 헐겁게
-    // 잡혀 있어 우연히 맞아떨어졌다. 잉크 정의를 바로잡아 실제 경계를 잠근다.
+        .expect("SVG가 같은 소유 괘선의 중심선을 소비한다");
     let line_bottom =
         svg_number_attr(bottom_line, "y1") + svg_number_attr(bottom_line, "stroke-width") / 2.0;
-    assert!(
-        clip_bottom + 0.01 >= line_bottom,
-        "SVG bottom stroke가 outer cell clip에 잘린다: line_bottom={line_bottom:.3}, clip_bottom={clip_bottom:.3}\n{outer_clip}\n{bottom_line}"
-    );
+    assert!(!clips.is_empty(), "종료 괘선의 실제 clipped Cell 조상");
+    for clip in clips {
+        let bounds = clip.bbox;
+        let svg_clip = svg
+            .lines()
+            .filter(|line| line.contains("<clipPath id=\"cell-clip"))
+            .find(|line| {
+                [
+                    ("x", bounds.x),
+                    ("y", bounds.y),
+                    ("width", bounds.width),
+                    ("height", bounds.height),
+                ]
+                .iter()
+                .all(|(attribute, value)| (svg_number_attr(line, attribute) - value).abs() <= 0.01)
+            })
+            .expect("SVG cell clip은 같은 소유자의 물리 상자를 소비한다");
+        let clip_bottom = svg_number_attr(svg_clip, "y") + svg_number_attr(svg_clip, "height");
+        assert!(
+            clip_bottom + 0.01 >= line_bottom,
+            "SVG 종료 획이 조상 셀 clip 안에 있다: line_bottom={line_bottom:.3}, clip_bottom={clip_bottom:.3}\n{svg_clip}\n{bottom_line}"
+        );
+    }
 }
