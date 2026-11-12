@@ -4468,6 +4468,15 @@ impl TypesetEngine {
         if intra_para_reset && !st.current_items.is_empty() {
             st.advance_column_or_new_page();
         }
+        // [#9016] 글자 없는 문단의 제목 차례 표시는 CTRL_HEADER 없이 개체보다 앞 슬롯을
+        // 차지하고 자기 저장 줄을 쌓는다(1730000-202000011 pi=168: ts 0 titM 줄 th 2000,
+        // ts 8 표 줄 vpos +2000). 이 문단의 첫 배치 표가 그 뒤 줄을 소유하면 표 원점과
+        // 적합 판정이 그 줄 원점에서 시작하도록 앞 줄의 저장 전진을 먼저 쌓는다.
+        if is_first_placed && !st.pre_emitted_host_paras.contains(&para_idx) {
+            if let Some(prefix) = title_mark_prefix_advance(para, ctrl_idx, self.dpi) {
+                st.advance_flow_by(prefix);
+            }
+        }
         // 다중 TAC 표: LINE_SEG 기반 개별 높이 계산
         let table_height = if tac_count > 1 {
             // [#2322] 마지막 TAC 판정은 개수 기반(prior_tac) — tac_seg_idx 는
@@ -9652,4 +9661,35 @@ mod tests {
             "actual image band must include p1693..p1697 and stop before p1698",
         );
     }
+}
+
+/// [#9016] 글자 없는 문단에서 제목 차례 표시 줄이 표 소유 줄 앞에 저장돼 있으면 그 저장 전진(px).
+///
+/// 제목 차례 표시는 CTRL_HEADER 없이 8유닛 슬롯을 차지하는 인라인 제어라 `controls[]` 에 없고,
+/// 한/글은 그 슬롯을 자기 줄(글자 높이 줄)로 쌓는다. 소유 줄까지의 저장 vpos 가 되감김 없이
+/// 증가할 때만 같은 조각의 앞 줄로 본다. 재조판·편집된 줄은 저장 원점을 근거로 쓰지 않는다.
+fn title_mark_prefix_advance(para: &Paragraph, ctrl_idx: usize, dpi: f64) -> Option<f64> {
+    if !para.text.is_empty()
+        || !para.title_marks.iter().any(|mark| mark.char_idx == 0)
+        || para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+    {
+        return None;
+    }
+    let owner = crate::renderer::composer::control_slot_line_index(para, ctrl_idx)
+        .filter(|&line| line > 0)?;
+    let rows = para.line_segs.get(..=owner)?;
+    if rows.iter().any(|seg| {
+        is_synthetic_line_seg(seg)
+            || seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+    }) || !rows
+        .windows(2)
+        .all(|pair| pair[1].vertical_pos > pair[0].vertical_pos)
+    {
+        return None;
+    }
+    Some(hwpunit_to_px(
+        rows[owner].vertical_pos - rows[0].vertical_pos,
+        dpi,
+    ))
 }

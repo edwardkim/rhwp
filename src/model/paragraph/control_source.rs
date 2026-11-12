@@ -67,7 +67,20 @@ impl Paragraph {
             let first = self.char_offsets.get(at).map_or_else(
                 || {
                     if complete_empty_stream {
-                        group_start as u32 * CTRL_CHAR_CODE_UNITS
+                        // 같은 자리의 제목 차례 표시·짝 없는 필드 끝은 CTRL_HEADER 없이 8유닛
+                        // 슬롯을 차지하고 그 자리의 제어보다 먼저 놓인다(직렬화와 같은 순서).
+                        // 빼지 않으면 뒤 제어가 한 슬롯씩 앞 줄에 매핑된다(#9016).
+                        let leading_markers = self
+                            .title_marks
+                            .iter()
+                            .filter(|mark| mark.char_idx == at)
+                            .count()
+                            + self
+                                .orphan_field_ends
+                                .iter()
+                                .filter(|end| end.char_idx == at)
+                                .count();
+                        (leading_markers as u32 + group_start as u32) * CTRL_CHAR_CODE_UNITS
                     } else {
                         text_end
                     }
