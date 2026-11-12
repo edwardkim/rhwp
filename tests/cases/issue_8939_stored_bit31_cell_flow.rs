@@ -24,6 +24,22 @@
 //! IR 줄 tag 에 합성 표지 없음, 쪽수 2 = 한/글(고정형), 문단 6~8 이 2쪽 소속이고 2쪽 첫 줄은
 //! 문단 6, HWP5 재저장본의 본문 줄 tag = 원본이고 되읽은 tag 에 합성 표지 없음, 1쪽 표 칸의 그린
 //! 높이 = 칸 선언 높이, rhwp 편집 저장본은 표지와 함께 합성 줄 tag 를 그대로 되읽음(관계형).
+//!
+//! 통합 보정 검사 갱신: 2026-11-13 04:54 KST.
+//! 추가 입력: `mydocs/pr/assets/planet6897_clean20_20261113/counterexamples/3930000-201800017-health-report.hwp`.
+//! 독립 기준: 같은 입력의 `pdf/issue8939/3930000-201800017-health-report-2020.pdf`,
+//! 한컴 2020 11.0.0.9136 MCP Print. code d0cc46573c, PDFium 5.13, 96dpi, raw 2px 실루엣:
+//! - 기존 2쪽 fixture 최저: Native 98.39975% / fresh WASM 98.39998%.
+//! - 추가 검사 관련 5쪽: Native 99.91223% / fresh WASM 99.91211%.
+//! - 추가 검사 관련 6쪽: Native 99.98623% / fresh WASM 99.99723%. 양쪽 review/overlay 직접 판독 완료.
+//! - 고정형: 독립 PDF 6쪽 제목 표 위 괘선 중심 109.63997px를 ±2px로 보호한다.
+//! - 관계형: 5쪽에 제목 소유가 중복되지 않음, 6쪽의 각 원본 표가 한 번만 존재함,
+//!   제목 줄 전체 전진과 후속 저장 원점의 일치, 요약·후속 제목·본문의 순서와 비겹침.
+//!
+//! 추가 원본의 1쪽은 Native 80.50731% / WASM 80.51907%로 기존 미달이다. 그 쪽이나 전체 7쪽을
+//! golden/쪽수 핀으로 고정하지 않으며, 이번 회귀의 검사 페이지로 사용하지 않는다.
+//! 전 7쪽 TSV와 검사 페이지의 선행 조건·독립 좌표·판독 근거:
+//! `mydocs/pr/assets/planet6897_clean20_20261113/maintainer-repair/health-visual-precondition.json`.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
@@ -307,4 +323,72 @@ fn rhwp_saved_section_keeps_synthetic_line_tags_through_marker() {
     );
     let reloaded = load_bytes(&saved);
     assert_eq!(tags(&reloaded), edited, "다시 연 줄 tag = 저장 전 IR tag");
+}
+
+#[test]
+fn restarted_tac_preserves_opening_band_and_following_source_axis() {
+    fn compact_text(node: &RenderNode) -> String {
+        let mut out = String::new();
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            out.push_str(&run.text);
+        }
+        for child in &node.children {
+            out.push_str(&compact_text(child));
+        }
+        out.chars().filter(|ch| !ch.is_whitespace()).collect()
+    }
+    fn table_count(node: &RenderNode, para: usize) -> usize {
+        let owned = matches!(&node.node_type, RenderNodeType::Table(table)
+            if table.para_index == Some(para) && table.cell_context.is_none());
+        usize::from(owned)
+            + node
+                .children
+                .iter()
+                .map(|child| table_count(child, para))
+                .sum::<usize>()
+    }
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(
+        "mydocs/pr/assets/planet6897_clean20_20261113/counterexamples/3930000-201800017-health-report.hwp");
+    let core = load_bytes(&std::fs::read(path).expect("보건 보고서 원본"));
+    let previous = core.build_page_render_tree(4).expect("독립 Print5쪽");
+    assert_eq!(
+        table_count(&previous.root, 32),
+        0,
+        "이월된 제목을 앞 쪽에 중복하지 않는다"
+    );
+    let tree = core.build_page_render_tree(5).expect("독립 Print6쪽");
+    for para in [32, 33, 34, 35] {
+        assert_eq!(
+            table_count(&tree.root, para),
+            1,
+            "6쪽 원본 표 pi={para}의 단일 소유"
+        );
+    }
+    let title = find_table(&tree.root, 32).expect("제목 표");
+    let summary = find_table(&tree.root, 33).expect("용역개요 표");
+    let progress_title = find_table(&tree.root, 34).expect("추진사항 제목");
+    let progress = find_table(&tree.root, 35).expect("추진사항 본문");
+    assert!(compact_text(title).contains("연구용역개요"));
+    assert!(compact_text(summary).contains("용역개요"));
+    assert!(compact_text(progress_title).contains("그간추진사항"));
+    let expected_title_top = 109.63997;
+    assert!(
+        (title.bbox.y - expected_title_top).abs() <= 2.0,
+        "이월된 TAC 제목 위끝 {}px, 독립 Print {expected_title_top}px ±2px",
+        title.bbox.y
+    );
+    let line = &core.document().sections[0].paragraphs[32].line_segs[0];
+    let source_advance = hu_to_px(line.line_height + line.line_spacing);
+    assert!(
+        ((summary.bbox.y - title.bbox.y) - source_advance).abs() <= hu_to_px(1),
+        "후속 저장 원점은 같은 원본 줄의 전체 전진을 소비해야 한다"
+    );
+    assert!(
+        progress_title.bbox.y >= summary.bbox.y + summary.bbox.height,
+        "용역개요 뒤 추진사항 제목의 순서와 비겹침"
+    );
+    assert!(
+        progress.bbox.y >= progress_title.bbox.y + progress_title.bbox.height,
+        "추진사항 제목 뒤 본문의 순서와 비겹침"
+    );
 }

@@ -1,3 +1,10 @@
+//! 검사 유형: 관계형 — 원본 중첩 구조의 깊이·소유·값과 검색·추출 결과를 대조한다.
+//! 주석 갱신: 2026-11-13 05:01 KST.
+//! Native/fresh WASM 일치율은 비해당이다. 이 파일은 렌더링 배치나 px 좌표를 검사하지 않는다.
+//! 공개 CLI 재현 입력은 `tests/fixtures/issue8989/nested-values.hml`을 공유한다.
+//! 기존 HML 상수와 바이트가 같은 입력이며, 기존 검색·추출 assertion은 변경하지 않는다.
+//! 실제 CLI 증거: `mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/api-consumers/`.
+//!
 //! [#2792] 표 안의 표(중첩 표) 텍스트가 검색에 잡히지 않던 결함.
 //!
 //! `grep` 은 본문 문단의 컨트롤에서 `Control::Table` 로 들어가 셀 문단까지 훑었지만,
@@ -263,34 +270,7 @@ fn replace_all_native_replaces_nested_only_token() {
 // ---------------------------------------------------------------------------
 
 /// 본문 → 바깥 1×2 표 칸 1 → (문단 1) 안쪽 1×3 표, 각 칸에 서로 다른 값.
-const NESTED_VALUES_HML: &str = r#"<HWPML Version="2.91"><HEAD/><BODY><SECTION>
-  <P><TEXT><TABLE RowCount="1" ColCount="2">
-    <SHAPEOBJECT><SIZE Width="12000" Height="4000"/></SHAPEOBJECT>
-    <ROW>
-    <CELL ColAddr="0" RowAddr="0" Width="3000" Height="4000"><PARALIST>
-      <P><TEXT><CHAR>목표 2026년 8월 2일</CHAR></TEXT></P>
-    </PARALIST></CELL>
-    <CELL ColAddr="1" RowAddr="0" Width="9000" Height="4000"><PARALIST>
-      <P><TEXT><CHAR>안내</CHAR></TEXT></P>
-      <P><TEXT><TABLE RowCount="1" ColCount="3">
-        <SHAPEOBJECT><SIZE Width="9000" Height="3000"/></SHAPEOBJECT>
-        <ROW>
-        <CELL ColAddr="0" RowAddr="0" Width="3000" Height="3000"><PARALIST>
-          <P><TEXT><CHAR>교육인원</CHAR></TEXT></P>
-          <P><TEXT><CHAR>42,360명</CHAR></TEXT></P>
-        </PARALIST></CELL>
-        <CELL ColAddr="1" RowAddr="0" Width="3000" Height="3000"><PARALIST>
-          <P><TEXT><CHAR>4,676건</CHAR></TEXT></P>
-        </PARALIST></CELL>
-        <CELL ColAddr="2" RowAddr="0" Width="3000" Height="3000"><PARALIST>
-          <P><TEXT><CHAR>예산 1,234,000원</CHAR></TEXT></P>
-        </PARALIST></CELL>
-        </ROW>
-      </TABLE></TEXT></P>
-    </PARALIST></CELL>
-    </ROW>
-  </TABLE></TEXT></P>
-</SECTION></BODY><TAIL/></HWPML>"#;
+const NESTED_VALUES_HML: &str = include_str!("../fixtures/issue8989/nested-values.hml");
 
 fn nested_values() -> DocumentCore {
     DocumentCore::from_bytes(NESTED_VALUES_HML.as_bytes()).expect("중첩 값 픽스처가 열려야 한다")
