@@ -734,6 +734,9 @@ pub(crate) fn stored_rows_are_stale_with_storage<S: crate::storage::Storage>(
         if !para.line_segs.is_empty() && para.stored_text_partition_is_dirty() {
             return Ok(true);
         }
+        if !para.line_segs.is_empty() && para.stored_rows_include_hidden_guide() {
+            return Ok(true);
+        }
         let stored = !para.line_segs.is_empty()
             && para
                 .line_segs

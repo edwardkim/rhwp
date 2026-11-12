@@ -1370,7 +1370,11 @@ pub(crate) fn fit_measured_table_to_declared_height_with_outcome_with_storage<
     storage: &S,
 ) -> Result<(MeasuredTable, bool), S::Error> {
     let mut fitted = crate::storage::try_clone(measured, storage)?;
-    if fitted.row_heights.is_empty() || table.common.height == 0 {
+    // [#9005] 숨긴 안내문을 담아 잰 저장 표 높이는 지금 내용의 높이가 아니다.
+    if fitted.row_heights.is_empty()
+        || table.common.height == 0
+        || table.stored_size_includes_hidden_guide()
+    {
         return Ok((fitted, false));
     }
 
@@ -5852,6 +5856,8 @@ let body_height=match nested_body_heights
             common_h
         } else if !table.common.treat_as_char
             && !crate::renderer::float_placement::reflow_table_uses_row_height_constraints(table)
+            // [#9005] 숨긴 안내문을 담아 잰 표 선언은 최소 높이가 아니다.
+            && !table.stored_size_includes_hidden_guide()
             && common_h > 0.0
             && raw_table_height > 0.0
             && common_h > raw_table_height + 0.5

@@ -6178,6 +6178,8 @@ impl LayoutEngine {
     ) {
         if row_heights.is_empty()
             || crate::renderer::float_placement::reflow_table_uses_row_height_constraints(table)
+            // [#9005] 숨긴 안내문을 담아 잰 저장 표 높이로 행을 다시 늘리지 않는다.
+            || table.stored_size_includes_hidden_guide()
             || (!self.profile.get().session_edited()
                 && crate::renderer::table_row_frame::stored_rows_own_body(
                     table,
