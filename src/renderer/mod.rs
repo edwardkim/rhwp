@@ -2744,10 +2744,18 @@ pub(crate) fn cell_uses_overlapping_line_boxes(
 ///
 /// 전진이 줄 높이를 넘으면 겹침 걸음이 아니라 평범한 줄이므로 기존 보존 경로가 판정한다.
 /// 되감김(전진 ≤ 0)도 이 규칙의 대상이 아니다.
-pub(crate) fn stored_overlap_spacer_advance_hu(
+///
+/// [#8981] 저장 차이는 이 줄의 위끝에서 다음 문단 줄의 위끝까지이므로 이 문단의 뒤 간격과
+/// 다음 문단의 앞 간격 띠를 함께 담는다. 두 소비자는 다음 문단에서 앞 간격을 다시 더하고,
+/// 이 문단의 앞 간격을 적용하기 전 커서에 결과를 더한다. 그래서 돌려주는 값(px)은
+/// `stored_empty_successor_geometry` 와 같이 `현재 앞 간격 + 저장 차이 − 다음 앞 간격` 이다
+/// (평가결과서 칸: 6456 → 7536HU 에 다음 앞 간격 300HU 포함).
+pub(crate) fn stored_overlap_spacer_advance(
     paragraphs: &[crate::model::paragraph::Paragraph],
     para_idx: usize,
-) -> Option<i32> {
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    dpi: f64,
+) -> Option<f64> {
     let synthetic = |seg: &crate::model::paragraph::LineSeg| {
         seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
     };
@@ -2759,12 +2767,24 @@ pub(crate) fn stored_overlap_spacer_advance_hu(
         [seg] if !synthetic(seg) && seg.line_height > 0 => seg,
         _ => return None,
     };
-    let next = paragraphs.get(para_idx + 1)?.line_segs.first()?;
+    let next_para = paragraphs.get(para_idx + 1)?;
+    let next = next_para.line_segs.first()?;
     if synthetic(next) {
         return None;
     }
     let forward = i64::from(next.vertical_pos) - i64::from(seg.vertical_pos);
-    (forward > 0 && forward <= i64::from(seg.line_height)).then_some(forward as i32)
+    if forward <= 0 || forward > i64::from(seg.line_height) {
+        return None;
+    }
+    let spacing_before = |p: &crate::model::paragraph::Paragraph| {
+        styles
+            .para_styles
+            .get(p.para_shape_id as usize)
+            .map_or(0.0, |style| style.spacing_before)
+    };
+    let current_before = cell_paragraph_spacing_before(para, para_idx, spacing_before(para));
+    let advance = current_before + hwpunit_to_px(forward as i32, dpi) - spacing_before(next_para);
+    (advance >= 0.0).then_some(advance)
 }
 
 /// [#2287] 저장 LINE_SEG 없는 빈 anchor 문단의 TAC(글자처럼) 그림/도형 플로우

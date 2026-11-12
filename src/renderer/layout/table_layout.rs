@@ -8038,10 +8038,13 @@ impl LayoutEngine {
                 } else if self.profile.get().hwp5_stored_pagination_layout()
                     && crate::renderer::cell_uses_overlapping_line_boxes(&cell.paragraphs)
                 {
-                    if let Some(step) =
-                        crate::renderer::stored_overlap_spacer_advance_hu(&cell.paragraphs, cp_idx)
-                    {
-                        para_y = para_y_before_compose + hwpunit_to_px(step, self.dpi);
+                    if let Some(advance) = crate::renderer::stored_overlap_spacer_advance(
+                        &cell.paragraphs,
+                        cp_idx,
+                        styles,
+                        self.dpi,
+                    ) {
+                        para_y = para_y_before_compose + advance;
                     }
                 }
 
@@ -16444,13 +16447,17 @@ impl LayoutEngine {
                 .map(|advance| hwpunit_to_px(advance, self.dpi));
             // [#6923] 겹침 걸음 사다리(음수 line_spacing)의 빈 줄은 접지 않는다 — 저장
             // 사다리가 그 줄의 점유를 직접 말한다. 규칙과 근거는
-            // `crate::renderer::stored_overlap_spacer_advance_hu` 에 한 곳으로 있고,
+            // `crate::renderer::stored_overlap_spacer_advance` 에 한 곳으로 있고,
             // 배치(`layout_horizontal_cell_paragraphs`)가 같은 결과를 소비한다.
             let stored_overlap_spacer_advance_px: Option<f64> = if cell_uses_overlapping_line_boxes
                 && self.profile.get().hwp5_stored_pagination_layout()
             {
-                crate::renderer::stored_overlap_spacer_advance_hu(&cell.paragraphs, pi)
-                    .map(|hu| hwpunit_to_px(hu, self.dpi))
+                crate::renderer::stored_overlap_spacer_advance(
+                    &cell.paragraphs,
+                    pi,
+                    styles,
+                    self.dpi,
+                )
             } else {
                 None
             };
