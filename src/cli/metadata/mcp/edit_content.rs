@@ -4,7 +4,7 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
     tools.extend([
         tool_with_optional_args(
             "hwp_insert_image",
-            "[#3719 §6-5] 도장·서명 같은 그림을 쪽 좌표에 붙여 새 문서를 만든다 — 채워 넣은 서식에 직인을 얹는 실물 제출의 마지막 조각. **길이 단위는 전부 HWPUNIT(1/7200 inch)이며 픽셀이 아니다** (A4 세로 = 59528 × 84188). 용지 왼쪽 위 모서리 기준 (x, y) 에 놓는 떠 있는 그림이다. 크기를 생략하면 원본 픽셀을 96dpi 로 환산하고, 한쪽만 주면 원본 비율을 지킨다. 쪽 밖으로 나가면 자르지 않고 overflow 로 보고한다. 지원 형식은 png·jpg·jpeg·bmp·tif·tiff 이며 그 밖은 인자 오류다. 산출물은 입력 형식을 따른다.",
+            "[#3719 §6-5] 도장·서명 같은 그림을 쪽 좌표에 붙여 새 문서를 만든다 — 채워 넣은 서식에 직인을 얹는 실물 제출의 마지막 조각. **길이 단위는 전부 HWPUNIT(1/7200 inch)이며 픽셀이 아니다** (A4 세로 = 59528 × 84188). 용지 왼쪽 위 모서리 기준 (x, y) 에 놓는 떠 있는 그림이다. 크기를 생략하면 원본 픽셀을 96dpi 로 환산하고, 한쪽만 주면 원본 비율을 지킨다. 쪽 밖으로 나가면 자르지 않고 overflow 로 보고한다. 결과의 section/paragraph/ctrl 이 넣은 그림의 자리다 (dryRun 이면 ctrl 은 null). 지원 형식은 png·jpg·jpeg·bmp·tif·tiff 이며 그 밖은 인자 오류다. 산출물은 입력 형식을 따른다.",
             serde_json::json!({
                 "type": "object",
                 "properties": {
@@ -31,11 +31,11 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
                 { "when": "output", "args": ["-o", "{output}"] },
                 { "when": "dryRun", "args": ["--dry-run"] }
             ]),
-            &["schemaVersion", "source", "image", "page", "x", "y", "width", "height", "binDataId", "dryRun", "overflow", "output", "outputFormat", "verify", "changedPages"],
+            &["schemaVersion", "source", "image", "page", "x", "y", "width", "height", "binDataId", "section", "paragraph", "ctrl", "dryRun", "overflow", "output", "outputFormat", "verify", "changedPages"],
         ),
         tool_with_optional_args(
             "hwp_insert_picture",
-            "문단 좌표(search 와 같은 section/paragraph/offset, 0 기준)에 본문 그림을 끼운다. 도장·서명용 쪽 좌표 insert-image 와 다르다. 코어 insert_picture_native 배선. 그림 바이트는 파일 그대로 넘긴다.",
+            "문단 좌표(search 와 같은 section/paragraph/offset, 0 기준)에 본문 그림을 끼운다. 도장·서명용 쪽 좌표 insert-image 와 다르다. 코어 insert_picture_native 배선. 그림 바이트는 파일 그대로 넘긴다. 결과의 section/paragraph/ctrl 이 넣은 그림의 자리이며 hwp_set_picture·hwp_delete_picture 에 그대로 넘긴다 (dryRun 이면 ctrl 은 null).",
             serde_json::json!({
                 "type": "object",
                 "properties": {
@@ -66,7 +66,7 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
                 { "when": "output", "args": ["-o", "{output}"] },
                 { "when": "dryRun", "args": ["--dry-run"] }
             ]),
-            &["schemaVersion", "source", "image", "section", "paragraph", "offset", "x", "y", "width", "height", "binDataId", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+            &["schemaVersion", "source", "image", "section", "paragraph", "offset", "x", "y", "width", "height", "binDataId", "ctrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         tool_with_optional_args(
             "hwp_delete_picture",

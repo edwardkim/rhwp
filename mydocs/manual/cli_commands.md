@@ -1552,9 +1552,11 @@ MCP `hwp_insert_table`은 `atField`, `widths`, `alignments`, `repeatHeader`로 �
 - `-o, --output <파일>` — 출력 파일(기본 `<입력명>_image.<입력과 같은 확장자>`, §edit 산출 형식)
 - `--dry-run` — 파일을 쓰지 않고 배치 예정만 보고
 - `--verify` — 저장 직후 IR 자기검증(차이 시 exit 3)
-- `--json` 봉투: `{"schemaVersion":"1.0","source","image","page","x","y","width","height","binDataId","dryRun","changedPages","overflow":[{"page","paperWidthHu","paperHeightHu","rightHu","bottomHu","overflowXHu","overflowYHu"}],"output"?,"outputFormat"?,"verify"?}`
+- `--json` 봉투: `{"schemaVersion":"1.0","source","image","page","x","y","width","height","binDataId","section","paragraph","ctrl","dryRun","changedPages","overflow":[{"page","paperWidthHu","paperHeightHu","rightHu","bottomHu","overflowXHu","overflowYHu"}],"output"?,"outputFormat"?,"verify"?}`
   - `binDataId` 는 실제로 저장했을 때만 값이 실린다(방금 삽입한 그림의 BinData 참조 —
     같은 그림 재사용이나 산출물 감사용 주소). `overflow` 는 넘칠 때만 원소 1개, 아니면 `[]`.
+  - `section`·`paragraph`·`ctrl` 은 그림을 붙인 문단과 그 안의 컨트롤 번호다. `ctrl` 은
+    실제로 저장했을 때만 값이 실리고 `--dry-run` 이면 `null` 이다.
 - 그림 설명(대체 텍스트)은 삽입한 파일명을 그대로 쓴다(한컴 개체 속성에 노출).
 - 실패 시 원본 불변, 산출 형식은 `edit` 5종과 같은 §edit 산출 형식 규약을 따른다.
 
@@ -1573,12 +1575,14 @@ rhwp edit insert-image 신청서_filled.hwp --image samples/images/moogung.jpg \
 - `--section` / `--para` / `--offset` — 0 기준. 생략하면 0.
 - `--width` / `--height` — HWPUNIT. 생략 시 원본 픽셀 ×75, 한쪽만 주면 비율 유지.
 - `--x` / `--y` — 용지 기준 위치(HWPUNIT, 기본 0).
-- `--json` 봉투: `image`·`section`·`paragraph`·`offset`·`x`·`y`·`width`·`height`·`binDataId`.
+- `--json` 봉투: `image`·`section`·`paragraph`·`offset`·`x`·`y`·`width`·`height`·`binDataId`·`ctrl`.
+  `section`·`paragraph`·`ctrl` 을 `set-picture`·`delete-picture` 에 그대로 넘긴다. `--dry-run`
+  이면 그림을 넣지 않으므로 `ctrl` 은 `null` 이다.
 
 ```bash
 rhwp edit insert-picture 공문.hwp --image assets/logo/logo-16.png \
   --section 0 --para 0 --offset 0 --width 1200 --height 1200 \
-  -o 그림본.hwp --json | jq '{section, paragraph, offset, binDataId}'
+  -o 그림본.hwp --json | jq '{section, paragraph, ctrl, binDataId}'
 ```
 
 ### `edit delete-picture <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]`
@@ -1591,8 +1595,34 @@ rhwp edit delete-picture 그림본.hwp --section 0 --para 0 --ctrl 0 -o 지움.h
 
 ### `edit set-picture <파일> --section N --para N --ctrl N --props <JSON> [-o <출력>] [--dry-run] [--verify] [--json]`
 본문 그림 속성을 바꾼다. 코어 `set_picture_properties_native`. `--section`/`--para`/`--ctrl`/
-`--props` 필수. 인덱스는 문서를 스캔해 Picture 컨트롤을 고른다. `--props` 예:
-`{"brightness":50}`, `{"treatAsChar":true}`, `{"hasCaption":true}`.
+`--props` 필수. 인덱스는 문서를 스캔해 Picture 컨트롤을 고르거나 `insert-picture --json` 결과의
+`section`·`paragraph`·`ctrl` 을 쓴다. `--props` 예:
+`{"brightness":50}`, `{"treatAsChar":true}`, `{"textWrap":"TopAndBottom","horzAlign":"Center"}`.
+
+`--props` 는 JSON 객체여야 하고, 아래 키와 값만 받는다. 모르는 키나 허용하지 않는 값이 하나라도
+있으면 문서를 쓰지 않고 exit 2 로 끝난다(`--dry-run` 도 같다). 열거 값은 대소문자를 구분한다.
+`set-hf-picture` 의 `--props` 도 같은 키를 받는다(캡션 만들기는 지원하지 않는다).
+
+| 키 | 값 |
+|---|---|
+| `width`, `height` | 0 이상 정수(HWPUNIT) |
+| `treatAsChar`, `restrictInPage`, `allowOverlap`, `sizeProtect`, `horzFlip`, `vertFlip` | `true`/`false` |
+| `textWrap` | `Square`, `Tight`, `Through`, `TopAndBottom`, `BehindText`, `InFrontOfText` |
+| `vertRelTo` | `Paper`, `Page`, `Para` |
+| `horzRelTo` | `Paper`, `Page`, `Column`, `Para` |
+| `vertAlign` | `Top`, `Center`, `Bottom` |
+| `horzAlign` | `Left`, `Center`, `Right` |
+| `vertOffset`, `horzOffset`, `cropLeft`, `cropTop`, `cropRight`, `cropBottom`, `borderWidth` | 정수 (i32) |
+| `brightness`, `contrast` | -128~127 정수 |
+| `transparency` | 0~100 정수 |
+| `effect` | `RealPic`, `GrayScale`, `BlackWhite`, `Pattern8x8` |
+| `rotationAngle`, `paddingLeft`/`Top`/`Right`/`Bottom`, `outerMarginLeft`/`Top`/`Right`/`Bottom` | 정수 (i16) |
+| `borderColor` | 0 이상 정수 |
+| `description` | 문자열 |
+| `hasCaption` | `true` 면 캡션을 만들고 `false` 면 지운다 |
+| `captionDirection` | `Left`, `Right`, `Top`, `Bottom` (`"hasCaption": true` 와 함께) |
+| `captionVertAlign` | `Top`, `Center`, `Bottom` (`"hasCaption": true` 와 함께) |
+| `captionWidth`, `captionSpacing`, `captionIncludeMargin` | 정수·정수·`true`/`false` (`"hasCaption": true` 와 함께) |
 
 ```bash
 rhwp edit set-picture 그림본.hwp --section 0 --para 0 --ctrl 0 \

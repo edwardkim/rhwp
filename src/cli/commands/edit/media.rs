@@ -350,6 +350,7 @@ pub(super) fn edit_insert_image(args: &[String]) -> i32 {
     };
 
     let mut bin_data_id = serde_json::Value::Null;
+    let mut ctrl_value = serde_json::Value::Null;
     if !dry_run {
         // 그림 설명(대체 텍스트)은 파일명 — 한컴이 개체 속성에 보여 주는 값이다.
         let description = Path::new(image_path)
@@ -383,15 +384,18 @@ pub(super) fn edit_insert_image(args: &[String]) -> i32 {
         let ctrl_idx = serde_json::from_str::<serde_json::Value>(&inserted)
             .ok()
             .and_then(|v| v["controlIdx"].as_u64())
-            .unwrap_or_default() as usize;
-        if let Some(rhwp::model::control::Control::Picture(picture)) = doc
-            .document()
-            .sections
-            .get(sec)
-            .and_then(|s| s.paragraphs.get(para))
-            .and_then(|p| p.controls.get(ctrl_idx))
+            .map(|v| v as usize);
+        if let Some(rhwp::model::control::Control::Picture(picture)) =
+            ctrl_idx.and_then(|ctrl_idx| {
+                doc.document()
+                    .sections
+                    .get(sec)
+                    .and_then(|s| s.paragraphs.get(para))
+                    .and_then(|p| p.controls.get(ctrl_idx))
+            })
         {
             bin_data_id = serde_json::json!(picture.image_attr.bin_data_id);
+            ctrl_value = serde_json::json!(ctrl_idx);
         }
     }
 
@@ -454,6 +458,9 @@ pub(super) fn edit_insert_image(args: &[String]) -> i32 {
             "width": width_hu,
             "height": height_hu,
             "binDataId": bin_data_id,
+            "section": sec,
+            "paragraph": para,
+            "ctrl": ctrl_value,
             "dryRun": dry_run,
             "changedPages": changed_pages,
             "overflow": overflow.clone().map(|o| vec![o]).unwrap_or_default(),
@@ -731,6 +738,7 @@ pub(super) fn edit_insert_picture(args: &[String]) -> i32 {
         return EXIT_USAGE;
     }
     let mut bin_data_id = serde_json::Value::Null;
+    let mut ctrl_value = serde_json::Value::Null;
     if !dry_run {
         let description = Path::new(image_path)
             .file_name()
@@ -760,15 +768,18 @@ pub(super) fn edit_insert_picture(args: &[String]) -> i32 {
         let ctrl_idx = serde_json::from_str::<serde_json::Value>(&inserted)
             .ok()
             .and_then(|v| v["controlIdx"].as_u64())
-            .unwrap_or_default() as usize;
-        if let Some(rhwp::model::control::Control::Picture(picture)) = doc
-            .document()
-            .sections
-            .get(section)
-            .and_then(|s| s.paragraphs.get(para))
-            .and_then(|p| p.controls.get(ctrl_idx))
+            .map(|v| v as usize);
+        if let Some(rhwp::model::control::Control::Picture(picture)) =
+            ctrl_idx.and_then(|ctrl_idx| {
+                doc.document()
+                    .sections
+                    .get(section)
+                    .and_then(|s| s.paragraphs.get(para))
+                    .and_then(|p| p.controls.get(ctrl_idx))
+            })
         {
             bin_data_id = serde_json::json!(picture.image_attr.bin_data_id);
+            ctrl_value = serde_json::json!(ctrl_idx);
         }
     }
     finish_edit_write(
@@ -790,6 +801,7 @@ pub(super) fn edit_insert_picture(args: &[String]) -> i32 {
             "width": width_hu,
             "height": height_hu,
             "binDataId": bin_data_id,
+            "ctrl": ctrl_value,
         }),
         &[(section, para)],
         &format!(
@@ -972,8 +984,8 @@ pub(super) fn edit_set_picture(args: &[String]) -> i32 {
         eprintln!("{USAGE}");
         return EXIT_USAGE;
     };
-    if props.trim().is_empty() {
-        eprintln!("오류: --props 는 비어 있을 수 없습니다.");
+    if let Err(e) = rhwp::document_core::check_picture_props(&props) {
+        eprintln!("오류: {e}");
         return EXIT_USAGE;
     }
     let bytes = match fs::read(file_path) {

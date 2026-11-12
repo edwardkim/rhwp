@@ -92,6 +92,10 @@ pub(super) fn edit_set_hf_picture(args: &[String]) -> i32 {
         eprintln!("{USAGE}");
         return EXIT_USAGE;
     };
+    if let Err(e) = rhwp::document_core::check_picture_props(props) {
+        eprintln!("오류: {e}");
+        return EXIT_USAGE;
+    }
     let bytes = match fs::read(file_path) {
         Ok(d) => d,
         Err(e) => {

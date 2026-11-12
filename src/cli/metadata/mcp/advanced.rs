@@ -148,7 +148,7 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
         ),
         tool_with_optional_args(
             "hwp_set_picture",
-            "본문 그림 속성을 JSON 으로 바꾼다. section/para/ctrl 은 0 기준. 코어 set_picture_properties_native 배선.",
+            "본문 그림 속성을 JSON 으로 바꾼다. section/para/ctrl 은 0 기준이며 hwp_insert_picture 결과의 section/paragraph/ctrl 을 그대로 쓸 수 있다. 코어 set_picture_properties_native 배선. 받는 키: width·height(HWPUNIT), treatAsChar, textWrap(Square|Tight|Through|TopAndBottom|BehindText|InFrontOfText), vertRelTo(Paper|Page|Para), horzRelTo(Paper|Page|Column|Para), vertAlign(Top|Center|Bottom), horzAlign(Left|Center|Right), vertOffset·horzOffset, restrictInPage, allowOverlap, sizeProtect, brightness, contrast, transparency, effect(RealPic|GrayScale|BlackWhite|Pattern8x8), rotationAngle, horzFlip, vertFlip, cropLeft·cropTop·cropRight·cropBottom, paddingLeft·paddingTop·paddingRight·paddingBottom, outerMarginLeft·outerMarginTop·outerMarginRight·outerMarginBottom, borderColor, borderWidth, description, hasCaption, captionDirection(Left|Right|Top|Bottom)·captionVertAlign(Top|Center|Bottom)·captionWidth·captionSpacing·captionIncludeMargin(hasCaption:true 와 함께). 모르는 키나 허용하지 않는 값이 하나라도 있으면 문서를 쓰지 않고 인자 오류로 끝난다.",
             serde_json::json!({
                 "type": "object",
                 "properties": {
@@ -156,7 +156,7 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
                     "section": { "type": "integer", "minimum": 0 },
                     "paragraph": { "type": "integer", "minimum": 0 },
                     "ctrl": { "type": "integer", "minimum": 0 },
-                    "props": { "type": "string", "description": "그림 속성 JSON (예: {\"brightness\":50,\"treatAsChar\":true})" },
+                    "props": { "type": "string", "description": "그림 속성 JSON 객체 (예: {\"textWrap\":\"TopAndBottom\",\"horzAlign\":\"Center\"}). 받는 키와 값은 도구 설명 참조" },
                     "output": { "type": "string" },
                     "dryRun": { "type": "boolean" }
                 },
@@ -273,7 +273,7 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
     super::add_edit_tool(
         tools,
         "hwp_set_hf_picture",
-        "머리말/꼬리말 안 그림 속성을 바꾼다. para/ctrl은 머리말·꼬리말 컨트롤, innerPara/innerCtrl은 그 안 그림이다.",
+        "머리말/꼬리말 안 그림 속성을 바꾼다. para/ctrl은 머리말·꼬리말 컨트롤, innerPara/innerCtrl은 그 안 그림이다. props 에서 받는 키와 값은 hwp_set_picture 와 같고(캡션 만들기 제외), 모르는 키나 허용하지 않는 값이 하나라도 있으면 인자 오류로 끝난다.",
         serde_json::json!({
             "path": { "type": "string" },
             "section": { "type": "integer", "minimum": 0 },
@@ -281,7 +281,7 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
             "ctrl": { "type": "integer", "minimum": 0 },
             "innerPara": { "type": "integer", "minimum": 0 },
             "innerCtrl": { "type": "integer", "minimum": 0 },
-            "props": { "type": "string", "description": "그림 속성 JSON" },
+            "props": { "type": "string", "description": "그림 속성 JSON 객체 (받는 키는 hwp_set_picture 와 같음)" },
             "output": { "type": "string" },
             "dryRun": { "type": "boolean" }
         }),
