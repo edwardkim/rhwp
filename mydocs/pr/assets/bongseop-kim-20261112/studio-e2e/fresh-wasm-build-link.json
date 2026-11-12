@@ -1,0 +1,12 @@
+{
+  "success": true,
+  "source": "0aa25a66345edbf36aee45bf953611fe041350e0",
+  "artifacts": {
+    "rhwp_bg.wasm": {
+      "bytes": 29242026,
+      "sha256": "dc791e8a463208459055bf395162445529213b185fb07720f2ac55709619c501"
+    }
+  },
+  "source_sha": "0aa25a66345edbf36aee45bf953611fe041350e0",
+  "profile": "release optimized wasm-pack"
+}

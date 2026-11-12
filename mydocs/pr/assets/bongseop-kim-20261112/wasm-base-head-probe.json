@@ -1,0 +1,41 @@
+{
+  "base": {
+    "wasm_sha256": "8929925f1b7fbfe8927c65e71081cb63497ad50e0856f818c679dfc4f511b20d",
+    "borders": [
+      [
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0
+      ]
+    ],
+    "leadingPlainIsBold": true,
+    "explicitBoldIsBold": true
+  },
+  "head": {
+    "wasm_sha256": "dc791e8a463208459055bf395162445529213b185fb07720f2ac55709619c501",
+    "borders": [
+      [
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        0
+      ]
+    ],
+    "leadingPlainIsBold": false,
+    "explicitBoldIsBold": true
+  },
+  "allExpectedComparisonsPassed": true
+}

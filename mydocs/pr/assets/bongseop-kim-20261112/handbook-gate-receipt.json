@@ -1,0 +1,30 @@
+{
+  "source": "39f0ac047778eb3ac382cc36143b92f3a5bf4d94",
+  "producer_source": "0aa25a66345edbf36aee45bf953611fe041350e0",
+  "product_source_unchanged": true,
+  "command": [
+    "/home/edward/mygithub/rhwp/venv/bin/python",
+    "scripts/visual_sweep.py",
+    "--handbook-gate",
+    "--out",
+    "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/handbook-gate",
+    "--rhwp-bin",
+    "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/producers/rhwp-candidate",
+    "--page-workers",
+    "2",
+    "--font-path",
+    "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/handbook-hwpx/00-hft",
+    "--font-path",
+    "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/handbook-hwpx/01-hwp",
+    "--font-path",
+    "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/handbook-hwpx/02-windows",
+    "--font-path",
+    "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/handbook-hwpx/03-kopub",
+    "--font-path",
+    "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/handbook-hwpx/04-gov",
+    "--font-environment",
+    "/home/edward/mygithub/rhwp-worktrees/review-integration-8942-bongseop-html-clipboard/mydocs/pr/assets/planet6897_integration_final/pr8389_8397/handbook-font-environment.json"
+  ],
+  "returncode": 0,
+  "seconds": 409.315
+}

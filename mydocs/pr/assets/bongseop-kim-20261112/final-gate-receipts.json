@@ -1,0 +1,213 @@
+[
+  {
+    "name": "format",
+    "source": "39f0ac047778eb3ac382cc36143b92f3a5bf4d94",
+    "command": [
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/minimal-font/run.sh",
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "returncode": 0,
+    "seconds": 32.828
+  },
+  {
+    "name": "manifest",
+    "source": "39f0ac047778eb3ac382cc36143b92f3a5bf4d94",
+    "command": [
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/minimal-font/run.sh",
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--check",
+      "--base-ref",
+      "80b1c354c29b7a02fb2b3c14a274da7f5b653ada"
+    ],
+    "returncode": 0,
+    "seconds": 1.108
+  },
+  {
+    "name": "focused-issue_8942_paste_html_table_border_attr",
+    "source": "39f0ac047778eb3ac382cc36143b92f3a5bf4d94",
+    "command": [
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/minimal-font/run.sh",
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_8942_paste_html_table_border_attr",
+      "--",
+      "--cargo-profile",
+      "release-test"
+    ],
+    "returncode": 0,
+    "seconds": 405.29
+  },
+  {
+    "name": "focused-issue_8943_paste_html_leading_plain_run",
+    "source": "39f0ac047778eb3ac382cc36143b92f3a5bf4d94",
+    "command": [
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/minimal-font/run.sh",
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_8943_paste_html_leading_plain_run",
+      "--",
+      "--cargo-profile",
+      "release-test"
+    ],
+    "returncode": 0,
+    "seconds": 14.796
+  },
+  {
+    "name": "focused-issue_7516_html_paste_loose_inline_format",
+    "source": "39f0ac047778eb3ac382cc36143b92f3a5bf4d94",
+    "command": [
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/minimal-font/run.sh",
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_7516_html_paste_loose_inline_format",
+      "--",
+      "--cargo-profile",
+      "release-test"
+    ],
+    "returncode": 0,
+    "seconds": 13.028
+  },
+  {
+    "name": "clippy-native",
+    "source": "39f0ac047778eb3ac382cc36143b92f3a5bf4d94",
+    "command": [
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/minimal-font/run.sh",
+      "cargo",
+      "clippy",
+      "--locked",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "returncode": 0,
+    "seconds": 148.314
+  },
+  {
+    "name": "clippy-wasm",
+    "source": "39f0ac047778eb3ac382cc36143b92f3a5bf4d94",
+    "command": [
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/minimal-font/run.sh",
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "rhwp",
+      "--lib",
+      "--target",
+      "wasm32-unknown-unknown",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "returncode": 0,
+    "seconds": 144.037
+  },
+  {
+    "name": "workspace-build",
+    "source": "39f0ac047778eb3ac382cc36143b92f3a5bf4d94",
+    "command": [
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/minimal-font/run.sh",
+      "cargo",
+      "build",
+      "--locked",
+      "--workspace"
+    ],
+    "returncode": 0,
+    "seconds": 203.566
+  },
+  {
+    "name": "clippy-workspace",
+    "source": "39f0ac047778eb3ac382cc36143b92f3a5bf4d94",
+    "command": [
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/minimal-font/run.sh",
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "returncode": 0,
+    "seconds": 166.99
+  },
+  {
+    "name": "full-regression",
+    "source": "39f0ac047778eb3ac382cc36143b92f3a5bf4d94",
+    "command": [
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/minimal-font/run.sh",
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--tests",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "returncode": 0,
+    "seconds": 1103.162
+  },
+  {
+    "name": "native-lib",
+    "source": "39f0ac047778eb3ac382cc36143b92f3a5bf4d94",
+    "command": [
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/minimal-font/run.sh",
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--lib",
+      "--",
+      "--test-threads",
+      "8"
+    ],
+    "returncode": 0,
+    "seconds": 318.857
+  },
+  {
+    "name": "native-placeholder",
+    "source": "39f0ac047778eb3ac382cc36143b92f3a5bf4d94",
+    "command": [
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/minimal-font/run.sh",
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_2225_missing_picture_placeholder",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--features",
+      "native-skia"
+    ],
+    "returncode": 0,
+    "seconds": 265.241
+  },
+  {
+    "name": "native-direct-pdf",
+    "source": "39f0ac047778eb3ac382cc36143b92f3a5bf4d94",
+    "command": [
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/minimal-font/run.sh",
+      "node",
+      "scripts/run-rust-test.mjs",
+      "render_p37_direct_pdf_export",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--features",
+      "native-skia"
+    ],
+    "returncode": 0,
+    "seconds": 12.902
+  }
+]

@@ -1,0 +1,26 @@
+{
+  "browser": "Chrome/157.0.8103.79",
+  "rows": [
+    {
+      "label": "data-only",
+      "borderAttribute": null,
+      "dataBorder": "1",
+      "cellBorderStyle": "none",
+      "cellBorderWidth": "0px"
+    },
+    {
+      "label": "data-before-zero",
+      "borderAttribute": "0",
+      "dataBorder": "1",
+      "cellBorderStyle": "none",
+      "cellBorderWidth": "0px"
+    },
+    {
+      "label": "real-one",
+      "borderAttribute": "1",
+      "dataBorder": null,
+      "cellBorderStyle": "inset",
+      "cellBorderWidth": "1px"
+    }
+  ]
+}
