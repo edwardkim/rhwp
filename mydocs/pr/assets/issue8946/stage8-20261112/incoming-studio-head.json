@@ -1,0 +1,462 @@
+{
+  "browser": "Chrome/157.0.8103.51",
+  "transport": "local Chrome with fresh WASM",
+  "pasteEntry": "real Studio textarea ClipboardEvent with text/html and text/plain; synthetic event, no clipboard handler mock",
+  "cases": [
+    {
+      "name": "leading",
+      "afterPaste": {
+        "body": [
+          {
+            "text": "첫 문단",
+            "marks": "...."
+          },
+          {
+            "text": "앞 굵게 뒤",
+            "marks": "..BB.."
+          }
+        ],
+        "tables": []
+      },
+      "roundtrips": [
+        {
+          "format": "hwp",
+          "cycle": 1,
+          "sha256": "f3f9518aae8f40206433e1ddb3313157dd1bc24dbc3564b99851e7f1cc9b7b75",
+          "preserved": true
+        },
+        {
+          "format": "hwp",
+          "cycle": 2,
+          "sha256": "dd1c4b40eed2283329e8a0bcb5cc9bc3208bdc80de147ef1fb83ff37a5f43afa",
+          "preserved": true
+        },
+        {
+          "format": "hwpx",
+          "cycle": 1,
+          "sha256": "d06d81ba49aac845e5757d2df30703271e5d3e3fe89c007c8ae26b734a8271b3",
+          "preserved": true
+        },
+        {
+          "format": "hwpx",
+          "cycle": 2,
+          "sha256": "d06d81ba49aac845e5757d2df30703271e5d3e3fe89c007c8ae26b734a8271b3",
+          "preserved": true
+        }
+      ]
+    },
+    {
+      "name": "border",
+      "afterPaste": {
+        "body": [
+          {
+            "text": "BEFORE",
+            "marks": "......"
+          },
+          {
+            "text": "AFTER",
+            "marks": "....."
+          }
+        ],
+        "tables": [
+          {
+            "paragraph": 1,
+            "cell": [
+              {
+                "text": "가",
+                "marks": "."
+              }
+            ],
+            "borders": [
+              {
+                "type": 1,
+                "width": 4,
+                "color": "#000000"
+              },
+              {
+                "type": 1,
+                "width": 4,
+                "color": "#000000"
+              },
+              {
+                "type": 1,
+                "width": 4,
+                "color": "#000000"
+              },
+              {
+                "type": 1,
+                "width": 4,
+                "color": "#000000"
+              }
+            ]
+          }
+        ]
+      },
+      "roundtrips": [
+        {
+          "format": "hwp",
+          "cycle": 1,
+          "sha256": "c0d99da9a776a61773b1bb82091f98611c65a3e14419bbb7efbb6d339c9029f5",
+          "preserved": true
+        },
+        {
+          "format": "hwp",
+          "cycle": 2,
+          "sha256": "21a8d0eba1dce39e21be4f97a195573fe5128eb26e50d6101b891d906e590c9e",
+          "preserved": true
+        },
+        {
+          "format": "hwpx",
+          "cycle": 1,
+          "sha256": "f638d9cb9b7817326a2f373b38b1ed76f96b3d6e93469dcce3cbe186545a5e02",
+          "preserved": true
+        },
+        {
+          "format": "hwpx",
+          "cycle": 2,
+          "sha256": "f638d9cb9b7817326a2f373b38b1ed76f96b3d6e93469dcce3cbe186545a5e02",
+          "preserved": true
+        }
+      ]
+    },
+    {
+      "name": "combined",
+      "afterPaste": {
+        "body": [
+          {
+            "text": "첫 문단",
+            "marks": "...."
+          },
+          {
+            "text": "앞 굵게 뒤",
+            "marks": "..BB.."
+          },
+          {
+            "text": "AFTER",
+            "marks": "....."
+          }
+        ],
+        "tables": [
+          {
+            "paragraph": 2,
+            "cell": [
+              {
+                "text": "셀 앞 굵게 뒤",
+                "marks": "....BB.."
+              }
+            ],
+            "borders": [
+              {
+                "type": 1,
+                "width": 4,
+                "color": "#000000"
+              },
+              {
+                "type": 1,
+                "width": 4,
+                "color": "#000000"
+              },
+              {
+                "type": 1,
+                "width": 4,
+                "color": "#000000"
+              },
+              {
+                "type": 1,
+                "width": 4,
+                "color": "#000000"
+              }
+            ]
+          }
+        ]
+      },
+      "roundtrips": [
+        {
+          "format": "hwp",
+          "cycle": 1,
+          "sha256": "59b4fab33e7be4c556d0c01ea9cc2c1ed5390ba169b4fe0cc2520880d40d9bd9",
+          "preserved": true
+        },
+        {
+          "format": "hwp",
+          "cycle": 2,
+          "sha256": "68c49242cce348fdc15911eb7e44fce03dc8bddb989e0f656555f3d90f18f312",
+          "preserved": true
+        },
+        {
+          "format": "hwpx",
+          "cycle": 1,
+          "sha256": "5f6e2bea11103d77af54eeae50693ae7e2cc921e18345b2773bdfab7023143fd",
+          "preserved": true
+        },
+        {
+          "format": "hwpx",
+          "cycle": 2,
+          "sha256": "5f6e2bea11103d77af54eeae50693ae7e2cc921e18345b2773bdfab7023143fd",
+          "preserved": true
+        }
+      ]
+    },
+    {
+      "name": "body-styled-caret",
+      "afterPaste": {
+        "body": [
+          {
+            "text": "L앞 굵게 뒤R",
+            "marks": "I..BB..I"
+          }
+        ],
+        "tables": []
+      },
+      "roundtrips": [
+        {
+          "format": "hwp",
+          "cycle": 1,
+          "sha256": "99641e42ffc4f4af95bd5f6198809672b9a893c052cb8f3b6a3ca561c90cf7f2",
+          "preserved": true
+        },
+        {
+          "format": "hwp",
+          "cycle": 2,
+          "sha256": "7f8a3b1b985813bb655ba7f0f649d69962017399d51070d93f8d826b2c6bdfc2",
+          "preserved": true
+        },
+        {
+          "format": "hwpx",
+          "cycle": 1,
+          "sha256": "c8587d18ca680bdfb01fcbd38a6e6a593cf35654615976d0e1740cab22e0226c",
+          "preserved": true
+        },
+        {
+          "format": "hwpx",
+          "cycle": 2,
+          "sha256": "c8587d18ca680bdfb01fcbd38a6e6a593cf35654615976d0e1740cab22e0226c",
+          "preserved": true
+        }
+      ]
+    },
+    {
+      "name": "cell-styled-caret",
+      "afterPaste": {
+        "body": [],
+        "tables": [
+          {
+            "paragraph": 0,
+            "cell": [
+              {
+                "text": "L앞 굵게 뒤R",
+                "marks": "I..BB..I"
+              }
+            ],
+            "borders": [
+              {
+                "type": 1,
+                "width": 1,
+                "color": "#000000"
+              },
+              {
+                "type": 1,
+                "width": 1,
+                "color": "#000000"
+              },
+              {
+                "type": 1,
+                "width": 1,
+                "color": "#000000"
+              },
+              {
+                "type": 1,
+                "width": 1,
+                "color": "#000000"
+              }
+            ]
+          }
+        ]
+      },
+      "roundtrips": [
+        {
+          "format": "hwp",
+          "cycle": 1,
+          "sha256": "668cb6821cd51f4e6089ffc2864e35fbf30921fb3f16e0e45dd74087c5198875",
+          "preserved": true
+        },
+        {
+          "format": "hwp",
+          "cycle": 2,
+          "sha256": "a9ed2f79f431463a19404ab90e4785beb7c61f0c5454475e3c90f74a1850025a",
+          "preserved": true
+        },
+        {
+          "format": "hwpx",
+          "cycle": 1,
+          "sha256": "5ee3793d05287f7e453d76f6480a96a6f90d75887a3c5d31478c4254ac47184a",
+          "preserved": true
+        },
+        {
+          "format": "hwpx",
+          "cycle": 2,
+          "sha256": "5ee3793d05287f7e453d76f6480a96a6f90d75887a3c5d31478c4254ac47184a",
+          "preserved": true
+        }
+      ]
+    },
+    {
+      "name": "attribute-alias",
+      "afterPaste": {
+        "body": [],
+        "tables": [
+          {
+            "paragraph": 0,
+            "cell": [
+              {
+                "text": "A",
+                "marks": "."
+              }
+            ],
+            "borders": [
+              {
+                "type": 0,
+                "width": 0,
+                "color": "#000000"
+              },
+              {
+                "type": 0,
+                "width": 0,
+                "color": "#000000"
+              },
+              {
+                "type": 0,
+                "width": 0,
+                "color": "#000000"
+              },
+              {
+                "type": 0,
+                "width": 0,
+                "color": "#000000"
+              }
+            ]
+          }
+        ]
+      },
+      "roundtrips": [
+        {
+          "format": "hwp",
+          "cycle": 1,
+          "sha256": "9293ece4de9b387aca1107997a7f5c3cfee6acd2d903e0eea330680f7de9ecb5",
+          "preserved": true
+        },
+        {
+          "format": "hwp",
+          "cycle": 2,
+          "sha256": "d763bb6afd1b467e603e95f9b99506230e6d9858fc60c835f6b9f63aad091891",
+          "preserved": true
+        },
+        {
+          "format": "hwpx",
+          "cycle": 1,
+          "sha256": "b1746c00007b8ce41d01e6b8e93aadbc533c9b419005274d487e988eef3499d3",
+          "preserved": true
+        },
+        {
+          "format": "hwpx",
+          "cycle": 2,
+          "sha256": "b1746c00007b8ce41d01e6b8e93aadbc533c9b419005274d487e988eef3499d3",
+          "preserved": true
+        }
+      ]
+    }
+  ],
+  "requests": [],
+  "errors": [],
+  "lastSnapshot": {
+    "name": "attribute-alias",
+    "expected": {
+      "body": [],
+      "tables": [
+        {
+          "paragraph": 0,
+          "cell": [
+            {
+              "text": "A",
+              "marks": "."
+            }
+          ],
+          "borders": [
+            {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "setup": {
+    "parent": 0,
+    "control": 2,
+    "count": 2,
+    "setupQuery": [
+      {
+        "pi": 0,
+        "error": "렌더링 오류: 지정된 컨트롤이 표가 아닙니다"
+      },
+      {
+        "pi": 1,
+        "error": "렌더링 오류: 지정된 컨트롤이 표가 아닙니다"
+      }
+    ]
+  },
+  "setupSnapshot": {
+    "body": [],
+    "tables": [
+      {
+        "paragraph": 0,
+        "cell": [
+          {
+            "text": "LR",
+            "marks": "II"
+          }
+        ],
+        "borders": [
+          {
+            "type": 1,
+            "width": 1,
+            "color": "#000000"
+          },
+          {
+            "type": 1,
+            "width": 1,
+            "color": "#000000"
+          },
+          {
+            "type": 1,
+            "width": 1,
+            "color": "#000000"
+          },
+          {
+            "type": 1,
+            "width": 1,
+            "color": "#000000"
+          }
+        ]
+      }
+    ]
+  },
+  "allPassed": true
+}

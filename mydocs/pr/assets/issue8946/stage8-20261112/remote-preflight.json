@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-11-13T00:17:21.030268+09:00",
+  "devel": "a85d3265dd10b316d1a0ae029ca3f67245b38b77",
+  "devel_unchanged": true,
+  "issue_updated_at": "2026-11-11T10:17:17Z",
+  "own_open_prs": [
+    {
+      "number": 9012,
+      "head": "71c002495603a34af43f238dd2c98354d942a589",
+      "requested_reviewers": [],
+      "reviews": [],
+      "mergeable": true,
+      "workflow_conclusions": {
+        "43210504513": "success",
+        "43210504413": "success",
+        "43210504580": "success",
+        "43210504430": "success",
+        "43210504452": "success"
+      },
+      "ci_impact_policy": "success",
+      "ci_impact_policy_run": 43215368921,
+      "merge_tree_exit": 0,
+      "merge_tree": "131dd8b4ef1b3e8e579fc25ebac822abed16afa0"
+    }
+  ],
+  "upstream_task_branch_exists": false,
+  "font_binary_count_in_diff": 0,
+  "large_files_over_50MiB": 0,
+  "literal_machine_path_files": 0
+}
