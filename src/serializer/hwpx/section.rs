@@ -1657,9 +1657,17 @@ struct RunSplitter {
     runs: String,
     /// 현재 run 의 내부 콘텐츠 버퍼.
     content: String,
+    /// 지금까지 복원한 안내문 잔재의 UTF-16 길이(#3545). `segs` 는 IR 축이고 잔재는 IR 에
+    /// 없는 방출 전용 글이라, 잔재 뒤 직렬화 위치는 IR 위치보다 이만큼 크다(#8998).
+    residue_shift: u32,
 }
 
 impl RunSplitter {
+    /// 직렬화 축 위치(`expected_utf16_pos`, 잔재 포함)를 경계가 쓰는 IR 축 위치로 바꾼다.
+    fn ir_pos(&self, serialized: u32) -> u32 {
+        serialized.saturating_sub(self.residue_shift)
+    }
+
     fn new(para: &Paragraph) -> Self {
         Self::new_with_storage(para, &crate::storage::Unbounded).expect("unbounded run XML")
     }
@@ -1687,6 +1695,7 @@ impl RunSplitter {
             next: 1,
             runs: String::new(),
             content: String::new(),
+            residue_shift: 0,
         })
     }
 
@@ -1902,7 +1911,9 @@ where
     }
     // 잔재를 담던 run 의 경계까지만 먼저 끊는다 — 삭제 수술이 같은 위치에 접어 둔
     // zero-width run 들이 원본 서식(charPrIDRef)의 유일한 근거다.
-    while splitter.needs_cut(pos) && splitter.current_shape_id() != residue.char_shape_id {
+    while splitter.needs_cut(splitter.ir_pos(pos))
+        && splitter.current_shape_id() != residue.char_shape_id
+    {
         splitter.cut_one_with_storage(storage)?;
     }
     // 안내문 잔재는 합성 텍스트라 탭 확장·제목 차례 표시가 없다 — 빈 커서로 낸다.
@@ -1913,7 +1924,9 @@ where
             &render_hp_t_content_with_storage(&residue.text, &[], &mut cursor, storage)?,
         )
         .map_err(xml_error)?;
-    Ok(residue.text.encode_utf16().count() as u32)
+    let units = residue.text.encode_utf16().count() as u32;
+    splitter.residue_shift = splitter.residue_shift.saturating_add(units);
+    Ok(units)
 }
 
 /// `pos` 위치에서 경계를 적용하고 `fieldEnd` 를 방출한다.
@@ -1942,7 +1955,9 @@ where
     S::Error: std::fmt::Display,
 {
     let guide_units = emit_guide_residue_with_storage(splitter, para, fr, pos, storage)?;
-    splitter.cut_before_with_storage(pos, storage)?;
+    // 잔재 뒤의 같은 IR 위치 경계(삭제 수술이 접어 둔 원래 run)는 잔재 다음에 연다.
+    let end_pos = splitter.ir_pos(pos.saturating_add(guide_units));
+    splitter.cut_before_with_storage(end_pos, storage)?;
     emit_field_end_with_storage(&mut splitter.content, para, fr, storage)?;
     Ok(guide_units)
 }
@@ -2514,9 +2529,9 @@ where
     // 연속 또는 중첩 필드의 닫는 순서가 뒤바뀐다.
     if para.text.is_empty() {
         while slot_idx < slots.len() {
-            splitter.cut_before_with_storage(expected_utf16_pos, storage)?;
+            splitter.cut_before_with_storage(splitter.ir_pos(expected_utf16_pos), storage)?;
             markpens.flush_with_storage(
-                expected_utf16_pos,
+                splitter.ir_pos(expected_utf16_pos),
                 &mut splitter,
                 &mut text_buf,
                 para,
@@ -2557,7 +2572,7 @@ where
         // [Task #1556] 빈 문단의 고아 fieldEnd (char_idx == 0).
         for (i, ofe) in para.orphan_field_ends.iter().enumerate() {
             if ofe.char_idx == 0 && !orphan_emitted[i] {
-                splitter.cut_before_with_storage(expected_utf16_pos, storage)?;
+                splitter.cut_before_with_storage(splitter.ir_pos(expected_utf16_pos), storage)?;
                 emit_orphan_field_end_with_storage(&mut splitter.content, ofe, storage)?;
                 expected_utf16_pos = expected_utf16_pos.saturating_add(8);
                 orphan_emitted[i] = true;
@@ -2622,7 +2637,7 @@ where
                     &mut cursor,
                     storage,
                 )?;
-                splitter.cut_before_with_storage(expected_utf16_pos, storage)?;
+                splitter.cut_before_with_storage(splitter.ir_pos(expected_utf16_pos), storage)?;
                 emit_orphan_field_end_with_storage(
                     &mut splitter.content,
                     &para.orphan_field_ends[oi],
@@ -2640,9 +2655,9 @@ where
                 storage,
             )?;
             // 슬롯 시작 위치의 경계 — 슬롯은 새 run 소속 (규칙 1)
-            splitter.cut_before_with_storage(expected_utf16_pos, storage)?;
+            splitter.cut_before_with_storage(splitter.ir_pos(expected_utf16_pos), storage)?;
             markpens.flush_with_storage(
-                expected_utf16_pos,
+                splitter.ir_pos(expected_utf16_pos),
                 &mut splitter,
                 &mut text_buf,
                 para,
@@ -2699,7 +2714,7 @@ where
                     &mut cursor,
                     storage,
                 )?;
-                splitter.cut_before_with_storage(expected_utf16_pos, storage)?;
+                splitter.cut_before_with_storage(splitter.ir_pos(expected_utf16_pos), storage)?;
                 emit_orphan_field_end_with_storage(&mut splitter.content, ofe, storage)?;
                 expected_utf16_pos = expected_utf16_pos.saturating_add(8);
                 orphan_emitted[i] = true;
@@ -2721,9 +2736,9 @@ where
                 &mut cursor,
                 storage,
             )?;
-            splitter.cut_before_with_storage(expected_utf16_pos, storage)?;
+            splitter.cut_before_with_storage(splitter.ir_pos(expected_utf16_pos), storage)?;
             markpens.flush_with_storage(
-                expected_utf16_pos,
+                splitter.ir_pos(expected_utf16_pos),
                 &mut splitter,
                 &mut text_buf,
                 para,
@@ -2800,9 +2815,9 @@ where
                 &mut cursor,
                 storage,
             )?;
-            splitter.cut_before_with_storage(expected_utf16_pos, storage)?;
+            splitter.cut_before_with_storage(splitter.ir_pos(expected_utf16_pos), storage)?;
             markpens.flush_with_storage(
-                expected_utf16_pos,
+                splitter.ir_pos(expected_utf16_pos),
                 &mut splitter,
                 &mut text_buf,
                 para,
@@ -2935,7 +2950,7 @@ where
                 ofe.char_idx >= text_char_count,
                 "미방출 고아 fieldEnd 는 텍스트 끝이어야 함"
             );
-            splitter.cut_before_with_storage(expected_utf16_pos, storage)?;
+            splitter.cut_before_with_storage(splitter.ir_pos(expected_utf16_pos), storage)?;
             emit_orphan_field_end_with_storage(&mut splitter.content, ofe, storage)?;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
             orphan_emitted[i] = true;
@@ -2943,9 +2958,9 @@ where
     }
 
     while slot_idx < slots.len() {
-        splitter.cut_before_with_storage(expected_utf16_pos, storage)?;
+        splitter.cut_before_with_storage(splitter.ir_pos(expected_utf16_pos), storage)?;
         markpens.flush_with_storage(
-            expected_utf16_pos,
+            splitter.ir_pos(expected_utf16_pos),
             &mut splitter,
             &mut text_buf,
             para,
