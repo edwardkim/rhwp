@@ -10,7 +10,7 @@
 //!   135.212pt 다. 또 Print raster 는 세대와 무관하게 장치 clip 을 쓴다 — PDFium 이 한컴 PDF 의 축
 //!   정렬 clip 을 바깥 화소로 넓혀 경계에 놓인 괘선이 남는다.
 //!
-//! 측정(2026-11-12, 코드 head 는 PR 의 첫 커밋, base = PR #8990 head 20e8ebacbe,
+//! 측정(2026-11-12, 코드 head e3427b7ba1, base = PR #8990 head 20e8ebacbe,
 //! `scripts/visual_sweep.py --silhouette-only --dpi 96`, raw = `silhouette_raw_match_percent`,
 //! `RHWP_FONT_PATH` 글꼴 공급, `--compat 2022`):
 //! - 36325899 Native 2쪽 / 2쪽: p1 97.37 (base 97.37), p2 100.00 (base 83.95).
