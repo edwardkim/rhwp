@@ -1073,6 +1073,82 @@ pub(crate) struct CellNoOverlapSquareStack {
     pub bottom: f64,
     /// 쌓기에 든 그림의 control 번호.
     pub members: Vec<usize>,
+    /// 쌓인 그림 상자 (x0, x1, y0, y1) px. 문단 원점 기준, 바깥 여백 포함.
+    pub boxes: Vec<(f64, f64, f64, f64)>,
+}
+
+/// 칸 문단의 어울림(Square) 그림이 뒤 글줄을 막는 상자들. 쌓기 결과가 있으면
+/// 쌓인 자리, 없으면 오프셋 자리(겹침 허용 그림 포함)다.
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct CellSquareTextObstacles {
+    /// (x0, x1, y0, y1) px. 문단 원점 기준, 바깥 여백 포함.
+    pub boxes: Vec<(f64, f64, f64, f64)>,
+}
+
+impl CellSquareTextObstacles {
+    /// 같은 칸 글줄(문단 원점 기준 `y`, 높이 `line_h`)이 어울림 그림 옆에 놓일 수 없으면
+    /// 막는 그림 아래로 내린 `y` 를 돌려준다. 한컴은 어울림 그림이 줄 띠를 가로질러
+    /// 남은 폭이 줄에 모자라면 그 줄을 그림 아래로 보낸다(빈 줄도 마찬가지). 남은
+    /// 폭은 칸 안쪽 폭 `inner_w` 에서 겹치는 그림 상자를 뺀 가장 넓은 빈 구간이다.
+    /// 글이 있는 줄(문단 원점 기준 `y`, 높이 `line_h`)이 가로 `x0..x1` 에 그려질 때
+    /// 그 자리와 겹치는 어울림 그림이 있으면 그 그림 아래로 내린 `y` 를 돌려준다.
+    /// 그림 옆 빈 자리에 글이 들어가면(그림이 글 오른쪽에 있는 칸 등) 그대로 둔다.
+    pub(crate) fn text_span_top(&self, y: f64, line_h: f64, x0: f64, x1: f64) -> f64 {
+        const EPS: f64 = 0.01;
+        let mut y = y;
+        loop {
+            let next = self
+                .boxes
+                .iter()
+                .filter(|&&(bx0, bx1, y0, y1)| {
+                    y0 < y + line_h.max(EPS) - EPS
+                        && y < y1 - EPS
+                        && bx0 < x1 - EPS
+                        && x0 < bx1 - EPS
+                })
+                .map(|&(_, _, _, y1)| y1)
+                .fold(f64::INFINITY, f64::min);
+            if !next.is_finite() || next <= y {
+                return y;
+            }
+            y = next;
+        }
+    }
+
+    pub(crate) fn text_line_top(&self, y: f64, line_h: f64, need_w: f64, inner_w: f64) -> f64 {
+        const EPS: f64 = 0.01;
+        let mut y = y;
+        loop {
+            let mut hits: Vec<_> = self
+                .boxes
+                .iter()
+                .filter(|&&(_, _, y0, y1)| y0 < y + line_h.max(EPS) - EPS && y < y1 - EPS)
+                .copied()
+                .collect();
+            if hits.is_empty() {
+                return y;
+            }
+            hits.sort_by(|a, b| a.0.total_cmp(&b.0));
+            let mut cursor = 0.0f64;
+            let mut widest = 0.0f64;
+            for &(x0, x1, _, _) in &hits {
+                widest = widest.max(x0.min(inner_w) - cursor);
+                cursor = cursor.max(x1);
+            }
+            widest = widest.max(inner_w - cursor);
+            if widest + EPS >= need_w {
+                return y;
+            }
+            let next = hits
+                .iter()
+                .map(|&(_, _, _, y1)| y1)
+                .fold(f64::INFINITY, f64::min);
+            if next.partial_cmp(&y) != Some(std::cmp::Ordering::Greater) {
+                return y;
+            }
+            y = next;
+        }
+    }
 }
 
 /// 쌓기에 든 그림을 실제 배치 자리에서 차례로 놓는다. 뒤 그림 상자(바깥 여백 포함)가
@@ -1140,6 +1216,89 @@ pub(crate) fn cell_paragraph_no_overlap_square_stack(
         return None;
     }
     cell_no_overlap_square_stack(&host.controls, dpi)
+}
+
+/// 저장 줄 없는 칸 호스트 문단의 어울림 그림이 음수 세로 오프셋으로 문단 원점 위로
+/// 올라가는 양(px, 0 이하). 칸 내용 위(`room_above` px 위)로는 올라가지 않는다.
+/// 한컴은 칸의 둘째 이후 문단에 달린 그림을 오프셋만큼 올려 놓고, 뒤 글줄도 그 그림
+/// 바닥 아래에 둔다(사진 행 높이가 오프셋만큼 낮다).
+pub(crate) fn cell_square_host_picture_lift(
+    common: &crate::model::shape::CommonObjAttr,
+    room_above: f64,
+    dpi: f64,
+) -> f64 {
+    hwpunit_to_px(signed_hwpunit(common.vertical_offset).min(0), dpi).max(-room_above.max(0.0))
+}
+
+/// 칸 문단 중 저장 줄 없는 어울림 그림 호스트가 있는가(그 뒤 글줄을 그림 아래로 내리는 칸).
+pub(crate) fn cell_has_square_text_obstacle_host(paragraphs: &[Paragraph], dpi: f64) -> bool {
+    (0..paragraphs.len()).any(|idx| {
+        crate::renderer::para_has_no_stored_line_segs(&paragraphs[idx])
+            && cell_paragraph_square_text_obstacles(paragraphs, idx, dpi).is_some()
+    })
+}
+
+/// 칸 문단 `para_idx` 의 어울림 그림이 같은 칸 뒤 글줄을 막는 상자들.
+/// 한컴은 그림이 쌓였든(#8576), 한 줄로 나란하든, 겹침 허용이든 어울림 그림이
+/// 줄 띠의 폭을 막으면 글줄을 그 아래로 보낸다. 범위는 쌓기와 같다: 호스트 문단에
+/// 보이는 글자가 없고, 글자처럼 취급 아님 + Square 그림이 문단 기준 위쪽 정렬·
+/// 문단/단 기준 왼쪽 정렬(오프셋만으로 자리가 정해지는 형상)일 때만 돌려준다.
+/// 음수 세로 오프셋은 그대로 둔다. 칸 내용 위로는 나가지 않게 쓰는 쪽이 묶는다
+/// (`cell_square_host_picture_lift`).
+pub(crate) fn cell_paragraph_square_text_obstacles(
+    paragraphs: &[Paragraph],
+    para_idx: usize,
+    dpi: f64,
+) -> Option<CellSquareTextObstacles> {
+    let host = paragraphs.get(para_idx)?;
+    if !host.text.trim().is_empty() {
+        return None;
+    }
+    let stack = cell_no_overlap_square_stack(&host.controls, dpi);
+    let mut boxes = Vec::new();
+    let mut horz_rel_to = None;
+    for (control_idx, control) in host.controls.iter().enumerate() {
+        let Control::Picture(picture) = control else {
+            continue;
+        };
+        let common = &picture.common;
+        if common.treat_as_char || !matches!(common.text_wrap, TextWrap::Square) {
+            continue;
+        }
+        if !matches!(common.vert_rel_to, VertRelTo::Para)
+            || !matches!(common.vert_align, VertAlign::Top)
+            || !matches!(common.horz_rel_to, HorzRelTo::Para | HorzRelTo::Column)
+            || !matches!(common.horz_align, HorzAlign::Left)
+            || *horz_rel_to.get_or_insert(common.horz_rel_to) != common.horz_rel_to
+        {
+            return None;
+        }
+        if let Some(index) = stack
+            .as_ref()
+            .and_then(|stack| stack.members.iter().position(|&m| m == control_idx))
+        {
+            boxes.push(stack.as_ref()?.boxes[index]);
+            continue;
+        }
+        let x0 = i64::from(signed_hwpunit(common.horizontal_offset));
+        let outer_w = i64::from(signed_hwpunit(common.width))
+            + i64::from(common.margin.left)
+            + i64::from(common.margin.right);
+        let outer_h = i64::from(signed_hwpunit(common.height))
+            + i64::from(common.margin.top)
+            + i64::from(common.margin.bottom);
+        if outer_w <= 0 || outer_h <= 0 {
+            return None;
+        }
+        let y0 = i64::from(signed_hwpunit(common.vertical_offset));
+        boxes.push((
+            hwpunit_to_px(x0 as i32, dpi),
+            hwpunit_to_px((x0 + outer_w) as i32, dpi),
+            hwpunit_to_px(y0 as i32, dpi),
+            hwpunit_to_px((y0 + outer_h) as i32, dpi),
+        ));
+    }
+    (!boxes.is_empty()).then_some(CellSquareTextObstacles { boxes })
 }
 
 /// 칸 한 문단의 어울림(Square) 그림이 '겹침 허용 안 함'이면 한컴은 뒤 그림을
@@ -1236,6 +1395,17 @@ pub(crate) fn cell_no_overlap_square_stack(
     }
     (!shifts.is_empty()).then(|| CellNoOverlapSquareStack {
         members: boxes.iter().map(|b| b.control_idx).collect(),
+        boxes: boxes
+            .iter()
+            .map(|b| {
+                (
+                    hwpunit_to_px(b.x0 as i32, dpi),
+                    hwpunit_to_px(b.x1 as i32, dpi),
+                    hwpunit_to_px(b.y as i32, dpi),
+                    hwpunit_to_px((b.y + b.outer_h) as i32, dpi),
+                )
+            })
+            .collect(),
         shifts,
         bottom: hwpunit_to_px(bottom as i32, dpi),
     })
