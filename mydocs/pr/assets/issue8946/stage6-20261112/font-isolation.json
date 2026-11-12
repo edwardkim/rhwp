@@ -1,0 +1,8 @@
+{
+  "profile_sha256": "1576eb0cb9e53e700ad4834aed7ff554eb8245a0054a020339c62fc112ac490d",
+  "private_programs": 71,
+  "private_readable": 0,
+  "enumerated_public_os_programs": 394,
+  "enumerated_public_os_readable": 394,
+  "note": "Enumeration covers OS, opensource and tests/fixtures. Other licensed exact-file allowances remain in the profile; this is not the count of every allowed file."
+}

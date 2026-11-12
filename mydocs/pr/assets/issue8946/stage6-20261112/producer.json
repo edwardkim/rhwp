@@ -1,0 +1,46 @@
+{
+  "verified_at": "2026-11-12T16:25:58.755131+09:00",
+  "base": "80b1c354c29b7a02fb2b3c14a274da7f5b653ada",
+  "code_head": "b4855616375c4a8fd1cdd6083d85cd77d655ad26",
+  "source_git_objects": {
+    "src": "3415ec407ce02e5f3e6ec0f05ef37a1b48a34808",
+    "rhwp-studio/src": "f92d35146756abaa83990d891692abd3ed22eadd",
+    "rhwp-studio/e2e": "6c0c50e9b7208489a3a7c7853998882a7aedc9ad",
+    "Cargo.toml": "67ffbf80f174ba3465e4454d140f758395833b2e",
+    "Cargo.lock": "34d08aa8d5150817968568e1ab6f68af228eeeac"
+  },
+  "files": {
+    "output/issue8946/stage6/base-rhwp": {
+      "sha256": "cfcd65ad98abbed49f7c65f3621c6bb2703fa467e50de2c05c95d4e520a27ef5",
+      "bytes": 73285392
+    },
+    "output/issue8946/stage6/head-rhwp": {
+      "sha256": "05ccf4791e99d75c8ba0025b23b6da61a4ea99ec864b7491a751b9d2589a1b97",
+      "bytes": 73277984
+    },
+    "pkg/rhwp_bg.wasm": {
+      "sha256": "c7ba625f2a51147afce8fb1509e900d7e462e1a18c198129b040bd02c4df97f7",
+      "bytes": 29284361
+    },
+    "pkg/rhwp.js": {
+      "sha256": "187d86cfd6265d8894d71722f97a6a5247e88dbc4b226cdb6eb18414a13950ba",
+      "bytes": 583735
+    },
+    "base-pkg/rhwp_bg.wasm": {
+      "sha256": "d8f64f86c8d806301496aa60142ea375f08fe4820bad0a367af3f1afed339c75",
+      "bytes": 29264489
+    }
+  },
+  "build_log_sha256": {
+    "base-native-build": "457781841ca80c7570ec34d9da42c0d8c296905f65122e34f5be6f480e87a282",
+    "base-wasm-build": "76faf2d8344d2bab4894a02c29201861f137f5958bbbf14c9f6ee4a76a7d95a9",
+    "base-site": "28365ee28da7ea7f2f17d363b1c5ec7750b3a2efd283112b4a3d6f8ba8689c76",
+    "final-native-build": "8253e3e3a6ebcb6a4bd8b037e07ec969795178b603607c2484fde6802fb0481c",
+    "final-wasm-build": "9e7629d78656004ce4148fb9e9c26cfcf516063a34217c1023be446a9b785485",
+    "head-site": "28003a210360ec624f9cf48342ddd92fd3ec5f26aac34030a44139dcadf89976"
+  },
+  "wasm_build": "scripts/wasm-pack-locked.sh --target web --out-dir pkg (wasm-opt enabled)",
+  "native_build": "cargo build --locked --profile release-test --features native-skia --bin rhwp",
+  "freshness": "base and candidate built separately, src/lib.rs and src/main.rs mtimes refreshed before each build; copied binaries differ; candidate includes clearTextFontOutline",
+  "chrome": "Google Chrome 157.0.8103.51"
+}

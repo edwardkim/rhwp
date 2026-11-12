@@ -1,0 +1,357 @@
+{
+  "hwpx": {
+    "checks": {
+      "orderedContentPreserved": true,
+      "restoredContent": true,
+      "targetOwnsInsertedText": true,
+      "unchangedContentGeometry": true,
+      "editedFlowValid": true,
+      "same_prior_verified_relations": true,
+      "reopened_after": true,
+      "reopened_restored": true
+    },
+    "reopened": [
+      {
+        "state": "after",
+        "pages": 763,
+        "target_empty_tail_and_successor": [
+          {
+            "page": 1,
+            "text": "검증창원대학교 데이타베이스 ",
+            "source": "section:0/para:23/char:0",
+            "bbox": {
+              "x": 300.773,
+              "y": 924.693,
+              "width": 351.947,
+              "height": 24
+            }
+          },
+          {
+            "page": 1,
+            "text": "연구실",
+            "source": "section:0/para:23/char:15",
+            "bbox": {
+              "x": 432.907,
+              "y": 963.093,
+              "width": 75.68,
+              "height": 24
+            }
+          },
+          {
+            "page": 1,
+            "text": "",
+            "source": "section:0/para:24/char:0",
+            "bbox": {
+              "x": 113.387,
+              "y": 1001.493,
+              "width": 0,
+              "height": 10.667
+            }
+          },
+          {
+            "page": 1,
+            "text": "",
+            "source": "section:0/para:25/char:0",
+            "bbox": {
+              "x": 113.387,
+              "y": 1001.493,
+              "width": 0,
+              "height": 10.667
+            }
+          },
+          {
+            "page": 2,
+            "text": "════════════════════■ ",
+            "source": "section:0/para:26/char:0",
+            "bbox": {
+              "x": 113.387,
+              "y": 132.267,
+              "width": 229.333,
+              "height": 18.667
+            }
+          },
+          {
+            "page": 2,
+            "text": "제목차례 ",
+            "source": "section:0/para:26/char:22",
+            "bbox": {
+              "x": 342.72,
+              "y": 132.267,
+              "width": 84,
+              "height": 18.667
+            }
+          },
+          {
+            "page": 2,
+            "text": "■══════════════════════",
+            "source": "section:0/para:26/char:27",
+            "bbox": {
+              "x": 426.72,
+              "y": 132.267,
+              "width": 245.333,
+              "height": 18.667
+            }
+          }
+        ],
+        "same_prior_verified_relations": true
+      },
+      {
+        "state": "restored",
+        "pages": 763,
+        "target_empty_tail_and_successor": [
+          {
+            "page": 1,
+            "text": "창원대학교 데이타베이스 연구실",
+            "source": "section:0/para:23/char:0",
+            "bbox": {
+              "x": 282.16,
+              "y": 924.693,
+              "width": 377.173,
+              "height": 24
+            }
+          },
+          {
+            "page": 1,
+            "text": "",
+            "source": "section:0/para:24/char:0",
+            "bbox": {
+              "x": 113.387,
+              "y": 963.093,
+              "width": 566.933,
+              "height": 10.667
+            }
+          },
+          {
+            "page": 1,
+            "text": "",
+            "source": "section:0/para:25/char:0",
+            "bbox": {
+              "x": 261.173,
+              "y": 980.16,
+              "width": 419.147,
+              "height": 10.667
+            }
+          },
+          {
+            "page": 2,
+            "text": "════════════════════■ ",
+            "source": "section:0/para:26/char:0",
+            "bbox": {
+              "x": 113.387,
+              "y": 132.267,
+              "width": 229.333,
+              "height": 18.667
+            }
+          },
+          {
+            "page": 2,
+            "text": "제목차례 ",
+            "source": "section:0/para:26/char:22",
+            "bbox": {
+              "x": 342.72,
+              "y": 132.267,
+              "width": 84,
+              "height": 18.667
+            }
+          },
+          {
+            "page": 2,
+            "text": "■══════════════════════",
+            "source": "section:0/para:26/char:27",
+            "bbox": {
+              "x": 426.72,
+              "y": 132.267,
+              "width": 245.333,
+              "height": 18.667
+            }
+          }
+        ],
+        "same_prior_verified_relations": true
+      }
+    ],
+    "all_passed": true
+  },
+  "hwp3": {
+    "checks": {
+      "orderedContentPreserved": true,
+      "restoredContent": true,
+      "targetOwnsInsertedText": true,
+      "unchangedContentGeometry": true,
+      "editedFlowValid": true,
+      "same_prior_verified_relations": true,
+      "reopened_after": true,
+      "reopened_restored": true
+    },
+    "reopened": [
+      {
+        "state": "after",
+        "pages": 763,
+        "target_empty_tail_and_successor": [
+          {
+            "page": 1,
+            "text": "검증창원대학교 데이타베이스 연구실",
+            "source": "section:0/para:23/char:0",
+            "bbox": {
+              "x": 266.747,
+              "y": 924.693,
+              "width": 408,
+              "height": 24
+            }
+          },
+          {
+            "page": 1,
+            "text": "",
+            "source": "section:0/para:24/char:0",
+            "bbox": {
+              "x": 113.387,
+              "y": 963.093,
+              "width": 566.933,
+              "height": 10.667
+            }
+          },
+          {
+            "page": 1,
+            "text": "",
+            "source": "section:0/para:25/char:0",
+            "bbox": {
+              "x": 113.387,
+              "y": 980.16,
+              "width": 0,
+              "height": 10.667
+            }
+          },
+          {
+            "page": 2,
+            "text": "￼￼",
+            "source": "section:0/para:26/char:0",
+            "bbox": {
+              "x": 113.387,
+              "y": 132.267,
+              "width": 0,
+              "height": 18.667
+            }
+          },
+          {
+            "page": 2,
+            "text": "════════════════════■ ",
+            "source": "section:0/para:26/char:2",
+            "bbox": {
+              "x": 113.387,
+              "y": 132.267,
+              "width": 229.333,
+              "height": 18.667
+            }
+          },
+          {
+            "page": 2,
+            "text": "제목차례 ",
+            "source": "section:0/para:26/char:24",
+            "bbox": {
+              "x": 342.72,
+              "y": 132.267,
+              "width": 84,
+              "height": 18.667
+            }
+          },
+          {
+            "page": 2,
+            "text": "■══════════════════════",
+            "source": "section:0/para:26/char:29",
+            "bbox": {
+              "x": 426.72,
+              "y": 132.267,
+              "width": 245.333,
+              "height": 18.667
+            }
+          }
+        ],
+        "same_prior_verified_relations": true
+      },
+      {
+        "state": "restored",
+        "pages": 763,
+        "target_empty_tail_and_successor": [
+          {
+            "page": 1,
+            "text": "창원대학교 데이타베이스 연구실",
+            "source": "section:0/para:23/char:0",
+            "bbox": {
+              "x": 290.747,
+              "y": 924.693,
+              "width": 360,
+              "height": 24
+            }
+          },
+          {
+            "page": 1,
+            "text": "",
+            "source": "section:0/para:24/char:0",
+            "bbox": {
+              "x": 113.387,
+              "y": 963.093,
+              "width": 566.933,
+              "height": 10.667
+            }
+          },
+          {
+            "page": 1,
+            "text": "",
+            "source": "section:0/para:25/char:0",
+            "bbox": {
+              "x": 113.387,
+              "y": 980.16,
+              "width": 0,
+              "height": 10.667
+            }
+          },
+          {
+            "page": 2,
+            "text": "￼￼",
+            "source": "section:0/para:26/char:0",
+            "bbox": {
+              "x": 113.387,
+              "y": 132.267,
+              "width": 0,
+              "height": 18.667
+            }
+          },
+          {
+            "page": 2,
+            "text": "════════════════════■ ",
+            "source": "section:0/para:26/char:2",
+            "bbox": {
+              "x": 113.387,
+              "y": 132.267,
+              "width": 229.333,
+              "height": 18.667
+            }
+          },
+          {
+            "page": 2,
+            "text": "제목차례 ",
+            "source": "section:0/para:26/char:24",
+            "bbox": {
+              "x": 342.72,
+              "y": 132.267,
+              "width": 84,
+              "height": 18.667
+            }
+          },
+          {
+            "page": 2,
+            "text": "■══════════════════════",
+            "source": "section:0/para:26/char:29",
+            "bbox": {
+              "x": 426.72,
+              "y": 132.267,
+              "width": 245.333,
+              "height": 18.667
+            }
+          }
+        ],
+        "same_prior_verified_relations": true
+      }
+    ],
+    "all_passed": true
+  }
+}
