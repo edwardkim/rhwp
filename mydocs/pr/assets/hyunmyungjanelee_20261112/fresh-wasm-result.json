@@ -1,0 +1,33 @@
+{
+  "head": "0c9819d698bcbe3e3d83f563a0154ccb00eb6f07",
+  "build": "macOS locked wrapper --no-opt local substitute",
+  "optimized": false,
+  "root_pkg_equals_studio_public": true,
+  "frozen_package": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/candidate-pkg",
+  "artifacts": [
+    {
+      "file": "rhwp.js",
+      "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+      "bytes": 581315
+    },
+    {
+      "file": "rhwp_bg.wasm",
+      "sha256": "505a18e552aba38c525ade903c520595bf3726cc1048a02676c9f5d0cf54d24c",
+      "bytes": 31807462
+    },
+    {
+      "file": "rhwp.d.ts",
+      "sha256": "d5a3572f326fc6353cff5eecfa222af3a27b612813049a601be316b693b78732",
+      "bytes": 232723
+    },
+    {
+      "file": "rhwp_bg.wasm.d.ts",
+      "sha256": "9d21217c454fa8f1757e7f08e26b27d00c564bcc0be2a228b75bb0dae08aa738",
+      "bytes": 80530
+    }
+  ],
+  "studio_comparison_scope": [
+    "rhwp.js",
+    "rhwp_bg.wasm"
+  ]
+}

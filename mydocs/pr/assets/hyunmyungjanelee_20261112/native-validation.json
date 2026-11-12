@@ -1,0 +1,831 @@
+{
+  "base": "80b1c354c29b7a02fb2b3c14a274da7f5b653ada",
+  "code_head": "0c9819d698bcbe3e3d83f563a0154ccb00eb6f07",
+  "method": "canonical Visual Sweep, native-skia direct PNG, print profile, compat 2022,96 DPI, PDFium pdfium_smooth_rgb_exact_dpi_v2, raw silhouette 2px",
+  "input_count": 28,
+  "pages": 37,
+  "below90_pages": 0,
+  "devel_drop_over_2pp_pages": 0,
+  "minimum": 93.02,
+  "producers": {
+    "base": {
+      "kind": "base",
+      "head": "80b1c354c29b7a02fb2b3c14a274da7f5b653ada",
+      "exit": 0,
+      "binary": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/base-native",
+      "bytes": 73351424,
+      "sha256": "e83621d5efef99d66ba91e29f53e1db73da40986a6689185e8a6699efb7d0251"
+    },
+    "candidate": {
+      "kind": "candidate",
+      "head": "0c9819d698bcbe3e3d83f563a0154ccb00eb6f07",
+      "exit": 0,
+      "binary": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/candidate-native",
+      "bytes": 73236240,
+      "sha256": "bac6cf3738fef099859e1f8be21ef01b17869fa66c5aac782a2c6736814874b3"
+    }
+  },
+  "input_and_png_hashes_checked": true,
+  "committed_inputs_checked": true,
+  "fresh_wasm": "공개 전쪽 완료: wasm-validation.json 참조",
+  "full_regression": {
+    "code_head": "0c9819d698bcbe3e3d83f563a0154ccb00eb6f07",
+    "profile": "release-test",
+    "minimal_font": true,
+    "seconds": 401.23,
+    "run": 13347,
+    "passed": 13347,
+    "failed": 0,
+    "skipped": 45,
+    "new_samples_explicitly_passed": 28,
+    "state_source": "serial-gates-state.json/full-nextest exit 0"
+  },
+  "protected_baseline": "미실행",
+  "direct_reading": "확인한 대표 쪽만 별도 기록; 전쪽 직접 판독 완료 아님",
+  "cases": [
+    {
+      "pr": 8897,
+      "key": "pr8897-empty-host-split-table",
+      "input": "samples/issue8573/empty-host-split-table.hwp",
+      "pdf": "pdf/issue8573/empty-host-split-table-webhwp-print.pdf",
+      "input_sha256": "8d5066645589188ac67cb768b124ac9a0d3ad511de891d4283ae653f9027fbf7",
+      "pdf_sha256": "845ca291eadb179114a8df021aaea6437e108e7a959f0ec70740e4bf4c01e05e",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 2,
+      "pdf_pages": 2,
+      "minimum": 100.0,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 2,
+          "pdf": 2
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8897,
+      "key": "pr8897-empty-host-square-band-1430-below",
+      "input": "samples/issue8573/empty-host-square-band-1430-below.hwp",
+      "pdf": "pdf/issue8573/empty-host-square-band-1430-below-webhwp-print.pdf",
+      "input_sha256": "bea3b61b470d9f4d6fd704ee12786c765fde5e1c4fad20d219e2d7397e4f9409",
+      "pdf_sha256": "3fcd25c784a968cb4dd787a2dfd3d8ba754f78218322822f813b6918b5db472a",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 1,
+      "pdf_pages": 1,
+      "minimum": 100.0,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8897,
+      "key": "pr8897-empty-host-square-band-1450-beside",
+      "input": "samples/issue8573/empty-host-square-band-1450-beside.hwp",
+      "pdf": "pdf/issue8573/empty-host-square-band-1450-beside-webhwp-print.pdf",
+      "input_sha256": "2c8763ca2989ae9125e136740890d1a5ea725f0f87a4f41ff0a49770777d6947",
+      "pdf_sha256": "4c41e82016bcc5cad8af6ff372676521b286795983cadbb07de9180c2b046651",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 1,
+      "pdf_pages": 1,
+      "minimum": 100.0,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8897,
+      "key": "pr8897-empty-host-square-band-600-no-extra-line",
+      "input": "samples/issue8573/empty-host-square-band-600-no-extra-line.hwp",
+      "pdf": "pdf/issue8573/empty-host-square-band-600-no-extra-line-webhwp-print.pdf",
+      "input_sha256": "3186a02350c8af4471ffd7099a1af84a0335de94acdbbbeaa1aa1b7178488aa3",
+      "pdf_sha256": "e874563d8d41e3a1cccdb0b4fbf88361e7c76c424380782a5ec11aa31571489c",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 1,
+      "pdf_pages": 1,
+      "minimum": 100.0,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8897,
+      "key": "pr8897-empty-host-square-beside-line",
+      "input": "samples/issue8573/empty-host-square-beside-line.hwp",
+      "pdf": "pdf/issue8573/empty-host-square-beside-line-webhwp-print.pdf",
+      "input_sha256": "6b5f643237a5d98d3351d56dd73053becac129b1aa99511a910b298a42f7d4d3",
+      "pdf_sha256": "76737949a56b4b74c270fcd1a67506f62263c9de90e56c60231bf0acc2cc1a21",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 1,
+      "pdf_pages": 1,
+      "minimum": 100.0,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8897,
+      "key": "pr8897-empty-host-square-then-topbottom-push",
+      "input": "samples/issue8573/empty-host-square-then-topbottom-push.hwp",
+      "pdf": "pdf/issue8573/empty-host-square-then-topbottom-push-webhwp-print.pdf",
+      "input_sha256": "e9e16c4f57d9d356b9b3a8dd3989edf0d4bd10f902f3ce3c45d6a9be4adab0cb",
+      "pdf_sha256": "d3d3e4493635816e4bf21996690fb1be841ae85fa55dd5ea0b7d16739be929b0",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 1,
+      "pdf_pages": 1,
+      "minimum": 100.0,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8897,
+      "key": "pr8897-text-host-split-table",
+      "input": "samples/issue8573/text-host-split-table.hwp",
+      "pdf": "pdf/issue8573/text-host-split-table-webhwp-print.pdf",
+      "input_sha256": "85d29b9ae1f6f1254503e744d1e71d37959608b9636f855e04fb11d4bf226738",
+      "pdf_sha256": "08f052147e724387c65afed36b9c42077837e4de6b77f8d697d5d3a070f42493",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 2,
+      "pdf_pages": 2,
+      "minimum": 100.0,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 2,
+          "pdf": 2
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8897,
+      "key": "pr8897-text-host-square-paper-companion-beside-line",
+      "input": "samples/issue8573/text-host-square-paper-companion-beside-line.hwp",
+      "pdf": "pdf/issue8573/text-host-square-paper-companion-beside-line-webhwp-print.pdf",
+      "input_sha256": "24f9f22eede659338a070672d828f0412e589132d432c610bb42a60b9518a516",
+      "pdf_sha256": "2dfa5d7493953c600d37785d97fab1922a25018c2189016164461e4fb930f3ed",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 1,
+      "pdf_pages": 1,
+      "minimum": 100.0,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8897,
+      "key": "pr8897-text-host-square-then-topbottom-push",
+      "input": "samples/issue8573/text-host-square-then-topbottom-push.hwp",
+      "pdf": "pdf/issue8573/text-host-square-then-topbottom-push-webhwp-print.pdf",
+      "input_sha256": "07b4e5e54e24ce64340aeb275beb3e482199737c6d8ae283bceecbfe1c8b3eec",
+      "pdf_sha256": "0dc25027d3614a2d9508e74237eff524e7752835e5a10e6874cda2378f52e930",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 1,
+      "pdf_pages": 1,
+      "minimum": 100.0,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8897,
+      "key": "pr8897-text-host-topbottom-line-below",
+      "input": "samples/issue8573/text-host-topbottom-line-below.hwp",
+      "pdf": "pdf/issue8573/text-host-topbottom-line-below-webhwp-print.pdf",
+      "input_sha256": "f36c04521e0ff7ec1be2a2152e4b628043935557737ce798bf7f0394505bbf84",
+      "pdf_sha256": "f9a830af16a1ce70dd1392560eac26cf19396d4f9ddc3bc2876b81e05e717f0f",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 1,
+      "pdf_pages": 1,
+      "minimum": 100.0,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8897,
+      "key": "pr8897-whitespace-host-negative-offset-table",
+      "input": "samples/issue8573/whitespace-host-negative-offset-table.hwp",
+      "pdf": "pdf/issue8573/whitespace-host-negative-offset-table-webhwp-print.pdf",
+      "input_sha256": "dfac0c5af294357bad22ccf3132957847b820d4533cdd34d5335dc0781c37662",
+      "pdf_sha256": "dd3ac6e2aabd2109adb910c07ad89a73ca66b10b9f584598c0c3714c2ecbc329",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 1,
+      "pdf_pages": 1,
+      "minimum": 100.0,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8897,
+      "key": "pr8897-whitespace-host-split-table",
+      "input": "samples/issue8573/whitespace-host-split-table.hwp",
+      "pdf": "pdf/issue8573/whitespace-host-split-table-webhwp-print.pdf",
+      "input_sha256": "dba90da10c6bcea9294656046a00ebcb08f17c4d7d0f8fd60729dd6f5e019fde",
+      "pdf_sha256": "ced3fdded61f38a3b3d6f8f83c907c56f2a26ac60d477564c48858b1b8759025",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 2,
+      "pdf_pages": 2,
+      "minimum": 100.0,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 2,
+          "pdf": 2
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8897,
+      "key": "pr8897-whitespace-host-square-then-topbottom-push",
+      "input": "samples/issue8573/whitespace-host-square-then-topbottom-push.hwp",
+      "pdf": "pdf/issue8573/whitespace-host-square-then-topbottom-push-webhwp-print.pdf",
+      "input_sha256": "4178f240dc0ecfa74fdc6833c82d0d19d64bd6093a8931c80981e247e2835aa5",
+      "pdf_sha256": "5c492562d1b0be3b9e7cdef56d4c3e3419c6472ed5e3962f6aceb7e86e0ad0ea",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 1,
+      "pdf_pages": 1,
+      "minimum": 100.0,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8897,
+      "key": "pr8897-whitespace-host-topbottom-line-below",
+      "input": "samples/issue8573/whitespace-host-topbottom-line-below.hwp",
+      "pdf": "pdf/issue8573/whitespace-host-topbottom-line-below-webhwp-print.pdf",
+      "input_sha256": "4af3cf6fc98884fa2c872e621bf9d13958654500e337182024cb2f9051774d4b",
+      "pdf_sha256": "b4124ac79e3f8b651e96c056c3c3a80a306528d92a5ef91623e47bf70a064f85",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 1,
+      "pdf_pages": 1,
+      "minimum": 100.0,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8897,
+      "key": "pr8897-whitespace-host-topbottom-stacked-zones",
+      "input": "samples/issue8573/whitespace-host-topbottom-stacked-zones.hwp",
+      "pdf": "pdf/issue8573/whitespace-host-topbottom-stacked-zones-webhwp-print.pdf",
+      "input_sha256": "97e347bc79600c7bd9e72d3705a35352f9e347d9c3c6e49f79928a51519723c8",
+      "pdf_sha256": "86f60e7358eb4071d438f28429584184ba93d82590d5ba369594199de598f64f",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 1,
+      "pdf_pages": 1,
+      "minimum": 98.96,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8897,
+      "key": "pr8897-whitespace-host-two-tables-negative-offset",
+      "input": "samples/issue8573/whitespace-host-two-tables-negative-offset.hwp",
+      "pdf": "pdf/issue8573/whitespace-host-two-tables-negative-offset-webhwp-print.pdf",
+      "input_sha256": "21d1211966e48852316e71847d80c96a056c4b0dd72e6d46594ddab1308d329f",
+      "pdf_sha256": "6d81c0bc1e2d8d3d2c120e300d2d506eaf3122c59b61b1444036407ca6438da3",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 1,
+      "pdf_pages": 1,
+      "minimum": 100.0,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8916,
+      "key": "pr8916-zero_size_para_before_table",
+      "input": "samples/issue8664/zero_size_para_before_table.hwp",
+      "pdf": "pdf/issue8664/zero_size_para_before_table-webhwp-print.pdf",
+      "input_sha256": "29dc4af9b4b746fbd089cff02029fc97bb8a8419d4818b2ddb7785f0fdbac9ce",
+      "pdf_sha256": "3f161afd7332fb11460e3a20cd7bc4107a29d59e0e00879dc49d3f24f16cf3be",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 1,
+      "pdf_pages": 1,
+      "minimum": 99.57,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8895,
+      "key": "pr8895-title_line_fits",
+      "input": "samples/issue8665/title_line_fits.hwpx",
+      "pdf": "pdf/issue8665/title_line_fits-webhwp-print.pdf",
+      "input_sha256": "6a5f2edeb685ba47ea170eec3c241e1f3d102d6c306ea0b245aa6090ed9ab3c5",
+      "pdf_sha256": "e32252785f7cae3c04f2ec446a158408180f5226cd2d3c1a17e6e8549f74aa35",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 2,
+      "pdf_pages": 2,
+      "minimum": 98.07,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 2,
+          "pdf": 2
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8895,
+      "key": "pr8895-title_line_overflows",
+      "input": "samples/issue8665/title_line_overflows.hwpx",
+      "pdf": "pdf/issue8665/title_line_overflows-webhwp-print.pdf",
+      "input_sha256": "2b30e88a11c007b166560703ed40c917ca0f9fa244795804c108ed45ee770477",
+      "pdf_sha256": "ca3973b978a2176c263255f5abf4644e7999717c57aa6c4a8e9883dd03c2ccc4",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 2,
+      "pdf_pages": 2,
+      "minimum": 100.0,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 2,
+          "pdf": 2
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8900,
+      "key": "pr8900-bar_axis_floor",
+      "input": "samples/issue8678/bar_axis_floor.hwpx",
+      "pdf": "pdf/issue8678/bar_axis_floor-webhwp-print.pdf",
+      "input_sha256": "952db943b46d70849c3f82ba9fe3d4b611ab246ab61018ec4cd451f15989b4d3",
+      "pdf_sha256": "7c070d64d3f15aabb8b1955ad2009c7e45117e26d625b340ad79019282e95d93",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 1,
+      "pdf_pages": 1,
+      "minimum": 93.22,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8900,
+      "key": "pr8900-column_axis_floor",
+      "input": "samples/issue8678/column_axis_floor.hwpx",
+      "pdf": "pdf/issue8678/column_axis_floor-webhwp-print.pdf",
+      "input_sha256": "aad66c6c81a1c820c420f14b1043f1ac6593e66860fb325071fa8d83376df5d2",
+      "pdf_sha256": "f86b1acaf11ad912a8d324b4101de60cbc6161d328ac9e6e0be31e837c5f11d5",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 1,
+      "pdf_pages": 1,
+      "minimum": 99.9,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8900,
+      "key": "pr8900-column_axis_floor_large",
+      "input": "samples/issue8678/column_axis_floor_large.hwpx",
+      "pdf": "pdf/issue8678/column_axis_floor_large-webhwp-print.pdf",
+      "input_sha256": "d3b1f0ef997fb60cffd1bd112a691f399026dda11c6dbe215c08a9ec987965aa",
+      "pdf_sha256": "57e5b674c23fd919303b4c6d2ccab559c9b8ff947ce6e2d06ee9f1245d646ac9",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 1,
+      "pdf_pages": 1,
+      "minimum": 99.73,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8900,
+      "key": "pr8900-column_axis_step_tall",
+      "input": "samples/issue8678/column_axis_step_tall.hwpx",
+      "pdf": "pdf/issue8678/column_axis_step_tall-webhwp-print.pdf",
+      "input_sha256": "825be7aec4ab07af28c80b9358bb69d272dcb8bef80a5770b3370f45b3d02df3",
+      "pdf_sha256": "0a07bb49b957f4e96a661d24035ed7faf5a88af217922cf9443f3bb6b8ee446e",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 1,
+      "pdf_pages": 1,
+      "minimum": 99.7,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8918,
+      "key": "pr8918-wingdings_pua_symbols",
+      "input": "samples/issue8680/wingdings_pua_symbols.hwpx",
+      "pdf": "pdf/issue8680/wingdings_pua_symbols-webhwp-print.pdf",
+      "input_sha256": "6173d83f23aed79f162e9c07f5efe19a0590bae650c800a4fcebd49abc73ad8b",
+      "pdf_sha256": "1d4ba0d3823c7b31fc7cbcf18a675572e13f33cb73f11d806d28b6a85a6640eb",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 1,
+      "pdf_pages": 1,
+      "minimum": 99.81,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8920,
+      "key": "pr8920-float_line_rowspan_infront_center",
+      "input": "samples/issue8690/float_line_rowspan_infront_center.hwp",
+      "pdf": "pdf/issue8690/float_line_rowspan_infront_center-webhwp-print.pdf",
+      "input_sha256": "4e5fce692945707fef8c39b6a980016fff4a2cd91b02f7abf35b01d19fabba4b",
+      "pdf_sha256": "4948239ac70eaf10a7dda16abc752f3cdb7bd7ffefa6c3b3e5b9afc28e6b48a0",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 2,
+      "pdf_pages": 2,
+      "minimum": 93.02,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 2,
+          "pdf": 2
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8920,
+      "key": "pr8920-float_line_rowspan_infront_top",
+      "input": "samples/issue8690/float_line_rowspan_infront_top.hwp",
+      "pdf": "pdf/issue8690/float_line_rowspan_infront_top-webhwp-print.pdf",
+      "input_sha256": "6b75acfc0deab5f1c55408b8143c7f2b936cd716079225b9392af5610ad38de9",
+      "pdf_sha256": "d82acf2ceb783e778737f9a86d39ace4e991321d5229f1a5a87e58a957963d9d",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 2,
+      "pdf_pages": 2,
+      "minimum": 100.0,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 2,
+          "pdf": 2
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8920,
+      "key": "pr8920-float_line_valign_center",
+      "input": "samples/issue8690/float_line_valign_center.hwp",
+      "pdf": "pdf/issue8690/float_line_valign_center-webhwp-print.pdf",
+      "input_sha256": "52fd73d131678d8ff020dbe46e0985f6fff616e26ed025b8a6f1d46af92b8d67",
+      "pdf_sha256": "2f31e0af6c043737a3e3b7270f88b2d3e1aaef4540346fb601b6c22eb0cfa593",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 2,
+      "pdf_pages": 2,
+      "minimum": 94.35,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 2,
+          "pdf": 2
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    },
+    {
+      "pr": 8920,
+      "key": "pr8920-float_line_valign_top",
+      "input": "samples/issue8690/float_line_valign_top.hwp",
+      "pdf": "pdf/issue8690/float_line_valign_top-webhwp-print.pdf",
+      "input_sha256": "76aab9b56afd2b0ccfeeab8184474219b84d34b4ac247acc4cca0afec0e359d4",
+      "pdf_sha256": "cd6db76a97ae8e4592ad5eb3ddc1fcc01237006e2c5952f0454f12314f6276f2",
+      "compat": 2022,
+      "exit": 0,
+      "pages": 2,
+      "pdf_pages": 2,
+      "minimum": 100.0,
+      "below90": 0,
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 2,
+          "pdf": 2
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      }
+    }
+  ]
+}

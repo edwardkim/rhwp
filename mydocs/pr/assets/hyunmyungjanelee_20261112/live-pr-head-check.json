@@ -1,0 +1,47 @@
+{
+  "checked_at": "2026-11-12T04:04:44.130Z",
+  "records": [
+    {
+      "pr": 8895,
+      "expected_head": "c60c1a140dacd635a7bf257d6a4839baea72bebf",
+      "actual_head": "c60c1a140dacd635a7bf257d6a4839baea72bebf",
+      "state": "open",
+      "head_equal": true
+    },
+    {
+      "pr": 8897,
+      "expected_head": "e263b59c25ae949065dec6726978c9fe2751e4d4",
+      "actual_head": "e263b59c25ae949065dec6726978c9fe2751e4d4",
+      "state": "open",
+      "head_equal": true
+    },
+    {
+      "pr": 8900,
+      "expected_head": "b215fce8179da1b5ed1a3c3c889388611a87c093",
+      "actual_head": "b215fce8179da1b5ed1a3c3c889388611a87c093",
+      "state": "open",
+      "head_equal": true
+    },
+    {
+      "pr": 8916,
+      "expected_head": "6ad97a9ae8bd230b1e2fd2d7a61764423e0c2b3b",
+      "actual_head": "6ad97a9ae8bd230b1e2fd2d7a61764423e0c2b3b",
+      "state": "open",
+      "head_equal": true
+    },
+    {
+      "pr": 8918,
+      "expected_head": "9400d7748457089509d7e5a55477dc0016d96c28",
+      "actual_head": "9400d7748457089509d7e5a55477dc0016d96c28",
+      "state": "open",
+      "head_equal": true
+    },
+    {
+      "pr": 8920,
+      "expected_head": "5037330c850e041591cbee1745120e98cf95e12c",
+      "actual_head": "5037330c850e041591cbee1745120e98cf95e12c",
+      "state": "open",
+      "head_equal": true
+    }
+  ]
+}
