@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**머지 보류 — 공개 입력의 Native·fresh WASM 전쪽과 최소 글꼴 전체 회귀를 완료했으며, devel fresh WASM 비교와 정본 보호 검증을 진행 중이다.** 원 PR의 공개되지 않은 보류 범위는 별도로 해소해야 한다. 원격 승인·병합을 수행한 기록이 아니다.
+**머지 보류 — 공개 입력의 Native·fresh WASM 전쪽과 최소 글꼴 전체 회귀를 완료했으며, Native 정본 보호 18종·1,771쪽까지 완료했으며 devel fresh WASM 비교와 WASM 정본 보호 검증을 진행 중이다.** 원 PR의 공개되지 않은 보류 범위는 별도로 해소해야 한다. 원격 승인·병합을 수행한 기록이 아니다.
 
 ## 접수 정보
 
@@ -32,6 +32,10 @@ F080–F095 원문자와 F0A1 흰 원의 표시 매핑 및 원본 advance를 보
 fresh WASM도 같은 공개 입력의 전 1쪽을 실제 출력했으며 최저 99.81%, 90% 미만 0쪽이다([후보 전쪽 TSV](../assets/hyunmyungjanelee_20261112/wasm-candidate.tsv) · [빌드·실제 초기화 응답](../assets/hyunmyungjanelee_20261112/browser-runtime-result.json)). 새 devel의 fresh WASM 전쪽 비교는 아직 미실행이며 Native 기준값으로 대신하지 않는다.
 
 최소 글꼴 전체 회귀는 **13,347 PASS / 0 FAIL / 45 skip**, 실행 401.230초다([결과](../assets/hyunmyungjanelee_20261112/full-nextest-result.json)). fmt·Native Clippy·WASM Clippy·workspace build·all-target Clippy·Native Skia 3종·suite manifest가 모두 통과했다([Rust gate 기록](../assets/hyunmyungjanelee_20261112/rust-gates.json)). 원 PR 6개 head는 [재조회](../assets/hyunmyungjanelee_20261112/live-pr-head-check.json)에서 모두 최초 검토 SHA와 같았다.
+
+Native 정본 보호 18종·1,771쪽은 최저 98.36%, 공식 두 자리 값 하락 0쪽이다([전쪽 비교](../assets/hyunmyungjanelee_20261112/protected-native-comparison.tsv) · [환경·생산 증거](../assets/hyunmyungjanelee_20261112/protected-native-validation.json)). 중첩 표와 편람 HWP는 잘못된 초기 조건을 같은 입력의 문서 전체 재검증으로 교체했다. 쪽별 최댓값을 조합하지 않았다.
+
+원 head의 [CI run 42836140944](https://github.com/edwardkim/rhwp/actions/runs/42836140944)은 성공이다([조회 범위](../assets/hyunmyungjanelee_20261112/source-ci-status.json)). 이는 현재 누적 통합 head의 원격 CI가 아니다.
 
 ## 시각 증적과 알려진 차이
 
