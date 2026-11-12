@@ -1,0 +1,19 @@
+{
+  "documentSubstitutions": [],
+  "id": "native-webfont-5f0f91ba91a46fc1c1ca541e",
+  "preserveSourceMetrics": true,
+  "substitutions": {
+    "Calibri": "NotoSansKR-Regular",
+    "HY견고딕": "NotoSansKRThin-Bold",
+    "HY견명조": "NotoSerifKRExtraLight-Bold",
+    "HY신명조": "NotoSerifKRExtraLight-Regular",
+    "HY중고딕": "NotoSansKR-Regular",
+    "HY헤드라인M": "NotoSansKRThin-Bold",
+    "굴림체": "D2Coding",
+    "맑은 고딕": "Pretendard-Regular",
+    "함초롬바탕": "HCRBatang"
+  },
+  "trueTypeFaces": [
+    "HCR Batang"
+  ]
+}

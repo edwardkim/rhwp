@@ -1,0 +1,308 @@
+{
+  "documentGlyphFallbacks": [
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 10,
+      "languageSlot": 0,
+      "source": "신명 태명조"
+    },
+    {
+      "faces": [
+        "NotoSansKRThin-Bold"
+      ],
+      "fontId": 11,
+      "languageSlot": 0,
+      "source": "신명 견고딕"
+    },
+    {
+      "faces": [
+        "HCRDotum"
+      ],
+      "fontId": 12,
+      "languageSlot": 0,
+      "source": "신명 태고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 13,
+      "languageSlot": 0,
+      "source": "한양신명조"
+    },
+    {
+      "faces": [
+        "HCRDotum"
+      ],
+      "fontId": 14,
+      "languageSlot": 0,
+      "source": "DDP_B_131224"
+    },
+    {
+      "faces": [
+        "HCRDotum"
+      ],
+      "fontId": 15,
+      "languageSlot": 0,
+      "source": "신명 중고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 10,
+      "languageSlot": 1,
+      "source": "신명 태명조"
+    },
+    {
+      "faces": [
+        "NotoSansKRThin-Bold"
+      ],
+      "fontId": 11,
+      "languageSlot": 1,
+      "source": "신명 견고딕"
+    },
+    {
+      "faces": [
+        "HCRDotum"
+      ],
+      "fontId": 12,
+      "languageSlot": 1,
+      "source": "신명 태고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 13,
+      "languageSlot": 1,
+      "source": "한양신명조"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 15,
+      "languageSlot": 1,
+      "source": "DDP_B_131224"
+    },
+    {
+      "faces": [
+        "HCRDotum"
+      ],
+      "fontId": 16,
+      "languageSlot": 1,
+      "source": "신명 중고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 10,
+      "languageSlot": 2,
+      "source": "신명 태명조"
+    },
+    {
+      "faces": [
+        "NotoSansKRThin-Bold"
+      ],
+      "fontId": 11,
+      "languageSlot": 2,
+      "source": "신명 견고딕"
+    },
+    {
+      "faces": [
+        "HCRDotum"
+      ],
+      "fontId": 12,
+      "languageSlot": 2,
+      "source": "신명 태고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 13,
+      "languageSlot": 2,
+      "source": "한양신명조"
+    },
+    {
+      "faces": [
+        "HCRDotum"
+      ],
+      "fontId": 14,
+      "languageSlot": 2,
+      "source": "DDP_B_131224"
+    },
+    {
+      "faces": [
+        "HCRDotum"
+      ],
+      "fontId": 15,
+      "languageSlot": 2,
+      "source": "신명 중고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 10,
+      "languageSlot": 3,
+      "source": "신명 태명조"
+    },
+    {
+      "faces": [
+        "HCRDotum"
+      ],
+      "fontId": 11,
+      "languageSlot": 3,
+      "source": "신명 태고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 12,
+      "languageSlot": 3,
+      "source": "한양신명조"
+    },
+    {
+      "faces": [
+        "HCRDotum"
+      ],
+      "fontId": 13,
+      "languageSlot": 3,
+      "source": "DDP_B_131224"
+    },
+    {
+      "faces": [
+        "HCRDotum"
+      ],
+      "fontId": 14,
+      "languageSlot": 3,
+      "source": "신명 중고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 10,
+      "languageSlot": 4,
+      "source": "한양신명조"
+    },
+    {
+      "faces": [
+        "HCRDotum"
+      ],
+      "fontId": 11,
+      "languageSlot": 4,
+      "source": "DDP_B_131224"
+    },
+    {
+      "faces": [
+        "NotoSerifKRExtraLight-Bold"
+      ],
+      "fontId": 10,
+      "languageSlot": 5,
+      "source": "신명 견명조"
+    },
+    {
+      "faces": [
+        "NotoSansKRThin-Bold"
+      ],
+      "fontId": 11,
+      "languageSlot": 5,
+      "source": "신명 견고딕"
+    },
+    {
+      "faces": [
+        "NotoSansKR-Regular"
+      ],
+      "fontId": 12,
+      "languageSlot": 5,
+      "source": "신명 태그래픽"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 13,
+      "languageSlot": 5,
+      "source": "한양신명조"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 14,
+      "languageSlot": 5,
+      "source": "DDP_B_131224"
+    },
+    {
+      "faces": [
+        "HCRDotum"
+      ],
+      "fontId": 15,
+      "languageSlot": 5,
+      "source": "한양중고딕"
+    },
+    {
+      "faces": [
+        "NotoSerifKRExtraLight-Bold"
+      ],
+      "fontId": 11,
+      "languageSlot": 6,
+      "source": "명조"
+    },
+    {
+      "faces": [
+        "HCRDotum"
+      ],
+      "fontId": 12,
+      "languageSlot": 6,
+      "source": "신명조■얒a"
+    },
+    {
+      "faces": [
+        "HCRDotum"
+      ],
+      "fontId": 13,
+      "languageSlot": 6,
+      "source": "DDP_B_131224"
+    }
+  ],
+  "documentSubstitutions": [],
+  "id": "native-webfont-b50141eecbd968a1d86ec063",
+  "preserveSourceMetrics": true,
+  "substitutions": {
+    "DDP_B_131224": "NotoSansKR-Regular",
+    "HY견고딕": "NotoSansKRThin-Bold",
+    "HY견명조": "NotoSerifKRExtraLight-Bold",
+    "HY신명조": "NotoSerifKRExtraLight-Regular",
+    "HY중고딕": "NotoSansKR-Regular",
+    "굴림": "NotoSansKRExtraLight",
+    "맑은 고딕": "Pretendard-Regular",
+    "맑은 고딕 Semilight": "NotoSansKR-Regular",
+    "명조": "NotoSansKR-Regular",
+    "산세리프": "NotoSansKR-Regular",
+    "신명 견고딕": "NotoSansKR-Regular",
+    "신명 견명조": "NotoSansKR-Regular",
+    "신명 중고딕": "NotoSansKR-Regular",
+    "신명 태고딕": "NotoSansKR-Regular",
+    "신명 태그래픽": "NotoSansKR-Regular",
+    "신명 태명조": "NotoSansKR-Regular",
+    "신명조■얒a": "NotoSansKR-Regular",
+    "한양신명조": "NotoSansKR-Regular",
+    "한양중고딕": "NotoSansKR-Regular",
+    "한컴돋움": "HCRDotum",
+    "한컴바탕": "HCRBatang",
+    "함초롬바탕": "HCRBatang",
+    "휴먼명조": "NotoSansKR-Regular"
+  },
+  "trueTypeFaces": [
+    "HCR Batang",
+    "HCR Dotum"
+  ]
+}

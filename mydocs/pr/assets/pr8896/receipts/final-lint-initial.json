@@ -1,0 +1,185 @@
+[
+  {
+    "name": "format",
+    "source": "3fdde2a216e19cedb51a00be17e01a2d20950c88",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "returncode": 0,
+    "seconds": 28.77,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/logs/final-gate-format.log",
+    "minimal_fonts": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/minimal-font/exposed.txt"
+  },
+  {
+    "name": "manifest",
+    "source": "3fdde2a216e19cedb51a00be17e01a2d20950c88",
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--check",
+      "--base-ref",
+      "4c876654d86d071d342fc78706c51cfff6ddbde4"
+    ],
+    "returncode": 0,
+    "seconds": 0.95,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/logs/final-gate-manifest.log",
+    "minimal_fonts": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/minimal-font/exposed.txt"
+  },
+  {
+    "name": "unit-tiers",
+    "source": "3fdde2a216e19cedb51a00be17e01a2d20950c88",
+    "command": [
+      "node",
+      "scripts/rust-unit-test-tiers.mjs",
+      "--check",
+      "--base-ref",
+      "4c876654d86d071d342fc78706c51cfff6ddbde4"
+    ],
+    "returncode": 0,
+    "seconds": 14.35,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/logs/final-gate-unit-tiers.log",
+    "minimal_fonts": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/minimal-font/exposed.txt"
+  },
+  {
+    "name": "focused-8693",
+    "source": "3fdde2a216e19cedb51a00be17e01a2d20950c88",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_8693_table_end_row_clamp_no_blank_page",
+      "--",
+      "--cargo-profile",
+      "release-test"
+    ],
+    "returncode": 0,
+    "seconds": 387.72,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/logs/final-gate-focused-8693.log",
+    "minimal_fonts": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/minimal-font/exposed.txt"
+  },
+  {
+    "name": "focused-pua",
+    "source": "3fdde2a216e19cedb51a00be17e01a2d20950c88",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "native_pua_host_font_protocol",
+      "--",
+      "--cargo-profile",
+      "release-test"
+    ],
+    "returncode": 0,
+    "seconds": 14.47,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/logs/final-gate-focused-pua.log",
+    "minimal_fonts": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/minimal-font/exposed.txt"
+  },
+  {
+    "name": "focused-legacy",
+    "source": "3fdde2a216e19cedb51a00be17e01a2d20950c88",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_8896_legacy_font_family_contract",
+      "--",
+      "--cargo-profile",
+      "release-test"
+    ],
+    "returncode": 0,
+    "seconds": 21.58,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/logs/final-gate-focused-legacy.log",
+    "minimal_fonts": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/minimal-font/exposed.txt"
+  },
+  {
+    "name": "clippy-host",
+    "source": "3fdde2a216e19cedb51a00be17e01a2d20950c88",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "returncode": 0,
+    "seconds": 53.0,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/logs/final-gate-clippy-host.log",
+    "minimal_fonts": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/minimal-font/exposed.txt"
+  },
+  {
+    "name": "clippy-wasm",
+    "source": "3fdde2a216e19cedb51a00be17e01a2d20950c88",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "rhwp",
+      "--lib",
+      "--target",
+      "wasm32-unknown-unknown",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "returncode": 0,
+    "seconds": 73.2,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/logs/final-gate-clippy-wasm.log",
+    "minimal_fonts": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/minimal-font/exposed.txt"
+  },
+  {
+    "name": "workspace-build",
+    "source": "3fdde2a216e19cedb51a00be17e01a2d20950c88",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--workspace"
+    ],
+    "returncode": 0,
+    "seconds": 84.26,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/logs/final-gate-workspace-build.log",
+    "minimal_fonts": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/minimal-font/exposed.txt"
+  },
+  {
+    "name": "clippy-all-targets",
+    "source": "3fdde2a216e19cedb51a00be17e01a2d20950c88",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "returncode": 0,
+    "seconds": 124.53,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/logs/final-gate-clippy-all-targets.log",
+    "minimal_fonts": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/minimal-font/exposed.txt"
+  },
+  {
+    "name": "clippy-skia",
+    "source": "3fdde2a216e19cedb51a00be17e01a2d20950c88",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--features",
+      "native-skia",
+      "--lib",
+      "--bin",
+      "rhwp",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "returncode": 101,
+    "seconds": 19.25,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/logs/final-gate-clippy-skia.log",
+    "minimal_fonts": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/minimal-font/exposed.txt"
+  }
+]

@@ -1,0 +1,14 @@
+{
+  "scope": "incoming",
+  "backend": "native",
+  "base_source": "eb84afc0364c51031bb07cbbb013476293367990",
+  "head_source": "1749b66d704b3ea0443ae9792ff8a1d65e26a9c1",
+  "datasets": 44,
+  "pages": 88,
+  "png_equal": 88,
+  "minimum": 90.75718,
+  "minimum_delta_pp": "0.00000",
+  "drops_over_2pp": 0,
+  "head_below_90": 0,
+  "protected_declines": 0
+}

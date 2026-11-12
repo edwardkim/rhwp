@@ -1,0 +1,40 @@
+{
+  "complete": true,
+  "checkout_source": "759212053e4b289db93034c7b2b32f5b50bdcd4e",
+  "base_source": "eb84afc0364c51031bb07cbbb013476293367990",
+  "production_equivalence": [
+    {
+      "source": "1749b66d704b3ea0443ae9792ff8a1d65e26a9c1",
+      "changed_production_paths": []
+    },
+    {
+      "source": "68e8190d334fccc5a2846dcfead4a7c60330774a",
+      "changed_production_paths": []
+    }
+  ],
+  "full_default_regression": {
+    "partitions": [
+      4466,
+      4398,
+      4462
+    ],
+    "passed": 13326,
+    "failed": 0,
+    "pass_identity_sha256": "12a4666b2b646847764119c101d69b1e10b096500ce8f5138afc855a35a25a47"
+  },
+  "native_counts": {
+    "native-skia-lib": 4035,
+    "native-skia-placeholder": 2,
+    "native-skia-pdf": 36,
+    "native-font-protocol": 22
+  },
+  "native_official_three_passed": 4073,
+  "focused_root_selector_passed": 9,
+  "protected_total_pages": 3542,
+  "official_protected_declines": 0,
+  "new_base_claims": {
+    "datasets": 44,
+    "pages_per_backend": 88,
+    "png_equal_per_backend": 88
+  }
+}

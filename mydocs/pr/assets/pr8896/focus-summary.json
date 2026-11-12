@@ -1,0 +1,62 @@
+[
+  {
+    "backend": "native",
+    "key": "issue8693-table-end-row-clamp",
+    "pages": [
+      1
+    ],
+    "minimum": 100.0,
+    "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+  },
+  {
+    "backend": "native",
+    "key": "issue8693-two-tables-host-line-fits",
+    "pages": [
+      1,
+      2
+    ],
+    "minimum": 100.0,
+    "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+  },
+  {
+    "backend": "native",
+    "key": "issue8693-two-tables-host-line-no-room",
+    "pages": [
+      1,
+      2,
+      3
+    ],
+    "minimum": 100.0,
+    "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af"
+  },
+  {
+    "backend": "wasm",
+    "key": "issue8693-table-end-row-clamp",
+    "pages": [
+      1
+    ],
+    "minimum": 100.0,
+    "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+  },
+  {
+    "backend": "wasm",
+    "key": "issue8693-two-tables-host-line-fits",
+    "pages": [
+      1,
+      2
+    ],
+    "minimum": 100.0,
+    "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+  },
+  {
+    "backend": "wasm",
+    "key": "issue8693-two-tables-host-line-no-room",
+    "pages": [
+      1,
+      2,
+      3
+    ],
+    "minimum": 100.0,
+    "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af"
+  }
+]

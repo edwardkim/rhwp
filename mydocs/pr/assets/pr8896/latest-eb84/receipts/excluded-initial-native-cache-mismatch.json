@@ -1,0 +1,22 @@
+{
+  "source": "1749b66d704b3ea0443ae9792ff8a1d65e26a9c1",
+  "command": [
+    "cargo",
+    "build",
+    "--locked",
+    "--profile",
+    "release-test",
+    "--features",
+    "native-skia",
+    "--lib",
+    "--bin",
+    "rhwp",
+    "-vv"
+  ],
+  "returncode": 0,
+  "seconds": 0.4,
+  "source_directory": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment",
+  "sha256": "3c0ea3e3d0619331f0a9d5c5585510ed523270be59c5daf9957c20434cd11850",
+  "valid_for_candidate": false,
+  "reason": "Shared target returned the exact base binary after worktree switch; no candidate code compiled. Excluded before validation."
+}

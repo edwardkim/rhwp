@@ -1,0 +1,102 @@
+{
+  "summary": {
+    "compared_pages": 2,
+    "average_silhouette_raw_match_percent": 100.0,
+    "worst_silhouette_raw_match_percent": 100.0,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 95.39293,
+    "worst_pixel_match_percent": 95.0156,
+    "average_ink_match_percent": 8.30486,
+    "worst_ink_match_percent": 5.18209,
+    "average_visual_accuracy_proxy_percent": 8.30486,
+    "worst_visual_accuracy_proxy_percent": 5.18209,
+    "average_tolerant_content_match_percent": 100.0,
+    "worst_tolerant_content_match_percent": 100.0,
+    "worst_pages": [
+      2,
+      1
+    ]
+  },
+  "pages": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/wasm/focus/issue8693-two-tables-host-line-fits-run/issue8693-two-tables-host-line-fits/rhwp_png/rhwp_001.png",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/wasm/focus/issue8693-two-tables-host-line-fits-run/issue8693-two-tables-host-line-fits/pdf_png/pdf-001.png",
+      "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/wasm/focus/issue8693-two-tables-host-line-fits-run/issue8693-two-tables-host-line-fits/overlay/overlay_001.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "overlay_color_legend": {
+        "rhwp_only": "blue",
+        "pdf_only": "red",
+        "both_different": "orange",
+        "matching": "gray"
+      },
+      "total_pixels": 891662,
+      "diff_pixels": 37715,
+      "diff_ratio": 0.04229742,
+      "pixel_match_percent": 95.77026,
+      "ink_union_pixels": 42581,
+      "ink_diff_pixels": 37715,
+      "ink_diff_ratio": 0.88572368,
+      "ink_match_percent": 11.42763,
+      "visual_accuracy_proxy_percent": 11.42763,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 42581,
+      "tolerant_content_match_percent": 100.0,
+      "mean_abs_channel_delta": 6.242,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        116,
+        135,
+        677,
+        991
+      ]
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/wasm/focus/issue8693-two-tables-host-line-fits-run/issue8693-two-tables-host-line-fits/rhwp_png/rhwp_002.png",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/wasm/focus/issue8693-two-tables-host-line-fits-run/issue8693-two-tables-host-line-fits/pdf_png/pdf-002.png",
+      "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/wasm/focus/issue8693-two-tables-host-line-fits-run/issue8693-two-tables-host-line-fits/overlay/overlay_002.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "overlay_color_legend": {
+        "rhwp_only": "blue",
+        "pdf_only": "red",
+        "both_different": "orange",
+        "matching": "gray"
+      },
+      "total_pixels": 891662,
+      "diff_pixels": 44444,
+      "diff_ratio": 0.049844,
+      "pixel_match_percent": 95.0156,
+      "ink_union_pixels": 46873,
+      "ink_diff_pixels": 44444,
+      "ink_diff_ratio": 0.94817912,
+      "ink_match_percent": 5.18209,
+      "visual_accuracy_proxy_percent": 5.18209,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 46873,
+      "tolerant_content_match_percent": 100.0,
+      "mean_abs_channel_delta": 6.879,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        116,
+        135,
+        677,
+        1004
+      ]
+    }
+  ]
+}

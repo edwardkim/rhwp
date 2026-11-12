@@ -1,0 +1,24 @@
+{
+  "name": "clippy-skia",
+  "source": "3fdde2a216e19cedb51a00be17e01a2d20950c88",
+  "command": [
+    "cargo",
+    "clippy",
+    "--locked",
+    "--features",
+    "native-skia",
+    "--lib",
+    "--bin",
+    "rhwp",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "returncode": 101,
+  "seconds": 19.25,
+  "log": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/logs/final-gate-clippy-skia.log",
+  "minimal_fonts": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/minimal-font/exposed.txt",
+  "diagnosis": "Minimal font bwrap root omitted /mnt/wsl/resolv.conf, target of /etc/resolv.conf. GitHub prebuilt Skia download curl exit 6; no Rust diagnostic.",
+  "correction": "Bind only the actual resolver file; font mounts and exposed fonts unchanged; DNS resolution verified before rerun.",
+  "log_retention": "Complete raw log overwritten by owned rerun; diagnosis copied from observed stderr. Final rerun is separately recorded in gates-skia-lint.json."
+}

@@ -1,0 +1,469 @@
+{
+  "review_source": "f351d6c57fca5c46462f279eb5e7c6e1ba1e23b2",
+  "inputs": [
+    {
+      "path": "samples/issue8693/table-end-row-clamp.hwp",
+      "bytes": 14848,
+      "sha256": "8982493b412cf6ab0165ce234303786f994a6a870433101ce64aed1d82766aa0",
+      "git_blob": "2328a357ad541f1f659167de4d431fdc7720df75",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/issue8693/table-end-row-clamp-webhwp-print.pdf",
+      "bytes": 5451,
+      "sha256": "2c0bd2817e86e5c9e4c01961852a0ceb0ef6a6ae9076fea0b45d4d0ec7506321",
+      "git_blob": "86cd825a8cd370832a33de1b539a8cb8bb3af38f",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/issue8693/two-tables-host-line-fits.hwp",
+      "bytes": 15360,
+      "sha256": "50cf138669be588545fb59c688970f2bc52282168886e998c364d69671e143f2",
+      "git_blob": "e03f60bcaa1c2fc16770375e93370728b1b02d3b",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/issue8693/two-tables-host-line-fits-webhwp-print.pdf",
+      "bytes": 6344,
+      "sha256": "b7eba5df3d128aaaca45d0e67a01ec512100cfec27b2227f7273ef20d0f5f71a",
+      "git_blob": "c2b9742853a44bdfdb260ab3914d6ba16c9e44b3",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/issue8693/two-tables-host-line-no-room.hwp",
+      "bytes": 15360,
+      "sha256": "89bb55a075b5429c5cecdd60cb60085bb6bf25ce10e0af6518bab9ba04c67059",
+      "git_blob": "755c812edc96e2a9e8caa7b5e5bfdd302420988c",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/issue8693/two-tables-host-line-no-room-webhwp-print.pdf",
+      "bytes": 6811,
+      "sha256": "09360c400fcc46f1819f6b9b378305d5af5accfe91417d2e534d0026f31f2c8a",
+      "git_blob": "62f5ebad5259fada64655722ce9c86db829bea31",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/issue7620/a-rowbreak-float.hwp",
+      "bytes": 13312,
+      "sha256": "44c065e5a770e88903e314b53e1b199f2ab1385e50a79eebb5e8ae8716ec64a3",
+      "git_blob": "d48e7b827e76ca02bbeb0338ee7bb00a39851cc8",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/issue7620/a-rowbreak-float-hancomdocs.pdf",
+      "bytes": 7414,
+      "sha256": "901c26db10c91b3e2284f5506af5c18e7e5c78525ad1b6b9dcd3ea83e73e08e7",
+      "git_blob": "18dd1a8058e89072dc740ed359a9ccbe1e0c6af4",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/issue7620/b-rowbreak-bottom-margin-overflow.hwp",
+      "bytes": 14336,
+      "sha256": "496d5653cee6205d13a070d3e1c7758459b120f4146a6e9dba05ee3122ce06b4",
+      "git_blob": "ea387fdab2569718530f79cf6eec3642e09a5d18",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/issue7620/b-rowbreak-bottom-margin-overflow-hancomdocs.pdf",
+      "bytes": 9568,
+      "sha256": "3d5aa0ec87b10af1bc584c7500cdc0d1cf93f5f3812c1ccf3a3585ebf6382387",
+      "git_blob": "fc969ab0e5ebf6d9a721089fe4e789bf5edf3a46",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/issue7620/c-rowbreak-table-moves-next-page.hwp",
+      "bytes": 14336,
+      "sha256": "1a19df0ccf31676c411a576963cf322ec9e927fd8727390e94703cd95a297669",
+      "git_blob": "3b27f9b46515f219d405599161445ad2459941c5",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/issue7620/c-rowbreak-table-moves-next-page-hancomdocs.pdf",
+      "bytes": 9589,
+      "sha256": "dfd39700bc26029a4bc148ab64640ad91243642c549fe6cfd9bfb0870cc61c4d",
+      "git_blob": "604b4c067fffa7892b02fda9270ccb8593eb2547",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/issue7620/d-rowbreak-splits-at-row-boundary.hwp",
+      "bytes": 14336,
+      "sha256": "1ac6b0c2f586b7e7c4a59cfc71834aff9e76e57bb73a846ff7a392c6489f6aee",
+      "git_blob": "b2ca030f8319a78cb628bbfe6b2fcb3e2f022f0a",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/issue7620/d-rowbreak-splits-at-row-boundary-hancomdocs.pdf",
+      "bytes": 10277,
+      "sha256": "80e1acd33c2a9b437e1ecd2020e46b113a953514c0eb4428ecd414f8bcb25347",
+      "git_blob": "d933e1ef5beb77b4d7147e5d0d024cfcc9c1ece6",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/issue7621/control-float.hwp",
+      "bytes": 13312,
+      "sha256": "81d61a11efd5070e64767b8cd32491ba8af93ec212351607694e10aece0a9480",
+      "git_blob": "55f14a4fec6f19d9116355438d0aea483aec10ec",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/issue7621/control-float-hancomdocs.pdf",
+      "bytes": 7414,
+      "sha256": "83da2a4b27b50aad35ac4a502e9acb521e1f222ece95bfa15485568bde52f9f1",
+      "git_blob": "45b3ee56d6db7b1357d1e8fabc3c591b749819c6",
+      "same_as_committed": true
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "bytes": 6848,
+      "sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+      "git_blob": "8f5511811a26703a906360ea22a5e3cf141f8b73",
+      "same_as_committed": true
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+      "bytes": 10328,
+      "sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+      "git_blob": "512875fda389b4eef8987e2b9911e03408f29006",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/2025 행정업무운영 편람(최종).hwp",
+      "bytes": 10687488,
+      "sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+      "git_blob": "492e1702dcfbd59d119af1214e83b99fa8d7cf9f",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+      "bytes": 4692840,
+      "sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+      "git_blob": "e51c11b3802be0c7b7c047c579e86ba3084a0503",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+      "bytes": 13639865,
+      "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+      "git_blob": "961e91f0af177689fbef4c240c0947b88c674af5",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+      "bytes": 4692840,
+      "sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+      "git_blob": "c1ffffbf60fd0ff522cfdaa869e8dfca98a2545e",
+      "same_as_committed": true
+    },
+    {
+      "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx",
+      "bytes": 140149,
+      "sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+      "git_blob": "a056d1a117139644d05a0d42f32dea1969b995ab",
+      "same_as_committed": true
+    },
+    {
+      "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law_hancom2018_print.pdf",
+      "bytes": 287952,
+      "sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+      "git_blob": "74ae2b665f50d81f5747246273afcd4ab7e8f156",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/pr8040/exam-social-insert.hwp",
+      "bytes": 514560,
+      "sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+      "git_blob": "1eed74550baf7bcc70d09a4a04d586dfb6584b4b",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/pr8040/exam-social-insert-2020.pdf",
+      "bytes": 641866,
+      "sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+      "git_blob": "07aa6d3a95d37994429bd7df341f4e7b60443fa1",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/pr8040/exam-social-insert-delete.hwp",
+      "bytes": 514560,
+      "sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+      "git_blob": "dcead6985001e73751ca67c325245a62de698597",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/pr8040/exam-social-insert-delete-2020.pdf",
+      "bytes": 641867,
+      "sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+      "git_blob": "e291015645b6d35b15f9982da9d22a86f1132d35",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "bytes": 51712,
+      "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "git_blob": "f6f047708aed3ca5b603fde2c8d41d40c2ba4b98",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+      "bytes": 625577,
+      "sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+      "git_blob": "23f9278e8a0d0a047c2e12b10076932881dcf7c1",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/task3307/issue3307_outline_number.hwpx",
+      "bytes": 57890,
+      "sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+      "git_blob": "135d3265a8520e4c022a726e7c0677cb4c79c640",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "bytes": 237518,
+      "sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+      "git_blob": "8780c4d81dd263c2cad63ca20830e933b7b9a268",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/hwp3-sample10.hwp",
+      "bytes": 945360,
+      "sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+      "git_blob": "88e507c2cef0637eb4ffdaa9da3532a9cc7515c9",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/issue8371/hwp3-sample10-2020.pdf",
+      "bytes": 96185197,
+      "sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+      "git_blob": "af35caf0aec471085bf3e738f25c30122538a0b3",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5-2022.hwp",
+      "bytes": 3048448,
+      "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+      "git_blob": "ce4fc4fddbd57ea4cfcaef2c5e2f4f72991e4f7b",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+      "bytes": 1830277,
+      "sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+      "git_blob": "cb168a9199f86c9f935af695af055bfa382e9e8b",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5-2024.hwp",
+      "bytes": 3044864,
+      "sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+      "git_blob": "1e7b1834277effd9240a2aa24724799c55b210f1",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
+      "bytes": 2234015,
+      "sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+      "git_blob": "5974ae3ecf91fca171b847c4d3fdad640920d567",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5.hwpx",
+      "bytes": 3061900,
+      "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+      "git_blob": "119f835b1a7d296e21a43e91715c52ebf1ecb912",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+      "bytes": 2234018,
+      "sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+      "git_blob": "d729d2c89320ccd332c9a7ba2fe370629444a0e2",
+      "same_as_committed": true
+    },
+    {
+      "path": "tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp",
+      "bytes": 4096,
+      "sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687",
+      "git_blob": "f8fbd777c431df7cda843626c1cb2f707188d6eb",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/issue8109/print/body-list-typed-hwp-2020.pdf",
+      "bytes": 19110,
+      "sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3",
+      "git_blob": "fa874649942acdedaeb5ff774467e08b0920ccf4",
+      "same_as_committed": true
+    },
+    {
+      "path": "tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp",
+      "bytes": 4096,
+      "sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
+      "git_blob": "4c82c1bb6f8576c5e875f1508ae0279d77682520",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/issue8109/print/control-styles-hwp-2020.pdf",
+      "bytes": 43664,
+      "sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba",
+      "git_blob": "eaf9b43202a8df7de4e36d3cf6cd3f4ef8d0fc1c",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/pic-crop-01.hwp",
+      "bytes": 131072,
+      "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+      "git_blob": "2ae41567f46adfdecebab27b327500f76b74c4e1",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/pic-crop-01-2022.pdf",
+      "bytes": 19211,
+      "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+      "git_blob": "171d9dfe4e3511ec9ed8c8078e47cfa5ac2ac7e2",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/re-03-latin-only-hancom.hwp",
+      "bytes": 9216,
+      "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+      "git_blob": "b55553422f96b5d2b5c2fd6ee1cf06bdd129f573",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+      "bytes": 11752,
+      "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+      "git_blob": "007f057f67b46042b6ec6e67f6aa597226ec00e2",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/shape-group-02.hwp",
+      "bytes": 16384,
+      "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+      "git_blob": "ceb34fdaad8f81674881bfeae7a1089e68aab262",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/shape-group-02-hwp-2020.pdf",
+      "bytes": 89651,
+      "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+      "git_blob": "58e8dc8d8a4c11df34acee1058470239c4aea1e3",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/issue5699/20099369_yeongwol_forms.hwp",
+      "bytes": 20800,
+      "sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+      "git_blob": "c9832b79acaa3cf88307f540a1e70a859cc2cec4",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/issue7642-failed-inputs-followup-20261011/20099369_yeongwol_forms-2020.pdf",
+      "bytes": 91696,
+      "sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+      "git_blob": "66188bfaf0cf278efb90c072f65d1d112020ce30",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/issue8682/ai_procurement_appendix.hwp",
+      "bytes": 57856,
+      "sha256": "8f18a357c73ff2aae4b0e2a2df3f1fecf9679aab65d137e684c7791685c09b5a",
+      "git_blob": "53fa139bbf8140cc25a17ab61caa59e0e37fff02",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/issue8682/ai_procurement_appendix-2020.pdf",
+      "bytes": 272696,
+      "sha256": "a6fe15e195cda7b85c520b69bfa53bc8a0727821ac90c1822e956e227269c68b",
+      "git_blob": "4e40409f89a99da0a9d90dfd7a781e89d379b6ee",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/issue8682/artifact_loan_form.hwp",
+      "bytes": 33792,
+      "sha256": "9dc4fc28bd951a009932298c29263e24544e455726ba9e1cc641c9fdb0a9272b",
+      "git_blob": "1eb3a4933c6a2d8bb9b94d773abce9bef3a8f14c",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/issue8682/artifact_loan_form-2020.pdf",
+      "bytes": 55257,
+      "sha256": "72ae7ff498e2371c0f316739f72a09e12cd8fc28e921f446e8f8c8a034f13b9b",
+      "git_blob": "5e3146a63d8d41582c3d09936da75879f5ec0885",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/issue8682/rental_approval_form.hwp",
+      "bytes": 33280,
+      "sha256": "301d6f7e7df4129ee5090d174100b1e0dfcf1b2abfb8afdcf289a0bed2beef46",
+      "git_blob": "e7d90d8ad54459e906dd11fde01a8a6f7ae74b46",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/issue8682/rental_approval_form-2020.pdf",
+      "bytes": 29919,
+      "sha256": "4fb0322894a091b29b429344486bdb874feb1afa85edc18837618264cf5dad82",
+      "git_blob": "afdeaa89bfade44eb04628db874851c3945715a6",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/issue7282/wide_paper_table_two_columns.hwp",
+      "bytes": 2051584,
+      "sha256": "2400c5a5dd0e6d734d422cea83597c6216341584814e973fc477c37637bb8150",
+      "git_blob": "f3b69c380918c86b5f95ba6862b6c322806ceb64",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/issue7282/wide_paper_table_two_columns-2020.pdf",
+      "bytes": 281285,
+      "sha256": "53c2a848ee52b4e5d51e85d1c0d82af57a6fd3fd64b31f9b3595f72b43be3bc3",
+      "git_blob": "27fbfc3ae0688d625bbd4327bef840ce35e7b4fc",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/issue8770/4680000-202100038_research_review_request.hwp",
+      "bytes": 1635328,
+      "sha256": "13d5f5e3f8579010d3c284d8e1bcf5039502fb485c1fece8f4bbb99e0a23964c",
+      "git_blob": "461ac9d7722750476d89f8aa8f0abb441b474fdc",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/issue8770/4680000-202100038_research_review_request-2020.pdf",
+      "bytes": 238668,
+      "sha256": "f4861e9c548aada2eebd5ce3613b59a97b142c3ade52c5a298fc3aa2ffa844d8",
+      "git_blob": "285a34f3449824aa2580c7ad6deeec9f95179baa",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/issue8888/36384898-unstored-next-float-bottom-margin.hwpx",
+      "bytes": 57798,
+      "sha256": "03e54b5b4517505ce678af874747e9af69c92d0fb16af3881eadc797782b979f",
+      "git_blob": "a4bedfb9b0f0916c45c6a6be708b9619c14b8fc4",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/issue8888/36384898-unstored-next-float-bottom-margin-2020.pdf",
+      "bytes": 88869,
+      "sha256": "10b43e69fb22145c63c432f4ad518115140ceea2629e215d288cc1a41b5ff180",
+      "git_blob": "47449129594c8b57c6dc4d9d663f72e86c469ebb",
+      "same_as_committed": true
+    },
+    {
+      "path": "samples/issue8904/36376635-synthetic-tail-saved-reset.hwpx",
+      "bytes": 37971,
+      "sha256": "27bc644e73eb8cf64d35227775dc7e9d5e27b74f540c610e1da12ad224d7dca5",
+      "git_blob": "0f9bd96668e522a8adf0ea17d0b66a5f70163969",
+      "same_as_committed": true
+    },
+    {
+      "path": "pdf/issue8904/36376635-synthetic-tail-saved-reset-2020.pdf",
+      "bytes": 48778,
+      "sha256": "20257a2be00588346f8536e1ebf1452fcfab7781b06961b817e2190abb33ff35",
+      "git_blob": "265f4f5642487bfeb6afbaadacc3bd90fc957562",
+      "same_as_committed": true
+    }
+  ],
+  "final_inventory_verified_at_source": "3fdde2a216e19cedb51a00be17e01a2d20950c88",
+  "final_verified_inputs": 66
+}

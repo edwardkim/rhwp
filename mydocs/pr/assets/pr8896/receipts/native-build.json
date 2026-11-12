@@ -1,0 +1,19 @@
+{
+  "source": "a22e3fbb8ff117086443c0618287c34f9c7dc5ef",
+  "command": [
+    "cargo",
+    "build",
+    "--locked",
+    "--profile",
+    "release-test",
+    "--features",
+    "native-skia",
+    "--lib",
+    "--bin",
+    "rhwp",
+    "-vv"
+  ],
+  "returncode": 0,
+  "seconds": 354.46,
+  "binary_sha256": "2a23b376834905325e5dd61a950cc6436f3884b6b3a7dd7af346481056f0fc2b"
+}

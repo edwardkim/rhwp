@@ -1,0 +1,374 @@
+{
+  "documentGlyphFallbacks": [
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 14,
+      "languageSlot": 0,
+      "source": "08서울남산체 EB"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 15,
+      "languageSlot": 0,
+      "source": "08서울한강체 L"
+    },
+    {
+      "faces": [
+        "NotoSansKRExtraLight",
+        "HCRBatang"
+      ],
+      "fontId": 17,
+      "languageSlot": 0,
+      "source": "KoPub돋움체 Light"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 18,
+      "languageSlot": 0,
+      "source": "함초롬바탕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 20,
+      "languageSlot": 0,
+      "source": "-윤명조320"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 15,
+      "languageSlot": 1,
+      "source": "08서울남산체 EB"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 16,
+      "languageSlot": 1,
+      "source": "08서울한강체 L"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 18,
+      "languageSlot": 1,
+      "source": "KoPub돋움체 Light"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 19,
+      "languageSlot": 1,
+      "source": "함초롬바탕"
+    },
+    {
+      "faces": [
+        "NotoSansKR-Regular"
+      ],
+      "fontId": 20,
+      "languageSlot": 1,
+      "source": "신명 중고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 21,
+      "languageSlot": 1,
+      "source": "산돌명조 L"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 12,
+      "languageSlot": 2,
+      "source": "08서울한강체 L"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 14,
+      "languageSlot": 2,
+      "source": "KoPub돋움체 Light"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 15,
+      "languageSlot": 2,
+      "source": "함초롬바탕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 16,
+      "languageSlot": 2,
+      "source": "08서울남산체 EB"
+    },
+    {
+      "faces": [
+        "NotoSansKR-Regular"
+      ],
+      "fontId": 17,
+      "languageSlot": 2,
+      "source": "신명 중고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 18,
+      "languageSlot": 2,
+      "source": "-윤명조320"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 12,
+      "languageSlot": 3,
+      "source": "08서울한강체 L"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 14,
+      "languageSlot": 3,
+      "source": "KoPub돋움체 Light"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 15,
+      "languageSlot": 3,
+      "source": "함초롬바탕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 16,
+      "languageSlot": 3,
+      "source": "08서울남산체 EB"
+    },
+    {
+      "faces": [
+        "NotoSansKR-Regular"
+      ],
+      "fontId": 17,
+      "languageSlot": 3,
+      "source": "신명 중고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 18,
+      "languageSlot": 3,
+      "source": "-윤명조320"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 10,
+      "languageSlot": 4,
+      "source": "08서울한강체 L"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 11,
+      "languageSlot": 4,
+      "source": "KoPub돋움체 Light"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 12,
+      "languageSlot": 4,
+      "source": "함초롬바탕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 13,
+      "languageSlot": 4,
+      "source": "08서울남산체 EB"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 14,
+      "languageSlot": 4,
+      "source": "-윤명조320"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 12,
+      "languageSlot": 5,
+      "source": "08서울한강체 L"
+    },
+    {
+      "faces": [
+        "NotoSansKR-Regular"
+      ],
+      "fontId": 13,
+      "languageSlot": 5,
+      "source": "#그래픽"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 14,
+      "languageSlot": 5,
+      "source": "KoPub돋움체 Light"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 15,
+      "languageSlot": 5,
+      "source": "함초롬바탕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 16,
+      "languageSlot": 5,
+      "source": "08서울남산체 EB"
+    },
+    {
+      "faces": [
+        "Noto Serif",
+        "HCRBatang"
+      ],
+      "fontId": 17,
+      "languageSlot": 5,
+      "source": "KoPub바탕체 Light"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 10,
+      "languageSlot": 6,
+      "source": "08서울한강체 L"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 11,
+      "languageSlot": 6,
+      "source": "KoPub돋움체 Light"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 12,
+      "languageSlot": 6,
+      "source": "함초롬바탕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 13,
+      "languageSlot": 6,
+      "source": "08서울남산체 EB"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 14,
+      "languageSlot": 6,
+      "source": "-윤명조320"
+    }
+  ],
+  "documentSubstitutions": [],
+  "id": "native-webfont-a35e742ce6322c080634a25f",
+  "preserveSourceMetrics": true,
+  "selectedPrograms": {
+    "KoPub돋움체 Light": {
+      "family": "KoPubDotum Light",
+      "openTypeCff": false,
+      "programId": "6d6953f3c854de69eb2b947d2abbdd108512617b3cd542cde6d00a1dd496824b",
+      "query": "KoPub돋움체 Light",
+      "trueType": true
+    },
+    "KoPub바탕체 Light": {
+      "family": "KoPubBatang Light",
+      "openTypeCff": false,
+      "programId": "3518b7160348c029ed9ba9fcbfb7c2e73ee60259e4b4ac93e321b802105bdb12",
+      "query": "KoPub바탕체 Light",
+      "trueType": true
+    }
+  },
+  "substitutions": {
+    "#그래픽": "NotoSansKRExtraLight",
+    "#세명조": "NotoSansKR-Regular",
+    "#중명조": "NotoSansKR-Regular",
+    "-윤명조320": "NotoSansKR-Regular",
+    "08서울남산체 EB": "NotoSansKR-Regular",
+    "08서울한강체 L": "NotoSansKR-Regular",
+    "HCI Hollyhock": "NotoSansKR-Regular",
+    "HY견고딕": "NotoSansKRThin-Bold",
+    "HY울릉도M": "NotoSansKR-Regular",
+    "HY헤드라인M": "NotoSansKRThin-Bold",
+    "KoPub돋움체 Light": "KoPubDotumLight",
+    "KoPub바탕체 Light": "KoPubBatang-Light",
+    "굴림": "NotoSansKRExtraLight",
+    "맑은 고딕": "Pretendard-Regular",
+    "명조": "NotoSerifKRExtraLight-Bold",
+    "바탕": "NotoSerifKRExtraLight-Regular",
+    "바탕체": "NotoSerifKRExtraLight-Regular",
+    "산돌명조 L": "NotoSansKR-Regular",
+    "산세리프": "NotoSansKR-Regular",
+    "신명 견명조": "NotoSerifKRExtraLight-Bold",
+    "신명 신명조": "NotoSerifKRExtraLight-Regular",
+    "신명 중고딕": "NotoSansKR-Regular",
+    "신명 중명조": "NotoSerifKRExtraLight-Regular",
+    "신명 태명조": "NotoSerifKRExtraLight-Regular",
+    "한양그래픽": "NotoSansKRExtraLight",
+    "한양신명조": "NotoSansKR-Regular",
+    "한양중고딕": "NotoSansKR-Regular",
+    "한컴바탕": "HCRBatang",
+    "함초롬바탕": "HCRBatang",
+    "휴먼고딕": "NotoSansKRExtraLight"
+  },
+  "trueTypeFaces": [
+    "HCR Batang",
+    "KoPubBatang Light",
+    "KoPubDotum Light"
+  ]
+}

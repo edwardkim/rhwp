@@ -1,0 +1,104 @@
+{
+  "all_equal": true,
+  "pages": 14,
+  "rows": [
+    {
+      "key": "issue8693-table-end-row-clamp",
+      "page": 1,
+      "reference_sha256": "a2b5fa7c45f7309beed878cbeaa79db11e4b1674109693300eb1f0cf0e62f59d",
+      "current_sha256": "a2b5fa7c45f7309beed878cbeaa79db11e4b1674109693300eb1f0cf0e62f59d",
+      "equal": true
+    },
+    {
+      "key": "issue8693-two-tables-host-line-fits",
+      "page": 1,
+      "reference_sha256": "8feef55b6fa42d87d226736b73d10e0af61590ded5cac0736d443ca51c3420e6",
+      "current_sha256": "8feef55b6fa42d87d226736b73d10e0af61590ded5cac0736d443ca51c3420e6",
+      "equal": true
+    },
+    {
+      "key": "issue8693-two-tables-host-line-fits",
+      "page": 2,
+      "reference_sha256": "8729c36188bfd68a008c65140e62720cc546bb818245bd3c4b3550d9b5964da9",
+      "current_sha256": "8729c36188bfd68a008c65140e62720cc546bb818245bd3c4b3550d9b5964da9",
+      "equal": true
+    },
+    {
+      "key": "issue8693-two-tables-host-line-no-room",
+      "page": 1,
+      "reference_sha256": "f365d8957ea5eeba8d4b0da21cb2bc3c40edc8b7f2c6151e13379a30657817a2",
+      "current_sha256": "f365d8957ea5eeba8d4b0da21cb2bc3c40edc8b7f2c6151e13379a30657817a2",
+      "equal": true
+    },
+    {
+      "key": "issue8693-two-tables-host-line-no-room",
+      "page": 2,
+      "reference_sha256": "8729c36188bfd68a008c65140e62720cc546bb818245bd3c4b3550d9b5964da9",
+      "current_sha256": "8729c36188bfd68a008c65140e62720cc546bb818245bd3c4b3550d9b5964da9",
+      "equal": true
+    },
+    {
+      "key": "issue8693-two-tables-host-line-no-room",
+      "page": 3,
+      "reference_sha256": "6fb2edcbc902de425f2df69d5b3f88bb5a0c58b8428abbca2caabc57521c8302",
+      "current_sha256": "6fb2edcbc902de425f2df69d5b3f88bb5a0c58b8428abbca2caabc57521c8302",
+      "equal": true
+    },
+    {
+      "key": "issue7620-a-rowbreak-float",
+      "page": 1,
+      "reference_sha256": "98af5bd9fedd6c26b210090d0d7dabef38a820d166791ee3be9a978642411d48",
+      "current_sha256": "98af5bd9fedd6c26b210090d0d7dabef38a820d166791ee3be9a978642411d48",
+      "equal": true
+    },
+    {
+      "key": "issue7620-b-rowbreak-bottom-margin-overflow",
+      "page": 1,
+      "reference_sha256": "84a6f74daf8773bab2c44d5911bdd273b7cfccfc78da81adfcfcb0f04a8cacbc",
+      "current_sha256": "84a6f74daf8773bab2c44d5911bdd273b7cfccfc78da81adfcfcb0f04a8cacbc",
+      "equal": true
+    },
+    {
+      "key": "issue7620-b-rowbreak-bottom-margin-overflow",
+      "page": 2,
+      "reference_sha256": "7c404b9c537f3d36d762b16279af92f73a4fef48895bef8b5f2a2fa46c2f1bcc",
+      "current_sha256": "7c404b9c537f3d36d762b16279af92f73a4fef48895bef8b5f2a2fa46c2f1bcc",
+      "equal": true
+    },
+    {
+      "key": "issue7620-c-rowbreak-table-moves-next-page",
+      "page": 1,
+      "reference_sha256": "efcee3df1d2e0e182c6d0bfdc42ca63c4e34d78f4c353d3a8c2dd4255924a93d",
+      "current_sha256": "efcee3df1d2e0e182c6d0bfdc42ca63c4e34d78f4c353d3a8c2dd4255924a93d",
+      "equal": true
+    },
+    {
+      "key": "issue7620-c-rowbreak-table-moves-next-page",
+      "page": 2,
+      "reference_sha256": "f7c9fa6ef35b48871f12f9c5ad929e12e3488e85ba622e438bb19f4a9451f19a",
+      "current_sha256": "f7c9fa6ef35b48871f12f9c5ad929e12e3488e85ba622e438bb19f4a9451f19a",
+      "equal": true
+    },
+    {
+      "key": "issue7620-d-rowbreak-splits-at-row-boundary",
+      "page": 1,
+      "reference_sha256": "e95a9463a6f8f970d119f2bec42d49650c190ab09cb12eb45673887668b3cb3c",
+      "current_sha256": "e95a9463a6f8f970d119f2bec42d49650c190ab09cb12eb45673887668b3cb3c",
+      "equal": true
+    },
+    {
+      "key": "issue7620-d-rowbreak-splits-at-row-boundary",
+      "page": 2,
+      "reference_sha256": "daea906d92820c1be53bd1c7ed67f6dabef8a76ced3ed1fa15eb0369ecfee492",
+      "current_sha256": "daea906d92820c1be53bd1c7ed67f6dabef8a76ced3ed1fa15eb0369ecfee492",
+      "equal": true
+    },
+    {
+      "key": "issue7621-control-float",
+      "page": 1,
+      "reference_sha256": "98af5bd9fedd6c26b210090d0d7dabef38a820d166791ee3be9a978642411d48",
+      "current_sha256": "98af5bd9fedd6c26b210090d0d7dabef38a820d166791ee3be9a978642411d48",
+      "equal": true
+    }
+  ]
+}

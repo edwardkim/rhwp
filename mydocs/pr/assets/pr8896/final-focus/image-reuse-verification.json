@@ -1,0 +1,105 @@
+{
+  "compiled_source": "ae5c72c710ac116132d2b9dcf62078bbc884beff",
+  "initial_source": "a22e3fbb8ff117086443c0618287c34f9c7dc5ef",
+  "pages": 12,
+  "all_png_equal": true,
+  "overlay_policy": "Derived review/overlay assets reused only after exact final PNG equality, same reference PDF and rasterizer. Initial run manifests retain their actual source.",
+  "rows": [
+    {
+      "backend": "native",
+      "key": "issue8693-table-end-row-clamp",
+      "page": 1,
+      "final_png_sha256": "93c95537185ff83d1bac720cc836539af2fccf1572258735ed4018a9bfd2d448",
+      "initial_png_sha256": "93c95537185ff83d1bac720cc836539af2fccf1572258735ed4018a9bfd2d448",
+      "equal": true
+    },
+    {
+      "backend": "native",
+      "key": "issue8693-two-tables-host-line-fits",
+      "page": 1,
+      "final_png_sha256": "b2842614dea7b89d1ccd036d76365e31edbad8f63543f0199f205e6636b8e850",
+      "initial_png_sha256": "b2842614dea7b89d1ccd036d76365e31edbad8f63543f0199f205e6636b8e850",
+      "equal": true
+    },
+    {
+      "backend": "native",
+      "key": "issue8693-two-tables-host-line-fits",
+      "page": 2,
+      "final_png_sha256": "cd7472a433c43be460715ac377323172067534ae71e67b74bf2a0c2fa4e6e237",
+      "initial_png_sha256": "cd7472a433c43be460715ac377323172067534ae71e67b74bf2a0c2fa4e6e237",
+      "equal": true
+    },
+    {
+      "backend": "native",
+      "key": "issue8693-two-tables-host-line-no-room",
+      "page": 1,
+      "final_png_sha256": "cf16865585dfea76d789ec3f93fcbd925803a1c3674d1af602e141f19776c403",
+      "initial_png_sha256": "cf16865585dfea76d789ec3f93fcbd925803a1c3674d1af602e141f19776c403",
+      "equal": true
+    },
+    {
+      "backend": "native",
+      "key": "issue8693-two-tables-host-line-no-room",
+      "page": 3,
+      "final_png_sha256": "b0e152794b097b46e03a2db76356bb9c14ac2e3fe864380d480ff0cfa743a0b1",
+      "initial_png_sha256": "b0e152794b097b46e03a2db76356bb9c14ac2e3fe864380d480ff0cfa743a0b1",
+      "equal": true
+    },
+    {
+      "backend": "native",
+      "key": "issue8693-two-tables-host-line-no-room",
+      "page": 2,
+      "final_png_sha256": "cd7472a433c43be460715ac377323172067534ae71e67b74bf2a0c2fa4e6e237",
+      "initial_png_sha256": "cd7472a433c43be460715ac377323172067534ae71e67b74bf2a0c2fa4e6e237",
+      "equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "issue8693-table-end-row-clamp",
+      "page": 1,
+      "final_png_sha256": "a2b5fa7c45f7309beed878cbeaa79db11e4b1674109693300eb1f0cf0e62f59d",
+      "initial_png_sha256": "a2b5fa7c45f7309beed878cbeaa79db11e4b1674109693300eb1f0cf0e62f59d",
+      "equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "issue8693-two-tables-host-line-fits",
+      "page": 1,
+      "final_png_sha256": "8feef55b6fa42d87d226736b73d10e0af61590ded5cac0736d443ca51c3420e6",
+      "initial_png_sha256": "8feef55b6fa42d87d226736b73d10e0af61590ded5cac0736d443ca51c3420e6",
+      "equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "issue8693-two-tables-host-line-fits",
+      "page": 2,
+      "final_png_sha256": "8729c36188bfd68a008c65140e62720cc546bb818245bd3c4b3550d9b5964da9",
+      "initial_png_sha256": "8729c36188bfd68a008c65140e62720cc546bb818245bd3c4b3550d9b5964da9",
+      "equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "issue8693-two-tables-host-line-no-room",
+      "page": 1,
+      "final_png_sha256": "f365d8957ea5eeba8d4b0da21cb2bc3c40edc8b7f2c6151e13379a30657817a2",
+      "initial_png_sha256": "f365d8957ea5eeba8d4b0da21cb2bc3c40edc8b7f2c6151e13379a30657817a2",
+      "equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "issue8693-two-tables-host-line-no-room",
+      "page": 3,
+      "final_png_sha256": "6fb2edcbc902de425f2df69d5b3f88bb5a0c58b8428abbca2caabc57521c8302",
+      "initial_png_sha256": "6fb2edcbc902de425f2df69d5b3f88bb5a0c58b8428abbca2caabc57521c8302",
+      "equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "issue8693-two-tables-host-line-no-room",
+      "page": 2,
+      "final_png_sha256": "8729c36188bfd68a008c65140e62720cc546bb818245bd3c4b3550d9b5964da9",
+      "initial_png_sha256": "8729c36188bfd68a008c65140e62720cc546bb818245bd3c4b3550d9b5964da9",
+      "equal": true
+    }
+  ]
+}

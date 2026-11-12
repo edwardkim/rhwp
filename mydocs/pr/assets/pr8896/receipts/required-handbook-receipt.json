@@ -1,0 +1,18 @@
+{
+  "source": "a22e3fbb8ff117086443c0618287c34f9c7dc5ef",
+  "command": [
+    "/home/edward/mygithub/rhwp/venv/bin/python",
+    "scripts/visual_sweep.py",
+    "--handbook-gate",
+    "--out",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8896/handbook-gate",
+    "--rhwp-bin",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8896/producers/rhwp-head",
+    "--font-path",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8896/handbook-fonts",
+    "--page-workers",
+    "4"
+  ],
+  "returncode": 0,
+  "seconds": 401.09
+}

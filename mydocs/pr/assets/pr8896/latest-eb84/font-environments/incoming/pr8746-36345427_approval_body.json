@@ -1,0 +1,13 @@
+{
+  "documentSubstitutions": [],
+  "id": "native-webfont-e978e8410089baea9f729a01",
+  "preserveSourceMetrics": true,
+  "substitutions": {
+    "HY견고딕": "NotoSansKRThin-Bold",
+    "HY견명조": "NotoSerifKRExtraLight-Bold",
+    "HY신명조": "NotoSerifKRExtraLight-Regular",
+    "HY중고딕": "NotoSansKR-Regular",
+    "굴림체": "D2Coding",
+    "한컴바탕": "HCRBatang"
+  }
+}

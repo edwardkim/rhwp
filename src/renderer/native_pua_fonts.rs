@@ -16,7 +16,7 @@ pub fn is_book_bracket(character: char) -> bool {
 }
 /// 실제 공급한 같은 SFNT의 원 PUA 표시와 전진을 보존할 기호다.
 /// 이 기호는 Unicode 대체와 폭·윤곽이 달라 실제 공급한 원 glyph가 필요하다.
-pub const SUPPORTED_SYMBOLS: [char; 10] = [
+pub const SUPPORTED_SYMBOLS: [char; 11] = [
     '\u{F0854}',
     '\u{F0855}',
     '\u{F02FC}',
@@ -27,6 +27,10 @@ pub const SUPPORTED_SYMBOLS: [char; 10] = [
     '\u{F03A8}',
     '\u{F0848}',
     '\u{F080F}',
+    // 기존 기호의 공급자 탐색 순서를 보존하고 새 기호를 마지막에 조회한다.
+    // 독립 한컴 Print의 작은 삼각형은 공급된 Haansoft Batang의 원 PUA다.
+    // 원 프로그램이 없으면 기존 U+25B8 표시 대체를 그대로 사용한다.
+    '\u{F02FB}',
 ];
 
 pub fn is_supported_symbol(character: char) -> bool {

@@ -1,0 +1,18 @@
+{
+  "source": "4c876654d86d071d342fc78706c51cfff6ddbde4",
+  "command": [
+    "scripts/wasm-pack-locked.sh",
+    "--target",
+    "web",
+    "--out-dir",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8896/producers/pkg-base"
+  ],
+  "returncode": 0,
+  "seconds": 868.27,
+  "optimized": true,
+  "codegen_units": 16,
+  "artifacts": {
+    "rhwp.js": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+    "rhwp_bg.wasm": "cb36784306e8ca84367a64939b9ec5be36d6aea2732ab4343bc55f63c2309747"
+  }
+}

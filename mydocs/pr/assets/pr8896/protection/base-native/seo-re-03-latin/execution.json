@@ -1,0 +1,43 @@
+{
+  "key": "seo-re-03-latin",
+  "backend": "native",
+  "producer": "base",
+  "scope": "protected",
+  "source": "4c876654d86d071d342fc78706c51cfff6ddbde4",
+  "producer_sha256": "0df8a7d3bd2d18f994ad03f048d2f3f9b9d75d8cb86a03d92141599af32a22d8",
+  "command": [
+    "/home/edward/mygithub/rhwp/venv/bin/python",
+    "scripts/visual_sweep.py",
+    "--file-target",
+    "seo-re-03-latin",
+    "samples/re-03-latin-only-hancom.hwp",
+    "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+    "--out",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/native/final-base-protected/seo-re-03-latin-run",
+    "--rhwp-bin",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8896/producers/rhwp-base",
+    "--dpi",
+    "96",
+    "--compat",
+    "2022",
+    "--page-workers",
+    "4",
+    "--silhouette-only",
+    "--font-path",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/seo-re-03-latin/00-hwp",
+    "--font-path",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/seo-re-03-latin/01-windows",
+    "--font-path",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/seo-re-03-latin/02-ttfs"
+  ],
+  "returncode": 0,
+  "seconds": 2.56,
+  "output": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/native/final-base-protected/seo-re-03-latin-run/seo-re-03-latin",
+  "state": "complete",
+  "pages": [
+    1
+  ],
+  "missing": [],
+  "minimum": 100.0,
+  "baseline_declines": []
+}

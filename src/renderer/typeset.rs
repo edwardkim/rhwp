@@ -8091,6 +8091,7 @@ mod tests {
             source_cellbreak_row_end: None,
             next_para_stored_top: None,
             relax_terminal_table_footnote_fit: false,
+            host_line_trails_table: false,
         };
         let flow_layout =
             PageLayoutInfo::from_page_def(&a4_page_def(), &ColumnDef::default(), DEFAULT_DPI);

@@ -1,0 +1,611 @@
+{
+  "key": "pr8833-36341965-float-band-gap-reduced",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2
+  ],
+  "completed_pages": [
+    1,
+    2
+  ],
+  "missing_pages": [],
+  "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/visual/wasm/final-head-incoming/pr8833-36341965-float-band-gap-reduced-run/pr8833-36341965-float-band-gap-reduced/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/visual/wasm/final-head-incoming/pr8833-36341965-float-band-gap-reduced-run/pr8833-36341965-float-band-gap-reduced/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "0c33d8c7f39d34e50da1ea87e26b7e194d1b0b4678f25b22d95e24f295b61aff",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/visual/wasm/final-head-incoming/pr8833-36341965-float-band-gap-reduced-run/pr8833-36341965-float-band-gap-reduced/pdf_png/pdf-001.png",
+      "pdf_sha256": "93f1ebe5430d57564f97c8b4e7a80e463ccff2daea92b6309a6a6107d5bd7dbd"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/visual/wasm/final-head-incoming/pr8833-36341965-float-band-gap-reduced-run/pr8833-36341965-float-band-gap-reduced/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "b4d142af84e7ea62eddbe4579985b0a7e7ee8340514af4f7632162689edfe393",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/visual/wasm/final-head-incoming/pr8833-36341965-float-band-gap-reduced-run/pr8833-36341965-float-band-gap-reduced/pdf_png/pdf-002.png",
+      "pdf_sha256": "0f0062da0cad473c22aec37a8384f42dfde4503edf178b1bc9603ececa82a930"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 93.79102,
+      "silhouette_raw_unmatched_pixels": 6973,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 112305,
+      "tolerant_content_match_percent": 93.79102
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.81732,
+      "silhouette_raw_unmatched_pixels": 241,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 131922,
+      "tolerant_content_match_percent": 99.81732
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 2,
+      "pdf": 2
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue8808/36341965-float-band-gap-reduced.hwpx",
+      "sha256": "18ea6268e9022072aa79f16eb6f94afc4fbd6f65ba73103feaa51dca9df96e1e"
+    },
+    "pdf": {
+      "path": "pdf/issue8808/36341965-float-band-gap-reduced-2020.pdf",
+      "sha256": "681ba666bfd3c0a8714f0ab7a7eb7f84fe741cc0f3f07ea6e3615726109d4370"
+    },
+    "git_head": "68e8190d334fccc5a2846dcfead4a7c60330774a",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/producers/rhwp-head",
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/producers/rhwp-head",
+      "sha256": "961cb8f2e09dade36dbad4a35d102922dd1949a36ccd95ad4cc45992b2eb837f"
+    },
+    "raster_backend": "wasm-canvas2d",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2022",
+    "font_environment": {
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/incoming-environments/pr8833-36341965-float-band-gap-reduced.json",
+      "sha256": "645a7dda03a29fc387db1ce03f7e352f9f70e9d22e26ea924b9f027ce4eb5be6"
+    },
+    "wasm": {
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/producers/pkg-head/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/producers/pkg-head/rhwp_bg.wasm",
+          "sha256": "69c44690932008ac04546bff02c74757557f003acec94dcd415ba0063e52522b"
+        }
+      ],
+      "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+      "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+          "sha256": "67b4003e2be99ea44a7c957e4b35acde1b5e6e82a54fe195c5598c3c617bc2e3"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/ttfs/opensource/NotoSansKR-Regular.ttf",
+          "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+          "sha256": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/ttfs/opensource/RHWPOldHangul-Regular.otf",
+          "sha256": "0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+          "sha256": "7e3aee5ee1d8f44cc37d35dbd07e5f66414fee5ce552ebda6b4347643d9d0b78"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+          "sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+          "sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/native.ttf",
+          "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/native.ttf",
+          "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+          "sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/native.ttf",
+          "sha256": "68e21f4ed0189ce481d4a18fdf654f410d6e94d6e5b4936f0b20874e9e5b97a6"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941/native.ttf",
+          "sha256": "d88ec0ddb32437f9df01fcd6faafed8521e1c11d27ef174d1f4c2bd39ae457d7"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/2e8500e2fca3501397620a8d3459bf927502989a2e1f5967d38c3f4e97c965b1/native.ttf",
+          "sha256": "9343be068978dd58b2b0fe76f56f5aa9f6d4bd30e5cbb887af2cb9273ebb6f4c"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/0c6a288aa0c12081dccde769c312f71f290b353243747dd24fb8c57f94f01d72/native.ttf",
+          "sha256": "7ec77182f7d4ea7811554e2f9b077e4710c070b206d00b79be3c65b1b0d1add7"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/4d3fa8ed66fedcb1787f200bd75637b816b09057fc06da0aa783e3b305a726d8/native.ttf",
+          "sha256": "16691c74f7152efc5a7c00a0331217bb4088ccd8b74be86b9ba99b26231ccc02"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/fad853f7f47c6c8b103171e7193fa095708cdcd70850a71d93aa5379e8a61d63/native.ttf",
+          "sha256": "7a7c63f2c8394dd85870dd22734a2fb479ced783b913141445adf0c8e9b99ebc"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/e0acaab460a92f62097245b640bbcbaf814d7aeabaaf1953c37afdaf0ee529a3/native.ttf",
+          "sha256": "bbacd057232e6835f0b978f4cc32b8818496a4d9bd28554e02c5e83aa74c3e2d"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/0e8be88251b2c13c3f1738f52b0d1e4f4951a499a9c04e3b5b02b23ef2558ad3/native.ttf",
+          "sha256": "01a1da450c043ce16e209be412875aea77a7faadde1a95da44910ed070a4bd6b"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/6cd9feb87ca3665549263eb7ba587c71acc8402c7f83b7db88880ebf371e9bdf/native.ttf",
+          "sha256": "efe3f12a2f98d98e3a272adade1ea51afe3c2b8d14a5fda825c90b2edf5e68d7"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/69b5350e9c4d11b8885da683c1dc6010d38d033f371a3d07fac970ee1e382771/native.ttf",
+          "sha256": "c7fc55861ec506f3dcde1e8d773e9313bd775968c26a18b040cf3c3d3d3aaef3"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/ca4da082cd970f0c8abaa79f213ddcbc475f7b5afabcb81b385998f9ebfbb53f/source.ttf",
+          "sha256": "ca4da082cd970f0c8abaa79f213ddcbc475f7b5afabcb81b385998f9ebfbb53f"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/67431ee9cf055c785b9c155c6d867ac8a23078a41e654612503d7dd354a0b8c5/native.ttf",
+          "sha256": "c0ab01fcb86132d766339d1c399db54192f662f79a736d0629f80991802fe3a4"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/af5632f8ebdccaab99601183265d9c11ce6307017783c1bac14972c7b8af4f12/native.ttf",
+          "sha256": "1a46c36f1d6da2dc4eb267d2205b1ebf4b0ef69fdab3bf3dd85c64b66674a385"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/2354024d603f6639c5d5e166d4a2af5fce52e21303370018e5cdbd729bc32f4b/native.ttf",
+          "sha256": "be5888a01733d841c5af0a7ae89c3ff6259950f92b2c9158e07ed511ae660e4b"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/697dd52dcdf4d294924fc0dd58ed82ec568bfa64f1a785ff5e3a35b67f5313fd/native.ttf",
+          "sha256": "060a9490f985145057ccc502712a4fa6930b2ba59b12b778ecdc39cc6c136fa6"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/df75e9a52bd115ffd2229f5ed8d729fba9c225231a71de450f8dafb859f07023/native.ttf",
+          "sha256": "aab5d21bff06344f1ad1ed8e4ea8335ef70290d23385032565c2173ee553161b"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/61a989ab282d34c898ef538911c07a4956370c624e10a082d44ef9cb32af93fe/native.otf",
+          "sha256": "e06951f6280ba3e19fdd6a9f90b41ed3d1547b28c617e5903bfb6a7378f1a54b"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/aca3dbb68fa1f09e9ea34753596a8dc7aec29cd15b9559d4ed1ece442fbc8542/native.ttf",
+          "sha256": "6507506fd13388ebabd254cc6fd71fbe1cfaf009e4fdc5d4628437fc4f2ed939"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/a04fc101076c96063dc2a6c9a2b767232032c1b88de15a7dbf1b5f35a3c6c256/source.otf",
+          "sha256": "a04fc101076c96063dc2a6c9a2b767232032c1b88de15a7dbf1b5f35a3c6c256"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b2b25ce9c9179e0a4c867bd2610e1db5595965345aa1cdb857964ab802c4ee3e/native.ttf",
+          "sha256": "55ded6d110b0c2851fe9b42328d95257f8c82a0f978f369dec57da89fc3e5348"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/52d27bf4ee205020a4aa9eb19ef4835e4aa04a94f7742b13e69e5c8b9a74072a/native.ttf",
+          "sha256": "4bb6afd108a286711b26feed365dc6da21f7d9137e7a521d90c95f5d846aeec5"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/kopub/KoPub Batang Bold.ttf",
+          "sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/kopub/KoPub Batang Light.ttf",
+          "sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/kopub/KoPub Batang Medium.ttf",
+          "sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/kopub/KoPub Dotum Bold.ttf",
+          "sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/kopub/KoPub Dotum Light.ttf",
+          "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/kopub/KoPub Dotum Medium.ttf",
+          "sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/ARIALN.TTF",
+          "sha256": "cad552553cf2a75afca01955751aaa115e2a64fd6c6eea42e1fbd236630b7e0a"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/ARIALNB.TTF",
+          "sha256": "6c4a4b643461def5411e0217b74a625dcf2fb681252ef5da1db0af4eae80aa7e"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/ARIALNBI.TTF",
+          "sha256": "161b859efd20c69ddebb23012a49f4f2030d56a0c1b9bcfd4df753217ce3e358"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/ARIALNI.TTF",
+          "sha256": "faf73aa7ce40b77ad19c09507a2263fe3f3ce9fa5642e8a1cd54fb3c9f52d599"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/ARIALUNI.TTF",
+          "sha256": "fe50313c37c2eca0bbf8cc3565b5ef32314753889afbe44cb275d65c3b58f0df"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSans-Bold.ttf",
+          "sha256": "e6476c1b80502924294eed40894c5b18e06c181444ca953e5334262df9c27724"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSans-BoldOblique.ttf",
+          "sha256": "eb436dca0c2594b73d8b603b892e374fdfd8d885d25ffb4f18df4c4c0b49e50f"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSans-ExtraLight.ttf",
+          "sha256": "6cb0746a1f68d176bebe83752cee35ebdf726cb1a1e88a01fc038ddf76de9ea8"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSans-Oblique.ttf",
+          "sha256": "4af75fa16ee6d3ad43e1ecec41862c24954af26a55c6bb1ebb27bd486a50f5f4"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSans.ttf",
+          "sha256": "7da195a74c55bef988d0d48f9508bd5d849425c1770dba5d7bfc6ce9ed848954"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansCondensed-Bold.ttf",
+          "sha256": "38098d0b8edd8430a0f53fb2831b5d36037563a998a620d3c87a4d7591766d20"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansCondensed-BoldOblique.ttf",
+          "sha256": "43f9fd6b77edf174553cf94857c77c63de7ddb0c6751fd1390e73223518e128f"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansCondensed-Oblique.ttf",
+          "sha256": "dc3526fa25fae4278c4e34b47d4c049b6923421c70921032a0db11bfe9c1b0cf"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansCondensed.ttf",
+          "sha256": "8550cd5ca1acb65a8fc7877c46939cd0b4d909f8e7bc1e24716873d918c5e549"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansMono-Bold.ttf",
+          "sha256": "bce60f1b4421acd9ea51ba6623d7024ecbe6817a953e3654df62a5e6bdf8f769"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansMono-BoldOblique.ttf",
+          "sha256": "91713a71d550bba22c2a6b2bb2a9ad8f9a159e12e4e9f0a5b2677998ba21213e"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansMono-Oblique.ttf",
+          "sha256": "742097840c541870e8d6dc5c9b37bb1ceeea6c0dedd1d475faf903ef9df734b0"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansMono.ttf",
+          "sha256": "b4a6c3e4faab8773f4ff761d56451646409f29abedd68f05d38c2df667d3c582"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerif-Bold.ttf",
+          "sha256": "c47b5527bcdc8dcf9ea8c77054454c5a884beaca2f44851a2a823ee639cbf07f"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerif-BoldItalic.ttf",
+          "sha256": "8d3dd3d31350309042ed226af82b34539bd773518e6107cb352712853ba80308"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerif-Italic.ttf",
+          "sha256": "2e39b1d50f90b933b00c7bb54a96afd3f86419b3d717c7cf202e36f2d4973e47"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerif.ttf",
+          "sha256": "42d1edeb7952f31b1f96d767ed7030b08a39e0c372b0071641518864e2bffb51"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerifCondensed-Bold.ttf",
+          "sha256": "e09aa87c60c3e8de7f4e6c7bfeec8fd9489b6cd975e3033259bca3d6009aed18"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerifCondensed-BoldItalic.ttf",
+          "sha256": "4cfc5a3700c72413f51c4bb54f09617401a0a63eccb9ff577713e20afa047fa5"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerifCondensed-Italic.ttf",
+          "sha256": "dfe5bf5336d62ca71de419cccf7fd18ab19a57245dc392891ee76347129807e1"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerifCondensed.ttf",
+          "sha256": "685dcdfb8daf32a453d3426a4eb8d881c72146ddd999229354fb757511357995"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/ENBASKVL.TTF",
+          "sha256": "177de2eea49950c9b7ed74843c032be1a80c7a5a3dd4f07ca953e561ea5df1f1"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYBDAL.TTF",
+          "sha256": "e418f439658680da75e5c9ed2a665123925ba801315f259ff0684a9e60bb0c84"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYBDAM.TTF",
+          "sha256": "555367f75d9ad77ade99efacac6d0efcc26cab1f2ee6366f4180f78ebfbd56fd"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYBSRB.TTF",
+          "sha256": "74f2ae9ab8e0ad36175344a759721cd616a7623613853973a0adfe99ebe79862"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYCYSM.TTF",
+          "sha256": "769537a52d27d648e90a30029deab686f604dfc767382cc8c74ae42cb44df5aa"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYDNKB.TTF",
+          "sha256": "da24992e369b46fee38c02520b6901f49af16107c6a35ee3d34cd89154f60e31"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYDNKM.TTF",
+          "sha256": "7ce310f7d24b95844a0188943cdb4dac95bc496e96c876d3ca731e72c578dd48"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYGPRM.TTF",
+          "sha256": "cf8614cb09e038ff24c0edb2ba2cfa6b8911c7c913cfe590e7e56014e7e63e5a"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYGSRB.TTF",
+          "sha256": "b41cef3386d034040704b1a143ef13a63c5b9f1ec4222a7579c1796ea05517f6"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYGTRE.TTF",
+          "sha256": "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYHWPEQ.TTF",
+          "sha256": "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYKANB.TTF",
+          "sha256": "cfd21db0edd632dcff6e6d9179f0266e2febb63586947fffa9dcffa34833e85e"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYKANM.TTF",
+          "sha256": "896a7b5e562f5d5ee0694ec547b3d1a10587b882a94850fb39e62d5fc5eb8c6d"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYMJRE.TTF",
+          "sha256": "a101a7a219ffd57273374a423e734adfba1529e5eaf2e9a7476f7150708ea506"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYMPRL.TTF",
+          "sha256": "6bd4066d8dd5ad7296a5d5e826032872bdf4b5343dbbf20073dec67d6b7d4f28"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYNAMB.TTF",
+          "sha256": "728450078ea1263e88b5f815777ba526d081be603975c21171aafeb323a39b5b"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYNAML.TTF",
+          "sha256": "426444500b76ef980f0a933bde22769b50c6b6371f4118995b704c6430a9428a"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYNAMM.TTF",
+          "sha256": "6448359d4a640184a0224b4a403ae11fd25e7f770c70f5ff5ef9ceca36d494f5"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYPORM.TTF",
+          "sha256": "c59429a54a1aa0bcb71c2b35e3a1a8990752d3993dbf905018a5b0b91cf7cd2f"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYSANB.TTF",
+          "sha256": "5c4ded4685db7f24523391253656f128a42b437aaf6660a3737e54e7aa30a288"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYSNRL.TTF",
+          "sha256": "c676038d3cf13121dd974c2e7ee99c0c81eea04a4a493bc3dc60c9f32b791dc6"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYSUPB.TTF",
+          "sha256": "3ac03d75b2e752546044990917fab57b415780ca119751e8bfa0136765772071"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYSUPM.TTF",
+          "sha256": "e36a1f1b97db4c2f71d1d177d573702f2e8cb19a52aa929fc5501a7f79fa70b7"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYTBRB.TTF",
+          "sha256": "4f7650a93ef862a2ee69d6fdc5a0e9ce94a47ab683cd810961e18cab27ce61a2"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYWULB.TTF",
+          "sha256": "c48939f1dac8d1946d64d2063adf6e47c6dcecfb978548d52d9e47d1f70ff61a"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYWULM.TTF",
+          "sha256": "b6e5c595d3b8986aa31830c228cdf30abefcb182bcfe1c016f464fd8395679b0"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/arial.ttf",
+          "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/arialbd.ttf",
+          "sha256": "3680a1bbffab914f36b27d5fd97b193de5bccfab882c41b41b5f8f99457b4820"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/arialbi.ttf",
+          "sha256": "77a0b63c5f73eb85923f10359e68b8fc768487ae88ad902a1ea21276954e205b"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/ariali.ttf",
+          "sha256": "c30c71d614e143c0d4e42aaf04d9a1f50f90b365a2654eb3f2c6598e5655af08"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/batang.ttc",
+          "sha256": "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/cour.ttf",
+          "sha256": "6aab1f79264ccda1e7129dba62dbe3750b10eaa27408a327dadb808724e62c84"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/courbd.ttf",
+          "sha256": "e376f24c9f27eb7370b25aa366d78da731834a1aea651858801c9a14e8906943"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/courbi.ttf",
+          "sha256": "ac3b362cf998eb33475655e12ab7cb2f6a35d1f2eff6f76af00ebb6f81c53ee7"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/couri.ttf",
+          "sha256": "546406ddbb3e3f6b876a5e8a5dee62ac090d1448662e98d8844b22393813dd13"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/gulim.ttc",
+          "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/malgun.ttf",
+          "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/malgunbd.ttf",
+          "sha256": "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/malgunsl.ttf",
+          "sha256": "c0ca810a242c4482594182db40f0f9d35a3d51bb2eeac750e6e867b2110eb00e"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/segoeui.ttf",
+          "sha256": "8134dbcd09e7b123c9a7f229d49cffbcb01352cc72ea5e1076b65d0dca9f73cd"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/segoeuib.ttf",
+          "sha256": "aeb9e4a6ec5cc59f4d72df8189032d7dbb28f45161cf1552174818b5465dac4e"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/segoeuii.ttf",
+          "sha256": "be525b9a6d307d73c23908cd269be9be754210a9d93c0c1eaaa126d2a174290a"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/segoeuil.ttf",
+          "sha256": "866557576dfc772395301b581eccef4c0daf1dbb75f9667f26784b260bce7da1"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/segoeuisl.ttf",
+          "sha256": "3432de66f335c7e3058154f7cbb13ef051195653a544b49b1992267e558b33ef"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/segoeuiz.ttf",
+          "sha256": "c886161fa6d102090ff992519b6fdc73057a0e838e9d40b27e187e9e61300a92"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/seguisym.ttf",
+          "sha256": "a4a35dcc62cd30e1a6c97b695ecef83e59d2b149e3af834f6a49f11851d56b37"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/symbol.ttf",
+          "sha256": "bbf1192965e5266fbf23370416337d2861fc1e8bd349def93f2994ba67382fc3"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/times.ttf",
+          "sha256": "fbb57cdb0079137adc0e478913ca134dfee02aa2ef443738ec5e839bf97a1f7f"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/timesbd.ttf",
+          "sha256": "e94ff9111656f17bd81e9f822f1e234edcd370bcbacfdebf998b8938f525ac77"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/timesbi.ttf",
+          "sha256": "8d2c8d8d25d9fc529d08558c42effa771617914a455603881e212a26e2f2ddcd"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/timesi.ttf",
+          "sha256": "c2c134968be4259aaa78845d3aca5e91c4a0bd10d98e4d2e48ac3c12f3c63b89"
+        }
+      ]
+    }
+  },
+  "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/visual/wasm/final-head-incoming/pr8833-36341965-float-band-gap-reduced-run/pr8833-36341965-float-band-gap-reduced/silhouette-checkpoint.json"
+}

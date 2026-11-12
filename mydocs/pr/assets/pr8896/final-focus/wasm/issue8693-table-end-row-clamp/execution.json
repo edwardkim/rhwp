@@ -1,0 +1,41 @@
+{
+  "key": "issue8693-table-end-row-clamp",
+  "backend": "wasm",
+  "producer": "head",
+  "scope": "focus",
+  "source": "ae5c72c710ac116132d2b9dcf62078bbc884beff",
+  "producer_sha256": "fa470ee68c748af38a6adbbefcfcbde0cab128c90fa7581214b03fd0a4d62fee",
+  "command": [
+    "/home/edward/mygithub/rhwp/venv/bin/python",
+    "scripts/visual_sweep.py",
+    "--file-target",
+    "issue8693-table-end-row-clamp",
+    "samples/issue8693/table-end-row-clamp.hwp",
+    "pdf/issue8693/table-end-row-clamp-webhwp-print.pdf",
+    "--out",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/wasm/final-head-focus/issue8693-table-end-row-clamp-run",
+    "--rhwp-bin",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8896/producers/rhwp-restored-head",
+    "--dpi",
+    "96",
+    "--compat",
+    "2022",
+    "--page-workers",
+    "4",
+    "--silhouette-only",
+    "--font-path",
+    "ttfs/opensource",
+    "--wasm-pkg",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8896/producers/pkg-restored-head"
+  ],
+  "returncode": 0,
+  "seconds": 3.99,
+  "output": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/wasm/final-head-focus/issue8693-table-end-row-clamp-run/issue8693-table-end-row-clamp",
+  "state": "complete",
+  "pages": [
+    1
+  ],
+  "missing": [],
+  "minimum": 100.0,
+  "baseline_declines": []
+}

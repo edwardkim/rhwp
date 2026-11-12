@@ -1,0 +1,1337 @@
+{
+  "key": "yeongwol",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "missing_pages": [],
+  "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/visual/native/final-head-protected/yeongwol-run/yeongwol/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/visual/native/final-head-protected/yeongwol-run/yeongwol/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "de9993cc44daf12cdef4fa6dd3d459e95f797a28a68a1687791ca5a085ca80d6",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/visual/native/final-head-protected/yeongwol-run/yeongwol/pdf_png/pdf-001.png",
+      "pdf_sha256": "63ed5a39affc82a83a224ed2bd40215a7fa191b5f9a78658d1434ea95040e96c"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/visual/native/final-head-protected/yeongwol-run/yeongwol/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "1b0119113bd2b5acabc04b7d25aab90454d8264bf53f15723b1d2bb87ccb4dc8",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/visual/native/final-head-protected/yeongwol-run/yeongwol/pdf_png/pdf-002.png",
+      "pdf_sha256": "37649f27c4e0789da12a7122b224c4a78a4eb9afb5deb5d1ad706cea51c4bf99"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/visual/native/final-head-protected/yeongwol-run/yeongwol/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "a0de1bc378a6619f5781d04c4c6e0508c6f3dda6c5948d36d9b74c2dce624dc7",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/visual/native/final-head-protected/yeongwol-run/yeongwol/pdf_png/pdf-003.png",
+      "pdf_sha256": "4b81fcc56aac08b10beaeab46738e797d0220dee32d7053bc726163502865d92"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/visual/native/final-head-protected/yeongwol-run/yeongwol/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "f96001f38a1aa9a458cc0037a995b560f4a868f6cbbeb873a4cd6f42fbfa5641",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/visual/native/final-head-protected/yeongwol-run/yeongwol/pdf_png/pdf-004.png",
+      "pdf_sha256": "7524d9f2fabb1683e457930ed57b6a63118f0f174cdb3a1c2ffd0109f4385f00"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99461,
+      "silhouette_raw_unmatched_pixels": 4,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 74252,
+      "tolerant_content_match_percent": 99.99461
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99067,
+      "silhouette_raw_unmatched_pixels": 4,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 42869,
+      "tolerant_content_match_percent": 99.99067
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.98663,
+      "silhouette_raw_unmatched_pixels": 10,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 74810,
+      "tolerant_content_match_percent": 99.98663
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99505,
+      "silhouette_raw_unmatched_pixels": 2,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 40426,
+      "tolerant_content_match_percent": 99.99505
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue5699/20099369_yeongwol_forms.hwp",
+      "sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09"
+    },
+    "pdf": {
+      "path": "pdf/issue7642-failed-inputs-followup-20261011/20099369_yeongwol_forms-2020.pdf",
+      "sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123"
+    },
+    "git_head": "1749b66d704b3ea0443ae9792ff8a1d65e26a9c1",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/producers/rhwp-head",
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/producers/rhwp-head",
+      "sha256": "961cb8f2e09dade36dbad4a35d102922dd1949a36ccd95ad4cc45992b2eb837f"
+    },
+    "native_webfont_fallback": {
+      "registry_sha256": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
+      "mappings": {
+        "샘물체": "NotoSansKR-Regular",
+        "순명조": "NotoSansKR-Regular",
+        "신명조체": "NotoSansKR-Regular",
+        "엽서체": "NotoSansKR-Regular",
+        "옛체": "NotoSansKR-Regular",
+        "한양해서": "NotoSansKR-Regular",
+        "헤드라인": "NotoSansKR-Regular",
+        "휴먼매직체": "NotoSansKR-Regular",
+        "HY궁서B": "NotoSansKR-Regular",
+        "HY부활L": "NotoSansKR-Regular",
+        "HY얕은샘물M": "NotoSansKR-Regular",
+        "HY엽서L": "NotoSansKR-Regular",
+        "HY울릉도L": "NotoSansKR-Regular",
+        "HY중고딕": "NotoSansKR-Regular",
+        "HY해서M": "NotoSansKR-Regular",
+        "HY해서M확장1": "NotoSansKR-Regular",
+        "HY해서M확장2": "NotoSansKR-Regular",
+        "HY해서M확장3": "NotoSansKR-Regular",
+        "JungGothic Old Hangul": "NotoSansKR-Regular",
+        "MD개성체": "NotoSansKR-Regular",
+        "MD솔체": "NotoSansKR-Regular",
+        "MD아롱체": "NotoSansKR-Regular",
+        "MD아트체": "NotoSansKR-Regular",
+        "MD이솝체": "NotoSansKR-Regular",
+        "SinMyungJo Old Hangul": "NotoSansKR-Regular",
+        "SinMyungJo Symbol": "NotoSansKR-Regular",
+        "신명조확장둘": "NotoSansKR-Regular",
+        "신명조확장셋": "NotoSansKR-Regular",
+        "신명조확장하나": "NotoSansKR-Regular",
+        "약물": "NotoSansKR-Regular",
+        "영문꾸미기(가)": "NotoSansKR-Regular",
+        "영문꾸미기(나)": "NotoSansKR-Regular",
+        "영문꾸미기(다)": "NotoSansKR-Regular",
+        "쪽자": "NotoSansKR-Regular",
+        "화살표": "NotoSansKR-Regular",
+        "Arial Black": "NotoSansKR-Regular",
+        "Book Antiqua": "NotoSansKR-Regular",
+        "Bookman Old Style": "NotoSansKR-Regular",
+        "Century Gothic": "NotoSansKR-Regular",
+        "Comic Sans MS": "NotoSansKR-Regular",
+        "Estrangelo Edessa": "NotoSansKR-Regular",
+        "Euro Batang": "NotoSansKR-Regular",
+        "Euro Dotum": "NotoSansKR-Regular",
+        "Euro Gulim": "NotoSansKR-Regular",
+        "Euro Gungso": "NotoSansKR-Regular",
+        "Franklin Gothic Medium": "NotoSansKR-Regular",
+        "Garamond": "CormorantGaramond-LightItalic",
+        "Gautami": "NotoSansKR-Regular",
+        "Georgia": "NotoSansKR-Regular",
+        "Haettenschweiler": "NotoSansKR-Regular",
+        "H_CIRNUM": "NotoSansKR-Regular",
+        "H_EQSYM1": "NotoSansKR-Regular",
+        "H_EQSYM2": "NotoSansKR-Regular",
+        "H_ESPERANTO": "NotoSansKR-Regular",
+        "H_HEBREW": "NotoSansKR-Regular",
+        "H_KEYBD": "NotoSansKR-Regular",
+        "H_MULTI1": "NotoSansKR-Regular",
+        "H_MULTI2": "NotoSansKR-Regular",
+        "H_PROSYM": "NotoSansKR-Regular",
+        "Impact": "NotoSansKR-Regular",
+        "Kartika": "NotoSansKR-Regular",
+        "Latha": "NotoSansKR-Regular",
+        "Lucida Console": "NotoSansKR-Regular",
+        "Lucida Sans Unicode": "NotoSansKR-Regular",
+        "Mangal": "NotoSansKR-Regular",
+        "Marlett": "NotoSansKR-Regular",
+        "Microsoft Sans Serif": "NotoSansKR-Regular",
+        "MingLiU": "NotoSansKR-Regular",
+        "Monotype Corsiva": "NotoSansKR-Regular",
+        "MS Gothic": "ZenMaruGothic-Light",
+        "MS Outlook": "NotoSansKR-Regular",
+        "MS PGothic": "NotoSansKR-Regular",
+        "MS UI Gothic": "ZenMaruGothic-Light",
+        "MT Extra": "FiraSansExtraCondensed-ThinItalic",
+        "MV Boli": "NotoSansKR-Regular",
+        "NSimSun": "NotoSansKR-Regular",
+        "Palatino Linotype": "NotoSerifKRExtraLight-Regular",
+        "PMingLiU": "NotoSansKR-Regular",
+        "Raavi": "NotoSansKR-Regular",
+        "Shruti": "NotoSansKR-Regular",
+        "SimHei": "NotoSansKR-Regular",
+        "SimSun": "SimSun",
+        "Sylfaen": "NotoSansKR-Regular",
+        "Tahoma": "HCRDotum",
+        "Trebuchet MS": "NotoSansKR-Regular",
+        "Tunga": "NotoSansKR-Regular",
+        "Verdana": "NotoSansKR-Regular",
+        "Vrinda": "NotoSansKR-Regular",
+        "Webdings": "NotoSansKR-Regular",
+        "Wingdings": "NotoSansKR-Regular",
+        "Wingdings 2": "NotoSansKR-Regular",
+        "Wingdings 3": "NotoSansKR-Regular"
+      },
+      "document_glyph_fallbacks": [],
+      "unmapped_sources": [
+        "Arial Black",
+        "Book Antiqua",
+        "Bookman Old Style",
+        "Century Gothic",
+        "Comic Sans MS",
+        "Estrangelo Edessa",
+        "Euro Batang",
+        "Euro Dotum",
+        "Euro Gulim",
+        "Euro Gungso",
+        "Franklin Gothic Medium",
+        "Gautami",
+        "Georgia",
+        "HY궁서B",
+        "HY부활L",
+        "HY얕은샘물M",
+        "HY엽서L",
+        "HY울릉도L",
+        "HY해서M",
+        "HY해서M확장1",
+        "HY해서M확장2",
+        "HY해서M확장3",
+        "H_CIRNUM",
+        "H_EQSYM1",
+        "H_EQSYM2",
+        "H_ESPERANTO",
+        "H_HEBREW",
+        "H_KEYBD",
+        "H_MULTI1",
+        "H_MULTI2",
+        "H_PROSYM",
+        "Haettenschweiler",
+        "Impact",
+        "JungGothic Old Hangul",
+        "Kartika",
+        "Latha",
+        "Lucida Console",
+        "Lucida Sans Unicode",
+        "MD개성체",
+        "MD솔체",
+        "MD아롱체",
+        "MD아트체",
+        "MD이솝체",
+        "MS Outlook",
+        "MS PGothic",
+        "MV Boli",
+        "Mangal",
+        "Marlett",
+        "Microsoft Sans Serif",
+        "MingLiU",
+        "Monotype Corsiva",
+        "NSimSun",
+        "PMingLiU",
+        "Raavi",
+        "Shruti",
+        "SimHei",
+        "SinMyungJo Old Hangul",
+        "SinMyungJo Symbol",
+        "Sylfaen",
+        "Trebuchet MS",
+        "Tunga",
+        "Verdana",
+        "Vrinda",
+        "Webdings",
+        "Wingdings",
+        "Wingdings 2",
+        "Wingdings 3",
+        "샘물체",
+        "순명조",
+        "신명조체",
+        "신명조확장둘",
+        "신명조확장셋",
+        "신명조확장하나",
+        "약물",
+        "엽서체",
+        "영문꾸미기(가)",
+        "영문꾸미기(나)",
+        "영문꾸미기(다)",
+        "옛체",
+        "쪽자",
+        "한양해서",
+        "헤드라인",
+        "화살표",
+        "휴먼매직체"
+      ],
+      "local_document_substitutes": [],
+      "resources": [
+        {
+          "url": "fonts/NotoSansKR-Regular.woff2",
+          "source_sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a",
+          "native_path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+          "native_sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834",
+          "native_face": "NotoSansKR-Regular"
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/npm/@fontsource/cormorant-garamond@5.3.0/files/cormorant-garamond-cyrillic-300-italic.woff",
+          "source_sha256": "e0acaab460a92f62097245b640bbcbaf814d7aeabaaf1953c37afdaf0ee529a3",
+          "native_path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/output/pr-review/native-webfont-cache/programs/e0acaab460a92f62097245b640bbcbaf814d7aeabaaf1953c37afdaf0ee529a3/native.ttf",
+          "native_sha256": "bbacd057232e6835f0b978f4cc32b8818496a4d9bd28554e02c5e83aa74c3e2d",
+          "native_face": "CormorantGaramond-LightItalic"
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/npm/@fontsource/zen-maru-gothic@5.3.0/files/zen-maru-gothic-10-300-normal.woff",
+          "source_sha256": "0e8be88251b2c13c3f1738f52b0d1e4f4951a499a9c04e3b5b02b23ef2558ad3",
+          "native_path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/output/pr-review/native-webfont-cache/programs/0e8be88251b2c13c3f1738f52b0d1e4f4951a499a9c04e3b5b02b23ef2558ad3/native.ttf",
+          "native_sha256": "01a1da450c043ce16e209be412875aea77a7faadde1a95da44910ed070a4bd6b",
+          "native_face": "ZenMaruGothic-Light"
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/npm/@fontsource/fira-sans-extra-condensed@5.3.0/files/fira-sans-extra-condensed-cyrillic-100-italic.woff",
+          "source_sha256": "2ae036c4141064c4cf7e43e0e021a4a6a29a97c02fef7ce93eb5c05f4bcbe262",
+          "native_path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/output/pr-review/native-webfont-cache/programs/2ae036c4141064c4cf7e43e0e021a4a6a29a97c02fef7ce93eb5c05f4bcbe262/native.ttf",
+          "native_sha256": "b94c392fd3d881bf46302614e80adf281c0ae2990638e8b4574444599f54a9c6",
+          "native_face": "FiraSansExtraCondensed-ThinItalic"
+        },
+        {
+          "url": "fonts/NotoSerifKR-Regular.woff2",
+          "source_sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45",
+          "native_path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+          "native_sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18",
+          "native_face": "NotoSerifKRExtraLight-Regular"
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/npm/react-native-font-sim@2.0.1/fonts/SimSun.ttf",
+          "source_sha256": "ca4da082cd970f0c8abaa79f213ddcbc475f7b5afabcb81b385998f9ebfbb53f",
+          "native_path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/output/pr-review/native-webfont-cache/programs/ca4da082cd970f0c8abaa79f213ddcbc475f7b5afabcb81b385998f9ebfbb53f/source.ttf",
+          "native_sha256": "ca4da082cd970f0c8abaa79f213ddcbc475f7b5afabcb81b385998f9ebfbb53f",
+          "native_face": "SimSun"
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff",
+          "source_sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+          "native_path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/native.ttf",
+          "native_sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+          "native_face": "HCRDotum"
+        }
+      ],
+      "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+    },
+    "raster_backend": "native-skia",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2022",
+    "font_environment": {
+      "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/output/pr-review/native-webfont-cache/environments/f60726ea2bd57157888d68b78977e7e263266005eca0dced04852afa65241416.json",
+      "sha256": "f60726ea2bd57157888d68b78977e7e263266005eca0dced04852afa65241416"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENBASKVL.otf",
+          "sha256": "7854c45e096367ba814656d8393ebb5654560cc5f82373779356b4d777332266"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENBERNF.otf",
+          "sha256": "de00ee390df8343e09e4cd81f7a29277416b2db528ffc993d7bd6ee6744fe98f"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENBLBK.otf",
+          "sha256": "36436263353ca6ccd1fc34f87a588e80d400c0098635578dc34ae7cd035d0f2d"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENBODB.otf",
+          "sha256": "7c256e2f5699c85aee855984d5a2d7b0b9350dcc869d86284aa6c321a1b487d7"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENBODBI.otf",
+          "sha256": "fee201f262f7a9cb7162d47417bd499ca5e288bd9ccffcdf31fd5f7f7eb935fd"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENBODBK.otf",
+          "sha256": "3f34bbf6210d2b961a0bf436bd7a0b9b923849962335e505e48a0c5707d85357"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENBODBKI.otf",
+          "sha256": "381209d2ea31bcd6322edf822eb2050aead495a69d9f3d3c8d4f7700924333db"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENBRODWY.otf",
+          "sha256": "561dddbab5237622f87b5377edde61635dcba45b8447733d3c049b08fe5e2c34"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENBRUSH.otf",
+          "sha256": "5313a65caa95bde59302b1c181d17591d4d10eed24db3a6c505758580a6b735e"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENCOBK.otf",
+          "sha256": "6ba0df7b69e1a350ac4a053c38571dbc329d7f962c27e7e28f60f3e4d9374cf4"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENCOBKI.otf",
+          "sha256": "4f33868fd4af7f7286999167b06fd7900b3da63bed01621e27c9845c2acafd22"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENCORN.otf",
+          "sha256": "c380338aa87f488419c607aae0595c08a373cf756e6ef58dfc82f1e4d05f040f"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENCOSCPT.otf",
+          "sha256": "67ae5db3a673435583a7393e30d0c4f517a7ccf78226dc2c8dd9e1e00d1d279a"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENCR10B.otf",
+          "sha256": "7100e1fc4ba3c6401309c0656138c39014e06f7d5b131c4fc54f566b5890b717"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENCR10BI.otf",
+          "sha256": "332423949214edc338b496ad7316098f7cc2b312cfcdbbde2f10ad30c75cfc34"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENCSCH.otf",
+          "sha256": "2321073a31d3597ad09fef0966f26c058414e80dad9d855c7d4dfe5b23789673"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENCSCHB.otf",
+          "sha256": "fb7cf41c69d704b12c6cedbe46bb1c7ef1dba8044f2ba268afd4b06279e564fd"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENCSCHBI.otf",
+          "sha256": "0ef2e790b6180e73951032f4c75a31d67a3a5087eef2959acd2e43d5c4964dbf"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENCSCHI.otf",
+          "sha256": "b5aec6725328f30dd201699a3fbafb0ac590e989f181cc148fb0bcafe3f3195e"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENCUCMBR.otf",
+          "sha256": "64b0415c50c1a61d43f0c3c85406ee38986f154f01a3b6b87d20364dd93ab48f"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENDOMCA.otf",
+          "sha256": "9cddbe21a45d23434296c2ac7e80d7e7fbe782b995a58aacfe70a0e5b93803cd"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENFREEHD.otf",
+          "sha256": "10e97fbbe2dfcab5a929e6550b886d98dcf373b2807cc5b8f5098ca3b07456b3"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENFUTUBK.otf",
+          "sha256": "7fd39fbb355bac953f375712e7891459ab610b590fe6a7ac8e50c777ce08b027"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENGARM.otf",
+          "sha256": "fff7ffadb89adb9d4aa4366301208db2761209c969e6b9445d330272d974f743"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENGARMB.otf",
+          "sha256": "b75339b4bb4ac8eed121485c0841f0396544c00f0abde8288f242c8ef09c65f0"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENGARMBI.otf",
+          "sha256": "88ff74631c78469bf03216a724c31bb08d1052b0682cbb7a07b24770bb795511"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENGARMI.otf",
+          "sha256": "4c3b1ab6a31c011d7e359e8af9b2c8cfbdbf094352b40fa57bfdf3af8ca5cb49"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENGDOS.otf",
+          "sha256": "0b8292682858ab18125bb3107c9d006c27853c704680ec915e6c5562ce1a6510"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENGDOSB.otf",
+          "sha256": "064c4973382c3c47b661db0315d7e75413f6f6262313acbb84e235b88311b1ce"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENGDOSBI.otf",
+          "sha256": "4c4bb958b435cb26a6e48c836ee412db0a2a4a55eece5e70939b6122dafa574c"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENGDOSI.otf",
+          "sha256": "5ce3243debb389cf0e3adab5ecd6e8f6489cccddffb39edb7bda0b7ca04bf2c5"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENGGT.otf",
+          "sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENGMJ.otf",
+          "sha256": "92f7b9f4aab6a183da9adedc051eeadb329db563bfb5a3187e4cc861365e633c"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENGRP.otf",
+          "sha256": "472830cfd4f5edc2d9dc9d0a8e3078839977c4bb0e317b198549ce278075bd26"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENGS.otf",
+          "sha256": "ed503552219ae16332e595c4b2999a3462d55509a4032dfce29c5ee4d0407346"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENGT.otf",
+          "sha256": "66361d81d242e860d279e051149d08996ac4a5eaa2ffd319ca0f2ef99ceffd1b"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENHOBO.otf",
+          "sha256": "05b3ed3907d4aba2f7418554a5629f0417dbca2186a7601f3f4e4b6f31e40539"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENITCNBK.otf",
+          "sha256": "93ac609d39c42bcdf7af651d6ce75afaab1db5843b7aa7e0123cd46eec36bbfd"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENJGT.otf",
+          "sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENLIBRTY.otf",
+          "sha256": "b4cc0b0e79dd2214df6935d3414458f7dbd010e851cb8206bbcb30c3ba0f4d32"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENMJ.otf",
+          "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENMUHB.otf",
+          "sha256": "75326ad01d44000d6177a40f386eacb6465ba2b56e8a1d01c6e852be45d6b8f8"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENOCRA.otf",
+          "sha256": "3f8b53a314e6abe6ce8ebb10b216d5718b4436a65496741fcd4b02edcfe6b7c6"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENOCRB10.otf",
+          "sha256": "b587d43291b4c64d05ac1a70c6e3b617a5f052d293bab3077c4886df489495a9"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENORAT10.otf",
+          "sha256": "783dbecf9093142766a153bb3b6832bd8cc3a57f89e412276d89c54fe2aeed18"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENORBITB.otf",
+          "sha256": "a642b31051d3447f4b0987752bae63386b7078eecdf736b8ee84d9c829338358"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENPENHL.otf",
+          "sha256": "958493898b28d508d1024ae7ba76580946bdd4f0a0566c3f7440285639efa5b0"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENPG.otf",
+          "sha256": "2e44da8d1dc566bbd52790860b7caf7270520b5893241b5bf19c3d5eab92c22c"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENPKAV.otf",
+          "sha256": "00b62a082417acb468bcf0a86515134158db732c7ea9dd60460e7c96ac3e17cf"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENS721LI.otf",
+          "sha256": "6e4c73876d86a87e223370bd179852fd3237b9259505d2637224b9fab5d8e822"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENSMJ.otf",
+          "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENSS.otf",
+          "sha256": "dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENSTEN.otf",
+          "sha256": "718db49c06c87f97f1305e425e6628d4747f07b90aa4832b8825231d926d6d62"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENSW721L.otf",
+          "sha256": "c1a1be0d8d1b0373bc8315d07f13b3601ab87dfa9c164c41d90be0636cf98f23"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENSYS.otf",
+          "sha256": "f11137ccccd429956b6e386edd8b197f1ff17c9f9385c40752cb8ed2c8b30546"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/ENTYPE.otf",
+          "sha256": "c61d514f0077859d3a49f7dfdca9c2600be276baabaf50e0396b79135a0de1bd"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/FLMJ.otf",
+          "sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/FLSMJ.otf",
+          "sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HANB.otf",
+          "sha256": "3e829a3ac0562c5f230e1197e86c35c6eee3ef707c9c1c72201bf2caf2725f09"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HANENGB.otf",
+          "sha256": "0252d4d0e76dbc476ad67ac7c8d1ee95a23db10b1b93016022273e799982b096"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HANENGL.otf",
+          "sha256": "a1766f31f4be82ff1ffe0f1666a4c0a1cdddce573d4b3264405d5bd016bd4871"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HANENGM.otf",
+          "sha256": "699663a0f97c40a11895cb281cdc6eb215646fde8f7574b0b4726168541482b6"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HANL.otf",
+          "sha256": "92fca136138dbdd3c0b826aa55022ec57659653e402535e7f9dd0818e9f86b28"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HANM.otf",
+          "sha256": "0a2d94f2af9a8b0cf605cfd4577db08493f769efec974a3ffc6f760a4dfb2ce8"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HCENPG.otf",
+          "sha256": "3bc946396f666b31c3a45e883f4a2a9885d96d68fc5b8609a154f41fa9f1e907"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HCENSGRP.otf",
+          "sha256": "3f6f0cb23755c77d0eecb0f0d737649bad0b7503f0bc6023c1d2ea43ab084f31"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HCHGSGRP.otf",
+          "sha256": "5f71e081b68a21f8868b1e05748576eb82ffc8b6dab980e4d7132afbdf98c495"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HCSPPG.otf",
+          "sha256": "d91ae05f1af5e8ec1ccdfc5327d7c767d04b9403f47ad5a82495e168e0ddc288"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HCSPSGRP.otf",
+          "sha256": "06a1fe1a92b864263a566a40154f4bf13c5f9edf447a5b822b9078b1d7d322dc"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HGBT.otf",
+          "sha256": "8c2bfc160b79f31814ce26057dd506ae9dec5944a12d9d8bd8d403c7416dce7a"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HGBTJM.otf",
+          "sha256": "831d8e6a848b4590109767cc26cda11640d9e359001782ac7afd20659040a093"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HGCORN.otf",
+          "sha256": "c067bcdb413c573bde52aa0705583d0329d14a9a0e69eece2ac81e834f7393b0"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HGCUCMBR.otf",
+          "sha256": "da4445d0ebd83dc03631b12a0423a9baf6084aea269008d71d3450fba8d0e0a3"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HGDU.otf",
+          "sha256": "f8268c6dce51a539d696810d9d83b4d5f0314dfcb63c86a6a73a0eaeeb197ddd"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HGDUJM.otf",
+          "sha256": "598232b6c8b99f6c806985c4c85f1baf01599b7ae8dd8a5cb1b55d979161ec95"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HGEGPLNT.otf",
+          "sha256": "5a75da50547d1700f457df56b5bea3d0d508dd87593c93590a278fd2f349eb37"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HGGGT.otf",
+          "sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HGGMJ.otf",
+          "sha256": "34e58d7685669addf992dd969f14bfea6eb3f7b7aa2b3ff17bba1275d353768b"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HGGRP.otf",
+          "sha256": "85a60f7efbc9926e8a634e702442edc0245e86874af3efe640f6402ae56e36f7"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HGGS.otf",
+          "sha256": "b654b6944b6c45a5581d218b8aa0e2e4125a7f348b9f8f91803831f29ce37040"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HGGT.otf",
+          "sha256": "562b04b412f52a1f09895fd06a1946496af9c282b3708f254d5a37c741bd3b7d"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HGKDNYBN.otf",
+          "sha256": "a93c32d8a696a0c069bd74f3f42cee8f0f2a6410b6cbd4b77395c44d1603f1e9"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HGMJ.otf",
+          "sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HGOLD.otf",
+          "sha256": "a4de9b02438cdfc309ef5c2e6a062bf30154884182624c1357f36c2f48bb91a6"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HGPEACH.otf",
+          "sha256": "1ea92a217d1d5d0ce36073b7b3d1661a3253bfb1a6d2a4dc95535433a2c0ea63"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HGPENHL.otf",
+          "sha256": "5b578acac163505c6c384a64e1ff32c03f4c6c59ed948bfdfff55d269a4a97b5"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HGPG.otf",
+          "sha256": "75c76493267ec17b9610484c1c8856f919108d93a2a90c1e58716d7187b50204"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HGSM.otf",
+          "sha256": "44ca1cab6c0431382842a4767468364b07a2c4c2352ec80acecfa84bffbac164"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HGSMJ.otf",
+          "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HGSTRBRY.otf",
+          "sha256": "6844aed54084783e28e7be0da351d08f4c0fe9e16e0844cbad4e4164c47488ca"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HGSYS.otf",
+          "sha256": "b541cec7bb43f6ef98d5efb033a1dc191922ca7f9893cd2652ce0dfaa13a630e"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HGTYPE.otf",
+          "sha256": "53ccbef1ac6cc2a1aad101ca152c447663bd794dc7b57edd932bb6396e52e0d2"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HJGHS.otf",
+          "sha256": "7746d16602f68ad0eb653ad1ccae177f8b538581028568dc3f404eacb97a2c23"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HJGJGT.otf",
+          "sha256": "7a55744c9baa3a0acdab640e13ce2b85f6a02f63f01c5663cfd55c30e0637bf8"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HJGSMJ.otf",
+          "sha256": "6f3bfe33cb1a19b509dc11285df95a45180f997ad597ea240afce65782a80e88"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HJGSYS.otf",
+          "sha256": "38425542eb58d69822cf35717de61ca2567dc8b127e6b3e53c16a072edf48d57"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HJJGT.otf",
+          "sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HJMJ.otf",
+          "sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HJSMJ.otf",
+          "sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HJSYS.otf",
+          "sha256": "332201f62c6833e9ffba1861fc6c22726a517d1f75a34eaa2f1885216d08a130"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HJYHS.otf",
+          "sha256": "a82801f3447e7d8ca55282d00097f797e4f5e49ad316aab639bcdeb1621a9ec0"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HJYJGT.otf",
+          "sha256": "566d3f71a15cd5c2fcdb70f85deac807e0f97705b892c3d2dabb3081499c3b64"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HJYSMJ.otf",
+          "sha256": "d275c494ea495ea84dbd3b7093de85c978d60ce384d148e42a838802da885054"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HJYSYS.otf",
+          "sha256": "4e124bd15321686c8e513b24826941b0d2b2c143bef85fab9e374e7492e994c1"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HMEAC.otf",
+          "sha256": "2ac3ad7a79158e0102136b50ada2997a4e19d0a86fba324cf97089be7ab8cbcb"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HMEAHNB.otf",
+          "sha256": "96db65bfa17d40a36b6769b2f49509746a574f0b082ad743f5a1f4e7a54603b9"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HMEAHNL.otf",
+          "sha256": "503e903ef31031037387523f16705c56b036c45efdfd19e45c7b755fea64234f"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HMEAHNM.otf",
+          "sha256": "a09f0213601e1edf7196675da796e7554892b5f19cfe525865fcf30d67222ab8"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HMECR.otf",
+          "sha256": "5c99ed74e1a2f3d1e48c6a4d7d6901a1728671b337266a5883ac0e77c19d00d9"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HMEHL.otf",
+          "sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HMEHLN.otf",
+          "sha256": "667108098b7c034efce69eaee58211e6a8d2d4fd2a7060fba0084ad38fd6cbab"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HMEMO.otf",
+          "sha256": "4df601c0a47dc2b38b41d3542855192e381191462d202c87c3e5aef0fb07f003"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HMEPO.otf",
+          "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HMETR.otf",
+          "sha256": "b3f089f23de7bb9d4b4d753f09aa3459e36b59e2f061a9c605bb5774470690ba"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HMKBA.otf",
+          "sha256": "984e0cee58ca90ff31090f9679719d3d9a5f0c5258458a3a4ef4da89a2ebe352"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HMKBP.otf",
+          "sha256": "8821e21176dae703139321ab3da964cdc12a312cfb3475861bb62c54a28a6d38"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HMKBS.otf",
+          "sha256": "d74f53661d802ff85c66f01508411b63013fcf986e5fa0f3977d4c6543e0275f"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HMKLA.otf",
+          "sha256": "fd5db3a8dfc48ec04766e1bd836d73d7b03e2f9114dad7159c321fafd324c3e4"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HMKLP.otf",
+          "sha256": "303e766b28263361aaa1b715ddd30707458c38130167e32dbb5fea8e543318ad"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HMKLS.otf",
+          "sha256": "a8fda6541f6201acc757a7b92c768a36e8e2c803da8c1d38b240a0463bceb361"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HMKMA.otf",
+          "sha256": "2891720908a601322cf568993146a978aa60cf00a77613ffe41e9780d2592d59"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HMKMG.otf",
+          "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HMKMP.otf",
+          "sha256": "06107130f56a186772bf38d17ec92c5836340ac63cae9779a827a64622ab5308"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HMKMS.otf",
+          "sha256": "486455d5230e2103761a21abc37dbc92038d97007c6f9af4bdd698562403a997"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HMKOLD.otf",
+          "sha256": "f2122c5200148d46a3f13b703e27536748fc5abf912a9b44d8ccd0f2b7f4ce97"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HMKSM.otf",
+          "sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HSUSFL.otf",
+          "sha256": "0539698e1093fa4277954e9b7a660770ed2423a19c1db848012fa5ce53ce6929"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HSUSR.otf",
+          "sha256": "bf0c0844f5e021ceea3524430049c74ef90809327f228b3a8ae40e7aeb6d612b"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HSUSRI.otf",
+          "sha256": "67a247373a286fabaec4608c3fd7809728c78a1204b7fc71be0ac4d1df4ca18a"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HSUSSP.otf",
+          "sha256": "05d3aeff0769a3f1853573ff76922ce2b7c2c10506dc009b90abd06386e49fcd"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HYENGL.otf",
+          "sha256": "d86aebf2c16e61bd6f85abd2a513932ce410013f50b787361963acf76f901100"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HYHGGL.otf",
+          "sha256": "c578b200e2f17b7db484ea754c149fd73c9bc07bc28785b4d8e2a151b05ed29c"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HYJPGL.otf",
+          "sha256": "3188b00bccfd3c9982f66a782058a701a1fd3ca27bc9b0fc1d991049070ddf5d"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/HYSPGL.otf",
+          "sha256": "ba2d223db87ac83eee63c6ddeb1e57a58d6d53c4aae691b6335fb1204e6766eb"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/JPGT.otf",
+          "sha256": "8c0ff53726428d115dfee5df77691532da1fc902ae0691cd1f4bdc111cbcfd66"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/JPJGT.otf",
+          "sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/JPJGTV.otf",
+          "sha256": "d3643247c358ad0001b86f3b31d8aec11c7a4958e9815e2936dea6a5f5fec5e2"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/JPMJ.otf",
+          "sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/JPSMJ.otf",
+          "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/JPSMJV.otf",
+          "sha256": "cba88344a750fc55c7af9c80ca7ef076066dc7a74927062dde4aa74914d01631"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/JPSYS.otf",
+          "sha256": "d3c70c4f3af26676105cf9bd44e08417fa28ca03187ffb45dc8d1e7cae6c6579"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/KHANB.otf",
+          "sha256": "aedf5b7eb818afa7ec273f772517fc935be0c817b121edbe5428d6dc62f113ec"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/KHANENGB.otf",
+          "sha256": "8b0b3ce9e965c145df8ebfc17099ac3abf519611bd44a63a9c1184497a4aa4cd"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/KHANENGL.otf",
+          "sha256": "b41a67571cb5124d38b84d589ed6a4f4e6eefc5d0d7ff7c877c2108c66ad4af3"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/KHANENGM.otf",
+          "sha256": "fb01f484d8b00af51589a3fa757dce0eb6824081fca5c1cc770aa5ee44c7c146"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/KHANL.otf",
+          "sha256": "498d46408a5455ba9730aeef4f9e004d575d92c9570ee6f68485ebf7738926d7"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/KHANM.otf",
+          "sha256": "8015b74a91596d8a4cb6adc6dd62b4a0d73204fc89364c6a2a6f1c22a2b47cb5"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/MHHGSSG.otf",
+          "sha256": "2fe8ef2806254a9cec101188dd0926b71cf67b578fffe4f01325acf45b7f680a"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/MHHGSSP.otf",
+          "sha256": "459114529c5c7ed86e5fe94e673260f43a7ccb70e784134541394945ddf5668b"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/SPJGT.otf",
+          "sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/SPMJ.otf",
+          "sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/SPSMJ.otf",
+          "sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/SPSYS.otf",
+          "sha256": "a94aaa295c4cd1033926bb0ec97ed5f6b2cd0d3ca06608c18347a87cd005ed07"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/TAENMREN.otf",
+          "sha256": "aef1b4e32ba55e42764385e1042b0bc5fbb51998571a380ce7b5e63a0a82c4b2"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/TAENMRKR.otf",
+          "sha256": "691205fe589ff8e46e7c840304316ea6d0459e54259b16eef6e49dfa66018e2a"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/TEHDDHG.otf",
+          "sha256": "e92ab7d486ee6746db62e72c44320b4a7cf1a0c53d36ae78ef07f3751c230a02"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/TEHDDRHG.otf",
+          "sha256": "aa7d7bb757d85dc301c8a73046002e202b57efb13f79b502256aa79027b1753f"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/TEHDTHG.otf",
+          "sha256": "b4c43298ec697f6f0e704379fc3da490be4ad7de6cbb629fde1e2756c98a9d2e"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/TEHDTRHG.otf",
+          "sha256": "d4ed4bc8b5270539fcb97bfd69011107f1d9091aafbc79ab36526d243a53fc36"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/USER.otf",
+          "sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/USHGPL.otf",
+          "sha256": "be7582a44864837840ece42b037afa075060a6227924c18ebfe4ea1dae133109"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/YJENBMGM.otf",
+          "sha256": "b605bb645d865907b6f07f3b9eb7d94af64b3d630b0c2a4abfd9a5756e1ade13"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/YJENCHM.otf",
+          "sha256": "69d11a95e6fa11e4c23a04306f6e5f772288d1a3ba2a96aff2cbc4f68fd1368f"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/YJENDNMJ.otf",
+          "sha256": "6ecf9ae84cf8af8faf125e7000aeb2af282a6a993729dcb35cc20a9b62aef822"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/YJENDUG.otf",
+          "sha256": "75b753b9438e3d5355c326ae7e853d609663ff42cecd1cf8c2acdb0cd23a6270"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/YJENINI.otf",
+          "sha256": "d2513b33ee7393bdf02703aafc0264dc91feef7213b0e0e14ef746974fa593fd"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/YJENMAE.otf",
+          "sha256": "baecd92f40be280f03d709d9d46d32ab3d3c37a9291948e516fdabcc6683792a"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/YJENSHN.otf",
+          "sha256": "2415f7198644d598fe05b038ed189a0164896afc653a063a976f38b7720d1bb6"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/YJENSOSL.otf",
+          "sha256": "e854060b717a8a25ce77d4831d44de25fdf84231913d76476c24554a45da0832"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/YJENTTB.otf",
+          "sha256": "a69add28f146c1c59ad504bf7ebb7342c540ec3a0c2f88f8575b894a0289cf73"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/YJENWDA.otf",
+          "sha256": "49757233e781e9df7ed190f9965c235e55e123ff58922a5198c123a30b7bd3b4"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/YJHGBMGM.otf",
+          "sha256": "33d7603949542d9fbe16be6520c985a178562f22012d5a0db68855690d572337"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/YJHGCHM.otf",
+          "sha256": "77c44e04f63ddd1f77b446572609ba895f9c1e8debd83d4a71fa755e03988c91"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/YJHGDNMJ.otf",
+          "sha256": "80c66475b28c3c993bbad99fd84219a9208a990abe08bf3befb9cb82abf835f6"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/YJHGDUG.otf",
+          "sha256": "407ba687812ff0c95cc4c8d6a6c13765a95b95f5ae53d2e026f0e25b51c3f2f0"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/YJHGINI.otf",
+          "sha256": "f5982b36a124f5ea49e1904ceffb84645bf7574c00665a83d39b37a12887af9c"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/YJHGMAE.otf",
+          "sha256": "38bae5096df0c429caceff68f76922dc6c88dd02ba0e68206154c440d812dc2f"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/YJHGSHN.otf",
+          "sha256": "8e0b417e48a580c9997baf0899295efd02a1824f5340cd78aa7a38a0640f9493"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/YJHGSOSL.otf",
+          "sha256": "e857e705237d7e7e9e3e3842f8006c61396fe4c52414183ece257d59481e10a7"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/YJHGTTB.otf",
+          "sha256": "e7f3a88ad0d1fe099637f7423570899165777675e927d448d787845dc0fbda36"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/00-hft/YJHGWDA.otf",
+          "sha256": "2cb8623cecc13f2cc17e428dac3fe4ca675f9f047751b2be8a2af7502d7197e0"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/01-hwp/H2HDRM.TTF",
+          "sha256": "a3f57b4cb4292977479c1511b52997daadaf04c37f180ff05ab152c4d12ccaf5"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/01-hwp/HBATANG.TTF",
+          "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/01-hwp/HDOTUM.TTF",
+          "sha256": "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/01-hwp/HMKMM.TTF",
+          "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/ARIALN.TTF",
+          "sha256": "cad552553cf2a75afca01955751aaa115e2a64fd6c6eea42e1fbd236630b7e0a"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/ARIALNB.TTF",
+          "sha256": "6c4a4b643461def5411e0217b74a625dcf2fb681252ef5da1db0af4eae80aa7e"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/ARIALNBI.TTF",
+          "sha256": "161b859efd20c69ddebb23012a49f4f2030d56a0c1b9bcfd4df753217ce3e358"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/ARIALNI.TTF",
+          "sha256": "faf73aa7ce40b77ad19c09507a2263fe3f3ce9fa5642e8a1cd54fb3c9f52d599"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/ENBASKVL.TTF",
+          "sha256": "177de2eea49950c9b7ed74843c032be1a80c7a5a3dd4f07ca953e561ea5df1f1"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/HYBSRB.TTF",
+          "sha256": "74f2ae9ab8e0ad36175344a759721cd616a7623613853973a0adfe99ebe79862"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/HYCYSM.TTF",
+          "sha256": "769537a52d27d648e90a30029deab686f604dfc767382cc8c74ae42cb44df5aa"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/HYGPRM.TTF",
+          "sha256": "cf8614cb09e038ff24c0edb2ba2cfa6b8911c7c913cfe590e7e56014e7e63e5a"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/HYGSRB.TTF",
+          "sha256": "b41cef3386d034040704b1a143ef13a63c5b9f1ec4222a7579c1796ea05517f6"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/HYGTRE.TTF",
+          "sha256": "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/HYHWPEQ.TTF",
+          "sha256": "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/HYMJRE.TTF",
+          "sha256": "a101a7a219ffd57273374a423e734adfba1529e5eaf2e9a7476f7150708ea506"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/HYMPRL.TTF",
+          "sha256": "6bd4066d8dd5ad7296a5d5e826032872bdf4b5343dbbf20073dec67d6b7d4f28"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/HYPORM.TTF",
+          "sha256": "c59429a54a1aa0bcb71c2b35e3a1a8990752d3993dbf905018a5b0b91cf7cd2f"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/HYSNRL.TTF",
+          "sha256": "c676038d3cf13121dd974c2e7ee99c0c81eea04a4a493bc3dc60c9f32b791dc6"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/arial.ttf",
+          "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/arialbd.ttf",
+          "sha256": "3680a1bbffab914f36b27d5fd97b193de5bccfab882c41b41b5f8f99457b4820"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/arialbi.ttf",
+          "sha256": "77a0b63c5f73eb85923f10359e68b8fc768487ae88ad902a1ea21276954e205b"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/ariali.ttf",
+          "sha256": "c30c71d614e143c0d4e42aaf04d9a1f50f90b365a2654eb3f2c6598e5655af08"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/batang.ttc",
+          "sha256": "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/cour.ttf",
+          "sha256": "6aab1f79264ccda1e7129dba62dbe3750b10eaa27408a327dadb808724e62c84"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/courbd.ttf",
+          "sha256": "e376f24c9f27eb7370b25aa366d78da731834a1aea651858801c9a14e8906943"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/courbi.ttf",
+          "sha256": "ac3b362cf998eb33475655e12ab7cb2f6a35d1f2eff6f76af00ebb6f81c53ee7"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/couri.ttf",
+          "sha256": "546406ddbb3e3f6b876a5e8a5dee62ac090d1448662e98d8844b22393813dd13"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/gulim.ttc",
+          "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/malgun.ttf",
+          "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/malgunbd.ttf",
+          "sha256": "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/malgunsl.ttf",
+          "sha256": "c0ca810a242c4482594182db40f0f9d35a3d51bb2eeac750e6e867b2110eb00e"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/symbol.ttf",
+          "sha256": "bbf1192965e5266fbf23370416337d2861fc1e8bd349def93f2994ba67382fc3"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/times.ttf",
+          "sha256": "fbb57cdb0079137adc0e478913ca134dfee02aa2ef443738ec5e839bf97a1f7f"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/timesbd.ttf",
+          "sha256": "e94ff9111656f17bd81e9f822f1e234edcd370bcbacfdebf998b8938f525ac77"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/timesbi.ttf",
+          "sha256": "8d2c8d8d25d9fc529d08558c42effa771617914a455603881e212a26e2f2ddcd"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/yeongwol/02-windows/timesi.ttf",
+          "sha256": "c2c134968be4259aaa78845d3aca5e91c4a0bd10d98e4d2e48ac3c12f3c63b89"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+          "sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/source.woff2",
+          "sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/output/pr-review/native-webfont-cache/programs/e0acaab460a92f62097245b640bbcbaf814d7aeabaaf1953c37afdaf0ee529a3/native.ttf",
+          "sha256": "bbacd057232e6835f0b978f4cc32b8818496a4d9bd28554e02c5e83aa74c3e2d"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/output/pr-review/native-webfont-cache/programs/e0acaab460a92f62097245b640bbcbaf814d7aeabaaf1953c37afdaf0ee529a3/source.woff",
+          "sha256": "e0acaab460a92f62097245b640bbcbaf814d7aeabaaf1953c37afdaf0ee529a3"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/output/pr-review/native-webfont-cache/programs/0e8be88251b2c13c3f1738f52b0d1e4f4951a499a9c04e3b5b02b23ef2558ad3/native.ttf",
+          "sha256": "01a1da450c043ce16e209be412875aea77a7faadde1a95da44910ed070a4bd6b"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/output/pr-review/native-webfont-cache/programs/0e8be88251b2c13c3f1738f52b0d1e4f4951a499a9c04e3b5b02b23ef2558ad3/source.woff",
+          "sha256": "0e8be88251b2c13c3f1738f52b0d1e4f4951a499a9c04e3b5b02b23ef2558ad3"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/output/pr-review/native-webfont-cache/programs/2ae036c4141064c4cf7e43e0e021a4a6a29a97c02fef7ce93eb5c05f4bcbe262/native.ttf",
+          "sha256": "b94c392fd3d881bf46302614e80adf281c0ae2990638e8b4574444599f54a9c6"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/output/pr-review/native-webfont-cache/programs/2ae036c4141064c4cf7e43e0e021a4a6a29a97c02fef7ce93eb5c05f4bcbe262/source.woff",
+          "sha256": "2ae036c4141064c4cf7e43e0e021a4a6a29a97c02fef7ce93eb5c05f4bcbe262"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+          "sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+          "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/output/pr-review/native-webfont-cache/programs/ca4da082cd970f0c8abaa79f213ddcbc475f7b5afabcb81b385998f9ebfbb53f/source.ttf",
+          "sha256": "ca4da082cd970f0c8abaa79f213ddcbc475f7b5afabcb81b385998f9ebfbb53f"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/native.ttf",
+          "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/source.woff",
+          "sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf"
+        }
+      ]
+    }
+  },
+  "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/visual/native/final-head-protected/yeongwol-run/yeongwol/silhouette-checkpoint.json"
+}

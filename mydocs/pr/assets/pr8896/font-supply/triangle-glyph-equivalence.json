@@ -1,0 +1,16 @@
+{
+  "pdf": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+  "page": 8,
+  "pdf_font": "Haansoft Batang",
+  "pdf_unicode": "U+F000",
+  "original_hwp_pua": "U+F02FB",
+  "pdf_subset_glyph": 7,
+  "pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+  "font_source": "/home/edward/mygithub/ttfs/hwp/HBATANG.TTF",
+  "font_sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+  "units_per_em": 1024,
+  "all_contour_operands_equal": true,
+  "subset_contour_sha256": "5cd43a4435406db7d259f840b74a65c255f017ebd6fa1e1d5c0b5f1b52613eca",
+  "source_contour_sha256": "5cd43a4435406db7d259f840b74a65c255f017ebd6fa1e1d5c0b5f1b52613eca",
+  "source_advance": 1024
+}

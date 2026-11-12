@@ -1,0 +1,180 @@
+{
+  "key": "angle-narrow",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1
+  ],
+  "completed_pages": [
+    1
+  ],
+  "missing_pages": [],
+  "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/wasm/final-base-protected/angle-narrow-run/angle-narrow/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/wasm/final-base-protected/angle-narrow-run/angle-narrow/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "ad352fe2bdd6a29eb8845f303005ed983706db99b962aff6a14871010a70946c",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/wasm/final-base-protected/angle-narrow-run/angle-narrow/pdf_png/pdf-001.png",
+      "pdf_sha256": "a830231b65fe2f4f97a852eba43a6578af6c4f48b1c6b8adba787ce711d126e6"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 462,
+      "tolerant_content_match_percent": 100.0
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5"
+    },
+    "pdf": {
+      "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+      "sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712"
+    },
+    "git_head": "3fdde2a216e19cedb51a00be17e01a2d20950c88",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/producers/rhwp-base",
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/producers/rhwp-base",
+      "sha256": "0df8a7d3bd2d18f994ad03f048d2f3f9b9d75d8cb86a03d92141599af32a22d8"
+    },
+    "raster_backend": "wasm-canvas2d",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2022",
+    "wasm": {
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/producers/pkg-base/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/producers/pkg-base/rhwp_bg.wasm",
+          "sha256": "cb36784306e8ca84367a64939b9ec5be36d6aea2732ab4343bc55f63c2309747"
+        }
+      ],
+      "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+      "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/angle-narrow/00-hwp/HBATANG.TTF",
+          "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/angle-narrow/01-windows/cour.ttf",
+          "sha256": "6aab1f79264ccda1e7129dba62dbe3750b10eaa27408a327dadb808724e62c84"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/angle-narrow/01-windows/courbd.ttf",
+          "sha256": "e376f24c9f27eb7370b25aa366d78da731834a1aea651858801c9a14e8906943"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/angle-narrow/01-windows/courbi.ttf",
+          "sha256": "ac3b362cf998eb33475655e12ab7cb2f6a35d1f2eff6f76af00ebb6f81c53ee7"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/angle-narrow/01-windows/couri.ttf",
+          "sha256": "546406ddbb3e3f6b876a5e8a5dee62ac090d1448662e98d8844b22393813dd13"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/angle-narrow/01-windows/gulim.ttc",
+          "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/angle-narrow/01-windows/times.ttf",
+          "sha256": "fbb57cdb0079137adc0e478913ca134dfee02aa2ef443738ec5e839bf97a1f7f"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/angle-narrow/01-windows/timesbd.ttf",
+          "sha256": "e94ff9111656f17bd81e9f822f1e234edcd370bcbacfdebf998b8938f525ac77"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/angle-narrow/01-windows/timesbi.ttf",
+          "sha256": "8d2c8d8d25d9fc529d08558c42effa771617914a455603881e212a26e2f2ddcd"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/angle-narrow/01-windows/timesi.ttf",
+          "sha256": "c2c134968be4259aaa78845d3aca5e91c4a0bd10d98e4d2e48ac3c12f3c63b89"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/angle-narrow/02-ttfs/hamchob-r.ttf",
+          "sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/angle-narrow/02-ttfs/hamchod-r.ttf",
+          "sha256": "ddbf97ce7e4c19accd208354369d77d89947bf48446a61ed1cbb28a23c1c0f43"
+        }
+      ]
+    }
+  },
+  "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/wasm/final-base-protected/angle-narrow-run/angle-narrow/silhouette-checkpoint.json"
+}

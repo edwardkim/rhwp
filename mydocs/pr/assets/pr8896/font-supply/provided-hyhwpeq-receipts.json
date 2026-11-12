@@ -1,0 +1,18 @@
+[
+  {
+    "backend": "native",
+    "manifest_sha256": "b002d9392c964cdd90678ced9216937630a822940858655955935abc9483615f",
+    "hyhwpeq": {
+      "path": "/home/edward/mygithub/ttfs/windows/HYHWPEQ.TTF",
+      "sha256": "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
+    }
+  },
+  {
+    "backend": "wasm",
+    "manifest_sha256": "ebb4fee3b8f2a4797f31aee9d5c1ed41cab56e5a3378bcd3dbb931f1ecd256f5",
+    "hyhwpeq": {
+      "path": "/home/edward/mygithub/ttfs/windows/HYHWPEQ.TTF",
+      "sha256": "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
+    }
+  }
+]

@@ -1,0 +1,8 @@
+{
+  "documentSubstitutions": [],
+  "id": "native-webfont-dceced2347b931ce850841f0",
+  "preserveSourceMetrics": true,
+  "substitutions": {
+    "신명 중고딕": "NotoSansKR-Regular"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "provided_path": "/home/edward/mygithub/ttfs/windows/HYHWPEQ.TTF",
+  "sha256": "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a",
+  "family": "HyhwpEQ",
+  "upm": 1024,
+  "symbols": {
+    "×": {
+      "modern_present": true,
+      "modern_advance": 831,
+      "modern_advance_em": 0.8115234375,
+      "independent_legacy_advance": 616,
+      "independent_legacy_upm": 1000
+    },
+    "÷": {
+      "modern_present": true,
+      "modern_advance": 831,
+      "modern_advance_em": 0.8115234375,
+      "independent_legacy_advance": 623,
+      "independent_legacy_upm": 1000
+    }
+  },
+  "decision": "Explicitly supplied for modern fallback; do not replace independent legacy programs by presence alone."
+}

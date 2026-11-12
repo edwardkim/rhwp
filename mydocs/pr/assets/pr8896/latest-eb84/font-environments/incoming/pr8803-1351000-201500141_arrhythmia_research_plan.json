@@ -1,0 +1,68 @@
+{
+  "documentGlyphFallbacks": [
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 9,
+      "languageSlot": 1,
+      "source": "휴먼명조"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 7,
+      "languageSlot": 2,
+      "source": "휴먼명조"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 7,
+      "languageSlot": 3,
+      "source": "휴먼명조"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 6,
+      "languageSlot": 4,
+      "source": "휴먼명조"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 7,
+      "languageSlot": 5,
+      "source": "휴먼명조"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 5,
+      "languageSlot": 6,
+      "source": "휴먼명조"
+    }
+  ],
+  "documentSubstitutions": [],
+  "id": "native-webfont-206f080dd0bace98a861da1d",
+  "preserveSourceMetrics": true,
+  "substitutions": {
+    "HCI Poppy": "NotoSerifKRExtraLight-Regular",
+    "HY견명조": "NotoSerifKRExtraLight-Bold",
+    "고딕": "NotoSansKRExtraLight",
+    "굴림": "NotoSansKRExtraLight",
+    "맑은 고딕": "Pretendard-Regular",
+    "명조": "NotoSerifKRExtraLight-Bold",
+    "바탕": "NotoSerifKRExtraLight-Regular",
+    "한양그래픽": "NotoSansKRExtraLight",
+    "한양신명조": "NotoSansKR-Regular",
+    "한양중고딕": "NotoSansKR-Regular",
+    "휴먼명조": "NotoSansKR-Regular"
+  }
+}
