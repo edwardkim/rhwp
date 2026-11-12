@@ -263,7 +263,7 @@ void run_producer(const std::shared_ptr<State>& state) noexcept {
         if (state->closed) break;
         job = std::move(state->pending); state->in_flight = true;
       }
-      bool completed = false;
+      bool completed = false, published = false;
       try {
         if (!api->current(job->check_json)) {
           std::lock_guard<std::mutex> lock(state->mutex); ++state->stale_drops;
@@ -291,6 +291,7 @@ void run_producer(const std::shared_ptr<State>& state) noexcept {
                   if (state->gate.current(job->serial, job->stamp)) {
                     if (!job->credit->publish_immutable()) throw std::runtime_error("frame was not producer-complete");
                     state->current = std::move(frame); state->error.clear(); state->error_code.clear(); state->device_failure = false;
+                    published = true;
                   } else ++state->stale_drops;
                 }
                 mark_frame(state);
@@ -308,6 +309,7 @@ void run_producer(const std::shared_ptr<State>& state) noexcept {
       {
         std::lock_guard<std::mutex> lock(state->mutex); state->in_flight = false;
       }
+      if (published && state->producer_ready) state->producer_ready(job->serial, job->stamp);
     }
   } catch (const std::exception& error) { try { state->fail(error.what()); } catch (...) {} }
   try {
