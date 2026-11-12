@@ -72,3 +72,8 @@ Canvas2D에 전환한다. 양 모드 screen/print 4캡처에서 차트를 보존
 source·명령·입력/PNG hash와 각 결과를 기준으로 읽는다. Mac fresh WASM은 locked wrapper의
 --target web --out-dir pkg --no-opt 로컬 대체 빌드이며 Docker 최적화 통과로 표시하지 않는다.
 최종 로컬 게이트를 완료했고 개별 6개 리뷰와 PR 제출 자료를 확정했다. 원격 CI·병합·후속 처리 결과는 실제 완료 뒤 연결한다.
+
+
+## 통합 PR #9025 code CI
+
+code head `8d70de44b12e24ca8297f84e90337a2eb8e2977f`의 Full CI·CodeQL·Render Diff·Adapter·Proptest와 최종 정책 감사를 모두 통과했다. Archive A–E는 13,195 PASS / 0 FAIL / 45 skipped다. [원격 code CI 영수증](remote/pr9025-code-ci.json)에 정확한 head·base, 39개 check, workflow와 archive별 실제 summary를 보존한다. 이번 기록은 제품·검사·CI 정책을 바꾸지 않는 문서-only trailing이며, 새 trailing head의 필수 검사·병합은 별도로 확인한다. 원 PR 6개 리뷰를 유지하고 통합 번호만의 별도 리뷰 문서는 만들지 않는다.

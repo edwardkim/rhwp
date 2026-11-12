@@ -2,7 +2,9 @@
 
 ## 최종 판정
 
-**메인터너 보정 후 통합 가능 — 통합 PR의 exact-head CI 확인 필요**. 현재 검증 제품 source는 `73d06ed0b18df7c222a850bb5d9340c9b7de2bcc`, base는 `a85d3265dd10b316d1a0ae029ca3f67245b38b77`(#9017)다. 최소 글꼴 Native 집중 **164 PASS / 0 FAIL**, 전체 nextest **13,380 PASS / 0 FAIL / 45 skipped**(실행 404.945초)와 필수 게이트를 완료했다. [최신 실제 실행 원장](../assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/rebase-a85d3265/gates-validation.json)에 명령·종료 코드·로그 해시를 보존했다. 원 PR head를 그대로 승인하는 판정이 아니라 아래 메인터너 보정을 포함한 통합 후보의 판정이다.
+**메인터너 보정 후 수용 가능 — #8690의 온전한 행·병합 칸 범위의 로컬 검증 완료.** 현재 검증 제품 source는 `73d06ed0b18df7c222a850bb5d9340c9b7de2bcc`, base는 `a85d3265dd10b316d1a0ae029ca3f67245b38b77`(#9017)다. 최소 글꼴 Native 집중 **164 PASS / 0 FAIL**, 전체 nextest **13,380 PASS / 0 FAIL / 45 skipped**(실행 404.945초)와 필수 게이트를 완료했다. [최신 실제 실행 원장](../assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/rebase-a85d3265/gates-validation.json)에 명령·종료 코드·로그 해시를 보존했다. 원 PR head를 그대로 승인하는 판정이 아니라 아래 메인터너 보정을 포함한 통합 후보의 판정이다.
+
+[통합 PR #9025](https://github.com/edwardkim/rhwp/pull/9025)의 code head `8d70de44b12e24ca8297f84e90337a2eb8e2977f`에서 [Full CI](https://github.com/edwardkim/rhwp/actions/runs/43247843732)·CodeQL·Render Diff·Adapter·Proptest와 최종 CI Impact Policy를 모두 통과했다. Archive A–E 실제 합계는 **13,195 PASS / 0 FAIL / 45 skipped**이며 로컬 최소 글꼴 13,380건과 실행 구성을 구분한다. 최신 code head의 필수 검사 39개가 완료됐고 `MERGEABLE / CLEAN`을 재조회했다. [code CI 영수증](../assets/hyunmyungjanelee_20261112/remote/pr9025-code-ci.json)을 보존한다. 이 문서와 오늘할일을 추가하는 문서-only trailing head의 필수 검사·병합은 아직 남은 조건이다.
 
 시각 증적을 실제 산출한 source는 `30fa7739f0340f2a248b22542c7dd36d9354f056`, 당시 base는 `1a3ed4a7cd76701085a24ac81d30bc5fb31942c1`(#8956)이다. 이 PR의 공개 입력 4종·8쪽을 새 Native/fresh WASM으로 다시 출력해 최저 **100.00% / 100.00%**, 미달·새 하락 0쪽을 확인했다. 공개 전체 34종·46쪽의 raw·PDF·review·overlay 368개는 리베이스 전 직접 판독한 증적과 바이트가 같다.
 
