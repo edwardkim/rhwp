@@ -139,28 +139,69 @@ HWP/HWPX fresh WASM 전 383+383쪽은 각각 최저 99.96%(130쪽의 기존 WMF)
 그 점수를 전체 수식 문서 통과로 확대하지 않는다. Windows Gulim 공급 후 WMF 18·35쪽의 큰 차이도 해소됐으며,
 공급 전 두 쪽의 base/후보 PNG가 바이트 단위로 같았던 진단은 별도로 보존했다.
 
+### Windows 글꼴 백업 적용과 재검증
+
+2026-11-12 21:18 KST 기준, 사용자가 제공한 Windows Fonts 백업의 578개 파일 중 TTF/TTC/OTF 383개를 확인했다.
+[백업 원장](../pr/assets/issue8946/stage6-20261112/windows-backup-audit.json)에 실제 이름·버전·SHA를 기록했다.
+`H2HDRM.TTF`(HY헤드라인M, `e50c7200521c…`), `HYHWPEQ.TTF`(`a3a3cd992a89…`),
+Courier New·Times New Roman·맑은 고딕을 확보했다. 기준 원장의 SHA와 같지 않은 파일은 `family-only-backup`으로
+구분했다. 제공 원본의 변경·시스템 설치·글꼴 업로드·저장소 수록은 하지 않았다.
+
+[공급 선택](../pr/assets/issue8946/stage6-20261112/protected-backup-supply.json)은 이전 정확한 SHA의 프로그램을 우선 유지하고,
+부족한 가족을 백업에서 보충한다. 가족별 그룹 경로를 유지한 상태에서 중첩 표·sample16 세 형식·sample10의 Native/fresh WASM
+전쪽을 다시 산출했다. 정본 보호 기준·입력·독립 PDF는 바꾸지 않았다.
+
+| 복원 항목 | 적용 전 | 적용 후 |
+| --- | --- | --- |
+| sample16 세 형식 6쪽 WASM 수식 | 99.99% | 모두 100.00% |
+| 중첩 표 4쪽 Native | 99.62% | 제목 공급 후 99.89%, 화살표 공급 복원 후 100.00% |
+| 중첩 표 4쪽 WASM | 99.61% | 제목 공급 후 99.95%, 화살표 공급 복원 후 100.00% |
+
+중첩 표의 독립 Print는 화살표에 Haansoft Batang을 사용하지만, 실제 요청은 `굴림체/GulimChe`다.
+기존 검증 환경은 `Gulim`에만 해당 문자 대체를 명시했다. [로컬 환경](../pr/assets/issue8946/stage6-20261112/nested-print-font-environment.json)에
+GulimChe/굴림체의 결측 문자 공급도 같은 Haansoft Batang으로 명시해 실제 화살표를 복원했다.
+제품의 전역 대체 정책이나 원본 문서의 글꼴 선언은 변경하지 않았다. 기존 HBATANG과 Print의 윤곽이 바이트까지 같다는
+주장도 하지 않는다. [동일 영역 확대](../pr/assets/issue8946/stage6-20261112/backup-final-reviews/nested-arrows.png)에서
+두 화살표의 존재·방향·본문과의 간격·표 내부 배치를 확인했고,
+[제목](../pr/assets/issue8946/stage6-20261112/backup-final-reviews/nested-title.png)의 형태도 대조했다.
+최종 중첩 표 17쪽 × 두 경로는 모두 정본 보호값 이상이며, 4쪽은 양쪽 100.00%다.
+
 ### 현재 남은 항목
 
 [전쪽 색인](../pr/assets/issue8946/stage6-20261112/protected-index.json)은 18입력 × 두 backend의 **3,542쪽 전부**를 포함한다.
-전체 페이지의 raw는 90% 이상이지만, 변경하지 않은 공식 보호값보다 낮은 **35개 문서/backend/쪽 행**이 남아
-`re_review_required`다. 페이지별 최댓값을 조합하지 않고 공급 계약을 복원한 데이터셋 전체를 선택했다.
-이전 미달 실행은 로컬 진단 기록에 남겼다.
+백업 적용 전 보호값 하락 35행에서 **30행**으로 줄었다. 전체 최저 raw는 98.09%지만, 공식 두 자리 보호값 하락 금지 조건은
+아직 충족하지 않아 `re_review_required`다. 페이지별 최댓값을 조합하지 않고 공급 환경을 복원한 데이터셋 전체를 선택했다.
 
 | 문서 | Native 보호값 하락 | fresh WASM 보호값 하락 |
 | --- | ---: | ---: |
-| sample16 HWPX | 3쪽 | 4쪽 |
-| sample16 HWP 2024 | 3쪽 | 4쪽 |
-| sample16 HWP 2022 | 7쪽 | 8쪽 |
-| 중첩 표 | 1쪽 | 1쪽 |
+| sample16 HWPX | 3쪽 | 3쪽 |
+| sample16 HWP 2024 | 3쪽 | 3쪽 |
+| sample16 HWP 2022 | 7쪽 | 7쪽 |
 | sample10 HWP3 | 2쪽 | 2쪽 |
 
-중첩 표 4쪽의 독립 Print는 제목에 `H2hdrM`, 화살표에 Haansoft Batang을 사용한다.
-현재 공급에는 `H2HDRM.TTF`가 없으며 실제 제목 차이를 확인해 Windows 보관본을 요청했다.
-화살표는 `굴림체/GulimChe` 요청이고 현재 명시 환경의 `Gulim` 문자 대체와 별개다. 제공된 HBATANG의 같은 코드포인트와
-Print 글리프의 전진은 같으나 윤곽은 완전히 같지 않았다. 따라서 동일 프로그램 복원으로 판정하지 않았고 기준이나 기대값도 바꾸지 않았다.
-sample16의 남은 본문 잔차는 줄 오른쪽 한글의 미세 위치를 포함한다.
-[잔차 확대 이미지](../pr/assets/issue8946/stage6-20261112/remaining-font-reviews/)와 실제 좌표를 보존했다.
+sample16 22·24·25쪽에는 본문 오른쪽의 미세 간격 차이가 남고, HWP 2022의 52·53·55·56·57쪽에는 빈 네모 형태가 다르다.
+sample10 81·351쪽에는 삼각형 기호 크기가 다르다.
+[잔차 확대 자료](../pr/assets/issue8946/stage6-20261112/backup-residuals/sample16-hwp2022-native-52-0.png)와
+[삼각형 비교](../pr/assets/issue8946/stage6-20261112/backup-residuals/sample10-native-81-0.png)를 직접 확인했다.
+같은 글꼴 조건의 base `80b1c354c29…`와 제품 head `b485561637…`에서 sample16 HWPX/HWP 2022·sample10의
+집중 WASM 16쪽 PNG가 모두 바이트 단위로 같다. [비교 원장](../pr/assets/issue8946/stage6-20261112/backup-base-head-identity.json).
+이 16쪽 동일성을 전쪽 보호 통과나 나머지 검증의 면제로 확대하지 않는다.
 
-Windows Fonts 전체 백업을 받으면 필요한 원 프로그램·버전을 확인하고 남은 원인별 집중 검증과 전쪽 검증을 이어간다.
-제품 코드·회귀 기대값·정본 TSV·허용폭은 변경하지 않았다. 필수 보호 검증을 완료한 뒤에만 증적 상태를 확정하고,
-최신 열린 PR·base 및 병합 가능 여부를 재확인해 승인된 push·Open PR·CI 확인으로 진행한다.
+백업에는 기존 Linux 기준의 HBATANG `35f84328500f…`가 없다. 제공된 Mac HBATANG에는 해당 원 PUA 기호가 없으며,
+백업의 HANBatang/HANDotum 계열은 해당 기호를 지원하지만 원 프로그램과 같지 않다.
+[coverage 원장](../pr/assets/issue8946/stage6-20261112/backup-pua-coverage.json)과
+[삼각형 비교](../pr/assets/issue8946/stage6-20261112/backup-triangle-program-equivalence.json)에서
+원 PUA U+F02FB의 전진은 Print 1024/1024, HANBatang 969/1000, HANDotum 970/1000이다.
+문자 지원 여부만으로 동일 프로그램 복원이라고 판정하지 않았고 임의의 확대·전진 보정도 하지 않았다.
+
+기존 #8064의 `b5fdb6d332…`와 [단계 1185](task_m100_7642_stage1185.md)를 추적했다.
+1:1 PUA 표시 대체가 있는 줄에서 정렬과 분배의 끝 자간 제외 조건이 다른 경로는 추가 진단 후보다.
+그러나 실제 원 PUA 프로그램 공급이 없는 현재 조건만으로 공통 조판 결함이나 이번 변경의 회귀라고 확정하지 않았다.
+기본 동작 보존이 #8946 수용 조건이므로 점수를 맞추기 위한 별도 조판 변경은 넣지 않았다.
+PDFium 153을 별도 로컬 환경에서 비교해도 본문 22·24·25쪽 잔차는 유지됐다. 정본 rasterizer나 기준값을 바꾸지 않았다.
+
+다음 증거 확보를 위해 문자·코드포인트만 담은 약 8KB의 독립 HWPX 표본을 로컬에 준비했다.
+원문 문서 내용과 글꼴 파일은 포함하지 않는다. 이전 수식 표본 전송 승인과 다른 새 표본이므로 Hancom MCP 전송 승인을
+별도로 요청한 상태이며 아직 전송하지 않았다. 독립 Print에서 원 기호와 전진을 확인한 뒤 같은 공급 계약으로 집중·전쪽
+재검증을 이어간다. 제품 코드·회귀 기대값·정본 TSV·허용폭은 변경하지 않았다.
+필수 보호 검증 완료 전에는 push·PR 생성을 진행하지 않는다.

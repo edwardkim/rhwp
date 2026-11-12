@@ -1,0 +1,220 @@
+[
+  {
+    "file": "HANBatang.ttf",
+    "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+    "face_index": 0,
+    "family": "HCR Batang",
+    "coverage": {
+      "U+F03C5": "uF03C5",
+      "U+F02FB": "uF02FB",
+      "U+F02FC": "uF02FC",
+      "U+F0854": "uF0854",
+      "U+F0855": "uF0855",
+      "U+021E9": "uni21E9"
+    }
+  },
+  {
+    "file": "HANBatangB.ttf",
+    "sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+    "face_index": 0,
+    "family": "HCR Batang",
+    "coverage": {
+      "U+F03C5": "uF03C5",
+      "U+F02FB": "uF02FB",
+      "U+F02FC": "uF02FC",
+      "U+F0854": "uF0854",
+      "U+F0855": "uF0855",
+      "U+021E9": "uni21E9"
+    }
+  },
+  {
+    "file": "HANDotum.ttf",
+    "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+    "face_index": 0,
+    "family": "HCR Dotum",
+    "coverage": {
+      "U+F03C5": "uF03C5",
+      "U+F02FB": "uF02FB",
+      "U+F02FC": "uF02FC",
+      "U+F0854": "uF0854",
+      "U+F0855": "uF0855",
+      "U+021E9": "uni21E9"
+    }
+  },
+  {
+    "file": "HANDotumB.ttf",
+    "sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+    "face_index": 0,
+    "family": "HCR Dotum",
+    "coverage": {
+      "U+F03C5": "uF03C5",
+      "U+F02FB": "uF02FB",
+      "U+F02FC": "uF02FC",
+      "U+F0854": "uF0854",
+      "U+F0855": "uF0855",
+      "U+021E9": "uni21E9"
+    }
+  },
+  {
+    "file": "NotoSansKR-VF.ttf",
+    "sha256": "018174e8cdd366aff67c8d366c7dc806a7babbe7f2819fc23b00d59f7b8353d0",
+    "face_index": 0,
+    "family": "Noto Sans KR",
+    "coverage": {
+      "U+021E9": "uni21E9"
+    }
+  },
+  {
+    "file": "YuGothB.ttc",
+    "sha256": "15157483588f2778a180f2b401256df12b582513fa0655f8172937c85521b80b",
+    "face_index": 0,
+    "family": "Yu Gothic",
+    "coverage": {
+      "U+021E9": "uni21E9"
+    }
+  },
+  {
+    "file": "YuGothB.ttc",
+    "sha256": "15157483588f2778a180f2b401256df12b582513fa0655f8172937c85521b80b",
+    "face_index": 1,
+    "family": "Yu Gothic UI",
+    "coverage": {
+      "U+021E9": "uni21E9"
+    }
+  },
+  {
+    "file": "YuGothB.ttc",
+    "sha256": "15157483588f2778a180f2b401256df12b582513fa0655f8172937c85521b80b",
+    "face_index": 2,
+    "family": "Yu Gothic UI Semibold",
+    "coverage": {
+      "U+021E9": "uni21E9"
+    }
+  },
+  {
+    "file": "YuGothL.ttc",
+    "sha256": "7a06352c79894d1a5d0f3199061fe43a327ded93c0ff316541ce31cf314968cc",
+    "face_index": 0,
+    "family": "Yu Gothic Light",
+    "coverage": {
+      "U+021E9": "uni21E9"
+    }
+  },
+  {
+    "file": "YuGothL.ttc",
+    "sha256": "7a06352c79894d1a5d0f3199061fe43a327ded93c0ff316541ce31cf314968cc",
+    "face_index": 1,
+    "family": "Yu Gothic UI Light",
+    "coverage": {
+      "U+021E9": "uni21E9"
+    }
+  },
+  {
+    "file": "YuGothM.ttc",
+    "sha256": "3e7d80ef5a1615134800c1b1b3b9d9ee870085e8486b884258de2519dd62b1cb",
+    "face_index": 0,
+    "family": "Yu Gothic Medium",
+    "coverage": {
+      "U+021E9": "uni21E9"
+    }
+  },
+  {
+    "file": "YuGothM.ttc",
+    "sha256": "3e7d80ef5a1615134800c1b1b3b9d9ee870085e8486b884258de2519dd62b1cb",
+    "face_index": 1,
+    "family": "Yu Gothic UI",
+    "coverage": {
+      "U+021E9": "uni21E9"
+    }
+  },
+  {
+    "file": "YuGothR.ttc",
+    "sha256": "1e5a4b342c6417bb9352e8c29cb839413987a06438e7b48fd0320925827f289c",
+    "face_index": 0,
+    "family": "Yu Gothic",
+    "coverage": {
+      "U+021E9": "uni21E9"
+    }
+  },
+  {
+    "file": "YuGothR.ttc",
+    "sha256": "1e5a4b342c6417bb9352e8c29cb839413987a06438e7b48fd0320925827f289c",
+    "face_index": 1,
+    "family": "Yu Gothic UI Semilight",
+    "coverage": {
+      "U+021E9": "uni21E9"
+    }
+  },
+  {
+    "file": "cambria.ttc",
+    "sha256": "84e70ccc1664482f4a960442c7a166c91a1b2cf98ff88c33cb73f79403f66d7b",
+    "face_index": 0,
+    "family": "Cambria",
+    "coverage": {
+      "U+021E9": "uni21E9"
+    }
+  },
+  {
+    "file": "cambria.ttc",
+    "sha256": "84e70ccc1664482f4a960442c7a166c91a1b2cf98ff88c33cb73f79403f66d7b",
+    "face_index": 1,
+    "family": "Cambria Math",
+    "coverage": {
+      "U+021E9": "uni21E9"
+    }
+  },
+  {
+    "file": "l_10646.ttf",
+    "sha256": "97226e81f19eff8c8fb191745748bab920472c005d3ec4e23d9a50a12c471d92",
+    "face_index": 0,
+    "family": "Lucida Sans Unicode",
+    "coverage": {
+      "U+021E9": "uni21E9"
+    }
+  },
+  {
+    "file": "msgothic.ttc",
+    "sha256": "4bde3e6392b96910fb59094c6c1a4dbfae18fee78d0bf13dc30616837c4f95db",
+    "face_index": 0,
+    "family": "MS Gothic",
+    "coverage": {
+      "U+021E9": "uni21E9"
+    }
+  },
+  {
+    "file": "msgothic.ttc",
+    "sha256": "4bde3e6392b96910fb59094c6c1a4dbfae18fee78d0bf13dc30616837c4f95db",
+    "face_index": 1,
+    "family": "MS UI Gothic",
+    "coverage": {
+      "U+021E9": "uni21E9"
+    }
+  },
+  {
+    "file": "msgothic.ttc",
+    "sha256": "4bde3e6392b96910fb59094c6c1a4dbfae18fee78d0bf13dc30616837c4f95db",
+    "face_index": 2,
+    "family": "MS PGothic",
+    "coverage": {
+      "U+021E9": "uni21E9"
+    }
+  },
+  {
+    "file": "seguiemj.ttf",
+    "sha256": "7c0244dd8eeb7c6bdecdfc3f9e59833527fc18a66d0295ce47339069692a2b4f",
+    "face_index": 0,
+    "family": "Segoe UI Emoji",
+    "coverage": {
+      "U+021E9": "uni21E9"
+    }
+  },
+  {
+    "file": "seguisym.ttf",
+    "sha256": "d2f8326a354456d93e78b0537c58793e7072c3617af7d9ee187f10d6d595f510",
+    "face_index": 0,
+    "family": "Segoe UI Symbol",
+    "coverage": {
+      "U+021E9": "uni21E9"
+    }
+  }
+]
