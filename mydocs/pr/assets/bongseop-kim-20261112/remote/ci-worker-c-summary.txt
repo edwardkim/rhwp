@@ -1,0 +1,11 @@
+2026-11-12T13:16:28.9872894Z      Summary [ 160.309s] 2340 tests run: 2340 passed, 9 skipped
+2026-11-12T13:16:03.1227077Z         PASS [   0.009s] (1845/2340) rhwp::regression_suite_018 issue_8880_bypath_table_path::cell_bboxes_accept_control_only_last_step
+2026-11-12T13:16:03.1299616Z         PASS [   0.010s] (1847/2340) rhwp::regression_suite_018 issue_8880_bypath_table_path::nested_table_path_needs_full_outer_steps
+2026-11-12T13:16:03.1382259Z         PASS [   0.008s] (1848/2340) rhwp::regression_suite_018 issue_8880_bypath_table_path::table_path_still_rejects_invalid_last_step
+2026-11-12T13:16:03.1392199Z         PASS [   0.009s] (1849/2340) rhwp::regression_suite_018 issue_8880_bypath_table_path::table_path_last_step_needs_only_control_index
+2026-11-12T13:16:25.9405533Z         PASS [   0.016s] (2263/2340) rhwp::regression_suite_027 issue_8943_paste_html_leading_plain_run::cell_html_plain_run_and_surrounding_styles_survive_both_formats_twice
+2026-11-12T13:16:25.9509278Z         PASS [   0.010s] (2264/2340) rhwp::regression_suite_027 issue_8943_paste_html_leading_plain_run::first_paragraph_keeps_the_same_result
+2026-11-12T13:16:25.9618694Z         PASS [   0.008s] (2266/2340) rhwp::regression_suite_027 issue_8943_paste_html_leading_plain_run::html_plain_run_keeps_surrounding_styled_caret_text
+2026-11-12T13:16:25.9708661Z         PASS [   0.011s] (2267/2340) rhwp::regression_suite_027 issue_8943_paste_html_leading_plain_run::leading_plain_run_survives_hwpx_save_and_reopen
+2026-11-12T13:16:25.9749700Z         PASS [   0.015s] (2268/2340) rhwp::regression_suite_027 issue_8943_paste_html_leading_plain_run::mixed_body_and_table_styles_survive_both_formats_twice
+2026-11-12T13:16:25.9808905Z         PASS [   0.010s] (2269/2340) rhwp::regression_suite_027 issue_8943_paste_html_leading_plain_run::plain_text_before_a_format_stays_plain_in_later_paragraphs

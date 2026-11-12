@@ -1,0 +1,17 @@
+[RustTestSuite] issue_8880_bypath_table_path -> regression_suite_020::issue_8880_bypath_table_path
+[RustTestSuite] cargo nextest run --locked --test regression_suite_020 -E test(/(^|::)issue_8880_bypath_table_path::/) --cargo-profile release-test
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped
+   Compiling rhwp v0.9.0 (/home/edward/mygithub/rhwp-worktrees/review-base-8942-html-clipboard)
+    Finished `release-test` profile [optimized] target(s) in 4m 10s
+────────────
+ Nextest run ID f82fac57-8ff0-4fa7-bf7f-540018072e7f with nextest profile: default
+    Starting 4 tests across 1 binary (312 tests skipped)
+        PASS [   0.007s] (1/4) rhwp::regression_suite_020 issue_8880_bypath_table_path::cell_bboxes_accept_control_only_last_step
+        PASS [   0.007s] (2/4) rhwp::regression_suite_020 issue_8880_bypath_table_path::table_path_last_step_needs_only_control_index
+        PASS [   0.007s] (3/4) rhwp::regression_suite_020 issue_8880_bypath_table_path::table_path_still_rejects_invalid_last_step
+        PASS [   0.007s] (4/4) rhwp::regression_suite_020 issue_8880_bypath_table_path::nested_table_path_needs_full_outer_steps
+────────────
+     Summary [   0.008s] 4 tests run: 4 passed, 312 skipped
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+info: update nextest with cargo nextest self update, or bypass check with --override-version-check

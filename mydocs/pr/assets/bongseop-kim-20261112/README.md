@@ -2,7 +2,7 @@
 
 ## 범위와 현재 상태
 
-원 기여 SHA 두 개를 보존한 누적 후보에서 #8982의 속성 이름/값 오인을 공통 파서에서 보정했다. 승인 범위는 로컬 보완과 필수 검증이다. push·새 PR·공개 댓글·merge는 아직 수행하지 않았다. 승인된 필수 전체 회귀·lint·역할별 보호 검증을 완료했으며 원격 처리 승인을 기다린다.
+원 기여 SHA 두 개를 보존한 후보에서 공통 속성 경계 오류를 보완했다. 로컬 검증과 승인된 원격 처리로 [수용 PR #9017](https://github.com/edwardkim/rhwp/pull/9017)의 exact-head CI·self-review·merge를 완료했다. 두 원 PR은 MERGED, #8942·#8943은 CLOSED이며 #7992는 OPEN을 유지한다. [최종 검토](../../archives/bongseop_kim_20261112_review.md)와 [CI·병합 영수증](remote/merge-and-ci.json)을 참고한다.
 
 ## 원인과 소비 경로
 
@@ -53,7 +53,7 @@ CDP 19222의 Windows Chrome에 별도 페이지를 열고 새 최적화 WASM을 
 - `before-api/`와 `direct-review/before-after/`는 동일 HTML을 수정 전 API에 넣어 얻은 잘못된 저장 결과의 진단이다. 정상 fixture나 기대값으로 등록하지 않았다. 이 그림을 다른 입력 파일의 정상 raw 점수로 승격하지 않는다.
 - 정본 보호 18문서, Native/fresh WASM 각각 1,771쪽·합계 3,542행을 전수 측정했다. 공식 두 자리 표시값 하락 0건이며 예외를 적용하지 않았다. `protected-comparison.json`·`protected-comparison.tsv`, `protection/<backend>/`의 전쪽 TSV와 정밀 manifest를 보존했다.
 - 별도 필수 `--handbook-gate`도 현재 회귀 head `39f0ac0477`에서 실행해 Native HWPX 383쪽을 통과했다. `handbook-gate/`와 `handbook-gate-receipt.json`을 참고한다.
-- 생산자 build source는 `0aa25a6634`, 정식 회귀 head는 `39f0ac0477`이다. 둘 사이의 Rust 제품·의존성·빌드/출력 script 변경은 0개이며 `product-source-equivalence.json`에 기록했다. 각각의 빌드·실행 SHA를 바꾸어 쓰지 않는다. 새 code/test head의 필수 lint·전체 회귀와 이후 승인받을 GitHub CI는 별도로 완료한다.
+- 생산자 build source는 `0aa25a6634`, 정식 회귀 head는 `39f0ac0477`이다. 둘 사이의 Rust 제품·의존성·빌드/출력 script 변경은 0개이며 `product-source-equivalence.json`에 기록했다. 각각의 빌드·실행 SHA를 바꾸어 쓰지 않는다. 새 code/test head의 필수 lint·전체 회귀와 승인된 수용 PR의 exact-head GitHub CI도 별도로 완료했다.
 - 보호 검증의 독립 구형 수식 문자 표본을 현재 정본 도구로 새로 인쇄·준비했다. 과거 수용된 표본과 문자별 원 프로그램 hash·변환이 동일함을 확인했다. `font-supply/`에는 출처·인쇄·hash 영수증만 남기며 글꼴 프로그램·표본 PDF는 포함하지 않는다.
 
 ## 최종 로컬 게이트

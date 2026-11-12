@@ -1,0 +1,34 @@
+{
+  "observed_at": "2026-11-12T13:35:16.406752+00:00",
+  "merge": "dbb0dfcdaf7aebe68e712807da3ca700774fd39b",
+  "images": [
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/dbb0dfcdaf7aebe68e712807da3ca700774fd39b/mydocs/pr/assets/bongseop-kim-20261112/direct-review/native/border-hwp.png",
+      "sha256": "d89ce0e551927037f846198871ccc209291504f97b4092b3bc60e4877856c4c0",
+      "bytes": 27645,
+      "content_type": "image/png",
+      "verified": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/dbb0dfcdaf7aebe68e712807da3ca700774fd39b/mydocs/pr/assets/bongseop-kim-20261112/direct-review/native/leading-hwpx.png",
+      "sha256": "2c8654a77502c0a677169e68732faf0ac44885112ec59481491fe1f65cfd4566",
+      "bytes": 34346,
+      "content_type": "image/png",
+      "verified": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/dbb0dfcdaf7aebe68e712807da3ca700774fd39b/mydocs/pr/assets/bongseop-kim-20261112/direct-review/wasm/border-hwp.png",
+      "sha256": "023253faf693e9938843d2381fe3a5eb4e0021f071d2742b7260af9bb5dfc079",
+      "bytes": 28575,
+      "content_type": "image/png",
+      "verified": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/dbb0dfcdaf7aebe68e712807da3ca700774fd39b/mydocs/pr/assets/bongseop-kim-20261112/direct-review/wasm/leading-hwpx.png",
+      "sha256": "1ab7a791aa23b725f603319f16bcc6f1e18caa9658fe5c83707fcae1fff4d7aa",
+      "bytes": 34075,
+      "content_type": "image/png",
+      "verified": true
+    }
+  ]
+}

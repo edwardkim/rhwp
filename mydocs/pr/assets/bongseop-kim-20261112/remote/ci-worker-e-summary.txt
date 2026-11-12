@@ -1,0 +1,10 @@
+2026-11-12T13:23:06.4279511Z      Summary [ 254.357s] 2359 tests run: 2359 passed, 4 skipped
+2026-11-12T13:21:48.5495738Z         PASS [   0.017s] (1649/2359) rhwp::regression_suite_019 issue_8942_paste_html_table_border_attr::attribute_names_and_quoted_values_do_not_alias_a_real_border
+2026-11-12T13:21:48.5615386Z         PASS [   0.013s] (1650/2359) rhwp::regression_suite_019 issue_8942_paste_html_table_border_attr::border_attribute_draws_solid_cell_borders
+2026-11-12T13:21:48.5765400Z         PASS [   0.015s] (1651/2359) rhwp::regression_suite_019 issue_8942_paste_html_table_border_attr::border_attribute_survives_hwpx_save_and_reopen
+2026-11-12T13:21:48.5865360Z         PASS [   0.011s] (1652/2359) rhwp::regression_suite_019 issue_8942_paste_html_table_border_attr::cell_css_overrides_the_border_attribute
+2026-11-12T13:21:48.6005655Z         PASS [   0.013s] (1653/2359) rhwp::regression_suite_019 issue_8942_paste_html_table_border_attr::shared_attribute_parser_preserves_image_units_and_quoted_boundaries
+2026-11-12T13:21:48.6105400Z         PASS [   0.011s] (1654/2359) rhwp::regression_suite_019 issue_8942_paste_html_table_border_attr::shared_attribute_parser_preserves_real_merged_cell_spans
+2026-11-12T13:21:48.6215773Z         PASS [   0.010s] (1655/2359) rhwp::regression_suite_019 issue_8942_paste_html_table_border_attr::standalone_picture_style_uses_the_real_attribute
+2026-11-12T13:21:48.6435565Z         PASS [   0.022s] (1656/2359) rhwp::regression_suite_019 issue_8942_paste_html_table_border_attr::table_border_and_contents_survive_both_formats_twice
+2026-11-12T13:21:48.6555509Z         PASS [   0.012s] (1657/2359) rhwp::regression_suite_019 issue_8942_paste_html_table_border_attr::zero_or_missing_border_attribute_keeps_cells_borderless

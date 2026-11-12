@@ -1,0 +1,62 @@
+[
+  {
+    "archive": "A",
+    "job_id": 131203741176,
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/43221597756/job/131203741176",
+    "conclusion": "success",
+    "passed": 3796,
+    "skipped": 12,
+    "focused_passed": 0,
+    "summary": "2026-11-12T13:12:15.5710759Z      Summary [  27.629s] 3796 tests run: 3796 passed, 12 skipped",
+    "log_sha256": "7e0083817371f079c892c3be7e4968960111a2d2d07ff841510f26cefcc85d07",
+    "bytes": 795580
+  },
+  {
+    "archive": "D",
+    "job_id": 131204125828,
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/43221597756/job/131204125828",
+    "conclusion": "success",
+    "passed": 2236,
+    "skipped": 14,
+    "focused_passed": 8,
+    "summary": "2026-11-12T13:15:42.5619472Z      Summary [ 181.574s] 2236 tests run: 2236 passed, 14 skipped",
+    "log_sha256": "0b97d7f738015a2226f0352f7097cb163587d204b393272df9b1e9ea1bea884a",
+    "bytes": 558831
+  },
+  {
+    "archive": "B",
+    "job_id": 131204609895,
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/43221597756/job/131204609895",
+    "conclusion": "success",
+    "passed": 2420,
+    "skipped": 0,
+    "focused_passed": 0,
+    "summary": "2026-11-12T13:20:24.0999538Z      Summary [ 296.686s] 2420 tests run: 2420 passed (1 slow), 6 skipped",
+    "log_sha256": "e52c050a92872fcc7560a4ac41b5d4c0b0f32a08b5731ff548d9550dbc7ee45c",
+    "bytes": 607209
+  },
+  {
+    "archive": "C",
+    "job_id": 131204835538,
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/43221597756/job/131204835538",
+    "conclusion": "success",
+    "passed": 2340,
+    "skipped": 9,
+    "focused_passed": 10,
+    "summary": "2026-11-12T13:16:28.9872894Z      Summary [ 160.309s] 2340 tests run: 2340 passed, 9 skipped",
+    "log_sha256": "beebde9e718e8dad469f53848ec0d8bcafe3f0694f0c960d9a9c13b0d94b553a",
+    "bytes": 588642
+  },
+  {
+    "archive": "E",
+    "job_id": 131204912835,
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/43221597756/job/131204912835",
+    "conclusion": "success",
+    "passed": 2359,
+    "skipped": 4,
+    "focused_passed": 9,
+    "summary": "2026-11-12T13:23:06.4279511Z      Summary [ 254.357s] 2359 tests run: 2359 passed, 4 skipped",
+    "log_sha256": "44c2ead59edd8ff3337c4f79f4fc1d7e5e392406a9e90a74ac85b06c12e96279",
+    "bytes": 588230
+  }
+]

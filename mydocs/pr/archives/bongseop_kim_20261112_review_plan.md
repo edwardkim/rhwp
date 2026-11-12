@@ -2,7 +2,7 @@
 
 ## 목표와 고정 범위
 
-첫 기여 두 건의 유효한 수정을 보존해 수용 가능한 상태로 준비한다. 작업지시자가 2026-11-12 메인터너 보완·필수 검증 진행을 승인했다. 현재 단계는 승인된 로컬 source 보정·검증이며 원격 처리 승인은 별도다. #8982는 명시한 표 테두리, #8983은 첫 서식 앞 평문을 다룬다. 무테두리 표의 기본값 변경 제안 #7992는 유지한다.
+첫 기여 두 건의 유효한 수정을 보존해 수용 가능한 상태로 준비한다. 작업지시자가 2026-11-12 메인터너 보완·필수 검증 진행을 승인했다. 계획 작성 당시 승인 범위는 로컬 source 보정·검증이었다. 이후 별도 원격 승인을 받아 수용 PR의 CI·self-review·merge를 완료했다. #8982는 명시한 표 테두리, #8983은 첫 서식 앞 평문을 다룬다. 무테두리 표의 기본값 변경 제안 #7992는 유지한다.
 
 ## 선행 조사
 
@@ -34,10 +34,23 @@
 
 ## 시각 선행 조건 완료와 정식 회귀 보강
 
-2026-11-12, 보정 source `0aa25a6634`의 Native와 최적화 완료 fresh WASM에서 12문서·12쪽씩 모두 raw 100.00%를 확인했다. 한컴 2020 Print의 실제 인쇄 필드와 전쪽/동일 영역 확대 판독을 연결했다. [정식 원장](assets/bongseop-kim-20261112/README.md)을 만든 뒤 기존 두 회귀 파일의 첫머리에 실제 측정 범위·직전 파일 commit을 기록했다. 별칭 속성·span·그림 단위/실제 style 속성과 서식 있는 삽입점·복합/반복 저장 보호를 보강했다. 합성 API assertion을 별도 실물 입력의 픽셀 점수로 대신하지 않으며 px/쪽수 pin을 추가하지 않았다. 최소 글꼴 환경의 정식 suite·필수 lint·전체 회귀·Native 공식 검사·보호 전수와 실제 Studio 경로 검증을 완료한 뒤 최종 후보를 확정한다.
+2026-11-12, 보정 source `0aa25a6634`의 Native와 최적화 완료 fresh WASM에서 12문서·12쪽씩 모두 raw 100.00%를 확인했다. 한컴 2020 Print의 실제 인쇄 필드와 전쪽/동일 영역 확대 판독을 연결했다. [정식 원장](../assets/bongseop-kim-20261112/README.md)을 만든 뒤 기존 두 회귀 파일의 첫머리에 실제 측정 범위·직전 파일 commit을 기록했다. 별칭 속성·span·그림 단위/실제 style 속성과 서식 있는 삽입점·복합/반복 저장 보호를 보강했다. 합성 API assertion을 별도 실물 입력의 픽셀 점수로 대신하지 않으며 px/쪽수 pin을 추가하지 않았다. 최소 글꼴 환경의 정식 suite·필수 lint·전체 회귀·Native 공식 검사·보호 전수와 실제 Studio 경로 검증을 완료한 뒤 최종 후보를 확정한다.
 
 ## 승인 범위 완료
 
 최종 정식 회귀 head `39f0ac0477`에서 13개 로컬 게이트가 모두 통과했다. 전체 회귀 13,341개·집중 23개·Native 공식 검사 4,073개·모든 lint·workspace build, 주요 Native/fresh WASM 각 13쪽 raw 100.00%, 정본 보호 3,542행 공식 하락 0, 별도 필수 편람 383쪽 gate·Studio 6사례/반복 저장 24개 비교를 완료했다. 원 로그·실행 source·생산자 동일성·skip/ignored·세션 수집기 상태까지 정식 원장에 보존했다. 새 제품 수정·검사 기준 변경·예외 적용은 없다.
 
-[최종 통합 검토](bongseop_kim_20261112_review.md)에 따라 수용을 권고하며, 실제 제출 후보의 원격 push·Open PR·새 head CI·self-review·merge·후속 처리는 별도 승인받는다.
+[최종 통합 검토](bongseop_kim_20261112_review.md)에 따라 수용을 권고했고, 별도 원격 승인을 받아 제출 후보의 Open PR·새 head CI·self-review·merge를 완료했다. 운영 기록 반영 뒤 승인된 댓글·동기화·종료 정리를 수행한다.
+
+## 원격 승인·CI·self-review·병합 결과
+
+작업지시자는 제출 후보 `62a3fe4e2982961f9356a890395dc056eca85570`의 원격 push·Open PR·CI·self-review·merge와 원 PR/이슈 후속 처리·운영 기록·정리를 승인했다. [통합 수용 PR #9017](https://github.com/edwardkim/rhwp/pull/9017)을 열어 같은 head를 검증하고 [self-review](https://github.com/edwardkim/rhwp/pull/9017#pullrequestreview-5875203068) 뒤 merge commit [`dbb0dfcdaf7aebe68e712807da3ca700774fd39b`](https://github.com/edwardkim/rhwp/commit/dbb0dfcdaf7aebe68e712807da3ca700774fd39b)로 통합했다.
+
+- [CI](https://github.com/edwardkim/rhwp/actions/runs/43221597756): lint·Archive A–E·Build & Test 성공. 실제 기본 아카이브 13,151건과 이번/선행 관련 27건이 PASS이며, 로컬 전체 workspace 13,341건과 실행 범위를 구분한다.
+- [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/43221598571): 변경 대상 Rust의 실제 분석 성공. Actions·JavaScript/TypeScript·Python은 경로 분류에 따라 분석을 생략했다. 종합 check의 `neutral`·3개 구성 누락 경고를 보존하며 전체 언어 분석 성공으로 쓰지 않는다. Adapter·Proptest와 최종 CI Impact Policy도 성공했다.
+- CI의 Native·Frontend 생략과 미트리거 Render Diff는 위 로컬 Native/fresh WASM·Studio 실측과 구분한다. 새 CI 재실행·보호 설정 변경·보안 분류 변경은 없었다.
+- 최신 devel `1a3ed4a7cd`의 #8956 표 조회 API 4건과 실제 병합 tree `721ccfdffb`의 27건을 추가 검증했다. 첫 실행의 공용 target 기준 라이브러리 재사용은 실패로 보존했고, 내용 변경 없이 현재 소스를 재컴파일해 27 PASS를 확인했다. GitHub의 실제 merge tree도 동일하다.
+- 두 원 PR은 간접 MERGED다. #8942·#8943의 자동 CLOSED를 확인했고 #7992는 OPEN을 유지한다. 원 기여 SHA와 fork branch를 보존했다.
+- duration 후처리: [duration workflow](https://github.com/edwardkim/rhwp/actions/runs/43227236387)는 success로 끝났지만 `ready:false, reason:no-verified-pr-duration-measurements`로 갱신을 보류했다. 제품 검증 CI를 재실행하지 않았다.
+
+[실제 CI·병합 영수증](../assets/bongseop-kim-20261112/remote/merge-and-ci.json). workflow·판정 정책 변경이 없는 maintainer 일반 경로이므로 옵션 M의 mydocs 운영 기록만 devel에 반영한다. 기록 push와 devel 동기화 후 완료 댓글·감사 댓글을 게시하고 전용 branch/worktree·output 전체·유휴 debug를 정리한다.

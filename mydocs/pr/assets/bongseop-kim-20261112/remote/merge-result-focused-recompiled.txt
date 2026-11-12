@@ -1,0 +1,38 @@
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped
+   Compiling rhwp v0.9.0 (/home/edward/mygithub/rhwp-worktrees/review-integration-8942-bongseop-html-clipboard)
+    Finished `release-test` profile [optimized] target(s) in 4m 27s
+────────────
+ Nextest run ID 7b6f8984-03f9-4cdf-82e6-b58f38203e49 with nextest profile: default
+    Starting 27 tests across 3 binaries (963 tests skipped)
+        PASS [   0.009s] ( 1/27) rhwp::regression_suite_014 issue_7516_html_paste_loose_inline_format::text_after_a_format_does_not_inherit_it
+        PASS [   0.009s] ( 2/27) rhwp::regression_suite_014 issue_7516_html_paste_loose_inline_format::google_docs_normal_weight_wrapper_stays_normal
+        PASS [   0.009s] ( 3/27) rhwp::regression_suite_014 issue_7516_html_paste_loose_inline_format::span_inside_a_paragraph_keeps_inner_formats_and_images
+        PASS [   0.010s] ( 4/27) rhwp::regression_suite_014 issue_7516_html_paste_loose_inline_format::numeric_bold_weights_stay_bold
+        PASS [   0.011s] ( 5/27) rhwp::regression_suite_014 issue_7516_html_paste_loose_inline_format::line_break_inside_a_format_keeps_lines_and_format
+        PASS [   0.012s] ( 6/27) rhwp::regression_suite_014 issue_7516_html_paste_loose_inline_format::loose_inline_formats_stay_in_one_paragraph
+        PASS [   0.009s] ( 7/27) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::cell_css_overrides_the_border_attribute
+        PASS [   0.010s] ( 8/27) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::border_attribute_draws_solid_cell_borders
+        PASS [   0.010s] ( 9/27) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::shared_attribute_parser_preserves_real_merged_cell_spans
+        PASS [   0.013s] (10/27) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::border_attribute_survives_hwpx_save_and_reopen
+        PASS [   0.011s] (11/27) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::shared_attribute_parser_preserves_image_units_and_quoted_boundaries
+        PASS [   0.015s] (12/27) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::attribute_names_and_quoted_values_do_not_alias_a_real_border
+        PASS [   0.010s] (13/27) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::standalone_picture_style_uses_the_real_attribute
+        PASS [   0.010s] (14/27) rhwp::regression_suite_027 issue_8880_bypath_table_path::cell_bboxes_accept_control_only_last_step
+        PASS [   0.010s] (15/27) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::zero_or_missing_border_attribute_keeps_cells_borderless
+        PASS [   0.010s] (16/27) rhwp::regression_suite_027 issue_8880_bypath_table_path::nested_table_path_needs_full_outer_steps
+        PASS [   0.010s] (17/27) rhwp::regression_suite_027 issue_8880_bypath_table_path::table_path_last_step_needs_only_control_index
+        PASS [   0.020s] (18/27) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::table_border_and_contents_survive_both_formats_twice
+        PASS [   0.010s] (19/27) rhwp::regression_suite_027 issue_8880_bypath_table_path::table_path_still_rejects_invalid_last_step
+        PASS [   0.008s] (20/27) rhwp::regression_suite_027 issue_8943_paste_html_leading_plain_run::first_paragraph_keeps_the_same_result
+        PASS [   0.010s] (21/27) rhwp::regression_suite_027 issue_8943_paste_html_leading_plain_run::html_plain_run_keeps_surrounding_styled_caret_text
+        PASS [   0.011s] (22/27) rhwp::regression_suite_027 issue_8943_paste_html_leading_plain_run::leading_plain_run_survives_hwpx_save_and_reopen
+        PASS [   0.015s] (23/27) rhwp::regression_suite_027 issue_8943_paste_html_leading_plain_run::cell_html_plain_run_and_surrounding_styles_survive_both_formats_twice
+        PASS [   0.010s] (24/27) rhwp::regression_suite_027 issue_8943_paste_html_leading_plain_run::plain_text_before_a_format_stays_plain_in_later_paragraphs
+        PASS [   0.017s] (25/27) rhwp::regression_suite_027 issue_8943_paste_html_leading_plain_run::mixed_body_and_table_styles_survive_both_formats_twice
+        PASS [   0.101s] (26/27) rhwp::regression_suite_014 issue_7516_html_paste_loose_inline_format::long_loose_inline_keeps_images_on_the_correct_side_of_the_cut
+        PASS [   0.397s] (27/27) rhwp::regression_suite_014 issue_7516_html_paste_loose_inline_format::long_loose_inline_preserves_content_and_styles_at_the_existing_limit
+────────────
+     Summary [   0.399s] 27 tests run: 27 passed, 963 skipped
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+info: update nextest with cargo nextest self update, or bypass check with --override-version-check
