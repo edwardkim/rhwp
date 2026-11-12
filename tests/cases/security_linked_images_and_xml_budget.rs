@@ -1,4 +1,9 @@
-//! Local security boundary contracts, independent of layout/golden baselines.
+//! 관계형 보안 계약: 편집용 연결 그림 표시는 basename만 노출하고 인쇄에는 노출하지 않는다.
+//! 주석 갱신: 2026-11-12T17:04:43+09:00; 직전 변경 17a69fa4e789226d529ef90caaae5a58655a1eec (2026-10-06T11:49:12+09:00).
+//! 화면/인쇄 분리 근거: #8957 cover-linked·cover-mixed-images, 한글 2024 독립 Print.
+//! 2026-11-12, PDFium 96 DPI raw 2px: 각 전체 1쪽 Native/fresh WASM 100.00%, 전쪽 최저 100.00%.
+//! mydocs/pr/assets/issue8957/linked-print/의 확대 판독을 완료했다. 이 파일의 합성 입력은 보안 계약이며
+//! 그 입력을 실물 조판 golden으로 주장하지 않는다. XML 예산과 비이미지 거부 계약은 유지한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::model::control::Control;
@@ -115,11 +120,16 @@ fn missing_picture_label_exposes_basename_without_author_directory() {
         let mut tree = core.build_page_render_tree(0).unwrap();
         assert!(mark_missing(&mut tree.root, path) > 0);
         let mut renderer = SvgRenderer::new();
+        renderer.show_missing_picture_placeholder = true;
         renderer.render_tree(&tree);
         let svg = renderer.output();
         assert!(!svg.contains("PrivateOwner"));
         assert!(svg.contains("[외부: photo.png]"));
         roxmltree::Document::parse(svg).unwrap();
+        let mut print = SvgRenderer::new();
+        print.render_tree(&tree);
+        assert!(!print.output().contains("PrivateOwner"));
+        assert!(!print.output().contains("[외부:"));
     }
 }
 
